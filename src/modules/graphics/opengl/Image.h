@@ -121,7 +121,7 @@ namespace opengl
 		* @copydetails Image::draws()
 		* @param frame Represents the region of the Image to draw.
 		**/
-		void draws(float x, float y, float angle, float sx, float sy, float ox, float oy, Frame * frame) const;
+		void drawf(float x, float y, float angle, float sx, float sy, float ox, float oy, Frame * frame) const;
 
 		/**
 		* Sets the filter mode.

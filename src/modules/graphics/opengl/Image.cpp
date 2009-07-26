@@ -121,7 +121,7 @@ namespace opengl
 		drawv(t, cache);
 	}
 
-	void Image::draws(float x, float y, float angle, float sx, float sy, float ox, float oy, Frame * frame) const
+	void Image::drawf(float x, float y, float angle, float sx, float sy, float ox, float oy, Frame * frame) const
 	{
 		static Matrix t;
 		const vertex * v = frame->getVertices();

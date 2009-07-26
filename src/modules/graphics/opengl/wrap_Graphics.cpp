@@ -483,6 +483,34 @@ namespace opengl
 		return 0;
 	}
 
+	/**
+	* Draws an Frame of an Image at the specified coordinates, 
+	* with rotation and scaling along both axes.
+	* 
+	* @param x The x-coordinate.
+	* @param y The y-coordinate.
+	* @param angle The amount of rotation.
+	* @param sx The scale factor along the x-axis. (1 = normal).
+	* @param sy The scale factor along the y-axis. (1 = normal).
+	* @param ox The offset along the x-axis.
+	* @param oy The offset along the y-axis.
+	* @param f The Frame to dra.
+	**/
+	int _wrap_drawf(lua_State * L)
+	{
+		Image * image = luax_checktype<Image>(L, 1, "Image", LOVE_GRAPHICS_IMAGE_BITS);
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float angle = (float)luaL_checknumber(L, 4);
+		float sx = (float)luaL_checknumber(L, 5);
+		float sy = (float)luaL_checknumber(L, 6);
+		float ox = (float)luaL_checknumber(L, 7);
+		float oy = (float)luaL_checknumber(L, 8);
+		Frame * f = luax_checkframe(L, 9);
+		image->drawf(x, y, angle, sx, sy, ox, oy, f);
+		return 0;
+	}
+
 	int _wrap_drawTest(lua_State * L)
 	{
 		Image * image = luax_checktype<Image>(L, 1, "Image", LOVE_GRAPHICS_IMAGE_BITS);
@@ -687,6 +715,7 @@ namespace opengl
 
 		{ "draw", _wrap_draw },
 		{ "draws", _wrap_draws },
+		{ "drawf", _wrap_drawf },
 		{ "drawTest", _wrap_drawTest },
 
 		{ "print", _wrap_print },
