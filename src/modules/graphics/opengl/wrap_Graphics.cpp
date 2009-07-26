@@ -128,20 +128,6 @@ namespace opengl
 		return instance->getScissor(L);
 	}
 
-	int _wrap_newColor(lua_State * L)
-	{
-		int r = luaL_checkinteger(L, 1);
-		int g = luaL_checkinteger(L, 2);
-		int b = luaL_checkinteger(L, 3);
-		int a = luaL_optint(L, 4, 255);
-
-		Color * t = instance->newColor(r, g, b, a);
-
-		luax_newtype(L, "Color", LOVE_GRAPHICS_COLOR_BITS, (void*)t);
-
-		return 1;
-	}
-
 	int _wrap_newImage(lua_State * L)
 	{
 		// Convert to File, if necessary.
@@ -182,45 +168,6 @@ namespace opengl
 			return luaL_error(L, "Could not create frame.");
 		
 		luax_newtype(L, "Frame", LOVE_GRAPHICS_FRAME_BITS, (void*)frame);
-		return 1;
-	}
-
-	int _wrap_newAnimation(lua_State * L)
-	{
-		// If string -> file
-		if(lua_isstring(L, 1))
-			luax_strtofile(L, 1);
-
-		// file -> imagedata
-		if(luax_istype(L, 1, LOVE_FILESYSTEM_FILE_BITS))
-			luax_convobj(L, 1, "image", "newImageData");
-
-		// imagedata -> image
-		if(luax_istype(L, 1, LOVE_IMAGE_IMAGE_DATA_BITS))
-			luax_convobj(L, 1, "graphics", "newImage");
-
-		// Check the value.
-		Image * image = luax_checktype<Image>(L, 1, "Image", LOVE_GRAPHICS_IMAGE_BITS);
-
-		Animation * animation = 0;
-
-		if(lua_gettop(L) == 1)
-		{
-			animation = instance->newAnimation(image);
-		}
-		else 
-		{
-			float fw = (float)luaL_checknumber(L, 2);
-			float fh = (float)luaL_checknumber(L, 3);
-			float delay = (float)luaL_checknumber(L, 4);
-			int num = luaL_optint(L, 5, 0);
-			animation = instance->newAnimation(image, fw, fh, delay, num);
-		}
-
-		if(animation == 0)
-			return luaL_error(L, "Could not load the Animation");
-		
-		luax_newtype(L, "Animation", LOVE_GRAPHICS_ANIMATION_BITS, (void*)animation);
 		return 1;
 	}
 
@@ -271,6 +218,7 @@ namespace opengl
 		return 1;
 	}
 
+	/*
 	int _wrap_newSpriteBatch(lua_State * L)
 	{
 		Image * image = luax_checktype<Image>(L, 1, "Image", LOVE_GRAPHICS_IMAGE_BITS);
@@ -280,83 +228,48 @@ namespace opengl
 		luax_newtype(L, "SpriteBatch", LOVE_GRAPHICS_SPRITE_BATCH_BITS, (void*)t);
 		return 1;
 	}
-
-	int _wrap_newVertexBuffer(lua_State * L)
-	{
-
-		Image * image;
-		int type, usage, size;
-
-		if(luax_istype(L, 1, LOVE_GRAPHICS_IMAGE_BITS))
-		{
-			image = luax_checktype<Image>(L, 1, "Image", LOVE_GRAPHICS_IMAGE_BITS);
-			size = luaL_optint(L, 2, 100);
-			type = luaL_optint(L, 3, TYPE_TRIANGLES);
-			usage = luaL_optint(L, 4, USAGE_ARRAY);
-		}
-		else if(lua_isnumber(L, 1))
-		{
-			image = 0;
-			size = luaL_optint(L, 1, 100);
-			type = luaL_optint(L, 2, TYPE_TRIANGLES);
-			usage = luaL_optint(L, 3, USAGE_ARRAY);
-		}
-		else return luaL_error(L, "Expected type image or number");
-
-		VertexBuffer * t = instance->newVertexBuffer(image, size, type, usage);
-		luax_newtype(L, "VertexBuffer", LOVE_GRAPHICS_VERTEX_BUFFER_BITS, (void*)t);
-		return 1;
-	}
+	*/
 
 	int _wrap_setColor(lua_State * L)
 	{
-		if(luax_istype(L, 1, LOVE_GRAPHICS_COLOR_BITS))
-		{
-			Color * color = luax_checktype<Color>(L, 1, "Color", LOVE_GRAPHICS_COLOR_BITS);
-			instance->setColor(color);
-			return 0;
-		}
-
-		int r = luaL_checkint(L, 1);
-		int g = luaL_checkint(L, 2);
-		int b = luaL_checkint(L, 3);
-		int a = luaL_optint(L, 4, 255);
-
-		instance->setColor(r, g, b, a);
-
-		return 1;
+		Color c;
+		c.r = (unsigned char)luaL_checkint(L, 1);
+		c.g = (unsigned char)luaL_checkint(L, 2);
+		c.b = (unsigned char)luaL_checkint(L, 3);
+		c.a = (unsigned char)luaL_optint(L, 4, 255);
+		instance->setColor(c);
+		return 0;
 	}
 
 	int _wrap_getColor(lua_State * L)
 	{
-		Color * color = instance->getColor();
-		luax_newtype(L, "Color", LOVE_GRAPHICS_COLOR_BITS, (void*)color);
-		return 1;
+		Color c = instance->getColor();
+		lua_pushinteger(L, c.r);
+		lua_pushinteger(L, c.g);
+		lua_pushinteger(L, c.b);
+		lua_pushinteger(L, c.a);
+		return 4;
 	}
 
 	int _wrap_setBackgroundColor(lua_State * L)
 	{
-		if(luax_istype(L, 1, LOVE_GRAPHICS_COLOR_BITS))
-		{
-			Color * color = luax_checktype<Color>(L, 1, "Color", LOVE_GRAPHICS_COLOR_BITS);
-			instance->setBackgroundColor(color);
-			return 0;
-		}
-
-		int r = luaL_checkint(L, 1);
-		int g = luaL_checkint(L, 1);
-		int b = luaL_checkint(L, 1);
-
-		instance->setBackgroundColor(r, g, b);
-
-		return 1;
+		Color c;
+		c.r = (unsigned char)luaL_checkint(L, 1);
+		c.g = (unsigned char)luaL_checkint(L, 2);
+		c.b = (unsigned char)luaL_checkint(L, 3);
+		c.a = 255;
+		instance->setBackgroundColor(c);
+		return 0;
 	}
 
 	int _wrap_getBackgroundColor(lua_State * L)
 	{
-		Color * color = instance->getBackgroundColor();
-		luax_newtype(L, "Color", LOVE_GRAPHICS_COLOR_BITS, (void*)color);
-		return 1;
+		Color c = instance->getBackgroundColor();
+		lua_pushinteger(L, c.r);
+		lua_pushinteger(L, c.g);
+		lua_pushinteger(L, c.b);
+		lua_pushinteger(L, c.a);
+		return 4;
 	}
 
 	int _wrap_setFont(lua_State * L)
@@ -436,7 +349,7 @@ namespace opengl
 	int _wrap_setLine(lua_State * L)
 	{
 		float width = (float)luaL_checknumber(L, 1);
-		int style = luaL_optint(L, 2, LINE_SMOOTH);
+		int style = luaL_optint(L, 2, Graphics::LINE_SMOOTH);
 		instance->setLine(width, style);
 		return 0;
 	}
@@ -489,7 +402,7 @@ namespace opengl
 	int _wrap_setPoint(lua_State * L)
 	{
 		float size = (float)luaL_checknumber(L, 1);
-		int style = luaL_optint(L, 2, POINT_SMOOTH);
+		int style = luaL_optint(L, 2, Graphics::POINT_SMOOTH);
 		instance->setPoint(size, style);
 		return 0;
 	}
@@ -741,14 +654,11 @@ namespace opengl
 		{ "clear", _wrap_clear },
 		{ "present", _wrap_present },
 
-		{ "newColor", _wrap_newColor },
 		{ "newImage", _wrap_newImage },
 		{ "newFrame", _wrap_newFrame },
-		{ "newAnimation", _wrap_newAnimation },
 		{ "newFont", _wrap_newFont },
 		{ "newImageFont", _wrap_newImageFont },
-		{ "newSpriteBatch", _wrap_newSpriteBatch },
-		{ "newVertexBuffer", _wrap_newVertexBuffer },
+		//{ "newSpriteBatch", _wrap_newSpriteBatch },
 
 		{ "setColor", _wrap_setColor },
 		{ "getColor", _wrap_getColor },
@@ -815,14 +725,14 @@ namespace opengl
 
 	// Types for this module.
 	const lua_CFunction wrap_Graphics_types[] = {
-		wrap_Color_open, 
+		//wrap_Color_open, 
 		wrap_Font_open, 
 		wrap_Image_open, 
 		wrap_Frame_open, 
-		wrap_Animation_open, 
-		wrap_ParticleSystem_open, 
-		wrap_SpriteBatch_open, 
-		wrap_VertexBuffer_open, 
+		//wrap_Animation_open, 
+		//wrap_ParticleSystem_open, 
+		//wrap_SpriteBatch_open, 
+		//wrap_VertexBuffer_open, 
 		0		
 	};
 

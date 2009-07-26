@@ -18,39 +18,34 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_MOUSE_SDL_MOUSE_H
-#define LOVE_MOUSE_SDL_MOUSE_H
+#ifndef LOVE_MOUSE_MOUSE_H
+#define LOVE_MOUSE_MOUSE_H
 
 // LOVE
-#include <mouse/Mouse.h>
+#include <common/Module.h>
 
 namespace love
 {
 namespace mouse
 {
-namespace sdl
-{
-	class Mouse : public love::mouse::Mouse
+	class Mouse : public Module
 	{
 	public:
-
-		// Implements Module.
-		const char * getName() const;
 		
-		int getX() const;
-		int getY() const;
-		void getPosition(int * x, int * y) const;
-		void setPosition(int x, int y);
-		void setVisible(bool visible);
-		bool isDown(int button) const;
-		bool isVisible() const;
-		void setGrab(bool grab);
-		bool isGrabbed() const;
+		enum MouseButton
+		{
+			MOUSE_LEFT = 1,
+			MOUSE_MIDDLE, 
+			MOUSE_RIGHT,
+			MOUSE_WHEELUP,
+			MOUSE_WHEELDOWN
+		};
+
+		virtual ~Mouse(){};
 
 	}; // Mouse
 
-} // sdl
 } // mouse
 } // love
 
-#endif // LOVE_MOUSE_SDL_MOUSE_H
+#endif // LOVE_MOUSE_MOUSE_H

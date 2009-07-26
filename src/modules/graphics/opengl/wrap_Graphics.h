@@ -22,13 +22,8 @@
 #define LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
 
 // LOVE
-#include "wrap_Color.h"
 #include "wrap_Font.h"
 #include "wrap_Image.h"
-#include "wrap_Animation.h"
-#include "wrap_ParticleSystem.h"
-#include "wrap_SpriteBatch.h"
-#include "wrap_VertexBuffer.h"
 #include "wrap_Frame.h"
 #include "Graphics.h"
 

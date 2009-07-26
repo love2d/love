@@ -31,6 +31,7 @@
 #include <common/math.h>
 
 // OpenGL
+#include "GLee.h"
 #include <SDL/SDL_opengl.h>
 
 namespace love

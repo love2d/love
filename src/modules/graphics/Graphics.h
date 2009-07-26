@@ -18,39 +18,62 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_MOUSE_SDL_MOUSE_H
-#define LOVE_MOUSE_SDL_MOUSE_H
+#ifndef LOVE_GRAPHICS_GRAPHICS_H
+#define LOVE_GRAPHICS_GRAPHICS_H
 
 // LOVE
-#include <mouse/Mouse.h>
+#include <common/Module.h>
 
 namespace love
 {
-namespace mouse
+namespace graphics
 {
-namespace sdl
-{
-	class Mouse : public love::mouse::Mouse
+	class Graphics : public Module
 	{
 	public:
 
-		// Implements Module.
-		const char * getName() const;
+		enum DrawMode
+		{
+			DRAW_LINE, 
+			DRAW_FILL
+		};
+
+		enum AlignMode
+		{
+			ALIGN_LEFT, 
+			ALIGN_CENTER, 
+			ALIGN_RIGHT
+		};
+
+		enum BlendMode
+		{
+			BLEND_ALPHA, 
+			BLEND_ADDITIVE
+		};
+
+		enum ColorMode
+		{
+			COLOR_MODULATE, 
+			COLOR_REPLACE
+		};
+
+		enum LineStyle
+		{
+			LINE_ROUGH, 
+			LINE_SMOOTH
+		};
+
+		enum PointStyle
+		{
+			POINT_ROUGH,
+			POINT_SMOOTH
+		};
+
+		virtual ~Graphics(){};
 		
-		int getX() const;
-		int getY() const;
-		void getPosition(int * x, int * y) const;
-		void setPosition(int x, int y);
-		void setVisible(bool visible);
-		bool isDown(int button) const;
-		bool isVisible() const;
-		void setGrab(bool grab);
-		bool isGrabbed() const;
+	}; // Graphics
 
-	}; // Mouse
-
-} // sdl
-} // mouse
+} // graphics
 } // love
 
-#endif // LOVE_MOUSE_SDL_MOUSE_H
+#endif // LOVE_GRAPHICS_GRAPHICS_H

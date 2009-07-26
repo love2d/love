@@ -18,39 +18,44 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_MOUSE_SDL_MOUSE_H
-#define LOVE_MOUSE_SDL_MOUSE_H
+#ifndef LOVE_JOYSTICK_JOYSTICK_H
+#define LOVE_JOYSTICK_JOYSTICK_H
 
 // LOVE
-#include <mouse/Mouse.h>
+#include <common/Module.h>
 
 namespace love
 {
-namespace mouse
+namespace joystick
 {
-namespace sdl
-{
-	class Mouse : public love::mouse::Mouse
+	class Joystick : public Module
 	{
 	public:
 
-		// Implements Module.
-		const char * getName() const;
-		
-		int getX() const;
-		int getY() const;
-		void getPosition(int * x, int * y) const;
-		void setPosition(int x, int y);
-		void setVisible(bool visible);
-		bool isDown(int button) const;
-		bool isVisible() const;
-		void setGrab(bool grab);
-		bool isGrabbed() const;
+		enum JoystickAxis
+		{
+			JOYSTICK_AXIS_HORIZONTAL = 0,
+			JOYSTICK_AXIS_VERITCAL = 1,
+		};
 
-	}; // Mouse
+		enum JoystickHat
+		{
+			JOYSTICK_HAT_CENTERED = 0,
+			JOYSTICK_HAT_UP = 1,
+			JOYSTICK_HAT_RIGHT = 2,
+			JOYSTICK_HAT_DOWN = 4,
+			JOYSTICK_HAT_LEFT = 8,
+			JOYSTICK_HAT_RIGHTUP = (2|1),
+			JOYSTICK_HAT_RIGHTDOWN = (2|4),
+			JOYSTICK_HAT_LEFTUP = (8|1),
+			JOYSTICK_HAT_LEFTDOWN = (8|4)
+		};
 
-} // sdl
-} // mouse
+		virtual ~Joystick(){};
+
+	}; // Joystick
+
+} // joystick
 } // love
 
-#endif // LOVE_MOUSE_SDL_MOUSE_H
+#endif // LOVE_JOYSTICK_JOYSTICK_H

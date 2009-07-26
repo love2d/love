@@ -18,39 +18,35 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_MOUSE_SDL_MOUSE_H
-#define LOVE_MOUSE_SDL_MOUSE_H
+#ifndef LOVE_PHYSICS_JOINT_H
+#define LOVE_PHYSICS_JOINT_H
 
 // LOVE
-#include <mouse/Mouse.h>
+#include <common/Object.h>
 
 namespace love
 {
-namespace mouse
+namespace physics
 {
-namespace sdl
-{
-	class Mouse : public love::mouse::Mouse
+	class Joint : public Object
 	{
 	public:
 
-		// Implements Module.
-		const char * getName() const;
-		
-		int getX() const;
-		int getY() const;
-		void getPosition(int * x, int * y) const;
-		void setPosition(int x, int y);
-		void setVisible(bool visible);
-		bool isDown(int button) const;
-		bool isVisible() const;
-		void setGrab(bool grab);
-		bool isGrabbed() const;
+		enum JointType
+		{
+			JOINT_DISTANCE,
+			JOINT_REVOLUTE,
+			JOINT_PRISMATIC,
+			JOINT_MOUSE,
+			JOINT_PULLEY,
+			JOINT_GEAR
+		};
 
-	}; // Mouse
 
-} // sdl
-} // mouse
+		virtual ~Joint(){}
+	};
+
+} // physics
 } // love
 
-#endif // LOVE_MOUSE_SDL_MOUSE_H
+#endif // LOVE_PHYSICS_JOINT_H

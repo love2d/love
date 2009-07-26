@@ -25,7 +25,7 @@
 #include <SDL.h>
 
 // LOVE
-#include <common/Module.h>
+#include <joystick/Joystick.h>
 
 namespace love
 {
@@ -33,13 +33,13 @@ namespace joystick
 {
 namespace sdl
 {
-	class Joystick : public Module
+	class Joystick : public love::joystick::Joystick
 	{
 	private:
 		SDL_Joystick ** joysticks;
 	public:
 		Joystick();
-		~Joystick();
+		virtual ~Joystick();
 
 		// Implements Module.
 		const char * getName() const;

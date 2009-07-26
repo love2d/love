@@ -18,7 +18,14 @@ LOVE 0.6.0
   * Changed love.filesystem.open to accept mode (removed from love.filesystem.newFile).
   * Changed love.filesystem.read() which now returns two parameters (data, length).
   * Changed love.filesystem.write() which now takes up to four parameters (file, data, length, mode).
+  * Changed default color mode to love.color_modulate.
+  * Changed named of love.color_normal to love.color_replace.
+  * Changed name of love.blend_normal to love.blend_alpha.
   
+  * Removed Color object.
+  * Removed Animation. 
+  * Removed ParticleSystem (!)
+  * Removed several constants.
   * Removed love.graphics.draw() for strings.
   * Removed love.system.
   * Removed conf files. 

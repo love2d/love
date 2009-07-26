@@ -18,39 +18,51 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_MOUSE_SDL_MOUSE_H
-#define LOVE_MOUSE_SDL_MOUSE_H
+#ifndef LOVE_GRAPHICS_IMAGE_H
+#define LOVE_GRAPHICS_IMAGE_H
 
 // LOVE
-#include <mouse/Mouse.h>
+#include <graphics/Volatile.h>
+#include <graphics/Drawable.h>
 
 namespace love
 {
-namespace mouse
+namespace graphics
 {
-namespace sdl
-{
-	class Mouse : public love::mouse::Mouse
+	
+	class Image : public Drawable, public Volatile
 	{
 	public:
+	
+		enum WrapMode
+		{
+			WRAP_CLAMP, 
+			WRAP_REPEAT
+		};
 
-		// Implements Module.
-		const char * getName() const;
-		
-		int getX() const;
-		int getY() const;
-		void getPosition(int * x, int * y) const;
-		void setPosition(int x, int y);
-		void setVisible(bool visible);
-		bool isDown(int button) const;
-		bool isVisible() const;
-		void setGrab(bool grab);
-		bool isGrabbed() const;
+		enum FilterMode
+		{
+			FILTER_LINEAR,
+			FILTER_NEAREST
+		};
 
-	}; // Mouse
+		struct Filter
+		{
+			FilterMode min;
+			FilterMode mag;
+		};
 
-} // sdl
-} // mouse
+		struct Wrap
+		{
+			WrapMode s;
+			WrapMode t;
+		};
+
+		virtual ~Image(){};
+
+	}; // Image
+	
+} // graphics
 } // love
 
-#endif // LOVE_MOUSE_SDL_MOUSE_H
+#endif // LOVE_GRAPHICS_IMAGE_H

@@ -783,6 +783,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\graphics\Graphics.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\graphics\Image.h"
 					>
 				</File>
@@ -813,54 +817,6 @@
 				<Filter
 					Name="opengl"
 					>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\Animation.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\Animation.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\Color.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\Color.h"
-						>
-					</File>
 					<File
 						RelativePath="..\..\src\modules\graphics\opengl\Font.cpp"
 						>
@@ -1006,54 +962,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\modules\graphics\opengl\ParticleSystem.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\ParticleSystem.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\SpriteBatch.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\SpriteBatch.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\modules\graphics\opengl\TrueTypeFont.cpp"
 						>
 						<FileConfiguration
@@ -1075,78 +983,6 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\graphics\opengl\TrueTypeFont.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\VertexBuffer.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\VertexBuffer.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_Animation.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_Animation.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_Color.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_Color.h"
 						>
 					</File>
 					<File
@@ -1243,78 +1079,6 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\graphics\opengl\wrap_Image.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_VertexBuffer.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_VertexBuffer.h"
 						>
 					</File>
 				</Filter>
@@ -1454,6 +1218,10 @@
 			<Filter
 				Name="joystick"
 				>
+				<File
+					RelativePath="..\..\src\modules\joystick\Joystick.h"
+					>
+				</File>
 				<Filter
 					Name="sdl"
 					>
@@ -1510,6 +1278,10 @@
 			<Filter
 				Name="keyboard"
 				>
+				<File
+					RelativePath="..\..\src\modules\keyboard\Keyboard.h"
+					>
+				</File>
 				<Filter
 					Name="sdl"
 					>
@@ -1566,6 +1338,10 @@
 			<Filter
 				Name="mouse"
 				>
+				<File
+					RelativePath="..\..\src\modules\mouse\Mouse.h"
+					>
+				</File>
 				<Filter
 					Name="sdl"
 					>
@@ -1622,6 +1398,14 @@
 			<Filter
 				Name="physics"
 				>
+				<File
+					RelativePath="..\..\src\modules\physics\Joint.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\physics\Shape.h"
+					>
+				</File>
 				<Filter
 					Name="box2d"
 					>
@@ -3367,6 +3151,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\common\constants.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\common\constants.h"
 				>
 			</File>
 			<File

@@ -18,39 +18,21 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_MOUSE_SDL_MOUSE_H
-#define LOVE_MOUSE_SDL_MOUSE_H
-
-// LOVE
-#include <mouse/Mouse.h>
+#ifndef LOVE_CONSTANTS_H
+#define LOVE_CONSTANTS_H
 
 namespace love
 {
-namespace mouse
-{
-namespace sdl
-{
-	class Mouse : public love::mouse::Mouse
+	// Type used for storing constants
+	// in an array.
+	typedef struct lua_constant_entry
 	{
-	public:
+		const char * name;
+		int value;
+	} lua_constant_entry;
 
-		// Implements Module.
-		const char * getName() const;
-		
-		int getX() const;
-		int getY() const;
-		void getPosition(int * x, int * y) const;
-		void setPosition(int x, int y);
-		void setVisible(bool visible);
-		bool isDown(int button) const;
-		bool isVisible() const;
-		void setGrab(bool grab);
-		bool isGrabbed() const;
+	extern const lua_constant_entry lua_constants[];
 
-	}; // Mouse
-
-} // sdl
-} // mouse
 } // love
 
-#endif // LOVE_MOUSE_SDL_MOUSE_H
+#endif // LOVE_CONSTANTS_H

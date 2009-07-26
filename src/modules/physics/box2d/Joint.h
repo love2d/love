@@ -23,8 +23,7 @@
 
 // LOVE
 #include <common/runtime.h>
-#include <common/Object.h>
-#include <common/constants.h>
+#include <physics/Joint.h>
 
 // Box2D
 #include "Include/Box2D.h"
@@ -44,7 +43,7 @@ namespace box2d
 	* A Joint can be used to prevent Bodies from going to 
 	* far apart, or coming too close together.
 	**/
-	class Joint : public Object
+	class Joint : public love::physics::Joint
 	{
 		friend class GearJoint;
 		

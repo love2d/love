@@ -22,9 +22,8 @@
 #define LOVE_PHYSICS_BOX2D_SHAPE_H
 
 // LOVE
-#include <common/Object.h>
+#include <physics/Shape.h>
 #include <common/Reference.h>
-#include <common/constants.h>
 
 // Box2D
 #include "Include/Box2D.h"
@@ -56,7 +55,7 @@ namespace box2d
 	* a Shape's geometry will be affected by the parent
 	* body's transformation.
 	**/
-	class Shape : public Object
+	class Shape : public love::physics::Shape
 	{
 	protected:
 		

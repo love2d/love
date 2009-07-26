@@ -48,10 +48,11 @@ namespace opengl
 
 	int _wrap_Image_setFilter(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1);
-		int min = luaL_checkint(L, 2);
-		int mag = luaL_checkint(L, 3);
-		t->setFilter(min, mag);
+		Image * t = luax_checkimage(L, 1); 
+		Image::Filter f;
+		f.min = (Image::FilterMode)luaL_checkint(L, 2);
+		f.mag = (Image::FilterMode)luaL_checkint(L, 3);
+		t->setFilter(f);
 		return 1;
 	}
 

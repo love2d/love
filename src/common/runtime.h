@@ -33,15 +33,6 @@ extern "C" {
 
 namespace love
 {
-
-	// Type used for storing constants
-	// in an array.
-	typedef struct lua_constant_entry
-	{
-		const char * name;
-		int value;
-	} lua_constant_entry;
-
 	class Module;
 
 	void luax_printstack(lua_State * L);

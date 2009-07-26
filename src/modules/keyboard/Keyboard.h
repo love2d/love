@@ -18,55 +18,28 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
+#ifndef LOVE_KEYBOARD_KEYBOARD_H
+#define LOVE_KEYBOARD_KEYBOARD_H
 
 // LOVE
-#include <keyboard/Keyboard.h>
+#include <common/Module.h>
 
 namespace love
 {
 namespace keyboard
 {
-namespace sdl
-{
-	class Keyboard : public love::keyboard::Keyboard
+	class Keyboard : public Module
 	{
 	public:
 
-		// Implements Module.
-		const char * getName() const;
-		
-		/**
-		* Checks whether a certain key is down or not.
-		* @param key A key identifier.
-		* @return boolean
-		**/
-		bool isDown(int key) const;
+		static const int KEY_REPEAT_DELAY = -1;
+		static const int KEY_REPEAT_INTERVAL = -2;
 
-		/**
-		* Enables key repeating.
-		* @param delay The amount of delay before repeating the key (in milliseconds)
-		* @param interval Specifies the amount of time between repeats (in milliseconds)
-		**/
-		void setKeyRepeat(int delay = 0, int interval = 0) const;
-
-		/**
-		* Gets the specified delay for the key repeat.
-		* @return int
-		**/
-		int getKeyRepeatDelay() const;
-
-		/**
-		* Gets the specified interval for the key repeat.
-		* @return int
-		**/
-		int getKeyRepeatInterval() const;
+		virtual ~Keyboard(){}
 
 	}; // Keyboard
 
-} // sdl
 } // keyboard
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H
+#endif // LOVE_KEYBOARD_KEYBOARD_H

@@ -22,7 +22,6 @@
 
 // LOVE
 #include <common/config.h>
-#include <common/constants.h>
 
 namespace love
 {
@@ -76,29 +75,29 @@ namespace opengl
 		float color[4];
 		//get the color
 		glGetFloatv(GL_CURRENT_COLOR, color);
-		s.color[0] = (GLubyte)(color[0]*255.0f);
-		s.color[1] = (GLubyte)(color[1]*255.0f);
-		s.color[2] = (GLubyte)(color[2]*255.0f);
-		s.color[3] = (GLubyte)(color[3]*255.0f);
+		s.color.r = (GLubyte)(color[0]*255.0f);
+		s.color.g = (GLubyte)(color[1]*255.0f);
+		s.color.b = (GLubyte)(color[2]*255.0f);
+		s.color.a = (GLubyte)(color[3]*255.0f);
 		//get the background color
 		glGetFloatv(GL_COLOR_CLEAR_VALUE, color);
-		s.backgroundColor[0] = (GLubyte)(color[0]*255.0f);
-		s.backgroundColor[1] = (GLubyte)(color[1]*255.0f);
-		s.backgroundColor[2] = (GLubyte)(color[2]*255.0f);
-		s.backgroundColor[3] = (GLubyte)(color[3]*255.0f);
+		s.backgroundColor.r = (GLubyte)(color[0]*255.0f);
+		s.backgroundColor.g = (GLubyte)(color[1]*255.0f);
+		s.backgroundColor.b = (GLubyte)(color[2]*255.0f);
+		s.backgroundColor.a = (GLubyte)(color[3]*255.0f);
 		//store modes here
 		int mode;
 		//get blend mode
 		glGetIntegerv(GL_BLEND_DST, &mode);
 		//following syntax seems better than if-else every time
-		s.blendMode = (mode == GL_ONE) ? BLEND_ADDITIVE : BLEND_NORMAL;
+		s.blendMode = (mode == GL_ONE) ? Graphics::BLEND_ADDITIVE : Graphics::BLEND_ALPHA;
 		//get color mode
 		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
-		s.colorMode = (mode == GL_MODULATE) ? COLOR_MODULATE : COLOR_NORMAL;
+		s.colorMode = (mode == GL_MODULATE) ? Graphics::COLOR_MODULATE : Graphics::COLOR_REPLACE;
 		//get the line width (directly to corresponding variable)
 		glGetFloatv(GL_LINE_WIDTH, &s.lineWidth);
 		//get line style
-		s.lineStyle = (glIsEnabled(GL_LINE_SMOOTH) == GL_TRUE) ? LINE_SMOOTH : LINE_ROUGH;
+		s.lineStyle = (glIsEnabled(GL_LINE_SMOOTH) == GL_TRUE) ? Graphics::LINE_SMOOTH : Graphics::LINE_ROUGH;
 		//get line stipple
 		s.stipple = (glIsEnabled(GL_LINE_SMOOTH) == GL_TRUE) ? true : false;
 		if (s.stipple)
@@ -111,7 +110,7 @@ namespace opengl
 		//get the point size
 		glGetFloatv(GL_POINT_SIZE, &s.pointSize);
 		//get point style
-		s.pointStyle = (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE) ? POINT_SMOOTH : POINT_ROUGH;
+		s.pointStyle = (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE) ? Graphics::POINT_SMOOTH : Graphics::POINT_ROUGH;
 		//get scissor status
 		s.scissor = (glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE) ? true : false;
 		//do we have scissor, if so, store the box
@@ -122,8 +121,8 @@ namespace opengl
 
 	void Graphics::restoreState(const DisplayState & s)
 	{
-		setColor(s.color[0], s.color[1], s.color[2], s.color[3]);
-		setBackgroundColor(s.backgroundColor[0], s.backgroundColor[1], s.backgroundColor[2]);
+		setColor(s.color);
+		setBackgroundColor(s.backgroundColor);
 		setBlendMode(s.blendMode);
 		setColorMode(s.colorMode);
 		setLine(s.lineWidth, s.lineStyle);
@@ -401,11 +400,6 @@ namespace opengl
 		return new Frame(x, y, w, h, sw, sh);
 	}
 
-	Color * Graphics::newColor(int r, int g, int b, int a)
-	{
-		return new Color(r, g, b, a);
-	}
-
 	Font * Graphics::newFont(love::filesystem::File * file, int size)
 	{
 		Font * font = new TrueTypeFont(file, size);
@@ -434,58 +428,49 @@ namespace opengl
 		return font;
 	}
 
-	Animation * Graphics::newAnimation(Image * image)
-	{
-		return new Animation(image);
-	}
-
-	Animation * Graphics::newAnimation(Image * image, float fw, float fh, float delay, int num)
-	{
-		return new Animation(image, fw, fh, delay, num);
-	}
-
+	/*
 	SpriteBatch * Graphics::newSpriteBatch(Image * image, int size, int usage)
 	{
 		return new SpriteBatch(image, size, usage);
 	}
+	*/
 
-	VertexBuffer * Graphics::newVertexBuffer(Image * image, int size, int type, int usage)
+	void Graphics::setColor(Color c)
 	{
-		return new VertexBuffer(image, size, type, usage);
+		glColor4ubv(&c.r);
 	}
 
-	void Graphics::setColor( int r, int g, int b, int a)
-	{
-		glColor4ub(r, g, b, a);
-	}
-
-	void Graphics::setColor( Color * color )
-	{
-		glColor4ub(color->getRed(), color->getGreen(), color->getBlue(), color->getAlpha());
-	}
-
-	Color * Graphics::getColor()
+	Color Graphics::getColor()
 	{
 		float c[4];
 		glGetFloatv(GL_CURRENT_COLOR, c);
-		return new Color((int)(255.0f*c[0]), (int)(255.0f*c[1]), (int)(255.0f*c[2]), (int)(255.0f*c[3]));
+
+		Color t;
+		t.r = (unsigned char)(255.0f*c[0]); 
+		t.g = (unsigned char)(255.0f*c[1]); 
+		t.b = (unsigned char)(255.0f*c[2]); 
+		t.a = (unsigned char)(255.0f*c[3]);
+
+		return t;
 	}
 
-	void Graphics::setBackgroundColor( int r, int g, int b )
+	void Graphics::setBackgroundColor(Color c)
 	{
-		glClearColor( (float)r/255.0f, (float)g/255.0f, (float)b/255.0f, 1.0f);
+		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, 1.0f);
 	}
 
-	void Graphics::setBackgroundColor( Color * color )
-	{
-		glClearColor( (float)color->getRed()/255.0f, (float)color->getGreen()/255.0f, (float)color->getBlue()/255.0f, 1.0f);
-	}
-
-	Color * Graphics::getBackgroundColor()
+	Color Graphics::getBackgroundColor()
 	{
 		float c[4];
 		glGetFloatv(GL_COLOR_CLEAR_VALUE, c);
-		return new Color((int)(255.0f*c[0]), (int)(255.0f*c[1]), (int)(255.0f*c[2]), (int)(255.0f*c[3]));
+
+		Color t;
+		t.r = (unsigned char)(255.0f*c[0]); 
+		t.g = (unsigned char)(255.0f*c[1]); 
+		t.b = (unsigned char)(255.0f*c[2]); 
+		t.a = (unsigned char)(255.0f*c[3]);
+
+		return t;
 	}
 
 	void Graphics::setFont( Font * font )
@@ -517,7 +502,7 @@ namespace opengl
 	{
 		if(mode == BLEND_ADDITIVE)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		else // mode == BLEND_NORMAL
+		else // mode == BLEND_ALPHA
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
@@ -525,7 +510,7 @@ namespace opengl
 	{
 		if(mode == COLOR_MODULATE)
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		else // mode = COLOR_NORMAL
+		else // mode = COLOR_REPLACE
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 	
@@ -538,7 +523,7 @@ namespace opengl
 		if(src == GL_SRC_ALPHA && dst == GL_ONE)
 			return BLEND_ADDITIVE;
 		else // src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA
-			return BLEND_NORMAL;
+			return BLEND_ALPHA;
 	}
 
 	int Graphics::getColorMode()
@@ -549,7 +534,7 @@ namespace opengl
 		if(mode == GL_MODULATE)
 			return COLOR_MODULATE;
 		else // // mode == GL_REPLACE
-			return COLOR_NORMAL;
+			return COLOR_REPLACE;
 	}
 
 	void Graphics::setLineWidth( float width )
@@ -856,7 +841,7 @@ namespace opengl
 
 		switch(type)
 		{
-		case love::DRAW_LINE:
+		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
 				glVertex2f(x1, y1);
 				glVertex2f(x2, y2);
@@ -865,7 +850,7 @@ namespace opengl
 			break;
 
 		default:
-		case love::DRAW_FILL:
+		case DRAW_FILL:
 			glBegin(GL_TRIANGLES);
 				glVertex2f(x1, y1);
 				glVertex2f(x2, y2);
@@ -886,7 +871,7 @@ namespace opengl
 
 		switch(type)
 		{
-		case love::DRAW_LINE:
+		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
 				glVertex2f(x, y);				
 				glVertex2f(x, y+h);
@@ -896,7 +881,7 @@ namespace opengl
 			break;
 
 		default:
-		case love::DRAW_FILL:
+		case DRAW_FILL:
 			glBegin(GL_QUADS);
 				glVertex2f(x, y);				
 				glVertex2f(x, y+h);
@@ -918,7 +903,7 @@ namespace opengl
 
 		switch(type)
 		{
-		case love::DRAW_LINE:
+		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
 				glVertex2f(x1, y1);				
 				glVertex2f(x2, y2);
@@ -928,7 +913,7 @@ namespace opengl
 			break;
 
 		default:
-		case love::DRAW_FILL:
+		case DRAW_FILL:
 			glBegin(GL_QUADS);
 				glVertex2f(x1, y1);
 				glVertex2f(x2, y2);
@@ -956,7 +941,7 @@ namespace opengl
 
 		switch(type)
 		{
-		case love::DRAW_LINE:
+		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
 
 			for(float i = 0; i < two_pi; i+= angle_shift)
@@ -966,7 +951,7 @@ namespace opengl
 			break;
 
 		default:
-		case love::DRAW_FILL:
+		case DRAW_FILL:
 			glBegin(GL_TRIANGLE_FAN);
 
 			for(float i = 0; i < two_pi; i+= angle_shift)
@@ -1017,7 +1002,7 @@ namespace opengl
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_TEXTURE_2D);
 
-		glBegin((mode==love::DRAW_LINE) ? GL_LINE_LOOP : GL_POLYGON);
+		glBegin((mode==DRAW_LINE) ? GL_LINE_LOOP : GL_POLYGON);
 
 		switch(luatype)
 		{
@@ -1075,7 +1060,7 @@ namespace opengl
 
 		// Get rendering mode. (line/fill)
 		int mode = (int)lua_tonumber(L, 1);
-		GLenum glmode = (mode==love::DRAW_LINE) ? GL_LINE_LOOP : GL_POLYGON;
+		GLenum glmode = (mode==DRAW_LINE) ? GL_LINE_LOOP : GL_POLYGON;
 
 		// Get the type of the second argument.
 		int luatype = lua_type(L, 2);

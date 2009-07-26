@@ -31,15 +31,11 @@
 #include <SDL_opengl.h>
 
 // LOVE
-#include <common/Module.h>
+#include <graphics/Graphics.h>
+
 #include "Image.h"
-#include "Animation.h"
-#include "Color.h"
 #include "TrueTypeFont.h"
 #include "ImageFont.h"
-#include "ParticleSystem.h"
-#include "SpriteBatch.h"
-#include "VertexBuffer.h"
 #include "Frame.h"
 
 namespace love
@@ -48,6 +44,11 @@ namespace graphics
 {
 namespace opengl
 {
+	struct Color
+	{
+		unsigned char r, b, g, a;
+	};
+
 	struct DisplayMode
 	{
 		int width, height; // The size of the screen.
@@ -63,22 +64,23 @@ namespace opengl
 	struct DisplayState
 	{
 		// Colors.
-		GLubyte color[4];
-		GLubyte backgroundColor[4];
+		Color color;
+		Color backgroundColor;
 
 		// Blend and color modes.
-		int blendMode, colorMode;
+		Graphics::BlendMode blendMode;
+		Graphics::ColorMode colorMode;
 
 		// Line.
 		float lineWidth;
-		int lineStyle;
+		Graphics::LineStyle lineStyle;
 		bool stipple;
 		int stippleRepeat;
 		int stipplePattern;
 
 		// Point.
 		float pointSize;
-		int pointStyle;
+		Graphics::PointStyle pointStyle;
 
 		// Scissor.
 		bool scissor;
@@ -87,27 +89,27 @@ namespace opengl
 		// Default values.
 		DisplayState()
 		{
-			color[0] = 255; 
-			color[1] = 255; 
-			color[2] = 255; 
-			color[3] = 255;
-			backgroundColor[0] = 0; 
-			backgroundColor[1] = 0; 
-			backgroundColor[2] = 0; 
-			backgroundColor[3] = 255;
-			blendMode = BLEND_NORMAL;
-			colorMode = COLOR_NORMAL;
+			color.r = 255; 
+			color.g = 255; 
+			color.b = 255; 
+			color.a = 255;
+			backgroundColor.r = 0; 
+			backgroundColor.g = 0; 
+			backgroundColor.b = 0; 
+			backgroundColor.a = 255;
+			blendMode = Graphics::BLEND_ALPHA;
+			colorMode = Graphics::COLOR_MODULATE;
 			lineWidth = 1.0f;
-			lineStyle = LINE_SMOOTH;
+			lineStyle = Graphics::LINE_SMOOTH;
 			stipple = false;
 			pointSize = 1.0f;
-			pointStyle = POINT_SMOOTH;
+			pointStyle = Graphics::POINT_SMOOTH;
 			scissor = false;
 		}
 
 	};
 
-	class Graphics : public Module
+	class Graphics : public love::graphics::Graphics
 	{
 	private:
 
@@ -115,8 +117,9 @@ namespace opengl
 		DisplayMode currentMode;
 
 	public:
+
 		Graphics();
-		~Graphics();
+		virtual ~Graphics();
 		
 		// Implements Module.
 		const char * getName() const;
@@ -129,7 +132,6 @@ namespace opengl
 		* @param height The window height.
 		**/
 		bool checkMode(int width, int height, bool fullscreen);
-
 
 		DisplayState saveState();
 
@@ -228,11 +230,6 @@ namespace opengl
 		int getScissor(lua_State * L);
 
 		/**
-		* Creates a new Color object.
-		**/
-		Color * newColor( int r, int g, int b, int a );
-
-		/**
 		* Creates an Image object with padding and/or optimization.
 		**/
 		Image * newImage(love::filesystem::File * file);
@@ -253,59 +250,28 @@ namespace opengl
 		**/
 		Font * newImageFont(Image * image, const char * glyphs, float spacing = 1);
 		
-		/**
-		* Creates an Animation object with no frames.
-		**/
-		Animation * newAnimation(Image * image);
-
-		/**
-		* Creates an Animation object with generated frames in a grid.
-		**/
-		Animation * newAnimation(Image * image, float fw, float fh, float delay, int num = 0);
-
-		/**
-		* Creates a ParticleSystem object with the specified buffer size and using the specified sprite.
-		**/
-		//pParticleSystem newParticleSystem(Image * image, unsigned int size);
-
-		/**
-		* Creates a PointParticleSystem object with the specified buffer size and sprite.
-		* @param mode This should be love::POINT_SPRITE.
-		**/
-		//pParticleSystem newParticleSystem(Image * image, unsigned int size, int mode);
-
-		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
-		VertexBuffer * newVertexBuffer(Image * image, int size, int type, int usage);
+		//SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
 			
 		/**
 		* Sets the foreground color.
 		**/
-		void setColor(Color * color);
-
-		/**
-		* Sets the foreground color.
-		**/
-		void setColor( int r, int g, int b, int a = 255);
+		void setColor(Color c);
 
 		/**
 		* Gets current color.
 		**/
-		Color * getColor();
+		Color getColor();
 
 		/**
 		* Sets the background Color. 
 		**/
-		void setBackgroundColor( Color * color );
-
-		/**
-		* Sets the background Color. 
-		**/
-		void setBackgroundColor( int r, int g, int b );
+		void setBackgroundColor(Color c);
 
 		/**
 		* Gets the current background color.
+		* @param c Array of size 3 (r,g,b).
 		**/
-		Color * getBackgroundColor();
+		Color getBackgroundColor();
 
 		/**
 		* Sets the current font.
@@ -472,17 +438,6 @@ namespace opengl
 		* @param align Where to align the text.
 		**/
 		void printf( const char * str, float x, float y, float wrap, int align = 0 );
-
-		/**
-		* Draws an Image at the specified coordinates, with rotation and 
-		* scaling along both axes.
-		* @param x The x-coordinate.
-		* @param y The y-coordinate.
-		* @param angle The amount of rotation.
-		* @param sx The scale factor along the x-axis. (1 = normal).
-		* @param sy The scale factor along the y-axis. (1 = normal).
-		**/
-		//void draw(Drawable * drawable, float x, float y, float angle, float sx, float sy);
 
 		/**
 		* Draws a point at (x,y).
