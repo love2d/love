@@ -1,0 +1,37 @@
+AC_INIT([love], [r718])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_AUX_DIR([platform/unix])
+AC_CONFIG_MACRO_DIR([platform/unix/m4])
+AC_CONFIG_SRCDIR([src/love.cpp])
+AM_INIT_AUTOMAKE([-Wall foreign])
+AC_PREFIX_DEFAULT([/usr])
+AC_PROG_LIBTOOL
+AC_PROG_CC
+AC_PROG_CXX
+AC_SEARCH_LIBS([sqrt], [m], [], AC_MSG_ERROR([Can't LÖVE without C math library]))
+AC_SEARCH_LIBS([SDL_Init], [SDL], [], AC_MSG_ERROR([Can't LÖVE without SDL]))
+AC_SEARCH_LIBS([glLoadIdentity], [GL], [], AC_MSG_ERROR([Can't LÖVE without OpenGL]))
+AC_SEARCH_LIBS([gluOrtho2D], [GLU], [], AC_MSG_ERROR([Can't LÖVE without OpenGL Utility Library]))
+AC_SEARCH_LIBS([alSourcePlay], [openal], [], AC_MSG_ERROR([Can't LÖVE without OpenAL]))
+AC_SEARCH_LIBS(
+	[lua_pcall],
+	[lua lua5.1],
+	if test "$ac_cv_search_lua_pcall" = "-llua5.1"; then
+		AC_SUBST([INCLUDE_LUA], [-I/usr/include/lua5.1])
+	fi,
+	AC_MSG_ERROR([Can't LÖVE without Lua])
+)
+AC_SEARCH_LIBS([ilInit], [IL], [], AC_MSG_ERROR([Can't LÖVE without DevIL]))
+AC_SEARCH_LIBS([mng_initialize], [mng], [], AC_MSG_ERROR([DevIL needs MNG]))
+AC_SEARCH_LIBS([TIFFOpen], [tiff], [], AC_MSG_ERROR([DevIL needs TIFF]))
+AC_SEARCH_LIBS([FT_Load_Glyph], [freetype], [], AC_MSG_ERROR([Can't LÖVE without FreeType]))
+AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], AC_MSG_ERROR([Can't LÖVE without PhysicsFS]))
+AC_SEARCH_LIBS([ModPlug_Load], [modplug], [], AC_MSG_ERROR([Can't LÖVE without ModPlug]))
+AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [], AC_MSG_ERROR([Can't LÖVE without Mpg123]))
+AC_SEARCH_LIBS([ov_open], [vorbisfile], [], AC_MSG_ERROR([Can't LÖVE without VorbisFile]))
+AC_SEARCH_LIBS([FLAC__metadata_chain_new], [FLAC++], [], AC_MSG_ERROR([Can't LÖVE without FLAC++]))
+AC_CONFIG_FILES([
+	Makefile
+	src/Makefile
+])
+AC_OUTPUT

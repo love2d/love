@@ -1,0 +1,22 @@
+#!/bin/bash
+echo Generating src/Makefile.am ...
+cd src
+inc_current=`pwd`
+inc_modules="$inc_current/modules"
+echo "AM_CPPFLAGS = -I$inc_current -I$inc_modules -I/usr/include/AL -I/usr/include/freetype2  \$(INCLUDE_LUA) -I/usr/include/SDL
+AUTOMAKE_OPTIONS = subdir-objects
+DEFAULT_INCLUDES =
+SUBDIRS =
+
+# LÖVE executable
+bin_PROGRAMS = love
+#love_LDFLAGS =
+#love_LDADD =
+
+love_SOURCES = \\" > Makefile.am.tmp
+find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" \) \) -exec echo '{}' \\ \; >> Makefile.am.tmp
+cat Makefile.am.tmp | grep -v -f"../platform/unix/exclude" | head -c -3 > Makefile.am
+#head -c -3 Makefile.am.tmp > Makefile.am
+rm Makefile.am.tmp
+cd ..
+echo src/Makefile.am is updated! \^.^

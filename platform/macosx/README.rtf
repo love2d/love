@@ -1,0 +1,49 @@
+{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf350
+{\fonttbl\f0\fswiss\fcharset0 ArialMT;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11900\viewh14740\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\b\fs24 \cf0 XCode Project for LOVE 
+\b0 02/11/2008\
+\
+Requires Mac OS X 10.4 (Can try 10.3.9 if you want... though; only 10.4 is tested)\
+\
+Required frameworks reside in the Frameworks folder inside the love.app package. (Right click love.app and select "Show Package Contents" to view love.app as a folder)\
+\
+Requires XCode 3.1. download from http://developer.apple.com/iphone/program/ (Can try older version if you want but it is only confirmed to work on XCode 3.1)\
+\
+Put these frameworks inside /Library/Frameworks.\
+\
+Open the XCode project. There maybe some paths that were accidentally left absolute; In this case, the files would be highlighted red. Unfortunately the xcode project haven't been checked thoroughly yet, so you will need to fix these up yourself and redirect the paths to the correct ones. You will need your wits.\
+\
+Fix up source code. See change I had to make at bottom of this document\
+\
+Click build on the toolbar.\
+\
+It should compile fine, hopefully. \
+\
+
+\b Now, open up the terminal after compiling and cd to the macosx folder. \ul type "./script.sh" .\ulnone \
+
+\b0 \
+It will edit the link paths of the love executable so love can be run on any computer, rather than only ones with the required frameworks inside /Library/Framework. (There is also some erroneous libs that got linked even though they are not needed, and this script also removes those links, somewhat crudely).\
+\
+I apologise for this to be somewhat cumbersome; This is my first shell script. Apparently XCode can be set up so when you click build, and script is run automatically. I do not know how to do that, yet.\
+\
+The love.app inside ./build/release folder is the result. Enjoy. (If it isn't then you need to click Project->Set Active Build Configuration->Release, and re-build and re-run script.sh)\
+\
+
+\b Source code changes required:\
+
+\b0 in luaSocket usocket.h, commented out #include <unistd.h> to compile, because of errors regarding symbol "_strerror$UNIX2003".\
+http://www.haskell.org/pipermail/glasgo ... 08233.html has some info on this. [[removed unistd.h]]\
+\
+in love_opengl.cpp changed struct display_state: int stipple_repeat; int stipple_pattern; to GLints instead [[changed returns to GLint]]\
+\
+SDL_opengl.h\
+define for linux only\
+changed to [[added ifndef]]\
+#ifndef __APPLE__\
+#define GL_GLEXT_VERSION 29\
+#endif}

@@ -1,0 +1,11 @@
+Package: love
+Version: %VERSION%
+Section: games
+Priority: optional
+Architecture: i386
+Essential: no
+Depends: libdevil1c2, libfreetype6, libgl1-mesa-glx, liblua5.1-0, libphysfs-1.0-0, libsdl1.2debian, libsdl-sound1.2, libopenal1, libalut0
+Installed-Size: %INSTALLSIZE%
+Maintainer: Tommy Nguyen [tn0502@hotmail.com]
+Provides: love
+Description: LOVE is a free 2D game engine which enables easy game creation in Lua.

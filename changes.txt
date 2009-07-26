@@ -1,0 +1,187 @@
+LOVE 0.6.0
+----------
+
+  * Added love.graphics.print()/printf().
+  * Added unicode-translated parameter to love.keypressed().
+  * Added love.event.
+  * Added love.filesystem.setIdentity().
+  * Added experimental support for Lua lanes.
+  * Added OpenAL dependency.
+  * Added SDL_sound dependency.
+  
+  * Fixed love.fileystem problems with internal \0 in strings.
+  * Fixed love.filesystem.mkdir/remove not working when write directory not set.
+  * Fixed position of Window.
+  
+  * Changed parameter order of draws().
+  * Changed origin for images to top-left.
+  * Changed love.filesystem.open to accept mode (removed from love.filesystem.newFile).
+  * Changed love.filesystem.read() which now returns two parameters (data, length).
+  * Changed love.filesystem.write() which now takes up to four parameters (file, data, length, mode).
+  
+  * Removed love.graphics.draw() for strings.
+  * Removed love.system.
+  * Removed conf files. 
+  * Removed SWIG.
+  * Removed boost.
+  * Removed SDL_mixer.
+  
+
+LOVE 0.5.0
+----------
+
+  * Added love.joystick.
+  * Added network support via LuaSocket.
+  * Added support for loading of appended .love-file.
+
+  * Added love.filesystem.lines().
+  * Added a loader function to enable use of normal require().
+  * Added love.filesystem.load().
+  * Added love.filesystem.getSaveDirectory()
+  * Added love.filesystem.getWorkingDirectory()
+
+  * Added optional explicit destruction of Box2D objects.
+  * Added shape:testSegment().
+  * Added love.graphics.screenshot() (.bmp only).
+  * Added default size (12) to font-related functions.
+  * Added love.graphics.setFont( filename, size )
+  * Added love.graphics.setLineStippe and related functions.
+  * Added love.graphics.setPointSize and related functions.
+
+  * Changed love.filesystem.read() to accept file name.
+  * Changed love.filesystem.write() to accept file name.
+  * Changed love.graphics.triangle() to accept CCW and CW ordering.
+
+  * Fixed love.graphics.read adding bogus characters at the end of string.
+  * Fixed epic swigfusion bug.
+  * Fixed love.graphics.getFont so it returns nil if no font is present.
+  * Fixed bug where love.graphics.getBlendMode() always returns blend_normal.
+  * Fixed bug which caused error screen to be scissored (when enabled).
+  * Fixed Body:setAngle to accept degrees like everything else.
+
+  * Cleaned up love::File and love_physfs.
+  * Cleaned up love::Reference so it stores its reference in _G.
+
+LOVE 0.4.0
+----------
+
+  * Added love.physics. (YES!)
+  * Added love.audio.setMode().
+  * Added love.audio.setChannels().
+  * Added love.graphics.polygon().
+  * Added love.graphics.setScissor() and love.graphics.getScissor() to handle scissoring the graphical area.
+  * Fixed missing constants related to image optimization.
+  * Fixed memory leak related to love::File (thanks amnesiasoft!).
+
+
+LOVE 0.3.2
+----------
+
+  * Added love.graphics.rectangle()
+  * Added love.graphics.setLineWidth()
+  * Added love.graphics.setLineStyle()
+  * Added love.graphics.getLineWidth()
+  * Added love.graphics.getLineStyle()
+  * Added love.mouse.getPosition()
+  * Added love.audio_loop
+  * Added love.timer.getTime()
+  * Changed love.graphics.quad() to accept CCW and CW ordering.
+  * Fixed default color mode bug.
+  * Fixed line width being applied unnecessarily.
+  * Fixed line width bug related to fullscreen toggle.
+  * Fixed music not looping.
+
+LOVE 0.3.1
+----------
+ 
+  * Fixed segfault related to graphics.
+  * Fixed wait-forever bug related to audio.
+  * Fixed error reporting not working across modules.
+  * Fixed bug where games with a trailing "/" would not start.
+  * Fixed bug which caused love.timer.sleep to delay for (way) too long.
+
+LOVE 0.3.0
+----------
+
+  * Added ParticleSystem.
+  * Added visual error reporting. 
+  * Added love.system for game control needs.
+  * Added input grabbing.
+  * Added functions in love.graphics for display management.
+  * Added love.graphics.point().
+  * Added functions in love.graphics for getting current color, font, etc.
+  * Added love.filesystem.enumerate() for getting folder contents.
+  * Added functions for setting the window caption.
+  * Added version checking. An error occurs if the game is incompatible.
+  * Fixed print() :)
+  * Removed all keyboard shortcuts.
+  * Save folders are now created only if required.
+  * On Windows, the new save location is %APPDATA%\LOVE\game
+
+LOVE 0.2.1
+----------
+ 
+  * Added many functions in love.filesystem.
+  * Added a dedicated save-folder for each game.
+  * Added timer.sleep.
+  * Added line heights to font objects.
+  * Added love.graphics.getWidth/getHeight.
+  * Added scaling and rotation for text.
+  * Added variable spacing to ImageFont.
+  * Added support for variable line quality when drawing primitives.
+  * Added several functions for drawing sections of images. (love.graphics.draws)
+  * Added image optimization function and padding function. 
+  * Added love.graphics.getWidth/Height.
+
+  * Split devices up into actual SWIG-modules. This means that:
+    - Functions are used like this: love.graphics.draw, not love.graphics:draw
+    - love.objects is no more. Objects are created by an appropriate device.
+  * How you draw primitives has been altered.
+  * draw(string, x, y, wrap, align) has become drawf(string, x, y, wrap, align)
+
+  * Changed getFps to getFPS.
+  * Escape is no more ... enter: Alt+F4.
+  * love.filesystem.include has been renamed to love.filesystem.require.  
+  * ImageFonts now consider the spacing as well as the glyph size.
+  * Fixed a massive ImageFont bug which resulted in float-positioning failure.
+  * Fixed a bug when loading fonts where the specified size doesn't represent the true size of the font.
+
+  * Updated DevIL to version 1.6.8-rc2 (Windows)
+  * Updated FreeType to freetype-2.3.5-1 (Windows)
+  * Updated Lua to 5.1.3 (Windows)
+  * Updated SDL to 1.2.13 (Windows)
+  * Removed boost::filesystem.
+
+LOVE 0.2.0
+----------
+
+  * Added ImageFont
+  * Added Animation
+  * Added text formatting functions
+  * Added setCenter for Image and Animation.
+  * Added methods for rendering of scaled/rotated sprites.
+  * Added the drawing of basic shapes.
+  * Added default font and embedded resources.
+  * Added Ctrl+R for reload.
+  * Added blending and color modes.
+  * Fixed memory usage of Graphics.
+  * Fixed a bug where the set text color would change the color of any images rendered.
+  * Fixed CWD bug.
+  * Fixed titlebar. Game title is now displayed.
+
+
+LOVE 0.1.1
+----------
+
+Initial release!
+
+ * Image loading and rendering.
+ * Sound loading and playing.
+ * Font loading and rendering.
+ * Lua-scriptable games.
+ * Config files.
+ * Stuff is loadable from archive files.
+ * Keyboard, mouse, display, timer, etc. (Basic devices).
+
+
+

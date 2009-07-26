@@ -1,0 +1,40 @@
+#!/bin/bash
+echo
+echo "Packing LÖVE to go v1.2"
+echo
+if [ -z "$2" ]; then
+	echo "Syntax:  ./make-package <package> <version>"
+	echo "Example: ./make-package deb 0.3.0-1"
+	echo "All files will be created in this folder."
+	echo
+	exit 0
+fi
+case "$1" in
+	deb )
+		strip ../../src/love
+		mkdir deb
+		mkdir deb/DEBIAN
+		sed "s/%VERSION%/$2/" < debian > deb/DEBIAN/tmp
+		sed "s/%INSTALLSIZE%/`ls -l ../../src/love | awk '{ sum += $5 } END { printf "%.2f", sum / 1000 }'`/" < deb/DEBIAN/tmp > deb/DEBIAN/control
+		rm deb/DEBIAN/tmp
+		mkdir deb/usr
+		mkdir deb/usr/bin
+		cp ../../src/love deb/usr/bin/love
+		dpkg -b deb love-$2.deb && \
+		echo "  * love-$2.deb created"
+		rm -rf deb
+		;;
+	src )
+		cd ../../../
+		tar -czf love/platform/unix/love-$2-src.tar.gz --exclude=.svn love/demos/* love/*.txt love/makefile-ancient love/src/ && \
+		echo "  * love-$2-src.tar.gz created"
+		tar -cjf love/platform/unix/love-$2-src.tar.bz2 --exclude=.svn love/demos/* love/*.txt love/makefile-ancient love/src/ && \
+		echo "  * love-$2-src.tar.bz2 created"
+		zip -9q love/platform/unix/love-$2-src.zip love/*.txt love/demos/* love/makefile-ancient `find love/src/* | grep -viE svn` && \
+		echo "  * love-$2-src.zip created"
+		;;
+	* )
+		echo "Unknown package type: $1"
+		echo "Valid types: deb src"
+esac
+echo
