@@ -754,14 +754,10 @@ namespace opengl
 
 	// Types for this module.
 	const lua_CFunction wrap_Graphics_types[] = {
-		//wrap_Color_open, 
 		wrap_Font_open, 
 		wrap_Image_open, 
 		wrap_Frame_open, 
-		//wrap_Animation_open, 
-		//wrap_ParticleSystem_open, 
 		//wrap_SpriteBatch_open, 
-		//wrap_VertexBuffer_open, 
 		0		
 	};
 

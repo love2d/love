@@ -44,6 +44,10 @@ namespace opengl
 		vertices[2].s = (float)(x+w)/(float)sw; vertices[2].t = (float)(y+h)/(float)sh;
 		vertices[3].s = (float)(x+w)/(float)sw; vertices[3].t = (float)y/(float)sh;
 	}
+
+	Frame::~Frame()
+	{
+	}
 	
 	void Frame::flip(bool x, bool y)
 	{

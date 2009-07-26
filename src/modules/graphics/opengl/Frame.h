@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_FRAME_H
 
 // LOVE
+#include <common/Object.h>
 #include <common/math.h>
 #include <graphics/Drawable.h>
 
@@ -31,7 +32,7 @@ namespace graphics
 {
 namespace opengl
 {
-	class Frame
+	class Frame : public Object
 	{
 		private:
 			vertex vertices[4];
@@ -50,6 +51,8 @@ namespace opengl
 			* @param sh Height of the source image.
 			**/
 			Frame(int x, int y, int w, int h, int sw, int sh);
+
+			virtual ~Frame();
 
 			void flip(bool x, bool y);
 
