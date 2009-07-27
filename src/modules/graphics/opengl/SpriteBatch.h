@@ -68,6 +68,9 @@ namespace opengl
 		int usage;
 		int gl_usage;
 
+		// If the buffer is locked, this pointer is nonzero.
+		vertex * lockp;
+
 	public:
 
 		enum UsageHint
@@ -84,6 +87,9 @@ namespace opengl
 		//void adds(float x, float y, float a, float sx, float sy, float ox, float oy, float rx, float ry, float rw, float rh);
 		//void addf(float x, float y, float a, float sx, float sy, float ox, float oy, Frame * frame);
 		void clear();
+
+		void * lock();
+		void unlock();
 
 		// Implements Drawable.
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;

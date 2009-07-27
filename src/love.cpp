@@ -124,8 +124,8 @@ int main(int argc, char ** argv)
 	// which gets everything started.
 
 	// TODO: This is obviously test code.
-	//luaL_dofile(L, "../../src/scripts/boot.lua");
-#	include "scripts/boot.lua.h"
+	luaL_dofile(L, "../../src/scripts/boot.lua");
+//#	include "scripts/boot.lua.h"
 
 	lua_close(L);
 

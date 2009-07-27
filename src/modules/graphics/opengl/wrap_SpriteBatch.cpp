@@ -52,9 +52,25 @@ namespace opengl
 		return 0;
 	}
 
+	int _wrap_SpriteBatch_lock(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+		lua_pushlightuserdata(L, t->lock());
+		return 1;
+	}
+
+	int _wrap_SpriteBatch_unlock(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+		t->unlock();
+		return 0;
+	}
+
 	static const luaL_Reg wrap_SpriteBatch_functions[] = {
 		{ "add", _wrap_SpriteBatch_add },
 		{ "clear", _wrap_SpriteBatch_clear },
+		{ "lock", _wrap_SpriteBatch_lock },
+		{ "unlock", _wrap_SpriteBatch_unlock },
 		{ 0, 0 }
 	};
 

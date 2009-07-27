@@ -5,13 +5,6 @@ if not love then love = {} end
 -- Used for setup:
 love.path = {}
 
-function love.insmod(name, provides)
-	if love.__mod[provides] and love.__mod[provides][name] then
-		love.__mod[provides][name].open()
-		print("Opened " .. provides .. " module " .. name .. ".")
-	end
-end
-
 -- Replace any \ with /.
 function love.path.normalslashes(p)
 	return string.gsub(p, "\\", "/")
@@ -94,45 +87,88 @@ love.handlers = {
 	end,
 }
 
-function love.init()
+-- This can't be overriden. 
+function love.boot()
 
+	print("boot")
+
+	-- This is absolutely needed. 
+	love.filesystem = require("love.filesystem")
+
+	-- Prints the arguments passes to the app.
 	if love.__args then
 		for i,v in pairs(love.__args) do
 			print(i,v)
 		end
-	end
-
-	love.filesystem = require("love.filesystem")
-	love.event = require("love.event")
-	love.keyboard = require("love.keyboard")
-	love.mouse = require("love.mouse")
-	love.timer = require("love.timer")
-	love.joystick = require("love.joystick")
-	love.image = require("love.image")
-	love.graphics = require("love.graphics")
-	love.audio = require("love.audio")
-	love.physics = require("love.physics")
-	love.sound = require("love.sound")
-	love.native = require("love.native")
-
+	end	
+	
+	-- Sets the source for the game.
 	if love.__args[1] and love.__args[1] ~= "" then
-		love.filesystem.setIdentity("love2")
 		love.filesystem.setSource(love.path.getfull(love.__args[1]))
-		require("main.lua")
 	end
+	
+end
 
-	love.run()
+function love.init()
+
+	-- Create default configuration settings.
+	local c = {
+		title = "Untitled",
+		author = "Unnamed",
+		version = 0,
+		screen = {
+			width = 800,
+			height = 600,
+			fullscreen = false,
+			vsync = true,
+			fsaa = 0,
+		}, 
+		modules = {
+			event = true,
+			keyboard = true,
+			mouse = true,
+			timer = true,
+			joystick = true,
+			image = true,
+			graphics = true,
+			audio = true,
+			physics = true,
+			sound = true,
+			native = true,
+		},
+	}
+
+	-- If config file exists, load it and allow it to update config table.
+	if love.filesystem.exists("conf.lua") then
+		require("conf.lua")
+		love.conf(c)
+	end
+	
+	if c.modules.event then love.event = require("love.event") end
+	if c.modules.keyboard then love.keyboard = require("love.keyboard") end
+	if c.modules.mouse then love.mouse = require("love.mouse") end
+	if c.modules.timer then love.timer = require("love.timer") end
+	if c.modules.joystick then love.joystick = require("love.joystick") end
+	if c.modules.image then love.image = require("love.image") end
+	if c.modules.graphics then love.graphics = require("love.graphics") end
+	if c.modules.audio then love.audio = require("love.audio") end
+	if c.modules.physics then love.physics = require("love.physics") end
+	if c.modules.sound then love.sound = require("love.sound") end
+	if c.modules.native then love.native = require("love.native") end
+	
+	-- Setup screen here.
+	if c.screen and c.modules.graphics then 
+		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) then
+			love.graphics.setMode(c.screen.width, c.screen.height, c.screen.fullscreen, c.screen.vsync, c.screen.fsaa)
+		end
+		love.graphics.setCaption(c.title)
+	end
+	
+	if love.filesystem.exists("main.lua") then require("main.lua") end
+	
 end
 
 function love.run()
-
-	-- CONFIG BEGINS
-
-	if love.graphics.checkMode(800, 600, false) then
-		love.graphics.setMode(800, 600, false, false)
-	end
-
-	-- CONFIG ENDS
 
 	if love.load then love.load() end
 
@@ -180,10 +216,12 @@ end
 -- The root of all calls.
 -----------------------------------------------------------
 
-local result = xpcall(love.init,
-	function (msg)
-		print(msg, debug.traceback())
-	end)
+function error_printer(msg)
+	print("boot", msg, debug.traceback())
+end
 
+result = xpcall(love.boot, error_printer)
+result = xpcall(love.init, error_printer)
+result = xpcall(love.run, error_printer)
 
 print("Done.")

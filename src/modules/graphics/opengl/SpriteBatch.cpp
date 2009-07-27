@@ -33,7 +33,7 @@ namespace graphics
 namespace opengl
 {
 	SpriteBatch::SpriteBatch(Image * image, int size, int usage)
-		: image(image), size(size), next(0), usage(usage)
+		: image(image), size(size), next(0), usage(usage), lockp(0)
 	{
 		image->retain();
 
@@ -92,17 +92,24 @@ namespace opengl
 
 			// Transform.
 			Matrix t;
-			t.translate(x, y);
-			t.scale(sx, sy);
-			t.rotate(a);
+			t.setTransformation(x, y, a, sx, sy, ox, oy);
 			t.transform(v, v, 4);
 
-			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-			glBufferSubData(GL_ARRAY_BUFFER, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			if(lockp != 0)
+			{
+				// Copy into mapped memory if buffer is locked.
+				memcpy(lockp + (next*4), v,  sizeof(vertex)*4);
+			}
+			else
+			{
+				// ... use glBufferSubData otherwise.
+				glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+				glBufferSubData(GL_ARRAY_BUFFER, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
 
 			// Increment counter.
-			next++;			
+			next++;
 		}
 	}
 
@@ -112,10 +119,28 @@ namespace opengl
 		next = 0;
 	}
 
+	void * SpriteBatch::lock()
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+		lockp = (vertex *)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+		return lockp;
+	}
+
+	void SpriteBatch::unlock()
+	{
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+		lockp = 0;
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
 	void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
 	{
+		static Matrix t;
+
 		glPushMatrix();
-		glTranslatef(x, y, 0);
+
+		t.setTransformation(x, y, angle, sx, sy, ox, oy);
+		glMultMatrixf((const GLfloat*)t.getElements());
 
 		image->bind();
 
