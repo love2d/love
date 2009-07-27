@@ -37,6 +37,7 @@
 #include "TrueTypeFont.h"
 #include "ImageFont.h"
 #include "Frame.h"
+#include "SpriteBatch.h"
 
 namespace love
 {
@@ -250,7 +251,7 @@ namespace opengl
 		**/
 		Font * newImageFont(Image * image, const char * glyphs, float spacing = 1);
 		
-		//SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
+		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
 			
 		/**
 		* Sets the foreground color.

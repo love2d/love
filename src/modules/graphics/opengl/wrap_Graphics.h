@@ -25,6 +25,7 @@
 #include "wrap_Font.h"
 #include "wrap_Image.h"
 #include "wrap_Frame.h"
+#include "wrap_SpriteBatch.h"
 #include "Graphics.h"
 
 namespace love
@@ -46,14 +47,11 @@ namespace opengl
 	int _wrap_isCreated(lua_State * L);
 	int _wrap_setScissor(lua_State * L);
 	int _wrap_getScissor(lua_State * L);
-	int _wrap_newColor(lua_State * L);
 	int _wrap_newImage(lua_State * L);
 	int _wrap_newFrame(lua_State * L);
-	int _wrap_newAnimation(lua_State * L);
 	int _wrap_newFont(lua_State * L);
 	int _wrap_newImageFont(lua_State * L);
 	int _wrap_newSpriteBatch(lua_State * L);
-	int _wrap_newVertexBuffer(lua_State * L);
 	int _wrap_setColor(lua_State * L);
 	int _wrap_getColor(lua_State * L);
 	int _wrap_setBackgroundColor(lua_State * L);

@@ -962,6 +962,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\modules\graphics\opengl\SpriteBatch.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\SpriteBatch.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\modules\graphics\opengl\TrueTypeFont.cpp"
 						>
 						<FileConfiguration
@@ -1079,6 +1087,14 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\graphics\opengl\wrap_Image.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h"
 						>
 					</File>
 				</Filter>

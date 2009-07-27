@@ -428,12 +428,10 @@ namespace opengl
 		return font;
 	}
 
-	/*
 	SpriteBatch * Graphics::newSpriteBatch(Image * image, int size, int usage)
 	{
 		return new SpriteBatch(image, size, usage);
 	}
-	*/
 
 	void Graphics::setColor(Color c)
 	{

@@ -17,6 +17,7 @@
 *    misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 **/
+
 #include "wrap_Graphics.h"
 
 namespace love
@@ -218,17 +219,15 @@ namespace opengl
 		return 1;
 	}
 
-	/*
 	int _wrap_newSpriteBatch(lua_State * L)
 	{
 		Image * image = luax_checktype<Image>(L, 1, "Image", LOVE_GRAPHICS_IMAGE_BITS);
 		int size = luaL_optint(L, 2, 1000);
-		int usage = luaL_optint(L, 3, USAGE_ARRAY);
+		int usage = luaL_optint(L, 3, SpriteBatch::USAGE_DYNAMIC);
 		SpriteBatch * t = instance->newSpriteBatch(image, size, usage);
 		luax_newtype(L, "SpriteBatch", LOVE_GRAPHICS_SPRITE_BATCH_BITS, (void*)t);
 		return 1;
 	}
-	*/
 
 	int _wrap_setColor(lua_State * L)
 	{
@@ -686,7 +685,7 @@ namespace opengl
 		{ "newFrame", _wrap_newFrame },
 		{ "newFont", _wrap_newFont },
 		{ "newImageFont", _wrap_newImageFont },
-		//{ "newSpriteBatch", _wrap_newSpriteBatch },
+		{ "newSpriteBatch", _wrap_newSpriteBatch },
 
 		{ "setColor", _wrap_setColor },
 		{ "getColor", _wrap_getColor },
@@ -757,7 +756,7 @@ namespace opengl
 		wrap_Font_open, 
 		wrap_Image_open, 
 		wrap_Frame_open, 
-		//wrap_SpriteBatch_open, 
+		wrap_SpriteBatch_open, 
 		0		
 	};
 
