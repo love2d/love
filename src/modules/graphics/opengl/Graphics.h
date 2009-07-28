@@ -244,7 +244,7 @@ namespace opengl
 		/**
 		* Creates a Font object.
 		**/
-		Font * newFont(love::filesystem::File * file, int size = 12);
+		Font * newFont(love::filesystem::File * file, int size);
 
 		/**
 		* Creates an ImageFont object.

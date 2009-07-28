@@ -3210,6 +3210,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\common\MemoryData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\common\MemoryData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\common\Module.h"
 				>
 			</File>

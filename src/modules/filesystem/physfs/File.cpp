@@ -25,7 +25,7 @@
 
 // LOVE
 #include "Filesystem.h"
-#include "FileData.h"
+#include <filesystem/FileData.h>
 
 namespace love
 {

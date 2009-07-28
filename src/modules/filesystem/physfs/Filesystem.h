@@ -30,10 +30,8 @@
 #include <common/Module.h>
 #include <common/config.h>
 #include <common/constants.h>
-
-// Module
+#include <filesystem/FileData.h>
 #include "File.h"
-#include "FileData.h"
 
 // For great CWD. (Current Working Directory)
 // Using this instead of boost::filesystem which totally
