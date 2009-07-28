@@ -3157,6 +3157,62 @@
 					</Filter>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="font"
+				>
+				<File
+					RelativePath="..\..\src\modules\font\Font.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\Font.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\GlyphData.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\GlyphData.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\ImageRasterizer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\ImageRasterizer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\Rasterizer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\Rasterizer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\wrap_Font.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\wrap_Font.h"
+					>
+				</File>
+				<Filter
+					Name="freetype"
+					>
+					<File
+						RelativePath="..\..\src\modules\font\freetype\FreeTypeRasterizer.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\font\freetype\FreeTypeRasterizer.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="common"
