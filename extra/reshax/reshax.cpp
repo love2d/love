@@ -9,6 +9,29 @@ void load(std::string file);
 void write(std::string file, int size, char *data);
 
 
+const char * love_header = ""
+"/**\n"
+"* Copyright (c) 2006-2009 LOVE Development Team\n"
+"* \n"
+"* This software is provided 'as-is', without any express or implied\n"
+"* warranty.  In no event will the authors be held liable for any damages\n"
+"* arising from the use of this software.\n"
+"* \n"
+"* Permission is granted to anyone to use this software for any purpose,\n"
+"* including commercial applications, and to alter it and redistribute it\n"
+"* freely, subject to the following restrictions:\n"
+"* \n"
+"* 1. The origin of this software must not be misrepresented; you must not\n"
+"*    claim that you wrote the original software. If you use this software\n"
+"*    in a product, an acknowledgment in the product documentation would be\n"
+"*    appreciated but is not required.\n"
+"* 2. Altered source versions must be plainly marked as such, and must not be\n"
+"*    misrepresented as being the original software.\n"
+"* 3. This notice may not be removed or altered from any source distribution.\n"
+"**/\n\n";
+
+
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -17,14 +40,14 @@ int main(int argc, char *argv[])
 	{
 		resources_h.open("resources.h");
 		resources_h
+			<< love_header
 			<< "#ifndef LOVE_RESOURCES_H\n"
 			<< "#define LOVE_RESOURCES_H\n\n"
-			<< "#include <vector>\n"
-			<< "#include <love/MemoryFile.h>\n\n"
 			<< "namespace love\n"
 			<< "{\n";
 		resources_cpp.open("resources.cpp");
 		resources_cpp
+			<< love_header
 			<< "#include \"resources.h\"\n\n"
 			<< "namespace love\n"
 			<< "{\n";
@@ -37,7 +60,7 @@ int main(int argc, char *argv[])
 		resources_cpp.close();
 		resources_h
 			<< "}\n\n"
-			<< "#endif\n";
+			<< "#endif // LOVE_RESOURCES_H \n";
 		resources_h.close();
 	}
 
@@ -95,7 +118,7 @@ void write(string file, int size, char *data)
 	}
 	//#endif
 
-	resources_cpp << "\tstatic char " << var << "_data[" << size << "] = {";
+	resources_cpp << "\tconst char " << var << "_data[] = {";
 	for (int i = 0; i < size - 1; i++)
 	{
 		sprintf(buffer, "%d,", data[i]);
@@ -104,8 +127,9 @@ void write(string file, int size, char *data)
 			resources_cpp << "\n\t";
 	}
 	sprintf(buffer, "%d};\n", data[size]);
-	resources_cpp << buffer << "\tpFile " << var.c_str() << "(new MemoryFile(" << var << "_data, " << size << ", \"" << file.c_str() << "\"));\n\n";
 
-	resources_h << "\textern pFile " << var << ";\n";
+	resources_h << "\t// " << var << "\n";
+	resources_h << "\tconst int " << var << "_size = " << size << ";\n";
+	resources_h << "\textern const char " << var << "_data[];\n\n";
 	printf(" is haxed\n");
 }
