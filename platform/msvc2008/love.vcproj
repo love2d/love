@@ -603,6 +603,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\filesystem\FileData.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\filesystem\FileData.h"
 					>
 				</File>
@@ -631,30 +635,6 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\filesystem\physfs\File.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\filesystem\physfs\FileData.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\filesystem\physfs\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\filesystem\physfs\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\filesystem\physfs\FileData.h"
 						>
 					</File>
 					<File
