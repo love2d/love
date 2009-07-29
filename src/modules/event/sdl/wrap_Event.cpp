@@ -87,7 +87,7 @@ namespace sdl
 
 		luax_register_gc(L, "love.event", instance);
 
-		return luax_register_module(L, wrap_Event_functions, 0);
+		return luax_register_module(L, wrap_Event_functions, 0, "event");
 	}
 
 } // sdl

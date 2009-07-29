@@ -80,7 +80,7 @@ namespace sdl
 
 		luax_register_gc(L, "love.keyboard", instance);
 
-		return luax_register_module(L, wrap_Keyboard_functions, 0);
+		return luax_register_module(L, wrap_Keyboard_functions, 0, "keyboard");
 	}
 
 } // sdl

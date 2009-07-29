@@ -162,7 +162,7 @@ namespace sdl
 
 		luax_register_gc(L, "love.joystick", instance);
 
-		return luax_register_module(L, wrap_Joystick_functions, 0);
+		return luax_register_module(L, wrap_Joystick_functions, 0, "joystick");
 	}
 
 } // sdl

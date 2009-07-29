@@ -53,7 +53,7 @@ namespace opengl
 	{
 	private: 
 
-		love::filesystem::File * file;
+		Data * data;
 
 	protected:
 		
@@ -93,7 +93,7 @@ namespace opengl
 		* @param file The file containing the TrueTypeFont data.
 		* @param size The size of the TrueTypeFont.
 		**/
-		TrueTypeFont(love::filesystem::File * file, int size);
+		TrueTypeFont(Data * data, int size);
 
 		/**
 		* Calls unload().

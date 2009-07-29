@@ -1,8 +1,28 @@
+/**
+* Copyright (c) 2006-2009 LOVE Development Team
+* 
+* This software is provided 'as-is', without any express or implied
+* warranty.  In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* 
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely, subject to the following restrictions:
+* 
+* 1. The origin of this software must not be misrepresented; you must not
+*    claim that you wrote the original software. If you use this software
+*    in a product, an acknowledgment in the product documentation would be
+*    appreciated but is not required.
+* 2. Altered source versions must be plainly marked as such, and must not be
+*    misrepresented as being the original software.
+* 3. This notice may not be removed or altered from any source distribution.
+**/
+
 #include "resources.h"
 
 namespace love
 {
-	static char Vera_ttf_data[65932] = {0,1,0,0,0,17,1,0,0,4,0,16,79,83,47,50,-76,95,-12,99,0,0,-21,112,0,0,0,86,80,67,76,
+	const char Vera_ttf_data[] = {0,1,0,0,0,17,1,0,0,4,0,16,79,83,47,50,-76,95,-12,99,0,0,-21,112,0,0,0,86,80,67,76,
 	84,-47,-118,94,-105,0,0,-21,-56,0,0,0,54,99,109,97,112,-92,-61,-24,-96,0,0,-79,108,0,0,3,88,99,
 	118,116,32,-1,-45,29,57,0,0,30,-4,0,0,1,-4,102,112,103,109,-25,-76,-15,-60,0,0,38,96,0,0,0,
 	-117,103,97,115,112,0,7,0,7,0,1,1,72,0,0,0,12,103,108,121,102,12,116,65,-49,0,0,38,-20,0,
@@ -2199,7 +2219,5 @@ namespace love
 	18,15,19,15,9,22,17,17,17,17,18,23,23,11,11,11,27,27,27,22,18,8,18,15,20,15,20,15,18,10,
 	9,18,14,14,14,14,14,14,11,14,14,0,0,0,0,0,2,0,8,0,2,-1,-1,0,3,0,1,0,0,0,
 	2,0,0,12,80,10,-20,95,15,60,-11,0,31,8,0,0,0,0,0,-70,-71,-16,-72,0,0,0,0,-70,-62,103,
-	-111,-2,-119,-2,29,10,76,7,109,0,0,0,8,0,1,0,0,0,0,0,0};
-	pFile Vera_ttf(new MemoryFile(Vera_ttf_data, 65932, "Vera.ttf"));
-
-}
+	-111,-2,-119,-2,29,10,76,7,109,0,0,0,8,0,1,0,0,0,0,0,};
+} // love

@@ -250,7 +250,7 @@ namespace box2d
 			}
 		}
 
-		return luax_register_module(L, wrap_Physics_functions, wrap_Physics_types);
+		return luax_register_module(L, wrap_Physics_functions, wrap_Physics_types, "physics");
 	}
 
 } // box2d

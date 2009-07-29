@@ -244,7 +244,7 @@ namespace opengl
 		/**
 		* Creates a Font object.
 		**/
-		Font * newFont(love::filesystem::File * file, int size);
+		Font * newFont(Data * data, int size);
 
 		/**
 		* Creates an ImageFont object.
@@ -284,10 +284,10 @@ namespace opengl
 		* Sets a default font. The font is
 		* loaded and sent to the GPU every time this is called, 
 		* so no over-using.
-		* @param file File from which to load the font.
+		* @param data Data 
 		* @param size The size of the font.
 		**/
-		void setFont( love::filesystem::File * file, int size = 12);
+		void setFont( Data * data, int size = 12);
 
 		/**
 		* Gets the current Font, or nil if none.

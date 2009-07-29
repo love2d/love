@@ -120,7 +120,7 @@ namespace sdl
 
 		luax_register_gc(L, "love.mouse", instance);
 
-		return luax_register_module(L, wrap_Mouse_functions, 0);
+		return luax_register_module(L, wrap_Mouse_functions, 0, "mouse");
 	}
 
 

@@ -78,8 +78,8 @@ namespace opengl
 	int _wrap_draw(lua_State * L);
 	int _wrap_draws(lua_State * L);
 	int _wrap_drawTest(lua_State * L);
-	int _wrap_print(lua_State * L);
-	int _wrap_printf(lua_State * L);
+	int _wrap_print1(lua_State * L);
+	int _wrap_printf1(lua_State * L);
 	int _wrap_point(lua_State * L);
 	int _wrap_line(lua_State * L);
 	int _wrap_triangle(lua_State * L);

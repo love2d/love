@@ -27,6 +27,7 @@
 #include <common/config.h>
 #include <common/runtime.h>
 #include <common/constants.h>
+#include <common/MemoryData.h>
 
 // Modules
 #include <audio/wrap_Audio.h>
@@ -46,6 +47,9 @@
 #include "libraries/luasocket/luasocket.h"
 #include "libraries/lanes/lanes.h"
 
+// Resources
+#include "resources/resources.h"
+
 DECLSPEC int luaopen_love(lua_State * L)
 {
 	// Create the love table.
@@ -61,6 +65,10 @@ DECLSPEC int luaopen_love(lua_State * L)
 	// Create the __fin table.
 	lua_newtable(L);
 	lua_setfield(L, -2, "__fin");
+
+	// Resources.
+	love::luax_newtype(L, "Data", love::LOVE_DATA_BITS, new love::MemoryData((void*)love::Vera_ttf_data, love::Vera_ttf_size));
+	lua_setfield(L, -2, "_vera");
 
 	// Set the love table.
 	lua_setglobal(L, "love");

@@ -60,7 +60,7 @@ namespace font
 
 		luax_register_gc(L, "love.font", instance);
 
-		return luax_register_module(L, wrap_Font_functions, wrap_Font_types);
+		return luax_register_module(L, wrap_Font_functions, wrap_Font_types, "font");
 	}
 
 } // sound

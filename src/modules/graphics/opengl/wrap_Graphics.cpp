@@ -174,17 +174,28 @@ namespace opengl
 
 	int _wrap_newFont(lua_State * L)
 	{
+
+		Data * d = 0;
+
 		// Convert to File, if necessary.
 		if(lua_isstring(L, 1))
 			luax_strtofile(L, 1);
 
-		// Check the value.
-		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", LOVE_FILESYSTEM_FILE_BITS);
+		if(luax_istype(L, 1, LOVE_FILESYSTEM_FILE_BITS))
+		{
+			// Check the value.
+			love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", LOVE_FILESYSTEM_FILE_BITS);
+			d = file->read();
+		}
+		else if(luax_istype(L, 1, LOVE_DATA_BITS))
+		{
+			d = luax_checktype<Data>(L, 1, "Data", LOVE_DATA_BITS);
+		}
 
 		// Second optional parameter can be a number:
 		int size = luaL_optint(L, 2, 12);
 
-		Font * font = instance->newFont(file, size);
+		Font * font = instance->newFont(d, size);
 
 		if(font == 0)
 			return luaL_error(L, "Could not load the font");
@@ -284,7 +295,13 @@ namespace opengl
 		if(luax_istype(L, 1, LOVE_FILESYSTEM_FILE_BITS))
 		{
 			love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", LOVE_FILESYSTEM_FILE_BITS);
-			instance->setFont(file, size);
+			instance->setFont(file->read(), size);
+			return 0;
+		}
+		else if(luax_istype(L, 1, LOVE_DATA_BITS))
+		{
+			Data * data = luax_checktype<Data>(L, 1, "Data", LOVE_DATA_BITS);
+			instance->setFont(data, size);
 			return 0;
 		}
 
@@ -524,7 +541,7 @@ namespace opengl
 		return 0;
 	}
 
-	int _wrap_print(lua_State * L)
+	int _wrap_print1(lua_State * L)
 	{
 		const char * str = luaL_checkstring(L, 1);
 		float x = (float)luaL_checknumber(L, 2);
@@ -553,7 +570,7 @@ namespace opengl
 		return 0;
 	}
 
-	int _wrap_printf(lua_State * L)
+	int _wrap_printf1(lua_State * L)
 	{
 		const char * str = luaL_checkstring(L, 1);
 		float x = (float)luaL_checknumber(L, 2);
@@ -693,6 +710,7 @@ namespace opengl
 		{ "getBackgroundColor", _wrap_getBackgroundColor },
 
 		{ "setFont", _wrap_setFont },
+		{ "getFont", _wrap_getFont },
 
 		{ "setBlendMode", _wrap_setBlendMode },
 		{ "setColorMode", _wrap_setColorMode },
@@ -717,8 +735,8 @@ namespace opengl
 		{ "drawf", _wrap_drawf },
 		{ "drawTest", _wrap_drawTest },
 
-		{ "print", _wrap_print },
-		{ "printf", _wrap_printf },
+		{ "print1", _wrap_print1 },
+		{ "printf1", _wrap_printf1 },
 
 		{ "setCaption", _wrap_setCaption },
 		{ "getCaption", _wrap_getCaption },
@@ -775,8 +793,12 @@ namespace opengl
 		}
 
 		luax_register_gc(L, "love.graphics", instance);
+		luax_register_module(L, wrap_Graphics_functions, wrap_Graphics_types, "graphics");		
 
-		return luax_register_module(L, wrap_Graphics_functions, wrap_Graphics_types);
+//#		include <scripts/graphics.lua.h>
+		luaL_dofile(L, "../../src/scripts/graphics.lua");
+
+		return 0;
 	}
 
 } // opengl

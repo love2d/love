@@ -93,7 +93,7 @@ function love.boot()
 	print("boot")
 
 	-- This is absolutely needed. 
-	love.filesystem = require("love.filesystem")
+	require("love.filesystem")
 
 	-- Prints the arguments passes to the app.
 	if love.__args then
@@ -144,17 +144,13 @@ function love.init()
 		love.conf(c)
 	end
 	
-	if c.modules.event then love.event = require("love.event") end
-	if c.modules.keyboard then love.keyboard = require("love.keyboard") end
-	if c.modules.mouse then love.mouse = require("love.mouse") end
-	if c.modules.timer then love.timer = require("love.timer") end
-	if c.modules.joystick then love.joystick = require("love.joystick") end
-	if c.modules.image then love.image = require("love.image") end
-	if c.modules.graphics then love.graphics = require("love.graphics") end
-	if c.modules.audio then love.audio = require("love.audio") end
-	if c.modules.physics then love.physics = require("love.physics") end
-	if c.modules.sound then love.sound = require("love.sound") end
-	if c.modules.native then love.native = require("love.native") end
+	-- Gets desired modules.
+	for k,v in pairs(c.modules) do
+		if v then
+			require("love." .. k)
+		end
+	end
+	
 	
 	-- Setup screen here.
 	if c.screen and c.modules.graphics then 

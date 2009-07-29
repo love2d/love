@@ -400,9 +400,9 @@ namespace opengl
 		return new Frame(x, y, w, h, sw, sh);
 	}
 
-	Font * Graphics::newFont(love::filesystem::File * file, int size)
+	Font * Graphics::newFont(Data * data, int size)
 	{
-		Font * font = new TrueTypeFont(file, size);
+		Font * font = new TrueTypeFont(data, size);
 
 		// Load it and check for errors.
 		if(!font->load())
@@ -482,12 +482,12 @@ namespace opengl
 			currentFont->retain();
 	}
 
-	void Graphics::setFont( love::filesystem::File * file, int size )
+	void Graphics::setFont( Data * data, int size )
 	{
 		if(currentFont != 0)
 			currentFont->release();
 
-		currentFont = new TrueTypeFont(file, size);
+		currentFont = new TrueTypeFont(data, size);
 		currentFont->load();
 	}
 

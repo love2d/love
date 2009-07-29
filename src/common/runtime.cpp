@@ -155,8 +155,11 @@ namespace love
 		return 0;
 	}
 
-	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types)
+	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types, const char * name)
 	{
+		// Gets the love table.
+		lua_getglobal(L, "love");
+
 		// Create new table for module.
 		lua_newtable(L);
 
@@ -168,7 +171,10 @@ namespace love
 			for(const lua_CFunction * t = types; *t != 0; t++)
 				(*t)(L);
 
-		return 1;
+		lua_setfield(L, -2, name); // love.graphics = table
+		lua_pop(L, 1); // love
+
+		return 0;
 	}
 
 	int luax_preload(lua_State * L, lua_CFunction f, const char * name)

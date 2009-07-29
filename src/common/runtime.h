@@ -49,7 +49,7 @@ namespace love
 		const char * provides, const char * desc, const char * author,
 		lua_CFunction open);
 
-	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types);
+	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types, const char * name);
 	int luax_preload(lua_State * L, lua_CFunction f, const char * name);
 	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * fn);
 

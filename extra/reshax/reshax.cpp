@@ -56,7 +56,8 @@ int main(int argc, char *argv[])
 			// use boost::filesystem to list all the files (in v2 maybe)
 			load(argv[i]);
 		}
-		resources_cpp << "}\n";
+		resources_cpp << "};\n";
+		resources_cpp << "} // love\n";
 		resources_cpp.close();
 		resources_h
 			<< "}\n\n"

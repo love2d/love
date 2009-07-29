@@ -3143,6 +3143,14 @@
 				<File
 					RelativePath="..\..\src\modules\font\Font.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\font\"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\font\Font.h"
@@ -3151,6 +3159,14 @@
 				<File
 					RelativePath="..\..\src\modules\font\GlyphData.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\font\"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\font\GlyphData.h"
@@ -3159,6 +3175,14 @@
 				<File
 					RelativePath="..\..\src\modules\font\ImageRasterizer.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\font\"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\font\ImageRasterizer.h"
@@ -3167,6 +3191,14 @@
 				<File
 					RelativePath="..\..\src\modules\font\Rasterizer.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\font\"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\font\Rasterizer.h"
@@ -3175,6 +3207,14 @@
 				<File
 					RelativePath="..\..\src\modules\font\wrap_Font.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\font\"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\font\wrap_Font.h"
@@ -3186,6 +3226,14 @@
 					<File
 						RelativePath="..\..\src\modules\font\freetype\FreeTypeRasterizer.cpp"
 						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\font\freetype\"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\src\modules\font\freetype\FreeTypeRasterizer.h"
@@ -3793,6 +3841,18 @@
 		<Filter
 			Name="scripts"
 			>
+		</Filter>
+		<Filter
+			Name="resources"
+			>
+			<File
+				RelativePath="..\..\src\resources\resources.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\resources\resources.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath="..\..\src\love.cpp"

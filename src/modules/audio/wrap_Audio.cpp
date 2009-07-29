@@ -189,7 +189,7 @@ namespace audio
 
 		luax_register_gc(L, "love.audio", instance);
 
-		return luax_register_module(L, wrap_Audio_functions, wrap_Audio_types);
+		return luax_register_module(L, wrap_Audio_functions, wrap_Audio_types, "audio");
 	}
 
 } // audio
