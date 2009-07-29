@@ -18,16 +18,13 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_DATA_H
-#define LOVE_DATA_H
-
 // LOVE
-#include "Object.h"
+#include "MemoryData.h"
 
 namespace love
 {	
 
-	MemoryData::MemoryData(const void * data)
+	MemoryData::MemoryData(void * data, int size)
 		: data(data), size(size)
 	{
 	}
@@ -47,7 +44,4 @@ namespace love
 		return size;
 	}
 
-
 } // love
-
-#endif // LOVE_DATA_H

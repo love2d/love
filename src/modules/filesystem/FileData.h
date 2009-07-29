@@ -22,10 +22,8 @@
 #define LOVE_FILESYSTEM_FILE_DATA_H
 
 // LOVE
-#include <common/Data.h>
-
-// STD
 #include <string>
+#include <common/Data.h>
 
 namespace love
 {	
@@ -34,24 +32,31 @@ namespace filesystem
 	class FileData : public Data
 	{
 	private:
+
+		// The actual data.
+		char * data;
+
+		// Size of the data.
+		int size;
+
+		// The filename used for error purposes.
+		std::string filename;
+
+		// The extension (without dot). Used to identify file type.
+		std::string extension;
+
 	public:
 
-		/**
-		* Destructor.
-		**/
-		virtual ~FileData(){};
+		FileData(int size, const std::string & filename);
 
-		/**
-		* Gets a filename for this FileData. 
-		* @return The filename for this FileData, with extension.
-		**/
-		virtual const std::string & getFilename() const = 0;
+		virtual ~FileData();
 
-		/**
-		* Gets the file extension for this FileData, or empty string if none.
-		* @return The file extension for this FileData (without the dot).
-		**/
-		virtual const std::string & getExtension() const = 0;
+		// Implements Data.
+		void * getData() const;
+		int getSize() const;
+
+		const std::string & getFilename() const;
+		const std::string & getExtension() const;
 
 	}; // FileData
 

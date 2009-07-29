@@ -26,14 +26,14 @@
 
 namespace love
 {	
-	class Memory : public Data
+	class MemoryData : public Data
 	{
 	private:
 		void * data;
 		int size; 
 	public:
 
-		MemoryData(const void * data, int size);
+		MemoryData(void * data, int size);
 		virtual ~MemoryData();
 
 		// Implements Data.

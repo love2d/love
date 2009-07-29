@@ -27,8 +27,6 @@ namespace love
 {
 namespace filesystem
 {
-namespace physfs
-{
 	FileData::FileData(int size, const std::string & filename)
 		: data(new char[size]), size(size), filename(filename)
 	{
@@ -61,6 +59,5 @@ namespace physfs
 		return extension;
 	}
 
-} // physfs
 } // filesystem
 } // love
