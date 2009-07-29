@@ -47,7 +47,7 @@ namespace opengl
 {
 	struct Color
 	{
-		unsigned char r, b, g, a;
+		unsigned char r, g, b, a;
 	};
 
 	struct DisplayMode
