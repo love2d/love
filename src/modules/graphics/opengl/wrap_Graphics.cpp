@@ -20,6 +20,8 @@
 
 #include "wrap_Graphics.h"
 
+#include <font/wrap_GlyphData.h>
+
 namespace love
 {
 namespace graphics
@@ -150,6 +152,21 @@ namespace opengl
 
 		// Push the type.
 		luax_newtype(L, "Image", LOVE_GRAPHICS_IMAGE_BITS, (void*)image);
+
+		return 1;
+	}
+
+	int _wrap_newGlyph(lua_State * L)
+	{
+		
+		love::font::GlyphData * data = love::font::luax_checkglyphdata(L, 1);
+
+		// Create the image.
+		Glyph * t = new Glyph(data);
+		t->load();
+			
+		// Push the type.
+		luax_newtype(L, "Glyph", LOVE_GRAPHICS_GLYPH_BITS, (void*)t);
 
 		return 1;
 	}
@@ -699,6 +716,7 @@ namespace opengl
 		{ "present", _wrap_present },
 
 		{ "newImage", _wrap_newImage },
+		{ "newGlyph", _wrap_newGlyph },
 		{ "newFrame", _wrap_newFrame },
 		{ "newFont", _wrap_newFont },
 		{ "newImageFont", _wrap_newImageFont },
@@ -764,6 +782,7 @@ namespace opengl
 		{ "pop", _wrap_pop },
 		{ "rotate", _wrap_rotate },
 		{ "scale", _wrap_scale },
+
 		{ "translate", _wrap_translate },
 
 		{ 0, 0 }
@@ -773,6 +792,7 @@ namespace opengl
 	const lua_CFunction wrap_Graphics_types[] = {
 		wrap_Font_open, 
 		wrap_Image_open, 
+		wrap_Glyph_open,
 		wrap_Frame_open, 
 		wrap_SpriteBatch_open, 
 		0		
@@ -795,8 +815,8 @@ namespace opengl
 		luax_register_gc(L, "love.graphics", instance);
 		luax_register_module(L, wrap_Graphics_functions, wrap_Graphics_types, "graphics");		
 
-//#		include <scripts/graphics.lua.h>
-		luaL_dofile(L, "../../src/scripts/graphics.lua");
+#		include <scripts/graphics.lua.h>
+		//luaL_dofile(L, "../../src/scripts/graphics.lua");
 
 		return 0;
 	}

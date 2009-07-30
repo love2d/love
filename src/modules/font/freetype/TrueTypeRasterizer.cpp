@@ -19,7 +19,7 @@
 **/
 
 // LOVE
-#include "FreeTypeRasterizer.h"
+#include "TrueTypeRasterizer.h"
 
 #include <common/Exception.h>
 
@@ -29,20 +29,12 @@ namespace font
 {
 namespace freetype
 {
-	inline int next_p2(int num)
-	{
-		int powered = 2;
-		while(powered < num) powered <<= 1;
-		return powered;
-	}
+	struct la { unsigned char l,a; };
 
-	FreeTypeRasterizer::FreeTypeRasterizer(love::filesystem::File * file, int size)
+	TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data * data, int size)
+		: data(data)
 	{
-		// Initialize
-		data = file->read();
-
-		if(FT_Init_FreeType(&library))
-			throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed\n");
+		data->retain();
 
 		if(FT_New_Memory_Face(	library,
 								(const FT_Byte *)data->getData(),	/* first byte in memory */
@@ -60,23 +52,20 @@ namespace freetype
 		metrics.height = face->height;
 	}
 
-	FreeTypeRasterizer::~FreeTypeRasterizer()
+	TrueTypeRasterizer::~TrueTypeRasterizer()
 	{
 		FT_Done_Face(face);
-		FT_Done_FreeType(library);
 		data->release();
 	}
 
-	int FreeTypeRasterizer::getLineHeight() const
+	int TrueTypeRasterizer::getLineHeight() const
 	{
 		return (int)(getHeight() * 1.25);
 	}
 
-	GlyphData * FreeTypeRasterizer::getGlyphData(const wchar_t glyph) const
+	GlyphData * TrueTypeRasterizer::getGlyphData(unsigned short glyph) const
 	{
-		unsigned char * textureData;
 		love::font::GlyphMetrics glyphMetrics;
-		int bpp = 2;
 		FT_Glyph ftglyph;
 
 		// Initialize
@@ -85,7 +74,7 @@ namespace freetype
 		
 		if( FT_Get_Glyph(face->glyph, &ftglyph) )
 			throw love::Exception("TrueTypeFont Loading vm->error: FT_Get_Glyph failed\n");
-
+			
 		FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
 		FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph)ftglyph;
 		FT_Bitmap& bitmap = bitmap_glyph->bitmap; //just to make things easier
@@ -93,23 +82,25 @@ namespace freetype
 		// Get metrics
 		glyphMetrics.bearingX = face->glyph->metrics.horiBearingX;
 		glyphMetrics.bearingY = face->glyph->metrics.horiBearingY;
-		glyphMetrics.height = face->glyph->metrics.height;
-		glyphMetrics.width = face->glyph->metrics.width;
+		glyphMetrics.height = bitmap.rows;
+		glyphMetrics.width = bitmap.width;
 		glyphMetrics.advance = face->glyph->advance.x >> 6;
 
-		// Get texture
-		int w = next_p2(bitmap.width);
-		int h = next_p2(bitmap.rows);
-		textureData = new unsigned char[bpp * w * h];
+		GlyphData * glyphData = new GlyphData(glyph, glyphMetrics);
 
-		for(int j = 0; j < h; j++) for(int i = 0; i < w; i++)
 		{
-			textureData[bpp * (i + j * w)] = 255;
-			textureData[bpp * (i + j * w) + 1] = (i >= bitmap.width || j >= bitmap.rows) ? 0 : bitmap.buffer[i + bitmap.width * j];
+			int size = bitmap.rows*bitmap.width;
+			unsigned char * dst = (unsigned char *)glyphData->getData();
+
+			// Note that bitmap.buffer contains only luminocity. We copy that single value to 
+			// our luminocity-alpha format. 
+			for(int i = 0; i<size; i++)
+			{
+				dst[2*i] = dst[2*i+1] = bitmap.buffer[i];
+			}
 		}
 
 		// Return data
-		GlyphData * glyphData = new GlyphData(glyph, textureData, glyphMetrics, bpp);
 		return glyphData;
 	}
 

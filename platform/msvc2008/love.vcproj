@@ -870,6 +870,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\modules\graphics\opengl\Glyph.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\Glyph.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\modules\graphics\opengl\Graphics.cpp"
 						>
 						<FileConfiguration
@@ -1019,6 +1027,14 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\graphics\opengl\wrap_Frame.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_Glyph.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_Glyph.h"
 						>
 					</File>
 					<File
@@ -3141,22 +3157,6 @@
 				Name="font"
 				>
 				<File
-					RelativePath="..\..\src\modules\font\Font.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\Font.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\modules\font\GlyphData.cpp"
 					>
 					<FileConfiguration
@@ -3205,7 +3205,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\modules\font\wrap_Font.cpp"
+					RelativePath="..\..\src\modules\font\wrap_GlyphData.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -3217,14 +3217,30 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\src\modules\font\wrap_Font.h"
+					RelativePath="..\..\src\modules\font\wrap_GlyphData.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\wrap_Rasterizer.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\font\"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\font\wrap_Rasterizer.h"
 					>
 				</File>
 				<Filter
 					Name="freetype"
 					>
 					<File
-						RelativePath="..\..\src\modules\font\freetype\FreeTypeRasterizer.cpp"
+						RelativePath="..\..\src\modules\font\freetype\Font.cpp"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -3236,7 +3252,39 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\src\modules\font\freetype\FreeTypeRasterizer.h"
+						RelativePath="..\..\src\modules\font\freetype\Font.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\font\freetype\TrueTypeRasterizer.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\font\freetype\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\font\freetype\TrueTypeRasterizer.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\font\freetype\wrap_Font.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\font\freetype\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\font\freetype\wrap_Font.h"
 						>
 					</File>
 				</Filter>

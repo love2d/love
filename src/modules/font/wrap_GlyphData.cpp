@@ -18,38 +18,31 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_FONT_FONT_H
-#define LOVE_FONT_FONT_H
-
-// LOVE
-#include <common/Module.h>
-#include <filesystem/File.h>
-#include "Rasterizer.h"
+#include "wrap_GlyphData.h"
 
 namespace love
 {
 namespace font
 {
-
-	/**
-	* The Font module is responsible for decoding font data. It is
-	* not responsible for drawing it. 
-	**/
-	class Font : public Module
+	GlyphData * luax_checkglyphdata(lua_State * L, int idx)
 	{
-	public:
+		return luax_checktype<GlyphData>(L, idx, "GlyphData", LOVE_FONT_GLYPH_DATA_BITS);
+	}
 
-		/**
-		* Destructor.
-		**/
-		virtual ~Font();
+	static const luaL_Reg wrap_GlyphData_functions[] = {
 
-		// Implement Module
-		const char * getName() const;
+		// Data
+		{ "getPointer", _wrap_Data_getPointer },
+		{ "getSize", _wrap_Data_getSize },
 
-	}; // Font
+		{ 0, 0 }
+	};
+	
+	int wrap_GlyphData_open(lua_State * L)
+	{
+		luax_register_type(L, "GlyphData", wrap_GlyphData_functions);
+		return 0;
+	}
 
-} // font
+} // sound
 } // love
-
-#endif // LOVE_FONT_FONT_H

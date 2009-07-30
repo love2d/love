@@ -18,21 +18,30 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#include "Font.h"
+// LOVE
+#include "wrap_Glyph.h"
 
 namespace love
 {
-namespace font
+namespace graphics
 {
-
-	Font::~Font()
+namespace opengl
+{
+	Glyph * luax_checkglyph(lua_State * L, int idx)
 	{
+		return luax_checktype<Glyph>(L, idx, "Glyph", LOVE_GRAPHICS_GLYPH_BITS);
 	}
 
-	const char * Font::getName() const
+	static const luaL_Reg wrap_Glyph_functions[] = {
+		{ 0, 0 }
+	};
+
+	int wrap_Glyph_open(lua_State * L)
 	{
-		return "love.font";
+		luax_register_type(L, "Glyph", wrap_Glyph_functions);
+		return 0;
 	}
 
-} // font
+} // opengl
+} // graphics
 } // love

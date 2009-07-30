@@ -42,6 +42,7 @@
 #include <physics/box2d/wrap_Physics.h>
 #include <sound/wrap_Sound.h>
 #include <timer/sdl/wrap_Timer.h>
+#include <font/freetype/wrap_Font.h>
 
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
@@ -85,6 +86,7 @@ DECLSPEC int luaopen_love(lua_State * L)
 	love::luax_preload(L, love::image::wrap_Image_open, "love.image");
 	love::luax_preload(L, love::physics::box2d::wrap_Physics_open, "love.physics");
 	love::luax_preload(L, love::sound::wrap_Sound_open, "love.sound");
+	love::luax_preload(L, love::font::freetype::wrap_Font_open, "love.font");
 
 	love::luasocket::__open(L);
 	love::lanes::open(L);
@@ -132,8 +134,8 @@ int main(int argc, char ** argv)
 	// which gets everything started.
 
 	// TODO: This is obviously test code.
-	luaL_dofile(L, "../../src/scripts/boot.lua");
-//#	include "scripts/boot.lua.h"
+	//luaL_dofile(L, "../../src/scripts/boot.lua");
+#	include "scripts/boot.lua.h"
 
 	lua_close(L);
 

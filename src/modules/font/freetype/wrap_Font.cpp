@@ -20,27 +20,49 @@
 
 #include "wrap_Font.h"
 
+#include <font/wrap_GlyphData.h>
+#include <font/wrap_Rasterizer.h>
+
+#include "TrueTypeRasterizer.h"
+
 namespace love
 {
 namespace font
 {
+namespace freetype
+{
 	static Font * instance = 0;
 
-	int _wrap_test(lua_State * L)
+	int _wrap_newRasterizer(lua_State * L)
 	{
-		lua_pushinteger(L, 696);
+		Data * d = luax_checkdata(L, 1);
+		int size = luaL_checkint(L, 2);
+		
+		Rasterizer * t = instance->newRasterizer(d, size);
+		luax_newtype(L, "Rasterizer", LOVE_FONT_RASTERIZER_BITS, t);
+		return 1;
+	}
 
+	int _wrap_newGlyphData(lua_State * L)
+	{
+		Rasterizer * r = luax_checkrasterizer(L, 1);
+		unsigned short g = (unsigned short)luaL_checkint(L, 2);
+		
+		GlyphData * t = instance->newGlyphData(r, g);
+		luax_newtype(L, "GlyphData", LOVE_FONT_GLYPH_DATA_BITS, t);
 		return 1;
 	}
 
 	// List of functions to wrap.
 	static const luaL_Reg wrap_Font_functions[] = {
-		{ "test",  _wrap_test },
+		{ "newRasterizer",  _wrap_newRasterizer },
+		{ "newGlyphData",  _wrap_newGlyphData },
 		{ 0, 0 }
 	};
 
 	static const lua_CFunction wrap_Font_types[] = {
-		_wrap_test,
+		wrap_GlyphData_open,
+		wrap_Rasterizer_open,
 		0
 	};
 
@@ -63,5 +85,6 @@ namespace font
 		return luax_register_module(L, wrap_Font_functions, wrap_Font_types, "font");
 	}
 
+} // freetype
 } // sound
 } // love

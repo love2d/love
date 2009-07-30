@@ -26,6 +26,10 @@ namespace love
 namespace font
 {
 
+	Rasterizer::~Rasterizer()
+	{
+	}
+
 	int Rasterizer::getHeight() const
 	{
 		return metrics.height;

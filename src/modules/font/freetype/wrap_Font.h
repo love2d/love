@@ -18,35 +18,25 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// LOVE
-#include "ImageRasterizer.h"
+#ifndef LOVE_FONT_FREETYPE_WRAP_FONT_H
+#define LOVE_FONT_FREETYPE_WRAP_FONT_H
 
-#include <common/Exception.h>
+// LOVE
+#include "Font.h"
+#include "wrap_Font.h"
 
 namespace love
 {
 namespace font
 {
-	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs)
-		: imageData(imageData)
-	{
-		imageData->retain();
-	}
+namespace freetype
+{
+	int _wrap_newRasterizer(lua_State * L);
+	int _wrap_newGlyphData(lua_State * L);
+	int wrap_Font_open(lua_State * L);
 
-	ImageRasterizer::~ImageRasterizer()
-	{
-		imageData->release();
-	}
-
-	int ImageRasterizer::getLineHeight() const
-	{
-		return getHeight();
-	}
-
-	GlyphData * ImageRasterizer::getGlyphData(unsigned short glyph) const
-	{
-		return 0;
-	}
-
+} // freetype
 } // font
 } // love
+
+#endif // LOVE_FONT_FREETYPE_WRAP_FONT_H

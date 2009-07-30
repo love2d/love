@@ -18,33 +18,31 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// LOVE
-#include "ImageRasterizer.h"
+#include "wrap_Rasterizer.h"
 
-#include <common/Exception.h>
+#include <common/wrap_Data.h>
 
 namespace love
 {
 namespace font
 {
-	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs)
-		: imageData(imageData)
+	Rasterizer * luax_checkrasterizer(lua_State * L, int idx)
 	{
-		imageData->retain();
+		return luax_checktype<Rasterizer>(L, idx, "Rasterizer", LOVE_FONT_RASTERIZER_BITS);
 	}
 
-	ImageRasterizer::~ImageRasterizer()
-	{
-		imageData->release();
-	}
+	static const luaL_Reg wrap_Rasterizer_functions[] = {
 
-	int ImageRasterizer::getLineHeight() const
-	{
-		return getHeight();
-	}
+		// Data
+		{ "getPointer", _wrap_Data_getPointer },
+		{ "getSize", _wrap_Data_getSize },
 
-	GlyphData * ImageRasterizer::getGlyphData(unsigned short glyph) const
+		{ 0, 0 }
+	};
+	
+	int wrap_Rasterizer_open(lua_State * L)
 	{
+		luax_register_type(L, "Rasterizer", wrap_Rasterizer_functions);
 		return 0;
 	}
 

@@ -20,6 +20,8 @@
 
 #include "Image.h"
 
+#include "ImageData.h"
+
 // DevIL
 #include <IL/il.h>
 

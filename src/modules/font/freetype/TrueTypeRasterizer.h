@@ -18,35 +18,52 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// LOVE
-#include "ImageRasterizer.h"
+#ifndef LOVE_FONT_FREETYPE_TRUE_TYPE_RASTERIZER_H
+#define LOVE_FONT_FREETYPE_TRUE_TYPE_RASTERIZER_H
 
-#include <common/Exception.h>
+// LOVE
+#include <filesystem/File.h>
+#include <font/Rasterizer.h>
+
+// TrueType2
+#include <ft2build.h>
+#include <freetype/freetype.h>
+#include <freetype/ftglyph.h>
+#include <freetype/ftoutln.h>
+#include <freetype/fttrigon.h>
 
 namespace love
 {
 namespace font
 {
-	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs)
-		: imageData(imageData)
+namespace freetype
+{
+	/**
+	* Holds data for a font object.
+	**/
+	class TrueTypeRasterizer : public Rasterizer
 	{
-		imageData->retain();
-	}
+	private:
 
-	ImageRasterizer::~ImageRasterizer()
-	{
-		imageData->release();
-	}
 
-	int ImageRasterizer::getLineHeight() const
-	{
-		return getHeight();
-	}
+		// TrueType face
+		FT_Face face;
 
-	GlyphData * ImageRasterizer::getGlyphData(unsigned short glyph) const
-	{
-		return 0;
-	}
+		// File data
+		Data * data;
+		
+	public:
+		TrueTypeRasterizer(FT_Library library, Data * data, int size);
+		virtual ~TrueTypeRasterizer();
 
+		// Implement Rasterizer
+		virtual int getLineHeight() const;
+		virtual GlyphData * getGlyphData(unsigned short glyph) const;
+
+	}; // FreetypeRasterizer
+
+} // freetype
 } // font
 } // love
+
+#endif // LOVE_FONT_FREETYPE_TRUE_TYPE_RASTERIZER_H

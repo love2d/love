@@ -18,35 +18,58 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// LOVE
-#include "ImageRasterizer.h"
+#ifndef LOVE_GRAPHICS_OPENGL_GLYPH_H
+#define LOVE_GRAPHICS_OPENGL_GLYPH_H
 
-#include <common/Exception.h>
+// LOVE
+#include <common/config.h>
+#include <common/math.h>
+#include <common/Matrix.h>
+#include <font/GlyphData.h>
+#include <graphics/Drawable.h>
+
+// OpenGL
+#include "GLee.h"
+#include <SDL/SDL_opengl.h>
 
 namespace love
 {
-namespace font
+namespace graphics
 {
-	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs)
-		: imageData(imageData)
+namespace opengl
+{
+	
+	class Glyph : public Drawable
 	{
-		imageData->retain();
-	}
+	private:
 
-	ImageRasterizer::~ImageRasterizer()
-	{
-		imageData->release();
-	}
+		love::font::GlyphData * data;
 
-	int ImageRasterizer::getLineHeight() const
-	{
-		return getHeight();
-	}
+		float width, height;
 
-	GlyphData * ImageRasterizer::getGlyphData(unsigned short glyph) const
-	{
-		return 0;
-	}
+		GLuint texture;
 
-} // font
+		vertex vertices[4];
+
+	public:
+
+
+		Glyph(love::font::GlyphData * data);
+		virtual ~Glyph();
+
+		bool load();
+		void unload();
+
+		// Implements Volatile.
+		bool loadVolatile();
+		void unloadVolatile();		
+
+		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+
+	}; // Glyph
+	
+} // opengl
+} // graphics
 } // love
+
+#endif // LOVE_GRAPHICS_OPENGL_GLYPH_H

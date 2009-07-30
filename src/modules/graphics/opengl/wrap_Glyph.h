@@ -18,35 +18,24 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// LOVE
-#include "ImageRasterizer.h"
+#ifndef LOVE_GRAPHICS_OPENGL_WRAP_GLYPH_H
+#define LOVE_GRAPHICS_OPENGL_WRAP_GLYPH_H
 
-#include <common/Exception.h>
+// LOVE
+#include <common/runtime.h>
+#include "Glyph.h"
 
 namespace love
 {
-namespace font
+namespace graphics
 {
-	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs)
-		: imageData(imageData)
-	{
-		imageData->retain();
-	}
+namespace opengl
+{
+	Glyph * luax_checkglyph(lua_State * L, int idx);
+	int wrap_Glyph_open(lua_State * L);
 
-	ImageRasterizer::~ImageRasterizer()
-	{
-		imageData->release();
-	}
-
-	int ImageRasterizer::getLineHeight() const
-	{
-		return getHeight();
-	}
-
-	GlyphData * ImageRasterizer::getGlyphData(unsigned short glyph) const
-	{
-		return 0;
-	}
-
-} // font
+} // opengl
+} // graphics
 } // love
+
+#endif // LOVE_GRAPHICS_OPENGL_WRAP_GLYPH_H

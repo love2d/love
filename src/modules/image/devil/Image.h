@@ -23,7 +23,6 @@
 
 // LOVE
 #include <image/Image.h>
-#include "ImageData.h"
 
 namespace love
 {

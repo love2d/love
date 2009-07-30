@@ -18,21 +18,21 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_FONT_WRAP_FONT_H
-#define LOVE_FONT_WRAP_FONT_H
+#ifndef LOVE_FONT_WRAP_RASTERIZER_H
+#define LOVE_FONT_WRAP_RASTERIZER_H
 
 // LOVE
-#include "Font.h"
-#include "wrap_Font.h"
+#include <common/runtime.h>
+#include "Rasterizer.h"
 
 namespace love
 {
 namespace font
 {
-	int _wrap_test(lua_State * L);
-	int wrap_Font_open(lua_State * L);
+	Rasterizer * luax_checkrasterizer(lua_State * L, int idx);
+	int wrap_Rasterizer_open(lua_State * L);
 
 } // font
 } // love
 
-#endif // LOVE_SOUND_WRAP_FONT_H
+#endif // LOVE_FONT_WRAP_RASTERIZER_H

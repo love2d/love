@@ -47,19 +47,16 @@ namespace font
 	{
 	private:
 		// The glyph itself
-		wchar_t glyph;
+		unsigned short glyph;
 
 		// Glyph metrics
 		GlyphMetrics metrics;
 
 		// Glyph texture data
 		unsigned char * data;
-
-		// Bits Per Pixel
-		int bpp;
 		
 	public:
-		GlyphData(wchar_t glyph, unsigned char * glyphData, GlyphMetrics glyphMetrics, int glyphBPP);
+		GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics);
 		virtual ~GlyphData();
 
 		// Implements Data.

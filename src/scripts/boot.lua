@@ -135,6 +135,7 @@ function love.init()
 			physics = true,
 			sound = true,
 			native = true,
+			font = true,
 		},
 	}
 

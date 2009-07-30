@@ -25,9 +25,10 @@ namespace love
 namespace font
 {
 
-	GlyphData::GlyphData(wchar_t glyph, unsigned char * glyphData, GlyphMetrics glyphMetrics, int glyphBPP)
-		: glyph(glyph), data(glyphData), metrics(glyphMetrics), bpp(glyphBPP)
+	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics)
+		: glyph(glyph), metrics(glyphMetrics)
 	{
+		data = new unsigned char[getWidth() * getHeight() * 2];
 	}
 
 	GlyphData::~GlyphData()
@@ -42,7 +43,7 @@ namespace font
 
 	int GlyphData::getSize() const
 	{
-		return getWidth() * getHeight() * bpp;
+		return getWidth() * getHeight() * 2;
 	}
 
 	int GlyphData::getHeight() const

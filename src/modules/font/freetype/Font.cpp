@@ -18,19 +18,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_FONT_FREE_TYPE_RASTERIZER_H
-#define LOVE_FONT_FREE_TYPE_RASTERIZER_H
+#include "Font.h"
 
-// LOVE
-#include <filesystem/File.h>
-#include <font/Rasterizer.h>
-
-// FreeType2
-#include <ft2build.h>
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
-#include <freetype/ftoutln.h>
-#include <freetype/fttrigon.h>
+#include "TrueTypeRasterizer.h"
+#include <font/ImageRasterizer.h>
 
 namespace love
 {
@@ -38,34 +29,37 @@ namespace font
 {
 namespace freetype
 {
-	/**
-	* Holds data for a font object.
-	**/
-	class FreeTypeRasterizer : public Rasterizer
+	Font::Font()
 	{
-	private:
-		// FreeType library
-		FT_Library library;
+		if(FT_Init_FreeType(&library))
+			throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed\n");
+	}
 
-		// FreeType face
-		FT_Face face;
+	Font::~Font()
+	{
+		FT_Done_FreeType(library);
+	}
 
-		// File data
-		Data * data;
-		
-		
-	public:
-		FreeTypeRasterizer(love::filesystem::File * file, int size);
-		virtual ~FreeTypeRasterizer();
+	Rasterizer * Font::newRasterizer(Data * data, int size)
+	{
+		return new TrueTypeRasterizer(library, data, size);
+	}
 
-		// Implement FontData
-		virtual int getLineHeight() const;
-		virtual GlyphData * getGlyphData(const wchar_t glyph) const;
+	Rasterizer * Font::newRasterizer(love::image::ImageData * data, unsigned short * glyphs)
+	{
+		return new ImageRasterizer(data, glyphs);
+	}
 
-	}; // FreetypeRasterizer
+	GlyphData * Font::newGlyphData(Rasterizer * r, unsigned short glyph)
+	{
+		return r->getGlyphData(glyph);
+	}
+
+	const char * Font::getName() const
+	{
+		return "love.font.freetype";
+	}
 
 } // freetype
 } // font
 } // love
-
-#endif // LOVE_FONT_FREE_TYPE_RASTERIZER_H

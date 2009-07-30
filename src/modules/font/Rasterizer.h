@@ -49,6 +49,9 @@ namespace font
 		FontMetrics metrics;
 		
 	public:
+
+		virtual ~Rasterizer();
+
 		/**
 		* Gets the max height of the glyphs.
 		**/
@@ -78,10 +81,10 @@ namespace font
 		* Gets a specific glyph.
 		* @param glyph The (UNICODE) glyph to get data for
 		**/
-		virtual GlyphData * getGlyphData(const wchar_t glyph) const = 0;
+		virtual GlyphData * getGlyphData(unsigned short glyph) const = 0;
 
 
-	}; // FontData
+	}; // Rasterizer
 
 } // font
 } // love

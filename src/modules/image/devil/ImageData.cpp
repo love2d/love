@@ -79,7 +79,7 @@ namespace devil
 		// Bind the image.
 		ilBindImage(image);	
 
-		ilTexImage(width, height, 0, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
+		ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
 	}
 
 	ImageData::~ImageData()

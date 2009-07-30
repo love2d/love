@@ -38,17 +38,14 @@ namespace font
 	private:
 		// The image data
 		love::image::ImageData * imageData;
-
-		// Glyphs
-		wchar_t * glyphs;
-		
+	
 	public:
-		ImageRasterizer(love::filesystem::File * file, wchar_t * glyphs);
+		ImageRasterizer(love::image::ImageData * imageData, unsigned short * glyphs);
 		virtual ~ImageRasterizer();
 
 		// Implement FontData
 		virtual int getLineHeight() const;
-		virtual GlyphData * getGlyphData(const wchar_t glyph) const;
+		virtual GlyphData * getGlyphData(unsigned short glyph) const;
 
 	}; // ImageRasterizer
 
