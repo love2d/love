@@ -115,6 +115,13 @@ namespace audio
 		return 0;
 	}
 
+	int _wrap_resume(lua_State * L)
+	{
+		Source * c = luax_checksource(L, 1);
+		instance->resume(c);
+		return 0;
+	}
+
 	int _wrap_rewind(lua_State * L)
 	{
 		Source * c = luax_checksource(L, 1);
@@ -144,6 +151,7 @@ namespace audio
 		{ "play",  _wrap_play },
 		{ "stop",  _wrap_stop },
 		{ "pause",  _wrap_pause },
+		{ "resume",  _wrap_resume },
 		{ "rewind",  _wrap_rewind },
 		{ "setVolume",  _wrap_setVolume },
 		{ "getVolume",  _wrap_getVolume },

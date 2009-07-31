@@ -38,6 +38,7 @@ namespace audio
 	int _wrap_play(lua_State * L);
 	int _wrap_stop(lua_State * L);
 	int _wrap_pause(lua_State * L);
+	int _wrap_resume(lua_State * L);
 	int _wrap_rewind(lua_State * L);
 	int _wrap_setVolume(lua_State * L);
 	int _wrap_getVolume(lua_State * L);
