@@ -79,7 +79,7 @@ namespace openal
 		// Implements Audio.
 		love::audio::Sound * newSound(love::sound::SoundData * data);
 		love::audio::Music * newMusic(love::sound::Decoder * decoder);
-		love::audio::Source * newSource();
+		love::audio::Source * newSource(Audible * audible);
 		int getNumSources() const;
 		int getMaxSources() const;
 		void play(love::audio::Source * source);

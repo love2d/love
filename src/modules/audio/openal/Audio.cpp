@@ -89,9 +89,9 @@ namespace openal
 		return new Music(pool, decoder);
 	}
 
-	love::audio::Source * Audio::newSource()
+	love::audio::Source * Audio::newSource(Audible * audible)
 	{
-		return new Source(pool);
+		return new Source(pool, audible);
 	}
 
 	int Audio::getNumSources() const

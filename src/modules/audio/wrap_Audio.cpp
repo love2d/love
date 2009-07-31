@@ -69,7 +69,8 @@ namespace audio
 
 	int _wrap_newSource(lua_State * L)
 	{
-		Source * t = instance->newSource();
+		Audible * a = luax_checktype<Audible>(L, 1, "Audible", LOVE_AUDIO_AUDIBLE_BITS);
+		Source * t = instance->newSource(a);
 		luax_newtype(L, "Source", LOVE_AUDIO_SOURCE_BITS, (void*)t);
 		return 1;
 	}

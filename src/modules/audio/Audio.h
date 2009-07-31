@@ -59,7 +59,7 @@ namespace audio
 		* Creates a new Source.
 		* @returns A new Source.
 		**/
-		virtual Source * newSource() = 0;
+		virtual Source * newSource(Audible * audible) = 0;
 
 		/**
 		* Gets the current number of simulatenous playing sources.
