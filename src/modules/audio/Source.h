@@ -33,6 +33,7 @@ namespace audio
 	{
 	protected:
 		Audible * audible;
+		bool looping;
 	public:
 		Source();
 		virtual ~Source();
@@ -52,6 +53,9 @@ namespace audio
 
 		virtual void setVolume(float volume) = 0;
 		virtual float getVolume() const = 0;
+		
+		void setLooping(bool looping);
+		bool isLooping() const;
 
 	}; // Source
 

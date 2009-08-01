@@ -96,15 +96,16 @@ function love.boot()
 	require("love.filesystem")
 
 	-- Prints the arguments passes to the app.
-	if love.__args then
-		for i,v in pairs(love.__args) do
+	if love._args then
+		for i,v in pairs(love._args) do
 			print(i,v)
 		end
 	end	
 	
 	-- Sets the source for the game.
-	if love.__args[1] and love.__args[1] ~= "" then
-		love.filesystem.setSource(love.path.getfull(love.__args[1]))
+	if love._args[1] and love._args[1] ~= "" then
+		love.filesystem.init(love._args[0])
+		love.filesystem.setSource(love.path.getfull(love._args[1]))
 	else
 		-- Do not set a source, load the default game.
 		love.defaultscreen()

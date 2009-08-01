@@ -63,9 +63,9 @@ DECLSPEC int luaopen_love(lua_State * L)
 		lua_setfield(L, -2, love::lua_constants[i].name);
 	}
 
-	// Create the __fin table.
+	// Create the _fin table.
 	lua_newtable(L);
-	lua_setfield(L, -2, "__fin");
+	lua_setfield(L, -2, "_fin");
 
 	// Resources.
 	love::luax_newtype(L, "Data", love::LOVE_DATA_BITS, new love::MemoryData((void*)love::Vera_ttf_data, love::Vera_ttf_size));
@@ -115,7 +115,7 @@ int main(int argc, char ** argv)
 			lua_pushstring(L, argv[i]);
 			lua_rawseti(L, -2, i);
 		}
-		lua_setfield(L, -2, "__args");
+		lua_setfield(L, -2, "_args");
 		lua_pop(L, 1);
 	}
 
@@ -126,7 +126,7 @@ int main(int argc, char ** argv)
 	{
 		lua_getglobal(L, "love");
 		lua_pushboolean(L, 1);
-		lua_setfield(L, -2, "__exe");
+		lua_setfield(L, -2, "_exe");
 		lua_pop(L, 1);
 	}
 

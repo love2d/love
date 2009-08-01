@@ -33,6 +33,8 @@ namespace audio
 	int _wrap_Source_getPitch(lua_State * L);
 	int _wrap_Source_setVolume(lua_State * L);
 	int _wrap_Source_getVolume(lua_State * L);
+	int _wrap_Source_setLooping(lua_State * L);
+	int _wrap_Source_isLooping(lua_State * L);
 	int wrap_Source_open(lua_State * L);
 
 } // audio

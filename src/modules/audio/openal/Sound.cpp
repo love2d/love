@@ -58,12 +58,16 @@ namespace openal
 		source = pool->find(s);
 
 		if(source)
+		{
 			alSourcei(source, AL_BUFFER, buffer);
+			alSourcei(source, AL_LOOPING, s->isLooping() ? AL_TRUE : AL_FALSE);
+		}
 	}
 
 	void Sound::update(love::audio::Source * s)
 	{
-		// No need.
+		// Looping mode could have changed.
+		alSourcei(source, AL_LOOPING, s->isLooping() ? AL_TRUE : AL_FALSE);
 	}
 
 	void Sound::stop(love::audio::Source * s)

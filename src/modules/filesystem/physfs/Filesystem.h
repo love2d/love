@@ -91,9 +91,12 @@ namespace physfs
 	public:
 
 		Filesystem();
+
 		~Filesystem();
 
 		const char * getName() const;
+
+		void init(const char * arg0);
 
 		/**
 		* This sets up the save directory. If the 

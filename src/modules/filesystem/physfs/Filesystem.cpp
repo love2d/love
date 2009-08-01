@@ -32,9 +32,7 @@ namespace physfs
 	Filesystem::Filesystem()
 		: open_count(0), buffer(0)
 	{
-		// TODO: love.exe << fail
-		if(!PHYSFS_init("love.exe"))
-			throw Exception(PHYSFS_getLastError());
+
 	}
 
 	Filesystem::~Filesystem()
@@ -45,6 +43,12 @@ namespace physfs
 	const char * Filesystem::getName() const
 	{
 		return "love.filesystem.physfs";
+	}
+
+	void Filesystem::init(const char * arg0)
+	{
+		if(!PHYSFS_init(arg0))
+			throw Exception(PHYSFS_getLastError());
 	}
 
 	bool Filesystem::setIdentity( const char * ident )

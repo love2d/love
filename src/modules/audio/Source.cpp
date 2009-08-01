@@ -25,7 +25,7 @@ namespace love
 namespace audio
 {
 	Source::Source()
-		: audible(0)
+		: audible(0), looping(false)
 	{
 	}
 
@@ -54,6 +54,16 @@ namespace audio
 	Audible * Source::getAudible() const
 	{
 		return audible;
+	}
+
+	void Source::setLooping(bool looping)
+	{
+		this->looping = looping;
+	}
+
+	bool Source::isLooping() const
+	{
+		return looping;
 	}
 
 } // audio

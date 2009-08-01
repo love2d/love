@@ -55,7 +55,7 @@ namespace openal
 		{
 			for(int i = 0; i < NUM_BUFFERS; i++)
 			{
-				if(!stream(buffers[i]))
+				if(!stream(s, buffers[i]))
 				{
 					std::cout << "Could not stream music." << std::endl;
 					return;
@@ -82,7 +82,7 @@ namespace openal
 				// Get a free buffer.
 				alSourceUnqueueBuffers(source, 1, &buffer);
 
-				if(stream(buffer))
+				if(stream(s, buffer))
 					alSourceQueueBuffers(source, 1, &buffer);
 			}
 		}
@@ -111,8 +111,11 @@ namespace openal
 		play(s);
 	}
 
-	bool Music::stream(ALuint buffer)
+	bool Music::stream(love::audio::Source * source, ALuint buffer)
 	{
+		if(source->isLooping() && decoder->isFinished())
+			decoder->rewind();		
+
 		// Get more sound data.
 		int decoded = decoder->decode();
 
@@ -130,6 +133,7 @@ namespace openal
 		}
 		return false;
 	}
+
 
 } // openal
 } // audio

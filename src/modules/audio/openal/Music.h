@@ -48,10 +48,10 @@ namespace openal
 		Pool * pool;
 		love::sound::Decoder * decoder;
 		ALuint source;
+
 	public:
 		Music(Pool * pool, love::sound::Decoder * decoder);
 		virtual ~Music();
-		
 
 		// Implements Audible.
 		void play(love::audio::Source * source);
@@ -63,7 +63,7 @@ namespace openal
 		love::audio::Music * clone();
 
 	private:
-		bool stream(ALuint buffer);
+		bool stream(love::audio::Source * source, ALuint buffer);
 	}; // Sound
 
 } // openal

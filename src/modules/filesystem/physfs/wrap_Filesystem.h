@@ -33,6 +33,7 @@ namespace filesystem
 namespace physfs
 {
 	bool hack_setupWriteDirectory();
+	int _wrap_init(lua_State * L);
 	int _wrap_setIdentity(lua_State * L);
 	int _wrap_setSource(lua_State * L);
 	int _wrap_newFile(lua_State * L);

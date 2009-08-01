@@ -59,11 +59,28 @@ namespace audio
 		return 1;
 	}
 
+	int _wrap_Source_setLooping(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setLooping(luax_toboolean(L, 2));
+		return 0;
+	}
+
+	int _wrap_Source_isLooping(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		luax_pushboolean(L, t->isLooping());
+		return 1;
+	}
+
+
 	static const luaL_Reg wrap_Source_functions[] = {
 		{ "setPitch", _wrap_Source_setPitch },
 		{ "getPitch", _wrap_Source_getPitch },
 		{ "setVolume", _wrap_Source_setVolume },
 		{ "getVolume", _wrap_Source_getVolume },
+		{ "setLooping", _wrap_Source_setLooping },
+		{ "isLooping", _wrap_Source_isLooping },
 		{ 0, 0 }
 	};
 

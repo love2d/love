@@ -104,7 +104,7 @@ namespace love
 	int luax_register_gc(lua_State * L, const char * mname, Module * m)
 	{
 		lua_getglobal(L, "love");
-		lua_getfield(L, -1, "__fin");
+		lua_getfield(L, -1, "_fin");
 
 		userdata * u = (userdata *)lua_newuserdata(L, sizeof(userdata));
 		u->own = true;
@@ -117,7 +117,7 @@ namespace love
 
 		lua_setfield(L, -2, mname);
 
-		lua_pop(L, 2); // __fin, love
+		lua_pop(L, 2); // _fin, love
 
 		return 0;
 	}

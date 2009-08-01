@@ -36,6 +36,22 @@ namespace physfs
 		return false;
 	}
 
+	int _wrap_init(lua_State * L)
+	{
+		const char * arg0 = luaL_checkstring(L, 1);
+
+		try 
+		{
+			instance->init(arg0);
+		} 
+		catch(Exception & e)
+		{
+			return luaL_error(L, e.what());
+		}
+
+		return 0;
+	}
+
 	int _wrap_setIdentity(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
@@ -200,6 +216,7 @@ namespace physfs
 
 	// List of functions to wrap.
 	const luaL_Reg wrap_Filesystem_functions[] = {
+		{ "init",  _wrap_init },
 		{ "setIdentity",  _wrap_setIdentity },
 		{ "setSource",  _wrap_setSource },
 		{ "newFile",  _wrap_newFile },
