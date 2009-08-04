@@ -103,7 +103,7 @@ namespace box2d
 		* @returns The x-component of the velocity.
 		* @returns The y-component of the velocity.
 		**/
-		int getVelocity(lua_State * L);
+		int getLinearVelocity(lua_State * L);
 
 		/**
 		* The current center of mass for the Body in world
@@ -124,7 +124,7 @@ namespace box2d
 		/**
 		* Get the current Body spin. (Angular velocity).
 		**/
-		float getSpin() const;
+		float getAngularVelocity() const;
 
 		/**
 		* Gets the Body's mass.
@@ -144,7 +144,7 @@ namespace box2d
 		/**
 		* Gets the Body's linear damping.
 		**/
-		float getDamping() const;
+		float getLinearDamping() const;
 
 		/**
 		* Apply an impulse (jx, jy) with offset (0, 0).
@@ -184,7 +184,7 @@ namespace box2d
 		/**
 		* Sets the current velocity of the Body.
 		**/
-		void setVelocity(float x, float y);
+		void setLinearVelocity(float x, float y);
 
 		/**
 		* Sets the angle of the Body.
@@ -194,7 +194,7 @@ namespace box2d
 		/**
 		* Sets the current spin of the Body. 
 		**/
-		void setSpin(float r);
+		void setAngularVelocity(float r);
 
 		/**
 		* Sets the current position of the Body.
@@ -223,7 +223,7 @@ namespace box2d
 		/**
 		* Sets the Body's linear damping.
 		**/
-		void setDamping(float d);
+		void setLinearDamping(float d);
 
 		/**
 		* Transforms a point (x, y) from local coordinates
@@ -272,7 +272,7 @@ namespace box2d
 		* @returns The x-component of the velocity vector.
 		* @returns The y-component of the velocity vector.
 		**/
-		int getVelocityWorldPoint(lua_State * L);
+		int getLinearVelocityFromWorldPoint(lua_State * L);
 
 		/**
 		* Gets the velocity on the Body for the given local point.
@@ -281,7 +281,7 @@ namespace box2d
 		* @returns The x-component of the velocity vector.
 		* @returns The y-component of the velocity vector.
 		**/
-		int getVelocityLocalPoint(lua_State * L);
+		int getLinearVelocityFromLocalPoint(lua_State * L);
 
 		/**
 		* Returns true if the Body is a bullet, false otherwise.
@@ -320,13 +320,17 @@ namespace box2d
 		/**
 		* Controls whether this Body should be allowed to sleep.
 		**/ 
-		void setAllowSleep(bool allow);
+		void setAllowSleeping(bool allow);
 
 		/**
-		* Controls the Body's sleep.
-		* @param sleep True to put to sleep, false to wake up.
+		* Puts the body to sleep.
 		**/
-		void setSleep(bool sleep);
+		void putToSleep();
+
+		/**
+		* Wakes the Body up.
+		**/
+		void wakeUp();
 
 	private:
 

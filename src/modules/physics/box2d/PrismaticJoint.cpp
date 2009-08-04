@@ -48,12 +48,12 @@ namespace box2d
 		joint = 0;
 	}
 
-	float PrismaticJoint::getTranslation() const
+	float PrismaticJoint::getJointTranslation() const
 	{
 		return world->scaleDown(joint->GetJointTranslation());
 	}
 
-	float PrismaticJoint::getSpeed() const
+	float PrismaticJoint::getJointSpeed() const
 	{
 		return world->scaleDown(joint->GetJointSpeed());
 	}
@@ -75,7 +75,7 @@ namespace box2d
 
 	float PrismaticJoint::getMaxMotorForce() const
 	{
-		return joint->GetMotorForce();
+		return joint->m_maxMotorForce;
 	}
 
 	void PrismaticJoint::setMotorSpeed(float speed)

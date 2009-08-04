@@ -155,38 +155,18 @@ namespace box2d
 		int testSegment(lua_State * L);
 
 		/**
-		* With this function, you can easily set the categories
-		* a Shape is a member of.
-		* 
-		* The function accepts 1-16 arguments. Each argument must 
-		* be a number from 1-16, and must be unique in the list.
+		* Sets the filter data. An integer array is used even though the
+		* first two elements are unsigned shorts. The elements are:
+		* category (16-bits), mask (16-bits) and group (32-bits/int).
 		**/
-		int setCategory(lua_State * L);
+		void setFilterData(int * v);
 
 		/**
-		* Returns the categories this Shape is
-		* a member of. So if the Shape is a member
-		* of 5 categories, this function returns five
-		* values.
-		**/ 
-		int getCategory(lua_State * L);
-
-		/**
-		* Sets which categories this Shape should *not*
-		* collide with. 
-		* 
-		* The function works the same was as setCategory, but
-		* each entry here represents a 0 in the bit string, not
-		* a 1 like setCategory.
+		* Gets the filter data. An integer array is used even though the
+		* first two elements are unsigned shorts. The elements are:
+		* category (16-bits), mask (16-bits) and group (32-bits/int).
 		**/
-		int setMask(lua_State * L);
-
-		/**
-		* Returns the current masked categories.
-		* If there are 5 masked categories, then this
-		* function will have 5 return values.
-		**/
-		int getMask(lua_State * L);
+		void getFilterData(int * v);
 
 		/**
 		* This function stores an in-C reference to
@@ -209,22 +189,6 @@ namespace box2d
 		* passed directly to love.graphics.polygon.
 		**/ 
 		int getBoundingBox(lua_State * L);
-
-	private:
-
-		/**
-		* Gets a 16-integer from the current stack top.
-		* @param The 16-bit integer.
-		**/
-		uint16 getBits(lua_State * L);
-
-		/**
-		* Push each set bit in a 16-bit integer as
-		* a list of integer indices. That is, if the bits are 
-		* set to 0000 0000 0011 0001, then this function will
-		* push (1, 5, 6) on the stack.
-		**/
-		int pushBits(lua_State * L, uint16 bits);
 	};
 
 } // box2d

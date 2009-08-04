@@ -37,8 +37,8 @@ namespace box2d
 	int _wrap_DistanceJoint_getLength(lua_State * L);
 	int _wrap_DistanceJoint_setFrequency(lua_State * L);
 	int _wrap_DistanceJoint_getFrequency(lua_State * L);
-	int _wrap_DistanceJoint_setDamping(lua_State * L);
-	int _wrap_DistanceJoint_getDamping(lua_State * L);
+	int _wrap_DistanceJoint_setDampingRatio(lua_State * L);
+	int _wrap_DistanceJoint_getDampingRatio(lua_State * L);
 	int wrap_DistanceJoint_open(lua_State * L);
 
 } // box2d

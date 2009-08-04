@@ -58,10 +58,10 @@ namespace box2d
 		return t->getPosition(L);
 	}
 
-	int _wrap_Body_getVelocity(lua_State * L)
+	int _wrap_Body_getLinearVelocity(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getVelocity(L);
+		return t->getLinearVelocity(L);
 	}
 
 	int _wrap_Body_getWorldCenter(lua_State * L)
@@ -76,10 +76,10 @@ namespace box2d
 		return t->getLocalCenter(L);
 	}
 
-	int _wrap_Body_getSpin(lua_State * L)
+	int _wrap_Body_getAngularVelocity(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		lua_pushnumber(L, t->getSpin());
+		lua_pushnumber(L, t->getAngularVelocity());
 		return 1;
 	}
 
@@ -104,10 +104,10 @@ namespace box2d
 		return 1;
 	}
 
-	int _wrap_Body_getDamping(lua_State * L)
+	int _wrap_Body_getLinearDamping(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		lua_pushnumber(L, t->getDamping());
+		lua_pushnumber(L, t->getLinearDamping());
 		return 1;
 	}
 
@@ -157,12 +157,12 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Body_setVelocity(lua_State * L)
+	int _wrap_Body_setLinearVelocity(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
 		float arg2 = (float)luaL_checknumber(L, 3);
-		t->setVelocity(arg1, arg2);
+		t->setLinearVelocity(arg1, arg2);
 		return 0;
 	}
 
@@ -174,11 +174,11 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Body_setSpin(lua_State * L)
+	int _wrap_Body_setAngularVelocity(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setSpin(arg1);
+		t->setAngularVelocity(arg1);
 		return 0;
 	}
 
@@ -217,11 +217,11 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Body_setDamping(lua_State * L)
+	int _wrap_Body_setLinearDamping(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setDamping(arg1);
+		t->setLinearDamping(arg1);
 		return 0;
 	}
 
@@ -249,16 +249,16 @@ namespace box2d
 		return t->getLocalVector(L);
 	}
 
-	int _wrap_Body_getVelocityWorldPoint(lua_State * L)
+	int _wrap_Body_getLinearVelocityFromWorldPoint(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getVelocityWorldPoint(L);
+		return t->getLinearVelocityFromWorldPoint(L);
 	}
 
-	int _wrap_Body_getVelocityLocalPoint(lua_State * L)
+	int _wrap_Body_getLinearVelocityFromLocalPoint(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getVelocityLocalPoint(L);
+		return t->getLinearVelocityFromLocalPoint(L);
 	}
 
 	int _wrap_Body_isBullet(lua_State * L)
@@ -304,19 +304,25 @@ namespace box2d
 		return 1;
 	}
 
-	int _wrap_Body_setAllowSleep(lua_State * L)
+	int _wrap_Body_setAllowSleeping(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		bool b = luax_toboolean(L, 2);
-		t->setAllowSleep(b);
+		t->setAllowSleeping(b);
 		return 0;
 	}
 
-	int _wrap_Body_setSleep(lua_State * L)
+	int _wrap_Body_putToSleep(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		bool b = luax_toboolean(L, 2);
-		t->setSleep(b);
+		t->putToSleep();
+		return 0;
+	}
+
+	int _wrap_Body_wakeUp(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		t->wakeUp();
 		return 0;
 	}
 
@@ -325,41 +331,42 @@ namespace box2d
 		{ "getY", _wrap_Body_getY },
 		{ "getAngle", _wrap_Body_getAngle },
 		{ "getPosition", _wrap_Body_getPosition },
-		{ "getVelocity", _wrap_Body_getVelocity },
+		{ "getLinearVelocity", _wrap_Body_getLinearVelocity },
 		{ "getWorldCenter", _wrap_Body_getWorldCenter },
 		{ "getLocalCenter", _wrap_Body_getLocalCenter },
-		{ "getSpin", _wrap_Body_getSpin },
+		{ "getAngularVelocity", _wrap_Body_getAngularVelocity },
 		{ "getMass", _wrap_Body_getMass },
 		{ "getInertia", _wrap_Body_getInertia },
 		{ "getAngularDamping", _wrap_Body_getAngularDamping },
-		{ "getDamping", _wrap_Body_getDamping },
+		{ "getLinearDamping", _wrap_Body_getLinearDamping },
 		{ "applyImpulse", _wrap_Body_applyImpulse },
 		{ "applyTorque", _wrap_Body_applyTorque },
 		{ "applyForce", _wrap_Body_applyForce },
 		{ "setX", _wrap_Body_setX },
 		{ "setY", _wrap_Body_setY },
-		{ "setVelocity", _wrap_Body_setVelocity },
+		{ "setLinearVelocity", _wrap_Body_setLinearVelocity },
 		{ "setAngle", _wrap_Body_setAngle },
-		{ "setSpin", _wrap_Body_setSpin },
+		{ "setAngularVelocity", _wrap_Body_setAngularVelocity },
 		{ "setPosition", _wrap_Body_setPosition },
 		{ "setMassFromShapes", _wrap_Body_setMassFromShapes },
 		{ "setMass", _wrap_Body_setMass },
 		{ "setAngularDamping", _wrap_Body_setAngularDamping },
-		{ "setDamping", _wrap_Body_setDamping },
+		{ "setLinearDamping", _wrap_Body_setLinearDamping },
 		{ "getWorldPoint", _wrap_Body_getWorldPoint },
 		{ "getWorldVector", _wrap_Body_getWorldVector },
 		{ "getLocalPoint", _wrap_Body_getLocalPoint },
 		{ "getLocalVector", _wrap_Body_getLocalVector },
-		{ "getVelocityWorldPoint", _wrap_Body_getVelocityWorldPoint },
-		{ "getVelocityLocalPoint", _wrap_Body_getVelocityLocalPoint },
+		{ "getLinearVelocityFromWorldPoint", _wrap_Body_getLinearVelocityFromWorldPoint },
+		{ "getLinearVelocityFromLocalPoint", _wrap_Body_getLinearVelocityFromLocalPoint },
 		{ "isBullet", _wrap_Body_isBullet },
 		{ "setBullet", _wrap_Body_setBullet },
 		{ "isStatic", _wrap_Body_isStatic },
 		{ "isDynamic", _wrap_Body_isDynamic },
 		{ "isFrozen", _wrap_Body_isFrozen },
 		{ "isSleeping", _wrap_Body_isSleeping },
-		{ "setAllowSleep", _wrap_Body_setAllowSleep },
-		{ "setSleep", _wrap_Body_setSleep },
+		{ "setAllowSleeping", _wrap_Body_setAllowSleeping },
+		{ "putToSleep", _wrap_Body_putToSleep },
+		{ "wakeUp", _wrap_Body_wakeUp },
 		{ 0, 0 }
 	};
 

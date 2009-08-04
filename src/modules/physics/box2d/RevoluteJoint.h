@@ -53,12 +53,12 @@ namespace box2d
 		/**
 		* Get the current joint angle in degrees.
 		**/
-		float getAngle() const;
+		float getJointAngle() const;
 
 		/**
 		* Get the current joint angle speed in degrees per second.
 		**/
-		float getSpeed() const;
+		float getJointSpeed() const;
 		
 		/**
 		* Enable/disable the joint motor.

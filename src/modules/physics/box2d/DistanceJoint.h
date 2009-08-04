@@ -72,13 +72,13 @@ namespace box2d
 		* Sets the damping ratio.
 		* 0 = no damping, 1 = critical damping.
 		**/
-		void setDamping(float d);
+		void setDampingRatio(float d);
 
 		/**
 		* Gets the damping ratio.
 		* 0 = no damping, 1 = critical damping.
 		**/
-		float getDamping() const;
+		float getDampingRatio() const;
 
 	};
 

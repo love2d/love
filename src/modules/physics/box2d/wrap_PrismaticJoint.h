@@ -33,8 +33,8 @@ namespace physics
 namespace box2d
 {
 	PrismaticJoint * luax_checkprismaticjoint(lua_State * L, int idx);
-	int _wrap_PrismaticJoint_getTranslation(lua_State * L);
-	int _wrap_PrismaticJoint_getSpeed(lua_State * L);
+	int _wrap_PrismaticJoint_getJointTranslation(lua_State * L);
+	int _wrap_PrismaticJoint_getJointSpeed(lua_State * L);
 	int _wrap_PrismaticJoint_setMotorEnabled(lua_State * L);
 	int _wrap_PrismaticJoint_isMotorEnabled(lua_State * L);
 	int _wrap_PrismaticJoint_setMaxMotorForce(lua_State * L);

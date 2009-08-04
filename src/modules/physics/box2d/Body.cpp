@@ -63,7 +63,7 @@ namespace box2d
 		return pushVector(L, world->scaleUp(body->GetPosition()));
 	}
 
-	int Body::getVelocity(lua_State * L)
+	int Body::getLinearVelocity(lua_State * L)
 	{
 		return pushVector(L, world->scaleUp(body->GetLinearVelocity()));
 	}
@@ -83,7 +83,7 @@ namespace box2d
 		return pushVector(L, world->scaleUp(body->GetLocalCenter()));
 	}
 
-	float Body::getSpin() const
+	float Body::getAngularVelocity() const
 	{
 		return body->GetAngularVelocity();
 	}
@@ -103,7 +103,7 @@ namespace box2d
 		return body->m_angularDamping;
 	}
 
-	float Body::getDamping() const
+	float Body::getLinearDamping() const
 	{
 		return body->m_linearDamping;
 	}
@@ -143,7 +143,7 @@ namespace box2d
 		body->SetXForm(world->scaleDown(b2Vec2(getX(), y)), getAngle());
 	}
 
-	void Body::setVelocity(float x, float y)
+	void Body::setLinearVelocity(float x, float y)
 	{
 		body->SetLinearVelocity(world->scaleDown(b2Vec2(x, y)));
 	}
@@ -153,7 +153,7 @@ namespace box2d
 		body->SetXForm(body->GetPosition(), d);
 	}
 
-	void Body::setSpin(float r)
+	void Body::setAngularVelocity(float r)
 	{
 		body->SetAngularVelocity(r);
 	}
@@ -168,7 +168,7 @@ namespace box2d
 		body->m_angularDamping = d;
 	}
 
-	void Body::setDamping(float d)
+	void Body::setLinearDamping(float d)
 	{
 		body->m_linearDamping = d;
 	}
@@ -211,13 +211,13 @@ namespace box2d
 		return pushVector(L, world->scaleUp(body->GetLocalVector(v)));
 	}
 
-	int Body::getVelocityWorldPoint(lua_State * L)
+	int Body::getLinearVelocityFromWorldPoint(lua_State * L)
 	{
 		b2Vec2 v = world->scaleDown(getVector(L));
 		return pushVector(L, world->scaleUp(body->GetLinearVelocityFromWorldPoint(v)));
 	}
 
-	int Body::getVelocityLocalPoint(lua_State * L)
+	int Body::getLinearVelocityFromLocalPoint(lua_State * L)
 	{
 		b2Vec2 v = world->scaleDown(getVector(L));
 		return pushVector(L, world->scaleUp(body->GetLinearVelocityFromLocalPoint(v)));
@@ -253,17 +253,19 @@ namespace box2d
 		return body->IsSleeping();
 	}
 
-	void Body::setAllowSleep(bool allow)
+	void Body::setAllowSleeping(bool allow)
 	{
 		body->AllowSleeping(true);
 	}
 
-	void Body::setSleep(bool sleep)
+	void Body::putToSleep()
 	{
-		if(sleep)
-			body->PutToSleep();
-		else
-			body->WakeUp();
+		body->PutToSleep();
+	}
+
+	void Body::wakeUp()
+	{
+		body->WakeUp();
 	}
 
 	b2Vec2 Body::getVector(lua_State * L)

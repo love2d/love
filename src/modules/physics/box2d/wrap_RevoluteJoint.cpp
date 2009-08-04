@@ -31,17 +31,17 @@ namespace box2d
 		return luax_checktype<RevoluteJoint>(L, idx, "RevoluteJoint", LOVE_PHYSICS_REVOLUTE_JOINT_BITS);
 	}
 
-	int _wrap_RevoluteJoint_getAngle(lua_State * L)
+	int _wrap_RevoluteJoint_getJointAngle(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
-		lua_pushnumber(L, t->getAngle());
+		lua_pushnumber(L, t->getJointAngle());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_getSpeed(lua_State * L)
+	int _wrap_RevoluteJoint_getJointSpeed(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
-		lua_pushnumber(L, t->getSpeed());
+		lua_pushnumber(L, t->getJointSpeed());
 		return 1;
 	}
 
@@ -159,8 +159,8 @@ namespace box2d
 	}
 
 	static const luaL_Reg wrap_RevoluteJoint_functions[] = {
-		{ "getAngle", _wrap_RevoluteJoint_getAngle },
-		{ "getSpeed", _wrap_RevoluteJoint_getSpeed },
+		{ "getJointAngle", _wrap_RevoluteJoint_getJointAngle },
+		{ "getJointSpeed", _wrap_RevoluteJoint_getJointSpeed },
 		{ "setMotorEnabled", _wrap_RevoluteJoint_setMotorEnabled },
 		{ "isMotorEnabled", _wrap_RevoluteJoint_isMotorEnabled },
 		{ "setMaxMotorTorque", _wrap_RevoluteJoint_setMaxMotorTorque },

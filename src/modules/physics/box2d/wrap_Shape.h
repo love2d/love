@@ -44,10 +44,8 @@ namespace box2d
 	int _wrap_Shape_getBody(lua_State * L);
 	int _wrap_Shape_testPoint(lua_State * L);
 	int _wrap_Shape_testSegment(lua_State * L);
-	int _wrap_Shape_setCategory(lua_State * L);
-	int _wrap_Shape_getCategory(lua_State * L);
-	int _wrap_Shape_setMask(lua_State * L);
-	int _wrap_Shape_getMask(lua_State * L);
+	int _wrap_Shape_setFilterData(lua_State * L);
+	int _wrap_Shape_getFilterData(lua_State * L);
 	int _wrap_Shape_setData(lua_State * L);
 	int _wrap_Shape_getData(lua_State * L);
 	int _wrap_Shape_getBoundingBox(lua_State * L);

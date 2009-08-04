@@ -64,12 +64,12 @@ namespace box2d
 		return joint->m_frequencyHz;
 	}
 
-	void DistanceJoint::setDamping(float d)
+	void DistanceJoint::setDampingRatio(float d)
 	{
 		joint->m_dampingRatio = d;
 	}
 
-	float DistanceJoint::getDamping() const
+	float DistanceJoint::getDampingRatio() const
 	{
 		return joint->m_dampingRatio;
 	}

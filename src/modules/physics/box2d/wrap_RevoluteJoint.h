@@ -33,8 +33,8 @@ namespace physics
 namespace box2d
 {
 	RevoluteJoint * luax_checkrevolutejoint(lua_State * L, int idx);
-	int _wrap_RevoluteJoint_getAngle(lua_State * L);
-	int _wrap_RevoluteJoint_getSpeed(lua_State * L);
+	int _wrap_RevoluteJoint_getJointAngle(lua_State * L);
+	int _wrap_RevoluteJoint_getJointSpeed(lua_State * L);
 	int _wrap_RevoluteJoint_setMotorEnabled(lua_State * L);
 	int _wrap_RevoluteJoint_isMotorEnabled(lua_State * L);
 	int _wrap_RevoluteJoint_setMaxMotorTorque(lua_State * L);

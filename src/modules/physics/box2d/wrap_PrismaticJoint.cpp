@@ -31,17 +31,17 @@ namespace box2d
 		return luax_checktype<PrismaticJoint>(L, idx, "PrismaticJoint", LOVE_PHYSICS_PRISMATIC_JOINT_BITS);
 	}
 
-	int _wrap_PrismaticJoint_getTranslation(lua_State * L)
+	int _wrap_PrismaticJoint_getJointTranslation(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
-		lua_pushnumber(L, t->getTranslation());
+		lua_pushnumber(L, t->getJointTranslation());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_getSpeed(lua_State * L)
+	int _wrap_PrismaticJoint_getJointSpeed(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
-		lua_pushnumber(L, t->getSpeed());
+		lua_pushnumber(L, t->getJointSpeed());
 		return 1;
 	}
 
@@ -159,8 +159,8 @@ namespace box2d
 	}
 
 	static const luaL_Reg wrap_PrismaticJoint_functions[] = {
-		{ "getTranslation", _wrap_PrismaticJoint_getTranslation },
-		{ "getSpeed", _wrap_PrismaticJoint_getSpeed },
+		{ "getJointTranslation", _wrap_PrismaticJoint_getJointTranslation },
+		{ "getJointSpeed", _wrap_PrismaticJoint_getJointSpeed },
 		{ "setMotorEnabled", _wrap_PrismaticJoint_setMotorEnabled },
 		{ "isMotorEnabled", _wrap_PrismaticJoint_isMotorEnabled },
 		{ "setMaxMotorForce", _wrap_PrismaticJoint_setMaxMotorForce },

@@ -53,12 +53,12 @@ namespace box2d
 		/**
 		* Get the current joint translation, usually in meters.
 		**/
-		float getTranslation() const;
+		float getJointTranslation() const;
 
 		/**
 		* Get the current joint translation speed, usually in meters per second.
 		**/
-		float getSpeed() const;
+		float getJointSpeed() const;
 
 		/**
 		* Enable/disable the joint motor.

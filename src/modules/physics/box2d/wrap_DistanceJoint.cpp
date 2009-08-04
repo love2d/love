@@ -61,18 +61,18 @@ namespace box2d
 		return 1;
 	}
 
-	int _wrap_DistanceJoint_setDamping(lua_State * L)
+	int _wrap_DistanceJoint_setDampingRatio(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setDamping(arg1);
+		t->setDampingRatio(arg1);
 		return 0;
 	}
 
-	int _wrap_DistanceJoint_getDamping(lua_State * L)
+	int _wrap_DistanceJoint_getDampingRatio(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
-		lua_pushnumber(L, t->getDamping());
+		lua_pushnumber(L, t->getDampingRatio());
 		return 1;
 	}
 
@@ -81,8 +81,8 @@ namespace box2d
 		{ "getLength", _wrap_DistanceJoint_getLength },
 		{ "setFrequency", _wrap_DistanceJoint_setFrequency },
 		{ "getFrequency", _wrap_DistanceJoint_getFrequency },
-		{ "setDamping", _wrap_DistanceJoint_setDamping },
-		{ "getDamping", _wrap_DistanceJoint_getDamping },
+		{ "setDamping", _wrap_DistanceJoint_setDampingRatio },
+		{ "getDamping", _wrap_DistanceJoint_getDampingRatio },
 		// From Joint.
 		{ "getType", _wrap_Joint_getType },
 		{ "getAnchors", _wrap_Joint_getAnchors },

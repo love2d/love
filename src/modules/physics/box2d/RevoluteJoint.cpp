@@ -46,12 +46,12 @@ namespace box2d
 		joint = 0;
 	}
 
-	float RevoluteJoint::getAngle() const
+	float RevoluteJoint::getJointAngle() const
 	{
 		return joint->GetJointAngle();
 	}
 
-	float RevoluteJoint::getSpeed() const
+	float RevoluteJoint::getJointSpeed() const
 	{
 		return joint->GetJointSpeed();
 	}
@@ -73,7 +73,7 @@ namespace box2d
 
 	float RevoluteJoint::getMaxMotorTorque() const
 	{
-		return joint->GetMotorTorque();
+		return joint->m_maxMotorTorque;
 	}
 
 	void RevoluteJoint::setMotorSpeed(float speed)

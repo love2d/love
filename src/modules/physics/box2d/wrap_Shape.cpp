@@ -123,32 +123,26 @@ namespace box2d
 		return t->testSegment(L);
 	}
 
-	int _wrap_Shape_setCategory(lua_State * L)
+	int _wrap_Shape_setFilterData(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->setCategory(L);
+		int v[3];
+		v[0] = luaL_checkint(L, 2);
+		v[1] = luaL_checkint(L, 3);
+		v[2] = luaL_checkint(L, 4);
+		t->setFilterData(v);
+		return 0;
 	}
 
-	int _wrap_Shape_getCategory(lua_State * L)
+	int _wrap_Shape_getFilterData(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->getCategory(L);
-	}
-
-	int _wrap_Shape_setMask(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->setMask(L);
-	}
-
-	int _wrap_Shape_getMask(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->getMask(L);
+		int v[3];
+		t->getFilterData(v);
+		lua_pushinteger(L, v[0]);
+		lua_pushinteger(L, v[1]);
+		lua_pushinteger(L, v[2]);
+		return 3;
 	}
 
 	int _wrap_Shape_setData(lua_State * L)
@@ -184,10 +178,8 @@ namespace box2d
 		{ "isSensor", _wrap_Shape_isSensor },
 		{ "testPoint", _wrap_Shape_testPoint },
 		{ "testSegment", _wrap_Shape_testSegment },
-		{ "setCategory", _wrap_Shape_setCategory },
-		{ "getCategory", _wrap_Shape_getCategory },
-		{ "setMask", _wrap_Shape_setMask },
-		{ "getMask", _wrap_Shape_getMask },
+		{ "setFilterData", _wrap_Shape_setFilterData },
+		{ "getFilterData", _wrap_Shape_getFilterData },
 		{ "setData", _wrap_Shape_setData },
 		{ "getData", _wrap_Shape_getData },
 		{ "getBoundingBox", _wrap_Shape_getBoundingBox },
