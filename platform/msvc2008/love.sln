@@ -76,6 +76,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "native", "native\native.vcp
 		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua", "lua\lua.vcproj", "{892D9BD8-F38E-40BC-B4E1-FAEBD59AECDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -142,6 +144,10 @@ Global
 		{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}.Debug|Win32.Build.0 = Debug|Win32
 		{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}.Release|Win32.ActiveCfg = Release|Win32
 		{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}.Release|Win32.Build.0 = Release|Win32
+		{892D9BD8-F38E-40BC-B4E1-FAEBD59AECDE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{892D9BD8-F38E-40BC-B4E1-FAEBD59AECDE}.Debug|Win32.Build.0 = Debug|Win32
+		{892D9BD8-F38E-40BC-B4E1-FAEBD59AECDE}.Release|Win32.ActiveCfg = Release|Win32
+		{892D9BD8-F38E-40BC-B4E1-FAEBD59AECDE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

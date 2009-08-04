@@ -4,6 +4,7 @@ if not love then love = {} end
 
 -- Used for setup:
 love.path = {}
+love.arg = {}
 
 -- Replace any \ with /.
 function love.path.normalslashes(p)
@@ -62,30 +63,46 @@ function love.path.leaf(p)
 
 end
 
--- Standard callback handlers.
-love.handlers = {
-	[love.event_keypressed] = function (b, u)
-		if love.keypressed then love.keypressed(b, u) end
-	end,
-	[love.event_keyreleased] = function (b)
-		if love.keyreleased then love.keyreleased(b) end
-	end,
-	[love.event_mousepressed] = function (x,y,b)
-		if love.mousepressed then love.mousepressed(x,y,b) end
-	end,
-	[love.event_mousereleased] = function (x,y,b)
-		if love.mousereleased then love.mousereleased(x,y,b) end
-	end,
-	[love.event_joystickpressed] = function (j,b)
-		if love.joystickpressed then love.joystickpressed(j,b) end
-	end,
-	[love.event_joystickreleased] = function (j,b)
-		if love.joystickreleased then love.joystickreleased(j,b) end
-	end,
-	[love.event_quit] = function ()
-		return
-	end,
-}
+-- Finds the key in the table with the lowest integral index. The lowest 
+-- will typically the executable, for instance "lua5.1.exe".
+function love.arg.getLow(a)
+	local m = math.huge
+	for k,v in pairs(a) do
+		if k < m then 
+			m = k
+		end
+	end
+	return a[m]
+end
+
+function love.createhandlers()
+
+	-- Standard callback handlers.
+	love.handlers = {
+		[love.event_keypressed] = function (b, u)
+			if love.keypressed then love.keypressed(b, u) end
+		end,
+		[love.event_keyreleased] = function (b)
+			if love.keyreleased then love.keyreleased(b) end
+		end,
+		[love.event_mousepressed] = function (x,y,b)
+			if love.mousepressed then love.mousepressed(x,y,b) end
+		end,
+		[love.event_mousereleased] = function (x,y,b)
+			if love.mousereleased then love.mousereleased(x,y,b) end
+		end,
+		[love.event_joystickpressed] = function (j,b)
+			if love.joystickpressed then love.joystickpressed(j,b) end
+		end,
+		[love.event_joystickreleased] = function (j,b)
+			if love.joystickreleased then love.joystickreleased(j,b) end
+		end,
+		[love.event_quit] = function ()
+			return
+		end,
+	}
+
+end
 
 -- This can't be overriden. 
 function love.boot()
@@ -95,17 +112,9 @@ function love.boot()
 	-- This is absolutely needed. 
 	require("love.filesystem")
 
-	-- Prints the arguments passes to the app.
-	if love._args then
-		for i,v in pairs(love._args) do
-			print(i,v)
-		end
-	end	
-	
-	-- Sets the source for the game.
-	if love._args[1] and love._args[1] ~= "" then
-		love.filesystem.init(love._args[0])
-		love.filesystem.setSource(love.path.getfull(love._args[1]))
+	if arg and arg[1] then
+		love.filesystem.init(love.path.getfull(love.arg.getLow(arg)))
+		love.filesystem.setSource(love.path.getfull(arg[1]))
 	else
 		-- Do not set a source, load the default game.
 		love.defaultscreen()
@@ -156,6 +165,9 @@ function love.init()
 		end
 	end
 	
+	if love.keyboard then
+		love.createhandlers()
+	end
 	
 	-- Setup screen here.
 	if c.screen and c.modules.graphics then 
