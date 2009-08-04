@@ -163,6 +163,42 @@ namespace openal
 		return volume;
 	}
 
+	void Source::setPosition(float * v)
+	{
+		if(source)
+			alSourcefv(source, AL_POSITION, v);
+	}
+
+	void Source::getPosition(float * v) const
+	{
+		if(source)
+			alGetSourcefv(source, AL_POSITION, v);
+	}
+
+	void Source::setVelocity(float * v)
+	{
+		if(source)
+			alSourcefv(source, AL_VELOCITY, v);
+	}
+
+	void Source::getVelocity(float * v) const
+	{
+		if(source)
+			alGetSourcefv(source, AL_VELOCITY, v);
+	}
+
+	void Source::setDirection(float * v)
+	{
+		if(source)
+			alSourcefv(source, AL_DIRECTION, v);
+	}
+
+	void Source::getDirection(float * v) const
+	{
+		if(source)
+			alGetSourcefv(source, AL_DIRECTION, v);
+	}
+
 } // openal
 } // audio
 } // love

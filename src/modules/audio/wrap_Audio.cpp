@@ -140,6 +140,72 @@ namespace audio
 		return 1;
 	}
 
+	int _wrap_setPosition(lua_State * L)
+	{
+		float v[3];
+		v[0] = (float)luaL_checknumber(L, 1);
+		v[1] = (float)luaL_checknumber(L, 2);
+		v[2] = (float)luaL_checknumber(L, 3);
+		instance->setPosition(v);
+		return 0;
+	}
+
+	int _wrap_getPosition(lua_State * L)
+	{
+		float v[3];
+		instance->getPosition(v);
+		lua_pushnumber(L, v[0]);
+		lua_pushnumber(L, v[1]);
+		lua_pushnumber(L, v[2]);
+		return 3;
+	}
+
+	int _wrap_setOrientation(lua_State * L)
+	{
+		float v[6];
+		v[0] = (float)luaL_checknumber(L, 1);
+		v[1] = (float)luaL_checknumber(L, 2);
+		v[2] = (float)luaL_checknumber(L, 3);
+		v[3] = (float)luaL_checknumber(L, 4);
+		v[4] = (float)luaL_checknumber(L, 5);
+		v[5] = (float)luaL_checknumber(L, 6);
+		instance->setOrientation(v);
+		return 0;
+	}
+
+	int _wrap_getOrientation(lua_State * L)
+	{
+		float v[6];
+		instance->getOrientation(v);
+		lua_pushnumber(L, v[0]);
+		lua_pushnumber(L, v[1]);
+		lua_pushnumber(L, v[2]);
+		lua_pushnumber(L, v[3]);
+		lua_pushnumber(L, v[4]);
+		lua_pushnumber(L, v[5]);
+		return 6;
+	}
+
+	int _wrap_setVelocity(lua_State * L)
+	{
+		float v[3];
+		v[0] = (float)luaL_checknumber(L, 1);
+		v[1] = (float)luaL_checknumber(L, 2);
+		v[2] = (float)luaL_checknumber(L, 3);
+		instance->setVelocity(v);
+		return 0;
+	}
+
+	int _wrap_getVelocity(lua_State * L)
+	{
+		float v[3];
+		instance->getVelocity(v);
+		lua_pushnumber(L, v[0]);
+		lua_pushnumber(L, v[1]);
+		lua_pushnumber(L, v[2]);
+		return 3;
+	}
+
 	// List of functions to wrap.
 	static const luaL_Reg wrap_Audio_functions[] = {
 		{ "getNumSources", _wrap_getNumSources },
@@ -153,6 +219,14 @@ namespace audio
 		{ "rewind",  _wrap_rewind },
 		{ "setVolume",  _wrap_setVolume },
 		{ "getVolume",  _wrap_getVolume },
+
+		{ "setPosition",  _wrap_setPosition },
+		{ "getPosition",  _wrap_getPosition },
+		{ "setOrientation",  _wrap_setOrientation },
+		{ "getOrientation",  _wrap_getOrientation },
+		{ "setVelocity",  _wrap_setVelocity },
+		{ "getVelocity",  _wrap_getVelocity },
+
 		{ 0, 0 }
 	};
 

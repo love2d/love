@@ -57,6 +57,13 @@ namespace null
 		void setVolume(float volume);
 		float getVolume() const;
 
+		void setPosition(float * v);
+		void getPosition(float * v) const;
+		void setVelocity(float * v);
+		void getVelocity(float * v) const;
+		void setDirection(float * v);
+		void getDirection(float * v) const;
+
 	}; // Source
 
 } // null

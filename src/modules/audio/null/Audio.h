@@ -67,6 +67,13 @@ namespace null
 		void setVolume(float volume);
 		float getVolume() const;
 
+		void getPosition(float * v) const;
+		void setPosition(float * v);
+		void getOrientation(float * v) const;
+		void setOrientation(float * v);
+		void getVelocity(float * v) const;
+		void setVelocity(float * v);
+
 	}; // Audio
 
 } // null

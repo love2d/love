@@ -89,6 +89,30 @@ namespace null
 		return volume;
 	}
 
+	void Source::setPosition(float * v)
+	{
+	}
+
+	void Source::getPosition(float * v) const
+	{
+	}
+
+	void Source::setVelocity(float * v)
+	{
+	}
+
+	void Source::getVelocity(float * v) const
+	{
+	}
+
+	void Source::setDirection(float * v)
+	{
+	}
+
+	void Source::getDirection(float * v) const
+	{
+	}
+
 } // null
 } // audio
 } // love

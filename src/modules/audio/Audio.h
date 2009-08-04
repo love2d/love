@@ -156,6 +156,44 @@ namespace audio
 		**/
 		virtual float getVolume() const = 0;
 
+		/**
+		* Gets the position of the listener.
+		* @param v A float array of size 3 containing (x,y,z) in that order. 
+		**/
+		virtual void getPosition(float * v) const = 0;
+
+		/**
+		* Sets the position of the listener.
+		* @param v A float array of size 3 containing [x,y,z] in that order. 
+		**/
+		virtual void setPosition(float * v) = 0;
+
+		/**
+		* Gets the orientation of the listener.
+		* @param v A float array of size 6 containing [x,y,z] for the forward
+		* vector, followed by [x,y,z] for the up vector.
+		**/
+		virtual void getOrientation(float * v) const = 0;
+
+		/**
+		* Sets the orientation of the listener.
+		* @param v A float array of size 6 containing [x,y,z] for the forward
+		* vector, followed by [x,y,z] for the up vector.
+		**/
+		virtual void setOrientation(float * v) = 0;
+
+		/**
+		* Gets the velocity of the listener.
+		* @param v A float array of size 3 containing [x,y,z] in that order. 
+		**/
+		virtual void getVelocity(float * v) const = 0;
+
+		/**
+		* Sets the velocity of the listener.
+		* @param v A float array of size 3 containing [x,y,z] in that order. 
+		**/
+		virtual void setVelocity(float * v) = 0;
+
 	}; // Audio
 
 } // audio

@@ -122,6 +122,30 @@ namespace null
 		return volume;
 	}
 
+	void Audio::getPosition(float * v) const
+	{
+	}
+
+	void Audio::setPosition(float * v)
+	{
+	}
+
+	void Audio::getOrientation(float * v) const
+	{
+	}
+
+	void Audio::setOrientation(float * v)
+	{
+	}
+
+	void Audio::getVelocity(float * v) const
+	{
+	}
+
+	void Audio::setVelocity(float * v)
+	{
+	}
+
 } // null
 } // audio
 } // love

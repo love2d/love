@@ -42,6 +42,12 @@ namespace audio
 	int _wrap_rewind(lua_State * L);
 	int _wrap_setVolume(lua_State * L);
 	int _wrap_getVolume(lua_State * L);
+	int _wrap_setPosition(lua_State * L);
+	int _wrap_getPosition(lua_State * L);
+	int _wrap_setOrientation(lua_State * L);
+	int _wrap_getOrientation(lua_State * L);
+	int _wrap_setVelocity(lua_State * L);
+	int _wrap_getVelocity(lua_State * L);
 	int wrap_Audio_open(lua_State * L);
 
 } // audio

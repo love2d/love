@@ -53,6 +53,14 @@ namespace audio
 
 		virtual void setVolume(float volume) = 0;
 		virtual float getVolume() const = 0;
+
+		// all float * v must be of size 3
+		virtual void setPosition(float * v) = 0;
+		virtual void getPosition(float * v) const = 0;
+		virtual void setVelocity(float * v) = 0;
+		virtual void getVelocity(float * v) const = 0;
+		virtual void setDirection(float * v) = 0;
+		virtual void getDirection(float * v) const = 0;
 		
 		void setLooping(bool looping);
 		bool isLooping() const;

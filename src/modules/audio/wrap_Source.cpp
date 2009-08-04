@@ -59,6 +59,72 @@ namespace audio
 		return 1;
 	}
 
+	int _wrap_Source_setPosition(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float v[3];
+		v[0] = (float)luaL_checknumber(L, 2);
+		v[1] = (float)luaL_checknumber(L, 3);
+		v[2] = (float)luaL_checknumber(L, 4);
+		t->setPosition(v);
+		return 0;
+	}
+
+	int _wrap_Source_getPosition(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float v[3];
+		t->getPosition(v);
+		lua_pushnumber(L, v[0]);
+		lua_pushnumber(L, v[1]);
+		lua_pushnumber(L, v[2]);
+		return 3;
+	}
+
+	int _wrap_Source_setVelocity(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float v[3];
+		v[0] = (float)luaL_checknumber(L, 2);
+		v[1] = (float)luaL_checknumber(L, 3);
+		v[2] = (float)luaL_checknumber(L, 4);
+		t->setVelocity(v);
+		return 0;
+	}
+
+	int _wrap_Source_getVelocity(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float v[3];
+		t->getVelocity(v);
+		lua_pushnumber(L, v[0]);
+		lua_pushnumber(L, v[1]);
+		lua_pushnumber(L, v[2]);
+		return 3;
+	}
+
+	int _wrap_Source_setDirection(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float v[3];
+		v[0] = (float)luaL_checknumber(L, 2);
+		v[1] = (float)luaL_checknumber(L, 3);
+		v[2] = (float)luaL_checknumber(L, 4);
+		t->setDirection(v);
+		return 0;
+	}
+
+	int _wrap_Source_getDirection(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float v[3];
+		t->getDirection(v);
+		lua_pushnumber(L, v[0]);
+		lua_pushnumber(L, v[1]);
+		lua_pushnumber(L, v[2]);
+		return 3;
+	}
+
 	int _wrap_Source_setLooping(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
@@ -72,7 +138,6 @@ namespace audio
 		luax_pushboolean(L, t->isLooping());
 		return 1;
 	}
-
 
 	static const luaL_Reg wrap_Source_functions[] = {
 		{ "setPitch", _wrap_Source_setPitch },

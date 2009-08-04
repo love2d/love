@@ -175,6 +175,36 @@ namespace openal
 		return volume;
 	}
 
+	void Audio::getPosition(float * v) const
+	{
+		alGetListenerfv(AL_POSITION, v);
+	}
+
+	void Audio::setPosition(float * v)
+	{
+		alListenerfv(AL_POSITION, v);
+	}
+
+	void Audio::getOrientation(float * v) const
+	{
+		alGetListenerfv(AL_ORIENTATION, v);
+	}
+
+	void Audio::setOrientation(float * v)
+	{
+		alListenerfv(AL_ORIENTATION, v);
+	}
+
+	void Audio::getVelocity(float * v) const
+	{
+		alGetListenerfv(AL_VELOCITY, v);
+	}
+
+	void Audio::setVelocity(float * v)
+	{
+		alListenerfv(AL_VELOCITY, v);
+	}
+
 } // openal
 } // audio
 } // love
