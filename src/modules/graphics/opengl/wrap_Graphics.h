@@ -100,3 +100,5 @@ namespace opengl
 } // love
 
 #endif // LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
+
+extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State * L);

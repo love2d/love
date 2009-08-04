@@ -80,8 +80,13 @@ namespace image
 
 		luax_register_gc(L, "love.image", instance);
 
-		return luax_register_module(L, wrap_Image_functions, wrap_Image_types, "image");
+		return luax_register_module(L, wrap_Image_functions, wrap_Image_types, 0, "image");
 	}
 
 } // image
 } // love
+
+int luaopen_love_image(lua_State * L)
+{
+	return love::image::wrap_Image_open(L);
+}

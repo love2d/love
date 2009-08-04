@@ -71,6 +71,18 @@ namespace sdl
 		{ 0, 0 }
 	};
 
+	// List of constants.
+	static const LuaConstant wrap_Event_constants[] = {
+		{ "event_keypressed", Event::EVENT_KEYDOWN },
+		{ "event_keyreleased", Event::EVENT_KEYUP },
+		{ "event_mousepressed", Event::EVENT_MOUSEBUTTONDOWN },
+		{ "event_mousereleased", Event::EVENT_MOUSEBUTTONUP },
+		{ "event_joystickpressed", Event::EVENT_JOYBUTTONDOWN },
+		{ "event_joystickreleased", Event::EVENT_JOYBUTTONUP },
+		{ "event_quit", Event::EVENT_QUIT },
+		{ 0, 0 }
+	};
+
 	int wrap_Event_open(lua_State * L)
 	{
 		if(instance == 0)
@@ -87,9 +99,14 @@ namespace sdl
 
 		luax_register_gc(L, "love.event", instance);
 
-		return luax_register_module(L, wrap_Event_functions, 0, "event");
+		return luax_register_module(L, wrap_Event_functions, 0, wrap_Event_constants, "event");
 	}
 
 } // sdl
 } // event
 } // love
+
+int luaopen_love_event(lua_State * L)
+{
+	return love::event::sdl::wrap_Event_open(L);
+}

@@ -22,6 +22,7 @@
 #define LOVE_TIMER_SDL_WRAP_TIMER_H
 
 // LOVE
+#include <common/config.h>
 #include "Timer.h"
 
 namespace love
@@ -41,5 +42,7 @@ namespace sdl
 } // sdl
 } // timer
 } // love
+
+extern "C" LOVE_EXPORT int luaopen_love_timer(lua_State * L);
 
 #endif // LOVE_TIMER_SDL_WRAP_TIMER_H

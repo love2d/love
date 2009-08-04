@@ -22,6 +22,7 @@
 #define LOVE_KEYBOARD_SDL_WRAP_KEYBOARD_H
 
 // LOVE
+#include <common/config.h>
 #include "Keyboard.h"
 
 namespace love
@@ -39,5 +40,7 @@ namespace sdl
 } // sdl
 } // keyboard
 } // love
+
+extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State * L);
 
 #endif // LOVE_KEYBOARD_SDL_WRAP_KEYBOARD_H

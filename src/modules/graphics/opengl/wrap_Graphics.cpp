@@ -20,8 +20,6 @@
 
 #include "wrap_Graphics.h"
 
-#include <font/wrap_GlyphData.h>
-
 namespace love
 {
 namespace graphics
@@ -158,8 +156,7 @@ namespace opengl
 
 	int _wrap_newGlyph(lua_State * L)
 	{
-		
-		love::font::GlyphData * data = love::font::luax_checkglyphdata(L, 1);
+		love::font::GlyphData * data = luax_checktype<love::font::GlyphData>(L, 1, "GlyphData", LOVE_FONT_GLYPH_DATA_BITS);
 
 		// Create the image.
 		Glyph * t = new Glyph(data);
@@ -798,6 +795,58 @@ namespace opengl
 		0		
 	};
 
+	// List of constants.
+	static const LuaConstant wrap_Graphics_constants[] = {
+
+		{ "align_left", Graphics::ALIGN_LEFT },
+		{ "align_right", Graphics::ALIGN_RIGHT },
+		{ "align_center", Graphics::ALIGN_CENTER },
+
+		{ "blend_alpha", Graphics::BLEND_ALPHA },
+		{ "blend_additive", Graphics::BLEND_ADDITIVE },
+		{ "color_replace", Graphics::COLOR_REPLACE },
+		{ "color_modulate", Graphics::COLOR_MODULATE },
+
+		{ "draw_line", Graphics::DRAW_LINE },
+		{ "draw_fill", Graphics::DRAW_FILL },
+
+		{ "line_smooth", Graphics::LINE_SMOOTH },
+		{ "line_rough", Graphics::LINE_ROUGH },
+
+		{ "point_smooth", Graphics::POINT_SMOOTH },
+		{ "point_rough", Graphics::POINT_ROUGH },
+
+		{ "filter_linear", Image::FILTER_LINEAR },
+		{ "filter_nearest", Image::FILTER_NEAREST },
+
+		{ "wrap_clamp", Image::WRAP_CLAMP },
+		{ "wrap_repeat", Image::WRAP_REPEAT },
+
+		/**
+
+		// Vertex buffer geometry types.
+
+		{ "type_points", TYPE_POINTS },
+		{ "type_lines", TYPE_LINES },
+		{ "type_line_strip", TYPE_LINE_STRIP },
+		{ "type_triangles", TYPE_TRIANGLES },
+		{ "type_triangle_strip", TYPE_TRIANGLE_STRIP },
+		{ "type_triangle_fan", TYPE_TRIANGLE_FAN },
+		{ "type_num", TYPE_NUM },
+		
+		// Vertex buffer usage hints.
+
+		{ "usage_array", USAGE_ARRAY },
+		{ "usage_dynamic", USAGE_DYNAMIC },
+		{ "usage_static", USAGE_STATIC },
+		{ "usage_stream", USAGE_STREAM },
+		{ "usage_num", USAGE_NUM },
+		**/
+
+
+		{ 0, 0 }
+	};
+
 	int wrap_Graphics_open(lua_State * L)
 	{
 		if(instance == 0)
@@ -813,7 +862,7 @@ namespace opengl
 		}
 
 		luax_register_gc(L, "love.graphics", instance);
-		luax_register_module(L, wrap_Graphics_functions, wrap_Graphics_types, "graphics");		
+		luax_register_module(L, wrap_Graphics_functions, wrap_Graphics_types, wrap_Graphics_constants, "graphics");		
 
 #		include <scripts/graphics.lua.h>
 		//luaL_dofile(L, "../../src/scripts/graphics.lua");
@@ -824,3 +873,8 @@ namespace opengl
 } // opengl
 } // graphics
 } // love
+
+int luaopen_love_graphics(lua_State * L)
+{
+	return love::graphics::opengl::wrap_Graphics_open(L);
+}

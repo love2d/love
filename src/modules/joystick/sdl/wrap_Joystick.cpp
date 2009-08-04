@@ -145,6 +145,23 @@ namespace sdl
 		{ 0, 0 }
 	};
 
+	// List of constants.
+	static const LuaConstant wrap_Joystick_constants[] = {
+		{ "joystick_axis_horizontal", Joystick::JOYSTICK_AXIS_HORIZONTAL },
+		{ "joystick_axis_vertical", Joystick::JOYSTICK_AXIS_VERITCAL },
+
+		{ "joystick_hat_centered", Joystick::JOYSTICK_HAT_CENTERED },
+		{ "joystick_hat_up", Joystick::JOYSTICK_HAT_UP },
+		{ "joystick_hat_right", Joystick::JOYSTICK_HAT_RIGHT },
+		{ "joystick_hat_down", Joystick::JOYSTICK_HAT_DOWN },
+		{ "joystick_hat_left", Joystick::JOYSTICK_HAT_LEFT },
+		{ "joystick_hat_rightup", Joystick::JOYSTICK_HAT_RIGHTUP },
+		{ "joystick_hat_rightdown", Joystick::JOYSTICK_HAT_RIGHTDOWN },
+		{ "joystick_hat_leftup", Joystick::JOYSTICK_HAT_LEFTUP },
+		{ "joystick_hat_leftdown", Joystick::JOYSTICK_HAT_LEFTDOWN },
+		{ 0, 0 }
+	};
+
 	int wrap_Joystick_open(lua_State * L)
 	{
 
@@ -162,9 +179,14 @@ namespace sdl
 
 		luax_register_gc(L, "love.joystick", instance);
 
-		return luax_register_module(L, wrap_Joystick_functions, 0, "joystick");
+		return luax_register_module(L, wrap_Joystick_functions, 0, wrap_Joystick_constants, "joystick");
 	}
 
 } // sdl
 } // joystick
 } // love
+
+int luaopen_love_joystick(lua_State * L)
+{
+	return love::joystick::sdl::wrap_Joystick_open(L);
+}

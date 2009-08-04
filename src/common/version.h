@@ -18,21 +18,17 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_CONSTANTS_H
-#define LOVE_CONSTANTS_H
+#ifndef LOVE_VERSION_H
+#define LOVE_VERSION_H
 
-namespace love
-{
-	// Type used for storing constants
-	// in an array.
-	typedef struct lua_constant_entry
-	{
-		const char * name;
-		int value;
-	} lua_constant_entry;
+// STD
+#include <string>
 
-	extern const lua_constant_entry lua_constants[];
+// Version stuff.
+const int LOVE_VERSION = 060;
+const int LOVE_VERSION_COMPATIBILITY[] =  { 0 };
+const std::string LOVE_VERSION_STR = "0.6.0";
+const std::string LOVE_VERSION_CODENAME = "Jiggly Juice";
+const std::string LOVE_VERSION_FULL_STR = std::string("LOVE ") + LOVE_VERSION_STR + std::string(" (") + LOVE_VERSION_CODENAME + std::string(")");
 
-} // love
-
-#endif // LOVE_CONSTANTS_H
+#endif // LOVE_VERSION_H

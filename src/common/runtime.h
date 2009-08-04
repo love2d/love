@@ -35,6 +35,18 @@ namespace love
 {
 	class Module;
 
+	enum Registry
+	{
+		REGISTRY_GC = 1,
+	};
+
+	// Type used for storing constants in an array.
+	struct LuaConstant
+	{
+		const char * name;
+		int value;
+	};
+
 	void luax_printstack(lua_State * L);
 	bool luax_toboolean(lua_State * L, int idx);
 	void luax_pushboolean(lua_State * L, bool b);
@@ -49,7 +61,7 @@ namespace love
 		const char * provides, const char * desc, const char * author,
 		lua_CFunction open);
 
-	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types, const char * name);
+	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types, const LuaConstant * constants, const char * name);
 	int luax_preload(lua_State * L, lua_CFunction f, const char * name);
 	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * fn);
 
@@ -78,6 +90,15 @@ namespace love
 	* specified index, and NOT pushed onto the stack.
 	**/
 	int luax_strtofile(lua_State * L, int idx);
+
+	int luax_insist(lua_State * L, int idx, const char * k);
+	int luax_insistglobal(lua_State * L, const char * k);
+	int luax_insistlove(lua_State * L, const char * k);
+
+	/**
+	* Gets (creates if needed) the specified Registry.
+	**/
+	int luax_getregistry(lua_State * L, Registry r);
 
 	template <typename T>
 	T * luax_checktype(lua_State * L, int idx, const char * tname, love::bits type)

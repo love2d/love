@@ -103,8 +103,7 @@ namespace love
 
 	int luax_register_gc(lua_State * L, const char * mname, Module * m)
 	{
-		lua_getglobal(L, "love");
-		lua_getfield(L, -1, "_fin");
+		luax_getregistry(L, REGISTRY_GC);
 
 		userdata * u = (userdata *)lua_newuserdata(L, sizeof(userdata));
 		u->own = true;
@@ -117,7 +116,7 @@ namespace love
 
 		lua_setfield(L, -2, mname);
 
-		lua_pop(L, 2); // _fin, love
+		lua_pop(L, 1); // Registry
 
 		return 0;
 	}
@@ -155,10 +154,20 @@ namespace love
 		return 0;
 	}
 
-	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types, const char * name)
+	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types, const LuaConstant * constants, const char * name)
 	{
 		// Gets the love table.
-		lua_getglobal(L, "love");
+		luax_insistglobal(L, "love");
+
+		// Install constants.
+		if(constants != 0)
+		{
+			for(int i = 0; constants[i].name != 0; i++)
+			{
+				lua_pushinteger(L, constants[i].value);
+				lua_setfield(L, -2, constants[i].name);
+			}
+		}
 
 		// Create new table for module.
 		lua_newtable(L);
@@ -280,5 +289,60 @@ namespace love
 	{
 		return luax_convobj(L, idx, "filesystem", "read");
 	}
+
+	int luax_insist(lua_State * L, int idx, const char * k)
+	{
+		lua_getfield(L, idx, k);
+
+		// Create if necessary.
+		if(!lua_istable(L, -1))
+		{
+			lua_pop(L, 1); // Pop the non-table.
+			lua_newtable(L);
+			lua_pushvalue(L, -1); // Duplicate the table to leave on top.
+			lua_setfield(L, -3, k); // k[idx] = table
+		}
+
+		return 1;
+	}
+
+	int luax_insistglobal(lua_State * L, const char * k)
+	{
+		lua_getglobal(L, k);
+
+		if(!lua_istable(L, -1))
+		{
+			lua_pop(L, 1); // Pop the non-table.
+			lua_newtable(L);
+			lua_pushvalue(L, -1);
+			lua_setglobal(L, k);
+		}
+
+		return 1;
+	}
+
+	int luax_insistlove(lua_State * L, const char * k)
+	{
+		luax_insistglobal(L, "love");
+		luax_insist(L, -1, k);
+		
+		// The love table should be replaced with the top stack
+		// item. Only the reqested table should remain on the stack.
+		lua_replace(L, -2);
+
+		return 1;
+	}
+
+	int luax_getregistry(lua_State * L, Registry r)
+	{
+		switch(r)
+		{
+		case REGISTRY_GC:
+			return luax_insistlove(L, "_gc");
+		default:
+			return luaL_error(L, "Attempted to use invalid registry.");
+		}
+	}
+
 
 } // love

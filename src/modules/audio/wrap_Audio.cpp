@@ -24,8 +24,6 @@
 #include "openal/Audio.h"
 #include "null/Audio.h"
 
-#include <sound/wrap_Decoder.h>
-
 namespace love
 {
 namespace audio
@@ -61,7 +59,7 @@ namespace audio
 		if(!luax_istype(L, 1, LOVE_SOUND_DECODER_BITS))
 			luax_convobj(L, 1, "sound", "newDecoder");
 
-		love::sound::Decoder * decoder = love::sound::luax_checkdecoder(L, 1);
+		love::sound::Decoder * decoder = luax_checktype<love::sound::Decoder>(L, 1, "Decoder", LOVE_SOUND_DECODER_BITS);
 		Music * t = instance->newMusic(decoder);
 		luax_newtype(L, "Music", LOVE_AUDIO_MUSIC_BITS, (void*)t);
 		return 1;
@@ -198,8 +196,13 @@ namespace audio
 
 		luax_register_gc(L, "love.audio", instance);
 
-		return luax_register_module(L, wrap_Audio_functions, wrap_Audio_types, "audio");
+		return luax_register_module(L, wrap_Audio_functions, wrap_Audio_types, 0, "audio");
 	}
 
 } // audio
 } // love
+
+int luaopen_love_audio(lua_State * L)
+{
+	return love::audio::wrap_Audio_open(L);
+}

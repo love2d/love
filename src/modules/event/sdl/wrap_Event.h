@@ -22,6 +22,7 @@
 #define LOVE_EVENT_SDL_WRAP_EVENT_H
 
 // LOVE
+#include <common/config.h>
 #include "Event.h"
 
 namespace love
@@ -41,5 +42,7 @@ namespace sdl
 } // sdl
 } // event
 } // love
+
+extern "C" LOVE_EXPORT int luaopen_love_event(lua_State * L);
 
 #endif // LOVE_EVENT_SDL_WRAP_EVENT_H

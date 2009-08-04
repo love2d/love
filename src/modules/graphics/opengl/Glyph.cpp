@@ -34,6 +34,7 @@ namespace opengl
 		: data(data), texture(0), width((float)data->getWidth()), height((float)data->getHeight())
 	{
 		data->retain();
+		data->getWidth();
 
 		memset(vertices, 255, sizeof(vertex)*4);
 

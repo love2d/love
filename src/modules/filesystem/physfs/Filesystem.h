@@ -29,7 +29,6 @@
 // LOVE
 #include <common/Module.h>
 #include <common/config.h>
-#include <common/constants.h>
 #include <filesystem/FileData.h>
 #include "File.h"
 

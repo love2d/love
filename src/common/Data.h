@@ -22,6 +22,7 @@
 #define LOVE_DATA_H
 
 // LOVE
+#include "config.h"
 #include "Object.h"
 
 namespace love

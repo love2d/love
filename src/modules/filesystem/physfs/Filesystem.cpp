@@ -32,12 +32,12 @@ namespace physfs
 	Filesystem::Filesystem()
 		: open_count(0), buffer(0)
 	{
-
 	}
 
 	Filesystem::~Filesystem()
 	{
-		PHYSFS_deinit();
+		if(PHYSFS_isInit())
+			PHYSFS_deinit();
 	}
 
 	const char * Filesystem::getName() const
@@ -53,6 +53,9 @@ namespace physfs
 
 	bool Filesystem::setIdentity( const char * ident )
 	{
+		if(PHYSFS_isInit())
+			return false;
+
 		// Check whether save directory is already set.
 		if(!save_identity.empty() || PHYSFS_getWriteDir() != 0)
 			return false;
@@ -83,6 +86,9 @@ namespace physfs
 
 	bool Filesystem::setSource(const char * source)
 	{
+		if(!PHYSFS_isInit())
+			return false;
+
 		// Check whether directory is already set.
 		if(!game_source.empty())
 			return false;
@@ -99,6 +105,9 @@ namespace physfs
 
 	bool Filesystem::setupWriteDirectory()
 	{
+		if(!PHYSFS_isInit())
+			return false;
+
 		// These must all be set.
 		if(save_identity.empty() || save_path_full.empty() || save_path_relative.empty())
 			return false;

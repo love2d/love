@@ -130,8 +130,13 @@ namespace sound
 
 		luax_register_gc(L, "love.sound", instance);
 
-		return luax_register_module(L, wrap_Sound_functions, wrap_Sound_types, "sound");
+		return luax_register_module(L, wrap_Sound_functions, wrap_Sound_types, 0, "sound");
 	}
 
 } // sound
 } // love
+
+int luaopen_love_sound(lua_State * L)
+{
+	return love::sound::wrap_Sound_open(L);
+}

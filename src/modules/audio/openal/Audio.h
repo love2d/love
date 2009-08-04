@@ -37,7 +37,6 @@
 // LOVE
 #include <audio/Audio.h>
 #include <common/config.h>
-#include <common/constants.h>
 #include <sound/SoundData.h>
 
 #include "Sound.h"

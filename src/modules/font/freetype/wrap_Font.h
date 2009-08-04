@@ -22,6 +22,7 @@
 #define LOVE_FONT_FREETYPE_WRAP_FONT_H
 
 // LOVE
+#include <common/config.h>
 #include "Font.h"
 #include "wrap_Font.h"
 
@@ -40,3 +41,5 @@ namespace freetype
 } // love
 
 #endif // LOVE_FONT_FREETYPE_WRAP_FONT_H
+
+extern "C" LOVE_EXPORT int luaopen_love_font(lua_State * L);

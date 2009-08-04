@@ -52,9 +52,9 @@ namespace sound
 		void * getData() const;
 		int getSize() const;
 	
-		int getChannels() const;
-		int getBits() const;
-		int getSampleRate() const;
+		virtual int getChannels() const;
+		virtual int getBits() const;
+		virtual int getSampleRate() const;
 
 		void setSample(int i, float sample);
 		float getSample(int i) const;

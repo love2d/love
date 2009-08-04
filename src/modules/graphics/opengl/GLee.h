@@ -53,7 +53,9 @@
 #endif
 
 #if defined(WIN32) || defined(_WIN32)
-#define WIN32
+#ifndef WIN32
+#	define WIN32
+#endif
 	#include <windows.h>
 	#include <GL/gl.h>
 #elif defined(__APPLE__) || defined(__APPLE_CC__)

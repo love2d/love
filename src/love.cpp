@@ -18,21 +18,20 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// STD
-
 // SDL
 #include <SDL.h>
 
 // LOVE
 #include <common/config.h>
+#include <common/version.h>
 #include <common/runtime.h>
-#include <common/constants.h>
 #include <common/MemoryData.h>
 
 // Modules
 #include <audio/wrap_Audio.h>
 #include <event/sdl/wrap_Event.h>
 #include <filesystem/physfs/wrap_Filesystem.h>
+#include <font/freetype/wrap_Font.h>
 #include <graphics/opengl/wrap_Graphics.h>
 #include <image/wrap_Image.h>
 #include <joystick/sdl/wrap_Joystick.h>
@@ -42,7 +41,6 @@
 #include <physics/box2d/wrap_Physics.h>
 #include <sound/wrap_Sound.h>
 #include <timer/sdl/wrap_Timer.h>
-#include <font/freetype/wrap_Font.h>
 
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
@@ -51,42 +49,38 @@
 // Resources
 #include "resources/resources.h"
 
+static const luaL_Reg modules[] = {
+	{ "love.audio", luaopen_love_audio },
+	{ "love.event", luaopen_love_event },
+	{ "love.filesystem", luaopen_love_filesystem },
+	{ "love.font", luaopen_love_font },
+	{ "love.graphics", luaopen_love_graphics },
+	{ "love.image", luaopen_love_image },
+	{ "love.joystick", luaopen_love_joystick },
+	{ "love.keyboard", luaopen_love_keyboard },
+	{ "love.mouse", luaopen_love_mouse },
+	{ "love.native", luaopen_love_native },
+	{ "love.physics", luaopen_love_physics },
+	{ "love.sound", luaopen_love_sound },
+	{ "love.timer", luaopen_love_timer },
+	{ 0, 0 }
+};
+
 DECLSPEC int luaopen_love(lua_State * L)
 {
-	// Create the love table.
-	lua_newtable(L);
-
-	// Install constants.
-	for(int i = 0; love::lua_constants[i].name != 0; i++)
-	{
-		lua_pushinteger(L, love::lua_constants[i].value);
-		lua_setfield(L, -2, love::lua_constants[i].name);
-	}
-
-	// Create the _fin table.
-	lua_newtable(L);
-	lua_setfield(L, -2, "_fin");
+	love::luax_insistglobal(L, "love");
 
 	// Resources.
 	love::luax_newtype(L, "Data", love::LOVE_DATA_BITS, new love::MemoryData((void*)love::Vera_ttf_data, love::Vera_ttf_size));
 	lua_setfield(L, -2, "_vera");
 
-	// Set the love table.
-	lua_setglobal(L, "love");
+	lua_pop(L, 1); // love
 
-	love::luax_preload(L, love::audio::wrap_Audio_open, "love.audio");
-	love::luax_preload(L, love::filesystem::physfs::wrap_Filesystem_open, "love.filesystem");
-	love::luax_preload(L, love::event::sdl::wrap_Event_open, "love.event");
-	love::luax_preload(L, love::keyboard::sdl::wrap_Keyboard_open, "love.keyboard");
-	love::luax_preload(L, love::mouse::sdl::wrap_Mouse_open, "love.mouse");
-	love::luax_preload(L, love::native::tcc::wrap_Native_open, "love.native");
-	love::luax_preload(L, love::timer::sdl::wrap_Timer_open, "love.timer");
-	love::luax_preload(L, love::joystick::sdl::wrap_Joystick_open, "love.joystick");
-	love::luax_preload(L, love::graphics::opengl::wrap_Graphics_open, "love.graphics");
-	love::luax_preload(L, love::image::wrap_Image_open, "love.image");
-	love::luax_preload(L, love::physics::box2d::wrap_Physics_open, "love.physics");
-	love::luax_preload(L, love::sound::wrap_Sound_open, "love.sound");
-	love::luax_preload(L, love::font::freetype::wrap_Font_open, "love.font");
+	// Preload module loaders.
+	for(int i = 0; modules[i].name != 0; i++)
+	{
+		love::luax_preload(L, modules[i].func, modules[i].name);
+	}
 
 	love::luasocket::__open(L);
 	love::lanes::open(L);

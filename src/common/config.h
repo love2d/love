@@ -21,9 +21,6 @@
 #ifndef LOVE_CONFIG_H
 #define LOVE_CONFIG_H
 
-// STD
-#include <string>
-
 // Platform stuff.
 #if defined(WIN32) || defined(_WIN32)
 #	define LOVE_WINDOWS 1
@@ -38,26 +35,20 @@
 #	define LOVE_MACOS 1
 #endif
 
+// Warnings.
+#ifndef _CRT_SECURE_NO_WARNINGS
+#	define _CRT_SECURE_NO_WARNINGS
+#endif
+
 // Build.
 #define LOVE_BUILD_EXE 1
 #define LOVE_BUILD_DLL 0
 
-// Version stuff.
-const int LOVE_VERSION = 060;
-const int LOVE_VERSION_COMPATIBILITY[] =  { 0 };
-const std::string LOVE_VERSION_STR = "0.6.0";
-const std::string LOVE_VERSION_CODENAME = "Jiggly Juice";
-const std::string LOVE_VERSION_FULL_STR = std::string("LOVE ") + LOVE_VERSION_STR + std::string(" (") + LOVE_VERSION_CODENAME + std::string(")");
-
 // DLL-stuff.
 #ifdef LOVE_WINDOWS
-#	ifndef DECLSPEC
-#		define DECLSPEC __declspec(dllexport)
-#	endif
+#	define LOVE_EXPORT __declspec(dllexport)
 #else
-#	ifndef DECLSPEC
-#		define DECLSPEC
-#	endif
+#	define LOVE_EXPORT
 #endif
 
 #endif // LOVE_CONFIG_H

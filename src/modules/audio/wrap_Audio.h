@@ -47,5 +47,6 @@ namespace audio
 } // audio
 } // love
 
+extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State * L);
 
 #endif // LOVE_AUDIO_WRAP_AUDIO_H

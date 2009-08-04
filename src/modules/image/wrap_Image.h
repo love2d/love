@@ -37,3 +37,5 @@ namespace image
 } // love
 
 #endif // LOVE_IMAGE_WRAP_IMAGE_H
+
+extern "C" LOVE_EXPORT int luaopen_love_image(lua_State * L);

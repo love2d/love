@@ -22,6 +22,7 @@
 #define LOVE_NATIVE_TCC_WRAP_NATIVE_H
 
 // LOVE
+#include <common/config.h>
 #include "Native.h"
 
 namespace love
@@ -37,5 +38,7 @@ namespace tcc
 } // tcc
 } // native
 } // love
+
+extern "C" LOVE_EXPORT int luaopen_love_native(lua_State * L);
 
 #endif // LOVE_NATIVE_TCC_WRAP_NATIVE_H

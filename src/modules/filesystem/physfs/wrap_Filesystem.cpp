@@ -243,6 +243,15 @@ namespace physfs
 		0
 	};
 
+	// List of constants.
+	static const LuaConstant wrap_Filesystem_constants[] = {
+		{ "file_closed", File::CLOSED },
+		{ "file_read", File::READ },
+		{ "file_write", File::WRITE },
+		{ "file_append", File::APPEND },
+		{ 0, 0 }
+	};
+
 	int wrap_Filesystem_open(lua_State * L)
 	{
 		if(instance == 0)
@@ -260,10 +269,14 @@ namespace physfs
 
 		luax_register_gc(L, "love.filesystem", instance);
 
-		return luax_register_module(L, wrap_Filesystem_functions, wrap_Filesystem_types, "filesystem");
+		return luax_register_module(L, wrap_Filesystem_functions, wrap_Filesystem_types, wrap_Filesystem_constants, "filesystem");
 	}
 
 } // physfs
 } // filesystem
 } // love
 
+int luaopen_love_filesystem(lua_State * L)
+{
+	return love::filesystem::physfs::wrap_Filesystem_open(L);
+}

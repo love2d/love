@@ -21,6 +21,9 @@
 #ifndef LOVE_OBJECT_H
 #define LOVE_OBJECT_H
 
+// LOVE
+#include "config.h"
+
 namespace love
 {
 	/**

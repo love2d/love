@@ -22,6 +22,7 @@
 #define LOVE_IMAGE_IMAGE_H
 
 // LOVE
+#include <common/config.h>
 #include <common/Module.h>
 #include <filesystem/File.h>
 #include <font/GlyphData.h>

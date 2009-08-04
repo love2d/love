@@ -236,6 +236,22 @@ namespace box2d
 		0
 	};
 
+
+	// List of constants.
+	static const LuaConstant wrap_Physics_constants[] = {
+		{ "shape_circle", Shape::SHAPE_CIRCLE },
+		{ "shape_polygon", Shape::SHAPE_POLYGON },
+
+		{ "joint_distance", Joint::JOINT_DISTANCE },
+		{ "joint_revolute", Joint::JOINT_REVOLUTE },
+		{ "joint_prismatic", Joint::JOINT_PRISMATIC },
+		{ "joint_mouse", Joint::JOINT_MOUSE },	
+		{ "joint_pulley", Joint::JOINT_PULLEY },	
+		{ "joint_gear", Joint::JOINT_GEAR },
+		{ 0, 0 }
+	};
+
+
 	int wrap_Physics_open(lua_State * L)
 	{
 		if(instance == 0)
@@ -250,9 +266,14 @@ namespace box2d
 			}
 		}
 
-		return luax_register_module(L, wrap_Physics_functions, wrap_Physics_types, "physics");
+		return luax_register_module(L, wrap_Physics_functions, wrap_Physics_types, wrap_Physics_constants, "physics");
 	}
 
 } // box2d
 } // physics
 } // love
+
+int luaopen_love_physics(lua_State * L)
+{
+	return love::physics::box2d::wrap_Physics_open(L);
+}

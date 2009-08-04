@@ -104,6 +104,17 @@ namespace sdl
 		{ 0, 0 }
 	};
 
+	// List of constants.
+	static const LuaConstant wrap_Mouse_constants[] = {
+		{ "mouse_left", Mouse::MOUSE_LEFT },
+		{ "mouse_middle", Mouse::MOUSE_MIDDLE },
+		{ "mouse_right", Mouse::MOUSE_RIGHT },
+		{ "mouse_wheelup", Mouse::MOUSE_WHEELUP },
+		{ "mouse_wheeldown", Mouse::MOUSE_WHEELDOWN },
+		{ 0, 0 }
+	};
+
+
 	int wrap_Mouse_open(lua_State * L)
 	{
 		if(instance == 0)
@@ -120,10 +131,14 @@ namespace sdl
 
 		luax_register_gc(L, "love.mouse", instance);
 
-		return luax_register_module(L, wrap_Mouse_functions, 0, "mouse");
+		return luax_register_module(L, wrap_Mouse_functions, 0, wrap_Mouse_constants, "mouse");
 	}
-
 
 } // sdl
 } // mouse
 } // love
+
+int luaopen_love_mouse(lua_State * L)
+{
+	return love::mouse::sdl::wrap_Mouse_open(L);
+}

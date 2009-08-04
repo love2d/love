@@ -22,6 +22,7 @@
 #define LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H
 
 // LOVE
+#include <common/config.h>
 #include "Joystick.h"
 
 namespace love
@@ -49,5 +50,7 @@ namespace sdl
 } // sdl
 } // joystick
 } // love
+
+extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State * L);
 
 #endif // LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H

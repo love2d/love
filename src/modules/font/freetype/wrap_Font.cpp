@@ -82,9 +82,14 @@ namespace freetype
 
 		luax_register_gc(L, "love.font", instance);
 
-		return luax_register_module(L, wrap_Font_functions, wrap_Font_types, "font");
+		return luax_register_module(L, wrap_Font_functions, wrap_Font_types, 0, "font");
 	}
 
 } // freetype
-} // sound
+} // font
 } // love
+
+int luaopen_love_font(lua_State * L)
+{
+	return love::font::freetype::wrap_Font_open(L);
+}

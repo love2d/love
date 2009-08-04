@@ -22,6 +22,7 @@
 #define LOVE_FONT_GLYPH_DATA_H
 
 // LOVE
+#include <common/config.h>
 #include <common/Data.h>
 
 namespace love
@@ -66,12 +67,12 @@ namespace font
 		/**
 		* Gets the height of the glyph.
 		**/
-		int getHeight() const;
+		virtual int getHeight() const;
 
 		/**
 		* Gets the width of the glyph.
 		**/
-		int getWidth() const;
+		virtual int getWidth() const;
 
 		/**
 		* Gets the advance (the space the glyph takes up) of the glyph.

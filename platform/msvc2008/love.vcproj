@@ -3298,14 +3298,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\common\constants.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\common\constants.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\common\Data.h"
 				>
 			</File>

@@ -139,9 +139,14 @@ namespace tcc
 
 		luax_register_gc(L, "love.native", instance);
 
-		return luax_register_module(L, wrap_Native_functions, 0, "native");
+		return luax_register_module(L, wrap_Native_functions, 0, 0, "native");
 	}
 
 } // tcc
 } // native
 } // love
+
+int luaopen_love_native(lua_State * L)
+{
+	return love::native::tcc::wrap_Native_open(L);
+}

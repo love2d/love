@@ -64,4 +64,6 @@ namespace physfs
 } // filesystem
 } // love
 
+extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State * L);
+
 #endif // LOVE_FILESYSTEM_PHYSFS_WRAP_FILESYSTEM_H

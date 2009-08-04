@@ -86,9 +86,14 @@ namespace sdl
 
 		luax_register_gc(L, "love.timer", instance);
 
-		return luax_register_module(L, wrap_Timer_functions, 0, "timer");
+		return luax_register_module(L, wrap_Timer_functions, 0, 0, "timer");
 	}
 
 } // sdl
 } // timer
 } // love
+
+int luaopen_love_timer(lua_State * L)
+{
+	return love::timer::sdl::wrap_Timer_open(L);
+}

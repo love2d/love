@@ -22,6 +22,7 @@
 #define LOVE_MOUSE_SDL_WRAP_MOUSE_H
 
 // LOVE
+#include <common/config.h>
 #include "Mouse.h"
 
 namespace love
@@ -45,4 +46,7 @@ namespace sdl
 } // mouse
 } // love
 
+extern "C" LOVE_EXPORT int luaopen_love_mouse(lua_State * L);
+
 #endif // LOVE_MOUSE_SDL_WRAP_MOUSE_H
+
