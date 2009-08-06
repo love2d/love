@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="filesystem"
-	ProjectGUID="{0A2BDA60-43BB-4837-921A-2E4955FD8AEC}"
-	RootNamespace="filesystem"
+	Name="{MODULE}"
+	ProjectGUID="{GUID}"
+	RootNamespace="{MODULE}"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LOVE_FILESYSTEM_EXPORTS"
+				AdditionalIncludeDirectories="{INCLUDES}"
+				PreprocessorDefinitions="{DEFINES_DEBUG}"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib physfs.lib"
+				AdditionalDependencies="{LIBS}"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib"
+				AdditionalLibraryDirectories="{LIBDIR}"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,8 +118,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FILESYSTEM_EXPORTS"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="{INCLUDES}"
+				PreprocessorDefinitions="{DEFINES_RELEASE}"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -136,8 +137,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="{LIBS}"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -168,64 +171,9 @@
 	</Configurations>
 	<References>
 	</References>
-	<Files>
-		<Filter
-			Name="filesystem"
-			>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\File.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\File.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\Filesystem.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\Filesystem.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_File.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_File.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_FileData.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_FileData.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_Filesystem.h"
-				>
-			</File>
-		</Filter>
-		<File
-			RelativePath="..\..\..\src\modules\filesystem\File.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\filesystem\FileData.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\filesystem\FileData.h"
-			>
-		</File>
-	</Files>
+
+{FILES}
+	
 	<Globals>
 	</Globals>
 </VisualStudioProject>

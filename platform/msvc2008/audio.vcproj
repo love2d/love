@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9,00"
+	Name="audio"
+	ProjectGUID="{BA0FC12D-5ED5-FCFE-DD98-FAE9D85C9FC2}"
+	RootNamespace="audio"
+	Keyword="Win32Proj"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AUDIO_EXPORTS"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="lua5.1.lib SDL.lib openal32.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="lib"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;AUDIO_EXPORTS"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="lua5.1.lib SDL.lib openal32.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
+				LinkIncremental="1"
+				GenerateDebugInformation="false"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+
+<!-- Generated stuff begins -->
+<Files>
+<File RelativePath="..\..\src\modules\audio\Audible.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\Audio.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\Music.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\Sound.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\Source.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\Source.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Audio.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Audio.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Music.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Music.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Sound.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Sound.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Source.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\wrap_Source.h">
+</File>
+
+<Filter Name="null">
+<File RelativePath="..\..\src\modules\audio\null\Audio.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\null\Audio.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\null\Music.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\null\Music.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\null\Sound.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\null\Sound.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\null\Source.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\null\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\null\Source.h">
+</File>
+</Filter>
+
+
+<Filter Name="openal">
+<File RelativePath="..\..\src\modules\audio\openal\Audio.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Audio.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Music.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Music.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Pool.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Pool.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Sound.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Sound.h">
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Source.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\audio\openal\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\audio\openal\Source.h">
+</File>
+</Filter>
+
+</Files>
+<!-- Generated stuff ends -->
+	
+	<Globals>
+	</Globals>
+</VisualStudioProject>

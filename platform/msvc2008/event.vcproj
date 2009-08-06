@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="mouse"
-	ProjectGUID="{88881251-6818-485E-A262-DE1283096589}"
-	RootNamespace="mouse"
+	Name="event"
+	ProjectGUID="{6FAF7CE7-283C-8F9D-C398-045C9CCF16BC}"
+	RootNamespace="event"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules;../include/SDL"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MOUSE_EXPORTS"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -64,7 +64,7 @@
 				AdditionalDependencies="lua5.1.lib SDL.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib"
+				AdditionalLibraryDirectories="lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,8 +118,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MOUSE_EXPORTS"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -136,8 +137,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="lua5.1.lib SDL.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -168,48 +171,38 @@
 	</Configurations>
 	<References>
 	</References>
-	<Files>
-		<Filter
-			Name="sdl"
-			>
-			<File
-				RelativePath="..\..\..\src\modules\mouse\sdl\Mouse.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\mouse\sdlmouse\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\mouse\sdl\Mouse.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\mouse\sdl\wrap_Mouse.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\mouse\sdlmouse\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\mouse\sdl\wrap_Mouse.h"
-				>
-			</File>
-		</Filter>
-		<File
-			RelativePath="..\..\..\src\modules\mouse\Mouse.h"
-			>
-		</File>
-	</Files>
+
+<!-- Generated stuff begins -->
+<Files>
+<File RelativePath="..\..\src\modules\event\Event.h">
+</File>
+
+<Filter Name="sdl">
+<File RelativePath="..\..\src\modules\event\sdl\Event.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\event\sdl\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\event\sdl\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\event\sdl\Event.h">
+</File>
+<File RelativePath="..\..\src\modules\event\sdl\wrap_Event.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\event\sdl\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\event\sdl\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\event\sdl\wrap_Event.h">
+</File>
+</Filter>
+
+</Files>
+<!-- Generated stuff ends -->
+	
 	<Globals>
 	</Globals>
 </VisualStudioProject>

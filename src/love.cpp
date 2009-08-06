@@ -1,4 +1,12 @@
 /**
+* @mainpage LOVE
+* @section sec-intro Introduction
+* 
+* LOVE is a free 2D game "engine" which allows you to create games in 
+* Lua primarily, but increasingly in C as well.
+* 
+* @section sec-license License
+* 
 * Copyright (c) 2006-2009 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
@@ -9,13 +17,13 @@
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
 * 
-* 1. The origin of this software must not be misrepresented; you must not
+* -# The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
 *    appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
+* -# Altered source versions must be plainly marked as such, and must not be
 *    misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
+* -# This notice may not be removed or altered from any source distribution.
 **/
 
 // SDL
@@ -100,17 +108,15 @@ int main(int argc, char ** argv)
 
 	luaopen_love(L);	
 
-	// Add command line arguments to love.__args
+	// Add command line arguments to global arg (like stand-alone Lua).
 	{
-		lua_getglobal(L, "love");
 		lua_newtable(L);
 		for(int i = 0;i<argc;i++)
 		{
 			lua_pushstring(L, argv[i]);
 			lua_rawseti(L, -2, i);
 		}
-		lua_setfield(L, -2, "_args");
-		lua_pop(L, 1);
+		lua_setglobal(L, "arg");
 	}
 
 	// Add love.__exe = true.
@@ -127,9 +133,7 @@ int main(int argc, char ** argv)
 	// This is where we should run the built-in Lua code
 	// which gets everything started.
 
-	// TODO: This is obviously test code.
-	luaL_dofile(L, "../../src/scripts/boot.lua");
-//#	include "scripts/boot.lua.h"
+#	include "scripts/boot.lua.h"
 
 	lua_close(L);
 

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="image"
-	ProjectGUID="{55F35AEA-2D84-4A39-BF98-505106A15FF7}"
-	RootNamespace="image"
+	Name="mouse"
+	ProjectGUID="{B4EC48F6-808C-7CD7-CA18-0A165EC7ED2C}"
+	RootNamespace="mouse"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IMAGE_EXPORTS"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MOUSE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib DevIL.lib"
+				AdditionalDependencies="lua5.1.lib SDL.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib"
+				AdditionalLibraryDirectories="lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,8 +118,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IMAGE_EXPORTS"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MOUSE_EXPORTS"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -136,8 +137,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="lua5.1.lib SDL.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -168,96 +171,38 @@
 	</Configurations>
 	<References>
 	</References>
-	<Files>
-		<Filter
-			Name="devil"
-			>
-			<File
-				RelativePath="..\..\..\src\modules\image\devil\Image.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\image\devil\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\image\devil\Image.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\image\devil\ImageData.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\image\devil\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\image\devil\ImageData.h"
-				>
-			</File>
-		</Filter>
-		<File
-			RelativePath="..\..\..\src\modules\image\Image.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\image\ImageData.cpp"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\image\"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\image\ImageData.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\image\wrap_Image.cpp"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\image\"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\image\wrap_Image.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\image\wrap_ImageData.cpp"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\image\"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="..\..\..\src\modules\image\wrap_ImageData.h"
-			>
-		</File>
-	</Files>
+
+<!-- Generated stuff begins -->
+<Files>
+<File RelativePath="..\..\src\modules\mouse\Mouse.h">
+</File>
+
+<Filter Name="sdl">
+<File RelativePath="..\..\src\modules\mouse\sdl\Mouse.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\mouse\sdl\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\mouse\sdl\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\mouse\sdl\Mouse.h">
+</File>
+<File RelativePath="..\..\src\modules\mouse\sdl\wrap_Mouse.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\mouse\sdl\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\mouse\sdl\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\mouse\sdl\wrap_Mouse.h">
+</File>
+</Filter>
+
+</Files>
+<!-- Generated stuff ends -->
+	
 	<Globals>
 	</Globals>
 </VisualStudioProject>

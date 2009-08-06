@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="timer"
-	ProjectGUID="{3DFF2849-C47D-4251-B2AC-E60EDBC29511}"
+	ProjectGUID="{D6FB3DE4-3542-86A3-F68F-EB29126DCC1D}"
 	RootNamespace="timer"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules;../include/SDL"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;TIMER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -64,7 +64,7 @@
 				AdditionalDependencies="lua5.1.lib SDL.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib"
+				AdditionalLibraryDirectories="lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,8 +118,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;TIMER_EXPORTS"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -136,8 +137,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="lua5.1.lib SDL.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -168,44 +171,36 @@
 	</Configurations>
 	<References>
 	</References>
-	<Files>
-		<Filter
-			Name="sdl"
-			>
-			<File
-				RelativePath="..\..\..\src\modules\timer\sdl\Timer.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\timer\sdl\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\timer\sdl\Timer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\timer\sdl\wrap_Timer.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\timer\sdl\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\timer\sdl\wrap_Timer.h"
-				>
-			</File>
-		</Filter>
-	</Files>
+
+<!-- Generated stuff begins -->
+<Files>
+
+<Filter Name="sdl">
+<File RelativePath="..\..\src\modules\timer\sdl\Timer.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\timer\sdl\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\timer\sdl\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\timer\sdl\Timer.h">
+</File>
+<File RelativePath="..\..\src\modules\timer\sdl\wrap_Timer.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\timer\sdl\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\timer\sdl\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\timer\sdl\wrap_Timer.h">
+</File>
+</Filter>
+
+</Files>
+<!-- Generated stuff ends -->
+	
 	<Globals>
 	</Globals>
 </VisualStudioProject>

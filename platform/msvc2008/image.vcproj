@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="native"
-	ProjectGUID="{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}"
-	RootNamespace="native"
+	Name="image"
+	ProjectGUID="{B4AB1115-4A1B-5A81-626D-9BB2C67ACAA6}"
+	RootNamespace="image"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules;../include/SDL"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IMAGE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib SDL.lib"
+				AdditionalDependencies="lua5.1.lib DevIL.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib"
+				AdditionalLibraryDirectories="lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,8 +118,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="include;../../src;../../src/modules;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IMAGE_EXPORTS"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -136,8 +137,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="lua5.1.lib DevIL.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -168,77 +171,68 @@
 	</Configurations>
 	<References>
 	</References>
-	<Files>
-		<Filter
-			Name="tcc"
-			>
-			<File
-				RelativePath="..\..\..\src\modules\native\tcc\api.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\native\tcc\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\native\tcc\api.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\native\tcc\Native.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\native\tcc\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\native\tcc\Native.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\native\tcc\wrap_Native.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\native\tcc\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\native\tcc\wrap_Native.h"
-				>
-			</File>
-			<Filter
-				Name="libtcc"
-				>
-				<File
-					RelativePath="..\..\..\src\modules\native\tcc\libtcc\libtcc.c"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\native\tcc\libtcc\"
-							WarningLevel="0"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-		</Filter>
-	</Files>
+
+<!-- Generated stuff begins -->
+<Files>
+<File RelativePath="..\..\src\modules\image\Image.h">
+</File>
+<File RelativePath="..\..\src\modules\image\ImageData.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\image\ImageData.h">
+</File>
+<File RelativePath="..\..\src\modules\image\wrap_Image.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\image\wrap_Image.h">
+</File>
+<File RelativePath="..\..\src\modules\image\wrap_ImageData.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\image\wrap_ImageData.h">
+</File>
+
+<Filter Name="devil">
+<File RelativePath="..\..\src\modules\image\devil\Image.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\image\devil\Image.h">
+</File>
+<File RelativePath="..\..\src\modules\image\devil\ImageData.cpp">
+<FileConfiguration Name="Debug|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
+</FileConfiguration>
+<FileConfiguration Name="Release|Win32">
+<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
+</FileConfiguration>
+</File>
+<File RelativePath="..\..\src\modules\image\devil\ImageData.h">
+</File>
+</Filter>
+
+</Files>
+<!-- Generated stuff ends -->
+	
 	<Globals>
 	</Globals>
 </VisualStudioProject>

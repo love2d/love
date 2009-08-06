@@ -27,19 +27,26 @@
 
 namespace love
 {	
+	/**
+	* This class is a simple abstraction over 
+	**/
 	class Data : public Object
 	{
 	public:
 
+		/**
+		* Destructor.
+		**/
 		virtual ~Data() {};
 
 		/**
-		* Gets a pointer to the data.
+		* Gets a pointer to the data. This pointer will obviously not
+		* be valid if the Data object is destroyed.
 		**/
 		virtual void * getData() const = 0 ;
 
 		/**
-		* Gets the size of the data buffer.
+		* Gets the size of the Data in bytes.
 		**/
 		virtual int getSize() const = 0;
 
