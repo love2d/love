@@ -140,6 +140,7 @@
 				AdditionalDependencies="{LIBS}"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="{LIBDIR}"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"

@@ -2,7 +2,7 @@
 
 require("lfs")
 
-math.randomseed(os.time())
+math.randomseed(5000)
 
 function scan(path)
 	local files = {}
@@ -134,13 +134,18 @@ end
 
 function filter.defines(data, module)
 
-	local unique = string.upper(module) .."_EXPORTS"
-	local release = "WIN32;NDEBUG;_WINDOWS;_USRDLL;".. unique
-	local dbg = "WIN32;_DEBUG;_WINDOWS;_USRDLL;".. unique
+	local unique = string.upper(module) .."_EXPORTS;"
+	local release = "WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;".. unique
+	local dbg = "WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;".. unique
 	
 	print(" Defines:")
 	print("  Debug: "..dbg)
 	print("  Release: "..release)
+	
+	if module == "sound" then
+		dbg = dbg .. "FLAC__NO_DLL;"
+		release = release .. "FLAC__NO_DLL;"
+	end
 	
 	local data = string.gsub(data, "{DEFINES_RELEASE}", release)
 	
