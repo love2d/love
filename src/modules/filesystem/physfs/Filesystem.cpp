@@ -64,10 +64,10 @@ namespace physfs
 		save_identity = std::string(ident);
 
 		// Generate the relative path to the game save folder.
-		save_path_relative = std::string(LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
+		save_path_relative = std::string(APPDATA_FOLDER PATH_SEPARATOR) + save_identity;
 
 		// Generate the full path to the game save folder.
-		save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR);
+		save_path_full = std::string(getAppdataDirectory()) + std::string(PATH_SEPARATOR);
 		save_path_full += save_path_relative;
 
 		std::cout << save_path_full << std::endl;
@@ -155,7 +155,7 @@ namespace physfs
 
 	const char * Filesystem::getWorkingDirectory()
 	{
-		#ifdef LOVE_WINDOWS
+		#ifdef WINDOWS
 				_getcwd(cwdbuffer, _MAX_PATH);
 		#else
 				char * temp = getcwd(cwdbuffer, MAXPATHLEN);
@@ -172,7 +172,7 @@ namespace physfs
 
 	const char * Filesystem::getAppdataDirectory()
 	{
-#ifdef LOVE_WINDOWS
+#ifdef WINDOWS
 		return getenv("APPDATA");
 #else
 		return getUserDirectory();
@@ -372,7 +372,7 @@ namespace physfs
 				return luaL_error(L, "Could not open file %s.\n", lua_tostring(L, 1)); 
 			lua_pop(L, 1);
 			
-			luax_newtype(L, "File", LOVE_FILESYSTEM_FILE_BITS, file, false);
+			luax_newtype(L, "File", FILESYSTEM_FILE_T, file, false);
 			lua_pushboolean(L, 1); // 1 = autoclose.
 		}
 		else
@@ -392,7 +392,7 @@ namespace physfs
 		const static int bufsize = 8;
 		static char buf[bufsize];
 
-		File * file = luax_checktype<File>(L, lua_upvalueindex(1), "File", LOVE_FILESYSTEM_FILE_BITS);
+		File * file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
 		int close = (int)lua_tointeger(L, lua_upvalueindex(2));
 
 		// Find the next newline.

@@ -26,14 +26,37 @@
 
 namespace love
 {	
+	/**
+	* Allows files to be embedded into LOVE and used in Lua. This
+	* class assumes the referenced memory area is static, which means
+	* it will not attempt to delete the memory.
+	**/
 	class MemoryData : public Data
 	{
 	private:
+
+		/**
+		* Pointer to the memory area.
+		**/
 		void * data;
+
+		/**
+		* Size of the memory pointed to.
+		**/
 		int size; 
+
 	public:
 
+		/**
+		* Creates a new MemoryData.
+		* @param data Pointer to the static memory. 
+		* @param size Size of the memory data.
+		**/
 		MemoryData(void * data, int size);
+
+		/**
+		* Destructor. Does NOTHING.
+		**/
 		virtual ~MemoryData();
 
 		// Implements Data.

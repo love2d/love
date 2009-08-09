@@ -29,7 +29,7 @@ namespace love
 namespace audio
 {
 	Sound * luax_checksound(lua_State * L, int idx);
-	int wrap_Sound_open(lua_State * L);
+	int luaopen_sound(lua_State * L);
 
 } // audio
 } // love

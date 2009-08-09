@@ -28,9 +28,9 @@
 namespace love
 {
 	Data * luax_checkdata(lua_State * L, int idx);
-	int _wrap_Data_getPointer(lua_State * L);
-	int _wrap_Data_getSize(lua_State * L);
-	int wrap_Data_open(lua_State * L);
+	int w_Data_getPointer(lua_State * L);
+	int w_Data_getSize(lua_State * L);
+	int w_Data_open(lua_State * L);
 
 } // love
 

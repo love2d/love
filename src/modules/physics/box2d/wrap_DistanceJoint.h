@@ -33,13 +33,13 @@ namespace physics
 namespace box2d
 {
 	DistanceJoint * luax_checkdistancejoint(lua_State * L, int idx);
-	int _wrap_DistanceJoint_setLength(lua_State * L);
-	int _wrap_DistanceJoint_getLength(lua_State * L);
-	int _wrap_DistanceJoint_setFrequency(lua_State * L);
-	int _wrap_DistanceJoint_getFrequency(lua_State * L);
-	int _wrap_DistanceJoint_setDampingRatio(lua_State * L);
-	int _wrap_DistanceJoint_getDampingRatio(lua_State * L);
-	int wrap_DistanceJoint_open(lua_State * L);
+	int w_DistanceJoint_setLength(lua_State * L);
+	int w_DistanceJoint_getLength(lua_State * L);
+	int w_DistanceJoint_setFrequency(lua_State * L);
+	int w_DistanceJoint_getFrequency(lua_State * L);
+	int w_DistanceJoint_setDampingRatio(lua_State * L);
+	int w_DistanceJoint_getDampingRatio(lua_State * L);
+	int luaopen_distancejoint(lua_State * L);
 
 } // box2d
 } // physics

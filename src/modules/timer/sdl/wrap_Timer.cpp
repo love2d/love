@@ -29,49 +29,49 @@ namespace sdl
 {
 	static Timer * instance = 0;
 
-	int _wrap_step(lua_State * L)
+	int w_step(lua_State * L)
 	{
 		instance->step();
 		return 0;
 	}
 
-	int _wrap_getDelta(lua_State * L)
+	int w_getDelta(lua_State * L)
 	{
 		lua_pushnumber(L, instance->getDelta());
 		return 1;
 	}
 
-	int _wrap_getFPS(lua_State * L)
+	int w_getFPS(lua_State * L)
 	{
 		lua_pushnumber(L, instance->getFPS());
 		return 1;
 	}
 
-	int _wrap_sleep(lua_State * L)
+	int w_sleep(lua_State * L)
 	{
 		int ms = luaL_checkint(L, 1);
 		instance->sleep(ms);
 		return 0;
 	}
 
-	int _wrap_getTime(lua_State * L)
+	int w_getTime(lua_State * L)
 	{
 		lua_pushnumber(L, instance->getTime());
 		return 1;
 	}
-	
-	// List of functions to wrap.
-	static const luaL_Reg wrap_Timer_functions[] = {
-		{ "step", _wrap_step },
-		{ "getDelta", _wrap_getDelta },
-		{ "getFPS", _wrap_getFPS },
-		{ "sleep", _wrap_sleep },
-		{ "getTime", _wrap_getTime },
-		{ 0, 0 }
-	};
 
-	int wrap_Timer_open(lua_State * L)
+	int w_Timer_open(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "step", w_step },
+			{ "getDelta", w_getDelta },
+			{ "getFPS", w_getFPS },
+			{ "sleep", w_sleep },
+			{ "getTime", w_getTime },
+			{ 0, 0 }
+		};
+
 		if(instance == 0)
 		{
 			try 
@@ -84,16 +84,11 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, "love.timer", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Timer_functions, 0, 0, "timer");
+		return luax_register_module(L, functions, 0, 0, "timer");
 	}
 
 } // sdl
 } // timer
 } // love
-
-int luaopen_love_timer(lua_State * L)
-{
-	return love::timer::sdl::wrap_Timer_open(L);
-}

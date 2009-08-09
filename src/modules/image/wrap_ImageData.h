@@ -30,14 +30,14 @@ namespace love
 namespace image
 {
 	ImageData * luax_checkimagedata(lua_State * L, int idx);
-	int _wrap_ImageData_getWidth(lua_State * L);
-	int _wrap_ImageData_getHeight(lua_State * L);
-	int _wrap_ImageData_getPixel(lua_State * L);
-	int _wrap_ImageData_setPixel(lua_State * L);
-	int _wrap_ImageData_mapPixel(lua_State * L);
-	int _wrap_ImageData_getString(lua_State * L);
-	int _wrap_ImageData_paste(lua_State * L);
-	int wrap_ImageData_open(lua_State * L);
+	int w_ImageData_getWidth(lua_State * L);
+	int w_ImageData_getHeight(lua_State * L);
+	int w_ImageData_getPixel(lua_State * L);
+	int w_ImageData_setPixel(lua_State * L);
+	int w_ImageData_mapPixel(lua_State * L);
+	int w_ImageData_getString(lua_State * L);
+	int w_ImageData_paste(lua_State * L);
+	int luaopen_imagedata(lua_State * L);
 
 } // image
 } // love

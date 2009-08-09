@@ -28,17 +28,17 @@ namespace box2d
 {
 	Shape * luax_checkshape(lua_State * L, int idx)
 	{
-		return luax_checktype<Shape>(L, idx, "Shape", LOVE_PHYSICS_SHAPE_BITS);
+		return luax_checktype<Shape>(L, idx, "Shape", PHYSICS_SHAPE_T);
 	}
 
-	int _wrap_Shape_getType(lua_State * L)
+	int w_Shape_getType(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_pushinteger(L, t->getType());
 		return 1;
 	}
 
-	int _wrap_Shape_setFriction(lua_State * L)
+	int w_Shape_setFriction(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -46,7 +46,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Shape_setRestitution(lua_State * L)
+	int w_Shape_setRestitution(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -54,7 +54,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Shape_setDensity(lua_State * L)
+	int w_Shape_setDensity(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -62,7 +62,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Shape_setSensor(lua_State * L)
+	int w_Shape_setSensor(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
@@ -70,45 +70,45 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Shape_getFriction(lua_State * L)
+	int w_Shape_getFriction(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_pushnumber(L, t->getFriction());
 		return 1;
 	}
 
-	int _wrap_Shape_getRestituion(lua_State * L)
+	int w_Shape_getRestituion(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_pushnumber(L, t->getRestituion());
 		return 1;
 	}
 
-	int _wrap_Shape_getDensity(lua_State * L)
+	int w_Shape_getDensity(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_pushnumber(L, t->getDensity());
 		return 1;
 	}
 
-	int _wrap_Shape_isSensor(lua_State * L)
+	int w_Shape_isSensor(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		luax_pushboolean(L, t->isSensor());
 		return 1;
 	}
 
-	int _wrap_Shape_getBody(lua_State * L)
+	int w_Shape_getBody(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		Body * body = t->getBody();
 		if(body == 0)
 			return 0;
-		luax_newtype(L, "Body", LOVE_PHYSICS_BODY_BITS, (void*)body);
+		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
 	}
 
-	int _wrap_Shape_testPoint(lua_State * L)
+	int w_Shape_testPoint(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		float x = (float)luaL_checknumber(L, 2);
@@ -117,13 +117,13 @@ namespace box2d
 		return 1;
 	}
 
-	int _wrap_Shape_testSegment(lua_State * L)
+	int w_Shape_testSegment(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		return t->testSegment(L);
 	}
 
-	int _wrap_Shape_setFilterData(lua_State * L)
+	int w_Shape_setFilterData(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		int v[3];
@@ -134,7 +134,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Shape_getFilterData(lua_State * L)
+	int w_Shape_getFilterData(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		int v[3];
@@ -145,51 +145,50 @@ namespace box2d
 		return 3;
 	}
 
-	int _wrap_Shape_setData(lua_State * L)
+	int w_Shape_setData(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_remove(L, 1);
 		return t->setData(L);
 	}
 
-	int _wrap_Shape_getData(lua_State * L)
+	int w_Shape_getData(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_remove(L, 1);
 		return t->getData(L);
 	}
 
-	int _wrap_Shape_getBoundingBox(lua_State * L)
+	int w_Shape_getBoundingBox(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_remove(L, 1);
 		return t->getBoundingBox(L);
 	}
 
-	static const luaL_Reg wrap_Shape_functions[] = {
-		{ "getType", _wrap_Shape_getType },
-		{ "setFriction", _wrap_Shape_setFriction },
-		{ "setRestitution", _wrap_Shape_setRestitution },
-		{ "setDensity", _wrap_Shape_setDensity },
-		{ "setSensor", _wrap_Shape_setSensor },
-		{ "getFriction", _wrap_Shape_getFriction },
-		{ "getRestituion", _wrap_Shape_getRestituion },
-		{ "getDensity", _wrap_Shape_getDensity },
-		{ "isSensor", _wrap_Shape_isSensor },
-		{ "testPoint", _wrap_Shape_testPoint },
-		{ "testSegment", _wrap_Shape_testSegment },
-		{ "setFilterData", _wrap_Shape_setFilterData },
-		{ "getFilterData", _wrap_Shape_getFilterData },
-		{ "setData", _wrap_Shape_setData },
-		{ "getData", _wrap_Shape_getData },
-		{ "getBoundingBox", _wrap_Shape_getBoundingBox },
-		{ 0, 0 }
-	};
-
-	int wrap_Shape_open(lua_State * L)
+	int w_Shape_open(lua_State * L)
 	{
-		luax_register_type(L, "Shape", wrap_Shape_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "getType", w_Shape_getType },
+			{ "setFriction", w_Shape_setFriction },
+			{ "setRestitution", w_Shape_setRestitution },
+			{ "setDensity", w_Shape_setDensity },
+			{ "setSensor", w_Shape_setSensor },
+			{ "getFriction", w_Shape_getFriction },
+			{ "getRestituion", w_Shape_getRestituion },
+			{ "getDensity", w_Shape_getDensity },
+			{ "isSensor", w_Shape_isSensor },
+			{ "testPoint", w_Shape_testPoint },
+			{ "testSegment", w_Shape_testSegment },
+			{ "setFilterData", w_Shape_setFilterData },
+			{ "getFilterData", w_Shape_getFilterData },
+			{ "setData", w_Shape_setData },
+			{ "getData", w_Shape_getData },
+			{ "getBoundingBox", w_Shape_getBoundingBox },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "Shape", functions);
 	}
 
 } // box2d

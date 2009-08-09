@@ -29,38 +29,38 @@ namespace box2d
 {
 	Joint * luax_checkjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<Joint>(L, idx, "Joint", LOVE_PHYSICS_JOINT_BITS);
+		return luax_checktype<Joint>(L, idx, "Joint", PHYSICS_JOINT_T);
 	}
 
-	int _wrap_Joint_getType(lua_State * L)
+	int w_Joint_getType(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
 		lua_pushinteger(L, t->getType());
 		return 1;
 	}
 
-	int _wrap_Joint_getAnchors(lua_State * L)
+	int w_Joint_getAnchors(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
 		lua_remove(L, 1);
 		return t->getAnchors(L);
 	}
 
-	int _wrap_Joint_getReactionForce(lua_State * L)
+	int w_Joint_getReactionForce(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
 		lua_remove(L, 1);
 		return t->getReactionForce(L);
 	}
 
-	int _wrap_Joint_getReactionTorque(lua_State * L)
+	int w_Joint_getReactionTorque(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
 		lua_pushnumber(L, t->getReactionTorque());
 		return 1;
 	}
 
-	int _wrap_Joint_setCollideConnected(lua_State * L)
+	int w_Joint_setCollideConnected(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
@@ -68,27 +68,26 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_Joint_getCollideConnected(lua_State * L)
+	int w_Joint_getCollideConnected(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
 		luax_pushboolean(L, t->getCollideConnected());
 		return 1;
 	}
 
-	static const luaL_Reg wrap_Joint_functions[] = {
-		{ "getType", _wrap_Joint_getType },
-		{ "getAnchors", _wrap_Joint_getAnchors },
-		{ "getReactionForce", _wrap_Joint_getReactionForce },
-		{ "getReactionTorque", _wrap_Joint_getReactionTorque },
-		{ "setCollideConnected", _wrap_Joint_setCollideConnected },
-		{ "getCollideConnected", _wrap_Joint_getCollideConnected },
-		{ 0, 0 }
-	};
-
-	int wrap_Joint_open(lua_State * L)
+	int luaopen_joint(lua_State * L)
 	{
-		luax_register_type(L, "Joint", wrap_Joint_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "getType", w_Joint_getType },
+			{ "getAnchors", w_Joint_getAnchors },
+			{ "getReactionForce", w_Joint_getReactionForce },
+			{ "getReactionTorque", w_Joint_getReactionTorque },
+			{ "setCollideConnected", w_Joint_setCollideConnected },
+			{ "getCollideConnected", w_Joint_getCollideConnected },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "Joint", functions);
 	}
 
 } // box2d

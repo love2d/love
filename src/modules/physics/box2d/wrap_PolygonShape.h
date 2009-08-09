@@ -33,8 +33,8 @@ namespace physics
 namespace box2d
 {
 	PolygonShape * luax_checkpolygonshape(lua_State * L, int idx);
-	int _wrap_PolygonShape_getPoints(lua_State * L);
-	int wrap_PolygonShape_open(lua_State * L);
+	int w_PolygonShape_getPoints(lua_State * L);
+	int luaopen_polygonshape(lua_State * L);
 
 } // box2d
 } // physics

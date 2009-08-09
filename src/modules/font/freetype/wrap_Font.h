@@ -32,14 +32,12 @@ namespace font
 {
 namespace freetype
 {
-	int _wrap_newRasterizer(lua_State * L);
-	int _wrap_newGlyphData(lua_State * L);
-	int wrap_Font_open(lua_State * L);
+	int w_newRasterizer(lua_State * L);
+	int w_newGlyphData(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_font(lua_State * L);
 
 } // freetype
 } // font
 } // love
 
 #endif // LOVE_FONT_FREETYPE_WRAP_FONT_H
-
-extern "C" LOVE_EXPORT int luaopen_love_font(lua_State * L);

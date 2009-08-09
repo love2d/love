@@ -31,16 +31,13 @@ namespace keyboard
 {
 namespace sdl
 {
-	int _wrap_isDown(lua_State * L);
-	int _wrap_setKeyRepeat(lua_State * L);
-	int _wrap_getKeyRepeat(lua_State * L);
-
-	int wrap_Keyboard_open(lua_State * L);
+	int w_isDown(lua_State * L);
+	int w_setKeyRepeat(lua_State * L);
+	int w_getKeyRepeat(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State * L);
 
 } // sdl
 } // keyboard
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State * L);
 
 #endif // LOVE_KEYBOARD_SDL_WRAP_KEYBOARD_H

@@ -31,7 +31,6 @@ namespace love
 
 	Object::~Object()
 	{
-		// PURE VIRUTAL!
 	}
 
 	int Object::getReferenceCount() const

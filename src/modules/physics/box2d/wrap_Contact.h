@@ -32,13 +32,13 @@ namespace physics
 namespace box2d
 {
 	Contact * luax_checkcontact(lua_State * L, int idx);
-	int _wrap_Contact_getPosition(lua_State * L);
-	int _wrap_Contact_getVelocity(lua_State * L);
-	int _wrap_Contact_getNormal(lua_State * L);
-	int _wrap_Contact_getSeparation(lua_State * L);
-	int _wrap_Contact_getFriction(lua_State * L);
-	int _wrap_Contact_getRestitution(lua_State * L);
-	int wrap_Contact_open(lua_State * L);
+	int w_Contact_getPosition(lua_State * L);
+	int w_Contact_getVelocity(lua_State * L);
+	int w_Contact_getNormal(lua_State * L);
+	int w_Contact_getSeparation(lua_State * L);
+	int w_Contact_getFriction(lua_State * L);
+	int w_Contact_getRestitution(lua_State * L);
+	int luaopen_contact(lua_State * L);
 
 } // box2d
 } // physics

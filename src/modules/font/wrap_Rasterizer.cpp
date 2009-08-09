@@ -28,22 +28,19 @@ namespace font
 {
 	Rasterizer * luax_checkrasterizer(lua_State * L, int idx)
 	{
-		return luax_checktype<Rasterizer>(L, idx, "Rasterizer", LOVE_FONT_RASTERIZER_BITS);
+		return luax_checktype<Rasterizer>(L, idx, "Rasterizer", FONT_RASTERIZER_T);
 	}
 
-	static const luaL_Reg wrap_Rasterizer_functions[] = {
-
-		// Data
-		{ "getPointer", _wrap_Data_getPointer },
-		{ "getSize", _wrap_Data_getSize },
-
-		{ 0, 0 }
-	};
-	
-	int wrap_Rasterizer_open(lua_State * L)
+	int luaopen_rasterizer(lua_State * L)
 	{
-		luax_register_type(L, "Rasterizer", wrap_Rasterizer_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			// Data
+			{ "getPointer", w_Data_getPointer },
+			{ "getSize", w_Data_getSize },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "Rasterizer", functions);
 	}
 
 } // font

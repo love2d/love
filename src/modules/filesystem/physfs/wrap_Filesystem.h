@@ -33,37 +33,35 @@ namespace filesystem
 namespace physfs
 {
 	bool hack_setupWriteDirectory();
-	int _wrap_init(lua_State * L);
-	int _wrap_setIdentity(lua_State * L);
-	int _wrap_setSource(lua_State * L);
-	int _wrap_newFile(lua_State * L);
-	int _wrap_newFileData(lua_State * L);
-	int _wrap_getWorkingDirectory(lua_State * L);
-	int _wrap_getUserDirectory(lua_State * L);
-	int _wrap_getAppdataDirectory(lua_State * L);
-	int _wrap_getSaveDirectory(lua_State * L);
-	int _wrap_exists(lua_State * L);
-	int _wrap_isDirectory(lua_State * L);
-	int _wrap_isFile(lua_State * L);
-	int _wrap_mkdir(lua_State * L);
-	int _wrap_remove(lua_State * L);
-	int _wrap_open(lua_State * L);
-	int _wrap_close(lua_State * L);
-	int _wrap_read(lua_State * L);
-	int _wrap_write(lua_State * L);
-	int _wrap_eof(lua_State * L);
-	int _wrap_tell(lua_State * L);
-	int _wrap_seek(lua_State * L);
-	int _wrap_enumerate(lua_State * L);
-	int _wrap_lines(lua_State * L);
-	int _wrap_load(lua_State * L);
+	int w_init(lua_State * L);
+	int w_setIdentity(lua_State * L);
+	int w_setSource(lua_State * L);
+	int w_newFile(lua_State * L);
+	int w_newFileData(lua_State * L);
+	int w_getWorkingDirectory(lua_State * L);
+	int w_getUserDirectory(lua_State * L);
+	int w_getAppdataDirectory(lua_State * L);
+	int w_getSaveDirectory(lua_State * L);
+	int w_exists(lua_State * L);
+	int w_isDirectory(lua_State * L);
+	int w_isFile(lua_State * L);
+	int w_mkdir(lua_State * L);
+	int w_remove(lua_State * L);
+	int w_open(lua_State * L);
+	int w_close(lua_State * L);
+	int w_read(lua_State * L);
+	int w_write(lua_State * L);
+	int w_eof(lua_State * L);
+	int w_tell(lua_State * L);
+	int w_seek(lua_State * L);
+	int w_enumerate(lua_State * L);
+	int w_lines(lua_State * L);
+	int w_load(lua_State * L);
 	int loader(lua_State * L);
-	int wrap_Filesystem_open(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State * L);
 
 } // physfs
 } // filesystem
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State * L);
 
 #endif // LOVE_FILESYSTEM_PHYSFS_WRAP_FILESYSTEM_H

@@ -31,18 +31,15 @@ namespace timer
 {
 namespace sdl
 {
-	int _wrap_step(lua_State * L);
-	int _wrap_getDelta(lua_State * L);
-	int _wrap_getFPS(lua_State * L);
-	int _wrap_sleep(lua_State * L);
-	int _wrap_getTime(lua_State * L);
-
-	int wrap_Timer_open(lua_State * L);
+	int w_step(lua_State * L);
+	int w_getDelta(lua_State * L);
+	int w_getFPS(lua_State * L);
+	int w_sleep(lua_State * L);
+	int w_getTime(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_timer(lua_State * L);
 
 } // sdl
 } // timer
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_timer(lua_State * L);
 
 #endif // LOVE_TIMER_SDL_WRAP_TIMER_H

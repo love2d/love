@@ -34,57 +34,56 @@ namespace sdl
 {
 	static Event * instance = 0;
 	
-	int _wrap_pump(lua_State * L)
+	int w_pump(lua_State * L)
 	{
 		instance->pump();
 		return 0;
 	}
 
-	int _wrap_poll(lua_State * L)
+	int w_poll(lua_State * L)
 	{
 		return instance->poll(L);
 	}
 
-	int _wrap_wait(lua_State * L)
+	int w_wait(lua_State * L)
 	{
 		return instance->wait(L);
 	}
 
-	int _wrap_quit(lua_State * L)
+	int w_quit(lua_State * L)
 	{
 		instance->quit();
 		return 0;
 	}
 
-	int _wrap_push(lua_State * L)
+	int w_push(lua_State * L)
 	{
 		return instance->push(L);
 	}
 
-	// List of functions to wrap.
-	static const luaL_Reg wrap_Event_functions[] = {
-		{ "pump", _wrap_pump }, 
-		{ "poll", _wrap_poll }, 
-		{ "wait", _wrap_wait }, 
-		{ "quit", _wrap_quit }, 
-		{ "push", _wrap_push }, 
-		{ 0, 0 }
-	};
-
-	// List of constants.
-	static const LuaConstant wrap_Event_constants[] = {
-		{ "event_keypressed", Event::EVENT_KEYDOWN },
-		{ "event_keyreleased", Event::EVENT_KEYUP },
-		{ "event_mousepressed", Event::EVENT_MOUSEBUTTONDOWN },
-		{ "event_mousereleased", Event::EVENT_MOUSEBUTTONUP },
-		{ "event_joystickpressed", Event::EVENT_JOYBUTTONDOWN },
-		{ "event_joystickreleased", Event::EVENT_JOYBUTTONUP },
-		{ "event_quit", Event::EVENT_QUIT },
-		{ 0, 0 }
-	};
-
-	int wrap_Event_open(lua_State * L)
+	int luaopen_love_event(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "pump", w_pump }, 
+			{ "poll", w_poll }, 
+			{ "wait", w_wait }, 
+			{ "quit", w_quit }, 
+			{ "push", w_push }, 
+			{ 0, 0 }
+		};
+
+		// List of constants.
+		static const LuaConstant constants[] = {
+			{ "event_keypressed", Event::EVENT_KEYDOWN },
+			{ "event_keyreleased", Event::EVENT_KEYUP },
+			{ "event_mousepressed", Event::EVENT_MOUSEBUTTONDOWN },
+			{ "event_mousereleased", Event::EVENT_MOUSEBUTTONUP },
+			{ "event_joystickpressed", Event::EVENT_JOYBUTTONDOWN },
+			{ "event_joystickreleased", Event::EVENT_JOYBUTTONUP },
+			{ "event_quit", Event::EVENT_QUIT },
+			{ 0, 0 }
+		};
 		if(instance == 0)
 		{
 			try 
@@ -97,16 +96,11 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, "love.event", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Event_functions, 0, wrap_Event_constants, "event");
+		return luax_register_module(L, functions, 0, constants, "event");
 	}
 
 } // sdl
 } // event
 } // love
-
-int luaopen_love_event(lua_State * L)
-{
-	return love::event::sdl::wrap_Event_open(L);
-}

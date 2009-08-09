@@ -26,41 +26,40 @@ namespace sound
 {
 	Decoder * luax_checkdecoder(lua_State * L, int idx)
 	{
-		return luax_checktype<Decoder>(L, idx, "Decoder", LOVE_SOUND_DECODER_BITS);
+		return luax_checktype<Decoder>(L, idx, "Decoder", SOUND_DECODER_T);
 	}
 
-	int _wrap_Decoder_getChannels(lua_State * L)
+	int w_Decoder_getChannels(lua_State * L)
 	{
 		Decoder * t = luax_checkdecoder(L, 1);
 		lua_pushinteger(L, t->getChannels());
 		return 1;
 	}
 
-	int _wrap_Decoder_getBits(lua_State * L)
+	int w_Decoder_getBits(lua_State * L)
 	{
 		Decoder * t = luax_checkdecoder(L, 1);
 		lua_pushinteger(L, t->getBits());
 		return 1;
 	}
 
-	int _wrap_Decoder_getSampleRate(lua_State * L)
+	int w_Decoder_getSampleRate(lua_State * L)
 	{
 		Decoder * t = luax_checkdecoder(L, 1);
 		lua_pushinteger(L, t->getSampleRate());
 		return 1;
 	}
-
-	static const luaL_Reg wrap_Decoder_functions[] = {
-		{ "getChannels", _wrap_Decoder_getChannels },
-		{ "getBits", _wrap_Decoder_getBits },
-		{ "getSampleRate", _wrap_Decoder_getSampleRate },
-		{ 0, 0 }
-	};
 	
-	int wrap_Decoder_open(lua_State * L)
+	int luaopen_decoder(lua_State * L)
 	{
-		luax_register_type(L, "Decoder", wrap_Decoder_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "getChannels", w_Decoder_getChannels },
+			{ "getBits", w_Decoder_getBits },
+			{ "getSampleRate", w_Decoder_getSampleRate },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "Decoder", functions);
 	}
 
 } // sound

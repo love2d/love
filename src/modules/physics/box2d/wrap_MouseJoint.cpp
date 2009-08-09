@@ -28,10 +28,10 @@ namespace box2d
 {
 	MouseJoint * luax_checkmousejoint(lua_State * L, int idx)
 	{
-		return luax_checktype<MouseJoint>(L, idx, "MouseJoint", LOVE_PHYSICS_MOUSE_JOINT_BITS);
+		return luax_checktype<MouseJoint>(L, idx, "MouseJoint", PHYSICS_MOUSE_JOINT_T);
 	}
 
-	int _wrap_MouseJoint_setTarget(lua_State * L)
+	int w_MouseJoint_setTarget(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);
 		float x = (float)luaL_checknumber(L, 2);
@@ -40,14 +40,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_MouseJoint_getTarget(lua_State * L)
+	int w_MouseJoint_getTarget(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);
 		lua_remove(L, 1);
 		return t->getTarget(L);
 	}
 
-	int _wrap_MouseJoint_setMaxForce(lua_State * L)
+	int w_MouseJoint_setMaxForce(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);
 		float f = (float)luaL_checknumber(L, 2);
@@ -55,32 +55,31 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_MouseJoint_getMaxForce(lua_State * L)
+	int w_MouseJoint_getMaxForce(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);
 		lua_pushnumber(L, t->getMaxForce());
 		return 1;
 	}
 
-	static const luaL_Reg wrap_MouseJoint_functions[] = {
-		{ "setTarget", _wrap_MouseJoint_setTarget },
-		{ "getTarget", _wrap_MouseJoint_getTarget },
-		{ "setMaxForce", _wrap_MouseJoint_setMaxForce },
-		{ "getMaxForce", _wrap_MouseJoint_getMaxForce },
-		// From Joint.
-		{ "getType", _wrap_Joint_getType },
-		{ "getAnchors", _wrap_Joint_getAnchors },
-		{ "getReactionForce", _wrap_Joint_getReactionForce },
-		{ "getReactionTorque", _wrap_Joint_getReactionTorque },
-		{ "setCollideConnected", _wrap_Joint_setCollideConnected },
-		{ "getCollideConnected", _wrap_Joint_getCollideConnected },
-		{ 0, 0 }
-	};
-
-	int wrap_MouseJoint_open(lua_State * L)
+	int luaopen_mousejoint(lua_State * L)
 	{
-		luax_register_type(L, "MouseJoint", wrap_MouseJoint_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "setTarget", w_MouseJoint_setTarget },
+			{ "getTarget", w_MouseJoint_getTarget },
+			{ "setMaxForce", w_MouseJoint_setMaxForce },
+			{ "getMaxForce", w_MouseJoint_getMaxForce },
+			// From Joint.
+			{ "getType", w_Joint_getType },
+			{ "getAnchors", w_Joint_getAnchors },
+			{ "getReactionForce", w_Joint_getReactionForce },
+			{ "getReactionTorque", w_Joint_getReactionTorque },
+			{ "setCollideConnected", w_Joint_setCollideConnected },
+			{ "getCollideConnected", w_Joint_getCollideConnected },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "MouseJoint", functions);
 	}
 
 } // box2d

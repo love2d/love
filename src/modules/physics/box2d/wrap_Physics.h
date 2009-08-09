@@ -44,23 +44,21 @@ namespace physics
 {
 namespace box2d
 {
-	int _wrap_newWorld(lua_State * L);
-	int _wrap_newBody(lua_State * L);
-	int _wrap_newCircleShape(lua_State * L);
-	int _wrap_newRectangleShape(lua_State * L);
-	int _wrap_newPolygonShape(lua_State * L);;
-	int _wrap_newDistanceJoint(lua_State * L);
-	int _wrap_newMouseJoint(lua_State * L);
-	int _wrap_newRevoluteJoint(lua_State * L);
-	int _wrap_newPrismaticJoint(lua_State * L);
-	int _wrap_newPulleyJoint(lua_State * L);
-	int _wrap_newGearJoint(lua_State * L);
-	int wrap_Physics_open(lua_State * L);
+	int w_newWorld(lua_State * L);
+	int w_newBody(lua_State * L);
+	int w_newCircleShape(lua_State * L);
+	int w_newRectangleShape(lua_State * L);
+	int w_newPolygonShape(lua_State * L);;
+	int w_newDistanceJoint(lua_State * L);
+	int w_newMouseJoint(lua_State * L);
+	int w_newRevoluteJoint(lua_State * L);
+	int w_newPrismaticJoint(lua_State * L);
+	int w_newPulleyJoint(lua_State * L);
+	int w_newGearJoint(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
 
 } // box2d
 } // physics
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
 
 #endif // LOVE_PHYSICS_BOX2D_WRAP_PHYSICS_H

@@ -21,11 +21,8 @@
 #include "Matrix.h"
 
 // STD
-#include <cstring>
+#include <cstring> // memcpy
 #include <cmath>
-
-// LOVE
-#include "Vector.h"
 
 namespace love
 {
@@ -80,7 +77,7 @@ namespace love
 		return t;
 	}
 
-	void Matrix::operator *= (const Matrix & m) const
+	void Matrix::operator *= (const Matrix & m)
 	{
 		Matrix t = (*this) * m;
 		memcpy((void*)this->e, (void*)t.e, sizeof(float)*16);

@@ -31,28 +31,26 @@ namespace love
 {
 namespace audio
 {
-	int _wrap_getNumSources(lua_State * L);
-	int _wrap_newSound(lua_State * L);
-	int _wrap_newMusic(lua_State * L);
-	int _wrap_newSource(lua_State * L);
-	int _wrap_play(lua_State * L);
-	int _wrap_stop(lua_State * L);
-	int _wrap_pause(lua_State * L);
-	int _wrap_resume(lua_State * L);
-	int _wrap_rewind(lua_State * L);
-	int _wrap_setVolume(lua_State * L);
-	int _wrap_getVolume(lua_State * L);
-	int _wrap_setPosition(lua_State * L);
-	int _wrap_getPosition(lua_State * L);
-	int _wrap_setOrientation(lua_State * L);
-	int _wrap_getOrientation(lua_State * L);
-	int _wrap_setVelocity(lua_State * L);
-	int _wrap_getVelocity(lua_State * L);
-	int wrap_Audio_open(lua_State * L);
+	int w_getNumSources(lua_State * L);
+	int w_newSound(lua_State * L);
+	int w_newMusic(lua_State * L);
+	int w_newSource(lua_State * L);
+	int w_play(lua_State * L);
+	int w_stop(lua_State * L);
+	int w_pause(lua_State * L);
+	int w_resume(lua_State * L);
+	int w_rewind(lua_State * L);
+	int w_setVolume(lua_State * L);
+	int w_getVolume(lua_State * L);
+	int w_setPosition(lua_State * L);
+	int w_getPosition(lua_State * L);
+	int w_setOrientation(lua_State * L);
+	int w_getOrientation(lua_State * L);
+	int w_setVelocity(lua_State * L);
+	int w_getVelocity(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State * L);
 
 } // audio
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State * L);
 
 #endif // LOVE_AUDIO_WRAP_AUDIO_H

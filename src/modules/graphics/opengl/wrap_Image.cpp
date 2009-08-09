@@ -29,24 +29,24 @@ namespace opengl
 {
 	Image * luax_checkimage(lua_State * L, int idx)
 	{
-		return luax_checktype<Image>(L, idx, "Image", LOVE_GRAPHICS_IMAGE_BITS);
+		return luax_checktype<Image>(L, idx, "Image", GRAPHICS_IMAGE_T);
 	}
 
-	int _wrap_Image_getWidth(lua_State * L)
+	int w_Image_getWidth(lua_State * L)
 	{
 		Image * t = luax_checkimage(L, 1);
 		lua_pushnumber(L, t->getWidth());
 		return 1;
 	}
 
-	int _wrap_Image_getHeight(lua_State * L)
+	int w_Image_getHeight(lua_State * L)
 	{
 		Image * t = luax_checkimage(L, 1);
 		lua_pushnumber(L, t->getHeight());
 		return 1;
 	}
 
-	int _wrap_Image_setFilter(lua_State * L)
+	int w_Image_setFilter(lua_State * L)
 	{
 		Image * t = luax_checkimage(L, 1); 
 		Image::Filter f;
@@ -56,7 +56,7 @@ namespace opengl
 		return 0;
 	}
 
-	int _wrap_Image_getFilter(lua_State * L)
+	int w_Image_getFilter(lua_State * L)
 	{
 		Image * t = luax_checkimage(L, 1); 
 		Image::Filter f = t->getFilter();
@@ -65,7 +65,7 @@ namespace opengl
 		return 2;
 	}
 
-	int _wrap_Image_setWrap(lua_State * L)
+	int w_Image_setWrap(lua_State * L)
 	{
 		Image * t = luax_checkimage(L, 1); 
 		Image::Wrap w;
@@ -75,7 +75,7 @@ namespace opengl
 		return 0;
 	}
 
-	int _wrap_Image_getWrap(lua_State * L)
+	int w_Image_getWrap(lua_State * L)
 	{
 		Image * t = luax_checkimage(L, 1); 
 		Image::Wrap w = t->getWrap();
@@ -84,19 +84,19 @@ namespace opengl
 		return 2;
 	}
 
-	static const luaL_Reg wrap_Image_functions[] = {
-		{ "getWidth", _wrap_Image_getWidth },
-		{ "getHeight", _wrap_Image_getHeight },
-		{ "setFilter", _wrap_Image_setFilter },
-		{ "getFilter", _wrap_Image_getFilter },
-		{ "setWrap", _wrap_Image_setWrap },
-		{ "getWrap", _wrap_Image_getWrap },
+	static const luaL_Reg w_Image_functions[] = {
+		{ "getWidth", w_Image_getWidth },
+		{ "getHeight", w_Image_getHeight },
+		{ "setFilter", w_Image_setFilter },
+		{ "getFilter", w_Image_getFilter },
+		{ "setWrap", w_Image_setWrap },
+		{ "getWrap", w_Image_getWrap },
 		{ 0, 0 }
 	};
 
-	int wrap_Image_open(lua_State * L)
+	int w_Image_open(lua_State * L)
 	{
-		luax_register_type(L, "Image", wrap_Image_functions);
+		luax_register_type(L, "Image", w_Image_functions);
 		return 0;
 	}
 

@@ -36,7 +36,7 @@ namespace physfs
 		return false;
 	}
 
-	int _wrap_init(lua_State * L)
+	int w_init(lua_State * L)
 	{
 		const char * arg0 = luaL_checkstring(L, 1);
 
@@ -52,7 +52,7 @@ namespace physfs
 		return 0;
 	}
 
-	int _wrap_setIdentity(lua_State * L)
+	int w_setIdentity(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 
@@ -62,7 +62,7 @@ namespace physfs
 		return 0;
 	}
 
-	int _wrap_setSource(lua_State * L)
+	int w_setSource(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 
@@ -72,15 +72,15 @@ namespace physfs
 		return 0;
 	}
 
-	int _wrap_newFile(lua_State * L)
+	int w_newFile(lua_State * L)
 	{
 		const char * filename = luaL_checkstring(L, 1);
 		File * t = instance->newFile(filename);
-		luax_newtype(L, "File", LOVE_FILESYSTEM_FILE_BITS, (void*)t);
+		luax_newtype(L, "File", FILESYSTEM_FILE_T, (void*)t);
 		return 1;
 	}
 
-	int _wrap_newFileData(lua_State * L)
+	int w_newFileData(lua_State * L)
 	{
 		if(!lua_isstring(L, 1))
 			return luaL_error(L, "String expected.");
@@ -93,90 +93,90 @@ namespace physfs
 
 		FileData * t = instance->newFileData((void*)str, (int)length, filename);
 
-		luax_newtype(L, "FileData", LOVE_FILESYSTEM_FILE_DATA_BITS, (void*)t);
+		luax_newtype(L, "FileData", FILESYSTEM_FILE_DATA_T, (void*)t);
 		return 1;
 	}
 
-	int _wrap_getWorkingDirectory(lua_State * L)
+	int w_getWorkingDirectory(lua_State * L)
 	{
 		lua_pushstring(L, instance->getWorkingDirectory());
 		return 1;
 	}
 
-	int _wrap_getUserDirectory(lua_State * L)
+	int w_getUserDirectory(lua_State * L)
 	{
 		lua_pushstring(L, instance->getUserDirectory());
 		return 1;
 	}
 
-	int _wrap_getAppdataDirectory(lua_State * L)
+	int w_getAppdataDirectory(lua_State * L)
 	{
 		lua_pushstring(L, instance->getAppdataDirectory());
 		return 1;
 	}
 
-	int _wrap_getSaveDirectory(lua_State * L)
+	int w_getSaveDirectory(lua_State * L)
 	{
 		lua_pushstring(L, instance->getSaveDirectory());
 		return 1;
 	}
 
-	int _wrap_exists(lua_State * L)
+	int w_exists(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 		lua_pushboolean(L, instance->exists(arg) ? 1 : 0);
 		return 1;
 	}
 
-	int _wrap_isDirectory(lua_State * L)
+	int w_isDirectory(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 		lua_pushboolean(L, instance->isDirectory(arg) ? 1 : 0);
 		return 1;
 	}
 
-	int _wrap_isFile(lua_State * L)
+	int w_isFile(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 		lua_pushboolean(L, instance->isFile(arg) ? 1 : 0);
 		return 1;
 	}
 
-	int _wrap_mkdir(lua_State * L)
+	int w_mkdir(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 		lua_pushboolean(L, instance->mkdir(arg) ? 1 : 0);
 		return 1;
 	}
 
-	int _wrap_remove(lua_State * L)
+	int w_remove(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 		lua_pushboolean(L, instance->remove(arg) ? 1 : 0);
 		return 1;
 	}
 
-	int _wrap_read(lua_State * L)
+	int w_read(lua_State * L)
 	{
 		return instance->read(L);
 	}
 
-	int _wrap_write(lua_State * L)
+	int w_write(lua_State * L)
 	{
 		return instance->write(L);
 	}	
 
-	int _wrap_enumerate(lua_State * L)
+	int w_enumerate(lua_State * L)
 	{
 		return instance->enumerate(L);
 	}
 
-	int _wrap_lines(lua_State * L)
+	int w_lines(lua_State * L)
 	{
 		return instance->lines(L);
 	}
 
-	int _wrap_load(lua_State * L)
+	int w_load(lua_State * L)
 	{
 		return instance->load(L);
 	}
@@ -214,46 +214,46 @@ namespace physfs
 		return instance->load(L);
 	}
 
-	// List of functions to wrap.
-	const luaL_Reg wrap_Filesystem_functions[] = {
-		{ "init",  _wrap_init },
-		{ "setIdentity",  _wrap_setIdentity },
-		{ "setSource",  _wrap_setSource },
-		{ "newFile",  _wrap_newFile },
-		{ "getWorkingDirectory",  _wrap_getWorkingDirectory },
-		{ "getUserDirectory",  _wrap_getUserDirectory },
-		{ "getAppdataDirectory",  _wrap_getAppdataDirectory },
-		{ "getSaveDirectory",  _wrap_getSaveDirectory },
-		{ "exists",  _wrap_exists },
-		{ "isDirectory",  _wrap_isDirectory },
-		{ "isFile",  _wrap_isFile },
-		{ "mkdir",  _wrap_mkdir },
-		{ "remove",  _wrap_remove },
-		{ "read",  _wrap_read },
-		{ "write",  _wrap_write },
-		{ "enumerate",  _wrap_enumerate },
-		{ "lines",  _wrap_lines },
-		{ "load",  _wrap_load },
-		{ 0, 0 }
-	};
-
-	const lua_CFunction wrap_Filesystem_types[] = {
-		wrap_File_open,
-		wrap_FileData_open,
-		0
-	};
-
-	// List of constants.
-	static const LuaConstant wrap_Filesystem_constants[] = {
-		{ "file_closed", File::CLOSED },
-		{ "file_read", File::READ },
-		{ "file_write", File::WRITE },
-		{ "file_append", File::APPEND },
-		{ 0, 0 }
-	};
-
-	int wrap_Filesystem_open(lua_State * L)
+	int w_Filesystem_open(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "init",  w_init },
+			{ "setIdentity",  w_setIdentity },
+			{ "setSource",  w_setSource },
+			{ "newFile",  w_newFile },
+			{ "getWorkingDirectory",  w_getWorkingDirectory },
+			{ "getUserDirectory",  w_getUserDirectory },
+			{ "getAppdataDirectory",  w_getAppdataDirectory },
+			{ "getSaveDirectory",  w_getSaveDirectory },
+			{ "exists",  w_exists },
+			{ "isDirectory",  w_isDirectory },
+			{ "isFile",  w_isFile },
+			{ "mkdir",  w_mkdir },
+			{ "remove",  w_remove },
+			{ "read",  w_read },
+			{ "write",  w_write },
+			{ "enumerate",  w_enumerate },
+			{ "lines",  w_lines },
+			{ "load",  w_load },
+			{ 0, 0 }
+		};
+
+		static const lua_CFunction types[] = {
+			luaopen_file,
+			luaopen_filedata,
+			0
+		};
+
+		// List of constants.
+		static const LuaConstant constants[] = {
+			{ "file_closed", File::CLOSED },
+			{ "file_read", File::READ },
+			{ "file_write", File::WRITE },
+			{ "file_append", File::APPEND },
+			{ 0, 0 }
+		};
+
 		if(instance == 0)
 		{
 			try 
@@ -267,16 +267,11 @@ namespace physfs
 			}
 		}
 
-		luax_register_gc(L, "love.filesystem", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Filesystem_functions, wrap_Filesystem_types, wrap_Filesystem_constants, "filesystem");
+		return luax_register_module(L, functions, types, constants, "filesystem");
 	}
 
 } // physfs
 } // filesystem
 } // love
-
-int luaopen_love_filesystem(lua_State * L)
-{
-	return love::filesystem::physfs::wrap_Filesystem_open(L);
-}

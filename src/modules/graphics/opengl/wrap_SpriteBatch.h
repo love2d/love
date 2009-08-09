@@ -31,11 +31,11 @@ namespace graphics
 namespace opengl
 {
 	SpriteBatch * luax_checkspritebatch(lua_State * L, int idx);
-	int _wrap_SpriteBatch_add(lua_State * L);
-	int _wrap_SpriteBatch_clear(lua_State * L);
-	int _wrap_SpriteBatch_lock(lua_State * L);
-	int _wrap_SpriteBatch_unlock(lua_State * L);
-	int wrap_SpriteBatch_open(lua_State * L);
+	int w_SpriteBatch_add(lua_State * L);
+	int w_SpriteBatch_clear(lua_State * L);
+	int w_SpriteBatch_lock(lua_State * L);
+	int w_SpriteBatch_unlock(lua_State * L);
+	int luaopen_spritebatch(lua_State * L);
 
 } // opengl
 } // graphics

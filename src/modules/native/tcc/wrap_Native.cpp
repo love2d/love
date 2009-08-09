@@ -33,7 +33,7 @@ namespace tcc
 {
 	static Native * instance = 0;
 
-	int _wrap_compile(lua_State * L)
+	int w_compile(lua_State * L)
 	{
 		int argn = lua_gettop(L);
 		
@@ -44,9 +44,9 @@ namespace tcc
 		{
 			// Convert to File, if necessary.
 			if(lua_isstring(L, 1))
-				luax_strtofile(L, 1);
+				luax_convobj(L, 1, "filesystem", "newFile");
 
-			filesystem::File * file = luax_checktype<filesystem::File>(L, 1, "File", LOVE_FILESYSTEM_FILE_BITS);
+			filesystem::File * file = luax_checktype<filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 			
 			int size = file->getSize();
 
@@ -72,7 +72,7 @@ namespace tcc
 		return 1;
 	}
 
-	int _wrap_getSymbol(lua_State * L)
+	int w_getSymbol(lua_State * L)
 	{
 		const char * sym = luaL_checkstring(L, 1);
 		void * ptr = instance->getSymbol(sym);
@@ -113,16 +113,16 @@ namespace tcc
 
 		return 1;
 	}
-	
-	// List of functions to wrap.
-	static const luaL_Reg wrap_Native_functions[] = {
-		{ "compile", _wrap_compile },
-		{ "getSymbol", _wrap_getSymbol },
-		{ 0, 0 }
-	};
 
-	int wrap_Native_open(lua_State * L)
+	int luaopen_native(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "compile", w_compile },
+			{ "getSymbol", w_getSymbol },
+			{ 0, 0 }
+		};
+
 		if(instance == 0)
 		{
 			try 
@@ -137,16 +137,11 @@ namespace tcc
 
 		luax_register_searcher(L, searcher);
 
-		luax_register_gc(L, "love.native", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Native_functions, 0, 0, "native");
+		return luax_register_module(L, functions, 0, 0, "native");
 	}
 
 } // tcc
 } // native
 } // love
-
-int luaopen_love_native(lua_State * L)
-{
-	return love::native::tcc::wrap_Native_open(L);
-}

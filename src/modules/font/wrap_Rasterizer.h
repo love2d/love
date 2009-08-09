@@ -30,7 +30,7 @@ namespace love
 namespace font
 {
 	Rasterizer * luax_checkrasterizer(lua_State * L, int idx);
-	int wrap_Rasterizer_open(lua_State * L);
+	int luaopen_rasterizer(lua_State * L);
 
 } // font
 } // love

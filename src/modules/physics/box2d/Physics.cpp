@@ -142,7 +142,7 @@ namespace box2d
 
 		PolygonShape * p = new PolygonShape(b, &def);
 
-		luax_newtype(L, "PolygonShape", LOVE_PHYSICS_POLYGON_SHAPE_BITS, (void*)p);
+		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)p);
 
 		return 1;
 	}

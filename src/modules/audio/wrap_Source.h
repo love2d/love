@@ -29,19 +29,19 @@ namespace love
 namespace audio
 {
 	Source * luax_checksource(lua_State * L, int idx);
-	int _wrap_Source_setPitch(lua_State * L);
-	int _wrap_Source_getPitch(lua_State * L);
-	int _wrap_Source_setVolume(lua_State * L);
-	int _wrap_Source_getVolume(lua_State * L);
-	int _wrap_Source_setPosition(lua_State * L);
-	int _wrap_Source_getPosition(lua_State * L);
-	int _wrap_Source_setVelocity(lua_State * L);
-	int _wrap_Source_getVelocity(lua_State * L);
-	int _wrap_Source_setDirection(lua_State * L);
-	int _wrap_Source_getDirection(lua_State * L);
-	int _wrap_Source_setLooping(lua_State * L);
-	int _wrap_Source_isLooping(lua_State * L);
-	int wrap_Source_open(lua_State * L);
+	int w_Source_setPitch(lua_State * L);
+	int w_Source_getPitch(lua_State * L);
+	int w_Source_setVolume(lua_State * L);
+	int w_Source_getVolume(lua_State * L);
+	int w_Source_setPosition(lua_State * L);
+	int w_Source_getPosition(lua_State * L);
+	int w_Source_setVelocity(lua_State * L);
+	int w_Source_getVelocity(lua_State * L);
+	int w_Source_setDirection(lua_State * L);
+	int w_Source_getDirection(lua_State * L);
+	int w_Source_setLooping(lua_State * L);
+	int w_Source_isLooping(lua_State * L);
+	int luaopen_source(lua_State * L);
 
 } // audio
 } // love

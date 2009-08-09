@@ -33,9 +33,9 @@ namespace filesystem
 namespace physfs
 {
 	FileData * luax_checkfiledata(lua_State * L, int idx);
-	int _wrap_FileData_getFilename(lua_State * L);
-	int _wrap_FileData_getExtension(lua_State * L);
-	int wrap_FileData_open(lua_State * L);
+	int w_FileData_getFilename(lua_State * L);
+	int w_FileData_getExtension(lua_State * L);
+	int w_FileData_open(lua_State * L);
 } // physfs
 } // filesystem
 } // love

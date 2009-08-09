@@ -79,7 +79,7 @@ DECLSPEC int luaopen_love(lua_State * L)
 	love::luax_insistglobal(L, "love");
 
 	// Resources.
-	love::luax_newtype(L, "Data", love::LOVE_DATA_BITS, new love::MemoryData((void*)love::Vera_ttf_data, love::Vera_ttf_size));
+	love::luax_newtype(L, "Data", love::DATA_T, new love::MemoryData((void*)love::Vera_ttf_data, love::Vera_ttf_size));
 	lua_setfield(L, -2, "_vera");
 
 	lua_pop(L, 1); // love
@@ -141,7 +141,7 @@ int main(int argc, char ** argv)
 	printf("(press key)\n");
 	getchar();
 #endif
-	printf("Done. This was: %s (%s)\n", LOVE_VERSION_STR.c_str(), LOVE_VERSION_CODENAME.c_str());
+	printf("Done. This was: %s (%s)\n", love::VERSION_STR, love::VERSION_CODENAME);
 	return 0;
 }
 

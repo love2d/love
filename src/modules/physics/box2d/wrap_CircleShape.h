@@ -33,8 +33,8 @@ namespace physics
 namespace box2d
 {
 	CircleShape * luax_checkcircleshape(lua_State * L, int idx);
-	int _wrap_CircleShape_getRadius(lua_State * L);
-	int wrap_CircleShape_open(lua_State * L);
+	int w_CircleShape_getRadius(lua_State * L);
+	int luaopen_circleshape(lua_State * L);
 
 } // box2d
 } // physics

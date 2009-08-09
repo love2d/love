@@ -33,41 +33,41 @@ namespace freetype
 {
 	static Font * instance = 0;
 
-	int _wrap_newRasterizer(lua_State * L)
+	int w_newRasterizer(lua_State * L)
 	{
 		Data * d = luax_checkdata(L, 1);
 		int size = luaL_checkint(L, 2);
 		
 		Rasterizer * t = instance->newRasterizer(d, size);
-		luax_newtype(L, "Rasterizer", LOVE_FONT_RASTERIZER_BITS, t);
+		luax_newtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 		return 1;
 	}
 
-	int _wrap_newGlyphData(lua_State * L)
+	int w_newGlyphData(lua_State * L)
 	{
 		Rasterizer * r = luax_checkrasterizer(L, 1);
 		unsigned short g = (unsigned short)luaL_checkint(L, 2);
 		
 		GlyphData * t = instance->newGlyphData(r, g);
-		luax_newtype(L, "GlyphData", LOVE_FONT_GLYPH_DATA_BITS, t);
+		luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
 		return 1;
 	}
 
-	// List of functions to wrap.
-	static const luaL_Reg wrap_Font_functions[] = {
-		{ "newRasterizer",  _wrap_newRasterizer },
-		{ "newGlyphData",  _wrap_newGlyphData },
-		{ 0, 0 }
-	};
-
-	static const lua_CFunction wrap_Font_types[] = {
-		wrap_GlyphData_open,
-		wrap_Rasterizer_open,
-		0
-	};
-
-	int wrap_Font_open(lua_State * L)
+	int luaopen_font(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "newRasterizer",  w_newRasterizer },
+			{ "newGlyphData",  w_newGlyphData },
+			{ 0, 0 }
+		};
+
+		static const lua_CFunction types[] = {
+			luaopen_glyphdata,
+			luaopen_rasterizer,
+			0
+		};
+
 		if(instance == 0)
 		{
 			try
@@ -80,16 +80,11 @@ namespace freetype
 			}
 		}
 
-		luax_register_gc(L, "love.font", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Font_functions, wrap_Font_types, 0, "font");
+		return luax_register_module(L, functions, types, 0, "font");
 	}
 
 } // freetype
 } // font
 } // love
-
-int luaopen_love_font(lua_State * L)
-{
-	return love::font::freetype::wrap_Font_open(L);
-}

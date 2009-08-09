@@ -21,9 +21,6 @@
 #ifndef LOVE_OBJECT_H
 #define LOVE_OBJECT_H
 
-// LOVE
-#include "config.h"
-
 namespace love
 {
 	/**
@@ -33,8 +30,6 @@ namespace love
 	* This class is an alternative to using smart pointers; it contains retain/release 
 	* methods, and will delete itself with the reference count hits zero. The wrapper 
 	* code assumes that all userdata inherits from this class.
-	* 
-	* @author Anders Ruud
 	**/
 	class Object
 	{

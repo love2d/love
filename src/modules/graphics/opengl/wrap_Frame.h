@@ -32,8 +32,8 @@ namespace graphics
 namespace opengl
 {
 	Frame * luax_checkframe(lua_State * L, int idx);
-	int _wrap_Frame_flip(lua_State *L);
-	int wrap_Frame_open(lua_State * L);
+	int w_Frame_flip(lua_State *L);
+	int luaopen_frame(lua_State * L);
 
 } // opengl
 } // graphics

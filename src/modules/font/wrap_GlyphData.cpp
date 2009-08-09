@@ -26,22 +26,18 @@ namespace font
 {
 	GlyphData * luax_checkglyphdata(lua_State * L, int idx)
 	{
-		return luax_checktype<GlyphData>(L, idx, "GlyphData", LOVE_FONT_GLYPH_DATA_BITS);
+		return luax_checktype<GlyphData>(L, idx, "GlyphData", FONT_GLYPH_DATA_T);
 	}
-
-	static const luaL_Reg wrap_GlyphData_functions[] = {
-
-		// Data
-		{ "getPointer", _wrap_Data_getPointer },
-		{ "getSize", _wrap_Data_getSize },
-
-		{ 0, 0 }
-	};
 	
-	int wrap_GlyphData_open(lua_State * L)
+	int luaopen_glyphdata(lua_State * L)
 	{
-		luax_register_type(L, "GlyphData", wrap_GlyphData_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "getPointer", w_Data_getPointer },
+			{ "getSize", w_Data_getSize },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "GlyphData", functions);
 	}
 
 } // sound

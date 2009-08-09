@@ -33,24 +33,24 @@ namespace physics
 namespace box2d
 {
 	RevoluteJoint * luax_checkrevolutejoint(lua_State * L, int idx);
-	int _wrap_RevoluteJoint_getJointAngle(lua_State * L);
-	int _wrap_RevoluteJoint_getJointSpeed(lua_State * L);
-	int _wrap_RevoluteJoint_setMotorEnabled(lua_State * L);
-	int _wrap_RevoluteJoint_isMotorEnabled(lua_State * L);
-	int _wrap_RevoluteJoint_setMaxMotorTorque(lua_State * L);
-	int _wrap_RevoluteJoint_getMaxMotorTorque(lua_State * L);
-	int _wrap_RevoluteJoint_setMotorSpeed(lua_State * L);
-	int _wrap_RevoluteJoint_getMotorSpeed(lua_State * L);
-	int _wrap_RevoluteJoint_getMotorTorque(lua_State * L);
-	int _wrap_RevoluteJoint_setLimitsEnabled(lua_State * L);
-	int _wrap_RevoluteJoint_isLimitsEnabled(lua_State * L);
-	int _wrap_RevoluteJoint_setUpperLimit(lua_State * L);
-	int _wrap_RevoluteJoint_setLowerLimit(lua_State * L);
-	int _wrap_RevoluteJoint_setLimits(lua_State * L);
-	int _wrap_RevoluteJoint_getLowerLimit(lua_State * L);
-	int _wrap_RevoluteJoint_getUpperLimit(lua_State * L);
-	int _wrap_RevoluteJoint_getLimits(lua_State * L);
-	int wrap_RevoluteJoint_open(lua_State * L);
+	int w_RevoluteJoint_getJointAngle(lua_State * L);
+	int w_RevoluteJoint_getJointSpeed(lua_State * L);
+	int w_RevoluteJoint_setMotorEnabled(lua_State * L);
+	int w_RevoluteJoint_isMotorEnabled(lua_State * L);
+	int w_RevoluteJoint_setMaxMotorTorque(lua_State * L);
+	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L);
+	int w_RevoluteJoint_setMotorSpeed(lua_State * L);
+	int w_RevoluteJoint_getMotorSpeed(lua_State * L);
+	int w_RevoluteJoint_getMotorTorque(lua_State * L);
+	int w_RevoluteJoint_setLimitsEnabled(lua_State * L);
+	int w_RevoluteJoint_isLimitsEnabled(lua_State * L);
+	int w_RevoluteJoint_setUpperLimit(lua_State * L);
+	int w_RevoluteJoint_setLowerLimit(lua_State * L);
+	int w_RevoluteJoint_setLimits(lua_State * L);
+	int w_RevoluteJoint_getLowerLimit(lua_State * L);
+	int w_RevoluteJoint_getUpperLimit(lua_State * L);
+	int w_RevoluteJoint_getLimits(lua_State * L);
+	int luaopen_revolutejoint(lua_State * L);
 
 } // box2d
 } // physics

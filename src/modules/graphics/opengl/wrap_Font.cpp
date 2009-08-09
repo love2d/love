@@ -27,20 +27,19 @@ namespace graphics
 {
 namespace opengl
 {
-	// This macro makes checking for the correct type slightly more compact.
 	Font * luax_checkfont(lua_State * L, int idx)
 	{
-		return luax_checktype<Font>(L, idx, "Font", LOVE_GRAPHICS_FONT_BITS);
+		return luax_checktype<Font>(L, idx, "Font", GRAPHICS_FONT_T);
 	}
 
-	int _wrap_Font_getHeight(lua_State * L)
+	int w_Font_getHeight(lua_State * L)
 	{
 		Font * t = luax_checkfont(L, 1);
 		lua_pushnumber(L, t->getHeight());
 		return 1;
 	}
 
-	int _wrap_Font_getWidth(lua_State * L)
+	int w_Font_getWidth(lua_State * L)
 	{
 		Font * t = luax_checkfont(L, 1);
 		const char * str = luaL_checkstring(L, 2);
@@ -48,7 +47,7 @@ namespace opengl
 		return 1;
 	}
 
-	int _wrap_Font_setLineHeight(lua_State * L)
+	int w_Font_setLineHeight(lua_State * L)
 	{
 		Font * t = luax_checkfont(L, 1);
 		float h = (float)luaL_checknumber(L, 2);
@@ -56,25 +55,24 @@ namespace opengl
 		return 0;
 	}
 
-	int _wrap_Font_getLineHeight(lua_State * L)
+	int w_Font_getLineHeight(lua_State * L)
 	{
 		Font * t = luax_checkfont(L, 1);
 		lua_pushnumber(L, t->getLineHeight());
 		return 1;
 	}
 
-	static const luaL_Reg wrap_Font_functions[] = {
-		{ "getHeight", _wrap_Font_getHeight },
-		{ "getWidth", _wrap_Font_getWidth },
-		{ "setLineHeight", _wrap_Font_setLineHeight },
-		{ "getLineHeight", _wrap_Font_getLineHeight },
-		{ 0, 0 }
-	};
-
-	int wrap_Font_open(lua_State * L)
+	int luaopen_font(lua_State * L)
 	{
-		luax_register_type(L, "Font", wrap_Font_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "getHeight", w_Font_getHeight },
+			{ "getWidth", w_Font_getWidth },
+			{ "setLineHeight", w_Font_setLineHeight },
+			{ "getLineHeight", w_Font_getLineHeight },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "Font", functions);
 	}
 
 } // opengl

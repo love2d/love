@@ -33,16 +33,16 @@ namespace physics
 namespace box2d
 {
 	PulleyJoint * luax_checkpulleyjoint(lua_State * L, int idx);
-	int _wrap_PulleyJoint_getGroundAnchors(lua_State * L);
-	int _wrap_PulleyJoint_setMaxLengths(lua_State * L);
-	int _wrap_PulleyJoint_getMaxLengths(lua_State * L);
-	int _wrap_PulleyJoint_setConstant(lua_State * L);
-	int _wrap_PulleyJoint_getConstant(lua_State * L);
-	int _wrap_PulleyJoint_getLength1(lua_State * L);
-	int _wrap_PulleyJoint_getLength2(lua_State * L);
-	int _wrap_PulleyJoint_setRatio(lua_State * L);
-	int _wrap_PulleyJoint_getRatio(lua_State * L);
-	int wrap_PulleyJoint_open(lua_State * L);
+	int w_PulleyJoint_getGroundAnchors(lua_State * L);
+	int w_PulleyJoint_setMaxLengths(lua_State * L);
+	int w_PulleyJoint_getMaxLengths(lua_State * L);
+	int w_PulleyJoint_setConstant(lua_State * L);
+	int w_PulleyJoint_getConstant(lua_State * L);
+	int w_PulleyJoint_getLength1(lua_State * L);
+	int w_PulleyJoint_getLength2(lua_State * L);
+	int w_PulleyJoint_setRatio(lua_State * L);
+	int w_PulleyJoint_getRatio(lua_State * L);
+	int luaopen_pulleyjoint(lua_State * L);
 
 } // box2d
 } // physics

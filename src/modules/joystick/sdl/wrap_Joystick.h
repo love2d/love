@@ -31,26 +31,24 @@ namespace joystick
 {
 namespace sdl
 {
-	int _wrap_getNumJoysticks(lua_State * L);
-	int _wrap_getName(lua_State * L);
-	int _wrap_open(lua_State * L);
-	int _wrap_isOpen(lua_State * L);
-	int _wrap_getNumAxes(lua_State * L);
-	int _wrap_getNumBalls(lua_State * L);
-	int _wrap_getNumButtons(lua_State * L);
-	int _wrap_getNumHats(lua_State * L);
-	int _wrap_getAxis(lua_State * L);
-	int _wrap_getAxes(lua_State * L);
-	int _wrap_getBall(lua_State * L);
-	int _wrap_isDown(lua_State * L);
-	int _wrap_getHat(lua_State * L);
-	int _wrap_close(lua_State * L);
-	int wrap_Joystick_open(lua_State * L);
+	int w_getNumJoysticks(lua_State * L);
+	int w_getName(lua_State * L);
+	int w_open(lua_State * L);
+	int w_isOpen(lua_State * L);
+	int w_getNumAxes(lua_State * L);
+	int w_getNumBalls(lua_State * L);
+	int w_getNumButtons(lua_State * L);
+	int w_getNumHats(lua_State * L);
+	int w_getAxis(lua_State * L);
+	int w_getAxes(lua_State * L);
+	int w_getBall(lua_State * L);
+	int w_isDown(lua_State * L);
+	int w_getHat(lua_State * L);
+	int w_close(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State * L);
 
 } // sdl
 } // joystick
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State * L);
 
 #endif // LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H

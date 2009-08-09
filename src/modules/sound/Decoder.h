@@ -55,7 +55,7 @@ namespace sound
 		/**
 		* 16 bit audio is the default.
 		**/
-		static const int DEFAULT_BITS = 16;
+		static const int DEFAULT_T = 16;
 
 		/**
 		* Creates a deep of itself. The sound stream can (and should) be 

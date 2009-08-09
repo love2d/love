@@ -28,24 +28,24 @@ namespace box2d
 {
 	RevoluteJoint * luax_checkrevolutejoint(lua_State * L, int idx)
 	{
-		return luax_checktype<RevoluteJoint>(L, idx, "RevoluteJoint", LOVE_PHYSICS_REVOLUTE_JOINT_BITS);
+		return luax_checktype<RevoluteJoint>(L, idx, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T);
 	}
 
-	int _wrap_RevoluteJoint_getJointAngle(lua_State * L)
+	int w_RevoluteJoint_getJointAngle(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_pushnumber(L, t->getJointAngle());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_getJointSpeed(lua_State * L)
+	int w_RevoluteJoint_getJointSpeed(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_pushnumber(L, t->getJointSpeed());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_setMotorEnabled(lua_State * L)
+	int w_RevoluteJoint_setMotorEnabled(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
@@ -53,14 +53,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_RevoluteJoint_isMotorEnabled(lua_State * L)
+	int w_RevoluteJoint_isMotorEnabled(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		luax_pushboolean(L, t->isMotorEnabled());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_setMaxMotorTorque(lua_State * L)
+	int w_RevoluteJoint_setMaxMotorTorque(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -68,14 +68,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_RevoluteJoint_getMaxMotorTorque(lua_State * L)
+	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_pushnumber(L, t->getMaxMotorTorque());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_setMotorSpeed(lua_State * L)
+	int w_RevoluteJoint_setMotorSpeed(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -83,21 +83,21 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_RevoluteJoint_getMotorSpeed(lua_State * L)
+	int w_RevoluteJoint_getMotorSpeed(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_pushnumber(L, t->getMotorSpeed());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_getMotorTorque(lua_State * L)
+	int w_RevoluteJoint_getMotorTorque(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_pushnumber(L, t->getMotorTorque());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_setLimitsEnabled(lua_State * L)
+	int w_RevoluteJoint_setLimitsEnabled(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
@@ -105,14 +105,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_RevoluteJoint_isLimitsEnabled(lua_State * L)
+	int w_RevoluteJoint_isLimitsEnabled(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		luax_pushboolean(L, t->isLimitsEnabled());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_setUpperLimit(lua_State * L)
+	int w_RevoluteJoint_setUpperLimit(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -120,7 +120,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_RevoluteJoint_setLowerLimit(lua_State * L)
+	int w_RevoluteJoint_setLowerLimit(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -128,7 +128,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_RevoluteJoint_setLimits(lua_State * L)
+	int w_RevoluteJoint_setLimits(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -137,59 +137,57 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_RevoluteJoint_getLowerLimit(lua_State * L)
+	int w_RevoluteJoint_getLowerLimit(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_pushnumber(L, t->getLowerLimit());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_getUpperLimit(lua_State * L)
+	int w_RevoluteJoint_getUpperLimit(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_pushnumber(L, t->getUpperLimit());
 		return 1;
 	}
 
-	int _wrap_RevoluteJoint_getLimits(lua_State * L)
+	int w_RevoluteJoint_getLimits(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		lua_remove(L, 1);
 		return t->getLimits(L);
 	}
 
-	static const luaL_Reg wrap_RevoluteJoint_functions[] = {
-		{ "getJointAngle", _wrap_RevoluteJoint_getJointAngle },
-		{ "getJointSpeed", _wrap_RevoluteJoint_getJointSpeed },
-		{ "setMotorEnabled", _wrap_RevoluteJoint_setMotorEnabled },
-		{ "isMotorEnabled", _wrap_RevoluteJoint_isMotorEnabled },
-		{ "setMaxMotorTorque", _wrap_RevoluteJoint_setMaxMotorTorque },
-		{ "getMaxMotorTorque", _wrap_RevoluteJoint_getMaxMotorTorque },
-		{ "setMotorSpeed", _wrap_RevoluteJoint_setMotorSpeed },
-		{ "getMotorSpeed", _wrap_RevoluteJoint_getMotorSpeed },
-		{ "getMotorTorque", _wrap_RevoluteJoint_getMotorTorque },
-		{ "setLimitsEnabled", _wrap_RevoluteJoint_setLimitsEnabled },
-		{ "isLimitsEnabled", _wrap_RevoluteJoint_isLimitsEnabled },
-		{ "setUpperLimit", _wrap_RevoluteJoint_setUpperLimit },
-		{ "setLowerLimit", _wrap_RevoluteJoint_setLowerLimit },
-		{ "setLimits", _wrap_RevoluteJoint_setLimits },
-		{ "getLowerLimit", _wrap_RevoluteJoint_getLowerLimit },
-		{ "getUpperLimit", _wrap_RevoluteJoint_getUpperLimit },
-		{ "getLimits", _wrap_RevoluteJoint_getLimits },
-		// From Joint.
-		{ "getType", _wrap_Joint_getType },
-		{ "getAnchors", _wrap_Joint_getAnchors },
-		{ "getReactionForce", _wrap_Joint_getReactionForce },
-		{ "getReactionTorque", _wrap_Joint_getReactionTorque },
-		{ "setCollideConnected", _wrap_Joint_setCollideConnected },
-		{ "getCollideConnected", _wrap_Joint_getCollideConnected },
-		{ 0, 0 }
-	};
-
-	int wrap_RevoluteJoint_open(lua_State * L)
+	int luaopen_revolutejoint(lua_State * L)
 	{
-		luax_register_type(L, "RevoluteJoint", wrap_RevoluteJoint_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "getJointAngle", w_RevoluteJoint_getJointAngle },
+			{ "getJointSpeed", w_RevoluteJoint_getJointSpeed },
+			{ "setMotorEnabled", w_RevoluteJoint_setMotorEnabled },
+			{ "isMotorEnabled", w_RevoluteJoint_isMotorEnabled },
+			{ "setMaxMotorTorque", w_RevoluteJoint_setMaxMotorTorque },
+			{ "getMaxMotorTorque", w_RevoluteJoint_getMaxMotorTorque },
+			{ "setMotorSpeed", w_RevoluteJoint_setMotorSpeed },
+			{ "getMotorSpeed", w_RevoluteJoint_getMotorSpeed },
+			{ "getMotorTorque", w_RevoluteJoint_getMotorTorque },
+			{ "setLimitsEnabled", w_RevoluteJoint_setLimitsEnabled },
+			{ "isLimitsEnabled", w_RevoluteJoint_isLimitsEnabled },
+			{ "setUpperLimit", w_RevoluteJoint_setUpperLimit },
+			{ "setLowerLimit", w_RevoluteJoint_setLowerLimit },
+			{ "setLimits", w_RevoluteJoint_setLimits },
+			{ "getLowerLimit", w_RevoluteJoint_getLowerLimit },
+			{ "getUpperLimit", w_RevoluteJoint_getUpperLimit },
+			{ "getLimits", w_RevoluteJoint_getLimits },
+			// From Joint.
+			{ "getType", w_Joint_getType },
+			{ "getAnchors", w_Joint_getAnchors },
+			{ "getReactionForce", w_Joint_getReactionForce },
+			{ "getReactionTorque", w_Joint_getReactionTorque },
+			{ "setCollideConnected", w_Joint_setCollideConnected },
+			{ "getCollideConnected", w_Joint_getCollideConnected },
+			{ 0, 0 }
+		};
+		return luax_register_type(L, "RevoluteJoint", functions);
 	}
 
 } // box2d

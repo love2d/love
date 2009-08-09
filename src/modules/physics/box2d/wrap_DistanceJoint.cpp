@@ -28,10 +28,10 @@ namespace box2d
 {
 	DistanceJoint * luax_checkdistancejoint(lua_State * L, int idx)
 	{
-		return luax_checktype<DistanceJoint>(L, idx, "DistanceJoint", LOVE_PHYSICS_DISTANCE_JOINT_BITS);
+		return luax_checktype<DistanceJoint>(L, idx, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T);
 	}
 
-	int _wrap_DistanceJoint_setLength(lua_State * L)
+	int w_DistanceJoint_setLength(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -39,14 +39,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_DistanceJoint_getLength(lua_State * L)
+	int w_DistanceJoint_getLength(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
 		lua_pushnumber(L, t->getLength());
 		return 1;
 	}
 
-	int _wrap_DistanceJoint_setFrequency(lua_State * L)
+	int w_DistanceJoint_setFrequency(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -54,14 +54,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_DistanceJoint_getFrequency(lua_State * L)
+	int w_DistanceJoint_getFrequency(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
 		lua_pushnumber(L, t->getFrequency());
 		return 1;
 	}
 
-	int _wrap_DistanceJoint_setDampingRatio(lua_State * L)
+	int w_DistanceJoint_setDampingRatio(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -69,34 +69,33 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_DistanceJoint_getDampingRatio(lua_State * L)
+	int w_DistanceJoint_getDampingRatio(lua_State * L)
 	{
 		DistanceJoint * t = luax_checkdistancejoint(L, 1);
 		lua_pushnumber(L, t->getDampingRatio());
 		return 1;
 	}
 
-	static const luaL_Reg wrap_DistanceJoint_functions[] = {
-		{ "setLength", _wrap_DistanceJoint_setLength },
-		{ "getLength", _wrap_DistanceJoint_getLength },
-		{ "setFrequency", _wrap_DistanceJoint_setFrequency },
-		{ "getFrequency", _wrap_DistanceJoint_getFrequency },
-		{ "setDamping", _wrap_DistanceJoint_setDampingRatio },
-		{ "getDamping", _wrap_DistanceJoint_getDampingRatio },
-		// From Joint.
-		{ "getType", _wrap_Joint_getType },
-		{ "getAnchors", _wrap_Joint_getAnchors },
-		{ "getReactionForce", _wrap_Joint_getReactionForce },
-		{ "getReactionTorque", _wrap_Joint_getReactionTorque },
-		{ "setCollideConnected", _wrap_Joint_setCollideConnected },
-		{ "getCollideConnected", _wrap_Joint_getCollideConnected },
-		{ 0, 0 }
-	};
-
-	int wrap_DistanceJoint_open(lua_State * L)
+	int luaopen_distancejoint(lua_State * L)
 	{
-		luax_register_type(L, "DistanceJoint", wrap_DistanceJoint_functions);
-		return 0; 
+		static const luaL_Reg functions[] = {
+			{ "setLength", w_DistanceJoint_setLength },
+			{ "getLength", w_DistanceJoint_getLength },
+			{ "setFrequency", w_DistanceJoint_setFrequency },
+			{ "getFrequency", w_DistanceJoint_getFrequency },
+			{ "setDamping", w_DistanceJoint_setDampingRatio },
+			{ "getDamping", w_DistanceJoint_getDampingRatio },
+			// From Joint.
+			{ "getType", w_Joint_getType },
+			{ "getAnchors", w_Joint_getAnchors },
+			{ "getReactionForce", w_Joint_getReactionForce },
+			{ "getReactionTorque", w_Joint_getReactionTorque },
+			{ "setCollideConnected", w_Joint_setCollideConnected },
+			{ "getCollideConnected", w_Joint_getCollideConnected },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "DistanceJoint", functions);
 	}
 
 } // box2d

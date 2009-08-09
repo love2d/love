@@ -32,13 +32,13 @@ namespace physics
 namespace box2d
 {
 	Joint * luax_checkjoint(lua_State * L, int idx);
-	int _wrap_Joint_getType(lua_State * L);
-	int _wrap_Joint_getAnchors(lua_State * L);
-	int _wrap_Joint_getReactionForce(lua_State * L);
-	int _wrap_Joint_getReactionTorque(lua_State * L);
-	int _wrap_Joint_setCollideConnected(lua_State * L);
-	int _wrap_Joint_getCollideConnected(lua_State * L);
-	int wrap_Joint_open(lua_State * L);
+	int w_Joint_getType(lua_State * L);
+	int w_Joint_getAnchors(lua_State * L);
+	int w_Joint_getReactionForce(lua_State * L);
+	int w_Joint_getReactionTorque(lua_State * L);
+	int w_Joint_setCollideConnected(lua_State * L);
+	int w_Joint_getCollideConnected(lua_State * L);
+	int luaopen_joint(lua_State * L);
 
 } // box2d
 } // physics

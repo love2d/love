@@ -31,18 +31,16 @@ namespace event
 {
 namespace sdl
 {
-	int _wrap_pump(lua_State * L);
-	int _wrap_poll(lua_State * L);
-	int _wrap_wait(lua_State * L);
-	int _wrap_quit(lua_State * L);
-	int _wrap_push(lua_State * L);
+	int w_pump(lua_State * L);
+	int w_poll(lua_State * L);
+	int w_wait(lua_State * L);
+	int w_quit(lua_State * L);
+	int w_push(lua_State * L);
 
-	int wrap_Event_open(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_event(lua_State * L);
 
 } // sdl
 } // event
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_event(lua_State * L);
 
 #endif // LOVE_EVENT_SDL_WRAP_EVENT_H

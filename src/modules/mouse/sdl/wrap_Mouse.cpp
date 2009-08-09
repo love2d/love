@@ -28,19 +28,19 @@ namespace sdl
 {
 	static Mouse * instance = 0;
 
-	int _wrap_getX(lua_State * L)
+	int w_getX(lua_State * L)
 	{
 		lua_pushnumber(L, instance->getX());
 		return 1;
 	}
 
-	int _wrap_getY(lua_State * L)
+	int w_getY(lua_State * L)
 	{
 		lua_pushnumber(L, instance->getY());
 		return 1;
 	}
 
-	int _wrap_getPosition(lua_State * L)
+	int w_getPosition(lua_State * L)
 	{
 		int x, y;
 		instance->getPosition(&x, &y);
@@ -49,7 +49,7 @@ namespace sdl
 		return 2;
 	}
 
-	int _wrap_setPosition(lua_State * L)
+	int w_setPosition(lua_State * L)
 	{
 		int x = luaL_checkint(L, 1);
 		int y = luaL_checkint(L, 2);
@@ -57,66 +57,66 @@ namespace sdl
 		return 0;
 	}
 
-	int _wrap_isDown(lua_State * L)
+	int w_isDown(lua_State * L)
 	{
 		int b = luaL_checkint(L, 1);
 		luax_pushboolean(L, instance->isDown(b));
 		return 1;
 	}
 
-	int _wrap_setVisible(lua_State * L)
+	int w_setVisible(lua_State * L)
 	{
 		bool b = luax_toboolean(L, 1);
 		instance->setVisible(b);
 		return 0;
 	}
 
-	int _wrap_isVisible(lua_State * L)
+	int w_isVisible(lua_State * L)
 	{
 		luax_pushboolean(L, instance->isVisible());
 		return 1;
 	}
 
-	int _wrap_setGrap(lua_State * L)
+	int w_setGrap(lua_State * L)
 	{
 		bool b = luax_toboolean(L, 1);
 		instance->setGrab(b);
 		return 0;
 	}
 
-	int _wrap_isGrabbed(lua_State * L)
+	int w_isGrabbed(lua_State * L)
 	{
 		luax_pushboolean(L, instance->isGrabbed());
 		return 1;
 	}
 	
-	// List of functions to wrap.
-	static const luaL_Reg wrap_Mouse_functions[] = {
-		{ "getX", _wrap_getX },
-		{ "getY", _wrap_getY },
-		{ "setPosition", _wrap_setPosition },
-		{ "isDown", _wrap_isDown },
-		{ "setVisible", _wrap_setVisible },
-		{ "isVisible", _wrap_isVisible },
-		{ "getPosition", _wrap_getPosition },
-		{ "setGrab", _wrap_setGrap },
-		{ "isGrabbed", _wrap_isGrabbed },
-		{ 0, 0 }
-	};
 
-	// List of constants.
-	static const LuaConstant wrap_Mouse_constants[] = {
-		{ "mouse_left", Mouse::MOUSE_LEFT },
-		{ "mouse_middle", Mouse::MOUSE_MIDDLE },
-		{ "mouse_right", Mouse::MOUSE_RIGHT },
-		{ "mouse_wheelup", Mouse::MOUSE_WHEELUP },
-		{ "mouse_wheeldown", Mouse::MOUSE_WHEELDOWN },
-		{ 0, 0 }
-	};
-
-
-	int wrap_Mouse_open(lua_State * L)
+	int w_Mouse_open(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "getX", w_getX },
+			{ "getY", w_getY },
+			{ "setPosition", w_setPosition },
+			{ "isDown", w_isDown },
+			{ "setVisible", w_setVisible },
+			{ "isVisible", w_isVisible },
+			{ "getPosition", w_getPosition },
+			{ "setGrab", w_setGrap },
+			{ "isGrabbed", w_isGrabbed },
+			{ 0, 0 }
+		};
+
+		// List of constants.
+		static const LuaConstant constants[] = {
+			{ "mouse_left", Mouse::MOUSE_LEFT },
+			{ "mouse_middle", Mouse::MOUSE_MIDDLE },
+			{ "mouse_right", Mouse::MOUSE_RIGHT },
+			{ "mouse_wheelup", Mouse::MOUSE_WHEELUP },
+			{ "mouse_wheeldown", Mouse::MOUSE_WHEELDOWN },
+			{ 0, 0 }
+		};
+
 		if(instance == 0)
 		{
 			try 
@@ -129,9 +129,9 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, "love.mouse", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Mouse_functions, 0, wrap_Mouse_constants, "mouse");
+		return luax_register_module(L, functions, 0, constants, "mouse");
 	}
 
 } // sdl
@@ -140,5 +140,5 @@ namespace sdl
 
 int luaopen_love_mouse(lua_State * L)
 {
-	return love::mouse::sdl::wrap_Mouse_open(L);
+	return love::mouse::sdl::w_Mouse_open(L);
 }

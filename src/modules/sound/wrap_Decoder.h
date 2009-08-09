@@ -30,10 +30,10 @@ namespace love
 namespace sound
 {
 	Decoder * luax_checkdecoder(lua_State * L, int idx);
-	int _wrap_Decoder_getChannels(lua_State * L);
-	int _wrap_Decoder_getBits(lua_State * L);
-	int _wrap_Decoder_getSampleRate(lua_State * L);
-	int wrap_Decoder_open(lua_State * L);
+	int w_Decoder_getChannels(lua_State * L);
+	int w_Decoder_getBits(lua_State * L);
+	int w_Decoder_getSampleRate(lua_State * L);
+	int luaopen_decoder(lua_State * L);
 
 } // sound
 } // love

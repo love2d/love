@@ -30,66 +30,66 @@ namespace audio
 {
 	static Audio * instance = 0;
 
-	int _wrap_getNumSources(lua_State * L)
+	int w_getNumSources(lua_State * L)
 	{
 		lua_pushinteger(L, instance->getNumSources());
 		return 1;
 	}
 
-	int _wrap_newSound(lua_State * L)
+	int w_newSound(lua_State * L)
 	{
 		// Convert to File, if necessary.
 		if(lua_isstring(L, 1))
-			luax_strtofile(L, 1);
+			luax_convobj(L, 1, "filesystem", "newFile");
 
 		// Convert to SoundData, if necessary.
-		if(luax_istype(L, 1, LOVE_FILESYSTEM_FILE_BITS))
+		if(luax_istype(L, 1, FILESYSTEM_FILE_T))
 			luax_convobj(L, 1, "sound", "newSoundData");
 
-		love::sound::SoundData * data = luax_checktype<love::sound::SoundData>(L, 1, "SoundData", LOVE_SOUND_SOUND_DATA_BITS);
+		love::sound::SoundData * data = luax_checktype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T);
 		Sound * t = instance->newSound(data);
-		luax_newtype(L, "Sound", LOVE_AUDIO_SOUND_BITS, (void*)t);
+		luax_newtype(L, "Sound", AUDIO_SOUND_T, (void*)t);
 		return 1;
 	}
 
 
-	int _wrap_newMusic(lua_State * L)
+	int w_newMusic(lua_State * L)
 	{
 		// Convert to Decoder, if necessary.
-		if(!luax_istype(L, 1, LOVE_SOUND_DECODER_BITS))
+		if(!luax_istype(L, 1, SOUND_DECODER_T))
 			luax_convobj(L, 1, "sound", "newDecoder");
 
-		love::sound::Decoder * decoder = luax_checktype<love::sound::Decoder>(L, 1, "Decoder", LOVE_SOUND_DECODER_BITS);
+		love::sound::Decoder * decoder = luax_checktype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T);
 		Music * t = instance->newMusic(decoder);
-		luax_newtype(L, "Music", LOVE_AUDIO_MUSIC_BITS, (void*)t);
+		luax_newtype(L, "Music", AUDIO_MUSIC_T, (void*)t);
 		return 1;
 	}
 
-	int _wrap_newSource(lua_State * L)
+	int w_newSource(lua_State * L)
 	{
-		Audible * a = luax_checktype<Audible>(L, 1, "Audible", LOVE_AUDIO_AUDIBLE_BITS);
+		Audible * a = luax_checktype<Audible>(L, 1, "Audible", AUDIO_AUDIBLE_T);
 		Source * t = instance->newSource(a);
-		luax_newtype(L, "Source", LOVE_AUDIO_SOURCE_BITS, (void*)t);
+		luax_newtype(L, "Source", AUDIO_SOURCE_T, (void*)t);
 		return 1;
 	}
 
-	int _wrap_play(lua_State * L)
+	int w_play(lua_State * L)
 	{
 		int argn = lua_gettop(L);
 
-		if(luax_istype(L, 1, LOVE_AUDIO_SOUND_BITS))
+		if(luax_istype(L, 1, AUDIO_SOUND_T))
 		{
 			Sound * s = luax_checksound(L, 1);
 			instance->play(s);
 			return 0;
 		} 
-		else if(luax_istype(L, 1, LOVE_AUDIO_MUSIC_BITS))
+		else if(luax_istype(L, 1, AUDIO_MUSIC_T))
 		{
 			Music * m = luax_checkmusic(L, 1);
 			instance->play(m);
 			return 0;
 		}
-		else if(luax_istype(L, 1, LOVE_AUDIO_SOURCE_BITS))
+		else if(luax_istype(L, 1, AUDIO_SOURCE_T))
 		{
 			Source * s = luax_checksource(L, 1);
 			instance->play(s);
@@ -99,48 +99,48 @@ namespace audio
 		return luaL_error(L, "No matching overload");
 	}
 
-	int _wrap_stop(lua_State * L)
+	int w_stop(lua_State * L)
 	{
 		Source * c = luax_checksource(L, 1);
 		instance->stop(c);
 		return 0;
 	}
 
-	int _wrap_pause(lua_State * L)
+	int w_pause(lua_State * L)
 	{
 		Source * c = luax_checksource(L, 1);
 		instance->pause(c);
 		return 0;
 	}
 
-	int _wrap_resume(lua_State * L)
+	int w_resume(lua_State * L)
 	{
 		Source * c = luax_checksource(L, 1);
 		instance->resume(c);
 		return 0;
 	}
 
-	int _wrap_rewind(lua_State * L)
+	int w_rewind(lua_State * L)
 	{
 		Source * c = luax_checksource(L, 1);
 		instance->rewind(c);
 		return 0;
 	}
 
-	int _wrap_setVolume(lua_State * L)
+	int w_setVolume(lua_State * L)
 	{
 		float v = (float)luaL_checknumber(L, 1);
 		instance->setVolume(v);
 		return 0;
 	}
 
-	int _wrap_getVolume(lua_State * L)
+	int w_getVolume(lua_State * L)
 	{
 		lua_pushnumber(L, instance->getVolume());
 		return 1;
 	}
 
-	int _wrap_setPosition(lua_State * L)
+	int w_setPosition(lua_State * L)
 	{
 		float v[3];
 		v[0] = (float)luaL_checknumber(L, 1);
@@ -150,7 +150,7 @@ namespace audio
 		return 0;
 	}
 
-	int _wrap_getPosition(lua_State * L)
+	int w_getPosition(lua_State * L)
 	{
 		float v[3];
 		instance->getPosition(v);
@@ -160,7 +160,7 @@ namespace audio
 		return 3;
 	}
 
-	int _wrap_setOrientation(lua_State * L)
+	int w_setOrientation(lua_State * L)
 	{
 		float v[6];
 		v[0] = (float)luaL_checknumber(L, 1);
@@ -173,7 +173,7 @@ namespace audio
 		return 0;
 	}
 
-	int _wrap_getOrientation(lua_State * L)
+	int w_getOrientation(lua_State * L)
 	{
 		float v[6];
 		instance->getOrientation(v);
@@ -186,7 +186,7 @@ namespace audio
 		return 6;
 	}
 
-	int _wrap_setVelocity(lua_State * L)
+	int w_setVelocity(lua_State * L)
 	{
 		float v[3];
 		v[0] = (float)luaL_checknumber(L, 1);
@@ -196,7 +196,7 @@ namespace audio
 		return 0;
 	}
 
-	int _wrap_getVelocity(lua_State * L)
+	int w_getVelocity(lua_State * L)
 	{
 		float v[3];
 		instance->getVelocity(v);
@@ -206,39 +206,37 @@ namespace audio
 		return 3;
 	}
 
-	// List of functions to wrap.
-	static const luaL_Reg wrap_Audio_functions[] = {
-		{ "getNumSources", _wrap_getNumSources },
-		{ "newSound",  _wrap_newSound },
-		{ "newMusic",  _wrap_newMusic },
-		{ "newSource",  _wrap_newSource },
-		{ "play",  _wrap_play },
-		{ "stop",  _wrap_stop },
-		{ "pause",  _wrap_pause },
-		{ "resume",  _wrap_resume },
-		{ "rewind",  _wrap_rewind },
-		{ "setVolume",  _wrap_setVolume },
-		{ "getVolume",  _wrap_getVolume },
-
-		{ "setPosition",  _wrap_setPosition },
-		{ "getPosition",  _wrap_getPosition },
-		{ "setOrientation",  _wrap_setOrientation },
-		{ "getOrientation",  _wrap_getOrientation },
-		{ "setVelocity",  _wrap_setVelocity },
-		{ "getVelocity",  _wrap_getVelocity },
-
-		{ 0, 0 }
-	};
-
-	static const lua_CFunction wrap_Audio_types[] = {
-		wrap_Source_open,
-		wrap_Music_open,
-		wrap_Sound_open,
-		0
-	};
-
-	int wrap_Audio_open(lua_State * L)
+	int luaopen_love_audio(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "getNumSources", w_getNumSources },
+			{ "newSound", w_newSound },
+			{ "newMusic", w_newMusic },
+			{ "newSource", w_newSource },
+			{ "play", w_play },
+			{ "stop", w_stop },
+			{ "pause", w_pause },
+			{ "resume", w_resume },
+			{ "rewind", w_rewind },
+			{ "setVolume", w_setVolume },
+			{ "getVolume", w_getVolume },
+			{ "setPosition", w_setPosition },
+			{ "getPosition", w_getPosition },
+			{ "setOrientation", w_setOrientation },
+			{ "getOrientation", w_getOrientation },
+			{ "setVelocity", w_setVelocity },
+			{ "getVelocity", w_getVelocity },
+			{ 0, 0 }
+		};
+
+		static const lua_CFunction types[] = {
+			luaopen_source,
+			luaopen_music,
+			luaopen_sound,
+			0
+		};
+
 		if(instance == 0)
 		{
 			// Try OpenAL first.
@@ -268,15 +266,10 @@ namespace audio
 		if(instance == 0)
 			return luaL_error(L, "Could not open any audio module.");
 
-		luax_register_gc(L, "love.audio", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Audio_functions, wrap_Audio_types, 0, "audio");
+		return luax_register_module(L, functions, types, 0, "audio");
 	}
 
 } // audio
 } // love
-
-int luaopen_love_audio(lua_State * L)
-{
-	return love::audio::wrap_Audio_open(L);
-}

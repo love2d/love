@@ -24,32 +24,32 @@ namespace love
 {
 	Data * luax_checkdata(lua_State * L, int idx)
 	{
-		return luax_checktype<Data>(L, idx, "Data", LOVE_DATA_BITS);
+		return luax_checktype<Data>(L, idx, "Data", DATA_T);
 	}
 
-	int _wrap_Data_getPointer(lua_State * L)
+	int w_Data_getPointer(lua_State * L)
 	{
 		Data * t = luax_checkdata(L, 1);
 		lua_pushlightuserdata(L, t->getData());
 		return 1;
 	}
 
-	int _wrap_Data_getSize(lua_State * L)
+	int w_Data_getSize(lua_State * L)
 	{
 		Data * t = luax_checkdata(L, 1);
 		lua_pushinteger(L, t->getSize());
 		return 1;
 	}
 
-	const luaL_Reg wrap_Data_functions[] = {
-		{ "getPointer", _wrap_Data_getPointer },
-		{ "getSize", _wrap_Data_getSize },
+	const luaL_Reg w_Data_functions[] = {
+		{ "getPointer", w_Data_getPointer },
+		{ "getSize", w_Data_getSize },
 		{ 0, 0 }
 	};
 
-	int wrap_Data_open(lua_State * L)
+	int w_Data_open(lua_State * L)
 	{
-		luax_register_type(L, "Data", wrap_Data_functions);
+		luax_register_type(L, "Data", w_Data_functions);
 		return 0;
 	}
 	

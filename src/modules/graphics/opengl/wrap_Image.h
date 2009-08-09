@@ -32,10 +32,10 @@ namespace graphics
 namespace opengl
 {
 	Image * luax_checkimage(lua_State * L, int idx);
-	int _wrap_Image_getWidth(lua_State * L);
-	int _wrap_Image_getHeight(lua_State * L);
-	int _wrap_Image_setFIlter(lua_State * L);
-	int wrap_Image_open(lua_State * L);
+	int w_Image_getWidth(lua_State * L);
+	int w_Image_getHeight(lua_State * L);
+	int w_Image_setFIlter(lua_State * L);
+	int luaopen_image(lua_State * L);
 
 } // opengl
 } // graphics

@@ -32,17 +32,17 @@ namespace filesystem
 namespace physfs
 {
 	File * luax_checkfile(lua_State * L, int idx);
-	int _wrap_File_getSize(lua_State * L);
-	int _wrap_File_open(lua_State * L);
-	int _wrap_File_close(lua_State * L);
-	int _wrap_File_read(lua_State * L);
-	int _wrap_File_write(lua_State * L);
-	int _wrap_File_eof(lua_State * L);
-	int _wrap_File_tell(lua_State * L);
-	int _wrap_File_seek(lua_State * L);
-	int _wrap_File_lines(lua_State * L);
+	int w_File_getSize(lua_State * L);
+	int w_File_open(lua_State * L);
+	int w_File_close(lua_State * L);
+	int w_File_read(lua_State * L);
+	int w_File_write(lua_State * L);
+	int w_File_eof(lua_State * L);
+	int w_File_tell(lua_State * L);
+	int w_File_seek(lua_State * L);
+	int w_File_lines(lua_State * L);
 	int lines_i(lua_State * L);
-	int wrap_File_open(lua_State * L);
+	int luaopen_file(lua_State * L);
 } // physfs
 } // filesystem
 } // love

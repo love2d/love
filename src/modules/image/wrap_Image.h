@@ -29,13 +29,11 @@ namespace love
 {
 namespace image
 {
-	int _wrap_getFormats(lua_State * L);
-	int _wrap_newImageData(lua_State * L);
-	int wrap_Image_open(lua_State * L);
+	int w_getFormats(lua_State * L);
+	int w_newImageData(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_image(lua_State * L);
 
 } // image
 } // love
 
 #endif // LOVE_IMAGE_WRAP_IMAGE_H
-
-extern "C" LOVE_EXPORT int luaopen_love_image(lua_State * L);

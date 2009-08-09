@@ -29,24 +29,24 @@ namespace opengl
 {
 	Frame * luax_checkframe(lua_State * L, int idx)
 	{
-		return luax_checktype<Frame>(L, idx, "Frame", LOVE_GRAPHICS_FRAME_BITS);
+		return luax_checktype<Frame>(L, idx, "Frame", GRAPHICS_FRAME_T);
 	}
 	
-	int _wrap_Frame_flip(lua_State *L)
+	int w_Frame_flip(lua_State *L)
 	{
-		Frame *frame = luax_checktype<Frame>(L, 1, "Frame", LOVE_GRAPHICS_FRAME_BITS);
+		Frame *frame = luax_checktype<Frame>(L, 1, "Frame", GRAPHICS_FRAME_T);
 		frame->flip(luax_toboolean(L, 2), luax_toboolean(L, 3));
 		return 0;
 	}
 
-	static const luaL_Reg wrap_Frame_functions[] = {
-		{ "flip", _wrap_Frame_flip },
+	static const luaL_Reg w_Frame_functions[] = {
+		{ "flip", w_Frame_flip },
 		{ 0, 0 }
 	};
 
-	int wrap_Frame_open(lua_State * L)
+	int w_Frame_open(lua_State * L)
 	{
-		luax_register_type(L, "Frame", wrap_Frame_functions);
+		luax_register_type(L, "Frame", w_Frame_functions);
 		return 0;
 	}
 

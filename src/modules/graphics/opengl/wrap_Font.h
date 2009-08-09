@@ -32,11 +32,11 @@ namespace graphics
 namespace opengl
 {
 	Font * luax_checkfont(lua_State * L, int idx);
-	int _wrap_Font_getHeight(lua_State * L);
-	int _wrap_Font_getWidth(lua_State * L);
-	int _wrap_Font_setLineHeight(lua_State * L);
-	int _wrap_Font_getLineHeight(lua_State * L);
-	int wrap_Font_open(lua_State * L);
+	int w_Font_getHeight(lua_State * L);
+	int w_Font_getWidth(lua_State * L);
+	int w_Font_setLineHeight(lua_State * L);
+	int w_Font_getLineHeight(lua_State * L);
+	int luaopen_font(lua_State * L);
 
 } // opengl
 } // graphics

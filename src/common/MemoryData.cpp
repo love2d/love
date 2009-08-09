@@ -23,7 +23,6 @@
 
 namespace love
 {	
-
 	MemoryData::MemoryData(void * data, int size)
 		: data(data), size(size)
 	{

@@ -172,128 +172,280 @@
 	</Configurations>
 	<References>
 	</References>
-
-<!-- Generated stuff begins -->
-<Files>
-<File RelativePath="..\..\src\modules\sound\Decoder.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\Sound.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\Sound.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\SoundData.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\SoundData.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\wrap_Decoder.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\wrap_Decoder.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\wrap_Sound.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\wrap_Sound.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\wrap_SoundData.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\wrap_SoundData.h">
-</File>
-
-<Filter Name="lullaby">
-<File RelativePath="..\..\src\modules\sound\lullaby\Decoder.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\Decoder.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\FLACDecoder.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\FLACDecoder.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\ModPlugDecoder.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\ModPlugDecoder.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\Mpg123Decoder.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\Mpg123Decoder.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\Sound.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\Sound.h">
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\sound\lullaby\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\sound\lullaby\VorbisDecoder.h">
-</File>
-</Filter>
-
-</Files>
-<!-- Generated stuff ends -->
-	
+	<Files>
+		<Filter
+			Name="lullaby"
+			>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\Decoder.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\Decoder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\FLACDecoder.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\FLACDecoder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\ModPlugDecoder.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\ModPlugDecoder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\Mpg123Decoder.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\Mpg123Decoder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\Sound.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\Sound.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\modules\sound\lullaby\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\modules\sound\lullaby\VorbisDecoder.h"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath="..\..\src\modules\sound\Decoder.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\Sound.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\Sound.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\SoundData.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\SoundData.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\wrap_Decoder.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\wrap_Decoder.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\wrap_Sound.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\wrap_Sound.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\wrap_SoundData.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\modules\sound\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\modules\sound\wrap_SoundData.h"
+			>
+		</File>
+	</Files>
 	<Globals>
 	</Globals>
 </VisualStudioProject>

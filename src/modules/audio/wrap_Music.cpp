@@ -26,17 +26,18 @@ namespace audio
 {
 	Music * luax_checkmusic(lua_State * L, int idx)
 	{
-		return luax_checktype<Music>(L, idx, "Music", LOVE_AUDIO_MUSIC_BITS);
+		return luax_checktype<Music>(L, idx, "Music", AUDIO_MUSIC_T);
 	}
 
-	static const luaL_Reg wrap_Music_functions[] = {
-		{ 0, 0 }
-	};
 
-	int wrap_Music_open(lua_State * L)
+
+	int luaopen_music(lua_State * L)
 	{
-		luax_register_type(L, "Music", wrap_Music_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "Music", functions);
 	}
 
 } // audio

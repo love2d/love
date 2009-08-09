@@ -28,31 +28,31 @@ namespace sound
 {
 	SoundData * luax_checksounddata(lua_State * L, int idx)
 	{
-		return luax_checktype<SoundData>(L, idx, "SoundData", LOVE_SOUND_SOUND_DATA_BITS);
+		return luax_checktype<SoundData>(L, idx, "SoundData", SOUND_SOUND_DATA_T);
 	}
 
-	int _wrap_SoundData_getChannels(lua_State * L)
+	int w_SoundData_getChannels(lua_State * L)
 	{
 		SoundData * t = luax_checksounddata(L, 1);
 		lua_pushinteger(L, t->getChannels());
 		return 1;
 	}
 
-	int _wrap_SoundData_getBits(lua_State * L)
+	int w_SoundData_getBits(lua_State * L)
 	{
 		SoundData * t = luax_checksounddata(L, 1);
 		lua_pushinteger(L, t->getBits());
 		return 1;
 	}
 
-	int _wrap_SoundData_getSampleRate(lua_State * L)
+	int w_SoundData_getSampleRate(lua_State * L)
 	{
 		SoundData * t = luax_checksounddata(L, 1);
 		lua_pushinteger(L, t->getSampleRate());
 		return 1;
 	}
 
-	int _wrap_SoundData_setSample(lua_State * L)
+	int w_SoundData_setSample(lua_State * L)
 	{
 		SoundData * sd = luax_checksounddata(L, 1);
 		int i = (int)lua_tointeger(L, 2);
@@ -61,7 +61,7 @@ namespace sound
 		return 0;
 	}
 
-	int _wrap_SoundData_getSample(lua_State * L)
+	int w_SoundData_getSample(lua_State * L)
 	{
 		SoundData * sd = luax_checksounddata(L, 1);
 		int i = (int)lua_tointeger(L, 2);
@@ -69,24 +69,25 @@ namespace sound
 		return 1;
 	}
 
-	static const luaL_Reg wrap_SoundData_functions[] = {
 
-		// Data
-		{ "getPointer", _wrap_Data_getPointer },
-		{ "getSize", _wrap_Data_getSize },
-
-		{ "getChannels", _wrap_SoundData_getChannels },
-		{ "getBits", _wrap_SoundData_getBits },
-		{ "getSampleRate", _wrap_SoundData_getSampleRate },
-		{ "setSample", _wrap_SoundData_setSample },
-		{ "getSample", _wrap_SoundData_getSample },
-		{ 0, 0 }
-	};
 	
-	int wrap_SoundData_open(lua_State * L)
+	int luaopen_sounddata(lua_State * L)
 	{
-		luax_register_type(L, "SoundData", wrap_SoundData_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+
+			// Data
+			{ "getPointer", w_Data_getPointer },
+			{ "getSize", w_Data_getSize },
+
+			{ "getChannels", w_SoundData_getChannels },
+			{ "getBits", w_SoundData_getBits },
+			{ "getSampleRate", w_SoundData_getSampleRate },
+			{ "setSample", w_SoundData_setSample },
+			{ "getSample", w_SoundData_getSample },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "SoundData", functions);
 	}
 
 } // sound

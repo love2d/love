@@ -32,7 +32,7 @@ namespace graphics
 namespace opengl
 {
 	Glyph * luax_checkglyph(lua_State * L, int idx);
-	int wrap_Glyph_open(lua_State * L);
+	int luaopen_glyph(lua_State * L);
 
 } // opengl
 } // graphics

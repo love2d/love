@@ -22,23 +22,47 @@
 #define LOVE_EXCEPTION_H
 
 #include <exception>
-#include <string>
-#include <cstdarg>
-#include <cstdio>
+#include <cstdarg> // vararg
+#include <cstdio> // vsnprintf
 
 namespace love
 {
-
+	/**
+	* A convenient vararg-enabled exception class. 
+	**/
 	class Exception : public std::exception
 	{
 	private:
-		static const int BUFFER_SIZE = 256;
-		char buffer[BUFFER_SIZE];
-	public:
-		Exception(const char * fmt, ...);
-		virtual const char * what() const throw();
-	};
 
-}
+		/**
+		* The vsnprintf operates on a buffer this large.
+		**/
+		static const int BUFFER_SIZE = 256;
+
+		/**
+		* The buffer for vsnprintf.
+		**/
+		char buffer[BUFFER_SIZE];
+
+	public:
+
+		/**
+		* Creates a new Exception according to printf-rules.
+		* 
+		* See: http://www.cplusplus.com/reference/clibrary/cstdio/printf/
+		* 
+		* @param fmt The format string (see printf).
+		**/
+		Exception(const char * fmt, ...);
+
+		/**
+		* Returns a string containing reason for the exception.
+		* @return A description of the exception.
+		**/
+		virtual const char * what() const throw();
+
+	}; // class
+
+} // love
 
 #endif // LOVE_EXCEPTION_H

@@ -31,14 +31,12 @@ namespace native
 {
 namespace tcc
 {
-	int _wrap_compile(lua_State * L);
-	int _wrap_getSymbol(lua_State * L);
-	int wrap_Native_open(lua_State * L);
+	int w_compile(lua_State * L);
+	int w_getSymbol(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_native(lua_State * L);
 
 } // tcc
 } // native
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_native(lua_State * L);
 
 #endif // LOVE_NATIVE_TCC_WRAP_NATIVE_H

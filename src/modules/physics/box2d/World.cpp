@@ -85,7 +85,7 @@ namespace box2d
 						lua_pushnil(L);
 				}
 
-				luax_newtype(L, "Contact", (LOVE_PHYSICS_CONTACT_BITS), (void*)add_contacts[i], false);
+				luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)add_contacts[i], false);
 				lua_call(L, 3, 0);
 			}
 

@@ -30,39 +30,38 @@ namespace physfs
 {
 	FileData * luax_checkfiledata(lua_State * L, int idx)
 	{
-		return luax_checktype<FileData>(L, idx, "FileData", LOVE_FILESYSTEM_FILE_DATA_BITS);
+		return luax_checktype<FileData>(L, idx, "FileData", FILESYSTEM_FILE_DATA_T);
 	}
 
-	int _wrap_FileData_getFilename(lua_State * L)
+	int w_FileData_getFilename(lua_State * L)
 	{
 		FileData * t = luax_checkfiledata(L, 1);
 		lua_pushstring(L, t->getFilename().c_str());
 		return 1;
 	}
 
-	int _wrap_FileData_getExtension(lua_State * L)
+	int w_FileData_getExtension(lua_State * L)
 	{
 		FileData * t = luax_checkfiledata(L, 1);
 		lua_pushstring(L, t->getExtension().c_str());
 		return 1;
 	}
 
-	const luaL_Reg wrap_FileData_functions[] = {
-
-		// Data
-		{ "getPointer", _wrap_Data_getPointer },
-		{ "getSize", _wrap_Data_getSize },
-
-		{ "getFilename", _wrap_FileData_getFilename },
-		{ "getExtension", _wrap_FileData_getExtension },
-
-		{ 0, 0 }
-	};
-
-	int wrap_FileData_open(lua_State * L)
+	int w_FileData_open(lua_State * L)
 	{
-		luax_register_type(L, "FileData", wrap_FileData_functions);
-		return 0;
+		static const luaL_Reg w_FileData_functions[] = {
+
+			// Data
+			{ "getPointer", w_Data_getPointer },
+			{ "getSize", w_Data_getSize },
+
+			{ "getFilename", w_FileData_getFilename },
+			{ "getExtension", w_FileData_getExtension },
+
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "FileData", w_FileData_functions);
 	}
 	
 } // physfs

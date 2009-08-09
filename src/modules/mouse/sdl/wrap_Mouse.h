@@ -31,22 +31,20 @@ namespace mouse
 {
 namespace sdl
 {
-	int _wrap_getX(lua_State * L);
-	int _wrap_getY(lua_State * L);
-	int _wrap_getPosition(lua_State * L);
-	int _wrap_setPosition(lua_State * L);
-	int _wrap_isDown(lua_State * L);
-	int _wrap_setVisible(lua_State * L);
-	int _wrap_isVisible(lua_State * L);
-	int _wrap_setGrap(lua_State * L);
-	int _wrap_isGrabbed(lua_State * L);
-	int wrap_Mouse_open(lua_State * L);
+	int w_getX(lua_State * L);
+	int w_getY(lua_State * L);
+	int w_getPosition(lua_State * L);
+	int w_setPosition(lua_State * L);
+	int w_isDown(lua_State * L);
+	int w_setVisible(lua_State * L);
+	int w_isVisible(lua_State * L);
+	int w_setGrap(lua_State * L);
+	int w_isGrabbed(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_mouse(lua_State * L);
 
 } // sdl
 } // mouse
 } // love
-
-extern "C" LOVE_EXPORT int luaopen_love_mouse(lua_State * L);
 
 #endif // LOVE_MOUSE_SDL_WRAP_MOUSE_H
 

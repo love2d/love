@@ -28,24 +28,24 @@ namespace image
 {
 	ImageData * luax_checkimagedata(lua_State * L, int idx)
 	{
-		return luax_checktype<ImageData>(L, idx, "ImageData", LOVE_IMAGE_IMAGE_DATA_BITS);
+		return luax_checktype<ImageData>(L, idx, "ImageData", IMAGE_IMAGE_DATA_T);
 	}
 
-	int _wrap_ImageData_getWidth(lua_State * L)
+	int w_ImageData_getWidth(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 		lua_pushinteger(L, t->getWidth());
 		return 1;
 	}
 
-	int _wrap_ImageData_getHeight(lua_State * L)
+	int w_ImageData_getHeight(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 		lua_pushinteger(L, t->getHeight());
 		return 1;
 	}
 
-	int _wrap_ImageData_getPixel(lua_State * L)
+	int w_ImageData_getPixel(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 		int x = luaL_checkint(L, 2);
@@ -58,7 +58,7 @@ namespace image
 		return 4;
 	}
 
-	int _wrap_ImageData_setPixel(lua_State * L)
+	int w_ImageData_setPixel(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 		int x = luaL_checkint(L, 2);
@@ -72,7 +72,7 @@ namespace image
 		return 0;
 	}
 
-	int _wrap_ImageData_mapPixel(lua_State * L)
+	int w_ImageData_mapPixel(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 
@@ -106,14 +106,14 @@ namespace image
 		return 0;
 	}
 
-	int _wrap_ImageData_getString(lua_State * L)
+	int w_ImageData_getString(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 		lua_pushlstring(L, (const char *)t->getData(), t->getSize());
 		return 1;
 	}
 
-	int _wrap_ImageData_paste(lua_State * L)
+	int w_ImageData_paste(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 		ImageData * src = luax_checkimagedata(L, 2);
@@ -127,26 +127,25 @@ namespace image
 		return 0;
 	}
 
-	static const luaL_Reg wrap_ImageData_functions[] = {
-
-		// Data
-		{ "getPointer", _wrap_Data_getPointer },
-		{ "getSize", _wrap_Data_getSize },
-
-		{ "getWidth", _wrap_ImageData_getWidth },
-		{ "getHeight", _wrap_ImageData_getHeight },
-		{ "getPixel", _wrap_ImageData_getPixel },
-		{ "setPixel", _wrap_ImageData_setPixel },
-		{ "mapPixel", _wrap_ImageData_mapPixel },
-		{ "getString", _wrap_ImageData_getString },
-		{ "paste", _wrap_ImageData_paste },
-		{ 0, 0 }
-	};
-
-	int wrap_ImageData_open(lua_State * L)
+	int luaopen_imagedata(lua_State * L)
 	{
-		luax_register_type(L, "ImageData", wrap_ImageData_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+
+			// Data
+			{ "getPointer", w_Data_getPointer },
+			{ "getSize", w_Data_getSize },
+
+			{ "getWidth", w_ImageData_getWidth },
+			{ "getHeight", w_ImageData_getHeight },
+			{ "getPixel", w_ImageData_getPixel },
+			{ "setPixel", w_ImageData_setPixel },
+			{ "mapPixel", w_ImageData_mapPixel },
+			{ "getString", w_ImageData_getString },
+			{ "paste", w_ImageData_paste },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "ImageData", functions);
 	}
 
 } // image

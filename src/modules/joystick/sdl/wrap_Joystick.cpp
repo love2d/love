@@ -28,62 +28,62 @@ namespace sdl
 {
 	static Joystick * instance = 0;
 
-	int _wrap_getNumJoysticks(lua_State * L)
+	int w_getNumJoysticks(lua_State * L)
 	{
 		lua_pushinteger(L, instance->getNumJoysticks());
 		return 1;
 	}
 
-	int _wrap_getName(lua_State * L)
+	int w_getName(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		lua_pushstring(L, instance->getName(index));
 		return 1;
 	}
 	
-	int _wrap_open(lua_State * L)
+	int w_open(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		luax_pushboolean(L, instance->open(index));
 		return 1;
 	}
 
-	int _wrap_isOpen(lua_State * L)
+	int w_isOpen(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		luax_pushboolean(L, instance->isOpen(index));
 		return 1;
 	}
 
-	int _wrap_getNumAxes(lua_State * L)
+	int w_getNumAxes(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		lua_pushinteger(L, instance->getNumAxes(index));
 		return 1;
 	}
 
-	int _wrap_getNumBalls(lua_State * L)
+	int w_getNumBalls(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		lua_pushinteger(L, instance->getNumBalls(index));
 		return 1;
 	}
 
-	int _wrap_getNumButtons(lua_State * L)
+	int w_getNumButtons(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		lua_pushinteger(L, instance->getNumButtons(index));
 		return 1;
 	}
 
-	int _wrap_getNumHats(lua_State * L)
+	int w_getNumHats(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		lua_pushinteger(L, instance->getNumHats(index));
 		return 1;
 	}
 
-	int _wrap_getAxis(lua_State * L)
+	int w_getAxis(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		int axis = luaL_checkint(L, 2);
@@ -91,17 +91,17 @@ namespace sdl
 		return 1;
 	}
 
-	int _wrap_getAxes(lua_State * L)
+	int w_getAxes(lua_State * L)
 	{
 		return instance->getAxes(L);
 	}
 
-	int _wrap_getBall(lua_State * L)
+	int w_getBall(lua_State * L)
 	{
 		return instance->getBall(L);
 	}
 
-	int _wrap_isDown(lua_State * L)
+	int w_isDown(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		int button = luaL_checkint(L, 2);
@@ -109,7 +109,7 @@ namespace sdl
 		return 1;
 	}
 
-	int _wrap_getHat(lua_State * L)
+	int w_getHat(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		int hat = luaL_checkint(L, 2);
@@ -117,53 +117,52 @@ namespace sdl
 		return 1;
 	}
 
-	int _wrap_close(lua_State * L)
+	int w_close(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
 		instance->close(index);
 		return 0;
 	}
-	
-	// List of functions to wrap.
-	static const luaL_Reg wrap_Joystick_functions[] = {
-		{ "getNumJoysticks", _wrap_getNumJoysticks },
-		{ "getName", _wrap_getName },
-		{ "open", _wrap_open },
-		{ "isOpen", _wrap_isOpen },
-		{ "getNumAxes", _wrap_getNumAxes },
-		{ "getNumBalls", _wrap_getNumBalls },
-		{ "getNumButtons", _wrap_getNumButtons },
-		{ "getNumHats", _wrap_getNumHats },
-		{ "getAxis", _wrap_getAxis },
 
-		{ "getAxes", _wrap_getAxes },
-		{ "getBall", _wrap_getBall },
-
-		{ "isDown", _wrap_isDown },
-		{ "getHat", _wrap_getHat },
-		{ "close", _wrap_close },
-		{ 0, 0 }
-	};
-
-	// List of constants.
-	static const LuaConstant wrap_Joystick_constants[] = {
-		{ "joystick_axis_horizontal", Joystick::JOYSTICK_AXIS_HORIZONTAL },
-		{ "joystick_axis_vertical", Joystick::JOYSTICK_AXIS_VERITCAL },
-
-		{ "joystick_hat_centered", Joystick::JOYSTICK_HAT_CENTERED },
-		{ "joystick_hat_up", Joystick::JOYSTICK_HAT_UP },
-		{ "joystick_hat_right", Joystick::JOYSTICK_HAT_RIGHT },
-		{ "joystick_hat_down", Joystick::JOYSTICK_HAT_DOWN },
-		{ "joystick_hat_left", Joystick::JOYSTICK_HAT_LEFT },
-		{ "joystick_hat_rightup", Joystick::JOYSTICK_HAT_RIGHTUP },
-		{ "joystick_hat_rightdown", Joystick::JOYSTICK_HAT_RIGHTDOWN },
-		{ "joystick_hat_leftup", Joystick::JOYSTICK_HAT_LEFTUP },
-		{ "joystick_hat_leftdown", Joystick::JOYSTICK_HAT_LEFTDOWN },
-		{ 0, 0 }
-	};
-
-	int wrap_Joystick_open(lua_State * L)
+	int luaopen_joystick(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "getNumJoysticks", w_getNumJoysticks },
+			{ "getName", w_getName },
+			{ "open", w_open },
+			{ "isOpen", w_isOpen },
+			{ "getNumAxes", w_getNumAxes },
+			{ "getNumBalls", w_getNumBalls },
+			{ "getNumButtons", w_getNumButtons },
+			{ "getNumHats", w_getNumHats },
+			{ "getAxis", w_getAxis },
+
+			{ "getAxes", w_getAxes },
+			{ "getBall", w_getBall },
+
+			{ "isDown", w_isDown },
+			{ "getHat", w_getHat },
+			{ "close", w_close },
+			{ 0, 0 }
+		};
+
+		// List of constants.
+		static const LuaConstant constants[] = {
+			{ "joystick_axis_horizontal", Joystick::JOYSTICK_AXIS_HORIZONTAL },
+			{ "joystick_axis_vertical", Joystick::JOYSTICK_AXIS_VERITCAL },
+
+			{ "joystick_hat_centered", Joystick::JOYSTICK_HAT_CENTERED },
+			{ "joystick_hat_up", Joystick::JOYSTICK_HAT_UP },
+			{ "joystick_hat_right", Joystick::JOYSTICK_HAT_RIGHT },
+			{ "joystick_hat_down", Joystick::JOYSTICK_HAT_DOWN },
+			{ "joystick_hat_left", Joystick::JOYSTICK_HAT_LEFT },
+			{ "joystick_hat_rightup", Joystick::JOYSTICK_HAT_RIGHTUP },
+			{ "joystick_hat_rightdown", Joystick::JOYSTICK_HAT_RIGHTDOWN },
+			{ "joystick_hat_leftup", Joystick::JOYSTICK_HAT_LEFTUP },
+			{ "joystick_hat_leftdown", Joystick::JOYSTICK_HAT_LEFTDOWN },
+			{ 0, 0 }
+		};
 
 		if(instance == 0)
 		{
@@ -177,16 +176,11 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, "love.joystick", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Joystick_functions, 0, wrap_Joystick_constants, "joystick");
+		return luax_register_module(L, functions, 0, constants, "joystick");
 	}
 
 } // sdl
 } // joystick
 } // love
-
-int luaopen_love_joystick(lua_State * L)
-{
-	return love::joystick::sdl::wrap_Joystick_open(L);
-}

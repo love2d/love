@@ -28,10 +28,10 @@ namespace opengl
 {
 	SpriteBatch * luax_checkspritebatch(lua_State * L, int idx)
 	{
-		return luax_checktype<SpriteBatch>(L, idx, "SpriteBatch", LOVE_GRAPHICS_SPRITE_BATCH_BITS); 
+		return luax_checktype<SpriteBatch>(L, idx, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T); 
 	}
 
-	int _wrap_SpriteBatch_add(lua_State * L)
+	int w_SpriteBatch_add(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
 		float x = (float)luaL_optnumber(L, 2, 0.0f);
@@ -45,39 +45,38 @@ namespace opengl
 		return 0;
 	}
 
-	int _wrap_SpriteBatch_clear(lua_State * L)
+	int w_SpriteBatch_clear(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
 		t->clear();
 		return 0;
 	}
 
-	int _wrap_SpriteBatch_lock(lua_State * L)
+	int w_SpriteBatch_lock(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
 		lua_pushlightuserdata(L, t->lock());
 		return 1;
 	}
 
-	int _wrap_SpriteBatch_unlock(lua_State * L)
+	int w_SpriteBatch_unlock(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
 		t->unlock();
 		return 0;
 	}
 
-	static const luaL_Reg wrap_SpriteBatch_functions[] = {
-		{ "add", _wrap_SpriteBatch_add },
-		{ "clear", _wrap_SpriteBatch_clear },
-		{ "lock", _wrap_SpriteBatch_lock },
-		{ "unlock", _wrap_SpriteBatch_unlock },
-		{ 0, 0 }
-	};
-
-	int wrap_SpriteBatch_open(lua_State * L)
+	int w_SpriteBatch_open(lua_State * L)
 	{
-		luax_register_type(L, "SpriteBatch", wrap_SpriteBatch_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "add", w_SpriteBatch_add },
+			{ "clear", w_SpriteBatch_clear },
+			{ "lock", w_SpriteBatch_lock },
+			{ "unlock", w_SpriteBatch_unlock },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "SpriteBatch", functions);
 	}
 
 } // opengl

@@ -32,18 +32,18 @@ namespace physics
 namespace box2d
 {
 	World * luax_checkworld(lua_State * L, int idx);
-	int _wrap_World_update(lua_State * L);
-	int _wrap_World_setCallback(lua_State * L);
-	int _wrap_World_getCallback(lua_State * L);
-	int _wrap_World_setGravity(lua_State * L);
-	int _wrap_World_getGravity(lua_State * L);
-	int _wrap_World_setAllowSleep(lua_State * L);
-	int _wrap_World_isAllowSleep(lua_State * L);
-	int _wrap_World_getBodyCount(lua_State * L);
-	int _wrap_World_getJointCount(lua_State * L);
-	int _wrap_World_setMeter(lua_State * L);
-	int _wrap_World_getMeter(lua_State * L);
-	int wrap_World_open(lua_State * L);
+	int w_World_update(lua_State * L);
+	int w_World_setCallback(lua_State * L);
+	int w_World_getCallback(lua_State * L);
+	int w_World_setGravity(lua_State * L);
+	int w_World_getGravity(lua_State * L);
+	int w_World_setAllowSleep(lua_State * L);
+	int w_World_isAllowSleep(lua_State * L);
+	int w_World_getBodyCount(lua_State * L);
+	int w_World_getJointCount(lua_State * L);
+	int w_World_setMeter(lua_State * L);
+	int w_World_getMeter(lua_State * L);
+	int luaopen_world(lua_State * L);
 
 } // box2d
 } // physics

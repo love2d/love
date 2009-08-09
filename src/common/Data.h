@@ -28,7 +28,7 @@
 namespace love
 {	
 	/**
-	* This class is a simple abstraction over 
+	* This class is a simple abstraction over all objects which contain data. 
 	**/
 	class Data : public Object
 	{

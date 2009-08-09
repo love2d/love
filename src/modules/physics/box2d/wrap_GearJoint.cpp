@@ -28,10 +28,10 @@ namespace box2d
 {
 	GearJoint * luax_checkgearjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<GearJoint>(L, idx, "GearJoint", LOVE_PHYSICS_GEAR_JOINT_BITS);
+		return luax_checktype<GearJoint>(L, idx, "GearJoint", PHYSICS_GEAR_JOINT_T);
 	}
 
-	int _wrap_GearJoint_setRatio(lua_State * L)
+	int w_GearJoint_setRatio(lua_State * L)
 	{
 		GearJoint * t = luax_checkgearjoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -39,30 +39,28 @@ namespace box2d
 		return 0;
 	}
 	
-	int _wrap_GearJoint_getRatio(lua_State * L)
+	int w_GearJoint_getRatio(lua_State * L)
 	{
 		GearJoint * t = luax_checkgearjoint(L, 1);
 		lua_pushnumber(L, t->getRatio());
 		return 1;
 	}
-	
-	static const luaL_Reg wrap_GearJoint_functions[] = {
-		{ "setRatio", _wrap_GearJoint_setRatio },
-		{ "getRatio", _wrap_GearJoint_getRatio },
-		// From Joint.
-		{ "getType", _wrap_Joint_getType },
-		{ "getAnchors", _wrap_Joint_getAnchors },
-		{ "getReactionForce", _wrap_Joint_getReactionForce },
-		{ "getReactionTorque", _wrap_Joint_getReactionTorque },
-		{ "setCollideConnected", _wrap_Joint_setCollideConnected },
-		{ "getCollideConnected", _wrap_Joint_getCollideConnected },
-		{ 0, 0 }
-	};
 
-	int wrap_GearJoint_open(lua_State * L)
+	int luaopen_gearjoint(lua_State * L)
 	{
-		luax_register_type(L, "GearJoint", wrap_GearJoint_functions);
-		return 0; 
+		static const luaL_Reg functions[] = {
+			{ "setRatio", w_GearJoint_setRatio },
+			{ "getRatio", w_GearJoint_getRatio },
+			// From Joint.
+			{ "getType", w_Joint_getType },
+			{ "getAnchors", w_Joint_getAnchors },
+			{ "getReactionForce", w_Joint_getReactionForce },
+			{ "getReactionTorque", w_Joint_getReactionTorque },
+			{ "setCollideConnected", w_Joint_setCollideConnected },
+			{ "getCollideConnected", w_Joint_getCollideConnected },
+			{ 0, 0 }
+		};
+		return luax_register_type(L, "GearJoint", functions);
 	}
 
 } // box2d

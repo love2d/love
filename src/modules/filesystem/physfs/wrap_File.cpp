@@ -28,17 +28,17 @@ namespace physfs
 {
 	File * luax_checkfile(lua_State * L, int idx)
 	{
-		return luax_checktype<File>(L, idx, "File", LOVE_FILESYSTEM_FILE_BITS);
+		return luax_checktype<File>(L, idx, "File", FILESYSTEM_FILE_T);
 	}
 
-	int _wrap_File_getSize(lua_State * L)
+	int w_File_getSize(lua_State * L)
 	{
 		File * t = luax_checkfile(L, 1);
 		lua_pushinteger(L, t->getSize());
 		return 1;
 	}
 
-	int _wrap_File_open(lua_State * L)
+	int w_File_open(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
 		int mode = luaL_optint(L, 2, File::READ);
@@ -46,14 +46,14 @@ namespace physfs
 		return 1;
 	}
 
-	int _wrap_File_close(lua_State * L)
+	int w_File_close(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
 		lua_pushboolean(L, file->close() ? 1 : 0);
 		return 1;
 	}
 
-	int _wrap_File_read(lua_State * L)
+	int w_File_read(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
 		Data * d = file->read(luaL_optint(L, 2, file->getSize()));
@@ -63,7 +63,7 @@ namespace physfs
 		return 2;
 	}
 
-	int _wrap_File_write(lua_State * L)
+	int w_File_write(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
 		bool result;
@@ -77,21 +77,21 @@ namespace physfs
 		return 1;
 	}
 
-	int _wrap_File_eof(lua_State * L)
+	int w_File_eof(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
 		lua_pushboolean(L, file->eof() ? 1 : 0);
 		return 1;
 	}
 
-	int _wrap_File_tell(lua_State * L)
+	int w_File_tell(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
 		lua_pushinteger(L, file->tell());
 		return 1;
 	}
 
-	int _wrap_File_seek(lua_State * L)
+	int w_File_seek(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
 		int pos = luaL_checkinteger(L, 2);
@@ -101,13 +101,13 @@ namespace physfs
 
 	//yes, the following two are copy-pasted and slightly edited
 
-	int _wrap_File_lines(lua_State * L)
+	int w_File_lines(lua_State * L)
 	{
 		File * file;
 
-		if(luax_istype(L, 1, LOVE_FILESYSTEM_FILE_BITS))
+		if(luax_istype(L, 1, FILESYSTEM_FILE_T))
 		{
-			file = luax_checktype<File>(L, 1, "File", LOVE_FILESYSTEM_FILE_BITS);
+			file = luax_checktype<File>(L, 1, "File", FILESYSTEM_FILE_T);
 			lua_pushboolean(L, 0); // 0 = do not close.
 		}
 		else
@@ -127,7 +127,7 @@ namespace physfs
 		const static int bufsize = 1024;
 		static char buf[bufsize];
 
-		File * file = luax_checktype<File>(L, lua_upvalueindex(1), "File", LOVE_FILESYSTEM_FILE_BITS);
+		File * file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
 		int close = (int)lua_tointeger(L, lua_upvalueindex(2));
 
 		// Find the next newline.
@@ -201,23 +201,22 @@ namespace physfs
 		return 0;
 	}
 
-	const luaL_Reg wrap_File_functions[] = {
-		{ "getSize", _wrap_File_getSize },
-		{ "open", _wrap_File_open },
-		{ "close", _wrap_File_close },
-		{ "read", _wrap_File_read },
-		{ "write", _wrap_File_write },
-		{ "eof", _wrap_File_eof },
-		{ "tell", _wrap_File_tell },
-		{ "seek", _wrap_File_seek },
-		{ "lines", _wrap_File_lines },
-		{ 0, 0 }
-	};
-
-	int wrap_File_open(lua_State * L)
+	int luaopen_file(lua_State * L)
 	{
-		luax_register_type(L, "File", wrap_File_functions);
-		return 0;
+		static const luaL_Reg functions[] = { 
+				{ "getSize", w_File_getSize },
+				{ "open", w_File_open },
+				{ "close", w_File_close },
+				{ "read", w_File_read },
+				{ "write", w_File_write },
+				{ "eof", w_File_eof },
+				{ "tell", w_File_tell },
+				{ "seek", w_File_seek },
+				{ "lines", w_File_lines },
+				{ 0, 0 }
+		};
+
+		return luax_register_type(L, "File", functions);
 	}
 	
 } // physfs

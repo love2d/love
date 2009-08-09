@@ -28,24 +28,24 @@ namespace box2d
 {
 	PrismaticJoint * luax_checkprismaticjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<PrismaticJoint>(L, idx, "PrismaticJoint", LOVE_PHYSICS_PRISMATIC_JOINT_BITS);
+		return luax_checktype<PrismaticJoint>(L, idx, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T);
 	}
 
-	int _wrap_PrismaticJoint_getJointTranslation(lua_State * L)
+	int w_PrismaticJoint_getJointTranslation(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_pushnumber(L, t->getJointTranslation());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_getJointSpeed(lua_State * L)
+	int w_PrismaticJoint_getJointSpeed(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_pushnumber(L, t->getJointSpeed());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_setMotorEnabled(lua_State * L)
+	int w_PrismaticJoint_setMotorEnabled(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
@@ -53,14 +53,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_PrismaticJoint_isMotorEnabled(lua_State * L)
+	int w_PrismaticJoint_isMotorEnabled(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		luax_pushboolean(L, t->isMotorEnabled());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_setMaxMotorForce(lua_State * L)
+	int w_PrismaticJoint_setMaxMotorForce(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -68,14 +68,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_PrismaticJoint_getMaxMotorForce(lua_State * L)
+	int w_PrismaticJoint_getMaxMotorForce(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_pushnumber(L, t->getMaxMotorForce());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_setMotorSpeed(lua_State * L)
+	int w_PrismaticJoint_setMotorSpeed(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -83,21 +83,21 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_PrismaticJoint_getMotorSpeed(lua_State * L)
+	int w_PrismaticJoint_getMotorSpeed(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_pushnumber(L, t->getMotorSpeed());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_getMotorForce(lua_State * L)
+	int w_PrismaticJoint_getMotorForce(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_pushnumber(L, t->getMotorForce());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_setLimitsEnabled(lua_State * L)
+	int w_PrismaticJoint_setLimitsEnabled(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
@@ -105,14 +105,14 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_PrismaticJoint_isLimitsEnabled(lua_State * L)
+	int w_PrismaticJoint_isLimitsEnabled(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		luax_pushboolean(L, t->isLimitsEnabled());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_setUpperLimit(lua_State * L)
+	int w_PrismaticJoint_setUpperLimit(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -120,7 +120,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_PrismaticJoint_setLowerLimit(lua_State * L)
+	int w_PrismaticJoint_setLowerLimit(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -128,7 +128,7 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_PrismaticJoint_setLimits(lua_State * L)
+	int w_PrismaticJoint_setLimits(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
@@ -137,59 +137,58 @@ namespace box2d
 		return 0;
 	}
 
-	int _wrap_PrismaticJoint_getLowerLimit(lua_State * L)
+	int w_PrismaticJoint_getLowerLimit(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_pushnumber(L, t->getLowerLimit());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_getUpperLimit(lua_State * L)
+	int w_PrismaticJoint_getUpperLimit(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_pushnumber(L, t->getUpperLimit());
 		return 1;
 	}
 
-	int _wrap_PrismaticJoint_getLimits(lua_State * L)
+	int w_PrismaticJoint_getLimits(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		lua_remove(L, 1);
 		return t->getLimits(L);
 	}
 
-	static const luaL_Reg wrap_PrismaticJoint_functions[] = {
-		{ "getJointTranslation", _wrap_PrismaticJoint_getJointTranslation },
-		{ "getJointSpeed", _wrap_PrismaticJoint_getJointSpeed },
-		{ "setMotorEnabled", _wrap_PrismaticJoint_setMotorEnabled },
-		{ "isMotorEnabled", _wrap_PrismaticJoint_isMotorEnabled },
-		{ "setMaxMotorForce", _wrap_PrismaticJoint_setMaxMotorForce },
-		{ "getMaxMotorForce", _wrap_PrismaticJoint_getMaxMotorForce },
-		{ "setMotorSpeed", _wrap_PrismaticJoint_setMotorSpeed },
-		{ "getMotorSpeed", _wrap_PrismaticJoint_getMotorSpeed },
-		{ "getMotorForce", _wrap_PrismaticJoint_getMotorForce },
-		{ "setLimitsEnabled", _wrap_PrismaticJoint_setLimitsEnabled },
-		{ "isLimitsEnabled", _wrap_PrismaticJoint_isLimitsEnabled },
-		{ "setUpperLimit", _wrap_PrismaticJoint_setUpperLimit },
-		{ "setLowerLimit", _wrap_PrismaticJoint_setLowerLimit },
-		{ "setLimits", _wrap_PrismaticJoint_setLimits },
-		{ "getLowerLimit", _wrap_PrismaticJoint_getLowerLimit },
-		{ "getUpperLimit", _wrap_PrismaticJoint_getUpperLimit },
-		{ "getLimits", _wrap_PrismaticJoint_getLimits },
-		// From Joint.
-		{ "getType", _wrap_Joint_getType },
-		{ "getAnchors", _wrap_Joint_getAnchors },
-		{ "getReactionForce", _wrap_Joint_getReactionForce },
-		{ "getReactionTorque", _wrap_Joint_getReactionTorque },
-		{ "setCollideConnected", _wrap_Joint_setCollideConnected },
-		{ "getCollideConnected", _wrap_Joint_getCollideConnected },
-		{ 0, 0 }
-	};
-
-	int wrap_PrismaticJoint_open(lua_State * L)
+	int w_PrismaticJoint_open(lua_State * L)
 	{
-		luax_register_type(L, "PrismaticJoint", wrap_PrismaticJoint_functions);
-		return 0;
+		static const luaL_Reg functions[] = {
+			{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
+			{ "getJointSpeed", w_PrismaticJoint_getJointSpeed },
+			{ "setMotorEnabled", w_PrismaticJoint_setMotorEnabled },
+			{ "isMotorEnabled", w_PrismaticJoint_isMotorEnabled },
+			{ "setMaxMotorForce", w_PrismaticJoint_setMaxMotorForce },
+			{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
+			{ "setMotorSpeed", w_PrismaticJoint_setMotorSpeed },
+			{ "getMotorSpeed", w_PrismaticJoint_getMotorSpeed },
+			{ "getMotorForce", w_PrismaticJoint_getMotorForce },
+			{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
+			{ "isLimitsEnabled", w_PrismaticJoint_isLimitsEnabled },
+			{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
+			{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
+			{ "setLimits", w_PrismaticJoint_setLimits },
+			{ "getLowerLimit", w_PrismaticJoint_getLowerLimit },
+			{ "getUpperLimit", w_PrismaticJoint_getUpperLimit },
+			{ "getLimits", w_PrismaticJoint_getLimits },
+			// From Joint.
+			{ "getType", w_Joint_getType },
+			{ "getAnchors", w_Joint_getAnchors },
+			{ "getReactionForce", w_Joint_getReactionForce },
+			{ "getReactionTorque", w_Joint_getReactionTorque },
+			{ "setCollideConnected", w_Joint_setCollideConnected },
+			{ "getCollideConnected", w_Joint_getCollideConnected },
+			{ 0, 0 }
+		};
+
+		return luax_register_type(L, "PrismaticJoint", functions);
 	}
 
 } // box2d

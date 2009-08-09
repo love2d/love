@@ -31,13 +31,11 @@ namespace love
 {
 namespace sound
 {
-	int _wrap_newSoundData(lua_State * L);
-	int _wrap_newDecoder(lua_State * L);
-	int wrap_Sound_open(lua_State * L);
+	int w_newSoundData(lua_State * L);
+	int w_newDecoder(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_sound(lua_State * L);
 
 } // sound
 } // love
 
 #endif // LOVE_SOUND_WRAP_SOUND_H
-
-extern "C" LOVE_EXPORT int luaopen_love_sound(lua_State * L);

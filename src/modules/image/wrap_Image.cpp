@@ -28,7 +28,7 @@ namespace image
 {
 	static Image * instance = 0;
 
-	int _wrap_newImageData(lua_State * L)
+	int w_newImageData(lua_State * L)
 	{
 
 		// Case 1: Integers.
@@ -37,34 +37,33 @@ namespace image
 			int w = luaL_checkint(L, 1);
 			int h = luaL_checkint(L, 2);
 			ImageData * t = instance->newImageData(w, h);
-			luax_newtype(L, "ImageData", LOVE_IMAGE_IMAGE_DATA_BITS, (void*)t);
+			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 			return 1;
 		}
 
 		// Convert to File, if necessary.
 		if(lua_isstring(L, 1))
-			luax_strtofile(L, 1);
+			luax_convobj(L, 1, "filesystem", "newFile");
 
 		// Case 2: String/File.
-		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", LOVE_FILESYSTEM_FILE_BITS);
+		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 		ImageData * t = instance->newImageData(file);
-		luax_newtype(L, "ImageData", LOVE_IMAGE_IMAGE_DATA_BITS, (void*)t);
+		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 		return 1;
 	}
 
-	// List of functions to wrap.
-	const luaL_Reg wrap_Image_functions[] = {
-		{ "newImageData",  _wrap_newImageData },
-		{ 0, 0 }
-	};
-
-	static const lua_CFunction wrap_Image_types[] = {
-		wrap_ImageData_open,
-		0
-	};
-
-	int wrap_Image_open(lua_State * L)
+	int w_Image_open(lua_State * L)
 	{
+		// List of functions to wrap.
+		static const luaL_Reg functions[] = {
+			{ "newImageData",  w_newImageData },
+			{ 0, 0 }
+		};
+
+		static const lua_CFunction types[] = {
+			luaopen_imagedata,
+			0
+		};
 
 		if(instance == 0)
 		{
@@ -78,15 +77,10 @@ namespace image
 			}
 		}
 
-		luax_register_gc(L, "love.image", instance);
+		luax_register_gc(L, instance);
 
-		return luax_register_module(L, wrap_Image_functions, wrap_Image_types, 0, "image");
+		return luax_register_module(L, functions, types, 0, "image");
 	}
 
 } // image
 } // love
-
-int luaopen_love_image(lua_State * L)
-{
-	return love::image::wrap_Image_open(L);
-}

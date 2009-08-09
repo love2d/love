@@ -34,9 +34,9 @@ namespace love
 	* Called when an object is collected. The object is released
 	* once in this function, possibly deleting it.
 	**/
-	static int _wrap__gc(lua_State * L)
+	static int w__gc(lua_State * L)
 	{
-		userdata * u = (userdata *)lua_touserdata(L, 1);
+		UserData * u = (UserData *)lua_touserdata(L, 1);
 		Object * t = (Object *)u->data;
 		t->release();
 		return 0;
@@ -45,9 +45,9 @@ namespace love
 	/**
 	* Special garbage collector for Modules.
 	**/
-	static int _wrap__Module_gc(lua_State * L)
+	static int w__Module_gc(lua_State * L)
 	{
-		userdata * u = (userdata *)lua_touserdata(L, 1);
+		UserData * u = (UserData *)lua_touserdata(L, 1);
 		Module * t = (Module *)u->data;
 		delete t;
 		return 0;
@@ -78,19 +78,19 @@ namespace love
 		return b;
 	}
 
-	int luax_assert_argc(lua_State * L, int lower)
+	int luax_assert_argc(lua_State * L, int min)
 	{
 		int argc = lua_gettop(L);
-		if( argc < lower )
-			return luaL_error(L, "Incorrect number of arguments. Got [%d], expected at least [%d]", argc, lower);
+		if( argc < min )
+			return luaL_error(L, "Incorrect number of arguments. Got [%d], expected at least [%d]", argc, min);
 		return 0;
 	}
 
-	int luax_assert_argc(lua_State * L, int lower, int upper)
+	int luax_assert_argc(lua_State * L, int min, int max)
 	{
 		int argc = lua_gettop(L);
-		if( argc < lower || argc > upper)
-			return luaL_error(L, "Incorrect number of arguments. Got [%d], expected [%d-%d]", argc, lower, upper);
+		if( argc < min || argc > max)
+			return luaL_error(L, "Incorrect number of arguments. Got [%d], expected [%d-%d]", argc, min, max);
 		return 0;
 	}
 
@@ -101,56 +101,23 @@ namespace love
 		return 0;
 	}
 
-	int luax_register_gc(lua_State * L, const char * mname, Module * m)
+	int luax_register_gc(lua_State * L, Module * m)
 	{
 		luax_getregistry(L, REGISTRY_GC);
 
-		userdata * u = (userdata *)lua_newuserdata(L, sizeof(userdata));
+		UserData * u = (UserData *)lua_touserdata(L, sizeof(UserData));
 		u->own = true;
 		u->data = m;
 
-		luaL_newmetatable(L, mname);
-		lua_pushcfunction(L, _wrap__Module_gc);
+		luaL_newmetatable(L, m->getName());
+		lua_pushcfunction(L, w__Module_gc);
 		lua_setfield(L, -2, "__gc");
 		lua_setmetatable(L, -2);
 
-		lua_setfield(L, -2, mname);
+		lua_setfield(L, -2, m->getName());
 
 		lua_pop(L, 1); // Registry
 
-		return 0;
-	}
-
-	int luax_register_info(lua_State * L, const char * name, 
-		const char * provides, const char * desc, const char * author,
-		lua_CFunction open)
-	{
-		lua_getglobal(L, "love");
-		lua_getfield(L, -1, "__mod");
-		lua_getfield(L, -1, provides);
-
-		// Make sure it exists.
-		if(lua_isnil(L, -1))
-		{
-			lua_pop(L, 1);
-			lua_newtable(L);
-			lua_setfield(L, -2, provides);
-			lua_getfield(L, -1, provides);
-		}
-
-		lua_newtable(L);
-
-		lua_pushstring(L, desc);
-		lua_setfield(L, -2, "description");
-		lua_pushstring(L, author);
-		lua_setfield(L, -2, "author");
-		lua_pushcfunction(L, open);
-		lua_setfield(L, -2, "open");
-
-		lua_setfield(L, -2, name);
-
-		// Pop "provides", __mod, love
-		lua_pop(L, 3);
 		return 0;
 	}
 
@@ -196,7 +163,7 @@ namespace love
 		return 0;
 	}
 
-	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * fn)
+	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * f)
 	{
 		luaL_newmetatable(L, tname);
 
@@ -205,10 +172,10 @@ namespace love
 		lua_setfield(L, -2, "__index");
 
 		// setup gc
-		lua_pushcfunction(L, _wrap__gc);
+		lua_pushcfunction(L, w__gc);
 		lua_setfield(L, -2, "__gc");
 
-		luaL_register(L, 0, fn);
+		luaL_register(L, 0, f);
 		lua_pop(L, 1); // Pops metatable.
 		return 0;
 	}
@@ -234,15 +201,15 @@ namespace love
 		return 0;
 	}
 
-	void luax_newtype(lua_State * L, const char * tname, bits flags, void * data, bool own)
+	void luax_newtype(lua_State * L, const char * name, bits flags, void * data, bool own)
 	{
-		userdata * u = (userdata *)lua_newuserdata(L, sizeof(userdata));
+		UserData * u = (UserData *)lua_touserdata(L, sizeof(UserData));
 
 		u->data = data;
 		u->flags = flags;
 		u->own = own;
 
-		luaL_newmetatable(L, tname);
+		luaL_newmetatable(L, name);
 		lua_setmetatable(L, -2);
 	}
 
@@ -251,9 +218,7 @@ namespace love
 		if(lua_isuserdata(L, idx) == 0)
 			return false;
 
-		userdata * u = (userdata *)lua_touserdata(L, idx);
-
-		return ((u->flags & type) == type);
+		return ((((UserData *)lua_touserdata(L, idx))->flags & type) == type);
 	}
 
 	int luax_getfunction(lua_State * L, const char * mod, const char * fn)
