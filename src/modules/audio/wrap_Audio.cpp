@@ -206,37 +206,37 @@ namespace audio
 		return 3;
 	}
 
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "getNumSources", w_getNumSources },
+		{ "newSound", w_newSound },
+		{ "newMusic", w_newMusic },
+		{ "newSource", w_newSource },
+		{ "play", w_play },
+		{ "stop", w_stop },
+		{ "pause", w_pause },
+		{ "resume", w_resume },
+		{ "rewind", w_rewind },
+		{ "setVolume", w_setVolume },
+		{ "getVolume", w_getVolume },
+		{ "setPosition", w_setPosition },
+		{ "getPosition", w_getPosition },
+		{ "setOrientation", w_setOrientation },
+		{ "getOrientation", w_getOrientation },
+		{ "setVelocity", w_setVelocity },
+		{ "getVelocity", w_getVelocity },
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_source,
+		luaopen_music,
+		luaopen_sound,
+		0
+	};	
+
 	int luaopen_love_audio(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "getNumSources", w_getNumSources },
-			{ "newSound", w_newSound },
-			{ "newMusic", w_newMusic },
-			{ "newSource", w_newSource },
-			{ "play", w_play },
-			{ "stop", w_stop },
-			{ "pause", w_pause },
-			{ "resume", w_resume },
-			{ "rewind", w_rewind },
-			{ "setVolume", w_setVolume },
-			{ "getVolume", w_getVolume },
-			{ "setPosition", w_setPosition },
-			{ "getPosition", w_getPosition },
-			{ "setOrientation", w_setOrientation },
-			{ "getOrientation", w_getOrientation },
-			{ "setVelocity", w_setVelocity },
-			{ "getVelocity", w_getVelocity },
-			{ 0, 0 }
-		};
-
-		static const lua_CFunction types[] = {
-			luaopen_source,
-			luaopen_music,
-			luaopen_sound,
-			0
-		};
-
 		if(instance == 0)
 		{
 			// Try OpenAL first.

@@ -31,15 +31,15 @@ namespace font
 		return luax_checktype<Rasterizer>(L, idx, "Rasterizer", FONT_RASTERIZER_T);
 	}
 
+	static const luaL_Reg functions[] = {
+		// Data
+		{ "getPointer", w_Data_getPointer },
+		{ "getSize", w_Data_getSize },
+		{ 0, 0 }
+	};
+
 	int luaopen_rasterizer(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			// Data
-			{ "getPointer", w_Data_getPointer },
-			{ "getSize", w_Data_getSize },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "Rasterizer", functions);
 	}
 

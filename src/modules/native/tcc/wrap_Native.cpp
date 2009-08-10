@@ -114,15 +114,15 @@ namespace tcc
 		return 1;
 	}
 
-	int luaopen_native(lua_State * L)
-	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "compile", w_compile },
-			{ "getSymbol", w_getSymbol },
-			{ 0, 0 }
-		};
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "compile", w_compile },
+		{ "getSymbol", w_getSymbol },
+		{ 0, 0 }
+	};
 
+	int luaopen_love_native(lua_State * L)
+	{
 		if(instance == 0)
 		{
 			try 

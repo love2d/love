@@ -105,7 +105,7 @@ namespace love
 	{
 		luax_getregistry(L, REGISTRY_GC);
 
-		UserData * u = (UserData *)lua_touserdata(L, sizeof(UserData));
+		UserData * u = (UserData *)lua_newuserdata(L, sizeof(UserData));
 		u->own = true;
 		u->data = m;
 
@@ -203,7 +203,7 @@ namespace love
 
 	void luax_newtype(lua_State * L, const char * name, bits flags, void * data, bool own)
 	{
-		UserData * u = (UserData *)lua_touserdata(L, sizeof(UserData));
+		UserData * u = (UserData *)lua_newuserdata(L, sizeof(UserData));
 
 		u->data = data;
 		u->flags = flags;

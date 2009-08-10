@@ -69,24 +69,22 @@ namespace sound
 		return 1;
 	}
 
+	static const luaL_Reg functions[] = {
 
+		// Data
+		{ "getPointer", w_Data_getPointer },
+		{ "getSize", w_Data_getSize },
+
+		{ "getChannels", w_SoundData_getChannels },
+		{ "getBits", w_SoundData_getBits },
+		{ "getSampleRate", w_SoundData_getSampleRate },
+		{ "setSample", w_SoundData_setSample },
+		{ "getSample", w_SoundData_getSample },
+		{ 0, 0 }
+	};
 	
 	int luaopen_sounddata(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-
-			// Data
-			{ "getPointer", w_Data_getPointer },
-			{ "getSize", w_Data_getSize },
-
-			{ "getChannels", w_SoundData_getChannels },
-			{ "getBits", w_SoundData_getBits },
-			{ "getSampleRate", w_SoundData_getSampleRate },
-			{ "setSample", w_SoundData_setSample },
-			{ "getSample", w_SoundData_getSample },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "SoundData", functions);
 	}
 

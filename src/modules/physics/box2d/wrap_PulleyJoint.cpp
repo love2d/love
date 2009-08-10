@@ -98,27 +98,28 @@ namespace box2d
 		return 1;
 	}
 
+	static const luaL_Reg functions[] = {
+		{ "getGroundAnchors", w_PulleyJoint_getGroundAnchors },
+		{ "setMaxLengths", w_PulleyJoint_setMaxLengths },
+		{ "getMaxLengths", w_PulleyJoint_getMaxLengths },
+		{ "setConstant", w_PulleyJoint_setConstant },
+		{ "getConstant", w_PulleyJoint_getConstant },
+		{ "getLength1", w_PulleyJoint_getLength1 },
+		{ "getLength2", w_PulleyJoint_getLength2 },
+		{ "setRatio", w_PulleyJoint_setRatio },
+		{ "getRatio", w_PulleyJoint_getRatio },
+		// From Joint.
+		{ "getType", w_Joint_getType },
+		{ "getAnchors", w_Joint_getAnchors },
+		{ "getReactionForce", w_Joint_getReactionForce },
+		{ "getReactionTorque", w_Joint_getReactionTorque },
+		{ "setCollideConnected", w_Joint_setCollideConnected },
+		{ "getCollideConnected", w_Joint_getCollideConnected },
+		{ 0, 0 }
+	};
+
 	int luaopen_pulleyjoint(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "getGroundAnchors", w_PulleyJoint_getGroundAnchors },
-			{ "setMaxLengths", w_PulleyJoint_setMaxLengths },
-			{ "getMaxLengths", w_PulleyJoint_getMaxLengths },
-			{ "setConstant", w_PulleyJoint_setConstant },
-			{ "getConstant", w_PulleyJoint_getConstant },
-			{ "getLength1", w_PulleyJoint_getLength1 },
-			{ "getLength2", w_PulleyJoint_getLength2 },
-			{ "setRatio", w_PulleyJoint_setRatio },
-			{ "getRatio", w_PulleyJoint_getRatio },
-			// From Joint.
-			{ "getType", w_Joint_getType },
-			{ "getAnchors", w_Joint_getAnchors },
-			{ "getReactionForce", w_Joint_getReactionForce },
-			{ "getReactionTorque", w_Joint_getReactionTorque },
-			{ "setCollideConnected", w_Joint_setCollideConnected },
-			{ "getCollideConnected", w_Joint_getCollideConnected },
-			{ 0, 0 }
-		};
 		return luax_register_type(L, "PulleyJoint", functions);
 	}
 

@@ -703,153 +703,153 @@ namespace opengl
 		return 0;
 	}
 
+
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "checkMode", w_checkMode },
+		{ "setMode", w_setMode },
+		{ "toggleFullscreen", w_toggleFullscreen },
+		{ "reset", w_reset },
+		{ "clear", w_clear },
+		{ "present", w_present },
+
+		{ "newImage", w_newImage },
+		{ "newGlyph", w_newGlyph },
+		{ "newFrame", w_newFrame },
+		{ "newFont", w_newFont },
+		{ "newImageFont", w_newImageFont },
+		{ "newSpriteBatch", w_newSpriteBatch },
+
+		{ "setColor", w_setColor },
+		{ "getColor", w_getColor },
+		{ "setBackgroundColor", w_setBackgroundColor },
+		{ "getBackgroundColor", w_getBackgroundColor },
+
+		{ "setFont", w_setFont },
+		{ "getFont", w_getFont },
+
+		{ "setBlendMode", w_setBlendMode },
+		{ "setColorMode", w_setColorMode },
+		{ "getBlendMode", w_getBlendMode },
+		{ "getColorMode", w_getColorMode },
+		{ "setLineWidth", w_setLineWidth },
+		{ "setLineStyle", w_setLineStyle },
+		{ "setLine", w_setLine },
+		{ "setLineStipple", w_setLineStipple },
+		{ "getLineWidth", w_getLineWidth },
+		{ "getLineStyle", w_getLineStyle },
+		{ "getLineStipple", w_getLineStipple },
+		{ "setPointSize", w_setPointSize },
+		{ "setPointStyle", w_setPointStyle },
+		{ "setPoint", w_setPoint },
+		{ "getPointSize", w_getPointSize },
+		{ "getPointStyle", w_getPointStyle },
+		{ "getMaxPointSize", w_getMaxPointSize },
+
+		{ "draw", w_draw },
+		{ "draws", w_draws },
+		{ "drawf", w_drawf },
+		{ "drawTest", w_drawTest },
+
+		{ "print1", w_print1 },
+		{ "printf1", w_printf1 },
+
+		{ "setCaption", w_setCaption },
+		{ "getCaption", w_getCaption },
+
+		{ "getWidth", w_getWidth },
+		{ "getHeight", w_getHeight },
+
+		{ "isCreated", w_isCreated },
+
+		{ "getModes", w_getModes },
+
+		{ "setScissor", w_setScissor },
+		{ "getScissor", w_getScissor },
+
+		{ "point", w_point },
+		{ "line", w_line },
+		{ "triangle", w_triangle },
+		{ "rectangle", w_rectangle },
+		{ "quad", w_quad },
+		{ "circle", w_circle },
+
+		{ "polygon", w_polygon },
+
+		{ "push", w_push },
+		{ "pop", w_pop },
+		{ "rotate", w_rotate },
+		{ "scale", w_scale },
+
+		{ "translate", w_translate },
+
+		{ 0, 0 }
+	};
+
+	// Types for this module.
+	static const lua_CFunction types[] = {
+		luaopen_font, 
+		luaopen_image, 
+		luaopen_glyph,
+		luaopen_frame, 
+		luaopen_spritebatch, 
+		0		
+	};
+
+	// List of constants.
+	static const LuaConstant constants[] = {
+
+		{ "align_left", Graphics::ALIGN_LEFT },
+		{ "align_right", Graphics::ALIGN_RIGHT },
+		{ "align_center", Graphics::ALIGN_CENTER },
+
+		{ "blend_alpha", Graphics::BLEND_ALPHA },
+		{ "blend_additive", Graphics::BLEND_ADDITIVE },
+		{ "color_replace", Graphics::COLOR_REPLACE },
+		{ "color_modulate", Graphics::COLOR_MODULATE },
+
+		{ "draw_line", Graphics::DRAW_LINE },
+		{ "draw_fill", Graphics::DRAW_FILL },
+
+		{ "line_smooth", Graphics::LINE_SMOOTH },
+		{ "line_rough", Graphics::LINE_ROUGH },
+
+		{ "point_smooth", Graphics::POINT_SMOOTH },
+		{ "point_rough", Graphics::POINT_ROUGH },
+
+		{ "filter_linear", Image::FILTER_LINEAR },
+		{ "filter_nearest", Image::FILTER_NEAREST },
+
+		{ "wrap_clamp", Image::WRAP_CLAMP },
+		{ "wrap_repeat", Image::WRAP_REPEAT },
+
+		/**
+
+		// Vertex buffer geometry types.
+
+		{ "type_points", TYPE_POINTS },
+		{ "type_lines", TYPE_LINES },
+		{ "type_line_strip", TYPE_LINE_STRIP },
+		{ "type_triangles", TYPE_TRIANGLES },
+		{ "type_triangle_strip", TYPE_TRIANGLE_STRIP },
+		{ "type_triangle_fan", TYPE_TRIANGLE_FAN },
+		{ "type_num", TYPE_NUM },
+		
+		// Vertex buffer usage hints.
+
+		{ "usage_array", USAGE_ARRAY },
+		{ "usage_dynamic", USAGE_DYNAMIC },
+		{ "usage_static", USAGE_STATIC },
+		{ "usage_stream", USAGE_STREAM },
+		{ "usage_num", USAGE_NUM },
+		**/
+
+
+		{ 0, 0 }
+	};
+
 	int luaopen_love_graphics(lua_State * L)
 	{
-
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "checkMode", w_checkMode },
-			{ "setMode", w_setMode },
-			{ "toggleFullscreen", w_toggleFullscreen },
-			{ "reset", w_reset },
-			{ "clear", w_clear },
-			{ "present", w_present },
-
-			{ "newImage", w_newImage },
-			{ "newGlyph", w_newGlyph },
-			{ "newFrame", w_newFrame },
-			{ "newFont", w_newFont },
-			{ "newImageFont", w_newImageFont },
-			{ "newSpriteBatch", w_newSpriteBatch },
-
-			{ "setColor", w_setColor },
-			{ "getColor", w_getColor },
-			{ "setBackgroundColor", w_setBackgroundColor },
-			{ "getBackgroundColor", w_getBackgroundColor },
-
-			{ "setFont", w_setFont },
-			{ "getFont", w_getFont },
-
-			{ "setBlendMode", w_setBlendMode },
-			{ "setColorMode", w_setColorMode },
-			{ "getBlendMode", w_getBlendMode },
-			{ "getColorMode", w_getColorMode },
-			{ "setLineWidth", w_setLineWidth },
-			{ "setLineStyle", w_setLineStyle },
-			{ "setLine", w_setLine },
-			{ "setLineStipple", w_setLineStipple },
-			{ "getLineWidth", w_getLineWidth },
-			{ "getLineStyle", w_getLineStyle },
-			{ "getLineStipple", w_getLineStipple },
-			{ "setPointSize", w_setPointSize },
-			{ "setPointStyle", w_setPointStyle },
-			{ "setPoint", w_setPoint },
-			{ "getPointSize", w_getPointSize },
-			{ "getPointStyle", w_getPointStyle },
-			{ "getMaxPointSize", w_getMaxPointSize },
-
-			{ "draw", w_draw },
-			{ "draws", w_draws },
-			{ "drawf", w_drawf },
-			{ "drawTest", w_drawTest },
-
-			{ "print1", w_print1 },
-			{ "printf1", w_printf1 },
-
-			{ "setCaption", w_setCaption },
-			{ "getCaption", w_getCaption },
-
-			{ "getWidth", w_getWidth },
-			{ "getHeight", w_getHeight },
-
-			{ "isCreated", w_isCreated },
-
-			{ "getModes", w_getModes },
-
-			{ "setScissor", w_setScissor },
-			{ "getScissor", w_getScissor },
-
-			{ "point", w_point },
-			{ "line", w_line },
-			{ "triangle", w_triangle },
-			{ "rectangle", w_rectangle },
-			{ "quad", w_quad },
-			{ "circle", w_circle },
-
-			{ "polygon", w_polygon },
-
-			{ "push", w_push },
-			{ "pop", w_pop },
-			{ "rotate", w_rotate },
-			{ "scale", w_scale },
-
-			{ "translate", w_translate },
-
-			{ 0, 0 }
-		};
-
-		// Types for this module.
-		static const lua_CFunction types[] = {
-			luaopen_font, 
-			luaopen_image, 
-			luaopen_glyph,
-			luaopen_frame, 
-			luaopen_spritebatch, 
-			0		
-		};
-
-		// List of constants.
-		static const LuaConstant constants[] = {
-
-			{ "align_left", Graphics::ALIGN_LEFT },
-			{ "align_right", Graphics::ALIGN_RIGHT },
-			{ "align_center", Graphics::ALIGN_CENTER },
-
-			{ "blend_alpha", Graphics::BLEND_ALPHA },
-			{ "blend_additive", Graphics::BLEND_ADDITIVE },
-			{ "color_replace", Graphics::COLOR_REPLACE },
-			{ "color_modulate", Graphics::COLOR_MODULATE },
-
-			{ "draw_line", Graphics::DRAW_LINE },
-			{ "draw_fill", Graphics::DRAW_FILL },
-
-			{ "line_smooth", Graphics::LINE_SMOOTH },
-			{ "line_rough", Graphics::LINE_ROUGH },
-
-			{ "point_smooth", Graphics::POINT_SMOOTH },
-			{ "point_rough", Graphics::POINT_ROUGH },
-
-			{ "filter_linear", Image::FILTER_LINEAR },
-			{ "filter_nearest", Image::FILTER_NEAREST },
-
-			{ "wrap_clamp", Image::WRAP_CLAMP },
-			{ "wrap_repeat", Image::WRAP_REPEAT },
-
-			/**
-
-			// Vertex buffer geometry types.
-
-			{ "type_points", TYPE_POINTS },
-			{ "type_lines", TYPE_LINES },
-			{ "type_line_strip", TYPE_LINE_STRIP },
-			{ "type_triangles", TYPE_TRIANGLES },
-			{ "type_triangle_strip", TYPE_TRIANGLE_STRIP },
-			{ "type_triangle_fan", TYPE_TRIANGLE_FAN },
-			{ "type_num", TYPE_NUM },
-			
-			// Vertex buffer usage hints.
-
-			{ "usage_array", USAGE_ARRAY },
-			{ "usage_dynamic", USAGE_DYNAMIC },
-			{ "usage_static", USAGE_STATIC },
-			{ "usage_stream", USAGE_STREAM },
-			{ "usage_num", USAGE_NUM },
-			**/
-
-
-			{ 0, 0 }
-		};
-
 		if(instance == 0)
 		{
 			try 

@@ -49,16 +49,16 @@ namespace sound
 		lua_pushinteger(L, t->getSampleRate());
 		return 1;
 	}
-	
+
+	static const luaL_Reg functions[] = {
+		{ "getChannels", w_Decoder_getChannels },
+		{ "getBits", w_Decoder_getBits },
+		{ "getSampleRate", w_Decoder_getSampleRate },
+		{ 0, 0 }
+	};
+
 	int luaopen_decoder(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "getChannels", w_Decoder_getChannels },
-			{ "getBits", w_Decoder_getBits },
-			{ "getSampleRate", w_Decoder_getSampleRate },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "Decoder", functions);
 	}
 

@@ -53,21 +53,21 @@ namespace freetype
 		return 1;
 	}
 
-	int luaopen_font(lua_State * L)
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "newRasterizer",  w_newRasterizer },
+		{ "newGlyphData",  w_newGlyphData },
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_glyphdata,
+		luaopen_rasterizer,
+		0
+	};
+
+	int luaopen_love_font(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "newRasterizer",  w_newRasterizer },
-			{ "newGlyphData",  w_newGlyphData },
-			{ 0, 0 }
-		};
-
-		static const lua_CFunction types[] = {
-			luaopen_glyphdata,
-			luaopen_rasterizer,
-			0
-		};
-
 		if(instance == 0)
 		{
 			try

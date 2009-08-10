@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="image"
-	ProjectGUID="{E7C66EE0-27CA-CB59-843C-D22A74FBF081}"
+	ProjectGUID="{55F35AEA-2D84-4A39-BF98-505106A15FF7}"
 	RootNamespace="image"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../../src;../../src/modules;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;IMAGE_EXPORTS;"
+				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IMAGE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -64,7 +64,7 @@
 				AdditionalDependencies="lua5.1.lib DevIL.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="lib"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,9 +118,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="include;../../src;../../src/modules;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;IMAGE_EXPORTS;"
-				RuntimeLibrary="0"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IMAGE_EXPORTS"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -137,11 +136,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib DevIL.lib"
-				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="lib"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -172,68 +168,96 @@
 	</Configurations>
 	<References>
 	</References>
-
-<!-- Generated stuff begins -->
-<Files>
-<File RelativePath="..\..\src\modules\image\Image.h">
-</File>
-<File RelativePath="..\..\src\modules\image\ImageData.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\image\ImageData.h">
-</File>
-<File RelativePath="..\..\src\modules\image\wrap_Image.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\image\wrap_Image.h">
-</File>
-<File RelativePath="..\..\src\modules\image\wrap_ImageData.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\image\wrap_ImageData.h">
-</File>
-
-<Filter Name="devil">
-<File RelativePath="..\..\src\modules\image\devil\Image.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\image\devil\Image.h">
-</File>
-<File RelativePath="..\..\src\modules\image\devil\ImageData.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\image\devil\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\image\devil\ImageData.h">
-</File>
-</Filter>
-
-</Files>
-<!-- Generated stuff ends -->
-	
+	<Files>
+		<Filter
+			Name="devil"
+			>
+			<File
+				RelativePath="..\..\..\src\modules\image\devil\Image.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\image\devil\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\image\devil\Image.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\image\devil\ImageData.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\image\devil\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\image\devil\ImageData.h"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath="..\..\..\src\modules\image\Image.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\image\ImageData.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\image\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\image\ImageData.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\image\wrap_Image.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\image\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\image\wrap_Image.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\image\wrap_ImageData.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\image\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\image\wrap_ImageData.h"
+			>
+		</File>
+	</Files>
 	<Globals>
 	</Globals>
 </VisualStudioProject>

@@ -113,24 +113,24 @@ namespace box2d
 		lua_pushinteger(L, t->getMeter());
 		return 1;
 	}
-	
+
+	static const luaL_Reg functions[] = {
+		{ "update", w_World_update },
+		{ "setCallback", w_World_setCallback },
+		{ "getCallback", w_World_getCallback },
+		{ "setGravity", w_World_setGravity },
+		{ "getGravity", w_World_getGravity },
+		{ "setAllowSleep", w_World_setAllowSleep },
+		{ "isAllowSleep", w_World_isAllowSleep },
+		{ "getBodyCount", w_World_getBodyCount },
+		{ "getJointCount", w_World_getJointCount },
+		{ "setMeter", w_World_setMeter },
+		{ "getMeter", w_World_getMeter },
+		{ 0, 0 }
+	};
+
 	int luaopen_world(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "update", w_World_update },
-			{ "setCallback", w_World_setCallback },
-			{ "getCallback", w_World_getCallback },
-			{ "setGravity", w_World_setGravity },
-			{ "getGravity", w_World_getGravity },
-			{ "setAllowSleep", w_World_setAllowSleep },
-			{ "isAllowSleep", w_World_isAllowSleep },
-			{ "getBodyCount", w_World_getBodyCount },
-			{ "getJointCount", w_World_getJointCount },
-			{ "setMeter", w_World_setMeter },
-			{ "getMeter", w_World_getMeter },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "World", functions);
 	}
 

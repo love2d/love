@@ -52,19 +52,19 @@ namespace image
 		return 1;
 	}
 
-	int w_Image_open(lua_State * L)
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "newImageData",  w_newImageData },
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_imagedata,
+		0
+	};
+
+	int luaopen_love_image(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "newImageData",  w_newImageData },
-			{ 0, 0 }
-		};
-
-		static const lua_CFunction types[] = {
-			luaopen_imagedata,
-			0
-		};
-
 		if(instance == 0)
 		{
 			try 

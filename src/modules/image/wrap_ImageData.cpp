@@ -127,24 +127,24 @@ namespace image
 		return 0;
 	}
 
+	static const luaL_Reg functions[] = {
+
+		// Data
+		{ "getPointer", w_Data_getPointer },
+		{ "getSize", w_Data_getSize },
+
+		{ "getWidth", w_ImageData_getWidth },
+		{ "getHeight", w_ImageData_getHeight },
+		{ "getPixel", w_ImageData_getPixel },
+		{ "setPixel", w_ImageData_setPixel },
+		{ "mapPixel", w_ImageData_mapPixel },
+		{ "getString", w_ImageData_getString },
+		{ "paste", w_ImageData_paste },
+		{ 0, 0 }
+	};
+
 	int luaopen_imagedata(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-
-			// Data
-			{ "getPointer", w_Data_getPointer },
-			{ "getSize", w_Data_getSize },
-
-			{ "getWidth", w_ImageData_getWidth },
-			{ "getHeight", w_ImageData_getHeight },
-			{ "getPixel", w_ImageData_getPixel },
-			{ "setPixel", w_ImageData_setPixel },
-			{ "mapPixel", w_ImageData_mapPixel },
-			{ "getString", w_ImageData_getString },
-			{ "paste", w_ImageData_paste },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "ImageData", functions);
 	}
 

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="common"
-	ProjectGUID="{8273822F-45A4-4BE3-82F3-B8B3223C578C}"
-	RootNamespace="common"
+	Name="keyboard"
+	ProjectGUID="{F84CE42B-BBA4-4E32-824B-1F2CAD9236C3}"
+	RootNamespace="keyboard"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,7 +20,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;"
+				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules;../include/SDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KEYBOARD_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -60,12 +60,20 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="lua5.1.lib"
-				AdditionalLibraryDirectories="lib"
+				Name="VCLinkerTool"
+				AdditionalDependencies="lua5.1.lib SDL.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\lib"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -77,6 +85,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -84,7 +95,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -107,9 +118,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;"
-				RuntimeLibrary="0"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KEYBOARD_EXPORTS"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -125,12 +135,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="lua5.1.lib"
-				AdditionalLibraryDirectories="lib"
+				Name="VCLinkerTool"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -142,6 +159,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -149,92 +169,44 @@
 	<References>
 	</References>
 	<Files>
-		<File
-			RelativePath="..\..\src\common\config.h"
+		<Filter
+			Name="sdl"
 			>
-		</File>
+			<File
+				RelativePath="..\..\..\src\modules\keyboard\sdl\Keyboard.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\keyboard\sdlkeyboard\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\keyboard\sdl\Keyboard.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\keyboard\sdl\wrap_Keyboard.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\keyboard\sdlkeyboard\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\keyboard\sdl\wrap_Keyboard.h"
+				>
+			</File>
+		</Filter>
 		<File
-			RelativePath="..\..\src\common\Data.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Exception.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Exception.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\math.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Matrix.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Matrix.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\MemoryData.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\MemoryData.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Module.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Object.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Object.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Reference.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Reference.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\runtime.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\runtime.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\types.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Vector.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\Vector.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\version.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\wrap_Data.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\common\wrap_Data.h"
+			RelativePath="..\..\..\src\modules\keyboard\Keyboard.h"
 			>
 		</File>
 	</Files>

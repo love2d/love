@@ -46,20 +46,21 @@ namespace box2d
 		return 1;
 	}
 
+	static const luaL_Reg functions[] = {
+		{ "setRatio", w_GearJoint_setRatio },
+		{ "getRatio", w_GearJoint_getRatio },
+		// From Joint.
+		{ "getType", w_Joint_getType },
+		{ "getAnchors", w_Joint_getAnchors },
+		{ "getReactionForce", w_Joint_getReactionForce },
+		{ "getReactionTorque", w_Joint_getReactionTorque },
+		{ "setCollideConnected", w_Joint_setCollideConnected },
+		{ "getCollideConnected", w_Joint_getCollideConnected },
+		{ 0, 0 }
+	};
+
 	int luaopen_gearjoint(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "setRatio", w_GearJoint_setRatio },
-			{ "getRatio", w_GearJoint_getRatio },
-			// From Joint.
-			{ "getType", w_Joint_getType },
-			{ "getAnchors", w_Joint_getAnchors },
-			{ "getReactionForce", w_Joint_getReactionForce },
-			{ "getReactionTorque", w_Joint_getReactionTorque },
-			{ "setCollideConnected", w_Joint_setCollideConnected },
-			{ "getCollideConnected", w_Joint_getCollideConnected },
-			{ 0, 0 }
-		};
 		return luax_register_type(L, "GearJoint", functions);
 	}
 

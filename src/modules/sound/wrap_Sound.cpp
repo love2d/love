@@ -101,22 +101,21 @@ namespace sound
 		return 1;
 	}
 
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "newSoundData",  w_newSoundData },
+		{ "newDecoder",  w_newDecoder },
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_sounddata,
+		luaopen_decoder,
+		0
+	};
+
 	int luaopen_love_sound(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "newSoundData",  w_newSoundData },
-			{ "newDecoder",  w_newDecoder },
-			{ 0, 0 }
-		};
-
-		static const lua_CFunction types[] = {
-			luaopen_sounddata,
-			luaopen_decoder,
-			0
-		};
-
-
 		if(instance == 0)
 		{
 			try

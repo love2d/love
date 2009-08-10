@@ -139,18 +139,18 @@ namespace audio
 		return 1;
 	}
 
+	static const luaL_Reg functions[] = {
+		{ "setPitch", w_Source_setPitch },
+		{ "getPitch", w_Source_getPitch },
+		{ "setVolume", w_Source_setVolume },
+		{ "getVolume", w_Source_getVolume },
+		{ "setLooping", w_Source_setLooping },
+		{ "isLooping", w_Source_isLooping },
+		{ 0, 0 }
+	};
+
 	int luaopen_source(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "setPitch", w_Source_setPitch },
-			{ "getPitch", w_Source_getPitch },
-			{ "setVolume", w_Source_setVolume },
-			{ "getVolume", w_Source_getVolume },
-			{ "setLooping", w_Source_setLooping },
-			{ "isLooping", w_Source_isLooping },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "Source", functions);
 	}
 

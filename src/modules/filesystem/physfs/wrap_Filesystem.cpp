@@ -214,46 +214,46 @@ namespace physfs
 		return instance->load(L);
 	}
 
-	int w_Filesystem_open(lua_State * L)
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "init",  w_init },
+		{ "setIdentity",  w_setIdentity },
+		{ "setSource",  w_setSource },
+		{ "newFile",  w_newFile },
+		{ "getWorkingDirectory",  w_getWorkingDirectory },
+		{ "getUserDirectory",  w_getUserDirectory },
+		{ "getAppdataDirectory",  w_getAppdataDirectory },
+		{ "getSaveDirectory",  w_getSaveDirectory },
+		{ "exists",  w_exists },
+		{ "isDirectory",  w_isDirectory },
+		{ "isFile",  w_isFile },
+		{ "mkdir",  w_mkdir },
+		{ "remove",  w_remove },
+		{ "read",  w_read },
+		{ "write",  w_write },
+		{ "enumerate",  w_enumerate },
+		{ "lines",  w_lines },
+		{ "load",  w_load },
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_file,
+		luaopen_filedata,
+		0
+	};
+
+	// List of constants.
+	static const LuaConstant constants[] = {
+		{ "file_closed", File::CLOSED },
+		{ "file_read", File::READ },
+		{ "file_write", File::WRITE },
+		{ "file_append", File::APPEND },
+		{ 0, 0 }
+	};
+
+	int luaopen_love_filesystem(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "init",  w_init },
-			{ "setIdentity",  w_setIdentity },
-			{ "setSource",  w_setSource },
-			{ "newFile",  w_newFile },
-			{ "getWorkingDirectory",  w_getWorkingDirectory },
-			{ "getUserDirectory",  w_getUserDirectory },
-			{ "getAppdataDirectory",  w_getAppdataDirectory },
-			{ "getSaveDirectory",  w_getSaveDirectory },
-			{ "exists",  w_exists },
-			{ "isDirectory",  w_isDirectory },
-			{ "isFile",  w_isFile },
-			{ "mkdir",  w_mkdir },
-			{ "remove",  w_remove },
-			{ "read",  w_read },
-			{ "write",  w_write },
-			{ "enumerate",  w_enumerate },
-			{ "lines",  w_lines },
-			{ "load",  w_load },
-			{ 0, 0 }
-		};
-
-		static const lua_CFunction types[] = {
-			luaopen_file,
-			luaopen_filedata,
-			0
-		};
-
-		// List of constants.
-		static const LuaConstant constants[] = {
-			{ "file_closed", File::CLOSED },
-			{ "file_read", File::READ },
-			{ "file_write", File::WRITE },
-			{ "file_append", File::APPEND },
-			{ 0, 0 }
-		};
-
 		if(instance == 0)
 		{
 			try 

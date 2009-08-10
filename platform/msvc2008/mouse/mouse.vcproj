@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="keyboard"
-	ProjectGUID="{4D206ABC-7DBF-7BD9-E1A6-DB4B482A6594}"
-	RootNamespace="keyboard"
+	Name="mouse"
+	ProjectGUID="{88881251-6818-485E-A262-DE1283096589}"
+	RootNamespace="mouse"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;KEYBOARD_EXPORTS;"
+				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules;../include/SDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;MOUSE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -64,7 +64,7 @@
 				AdditionalDependencies="lua5.1.lib SDL.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="lib"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,9 +118,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="include;../../src;../../src/modules;include/SDL"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;KEYBOARD_EXPORTS;"
-				RuntimeLibrary="0"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MOUSE_EXPORTS"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -137,11 +136,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib SDL.lib"
-				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="lib"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -172,38 +168,48 @@
 	</Configurations>
 	<References>
 	</References>
-
-<!-- Generated stuff begins -->
-<Files>
-<File RelativePath="..\..\src\modules\keyboard\Keyboard.h">
-</File>
-
-<Filter Name="sdl">
-<File RelativePath="..\..\src\modules\keyboard\sdl\Keyboard.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\keyboard\sdl\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\keyboard\sdl\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\keyboard\sdl\Keyboard.h">
-</File>
-<File RelativePath="..\..\src\modules\keyboard\sdl\wrap_Keyboard.cpp">
-<FileConfiguration Name="Debug|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\keyboard\sdl\" />
-</FileConfiguration>
-<FileConfiguration Name="Release|Win32">
-<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)\modules\keyboard\sdl\" />
-</FileConfiguration>
-</File>
-<File RelativePath="..\..\src\modules\keyboard\sdl\wrap_Keyboard.h">
-</File>
-</Filter>
-
-</Files>
-<!-- Generated stuff ends -->
-	
+	<Files>
+		<Filter
+			Name="sdl"
+			>
+			<File
+				RelativePath="..\..\..\src\modules\mouse\sdl\Mouse.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\mouse\sdlmouse\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\mouse\sdl\Mouse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\mouse\sdl\wrap_Mouse.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\mouse\sdlmouse\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\mouse\sdl\wrap_Mouse.h"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath="..\..\..\src\modules\mouse\Mouse.h"
+			>
+		</File>
+	</Files>
 	<Globals>
 	</Globals>
 </VisualStudioProject>

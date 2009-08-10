@@ -32,13 +32,13 @@ namespace opengl
 		return luax_checktype<Glyph>(L, idx, "Glyph", GRAPHICS_GLYPH_T);
 	}
 
-	static const luaL_Reg w_Glyph_functions[] = {
+	static const luaL_Reg functions[] = {
 		{ 0, 0 }
 	};
 
-	int w_Glyph_open(lua_State * L)
+	int luaopen_glyph(lua_State * L)
 	{
-		luax_register_type(L, "Glyph", w_Glyph_functions);
+		luax_register_type(L, "Glyph", functions);
 		return 0;
 	}
 

@@ -203,55 +203,55 @@ namespace box2d
 		return 1;
 	}
 
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "newWorld", w_newWorld },
+		{ "newBody", w_newBody },
+		{ "newCircleShape", w_newCircleShape },
+		{ "newRectangleShape", w_newRectangleShape },
+		{ "newPolygonShape", w_newPolygonShape },
+		{ "newDistanceJoint", w_newDistanceJoint },
+		{ "newMouseJoint", w_newMouseJoint },
+		{ "newRevoluteJoint", w_newRevoluteJoint },
+		{ "newPrismaticJoint", w_newPrismaticJoint },
+		{ "newPulleyJoint", w_newPulleyJoint },
+		{ "newGearJoint", w_newGearJoint },
+		{ 0, 0 },
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_world,
+		luaopen_contact,
+		luaopen_body,
+		luaopen_shape,
+		luaopen_circleshape,
+		luaopen_polygonshape,
+		luaopen_joint,
+		luaopen_mousejoint,
+		luaopen_distancejoint,
+		luaopen_prismaticjoint,
+		luaopen_revolutejoint,
+		luaopen_pulleyjoint,
+		luaopen_gearjoint,
+		0
+	};
+
+	// List of constants.
+	static const LuaConstant constants[] = {
+		{ "shape_circle", Shape::SHAPE_CIRCLE },
+		{ "shape_polygon", Shape::SHAPE_POLYGON },
+
+		{ "joint_distance", Joint::JOINT_DISTANCE },
+		{ "joint_revolute", Joint::JOINT_REVOLUTE },
+		{ "joint_prismatic", Joint::JOINT_PRISMATIC },
+		{ "joint_mouse", Joint::JOINT_MOUSE },	
+		{ "joint_pulley", Joint::JOINT_PULLEY },	
+		{ "joint_gear", Joint::JOINT_GEAR },
+		{ 0, 0 }
+	};
+
 	int luaopen_love_physics(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "newWorld", w_newWorld },
-			{ "newBody", w_newBody },
-			{ "newCircleShape", w_newCircleShape },
-			{ "newRectangleShape", w_newRectangleShape },
-			{ "newPolygonShape", w_newPolygonShape },
-			{ "newDistanceJoint", w_newDistanceJoint },
-			{ "newMouseJoint", w_newMouseJoint },
-			{ "newRevoluteJoint", w_newRevoluteJoint },
-			{ "newPrismaticJoint", w_newPrismaticJoint },
-			{ "newPulleyJoint", w_newPulleyJoint },
-			{ "newGearJoint", w_newGearJoint },
-			{ 0, 0 },
-		};
-
-		static const lua_CFunction types[] = {
-			luaopen_world,
-			luaopen_contact,
-			luaopen_body,
-			luaopen_shape,
-			luaopen_circleshape,
-			luaopen_polygonshape,
-			luaopen_joint,
-			luaopen_mousejoint,
-			luaopen_distancejoint,
-			luaopen_prismaticjoint,
-			luaopen_revolutejoint,
-			luaopen_pulleyjoint,
-			luaopen_gearjoint,
-			0
-		};
-
-		// List of constants.
-		static const LuaConstant constants[] = {
-			{ "shape_circle", Shape::SHAPE_CIRCLE },
-			{ "shape_polygon", Shape::SHAPE_POLYGON },
-
-			{ "joint_distance", Joint::JOINT_DISTANCE },
-			{ "joint_revolute", Joint::JOINT_REVOLUTE },
-			{ "joint_prismatic", Joint::JOINT_PRISMATIC },
-			{ "joint_mouse", Joint::JOINT_MOUSE },	
-			{ "joint_pulley", Joint::JOINT_PULLEY },	
-			{ "joint_gear", Joint::JOINT_GEAR },
-			{ 0, 0 }
-		};
-
 		if(instance == 0)
 		{
 			try

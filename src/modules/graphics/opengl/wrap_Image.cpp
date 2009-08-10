@@ -84,7 +84,7 @@ namespace opengl
 		return 2;
 	}
 
-	static const luaL_Reg w_Image_functions[] = {
+	static const luaL_Reg functions[] = {
 		{ "getWidth", w_Image_getWidth },
 		{ "getHeight", w_Image_getHeight },
 		{ "setFilter", w_Image_setFilter },
@@ -94,10 +94,9 @@ namespace opengl
 		{ 0, 0 }
 	};
 
-	int w_Image_open(lua_State * L)
+	int luaopen_image(lua_State * L)
 	{
-		luax_register_type(L, "Image", w_Image_functions);
-		return 0;
+		return luax_register_type(L, "Image", functions);
 	}
 
 } // opengl

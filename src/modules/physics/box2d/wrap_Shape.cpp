@@ -166,28 +166,28 @@ namespace box2d
 		return t->getBoundingBox(L);
 	}
 
-	int w_Shape_open(lua_State * L)
-	{
-		static const luaL_Reg functions[] = {
-			{ "getType", w_Shape_getType },
-			{ "setFriction", w_Shape_setFriction },
-			{ "setRestitution", w_Shape_setRestitution },
-			{ "setDensity", w_Shape_setDensity },
-			{ "setSensor", w_Shape_setSensor },
-			{ "getFriction", w_Shape_getFriction },
-			{ "getRestituion", w_Shape_getRestituion },
-			{ "getDensity", w_Shape_getDensity },
-			{ "isSensor", w_Shape_isSensor },
-			{ "testPoint", w_Shape_testPoint },
-			{ "testSegment", w_Shape_testSegment },
-			{ "setFilterData", w_Shape_setFilterData },
-			{ "getFilterData", w_Shape_getFilterData },
-			{ "setData", w_Shape_setData },
-			{ "getData", w_Shape_getData },
-			{ "getBoundingBox", w_Shape_getBoundingBox },
-			{ 0, 0 }
-		};
+	static const luaL_Reg functions[] = {
+		{ "getType", w_Shape_getType },
+		{ "setFriction", w_Shape_setFriction },
+		{ "setRestitution", w_Shape_setRestitution },
+		{ "setDensity", w_Shape_setDensity },
+		{ "setSensor", w_Shape_setSensor },
+		{ "getFriction", w_Shape_getFriction },
+		{ "getRestituion", w_Shape_getRestituion },
+		{ "getDensity", w_Shape_getDensity },
+		{ "isSensor", w_Shape_isSensor },
+		{ "testPoint", w_Shape_testPoint },
+		{ "testSegment", w_Shape_testSegment },
+		{ "setFilterData", w_Shape_setFilterData },
+		{ "getFilterData", w_Shape_getFilterData },
+		{ "setData", w_Shape_setData },
+		{ "getData", w_Shape_getData },
+		{ "getBoundingBox", w_Shape_getBoundingBox },
+		{ 0, 0 }
+	};
 
+	int luaopen_shape(lua_State * L)
+	{
 		return luax_register_type(L, "Shape", functions);
 	}
 

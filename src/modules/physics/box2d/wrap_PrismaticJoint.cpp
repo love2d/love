@@ -158,36 +158,36 @@ namespace box2d
 		return t->getLimits(L);
 	}
 
-	int w_PrismaticJoint_open(lua_State * L)
-	{
-		static const luaL_Reg functions[] = {
-			{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
-			{ "getJointSpeed", w_PrismaticJoint_getJointSpeed },
-			{ "setMotorEnabled", w_PrismaticJoint_setMotorEnabled },
-			{ "isMotorEnabled", w_PrismaticJoint_isMotorEnabled },
-			{ "setMaxMotorForce", w_PrismaticJoint_setMaxMotorForce },
-			{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
-			{ "setMotorSpeed", w_PrismaticJoint_setMotorSpeed },
-			{ "getMotorSpeed", w_PrismaticJoint_getMotorSpeed },
-			{ "getMotorForce", w_PrismaticJoint_getMotorForce },
-			{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
-			{ "isLimitsEnabled", w_PrismaticJoint_isLimitsEnabled },
-			{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
-			{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
-			{ "setLimits", w_PrismaticJoint_setLimits },
-			{ "getLowerLimit", w_PrismaticJoint_getLowerLimit },
-			{ "getUpperLimit", w_PrismaticJoint_getUpperLimit },
-			{ "getLimits", w_PrismaticJoint_getLimits },
-			// From Joint.
-			{ "getType", w_Joint_getType },
-			{ "getAnchors", w_Joint_getAnchors },
-			{ "getReactionForce", w_Joint_getReactionForce },
-			{ "getReactionTorque", w_Joint_getReactionTorque },
-			{ "setCollideConnected", w_Joint_setCollideConnected },
-			{ "getCollideConnected", w_Joint_getCollideConnected },
-			{ 0, 0 }
-		};
+	static const luaL_Reg functions[] = {
+		{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
+		{ "getJointSpeed", w_PrismaticJoint_getJointSpeed },
+		{ "setMotorEnabled", w_PrismaticJoint_setMotorEnabled },
+		{ "isMotorEnabled", w_PrismaticJoint_isMotorEnabled },
+		{ "setMaxMotorForce", w_PrismaticJoint_setMaxMotorForce },
+		{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
+		{ "setMotorSpeed", w_PrismaticJoint_setMotorSpeed },
+		{ "getMotorSpeed", w_PrismaticJoint_getMotorSpeed },
+		{ "getMotorForce", w_PrismaticJoint_getMotorForce },
+		{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
+		{ "isLimitsEnabled", w_PrismaticJoint_isLimitsEnabled },
+		{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
+		{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
+		{ "setLimits", w_PrismaticJoint_setLimits },
+		{ "getLowerLimit", w_PrismaticJoint_getLowerLimit },
+		{ "getUpperLimit", w_PrismaticJoint_getUpperLimit },
+		{ "getLimits", w_PrismaticJoint_getLimits },
+		// From Joint.
+		{ "getType", w_Joint_getType },
+		{ "getAnchors", w_Joint_getAnchors },
+		{ "getReactionForce", w_Joint_getReactionForce },
+		{ "getReactionTorque", w_Joint_getReactionTorque },
+		{ "setCollideConnected", w_Joint_setCollideConnected },
+		{ "getCollideConnected", w_Joint_getCollideConnected },
+		{ 0, 0 }
+	};
 
+	int luaopen_prismaticjoint(lua_State * L)
+	{
 		return luax_register_type(L, "PrismaticJoint", functions);
 	}
 

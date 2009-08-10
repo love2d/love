@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="{MODULE}"
-	ProjectGUID="{GUID}"
-	RootNamespace="{MODULE}"
+	Name="native"
+	ProjectGUID="{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}"
+	RootNamespace="native"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="{INCLUDES}"
-				PreprocessorDefinitions="{DEFINES_DEBUG}"
+				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules;../include/SDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="{LIBS}"
+				AdditionalDependencies="lua5.1.lib SDL.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="{LIBDIR}"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,9 +118,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="{INCLUDES}"
-				PreprocessorDefinitions="{DEFINES_RELEASE}"
-				RuntimeLibrary="0"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;EVENT_EXPORTS"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -137,11 +136,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="{LIBS}"
-				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="{LIBDIR}"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -172,9 +168,77 @@
 	</Configurations>
 	<References>
 	</References>
-
-{FILES}
-	
+	<Files>
+		<Filter
+			Name="tcc"
+			>
+			<File
+				RelativePath="..\..\..\src\modules\native\tcc\api.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\native\tcc\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\native\tcc\api.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\native\tcc\Native.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\native\tcc\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\native\tcc\Native.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\native\tcc\wrap_Native.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\native\tcc\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\native\tcc\wrap_Native.h"
+				>
+			</File>
+			<Filter
+				Name="libtcc"
+				>
+				<File
+					RelativePath="..\..\..\src\modules\native\tcc\libtcc\libtcc.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\native\tcc\libtcc\"
+							WarningLevel="0"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+		</Filter>
+	</Files>
 	<Globals>
 	</Globals>
 </VisualStudioProject>

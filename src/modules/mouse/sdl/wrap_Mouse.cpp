@@ -90,33 +90,33 @@ namespace sdl
 		return 1;
 	}
 	
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "getX", w_getX },
+		{ "getY", w_getY },
+		{ "setPosition", w_setPosition },
+		{ "isDown", w_isDown },
+		{ "setVisible", w_setVisible },
+		{ "isVisible", w_isVisible },
+		{ "getPosition", w_getPosition },
+		{ "setGrab", w_setGrap },
+		{ "isGrabbed", w_isGrabbed },
+		{ 0, 0 }
+	};
 
-	int w_Mouse_open(lua_State * L)
+	// List of constants.
+	static const LuaConstant constants[] = {
+		{ "mouse_left", Mouse::MOUSE_LEFT },
+		{ "mouse_middle", Mouse::MOUSE_MIDDLE },
+		{ "mouse_right", Mouse::MOUSE_RIGHT },
+		{ "mouse_wheelup", Mouse::MOUSE_WHEELUP },
+		{ "mouse_wheeldown", Mouse::MOUSE_WHEELDOWN },
+		{ 0, 0 }
+	};
+
+
+	int luaopen_love_mouse(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "getX", w_getX },
-			{ "getY", w_getY },
-			{ "setPosition", w_setPosition },
-			{ "isDown", w_isDown },
-			{ "setVisible", w_setVisible },
-			{ "isVisible", w_isVisible },
-			{ "getPosition", w_getPosition },
-			{ "setGrab", w_setGrap },
-			{ "isGrabbed", w_isGrabbed },
-			{ 0, 0 }
-		};
-
-		// List of constants.
-		static const LuaConstant constants[] = {
-			{ "mouse_left", Mouse::MOUSE_LEFT },
-			{ "mouse_middle", Mouse::MOUSE_MIDDLE },
-			{ "mouse_right", Mouse::MOUSE_RIGHT },
-			{ "mouse_wheelup", Mouse::MOUSE_WHEELUP },
-			{ "mouse_wheeldown", Mouse::MOUSE_WHEELDOWN },
-			{ 0, 0 }
-		};
-
 		if(instance == 0)
 		{
 			try 
@@ -137,8 +137,3 @@ namespace sdl
 } // sdl
 } // mouse
 } // love
-
-int luaopen_love_mouse(lua_State * L)
-{
-	return love::mouse::sdl::w_Mouse_open(L);
-}

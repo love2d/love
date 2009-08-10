@@ -76,25 +76,25 @@ namespace box2d
 		return 1;
 	}
 
+	static const luaL_Reg functions[] = {
+		{ "setLength", w_DistanceJoint_setLength },
+		{ "getLength", w_DistanceJoint_getLength },
+		{ "setFrequency", w_DistanceJoint_setFrequency },
+		{ "getFrequency", w_DistanceJoint_getFrequency },
+		{ "setDamping", w_DistanceJoint_setDampingRatio },
+		{ "getDamping", w_DistanceJoint_getDampingRatio },
+		// From Joint.
+		{ "getType", w_Joint_getType },
+		{ "getAnchors", w_Joint_getAnchors },
+		{ "getReactionForce", w_Joint_getReactionForce },
+		{ "getReactionTorque", w_Joint_getReactionTorque },
+		{ "setCollideConnected", w_Joint_setCollideConnected },
+		{ "getCollideConnected", w_Joint_getCollideConnected },
+		{ 0, 0 }
+	};
+
 	int luaopen_distancejoint(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "setLength", w_DistanceJoint_setLength },
-			{ "getLength", w_DistanceJoint_getLength },
-			{ "setFrequency", w_DistanceJoint_setFrequency },
-			{ "getFrequency", w_DistanceJoint_getFrequency },
-			{ "setDamping", w_DistanceJoint_setDampingRatio },
-			{ "getDamping", w_DistanceJoint_getDampingRatio },
-			// From Joint.
-			{ "getType", w_Joint_getType },
-			{ "getAnchors", w_Joint_getAnchors },
-			{ "getReactionForce", w_Joint_getReactionForce },
-			{ "getReactionTorque", w_Joint_getReactionTorque },
-			{ "setCollideConnected", w_Joint_setCollideConnected },
-			{ "getCollideConnected", w_Joint_getCollideConnected },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "DistanceJoint", functions);
 	}
 

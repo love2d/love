@@ -29,14 +29,14 @@ namespace font
 		return luax_checktype<GlyphData>(L, idx, "GlyphData", FONT_GLYPH_DATA_T);
 	}
 	
+	static const luaL_Reg functions[] = {
+		{ "getPointer", w_Data_getPointer },
+		{ "getSize", w_Data_getSize },
+		{ 0, 0 }
+	};
+
 	int luaopen_glyphdata(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "getPointer", w_Data_getPointer },
-			{ "getSize", w_Data_getSize },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "GlyphData", functions);
 	}
 

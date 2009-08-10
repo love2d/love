@@ -29,12 +29,12 @@ namespace audio
 		return luax_checktype<Sound>(L, idx, "Sound", AUDIO_SOUND_T);
 	}
 
+	static const luaL_Reg functions[] = {
+		{ 0, 0 }
+	};
+
 	int luaopen_sound(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "Sound", functions);
 	}
 

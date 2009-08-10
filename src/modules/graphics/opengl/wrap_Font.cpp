@@ -62,16 +62,16 @@ namespace opengl
 		return 1;
 	}
 
+	static const luaL_Reg functions[] = {
+		{ "getHeight", w_Font_getHeight },
+		{ "getWidth", w_Font_getWidth },
+		{ "setLineHeight", w_Font_setLineHeight },
+		{ "getLineHeight", w_Font_getLineHeight },
+		{ 0, 0 }
+	};
+
 	int luaopen_font(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "getHeight", w_Font_getHeight },
-			{ "getWidth", w_Font_getWidth },
-			{ "setLineHeight", w_Font_setLineHeight },
-			{ "getLineHeight", w_Font_getLineHeight },
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "Font", functions);
 	}
 

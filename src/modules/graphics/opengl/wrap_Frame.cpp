@@ -44,10 +44,9 @@ namespace opengl
 		{ 0, 0 }
 	};
 
-	int w_Frame_open(lua_State * L)
+	int luaopen_frame(lua_State * L)
 	{
-		luax_register_type(L, "Frame", w_Frame_functions);
-		return 0;
+		return luax_register_type(L, "Frame", w_Frame_functions);
 	}
 
 } // opengl

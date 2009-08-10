@@ -60,18 +60,19 @@ namespace sdl
 		return 1;
 	}
 
-	int w_Timer_open(lua_State * L)
-	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "step", w_step },
-			{ "getDelta", w_getDelta },
-			{ "getFPS", w_getFPS },
-			{ "sleep", w_sleep },
-			{ "getTime", w_getTime },
-			{ 0, 0 }
-		};
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "step", w_step },
+		{ "getDelta", w_getDelta },
+		{ "getFPS", w_getFPS },
+		{ "sleep", w_sleep },
+		{ "getTime", w_getTime },
+		{ 0, 0 }
+	};
 
+
+	int luaopen_love_timer(lua_State * L)
+	{
 		if(instance == 0)
 		{
 			try 

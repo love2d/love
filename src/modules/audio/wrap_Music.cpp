@@ -29,14 +29,12 @@ namespace audio
 		return luax_checktype<Music>(L, idx, "Music", AUDIO_MUSIC_T);
 	}
 
-
+	static const luaL_Reg functions[] = {
+		{ 0, 0 }
+	};
 
 	int luaopen_music(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "Music", functions);
 	}
 

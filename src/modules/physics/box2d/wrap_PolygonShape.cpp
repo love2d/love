@@ -38,29 +38,30 @@ namespace box2d
 		return t->getPoints(L);
 	}
 
+	static const luaL_Reg functions[] = {
+		{ "getPoints", w_PolygonShape_getPoints },
+		// From Shape.
+		{ "getType", w_Shape_getType },
+		{ "setFriction", w_Shape_setFriction },
+		{ "setRestitution", w_Shape_setRestitution },
+		{ "setDensity", w_Shape_setDensity },
+		{ "setSensor", w_Shape_setSensor },
+		{ "getFriction", w_Shape_getFriction },
+		{ "getRestituion", w_Shape_getRestituion },
+		{ "getDensity", w_Shape_getDensity },
+		{ "isSensor", w_Shape_isSensor },
+		{ "testPoint", w_Shape_testPoint },
+		{ "testSegment", w_Shape_testSegment },
+		{ "setFilterData", w_Shape_setFilterData },
+		{ "getFilterData", w_Shape_getFilterData },
+		{ "setData", w_Shape_setData },
+		{ "getData", w_Shape_getData },
+		{ "getBoundingBox", w_Shape_getBoundingBox },
+		{ 0, 0 }
+	};
+
 	int luaopen_polygonshape(lua_State * L)
 	{
-		static const luaL_Reg functions[] = {
-			{ "getPoints", w_PolygonShape_getPoints },
-			// From Shape.
-			{ "getType", w_Shape_getType },
-			{ "setFriction", w_Shape_setFriction },
-			{ "setRestitution", w_Shape_setRestitution },
-			{ "setDensity", w_Shape_setDensity },
-			{ "setSensor", w_Shape_setSensor },
-			{ "getFriction", w_Shape_getFriction },
-			{ "getRestituion", w_Shape_getRestituion },
-			{ "getDensity", w_Shape_getDensity },
-			{ "isSensor", w_Shape_isSensor },
-			{ "testPoint", w_Shape_testPoint },
-			{ "testSegment", w_Shape_testSegment },
-			{ "setFilterData", w_Shape_setFilterData },
-			{ "getFilterData", w_Shape_getFilterData },
-			{ "setData", w_Shape_setData },
-			{ "getData", w_Shape_getData },
-			{ "getBoundingBox", w_Shape_getBoundingBox },
-			{ 0, 0 }
-		};
 		return luax_register_type(L, "PolygonShape", functions);
 	}
 

@@ -61,29 +61,30 @@ namespace sdl
 		return instance->push(L);
 	}
 
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "pump", w_pump }, 
+		{ "poll", w_poll }, 
+		{ "wait", w_wait }, 
+		{ "quit", w_quit }, 
+		{ "push", w_push }, 
+		{ 0, 0 }
+	};
+
+	// List of constants.
+	static const LuaConstant constants[] = {
+		{ "event_keypressed", Event::EVENT_KEYDOWN },
+		{ "event_keyreleased", Event::EVENT_KEYUP },
+		{ "event_mousepressed", Event::EVENT_MOUSEBUTTONDOWN },
+		{ "event_mousereleased", Event::EVENT_MOUSEBUTTONUP },
+		{ "event_joystickpressed", Event::EVENT_JOYBUTTONDOWN },
+		{ "event_joystickreleased", Event::EVENT_JOYBUTTONUP },
+		{ "event_quit", Event::EVENT_QUIT },
+		{ 0, 0 }
+	};
+
 	int luaopen_love_event(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "pump", w_pump }, 
-			{ "poll", w_poll }, 
-			{ "wait", w_wait }, 
-			{ "quit", w_quit }, 
-			{ "push", w_push }, 
-			{ 0, 0 }
-		};
-
-		// List of constants.
-		static const LuaConstant constants[] = {
-			{ "event_keypressed", Event::EVENT_KEYDOWN },
-			{ "event_keyreleased", Event::EVENT_KEYUP },
-			{ "event_mousepressed", Event::EVENT_MOUSEBUTTONDOWN },
-			{ "event_mousereleased", Event::EVENT_MOUSEBUTTONUP },
-			{ "event_joystickpressed", Event::EVENT_JOYBUTTONDOWN },
-			{ "event_joystickreleased", Event::EVENT_JOYBUTTONUP },
-			{ "event_quit", Event::EVENT_QUIT },
-			{ 0, 0 }
-		};
 		if(instance == 0)
 		{
 			try 

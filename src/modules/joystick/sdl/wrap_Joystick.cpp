@@ -124,46 +124,46 @@ namespace sdl
 		return 0;
 	}
 
-	int luaopen_joystick(lua_State * L)
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "getNumJoysticks", w_getNumJoysticks },
+		{ "getName", w_getName },
+		{ "open", w_open },
+		{ "isOpen", w_isOpen },
+		{ "getNumAxes", w_getNumAxes },
+		{ "getNumBalls", w_getNumBalls },
+		{ "getNumButtons", w_getNumButtons },
+		{ "getNumHats", w_getNumHats },
+		{ "getAxis", w_getAxis },
+
+		{ "getAxes", w_getAxes },
+		{ "getBall", w_getBall },
+
+		{ "isDown", w_isDown },
+		{ "getHat", w_getHat },
+		{ "close", w_close },
+		{ 0, 0 }
+	};
+
+	// List of constants.
+	static const LuaConstant constants[] = {
+		{ "joystick_axis_horizontal", Joystick::JOYSTICK_AXIS_HORIZONTAL },
+		{ "joystick_axis_vertical", Joystick::JOYSTICK_AXIS_VERITCAL },
+
+		{ "joystick_hat_centered", Joystick::JOYSTICK_HAT_CENTERED },
+		{ "joystick_hat_up", Joystick::JOYSTICK_HAT_UP },
+		{ "joystick_hat_right", Joystick::JOYSTICK_HAT_RIGHT },
+		{ "joystick_hat_down", Joystick::JOYSTICK_HAT_DOWN },
+		{ "joystick_hat_left", Joystick::JOYSTICK_HAT_LEFT },
+		{ "joystick_hat_rightup", Joystick::JOYSTICK_HAT_RIGHTUP },
+		{ "joystick_hat_rightdown", Joystick::JOYSTICK_HAT_RIGHTDOWN },
+		{ "joystick_hat_leftup", Joystick::JOYSTICK_HAT_LEFTUP },
+		{ "joystick_hat_leftdown", Joystick::JOYSTICK_HAT_LEFTDOWN },
+		{ 0, 0 }
+	};
+
+	int luaopen_love_joystick(lua_State * L)
 	{
-		// List of functions to wrap.
-		static const luaL_Reg functions[] = {
-			{ "getNumJoysticks", w_getNumJoysticks },
-			{ "getName", w_getName },
-			{ "open", w_open },
-			{ "isOpen", w_isOpen },
-			{ "getNumAxes", w_getNumAxes },
-			{ "getNumBalls", w_getNumBalls },
-			{ "getNumButtons", w_getNumButtons },
-			{ "getNumHats", w_getNumHats },
-			{ "getAxis", w_getAxis },
-
-			{ "getAxes", w_getAxes },
-			{ "getBall", w_getBall },
-
-			{ "isDown", w_isDown },
-			{ "getHat", w_getHat },
-			{ "close", w_close },
-			{ 0, 0 }
-		};
-
-		// List of constants.
-		static const LuaConstant constants[] = {
-			{ "joystick_axis_horizontal", Joystick::JOYSTICK_AXIS_HORIZONTAL },
-			{ "joystick_axis_vertical", Joystick::JOYSTICK_AXIS_VERITCAL },
-
-			{ "joystick_hat_centered", Joystick::JOYSTICK_HAT_CENTERED },
-			{ "joystick_hat_up", Joystick::JOYSTICK_HAT_UP },
-			{ "joystick_hat_right", Joystick::JOYSTICK_HAT_RIGHT },
-			{ "joystick_hat_down", Joystick::JOYSTICK_HAT_DOWN },
-			{ "joystick_hat_left", Joystick::JOYSTICK_HAT_LEFT },
-			{ "joystick_hat_rightup", Joystick::JOYSTICK_HAT_RIGHTUP },
-			{ "joystick_hat_rightdown", Joystick::JOYSTICK_HAT_RIGHTDOWN },
-			{ "joystick_hat_leftup", Joystick::JOYSTICK_HAT_LEFTUP },
-			{ "joystick_hat_leftdown", Joystick::JOYSTICK_HAT_LEFTDOWN },
-			{ 0, 0 }
-		};
-
 		if(instance == 0)
 		{
 			try 

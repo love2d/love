@@ -66,16 +66,16 @@ namespace opengl
 		return 0;
 	}
 
-	int w_SpriteBatch_open(lua_State * L)
-	{
-		static const luaL_Reg functions[] = {
-			{ "add", w_SpriteBatch_add },
-			{ "clear", w_SpriteBatch_clear },
-			{ "lock", w_SpriteBatch_lock },
-			{ "unlock", w_SpriteBatch_unlock },
-			{ 0, 0 }
-		};
+	static const luaL_Reg functions[] = {
+		{ "add", w_SpriteBatch_add },
+		{ "clear", w_SpriteBatch_clear },
+		{ "lock", w_SpriteBatch_lock },
+		{ "unlock", w_SpriteBatch_unlock },
+		{ 0, 0 }
+	};
 
+	int luaopen_spritebatch(lua_State * L)
+	{
 		return luax_register_type(L, "SpriteBatch", functions);
 	}
 

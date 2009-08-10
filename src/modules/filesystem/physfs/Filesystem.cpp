@@ -64,10 +64,10 @@ namespace physfs
 		save_identity = std::string(ident);
 
 		// Generate the relative path to the game save folder.
-		save_path_relative = std::string(APPDATA_FOLDER PATH_SEPARATOR) + save_identity;
+		save_path_relative = std::string(LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
 
 		// Generate the full path to the game save folder.
-		save_path_full = std::string(getAppdataDirectory()) + std::string(PATH_SEPARATOR);
+		save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR);
 		save_path_full += save_path_relative;
 
 		std::cout << save_path_full << std::endl;
@@ -155,10 +155,10 @@ namespace physfs
 
 	const char * Filesystem::getWorkingDirectory()
 	{
-		#ifdef WINDOWS
+		#ifdef LOVE_WINDOWS
 				_getcwd(cwdbuffer, _MAX_PATH);
 		#else
-				char * temp = getcwd(cwdbuffer, MAXPATHLEN);
+				char * temp = getcwd(cwdbuffer, LOVE_MAXPATHLEN);
 				if(temp == 0)
 					return 0;
 		#endif

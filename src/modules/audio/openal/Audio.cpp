@@ -54,6 +54,8 @@ namespace openal
 	{
 		SDL_KillThread(thread);
 
+		pool->stop();
+
 		delete pool;
 		
 		alcMakeContextCurrent(0);

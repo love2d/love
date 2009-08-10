@@ -47,20 +47,20 @@ namespace physfs
 		return 1;
 	}
 
-	int w_FileData_open(lua_State * L)
+	static const luaL_Reg w_FileData_functions[] = {
+
+		// Data
+		{ "getPointer", w_Data_getPointer },
+		{ "getSize", w_Data_getSize },
+
+		{ "getFilename", w_FileData_getFilename },
+		{ "getExtension", w_FileData_getExtension },
+
+		{ 0, 0 }
+	};
+
+	int luaopen_filedata(lua_State * L)
 	{
-		static const luaL_Reg w_FileData_functions[] = {
-
-			// Data
-			{ "getPointer", w_Data_getPointer },
-			{ "getSize", w_Data_getSize },
-
-			{ "getFilename", w_FileData_getFilename },
-			{ "getExtension", w_FileData_getExtension },
-
-			{ 0, 0 }
-		};
-
 		return luax_register_type(L, "FileData", w_FileData_functions);
 	}
 	

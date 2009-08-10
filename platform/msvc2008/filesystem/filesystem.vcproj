@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="lua"
-	ProjectGUID="{892D9BD8-F38E-40BC-B4E1-FAEBD59AECDE}"
-	RootNamespace="lua"
+	Name="filesystem"
+	ProjectGUID="{0A2BDA60-43BB-4837-921A-2E4955FD8AEC}"
+	RootNamespace="filesystem"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,7 +20,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,11 +41,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="../include;../../../src;../../../src/modules"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LOVE_FILESYSTEM_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
@@ -61,11 +61,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib"
+				AdditionalDependencies="lua5.1.lib physfs.lib"
+				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="lib"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -94,7 +95,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -117,8 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FILESYSTEM_EXPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -136,11 +136,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="lib"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -171,8 +169,60 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="filesystem"
+			>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\File.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\File.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\Filesystem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\Filesystem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_File.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_File.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_FileData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_FileData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_Filesystem.h"
+				>
+			</File>
+		</Filter>
 		<File
-			RelativePath=".\lua.c"
+			RelativePath="..\..\..\src\modules\filesystem\File.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\filesystem\FileData.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\filesystem\FileData.h"
 			>
 		</File>
 	</Files>
