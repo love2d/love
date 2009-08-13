@@ -75,6 +75,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "font", "font\font.vcproj", 
 		{0A2BDA60-43BB-4837-921A-2E4955FD8AEC} = {0A2BDA60-43BB-4837-921A-2E4955FD8AEC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "love", "love.vcproj", "{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -141,6 +143,10 @@ Global
 		{0E3ACF52-EEB5-4E35-8631-43B3E9F4577E}.Debug|Win32.Build.0 = Debug|Win32
 		{0E3ACF52-EEB5-4E35-8631-43B3E9F4577E}.Release|Win32.ActiveCfg = Release|Win32
 		{0E3ACF52-EEB5-4E35-8631-43B3E9F4577E}.Release|Win32.Build.0 = Release|Win32
+		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Debug|Win32.Build.0 = Debug|Win32
+		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Release|Win32.ActiveCfg = Release|Win32
+		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

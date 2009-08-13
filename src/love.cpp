@@ -1,12 +1,4 @@
 /**
-* @mainpage LOVE
-* @section sec-intro Introduction
-* 
-* LOVE is a free 2D game "engine" which allows you to create games in 
-* Lua primarily, but increasingly in C as well.
-* 
-* @section sec-license License
-* 
 * Copyright (c) 2006-2009 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
@@ -17,13 +9,13 @@
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
 * 
-* -# The origin of this software must not be misrepresented; you must not
+* 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
 *    appreciated but is not required.
-* -# Altered source versions must be plainly marked as such, and must not be
+* 2. Altered source versions must be plainly marked as such, and must not be
 *    misrepresented as being the original software.
-* -# This notice may not be removed or altered from any source distribution.
+* 3. This notice may not be removed or altered from any source distribution.
 **/
 
 // SDL
@@ -58,19 +50,19 @@
 #include "resources/resources.h"
 
 static const luaL_Reg modules[] = {
-	{ "love.audio", luaopen_love_audio },
-	{ "love.event", luaopen_love_event },
-	{ "love.filesystem", luaopen_love_filesystem },
-	{ "love.font", luaopen_love_font },
-	{ "love.graphics", luaopen_love_graphics },
-	{ "love.image", luaopen_love_image },
-	{ "love.joystick", luaopen_love_joystick },
-	{ "love.keyboard", luaopen_love_keyboard },
-	{ "love.mouse", luaopen_love_mouse },
-	{ "love.native", luaopen_love_native },
-	{ "love.physics", luaopen_love_physics },
-	{ "love.sound", luaopen_love_sound },
-	{ "love.timer", luaopen_love_timer },
+	{ "love.audio", love::audio::luaopen_love_audio },
+	{ "love.event", love::event::sdl::luaopen_love_event },
+	{ "love.filesystem", love::filesystem::physfs::luaopen_love_filesystem },
+	{ "love.font", love::font::freetype::luaopen_love_font },
+	{ "love.graphics", love::graphics::opengl::luaopen_love_graphics },
+	{ "love.image", love::image::luaopen_love_image },
+	{ "love.joystick", love::joystick::sdl::luaopen_love_joystick },
+	{ "love.keyboard", love::keyboard::sdl::luaopen_love_keyboard },
+	{ "love.mouse", love::mouse::sdl::luaopen_love_mouse },
+	{ "love.native", love::native::tcc::luaopen_love_native },
+	{ "love.physics", love::physics::box2d::luaopen_love_physics },
+	{ "love.sound", love::sound::luaopen_love_sound },
+	{ "love.timer", love::timer::sdl::luaopen_love_timer },
 	{ 0, 0 }
 };
 
