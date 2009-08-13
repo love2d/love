@@ -30,14 +30,17 @@ namespace filesystem
 namespace physfs
 {
 	Filesystem::Filesystem()
-		: open_count(0), buffer(0)
+		: open_count(0), buffer(0), isInited(false)
 	{
 	}
 
 	Filesystem::~Filesystem()
 	{
-		if(PHYSFS_isInit())
+		if(isInited)
+		{
+			isInited = false;
 			PHYSFS_deinit();
+		}
 	}
 
 	const char * Filesystem::getName() const
@@ -49,11 +52,12 @@ namespace physfs
 	{
 		if(!PHYSFS_init(arg0))
 			throw Exception(PHYSFS_getLastError());
+		isInited = true;
 	}
 
 	bool Filesystem::setIdentity( const char * ident )
 	{
-		if(PHYSFS_isInit())
+		if(!isInited)
 			return false;
 
 		// Check whether save directory is already set.
@@ -86,7 +90,7 @@ namespace physfs
 
 	bool Filesystem::setSource(const char * source)
 	{
-		if(!PHYSFS_isInit())
+		if(!isInited)
 			return false;
 
 		// Check whether directory is already set.
@@ -105,7 +109,7 @@ namespace physfs
 
 	bool Filesystem::setupWriteDirectory()
 	{
-		if(!PHYSFS_isInit())
+		if(!isInited)
 			return false;
 
 		// These must all be set.
@@ -156,9 +160,9 @@ namespace physfs
 	const char * Filesystem::getWorkingDirectory()
 	{
 		#ifdef LOVE_WINDOWS
-				_getcwd(cwdbuffer, _MAX_PATH);
+				_getcwd(cwdbuffer, LOVE_MAX_PATH);
 		#else
-				char * temp = getcwd(cwdbuffer, LOVE_MAXPATHLEN);
+				char * temp = getcwd(cwdbuffer, LOVE_MAX_PATH);
 				if(temp == 0)
 					return 0;
 		#endif

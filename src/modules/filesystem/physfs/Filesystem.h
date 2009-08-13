@@ -85,6 +85,9 @@ namespace physfs
 		// The full path to the source of the game.
 		std::string game_source;
 
+		// Workaround for machines without PhysFS 2.0
+		bool isInited;
+
 	protected:
 		
 	public:
