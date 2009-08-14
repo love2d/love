@@ -39,6 +39,7 @@
 #include <mouse/sdl/wrap_Mouse.h>
 #include <native/tcc/wrap_Native.h>
 #include <physics/box2d/wrap_Physics.h>
+#include <signal/posix/wrap_Signal.h>
 #include <sound/wrap_Sound.h>
 #include <timer/sdl/wrap_Timer.h>
 
@@ -61,6 +62,7 @@ static const luaL_Reg modules[] = {
 	{ "love.mouse", love::mouse::sdl::luaopen_love_mouse },
 	{ "love.native", love::native::tcc::luaopen_love_native },
 	{ "love.physics", love::physics::box2d::luaopen_love_physics },
+	{ "love.signal", love::signal::posix::luaopen_love_signal },
 	{ "love.sound", love::sound::luaopen_love_sound },
 	{ "love.timer", love::timer::sdl::luaopen_love_timer },
 	{ 0, 0 }
