@@ -116,10 +116,8 @@ function love.boot()
 		love.filesystem.init(love.path.getfull(love.arg.getLow(arg)))
 		love.filesystem.setSource(love.path.getfull(arg[1]))
 	else
-		-- Do not set a source, load the default game.
-		love.defaultscreen()
+		love.filesystem = nil
 	end
-	
 end
 
 function love.init()
@@ -153,7 +151,7 @@ function love.init()
 	}
 
 	-- If config file exists, load it and allow it to update config table.
-	if love.filesystem.exists("conf.lua") then
+	if love.filesystem and love.filesystem.exists("conf.lua") then
 		require("conf.lua")
 		love.conf(c)
 	end
@@ -177,7 +175,7 @@ function love.init()
 		love.graphics.setCaption(c.title)
 	end
 	
-	if love.filesystem.exists("main.lua") then require("main.lua") end
+	if love.filesystem and love.filesystem.exists("main.lua") then require("main.lua") end
 	
 end
 
