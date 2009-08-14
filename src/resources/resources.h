@@ -23,9 +23,14 @@
 
 namespace love
 {
-	// Vera_ttf
-	const int Vera_ttf_size = 65932;
-	extern const char Vera_ttf_data[];
+	struct Resource
+	{
+		const char * name;
+		void * data;
+		unsigned int size;
+	};
+
+	extern const Resource resources[];
 
 }
 

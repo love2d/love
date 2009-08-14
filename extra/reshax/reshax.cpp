@@ -1,9 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <fstream>
 #include <map>
 #include <sstream>
 #include <sys/stat.h>
 
 std::ofstream resources_cpp, resources_h;
+std::stringstream resources_array;
 
 void load(std::string file);
 void write(std::string file, int size, char *data);
@@ -44,19 +47,34 @@ int main(int argc, char *argv[])
 			<< "#ifndef LOVE_RESOURCES_H\n"
 			<< "#define LOVE_RESOURCES_H\n\n"
 			<< "namespace love\n"
-			<< "{\n";
+			<< "{\n"
+			<< "\tstruct Resource\n"
+			<< "\t{\n"
+			<< "\t\tconst char * name;\n"
+			<< "\t\tvoid * data;\n"
+			<< "\t\tunsigned int size;\n"
+			<< "\t};\n"
+			<< "\n"
+			<< "\textern const Resource resources[];\n"
+			<< "\n";
 		resources_cpp.open("resources.cpp");
 		resources_cpp
 			<< love_header
 			<< "#include \"resources.h\"\n\n"
 			<< "namespace love\n"
 			<< "{\n";
+
+		resources_array << "\n\tconst Resource resources[] = {\n";
+
 		for (int i = 1; i < argc; i++)
 		{
 			// use boost::filesystem to list all the files (in v2 maybe)
 			load(argv[i]);
 		}
-		resources_cpp << "};\n";
+
+		resources_array << "\t\t{0,0,0}\n\t};\n\n";
+
+		resources_cpp << resources_array.str();
 		resources_cpp << "} // love\n";
 		resources_cpp.close();
 		resources_h
@@ -119,6 +137,11 @@ void write(string file, int size, char *data)
 	}
 	//#endif
 
+	// Lowercase plz.
+    for (unsigned int i=0;i<strlen(var.c_str());i++) 
+        if (var[i] >= 0x41 && var[i] <= 0x5A) 
+            var[i] = var[i] + 0x20;
+
 	resources_cpp << "\tconst char " << var << "_data[] = {";
 	for (int i = 0; i < size - 1; i++)
 	{
@@ -127,10 +150,8 @@ void write(string file, int size, char *data)
 		if (i != 0 && i % 30 == 0)
 			resources_cpp << "\n\t";
 	}
-	sprintf(buffer, "%d};\n", data[size]);
-
-	resources_h << "\t// " << var << "\n";
-	resources_h << "\tconst int " << var << "_size = " << size << ";\n";
-	resources_h << "\textern const char " << var << "_data[];\n\n";
+	sprintf(buffer, "%d};\n\n", data[size]);
+	resources_cpp << buffer;
+	resources_array << "\t\t{\"_" << var << "\", (void*)" << var << "_data, " << size << "},\n";
 	printf(" is haxed\n");
 }

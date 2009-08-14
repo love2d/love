@@ -71,8 +71,11 @@ DECLSPEC int luaopen_love(lua_State * L)
 	love::luax_insistglobal(L, "love");
 
 	// Resources.
-	love::luax_newtype(L, "Data", love::DATA_T, new love::MemoryData((void*)love::Vera_ttf_data, love::Vera_ttf_size));
-	lua_setfield(L, -2, "_vera");
+	for(const love::Resource * r = love::resources; r->name != 0; r++)
+	{
+		love::luax_newtype(L, "Data", love::DATA_T, new love::MemoryData((void*)r->data, r->size));
+		lua_setfield(L, -2, r->name);
+	}
 
 	lua_pop(L, 1); // love
 
