@@ -51,6 +51,11 @@ namespace devil
 		return new ImageData(file);
 	}
 
+	love::image::ImageData * Image::newImageData(Data * data)
+	{
+		return new ImageData(data);
+	}
+
 	love::image::ImageData * Image::newImageData(int width, int height)
 	{
 		return new ImageData(width, height);

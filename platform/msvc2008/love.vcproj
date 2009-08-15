@@ -3289,6 +3289,62 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="signal"
+				>
+				<Filter
+					Name="posix"
+					>
+					<File
+						RelativePath="..\..\src\modules\signal\posix\Signal.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\signal\posix\"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\signal\posix\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\signal\posix\Signal.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\signal\posix\wrap_Signal.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\signal\posix\"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\signal\posix\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\signal\posix\wrap_Signal.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="common"
@@ -3463,6 +3519,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\common\Vector.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\common\version.h"
 				>
 			</File>
 			<File

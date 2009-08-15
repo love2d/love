@@ -24,10 +24,11 @@
 namespace love
 {
 	// Version stuff.
-	const char VERSION_MAJOR = 0;
-	const char VERSION_MINOR = 6;
-	const char VERSION_REV = 0;
-	const int VERSION_COMPATIBILITY[] =  { 0 };
+	const int VERSION_MAJOR = 0;
+	const int VERSION_MINOR = 6;
+	const int VERSION_REV = 0;
+	const int VERSION = VERSION_MAJOR*100 + VERSION_MINOR*10 + VERSION_REV;
+	const int VERSION_COMPATIBILITY[] =  { VERSION, 0 };
 	const char * VERSION_STR = "0.6.0";
 	const char * VERSION_CODENAME = "Jiggly Juice";
 

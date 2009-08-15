@@ -29,11 +29,8 @@ namespace image
 {
 namespace devil
 {
-	ImageData::ImageData(filesystem::File * file)
+	void ImageData::load(Data * data)
 	{
-		// Read the data.
-		Data * data = file->read();
-
 		// Generate DevIL image.
 		ilGenImages(1, &image);
 
@@ -42,9 +39,6 @@ namespace devil
 
 		// Try to load the image.
 		ILboolean success = ilLoadL(IL_TYPE_UNKNOWN, (void*)data->getData(), data->getSize());
-
-		// Free local image data.
-		data->release();
 
 		// Check for errors
 		if(!success)
@@ -68,6 +62,18 @@ namespace devil
 			std::cerr << "Bits per pixel != 4" << std::endl;
 			return;
 		}
+	}
+
+	ImageData::ImageData(Data * data)
+	{
+		load(data);
+	}
+
+	ImageData::ImageData(filesystem::File * file)
+	{
+		Data * data = file->read();
+		load(data);
+		data->release();
 	}
 
 	ImageData::ImageData(int width, int height)

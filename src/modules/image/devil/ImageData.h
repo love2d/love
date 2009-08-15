@@ -53,8 +53,11 @@ namespace devil
 		// DevIL image identifier.
 		ILuint image;
 
+		void load(Data * data);
+
 	public:
 
+		ImageData(Data * data);
 		ImageData(love::filesystem::File * file);
 		ImageData(int width, int height);
 		virtual ~ImageData();

@@ -35,7 +35,7 @@ namespace posix
 	
 	Signal::~Signal()
 	{
-		::signal(signals, SIG_DFL);
+		//::signal(signals, SIG_DFL);
 	}
 	
 	bool Signal::hook(int sgn)
@@ -61,7 +61,8 @@ namespace posix
 	
 	bool Signal::raise(int sgn)
 	{
-		return ::raise(sgn);
+		// MSVC warns about int -> bool conversion.
+		return ::raise(sgn) ? true : false;
 	}
 	
 	void handler(int signal)

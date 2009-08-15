@@ -41,6 +41,7 @@ namespace devil
 		const char * getName() const;
 		
 		love::image::ImageData * newImageData(love::filesystem::File * file);
+		love::image::ImageData * newImageData(Data * data);
 		love::image::ImageData * newImageData(int width, int height);
 
 	}; // Image

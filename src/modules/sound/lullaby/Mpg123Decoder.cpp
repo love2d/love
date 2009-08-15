@@ -22,6 +22,8 @@
 
 #include <common/Exception.h>
 
+#include <iostream>
+
 namespace love
 {
 namespace sound
@@ -116,7 +118,8 @@ namespace lullaby
 
 	bool Mpg123Decoder::rewind()
 	{
-		mpg123_seek(handle, SEEK_SET, 0);
+		if(mpg123_seek(handle, SEEK_SET, 0) < 0)
+			return false;
 		return true;
 	}
 

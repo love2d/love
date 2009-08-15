@@ -77,6 +77,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "font", "font\font.vcproj", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "love", "love.vcproj", "{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "signal", "signal\signal.vcproj", "{5A7AAEBC-F269-41DA-984A-75F975549CA5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lovedll", "lovedll\lovedll.vcproj", "{2863FF8A-153F-46E0-8E71-2E58F3809E9B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -147,6 +157,14 @@ Global
 		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Debug|Win32.Build.0 = Debug|Win32
 		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Release|Win32.ActiveCfg = Release|Win32
 		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Release|Win32.Build.0 = Release|Win32
+		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Debug|Win32.Build.0 = Debug|Win32
+		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Release|Win32.ActiveCfg = Release|Win32
+		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Release|Win32.Build.0 = Release|Win32
+		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Debug|Win32.Build.0 = Debug|Win32
+		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Release|Win32.ActiveCfg = Release|Win32
+		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -40,9 +40,12 @@
 #	define _CRT_SECURE_NO_WARNINGS
 #endif
 
-// Build.
-#define LOVE_BUILD_EXE 1
-#define LOVE_BUILD_DLL 0
+#ifndef LOVE_BUILD
+#	define LOVE_BUILD
+#	define LOVE_BUILD_STANDALONE
+#	define LOVE_BUILD_EXE
+//#	define LOVE_BUILD_DLL
+#endif
 
 // DLL-stuff.
 #ifdef LOVE_WINDOWS

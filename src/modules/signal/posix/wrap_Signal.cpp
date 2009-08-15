@@ -36,7 +36,7 @@ namespace posix
 	int w_hook(lua_State *L)
 	{
 		luaL_argcheck(L, lua_isnumber(L, 1), 1, "Expected number");
-		lua_pushboolean(L, instance->hook(lua_tonumber(L, 1)));
+		lua_pushboolean(L, instance->hook(lua_tointeger(L, 1)));
 		return 1;
 	}
 	
@@ -44,12 +44,13 @@ namespace posix
 	{
 		luaL_argcheck(L, lua_isfunction(L, 1), 1, "Expected function");
 		instance->setCallback(L);
+		return 0;
 	}
 	
 	int w_raise(lua_State *L)
 	{
 		luaL_argcheck(L, lua_isnumber(L, 1), 1, "Expected number");
-		lua_pushboolean(L, instance->raise(lua_tonumber(L, 1)));
+		lua_pushboolean(L, instance->raise(lua_tointeger(L, 1)));
 		return 1;
 	}
 

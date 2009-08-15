@@ -41,11 +41,21 @@ namespace image
 			return 1;
 		}
 
+		// Case 2: Data
+		if(luax_istype(L, 1, DATA_T))
+		{
+			Data * d = luax_checktype<Data>(L, 1, "Data", DATA_T);
+			ImageData * t = instance->newImageData(d);
+			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
+			return 1;
+		}
+
+		// Case 3: String/File.
+
 		// Convert to File, if necessary.
 		if(lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
 
-		// Case 2: String/File.
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 		ImageData * t = instance->newImageData(file);
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);

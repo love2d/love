@@ -18,14 +18,16 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// SDL
-#include <SDL.h>
-
 // LOVE
 #include <common/config.h>
 #include <common/version.h>
 #include <common/runtime.h>
 #include <common/MemoryData.h>
+
+#ifdef LOVE_BUILD_EXE
+
+// SDL
+#include <SDL.h>
 
 // Modules
 #include <audio/wrap_Audio.h>
@@ -47,8 +49,12 @@
 #include "libraries/luasocket/luasocket.h"
 #include "libraries/lanes/lanes.h"
 
+#endif // LOVE_BUILD_EXE
+
 // Resources
 #include "resources/resources.h"
+
+#ifdef LOVE_BUILD_STANDALONE
 
 static const luaL_Reg modules[] = {
 	{ "love.audio", love::audio::luaopen_love_audio },
@@ -68,9 +74,32 @@ static const luaL_Reg modules[] = {
 	{ 0, 0 }
 };
 
-DECLSPEC int luaopen_love(lua_State * L)
+#endif // LOVE_BUILD_STANDALONE
+
+extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 {
 	love::luax_insistglobal(L, "love");
+
+	// Set version information.
+	lua_pushinteger(L, love::VERSION);
+	lua_setfield(L, -2, "_version");
+
+	lua_pushstring(L, love::VERSION_STR);
+	lua_setfield(L, -2, "_version_string");
+
+	lua_pushstring(L, love::VERSION_CODENAME);
+	lua_setfield(L, -2, "_version_codename");
+
+	lua_newtable(L);
+
+	for(int i = 0; love::VERSION_COMPATIBILITY[i] != 0; ++i)
+	{
+		lua_pushinteger(L, love::VERSION_COMPATIBILITY[i]);
+		lua_rawseti(L, -2, i+1);
+	}
+
+	lua_setfield(L, -2, "_version_compat");
+
 
 	// Resources.
 	for(const love::Resource * r = love::resources; r->name != 0; r++)
@@ -81,6 +110,8 @@ DECLSPEC int luaopen_love(lua_State * L)
 
 	lua_pop(L, 1); // love
 
+#ifdef LOVE_BUILD_STANDALONE
+
 	// Preload module loaders.
 	for(int i = 0; modules[i].name != 0; i++)
 	{
@@ -90,10 +121,12 @@ DECLSPEC int luaopen_love(lua_State * L)
 	love::luasocket::__open(L);
 	love::lanes::open(L);
 
+#endif // LOVE_BUILD_STANDALONE
+
 	return 0;
 }
 
-#if LOVE_BUILD_EXE
+#ifdef LOVE_BUILD_EXE
 
 int main(int argc, char ** argv)
 {

@@ -54,6 +54,13 @@ namespace image
 		virtual ImageData * newImageData(love::filesystem::File * file) = 0;
 
 		/**
+		* Creates new ImageData from a raw Data. 
+		* @param data The object containing encoded pixel data.
+		* @return The new ImageData.
+		**/
+		virtual ImageData * newImageData(Data * data) = 0;
+
+		/**
 		* Creates empty ImageData with the given size.
 		* @param The width of the ImageData.
 		* @param The height of the ImageData.
