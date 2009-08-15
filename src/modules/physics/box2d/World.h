@@ -60,16 +60,26 @@ namespace box2d
 		friend class MouseJoint;
 		friend class Body;
 
+	public:
+
+		class ContactCallback
+		{
+		public:
+			Reference * ref;
+			std::vector<Contact *> contacts;
+			ContactCallback();
+			~ContactCallback();
+			void add(World * world, const b2ContactPoint* point);
+			void process();
+		};
+
 	private:
 
 		// Pointer to the Box2D world.
 		b2World * world;
 
 		// Contact callbacks.
-		Reference * add_ref;
-
-		// Contacts buffers.
-		std::vector<Contact *> add_contacts;
+		ContactCallback add, persist, remove, result;
 
 		// The length of one meter in pixels.
 		int meter;
@@ -109,18 +119,22 @@ namespace box2d
 
 		// From b2ContactListener
 		void Add(const b2ContactPoint* point);
+		void Persist(const b2ContactPoint* point);
+		void Remove(const b2ContactPoint* point);
+		void Result(const b2ContactPoint* point);
 
 		/**
-		* Recieves a Lua function as argument, and
-		* stores it for use when a collision occurs.
+		* Receives up to four Lua functions as arguments. Each function is
+		* collision callback for the four events (in order): add, persist,
+		* remove and result. The value "nil" is accepted if one or more events
+		* are uninteresting. 
 		**/
-		int setCallback(lua_State * L);
+		int setCallbacks(lua_State * L);
 
 		/**
-		* Returns the stored Lua function for collision
-		* handling, or nil if there is none.
+		* Returns the functions previously set by setCallbacks.
 		**/
-		int getCallback(lua_State * L);
+		int getCallbacks(lua_State * L);
 		
 		/**
 		* Sets the current gravity of the World.

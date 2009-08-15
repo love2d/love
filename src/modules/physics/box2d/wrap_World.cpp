@@ -40,18 +40,18 @@ namespace box2d
 		return 0;
 	}
 
-	int w_World_setCallback(lua_State * L)
+	int w_World_setCallbacks(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
 		lua_remove(L, 1);
-		return t->setCallback(L);
+		return t->setCallbacks(L);
 	}
 
-	int w_World_getCallback(lua_State * L)
+	int w_World_getCallbacks(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
 		lua_remove(L, 1);
-		return t->getCallback(L);
+		return t->getCallbacks(L);
 	}
 
 	int w_World_setGravity(lua_State * L)
@@ -116,8 +116,8 @@ namespace box2d
 
 	static const luaL_Reg functions[] = {
 		{ "update", w_World_update },
-		{ "setCallback", w_World_setCallback },
-		{ "getCallback", w_World_getCallback },
+		{ "setCallbacks", w_World_setCallbacks },
+		{ "getCallbacks", w_World_getCallbacks },
 		{ "setGravity", w_World_setGravity },
 		{ "getGravity", w_World_getGravity },
 		{ "setAllowSleep", w_World_setAllowSleep },

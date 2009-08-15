@@ -22,6 +22,7 @@
 
 #include "Shape.h"
 #include "Contact.h"
+#include <common/Reference.h>
 
 namespace love
 {
@@ -30,74 +31,18 @@ namespace physics
 namespace box2d
 {
 
-	World::World(b2AABB aabb)
-		: add_ref(0), meter(DEFAULT_METER)
+	World::ContactCallback::ContactCallback()
+		: ref(0)
 	{
-		world = new b2World(scaleDown(aabb), b2Vec2(0,0), true);
-		world->SetContactListener(this);
-		add_contacts.reserve(10);
 	}
 
-	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep)
-		: add_ref(0), meter(DEFAULT_METER)
+	World::ContactCallback::~ContactCallback()
 	{
-		world = new b2World(scaleDown(aabb), scaleDown(gravity), sleep);
-		world->SetContactListener(this);
-		add_contacts.reserve(10);
+		if(ref != 0)
+			delete ref;
 	}
 
-	World::~World()
-	{
-		if(add_ref != 0)
-			delete add_ref;
-
-		delete world;
-	}
-
-	void World::update(float dt)
-	{
-		world->Step(dt, 10);
-
-		// Process contacts.
-		if(add_ref != 0)
-		{
-			lua_State * L = add_ref->getL();
-			for(int i = 0;i<(int)add_contacts.size();i++)
-			{
-				// Push the function.
-				add_ref->push();
-				
-				// Push first userdata.
-				{
-					shapeudata * d = (shapeudata *)(add_contacts[i]->point.shape1->GetUserData());
-					if(d->ref != 0) 
-						d->ref->push(); 
-					else 
-						lua_pushnil(L);
-				}
-
-				// Push first userdata.
-				{
-					shapeudata * d = (shapeudata *)(add_contacts[i]->point.shape2->GetUserData());
-					if(d->ref != 0) 
-						d->ref->push(); 
-					else 
-						lua_pushnil(L);
-				}
-
-				luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)add_contacts[i], false);
-				lua_call(L, 3, 0);
-			}
-
-			// Clear contacts.
-			for(int i = 0;i<(int)add_contacts.size();i++)
-				delete add_contacts[i];
-			add_contacts.clear();
-		}
-
-	}
-
-	void World::Add(const b2ContactPoint* point)
+	void World::ContactCallback::add(World * world, const b2ContactPoint* point)
 	{
 		/**
 		* We must copy contacts, since we're not allowed to process
@@ -105,33 +50,128 @@ namespace box2d
 		* pretty much guarantees segfault. ^^
 		**/
 
-		if(add_ref != 0)
-			add_contacts.push_back(new Contact(this, point));
+		if(ref != 0)
+			contacts.push_back(new Contact(world, point));
 	}
 
-	int World::setCallback(lua_State * L)
+	void World::ContactCallback::process()
 	{
-		luax_assert_argc(L, 1, 1);
-		luax_assert_function(L, -1);
-
-		if(add_ref != 0)
+		// Process contacts.
+		if(ref != 0)
 		{
-			delete add_ref;
-			add_ref = 0;
+			lua_State * L = ref->getL();
+			for(int i = 0;i<(int)contacts.size();i++)
+			{
+				// Push the function.
+				ref->push();
+				
+				// Push first userdata.
+				{
+					shapeudata * d = (shapeudata *)(contacts[i]->point.shape1->GetUserData());
+					if(d->ref != 0) 
+						d->ref->push(); 
+					else 
+						lua_pushnil(L);
+				}
+
+				// Push first userdata.
+				{
+					shapeudata * d = (shapeudata *)(contacts[i]->point.shape2->GetUserData());
+					if(d->ref != 0) 
+						d->ref->push(); 
+					else 
+						lua_pushnil(L);
+				}
+
+				luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)contacts[i], false);
+				lua_call(L, 3, 0);
+			}
+
+			// Clear contacts.
+			for(int i = 0;i<(int)contacts.size();i++)
+				delete contacts[i];
+			contacts.clear();
 		}
 
-		add_ref = new Reference(L);
+	}
+
+	World::World(b2AABB aabb)
+		: meter(DEFAULT_METER)
+	{
+		world = new b2World(scaleDown(aabb), b2Vec2(0,0), true);
+		world->SetContactListener(this);
+	}
+
+	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep)
+		: meter(DEFAULT_METER)
+	{
+		world = new b2World(scaleDown(aabb), scaleDown(gravity), sleep);
+		world->SetContactListener(this);
+	}
+
+	World::~World()
+	{
+		delete world;
+	}
+
+	void World::update(float dt)
+	{
+		world->Step(dt, 10);
+
+
+		add.process();
+		persist.process();
+		remove.process();
+		result.process();
+	}
+
+	void World::Add(const b2ContactPoint* point)
+	{
+		add.add(this, point);
+	}
+
+	void World::Persist(const b2ContactPoint* point)
+	{
+		persist.add(this, point);
+	}
+
+	void World::Remove(const b2ContactPoint* point)
+	{
+		remove.add(this, point);
+	}
+
+	void World::Result(const b2ContactPoint* point)
+	{
+		result.add(this, point);
+	}
+
+	int World::setCallbacks(lua_State * L)
+	{
+		int n = lua_gettop(L);
+		luax_assert_argc(L, 1, 4);
+
+		switch(n)
+		{
+		case 4:
+			result.ref = luax_refif(L, LUA_TFUNCTION);
+		case 3:
+			remove.ref = luax_refif(L, LUA_TFUNCTION);
+		case 2:
+			persist.ref = luax_refif(L, LUA_TFUNCTION);
+		case 1:
+			add.ref = luax_refif(L, LUA_TFUNCTION);
+		}
+
 		return 0;
 	}
 
-	int World::getCallback(lua_State * L)
+	int World::getCallbacks(lua_State * L)
 	{
-		if(add_ref != 0)
-			add_ref->push();
-		else
-			lua_pushnil(L);
-
-		return 1;
+		add.ref ? add.ref->push() : lua_pushnil(L);
+		persist.ref ? persist.ref->push() : lua_pushnil(L);
+		remove.ref ? remove.ref->push() : lua_pushnil(L);
+		result.ref ? result.ref->push() : lua_pushnil(L);
+		return lua_gettop(L);
 	}
 
 	void World::setGravity(float x, float y)

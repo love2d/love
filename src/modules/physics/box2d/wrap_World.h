@@ -33,8 +33,8 @@ namespace box2d
 {
 	World * luax_checkworld(lua_State * L, int idx);
 	int w_World_update(lua_State * L);
-	int w_World_setCallback(lua_State * L);
-	int w_World_getCallback(lua_State * L);
+	int w_World_setCallbacks(lua_State * L);
+	int w_World_getCallbacks(lua_State * L);
 	int w_World_setGravity(lua_State * L);
 	int w_World_getGravity(lua_State * L);
 	int w_World_setAllowSleep(lua_State * L);

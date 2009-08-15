@@ -35,6 +35,7 @@ namespace love
 {
 	// Forward declarations.
 	class Module;
+	class Reference;
 
 	/**
 	* Registries represent special tables which can be accessed with
@@ -67,6 +68,14 @@ namespace love
 		const char * name;
 		int value;
 	};
+
+	/**
+	* Returns a reference to the top stack element (-1) if the value
+	* is of the specified type. If the value is incorrect, zero is returned.
+	* 
+	* In any case, the top stack element is popped, regardless of its type.
+	**/
+	Reference * luax_refif(lua_State * L, int type);
 
 	/**
 	* Prints the current contents of the stack. Only useful for debugging.

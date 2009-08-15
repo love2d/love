@@ -23,6 +23,7 @@
 // LOVE
 #include "Module.h"
 #include "Object.h"
+#include "Reference.h"
 
 // STD
 #include <iostream>
@@ -51,6 +52,19 @@ namespace love
 		Module * t = (Module *)u->data;
 		delete t;
 		return 0;
+	}
+
+	Reference * luax_refif(lua_State * L, int type)
+	{
+		Reference * r = 0;
+
+		// Create a reference only if the test succeeds.
+		if(lua_type(L, -1) == type)
+			r = new Reference(L); 
+		else // Pop the value even if it fails (but also if it succeeds).
+			lua_pop(L, 1);
+
+		return r;
 	}
 
 	void luax_printstack(lua_State * L)
