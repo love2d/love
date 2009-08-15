@@ -38,10 +38,11 @@ namespace posix
 		::signal(signals, SIG_DFL);
 	}
 	
-	bool Signal::registerSignal(int sgn)
+	bool Signal::hook(int sgn)
 	{
 		signals |= sgn;
 		::signal(sgn, (void (*)(int)) &handler);
+		return true;
 	}
 	
 	void Signal::setCallback(lua_State *L)
@@ -56,6 +57,11 @@ namespace posix
 		}
 
 		cb = new Reference(L);
+	}
+	
+	bool Signal::raise(int sgn)
+	{
+		return ::raise(sgn);
 	}
 	
 	void handler(int signal)

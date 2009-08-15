@@ -31,8 +31,9 @@ namespace signal
 {
 namespace posix
 {
-	int w_registerSignal(lua_State *L);
+	int w_hook(lua_State *L);
 	int w_setCallback(lua_State *L);
+	int w_raise(lua_State *L);
 
 	extern "C" LOVE_EXPORT int luaopen_love_signal(lua_State * L);
 

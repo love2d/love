@@ -42,9 +42,10 @@ namespace posix
 	public:
 		Signal();
 		~Signal();
-		bool registerSignal(int sgn);
+		bool hook(int sgn);
 		void setCallback(lua_State *L);
 		const char * getName() const;
+		bool raise(int sgn);
 	}; // Signal
 	
 	void handler(int signal);

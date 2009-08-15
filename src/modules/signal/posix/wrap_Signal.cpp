@@ -33,10 +33,10 @@ namespace posix
 {
 	static Signal * instance = 0;
 	
-	int w_registerSignal(lua_State *L)
+	int w_hook(lua_State *L)
 	{
 		luaL_argcheck(L, lua_isnumber(L, 1), 1, "Expected number");
-		lua_pushboolean(L, instance->registerSignal(lua_tonumber(L, 1)));
+		lua_pushboolean(L, instance->hook(lua_tonumber(L, 1)));
 		return 1;
 	}
 	
@@ -45,11 +45,19 @@ namespace posix
 		luaL_argcheck(L, lua_isfunction(L, 1), 1, "Expected function");
 		instance->setCallback(L);
 	}
+	
+	int w_raise(lua_State *L)
+	{
+		luaL_argcheck(L, lua_isnumber(L, 1), 1, "Expected number");
+		lua_pushboolean(L, instance->raise(lua_tonumber(L, 1)));
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
-		{ "registerSignal", w_registerSignal },
+		{ "hook", w_hook },
 		{ "setCallback", w_setCallback }, 
+		{ "raise", w_raise },
 		{ 0, 0 }
 	};
 	
