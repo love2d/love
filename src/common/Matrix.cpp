@@ -156,7 +156,7 @@ namespace love
 	// | e2 e6 e10 e14 |
 	// | e3 e7 e11 e15 |
 
-	void Matrix::transform(vertex * dst, const vertex * src, int size)
+	void Matrix::transform(vertex * dst, const vertex * src, int size) const
 	{
 		for(int i = 0;i<size;i++)
 		{

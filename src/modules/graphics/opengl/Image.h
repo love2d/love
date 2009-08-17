@@ -22,13 +22,12 @@
 #define LOVE_GRAPHICS_OPENGL_IMAGE_H
 
 // LOVE
-#include <common/config.h>
-#include <image/ImageData.h>
-#include <common/math.h>
-#include <graphics/Image.h>
-#include "Frame.h"
 #include <common/Matrix.h>
 #include <common/math.h>
+#include <common/config.h>
+#include <image/ImageData.h>
+#include <graphics/Image.h>
+#include "Quad.h"
 
 // OpenGL
 #include "GLee.h"
@@ -105,23 +104,12 @@ namespace opengl
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 
 		/**
-		* This function draws a section of the image.
-		*
-		* @copydetails Drawable::draw()
-		* @param rx The upper-left corner of the source rectangle along the x-axis.
-		* @param ry The upper-left corner of the source rectangle along the y-axis.
-		* @param rw The width of the source rectangle.
-		* @param rw The height of the source rectangle.
-		**/
-		void draws(float x, float y, float angle, float sx, float sy, float ox, float oy, float rx, float ry, float rw, float rh) const;
-
-		/**
-		* This function draws a section of the image using a Frame object.
+		* This function draws a section of the image using a Quad object.
 		*
 		* @copydetails Image::draws()
 		* @param frame Represents the region of the Image to draw.
 		**/
-		void drawf(float x, float y, float angle, float sx, float sy, float ox, float oy, Frame * frame) const;
+		void drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 
 		/**
 		* Sets the filter mode.

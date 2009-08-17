@@ -22,8 +22,9 @@
 #define LOVE_GRAPHICS_OPENGL_FONT_H
 
 // LOVE
-#include <filesystem/File.h>
+#include <common/Object.h>
 #include <graphics/Volatile.h>
+#include <filesystem/File.h>
 
 namespace love
 {

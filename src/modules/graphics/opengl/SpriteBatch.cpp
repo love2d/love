@@ -25,6 +25,7 @@
 
 // LOVE
 #include "Image.h"
+#include "Quad.h"
 
 namespace love
 {
@@ -88,6 +89,7 @@ namespace opengl
 			// Get a pointer to the correct insertion position.
 			vertex * v = vertices + next*4;
 
+			// Needed for texture coordinates.
 			memcpy(v, image->getVertices(), sizeof(vertex)*4);
 
 			// Transform.
@@ -95,18 +97,30 @@ namespace opengl
 			t.setTransformation(x, y, a, sx, sy, ox, oy);
 			t.transform(v, v, 4);
 
-			if(lockp != 0)
-			{
-				// Copy into mapped memory if buffer is locked.
-				memcpy(lockp + (next*4), v,  sizeof(vertex)*4);
-			}
-			else
-			{
-				// ... use glBufferSubData otherwise.
-				glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-				glBufferSubData(GL_ARRAY_BUFFER, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
-			}
+			addv(t, v);
+
+			// Increment counter.
+			next++;
+		}
+	}
+
+	void SpriteBatch::addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy)
+	{
+		// Only do this if there's a free slot.
+		if(next < size)
+		{
+			// Get a pointer to the correct insertion position.
+			vertex * v = vertices + next*4;
+
+			// Needed for colors.
+			memcpy(v, quad->getVertices(), sizeof(vertex)*4);
+
+			// Transform.
+			Matrix t;
+			t.setTransformation(x, y, a, sx, sy, ox, oy);
+			t.transform(v, quad->getVertices(), 4);
+
+			addv(t, v);
 
 			// Increment counter.
 			next++;
@@ -167,6 +181,28 @@ namespace opengl
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		glPopMatrix();
+	}
+
+	void SpriteBatch::addv(const Matrix & t, const vertex * v)
+	{
+		// Get a pointer to the correct insertion position.
+		vertex * dst = vertices + next*4;
+
+		// Transform.
+		t.transform(dst, dst, 4);
+
+		if(lockp != 0)
+		{
+			// Copy into mapped memory if buffer is locked.
+			memcpy(lockp + (next*4), dst,  sizeof(vertex)*4);
+		}
+		else
+		{
+			// ... use glBufferSubData otherwise.
+			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+			glBufferSubData(GL_ARRAY_BUFFER, (next*4)*sizeof(vertex), sizeof(vertex)*4, dst);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
 	}
 
 } // opengl

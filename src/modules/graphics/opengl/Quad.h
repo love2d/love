@@ -18,8 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_FRAME_H
-#define LOVE_GRAPHICS_OPENGL_FRAME_H
+#ifndef LOVE_GRAPHICS_OPENGL_QUAD_H
+#define LOVE_GRAPHICS_OPENGL_QUAD_H
 
 // LOVE
 #include <common/Object.h>
@@ -32,37 +32,50 @@ namespace graphics
 {
 namespace opengl
 {
-	class Frame : public Object
+	class Quad : public Object
 	{
-		private:
-			vertex vertices[4];
-		public:
+	public:
 
-			/**
-			* Creates a new Frame of size (w,h), using (x,y) as the top-left
-			* anchor point in the source image. The size of the source image is
-			* is specified by (sw,sh).
-			* 
-			* @param x Frame source position along the x-axis.
-			* @param y Frame source position along the y-axis.
-			* @param w Frame width.
-			* @param h Frame width.
-			* @param sw Width of the source image.
-			* @param sh Height of the source image.
-			**/
-			Frame(int x, int y, int w, int h, int sw, int sh);
+		struct Viewport
+		{
+			int x, y, w, h;
+		};
 
-			virtual ~Frame();
+	private:
 
-			void flip(bool x, bool y);
+		vertex vertices[4];
 
-			/**
-			* Gets a pointer to the vertices.
-			**/
-			const vertex * getVertices() const;
+		Viewport viewport;
+		int sw, sh;
+
+	public:
+
+		/**
+		* Creates a new Quad of size (w,h), using (x,y) as the top-left
+		* anchor point in the source image. The size of the source image is
+		* is specified by (sw,sh).
+		* 
+		* @param sw Width of the source image.
+		* @param sh Height of the source image.
+		**/
+		Quad(const Viewport & v, int sw, int sh);
+
+		virtual ~Quad();
+
+		void refresh(const Viewport & v, int sw, int sh);
+
+		void setViewport(const Viewport & v);
+		Viewport getViewport() const;
+
+		void flip(bool x, bool y);
+
+		/**
+		* Gets a pointer to the vertices.
+		**/
+		const vertex * getVertices() const;
 	};
 } // opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_FRAME_H
+#endif // LOVE_GRAPHICS_OPENGL_QUAD_H

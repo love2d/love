@@ -19,7 +19,7 @@
 **/
 
 // LOVE
-#include "wrap_Frame.h"
+#include "wrap_Quad.h"
 
 namespace love
 {
@@ -27,26 +27,51 @@ namespace graphics
 {
 namespace opengl
 {
-	Frame * luax_checkframe(lua_State * L, int idx)
+	Quad * luax_checkframe(lua_State * L, int idx)
 	{
-		return luax_checktype<Frame>(L, idx, "Frame", GRAPHICS_FRAME_T);
+		return luax_checktype<Quad>(L, idx, "Quad", GRAPHICS_QUAD_T);
 	}
 	
-	int w_Frame_flip(lua_State *L)
+	int w_Quad_flip(lua_State *L)
 	{
-		Frame *frame = luax_checktype<Frame>(L, 1, "Frame", GRAPHICS_FRAME_T);
-		frame->flip(luax_toboolean(L, 2), luax_toboolean(L, 3));
+		Quad * quad = luax_checktype<Quad>(L, 1, "Quad", GRAPHICS_QUAD_T);
+		quad->flip(luax_toboolean(L, 2), luax_toboolean(L, 3));
 		return 0;
 	}
 
-	static const luaL_Reg w_Frame_functions[] = {
-		{ "flip", w_Frame_flip },
+	int w_Quad_setViewport(lua_State * L)
+	{
+		Quad * quad = luax_checktype<Quad>(L, 1, "Quad", GRAPHICS_QUAD_T);
+		Quad::Viewport v;
+		v.x = luaL_checkint(L, 2);
+		v.y = luaL_checkint(L, 3);
+		v.w = luaL_checkint(L, 4);
+		v.h = luaL_checkint(L, 5);
+		quad->setViewport(v);
+		return 0;
+	}
+
+	int w_Quad_getViewport(lua_State * L)
+	{
+		Quad * quad = luax_checktype<Quad>(L, 1, "Quad", GRAPHICS_QUAD_T);
+		Quad::Viewport v = quad->getViewport();
+		lua_pushinteger(L, v.x);
+		lua_pushinteger(L, v.y);
+		lua_pushinteger(L, v.w);
+		lua_pushinteger(L, v.h);
+		return 4;
+	}
+
+	static const luaL_Reg w_Quad_functions[] = {
+		{ "flip", w_Quad_flip },
+		{ "setViewport", w_Quad_setViewport },
+		{ "getViewport", w_Quad_getViewport },
 		{ 0, 0 }
 	};
 
 	int luaopen_frame(lua_State * L)
 	{
-		return luax_register_type(L, "Frame", w_Frame_functions);
+		return luax_register_type(L, "Quad", w_Quad_functions);
 	}
 
 } // opengl

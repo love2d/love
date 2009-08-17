@@ -43,6 +43,7 @@ namespace opengl
 {
 	// Forward declarations.
 	class Image;
+	class Quad;
 
 	class SpriteBatch : public Drawable
 	{
@@ -84,8 +85,7 @@ namespace opengl
 		virtual ~SpriteBatch();
 
 		void add(float x, float y, float a, float sx, float sy, float ox, float oy);
-		//void adds(float x, float y, float a, float sx, float sy, float ox, float oy, float rx, float ry, float rw, float rh);
-		//void addf(float x, float y, float a, float sx, float sy, float ox, float oy, Frame * frame);
+		void addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy);
 		void clear();
 
 		void * lock();
@@ -93,6 +93,10 @@ namespace opengl
 
 		// Implements Drawable.
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+
+	private:
+
+		void addv(const Matrix & t, const vertex * v);
 
 	}; // SpriteBatch
 

@@ -69,9 +69,10 @@ namespace sdl
 		}
 	}
 
-	void Timer::sleep(unsigned int ms)
+	void Timer::sleep(int ms)
 	{
-		SDL_Delay(ms);
+		if(ms > 0)
+			SDL_Delay(ms);
 	}
 
 	float Timer::getDelta() const

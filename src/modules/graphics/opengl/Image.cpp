@@ -110,21 +110,11 @@ namespace opengl
 		t.setTransformation(x, y, angle, sx, sy, ox, oy);
 		drawv(t, vertices);
 	}
-	
-	void Image::draws(float x, float y, float angle, float sx, float sy, float ox, float oy, float rx, float ry, float rw, float rh) const
+
+	void Image::drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy) const
 	{
 		static Matrix t;
-		static vertex cache[4];
-
-		getRectangleVertices((int)rx, (int)ry, (int)rw, (int)rh, cache);
-		t.setTransformation(x, y, angle, sx, sy, ox, oy);
-		drawv(t, cache);
-	}
-
-	void Image::drawf(float x, float y, float angle, float sx, float sy, float ox, float oy, Frame * frame) const
-	{
-		static Matrix t;
-		const vertex * v = frame->getVertices();
+		const vertex * v = quad->getVertices();
 
 		t.setTransformation(x, y, angle, sx, sy, ox, oy);
 		drawv(t, v);

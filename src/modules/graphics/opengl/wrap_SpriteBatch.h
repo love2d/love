@@ -32,6 +32,7 @@ namespace opengl
 {
 	SpriteBatch * luax_checkspritebatch(lua_State * L, int idx);
 	int w_SpriteBatch_add(lua_State * L);
+	int w_SpriteBatch_addq(lua_State * L);
 	int w_SpriteBatch_clear(lua_State * L);
 	int w_SpriteBatch_lock(lua_State * L);
 	int w_SpriteBatch_unlock(lua_State * L);

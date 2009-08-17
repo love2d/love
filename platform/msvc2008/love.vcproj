@@ -822,30 +822,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\modules\graphics\opengl\Frame.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\Frame.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\modules\graphics\opengl\GLee.c"
 						>
 						<FileConfiguration
@@ -950,6 +926,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\modules\graphics\opengl\Quad.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\Quad.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\modules\graphics\opengl\SpriteBatch.cpp"
 						>
 					</File>
@@ -1006,30 +990,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_Frame.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\graphics\opengl\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\graphics\opengl\wrap_Frame.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\modules\graphics\opengl\wrap_Glyph.cpp"
 						>
 					</File>
@@ -1083,6 +1043,14 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\graphics\opengl\wrap_Image.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_Quad.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_Quad.h"
 						>
 					</File>
 					<File

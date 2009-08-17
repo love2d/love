@@ -90,7 +90,7 @@ namespace sdl
 		* usually 1ms.
 		* @param ms The number of milliseconds to sleep for.
 		**/
-		void sleep(unsigned int ms);
+		void sleep(int ms);
 
 		/**
 		* Gets the time between the last two frames, assuming step is called

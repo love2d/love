@@ -74,8 +74,6 @@ namespace physfs
 		save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR);
 		save_path_full += save_path_relative;
 
-		std::cout << save_path_full << std::endl;
-
 		// We now have something like:
 		// save_identity: game
 		// save_path_relative: ./LOVE/game
@@ -281,11 +279,6 @@ namespace physfs
 		// a string, so let's check that first.
 		if(!lua_isstring(L, 2))
 			return luaL_error(L, "Second argument must be a string.");
-
-		// The third paramter must be a number to indicate the size of
-		// the data.
-		if(!lua_isnumber(L, 3))
-			return luaL_error(L, "Third argument must be a number.");
 
 		if(lua_isstring(L, 1))
 		{

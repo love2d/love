@@ -36,7 +36,7 @@
 #include "Image.h"
 #include "TrueTypeFont.h"
 #include "ImageFont.h"
-#include "Frame.h"
+#include "Quad.h"
 #include "SpriteBatch.h"
 
 namespace love
@@ -239,7 +239,7 @@ namespace opengl
 		/**
 		* Creates a Frame
 		**/
-		Frame * newFrame(int x, int y, int w, int h, int sw, int sh);
+		Quad * newQuad(int x, int y, int w, int h, int sw, int sh);
 
 		/**
 		* Creates a Font object.

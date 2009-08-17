@@ -25,7 +25,7 @@
 #include "wrap_Font.h"
 #include "wrap_Image.h"
 #include "wrap_Glyph.h"
-#include "wrap_Frame.h"
+#include "wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "Graphics.h"
 
@@ -78,7 +78,7 @@ namespace opengl
 	int w_getPointStyle(lua_State * L);
 	int w_getMaxPointSize(lua_State * L);
 	int w_draw(lua_State * L);
-	int w_draws(lua_State * L);
+	int w_drawq(lua_State * L);
 	int w_drawTest(lua_State * L);
 	int w_print1(lua_State * L);
 	int w_printf1(lua_State * L);

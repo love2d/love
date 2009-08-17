@@ -168,7 +168,7 @@ namespace opengl
 		return 1;
 	}
 	
-	int w_newFrame(lua_State * L)
+	int w_newQuad(lua_State * L)
 	{
 		int x = luaL_checkint(L, 1);
 		int y = luaL_checkint(L, 2);
@@ -177,12 +177,12 @@ namespace opengl
 		int sw = luaL_checkint(L, 5);
 		int sh = luaL_checkint(L, 6);
 
-		Frame * frame = instance->newFrame(x, y, w, h, sw, sh);
+		Quad * frame = instance->newQuad(x, y, w, h, sw, sh);
 
 		if (frame == 0)
 			return luaL_error(L, "Could not create frame.");
 		
-		luax_newtype(L, "Frame", GRAPHICS_FRAME_T, (void*)frame);
+		luax_newtype(L, "Quad", GRAPHICS_QUAD_T, (void*)frame);
 		return 1;
 	}
 
@@ -481,40 +481,7 @@ namespace opengl
 	}
 
 	/**
-	* Draws an Image at the specified coordinates, with rotation and 
-	* scaling along both axes.
-	* @param x The x-coordinate.
-	* @param y The y-coordinate.
-	* @param angle The amount of rotation.
-	* @param sx The scale factor along the x-axis. (1 = normal).
-	* @param sy The scale factor along the y-axis. (1 = normal).
-	* @param ox The offset along the x-axis.
-	* @param oy The offset along the y-axis.
-	* @param rx The upper-left corner of the source rectangle along the x-axis.
-	* @param ry The upper-left corner of the source rectangle along the y-axis.
-	* @param rw The width of the source rectangle.
-	* @param rw The height of the source rectangle.
-	**/
-	int w_draws(lua_State * L)
-	{
-		Image * image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
-		float x = (float)luaL_optnumber(L, 2, 0.0f);
-		float y = (float)luaL_optnumber(L, 3, 0.0f);
-		float angle = (float)luaL_optnumber(L, 4, 0.0f);
-		float sx = (float)luaL_optnumber(L, 5, 1.0f);
-		float sy = (float)luaL_optnumber(L, 6, sx);
-		float ox = (float)luaL_optnumber(L, 7, 0);
-		float oy = (float)luaL_optnumber(L, 8, 0);
-		float rx = (float)luaL_optnumber(L, 9, 0);
-		float ry = (float)luaL_optnumber(L, 10, 0);
-		float rw = (float)luaL_optnumber(L, 11, image->getWidth());
-		float rh = (float)luaL_optnumber(L, 12, image->getHeight());
-		image->draws(x, y, angle, sx, sy, ox, oy, rx, ry, rw, rh);
-		return 0;
-	}
-
-	/**
-	* Draws an Frame of an Image at the specified coordinates, 
+	* Draws an Quad of an Image at the specified coordinates, 
 	* with rotation and scaling along both axes.
 	* 
 	* @param x The x-coordinate.
@@ -524,20 +491,20 @@ namespace opengl
 	* @param sy The scale factor along the y-axis. (1 = normal).
 	* @param ox The offset along the x-axis.
 	* @param oy The offset along the y-axis.
-	* @param f The Frame to dra.
+	* @param f The Quad to dra.
 	**/
-	int w_drawf(lua_State * L)
+	int w_drawq(lua_State * L)
 	{
 		Image * image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
-		float x = (float)luaL_checknumber(L, 2);
-		float y = (float)luaL_checknumber(L, 3);
-		float angle = (float)luaL_checknumber(L, 4);
-		float sx = (float)luaL_checknumber(L, 5);
-		float sy = (float)luaL_checknumber(L, 6);
-		float ox = (float)luaL_checknumber(L, 7);
-		float oy = (float)luaL_checknumber(L, 8);
-		Frame * f = luax_checkframe(L, 9);
-		image->drawf(x, y, angle, sx, sy, ox, oy, f);
+		Quad * q = luax_checkframe(L, 2);
+		float x = (float)luaL_checknumber(L, 3);
+		float y = (float)luaL_checknumber(L, 4);
+		float angle = (float)luaL_checknumber(L, 5);
+		float sx = (float)luaL_checknumber(L, 6);
+		float sy = (float)luaL_checknumber(L, 7);
+		float ox = (float)luaL_checknumber(L, 8);
+		float oy = (float)luaL_checknumber(L, 9);
+		image->drawq(q, x, y, angle, sx, sy, ox, oy);
 		return 0;
 	}
 
@@ -715,7 +682,7 @@ namespace opengl
 
 		{ "newImage", w_newImage },
 		{ "newGlyph", w_newGlyph },
-		{ "newFrame", w_newFrame },
+		{ "newQuad", w_newQuad },
 		{ "newFont", w_newFont },
 		{ "newImageFont", w_newImageFont },
 		{ "newSpriteBatch", w_newSpriteBatch },
@@ -747,8 +714,7 @@ namespace opengl
 		{ "getMaxPointSize", w_getMaxPointSize },
 
 		{ "draw", w_draw },
-		{ "draws", w_draws },
-		{ "drawf", w_drawf },
+		{ "drawq", w_drawq },
 		{ "drawTest", w_drawTest },
 
 		{ "print1", w_print1 },

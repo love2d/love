@@ -45,6 +45,21 @@ namespace opengl
 		return 0;
 	}
 
+	int w_SpriteBatch_addq(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+		Quad * q = luax_checktype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
+		float x = (float)luaL_optnumber(L, 3, 0.0f);
+		float y = (float)luaL_optnumber(L, 4, 0.0f);
+		float angle = (float)luaL_optnumber(L, 5, 0.0f);
+		float sx = (float)luaL_optnumber(L, 6, 1.0f);
+		float sy = (float)luaL_optnumber(L, 7, sx);
+		float ox = (float)luaL_optnumber(L, 8, 0);
+		float oy = (float)luaL_optnumber(L, 9, 0);
+		t->addq(q, x, y, angle, sx, sy, ox, oy);
+		return 0;
+	}
+
 	int w_SpriteBatch_clear(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
@@ -68,6 +83,7 @@ namespace opengl
 
 	static const luaL_Reg functions[] = {
 		{ "add", w_SpriteBatch_add },
+		{ "addq", w_SpriteBatch_addq },
 		{ "clear", w_SpriteBatch_clear },
 		{ "lock", w_SpriteBatch_lock },
 		{ "unlock", w_SpriteBatch_unlock },

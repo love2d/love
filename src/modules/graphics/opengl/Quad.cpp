@@ -18,7 +18,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#include "Frame.h"
+#include "Quad.h"
 #include <common/Matrix.h>
 
 // STD
@@ -30,26 +30,51 @@ namespace graphics
 {
 namespace opengl
 {
-	Frame::Frame(int x, int y, int w, int h, int sw, int sh)
+	Quad::Quad(const Viewport & v, int sw, int sh)
+		: sw(sw), sh(sh)
 	{
 		memset(vertices, 255, sizeof(vertex)*4);
-	
-		vertices[0].x = 0; vertices[0].y = 0;
-		vertices[1].x = 0; vertices[1].y = (float)h;
-		vertices[2].x = (float)w; vertices[2].y = (float)h;
-		vertices[3].x = (float)w; vertices[3].y = 0;
-		
-		vertices[0].s = (float)x/(float)sw; vertices[0].t = (float)y/(float)sh;
-		vertices[1].s = (float)x/(float)sw; vertices[1].t = (float)(y+h)/(float)sh;
-		vertices[2].s = (float)(x+w)/(float)sw; vertices[2].t = (float)(y+h)/(float)sh;
-		vertices[3].s = (float)(x+w)/(float)sw; vertices[3].t = (float)y/(float)sh;
+		refresh(v, sw, sh);
 	}
 
-	Frame::~Frame()
+	Quad::~Quad()
 	{
 	}
+
+	void Quad::refresh(const Viewport & v, int sw, int sh)
+	{
+		viewport = v;
+
+		vertices[0].x = 0; 
+		vertices[0].y = 0;
+		vertices[1].x = 0; 
+		vertices[1].y = (float)v.h;
+		vertices[2].x = (float)v.w; 
+		vertices[2].y = (float)v.h;
+		vertices[3].x = (float)v.w; 
+		vertices[3].y = 0;
+		
+		vertices[0].s = (float)v.x/(float)sw; 
+		vertices[0].t = (float)v.y/(float)sh;
+		vertices[1].s = (float)v.x/(float)sw; 
+		vertices[1].t = (float)(v.y+v.h)/(float)sh;
+		vertices[2].s = (float)(v.x+v.w)/(float)sw; 
+		vertices[2].t = (float)(v.y+v.h)/(float)sh;
+		vertices[3].s = (float)(v.x+v.w)/(float)sw; 
+		vertices[3].t = (float)v.y/(float)sh;
+	}
+
+	void Quad::setViewport(const Quad::Viewport & v)
+	{
+		refresh(v, sw, sh);
+	}
+
+	Quad::Viewport Quad::getViewport() const
+	{
+		return viewport;	
+	}
 	
-	void Frame::flip(bool x, bool y)
+	void Quad::flip(bool x, bool y)
 	{
 		vertex temp[4];
 		if (x)
@@ -70,7 +95,7 @@ namespace opengl
 		}
 	}
 
-	const vertex * Frame::getVertices() const
+	const vertex * Quad::getVertices() const
 	{
 		return vertices;
 	}

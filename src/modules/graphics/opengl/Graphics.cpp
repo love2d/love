@@ -395,9 +395,14 @@ namespace opengl
 		return image;
 	}
 	
-	Frame * Graphics::newFrame(int x, int y, int w, int h, int sw, int sh)
+	Quad * Graphics::newQuad(int x, int y, int w, int h, int sw, int sh)
 	{
-		return new Frame(x, y, w, h, sw, sh);
+		Quad::Viewport v;
+		v.x = x;
+		v.y = y;
+		v.w = w;
+		v.h = h;
+		return new Quad(v, sw, sh);
 	}
 
 	Font * Graphics::newFont(Data * data, int size)
