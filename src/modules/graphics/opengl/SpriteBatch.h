@@ -30,6 +30,7 @@
 #include <common/Vector.h>
 #include <common/Matrix.h>
 #include <graphics/Drawable.h>
+#include <graphics/Volatile.h>
 
 // OpenGL
 #include "GLee.h"
@@ -45,7 +46,7 @@ namespace opengl
 	class Image;
 	class Quad;
 
-	class SpriteBatch : public Drawable
+	class SpriteBatch : public Drawable, public Volatile
 	{
 	private:
 
@@ -83,6 +84,10 @@ namespace opengl
 
 		SpriteBatch(Image * image, int size, int usage);
 		virtual ~SpriteBatch();
+
+		// Implements Volatile.
+		bool loadVolatile();
+		void unloadVolatile();
 
 		void add(float x, float y, float a, float sx, float sy, float ox, float oy);
 		void addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy);

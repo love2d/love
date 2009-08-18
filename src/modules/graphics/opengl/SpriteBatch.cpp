@@ -52,6 +52,22 @@ namespace opengl
 			indices[i*6+5] = 3+(i*4);
 		}
 
+		loadVolatile();
+	}
+
+	SpriteBatch::~SpriteBatch()
+	{
+		image->release();
+
+		if(vbo[0] != 0 && vbo[1] != 0)
+			glDeleteBuffers(2, vbo);
+
+		delete [] vertices;
+		delete [] indices;
+	}
+
+	bool SpriteBatch::loadVolatile()
+	{
 		// Find out which OpenGL VBO usage hint to use.
 		gl_usage = GL_STREAM_DRAW;
 		gl_usage = (usage == USAGE_DYNAMIC) ? GL_DYNAMIC_DRAW : gl_usage;
@@ -68,17 +84,21 @@ namespace opengl
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*size*6, indices, GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+		return true;
 	}
 
-	SpriteBatch::~SpriteBatch()
+	void SpriteBatch::unloadVolatile()
 	{
-		image->release();
+		vertex * v = (vertex *)lock();
 
+		// Copy to system memory.
+		memcpy(vertices, v, sizeof(vertex)*size*4);
+
+		unlock();
+
+		// Delete the buffers.
 		if(vbo[0] != 0 && vbo[1] != 0)
 			glDeleteBuffers(2, vbo);
-
-		delete [] vertices;
-		delete [] indices;
 	}
 
 	void SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy)
@@ -135,6 +155,10 @@ namespace opengl
 
 	void * SpriteBatch::lock()
 	{
+		// If already locked, prevent from locking again.
+		if(lockp != 0)
+			return lockp;
+
 		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		lockp = (vertex *)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
 		return lockp;
