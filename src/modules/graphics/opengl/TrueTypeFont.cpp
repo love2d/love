@@ -228,9 +228,6 @@ namespace opengl
 		FT_Done_Face(face);
 		FT_Done_FreeType(library); //all done
 
-		// Free data.
-		data->release();
-
 		return true;
 	}
 
