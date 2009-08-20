@@ -630,11 +630,43 @@ end
 -- Error screen.
 -----------------------------------------------------------
 
-function love.errorscreen()
-	
-	-- Main loop goes here.
+function love.errhand(msg)
 
+	-- Load.
+	love.graphics.setBackgroundColor(89, 157, 220)
+	local font = love.graphics.newFont(love._vera_ttf, 14)
+	love.graphics.setFont(font)
+	love.graphics.setColor(255, 255, 255, 255)
+	if love.audio then love.audio.stop() end	
+
+	local trace = debug.traceback()
+	
+	love.graphics.clear()
+	love.graphics.print(msg, 70, 80)
+	--love.graphics.print(, 70, 160)
+	local y, yi = 160, 20
+	local x, xi = 70, 10
+	for line in string.gmatch(trace, ".-\n") do
+		love.graphics.print(line, x, y)
+		y = y + yi
+		x = x + xi
+	end
+	
+	
+	love.graphics.present()
+
+	
+	while true do
+	
+		-- Process events.
+		for e,a,b,c in love.event.wait() do
+			if e == love.event_quit then return end
+		end
+		
+	end
+	
 end
+
 
 -----------------------------------------------------------
 -- The root of all calls.
@@ -646,6 +678,6 @@ end
 
 result = xpcall(love.boot, error_printer)
 result = xpcall(love.init, error_printer)
-result = xpcall(love.run, error_printer)
+result = xpcall(love.run, love.errhand)
 
 print("Done.")
