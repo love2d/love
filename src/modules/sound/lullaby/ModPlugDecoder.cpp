@@ -93,8 +93,11 @@ namespace lullaby
 
 	bool ModPlugDecoder::rewind()
 	{
-		ModPlug_Seek(plug, 0);
-		return true;
+		// Let's reload.
+		ModPlug_Unload(plug);
+		plug = ModPlug_Load(data->getData(), data->getSize());
+		eof = false;
+		return (plug != 0);
 	}
 
 	bool ModPlugDecoder::isSeekable()
