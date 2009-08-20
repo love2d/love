@@ -499,11 +499,11 @@ namespace opengl
 		Quad * q = luax_checkframe(L, 2);
 		float x = (float)luaL_checknumber(L, 3);
 		float y = (float)luaL_checknumber(L, 4);
-		float angle = (float)luaL_checknumber(L, 5);
-		float sx = (float)luaL_checknumber(L, 6);
-		float sy = (float)luaL_checknumber(L, 7);
-		float ox = (float)luaL_checknumber(L, 8);
-		float oy = (float)luaL_checknumber(L, 9);
+		float angle = (float)luaL_optnumber(L, 5, 0);
+		float sx = (float)luaL_optnumber(L, 6, 1);
+		float sy = (float)luaL_optnumber(L, 7, sx);
+		float ox = (float)luaL_optnumber(L, 8, 0);
+		float oy = (float)luaL_optnumber(L, 9, 0);
 		image->drawq(q, x, y, angle, sx, sy, ox, oy);
 		return 0;
 	}
