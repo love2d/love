@@ -103,8 +103,16 @@ namespace lullaby
 		// If we're done, then EOF. If some error occurred, pretend we EOF'd.
 		if (r == MPG123_DONE || r != MPG123_OK)
 		{
-			eof = true;
-			numbytes = 0;
+			if ( r == MPG123_NEED_MORE )
+			{
+				size_t numbytes = 0;
+				mpg123_decode(handle, (unsigned char*) data->getData(), data->getSize(), (unsigned char*) buffer, bufferSize, &numbytes);
+			}
+			else
+			{
+				eof = true;
+				numbytes = 0;
+			}
 		}
 
 		return numbytes;
@@ -112,13 +120,13 @@ namespace lullaby
 
 	bool Mpg123Decoder::seek(int ms)
 	{
-		mpg123_seek(handle, SEEK_SET, ms);
+		mpg123_seek(handle, ms, SEEK_SET);
 		return true;
 	}
 
 	bool Mpg123Decoder::rewind()
 	{
-		if(mpg123_seek(handle, SEEK_SET, 0) < 0)
+		if(mpg123_seek(handle, 0, SEEK_SET) < 0)
 			return false;
 		return true;
 	}
