@@ -44,9 +44,8 @@ namespace sdl
 
 	int Event::wait(lua_State * L)
 	{
-		static SDL_Event e;
-		SDL_WaitEvent(&e);
-		return pushEvent(L, e); 
+		lua_pushcclosure(L, &wait_i, 0);
+		return 1;
 	}
 
 	void Event::quit()
@@ -81,6 +80,20 @@ namespace sdl
 
 		// No pending events.
 		return 0;
+	}
+
+	int Event::wait_i(lua_State * L)
+	{
+		SDL_EnableUNICODE(1);
+
+		// The union used to get SDL events. 
+		static SDL_Event e;
+
+		SDL_WaitEvent(&e);
+
+		int args = Event::pushEvent(L, e);
+
+		return args;
 	}
 
 	int Event::pushEvent(lua_State * L, SDL_Event & e)

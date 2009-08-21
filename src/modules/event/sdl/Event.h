@@ -76,6 +76,7 @@ namespace sdl
 		* The iterator function.
 		**/
 		static int poll_i(lua_State * L);
+		static int wait_i(lua_State * L);
 
 	private:
 
