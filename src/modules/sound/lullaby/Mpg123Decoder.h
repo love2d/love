@@ -39,7 +39,7 @@ namespace lullaby
 	private:
 
 		mpg123_handle * handle;
-
+		bool islooping;
 		static bool inited;
 
 	public:

@@ -34,7 +34,7 @@ namespace lullaby
 	bool Mpg123Decoder::inited = false;
 
 	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), handle(0)
+		: Decoder(data, ext, bufferSize, sampleRate), handle(0), islooping(false)
 	{
 
 		int ret;
@@ -58,7 +58,7 @@ namespace lullaby
 		if (ret != MPG123_OK)
 			throw love::Exception("Could not set output format.");
 		size_t numbytes = 0;
-		ret = mpg123_feed(handle, (unsigned char*)data->getData(), data->getSize());
+		ret = mpg123_decode(handle, (unsigned char*)data->getData(), data->getSize(), NULL, 0, &numbytes);
 		
 		if(ret == MPG123_NEW_FORMAT)
 		{
@@ -109,30 +109,13 @@ namespace lullaby
 	int Mpg123Decoder::decode()
 	{
 		size_t numbytes;
-		
-		for(int i = 0; i < 2; ++i)
-		{
-			int r = mpg123_read(handle, (unsigned char*) buffer, bufferSize, &numbytes);
-
-			switch(r)
-			{
-			case MPG123_NEW_FORMAT:
-				continue;
-			case MPG123_DONE:
-				eof = false;
-			case MPG123_OK:
-			default:
-				return numbytes;
-			}
-		}
-
-
-		// If we're done, then EOF. If some error occurred, pretend we EOF'd.
-		/*
+		int r = mpg123_read(handle, (unsigned char*) buffer, bufferSize, &numbytes);
+	
 		if (r == MPG123_DONE || r != MPG123_OK)
 		{
-			if ( r == MPG123_NEED_MORE )
+			if ( r == MPG123_NEED_MORE && islooping )
 			{
+				islooping = false;
 				size_t numbytes = 0;
 				mpg123_decode(handle, (unsigned char*) data->getData(), data->getSize(), (unsigned char*) buffer, bufferSize, &numbytes);
 			}
@@ -142,7 +125,7 @@ namespace lullaby
 				numbytes = 0;
 			}
 		}
-		*/
+		
 
 		return numbytes;
 	}
@@ -158,6 +141,8 @@ namespace lullaby
 	{
 		if(mpg123_seek(handle, 0, SEEK_SET) >= 0)
 			return false;
+		islooping = true;
+		eof = false;
 		return true;
 	}
 
