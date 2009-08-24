@@ -85,9 +85,9 @@ namespace lullaby
 		return r;
 	}
 
-	bool ModPlugDecoder::seek(int ms)
+	bool ModPlugDecoder::seek(float s)
 	{
-		ModPlug_Seek(plug, ms);
+		ModPlug_Seek(plug, (int)(s*1000.0f));
 		return true;
 	}
 

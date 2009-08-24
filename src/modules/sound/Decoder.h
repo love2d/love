@@ -92,10 +92,10 @@ namespace sound
 
 		/**
 		* Seeks to the specified position, if possible.
-		* @param ms The position in the stream in milliseconds.
+		* @param s The position in the stream in seconds.
 		* @return True if success, false on fail/unsupported.
 		**/
-		virtual bool seek(int ms) = 0;
+		virtual bool seek(float s) = 0;
 
 		/**
 		* Rewinds the stream to the start.

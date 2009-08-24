@@ -46,7 +46,7 @@ namespace lullaby
 			static bool accepts(const std::string &ext);
 			love::sound::Decoder *clone();
 			int decode();
-			bool seek(int ms);
+			bool seek(float s);
 			bool rewind();
 			bool isSeekable();
 			int getChannels() const;

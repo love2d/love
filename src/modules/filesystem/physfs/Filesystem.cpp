@@ -481,7 +481,6 @@ namespace physfs
 
 		// Create the file.
 		File * file = newFile(filename);
-		file->open(File::READ);
 
 		// Get the data from the file.
 		Data * data = file->read();

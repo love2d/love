@@ -218,10 +218,10 @@ namespace lullaby
 		return size;
 	}
 
-	bool VorbisDecoder::seek(int ms)
+	bool VorbisDecoder::seek(float s)
 	{
 		eof = false;
-		int result = ov_time_seek(&handle, ms / 100);
+		int result = ov_time_seek(&handle, (int)(s*1000.0f) / 100);
 
 		if(result == 0)
 			return true;

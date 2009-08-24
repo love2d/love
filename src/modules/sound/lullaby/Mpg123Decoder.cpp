@@ -58,9 +58,20 @@ namespace lullaby
 		if (ret != MPG123_OK)
 			throw love::Exception("Could not set output format.");
 		size_t numbytes = 0;
-		ret = mpg123_decode(handle, (unsigned char*) data->getData(), data->getSize(), NULL, 0, &numbytes);
-		if (ret != MPG123_DONE && ret != MPG123_NEW_FORMAT)
-			throw love::Exception("Could not decode feed.");
+		ret = mpg123_feed(handle, (unsigned char*)data->getData(), data->getSize());
+		
+		if(ret == MPG123_NEW_FORMAT)
+		{
+			long rate;
+			int channels;
+			int encoding;
+			mpg123_getformat(handle, &rate, &channels, &encoding);
+		}
+		else if(ret != 0)
+		{
+			throw love::Exception(mpg123_strerror(handle));
+		}
+
 	}
 
 	Mpg123Decoder::~Mpg123Decoder()
@@ -98,9 +109,26 @@ namespace lullaby
 	int Mpg123Decoder::decode()
 	{
 		size_t numbytes;
-		int r =  mpg123_read(handle, (unsigned char*) buffer, bufferSize, &numbytes);
+		
+		for(int i = 0; i < 2; ++i)
+		{
+			int r = mpg123_read(handle, (unsigned char*) buffer, bufferSize, &numbytes);
+
+			switch(r)
+			{
+			case MPG123_NEW_FORMAT:
+				continue;
+			case MPG123_DONE:
+				eof = false;
+			case MPG123_OK:
+			default:
+				return numbytes;
+			}
+		}
+
 
 		// If we're done, then EOF. If some error occurred, pretend we EOF'd.
+		/*
 		if (r == MPG123_DONE || r != MPG123_OK)
 		{
 			if ( r == MPG123_NEED_MORE )
@@ -114,19 +142,21 @@ namespace lullaby
 				numbytes = 0;
 			}
 		}
+		*/
 
 		return numbytes;
 	}
 
-	bool Mpg123Decoder::seek(int ms)
+	bool Mpg123Decoder::seek(float s)
 	{
-		mpg123_seek(handle, ms, SEEK_SET);
-		return true;
+		off_t r = mpg123_seek(handle, (off_t)(s*1000.0f), SEEK_SET);
+
+		return (r >= 0);
 	}
 
 	bool Mpg123Decoder::rewind()
 	{
-		if(mpg123_seek(handle, 0, SEEK_SET) < 0)
+		if(mpg123_seek(handle, 0, SEEK_SET) >= 0)
 			return false;
 		return true;
 	}

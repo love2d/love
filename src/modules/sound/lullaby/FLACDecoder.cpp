@@ -73,9 +73,9 @@ namespace lullaby
 		return bufferSize;
 	}
 
-	bool FLACDecoder::seek(int ms)
+	bool FLACDecoder::seek(float s)
 	{
-		return seek_absolute(ms);
+		return seek_absolute((int)(s*1000.0f));
 	}
 
 	bool FLACDecoder::rewind()

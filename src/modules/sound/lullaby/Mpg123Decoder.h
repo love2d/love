@@ -52,7 +52,7 @@ namespace lullaby
 
 		love::sound::Decoder * clone();
 		int decode();
-		bool seek(int ms);
+		bool seek(float s);
 		bool rewind();
 		bool isSeekable();
 		int getChannels() const;
