@@ -24,6 +24,7 @@
 // LOVE
 #include <common/Object.h>
 #include <common/runtime.h>
+#include "World.h"
 
 // Box2D
 #include "Include/Box2D.h"
@@ -44,6 +45,7 @@ namespace box2d
 	{
 		// Friends.
 		friend class World;
+		friend class World::ContactCallback;
 
 	private:
 

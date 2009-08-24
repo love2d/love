@@ -615,7 +615,7 @@ function love.nogame()
 	end
 	
 	love.conf = function(t)
-		t.title = "*Tank* you using LOVE " .. love._version_string .. " (" .. love._version_codename .. ")"
+		t.title = "*Tank* you for using LOVE " .. love._version_string .. " (" .. love._version_codename .. ")"
 		t.modules.audio = false
 		t.modules.sound = false
 		t.modules.physics = false
@@ -642,27 +642,38 @@ function love.errhand(msg)
 	local trace = debug.traceback()
 	
 	love.graphics.clear()
-	love.graphics.print(msg, 70, 80)
-	--love.graphics.print(, 70, 160)
-	local y, yi = 160, 20
-	local x, xi = 70, 10
-	for line in string.gmatch(trace, ".-\n") do
-		love.graphics.print(line, x, y)
-		y = y + yi
-		x = x + xi
+	
+	local err = {}
+	
+	table.insert(err, "Error\n")
+	table.insert(err, msg.."\n\n")
+	
+	for l in string.gmatch(trace, "(.-)\n") do
+		if not string.match(l, "boot.lua") then
+			l = string.gsub(l, "stack traceback:", "Traceback\n")
+			table.insert(err, l)
+		end
 	end
 	
+	local p = table.concat(err, "\n")
+		
+	p = string.gsub(p, "\t", "")
+	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
+	
+	love.graphics.print(p, 70, 70)	
 	
 	love.graphics.present()
-
+		
+	local finish = false
 	
 	while true do
-	
-		-- Process events.
-		for e,a,b,c in love.event.wait() do
-			if e == love.event_quit then return end
-		end
+		e, a, b, c = love.event.wait()
 		
+		if e == love.event_quit then return end
+		if e == love.event_keypressed and a == love.key_escape then
+			return
+		end
+
 	end
 	
 end
