@@ -758,7 +758,8 @@ namespace opengl
 		luaopen_image, 
 		luaopen_glyph,
 		luaopen_frame, 
-		luaopen_spritebatch, 
+		luaopen_spritebatch,
+		luaopen_particlesystem,
 		0		
 	};
 

@@ -27,6 +27,7 @@
 #include "wrap_Glyph.h"
 #include "wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
+#include "wrap_ParticleSystem.h"
 #include "Graphics.h"
 
 namespace love

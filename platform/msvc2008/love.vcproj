@@ -926,6 +926,22 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\modules\graphics\opengl\ParticleSystem.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\graphics\opengl\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\ParticleSystem.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\modules\graphics\opengl\Quad.cpp"
 						>
 					</File>
@@ -1043,6 +1059,22 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\graphics\opengl\wrap_Image.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\graphics\opengl\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h"
 						>
 					</File>
 					<File

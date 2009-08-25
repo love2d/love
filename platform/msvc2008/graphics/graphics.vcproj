@@ -173,6 +173,18 @@
 			Name="opengl"
 			>
 			<File
+				RelativePath="..\..\..\src\modules\graphics\Drawable.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\graphics\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\..\src\modules\graphics\opengl\Font.cpp"
 				>
 				<FileConfiguration
@@ -267,6 +279,22 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\graphics\opengl\ImageFont.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\graphics\opengl\ParticleSystem.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\graphics\opengl\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\graphics\opengl\ParticleSystem.h"
 				>
 			</File>
 			<File
@@ -374,6 +402,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\graphics\opengl\"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\modules\graphics\opengl\wrap_Quad.cpp"
 				>
 			</File>
@@ -398,18 +442,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\..\..\src\modules\graphics\Drawable.cpp"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\graphics\"
-				/>
-			</FileConfiguration>
-		</File>
 		<File
 			RelativePath="..\..\..\src\modules\graphics\Drawable.h"
 			>
