@@ -236,10 +236,9 @@ namespace physfs
 		{
 			// Create the file.
 			file = newFile(lua_tostring(L, 1));
-			file->open(File::READ);
 		}
 		else
-                        return luaL_error(L, "Expected filename.");
+			return luaL_error(L, "Expected filename.");
 
 		// Optionally, the caller can specify whether to read
 		// the whole file, or just a part of it.
