@@ -52,7 +52,7 @@ namespace openal
 
 	Audio::~Audio()
 	{
-		SDL_KillThread(thread);
+		//SDL_KillThread(thread);
 
 		pool->stop();
 
