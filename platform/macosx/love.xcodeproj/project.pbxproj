@@ -671,13 +671,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		080E96DDFE201D6D7F000001 /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Classes;
-			sourceTree = "<group>";
-		};
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -719,21 +712,12 @@
 			children = (
 				A9255DEA1043188D00BA1496 /* SDLMain.m */,
 				A9255DEB1043188D00BA1496 /* SDLMain.h */,
-				A93E69DC10420ABF007D418B /* src */,
-				080E96DDFE201D6D7F000001 /* Classes */,
-				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				A93E69DC10420ABF007D418B /* Source */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
 			name = love;
-			sourceTree = "<group>";
-		};
-		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "Other Sources";
 			sourceTree = "<group>";
 		};
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
@@ -753,7 +737,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		A93E69DC10420ABF007D418B /* src */ = {
+		A93E69DC10420ABF007D418B /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				A93E69DD10420ABF007D418B /* common */,
@@ -763,7 +747,7 @@
 				A93E6B9310420ACC007D418B /* resources */,
 				A93E6B9610420ACC007D418B /* scripts */,
 			);
-			name = src;
+			name = Source;
 			path = ../../src;
 			sourceTree = "<group>";
 		};

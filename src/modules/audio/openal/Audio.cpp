@@ -61,6 +61,11 @@ namespace openal
 		alcMakeContextCurrent(0);
 		alcDestroyContext(context);
 		alcCloseDevice(device);
+		
+		printf("waiting on thread to finish...\n");
+		int status;
+		SDL_WaitThread(thread, &status);
+		printf("%d", status);
 	}
 
 	int Audio::run(void * d)
