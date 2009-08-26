@@ -142,6 +142,8 @@ namespace physfs
 	
 	File * Filesystem::newFile(const char *filename)
 	{
+		if (!PHYSFS_exists(filename))
+			throw Exception("File %s doesn't exist", filename);
 		return new File(filename);
 	}
 

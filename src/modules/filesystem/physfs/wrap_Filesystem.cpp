@@ -75,7 +75,15 @@ namespace physfs
 	int w_newFile(lua_State * L)
 	{
 		const char * filename = luaL_checkstring(L, 1);
-		File * t = instance->newFile(filename);
+		File * t;
+		try
+		{
+			t = instance->newFile(filename);
+		}
+		catch(Exception e)
+		{
+			return luaL_error(L, e.what());
+		}
 		luax_newtype(L, "File", FILESYSTEM_FILE_T, (void*)t);
 		return 1;
 	}
