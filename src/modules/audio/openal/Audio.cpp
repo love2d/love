@@ -27,6 +27,7 @@ namespace audio
 namespace openal
 {
 	Audio::Audio()
+		: finish(false)
 	{
 		// Passing zero for default device.
 		device = alcOpenDevice(0);
@@ -52,7 +53,10 @@ namespace openal
 
 	Audio::~Audio()
 	{
-		SDL_KillThread(thread);
+		finish = true;
+
+		int status;
+		SDL_WaitThread(thread, &status);
 
 		pool->stop();
 
@@ -67,7 +71,7 @@ namespace openal
 	{
 		Audio * instance = (Audio*)d;
 		
-		while(true)
+		while(!instance->finish)
 		{
 			instance->pool->update();
 			SDL_Delay(10);

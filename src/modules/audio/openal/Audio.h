@@ -65,6 +65,11 @@ namespace openal
 		// The Pool.
 		Pool * pool;
 
+		// Set this to true when the thread should finish.
+		// Main thread will write to this value, and Audio::run
+		// will read from it.
+		bool finish;
+
 		static int run(void * unused);
 
 	public:
