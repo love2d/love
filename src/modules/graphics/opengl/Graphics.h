@@ -38,6 +38,7 @@
 #include "ImageFont.h"
 #include "Quad.h"
 #include "SpriteBatch.h"
+#include "ParticleSystem.h"
 
 namespace love
 {
@@ -252,6 +253,8 @@ namespace opengl
 		Font * newImageFont(Image * image, const char * glyphs, float spacing = 1);
 		
 		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
+
+		ParticleSystem * newParticleSystem(Image * image, int size);
 			
 		/**
 		* Sets the foreground color.

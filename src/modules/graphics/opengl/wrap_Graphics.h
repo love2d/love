@@ -55,6 +55,7 @@ namespace opengl
 	int w_newFont(lua_State * L);
 	int w_newImageFont(lua_State * L);
 	int w_newSpriteBatch(lua_State * L);
+	int w_newParticleSystem(lua_State * L);
 	int w_setColor(lua_State * L);
 	int w_getColor(lua_State * L);
 	int w_setBackgroundColor(lua_State * L);

@@ -69,7 +69,7 @@ namespace opengl
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
-		float arg2 = (float)luaL_checknumber(L, 3);
+		float arg2 = (float)luaL_optnumber(L, 3, arg1);
 		t->setParticleLife(arg1, arg2);
 		return 0;
 	}
@@ -310,7 +310,7 @@ namespace opengl
 		{ "setSprite", w_ParticleSystem_setSprite },
 		{ "setBufferSize", w_ParticleSystem_setBufferSize },
 		{ "setEmissionRate", w_ParticleSystem_setEmissionRate },
-		{ "setLifeTime", w_ParticleSystem_setLifetime },
+		{ "setLifetime", w_ParticleSystem_setLifetime },
 		{ "setParticleLife", w_ParticleSystem_setParticleLife },
 		{ "setPosition", w_ParticleSystem_setPosition },
 		{ "setDirection", w_ParticleSystem_setDirection },
