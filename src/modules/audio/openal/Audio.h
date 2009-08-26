@@ -30,10 +30,6 @@
 // SDL
 #include <SDL.h>
 
-// OpenAL
-#include <AL/alc.h>
-#include <AL/al.h>
-
 // LOVE
 #include <audio/Audio.h>
 #include <common/config.h>
@@ -43,6 +39,15 @@
 #include "Music.h"
 #include "Source.h"
 #include "Pool.h"
+
+// OpenAL
+#ifdef LOVE_MACOSX
+#include <OpenAL/alc.h>
+#include <OpenAL/al.h>
+#else
+#include <AL/alc.h>
+#include <AL/al.h>
+#endif
 
 namespace love
 {

@@ -59,8 +59,8 @@ namespace lullaby
 			decoder = new Mpg123Decoder(data, ext, bufferSize, sampleRate);
 		else if (VorbisDecoder::accepts(ext))
 			decoder = new VorbisDecoder(data, ext, bufferSize, sampleRate);
-		else if (FLACDecoder::accepts(ext))
-			decoder = new FLACDecoder(data, ext, bufferSize, sampleRate);
+		/*else if (FLACDecoder::accepts(ext))
+			decoder = new FLACDecoder(data, ext, bufferSize, sampleRate);*/
 
 		// else if(OtherDecoder::accept(ext))
 

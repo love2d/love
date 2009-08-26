@@ -1477,6 +1477,8 @@ static int rt_get_caller_pc(unsigned long *paddr,
         *paddr = uc->uc_mcontext.mc_eip;
 #elif defined(__dietlibc__)
         *paddr = uc->uc_mcontext.eip;
+#elif defined(__APPLE__)
+		fp = uc->uc_mcontext->__ss.__eip;
 #else
         *paddr = uc->uc_mcontext.gregs[REG_EIP];
 #endif
@@ -1486,6 +1488,8 @@ static int rt_get_caller_pc(unsigned long *paddr,
         fp = uc->uc_mcontext.mc_ebp;
 #elif defined(__dietlibc__)
         fp = uc->uc_mcontext.ebp;
+#elif defined(__APPLE__)
+		fp = uc->uc_mcontext->__ss.__ebp;
 #else
         fp = uc->uc_mcontext.gregs[REG_EBP];
 #endif

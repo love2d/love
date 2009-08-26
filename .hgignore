@@ -16,3 +16,7 @@ glob:*.lib
 glob:*.ncb
 glob:*.exe
 glob:*.bat
+glob:platform/macosx/build
+glob:platform/macosx/love.xcodeproj/bill*
+glob:*.DS_Store
+glob:*.dylib

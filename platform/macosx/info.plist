@@ -40,7 +40,7 @@
 	<key>CFBundleSignature</key>
 	<string>LoVe</string>
 	<key>CFBundleVersion</key>
-	<string>0.5</string>
+	<string>0.6.0</string>
 	<key>NSMainNibFile</key>
 	<string>SDLMain</string>
 	<key>NSPrincipalClass</key>

@@ -24,11 +24,19 @@
 // LOVE
 #include <sound/SoundData.h>
 #include <audio/Sound.h>
+#include <common/config.h>
 #include "Pool.h"
 
+
+
 // OpenAL
+#ifdef LOVE_MACOSX
+#include <OpenAL/alc.h>
+#include <OpenAL/al.h>
+#else
 #include <AL/alc.h>
 #include <AL/al.h>
+#endif
 
 namespace love
 {
