@@ -20,3 +20,5 @@ glob:platform/macosx/build
 glob:platform/macosx/love.xcodeproj/bill*
 glob:*.DS_Store
 glob:*.dylib
+glob:*.dmg*
+

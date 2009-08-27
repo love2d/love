@@ -9,28 +9,26 @@
 /* Begin PBXBuildFile section */
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		A904A5FD1043A2BE005228C3 /* libmpg123.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A904A5FC1043A2BE005228C3 /* libmpg123.dylib */; };
-		A904A6221043A72A005228C3 /* libmpg123.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = A904A5FC1043A2BE005228C3 /* libmpg123.dylib */; };
+		A904A6221043A72A005228C3 /* libmpg123.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A904A5FC1043A2BE005228C3 /* libmpg123.dylib */; };
 		A904A6431043AC66005228C3 /* libphysfs.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A904A6421043AC66005228C3 /* libphysfs.dylib */; };
-		A904A64A1043ACB5005228C3 /* libphysfs.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = A904A6421043AC66005228C3 /* libphysfs.dylib */; };
-		A9255DD11043183600BA1496 /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
-		A9255DD21043183600BA1496 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
-		A9255DD31043183600BA1496 /* Lua.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
+		A904A64A1043ACB5005228C3 /* libphysfs.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A904A6421043AC66005228C3 /* libphysfs.dylib */; };
+		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
+		A9255DD21043183600BA1496 /* SDL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
+		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A9255DEC1043188D00BA1496 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = A9255DEA1043188D00BA1496 /* SDLMain.m */; };
-		A9255E031043195A00BA1496 /* Vorbis.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* Vorbis.framework */; };
+		A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* Vorbis.framework */; };
 		A9255EE810431BD000BA1496 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* Vorbis.framework */; };
-		A9255F431043240F00BA1496 /* IL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9255F421043240F00BA1496 /* IL.framework */; };
+		A9255F431043240F00BA1496 /* IL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F421043240F00BA1496 /* IL.framework */; };
 		A9255F461043247300BA1496 /* IL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F421043240F00BA1496 /* IL.framework */; };
 		A9255F52104324D700BA1496 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; };
-		A9255F58104324E100BA1496 /* Ogg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; };
-		A9255F8210432C3E00BA1496 /* libltdl.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9255F8110432C3E00BA1496 /* libltdl.3.dylib */; };
+		A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; };
+		A9255F8210432C3E00BA1496 /* libltdl.3.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F8110432C3E00BA1496 /* libltdl.3.dylib */; };
 		A93E6E4910420B4A007D418B /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4610420B4A007D418B /* OpenAL.framework */; };
 		A93E6E4A10420B4A007D418B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4710420B4A007D418B /* OpenGL.framework */; };
 		A93E6E4B10420B4A007D418B /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
 		A93E6E5410420B57007D418B /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
 		A93E6E5510420B57007D418B /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
-		A93E6EEE10420BD0007D418B /* keeper.lch in Resources */ = {isa = PBXBuildFile; fileRef = A93E69F710420ABF007D418B /* keeper.lch */; };
-		A93E6EEF10420BE6007D418B /* stab.def in Resources */ = {isa = PBXBuildFile; fileRef = A93E6AD910420AC5007D418B /* stab.def */; };
 		A946D67F104248DA002BF36C /* Reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69EA10420ABF007D418B /* Reference.cpp */; };
 		A946D680104248DA002BF36C /* Matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E310420ABF007D418B /* Matrix.cpp */; };
 		A946D681104248DA002BF36C /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E810420ABF007D418B /* Object.cpp */; };
@@ -198,27 +196,30 @@
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
 		A9D8FC0F1043EBEC0063561F /* libmodplug.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
-		A9DE839F1043D81A00567BA4 /* libmodplug.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
+		A9DE839F1043D81A00567BA4 /* libmodplug.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
+		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
+		A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1C01046EFA70049C70C /* LoveDocument.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A9255DDE1043185300BA1496 /* CopyFiles */ = {
+		A9255DDE1043185300BA1496 /* Copy Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A9DE839F1043D81A00567BA4 /* libmodplug.dylib in CopyFiles */,
-				A904A64A1043ACB5005228C3 /* libphysfs.dylib in CopyFiles */,
-				A904A6221043A72A005228C3 /* libmpg123.dylib in CopyFiles */,
-				A9255F8210432C3E00BA1496 /* libltdl.3.dylib in CopyFiles */,
-				A9255F58104324E100BA1496 /* Ogg.framework in CopyFiles */,
-				A9255F431043240F00BA1496 /* IL.framework in CopyFiles */,
-				A9255E031043195A00BA1496 /* Vorbis.framework in CopyFiles */,
-				A9255DD11043183600BA1496 /* FreeType.framework in CopyFiles */,
-				A9255DD21043183600BA1496 /* SDL.framework in CopyFiles */,
-				A9255DD31043183600BA1496 /* Lua.framework in CopyFiles */,
+				A9DE839F1043D81A00567BA4 /* libmodplug.dylib in Copy Frameworks */,
+				A904A64A1043ACB5005228C3 /* libphysfs.dylib in Copy Frameworks */,
+				A904A6221043A72A005228C3 /* libmpg123.dylib in Copy Frameworks */,
+				A9255F8210432C3E00BA1496 /* libltdl.3.dylib in Copy Frameworks */,
+				A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */,
+				A9255F431043240F00BA1496 /* IL.framework in Copy Frameworks */,
+				A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */,
+				A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */,
+				A9255DD21043183600BA1496 /* SDL.framework in Copy Frameworks */,
+				A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */,
 			);
+			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -643,6 +644,8 @@
 		A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ParticleSystem.cpp; sourceTree = "<group>"; };
 		A9DE839E1043D81A00567BA4 /* libmodplug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmodplug.dylib; sourceTree = "<group>"; };
+		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
+		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -719,6 +722,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				A9DEC1BF1046EFA60049C70C /* Love.icns */,
+				A9DEC1C01046EFA70049C70C /* LoveDocument.icns */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 			);
 			name = Resources;
@@ -1537,8 +1542,9 @@
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
-				A9255DDE1043185300BA1496 /* CopyFiles */,
-				A971EA481042798500EAD7F9 /* ShellScript */,
+				A9255DDE1043185300BA1496 /* Copy Frameworks */,
+				A971EA481042798500EAD7F9 /* Change Link Locations */,
+				A9DEC1F51046F3F30049C70C /* Create DMG */,
 			);
 			buildRules = (
 			);
@@ -1572,26 +1578,41 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A93E6EEF10420BE6007D418B /* stab.def in Resources */,
-				A93E6EEE10420BD0007D418B /* keeper.lch in Resources */,
+				A9DEC1C11046EFA70049C70C /* Love.icns in Resources */,
+				A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		A971EA481042798500EAD7F9 /* ShellScript */ = {
+		A971EA481042798500EAD7F9 /* Change Link Locations */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Change Link Locations";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#! /bin/sh\n#Use install_name_tool, make love to search libs in its own framework folder instead\n#*very* hackish.\n\n# IL\ninstall_name_tool -change /Library/Frameworks/IL.framework/Versions/A/IL @executable_path/../Frameworks/IL.framework/Versions/A/IL build/Release/love.app/Contents/MacOS/love\n\n# FreeType\ninstall_name_tool -change /Library/Frameworks/FreeType.framework/Versions/2.3/FreeType @executable_path/../Frameworks/FreeType.framework/Versions/2.3/FreeType build/Release/love.app/Contents/MacOS/love\n\n# SDL\ninstall_name_tool -change /Library/Frameworks/SDL.framework/Versions/A/SDL @executable_path/../Frameworks/SDL.framework/Versions/A/SDL build/Release/love.app/Contents/MacOS/love\n\n# Lua\ninstall_name_tool -change /Library/Frameworks/Lua.framework/Versions/A/Lua @executable_path/../Frameworks/Lua.framework/Versions/A/Lua build/Release/love.app/Contents/MacOS/love\n\n# Ogg\ninstall_name_tool -change /Library/Frameworks/Ogg.framework/Versions/A/Ogg @executable_path/../Frameworks/Ogg.framework/Versions/A/Ogg build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Library/Frameworks/Ogg.framework/Versions/A/Ogg @executable_path/../Frameworks/Ogg.framework/Versions/A/Ogg build/Release/love.app/Contents/Frameworks/Vorbis.framework/Versions/A/Vorbis\n\n# Vorbis\ninstall_name_tool -change /Library/Frameworks/Vorbis.framework/Versions/A/Vorbis @executable_path/../Frameworks/Vorbis.framework/Versions/A/Vorbis build/Release/love.app/Contents/MacOS/love\n\n# libmpg123\ninstall_name_tool -change /usr/local/lib/libmpg123.0.dylib @executable_path/../Frameworks/libmpg123.dylib build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Users/bill/libs/lib/libmpg123.0.dylib @executable_path/../Frameworks/libmpg123.dylib build/Release/love.app/Contents/MacOS/love\n\n# libphysfs\ninstall_name_tool -change /Users/bill/downloads/physfs-2.0.0/build/Release/libphysfs.dylib @executable_path/../Frameworks/libphysfs.dylib build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Users/bill/downloads/physfs-2.0.0/build/Release/libphysfs.dylib @executable_path/../Frameworks/libphysfs.dylib build/Release/love.app/Contents/Frameworks/libphysfs.dylib\n\n# libmodplug\ninstall_name_tool -change /Users/bill/libs/lib/libmodplug.0.dylib @executable_path/../Frameworks/libmodplug.dylib build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Users/bill/libs-ppc/lib/libmodplug.0.dylib @executable_path/../Frameworks/libmodplug.dylib build/Release/love.app/Contents/MacOS/love\n\n# libltdl\ninstall_name_tool -change /usr/lib/libltdl.3.dylib @executable_path/../Frameworks/libltdl.3.dylib build/Release/love.app/Contents/Frameworks/libmpg123.dylib\n\nexit 0";
+		};
+		A9DEC1F51046F3F30049C70C /* Create DMG */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Create DMG";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# borrowed (with love) from banshee\n\nVOLUME_NAME=\"LÖVE 0.6.0\"\nDMG_APP=build/Release/love.app\nDMG_FILE=\"love.dmg\"\nMOUNT_POINT=\"love.mounted\"\n\nrm -f $DMG_FILE\nrm -f $DMG_FILE.master\n\n# Compute an approximated image size in MB, and bloat by 1MB\nimage_size=$(du -ck $DMG_APP dmg | tail -n1 | cut -f1)\nimage_size=$((($image_size + 1000) / 1000))\n\necho \"Creating disk image (${image_size}MB)...\"\nhdiutil create -megabytes $image_size -volname \"${VOLUME_NAME}\" -fs HFS+ \"${DMG_FILE}\" || exit $?\n\necho \"Attaching to disk image...\"\nhdiutil attach $DMG_FILE -readwrite -noautoopen -mountpoint $MOUNT_POINT -quiet\n\necho \"Populating image...\"\n\ncp -RP $DMG_APP $MOUNT_POINT\n\ncp dmg/VolumeIcon.icns $MOUNT_POINT/.VolumeIcon.icns\n\nmkdir $MOUNT_POINT/.background\ncp dmg/backgroundImage.tiff $MOUNT_POINT\n/Developer/Tools/SetFile -a V $MOUNT_POINT/backgroundImage.tiff\ncp dmg/DS_Store $MOUNT_POINT/.DS_Store\n\necho \"Detaching from disk image...\"\nhdiutil detach $MOUNT_POINT -quiet\n\nmv $DMG_FILE $DMG_FILE.master\n\necho \"Creating distributable image...\"\nhdiutil convert -quiet -format UDRO -o $DMG_FILE $DMG_FILE.master\n\n#echo \"Installing end user license agreement...\"\n#hdiutil flatten -quiet $DMG_FILE\n#/Developer/Tools/Rez /Developer/Headers/FlatCarbon/*.r dmg-data/license.r -a -o $DMG_FILE\n#hdiutil unflatten -quiet $DMG_FILE\n\necho \"Done.\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
