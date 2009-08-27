@@ -634,6 +634,10 @@ end
 
 function love.errhand(msg)
 
+	if not love.graphics or not love.event then
+		return error_printer(msg)
+	end
+	
 	-- Load.
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(love._vera_ttf, 14)
@@ -688,7 +692,10 @@ function error_printer(msg)
 end
 
 result = xpcall(love.boot, error_printer)
-result = xpcall(love.init, error_printer)
+if not result then return end
+result = xpcall(love.init, love.errhand)
+if not result then return end
 result = xpcall(love.run, love.errhand)
+if not result then return end
 
 print("Done.")
