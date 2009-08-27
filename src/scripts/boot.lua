@@ -113,7 +113,9 @@ function love.boot()
 
 	if arg and arg[1] then
 		love.filesystem.init(love.path.getfull(love.arg.getLow(arg)))
-		love.filesystem.setSource(love.path.getfull(arg[1]))
+		if not pcall(love.filesystem.setSource, love.path.getfull(arg[1])) then
+			love.nogame()
+		end
 	else
 		love.filesystem = nil
 		love.nogame() -- Who needs a game? Got one embedded right here!
