@@ -636,8 +636,8 @@ function love.errhand(msg)
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(love._vera_ttf, 14)
 	love.graphics.setFont(font)
+	
 	love.graphics.setColor(255, 255, 255, 255)
-	if love.audio then love.audio.stop() end	
 
 	local trace = debug.traceback()
 	
@@ -664,8 +664,6 @@ function love.errhand(msg)
 	
 	love.graphics.present()
 		
-	local finish = false
-	
 	while true do
 		e, a, b, c = love.event.wait()
 		

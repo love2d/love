@@ -254,6 +254,15 @@ namespace opengl
 		return 1;
 	}
 
+	int w_newParticleSystem(lua_State * L)
+	{
+		Image * image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+		int size = luaL_checkint(L, 2);
+		ParticleSystem * t = instance->newParticleSystem(image, size);
+		luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void*)t);
+		return 1;
+	}
+
 	int w_setColor(lua_State * L)
 	{
 		Color c;
@@ -686,6 +695,7 @@ namespace opengl
 		{ "newFont", w_newFont },
 		{ "newImageFont", w_newImageFont },
 		{ "newSpriteBatch", w_newSpriteBatch },
+		{ "newParticleSystem", w_newParticleSystem },
 
 		{ "setColor", w_setColor },
 		{ "getColor", w_getColor },

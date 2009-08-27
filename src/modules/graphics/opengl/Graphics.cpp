@@ -438,6 +438,11 @@ namespace opengl
 		return new SpriteBatch(image, size, usage);
 	}
 
+	ParticleSystem * Graphics::newParticleSystem(Image * image, int size)
+	{
+		return new ParticleSystem(image, size);
+	}
+
 	void Graphics::setColor(Color c)
 	{
 		glColor4ubv(&c.r);
