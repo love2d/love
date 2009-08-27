@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>love</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>LoveDocument.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Love Project</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>????</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSIsAppleDefaultForType</key>
+			<true/>
+			<key>LSTypeIsPackage</key>
+			<true/>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>love</string>
+	<key>CFBundleIconFile</key>
+	<string>Love.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.love2d.love</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>love</string>
+	<key>CFBundlePackageType</key>
+	<string>LoVe</string>
+	<key>CFBundleSignature</key>
+	<string>LoVe</string>
+	<key>CFBundleVersion</key>
+	<string>0.6.0</string>
+	<key>NSMainNibFile</key>
+	<string>SDLMain</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>
