@@ -188,7 +188,6 @@ namespace opengl
 
 	int w_newFont(lua_State * L)
 	{
-
 		Data * d = 0;
 
 		// Convert to File, if necessary.
@@ -204,6 +203,8 @@ namespace opengl
 		else if(luax_istype(L, 1, DATA_T))
 		{
 			d = luax_checktype<Data>(L, 1, "Data", DATA_T);
+		} else { // This is not the type you're looking for.
+			return luaL_error(L, "love.graphics.newFont() requires a string, File, or font data as argument #1");
 		}
 
 		// Second optional parameter can be a number:
@@ -493,6 +494,7 @@ namespace opengl
 	* Draws an Quad of an Image at the specified coordinates, 
 	* with rotation and scaling along both axes.
 	* 
+	* @param q The Quad to draw.
 	* @param x The x-coordinate.
 	* @param y The y-coordinate.
 	* @param angle The amount of rotation.
@@ -500,7 +502,6 @@ namespace opengl
 	* @param sy The scale factor along the y-axis. (1 = normal).
 	* @param ox The offset along the x-axis.
 	* @param oy The offset along the y-axis.
-	* @param f The Quad to dra.
 	**/
 	int w_drawq(lua_State * L)
 	{
