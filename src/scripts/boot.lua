@@ -666,7 +666,7 @@ function love.errhand(msg)
 	p = string.gsub(p, "\t", "")
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
 	
-	love.graphics.print(p, 70, 70)	
+	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)	
 	
 	love.graphics.present()
 		

@@ -210,7 +210,12 @@ namespace opengl
 		// Second optional parameter can be a number:
 		int size = luaL_optint(L, 2, 12);
 
-		Font * font = instance->newFont(d, size);
+		Font * font;
+		try {
+			font = instance->newFont(d, size);
+		} catch (Exception & e) {
+			return luaL_error(L, e.what());
+		}
 
 		if(font == 0)
 			return luaL_error(L, "Could not load the font");

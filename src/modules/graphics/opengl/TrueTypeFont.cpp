@@ -22,6 +22,7 @@
 
 #include <SDL_opengl.h>
 
+#include <common/Exception.h>
 
 #include <math.h>
 #include <iostream>
@@ -207,16 +208,19 @@ namespace opengl
 		for(unsigned int i = 0; i != MAX_CHARS; i++) widths[i] = 0;
 
 		FT_Library library;
-		if( FT_Init_FreeType(&library) )
+		if( FT_Init_FreeType(&library) ) {
 			std::cerr << "TrueTypeFont Loading error: FT_Init_FreeType failed." << std::endl;
-
+			throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed.");
+		}
 		FT_Face face;
 		if( FT_New_Memory_Face( library,
 								(const FT_Byte *)data->getData(),	/* first byte in memory */
 								data->getSize(),					/* size in bytes        */
 								0,									/* face_index           */
-								&face ))
+							   &face )) {
 			std::cerr << "TrueTypeFont Loading error: FT_New_Face failed (there is probably a problem with your font file)." << std::endl;
+			throw love::Exception("TrueTypeFont Loading error: FT_New_Face failed (there is probably a problem with your font file).");
+		}
 		//FT_Set_Char_Size(face, size << 6, size << 6, 96, 96);
 		FT_Set_Pixel_Sizes(face, size, size);
 
