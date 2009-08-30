@@ -393,6 +393,7 @@ namespace opengl
 			glTranslatef(p->position[0],p->position[1],0.0f);
 			glRotatef(p->rotation * 57.29578f, 0.0f, 0.0f, 1.0f); // rad * (180 / pi)
 			glScalef(p->size,p->size,1.0f);
+			glTranslatef(sprite->getWidth()*-0.5f,sprite->getHeight()*-0.5f,0.0f);
 			sprite->draw(0,0, 0, 1, 1, 0, 0);
 
 			glPopMatrix();
