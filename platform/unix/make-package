@@ -17,9 +17,22 @@ case "$1" in
 		sed "s/%VERSION%/$2/" < debian > deb/DEBIAN/tmp
 		sed "s/%INSTALLSIZE%/`ls -l ../../src/love | awk '{ sum += $5 } END { printf "%.2f", sum / 1000 }'`/" < deb/DEBIAN/tmp > deb/DEBIAN/control
 		rm deb/DEBIAN/tmp
+		cp mimescript deb/DEBIAN/postinst
+		cp mimescript deb/DEBIAN/postrm
 		mkdir deb/usr
 		mkdir deb/usr/bin
 		cp ../../src/love deb/usr/bin/love
+		mkdir deb/usr/share
+		mkdir deb/usr/share/mime
+		mkdir deb/usr/share/mime/packages
+		cp love.xml deb/usr/share/mime/packages
+		mkdir deb/usr/share/icons
+		mkdir deb/usr/share/icons/gnome
+		mkdir deb/usr/share/icons/gnome/scalable
+		mkdir deb/usr/share/icons/gnome/scalable/apps
+		cp app.svg deb/usr/share/icons/gnome/scalable/apps/love.svg
+		mkdir deb/usr/share/icons/gnome/mimetypes
+		cp game.svg deb/usr/share/icons/gnome/mimetypes/gnome-mime-application-love-game.svg
 		dpkg -b deb love-$2.deb && \
 		echo "  * love-$2.deb created"
 		rm -rf deb
