@@ -213,6 +213,15 @@ namespace opengl
 
 		return 0;
 	}
+	
+	int w_ParticleSystem_setOffset(lua_State * L)
+	{
+		ParticleSystem * t = luax_checkparticlesystem(L, 1);
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		t->setOffset(x, y);
+		return 0;
+	}
 
 	int w_ParticleSystem_getX(lua_State * L)
 	{
@@ -241,7 +250,21 @@ namespace opengl
 		lua_pushnumber(L, t->getSpread());
 		return 1;
 	}
-
+	
+	int w_ParticleSystem_getOffsetX(lua_State * L)
+	{
+		ParticleSystem * t = luax_checkparticlesystem(L, 1);
+		lua_pushnumber(L, t->getOffsetX());
+		return 1;
+	}
+	
+	int w_ParticleSystem_getOffsetY(lua_State * L)
+	{
+		ParticleSystem * t = luax_checkparticlesystem(L, 1);
+		lua_pushnumber(L, t->getOffsetY());
+		return 1;
+	}
+	
 	int w_ParticleSystem_count(lua_State * L)
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
@@ -326,10 +349,13 @@ namespace opengl
 		{ "setSpin", w_ParticleSystem_setSpin },
 		{ "setSpinVariation", w_ParticleSystem_setSpinVariation },
 		{ "setColor", w_ParticleSystem_setColor },
+		{ "setOffset", w_ParticleSystem_setOffset },
 		{ "getX", w_ParticleSystem_getX },
 		{ "getY", w_ParticleSystem_getY },
 		{ "getDirection", w_ParticleSystem_getDirection },
 		{ "getSpread", w_ParticleSystem_getSpread },
+		{ "getOffsetX", w_ParticleSystem_getOffsetX },
+		{ "getOffsetY", w_ParticleSystem_getOffsetY },
 		{ "count", w_ParticleSystem_count },
 		{ "start", w_ParticleSystem_start },
 		{ "stop", w_ParticleSystem_stop },

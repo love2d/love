@@ -52,10 +52,13 @@ namespace opengl
 	int w_ParticleSystem_setSpin(lua_State * L);
 	int w_ParticleSystem_setSpinVariation(lua_State * L);
 	int w_ParticleSystem_setColor(lua_State * L);
+	int w_ParticleSystem_setOffset(lua_State * L);
 	int w_ParticleSystem_getX(lua_State * L);
 	int w_ParticleSystem_getY(lua_State * L);
 	int w_ParticleSystem_getDirection(lua_State * L);
 	int w_ParticleSystem_getSpread(lua_State * L);
+	int w_ParticleSystem_getOffsetX(lua_State * L);
+	int w_ParticleSystem_getOffsetY(lua_State * L);
 	int w_ParticleSystem_count(lua_State * L);
 	int w_ParticleSystem_start(lua_State * L);
 	int w_ParticleSystem_stop(lua_State * L);

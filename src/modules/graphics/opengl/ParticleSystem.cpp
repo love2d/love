@@ -47,7 +47,8 @@ namespace opengl
 															gravityMax(0), radialAccelerationMin(0), radialAccelerationMax(0),
 															tangentialAccelerationMin(0), tangentialAccelerationMax(0),
 															sizeStart(1), sizeEnd(1), sizeVariation(0), rotationMin(0), rotationMax(0),
-															spinStart(0), spinEnd(0), spinVariation(0)
+															spinStart(0), spinEnd(0), spinVariation(0), offsetX(sprite->getWidth()*0.5f),
+															offsetY(sprite->getHeight()*0.5f)
 	{	
 		this->sprite = sprite;
 		sprite->retain();
@@ -307,6 +308,12 @@ namespace opengl
 		memcpy(colorStart, start, 4);
 		memcpy(colorEnd, end, 4);
 	}
+	
+	void ParticleSystem::setOffset(float x, float y)
+	{
+		offsetX = x;
+		offsetY = y;
+	}
 
 	float ParticleSystem::getX() const
 	{
@@ -326,6 +333,16 @@ namespace opengl
 	float ParticleSystem::getSpread() const
 	{
 		return spread * LOVE_M_TODEG;
+	}
+	
+	float ParticleSystem::getOffsetX() const
+	{
+		return offsetX;
+	}
+	
+	float ParticleSystem::getOffsetY() const
+	{
+		return offsetY;
 	}
 
 	int ParticleSystem::count() const
@@ -393,7 +410,7 @@ namespace opengl
 			glTranslatef(p->position[0],p->position[1],0.0f);
 			glRotatef(p->rotation * 57.29578f, 0.0f, 0.0f, 1.0f); // rad * (180 / pi)
 			glScalef(p->size,p->size,1.0f);
-			glTranslatef(sprite->getWidth()*-0.5f,sprite->getHeight()*-0.5f,0.0f);
+			glTranslatef(-offsetX,-offsetY,0.0f);
 			sprite->draw(0,0, 0, 1, 1, 0, 0);
 
 			glPopMatrix();

@@ -139,6 +139,10 @@ namespace opengl
 		float spinStart;
 		float spinEnd;
 		float spinVariation;
+		
+		// Offsets
+		float offsetX;
+		float offsetY;
 
 		// Color.
 		unsigned char colorStart[4];
@@ -340,7 +344,14 @@ namespace opengl
 		* @param color The color.
 		**/
 		void setColor(unsigned char * color);
-
+		
+		/**
+		* Sets the particles' offsets for rotation.
+		* @param x The x offset.
+		* @param y The y offset.
+		**/
+		void setOffset(float x, float y);
+		
 		/**
 		* Sets the color of the particles.
 		* @param start The color of the particle when created.
@@ -367,7 +378,17 @@ namespace opengl
 		* Returns the directional spread of the emitter (in degrees).
 		**/
 		float getSpread() const;
-
+		
+		/**
+		* Returns the X offset of the particles.
+		**/
+		float getOffsetX() const;
+		
+		/**
+		* Returns the Y offset of the particles.
+		**/
+		float getOffsetY() const;
+		
 		/**
 		* Returns the amount of particles that are currently active in the system.
 		**/
