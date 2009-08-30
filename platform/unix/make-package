@@ -26,11 +26,11 @@ case "$1" in
 		;;
 	src )
 		cd ../../../
-		tar -czf love/platform/unix/love-$2-src.tar.gz --exclude=.svn love/demos/* love/*.txt love/makefile-ancient love/src/ && \
+		tar -czf love/platform/unix/love-$2-src.tar.gz --exclude=*.o --exclude=.* love/demos/* love/*.txt love/src/ && \
 		echo "  * love-$2-src.tar.gz created"
-		tar -cjf love/platform/unix/love-$2-src.tar.bz2 --exclude=.svn love/demos/* love/*.txt love/makefile-ancient love/src/ && \
+		tar -cjf love/platform/unix/love-$2-src.tar.bz2 --exclude=*.o --exclude=.* love/demos/* love/*.txt love/src/ && \
 		echo "  * love-$2-src.tar.bz2 created"
-		zip -9q love/platform/unix/love-$2-src.zip love/*.txt love/demos/* love/makefile-ancient `find love/src/* | grep -viE svn` && \
+		zip -9q love/platform/unix/love-$2-src.zip love/*.txt love/demos/* `find love/src/* | grep -viE *.o` && \
 		echo "  * love-$2-src.zip created"
 		;;
 	* )

@@ -23,8 +23,8 @@
 #
 # revision:
 #
-# The SVN revision that should be built. Should be a valid revision 
-# number or HEAD. If not specified, it defaults to HEAD.
+# The revision that should be built. Should be a valid revision 
+# number or tip. If not specified, it defaults to tip.
 #
 # version: 
 #
@@ -37,11 +37,11 @@
 # (Builds HEAD, but does not upload)
 #
 # autobuild build
-# (Builds HEAD and uploads to tehlol server with the current svn rev. as
+# (Builds tip and uploads to tehlol server with the current rev. as
 # version number)
 #
-# autobuild build HEAD 1.0
-# (Builds HEAD and uploads it using the version 1.0)
+# autobuild build tip 1.0
+# (Builds tip and uploads it using the version 1.0)
 #
 #
 # Passwords for servers must be in these external files:
@@ -53,31 +53,33 @@
 cd ../..
 
 # Get required packages.
-sudo apt-get -y install subversion build-essential liblua5.1-dev \
-libopenal-dev libsdl1.2-dev libsdl-sound1.2-dev libfreetype6-dev \
-libphysfs-dev libdevil-dev libtiff4-dev libalut-dev libmng-dev \
-liblcms1-dev ftp-upload libmpg123-dev libmodplug-dev libpng12-dev
+#sudo apt-get -y install subversion build-essential liblua5.1-dev \
+#libopenal-dev libsdl1.2-dev libfreetype6-dev \
+#libphysfs-dev libdevil-dev libtiff4-dev libmng-dev \
+#liblcms1-dev ftp-upload libmpg123-dev libmodplug-dev libpng12-dev
 
 # Check which revision to build.
 if [ -z $2 ]; then
-	buildrev="HEAD"
+	buildrev="tip"
 else
 	buildrev=$2
 fi
 
 # Upload to the appropriate revision.
-svn up -r $buildrev
+hg pull
+hg update $buildrev
 
 # Set the displayversion.
 if [ -z $3 ]; then
-	if [ "$buildrev" == "HEAD" ]; then
+	if [ "$buildrev" == "tip" ]; then
 		# Get the current SVN version, use sed to remove any non-numbers.
-		currentsvnversion=`svnversion | sed 's/[a-zA-Z: ]//g'`
-		displayversion="r$currentsvnversion"
+		currentversion=`hg log -l1 | grep changeset | sed 's/.*://g'`
+		currentdate=`date +%Y%m%d`
+		displayversion="$currentdate-$currentversion"
 	else
 		# The revision is already specified, so we'll use that as the 
 		# display version.
-		displayversion="r$buildrev"
+		displayversion="$buildrev"
 	fi
 else
 	# If the param is present, it overrides everything else.
@@ -112,7 +114,7 @@ deb="love-$displayversion-ubuntu-x86.deb"
 mv "love-$displayversion.deb" $deb
 
 # Copy and rename the binary.
-binary="love-$displayversion"
+binary="love-$displayversion-linux-x86"
 cp ../../src/love $binary
 
 # Deal with uploading.

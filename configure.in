@@ -1,9 +1,9 @@
-AC_INIT([love], [r718])
+AC_INIT([love], [20090829-40a9af50de1f])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([platform/unix])
 AC_CONFIG_MACRO_DIR([platform/unix/m4])
 AC_CONFIG_SRCDIR([src/love.cpp])
-AM_INIT_AUTOMAKE([-Wall foreign])
+AM_INIT_AUTOMAKE([foreign -Wall foreign tar-ustar])
 AC_PREFIX_DEFAULT([/usr])
 AC_PROG_LIBTOOL
 AC_PROG_CC
