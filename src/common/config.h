@@ -35,6 +35,14 @@
 #	define LOVE_MACOS 1
 #endif
 
+// Endianness.
+#if defined(__i386__) || defined(__i386)
+#	define LOVE_LITTLE_ENDIAN 1
+#endif
+#if defined(__ppc__) || defined(__ppc)
+#	define LOVE_BIG_ENDIAN 1
+#endif
+
 // Warnings.
 #ifndef _CRT_SECURE_NO_WARNINGS
 #	define _CRT_SECURE_NO_WARNINGS

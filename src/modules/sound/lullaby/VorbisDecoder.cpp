@@ -21,6 +21,7 @@
 #include "VorbisDecoder.h"
 
 #include <string.h>
+#include <common/config.h>
 #include <common/Exception.h>
 
 namespace love
@@ -132,6 +133,13 @@ namespace lullaby
 		vorbisCallbacks.seek_func  = vorbisSeek;
 		vorbisCallbacks.read_func  = vorbisRead;
 		vorbisCallbacks.tell_func  = vorbisTell;
+		
+		// Check endianness
+#ifdef LOVE_BIG_ENDIAN
+		endian = 1;
+#else
+		endian = 0;
+#endif
 
 		// Initialize OGG file
 		oggFile.dataPtr = (char *) data->getData();
@@ -186,7 +194,7 @@ namespace lullaby
 
 		while(size < bufferSize)
 		{
-			result = ov_read(&handle, (char*) buffer + size, bufferSize - size, 0, bits, 1, &section);
+			result = ov_read(&handle, (char*) buffer + size, bufferSize - size, endian, bits, 1, &section);
 
 			if(result > 0)
 				size += result;

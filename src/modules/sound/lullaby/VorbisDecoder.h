@@ -51,6 +51,7 @@ namespace lullaby
 		OggVorbis_File handle;			// Handle to the file
 		vorbis_info * vorbisInfo;		// Info
         vorbis_comment * vorbisComment;	// Comments
+		int endian;						// Endianness
 
 	public:
 
