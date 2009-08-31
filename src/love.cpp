@@ -130,6 +130,11 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 
 int main(int argc, char ** argv)
 {
+	// Oh, you just want the version? Okay!
+	if(argc > 1 && strcmp(argv[1],"--version") == 0) {
+		printf("This is LOVE %s (%s), the unquestionably awesome 2D game engine.\n", love::VERSION_STR, love::VERSION_CODENAME);
+		return 0;
+	}
 	// Create the virtual machine.
 	lua_State * L = lua_open();
 	luaL_openlibs(L);
