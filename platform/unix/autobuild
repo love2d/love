@@ -65,9 +65,11 @@ else
 	buildrev=$2
 fi
 
+echo $buildrev
+
 # Upload to the appropriate revision.
 hg pull
-hg update $buildrev
+hg update -r $buildrev
 
 # Set the displayversion.
 if [ -z $3 ]; then
@@ -85,6 +87,8 @@ else
 	# If the param is present, it overrides everything else.
 	displayversion=$3
 fi
+
+echo $displayversion
 
 # Update version in configure.
 # cat configure.in | sed "s/LOVE_VERSION/$displayversion/g" > configure.in
@@ -109,12 +113,14 @@ mv "love-$displayversion.tar.gz" platform/unix/$tar
 cd platform/unix
 sh make-package deb $displayversion
 
+machine=`uname -m`
+
 # Move and rename the deb.
-deb="love-$displayversion-ubuntu-x86.deb"
+deb="love-$displayversion-ubuntu-$machine.deb"
 mv "love-$displayversion.deb" $deb
 
 # Copy and rename the binary.
-binary="love-$displayversion-linux-x86"
+binary="love-$displayversion-linux-$machine"
 cp ../../src/love $binary
 
 # Deal with uploading.

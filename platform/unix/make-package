@@ -2,6 +2,13 @@
 echo
 echo "Packing LÖVE to go v1.2"
 echo
+
+arch="i386"
+
+if [ -n "`uname -m | grep -c -G x86_64`" ]; then
+	arch="amd64"
+fi
+
 if [ -z "$2" ]; then
 	echo "Syntax:  ./make-package <package> <version>"
 	echo "Example: ./make-package deb 0.3.0-1"
@@ -14,8 +21,9 @@ case "$1" in
 		strip ../../src/love
 		mkdir deb
 		mkdir deb/DEBIAN
-		sed "s/%VERSION%/$2/" < debian > deb/DEBIAN/tmp
-		sed "s/%INSTALLSIZE%/`ls -l ../../src/love | awk '{ sum += $5 } END { printf "%.2f", sum / 1000 }'`/" < deb/DEBIAN/tmp > deb/DEBIAN/control
+		cat debian | sed "s/%VERSION%/$2/" | sed "s/%ARCHITECTURE%/$arch/g" > deb/DEBIAN/tmp
+		cat deb/DEBIAN/tmp
+		sed "s/%INSTALLSIZE%/`ls -l ../../src/love | awk '{ sum += $5 } END { printf "%.2f", sum / 1000 }'`/" < deb/DEBIAN/tmp > deb/DEBIAN/control		
 		rm deb/DEBIAN/tmp
 		cp mimescript deb/DEBIAN/postinst
 		cp mimescript deb/DEBIAN/postrm
