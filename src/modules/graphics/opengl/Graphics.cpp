@@ -22,6 +22,10 @@
 
 // LOVE
 #include <common/config.h>
+#include <image/devil/Image.h>
+
+// IL
+#include <IL/ilu.h>
 
 namespace love
 {
@@ -385,13 +389,18 @@ namespace opengl
 	{
 		// Create the image.
 		Image * image = new Image(data);
-
-		if(!image->load())
-		{
+		bool success;
+		try {
+			success = image->load();
+		} catch (love::Exception & e) {
+			image->release();
+			throw love::Exception(e.what());
+		}
+		if (!success) {
 			image->release();
 			return 0;
 		}
-
+		
 		return image;
 	}
 	
@@ -1168,8 +1177,32 @@ namespace opengl
 		return 0;
 	}
 
-	bool Graphics::screenshot(love::filesystem::File * file)
+	love::image::ImageData * Graphics::newScreenshot(lua_State * L)
 	{
+		
+		int w = getWidth();
+		int h = getHeight();
+		
+		love::image::devil::Image * i = new love::image::devil::Image();
+		love::image::ImageData * img = i->newImageData(w, h);
+		
+		GLubyte * pixels = new GLubyte[4*w*h];
+		
+		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		
+		try {
+			img = i->newImageData(w, h, pixels);
+		} catch (Exception & e) {
+			luaL_error(L, e.what());
+		}
+		
+		// the screenshot is upside down, let's fix this
+		iluFlipImage();
+		
+		delete [] pixels;
+		
+		return img;
+		
 		// TODO: update this.
 		/*
 		int w = getWidth();

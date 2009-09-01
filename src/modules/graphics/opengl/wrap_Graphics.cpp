@@ -20,6 +20,8 @@
 
 #include "wrap_Graphics.h"
 
+#include <image/ImageData.h>
+
 namespace love
 {
 namespace graphics
@@ -142,7 +144,12 @@ namespace opengl
 		love::image::ImageData * data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 
 		// Create the image.
-		Image * image = instance->newImage(data);
+		Image * image = 0;
+		try {
+			image = instance->newImage(data);
+		} catch (love::Exception & e) {
+			luaL_error(L, e.what());
+		}
 			
 		if(image == 0)
 			return luaL_error(L, "Could not load image.");
@@ -469,6 +476,13 @@ namespace opengl
 		lua_pushnumber(L, instance->getMaxPointSize());
 		return 1;
 	}
+	
+	int w_newScreenshot(lua_State * L)
+	{
+		love::image::ImageData * i = instance->newScreenshot(L);
+		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)i);
+		return 1;
+	}
 
 	/**
 	* Draws an Image at the specified coordinates, with rotation and 
@@ -728,6 +742,7 @@ namespace opengl
 		{ "getPointSize", w_getPointSize },
 		{ "getPointStyle", w_getPointStyle },
 		{ "getMaxPointSize", w_getMaxPointSize },
+		{ "newScreenshot", w_newScreenshot },
 
 		{ "draw", w_draw },
 		{ "drawq", w_drawq },

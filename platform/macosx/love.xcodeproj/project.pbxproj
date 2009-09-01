@@ -1882,7 +1882,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/include/IL,
 					/Library/Frameworks/SDL.framework/Headers,
 					/usr/local/include,
 					/opt/local/include,

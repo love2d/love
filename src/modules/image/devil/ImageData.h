@@ -60,6 +60,7 @@ namespace devil
 		ImageData(Data * data);
 		ImageData(love::filesystem::File * file);
 		ImageData(int width, int height);
+		ImageData(int width, int height, void *data);
 		virtual ~ImageData();
 
 		// Implements Data.

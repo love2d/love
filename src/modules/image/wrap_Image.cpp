@@ -45,7 +45,12 @@ namespace image
 		if(luax_istype(L, 1, DATA_T))
 		{
 			Data * d = luax_checktype<Data>(L, 1, "Data", DATA_T);
-			ImageData * t = instance->newImageData(d);
+			ImageData * t;
+			try {
+				t = instance->newImageData(d);
+			} catch (love::Exception & e) {
+				return luaL_error(L, e.what());
+			}
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 			return 1;
 		}

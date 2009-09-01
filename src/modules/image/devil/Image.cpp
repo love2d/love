@@ -53,12 +53,22 @@ namespace devil
 
 	love::image::ImageData * Image::newImageData(Data * data)
 	{
-		return new ImageData(data);
+		try {
+			return new ImageData(data);
+		} catch (love::Exception & e) {
+			throw love::Exception(e.what());
+		}
+		
 	}
-
+	
 	love::image::ImageData * Image::newImageData(int width, int height)
 	{
 		return new ImageData(width, height);
+	}
+
+	love::image::ImageData * Image::newImageData(int width, int height, void *data)
+	{
+		return new ImageData(width, height, data);
 	}
 
 } // devil

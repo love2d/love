@@ -79,6 +79,7 @@ namespace opengl
 	int w_getPointSize(lua_State * L);
 	int w_getPointStyle(lua_State * L);
 	int w_getMaxPointSize(lua_State * L);
+	int w_newScreenshot(lua_State * L);
 	int w_draw(lua_State * L);
 	int w_drawq(lua_State * L);
 	int w_drawTest(lua_State * L);

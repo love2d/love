@@ -59,14 +59,23 @@ namespace image
 		* @return The new ImageData.
 		**/
 		virtual ImageData * newImageData(Data * data) = 0;
-
+		
 		/**
-		* Creates empty ImageData with the given size.
-		* @param The width of the ImageData.
-		* @param The height of the ImageData.
-		* @return The new ImageData.
-		**/
+		 * Creates empty ImageData with the given size.
+		 * @param The width of the ImageData.
+		 * @param The height of the ImageData.
+		 * @return The new ImageData.
+		 **/
 		virtual ImageData * newImageData(int width, int height) = 0;
+		
+		/**
+		 * Creates empty ImageData with the given size.
+		 * @param The width of the ImageData.
+		 * @param The height of the ImageData.
+		 * @param The data to load into the ImageData.
+		 * @return The new ImageData.
+		 **/
+		virtual ImageData * newImageData(int width, int height, void *data) = 0;
 
 	}; // Image
 
