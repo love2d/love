@@ -22,6 +22,7 @@ AC_SEARCH_LIBS(
 	AC_MSG_ERROR([Can't LÖVE without Lua])
 )
 AC_SEARCH_LIBS([ilInit], [IL], [], AC_MSG_ERROR([Can't LÖVE without DevIL]))
+AC_SEARCH_LIBS([iluInit], [ILU], [], AC_MSG_ERROR([Can't LÖVE without ILU]))
 AC_SEARCH_LIBS([mng_initialize], [mng], [], AC_MSG_ERROR([DevIL needs MNG]))
 AC_SEARCH_LIBS([TIFFOpen], [tiff], [], AC_MSG_ERROR([DevIL needs TIFF]))
 AC_SEARCH_LIBS([FT_Load_Glyph], [freetype], [], AC_MSG_ERROR([Can't LÖVE without FreeType]))
