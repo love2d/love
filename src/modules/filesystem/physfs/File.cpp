@@ -46,10 +46,15 @@ namespace physfs
 	
 	bool File::open(Mode mode)
 	{
+		// File must exist if read mode.
+		if((mode == READ))
+			if(!PHYSFS_exists(filename.c_str()))
+				throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
+
 		// Check whether the write directory is set.
 		if((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0))
 			if(!hack_setupWriteDirectory())
-				return false;
+				throw love::Exception("Could not set write directory.");
 
 		// File already open?
 		if(file != 0)
@@ -143,6 +148,9 @@ namespace physfs
 
 	bool File::write(const void * data, int size)
 	{
+		if(file == 0)
+			throw love::Exception("Could not write to file. File not open.");
+
 		// Try to write.
 		int written = static_cast<int>(PHYSFS_write(file, data, 1, size));
 

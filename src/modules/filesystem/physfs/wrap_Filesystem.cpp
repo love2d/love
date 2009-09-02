@@ -166,12 +166,26 @@ namespace physfs
 
 	int w_read(lua_State * L)
 	{
-		return instance->read(L);
+		try
+		{
+			return instance->read(L);
+		}
+		catch(Exception e)
+		{
+			return luaL_error(L, e.what());
+		}
 	}
 
 	int w_write(lua_State * L)
 	{
-		return instance->write(L);
+		try
+		{
+			return instance->write(L);
+		}
+		catch(Exception e)
+		{
+			return luaL_error(L, e.what());
+		}
 	}	
 
 	int w_enumerate(lua_State * L)

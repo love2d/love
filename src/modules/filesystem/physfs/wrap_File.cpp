@@ -20,6 +20,8 @@
 
 #include "wrap_File.h"
 
+#include <common/Exception.h>
+
 namespace love
 {
 namespace filesystem
@@ -42,7 +44,16 @@ namespace physfs
 	{
 		File * file = luax_checkfile(L, 1);
 		int mode = luaL_optint(L, 2, File::READ);
-		lua_pushboolean(L, file->open((File::Mode)mode) ? 1 : 0);
+
+		try
+		{
+			lua_pushboolean(L, file->open((File::Mode)mode) ? 1 : 0);
+		}
+		catch(Exception e)
+		{
+			return luaL_error(L, e.what());
+		}
+
 		return 1;
 	}
 
@@ -56,7 +67,17 @@ namespace physfs
 	int w_File_read(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
-		Data * d = file->read(luaL_optint(L, 2, file->getSize()));
+		Data * d = 0;
+
+		try
+		{
+			d = file->read(luaL_optint(L, 2, file->getSize()));
+		}
+		catch(Exception e)
+		{
+			return luaL_error(L, e.what());
+		}
+
 		lua_pushlstring(L, (const char*) d->getData(), d->getSize());
 		lua_pushnumber(L, d->getSize());
 		d->release();
@@ -70,9 +91,21 @@ namespace physfs
 		if ( file->getMode() == File::CLOSED )
 			return luaL_error(L, "File is not open.");
 		if ( lua_isstring(L, 2) )
-			result = file->write(lua_tostring(L, 2), luaL_optint(L, 3, lua_objlen(L, 2)));
+		{
+			try
+			{
+				result = file->write(lua_tostring(L, 2), luaL_optint(L, 3, lua_objlen(L, 2)));
+			}
+			catch(Exception e)
+			{
+				return luaL_error(L, e.what());
+			}
+			
+		}
 		else
+		{
 			return luaL_error(L, "String expected.");
+		}
 		lua_pushboolean(L, result);
 		return 1;
 	}
@@ -201,21 +234,21 @@ namespace physfs
 		return 0;
 	}
 
+	static const luaL_Reg functions[] = { 
+			{ "getSize", w_File_getSize },
+			{ "open", w_File_open },
+			{ "close", w_File_close },
+			{ "read", w_File_read },
+			{ "write", w_File_write },
+			{ "eof", w_File_eof },
+			{ "tell", w_File_tell },
+			{ "seek", w_File_seek },
+			{ "lines", w_File_lines },
+			{ 0, 0 }
+	};
+
 	int luaopen_file(lua_State * L)
 	{
-		static const luaL_Reg functions[] = { 
-				{ "getSize", w_File_getSize },
-				{ "open", w_File_open },
-				{ "close", w_File_close },
-				{ "read", w_File_read },
-				{ "write", w_File_write },
-				{ "eof", w_File_eof },
-				{ "tell", w_File_tell },
-				{ "seek", w_File_seek },
-				{ "lines", w_File_lines },
-				{ 0, 0 }
-		};
-
 		return luax_register_type(L, "File", functions);
 	}
 	
