@@ -266,9 +266,15 @@ namespace audio
 		if(instance == 0)
 			return luaL_error(L, "Could not open any audio module.");
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "audio";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = types;
+		w.constants = 0;
 
-		return luax_register_module(L, functions, types, 0, "audio");
+		return luax_register_module(L, w);
 	}
 
 } // audio

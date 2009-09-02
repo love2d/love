@@ -24,15 +24,14 @@
 // LOVE
 #include "runtime.h"
 #include "Exception.h"
+#include "Object.h"
 
 namespace love
 {
 	/**
 	* Abstract superclass for all modules. 
-	*
-	* @author Anders Ruud
 	**/
-	class Module
+	class Module : public Object
 	{
 	public:
 

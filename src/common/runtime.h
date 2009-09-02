@@ -44,29 +44,59 @@ namespace love
 	enum Registry
 	{
 		REGISTRY_GC = 1,
+		REGISTRY_MODULES,
 	};
 
 	/**
 	* This structure wraps all Lua-exposed objects. It exists in the
-	* Lua state as a full UserData (so we can catch __gc "events"), 
-	* though the Object it refers to is light UserData in the sense 
+	* Lua state as a full userdata (so we can catch __gc "events"), 
+	* though the Object it refers to is light userdata in the sense 
 	* that it is not allocated by the Lua VM. 
 	**/
-	struct UserData
+	struct Proxy
 	{
-		bits flags; // Holds type information (see types.h).
+		// Holds type information (see types.h).
+		bits flags; 
+		
+		// The light userdata.
 		void * data;
-		bool own; // True if Lua should delete on GC.
+
+		// True if Lua should delete on GC.
+		bool own; 
 	};
 
 	
 	/**
 	* Used to store constants in arrays.
 	**/
-	struct LuaConstant
+	struct Constant
 	{
 		const char * name;
 		int value;
+	};
+
+	/**
+	* A Module with Lua wrapper functions and other data.
+	**/
+	struct WrappedModule
+	{
+		// The module containing the functions.
+		Module * module;
+
+		// The name for the table to put the functions in, without the 'love'-prefix.
+		const char * name;
+
+		// The type flags of this module.
+		love::bits flags;
+
+		// The functions of the module (last element {0,0}).
+		const luaL_Reg * functions;
+
+		// A list of functions which expose the types of the modules (last element 0).
+		const lua_CFunction * types;
+
+		// A list of constants (last element 0).
+		const Constant * constants;
 	};
 
 	/**
@@ -134,22 +164,10 @@ namespace love
 	int luax_assert_function(lua_State * L, int idx);
 
 	/**
-	* Register a dummy UserData (full) for a module. This enables us to catch the
-	* call to __gc, and properly call the destructor on the Module in question.
+	* Register a module in the love table. The love table will be created if it does not exist.
 	* @param L The Lua state.
-	* @param module The Module to register the dummy UserData for.
 	**/
-	int luax_register_gc(lua_State * L, Module * module);
-
-	/**
-	* Register a module in the love table. The love table will created if it does not exist.
-	* @param L The Lua state.
-	* @param f The functions of the module (last element {0,0}).
-	* @param t A list of functions which expose the types of the modules (last element 0).
-	* @param c A list of constants (last element 0).
-	* @param name The name for the table to put the functions in, without the 'love'-prefix.
-	**/
-	int luax_register_module(lua_State * L, const luaL_Reg * f, const lua_CFunction * t, const LuaConstant * c, const char * name);
+	int luax_register_module(lua_State * L, const WrappedModule & m);
 	
 	/**
 	* Inserts a module with 'name' into the package.preloaded table.
@@ -164,7 +182,7 @@ namespace love
 	* even from other modules.
 	* @param f The list of member functions for the type.
 	**/
-	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * f);
+	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * f = 0);
 
 	/**
 	* Register a new searcher function for package.loaders. This can for instance enable
@@ -189,7 +207,7 @@ namespace love
 	* @param L The Lua state.
 	* @param idx The index on the stack.
 	* @param type The type to check for.
-	* @return True if the value is UserData of the specified type, false otherwise.
+	* @return True if the value is Proxy of the specified type, false otherwise.
 	**/
 	bool luax_istype(lua_State * L, int idx, love::bits type);
 	
@@ -258,11 +276,11 @@ namespace love
 	template <typename T>
 	T * luax_totype(lua_State * L, int idx, const char * name, love::bits type)
 	{
-		return (T*)(((UserData *)lua_touserdata(L, idx))->data);
+		return (T*)(((Proxy *)lua_touserdata(L, idx))->data);
 	}
 
 	/**
-	* Like luax_totype, but causes an error if the value at idx is not UserData, 
+	* Like luax_totype, but causes an error if the value at idx is not Proxy, 
 	* or is not the specified type.
 	* @param L The Lua state.
 	* @param idx The index on the stack.
@@ -275,12 +293,31 @@ namespace love
 		if(lua_isuserdata(L, idx) == 0)
 			luaL_error(L, "Incorrect parameter type: expected userdata.");
 
-		UserData * u = (UserData *)lua_touserdata(L, idx);
+		Proxy * u = (Proxy *)lua_touserdata(L, idx);
 
 		if((u->flags & type) != type)
 			luaL_error(L, "Incorrect parameter type: expected %s", name);
 
 		return (T *)u->data;	
+	}
+
+	template <typename T>
+	T * luax_getmodule(lua_State * L, const char * k, love::bits type)
+	{
+		luax_getregistry(L, REGISTRY_MODULES);
+		lua_getfield(L, -1, k);
+		
+		if(!lua_isuserdata(L, -1))
+			luaL_error(L, "Tried to get nonexisting module %s.", k);
+
+		Proxy * u = (Proxy *)lua_touserdata(L, -1);
+
+		if((u->flags & type) != type)
+			luaL_error(L, "Incorrect module %s", k);
+
+		lua_pop(L, 2);
+
+		return (T*)u->data;
 	}
 
 } // love

@@ -105,7 +105,7 @@ namespace sdl
 	};
 
 	// List of constants.
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 		{ "mouse_left", Mouse::MOUSE_LEFT },
 		{ "mouse_middle", Mouse::MOUSE_MIDDLE },
 		{ "mouse_right", Mouse::MOUSE_RIGHT },
@@ -129,9 +129,15 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "mouse";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = 0;
+		w.constants = constants;
 
-		return luax_register_module(L, functions, 0, constants, "mouse");
+		return luax_register_module(L, w);
 	}
 
 } // sdl

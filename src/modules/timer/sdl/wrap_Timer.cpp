@@ -85,9 +85,15 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "timer";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = 0;
+		w.constants = 0;
 
-		return luax_register_module(L, functions, 0, 0, "timer");
+		return luax_register_module(L, w);
 	}
 
 } // sdl

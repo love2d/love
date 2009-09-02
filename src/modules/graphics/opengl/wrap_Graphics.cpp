@@ -479,7 +479,8 @@ namespace opengl
 	
 	int w_newScreenshot(lua_State * L)
 	{
-		love::image::ImageData * i = instance->newScreenshot(L);
+		love::image::Image * image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
+		love::image::ImageData * i = instance->newScreenshot(image);
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)i);
 		return 1;
 	}
@@ -795,7 +796,7 @@ namespace opengl
 	};
 
 	// List of constants.
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 
 		{ "align_left", Graphics::ALIGN_LEFT },
 		{ "align_right", Graphics::ALIGN_RIGHT },
@@ -860,8 +861,15 @@ namespace opengl
 			}
 		}
 
-		luax_register_gc(L, instance);
-		luax_register_module(L, functions, types, constants, "graphics");		
+		WrappedModule w;
+		w.module = instance;
+		w.name = "graphics";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = types;
+		w.constants = constants;
+
+		luax_register_module(L, w);
 
 #		include <scripts/graphics.lua.h>
 

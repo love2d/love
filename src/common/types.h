@@ -26,11 +26,12 @@
 
 namespace love
 {
-	enum
+	enum Type
 	{
 		// Cross-module types.
 		OBJECT_ID = 0,
 		DATA_ID,
+		MODULE_ID,
 
 		// Filesystem.
 		FILESYSTEM_FILE_ID,
@@ -79,6 +80,11 @@ namespace love
 		PHYSICS_REVOLUTE_JOINT_ID,
 		PHYSICS_PULLEY_JOINT_ID,
 		PHYSICS_GEAR_JOINT_ID,
+		
+		// The modules themselves. Only add abstracted modules here. 
+		MODULE_FILESYSTEM_ID,
+		MODULE_IMAGE_ID,
+		MODULE_SOUND_ID,
 
 		// Count the number of bits needed.
 		BIT_SIZE
@@ -88,6 +94,7 @@ namespace love
 
 	const bits OBJECT_T = bits(1) << OBJECT_ID;
 	const bits DATA_T = (bits(1) << DATA_ID) | OBJECT_T;
+	const bits MODULE_T = (bits(1) << MODULE_ID) | OBJECT_T;
 
 	// Filesystem. 
 	const bits FILESYSTEM_FILE_T = (bits(1) << FILESYSTEM_FILE_ID) | OBJECT_T;
@@ -135,6 +142,11 @@ namespace love
 	const bits PHYSICS_REVOLUTE_JOINT_T = (bits(1) << PHYSICS_REVOLUTE_JOINT_ID) | PHYSICS_JOINT_T;
 	const bits PHYSICS_PULLEY_JOINT_T = (bits(1) << PHYSICS_PULLEY_JOINT_ID) | PHYSICS_JOINT_T;
 	const bits PHYSICS_GEAR_JOINT_T = (bits(1) << PHYSICS_GEAR_JOINT_ID) | PHYSICS_JOINT_T;
+
+	// Modules.
+	const bits MODULE_FILESYSTEM_T = (bits(1) << MODULE_FILESYSTEM_ID) | MODULE_T;
+	const bits MODULE_IMAGE_T = (bits(1) << MODULE_IMAGE_ID) | MODULE_T;
+	const bits MODULE_SOUND_T = (bits(1) << MODULE_SOUND_ID) | MODULE_T;
 
 } // love
 

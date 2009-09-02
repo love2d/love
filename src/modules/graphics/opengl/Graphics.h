@@ -33,6 +33,7 @@
 // LOVE
 #include <graphics/Graphics.h>
 
+#include <image/Image.h>
 #include <image/ImageData.h>
 
 #include "Image.h"
@@ -518,7 +519,7 @@ namespace opengl
 		* Creates a screenshot of the view and saves it to the default folder.
 		* @param file The file to write the screenshot to.
 		**/
-		love::image::ImageData * newScreenshot(lua_State * L);
+		love::image::ImageData * newScreenshot(love::image::Image * image);
 
 		void push();
 		void pop();

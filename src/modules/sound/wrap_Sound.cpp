@@ -128,9 +128,16 @@ namespace sound
 			}
 		}
 
-		luax_register_gc(L, instance);
 
-		return luax_register_module(L, functions, types, 0, "sound");
+		WrappedModule w;
+		w.module = instance;
+		w.name = "sound";
+		w.flags = MODULE_SOUND_T;
+		w.functions = functions;
+		w.types = types;
+		w.constants = 0;
+
+		return luax_register_module(L, w);
 	}
 
 } // sound

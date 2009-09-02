@@ -65,7 +65,7 @@ namespace sdl
 	};
 
 	// List of constants.
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 		{ "key_unknown", 0 },
 		{ "key_first", 0 },
 		{ "key_backspace", 8 },
@@ -232,9 +232,15 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "keyboard";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = 0;
+		w.constants = constants;
 
-		return luax_register_module(L, functions, 0, constants, "keyboard");
+		return luax_register_module(L, w);
 	}
 
 } // sdl

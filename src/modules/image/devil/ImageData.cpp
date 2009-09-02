@@ -99,7 +99,7 @@ namespace devil
 		// Bind the image.
 		ilBindImage(image);
 		// Try to load the data.
-		bool success = ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data);
+		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
 		int err = ilGetError();
 		if (err != IL_NO_ERROR){
 			switch (err) {

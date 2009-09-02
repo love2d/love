@@ -37,20 +37,9 @@ namespace love
 	**/
 	static int w__gc(lua_State * L)
 	{
-		UserData * u = (UserData *)lua_touserdata(L, 1);
+		Proxy * u = (Proxy *)lua_touserdata(L, 1);
 		Object * t = (Object *)u->data;
 		t->release();
-		return 0;
-	}
-
-	/**
-	* Special garbage collector for Modules.
-	**/
-	static int w__Module_gc(lua_State * L)
-	{
-		UserData * u = (UserData *)lua_touserdata(L, 1);
-		Module * t = (Module *)u->data;
-		delete t;
 		return 0;
 	}
 
@@ -115,38 +104,36 @@ namespace love
 		return 0;
 	}
 
-	int luax_register_gc(lua_State * L, Module * m)
+	int luax_register_module(lua_State * L, const WrappedModule & m)
 	{
-		luax_getregistry(L, REGISTRY_GC);
+		// Put a reference to the C++ module in Lua.
+		luax_getregistry(L, REGISTRY_MODULES);
 
-		UserData * u = (UserData *)lua_newuserdata(L, sizeof(UserData));
-		u->own = true;
-		u->data = m;
+		Proxy * p = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
+		p->own = true;
+		p->data = m.module;
+		p->flags = m.flags;
 
-		luaL_newmetatable(L, m->getName());
-		lua_pushcfunction(L, w__Module_gc);
+		luaL_newmetatable(L, m.module->getName());
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -2, "__index");
+		lua_pushcfunction(L, w__gc);
 		lua_setfield(L, -2, "__gc");
+
 		lua_setmetatable(L, -2);
+		lua_setfield(L, -2, m.name); // _modules[name] = proxy
+		lua_pop(L, 1);
 
-		lua_setfield(L, -2, m->getName());
-
-		lua_pop(L, 1); // Registry
-
-		return 0;
-	}
-
-	int luax_register_module(lua_State * L, const luaL_Reg * fn, const lua_CFunction * types, const LuaConstant * constants, const char * name)
-	{
 		// Gets the love table.
 		luax_insistglobal(L, "love");
 
 		// Install constants.
-		if(constants != 0)
+		if(m.constants != 0)
 		{
-			for(int i = 0; constants[i].name != 0; i++)
+			for(int i = 0; m.constants[i].name != 0; i++)
 			{
-				lua_pushinteger(L, constants[i].value);
-				lua_setfield(L, -2, constants[i].name);
+				lua_pushinteger(L, m.constants[i].value);
+				lua_setfield(L, -2, m.constants[i].name);
 			}
 		}
 
@@ -154,14 +141,14 @@ namespace love
 		lua_newtable(L);
 
 		// Register all the functions.
-		luaL_register(L, 0, fn);
+		luaL_register(L, 0, m.functions);
 
 		// Register types.
-		if(types != 0)
-			for(const lua_CFunction * t = types; *t != 0; t++)
+		if(m.types != 0)
+			for(const lua_CFunction * t = m.types; *t != 0; t++)
 				(*t)(L);
 
-		lua_setfield(L, -2, name); // love.graphics = table
+		lua_setfield(L, -2, m.name); // love.graphics = table
 		lua_pop(L, 1); // love
 
 		return 0;
@@ -189,7 +176,9 @@ namespace love
 		lua_pushcfunction(L, w__gc);
 		lua_setfield(L, -2, "__gc");
 
-		luaL_register(L, 0, f);
+		if(f != 0)
+			luaL_register(L, 0, f);
+
 		lua_pop(L, 1); // Pops metatable.
 		return 0;
 	}
@@ -217,7 +206,7 @@ namespace love
 
 	void luax_newtype(lua_State * L, const char * name, bits flags, void * data, bool own)
 	{
-		UserData * u = (UserData *)lua_newuserdata(L, sizeof(UserData));
+		Proxy * u = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
 
 		u->data = data;
 		u->flags = flags;
@@ -232,7 +221,7 @@ namespace love
 		if(lua_isuserdata(L, idx) == 0)
 			return false;
 
-		return ((((UserData *)lua_touserdata(L, idx))->flags & type) == type);
+		return ((((Proxy *)lua_touserdata(L, idx))->flags & type) == type);
 	}
 
 	int luax_getfunction(lua_State * L, const char * mod, const char * fn)
@@ -318,6 +307,8 @@ namespace love
 		{
 		case REGISTRY_GC:
 			return luax_insistlove(L, "_gc");
+		case REGISTRY_MODULES:
+			return luax_insistlove(L, "_modules");
 		default:
 			return luaL_error(L, "Attempted to use invalid registry.");
 		}

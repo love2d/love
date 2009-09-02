@@ -80,9 +80,15 @@ namespace freetype
 			}
 		}
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "font";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = types;
+		w.constants = 0;
 
-		return luax_register_module(L, functions, types, 0, "font");
+		return luax_register_module(L, w);
 	}
 
 } // freetype

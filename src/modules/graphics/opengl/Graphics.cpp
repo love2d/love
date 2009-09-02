@@ -22,10 +22,6 @@
 
 // LOVE
 #include <common/config.h>
-#include <image/devil/Image.h>
-
-// IL
-#include <IL/ilu.h>
 
 namespace love
 {
@@ -1177,70 +1173,15 @@ namespace opengl
 		return 0;
 	}
 
-	love::image::ImageData * Graphics::newScreenshot(lua_State * L)
+	love::image::ImageData * Graphics::newScreenshot(love::image::Image * image)
 	{
-		
 		int w = getWidth();
 		int h = getHeight();
-		
-		love::image::devil::Image * i = new love::image::devil::Image();
-		love::image::ImageData * img = i->newImageData(w, h);
 		
 		GLubyte * pixels = new GLubyte[4*w*h];
-		
 		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-		
-		try {
-			img = i->newImageData(w, h, pixels);
-		} catch (Exception & e) {
-			luaL_error(L, e.what());
-		}
-		
-		// the screenshot is upside down, let's fix this
-		iluFlipImage();
-		
-		delete [] pixels;
-		
-		return img;
-		
-		// TODO: update this.
-		/*
-		int w = getWidth();
-		int h = getHeight();
 
-		// Declare some storage.
-		GLubyte * pixels = new GLubyte[3*w*h];
-		GLubyte * screenshot = new GLubyte[3*w*h];
-		ILuint image;
-
-		// Read the pixels on the screen.
-		glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-
-		ilGenImages(1, &image);
-		ilBindImage(image);
-		ilTexImage(w, h, 1, 3, IL_RGB, IL_UNSIGNED_BYTE, (ILvoid*)pixels);
-
-		delete [] pixels;
-
-		// Create the image.
-		ilSaveL(IL_BMP, screenshot, 3*w*h);
-
-		bool success = true;
-
-		if(file->open())
-		{
-			if(!file->write((const char *)screenshot, 3*w*h))
-				success = false;
-			file->close();
-		}
-		else
-			success = false;
-
-		delete [] screenshot;
-		ilDeleteImages(1, &image);
-		*/
-
-		return false;
+		return image->newImageData(w, h, (void*)pixels);
 	}
 
 	void Graphics::push()

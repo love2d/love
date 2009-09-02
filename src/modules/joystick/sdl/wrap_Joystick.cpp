@@ -146,7 +146,7 @@ namespace sdl
 	};
 
 	// List of constants.
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 		{ "joystick_axis_horizontal", Joystick::JOYSTICK_AXIS_HORIZONTAL },
 		{ "joystick_axis_vertical", Joystick::JOYSTICK_AXIS_VERITCAL },
 
@@ -176,9 +176,16 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, instance);
 
-		return luax_register_module(L, functions, 0, constants, "joystick");
+		WrappedModule w;
+		w.module = instance;
+		w.name = "joystick";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = 0;
+		w.constants = constants;
+
+		return luax_register_module(L, w);
 	}
 
 } // sdl

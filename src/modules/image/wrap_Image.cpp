@@ -92,9 +92,15 @@ namespace image
 			}
 		}
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "image";
+		w.flags = MODULE_IMAGE_T;
+		w.functions = functions;
+		w.types = types;
+		w.constants = 0;
 
-		return luax_register_module(L, functions, types, 0, "image");
+		return luax_register_module(L, w);
 	}
 
 } // image

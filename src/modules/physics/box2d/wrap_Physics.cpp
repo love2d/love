@@ -237,7 +237,7 @@ namespace box2d
 	};
 
 	// List of constants.
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 		{ "shape_circle", Shape::SHAPE_CIRCLE },
 		{ "shape_polygon", Shape::SHAPE_POLYGON },
 
@@ -264,7 +264,15 @@ namespace box2d
 			}
 		}
 
-		return luax_register_module(L, functions, types, constants, "physics");
+		WrappedModule w;
+		w.module = instance;
+		w.name = "physics";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = types;
+		w.constants = constants;
+
+		return luax_register_module(L, w);
 	}
 
 } // box2d

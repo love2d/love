@@ -62,7 +62,7 @@ namespace posix
 		{ 0, 0 }
 	};
 	
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 		{ "signal_abrt", SIGABRT },
 		{ "signal_fpe", SIGFPE },
 		{ "signal_ill", SIGILL },
@@ -86,9 +86,16 @@ namespace posix
 			}
 		}
 
-		luax_register_gc(L, instance);
 
-		return luax_register_module(L, functions, 0, constants, "signal");
+		WrappedModule w;
+		w.module = instance;
+		w.name = "signal";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = 0;
+		w.constants = constants;
+
+		return luax_register_module(L, w);
 	}
 
 } // posix

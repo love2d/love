@@ -72,7 +72,7 @@ namespace sdl
 	};
 
 	// List of constants.
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 		{ "event_keypressed", Event::EVENT_KEYDOWN },
 		{ "event_keyreleased", Event::EVENT_KEYUP },
 		{ "event_mousepressed", Event::EVENT_MOUSEBUTTONDOWN },
@@ -97,9 +97,15 @@ namespace sdl
 			}
 		}
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "event";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = 0;
+		w.constants = constants;
 
-		return luax_register_module(L, functions, 0, constants, "event");
+		return luax_register_module(L, w);
 	}
 
 } // sdl

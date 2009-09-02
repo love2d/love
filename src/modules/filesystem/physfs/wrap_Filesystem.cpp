@@ -252,7 +252,7 @@ namespace physfs
 	};
 
 	// List of constants.
-	static const LuaConstant constants[] = {
+	static const Constant constants[] = {
 		{ "file_closed", File::CLOSED },
 		{ "file_read", File::READ },
 		{ "file_write", File::WRITE },
@@ -275,9 +275,15 @@ namespace physfs
 			}
 		}
 
-		luax_register_gc(L, instance);
+		WrappedModule w;
+		w.module = instance;
+		w.name = "filesystem";
+		w.flags = MODULE_FILESYSTEM_T;
+		w.functions = functions;
+		w.types = types;
+		w.constants = constants;
 
-		return luax_register_module(L, functions, types, constants, "filesystem");
+		return luax_register_module(L, w);
 	}
 
 } // physfs
