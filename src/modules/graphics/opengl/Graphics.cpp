@@ -1178,10 +1178,29 @@ namespace opengl
 		int w = getWidth();
 		int h = getHeight();
 		
-		GLubyte * pixels = new GLubyte[4*w*h];
+		int row = 4*w;
+		
+		int size = row*h;
+		
+		GLubyte * pixels = new GLubyte[size];
+		GLubyte * screenshot = new GLubyte[size];
+		
 		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		
+		// OpenGL sucks and reads pixels from the lower-left. Let's fix that.
+		
+		GLubyte *src = pixels - row, *dst = screenshot + size;
+		
+		for (int i = 0; i < h; ++i) {
+			memcpy(dst-=row, src+=row, row);
+		}
 
-		return image->newImageData(w, h, (void*)pixels);
+		love::image::ImageData * img = image->newImageData(w, h, (void*)screenshot);
+		
+		delete [] pixels;
+		delete [] screenshot;
+		
+		return img;
 	}
 
 	void Graphics::push()
