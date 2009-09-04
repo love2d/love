@@ -23,6 +23,7 @@
 
 // LOVE
 #include "Image.h"
+#include "EncodedImageData.h"
 #include "wrap_ImageData.h"
 
 namespace love
@@ -31,6 +32,7 @@ namespace image
 {
 	int w_getFormats(lua_State * L);
 	int w_newImageData(lua_State * L);
+	int w_newEncodedImageData(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_image(lua_State * L);
 
 } // image

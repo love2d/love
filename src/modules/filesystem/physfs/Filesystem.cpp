@@ -274,10 +274,10 @@ namespace physfs
 		// on-the-fly, or passed as a parameter.
 		File * file;
 		
-		// We know for sure that the second parameter must be a 
-		// a string, so let's check that first.
-		if(!lua_isstring(L, 2))
-			return luaL_error(L, "Second argument must be a string.");
+		// We know for sure that we need a second parameter, so 
+		// let's check that first.
+		if(lua_isnoneornil(L, 2))
+			return luaL_error(L, "Second argument needed.");
 
 		if(lua_isstring(L, 1))
 		{
@@ -302,7 +302,16 @@ namespace physfs
 		}
 
 		size_t length = 0;
-		const char * input = lua_tolstring(L, 2, &length);
+		const char * input;
+		if(lua_isstring(L, 2)) {
+			input = lua_tolstring(L, 2, &length);
+		} else if (luax_istype(L, 2, DATA_T)) {
+			love::Data * data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
+			length = data->getSize();
+			input = (char *)data->getData();
+		} else {
+			return luaL_error(L, "Expected string or data for argument #2.");
+		}
 
 		// Get how much we should write. Length of string default.
 		length = luaL_optint(L, 3, length);

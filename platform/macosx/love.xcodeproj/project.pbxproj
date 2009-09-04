@@ -193,6 +193,7 @@
 		A946D85610425002002BF36C /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8F10420ACC007D418B /* Timer.cpp */; };
 		A946D8571042500F002BF36C /* resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B9410420ACC007D418B /* resources.cpp */; };
 		A946D8A3104254C4002BF36C /* libtcc.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AD710420AC5007D418B /* libtcc.c */; };
+		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
 		A9D8FC0F1043EBEC0063561F /* libmodplug.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
@@ -639,6 +640,8 @@
 		A93E6E4810420B4A007D418B /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		A93E6E5210420B57007D418B /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
 		A93E6E5310420B57007D418B /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
+		A98D913E10507BF9008E03F2 /* EncodedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodedImageData.h; sourceTree = "<group>"; };
+		A98D914310507C97008E03F2 /* EncodedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EncodedImageData.cpp; sourceTree = "<group>"; };
 		A9B4BA981045937F001DBC80 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
@@ -1093,6 +1096,8 @@
 			isa = PBXGroup;
 			children = (
 				A93E6AA810420AC3007D418B /* devil */,
+				A98D913E10507BF9008E03F2 /* EncodedImageData.h */,
+				A98D914310507C97008E03F2 /* EncodedImageData.cpp */,
 				A93E6AAD10420AC3007D418B /* Image.h */,
 				A93E6AAE10420AC3007D418B /* ImageData.cpp */,
 				A93E6AAF10420AC3007D418B /* ImageData.h */,
@@ -1789,6 +1794,7 @@
 				A9255DEC1043188D00BA1496 /* SDLMain.m in Sources */,
 				A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */,
 				A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */,
+				A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

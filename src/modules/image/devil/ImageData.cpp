@@ -164,6 +164,54 @@ namespace devil
 		pixel * pixels = (pixel *)getData();
 		return pixels[y*width+x];
 	}
+	
+	love::image::EncodedImageData * ImageData::encodeImageData(love::image::ImageData * d, love::image::Image::ImageFormat f) {
+		ILubyte * data;
+		ILuint w = d->getWidth();
+		ILuint h = d->getHeight();
+		int headerLen, bpp;
+		switch (f) {
+			default: // since we only support one format
+				headerLen = 18;
+				bpp = 3;
+				int size = h * w * bpp;
+				data = new ILubyte[size + headerLen];
+				// here's the header for the Targa file format.
+				data[0] = 0; // ID field size
+				data[1] = 0; // colormap type
+				data[2] = 2; // image type
+				data[3] = data[4] = 0; // colormap start
+				data[5] = data[6] = 0; // colormap length
+				data[7] = 32; // colormap bits
+				data[8] = data[9] = 0; // x origin
+				data[10] = data[11] = 0; // y origin
+				// Targa is little endian, so:
+				data[12] = w & 255; // least significant byte of width
+				data[13] = w >> 8; // most significant byte of width
+				data[14] = h & 255; // least significant byte of height
+				data[15] = h >> 8; // most significant byte of height
+				data[16] = bpp * 8; // bits per pixel
+				data[17] = 0; // descriptor bits
+				// header done. write the pixel data to TGA:
+				data += headerLen;
+				d->getData(); // bind the imagedata's image
+				ilCopyPixels(0,0,0,w,h,1,IL_BGR,IL_UNSIGNED_BYTE,data); // convert the pixels to BGR (remember, little-endian) and copy them to data
+				
+				// It's Targa, so we have to flip the image.
+				int row = w * bpp;
+				ILubyte * temp = new ILubyte[row];
+				ILubyte * src = data - row;
+				ILubyte * dst = data + size;
+				for (int i = 0; i < (h >> 1); i++) {
+					memcpy(temp,src+=row,row);
+					memcpy(src,dst-=row,row);
+					memcpy(dst,temp,row);
+				}
+				data -= headerLen;
+				delete [] temp;
+				return new love::image::EncodedImageData(data, f, size + headerLen);
+		}
+	}
 
 } // devil
 } // image
