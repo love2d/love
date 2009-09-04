@@ -20,6 +20,7 @@
 
 #include "wrap_File.h"
 
+#include <common/Data.h>
 #include <common/Exception.h>
 
 namespace love
@@ -102,9 +103,19 @@ namespace physfs
 			}
 			
 		}
+		else if( luax_istype(L, 2, DATA_T)) {
+			try
+			{
+				love::Data * data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
+				result = file->write(data, luaL_optint(L, 3, data->getSize()));
+			} catch(Exception e)
+			{
+				return luaL_error(L, e.what());
+			}
+		}
 		else
 		{
-			return luaL_error(L, "String expected.");
+			return luaL_error(L, "String or data expected.");
 		}
 		lua_pushboolean(L, result);
 		return 1;
