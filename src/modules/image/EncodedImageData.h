@@ -55,7 +55,7 @@ namespace love
 				* Get the format the data is encoded in.
 				**/
 				
-				Image::ImageFormat EncodedImageData::getFormat();
+				Image::ImageFormat getFormat();
 				
 			private:
 				

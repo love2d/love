@@ -30,6 +30,9 @@
 // DevIL
 #include <IL/il.h>
 
+// String
+#include <string.h>
+
 namespace love
 {	
 namespace image
