@@ -89,6 +89,12 @@ namespace image
 		luaopen_imagedata,
 		0
 	};
+	
+	static const Constant constants[] = {
+		{ "format_tga", Image::FORMAT_TGA },
+		{ "format_bmp", Image::FORMAT_BMP },
+		{ 0, 0 }
+	};
 
 	int luaopen_love_image(lua_State * L)
 	{
@@ -110,7 +116,7 @@ namespace image
 		w.flags = MODULE_IMAGE_T;
 		w.functions = functions;
 		w.types = types;
-		w.constants = 0;
+		w.constants = constants;
 
 		return luax_register_module(L, w);
 	}
