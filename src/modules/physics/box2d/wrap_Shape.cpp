@@ -144,6 +144,34 @@ namespace box2d
 		lua_pushinteger(L, v[2]);
 		return 3;
 	}
+	
+	int w_Shape_setCategory(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
+		return t->setCategory(L);
+	}
+	
+	int w_Shape_getCategory(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
+		return t->getCategory(L);
+	}
+
+	int w_Shape_setMask(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
+		return t->setMask(L);
+	}
+
+	int w_Shape_getMask(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
+		return t->getMask(L);
+	}
 
 	int w_Shape_setData(lua_State * L)
 	{
@@ -180,6 +208,10 @@ namespace box2d
 		{ "testSegment", w_Shape_testSegment },
 		{ "setFilterData", w_Shape_setFilterData },
 		{ "getFilterData", w_Shape_getFilterData },
+		{ "setCategory", w_Shape_setCategory },
+		{ "getCategory", w_Shape_getCategory },
+		{ "setMask", w_Shape_setMask },
+		{ "getMask", w_Shape_getMask },
 		{ "setData", w_Shape_setData },
 		{ "getData", w_Shape_getData },
 		{ "getBoundingBox", w_Shape_getBoundingBox },
