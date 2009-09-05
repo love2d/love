@@ -61,8 +61,8 @@ namespace box2d
 		World * world = luax_checktype<World>(L, 1, "World", PHYSICS_WORLD_T);
 		float x = (float)luaL_optnumber(L, 2, 0.0);
 		float y = (float)luaL_optnumber(L, 3, 0.0);
-		float m = (float)luaL_optnumber(L, 4, 1.0);
-		float i = (float)luaL_optnumber(L, 5, 1.0);
+		float m = (float)luaL_optnumber(L, 4, 0.0);
+		float i = (float)luaL_optnumber(L, 5, 0.0);
 		Body * body = instance->newBody(world, x, y, m, i);
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
