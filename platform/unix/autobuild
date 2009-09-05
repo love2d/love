@@ -125,10 +125,9 @@ cp ../../src/love $binary
 
 # Deal with uploading.
 if [ "$1" == "build" ]; then
-	pass=`cat pwtehlol`
-	ftp-upload -u tehloejc --password $pass -h tehlol.com -d public_html/love2d/builds/ $deb
-	ftp-upload -u tehloejc --password $pass -h tehlol.com -d public_html/love2d/builds/ $tar
-	ftp-upload -u tehloejc --password $pass -h tehlol.com -d public_html/love2d/builds/ $binary
+	curl -F build=@$deb -F press=ok http://love2d.org/builds/upload.php?upload
+	curl -F build=@$tar -F press=ok http://love2d.org/builds/upload.php?upload
+	curl -F build=@$binary -F press=ok http://love2d.org/builds/upload.php?upload
 fi
 
 if [ "$1" == "release" ]; then
