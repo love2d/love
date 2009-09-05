@@ -206,6 +206,14 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\..\..\src\modules\image\EncodedImageData.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\image\EncodedImageData.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\..\src\modules\image\Image.h"
 			>
 		</File>

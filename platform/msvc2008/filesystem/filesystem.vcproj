@@ -175,6 +175,22 @@
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\File.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\File.h"
@@ -183,6 +199,22 @@
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\Filesystem.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\Filesystem.h"
@@ -191,6 +223,22 @@
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_File.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_File.h"
@@ -199,6 +247,22 @@
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_FileData.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_FileData.h"
@@ -207,6 +271,22 @@
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\filesystem\physfs\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\wrap_Filesystem.h"
@@ -220,6 +300,22 @@
 		<File
 			RelativePath="..\..\..\src\modules\filesystem\FileData.cpp"
 			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\filesystem\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\filesystem\"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\..\..\src\modules\filesystem\FileData.h"

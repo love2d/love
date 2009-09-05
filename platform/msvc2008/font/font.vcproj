@@ -183,6 +183,14 @@
 						ObjectFile="$(IntDir)\font\freetype\"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\font\freetype\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\font\freetype\Font.h"
@@ -193,6 +201,14 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\font\freetype\"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -215,6 +231,14 @@
 						ObjectFile="$(IntDir)\font\freetype\"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\font\freetype\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\font\freetype\wrap_Font.h"
@@ -229,7 +253,15 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\font\freetype\"
+					ObjectFile="$(IntDir)\font\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\font\"
 				/>
 			</FileConfiguration>
 		</File>
@@ -245,7 +277,15 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\font\freetype\"
+					ObjectFile="$(IntDir)\font\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\font\"
 				/>
 			</FileConfiguration>
 		</File>
@@ -261,7 +301,15 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\font\freetype\"
+					ObjectFile="$(IntDir)\font\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\font\"
 				/>
 			</FileConfiguration>
 		</File>
@@ -277,7 +325,15 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\font\freetype\"
+					ObjectFile="$(IntDir)\font\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\font\"
 				/>
 			</FileConfiguration>
 		</File>
@@ -293,7 +349,15 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\font\freetype\"
+					ObjectFile="$(IntDir)\font\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\font\"
 				/>
 			</FileConfiguration>
 		</File>

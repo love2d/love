@@ -171,6 +171,7 @@ namespace devil
 		ILuint h = d->getHeight();
 		int headerLen, bpp;
 		switch (f) {
+			case Image::FORMAT_TGA: // MSVC issues warning when there's no case statement.
 			default: // since we only support one format
 				headerLen = 18;
 				bpp = 3;
@@ -202,7 +203,7 @@ namespace devil
 				ILubyte * temp = new ILubyte[row];
 				ILubyte * src = data - row;
 				ILubyte * dst = data + size;
-				for (int i = 0; i < (h >> 1); i++) {
+				for (unsigned i = 0; i < (h >> 1); i++) {
 					memcpy(temp,src+=row,row);
 					memcpy(src,dst-=row,row);
 					memcpy(dst,temp,row);

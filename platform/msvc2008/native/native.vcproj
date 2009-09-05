@@ -183,6 +183,14 @@
 						ObjectFile="$(IntDir)\native\tcc\"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\native\tcc\"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\native\tcc\api.h"
@@ -233,6 +241,14 @@
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\native\tcc\libtcc\"
 							WarningLevel="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\native\tcc\libtcc\"
 						/>
 					</FileConfiguration>
 				</File>

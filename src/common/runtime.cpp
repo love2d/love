@@ -37,9 +37,10 @@ namespace love
 	**/
 	static int w__gc(lua_State * L)
 	{
-		Proxy * u = (Proxy *)lua_touserdata(L, 1);
-		Object * t = (Object *)u->data;
-		t->release();
+		Proxy * p = (Proxy *)lua_touserdata(L, 1);
+		Object * t = (Object *)p->data;
+		if(p->own)
+			t->release();
 		return 0;
 	}
 
