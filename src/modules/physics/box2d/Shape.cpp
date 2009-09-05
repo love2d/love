@@ -159,6 +159,67 @@ namespace box2d
 		v[1] = (int)f.maskBits;
 		v[2] = f.groupIndex;
 	}
+	
+	int Shape::setCategory(lua_State * L)
+	{
+		b2FilterData f = shape->GetFilterData();
+		f.categoryBits = (uint16)getBits(L);
+		shape->SetFilterData(f);
+		shape->GetBody()->GetWorld()->Refilter(shape);
+		return 0;
+	}
+
+	int Shape::setMask(lua_State * L)
+	{
+		b2FilterData f = shape->GetFilterData();
+		f.maskBits = ~(uint16)getBits(L);
+		shape->SetFilterData(f);
+		shape->GetBody()->GetWorld()->Refilter(shape);
+		return 0;
+	}
+
+	int Shape::getCategory(lua_State * L)
+	{
+		return pushBits(L, shape->GetFilterData().categoryBits);
+	}
+
+	int Shape::getMask(lua_State * L)
+	{
+		return pushBits(L, ~(shape->GetFilterData().maskBits));
+	}
+	
+	uint16 Shape::getBits(lua_State * L)
+	{
+		// Get number of args.
+		int argc = lua_gettop(L);
+
+		// The new bitset.
+		std::bitset<16> b;
+
+		for(int i = 1;i<=argc;i++)
+		{
+			size_t bpos = (size_t)(lua_tointeger(L, i)-1);
+			if(bpos < 0 || bpos > 16) 
+				return luaL_error(L, "Values must be in range 1-16.");
+			b.set(bpos, true);
+		}
+		
+		return (uint16)b.to_ulong();
+	}
+
+	int Shape::pushBits(lua_State * L, uint16 bits)
+	{
+		// Create a bitset.
+		std::bitset<16> b((unsigned long)bits);
+
+		// Push all set bits.
+		for(int i = 0;i<16;i++)
+			if(b.test(i))
+				lua_pushinteger(L, i+1);
+
+		// Count number of set bits.
+		return (int)b.count();
+	}
 
 	int Shape::setData(lua_State * L)
 	{

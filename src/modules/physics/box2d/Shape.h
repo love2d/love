@@ -167,6 +167,13 @@ namespace box2d
 		* category (16-bits), mask (16-bits) and group (32-bits/int).
 		**/
 		void getFilterData(int * v);
+		
+		int setCategory(lua_State * L);
+		int setMask(lua_State * L);
+		int getCategory(lua_State * L);
+		int getMask(lua_State * L);
+		uint16 getBits(lua_State * L);
+		int pushBits(lua_State * L, uint16 bits);
 
 		/**
 		* This function stores an in-C reference to
