@@ -168,7 +168,7 @@ namespace devil
 	love::image::EncodedImageData * ImageData::encodeImageData(love::image::ImageData * d, love::image::Image::ImageFormat f) {
 		ILubyte * data;
 		ILuint w = d->getWidth();
-		ILuint h = d->getHeight();
+		int h = d->getHeight(); // has to be a signed int so we can make it negative for BMPs
 		int headerLen, bpp, row, size, padding, filesize;
 		switch (f) {
 			case Image::FORMAT_BMP:
