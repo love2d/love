@@ -169,20 +169,20 @@ namespace devil
 		ILubyte * data;
 		ILuint w = d->getWidth();
 		ILuint h = d->getHeight();
-		int headerLen, bpp, row, size;
+		int headerLen, bpp, row, size, padding, filesize;
 		switch (f) {
 			case Image::FORMAT_BMP:
 				headerLen = 54;
 				bpp = 3;
 				row = w * bpp;
-				int padding = row & 3;
+				padding = row & 3;
 				size = h * (row + padding);
-				int filesize = size + headerLen;
+				filesize = size + headerLen;
 				data = new ILubyte[filesize];
 				// Here's the header for the BMP file format.
 				data[0] = 66; // "B"
 				data[1] = 77; // "M"
-				data[2] = filesize; // size of the file
+				data[2] = filesize & 255; // size of the file
 				data[3] = (filesize >> 8) & 255;
 				data[4] = (filesize >> 16) & 255;
 				data[5] = (filesize >> 24) & 255;
@@ -195,11 +195,11 @@ namespace devil
 				data[15] = (data[14] >> 8) & 255;
 				data[16] = (data[14] >> 16) & 255;
 				data[17] = (data[14] >> 24) & 255;
-				data[18] = w; // width of the bitmap
+				data[18] = w & 255; // width of the bitmap
 				data[19] = (w >> 8) & 255;
 				data[20] = (w >> 16) & 255;
 				data[21] = (w >> 24) & 255;
-				data[22] = -h; // negative height of the bitmap - used so we don't have to flip the data
+				data[22] = -h & 255; // negative height of the bitmap - used so we don't have to flip the data
 				data[23] = ((-h) >> 8) & 255;
 				data[24] = ((-h) >> 16) & 255;
 				data[25] = ((-h) >> 24) & 255;
@@ -212,11 +212,11 @@ namespace devil
 				data[35] = (data[34] >> 8) & 255;
 				data[36] = (data[34] >> 16) & 255;
 				data[37] = (data[34] >> 24) & 255;
-				data[38] = 2835; // horizontal pixels per meter
+				data[38] = 2835 & 255; // horizontal pixels per meter
 				data[39] = (2835 >> 8) & 255;
 				data[40] = (2835 >> 16) & 255;
 				data[41] = (2835 >> 24) & 255;
-				data[42] = 2835; // vertical pixels per meter
+				data[42] = 2835 & 255; // vertical pixels per meter
 				data[43] = data[39];
 				data[44] = data[40];
 				data[45] = data[41];
