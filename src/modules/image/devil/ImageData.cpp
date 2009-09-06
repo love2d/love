@@ -192,9 +192,9 @@ namespace devil
 				data[12] = (headerLen >> 16) & 255;
 				data[13] = (headerLen >> 24) & 255;
 				data[14] = headerLen - 14; // length of this part of the header
-				data[15] = (data[14] >> 8) & 255;
-				data[16] = (data[14] >> 16) & 255;
-				data[17] = (data[14] >> 24) & 255;
+				data[15] = ((headerLen - 14) >> 8) & 255;
+				data[16] = ((headerLen - 14) >> 16) & 255;
+				data[17] = ((headerLen - 14) >> 24) & 255;
 				data[18] = w & 255; // width of the bitmap
 				data[19] = (w >> 8) & 255;
 				data[20] = (w >> 16) & 255;
@@ -209,9 +209,9 @@ namespace devil
 				data[29] = 0;
 				data[30] = data[31] = data[32] = data[33] = 0; // RGB - no compression
 				data[34] = (row + padding) * h; // length of the pixel data
-				data[35] = (data[34] >> 8) & 255;
-				data[36] = (data[34] >> 16) & 255;
-				data[37] = (data[34] >> 24) & 255;
+				data[35] = (((row + padding) * h) >> 8) & 255;
+				data[36] = (((row + padding) * h) >> 16) & 255;
+				data[37] = (((row + padding) * h) >> 24) & 255;
 				data[38] = 2835 & 255; // horizontal pixels per meter
 				data[39] = (2835 >> 8) & 255;
 				data[40] = (2835 >> 16) & 255;
