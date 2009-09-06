@@ -44,6 +44,12 @@ namespace love
 		return 0;
 	}
 
+	static int w__tostring(lua_State * L)
+	{
+		lua_pushvalue(L, lua_upvalueindex(1));
+		return 1;
+	}
+
 	Reference * luax_refif(lua_State * L, int type)
 	{
 		Reference * r = 0;
@@ -176,6 +182,11 @@ namespace love
 		// setup gc
 		lua_pushcfunction(L, w__gc);
 		lua_setfield(L, -2, "__gc");
+
+		// Add tostring function.
+		lua_pushstring(L, tname);
+		lua_pushcclosure(L, w__tostring, 1);
+		lua_setfield(L, -2, "__tostring");
 
 		if(f != 0)
 			luaL_register(L, 0, f);
