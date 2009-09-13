@@ -124,8 +124,10 @@ namespace openal
 
 	void Audio::play(love::audio::Music * music)
 	{
-		Source * source = new Source(pool, music->clone());
+		love::audio::Music *cloned = music->clone();
+		Source * source = new Source(pool, cloned);
 		play(source);
+		cloned->release();
 		source->release();
 	}
 
