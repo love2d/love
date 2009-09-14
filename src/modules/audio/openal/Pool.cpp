@@ -106,9 +106,6 @@ namespace openal
 
 			// Insert into map of playing sources.
 			playing.insert(std::pair<love::audio::Source *, ALuint>(source, s));
-
-			// Retain the source.
-			source->retain();
 		}
 		UNLOCK(mutex);
 
@@ -124,7 +121,6 @@ namespace openal
 		{
 			available.push(s);
 			playing.erase(source);
-			source->release();
 		}
 		UNLOCK(mutex);
 	}

@@ -43,6 +43,7 @@ namespace openal
 
 	Source::~Source()
 	{
+		stop();
 	}
 
 	void Source::play()
@@ -74,6 +75,7 @@ namespace openal
 			alSourceStop(source);
 			audible->stop(this);
 			source = 0;
+			pool->release(this);
 		}
 	}
 
@@ -113,6 +115,12 @@ namespace openal
 
 	void Source::update()
 	{
+		if(isFinished())
+		{
+			stop();
+			return;
+		}
+
 		if(audible != 0)
 			audible->update(this);
 	}
