@@ -639,6 +639,7 @@ function love.errhand(msg)
 	end
 	
 	-- Load.
+	love.graphics.setScissor()
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(love._vera_ttf, 14)
 	love.graphics.setFont(font)
