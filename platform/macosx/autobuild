@@ -43,8 +43,8 @@ cp love.dmg $outdmg
 # Deal with uploading.
 if [ "$1" == "build" ]; then
 	pass=`cat pwtehlol`
-	ftp -u ftp://tehloejc:$pass@tehlol.com/public_html/love2d/builds/$outdmg $outdmg
-	ftp -u ftp://tehloejc:$pass@tehlol.com/public_html/love2d/builds/$outlog $outlog
+	ftp -u ftp://tehloejc:$pass@tehlol.com/public_html/love2d/builds/files/$outdmg $outdmg
+	ftp -u ftp://tehloejc:$pass@tehlol.com/public_html/love2d/builds/files/$outlog $outlog
 fi
 
 if [ "$1" == "release" ]; then
