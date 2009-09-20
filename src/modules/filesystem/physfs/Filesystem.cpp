@@ -177,7 +177,7 @@ namespace physfs
 #ifdef WINDOWS
 		return getenv("APPDATA");
 #elif defined(LOVE_MACOSX)
-		std::string udir(getUserDirectory());
+		std::string udir = getUserDirectory();
 		udir.append("/Library/Application Support");
 		return udir.c_str();
 #else

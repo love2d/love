@@ -49,7 +49,11 @@
 #	define LOVE_PATH_SEPARATOR "/"
 #	define LOVE_MAX_PATH _MAX_PATH
 #else
-#	define LOVE_APPDATA_FOLDER ".love"
+#	ifdef LOVE_MACOSX
+#		define LOVE_APPDATA_FOLDER "LOVE"
+#	else
+#		define LOVE_APPDATA_FOLDER ".love"
+#	endif
 #	define LOVE_PATH_SEPARATOR "/"
 #	define LOVE_MAX_PATH MAXPATHLEN
 #endif
