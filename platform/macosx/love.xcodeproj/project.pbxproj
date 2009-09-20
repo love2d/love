@@ -10,8 +10,6 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		A904A5FD1043A2BE005228C3 /* libmpg123.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A904A5FC1043A2BE005228C3 /* libmpg123.dylib */; };
 		A904A6221043A72A005228C3 /* libmpg123.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A904A5FC1043A2BE005228C3 /* libmpg123.dylib */; };
-		A904A6431043AC66005228C3 /* libphysfs.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A904A6421043AC66005228C3 /* libphysfs.dylib */; };
-		A904A64A1043ACB5005228C3 /* libphysfs.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A904A6421043AC66005228C3 /* libphysfs.dylib */; };
 		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
 		A9255DD21043183600BA1496 /* SDL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
 		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
@@ -196,6 +194,8 @@
 		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
+		A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
+		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9D8FC0F1043EBEC0063561F /* libmodplug.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
 		A9DE839F1043D81A00567BA4 /* libmodplug.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
 		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
@@ -209,8 +209,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */,
 				A9DE839F1043D81A00567BA4 /* libmodplug.dylib in Copy Frameworks */,
-				A904A64A1043ACB5005228C3 /* libphysfs.dylib in Copy Frameworks */,
 				A904A6221043A72A005228C3 /* libmpg123.dylib in Copy Frameworks */,
 				A9255F8210432C3E00BA1496 /* libltdl.3.dylib in Copy Frameworks */,
 				A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */,
@@ -230,7 +230,6 @@
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A904A5FC1043A2BE005228C3 /* libmpg123.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpg123.dylib; sourceTree = "<group>"; };
-		A904A6421043AC66005228C3 /* libphysfs.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libphysfs.dylib; sourceTree = "<group>"; };
 		A9255DEA1043188D00BA1496 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = "<group>"; };
 		A9255DEB1043188D00BA1496 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
@@ -646,6 +645,7 @@
 		A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ParticleSystem.cpp; sourceTree = "<group>"; };
+		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
 		A9DE839E1043D81A00567BA4 /* libmodplug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmodplug.dylib; sourceTree = "<group>"; };
 		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
@@ -666,8 +666,8 @@
 				A93E6E5510420B57007D418B /* Lua.framework in Frameworks */,
 				A9255F52104324D700BA1496 /* Ogg.framework in Frameworks */,
 				A904A5FD1043A2BE005228C3 /* libmpg123.dylib in Frameworks */,
-				A904A6431043AC66005228C3 /* libphysfs.dylib in Frameworks */,
 				A9D8FC0F1043EBEC0063561F /* libmodplug.dylib in Frameworks */,
+				A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -677,8 +677,8 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A9D307E9106635C3004FEDF8 /* physfs.framework */,
 				A9255F51104324D700BA1496 /* Ogg.framework */,
-				A904A6421043AC66005228C3 /* libphysfs.dylib */,
 				A9DE839E1043D81A00567BA4 /* libmodplug.dylib */,
 				A904A5FC1043A2BE005228C3 /* libmpg123.dylib */,
 				A9255F421043240F00BA1496 /* IL.framework */,
