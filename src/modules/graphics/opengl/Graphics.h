@@ -284,7 +284,7 @@ namespace opengl
 		* Sets the current font.
 		* @parm font A Font object.
 		**/
-		void setFont( Font * font );
+		void setFont(Font * font);
 
 		/**
 		* Sets a default font. The font is
@@ -293,7 +293,7 @@ namespace opengl
 		* @param data Data 
 		* @param size The size of the font.
 		**/
-		void setFont( Data * data, int size = 12);
+		void setFont(Data * data, int size = 12);
 
 		/**
 		* Gets the current Font, or nil if none.
@@ -303,40 +303,40 @@ namespace opengl
 		/**
 		* Sets the current blend mode.
 		**/
-		void setBlendMode( int mode );
+		void setBlendMode(BlendMode mode);
 
 		/**
 		* Sets the current color mode.
 		**/
-		void setColorMode ( int mode );
+		void setColorMode (ColorMode mode);
 
 		/**
 		* Gets the current blend mode.
 		**/
-		int getBlendMode();
+		BlendMode getBlendMode();
 
 		/**
 		* Gets the current color mode.
 		**/
-		int getColorMode();
+		ColorMode getColorMode();
 
 		/**
 		* Sets the line width.
 		* @param width The new width of the line.
 		**/
-		void setLineWidth( float width );
+		void setLineWidth(float width);
 
 		/**
 		* Sets the line style.
 		* @param style LINE_ROUGH or LINE_SMOOTH.
 		**/
-		void setLineStyle( int style );
+		void setLineStyle(LineStyle style);
 
 		/**
 		* Sets the type of line used to draw primitives.
 		* A shorthand for setLineWidth and setLineStyle.
 		**/
-		void setLine( float width, int style = 0 );
+		void setLine(float width, LineStyle style);
 
 		/**
 		* Disables line stippling.
@@ -356,7 +356,7 @@ namespace opengl
 		/**
 		* Gets the line style.
 		**/
-		int getLineStyle();
+		LineStyle getLineStyle();
 
 		/**
 		* Gets the line stipple pattern and repeat factor.
@@ -368,18 +368,18 @@ namespace opengl
 		/**
 		* Sets the size of points.
 		**/
-		void setPointSize( float size );
+		void setPointSize(float size);
 
 		/**
 		* Sets the style of points.
 		* @param style POINT_SMOOTH or POINT_ROUGH.
 		**/
-		void setPointStyle( int style );
+		void setPointStyle(PointStyle style);
 
 		/**
 		* Shorthand for setPointSize and setPointStyle.
 		**/
-		void setPoint( float size, int style );
+		void setPoint(float size, PointStyle style);
 
 		/**
 		* Gets the point size.
@@ -389,7 +389,7 @@ namespace opengl
 		/**
 		* Gets the point style.
 		**/
-		int getPointStyle();
+		PointStyle getPointStyle();
 
 		/**
 		* Gets the maximum point size supported. 
@@ -404,7 +404,7 @@ namespace opengl
 		* @param x The x-coordiante.
 		* @param y The y-coordiante.
 		**/
-		void print( const char * str, float x, float y );
+		void print(const char * str, float x, float y);
 
 		/**
 		* Draws text at the specified coordinates, with rotation.
@@ -412,7 +412,7 @@ namespace opengl
 		* @param y The y-coordinate.
 		* @param angle The amount of rotation.
 		**/
-		void print( const char * str, float x, float y , float angle );
+		void print(const char * str, float x, float y , float angle);
 
 		/**
 		* Draws text at the specified coordinates, with rotation and 
@@ -422,7 +422,7 @@ namespace opengl
 		* @param angle The amount of rotation.
 		* @param s The scale factor. (1 = normal).
 		**/
-		void print( const char * str, float x, float y , float angle, float s );
+		void print(const char * str, float x, float y , float angle, float s);
 
 		/**
 		* Draws text at the specified coordinates, with rotation and 
@@ -433,7 +433,7 @@ namespace opengl
 		* @param sx The scale factor along the x-axis. (1 = normal).
 		* @param sy The scale factor along the y-axis. (1 = normal).
 		**/
-		void print( const char * str, float x, float y , float angle, float sx, float sy);
+		void print(const char * str, float x, float y , float angle, float sx, float sy);
 
 		/**
 		* Draw formatted text on screen at the specified coordinates.
@@ -444,14 +444,14 @@ namespace opengl
 		* @param wrap The maximum width of the text area.
 		* @param align Where to align the text.
 		**/
-		void printf( const char * str, float x, float y, float wrap, int align = 0 );
+		void printf(const char * str, float x, float y, float wrap, AlignMode align);
 
 		/**
 		* Draws a point at (x,y).
 		* @param x Point along x-axis.
 		* @param y Point along y-axis.
 		**/
-		void point( float x, float y );
+		void point(float x, float y);
 
 		/**
 		* Draws a line from (x1,y1) to (x2,y2).
@@ -460,11 +460,11 @@ namespace opengl
 		* @param x2 Second x-coordinate.
 		* @param y2 Second y-coordinate.
 		**/
-		void line( float x1, float y1, float x2, float y2 );
+		void line(float x1, float y1, float x2, float y2);
 
 		/**
 		* Draws a triangle using the three coordinates passed.
-		* @param type The type of drawing (line/filled).
+		* @param mode The mode of drawing (line/filled).
 		* @param x1 First x-coordinate.
 		* @param y1 First y-coordinate.
 		* @param x2 Second x-coordinate.
@@ -472,7 +472,7 @@ namespace opengl
 		* @param x3 Third x-coordinate.
 		* @param y3 Third y-coordinate.
 		**/
-		void triangle( int type, float x1, float y1, float x2, float y2, float x3, float y3 );
+		void triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3);
 
 		/**
 		* Draws a rectangle.
@@ -481,11 +481,11 @@ namespace opengl
 		* @param w The width of the rectangle.
 		* @param h The height of the rectangle.
 		**/
-		void rectangle( int type, float x, float y, float w, float h );
+		void rectangle(DrawMode mode, float x, float y, float w, float h);
 
 		/**
 		* Draws a quadrilateral using the four coordinates passed.
-		* @param type The type of drawing (line/filled).
+		* @param mode The mode of drawing (line/filled).
 		* @param x1 First x-coordinate.
 		* @param y1 First y-coordinate.
 		* @param x2 Second x-coordinate.
@@ -495,25 +495,25 @@ namespace opengl
 		* @param x4 Fourth x-coordinate.
 		* @param y4 Fourth y-coordinate.
 		**/
-		void quad( int type, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4 );
+		void quad(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 
 		/**
 		* Draws a circle using the specified arguments.
-		* @param type The type of drawing (line/filled).
+		* @param mode The mode of drawing (line/filled).
 		* @param x X-coordinate.
 		* @param y Y-coordinate.
 		* @param radius Radius of the circle.
 		* @param points Amount of points to use to draw the circle.
 		**/
-		void circle( int type, float x, float y, float radius, int points = 10 );
+		void circle(DrawMode mode, float x, float y, float radius, int points = 10);
 
 		/**
 		* Draws a polygon with an arbitrary number of vertices.
 		* @param type The type of drawing (line/filled).
 		* @param ... Vertex components (x1, y1, x2, y2, etc).
 		**/
-		int polygon( lua_State * L );
-		int polygong( lua_State * L );
+		int polygon(lua_State * L);
+		int polygong(lua_State * L);
 
 		/**
 		* Creates a screenshot of the view and saves it to the default folder.

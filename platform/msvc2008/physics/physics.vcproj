@@ -1242,7 +1242,15 @@
 			</Filter>
 		</Filter>
 		<File
+			RelativePath="..\..\..\src\modules\physics\Joint.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\..\src\modules\physics\Joint.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\physics\Shape.cpp"
 			>
 		</File>
 		<File

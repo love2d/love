@@ -18,45 +18,33 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_MOUSE_SDL_MOUSE_H
-#define LOVE_MOUSE_SDL_MOUSE_H
-
-// LOVE
-#include <mouse/Mouse.h>
-#include <common/EnumMap.h>
+#include "Shape.h"
 
 namespace love
 {
-namespace mouse
+namespace physics
 {
-namespace sdl
-{
-	class Mouse : public love::mouse::Mouse
+	Shape::~Shape()
 	{
-	public:
+	}
 
-		// Implements Module.
-		const char * getName() const;
-		
-		int getX() const;
-		int getY() const;
-		void getPosition(int & x, int & y) const;
-		void setPosition(int x, int y);
-		void setVisible(bool visible);
-		bool isDown(Button button) const;
-		bool isVisible() const;
-		void setGrab(bool grab);
-		bool isGrabbed() const;
+	bool Shape::getConstant(const char * in, Type & out)
+	{
+		return types.find(in, out);
+	}
 
-	public:
+	bool Shape::getConstant(Type in, const char *& out)
+	{
+		return types.find(in, out);
+	}
 
-		static EnumMap<Button, unsigned, BUTTON_MAX_ENUM>::Entry buttonEntries[];
-		static EnumMap<Button, unsigned, BUTTON_MAX_ENUM> buttons;
+	StringMap<Shape::Type, Shape::SHAPE_MAX_ENUM>::Entry Shape::typeEntries[] = 
+	{
+		{"circle", Shape::SHAPE_CIRCLE},
+		{"polygon", Shape::SHAPE_POLYGON},
+	};
 
-	}; // Mouse
+	StringMap<Shape::Type, Shape::SHAPE_MAX_ENUM> Shape::types(Shape::typeEntries, sizeof(Shape::typeEntries));
 
-} // sdl
-} // mouse
+} // physics
 } // love
-
-#endif // LOVE_MOUSE_SDL_MOUSE_H

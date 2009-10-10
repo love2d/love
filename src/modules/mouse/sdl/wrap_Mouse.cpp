@@ -43,7 +43,7 @@ namespace sdl
 	int w_getPosition(lua_State * L)
 	{
 		int x, y;
-		instance->getPosition(&x, &y);
+		instance->getPosition(x, y);
 		lua_pushinteger(L, x);
 		lua_pushinteger(L, y);
 		return 2;
@@ -59,8 +59,13 @@ namespace sdl
 
 	int w_isDown(lua_State * L)
 	{
-		int b = luaL_checkint(L, 1);
-		luax_pushboolean(L, instance->isDown(b));
+		Mouse::Button button;
+
+		if(!Mouse::getConstant(luaL_checkstring(L, 1), button))
+			luax_pushboolean(L, false);
+		else
+			luax_pushboolean(L, instance->isDown(button));
+
 		return 1;
 	}
 
@@ -104,17 +109,6 @@ namespace sdl
 		{ 0, 0 }
 	};
 
-	// List of constants.
-	static const Constant constants[] = {
-		{ "mouse_left", Mouse::MOUSE_LEFT },
-		{ "mouse_middle", Mouse::MOUSE_MIDDLE },
-		{ "mouse_right", Mouse::MOUSE_RIGHT },
-		{ "mouse_wheelup", Mouse::MOUSE_WHEELUP },
-		{ "mouse_wheeldown", Mouse::MOUSE_WHEELDOWN },
-		{ 0, 0 }
-	};
-
-
 	int luaopen_love_mouse(lua_State * L)
 	{
 		if(instance == 0)
@@ -135,7 +129,6 @@ namespace sdl
 		w.flags = MODULE_T;
 		w.functions = functions;
 		w.types = 0;
-		w.constants = constants;
 
 		return luax_register_module(L, w);
 	}

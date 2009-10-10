@@ -56,7 +56,7 @@ namespace box2d
 		joint = 0;
 	}
 
-	int Joint::getType() const
+	Joint::Type Joint::getType() const
 	{
 		switch(joint->GetType())
 		{
@@ -73,7 +73,7 @@ namespace box2d
 		case e_gearJoint: 
 			return JOINT_GEAR;
 		default:
-			return -1;
+			return JOINT_INVALID;
 		}
 	}
 

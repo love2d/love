@@ -65,16 +65,6 @@ namespace love
 		bool own; 
 	};
 
-	
-	/**
-	* Used to store constants in arrays.
-	**/
-	struct Constant
-	{
-		const char * name;
-		int value;
-	};
-
 	/**
 	* A Module with Lua wrapper functions and other data.
 	**/
@@ -95,8 +85,6 @@ namespace love
 		// A list of functions which expose the types of the modules (last element 0).
 		const lua_CFunction * types;
 
-		// A list of constants (last element 0).
-		const Constant * constants;
 	};
 
 	/**

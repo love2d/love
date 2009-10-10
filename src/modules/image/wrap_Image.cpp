@@ -21,6 +21,7 @@
 #include "wrap_Image.h"
 
 #include <common/Data.h>
+#include <common/StringMap.h>
 
 #include "devil/Image.h"
 #include "devil/ImageData.h"
@@ -30,7 +31,7 @@ namespace love
 namespace image
 {
 	static Image * instance = 0;
-
+	
 	int w_newImageData(lua_State * L)
 	{
 
@@ -72,7 +73,8 @@ namespace image
 	
 	int w_newEncodedImageData(lua_State * L) {
 		ImageData * t = luax_checkimagedata(L, 1);
-		Image::ImageFormat format = (Image::ImageFormat)luaL_optint(L, 2, Image::FORMAT_TGA);
+		EncodedImageData::Format format;
+		EncodedImageData::getConstant(luaL_checkstring(L, 2), format);
 		EncodedImageData * e = love::image::devil::ImageData::encodeImageData(t, format);
 		luax_newtype(L, "Data", DATA_T, (void*)e); // since we don't need any of EncodedImageData's features
 		return 1;
@@ -88,12 +90,6 @@ namespace image
 	static const lua_CFunction types[] = {
 		luaopen_imagedata,
 		0
-	};
-	
-	static const Constant constants[] = {
-		{ "format_tga", Image::FORMAT_TGA },
-		{ "format_bmp", Image::FORMAT_BMP },
-		{ 0, 0 }
 	};
 
 	int luaopen_love_image(lua_State * L)
@@ -116,7 +112,6 @@ namespace image
 		w.flags = MODULE_IMAGE_T;
 		w.functions = functions;
 		w.types = types;
-		w.constants = constants;
 
 		return luax_register_module(L, w);
 	}

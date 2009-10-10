@@ -38,7 +38,7 @@ namespace opengl
 		currentMode.width = 0;
 		currentMode.height = 0;
 
-		// Windows should be centered.
+		// Window should be centered.
 		SDL_putenv("SDL_VIDEO_CENTERED=center");
 
 		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
@@ -511,7 +511,7 @@ namespace opengl
 		return currentFont;
 	}
 
-	void Graphics::setBlendMode( int mode )
+	void Graphics::setBlendMode( Graphics::BlendMode mode )
 	{
 		if(mode == BLEND_ADDITIVE)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -519,7 +519,7 @@ namespace opengl
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	void Graphics::setColorMode ( int mode )
+	void Graphics::setColorMode ( Graphics::ColorMode mode )
 	{
 		if(mode == COLOR_MODULATE)
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -527,7 +527,7 @@ namespace opengl
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 	
-	int Graphics::getBlendMode()
+	Graphics::BlendMode Graphics::getBlendMode()
 	{
 		GLint dst, src;
 		glGetIntegerv(GL_BLEND_DST, &dst);
@@ -539,7 +539,7 @@ namespace opengl
 			return BLEND_ALPHA;
 	}
 
-	int Graphics::getColorMode()
+	Graphics::ColorMode Graphics::getColorMode()
 	{
 		GLint mode;
 		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
@@ -555,7 +555,7 @@ namespace opengl
 		glLineWidth(width);
 	}
 
-	void Graphics::setLineStyle( int style )
+	void Graphics::setLineStyle(Graphics::LineStyle style )
 	{
 		if(style == LINE_ROUGH)
 			glDisable (GL_LINE_SMOOTH);
@@ -566,7 +566,7 @@ namespace opengl
 		}		
 	}
 
-	void Graphics::setLine( float width, int style )
+	void Graphics::setLine( float width, Graphics::LineStyle style )
 	{
 		glLineWidth(width);
 
@@ -600,7 +600,7 @@ namespace opengl
 		return w;
 	}
 
-	int Graphics::getLineStyle()
+	Graphics::LineStyle Graphics::getLineStyle()
 	{
 		if(glIsEnabled(GL_LINE_SMOOTH) == GL_TRUE)
 			return LINE_SMOOTH;
@@ -626,7 +626,7 @@ namespace opengl
 		glPointSize((GLfloat)size);
 	}
 
-	void Graphics::setPointStyle( int style )
+	void Graphics::setPointStyle( Graphics::PointStyle style )
 	{
 		if( style == POINT_SMOOTH )
 			glEnable(GL_POINT_SMOOTH);
@@ -634,7 +634,7 @@ namespace opengl
 			glDisable(GL_POINT_SMOOTH);
 	}
 
-	void Graphics::setPoint( float size, int style )
+	void Graphics::setPoint( float size, Graphics::PointStyle style )
 	{
 		if( style == POINT_SMOOTH )
 			glEnable(GL_POINT_SMOOTH);
@@ -651,7 +651,7 @@ namespace opengl
 		return (float)size;
 	}
 
-	int Graphics::getPointStyle()
+	Graphics::PointStyle Graphics::getPointStyle()
 	{
 		if(glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
 			return POINT_SMOOTH;
@@ -724,7 +724,7 @@ namespace opengl
 		}
 	}
 
-	void Graphics::printf( const char * str, float x, float y, float wrap, int align)
+	void Graphics::printf( const char * str, float x, float y, float wrap, AlignMode align)
 	{
 		if(currentFont != 0)
 		{
@@ -846,13 +846,13 @@ namespace opengl
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	void Graphics::triangle( int type, float x1, float y1, float x2, float y2, float x3, float y3 )
+	void Graphics::triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3 )
 	{
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_TEXTURE_2D);
 		glPushMatrix();
 
-		switch(type)
+		switch(mode)
 		{
 		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
@@ -877,12 +877,12 @@ namespace opengl
 		glEnable(GL_CULL_FACE);
 	}
 
-	void Graphics::rectangle( int type, float x, float y, float w, float h )
+	void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h )
 	{
 		glDisable(GL_TEXTURE_2D);
 		glPushMatrix();
 
-		switch(type)
+		switch(mode)
 		{
 		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
@@ -908,13 +908,13 @@ namespace opengl
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	void Graphics::quad( int type, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4 )
+	void Graphics::quad(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4 )
 	{
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_TEXTURE_2D);
 		glPushMatrix();
 
-		switch(type)
+		switch(mode)
 		{
 		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
@@ -941,7 +941,7 @@ namespace opengl
 		glEnable(GL_CULL_FACE);
 	}
 
-	void Graphics::circle( int type, float x, float y, float radius, int points )
+	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points )
 	{
 		float two_pi = 3.14159265f * 2;
 		if(points <= 0) points = 1;
@@ -952,7 +952,7 @@ namespace opengl
 
 		glTranslatef(x, y, 0.0f);
 
-		switch(type)
+		switch(mode)
 		{
 		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
@@ -987,12 +987,11 @@ namespace opengl
 		if( n < 2 )
 			return luaL_error(L, "Error: function needs at least two parameters.");
 
-		// The first one MUST be a number.
-		if( !lua_isnumber(L, 1) )
-			return luaL_error(L, "Error: first parameter must be a number.");
+		DrawMode mode;
 
-		// Get rendering mode. (line/fill)
-		int mode = (int)lua_tonumber(L, 1);
+		const char * str = luaL_checkstring(L, 1);
+		if(!getConstant(str, mode))
+			return luaL_error(L, "Invalid draw mode: %s", str);
 
 		// Get the type of the second argument.
 		int luatype = lua_type(L, 2);
@@ -1042,133 +1041,6 @@ namespace opengl
 
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_2D);
-
-		return 0;
-	}
-
-	int Graphics::polygong( lua_State * L )
-	{
-		// Get number of params.
-		int n = lua_gettop(L);
-
-		// Need at least two params.
-		if( n < 2 )
-			return luaL_error(L, "Error: function needs at least two parameters.");
-
-		// The first one MUST be a number.
-		if( !lua_isnumber(L, 1) )
-			return luaL_error(L, "Error: first parameter must be a number.");
-
-		int vertc = 0, colorc = 0;
-
-		if( n == 3 )
-		{
-			if((!lua_istable(L, 2) || !lua_istable(L, 3))) 
-				return luaL_error(L, "Error: two tables expected.");
-			vertc = (int)lua_objlen(L, 2);
-			colorc = (int)lua_objlen(L, 3);
-			if( (vertc <= 0 || colorc <= 0)) 
-				return luaL_error(L, "Error: empty table.");
-		}
-
-		// Get rendering mode. (line/fill)
-		int mode = (int)lua_tonumber(L, 1);
-		GLenum glmode = (mode==DRAW_LINE) ? GL_LINE_LOOP : GL_POLYGON;
-
-		// Get the type of the second argument.
-		int luatype = lua_type(L, 2);
-
-		if(!(luatype == LUA_TTABLE || luatype == LUA_TNUMBER))
-			return luaL_error(L, "Error: expected number or table values.");
-
-		glPushAttrib(GL_CURRENT_BIT);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_TEXTURE_2D);
-
-		switch(luatype)
-		{
-		case LUA_TTABLE:
-
-			if( n == 2 )
-			{
-				glBegin(glmode);
-				lua_pushnil(L);
-				while(true)
-				{
-					if(lua_next(L, 2) == 0) break;
-					GLfloat x = (GLfloat)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-					if(lua_next(L, 2) == 0) break;
-					GLfloat y = (GLfloat)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-					if(lua_next(L, 2) == 0) break;
-					GLubyte r = (GLubyte)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-					if(lua_next(L, 2) == 0) break;
-					GLubyte g = (GLubyte)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-					if(lua_next(L, 2) == 0) break;
-					GLubyte b = (GLubyte)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-					if(lua_next(L, 2) == 0) break;
-					GLubyte a = (GLubyte)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-					glColor4ub(r, g, b, a);
-					glVertex2f(x, y);
-				}
-				glEnd();
-			}
-			else if(n == 3)
-			{
-				// Allocate memory.
-				GLfloat * verts = new GLfloat[vertc];
-				GLubyte * colors = new GLubyte[colorc];
-				int verti = 0, colori = 0;
-
-				// Get verts.
-				lua_pushnil(L);
-				while(lua_next(L, 2))
-				{
-					verts[verti++] = (GLfloat)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-				}
-
-				// Get colors.
-				lua_pushnil(L);
-				while(lua_next(L, 3))
-				{
-					colors[colori++] = (GLubyte)lua_tonumber(L, -1);
-					lua_pop(L, 1);
-				}
-
-				glEnable(GL_VERTEX_ARRAY);
-				glEnable(GL_COLOR_ARRAY);
-				glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
-				glVertexPointer(2, GL_FLOAT, 0, verts);
-				glDrawArrays(glmode, 0, (GLint)(vertc/2));
-				glDisable(GL_VERTEX_ARRAY);
-				glDisable(GL_COLOR_ARRAY);
-				delete [] verts;
-				delete [] colors;
-			}	
-
-			break;
-		case LUA_TNUMBER:
-			// Assume params to be packed like this: x, y, r, g, b, a, x, y, r, ...
-			glBegin(glmode);
-			for(int i = 2; i < (n-1); i+=6)
-			{
-				glColor4ub((GLubyte)lua_tonumber(L, i+2), (GLubyte)lua_tonumber(L, i+3), (GLubyte)lua_tonumber(L, i+4), (GLubyte)lua_tonumber(L, i+5));
-				glVertex2f((GLfloat)lua_tonumber(L, i), (GLfloat)lua_tonumber(L, i+1));
-			}				
-			glEnd();
-			break;
-		}
-
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_TEXTURE_2D);
-		glPopAttrib();
-
 
 		return 0;
 	}

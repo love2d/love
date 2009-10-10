@@ -234,6 +234,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\graphics\opengl\"
+						WarningLevel="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -604,6 +605,10 @@
 		</Filter>
 		<File
 			RelativePath="..\..\..\src\modules\graphics\Drawable.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\modules\graphics\Graphics.cpp"
 			>
 		</File>
 		<File

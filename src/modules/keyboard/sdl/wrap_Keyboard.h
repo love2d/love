@@ -25,6 +25,9 @@
 #include <common/config.h>
 #include "Keyboard.h"
 
+// SDL
+#include <SDL.h>
+
 namespace love
 {
 namespace keyboard

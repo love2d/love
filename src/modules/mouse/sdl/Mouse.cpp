@@ -48,9 +48,9 @@ namespace sdl
 		return y;
 	}
 
-	void Mouse::getPosition(int * x, int * y) const
+	void Mouse::getPosition(int & x, int & y) const
 	{
-		SDL_GetMouseState(x, y);
+		SDL_GetMouseState(&x, &y);
 	}
 
 	void Mouse::setPosition(int x, int y)
@@ -63,9 +63,14 @@ namespace sdl
 		SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
 	}
 
-	bool Mouse::isDown(int button) const
+	bool Mouse::isDown(Button button) const
 	{
-		return (SDL_GetMouseState(0, 0) & SDL_BUTTON(button)) != 0;
+		unsigned b = 0;
+
+		if(!buttons.find(button, b))
+			return false;
+
+		return (SDL_GetMouseState(0, 0) & SDL_BUTTON(b)) != 0;
 	}
 
 	bool Mouse::isVisible() const
@@ -82,6 +87,19 @@ namespace sdl
 	{
 		return (SDL_WM_GrabInput(SDL_GRAB_QUERY) ==  SDL_GRAB_ON ? true : false);
 	}
+
+	EnumMap<Mouse::Button, unsigned, Mouse::BUTTON_MAX_ENUM>::Entry Mouse::buttonEntries[] = 
+	{
+		{ Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
+		{ Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},
+		{ Mouse::BUTTON_RIGHT, SDL_BUTTON_RIGHT},
+		{ Mouse::BUTTON_WHEELUP, SDL_BUTTON_WHEELUP},
+		{ Mouse::BUTTON_WHEELDOWN, SDL_BUTTON_WHEELDOWN},
+		{ Mouse::BUTTON_X1, SDL_BUTTON_X1},
+		{ Mouse::BUTTON_X2, SDL_BUTTON_X2},
+	};
+
+	EnumMap<Mouse::Button, unsigned, Mouse::BUTTON_MAX_ENUM> Mouse::buttons(Mouse::buttonEntries, sizeof(Mouse::buttonEntries));
 
 } // sdl
 } // mouse

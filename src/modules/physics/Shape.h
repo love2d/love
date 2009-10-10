@@ -23,6 +23,7 @@
 
 // LOVE
 #include <common/Object.h>
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -32,13 +33,23 @@ namespace physics
 	{
 	public:
 
-		enum ShapeType
+		enum Type
 		{
+			SHAPE_INVALID,
 			SHAPE_CIRCLE, 
 			SHAPE_POLYGON,
+			SHAPE_MAX_ENUM
 		};
 
-		virtual ~Shape(){}
+		virtual ~Shape();
+
+		static bool getConstant(const char * in, Type & out);
+		static bool getConstant(Type in, const char *& out);
+
+	private:
+
+		static StringMap<Type, SHAPE_MAX_ENUM>::Entry typeEntries[];
+		static StringMap<Type, SHAPE_MAX_ENUM> types;
 	};
 
 } // physics

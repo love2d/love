@@ -165,13 +165,13 @@ namespace devil
 		return pixels[y*width+x];
 	}
 	
-	love::image::EncodedImageData * ImageData::encodeImageData(love::image::ImageData * d, love::image::Image::ImageFormat f) {
+	love::image::EncodedImageData * ImageData::encodeImageData(love::image::ImageData * d, EncodedImageData::Format f) {
 		ILubyte * data;
 		ILuint w = d->getWidth();
 		int h = d->getHeight(); // has to be a signed int so we can make it negative for BMPs
 		int headerLen, bpp, row, size, padding, filesize;
 		switch (f) {
-			case Image::FORMAT_BMP:
+			case EncodedImageData::FORMAT_BMP:
 				headerLen = 54;
 				bpp = 3;
 				row = w * bpp;
@@ -231,7 +231,7 @@ namespace devil
 				}
 				data -= filesize;
 				break;
-			case Image::FORMAT_TGA:
+			case EncodedImageData::FORMAT_TGA:
 			default: // TGA is the default format
 				headerLen = 18;
 				bpp = 3;
@@ -263,7 +263,7 @@ namespace devil
 				ILubyte * temp = new ILubyte[row];
 				ILubyte * src = data - row;
 				ILubyte * dst = data + size;
-				for (unsigned i = 0; i < (h >> 1); i++) {
+				for (int i = 0; i < (h >> 1); i++) {
 					memcpy(temp,src+=row,row);
 					memcpy(src,dst-=row,row);
 					memcpy(dst,temp,row);

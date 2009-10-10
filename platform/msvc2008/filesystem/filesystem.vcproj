@@ -170,7 +170,7 @@
 	</References>
 	<Files>
 		<Filter
-			Name="filesystem"
+			Name="physfs"
 			>
 			<File
 				RelativePath="..\..\..\src\modules\filesystem\physfs\File.cpp"
@@ -293,6 +293,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\..\src\modules\filesystem\File.cpp"
+			>
+		</File>
 		<File
 			RelativePath="..\..\..\src\modules\filesystem\File.h"
 			>

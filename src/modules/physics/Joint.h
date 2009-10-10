@@ -23,6 +23,7 @@
 
 // LOVE
 #include <common/Object.h>
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -32,18 +33,28 @@ namespace physics
 	{
 	public:
 
-		enum JointType
+		enum Type
 		{
+			JOINT_INVALID,
 			JOINT_DISTANCE,
 			JOINT_REVOLUTE,
 			JOINT_PRISMATIC,
 			JOINT_MOUSE,
 			JOINT_PULLEY,
-			JOINT_GEAR
+			JOINT_GEAR,
+			JOINT_MAX_ENUM
 		};
 
 
-		virtual ~Joint(){}
+		virtual ~Joint();
+
+		static bool getConstant(const char * in, Type & out);
+		static bool getConstant(Type in, const char *& out);
+
+	private:
+
+		static StringMap<Type, JOINT_MAX_ENUM>::Entry typeEntries[];
+		static StringMap<Type, JOINT_MAX_ENUM> types;
 	};
 
 } // physics

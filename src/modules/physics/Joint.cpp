@@ -18,23 +18,37 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_NATIVE_TCC_API_H
-#define LOVE_NATIVE_TCC_API_H
+#include "Joint.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct tcc_function_
+namespace love
 {
-	const char * name; 
-	void * fn;
-} tcc_function;
+namespace physics
+{
+	Joint::~Joint()
+	{
+	}
 
-extern const tcc_function tcc_api[];
+	bool Joint::getConstant(const char * in, Type & out)
+	{
+		return types.find(in, out);
+	}
 
-#ifdef __cplusplus
-}
-#endif
+	bool Joint::getConstant(Type in, const char *& out)
+	{
+		return types.find(in, out);
+	}
 
-#endif /* LOVE_NATIVE_TCC_API_H */
+	StringMap<Joint::Type, Joint::JOINT_MAX_ENUM>::Entry Joint::typeEntries[] = 
+	{
+		{"circle", Joint::JOINT_DISTANCE},
+		{"revolute", Joint::JOINT_REVOLUTE},
+		{"prismatic", Joint::JOINT_PRISMATIC},
+		{"mouse", Joint::JOINT_MOUSE},
+		{"pulley", Joint::JOINT_PULLEY},
+		{"gear", Joint::JOINT_GEAR},
+	};
+
+	StringMap<Joint::Type, Joint::JOINT_MAX_ENUM> Joint::types(Joint::typeEntries, sizeof(Joint::typeEntries));
+
+} // physics
+} // love

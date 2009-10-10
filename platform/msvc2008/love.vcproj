@@ -539,6 +539,26 @@
 				Name="event"
 				>
 				<File
+					RelativePath="..\..\src\modules\event\Event.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\event\"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\event\"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\event\Event.h"
 					>
 				</File>
@@ -598,6 +618,10 @@
 			<Filter
 				Name="filesystem"
 				>
+				<File
+					RelativePath="..\..\src\modules\filesystem\File.cpp"
+					>
+				</File>
 				<File
 					RelativePath="..\..\src\modules\filesystem\File.h"
 					>
@@ -779,6 +803,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\graphics\Graphics.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\graphics\Graphics.h"
 					>
 				</File>
@@ -846,6 +874,7 @@
 							<Tool
 								Name="VCCLCompilerTool"
 								ObjectFile="$(IntDir)\graphics\opengl\"
+								WarningLevel="0"
 							/>
 						</FileConfiguration>
 						<FileConfiguration
@@ -854,6 +883,7 @@
 							<Tool
 								Name="VCCLCompilerTool"
 								ObjectFile="$(IntDir)\graphics\opengl\"
+								WarningLevel="0"
 							/>
 						</FileConfiguration>
 					</File>
@@ -1383,6 +1413,26 @@
 				Name="joystick"
 				>
 				<File
+					RelativePath="..\..\src\modules\joystick\Joystick.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\joystick\"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\joystick\"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\joystick\Joystick.h"
 					>
 				</File>
@@ -1442,6 +1492,26 @@
 			<Filter
 				Name="keyboard"
 				>
+				<File
+					RelativePath="..\..\src\modules\keyboard\Keyboard.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\keyboard\"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\keyboard\"
+						/>
+					</FileConfiguration>
+				</File>
 				<File
 					RelativePath="..\..\src\modules\keyboard\Keyboard.h"
 					>
@@ -1503,6 +1573,26 @@
 				Name="mouse"
 				>
 				<File
+					RelativePath="..\..\src\modules\mouse\Mouse.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\mouse\"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\mouse\"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\mouse\Mouse.h"
 					>
 				</File>
@@ -1563,8 +1653,48 @@
 				Name="physics"
 				>
 				<File
+					RelativePath="..\..\src\modules\physics\Joint.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\physics\"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\physics\"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\physics\Joint.h"
 					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\physics\Shape.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\physics\"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\physics\"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\physics\Shape.h"
@@ -3231,368 +3361,6 @@
 					</File>
 				</Filter>
 			</Filter>
-			<Filter
-				Name="native"
-				>
-				<Filter
-					Name="tcc"
-					>
-					<File
-						RelativePath="..\..\src\modules\native\tcc\api.c"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\native\tcc\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\native\tcc\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\native\tcc\api.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\native\tcc\Native.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\native\tcc\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\native\tcc\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\native\tcc\Native.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\native\tcc\wrap_Native.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\native\tcc\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\native\tcc\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\native\tcc\wrap_Native.h"
-						>
-					</File>
-					<Filter
-						Name="libtcc"
-						>
-						<File
-							RelativePath="..\..\src\modules\native\tcc\libtcc\libtcc.c"
-							>
-							<FileConfiguration
-								Name="Debug|Win32"
-								>
-								<Tool
-									Name="VCCLCompilerTool"
-									ObjectFile="$(IntDir)\native\tcc\libtcc\"
-									WarningLevel="0"
-								/>
-							</FileConfiguration>
-							<FileConfiguration
-								Name="Release|Win32"
-								>
-								<Tool
-									Name="VCCLCompilerTool"
-									ObjectFile="$(IntDir)\native\tcc\libtcc\"
-									WarningLevel="0"
-								/>
-							</FileConfiguration>
-						</File>
-					</Filter>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="font"
-				>
-				<File
-					RelativePath="..\..\src\modules\font\GlyphData.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\GlyphData.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\ImageRasterizer.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\ImageRasterizer.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\Rasterizer.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\Rasterizer.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\wrap_GlyphData.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\wrap_GlyphData.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\wrap_Rasterizer.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\font\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\font\wrap_Rasterizer.h"
-					>
-				</File>
-				<Filter
-					Name="freetype"
-					>
-					<File
-						RelativePath="..\..\src\modules\font\freetype\Font.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\font\freetype\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\font\freetype\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\font\freetype\Font.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\font\freetype\TrueTypeRasterizer.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\font\freetype\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\font\freetype\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\font\freetype\TrueTypeRasterizer.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\font\freetype\wrap_Font.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\font\freetype\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\font\freetype\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\font\freetype\wrap_Font.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="signal"
-				>
-				<Filter
-					Name="posix"
-					>
-					<File
-						RelativePath="..\..\src\modules\signal\posix\Signal.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\signal\posix\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\signal\posix\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\signal\posix\Signal.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\signal\posix\wrap_Signal.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\signal\posix\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\signal\posix\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\signal\posix\wrap_Signal.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="common"
@@ -3603,6 +3371,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\common\Data.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\common\EnumMap.h"
 				>
 			</File>
 			<File
@@ -3755,6 +3527,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\common\runtime.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\common\StringMap.h"
 				>
 			</File>
 			<File

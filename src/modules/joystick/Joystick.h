@@ -23,6 +23,7 @@
 
 // LOVE
 #include <common/Module.h>
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -32,26 +33,30 @@ namespace joystick
 	{
 	public:
 
-		enum JoystickAxis
+		enum Hat
 		{
-			JOYSTICK_AXIS_HORIZONTAL = 0,
-			JOYSTICK_AXIS_VERITCAL = 1,
+			HAT_INVALID,
+			HAT_CENTERED,
+			HAT_UP,
+			HAT_RIGHT,
+			HAT_DOWN,
+			HAT_LEFT,
+			HAT_RIGHTUP,
+			HAT_RIGHTDOWN,
+			HAT_LEFTUP,
+			HAT_LEFTDOWN,
+			HAT_MAX_ENUM = 16
 		};
 
-		enum JoystickHat
-		{
-			JOYSTICK_HAT_CENTERED = 0,
-			JOYSTICK_HAT_UP = 1,
-			JOYSTICK_HAT_RIGHT = 2,
-			JOYSTICK_HAT_DOWN = 4,
-			JOYSTICK_HAT_LEFT = 8,
-			JOYSTICK_HAT_RIGHTUP = (2|1),
-			JOYSTICK_HAT_RIGHTDOWN = (2|4),
-			JOYSTICK_HAT_LEFTUP = (8|1),
-			JOYSTICK_HAT_LEFTDOWN = (8|4)
-		};
+		virtual ~Joystick();
 
-		virtual ~Joystick(){};
+		static bool getConstant(const char * in, Hat & out);
+		static bool getConstant(Hat in, const char *& out);
+
+	private:
+
+		static StringMap<Hat, HAT_MAX_ENUM>::Entry hatEntries[];
+		static StringMap<Hat, HAT_MAX_ENUM> hats;
 
 	}; // Joystick
 

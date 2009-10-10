@@ -24,6 +24,7 @@
 // LOVE
 #include <event/Event.h>
 #include <common/runtime.h>
+#include <common/EnumMap.h>
 
 // SDL
 #include <SDL.h>
@@ -34,12 +35,14 @@ namespace event
 {
 namespace sdl
 {
-	class Event : public event::Event
+	class Event : public love::event::Event
 	{
 	public:
 		
 		// Implements Module.
 		const char * getName() const;
+
+		Event();
 
 		/**
 		* Pumps the event queue. This function gathers all the pending input information 
@@ -49,37 +52,37 @@ namespace sdl
 		void pump();
 
 		/**
-		* Returns an iterator function for iterating over pending events.
+		* Checks if there are messages in the queue. 
+		* 
+		* @param message The next message in the queue, if the return value is true.
+		* @return True if there a message was found, false otherwise.
 		**/
-		int poll(lua_State * L);
-		
+		bool poll(Message & message);
+
 		/**
 		* Waits for the next event (indefinitely). Useful for creating games where
 		* the screen and game state only needs updating when the user interacts with
 		* the window.
 		**/
-		int wait(lua_State * L);
+		bool wait(Message & message);
 
 		/**
-		* Push a quit event. Calling this does not mean the application
-		* will exit immediately, it just means an quit event will be issued. 
-		* How to respond to the quit event is up the application. 
+		* Push a message onto the event queue.
+		* 
+		* @param message The message to push onto the queue.
+		* @return True on success, false if the queue was full. 
 		**/
-		void quit();
+		bool push(Message & message);
 
-		/**
-		* Pushes an event into the queue.
-		**/
-		int push(lua_State * L);
-
-		/**
-		* The iterator function.
-		**/
-		static int poll_i(lua_State * L);
 	private:
 
-		static int pushEvent(lua_State * L, SDL_Event & e);
-		static int getEvent(lua_State * L, SDL_Event & e);
+		bool convert(SDL_Event & e, Message & m);
+		bool convert(Message & m, SDL_Event & e);
+
+		static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
+		static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;
+		static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
+		static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
 
 	}; // System
 

@@ -155,6 +155,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\..\src\common\EnumMap.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\..\src\common\Exception.cpp"
 			>
 			<FileConfiguration
@@ -304,6 +308,18 @@
 		</File>
 		<File
 			RelativePath="..\..\..\src\common\runtime.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\common\string.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\common\string.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\src\common\StringMap.h"
 			>
 		</File>
 		<File

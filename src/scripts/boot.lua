@@ -79,25 +79,25 @@ function love.createhandlers()
 
 	-- Standard callback handlers.
 	love.handlers = {
-		[love.event_keypressed] = function (b, u)
+		kp = function (b, u)
 			if love.keypressed then love.keypressed(b, u) end
 		end,
-		[love.event_keyreleased] = function (b)
+		kr = function (b)
 			if love.keyreleased then love.keyreleased(b) end
 		end,
-		[love.event_mousepressed] = function (x,y,b)
+		mp = function (x,y,b)
 			if love.mousepressed then love.mousepressed(x,y,b) end
 		end,
-		[love.event_mousereleased] = function (x,y,b)
+		mr = function (x,y,b)
 			if love.mousereleased then love.mousereleased(x,y,b) end
 		end,
-		[love.event_joystickpressed] = function (j,b)
+		jp = function (j,b)
 			if love.joystickpressed then love.joystickpressed(j,b) end
 		end,
-		[love.event_joystickreleased] = function (j,b)
+		jr = function (j,b)
 			if love.joystickreleased then love.joystickreleased(j,b) end
 		end,
-		[love.event_quit] = function ()
+		q = function ()
 			return
 		end,
 	}
@@ -147,9 +147,6 @@ function love.init()
 			audio = true,
 			physics = true,
 			sound = true,
-			native = true,
-			font = true,
-			signal = true,
 		},
 	}
 
@@ -200,7 +197,7 @@ function love.run()
 
 		-- Process events.
 		for e,a,b,c in love.event.poll() do
-			if e == love.event_quit then return end
+			if e == "q" then return end
 			love.handlers[e](a,b,c)
 		end
 
@@ -674,8 +671,8 @@ function love.errhand(msg)
 	while true do
 		e, a, b, c = love.event.wait()
 		
-		if e == love.event_quit then return end
-		if e == love.event_keypressed and a == love.key_escape then
+		if e == "q" then return end
+		if e == "kp" and a == "escape" then
 			return
 		end
 

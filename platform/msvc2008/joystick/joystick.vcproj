@@ -206,6 +206,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\..\..\src\modules\joystick\Joystick.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\..\src\modules\joystick\Joystick.h"
 			>
 		</File>

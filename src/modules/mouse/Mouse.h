@@ -23,6 +23,7 @@
 
 // LOVE
 #include <common/Module.h>
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -32,16 +33,28 @@ namespace mouse
 	{
 	public:
 		
-		enum MouseButton
+		enum Button
 		{
-			MOUSE_LEFT = 1,
-			MOUSE_MIDDLE, 
-			MOUSE_RIGHT,
-			MOUSE_WHEELUP,
-			MOUSE_WHEELDOWN
+			BUTTON_INVALID,
+			BUTTON_LEFT,
+			BUTTON_MIDDLE,
+			BUTTON_RIGHT,
+			BUTTON_WHEELUP,
+			BUTTON_WHEELDOWN,
+			BUTTON_X1,
+			BUTTON_X2,
+			BUTTON_MAX_ENUM
 		};
 
 		virtual ~Mouse(){};
+
+		static bool getConstant(const char * in, Button & out);
+		static bool getConstant(Button in, const char *& out);
+
+	private:
+
+		static StringMap<Button, BUTTON_MAX_ENUM>::Entry buttonEntries[];
+		static StringMap<Button, BUTTON_MAX_ENUM> buttons;
 
 	}; // Mouse
 

@@ -18,40 +18,35 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_SIGNAL_POSIX_SIGNAL_H
-#define LOVE_SIGNAL_POSIX_SIGNAL_H
-
-// signal
-#include <csignal>
-
-// LOVE
-#include <common/Module.h>
-#include <common/Reference.h>
+#include "File.h"
 
 namespace love
 {
-namespace signal
+namespace filesystem
 {
-namespace posix
-{
-	class Signal : public Module
+	File::~File()
 	{
-	private:
-		int signals;
+	}
 
-	public:
-		Signal();
-		~Signal();
-		bool hook(int sgn);
-		void setCallback(lua_State *L);
-		const char * getName() const;
-		bool raise(int sgn);
-	}; // Signal
-	
-	void handler(int signal);
-	static Reference *cb;
-} // posix
-} // signal
+	bool File::getConstant(const char * in, Mode & out)
+	{
+		return modes.find(in, out);
+	}
+
+	bool File::getConstant(Mode in, const char *& out)
+	{
+		return modes.find(in, out);
+	}
+
+	StringMap<File::Mode, File::MODE_MAX_ENUM>::Entry File::modeEntries[] = 
+	{
+		{"c", File::CLOSED},
+		{"r", File::READ},
+		{"w", File::WRITE},
+		{"w+", File::APPEND},
+	};
+
+	StringMap<File::Mode, File::MODE_MAX_ENUM> File::modes(File::modeEntries, sizeof(File::modeEntries));
+
+} // filesystem
 } // love
-
-#endif // LOVE_SIGNAL_POSIX_SIGNAL_H

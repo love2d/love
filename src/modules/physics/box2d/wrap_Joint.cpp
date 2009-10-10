@@ -20,6 +20,7 @@
 
 // LOVE
 #include "wrap_Joint.h"
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -35,7 +36,9 @@ namespace box2d
 	int w_Joint_getType(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
-		lua_pushinteger(L, t->getType());
+		const char * type = "";
+		Joint::getConstant(t->getType(), type);
+		lua_pushstring(L, type);
 		return 1;
 	}
 

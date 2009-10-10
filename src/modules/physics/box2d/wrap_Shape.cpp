@@ -19,6 +19,7 @@
 **/
 
 #include "wrap_Shape.h"
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -34,7 +35,9 @@ namespace box2d
 	int w_Shape_getType(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
-		lua_pushinteger(L, t->getType());
+		const char * type = "";
+		Shape::getConstant(t->getType(), type);
+		lua_pushstring(L, type);
 		return 1;
 	}
 

@@ -86,7 +86,7 @@ namespace box2d
 		* Gets the type of Shape. Useful for 
 		* debug drawing.
 		**/
-		int getType() const;
+		Type getType() const;
 
 		/**
 		* Sets the friction of the Shape.

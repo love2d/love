@@ -113,7 +113,13 @@ namespace sdl
 	{
 		int index = luaL_checkint(L, 1);
 		int hat = luaL_checkint(L, 2);
-		lua_pushinteger(L, instance->getHat(index, hat));
+
+		Joystick::Hat h = instance->getHat(index, hat);
+
+		const char * direction = "";
+		Joystick::getConstant(h, direction);
+		lua_pushstring(L, direction);
+
 		return 1;
 	}
 
@@ -145,23 +151,6 @@ namespace sdl
 		{ 0, 0 }
 	};
 
-	// List of constants.
-	static const Constant constants[] = {
-		{ "joystick_axis_horizontal", Joystick::JOYSTICK_AXIS_HORIZONTAL },
-		{ "joystick_axis_vertical", Joystick::JOYSTICK_AXIS_VERITCAL },
-
-		{ "joystick_hat_centered", Joystick::JOYSTICK_HAT_CENTERED },
-		{ "joystick_hat_up", Joystick::JOYSTICK_HAT_UP },
-		{ "joystick_hat_right", Joystick::JOYSTICK_HAT_RIGHT },
-		{ "joystick_hat_down", Joystick::JOYSTICK_HAT_DOWN },
-		{ "joystick_hat_left", Joystick::JOYSTICK_HAT_LEFT },
-		{ "joystick_hat_rightup", Joystick::JOYSTICK_HAT_RIGHTUP },
-		{ "joystick_hat_rightdown", Joystick::JOYSTICK_HAT_RIGHTDOWN },
-		{ "joystick_hat_leftup", Joystick::JOYSTICK_HAT_LEFTUP },
-		{ "joystick_hat_leftdown", Joystick::JOYSTICK_HAT_LEFTDOWN },
-		{ 0, 0 }
-	};
-
 	int luaopen_love_joystick(lua_State * L)
 	{
 		if(instance == 0)
@@ -183,7 +172,6 @@ namespace sdl
 		w.flags = MODULE_T;
 		w.functions = functions;
 		w.types = 0;
-		w.constants = constants;
 
 		return luax_register_module(L, w);
 	}

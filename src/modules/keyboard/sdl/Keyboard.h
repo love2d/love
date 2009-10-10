@@ -23,6 +23,10 @@
 
 // LOVE
 #include <keyboard/Keyboard.h>
+#include <common/EnumMap.h>
+
+// SDL
+#include <SDL.h>
 
 namespace love
 {
@@ -42,14 +46,14 @@ namespace sdl
 		* @param key A key identifier.
 		* @return boolean
 		**/
-		bool isDown(int key) const;
+		bool isDown(Key key) const;
 
 		/**
 		* Enables key repeating.
 		* @param delay The amount of delay before repeating the key (in milliseconds)
 		* @param interval Specifies the amount of time between repeats (in milliseconds)
 		**/
-		void setKeyRepeat(int delay = 0, int interval = 0) const;
+		void setKeyRepeat(int delay, int interval) const;
 
 		/**
 		* Gets the specified delay for the key repeat.
@@ -62,6 +66,11 @@ namespace sdl
 		* @return int
 		**/
 		int getKeyRepeatInterval() const;
+
+	private:
+
+		static EnumMap<Key, SDLKey, Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
+		static EnumMap<Key, SDLKey, Keyboard::KEY_MAX_ENUM> keys;
 
 	}; // Keyboard
 

@@ -134,16 +134,6 @@ namespace love
 		// Gets the love table.
 		luax_insistglobal(L, "love");
 
-		// Install constants.
-		if(m.constants != 0)
-		{
-			for(int i = 0; m.constants[i].name != 0; i++)
-			{
-				lua_pushinteger(L, m.constants[i].value);
-				lua_setfield(L, -2, m.constants[i].name);
-			}
-		}
-
 		// Create new table for module.
 		lua_newtable(L);
 

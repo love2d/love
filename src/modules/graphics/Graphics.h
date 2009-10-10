@@ -23,6 +23,7 @@
 
 // LOVE
 #include <common/Module.h>
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -34,43 +35,87 @@ namespace graphics
 
 		enum DrawMode
 		{
-			DRAW_LINE, 
-			DRAW_FILL
+			DRAW_LINE = 1, 
+			DRAW_FILL,
+			DRAW_MAX_ENUM
 		};
 
 		enum AlignMode
 		{
-			ALIGN_LEFT, 
+			ALIGN_LEFT = 1, 
 			ALIGN_CENTER, 
-			ALIGN_RIGHT
+			ALIGN_RIGHT,
+			ALIGN_MAX_ENUM
 		};
 
 		enum BlendMode
 		{
-			BLEND_ALPHA, 
-			BLEND_ADDITIVE
+			BLEND_ALPHA = 1, 
+			BLEND_ADDITIVE,
+			BLEND_MAX_ENUM
 		};
 
 		enum ColorMode
 		{
-			COLOR_MODULATE, 
-			COLOR_REPLACE
+			COLOR_MODULATE = 1, 
+			COLOR_REPLACE,
+			COLOR_MAX_ENUM
 		};
 
 		enum LineStyle
 		{
-			LINE_ROUGH, 
-			LINE_SMOOTH
+			LINE_ROUGH = 1, 
+			LINE_SMOOTH,
+			LINE_MAX_ENUM
 		};
 
 		enum PointStyle
 		{
-			POINT_ROUGH,
-			POINT_SMOOTH
+			POINT_ROUGH = 1,
+			POINT_SMOOTH,
+			POINT_MAX_ENUM
 		};
 
-		virtual ~Graphics(){};
-		
+		virtual ~Graphics();
+
+		static bool getConstant(const char * in, DrawMode & out);
+		static bool getConstant(DrawMode in, const char *& out);
+
+		static bool getConstant(const char * in, AlignMode & out);
+		static bool getConstant(AlignMode in, const char *& out);
+
+		static bool getConstant(const char * in, BlendMode & out);
+		static bool getConstant(BlendMode in, const char *& out);
+
+		static bool getConstant(const char * in, ColorMode & out);
+		static bool getConstant(ColorMode in, const char *& out);
+
+		static bool getConstant(const char * in, LineStyle & out);
+		static bool getConstant(LineStyle in, const char *& out);
+
+		static bool getConstant(const char * in, PointStyle & out);
+		static bool getConstant(PointStyle in, const char *& out);
+
+	private:
+
+		static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
+		static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
+
+		static StringMap<AlignMode, ALIGN_MAX_ENUM>::Entry alignModeEntries[];
+		static StringMap<AlignMode, ALIGN_MAX_ENUM> alignModes;
+
+		static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
+		static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;
+
+		static StringMap<ColorMode, COLOR_MAX_ENUM>::Entry colorModeEntries[];
+		static StringMap<ColorMode, COLOR_MAX_ENUM> colorModes;
+
+		static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
+		static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;
+
+		static StringMap<PointStyle, POINT_MAX_ENUM>::Entry pointStyleEntries[];
+		static StringMap<PointStyle, POINT_MAX_ENUM> pointStyles;
+
 	}; // Graphics
 
 } // graphics

@@ -27,6 +27,7 @@
 // LOVE
 #include <common/Data.h>
 #include <common/Object.h>
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -49,6 +50,7 @@ namespace filesystem
 			READ,
 			WRITE,
 			APPEND,
+			MODE_MAX_ENUM
 		};
 
 		/**
@@ -59,7 +61,7 @@ namespace filesystem
 		/**
 		* Destructor.
 		**/
-		virtual ~File(){};
+		virtual ~File();
 
 		/**
 		* Opens the file in a certain mode.
@@ -157,6 +159,14 @@ namespace filesystem
 		* @return The file extension for this File (without the dot).
 		**/
 		virtual std::string getExtension() const = 0;
+
+		static bool getConstant(const char * in, Mode & out);
+		static bool getConstant(Mode in, const char *& out);
+
+	private:
+
+		static StringMap<Mode, MODE_MAX_ENUM>::Entry modeEntries[];
+		static StringMap<Mode, MODE_MAX_ENUM> modes;
 
 	}; // File
 

@@ -42,11 +42,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mouse", "mouse\mouse.vcproj
 		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "native", "native\native.vcproj", "{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}"
-	ProjectSection(ProjectDependencies) = postProject
-		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "physics", "physics\physics.vcproj", "{39CDF8C8-016D-423E-94BA-7DD798CF0E15}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
@@ -76,11 +71,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "font", "font\font.vcproj", 
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "love", "love.vcproj", "{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "signal", "signal\signal.vcproj", "{5A7AAEBC-F269-41DA-984A-75F975549CA5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lovedll", "lovedll\lovedll.vcproj", "{2863FF8A-153F-46E0-8E71-2E58F3809E9B}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -129,10 +119,6 @@ Global
 		{88881251-6818-485E-A262-DE1283096589}.Debug|Win32.Build.0 = Debug|Win32
 		{88881251-6818-485E-A262-DE1283096589}.Release|Win32.ActiveCfg = Release|Win32
 		{88881251-6818-485E-A262-DE1283096589}.Release|Win32.Build.0 = Release|Win32
-		{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}.Debug|Win32.Build.0 = Debug|Win32
-		{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}.Release|Win32.ActiveCfg = Release|Win32
-		{CCAD89EC-2C3C-4F69-BF71-D9DA230FE109}.Release|Win32.Build.0 = Release|Win32
 		{39CDF8C8-016D-423E-94BA-7DD798CF0E15}.Debug|Win32.ActiveCfg = Debug|Win32
 		{39CDF8C8-016D-423E-94BA-7DD798CF0E15}.Debug|Win32.Build.0 = Debug|Win32
 		{39CDF8C8-016D-423E-94BA-7DD798CF0E15}.Release|Win32.ActiveCfg = Release|Win32
@@ -157,10 +143,6 @@ Global
 		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Debug|Win32.Build.0 = Debug|Win32
 		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Release|Win32.ActiveCfg = Release|Win32
 		{F2FDC53D-1ECD-4CF1-BA3F-3E59A2484DB9}.Release|Win32.Build.0 = Release|Win32
-		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Debug|Win32.Build.0 = Debug|Win32
-		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Release|Win32.ActiveCfg = Release|Win32
-		{5A7AAEBC-F269-41DA-984A-75F975549CA5}.Release|Win32.Build.0 = Release|Win32
 		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Debug|Win32.Build.0 = Debug|Win32
 		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Release|Win32.ActiveCfg = Release|Win32

@@ -23,6 +23,9 @@
 
 // LOVE
 #include <common/Module.h>
+#include <common/StringMap.h>
+#include <keyboard/Keyboard.h>
+#include <mouse/Mouse.h>
 
 namespace love
 {
@@ -30,39 +33,65 @@ namespace event
 {
 	class Event : public Module
 	{
-	protected:
-		virtual ~Event(){};
 	public:
 
-		enum
+		enum Type
 		{
-		   EVENT_NOEVENT = 0,
-		   EVENT_ACTIVEEVENT,
-		   EVENT_KEYDOWN,
-		   EVENT_KEYUP,
-		   EVENT_MOUSEMOTION,	
-		   EVENT_MOUSEBUTTONDOWN,
-		   EVENT_MOUSEBUTTONUP,
-		   EVENT_JOYAXISMOTION,
-		   EVENT_JOYBALLMOTION,
-		   EVENT_JOYHATMOTION,
-		   EVENT_JOYBUTTONDOWN,
-		   EVENT_JOYBUTTONUP,
-		   EVENT_QUIT,
-		   EVENT_SYSWMEVENT,
-		   EVENT_RESERVEDA,
-		   EVENT_RESERVEDB,
-		   EVENT_VIDEORESIZE,
-		   EVENT_VIDEOEXPOSE,	
-		   EVENT_RESERVED2,
-		   EVENT_RESERVED3,	
-		   EVENT_RESERVED4,
-		   EVENT_RESERVED5,	
-		   EVENT_RESERVED6,
-		   EVENT_RESERVED7,	
-		   EVENT_USEREVENT = 24,
-		   EVENT_NUMEVENTS = 32
+		   TYPE_INVALID,
+		   TYPE_KEY_PRESSED,
+		   TYPE_KEY_RELEASED,
+		   TYPE_MOUSE_PRESSED,
+		   TYPE_MOUSE_RELEASED,
+		   TYPE_JOYSTICK_RELEASED,
+		   TYPE_JOYSTICK_PRESSED,
+		   TYPE_QUIT,
+		   TYPE_MAX_ENUM = 32
 		};
+
+		union Message
+		{
+			Type type;
+
+			struct 
+			{
+				Type type;
+				love::mouse::Mouse::Button b;
+				unsigned x;
+				unsigned y;
+			} mouse;
+
+			struct
+			{
+				Type type;
+				unsigned index;
+				unsigned button;
+			} joystick;
+
+			struct
+			{
+				Type type;
+				love::keyboard::Keyboard::Key k;
+				unsigned short u;
+			} keyboard;
+		};
+
+		virtual ~Event();
+
+		static bool getConstant(const char * in, Type & out);
+		static bool getConstant(Type in, const char *& out);
+		static bool getConstant(const char * in, love::mouse::Mouse::Button & out);
+		static bool getConstant(love::mouse::Mouse::Button in, const char *& out);
+		static bool getConstant(const char * in, love::keyboard::Keyboard::Key & out);
+		static bool getConstant(love::keyboard::Keyboard::Key in, const char *& out);
+
+	private:
+
+		static StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[];
+		static StringMap<Type, TYPE_MAX_ENUM> types;
+		static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
+		static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
+		static StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
+		static StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;
 
 	}; // Event
 

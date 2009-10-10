@@ -18,25 +18,41 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_NATIVE_TCC_WRAP_NATIVE_H
-#define LOVE_NATIVE_TCC_WRAP_NATIVE_H
-
-// LOVE
-#include <common/config.h>
-#include "Native.h"
+#include "Joystick.h"
 
 namespace love
 {
-namespace native
+namespace joystick
 {
-namespace tcc
-{
-	int w_compile(lua_State * L);
-	int w_getSymbol(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_native(lua_State * L);
 
-} // tcc
-} // native
+	Joystick::~Joystick()
+	{
+	}
+
+	bool Joystick::getConstant(const char * in, Joystick::Hat & out)
+	{
+		return hats.find(in, out);
+	}
+
+	bool Joystick::getConstant(Joystick::Hat in, const char *& out)
+	{
+		return hats.find(in, out);
+	}
+
+	StringMap<Joystick::Hat, Joystick::HAT_MAX_ENUM>::Entry Joystick::hatEntries[] = 
+	{
+		{"c", Joystick::HAT_CENTERED},
+		{"u", Joystick::HAT_UP},
+		{"r", Joystick::HAT_RIGHT},
+		{"d", Joystick::HAT_DOWN},
+		{"l", Joystick::HAT_LEFT},
+		{"ru", Joystick::HAT_RIGHTUP},
+		{"rd", Joystick::HAT_RIGHTDOWN},
+		{"lu", Joystick::HAT_LEFTUP},
+		{"ld", Joystick::HAT_LEFTDOWN},
+	};
+
+	StringMap<Joystick::Hat, Joystick::HAT_MAX_ENUM> Joystick::hats(Joystick::hatEntries, sizeof(Joystick::hatEntries));
+
+} // joystick
 } // love
-
-#endif // LOVE_NATIVE_TCC_WRAP_NATIVE_H

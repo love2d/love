@@ -76,11 +76,6 @@ namespace image
 		 * @return The new ImageData.
 		 **/
 		virtual ImageData * newImageData(int width, int height, void *data) = 0;
-		
-		enum ImageFormat {
-			FORMAT_TGA,
-			FORMAT_BMP
-		};
 
 	}; // Image
 

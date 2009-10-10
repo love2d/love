@@ -23,60 +23,73 @@
 
 // LOVE
 #include <common/Data.h>
+#include <common/StringMap.h>
 
 #include "Image.h"
 
 namespace love
 {	
-	namespace image
+namespace image
+{
+	/**
+	 * Represents encoded pixel data. 
+	 **/
+	class EncodedImageData : public Data
 	{
-		/**
-		 * Represents encoded pixel data. 
-		 **/
-		class EncodedImageData : public Data
-			{
-			public:
-				
-				/**
-				* Constructor.
-				**/
-				EncodedImageData(void * data, Image::ImageFormat format, int size);
-				
-				/**
-				* Destructor.
-				**/
-				virtual ~EncodedImageData(){};
-				
-				// Implements Data.
-				void * getData() const;
-				int getSize() const;
-				
-				/**
-				* Get the format the data is encoded in.
-				**/
-				
-				Image::ImageFormat getFormat();
-				
-			private:
-				
-				/**
-				* Actual data.
-				**/
-				void * data;
-				
-				/**
-				* Size of the data.
-				**/
-				int size;
-				
-				/**
-				 * Image format.
-				 **/
-				Image::ImageFormat format;
-				
-			}; // EncodedImageData
+	public:
 		
-	} // image
+		enum Format 
+		{
+			FORMAT_TGA = 1,
+			FORMAT_BMP,
+			FORMAT_MAX_ENUM
+		};
+
+		/**
+		* Constructor.
+		**/
+		EncodedImageData(void * data, Format format, int size);
+		
+		/**
+		* Destructor.
+		**/
+		virtual ~EncodedImageData(){};
+		
+		// Implements Data.
+		void * getData() const;
+		int getSize() const;
+		
+		/**
+		* Get the format the data is encoded in.
+		**/
+		Format getFormat() const;
+
+		static bool getConstant(const char * in, Format & out);
+		static bool getConstant(Format in, const char *& out);
+		
+	private:
+		
+		/**
+		* Actual data.
+		**/
+		void * data;
+		
+		/**
+		* Size of the data.
+		**/
+		int size;
+		
+		/**
+		 * Image format.
+		 **/
+		Format format;
+
+		static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
+		static StringMap<Format, FORMAT_MAX_ENUM> formats;
+		
+	}; // EncodedImageData
+	
+} // image
 } // love
 
 #endif // LOVE_IMAGE_ENCODED_IMAGE_DATA_H

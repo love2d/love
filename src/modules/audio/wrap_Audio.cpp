@@ -272,7 +272,6 @@ namespace audio
 		w.flags = MODULE_T;
 		w.functions = functions;
 		w.types = types;
-		w.constants = 0;
 
 		return luax_register_module(L, w);
 	}

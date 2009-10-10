@@ -44,11 +44,14 @@ namespace physfs
 	int w_File_open(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
-		int mode = luaL_optint(L, 2, File::READ);
+		File::Mode mode;
+
+		if(!File::getConstant(luaL_checkstring(L, 2), mode))
+			return luaL_error(L, "Incorrect file open mode: %s", luaL_checkstring(L, 2));
 
 		try
 		{
-			lua_pushboolean(L, file->open((File::Mode)mode) ? 1 : 0);
+			lua_pushboolean(L, file->open(mode) ? 1 : 0);
 		}
 		catch(Exception e)
 		{

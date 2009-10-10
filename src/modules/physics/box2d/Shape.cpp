@@ -50,7 +50,7 @@ namespace box2d
 		data = 0;
 	}
 
-	int Shape::getType() const
+	Shape::Type Shape::getType() const
 	{
 		switch(shape->GetType())
 		{
@@ -59,7 +59,7 @@ namespace box2d
 		case e_polygonShape:
 			return SHAPE_POLYGON;
 		default:
-			return -1;
+			return SHAPE_INVALID;
 		}
 	}
 

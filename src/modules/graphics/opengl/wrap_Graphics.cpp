@@ -360,27 +360,45 @@ namespace opengl
 
 	int w_setBlendMode(lua_State * L)
 	{
-		int mode = luaL_checkint(L, 1);
+		Graphics::BlendMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Invalid blend mode: %s", str);
+
 		instance->setBlendMode(mode);
 		return 0;
 	}
 
 	int w_setColorMode(lua_State * L)
 	{
-		int mode = luaL_checkint(L, 1);
+		Graphics::ColorMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Invalid color mode: %s", str);
+
 		instance->setColorMode(mode);
 		return 0;
 	}
 
 	int w_getBlendMode(lua_State * L)
 	{
-		lua_pushinteger(L, instance->getBlendMode());
+		Graphics::BlendMode mode = instance->getBlendMode();
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Invalid blend mode: %s", str);
+
+		lua_pushstring(L, str);
 		return 1;
 	}
 
 	int w_getColorMode(lua_State * L)
 	{
-		lua_pushinteger(L, instance->getColorMode());
+		Graphics::ColorMode mode = instance->getColorMode();
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Invalid blend mode: %s", str);
+
+		lua_pushstring(L, str);
 		return 1;
 	}
 
@@ -393,7 +411,11 @@ namespace opengl
 
 	int w_setLineStyle(lua_State * L)
 	{
-		int style = luaL_checkint(L, 1);
+		Graphics::LineStyle style;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, style))
+			return luaL_error(L, "Invalid line style: %s", str);
+
 		instance->setLineStyle(style);
 		return 0;
 	}
@@ -401,7 +423,16 @@ namespace opengl
 	int w_setLine(lua_State * L)
 	{
 		float width = (float)luaL_checknumber(L, 1);
-		int style = luaL_optint(L, 2, Graphics::LINE_SMOOTH);
+
+		Graphics::LineStyle style = Graphics::LINE_SMOOTH;
+
+		if(lua_gettop(L) >= 2)
+		{
+			const char * str = luaL_checkstring(L, 1);
+			if(!Graphics::getConstant(str, style))
+				return luaL_error(L, "Invalid line style: %s", str);
+		}
+
 		instance->setLine(width, style);
 		return 0;
 	}
@@ -446,7 +477,15 @@ namespace opengl
 
 	int w_setPointStyle(lua_State * L)
 	{
-		int style = luaL_checkint(L, 1);
+		Graphics::PointStyle style = Graphics::POINT_SMOOTH;
+
+		if(lua_gettop(L) >= 2)
+		{
+			const char * str = luaL_checkstring(L, 1);
+			if(!Graphics::getConstant(str, style))
+				return luaL_error(L, "Invalid point style: %s", str);
+		}
+
 		instance->setPointStyle(style);
 		return 0;
 	}
@@ -454,7 +493,12 @@ namespace opengl
 	int w_setPoint(lua_State * L)
 	{
 		float size = (float)luaL_checknumber(L, 1);
-		int style = luaL_optint(L, 2, Graphics::POINT_SMOOTH);
+
+		Graphics::PointStyle style;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, style))
+			return luaL_error(L, "Invalid point style: %s", str);
+
 		instance->setPoint(size, style);
 		return 0;
 	}
@@ -587,7 +631,16 @@ namespace opengl
 		float x = (float)luaL_checknumber(L, 2);
 		float y = (float)luaL_checknumber(L, 3);
 		float wrap = (float)luaL_checknumber(L, 4);
-		int align = luaL_optint(L, 5, 0);
+
+		Graphics::AlignMode align = Graphics::ALIGN_LEFT;
+
+		if(lua_gettop(L) >= 5)
+		{
+			const char * str = luaL_checkstring(L, 5);
+			if(!Graphics::getConstant(str, align))
+				return luaL_error(L, "Incorrect alignment: %s", str);
+		}
+
 		instance->printf(str, x, y, wrap, align);
 		return 0;
 	}
@@ -612,31 +665,43 @@ namespace opengl
 
 	int w_triangle(lua_State * L)
 	{
-		int type = luaL_checkint(L, 1);
+		Graphics::DrawMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Incorrect draw mode %s", str);
+
 		float x1 = (float)luaL_checknumber(L, 2);
 		float y1 = (float)luaL_checknumber(L, 3);
 		float x2 = (float)luaL_checknumber(L, 4);
 		float y2 = (float)luaL_checknumber(L, 5);
 		float x3 = (float)luaL_checknumber(L, 6);
 		float y3 = (float)luaL_checknumber(L, 7);
-		instance->triangle(type, x1, y1, x2, y2, x3, y3);
+		instance->triangle(mode, x1, y1, x2, y2, x3, y3);
 		return 0;
 	}
 
 	int w_rectangle(lua_State * L)
 	{
-		int type = luaL_checkint(L, 1);
+		Graphics::DrawMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Incorrect draw mode %s", str);
+
 		float x = (float)luaL_checknumber(L, 2);
 		float y = (float)luaL_checknumber(L, 3);
 		float w = (float)luaL_checknumber(L, 4);
 		float h = (float)luaL_checknumber(L, 5);
-		instance->rectangle(type, x, y, w, h);
+		instance->rectangle(mode, x, y, w, h);
 		return 0;
 	}
 
 	int w_quad(lua_State * L)
 	{
-		int type = luaL_checkint(L, 1);
+		Graphics::DrawMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Incorrect draw mode %s", str);
+
 		float x1 = (float)luaL_checknumber(L, 2);
 		float y1 = (float)luaL_checknumber(L, 3);
 		float x2 = (float)luaL_checknumber(L, 4);
@@ -645,18 +710,22 @@ namespace opengl
 		float y3 = (float)luaL_checknumber(L, 7);
 		float x4 = (float)luaL_checknumber(L, 6);
 		float y4 = (float)luaL_checknumber(L, 7);
-		instance->quad(type, x1, y1, x2, y2, x3, y3, x4, y4);
+		instance->quad(mode, x1, y1, x2, y2, x3, y3, x4, y4);
 		return 0;
 	}
 
 	int w_circle(lua_State * L)
 	{
-		int type = luaL_checkint(L, 1);
+		Graphics::DrawMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Incorrect draw mode %s", str);
+
 		float x = (float)luaL_checknumber(L, 2);
 		float y = (float)luaL_checknumber(L, 3);
 		float radius = (float)luaL_checknumber(L, 4);
 		int points = luaL_optint(L, 5, 10);
-		instance->circle(type, x, y, radius, points);
+		instance->circle(mode, x, y, radius, points);
 		return 0;
 	}
 
@@ -795,58 +864,6 @@ namespace opengl
 		0		
 	};
 
-	// List of constants.
-	static const Constant constants[] = {
-
-		{ "align_left", Graphics::ALIGN_LEFT },
-		{ "align_right", Graphics::ALIGN_RIGHT },
-		{ "align_center", Graphics::ALIGN_CENTER },
-
-		{ "blend_alpha", Graphics::BLEND_ALPHA },
-		{ "blend_additive", Graphics::BLEND_ADDITIVE },
-		{ "color_replace", Graphics::COLOR_REPLACE },
-		{ "color_modulate", Graphics::COLOR_MODULATE },
-
-		{ "draw_line", Graphics::DRAW_LINE },
-		{ "draw_fill", Graphics::DRAW_FILL },
-
-		{ "line_smooth", Graphics::LINE_SMOOTH },
-		{ "line_rough", Graphics::LINE_ROUGH },
-
-		{ "point_smooth", Graphics::POINT_SMOOTH },
-		{ "point_rough", Graphics::POINT_ROUGH },
-
-		{ "filter_linear", Image::FILTER_LINEAR },
-		{ "filter_nearest", Image::FILTER_NEAREST },
-
-		{ "wrap_clamp", Image::WRAP_CLAMP },
-		{ "wrap_repeat", Image::WRAP_REPEAT },
-
-		/**
-
-		// Vertex buffer geometry types.
-
-		{ "type_points", TYPE_POINTS },
-		{ "type_lines", TYPE_LINES },
-		{ "type_line_strip", TYPE_LINE_STRIP },
-		{ "type_triangles", TYPE_TRIANGLES },
-		{ "type_triangle_strip", TYPE_TRIANGLE_STRIP },
-		{ "type_triangle_fan", TYPE_TRIANGLE_FAN },
-		{ "type_num", TYPE_NUM },
-		
-		// Vertex buffer usage hints.
-
-		{ "usage_array", USAGE_ARRAY },
-		{ "usage_dynamic", USAGE_DYNAMIC },
-		{ "usage_static", USAGE_STATIC },
-		{ "usage_stream", USAGE_STREAM },
-		{ "usage_num", USAGE_NUM },
-		**/
-
-
-		{ 0, 0 }
-	};
-
 	int luaopen_love_graphics(lua_State * L)
 	{
 		if(instance == 0)
@@ -867,7 +884,6 @@ namespace opengl
 		w.flags = MODULE_T;
 		w.functions = functions;
 		w.types = types;
-		w.constants = constants;
 
 		luax_register_module(L, w);
 

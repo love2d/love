@@ -21,7 +21,7 @@
 #include "File.h"
 
 // STD
-#include <string.h>
+#include <cstring>
 
 // LOVE
 #include "Filesystem.h"
@@ -46,6 +46,9 @@ namespace physfs
 	
 	bool File::open(Mode mode)
 	{
+		if(mode == CLOSED)
+			return true;
+
 		// File must exist if read mode.
 		if((mode == READ))
 			if(!PHYSFS_exists(filename.c_str()))
@@ -73,9 +76,6 @@ namespace physfs
 		case WRITE:
 			file = PHYSFS_openWrite(filename.c_str());
 			break;
-		case CLOSED:
-			// Heh. Case closed.
-			return true;
 		}
 
 		return (file != 0);

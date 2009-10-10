@@ -265,15 +265,6 @@ namespace physfs
 		0
 	};
 
-	// List of constants.
-	static const Constant constants[] = {
-		{ "file_closed", File::CLOSED },
-		{ "file_read", File::READ },
-		{ "file_write", File::WRITE },
-		{ "file_append", File::APPEND },
-		{ 0, 0 }
-	};
-
 	int luaopen_love_filesystem(lua_State * L)
 	{
 		if(instance == 0)
@@ -295,7 +286,6 @@ namespace physfs
 		w.flags = MODULE_FILESYSTEM_T;
 		w.functions = functions;
 		w.types = types;
-		w.constants = constants;
 
 		return luax_register_module(L, w);
 	}

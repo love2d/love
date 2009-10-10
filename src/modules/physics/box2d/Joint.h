@@ -81,7 +81,7 @@ namespace box2d
 		/**
 		* Gets the type of joint.
 		**/
-		int getType() const;
+		Type getType() const;
 
 		/**
 		* Gets the anchor positions of the Joint in world

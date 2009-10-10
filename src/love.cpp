@@ -33,15 +33,12 @@
 #include <audio/wrap_Audio.h>
 #include <event/sdl/wrap_Event.h>
 #include <filesystem/physfs/wrap_Filesystem.h>
-#include <font/freetype/wrap_Font.h>
 #include <graphics/opengl/wrap_Graphics.h>
 #include <image/wrap_Image.h>
 #include <joystick/sdl/wrap_Joystick.h>
 #include <keyboard/sdl/wrap_Keyboard.h>
 #include <mouse/sdl/wrap_Mouse.h>
-#include <native/tcc/wrap_Native.h>
 #include <physics/box2d/wrap_Physics.h>
-#include <signal/posix/wrap_Signal.h>
 #include <sound/wrap_Sound.h>
 #include <timer/sdl/wrap_Timer.h>
 
@@ -60,15 +57,12 @@ static const luaL_Reg modules[] = {
 	{ "love.audio", love::audio::luaopen_love_audio },
 	{ "love.event", love::event::sdl::luaopen_love_event },
 	{ "love.filesystem", love::filesystem::physfs::luaopen_love_filesystem },
-	{ "love.font", love::font::freetype::luaopen_love_font },
 	{ "love.graphics", love::graphics::opengl::luaopen_love_graphics },
 	{ "love.image", love::image::luaopen_love_image },
 	{ "love.joystick", love::joystick::sdl::luaopen_love_joystick },
 	{ "love.keyboard", love::keyboard::sdl::luaopen_love_keyboard },
 	{ "love.mouse", love::mouse::sdl::luaopen_love_mouse },
-	{ "love.native", love::native::tcc::luaopen_love_native },
 	{ "love.physics", love::physics::box2d::luaopen_love_physics },
-	{ "love.signal", love::signal::posix::luaopen_love_signal },
 	{ "love.sound", love::sound::luaopen_love_sound },
 	{ "love.timer", love::timer::sdl::luaopen_love_timer },
 	{ 0, 0 }

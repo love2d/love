@@ -24,22 +24,43 @@ namespace love
 {
 namespace image
 {
-	EncodedImageData::EncodedImageData(void * d, Image::ImageFormat f, int s) {
-		data = d;
-		format = f;
-		size = s;
+	EncodedImageData::EncodedImageData(void * d, Format f, int s)
+		: data(d), format(f), size(s)
+	{
 	}
 	
-	void * EncodedImageData::getData() const {
+	void * EncodedImageData::getData() const 
+	{
 		return data;
 	}
 	
-	Image::ImageFormat EncodedImageData::getFormat() {
+	EncodedImageData::Format EncodedImageData::getFormat() const
+	{
 		return format;
 	}
 	
-	int EncodedImageData::getSize() const {
+	int EncodedImageData::getSize() const 
+	{
 		return size;
 	}
+
+	bool EncodedImageData::getConstant(const char * in, EncodedImageData::Format & out)
+	{
+		return formats.find(in, out);
+	}
+
+	bool EncodedImageData::getConstant(EncodedImageData::Format in, const char *& out)
+	{
+		return formats.find(in, out);
+	}
+
+	StringMap<EncodedImageData::Format, EncodedImageData::FORMAT_MAX_ENUM>::Entry EncodedImageData::formatEntries[] = 
+	{
+		{"tga", EncodedImageData::FORMAT_TGA},
+		{"bmp", EncodedImageData::FORMAT_BMP},
+	};
+
+	StringMap<EncodedImageData::Format, EncodedImageData::FORMAT_MAX_ENUM> EncodedImageData::formats(EncodedImageData::formatEntries, sizeof(EncodedImageData::formatEntries));
+
 } // image
 } // love

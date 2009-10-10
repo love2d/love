@@ -21,11 +21,12 @@
 #ifndef LOVE_JOYSTICK_SDL_JOYSTICK_H
 #define LOVE_JOYSTICK_SDL_JOYSTICK_H
 
-// SDL
-#include <SDL.h>
-
 // LOVE
 #include <joystick/Joystick.h>
+#include <common/EnumMap.h>
+
+// SDL
+#include <SDL.h>
 
 namespace love
 {
@@ -59,8 +60,13 @@ namespace sdl
 		int getAxes(lua_State * L);
 		int getBall(lua_State * L);
 		bool isDown(int index, int button);
-		int getHat(int index, int hat);
+		Hat getHat(int index, int hat);
 		void close(int index);
+
+	private:
+
+		static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry hatEntries[];
+		static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM> hats;
 
 	}; // Joystick
 

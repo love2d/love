@@ -202,15 +202,19 @@ namespace sdl
 		return (SDL_JoystickGetButton(joysticks[index], button) == 1);
 	}
 
-	int Joystick::getHat(int index, int hat)
+	Joystick::Hat Joystick::getHat(int index, int hat)
 	{
+		Hat h = HAT_INVALID;
+
 		if(!verifyJoystick(index))
-			return 0;
+			return h;
 
 		if(hat >= getNumHats(index))
-			return 0;
+			return h;
 
-		return SDL_JoystickGetHat(joysticks[index], hat);
+		hats.find(SDL_JoystickGetHat(joysticks[index], hat), h);
+
+		return h;
 	}
 
 	void Joystick::close(int index)
@@ -224,6 +228,21 @@ namespace sdl
 			joysticks[index] = 0;
 		}
 	}
+
+	EnumMap<Joystick::Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry Joystick::hatEntries[] = 
+	{
+		{Joystick::HAT_CENTERED, SDL_HAT_CENTERED},
+		{Joystick::HAT_UP, SDL_HAT_UP},
+		{Joystick::HAT_RIGHT, SDL_HAT_RIGHT},
+		{Joystick::HAT_DOWN, SDL_HAT_DOWN},
+		{Joystick::HAT_LEFT, SDL_HAT_LEFT},
+		{Joystick::HAT_RIGHTUP, SDL_HAT_RIGHTUP},
+		{Joystick::HAT_RIGHTDOWN, SDL_HAT_RIGHTDOWN},
+		{Joystick::HAT_LEFTUP, SDL_HAT_LEFTUP},
+		{Joystick::HAT_LEFTDOWN, SDL_HAT_LEFTDOWN},
+	};
+
+	EnumMap<Joystick::Hat, Uint8, Joystick::HAT_MAX_ENUM> Joystick::hats(Joystick::hatEntries, sizeof(Joystick::hatEntries));
 
 } // sdl
 } // joystick
