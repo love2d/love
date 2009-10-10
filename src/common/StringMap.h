@@ -38,7 +38,7 @@ namespace love
 			Record() : set(false) {}
 		};
 
-		const static unsigned MAX = (unsigned)((float)SIZE * 1.5f);
+		const static unsigned MAX = SIZE*2;
 
 		Record records[MAX];
 		const char * reverse[SIZE];
