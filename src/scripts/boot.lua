@@ -604,9 +604,9 @@ function love.nogame()
 		
 		-- Ground
 		love.graphics.setColor(146, 201, 87)
-		love.graphics.rectangle(love.draw_fill, 0, 530, 800, 70)
+		love.graphics.rectangle("fill", 0, 530, 800, 70)
 		love.graphics.setColor(205, 227, 161)
-		love.graphics.rectangle(love.draw_fill, 0, 520, 800, 10)
+		love.graphics.rectangle("fill", 0, 520, 800, 10)
 		love.graphics.setColor(255, 255, 255)
 		
 		lists.f:draw()
