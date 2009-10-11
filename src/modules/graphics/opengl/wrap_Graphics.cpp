@@ -383,8 +383,8 @@ namespace opengl
 	int w_getBlendMode(lua_State * L)
 	{
 		Graphics::BlendMode mode = instance->getBlendMode();
-		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		const char * str;
+		if(!Graphics::getConstant(mode, str))
 			return luaL_error(L, "Invalid blend mode: %s", str);
 
 		lua_pushstring(L, str);
@@ -394,9 +394,9 @@ namespace opengl
 	int w_getColorMode(lua_State * L)
 	{
 		Graphics::ColorMode mode = instance->getColorMode();
-		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
-			return luaL_error(L, "Invalid blend mode: %s", str);
+		const char * str;
+		if(!Graphics::getConstant(mode, str))
+			return luaL_error(L, "Invalid color mode: %s", str);
 
 		lua_pushstring(L, str);
 		return 1;
@@ -459,7 +459,10 @@ namespace opengl
 
 	int w_getLineStyle(lua_State * L)
 	{
-		lua_pushinteger(L, instance->getLineStyle());
+		Graphics::LineStyle style = instance->getLineStyle();
+		const char *str;
+		Graphics::getConstant(style, str);
+		lua_pushstring(L, str);
 		return 1;
 	}
 

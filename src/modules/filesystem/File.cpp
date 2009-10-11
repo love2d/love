@@ -43,7 +43,7 @@ namespace filesystem
 		{"c", File::CLOSED},
 		{"r", File::READ},
 		{"w", File::WRITE},
-		{"w+", File::APPEND},
+		{"a", File::APPEND},
 	};
 
 	StringMap<File::Mode, File::MODE_MAX_ENUM> File::modes(File::modeEntries, sizeof(File::modeEntries));
