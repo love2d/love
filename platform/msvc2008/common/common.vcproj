@@ -311,14 +311,6 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\..\src\common\string.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\..\..\src\common\string.h"
-			>
-		</File>
-		<File
 			RelativePath="..\..\..\src\common\StringMap.h"
 			>
 		</File>
