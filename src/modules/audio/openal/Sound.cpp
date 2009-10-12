@@ -38,7 +38,7 @@ namespace openal
 		int fmt = pool->getFormat(data->getChannels(), data->getBits());
 
 		if(fmt == 0)
-			throw love::Exception("Unsopported audio format.");
+			throw love::Exception("Unsupported audio format.");
 
 		alBufferData(buffer, fmt, data->getData(), data->getSize(), data->getSampleRate());
 
