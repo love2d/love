@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -81,7 +81,7 @@ namespace physfs
 
 		// Try to add the save directory to the search path.
 		// (No error on fail, it means that the path doesn't exist).
-		PHYSFS_addToSearchPath(save_path_full.c_str(), 1);
+		PHYSFS_addToSearchPath(save_path_full.c_str(), 0);
 
 		return true;
 	}
@@ -96,7 +96,7 @@ namespace physfs
 			return false;
 
 		// Add the directory.
-		if(!PHYSFS_addToSearchPath(source, 0))
+		if(!PHYSFS_addToSearchPath(source, 1))
 			return false;
 
 		// Save the game source.
@@ -121,17 +121,17 @@ namespace physfs
 
 		// Create the save folder. (We're now "at" %APPDATA%).
 		if(!mkdir(save_path_relative.c_str()))
-		{	
+		{
 			PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
 			return false;
-		}	
+		}
 
 		// Set the final write directory.
 		if(!PHYSFS_setWriteDir(save_path_full.c_str()))
 			return false;
 
-		// Add the directory. (Well not be readded if already present).
-		if(!PHYSFS_addToSearchPath(save_path_full.c_str(), 1))
+		// Add the directory. (Will not be readded if already present).
+		if(!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
 		{
 			PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
 			return false;
@@ -139,7 +139,7 @@ namespace physfs
 
 		return true;
 	}
-	
+
 	File * Filesystem::newFile(const char *filename)
 	{
 		return new File(filename);
@@ -213,7 +213,7 @@ namespace physfs
 	bool Filesystem::mkdir(const char * file)
 	{
 		if(PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
-			return false;		
+			return false;
 
 		if(!PHYSFS_mkdir(file))
 			return false;
@@ -223,7 +223,7 @@ namespace physfs
 	bool Filesystem::remove(const char * file)
 	{
 		if(PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
-			return false;	
+			return false;
 
 		if(!PHYSFS_delete(file))
 			return false;
@@ -235,7 +235,7 @@ namespace physfs
 		// The file to read from. The file must either be created
 		// on-the-fly, or passed as a parameter.
 		File * file;
-		
+
         if(lua_isstring(L, 1))
 		{
 			// Create the file.
@@ -255,7 +255,7 @@ namespace physfs
 		if(data == 0)
 			return luaL_error(L, "File could not be read.");
 
-		// Close and delete the file, if we created it. 
+		// Close and delete the file, if we created it.
 		// (I.e. if the first parameter is a string).
 		if(lua_isstring(L, 1))
 			file->release();
@@ -265,7 +265,7 @@ namespace physfs
 
 		// Push the size.
 		lua_pushinteger(L, data->getSize());
-		
+
 		// Lua has a copy now, so we can free it.
 		data->release();
 
@@ -277,8 +277,8 @@ namespace physfs
 		// The file to write to. The file must either be created
 		// on-the-fly, or passed as a parameter.
 		File * file;
-		
-		// We know for sure that we need a second parameter, so 
+
+		// We know for sure that we need a second parameter, so
 		// let's check that first.
 		if(lua_isnoneornil(L, 2))
 			return luaL_error(L, "Second argument needed.");
@@ -323,7 +323,7 @@ namespace physfs
 		// Write the data.
 		bool success = file->write(input, length);
 
-		// Close and delete the file, if we created 
+		// Close and delete the file, if we created
 		// it in this function.
 		if(lua_isstring(L, 1))
 		{
@@ -349,7 +349,7 @@ namespace physfs
 		int type = lua_type(L, 1);
 
 		if(type != LUA_TSTRING)
-			return luaL_error(L, "Function requires parameter of type string.");	
+			return luaL_error(L, "Function requires parameter of type string.");
 
 		const char * dir = lua_tostring(L, 1);
 		char **rc = PHYSFS_enumerateFiles(dir);
@@ -365,7 +365,7 @@ namespace physfs
 			lua_settable(L, -3);
 			index++;
 		}
-			
+
 		PHYSFS_freeList(rc);
 
 		return 1;
@@ -379,9 +379,9 @@ namespace physfs
 		{
 			file = newFile(lua_tostring(L, 1));
 			if(!file->open(File::READ))
-				return luaL_error(L, "Could not open file %s.\n", lua_tostring(L, 1)); 
+				return luaL_error(L, "Could not open file %s.\n", lua_tostring(L, 1));
 			lua_pop(L, 1);
-			
+
 			luax_newtype(L, "File", FILESYSTEM_FILE_T, file, false);
 			lua_pushboolean(L, 1); // 1 = autoclose.
 		}
@@ -428,7 +428,7 @@ namespace physfs
 					break;
 				}
 			}
-				
+
 			if(newline > 0)
 				break;
 		}
@@ -447,13 +447,13 @@ namespace physfs
 			char * str = new char[linesize];
 
 			// Read it.
-			file->seek(pos); 
+			file->seek(pos);
 			if(file->read(str, linesize) == -1)
 				return luaL_error(L, "Read error.");
 
 			if(str[linesize-1]=='\r')
 				linesize -= 1;
-			
+
 			lua_pushlstring(L, str, linesize);
 
 			// Free the memory. Lua has a copy now.
@@ -462,7 +462,7 @@ namespace physfs
 			// Set the beginning of the next line.
 			if(!file->eof())
 				file->seek(newline+1);
-			
+
 			return 1;
 		}
 
@@ -486,7 +486,7 @@ namespace physfs
 			return luaL_error(L, "The argument must be a string.");
 
 		const char * filename = lua_tostring(L, -1);
-		
+
 		// The file must exist.
 		if(!exists(filename))
 			return luaL_error(L, "File %s does not exist.", filename);
