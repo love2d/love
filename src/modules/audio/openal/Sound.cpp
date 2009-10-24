@@ -72,7 +72,8 @@ namespace openal
 
 	void Sound::stop(love::audio::Source * s)
 	{
-		// Also no need.
+		if(source)
+			alSourceStop(source);
 	}
 
 	void Sound::rewind(love::audio::Source * s)

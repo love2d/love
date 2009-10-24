@@ -60,7 +60,7 @@ namespace null
 	{
 	}
 
-	bool Source::isFinished() const
+	bool Source::isStopped() const
 	{
 		return true;		
 	}

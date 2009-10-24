@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libmodplug.lib libmpg123.lib libogg.lib libvorbis.lib libvorbisfile.lib libFLAC_static.lib libFLAC++_static.lib"
+				AdditionalDependencies="libmodplug.lib libmpg123.lib libogg.lib libvorbis.lib libvorbisfile.lib libFLAC_static_d.lib libFLAC++_static_d.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\lib"

@@ -45,7 +45,7 @@ namespace audio
 		virtual void pause() = 0;
 		virtual void resume() = 0;
 		virtual void rewind() = 0;
-		virtual bool isFinished() const = 0;
+		virtual bool isStopped() const = 0;
 		virtual void update() = 0;
 
 		virtual void setPitch(float pitch) = 0;

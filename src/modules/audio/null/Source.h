@@ -48,7 +48,7 @@ namespace null
 		void pause();
 		void resume();
 		void rewind();
-		bool isFinished() const;
+		bool isStopped() const;
 		void update();
 
 		void setPitch(float pitch);

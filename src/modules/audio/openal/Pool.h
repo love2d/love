@@ -102,12 +102,6 @@ namespace openal
 		**/
 		ALuint claim(love::audio::Source * source);
 
-		/**
-		* Makes the specified OpenAL source available for use.
-		* @param source The OpenAL source.
-		**/
-		void release(love::audio::Source * source);
-
 		ALuint find(const love::audio::Source * source) const;
 
 		void update();
@@ -121,6 +115,12 @@ namespace openal
 		void rewind();
 
 	private:
+
+		/**
+		* Makes the specified OpenAL source available for use.
+		* @param source The OpenAL source.
+		**/
+		void release(love::audio::Source * source);
 
 		ALuint findi(const love::audio::Source * source) const;
 	}; // Pool

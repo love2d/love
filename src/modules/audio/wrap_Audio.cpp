@@ -101,29 +101,25 @@ namespace audio
 
 	int w_stop(lua_State * L)
 	{
-		Source * c = luax_checksource(L, 1);
-		instance->stop(c);
+		instance->stop();
 		return 0;
 	}
 
 	int w_pause(lua_State * L)
 	{
-		Source * c = luax_checksource(L, 1);
-		instance->pause(c);
+		instance->pause();
 		return 0;
 	}
 
 	int w_resume(lua_State * L)
 	{
-		Source * c = luax_checksource(L, 1);
-		instance->resume(c);
+		instance->resume();
 		return 0;
 	}
 
 	int w_rewind(lua_State * L)
 	{
-		Source * c = luax_checksource(L, 1);
-		instance->rewind(c);
+		instance->rewind();
 		return 0;
 	}
 

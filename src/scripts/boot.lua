@@ -197,7 +197,12 @@ function love.run()
 
 		-- Process events.
 		for e,a,b,c in love.event.poll() do
-			if e == "q" then return end
+			if e == "q" then 
+				if love.audio then
+					love.audio.stop()
+				end			
+				return 
+			end
 			love.handlers[e](a,b,c)
 		end
 
@@ -671,7 +676,9 @@ function love.errhand(msg)
 	while true do
 		e, a, b, c = love.event.wait()
 		
-		if e == "q" then return end
+		if e == "q" then
+			return 
+		end
 		if e == "kp" and a == "escape" then
 			return
 		end

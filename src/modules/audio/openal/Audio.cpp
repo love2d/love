@@ -55,10 +55,7 @@ namespace openal
 	{
 		finish = true;
 
-		int status;
-		SDL_WaitThread(thread, &status);
-
-		pool->stop();
+		SDL_WaitThread(thread, 0);
 
 		delete pool;
 		

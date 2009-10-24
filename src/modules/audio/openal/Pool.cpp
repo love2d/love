@@ -27,8 +27,8 @@
 		exit(-1); \
 	} \
 
-#define LOCK(m) MUTEX_ASSERT(SDL_mutexP(m), 0)
-#define UNLOCK(m) MUTEX_ASSERT(SDL_mutexV(m), 0);
+#define LOCK(m) MUTEX_ASSERT(SDL_LockMutex(m), 0)
+#define UNLOCK(m) MUTEX_ASSERT(SDL_UnlockMutex(m), 0)
 
 namespace love
 {
@@ -54,16 +54,9 @@ namespace openal
 
 	Pool::~Pool()
 	{
-		SDL_DestroyMutex(mutex);
-		
-		std::map<love::audio::Source *, ALuint>::iterator i = playing.begin();
+		stop();
 
-		while(i != playing.end())
-		{
-			i->first->stop();
-			i->first->release();
-			i++;
-		}
+		SDL_DestroyMutex(mutex);
 
 		// Free all sources.
 		alDeleteSources(NUM_SOURCES, sources);
@@ -106,23 +99,12 @@ namespace openal
 
 			// Insert into map of playing sources.
 			playing.insert(std::pair<love::audio::Source *, ALuint>(source, s));
+
+			source->retain();
 		}
 		UNLOCK(mutex);
 
 		return s;
-	}
-
-	void Pool::release(love::audio::Source * source)
-	{
-		LOCK(mutex);
-		ALuint s = findi(source);
-
-		if(s != 0)
-		{
-			available.push(s);
-			playing.erase(source);
-		}
-		UNLOCK(mutex);
 	}
 
 	ALuint Pool::find(const love::audio::Source * source) const
@@ -152,18 +134,14 @@ namespace openal
 		LOCK(mutex);
 
 		std::map<love::audio::Source *, ALuint>::iterator i = playing.begin();
-
+	
 		while(i != playing.end())
 		{
-			if(i->first->isFinished())
+			if(i->first->isStopped())
 			{
-				// Stop the source.
 				i->first->stop();
-
-				// Make it available.
+				i->first->release();
 				available.push(i->second);
-
-				// Remove if from the playing list.
 				playing.erase(i++);
 			}
 			else
@@ -190,7 +168,13 @@ namespace openal
 	{
 		LOCK(mutex);
 		for(std::map<love::audio::Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		{
 			i->first->stop();
+			available.push(i->second);
+		}
+
+		playing.clear();
+
 		UNLOCK(mutex);
 	}
 
@@ -216,6 +200,17 @@ namespace openal
 		for(std::map<love::audio::Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->rewind();
 		UNLOCK(mutex);
+	}
+
+	void Pool::release(love::audio::Source * source)
+	{
+		ALuint s = findi(source);
+
+		if(s != 0)
+		{
+			available.push(s);
+			playing.erase(source);
+		}
 	}
 
 	ALuint Pool::findi(const love::audio::Source * source) const

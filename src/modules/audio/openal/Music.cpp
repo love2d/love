@@ -96,19 +96,13 @@ namespace openal
 			alSourceStop(source);
 			alSourceUnqueueBuffers(source, NUM_BUFFERS, bufs);
 			source = 0;
+			rewind(s);
 		}
 	}
 
 	void Music::rewind(love::audio::Source * s)
 	{
-		// Stop source, unqueue buffers.
-		stop(s);
-
-		// Rewind data pointer.
 		decoder->rewind();
-
-		// Requeue buffers.
-		play(s);
 	}
 
 	bool Music::stream(love::audio::Source * source, ALuint buffer)
