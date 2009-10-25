@@ -1,7 +1,7 @@
 #!/bin/bash
 echo Generating src/Makefile.am ...
 cd src
-inc_current=`pwd`
+inc_current=.
 inc_modules="$inc_current/modules"
 echo "AM_CPPFLAGS = -I$inc_current -I$inc_modules -I/usr/include/AL -I/usr/include/freetype2  \$(INCLUDE_LUA) -I/usr/include/SDL
 AUTOMAKE_OPTIONS = subdir-objects
