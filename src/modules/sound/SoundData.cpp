@@ -36,16 +36,10 @@ namespace sound
 	SoundData::SoundData(Decoder * decoder)
 		: data(0), size(0), sampleRate(Decoder::DEFAULT_SAMPLE_RATE), bits(0), channels(0)
 	{
+		int decoded = decoder->decode();
 
-		// Decode all data here.
-		while(!decoder->isFinished())
+		while(decoded > 0)
 		{
-			int decoded = decoder->decode();
-
-			// If this returns 0, then we're probably at EOF.
-			if(decoded <= 0)
-				break;
-
 			// Expand or allocate buffer. Note that realloc may move
 			// memory to other locations.
 			data = (char*)realloc(data, size + decoder->getSize());
@@ -55,6 +49,8 @@ namespace sound
 
 			// Keep this up to date.
 			size += decoded;
+
+			decoded = decoder->decode();
 		}
 
 		channels = decoder->getChannels();

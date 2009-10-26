@@ -45,6 +45,8 @@ namespace lullaby
 		// Load the module.
 		plug = ModPlug_Load(data->getData(), data->getSize());
 
+		ModPlug_SetMasterVolume(plug, 512);
+
 		if(plug == 0)
 			throw love::Exception("Could not load file with ModPlug.");
 	}
