@@ -14,7 +14,7 @@ bin_PROGRAMS = love
 #love_LDADD =
 
 love_SOURCES = \\" > Makefile.am.tmp
-find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" \) \) -exec echo '{}' \\ \; >> Makefile.am.tmp
+find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) \) -exec echo '{}' \\ \; >> Makefile.am.tmp
 cat Makefile.am.tmp | grep -v -f"../platform/unix/exclude" | head -c -3 > Makefile.am
 #head -c -3 Makefile.am.tmp > Makefile.am
 rm Makefile.am.tmp
