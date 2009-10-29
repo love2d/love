@@ -48,11 +48,12 @@ namespace sdl
 	{
 		if(lua_gettop(L) == 0)
 		{
+			// Disables key repeat.
 			instance->setKeyRepeat(0, 0);
 			return 0;
 		}
 
-		instance->setKeyRepeat(luaL_checkint(L, 1), luaL_checkint(L, 2));
+		instance->setKeyRepeat(luaL_optint(L, 1, Keyboard::DEFAULT), luaL_optint(L, 2, Keyboard::DEFAULT));
 		return 0;
 	}
 

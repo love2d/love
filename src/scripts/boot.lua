@@ -60,7 +60,18 @@ end
 
 -- Returns the leaf of a full path.
 function love.path.leaf(p)
-
+	local a = 1
+	local last = p
+	
+	while a do
+		a = string.find(p, "/", a+1)
+		
+		if a then
+			last = string.sub(p, a+1)
+		end
+	end
+	
+	return last
 end
 
 -- Finds the key in the table with the lowest integral index. The lowest 
@@ -113,7 +124,10 @@ function love.boot()
 
 	if arg and arg[1] then
 		love.filesystem.init(love.path.getfull(love.arg.getLow(arg)))
-		if not pcall(love.filesystem.setSource, love.path.getfull(arg[1])) then
+		local full_source =  love.path.getfull(arg[1])
+		local leaf = love.path.leaf(full_source)
+		love.filesystem.setIdentity(leaf)
+		if not pcall(love.filesystem.setSource, full_source) then
 			love.nogame()
 		end
 	else

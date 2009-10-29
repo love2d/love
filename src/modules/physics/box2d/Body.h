@@ -22,6 +22,7 @@
 #define LOVE_PHYSICS_BOX2D_BODY_H
 
 // LOVE
+#include <common/math.h>
 #include <common/runtime.h>
 #include <common/Object.h>
 
@@ -93,17 +94,15 @@ namespace box2d
 
 		/**
 		* Gets the current position of the Body.
-		* @returns The current x-position.
-		* @returns The current y-position.
+		* @returns The current position.
 		**/
-		int getPosition(lua_State * L);
+		void getPosition(float & x_o, float & y_o);
 
 		/**
 		* Gets the velocity in the current center of mass.
-		* @returns The x-component of the velocity.
-		* @returns The y-component of the velocity.
+		* @returns The velocity in the current center of mass.
 		**/
-		int getLinearVelocity(lua_State * L);
+		void getLinearVelocity(float & x_o, float & y_o);
 
 		/**
 		* The current center of mass for the Body in world
@@ -111,7 +110,7 @@ namespace box2d
 		* @returns The x-component of the point.
 		* @returns The y-component of the point.
 		**/
-		int getWorldCenter(lua_State * L);
+		void getWorldCenter(float & x_o, float & y_o);
 
 		/**
 		* The current center of mass for the Body in local
@@ -119,7 +118,7 @@ namespace box2d
 		* @returns The x-component of the point.
 		* @returns The y-component of the point.
 		**/
-		int getLocalCenter(lua_State * L);
+		void getLocalCenter(float & x_o, float & y_o);
 
 		/**
 		* Get the current Body spin. (Angular velocity).
@@ -233,7 +232,7 @@ namespace box2d
 		* @returns The x-coordinate of the point in world coordinates.
 		* @returns The y-coordinate of the point in world coordinates.
 		**/
-		int getWorldPoint(lua_State * L);
+		void getWorldPoint(float x, float y, float & x_o, float & y_o);
 
 		/**
 		* Transforms a vector (x, y) from local coordinates
@@ -243,7 +242,7 @@ namespace box2d
 		* @returns The x-coordinate of the vector in world coordinates.
 		* @returns The y-coordinate of the vector in world coordinates.
 		**/
-		int getWorldVector(lua_State * L);
+		void getWorldVector(float x, float y, float & x_o, float & y_o);
 
 		/**
 		* Transforms a point (x, y) from world coordinates
@@ -253,7 +252,7 @@ namespace box2d
 		* @returns The x-coordinate of the point in local coordinates.
 		* @returns The y-coordinate of the point in local coordinates.
 		**/
-		int getLocalPoint(lua_State * L);
+		void getLocalPoint(float x, float y, float & x_o, float & y_o);
 
 		/**
 		* Transforms a vector (x, y) from world coordinates
@@ -263,7 +262,7 @@ namespace box2d
 		* @returns The x-coordinate of the vector in local coordinates.
 		* @returns The y-coordinate of the vector in local coordinates.
 		**/
-		int getLocalVector(lua_State * L);
+		void getLocalVector(float x, float y, float & x_o, float & y_o);
 
 		/**
 		* Gets the velocity on the Body for the given world point.
@@ -272,7 +271,7 @@ namespace box2d
 		* @returns The x-component of the velocity vector.
 		* @returns The y-component of the velocity vector.
 		**/
-		int getLinearVelocityFromWorldPoint(lua_State * L);
+		void getLinearVelocityFromWorldPoint(float x, float y, float & x_o, float & y_o);
 
 		/**
 		* Gets the velocity on the Body for the given local point.
@@ -281,7 +280,7 @@ namespace box2d
 		* @returns The x-component of the velocity vector.
 		* @returns The y-component of the velocity vector.
 		**/
-		int getLinearVelocityFromLocalPoint(lua_State * L);
+		void getLinearVelocityFromLocalPoint(float x, float y, float & x_o, float & y_o);
 
 		/**
 		* Returns true if the Body is a bullet, false otherwise.

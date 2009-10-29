@@ -180,7 +180,7 @@ namespace keyboard
 			KEY_MAX_ENUM = 512
 		};
 
-		static const int DEFAULT = 0;
+		static const int DEFAULT = -1;
 
 		virtual ~Keyboard(){}
 

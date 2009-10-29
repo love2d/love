@@ -55,25 +55,49 @@ namespace box2d
 	int w_Body_getPosition(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getPosition(L);
+
+		float x_o, y_o;
+		t->getPosition(x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getLinearVelocity(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getLinearVelocity(L);
+
+		float x_o, y_o;
+		t->getLinearVelocity(x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getWorldCenter(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getWorldCenter(L);
+
+		float x_o, y_o;
+		t->getWorldCenter(x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getLocalCenter(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getLocalCenter(L);
+
+		float x_o, y_o;
+		t->getLocalCenter(x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getAngularVelocity(lua_State * L)
@@ -228,37 +252,85 @@ namespace box2d
 	int w_Body_getWorldPoint(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getWorldPoint(L);
+
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float x_o, y_o;
+		t->getWorldPoint(x, y, x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getWorldVector(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getWorldVector(L);
+
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float x_o, y_o;
+		t->getWorldVector(x, y, x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getLocalPoint(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getLocalPoint(L);
+
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float x_o, y_o;
+		t->getLocalPoint(x, y, x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getLocalVector(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getLocalVector(L);
+
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float x_o, y_o;
+		t->getLocalVector(x, y, x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getLinearVelocityFromWorldPoint(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getLinearVelocityFromWorldPoint(L);
+
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float x_o, y_o;
+		t->getLinearVelocityFromWorldPoint(x, y, x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_getLinearVelocityFromLocalPoint(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		return t->getLinearVelocityFromLocalPoint(L);
+
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float x_o, y_o;
+		t->getLinearVelocityFromLocalPoint(x, y, x_o, y_o);
+		lua_pushnumber(L, x_o);
+		lua_pushnumber(L, y_o);
+
+		return 2;
 	}
 
 	int w_Body_isBullet(lua_State * L)

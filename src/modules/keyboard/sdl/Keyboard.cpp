@@ -46,11 +46,10 @@ namespace sdl
 
 	void Keyboard::setKeyRepeat(int delay, int interval) const
 	{
-		if(delay == DEFAULT)
-			delay = SDL_DEFAULT_REPEAT_DELAY;
+		delay = (delay == DEFAULT) ? SDL_DEFAULT_REPEAT_DELAY : delay;
+		interval = (interval == DEFAULT) ? SDL_DEFAULT_REPEAT_INTERVAL : interval;
 
-		if(interval == DEFAULT)
-			interval = SDL_DEFAULT_REPEAT_INTERVAL;
+		SDL_EnableKeyRepeat(delay, interval);
 	}
 
 	int Keyboard::getKeyRepeatDelay() const

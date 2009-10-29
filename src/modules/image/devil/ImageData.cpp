@@ -89,6 +89,9 @@ namespace devil
 		ilBindImage(image);	
 
 		ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
+
+		// Set to black.
+		memset((void*)ilGetData(), 0, width*height*4);
 	}
 	
 	ImageData::ImageData(int width, int height, void *data)

@@ -58,14 +58,18 @@ namespace box2d
 		return world->scaleUp(body->GetPosition().y);
 	}
 
-	int Body::getPosition(lua_State * L)
+	void Body::getPosition(float & x_o, float & y_o)
 	{
-		return pushVector(L, world->scaleUp(body->GetPosition()));
+		b2Vec2 v = world->scaleUp(body->GetPosition());
+		x_o = v.x;
+		y_o = v.y;
 	}
 
-	int Body::getLinearVelocity(lua_State * L)
+	void Body::getLinearVelocity(float & x_o, float & y_o)
 	{
-		return pushVector(L, world->scaleUp(body->GetLinearVelocity()));
+		b2Vec2 v = world->scaleUp(body->GetLinearVelocity());
+		x_o = v.x;
+		y_o = v.y;
 	}
 
 	float Body::getAngle()
@@ -73,14 +77,18 @@ namespace box2d
 		return body->GetAngle();
 	}
 
-	int Body::getWorldCenter(lua_State * L)
+	void Body::getWorldCenter(float & x_o, float & y_o)
 	{
-		return pushVector(L, world->scaleUp(body->GetWorldCenter()));
+		b2Vec2 v = world->scaleUp(body->GetWorldCenter());
+		x_o = v.x;
+		y_o = v.y;
 	}
 
-	int Body::getLocalCenter(lua_State * L)
+	void Body::getLocalCenter(float & x_o, float & y_o)
 	{
-		return pushVector(L, world->scaleUp(body->GetLocalCenter()));
+		b2Vec2 v = world->scaleUp(body->GetLocalCenter());
+		x_o = v.x;
+		y_o = v.y;
 	}
 
 	float Body::getAngularVelocity() const
@@ -187,40 +195,46 @@ namespace box2d
 		body->SetMass(&massData);
 	}
 
-	int Body::getWorldPoint(lua_State * L)
+	void Body::getWorldPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleDown(getVector(L));
-		return pushVector(L, world->scaleUp(body->GetWorldPoint(v)));
+		b2Vec2 v = world->scaleUp(body->GetWorldPoint(world->scaleDown(b2Vec2(x, y))));
+		x_o = v.x;
+		y_o = v.y;
 	}
 
-	int Body::getWorldVector(lua_State * L)
+	void Body::getWorldVector(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleDown(getVector(L));
-		return pushVector(L, world->scaleUp(body->GetWorldVector(v)));
+		b2Vec2 v = world->scaleUp(body->GetWorldVector(world->scaleDown(b2Vec2(x, y))));
+		x_o = v.x;
+		y_o = v.y;
 	}
 
-	int Body::getLocalPoint(lua_State * L)
+	void Body::getLocalPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleDown(getVector(L));
-		return pushVector(L, world->scaleUp(body->GetLocalPoint(v)));
+		b2Vec2 v = world->scaleUp(body->GetLocalPoint(world->scaleDown(b2Vec2(x, y))));
+		x_o = v.x;
+		y_o = v.y;
 	}
 
-	int Body::getLocalVector(lua_State * L)
+	void Body::getLocalVector(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleDown(getVector(L));
-		return pushVector(L, world->scaleUp(body->GetLocalVector(v)));
+		b2Vec2 v = world->scaleUp(body->GetLocalVector(world->scaleDown(b2Vec2(x, y))));
+		x_o = v.x;
+		y_o = v.y;
 	}
 
-	int Body::getLinearVelocityFromWorldPoint(lua_State * L)
+	void Body::getLinearVelocityFromWorldPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleDown(getVector(L));
-		return pushVector(L, world->scaleUp(body->GetLinearVelocityFromWorldPoint(v)));
+		b2Vec2 v = world->scaleUp(body->GetLinearVelocityFromWorldPoint(world->scaleDown(b2Vec2(x, y))));
+		x_o = v.x;
+		y_o = v.y;
 	}
 
-	int Body::getLinearVelocityFromLocalPoint(lua_State * L)
+	void Body::getLinearVelocityFromLocalPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleDown(getVector(L));
-		return pushVector(L, world->scaleUp(body->GetLinearVelocityFromLocalPoint(v)));
+		b2Vec2 v = world->scaleUp(body->GetLinearVelocityFromLocalPoint(world->scaleDown(b2Vec2(x, y))));
+		x_o = v.x;
+		y_o = v.y;
 	}
 
 	bool Body::isBullet() const

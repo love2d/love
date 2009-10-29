@@ -60,10 +60,6 @@ namespace physfs
 		if(!isInited)
 			return false;
 
-		// Check whether save directory is already set.
-		if(!save_identity.empty() || PHYSFS_getWriteDir() != 0)
-			return false;
-
 		// Store the save directory.
 		save_identity = std::string(ident);
 
