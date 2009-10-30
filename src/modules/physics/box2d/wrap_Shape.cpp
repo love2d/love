@@ -123,6 +123,7 @@ namespace box2d
 	int w_Shape_testSegment(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
 		return t->testSegment(L);
 	}
 
