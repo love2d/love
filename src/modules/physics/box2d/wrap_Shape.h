@@ -53,6 +53,7 @@ namespace box2d
 	int w_Shape_setData(lua_State * L);
 	int w_Shape_getData(lua_State * L);
 	int w_Shape_getBoundingBox(lua_State * L);
+	int w_Shape_destroy(lua_State * L);
 	int luaopen_shape(lua_State * L);
 
 } // box2d

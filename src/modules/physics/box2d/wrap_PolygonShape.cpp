@@ -61,6 +61,7 @@ namespace box2d
 		{ "setData", w_Shape_setData },
 		{ "getData", w_Shape_getData },
 		{ "getBoundingBox", w_Shape_getBoundingBox },
+		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};
 

@@ -398,6 +398,13 @@ namespace box2d
 		return 0;
 	}
 
+	int w_Body_destroy(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		t->release();
+		return 0;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "getX", w_Body_getX },
 		{ "getY", w_Body_getY },
@@ -439,6 +446,7 @@ namespace box2d
 		{ "setAllowSleeping", w_Body_setAllowSleeping },
 		{ "putToSleep", w_Body_putToSleep },
 		{ "wakeUp", w_Body_wakeUp },
+		{ "destroy", w_Body_destroy },
 		{ 0, 0 }
 	};
 

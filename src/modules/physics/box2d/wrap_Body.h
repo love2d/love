@@ -73,6 +73,7 @@ namespace box2d
 	int w_Body_setAllowSleeping(lua_State * L);
 	int w_Body_putToSleep(lua_State * L);
 	int w_Body_wakeUp(lua_State * L);
+	int w_Body_destroy(lua_State * L);
 	int luaopen_body(lua_State * L);
 
 } // box2d

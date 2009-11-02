@@ -198,6 +198,13 @@ namespace box2d
 		return t->getBoundingBox(L);
 	}
 
+	int w_Shape_destroy(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		t->release();
+		return 0;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "getType", w_Shape_getType },
 		{ "setFriction", w_Shape_setFriction },
@@ -219,6 +226,7 @@ namespace box2d
 		{ "setData", w_Shape_setData },
 		{ "getData", w_Shape_getData },
 		{ "getBoundingBox", w_Shape_getBoundingBox },
+		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};
 

@@ -74,6 +74,7 @@ namespace box2d
 		{ "getReactionTorque", w_Joint_getReactionTorque },
 		{ "setCollideConnected", w_Joint_setCollideConnected },
 		{ "getCollideConnected", w_Joint_getCollideConnected },
+		{ "destroy", w_Joint_destroy },
 		{ 0, 0 }
 	};
 

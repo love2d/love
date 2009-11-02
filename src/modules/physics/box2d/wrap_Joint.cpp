@@ -78,6 +78,13 @@ namespace box2d
 		return 1;
 	}
 
+	int w_Joint_destroy(lua_State * L)
+	{
+		Joint * t = luax_checkjoint(L, 1);
+		t->release();
+		return 0;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "getType", w_Joint_getType },
 		{ "getAnchors", w_Joint_getAnchors },
@@ -85,6 +92,7 @@ namespace box2d
 		{ "getReactionTorque", w_Joint_getReactionTorque },
 		{ "setCollideConnected", w_Joint_setCollideConnected },
 		{ "getCollideConnected", w_Joint_getCollideConnected },
+		{ "destroy", w_Joint_destroy },
 		{ 0, 0 }
 	};
 
