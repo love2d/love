@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		A904A5FD1043A2BE005228C3 /* libmpg123.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A904A5FC1043A2BE005228C3 /* libmpg123.dylib */; };
-		A904A6221043A72A005228C3 /* libmpg123.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A904A5FC1043A2BE005228C3 /* libmpg123.dylib */; };
 		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
 		A9255DD21043183600BA1496 /* SDL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
 		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
@@ -192,16 +190,17 @@
 		A968F0D91083A9FC00A895AA /* Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D81083A9FC00A895AA /* Mouse.cpp */; };
 		A968F0DD1083AA6600A895AA /* Shape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0DB1083AA6600A895AA /* Shape.cpp */; };
 		A968F0DE1083AA6600A895AA /* Joint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0DC1083AA6600A895AA /* Joint.cpp */; };
-		A968F1271083AC1A00A895AA /* libltdl.3.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F8110432C3E00BA1496 /* libltdl.3.dylib */; };
 		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
 		A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
-		A9D8FC0F1043EBEC0063561F /* libmodplug.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
-		A9DE839F1043D81A00567BA4 /* libmodplug.dylib in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9DE839E1043D81A00567BA4 /* libmodplug.dylib */; };
 		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
 		A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1C01046EFA70049C70C /* LoveDocument.icns */; };
+		A9F16927109E7BAD00FC83D1 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
+		A9F169A7109E824900FC83D1 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
+		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
+		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -211,10 +210,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A968F1271083AC1A00A895AA /* libltdl.3.dylib in Copy Frameworks */,
+				A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */,
+				A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */,
 				A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */,
-				A9DE839F1043D81A00567BA4 /* libmodplug.dylib in Copy Frameworks */,
-				A904A6221043A72A005228C3 /* libmpg123.dylib in Copy Frameworks */,
 				A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */,
 				A9255F431043240F00BA1496 /* IL.framework in Copy Frameworks */,
 				A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */,
@@ -231,13 +229,11 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A904A5FC1043A2BE005228C3 /* libmpg123.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpg123.dylib; sourceTree = "<group>"; };
 		A9255DEA1043188D00BA1496 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = "<group>"; };
 		A9255DEB1043188D00BA1496 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
 		A9255F421043240F00BA1496 /* IL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IL.framework; path = /Library/Frameworks/IL.framework; sourceTree = "<absolute>"; };
 		A9255F51104324D700BA1496 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
-		A9255F8110432C3E00BA1496 /* libltdl.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libltdl.3.dylib; path = /usr/lib/libltdl.3.dylib; sourceTree = "<absolute>"; };
 		A93E69DE10420ABF007D418B /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		A93E69DF10420ABF007D418B /* Data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Data.h; sourceTree = "<group>"; };
 		A93E69E010420ABF007D418B /* Exception.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Exception.cpp; sourceTree = "<group>"; };
@@ -625,9 +621,10 @@
 		A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ParticleSystem.cpp; sourceTree = "<group>"; };
 		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
-		A9DE839E1043D81A00567BA4 /* libmodplug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmodplug.dylib; sourceTree = "<group>"; };
 		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
+		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
+		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -644,9 +641,9 @@
 				A93E6E5410420B57007D418B /* SDL.framework in Frameworks */,
 				A93E6E5510420B57007D418B /* Lua.framework in Frameworks */,
 				A9255F52104324D700BA1496 /* Ogg.framework in Frameworks */,
-				A904A5FD1043A2BE005228C3 /* libmpg123.dylib in Frameworks */,
-				A9D8FC0F1043EBEC0063561F /* libmodplug.dylib in Frameworks */,
 				A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */,
+				A9F16927109E7BAD00FC83D1 /* libmodplug.framework in Frameworks */,
+				A9F169A7109E824900FC83D1 /* mpg123.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -656,10 +653,10 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A9F169A6109E824900FC83D1 /* mpg123.framework */,
+				A9F16926109E7BAD00FC83D1 /* libmodplug.framework */,
 				A9D307E9106635C3004FEDF8 /* physfs.framework */,
 				A9255F51104324D700BA1496 /* Ogg.framework */,
-				A9DE839E1043D81A00567BA4 /* libmodplug.dylib */,
-				A904A5FC1043A2BE005228C3 /* libmpg123.dylib */,
 				A9255F421043240F00BA1496 /* IL.framework */,
 				A9255E021043195A00BA1496 /* Vorbis.framework */,
 				A93E6E4610420B4A007D418B /* OpenAL.framework */,
@@ -675,7 +672,6 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				A9255F8110432C3E00BA1496 /* libltdl.3.dylib */,
 			);
 			name = "Other Frameworks";
 			sourceTree = "<group>";
@@ -1519,7 +1515,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#! /bin/sh\n#Use install_name_tool, make love to search libs in its own framework folder instead\n#*very* hackish.\n\n# IL\ninstall_name_tool -change /Library/Frameworks/IL.framework/Versions/A/IL @executable_path/../Frameworks/IL.framework/Versions/A/IL build/Release/love.app/Contents/MacOS/love\n\n# FreeType\ninstall_name_tool -change /Library/Frameworks/FreeType.framework/Versions/2.3/FreeType @executable_path/../Frameworks/FreeType.framework/Versions/2.3/FreeType build/Release/love.app/Contents/MacOS/love\n\n# SDL\ninstall_name_tool -change /Library/Frameworks/SDL.framework/Versions/A/SDL @executable_path/../Frameworks/SDL.framework/Versions/A/SDL build/Release/love.app/Contents/MacOS/love\n\n# Lua\ninstall_name_tool -change /Library/Frameworks/Lua.framework/Versions/A/Lua @executable_path/../Frameworks/Lua.framework/Versions/A/Lua build/Release/love.app/Contents/MacOS/love\n\n# Ogg\ninstall_name_tool -change /Library/Frameworks/Ogg.framework/Versions/A/Ogg @executable_path/../Frameworks/Ogg.framework/Versions/A/Ogg build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Library/Frameworks/Ogg.framework/Versions/A/Ogg @executable_path/../Frameworks/Ogg.framework/Versions/A/Ogg build/Release/love.app/Contents/Frameworks/Vorbis.framework/Versions/A/Vorbis\n\n# Vorbis\ninstall_name_tool -change /Library/Frameworks/Vorbis.framework/Versions/A/Vorbis @executable_path/../Frameworks/Vorbis.framework/Versions/A/Vorbis build/Release/love.app/Contents/MacOS/love\n\n# libmpg123\ninstall_name_tool -change /usr/local/lib/libmpg123.0.dylib @executable_path/../Frameworks/libmpg123.dylib build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Users/bill/libs/lib/libmpg123.0.dylib @executable_path/../Frameworks/libmpg123.dylib build/Release/love.app/Contents/MacOS/love\n\n# libphysfs\ninstall_name_tool -change /Users/bill/downloads/physfs-2.0.0/build/Release/libphysfs.dylib @executable_path/../Frameworks/libphysfs.dylib build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Users/bill/downloads/physfs-2.0.0/build/Release/libphysfs.dylib @executable_path/../Frameworks/libphysfs.dylib build/Release/love.app/Contents/Frameworks/libphysfs.dylib\n\n# libmodplug\ninstall_name_tool -change /Users/bill/libs/lib/libmodplug.0.dylib @executable_path/../Frameworks/libmodplug.dylib build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Users/bill/libs-ppc/lib/libmodplug.0.dylib @executable_path/../Frameworks/libmodplug.dylib build/Release/love.app/Contents/MacOS/love\n\n# libltdl\ninstall_name_tool -change /usr/lib/libltdl.3.dylib @executable_path/../Frameworks/libltdl.3.dylib build/Release/love.app/Contents/Frameworks/libmpg123.dylib\n\nexit 0";
+			shellScript = "#! /bin/sh\n#Use install_name_tool, make love to search libs in its own framework folder instead\n#*very* hackish.\n\n# IL\ninstall_name_tool -change /Library/Frameworks/IL.framework/Versions/A/IL @executable_path/../Frameworks/IL.framework/Versions/A/IL build/Release/love.app/Contents/MacOS/love\n\n# FreeType\ninstall_name_tool -change /Library/Frameworks/FreeType.framework/Versions/2.3/FreeType @executable_path/../Frameworks/FreeType.framework/Versions/2.3/FreeType build/Release/love.app/Contents/MacOS/love\n\n# SDL\ninstall_name_tool -change /Library/Frameworks/SDL.framework/Versions/A/SDL @executable_path/../Frameworks/SDL.framework/Versions/A/SDL build/Release/love.app/Contents/MacOS/love\n\n# Lua\ninstall_name_tool -change /Library/Frameworks/Lua.framework/Versions/A/Lua @executable_path/../Frameworks/Lua.framework/Versions/A/Lua build/Release/love.app/Contents/MacOS/love\n\n# Ogg\ninstall_name_tool -change /Library/Frameworks/Ogg.framework/Versions/A/Ogg @executable_path/../Frameworks/Ogg.framework/Versions/A/Ogg build/Release/love.app/Contents/MacOS/love\n\ninstall_name_tool -change /Library/Frameworks/Ogg.framework/Versions/A/Ogg @executable_path/../Frameworks/Ogg.framework/Versions/A/Ogg build/Release/love.app/Contents/Frameworks/Vorbis.framework/Versions/A/Vorbis\n\n# Vorbis\ninstall_name_tool -change /Library/Frameworks/Vorbis.framework/Versions/A/Vorbis @executable_path/../Frameworks/Vorbis.framework/Versions/A/Vorbis build/Release/love.app/Contents/MacOS/love\n\n# mpg123\ninstall_name_tool -change /Library/Frameworks/mpg123.framework @executable_path/../Frameworks/mpg123.framework build/Release/love.app/Contents/MacOS/love\n\n# physfs\ninstall_name_tool -change /Library/Frameworks/physfs.framework @executable_path/../Frameworks/physfs.framework build/Release/love.app/Contents/MacOS/love\n\n# libmodplug\ninstall_name_tool -change /Library/Framework/libmodplug.framework @executable_path/../Frameworks/libmodplug.framework build/Release/love.app/Contents/MacOS/love\n\nexit 0";
 		};
 		A9DEC1F51046F3F30049C70C /* Create DMG */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1846,9 +1842,8 @@
 				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
-					/usr/local/include,
-					/opt/local/include,
 					../../src,
 					../../src/modules,
 				);
@@ -1857,6 +1852,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = love;
+				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx10.5;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = "i386 ppc";

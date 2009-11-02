@@ -28,7 +28,11 @@
 #include <common/Module.h>
 
 // FreeType2
+#ifdef LOVE_MACOSX
+#include <freetype/ft2build.h>
+#else
 #include <ft2build.h>
+#endif
 #include <freetype/freetype.h>
 #include <freetype/ftglyph.h>
 #include <freetype/ftoutln.h>

@@ -26,7 +26,11 @@
 #include "Decoder.h"
 
 // libmpg123
+#ifdef LOVE_MACOSX
+#include <mpg123/mpg123.h>
+#else
 #include <mpg123.h>
+#endif
 
 namespace love
 {

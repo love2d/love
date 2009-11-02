@@ -21,7 +21,7 @@
 #include "Filesystem.h"
 
 // Physfs
-#include <physfs.h>
+//#include <physfs.h> // this gets included by virtue of Filesystem.h including File.h
 
 namespace love
 {

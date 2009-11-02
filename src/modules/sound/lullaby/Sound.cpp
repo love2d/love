@@ -23,7 +23,7 @@
 #include "ModPlugDecoder.h"
 #include "Mpg123Decoder.h"
 #include "VorbisDecoder.h"
-#include "FLACDecoder.h"
+//#include "FLACDecoder.h"
 
 namespace love
 {
