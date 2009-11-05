@@ -99,7 +99,7 @@ namespace opengl
 		//get line style
 		s.lineStyle = (glIsEnabled(GL_LINE_SMOOTH) == GL_TRUE) ? Graphics::LINE_SMOOTH : Graphics::LINE_ROUGH;
 		//get line stipple
-		s.stipple = (glIsEnabled(GL_LINE_SMOOTH) == GL_TRUE) ? true : false;
+		s.stipple = (glIsEnabled(GL_LINE_STIPPLE) == GL_TRUE);
 		if (s.stipple)
 		{
 			//get the stipple repeat
@@ -112,7 +112,7 @@ namespace opengl
 		//get point style
 		s.pointStyle = (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE) ? Graphics::POINT_SMOOTH : Graphics::POINT_ROUGH;
 		//get scissor status
-		s.scissor = (glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE) ? true : false;
+		s.scissor = (glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE);
 		//do we have scissor, if so, store the box
 		if (s.scissor)
 			glGetIntegerv(GL_SCISSOR_BOX, s.scissorBox);
@@ -220,9 +220,6 @@ namespace opengl
 		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 		glEnable(GL_POINT_SMOOTH);
 		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-
-		// TODO:
-		//reset();
 
 		// Enable textures
 		glEnable(GL_TEXTURE_2D);	
