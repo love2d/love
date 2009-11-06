@@ -62,4 +62,8 @@
 #	define LOVE_EXPORT
 #endif
 
+#if defined(LOVE_WINDOWS)
+#	define	LOVE_LEGENDARY_UTF8_ARGV_HACK
+#endif
+
 #endif // LOVE_CONFIG_H

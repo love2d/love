@@ -20,7 +20,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua.lib d/SDLmain.lib d/SDL.lib opengl32.lib glu32.lib DevIL.lib freetype.lib physfs.lib ws2_32.lib openal32.lib libmodplug.lib libmpg123.lib libogg.lib libvorbis.lib libvorbisfile.lib libFLAC_static_d.lib libFLAC++_static_d.lib"
+				AdditionalDependencies="lua.lib SDLmain.lib SDL.lib opengl32.lib glu32.lib DevIL.lib freetype.lib physfs.lib ws2_32.lib openal32.lib libmodplug.lib libmpg123.lib libogg.lib libvorbis.lib libvorbisfile.lib libFLAC_static_d.lib libFLAC++_static_d.lib"
 				AdditionalLibraryDirectories="lib;Debug"
 				GenerateDebugInformation="true"
 				SubSystem="1"
