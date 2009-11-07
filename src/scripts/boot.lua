@@ -86,6 +86,46 @@ function love.arg.getLow(a)
 	return a[m]
 end
 
+love.arg.options = {
+	console = { a = 0 },
+	game = { a = 1 }
+}
+
+function love.arg.parse_option(m, i)
+	m.set = true
+
+	if m.a > 0 then
+		m.arg = {}
+		for j=i,i+m.a-1 do
+			table.insert(m.arg, arg[j])
+			i = j
+		end
+	end
+
+	return i
+end
+
+function love.arg.parse_options()
+		
+	local last = 0
+	local argc = #arg
+	
+	for i=1,argc do
+		-- Look for options.
+		local s, e, m = string.find(arg[i], "%-%-(.+)")
+	
+		if m and love.arg.options[m] then
+			i = love.arg.parse_option(love.arg.options[m], i+1)
+		end
+		
+		last = i
+	end
+	
+	if not love.arg.options.game.set then
+		love.arg.parse_option(love.arg.options.game, last)
+	end
+end
+
 function love.createhandlers()
 
 	-- Standard callback handlers.
@@ -122,9 +162,13 @@ function love.boot()
 	require("love")
 	require("love.filesystem")
 
-	if arg and arg[1] then
+	love.arg.parse_options()
+	
+	local o = love.arg.options
+	
+	if o.game.set and o.game.arg[1] then
 		love.filesystem.init(love.path.getfull(love.arg.getLow(arg)))
-		local full_source =  love.path.getfull(arg[1])
+		local full_source =  love.path.getfull(o.game.arg[1])
 		local leaf = love.path.leaf(full_source)
 		love.filesystem.setIdentity(leaf)
 		if not pcall(love.filesystem.setSource, full_source) then
@@ -162,6 +206,7 @@ function love.init()
 			physics = true,
 			sound = true,
 		},
+		console = false, -- Only relevant for windows.
 	}
 
 	-- If config file exists, load it and allow it to update config table.
@@ -173,6 +218,10 @@ function love.init()
 	-- love.conf appear, so we should check for it anyway.
 	if love.conf then
 		love.conf(c)
+	end
+	
+	if love.arg.options.console.set then
+		c.console = true
 	end
 	
 	-- Gets desired modules.
@@ -195,6 +244,11 @@ function love.init()
 	end
 	
 	if love.filesystem and love.filesystem.exists("main.lua") then require("main.lua") end
+	
+	-- Console hack
+	if c.console and love._openConsole then
+		love._openConsole()
+	end
 	
 end
 
@@ -716,5 +770,3 @@ result = xpcall(love.init, love.errhand)
 if not result then return end
 result = xpcall(love.run, love.errhand)
 if not result then return end
-
-print("Done.")

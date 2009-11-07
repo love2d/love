@@ -24,9 +24,16 @@
 #include <common/runtime.h>
 #include <common/MemoryData.h>
 
-#ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
+#ifdef LOVE_WINDOWS
 #include <windows.h>
-#endif // #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
+#endif // LOVE_WINDOWS
+
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+#include <fcntl.h>
+#include <io.h>
+#include <iostream>
+#include <fstream>
+#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
 #ifdef LOVE_BUILD_EXE
 
@@ -74,6 +81,10 @@ static const luaL_Reg modules[] = {
 
 #endif // LOVE_BUILD_STANDALONE
 
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+int w__openConsole(lua_State * L);
+#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
+
 extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 {
 	love::luax_insistglobal(L, "love");
@@ -87,6 +98,11 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 
 	lua_pushstring(L, love::VERSION_CODENAME);
 	lua_setfield(L, -2, "_version_codename");
+
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+	lua_pushcfunction(L, w__openConsole);
+	lua_setfield(L, -2, "_openConsole");
+#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
 	lua_newtable(L);
 
@@ -161,6 +177,61 @@ void get_utf8_arguments(int & argc, char **& argv)
 
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+
+int w__openConsole(lua_State * L)
+{
+	static bool is_open = false;
+
+	if(is_open)
+		return 0;
+
+	static const int MAX_CONSOLE_LINES = 5000;
+	long std_handle;
+	int console_handle;
+	CONSOLE_SCREEN_BUFFER_INFO console_info;
+	FILE *fp;
+
+	AllocConsole();
+	
+	// Set size.
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
+	console_info.dwSize.Y = MAX_CONSOLE_LINES;
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), console_info.dwSize);
+
+	SetConsoleTitle(TEXT("LOVE Console"));
+
+	// Redirect stdout.
+	std_handle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+	console_handle = _open_osfhandle(std_handle, _O_TEXT);
+	fp = _fdopen(console_handle, "w");
+	*stdout = *fp;
+	setvbuf(stdout, NULL, _IONBF, 0);
+
+	// Redirect stdin.
+	std_handle = (long)GetStdHandle(STD_INPUT_HANDLE);
+	console_handle = _open_osfhandle(std_handle, _O_TEXT);
+	fp = _fdopen(console_handle, "r");
+	*stdin = *fp;
+	setvbuf(stdin, NULL, _IONBF, 0);
+
+	// Redirect stderr.
+	std_handle = (long)GetStdHandle(STD_ERROR_HANDLE);
+	console_handle = _open_osfhandle(std_handle, _O_TEXT);
+	fp = _fdopen(console_handle, "w");
+	*stderr = *fp;
+	setvbuf(stderr, NULL, _IONBF, 0);
+
+	// Sync std::cout, std::cerr, etc.
+	std::ios::sync_with_stdio();
+
+	is_open = true;
+
+	return 0;
+}
+
+#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
+
 #ifdef LOVE_BUILD_EXE
 
 int main(int argc, char ** argv)
@@ -176,9 +247,10 @@ int main(int argc, char ** argv)
 
 	// Oh, you just want the version? Okay!
 	if(argc > 1 && strcmp(argv[1],"--version") == 0) {
-		printf("This is LOVE %s (%s), the unquestionably awesome 2D game engine.\n", love::VERSION_STR, love::VERSION_CODENAME);
+		printf("LOVE %s (%s)\n", love::VERSION_STR, love::VERSION_CODENAME);
 		return 0;
 	}
+
 	// Create the virtual machine.
 	lua_State * L = lua_open();
 	luaL_openlibs(L);
@@ -190,11 +262,22 @@ int main(int argc, char ** argv)
 	// Add command line arguments to global arg (like stand-alone Lua).
 	{
 		lua_newtable(L);
-		for(int i = 0;i<argc;i++)
+
+		if(argc > 0)
+		{
+			lua_pushstring(L, argv[0]);
+			lua_rawseti(L, -2, -2);
+		}
+
+		lua_pushstring(L, "embedded boot.lua");
+		lua_rawseti(L, -2, -1);
+
+		for(int i = 1; i<argc; i++)
 		{
 			lua_pushstring(L, argv[i]);
 			lua_rawseti(L, -2, i);
 		}
+
 		lua_setglobal(L, "arg");
 	}
 

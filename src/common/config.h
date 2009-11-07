@@ -63,7 +63,8 @@
 #endif
 
 #if defined(LOVE_WINDOWS)
-#	define	LOVE_LEGENDARY_UTF8_ARGV_HACK
+#	define LOVE_LEGENDARY_UTF8_ARGV_HACK
+#	define LOVE_LEGENDARY_CONSOLE_IO_HACK
 #endif
 
 #endif // LOVE_CONFIG_H

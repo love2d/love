@@ -64,7 +64,7 @@
 				AdditionalDependencies="lua.lib SDLmain.lib SDL.lib opengl32.lib glu32.lib DevIL.lib freetype.lib physfs.lib ws2_32.lib openal32.lib libmodplug.lib libmpg123.lib libogg.lib libvorbis.lib libvorbisfile.lib libFLAC_static_d.lib libFLAC++_static_d.lib"
 				AdditionalLibraryDirectories="lib;Debug"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
