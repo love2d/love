@@ -18,10 +18,9 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#include "Graphics.h"
-
-// LOVE
 #include <common/config.h>
+
+#include "Graphics.h"
 
 namespace love
 {
@@ -185,6 +184,9 @@ namespace opengl
 
 		// Fullscreen?
 		Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
+
+		if(!isCreated())
+			setCaption("");
 
 		// Have SDL set the video mode.
 		if(SDL_SetVideoMode(width, height, 32, sdlflags ) == 0)
