@@ -57,6 +57,9 @@
 #include "libraries/luasocket/luasocket.h"
 #include "libraries/lanes/lanes.h"
 
+// Scripts
+#include "scripts/boot.lua.h"
+
 #endif // LOVE_BUILD_EXE
 
 // Resources
@@ -292,10 +295,9 @@ int main(int argc, char ** argv)
 		lua_pop(L, 1);
 	}
 
-	// This is where we should run the built-in Lua code
-	// which gets everything started.
-
-#	include "scripts/boot.lua.h"
+	// Boot
+	if (luaL_loadbuffer(L, love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
+		lua_call(L, 0, 0);
 
 	lua_close(L);
 

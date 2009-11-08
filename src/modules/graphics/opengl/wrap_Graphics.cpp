@@ -22,6 +22,8 @@
 
 #include <image/ImageData.h>
 
+#include <scripts/graphics.lua.h>
+
 namespace love
 {
 namespace graphics
@@ -890,7 +892,8 @@ namespace opengl
 
 		luax_register_module(L, w);
 
-#		include <scripts/graphics.lua.h>
+		if (luaL_loadbuffer(L, graphics_lua, sizeof(graphics_lua), "graphics.lua") == 0)
+			lua_call(L, 0, 0);
 
 		return 0;
 	}
