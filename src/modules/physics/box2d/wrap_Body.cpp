@@ -400,8 +400,12 @@ namespace box2d
 
 	int w_Body_destroy(lua_State * L)
 	{
-		Body * t = luax_checkbody(L, 1);
+		Proxy * p = (Proxy *)lua_touserdata(L, 1);
+		p->own = false;
+
+		Body * t = (Body *)p->data;
 		t->release();
+
 		return 0;
 	}
 

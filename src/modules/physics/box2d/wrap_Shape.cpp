@@ -200,7 +200,10 @@ namespace box2d
 
 	int w_Shape_destroy(lua_State * L)
 	{
-		Shape * t = luax_checkshape(L, 1);
+		Proxy * p = (Proxy *)lua_touserdata(L, 1);
+		p->own = false;
+
+		Shape * t = (Shape *)p->data;
 		t->release();
 		return 0;
 	}

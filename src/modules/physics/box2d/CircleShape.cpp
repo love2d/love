@@ -42,8 +42,6 @@ namespace box2d
 
 	CircleShape::~CircleShape()
 	{
-		body->body->DestroyShape(shape);
-		shape = 0;
 	}
 
 	float CircleShape::getRadius() const

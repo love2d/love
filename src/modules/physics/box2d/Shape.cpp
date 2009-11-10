@@ -48,6 +48,11 @@ namespace box2d
 
 		delete data;
 		data = 0;
+
+		body->body->DestroyShape(shape);
+		shape = 0;
+
+		body->release();
 	}
 
 	Shape::Type Shape::getType() const

@@ -42,8 +42,6 @@ namespace box2d
 
 	PolygonShape::~PolygonShape()
 	{
-		body->body->DestroyShape(shape);
-		shape = 0;
 	}
 
 	int PolygonShape::getPoints(lua_State * L)

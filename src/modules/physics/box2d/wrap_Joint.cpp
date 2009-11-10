@@ -80,8 +80,12 @@ namespace box2d
 
 	int w_Joint_destroy(lua_State * L)
 	{
-		Joint * t = luax_checkjoint(L, 1);
+		Proxy * p = (Proxy *)lua_touserdata(L, 1);
+		p->own = false;
+
+		Joint * t = (Joint *)p->data;
 		t->release();
+
 		return 0;
 	}
 
