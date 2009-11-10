@@ -75,7 +75,7 @@ namespace box2d
 		**/ 
 		Body(World * world, b2Vec2 p, float m, float i);
 
-		~Body();
+		virtual ~Body();
 
 		/**
 		* Gets the current x-position of the Body.

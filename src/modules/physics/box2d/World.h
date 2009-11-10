@@ -107,7 +107,7 @@ namespace box2d
 		**/
 		World(b2AABB aabb, b2Vec2 gravity, bool sleep);
 
-		~World();
+		virtual ~World();
 
 		/**
 		* Updates everything in the world one timestep.

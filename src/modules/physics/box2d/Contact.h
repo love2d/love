@@ -65,7 +65,7 @@ namespace box2d
 		**/
 		Contact(World * world, const b2ContactPoint * point);
 
-		~Contact();
+		virtual ~Contact();
 
 		/**
 		* Gets the position of the Contact.
