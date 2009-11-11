@@ -217,7 +217,11 @@ function love.init()
 	-- Yes, conf.lua might not exist, but there are other ways of making
 	-- love.conf appear, so we should check for it anyway.
 	if love.conf then
-		love.conf(c)
+		local ok, err = pcall(love.conf, c)
+		if not ok then
+			print(err)
+			-- continue
+		end
 	end
 	
 	if love.arg.options.console.set then
@@ -274,7 +278,7 @@ function love.run()
 			love.handlers[e](a,b,c)
 		end
 
-		--love.timer.sleep(10)
+		love.timer.sleep(1)
 		love.graphics.present()
 
 	end
