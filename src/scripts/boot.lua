@@ -166,18 +166,24 @@ function love.boot()
 	
 	local o = love.arg.options
 	
-	if o.game.set and o.game.arg[1] then
-		love.filesystem.init(love.path.getfull(love.arg.getLow(arg)))
+	local abs_arg0 = love.path.getfull(love.arg.getLow(arg))
+	love.filesystem.init(abs_arg0)
+	
+	-- Is this one of those fancy "fused" games?
+	local can_has_game = pcall(love.filesystem.setSource, abs_arg0)
+	
+	if not can_has_game and o.game.set and o.game.arg[1] then
 		local full_source =  love.path.getfull(o.game.arg[1])
 		local leaf = love.path.leaf(full_source)
 		love.filesystem.setIdentity(leaf)
-		if not pcall(love.filesystem.setSource, full_source) then
-			love.nogame()
-		end
-	else
-		love.filesystem = nil
-		love.nogame() -- Who needs a game? Got one embedded right here!
+		can_has_game = pcall(love.filesystem.setSource, full_source)
 	end
+	
+	if not can_has_game then
+		love.filesystem = nil
+		love.nogame()		
+	end
+	
 end
 
 function love.init()
