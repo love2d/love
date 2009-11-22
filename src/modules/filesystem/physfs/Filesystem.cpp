@@ -163,13 +163,13 @@ namespace physfs
 			cwd = to_utf8(w_cwd);
 			replace_char(cwd, '\\', '/');
 #else
-			cwd = new char[LOVE_MAX_PATH];
+			char * cwd_char = new char[LOVE_MAX_PATH];
 
-			if(!getcwd(cwd, LOVE_MAX_PATH))
-			{
-				delete [] cwd;
-				cwd = 0;
-			}
+			getcwd(cwd_char, LOVE_MAX_PATH);
+			
+			cwd = cwd_char; // if getcwd fails, cwd_char (and thus cwd) will still be empty
+			
+			delete [] cwd_char;
 #endif
 		}
 
@@ -191,7 +191,7 @@ namespace physfs
 			replace_char(appdata, '\\', '/');
 		}
 		return appdata.c_str();
-#elif defined(LOVE_MACOSX
+#elif defined(LOVE_MACOSX)
 		if(appdata.empty())
 		{
 			std::string udir = getUserDirectory();
