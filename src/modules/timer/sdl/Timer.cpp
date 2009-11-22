@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -27,7 +27,7 @@ namespace timer
 namespace sdl
 {
 	Timer::Timer()
-		: time_init(0), currTime(0), prevFpsUpdate(0), fps(0), fpsUpdateFrequency(1), 
+		: time_init(0), currTime(0), prevFpsUpdate(0), fps(0), fpsUpdateFrequency(1),
 		frames(0), dt(0)
 	{
 		// Init the SDL timer system.
@@ -50,7 +50,7 @@ namespace sdl
 	{
 		// Frames rendered
 		frames++;
-			
+
 		// "Current" time is previous time by now.
 		prevTime = currTime;
 
@@ -88,6 +88,32 @@ namespace sdl
 	float Timer::getTime() const
 	{
 		return (SDL_GetTicks() - time_init)/1000.0f;
+	}
+
+	float Timer::getMicroTime() const
+	{
+		#ifdef LOVE_WINDOWS
+			FILETIME ft;
+			unsigned __int64 t = 0;
+			GetSystemTimeAsFileTime(&ft);
+			t |= ft.dwHighDateTime;
+			t <<= 32;
+			t |= ft.dwLowDateTime;
+			t /= 10;
+			#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+				#define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+			#else
+				#define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
+			#endif
+			t -= DELTA_EPOCH_IN_MICROSECS;
+			float floatt = t/1000000.0f;
+			floatt %= 86400;
+			return floatt;
+		#else
+			timeval t;
+			gettimeofday(&t, NULL);
+			return t.tv_sec%86400 + t.tv_usec/1000000.0f;
+		#endif
 	}
 
 } // sdl

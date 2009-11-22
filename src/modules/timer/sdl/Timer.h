@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -23,6 +23,12 @@
 
 // SDL
 #include <SDL.h>
+
+#ifdef LOVE_WINDOWS
+	#include <time.h>
+#else
+	#include <sys/time.h>
+#endif
 
 // LOVE
 #include <common/Module.h>
@@ -43,7 +49,7 @@ namespace sdl
 
 		// Timing vars for benchmarking.
 		Uint32 time_init;
-		
+
 		// Frame delta vars.
 		Uint32 currTime;
 		Uint32 prevTime;
@@ -78,9 +84,9 @@ namespace sdl
 		* @return Always returns "love.timer.sdl".
 		**/
 		const char * getName() const;
-		
+
 		/**
-		* Measures the time between this call and the previous call, 
+		* Measures the time between this call and the previous call,
 		* and updates internal values accordinly.
 		**/
 		void step();
@@ -101,7 +107,7 @@ namespace sdl
 		/**
 		* Gets the average FPS over the last second. Beucase the value is only updated
 		* once per second, it does not look erratic when displayed on screen.
-		* @return The "current" FPS. 
+		* @return The "current" FPS.
 		**/
 		float getFPS() const;
 
@@ -111,6 +117,13 @@ namespace sdl
 		* @return The time (in seconds) since the program started.
 		**/
 		float getTime() const;
+
+		/**
+		 * Gets the amount of time since the Epoch. Useful for timing too because
+		 * it is accurate to the microsecond.
+		 * @return The time (in seconds) since the Epoch.
+		 **/
+		float getMicroTime() const;
 
 	}; // Timer
 
