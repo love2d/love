@@ -36,6 +36,7 @@
 // Using this instead of boost::filesystem which totally
 // cramped our style.
 #ifdef LOVE_WINDOWS
+#	include <windows.h>
 #	include <direct.h>
 #else
 #	include <sys/param.h>
@@ -74,8 +75,11 @@ namespace physfs
 		// Pointer used for file reads.
 		char * buffer;
 		
-		// Buffer used for getcwd in Linux.
-		char cwdbuffer[LOVE_MAX_PATH];
+		// Contains the current working directory (UTF8).
+		std::string cwd;
+
+		// %APPDATA% on Windows.
+		std::string appdata;
 
 		// This name will be used to create the folder
 		// in the appdata/userdata folder.

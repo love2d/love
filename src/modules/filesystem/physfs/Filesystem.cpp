@@ -18,10 +18,11 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#include "Filesystem.h"
+#include <common/config.h>
 
-// Physfs
-//#include <physfs.h> // this gets included by virtue of Filesystem.h including File.h
+#include <common/utf8.h>
+
+#include "Filesystem.h"
 
 namespace love
 {
@@ -153,14 +154,26 @@ namespace physfs
 
 	const char * Filesystem::getWorkingDirectory()
 	{
-		#ifdef LOVE_WINDOWS
-				_getcwd(cwdbuffer, LOVE_MAX_PATH);
-		#else
-				char * temp = getcwd(cwdbuffer, LOVE_MAX_PATH);
-				if(temp == 0)
-					return 0;
-		#endif
-				return cwdbuffer;
+		if(cwd.empty())
+		{
+#ifdef LOVE_WINDOWS
+
+			WCHAR w_cwd[LOVE_MAX_PATH];
+			_wgetcwd(w_cwd, LOVE_MAX_PATH);
+			cwd = to_utf8(w_cwd);
+			replace_char(cwd, '\\', '/');
+#else
+			cwd = new char[LOVE_MAX_PATH];
+
+			if(!getcwd(cwd, LOVE_MAX_PATH))
+			{
+				delete [] cwd;
+				cwd = 0;
+			}
+#endif
+		}
+
+		return cwd.c_str();
 	}
 
 	const char * Filesystem::getUserDirectory()
@@ -170,12 +183,22 @@ namespace physfs
 
 	const char * Filesystem::getAppdataDirectory()
 	{
-#ifdef WINDOWS
-		return getenv("APPDATA");
-#elif defined(LOVE_MACOSX)
-		std::string udir = getUserDirectory();
-		udir.append("/Library/Application Support");
-		return udir.c_str();
+#ifdef LOVE_WINDOWS
+		if(appdata.empty())
+		{
+			wchar_t * w_appdata = _wgetenv(TEXT("APPDATA"));
+			appdata = to_utf8(w_appdata);
+			replace_char(appdata, '\\', '/');
+		}
+		return appdata.c_str();
+#elif defined(LOVE_MACOSX
+		if(appdata.empty())
+		{
+			std::string udir = getUserDirectory();
+			udir.append("/Library/Application Support");
+			appdata = udir;
+		}
+		return appdata.c_str();
 #else
 		return getUserDirectory();
 #endif

@@ -319,6 +319,30 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\..\src\common\utf8.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\common\"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\common\"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\..\src\common\utf8.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\..\src\common\Vector.cpp"
 			>
 			<FileConfiguration
