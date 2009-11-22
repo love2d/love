@@ -193,6 +193,7 @@
 		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
+		A9CF0E8610B9EB1000E6F37E /* utf8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9CF0E8510B9EB1000E6F37E /* utf8.cpp */; };
 		A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
@@ -620,6 +621,8 @@
 		A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ParticleSystem.cpp; sourceTree = "<group>"; };
+		A9CF0E8410B9EB1000E6F37E /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8.h; sourceTree = "<group>"; };
+		A9CF0E8510B9EB1000E6F37E /* utf8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8.cpp; sourceTree = "<group>"; };
 		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
 		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
@@ -752,6 +755,8 @@
 				A93E69ED10420ABF007D418B /* runtime.h */,
 				A968F0C71083A07C00A895AA /* StringMap.h */,
 				A93E69EE10420ABF007D418B /* types.h */,
+				A9CF0E8510B9EB1000E6F37E /* utf8.cpp */,
+				A9CF0E8410B9EB1000E6F37E /* utf8.h */,
 				A93E69EF10420ABF007D418B /* Vector.cpp */,
 				A93E69F010420ABF007D418B /* Vector.h */,
 				A93E69F110420ABF007D418B /* version.h */,
@@ -1709,6 +1714,7 @@
 				A968F0D91083A9FC00A895AA /* Mouse.cpp in Sources */,
 				A968F0DD1083AA6600A895AA /* Shape.cpp in Sources */,
 				A968F0DE1083AA6600A895AA /* Joint.cpp in Sources */,
+				A9CF0E8610B9EB1000E6F37E /* utf8.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
