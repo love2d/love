@@ -140,9 +140,22 @@ namespace box2d
 		Body * t = luax_checkbody(L, 1);
 		float jx = (float)luaL_checknumber(L, 2);
 		float jy = (float)luaL_checknumber(L, 3);
-		float rx = (float)luaL_optnumber(L, 4, 0);
-		float ry = (float)luaL_optnumber(L, 5, 0);
-		t->applyImpulse(jx, jy, rx, ry);
+
+		if(lua_gettop(L) == 3)
+		{
+			t->applyImpulse(jx, jy);
+		}
+		else if(lua_gettop(L) == 5)
+		{
+			float rx = (float)luaL_checknumber(L, 4);
+			float ry = (float)luaL_checknumber(L, 5);
+			t->applyImpulse(jx, jy, rx, ry);
+		}
+		else
+		{
+			return luaL_error(L, "Wrong number of parameters.");
+		}
+		
 		return 0;
 	}
 
@@ -159,9 +172,23 @@ namespace box2d
 		Body * t = luax_checkbody(L, 1);
 		float fx = (float)luaL_checknumber(L, 2);
 		float fy = (float)luaL_checknumber(L, 3);
-		float rx = (float)luaL_optnumber(L, 4, 0);
-		float ry = (float)luaL_optnumber(L, 5, 0);
-		t->applyForce(fx, fy, rx, ry);
+
+
+		if(lua_gettop(L) == 3)
+		{
+			t->applyForce(fx, fy);
+		}
+		else if(lua_gettop(L) == 5)
+		{
+			float rx = (float)luaL_checknumber(L, 4);
+			float ry = (float)luaL_checknumber(L, 5);
+			t->applyForce(fx, fy, rx, ry);
+		}
+		else
+		{
+			return luaL_error(L, "Wrong number of parameters.");
+		}
+		
 		return 0;
 	}
 

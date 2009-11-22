@@ -118,7 +118,7 @@ namespace box2d
 
 	void Body::applyImpulse(float jx, float jy)
 	{
-		body->ApplyImpulse(b2Vec2(jx, jy), world->scaleDown(body->GetWorldCenter()));
+		body->ApplyImpulse(b2Vec2(jx, jy), body->GetWorldCenter());
 	}
 
 	void Body::applyImpulse(float jx, float jy, float rx, float ry)
@@ -138,7 +138,7 @@ namespace box2d
 
 	void Body::applyForce(float fx, float fy)
 	{
-		body->ApplyForce(b2Vec2(fx, fy), world->scaleDown(body->GetWorldCenter()));
+		body->ApplyForce(b2Vec2(fx, fy), body->GetWorldCenter());
 	}
 
 	void Body::setX(float x)
