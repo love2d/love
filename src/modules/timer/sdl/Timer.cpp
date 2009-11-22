@@ -102,19 +102,19 @@ namespace sdl
 	float Timer::getMicroTime() const
 	{
 #ifdef LOVE_WINDOWS
-		/*
-			long ticks, freq;
-			QueryPeformanceCounter(&ticks);
-			QueryPeformanceFrequency(&freq);
-			long secs = ticks/freq;
-			long usecs = (ticks%freq)/(freq/1000000.0f);
-			return secs%86400 + usecs/1000000.0f;
-		*/
-			return 0;
+		__int64 ticks, freq;
+		LARGE_INTEGER temp;
+		QueryPerformanceCounter(&temp);
+		ticks = temp.QuadPart;
+		QueryPerformanceFrequency(&temp);
+		freq = temp.QuadPart;
+		__int64 secs = ticks/freq;
+		__int64 usecs = (ticks%freq)/(freq/1000000.0f);
+		return secs%86400 + usecs/1000000.0f;
 #else
-			timeval t;
-			gettimeofday(&t, NULL);
-			return t.tv_sec%86400 + t.tv_usec/1000000.0f;
+		timeval t;
+		gettimeofday(&t, NULL);
+		return t.tv_sec%86400 + t.tv_usec/1000000.0f;
 #endif
 	}
 
