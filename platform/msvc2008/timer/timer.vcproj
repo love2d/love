@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua5.1.lib SDL.lib"
+				AdditionalDependencies="lua5.1.lib SDL.lib kernel32.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\lib"
