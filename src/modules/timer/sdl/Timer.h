@@ -24,12 +24,6 @@
 // SDL
 #include <SDL.h>
 
-#ifdef LOVE_WINDOWS
-	#include <time.h>
-#else
-	#include <sys/time.h>
-#endif
-
 // LOVE
 #include <common/Module.h>
 

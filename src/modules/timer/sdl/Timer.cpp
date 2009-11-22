@@ -18,6 +18,15 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+#include <common/config.h>
+
+#ifdef LOVE_WINDOWS
+#	include <windows.h>
+#	include <time.h>
+#else
+#	include <sys/time.h>
+#endif
+
 #include "Timer.h"
 
 namespace love
@@ -92,18 +101,21 @@ namespace sdl
 
 	float Timer::getMicroTime() const
 	{
-		#ifdef LOVE_WINDOWS
+#ifdef LOVE_WINDOWS
+		/*
 			long ticks, freq;
 			QueryPeformanceCounter(&ticks);
 			QueryPeformanceFrequency(&freq);
 			long secs = ticks/freq;
 			long usecs = (ticks%freq)/(freq/1000000.0f);
 			return secs%86400 + usecs/1000000.0f;
-		#else
+		*/
+			return 0;
+#else
 			timeval t;
 			gettimeofday(&t, NULL);
 			return t.tv_sec%86400 + t.tv_usec/1000000.0f;
-		#endif
+#endif
 	}
 
 } // sdl
