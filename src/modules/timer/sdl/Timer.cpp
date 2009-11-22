@@ -93,21 +93,18 @@ namespace sdl
 	float Timer::getMicroTime() const
 	{
 		#ifdef LOVE_WINDOWS
-			FILETIME ft;
+			FILETIME tstruct;
 			unsigned __int64 t = 0;
-			GetSystemTimeAsFileTime(&ft);
-			t |= ft.dwHighDateTime;
+			GetSystemTimeAsFileTime(&tstruct);	//ah, yes, a struct with a high and a low part
+			t = tstruct.dwHighDateTime;			//let's make it one variable;
 			t <<= 32;
-			t |= ft.dwLowDateTime;
-			t /= 10;
+			t |= tstruct.dwLowDateTime;
 			#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
-				#define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+				float floatt = (t/10-11644473600000000Ui64)/1000000.0f;
 			#else
-				#define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
-			#endif
-			t -= DELTA_EPOCH_IN_MICROSECS;
-			float floatt = t/1000000.0f;
-			floatt %= 86400;
+				float floatt = (t/11644473600000000ULL)/1000000.0f;
+			#endif	//even windows has it's differences, yay...
+			floatt %= 86400; //from start of day, else it's too big for a lua_Number
 			return floatt;
 		#else
 			timeval t;
