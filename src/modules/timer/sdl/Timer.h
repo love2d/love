@@ -119,9 +119,9 @@ namespace sdl
 		float getTime() const;
 
 		/**
-		 * Gets the amount of time since the Epoch. Useful for timing too because
-		 * it is accurate to the microsecond.
-		 * @return The time (in seconds) since the Epoch.
+		 * Gets the amount of time passed since an unspecified time. The time is accurate
+		 * to the microsecond, and is limited to 24 hours.
+		 * @return The time (in seconds)
 		 **/
 		float getMicroTime() const;
 
