@@ -94,7 +94,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="2"
+			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -4034,6 +4034,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\icon.rc"
+			>
+		</File>
 		<File
 			RelativePath="..\..\src\love.cpp"
 			>

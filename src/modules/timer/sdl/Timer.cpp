@@ -109,7 +109,7 @@ namespace sdl
 		QueryPerformanceFrequency(&temp);
 		freq = temp.QuadPart;
 		__int64 secs = ticks/freq;
-		__int64 usecs = (ticks%freq)/(freq/1000000.0f);
+		__int64 usecs = static_cast<__int64>((ticks%freq)/(freq/1000000.0f));
 		return secs%86400 + usecs/1000000.0f;
 #else
 		timeval t;
