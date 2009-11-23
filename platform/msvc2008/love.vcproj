@@ -4035,6 +4035,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\icon.rc"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\love.cpp"
 			>
 			<FileConfiguration
