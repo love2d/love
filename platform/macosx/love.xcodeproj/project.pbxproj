@@ -1463,8 +1463,8 @@
 			buildPhases = (
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
-				8D11072E0486CEB800E47090 /* Frameworks */,
 				A9255DDE1043185300BA1496 /* Copy Frameworks */,
+				8D11072E0486CEB800E47090 /* Frameworks */,
 				A971EA481042798500EAD7F9 /* Change Link Locations */,
 				A9DEC1F51046F3F30049C70C /* Create DMG */,
 			);
