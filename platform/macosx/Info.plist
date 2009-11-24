@@ -26,6 +26,16 @@
 			<key>LSTypeIsPackage</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Folder</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>fold</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>love</string>
