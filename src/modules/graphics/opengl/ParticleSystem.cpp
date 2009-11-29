@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -49,7 +49,7 @@ namespace opengl
 															sizeStart(1), sizeEnd(1), sizeVariation(0), rotationMin(0), rotationMax(0),
 															spinStart(0), spinEnd(0), spinVariation(0), offsetX(sprite->getWidth()*0.5f),
 															offsetY(sprite->getHeight()*0.5f)
-	{	
+	{
 		this->sprite = sprite;
 		sprite->retain();
 		memset(colorStart, 255, 4);
@@ -72,7 +72,7 @@ namespace opengl
 	void ParticleSystem::add()
 	{
 		if(isFull()) return;
-		
+
 		float min,max;
 
 		min = particleLifeMin;
@@ -122,7 +122,7 @@ namespace opengl
 		pLast->color[1] = (float)colorStart[1] / 255;
 		pLast->color[2] = (float)colorStart[2] / 255;
 		pLast->color[3] = (float)colorStart[3] / 255;
-			
+
 		pLast++;
 	}
 
@@ -181,12 +181,12 @@ namespace opengl
 
 	void ParticleSystem::setDirection(float direction)
 	{
-		this->direction = direction * LOVE_M_TORAD;
+		this->direction = direction;
 	}
 
 	void ParticleSystem::setSpread(float spread)
 	{
-		this->spread = spread * LOVE_M_TORAD;
+		this->spread = spread;
 	}
 
 	void ParticleSystem::setRelativeDirection(bool relative)
@@ -275,26 +275,26 @@ namespace opengl
 
 	void ParticleSystem::setSpin(float spin)
 	{
-		spinStart = spin * LOVE_M_TORAD;
-		spinEnd = spin * LOVE_M_TORAD;
+		spinStart = spin;
+		spinEnd = spin;
 	}
 
 	void ParticleSystem::setSpin(float start, float end)
 	{
-		spinStart = start * LOVE_M_TORAD;
-		spinEnd = end * LOVE_M_TORAD;
+		spinStart = start;
+		spinEnd = end;
 	}
 
 	void ParticleSystem::setSpin(float start, float end, float variation)
 	{
-		spinStart = start * LOVE_M_TORAD;
-		spinEnd = end * LOVE_M_TORAD;
-		spinVariation = variation * LOVE_M_TORAD;
+		spinStart = start;
+		spinEnd = end;
+		spinVariation = variation;
 	}
 
 	void ParticleSystem::setSpinVariation(float variation)
 	{
-		spinVariation = variation * LOVE_M_TORAD;
+		spinVariation = variation;
 	}
 
 	void ParticleSystem::setColor(unsigned char * color)
@@ -308,7 +308,7 @@ namespace opengl
 		memcpy(colorStart, start, 4);
 		memcpy(colorEnd, end, 4);
 	}
-	
+
 	void ParticleSystem::setOffset(float x, float y)
 	{
 		offsetX = x;
@@ -327,19 +327,19 @@ namespace opengl
 
 	float ParticleSystem::getDirection() const
 	{
-		return direction * LOVE_M_TODEG;
+		return direction;
 	}
 
 	float ParticleSystem::getSpread() const
 	{
-		return spread * LOVE_M_TODEG;
+		return spread;
 	}
-	
+
 	float ParticleSystem::getOffsetX() const
 	{
 		return offsetX;
 	}
-	
+
 	float ParticleSystem::getOffsetY() const
 	{
 		return offsetY;
@@ -497,7 +497,7 @@ namespace opengl
 				p->color[1] = (float)(colorEnd[1]*(1.0f-t) + colorStart[1] * t)/255.0f;
 				p->color[2] = (float)(colorEnd[2]*(1.0f-t) + colorStart[2] * t)/255.0f;
 				p->color[3] = (float)(colorEnd[3]*(1.0f-t) + colorStart[3] * t)/255.0f;
-	
+
 				// Next particle.
 				p++;
 			}
