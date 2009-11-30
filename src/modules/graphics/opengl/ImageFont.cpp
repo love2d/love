@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -25,17 +25,17 @@
 using std::string;
 
 namespace love
-{	
+{
 namespace graphics
 {
 namespace opengl
 {
-	ImageFont::ImageFont(Image * image, std::string glyphs) 
+	ImageFont::ImageFont(Image * image, std::string glyphs)
 		: Font(0), glyphs(glyphs), image(image)
 
 	{
 		image->retain();
-	}	
+	}
 
 	ImageFont::~ImageFont()
 	{
@@ -58,7 +58,7 @@ namespace opengl
 		glPushMatrix();
 
 		glTranslatef(x, y, 0.0f);
-		glRotatef(angle, 0, 0, 1.0f);
+		glRotatef(angle * 57.29578f, 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 
 		GLuint OpenGLFont = list;
@@ -87,16 +87,16 @@ namespace opengl
 	{
 		unloadVolatile();
 	}
-	
+
 	bool ImageFont::loadVolatile()
 	{
 		love::image::pixel * pixels = (love::image::pixel *)(image->getData()->getData());
-		
+
 		// Reading texture data begins
 		size = (int)image->getHeight();
-		
+
 		for(unsigned int i = 0; i < MAX_CHARS; i++) positions[i] = -1;
-		
+
 		love::image::pixel spacer = pixels[0];
 		unsigned int current = 0;
 		int width = 0;
@@ -114,9 +114,9 @@ namespace opengl
 				break;
 			}
 		}
-		
+
 		for(int i = firstchar; i != (int)image->getWidth(); i++)
-		{			
+		{
 			if(spacer.r == pixels[i].r && spacer.g == pixels[i].g && spacer.b == pixels[i].b && spacer.a == pixels[i].a)
 			{
 				if(width != 0) // this means we have found the end of our current character
@@ -128,7 +128,7 @@ namespace opengl
 						widths[(int)glyphs[current]] = width - 1;
 						positions[(int)glyphs[current]] = i - width;
 					}
-					
+
 					width = 0;
 					//space++; // start counting the spacing
 				}
@@ -181,7 +181,7 @@ namespace opengl
 				float y = 1.0;
 				float w = (float)widths[i];
 				float h = (float)size+1;
-				
+
 				image->bind();
 
 				float xTex = x/(float)image->getWidth();
@@ -196,7 +196,7 @@ namespace opengl
 					glTexCoord2f(xTex+wTex,yTex+hTex);		glVertex2f(w,h);
 					glTexCoord2f(xTex+wTex,yTex);			glVertex2f(w,0);
 				glEnd();
-				
+
 				glTranslatef((float)widths[i] + ((float)spacing[i] * mSpacing), 0, 0);
 			}
 			else

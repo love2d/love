@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -64,7 +64,7 @@ namespace opengl
 		// Check if mode is supported
 		int bpp = SDL_VideoModeOK(width, height, 32, sdlflags);
 
-		return (bpp >= 16);	
+		return (bpp >= 16);
 	}
 
 	DisplayState Graphics::saveState()
@@ -151,7 +151,7 @@ namespace opengl
 		// Get caption.
 
 		// Special case for fullscreen -> windowed. Windows XP did not
-		// work well with "normal" display mode change in this case. 
+		// work well with "normal" display mode change in this case.
 		// The application window does leave fullscreen, but the desktop
 		// resolution does not revert to the correct one. Restarting the
 		// SDL video subsystem does the trick, though.
@@ -224,7 +224,7 @@ namespace opengl
 		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 		// Enable textures
-		glEnable(GL_TEXTURE_2D);	
+		glEnable(GL_TEXTURE_2D);
 
 		// Set the viewport to top-left corner
 		glViewport(0,0, width, height);
@@ -261,10 +261,10 @@ namespace opengl
 	bool Graphics::toggleFullscreen()
 	{
 		// Try to do the change.
-		if(!setMode(currentMode.width, 
-			currentMode.height, 
-			!currentMode.fullscreen, 
-			currentMode.vsync, 
+		if(!setMode(currentMode.width,
+			currentMode.height,
+			!currentMode.fullscreen,
+			currentMode.vsync,
 			currentMode.fsaa))
 			return false;
 		currentMode.fullscreen = !currentMode.fullscreen;
@@ -395,10 +395,10 @@ namespace opengl
 			image->release();
 			return 0;
 		}
-		
+
 		return image;
 	}
-	
+
 	Quad * Graphics::newQuad(int x, int y, int w, int h, int sw, int sh)
 	{
 		Quad::Viewport v;
@@ -458,9 +458,9 @@ namespace opengl
 		glGetFloatv(GL_CURRENT_COLOR, c);
 
 		Color t;
-		t.r = (unsigned char)(255.0f*c[0]); 
-		t.g = (unsigned char)(255.0f*c[1]); 
-		t.b = (unsigned char)(255.0f*c[2]); 
+		t.r = (unsigned char)(255.0f*c[0]);
+		t.g = (unsigned char)(255.0f*c[1]);
+		t.b = (unsigned char)(255.0f*c[2]);
 		t.a = (unsigned char)(255.0f*c[3]);
 
 		return t;
@@ -477,9 +477,9 @@ namespace opengl
 		glGetFloatv(GL_COLOR_CLEAR_VALUE, c);
 
 		Color t;
-		t.r = (unsigned char)(255.0f*c[0]); 
-		t.g = (unsigned char)(255.0f*c[1]); 
-		t.b = (unsigned char)(255.0f*c[2]); 
+		t.r = (unsigned char)(255.0f*c[0]);
+		t.g = (unsigned char)(255.0f*c[1]);
+		t.b = (unsigned char)(255.0f*c[2]);
 		t.a = (unsigned char)(255.0f*c[3]);
 
 		return t;
@@ -525,7 +525,7 @@ namespace opengl
 		else // mode = COLOR_REPLACE
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
-	
+
 	Graphics::BlendMode Graphics::getBlendMode()
 	{
 		GLint dst, src;
@@ -562,7 +562,7 @@ namespace opengl
 		{
 			glEnable (GL_LINE_SMOOTH);
 			glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
-		}		
+		}
 	}
 
 	void Graphics::setLine( float width, Graphics::LineStyle style )
@@ -611,7 +611,7 @@ namespace opengl
 	{
 		if(glIsEnabled(GL_LINE_STIPPLE) == GL_FALSE)
 			return 0;
-	
+
 		GLint factor, pattern;
 		glGetIntegerv(GL_LINE_STIPPLE_PATTERN, &pattern);
 		glGetIntegerv(GL_LINE_STIPPLE_REPEAT, &factor);
@@ -677,7 +677,7 @@ namespace opengl
 			{
 				int lines = 0;
 				text = "";
-				
+
 				for(unsigned int i = 0; i < strlen(str); i++)
 				{
 					if(str[i] == '\n')
@@ -689,7 +689,7 @@ namespace opengl
 					else
 						text += str[i];
 				}
-				
+
 				if(text != "") // Print the last text (if applicable).
 					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()));
 			}
@@ -730,7 +730,7 @@ namespace opengl
 			std::string text = "";
 			float width = 0;
 			float lines = 0;
-			
+
 			for(unsigned int i = 0; i < strlen(str); i++)
 			{
 				if(str[i] == '\n')
@@ -740,15 +740,15 @@ namespace opengl
 						case ALIGN_LEFT:
 							currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 							break;
-							
+
 						case ALIGN_RIGHT:
 							currentFont->print(text, (x + (wrap - currentFont->getWidth(text))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 							break;
-							
+
 						case ALIGN_CENTER:
 							currentFont->print(text, ceil(x + ((wrap - currentFont->getWidth(text)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
 							break;
-							
+
 						default: // A copy of the left align code. Kept separate in case an error message is wanted.
 							currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 							break;
@@ -761,37 +761,37 @@ namespace opengl
 				else
 				{
 					width += currentFont->getWidth(str[i]);
-					
+
 					if(width > wrap && text.find(" ") != std::string::npos) // If there doesn't exist a space, then ignore the wrap limit.
-					{						
+					{
 						// Seek back to the nearest space and print that.
 						unsigned int space = (unsigned int)text.find_last_of(' ');
 						std::string temp = text.substr(0, space);
-						
+
 						switch(align)
 						{
 							case ALIGN_LEFT:
 								currentFont->print(temp, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 								break;
-							
+
 							case ALIGN_RIGHT:
 								currentFont->print(temp, (x + (wrap - currentFont->getWidth(temp))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 								break;
-							
+
 							case ALIGN_CENTER:
 								currentFont->print(temp, ceil(x + ((wrap - currentFont->getWidth(temp)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
 								break;
-							
+
 							default: // A copy of the left align code. Kept separate in case an error message is wanted.
 								currentFont->print(temp, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 								break;
-						}	
-						
+						}
+
 						text = text.substr(space + 1);
 						width = currentFont->getWidth(text);
 						lines++;
 					}
-					
+
 					text += str[i];
 				}
 			} // for
@@ -803,20 +803,20 @@ namespace opengl
 					case ALIGN_LEFT:
 						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 						break;
-							
+
 					case ALIGN_RIGHT:
 						currentFont->print(text, (x + (wrap - currentFont->getWidth(text))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
 						break;
-							
+
 					case ALIGN_CENTER:
 						currentFont->print(text, ceil(x + ((wrap - currentFont->getWidth(text)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
 						break;
-							
+
 					default: // A copy of the left align code. Kept separate in case an error message is wanted.
 						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()));
 						break;
 				}
-			} 
+			}
 		}
 	}
 
@@ -885,7 +885,7 @@ namespace opengl
 		{
 		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
-				glVertex2f(x, y);				
+				glVertex2f(x, y);
 				glVertex2f(x, y+h);
 				glVertex2f(x+w, y+h);
 				glVertex2f(x+w, y);
@@ -895,7 +895,7 @@ namespace opengl
 		default:
 		case DRAW_FILL:
 			glBegin(GL_QUADS);
-				glVertex2f(x, y);				
+				glVertex2f(x, y);
 				glVertex2f(x, y+h);
 				glVertex2f(x+w, y+h);
 				glVertex2f(x+w, y);
@@ -917,7 +917,7 @@ namespace opengl
 		{
 		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
-				glVertex2f(x1, y1);				
+				glVertex2f(x1, y1);
 				glVertex2f(x2, y2);
 				glVertex2f(x3, y3);
 				glVertex2f(x4, y4);
@@ -1009,7 +1009,7 @@ namespace opengl
 			return luaL_error(L, "Error: number type or table expected.");
 		}
 
-		
+
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_TEXTURE_2D);
 
@@ -1022,7 +1022,7 @@ namespace opengl
 				glVertex2f((GLfloat)lua_tonumber(L, i), (GLfloat)lua_tonumber(L, i+1));
 			break;
 		case LUA_TTABLE:
-			lua_pushnil(L); 
+			lua_pushnil(L);
 			while (true)
 			{
 				if(lua_next(L, 2) == 0) break;
@@ -1048,29 +1048,29 @@ namespace opengl
 	{
 		int w = getWidth();
 		int h = getHeight();
-		
+
 		int row = 4*w;
-		
+
 		int size = row*h;
-		
+
 		GLubyte * pixels = new GLubyte[size];
 		GLubyte * screenshot = new GLubyte[size];
-		
+
 		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-		
+
 		// OpenGL sucks and reads pixels from the lower-left. Let's fix that.
-		
+
 		GLubyte *src = pixels - row, *dst = screenshot + size;
-		
+
 		for (int i = 0; i < h; ++i) {
 			memcpy(dst-=row, src+=row, row);
 		}
 
 		love::image::ImageData * img = image->newImageData(w, h, (void*)screenshot);
-		
+
 		delete [] pixels;
 		delete [] screenshot;
-		
+
 		return img;
 	}
 
@@ -1086,7 +1086,7 @@ namespace opengl
 
 	void Graphics::rotate(float r)
 	{
-		glRotatef(r, 0, 0, 1);
+		glRotatef(r * 57.29578f, 0, 0, 1);
 	}
 
 	void Graphics::scale(float x, float y)

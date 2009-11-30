@@ -397,7 +397,7 @@ namespace opengl
 		glPushAttrib(GL_CURRENT_BIT);
 
 		glTranslatef(x, y, 0);
-		glRotatef(angle, 0, 0, 1.0f);
+		glRotatef(angle * 57.29578f, 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 		glTranslatef( ox, oy, 0);
 

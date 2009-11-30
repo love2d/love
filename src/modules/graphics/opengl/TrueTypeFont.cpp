@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -132,11 +132,11 @@ namespace opengl
 		FT_Done_Glyph(glyph);
 	}
 
-	TrueTypeFont::TrueTypeFont(Data * data, int size) 
+	TrueTypeFont::TrueTypeFont(Data * data, int size)
 		: Font(size), data(data), textures(0), list(0)
 	{
 		data->retain();
-	}	
+	}
 
 	TrueTypeFont::~TrueTypeFont()
 	{
@@ -159,7 +159,7 @@ namespace opengl
 		glPushMatrix();
 
 		glTranslatef(ceil(x), ceil(y), 0.0f);
-		glRotatef(angle, 0, 0, 1.0f);
+		glRotatef(angle * 57.29578f, 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 
 		GLuint TrueTypeFont = list;
@@ -197,7 +197,7 @@ namespace opengl
 	void TrueTypeFont::unload()
 	{
 		unloadVolatile();
-	}	
+	}
 
 	bool TrueTypeFont::loadVolatile()
 	{
