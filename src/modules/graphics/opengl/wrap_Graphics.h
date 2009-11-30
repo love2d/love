@@ -52,7 +52,7 @@ namespace opengl
 	int w_newImage(lua_State * L);
 	int w_newGlyph(lua_State * L);
 	int w_newFrame(lua_State * L);
-	int w_newFont(lua_State * L);
+	int w_newFont1(lua_State * L);
 	int w_newImageFont(lua_State * L);
 	int w_newSpriteBatch(lua_State * L);
 	int w_newParticleSystem(lua_State * L);
@@ -60,7 +60,7 @@ namespace opengl
 	int w_getColor(lua_State * L);
 	int w_setBackgroundColor(lua_State * L);
 	int w_getBackgroundColor(lua_State * L);
-	int w_setFont(lua_State * L);
+	int w_setFont1(lua_State * L);
 	int w_getFont(lua_State * L);
 	int w_setBlendMode(lua_State * L);
 	int w_setColorMode(lua_State * L);

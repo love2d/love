@@ -18,6 +18,22 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
+function love.graphics.newFont(font, size)
+	if type(font) == "number" then
+		size = font
+		font = love._vera_ttf
+	end
+	return love.graphics.newFont1(font, size)
+end
+
+love.graphics.setFont = function(font, size)
+	if type(font) == "number" then
+		size = font
+		font = love._vera_ttf
+	end
+	return love.graphics.setFont1(font, size)
+end
+
 love.graphics.print = function (...)
 	if not love.graphics.getFont() then 
 		love.graphics.setFont(love._vera_ttf, 12)

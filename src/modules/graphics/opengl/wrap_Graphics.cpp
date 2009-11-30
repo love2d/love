@@ -195,7 +195,7 @@ namespace opengl
 		return 1;
 	}
 
-	int w_newFont(lua_State * L)
+	int w_newFont1(lua_State * L)
 	{
 		Data * d = 0;
 
@@ -320,7 +320,7 @@ namespace opengl
 		return 4;
 	}
 
-	int w_setFont(lua_State * L)
+	int w_setFont1(lua_State * L)
 	{
 		// The second parameter is an optional int.
 		int size = luaL_optint(L, 2, 12);
@@ -787,7 +787,7 @@ namespace opengl
 		{ "newImage", w_newImage },
 		{ "newGlyph", w_newGlyph },
 		{ "newQuad", w_newQuad },
-		{ "newFont", w_newFont },
+		{ "newFont1", w_newFont1 },
 		{ "newImageFont", w_newImageFont },
 		{ "newSpriteBatch", w_newSpriteBatch },
 		{ "newParticleSystem", w_newParticleSystem },
@@ -797,7 +797,7 @@ namespace opengl
 		{ "setBackgroundColor", w_setBackgroundColor },
 		{ "getBackgroundColor", w_getBackgroundColor },
 
-		{ "setFont", w_setFont },
+		{ "setFont1", w_setFont1 },
 		{ "getFont", w_getFont },
 
 		{ "setBlendMode", w_setBlendMode },
