@@ -269,7 +269,7 @@ namespace box2d
 
 	void Body::setAllowSleeping(bool allow)
 	{
-		body->AllowSleeping(true);
+		body->AllowSleeping(allow);
 	}
 
 	void Body::putToSleep()
