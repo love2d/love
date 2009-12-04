@@ -31,12 +31,13 @@ namespace box2d
 
 	int w_newWorld(lua_State * L)
 	{
+		World * w;
 		switch(lua_gettop(L))
 		{
 			case 2:
 				float x = (float)luaL_checknumber(L, 1);
 				float y = (float)luaL_checknumber(L, 2);
-				World * w = instance->newWorld(x, y);
+				w = instance->newWorld(x, y);
 				luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
 				return 1;
 				
@@ -49,7 +50,7 @@ namespace box2d
 				float gx = (float)luaL_checknumber(L, 5);
 				float gy = (float)luaL_checknumber(L, 6);
 				bool sleep = luax_optboolean(L, 7, true);
-				World * w = instance->newWorld(lx, ly, ux, uy, gx, gy, sleep);
+				w = instance->newWorld(lx, ly, ux, uy, gx, gy, sleep);
 				luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
 				return 1;
 				
