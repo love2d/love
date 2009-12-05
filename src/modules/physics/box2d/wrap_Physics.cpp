@@ -31,32 +31,30 @@ namespace box2d
 
 	int w_newWorld(lua_State * L)
 	{
-		World * w;
-		switch(lua_gettop(L))
+		int top = lua_gettop(L);
+		if (top == 2)
 		{
-			case 2:
-				float x = (float)luaL_checknumber(L, 1);
-				float y = (float)luaL_checknumber(L, 2);
-				w = instance->newWorld(x, y);
-				luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
-				return 1;
-				
-			case 6:
-			case 7:
-				float lx = (float)luaL_checknumber(L, 1);
-				float ly = (float)luaL_checknumber(L, 2);
-				float ux = (float)luaL_checknumber(L, 3);
-				float uy = (float)luaL_checknumber(L, 4);
-				float gx = (float)luaL_checknumber(L, 5);
-				float gy = (float)luaL_checknumber(L, 6);
-				bool sleep = luax_optboolean(L, 7, true);
-				w = instance->newWorld(lx, ly, ux, uy, gx, gy, sleep);
-				luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
-				return 1;
-				
-			default:
-				return luaL_error(L, "Incorrect number of parameters");
+			float x = (float)luaL_checknumber(L, 1);
+			float y = (float)luaL_checknumber(L, 2);
+			World * w = instance->newWorld(x, y);
+			luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
+			return 1;
 		}
+		else if (top == 6 || top == 7)
+		{
+			float lx = (float)luaL_checknumber(L, 1);
+			float ly = (float)luaL_checknumber(L, 2);
+			float ux = (float)luaL_checknumber(L, 3);
+			float uy = (float)luaL_checknumber(L, 4);
+			float gx = (float)luaL_checknumber(L, 5);
+			float gy = (float)luaL_checknumber(L, 6);
+			bool sleep = luax_optboolean(L, 7, true);
+			World * w = instance->newWorld(lx, ly, ux, uy, gx, gy, sleep);
+			luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
+			return 1;
+		}
+		else 
+			return luaL_error(L, "Incorrect number of parameters");
 	}
 
 	int w_newBody(lua_State * L)
