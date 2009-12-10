@@ -51,6 +51,7 @@ namespace opengl
 	int w_getScissor(lua_State * L);
 	int w_newImage(lua_State * L);
 	int w_newGlyph(lua_State * L);
+	int w_newQuad(lua_State * L);
 	int w_newFrame(lua_State * L);
 	int w_newFont1(lua_State * L);
 	int w_newImageFont(lua_State * L);

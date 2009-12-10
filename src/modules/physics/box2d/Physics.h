@@ -134,7 +134,7 @@ namespace box2d
 		* @param y The offset along the y-axis.
 		* @param w The width of the rectangle.
 		* @param h The height of the rectangle.
-		* @param angle The angle of the rectangle. (deg)
+		* @param angle The angle of the rectangle. (rad)
 		**/
 		PolygonShape * newRectangleShape(Body * body, float x, float y, float w, float h, float angle);
 
