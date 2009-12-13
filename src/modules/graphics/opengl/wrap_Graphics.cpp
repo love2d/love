@@ -713,8 +713,8 @@ namespace opengl
 		float y2 = (float)luaL_checknumber(L, 5);
 		float x3 = (float)luaL_checknumber(L, 6);
 		float y3 = (float)luaL_checknumber(L, 7);
-		float x4 = (float)luaL_checknumber(L, 6);
-		float y4 = (float)luaL_checknumber(L, 7);
+		float x4 = (float)luaL_checknumber(L, 8);
+		float y4 = (float)luaL_checknumber(L, 9);
 		instance->quad(mode, x1, y1, x2, y2, x3, y3, x4, y4);
 		return 0;
 	}
