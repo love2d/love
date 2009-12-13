@@ -430,7 +430,7 @@ namespace opengl
 
 		if(lua_gettop(L) >= 2)
 		{
-			const char * str = luaL_checkstring(L, 1);
+			const char * str = luaL_checkstring(L, 2);
 			if(!Graphics::getConstant(str, style))
 				return luaL_error(L, "Invalid line style: %s", str);
 		}
@@ -500,7 +500,7 @@ namespace opengl
 		float size = (float)luaL_checknumber(L, 1);
 
 		Graphics::PointStyle style;
-		const char * str = luaL_checkstring(L, 1);
+		const char * str = luaL_checkstring(L, 2);
 		if(!Graphics::getConstant(str, style))
 			return luaL_error(L, "Invalid point style: %s", str);
 
