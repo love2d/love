@@ -101,25 +101,58 @@ namespace audio
 
 	int w_stop(lua_State * L)
 	{
-		instance->stop();
+		if(lua_gettop(L) == 0)
+		{
+			instance->stop();
+		}
+		else
+		{
+			Source * s = luax_checksource(L, 1);
+			s->stop();
+		}
 		return 0;
 	}
 
 	int w_pause(lua_State * L)
 	{
-		instance->pause();
+		if(lua_gettop(L) == 0)
+		{
+			instance->pause();
+		}
+		else
+		{
+			Source * s = luax_checksource(L, 1);
+			s->pause();			
+		}
+
 		return 0;
 	}
 
 	int w_resume(lua_State * L)
 	{
-		instance->resume();
+		if(lua_gettop(L) == 0)
+		{
+			instance->resume();
+		}
+		else
+		{
+			Source * s = luax_checksource(L, 1);
+			s->resume();		
+		}
 		return 0;
 	}
 
 	int w_rewind(lua_State * L)
 	{
-		instance->rewind();
+		if(lua_gettop(L) == 0)
+		{
+			instance->rewind();
+		}
+		else
+		{
+			Source * s = luax_checksource(L, 1);
+			s->rewind();	
+		}
 		return 0;
 	}
 
