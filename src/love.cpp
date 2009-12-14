@@ -55,7 +55,6 @@
 
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
-#include "libraries/lanes/lanes.h"
 
 // Scripts
 #include "scripts/boot.lua.h"
@@ -136,7 +135,6 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 	}
 
 	love::luasocket::__open(L);
-	love::lanes::open(L);
 
 #endif // LOVE_BUILD_STANDALONE
 
