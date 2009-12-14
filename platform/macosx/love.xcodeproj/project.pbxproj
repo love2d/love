@@ -34,12 +34,10 @@
 		A946D686104248DA002BF36C /* Exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E010420ABF007D418B /* Exception.cpp */; };
 		A946D687104248E3002BF36C /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3010420AC0007D418B /* usocket.c */; };
 		A946D688104248E3002BF36C /* auxiliar.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A0410420ABF007D418B /* auxiliar.c */; };
-		A946D689104248E3002BF36C /* tools.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E69FE10420ABF007D418B /* tools.c */; };
 		A946D68A104248E3002BF36C /* tcp.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A2410420AC0007D418B /* tcp.c */; };
 		A946D68B104248E3002BF36C /* select.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A1D10420AC0007D418B /* select.c */; };
 		A946D68C104248E3002BF36C /* options.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A1A10420ABF007D418B /* options.c */; };
 		A946D68D104248E3002BF36C /* mime.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A1610420ABF007D418B /* mime.c */; };
-		A946D68E104248E3002BF36C /* threading.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E69FC10420ABF007D418B /* threading.c */; };
 		A946D68F104248E3002BF36C /* udp.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A2A10420AC0007D418B /* udp.c */; };
 		A946D690104248E3002BF36C /* inet.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A0E10420ABF007D418B /* inet.c */; };
 		A946D691104248E3002BF36C /* except.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A0810420ABF007D418B /* except.c */; };
@@ -48,9 +46,7 @@
 		A946D694104248E3002BF36C /* io.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A1010420ABF007D418B /* io.c */; };
 		A946D695104248E3002BF36C /* unix.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A2C10420AC0007D418B /* unix.c */; };
 		A946D696104248E3002BF36C /* buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A0610420ABF007D418B /* buffer.c */; };
-		A946D697104248E3002BF36C /* lanes.c in Sources */ = {isa = PBXBuildFile; fileRef = A93E69F910420ABF007D418B /* lanes.c */; };
 		A946D698104248E3002BF36C /* luasocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3210420AC0007D418B /* luasocket.cpp */; };
-		A946D699104248E3002BF36C /* lanes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A0010420ABF007D418B /* lanes.cpp */; };
 		A946D69B1042491D002BF36C /* wrap_Audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A5110420AC0007D418B /* wrap_Audio.cpp */; };
 		A946D69C1042491D002BF36C /* wrap_Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A5310420AC0007D418B /* wrap_Music.cpp */; };
 		A946D69D1042491D002BF36C /* Pool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A4810420AC0007D418B /* Pool.cpp */; };
@@ -257,17 +253,6 @@
 		A93E69F110420ABF007D418B /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
 		A93E69F210420ABF007D418B /* wrap_Data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Data.cpp; sourceTree = "<group>"; };
 		A93E69F310420ABF007D418B /* wrap_Data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Data.h; sourceTree = "<group>"; };
-		A93E69F710420ABF007D418B /* keeper.lch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = keeper.lch; sourceTree = "<group>"; };
-		A93E69F810420ABF007D418B /* keeper.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = keeper.lua; sourceTree = "<group>"; };
-		A93E69F910420ABF007D418B /* lanes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lanes.c; sourceTree = "<group>"; };
-		A93E69FA10420ABF007D418B /* lanes.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = lanes.lua; sourceTree = "<group>"; };
-		A93E69FB10420ABF007D418B /* lanes.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lanes.lua.h; sourceTree = "<group>"; };
-		A93E69FC10420ABF007D418B /* threading.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threading.c; sourceTree = "<group>"; };
-		A93E69FD10420ABF007D418B /* threading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threading.h; sourceTree = "<group>"; };
-		A93E69FE10420ABF007D418B /* tools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tools.c; sourceTree = "<group>"; };
-		A93E69FF10420ABF007D418B /* tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tools.h; sourceTree = "<group>"; };
-		A93E6A0010420ABF007D418B /* lanes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lanes.cpp; sourceTree = "<group>"; };
-		A93E6A0110420ABF007D418B /* lanes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lanes.h; sourceTree = "<group>"; };
 		A93E6A0410420ABF007D418B /* auxiliar.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = auxiliar.c; sourceTree = "<group>"; };
 		A93E6A0510420ABF007D418B /* auxiliar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = auxiliar.h; sourceTree = "<group>"; };
 		A93E6A0610420ABF007D418B /* buffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = buffer.c; sourceTree = "<group>"; };
@@ -769,36 +754,9 @@
 		A93E69F410420ABF007D418B /* libraries */ = {
 			isa = PBXGroup;
 			children = (
-				A93E69F510420ABF007D418B /* lanes */,
 				A93E6A0210420ABF007D418B /* luasocket */,
 			);
 			path = libraries;
-			sourceTree = "<group>";
-		};
-		A93E69F510420ABF007D418B /* lanes */ = {
-			isa = PBXGroup;
-			children = (
-				A93E69F610420ABF007D418B /* lanes */,
-				A93E6A0010420ABF007D418B /* lanes.cpp */,
-				A93E6A0110420ABF007D418B /* lanes.h */,
-			);
-			path = lanes;
-			sourceTree = "<group>";
-		};
-		A93E69F610420ABF007D418B /* lanes */ = {
-			isa = PBXGroup;
-			children = (
-				A93E69F710420ABF007D418B /* keeper.lch */,
-				A93E69F810420ABF007D418B /* keeper.lua */,
-				A93E69F910420ABF007D418B /* lanes.c */,
-				A93E69FA10420ABF007D418B /* lanes.lua */,
-				A93E69FB10420ABF007D418B /* lanes.lua.h */,
-				A93E69FC10420ABF007D418B /* threading.c */,
-				A93E69FD10420ABF007D418B /* threading.h */,
-				A93E69FE10420ABF007D418B /* tools.c */,
-				A93E69FF10420ABF007D418B /* tools.h */,
-			);
-			path = lanes;
 			sourceTree = "<group>";
 		};
 		A93E6A0210420ABF007D418B /* luasocket */ = {
@@ -1554,12 +1512,10 @@
 				A946D686104248DA002BF36C /* Exception.cpp in Sources */,
 				A946D687104248E3002BF36C /* usocket.c in Sources */,
 				A946D688104248E3002BF36C /* auxiliar.c in Sources */,
-				A946D689104248E3002BF36C /* tools.c in Sources */,
 				A946D68A104248E3002BF36C /* tcp.c in Sources */,
 				A946D68B104248E3002BF36C /* select.c in Sources */,
 				A946D68C104248E3002BF36C /* options.c in Sources */,
 				A946D68D104248E3002BF36C /* mime.c in Sources */,
-				A946D68E104248E3002BF36C /* threading.c in Sources */,
 				A946D68F104248E3002BF36C /* udp.c in Sources */,
 				A946D690104248E3002BF36C /* inet.c in Sources */,
 				A946D691104248E3002BF36C /* except.c in Sources */,
@@ -1568,9 +1524,7 @@
 				A946D694104248E3002BF36C /* io.c in Sources */,
 				A946D695104248E3002BF36C /* unix.c in Sources */,
 				A946D696104248E3002BF36C /* buffer.c in Sources */,
-				A946D697104248E3002BF36C /* lanes.c in Sources */,
 				A946D698104248E3002BF36C /* luasocket.cpp in Sources */,
-				A946D699104248E3002BF36C /* lanes.cpp in Sources */,
 				A946D69B1042491D002BF36C /* wrap_Audio.cpp in Sources */,
 				A946D69C1042491D002BF36C /* wrap_Music.cpp in Sources */,
 				A946D69D1042491D002BF36C /* Pool.cpp in Sources */,
