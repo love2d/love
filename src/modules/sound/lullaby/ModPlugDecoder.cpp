@@ -98,6 +98,7 @@ namespace lullaby
 		// Let's reload.
 		ModPlug_Unload(plug);
 		plug = ModPlug_Load(data->getData(), data->getSize());
+		ModPlug_SetMasterVolume(plug, 512);
 		eof = false;
 		return (plug != 0);
 	}
