@@ -1,7 +1,8 @@
 #!/bin/bash
-echo
-echo "  * Remember to run 'sh platform/unix/gen-makefile' if you've added/removed any files under src/ before running this script"
-echo
+if ! sh platform/unix/gen-makefile; then
+	echo "You should be doing this from the root directory of the project."
+	exit 1
+fi
 autoheader # Gimmie config.h.in
 libtoolize --force
 aclocal
