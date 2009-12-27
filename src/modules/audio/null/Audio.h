@@ -49,7 +49,8 @@ namespace null
 		// Implements Audio.
 		love::audio::Sound * newSound(love::sound::SoundData * data);
 		love::audio::Music * newMusic(love::sound::Decoder * decoder);
-		love::audio::Source * newSource(Audible * audible);
+		love::audio::Source * newSource(love::audio::Sound * sound);
+		love::audio::Source * newSource(love::audio::Music * music);
 		int getNumSources() const;
 		int getMaxSources() const;
 		void play(love::audio::Source * source);

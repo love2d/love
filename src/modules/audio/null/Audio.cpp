@@ -49,7 +49,12 @@ namespace null
 		return new Music(decoder);
 	}
 
-	love::audio::Source * Audio::newSource(Audible * audible)
+	love::audio::Source * Audio::newSource(love::audio::Sound * sound)
+	{
+		return new Source();
+	}
+
+	love::audio::Source * Audio::newSource(love::audio::Music * music)
 	{
 		return new Source();
 	}

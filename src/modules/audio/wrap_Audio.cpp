@@ -67,8 +67,22 @@ namespace audio
 
 	int w_newSource(lua_State * L)
 	{
-		Audible * a = luax_checktype<Audible>(L, 1, "Audible", AUDIO_AUDIBLE_T);
-		Source * t = instance->newSource(a);
+		Source * t = 0;
+
+		if(luax_istype(L, 1, AUDIO_SOUND_T))
+		{
+			Sound * s = luax_checksound(L, 1);
+			t = instance->newSource(s);
+		} 
+		else if(luax_istype(L, 1, AUDIO_MUSIC_T))
+		{
+			Music * m = luax_checkmusic(L, 1);
+			t = instance->newSource(m);
+		}
+
+		if(!t)
+			return luaL_error(L, "No matching overload");
+
 		luax_newtype(L, "Source", AUDIO_SOURCE_T, (void*)t);
 		return 1;
 	}
