@@ -309,6 +309,9 @@ static void CustomApplicationMain (int argc, char **argv)
     /* Set the main menu to contain the real app name instead of "SDL App" */
     [self fixMenu:[NSApp mainMenu] withAppName:getApplicationName()];
 #endif
+	
+	/* Set up the app to receive menu events via keyboard shortcut */
+	setenv("SDL_ENABLEAPPEVENTS", "1", 1);
 
     /* Hand off to main application code */
     gCalledAppMainline = TRUE;
@@ -377,6 +380,37 @@ int main (int argc, char **argv)
         gArgv[1] = NULL;
         gArgc = 1;
         gFinderLaunch = YES;
+		
+		/* check to see if there are any .love files in Resources - props to stevejohnson/diordna */
+		NSArray *lovePaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"love" inDirectory:nil];
+		if ([lovePaths count] > 0) { /* there are, load the first one we found and run it */
+			NSString *firstLovePath = [lovePaths objectAtIndex:0];
+			gCalledAppMainline = YES;
+			NSLog(firstLovePath);
+			
+			const char *temparg;
+			size_t arglen;
+			char *arg;
+			char **newargv;
+			
+			temparg = [firstLovePath UTF8String];
+			arglen = SDL_strlen(temparg) + 1;
+			arg = (char *)SDL_malloc(arglen);
+			if (arg == NULL)
+				return FALSE;
+			newargv = (char **)realloc(gArgv, sizeof(char *) * (gArgc + 2));
+			if (newargv == NULL) {
+				SDL_free(arg);
+				return FALSE;
+			}
+			gArgv = newargv;
+			SDL_strlcpy(arg, temparg, arglen);
+			gArgv[gArgc++] = arg;
+			gArgv[gArgc] = NULL;
+			
+			[firstLovePath release];
+		}
+		[lovePaths release];
     } else {
         int i;
         gArgc = argc;
