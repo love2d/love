@@ -23,10 +23,10 @@ case "$1" in
 		mkdir deb/DEBIAN
 		cat debian | sed "s/%VERSION%/$2/" | sed "s/%ARCHITECTURE%/$arch/g" > deb/DEBIAN/tmp
 		cat deb/DEBIAN/tmp
-		sed "s/%INSTALLSIZE%/`ls -l ../../src/love | awk '{ sum += $5 } END { printf "%.2f", sum / 1000 }'`/" < deb/DEBIAN/tmp > deb/DEBIAN/control		
+		sed "s/%INSTALLSIZE%/`ls -l ../../src/love | awk '{ sum += $5 } END { printf "%.2f", sum / 1000 }'`/" < deb/DEBIAN/tmp > deb/DEBIAN/control
 		rm deb/DEBIAN/tmp
-		cp mimescript deb/DEBIAN/postinst
-		cp mimescript deb/DEBIAN/postrm
+		cp postinst deb/DEBIAN/postinst
+		cp postrm deb/DEBIAN/postrm
 		mkdir deb/usr
 		mkdir deb/usr/bin
 		cp ../../src/love deb/usr/bin/love
@@ -39,8 +39,10 @@ case "$1" in
 		mkdir deb/usr/share/icons/gnome/scalable
 		mkdir deb/usr/share/icons/gnome/scalable/apps
 		cp app.svg deb/usr/share/icons/gnome/scalable/apps/love.svg
-		mkdir deb/usr/share/icons/gnome/mimetypes
-		cp game.svg deb/usr/share/icons/gnome/mimetypes/gnome-mime-application-love-game.svg
+		mkdir deb/usr/share/icons/gnome/scalable/mimetypes
+		cp game.svg deb/usr/share/icons/gnome/scalable/mimetypes/gnome-mime-application-love-game.svg
+		mkdir deb/usr/share/applications
+		cp love.desktop deb/usr/share/applications
 		dpkg -b deb love-$2.deb && \
 		echo "  * love-$2.deb created"
 		rm -rf deb
