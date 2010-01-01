@@ -31,12 +31,12 @@ function love.path.abs(p)
 		return true
 	end
 
-	-- Path is absolute if it starts with a 
+	-- Path is absolute if it starts with a
 	-- letter followed by a colon.
 	if string.find(tmp, "%a:") == 1 then
 		return true
 	end
-	
+
 	-- Relative.
 	return false
 
@@ -52,7 +52,7 @@ function love.path.getfull(p)
 	local cwd = love.filesystem.getWorkingDirectory()
 	cwd = love.path.normalslashes(cwd)
 	cwd = love.path.endslash(cwd)
-	
+
 	-- Construct a full path.
 	return cwd .. love.path.normalslashes(p)
 
@@ -62,24 +62,24 @@ end
 function love.path.leaf(p)
 	local a = 1
 	local last = p
-	
+
 	while a do
 		a = string.find(p, "/", a+1)
-		
+
 		if a then
 			last = string.sub(p, a+1)
 		end
 	end
-	
+
 	return last
 end
 
--- Finds the key in the table with the lowest integral index. The lowest 
+-- Finds the key in the table with the lowest integral index. The lowest
 -- will typically the executable, for instance "lua5.1.exe".
 function love.arg.getLow(a)
 	local m = math.huge
 	for k,v in pairs(a) do
-		if k < m then 
+		if k < m then
 			m = k
 		end
 	end
@@ -106,21 +106,21 @@ function love.arg.parse_option(m, i)
 end
 
 function love.arg.parse_options()
-		
+
 	local last = 0
 	local argc = #arg
-	
+
 	for i=1,argc do
 		-- Look for options.
 		local s, e, m = string.find(arg[i], "%-%-(.+)")
-	
+
 		if m and love.arg.options[m] then
 			i = love.arg.parse_option(love.arg.options[m], i+1)
 		end
-		
+
 		last = i
 	end
-	
+
 	if not love.arg.options.game.set then
 		love.arg.parse_option(love.arg.options.game, last)
 	end
@@ -155,7 +155,7 @@ function love.createhandlers()
 
 end
 
--- This can't be overriden. 
+-- This can't be overriden.
 function love.boot()
 
 	-- This is absolutely needed.
@@ -163,27 +163,27 @@ function love.boot()
 	require("love.filesystem")
 
 	love.arg.parse_options()
-	
+
 	local o = love.arg.options
-	
+
 	local abs_arg0 = love.path.getfull(love.arg.getLow(arg))
 	love.filesystem.init(abs_arg0)
-	
+
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, abs_arg0)
-	
+
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local full_source =  love.path.getfull(o.game.arg[1])
 		local leaf = love.path.leaf(full_source)
 		love.filesystem.setIdentity(leaf)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
 	end
-	
+
 	if not can_has_game then
 		love.filesystem = nil
-		love.nogame()		
+		love.nogame()
 	end
-	
+
 end
 
 function love.init()
@@ -199,7 +199,7 @@ function love.init()
 			fullscreen = false,
 			vsync = true,
 			fsaa = 0,
-		}, 
+		},
 		modules = {
 			event = true,
 			keyboard = true,
@@ -219,7 +219,7 @@ function love.init()
 	if not love.conf and love.filesystem and love.filesystem.exists("conf.lua") then
 		require("conf.lua")
 	end
-	
+
 	-- Yes, conf.lua might not exist, but there are other ways of making
 	-- love.conf appear, so we should check for it anyway.
 	if love.conf then
@@ -229,37 +229,37 @@ function love.init()
 			-- continue
 		end
 	end
-	
+
 	if love.arg.options.console.set then
 		c.console = true
 	end
-	
+
 	-- Gets desired modules.
 	for k,v in pairs(c.modules) do
 		if v then
 			require("love." .. k)
 		end
 	end
-	
+
 	if love.keyboard then
 		love.createhandlers()
 	end
-	
+
 	-- Setup screen here.
-	if c.screen and c.modules.graphics then 
+	if c.screen and c.modules.graphics then
 		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) then
-			love.graphics.setMode(c.screen.width, c.screen.height, c.screen.fullscreen, c.screen.vsync, c.screen.fsaa)
+			assert(love.graphics.setMode(c.screen.width, c.screen.height, c.screen.fullscreen, c.screen.vsync, c.screen.fsaa), "Could not set screen mode")
 		end
 		love.graphics.setCaption(c.title)
 	end
-	
+
 	if love.filesystem and love.filesystem.exists("main.lua") then require("main.lua") end
-	
+
 	-- Console hack
 	if c.console and love._openConsole then
 		love._openConsole()
 	end
-	
+
 end
 
 function love.run()
@@ -275,11 +275,11 @@ function love.run()
 
 		-- Process events.
 		for e,a,b,c in love.event.poll() do
-			if e == "q" then 
+			if e == "q" then
 				if love.audio then
 					love.audio.stop()
-				end			
-				return 
+				end
+				return
 			end
 			love.handlers[e](a,b,c)
 		end
@@ -300,7 +300,7 @@ function love.nogame()
 	love.load = function()
 
 		love.graphics.setBackgroundColor(0x84, 0xca, 0xff)
-		
+
 		names = {
 			"wheel_major",
 			"wheel_minor",
@@ -318,13 +318,13 @@ function love.nogame()
 			"bubble",
 			"love",
 		}
-		
+
 		local decode = function(file)
 			return love.graphics.newImage(love.image.newImageData(file))
 		end
-		
+
 		images = {}
-		
+
 		for i,v in pairs(names) do
 			images[v] = decode(love["_"..v.."_png"])
 		end
@@ -372,7 +372,7 @@ function love.nogame()
 
 		Node.new = function(self, object)
 			local o = {
-				next = nil, 
+				next = nil,
 			}
 			setmetatable(o, List)
 			return o
@@ -395,7 +395,7 @@ function love.nogame()
 		Object.new = function(self)
 			local o = {
 				image = nil,
-				x = 0, 
+				x = 0,
 				y = 0,
 				dx = -400,
 				dy = 0,
@@ -491,7 +491,7 @@ function love.nogame()
 		Belt.new = function(self, n)
 
 			local o = {}
-			
+
 			o.r = 30
 			o.d = o.r*2
 			o.half_c = math.pi*o.r
@@ -508,7 +508,7 @@ function love.nogame()
 				local b = { x = 0, y = 0, t = (o.total/n)*i }
 				table.insert(o.teeth, b)
 			end
-			
+
 			setmetatable(o, Belt)
 			return o
 		end
@@ -516,12 +516,12 @@ function love.nogame()
 		Belt.update = function(self, dt)
 			for i,b in ipairs(self.teeth) do
 				b.t = b.t + dt
-				
+
 				if b.t < self.th then
 					local t = b.t
 					b.x = self.x + self.w * (t/self.th)
 					b.y = self.y
-				elseif b.t < self.th + self.ta then 
+				elseif b.t < self.th + self.ta then
 					local t = (self.th + self.ta - b.t)
 					b.x = self.x + self.w + math.cos(-math.pi*t + math.pi/2)*self.r
 					b.y = self.y + self.r + math.sin(-math.pi*t + math.pi/2)*self.r
@@ -529,7 +529,7 @@ function love.nogame()
 					local t = (b.t - self.th*2 + self.ta)/self.th
 					b.x = self.x + self.w * (2-t)
 					b.y = self.y + self.d
-				elseif b.t < self.total then 
+				elseif b.t < self.total then
 					local t = (self.th*2 + self.ta - b.t)
 					b.x = self.x + math.cos(-math.pi*t + math.pi/2)*self.r
 					b.y = self.y + self.r + math.sin(-math.pi*t + math.pi/2)*self.r
@@ -625,15 +625,15 @@ function love.nogame()
 		end
 
 		lists = {
-			b = List:new(), 
+			b = List:new(),
 			f = List:new()
 		}
-		
+
 		do
 			local t = Bubble:new()
 			t:insert(lists.f)
 		end
-		
+
 		do
 			local t = Tank:new()
 			t:insert(lists.f)
@@ -643,7 +643,7 @@ function love.nogame()
 			local t = Tree:new(50, 300)
 			t:insert(lists.b)
 		end
-		
+
 
 		for i=1,2 do
 			local t = Knoll:new(1, 50, 100)
@@ -659,11 +659,11 @@ function love.nogame()
 			local t = Knoll:new(2, 100, 50)
 			t:insert(lists.b)
 		end
-		
+
 		for i,v in pairs(lists) do
 			v:update(10)
 		end
-		
+
 	end
 
 
@@ -676,7 +676,7 @@ function love.nogame()
 		for i,v in pairs(lists) do
 			v:update(dt)
 		end
-		
+
 		love.timer.sleep(10)
 	end
 
@@ -684,18 +684,18 @@ function love.nogame()
 	love.draw = function()
 
 		lists.b:draw()
-		
+
 		-- Ground
 		love.graphics.setColor(146, 201, 87)
 		love.graphics.rectangle("fill", 0, 530, 800, 70)
 		love.graphics.setColor(205, 227, 161)
 		love.graphics.rectangle("fill", 0, 520, 800, 10)
 		love.graphics.setColor(255, 255, 255)
-		
+
 		lists.f:draw()
-		
+
 	end
-	
+
 	love.conf = function(t)
 		t.title = "*Tank* you for using LOVE " .. love._version_string .. " (" .. love._version_codename .. ")"
 		t.modules.audio = false
@@ -705,7 +705,7 @@ function love.nogame()
 		t.modules.native = false
 		t.modules.font = false
 	end
-	
+
 end
 
 -----------------------------------------------------------
@@ -717,52 +717,52 @@ function love.errhand(msg)
 	if not love.graphics or not love.event then
 		return error_printer(msg)
 	end
-	
+
 	-- Load.
 	love.graphics.setScissor()
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(love._vera_ttf, 14)
 	love.graphics.setFont(font)
-	
+
 	love.graphics.setColor(255, 255, 255, 255)
 
 	local trace = debug.traceback()
-	
+
 	love.graphics.clear()
-	
+
 	local err = {}
-	
+
 	table.insert(err, "Error\n")
 	table.insert(err, msg.."\n\n")
-	
+
 	for l in string.gmatch(trace, "(.-)\n") do
 		if not string.match(l, "boot.lua") then
 			l = string.gsub(l, "stack traceback:", "Traceback\n")
 			table.insert(err, l)
 		end
 	end
-	
+
 	local p = table.concat(err, "\n")
-		
+
 	p = string.gsub(p, "\t", "")
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
-	
-	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)	
-	
+
+	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
+
 	love.graphics.present()
-		
+
 	while true do
 		e, a, b, c = love.event.wait()
-		
+
 		if e == "q" then
-			return 
+			return
 		end
 		if e == "kp" and a == "escape" then
 			return
 		end
 
 	end
-	
+
 end
 
 
