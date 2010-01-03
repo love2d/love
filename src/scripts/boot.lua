@@ -714,7 +714,7 @@ end
 
 function love.errhand(msg)
 
-	if not love.graphics or not love.event then
+	if not love.graphics or not love.event or not love.graphics.isCreated() then
 		return error_printer(msg)
 	end
 
