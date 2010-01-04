@@ -282,6 +282,19 @@ namespace box2d
 		body->WakeUp();
 	}
 
+	void Body::setFixedRotation(bool fixed)
+	{
+		if(fixed)
+			body->m_flags |= b2Body::e_fixedRotationFlag;
+		else
+			body->m_flags |= ~(b2Body::e_fixedRotationFlag);
+	}
+
+	bool Body::getFixedRotation() const
+	{
+		return (body->m_flags & b2Body::e_fixedRotationFlag) != 0;
+	}
+
 	b2Vec2 Body::getVector(lua_State * L)
 	{
 		love::luax_assert_argc(L, 2, 2);

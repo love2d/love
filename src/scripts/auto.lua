@@ -28,7 +28,7 @@ function auto(name)
 		end
 	end
 
-	local src_output = "const char "..cpp_name.."[] = \n{\n"
+	local src_output = "const unsigned char "..cpp_name.."[] = \n{\n"
 
 	for i,line in ipairs(lines) do
 		local concat = {}

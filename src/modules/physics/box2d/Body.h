@@ -331,6 +331,8 @@ namespace box2d
 		**/
 		void wakeUp();
 
+		void setFixedRotation(bool fixed);
+		bool getFixedRotation() const;
 	private:
 
 		/**

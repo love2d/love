@@ -294,7 +294,7 @@ int main(int argc, char ** argv)
 	}
 
 	// Boot
-	if (luaL_loadbuffer(L, love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
+	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
 		lua_call(L, 0, 0);
 
 	lua_close(L);

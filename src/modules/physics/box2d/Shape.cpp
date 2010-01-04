@@ -183,6 +183,20 @@ namespace box2d
 		return 0;
 	}
 
+	void Shape::setGroupIndex(int index)
+	{
+		b2FilterData f = shape->GetFilterData();
+		f.groupIndex = (uint16)index;
+		shape->SetFilterData(f);
+		shape->GetBody()->GetWorld()->Refilter(shape);
+	}
+
+	int Shape::getGroupIndex() const
+	{
+		b2FilterData f = shape->GetFilterData();
+		return f.groupIndex;
+	}
+
 	int Shape::getCategory(lua_State * L)
 	{
 		return pushBits(L, shape->GetFilterData().categoryBits);
