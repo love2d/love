@@ -1,11 +1,21 @@
+LOVE 0.6.1
+----------
+
+  * Added Shape:setGroupIndex and getGroupIndex.
+  * Added Body:setFixedRotation and Body:getFixedRotation.
+  * Added icons and file associations for the debs.
+  * It's now possible to run a .love from Resources in Mac OSX, thanks to stevejohnson and diordna.
+  * Fixed a bug with multiple Sources on the same Music.
+
 LOVE 0.6.0
 ----------
+
+  * Lost track of 0.6.0 changes a long while ago. Don't trust the list below.
 
   * Added love.graphics.print()/printf().
   * Added unicode-translated parameter to love.keypressed().
   * Added love.event.
   * Added love.filesystem.setIdentity().
-  * Added experimental support for Lua lanes.
   * Added OpenAL dependency.
   * Added SDL_sound dependency.
   
