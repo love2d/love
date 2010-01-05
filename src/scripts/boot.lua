@@ -241,7 +241,7 @@ function love.init()
 		end
 	end
 
-	if love.keyboard then
+	if love.event then
 		love.createhandlers()
 	end
 
