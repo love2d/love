@@ -747,9 +747,13 @@ function love.errhand(msg)
 	p = string.gsub(p, "\t", "")
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
 
-	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
+	local function draw()
+		love.graphics.clear()
+		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
+		love.graphics.present()
+	end
 
-	love.graphics.present()
+	draw()
 
 	while true do
 		e, a, b, c = love.event.wait()
@@ -760,6 +764,8 @@ function love.errhand(msg)
 		if e == "kp" and a == "escape" then
 			return
 		end
+
+		draw()
 
 	end
 
