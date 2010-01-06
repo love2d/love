@@ -272,8 +272,9 @@ function love.run()
 	while true do
 		if love.timer then
 			love.timer.step()
-			if love.update then love.update(dt) end -- passes 0 if timer is disabled
+			dt = love.timer.getDelta()
 		end
+		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 		if love.graphics then
 			love.graphics.clear()
 			if love.draw then love.draw() end
