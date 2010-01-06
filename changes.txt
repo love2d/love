@@ -4,10 +4,11 @@ LOVE 0.6.1
   * Added Shape:setGroupIndex and getGroupIndex.
   * Added Body:setFixedRotation and Body:getFixedRotation.
   * Added icons and file associations for the debs.
-  * It's now possible to run a .love from Resources in Mac OSX, thanks to stevejohnson and diordna.
+  * It's now possible to run a .love from Resources in Mac OSX, thanks to Steve Johnson.
   * Fixed a bug with multiple Sources on the same Music.
   * Fixed a bug so the mouse doesn't get crippled when the keyboard is disabled.
-  * The error screen redraws when an event occurs
+  * The error screen redraws when an event occurs.
+  * The default love.run() now gracefully handles disabled modules.
 
 LOVE 0.6.0
 ----------
