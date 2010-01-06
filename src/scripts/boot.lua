@@ -265,27 +265,35 @@ end
 function love.run()
 
 	if love.load then love.load() end
+	
+	local dt = 0
 
 	-- Main loop time.
 	while true do
-		love.timer.step()
-		if love.update then love.update(love.timer.getDelta()) end
-		love.graphics.clear()
-		if love.draw then love.draw() end
-
-		-- Process events.
-		for e,a,b,c in love.event.poll() do
-			if e == "q" then
-				if love.audio then
-					love.audio.stop()
-				end
-				return
-			end
-			love.handlers[e](a,b,c)
+		if love.timer then
+			love.timer.step()
+			if love.update then love.update(dt) end -- passes 0 if timer is disabled
+		end
+		if love.graphics then
+			love.graphics.clear()
+			if love.draw then love.draw() end
 		end
 
-		love.timer.sleep(1)
-		love.graphics.present()
+		-- Process events.
+		if love.event then
+			for e,a,b,c in love.event.poll() do
+				if e == "q" then
+					if love.audio then
+						love.audio.stop()
+					end
+					return
+				end
+				love.handlers[e](a,b,c)
+			end
+		end
+
+		if love.timer then love.timer.sleep(1) end
+		if love.graphics then love.graphics.present() end
 
 	end
 
