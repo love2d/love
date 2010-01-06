@@ -892,7 +892,7 @@ namespace opengl
 
 		luax_register_module(L, w);
 
-		if (luaL_loadbuffer(L, graphics_lua, sizeof(graphics_lua), "graphics.lua") == 0)
+		if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "graphics.lua") == 0)
 			lua_call(L, 0, 0);
 
 		return 0;

@@ -425,6 +425,22 @@ namespace box2d
 		return 0;
 	}
 
+	int w_Body_setFixedRotation(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		bool b = luax_toboolean(L, 2);
+		t->setFixedRotation(b);
+		return 0;
+	}
+
+	int w_Body_getFixedRotation(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		bool b = t->getFixedRotation();
+		luax_pushboolean(L, b);
+		return 1;
+	}
+
 	int w_Body_destroy(lua_State * L)
 	{
 		Proxy * p = (Proxy *)lua_touserdata(L, 1);
@@ -477,6 +493,8 @@ namespace box2d
 		{ "setAllowSleeping", w_Body_setAllowSleeping },
 		{ "putToSleep", w_Body_putToSleep },
 		{ "wakeUp", w_Body_wakeUp },
+		{ "setFixedRotation", w_Body_setFixedRotation },
+		{ "getFixedRotation", w_Body_getFixedRotation },
 		{ "destroy", w_Body_destroy },
 		{ 0, 0 }
 	};

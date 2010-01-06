@@ -198,6 +198,22 @@ namespace box2d
 		return t->getBoundingBox(L);
 	}
 
+	int w_Shape_getGroupIndex(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		int i = t->getGroupIndex();
+		lua_pushinteger(L, i);
+		return 1;
+	}
+
+	int w_Shape_setGroupIndex(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		int i = luaL_checkint(L, 2);
+		t->setGroupIndex(i);
+		return 0;
+	}
+
 	int w_Shape_destroy(lua_State * L)
 	{
 		Proxy * p = (Proxy *)lua_touserdata(L, 1);
@@ -229,6 +245,8 @@ namespace box2d
 		{ "setData", w_Shape_setData },
 		{ "getData", w_Shape_getData },
 		{ "getBoundingBox", w_Shape_getBoundingBox },
+		{ "getGroupIndex", w_Shape_getGroupIndex },
+		{ "setGroupIndex", w_Shape_setGroupIndex },
 		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};

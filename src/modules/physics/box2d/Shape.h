@@ -168,6 +168,9 @@ namespace box2d
 		**/
 		void getFilterData(int * v);
 		
+		void setGroupIndex(int index);
+		int getGroupIndex() const;
+
 		int setCategory(lua_State * L);
 		int setMask(lua_State * L);
 		int getCategory(lua_State * L);
