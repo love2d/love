@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -93,7 +93,7 @@ namespace box2d
 		return shape->GetFriction();
 	}
 
-	float Shape::getRestituion() const
+	float Shape::getRestitution() const
 	{
 		return shape->GetRestitution();
 	}
@@ -134,7 +134,7 @@ namespace box2d
 
 		float lambda;
 		b2Vec2 normal;
-		
+
 		if(shape->TestSegment(shape->GetBody()->GetXForm(), &lambda, &normal, s, 1.0f))
 		{
 			lua_pushnumber(L, lambda);
@@ -164,7 +164,7 @@ namespace box2d
 		v[1] = (int)f.maskBits;
 		v[2] = f.groupIndex;
 	}
-	
+
 	int Shape::setCategory(lua_State * L)
 	{
 		b2FilterData f = shape->GetFilterData();
@@ -206,7 +206,7 @@ namespace box2d
 	{
 		return pushBits(L, ~(shape->GetFilterData().maskBits));
 	}
-	
+
 	uint16 Shape::getBits(lua_State * L)
 	{
 		// Get number of args.
@@ -218,11 +218,11 @@ namespace box2d
 		for(int i = 1;i<=argc;i++)
 		{
 			size_t bpos = (size_t)(lua_tointeger(L, i)-1);
-			if(bpos < 0 || bpos > 16) 
+			if(bpos < 0 || bpos > 16)
 				return luaL_error(L, "Values must be in range 1-16.");
 			b.set(bpos, true);
 		}
-		
+
 		return (uint16)b.to_ulong();
 	}
 
@@ -243,7 +243,7 @@ namespace box2d
 	int Shape::setData(lua_State * L)
 	{
 		love::luax_assert_argc(L, 1, 1);
-		
+
 		if(data->ref != 0)
 		{
 			delete data->ref;

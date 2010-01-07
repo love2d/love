@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2009 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -51,16 +51,16 @@ namespace box2d
 
 	/**
 	* A Shape is geometry attached to a Body.
-	* A Body has position and orientation, and 
+	* A Body has position and orientation, and
 	* a Shape's geometry will be affected by the parent
 	* body's transformation.
 	**/
 	class Shape : public love::physics::Shape
 	{
 	protected:
-		
+
 		// A pointer to the parent Body. If the Body
-		// is destroyed, all child shapes are destroyed as well. 
+		// is destroyed, all child shapes are destroyed as well.
 		// This ensures that all child shapes are always destroyed
 		// *before* the parent Body.
 		Body * body;
@@ -76,14 +76,14 @@ namespace box2d
 
 		/**
 		* Creates a Shape attatched to the specified
-		* Body. 
+		* Body.
 		**/
 		Shape(Body * body);
 
 		virtual ~Shape();
 
 		/**
-		* Gets the type of Shape. Useful for 
+		* Gets the type of Shape. Useful for
 		* debug drawing.
 		**/
 		Type getType() const;
@@ -122,7 +122,7 @@ namespace box2d
 		* Gets the restitution of the Shape.
 		* @return The restitution of the Shape.
 		**/
-		float getRestituion() const;
+		float getRestitution() const;
 
 		/**
 		* Gets the density of the Shape.
@@ -167,7 +167,7 @@ namespace box2d
 		* category (16-bits), mask (16-bits) and group (32-bits/int).
 		**/
 		void getFilterData(int * v);
-		
+
 		void setGroupIndex(int index);
 		int getGroupIndex() const;
 
@@ -181,7 +181,7 @@ namespace box2d
 		/**
 		* This function stores an in-C reference to
 		* arbitrary Lua data in the Box2D shape object.
-		* 
+		*
 		* The data set here will be passed to the collision
 		* handler when collisions occur.
 		**/
@@ -194,10 +194,10 @@ namespace box2d
 		int getData(lua_State * L);
 
 		/**
-		* Gets the bounding box for this Shape. 
+		* Gets the bounding box for this Shape.
 		* The function returns eight values which can be
 		* passed directly to love.graphics.polygon.
-		**/ 
+		**/
 		int getBoundingBox(lua_State * L);
 	};
 
