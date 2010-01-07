@@ -76,6 +76,16 @@ static NSString *getApplicationName(void)
     event.type = SDL_QUIT;
     SDL_PushEvent(&event);
 }
+
+/* Hack to make Cocoa ignore keystrokes that aren't shortcuts, otherwise it beeps on every key press */
+- (void)sendEvent:(NSEvent *)theEvent {
+	if (NSKeyDown == [theEvent type] || NSKeyUp == [theEvent type]) {
+		if ([theEvent modifierFlags] & NSCommandKeyMask)
+			[super sendEvent: theEvent];
+	} else {
+		[super sendEvent: theEvent];
+	}
+}
 @end
 
 /* The main class of the application, the application's delegate */
