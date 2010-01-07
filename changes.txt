@@ -10,6 +10,7 @@ LOVE 0.6.1
   * Fixed a bug so the mouse doesn't get crippled when the keyboard is disabled.
   * The error screen redraws when an event occurs.
   * The default love.run() now gracefully handles disabled modules.
+  * The debian packages should now successfully include icons, file associations, etc, and should give the correct architecture.
 
 LOVE 0.6.0
 ----------
