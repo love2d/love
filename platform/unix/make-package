@@ -7,6 +7,8 @@ arch="i386"
 
 if [ "`uname -m | grep -c -G x86_64`" != 0 ]; then
 	arch="amd64"
+elif [ "`uname -m | grep -c -G ppc`" != 0 ]; then
+	arch="ppc"
 fi
 
 if [ -z "$2" ]; then
