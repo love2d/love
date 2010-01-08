@@ -179,6 +179,10 @@ function love.boot()
 		can_has_game = pcall(love.filesystem.setSource, full_source)
 	end
 
+	if can_has_game and not (love.filesystem.exists("main.lua") or love.filesystem.exists("conf.lua")) then
+		no_game_code = true
+	end
+
 	if not can_has_game then
 		love.filesystem = nil
 		love.nogame()
@@ -255,6 +259,10 @@ function love.init()
 
 	if love.filesystem and love.filesystem.exists("main.lua") then require("main.lua") end
 
+	if no_game_code then
+		error("No code to run\nYour game might be packaged incorrectly\nMake sure main.lua is at the top level of the zip")
+	end
+
 	-- Console hack
 	if c.console and love._openConsole then
 		love._openConsole()
@@ -265,7 +273,7 @@ end
 function love.run()
 
 	if love.load then love.load() end
-	
+
 	local dt = 0
 
 	-- Main loop time.
