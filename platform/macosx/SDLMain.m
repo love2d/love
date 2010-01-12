@@ -417,10 +417,7 @@ int main (int argc, char **argv)
 			SDL_strlcpy(arg, temparg, arglen);
 			gArgv[gArgc++] = arg;
 			gArgv[gArgc] = NULL;
-			
-			[firstLovePath release];
 		}
-		[lovePaths release];
     } else {
         int i;
         gArgc = argc;
