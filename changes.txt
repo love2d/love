@@ -11,6 +11,7 @@ LOVE 0.6.1
   * The error screen redraws when an event occurs.
   * The default love.run() now gracefully handles disabled modules.
   * The debian packages should now successfully include icons, file associations, etc, and should give the correct architecture.
+  * Added support for drawing polylines to love.graphics.line - the syntax is the same as love.graphics.polygon.
 
 LOVE 0.6.0
 ----------
@@ -22,7 +23,6 @@ LOVE 0.6.0
   * Added love.event.
   * Added love.filesystem.setIdentity().
   * Added OpenAL dependency.
-  * Added SDL_sound dependency.
   
   * Fixed love.fileystem problems with internal \0 in strings.
   * Fixed love.filesystem.mkdir/remove not working when write directory not set.
@@ -33,17 +33,16 @@ LOVE 0.6.0
   * Changed love.filesystem.open to accept mode (removed from love.filesystem.newFile).
   * Changed love.filesystem.read() which now returns two parameters (data, length).
   * Changed love.filesystem.write() which now takes up to four parameters (file, data, length, mode).
-  * Changed default color mode to love.color_modulate.
-  * Changed named of love.color_normal to love.color_replace.
-  * Changed name of love.blend_normal to love.blend_alpha.
+  * Changed default color mode to "modulate".
+  * Changed name of love.color_normal to "replace".
+  * Changed name of love.blend_normal to "alpha".
+  * Changed the conf file format. 
   
   * Removed Color object.
   * Removed Animation. 
-  * Removed ParticleSystem (!)
   * Removed several constants.
   * Removed love.graphics.draw() for strings.
   * Removed love.system.
-  * Removed conf files. 
   * Removed SWIG.
   * Removed boost.
   * Removed SDL_mixer.
