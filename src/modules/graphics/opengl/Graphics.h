@@ -461,6 +461,12 @@ namespace opengl
 		* @param y2 Second y-coordinate.
 		**/
 		void line(float x1, float y1, float x2, float y2);
+		
+		/**
+		* Draws a series of lines connecting the given vertices.
+		* @param ... Vertex components (x1, y1, x2, y2, etc.)
+		**/
+		int polyline(lua_State * L);
 
 		/**
 		* Draws a triangle using the three coordinates passed.

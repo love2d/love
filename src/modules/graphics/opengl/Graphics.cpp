@@ -844,6 +844,47 @@ namespace opengl
 		glPopMatrix();
 		glEnable(GL_TEXTURE_2D);
 	}
+	
+	int Graphics::polyline( lua_State * L)
+	{
+		// Get number of params.
+		int args = lua_gettop(L);
+		bool table = false;
+		
+		if (args == 1) { // we've got a table, hopefully
+			int type = lua_type(L, 1);
+			if (type != LUA_TTABLE)
+				return luaL_error(L, "Function requires a table or series of numbers");
+			table = true;
+			args = lua_objlen(L, 1);
+		}
+		
+		if (args % 2) // an odd number of arguments, no good for a polyline
+			return luaL_error(L, "Number of vertices must be a multiple of two");
+		
+		// right, let's draw this polyline, then
+		glDisable(GL_TEXTURE_2D);
+		glBegin(GL_LINE_STRIP);
+		if (table) {
+			lua_pushnil(L);
+			while (true) {
+				if(lua_next(L, 1) == 0) break;
+				GLfloat x = (GLfloat)lua_tonumber(L, -1);
+				lua_pop(L, 1); // pop value
+				if(lua_next(L, 1) == 0) break;
+				GLfloat y = (GLfloat)lua_tonumber(L, -1);
+				lua_pop(L, 1); // pop value
+				glVertex2f(x, y);
+			}
+		} else {
+			for (int i = 1; i < args; i+=2) {
+				glVertex2f((GLfloat)lua_tonumber(L, i), (GLfloat)lua_tonumber(L, i+1));
+			}
+		}
+		glEnd();
+		glEnable(GL_TEXTURE_2D);
+		return 0;
+	}
 
 	void Graphics::triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3 )
 	{

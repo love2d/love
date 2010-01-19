@@ -660,11 +660,16 @@ namespace opengl
 
 	int w_line(lua_State * L)
 	{
-		float x1 = (float)luaL_checknumber(L, 1);
-		float y1 = (float)luaL_checknumber(L, 2);
-		float x2 = (float)luaL_checknumber(L, 3);
-		float y2 = (float)luaL_checknumber(L, 4);
-		instance->line(x1, y1, x2, y2);
+		int args = lua_gettop(L);
+		if( args == 1 || args > 4) {
+			instance->polyline(L);
+		} else {
+			float x1 = (float)luaL_checknumber(L, 1);
+			float y1 = (float)luaL_checknumber(L, 2);
+			float x2 = (float)luaL_checknumber(L, 3);
+			float y2 = (float)luaL_checknumber(L, 4);
+			instance->line(x1, y1, x2, y2);
+		}
 		return 0;
 	}
 
