@@ -37,7 +37,7 @@ namespace sound
 		{
 			int samples = luaL_checkint(L, 1);
 			int sampleRate = luaL_optint(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
-			int bits = luaL_optint(L, 3, Decoder::DEFAULT_T);
+			int bits = luaL_optint(L, 3, Decoder::DEFAULT_BITS);
 			int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
 
 			try

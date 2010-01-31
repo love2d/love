@@ -23,11 +23,14 @@
 
 #include <common/Module.h>
 #include "Source.h"
-#include "Sound.h"
-#include "Music.h"
 
 namespace love
 {
+namespace sound
+{
+	class Decoder;
+	class SoundData;
+}
 namespace audio
 {
 	/**
@@ -42,25 +45,8 @@ namespace audio
 		**/
 		virtual ~Audio(){};
 
-		/**
-		* Creates a new Sound with the specified SoundData.
-		* @param data The SoundData from which to create the sound.
-		* @return A new Sound if successful, zero otherwise.
-		**/
-		virtual Sound * newSound(love::sound::SoundData * data) = 0;
-
-		/**
-		* Creates a new Music (stream) using the specified SoundData.
-		* @param decoder The object to use to decode the sound stream.
-		**/
-		virtual Music * newMusic(love::sound::Decoder * decoder) = 0;
-
-		/**
-		* Creates a new Source.
-		* @returns A new Source.
-		**/
-		virtual Source * newSource(Sound * sound) = 0;
-		virtual Source * newSource(Music * music) = 0;
+		virtual Source * newSource(love::sound::Decoder * decoder) = 0;
+		virtual Source * newSource(love::sound::SoundData * soundData) = 0;
 
 		/**
 		* Gets the current number of simulatenous playing sources.
@@ -79,26 +65,6 @@ namespace audio
 		* @param source The Source to play.
 		**/
 		virtual void play(Source * source) = 0;
-
-		/**
-		* Plays one Sound on the specified Source. We need separate
-		* Sound and Music play functions because Music must be cloned, 
-		* whereas Sound needs not be.
-		* 
-		* @param sound The Sound to play.
-		* @param source The Source on which to play the Sound.
-		**/
-		virtual void play(Sound * sound) = 0;
-
-		/**
-		* Plays one Music on the specified Source. We need separate
-		* Sound and Music play functions because Music must be cloned, 
-		* whereas Sound needs not be.
-		* 
-		* @param music The Music to play.
-		* @param source The Source on which to play the Music.
-		**/
-		virtual void play(Music * music) = 0;
 
 		/**
 		* Stops playback on the specified source.

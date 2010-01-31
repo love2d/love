@@ -36,33 +36,34 @@ namespace null
 	private:
 
 		float pitch;
-		float volume; 
+		float volume;
+		bool looping;
 
 	public:
 		Source();
-		Source(Audible * audible);
 		virtual ~Source();
 		
-		void play();
-		void stop();
-		void pause();
-		void resume();
-		void rewind();
-		bool isStopped() const;
-		void update();
-
-		void setPitch(float pitch);
-		float getPitch() const;
-
-		void setVolume(float volume);
-		float getVolume() const;
-
-		void setPosition(float * v);
-		void getPosition(float * v) const;
-		void setVelocity(float * v);
-		void getVelocity(float * v) const;
-		void setDirection(float * v);
-		void getDirection(float * v) const;
+		virtual love::audio::Source * copy();	
+		virtual void play();
+		virtual void stop();
+		virtual void pause();
+		virtual void resume();
+		virtual void rewind();
+		virtual bool isStopped() const;
+		virtual bool isFinished() const;
+		virtual void update();
+		virtual void setPitch(float pitch);
+		virtual float getPitch() const;
+		virtual void setVolume(float volume);
+		virtual float getVolume() const;
+		virtual void setPosition(float * v);
+		virtual void getPosition(float * v) const;
+		virtual void setVelocity(float * v);
+		virtual void getVelocity(float * v) const;
+		virtual void setDirection(float * v);
+		virtual void getDirection(float * v) const;
+		void setLooping(bool looping);
+		bool isLooping() const;
 
 	}; // Source
 

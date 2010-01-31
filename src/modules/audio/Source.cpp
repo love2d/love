@@ -24,47 +24,32 @@ namespace love
 {
 namespace audio
 {
-	Source::Source()
-		: audible(0), looping(false)
+	Source::Source(Type type)
+		: type(type)
 	{
 	}
 
 	Source::~Source()
 	{
-		if(audible != 0)
-		{
-			audible->stop(this);
-			audible->release();
-		}
 	}
 
-	void Source::setAudible(Audible * audible)
+	bool Source::getConstant(const char * in, Type & out)
 	{
-		// If this source already has an audible, remove it.
-		if(this->audible != 0)
-		{
-			this->audible->stop(this);
-			this->audible->release();
-		}
-
-		this->audible = audible;
-		audible->retain();
+		return types.find(in, out);
 	}
 
-	Audible * Source::getAudible() const
+	bool Source::getConstant(Type in, const char *& out)
 	{
-		return audible;
+		return types.find(in, out);
 	}
 
-	void Source::setLooping(bool looping)
+	StringMap<Source::Type, Source::TYPE_MAX_ENUM>::Entry Source::typeEntries[] = 
 	{
-		this->looping = looping;
-	}
+		{"static", Source::TYPE_STATIC},
+		{"stream", Source::TYPE_STREAM},
+	};
 
-	bool Source::isLooping() const
-	{
-		return looping;
-	}
+	StringMap<Source::Type, Source::TYPE_MAX_ENUM> Source::types(Source::typeEntries, sizeof(Source::typeEntries));
 
 } // audio
 } // love

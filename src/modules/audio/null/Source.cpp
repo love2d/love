@@ -28,16 +28,18 @@ namespace null
 {
 
 	Source::Source()
+		: love::audio::Source(Source::TYPE_STATIC)
 	{
-	}
-
-	Source::Source(Audible * audible)
-	{
-		setAudible(audible);
 	}
 
 	Source::~Source()
 	{
+	}
+
+	love::audio::Source * Source::copy()
+	{
+		this->retain();
+		return this;
 	}
 
 	void Source::play()
@@ -61,6 +63,11 @@ namespace null
 	}
 
 	bool Source::isStopped() const
+	{
+		return true;		
+	}
+
+	bool Source::isFinished() const
 	{
 		return true;		
 	}
@@ -111,6 +118,16 @@ namespace null
 
 	void Source::getDirection(float * v) const
 	{
+	}
+
+	void Source::setLooping(bool looping)
+	{
+		this->looping = looping;
+	}
+
+	bool Source::isLooping() const
+	{
+		return looping;
 	}
 
 } // null

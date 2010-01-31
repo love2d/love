@@ -60,7 +60,11 @@ namespace lullaby
 	bool ModPlugDecoder::accepts(const std::string & ext)
 	{
 		static const std::string supported[] = {
-			"it", "xm", "mod", "wav", ""
+			"699", "abc", "amf", "ams", "dbm", "dmf",
+			"dsm", "far", "it", "j2b", "mdl", "med",
+			"mid", "mod", "mt2", "mtm", "okt", "pat",
+			"psm", "s3m", "stm", "ult", "umx", "wav",
+			"xm", ""
 		};
 
 		for(int i = 0; !(supported[i].empty()); i++)

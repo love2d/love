@@ -183,14 +183,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\modules\audio\Music.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\audio\Sound.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\modules\audio\Source.cpp"
 					>
 					<FileConfiguration
@@ -236,54 +228,6 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\audio\wrap_Audio.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\audio\wrap_Music.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\audio\"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\audio\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\audio\wrap_Music.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\audio\wrap_Sound.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\audio\"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\audio\"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\audio\wrap_Sound.h"
 					>
 				</File>
 				<File
@@ -338,30 +282,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\modules\audio\openal\Music.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\openal\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\openal\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\audio\openal\Music.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\modules\audio\openal\Pool.cpp"
 						>
 						<FileConfiguration
@@ -383,30 +303,6 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\audio\openal\Pool.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\audio\openal\Sound.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\openal\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\openal\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\audio\openal\Sound.h"
 						>
 					</File>
 					<File
@@ -459,54 +355,6 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\audio\null\Audio.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\audio\null\Music.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\null\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\null\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\audio\null\Music.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\audio\null\Sound.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\null\"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)\audio\null\"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\..\src\modules\audio\null\Sound.h"
 						>
 					</File>
 					<File

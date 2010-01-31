@@ -34,8 +34,11 @@ namespace lullaby
 	bool Mpg123Decoder::inited = false;
 
 	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), handle(0), islooping(false)
+		: Decoder(data, ext, bufferSize, sampleRate), handle(0)
 	{
+
+		data_size = data->getSize();
+		data_offset = 0;
 
 		int ret;
 
@@ -57,21 +60,11 @@ namespace lullaby
 		ret = mpg123_format(handle, sampleRate, MPG123_STEREO, MPG123_ENC_SIGNED_16);
 		if (ret != MPG123_OK)
 			throw love::Exception("Could not set output format.");
-		size_t numbytes = 0;
-		ret = mpg123_decode(handle, (unsigned char*)data->getData(), data->getSize(), NULL, 0, &numbytes);
-		
-		if(ret == MPG123_NEW_FORMAT)
-		{
-			long rate;
-			int channels;
-			int encoding;
-			mpg123_getformat(handle, &rate, &channels, &encoding);
-		}
-		else if(ret != 0)
-		{
-			throw love::Exception(mpg123_strerror(handle));
-		}
 
+		ret = feed(16384);
+
+		if (ret != MPG123_OK && ret != MPG123_DONE)
+			throw love::Exception("Could not feed!");
 	}
 
 	Mpg123Decoder::~Mpg123Decoder()
@@ -108,26 +101,51 @@ namespace lullaby
 
 	int Mpg123Decoder::decode()
 	{
-		size_t numbytes;
-		int r = mpg123_read(handle, (unsigned char*) buffer, bufferSize, &numbytes);
-	
-		if (r == MPG123_DONE || r != MPG123_OK)
+		int size = 0;
+		bool done = false;
+
+		while(size < bufferSize && !done && !eof)
 		{
-			if ( r == MPG123_NEED_MORE && islooping )
+			size_t numbytes = 0;
+
+			int r = mpg123_read(handle, (unsigned char*) buffer + size, bufferSize - size, &numbytes);
+
+			switch(r)
 			{
-				islooping = false;
-				size_t numbytes = 0;
-				mpg123_decode(handle, (unsigned char*) data->getData(), data->getSize(), (unsigned char*) buffer, bufferSize, &numbytes);
-			}
-			else
-			{
+			case MPG123_NEW_FORMAT:
+				continue;
+			case MPG123_NEED_MORE:
+				{
+					int v = feed(8192);
+
+					switch(v)
+					{
+					case MPG123_OK:
+						continue;
+					case MPG123_DONE:
+						if(numbytes == 0)
+							eof = true;
+						break;
+					default:
+						done = true;
+					}
+
+					continue;
+				}
+			case MPG123_OK:
+				size += numbytes;
+				continue;
+			case MPG123_DONE:
+				// Apparently, mpg123_read does not return MPG123_DONE, but 
+				// let's keep it here anyway.
 				eof = true;
-				numbytes = 0;
+			default:
+				done = true;
+				break;
 			}
 		}
 		
-
-		return numbytes;
+		return size;
 	}
 
 	bool Mpg123Decoder::seek(float s)
@@ -139,11 +157,16 @@ namespace lullaby
 
 	bool Mpg123Decoder::rewind()
 	{
-		if(mpg123_seek(handle, 0, SEEK_SET) >= 0)
-			return false;
-		islooping = true;
 		eof = false;
-		return true;
+		off_t offset;
+
+		if(mpg123_feedseek(handle, 0, SEEK_SET, &offset) >= 0)
+		{
+			data_offset = offset;
+			return true;
+		}
+		else
+			return false;
 	}
 
 	bool Mpg123Decoder::isSeekable()
@@ -161,6 +184,22 @@ namespace lullaby
 		return 16;
 	}
 
+	int Mpg123Decoder::feed(int bytes)
+	{
+		int remaining = data_size - data_offset;
+
+		if(remaining <= 0)
+			return MPG123_DONE;
+
+		int feed_bytes = remaining < bytes ? remaining : bytes;
+
+		int r = mpg123_feed(handle, (unsigned char*)data->getData() + data_offset, feed_bytes);
+
+		if(r == MPG123_OK || r == MPG123_DONE)
+			data_offset += feed_bytes;
+
+		return r;
+	}
 
 } // lullaby
 } // sound

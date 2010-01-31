@@ -55,9 +55,9 @@ namespace lullaby
 		// Find a suitable decoder here, and return it.
 		if(ModPlugDecoder::accepts(ext))
 			decoder = new ModPlugDecoder(data, ext, bufferSize, sampleRate);
-		else if (Mpg123Decoder::accepts(ext))
+		else if(Mpg123Decoder::accepts(ext))
 			decoder = new Mpg123Decoder(data, ext, bufferSize, sampleRate);
-		else if (VorbisDecoder::accepts(ext))
+		else if(VorbisDecoder::accepts(ext))
 			decoder = new VorbisDecoder(data, ext, bufferSize, sampleRate);
 		/*else if (FLACDecoder::accepts(ext))
 			decoder = new FLACDecoder(data, ext, bufferSize, sampleRate);*/

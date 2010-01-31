@@ -82,24 +82,14 @@ namespace openal
 		return "love.audio.openal";
 	}
 
-	love::audio::Sound * Audio::newSound(love::sound::SoundData * data)
+	love::audio::Source * Audio::newSource(love::sound::Decoder * decoder)
 	{
-		return new Sound(pool, data);
+		return new Source(pool, decoder);
 	}
 
-	love::audio::Music * Audio::newMusic(love::sound::Decoder * decoder)
+	love::audio::Source * Audio::newSource(love::sound::SoundData * soundData)
 	{
-		return new Music(pool, decoder);
-	}
-
-	love::audio::Source * Audio::newSource(love::audio::Sound * sound)
-	{
-		return new Source(pool, sound);
-	}
-
-	love::audio::Source * Audio::newSource(love::audio::Music * music)
-	{
-		return new Source(pool, music->clone());
+		return new Source(pool, soundData);
 	}
 
 	int Audio::getNumSources() const
@@ -115,22 +105,6 @@ namespace openal
 	void Audio::play(love::audio::Source * source)
 	{
 		source->play();
-	}
-
-	void Audio::play(love::audio::Sound * sound)
-	{
-		Source * source = new Source(pool, sound);
-		play(source);
-		source->release();
-	}
-
-	void Audio::play(love::audio::Music * music)
-	{
-		love::audio::Music *cloned = music->clone();
-		Source * source = new Source(pool, cloned);
-		play(source);
-		cloned->release();
-		source->release();
 	}
 
 	void Audio::stop(love::audio::Source * source)

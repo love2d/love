@@ -43,13 +43,15 @@ namespace lullaby
 	private:
 
 		mpg123_handle * handle;
-		bool islooping;
 		static bool inited;
+
+		int data_offset;
+		int data_size;
 
 	public:
 
 		Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate);
-		~Mpg123Decoder();
+		virtual ~Mpg123Decoder();
 		
 		static bool accepts(const std::string & ext);
 		static void quit();
@@ -61,6 +63,10 @@ namespace lullaby
 		bool isSeekable();
 		int getChannels() const;
 		int getBits() const;
+
+	private:
+
+		int feed(int bytes);
 
 	}; // Decoder
 

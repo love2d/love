@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libmodplug.lib libmpg123.lib libogg.lib libvorbis.lib libvorbisfile.lib libFLAC_static_d.lib libFLAC++_static_d.lib"
+				AdditionalDependencies="libmodplug.lib libmpg123.lib libogg.lib libvorbis.lib libvorbisfile.lib"
 				OutputFile="$(OutDir)\love\$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\lib"
@@ -186,22 +186,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\modules\sound\lullaby\Decoder.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\sound\lullaby\FLACDecoder.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\sound\lullaby\"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\src\modules\sound\lullaby\FLACDecoder.h"
 				>
 			</File>
 			<File

@@ -182,42 +182,20 @@ namespace lullaby
 
 	int VorbisDecoder::decode()
 	{
-		int bits = this->getBits();
 		int size = 0;
-		int section;
-		int result;
-
-		if(bits == 16)
-			bits = 2;
-		else
-			bits = 1;
 
 		while(size < bufferSize)
 		{
-			result = ov_read(&handle, (char*) buffer + size, bufferSize - size, endian, bits, 1, &section);
+			int result = ov_read(&handle, (char*) buffer + size, bufferSize - size, endian, (getBits() == 16 ? 2 : 1), 1, 0);
 
-			if(result > 0)
-				size += result;
-			else if(result < 0)
-			{
-				switch(result)
-				{
-				case OV_EREAD:
-					throw love::Exception("Vorbis read: Read from media");
-				case OV_ENOTVORBIS:
-					throw love::Exception("Vorbis read: Not Vorbis data");
-				case OV_EVERSION:
-					throw love::Exception("Vorbis read: Vorbis version mismatch");
-				case OV_EBADHEADER:
-					throw love::Exception("Vorbis read: Invalid Vorbis header");
-				case OV_EFAULT:
-					throw love::Exception("Vorbis read: Internal logic fault (bug or heap/stack corruption)");
-				default:
-					throw love::Exception("Vorbis read: Unknown error");
-				}
-			}
-			else
+			if(result == OV_HOLE)
+				continue;
+			else if(result <= OV_EREAD)
+				return -1;
+			else if(result == 0)
 				break;
+			else if(result > 0)
+				size += result;
 		}
 
 		if(oggFile.dataSize - oggFile.dataRead == 0)
@@ -256,7 +234,8 @@ namespace lullaby
 	bool VorbisDecoder::rewind()
 	{
 		eof = false;
-		return this->seek(0);
+		ov_pcm_seek(&handle, 0);
+		return true;
 	}
 
 	bool VorbisDecoder::isSeekable()

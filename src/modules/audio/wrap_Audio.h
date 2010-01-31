@@ -22,9 +22,9 @@
 #define LOVE_AUDIO_WRAP_AUDIO_H
 
 // LOVE
+#include <common/config.h>
+#include <common/runtime.h>
 #include "Audio.h"
-#include "wrap_Sound.h"
-#include "wrap_Music.h"
 #include "wrap_Source.h"
 
 namespace love
@@ -32,9 +32,7 @@ namespace love
 namespace audio
 {
 	int w_getNumSources(lua_State * L);
-	int w_newSound(lua_State * L);
-	int w_newMusic(lua_State * L);
-	int w_newSource(lua_State * L);
+	int w_newSource1(lua_State * L);
 	int w_play(lua_State * L);
 	int w_stop(lua_State * L);
 	int w_pause(lua_State * L);

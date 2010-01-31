@@ -24,6 +24,7 @@
 #include "Module.h"
 #include "Object.h"
 #include "Reference.h"
+#include "StringMap.h"
 
 // STD
 #include <iostream>
@@ -47,6 +48,14 @@ namespace love
 	static int w__tostring(lua_State * L)
 	{
 		lua_pushvalue(L, lua_upvalueindex(1));
+		return 1;
+	}
+
+	static int w__typeOf(lua_State * L)
+	{
+		Proxy * p = (Proxy *)lua_touserdata(L, 1);
+		Type t = luax_type(L, 2);
+		luax_pushboolean(L, p->flags.at(t));
 		return 1;
 	}
 
@@ -177,6 +186,15 @@ namespace love
 		lua_pushstring(L, tname);
 		lua_pushcclosure(L, w__tostring, 1);
 		lua_setfield(L, -2, "__tostring");
+
+		// Add tostring to as type() as well.
+		lua_pushstring(L, tname);
+		lua_pushcclosure(L, w__tostring, 1);
+		lua_setfield(L, -2, "type");
+
+		// Add typeOf
+		lua_pushcfunction(L, w__typeOf);
+		lua_setfield(L, -2, "typeOf");
 
 		if(f != 0)
 			luaL_register(L, 0, f);
@@ -316,5 +334,70 @@ namespace love
 		}
 	}
 
+	StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] = 
+	{
+		{"Invalid", INVALID_ID},
+
+		{"Object", OBJECT_ID},
+		{"Data", DATA_ID},
+		{"Module", MODULE_ID},
+
+		// Filesystem
+		{"File", FILESYSTEM_FILE_ID},
+		{"FileData", FILESYSTEM_FILE_DATA_ID},
+
+		// Font
+		{"GlyphData", FONT_GLYPH_DATA_ID},
+		{"Rasterizer", FONT_RASTERIZER_ID},
+
+		// Graphics
+		{"Drawable", GRAPHICS_DRAWABLE_ID},
+		{"Image", GRAPHICS_IMAGE_ID},
+		{"Quad", GRAPHICS_QUAD_ID},
+		{"Glyph", GRAPHICS_GLYPH_ID},
+		{"Font", GRAPHICS_FONT_ID},
+		{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
+		{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
+		{"VertexBuffer", GRAPHICS_VERTEX_BUFFER_ID},
+
+		// Image
+		{"ImageData", IMAGE_IMAGE_DATA_ID},
+
+		// Audio
+		{"Source", AUDIO_SOURCE_ID},
+
+		// Sound
+		{"SoundData", SOUND_SOUND_DATA_ID},
+		{"Decoder", SOUND_DECODER_ID},
+
+		// Physics
+		{"World", PHYSICS_WORLD_ID},
+		{"Contact", PHYSICS_CONTACT_ID},
+		{"Body", PHYSICS_BODY_ID},
+		{"Shape", PHYSICS_SHAPE_ID},
+		{"CircleShape", PHYSICS_CIRCLE_SHAPE_ID},
+		{"PolygonShape", PHYSICS_POLYGON_SHAPE_ID},
+		{"Joint", PHYSICS_JOINT_ID},
+		{"MouseJoint", PHYSICS_MOUSE_JOINT_ID},
+		{"DistanceJoint", PHYSICS_DISTANCE_JOINT_ID},
+		{"PrismaticJoint", PHYSICS_PRISMATIC_JOINT_ID},
+		{"RevoluteJoint", PHYSICS_REVOLUTE_JOINT_ID},
+		{"PulleyJoint", PHYSICS_PULLEY_JOINT_ID},
+		{"GearJoint", PHYSICS_GEAR_JOINT_ID},
+
+		// The modules themselves. Only add abstracted modules here. 
+		{"filesystem", MODULE_FILESYSTEM_ID},
+		{"image", MODULE_IMAGE_ID},
+		{"sound", MODULE_SOUND_ID},
+	};
+
+	StringMap<Type, TYPE_MAX_ENUM> types(typeEntries, sizeof(typeEntries));
+
+	Type luax_type(lua_State * L, int idx)
+	{
+		Type t = INVALID_ID;
+		types.find(luaL_checkstring(L, idx), t);
+		return t;
+	}
 
 } // love
