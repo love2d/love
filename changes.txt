@@ -3,15 +3,21 @@ LOVE 0.6.1
 
   * Added Shape:setGroupIndex and getGroupIndex.
   * Added Body:setFixedRotation and Body:getFixedRotation.
+  * Added Body:setInertia.
+  * Added CircleShape:getLocalCenter and CircleShape:getWorldCenter.
   * Added icons and file associations for the debs.
   * Added the demos folder to the Mac OS X DMG.
   * It's now possible to run a .love from Resources in Mac OS X, thanks to Steve Johnson.
   * Fixed a bug with multiple Sources on the same Music.
   * Fixed a bug so the mouse doesn't get crippled when the keyboard is disabled.
+  * Fixed a bug where love.graphics.rectangle drew a too large rectangle.
+  * Fixed epic physics typo (getRestituion->getRestitution).
   * The error screen redraws when an event occurs.
   * The default love.run() now gracefully handles disabled modules.
   * The debian packages should now successfully include icons, file associations, etc, and should give the correct architecture.
   * Added support for drawing polylines to love.graphics.line - the syntax is the same as love.graphics.polygon.
+  * Removed Music and Sound. There are now only sources.
+  * Improved the stability of love.audio/love.sound.
 
 LOVE 0.6.0
 ----------
@@ -23,11 +29,11 @@ LOVE 0.6.0
   * Added love.event.
   * Added love.filesystem.setIdentity().
   * Added OpenAL dependency.
-  
+
   * Fixed love.fileystem problems with internal \0 in strings.
   * Fixed love.filesystem.mkdir/remove not working when write directory not set.
   * Fixed position of Window.
-  
+
   * Changed parameter order of draws().
   * Changed origin for images to top-left.
   * Changed love.filesystem.open to accept mode (removed from love.filesystem.newFile).
@@ -36,17 +42,17 @@ LOVE 0.6.0
   * Changed default color mode to "modulate".
   * Changed name of love.color_normal to "replace".
   * Changed name of love.blend_normal to "alpha".
-  * Changed the conf file format. 
-  
+  * Changed the conf file format.
+
   * Removed Color object.
-  * Removed Animation. 
+  * Removed Animation.
   * Removed several constants.
   * Removed love.graphics.draw() for strings.
   * Removed love.system.
   * Removed SWIG.
   * Removed boost.
   * Removed SDL_mixer.
-  
+
 
 LOVE 0.5.0
 ----------
@@ -114,7 +120,7 @@ LOVE 0.3.2
 
 LOVE 0.3.1
 ----------
- 
+
   * Fixed segfault related to graphics.
   * Fixed wait-forever bug related to audio.
   * Fixed error reporting not working across modules.
@@ -125,7 +131,7 @@ LOVE 0.3.0
 ----------
 
   * Added ParticleSystem.
-  * Added visual error reporting. 
+  * Added visual error reporting.
   * Added love.system for game control needs.
   * Added input grabbing.
   * Added functions in love.graphics for display management.
@@ -141,7 +147,7 @@ LOVE 0.3.0
 
 LOVE 0.2.1
 ----------
- 
+
   * Added many functions in love.filesystem.
   * Added a dedicated save-folder for each game.
   * Added timer.sleep.
@@ -151,7 +157,7 @@ LOVE 0.2.1
   * Added variable spacing to ImageFont.
   * Added support for variable line quality when drawing primitives.
   * Added several functions for drawing sections of images. (love.graphics.draws)
-  * Added image optimization function and padding function. 
+  * Added image optimization function and padding function.
   * Added love.graphics.getWidth/Height.
 
   * Split devices up into actual SWIG-modules. This means that:
@@ -162,7 +168,7 @@ LOVE 0.2.1
 
   * Changed getFps to getFPS.
   * Escape is no more ... enter: Alt+F4.
-  * love.filesystem.include has been renamed to love.filesystem.require.  
+  * love.filesystem.include has been renamed to love.filesystem.require.
   * ImageFonts now consider the spacing as well as the glyph size.
   * Fixed a massive ImageFont bug which resulted in float-positioning failure.
   * Fixed a bug when loading fonts where the specified size doesn't represent the true size of the font.
