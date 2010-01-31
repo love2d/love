@@ -888,7 +888,6 @@ namespace opengl
 
 	void Graphics::triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3 )
 	{
-		glDisable(GL_CULL_FACE);
 		glDisable(GL_TEXTURE_2D);
 		glPushMatrix();
 
@@ -914,7 +913,6 @@ namespace opengl
 
 		glPopMatrix();
 		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_CULL_FACE);
 	}
 
 	void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h )
@@ -950,7 +948,6 @@ namespace opengl
 
 	void Graphics::quad(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4 )
 	{
-		glDisable(GL_CULL_FACE);
 		glDisable(GL_TEXTURE_2D);
 		glPushMatrix();
 
@@ -978,7 +975,6 @@ namespace opengl
 
 		glPopMatrix();
 		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_CULL_FACE);
 	}
 
 	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points )
@@ -1051,7 +1047,6 @@ namespace opengl
 		}
 
 
-		glDisable(GL_CULL_FACE);
 		glDisable(GL_TEXTURE_2D);
 
 		glBegin((mode==DRAW_LINE) ? GL_LINE_LOOP : GL_POLYGON);
@@ -1079,7 +1074,6 @@ namespace opengl
 
 		glEnd();
 
-		glEnable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_2D);
 
 		return 0;
