@@ -39,22 +39,12 @@ namespace null
 		return "love.audio.null";
 	}
 
-	love::audio::Sound * Audio::newSound(love::sound::SoundData * data)
-	{
-		return new Sound(data);
-	}
-
-	love::audio::Music * Audio::newMusic(love::sound::Decoder * decoder)
-	{
-		return new Music(decoder);
-	}
-
-	love::audio::Source * Audio::newSource(love::audio::Sound * sound)
+	love::audio::Source * Audio::newSource(love::sound::Decoder * decoder)
 	{
 		return new Source();
 	}
 
-	love::audio::Source * Audio::newSource(love::audio::Music * music)
+	love::audio::Source * Audio::newSource(love::sound::SoundData * soundData)
 	{
 		return new Source();
 	}
@@ -70,14 +60,6 @@ namespace null
 	}
 
 	void Audio::play(love::audio::Source * source)
-	{
-	}
-
-	void Audio::play(love::audio::Sound * sound)
-	{
-	}
-
-	void Audio::play(love::audio::Music * music)
 	{
 	}
 

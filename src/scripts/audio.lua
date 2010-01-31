@@ -18,35 +18,24 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
-function love.graphics.newFont(font, size)
-	if type(font) == "number" then
-		size = font
-		font = love._vera_ttf
+function love.audio.newSource(a, b)
+	if type(a) == "string" then
+		a = love.filesystem.newFile(a)
 	end
-	return love.graphics.newFont1(font, size)
-end
-
-love.graphics.setFont = function(font, size)
-	if type(font) == "number" then
-		size = font
-		font = love._vera_ttf
+	if type(a) == "userdata" then
+		if a:typeOf("File") then
+			a = love.sound.newDecoder(a)
+		end
+		
+		if a:typeOf("Decoder") then
+			if b == "static" then
+				a = love.sound.newSoundData(a)
+			end
+			return love.audio.newSource1(a)
+		end
+		if a:typeOf("SoundData") then
+			return love.audio.newSource1(a)
+		end
 	end
-	return love.graphics.setFont1(font, size)
+	error("No matching overload")
 end
-
-love.graphics.print = function (...)
-	if not love.graphics.getFont() then 
-		love.graphics.setFont(love._vera_ttf, 12)
-	end
-	love.graphics.print1(...)
-	love.graphics.print = love.graphics.print1
-end
-
-love.graphics.printf = function (...)
-	if not love.graphics.getFont() then 
-		love.graphics.setFont(love._vera_ttf, 12)
-	end
-	love.graphics.printf1(...)
-	love.graphics.printf = love.graphics.printf1
-end
-

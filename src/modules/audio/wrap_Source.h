@@ -41,6 +41,7 @@ namespace audio
 	int w_Source_getDirection(lua_State * L);
 	int w_Source_setLooping(lua_State * L);
 	int w_Source_isLooping(lua_State * L);
+	int w_Source_isStopped(lua_State * L);
 	int luaopen_source(lua_State * L);
 
 } // audio

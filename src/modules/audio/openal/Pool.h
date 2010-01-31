@@ -31,7 +31,6 @@
 #include <SDL.h>
 
 // LOVE
-#include <audio/Source.h>
 #include <common/config.h>
 #include <common/Exception.h>
 
@@ -50,6 +49,9 @@ namespace audio
 {
 namespace openal
 {
+
+	class Source;
+
 	class Pool
 	{
 	private:
@@ -64,7 +66,7 @@ namespace openal
 		std::queue<ALuint> available;
 
 		// A map of playing sources.
-		std::map<love::audio::Source *, ALuint> playing;
+		std::map<Source *, ALuint> playing;
 
 		// Only one thread can access this object at the same time. This mutex will
 		// make sure of that.
@@ -76,15 +78,6 @@ namespace openal
 		~Pool();
 
 		/**
-		* Gets the OpenAL format identifier based on number of
-		* channels and bits.
-		* @param channels Either 1 (mono) or 2 (stereo). 
-		* @param bits Either 8-bit samples, or 16-bit samples.
-		* @return One of AL_FORMAT_*, or 0 if unsupported format.
-		**/
-		ALenum getFormat(int channels, int bits) const;
-
-		/**
 		* Checks whether an OpenAL source is available.
 		* @return True if at least one is available, false otherwise.
 		**/
@@ -93,26 +86,22 @@ namespace openal
 		/**
 		* Checks whether a Source is currently in the playing list.
 		**/
-		bool isPlaying(love::audio::Source * s);
-
-		/**
-		* Returns an available OpenAL source identifier, or 0 if
-		* none is available.
-		* @return An OpenAL source ID, or 0 if unavailable.
-		**/
-		ALuint claim(love::audio::Source * source);
-
-		ALuint find(const love::audio::Source * source) const;
+		bool isPlaying(Source * s);
 
 		void update();
 
 		int getNumSources() const;
 		int getMaxSources() const;
 
+		bool play(Source * source, ALuint & out);
 		void stop();
+		void stop(Source * source);
 		void pause();
+		void pause(Source * source);
 		void resume();
+		void resume(Source * source);
 		void rewind();
+		void rewind(Source * source);
 
 	private:
 
@@ -120,9 +109,12 @@ namespace openal
 		* Makes the specified OpenAL source available for use.
 		* @param source The OpenAL source.
 		**/
-		void release(love::audio::Source * source);
+		void release(Source * source);
 
-		ALuint findi(const love::audio::Source * source) const;
+		ALuint findi(const Source * source) const;
+
+		bool findSource(Source * source, ALuint & out);
+		bool removeSource(Source * source);
 	}; // Pool
 
 } // openal

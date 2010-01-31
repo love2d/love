@@ -252,6 +252,8 @@ namespace love
 	**/
 	int luax_getregistry(lua_State * L, Registry r);
 
+	Type luax_type(lua_State * L, int idx);
+
 	/**
 	* Converts the value at idx to the specified type without checking that
 	* this conversion is valid. If the type has been previously verified with

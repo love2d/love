@@ -28,8 +28,9 @@ namespace love
 {
 	enum Type
 	{
+		INVALID_ID = 0,
 		// Cross-module types.
-		OBJECT_ID = 0,
+		OBJECT_ID,
 		DATA_ID,
 		MODULE_ID,
 
@@ -46,8 +47,6 @@ namespace love
 		GRAPHICS_IMAGE_ID,
 		GRAPHICS_QUAD_ID,
 		GRAPHICS_GLYPH_ID,
-		GRAPHICS_ANIMATION_ID,
-		GRAPHICS_COLOR_ID,
 		GRAPHICS_FONT_ID,
 		GRAPHICS_PARTICLE_SYSTEM_ID,
 		GRAPHICS_SPRITE_BATCH_ID,
@@ -57,9 +56,6 @@ namespace love
 		IMAGE_IMAGE_DATA_ID,
 
 		// Audio
-		AUDIO_AUDIBLE_ID,
-		AUDIO_SOUND_ID,
-		AUDIO_MUSIC_ID,
 		AUDIO_SOURCE_ID,
 
 		// Sound
@@ -87,10 +83,12 @@ namespace love
 		MODULE_SOUND_ID,
 
 		// Count the number of bits needed.
-		BIT_SIZE
+		TYPE_MAX_ENUM
 	};
 
-	typedef std::bitset<BIT_SIZE> bits;
+	typedef std::bitset<TYPE_MAX_ENUM> bits;
+
+	const bits INVALID_T = bits(1) << INVALID_ID;
 
 	const bits OBJECT_T = bits(1) << OBJECT_ID;
 	const bits DATA_T = (bits(1) << DATA_ID) | OBJECT_T;
@@ -108,8 +106,6 @@ namespace love
 	const bits GRAPHICS_IMAGE_T = (bits(1) << GRAPHICS_IMAGE_ID) | GRAPHICS_DRAWABLE_T;
 	const bits GRAPHICS_QUAD_T = (bits(1) << GRAPHICS_QUAD_ID) | OBJECT_T;
 	const bits GRAPHICS_GLYPH_T = (bits(1) << GRAPHICS_GLYPH_ID) | GRAPHICS_DRAWABLE_T;
-	const bits GRAPHICS_ANIMATION_T = (bits(1) << GRAPHICS_ANIMATION_ID) | GRAPHICS_DRAWABLE_T;
-	const bits GRAPHICS_COLOR_T = (bits(1) << GRAPHICS_COLOR_ID) | OBJECT_T;
 	const bits GRAPHICS_FONT_T = (bits(1) << GRAPHICS_FONT_ID) | OBJECT_T;
 	const bits GRAPHICS_PARTICLE_SYSTEM_T = (bits(1) << GRAPHICS_PARTICLE_SYSTEM_ID) | GRAPHICS_DRAWABLE_T;
 	const bits GRAPHICS_SPRITE_BATCH_T = (bits(1) << GRAPHICS_SPRITE_BATCH_ID) | GRAPHICS_DRAWABLE_T;
@@ -119,9 +115,6 @@ namespace love
 	const bits IMAGE_IMAGE_DATA_T = (bits(1) << IMAGE_IMAGE_DATA_ID) | DATA_T;
 	
 	// Audio.
-	const bits AUDIO_AUDIBLE_T = (bits(1) << AUDIO_AUDIBLE_ID) | OBJECT_T;
-	const bits AUDIO_SOUND_T = (bits(1) << AUDIO_SOUND_ID) | AUDIO_AUDIBLE_T;
-	const bits AUDIO_MUSIC_T = (bits(1) << AUDIO_MUSIC_ID) | AUDIO_AUDIBLE_T;
 	const bits AUDIO_SOURCE_T = (bits(1) << AUDIO_SOURCE_ID) | OBJECT_T;
 
 	// Sound.
@@ -147,6 +140,9 @@ namespace love
 	const bits MODULE_FILESYSTEM_T = (bits(1) << MODULE_FILESYSTEM_ID) | MODULE_T;
 	const bits MODULE_IMAGE_T = (bits(1) << MODULE_IMAGE_ID) | MODULE_T;
 	const bits MODULE_SOUND_T = (bits(1) << MODULE_SOUND_ID) | MODULE_T;
+
+	bool getType(const char * in, Type & out);
+	bool getType(Type in, const char *& out);
 
 } // love
 

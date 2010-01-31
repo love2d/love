@@ -25,7 +25,8 @@
 #include <common/config.h>
 #include <common/Object.h>
 #include <audio/Source.h>
-#include "Pool.h"
+#include <sound/SoundData.h>
+#include <sound/Decoder.h>
 
 // OpenAL
 #ifdef LOVE_MACOSX
@@ -43,6 +44,7 @@ namespace audio
 namespace openal
 {
 	class Audio;
+	class Pool;
 
 	class Source : public love::audio::Source
 	{
@@ -50,35 +52,63 @@ namespace openal
 
 		Pool * pool;
 		ALuint source;
+		bool valid;
+		static const unsigned int MAX_BUFFERS = 32;
+		ALuint buffers[MAX_BUFFERS];
 
 		float pitch;
-		float volume; 
+		float volume;
+		bool looping;
+
+		love::sound::Decoder * decoder;
 
 	public:
-		Source(Pool * pool);
-		Source(Pool * pool, Audible * audible);
+		Source(Pool * pool, love::sound::SoundData * soundData);
+		Source(Pool * pool, love::sound::Decoder * decoder);
 		virtual ~Source();
 		
-		void play();
-		void stop();
-		void pause();
-		void resume();
-		void rewind();
-		bool isStopped() const;
-		void update();
+		virtual love::audio::Source * copy();	
+		virtual void play();
+		virtual void stop();
+		virtual void pause();
+		virtual void resume();
+		virtual void rewind();
+		virtual bool isStopped() const;
+		virtual bool isFinished() const;
+		virtual void update();
+		virtual void setPitch(float pitch);
+		virtual float getPitch() const;
+		virtual void setVolume(float volume);
+		virtual float getVolume() const;
+		virtual void setPosition(float * v);
+		virtual void getPosition(float * v) const;
+		virtual void setVelocity(float * v);
+		virtual void getVelocity(float * v) const;
+		virtual void setDirection(float * v);
+		virtual void getDirection(float * v) const;
+		void setLooping(bool looping);
+		bool isLooping() const;
 
-		void setPitch(float pitch);
-		float getPitch() const;
+		void playAtomic();
+		void stopAtomic();
+		void pauseAtomic();
+		void resumeAtomic();
+		void rewindAtomic();
 
-		void setVolume(float volume);
-		float getVolume() const;
+	private:
 
-		void setPosition(float * v);
-		void getPosition(float * v) const;
-		void setVelocity(float * v);
-		void getVelocity(float * v) const;
-		void setDirection(float * v);
-		void getDirection(float * v) const;
+		void reset(ALenum source);
+
+		/**
+		* Gets the OpenAL format identifier based on number of
+		* channels and bits.
+		* @param channels Either 1 (mono) or 2 (stereo). 
+		* @param bits Either 8-bit samples, or 16-bit samples.
+		* @return One of AL_FORMAT_*, or 0 if unsupported format.
+		**/
+		ALenum getFormat(int channels, int bits) const;
+
+		int streamAtomic(ALuint buffer, love::sound::Decoder * d);
 
 	}; // Source
 

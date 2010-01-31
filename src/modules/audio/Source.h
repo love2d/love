@@ -23,7 +23,7 @@
 
 // LOVE
 #include <common/Object.h>
-#include "Audible.h"
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -31,14 +31,23 @@ namespace audio
 {
 	class Source : public Object
 	{
-	protected:
-		Audible * audible;
-		bool looping;
 	public:
-		Source();
+
+		enum Type
+		{
+			TYPE_STATIC = 1,
+			TYPE_STREAM,
+			TYPE_MAX_ENUM
+		}; // Type
+
+	protected:
+		Type type;
+	public:
+
+		Source(Type type);
 		virtual ~Source();
-		void setAudible(Audible * audible);
-		Audible * getAudible() const;
+
+		virtual Source * copy() = 0;
 		
 		virtual void play() = 0;
 		virtual void stop() = 0;
@@ -46,6 +55,7 @@ namespace audio
 		virtual void resume() = 0;
 		virtual void rewind() = 0;
 		virtual bool isStopped() const = 0;
+		virtual bool isFinished() const = 0;
 		virtual void update() = 0;
 
 		virtual void setPitch(float pitch) = 0;
@@ -62,8 +72,16 @@ namespace audio
 		virtual void setDirection(float * v) = 0;
 		virtual void getDirection(float * v) const = 0;
 		
-		void setLooping(bool looping);
-		bool isLooping() const;
+		virtual void setLooping(bool looping) = 0;
+		virtual bool isLooping() const = 0;
+
+		static bool getConstant(const char * in, Type & out);
+		static bool getConstant(Type in, const char *& out);
+
+	private:
+
+		static StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[];
+		static StringMap<Type, TYPE_MAX_ENUM> types;
 
 	}; // Source
 

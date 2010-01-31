@@ -139,6 +139,13 @@ namespace audio
 		return 1;
 	}
 
+	int w_Source_isStopped(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		luax_pushboolean(L, t->isStopped());
+		return 1;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "setPitch", w_Source_setPitch },
 		{ "getPitch", w_Source_getPitch },
@@ -146,6 +153,7 @@ namespace audio
 		{ "getVolume", w_Source_getVolume },
 		{ "setLooping", w_Source_setLooping },
 		{ "isLooping", w_Source_isLooping },
+		{ "isStopped", w_Source_isStopped },
 		{ 0, 0 }
 	};
 

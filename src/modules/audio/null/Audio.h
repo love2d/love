@@ -24,8 +24,6 @@
 // LOVE
 #include <audio/Audio.h>
 
-#include "Sound.h"
-#include "Music.h"
 #include "Source.h"
 
 namespace love
@@ -41,21 +39,17 @@ namespace null
 	public:
 
 		Audio();
-		~Audio();
+		virtual ~Audio();
 
 		// Implements Module.
 		const char * getName() const;
 
 		// Implements Audio.
-		love::audio::Sound * newSound(love::sound::SoundData * data);
-		love::audio::Music * newMusic(love::sound::Decoder * decoder);
-		love::audio::Source * newSource(love::audio::Sound * sound);
-		love::audio::Source * newSource(love::audio::Music * music);
+		love::audio::Source * newSource(love::sound::Decoder * decoder);
+		love::audio::Source * newSource(love::sound::SoundData * soundData);
 		int getNumSources() const;
 		int getMaxSources() const;
 		void play(love::audio::Source * source);
-		void play(love::audio::Sound * sound);
-		void play(love::audio::Music * music);
 		void play();
 		void stop(love::audio::Source * source);
 		void stop();

@@ -20,6 +20,8 @@
 
 #include "Pool.h"
 
+#include "Source.h"
+
 #define MUTEX_ASSERT(fn, sval) \
 	if(fn != sval) \
 	{ \
@@ -62,20 +64,6 @@ namespace openal
 		alDeleteSources(NUM_SOURCES, sources);
 	}
 
-	ALenum Pool::getFormat(int channels, int bits) const
-	{
-		if(channels == 1 && bits == 8)
-			return AL_FORMAT_MONO8;
-		else if(channels == 1 && bits == 16)
-			return AL_FORMAT_MONO16;
-		else if(channels == 2 && bits == 8)
-			return AL_FORMAT_STEREO8;
-		else if(channels == 2 && bits == 16)
-			return AL_FORMAT_STEREO16;
-		else
-			return 0;
-	}
-
 	bool Pool::isAvailable() const
 	{
 		bool has = false;
@@ -85,42 +73,11 @@ namespace openal
 		return has;
 	}
 
-	ALuint Pool::claim(love::audio::Source * source)
-	{
-		ALuint s = 0;
-		LOCK(mutex);
-		if(!available.empty())
-		{
-			// Get the first available source.
-			s = available.front();
-
-			// Remove it.
-			available.pop();
-
-			// Insert into map of playing sources.
-			playing.insert(std::pair<love::audio::Source *, ALuint>(source, s));
-
-			source->retain();
-		}
-		UNLOCK(mutex);
-
-		return s;
-	}
-
-	ALuint Pool::find(const love::audio::Source * source) const
-	{
-		ALuint r = 0;
-		LOCK(mutex);
-		r = findi(source);
-		UNLOCK(mutex);
-		return r;
-	}
-
-	bool Pool::isPlaying(love::audio::Source * s)
+	bool Pool::isPlaying(Source * s)
 	{
 		bool p = false;
 		LOCK(mutex);
-		for(std::map<love::audio::Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
 			if(i->first == s)
 				p = true;
@@ -133,13 +90,13 @@ namespace openal
 	{
 		LOCK(mutex);
 
-		std::map<love::audio::Source *, ALuint>::iterator i = playing.begin();
+		std::map<Source *, ALuint>::iterator i = playing.begin();
 	
 		while(i != playing.end())
 		{
 			if(i->first->isStopped())
 			{
-				i->first->stop();
+				i->first->stopAtomic();
 				i->first->release();
 				available.push(i->second);
 				playing.erase(i++);
@@ -164,12 +121,56 @@ namespace openal
 		return NUM_SOURCES;
 	}
 
+	bool Pool::play(Source * source, ALuint & out)
+	{
+		bool ok;
+		out = 0;
+
+		LOCK(mutex);
+
+		bool alreadyPlaying = findSource(source, out);
+
+		if(!alreadyPlaying)
+		{
+			// Try to play.
+			if(!available.empty())
+			{
+				// Get the first available source.
+				out = available.front();
+
+				// Remove it.
+				available.pop();
+
+				// Insert into map of playing sources.
+				playing.insert(std::pair<Source *, ALuint>(source, out));
+
+				source->retain();
+
+				source->playAtomic();
+
+				ok = true;
+			}
+			else
+			{
+				ok = false;
+			}
+		}
+		else
+		{
+			ok = true;
+		}
+
+		UNLOCK(mutex);
+
+		return ok;
+	}
+
 	void Pool::stop()
 	{
 		LOCK(mutex);
-		for(std::map<love::audio::Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
-			i->first->stop();
+			i->first->stopAtomic();
 			available.push(i->second);
 		}
 
@@ -178,31 +179,65 @@ namespace openal
 		UNLOCK(mutex);
 	}
 
+	void Pool::stop(Source * source)
+	{
+		LOCK(mutex);
+		removeSource(source);
+		UNLOCK(mutex);
+	}
+
 	void Pool::pause()
 	{
 		LOCK(mutex);
-		for(std::map<love::audio::Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
-			i->first->pause();
+		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+			i->first->pauseAtomic();
+		UNLOCK(mutex);
+	}
+
+	void Pool::pause(Source * source)
+	{
+		LOCK(mutex);
+		ALuint out;
+		if(findSource(source, out))
+			source->pauseAtomic();
 		UNLOCK(mutex);
 	}
 
 	void Pool::resume()
 	{
 		LOCK(mutex);
-		for(std::map<love::audio::Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
-			i->first->resume();
+		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+			i->first->resumeAtomic();
+		UNLOCK(mutex);
+	}
+
+	void Pool::resume(Source * source)
+	{
+		LOCK(mutex);
+		ALuint out;
+		if(findSource(source, out))
+			source->resumeAtomic();
 		UNLOCK(mutex);
 	}
 
 	void Pool::rewind()
 	{
 		LOCK(mutex);
-		for(std::map<love::audio::Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
-			i->first->rewind();
+		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+			i->first->rewindAtomic();
 		UNLOCK(mutex);
 	}
 
-	void Pool::release(love::audio::Source * source)
+	void Pool::rewind(Source * source)
+	{
+		LOCK(mutex);
+		ALuint out;
+		if(findSource(source, out))
+			source->rewindAtomic();
+		UNLOCK(mutex);
+	}
+
+	void Pool::release(Source * source)
 	{
 		ALuint s = findi(source);
 
@@ -213,14 +248,42 @@ namespace openal
 		}
 	}
 
-	ALuint Pool::findi(const love::audio::Source * source) const
+	ALuint Pool::findi(const Source * source) const
 	{
-		std::map<love::audio::Source *, ALuint>::const_iterator i = playing.find((love::audio::Source *)source);
+		std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
 
 		if(i != playing.end())
 			return i->second;
 
 		return 0;
+	}
+
+	bool Pool::findSource(Source * source, ALuint & out)
+	{
+		std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
+
+		bool found = i != playing.end();
+
+		if(found)
+			out = i->second;
+
+		return found;
+	}
+
+	bool Pool::removeSource(Source * source)
+	{
+		std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
+
+		if(i != playing.end())
+		{
+			source->stopAtomic();
+			source->release();
+			available.push(i->second);
+			playing.erase(i++);
+			return true;
+		}
+
+		return false;
 	}
 
 } // openal

@@ -24,6 +24,8 @@
 #include "openal/Audio.h"
 #include "null/Audio.h"
 
+#include <scripts/audio.lua.h>
+
 namespace love
 {
 namespace audio
@@ -36,81 +38,31 @@ namespace audio
 		return 1;
 	}
 
-	int w_newSound(lua_State * L)
-	{
-		// Convert to File, if necessary.
-		if(lua_isstring(L, 1))
-			luax_convobj(L, 1, "filesystem", "newFile");
-
-		// Convert to SoundData, if necessary.
-		if(luax_istype(L, 1, FILESYSTEM_FILE_T))
-			luax_convobj(L, 1, "sound", "newSoundData");
-
-		love::sound::SoundData * data = luax_checktype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T);
-		Sound * t = instance->newSound(data);
-		luax_newtype(L, "Sound", AUDIO_SOUND_T, (void*)t);
-		return 1;
-	}
-
-
-	int w_newMusic(lua_State * L)
-	{
-		// Convert to Decoder, if necessary.
-		if(!luax_istype(L, 1, SOUND_DECODER_T))
-			luax_convobj(L, 1, "sound", "newDecoder");
-
-		love::sound::Decoder * decoder = luax_checktype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T);
-		Music * t = instance->newMusic(decoder);
-		luax_newtype(L, "Music", AUDIO_MUSIC_T, (void*)t);
-		return 1;
-	}
-
-	int w_newSource(lua_State * L)
+	int w_newSource1(lua_State * L)
 	{
 		Source * t = 0;
 
-		if(luax_istype(L, 1, AUDIO_SOUND_T))
+		if(luax_istype(L, 1, SOUND_SOUND_DATA_T))
+			t = instance->newSource(luax_totype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T));
+		else if(luax_istype(L, 1, SOUND_DECODER_T))
+			t = instance->newSource(luax_totype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T));
+
+		if(t)
 		{
-			Sound * s = luax_checksound(L, 1);
-			t = instance->newSource(s);
-		} 
-		else if(luax_istype(L, 1, AUDIO_MUSIC_T))
-		{
-			Music * m = luax_checkmusic(L, 1);
-			t = instance->newSource(m);
+			luax_newtype(L, "Source", AUDIO_SOURCE_T, (void*)t);
+			return 1;
 		}
-
-		if(!t)
+		else
 			return luaL_error(L, "No matching overload");
-
-		luax_newtype(L, "Source", AUDIO_SOURCE_T, (void*)t);
-		return 1;
+			
+		return 0;
 	}
 
 	int w_play(lua_State * L)
 	{
-		int argn = lua_gettop(L);
-
-		if(luax_istype(L, 1, AUDIO_SOUND_T))
-		{
-			Sound * s = luax_checksound(L, 1);
-			instance->play(s);
-			return 0;
-		} 
-		else if(luax_istype(L, 1, AUDIO_MUSIC_T))
-		{
-			Music * m = luax_checkmusic(L, 1);
-			instance->play(m);
-			return 0;
-		}
-		else if(luax_istype(L, 1, AUDIO_SOURCE_T))
-		{
-			Source * s = luax_checksource(L, 1);
-			instance->play(s);
-			return 0;
-		}
-
-		return luaL_error(L, "No matching overload");
+		Source * s = luax_checksource(L, 1);
+		instance->play(s);
+		return 0;
 	}
 
 	int w_stop(lua_State * L)
@@ -252,9 +204,7 @@ namespace audio
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "getNumSources", w_getNumSources },
-		{ "newSound", w_newSound },
-		{ "newMusic", w_newMusic },
-		{ "newSource", w_newSource },
+		{ "newSource1", w_newSource1 },
 		{ "play", w_play },
 		{ "stop", w_stop },
 		{ "pause", w_pause },
@@ -273,8 +223,6 @@ namespace audio
 
 	static const lua_CFunction types[] = {
 		luaopen_source,
-		luaopen_music,
-		luaopen_sound,
 		0
 	};	
 
@@ -316,7 +264,12 @@ namespace audio
 		w.functions = functions;
 		w.types = types;
 
-		return luax_register_module(L, w);
+		luax_register_module(L, w);
+
+		if (luaL_loadbuffer(L, (const char *)audio_lua, sizeof(audio_lua), "audio.lua") == 0)
+			lua_call(L, 0, 0);
+
+		return 0;
 	}
 
 } // audio
