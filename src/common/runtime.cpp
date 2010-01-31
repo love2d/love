@@ -55,7 +55,7 @@ namespace love
 	{
 		Proxy * p = (Proxy *)lua_touserdata(L, 1);
 		Type t = luax_type(L, 2);
-		luax_pushboolean(L, p->flags.at(t));
+		luax_pushboolean(L, p->flags[t]);
 		return 1;
 	}
 
