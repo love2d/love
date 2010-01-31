@@ -915,7 +915,7 @@ namespace opengl
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h )
+	void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 	{
 		glDisable(GL_TEXTURE_2D);
 		glPushMatrix();
@@ -925,9 +925,9 @@ namespace opengl
 		case DRAW_LINE:
 			glBegin(GL_LINE_LOOP);
 				glVertex2f(x, y);
-				glVertex2f(x, y+h);
-				glVertex2f(x+w, y+h);
-				glVertex2f(x+w, y);
+				glVertex2f(x, y+h-1);
+				glVertex2f(x+w-1, y+h-1);
+				glVertex2f(x+w-1, y);
 			glEnd();
 			break;
 
@@ -935,9 +935,9 @@ namespace opengl
 		case DRAW_FILL:
 			glBegin(GL_QUADS);
 				glVertex2f(x, y);
-				glVertex2f(x, y+h);
-				glVertex2f(x+w, y+h);
-				glVertex2f(x+w, y);
+				glVertex2f(x, y+h-1);
+				glVertex2f(x+w-1, y+h-1);
+				glVertex2f(x+w-1, y);
 			glEnd();
 			break;
 		}
