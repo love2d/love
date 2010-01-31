@@ -14,7 +14,7 @@ void write(std::string file, int size, char *data);
 
 const char * love_header = ""
 "/**\n"
-"* Copyright (c) 2006-2009 LOVE Development Team\n"
+"* Copyright (c) 2006-2010 LOVE Development Team\n"
 "* \n"
 "* This software is provided 'as-is', without any express or implied\n"
 "* warranty.  In no event will the authors be held liable for any damages\n"
