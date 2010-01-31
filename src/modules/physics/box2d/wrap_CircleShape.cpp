@@ -38,8 +38,30 @@ namespace box2d
 		return 1;
 	}
 
+	int w_CircleShape_getLocalCenter(lua_State * L)
+	{
+		CircleShape * c = luax_checkcircleshape(L, 1);
+		float x, y;
+		c->getLocalCenter(x, y);
+		lua_pushnumber(L, x);
+		lua_pushnumber(L, y);
+		return 2;
+	}
+
+	int w_CircleShape_getWorldCenter(lua_State * L)
+	{
+		CircleShape * c = luax_checkcircleshape(L, 1);
+		float x, y;
+		c->getWorldCenter(x, y);
+		lua_pushnumber(L, x);
+		lua_pushnumber(L, y);
+		return 2;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "getRadius", w_CircleShape_getRadius },
+		{ "getLocalCenter", w_CircleShape_getLocalCenter },
+		{ "getWorldCenter", w_CircleShape_getWorldCenter },
 		// From Shape.
 		{ "getType", w_Shape_getType },
 		{ "setFriction", w_Shape_setFriction },

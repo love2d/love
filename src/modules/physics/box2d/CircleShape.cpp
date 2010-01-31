@@ -31,11 +31,12 @@ namespace physics
 namespace box2d
 {
 	CircleShape::CircleShape(Body * body, b2CircleDef * def)
-		: Shape(body), radius(def->radius)
+		: Shape(body)
 	{
 		def->localPosition = body->world->scaleDown(def->localPosition);
 		def->radius = body->world->scaleDown(def->radius);
 		radius = def->radius;
+		this->localPosition = def->localPosition;
 		shape = body->body->CreateShape(def);
 		shape->SetUserData((void*)data);
 	}
@@ -47,6 +48,21 @@ namespace box2d
 	float CircleShape::getRadius() const
 	{
 		return body->world->scaleUp(radius);
+	}
+
+	void CircleShape::getLocalCenter(float & x, float & y) const
+	{
+		x = localPosition.x;
+		y = localPosition.y;
+		body->world->scaleUp(x, y);
+	}
+
+	void CircleShape::getWorldCenter(float & x, float & y) const
+	{
+		b2Vec2 worldCenter = body->body->GetWorldPoint(localPosition);
+		worldCenter = body->world->scaleUp(worldCenter);
+		x = worldCenter.x;
+		y = worldCenter.y;
 	}
 
 } // box2d

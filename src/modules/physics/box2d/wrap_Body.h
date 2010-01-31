@@ -56,6 +56,7 @@ namespace box2d
 	int w_Body_setPosition(lua_State * L);
 	int w_Body_setMassFromShapes(lua_State * L);
 	int w_Body_setMass(lua_State * L);
+	int w_Body_setInertia(lua_State * L);
 	int w_Body_setAngularDamping(lua_State * L);
 	int w_Body_setLinearDamping(lua_State * L);
 	int w_Body_getWorldPoint(lua_State * L);

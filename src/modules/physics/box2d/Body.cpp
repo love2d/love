@@ -195,6 +195,15 @@ namespace box2d
 		body->SetMass(&massData);
 	}
 
+	void Body::setInertia(float i)
+	{
+		b2MassData massData;
+		massData.center = body->GetLocalCenter();
+		massData.mass = body->GetMass();
+		massData.I = i;
+		body->SetMass(&massData);
+	}
+
 	void Body::getWorldPoint(float x, float y, float & x_o, float & y_o)
 	{
 		b2Vec2 v = world->scaleUp(body->GetWorldPoint(world->scaleDown(b2Vec2(x, y))));

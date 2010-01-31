@@ -215,6 +215,13 @@ namespace box2d
 		void setMass(float x, float y, float m, float i);
 
 		/**
+		* Sets the inertia while keeping the other properties
+		* (mass and local center).
+		* @param i The inertia.
+		**/
+		void setInertia(float i);
+
+		/**
 		* Sets the Body's angular damping.
 		**/
 		void setAngularDamping(float d);

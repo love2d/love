@@ -42,9 +42,14 @@ namespace box2d
 	class CircleShape : public Shape
 	{
 	private:
+
 		// The radius of the circle. We need to store this because
 		// Box2D has no built-in method for getting the radius.
 		float radius;
+
+		// Local offset.
+		b2Vec2 localPosition;
+
 	public:
 		
 		/**
@@ -63,6 +68,9 @@ namespace box2d
 		float getRadius() const;
 
 		// There is no support for setting the radius.
+
+		void getLocalCenter(float & x, float & y) const;
+		void getWorldCenter(float & x, float & y) const;
 	};
 
 } // box2d
