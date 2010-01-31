@@ -206,26 +206,12 @@ namespace lullaby
 
 	bool VorbisDecoder::seek(float s)
 	{
-		eof = false;
-		int result = ov_time_seek(&handle, (int)(s*1000.0f) / 100);
+		int result = ov_time_seek(&handle, s);
 
 		if(result == 0)
-			return true;
-		
-		switch(result)
 		{
-		case OV_ENOSEEK:
-			throw love::Exception("Vorbis seek: Bitstream is unseekable");
-		case OV_EINVAL:
-			throw love::Exception("Vorbis seek: Invalid argument value");
-		case OV_EREAD:
-			throw love::Exception("Vorbis seek: Read from media");
-		case OV_EFAULT:
-			throw love::Exception("Vorbis seek: Internal logic fault (bug or heap/stack corruption)");
-		case OV_EBADLINK:
-			throw love::Exception("Vorbis seek: Invalid stream section supplied or link is corrupt");
-		default:
-			throw love::Exception("Vorbis seek: Unknown error");
+			eof = false;
+			return true;
 		}
 
 		return false;
@@ -233,9 +219,15 @@ namespace lullaby
 
 	bool VorbisDecoder::rewind()
 	{
-		eof = false;
-		ov_pcm_seek(&handle, 0);
-		return true;
+		int result = ov_pcm_seek(&handle, 0);
+
+		if(result == 0)
+		{
+			eof = false;
+			return true;
+		}
+
+		return false;
 	}
 
 	bool VorbisDecoder::isSeekable()

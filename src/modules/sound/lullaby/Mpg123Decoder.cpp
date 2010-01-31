@@ -150,9 +150,19 @@ namespace lullaby
 
 	bool Mpg123Decoder::seek(float s)
 	{
-		off_t r = mpg123_seek(handle, (off_t)(s*1000.0f), SEEK_SET);
+		off_t offset = mpg123_timeframe(handle, s);
 
-		return (r >= 0);
+		if(offset < 0)
+			return false;
+
+		if(mpg123_feedseek(handle, 0, SEEK_SET, &offset) >= 0)
+		{
+			data_offset = offset;
+			eof = false;
+			return true;
+		}
+		else
+			return false;
 	}
 
 	bool Mpg123Decoder::rewind()
