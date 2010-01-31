@@ -11,6 +11,7 @@ LOVE 0.6.1
   * Fixed a bug with multiple Sources on the same Music.
   * Fixed a bug so the mouse doesn't get crippled when the keyboard is disabled.
   * Fixed a bug where love.graphics.rectangle drew a too large rectangle.
+  * Fixed a bug where memory wouldn't be released correctly.
   * Fixed epic physics typo (getRestituion->getRestitution).
   * The error screen redraws when an event occurs.
   * The default love.run() now gracefully handles disabled modules.
