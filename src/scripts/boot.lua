@@ -25,6 +25,9 @@ if not love then love = {} end
 love.path = {}
 love.arg = {}
 
+-- Unparsed arguments:
+argv = {}
+
 -- Replace any \ with /.
 function love.path.normalslashes(p)
 	return string.gsub(p, "\\", "/")
@@ -126,7 +129,7 @@ end
 
 function love.arg.parse_options()
 
-	local last = 0
+	local game
 	local argc = #arg
 
 	for i=1,argc do
@@ -135,13 +138,13 @@ function love.arg.parse_options()
 
 		if m and love.arg.options[m] then
 			i = love.arg.parse_option(love.arg.options[m], i+1)
+		elseif not game then
+			game = i
 		end
-
-		last = i
 	end
 
 	if not love.arg.options.game.set then
-		love.arg.parse_option(love.arg.options.game, last)
+		love.arg.parse_option(love.arg.options.game, game or 0)
 	end
 end
 
@@ -291,7 +294,7 @@ end
 
 function love.run()
 
-	if love.load then love.load() end
+	if love.load then love.load(arg) end
 
 	local dt = 0
 
