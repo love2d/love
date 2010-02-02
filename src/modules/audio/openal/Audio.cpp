@@ -71,7 +71,7 @@ namespace openal
 		while(!instance->finish)
 		{
 			instance->pool->update();
-			SDL_Delay(10);
+			SDL_Delay(5);
 		}
 
 		return 0;

@@ -32,8 +32,6 @@ namespace audio
 namespace openal
 {
 
-	static int acc = 0;
-
 	Source::Source(Pool * pool, love::sound::SoundData * soundData)
 		: love::audio::Source(Source::TYPE_STATIC), pool(pool), pitch(1.0f), 
 		volume(1.0f), looping(false), decoder(0), valid(false)
@@ -41,6 +39,12 @@ namespace openal
 		alGenBuffers(1, buffers);
 		ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
 		alBufferData(buffers[0], fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate());
+
+		static float z[3] = {0, 0, 0};
+
+		setFloatv(position, z);
+		setFloatv(velocity, z);
+		setFloatv(direction, z);
 	}
 
 	Source::Source(Pool * pool, love::sound::Decoder * decoder)
@@ -49,6 +53,12 @@ namespace openal
 	{
 		decoder->retain();
 		alGenBuffers(MAX_BUFFERS, buffers);
+
+		static float z[3] = {0, 0, 0};
+
+		setFloatv(position, z);
+		setFloatv(velocity, z);
+		setFloatv(direction, z);
 	}
 
 	Source::~Source()
@@ -65,6 +75,9 @@ namespace openal
 	void Source::play()
 	{
 		valid = pool->play(this, source);
+
+		if(valid)
+			reset(source);
 	}
 
 	void Source::stop()
@@ -179,40 +192,55 @@ namespace openal
 	{
 		if(valid)
 			alSourcefv(source, AL_POSITION, v);
+
+		setFloatv(position, v);
 	}
 
 	void Source::getPosition(float * v) const
 	{
 		if(valid)
 			alGetSourcefv(source, AL_POSITION, v);
+		else
+			setFloatv(v, position);
 	}
 
 	void Source::setVelocity(float * v)
 	{
 		if(valid)
 			alSourcefv(source, AL_VELOCITY, v);
+
+		setFloatv(velocity, v);
 	}
 
 	void Source::getVelocity(float * v) const
 	{
 		if(valid)
 			alGetSourcefv(source, AL_VELOCITY, v);
+		else
+			setFloatv(v, velocity);
 	}
 
 	void Source::setDirection(float * v)
 	{
 		if(valid)
 			alSourcefv(source, AL_DIRECTION, v);
+		else
+			setFloatv(direction, v);
 	}
 
 	void Source::getDirection(float * v) const
 	{
 		if(valid)
 			alGetSourcefv(source, AL_DIRECTION, v);
+		else
+			setFloatv(v, direction);
 	}
 
 	void Source::setLooping(bool looping)
 	{
+		if(valid && type == TYPE_STATIC)
+			alSourcei(source, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
+
 		this->looping = looping;
 	}
 
@@ -226,7 +254,6 @@ namespace openal
 		if(type == TYPE_STATIC)
 		{
 			alSourcei(source, AL_BUFFER, buffers[0]);
-			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 		}
 		else if(type == TYPE_STREAM)
 		{
@@ -274,7 +301,7 @@ namespace openal
 				}
 			}
 
-			reset(source);
+			alSourcei(source, AL_BUFFER, AL_NONE);
 		}
 		rewindAtomic();
 		valid = false;
@@ -310,7 +337,18 @@ namespace openal
 
 	void Source::reset(ALenum source)
 	{
-		alSourcei(source, AL_BUFFER, AL_NONE);
+		alSourcefv(source, AL_POSITION, position);
+		alSourcefv(source, AL_VELOCITY, velocity);
+		alSourcefv(source, AL_DIRECTION, direction);
+		alSourcef(source, AL_PITCH, pitch);
+		alSourcef(source, AL_GAIN, volume);
+	}
+
+	void Source::setFloatv(float * dst, const float * src) const
+	{
+		dst[0] = src[0];
+		dst[1] = src[1];
+		dst[2] = src[2];
 	}
 
 	ALenum Source::getFormat(int channels, int bits) const
@@ -329,29 +367,16 @@ namespace openal
 
 	int Source::streamAtomic(ALuint buffer, love::sound::Decoder * d)
 	{
-		//if(isLooping() && d->isFinished())
-		//	d->rewind();
-
 		// Get more sound data.
 		int decoded = d->decode();
 
 		int fmt = getFormat(d->getChannels(), d->getBits());
 
-		//printf("Decoded %i ( %i )", decoded, d->getSize());
-
 		if(decoded > 0 && fmt != 0)
-		{
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
-			acc++;
-			//printf(" [%i] ", acc);
-		}
 
 		if(decoded < d->getSize() && isLooping())
-		{
-			printf(" Rewinding at %i.\n", acc);
 			d->rewind();
-			acc = 0;
-		}
 
 		return decoded;
 	}

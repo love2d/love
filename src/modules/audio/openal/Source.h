@@ -58,6 +58,9 @@ namespace openal
 
 		float pitch;
 		float volume;
+		float position[3];
+		float velocity[3];
+		float direction[3];
 		bool looping;
 
 		love::sound::Decoder * decoder;
@@ -98,6 +101,8 @@ namespace openal
 	private:
 
 		void reset(ALenum source);
+
+		void setFloatv(float * dst, const float * src) const;
 
 		/**
 		* Gets the OpenAL format identifier based on number of

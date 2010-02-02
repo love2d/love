@@ -57,7 +57,7 @@ namespace openal
 	private:
 
 		// Number of OpenAL sources.
-		static const int NUM_SOURCES = 16;
+		static const int NUM_SOURCES = 64;
 
 		// OpenAL sources
 		ALuint sources[NUM_SOURCES];
