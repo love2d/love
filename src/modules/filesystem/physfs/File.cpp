@@ -50,14 +50,12 @@ namespace physfs
 			return true;
 
 		// File must exist if read mode.
-		if((mode == READ))
-			if(!PHYSFS_exists(filename.c_str()))
-				throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
+		if((mode == READ) && !PHYSFS_exists(filename.c_str()))
+			throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
 
 		// Check whether the write directory is set.
-		if((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0))
-			if(!hack_setupWriteDirectory())
-				throw love::Exception("Could not set write directory.");
+		if((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
+			throw love::Exception("Could not set write directory.");
 
 		// File already open?
 		if(file != 0)

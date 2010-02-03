@@ -49,7 +49,7 @@ namespace image
 		if(luax_istype(L, 1, DATA_T))
 		{
 			Data * d = luax_checktype<Data>(L, 1, "Data", DATA_T);
-			ImageData * t;
+			ImageData * t = 0;
 			try {
 				t = instance->newImageData(d);
 			} catch (love::Exception & e) {
@@ -66,7 +66,13 @@ namespace image
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-		ImageData * t = instance->newImageData(file);
+
+		ImageData * t = 0;
+		try {
+			t = instance->newImageData(file);
+		} catch (love::Exception & e) {
+			return luaL_error(L, e.what());
+		}
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 		return 1;
 	}
