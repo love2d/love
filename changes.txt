@@ -13,6 +13,7 @@ LOVE 0.6.1
   * Fixed a bug where love.graphics.rectangle drew a too large rectangle.
   * Fixed a bug where memory wouldn't be released correctly.
   * Fixed epic physics typo (getRestituion->getRestitution).
+  * Fixed crash on opening non-existent image.
   * The error screen redraws when an event occurs.
   * The default love.run() now gracefully handles disabled modules.
   * The debian packages should now successfully include icons, file associations, etc, and should give the correct architecture.
