@@ -207,7 +207,11 @@ namespace opengl
 		{
 			// Check the value.
 			love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-			d = file->read();
+			try {
+				d = file->read();
+			} catch (Exception & e) {
+				return luaL_error(L, e.what());
+			}
 		}
 		else if(luax_istype(L, 1, DATA_T))
 		{
