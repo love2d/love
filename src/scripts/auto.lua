@@ -13,8 +13,10 @@ function auto(name)
 	local cpp_name = name .. "_lua"
 
 	-- Read source Lua file
-	local src_data = string.dump(loadfile(src))
-	local src_len = #src_data
+	local src_file = io.open(src, "rb")
+	local src_data = src_file:read("*a")
+ 	local src_len = #src_data
+	src_file:close()
 
 	local lines = {}
 	local line = {}
