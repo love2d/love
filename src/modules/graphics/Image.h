@@ -24,6 +24,7 @@
 // LOVE
 #include <graphics/Volatile.h>
 #include <graphics/Drawable.h>
+#include <common/StringMap.h>
 
 namespace love
 {
@@ -42,8 +43,9 @@ namespace graphics
 
 		enum FilterMode
 		{
-			FILTER_LINEAR,
-			FILTER_NEAREST
+			FILTER_LINEAR = 1,
+			FILTER_NEAREST,
+			FILTER_MAX_ENUM
 		};
 
 		struct Filter
@@ -58,7 +60,15 @@ namespace graphics
 			WrapMode t;
 		};
 
-		virtual ~Image(){};
+		virtual ~Image();
+		
+		static bool getConstant(const char * in, FilterMode & out);
+		static bool getConstant(FilterMode in, const char *& out);
+		
+	private:
+		
+		static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
+		static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;
 
 	}; // Image
 	

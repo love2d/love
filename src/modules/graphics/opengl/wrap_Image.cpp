@@ -48,10 +48,19 @@ namespace opengl
 
 	int w_Image_setFilter(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1); 
+		Image * t = luax_checkimage(L, 1);
 		Image::Filter f;
-		f.min = (Image::FilterMode)luaL_checkint(L, 2);
-		f.mag = (Image::FilterMode)luaL_checkint(L, 3);
+		Image::FilterMode min;
+		Image::FilterMode mag;
+		const char * minstr = luaL_checkstring(L, 2);
+		const char * magstr = luaL_checkstring(L, 3);
+		if (!Image::getConstant(minstr, min))
+			return luaL_error(L, "Invalid filter mode: %s", minstr);
+		if (!Image::getConstant(magstr, mag))
+			return luaL_error(L, "Invalid filter mode: %s", magstr);
+		
+		f.min = min;
+		f.mag = mag;
 		t->setFilter(f);
 		return 0;
 	}
@@ -60,8 +69,16 @@ namespace opengl
 	{
 		Image * t = luax_checkimage(L, 1); 
 		Image::Filter f = t->getFilter();
-		lua_pushinteger(L, f.min);
-		lua_pushinteger(L, f.mag);
+		Image::FilterMode min = f.min;
+		Image::FilterMode mag = f.mag;
+		const char * minstr;
+		const char * magstr;
+		if (!Image::getConstant(min, minstr))
+			return luaL_error(L, "Invalid filter mode: %s", minstr);
+		if (!Image::getConstant(mag, magstr))
+			return luaL_error(L, "Invalid filter mode: %s", magstr);
+		lua_pushstring(L, minstr);
+		lua_pushstring(L, magstr);
 		return 2;
 	}
 

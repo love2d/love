@@ -133,6 +133,8 @@ namespace opengl
 		case FILTER_NEAREST:
 			gmin = GL_NEAREST;
 			break;
+		default:
+			break;
 		}
 
 		switch(f.mag)
@@ -142,6 +144,8 @@ namespace opengl
 			break;
 		case FILTER_NEAREST:
 			gmag = GL_NEAREST;
+			break;
+		default:
 			break;
 		}
 

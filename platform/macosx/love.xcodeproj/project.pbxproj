@@ -18,6 +18,7 @@
 		A9255F461043247300BA1496 /* IL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F421043240F00BA1496 /* IL.framework */; };
 		A9255F52104324D700BA1496 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; };
 		A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; };
+		A93A3AB51121E86E003B04A4 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93A3AB41121E86E003B04A4 /* Image.cpp */; };
 		A93E6E4910420B4A007D418B /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4610420B4A007D418B /* OpenAL.framework */; };
 		A93E6E4A10420B4A007D418B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4710420B4A007D418B /* OpenGL.framework */; };
 		A93E6E4B10420B4A007D418B /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
@@ -225,6 +226,7 @@
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
 		A9255F421043240F00BA1496 /* IL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IL.framework; path = /Library/Frameworks/IL.framework; sourceTree = "<absolute>"; };
 		A9255F51104324D700BA1496 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
+		A93A3AB41121E86E003B04A4 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		A93E69DE10420ABF007D418B /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		A93E69DF10420ABF007D418B /* Data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Data.h; sourceTree = "<group>"; };
 		A93E69E010420ABF007D418B /* Exception.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Exception.cpp; sourceTree = "<group>"; };
@@ -950,6 +952,7 @@
 				A93E6A8310420AC2007D418B /* Drawable.h */,
 				A968F0D21083A9D400A895AA /* Graphics.cpp */,
 				A93E6A8410420AC2007D418B /* Graphics.h */,
+				A93A3AB41121E86E003B04A4 /* Image.cpp */,
 				A93E6A8510420AC2007D418B /* Image.h */,
 				A93E6A8610420AC2007D418B /* opengl */,
 				A93E6AA510420AC3007D418B /* Volatile.cpp */,
@@ -1003,8 +1006,8 @@
 			isa = PBXGroup;
 			children = (
 				A93E6AA810420AC3007D418B /* devil */,
-				A98D913E10507BF9008E03F2 /* EncodedImageData.h */,
 				A98D914310507C97008E03F2 /* EncodedImageData.cpp */,
+				A98D913E10507BF9008E03F2 /* EncodedImageData.h */,
 				A93E6AAD10420AC3007D418B /* Image.h */,
 				A93E6AAE10420AC3007D418B /* ImageData.cpp */,
 				A93E6AAF10420AC3007D418B /* ImageData.h */,
@@ -1616,6 +1619,7 @@
 				A968F0DD1083AA6600A895AA /* Shape.cpp in Sources */,
 				A968F0DE1083AA6600A895AA /* Joint.cpp in Sources */,
 				A9CF0E8610B9EB1000E6F37E /* utf8.cpp in Sources */,
+				A93A3AB51121E86E003B04A4 /* Image.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
