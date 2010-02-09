@@ -84,20 +84,37 @@ namespace opengl
 
 	int w_Image_setWrap(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1); 
+		Image * i = luax_checkimage(L, 1); 
 		Image::Wrap w;
-		w.s = (Image::WrapMode)luaL_checkint(L, 2);
-		w.t = (Image::WrapMode)luaL_checkint(L, 3);
-		t->setWrap(w);
+		Image::WrapMode s;
+		Image::WrapMode t;
+		const char * sstr = luaL_checkstring(L, 2);
+		const char * tstr = luaL_checkstring(L, 3);
+		if (!Image::getConstant(sstr, s))
+			return luaL_error(L, "Invalid wrap mode: %s", sstr);
+		if (!Image::getConstant(tstr, t))
+			return luaL_error(L, "Invalid wrap mode, %s", tstr);
+		
+		w.s = s;
+		w.t = t;
+		i->setWrap(w);
 		return 0;
 	}
 
 	int w_Image_getWrap(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1); 
-		Image::Wrap w = t->getWrap();
-		lua_pushinteger(L, w.s);
-		lua_pushinteger(L, w.t);
+		Image * i = luax_checkimage(L, 1); 
+		Image::Wrap w = i->getWrap();
+		Image::WrapMode s = w.s;
+		Image::WrapMode t = w.t;
+		const char * sstr;
+		const char * tstr;
+		if (!Image::getConstant(s, sstr))
+			return luaL_error(L, "Invalid filter mode: %s", sstr);
+		if (!Image::getConstant(t, tstr))
+			return luaL_error(L, "Invalid filter mode: %s", tstr);
+		lua_pushstring(L, sstr);
+		lua_pushstring(L, tstr);
 		return 2;
 	}
 

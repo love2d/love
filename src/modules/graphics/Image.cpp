@@ -38,6 +38,16 @@ namespace graphics
 		return filterModes.find(in, out);
 	}
 	
+	bool Image::getConstant(const char * in, WrapMode & out)
+	{
+		return wrapModes.find(in, out);
+	}
+	
+	bool Image::getConstant(WrapMode in, const char *& out)
+	{
+		return wrapModes.find(in, out);
+	}
+	
 	StringMap<Image::FilterMode, Image::FILTER_MAX_ENUM>::Entry Image::filterModeEntries[] = 
 	{
 		{ "linear", Image::FILTER_LINEAR },
@@ -45,6 +55,15 @@ namespace graphics
 	};
 	
 	StringMap<Image::FilterMode, Image::FILTER_MAX_ENUM> Image::filterModes(Image::filterModeEntries, sizeof(Image::filterModeEntries));
+
+	StringMap<Image::WrapMode, Image::WRAP_MAX_ENUM>::Entry Image::wrapModeEntries[] = 
+	{
+		{ "clamp", Image::WRAP_CLAMP },
+		{ "repeat", Image::WRAP_REPEAT },
+	};
+	
+	StringMap<Image::WrapMode, Image::WRAP_MAX_ENUM> Image::wrapModes(Image::wrapModeEntries, sizeof(Image::wrapModeEntries));
+	
 	
 } // graphics
 } // love
