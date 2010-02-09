@@ -74,6 +74,8 @@ namespace physfs
 		case WRITE:
 			file = PHYSFS_openWrite(filename.c_str());
 			break;
+		default:
+			break;
 		}
 
 		return (file != 0);

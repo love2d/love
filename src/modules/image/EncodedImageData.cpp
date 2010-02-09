@@ -25,7 +25,7 @@ namespace love
 namespace image
 {
 	EncodedImageData::EncodedImageData(void * d, Format f, int s)
-		: data(d), format(f), size(s)
+		: data(d), size(s), format(f)
 	{
 	}
 	

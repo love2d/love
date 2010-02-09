@@ -154,16 +154,16 @@ namespace devil
 
 	void ImageData::setPixel(int x, int y, pixel c)
 	{
-		int tx = x > width-1 ? width-1 : x;
-		int ty = y > height-1 ? height-1 : y;
+		//int tx = x > width-1 ? width-1 : x;
+		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
 		pixel * pixels = (pixel *)getData();
 		pixels[y*width+x] = c;
 	}
 
 	pixel ImageData::getPixel(int x, int y) const
 	{
-		int tx = x > width-1 ? width-1 : x;
-		int ty = y > height-1 ? height-1 : y;
+		//int tx = x > width-1 ? width-1 : x;
+		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
 		pixel * pixels = (pixel *)getData();
 		return pixels[y*width+x];
 	}
