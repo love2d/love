@@ -60,7 +60,7 @@ namespace box2d
 
 	void PrismaticJoint::setMotorEnabled(bool motor)
 	{
-		return joint->EnableMotor(true);
+		return joint->EnableMotor(motor);
 	}
 
 	bool PrismaticJoint::isMotorEnabled() const
