@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -52,6 +52,7 @@
 #include <physics/box2d/wrap_Physics.h>
 #include <sound/wrap_Sound.h>
 #include <timer/sdl/wrap_Timer.h>
+#include <thread/sdl/wrap_Thread.h>
 
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
@@ -78,6 +79,7 @@ static const luaL_Reg modules[] = {
 	{ "love.physics", love::physics::box2d::luaopen_love_physics },
 	{ "love.sound", love::sound::luaopen_love_sound },
 	{ "love.timer", love::timer::sdl::luaopen_love_timer },
+	{ "love.thread", love::thread::sdl::luaopen_love_thread },
 	{ 0, 0 }
 };
 
@@ -194,7 +196,7 @@ int w__openConsole(lua_State * L)
 	FILE *fp;
 
 	AllocConsole();
-	
+
 	// Set size.
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
 	console_info.dwSize.Y = MAX_CONSOLE_LINES;
@@ -258,7 +260,7 @@ int main(int argc, char ** argv)
 
 	love::luax_preload(L, luaopen_love, "love");
 
-	luaopen_love(L);	
+	luaopen_love(L);
 
 	// Add command line arguments to global arg (like stand-alone Lua).
 	{
@@ -283,7 +285,7 @@ int main(int argc, char ** argv)
 	}
 
 	// Add love.__exe = true.
-	// This indicates that we're running the 
+	// This indicates that we're running the
 	// standalone version of love, and not the
 	// DLL version.
 	{

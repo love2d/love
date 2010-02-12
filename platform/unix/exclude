@@ -13,10 +13,11 @@
 ./modules/native/tcc/libtcc/tcctok.h
 ./modules/native/tcc/libtcc/arm-gen.c
 ./modules/native/tcc/libtcc/i386-asm.c
-./modules/native/tcc/libtcc/i386-gen.c 
+./modules/native/tcc/libtcc/i386-gen.c
 ./modules/native/tcc/libtcc/tccgen.c
 ./modules/native/tcc/libtcc/tcc.h
 ./modules/native/tcc/libtcc/il-opcodes.h
 ./modules/native/tcc/libtcc/coff.h
 ./modules/native/tcc/libtcc/stab.h
 ./libraries/luasocket/libluasocket/wsocket.*
+

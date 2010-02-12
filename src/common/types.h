@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -76,8 +76,11 @@ namespace love
 		PHYSICS_REVOLUTE_JOINT_ID,
 		PHYSICS_PULLEY_JOINT_ID,
 		PHYSICS_GEAR_JOINT_ID,
-		
-		// The modules themselves. Only add abstracted modules here. 
+
+		// Thread
+		THREAD_THREAD_ID,
+
+		// The modules themselves. Only add abstracted modules here.
 		MODULE_FILESYSTEM_ID,
 		MODULE_IMAGE_ID,
 		MODULE_SOUND_ID,
@@ -94,7 +97,7 @@ namespace love
 	const bits DATA_T = (bits(1) << DATA_ID) | OBJECT_T;
 	const bits MODULE_T = (bits(1) << MODULE_ID) | OBJECT_T;
 
-	// Filesystem. 
+	// Filesystem.
 	const bits FILESYSTEM_FILE_T = (bits(1) << FILESYSTEM_FILE_ID) | OBJECT_T;
 	const bits FILESYSTEM_FILE_DATA_T = (bits(1) << FILESYSTEM_FILE_DATA_ID) | DATA_T;
 
@@ -113,7 +116,7 @@ namespace love
 
 	// Image.
 	const bits IMAGE_IMAGE_DATA_T = (bits(1) << IMAGE_IMAGE_DATA_ID) | DATA_T;
-	
+
 	// Audio.
 	const bits AUDIO_SOURCE_T = (bits(1) << AUDIO_SOURCE_ID) | OBJECT_T;
 
@@ -135,6 +138,9 @@ namespace love
 	const bits PHYSICS_REVOLUTE_JOINT_T = (bits(1) << PHYSICS_REVOLUTE_JOINT_ID) | PHYSICS_JOINT_T;
 	const bits PHYSICS_PULLEY_JOINT_T = (bits(1) << PHYSICS_PULLEY_JOINT_ID) | PHYSICS_JOINT_T;
 	const bits PHYSICS_GEAR_JOINT_T = (bits(1) << PHYSICS_GEAR_JOINT_ID) | PHYSICS_JOINT_T;
+
+	// Thread.
+	const bits THREAD_THREAD_T = (bits(1) << THREAD_THREAD_ID) | OBJECT_T;
 
 	// Modules.
 	const bits MODULE_FILESYSTEM_T = (bits(1) << MODULE_FILESYSTEM_ID) | MODULE_T;

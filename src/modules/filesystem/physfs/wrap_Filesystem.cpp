@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -40,10 +40,10 @@ namespace physfs
 	{
 		const char * arg0 = luaL_checkstring(L, 1);
 
-		try 
+		try
 		{
 			instance->init(arg0);
-		} 
+		}
 		catch(Exception & e)
 		{
 			return luaL_error(L, e.what());
@@ -186,7 +186,7 @@ namespace physfs
 		{
 			return luaL_error(L, e.what());
 		}
-	}	
+	}
 
 	int w_enumerate(lua_State * L)
 	{
@@ -256,6 +256,7 @@ namespace physfs
 		{ "enumerate",  w_enumerate },
 		{ "lines",  w_lines },
 		{ "load",  w_load },
+		{ "newFileData", w_newFileData },
 		{ 0, 0 }
 	};
 
@@ -269,11 +270,11 @@ namespace physfs
 	{
 		if(instance == 0)
 		{
-			try 
+			try
 			{
 				instance = new Filesystem();
 				love::luax_register_searcher(L, loader);
-			} 
+			}
 			catch(Exception & e)
 			{
 				return luaL_error(L, e.what());
