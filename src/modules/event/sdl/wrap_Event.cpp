@@ -66,6 +66,8 @@ namespace sdl
 			return true;
 		case Event::TYPE_QUIT:
 			return true;
+		default:
+			return false;
 		}
 
 		return false;
@@ -108,6 +110,8 @@ namespace sdl
 			return 3;
 		case Event::TYPE_QUIT:
 			return 1;
+		default:
+			return 0;
 		}
 
 		return 0;

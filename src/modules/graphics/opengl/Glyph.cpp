@@ -31,7 +31,7 @@ namespace opengl
 {
 
 	Glyph::Glyph(love::font::GlyphData * data)
-		: data(data), texture(0), width((float)data->getWidth()), height((float)data->getHeight())
+		: data(data), width((float)data->getWidth()), height((float)data->getHeight()), texture(0)
 	{
 		data->retain();
 		data->getWidth();

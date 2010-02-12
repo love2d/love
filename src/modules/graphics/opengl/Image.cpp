@@ -123,6 +123,7 @@ namespace opengl
 	void Image::setFilter(Image::Filter f)
 	{
 		GLint gmin, gmag;
+		gmin = gmag = 0; // so that they're not used uninitialized
 
 		switch(f.min)
 		{
@@ -131,6 +132,8 @@ namespace opengl
 			break;
 		case FILTER_NEAREST:
 			gmin = GL_NEAREST;
+			break;
+		default:
 			break;
 		}
 
@@ -142,12 +145,14 @@ namespace opengl
 		case FILTER_NEAREST:
 			gmag = GL_NEAREST;
 			break;
+		default:
+			break;
 		}
 
 		bind();
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmin);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmag);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
 	}
 
 	Image::Filter Image::getFilter() const

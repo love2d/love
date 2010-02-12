@@ -31,7 +31,7 @@ namespace graphics
 namespace opengl
 {
 	ImageFont::ImageFont(Image * image, std::string glyphs)
-		: Font(0), glyphs(glyphs), image(image)
+		: Font(0), image(image), glyphs(glyphs)
 
 	{
 		image->retain();

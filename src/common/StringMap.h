@@ -80,11 +80,11 @@ namespace love
 
 		bool find(const char * key, T & t)
 		{
-			unsigned str_hash = djb2(key);
+			//unsigned str_hash = djb2(key);
 
 			for(unsigned i = 0; i < MAX; ++i)
 			{
-				unsigned str_i = (str_hash + i) % MAX;
+				//unsigned str_i = (str_hash + i) % MAX; //this isn't used, is this intentional?
 
 				if(records[i].set && streq(records[i].key, key))
 				{
@@ -151,7 +151,7 @@ namespace love
 			unsigned hash = 5381;
 			int c;
 
-			while (c = *key++)
+			while ((c = *key++))
 				hash = ((hash << 5) + hash) + c;
 
 			return hash;

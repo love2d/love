@@ -130,6 +130,8 @@ namespace sdl
 		case Event::TYPE_QUIT:
 			e.type = SDL_QUIT;
 			return true;
+		default:
+			return true;
 		}
 
 		return true;

@@ -33,8 +33,8 @@ namespace openal
 {
 
 	Source::Source(Pool * pool, love::sound::SoundData * soundData)
-		: love::audio::Source(Source::TYPE_STATIC), pool(pool), pitch(1.0f), 
-		volume(1.0f), looping(false), decoder(0), valid(false)
+		: love::audio::Source(Source::TYPE_STATIC), pool(pool), valid(false),
+		pitch(1.0f), volume(1.0f), looping(false), decoder(0) 
 	{
 		alGenBuffers(1, buffers);
 		ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
@@ -48,8 +48,8 @@ namespace openal
 	}
 
 	Source::Source(Pool * pool, love::sound::Decoder * decoder)
-		: love::audio::Source(Source::TYPE_STREAM), pool(pool), pitch(1.0f), 
-		volume(1.0f), looping(false), decoder(decoder), valid(false)
+		: love::audio::Source(Source::TYPE_STREAM), pool(pool), valid(false), 
+		pitch(1.0f), volume(1.0f), looping(false), decoder(decoder)
 	{
 		decoder->retain();
 		alGenBuffers(MAX_BUFFERS, buffers);
@@ -259,7 +259,7 @@ namespace openal
 		{
 			int usedBuffers = 0;
 
-			for(int i = 0; i < MAX_BUFFERS; i++)
+			for(unsigned int i = 0; i < MAX_BUFFERS; i++)
 			{
 				int decoded = streamAtomic(buffers[i], decoder);
 				++usedBuffers;

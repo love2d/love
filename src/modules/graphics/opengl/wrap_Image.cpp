@@ -48,10 +48,19 @@ namespace opengl
 
 	int w_Image_setFilter(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1); 
+		Image * t = luax_checkimage(L, 1);
 		Image::Filter f;
-		f.min = (Image::FilterMode)luaL_checkint(L, 2);
-		f.mag = (Image::FilterMode)luaL_checkint(L, 3);
+		Image::FilterMode min;
+		Image::FilterMode mag;
+		const char * minstr = luaL_checkstring(L, 2);
+		const char * magstr = luaL_checkstring(L, 3);
+		if (!Image::getConstant(minstr, min))
+			return luaL_error(L, "Invalid filter mode: %s", minstr);
+		if (!Image::getConstant(magstr, mag))
+			return luaL_error(L, "Invalid filter mode: %s", magstr);
+		
+		f.min = min;
+		f.mag = mag;
 		t->setFilter(f);
 		return 0;
 	}
@@ -60,27 +69,52 @@ namespace opengl
 	{
 		Image * t = luax_checkimage(L, 1); 
 		Image::Filter f = t->getFilter();
-		lua_pushinteger(L, f.min);
-		lua_pushinteger(L, f.mag);
+		Image::FilterMode min = f.min;
+		Image::FilterMode mag = f.mag;
+		const char * minstr;
+		const char * magstr;
+		if (!Image::getConstant(min, minstr))
+			return luaL_error(L, "Invalid filter mode: %s", minstr);
+		if (!Image::getConstant(mag, magstr))
+			return luaL_error(L, "Invalid filter mode: %s", magstr);
+		lua_pushstring(L, minstr);
+		lua_pushstring(L, magstr);
 		return 2;
 	}
 
 	int w_Image_setWrap(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1); 
+		Image * i = luax_checkimage(L, 1); 
 		Image::Wrap w;
-		w.s = (Image::WrapMode)luaL_checkint(L, 2);
-		w.t = (Image::WrapMode)luaL_checkint(L, 3);
-		t->setWrap(w);
+		Image::WrapMode s;
+		Image::WrapMode t;
+		const char * sstr = luaL_checkstring(L, 2);
+		const char * tstr = luaL_checkstring(L, 3);
+		if (!Image::getConstant(sstr, s))
+			return luaL_error(L, "Invalid wrap mode: %s", sstr);
+		if (!Image::getConstant(tstr, t))
+			return luaL_error(L, "Invalid wrap mode, %s", tstr);
+		
+		w.s = s;
+		w.t = t;
+		i->setWrap(w);
 		return 0;
 	}
 
 	int w_Image_getWrap(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1); 
-		Image::Wrap w = t->getWrap();
-		lua_pushinteger(L, w.s);
-		lua_pushinteger(L, w.t);
+		Image * i = luax_checkimage(L, 1); 
+		Image::Wrap w = i->getWrap();
+		Image::WrapMode s = w.s;
+		Image::WrapMode t = w.t;
+		const char * sstr;
+		const char * tstr;
+		if (!Image::getConstant(s, sstr))
+			return luaL_error(L, "Invalid filter mode: %s", sstr);
+		if (!Image::getConstant(t, tstr))
+			return luaL_error(L, "Invalid filter mode: %s", tstr);
+		lua_pushstring(L, sstr);
+		lua_pushstring(L, tstr);
 		return 2;
 	}
 

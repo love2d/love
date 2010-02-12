@@ -28,7 +28,7 @@ namespace love
 namespace font
 {
 	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs)
-		: imageData(imageData)
+		: imageData(data)
 	{
 		imageData->retain();
 	}
