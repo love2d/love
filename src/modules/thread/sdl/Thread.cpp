@@ -27,31 +27,42 @@ extern "C" int luaopen_love(lua_State * L);
 #endif // LOVE_BUILD_STANDALONE
 
 
-int threadfunc(const char *data)
-{
-	lua_State * L = lua_open();
-	luaL_openlibs(L);
-#ifdef LOVE_BUILD_STANDALONE
-	love::luax_preload(L, luaopen_love, "love");
-	luaopen_love(L);
-#endif // LOVE_BUILD_STANDALONE
-	luaL_dostring(L, data);
-	lua_close(L);
-	return 0;
-}
-
 namespace love
 {
 namespace thread
 {
 namespace sdl
 {
+	int threadfunc(ThreadData *comm)
+	{
+		lua_State * L = lua_open();
+		luaL_openlibs(L);
+	#ifdef LOVE_BUILD_STANDALONE
+		love::luax_preload(L, luaopen_love, "love");
+		luaopen_love(L);
+	#endif // LOVE_BUILD_STANDALONE
+		luaL_dostring(L, comm->getCode());
+		lua_close(L);
+		return 0;
+	}
+
+	ThreadData::ThreadData(const char *code)
+		: code(code)
+	{
+	}
+
+	const char *ThreadData::getCode()
+	{
+		return code;
+	}
+
 	Thread::Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data)
 		: reg(reg), name(name), handle(0)
 	{
 		unsigned int len = data->getSize();
 		this->data = new char[len];
 		memcpy(this->data, data->getData(), len);
+		comm = new ThreadData(this->data);
 	}
 
 	Thread::~Thread()
@@ -65,7 +76,7 @@ namespace sdl
 	void Thread::start()
 	{
 		if (!handle)
-			SDL_CreateThread((int (*)(void*)) threadfunc, (void*) data);
+			SDL_CreateThread((int (*)(void*)) threadfunc, (void*) comm);
 	}
 
 	void Thread::kill()
@@ -104,7 +115,9 @@ namespace sdl
 		return i->second;
 	}
 
-	Thread **ThreadModule::getThreads()
+	Thread **ThreadModule::getThreads()  //THIS FUNCTION IS BROKEN
+	//DO NOT USE IT
+	//IT EVEN CONTAINS MEMORY LEAKS!!
 	{
 		Thread **list = new Thread*[threads.size()];
 		int c = 0;
@@ -112,8 +125,7 @@ namespace sdl
 		{
 			list[c] = i->second;
 		}
-
-		return NULL;
+		return 0;
 	}
 
 	void ThreadModule::unregister(std::string name)

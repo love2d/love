@@ -45,11 +45,42 @@ namespace sdl
 		virtual void unregister(std::string name) = 0;
 	};
 
+	struct ThreadVariant
+	{
+		enum type
+		{
+			UNKNOWN = 0,
+			BOOLEAN,
+			NUMBER,
+			STRING,
+			USERDATA
+		};
+		union data
+		{
+			bool boolean;
+			double number;
+			const char *string;
+			void *userdata;
+		};
+	};
+
+	class ThreadData
+	{
+	private:
+		const char *code;
+		std::map<std::string, ThreadVariant*> shared;
+
+	public:
+		ThreadData(const char *code);
+		const char *getCode();
+	};
+
 	class Thread : public love::Object
 	{
 	private:
 		SDL_Thread *handle;
 		ThreadModuleRegistrar *reg;
+		ThreadData *comm;
 		std::string name;
 		char *data;
 
