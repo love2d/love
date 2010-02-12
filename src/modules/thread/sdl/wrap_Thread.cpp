@@ -79,6 +79,7 @@ namespace sdl
 
 	int w_getThreads(lua_State *L)
 	{
+		return 0;
 	}
 
 	int w_getThread(lua_State *L)

@@ -77,6 +77,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lovedll", "lovedll\lovedll.
 		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "thread", "thread\thread.vcproj", "{0BD34470-EB9D-4D37-A398-F46FC97C017A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8273822F-45A4-4BE3-82F3-B8B3223C578C} = {8273822F-45A4-4BE3-82F3-B8B3223C578C}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -147,6 +152,10 @@ Global
 		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Debug|Win32.Build.0 = Debug|Win32
 		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Release|Win32.ActiveCfg = Release|Win32
 		{2863FF8A-153F-46E0-8E71-2E58F3809E9B}.Release|Win32.Build.0 = Release|Win32
+		{0BD34470-EB9D-4D37-A398-F46FC97C017A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0BD34470-EB9D-4D37-A398-F46FC97C017A}.Debug|Win32.Build.0 = Debug|Win32
+		{0BD34470-EB9D-4D37-A398-F46FC97C017A}.Release|Win32.ActiveCfg = Release|Win32
+		{0BD34470-EB9D-4D37-A398-F46FC97C017A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

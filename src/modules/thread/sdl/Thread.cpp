@@ -18,16 +18,23 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+#include <common/config.h>
+
 #include "Thread.h"
 
+#ifdef LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love(lua_State * L);
+#endif // LOVE_BUILD_STANDALONE
+
 
 int threadfunc(const char *data)
 {
 	lua_State * L = lua_open();
 	luaL_openlibs(L);
+#ifdef LOVE_BUILD_STANDALONE
 	love::luax_preload(L, luaopen_love, "love");
 	luaopen_love(L);
+#endif // LOVE_BUILD_STANDALONE
 	luaL_dostring(L, data);
 	lua_close(L);
 	return 0;
@@ -105,6 +112,8 @@ namespace sdl
 		{
 			list[c] = i->second;
 		}
+
+		return NULL;
 	}
 
 	void ThreadModule::unregister(std::string name)

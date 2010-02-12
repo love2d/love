@@ -659,6 +659,26 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\graphics\Image.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\graphics\"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\graphics\"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\graphics\Image.h"
 					>
 				</File>
@@ -3205,6 +3225,62 @@
 					</File>
 					<File
 						RelativePath="..\..\src\modules\timer\sdl\wrap_Timer.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="thread"
+				>
+				<Filter
+					Name="sdl"
+					>
+					<File
+						RelativePath="..\..\src\modules\thread\sdl\Thread.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\thread\"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\thread\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\thread\sdl\Thread.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\thread\sdl\wrap_Thread.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\thread\"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\thread\"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\src\modules\thread\sdl\wrap_Thread.h"
 						>
 					</File>
 				</Filter>
