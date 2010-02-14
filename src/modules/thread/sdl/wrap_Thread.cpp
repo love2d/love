@@ -45,6 +45,13 @@ namespace sdl
 		return 0;
 	}
 
+	int w_Thread_wait(lua_State *L)
+	{
+		Thread *t = luax_checkthread(L, 1);
+		t->wait();
+		return 0;
+	}
+
 	int w_Thread_getName(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
@@ -52,10 +59,73 @@ namespace sdl
 		return 1;
 	}
 
+	int w_Thread_receive(lua_State *L)
+	{
+		Thread *t = luax_checkthread(L, 1);
+		ThreadVariant *v = t->receive(luaL_checkstring(L, 2));
+		if (v)
+		{
+			switch(v->type)
+			{
+				case BOOLEAN:
+					lua_pushboolean(L, v->data.boolean);
+					break;
+				case NUMBER:
+					lua_pushnumber(L, v->data.number);
+					break;
+				case STRING:
+					lua_pushstring(L, v->data.string);
+					break;
+				case USERDATA: //FIXME: full userdata
+					lua_pushlightuserdata(L, v->data.userdata);
+					break;
+				default:
+					lua_pushnil(L);
+					break;
+			}
+		}
+		else
+			lua_pushnil(L);
+		return 1;
+	}
+
+	int w_Thread_send(lua_State *L)
+	{
+		Thread *t = luax_checkthread(L, 1);
+		std::string name = luaL_checkstring(L, 2);
+		ThreadVariant *v;
+		if (lua_isboolean(L, 3))
+		{
+			v = new ThreadVariant((bool) lua_toboolean(L, 3));
+		}
+		else if (lua_isnumber(L, 3))
+		{
+			v = new ThreadVariant(lua_tonumber(L, 3));
+		}
+		else if (lua_isstring(L, 3))
+		{
+			v = new ThreadVariant(lua_tostring(L, 3));
+		}
+		else if (lua_islightuserdata(L, 3))
+		{
+			v = new ThreadVariant(lua_touserdata(L, 3));
+		}
+		else
+		{
+			return luaL_error(L, "Expected boolean, number, string or userdata");
+		}
+		t->send(name, v);
+		v->release();
+		return 0;
+	}
+
 	static const luaL_Reg type_functions[] = {
 		{ "start", w_Thread_start },
 		{ "kill", w_Thread_kill },
+		{ "wait", w_Thread_wait },
 		{ "getName", w_Thread_getName },
+		{ "receive", w_Thread_receive },
+		{ "send", w_Thread_send },
 		{ 0, 0 }
 	};
 
@@ -86,8 +156,15 @@ namespace sdl
 	{
 		std::string name = luaL_checkstring(L, 1);
 		Thread *t = instance->getThread(name);
-		luax_newtype(L, "Thread", THREAD_THREAD_T, (void*)t);
-		t->retain();
+		if (t)
+		{
+			luax_newtype(L, "Thread", THREAD_THREAD_T, (void*)t);
+			t->lock();
+			t->retain();
+			t->unlock();
+		}
+		else
+			lua_pushnil(L);
 		return 1;
 	}
 
@@ -117,6 +194,8 @@ namespace sdl
 				return luaL_error(L, e.what());
 			}
 		}
+		else
+			instance->retain();
 
 		WrappedModule w;
 		w.module = instance;

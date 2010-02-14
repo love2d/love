@@ -23,6 +23,7 @@
 
 // SDL
 #include <SDL_thread.h>
+#include <SDL_mutex.h>
 
 // STL
 #include <map>
@@ -39,40 +40,53 @@ namespace thread
 {
 namespace sdl
 {
-	class ThreadModuleRegistrar
+	class ThreadModuleRegistrar : public Module
 	{
 	public:
 		virtual void unregister(std::string name) = 0;
 	};
 
-	struct ThreadVariant
+	enum ThreadVariantType
 	{
-		enum type
-		{
-			UNKNOWN = 0,
-			BOOLEAN,
-			NUMBER,
-			STRING,
-			USERDATA
-		};
-		union data
+		UNKNOWN = 0,
+		BOOLEAN,
+		NUMBER,
+		STRING,
+		USERDATA
+	};
+
+	class ThreadVariant : public love::Object
+	{
+	public:
+		ThreadVariant(bool boolean);
+		ThreadVariant(double number);
+		ThreadVariant(const char *string);
+		ThreadVariant(void *userdata);
+		~ThreadVariant();
+		ThreadVariantType type;
+		union
 		{
 			bool boolean;
 			double number;
 			const char *string;
 			void *userdata;
-		};
+		} data;
 	};
 
 	class ThreadData
 	{
 	private:
-		const char *code;
+		char *code;
+		char *name;
 		std::map<std::string, ThreadVariant*> shared;
 
 	public:
-		ThreadData(const char *code);
+		ThreadData(const char *name, const char *code);
+		~ThreadData();
 		const char *getCode();
+		const char *getName();
+		ThreadVariant* getValue(std::string name);
+		void setValue(std::string name, ThreadVariant *v);
 	};
 
 	class Thread : public love::Object
@@ -83,18 +97,24 @@ namespace sdl
 		ThreadData *comm;
 		std::string name;
 		char *data;
+		SDL_mutex *mutex;
 
 	public:
 		Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data);
 		~Thread();
 		void start();
 		void kill();
+		void wait();
 		std::string getName();
+		ThreadVariant *receive(std::string name);
+		void send(std::string name, ThreadVariant *v);
+		void lock();
+		void unlock();
 	}; // Thread
 
 	typedef std::map<std::string, Thread*> threadlist_t;
 
-	class ThreadModule : public Module, ThreadModuleRegistrar
+	class ThreadModule : public ThreadModuleRegistrar
 	{
 	private:
 		threadlist_t threads;

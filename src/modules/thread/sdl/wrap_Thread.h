@@ -34,7 +34,10 @@ namespace sdl
 	Thread *luax_checkthread(lua_State *L, int idx);
 	int w_Thread_start(lua_State *L);
 	int w_Thread_kill(lua_State *L);
-	int w_thread_getName(lua_State *L);
+	int w_Thread_wait(lua_State *L);
+	int w_Thread_getName(lua_State *L);
+	int w_Thread_receive(lua_State *L);
+	int w_Thread_send(lua_State *L);
 
 	int luaopen_thread(lua_State *L);
 

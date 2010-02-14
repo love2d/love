@@ -25,7 +25,7 @@
 #ifdef LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love(lua_State * L);
 #endif // LOVE_BUILD_STANDALONE
-
+extern "C" int luaopen_love_thread(lua_State *L);
 
 namespace love
 {
@@ -41,14 +41,74 @@ namespace sdl
 		love::luax_preload(L, luaopen_love, "love");
 		luaopen_love(L);
 	#endif // LOVE_BUILD_STANDALONE
-		luaL_dostring(L, comm->getCode());
+		luaopen_love_thread(L);
+		lua_pushstring(L, comm->getName());
+		luax_convobj(L, lua_gettop(L), "thread", "getThread");
+		lua_setglobal(L, "thread");
+		if(luaL_dostring(L, comm->getCode()) == 1)
+		{
+			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1));
+			comm->setValue("error", v);
+			v->release();
+		}
 		lua_close(L);
 		return 0;
 	}
 
-	ThreadData::ThreadData(const char *code)
-		: code(code)
+	ThreadVariant::ThreadVariant(bool boolean)
 	{
+		type = BOOLEAN;
+		data.boolean = boolean;
+	}
+
+	ThreadVariant::ThreadVariant(double number)
+	{
+		type = NUMBER;
+		data.number = number;
+	}
+
+	ThreadVariant::ThreadVariant(const char *string)
+	{
+		type = STRING;
+		size_t len = strlen(string);
+		char *buf = new char[len+1];
+		memset(buf, 0, len+1);
+		memcpy(buf, string, len);
+		data.string = buf;
+	}
+
+	ThreadVariant::ThreadVariant(void *userdata)
+	{
+		type = USERDATA;
+		data.userdata = userdata;
+	}
+
+	ThreadVariant::~ThreadVariant()
+	{
+		switch(type)
+		{
+			case STRING:
+				delete[] data.string;
+				break;
+		}
+	}
+
+	ThreadData::ThreadData(const char *name, const char *code)
+	{
+		size_t len = strlen(name);
+		this->name = new char[len+1];
+		memset(this->name, 0, len+1);
+		memcpy(this->name, name, len);
+		len = strlen(code);
+		this->code = new char[len+1];
+		memset(this->code, 0, len+1);
+		memcpy(this->code, code, len);
+	}
+
+	ThreadData::~ThreadData()
+	{
+		delete[] name;
+		delete[] code;
 	}
 
 	const char *ThreadData::getCode()
@@ -56,38 +116,101 @@ namespace sdl
 		return code;
 	}
 
+	const char *ThreadData::getName()
+	{
+		return name;
+	}
+
+	ThreadVariant* ThreadData::getValue(std::string name)
+	{
+		if (shared.count(name) == 0)
+			return 0;
+		return shared[name];
+	}
+
+	void ThreadData::setValue(std::string name, ThreadVariant *v)
+	{
+		if (shared.count(name) != 0)
+			shared[name]->release();
+		v->retain();
+		shared[name] = v;
+	}
+
 	Thread::Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data)
 		: reg(reg), name(name), handle(0)
 	{
+		reg->retain();
 		unsigned int len = data->getSize();
-		this->data = new char[len];
+		this->data = new char[len+1];
+		memset(this->data, 0, len+1);
 		memcpy(this->data, data->getData(), len);
-		comm = new ThreadData(this->data);
+		comm = new ThreadData(name.c_str(), this->data);
+		mutex = SDL_CreateMutex();
 	}
 
 	Thread::~Thread()
 	{
 		delete[] data;
+		delete comm;
 		if (handle)
 			SDL_KillThread(handle);
 		reg->unregister(name);
+		SDL_DestroyMutex(mutex);
+		reg->release();
 	}
 
 	void Thread::start()
 	{
 		if (!handle)
-			SDL_CreateThread((int (*)(void*)) threadfunc, (void*) comm);
+			handle = SDL_CreateThread((int (*)(void*)) threadfunc, (void*) comm);
 	}
 
 	void Thread::kill()
 	{
 		if (handle)
+		{
 			SDL_KillThread(handle);
+			handle = 0;
+		}
+	}
+
+	void Thread::wait()
+	{
+		if (handle)
+		{
+			SDL_WaitThread(handle, NULL);
+			handle = 0;
+		}
+	}
+
+	void Thread::lock()
+	{
+		SDL_mutexP(mutex);
+	}
+
+	void Thread::unlock()
+	{
+		SDL_mutexV(mutex);
 	}
 
 	std::string Thread::getName()
 	{
 		return name;
+	}
+
+	ThreadVariant *Thread::receive(std::string name)
+	{
+		lock();
+		ThreadVariant *v = comm->getValue(name);
+		unlock();
+		return v;
+	}
+
+	void Thread::send(std::string name, ThreadVariant *v)
+	{
+		lock();
+		comm->setValue(name, v);
+		unlock();
 	}
 
 	ThreadModule::~ThreadModule()
