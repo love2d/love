@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -53,7 +53,7 @@ namespace box2d
 			luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
 			return 1;
 		}
-		else 
+		else
 			return luaL_error(L, "Incorrect number of parameters");
 	}
 
@@ -173,7 +173,7 @@ namespace box2d
 		luax_newtype(L, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T, (void*)j);
 		return 1;
 	}
-	
+
 	int w_newPulleyJoint(lua_State * L)
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
@@ -187,12 +187,12 @@ namespace box2d
 		float x2 = (float)luaL_checknumber(L, 9);
 		float y2 = (float)luaL_checknumber(L, 10);
 		float ratio = (float)luaL_optnumber(L, 11, 1.0);
-		
+
 		PulleyJoint * j = instance->newPulleyJoint(body1, body2, b2Vec2(gx1,gy1), b2Vec2(gx2,gy2), b2Vec2(x1,y1), b2Vec2(x2,y2), ratio);
 		luax_newtype(L, "PulleyJoint", PHYSICS_PULLEY_JOINT_T, (void*)j);
 		return 1;
 	}
-	
+
 	int w_newGearJoint(lua_State * L)
 	{
 		Joint * joint1 = luax_checktype<Joint>(L, 1, "Joint", PHYSICS_JOINT_T);
@@ -250,6 +250,8 @@ namespace box2d
 				return luaL_error(L, e.what());
 			}
 		}
+		else
+			instance->retain();
 
 		WrappedModule w;
 		w.module = instance;

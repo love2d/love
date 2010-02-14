@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -65,7 +65,7 @@ namespace love
 
 		// Create a reference only if the test succeeds.
 		if(lua_type(L, -1) == type)
-			r = new Reference(L); 
+			r = new Reference(L);
 		else // Pop the value even if it fails (but also if it succeeds).
 			lua_pop(L, 1);
 
@@ -210,12 +210,12 @@ namespace love
 
 		if(lua_isnil(L, -1))
 			return luaL_error(L, "Can't register searcher: package table does not exist.");
-		
+
 		lua_getfield(L, -1, "loaders");
-		
+
 		if(lua_isnil(L, -1))
 			return luaL_error(L, "Can't register searcher: package.loaders table does not exist.");
-		
+
 		int len = lua_objlen(L, -1);
 		lua_pushinteger(L, len+1);
 		lua_pushcfunction(L, f);
@@ -252,7 +252,7 @@ namespace love
 		if(lua_isnil(L, -1)) return luaL_error(L, "Could not find love.%s!", mod);
 		lua_getfield(L, -1, fn);
 		if(lua_isnil(L, -1)) return luaL_error(L, "Could not find love.%s.%s!", mod, fn);
-		
+
 		lua_remove(L, -2); // remove mod
 		lua_remove(L, -2); // remove fn
 		return 0;
@@ -313,7 +313,7 @@ namespace love
 	{
 		luax_insistglobal(L, "love");
 		luax_insist(L, -1, k);
-		
+
 		// The love table should be replaced with the top stack
 		// item. Only the reqested table should remain on the stack.
 		lua_replace(L, -2);
@@ -334,7 +334,7 @@ namespace love
 		}
 	}
 
-	StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] = 
+	StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{
 		{"Invalid", INVALID_ID},
 
@@ -385,7 +385,10 @@ namespace love
 		{"PulleyJoint", PHYSICS_PULLEY_JOINT_ID},
 		{"GearJoint", PHYSICS_GEAR_JOINT_ID},
 
-		// The modules themselves. Only add abstracted modules here. 
+		// Thread
+		{"Thread", THREAD_THREAD_ID},
+
+		// The modules themselves. Only add abstracted modules here.
 		{"filesystem", MODULE_FILESYSTEM_ID},
 		{"image", MODULE_IMAGE_ID},
 		{"sound", MODULE_SOUND_ID},

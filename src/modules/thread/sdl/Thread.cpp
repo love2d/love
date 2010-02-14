@@ -79,8 +79,18 @@ namespace sdl
 
 	ThreadVariant::ThreadVariant(void *userdata)
 	{
-		type = USERDATA;
+		type = LUSERDATA;
 		data.userdata = userdata;
+	}
+
+	ThreadVariant::ThreadVariant(Type udatatype, void *userdata)
+	{
+		type = FUSERDATA;
+		this->udatatype = udatatype;
+		Proxy *p = (Proxy *) userdata;
+		flags = p->flags;
+		data.userdata = p->data;
+		((love::Object *) data.userdata)->retain();
 	}
 
 	ThreadVariant::~ThreadVariant()
@@ -89,6 +99,9 @@ namespace sdl
 		{
 			case STRING:
 				delete[] data.string;
+				break;
+			case FUSERDATA:
+				((love::Object *) data.userdata)->release();
 				break;
 		}
 	}
@@ -222,6 +235,8 @@ namespace sdl
 		ThreadVariant *v = comm->getValue(name);
 		while (!v)
 		{
+			if (comm->getValue("error"))
+				return 0;
 			SDL_CondWait(cond, mutex);
 			v = comm->getValue(name);
 		}

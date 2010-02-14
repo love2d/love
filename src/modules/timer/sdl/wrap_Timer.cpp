@@ -91,6 +91,8 @@ namespace sdl
 				return luaL_error(L, e.what());
 			}
 		}
+		else
+			instance->retain();
 
 		WrappedModule w;
 		w.module = instance;

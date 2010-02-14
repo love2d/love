@@ -27,6 +27,7 @@
 
 namespace love
 {
+	extern StringMap<Type, TYPE_MAX_ENUM> types;
 namespace thread
 {
 namespace sdl

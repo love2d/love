@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -118,7 +118,7 @@ namespace opengl
 			instance->setScissor();
 			return 0;
 		}
-	
+
 		int x = luaL_checkint(L, 1);
 		int y = luaL_checkint(L, 2);
 		int w = luaL_checkint(L, 3);
@@ -152,7 +152,7 @@ namespace opengl
 		} catch (love::Exception & e) {
 			luaL_error(L, e.what());
 		}
-			
+
 		if(image == 0)
 			return luaL_error(L, "Could not load image.");
 
@@ -170,13 +170,13 @@ namespace opengl
 		// Create the image.
 		Glyph * t = new Glyph(data);
 		t->load();
-			
+
 		// Push the type.
 		luax_newtype(L, "Glyph", GRAPHICS_GLYPH_T, (void*)t);
 
 		return 1;
 	}
-	
+
 	int w_newQuad(lua_State * L)
 	{
 		int x = luaL_checkint(L, 1);
@@ -190,7 +190,7 @@ namespace opengl
 
 		if (frame == 0)
 			return luaL_error(L, "Could not create frame.");
-		
+
 		luax_newtype(L, "Quad", GRAPHICS_QUAD_T, (void*)frame);
 		return 1;
 	}
@@ -232,9 +232,9 @@ namespace opengl
 
 		if(font == 0)
 			return luaL_error(L, "Could not load the font");
-		
+
 		luax_newtype(L, "Font", GRAPHICS_FONT_T, (void*)font);
-		
+
 		return 1;
 	}
 
@@ -259,7 +259,7 @@ namespace opengl
 			return luaL_error(L, "Could not load the font");
 
 		luax_newtype(L, "Font", GRAPHICS_FONT_T, (void*)font);
-		
+
 		return 1;
 	}
 
@@ -529,7 +529,7 @@ namespace opengl
 		lua_pushnumber(L, instance->getMaxPointSize());
 		return 1;
 	}
-	
+
 	int w_newScreenshot(lua_State * L)
 	{
 		love::image::Image * image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
@@ -539,7 +539,7 @@ namespace opengl
 	}
 
 	/**
-	* Draws an Image at the specified coordinates, with rotation and 
+	* Draws an Image at the specified coordinates, with rotation and
 	* scaling along both axes.
 	* @param x The x-coordinate.
 	* @param y The y-coordinate.
@@ -564,9 +564,9 @@ namespace opengl
 	}
 
 	/**
-	* Draws an Quad of an Image at the specified coordinates, 
+	* Draws an Quad of an Image at the specified coordinates,
 	* with rotation and scaling along both axes.
-	* 
+	*
 	* @param q The Quad to draw.
 	* @param x The x-coordinate.
 	* @param y The y-coordinate.
@@ -869,28 +869,30 @@ namespace opengl
 
 	// Types for this module.
 	static const lua_CFunction types[] = {
-		luaopen_font, 
-		luaopen_image, 
+		luaopen_font,
+		luaopen_image,
 		luaopen_glyph,
-		luaopen_frame, 
+		luaopen_frame,
 		luaopen_spritebatch,
 		luaopen_particlesystem,
-		0		
+		0
 	};
 
 	int luaopen_love_graphics(lua_State * L)
 	{
 		if(instance == 0)
 		{
-			try 
+			try
 			{
 				instance = new Graphics();
-			} 
+			}
 			catch(Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}
 		}
+		else
+			instance->retain();
 
 		WrappedModule w;
 		w.module = instance;

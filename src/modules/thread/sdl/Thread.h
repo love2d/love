@@ -52,7 +52,8 @@ namespace sdl
 		BOOLEAN,
 		NUMBER,
 		STRING,
-		USERDATA
+		LUSERDATA,
+		FUSERDATA
 	};
 
 	class ThreadVariant : public love::Object
@@ -62,6 +63,7 @@ namespace sdl
 		ThreadVariant(double number);
 		ThreadVariant(const char *string);
 		ThreadVariant(void *userdata);
+		ThreadVariant(Type udatatype, void *userdata);
 		~ThreadVariant();
 		ThreadVariantType type;
 		union
@@ -71,6 +73,8 @@ namespace sdl
 			const char *string;
 			void *userdata;
 		} data;
+		Type udatatype;
+		bits flags;
 	};
 
 	class ThreadData

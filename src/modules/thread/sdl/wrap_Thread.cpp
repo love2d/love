@@ -82,8 +82,14 @@ namespace sdl
 			case STRING:
 				lua_pushstring(L, v->data.string);
 				break;
-			case USERDATA: //FIXME: full userdata
+			case LUSERDATA:
 				lua_pushlightuserdata(L, v->data.userdata);
+				break;
+			case FUSERDATA:
+				const char *name;
+				love::types.find(v->udatatype, name);
+				((love::Object *) v->data.userdata)->retain();
+				luax_newtype(L, name, v->flags, v->data.userdata);
 				break;
 			default:
 				lua_pushnil(L);
@@ -116,8 +122,14 @@ namespace sdl
 			case STRING:
 				lua_pushstring(L, v->data.string);
 				break;
-			case USERDATA: //FIXME: full userdata
+			case LUSERDATA:
 				lua_pushlightuserdata(L, v->data.userdata);
+				break;
+			case FUSERDATA:
+				const char *name;
+				types.find(v->udatatype, name);
+				((love::Object *) v->data.userdata)->retain();
+				luax_newtype(L, name, v->flags, v->data.userdata);
 				break;
 			default:
 				lua_pushnil(L);
@@ -149,8 +161,14 @@ namespace sdl
 			case STRING:
 				lua_pushstring(L, v->data.string);
 				break;
-			case USERDATA: //FIXME: full userdata
+			case LUSERDATA:
 				lua_pushlightuserdata(L, v->data.userdata);
+				break;
+			case FUSERDATA:
+				const char *name;
+				types.find(v->udatatype, name);
+				((love::Object *) v->data.userdata)->retain();
+				luax_newtype(L, name, v->flags, v->data.userdata);
 				break;
 			default:
 				lua_pushnil(L);
@@ -158,6 +176,22 @@ namespace sdl
 		}
 		v->release();
 		return 1;
+	}
+
+	Type extractudatatype(lua_State * L, int idx)
+	{
+		Type t = INVALID_ID;
+		if (!lua_isuserdata(L, idx))
+			return t;
+		if (luaL_getmetafield (L, idx, "__tostring") == 0)
+			return t;
+		lua_pushvalue(L, idx);
+		int result = lua_pcall(L, 1, 1, 0);
+		if (result == 0)
+			types.find(lua_tostring(L, -1), t);
+		if (result == 0 || result == LUA_ERRRUN)
+			lua_pop(L, 1);
+		return t;
 	}
 
 	int w_Thread_send(lua_State *L)
@@ -180,6 +214,10 @@ namespace sdl
 		else if (lua_islightuserdata(L, 3))
 		{
 			v = new ThreadVariant(lua_touserdata(L, 3));
+		}
+		else if (lua_isuserdata(L, 3))
+		{
+			v = new ThreadVariant(extractudatatype(L, 3), lua_touserdata(L, 3));
 		}
 		else
 		{

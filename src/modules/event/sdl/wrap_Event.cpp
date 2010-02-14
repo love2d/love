@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -33,7 +33,7 @@ namespace event
 namespace sdl
 {
 	static Event * instance = 0;
-	
+
 	static bool to_message(lua_State * L, Event::Message & msg)
 	{
 		const char * str = luaL_checkstring(L, 1);
@@ -173,10 +173,10 @@ namespace sdl
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
-		{ "pump", w_pump }, 
-		{ "poll", w_poll }, 
-		{ "wait", w_wait }, 
-		{ "push", w_push }, 
+		{ "pump", w_pump },
+		{ "poll", w_poll },
+		{ "wait", w_wait },
+		{ "push", w_push },
 		{ 0, 0 }
 	};
 
@@ -184,15 +184,17 @@ namespace sdl
 	{
 		if(instance == 0)
 		{
-			try 
+			try
 			{
 				instance = new Event();
-			} 
+			}
 			catch(Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}
 		}
+		else
+			instance->retain();
 
 		WrappedModule w;
 		w.module = instance;
