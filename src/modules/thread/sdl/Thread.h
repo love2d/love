@@ -104,9 +104,11 @@ namespace sdl
 		char *data;
 		SDL_mutex *mutex;
 		SDL_cond *cond;
+		bool isThread;
 
 	public:
 		Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data);
+		Thread(ThreadModuleRegistrar *reg, std::string name);
 		~Thread();
 		void start();
 		void kill();
@@ -128,6 +130,7 @@ namespace sdl
 		threadlist_t threads;
 
 	public:
+		ThreadModule();
 		~ThreadModule();
 		Thread *newThread(std::string name, love::Data *data);
 		Thread **getThreads();

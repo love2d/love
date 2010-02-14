@@ -112,10 +112,15 @@ namespace sdl
 		this->name = new char[len+1];
 		memset(this->name, 0, len+1);
 		memcpy(this->name, name, len);
-		len = strlen(code);
-		this->code = new char[len+1];
-		memset(this->code, 0, len+1);
-		memcpy(this->code, code, len);
+		if (code)
+		{
+			len = strlen(code);
+			this->code = new char[len+1];
+			memset(this->code, 0, len+1);
+			memcpy(this->code, code, len);
+		}
+		else
+			this->code = 0;
 	}
 
 	ThreadData::~ThreadData()
@@ -158,7 +163,7 @@ namespace sdl
 	}
 
 	Thread::Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data)
-		: reg(reg), name(name), handle(0)
+		: reg(reg), name(name), handle(0), isThread(true)
 	{
 		reg->retain();
 		unsigned int len = data->getSize();
@@ -170,9 +175,19 @@ namespace sdl
 		cond = SDL_CreateCond();
 	}
 
+	Thread::Thread(ThreadModuleRegistrar *reg, std::string name)
+		: reg(reg), name(name), handle(0), data(0), isThread(false)
+	{
+		reg->retain();
+		comm = new ThreadData(name.c_str(), NULL);
+		mutex = SDL_CreateMutex();
+		cond = SDL_CreateCond();
+	}
+
 	Thread::~Thread()
 	{
-		delete[] data;
+		if (data)
+			delete[] data;
 		delete comm;
 		if (handle)
 			SDL_KillThread(handle);
@@ -184,7 +199,7 @@ namespace sdl
 
 	void Thread::start()
 	{
-		if (!handle)
+		if (!handle && isThread)
 			handle = SDL_CreateThread((int (*)(void*)) threadfunc, (void*) comm);
 	}
 
@@ -257,6 +272,11 @@ namespace sdl
 		comm->setValue(name, v);
 		unlock();
 		SDL_CondBroadcast(cond);
+	}
+
+	ThreadModule::ThreadModule()
+	{
+		threads["main"] = new Thread(this, "main");
 	}
 
 	ThreadModule::~ThreadModule()
