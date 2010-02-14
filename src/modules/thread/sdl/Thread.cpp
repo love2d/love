@@ -128,6 +128,14 @@ namespace sdl
 		return shared[name];
 	}
 
+	void ThreadData::clearValue(std::string name)
+	{
+		if (shared.count(name) == 0)
+			return;
+		shared[name]->release();
+		shared.erase(name);
+	}
+
 	void ThreadData::setValue(std::string name, ThreadVariant *v)
 	{
 		if (shared.count(name) != 0)
@@ -204,6 +212,13 @@ namespace sdl
 		ThreadVariant *v = comm->getValue(name);
 		unlock();
 		return v;
+	}
+
+	void Thread::clear(std::string name)
+	{
+		lock();
+		comm->clearValue(name);
+		unlock();
 	}
 
 	void Thread::send(std::string name, ThreadVariant *v)

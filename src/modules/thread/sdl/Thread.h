@@ -86,6 +86,7 @@ namespace sdl
 		const char *getCode();
 		const char *getName();
 		ThreadVariant* getValue(std::string name);
+		void clearValue(std::string name);
 		void setValue(std::string name, ThreadVariant *v);
 	};
 
@@ -107,6 +108,7 @@ namespace sdl
 		void wait();
 		std::string getName();
 		ThreadVariant *receive(std::string name);
+		void clear(std::string name);
 		void send(std::string name, ThreadVariant *v);
 		void lock();
 		void unlock();
