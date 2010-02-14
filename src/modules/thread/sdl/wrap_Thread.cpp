@@ -93,6 +93,40 @@ namespace sdl
 		return 1;
 	}
 
+	int w_Thread_demand(lua_State *L)
+	{
+		Thread *t = luax_checkthread(L, 1);
+		std::string name = luaL_checkstring(L, 2);
+		ThreadVariant *v = t->demand(name);
+		if (!v)
+		{
+			lua_pushnil(L);
+			return 1;
+		}
+		v->retain();
+		t->clear(name);
+		switch(v->type)
+		{
+			case BOOLEAN:
+				lua_pushboolean(L, v->data.boolean);
+				break;
+			case NUMBER:
+				lua_pushnumber(L, v->data.number);
+				break;
+			case STRING:
+				lua_pushstring(L, v->data.string);
+				break;
+			case USERDATA: //FIXME: full userdata
+				lua_pushlightuserdata(L, v->data.userdata);
+				break;
+			default:
+				lua_pushnil(L);
+				break;
+		}
+		v->release();
+		return 1;
+	}
+
 	int w_Thread_peek(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
@@ -162,6 +196,7 @@ namespace sdl
 		{ "wait", w_Thread_wait },
 		{ "getName", w_Thread_getName },
 		{ "receive", w_Thread_receive },
+		{ "demand", w_Thread_demand },
 		{ "peek", w_Thread_peek },
 		{ "send", w_Thread_send },
 		{ 0, 0 }

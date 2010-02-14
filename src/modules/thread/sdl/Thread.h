@@ -99,6 +99,7 @@ namespace sdl
 		std::string name;
 		char *data;
 		SDL_mutex *mutex;
+		SDL_cond *cond;
 
 	public:
 		Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data);
@@ -108,6 +109,7 @@ namespace sdl
 		void wait();
 		std::string getName();
 		ThreadVariant *receive(std::string name);
+		ThreadVariant *demand(std::string name);
 		void clear(std::string name);
 		void send(std::string name, ThreadVariant *v);
 		void lock();

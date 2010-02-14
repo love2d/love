@@ -154,6 +154,7 @@ namespace sdl
 		memcpy(this->data, data->getData(), len);
 		comm = new ThreadData(name.c_str(), this->data);
 		mutex = SDL_CreateMutex();
+		cond = SDL_CreateCond();
 	}
 
 	Thread::~Thread()
@@ -164,6 +165,7 @@ namespace sdl
 			SDL_KillThread(handle);
 		reg->unregister(name);
 		SDL_DestroyMutex(mutex);
+		SDL_DestroyCond(cond);
 		reg->release();
 	}
 
@@ -214,6 +216,19 @@ namespace sdl
 		return v;
 	}
 
+	ThreadVariant *Thread::demand(std::string name)
+	{
+		lock();
+		ThreadVariant *v = comm->getValue(name);
+		while (!v)
+		{
+			SDL_CondWait(cond, mutex);
+			v = comm->getValue(name);
+		}
+		unlock();
+		return v;
+	}
+
 	void Thread::clear(std::string name)
 	{
 		lock();
@@ -226,6 +241,7 @@ namespace sdl
 		lock();
 		comm->setValue(name, v);
 		unlock();
+		SDL_CondBroadcast(cond);
 	}
 
 	ThreadModule::~ThreadModule()
