@@ -754,8 +754,10 @@ end
 
 function love.errhand(msg)
 
+	error_printer(msg)
+
 	if not love.graphics or not love.event or not love.graphics.isCreated() then
-		return error_printer(msg)
+		return
 	end
 
 	-- Load.
