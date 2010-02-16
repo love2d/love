@@ -260,7 +260,18 @@ namespace sdl
 
 	int w_getThreads(lua_State *L)
 	{
-		return 0;
+		Thread **list = instance->getThreads();
+		lua_newtable(L);
+		for (int i = 0; list[i] != 0; i++)
+		{
+			luax_newtype(L, "Thread", THREAD_THREAD_T, (void*) list[i]);
+			list[i]->lock();
+			list[i]->retain();
+			list[i]->unlock();
+			lua_setfield(L, -2, list[i]->getName().c_str());
+		}
+		delete[] list;
+		return 1;
 	}
 
 	int w_getThread(lua_State *L)
@@ -284,6 +295,7 @@ namespace sdl
 	static const luaL_Reg module_functions[] = {
 		{ "newThread", w_newThread },
 		{ "getThread", w_getThread },
+		{ "getThreads", w_getThreads },
 		{ 0, 0 }
 	};
 

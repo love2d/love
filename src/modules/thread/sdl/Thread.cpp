@@ -304,17 +304,16 @@ namespace sdl
 		return i->second;
 	}
 
-	Thread **ThreadModule::getThreads()  //THIS FUNCTION IS BROKEN
-	//DO NOT USE IT
-	//IT EVEN CONTAINS MEMORY LEAKS!!
+	Thread **ThreadModule::getThreads()
 	{
-		Thread **list = new Thread*[threads.size()];
+		Thread **list = new Thread*[threads.size()+1];
 		int c = 0;
 		for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++, c++)
 		{
 			list[c] = i->second;
 		}
-		return 0;
+		list[threads.size()] = 0;
+		return list;
 	}
 
 	void ThreadModule::unregister(std::string name)
