@@ -117,7 +117,7 @@ namespace opengl
 			t.setTransformation(x, y, a, sx, sy, ox, oy);
 			t.transform(v, v, 4);
 
-			addv(t, v);
+			addv(v);
 
 			// Increment counter.
 			next++;
@@ -138,9 +138,9 @@ namespace opengl
 			// Transform.
 			Matrix t;
 			t.setTransformation(x, y, a, sx, sy, ox, oy);
-			t.transform(v, quad->getVertices(), 4);
+			t.transform(v, v, 4);
 
-			addv(t, v);
+			addv(v);
 
 			// Increment counter.
 			next++;
@@ -207,24 +207,18 @@ namespace opengl
 		glPopMatrix();
 	}
 
-	void SpriteBatch::addv(const Matrix & t, const vertex * v)
+	void SpriteBatch::addv(const vertex * v)
 	{
-		// Get a pointer to the correct insertion position.
-		vertex * dst = vertices + next*4;
-
-		// Transform.
-		t.transform(dst, dst, 4);
-
 		if(lockp != 0)
 		{
 			// Copy into mapped memory if buffer is locked.
-			memcpy(lockp + (next*4), dst,  sizeof(vertex)*4);
+			memcpy(lockp + (next*4), v,  sizeof(vertex)*4);
 		}
 		else
 		{
 			// ... use glBufferSubData otherwise.
 			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-			glBufferSubData(GL_ARRAY_BUFFER, (next*4)*sizeof(vertex), sizeof(vertex)*4, dst);
+			glBufferSubData(GL_ARRAY_BUFFER, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 	}

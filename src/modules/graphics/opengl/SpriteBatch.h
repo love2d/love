@@ -101,7 +101,7 @@ namespace opengl
 
 	private:
 
-		void addv(const Matrix & t, const vertex * v);
+		void addv(const vertex * v);
 
 	}; // SpriteBatch
 

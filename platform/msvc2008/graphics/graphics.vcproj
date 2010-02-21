@@ -610,6 +610,14 @@
 		<File
 			RelativePath="..\..\..\src\modules\graphics\Graphics.cpp"
 			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\graphics\"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\..\..\src\modules\graphics\Graphics.h"
