@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=LÖVE
 Comment=The unquestionably awesome 2D game engine
-MimeType=application/x-vnd.love-game;
+MimeType=application/x-love-game;
 Exec=/usr/bin/love
 Type=Application
 Categories=Development;Game;

@@ -42,7 +42,7 @@ case "$1" in
 		mkdir deb/usr/share/icons/gnome/scalable/apps
 		cp app.svg deb/usr/share/icons/gnome/scalable/apps/love.svg
 		mkdir deb/usr/share/icons/gnome/scalable/mimetypes
-		cp game.svg deb/usr/share/icons/gnome/scalable/mimetypes/gnome-mime-application-love-game.svg
+		cp game.svg deb/usr/share/icons/gnome/scalable/mimetypes/gnome-mime-application-x-love-game.svg
 		mkdir deb/usr/share/applications
 		cp love.desktop deb/usr/share/applications
 		dpkg -b deb love-$2.deb && \
