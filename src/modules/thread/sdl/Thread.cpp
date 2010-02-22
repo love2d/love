@@ -103,6 +103,8 @@ namespace sdl
 			case FUSERDATA:
 				((love::Object *) data.userdata)->release();
 				break;
+			default:
+				break;
 		}
 	}
 
@@ -163,7 +165,7 @@ namespace sdl
 	}
 
 	Thread::Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data)
-		: reg(reg), name(name), handle(0), isThread(true)
+		: handle(0), reg(reg), name(name), isThread(true)
 	{
 		reg->retain();
 		unsigned int len = data->getSize();
@@ -176,7 +178,7 @@ namespace sdl
 	}
 
 	Thread::Thread(ThreadModuleRegistrar *reg, std::string name)
-		: reg(reg), name(name), handle(0), data(0), isThread(false)
+		: handle(0), reg(reg), name(name), data(0), isThread(false)
 	{
 		reg->retain();
 		comm = new ThreadData(name.c_str(), NULL);
