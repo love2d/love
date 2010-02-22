@@ -181,6 +181,8 @@
 		A968F0D91083A9FC00A895AA /* Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D81083A9FC00A895AA /* Mouse.cpp */; };
 		A968F0DD1083AA6600A895AA /* Shape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0DB1083AA6600A895AA /* Shape.cpp */; };
 		A968F0DE1083AA6600A895AA /* Joint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0DC1083AA6600A895AA /* Joint.cpp */; };
+		A986DEB5113249A800810279 /* Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986DEB1113249A800810279 /* Thread.cpp */; };
+		A986DEB6113249A800810279 /* wrap_Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986DEB3113249A800810279 /* wrap_Thread.cpp */; };
 		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
@@ -581,6 +583,10 @@
 		A968F0D81083A9FC00A895AA /* Mouse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mouse.cpp; sourceTree = "<group>"; };
 		A968F0DB1083AA6600A895AA /* Shape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape.cpp; sourceTree = "<group>"; };
 		A968F0DC1083AA6600A895AA /* Joint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Joint.cpp; sourceTree = "<group>"; };
+		A986DEB1113249A800810279 /* Thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Thread.cpp; sourceTree = "<group>"; };
+		A986DEB2113249A800810279 /* Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
+		A986DEB3113249A800810279 /* wrap_Thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Thread.cpp; sourceTree = "<group>"; };
+		A986DEB4113249A800810279 /* wrap_Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Thread.h; sourceTree = "<group>"; };
 		A98D913E10507BF9008E03F2 /* EncodedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodedImageData.h; sourceTree = "<group>"; };
 		A98D914310507C97008E03F2 /* EncodedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EncodedImageData.cpp; sourceTree = "<group>"; };
 		A9B4BA981045937F001DBC80 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
@@ -819,6 +825,7 @@
 				A93E6AC210420AC3007D418B /* mouse */,
 				A93E6AE910420AC7007D418B /* physics */,
 				A93E6B7410420ACB007D418B /* sound */,
+				A986DEAF113249A700810279 /* thread */,
 				A93E6B8D10420ACB007D418B /* timer */,
 			);
 			path = modules;
@@ -1383,6 +1390,25 @@
 			path = scripts;
 			sourceTree = "<group>";
 		};
+		A986DEAF113249A700810279 /* thread */ = {
+			isa = PBXGroup;
+			children = (
+				A986DEB0113249A800810279 /* sdl */,
+			);
+			path = thread;
+			sourceTree = "<group>";
+		};
+		A986DEB0113249A800810279 /* sdl */ = {
+			isa = PBXGroup;
+			children = (
+				A986DEB1113249A800810279 /* Thread.cpp */,
+				A986DEB2113249A800810279 /* Thread.h */,
+				A986DEB3113249A800810279 /* wrap_Thread.cpp */,
+				A986DEB4113249A800810279 /* wrap_Thread.h */,
+			);
+			path = sdl;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1448,7 +1474,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# borrowed (with love) from banshee\nVOLUME_NAME=\"LÖVE\"\nDMG_APP=build/Release/love.app\nDMG_FILE=\"love.dmg\"\nDEMO_FOLDER=../../demos\nMOUNT_POINT=\"love.mounted\"\n\nrm -f $DMG_FILE\nrm -f $DMG_FILE.master\n\n# Compute an approximated image size in MB, and bloat by 1MB\nimage_size=$(du -ck $DMG_APP dmg $DEMO_FOLDER | tail -n1 | cut -f1)\nimage_size=$((($image_size + 1000) / 1000))\n\necho \"Creating disk image (${image_size}MB)...\"\nhdiutil create -megabytes $image_size -volname \"${VOLUME_NAME}\" -fs HFS+ \"${DMG_FILE}\" || exit $?\n\necho \"Attaching to disk image...\"\nhdiutil attach $DMG_FILE -readwrite -noautoopen -mountpoint $MOUNT_POINT -quiet\n\necho \"Populating image...\"\n\ncp -RP $DMG_APP $MOUNT_POINT\ncp -RP $DEMO_FOLDER $MOUNT_POINT\n\ncp dmg/VolumeIcon.icns $MOUNT_POINT/.VolumeIcon.icns\n/Developer/Tools/SetFile -a C $MOUNT_POINT\n\ncp dmg/backgroundImage.tiff $MOUNT_POINT\n/Developer/Tools/SetFile -a V $MOUNT_POINT/backgroundImage.tiff\ncp dmg/DS_Store $MOUNT_POINT/.DS_Store\n\necho \"Detaching from disk image...\"\nhdiutil detach $MOUNT_POINT -quiet\n\nmv $DMG_FILE $DMG_FILE.master\n\necho \"Creating distributable image...\"\nhdiutil convert -quiet -format UDBZ -o $DMG_FILE $DMG_FILE.master\n\n#echo \"Installing end user license agreement...\"\n#hdiutil flatten -quiet $DMG_FILE\n#/Developer/Tools/Rez /Developer/Headers/FlatCarbon/*.r dmg-data/license.r -a -o $DMG_FILE\n#hdiutil unflatten -quiet $DMG_FILE\n\necho \"Done.\"";
+			shellScript = "# borrowed (with love) from banshee\nVOLUME_NAME=\"LÖVE\"\nDMG_APP=build/Release/love.app\nDMG_FILE=\"love.dmg\"\nDEMO_FOLDER=../../demos\nMOUNT_POINT=\"love.mounted\"\n\nrm -f $DMG_FILE\nrm -f $DMG_FILE.master\n\n# Compute an approximated image size in MB, and bloat by 2MB\nimage_size=$(du -ck $DMG_APP dmg $DEMO_FOLDER | tail -n1 | cut -f1)\nimage_size=$((($image_size + 2000) / 1000))\n\necho \"Creating disk image (${image_size}MB)...\"\nhdiutil create -megabytes $image_size -volname \"${VOLUME_NAME}\" -fs HFS+ \"${DMG_FILE}\" || exit $?\n\necho \"Attaching to disk image...\"\nhdiutil attach $DMG_FILE -readwrite -noautoopen -mountpoint $MOUNT_POINT -quiet\n\necho \"Populating image...\"\n\ncp -RP $DMG_APP $MOUNT_POINT\ncp -RP $DEMO_FOLDER $MOUNT_POINT\n\ncp dmg/VolumeIcon.icns $MOUNT_POINT/.VolumeIcon.icns\n/Developer/Tools/SetFile -a C $MOUNT_POINT\n\ncp dmg/backgroundImage.tiff $MOUNT_POINT\n/Developer/Tools/SetFile -a V $MOUNT_POINT/backgroundImage.tiff\ncp dmg/DS_Store $MOUNT_POINT/.DS_Store\n\necho \"Detaching from disk image...\"\nhdiutil detach $MOUNT_POINT -quiet\n\nmv $DMG_FILE $DMG_FILE.master\n\necho \"Creating distributable image...\"\nhdiutil convert -quiet -format UDBZ -o $DMG_FILE $DMG_FILE.master\n\n#echo \"Installing end user license agreement...\"\n#hdiutil flatten -quiet $DMG_FILE\n#/Developer/Tools/Rez /Developer/Headers/FlatCarbon/*.r dmg-data/license.r -a -o $DMG_FILE\n#hdiutil unflatten -quiet $DMG_FILE\n\necho \"Done.\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1620,6 +1646,8 @@
 				A968F0DE1083AA6600A895AA /* Joint.cpp in Sources */,
 				A9CF0E8610B9EB1000E6F37E /* utf8.cpp in Sources */,
 				A93A3AB51121E86E003B04A4 /* Image.cpp in Sources */,
+				A986DEB5113249A800810279 /* Thread.cpp in Sources */,
+				A986DEB6113249A800810279 /* wrap_Thread.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
