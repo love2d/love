@@ -303,16 +303,18 @@ namespace sdl
 		return i->second;
 	}
 
-	Thread **ThreadModule::getThreads()
+	void ThreadModule::getThreads(Thread ** list)
 	{
-		Thread **list = new Thread*[threads.size()+1];
 		int c = 0;
 		for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++, c++)
 		{
 			list[c] = i->second;
 		}
-		list[threads.size()] = 0;
-		return list;
+	}
+
+	unsigned ThreadModule::getThreadCount() const
+	{
+		return threads.size();
 	}
 
 	void ThreadModule::unregister(const std::string & name)

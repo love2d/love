@@ -127,8 +127,9 @@ namespace sdl
 		ThreadModule();
 		virtual ~ThreadModule();
 		Thread *newThread(const std::string & name, love::Data *data);
-		Thread **getThreads();
+		void getThreads(Thread ** list);
 		Thread *getThread(const std::string & name);
+		unsigned getThreadCount() const;
 		void unregister(const std::string & name);
 		const char *getName() const;
 	}; // ThreadModule

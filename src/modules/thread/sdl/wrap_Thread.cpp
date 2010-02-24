@@ -260,9 +260,11 @@ namespace sdl
 
 	int w_getThreads(lua_State *L)
 	{
-		Thread **list = instance->getThreads();
+		unsigned count = instance->getThreadCount();
+		Thread **list = new Thread*[count];
+		instance->getThreads(list);
 		lua_newtable(L);
-		for (int i = 0; list[i] != 0; i++)
+		for (unsigned int i = 0; i<count; i++)
 		{
 			luax_newtype(L, "Thread", THREAD_THREAD_T, (void*) list[i]);
 			list[i]->lock();
