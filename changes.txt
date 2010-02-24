@@ -1,3 +1,11 @@
+  * Fixed a bug in Image:setFilter where it would switch the parameters.
+  * Fixed a bug in ImageRasterizer where it wasn't using the data.
+  * Image filter and wrap modes now use string constants as well.
+  * Fixed double-transform bug in SpriteBatch.
+  * Added love.thread.
+  * Errors are reported on stdout again.
+  * Another fix for the icons on ubuntu.
+
 LOVE 0.6.1
 ----------
 
