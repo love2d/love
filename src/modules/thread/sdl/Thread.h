@@ -58,7 +58,7 @@ namespace sdl
 		ThreadVariant(const char *string);
 		ThreadVariant(void *userdata);
 		ThreadVariant(Type udatatype, void *userdata);
-		~ThreadVariant();
+		virtual ~ThreadVariant();
 		ThreadVariantType type;
 		union
 		{
@@ -103,7 +103,7 @@ namespace sdl
 	public:
 		Thread(love::thread::ThreadModule *module, std::string name, love::Data *data);
 		Thread(love::thread::ThreadModule *module, std::string name);
-		~Thread();
+		virtual ~Thread();
 		void start();
 		void kill();
 		void wait();
@@ -125,7 +125,7 @@ namespace sdl
 
 	public:
 		ThreadModule();
-		~ThreadModule();
+		virtual ~ThreadModule();
 		Thread *newThread(std::string name, love::Data *data);
 		Thread **getThreads();
 		Thread *getThread(std::string name);
