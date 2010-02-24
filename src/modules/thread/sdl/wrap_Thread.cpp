@@ -201,7 +201,7 @@ namespace sdl
 		ThreadVariant *v;
 		if (lua_isboolean(L, 3))
 		{
-			v = new ThreadVariant((bool) lua_toboolean(L, 3));
+			v = new ThreadVariant(luax_toboolean(L, 3));
 		}
 		else if (lua_isnumber(L, 3))
 		{
