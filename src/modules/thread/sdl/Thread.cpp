@@ -42,9 +42,6 @@ namespace sdl
 		luaopen_love(L);
 	#endif // LOVE_BUILD_STANDALONE
 		luaopen_love_thread(L);
-		lua_pushstring(L, comm->getName());
-		luax_convobj(L, lua_gettop(L), "thread", "getThread");
-		lua_setglobal(L, "thread");
 		if(luaL_dostring(L, comm->getCode()) == 1)
 		{
 			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1));
