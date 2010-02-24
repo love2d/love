@@ -205,6 +205,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\..\src\modules\thread\ThreadModule.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

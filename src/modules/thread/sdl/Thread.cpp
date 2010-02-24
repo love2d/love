@@ -164,10 +164,10 @@ namespace sdl
 		shared[name] = v;
 	}
 
-	Thread::Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data)
-		: handle(0), reg(reg), name(name), isThread(true)
+	Thread::Thread(love::thread::ThreadModule *module, std::string name, love::Data *data)
+		: handle(0), module(module), name(name), isThread(true)
 	{
-		reg->retain();
+		module->retain();
 		unsigned int len = data->getSize();
 		this->data = new char[len+1];
 		memset(this->data, 0, len+1);
@@ -177,10 +177,10 @@ namespace sdl
 		cond = SDL_CreateCond();
 	}
 
-	Thread::Thread(ThreadModuleRegistrar *reg, std::string name)
-		: handle(0), reg(reg), name(name), data(0), isThread(false)
+	Thread::Thread(love::thread::ThreadModule *module, std::string name)
+		: handle(0), module(module), name(name), data(0), isThread(false)
 	{
-		reg->retain();
+		module->retain();
 		comm = new ThreadData(name.c_str(), NULL);
 		mutex = SDL_CreateMutex();
 		cond = SDL_CreateCond();
@@ -193,10 +193,10 @@ namespace sdl
 		delete comm;
 		if (handle)
 			SDL_KillThread(handle);
-		reg->unregister(name);
+		module->unregister(name);
 		SDL_DestroyMutex(mutex);
 		SDL_DestroyCond(cond);
-		reg->release();
+		module->release();
 	}
 
 	void Thread::start()

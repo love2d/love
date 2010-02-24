@@ -18,8 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_THREAD_THREAD_H
-#define LOVE_THREAD_THREAD_H
+#ifndef LOVE_THREAD_SDL_THREAD_H
+#define LOVE_THREAD_SDL_THREAD_H
 
 // SDL
 #include <SDL_thread.h>
@@ -30,7 +30,7 @@
 #include <string>
 
 // LOVE
-#include <common/Module.h>
+#include <thread/ThreadModule.h>
 #include <filesystem/File.h>
 #include <common/runtime.h>
 
@@ -40,12 +40,6 @@ namespace thread
 {
 namespace sdl
 {
-	class ThreadModuleRegistrar : public Module
-	{
-	public:
-		virtual void unregister(std::string name) = 0;
-	};
-
 	enum ThreadVariantType
 	{
 		UNKNOWN = 0,
@@ -98,7 +92,7 @@ namespace sdl
 	{
 	private:
 		SDL_Thread *handle;
-		ThreadModuleRegistrar *reg;
+		love::thread::ThreadModule *module;
 		ThreadData *comm;
 		std::string name;
 		char *data;
@@ -107,8 +101,8 @@ namespace sdl
 		bool isThread;
 
 	public:
-		Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data);
-		Thread(ThreadModuleRegistrar *reg, std::string name);
+		Thread(love::thread::ThreadModule *module, std::string name, love::Data *data);
+		Thread(love::thread::ThreadModule *module, std::string name);
 		~Thread();
 		void start();
 		void kill();
@@ -124,7 +118,7 @@ namespace sdl
 
 	typedef std::map<std::string, Thread*> threadlist_t;
 
-	class ThreadModule : public ThreadModuleRegistrar
+	class ThreadModule : public love::thread::ThreadModule
 	{
 	private:
 		threadlist_t threads;
@@ -142,4 +136,4 @@ namespace sdl
 } // thread
 } // love
 
-#endif // LOVE_THREAD_THREAD_H
+#endif // LOVE_THREAD_SDL_THREAD_H
