@@ -138,14 +138,14 @@ namespace sdl
 		return name;
 	}
 
-	ThreadVariant* ThreadData::getValue(std::string name)
+	ThreadVariant* ThreadData::getValue(const std::string & name)
 	{
 		if (shared.count(name) == 0)
 			return 0;
 		return shared[name];
 	}
 
-	void ThreadData::clearValue(std::string name)
+	void ThreadData::clearValue(const std::string & name)
 	{
 		if (shared.count(name) == 0)
 			return;
@@ -153,7 +153,7 @@ namespace sdl
 		shared.erase(name);
 	}
 
-	void ThreadData::setValue(std::string name, ThreadVariant *v)
+	void ThreadData::setValue(const std::string & name, ThreadVariant *v)
 	{
 		if (shared.count(name) != 0)
 			shared[name]->release();
@@ -161,7 +161,7 @@ namespace sdl
 		shared[name] = v;
 	}
 
-	Thread::Thread(love::thread::ThreadModule *module, std::string name, love::Data *data)
+	Thread::Thread(love::thread::ThreadModule *module, const std::string & name, love::Data *data)
 		: handle(0), module(module), name(name), isThread(true)
 	{
 		module->retain();
@@ -174,7 +174,7 @@ namespace sdl
 		cond = SDL_CreateCond();
 	}
 
-	Thread::Thread(love::thread::ThreadModule *module, std::string name)
+	Thread::Thread(love::thread::ThreadModule *module, const std::string & name)
 		: handle(0), module(module), name(name), data(0), isThread(false)
 	{
 		module->retain();
@@ -235,7 +235,7 @@ namespace sdl
 		return name;
 	}
 
-	ThreadVariant *Thread::receive(std::string name)
+	ThreadVariant *Thread::receive(const std::string & name)
 	{
 		lock();
 		ThreadVariant *v = comm->getValue(name);
@@ -243,7 +243,7 @@ namespace sdl
 		return v;
 	}
 
-	ThreadVariant *Thread::demand(std::string name)
+	ThreadVariant *Thread::demand(const std::string & name)
 	{
 		lock();
 		ThreadVariant *v = comm->getValue(name);
@@ -258,14 +258,14 @@ namespace sdl
 		return v;
 	}
 
-	void Thread::clear(std::string name)
+	void Thread::clear(const std::string & name)
 	{
 		lock();
 		comm->clearValue(name);
 		unlock();
 	}
 
-	void Thread::send(std::string name, ThreadVariant *v)
+	void Thread::send(const std::string & name, ThreadVariant *v)
 	{
 		lock();
 		comm->setValue(name, v);
@@ -286,7 +286,7 @@ namespace sdl
 		}
 	}
 
-	Thread *ThreadModule::newThread(std::string name, love::Data *data)
+	Thread *ThreadModule::newThread(const std::string & name, love::Data *data)
 	{
 		if (threads.count(name) != 0)
 			return 0;
@@ -295,7 +295,7 @@ namespace sdl
 		return t;
 	}
 
-	Thread *ThreadModule::getThread(std::string name)
+	Thread *ThreadModule::getThread(const std::string & name)
 	{
 		if (threads.count(name) == 0)
 			return 0;
@@ -315,7 +315,7 @@ namespace sdl
 		return list;
 	}
 
-	void ThreadModule::unregister(std::string name)
+	void ThreadModule::unregister(const std::string & name)
 	{
 		if (threads.count(name) == 0)
 			return;

@@ -83,9 +83,9 @@ namespace sdl
 		~ThreadData();
 		const char *getCode();
 		const char *getName();
-		ThreadVariant* getValue(std::string name);
-		void clearValue(std::string name);
-		void setValue(std::string name, ThreadVariant *v);
+		ThreadVariant* getValue(const std::string & name);
+		void clearValue(const std::string & name);
+		void setValue(const std::string & name, ThreadVariant *v);
 	};
 
 	class Thread : public love::Object
@@ -101,17 +101,17 @@ namespace sdl
 		bool isThread;
 
 	public:
-		Thread(love::thread::ThreadModule *module, std::string name, love::Data *data);
-		Thread(love::thread::ThreadModule *module, std::string name);
+		Thread(love::thread::ThreadModule *module, const std::string & name, love::Data *data);
+		Thread(love::thread::ThreadModule *module, const std::string & name);
 		virtual ~Thread();
 		void start();
 		void kill();
 		void wait();
 		std::string getName();
-		ThreadVariant *receive(std::string name);
-		ThreadVariant *demand(std::string name);
-		void clear(std::string name);
-		void send(std::string name, ThreadVariant *v);
+		ThreadVariant *receive(const std::string & name);
+		ThreadVariant *demand(const std::string & name);
+		void clear(const std::string & name);
+		void send(const std::string & name, ThreadVariant *v);
 		void lock();
 		void unlock();
 	}; // Thread
@@ -126,10 +126,10 @@ namespace sdl
 	public:
 		ThreadModule();
 		virtual ~ThreadModule();
-		Thread *newThread(std::string name, love::Data *data);
+		Thread *newThread(const std::string & name, love::Data *data);
 		Thread **getThreads();
-		Thread *getThread(std::string name);
-		void unregister(std::string name);
+		Thread *getThread(const std::string & name);
+		void unregister(const std::string & name);
 		const char *getName() const;
 	}; // ThreadModule
 } // sdl

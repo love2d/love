@@ -32,7 +32,7 @@ namespace thread
 	{
 	public:
 		virtual ~ThreadModule(){};
-		virtual void unregister(std::string name) = 0;
+		virtual void unregister(const std::string & name) = 0;
 	}; // ThreadModule
 
 } // thread
