@@ -46,7 +46,7 @@ namespace opengl
 	void ImageFont::print(string text, float x, float y) const
 	{
 		glPushMatrix();
-		glTranslatef(x, y, 0.0f);
+		glTranslatef(x, y+getHeight(), 0.0f);
 		GLuint OpenGLFont = list;
 		glListBase(OpenGLFont);
 		glCallLists((int)text.length(), GL_UNSIGNED_BYTE, text.c_str());
@@ -57,7 +57,7 @@ namespace opengl
 	{
 		glPushMatrix();
 
-		glTranslatef(x, y, 0.0f);
+		glTranslatef(x, y+getHeight(), 0.0f);
 		glRotatef(angle * 57.29578f, 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 
@@ -71,7 +71,7 @@ namespace opengl
 	void ImageFont::print(char character, float x, float y) const
 	{
 		glPushMatrix();
-		glTranslatef(x, y, 0.0f);
+		glTranslatef(x, y+getHeight(), 0.0f);
 		GLuint OpenGLFont = list;
 		glListBase(OpenGLFont);
 		glCallList(list + (int)character);
