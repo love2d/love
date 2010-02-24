@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -34,7 +34,7 @@ namespace lullaby
 	bool Mpg123Decoder::inited = false;
 
 	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), handle(0)
+		: Decoder(data, ext, bufferSize, sampleRate), channels(MPG123_STEREO), handle(0)
 	{
 
 		data_size = data->getSize();
@@ -57,9 +57,6 @@ namespace lullaby
 		ret = mpg123_open_feed(handle);
 		if (ret != MPG123_OK)
 			throw love::Exception("Could not open feed.");
-		ret = mpg123_format(handle, sampleRate, MPG123_STEREO, MPG123_ENC_SIGNED_16);
-		if (ret != MPG123_OK)
-			throw love::Exception("Could not set output format.");
 
 		ret = feed(16384);
 
@@ -70,7 +67,7 @@ namespace lullaby
 	Mpg123Decoder::~Mpg123Decoder()
 	{
 		mpg123_close(handle);
-		
+
 	}
 
 	bool Mpg123Decoder::accepts(const std::string & ext)
@@ -113,6 +110,20 @@ namespace lullaby
 			switch(r)
 			{
 			case MPG123_NEW_FORMAT:
+				{
+					long rate = 0;
+					int encoding = 0;
+					int ret = mpg123_getformat(handle, &rate, &channels, &encoding);
+					if (rate == 0)
+						rate = sampleRate;
+					if (channels == 0)
+						channels = MPG123_STEREO;
+					if (encoding == 0)
+						encoding = MPG123_ENC_SIGNED_16;
+					ret = mpg123_format(handle, rate, channels, encoding);
+					if (ret != MPG123_OK)
+						throw love::Exception("Could not set output format.");
+				}
 				continue;
 			case MPG123_NEED_MORE:
 				{
@@ -136,7 +147,7 @@ namespace lullaby
 				size += numbytes;
 				continue;
 			case MPG123_DONE:
-				// Apparently, mpg123_read does not return MPG123_DONE, but 
+				// Apparently, mpg123_read does not return MPG123_DONE, but
 				// let's keep it here anyway.
 				eof = true;
 			default:
@@ -144,7 +155,7 @@ namespace lullaby
 				break;
 			}
 		}
-		
+
 		return size;
 	}
 
@@ -186,7 +197,7 @@ namespace lullaby
 
 	int Mpg123Decoder::getChannels() const
 	{
-		return 2;
+		return channels;
 	}
 
 	int Mpg123Decoder::getBits() const
