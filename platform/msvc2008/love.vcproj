@@ -3232,6 +3232,10 @@
 			<Filter
 				Name="thread"
 				>
+				<File
+					RelativePath="..\..\src\modules\thread\ThreadModule.h"
+					>
+				</File>
 				<Filter
 					Name="sdl"
 					>

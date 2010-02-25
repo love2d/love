@@ -18,8 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_THREAD_THREAD_H
-#define LOVE_THREAD_THREAD_H
+#ifndef LOVE_THREAD_SDL_THREAD_H
+#define LOVE_THREAD_SDL_THREAD_H
 
 // SDL
 #include <SDL_thread.h>
@@ -30,7 +30,7 @@
 #include <string>
 
 // LOVE
-#include <common/Module.h>
+#include <thread/ThreadModule.h>
 #include <filesystem/File.h>
 #include <common/runtime.h>
 
@@ -40,12 +40,6 @@ namespace thread
 {
 namespace sdl
 {
-	class ThreadModuleRegistrar : public Module
-	{
-	public:
-		virtual void unregister(std::string name) = 0;
-	};
-
 	enum ThreadVariantType
 	{
 		UNKNOWN = 0,
@@ -64,7 +58,7 @@ namespace sdl
 		ThreadVariant(const char *string);
 		ThreadVariant(void *userdata);
 		ThreadVariant(Type udatatype, void *userdata);
-		~ThreadVariant();
+		virtual ~ThreadVariant();
 		ThreadVariantType type;
 		union
 		{
@@ -89,16 +83,16 @@ namespace sdl
 		~ThreadData();
 		const char *getCode();
 		const char *getName();
-		ThreadVariant* getValue(std::string name);
-		void clearValue(std::string name);
-		void setValue(std::string name, ThreadVariant *v);
+		ThreadVariant* getValue(const std::string & name);
+		void clearValue(const std::string & name);
+		void setValue(const std::string & name, ThreadVariant *v);
 	};
 
 	class Thread : public love::Object
 	{
 	private:
 		SDL_Thread *handle;
-		ThreadModuleRegistrar *reg;
+		love::thread::ThreadModule *module;
 		ThreadData *comm;
 		std::string name;
 		char *data;
@@ -107,39 +101,40 @@ namespace sdl
 		bool isThread;
 
 	public:
-		Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data);
-		Thread(ThreadModuleRegistrar *reg, std::string name);
-		~Thread();
+		Thread(love::thread::ThreadModule *module, const std::string & name, love::Data *data);
+		Thread(love::thread::ThreadModule *module, const std::string & name);
+		virtual ~Thread();
 		void start();
 		void kill();
 		void wait();
 		std::string getName();
-		ThreadVariant *receive(std::string name);
-		ThreadVariant *demand(std::string name);
-		void clear(std::string name);
-		void send(std::string name, ThreadVariant *v);
+		ThreadVariant *receive(const std::string & name);
+		ThreadVariant *demand(const std::string & name);
+		void clear(const std::string & name);
+		void send(const std::string & name, ThreadVariant *v);
 		void lock();
 		void unlock();
 	}; // Thread
 
 	typedef std::map<std::string, Thread*> threadlist_t;
 
-	class ThreadModule : public ThreadModuleRegistrar
+	class ThreadModule : public love::thread::ThreadModule
 	{
 	private:
 		threadlist_t threads;
 
 	public:
 		ThreadModule();
-		~ThreadModule();
-		Thread *newThread(std::string name, love::Data *data);
-		Thread **getThreads();
-		Thread *getThread(std::string name);
-		void unregister(std::string name);
+		virtual ~ThreadModule();
+		Thread *newThread(const std::string & name, love::Data *data);
+		void getThreads(Thread ** list);
+		Thread *getThread(const std::string & name);
+		unsigned getThreadCount() const;
+		void unregister(const std::string & name);
 		const char *getName() const;
 	}; // ThreadModule
 } // sdl
 } // thread
 } // love
 
-#endif // LOVE_THREAD_THREAD_H
+#endif // LOVE_THREAD_SDL_THREAD_H

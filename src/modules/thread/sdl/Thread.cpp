@@ -43,7 +43,7 @@ namespace sdl
 	#endif // LOVE_BUILD_STANDALONE
 		luaopen_love_thread(L);
 		lua_pushstring(L, comm->getName());
-		luax_convobj(L, lua_gettop(L), "thread", "getThread");
+ 		luax_convobj(L, lua_gettop(L), "thread", "getThread");
 		lua_getglobal(L, "love");
 		lua_pushvalue(L, -2);
 		lua_setfield(L, -2, "_curthread");
@@ -143,14 +143,14 @@ namespace sdl
 		return name;
 	}
 
-	ThreadVariant* ThreadData::getValue(std::string name)
+	ThreadVariant* ThreadData::getValue(const std::string & name)
 	{
 		if (shared.count(name) == 0)
 			return 0;
 		return shared[name];
 	}
 
-	void ThreadData::clearValue(std::string name)
+	void ThreadData::clearValue(const std::string & name)
 	{
 		if (shared.count(name) == 0)
 			return;
@@ -158,7 +158,7 @@ namespace sdl
 		shared.erase(name);
 	}
 
-	void ThreadData::setValue(std::string name, ThreadVariant *v)
+	void ThreadData::setValue(const std::string & name, ThreadVariant *v)
 	{
 		if (shared.count(name) != 0)
 			shared[name]->release();
@@ -166,10 +166,10 @@ namespace sdl
 		shared[name] = v;
 	}
 
-	Thread::Thread(ThreadModuleRegistrar *reg, std::string name, love::Data *data)
-		: handle(0), reg(reg), name(name), isThread(true)
+	Thread::Thread(love::thread::ThreadModule *module, const std::string & name, love::Data *data)
+		: handle(0), module(module), name(name), isThread(true)
 	{
-		reg->retain();
+		module->retain();
 		unsigned int len = data->getSize();
 		this->data = new char[len+1];
 		memset(this->data, 0, len+1);
@@ -179,10 +179,10 @@ namespace sdl
 		cond = SDL_CreateCond();
 	}
 
-	Thread::Thread(ThreadModuleRegistrar *reg, std::string name)
-		: handle(0), reg(reg), name(name), data(0), isThread(false)
+	Thread::Thread(love::thread::ThreadModule *module, const std::string & name)
+		: handle(0), module(module), name(name), data(0), isThread(false)
 	{
-		reg->retain();
+		module->retain();
 		comm = new ThreadData(name.c_str(), NULL);
 		mutex = SDL_CreateMutex();
 		cond = SDL_CreateCond();
@@ -195,10 +195,10 @@ namespace sdl
 		delete comm;
 		if (handle)
 			SDL_KillThread(handle);
-		reg->unregister(name);
+		module->unregister(name);
 		SDL_DestroyMutex(mutex);
 		SDL_DestroyCond(cond);
-		reg->release();
+		module->release();
 	}
 
 	void Thread::start()
@@ -240,7 +240,7 @@ namespace sdl
 		return name;
 	}
 
-	ThreadVariant *Thread::receive(std::string name)
+	ThreadVariant *Thread::receive(const std::string & name)
 	{
 		lock();
 		ThreadVariant *v = comm->getValue(name);
@@ -248,7 +248,7 @@ namespace sdl
 		return v;
 	}
 
-	ThreadVariant *Thread::demand(std::string name)
+	ThreadVariant *Thread::demand(const std::string & name)
 	{
 		lock();
 		ThreadVariant *v = comm->getValue(name);
@@ -263,14 +263,14 @@ namespace sdl
 		return v;
 	}
 
-	void Thread::clear(std::string name)
+	void Thread::clear(const std::string & name)
 	{
 		lock();
 		comm->clearValue(name);
 		unlock();
 	}
 
-	void Thread::send(std::string name, ThreadVariant *v)
+	void Thread::send(const std::string & name, ThreadVariant *v)
 	{
 		lock();
 		comm->setValue(name, v);
@@ -291,7 +291,7 @@ namespace sdl
 		}
 	}
 
-	Thread *ThreadModule::newThread(std::string name, love::Data *data)
+	Thread *ThreadModule::newThread(const std::string & name, love::Data *data)
 	{
 		if (threads.count(name) != 0)
 			return 0;
@@ -300,7 +300,7 @@ namespace sdl
 		return t;
 	}
 
-	Thread *ThreadModule::getThread(std::string name)
+	Thread *ThreadModule::getThread(const std::string & name)
 	{
 		if (threads.count(name) == 0)
 			return 0;
@@ -308,19 +308,21 @@ namespace sdl
 		return i->second;
 	}
 
-	Thread **ThreadModule::getThreads()
+	void ThreadModule::getThreads(Thread ** list)
 	{
-		Thread **list = new Thread*[threads.size()+1];
 		int c = 0;
 		for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++, c++)
 		{
 			list[c] = i->second;
 		}
-		list[threads.size()] = 0;
-		return list;
 	}
 
-	void ThreadModule::unregister(std::string name)
+	unsigned ThreadModule::getThreadCount() const
+	{
+		return threads.size();
+	}
+
+	void ThreadModule::unregister(const std::string & name)
 	{
 		if (threads.count(name) == 0)
 			return;

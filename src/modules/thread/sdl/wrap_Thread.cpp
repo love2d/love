@@ -201,7 +201,7 @@ namespace sdl
 		ThreadVariant *v;
 		if (lua_isboolean(L, 3))
 		{
-			v = new ThreadVariant((bool) lua_toboolean(L, 3));
+			v = new ThreadVariant(luax_toboolean(L, 3));
 		}
 		else if (lua_isnumber(L, 3))
 		{
@@ -260,9 +260,11 @@ namespace sdl
 
 	int w_getThreads(lua_State *L)
 	{
-		Thread **list = instance->getThreads();
+		unsigned count = instance->getThreadCount();
+		Thread **list = new Thread*[count];
+		instance->getThreads(list);
 		lua_newtable(L);
-		for (int i = 0; list[i] != 0; i++)
+		for (unsigned int i = 0; i<count; i++)
 		{
 			luax_newtype(L, "Thread", THREAD_THREAD_T, (void*) list[i]);
 			list[i]->lock();
