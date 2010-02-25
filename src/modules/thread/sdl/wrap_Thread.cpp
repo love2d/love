@@ -276,6 +276,12 @@ namespace sdl
 
 	int w_getThread(lua_State *L)
 	{
+		if (lua_isnoneornil(L, 1))
+		{
+			lua_getglobal(L, "love");
+			lua_getfield(L, -1, "_curthread");
+			return 1;
+		}
 		std::string name = luaL_checkstring(L, 1);
 		Thread *t = instance->getThread(name);
 		if (t)
@@ -311,6 +317,13 @@ namespace sdl
 			try
 			{
 				instance = new ThreadModule();
+				lua_getglobal(L, "love");
+				Thread *curthread = instance->getThread("main");
+				curthread->lock();
+				curthread->retain();
+				curthread->unlock();
+				luax_newtype(L, "Thread", THREAD_THREAD_T, (void*)curthread);
+				lua_setfield(L, -2, "_curthread");
 			}
 			catch(Exception & e)
 			{

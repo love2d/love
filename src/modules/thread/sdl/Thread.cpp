@@ -44,7 +44,9 @@ namespace sdl
 		luaopen_love_thread(L);
 		lua_pushstring(L, comm->getName());
 		luax_convobj(L, lua_gettop(L), "thread", "getThread");
-		lua_setglobal(L, "thread");
+		lua_getglobal(L, "love");
+		lua_pushvalue(L, -2);
+		lua_setfield(L, -2, "_curthread");
 		if(luaL_dostring(L, comm->getCode()) == 1)
 		{
 			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1));
