@@ -132,7 +132,7 @@ namespace sdl
 		return 0;
 	}
 
-	int w_pump(lua_State * L)
+	int w_pump(lua_State *)
 	{
 		instance->pump();
 		return 0;

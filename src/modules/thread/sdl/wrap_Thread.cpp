@@ -86,11 +86,13 @@ namespace sdl
 				lua_pushlightuserdata(L, v->data.userdata);
 				break;
 			case FUSERDATA:
-				const char *name;
+			{
+				const char *name = NULL;
 				love::types.find(v->udatatype, name);
 				((love::Object *) v->data.userdata)->retain();
 				luax_newtype(L, name, v->flags, v->data.userdata);
 				break;
+			}
 			default:
 				lua_pushnil(L);
 				break;
@@ -126,11 +128,13 @@ namespace sdl
 				lua_pushlightuserdata(L, v->data.userdata);
 				break;
 			case FUSERDATA:
-				const char *name;
+			{
+				const char *name = NULL;
 				types.find(v->udatatype, name);
 				((love::Object *) v->data.userdata)->retain();
 				luax_newtype(L, name, v->flags, v->data.userdata);
 				break;
+			}
 			default:
 				lua_pushnil(L);
 				break;
@@ -165,11 +169,13 @@ namespace sdl
 				lua_pushlightuserdata(L, v->data.userdata);
 				break;
 			case FUSERDATA:
-				const char *name;
+			{
+				const char *name = NULL;
 				types.find(v->udatatype, name);
 				((love::Object *) v->data.userdata)->retain();
 				luax_newtype(L, name, v->flags, v->data.userdata);
 				break;
+			}
 			default:
 				lua_pushnil(L);
 				break;

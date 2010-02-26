@@ -33,7 +33,7 @@ namespace lullaby
 	/**
 	* CALLBACK FUNCTIONS
 	**/
-	int vorbisClose(void * datasource	/* ptr to the data that the vorbis files need*/)
+	int vorbisClose(void *	/* ptr to the data that the vorbis files need*/)
 	{
 		// Does nothing (handled elsewhere)
 		return 1;

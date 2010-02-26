@@ -39,12 +39,12 @@ namespace null
 		return "love.audio.null";
 	}
 
-	love::audio::Source * Audio::newSource(love::sound::Decoder * decoder)
+	love::audio::Source * Audio::newSource(love::sound::Decoder *)
 	{
 		return new Source();
 	}
 
-	love::audio::Source * Audio::newSource(love::sound::SoundData * soundData)
+	love::audio::Source * Audio::newSource(love::sound::SoundData *)
 	{
 		return new Source();
 	}
@@ -59,7 +59,7 @@ namespace null
 		return 0;
 	}
 
-	void Audio::play(love::audio::Source * source)
+	void Audio::play(love::audio::Source *)
 	{
 	}
 
@@ -67,7 +67,7 @@ namespace null
 	{
 	}
 
-	void Audio::stop(love::audio::Source * source)
+	void Audio::stop(love::audio::Source *)
 	{
 	}
 
@@ -75,7 +75,7 @@ namespace null
 	{
 	}
 
-	void Audio::pause(love::audio::Source * source)
+	void Audio::pause(love::audio::Source *)
 	{
 	}
 
@@ -83,7 +83,7 @@ namespace null
 	{
 	}
 
-	void Audio::resume(love::audio::Source * source)
+	void Audio::resume(love::audio::Source *)
 	{
 	}
 
@@ -91,7 +91,7 @@ namespace null
 	{
 	}
 
-	void Audio::rewind(love::audio::Source * source)
+	void Audio::rewind(love::audio::Source *)
 	{
 	}
 
@@ -109,27 +109,27 @@ namespace null
 		return volume;
 	}
 
-	void Audio::getPosition(float * v) const
+	void Audio::getPosition(float *) const
 	{
 	}
 
-	void Audio::setPosition(float * v)
+	void Audio::setPosition(float *)
 	{
 	}
 
-	void Audio::getOrientation(float * v) const
+	void Audio::getOrientation(float *) const
 	{
 	}
 
-	void Audio::setOrientation(float * v)
+	void Audio::setOrientation(float *)
 	{
 	}
 
-	void Audio::getVelocity(float * v) const
+	void Audio::getVelocity(float *) const
 	{
 	}
 
-	void Audio::setVelocity(float * v)
+	void Audio::setVelocity(float *)
 	{
 	}
 

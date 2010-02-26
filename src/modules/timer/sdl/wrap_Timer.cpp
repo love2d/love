@@ -29,7 +29,7 @@ namespace sdl
 {
 	static Timer * instance = 0;
 
-	int w_step(lua_State * L)
+	int w_step(lua_State *)
 	{
 		instance->step();
 		return 0;

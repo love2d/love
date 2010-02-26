@@ -58,19 +58,19 @@ namespace opengl
 		return 1;
 	}
 
-	int w_reset(lua_State * L)
+	int w_reset(lua_State *)
 	{
 		instance->reset();
 		return 0;
 	}
 
-	int w_clear(lua_State * L)
+	int w_clear(lua_State *)
 	{
 		instance->clear();
 		return 0;
 	}
 
-	int w_present(lua_State * L)
+	int w_present(lua_State *)
 	{
 		instance->present();
 		return 0;
@@ -748,13 +748,13 @@ namespace opengl
 		return instance->polygon(L);
 	}
 
-	int w_push(lua_State * L)
+	int w_push(lua_State *)
 	{
 		instance->push();
 		return 0;
 	}
 
-	int w_pop(lua_State * L)
+	int w_pop(lua_State *)
 	{
 		instance->pop();
 		return 0;

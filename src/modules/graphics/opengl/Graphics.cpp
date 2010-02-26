@@ -38,7 +38,8 @@ namespace opengl
 		currentMode.height = 0;
 
 		// Window should be centered.
-		SDL_putenv("SDL_VIDEO_CENTERED=center");
+		char * center = "SDL_VIDEO_CENTERED=center";
+		SDL_putenv(center);
 
 		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 			throw Exception(SDL_GetError());
@@ -423,7 +424,7 @@ namespace opengl
 		return font;
 	}
 
-	Font * Graphics::newImageFont(Image * image, const char * glyphs, float spacing)
+	Font * Graphics::newImageFont(Image * image, const char * glyphs, float)
 	{
 		Font * font = new ImageFont(image, std::string(glyphs));
 

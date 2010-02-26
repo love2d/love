@@ -34,7 +34,7 @@ namespace lullaby
 	bool Mpg123Decoder::inited = false;
 
 	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), channels(MPG123_STEREO), handle(0)
+		: Decoder(data, ext, bufferSize, sampleRate), handle(0), channels(MPG123_STEREO)
 	{
 
 		data_size = data->getSize();

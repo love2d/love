@@ -96,27 +96,27 @@ namespace null
 		return volume;
 	}
 
-	void Source::setPosition(float * v)
+	void Source::setPosition(float *)
 	{
 	}
 
-	void Source::getPosition(float * v) const
+	void Source::getPosition(float *) const
 	{
 	}
 
-	void Source::setVelocity(float * v)
+	void Source::setVelocity(float *)
 	{
 	}
 
-	void Source::getVelocity(float * v) const
+	void Source::getVelocity(float *) const
 	{
 	}
 
-	void Source::setDirection(float * v)
+	void Source::setDirection(float *)
 	{
 	}
 
-	void Source::getDirection(float * v) const
+	void Source::getDirection(float *) const
 	{
 	}
 

@@ -27,7 +27,7 @@ namespace love
 {
 namespace font
 {
-	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs)
+	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short *)
 		: imageData(data)
 	{
 		imageData->retain();
@@ -43,7 +43,7 @@ namespace font
 		return getHeight();
 	}
 
-	GlyphData * ImageRasterizer::getGlyphData(unsigned short glyph) const
+	GlyphData * ImageRasterizer::getGlyphData(unsigned short) const
 	{
 		return 0;
 	}

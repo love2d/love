@@ -264,7 +264,7 @@ namespace love
 	* @param type The type bit.
 	**/
 	template <typename T>
-	T * luax_totype(lua_State * L, int idx, const char * name, love::bits type)
+	T * luax_totype(lua_State * L, int idx, const char *, love::bits)
 	{
 		return (T*)(((Proxy *)lua_touserdata(L, idx))->data);
 	}
