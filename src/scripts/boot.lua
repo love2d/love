@@ -342,7 +342,6 @@ function love.nogame()
 		if not major then major = 0 end
 		if not minor then minor = 0 end
 		if not rev then rev = 0 end
-		print(major, minor, rev)
 	
 		love.graphics.setBackgroundColor(0x84, 0xca, 0xff)
 
