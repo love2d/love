@@ -338,12 +338,25 @@ function love.nogame()
 
 	love.load = function()
 
+		major, minor, rev = string.match(love._version_string, "(%d)%.(%d)%.(%d)")
+		if not major then major = 0 end
+		if not minor then minor = 0 end
+		if not rev then rev = 0 end
+		print(major, minor, rev)
+	
 		love.graphics.setBackgroundColor(0x84, 0xca, 0xff)
 
 		names = {
-			"wheel_major",
-			"wheel_minor",
-			"wheel_revision",
+			"wheel_0",
+			"wheel_1",
+			"wheel_2",
+			"wheel_3",
+			"wheel_4",
+			"wheel_5",
+			"wheel_6",
+			"wheel_7",
+			"wheel_8",
+			"wheel_9",
 			"belt_tooth",
 			"belt_track",
 			"turret_body",
@@ -610,10 +623,10 @@ function love.nogame()
 		Tank.draw = function(self)
 			love.graphics.draw(images.turret_cannon, self.x+30, self.y-80)
 			love.graphics.draw(images.turret_body, self.x-12, self.y-110)
-			love.graphics.draw(images.belt_track, self.belt.x-74, self.belt.y-28)
-			love.graphics.draw(images.wheel_major, self.x, self.y, self.angle, 1, 1, 32, 32)
-			love.graphics.draw(images.wheel_minor, self.x+self.i, self.y, self.angle, 1, 1, 32, 32)
-			love.graphics.draw(images.wheel_revision, self.x+self.i*2, self.y, self.angle, 1, 1, 32, 32)
+			love.graphics.draw(images.belt_track, self.belt.x-74, self.belt.y-28)		
+			love.graphics.draw(images["wheel_"..tostring(major)], self.x, self.y, self.angle, 1, 1, 32, 32)
+			love.graphics.draw(images["wheel_"..tostring(minor)], self.x+self.i, self.y, self.angle, 1, 1, 32, 32)
+			love.graphics.draw(images["wheel_"..tostring(rev)], self.x+self.i*2, self.y, self.angle, 1, 1, 32, 32)
 			self.belt:draw()
 		end
 
