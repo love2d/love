@@ -20,9 +20,8 @@
 
 #include "ImageFont.h"
 
+#include <common/math.h>
 #include <SDL_opengl.h>
-
-using std::string;
 
 namespace love
 {
@@ -30,7 +29,7 @@ namespace graphics
 {
 namespace opengl
 {
-	ImageFont::ImageFont(Image * image, std::string glyphs)
+	ImageFont::ImageFont(Image * image, const std::string& glyphs)
 		: Font(0), image(image), glyphs(glyphs)
 
 	{
@@ -43,7 +42,7 @@ namespace opengl
 		image->release();
 	}
 
-	void ImageFont::print(string text, float x, float y) const
+	void ImageFont::print(std::string text, float x, float y) const
 	{
 		glPushMatrix();
 		glTranslatef(x, y, 0.0f);
@@ -58,7 +57,7 @@ namespace opengl
 		glPushMatrix();
 
 		glTranslatef(x, y, 0.0f);
-		glRotatef(angle * 57.29578f, 0, 0, 1.0f);
+		glRotatef(LOVE_TORAD(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 
 		GLuint OpenGLFont = list;
@@ -92,73 +91,57 @@ namespace opengl
 	{
 		love::image::pixel * pixels = (love::image::pixel *)(image->getData()->getData());
 
-		// Reading texture data begins
-		size = (int)image->getHeight();
+		unsigned imgw = (unsigned)image->getWidth();
+		unsigned imgh = (unsigned)image->getHeight();
+		unsigned imgs = imgw*imgh;
 
-		for(unsigned int i = 0; i < MAX_CHARS; i++) positions[i] = -1;
+		// Reading texture data begins
+		size = imgh;
+
+		for(unsigned int i = 0; i < MAX_CHARS; i++)
+			positions[i] = -1;
 
 		love::image::pixel spacer = pixels[0];
-		unsigned int current = 0;
-		int width = 0;
-		int space = 0;
+		
+		unsigned num = glyphs.size();
+		
+		unsigned start = 0;
+		unsigned end = 0;
+		unsigned space = 0;
 
-		// Finds out where the first character starts
-		int firstchar = 0;
-		for(int i = 0; i != (int)image->getWidth(); i++)
+		for(unsigned i = 0; i < num; ++i)
 		{
-			if(spacer.r == pixels[i].r && spacer.g == pixels[i].g && spacer.b == pixels[i].b && spacer.a == pixels[i].a)
-				continue;
-			else
-			{
-				firstchar = i;
+			if(i >= MAX_CHARS)
 				break;
-			}
+
+			start = end;
+
+			// Finds out where the first character starts
+			while(start < imgw && equal(pixels[start], spacer))
+				++start;
+
+			if(i > 0)
+				spacing[glyphs[i - 1]] = (start > end) ? (start - end) : 0;
+
+			end = start;
+
+			// Find where glyph ends.
+			while(end < imgw && !equal(pixels[end], spacer))
+				++end;
+
+			if(start >= end)
+				break;
+
+			unsigned c = glyphs[i];
+
+			positions[c] = start;
+			widths[c] = (end - start);
 		}
-
-		for(int i = firstchar; i != (int)image->getWidth(); i++)
-		{
-			if(spacer.r == pixels[i].r && spacer.g == pixels[i].g && spacer.b == pixels[i].b && spacer.a == pixels[i].a)
-			{
-				if(width != 0) // this means we have found the end of our current character
-				{
-					if((unsigned int)glyphs[current] > MAX_CHARS)
-						printf("Error reading texture font: Character '%c' is out of range.", glyphs[current]);
-					else
-					{
-						widths[(int)glyphs[current]] = width - 1;
-						positions[(int)glyphs[current]] = i - width;
-					}
-
-					width = 0;
-					//space++; // start counting the spacing
-				}
-				space++;
-			}
-			else
-			{
-				if(space != 0) // this means we have found the end of our spacing
-				{
-					if((unsigned int)spacing[current] > MAX_CHARS)
-						printf("Error reading image font: Character '%c' is out of range.", glyphs[current]);
-					else
-						spacing[(int)glyphs[current]] = space;
-
-					current++;
-					if(current == glyphs.size())
-						i = (int)image->getWidth() - 1; // just to end it when the last character is found
-
-					space = 0;
-					//width++; // start counting the width
-				}
-				width++;
-			}
-		}
-		// Reading image data ends
 
 		// Replace spacer color with an empty pixel
-		for(int i = 0; i < (int)(image->getWidth() * image->getHeight()); i++)
+		for(unsigned int i = 0; i < imgs; ++i)
 		{
-			if(spacer.r == pixels[i].r && spacer.g == pixels[i].g && spacer.b == pixels[i].b && spacer.a == pixels[i].a)
+			if(equal(pixels[i], spacer))
 			{
 				pixels[i].r = 0;
 				pixels[i].g = 0;
@@ -176,26 +159,14 @@ namespace opengl
 
 			if(positions[i] != -1)
 			{
+				Quad::Viewport v;
+				v.x = positions[i];
+				v.y = 0;
+				v.w = widths[i];
+				v.h = imgh;
+				Quad q(v, imgw, imgh);
 
-				float x = (float)positions[i] + 1;
-				float y = 1.0;
-				float w = (float)widths[i];
-				float h = (float)size+1;
-
-				image->bind();
-
-				float xTex = x/(float)image->getWidth();
-				float yTex = y/(float)image->getHeight();
-
-				float wTex = w/(float)image->getWidth();
-				float hTex = h/(float)image->getHeight();
-
-				glBegin(GL_QUADS);
-					glTexCoord2f(xTex,yTex);				glVertex2f(0,0);
-					glTexCoord2f(xTex,yTex+hTex);			glVertex2f(0,h);
-					glTexCoord2f(xTex+wTex,yTex+hTex);		glVertex2f(w,h);
-					glTexCoord2f(xTex+wTex,yTex);			glVertex2f(w,0);
-				glEnd();
+				image->drawq(&q, 0, 0, 0, 1, 1, 0, 0);
 
 				glTranslatef((float)widths[i] + ((float)spacing[i] * mSpacing), 0, 0);
 			}
@@ -213,7 +184,12 @@ namespace opengl
 		glDeleteLists(list, MAX_CHARS);
 	}
 
-	inline int ImageFont::next_p2(int num)
+	bool ImageFont::equal(const love::image::pixel& a, const love::image::pixel& b)
+	{
+		return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
+	}
+
+	int ImageFont::next_p2(int num)
 	{
 		int powered = 2;
 		while(powered < num) powered <<= 1;

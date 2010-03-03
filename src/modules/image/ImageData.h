@@ -32,7 +32,7 @@ namespace image
 	struct pixel 
 	{
 		// Red, green, blue, alpha.
-		unsigned char r, g, b, a; 
+		unsigned char r, g, b, a;
 	};
 
 	/**
@@ -94,7 +94,6 @@ namespace image
 		* @return The color for the given location.
 		**/
 		virtual pixel getPixel(int x, int y) const = 0;
-
 
 	}; // ImageData
 

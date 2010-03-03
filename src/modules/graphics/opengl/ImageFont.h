@@ -64,7 +64,7 @@ namespace opengl
 		* @param file The image file.
 		* @param glyphs A list of the characters as they appear in the image.
 		**/
-		ImageFont(Image * image, std::string glyphs);
+		ImageFont(Image * image, const std::string& glyphs);
 
 		/**
 		* Calls unload().
@@ -88,11 +88,16 @@ namespace opengl
 	protected:
 		
 		/**
+		* Checks whether two pixels are equal.
+		**/
+		bool equal(const love::image::pixel& a, const love::image::pixel& b);
+
+		/**
 		 * Returns the closest number to num which is a power of two.
 		 *
 		 * @param num The number to be 2powered.
 		 **/
-		inline int next_p2(int num);
+		int next_p2(int num);
 
 	}; // ImageFont
 
