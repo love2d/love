@@ -33,30 +33,35 @@ namespace audio
 	{
 		Source * t = luax_checksource(L, 1);
 		t->play();
+		return 0;
 	}
 	
 	int w_Source_stop(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
 		t->stop();
+		return 0;
 	}
 	
 	int w_Source_pause(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
 		t->pause();
+		return 0;
 	}
 	
 	int w_Source_resume(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
 		t->resume();
+		return 0;
 	}
 	
 	int w_Source_rewind(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
 		t->rewind();
+		return 0;
 	}
 
 	int w_Source_setPitch(lua_State * L)
