@@ -29,6 +29,11 @@ namespace love
 namespace audio
 {
 	Source * luax_checksource(lua_State * L, int idx);
+	int w_Source_play(lua_State * L);
+	int w_Source_stop(lua_State * L);
+	int w_Source_pause(lua_State * L);
+	int w_Source_resume(lua_State * L);
+	int w_Source_rewind(lua_State * L);
 	int w_Source_setPitch(lua_State * L);
 	int w_Source_getPitch(lua_State * L);
 	int w_Source_setVolume(lua_State * L);

@@ -28,6 +28,36 @@ namespace audio
 	{
 		return luax_checktype<Source>(L, idx, "Source", AUDIO_SOURCE_T);
 	}
+	
+	int w_Source_play(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->play();
+	}
+	
+	int w_Source_stop(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->stop();
+	}
+	
+	int w_Source_pause(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->pause();
+	}
+	
+	int w_Source_resume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->resume();
+	}
+	
+	int w_Source_rewind(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->rewind();
+	}
 
 	int w_Source_setPitch(lua_State * L)
 	{
@@ -147,6 +177,12 @@ namespace audio
 	}
 
 	static const luaL_Reg functions[] = {
+		{ "play", w_Source_play },
+		{ "stop", w_Source_stop },
+		{ "pause", w_Source_pause },
+		{ "resume", w_Source_resume },
+		{ "rewind", w_Source_rewind },
+		
 		{ "setPitch", w_Source_setPitch },
 		{ "getPitch", w_Source_getPitch },
 		{ "setVolume", w_Source_setVolume },
