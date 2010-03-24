@@ -23,6 +23,7 @@
 #include <SDL_opengl.h>
 
 #include <common/Exception.h>
+#include <common/math.h>
 
 #include <math.h>
 #include <iostream>
