@@ -147,7 +147,7 @@ namespace opengl
 	void TrueTypeFont::print(string text, float x, float y) const
 	{
 		glPushMatrix();
-		glTranslatef(ceil(x), ceil(y), 0.0f); // + getHeight() to make the x,y coordiantes the top left corner
+		glTranslatef(ceil(x), ceil(y), 0.0f); // + getHeight() to make the x,y coordinates the top left corner
 		GLuint TrueTypeFont = list;
 		glListBase(TrueTypeFont);
 		glCallLists((int)text.length(), GL_UNSIGNED_BYTE, text.c_str());
@@ -159,7 +159,7 @@ namespace opengl
 		glPushMatrix();
 
 		glTranslatef(ceil(x), ceil(y), 0.0f);
-		glRotatef(angle * 57.29578f, 0, 0, 1.0f);
+		glRotatef(LOVE_TORAD(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 
 		GLuint TrueTypeFont = list;
