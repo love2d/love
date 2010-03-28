@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -48,7 +48,7 @@ namespace audio
 		virtual ~Source();
 
 		virtual Source * copy() = 0;
-		
+
 		virtual void play() = 0;
 		virtual void stop() = 0;
 		virtual void pause() = 0;
@@ -71,9 +71,10 @@ namespace audio
 		virtual void getVelocity(float * v) const = 0;
 		virtual void setDirection(float * v) = 0;
 		virtual void getDirection(float * v) const = 0;
-		
+
 		virtual void setLooping(bool looping) = 0;
 		virtual bool isLooping() const = 0;
+		virtual bool isStatic() const = 0;
 
 		static bool getConstant(const char * in, Type & out);
 		static bool getConstant(Type in, const char *& out);
