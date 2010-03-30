@@ -17,7 +17,11 @@
 			<string>Love Project</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>????</string>
+				<string>LOVE</string>
+			</array>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/x-love-game</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
@@ -35,6 +39,34 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.pkware.zip-archive</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>org.love2d.love-game</string>
+			<key>UTTypeDescription</key>
+			<string>Love Project</string>
+			<key>UTTypeIconFile</key>
+			<string>LoveDocument.icns</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>com.apple.ostype</key>
+				<string>LOVE</string>
+				<key>public.filename-extension</key>
+				<array>
+					<string>love</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-love-game</string>
+			</dict>
+			<key>UTTypeReferenceURL</key>
+			<string>http://love2d.org/wiki/Game_Distribution</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
