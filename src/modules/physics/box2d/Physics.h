@@ -110,7 +110,7 @@ namespace box2d
 		CircleShape * newCircleShape(Body * body, float x, float y, float radius);
 
 		/**
-		* Shorthand for creating rectangluar PolygonShapes. The rectangle
+		* Shorthand for creating rectangular PolygonShapes. The rectangle
 		* will be created at the local origin.
 		* @param w The width of the rectangle.
 		* @param h The height of the rectangle.
@@ -118,7 +118,7 @@ namespace box2d
 		PolygonShape * newRectangleShape(Body * body, float w, float h);
 
 		/**
-		* Shorthand for creating rectangluar PolygonShapes. The rectangle
+		* Shorthand for creating rectangular PolygonShapes. The rectangle
 		* will be created at (x,y) in local coordinates.
 		* @param x The offset along the x-axis.
 		* @param y The offset along the y-axis.
@@ -128,7 +128,7 @@ namespace box2d
 		PolygonShape * newRectangleShape(Body * body, float x, float y, float w, float h);
 
 		/**
-		* Shorthand for creating rectangluar PolygonShapes. The rectangle
+		* Shorthand for creating rectangular PolygonShapes. The rectangle
 		* will be created at (x,y) in local coordinates.
 		* @param x The offset along the x-axis.
 		* @param y The offset along the y-axis.
