@@ -87,17 +87,17 @@ namespace openal
 
 	void Source::pause()
 	{
-		pool->pause();
+		pool->pause(this);
 	}
 
 	void Source::resume()
 	{
-		pool->resume();
+		pool->resume(this);
 	}
 
 	void Source::rewind()
 	{
-		pool->rewind();
+		pool->rewind(this);
 	}
 
 	bool Source::isStopped() const
