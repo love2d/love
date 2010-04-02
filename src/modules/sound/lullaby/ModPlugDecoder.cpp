@@ -20,7 +20,6 @@
 
 #include "ModPlugDecoder.h"
 
-#include <set>
 #include <common/Exception.h>
 
 namespace love
