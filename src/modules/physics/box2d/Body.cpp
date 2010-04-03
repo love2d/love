@@ -296,7 +296,7 @@ namespace box2d
 		if(fixed)
 			body->m_flags |= b2Body::e_fixedRotationFlag;
 		else
-			body->m_flags |= ~(b2Body::e_fixedRotationFlag);
+			body->m_flags &= ~(b2Body::e_fixedRotationFlag);
 	}
 
 	bool Body::getFixedRotation() const
