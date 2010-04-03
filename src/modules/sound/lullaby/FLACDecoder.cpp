@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -38,15 +38,15 @@ namespace lullaby
 		process_single();
 		seek(0);
 		bufferSize = 256 * getBits() * getChannels() * 2;
-		delete[] buffer;
+		delete[] (char*) buffer;
 		buffer = new char[bufferSize];
 	}
-	
+
 	FLACDecoder::~FLACDecoder()
 	{
 		finish();
 	}
-	
+
 	bool FLACDecoder::accepts(const std::string & ext)
 	{
 		static const std::string supported[] = {
@@ -97,12 +97,12 @@ namespace lullaby
 	{
 		return get_bits_per_sample();
 	}
-	
+
 	int FLACDecoder::getSampleRate() const
 	{
 		return get_sample_rate();
 	}
-	
+
 	FLAC__StreamDecoderReadStatus FLACDecoder::read_callback(FLAC__byte buffer[], size_t *bytes)
 	{
 		int size = data->getSize();
@@ -125,31 +125,31 @@ namespace lullaby
 		}
 		return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 	}
-	
+
 	FLAC__StreamDecoderSeekStatus FLACDecoder::seek_callback(FLAC__uint64 offset)
 	{
 		pos = (int)offset;
 		return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 	}
-	
+
 	FLAC__StreamDecoderTellStatus FLACDecoder::tell_callback(FLAC__uint64 *offset)
 	{
 		*offset = pos;
 		return FLAC__STREAM_DECODER_TELL_STATUS_OK;
 	}
-	
+
 	FLAC__StreamDecoderLengthStatus FLACDecoder::length_callback(FLAC__uint64 *length)
 	{
 		*length = data->getSize();
 		return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
 	}
-	
+
 	bool FLACDecoder::eof_callback()
 	{
 		eof = (pos >= data->getSize());
 		return eof;
 	}
-	
+
 	FLAC__StreamDecoderWriteStatus FLACDecoder::write_callback(const FLAC__Frame *frame, const FLAC__int32 *const fbuffer[])
 	{
 		int i, j;
@@ -162,13 +162,13 @@ namespace lullaby
 		}
 		return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 	}
-	
+
 	void FLACDecoder::metadata_callback(const FLAC__StreamMetadata *metadata)
 	{
 		//we do nothing with metadata...
 		return;
 	}
-	
+
 	void FLACDecoder::error_callback(FLAC__StreamDecoderErrorStatus status)
 	{
 		//wow.. error, let's throw one (please clean this part up sometime)
