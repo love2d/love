@@ -59,6 +59,9 @@ namespace openal
 
 		// The OpenAL device.
 		ALCdevice * device;
+		
+		// The OpenAL capture device (microphone).
+		ALCdevice * capture;
 
 		// The OpenAL context.
 		ALCcontext * context;
@@ -107,6 +110,11 @@ namespace openal
 		void setOrientation(float * v);
 		void getVelocity(float * v) const;
 		void setVelocity(float * v);
+		
+		void record();
+		love::sound::SoundData * getRecordedData();
+		love::sound::SoundData * stopRecording(bool returnData);
+		bool canRecord();
 
 	}; // Audio
 

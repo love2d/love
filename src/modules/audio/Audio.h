@@ -49,14 +49,14 @@ namespace audio
 		virtual Source * newSource(love::sound::SoundData * soundData) = 0;
 
 		/**
-		* Gets the current number of simulatenous playing sources.
-		* @return The current number of simulatenous playing sources.
+		* Gets the current number of simultaneous playing sources.
+		* @return The current number of simultaneous playing sources.
 		**/
 		virtual int getNumSources() const = 0;
 
 		/**
-		* Gets the maximum supported number of simulatenous playing sources.
-		* @return The maximum supported number of simulatenous playing sources.
+		* Gets the maximum supported number of simultaneous playing sources.
+		* @return The maximum supported number of simultaneous playing sources.
 		**/
 		virtual int getMaxSources() const = 0;
 
@@ -160,6 +160,36 @@ namespace audio
 		* @param v A float array of size 3 containing [x,y,z] in that order. 
 		**/
 		virtual void setVelocity(float * v) = 0;
+		
+		/**
+		* Begins recording audio input from the microphone.
+		**/
+		virtual void record() = 0;
+		
+		/**
+		* Gets a section of recorded audio.
+		* Per OpenAL, the measurement begins from the start of the
+		* audio data in memory, which is after the last time this function
+		* was called. If this function has not been called yet this recording
+		* session, it just grabs from the beginning.
+		* @return All the recorded SoundData thus far.
+		**/
+		virtual love::sound::SoundData * getRecordedData() = 0;
+		
+		/**
+		* Stops recording and, if passed true, returns all the recorded audio
+		* not already gotten by getRecordedData.
+		* @param returnData Whether to return recorded audio.
+		* @return if returnData, all the recorded audio yet to be gotten,
+		* otherwise NULL.
+		**/
+		virtual love::sound::SoundData * stopRecording(bool returnData) = 0;
+		
+		/**
+		* Checks whether LOVE is able to record audio input.
+		* @return hasMic Whether LOVE has a microphone enabled.
+		**/
+		virtual bool canRecord() = 0;
 
 	}; // Audio
 

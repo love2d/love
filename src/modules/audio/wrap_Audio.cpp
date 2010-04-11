@@ -26,6 +26,8 @@
 
 #include <scripts/audio.lua.h>
 
+#include <common/runtime.h>
+
 namespace love
 {
 namespace audio
@@ -200,6 +202,36 @@ namespace audio
 		lua_pushnumber(L, v[2]);
 		return 3;
 	}
+	
+	int w_record(lua_State *)
+	{
+		instance->record();
+		return 0;
+	}
+	
+	int w_getRecordedData(lua_State * L)
+	{
+		love::sound::SoundData * sd = instance->getRecordedData();
+		luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
+		return 1;
+	}
+	
+	int w_stopRecording(lua_State * L)
+	{
+		if (luax_optboolean(L, 1, true)) {
+			love::sound::SoundData * sd = instance->stopRecording(true);
+			luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
+			return 1;
+		}
+		instance->stopRecording(false);
+		return 0;
+	}
+	
+	int w_canRecord(lua_State * L) {
+		luax_pushboolean(L, instance->canRecord());
+		return 1;
+	}
+	
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -218,6 +250,9 @@ namespace audio
 		{ "getOrientation", w_getOrientation },
 		{ "setVelocity", w_setVelocity },
 		{ "getVelocity", w_getVelocity },
+		{ "record", w_record },
+		{ "getRecordedData", w_getRecordedData },
+		{ "stopRecording", w_stopRecording },
 		{ 0, 0 }
 	};
 

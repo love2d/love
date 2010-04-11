@@ -132,6 +132,25 @@ namespace null
 	void Audio::setVelocity(float *)
 	{
 	}
+	
+	void Audio::record()
+	{
+	}
+	
+	love::sound::SoundData * Audio::getRecordedData()
+	{
+		return NULL;
+	}
+	
+	love::sound::SoundData * Audio::stopRecording(bool)
+	{
+		return NULL;
+	}
+	
+	bool Audio::canRecord()
+	{
+		return false;
+	}
 
 } // null
 } // audio

@@ -63,6 +63,13 @@ namespace sound
 	{
 		data = (char*)malloc(size);
 	}
+	
+	SoundData::SoundData(void * d, int samples, int sampleRate, int bits, int channels)
+		: data(0), size(samples*(bits/8)), sampleRate(sampleRate), bits(bits), channels(channels)
+	{
+		data = (char*)malloc(size);
+		memcpy(data, d, size);
+	}
 
 	SoundData::~SoundData()
 	{

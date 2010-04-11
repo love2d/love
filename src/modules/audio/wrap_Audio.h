@@ -46,6 +46,10 @@ namespace audio
 	int w_getOrientation(lua_State * L);
 	int w_setVelocity(lua_State * L);
 	int w_getVelocity(lua_State * L);
+	int w_record(lua_State * L);
+	int w_getRecordedData(lua_State * L);
+	int w_stopRecording(lua_State * L);
+	int w_canRecord(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State * L);
 
 } // audio

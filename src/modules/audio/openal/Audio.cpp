@@ -20,6 +20,8 @@
 
 #include "Audio.h"
 
+#include <sound/Decoder.h>
+
 namespace love
 {
 namespace audio
@@ -44,6 +46,14 @@ namespace openal
 
 		if(alcGetError(device) != ALC_NO_ERROR)
 			throw love::Exception("Could not make context current.");
+		
+		capture = alcCaptureOpenDevice(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER),
+									   love::sound::Decoder::DEFAULT_SAMPLE_RATE, AL_FORMAT_MONO16, 1048576); // about 23 seconds
+		
+		if (!capture) {
+			// We're not going to prevent LOVE from running without a microphone, but we should warn, at least
+			std::cerr << "Warning, couldn't open capture device! No audio input!" << std::endl;
+		}
 
 		// pool must be allocated after AL context.
 		pool = new Pool();
@@ -61,6 +71,7 @@ namespace openal
 		
 		alcMakeContextCurrent(0);
 		alcDestroyContext(context);
+		alcCaptureCloseDevice(capture);
 		alcCloseDevice(device);
 	}
 
@@ -187,6 +198,41 @@ namespace openal
 	void Audio::setVelocity(float * v)
 	{
 		alListenerfv(AL_VELOCITY, v);
+	}
+	
+	void Audio::record()
+	{
+		if (!canRecord()) return;
+		alcCaptureStart(capture);
+	}
+	
+	love::sound::SoundData * Audio::getRecordedData()
+	{
+		if (!canRecord()) return NULL;
+		int samplerate = love::sound::Decoder::DEFAULT_SAMPLE_RATE;
+		ALCint samples;
+		alcGetIntegerv(capture, ALC_CAPTURE_SAMPLES, 4, &samples);
+		void * data = malloc(samples * (2/sizeof(char)));
+		alcCaptureSamples(capture, data, samples);
+		love::sound::SoundData * sd = new love::sound::SoundData(data, samples, samplerate, 16, 1);
+		free(data);
+		return sd;
+	}
+	
+	love::sound::SoundData * Audio::stopRecording(bool returnData)
+	{
+		if (!canRecord()) return NULL;
+		love::sound::SoundData * sd = NULL;
+		if (returnData) {
+			sd = getRecordedData();
+		}
+		alcCaptureStop(capture);
+		return sd;
+	}
+	
+	bool Audio::canRecord()
+	{
+		return (capture != NULL);
 	}
 
 } // openal
