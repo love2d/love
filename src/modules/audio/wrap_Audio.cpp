@@ -212,7 +212,8 @@ namespace audio
 	int w_getRecordedData(lua_State * L)
 	{
 		love::sound::SoundData * sd = instance->getRecordedData();
-		luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
+		if (!sd) lua_pushnil(L);
+		else luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
 		return 1;
 	}
 	
@@ -220,7 +221,8 @@ namespace audio
 	{
 		if (luax_optboolean(L, 1, true)) {
 			love::sound::SoundData * sd = instance->stopRecording(true);
-			luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
+			if (!sd) lua_pushnil(L);
+			else luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
 			return 1;
 		}
 		instance->stopRecording(false);
