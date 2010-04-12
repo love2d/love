@@ -25,6 +25,7 @@
 		A93E6E5410420B57007D418B /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
 		A93E6E5510420B57007D418B /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
+		A946CE821172BCD7005E1462 /* wrap_EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A946CE811172BCD7005E1462 /* wrap_EncodedImageData.cpp */; };
 		A946D67F104248DA002BF36C /* Reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69EA10420ABF007D418B /* Reference.cpp */; };
 		A946D680104248DA002BF36C /* Matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E310420ABF007D418B /* Matrix.cpp */; };
 		A946D681104248DA002BF36C /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E810420ABF007D418B /* Object.cpp */; };
@@ -573,6 +574,8 @@
 		A93E6E4810420B4A007D418B /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		A93E6E5210420B57007D418B /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
 		A93E6E5310420B57007D418B /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
+		A946CE801172BCD6005E1462 /* wrap_EncodedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_EncodedImageData.h; sourceTree = "<group>"; };
+		A946CE811172BCD7005E1462 /* wrap_EncodedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_EncodedImageData.cpp; sourceTree = "<group>"; };
 		A968F0C61083A07B00A895AA /* EnumMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumMap.h; sourceTree = "<group>"; };
 		A968F0C71083A07C00A895AA /* StringMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		A968F0CE1083A9A900A895AA /* Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Event.cpp; sourceTree = "<group>"; };
@@ -1019,6 +1022,8 @@
 				A93E6AAD10420AC3007D418B /* Image.h */,
 				A93E6AAE10420AC3007D418B /* ImageData.cpp */,
 				A93E6AAF10420AC3007D418B /* ImageData.h */,
+				A946CE811172BCD7005E1462 /* wrap_EncodedImageData.cpp */,
+				A946CE801172BCD6005E1462 /* wrap_EncodedImageData.h */,
 				A93E6AB010420AC3007D418B /* wrap_Image.cpp */,
 				A93E6AB110420AC3007D418B /* wrap_Image.h */,
 				A93E6AB210420AC3007D418B /* wrap_ImageData.cpp */,
@@ -1650,6 +1655,7 @@
 				A93A3AB51121E86E003B04A4 /* Image.cpp in Sources */,
 				A986DEB5113249A800810279 /* Thread.cpp in Sources */,
 				A986DEB6113249A800810279 /* wrap_Thread.cpp in Sources */,
+				A946CE821172BCD7005E1462 /* wrap_EncodedImageData.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

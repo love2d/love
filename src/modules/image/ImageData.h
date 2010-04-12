@@ -24,6 +24,8 @@
 // LOVE
 #include <common/Data.h>
 
+#include "EncodedImageData.h"
+
 namespace love
 {	
 namespace image
@@ -94,6 +96,13 @@ namespace image
 		* @return The color for the given location.
 		**/
 		virtual pixel getPixel(int x, int y) const = 0;
+		
+		/**
+		 * Encodes raw pixel data into a given format.
+		 * @param f The format to convert to.
+		 * @return A pointer to the encoded image data.
+		 **/
+		virtual EncodedImageData * encode(EncodedImageData::Format f) = 0;
 
 	}; // ImageData
 

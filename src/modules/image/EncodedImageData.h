@@ -25,8 +25,6 @@
 #include <common/Data.h>
 #include <common/StringMap.h>
 
-#include "Image.h"
-
 namespace love
 {	
 namespace image

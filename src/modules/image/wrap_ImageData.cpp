@@ -126,6 +126,17 @@ namespace image
 		t->paste((love::image::ImageData *)src, dx, dy, sx, sy, sw, sh);
 		return 0;
 	}
+	
+	int w_ImageData_encode(lua_State * L)
+	{
+		ImageData * t = luax_checkimagedata(L, 1);
+		const char * fmt = luaL_checkstring(L, 2);
+		EncodedImageData::Format f;
+		EncodedImageData::getConstant(fmt, f);
+		EncodedImageData * eid = t->encode(f);
+		luax_newtype(L, "EncodedImageData", IMAGE_ENCODED_IMAGE_DATA_T, (void*)eid);
+		return 1;
+	}
 
 	static const luaL_Reg functions[] = {
 
@@ -140,6 +151,7 @@ namespace image
 		{ "mapPixel", w_ImageData_mapPixel },
 		{ "getString", w_ImageData_getString },
 		{ "paste", w_ImageData_paste },
+		{ "encode", w_ImageData_encode },
 		{ 0, 0 }
 	};
 

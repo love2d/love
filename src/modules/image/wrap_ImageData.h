@@ -37,6 +37,7 @@ namespace image
 	int w_ImageData_mapPixel(lua_State * L);
 	int w_ImageData_getString(lua_State * L);
 	int w_ImageData_paste(lua_State * L);
+	int w_ImageData_encode(lua_State * L);
 	int luaopen_imagedata(lua_State * L);
 
 } // image

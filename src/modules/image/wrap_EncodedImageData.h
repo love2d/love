@@ -18,23 +18,23 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_IMAGE_WRAP_IMAGE_H
-#define LOVE_IMAGE_WRAP_IMAGE_H
+#ifndef LOVE_IMAGE_WRAP_ENCODED_IMAGE_DATA_H
+#define LOVE_IMAGE_WRAP_ENCODED_IMAGE_DATA_H
 
 // LOVE
-#include "Image.h"
-#include "wrap_ImageData.h"
+#include <common/runtime.h>
+#include "ImageData.h"
 
 namespace love
 {
 namespace image
 {
-	int w_getFormats(lua_State * L);
-	int w_newImageData(lua_State * L);
-	int w_newEncodedImageData(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_image(lua_State * L);
+	EncodedImageData * luax_checkencodedimagedata(lua_State * L, int idx);
+	
+	int w_EncodedImageData_getFormat(lua_State * L);
+	int luaopen_encodedimagedata(lua_State * L);
 
 } // image
 } // love
 
-#endif // LOVE_IMAGE_WRAP_IMAGE_H
+#endif // LOVE_IMAGE_WRAP_ENCODED_IMAGE_DATA_H

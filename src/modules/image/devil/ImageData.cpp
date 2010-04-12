@@ -168,10 +168,10 @@ namespace devil
 		return pixels[y*width+x];
 	}
 	
-	love::image::EncodedImageData * ImageData::encodeImageData(love::image::ImageData * d, EncodedImageData::Format f) {
+	EncodedImageData * ImageData::encode(EncodedImageData::Format f) {
 		ILubyte * data;
-		ILuint w = d->getWidth();
-		int h = d->getHeight(); // has to be a signed int so we can make it negative for BMPs
+		ILuint w = getWidth();
+		int h = getHeight(); // has to be a signed int so we can make it negative for BMPs
 		int headerLen, bpp, row, size, padding, filesize;
 		switch (f) {
 			case EncodedImageData::FORMAT_BMP:
@@ -227,7 +227,6 @@ namespace devil
 				data[50] = data[51] = data[52] = data[53] = 0; // all colors are important!
 				// Okay, header's done! Now for the pixel data...
 				data += headerLen;
-				d->getData(); // bind the imagedata's image
 				for (int i = 0; i < h; i++) { // we've got to loop through the rows, adding the pixel data plus padding
 					ilCopyPixels(0,i,0,w,1,1,IL_BGR,IL_UNSIGNED_BYTE,data);
 					data += row;
@@ -258,7 +257,6 @@ namespace devil
 				data[17] = 0; // descriptor bits
 				// header done. write the pixel data to TGA:
 				data += headerLen;
-				d->getData(); // bind the imagedata's image
 				ilCopyPixels(0,0,0,w,h,1,IL_BGR,IL_UNSIGNED_BYTE,data); // convert the pixels to BGR (remember, little-endian) and copy them to data
 				
 				// It's Targa, so we have to flip the image.
@@ -274,7 +272,7 @@ namespace devil
 				data -= headerLen;
 				delete [] temp;
 		}
-		return new love::image::EncodedImageData(data, f, size + headerLen);
+		return new EncodedImageData(data, f, size + headerLen);
 	}
 
 } // devil

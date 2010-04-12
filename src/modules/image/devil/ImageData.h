@@ -77,14 +77,8 @@ namespace devil
 		int getHeight() const ;
 		void setPixel(int x, int y, pixel c);
 		pixel getPixel(int x, int y) const;
+		EncodedImageData * encode(EncodedImageData::Format f); 
 		
-		/**
-		 * Encodes raw pixel data into a given format.
-		 * @param d The pixel data to be converted.
-		 * @param f The format to convert to.
-		 * @return A pointer to the encoded image data.
-		 **/
-		static love::image::EncodedImageData * encodeImageData(love::image::ImageData * d, EncodedImageData::Format f);
 
 	}; // ImageData
 

@@ -54,6 +54,7 @@ namespace love
 
 		// Image
 		IMAGE_IMAGE_DATA_ID,
+		IMAGE_ENCODED_IMAGE_DATA_ID,
 
 		// Audio
 		AUDIO_SOURCE_ID,
@@ -116,6 +117,7 @@ namespace love
 
 	// Image.
 	const bits IMAGE_IMAGE_DATA_T = (bits(1) << IMAGE_IMAGE_DATA_ID) | DATA_T;
+	const bits IMAGE_ENCODED_IMAGE_DATA_T = (bits(1) << IMAGE_ENCODED_IMAGE_DATA_ID) | DATA_T;
 
 	// Audio.
 	const bits AUDIO_SOURCE_T = (bits(1) << AUDIO_SOURCE_ID) | OBJECT_T;

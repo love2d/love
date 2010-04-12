@@ -18,23 +18,42 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_IMAGE_WRAP_IMAGE_H
-#define LOVE_IMAGE_WRAP_IMAGE_H
-
-// LOVE
-#include "Image.h"
 #include "wrap_ImageData.h"
+
+#include <common/wrap_Data.h>
 
 namespace love
 {
 namespace image
 {
-	int w_getFormats(lua_State * L);
-	int w_newImageData(lua_State * L);
-	int w_newEncodedImageData(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_image(lua_State * L);
+	EncodedImageData * luax_checkencodedimagedata(lua_State * L, int idx)
+	{
+		return luax_checktype<EncodedImageData>(L, idx, "EncodedImageData", IMAGE_ENCODED_IMAGE_DATA_T);
+	}
+	
+	int w_EncodedImageData_getFormat(lua_State * L) {
+		EncodedImageData * e = luax_checkencodedimagedata(L, 1);
+		EncodedImageData::Format f = e->getFormat();
+		const char * fmt;
+		EncodedImageData::getConstant(f, fmt);
+		lua_pushstring(L, fmt);
+		return 1;
+	}
+
+	static const luaL_Reg functions[] = {
+
+		// Data
+		{ "getPointer", w_Data_getPointer },
+		{ "getSize", w_Data_getSize },
+
+		{ "getFormat", w_EncodedImageData_getFormat },
+		{ 0, 0 }
+	};
+
+	int luaopen_encodedimagedata(lua_State * L)
+	{
+		return luax_register_type(L, "EncodedImageData", functions);
+	}
 
 } // image
 } // love
-
-#endif // LOVE_IMAGE_WRAP_IMAGE_H
