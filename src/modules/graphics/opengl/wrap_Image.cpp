@@ -73,10 +73,8 @@ namespace opengl
 		Image::FilterMode mag = f.mag;
 		const char * minstr;
 		const char * magstr;
-		if (!Image::getConstant(min, minstr))
-			return luaL_error(L, "Invalid filter mode: %s", minstr);
-		if (!Image::getConstant(mag, magstr))
-			return luaL_error(L, "Invalid filter mode: %s", magstr);
+		Image::getConstant(min, minstr);
+		Image::getConstant(mag, magstr);
 		lua_pushstring(L, minstr);
 		lua_pushstring(L, magstr);
 		return 2;
@@ -109,10 +107,8 @@ namespace opengl
 		Image::WrapMode t = w.t;
 		const char * sstr;
 		const char * tstr;
-		if (!Image::getConstant(s, sstr))
-			return luaL_error(L, "Invalid filter mode: %s", sstr);
-		if (!Image::getConstant(t, tstr))
-			return luaL_error(L, "Invalid filter mode: %s", tstr);
+		Image::getConstant(s, sstr);
+		Image::getConstant(t, tstr);
 		lua_pushstring(L, sstr);
 		lua_pushstring(L, tstr);
 		return 2;
