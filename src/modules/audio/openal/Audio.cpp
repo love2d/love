@@ -47,8 +47,18 @@ namespace openal
 		if(alcGetError(device) != ALC_NO_ERROR)
 			throw love::Exception("Could not make context current.");
 		
-		capture = alcCaptureOpenDevice(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER),
-									   love::sound::Decoder::DEFAULT_SAMPLE_RATE, AL_FORMAT_MONO16, 1048576); // about 23 seconds
+		std::string captureName(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
+		const ALCchar * devices = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
+		while (*devices) {
+			std::string device(devices);
+			devices += device.size() + 1;
+			if (device.find("Mic") != std::string::npos || device.find("mic") != std::string::npos) {
+				captureName = device;
+			}
+		}
+		
+		capture = alcCaptureOpenDevice(captureName.c_str(), love::sound::Decoder::DEFAULT_SAMPLE_RATE,
+									   AL_FORMAT_MONO16, 1048576); // about 23 seconds
 		
 		if (!capture) {
 			// We're not going to prevent LOVE from running without a microphone, but we should warn, at least
