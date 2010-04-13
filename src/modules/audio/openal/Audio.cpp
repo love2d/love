@@ -57,8 +57,7 @@ namespace openal
 			}
 		}
 		
-		capture = alcCaptureOpenDevice(captureName.c_str(), love::sound::Decoder::DEFAULT_SAMPLE_RATE,
-									   AL_FORMAT_MONO16, 1048576); // about 23 seconds
+		capture = alcCaptureOpenDevice(captureName.c_str(), 8000, AL_FORMAT_MONO16, 262144); // about 32 seconds
 		
 		if (!capture) {
 			// We're not going to prevent LOVE from running without a microphone, but we should warn, at least
@@ -219,7 +218,7 @@ namespace openal
 	love::sound::SoundData * Audio::getRecordedData()
 	{
 		if (!canRecord()) return NULL;
-		int samplerate = love::sound::Decoder::DEFAULT_SAMPLE_RATE;
+		int samplerate = 8000;
 		ALCint samples;
 		alcGetIntegerv(capture, ALC_CAPTURE_SAMPLES, 4, &samples);
 		void * data = malloc(samples * (2/sizeof(char)));
