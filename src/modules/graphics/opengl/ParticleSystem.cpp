@@ -20,6 +20,8 @@
 
 #include "ParticleSystem.h"
 
+#include <common/math.h>
+
 #include <SDL_opengl.h>
 #include <cmath>
 #include <cstdlib>
@@ -397,7 +399,7 @@ namespace opengl
 		glPushAttrib(GL_CURRENT_BIT);
 
 		glTranslatef(x, y, 0);
-		glRotatef(angle * 57.29578f, 0, 0, 1.0f);
+		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 		glTranslatef( ox, oy, 0);
 
@@ -408,7 +410,7 @@ namespace opengl
 
 			glColor4f(p->color[0],p->color[1],p->color[2],p->color[3]);
 			glTranslatef(p->position[0],p->position[1],0.0f);
-			glRotatef(p->rotation * 57.29578f, 0.0f, 0.0f, 1.0f); // rad * (180 / pi)
+			glRotatef(LOVE_TODEG(p->rotation), 0.0f, 0.0f, 1.0f); // rad * (180 / pi)
 			glScalef(p->size,p->size,1.0f);
 			glTranslatef(-offsetX,-offsetY,0.0f);
 			sprite->draw(0,0, 0, 1, 1, 0, 0);

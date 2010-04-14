@@ -19,6 +19,7 @@
 **/
 
 #include <common/config.h>
+#include <common/math.h>
 
 #include "Graphics.h"
 
@@ -1121,7 +1122,7 @@ namespace opengl
 
 	void Graphics::rotate(float r)
 	{
-		glRotatef(r * 57.29578f, 0, 0, 1);
+		glRotatef(LOVE_TODEG(r), 0, 0, 1);
 	}
 
 	void Graphics::scale(float x, float y)
