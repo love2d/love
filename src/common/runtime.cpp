@@ -267,6 +267,17 @@ namespace love
 		lua_replace(L, idx); // Replace the initial argument with the new object.
 		return 0;
 	}
+	
+	int luax_convobj(lua_State * L, int idxs[], int n, const char * mod, const char * fn)
+	{
+		luax_getfunction(L, mod, fn);
+		for (int i = 0; i < n; i++) {
+			lua_pushvalue(L, idxs[i]); // The arguments.
+		}
+		lua_call(L, n, 1); // Call the function, n args, one return value.
+		lua_replace(L, idxs[0]); // Replace the initial argument with the new object.
+		return 0;
+	}
 
 	int luax_strtofile(lua_State * L, int idx)
 	{

@@ -209,7 +209,7 @@ namespace love
 	/**
 	* Converts an object into another object by the specified function love.module.function.
 	* The conversion function must accept a single object of the relevant type as a parameter, 
-	* and returnone value. If the function does not exist (see luax_getfunction), an error is returned.
+	* and return one value. If the function does not exist (see luax_getfunction), an error is returned.
 	* 
 	* Note that the initial object at idx is replaced by the new object.
 	* 
@@ -219,6 +219,21 @@ namespace love
 	* @param function The function in the module.
 	**/
 	int luax_convobj(lua_State * L, int idx, const char * module, const char * function);
+	
+	/**
+	* Converts an object into another object by the specified function love.module.function.
+	* The conversion function must accept a single object of the relevant type as its first parameter, 
+	* and return one value. If the function does not exist (see luax_getfunction), an error is returned.
+	* 
+	* Note that the initial object at idx is replaced by the new object.
+	* 
+	* @param L The Lua state.
+	* @param idxs An array of indices on the stack.
+	* @param n How many arguments are being passed.
+	* @param module The module in the love table.
+	* @param function The function in the module.
+	**/
+	int luax_convobj(lua_State * L, int idxs[], int n, const char * module, const char * function);
 
 	/**
 	* 'Insist' that a table 'k' exists in the table at idx. Insistence involves that the
