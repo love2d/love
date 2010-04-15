@@ -366,14 +366,10 @@
 		A93E6A8E10420AC2007D418B /* Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Graphics.h; sourceTree = "<group>"; };
 		A93E6A8F10420AC2007D418B /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		A93E6A9010420AC2007D418B /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
-		A93E6A9110420AC2007D418B /* ImageFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageFont.cpp; sourceTree = "<group>"; };
-		A93E6A9210420AC2007D418B /* ImageFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageFont.h; sourceTree = "<group>"; };
 		A93E6A9310420AC2007D418B /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		A93E6A9410420AC2007D418B /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		A93E6A9510420AC2007D418B /* SpriteBatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteBatch.cpp; sourceTree = "<group>"; };
 		A93E6A9610420AC2007D418B /* SpriteBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteBatch.h; sourceTree = "<group>"; };
-		A93E6A9710420AC2007D418B /* TrueTypeFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TrueTypeFont.cpp; sourceTree = "<group>"; };
-		A93E6A9810420AC2007D418B /* TrueTypeFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeFont.h; sourceTree = "<group>"; };
 		A93E6A9910420AC2007D418B /* wrap_Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Font.cpp; sourceTree = "<group>"; };
 		A93E6A9A10420AC2007D418B /* wrap_Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Font.h; sourceTree = "<group>"; };
 		A93E6A9B10420AC2007D418B /* wrap_Glyph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Glyph.cpp; sourceTree = "<group>"; };
@@ -995,16 +991,12 @@
 				A93E6A8E10420AC2007D418B /* Graphics.h */,
 				A93E6A8F10420AC2007D418B /* Image.cpp */,
 				A93E6A9010420AC2007D418B /* Image.h */,
-				A93E6A9110420AC2007D418B /* ImageFont.cpp */,
-				A93E6A9210420AC2007D418B /* ImageFont.h */,
 				A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */,
 				A9B4BA981045937F001DBC80 /* ParticleSystem.h */,
 				A93E6A9310420AC2007D418B /* Quad.cpp */,
 				A93E6A9410420AC2007D418B /* Quad.h */,
 				A93E6A9510420AC2007D418B /* SpriteBatch.cpp */,
 				A93E6A9610420AC2007D418B /* SpriteBatch.h */,
-				A93E6A9710420AC2007D418B /* TrueTypeFont.cpp */,
-				A93E6A9810420AC2007D418B /* TrueTypeFont.h */,
 				A93E6A9910420AC2007D418B /* wrap_Font.cpp */,
 				A93E6A9A10420AC2007D418B /* wrap_Font.h */,
 				A93E6A9B10420AC2007D418B /* wrap_Glyph.cpp */,
