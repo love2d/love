@@ -44,6 +44,7 @@
 #include <audio/wrap_Audio.h>
 #include <event/sdl/wrap_Event.h>
 #include <filesystem/physfs/wrap_Filesystem.h>
+#include <font/freetype/wrap_Font.h>
 #include <graphics/opengl/wrap_Graphics.h>
 #include <image/wrap_Image.h>
 #include <joystick/sdl/wrap_Joystick.h>
@@ -71,6 +72,7 @@ static const luaL_Reg modules[] = {
 	{ "love.audio", love::audio::luaopen_love_audio },
 	{ "love.event", love::event::sdl::luaopen_love_event },
 	{ "love.filesystem", love::filesystem::physfs::luaopen_love_filesystem },
+	{ "love.font", love::font::freetype::luaopen_love_font },
 	{ "love.graphics", love::graphics::opengl::luaopen_love_graphics },
 	{ "love.image", love::image::luaopen_love_image },
 	{ "love.joystick", love::joystick::sdl::luaopen_love_joystick },

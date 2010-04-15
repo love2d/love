@@ -237,6 +237,7 @@ function love.init()
 			audio = true,
 			physics = true,
 			sound = true,
+			font = true,
 			thread = true,
 		},
 		console = false, -- Only relevant for windows.

@@ -18,60 +18,40 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_FONT_FREETYPE_FONT_H
-#define LOVE_FONT_FREETYPE_FONT_H
+#ifndef LOVE_FONT_FONT_H
+#define LOVE_FONT_FONT_H
 
 // LOVE
-#include <font/Font.h>
+#include "FontData.h"
+#include "Rasterizer.h"
+#include <image/ImageData.h>
+#include <common/Module.h>
 
-// FreeType2
-#ifdef LOVE_MACOSX
-#include <freetype/ft2build.h>
-#else
-#include <ft2build.h>
-#endif
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
-#include <freetype/ftoutln.h>
-#include <freetype/fttrigon.h>
+// STD
+#include <string>
 
 namespace love
 {
 namespace font
 {
-namespace freetype
-{
 
-	class Font : public love::font::Font
+	class Font : public Module
 	{
-	private:
-
-		// FreeType library
-		FT_Library library;
 
 	public:
 
-		Font();
-		
-		/**
-		* Destructor.
-		**/
-		virtual ~Font();
-		
-		// Implements Font
-		Rasterizer * newRasterizer(Data * data, int size);
-		Rasterizer * newRasterizer(love::image::ImageData * data, std::string glyphs);
-		Rasterizer * newRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length);
-		GlyphData * newGlyphData(Rasterizer * r, unsigned short glyph);
-		FontData * newFontData(Rasterizer * r);
-		
+		virtual Rasterizer * newRasterizer(Data * data, int size) = 0;
+		virtual Rasterizer * newRasterizer(love::image::ImageData * data, std::string glyphs) = 0;
+		virtual Rasterizer * newRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length) = 0;
+		virtual GlyphData * newGlyphData(Rasterizer * r, unsigned short glyph) = 0;
+		virtual FontData * newFontData(Rasterizer * r) = 0;
+
 		// Implement Module
-		const char * getName() const;
+		virtual const char * getName() const = 0;
 
 	}; // Font
 
-} // freetype
 } // font
 } // love
 
-#endif // LOVE_FONT_FREETYPE_FONT_H
+#endif // LOVE_FONT_FONT_H

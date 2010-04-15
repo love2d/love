@@ -20,6 +20,8 @@
 
 #include "wrap_Font.h"
 
+#include "Font.h"
+
 #include <font/wrap_FontData.h>
 #include <font/wrap_GlyphData.h>
 #include <font/wrap_Rasterizer.h>
@@ -36,10 +38,19 @@ namespace freetype
 
 	int w_newRasterizer(lua_State * L)
 	{
-		Data * d = luax_checkdata(L, 1);
-		int size = luaL_checkint(L, 2);
-
-		Rasterizer * t = instance->newRasterizer(d, size);
+		Rasterizer * t = NULL;
+		if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T)) {
+			love::image::ImageData * d = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+			const char * g = luaL_checkstring(L, 2);
+			std::string glyphs(g);
+			t = instance->newRasterizer(d, glyphs);
+		}
+		else if (luax_istype(L, 1, DATA_T)) {
+			Data * d = luax_checkdata(L, 1);
+			int size = luaL_checkint(L, 2);
+			t = instance->newRasterizer(d, size);
+		}
+		
 		luax_newtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 		return 1;
 	}
@@ -53,11 +64,20 @@ namespace freetype
 		luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
 		return 1;
 	}
+	
+	int w_newFontData(lua_State * L)
+	{
+		Rasterizer * r = luax_checkrasterizer(L, 1);
+		FontData * f = instance->newFontData(r);
+		luax_newtype(L, "FontData", FONT_FONT_DATA_T, (void*)f);
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "newRasterizer",  w_newRasterizer },
 		{ "newGlyphData",  w_newGlyphData },
+		{ "newFontData", w_newFontData },
 		{ 0, 0 }
 	};
 
