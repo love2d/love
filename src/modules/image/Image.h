@@ -25,7 +25,6 @@
 #include <common/config.h>
 #include <common/Module.h>
 #include <filesystem/File.h>
-#include <font/GlyphData.h>
 #include "ImageData.h"
 
 namespace love

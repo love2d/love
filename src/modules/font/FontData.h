@@ -48,7 +48,7 @@ namespace font
 		
 	private:
 		GlyphData ** data;
-		int height;
+		Rasterizer * raster;
 	};
 } // font
 } // love

@@ -22,7 +22,6 @@
 #define LOVE_FONT_FREETYPE_FONT_H
 
 // LOVE
-#include <filesystem/File.h>
 #include <font/Rasterizer.h>
 #include <image/ImageData.h>
 #include <common/Module.h>
@@ -37,6 +36,9 @@
 #include <freetype/ftglyph.h>
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
+
+// STD
+#include <string>
 
 namespace love
 {
@@ -62,7 +64,8 @@ namespace freetype
 		virtual ~Font();
 
 		Rasterizer * newRasterizer(Data * data, int size);
-		Rasterizer * newRasterizer(love::image::ImageData * data, unsigned short * glyphs);
+		Rasterizer * newRasterizer(love::image::ImageData * data, std::string glyphs);
+		Rasterizer * newRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length);
 		GlyphData * newGlyphData(Rasterizer * r, unsigned short glyph);
 
 		// Implement Module

@@ -28,6 +28,8 @@
 		A946CE821172BCD7005E1462 /* wrap_EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A946CE811172BCD7005E1462 /* wrap_EncodedImageData.cpp */; };
 		A946D3BB117681BD005E1462 /* FontData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A946D3BA117681BC005E1462 /* FontData.cpp */; };
 		A946D3C611768D69005E1462 /* wrap_FontData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A946D3C511768D69005E1462 /* wrap_FontData.cpp */; };
+		A946D4061176A711005E1462 /* ImageFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9110420AC2007D418B /* ImageFont.cpp */; };
+		A946D4071176A716005E1462 /* TrueTypeFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9710420AC2007D418B /* TrueTypeFont.cpp */; };
 		A946D67F104248DA002BF36C /* Reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69EA10420ABF007D418B /* Reference.cpp */; };
 		A946D680104248DA002BF36C /* Matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E310420ABF007D418B /* Matrix.cpp */; };
 		A946D681104248DA002BF36C /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E810420ABF007D418B /* Object.cpp */; };
@@ -86,12 +88,10 @@
 		A946D704104249A4002BF36C /* SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9510420AC2007D418B /* SpriteBatch.cpp */; };
 		A946D705104249A4002BF36C /* wrap_Glyph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9B10420AC2007D418B /* wrap_Glyph.cpp */; };
 		A946D706104249A4002BF36C /* Glyph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A8B10420AC2007D418B /* Glyph.cpp */; };
-		A946D707104249A4002BF36C /* ImageFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9110420AC2007D418B /* ImageFont.cpp */; };
 		A946D708104249A4002BF36C /* Drawable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A8210420AC2007D418B /* Drawable.cpp */; };
 		A946D709104249A4002BF36C /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9D10420AC3007D418B /* wrap_Graphics.cpp */; };
 		A946D70A104249A4002BF36C /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A8F10420AC2007D418B /* Image.cpp */; };
 		A946D70B104249A4002BF36C /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9F10420AC3007D418B /* wrap_Image.cpp */; };
-		A946D70C104249A4002BF36C /* TrueTypeFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A9710420AC2007D418B /* TrueTypeFont.cpp */; };
 		A946D72210424A58002BF36C /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AB010420AC3007D418B /* wrap_Image.cpp */; };
 		A946D72310424A58002BF36C /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AA910420AC3007D418B /* Image.cpp */; };
 		A946D72410424A58002BF36C /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AAB10420AC3007D418B /* ImageData.cpp */; };
@@ -1559,12 +1559,10 @@
 				A946D704104249A4002BF36C /* SpriteBatch.cpp in Sources */,
 				A946D705104249A4002BF36C /* wrap_Glyph.cpp in Sources */,
 				A946D706104249A4002BF36C /* Glyph.cpp in Sources */,
-				A946D707104249A4002BF36C /* ImageFont.cpp in Sources */,
 				A946D708104249A4002BF36C /* Drawable.cpp in Sources */,
 				A946D709104249A4002BF36C /* wrap_Graphics.cpp in Sources */,
 				A946D70A104249A4002BF36C /* Image.cpp in Sources */,
 				A946D70B104249A4002BF36C /* wrap_Image.cpp in Sources */,
-				A946D70C104249A4002BF36C /* TrueTypeFont.cpp in Sources */,
 				A946D72210424A58002BF36C /* wrap_Image.cpp in Sources */,
 				A946D72310424A58002BF36C /* Image.cpp in Sources */,
 				A946D72410424A58002BF36C /* ImageData.cpp in Sources */,
@@ -1668,6 +1666,8 @@
 				A946CE821172BCD7005E1462 /* wrap_EncodedImageData.cpp in Sources */,
 				A946D3BB117681BD005E1462 /* FontData.cpp in Sources */,
 				A946D3C611768D69005E1462 /* wrap_FontData.cpp in Sources */,
+				A946D4061176A711005E1462 /* ImageFont.cpp in Sources */,
+				A946D4071176A716005E1462 /* TrueTypeFont.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

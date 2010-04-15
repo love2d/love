@@ -27,15 +27,28 @@ namespace love
 {
 namespace font
 {
-	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short *)
-		: imageData(data)
+	
+	inline bool equal(const love::image::pixel& a, const love::image::pixel& b)
+	{
+		return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
+	}
+	
+	ImageRasterizer::ImageRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length)
+		: imageData(data), glyphs(glyphs), length(length)
 	{
 		imageData->retain();
+		positions = new unsigned int[MAX_CHARS];
+		widths = new unsigned int[MAX_CHARS];
+		spacing = new unsigned int[MAX_CHARS];
+		load();
 	}
 
 	ImageRasterizer::~ImageRasterizer()
 	{
 		imageData->release();
+		delete[] positions;
+		delete[] widths;
+		delete[] spacing;
 	}
 
 	int ImageRasterizer::getLineHeight() const
@@ -43,9 +56,81 @@ namespace font
 		return getHeight();
 	}
 
-	GlyphData * ImageRasterizer::getGlyphData(unsigned short) const
+	GlyphData * ImageRasterizer::getGlyphData(unsigned short glyph) const
 	{
-		return 0;
+		GlyphMetrics gm;
+		gm.height = metrics.height;
+		gm.width = widths[glyph];
+		GlyphData * g = new GlyphData(glyph, gm);
+		unsigned char * gd = (unsigned char*)g->getData();
+		love::image::pixel * pixels = (love::image::pixel *)(imageData->getData());
+		for (unsigned int i = positions[glyph]; i < positions[glyph] + widths[glyph]; i++) {
+			love::image::pixel p = pixels[i];
+			gd[i*4] = p.r;
+			gd[i*4+1] = p.g;
+			gd[i*4+2] = p.b;
+			gd[i*4+3] = p.a;
+		}
+		return g;
+	}
+	
+	void ImageRasterizer::load()
+	{
+		love::image::pixel * pixels = (love::image::pixel *)(imageData->getData());
+		
+		unsigned imgw = (unsigned)imageData->getWidth();
+		unsigned imgh = (unsigned)imageData->getHeight();
+		unsigned imgs = imgw*imgh;
+		
+		// Set the only metric that matters
+		metrics.height = imgh;
+		
+		// Reading texture data begins
+		love::image::pixel spacer = pixels[0];
+		
+		unsigned int start = 0;
+		unsigned int end = 0;
+		
+		for(unsigned int i = 0; i < length; ++i)
+		{
+			if(i >= MAX_CHARS)
+				break;
+			
+			start = end;
+			
+			// Finds out where the first character starts
+			while(start < imgw && equal(pixels[start], spacer))
+				++start;
+			
+			if(i > 0)
+				spacing[glyphs[i - 1]] = (start > end) ? (start - end) : 0;
+			
+			end = start;
+			
+			// Find where glyph ends.
+			while(end < imgw && !equal(pixels[end], spacer))
+				++end;
+			
+			if(start >= end)
+				break;
+			
+			unsigned c = glyphs[i];
+			
+			positions[c] = start;
+			widths[c] = (end - start);
+		}
+		
+		// Replace spacer color with an empty pixel
+		for(unsigned int i = 0; i < imgs; ++i)
+		{
+			if(equal(pixels[i], spacer))
+			{
+				pixels[i].r = 0;
+				pixels[i].g = 0;
+				pixels[i].b = 0;
+				pixels[i].a = 0;
+			}
+		}
 	}
 
 } // font

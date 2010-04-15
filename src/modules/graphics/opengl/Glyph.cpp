@@ -108,7 +108,7 @@ namespace opengl
 			(GLsizei)width, 
 			(GLsizei)height, 
 			0, 
-			GL_LUMINANCE_ALPHA, 
+			GL_RGBA, 
 			GL_UNSIGNED_BYTE, 
 			data->getData());
 

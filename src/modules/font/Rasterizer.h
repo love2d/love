@@ -34,7 +34,7 @@ namespace font
 	**/
 	struct FontMetrics
 	{
-		int advance ;
+		int advance;
 		int ascent;
 		int descent;
 		int height;

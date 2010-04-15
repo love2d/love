@@ -44,10 +44,20 @@ namespace freetype
 	{
 		return new TrueTypeRasterizer(library, data, size);
 	}
-
-	Rasterizer * Font::newRasterizer(love::image::ImageData * data, unsigned short * glyphs)
+	
+	Rasterizer * Font::newRasterizer(love::image::ImageData * data, std::string glyphs)
 	{
-		return new ImageRasterizer(data, glyphs);
+		int length = glyphs.size();
+		unsigned short g[length];
+		for (int i = 0; i < length; i++) {
+			g[i] = glyphs[i];
+		}
+		return newRasterizer(data, g, length);
+	}
+
+	Rasterizer * Font::newRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length)
+	{
+		return new ImageRasterizer(data, glyphs, length);
 	}
 
 	GlyphData * Font::newGlyphData(Rasterizer * r, unsigned short glyph)

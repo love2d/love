@@ -27,13 +27,11 @@ namespace font
 {
 	
 	FontData::FontData(Rasterizer * raster)
-		: height(0)
+		: raster(raster)
 	{
 		data = new GlyphData *[MAX_CHARS];
 		for (unsigned int i = 0; i < MAX_CHARS; i++) {
 			data[i] = raster->getGlyphData(i);
-			int h = data[i]->getHeight();
-			if (h > height) height = h;
 		}
 	}
 	
@@ -59,7 +57,7 @@ namespace font
 	
 	int FontData::getHeight() const
 	{
-		return height;
+		return raster->getHeight();
 	}
 	
 } // font

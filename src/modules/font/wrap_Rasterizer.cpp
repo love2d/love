@@ -32,9 +32,6 @@ namespace font
 	}
 
 	static const luaL_Reg functions[] = {
-		// Data
-		{ "getPointer", w_Data_getPointer },
-		{ "getSize", w_Data_getSize },
 		{ 0, 0 }
 	};
 

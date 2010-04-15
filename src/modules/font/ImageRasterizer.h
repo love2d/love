@@ -36,17 +36,32 @@ namespace font
 	class ImageRasterizer : public Rasterizer
 	{
 	private:
+		// Load all the glyph positions into memory
+		void load();
+		
 		// The image data
 		love::image::ImageData * imageData;
+		// The glyphs in the font
+		unsigned short * glyphs;
+		// The length of the glyph array
+		unsigned int length;
+		// The positions of each glyph
+		unsigned int * positions;
+		// The widths of each glyph
+		unsigned int * widths;
+		// The spacing of each glyph
+		unsigned int * spacing;
 	
 	public:
-		ImageRasterizer(love::image::ImageData * imageData, unsigned short * glyphs);
+		ImageRasterizer(love::image::ImageData * imageData, unsigned short * glyphs, int length);
 		virtual ~ImageRasterizer();
 
-		// Implement FontData
+		// Implement Rasterizer
 		virtual int getLineHeight() const;
 		virtual GlyphData * getGlyphData(unsigned short glyph) const;
-
+		
+		static const unsigned int MAX_CHARS = 256;
+		
 	}; // ImageRasterizer
 
 } // font

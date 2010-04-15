@@ -92,11 +92,11 @@ namespace freetype
 			int size = bitmap.rows*bitmap.width;
 			unsigned char * dst = (unsigned char *)glyphData->getData();
 
-			// Note that bitmap.buffer contains only luminocity. We copy that single value to 
-			// our luminocity-alpha format. 
+			// Note that bitmap.buffer contains only luminosity. We copy that single value to 
+			// our rgba format. 
 			for(int i = 0; i<size; i++)
 			{
-				dst[2*i] = dst[2*i+1] = bitmap.buffer[i];
+				dst[4*i] = dst[4*i+1] = dst[4*i+2] = dst[4*i+3] = bitmap.buffer[i];
 			}
 		}
 		

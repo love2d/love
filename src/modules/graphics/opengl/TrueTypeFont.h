@@ -24,6 +24,10 @@
 // Module
 #include "Font.h"
 
+// LOVE
+#include <common/config.h>
+#include <common/Data.h>
+
 // FreeType2
 #ifdef LOVE_MACOSX
 #include <freetype/ft2build.h>

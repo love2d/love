@@ -28,7 +28,7 @@ namespace font
 	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics)
 		: glyph(glyph), metrics(glyphMetrics)
 	{
-		data = new unsigned char[getWidth() * getHeight() * 2];
+		data = new unsigned char[getWidth() * getHeight() * 4];
 	}
 
 	GlyphData::~GlyphData()
@@ -43,7 +43,7 @@ namespace font
 
 	int GlyphData::getSize() const
 	{
-		return getWidth() * getHeight() * 2;
+		return getWidth() * getHeight() * 4;
 	}
 
 	int GlyphData::getHeight() const

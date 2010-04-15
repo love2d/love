@@ -21,10 +21,12 @@
 #ifndef LOVE_GRAPHICS_OPENGL_FONT_H
 #define LOVE_GRAPHICS_OPENGL_FONT_H
 
+// STD
+#include <string>
+
 // LOVE
 #include <common/Object.h>
 #include <graphics/Volatile.h>
-#include <filesystem/File.h>
 
 namespace love
 {
@@ -35,8 +37,6 @@ namespace opengl
 	class Font : public Object, public Volatile
 	{
 	protected:
-
-		love::filesystem::File * file;
 
 		int size;
 		float lineHeight;
