@@ -20,6 +20,7 @@
 
 #include "wrap_Font.h"
 
+#include <font/wrap_FontData.h>
 #include <font/wrap_GlyphData.h>
 #include <font/wrap_Rasterizer.h>
 
@@ -61,6 +62,7 @@ namespace freetype
 	};
 
 	static const lua_CFunction types[] = {
+		luaopen_fontdata,
 		luaopen_glyphdata,
 		luaopen_rasterizer,
 		0

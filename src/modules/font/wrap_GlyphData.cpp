@@ -40,5 +40,5 @@ namespace font
 		return luax_register_type(L, "GlyphData", functions);
 	}
 
-} // sound
+} // font
 } // love

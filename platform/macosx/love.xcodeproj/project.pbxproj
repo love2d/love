@@ -26,6 +26,8 @@
 		A93E6E5510420B57007D418B /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
 		A946CE821172BCD7005E1462 /* wrap_EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A946CE811172BCD7005E1462 /* wrap_EncodedImageData.cpp */; };
+		A946D3BB117681BD005E1462 /* FontData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A946D3BA117681BC005E1462 /* FontData.cpp */; };
+		A946D3C611768D69005E1462 /* wrap_FontData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A946D3C511768D69005E1462 /* wrap_FontData.cpp */; };
 		A946D67F104248DA002BF36C /* Reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69EA10420ABF007D418B /* Reference.cpp */; };
 		A946D680104248DA002BF36C /* Matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E310420ABF007D418B /* Matrix.cpp */; };
 		A946D681104248DA002BF36C /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E810420ABF007D418B /* Object.cpp */; };
@@ -576,6 +578,10 @@
 		A93E6E5310420B57007D418B /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		A946CE801172BCD6005E1462 /* wrap_EncodedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_EncodedImageData.h; sourceTree = "<group>"; };
 		A946CE811172BCD7005E1462 /* wrap_EncodedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_EncodedImageData.cpp; sourceTree = "<group>"; };
+		A946D3B9117681BC005E1462 /* FontData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FontData.h; sourceTree = "<group>"; };
+		A946D3BA117681BC005E1462 /* FontData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FontData.cpp; sourceTree = "<group>"; };
+		A946D3C411768D69005E1462 /* wrap_FontData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_FontData.h; sourceTree = "<group>"; };
+		A946D3C511768D69005E1462 /* wrap_FontData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_FontData.cpp; sourceTree = "<group>"; };
 		A968F0C61083A07B00A895AA /* EnumMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumMap.h; sourceTree = "<group>"; };
 		A968F0C71083A07C00A895AA /* StringMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		A968F0CE1083A9A900A895AA /* Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Event.cpp; sourceTree = "<group>"; };
@@ -928,6 +934,8 @@
 		A93E6A6F10420AC1007D418B /* font */ = {
 			isa = PBXGroup;
 			children = (
+				A946D3BA117681BC005E1462 /* FontData.cpp */,
+				A946D3B9117681BC005E1462 /* FontData.h */,
 				A93E6A7010420AC1007D418B /* freetype */,
 				A93E6A7710420AC2007D418B /* GlyphData.cpp */,
 				A93E6A7810420AC2007D418B /* GlyphData.h */,
@@ -935,6 +943,8 @@
 				A93E6A7A10420AC2007D418B /* ImageRasterizer.h */,
 				A93E6A7B10420AC2007D418B /* Rasterizer.cpp */,
 				A93E6A7C10420AC2007D418B /* Rasterizer.h */,
+				A946D3C511768D69005E1462 /* wrap_FontData.cpp */,
+				A946D3C411768D69005E1462 /* wrap_FontData.h */,
 				A93E6A7D10420AC2007D418B /* wrap_GlyphData.cpp */,
 				A93E6A7E10420AC2007D418B /* wrap_GlyphData.h */,
 				A93E6A7F10420AC2007D418B /* wrap_Rasterizer.cpp */,
@@ -1656,6 +1666,8 @@
 				A986DEB5113249A800810279 /* Thread.cpp in Sources */,
 				A986DEB6113249A800810279 /* wrap_Thread.cpp in Sources */,
 				A946CE821172BCD7005E1462 /* wrap_EncodedImageData.cpp in Sources */,
+				A946D3BB117681BD005E1462 /* FontData.cpp in Sources */,
+				A946D3C611768D69005E1462 /* wrap_FontData.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

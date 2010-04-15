@@ -39,6 +39,7 @@ namespace love
 		FILESYSTEM_FILE_DATA_ID,
 
 		// Font
+		FONT_FONT_DATA_ID,
 		FONT_GLYPH_DATA_ID,
 		FONT_RASTERIZER_ID,
 
@@ -102,6 +103,7 @@ namespace love
 	const bits FILESYSTEM_FILE_T = (bits(1) << FILESYSTEM_FILE_ID) | OBJECT_T;
 	const bits FILESYSTEM_FILE_DATA_T = (bits(1) << FILESYSTEM_FILE_DATA_ID) | DATA_T;
 
+	const bits FONT_FONT_DATA_T = (bits(1) << FONT_FONT_DATA_ID) | DATA_T;
 	const bits FONT_GLYPH_DATA_T = (bits(1) << FONT_GLYPH_DATA_ID) | DATA_T;
 	const bits FONT_RASTERIZER_T = (bits(1) << FONT_RASTERIZER_ID) | OBJECT_T;
 

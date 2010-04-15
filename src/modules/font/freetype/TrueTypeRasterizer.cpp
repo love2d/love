@@ -99,6 +99,9 @@ namespace freetype
 				dst[2*i] = dst[2*i+1] = bitmap.buffer[i];
 			}
 		}
+		
+		// Having copied the data over, we can destroy the glyph
+		FT_Done_Glyph(ftglyph);
 
 		// Return data
 		return glyphData;
