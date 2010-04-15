@@ -410,26 +410,12 @@ namespace opengl
 		return new Quad(v, sw, sh);
 	}
 
-	Font * Graphics::newFont(Data * data, int size)
+	Font * Graphics::newFont(love::font::FontData * data)
 	{
-		Font * font = new TrueTypeFont(data, size);
+		Font * font = new Font(data);
 
 		// Load it and check for errors.
-		if(!font->load())
-		{
-			delete font;
-			return 0;
-		}
-
-		return font;
-	}
-
-	Font * Graphics::newImageFont(Image * image, const char * glyphs, float)
-	{
-		Font * font = new ImageFont(image, std::string(glyphs));
-
-		// Load it and check for errors.
-		if(!font->load())
+		if(!font)
 		{
 			delete font;
 			return 0;
@@ -495,15 +481,6 @@ namespace opengl
 
 		if(font != 0)
 			currentFont->retain();
-	}
-
-	void Graphics::setFont( Data * data, int size )
-	{
-		if(currentFont != 0)
-			currentFont->release();
-
-		currentFont = new TrueTypeFont(data, size);
-		currentFont->load();
 	}
 
 	Font * Graphics::getFont()

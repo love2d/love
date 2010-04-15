@@ -82,6 +82,11 @@ namespace font
 		* @param glyph The (UNICODE) glyph to get data for
 		**/
 		virtual GlyphData * getGlyphData(unsigned short glyph) const = 0;
+		
+		/**
+		* Gets the number of glyphs the rasterizer has data for.
+		**/
+		virtual int getNumGlyphs() const = 0;
 
 
 	}; // Rasterizer

@@ -63,6 +63,7 @@ namespace freetype
 		// Implement Rasterizer
 		virtual int getLineHeight() const;
 		virtual GlyphData * getGlyphData(unsigned short glyph) const;
+		virtual int getNumGlyphs() const;
 
 	}; // FreetypeRasterizer
 

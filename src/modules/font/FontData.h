@@ -41,7 +41,7 @@ namespace font
 		void * getData() const;
 		int getSize() const;
 		
-		GlyphData * getGlyph(unsigned short glyph) const;
+		GlyphData * getGlyphData(unsigned short glyph) const;
 		int getHeight() const;
 		
 		static const unsigned int MAX_CHARS = 256;

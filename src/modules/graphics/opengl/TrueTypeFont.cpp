@@ -160,7 +160,7 @@ namespace opengl
 		glPushMatrix();
 
 		glTranslatef(ceil(x), ceil(y), 0.0f);
-		glRotatef(LOVE_TORAD(angle), 0, 0, 1.0f);
+		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 
 		GLuint TrueTypeFont = list;

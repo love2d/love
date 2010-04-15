@@ -59,6 +59,7 @@ namespace font
 		// Implement Rasterizer
 		virtual int getLineHeight() const;
 		virtual GlyphData * getGlyphData(unsigned short glyph) const;
+		virtual int getNumGlyphs() const;
 		
 		static const unsigned int MAX_CHARS = 256;
 		

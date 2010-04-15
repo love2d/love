@@ -46,10 +46,11 @@ namespace freetype
 		FT_Set_Pixel_Sizes(face, size, size);
 
 		// Set global metrics
-		metrics.advance = face->max_advance_width;
-		metrics.ascent = face->ascender;
-		metrics.descent = face->descender;
-		metrics.height = face->height;
+		FT_Size_Metrics s = face->size->metrics;
+		metrics.advance = s.max_advance >> 6;
+		metrics.ascent = s.ascender >> 6;
+		metrics.descent = s.descender >> 6;
+		metrics.height = s.height >> 6;
 	}
 
 	TrueTypeRasterizer::~TrueTypeRasterizer()
@@ -80,23 +81,24 @@ namespace freetype
 		FT_Bitmap& bitmap = bitmap_glyph->bitmap; //just to make things easier
 
 		// Get metrics
-		glyphMetrics.bearingX = face->glyph->metrics.horiBearingX;
-		glyphMetrics.bearingY = face->glyph->metrics.horiBearingY;
+		glyphMetrics.bearingX = face->glyph->metrics.horiBearingX >> 6;
+		glyphMetrics.bearingY = face->glyph->metrics.horiBearingY >> 6;
 		glyphMetrics.height = bitmap.rows;
 		glyphMetrics.width = bitmap.width;
-		glyphMetrics.advance = face->glyph->advance.x >> 6;
+		glyphMetrics.advance = face->glyph->metrics.horiAdvance >> 6;
 
-		GlyphData * glyphData = new GlyphData(glyph, glyphMetrics);
+		GlyphData * glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_RGBA);
 
 		{
 			int size = bitmap.rows*bitmap.width;
 			unsigned char * dst = (unsigned char *)glyphData->getData();
 
 			// Note that bitmap.buffer contains only luminosity. We copy that single value to 
-			// our rgba format. 
+			// our luminosity-alpha format. 
 			for(int i = 0; i<size; i++)
 			{
-				dst[4*i] = dst[4*i+1] = dst[4*i+2] = dst[4*i+3] = bitmap.buffer[i];
+				dst[4*i] = dst[4*i+1] = dst[4*i+2] = 255;
+				dst[4*i+3] = bitmap.buffer[i];
 			}
 		}
 		
@@ -105,6 +107,11 @@ namespace freetype
 
 		// Return data
 		return glyphData;
+	}
+	
+	int TrueTypeRasterizer::getNumGlyphs() const
+	{
+		return 256;
 	}
 
 } // freetype

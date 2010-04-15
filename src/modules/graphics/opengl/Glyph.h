@@ -62,7 +62,10 @@ namespace opengl
 
 		// Implements Volatile.
 		bool loadVolatile();
-		void unloadVolatile();		
+		void unloadVolatile();	
+		
+		float getWidth() const;
+		float getHeight() const;
 
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 

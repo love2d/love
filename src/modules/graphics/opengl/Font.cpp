@@ -20,29 +20,65 @@
 
 #include "Font.h"
 
+#include <common/math.h>
+#include <math.h>
+
 namespace love
 {
 namespace graphics
 {
 namespace opengl
 {
-	Font::Font(int size) 
-		: size(size), lineHeight(1), mSpacing(1)
+	
+	Font::Font(love::font::FontData * data)
+		: height(data->getHeight()), lineHeight(1.25)
 	{
+		glyphs = new Glyph*[MAX_CHARS];
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
-			widths[i] = 0;
-			spacing[i] = 0;
+			glyphs[i] = new Glyph(data->getGlyphData(i));
+			glyphs[i]->load();
+			widths[i] = data->getGlyphData(i)->getWidth();
+			spacing[i] = data->getGlyphData(i)->getAdvance();
+			bearingX[i] = data->getGlyphData(i)->getBearingX();
+			bearingY[i] = data->getGlyphData(i)->getBearingY();
 		}
 	}
 
 	Font::~Font()
 	{
+		delete[] glyphs;
 	}
 
 	float Font::getHeight() const
 	{
-		return (float)size;
+		return height;
+	}
+	
+	void Font::print(std::string text, float x, float y) const
+	{
+		print(text, x, y, 0.0f, 1.0f, 1.0f);
+	}
+	
+	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
+	{
+		glPushMatrix();
+		
+		glTranslatef(ceil(x), ceil(y+getHeight()), 0.0f);
+		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
+		glScalef(sx, sy, 1.0f);
+		int s = 0;
+		for (unsigned int i = 0; i < text.size(); i++) {
+			int g = (int)text[i];
+			glyphs[g]->draw(bearingX[g] + s, -bearingY[g], 0, 1, 1, 0, 0);
+			s += spacing[g];
+		}
+		glPopMatrix();
+	}
+	
+	void Font::print(char character, float x, float y) const
+	{
+		glyphs[character]->draw(x, y+getHeight(), 0, 1, 1, 0, 0);
 	}
 	
 	float Font::getWidth(const std::string & line) const

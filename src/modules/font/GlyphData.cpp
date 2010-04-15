@@ -25,10 +25,20 @@ namespace love
 namespace font
 {
 
-	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics)
-		: glyph(glyph), metrics(glyphMetrics)
+	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
+		: glyph(glyph), metrics(glyphMetrics), format(f)
 	{
-		data = new unsigned char[getWidth() * getHeight() * 4];
+		if (getWidth() && getHeight()) {
+			switch (f) {
+				case GlyphData::FORMAT_LUMINOSITY_ALPHA:
+					data = new unsigned char[getWidth() * getHeight() * 2];
+					break;
+				case GlyphData::FORMAT_RGBA:
+				default:
+					data = new unsigned char[getWidth() * getHeight() * 4];
+					break;
+			}
+		}
 	}
 
 	GlyphData::~GlyphData()
@@ -43,7 +53,16 @@ namespace font
 
 	int GlyphData::getSize() const
 	{
-		return getWidth() * getHeight() * 4;
+		switch(format) {
+			case GlyphData::FORMAT_LUMINOSITY_ALPHA:
+				return getWidth() * getHeight() * 2;
+				break;
+			case GlyphData::FORMAT_RGBA:
+			default:
+				return getWidth() * getHeight() * 4;
+				break;
+		}
+		
 	}
 
 	int GlyphData::getHeight() const
@@ -89,6 +108,11 @@ namespace font
 	int GlyphData::getMaxY() const
 	{
 		return this->getBearingY();
+	}
+	
+	GlyphData::Format GlyphData::getFormat() const
+	{
+		return format;
 	}
 
 } // font

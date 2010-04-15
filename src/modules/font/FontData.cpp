@@ -50,7 +50,7 @@ namespace font
 		return MAX_CHARS;
 	}
 	
-	GlyphData * FontData::getGlyph(unsigned short glyph) const
+	GlyphData * FontData::getGlyphData(unsigned short glyph) const
 	{
 		return data[glyph];
 	}

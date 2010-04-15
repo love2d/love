@@ -34,7 +34,6 @@ namespace opengl
 		: data(data), width((float)data->getWidth()), height((float)data->getHeight()), texture(0)
 	{
 		data->retain();
-		data->getWidth();
 
 		memset(vertices, 255, sizeof(vertex)*4);
 
@@ -94,6 +93,9 @@ namespace opengl
 
 	bool Glyph::loadVolatile()
 	{
+		GLint format = GL_RGBA;
+		if (data->getFormat() == love::font::GlyphData::FORMAT_LUMINOSITY_ALPHA) format = GL_LUMINANCE_ALPHA;
+		
 		glGenTextures(1,&texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -108,7 +110,7 @@ namespace opengl
 			(GLsizei)width, 
 			(GLsizei)height, 
 			0, 
-			GL_RGBA, 
+			format, 
 			GL_UNSIGNED_BYTE, 
 			data->getData());
 
@@ -123,6 +125,16 @@ namespace opengl
 			glDeleteTextures(1, (GLuint*)&texture);
 			texture = 0;
 		}
+	}
+	
+	float Glyph::getWidth() const
+	{
+		return width;
+	}
+	
+	float Glyph::getHeight() const
+	{
+		return height;
 	}
 
 } // opengl

@@ -26,7 +26,8 @@
 
 // LOVE
 #include <common/Object.h>
-#include <graphics/Volatile.h>
+#include <font/FontData.h>
+#include "Glyph.h"
 
 namespace love
 {
@@ -34,32 +35,34 @@ namespace graphics
 {
 namespace opengl
 {
-	class Font : public Object, public Volatile
+	class Font : public Object
 	{
-	protected:
+	private:
 
-		int size;
+		int height;
 		float lineHeight;
 		float mSpacing; // modifies the spacing by multiplying it with this value
+		Glyph ** glyphs;
 
 	public:
 		static const unsigned int MAX_CHARS = 256;
 		// The widths of each character.
 		int widths[MAX_CHARS];
+		// The spacing of each character.
 		int spacing[MAX_CHARS];
+		// The X-bearing of each character.
+		int bearingX[MAX_CHARS];
+		// The Y-bearing of each character.
+		int bearingY[MAX_CHARS];
 
 		/**
 		* Default constructor.
 		*
-		* @param file The file containing the OpenGLFont data.
-		* @param size The size of the OpenGLFont.
+		* @param data The font data to construct from.
 		**/
-		Font(int size);
+		Font(love::font::FontData * data);
 		
 		virtual ~Font();
-
-		virtual bool load() = 0;
-		virtual void unload() = 0;
 
 		/**
 		* Prints the text at the designated position.
@@ -68,7 +71,7 @@ namespace opengl
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
 		**/
-		virtual void print(std::string text, float x, float y) const = 0;
+		void print(std::string text, float x, float y) const;
 
 		/**
 		* Prints the text at the designated position with rotation and scaling.
@@ -78,7 +81,7 @@ namespace opengl
 		* @param y The y-coordinate.
 		* @param angle The amount of rotation.
 		**/
-		virtual void print(std::string text, float x, float y, float angle, float sx, float sy) const = 0;
+		void print(std::string text, float x, float y, float angle, float sx, float sy) const;
 
 		/**
 		* Prints the character at the designated position.
@@ -87,27 +90,27 @@ namespace opengl
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
 		**/
-		virtual void print(char character, float x, float y) const  = 0;
+		void print(char character, float x, float y) const;
 
 		/**
 		* Returns the height of the font.
 		**/
-		virtual float getHeight() const;
+		float getHeight() const;
 
 		/**
 		* Returns the width of the passed string.
 		*
 		* @param line A line of text.
 		**/
-		virtual float getWidth(const std::string & line) const;
-		virtual float getWidth(const char * line) const;
+		float getWidth(const std::string & line) const;
+		float getWidth(const char * line) const;
 		
 		/**
 		* Returns the width of the passed character.
 		*
 		* @param character A character.
 		**/
-		virtual float getWidth(const char character) const;
+		float getWidth(const char character) const;
 
 		/**
 		* Sets the line height (which should be a number to multiply the font size by,
@@ -119,7 +122,7 @@ namespace opengl
 		/**
 		* Returns the line height.
 		**/
-		virtual float getLineHeight() const;
+		float getLineHeight() const;
 
 		/**
 		* Sets the spacing modifier (changes the spacing between the characters the

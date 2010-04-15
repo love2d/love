@@ -38,8 +38,11 @@ namespace font
 	{
 		imageData->retain();
 		positions = new unsigned int[MAX_CHARS];
+		memset(positions, 0, MAX_CHARS*4);
 		widths = new unsigned int[MAX_CHARS];
+		memset(widths, 0, MAX_CHARS*4);
 		spacing = new unsigned int[MAX_CHARS];
+		memset(spacing, 0, MAX_CHARS*4);
 		load();
 	}
 
@@ -61,11 +64,15 @@ namespace font
 		GlyphMetrics gm;
 		gm.height = metrics.height;
 		gm.width = widths[glyph];
-		GlyphData * g = new GlyphData(glyph, gm);
+		gm.advance = spacing[glyph] + widths[glyph];
+		gm.bearingX = 0;
+		gm.bearingY = 0;
+		GlyphData * g = new GlyphData(glyph, gm, GlyphData::FORMAT_RGBA);
+		if (gm.width == 0) return g;
 		unsigned char * gd = (unsigned char*)g->getData();
 		love::image::pixel * pixels = (love::image::pixel *)(imageData->getData());
-		for (unsigned int i = positions[glyph]; i < positions[glyph] + widths[glyph]; i++) {
-			love::image::pixel p = pixels[i];
+		for (unsigned int i = 0; i < widths[glyph]*getHeight(); i++) {
+			love::image::pixel p = pixels[ positions[glyph] + (i % widths[glyph]) + (imageData->getWidth() * (i / widths[glyph])) ];
 			gd[i*4] = p.r;
 			gd[i*4+1] = p.g;
 			gd[i*4+2] = p.b;
@@ -131,6 +138,11 @@ namespace font
 				pixels[i].a = 0;
 			}
 		}
+	}
+	
+	int ImageRasterizer::getNumGlyphs() const
+	{
+		return length;
 	}
 
 } // font

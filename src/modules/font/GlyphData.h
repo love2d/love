@@ -39,6 +39,7 @@ namespace font
 		int advance;
 		int bearingX;
 		int bearingY;
+		int spacing;
 	};
 
 	/**
@@ -46,18 +47,15 @@ namespace font
 	**/
 	class GlyphData : public Data
 	{
-	private:
-		// The glyph itself
-		unsigned short glyph;
-
-		// Glyph metrics
-		GlyphMetrics metrics;
-
-		// Glyph texture data
-		unsigned char * data;
 		
 	public:
-		GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics);
+		enum Format
+		{
+			FORMAT_LUMINOSITY_ALPHA,
+			FORMAT_RGBA
+		};
+		
+		GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, Format f);
 		virtual ~GlyphData();
 
 		// Implements Data.
@@ -108,6 +106,24 @@ namespace font
 		* Gets the max y value of the glyph.
 		**/
 		int getMaxY() const;
+		
+		/**
+		* Gets the format of the glyph data.
+		**/
+		Format getFormat() const;
+		
+	private:
+		// The glyph itself
+		unsigned short glyph;
+		
+		// Glyph metrics
+		GlyphMetrics metrics;
+		
+		// Glyph texture data
+		unsigned char * data;
+		
+		// The format the data's in
+		Format format;
 
 	}; // GlyphData
 

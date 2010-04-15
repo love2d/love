@@ -33,12 +33,13 @@
 // LOVE
 #include <graphics/Graphics.h>
 
+#include <font/FontData.h>
+
 #include <image/Image.h>
 #include <image/ImageData.h>
 
+#include "Font.h"
 #include "Image.h"
-#include "TrueTypeFont.h"
-#include "ImageFont.h"
 #include "Quad.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
@@ -248,12 +249,7 @@ namespace opengl
 		/**
 		* Creates a Font object.
 		**/
-		Font * newFont(Data * data, int size);
-
-		/**
-		* Creates an ImageFont object.
-		**/
-		Font * newImageFont(Image * image, const char * glyphs, float spacing = 1);
+		Font * newFont(love::font::FontData * data);
 		
 		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
 
@@ -285,16 +281,6 @@ namespace opengl
 		* @parm font A Font object.
 		**/
 		void setFont(Font * font);
-
-		/**
-		* Sets a default font. The font is
-		* loaded and sent to the GPU every time this is called, 
-		* so no over-using.
-		* @param data Data 
-		* @param size The size of the font.
-		**/
-		void setFont(Data * data, int size = 12);
-
 		/**
 		* Gets the current Font, or nil if none.
 		**/
