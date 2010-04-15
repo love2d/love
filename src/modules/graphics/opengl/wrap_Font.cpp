@@ -43,7 +43,7 @@ namespace opengl
 	{
 		Font * t = luax_checkfont(L, 1);
 		const char * str = luaL_checkstring(L, 2);
-		lua_pushnumber(L, t->getWidth(str));
+		lua_pushinteger(L, t->getWidth(str));
 		return 1;
 	}
 

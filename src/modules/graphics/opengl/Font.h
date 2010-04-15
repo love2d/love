@@ -102,15 +102,15 @@ namespace opengl
 		*
 		* @param line A line of text.
 		**/
-		float getWidth(const std::string & line) const;
-		float getWidth(const char * line) const;
+		int getWidth(const std::string & line) const;
+		int getWidth(const char * line) const;
 		
 		/**
 		* Returns the width of the passed character.
 		*
 		* @param character A character.
 		**/
-		float getWidth(const char character) const;
+		int getWidth(const char character) const;
 
 		/**
 		* Sets the line height (which should be a number to multiply the font size by,

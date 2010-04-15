@@ -31,7 +31,7 @@ namespace opengl
 {
 	
 	Font::Font(love::font::FontData * data)
-		: height(data->getHeight()), lineHeight(1.25)
+	: height(data->getHeight()), lineHeight(1.25), mSpacing(1)
 	{
 		glyphs = new Glyph*[MAX_CHARS];
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
@@ -52,7 +52,7 @@ namespace opengl
 
 	float Font::getHeight() const
 	{
-		return height;
+		return height / lineHeight;
 	}
 	
 	void Font::print(std::string text, float x, float y) const
@@ -64,45 +64,48 @@ namespace opengl
 	{
 		glPushMatrix();
 		
-		glTranslatef(ceil(x), ceil(y+getHeight()), 0.0f);
+		glTranslatef(ceil(x), ceil(y), 0.0f);
 		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
-		int s = 0;
+		int first = (int)text[0];
+		int s = -bearingX[first];
+		int by = bearingY[first];
 		for (unsigned int i = 0; i < text.size(); i++) {
 			int g = (int)text[i];
-			glyphs[g]->draw(bearingX[g] + s, -bearingY[g], 0, 1, 1, 0, 0);
-			s += spacing[g];
+			if (!glyphs[g]) g = 32; // space
+			glyphs[g]->draw(bearingX[g] + s, -bearingY[g]+by, 0, 1, 1, 0, 0);
+			s += spacing[g] * mSpacing;
 		}
 		glPopMatrix();
 	}
 	
 	void Font::print(char character, float x, float y) const
 	{
-		glyphs[character]->draw(x, y+getHeight(), 0, 1, 1, 0, 0);
+		if (!glyphs[character]) character = ' ';
+		glyphs[character]->draw(x, y+height, 0, 1, 1, 0, 0);
 	}
 	
-	float Font::getWidth(const std::string & line) const
+	int Font::getWidth(const std::string & line) const
 	{
 		if(line.size() == 0) return 0;
-		float temp = 0;
+		int temp = 0;
 
-		for(unsigned int i = 0; i < line.size() - 1; i++)
+		for(unsigned int i = 0; i < line.size(); i++)
 		{
-			temp += widths[(int)line[i]] + (spacing[(int)line[i]] * mSpacing);
+			temp += (spacing[(int)line[i]] * mSpacing);
 		}
-		temp += widths[(int)line[line.size() - 1]]; // the last character's spacing isn't counted
-
+		
 		return temp;
 	}
 
-	float Font::getWidth(const char * line) const
+	int Font::getWidth(const char * line) const
 	{
 		return this->getWidth(std::string(line));
 	}
 	
-	float Font::getWidth(const char character) const
+	int Font::getWidth(const char character) const
 	{
-		return (float)widths[(int)character];
+		return widths[(int)character];
 	}
 
 	void Font::setLineHeight(float height)
