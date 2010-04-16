@@ -69,11 +69,10 @@ namespace opengl
 		glScalef(sx, sy, 1.0f);
 		int first = (int)text[0];
 		int s = -bearingX[first];
-		int by = bearingY[first];
 		for (unsigned int i = 0; i < text.size(); i++) {
 			int g = (int)text[i];
 			if (!glyphs[g]) g = 32; // space
-			glyphs[g]->draw(bearingX[g] + s, -bearingY[g]+by, 0, 1, 1, 0, 0);
+			glyphs[g]->draw(bearingX[g] + s, -bearingY[g], 0, 1, 1, 0, 0);
 			s += spacing[g] * mSpacing;
 		}
 		glPopMatrix();
@@ -105,7 +104,7 @@ namespace opengl
 	
 	int Font::getWidth(const char character) const
 	{
-		return widths[(int)character];
+		return spacing[(int)character];
 	}
 
 	void Font::setLineHeight(float height)
