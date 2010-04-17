@@ -766,13 +766,13 @@ end
 
 local debug = debug
 
-local function error_printer(msg)
-	print((debug.traceback("Error: " .. msg, 3):gsub("\n[^\n]+$", "")))
+local function error_printer(msg, layer)
+	print((debug.traceback("Error: " .. msg, 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 end
 
 function love.errhand(msg)
 
-	error_printer(msg)
+	error_printer(msg, 2)
 
 	if not love.graphics or not love.event or not love.graphics.isCreated() then
 		return
