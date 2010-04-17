@@ -767,7 +767,7 @@ end
 local debug = debug
 
 local function error_printer(msg)
-	print("Error:", msg, debug.traceback())
+	print((debug.traceback("Error: " .. msg, 3):gsub("\n[^\n]+$", "")))
 end
 
 function love.errhand(msg)
