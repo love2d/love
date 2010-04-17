@@ -344,7 +344,7 @@ function love.nogame()
 		if not major then major = 0 end
 		if not minor then minor = 0 end
 		if not rev then rev = 0 end
-	
+
 		love.graphics.setBackgroundColor(0x84, 0xca, 0xff)
 
 		names = {
@@ -624,7 +624,7 @@ function love.nogame()
 		Tank.draw = function(self)
 			love.graphics.draw(images.turret_cannon, self.x+30, self.y-80)
 			love.graphics.draw(images.turret_body, self.x-12, self.y-110)
-			love.graphics.draw(images.belt_track, self.belt.x-74, self.belt.y-28)		
+			love.graphics.draw(images.belt_track, self.belt.x-74, self.belt.y-28)
 			love.graphics.draw(images["wheel_"..tostring(major)], self.x, self.y, self.angle, 1, 1, 32, 32)
 			love.graphics.draw(images["wheel_"..tostring(minor)], self.x+self.i, self.y, self.angle, 1, 1, 32, 32)
 			love.graphics.draw(images["wheel_"..tostring(rev)], self.x+self.i*2, self.y, self.angle, 1, 1, 32, 32)
@@ -765,9 +765,15 @@ end
 -- Error screen.
 -----------------------------------------------------------
 
+local debug = debug
+
+local function error_printer(msg, layer)
+	print((debug.traceback("Error: " .. msg, 1+(layer or 1)):gsub("\n[^\n]+$", "")))
+end
+
 function love.errhand(msg)
 
-	error_printer(msg)
+	error_printer(msg, 2)
 
 	if not love.graphics or not love.event or not love.graphics.isCreated() then
 		return
@@ -830,10 +836,6 @@ end
 -----------------------------------------------------------
 -- The root of all calls.
 -----------------------------------------------------------
-
-function error_printer(msg)
-	print("boot", msg, debug.traceback())
-end
 
 result = xpcall(love.boot, error_printer)
 if not result then return end
