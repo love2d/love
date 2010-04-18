@@ -192,8 +192,18 @@ namespace opengl
 		// Have SDL set the video mode.
 		if(SDL_SetVideoMode(width, height, 32, sdlflags ) == 0)
 		{
-			std::cerr << "Could not set video mode: "  << SDL_GetError() << std::endl;
-			return false;
+			bool failed = true;
+			if(fsaa > 0)
+			{
+				// FSAA might have failed, disable it and try again
+				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+				failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
+			}
+			if(failed)
+			{
+				std::cerr << "Could not set video mode: "  << SDL_GetError() << std::endl;
+				return false;
+			}
 		}
 
 		// Check if FSAA failed or not
@@ -207,7 +217,7 @@ namespace opengl
 
 			// Don't fail because of this, but issue a warning.
 			if ( ! buffers || (samples != fsaa))
-				std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << std::endl;
+				std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
 		}
 
 		// Okay, setup OpenGL.
@@ -845,13 +855,13 @@ namespace opengl
 		glPopMatrix();
 		glEnable(GL_TEXTURE_2D);
 	}
-	
+
 	int Graphics::polyline( lua_State * L)
 	{
 		// Get number of params.
 		int args = lua_gettop(L);
 		bool table = false;
-		
+
 		if (args == 1) { // we've got a table, hopefully
 			int type = lua_type(L, 1);
 			if (type != LUA_TTABLE)
@@ -859,10 +869,10 @@ namespace opengl
 			table = true;
 			args = lua_objlen(L, 1);
 		}
-		
+
 		if (args % 2) // an odd number of arguments, no good for a polyline
 			return luaL_error(L, "Number of vertices must be a multiple of two");
-		
+
 		// right, let's draw this polyline, then
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_LINE_STRIP);
