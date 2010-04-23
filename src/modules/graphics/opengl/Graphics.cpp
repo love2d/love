@@ -996,7 +996,7 @@ namespace opengl
 
 	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points )
 	{
-		float two_pi = 3.14159265f * 2;
+		float two_pi = LOVE_M_PI * 2;
 		if(points <= 0) points = 1;
 		float angle_shift = (two_pi / points);
 
