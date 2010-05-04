@@ -212,7 +212,10 @@ namespace physfs
 		int size = tmp.size();
 
 		if(size <= 4 || strcmp(filename + (size-4), ".lua") != 0)
+		{
 			tmp.append(".lua");
+			size = tmp.size();
+		}
 
 		for(int i=0;i<size-4;i++)
 		{

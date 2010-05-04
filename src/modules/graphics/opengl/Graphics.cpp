@@ -198,6 +198,12 @@ namespace opengl
 				// FSAA might have failed, disable it and try again
 				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 				failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
+				if (failed)
+				{
+					// There might be no FSAA at all
+					SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+					failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
+				}
 			}
 			if(failed)
 			{
