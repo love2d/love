@@ -1177,6 +1177,18 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\image\wrap_EncodedImageData.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\image\"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\image\wrap_Image.cpp"
 					>
 					<FileConfiguration
