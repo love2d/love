@@ -37,6 +37,7 @@ namespace opengl
 		// created yet.
 		currentMode.width = 0;
 		currentMode.height = 0;
+		currentMode.fullscreen = 0;
 
 		// Window should be centered.
 		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
