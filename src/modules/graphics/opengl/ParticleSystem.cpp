@@ -62,10 +62,7 @@ namespace opengl
 	ParticleSystem::~ParticleSystem()
 	{
 		if(this->sprite != 0)
-		{
 			this->sprite->release();
-			this->sprite = 0;
-		}
 
 		if(pStart != 0)
 			delete [] pStart;
@@ -138,13 +135,11 @@ namespace opengl
 
 	void ParticleSystem::setSprite(Image * image)
 	{
-		if(this->sprite != 0)
-		{
-			this->sprite->release();
-			this->sprite = 0;
-		}
+		if(sprite != 0)
+			sprite->release();
 
-		this->sprite = image;
+		sprite = image;
+		sprite->retain();
 	}
 
 	void ParticleSystem::setBufferSize(unsigned int size)
