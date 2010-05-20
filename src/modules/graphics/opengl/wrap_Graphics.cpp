@@ -202,36 +202,37 @@ namespace opengl
 		// Convert to File, if necessary.
 		if(lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
-		
+
 		// Convert to Data, if necessary.
 		if(luax_istype(L, 1, FILESYSTEM_FILE_T)) {
 			love::filesystem::File * f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 			Data * d = f->read();
-			lua_pop(L, 1); // get rid of the file
+			lua_remove(L, 1); // get rid of the file
 			luax_newtype(L, "Data", DATA_T, (void*)d);
+			lua_insert(L, 1); // put it at the bottom of the stack
 		}
-		
+
 		// Convert to Rasterizer, if necessary.
 		if(luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, FONT_FONT_DATA_T)) {
 			int idxs[] = {1, 2};
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
-		
+
 		// Convert to FontData, if necessary.
 		if(luax_istype(L, 1, FONT_RASTERIZER_T))
 			luax_convobj(L, 1, "font", "newFontData");
-		
+
 		love::font::FontData * data = luax_checktype<love::font::FontData>(L, 1, "FontData", FONT_FONT_DATA_T);
-		
+
 		// Create the font.
 		Font * font = instance->newFont(data);
-		
+
 		if(font == 0)
 			return luaL_error(L, "Could not load font.");
-				
+
 		// Push the type.
 		luax_newtype(L, "Font", GRAPHICS_FONT_T, (void*)font);
-		
+
 		return 1;
 	}
 
@@ -240,28 +241,28 @@ namespace opengl
 		// Convert to ImageData if necessary.
 		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, DATA_T))
 			luax_convobj(L, 1, "image", "newImageData");
-		
+
 		// Convert to Rasterizer if necessary.
 		if(luax_istype(L, 1, IMAGE_IMAGE_DATA_T)) {
 			int idxs[] = {1, 2};
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
-		
+
 		// Convert to FontData, if necessary.
 		if(luax_istype(L, 1, FONT_RASTERIZER_T))
 			luax_convobj(L, 1, "font", "newFontData");
-		
+
 		love::font::FontData * data = luax_checktype<love::font::FontData>(L, 1, "FontData", FONT_FONT_DATA_T);
-		
+
 		// Create the font.
 		Font * font = instance->newFont(data);
-		
+
 		if(font == 0)
 			return luaL_error(L, "Could not load font.");
-		
+
 		// Push the type.
 		luax_newtype(L, "Font", GRAPHICS_FONT_T, (void*)font);
-		
+
 		return 1;
 	}
 
@@ -332,7 +333,7 @@ namespace opengl
 		int size = luaL_optint(L, 2, 12);
 
 		Font * font;
-		
+
 		// If the first parameter isn't a Font, create a new one
 		if (!luax_istype(L, 1, GRAPHICS_FONT_T)) {
 			lua_pushinteger(L, size); // push the size
@@ -340,30 +341,31 @@ namespace opengl
 			// Convert to File, if necessary.
 			if(lua_isstring(L, 1))
 				luax_convobj(L, 1, "filesystem", "newFile");
-			
+
 			// Convert to Data, if necessary.
 			if(luax_istype(L, 1, FILESYSTEM_FILE_T)) {
 				love::filesystem::File * f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 				Data * d = f->read();
-				lua_pop(L, 1); // get rid of the file
+				lua_remove(L, 1); // get rid of the file
 				luax_newtype(L, "Data", DATA_T, (void*)d);
+				lua_insert(L, 1); // put it at the bottom of the stack
 			}
-			
+
 			// Convert to Rasterizer, if necessary.
 			if(luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, FONT_FONT_DATA_T)) {
 				int idxs[] = {1, 2};
 				luax_convobj(L, idxs, 2, "font", "newRasterizer");
 			}
-			
+
 			// Convert to FontData, if necessary.
 			if(luax_istype(L, 1, FONT_RASTERIZER_T))
 				luax_convobj(L, 1, "font", "newFontData");
-			
+
 			love::font::FontData * data = luax_checktype<love::font::FontData>(L, 1, "FontData", FONT_FONT_DATA_T);
-			
+
 			// Create the font.
 			font = instance->newFont(data);
-			
+
 			if(font == 0)
 				return luaL_error(L, "Could not load font.");
 		}
