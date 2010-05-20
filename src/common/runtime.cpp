@@ -29,19 +29,26 @@
 // STD
 #include <iostream>
 
+// SDL
+#include <SDL_mutex.h>
+
 namespace love
 {
-
+	static SDL_mutex *gcmutex = 0;
 	/**
 	* Called when an object is collected. The object is released
 	* once in this function, possibly deleting it.
 	**/
 	static int w__gc(lua_State * L)
 	{
+		if (!gcmutex)
+			gcmutex = SDL_CreateMutex();
 		Proxy * p = (Proxy *)lua_touserdata(L, 1);
 		Object * t = (Object *)p->data;
+		SDL_mutexP(gcmutex);
 		if(p->own)
 			t->release();
+		SDL_mutexV(gcmutex);
 		return 0;
 	}
 
@@ -414,5 +421,4 @@ namespace love
 		types.find(luaL_checkstring(L, idx), t);
 		return t;
 	}
-
 } // love

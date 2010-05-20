@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -49,20 +49,20 @@ namespace love
 
 	/**
 	* This structure wraps all Lua-exposed objects. It exists in the
-	* Lua state as a full userdata (so we can catch __gc "events"), 
-	* though the Object it refers to is light userdata in the sense 
-	* that it is not allocated by the Lua VM. 
+	* Lua state as a full userdata (so we can catch __gc "events"),
+	* though the Object it refers to is light userdata in the sense
+	* that it is not allocated by the Lua VM.
 	**/
 	struct Proxy
 	{
 		// Holds type information (see types.h).
-		bits flags; 
-		
+		bits flags;
+
 		// The light userdata.
 		void * data;
 
 		// True if Lua should delete on GC.
-		bool own; 
+		bool own;
 	};
 
 	/**
@@ -90,7 +90,7 @@ namespace love
 	/**
 	* Returns a reference to the top stack element (-1) if the value
 	* is of the specified type. If the value is incorrect, zero is returned.
-	* 
+	*
 	* In any case, the top stack element is popped, regardless of its type.
 	**/
 	Reference * luax_refif(lua_State * L, int type);
@@ -111,7 +111,7 @@ namespace love
 	bool luax_toboolean(lua_State * L, int idx);
 
 	/**
-	* Pushes a bool onto the stack. It's the same as lua_pushboolean, 
+	* Pushes a bool onto the stack. It's the same as lua_pushboolean,
 	* but with bool instead of int.
 	* @param L The Lua state.
 	* @paarm b The bool to push.
@@ -138,7 +138,7 @@ namespace love
 	/**
 	* Require at least 'min', but more than 'max' items on the stack.
 	* @param L The Lua state.
-	* @param min The minimum number of items on the stack. 
+	* @param min The minimum number of items on the stack.
 	* @param max The maximum number of items on the stack.
 	* @return Zero if conditions are met, otherwise a Lua error (longjmp).
 	**/
@@ -156,7 +156,7 @@ namespace love
 	* @param L The Lua state.
 	**/
 	int luax_register_module(lua_State * L, const WrappedModule & m);
-	
+
 	/**
 	* Inserts a module with 'name' into the package.preloaded table.
 	* @param f The function to be called when the module is opened.
@@ -165,7 +165,7 @@ namespace love
 	int luax_preload(lua_State * L, lua_CFunction f, const char * name);
 
 	/**
-	* Register a new type. 
+	* Register a new type.
 	* @param tname The name of the type. This must not conflict with other type names,
 	* even from other modules.
 	* @param f The list of member functions for the type.
@@ -174,7 +174,7 @@ namespace love
 
 	/**
 	* Register a new searcher function for package.loaders. This can for instance enable
-	* loading of files through love.filesystem using standard require. 
+	* loading of files through love.filesystem using standard require.
 	* @param L The Lua state.
 	* @param f The searcher function.
 	**/
@@ -184,9 +184,9 @@ namespace love
 	* Creates a new Lua-accessible object of the given type, and put it on the stack.
 	* @param L The Lua state.
 	* @param name The name of the type. This must match the used earlier with luax_register_type.
-	* @param flags The type information. 
+	* @param flags The type information.
 	* @param data The pointer to the actual object.
-	* @own Set this to true (default) if the object should be released upon garbage collection. 
+	* @own Set this to true (default) if the object should be released upon garbage collection.
 	**/
 	void luax_newtype(lua_State * L, const char * name, bits flags, void * data, bool own = true);
 
@@ -198,7 +198,7 @@ namespace love
 	* @return True if the value is Proxy of the specified type, false otherwise.
 	**/
 	bool luax_istype(lua_State * L, int idx, love::bits type);
-	
+
 	/**
 	* Gets the function love.module.function and puts it on top of the stack (alone). If the
 	* love table, the module, or the function does not exist, an error is returned.
@@ -208,11 +208,11 @@ namespace love
 
 	/**
 	* Converts an object into another object by the specified function love.module.function.
-	* The conversion function must accept a single object of the relevant type as a parameter, 
-	* and return one value. If the function does not exist (see luax_getfunction), an error is returned.
-	* 
+	* The conversion function must accept a single object of the relevant type as a parameter,
+	* and returnone value. If the function does not exist (see luax_getfunction), an error is returned.
+	*
 	* Note that the initial object at idx is replaced by the new object.
-	* 
+	*
 	* @param L The Lua state.
 	* @param idx The index on the stack.
 	* @param module The module in the love table.
@@ -237,31 +237,31 @@ namespace love
 
 	/**
 	* 'Insist' that a table 'k' exists in the table at idx. Insistence involves that the
-	* table (k) is created if it does not exist in the table at idx. The table at idx must 
+	* table (k) is created if it does not exist in the table at idx. The table at idx must
 	* pre-exist, however. Also note that if the a non-table value exists at the specified
 	* location, it will be overwritten with a new table. The insisted table, and only the
-	* insisted table, will be placed on top of the stack. 
+	* insisted table, will be placed on top of the stack.
 	*
 	* @param idx The index on the stack containing a table.
-	* @param k The name of the table we are insisting exist. 
+	* @param k The name of the table we are insisting exist.
 	**/
 	int luax_insist(lua_State * L, int idx, const char * k);
 
 	/**
-	* Insist that a global table 'k' exists. See luax_insist. 
-	* @param k The name of the table we are insisting exist. 
+	* Insist that a global table 'k' exists. See luax_insist.
+	* @param k The name of the table we are insisting exist.
 	**/
 	int luax_insistglobal(lua_State * L, const char * k);
 
 	/**
 	* Insists that a table 'k' exists inside the 'love' table. See luax_insist.
-	* @param k The name of the table we are insisting exist. 
+	* @param k The name of the table we are insisting exist.
 	**/
 	int luax_insistlove(lua_State * L, const char * k);
 
 	/**
 	* Gets (creates if needed) the specified Registry, and puts it on top
-	* of the stack. 
+	* of the stack.
 	* @param L The Lua state.
 	* @param r The Registry to get.
 	**/
@@ -285,7 +285,7 @@ namespace love
 	}
 
 	/**
-	* Like luax_totype, but causes an error if the value at idx is not Proxy, 
+	* Like luax_totype, but causes an error if the value at idx is not Proxy,
 	* or is not the specified type.
 	* @param L The Lua state.
 	* @param idx The index on the stack.
@@ -303,7 +303,7 @@ namespace love
 		if((u->flags & type) != type)
 			luaL_error(L, "Incorrect parameter type: expected %s", name);
 
-		return (T *)u->data;	
+		return (T *)u->data;
 	}
 
 	template <typename T>
@@ -311,7 +311,7 @@ namespace love
 	{
 		luax_getregistry(L, REGISTRY_MODULES);
 		lua_getfield(L, -1, k);
-		
+
 		if(!lua_isuserdata(L, -1))
 			luaL_error(L, "Tried to get nonexisting module %s.", k);
 
