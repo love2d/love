@@ -31,10 +31,13 @@
 
 // SDL
 #include <SDL_mutex.h>
+#include <SDL_thread.h>
 
 namespace love
 {
 	static SDL_mutex *gcmutex = 0;
+	void *_gcmutex = 0;
+	unsigned int _gcthread = 0;
 	/**
 	* Called when an object is collected. The object is released
 	* once in this function, possibly deleting it.
@@ -42,13 +45,19 @@ namespace love
 	static int w__gc(lua_State * L)
 	{
 		if (!gcmutex)
+		{
 			gcmutex = SDL_CreateMutex();
+			_gcmutex = (void*) gcmutex;
+		}
 		Proxy * p = (Proxy *)lua_touserdata(L, 1);
 		Object * t = (Object *)p->data;
-		SDL_mutexP(gcmutex);
 		if(p->own)
+		{
+			SDL_mutexP(gcmutex);
+			_gcthread = (unsigned int) SDL_ThreadID();
 			t->release();
-		SDL_mutexV(gcmutex);
+			SDL_mutexV(gcmutex);
+		}
 		return 0;
 	}
 
@@ -274,7 +283,7 @@ namespace love
 		lua_replace(L, idx); // Replace the initial argument with the new object.
 		return 0;
 	}
-	
+
 	int luax_convobj(lua_State * L, int idxs[], int n, const char * mod, const char * fn)
 	{
 		luax_getfunction(L, mod, fn);

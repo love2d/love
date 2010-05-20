@@ -37,6 +37,10 @@ namespace love
 	class Module;
 	class Reference;
 
+	// Exposed mutex of the GC
+	extern void *_gcmutex;
+	extern unsigned int _gcthread;
+
 	/**
 	* Registries represent special tables which can be accessed with
 	* luax_getregistry.
@@ -219,14 +223,14 @@ namespace love
 	* @param function The function in the module.
 	**/
 	int luax_convobj(lua_State * L, int idx, const char * module, const char * function);
-	
+
 	/**
 	* Converts an object into another object by the specified function love.module.function.
-	* The conversion function must accept a single object of the relevant type as its first parameter, 
+	* The conversion function must accept a single object of the relevant type as its first parameter,
 	* and return one value. If the function does not exist (see luax_getfunction), an error is returned.
-	* 
+	*
 	* Note that the initial object at idx is replaced by the new object.
-	* 
+	*
 	* @param L The Lua state.
 	* @param idxs An array of indices on the stack.
 	* @param n How many arguments are being passed.
