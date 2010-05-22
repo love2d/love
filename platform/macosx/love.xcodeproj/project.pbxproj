@@ -593,6 +593,7 @@
 		A986DEB4113249A800810279 /* wrap_Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Thread.h; sourceTree = "<group>"; };
 		A98D913E10507BF9008E03F2 /* EncodedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodedImageData.h; sourceTree = "<group>"; };
 		A98D914310507C97008E03F2 /* EncodedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EncodedImageData.cpp; sourceTree = "<group>"; };
+		A9B1AE451197293000D496EB /* love_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = love_Prefix.pch; sourceTree = "<group>"; };
 		A9B4BA981045937F001DBC80 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
@@ -671,6 +672,7 @@
 			children = (
 				A9255DEA1043188D00BA1496 /* SDLMain.m */,
 				A9255DEB1043188D00BA1496 /* SDLMain.h */,
+				A9B1AE451197293000D496EB /* love_Prefix.pch */,
 				A93E69DC10420ABF007D418B /* Source */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
@@ -1718,20 +1720,20 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = NO;
 				GCC_TREAT_NONCONFORMANT_CODE_ERRORS_AS_WARNINGS = NO;
-				GCC_VERSION = 4.0;
+				GCC_VERSION = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_POINTER_SIGNEDNESS = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = NO;
 				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = NO;
@@ -1744,10 +1746,8 @@
 				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/include/IL,
+					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
-					/usr/local/include,
-					/opt/local/include,
 					../../src,
 					../../src/modules,
 				);
@@ -1756,7 +1756,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = YES;
 				PRODUCT_NAME = love;
-				SDKROOT = macosx10.5;
+				SDKROOT = "";
 				VALID_ARCHS = "i386 ppc";
 				WARNING_CFLAGS = (
 					"-W",
@@ -1807,7 +1807,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = love;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx10.4;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = "i386 ppc";
 				WARNING_CFLAGS = (

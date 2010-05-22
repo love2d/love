@@ -240,7 +240,7 @@ static void CustomApplicationMain (int argc, char **argv)
 #endif /* SDL_USE_CPS */
 
     /* Set up the menubar */
-    [NSApp setMainMenu:[[NSMenu alloc] init]];
+    [NSApp setMainMenu:[[[NSMenu alloc] init] autorelease]];
     setApplicationMenu();
     setupWindowMenu();
 
@@ -396,7 +396,7 @@ int main (int argc, char **argv)
 		if ([lovePaths count] > 0) { /* there are, load the first one we found and run it */
 			NSString *firstLovePath = [lovePaths objectAtIndex:0];
 			gCalledAppMainline = YES;
-			NSLog(firstLovePath);
+			//NSLog(firstLovePath);
 			
 			const char *temparg;
 			size_t arglen;

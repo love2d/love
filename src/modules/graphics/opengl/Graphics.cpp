@@ -87,7 +87,7 @@ namespace opengl
 		s.backgroundColor.b = (GLubyte)(color[2]*255.0f);
 		s.backgroundColor.a = (GLubyte)(color[3]*255.0f);
 		//store modes here
-		int mode;
+		GLint mode;
 		//get blend mode
 		glGetIntegerv(GL_BLEND_DST, &mode);
 		//following syntax seems better than if-else every time

@@ -81,8 +81,8 @@ namespace opengl
 		float lineWidth;
 		Graphics::LineStyle lineStyle;
 		bool stipple;
-		int stippleRepeat;
-		int stipplePattern;
+		GLint stippleRepeat;
+		GLint stipplePattern;
 
 		// Point.
 		float pointSize;
