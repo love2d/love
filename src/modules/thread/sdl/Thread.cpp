@@ -193,16 +193,6 @@ namespace sdl
 		if (data)
 			delete[] data;
 		delete comm;
-		if (handle)
-		{
-			bool inGC = (_gcthread == SDL_GetThreadID(handle));
-			bool collectSelf = (inGC && _gcthread == SDL_ThreadID());
-			inGC = inGC && !collectSelf;
-			if (inGC) SDL_mutexP((SDL_mutex *) _gcmutex);
-			if (collectSelf) SDL_mutexV((SDL_mutex *) _gcmutex);
-			SDL_KillThread(handle);
-			if (inGC) SDL_mutexV((SDL_mutex *) _gcmutex);
-		}
 		module->unregister(name);
 		SDL_DestroyMutex(mutex);
 		SDL_DestroyCond(cond);
