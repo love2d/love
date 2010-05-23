@@ -27,6 +27,7 @@
 #include <common/Matrix.h>
 #include <font/GlyphData.h>
 #include <graphics/Drawable.h>
+#include <graphics/Volatile.h>
 
 // OpenGL
 #include "GLee.h"
@@ -39,7 +40,7 @@ namespace graphics
 namespace opengl
 {
 	
-	class Glyph : public Drawable
+	class Glyph : public Drawable, public Volatile
 	{
 	private:
 
