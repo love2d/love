@@ -816,6 +816,7 @@ function love.errhand(msg)
 
 	draw()
 
+	local e, a, b, c
 	while true do
 		e, a, b, c = love.event.wait()
 
