@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -61,7 +61,7 @@ namespace opengl
 		* @param data The font data to construct from.
 		**/
 		Font(love::font::FontData * data);
-		
+
 		virtual ~Font();
 
 		/**
@@ -104,13 +104,24 @@ namespace opengl
 		**/
 		int getWidth(const std::string & line) const;
 		int getWidth(const char * line) const;
-		
+
 		/**
 		* Returns the width of the passed character.
 		*
 		* @param character A character.
 		**/
 		int getWidth(const char character) const;
+
+		/**
+		 * Returns the maximal width of a wrapped string
+		 * and optionally the number of lines
+		 *
+		 * @param line A line of text
+		 * @param wrap The number of pixels to wrap at
+		 * @param lines Optional output of the number of lines needed
+		 **/
+		int getWrap(const std::string & line, float wrap, int *lines = 0) const;
+		int getWrap(const char * line, float wrap, int *lines = 0) const;
 
 		/**
 		* Sets the line height (which should be a number to multiply the font size by,

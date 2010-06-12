@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -47,6 +47,17 @@ namespace opengl
 		return 1;
 	}
 
+	int w_Font_getWrap(lua_State * L)
+	{
+		Font * t = luax_checkfont(L, 1);
+		const char * str = luaL_checkstring(L, 2);
+		float wrap = (float) luaL_checknumber(L, 3);
+		int lines = 0;
+		lua_pushinteger(L, t->getWrap(str, wrap, &lines));
+		lua_pushinteger(L, lines);
+		return 2;
+	}
+
 	int w_Font_setLineHeight(lua_State * L)
 	{
 		Font * t = luax_checkfont(L, 1);
@@ -65,6 +76,7 @@ namespace opengl
 	static const luaL_Reg functions[] = {
 		{ "getHeight", w_Font_getHeight },
 		{ "getWidth", w_Font_getWidth },
+		{ "getWrap", w_Font_getWrap },
 		{ "setLineHeight", w_Font_setLineHeight },
 		{ "getLineHeight", w_Font_getLineHeight },
 		{ 0, 0 }
