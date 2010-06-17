@@ -838,9 +838,9 @@ end
 -- The root of all calls.
 -----------------------------------------------------------
 
-result = xpcall(love.boot, error_printer)
+local result = xpcall(love.boot, error_printer)
 if not result then return end
-result = xpcall(love.init, love.errhand)
+local result = xpcall(love.init, love.errhand)
 if not result then return end
-result = xpcall(love.run, love.errhand)
+local result = xpcall(love.run, love.errhand)
 if not result then return end
