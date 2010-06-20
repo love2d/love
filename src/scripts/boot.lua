@@ -241,6 +241,7 @@ function love.init()
 			thread = true,
 		},
 		console = false, -- Only relevant for windows.
+		identity = false,
 	}
 
 	-- If config file exists, load it and allow it to update config table.
@@ -280,6 +281,8 @@ function love.init()
 		end
 		love.graphics.setCaption(c.title)
 	end
+
+	if love.filesystem and c.identity then love.filesystem.setIdentity(c.identity) end
 
 	if love.filesystem and love.filesystem.exists("main.lua") then require("main.lua") end
 
