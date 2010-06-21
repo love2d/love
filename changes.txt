@@ -1,3 +1,8 @@
+LOVE 0.7.0
+----------
+
+  * Changelog should go here. I'm too lazy to write it atm.
+
 LOVE 0.6.2
 ----------
 
