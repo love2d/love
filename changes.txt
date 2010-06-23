@@ -1,23 +1,22 @@
 LOVE 0.7.0
 ----------
 
-  * Added love.thread module
-  * Added source:play and friends
-  * Added source:isStatic()
-  * OSX now has UTI
-  * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed source
-  * Less compiler warnings
-  * Fixed setFixedRotation enabling other flags
-  * Added get/setGroupIndex to CircleShape and PolygonShape
-  * Cleaned up traceback in error screen
-  * Invalid FSAA values now fall back to working ones (or none at all)
-  * Fixed a bug in the loader (for require)
-  * Moved fonts to love.font (from love.graphics), only rendering remains in love.graphics
-  * Switched font origin to top-left
---* TO BE ADDED: COMMIT 324
-  * Dropped the OS X version requirement to 10.4
-  * Added font:getWrap
-  * Added identity field to love.conf
+  * Added love.thread module.
+  * Added Source:play, Source:pause, etc.
+  * Added Source:isStatic().
+  * Added get/setGroupIndex to CircleShape and PolygonShape.
+  * Added Font:getWrap.
+  * Added identity field to love.conf.
+  * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.
+  * Fixed setFixedRotation enabling other flags.
+  * Fixed a bug in the loader (for require).
+  * Invalid FSAA values now fall back to working ones (or none at all).
+  * Cleaned up traceback in error screen.
+  * Moved fonts to love.font (from love.graphics), only rendering remains in love.graphics.
+  * Switched font origin to top-left.
+  * OS X now properly uses UTIs for .love files.
+  * Dropped the OS X version requirement to 10.4.
+  * Fewer compiler warnings.
 
 LOVE 0.6.2
 ----------
@@ -244,6 +243,3 @@ Initial release!
  * Config files.
  * Stuff is loadable from archive files.
  * Keyboard, mouse, display, timer, etc. (Basic devices).
-
-
-
