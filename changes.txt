@@ -8,9 +8,11 @@ LOVE 0.7.0
   * Added Font:getWrap.
   * Added identity field to love.conf.
   * Enabled love.filesystem.FileData.
+  * debug is now usable as a variable name.
   * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.
   * Fixed setFixedRotation enabling other flags.
   * Fixed a bug in the loader (for require).
+  * Fixed a bug where ParticleSystem::setSprite did not retain the new image.
   * Invalid FSAA values now fall back to working ones (or none at all).
   * Cleaned up traceback in error screen.
   * Moved fonts to love.font (from love.graphics), only rendering remains in love.graphics.
