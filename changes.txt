@@ -7,6 +7,7 @@ LOVE 0.7.0
   * Added get/setGroupIndex to CircleShape and PolygonShape.
   * Added Font:getWrap.
   * Added identity field to love.conf.
+  * Enabled love.filesystem.FileData.
   * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.
   * Fixed setFixedRotation enabling other flags.
   * Fixed a bug in the loader (for require).
