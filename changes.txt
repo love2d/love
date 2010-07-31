@@ -7,6 +7,7 @@ LOVE 0.7.0
   * Added get/setGroupIndex to CircleShape and PolygonShape.
   * Added Font:getWrap.
   * Added identity field to love.conf.
+  * Added love.quit callback.
   * Enabled love.filesystem.FileData.
   * Fixed bug where the debug module was not an upvalue of the error handlers. (you can now override debug)
   * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.

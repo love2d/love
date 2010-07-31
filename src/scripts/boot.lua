@@ -319,10 +319,12 @@ function love.run()
 		if love.event then
 			for e,a,b,c in love.event.poll() do
 				if e == "q" then
-					if love.audio then
-						love.audio.stop()
+					if not love.quit or not love.quit() then
+						if love.audio then
+							love.audio.stop()
+						end
+						return
 					end
-					return
 				end
 				love.handlers[e](a,b,c)
 			end

@@ -19,14 +19,16 @@
 #ifndef B2_SETTINGS_H
 #define B2_SETTINGS_H
 
-#include <assert.h>
+//#include <assert.h>
+#include <common/Exception.h>
 #include <cmath>
 
 #define B2_NOT_USED(x) x
-#define b2Assert(A) assert(A)
+//#define b2Assert(A) assert(A)
+#define b2Assert(A) {if(!(A)) throw love::Exception("Box2D error: " #A);}
 
 
-// need to include NDS jtypes.h instead of 
+// need to include NDS jtypes.h instead of
 // usual typedefs because NDS jtypes defines
 // them slightly differently, oh well.
 #ifdef TARGET_IS_NDS
