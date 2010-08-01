@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -49,6 +49,19 @@ namespace box2d
 
 		// Implements Module.
 		const char * getName() const;
+
+		/**
+		* Creates a new World.
+		* @param lx Lower bound on the x-axis.
+		* @param ly Lower bound on the y-axis.
+		* @param ux Upper bound on the x-axis.
+		* @param uy Upper bound on the y-axis.
+		* @param gx Gravity along x-axis.
+		* @param gy Gravity along y-axis.
+		* @param sleep Whether the World allows sleep.
+		* @param meter The scale in px/m.
+		**/
+		World * newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep, int meter);
 
 		/**
 		* Creates a new World.
@@ -176,7 +189,7 @@ namespace box2d
 		* @param ay The y-component of the world-axis.
 		**/
 		PrismaticJoint * newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay);
-		
+
 		/**
 		* Creates a new PulleyJoint connecting body1 with body2.
 		* @param groundAnchor1 World ground-anchor for body1.

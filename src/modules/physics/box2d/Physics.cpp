@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -33,10 +33,18 @@ namespace physics
 {
 namespace box2d
 {
-	
+
 	const char * Physics::getName() const
 	{
 		return "love.physics.box2d";
+	}
+
+	World * Physics::newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep, int meter)
+	{
+		b2AABB aabb;
+		aabb.lowerBound.Set(lx, ly);
+		aabb.upperBound.Set(ux, uy);
+		return new World(aabb, b2Vec2(gx, gy), sleep, meter);
 	}
 
 	World * Physics::newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep)
@@ -166,7 +174,7 @@ namespace box2d
 	{
 		return new PrismaticJoint(body1, body2, x, y, ax, ay);
 	}
-	
+
 	PulleyJoint * Physics::newPulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio)
 	{
 		return new PulleyJoint(body1, body2, groundAnchor1, groundAnchor2, anchor1, anchor2, ratio);

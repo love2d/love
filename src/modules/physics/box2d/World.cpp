@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -64,22 +64,22 @@ namespace box2d
 			{
 				// Push the function.
 				ref->push();
-				
+
 				// Push first userdata.
 				{
 					shapeudata * d = (shapeudata *)(contacts[i]->point.shape1->GetUserData());
-					if(d->ref != 0) 
-						d->ref->push(); 
-					else 
+					if(d->ref != 0)
+						d->ref->push();
+					else
 						lua_pushnil(L);
 				}
 
 				// Push first userdata.
 				{
 					shapeudata * d = (shapeudata *)(contacts[i]->point.shape2->GetUserData());
-					if(d->ref != 0) 
-						d->ref->push(); 
-					else 
+					if(d->ref != 0)
+						d->ref->push();
+					else
 						lua_pushnil(L);
 				}
 
@@ -102,8 +102,8 @@ namespace box2d
 		world->SetContactListener(this);
 	}
 
-	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep)
-		: meter(DEFAULT_METER)
+	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter)
+		: meter(meter)
 	{
 		world = new b2World(scaleDown(aabb), scaleDown(gravity), sleep);
 		world->SetContactListener(this);

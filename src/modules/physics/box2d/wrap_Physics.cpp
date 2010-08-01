@@ -53,6 +53,20 @@ namespace box2d
 			luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
 			return 1;
 		}
+		else if (top == 8)
+		{
+			float lx = (float)luaL_checknumber(L, 1);
+			float ly = (float)luaL_checknumber(L, 2);
+			float ux = (float)luaL_checknumber(L, 3);
+			float uy = (float)luaL_checknumber(L, 4);
+			float gx = (float)luaL_checknumber(L, 5);
+			float gy = (float)luaL_checknumber(L, 6);
+			bool sleep = lua_toboolean(L, 7);
+			int meter = (int)luaL_checknumber(L, 8);
+			World * w = instance->newWorld(lx, ly, ux, uy, gx, gy, sleep, meter);
+			luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
+			return 1;
+		}
 		else
 			return luaL_error(L, "Incorrect number of parameters");
 	}

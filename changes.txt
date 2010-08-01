@@ -8,6 +8,7 @@ LOVE 0.7.0
   * Added Font:getWrap.
   * Added identity field to love.conf.
   * Added love.quit callback.
+  * Added extra meter parameter to love.physics.newWorld.
   * Enabled love.filesystem.FileData.
   * Fixed bug where the debug module was not an upvalue of the error handlers. (you can now override debug)
   * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.

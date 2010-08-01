@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -38,18 +38,18 @@ namespace physics
 {
 namespace box2d
 {
-	
+
 	class Contact;
 
 	/**
-	* The World is the "God" container class, 
+	* The World is the "God" container class,
 	* which contains all Bodies and Joints. Shapes
-	* are contained in their associated Body. 
-	* 
+	* are contained in their associated Body.
+	*
 	* Bodies in different worlds can obviously not
 	* collide.
-	* 
-	* The world also controls global parameters, like 
+	*
+	* The world also controls global parameters, like
 	* gravity.
 	**/
 	class World : public Object, public b2ContactListener
@@ -105,7 +105,7 @@ namespace box2d
 		* @param sleep True if the bodies should be able to sleep,
 		* false otherwise.
 		**/
-		World(b2AABB aabb, b2Vec2 gravity, bool sleep);
+		World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter = DEFAULT_METER);
 
 		virtual ~World();
 
@@ -127,7 +127,7 @@ namespace box2d
 		* Receives up to four Lua functions as arguments. Each function is
 		* collision callback for the four events (in order): add, persist,
 		* remove and result. The value "nil" is accepted if one or more events
-		* are uninteresting. 
+		* are uninteresting.
 		**/
 		int setCallbacks(lua_State * L);
 
@@ -135,7 +135,7 @@ namespace box2d
 		* Returns the functions previously set by setCallbacks.
 		**/
 		int getCallbacks(lua_State * L);
-		
+
 		/**
 		* Sets the current gravity of the World.
 		* @param x Gravity in the x-direction.
@@ -175,7 +175,7 @@ namespace box2d
 		int getJointCount();
 
 		/**
-		* Sets the number of pixels in one meter. 
+		* Sets the number of pixels in one meter.
 		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
 		**/
 		void setMeter(int meter);
