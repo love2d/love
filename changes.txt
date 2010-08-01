@@ -9,6 +9,7 @@ LOVE 0.7.0
   * Added identity field to love.conf.
   * Added love.quit callback.
   * Added extra meter parameter to love.physics.newWorld.
+  * Added love.graphics.setIcon.
   * Enabled love.filesystem.FileData.
   * Fixed bug where the debug module was not an upvalue of the error handlers. (you can now override debug)
   * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.
@@ -20,7 +21,6 @@ LOVE 0.7.0
   * Moved fonts to love.font (from love.graphics), only rendering remains in love.graphics.
   * Switched font origin to top-left.
   * OS X now properly uses UTIs for .love files.
-  * Dropped the OS X version requirement to 10.4.
   * Fewer compiler warnings.
 
 LOVE 0.6.2

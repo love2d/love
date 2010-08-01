@@ -306,6 +306,25 @@ namespace opengl
 	{
 		SDL_GL_SwapBuffers();
 	}
+	
+	void Graphics::setIcon(Image * image)
+	{
+		Uint32 rmask, gmask, bmask, amask;
+#ifdef LOVE_BIG_ENDIAN
+		rmask = 0xFF000000;
+		gmask = 0x00FF0000;
+		bmask = 0x0000FF00;
+		amask = 0x000000FF;
+#else
+		rmask = 0x000000FF;
+		gmask = 0x0000FF00;
+		bmask = 0x00FF0000;
+		amask = 0xFF000000;
+#endif
+		SDL_Surface * icon = SDL_CreateRGBSurfaceFrom(image->getData()->getData(), image->getWidth(), image->getHeight(), 32, image->getWidth() * 4, rmask, gmask, bmask, amask);
+		SDL_WM_SetIcon(icon, NULL);
+		SDL_FreeSurface(icon);
+	}
 
 	void Graphics::setCaption(const char * caption)
 	{

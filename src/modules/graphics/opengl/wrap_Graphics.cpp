@@ -78,6 +78,13 @@ namespace opengl
 		return 0;
 	}
 
+	int w_setIcon(lua_State * L)
+	{
+		Image * image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+		instance->setIcon(image);
+		return 0;
+	}
+	
 	int w_setCaption(lua_State * L)
 	{
 		const char * str = luaL_checkstring(L, 1);
@@ -859,6 +866,8 @@ namespace opengl
 
 		{ "setCaption", w_setCaption },
 		{ "getCaption", w_getCaption },
+		
+		{ "setIcon", w_setIcon },
 
 		{ "getWidth", w_getWidth },
 		{ "getHeight", w_getHeight },

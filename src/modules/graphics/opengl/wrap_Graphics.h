@@ -42,6 +42,7 @@ namespace opengl
 	int w_reset(lua_State * L);
 	int w_clear(lua_State * L);
 	int w_present(lua_State * L);
+	int w_setIcon(lua_State * L);
 	int w_setCaption(lua_State * L);
 	int w_getCaption(lua_State * L);
 	int w_getWidth(lua_State * L);

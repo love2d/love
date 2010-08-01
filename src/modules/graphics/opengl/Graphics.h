@@ -176,9 +176,14 @@ namespace opengl
 		* presented on screen).
 		**/
 		void present();
+		
+		/**
+		* Sets the window's icon.
+		**/
+		void setIcon(Image * image);
 
 		/**
-		* Sets the windows caption.
+		* Sets the window's caption.
 		**/
 		void setCaption(const char * caption);
 
@@ -505,7 +510,6 @@ namespace opengl
 		* @param ... Vertex components (x1, y1, x2, y2, etc).
 		**/
 		int polygon(lua_State * L);
-		int polygong(lua_State * L);
 
 		/**
 		* Creates a screenshot of the view and saves it to the default folder.
