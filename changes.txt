@@ -8,6 +8,7 @@ LOVE 0.7.0
   * Added Font:getWrap.
   * Added identity field to love.conf.
   * Added love.quit callback.
+  * Added love.focus callback.
   * Added extra meter parameter to love.physics.newWorld.
   * Added love.graphics.setIcon.
   * Enabled love.filesystem.FileData.

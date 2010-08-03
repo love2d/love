@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -96,6 +96,12 @@ namespace sdl
 			m.joystick.button = e.jbutton.button;
 			m.joystick.index = e.jbutton.which;
 			return true;
+		case SDL_ACTIVEEVENT:
+			if (e.active.state & SDL_APPINPUTFOCUS) {
+				m.type = Event::TYPE_FOCUS;
+				m.focus.f = e.active.gain;
+				return true;
+			} else break;
 		case SDL_QUIT:
 			m.type = Event::TYPE_QUIT;
 			return true;
@@ -127,6 +133,10 @@ namespace sdl
 			e.jbutton.which = m.joystick.index;
 			e.jbutton.button = m.joystick.button;
 			return true;
+		case Event::TYPE_FOCUS:
+			e.type = SDL_ACTIVEEVENT;
+			e.active.state = SDL_APPINPUTFOCUS;
+			e.active.gain = m.focus.f;
 		case Event::TYPE_QUIT:
 			e.type = SDL_QUIT;
 			return true;
@@ -137,7 +147,7 @@ namespace sdl
 		return true;
 	}
 
-	EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry Event::keyEntries[] = 
+	EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry Event::keyEntries[] =
 	{
 		{ love::keyboard::Keyboard::KEY_BACKSPACE, SDLK_BACKSPACE},
 		{ love::keyboard::Keyboard::KEY_TAB, SDLK_TAB},
@@ -284,7 +294,7 @@ namespace sdl
 
 	EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> Event::keys(Event::keyEntries, sizeof(Event::keyEntries));
 
-	EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] = 
+	EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
 	{
 		{ love::mouse::Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
 		{ love::mouse::Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},

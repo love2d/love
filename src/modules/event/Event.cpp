@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -58,7 +58,7 @@ namespace event
 		return keys.find(in, out);
 	}
 
-	StringMap<Event::Type, Event::TYPE_MAX_ENUM>::Entry Event::typeEntries[] = 
+	StringMap<Event::Type, Event::TYPE_MAX_ENUM>::Entry Event::typeEntries[] =
 	{
 		{"kp", Event::TYPE_KEY_PRESSED},
 		{"kr", Event::TYPE_KEY_RELEASED},
@@ -66,12 +66,13 @@ namespace event
 		{"mr", Event::TYPE_MOUSE_RELEASED},
 		{"jp", Event::TYPE_JOYSTICK_PRESSED},
 		{"jr", Event::TYPE_JOYSTICK_RELEASED},
+		{"f", Event::TYPE_FOCUS},
 		{"q", Event::TYPE_QUIT},
 	};
 
 	StringMap<Event::Type, Event::TYPE_MAX_ENUM> Event::types(Event::typeEntries, sizeof(Event::typeEntries));
 
-	StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] = 
+	StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
 	{
 		{"l", love::mouse::Mouse::BUTTON_LEFT},
 		{"m", love::mouse::Mouse::BUTTON_MIDDLE},
@@ -84,7 +85,7 @@ namespace event
 
 	StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM> Event::buttons(Event::buttonEntries, sizeof(Event::buttonEntries));
 
-	StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry Event::keyEntries[] = 
+	StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry Event::keyEntries[] =
 	{
 		{"backspace", love::keyboard::Keyboard::KEY_BACKSPACE},
 		{"tab", love::keyboard::Keyboard::KEY_TAB},

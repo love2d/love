@@ -170,6 +170,9 @@ function love.createhandlers()
 		jr = function (j,b)
 			if love.joystickreleased then love.joystickreleased(j,b) end
 		end,
+		f = function (f)
+			if love.focus then love.focus(f) end
+		end,
 		q = function ()
 			return
 		end,

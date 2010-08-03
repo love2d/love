@@ -64,6 +64,9 @@ namespace sdl
 			msg.joystick.index = luaL_checkint(L, 2);
 			msg.joystick.button = luaL_checkint(L, 3);
 			return true;
+		case Event::TYPE_FOCUS:
+			msg.focus.f = lua_toboolean(L, 2);
+			return true;
 		case Event::TYPE_QUIT:
 			return true;
 		default:
@@ -108,6 +111,9 @@ namespace sdl
 			lua_pushinteger(L, msg.joystick.index);
 			lua_pushinteger(L, msg.joystick.button);
 			return 3;
+		case Event::TYPE_FOCUS:
+			lua_pushboolean(L, msg.focus.f);
+			return 2;
 		case Event::TYPE_QUIT:
 			return 1;
 		default:
