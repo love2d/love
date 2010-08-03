@@ -36,7 +36,6 @@ AC_SEARCH_LIBS([ModPlug_Load], [modplug], [], AC_MSG_ERROR([Can't LÖVE without 
 AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [], AC_MSG_ERROR([Can't LÖVE without Mpg123]))
 AC_SEARCH_LIBS([mpg123_seek_64], [mpg123], AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]), AC_SUBST([FILE_OFFSET],[]))
 AC_SEARCH_LIBS([ov_open], [vorbisfile], [], AC_MSG_ERROR([Can't LÖVE without VorbisFile]))
-AC_SEARCH_LIBS([FLAC__metadata_chain_new], [FLAC++], [], AC_MSG_ERROR([Can't LÖVE without FLAC++]))
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
