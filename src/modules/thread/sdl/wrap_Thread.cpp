@@ -256,9 +256,13 @@ namespace sdl
 	int w_newThread(lua_State *L)
 	{
 		std::string name = luaL_checkstring(L, 1);
+		love::Data *data;
 		if (lua_isstring(L, 2))
-			luax_convobj(L, 2, "filesystem", "read");
-		love::Data *data = luax_checktype<love::Data>(L, 2, "Data", DATA_T);
+			luax_convobj(L, 2, "filesystem", "newFile");
+		if (luax_istype(L, 2, FILESYSTEM_FILE_T))
+			data = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T)->read();
+		else
+			data = luax_checktype<love::Data>(L, 2, "Data", DATA_T);
 		Thread *t = instance->newThread(name, data);
 		luax_newtype(L, "Thread", THREAD_THREAD_T, (void*)t);
 		return 1;
