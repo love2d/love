@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -106,7 +106,7 @@ namespace opengl
 	void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
 	{
 		static Matrix t;
-		
+
 		t.setTransformation(x, y, angle, sx, sy, ox, oy);
 		drawv(t, vertices);
 	}
@@ -165,7 +165,7 @@ namespace opengl
 		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
 
 		Image::Filter f;
-		
+
 		switch(gmin)
 		{
 		case GL_NEAREST:
@@ -272,7 +272,7 @@ namespace opengl
 
 	void Image::unload()
 	{
-		unloadVolatile();
+		return unloadVolatile();
 	}
 
 	bool Image::loadVolatile()
@@ -285,21 +285,26 @@ namespace opengl
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		glTexImage2D(GL_TEXTURE_2D, 
-			0, 
-			GL_RGBA8, 
-			(GLsizei)width, 
-			(GLsizei)height, 
-			0, 
-			GL_RGBA, 
-			GL_UNSIGNED_BYTE, 
+		glTexImage2D(GL_TEXTURE_2D,
+			0,
+			GL_RGBA8,
+			(GLsizei)width,
+			(GLsizei)height,
+			0,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
 			data->getData());
+
+		setFilter(settings.filter);
+		setWrap(settings.wrap);
 
 		return true;
 	}
 
 	void Image::unloadVolatile()
 	{
+		settings.filter = getFilter();
+		settings.wrap = getWrap();
 		// Delete the hardware texture.
 		if(texture != 0)
 		{

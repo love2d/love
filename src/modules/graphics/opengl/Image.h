@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -39,11 +39,11 @@ namespace graphics
 {
 namespace opengl
 {
-	
+
 	/**
 	* A drawable image based on OpenGL-textures. This class takes ImageData
-	* objects and create textures on the GPU for fast drawing. 
-	* 
+	* objects and create textures on the GPU for fast drawing.
+	*
 	* @author Anders Ruud
 	**/
 	class Image : public love::graphics::Image
@@ -53,7 +53,7 @@ namespace opengl
 		// The ImageData from which the texture is created.
 		love::image::ImageData * data;
 
-		// Width and height of the hardware texture. 
+		// Width and height of the hardware texture.
 		float width, height;
 
 		// OpenGL texture identifier.
@@ -62,16 +62,23 @@ namespace opengl
 		// The source vertices of the image.
 		vertex vertices[4];
 
+		// The settings we need to save when reloading.
+		struct
+		{
+			Image::Filter filter;
+			Image::Wrap wrap;
+		} settings;
+
 	public:
 
 		/**
 		* Creates a new Image. Not that anything is ready to use
 		* before load is called.
-		* 
+		*
 		* @param file The file from which to load the image.
 		**/
 		Image(love::image::ImageData * data);
-		
+
 		/**
 		* Destructor. Deletes the hardware texture and other resources.
 		**/
@@ -81,15 +88,15 @@ namespace opengl
 		float getHeight() const;
 
 		const vertex * getVertices() const;
-		
+
 		love::image::ImageData * getData() const;
 
 		/**
 		* Generate vertices according to a subimage.
-		* 
-		* Note: out-of-range values will be clamped. 
+		*
+		* Note: out-of-range values will be clamped.
 		* Note: the vertex colors will not be changed.
-		* 
+		*
 		* @param x The top-left corner of the subimage along the x-axis.
 		* @param y The top-left corner of the subimage along the y-axis.
 		* @param w The width of the subimage.
@@ -131,14 +138,14 @@ namespace opengl
 
 		// Implements Volatile.
 		bool loadVolatile();
-		void unloadVolatile();		
+		void unloadVolatile();
 
 	private:
 
 		void drawv(const Matrix & t, const vertex * v) const;
 
 	}; // Image
-	
+
 } // opengl
 } // graphics
 } // love

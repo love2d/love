@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -39,9 +39,9 @@ namespace lullaby
 		return 1;
 	}
 
-	size_t vorbisRead(void * ptr		/* ptr to the data that the vorbis files need*/, 
-					  size_t byteSize	/* how big a byte is*/, 
-					  size_t sizeToRead	/* How much we can read*/, 
+	size_t vorbisRead(void * ptr		/* ptr to the data that the vorbis files need*/,
+					  size_t byteSize	/* how big a byte is*/,
+					  size_t sizeToRead	/* How much we can read*/,
 					  void * datasource	/* this is a pointer to the data we passed into ov_open_callbacks (our SOggFile struct*/)
 	{
 		size_t				spaceToEOF;			// How much more we can read till we hit the EOF marker
@@ -56,8 +56,8 @@ namespace lullaby
 		if ((sizeToRead*byteSize) < spaceToEOF)
 			actualSizeToRead = (sizeToRead*byteSize);
 		else
-			actualSizeToRead = spaceToEOF;	
-		
+			actualSizeToRead = spaceToEOF;
+
 		// A simple copy of the data from memory to the datastruct that the vorbis libs will use
 		if (actualSizeToRead)
 		{
@@ -100,7 +100,7 @@ namespace lullaby
 			if (offset < spaceToEOF)
 				actualOffset = (offset);
 			else
-				actualOffset = spaceToEOF;	
+				actualOffset = spaceToEOF;
 			// Seek from our currrent location
 			vorbisData->dataRead += (int)actualOffset;
 			break;
@@ -133,7 +133,7 @@ namespace lullaby
 		vorbisCallbacks.seek_func  = vorbisSeek;
 		vorbisCallbacks.read_func  = vorbisRead;
 		vorbisCallbacks.tell_func  = vorbisTell;
-		
+
 		// Check endianness
 #ifdef LOVE_BIG_ENDIAN
 		endian = 1;
@@ -149,7 +149,7 @@ namespace lullaby
 		// Open Vorbis handle
 		if(ov_open_callbacks(&oggFile, &handle, NULL, 0, vorbisCallbacks) < 0)
 			throw love::Exception("Could not read Ogg bitstream");
-		
+
 		// Get info and comments
 		vorbisInfo = ov_info(&handle, -1);
 		vorbisComment = ov_comment(&handle, -1);
