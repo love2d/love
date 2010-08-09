@@ -23,6 +23,7 @@
 
 // LOVE
 #include <physics/Shape.h>
+#include <physics/box2d/Body.h>
 #include <common/Reference.h>
 
 // Box2D
@@ -34,9 +35,6 @@ namespace physics
 {
 namespace box2d
 {
-	// Forward declarations.
-	class Body;
-
 	/**
 	* This struct is stored in a void pointer
 	* in the Box2D Shape class. For now, all we

@@ -49,6 +49,7 @@ namespace box2d
 		{ "getFriction", w_Shape_getFriction },
 		{ "getRestitution", w_Shape_getRestitution },
 		{ "getDensity", w_Shape_getDensity },
+		{ "getBody", w_Shape_getBody },
 		{ "isSensor", w_Shape_isSensor },
 		{ "testPoint", w_Shape_testPoint },
 		{ "testSegment", w_Shape_testSegment },

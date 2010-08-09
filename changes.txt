@@ -18,6 +18,7 @@ LOVE 0.7.0
   * Fixed a bug in the loader (for require).
   * Fixed a bug where ParticleSystem::setSprite did not retain the new image.
   * Fixed a bug where images would lose their settings (wrapping, filters) when setMode as called.
+  * Fixed a bug where shape:getBody wasn't exposed.
   * Invalid FSAA values now fall back to working ones (or none at all).
   * Cleaned up traceback in error screen.
   * Moved fonts to love.font (from love.graphics), only rendering remains in love.graphics.
