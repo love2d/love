@@ -84,7 +84,7 @@ namespace opengl
 		instance->setIcon(image);
 		return 0;
 	}
-	
+
 	int w_setCaption(lua_State * L)
 	{
 		const char * str = luaL_checkstring(L, 1);
@@ -289,6 +289,21 @@ namespace opengl
 		int size = luaL_checkint(L, 2);
 		ParticleSystem * t = instance->newParticleSystem(image, size);
 		luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void*)t);
+		return 1;
+	}
+
+	int w_newFbo(lua_State * L)
+	{
+		int width, height;
+		width = luaL_checkint(L, 1);
+		height = luaL_checkint(L, 2);
+		Fbo * fbo = instance->newFbo(width, height);
+
+		//and there we go with the status... still disliked
+		GLenum status = fbo->status();
+		if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+			return luaL_error(L, "Cannot create FBO: %d", status);
+		luax_newtype(L, "Fbo", GRAPHICS_FBO_T, (void*)fbo);
 		return 1;
 	}
 
@@ -829,6 +844,7 @@ namespace opengl
 		{ "newImageFont", w_newImageFont },
 		{ "newSpriteBatch", w_newSpriteBatch },
 		{ "newParticleSystem", w_newParticleSystem },
+		{ "newFbo", w_newFbo },
 
 		{ "setColor", w_setColor },
 		{ "getColor", w_getColor },
@@ -866,7 +882,7 @@ namespace opengl
 
 		{ "setCaption", w_setCaption },
 		{ "getCaption", w_getCaption },
-		
+
 		{ "setIcon", w_setIcon },
 
 		{ "getWidth", w_getWidth },
@@ -906,6 +922,7 @@ namespace opengl
 		luaopen_frame,
 		luaopen_spritebatch,
 		luaopen_particlesystem,
+		luaopen_fbo,
 		0
 	};
 
