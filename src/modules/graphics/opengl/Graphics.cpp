@@ -306,7 +306,7 @@ namespace opengl
 	{
 		SDL_GL_SwapBuffers();
 	}
-
+	
 	void Graphics::setIcon(Image * image)
 	{
 		Uint32 rmask, gmask, bmask, amask;
@@ -468,11 +468,6 @@ namespace opengl
 	ParticleSystem * Graphics::newParticleSystem(Image * image, int size)
 	{
 		return new ParticleSystem(image, size);
-	}
-
-	Fbo * Graphics::newFbo(int width, int height)
-	{
-		return new Fbo(width, height);
 	}
 
 	void Graphics::setColor(Color c)

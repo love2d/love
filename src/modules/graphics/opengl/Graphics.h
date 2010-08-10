@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-*
+* 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-*
+* 
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-*
+* 
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -43,7 +43,6 @@
 #include "Quad.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
-#include "Fbo.h"
 
 namespace love
 {
@@ -96,13 +95,13 @@ namespace opengl
 		// Default values.
 		DisplayState()
 		{
-			color.r = 255;
-			color.g = 255;
-			color.b = 255;
+			color.r = 255; 
+			color.g = 255; 
+			color.b = 255; 
 			color.a = 255;
-			backgroundColor.r = 0;
-			backgroundColor.g = 0;
-			backgroundColor.b = 0;
+			backgroundColor.r = 0; 
+			backgroundColor.g = 0; 
+			backgroundColor.b = 0; 
 			backgroundColor.a = 255;
 			blendMode = Graphics::BLEND_ALPHA;
 			colorMode = Graphics::COLOR_MODULATE;
@@ -127,7 +126,7 @@ namespace opengl
 
 		Graphics();
 		virtual ~Graphics();
-
+		
 		// Implements Module.
 		const char * getName() const;
 
@@ -166,18 +165,18 @@ namespace opengl
 		* when the game reloads.
 		**/
 		void reset();
-
+			
 		/**
 		* Clears the screen.
 		**/
 		void clear();
 
 		/**
-		* Flips buffers. (Rendered geometry is
+		* Flips buffers. (Rendered geometry is 
 		* presented on screen).
 		**/
 		void present();
-
+		
 		/**
 		* Sets the window's icon.
 		**/
@@ -208,13 +207,13 @@ namespace opengl
 		/**
 		* This native Lua function gets available modes
 		* from SDL and returns them as a table on the following format:
-		*
-		* {
-		*   { width = 800, height = 600 },
+		* 
+		* { 
+		*   { width = 800, height = 600 }, 
 		*   { width = 1024, height = 768 },
 		*   ...
 		* }
-		*
+		* 
 		* Only fullscreen modes are returned here, as all
 		* window sizes are supported (normally).
 		**/
@@ -246,7 +245,7 @@ namespace opengl
 		**/
 		Image * newImage(love::filesystem::File * file);
 		Image * newImage(love::image::ImageData * data);
-
+		
 		/**
 		* Creates a Frame
 		**/
@@ -256,13 +255,11 @@ namespace opengl
 		* Creates a Font object.
 		**/
 		Font * newFont(love::font::FontData * data);
-
+		
 		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
 
 		ParticleSystem * newParticleSystem(Image * image, int size);
-
-		Fbo * newFbo(int width, int height);
-
+			
 		/**
 		* Sets the foreground color.
 		**/
@@ -274,7 +271,7 @@ namespace opengl
 		Color getColor();
 
 		/**
-		* Sets the background Color.
+		* Sets the background Color. 
 		**/
 		void setBackgroundColor(Color c);
 
@@ -386,7 +383,7 @@ namespace opengl
 		PointStyle getPointStyle();
 
 		/**
-		* Gets the maximum point size supported.
+		* Gets the maximum point size supported. 
 		* This may vary from computer to computer.
 		**/
 		int getMaxPointSize();
@@ -409,7 +406,7 @@ namespace opengl
 		void print(const char * str, float x, float y , float angle);
 
 		/**
-		* Draws text at the specified coordinates, with rotation and
+		* Draws text at the specified coordinates, with rotation and 
 		* scaling.
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
@@ -419,7 +416,7 @@ namespace opengl
 		void print(const char * str, float x, float y , float angle, float s);
 
 		/**
-		* Draws text at the specified coordinates, with rotation and
+		* Draws text at the specified coordinates, with rotation and 
 		* scaling along both axes.
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
@@ -455,7 +452,7 @@ namespace opengl
 		* @param y2 Second y-coordinate.
 		**/
 		void line(float x1, float y1, float x2, float y2);
-
+		
 		/**
 		* Draws a series of lines connecting the given vertices.
 		* @param ... Vertex components (x1, y1, x2, y2, etc.)
