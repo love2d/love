@@ -4,6 +4,7 @@
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
 #include <common/math.h>
+#include <map>
 #include "GLee.h"
 
 namespace love
@@ -19,7 +20,9 @@ namespace opengl
 		Fbo(int width, int height);
 		virtual ~Fbo();
 
-		GLenum status() const; //SERIOUS DISLIKE HERE
+		// for internal use (w_newFbo <-> love.graphics.newFbo) only
+		GLenum statusCode() const { return status_; } //SERIOUS DISLIKE HERE
+		const char* statusMessage() const;
 
 		void bind(); //DOUBTFUL ABOUT NAME
 		void unbind(); //Maybe start/stop?
@@ -37,6 +40,8 @@ namespace opengl
 		GLenum status_;
 
 		vertex vertices[4];
+
+		static std::map<GLenum, const char*> status_to_string;
 	};
 
 } // opengl

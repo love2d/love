@@ -300,9 +300,8 @@ namespace opengl
 		Fbo * fbo = instance->newFbo(width, height);
 
 		//and there we go with the status... still disliked
-		GLenum status = fbo->status();
-		if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
-			return luaL_error(L, "Cannot create FBO: %d", status);
+		if (fbo->statusCode() != GL_FRAMEBUFFER_COMPLETE_EXT)
+			return luaL_error(L, "Cannot create FBO: %s", fbo->statusMessage());
 		luax_newtype(L, "Fbo", GRAPHICS_FBO_T, (void*)fbo);
 		return 1;
 	}
