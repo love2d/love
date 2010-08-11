@@ -94,6 +94,7 @@ namespace opengl
 		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(.0f, .0f, .0f, .0f);
 		glViewport(0, 0, width, height);
 	}
 
