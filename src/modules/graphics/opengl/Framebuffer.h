@@ -24,21 +24,23 @@ namespace opengl
 		GLenum statusCode() const { return status_; } //SERIOUS DISLIKE HERE
 		const char* statusMessage() const;
 
-		void grab();
-		void stop();
+		bool grab();
+		bool stop();
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 
 	private:
+		static bool isGrabbing;
+
 		GLsizei width;
 		GLsizei height;
 		GLuint fbo;
 		GLuint depthbuffer;
 		GLuint img;
-		GLenum status_;
 
 		vertex vertices[4];
 
+		GLenum status_;
 		static std::map<GLenum, const char*> status_to_string;
 	};
 

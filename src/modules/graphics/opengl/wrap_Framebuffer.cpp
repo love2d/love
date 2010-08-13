@@ -17,12 +17,16 @@ namespace opengl
 		if (!lua_isfunction(L, 2))
 			return luaL_error(L, "Need a function to render to fbo");
 
-		fbo->grab();
+		// prevent nesting
+		if (!fbo->grab())
+			return luaL_error(L, "Cannot grab screen. May be caused by nesting or forgetting to stop()");
 
 		lua_settop(L, 2); // make sure the function is on top of the stack
 		lua_pcall(L, 0, 0, 0);
 
-		fbo->stop();
+		// fbo can be stopped in function.
+		if (!fbo->stop())
+			return luaL_error(L, "Grabbing already stopped.");
 
 		return 0;
 	}
@@ -30,14 +34,17 @@ namespace opengl
 	int w_Framebuffer_grab(lua_State * L)
 	{
 		Framebuffer * fbo = luax_checkfbo(L, 1);
-		fbo->grab();
+		// prevent nesting
+		if (!fbo->grab())
+			return luaL_error(L, "Cannot grab screen. May be caused by nesting or forgetting to stop()");
 		return 0;
 	}
 
 	int w_Framebuffer_stop(lua_State * L)
 	{
 		Framebuffer * fbo = luax_checkfbo(L, 1);
-		fbo->stop();
+		if (!fbo->stop())
+			return luaL_error(L, "Grabbing already stopped.");
 		return 0;
 	}
 

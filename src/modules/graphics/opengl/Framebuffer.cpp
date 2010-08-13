@@ -8,6 +8,7 @@ namespace graphics
 namespace opengl
 {
 
+	bool Framebuffer::isGrabbing = false;
 	std::map<GLenum, const char*> Framebuffer::status_to_string;
 
 	Framebuffer::Framebuffer(int width, int height) :
@@ -89,19 +90,32 @@ namespace opengl
 		status_to_string[statusCode()];
 	}
 
-	void Framebuffer::grab()
+	bool Framebuffer::grab()
 	{
+		// don't allow nesting or forgetting Framebuffer::stop()
+		if (isGrabbing)
+			return false;
+
 		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(.0f, .0f, .0f, .0f);
 		glViewport(0, 0, width, height);
+		isGrabbing = true;
+
+		return true;
 	}
 
-	void Framebuffer::stop()
+	bool Framebuffer::stop()
 	{
+		if (!isGrabbing)
+			return false;
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glPopAttrib();
+		isGrabbing = false;
+
+		return true;
 	}
 
 	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
