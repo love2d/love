@@ -1,5 +1,5 @@
-#ifndef LOVE_GRAPHICS_FBO_H
-#define LOVE_GRAPHICS_FBO_H
+#ifndef LOVE_GRAPHICS_FRAMEBUFFER_H
+#define LOVE_GRAPHICS_FRAMEBUFFER_H
 
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
@@ -14,13 +14,13 @@ namespace graphics
 namespace opengl
 {
 
-	class Fbo : public Drawable // Fbo vs. FBO?
+	class Framebuffer : public Drawable
 	{
 	public:
-		Fbo(int width, int height);
-		virtual ~Fbo();
+		Framebuffer(int width, int height);
+		virtual ~Framebuffer();
 
-		// for internal use (w_newFbo <-> love.graphics.newFbo) only
+		// for internal use (w_newFramebuffer <-> love.graphics.newFramebuffer) only
 		GLenum statusCode() const { return status_; } //SERIOUS DISLIKE HERE
 		const char* statusMessage() const;
 
@@ -48,4 +48,4 @@ namespace opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_FBO_H
+#endif // LOVE_GRAPHICS_FRAMEBUFFER_H

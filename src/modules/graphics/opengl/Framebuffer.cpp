@@ -1,4 +1,4 @@
-#include "Fbo.h"
+#include "Framebuffer.h"
 #include <common/Matrix.h>
 
 namespace love
@@ -8,9 +8,9 @@ namespace graphics
 namespace opengl
 {
 
-	std::map<GLenum, const char*> Fbo::status_to_string;
+	std::map<GLenum, const char*> Framebuffer::status_to_string;
 
-	Fbo::Fbo(int width, int height) :
+	Framebuffer::Framebuffer(int width, int height) :
 		width(width), height(height)
 	{
 		// maybe create status code messages
@@ -77,19 +77,19 @@ namespace opengl
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	Fbo::~Fbo()
+	Framebuffer::~Framebuffer()
 	{
 		glDeleteTextures(1, &fbo);
 		glDeleteRenderbuffers(1, &depthbuffer);
 		glDeleteFramebuffers(1, &img);
 	}
 
-	const char* Fbo::statusMessage() const
+	const char* Framebuffer::statusMessage() const
 	{
 		status_to_string[statusCode()];
 	}
 
-	void Fbo::bind()
+	void Framebuffer::bind()
 	{
 		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -98,13 +98,13 @@ namespace opengl
 		glViewport(0, 0, width, height);
 	}
 
-	void Fbo::unbind()
+	void Framebuffer::unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glPopAttrib();
 	}
 
-	void Fbo::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
+	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
 	{
 		static Matrix t;
 		t.setTransformation(x, y, angle, sx, sy, ox, oy);
