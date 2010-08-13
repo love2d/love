@@ -17,34 +17,34 @@ namespace opengl
 		if (!lua_isfunction(L, 2))
 			return luaL_error(L, "Need a function to render to fbo");
 
-		fbo->bind();
+		fbo->grab();
 
 		lua_settop(L, 2); // make sure the function is on top of the stack
 		lua_pcall(L, 0, 0, 0);
 
-		fbo->unbind();
+		fbo->stop();
 
 		return 0;
 	}
 
-	int w_Framebuffer_bind(lua_State * L)
+	int w_Framebuffer_grab(lua_State * L)
 	{
 		Framebuffer * fbo = luax_checkfbo(L, 1);
-		fbo->bind();
+		fbo->grab();
 		return 0;
 	}
 
-	int w_Framebuffer_unbind(lua_State * L)
+	int w_Framebuffer_stop(lua_State * L)
 	{
 		Framebuffer * fbo = luax_checkfbo(L, 1);
-		fbo->unbind();
+		fbo->stop();
 		return 0;
 	}
 
 	static const luaL_Reg functions[] = {
 		{ "render", w_Framebuffer_render },
-		{ "bind", w_Framebuffer_bind },
-		{ "unbind", w_Framebuffer_unbind },
+		{ "grab", w_Framebuffer_grab },
+		{ "stop", w_Framebuffer_stop },
 		{ 0, 0 }
 	};
 

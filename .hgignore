@@ -7,6 +7,10 @@ glob:extra/reshax/Debug/
 glob:extra/reshax/resources.h
 glob:extra/reshax/resources.cpp
 glob:*.obj
+glob:*.o
+glob:*.dirstamp
+glob:*.m4
+glob:*.Po
 glob:*.dll
 glob:*.user
 glob:*.suo

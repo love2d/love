@@ -89,7 +89,7 @@ namespace opengl
 		status_to_string[statusCode()];
 	}
 
-	void Framebuffer::bind()
+	void Framebuffer::grab()
 	{
 		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -98,7 +98,7 @@ namespace opengl
 		glViewport(0, 0, width, height);
 	}
 
-	void Framebuffer::unbind()
+	void Framebuffer::stop()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glPopAttrib();

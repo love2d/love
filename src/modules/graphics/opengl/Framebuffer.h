@@ -24,10 +24,8 @@ namespace opengl
 		GLenum statusCode() const { return status_; } //SERIOUS DISLIKE HERE
 		const char* statusMessage() const;
 
-		void bind(); //DOUBTFUL ABOUT NAME
-		void unbind(); //Maybe start/stop?
-		//And what about clearing, clear() isn't entirely what I want either
-		//maybe make bind/start autoclear?
+		void grab();
+		void stop();
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 
