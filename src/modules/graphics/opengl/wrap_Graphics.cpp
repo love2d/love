@@ -292,17 +292,17 @@ namespace opengl
 		return 1;
 	}
 
-	int w_newFbo(lua_State * L)
+	int w_newFramebuffer(lua_State * L)
 	{
 		int width, height;
 		width = luaL_checkint(L, 1);
 		height = luaL_checkint(L, 2);
-		Fbo * fbo = instance->newFbo(width, height);
+		Framebuffer * Framebuffer = instance->newFramebuffer(width, height);
 
 		//and there we go with the status... still disliked
-		if (fbo->statusCode() != GL_FRAMEBUFFER_COMPLETE_EXT)
-			return luaL_error(L, "Cannot create FBO: %s", fbo->statusMessage());
-		luax_newtype(L, "Fbo", GRAPHICS_FBO_T, (void*)fbo);
+		if (Framebuffer->statusCode() != GL_FRAMEBUFFER_COMPLETE_EXT)
+			return luaL_error(L, "Cannot create Framebuffer: %s", Framebuffer->statusMessage());
+		luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*)Framebuffer);
 		return 1;
 	}
 
@@ -843,7 +843,7 @@ namespace opengl
 		{ "newImageFont", w_newImageFont },
 		{ "newSpriteBatch", w_newSpriteBatch },
 		{ "newParticleSystem", w_newParticleSystem },
-		{ "newFbo", w_newFbo },
+		{ "newFramebuffer", w_newFramebuffer },
 
 		{ "setColor", w_setColor },
 		{ "getColor", w_getColor },
@@ -921,7 +921,7 @@ namespace opengl
 		luaopen_frame,
 		luaopen_spritebatch,
 		luaopen_particlesystem,
-		luaopen_fbo,
+		luaopen_framebuffer,
 		0
 	};
 

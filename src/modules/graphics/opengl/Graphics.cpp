@@ -470,9 +470,9 @@ namespace opengl
 		return new ParticleSystem(image, size);
 	}
 
-	Fbo * Graphics::newFbo(int width, int height)
+	Framebuffer * Graphics::newFramebuffer(int width, int height)
 	{
-		return new Fbo(width, height);
+		return new Framebuffer(width, height);
 	}
 
 	void Graphics::setColor(Color c)

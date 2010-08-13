@@ -43,7 +43,7 @@
 #include "Quad.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
-#include "Fbo.h"
+#include "Framebuffer.h"
 
 namespace love
 {
@@ -261,7 +261,7 @@ namespace opengl
 
 		ParticleSystem * newParticleSystem(Image * image, int size);
 
-		Fbo * newFbo(int width, int height);
+		Framebuffer * newFramebuffer(int width, int height);
 
 		/**
 		* Sets the foreground color.

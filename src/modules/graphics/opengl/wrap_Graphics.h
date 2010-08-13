@@ -28,7 +28,7 @@
 #include "wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
-#include "wrap_Fbo.h"
+#include "wrap_Framebuffer.h"
 #include "Graphics.h"
 
 namespace love
@@ -59,7 +59,7 @@ namespace opengl
 	int w_newImageFont(lua_State * L);
 	int w_newSpriteBatch(lua_State * L);
 	int w_newParticleSystem(lua_State * L);
-	int w_newFbo(lua_State * L); // commetns in function
+	int w_newFramebuffer(lua_State * L); // commetns in function
 	int w_setColor(lua_State * L);
 	int w_getColor(lua_State * L);
 	int w_setBackgroundColor(lua_State * L);
