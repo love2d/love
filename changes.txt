@@ -4,6 +4,7 @@ LOVE 0.7.0
   * Added love.thread module.
   * Added Source:play, Source:pause, etc.
   * Added Source:isStatic().
+  * Added get/setPosition, get/setVelocity, and get/setDirection to Source.
   * Added get/setGroupIndex to CircleShape and PolygonShape.
   * Added Font:getWrap.
   * Added identity field to love.conf.

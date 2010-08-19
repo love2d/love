@@ -199,6 +199,13 @@ namespace audio
 		{ "getPitch", w_Source_getPitch },
 		{ "setVolume", w_Source_setVolume },
 		{ "getVolume", w_Source_getVolume },
+		{ "setPosition", w_Source_setPosition },
+		{ "getPosition", w_Source_getPosition },
+		{ "setVelocity", w_Source_setVelocity },
+		{ "getVelocity", w_Source_getVelocity },
+		{ "setDirection", w_Source_setDirection },
+		{ "getDirection", w_Source_getDirection },
+		
 		{ "setLooping", w_Source_setLooping },
 		{ "isLooping", w_Source_isLooping },
 		{ "isStopped", w_Source_isStopped },
