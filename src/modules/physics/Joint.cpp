@@ -40,7 +40,7 @@ namespace physics
 
 	StringMap<Joint::Type, Joint::JOINT_MAX_ENUM>::Entry Joint::typeEntries[] = 
 	{
-		{"circle", Joint::JOINT_DISTANCE},
+		{"distance", Joint::JOINT_DISTANCE},
 		{"revolute", Joint::JOINT_REVOLUTE},
 		{"prismatic", Joint::JOINT_PRISMATIC},
 		{"mouse", Joint::JOINT_MOUSE},
