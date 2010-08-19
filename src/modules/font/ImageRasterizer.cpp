@@ -79,6 +79,7 @@ namespace font
 			gd[i*4+2] = p.b;
 			gd[i*4+3] = p.a;
 		}
+		g->pad();
 		return g;
 	}
 

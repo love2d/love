@@ -104,6 +104,9 @@ namespace freetype
 		
 		// Having copied the data over, we can destroy the glyph
 		FT_Done_Glyph(ftglyph);
+		
+		// Pad the GlyphData for graphics cards that don't support npo2 textures
+		glyphData->pad();
 
 		// Return data
 		return glyphData;

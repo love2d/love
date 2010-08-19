@@ -26,7 +26,7 @@ namespace font
 {
 
 	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
-		: glyph(glyph), metrics(glyphMetrics), format(f)
+		: glyph(glyph), metrics(glyphMetrics), format(f), padded(false)
 	{
 		if (getWidth() && getHeight()) {
 			switch (f) {
@@ -67,12 +67,12 @@ namespace font
 
 	int GlyphData::getHeight() const
 	{
-		return metrics.height;
+		return (padded ? getPaddedHeight() : metrics.height);
 	}
 
 	int GlyphData::getWidth() const
 	{
-		return metrics.width;
+		return (padded ? getPaddedWidth() : metrics.width);
 	}
 	
 	int GlyphData::getAdvance() const
@@ -113,6 +113,69 @@ namespace font
 	GlyphData::Format GlyphData::getFormat() const
 	{
 		return format;
+	}
+	
+	void GlyphData::pad()
+	{
+		int w = getWidth();
+		int h = getHeight();
+		int pw = next_p2(w);
+		int ph = next_p2(h);
+		unsigned char * d = new unsigned char[pw * ph * (format == GlyphData::FORMAT_LUMINOSITY_ALPHA ? 2 : 4)];
+		for (int i = 0; i < pw; i++) {
+			for (int j = 0; j < ph; j++) {
+				int n = i+j*w;
+				int p = i+j*pw;
+				if (i < w && j < h) {
+					if (format == GlyphData::FORMAT_LUMINOSITY_ALPHA) {
+						p *= 2;
+						n *= 2;
+						d[p] = data[n];
+						d[p+1] = data[n+1];
+					} else {
+						p *= 4;
+						n *= 4;
+						d[p] = data[n];
+						d[p+1] = data[n+1];
+						d[p+2] = data[n+2];
+						d[p+3] = data[n+3];
+					}
+				} else {
+					if (format == GlyphData::FORMAT_LUMINOSITY_ALPHA) {
+						p *= 2;
+						d[p] = d[p+1] = 0;
+					} else {
+						p *= 4;
+						d[p] = d[p+1] = d[p+2] = d[p+3] = 0;
+					}
+				}
+			}
+		}
+		delete[] data;
+		data = d;
+		padded = true;
+	}
+	
+	bool GlyphData::isPadded() const
+	{
+		return padded;
+	}
+	
+	int GlyphData::getPaddedWidth() const
+	{
+		return next_p2(metrics.width);
+	}
+	
+	int GlyphData::getPaddedHeight() const
+	{
+		return next_p2(metrics.height);
+	}
+	
+	inline int GlyphData::next_p2(int num) const
+	{
+		int powered = 2;
+		while(powered < num) powered <<= 1;
+		return powered;
 	}
 
 } // font
