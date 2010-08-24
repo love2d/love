@@ -55,6 +55,31 @@ namespace opengl
 			data->release();
 		unload();
 	}
+
+	void Glyph::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
+	{
+		static Matrix t;
+		
+		t.setTransformation(x, y, angle, sx, sy, ox, oy);
+
+		if(texture != 0)
+			glBindTexture(GL_TEXTURE_2D,texture);
+
+		glPushMatrix();
+
+		glMultMatrixf((const GLfloat*)t.getElements());
+
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&vertices[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&vertices[0].s);
+		glDrawArrays(GL_QUADS, 0, 4);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+
+		glPopMatrix();
+
+	}
 	
 	bool Glyph::load()
 	{
@@ -87,15 +112,7 @@ namespace opengl
 			0, 
 			format, 
 			GL_UNSIGNED_BYTE, 
-					 data->getData());
-		
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&vertices[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&vertices[0].s);
-		glDrawArrays(GL_QUADS, 0, 4);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_VERTEX_ARRAY);
+			data->getData());
 
 		return true;
 	}

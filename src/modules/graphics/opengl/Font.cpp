@@ -38,8 +38,9 @@ namespace opengl
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
 			glyphs[i] = new Glyph(data->getGlyphData(i));
-			glNewList(list + i, GL_COMPILE);
 			glyphs[i]->load(); 
+			glNewList(list + i, GL_COMPILE);
+			glyphs[i]->draw(0, 0, 0, 1, 1, 0, 0);
 			glEndList();
 			widths[i] = data->getGlyphData(i)->getWidth();
 			spacing[i] = data->getGlyphData(i)->getAdvance();
