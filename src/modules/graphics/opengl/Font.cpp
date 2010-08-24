@@ -171,6 +171,25 @@ namespace opengl
 	{
 		return mSpacing;
 	}
+	
+	bool Font::loadVolatile()
+	{
+		// reload all glyphs
+		for(unsigned int i = 0; i < MAX_CHARS; i++)
+		{
+			glyphs[i]->load(); 
+			glNewList(list + i, GL_COMPILE);
+			glyphs[i]->draw(0, 0, 0, 1, 1, 0, 0);
+			glEndList();
+		}
+		return true;
+	}
+	
+	void Font::unloadVolatile()
+	{
+		// delete the glyphs
+		glDeleteLists(list, MAX_CHARS);
+	}
 
 } // opengl
 } // graphics

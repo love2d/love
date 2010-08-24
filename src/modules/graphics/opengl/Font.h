@@ -35,7 +35,7 @@ namespace graphics
 {
 namespace opengl
 {
-	class Font : public Object
+	class Font : public Object, public Volatile
 	{
 	private:
 
@@ -148,6 +148,10 @@ namespace opengl
 		* Returns the spacing modifier.
 		**/
 		float getSpacing() const;
+		
+		// Implements Volatile.
+		bool loadVolatile();
+		void unloadVolatile();	
 
 	}; // Font
 
