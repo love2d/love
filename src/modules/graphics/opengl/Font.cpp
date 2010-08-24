@@ -34,10 +34,13 @@ namespace opengl
 	: height(data->getHeight()), lineHeight(1.25), mSpacing(1)
 	{
 		glyphs = new Glyph*[MAX_CHARS];
+		
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
 			glyphs[i] = new Glyph(data->getGlyphData(i));
-			glyphs[i]->load();
+			glNewList(list + i, GL_COMPILE);
+			glyphs[i]->load(); 
+			glEndList();
 			widths[i] = data->getGlyphData(i)->getWidth();
 			spacing[i] = data->getGlyphData(i)->getAdvance();
 			bearingX[i] = data->getGlyphData(i)->getBearingX();
@@ -72,7 +75,10 @@ namespace opengl
 		for (unsigned int i = 0; i < text.size(); i++) {
 			int g = (int)text[i];
 			if (!glyphs[g]) g = 32; // space
-			glyphs[g]->draw(bearingX[g] + s, -bearingY[g]+height, 0, 1, 1, 0, 0);
+			glPushMatrix();
+			glTranslatef(bearingX[g] + s, -bearingY[g]+height, 0.0f);
+			glCallList(list+g);
+			glPopMatrix();
 			s += spacing[g] * mSpacing;
 		}
 		glPopMatrix();
@@ -81,7 +87,10 @@ namespace opengl
 	void Font::print(char character, float x, float y) const
 	{
 		if (!glyphs[character]) character = ' ';
-		glyphs[character]->draw(x, y+height, 0, 1, 1, 0, 0);
+		glPushMatrix();
+		glTranslatef(x, y+height, 0.0f);
+		glCallList(list+character);
+		glPopMatrix();
 	}
 
 	int Font::getWidth(const std::string & line) const

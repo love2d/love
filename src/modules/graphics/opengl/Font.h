@@ -43,6 +43,7 @@ namespace opengl
 		float lineHeight;
 		float mSpacing; // modifies the spacing by multiplying it with this value
 		Glyph ** glyphs;
+		GLuint list; // the list of glyphs, for quicker drawing
 
 	public:
 		static const unsigned int MAX_CHARS = 256;
