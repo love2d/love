@@ -297,12 +297,26 @@ namespace opengl
 		int width, height;
 		width = luaL_checkint(L, 1);
 		height = luaL_checkint(L, 2);
-		Framebuffer * Framebuffer = instance->newFramebuffer(width, height);
+		Framebuffer * framebuffer = instance->newFramebuffer(width, height);
 
 		//and there we go with the status... still disliked
-		if (Framebuffer->statusCode() != GL_FRAMEBUFFER_COMPLETE_EXT)
-			return luaL_error(L, "Cannot create Framebuffer: %s", Framebuffer->statusMessage());
-		luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*)Framebuffer);
+		if (framebuffer->getStatus() != GL_FRAMEBUFFER_COMPLETE) {
+			switch (framebuffer->getStatus()) {
+				case GL_FRAMEBUFFER_UNSUPPORTED:
+					return luaL_error(L, "Cannot create Framebuffer: "
+							"Not supported by your OpenGL implementation");
+				// remaining error codes are highly unlikely:
+				// GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
+				// GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
+				// GL_FRAMEBUFFER_UNDEFINED
+				// GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
+				// GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
+				// GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
+				default:
+					return luaL_error(L, "Cannot create Framebuffer: Aliens did it");
+			}
+		}
+		luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*)framebuffer);
 		return 1;
 	}
 

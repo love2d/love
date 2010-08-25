@@ -20,9 +20,7 @@ namespace opengl
 		Framebuffer(int width, int height);
 		virtual ~Framebuffer();
 
-		// for internal use (w_newFramebuffer <-> love.graphics.newFramebuffer) only
-		GLenum statusCode() const { return status_; } //SERIOUS DISLIKE HERE
-		const char* statusMessage() const;
+		unsigned int getStatus() const { return status_; }
 
 		bool grab();
 		bool stop();
@@ -41,7 +39,6 @@ namespace opengl
 		vertex vertices[4];
 
 		GLenum status_;
-		static std::map<GLenum, const char*> status_to_string;
 	};
 
 } // opengl

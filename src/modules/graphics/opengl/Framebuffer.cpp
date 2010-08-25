@@ -9,34 +9,9 @@ namespace opengl
 {
 
 	bool Framebuffer::isGrabbing = false;
-	std::map<GLenum, const char*> Framebuffer::status_to_string;
-
 	Framebuffer::Framebuffer(int width, int height) :
 		width(width), height(height)
 	{
-		// maybe create status code messages
-		if (status_to_string.empty()) {
-			status_to_string[GL_FRAMEBUFFER_UNSUPPORTED] // the most important one
-				= "your opengl implementation does not support framebuffer objects";
-
-			status_to_string[GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT]
-				= "framebuffer has incomplete attachments";
-			status_to_string[GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER]
-				= "incomplete draw buffer";
-
-			// the ones that should never, ever happen:
-			status_to_string[GL_FRAMEBUFFER_UNDEFINED]
-				= "default framebuffer does not exist";
-			status_to_string[GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]
-				= "framebuffer needs at least one image attached";
-			status_to_string[GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER]
-				= "incomplete read buffer";
-			status_to_string[GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]
-				= "number of samples mismatch in attached buffers";
-			// "Additionally, if an error occurs, zero is returned." and
-			// "GL_INVALID_ENUM is generated if target is not GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER or GL_FRAMEBUFFER."
-			status_to_string[0] = "Framebuffer hijacked by aliens";
-		}
 
 		// world coordinates
 		vertices[0].x = 0;     vertices[0].y = 0;
@@ -83,11 +58,6 @@ namespace opengl
 		glDeleteTextures(1, &fbo);
 		glDeleteRenderbuffers(1, &depthbuffer);
 		glDeleteFramebuffers(1, &img);
-	}
-
-	const char* Framebuffer::statusMessage() const
-	{
-		status_to_string[statusCode()];
 	}
 
 	bool Framebuffer::grab()
