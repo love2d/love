@@ -18,15 +18,17 @@ namespace opengl
 			return luaL_error(L, "Need a function to render to fbo");
 
 		// prevent nesting
-		if (!fbo->grab())
-			return luaL_error(L, "Cannot grab screen. May be caused by nesting or forgetting to stop()");
+		if (!fbo->grab()) {
+			fbo->stop(); // stop grabbing so errormessage is shown
+			return luaL_error(L, "Framebuffer:grab(): Cannot grab screen. Be sure to match every Framebuffer:grab() with Framebuffer:stop().");
+		}
 
 		lua_settop(L, 2); // make sure the function is on top of the stack
-		lua_pcall(L, 0, 0, 0);
+		lua_call(L, 0, 0);
 
 		// fbo can be stopped in function.
 		if (!fbo->stop())
-			return luaL_error(L, "Grabbing already stopped.");
+			return luaL_error(L, "Framebuffer:render(): Screengrabbing already stopped.");
 
 		return 0;
 	}
@@ -35,8 +37,10 @@ namespace opengl
 	{
 		Framebuffer * fbo = luax_checkfbo(L, 1);
 		// prevent nesting
-		if (!fbo->grab())
-			return luaL_error(L, "Cannot grab screen. May be caused by nesting or forgetting to stop()");
+		if (!fbo->grab()) {
+			fbo->stop(); // stop grabbing so errormessage is shown
+			return luaL_error(L, "Framebuffer:grab(): Cannot grab screen. Be sure to match every Framebuffer:grab() with Framebuffer:stop().");
+		}
 		return 0;
 	}
 
@@ -44,7 +48,7 @@ namespace opengl
 	{
 		Framebuffer * fbo = luax_checkfbo(L, 1);
 		if (!fbo->stop())
-			return luaL_error(L, "Grabbing already stopped.");
+			return luaL_error(L, "Framebuffer:stop(): Screengrabbing already stopped.");
 		return 0;
 	}
 
