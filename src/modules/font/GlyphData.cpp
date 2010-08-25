@@ -43,7 +43,7 @@ namespace font
 
 	GlyphData::~GlyphData()
 	{
-		delete[] data;
+		delete data;
 	}
 
 	void * GlyphData::getData() const
