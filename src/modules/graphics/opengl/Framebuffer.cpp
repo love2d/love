@@ -7,8 +7,8 @@ namespace graphics
 {
 namespace opengl
 {
+	Framebuffer* Framebuffer::current = NULL;
 
-	bool Framebuffer::isGrabbing = false;
 	Framebuffer::Framebuffer(int width, int height) :
 		width(width), height(height)
 	{
@@ -47,7 +47,7 @@ namespace opengl
 				GL_TEXTURE_2D, img, 0);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
 				GL_RENDERBUFFER, depthbuffer);
-		status_ = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		// unbind buffers and texture
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -55,37 +55,53 @@ namespace opengl
 
 	Framebuffer::~Framebuffer()
 	{
+		// reset framebuffer if still using this one
+		if (current == this)
+			stopGrab();
+
+		// clear fbo
 		glDeleteTextures(1, &fbo);
 		glDeleteRenderbuffers(1, &depthbuffer);
 		glDeleteFramebuffers(1, &img);
 	}
 
-	bool Framebuffer::grab()
+	void Framebuffer::bindDefaultBuffer()
 	{
-		// don't allow nesting or forgetting Framebuffer::stop()
-		if (isGrabbing)
-			return false;
+		if (current != NULL)
+			current->stopGrab();
+	}
 
+	void Framebuffer::startGrab()
+	{
+		// already grabbing
+		if (current == this)
+			return;
+
+		// cleanup after previous fbo
+		if (current != NULL)
+			glPopAttrib();
+
+		// bind buffer and clear screen
 		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(.0f, .0f, .0f, .0f);
 		glViewport(0, 0, width, height);
-		isGrabbing = true;
 
-		return true;
+		// indicate
+		current = this;
 	}
 
-	bool Framebuffer::stop()
+	void Framebuffer::stopGrab()
 	{
-		if (!isGrabbing)
-			return false;
+		// i am not grabbing. leave me alone
+		if (current != this)
+			return;
 
+		// bind default
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glPopAttrib();
-		isGrabbing = false;
-
-		return true;
+		current = NULL;
 	}
 
 	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const

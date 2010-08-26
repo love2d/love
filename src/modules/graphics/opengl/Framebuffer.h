@@ -20,16 +20,18 @@ namespace opengl
 		Framebuffer(int width, int height);
 		virtual ~Framebuffer();
 
-		unsigned int getStatus() const { return status_; }
+		unsigned int getStatus() const { return status; }
 
-		bool grab();
-		bool stop();
+		static Framebuffer* current;
+		static void bindDefaultBuffer();
+
+		void startGrab();
+		void stopGrab();
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 
-	private:
-		static bool isGrabbing;
 
+	private:
 		GLsizei width;
 		GLsizei height;
 		GLuint fbo;
@@ -38,7 +40,7 @@ namespace opengl
 
 		vertex vertices[4];
 
-		GLenum status_;
+		GLenum status;
 	};
 
 } // opengl

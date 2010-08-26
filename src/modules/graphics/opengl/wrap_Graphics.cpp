@@ -595,6 +595,21 @@ namespace opengl
 		return 1;
 	}
 
+	int w_setRenderTarget(lua_State * L)
+	{
+		// called with nil -> reset to default buffer
+		if (lua_isnil(L, 1)) {
+			Framebuffer::bindDefaultBuffer();
+			return 0;
+		}
+
+		Framebuffer * fbo = luax_checkfbo(L, 1);
+		// this unbinds the previous fbo
+		fbo->startGrab();
+
+		return 0;
+	}
+
 	/**
 	* Draws an Image at the specified coordinates, with rotation and
 	* scaling along both axes.
@@ -885,6 +900,7 @@ namespace opengl
 		{ "getPointStyle", w_getPointStyle },
 		{ "getMaxPointSize", w_getMaxPointSize },
 		{ "newScreenshot", w_newScreenshot },
+		{ "setRenderTarget", w_setRenderTarget },
 
 		{ "draw", w_draw },
 		{ "drawq", w_drawq },
