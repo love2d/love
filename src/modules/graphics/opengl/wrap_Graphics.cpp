@@ -297,6 +297,7 @@ namespace opengl
 		int width, height;
 		width = luaL_checkint(L, 1);
 		height = luaL_checkint(L, 2);
+		glGetError(); // clear opengl error flag
 		Framebuffer * framebuffer = instance->newFramebuffer(width, height);
 
 		//and there we go with the status... still disliked
@@ -306,14 +307,25 @@ namespace opengl
 					return luaL_error(L, "Cannot create Framebuffer: "
 							"Not supported by your OpenGL implementation");
 				// remaining error codes are highly unlikely:
-				// GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
-				// GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
-				// GL_FRAMEBUFFER_UNDEFINED
-				// GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
-				// GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
-				// GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
+				case GL_FRAMEBUFFER_UNDEFINED:
+				case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+				case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+				case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+				case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+					return luaL_error(L, "Cannot create Framebuffer: "
+							"Error in implementation (please inform the love devs)");
 				default:
-					return luaL_error(L, "Cannot create Framebuffer: Aliens did it");
+					// my intel hda card wrongly returns 0 to glCheckFramebufferStatus() but sets
+					// no error flag. I think it meant to return GL_FRAMEBUFFER_UNSUPPORTED, but who
+					// knows.
+					if (glGetError() == GL_NO_ERROR)
+						return luaL_error(L, "Cannot create Framebuffer: "
+								"May not be supported by your OpenGL implementation.");
+					// the remaining error is an indication of a serious fuckup since it should
+					// only be returned if glCheckFramebufferStatus() was called with the wrong
+					// arguments.
+					return luaL_error(L, "Cannot create Framebuffer: Aliens did it (OpenGL error code: %d)", glGetError());
 			}
 		}
 		luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*)framebuffer);
