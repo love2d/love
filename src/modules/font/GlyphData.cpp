@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -20,22 +20,24 @@
 
 #include "GlyphData.h"
 
+#include <iostream>
+
 namespace love
 {
 namespace font
 {
 
 	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
-		: glyph(glyph), metrics(glyphMetrics), format(f), padded(false)
+		: glyph(glyph), metrics(glyphMetrics), format(f), padded(false), data(0)
 	{
-		if (getWidth() && getHeight()) {
+		if (metrics.width && metrics.height) {
 			switch (f) {
 				case GlyphData::FORMAT_LUMINOSITY_ALPHA:
-					data = new unsigned char[getWidth() * getHeight() * 2];
+					data = new unsigned char[metrics.width * metrics.height * 2];
 					break;
 				case GlyphData::FORMAT_RGBA:
 				default:
-					data = new unsigned char[getWidth() * getHeight() * 4];
+					data = new unsigned char[metrics.width * metrics.height * 4];
 					break;
 			}
 		}
@@ -62,7 +64,7 @@ namespace font
 				return getWidth() * getHeight() * 4;
 				break;
 		}
-		
+
 	}
 
 	int GlyphData::getHeight() const
@@ -74,7 +76,7 @@ namespace font
 	{
 		return (padded ? getPaddedWidth() : metrics.width);
 	}
-	
+
 	int GlyphData::getAdvance() const
 	{
 		return metrics.advance;
@@ -109,14 +111,16 @@ namespace font
 	{
 		return this->getBearingY();
 	}
-	
+
 	GlyphData::Format GlyphData::getFormat() const
 	{
 		return format;
 	}
-	
+
 	void GlyphData::pad()
 	{
+		if (data == 0)
+			return;
 		int w = getWidth();
 		int h = getHeight();
 		int pw = next_p2(w);
@@ -155,22 +159,22 @@ namespace font
 		data = d;
 		padded = true;
 	}
-	
+
 	bool GlyphData::isPadded() const
 	{
 		return padded;
 	}
-	
+
 	int GlyphData::getPaddedWidth() const
 	{
 		return next_p2(metrics.width);
 	}
-	
+
 	int GlyphData::getPaddedHeight() const
 	{
 		return next_p2(metrics.height);
 	}
-	
+
 	inline int GlyphData::next_p2(int num) const
 	{
 		int powered = 2;
