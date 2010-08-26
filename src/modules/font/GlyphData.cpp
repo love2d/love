@@ -28,7 +28,7 @@ namespace font
 {
 
 	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
-		: glyph(glyph), metrics(glyphMetrics), format(f), padded(false), data(0)
+		: glyph(glyph), metrics(glyphMetrics), data(0), format(f), padded(false)
 	{
 		if (metrics.width && metrics.height) {
 			switch (f) {
