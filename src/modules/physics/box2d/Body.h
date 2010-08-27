@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -41,8 +41,8 @@ namespace box2d
 
 	/**
 	* A Body is an entity which has position and orientation
-	* in world space. A Body does have collision geometry 
-	* by itself, but depend on an arbitrary number of child Shape objects 
+	* in world space. A Body does have collision geometry
+	* by itself, but depend on an arbitrary number of child Shape objects
 	* which together constitute the final geometry for the Body.
 	**/
 	class Body : public Object
@@ -57,14 +57,14 @@ namespace box2d
 
 	private:
 
-		// We need a shared_ptr to the parent World, 
+		// We need a shared_ptr to the parent World,
 		// because World can not be destroyed as long as
 		// bodies exists in it.
 		//
 		// This ensures that a World only can be destroyed
 		// once all bodies have been destroyed too.
 		World * world;
-		
+
 	public:
 
 		// The Box2D body. (Should not be public?)
@@ -72,7 +72,7 @@ namespace box2d
 
 		/**
 		* Create a Body at position p.
-		**/ 
+		**/
 		Body(World * world, b2Vec2 p, float m, float i);
 
 		virtual ~Body();
@@ -169,7 +169,7 @@ namespace box2d
 		* Apply force (fx, fy) with offset (rx, ry).
 		**/
 		void applyForce(float fx, float fy, float rx, float ry);
-	
+
 		/**
 		* Sets the x-position of the Body.
 		**/
@@ -191,18 +191,18 @@ namespace box2d
 		void setAngle(float d);
 
 		/**
-		* Sets the current spin of the Body. 
+		* Sets the current spin of the Body.
 		**/
 		void setAngularVelocity(float r);
 
 		/**
 		* Sets the current position of the Body.
-		**/ 
+		**/
 		void setPosition(float x, float y);
 
 		/**
 		* Sets the mass from the currently attatched shapes.
-		**/ 
+		**/
 		void setMassFromShapes();
 
 		/**
@@ -325,8 +325,9 @@ namespace box2d
 
 		/**
 		* Controls whether this Body should be allowed to sleep.
-		**/ 
+		**/
 		void setAllowSleeping(bool allow);
+		bool getAllowSleeping();
 
 		/**
 		* Puts the body to sleep.
@@ -348,7 +349,7 @@ namespace box2d
 		b2Vec2 getVector(lua_State * L);
 
 		/**
-		* Pushed the x- and y-components of a vector on 
+		* Pushed the x- and y-components of a vector on
 		* the stack.
 		**/
 		int pushVector(lua_State * L, const b2Vec2 & v);
