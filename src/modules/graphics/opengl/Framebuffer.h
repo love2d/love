@@ -2,7 +2,8 @@
 #define LOVE_GRAPHICS_FRAMEBUFFER_H
 
 #include <graphics/Drawable.h>
-#include <graphics/Volatile.h>
+#include <image/Image.h>
+#include <image/ImageData.h>
 #include <common/math.h>
 #include <map>
 #include "GLee.h"
@@ -29,7 +30,7 @@ namespace opengl
 		void stopGrab();
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
-
+		love::image::ImageData * getImageData(love::image::Image * image);
 
 	private:
 		GLsizei width;

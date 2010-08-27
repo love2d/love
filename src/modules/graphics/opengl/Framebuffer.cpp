@@ -1,6 +1,8 @@
 #include "Framebuffer.h"
 #include <common/Matrix.h>
 
+#include <string.h>
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -273,6 +275,37 @@ namespace opengl
 		glDisableClientState(GL_VERTEX_ARRAY);
 
 		glPopMatrix();
+	}
+
+	love::image::ImageData * Framebuffer::getImageData(love::image::Image * image)
+	{
+		int row = 4 * width;
+		int size = row * height;
+
+		// see Graphics::newScreenshot. OpenGL reads from lower-left,
+		// but we need the pixels from upper-left.
+		GLubyte* pixels = new GLubyte[size];
+		GLubyte* screenshot = new GLubyte[size];
+
+		strategy->bindFBO( fbo );
+		glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		if (current)
+			strategy->bindFBO( current->fbo );
+		else
+			strategy->bindFBO( 0 );
+
+		GLubyte* src = pixels - row; // second line of buffer
+		GLubyte* dst = screenshot + size; // end of buffer
+
+		for (int i = 0; i < height; ++i)
+			memcpy(dst -= row, src += row, row);
+
+		love::image::ImageData * img = image->newImageData(width, height, (void*)screenshot);
+
+		delete[] screenshot;
+		delete[] pixels;
+
+		return img;
 	}
 
 } // opengl

@@ -14,6 +14,7 @@ namespace opengl
 	//see Framebuffer.h
 	Framebuffer * luax_checkfbo(lua_State * L, int idx);
 	int w_Framebuffer_renderTo(lua_State * L);
+	int w_Framebuffer_getImageData(lua_State * L);
 	int luaopen_framebuffer(lua_State * L);
 
 } // opengl

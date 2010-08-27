@@ -32,8 +32,18 @@ namespace opengl
 		return 0;
 	}
 
+	int w_Framebuffer_getImageData(lua_State * L)
+	{
+		Framebuffer * fbo = luax_checkfbo(L, 1);
+		love::image::Image * image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
+		love::image::ImageData * img = fbo->getImageData( image );
+		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)img);
+		return 1;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "renderTo", w_Framebuffer_renderTo },
+		{ "getImageData", w_Framebuffer_getImageData },
 		{ 0, 0 }
 	};
 
