@@ -185,19 +185,16 @@ namespace opengl
 		// Enable vertex arrays.
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
 
 		// Bind the VBO buffer.
 		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid*)0);
 		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4));
 		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4+sizeof(float)*2));
 		
 		glDrawElements(GL_TRIANGLES, next*6, GL_UNSIGNED_SHORT, 0);
 
 		// Disable vertex arrays.
-		glDisableClientState(GL_COLOR_ARRAY);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
 
