@@ -213,6 +213,13 @@ namespace opengl
 			}
 		}
 
+		if (width == 0 || height == 0)
+		{
+			const SDL_VideoInfo* videoinfo = SDL_GetVideoInfo();
+			width = videoinfo->current_w;
+			height = videoinfo->current_h;
+		}
+
 		// Check if FSAA failed or not
 		if(fsaa > 0)
 		{
@@ -306,7 +313,7 @@ namespace opengl
 	{
 		SDL_GL_SwapBuffers();
 	}
-	
+
 	void Graphics::setIcon(Image * image)
 	{
 		Uint32 rmask, gmask, bmask, amask;
