@@ -533,10 +533,19 @@ namespace opengl
 
 	void Graphics::setBlendMode( Graphics::BlendMode mode )
 	{
-		if(mode == BLEND_ADDITIVE)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		else // mode == BLEND_ALPHA
+		glAlphaFunc(GL_GEQUAL, 0);
+
+		if (mode == BLEND_SUBTRACTIVE)
+			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+		else
+			glBlendEquation(GL_FUNC_ADD);
+
+		if (mode == BLEND_ALPHA)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		else if (mode == BLEND_MULTIPLICATIVE)
+			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+		else
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	}
 
 	void Graphics::setColorMode ( Graphics::ColorMode mode )

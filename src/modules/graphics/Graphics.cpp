@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -88,7 +88,7 @@ namespace graphics
 		return pointStyles.find(in, out);
 	}
 
-	StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] = 
+	StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
 	{
 		{ "line", Graphics::DRAW_LINE },
 		{ "fill", Graphics::DRAW_FILL },
@@ -96,7 +96,7 @@ namespace graphics
 
 	StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM> Graphics::drawModes(Graphics::drawModeEntries, sizeof(Graphics::drawModeEntries));
 
-	StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM>::Entry Graphics::alignModeEntries[] = 
+	StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM>::Entry Graphics::alignModeEntries[] =
 	{
 		{ "left", Graphics::ALIGN_LEFT },
 		{ "right", Graphics::ALIGN_RIGHT },
@@ -105,15 +105,17 @@ namespace graphics
 
 	StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM> Graphics::alignModes(Graphics::alignModeEntries, sizeof(Graphics::alignModeEntries));
 
-	StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendModeEntries[] = 
+	StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendModeEntries[] =
 	{
 		{ "alpha", Graphics::BLEND_ALPHA },
 		{ "additive", Graphics::BLEND_ADDITIVE },
+		{ "subtractive", Graphics::BLEND_SUBTRACTIVE },
+		{ "multiplicative", Graphics::BLEND_MULTIPLICATIVE },
 	};
 
 	StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
 
-	StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM>::Entry Graphics::colorModeEntries[] = 
+	StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM>::Entry Graphics::colorModeEntries[] =
 	{
 		{ "replace", Graphics::COLOR_REPLACE },
 		{ "modulate", Graphics::COLOR_MODULATE },
@@ -121,7 +123,7 @@ namespace graphics
 
 	StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM> Graphics::colorModes(Graphics::colorModeEntries, sizeof(Graphics::colorModeEntries));
 
-	StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineStyleEntries[] = 
+	StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineStyleEntries[] =
 	{
 		{ "smooth", Graphics::LINE_SMOOTH },
 		{ "rough", Graphics::LINE_ROUGH }
@@ -129,7 +131,7 @@ namespace graphics
 
 	StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM> Graphics::lineStyles(Graphics::lineStyleEntries, sizeof(Graphics::lineStyleEntries));
 
-	StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM>::Entry Graphics::pointStyleEntries[] = 
+	StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM>::Entry Graphics::pointStyleEntries[] =
 	{
 		{ "smooth", Graphics::POINT_SMOOTH },
 		{ "rough", Graphics::POINT_ROUGH }
