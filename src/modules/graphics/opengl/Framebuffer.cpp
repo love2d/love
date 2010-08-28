@@ -99,9 +99,9 @@ namespace {
 		}
 		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img)
 		{
-			glDeleteTextures(1, &framebuffer);
+			glDeleteTextures(1, &img);
 			glDeleteRenderbuffers(1, &depthbuffer);
-			glDeleteFramebuffers(1, &img);
+			glDeleteFramebuffers(1, &framebuffer);
 		}
 
 		virtual void bindFBO(GLuint framebuffer)
@@ -117,7 +117,7 @@ namespace {
 		{
 			// generate depth buffer
 			glGenRenderbuffersEXT(1, &depthbuffer);
-			glBindRenderbuffer(GL_RENDERBUFFER_EXT, depthbuffer);
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
 			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, width, height);
 			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
@@ -146,9 +146,9 @@ namespace {
 
 		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img)
 		{
-			glDeleteTextures(1, &framebuffer);
+			glDeleteTextures(1, &img);
 			glDeleteRenderbuffersEXT(1, &depthbuffer);
-			glDeleteFramebuffersEXT(1, &img);
+			glDeleteFramebuffersEXT(1, &framebuffer);
 		}
 
 		virtual void bindFBO(GLuint framebuffer)
@@ -205,7 +205,7 @@ namespace opengl
 			
 		}
 
-		status = strategy->createFBO(fbo, depthbuffer, img, width, height);
+		loadVolatile();
 	}
 
 	Framebuffer::~Framebuffer()
@@ -214,7 +214,7 @@ namespace opengl
 		if (current == this)
 			stopGrab();
 
-		strategy->deleteFBO(fbo, depthbuffer, img);
+		unloadVolatile();
 	}
 
 	void Framebuffer::bindDefaultBuffer()
@@ -306,6 +306,17 @@ namespace opengl
 		delete[] pixels;
 
 		return img;
+	}
+	
+	bool Framebuffer::loadVolatile()
+	{
+		status = strategy->createFBO(fbo, depthbuffer, img, width, height);
+		return (status == GL_FRAMEBUFFER_COMPLETE);
+	}
+	
+	void Framebuffer::unloadVolatile()
+	{
+		strategy->deleteFBO(fbo, depthbuffer, img);
 	}
 
 } // opengl
