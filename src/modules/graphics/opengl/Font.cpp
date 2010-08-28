@@ -38,10 +38,7 @@ namespace opengl
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
 			glyphs[i] = new Glyph(data->getGlyphData(i));
-			glyphs[i]->load(); 
-			glNewList(list + i, GL_COMPILE);
-			glyphs[i]->draw(0, 0, 0, 1, 1, 0, 0);
-			glEndList();
+			glyphs[i]->load();
 			widths[i] = data->getGlyphData(i)->getWidth();
 			spacing[i] = data->getGlyphData(i)->getAdvance();
 			bearingX[i] = data->getGlyphData(i)->getBearingX();
@@ -71,16 +68,14 @@ namespace opengl
 		glTranslatef(ceil(x), ceil(y), 0.0f);
 		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
-		int first = (int)text[0];
-		int s = -bearingX[first];
 		for (unsigned int i = 0; i < text.size(); i++) {
 			int g = (int)text[i];
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
-			glTranslatef(bearingX[g] + s, -bearingY[g]+height, 0.0f);
-			glCallList(list+g);
+			glTranslatef(0, height, 0);
+			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
-			s += spacing[g] * mSpacing;
+			glTranslatef(spacing[g], 0, 0);
 		}
 		glPopMatrix();
 	}

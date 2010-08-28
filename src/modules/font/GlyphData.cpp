@@ -126,8 +126,8 @@ namespace font
 		int pw = next_p2(w);
 		int ph = next_p2(h);
 		unsigned char * d = new unsigned char[pw * ph * (format == GlyphData::FORMAT_LUMINOSITY_ALPHA ? 2 : 4)];
-		for (int i = 0; i < pw; i++) {
-			for (int j = 0; j < ph; j++) {
+		for (int j = 0; j < ph; j++) {
+			for (int i = 0; i < pw; i++) {
 				int n = i+j*w;
 				int p = i+j*pw;
 				if (i < w && j < h) {
