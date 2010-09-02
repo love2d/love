@@ -277,6 +277,9 @@ namespace openal
 		alSourcef(source, AL_GAIN, volume);
 
 		alSourcePlay(source);
+
+		valid = true; //if it fails it will be set to false again
+		//but this prevents a horrible, horrible bug
 	}
 
 	void Source::stopAtomic()
