@@ -787,6 +787,8 @@ function love.errhand(msg)
 		return
 	end
 
+	love.graphics.setRenderTarget()
+
 	-- Load.
 	love.graphics.setScissor()
 	love.graphics.setBackgroundColor(89, 157, 220)
