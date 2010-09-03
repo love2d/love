@@ -294,9 +294,13 @@ namespace opengl
 
 	int w_newFramebuffer(lua_State * L)
 	{
-		int width, height;
-		width = luaL_checkint(L, 1);
-		height = luaL_checkint(L, 2);
+        // check if width and height are given. else default to screen dimensions.
+		int width  = instance->getWidth();
+		int height = instance->getHeight();
+		if (lua_gettop(L) >= 2) {
+			width = luaL_optint(L, 1, instance->getWidth());
+			height = luaL_optint(L, 2, instance->getHeight());
+		}
 		glGetError(); // clear opengl error flag
 		Framebuffer * framebuffer = instance->newFramebuffer(width, height);
 
