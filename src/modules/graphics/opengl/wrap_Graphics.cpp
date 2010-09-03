@@ -294,7 +294,7 @@ namespace opengl
 
 	int w_newFramebuffer(lua_State * L)
 	{
-        // check if width and height are given. else default to screen dimensions.
+		// check if width and height are given. else default to screen dimensions.
 		int width  = instance->getWidth();
 		int height = instance->getHeight();
 		if (lua_gettop(L) >= 2) {
@@ -613,8 +613,8 @@ namespace opengl
 
 	int w_setRenderTarget(lua_State * L)
 	{
-		// called with nil -> reset to default buffer
-		if (lua_isnil(L, 1)) {
+		// called with nil or none -> reset to default buffer
+		if (lua_isnone(L,1) || lua_isnil(L, 1)) {
 			Framebuffer::bindDefaultBuffer();
 			return 0;
 		}
