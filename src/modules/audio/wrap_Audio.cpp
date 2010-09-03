@@ -252,9 +252,9 @@ namespace audio
 		{ "getOrientation", w_getOrientation },
 		{ "setVelocity", w_setVelocity },
 		{ "getVelocity", w_getVelocity },
-		{ "record", w_record },
+		/*{ "record", w_record },
 		{ "getRecordedData", w_getRecordedData },
-		{ "stopRecording", w_stopRecording },
+		{ "stopRecording", w_stopRecording },*/
 		{ 0, 0 }
 	};
 
