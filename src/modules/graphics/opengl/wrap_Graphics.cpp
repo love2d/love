@@ -84,7 +84,7 @@ namespace opengl
 		instance->setIcon(image);
 		return 0;
 	}
-	
+
 	int w_setCaption(lua_State * L)
 	{
 		const char * str = luaL_checkstring(L, 1);
@@ -289,6 +289,46 @@ namespace opengl
 		int size = luaL_checkint(L, 2);
 		ParticleSystem * t = instance->newParticleSystem(image, size);
 		luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void*)t);
+		return 1;
+	}
+
+	int w_newFramebuffer(lua_State * L)
+	{
+		// check if width and height are given. else default to screen dimensions.
+		int width  = luaL_optint(L, 1, instance->getWidth());
+		int height = luaL_optint(L, 2, instance->getHeight());
+		glGetError(); // clear opengl error flag
+		Framebuffer * framebuffer = instance->newFramebuffer(width, height);
+
+		//and there we go with the status... still disliked
+		if (framebuffer->getStatus() != GL_FRAMEBUFFER_COMPLETE) {
+			switch (framebuffer->getStatus()) {
+				case GL_FRAMEBUFFER_UNSUPPORTED:
+					return luaL_error(L, "Cannot create Framebuffer: "
+							"Not supported by your OpenGL implementation");
+				// remaining error codes are highly unlikely:
+				case GL_FRAMEBUFFER_UNDEFINED:
+				case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+				case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+				case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+				case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+					return luaL_error(L, "Cannot create Framebuffer: "
+							"Error in implementation (please inform the love devs)");
+				default:
+					// my intel hda card wrongly returns 0 to glCheckFramebufferStatus() but sets
+					// no error flag. I think it meant to return GL_FRAMEBUFFER_UNSUPPORTED, but who
+					// knows.
+					if (glGetError() == GL_NO_ERROR)
+						return luaL_error(L, "Cannot create Framebuffer: "
+								"May not be supported by your OpenGL implementation.");
+					// the remaining error is an indication of a serious fuckup since it should
+					// only be returned if glCheckFramebufferStatus() was called with the wrong
+					// arguments.
+					return luaL_error(L, "Cannot create Framebuffer: Aliens did it (OpenGL error code: %d)", glGetError());
+			}
+		}
+		luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*)framebuffer);
 		return 1;
 	}
 
@@ -567,6 +607,21 @@ namespace opengl
 		return 1;
 	}
 
+	int w_setRenderTarget(lua_State * L)
+	{
+		// called with nil or none -> reset to default buffer
+		if (lua_isnoneornil(L,1)) {
+			Framebuffer::bindDefaultBuffer();
+			return 0;
+		}
+
+		Framebuffer * fbo = luax_checkfbo(L, 1);
+		// this unbinds the previous fbo
+		fbo->startGrab();
+
+		return 0;
+	}
+
 	/**
 	* Draws an Image at the specified coordinates, with rotation and
 	* scaling along both axes.
@@ -829,6 +884,7 @@ namespace opengl
 		{ "newImageFont", w_newImageFont },
 		{ "newSpriteBatch", w_newSpriteBatch },
 		{ "newParticleSystem", w_newParticleSystem },
+		{ "newFramebuffer", w_newFramebuffer },
 
 		{ "setColor", w_setColor },
 		{ "getColor", w_getColor },
@@ -856,6 +912,7 @@ namespace opengl
 		{ "getPointStyle", w_getPointStyle },
 		{ "getMaxPointSize", w_getMaxPointSize },
 		{ "newScreenshot", w_newScreenshot },
+		{ "setRenderTarget", w_setRenderTarget },
 
 		{ "draw", w_draw },
 		{ "drawq", w_drawq },
@@ -866,7 +923,7 @@ namespace opengl
 
 		{ "setCaption", w_setCaption },
 		{ "getCaption", w_getCaption },
-		
+
 		{ "setIcon", w_setIcon },
 
 		{ "getWidth", w_getWidth },
@@ -906,6 +963,7 @@ namespace opengl
 		luaopen_frame,
 		luaopen_spritebatch,
 		luaopen_particlesystem,
+		luaopen_framebuffer,
 		0
 	};
 

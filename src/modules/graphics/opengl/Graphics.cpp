@@ -477,6 +477,11 @@ namespace opengl
 		return new ParticleSystem(image, size);
 	}
 
+	Framebuffer * Graphics::newFramebuffer(int width, int height)
+	{
+		return new Framebuffer(width, height);
+	}
+
 	void Graphics::setColor(Color c)
 	{
 		glColor4ubv(&c.r);

@@ -187,6 +187,8 @@
 		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
+		A9BD60741226C988007DEC63 /* Framebuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9BD60701226C988007DEC63 /* Framebuffer.cpp */; };
+		A9BD60751226C988007DEC63 /* wrap_Framebuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9BD60721226C988007DEC63 /* wrap_Framebuffer.cpp */; };
 		A9CF0E8610B9EB1000E6F37E /* utf8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9CF0E8510B9EB1000E6F37E /* utf8.cpp */; };
 		A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
@@ -598,6 +600,10 @@
 		A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ParticleSystem.cpp; sourceTree = "<group>"; };
+		A9BD60701226C988007DEC63 /* Framebuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Framebuffer.cpp; sourceTree = "<group>"; };
+		A9BD60711226C988007DEC63 /* Framebuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framebuffer.h; sourceTree = "<group>"; };
+		A9BD60721226C988007DEC63 /* wrap_Framebuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Framebuffer.cpp; sourceTree = "<group>"; };
+		A9BD60731226C988007DEC63 /* wrap_Framebuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Framebuffer.h; sourceTree = "<group>"; };
 		A9BFAA851137C1CE005FE0AD /* ThreadModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadModule.h; sourceTree = "<group>"; };
 		A9CF0E8410B9EB1000E6F37E /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8.h; sourceTree = "<group>"; };
 		A9CF0E8510B9EB1000E6F37E /* utf8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8.cpp; sourceTree = "<group>"; };
@@ -985,6 +991,8 @@
 			children = (
 				A93E6A8710420AC2007D418B /* Font.cpp */,
 				A93E6A8810420AC2007D418B /* Font.h */,
+				A9BD60701226C988007DEC63 /* Framebuffer.cpp */,
+				A9BD60711226C988007DEC63 /* Framebuffer.h */,
 				A93E6A8910420AC2007D418B /* GLee.c */,
 				A93E6A8A10420AC2007D418B /* GLee.h */,
 				A93E6A8B10420AC2007D418B /* Glyph.cpp */,
@@ -1001,6 +1009,8 @@
 				A93E6A9610420AC2007D418B /* SpriteBatch.h */,
 				A93E6A9910420AC2007D418B /* wrap_Font.cpp */,
 				A93E6A9A10420AC2007D418B /* wrap_Font.h */,
+				A9BD60721226C988007DEC63 /* wrap_Framebuffer.cpp */,
+				A9BD60731226C988007DEC63 /* wrap_Framebuffer.h */,
 				A93E6A9B10420AC2007D418B /* wrap_Glyph.cpp */,
 				A93E6A9C10420AC2007D418B /* wrap_Glyph.h */,
 				A93E6A9D10420AC3007D418B /* wrap_Graphics.cpp */,
@@ -1660,6 +1670,8 @@
 				A946CE821172BCD7005E1462 /* wrap_EncodedImageData.cpp in Sources */,
 				A946D3BB117681BD005E1462 /* FontData.cpp in Sources */,
 				A946D3C611768D69005E1462 /* wrap_FontData.cpp in Sources */,
+				A9BD60741226C988007DEC63 /* Framebuffer.cpp in Sources */,
+				A9BD60751226C988007DEC63 /* wrap_Framebuffer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
