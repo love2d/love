@@ -2,6 +2,7 @@ LOVE 0.7.0
 ----------
 
   * Added love.thread module.
+  * Added love.graphics.Framebuffer.
   * Added Source:play, Source:pause, etc.
   * Added Source:isStatic().
   * Added get/setPosition, get/setVelocity, and get/setDirection to Source.
@@ -12,6 +13,10 @@ LOVE 0.7.0
   * Added love.focus callback.
   * Added extra meter parameter to love.physics.newWorld.
   * Added love.graphics.setIcon.
+  * Added way to make the window desktop resolution.
+  * Added subtractive and multiplicative blend modes.
+  * Added body:getAllowSleeping.
+  * Added shape:getBody.
   * Enabled love.filesystem.FileData.
   * Fixed bug where the debug module was not an upvalue of the error handlers. (you can now override debug)
   * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.
@@ -21,6 +26,9 @@ LOVE 0.7.0
   * Fixed a bug where images would lose their settings (wrapping, filters) when setMode as called.
   * Fixed a bug where shape:getBody wasn't exposed.
   * Fixed a bug where DistanceJoint:getType() returned "circle" - it now returns "distance".
+  * Fixed a bug where SpriteBatches were unaffected by setColor
+  * Fixed the audio bug.
+  * Fonts are now padded.
   * Invalid FSAA values now fall back to working ones (or none at all).
   * Cleaned up traceback in error screen.
   * Moved fonts to love.font (from love.graphics), only rendering remains in love.graphics.
