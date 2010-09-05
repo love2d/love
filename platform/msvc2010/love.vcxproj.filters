@@ -1,0 +1,961 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="modules">
+      <UniqueIdentifier>{21718f2d-1708-4f8c-b2d9-5ae941335ff3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\audio">
+      <UniqueIdentifier>{ecb80393-e4ce-4834-83f8-915bb862560a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\audio\openal">
+      <UniqueIdentifier>{1d0f91d8-db76-41da-a979-b8bd256db3b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\audio\null">
+      <UniqueIdentifier>{e3b813a1-6543-4d8c-8ab7-7807a18f4546}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\event">
+      <UniqueIdentifier>{78e32753-6494-4461-aaa9-6ec0e25fdcd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\event\sdl">
+      <UniqueIdentifier>{0c933c63-8eb2-403f-996c-fa1b5694ee03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\filesystem">
+      <UniqueIdentifier>{7f415639-3adb-4f8e-bb46-942e6633bc85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\filesystem\physfs">
+      <UniqueIdentifier>{f5f66e7d-0a53-47d7-afde-b6e8c8c2804b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\font">
+      <UniqueIdentifier>{a48d663f-75c0-4657-b183-82e6d41d5506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\font\freetype">
+      <UniqueIdentifier>{04d149f3-1be7-41f6-9f9d-a450bec64a1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\graphics">
+      <UniqueIdentifier>{bbd5a94c-216d-4452-80d2-e2645e6b4b5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\graphics\opengl">
+      <UniqueIdentifier>{c98a73f4-6459-4b2a-b9bc-1fd7fc9a0c51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\image">
+      <UniqueIdentifier>{faaaf964-6808-4899-afb6-dc3954498a3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\image\devil">
+      <UniqueIdentifier>{12e62a4f-46c5-4fe9-8f5c-a235e23704f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\joystick">
+      <UniqueIdentifier>{f5345130-0ff7-4e15-8471-ec14276e19bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\joystick\sdl">
+      <UniqueIdentifier>{332a13ce-79f1-4142-8212-030384e9c3bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\keyboard">
+      <UniqueIdentifier>{2230709f-88b8-4823-8f6e-9ebd6541759a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\keyboard\sdl">
+      <UniqueIdentifier>{daa485cb-5ede-46df-99e4-a91053d4363c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\mouse">
+      <UniqueIdentifier>{4efc297b-8e3d-4841-9cbf-6bb638ff699e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\mouse\sdl">
+      <UniqueIdentifier>{14139ad0-f290-44d2-9524-2813458c1347}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\physics">
+      <UniqueIdentifier>{b1d3e8d2-4ac9-4f6a-b69d-7ac42113d87f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\physics\box2d">
+      <UniqueIdentifier>{56c3b1e6-7dbc-40df-be87-11e6531de639}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\physics\box2d\Source">
+      <UniqueIdentifier>{d05db3cf-4382-4e60-93ec-f0003a477a4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\sound">
+      <UniqueIdentifier>{cee682a4-e85e-49e5-b67c-c7ee37cca3aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\sound\lullaby">
+      <UniqueIdentifier>{a16246b7-cfc9-4888-9a29-42297595f663}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\thread">
+      <UniqueIdentifier>{6e32c8cf-d49d-4a78-a1d8-21240da24dab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\thread\sdl">
+      <UniqueIdentifier>{734b78fd-00fa-4000-9b6d-9bb4fb090c37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\timer">
+      <UniqueIdentifier>{60308813-dcf2-47cb-869b-f3d7bb7c805d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\timer\sdl">
+      <UniqueIdentifier>{71bb9eb2-9e5c-41a9-af64-77ab6b81e98e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="luasocket">
+      <UniqueIdentifier>{9faf15c8-bcff-4445-ba8b-009038f01ebb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="luasocket\libluasocket">
+      <UniqueIdentifier>{d8b037d0-25fe-47df-bdbb-a85bd556231c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{a2ca62d5-8dab-4f93-bbe8-75ff3c787936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{f4054111-5d0f-40d9-90a9-da5da444bc50}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\love.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\Source.cpp">
+      <Filter>modules\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\wrap_Audio.cpp">
+      <Filter>modules\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\wrap_Source.cpp">
+      <Filter>modules\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\openal\Audio.cpp">
+      <Filter>modules\audio\openal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\openal\Pool.cpp">
+      <Filter>modules\audio\openal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\openal\Source.cpp">
+      <Filter>modules\audio\openal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\null\Audio.cpp">
+      <Filter>modules\audio\null</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\null\Source.cpp">
+      <Filter>modules\audio\null</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\event\Event.cpp">
+      <Filter>modules\event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\event\sdl\Event.cpp">
+      <Filter>modules\event\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\event\sdl\wrap_Event.cpp">
+      <Filter>modules\event\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\filesystem\File.cpp">
+      <Filter>modules\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\filesystem\FileData.cpp">
+      <Filter>modules\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\File.cpp">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\Filesystem.cpp">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_File.cpp">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_FileData.cpp">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\FontData.cpp">
+      <Filter>modules\font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\GlyphData.cpp">
+      <Filter>modules\font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\ImageRasterizer.cpp">
+      <Filter>modules\font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\Rasterizer.cpp">
+      <Filter>modules\font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\wrap_FontData.cpp">
+      <Filter>modules\font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\wrap_GlyphData.cpp">
+      <Filter>modules\font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\wrap_Rasterizer.cpp">
+      <Filter>modules\font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\freetype\Font.cpp">
+      <Filter>modules\font\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.cpp">
+      <Filter>modules\font\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\font\freetype\wrap_Font.cpp">
+      <Filter>modules\font\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\Drawable.cpp">
+      <Filter>modules\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\Graphics.cpp">
+      <Filter>modules\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\Image.cpp">
+      <Filter>modules\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\Volatile.cpp">
+      <Filter>modules\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Font.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Glyph.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Glyph.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\image\EncodedImageData.cpp">
+      <Filter>modules\image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\image\ImageData.cpp">
+      <Filter>modules\image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\image\wrap_EncodedImageData.cpp">
+      <Filter>modules\image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\image\wrap_Image.cpp">
+      <Filter>modules\image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\image\wrap_ImageData.cpp">
+      <Filter>modules\image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\image\devil\Image.cpp">
+      <Filter>modules\image\devil</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\image\devil\ImageData.cpp">
+      <Filter>modules\image\devil</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\joystick\Joystick.cpp">
+      <Filter>modules\joystick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\joystick\sdl\Joystick.cpp">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_Joystick.cpp">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp">
+      <Filter>modules\keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp">
+      <Filter>modules\keyboard\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.cpp">
+      <Filter>modules\keyboard\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp">
+      <Filter>modules\mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\sdl\wrap_Mouse.cpp">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\Joint.cpp">
+      <Filter>modules\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\Shape.cpp">
+      <Filter>modules\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Body.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\CircleShape.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Contact.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\DistanceJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\GearJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Joint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\MouseJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Physics.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\PolygonShape.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\PrismaticJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\PulleyJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\RevoluteJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Shape.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\World.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Body.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_CircleShape.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Contact.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_DistanceJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_GearJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Joint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_MouseJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Physics.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PolygonShape.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PrismaticJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PulleyJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_RevoluteJoint.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Shape.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_World.cpp">
+      <Filter>modules\physics\box2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\Shapes\b2CircleShape.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\Shapes\b2PolygonShape.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\Shapes\b2Shape.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2BroadPhase.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2CollideCircle.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2CollidePoly.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2Collision.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2Distance.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2PairManager.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2TimeOfImpact.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2BlockAllocator.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2Math.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2Settings.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2StackAllocator.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2Body.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2ContactManager.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2Island.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2World.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2WorldCallbacks.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2PolyAndCircleContact.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2PolyContact.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2CircleContact.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2Contact.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2ContactSolver.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2PulleyJoint.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2RevoluteJoint.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2DistanceJoint.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2GearJoint.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2Joint.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2MouseJoint.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2PrismaticJoint.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\physics\box2d\graham\GrahamScanConvexHull.cpp">
+      <Filter>modules\physics\box2d\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\Sound.cpp">
+      <Filter>modules\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\SoundData.cpp">
+      <Filter>modules\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\wrap_Decoder.cpp">
+      <Filter>modules\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\wrap_Sound.cpp">
+      <Filter>modules\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\wrap_SoundData.cpp">
+      <Filter>modules\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\lullaby\Decoder.cpp">
+      <Filter>modules\sound\lullaby</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\lullaby\FLACDecoder.cpp">
+      <Filter>modules\sound\lullaby</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\lullaby\ModPlugDecoder.cpp">
+      <Filter>modules\sound\lullaby</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\lullaby\Mpg123Decoder.cpp">
+      <Filter>modules\sound\lullaby</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\lullaby\Sound.cpp">
+      <Filter>modules\sound\lullaby</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp">
+      <Filter>modules\sound\lullaby</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\sdl\Thread.cpp">
+      <Filter>modules\thread\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\sdl\wrap_Thread.cpp">
+      <Filter>modules\thread\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp">
+      <Filter>modules\timer\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\timer\sdl\wrap_Timer.cpp">
+      <Filter>modules\timer\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp">
+      <Filter>luasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\udp.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\auxiliar.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\buffer.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\except.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\inet.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\io.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\luasocket.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\mime.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\options.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\select.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\tcp.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\timeout.c">
+      <Filter>luasocket\libluasocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\resources\resources.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\Exception.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\Matrix.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\MemoryData.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\Object.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\Reference.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\runtime.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\utf8.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\Vector.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\wrap_Data.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\modules\audio\Audio.h">
+      <Filter>modules\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\Source.h">
+      <Filter>modules\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\wrap_Audio.h">
+      <Filter>modules\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\wrap_Source.h">
+      <Filter>modules\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\openal\Audio.h">
+      <Filter>modules\audio\openal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\openal\Pool.h">
+      <Filter>modules\audio\openal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\openal\Source.h">
+      <Filter>modules\audio\openal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\null\Audio.h">
+      <Filter>modules\audio\null</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\audio\null\Source.h">
+      <Filter>modules\audio\null</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\event\Event.h">
+      <Filter>modules\event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\event\sdl\Event.h">
+      <Filter>modules\event\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\event\sdl\wrap_Event.h">
+      <Filter>modules\event\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\filesystem\File.h">
+      <Filter>modules\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\filesystem\FileData.h">
+      <Filter>modules\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\File.h">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\Filesystem.h">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_File.h">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_FileData.h">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.h">
+      <Filter>modules\filesystem\physfs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\Font.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\FontData.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\GlyphData.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\ImageRasterizer.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\Rasterizer.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\wrap_FontData.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\wrap_GlyphData.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\wrap_Rasterizer.h">
+      <Filter>modules\font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\freetype\Font.h">
+      <Filter>modules\font\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.h">
+      <Filter>modules\font\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\font\freetype\wrap_Font.h">
+      <Filter>modules\font\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\Drawable.h">
+      <Filter>modules\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\Graphics.h">
+      <Filter>modules\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\Image.h">
+      <Filter>modules\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\Volatile.h">
+      <Filter>modules\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Font.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Glyph.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Glyph.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\EncodedImageData.h">
+      <Filter>modules\image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\Image.h">
+      <Filter>modules\image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\ImageData.h">
+      <Filter>modules\image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\wrap_EncodedImageData.h">
+      <Filter>modules\image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\wrap_Image.h">
+      <Filter>modules\image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\wrap_ImageData.h">
+      <Filter>modules\image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\devil\Image.h">
+      <Filter>modules\image\devil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\image\devil\ImageData.h">
+      <Filter>modules\image\devil</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\joystick\Joystick.h">
+      <Filter>modules\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\joystick\sdl\Joystick.h">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_Joystick.h">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h">
+      <Filter>modules\keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h">
+      <Filter>modules\keyboard\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.h">
+      <Filter>modules\keyboard\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\Mouse.h">
+      <Filter>modules\mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\sdl\wrap_Mouse.h">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\Joint.h">
+      <Filter>modules\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\Shape.h">
+      <Filter>modules\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\Body.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\CircleShape.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\Contact.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\DistanceJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\GearJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\Joint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\MouseJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\Physics.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\PolygonShape.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\PrismaticJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\PulleyJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\RevoluteJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\Shape.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\World.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Body.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_CircleShape.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Contact.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_DistanceJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_GearJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Joint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_MouseJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Physics.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PolygonShape.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PrismaticJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PulleyJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_RevoluteJoint.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Shape.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_World.h">
+      <Filter>modules\physics\box2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\ThreadModule.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\sdl\Thread.h">
+      <Filter>modules\thread\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\sdl\wrap_Thread.h">
+      <Filter>modules\thread\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h">
+      <Filter>modules\timer\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h">
+      <Filter>modules\timer\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\luasocket\luasocket.h">
+      <Filter>luasocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\resources\resources.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\config.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Data.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\EnumMap.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Exception.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\math.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Matrix.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\MemoryData.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Module.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Object.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Reference.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\runtime.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\StringMap.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\types.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\utf8.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Vector.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\version.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\wrap_Data.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

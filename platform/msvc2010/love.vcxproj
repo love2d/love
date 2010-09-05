@@ -1,0 +1,381 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\common\Exception.cpp" />
+    <ClCompile Include="..\..\src\common\Matrix.cpp" />
+    <ClCompile Include="..\..\src\common\MemoryData.cpp" />
+    <ClCompile Include="..\..\src\common\Object.cpp" />
+    <ClCompile Include="..\..\src\common\Reference.cpp" />
+    <ClCompile Include="..\..\src\common\runtime.cpp" />
+    <ClCompile Include="..\..\src\common\utf8.cpp" />
+    <ClCompile Include="..\..\src\common\Vector.cpp" />
+    <ClCompile Include="..\..\src\common\wrap_Data.cpp" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\auxiliar.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\buffer.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\except.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\inet.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\io.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\luasocket.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\mime.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\options.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\select.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\tcp.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\timeout.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\udp.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp" />
+    <ClCompile Include="..\..\src\love.cpp">
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\null\Audio.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\null\Source.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\openal\Audio.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\openal\Pool.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\openal\Source.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\Source.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\wrap_Audio.cpp" />
+    <ClCompile Include="..\..\src\modules\audio\wrap_Source.cpp" />
+    <ClCompile Include="..\..\src\modules\event\Event.cpp" />
+    <ClCompile Include="..\..\src\modules\event\sdl\Event.cpp" />
+    <ClCompile Include="..\..\src\modules\event\sdl\wrap_Event.cpp" />
+    <ClCompile Include="..\..\src\modules\filesystem\File.cpp" />
+    <ClCompile Include="..\..\src\modules\filesystem\FileData.cpp" />
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\File.cpp" />
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\Filesystem.cpp" />
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_File.cpp" />
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_FileData.cpp" />
+    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp" />
+    <ClCompile Include="..\..\src\modules\font\FontData.cpp" />
+    <ClCompile Include="..\..\src\modules\font\freetype\Font.cpp" />
+    <ClCompile Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.cpp" />
+    <ClCompile Include="..\..\src\modules\font\freetype\wrap_Font.cpp" />
+    <ClCompile Include="..\..\src\modules\font\GlyphData.cpp" />
+    <ClCompile Include="..\..\src\modules\font\ImageRasterizer.cpp" />
+    <ClCompile Include="..\..\src\modules\font\Rasterizer.cpp" />
+    <ClCompile Include="..\..\src\modules\font\wrap_FontData.cpp" />
+    <ClCompile Include="..\..\src\modules\font\wrap_GlyphData.cpp" />
+    <ClCompile Include="..\..\src\modules\font\wrap_Rasterizer.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\Drawable.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\Graphics.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\Image.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Font.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Glyph.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Glyph.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\Volatile.cpp" />
+    <ClCompile Include="..\..\src\modules\image\devil\Image.cpp" />
+    <ClCompile Include="..\..\src\modules\image\devil\ImageData.cpp" />
+    <ClCompile Include="..\..\src\modules\image\EncodedImageData.cpp" />
+    <ClCompile Include="..\..\src\modules\image\ImageData.cpp" />
+    <ClCompile Include="..\..\src\modules\image\wrap_EncodedImageData.cpp" />
+    <ClCompile Include="..\..\src\modules\image\wrap_Image.cpp" />
+    <ClCompile Include="..\..\src\modules\image\wrap_ImageData.cpp" />
+    <ClCompile Include="..\..\src\modules\joystick\Joystick.cpp" />
+    <ClCompile Include="..\..\src\modules\joystick\sdl\Joystick.cpp" />
+    <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_Joystick.cpp" />
+    <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp" />
+    <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
+    <ClCompile Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.cpp" />
+    <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
+    <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
+    <ClCompile Include="..\..\src\modules\mouse\sdl\wrap_Mouse.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Body.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\CircleShape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Contact.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\DistanceJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\GearJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\graham\GrahamScanConvexHull.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Joint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\MouseJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Physics.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\PolygonShape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\PrismaticJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\PulleyJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\RevoluteJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Shape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2BroadPhase.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2CollideCircle.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2CollidePoly.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2Collision.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2Distance.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2PairManager.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\b2TimeOfImpact.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\Shapes\b2CircleShape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\Shapes\b2PolygonShape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Collision\Shapes\b2Shape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2BlockAllocator.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2Math.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2Settings.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Common\b2StackAllocator.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2Body.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2ContactManager.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2Island.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2World.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\b2WorldCallbacks.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2CircleContact.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2Contact.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2ContactSolver.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2PolyAndCircleContact.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Contacts\b2PolyContact.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2DistanceJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2GearJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2Joint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2MouseJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2PrismaticJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2PulleyJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\Source\Dynamics\Joints\b2RevoluteJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\World.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Body.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_CircleShape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Contact.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_DistanceJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_GearJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Joint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_MouseJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Physics.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PolygonShape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PrismaticJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PulleyJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_RevoluteJoint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Shape.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_World.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\Joint.cpp" />
+    <ClCompile Include="..\..\src\modules\physics\Shape.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\lullaby\Decoder.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\lullaby\FLACDecoder.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\lullaby\ModPlugDecoder.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\lullaby\Mpg123Decoder.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\lullaby\Sound.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\Sound.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\SoundData.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\wrap_Decoder.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\wrap_Sound.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\wrap_SoundData.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\sdl\Thread.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\sdl\wrap_Thread.cpp" />
+    <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp" />
+    <ClCompile Include="..\..\src\modules\timer\sdl\wrap_Timer.cpp" />
+    <ClCompile Include="..\..\src\resources\resources.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\common\config.h" />
+    <ClInclude Include="..\..\src\common\Data.h" />
+    <ClInclude Include="..\..\src\common\EnumMap.h" />
+    <ClInclude Include="..\..\src\common\Exception.h" />
+    <ClInclude Include="..\..\src\common\math.h" />
+    <ClInclude Include="..\..\src\common\Matrix.h" />
+    <ClInclude Include="..\..\src\common\MemoryData.h" />
+    <ClInclude Include="..\..\src\common\Module.h" />
+    <ClInclude Include="..\..\src\common\Object.h" />
+    <ClInclude Include="..\..\src\common\Reference.h" />
+    <ClInclude Include="..\..\src\common\runtime.h" />
+    <ClInclude Include="..\..\src\common\StringMap.h" />
+    <ClInclude Include="..\..\src\common\types.h" />
+    <ClInclude Include="..\..\src\common\utf8.h" />
+    <ClInclude Include="..\..\src\common\Vector.h" />
+    <ClInclude Include="..\..\src\common\version.h" />
+    <ClInclude Include="..\..\src\common\wrap_Data.h" />
+    <ClInclude Include="..\..\src\libraries\luasocket\luasocket.h" />
+    <ClInclude Include="..\..\src\modules\audio\Audio.h" />
+    <ClInclude Include="..\..\src\modules\audio\null\Audio.h" />
+    <ClInclude Include="..\..\src\modules\audio\null\Source.h" />
+    <ClInclude Include="..\..\src\modules\audio\openal\Audio.h" />
+    <ClInclude Include="..\..\src\modules\audio\openal\Pool.h" />
+    <ClInclude Include="..\..\src\modules\audio\openal\Source.h" />
+    <ClInclude Include="..\..\src\modules\audio\Source.h" />
+    <ClInclude Include="..\..\src\modules\audio\wrap_Audio.h" />
+    <ClInclude Include="..\..\src\modules\audio\wrap_Source.h" />
+    <ClInclude Include="..\..\src\modules\event\Event.h" />
+    <ClInclude Include="..\..\src\modules\event\sdl\Event.h" />
+    <ClInclude Include="..\..\src\modules\event\sdl\wrap_Event.h" />
+    <ClInclude Include="..\..\src\modules\filesystem\File.h" />
+    <ClInclude Include="..\..\src\modules\filesystem\FileData.h" />
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\File.h" />
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\Filesystem.h" />
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_File.h" />
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_FileData.h" />
+    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.h" />
+    <ClInclude Include="..\..\src\modules\font\Font.h" />
+    <ClInclude Include="..\..\src\modules\font\FontData.h" />
+    <ClInclude Include="..\..\src\modules\font\freetype\Font.h" />
+    <ClInclude Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.h" />
+    <ClInclude Include="..\..\src\modules\font\freetype\wrap_Font.h" />
+    <ClInclude Include="..\..\src\modules\font\GlyphData.h" />
+    <ClInclude Include="..\..\src\modules\font\ImageRasterizer.h" />
+    <ClInclude Include="..\..\src\modules\font\Rasterizer.h" />
+    <ClInclude Include="..\..\src\modules\font\wrap_FontData.h" />
+    <ClInclude Include="..\..\src\modules\font\wrap_GlyphData.h" />
+    <ClInclude Include="..\..\src\modules\font\wrap_Rasterizer.h" />
+    <ClInclude Include="..\..\src\modules\graphics\Drawable.h" />
+    <ClInclude Include="..\..\src\modules\graphics\Graphics.h" />
+    <ClInclude Include="..\..\src\modules\graphics\Image.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Font.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Glyph.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Glyph.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h" />
+    <ClInclude Include="..\..\src\modules\graphics\Volatile.h" />
+    <ClInclude Include="..\..\src\modules\image\devil\Image.h" />
+    <ClInclude Include="..\..\src\modules\image\devil\ImageData.h" />
+    <ClInclude Include="..\..\src\modules\image\EncodedImageData.h" />
+    <ClInclude Include="..\..\src\modules\image\Image.h" />
+    <ClInclude Include="..\..\src\modules\image\ImageData.h" />
+    <ClInclude Include="..\..\src\modules\image\wrap_EncodedImageData.h" />
+    <ClInclude Include="..\..\src\modules\image\wrap_Image.h" />
+    <ClInclude Include="..\..\src\modules\image\wrap_ImageData.h" />
+    <ClInclude Include="..\..\src\modules\joystick\Joystick.h" />
+    <ClInclude Include="..\..\src\modules\joystick\sdl\Joystick.h" />
+    <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_Joystick.h" />
+    <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h" />
+    <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
+    <ClInclude Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.h" />
+    <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
+    <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
+    <ClInclude Include="..\..\src\modules\mouse\sdl\wrap_Mouse.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\Body.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\CircleShape.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\Contact.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\DistanceJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\GearJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\Joint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\MouseJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\Physics.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\PolygonShape.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\PrismaticJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\PulleyJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\RevoluteJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\Shape.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\World.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Body.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_CircleShape.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Contact.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_DistanceJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_GearJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Joint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_MouseJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Physics.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PolygonShape.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PrismaticJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PulleyJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_RevoluteJoint.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Shape.h" />
+    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_World.h" />
+    <ClInclude Include="..\..\src\modules\physics\Joint.h" />
+    <ClInclude Include="..\..\src\modules\physics\Shape.h" />
+    <ClInclude Include="..\..\src\modules\thread\sdl\Thread.h" />
+    <ClInclude Include="..\..\src\modules\thread\sdl\wrap_Thread.h" />
+    <ClInclude Include="..\..\src\modules\thread\ThreadModule.h" />
+    <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h" />
+    <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h" />
+    <ClInclude Include="..\..\src\resources\resources.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AED6D87B-9F81-49D0-8C6B-1C9F64421ECC}</ProjectGuid>
+    <RootNamespace>love</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <ObjectFileName>%(Identity)_d.obj</ObjectFileName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PreprocessorDefinitions>VC_EXTRALEAN;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;DevIL.lib;freetype242MT.lib;libmpg123.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua.lib;modplug_d.lib;OpenAL32.lib;physfs.lib;SDL.lib;SDLmain.lib;libFLAC_static_D.lib;libFLAC++_static_D.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <ObjectFileName>%(Identity).obj</ObjectFileName>
+      <PreprocessorDefinitions>VC_EXTRALEAN;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>
+      </StringPooling>
+      <MinimalRebuild>
+      </MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;DevIL.lib;freetype242MT.lib;libmpg123.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua.lib;modplug.lib;OpenAL32.lib;physfs.lib;SDL.lib;SDLmain.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
