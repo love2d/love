@@ -1,7 +1,8 @@
 LOVE 0.7.0
 ----------
 
-  * Added love.thread module.
+  * Added love.thread.
+  * Added love.font.
   * Added love.graphics.Framebuffer.
   * Added Source:play, Source:pause, etc.
   * Added Source:isStatic().
@@ -17,24 +18,27 @@ LOVE 0.7.0
   * Added subtractive and multiplicative blend modes.
   * Added body:getAllowSleeping.
   * Added shape:getBody.
-  * Enabled love.filesystem.FileData.
-  * Fixed bug where the debug module was not an upvalue of the error handlers. (you can now override debug)
-  * Fixed bug where love.audio.pause and friends were acting on everything, not just the passed Source.
+  * Added love.filesystem.FileData for public usage.
+  
+  * Fixed the debug module not being an upvalue of the error handlers. (you can now override debug)
+  * Fixed some cases when love.audio.pause and friends, were acting on everything, not just the passed Source.
   * Fixed setFixedRotation enabling other flags.
   * Fixed a bug in the loader (for require).
-  * Fixed a bug where ParticleSystem::setSprite did not retain the new image.
-  * Fixed a bug where images would lose their settings (wrapping, filters) when setMode as called.
-  * Fixed a bug where shape:getBody wasn't exposed.
-  * Fixed a bug where DistanceJoint:getType() returned "circle" - it now returns "distance".
-  * Fixed a bug where SpriteBatches were unaffected by setColor
+  * Fixed ParticleSystem::setSprite not retaining the new image.
+  * Fixed setMode removing images settings (wrapping, filters).
+  * Fixed shape:getBody, it's now exposed for LÖVE usage.
+  * Fixed DistanceJoint:getType() returning "circle" - it now returns "distance".
+  * Fixed SpriteBatches being unaffected by setColor
   * Fixed the audio bug.
-  * Fonts are now padded.
-  * Invalid FSAA values now fall back to working ones (or none at all).
-  * Cleaned up traceback in error screen.
-  * Moved fonts to love.font (from love.graphics), only rendering remains in love.graphics.
-  * Switched font origin to top-left.
-  * OS X now properly uses UTIs for .love files.
-  * Fewer compiler warnings.
+  * Fixed invalid FSAA values crashing LÖVE.
+  * Fixed a bunch of compiler warnings.
+  * Fixed OS X not properly using UTIs for .love files.
+
+  * Changed fonts, they're now po2 safe.
+  * Changed the traceback in the error screen.
+  * Changed font origin to top-left.
+
+  * Removed font functions from love.graphics.
 
 LOVE 0.6.2
 ----------
