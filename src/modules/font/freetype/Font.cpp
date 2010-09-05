@@ -48,11 +48,13 @@ namespace freetype
 	Rasterizer * Font::newRasterizer(love::image::ImageData * data, std::string glyphs)
 	{
 		int length = glyphs.size();
-		unsigned short g[length];
+		unsigned short * g = new unsigned short[length];
 		for (int i = 0; i < length; i++) {
 			g[i] = glyphs[i];
 		}
-		return newRasterizer(data, g, length);
+		Rasterizer * r = newRasterizer(data, g, length);
+		delete [] g;
+		return r;
 	}
 
 	Rasterizer * Font::newRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length)

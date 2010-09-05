@@ -341,6 +341,11 @@ namespace box2d
 
 		void setFixedRotation(bool fixed);
 		bool getFixedRotation() const;
+
+		/**
+		* Get the World this Body resides in.
+		*/
+		World * getWorld() const;
 	private:
 
 		/**

@@ -115,7 +115,7 @@ namespace box2d
 
 	bool Shape::testPoint(float x, float y) const
 	{
-		return shape->TestPoint(shape->GetBody()->GetXForm(), body->world->scaleDown(b2Vec2(x, y)));
+		return shape->TestPoint(shape->GetBody()->GetXForm(), body->getWorld()->scaleDown(b2Vec2(x, y)));
 	}
 
 	int Shape::testSegment(lua_State * L)
@@ -129,8 +129,8 @@ namespace box2d
 		s.p2.x = (float)lua_tonumber(L, 3);
 		s.p2.y = (float)lua_tonumber(L, 4);
 
-		s.p1 = body->world->scaleDown(s.p1);
-		s.p2 = body->world->scaleDown(s.p2);
+		s.p1 = body->getWorld()->scaleDown(s.p1);
+		s.p2 = body->getWorld()->scaleDown(s.p2);
 
 		float lambda;
 		b2Vec2 normal;
@@ -138,7 +138,7 @@ namespace box2d
 		if(shape->TestSegment(shape->GetBody()->GetXForm(), &lambda, &normal, s, 1.0f))
 		{
 			lua_pushnumber(L, lambda);
-			normal = body->world->scaleUp(normal);
+			normal = body->getWorld()->scaleUp(normal);
 			lua_pushnumber(L, normal.x);
 			lua_pushnumber(L, normal.y);
 			return 3;
@@ -229,7 +229,7 @@ namespace box2d
 	int Shape::pushBits(lua_State * L, uint16 bits)
 	{
 		// Create a bitset.
-		std::bitset<16> b((unsigned long)bits);
+		std::bitset<16> b((int)bits);
 
 		// Push all set bits.
 		for(int i = 0;i<16;i++)
@@ -270,7 +270,7 @@ namespace box2d
 		love::luax_assert_argc(L, 0, 0);
 		b2AABB bb;
 		shape->ComputeAABB(&bb, shape->GetBody()->GetXForm());
-		bb = body->world->scaleUp(bb);
+		bb = body->getWorld()->scaleUp(bb);
 
 		// Top left.
 		lua_pushnumber(L, bb.lowerBound.x);

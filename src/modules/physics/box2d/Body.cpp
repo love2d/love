@@ -309,6 +309,11 @@ namespace box2d
 		return (body->m_flags & b2Body::e_fixedRotationFlag) != 0;
 	}
 
+	World * Body::getWorld() const
+	{
+		return world;
+	}
+
 	b2Vec2 Body::getVector(lua_State * L)
 	{
 		love::luax_assert_argc(L, 2, 2);
