@@ -21,6 +21,8 @@
 #ifndef LOVE_SOUND_LULLABY_FLAC_DECODER_H
 #define LOVE_SOUND_LULLABY_FLAC_DECODER_H
 
+#if 0
+
 // LOVE
 #include <common/Data.h>
 #include "Decoder.h"
@@ -67,5 +69,7 @@ namespace lullaby
 } // lullaby
 } // sound
 } // love
+
+#endif // 0
 
 #endif // LOVE_SOUND_LULLABY_FLAC_DECODER_H

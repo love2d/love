@@ -18,6 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+#if 0
+
 #include "FLACDecoder.h"
 
 #include <set>
@@ -177,3 +179,5 @@ namespace lullaby
 } // lullaby
 } // sound
 } // love
+
+#endif // 0
