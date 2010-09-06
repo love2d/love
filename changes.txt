@@ -33,6 +33,7 @@ LOVE 0.7.0
   * Fixed invalid FSAA values crashing LÖVE.
   * Fixed a bunch of compiler warnings.
   * Fixed OS X not properly using UTIs for .love files.
+  * Fixed the modplug decoder not properly handeling files that fail to load.
 
   * Changed fonts, they're now po2 safe.
   * Changed the traceback in the error screen.
