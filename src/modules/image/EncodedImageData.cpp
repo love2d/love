@@ -1,14 +1,14 @@
 /**
  * Copyright (c) 2006-2010 LOVE Development Team
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
@@ -25,21 +25,32 @@ namespace love
 namespace image
 {
 	EncodedImageData::EncodedImageData(void * d, Format f, int s)
-		: data(d), size(s), format(f)
+		: data(d), size(s), format(f), freeData(0)
 	{
 	}
-	
-	void * EncodedImageData::getData() const 
+
+	EncodedImageData::EncodedImageData(void * d, Format f, int s, void (*freeData)(void*))
+		: data(d), size(s), format(f), freeData(freeData)
+	{
+	}
+
+	EncodedImageData::~EncodedImageData()
+	{
+		if (freeData != 0)
+			freeData(data);
+	}
+
+	void * EncodedImageData::getData() const
 	{
 		return data;
 	}
-	
+
 	EncodedImageData::Format EncodedImageData::getFormat() const
 	{
 		return format;
 	}
-	
-	int EncodedImageData::getSize() const 
+
+	int EncodedImageData::getSize() const
 	{
 		return size;
 	}
@@ -54,7 +65,7 @@ namespace image
 		return formats.find(in, out);
 	}
 
-	StringMap<EncodedImageData::Format, EncodedImageData::FORMAT_MAX_ENUM>::Entry EncodedImageData::formatEntries[] = 
+	StringMap<EncodedImageData::Format, EncodedImageData::FORMAT_MAX_ENUM>::Entry EncodedImageData::formatEntries[] =
 	{
 		{"tga", EncodedImageData::FORMAT_TGA},
 		{"bmp", EncodedImageData::FORMAT_BMP},

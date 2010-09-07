@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -86,14 +86,14 @@ namespace devil
 		ilGenImages(1, &image);
 
 		// Bind the image.
-		ilBindImage(image);	
+		ilBindImage(image);
 
 		ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
 
 		// Set to black.
 		memset((void*)ilGetData(), 0, width*height*4);
 	}
-	
+
 	ImageData::ImageData(int width, int height, void *data)
 	: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
 	{
@@ -120,7 +120,7 @@ namespace devil
 					break;
 			}
 		}
-		
+
 		if(!success) {
 			throw love::Exception("Could not decode image data.");
 		}
@@ -131,12 +131,12 @@ namespace devil
 		ilDeleteImages(1, &image);
 	}
 
-	int ImageData::getWidth() const 
+	int ImageData::getWidth() const
 	{
 		return width;
 	}
 
-	int ImageData::getHeight() const 
+	int ImageData::getHeight() const
 	{
 		return height;
 	}
@@ -167,7 +167,7 @@ namespace devil
 		pixel * pixels = (pixel *)getData();
 		return pixels[y*width+x];
 	}
-	
+
 	EncodedImageData * ImageData::encode(EncodedImageData::Format f) {
 		ILubyte * data;
 		ILuint w = getWidth();
@@ -258,7 +258,7 @@ namespace devil
 				// header done. write the pixel data to TGA:
 				data += headerLen;
 				ilCopyPixels(0,0,0,w,h,1,IL_BGR,IL_UNSIGNED_BYTE,data); // convert the pixels to BGR (remember, little-endian) and copy them to data
-				
+
 				// It's Targa, so we have to flip the image.
 				row = w * bpp;
 				ILubyte * temp = new ILubyte[row];
@@ -272,7 +272,12 @@ namespace devil
 				data -= headerLen;
 				delete [] temp;
 		}
-		return new EncodedImageData(data, f, size + headerLen);
+		return new EncodedImageData(data, f, size + headerLen, freeData);
+	}
+
+	void ImageData::freeData(void *data)
+	{
+		delete[] (ILubyte*) data;
 	}
 
 } // devil
