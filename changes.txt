@@ -1,5 +1,5 @@
-LOVE 0.7.0
-----------
+LOVE 0.7.0 [?]
+--------------
 
   * Added love.thread.
   * Added love.font.
@@ -41,8 +41,8 @@ LOVE 0.7.0
 
   * Removed font functions from love.graphics.
 
-LOVE 0.6.2
-----------
+LOVE 0.6.2 [Jiggly Juice]
+-------------------------
 
   * Fixed a bug causing ImageFonts to cut off some pixels.
   * Fixed a bug where filled rectangles were too small.
@@ -53,8 +53,8 @@ LOVE 0.6.2
   * Errors are reported on stdout again.
   * Another fix for the icons on ubuntu.
 
-LOVE 0.6.1
-----------
+LOVE 0.6.1 [Jiggly Juice]
+-------------------------
 
   * Added Shape:setGroupIndex and getGroupIndex.
   * Added Body:setFixedRotation and Body:getFixedRotation.
@@ -76,8 +76,8 @@ LOVE 0.6.1
   * Removed Music and Sound. There are now only sources.
   * Improved the stability of love.audio/love.sound.
 
-LOVE 0.6.0
-----------
+LOVE 0.6.0 [Jiggly Juice]
+-------------------------
 
   * Lost track of 0.6.0 changes a long while ago. Don't trust the list below.
 
@@ -111,8 +111,8 @@ LOVE 0.6.0
   * Removed SDL_mixer.
 
 
-LOVE 0.5.0
-----------
+LOVE 0.5.0 [Salted Nuts]
+------------------------
 
   * Added love.joystick.
   * Added network support via LuaSocket.
@@ -146,8 +146,8 @@ LOVE 0.5.0
   * Cleaned up love::File and love_physfs.
   * Cleaned up love::Reference so it stores its reference in _G.
 
-LOVE 0.4.0
-----------
+LOVE 0.4.0 [Taco Beam]
+----------------------
 
   * Added love.physics. (YES!)
   * Added love.audio.setMode().
@@ -158,8 +158,8 @@ LOVE 0.4.0
   * Fixed memory leak related to love::File (thanks amnesiasoft!).
 
 
-LOVE 0.3.2
-----------
+LOVE 0.3.2 [Lemony Fresh]
+-------------------------
 
   * Added love.graphics.rectangle()
   * Added love.graphics.setLineWidth()
@@ -175,8 +175,8 @@ LOVE 0.3.2
   * Fixed line width bug related to fullscreen toggle.
   * Fixed music not looping.
 
-LOVE 0.3.1
-----------
+LOVE 0.3.1 [Space Meat]
+-----------------------
 
   * Fixed segfault related to graphics.
   * Fixed wait-forever bug related to audio.
@@ -184,8 +184,8 @@ LOVE 0.3.1
   * Fixed bug where games with a trailing "/" would not start.
   * Fixed bug which caused love.timer.sleep to delay for (way) too long.
 
-LOVE 0.3.0
-----------
+LOVE 0.3.0 [Mutant Vermin]
+--------------------------
 
   * Added ParticleSystem.
   * Added visual error reporting.
@@ -202,8 +202,8 @@ LOVE 0.3.0
   * Save folders are now created only if required.
   * On Windows, the new save location is %APPDATA%\LOVE\game
 
-LOVE 0.2.1
-----------
+LOVE 0.2.1 [Impending Doom]
+---------------------------
 
   * Added many functions in love.filesystem.
   * Added a dedicated save-folder for each game.
@@ -236,8 +236,8 @@ LOVE 0.2.1
   * Updated SDL to 1.2.13 (Windows)
   * Removed boost::filesystem.
 
-LOVE 0.2.0
-----------
+LOVE 0.2.0 [Mini-Moose]
+-----------------------
 
   * Added ImageFont
   * Added Animation
@@ -254,8 +254,8 @@ LOVE 0.2.0
   * Fixed titlebar. Game title is now displayed.
 
 
-LOVE 0.1.1
-----------
+LOVE 0.1.1 [Santa-Power]
+------------------------
 
 Initial release!
 
