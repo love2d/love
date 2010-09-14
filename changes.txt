@@ -1,5 +1,5 @@
-LOVE 0.7.0 [?]
---------------
+LOVE 0.7.0 [Game Slave]
+-----------------------
 
   * Added love.thread.
   * Added love.font.
