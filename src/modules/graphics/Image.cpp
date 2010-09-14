@@ -24,6 +24,14 @@ namespace love
 {
 namespace graphics
 {
+	Image::Filter::Filter() : min(FILTER_LINEAR), mag(FILTER_LINEAR)
+	{
+	}
+
+	Image::Wrap::Wrap() : s(WRAP_CLAMP), t(WRAP_CLAMP)
+	{
+	}
+
 	Image::~Image()
 	{
 	}

@@ -51,12 +51,14 @@ namespace graphics
 
 		struct Filter
 		{
+			Filter();
 			FilterMode min;
 			FilterMode mag;
 		};
 
 		struct Wrap
 		{
+			Wrap();
 			WrapMode s;
 			WrapMode t;
 		};

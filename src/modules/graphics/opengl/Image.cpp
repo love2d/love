@@ -198,7 +198,7 @@ namespace opengl
 		switch(w.s)
 		{
 		case WRAP_CLAMP:
-			gs = GL_CLAMP;
+			gs = GL_CLAMP_TO_EDGE;
 			break;
 		case WRAP_REPEAT:
 		default:
@@ -209,7 +209,7 @@ namespace opengl
 		switch(w.t)
 		{
 		case WRAP_CLAMP:
-			gt = GL_CLAMP;
+			gt = GL_CLAMP_TO_EDGE;
 			break;
 		case WRAP_REPEAT:
 		default:
@@ -236,7 +236,7 @@ namespace opengl
 
 		switch(gs)
 		{
-		case GL_CLAMP:
+		case GL_CLAMP_TO_EDGE:
 			w.s = WRAP_CLAMP;
 			break;
 		case GL_REPEAT:
@@ -247,7 +247,7 @@ namespace opengl
 
 		switch(gt)
 		{
-		case GL_CLAMP:
+		case GL_CLAMP_TO_EDGE:
 			w.t = WRAP_CLAMP;
 			break;
 		case GL_REPEAT:
