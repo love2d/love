@@ -381,8 +381,11 @@ namespace opengl
 
 		Font * font;
 
+		bool created = false;
+
 		// If the first parameter isn't a Font, create a new one
 		if (!luax_istype(L, 1, GRAPHICS_FONT_T)) {
+			created = true;
 			lua_pushinteger(L, size); // push the size
 			lua_insert(L, 2); // move it to its proper place
 			// Convert to File, if necessary.
@@ -418,6 +421,8 @@ namespace opengl
 		}
 		else font = luax_checktype<Font>(L, 1, "Font", GRAPHICS_FONT_T);
 		instance->setFont(font);
+		if (created)
+			font->release();
 		return 0;
 	}
 
