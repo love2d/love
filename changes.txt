@@ -19,7 +19,7 @@ LOVE 0.7.0 [Game Slave]
   * Added body:getAllowSleeping.
   * Added shape:getBody.
   * Added love.filesystem.FileData for public usage.
-  
+
   * Fixed the debug module not being an upvalue of the error handlers. (you can now override debug)
   * Fixed some cases when love.audio.pause and friends, were acting on everything, not just the passed Source.
   * Fixed setFixedRotation enabling other flags.
@@ -34,6 +34,7 @@ LOVE 0.7.0 [Game Slave]
   * Fixed a bunch of compiler warnings.
   * Fixed OS X not properly using UTIs for .love files.
   * Fixed the modplug decoder not properly handeling files that fail to load.
+  * Fixed a memory leak in setFont.
 
   * Changed fonts, they're now po2 safe.
   * Changed the traceback in the error screen.
