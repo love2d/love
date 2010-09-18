@@ -50,7 +50,7 @@ namespace opengl
 	{
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
-			delete glyphs[i];
+			glyphs[i]->release();
 		}
 		delete[] glyphs;
 	}
