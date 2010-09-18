@@ -34,7 +34,7 @@ namespace opengl
 	: height(data->getHeight()), lineHeight(1.25), mSpacing(1)
 	{
 		glyphs = new Glyph*[MAX_CHARS];
-		
+
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
 			glyphs[i] = new Glyph(data->getGlyphData(i));
@@ -48,6 +48,10 @@ namespace opengl
 
 	Font::~Font()
 	{
+		for(unsigned int i = 0; i < MAX_CHARS; i++)
+		{
+			delete glyphs[i];
+		}
 		delete[] glyphs;
 	}
 
@@ -166,20 +170,20 @@ namespace opengl
 	{
 		return mSpacing;
 	}
-	
+
 	bool Font::loadVolatile()
 	{
 		// reload all glyphs
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
-			glyphs[i]->load(); 
+			glyphs[i]->load();
 			glNewList(list + i, GL_COMPILE);
 			glyphs[i]->draw(0, 0, 0, 1, 1, 0, 0);
 			glEndList();
 		}
 		return true;
 	}
-	
+
 	void Font::unloadVolatile()
 	{
 		// delete the glyphs
