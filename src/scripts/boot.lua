@@ -353,31 +353,11 @@ function love.nogame()
 		if not minor then minor = 0 end
 		if not rev then rev = 0 end
 
-		love.graphics.setBackgroundColor(0x84, 0xca, 0xff)
-
 		names = {
-			"wheel_0",
-			"wheel_1",
-			"wheel_2",
-			"wheel_3",
-			"wheel_4",
-			"wheel_5",
-			"wheel_6",
-			"wheel_7",
-			"wheel_8",
-			"wheel_9",
-			"belt_tooth",
-			"belt_track",
-			"turret_body",
-			"turret_cannon",
-			"star",
-			"knoll01",
-			"knoll02",
-			"knoll03",
-			"knoll04",
-			"tree01",
-			"bubble",
+			"knoll1",
 			"love",
+			"planet",
+			"star1",
 		}
 
 		local decode = function(file)
@@ -389,382 +369,166 @@ function love.nogame()
 		for i,v in pairs(names) do
 			images[v] = decode(love["_"..v.."_png"])
 		end
-
-		pools = {
-			{
-				images.knoll01,
-				images.knoll02,
-			},
-			{
-				images.knoll03,
-				images.knoll04,
-			},
+	
+		planet = {
+			x = 400,
+			y = 300,
+			w = 128,
+			h = 128,
+			img = images["planet"]
+		}
+	
+		logo = {
+			x = 400,
+			y = 300,
+			w = 256,
+			h = 64,
+			r = 0,
+			img = images["love"]
 		}
 
-		List = {}
-		List.__index = List
+		love.graphics.setBackgroundColor(18, 18, 18)
+		star1 = images["star1"]
+		knoll1 = images["knoll1"]
+		
+		layers = {}
+		knolls = create_knolls(10)
+	
+		-- Add star layers.
+		table.insert(layers, create_star_layer(100, 0.5, 0.5))
+		table.insert(layers, create_star_layer(70, 0.7, 0.7))
+		table.insert(layers, create_star_layer(50, 1, 1))
+	
+		math.randomseed(os.time())
+	end
 
-		List.new = function(self)
-			local o = {
-				head = nil,
-			}
-			setmetatable(o, List)
-			return o
-		end
-
-		List.update = function(self, dt)
-			local n = self.head
-			while n do
-				n:update(dt)
-				n = n.next
-			end
-		end
-
-		List.draw = function(self)
-			local n = self.head
-			while n do
-				n:draw()
-				n = n.next
-			end
-		end
-
-		Node = {}
-		Node.__index = Node
-
-		Node.new = function(self, object)
-			local o = {
-				next = nil,
-			}
-			setmetatable(o, List)
-			return o
-		end
-
-		Node.insert = function(self, list)
-			local h = list.head
-			list.head = self
-			self.next = h
-		end
-
-		Node.remove = function(self)
-			parent.next = self.next
-		end
-
-		Object = Node:new()
-		Object.__index = Object
-		setmetatable(Object, Node)
-
-		Object.new = function(self)
-			local o = {
-				image = nil,
-				x = 0,
-				y = 0,
-				dx = -400,
-				dy = 0,
-				scale = 1,
-				r = 0,
-				duration = 30,
-				passed = 0,
-				t = 0,
-				alpha = 255
-			}
-			setmetatable(o, Object)
-			return o
-		end
-
-		Object.update = function(self, dt)
-			self.passed = self.passed + dt
-			while self.passed > self.duration do
-				self.passed = self.passed - self.duration
-			end
-			self.t = self.passed/self.duration
-		end
-
-		Object.draw = function(self)
-			if self.image then
-				local x = self.x + self.dx*self.t
-				local y = self.y + self.dy*self.t
-				local r = self.r*self.t
-				love.graphics.setColor(255, 255, 255, self.alpha)
-				love.graphics.draw(self.image, x, y, r, self.scale)
-				love.graphics.setColor(255, 255, 255, 255)
-			end
-		end
-
-		Tree = Object:new()
-		Tree.__index = Tree
-		setmetatable(Tree, Object)
-
-		Tree.new = function(self)
-			local o = {}
-			o.image = images.tree01
-			o.x = 800 + math.random(0, 800)
-			o.y = 300 + math.random(0, 40)
-			o.xt = -200;
-			o.dx = o.xt - o.x
-			o.speed = 100
-			o.duration = -o.dx/o.speed
-			setmetatable(o, Tree)
-			return o
-		end
-
-		Star = Object:new()
-		Star.__index = Star
-		setmetatable(Star, Object)
-
-		Star.new = function(self, speed, scale)
-			local o = {}
-			o.image = images.star
-			o.x = 800 + math.random(0, 800)
-			o.y = -200 + math.random(0, 300)
-			o.xt = -50;
-			o.dy = 400
-			o.dx = o.xt - o.x
-			o.speed = speed
-			o.scale = scale
-			o.duration = -o.dx/o.speed
-			o.r = math.pi * 5
-			o.alpha = 100 + math.random(155)
-			setmetatable(o, Star)
-			return o
-		end
-
-		Knoll = Object:new()
-		Knoll.__index = Knoll
-		setmetatable(Knoll, Object)
-
-		Knoll.new = function(self, pool, var, speed)
-			local o = {}
-			o.image = pools[pool][math.random(1, #pools[pool])]
-			o.x = 800 + math.random(0, 800)
-			o.y = 300 + var - math.random(0, var*2)
-			o.xt = -200;
-			o.dx = o.xt - o.x
-			o.speed = speed
-			o.duration = -o.dx/o.speed
-			setmetatable(o, Star)
-			return o
-		end
-
-		Belt = Object:new()
-		Belt.__index = Belt
-		setmetatable(Belt, Object)
-
-		Belt.new = function(self, n)
-
-			local o = {}
-
-			o.r = 30
-			o.d = o.r*2
-			o.half_c = math.pi*o.r
-			o.c = 2*o.half_c
-			o.x = 200
-			o.y = 300
-			o.th = 1
-			o.ta = 1
-			o.w = o.th*o.half_c
-			o.total = o.th*2+o.ta*2
-			o.teeth = {}
-
-			for i=0,n-1 do
-				local b = { x = 0, y = 0, t = (o.total/n)*i }
-				table.insert(o.teeth, b)
-			end
-
-			setmetatable(o, Belt)
-			return o
-		end
-
-		Belt.update = function(self, dt)
-			for i,b in ipairs(self.teeth) do
-				b.t = b.t + dt
-
-				if b.t < self.th then
-					local t = b.t
-					b.x = self.x + self.w * (t/self.th)
-					b.y = self.y
-				elseif b.t < self.th + self.ta then
-					local t = (self.th + self.ta - b.t)
-					b.x = self.x + self.w + math.cos(-math.pi*t + math.pi/2)*self.r
-					b.y = self.y + self.r + math.sin(-math.pi*t + math.pi/2)*self.r
-				elseif b.t < self.th*2 + self.ta then
-					local t = (b.t - self.th*2 + self.ta)/self.th
-					b.x = self.x + self.w * (2-t)
-					b.y = self.y + self.d
-				elseif b.t < self.total then
-					local t = (self.th*2 + self.ta - b.t)
-					b.x = self.x + math.cos(-math.pi*t + math.pi/2)*self.r
-					b.y = self.y + self.r + math.sin(-math.pi*t + math.pi/2)*self.r
-				else
-					b.t = b.t - self.total
-				end
-			end
-		end
-
-		Belt.draw = function(self)
-			for i,b in ipairs(self.teeth) do
-				love.graphics.draw(images.belt_tooth, b.x, b.y)
-			end
-		end
-
-		Tank = Object:new()
-		Tank.__index = Tank
-		setmetatable(Tank, Object)
-
-		Tank.new = function(self)
-			local o = {}
-			o.x = 200
-			o.y = 490
-			o.i = 49
-			o.belt = Belt:new(30)
-			o.belt.x = o.x-7
-			o.belt.y = o.y-37
-			o.angle = 0
-			setmetatable(o, Tank)
-			return o
-		end
-
-		Tank.update = function(self, dt)
-			self.angle = self.angle + dt * math.pi/2
-			self.belt:update(dt)
-		end
-
-
-		Tank.draw = function(self)
-			love.graphics.draw(images.turret_cannon, self.x+30, self.y-80)
-			love.graphics.draw(images.turret_body, self.x-12, self.y-110)
-			love.graphics.draw(images.belt_track, self.belt.x-74, self.belt.y-28)
-			love.graphics.draw(images["wheel_"..tostring(major)], self.x, self.y, self.angle, 1, 1, 32, 32)
-			love.graphics.draw(images["wheel_"..tostring(minor)], self.x+self.i, self.y, self.angle, 1, 1, 32, 32)
-			love.graphics.draw(images["wheel_"..tostring(rev)], self.x+self.i*2, self.y, self.angle, 1, 1, 32, 32)
-			self.belt:draw()
-		end
-
-		Bubble = Object:new()
-		Bubble.__index = Bubble
-		setmetatable(Bubble, Object)
-
-		 Bubble.new = function(self)
-			local o = {}
-			o.x = 240
-			o.y = 190
-			o.angle = 0
-			setmetatable(o, Bubble)
-			return o
-		end
-
-		Bubble.update = function(self, dt)
-			self.angle = self.angle + dt*5
-		end
-
-		Bubble.draw = function(self)
-			local yv = math.sin(self.angle)*5
-			love.graphics.draw(images.bubble, self.x, self.y+yv)
-			love.graphics.draw(images.love, self.x+8, self.y+yv+95)
-		end
-
-		timers = {}
-
-		Timer = {}
-		Timer.__index = Timer
-
-		Timer.spawn = function(self, tick, f)
-			local o = {
-				passed = 0,
-				tick = tick,
-				f = f
-			}
-			setmetatable(o, Timer)
-			table.insert(timers, o)
-		end
-
-		Timer.update = function(self, dt)
-			self.passed = self.passed + dt
-			while self.passed > self.tick do
-				self.passed = self.passed - self.tick
-				self.f()
-			end
-		end
-
-		lists = {
-			b = List:new(),
-			f = List:new()
+	function create_star(scale, speed)
+		return {
+			x0 = -100,
+			x = 1000,
+			y = math.random() * 600,
+	
+			r0 = math.random() * math.pi * 2,
+			rv = math.random() * math.pi * 4,
+			t = math.random(),
+			scale = scale,
+			speed = speed,
 		}
-
-		do
-			local t = Bubble:new()
-			t:insert(lists.f)
-		end
-
-		do
-			local t = Tank:new()
-			t:insert(lists.f)
-		end
-
-		for i=1,3 do
-			local t = Tree:new(50, 300)
-			t:insert(lists.b)
-		end
-
-
-		for i=1,2 do
-			local t = Knoll:new(1, 50, 100)
-			t:insert(lists.b)
-		end
-
-		for i=1,40 do
-			local t = Star:new(100, 1)
-			t:insert(lists.b)
-		end
-
-		for i=1,5 do
-			local t = Knoll:new(2, 100, 50)
-			t:insert(lists.b)
-		end
-
-		for i,v in pairs(lists) do
-			v:update(10)
-		end
-
 	end
 
-
-
-	love.update = function(dt)
-
-		for i,v in ipairs(timers) do v:update(dt) end
-
-
-		for i,v in pairs(lists) do
-			v:update(dt)
+	function create_star_layer(num_stars, scale, speed)
+		
+		local layer = {}
+	
+		for i = 1,num_stars do
+			table.insert(layer, create_star(scale, speed))
 		end
-
-		love.timer.sleep(10)
+	
+		return layer
 	end
 
+	function update_star(dt, s)
+		s.t = s.t + 0.1 * s.speed * dt
+	
+		while s.t > 1 do
+			s.t = s.t - 1
+		end
+	end
 
-	love.draw = function()
+	function draw_star(s)
 
-		lists.b:draw()
+		local x = s.x0 + s.x * s.t
+		local y = s.y
+		local r = s.r0 + s.rv * s.t
+		local sx = s.scale
+		local sy = s.scale
 
-		-- Ground
-		love.graphics.setColor(146, 201, 87)
-		love.graphics.rectangle("fill", 0, 530, 800, 70)
-		love.graphics.setColor(205, 227, 161)
-		love.graphics.rectangle("fill", 0, 520, 800, 10)
-		love.graphics.setColor(255, 255, 255)
+		love.graphics.setColor(255*s.scale, 255*s.scale, 255, 255*s.scale)
+		love.graphics.draw(star1, x, y, r, sx, sy, 16, 16)
+	end
 
-		lists.f:draw()
+	function update_star_layer(dt, layer)
+		for k,v in ipairs(layer) do
+			update_star(dt, v)
+		end
+	end
 
+	function draw_star_layer(layer)
+		for k,v in ipairs(layer) do
+			draw_star(v)
+		end
+	end
+
+	function create_knolls(n)
+		local t = {}
+		for i = 1,n do
+			table.insert(t, create_knoll((math.pi * 2 / n) * i))
+		end
+		return t
+	end
+
+	function create_knoll(p)
+		return {
+			p = p,
+			t0 = math.random() * 10,
+			t = 0
+		}
+	end
+
+	function update_knoll(dt, k)
+		k.t = k.t + dt
+	end
+
+	function draw_knoll(k)
+		local x = planet.x
+		local y = planet.y
+		local a = k.p + k.t
+		local h = 225 + 20 * (1 + math.sin(k.t0 + k.t))
+		love.graphics.draw(knoll1, x, y, a, .75, .75, 64, h)
+	end
+
+	function update_logo(dt)
+		logo.r = logo.r + dt
+		if logo.r > 360 then logo.r = logo.r - 360 end
+	end
+
+	function love.draw()
+		for k, v in ipairs(layers) do
+			draw_star_layer(v)
+		end
+	
+		for k, v in ipairs(knolls) do
+			draw_knoll(v)
+		end
+
+		love.graphics.draw(planet.img, planet.x, planet.y, 0, 1, 1, planet.w, planet.h)
+		love.graphics.draw(logo.img, logo.x, logo.y, logo.r, 1, 1, logo.w/2, logo.h/2)
+	end
+
+	function love.update(dt)
+		for k, v in ipairs(layers) do
+			update_star_layer(dt, v)
+		end
+		for k, v in ipairs(knolls) do
+			update_knoll(dt, v)
+		end
+		update_logo(dt)
+	end
+
+	function love.keypressed(k)
+		if k == "r" then
+			local main = love.filesystem.load("main.lua")
+			main()
+			love.load()
+		end
 	end
 
 	love.conf = function(t)
-		t.title = "*Tank* you for using LOVE " .. love._version_string .. " (" .. love._version_codename .. ")"
+		t.title = "LOVE " .. love._version_string .. " (" .. love._version_codename .. "): The Final Frontier"
 		t.modules.audio = false
 		t.modules.sound = false
 		t.modules.physics = false
 		t.modules.joystick = false
-		t.modules.native = false
-		t.modules.font = false
 	end
 
 end

@@ -26,3 +26,4 @@ glob:*.DS_Store
 glob:*.dylib
 glob:*.dmg*
 glob:demos
+glob:*.orig
