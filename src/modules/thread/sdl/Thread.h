@@ -79,13 +79,16 @@ namespace sdl
 		std::map<std::string, ThreadVariant*> shared;
 
 	public:
-		ThreadData(const char *name, const char *code);
+		ThreadData(const char *name, const char *code, void *mutex, void *cond);
 		~ThreadData();
 		const char *getCode();
 		const char *getName();
 		ThreadVariant* getValue(const std::string & name);
 		void clearValue(const std::string & name);
 		void setValue(const std::string & name, ThreadVariant *v);
+
+		void *mutex;
+		void *cond;
 	};
 
 	class Thread : public love::Object

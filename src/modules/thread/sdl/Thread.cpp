@@ -49,9 +49,12 @@ namespace sdl
 		lua_setfield(L, -2, "_curthread");
 		if(luaL_dostring(L, comm->getCode()) == 1)
 		{
+			SDL_mutexP((SDL_mutex*) comm->mutex);
 			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1));
 			comm->setValue("error", v);
 			v->release();
+			SDL_mutexV((SDL_mutex*) comm->mutex);
+			SDL_CondBroadcast((SDL_cond*) comm->cond);
 		}
 		lua_close(L);
 		return 0;
@@ -110,7 +113,8 @@ namespace sdl
 		}
 	}
 
-	ThreadData::ThreadData(const char *name, const char *code)
+	ThreadData::ThreadData(const char *name, const char *code, void *mutex, void *cond)
+		: mutex(mutex), cond(cond)
 	{
 		size_t len = strlen(name);
 		this->name = new char[len+1];
@@ -174,18 +178,18 @@ namespace sdl
 		this->data = new char[len+1];
 		memset(this->data, 0, len+1);
 		memcpy(this->data, data->getData(), len);
-		comm = new ThreadData(name.c_str(), this->data);
 		mutex = SDL_CreateMutex();
 		cond = SDL_CreateCond();
+		comm = new ThreadData(name.c_str(), this->data, mutex, cond);
 	}
 
 	Thread::Thread(love::thread::ThreadModule *module, const std::string & name)
 		: handle(0), module(module), name(name), data(0), isThread(false)
 	{
 		module->retain();
-		comm = new ThreadData(name.c_str(), NULL);
 		mutex = SDL_CreateMutex();
 		cond = SDL_CreateCond();
+		comm = new ThreadData(name.c_str(), NULL, mutex, cond);
 	}
 
 	Thread::~Thread()
