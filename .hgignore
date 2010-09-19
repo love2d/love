@@ -27,3 +27,9 @@ glob:*.dylib
 glob:*.dmg*
 glob:demos
 glob:*.orig
+relre:platform/msvc2010/include/
+glob:platform/msvc2010/lib/
+relre:platform/msvc2010/(.*)txt
+relre:platform/msvc2010/(.*)suo
+relre:platform/msvc2010/(.*)sdf
+relre:platform/msvc2010/(.*)ipch
