@@ -143,6 +143,12 @@ namespace physfs
 		FileData * newFileData(void * data, int size, const char * filename);
 
 		/**
+		* Creates a new FileData object from base64 data.
+		* @param b64 The base64 data.
+		**/
+		FileData * newFileData(const char * b64, const char * filename);
+
+		/**
 		* Gets the current working directory.
 		**/
 		const char * getWorkingDirectory();

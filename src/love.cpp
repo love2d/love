@@ -63,9 +63,6 @@
 
 #endif // LOVE_BUILD_EXE
 
-// Resources
-#include "resources/resources.h"
-
 #ifdef LOVE_BUILD_STANDALONE
 
 static const luaL_Reg modules[] = {
@@ -119,14 +116,6 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 	}
 
 	lua_setfield(L, -2, "_version_compat");
-
-
-	// Resources.
-	for(const love::Resource * r = love::resources; r->name != 0; r++)
-	{
-		love::luax_newtype(L, "Data", love::DATA_T, new love::MemoryData((void*)r->data, r->size));
-		lua_setfield(L, -2, r->name);
-	}
 
 	lua_pop(L, 1); // love
 
@@ -241,7 +230,6 @@ int w__openConsole(lua_State * L)
 
 int main(int argc, char ** argv)
 {
-
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 	int hack_argc = 0;
 	char ** hack_argv = 0;
@@ -311,7 +299,6 @@ int main(int argc, char ** argv)
 		delete [] hack_argv;
 	}
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
-
 	return 0;
 }
 

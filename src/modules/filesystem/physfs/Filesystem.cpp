@@ -21,6 +21,7 @@
 #include <common/config.h>
 
 #include <common/utf8.h>
+#include <common/b64.h>
 
 #include "Filesystem.h"
 
@@ -146,8 +147,22 @@ namespace physfs
 	{
 		FileData * fd = new FileData(size, std::string(filename));
 
-		// Copy the data into
+		// Copy the data into FileData.
 		memcpy(fd->getData(), data, size);
+
+		return fd;
+	}
+
+	FileData * Filesystem::newFileData(const char * b64, const char * filename)
+	{
+		int size = strlen(b64);
+		int outsize = 0;
+		char * dst = b64_decode(b64, size, outsize);
+		FileData * fd = new FileData(outsize, std::string(filename));
+
+		// Copy the data into FileData.
+		memcpy(fd->getData(), dst, outsize);
+		delete [] dst;
 
 		return fd;
 	}

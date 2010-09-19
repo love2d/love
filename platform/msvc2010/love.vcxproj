@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\common\b64.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
     <ClCompile Include="..\..\src\common\Matrix.cpp" />
     <ClCompile Include="..\..\src\common\MemoryData.cpp" />
@@ -69,6 +70,7 @@
     <ClCompile Include="..\..\src\modules\graphics\Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Font.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Framebuffer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Glyph.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp" />
@@ -77,6 +79,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Glyph.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
@@ -177,9 +180,9 @@
     <ClCompile Include="..\..\src\modules\thread\sdl\wrap_Thread.cpp" />
     <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp" />
     <ClCompile Include="..\..\src\modules\timer\sdl\wrap_Timer.cpp" />
-    <ClCompile Include="..\..\src\resources\resources.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\common\b64.h" />
     <ClInclude Include="..\..\src\common\config.h" />
     <ClInclude Include="..\..\src\common\Data.h" />
     <ClInclude Include="..\..\src\common\EnumMap.h" />
@@ -232,6 +235,7 @@
     <ClInclude Include="..\..\src\modules\graphics\Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Font.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Framebuffer.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Glyph.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h" />
@@ -240,6 +244,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Glyph.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
@@ -299,7 +304,6 @@
     <ClInclude Include="..\..\src\modules\thread\ThreadModule.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h" />
-    <ClInclude Include="..\..\src\resources\resources.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AED6D87B-9F81-49D0-8C6B-1C9F64421ECC}</ProjectGuid>

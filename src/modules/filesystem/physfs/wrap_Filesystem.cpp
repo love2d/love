@@ -98,8 +98,26 @@ namespace physfs
 		size_t length = 0;
 		const char * str = lua_tolstring(L, 1, &length);
 		const char * filename = lua_tostring(L, 2);
+		const char * decstr = lua_isstring(L, 3) ? lua_tostring(L, 3) : 0;
 
-		FileData * t = instance->newFileData((void*)str, (int)length, filename);
+		FileData::Decoder decoder = FileData::FILE;
+
+		if(decstr)
+			FileData::getConstant(decstr, decoder);
+
+		FileData * t = 0;
+
+		switch(decoder)
+		{
+		case FileData::FILE:
+			t = instance->newFileData((void*)str, (int)length, filename);
+			break;
+		case FileData::BASE64:
+			t = instance->newFileData(str, filename);
+			break;
+		default:
+			return luaL_error(L, "Unrecognized FileData decoder: %s", decstr);
+		}
 
 		luax_newtype(L, "FileData", FILESYSTEM_FILE_DATA_T, (void*)t);
 		return 1;

@@ -18,20 +18,22 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_RESOURCES_H
-#define LOVE_RESOURCES_H
+#include "config.h"
+
+#ifndef LOVE_B64_H
+#define LOVE_B64_H
 
 namespace love
 {
-	struct Resource
-	{
-		const char * name;
-		void * data;
-		unsigned int size;
-	};
+	/**
+	* Decode base64 encoded data.
+	*
+	* @param src The string containing the base64 data.
+	* @param slen The length of the string.
+	* @param size The size of the binary data is stored here.
+	* @return A chunk of memory containing the binary data (allocated with new[]).
+	*/
+	char * b64_decode(const char * src, int slen, int & size);
+} // love
 
-	extern const Resource resources[];
-
-}
-
-#endif // LOVE_RESOURCES_H 
+#endif // LOVE_B64_H

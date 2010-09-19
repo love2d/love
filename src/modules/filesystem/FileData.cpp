@@ -59,5 +59,23 @@ namespace filesystem
 		return extension;
 	}
 
+	bool FileData::getConstant(const char * in, Decoder & out)
+	{
+		return decoders.find(in, out);
+	}
+
+	bool FileData::getConstant(Decoder in, const char *& out)
+	{
+		return decoders.find(in, out);
+	}
+
+	StringMap<FileData::Decoder, FileData::DECODE_MAX_ENUM>::Entry FileData::decoderEntries[] = 
+	{
+		{"file", FileData::FILE},
+		{"base64", FileData::BASE64},
+	};
+
+	StringMap<FileData::Decoder, FileData::DECODE_MAX_ENUM> FileData::decoders(FileData::decoderEntries, sizeof(FileData::decoderEntries));
+
 } // filesystem
 } // love

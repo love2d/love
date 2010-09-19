@@ -24,6 +24,7 @@
 // LOVE
 #include <string>
 #include <common/Data.h>
+#include <common/StringMap.h>
 
 namespace love
 {	
@@ -47,6 +48,13 @@ namespace filesystem
 
 	public:
 
+		enum Decoder
+		{
+			FILE,
+			BASE64,
+			DECODE_MAX_ENUM
+		}; // Decoder
+
 		FileData(int size, const std::string & filename);
 
 		virtual ~FileData();
@@ -57,6 +65,14 @@ namespace filesystem
 
 		const std::string & getFilename() const;
 		const std::string & getExtension() const;
+
+		static bool getConstant(const char * in, Decoder & out);
+		static bool getConstant(Decoder in, const char *& out);
+
+	private:
+
+		static StringMap<Decoder, DECODE_MAX_ENUM>::Entry decoderEntries[];
+		static StringMap<Decoder, DECODE_MAX_ENUM> decoders;
 
 	}; // FileData
 

@@ -94,9 +94,6 @@
     <Filter Include="luasocket\libluasocket">
       <UniqueIdentifier>{d8b037d0-25fe-47df-bdbb-a85bd556231c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="resources">
-      <UniqueIdentifier>{a2ca62d5-8dab-4f93-bbe8-75ff3c787936}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common">
       <UniqueIdentifier>{f4054111-5d0f-40d9-90a9-da5da444bc50}</UniqueIdentifier>
     </Filter>
@@ -565,9 +562,6 @@
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\timeout.c">
       <Filter>luasocket\libluasocket</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\resources\resources.cpp">
-      <Filter>resources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\common\Exception.cpp">
       <Filter>common</Filter>
     </ClCompile>
@@ -594,6 +588,15 @@
     </ClCompile>
     <ClCompile Include="..\..\src\common\wrap_Data.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\b64.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Framebuffer.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.cpp">
+      <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -903,9 +906,6 @@
     <ClInclude Include="..\..\src\libraries\luasocket\luasocket.h">
       <Filter>luasocket</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\resources\resources.h">
-      <Filter>resources</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\common\config.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -956,6 +956,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\common\wrap_Data.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\b64.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Framebuffer.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.h">
+      <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
