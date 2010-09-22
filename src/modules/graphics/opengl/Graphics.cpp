@@ -736,7 +736,29 @@ namespace opengl
 		if(currentFont != 0)
 		{
 			std::string text(str);
-			currentFont->print(text, x, y, angle, 1, 1);
+
+			if(text.find("\n") == std::string::npos)
+				currentFont->print(text, x, y, angle, 1, 1);
+			else
+			{
+				int lines = 0;
+				text = "";
+
+				for(unsigned int i = 0; i < strlen(str); i++)
+				{
+					if(str[i] == '\n')
+					{
+						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()), angle, 1, 1);
+						text = "";
+						lines++;
+					}
+					else
+						text += str[i];
+				}
+
+				if(text != "") // Print the last text (if applicable).
+					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()), angle, 1, 1);
+			}
 		}
 	}
 
@@ -745,7 +767,29 @@ namespace opengl
 		if(currentFont != 0)
 		{
 			std::string text(str);
-			currentFont->print(text, x, y, angle, s, s);
+
+			if(text.find("\n") == std::string::npos)
+				currentFont->print(text, x, y, angle, s, s);
+			else
+			{
+				int lines = 0;
+				text = "";
+
+				for(unsigned int i = 0; i < strlen(str); i++)
+				{
+					if(str[i] == '\n')
+					{
+						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * s), angle, s, s);
+						text = "";
+						lines++;
+					}
+					else
+						text += str[i];
+				}
+
+				if(text != "") // Print the last text (if applicable).
+					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * s), angle, s, s);
+			}
 		}
 	}
 
@@ -754,7 +798,29 @@ namespace opengl
 		if(currentFont != 0)
 		{
 			std::string text(str);
-			currentFont->print(text, x, y, angle, sx, sy);
+
+			if(text.find("\n") == std::string::npos)
+				currentFont->print(text, x, y, angle, sx, sy);
+			else
+			{
+				int lines = 0;
+				text = "";
+
+				for(unsigned int i = 0; i < strlen(str); i++)
+				{
+					if(str[i] == '\n')
+					{
+						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * sy), angle, sx, sy);
+						text = "";
+						lines++;
+					}
+					else
+						text += str[i];
+				}
+
+				if(text != "") // Print the last text (if applicable).
+					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * sy), angle, sx, sy);
+			}
 		}
 	}
 
