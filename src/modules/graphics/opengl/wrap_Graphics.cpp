@@ -246,7 +246,7 @@ namespace opengl
 	int w_newImageFont(lua_State * L)
 	{
 		// Convert to ImageData if necessary.
-		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, DATA_T))
+		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
 			luax_convobj(L, 1, "image", "newImageData");
 
 		// Convert to Rasterizer if necessary.
