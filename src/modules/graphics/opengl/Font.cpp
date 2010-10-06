@@ -76,7 +76,7 @@ namespace opengl
 			int g = (int)text[i];
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
-			glTranslatef(0, height, 0);
+			glTranslatef(0, getHeight(), 0);
 			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
 			glTranslatef(spacing[g], 0, 0);
@@ -88,7 +88,7 @@ namespace opengl
 	{
 		if (!glyphs[character]) character = ' ';
 		glPushMatrix();
-		glTranslatef(x, y+height, 0.0f);
+		glTranslatef(x, y+getHeight(), 0.0f);
 		glCallList(list+character);
 		glPopMatrix();
 	}
