@@ -173,7 +173,7 @@
 		A946D83310424EE3002BF36C /* SoundData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8510420ACB007D418B /* SoundData.cpp */; };
 		A946D85510425002002BF36C /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B9110420ACC007D418B /* wrap_Timer.cpp */; };
 		A946D85610425002002BF36C /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8F10420ACC007D418B /* Timer.cpp */; };
-		A946D8571042500F002BF36C /* resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B9410420ACC007D418B /* resources.cpp */; };
+		A95684F7125D3555001B276B /* b64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A95684F5125D3555001B276B /* b64.cpp */; };
 		A968F0CF1083A9A900A895AA /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0CE1083A9A900A895AA /* Event.cpp */; };
 		A968F0D11083A9B900A895AA /* File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D01083A9B900A895AA /* File.cpp */; };
 		A968F0D31083A9D400A895AA /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D21083A9D400A895AA /* Graphics.cpp */; };
@@ -561,8 +561,6 @@
 		A93E6B9010420ACC007D418B /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		A93E6B9110420ACC007D418B /* wrap_Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Timer.cpp; sourceTree = "<group>"; };
 		A93E6B9210420ACC007D418B /* wrap_Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Timer.h; sourceTree = "<group>"; };
-		A93E6B9410420ACC007D418B /* resources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = resources.cpp; sourceTree = "<group>"; };
-		A93E6B9510420ACC007D418B /* resources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = resources.h; sourceTree = "<group>"; };
 		A93E6B9710420ACC007D418B /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = boot.lua; sourceTree = "<group>"; };
 		A93E6B9810420ACC007D418B /* boot.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = boot.lua.h; sourceTree = "<group>"; };
 		A93E6B9910420ACC007D418B /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = graphics.lua; sourceTree = "<group>"; };
@@ -579,6 +577,8 @@
 		A946D3C411768D69005E1462 /* wrap_FontData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_FontData.h; sourceTree = "<group>"; };
 		A946D3C511768D69005E1462 /* wrap_FontData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_FontData.cpp; sourceTree = "<group>"; };
 		A946D4421176AC42005E1462 /* Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Font.h; sourceTree = "<group>"; };
+		A95684F5125D3555001B276B /* b64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b64.cpp; sourceTree = "<group>"; };
+		A95684F6125D3555001B276B /* b64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b64.h; sourceTree = "<group>"; };
 		A968F0C61083A07B00A895AA /* EnumMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumMap.h; sourceTree = "<group>"; };
 		A968F0C71083A07C00A895AA /* StringMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		A968F0CE1083A9A900A895AA /* Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Event.cpp; sourceTree = "<group>"; };
@@ -713,7 +713,6 @@
 				A93E69F410420ABF007D418B /* libraries */,
 				A93E6A3410420AC0007D418B /* love.cpp */,
 				A93E6A3510420AC0007D418B /* modules */,
-				A93E6B9310420ACC007D418B /* resources */,
 				A93E6B9610420ACC007D418B /* scripts */,
 			);
 			name = Source;
@@ -723,6 +722,8 @@
 		A93E69DD10420ABF007D418B /* common */ = {
 			isa = PBXGroup;
 			children = (
+				A95684F5125D3555001B276B /* b64.cpp */,
+				A95684F6125D3555001B276B /* b64.h */,
 				A93E69DE10420ABF007D418B /* config.h */,
 				A93E69DF10420ABF007D418B /* Data.h */,
 				A968F0C61083A07B00A895AA /* EnumMap.h */,
@@ -1388,15 +1389,6 @@
 			path = sdl;
 			sourceTree = "<group>";
 		};
-		A93E6B9310420ACC007D418B /* resources */ = {
-			isa = PBXGroup;
-			children = (
-				A93E6B9410420ACC007D418B /* resources.cpp */,
-				A93E6B9510420ACC007D418B /* resources.h */,
-			);
-			path = resources;
-			sourceTree = "<group>";
-		};
 		A93E6B9610420ACC007D418B /* scripts */ = {
 			isa = PBXGroup;
 			children = (
@@ -1632,7 +1624,6 @@
 				A946D83310424EE3002BF36C /* SoundData.cpp in Sources */,
 				A946D85510425002002BF36C /* wrap_Timer.cpp in Sources */,
 				A946D85610425002002BF36C /* Timer.cpp in Sources */,
-				A946D8571042500F002BF36C /* resources.cpp in Sources */,
 				A9255DEC1043188D00BA1496 /* SDLMain.m in Sources */,
 				A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */,
 				A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */,
@@ -1654,6 +1645,7 @@
 				A946D3C611768D69005E1462 /* wrap_FontData.cpp in Sources */,
 				A9BD60741226C988007DEC63 /* Framebuffer.cpp in Sources */,
 				A9BD60751226C988007DEC63 /* wrap_Framebuffer.cpp in Sources */,
+				A95684F7125D3555001B276B /* b64.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
