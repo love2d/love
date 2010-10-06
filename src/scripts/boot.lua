@@ -641,19 +641,19 @@ RU5ErkJggg==]]
 	end
 
 	local function create_star_layer(num_stars, scale, speed)
-		
+
 		local layer = {}
 
 		for i = 1,num_stars do
 			table.insert(layer, create_star(scale, speed))
 		end
-		
+
 		return layer
 	end
 
 	local function update_star(dt, s)
 		s.t = s.t + 0.1 * s.speed * dt
-		
+
 		while s.t > 1 do
 			s.t = s.t - 1
 		end
@@ -729,7 +729,7 @@ RU5ErkJggg==]]
 	end
 
 	function love.load()
-		
+
 		planet = {
 			x = 400,
 			y = 300,
@@ -738,7 +738,7 @@ RU5ErkJggg==]]
 			t = 0,
 			img = load_image_b64(planet_base64, "planet.png")
 		}
-		
+
 		logo = {
 			x = 400,
 			y = 300,
@@ -751,24 +751,24 @@ RU5ErkJggg==]]
 		love.graphics.setBackgroundColor(18, 18, 18)
 		star1 = load_image_b64(star1_base64, "star1.png")
 		knoll1 = load_image_b64(knoll1_base64, "knoll1.png")
-		
+
 		layers = {}
 		knolls = create_knolls(10)
-		
+
 		-- Add star layers.
 		table.insert(layers, create_star_layer(100, 0.5, 0.5))
 		table.insert(layers, create_star_layer(70, 0.7, 0.7))
 		table.insert(layers, create_star_layer(50, 1, 1))
-		
+
 		math.randomseed(os.time())
-		
+
 	end
 
 	function love.draw()
 		for k, v in ipairs(layers) do
 			draw_star_layer(v)
 		end
-		
+
 		for k, v in ipairs(knolls) do
 			draw_knoll(v)
 		end
@@ -787,7 +787,7 @@ RU5ErkJggg==]]
 		update_planet(dt)
 		update_logo(dt)
 	end
-	
+
 	function love.conf(t)
 		t.title = "LOVE " .. love._version_string .. " (" .. love._version_codename .. ")"
 		t.modules.audio = false
@@ -820,6 +820,7 @@ function love.errhand(msg)
 
 	-- Load.
 	love.graphics.setScissor()
+	love.graphics.setBlendMode("alpha")
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(14)
 	love.graphics.setFont(font)

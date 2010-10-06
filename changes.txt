@@ -39,6 +39,7 @@ LOVE 0.7.0 [Game Slave]
   * Fixed bug where errors in threads wouldn't get picked up by demand.
   * Fixed part of the bug with newlines when scaling text (rotating still messes up the lines).
   * Fixed the bug where newImageFont would try to created ImageData out of ImageData.
+  * Fixed error handler not resetting the blend mode.
 
   * Changed fonts, they're now po2 safe.
   * Changed the traceback in the error screen.
