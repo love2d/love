@@ -34,7 +34,7 @@ namespace opengl
 	Image * luax_checkimage(lua_State * L, int idx);
 	int w_Image_getWidth(lua_State * L);
 	int w_Image_getHeight(lua_State * L);
-	int w_Image_setFIlter(lua_State * L);
+	int w_Image_setFilter(lua_State * L);
 	int luaopen_image(lua_State * L);
 
 } // opengl
