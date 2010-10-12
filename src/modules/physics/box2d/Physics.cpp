@@ -57,7 +57,7 @@ namespace box2d
 
 	World * Physics::newWorld(float w, float h)
 	{
-		return newWorld(-w, -h, w, h, 0, 0, true);
+		return newWorld(0, 0, w, h, 0, 0, true);
 	}
 
 	Body * Physics::newBody(World * world, float x, float y, float mass, float i)
