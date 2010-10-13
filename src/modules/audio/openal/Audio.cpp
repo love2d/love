@@ -47,7 +47,7 @@ namespace openal
 		if(alcGetError(device) != ALC_NO_ERROR)
 			throw love::Exception("Could not make context current.");
 		
-		std::string captureName(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
+		/*std::string captureName(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
 		const ALCchar * devices = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
 		while (*devices) {
 			std::string device(devices);
@@ -62,7 +62,7 @@ namespace openal
 		if (!capture) {
 			// We're not going to prevent LOVE from running without a microphone, but we should warn, at least
 			std::cerr << "Warning, couldn't open capture device! No audio input!" << std::endl;
-		}
+		}*/
 
 		// pool must be allocated after AL context.
 		pool = new Pool();
