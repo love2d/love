@@ -246,8 +246,14 @@ namespace opengl
 	int w_newImageFont(lua_State * L)
 	{
 		// Convert to ImageData if necessary.
-		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
+		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T) && !luax_istype(L, 1, FONT_FONT_DATA_T)))
 			luax_convobj(L, 1, "image", "newImageData");
+		else if(luax_istype(L, 1, GRAPHICS_IMAGE_T)) {
+			Image * i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+			love::image::ImageData * id = i->getData();
+			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)id, false);
+			lua_replace(L, 1);
+		}
 
 		// Convert to Rasterizer if necessary.
 		if(luax_istype(L, 1, IMAGE_IMAGE_DATA_T)) {
