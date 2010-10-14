@@ -302,7 +302,10 @@ namespace physfs
 			}
 		}
 		else
+		{
 			instance->retain();
+			love::luax_register_searcher(L, loader);
+		}
 
 		WrappedModule w;
 		w.module = instance;
