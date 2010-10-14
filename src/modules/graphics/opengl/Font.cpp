@@ -73,7 +73,7 @@ namespace opengl
 		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
 		for (unsigned int i = 0; i < text.size(); i++) {
-			int g = (int)text[i];
+			unsigned char g = (unsigned char)text[i];
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
 			glTranslatef(0, round(getHeight()), 0);
