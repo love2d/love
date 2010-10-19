@@ -156,6 +156,7 @@ namespace devil
 	{
 		//int tx = x > width-1 ? width-1 : x;
 		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
+		if (x > width-1 || y > height-1 || x < 0 || y < 0) throw love::Exception("Attempt to set out-of-range pixel!");
 		pixel * pixels = (pixel *)getData();
 		pixels[y*width+x] = c;
 	}
@@ -164,6 +165,7 @@ namespace devil
 	{
 		//int tx = x > width-1 ? width-1 : x;
 		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
+		if (x > width-1 || y > height-1 || x < 0 || y < 0) throw love::Exception("Attempt to get out-of-range pixel!");
 		pixel * pixels = (pixel *)getData();
 		return pixels[y*width+x];
 	}
