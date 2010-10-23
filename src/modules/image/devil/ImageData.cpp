@@ -171,6 +171,7 @@ namespace devil
 	}
 
 	EncodedImageData * ImageData::encode(EncodedImageData::Format f) {
+		ilBindImage(image);
 		ILubyte * data;
 		ILuint w = getWidth();
 		int h = getHeight(); // has to be a signed int so we can make it negative for BMPs
