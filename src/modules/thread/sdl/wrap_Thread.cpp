@@ -264,6 +264,8 @@ namespace sdl
 		else
 			data = luax_checktype<love::Data>(L, 2, "Data", DATA_T);
 		Thread *t = instance->newThread(name, data);
+		if (!t)
+			return luaL_error(L, "A thread with that name already exists.");
 		luax_newtype(L, "Thread", THREAD_THREAD_T, (void*)t);
 		return 1;
 	}
