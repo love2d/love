@@ -80,7 +80,7 @@ namespace openal
 		
 		alcMakeContextCurrent(0);
 		alcDestroyContext(context);
-		if (capture) alcCaptureCloseDevice(capture);
+		//if (capture) alcCaptureCloseDevice(capture);
 		alcCloseDevice(device);
 	}
 
