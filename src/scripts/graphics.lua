@@ -1245,23 +1245,23 @@ AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 ]]
 
 	love.graphics.newFont = function(font, size)
-		if type(font) == "number" then
+		if type(font) == "number" or not font then
 			size = font
 			font = love.filesystem.newFileData(vera_ttf_b64, "Vera.ttf", "base64")
 		end
-		return love.graphics.newFont1(font, size)
+		return love.graphics.newFont1(font, size or 12)
 	end
 
 	love.graphics.setFont = function(font, size)
-		if type(font) == "number" then
+		if type(font) == "number" or not font then
 			size = font
 			font = love.filesystem.newFileData(vera_ttf_b64, "Vera.ttf", "base64")
 		end
-		return love.graphics.setFont1(font, size)
+		return love.graphics.setFont1(font, size or 12)
 	end
 
 	love.graphics.print = function (...)
-		if not love.graphics.getFont() then 
+		if not love.graphics.getFont() then
 			love.graphics.setFont(12)
 		end
 		love.graphics.print1(...)
@@ -1269,7 +1269,7 @@ AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 	end
 
 	love.graphics.printf = function (...)
-		if not love.graphics.getFont() then 
+		if not love.graphics.getFont() then
 			love.graphics.setFont(12)
 		end
 		love.graphics.printf1(...)
