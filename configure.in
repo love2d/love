@@ -11,7 +11,7 @@ AC_PROG_CXX
 AC_SEARCH_LIBS([sqrt], [m], [], AC_MSG_ERROR([Can't LÖVE without C math library]))
 AC_SEARCH_LIBS([SDL_Init], [SDL], [], AC_MSG_ERROR([Can't LÖVE without SDL]))
 AC_SEARCH_LIBS([glLoadIdentity], [GL], [], AC_MSG_ERROR([Can't LÖVE without OpenGL]))
-AC_SEARCH_LIBS([gluOrtho2D], [GLU], [], AC_MSG_ERROR([Can't LÖVE without OpenGL Utility Library]))
+#AC_SEARCH_LIBS([gluOrtho2D], [GLU], [], AC_MSG_ERROR([Can't LÖVE without OpenGL Utility Library]))
 AC_SEARCH_LIBS([alSourcePlay], [openal], [], AC_MSG_ERROR([Can't LÖVE without OpenAL]))
 AC_ARG_ENABLE([luajit],
 	[  --enable-luajit Use LuaJIT instead of lua],
