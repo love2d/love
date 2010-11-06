@@ -217,7 +217,7 @@ namespace physfs
 #elif defined(LOVE_LINUX)
 		if(appdata.empty())
 		{
-			char * xdgdatahome = getenv("XDG_DATA_HOM");
+			char * xdgdatahome = getenv("XDG_DATA_HOME");
 			if (!xdgdatahome)
 				appdata = getUserDirectory();
 			else
