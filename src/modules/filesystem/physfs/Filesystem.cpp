@@ -214,6 +214,16 @@ namespace physfs
 			appdata = udir;
 		}
 		return appdata.c_str();
+#elif defined(LOVE_LINUX)
+		if(appdata.empty())
+		{
+			char * xdgdatahome = getenv("XDG_DATA_HOM");
+			if (!xdgdatahome)
+				appdata = getUserDirectory();
+			else
+				appdata = xdgdatahome;
+		}
+		return appdata.c_str();
 #else
 		return getUserDirectory();
 #endif
