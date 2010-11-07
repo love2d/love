@@ -54,7 +54,7 @@
 #	ifdef LOVE_MACOSX
 #		define LOVE_APPDATA_FOLDER "LOVE"
 #	elif defined(LOVE_LINUX)
-#		define LOVE_APPDATA_FOLDER "LOVE"
+#		define LOVE_APPDATA_FOLDER "love"
 #	else
 #		define LOVE_APPDATA_FOLDER ".love"
 #	endif
