@@ -180,10 +180,9 @@ namespace physfs
 #else
 			char * cwd_char = new char[LOVE_MAX_PATH];
 
-			getcwd(cwd_char, LOVE_MAX_PATH);
-			
-			cwd = cwd_char; // if getcwd fails, cwd_char (and thus cwd) will still be empty
-			
+			if(getcwd(cwd_char, LOVE_MAX_PATH))
+				cwd = cwd_char; // if getcwd fails, cwd_char (and thus cwd) will still be empty
+
 			delete [] cwd_char;
 #endif
 		}
@@ -219,7 +218,7 @@ namespace physfs
 		{
 			char * xdgdatahome = getenv("XDG_DATA_HOME");
 			if (!xdgdatahome)
-				appdata = getUserDirectory();
+				appdata = std::string(getUserDirectory()) + "/.local/share/";
 			else
 				appdata = xdgdatahome;
 		}

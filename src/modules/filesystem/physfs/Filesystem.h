@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2010 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -44,7 +44,7 @@
 #	include <unistd.h>
 #endif
 
-// In Windows, we would like to use "LOVE" as the 
+// In Windows, we would like to use "LOVE" as the
 // application folder, but in Linux, we like .love.
 #ifdef LOVE_WINDOWS
 #	define LOVE_APPDATA_FOLDER "LOVE"
@@ -52,6 +52,8 @@
 #	define LOVE_MAX_PATH _MAX_PATH
 #else
 #	ifdef LOVE_MACOSX
+#		define LOVE_APPDATA_FOLDER "LOVE"
+#	elif defined(LOVE_LINUX)
 #		define LOVE_APPDATA_FOLDER "LOVE"
 #	else
 #		define LOVE_APPDATA_FOLDER ".love"
@@ -75,7 +77,7 @@ namespace physfs
 
 		// Pointer used for file reads.
 		char * buffer;
-		
+
 		// Contains the current working directory (UTF8).
 		std::string cwd;
 
@@ -86,7 +88,7 @@ namespace physfs
 		// in the appdata/userdata folder.
 		std::string save_identity;
 
-		// Full and relative paths of the game save folder. 
+		// Full and relative paths of the game save folder.
 		// (Relative to the %APPDATA% folder, meaning that the
 		// relative string will look something like: ./LOVE/game)
 		std::string save_path_relative, save_path_full;
@@ -98,7 +100,7 @@ namespace physfs
 		bool isInited;
 
 	protected:
-		
+
 	public:
 
 		Filesystem();
@@ -110,7 +112,7 @@ namespace physfs
 		void init(const char * arg0);
 
 		/**
-		* This sets up the save directory. If the 
+		* This sets up the save directory. If the
 		* it is already set up, nothing happens.
 		* @return True on success, false otherwise.
 		**/
@@ -156,7 +158,7 @@ namespace physfs
 
 		/**
 		* Gets the user home directory.
-		**/ 
+		**/
 		const char * getUserDirectory();
 
 		/**
@@ -173,7 +175,7 @@ namespace physfs
 
 		/**
 		* Checks whether a file exists in the current search path
-		* or not. 
+		* or not.
 		* @param file The filename to check.
 		**/
 		bool exists(const char * file);
@@ -185,7 +187,7 @@ namespace physfs
 		bool isDirectory(const char * file);
 
 		/**
-		* Checks if an existing file really is a file, 
+		* Checks if an existing file really is a file,
 		* and not a directory.
 		* @param file The filename to check.
 		**/
@@ -219,7 +221,7 @@ namespace physfs
 
 		/**
 		* Reads count bytes from an open file.
-		* The first parameter is either a File or 
+		* The first parameter is either a File or
 		* a string. An optional second parameter specified the
 		* max number of bytes to read.
 		**/
@@ -228,9 +230,9 @@ namespace physfs
 		/**
 		* Write the bytes in data to the file. File
 		* must be opened for write.
-		* The first parameter is either a File or 
+		* The first parameter is either a File or
 		* a string.
-		**/ 
+		**/
 		int write(lua_State * L);
 
 		/**
@@ -252,7 +254,7 @@ namespace physfs
 		bool seek(File * file, int pos);
 
 		/**
-		* This "native" method returns a table of all 
+		* This "native" method returns a table of all
 		* files in a given directory.
 		**/
 		int enumerate(lua_State * L);
