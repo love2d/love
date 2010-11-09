@@ -67,6 +67,7 @@ namespace opengl
 
 	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
 	{
+		float dx = 0.0f; // spacing counter for newline handling
 		glPushMatrix();
 
 		glTranslatef(ceil(x), ceil(y), 0.0f);
@@ -74,12 +75,18 @@ namespace opengl
 		glScalef(sx, sy, 1.0f);
 		for (unsigned int i = 0; i < text.size(); i++) {
 			unsigned char g = (unsigned char)text[i];
+			if (g == '\n') { // wrap newline, but do not print it
+				glTranslatef(-dx, round(getHeight()), 0);
+				dx = 0.0f;
+				continue;
+			}
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
 			glTranslatef(0, round(getHeight()), 0);
 			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
 			glTranslatef(spacing[g], 0, 0);
+			dx += spacing[g];
 		}
 		glPopMatrix();
 	}

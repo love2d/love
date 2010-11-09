@@ -700,97 +700,23 @@ namespace opengl
 		return (int)max;
 	}
 
-	void Graphics::print( const char * str, float x, float y )
+	void Graphics::print( const char * str, float x, float y)
 	{
 		if(currentFont != 0)
 		{
 			std::string text(str);
-
-			if(text.find("\n") == std::string::npos)
-				currentFont->print(text, x, y);
-			else
-			{
-				int lines = 0;
-				text = "";
-
-				for(unsigned int i = 0; i < strlen(str); i++)
-				{
-					if(str[i] == '\n')
-					{
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()));
-						text = "";
-						lines++;
-					}
-					else
-						text += str[i];
-				}
-
-				if(text != "") // Print the last text (if applicable).
-					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()));
-			}
+			currentFont->print(text, x, y);
 		}
 	}
 
-	void Graphics::print( const char * str, float x, float y , float angle)
+	void Graphics::print( const char * str, float x, float y, float angle)
 	{
-		if(currentFont != 0)
-		{
-			std::string text(str);
-
-			if(text.find("\n") == std::string::npos)
-				currentFont->print(text, x, y, angle, 1, 1);
-			else
-			{
-				int lines = 0;
-				text = "";
-
-				for(unsigned int i = 0; i < strlen(str); i++)
-				{
-					if(str[i] == '\n')
-					{
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()), angle, 1, 1);
-						text = "";
-						lines++;
-					}
-					else
-						text += str[i];
-				}
-
-				if(text != "") // Print the last text (if applicable).
-					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()), angle, 1, 1);
-			}
-		}
+		print(str, x, y, angle, 1, 1);
 	}
 
-	void Graphics::print( const char * str, float x, float y , float angle, float s)
+	void Graphics::print( const char * str, float x, float y, float angle, float s)
 	{
-		if(currentFont != 0)
-		{
-			std::string text(str);
-
-			if(text.find("\n") == std::string::npos)
-				currentFont->print(text, x, y, angle, s, s);
-			else
-			{
-				int lines = 0;
-				text = "";
-
-				for(unsigned int i = 0; i < strlen(str); i++)
-				{
-					if(str[i] == '\n')
-					{
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * s), angle, s, s);
-						text = "";
-						lines++;
-					}
-					else
-						text += str[i];
-				}
-
-				if(text != "") // Print the last text (if applicable).
-					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * s), angle, s, s);
-			}
-		}
+		print(str, x, y, angle, s, s);
 	}
 
 	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy)
@@ -798,29 +724,7 @@ namespace opengl
 		if(currentFont != 0)
 		{
 			std::string text(str);
-
-			if(text.find("\n") == std::string::npos)
-				currentFont->print(text, x, y, angle, sx, sy);
-			else
-			{
-				int lines = 0;
-				text = "";
-
-				for(unsigned int i = 0; i < strlen(str); i++)
-				{
-					if(str[i] == '\n')
-					{
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * sy), angle, sx, sy);
-						text = "";
-						lines++;
-					}
-					else
-						text += str[i];
-				}
-
-				if(text != "") // Print the last text (if applicable).
-					currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight() * sy), angle, sx, sy);
-			}
+			currentFont->print(text, x, y, angle, sx, sy);
 		}
 	}
 
