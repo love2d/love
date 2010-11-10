@@ -51,7 +51,7 @@ namespace font
 	public:
 		enum Format
 		{
-			FORMAT_LUMINOSITY_ALPHA,
+			FORMAT_LUMINANCE_ALPHA,
 			FORMAT_RGBA
 		};
 		

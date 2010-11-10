@@ -95,7 +95,7 @@ namespace opengl
 	bool Glyph::loadVolatile()
 	{
 		GLint format = GL_RGBA;
-		if (data->getFormat() == love::font::GlyphData::FORMAT_LUMINOSITY_ALPHA) format = GL_LUMINANCE_ALPHA;
+		if (data->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA) format = GL_LUMINANCE_ALPHA;
 		
 		glGenTextures(1,&texture);
 		glBindTexture(GL_TEXTURE_2D, texture);

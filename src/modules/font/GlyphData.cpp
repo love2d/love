@@ -32,7 +32,7 @@ namespace font
 	{
 		if (metrics.width && metrics.height) {
 			switch (f) {
-				case GlyphData::FORMAT_LUMINOSITY_ALPHA:
+				case GlyphData::FORMAT_LUMINANCE_ALPHA:
 					data = new unsigned char[metrics.width * metrics.height * 2];
 					break;
 				case GlyphData::FORMAT_RGBA:
@@ -56,7 +56,7 @@ namespace font
 	int GlyphData::getSize() const
 	{
 		switch(format) {
-			case GlyphData::FORMAT_LUMINOSITY_ALPHA:
+			case GlyphData::FORMAT_LUMINANCE_ALPHA:
 				return getWidth() * getHeight() * 2;
 				break;
 			case GlyphData::FORMAT_RGBA:
@@ -125,13 +125,13 @@ namespace font
 		int h = getHeight();
 		int pw = next_p2(w);
 		int ph = next_p2(h);
-		unsigned char * d = new unsigned char[pw * ph * (format == GlyphData::FORMAT_LUMINOSITY_ALPHA ? 2 : 4)];
+		unsigned char * d = new unsigned char[pw * ph * (format == GlyphData::FORMAT_LUMINANCE_ALPHA ? 2 : 4)];
 		for (int j = 0; j < ph; j++) {
 			for (int i = 0; i < pw; i++) {
 				int n = i+j*w;
 				int p = i+j*pw;
 				if (i < w && j < h) {
-					if (format == GlyphData::FORMAT_LUMINOSITY_ALPHA) {
+					if (format == GlyphData::FORMAT_LUMINANCE_ALPHA) {
 						p *= 2;
 						n *= 2;
 						d[p] = data[n];
@@ -145,7 +145,7 @@ namespace font
 						d[p+3] = data[n+3];
 					}
 				} else {
-					if (format == GlyphData::FORMAT_LUMINOSITY_ALPHA) {
+					if (format == GlyphData::FORMAT_LUMINANCE_ALPHA) {
 						p *= 2;
 						d[p] = d[p+1] = 0;
 					} else {
