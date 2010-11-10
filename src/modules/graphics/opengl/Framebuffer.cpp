@@ -1,183 +1,18 @@
 #include "Framebuffer.h"
 #include <common/Matrix.h>
 
-#include <string.h>
-
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-#include <iterator>
-using namespace std;
-
-namespace {
-
-	// functions to get opengl capabilities at runtime
-	vector<string> tokenize(const string& str)
-	{
-		vector<string> tokens;
-
-		istringstream iss( str );
-		copy(istream_iterator<string>(iss), istream_iterator<string>(),
-				back_inserter< vector<string> >(tokens));
-		return tokens;
-	}
-
-	float getOpenGLVersionNumber()
-	{
-		vector<string> tokens = tokenize( (const char*)glGetString(GL_VERSION) );
-		stringstream toNumber( tokens.at(0) );
-
-		double version;
-		toNumber >> version;
-		return version;
-	}
-
-	bool hasFramebufferExtension()
-	{
-		vector<string> ext = tokenize( (const char*)glGetString(GL_EXTENSIONS) );
-		return find(ext.begin(), ext.end(), "GL_EXT_framebuffer_object") != ext.end();
-	}
-
-
-	// strategy for fbo creation, interchangable at runtime:
-	// none, opengl >= 3.0, extensions
-	struct FramebufferStrategy {
-		/// create a new framebuffer, depthbuffer and texture
-		/**
-		 * @param[out] framebuffer Framebuffer name
-		 * @param[out] depthbuffer Depthbuffer name
-		 * @param[out] img         Texture name
-		 * @param[in]  width       Width of framebuffer
-		 * @param[in]  height      Height of framebuffer
-		 * @return Creation status
-		 */
-		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depthbuffer, GLuint& img, int width, int height)
-		{ return GL_FRAMEBUFFER_UNSUPPORTED; }
-		/// remove objects
-		/**
-		 * @param[in] framebuffer Framebuffer name
-		 * @param[in] depthbuffer Depthbuffer name
-		 * @param[in] img         Texture name
-		 */
-		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img) {}
-		virtual void bindFBO(GLuint framebuffer) {}
-	};
-
-#ifdef GL_VERSION_3_0
-	struct FramebufferStrategyGL3 : public FramebufferStrategy {
-		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depthbuffer, GLuint& img, int width, int height)
-		{
-			// generate depth buffer
-			glGenRenderbuffers(1, &depthbuffer);
-			glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-			glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-			// generate texture save target
-			glGenTextures(1, &img);
-			glBindTexture(GL_TEXTURE_2D, img);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-					0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-			glBindTexture(GL_TEXTURE_2D, 0);
-
-			// create framebuffer
-			glGenFramebuffers(1, &framebuffer);
-			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-					GL_TEXTURE_2D, img, 0);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-					GL_RENDERBUFFER, depthbuffer);
-			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-			// unbind buffers and texture
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			return status;
-		}
-		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img)
-		{
-			glDeleteTextures(1, &img);
-			glDeleteRenderbuffers(1, &depthbuffer);
-			glDeleteFramebuffers(1, &framebuffer);
-		}
-
-		virtual void bindFBO(GLuint framebuffer)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-		}
-	};
-#endif
-
-	struct FramebufferStrategyEXT : public FramebufferStrategy {
-
-		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depthbuffer, GLuint& img, int width, int height)
-		{
-			// generate depth buffer
-			glGenRenderbuffersEXT(1, &depthbuffer);
-			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
-			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, width, height);
-			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
-
-			// generate texture save target
-			glGenTextures(1, &img);
-			glBindTexture(GL_TEXTURE_2D, img);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-					0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-			glBindTexture(GL_TEXTURE_2D, 0);
-
-			// create framebuffer
-			glGenFramebuffersEXT(1, &framebuffer);
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-					GL_TEXTURE_2D, img, 0);
-			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-					GL_RENDERBUFFER_EXT, depthbuffer);
-			GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-
-			// unbind buffers and texture
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-			return status;
-		}
-
-		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img)
-		{
-			glDeleteTextures(1, &img);
-			glDeleteRenderbuffersEXT(1, &depthbuffer);
-			glDeleteFramebuffersEXT(1, &framebuffer);
-		}
-
-		virtual void bindFBO(GLuint framebuffer)
-		{
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
-		}
-	};
-
-	FramebufferStrategy* strategy = NULL;
-
-	FramebufferStrategy    strategyNone;
-#ifdef GL_VERSION_3_0
-	FramebufferStrategyGL3 strategyGL3;
-#endif
-	FramebufferStrategyEXT strategyEXT;
-
-};
-
 namespace love
 {
 namespace graphics
 {
 namespace opengl
-{
+{	
 	Framebuffer* Framebuffer::current = NULL;
 
 	Framebuffer::Framebuffer(int width, int height) :
 		width(width), height(height)
 	{
+		strategy = NULL;
 
 		// world coordinates
 		vertices[0].x = 0;     vertices[0].y = 0;
@@ -192,17 +27,12 @@ namespace opengl
 		vertices[3].s = 1;     vertices[3].t = 1;
 
 		if (!strategy) {
-#ifdef GL_VERSION_3_0
-			if (getOpenGLVersionNumber() >= 3.0)
+			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
 				strategy = &strategyGL3;
-			else if (hasFramebufferExtension())
-#else
-			if (hasFramebufferExtension())
-#endif
-			  strategy = &strategyEXT;
+			else if (GLEE_EXT_framebuffer_object)
+				strategy = &strategyEXT;
 			else
-			  strategy = &strategyNone;
-			
+				strategy = &strategyNone;
 		}
 
 		loadVolatile();
