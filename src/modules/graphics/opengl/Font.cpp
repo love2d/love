@@ -19,6 +19,7 @@
 **/
 
 #include "Font.h"
+#include <font/GlyphData.h>
 
 #include <common/math.h>
 #include <math.h>
@@ -34,15 +35,19 @@ namespace opengl
 	: height(data->getHeight()), lineHeight(1.25), mSpacing(1)
 	{
 		glyphs = new Glyph*[MAX_CHARS];
+		type = FONT_UNKNOWN;
+		love::font::GlyphData * gd;
 
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
-			glyphs[i] = new Glyph(data->getGlyphData(i));
+			gd = data->getGlyphData(i);
+			glyphs[i] = new Glyph(gd);
 			glyphs[i]->load();
-			widths[i] = data->getGlyphData(i)->getWidth();
-			spacing[i] = data->getGlyphData(i)->getAdvance();
-			bearingX[i] = data->getGlyphData(i)->getBearingX();
-			bearingY[i] = data->getGlyphData(i)->getBearingY();
+			widths[i] = gd->getWidth();
+			spacing[i] = gd->getAdvance();
+			bearingX[i] = gd->getBearingX();
+			bearingY[i] = gd->getBearingY();
+			if (type == FONT_UNKNOWN) type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
 		}
 	}
 
@@ -82,7 +87,7 @@ namespace opengl
 			}
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
-			glTranslatef(0, round(getHeight()), 0);
+			if (type == FONT_TRUETYPE) glTranslatef(0, round(getHeight()), 0);
 			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
 			glTranslatef(spacing[g], 0, 0);

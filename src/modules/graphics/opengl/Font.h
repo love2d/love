@@ -38,12 +38,20 @@ namespace opengl
 	class Font : public Object, public Volatile
 	{
 	private:
+		
+		enum FontType
+		{
+			FONT_TRUETYPE = 1,
+			FONT_IMAGE,
+			FONT_UNKNOWN
+		};
 
 		int height;
 		float lineHeight;
 		float mSpacing; // modifies the spacing by multiplying it with this value
 		Glyph ** glyphs;
 		GLuint list; // the list of glyphs, for quicker drawing
+		FontType type;
 
 	public:
 		static const unsigned int MAX_CHARS = 256;
