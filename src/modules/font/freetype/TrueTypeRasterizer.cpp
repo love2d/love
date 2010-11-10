@@ -87,7 +87,7 @@ namespace freetype
 		glyphMetrics.width = bitmap.width;
 		glyphMetrics.advance = face->glyph->metrics.horiAdvance >> 6;
 
-		GlyphData * glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_RGBA);
+		GlyphData * glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 
 		{
 			int size = bitmap.rows*bitmap.width;
@@ -97,8 +97,8 @@ namespace freetype
 			// our luminosity-alpha format. 
 			for(int i = 0; i<size; i++)
 			{
-				dst[4*i] = dst[4*i+1] = dst[4*i+2] = 255;
-				dst[4*i+3] = bitmap.buffer[i];
+				dst[2*i] = 255;
+				dst[2*i+1] = bitmap.buffer[i];
 			}
 		}
 		
