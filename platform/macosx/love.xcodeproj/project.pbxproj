@@ -1790,6 +1790,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					/Library/Frameworks/Lua.framework/Headers,
+					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					../../src,
 					../../src/modules,
