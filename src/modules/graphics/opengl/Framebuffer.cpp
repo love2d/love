@@ -1,6 +1,8 @@
 #include "Framebuffer.h"
 #include <common/Matrix.h>
 
+#include <cstring> // For memcpy
+
 namespace love
 {
 namespace graphics
