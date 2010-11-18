@@ -186,14 +186,25 @@ namespace opengl
 
 		// cleanup after previous fbo
 		if (current != NULL)
-			glPopAttrib();
+			current->stopGrab();
 
 		// bind buffer and clear screen
-		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_TRANSFORM_BIT);
 		strategy->bindFBO(fbo);
 		glClearColor(.0f, .0f, .0f, .0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, width, height);
+		
+		// Reset the projection matrix
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		
+		// Set up orthographic view (no depth)
+		glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
+		
+		// Switch back to modelview matrix
+		glMatrixMode(GL_MODELVIEW);
 
 		// indicate we are using this fbo
 		current = this;
@@ -207,6 +218,8 @@ namespace opengl
 
 		// bind default
 		strategy->bindFBO( 0 );
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
 		glPopAttrib();
 		current = NULL;
 	}
