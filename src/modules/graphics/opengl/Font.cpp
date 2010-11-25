@@ -81,13 +81,13 @@ namespace opengl
 		for (unsigned int i = 0; i < text.size(); i++) {
 			unsigned char g = (unsigned char)text[i];
 			if (g == '\n') { // wrap newline, but do not print it
-				glTranslatef(-dx, round(getHeight()), 0);
+				glTranslatef(-dx, floor(getHeight() + 0.5f), 0);
 				dx = 0.0f;
 				continue;
 			}
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
-			if (type == FONT_TRUETYPE) glTranslatef(0, round(getHeight()), 0);
+			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() + 0.5f), 0);
 			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
 			glTranslatef(spacing[g], 0, 0);
@@ -100,7 +100,7 @@ namespace opengl
 	{
 		if (!glyphs[character]) character = ' ';
 		glPushMatrix();
-		glTranslatef(x, round(y+getHeight()), 0.0f);
+		glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
 		glCallList(list+character);
 		glPopMatrix();
 	}
