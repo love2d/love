@@ -47,19 +47,6 @@ namespace box2d
 		return new World(aabb, b2Vec2(gx, gy), sleep, meter);
 	}
 
-	World * Physics::newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep)
-	{
-		b2AABB aabb;
-		aabb.lowerBound.Set(lx, ly);
-		aabb.upperBound.Set(ux, uy);
-		return new World(aabb, b2Vec2(gx, gy), sleep);
-	}
-
-	World * Physics::newWorld(float w, float h)
-	{
-		return newWorld(0, 0, w, h, 0, 0, true);
-	}
-
 	Body * Physics::newBody(World * world, float x, float y, float mass, float i)
 	{
 		return new Body(world, b2Vec2(x, y), mass, i);

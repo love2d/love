@@ -45,10 +45,10 @@ LOVE 0.7.0 [Game Slave]
   * Changed fonts, they're now po2 safe.
   * Changed the traceback in the error screen.
   * Changed font origin to top-left.
-  * Changed behavior of love.physics.newWorld(w, h), it now creates a w*h world, not a 4*w*h world.
   * Changed linux save dir location to obey to Freedesktop.org's XDG specs. (~/.local/share/love by default.)
 
   * Removed font functions from love.graphics.
+  * Removed love.physics.newWorld(w, h). Use love.physics.newWorld(x1, y1, x2, y2) instead.
 
 LOVE 0.6.2 [Jiggly Juice]
 -------------------------

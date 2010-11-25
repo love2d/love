@@ -64,25 +64,6 @@ namespace box2d
 		World * newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep, int meter);
 
 		/**
-		* Creates a new World.
-		* @param lx Lower bound on the x-axis.
-		* @param ly Lower bound on the y-axis.
-		* @param ux Upper bound on the x-axis.
-		* @param uy Upper bound on the y-axis.
-		* @param gx Gravity along x-axis.
-		* @param gy Gravity along y-axis.
-		* @param sleep Whether the World allows sleep.
-		**/
-		World * newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep);
-
-		/**
-		* Creates a new World with with size (w,h).
-		* @param w The width of the world.
-		* @param h The height of the world.
-		**/
-		World * newWorld(float w, float h);
-
-		/**
 		* Creates a new Body at the specified position.
 		* @param world The world to create the Body in.
 		* @param x The position along the x-axis.
