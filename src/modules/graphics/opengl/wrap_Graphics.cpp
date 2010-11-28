@@ -922,6 +922,12 @@ namespace opengl
 		return 0;
 	}
 
+	int w_hasFocus(lua_State * L)
+	{
+		luax_pushboolean(L, instance->hasFocus());
+		return 1;
+	}
+
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -1006,6 +1012,8 @@ namespace opengl
 		{ "scale", w_scale },
 
 		{ "translate", w_translate },
+
+		{ "hasFocus", w_hasFocus },
 
 		{ 0, 0 }
 	};

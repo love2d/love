@@ -1164,6 +1164,10 @@ namespace opengl
 		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 
+	bool Graphics::hasFocus()
+	{
+		return SDL_GetAppState() & SDL_APPINPUTFOCUS;
+	}
 } // opengl
 } // graphics
 } // love
