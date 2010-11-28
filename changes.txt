@@ -20,7 +20,9 @@ LOVE 0.7.0 [Game Slave]
   * Added shape:getBody.
   * Added love.filesystem.FileData for public usage.
   * Added base64 support for love.filesystem.FileData.
-  * Added table support for love.graphics.setColor.
+  * Added table support for love.graphics.setColor and love.graphics.setBackgroundColor.
+  * Added love.graphics.hasFocus().
+  * Added ?/init.lua to the loader.
 
   * Fixed the debug module not being an upvalue of the error handlers. (you can now override debug)
   * Fixed some cases when love.audio.pause and friends, were acting on everything, not just the passed Source.
