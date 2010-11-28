@@ -389,9 +389,26 @@ namespace opengl
 	int w_setBackgroundColor(lua_State * L)
 	{
 		Color c;
-		c.r = (unsigned char)luaL_checkint(L, 1);
-		c.g = (unsigned char)luaL_checkint(L, 2);
-		c.b = (unsigned char)luaL_checkint(L, 3);
+		if (lua_istable(L, 1)) {
+			lua_pushinteger(L, 1);
+			lua_gettable(L, -2);
+			c.r = (unsigned char)luaL_checkint(L, -1);
+			lua_pop(L, 1);
+			lua_pushinteger(L, 2);
+			lua_gettable(L, -2);
+			c.g = (unsigned char)luaL_checkint(L, -1);
+			lua_pop(L, 1);
+			lua_pushinteger(L, 3);
+			lua_gettable(L, -2);
+			c.b = (unsigned char)luaL_checkint(L, -1);
+			lua_pop(L, 1);
+		}
+		else
+		{
+			c.r = (unsigned char)luaL_checkint(L, 1);
+			c.g = (unsigned char)luaL_checkint(L, 2);
+			c.b = (unsigned char)luaL_checkint(L, 3);
+		}
 		c.a = 255;
 		instance->setBackgroundColor(c);
 		return 0;
