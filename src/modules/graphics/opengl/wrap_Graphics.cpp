@@ -213,7 +213,13 @@ namespace opengl
 		// Convert to Data, if necessary.
 		if(luax_istype(L, 1, FILESYSTEM_FILE_T)) {
 			love::filesystem::File * f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-			Data * d = f->read();
+			Data * d;
+			try {
+				d = f->read();
+			}
+			catch (love::Exception & e) {
+				return luaL_error(L, e.what());
+			}
 			lua_remove(L, 1); // get rid of the file
 			luax_newtype(L, "Data", DATA_T, (void*)d);
 			lua_insert(L, 1); // put it at the bottom of the stack
