@@ -244,17 +244,37 @@ namespace physfs
 		}
 
 		// Check whether file exists.
-		if(!instance->exists(tmp.c_str()))
+		if(instance->exists(tmp.c_str()))
 		{
-			lua_pushfstring(L, "\n\tno file \"%s\" in LOVE game directories.\n", tmp.c_str());
-			return 1;
+			lua_pop(L, 1);
+			lua_pushstring(L, tmp.c_str());
+			// Ok, load it.
+			return instance->load(L);
 		}
 
-		lua_pop(L, 1);
-		lua_pushstring(L, tmp.c_str());
+		tmp = filename;
+		size = tmp.size();
+		for(int i=0;i<size;i++)
+		{
+			if(tmp[i] == '.')
+			{
+				tmp[i] = '/';
+			}
+		}
 
-		// Ok, load it.
-		return instance->load(L);
+		if (instance->isDirectory(tmp.c_str()))
+		{
+			tmp += "/init.lua";
+			if (instance->exists(tmp.c_str())) {
+				lua_pop(L, 1);
+				lua_pushstring(L, tmp.c_str());
+				// Ok, load it.
+				return instance->load(L);
+			}
+		}
+
+		lua_pushfstring(L, "\n\tno file \"%s\" in LOVE game directories.\n", tmp.c_str());
+		return 1;
 	}
 
 	// List of functions to wrap.
