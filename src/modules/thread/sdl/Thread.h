@@ -55,7 +55,7 @@ namespace sdl
 	public:
 		ThreadVariant(bool boolean);
 		ThreadVariant(double number);
-		ThreadVariant(const char *string);
+		ThreadVariant(const char *string, size_t len);
 		ThreadVariant(void *userdata);
 		ThreadVariant(Type udatatype, void *userdata);
 		virtual ~ThreadVariant();
@@ -64,7 +64,10 @@ namespace sdl
 		{
 			bool boolean;
 			double number;
-			const char *string;
+			struct {
+				const char *str;
+				size_t len;
+			} string;
 			void *userdata;
 		} data;
 		Type udatatype;
@@ -77,12 +80,13 @@ namespace sdl
 		char *code;
 		char *name;
 		std::map<std::string, ThreadVariant*> shared;
+		size_t len;
 
 	public:
-		ThreadData(const char *name, const char *code, void *mutex, void *cond);
+		ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond);
 		~ThreadData();
 		const char *getCode();
-		const char *getName();
+		const char *getName(size_t *len = 0);
 		ThreadVariant* getValue(const std::string & name);
 		void clearValue(const std::string & name);
 		void setValue(const std::string & name, ThreadVariant *v);

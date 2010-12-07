@@ -42,7 +42,11 @@ namespace sdl
 		luaopen_love(L);
 	#endif // LOVE_BUILD_STANDALONE
 		luaopen_love_thread(L);
-		lua_pushstring(L, comm->getName());
+		{
+			size_t len;
+			const char *name = comm->getName(&len);
+			lua_pushlstring(L, name, len);
+		}
  		luax_convobj(L, lua_gettop(L), "thread", "getThread");
 		lua_getglobal(L, "love");
 		lua_pushvalue(L, -2);
@@ -72,14 +76,14 @@ namespace sdl
 		data.number = number;
 	}
 
-	ThreadVariant::ThreadVariant(const char *string)
+	ThreadVariant::ThreadVariant(const char *string, size_t len)
 	{
 		type = STRING;
-		size_t len = strlen(string);
 		char *buf = new char[len+1];
 		memset(buf, 0, len+1);
 		memcpy(buf, string, len);
-		data.string = buf;
+		data.string.str = buf;
+		data.string.len = len;
 	}
 
 	ThreadVariant::ThreadVariant(void *userdata)
@@ -103,7 +107,7 @@ namespace sdl
 		switch(type)
 		{
 			case STRING:
-				delete[] data.string;
+				delete[] data.string.str;
 				break;
 			case FUSERDATA:
 				((love::Object *) data.userdata)->release();
@@ -113,10 +117,9 @@ namespace sdl
 		}
 	}
 
-	ThreadData::ThreadData(const char *name, const char *code, void *mutex, void *cond)
-		: mutex(mutex), cond(cond)
+	ThreadData::ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond)
+		: mutex(mutex), cond(cond), len(len)
 	{
-		size_t len = strlen(name);
 		this->name = new char[len+1];
 		memset(this->name, 0, len+1);
 		memcpy(this->name, name, len);
@@ -142,8 +145,10 @@ namespace sdl
 		return code;
 	}
 
-	const char *ThreadData::getName()
+	const char *ThreadData::getName(size_t *len)
 	{
+		if (len)
+			*len = this->len;
 		return name;
 	}
 
@@ -180,7 +185,7 @@ namespace sdl
 		memcpy(this->data, data->getData(), len);
 		mutex = SDL_CreateMutex();
 		cond = SDL_CreateCond();
-		comm = new ThreadData(name.c_str(), this->data, mutex, cond);
+		comm = new ThreadData(name.c_str(), name.length(), this->data, mutex, cond);
 	}
 
 	Thread::Thread(love::thread::ThreadModule *module, const std::string & name)
@@ -189,7 +194,7 @@ namespace sdl
 		module->retain();
 		mutex = SDL_CreateMutex();
 		cond = SDL_CreateCond();
-		comm = new ThreadData(name.c_str(), NULL, mutex, cond);
+		comm = new ThreadData(name.c_str(), name.length(), NULL, mutex, cond);
 	}
 
 	Thread::~Thread()
