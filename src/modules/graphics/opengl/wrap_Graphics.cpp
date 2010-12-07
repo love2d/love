@@ -133,6 +133,9 @@ namespace opengl
 		int w = luaL_checkint(L, 3);
 		int h = luaL_checkint(L, 4);
 
+		if (w < 0 || h < 0)
+			return luaL_error(L, "Can't set scissor with negative width and/or height.");
+
 		instance->setScissor(x, y, w, h);
 		return 0;
 	}
