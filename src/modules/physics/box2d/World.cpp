@@ -153,12 +153,16 @@ namespace box2d
 		switch(n)
 		{
 		case 4:
+			if (result.ref) delete result.ref;
 			result.ref = luax_refif(L, LUA_TFUNCTION);
 		case 3:
+			if (remove.ref) delete remove.ref;
 			remove.ref = luax_refif(L, LUA_TFUNCTION);
 		case 2:
+			if (persist.ref) delete persist.ref;
 			persist.ref = luax_refif(L, LUA_TFUNCTION);
 		case 1:
+			if (add.ref) delete add.ref;
 			add.ref = luax_refif(L, LUA_TFUNCTION);
 		}
 
