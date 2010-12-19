@@ -80,7 +80,7 @@ namespace sdl
 				lua_pushnumber(L, v->data.number);
 				break;
 			case STRING:
-				lua_pushstring(L, v->data.string);
+				lua_pushlstring(L, v->data.string.str, v->data.string.len);
 				break;
 			case LUSERDATA:
 				lua_pushlightuserdata(L, v->data.userdata);
@@ -122,7 +122,7 @@ namespace sdl
 				lua_pushnumber(L, v->data.number);
 				break;
 			case STRING:
-				lua_pushstring(L, v->data.string);
+				lua_pushlstring(L, v->data.string.str, v->data.string.len);
 				break;
 			case LUSERDATA:
 				lua_pushlightuserdata(L, v->data.userdata);
@@ -163,7 +163,7 @@ namespace sdl
 				lua_pushnumber(L, v->data.number);
 				break;
 			case STRING:
-				lua_pushstring(L, v->data.string);
+				lua_pushlstring(L, v->data.string.str, v->data.string.len);
 				break;
 			case LUSERDATA:
 				lua_pushlightuserdata(L, v->data.userdata);
@@ -215,7 +215,9 @@ namespace sdl
 		}
 		else if (lua_isstring(L, 3))
 		{
-			v = new ThreadVariant(lua_tostring(L, 3));
+			size_t len;
+			const char *str = lua_tolstring(L, 3, &len);
+			v = new ThreadVariant(str, len);
 		}
 		else if (lua_islightuserdata(L, 3))
 		{
