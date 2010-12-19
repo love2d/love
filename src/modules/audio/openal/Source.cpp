@@ -112,6 +112,18 @@ namespace openal
 		return true;
 	}
 
+	bool Source::isPaused() const
+	{
+		if(valid)
+		{
+			ALenum state;
+			alGetSourcei(source, AL_SOURCE_STATE, &state);
+			return (state == AL_PAUSED);
+		}
+
+		return false;
+	}
+
 	bool Source::isFinished() const
 	{
 		return type == TYPE_STATIC ? isStopped() : isStopped() && !isLooping() && decoder->isFinished();

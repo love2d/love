@@ -77,6 +77,7 @@ namespace openal
 		virtual void resume();
 		virtual void rewind();
 		virtual bool isStopped() const;
+		virtual bool isPaused() const;
 		virtual bool isFinished() const;
 		virtual void update();
 		virtual void setPitch(float pitch);

@@ -181,6 +181,13 @@ namespace audio
 		return 1;
 	}
 
+	int w_Source_isPaused(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		luax_pushboolean(L, t->isPaused());
+		return 1;
+	}
+
 	int w_Source_isStatic(lua_State * L)
 	{
 		Source * t= luax_checksource(L, 1);
@@ -205,10 +212,11 @@ namespace audio
 		{ "getVelocity", w_Source_getVelocity },
 		{ "setDirection", w_Source_setDirection },
 		{ "getDirection", w_Source_getDirection },
-		
+
 		{ "setLooping", w_Source_setLooping },
 		{ "isLooping", w_Source_isLooping },
 		{ "isStopped", w_Source_isStopped },
+		{ "isPaused", w_Source_isPaused },
 		{ "isStatic", w_Source_isStatic },
 		{ 0, 0 }
 	};

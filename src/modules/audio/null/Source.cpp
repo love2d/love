@@ -67,6 +67,11 @@ namespace null
 		return true;
 	}
 
+	bool Source::isPaused() const
+	{
+		return false;
+	}
+
 	bool Source::isFinished() const
 	{
 		return true;
