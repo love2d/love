@@ -117,6 +117,11 @@ namespace opengl
 		//do we have scissor, if so, store the box
 		if (s.scissor)
 			glGetIntegerv(GL_SCISSOR_BOX, s.scissorBox);
+
+		char *cap = 0;
+		SDL_WM_GetCaption(&cap, 0);
+		s.caption = cap;
+		s.mouseVisible = (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
 		return s;
 	}
 
@@ -136,6 +141,9 @@ namespace opengl
 			setScissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3]);
 		else
 			setScissor();
+
+		setCaption(s.caption.c_str());
+		SDL_ShowCursor(s.mouseVisible ? SDL_ENABLE : SDL_DISABLE);
 	}
 
 	bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int fsaa)

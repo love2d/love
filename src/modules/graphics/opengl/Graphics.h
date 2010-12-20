@@ -93,6 +93,10 @@ namespace opengl
 		bool scissor;
 		GLint scissorBox[4];
 
+		// Window info.
+		std::string caption;
+		bool mouseVisible;
+
 		// Default values.
 		DisplayState()
 		{
@@ -112,6 +116,8 @@ namespace opengl
 			pointSize = 1.0f;
 			pointStyle = Graphics::POINT_SMOOTH;
 			scissor = false;
+			caption = "";
+			mouseVisible = true;
 		}
 
 	};
