@@ -257,7 +257,10 @@ namespace sdl
 
 	int w_newThread(lua_State *L)
 	{
-		std::string name = luaL_checkstring(L, 1);
+		luaL_checkstring(L, 1);
+		size_t len;
+		const char *name_str = lua_tolstring(L, 1, &len);
+		std::string name(name_str, len);
 		love::Data *data;
 		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
