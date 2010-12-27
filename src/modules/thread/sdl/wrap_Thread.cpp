@@ -20,6 +20,18 @@
 
 #include "wrap_Thread.h"
 
+// anonymous namespace for getting an std::string from the stack
+// that may contain embedded NULLs
+namespace
+{
+	std::string luax_checklstring(lua_State *L, int idx)
+	{
+		size_t len;
+		const char* str = luaL_checklstring(L, idx, &len);
+		return std::string(str, len);
+	}
+}
+
 namespace love
 {
 namespace thread
@@ -55,14 +67,15 @@ namespace sdl
 	int w_Thread_getName(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
-		lua_pushstring(L, t->getName().c_str());
+		// allow names containing \0
+		lua_pushlstring(L, t->getName().c_str(), t->getName().length());
 		return 1;
 	}
 
 	int w_Thread_receive(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
-		std::string name = luaL_checkstring(L, 2);
+		std::string name = luax_checklstring(L, 2);
 		ThreadVariant *v = t->receive(name);
 		if (!v)
 		{
@@ -104,7 +117,7 @@ namespace sdl
 	int w_Thread_demand(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
-		std::string name = luaL_checkstring(L, 2);
+		std::string name = luax_checklstring(L, 2);
 		ThreadVariant *v = t->demand(name);
 		if (!v)
 		{
@@ -146,7 +159,7 @@ namespace sdl
 	int w_Thread_peek(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
-		std::string name = luaL_checkstring(L, 2);
+		std::string name = luax_checklstring(L, 2);
 		ThreadVariant *v = t->receive(name);
 		if (!v)
 		{
@@ -203,7 +216,7 @@ namespace sdl
 	int w_Thread_send(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
-		std::string name = luaL_checkstring(L, 2);
+		std::string name = luax_checklstring(L, 2);
 		ThreadVariant *v;
 		if (lua_isboolean(L, 3))
 		{
@@ -257,10 +270,7 @@ namespace sdl
 
 	int w_newThread(lua_State *L)
 	{
-		luaL_checkstring(L, 1);
-		size_t len;
-		const char *name_str = lua_tolstring(L, 1, &len);
-		std::string name(name_str, len);
+		std::string name = luax_checklstring(L, 1);
 		love::Data *data;
 		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
@@ -287,7 +297,9 @@ namespace sdl
 			list[i]->lock();
 			list[i]->retain();
 			list[i]->unlock();
-			lua_setfield(L, -2, list[i]->getName().c_str());
+			// allow names containing \0
+			lua_pushlstring(L, list[i]->getName().c_str(), list[i]->getName().length());
+			lua_settable(L, -3);
 		}
 		delete[] list;
 		return 1;
@@ -301,7 +313,7 @@ namespace sdl
 			lua_getfield(L, -1, "_curthread");
 			return 1;
 		}
-		std::string name = luaL_checkstring(L, 1);
+		std::string name = luax_checklstring(L, 1);
 		Thread *t = instance->getThread(name);
 		if (t)
 		{
