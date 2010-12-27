@@ -37,6 +37,10 @@ namespace opengl
 	struct FramebufferStrategyGL3 : public FramebufferStrategy {
 		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depthbuffer, GLuint& img, int width, int height)
 		{
+			// get currently bound fbo to reset to it later
+			GLint current_fbo;
+			glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+
 			// generate depth buffer
 			glGenRenderbuffers(1, &depthbuffer);
 			glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
@@ -61,8 +65,8 @@ namespace opengl
 					GL_RENDERBUFFER, depthbuffer);
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-			// unbind buffers and texture
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			// unbind framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)current_fbo);
 			return status;
 		}
 		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img)
@@ -82,6 +86,9 @@ namespace opengl
 
 		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depthbuffer, GLuint& img, int width, int height)
 		{
+			GLint current_fbo;
+			glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &current_fbo);
+
 			// generate depth buffer
 			glGenRenderbuffersEXT(1, &depthbuffer);
 			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
@@ -106,8 +113,8 @@ namespace opengl
 					GL_RENDERBUFFER_EXT, depthbuffer);
 			GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 
-			// unbind buffers and texture
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			// unbind framebuffer
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint)current_fbo);
 			return status;
 		}
 
