@@ -253,6 +253,8 @@ namespace sdl
 	{
 		lock();
 		ThreadVariant *v = comm->getValue(name);
+		if (v)
+			v->retain();
 		unlock();
 		return v;
 	}

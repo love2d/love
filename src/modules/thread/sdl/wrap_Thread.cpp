@@ -82,7 +82,6 @@ namespace sdl
 			lua_pushnil(L);
 			return 1;
 		}
-		v->retain();
 		t->clear(name);
 		switch(v->type)
 		{
