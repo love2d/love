@@ -109,7 +109,9 @@ namespace sdl
 				lua_pushnil(L);
 				break;
 		}
+		t->lock();
 		v->release();
+		t->unlock();
 		return 1;
 	}
 
@@ -123,7 +125,6 @@ namespace sdl
 			lua_pushnil(L);
 			return 1;
 		}
-		v->retain();
 		t->clear(name);
 		switch(v->type)
 		{
@@ -151,7 +152,9 @@ namespace sdl
 				lua_pushnil(L);
 				break;
 		}
+		t->lock();
 		v->release();
+		t->unlock();
 		return 1;
 	}
 
@@ -165,7 +168,6 @@ namespace sdl
 			lua_pushnil(L);
 			return 1;
 		}
-		v->retain();
 		switch(v->type)
 		{
 			case BOOLEAN:
@@ -192,7 +194,9 @@ namespace sdl
 				lua_pushnil(L);
 				break;
 		}
+		t->lock();
 		v->release();
+		t->unlock();
 		return 1;
 	}
 

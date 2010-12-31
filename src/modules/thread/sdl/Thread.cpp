@@ -270,6 +270,7 @@ namespace sdl
 			SDL_CondWait(cond, mutex);
 			v = comm->getValue(name);
 		}
+		v->retain();
 		unlock();
 		return v;
 	}
