@@ -244,6 +244,7 @@ function love.init()
 		},
 		console = false, -- Only relevant for windows.
 		identity = false,
+		release = false,
 	}
 
 	-- If config file exists, load it and allow it to update config table.
@@ -259,6 +260,13 @@ function love.init()
 			print(err)
 			-- continue
 		end
+	end
+
+	if c.release then
+		love._release = {
+			title = c.title ~= "Untitled" and c.title or nil,
+			author = c.author ~= "Unnamed" and c.author or nil
+		}
 	end
 
 	if love.arg.options.console.set then
@@ -875,6 +883,54 @@ function love.errhand(msg)
 
 end
 
+function love.releaseerrhand(msg)
+	print("An error has occured, the game has been stopped.")
+
+	if not love.graphics or not love.event or not love.graphics.isCreated() then
+		return
+	end
+
+	love.graphics.setRenderTarget()
+
+	-- Load.
+	love.graphics.setScissor()
+	love.graphics.setBlendMode("alpha")
+	love.graphics.setBackgroundColor(89, 157, 220)
+	local font = love.graphics.newFont(14)
+	love.graphics.setFont(font)
+
+	love.graphics.setColor(255, 255, 255, 255)
+
+	love.graphics.clear()
+
+	local err = {}
+
+	p = string.format("An error has occured that caused %s to stop\nyou can notify %s about this.", love._release.title or "this game", love._release.author or "the author")
+
+	local function draw()
+		love.graphics.clear()
+		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
+		love.graphics.present()
+	end
+
+	draw()
+
+	local e, a, b, c
+	while true do
+		e, a, b, c = love.event.wait()
+
+		if e == "q" then
+			return
+		end
+		if e == "kp" and a == "escape" then
+			return
+		end
+
+		draw()
+
+	end
+end
+
 
 -----------------------------------------------------------
 -- The root of all calls.
@@ -884,5 +940,5 @@ local result = xpcall(love.boot, error_printer)
 if not result then return end
 local result = xpcall(love.init, love.errhand)
 if not result then return end
-local result = xpcall(love.run, love.errhand)
+local result = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
 if not result then return end
