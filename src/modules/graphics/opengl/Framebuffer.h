@@ -3,6 +3,7 @@
 
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
+#include <graphics/Image.h>
 #include <image/Image.h>
 #include <image/ImageData.h>
 #include <common/math.h>
@@ -30,7 +31,10 @@ namespace opengl
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 		love::image::ImageData * getImageData(love::image::Image * image);
-		
+
+		void setFilter(Image::Filter f);
+		Image::Filter getFilter() const;
+
 		bool loadVolatile();
 		void unloadVolatile();
 
@@ -44,6 +48,10 @@ namespace opengl
 		vertex vertices[4];
 
 		GLenum status;
+
+		struct {
+			Image::Filter filter;
+		} settings;
 	};
 
 } // opengl
