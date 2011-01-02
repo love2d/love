@@ -76,8 +76,10 @@ function love.path.getfull(p)
 	cwd = love.path.endslash(cwd)
 
 	-- Construct a full path.
-	return cwd .. love.path.normalslashes(p)
+	local full = cwd .. love.path.normalslashes(p)
 
+	-- Remove trailing /., if applicable
+	return full:match("(.-)/%.") or full
 end
 
 -- Returns the leaf of a full path.
