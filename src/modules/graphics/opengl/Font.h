@@ -74,15 +74,6 @@ namespace opengl
 		virtual ~Font();
 
 		/**
-		* Prints the text at the designated position.
-		*
-		* @param text A string.
-		* @param x The x-coordinate.
-		* @param y The y-coordinate.
-		**/
-		void print(std::string text, float x, float y) const;
-
-		/**
 		* Prints the text at the designated position with rotation and scaling.
 		*
 		* @param text A string.
@@ -90,7 +81,7 @@ namespace opengl
 		* @param y The y-coordinate.
 		* @param angle The amount of rotation.
 		**/
-		void print(std::string text, float x, float y, float angle, float sx, float sy) const;
+		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f) const;
 
 		/**
 		* Prints the character at the designated position.

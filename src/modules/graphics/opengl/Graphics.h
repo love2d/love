@@ -398,33 +398,6 @@ namespace opengl
 		int getMaxPointSize();
 
 		/**
-		* Draw text on screen at the specified coordiantes (automatically breaks \n characters).
-		*
-		* @param str A string of text.
-		* @param x The x-coordiante.
-		* @param y The y-coordiante.
-		**/
-		void print(const char * str, float x, float y);
-
-		/**
-		* Draws text at the specified coordinates, with rotation.
-		* @param x The x-coordinate.
-		* @param y The y-coordinate.
-		* @param angle The amount of rotation.
-		**/
-		void print(const char * str, float x, float y , float angle);
-
-		/**
-		* Draws text at the specified coordinates, with rotation and
-		* scaling.
-		* @param x The x-coordinate.
-		* @param y The y-coordinate.
-		* @param angle The amount of rotation.
-		* @param s The scale factor. (1 = normal).
-		**/
-		void print(const char * str, float x, float y , float angle, float s);
-
-		/**
 		* Draws text at the specified coordinates, with rotation and
 		* scaling along both axes.
 		* @param x The x-coordinate.
@@ -433,7 +406,7 @@ namespace opengl
 		* @param sx The scale factor along the x-axis. (1 = normal).
 		* @param sy The scale factor along the y-axis. (1 = normal).
 		**/
-		void print(const char * str, float x, float y , float angle, float sx, float sy);
+		void print(const char * str, float x, float y , float angle = 0.0f, float sx = 1.0f, float sy = 1.0f);
 
 		/**
 		* Draw formatted text on screen at the specified coordinates.

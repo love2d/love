@@ -708,25 +708,6 @@ namespace opengl
 		return (int)max;
 	}
 
-	void Graphics::print( const char * str, float x, float y)
-	{
-		if(currentFont != 0)
-		{
-			std::string text(str);
-			currentFont->print(text, x, y);
-		}
-	}
-
-	void Graphics::print( const char * str, float x, float y, float angle)
-	{
-		print(str, x, y, angle, 1, 1);
-	}
-
-	void Graphics::print( const char * str, float x, float y, float angle, float s)
-	{
-		print(str, x, y, angle, s, s);
-	}
-
 	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy)
 	{
 		if(currentFont != 0)

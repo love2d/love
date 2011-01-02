@@ -65,11 +65,6 @@ namespace opengl
 		return height / lineHeight;
 	}
 
-	void Font::print(std::string text, float x, float y) const
-	{
-		print(text, x, y, 0.0f, 1.0f, 1.0f);
-	}
-
 	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
 	{
 		float dx = 0.0f; // spacing counter for newline handling

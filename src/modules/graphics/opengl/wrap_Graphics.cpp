@@ -755,24 +755,7 @@ namespace opengl
 		float angle = (float)luaL_optnumber(L, 4, 0.0f);
 		float sx = (float)luaL_optnumber(L, 5, 1.0f);
 		float sy = (float)luaL_optnumber(L, 6, sx);
-
-		switch(lua_gettop(L))
-		{
-		case 3:
-			instance->print(str, x, y);
-			break;
-		case 4:
-			instance->print(str, x, y, angle);
-			break;
-		case 5:
-			instance->print(str, x, y, angle, sx);
-			break;
-		case 6:
-			instance->print(str, x, y, angle, sx, sy);
-			break;
-		default:
-			return luaL_error(L, "Incorrect number of parameters");
-		}
+		instance->print(str, x, y, angle, sx, sy);
 		return 0;
 	}
 
