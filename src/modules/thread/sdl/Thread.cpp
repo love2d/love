@@ -251,17 +251,14 @@ namespace sdl
 
 	ThreadVariant *Thread::receive(const std::string & name)
 	{
-		lock();
 		ThreadVariant *v = comm->getValue(name);
 		if (v)
 			v->retain();
-		unlock();
 		return v;
 	}
 
 	ThreadVariant *Thread::demand(const std::string & name)
 	{
-		lock();
 		ThreadVariant *v = comm->getValue(name);
 		while (!v)
 		{
@@ -271,22 +268,19 @@ namespace sdl
 			v = comm->getValue(name);
 		}
 		v->retain();
-		unlock();
 		return v;
 	}
 
 	void Thread::clear(const std::string & name)
 	{
-		lock();
 		comm->clearValue(name);
-		unlock();
 	}
 
 	void Thread::send(const std::string & name, ThreadVariant *v)
 	{
-		lock();
-		comm->setValue(name, v);
-		unlock();
+		lock(); //this function explicitly locks
+		comm->setValue(name, v); //because we need
+		unlock(); //it to unlock here for the cond
 		SDL_CondBroadcast(cond);
 	}
 

@@ -76,6 +76,7 @@ namespace sdl
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
+		t->lock();
 		ThreadVariant *v = t->receive(name);
 		if (!v)
 		{
@@ -83,6 +84,7 @@ namespace sdl
 			return 1;
 		}
 		t->clear(name);
+		t->unlock();
 		switch(v->type)
 		{
 			case BOOLEAN:
@@ -119,6 +121,7 @@ namespace sdl
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
+		t->lock();
 		ThreadVariant *v = t->demand(name);
 		if (!v)
 		{
@@ -126,6 +129,7 @@ namespace sdl
 			return 1;
 		}
 		t->clear(name);
+		t->unlock();
 		switch(v->type)
 		{
 			case BOOLEAN:
@@ -248,7 +252,9 @@ namespace sdl
 			return luaL_error(L, "Expected boolean, number, string or userdata");
 		}
 		t->send(name, v);
+		t->lock();
 		v->release();
+		t->unlock();
 		return 0;
 	}
 
