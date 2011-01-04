@@ -36,57 +36,57 @@ namespace sdl
 
 	int w_getName(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		lua_pushstring(L, instance->getName(index));
 		return 1;
 	}
 
 	int w_open(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		luax_pushboolean(L, instance->open(index));
 		return 1;
 	}
 
 	int w_isOpen(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		luax_pushboolean(L, instance->isOpen(index));
 		return 1;
 	}
 
 	int w_getNumAxes(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		lua_pushinteger(L, instance->getNumAxes(index));
 		return 1;
 	}
 
 	int w_getNumBalls(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		lua_pushinteger(L, instance->getNumBalls(index));
 		return 1;
 	}
 
 	int w_getNumButtons(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		lua_pushinteger(L, instance->getNumButtons(index));
 		return 1;
 	}
 
 	int w_getNumHats(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		lua_pushinteger(L, instance->getNumHats(index));
 		return 1;
 	}
 
 	int w_getAxis(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
-		int axis = luaL_checkint(L, 2);
+		int index = luaL_checkint(L, 1)-1;
+		int axis = luaL_checkint(L, 2)-1;
 		lua_pushnumber(L, instance->getAxis(index, axis));
 		return 1;
 	}
@@ -103,16 +103,16 @@ namespace sdl
 
 	int w_isDown(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
-		int button = luaL_checkint(L, 2);
+		int index = luaL_checkint(L, 1)-1;
+		int button = luaL_checkint(L, 2)-1;
 		luax_pushboolean(L, instance->isDown(index, button));
 		return 1;
 	}
 
 	int w_getHat(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
-		int hat = luaL_checkint(L, 2);
+		int index = luaL_checkint(L, 1)-1;
+		int hat = luaL_checkint(L, 2)-1;
 
 		Joystick::Hat h = instance->getHat(index, hat);
 
@@ -125,7 +125,7 @@ namespace sdl
 
 	int w_close(lua_State * L)
 	{
-		int index = luaL_checkint(L, 1);
+		int index = luaL_checkint(L, 1)-1;
 		instance->close(index);
 		return 0;
 	}
