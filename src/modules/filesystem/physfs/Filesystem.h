@@ -278,6 +278,8 @@ namespace physfs
 		**/
 		int load(lua_State * L);
 
+		int getLastModified(lua_State * L);
+
 	}; // Filesystem
 
 } // physfs

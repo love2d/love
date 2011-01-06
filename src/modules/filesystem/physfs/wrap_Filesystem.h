@@ -57,6 +57,7 @@ namespace physfs
 	int w_enumerate(lua_State * L);
 	int w_lines(lua_State * L);
 	int w_load(lua_State * L);
+	int w_getLastModified(lua_State * L);
 	int loader(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State * L);
 

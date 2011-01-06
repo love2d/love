@@ -557,6 +557,20 @@ namespace physfs
 		}
 	}
 
+	int Filesystem::getLastModified(lua_State * L)
+	{
+		const char * filename = luaL_checkstring(L, 1);
+		int64_t time = PHYSFS_getLastModTime(filename);
+		if (time == -1)
+		{
+			lua_pushnil(L);
+			lua_pushstring(L, "Could not determine file modification date.");
+			return 2;
+		}
+		lua_pushnumber(L, time);
+		return 1;
+	}
+
 } // physfs
 } // filesystem
 } // love

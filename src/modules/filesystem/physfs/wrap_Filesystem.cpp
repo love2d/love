@@ -221,6 +221,11 @@ namespace physfs
 		return instance->load(L);
 	}
 
+	int w_getLastModified(lua_State * L)
+	{
+		return instance->getLastModified(L);
+	}
+
 	int loader(lua_State * L)
 	{
 		const char * filename = lua_tostring(L, -1);
@@ -297,6 +302,7 @@ namespace physfs
 		{ "enumerate",  w_enumerate },
 		{ "lines",  w_lines },
 		{ "load",  w_load },
+		{ "getLastModified", w_getLastModified },
 		{ "newFileData", w_newFileData },
 		{ 0, 0 }
 	};
