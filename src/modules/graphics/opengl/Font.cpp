@@ -32,7 +32,7 @@ namespace opengl
 {
 
 	Font::Font(love::font::FontData * data, const Image::Filter& filter)
-	: height(data->getHeight()), lineHeight(1.25), mSpacing(1)
+	: height(data->getHeight()), lineHeight(1), mSpacing(1)
 	{
 		glyphs = new Glyph*[MAX_CHARS];
 		type = FONT_UNKNOWN;
@@ -62,7 +62,7 @@ namespace opengl
 
 	float Font::getHeight() const
 	{
-		return height / lineHeight;
+		return height;
 	}
 
 	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
@@ -76,13 +76,14 @@ namespace opengl
 		for (unsigned int i = 0; i < text.size(); i++) {
 			unsigned char g = (unsigned char)text[i];
 			if (g == '\n') { // wrap newline, but do not print it
-				glTranslatef(-dx, floor(getHeight() + 0.5f), 0);
+				glTranslatef(-dx, floor(getHeight() * getLineHeight() + 0.5f), 0);
 				dx = 0.0f;
 				continue;
 			}
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
-			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() + 0.5f), 0);
+			// 1.25 is magic line height for true type fonts
+			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() / 1.25f + 0.5f), 0);
 			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
 			glTranslatef(spacing[g], 0, 0);
