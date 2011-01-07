@@ -30,8 +30,10 @@ namespace graphics
 namespace opengl
 {
 
-	Glyph::Glyph(love::font::GlyphData * data)
-		: data(data), width((float)data->getWidth()), height((float)data->getHeight()), texture(0)
+	Glyph::Glyph(love::font::GlyphData * data, const Image::Filter& filter_)
+		: data(data),
+		width((float)data->getWidth()), height((float)data->getHeight()),
+		texture(0), filter(filter_)
 	{
 		data->retain();
 
@@ -99,8 +101,10 @@ namespace opengl
 		
 		glGenTextures(1,&texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+				(filter.mag == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+				(filter.min == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
 
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

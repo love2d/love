@@ -254,11 +254,15 @@ namespace opengl
 
 	int w_newImageFont(lua_State * L)
 	{
+		// filter for glyphs, defaults to linear/linear
+		Image::Filter img_filter;
+
 		// Convert to ImageData if necessary.
 		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T) && !luax_istype(L, 1, FONT_FONT_DATA_T)))
 			luax_convobj(L, 1, "image", "newImageData");
 		else if(luax_istype(L, 1, GRAPHICS_IMAGE_T)) {
 			Image * i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+			img_filter = i->getFilter();
 			love::image::ImageData * id = i->getData();
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)id, false);
 			lua_replace(L, 1);
@@ -277,7 +281,7 @@ namespace opengl
 		love::font::FontData * data = luax_checktype<love::font::FontData>(L, 1, "FontData", FONT_FONT_DATA_T);
 
 		// Create the font.
-		Font * font = instance->newFont(data);
+		Font * font = instance->newFont(data, img_filter);
 
 		if(font == 0)
 			return luaL_error(L, "Could not load font.");

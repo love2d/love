@@ -31,7 +31,7 @@ namespace graphics
 namespace opengl
 {
 
-	Font::Font(love::font::FontData * data)
+	Font::Font(love::font::FontData * data, const Image::Filter& filter)
 	: height(data->getHeight()), lineHeight(1.25), mSpacing(1)
 	{
 		glyphs = new Glyph*[MAX_CHARS];
@@ -41,7 +41,7 @@ namespace opengl
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
 			gd = data->getGlyphData(i);
-			glyphs[i] = new Glyph(gd);
+			glyphs[i] = new Glyph(gd, filter);
 			glyphs[i]->load();
 			widths[i] = gd->getWidth();
 			spacing[i] = gd->getAdvance();
@@ -93,7 +93,7 @@ namespace opengl
 
 	void Font::print(char character, float x, float y) const
 	{
-		if (!glyphs[character]) character = ' ';
+		if (!glyphs[(int)character]) character = ' ';
 		glPushMatrix();
 		glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
 		glCallList(list+character);
