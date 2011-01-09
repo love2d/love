@@ -34,6 +34,8 @@ namespace devil
 	Image::Image()
 	{
 		ilInit();
+		ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
+		ilEnable(IL_ORIGIN_SET);
 	}
 
 	Image::~Image()
