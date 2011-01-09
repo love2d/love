@@ -23,6 +23,11 @@
 
 #include "Graphics.h"
 
+#include <vector>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
+
 namespace love
 {
 namespace graphics
@@ -719,98 +724,62 @@ namespace opengl
 
 	void Graphics::printf( const char * str, float x, float y, float wrap, AlignMode align)
 	{
-		if(currentFont != 0)
-		{
-			std::string text = "";
-			float width = 0;
-			float lines = 0;
+		if (currentFont == 0)
+			return;
 
-			for(unsigned int i = 0; i < strlen(str); i++)
-			{
-				if(str[i] == '\n')
-				{
-					switch(align)
-					{
-						case ALIGN_LEFT:
-							currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-							break;
+		using namespace std;
+		string text(str);
+		const float width_space = currentFont->getWidth(' ');
+		vector<string> lines_to_draw;
 
-						case ALIGN_RIGHT:
-							currentFont->print(text, (x + (wrap - currentFont->getWidth(text))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-							break;
+		//split text at newlines
+		istringstream iss( text );
+		string line;
+		while (getline(iss, line, '\n')) {
+			// split line into words
+			vector<string> words;
+			istringstream word_iss(line);
+			copy(istream_iterator<string>(word_iss), istream_iterator<string>(),
+					back_inserter< vector<string> >(words));
 
-						case ALIGN_CENTER:
-							currentFont->print(text, ceil(x + ((wrap - currentFont->getWidth(text)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
-							break;
+			// put words back together until a wrap occurs
+			float width = 0.0f;
+			ostringstream string_builder;
+			vector<string>::const_iterator word_iter;
+			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter) {
+				string word( *word_iter );
+				width += currentFont->getWidth( word );
 
-						default: // A copy of the left align code. Kept separate in case an error message is wanted.
-							currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-							break;
-					}
-
-					text = "";
-					width = 0;
-					lines++;
+				// on wordwrap, push line to line buffer and clear string builder
+				if (width >= wrap) {
+					lines_to_draw.push_back( string_builder.str() );
+					string_builder.str( "" );
+					width = currentFont->getWidth( word );
 				}
-				else
-				{
-					width += currentFont->getWidth(str[i]);
-
-					if(width > wrap && text.find(" ") != std::string::npos) // If there doesn't exist a space, then ignore the wrap limit.
-					{
-						// Seek back to the nearest space and print that.
-						unsigned int space = (unsigned int)text.find_last_of(' ');
-						std::string temp = text.substr(0, space);
-
-						switch(align)
-						{
-							case ALIGN_LEFT:
-								currentFont->print(temp, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-								break;
-
-							case ALIGN_RIGHT:
-								currentFont->print(temp, (x + (wrap - currentFont->getWidth(temp))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-								break;
-
-							case ALIGN_CENTER:
-								currentFont->print(temp, ceil(x + ((wrap - currentFont->getWidth(temp)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
-								break;
-
-							default: // A copy of the left align code. Kept separate in case an error message is wanted.
-								currentFont->print(temp, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-								break;
-						}
-
-						text = text.substr(space + 1);
-						width = currentFont->getWidth(text);
-						lines++;
-					}
-
-					text += str[i];
-				}
-			} // for
-
-			if(text != "") // Print the last text (if applicable).
-			{
-				switch(align)
-				{
-					case ALIGN_LEFT:
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-						break;
-
-					case ALIGN_RIGHT:
-						currentFont->print(text, (x + (wrap - currentFont->getWidth(text))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-						break;
-
-					case ALIGN_CENTER:
-						currentFont->print(text, ceil(x + ((wrap - currentFont->getWidth(text)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
-						break;
-
-					default: // A copy of the left align code. Kept separate in case an error message is wanted.
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()));
-						break;
-				}
+				string_builder << word << " ";
+				width += width_space;
 			}
+			// push last line
+			lines_to_draw.push_back( string_builder.str() );
+		}
+
+		// now for the actual printing
+		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
+		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter) {
+			float width = currentFont->getWidth( *line_iter );
+			switch (align) {
+				case ALIGN_RIGHT:
+					currentFont->print(*line_iter, ceil(x + wrap - width), ceil(y));
+					break;
+				case ALIGN_CENTER:
+					currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y));
+					break;
+				case ALIGN_LEFT:
+				default:
+					currentFont->print(*line_iter, ceil(x), ceil(y));
+					break;
+			}
+			y += currentFont->getHeight() * currentFont->getLineHeight();
 		}
 	}
 
