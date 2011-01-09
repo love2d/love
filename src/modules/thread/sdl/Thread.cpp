@@ -54,7 +54,7 @@ namespace sdl
 		if(luaL_dostring(L, comm->getCode()) == 1)
 		{
 			SDL_mutexP((SDL_mutex*) comm->mutex);
-			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1));
+			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1), lua_strlen(L, -1));
 			comm->setValue("error", v);
 			v->release();
 			SDL_mutexV((SDL_mutex*) comm->mutex);
