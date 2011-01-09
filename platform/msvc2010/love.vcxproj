@@ -305,6 +305,12 @@
     <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="love.ico" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AED6D87B-9F81-49D0-8C6B-1C9F64421ECC}</ProjectGuid>
     <RootNamespace>love</RootNamespace>

@@ -967,4 +967,10 @@
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="love.ico" />
+  </ItemGroup>
 </Project>
