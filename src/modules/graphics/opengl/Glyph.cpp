@@ -70,7 +70,7 @@ namespace opengl
 		glPushMatrix();
 
 		glMultMatrixf((const GLfloat*)t.getElements());
-		glTranslatef(data->getBearingX(), -data->getBearingY(), 0.0f);
+		glTranslatef(static_cast<float>(data->getBearingX()), static_cast<float>(-data->getBearingY()), 0.0f);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);

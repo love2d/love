@@ -283,7 +283,7 @@ namespace box2d
 
 	bool Body::getAllowSleeping()
 	{
-		return (body->m_flags & b2Body::e_allowSleepFlag);
+		return (body->m_flags & b2Body::e_allowSleepFlag) != 0;
 	}
 
 	void Body::putToSleep()

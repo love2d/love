@@ -341,7 +341,12 @@ namespace opengl
 		bmask = 0x00FF0000;
 		amask = 0xFF000000;
 #endif
-		SDL_Surface * icon = SDL_CreateRGBSurfaceFrom(image->getData()->getData(), image->getWidth(), image->getHeight(), 32, image->getWidth() * 4, rmask, gmask, bmask, amask);
+
+		int w = static_cast<int>(image->getWidth());
+		int h = static_cast<int>(image->getHeight());
+		int pitch = static_cast<int>(image->getWidth() * 4);
+
+		SDL_Surface * icon = SDL_CreateRGBSurfaceFrom(image->getData()->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
 		SDL_WM_SetIcon(icon, NULL);
 		SDL_FreeSurface(icon);
 	}
@@ -943,7 +948,7 @@ namespace opengl
 
 	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points )
 	{
-		float two_pi = LOVE_M_PI * 2;
+		float two_pi = static_cast<float>(LOVE_M_PI * 2);
 		if(points <= 0) points = 1;
 		float angle_shift = (two_pi / points);
 
@@ -1125,7 +1130,7 @@ namespace opengl
 
 	bool Graphics::hasFocus()
 	{
-		return SDL_GetAppState() & SDL_APPINPUTFOCUS;
+		return (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
 	}
 } // opengl
 } // graphics

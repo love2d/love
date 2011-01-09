@@ -567,7 +567,7 @@ namespace physfs
 			lua_pushstring(L, "Could not determine file modification date.");
 			return 2;
 		}
-		lua_pushnumber(L, time);
+		lua_pushnumber(L, static_cast<lua_Number>(time));
 		return 1;
 	}
 

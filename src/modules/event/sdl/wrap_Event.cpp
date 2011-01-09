@@ -65,7 +65,7 @@ namespace sdl
 			msg.joystick.button = luaL_checkint(L, 3);
 			return true;
 		case Event::TYPE_FOCUS:
-			msg.focus.f = lua_toboolean(L, 2);
+			msg.focus.f = luax_toboolean(L, 2);
 			return true;
 		case Event::TYPE_QUIT:
 			return true;

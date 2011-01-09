@@ -98,7 +98,7 @@ namespace love
 
 	bool luax_toboolean(lua_State * L, int idx)
 	{
-		return (lua_toboolean(L, idx) == 1 ? true : false);
+		return (lua_toboolean(L, idx) != 0);
 	}
 
 	void luax_pushboolean(lua_State * L, bool b)

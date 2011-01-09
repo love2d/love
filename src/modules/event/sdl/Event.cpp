@@ -99,7 +99,7 @@ namespace sdl
 		case SDL_ACTIVEEVENT:
 			if (e.active.state & SDL_APPINPUTFOCUS) {
 				m.type = Event::TYPE_FOCUS;
-				m.focus.f = e.active.gain;
+				m.focus.f = (e.active.gain != 0);
 				return true;
 			} else break;
 		case SDL_QUIT:

@@ -62,7 +62,7 @@ namespace opengl
 
 	float Font::getHeight() const
 	{
-		return height;
+		return static_cast<float>(height);
 	}
 
 	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
@@ -86,7 +86,7 @@ namespace opengl
 			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() / 1.25f + 0.5f), 0);
 			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
-			glTranslatef(spacing[g], 0, 0);
+			glTranslatef(static_cast<GLfloat>(spacing[g]), 0, 0);
 			dx += spacing[g];
 		}
 		glPopMatrix();
@@ -108,7 +108,7 @@ namespace opengl
 
 		for(unsigned int i = 0; i < line.size(); i++)
 		{
-			temp += (spacing[(int)line[i]] * mSpacing);
+			temp += static_cast<int>((spacing[(int)line[i]] * mSpacing));
 		}
 
 		return temp;
@@ -144,7 +144,7 @@ namespace opengl
 				temp = getWidth(text);
 				linen++;
 			}
-			temp += (spacing[(int)line[i]] * mSpacing);
+			temp += static_cast<int>((spacing[(int)line[i]] * mSpacing));
 			text += line[i];
 		}
 

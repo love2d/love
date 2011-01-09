@@ -146,11 +146,14 @@ namespace opengl
 	{
 		strategy = NULL;
 
+		float w = static_cast<float>(width);
+		float h = static_cast<float>(height);
+
 		// world coordinates
 		vertices[0].x = 0;     vertices[0].y = 0;
-		vertices[1].x = 0;     vertices[1].y = height;
-		vertices[2].x = width; vertices[2].y = height;
-		vertices[3].x = width; vertices[3].y = 0;
+		vertices[1].x = 0;     vertices[1].y = h;
+		vertices[2].x = w; vertices[2].y = h;
+		vertices[3].x = w; vertices[3].y = 0;
 
 		// texture coordinates
 		vertices[0].s = 0;     vertices[0].t = 1;
