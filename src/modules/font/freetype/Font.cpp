@@ -50,7 +50,7 @@ namespace freetype
 		int length = glyphs.size();
 		unsigned short * g = new unsigned short[length];
 		for (int i = 0; i < length; i++) {
-			g[i] = glyphs[i];
+			g[i] = (unsigned char)glyphs[i];
 		}
 		Rasterizer * r = newRasterizer(data, g, length);
 		delete [] g;
