@@ -28,6 +28,7 @@
 #include <font/GlyphData.h>
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
+#include <graphics/Image.h>
 
 // OpenGL
 #include "GLee.h"
@@ -52,10 +53,12 @@ namespace opengl
 
 		vertex vertices[4];
 
+		Image::Filter filter;
+
 	public:
 
 
-		Glyph(love::font::GlyphData * data);
+		Glyph(love::font::GlyphData * data, const Image::Filter& filter_ = Image::Filter());
 		virtual ~Glyph();
 
 		bool load();

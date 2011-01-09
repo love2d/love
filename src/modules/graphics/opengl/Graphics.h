@@ -261,7 +261,7 @@ namespace opengl
 		/**
 		* Creates a Font object.
 		**/
-		Font * newFont(love::font::FontData * data);
+		Font * newFont(love::font::FontData * data, const Image::Filter& filter = Image::Filter());
 
 		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
 

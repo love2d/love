@@ -461,9 +461,9 @@ namespace opengl
 		return new Quad(v, sw, sh);
 	}
 
-	Font * Graphics::newFont(love::font::FontData * data)
+	Font * Graphics::newFont(love::font::FontData * data, const Image::Filter& filter)
 	{
-		Font * font = new Font(data);
+		Font * font = new Font(data, filter);
 
 		// Load it and check for errors.
 		if(!font)
@@ -917,6 +917,7 @@ namespace opengl
 		switch(mode)
 		{
 		case DRAW_LINE:
+			// offsets here because OpenGL is being a bitch about line drawings
 			glBegin(GL_LINE_LOOP);
 				glVertex2f(x, y);
 				glVertex2f(x, y+h-1);

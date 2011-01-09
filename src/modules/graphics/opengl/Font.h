@@ -27,6 +27,7 @@
 // LOVE
 #include <common/Object.h>
 #include <font/FontData.h>
+#include <graphics/Image.h>
 #include "Glyph.h"
 
 namespace love
@@ -69,7 +70,7 @@ namespace opengl
 		*
 		* @param data The font data to construct from.
 		**/
-		Font(love::font::FontData * data);
+		Font(love::font::FontData * data, const Image::Filter& filter = Image::Filter());
 
 		virtual ~Font();
 
