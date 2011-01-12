@@ -82,7 +82,8 @@ namespace openal
 
 	void Source::stop()
 	{
-		pool->stop(this);
+		if (!isStopped())
+			pool->stop(this);
 	}
 
 	void Source::pause()
