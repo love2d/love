@@ -116,6 +116,8 @@ namespace lullaby
 					int ret = mpg123_getformat(handle, &rate, &channels, &encoding);
 					if (rate == 0)
 						rate = sampleRate;
+					else
+						sampleRate = rate;
 					if (channels == 0)
 						channels = MPG123_STEREO;
 					if (encoding == 0)
