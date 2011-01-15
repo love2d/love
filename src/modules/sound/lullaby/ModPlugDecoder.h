@@ -43,7 +43,7 @@ namespace lullaby
 
 	public:
 
-		ModPlugDecoder(Data * data, const std::string & ext, int bufferSize, int sampleRate);
+		ModPlugDecoder(Data * data, const std::string & ext, int bufferSize);
 		virtual ~ModPlugDecoder();
 
 		static bool accepts(const std::string & ext);

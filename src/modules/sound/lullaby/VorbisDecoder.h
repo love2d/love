@@ -55,7 +55,7 @@ namespace lullaby
 
 	public:
 
-		VorbisDecoder(Data * data, const std::string & ext, int bufferSize, int sampleRate);
+		VorbisDecoder(Data * data, const std::string & ext, int bufferSize);
 		virtual ~VorbisDecoder();
 		
 		static bool accepts(const std::string & ext);

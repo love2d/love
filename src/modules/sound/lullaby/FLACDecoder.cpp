@@ -31,8 +31,8 @@ namespace sound
 {
 namespace lullaby
 {
-	FLACDecoder::FLACDecoder(Data * data, const std::string & ext, int nbufferSize, int sampleRate)
-		: Decoder(data, ext, nbufferSize, sampleRate), pos(0)
+	FLACDecoder::FLACDecoder(Data * data, const std::string & ext, int nbufferSize)
+		: Decoder(data, ext, nbufferSize), pos(0)
 	{
 		init();
 		init_ogg();

@@ -28,8 +28,8 @@ namespace sound
 {
 namespace lullaby
 {
-	ModPlugDecoder::ModPlugDecoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), plug(0)
+	ModPlugDecoder::ModPlugDecoder(Data * data, const std::string & ext, int bufferSize)
+		: Decoder(data, ext, bufferSize), plug(0)
 	{
 
 		// Set some ModPlug settings.
@@ -77,7 +77,7 @@ namespace lullaby
 
 	love::sound::Decoder * ModPlugDecoder::clone()
 	{
-		return new ModPlugDecoder(data, ext, bufferSize, settings.mFrequency);
+		return new ModPlugDecoder(data, ext, bufferSize);
 	}
 
 	int ModPlugDecoder::decode()

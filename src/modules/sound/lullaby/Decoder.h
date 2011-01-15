@@ -59,7 +59,7 @@ namespace lullaby
 
 	public:
 
-		Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate);
+		Decoder(Data * data, const std::string & ext, int bufferSize);
 
 		virtual ~Decoder();
 

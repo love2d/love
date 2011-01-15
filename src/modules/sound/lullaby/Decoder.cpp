@@ -28,8 +28,8 @@ namespace sound
 {
 namespace lullaby
 {
-	Decoder::Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		:data(data), ext(ext), bufferSize(bufferSize), sampleRate(sampleRate), buffer(0), eof(false)
+	Decoder::Decoder(Data * data, const std::string & ext, int bufferSize)
+		:data(data), ext(ext), bufferSize(bufferSize), sampleRate(DEFAULT_SAMPLE_RATE), buffer(0), eof(false)
 	{
 		data->retain();
 		buffer = new char[bufferSize];

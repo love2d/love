@@ -52,7 +52,7 @@ namespace lullaby
 
 	public:
 
-		Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate);
+		Mpg123Decoder(Data * data, const std::string & ext, int bufferSize);
 		virtual ~Mpg123Decoder();
 
 		static bool accepts(const std::string & ext);

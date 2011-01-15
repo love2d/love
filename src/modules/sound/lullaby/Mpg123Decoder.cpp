@@ -33,8 +33,8 @@ namespace lullaby
 
 	bool Mpg123Decoder::inited = false;
 
-	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), handle(0), channels(MPG123_STEREO)
+	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize)
+		: Decoder(data, ext, bufferSize), handle(0), channels(MPG123_STEREO)
 	{
 
 		data_size = data->getSize();
@@ -93,7 +93,7 @@ namespace lullaby
 
 	love::sound::Decoder * Mpg123Decoder::clone()
 	{
-		return new Mpg123Decoder(data, ext, bufferSize, sampleRate);
+		return new Mpg123Decoder(data, ext, bufferSize);
 	}
 
 	int Mpg123Decoder::decode()

@@ -84,11 +84,10 @@ namespace sound
 
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 		int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
-		int sampleRate = luaL_optint(L, 3, Decoder::DEFAULT_SAMPLE_RATE);
 
 		try
 		{
-			Decoder * t = instance->newDecoder(file, bufferSize, sampleRate);
+			Decoder * t = instance->newDecoder(file, bufferSize);
 			if(t == 0)
 				return luaL_error(L, "Extension \"%s\" not supported.", file->getExtension().c_str());
 			luax_newtype(L, "Decoder", SOUND_DECODER_T, (void*)t);

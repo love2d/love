@@ -42,7 +42,7 @@ namespace lullaby
 			int pos;
 			
 		public:
-			FLACDecoder(Data * data, const std::string & ext, int bufferSize, int sampleRate);
+			FLACDecoder(Data * data, const std::string & ext, int bufferSize);
 			~FLACDecoder();
 			
 			static bool accepts(const std::string &ext);

@@ -125,8 +125,8 @@ namespace lullaby
 	* END CALLBACK FUNCTIONS
 	**/
 
-	VorbisDecoder::VorbisDecoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate)
+	VorbisDecoder::VorbisDecoder(Data * data, const std::string & ext, int bufferSize)
+		: Decoder(data, ext, bufferSize)
 	{
 		// Initialize callbacks
 		vorbisCallbacks.close_func = vorbisClose;
@@ -177,7 +177,7 @@ namespace lullaby
 
 	love::sound::Decoder * VorbisDecoder::clone()
 	{
-		return new VorbisDecoder(data, ext, bufferSize, sampleRate);
+		return new VorbisDecoder(data, ext, bufferSize);
 	}
 
 	int VorbisDecoder::decode()
