@@ -115,10 +115,10 @@ namespace sdl
 		void kill();
 		void wait();
 		std::string getName();
-		ThreadVariant *receive(const std::string & name);
+		ThreadVariant *get(const std::string & name);
 		ThreadVariant *demand(const std::string & name);
 		void clear(const std::string & name);
-		void send(const std::string & name, ThreadVariant *v);
+		void set(const std::string & name, ThreadVariant *v);
 		void lock();
 		void unlock();
 	}; // Thread

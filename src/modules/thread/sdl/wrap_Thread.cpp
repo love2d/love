@@ -72,11 +72,11 @@ namespace sdl
 		return 1;
 	}
 
-	int w_Thread_receive(lua_State *L)
+	int w_Thread_get(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
-		ThreadVariant *v = t->receive(name);
+		ThreadVariant *v = t->get(name);
 		if (!v)
 		{
 			lua_pushnil(L);
@@ -162,7 +162,7 @@ namespace sdl
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
-		ThreadVariant *v = t->receive(name);
+		ThreadVariant *v = t->get(name);
 		if (!v)
 		{
 			lua_pushnil(L);
@@ -216,7 +216,7 @@ namespace sdl
 		return t;
 	}
 
-	int w_Thread_send(lua_State *L)
+	int w_Thread_set(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
@@ -247,7 +247,7 @@ namespace sdl
 		{
 			return luaL_error(L, "Expected boolean, number, string or userdata");
 		}
-		t->send(name, v);
+		t->set(name, v);
 		v->release();
 		return 0;
 	}
@@ -257,10 +257,10 @@ namespace sdl
 		{ "kill", w_Thread_kill },
 		{ "wait", w_Thread_wait },
 		{ "getName", w_Thread_getName },
-		{ "receive", w_Thread_receive },
+		{ "get", w_Thread_get },
 		{ "demand", w_Thread_demand },
 		{ "peek", w_Thread_peek },
-		{ "send", w_Thread_send },
+		{ "set", w_Thread_set },
 		{ 0, 0 }
 	};
 
