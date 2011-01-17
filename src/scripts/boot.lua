@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2006-2010 LOVE Development Team
+Copyright (c) 2006-2011 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -76,8 +76,10 @@ function love.path.getfull(p)
 	cwd = love.path.endslash(cwd)
 
 	-- Construct a full path.
-	return cwd .. love.path.normalslashes(p)
+	local full = cwd .. love.path.normalslashes(p)
 
+	-- Remove trailing /., if applicable
+	return full:match("(.-)/%.") or full
 end
 
 -- Returns the leaf of a full path.

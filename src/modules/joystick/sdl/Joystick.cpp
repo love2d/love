@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -68,15 +68,13 @@ namespace sdl
 
 	bool Joystick::checkIndex(int index)
 	{
-		if(index < getNumJoysticks())
-			return true;
-		else
-			return false;
+		return index >= 0 && index < getNumJoysticks();
 	}
 
 	int Joystick::getNumJoysticks()
 	{
-		return SDL_NumJoysticks();
+		int num = SDL_NumJoysticks();
+		return num < 0 ? 0 : num;
 	}
 
 	const char * Joystick::getName(int index)

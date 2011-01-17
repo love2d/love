@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,8 @@ namespace sound
 {
 namespace lullaby
 {
-	FLACDecoder::FLACDecoder(Data * data, const std::string & ext, int nbufferSize, int sampleRate)
-		: Decoder(data, ext, nbufferSize, sampleRate), pos(0)
+	FLACDecoder::FLACDecoder(Data * data, const std::string & ext, int nbufferSize)
+		: Decoder(data, ext, nbufferSize), pos(0)
 	{
 		init();
 		init_ogg();

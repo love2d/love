@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -33,8 +33,8 @@ namespace lullaby
 
 	bool Mpg123Decoder::inited = false;
 
-	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), handle(0), channels(MPG123_STEREO)
+	Mpg123Decoder::Mpg123Decoder(Data * data, const std::string & ext, int bufferSize)
+		: Decoder(data, ext, bufferSize), handle(0), channels(MPG123_STEREO)
 	{
 
 		data_size = data->getSize();
@@ -93,7 +93,7 @@ namespace lullaby
 
 	love::sound::Decoder * Mpg123Decoder::clone()
 	{
-		return new Mpg123Decoder(data, ext, bufferSize, sampleRate);
+		return new Mpg123Decoder(data, ext, bufferSize);
 	}
 
 	int Mpg123Decoder::decode()
@@ -116,6 +116,8 @@ namespace lullaby
 					int ret = mpg123_getformat(handle, &rate, &channels, &encoding);
 					if (rate == 0)
 						rate = sampleRate;
+					else
+						sampleRate = rate;
 					if (channels == 0)
 						channels = MPG123_STEREO;
 					if (encoding == 0)

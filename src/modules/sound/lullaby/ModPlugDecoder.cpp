@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -28,8 +28,8 @@ namespace sound
 {
 namespace lullaby
 {
-	ModPlugDecoder::ModPlugDecoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		: Decoder(data, ext, bufferSize, sampleRate), plug(0)
+	ModPlugDecoder::ModPlugDecoder(Data * data, const std::string & ext, int bufferSize)
+		: Decoder(data, ext, bufferSize), plug(0)
 	{
 
 		// Set some ModPlug settings.
@@ -77,7 +77,7 @@ namespace lullaby
 
 	love::sound::Decoder * ModPlugDecoder::clone()
 	{
-		return new ModPlugDecoder(data, ext, bufferSize, settings.mFrequency);
+		return new ModPlugDecoder(data, ext, bufferSize);
 	}
 
 	int ModPlugDecoder::decode()

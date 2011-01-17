@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,8 @@ namespace graphics
 namespace opengl
 {
 
-	Font::Font(love::font::FontData * data)
-	: height(data->getHeight()), lineHeight(1.25), mSpacing(1)
+	Font::Font(love::font::FontData * data, const Image::Filter& filter)
+	: height(data->getHeight()), lineHeight(1), mSpacing(1)
 	{
 		glyphs = new Glyph*[MAX_CHARS];
 		type = FONT_UNKNOWN;
@@ -41,7 +41,7 @@ namespace opengl
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
 			gd = data->getGlyphData(i);
-			glyphs[i] = new Glyph(gd);
+			glyphs[i] = new Glyph(gd, filter);
 			glyphs[i]->load();
 			widths[i] = gd->getWidth();
 			spacing[i] = gd->getAdvance();
@@ -62,12 +62,7 @@ namespace opengl
 
 	float Font::getHeight() const
 	{
-		return height / lineHeight;
-	}
-
-	void Font::print(std::string text, float x, float y) const
-	{
-		print(text, x, y, 0.0f, 1.0f, 1.0f);
+		return static_cast<float>(height);
 	}
 
 	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
@@ -81,16 +76,17 @@ namespace opengl
 		for (unsigned int i = 0; i < text.size(); i++) {
 			unsigned char g = (unsigned char)text[i];
 			if (g == '\n') { // wrap newline, but do not print it
-				glTranslatef(-dx, floor(getHeight() + 0.5f), 0);
+				glTranslatef(-dx, floor(getHeight() * getLineHeight() + 0.5f), 0);
 				dx = 0.0f;
 				continue;
 			}
 			if (!glyphs[g]) g = 32; // space
 			glPushMatrix();
-			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() + 0.5f), 0);
+			// 1.25 is magic line height for true type fonts
+			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() / 1.25f + 0.5f), 0);
 			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
 			glPopMatrix();
-			glTranslatef(spacing[g], 0, 0);
+			glTranslatef(static_cast<GLfloat>(spacing[g]), 0, 0);
 			dx += spacing[g];
 		}
 		glPopMatrix();
@@ -98,7 +94,7 @@ namespace opengl
 
 	void Font::print(char character, float x, float y) const
 	{
-		if (!glyphs[character]) character = ' ';
+		if (!glyphs[(int)character]) character = ' ';
 		glPushMatrix();
 		glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
 		glCallList(list+character);
@@ -112,7 +108,7 @@ namespace opengl
 
 		for(unsigned int i = 0; i < line.size(); i++)
 		{
-			temp += (spacing[(int)line[i]] * mSpacing);
+			temp += static_cast<int>((spacing[(int)line[i]] * mSpacing));
 		}
 
 		return temp;
@@ -148,7 +144,7 @@ namespace opengl
 				temp = getWidth(text);
 				linen++;
 			}
-			temp += (spacing[(int)line[i]] * mSpacing);
+			temp += static_cast<int>((spacing[(int)line[i]] * mSpacing));
 			text += line[i];
 		}
 

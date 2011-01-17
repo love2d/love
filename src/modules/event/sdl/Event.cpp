@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -99,7 +99,7 @@ namespace sdl
 		case SDL_ACTIVEEVENT:
 			if (e.active.state & SDL_APPINPUTFOCUS) {
 				m.type = Event::TYPE_FOCUS;
-				m.focus.f = e.active.gain;
+				m.focus.f = (e.active.gain != 0);
 				return true;
 			} else break;
 		case SDL_QUIT:

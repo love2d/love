@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,10 @@ namespace graphics
 namespace opengl
 {
 
-	Glyph::Glyph(love::font::GlyphData * data)
-		: data(data), width((float)data->getWidth()), height((float)data->getHeight()), texture(0)
+	Glyph::Glyph(love::font::GlyphData * data, const Image::Filter& filter_)
+		: data(data),
+		width((float)data->getWidth()), height((float)data->getHeight()),
+		texture(0), filter(filter_)
 	{
 		data->retain();
 
@@ -68,7 +70,7 @@ namespace opengl
 		glPushMatrix();
 
 		glMultMatrixf((const GLfloat*)t.getElements());
-		glTranslatef(data->getBearingX(), -data->getBearingY(), 0.0f);
+		glTranslatef(static_cast<float>(data->getBearingX()), static_cast<float>(-data->getBearingY()), 0.0f);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -99,8 +101,10 @@ namespace opengl
 		
 		glGenTextures(1,&texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+				(filter.mag == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+				(filter.min == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
 
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

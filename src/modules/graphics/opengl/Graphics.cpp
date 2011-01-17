@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,11 @@
 #include <common/math.h>
 
 #include "Graphics.h"
+
+#include <vector>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 
 namespace love
 {
@@ -336,7 +341,12 @@ namespace opengl
 		bmask = 0x00FF0000;
 		amask = 0xFF000000;
 #endif
-		SDL_Surface * icon = SDL_CreateRGBSurfaceFrom(image->getData()->getData(), image->getWidth(), image->getHeight(), 32, image->getWidth() * 4, rmask, gmask, bmask, amask);
+
+		int w = static_cast<int>(image->getWidth());
+		int h = static_cast<int>(image->getHeight());
+		int pitch = static_cast<int>(image->getWidth() * 4);
+
+		SDL_Surface * icon = SDL_CreateRGBSurfaceFrom(image->getData()->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
 		SDL_WM_SetIcon(icon, NULL);
 		SDL_FreeSurface(icon);
 	}
@@ -461,9 +471,9 @@ namespace opengl
 		return new Quad(v, sw, sh);
 	}
 
-	Font * Graphics::newFont(love::font::FontData * data)
+	Font * Graphics::newFont(love::font::FontData * data, const Image::Filter& filter)
 	{
-		Font * font = new Font(data);
+		Font * font = new Font(data, filter);
 
 		// Load it and check for errors.
 		if(!font)
@@ -708,25 +718,6 @@ namespace opengl
 		return (int)max;
 	}
 
-	void Graphics::print( const char * str, float x, float y)
-	{
-		if(currentFont != 0)
-		{
-			std::string text(str);
-			currentFont->print(text, x, y);
-		}
-	}
-
-	void Graphics::print( const char * str, float x, float y, float angle)
-	{
-		print(str, x, y, angle, 1, 1);
-	}
-
-	void Graphics::print( const char * str, float x, float y, float angle, float s)
-	{
-		print(str, x, y, angle, s, s);
-	}
-
 	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy)
 	{
 		if(currentFont != 0)
@@ -738,98 +729,62 @@ namespace opengl
 
 	void Graphics::printf( const char * str, float x, float y, float wrap, AlignMode align)
 	{
-		if(currentFont != 0)
-		{
-			std::string text = "";
-			float width = 0;
-			float lines = 0;
+		if (currentFont == 0)
+			return;
 
-			for(unsigned int i = 0; i < strlen(str); i++)
-			{
-				if(str[i] == '\n')
-				{
-					switch(align)
-					{
-						case ALIGN_LEFT:
-							currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-							break;
+		using namespace std;
+		string text(str);
+		const float width_space = currentFont->getWidth(' ');
+		vector<string> lines_to_draw;
 
-						case ALIGN_RIGHT:
-							currentFont->print(text, (x + (wrap - currentFont->getWidth(text))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-							break;
+		//split text at newlines
+		istringstream iss( text );
+		string line;
+		while (getline(iss, line, '\n')) {
+			// split line into words
+			vector<string> words;
+			istringstream word_iss(line);
+			copy(istream_iterator<string>(word_iss), istream_iterator<string>(),
+					back_inserter< vector<string> >(words));
 
-						case ALIGN_CENTER:
-							currentFont->print(text, ceil(x + ((wrap - currentFont->getWidth(text)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
-							break;
+			// put words back together until a wrap occurs
+			float width = 0.0f;
+			ostringstream string_builder;
+			vector<string>::const_iterator word_iter;
+			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter) {
+				string word( *word_iter );
+				width += currentFont->getWidth( word );
 
-						default: // A copy of the left align code. Kept separate in case an error message is wanted.
-							currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-							break;
-					}
-
-					text = "";
-					width = 0;
-					lines++;
+				// on wordwrap, push line to line buffer and clear string builder
+				if (width >= wrap) {
+					lines_to_draw.push_back( string_builder.str() );
+					string_builder.str( "" );
+					width = currentFont->getWidth( word );
 				}
-				else
-				{
-					width += currentFont->getWidth(str[i]);
-
-					if(width > wrap && text.find(" ") != std::string::npos) // If there doesn't exist a space, then ignore the wrap limit.
-					{
-						// Seek back to the nearest space and print that.
-						unsigned int space = (unsigned int)text.find_last_of(' ');
-						std::string temp = text.substr(0, space);
-
-						switch(align)
-						{
-							case ALIGN_LEFT:
-								currentFont->print(temp, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-								break;
-
-							case ALIGN_RIGHT:
-								currentFont->print(temp, (x + (wrap - currentFont->getWidth(temp))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-								break;
-
-							case ALIGN_CENTER:
-								currentFont->print(temp, ceil(x + ((wrap - currentFont->getWidth(temp)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
-								break;
-
-							default: // A copy of the left align code. Kept separate in case an error message is wanted.
-								currentFont->print(temp, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-								break;
-						}
-
-						text = text.substr(space + 1);
-						width = currentFont->getWidth(text);
-						lines++;
-					}
-
-					text += str[i];
-				}
-			} // for
-
-			if(text != "") // Print the last text (if applicable).
-			{
-				switch(align)
-				{
-					case ALIGN_LEFT:
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-						break;
-
-					case ALIGN_RIGHT:
-						currentFont->print(text, (x + (wrap - currentFont->getWidth(text))), y + (lines * currentFont->getHeight() * currentFont->getLineHeight()) );
-						break;
-
-					case ALIGN_CENTER:
-						currentFont->print(text, ceil(x + ((wrap - currentFont->getWidth(text)) / 2)), ceil(y + (lines * currentFont->getHeight() * currentFont->getLineHeight())) );
-						break;
-
-					default: // A copy of the left align code. Kept separate in case an error message is wanted.
-						currentFont->print(text, x, y + (lines * currentFont->getHeight() * currentFont->getLineHeight()));
-						break;
-				}
+				string_builder << word << " ";
+				width += width_space;
 			}
+			// push last line
+			lines_to_draw.push_back( string_builder.str() );
+		}
+
+		// now for the actual printing
+		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
+		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter) {
+			float width = currentFont->getWidth( *line_iter );
+			switch (align) {
+				case ALIGN_RIGHT:
+					currentFont->print(*line_iter, ceil(x + wrap - width), ceil(y));
+					break;
+				case ALIGN_CENTER:
+					currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y));
+					break;
+				case ALIGN_LEFT:
+				default:
+					currentFont->print(*line_iter, ceil(x), ceil(y));
+					break;
+			}
+			y += currentFont->getHeight() * currentFont->getLineHeight();
 		}
 	}
 
@@ -936,6 +891,7 @@ namespace opengl
 		switch(mode)
 		{
 		case DRAW_LINE:
+			// offsets here because OpenGL is being a bitch about line drawings
 			glBegin(GL_LINE_LOOP);
 				glVertex2f(x, y);
 				glVertex2f(x, y+h-1);
@@ -992,7 +948,7 @@ namespace opengl
 
 	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points )
 	{
-		float two_pi = LOVE_M_PI * 2;
+		float two_pi = static_cast<float>(LOVE_M_PI * 2);
 		if(points <= 0) points = 1;
 		float angle_shift = (two_pi / points);
 
@@ -1174,7 +1130,7 @@ namespace opengl
 
 	bool Graphics::hasFocus()
 	{
-		return SDL_GetAppState() & SDL_APPINPUTFOCUS;
+		return (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
 	}
 } // opengl
 } // graphics

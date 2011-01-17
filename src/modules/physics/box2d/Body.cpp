@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -283,7 +283,7 @@ namespace box2d
 
 	bool Body::getAllowSleeping()
 	{
-		return (body->m_flags & b2Body::e_allowSleepFlag);
+		return (body->m_flags & b2Body::e_allowSleepFlag) != 0;
 	}
 
 	void Body::putToSleep()

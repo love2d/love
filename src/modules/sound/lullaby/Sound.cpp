@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ namespace lullaby
 		return "love.sound.lullaby";
 	}
 
-	sound::Decoder * Sound::newDecoder(love::filesystem::File * file, int bufferSize, int sampleRate)
+	sound::Decoder * Sound::newDecoder(love::filesystem::File * file, int bufferSize)
 	{
 		Data * data = file->read();
 		std::string ext = file->getExtension();
@@ -54,13 +54,13 @@ namespace lullaby
 
 		// Find a suitable decoder here, and return it.
 		if(ModPlugDecoder::accepts(ext))
-			decoder = new ModPlugDecoder(data, ext, bufferSize, sampleRate);
+			decoder = new ModPlugDecoder(data, ext, bufferSize);
 		else if(Mpg123Decoder::accepts(ext))
-			decoder = new Mpg123Decoder(data, ext, bufferSize, sampleRate);
+			decoder = new Mpg123Decoder(data, ext, bufferSize);
 		else if(VorbisDecoder::accepts(ext))
-			decoder = new VorbisDecoder(data, ext, bufferSize, sampleRate);
+			decoder = new VorbisDecoder(data, ext, bufferSize);
 		/*else if (FLACDecoder::accepts(ext))
-			decoder = new FLACDecoder(data, ext, bufferSize, sampleRate);*/
+			decoder = new FLACDecoder(data, ext, bufferSize);*/
 
 		// else if(OtherDecoder::accept(ext))
 

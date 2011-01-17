@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,7 @@
 // LOVE
 #include <common/Object.h>
 #include <font/FontData.h>
+#include <graphics/Image.h>
 #include "Glyph.h"
 
 namespace love
@@ -69,18 +70,9 @@ namespace opengl
 		*
 		* @param data The font data to construct from.
 		**/
-		Font(love::font::FontData * data);
+		Font(love::font::FontData * data, const Image::Filter& filter = Image::Filter());
 
 		virtual ~Font();
-
-		/**
-		* Prints the text at the designated position.
-		*
-		* @param text A string.
-		* @param x The x-coordinate.
-		* @param y The y-coordinate.
-		**/
-		void print(std::string text, float x, float y) const;
 
 		/**
 		* Prints the text at the designated position with rotation and scaling.
@@ -90,7 +82,7 @@ namespace opengl
 		* @param y The y-coordinate.
 		* @param angle The amount of rotation.
 		**/
-		void print(std::string text, float x, float y, float angle, float sx, float sy) const;
+		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f) const;
 
 		/**
 		* Prints the character at the designated position.

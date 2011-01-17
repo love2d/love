@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,7 @@
 #include <font/GlyphData.h>
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
+#include <graphics/Image.h>
 
 // OpenGL
 #include "GLee.h"
@@ -52,10 +53,12 @@ namespace opengl
 
 		vertex vertices[4];
 
+		Image::Filter filter;
+
 	public:
 
 
-		Glyph(love::font::GlyphData * data);
+		Glyph(love::font::GlyphData * data, const Image::Filter& filter_ = Image::Filter());
 		virtual ~Glyph();
 
 		bool load();

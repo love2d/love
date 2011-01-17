@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -555,6 +555,20 @@ namespace physfs
 		default: // success
 			return 1;
 		}
+	}
+
+	int Filesystem::getLastModified(lua_State * L)
+	{
+		const char * filename = luaL_checkstring(L, 1);
+		PHYSFS_sint64 time = PHYSFS_getLastModTime(filename);
+		if (time == -1)
+		{
+			lua_pushnil(L);
+			lua_pushstring(L, "Could not determine file modification date.");
+			return 2;
+		}
+		lua_pushnumber(L, static_cast<lua_Number>(time));
+		return 1;
 	}
 
 } // physfs

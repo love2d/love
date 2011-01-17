@@ -146,11 +146,14 @@ namespace opengl
 	{
 		strategy = NULL;
 
+		float w = static_cast<float>(width);
+		float h = static_cast<float>(height);
+
 		// world coordinates
 		vertices[0].x = 0;     vertices[0].y = 0;
-		vertices[1].x = 0;     vertices[1].y = height;
-		vertices[2].x = width; vertices[2].y = height;
-		vertices[3].x = width; vertices[3].y = 0;
+		vertices[1].x = 0;     vertices[1].y = h;
+		vertices[2].x = w; vertices[2].y = h;
+		vertices[3].x = w; vertices[3].y = 0;
 
 		// texture coordinates
 		vertices[0].s = 0;     vertices[0].t = 1;
@@ -282,15 +285,44 @@ namespace opengl
 
 		return img;
 	}
-	
+
+	void Framebuffer::setFilter(Image::Filter f)
+	{
+		GLint gmin = (f.min == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
+		GLint gmag = (f.mag == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
+
+		glBindTexture(GL_TEXTURE_2D, img);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
+	}
+
+	Image::Filter Framebuffer::getFilter() const
+	{
+		GLint gmin, gmag;
+
+		glBindTexture(GL_TEXTURE_2D, img);
+		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
+		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
+
+		Image::Filter f;
+		f.min = (gmin == GL_NEAREST) ? Image::FILTER_NEAREST : Image::FILTER_LINEAR;
+		f.mag = (gmag == GL_NEAREST) ? Image::FILTER_NEAREST : Image::FILTER_LINEAR;
+		return f;
+	}
+
 	bool Framebuffer::loadVolatile()
 	{
 		status = strategy->createFBO(fbo, depthbuffer, img, width, height);
+		if (status == GL_FRAMEBUFFER_COMPLETE)
+			setFilter(settings.filter);
+
 		return (status == GL_FRAMEBUFFER_COMPLETE);
 	}
 	
 	void Framebuffer::unloadVolatile()
 	{
+		settings.filter = getFilter();
 		strategy->deleteFBO(fbo, depthbuffer, img);
 	}
 

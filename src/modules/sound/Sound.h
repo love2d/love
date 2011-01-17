@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -74,7 +74,7 @@ namespace sound
 		* @param sampleRate Samples per second, or quality of the audio. 44100 is a good value.
 		* @return A Decoder object on success, or zero if no decoder could be found.
 		**/
-		virtual Decoder * newDecoder(filesystem::File * file, int bufferSize, int sampleRate) = 0;
+		virtual Decoder * newDecoder(filesystem::File * file, int bufferSize) = 0;
 
 	}; // Sound
 

@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -28,8 +28,8 @@ namespace sound
 {
 namespace lullaby
 {
-	Decoder::Decoder(Data * data, const std::string & ext, int bufferSize, int sampleRate)
-		:data(data), ext(ext), bufferSize(bufferSize), sampleRate(sampleRate), buffer(0), eof(false)
+	Decoder::Decoder(Data * data, const std::string & ext, int bufferSize)
+		:data(data), ext(ext), bufferSize(bufferSize), sampleRate(DEFAULT_SAMPLE_RATE), buffer(0), eof(false)
 	{
 		data->retain();
 		buffer = new char[bufferSize];

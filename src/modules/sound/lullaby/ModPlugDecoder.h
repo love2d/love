@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -43,7 +43,7 @@ namespace lullaby
 
 	public:
 
-		ModPlugDecoder(Data * data, const std::string & ext, int bufferSize, int sampleRate);
+		ModPlugDecoder(Data * data, const std::string & ext, int bufferSize);
 		virtual ~ModPlugDecoder();
 
 		static bool accepts(const std::string & ext);

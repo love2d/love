@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -54,7 +54,7 @@ namespace sdl
 		if(luaL_dostring(L, comm->getCode()) == 1)
 		{
 			SDL_mutexP((SDL_mutex*) comm->mutex);
-			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1));
+			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1), lua_strlen(L, -1));
 			comm->setValue("error", v);
 			v->release();
 			SDL_mutexV((SDL_mutex*) comm->mutex);
@@ -251,17 +251,14 @@ namespace sdl
 
 	ThreadVariant *Thread::get(const std::string & name)
 	{
-		lock();
 		ThreadVariant *v = comm->getValue(name);
 		if (v)
 			v->retain();
-		unlock();
 		return v;
 	}
 
 	ThreadVariant *Thread::demand(const std::string & name)
 	{
-		lock();
 		ThreadVariant *v = comm->getValue(name);
 		while (!v)
 		{
@@ -271,22 +268,19 @@ namespace sdl
 			v = comm->getValue(name);
 		}
 		v->retain();
-		unlock();
 		return v;
 	}
 
 	void Thread::clear(const std::string & name)
 	{
-		lock();
 		comm->clearValue(name);
-		unlock();
 	}
 
 	void Thread::set(const std::string & name, ThreadVariant *v)
 	{
-		lock();
-		comm->setValue(name, v);
-		unlock();
+		lock(); //this function explicitly locks
+		comm->setValue(name, v); //because we need
+		unlock(); //it to unlock here for the cond
 		SDL_CondBroadcast(cond);
 	}
 

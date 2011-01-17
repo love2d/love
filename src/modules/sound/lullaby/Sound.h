@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -58,7 +58,7 @@ namespace lullaby
 		const char * getName() const;
 		
 		/// @copydoc love::sound::Sound::newDecoder
-		sound::Decoder * newDecoder(love::filesystem::File * file, int bufferSize, int sampleRate);
+		sound::Decoder * newDecoder(love::filesystem::File * file, int bufferSize);
 
 	}; // Sound
 

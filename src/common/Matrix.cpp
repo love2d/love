@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2010 LOVE Development Team
+* Copyright (c) 2006-2011 LOVE Development Team
 * 
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -118,12 +118,21 @@ namespace love
 
 	void Matrix::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy)
 	{
-		// TODO: This works fine, but should consider speeding this up a little.
-		setIdentity();
-		translate(x, y);
-		rotate(angle);
-		scale(sx, sy);
-		translate(-ox, -oy);
+		memset(e, 0, sizeof(float)*16); // zero out matrix
+		float c = cos(angle), s = sin(angle);
+		// matrix multiplication carried out on paper:
+		// |1     x| |c -s    | |sx       | |1     -ox|
+		// |  1   y| |s  c    | |   sy    | |  1   -oy|
+		// |    1  | |     1  | |      1  | |    1    |
+		// |      1| |       1| |        1| |       1 |
+		//   move      rotate      scale       origin
+		e[10] = e[15] = 1.0f;
+		e[0] = sx * c;
+		e[1] = sx * s;
+		e[4] = -sy * s;
+		e[5] = sy * c;
+		e[12] = -ox * e[0] - oy * e[4] + x;
+		e[13] = -ox * e[1] - oy * e[5] + y;
 	}
 
 	void Matrix::translate(float x, float y)
