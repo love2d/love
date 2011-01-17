@@ -68,15 +68,13 @@ namespace sdl
 
 	bool Joystick::checkIndex(int index)
 	{
-		if(index < getNumJoysticks())
-			return true;
-		else
-			return false;
+		return index >= 0 && index < getNumJoysticks();
 	}
 
 	int Joystick::getNumJoysticks()
 	{
-		return SDL_NumJoysticks();
+		int num = SDL_NumJoysticks();
+		return num < 0 ? 0 : num;
 	}
 
 	const char * Joystick::getName(int index)
