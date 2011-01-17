@@ -68,7 +68,7 @@ namespace sdl
 
 	bool Joystick::checkIndex(int index)
 	{
-		return index > 0 && index <= getNumJoysticks();
+		return index >= 0 && index < getNumJoysticks();
 	}
 
 	int Joystick::getNumJoysticks()
