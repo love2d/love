@@ -37,8 +37,9 @@ namespace box2d
 		def->radius = body->world->scaleDown(def->radius);
 		radius = def->radius;
 		this->localPosition = def->localPosition;
+
+		def->userData = (void*)data;
 		shape = body->body->CreateShape(def);
-		shape->SetUserData((void*)data);
 	}
 
 	CircleShape::~CircleShape()

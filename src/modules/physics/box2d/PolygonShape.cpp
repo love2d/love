@@ -36,8 +36,8 @@ namespace box2d
 		for(int i = 0; i<def->vertexCount; i++)
 			def->vertices[i] = body->world->scaleDown(def->vertices[i]);
 
+		def->userData = (void*)data;
 		shape = body->body->CreateShape(def);
-		shape->SetUserData((void*)data);
 	}
 
 	PolygonShape::~PolygonShape()

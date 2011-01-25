@@ -31,7 +31,7 @@ namespace physics
 namespace box2d
 {
 	MouseJoint::MouseJoint(Body * body1, float x, float y)
-		: Joint(body1)
+		: Joint(body1), joint(NULL)
 	{
 		b2MouseJointDef def;
 		

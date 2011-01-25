@@ -34,7 +34,7 @@ namespace physics
 namespace box2d
 {
 	Shape::Shape(Body * body)
-		: body(body)
+		: body(body), shape(NULL)
 	{
 		body->retain();
 		data = new shapeudata();
@@ -49,7 +49,8 @@ namespace box2d
 		delete data;
 		data = 0;
 
-		body->body->DestroyShape(shape);
+		if (shape)
+			body->body->DestroyShape(shape);
 		shape = 0;
 
 		body->release();
