@@ -117,7 +117,7 @@ namespace sdl
 		case Event::TYPE_KEY_PRESSED:
 			e.type = SDL_KEYDOWN;
 			e.key.keysym.unicode = (Uint16)m.keyboard.u;
-			return keys.find(m.keyboard.k, e.key.keysym.sym);;
+			return keys.find(m.keyboard.k, e.key.keysym.sym);
 		case Event::TYPE_KEY_RELEASED:
 			e.type = SDL_KEYUP;
 			return keys.find(m.keyboard.k, e.key.keysym.sym);
@@ -290,6 +290,8 @@ namespace sdl
 		{ love::keyboard::Keyboard::KEY_POWER, SDLK_POWER },
 		{ love::keyboard::Keyboard::KEY_EURO, SDLK_EURO },
 		{ love::keyboard::Keyboard::KEY_UNDO, SDLK_UNDO },
+
+		{ love::keyboard::Keyboard::KEY_UNKNOWN, SDLK_UNKNOWN },
 	};
 
 	EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> Event::keys(Event::keyEntries, sizeof(Event::keyEntries));

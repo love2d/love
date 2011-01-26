@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -34,14 +34,14 @@ namespace sdl
 	bool Keyboard::isDown(Key key) const
 	{
 		SDLKey k;
-		
+
 		if(keys.find(key, k))
-		{		
+		{
 			Uint8 * keystate = SDL_GetKeyState(0);
-			return keystate[(unsigned)k] == 1;	
+			return keystate[(unsigned)k] == 1;
 		}
 
-		return false;	
+		return false;
 	}
 
 	void Keyboard::setKeyRepeat(int delay, int interval) const
@@ -58,7 +58,7 @@ namespace sdl
 		SDL_GetKeyRepeat(&delay, &interval);
 		return delay;
 	}
-	
+
 	int Keyboard::getKeyRepeatInterval() const
 	{
 		int delay, interval = 0;
@@ -66,7 +66,7 @@ namespace sdl
 		return interval;
 	}
 
-	EnumMap<Keyboard::Key, SDLKey, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] = 
+	EnumMap<Keyboard::Key, SDLKey, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] =
 	{
 		{ Keyboard::KEY_BACKSPACE, SDLK_BACKSPACE},
 		{ Keyboard::KEY_TAB, SDLK_TAB},

@@ -228,6 +228,8 @@ namespace event
 		{"power", love::keyboard::Keyboard::KEY_POWER},
 		{"euro", love::keyboard::Keyboard::KEY_EURO},
 		{"undo", love::keyboard::Keyboard::KEY_UNDO},
+
+		{"unknown", love::keyboard::Keyboard::KEY_UNKNOWN},
 	};
 
 	StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM> Event::keys(Event::keyEntries, sizeof(Event::keyEntries));
