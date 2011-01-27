@@ -280,7 +280,7 @@ function love.init()
 
 	-- Setup screen here.
 	if c.screen and c.modules.graphics then
-		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) then
+		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) or (c.screen.width == 0 and c.screen.height == 0) then
 			assert(love.graphics.setMode(c.screen.width, c.screen.height, c.screen.fullscreen, c.screen.vsync, c.screen.fsaa), "Could not set screen mode")
 		else
 			error("Could not set screen mode")
