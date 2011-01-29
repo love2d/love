@@ -303,7 +303,7 @@ namespace opengl
 			currentMode.height,
 			!currentMode.fullscreen,
 			currentMode.vsync,
-			currentMode.fsaa));
+			currentMode.fsaa);
 	}
 
 
