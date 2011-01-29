@@ -299,14 +299,11 @@ namespace opengl
 	bool Graphics::toggleFullscreen()
 	{
 		// Try to do the change.
-		if(!setMode(currentMode.width,
+		return setMode(currentMode.width,
 			currentMode.height,
 			!currentMode.fullscreen,
 			currentMode.vsync,
-			currentMode.fsaa))
-			return false;
-		currentMode.fullscreen = !currentMode.fullscreen;
-		return true;
+			currentMode.fsaa));
 	}
 
 
