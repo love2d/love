@@ -165,20 +165,24 @@ namespace opengl
 
 		// Get caption.
 
-		// Special case for fullscreen -> windowed. Windows XP did not
-		// work well with "normal" display mode change in this case.
-		// The application window does leave fullscreen, but the desktop
-		// resolution does not revert to the correct one. Restarting the
-		// SDL video subsystem does the trick, though.
-		if( currentMode.fullscreen && !fullscreen )
+		// We need to restart the subsystem for two reasons:
+		// 1) Special case for fullscreen -> windowed. Windows XP did not
+		//    work well with "normal" display mode change in this case.
+		//    The application window does leave fullscreen, but the desktop
+		//    resolution does not revert to the correct one. Restarting the
+		//    SDL video subsystem does the trick, though.
+		// 2) Restart the event system (for whatever reason the event system
+		//    started and stopped with SDL_INIT_VIDEO, see:
+		//    http://sdl.beuc.net/sdl.wiki/Introduction_to_Events)
+		//    because the mouse position will not be able to exceed
+		//    the previous' video mode window size (i.e. alway
+		//    love.mouse.getX() < 800 when switching from 800x600 to a
+		//    higher resolution)
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		{
-			// Restart.
-			SDL_QuitSubSystem(SDL_INIT_VIDEO);
-			if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-			{
-				std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
-				return false;
-			}
+			std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
+			return false;
 		}
 
 		// Set caption.
