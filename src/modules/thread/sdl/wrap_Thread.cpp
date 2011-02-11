@@ -302,12 +302,12 @@ namespace sdl
 		lua_newtable(L);
 		for (unsigned int i = 0; i<count; i++)
 		{
+			// allow names containing \0
+			lua_pushlstring(L, list[i]->getName().c_str(), list[i]->getName().length());
 			luax_newtype(L, "Thread", THREAD_THREAD_T, (void*) list[i]);
 			list[i]->lock();
 			list[i]->retain();
 			list[i]->unlock();
-			// allow names containing \0
-			lua_pushlstring(L, list[i]->getName().c_str(), list[i]->getName().length());
 			lua_settable(L, -3);
 		}
 		delete[] list;
