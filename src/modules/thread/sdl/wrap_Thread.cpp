@@ -166,7 +166,9 @@ namespace sdl
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
+		t->lock();
 		ThreadVariant *v = t->receive(name);
+		t->unlock();
 		if (!v)
 		{
 			lua_pushnil(L);
