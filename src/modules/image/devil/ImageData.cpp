@@ -239,7 +239,7 @@ namespace devil
 			case EncodedImageData::FORMAT_TGA:
 			default: // TGA is the default format
 				headerLen = 18;
-				bpp = 3;
+				bpp = 4;
 				size = h * w * bpp;
 				data = new ILubyte[size + headerLen];
 				// here's the header for the Targa file format.
@@ -257,23 +257,12 @@ namespace devil
 				data[14] = h & 255; // least significant byte of height
 				data[15] = h >> 8; // most significant byte of height
 				data[16] = bpp * 8; // bits per pixel
-				data[17] = 0; // descriptor bits
+				data[17] = 0x20; // descriptor bits (flip bits: 0x10 horizontal, 0x20 vertical)
 				// header done. write the pixel data to TGA:
 				data += headerLen;
-				ilCopyPixels(0,0,0,w,h,1,IL_BGR,IL_UNSIGNED_BYTE,data); // convert the pixels to BGR (remember, little-endian) and copy them to data
+				ilCopyPixels(0,0,0,w,h,1,IL_BGRA,IL_UNSIGNED_BYTE,data); // convert the pixels to BGRA (remember, little-endian) and copy them to data
 
-				// It's Targa, so we have to flip the image.
-				row = w * bpp;
-				ILubyte * temp = new ILubyte[row];
-				ILubyte * src = data - row;
-				ILubyte * dst = data + size;
-				for (int i = 0; i < (h >> 1); i++) {
-					memcpy(temp,src+=row,row);
-					memcpy(src,dst-=row,row);
-					memcpy(dst,temp,row);
-				}
 				data -= headerLen;
-				delete [] temp;
 		}
 		return new EncodedImageData(data, f, size + headerLen, freeData);
 	}

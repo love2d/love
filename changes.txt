@@ -8,6 +8,7 @@ LOVE 0.7.1 [Game Slave]
   * Added filter modes for ImageFonts.
   * Added dead key support by using "unknown" key with correct unicode value.
   * Added 0 width and height in love.conf. (for current desktop resolution)
+  * Added alpha support when encoding TGA images.
 
   * Fixed a lot of bugs regarding zero characters in threads.
   * Fixed handling of a directory named "love" in current directory.
@@ -27,6 +28,7 @@ LOVE 0.7.1 [Game Slave]
   * Fixed unexpected behaviour with hash tables to love.graphics.line.
   * Fixed mouse coordinates being capped after setMode.
   * Fixed setFont's error handling on a non-existant file.
+  * Fixed issue where Windows builds would hard crash on Lua errors
 
   * Removed custom sample rates for Decoders.
 
