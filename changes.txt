@@ -28,6 +28,7 @@ LOVE 0.7.1 [Game Slave]
   * Fixed unexpected behaviour with hash tables to love.graphics.line.
   * Fixed mouse coordinates being capped after setMode.
   * Fixed setFont's error handling on a non-existant file.
+  * Fixed issue where Windows builds would hard crash on Lua errors
 
   * Removed custom sample rates for Decoders.
 
