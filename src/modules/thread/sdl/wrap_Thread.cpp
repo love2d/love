@@ -78,13 +78,13 @@ namespace sdl
 		std::string name = luax_checklstring(L, 2);
 		t->lock();
 		ThreadVariant *v = t->receive(name);
+		t->clear(name);
+		t->unlock();
 		if (!v)
 		{
 			lua_pushnil(L);
 			return 1;
 		}
-		t->clear(name);
-		t->unlock();
 		switch(v->type)
 		{
 			case BOOLEAN:
@@ -123,13 +123,13 @@ namespace sdl
 		std::string name = luax_checklstring(L, 2);
 		t->lock();
 		ThreadVariant *v = t->demand(name);
+		t->clear(name);
+		t->unlock();
 		if (!v)
 		{
 			lua_pushnil(L);
 			return 1;
 		}
-		t->clear(name);
-		t->unlock();
 		switch(v->type)
 		{
 			case BOOLEAN:
