@@ -1,3 +1,35 @@
+LOVE 0.7.1 [Game Slave]
+-----------------------
+
+  * Added source:isPaused()
+  * Added error when initial window can't be created.
+  * Added framebuffer filter modes.
+  * Added love.filesystem.getLastModified.
+  * Added filter modes for ImageFonts.
+  * Added dead key support by using "unknown" key with correct unicode value.
+  * Added 0 width and height in love.conf. (for current desktop resolution)
+
+  * Fixed a lot of bugs regarding zero characters in threads.
+  * Fixed handling of a directory named "love" in current directory.
+  * Fixed a few unhandled errors in setScissor.
+  * Fixed a bug where old physics callbacks were never dereferenced.
+  * Fixed loss of mouse visibility settings on setMode.
+  * Fixed creation of a framebuffer unbinding current framebuffer.
+  * Fixed several race conditions in love.thread.
+  * Fixed 'love .', so it won't use lovedir/. as save dir.
+  * Fixed setLineHeight.
+  * Fixed extended ascii and ImageFonts.
+  * Fixed printf's line wrapping.
+  * Fixed crash when playing sounds.
+  * Fixed playback of mp3s with arbitrary sample rates.
+  * Fixed handling of negative indices in love.joystick.
+  * Fixed toggleFullscreen.
+  * Fixed unexpected behaviour with hash tables to love.graphics.line.
+  * Fixed mouse coordinates being capped after setMode.
+  * Fixed setFont's error handling on a non-existant file.
+
+  * Removed custom sample rates for Decoders.
+
 LOVE 0.7.0 [Game Slave]
 -----------------------
 
