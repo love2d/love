@@ -75,7 +75,7 @@ hg update -r $buildrev
 if [ -z $3 ]; then
 	if [ "$buildrev" == "tip" ]; then
 		# Get the current SVN version, use sed to remove any non-numbers.
-		currentversion=`hg log -l1 | grep changeset | sed 's/.*://g'`
+		currentversion=`hg log -l1 --template "{node|short}"`
 		currentdate=`date +%Y%m%d`
 		displayversion="$currentdate-$currentversion"
 	else
@@ -99,7 +99,7 @@ cp configure.in.tmp configure.in
 rm configure.in.tmp
 
 # Build ... BUILD!
-sh platform/unix/gen-makefile
+#sh platform/unix/gen-makefile
 sh platform/unix/automagic
 ./configure
 make
@@ -124,11 +124,11 @@ binary="love-$displayversion-linux-$machine"
 cp ../../src/love $binary
 
 # Deal with uploading.
-if [ "$1" == "build" ]; then
-	curl -F build=@$deb -F press=ok http://love2d.org/builds/upload.php?upload
-	curl -F build=@$tar -F press=ok http://love2d.org/builds/upload.php?upload
-	curl -F build=@$binary -F press=ok http://love2d.org/builds/upload.php?upload
-fi
+#if [ "$1" == "build" ]; then
+#	curl -F build=@$deb -F press=ok http://love2d.org/builds/upload.php?upload
+#	curl -F build=@$tar -F press=ok http://love2d.org/builds/upload.php?upload
+#	curl -F build=@$binary -F press=ok http://love2d.org/builds/upload.php?upload
+#fi
 
 if [ "$1" == "release" ]; then
 	echo "release"
