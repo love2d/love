@@ -218,7 +218,12 @@ namespace physfs
 
 	int w_load(lua_State * L)
 	{
-		return instance->load(L);
+		try {
+			return instance->load(L);
+		}
+		catch (love::Exception & e) {
+			return luaL_error(L, e.what());
+		}
 	}
 
 	int w_getLastModified(lua_State * L)

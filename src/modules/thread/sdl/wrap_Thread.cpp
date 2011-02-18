@@ -286,7 +286,14 @@ namespace sdl
 		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
 		if (luax_istype(L, 2, FILESYSTEM_FILE_T))
-			data = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T)->read();
+		{
+			Data * d;
+			try {
+				data = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T)->read();
+			} catch (love::Exception & e) {
+				return luaL_error(L, e.what());
+			}
+		}
 		else
 			data = luax_checktype<love::Data>(L, 2, "Data", DATA_T);
 		Thread *t = instance->newThread(name, data);
