@@ -305,7 +305,7 @@ namespace audio
 
 		luax_register_module(L, w);
 
-		if (luaL_loadbuffer(L, (const char *)audio_lua, sizeof(audio_lua), "audio.lua") == 0)
+		if (luaL_loadbuffer(L, audio_lua.c_str(), audio_lua.size(), "audio.lua") == 0)
 			lua_call(L, 0, 0);
 
 		return 0;
