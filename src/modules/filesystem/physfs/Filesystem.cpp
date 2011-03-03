@@ -54,7 +54,6 @@ namespace physfs
 
 	void Filesystem::init(const char * arg0)
 	{
-		std::cout<<arg0 <<std::endl;
 		if(!PHYSFS_init(arg0))
 			throw Exception(PHYSFS_getLastError());
 		isInited = true;
