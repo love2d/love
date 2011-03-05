@@ -7,3 +7,5 @@ Type=Application
 Categories=Development;Game;
 Terminal=false
 Icon=love.svg
+NoDisplay=true
+
