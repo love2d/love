@@ -193,12 +193,11 @@ function love.boot()
 
 	local o = love.arg.options
 
-	--local abs_arg0 = love.path.getfull(love.arg.getLow(arg))
-	--love.filesystem.init(abs_arg0)
-	love.filesystem.init(love.arg.getLow(arg))
+	local arg0 = love.arg.getLow(arg)
+	love.filesystem.init(arg0)
 
 	-- Is this one of those fancy "fused" games?
-	local can_has_game = pcall(love.filesystem.setSource, abs_arg0)
+	local can_has_game = pcall(love.filesystem.setSource, arg0)
 
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local full_source =  love.path.getfull(o.game.arg[1])
