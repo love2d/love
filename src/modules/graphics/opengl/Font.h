@@ -57,15 +57,6 @@ namespace opengl
 		FontType type;
 
 	public:
-		static const unsigned int MAX_CHARS = 256;
-		// The widths of each character.
-		int widths[MAX_CHARS];
-		// The spacing of each character.
-		int spacing[MAX_CHARS];
-		// The X-bearing of each character.
-		int bearingX[MAX_CHARS];
-		// The Y-bearing of each character.
-		int bearingY[MAX_CHARS];
 
 		/**
 		* Default constructor.

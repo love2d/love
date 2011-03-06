@@ -112,33 +112,6 @@ namespace font
 		**/
 		Format getFormat() const;
 		
-		/**
-		* Returns the closest number to num which is a power of two.
-		*
-		* @param num The number to be 2powered.
-		**/
-		inline int next_p2(int num) const;
-		
-		/**
-		* Pads the data to fit into a power-of-2 texture.
-		**/
-		void pad();
-		
-		/**
-		* Returns whether the data has been padded.
-		**/
-		bool isPadded() const;
-		
-		/**
-		* Returns the padded width.
-		**/
-		int getPaddedWidth() const;
-		
-		/**
-		* Returns the padded height.
-		**/
-		int getPaddedHeight() const;
-		
 	private:
 		// The glyph itself
 		unsigned short glyph;
@@ -151,9 +124,6 @@ namespace font
 		
 		// The format the data's in
 		Format format;
-		
-		// Padded?
-		bool padded;
 
 	}; // GlyphData
 

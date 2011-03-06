@@ -34,18 +34,9 @@ namespace opengl
 	Font::Font(love::font::Rasterizer * r, const Image::Filter& filter)
 	: rasterizer(r), height(r->getHeight()), lineHeight(1), mSpacing(1)
 	{
-		type = FONT_UNKNOWN;
-		love::font::GlyphData * gd;
-
-		for(unsigned int i = 0; i < MAX_CHARS; i++)
-		{
-			gd = r->getGlyphData(i);
-			widths[i] = gd->getWidth();
-			spacing[i] = gd->getAdvance();
-			bearingX[i] = gd->getBearingX();
-			bearingY[i] = gd->getBearingY();
-			if (type == FONT_UNKNOWN) type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
-		}
+		love::font::GlyphData * gd = r->getGlyphData(0);
+		type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
+		delete gd;
 	}
 
 	Font::~Font()
