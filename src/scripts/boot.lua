@@ -79,7 +79,7 @@ function love.path.getfull(p)
 	local full = cwd .. love.path.normalslashes(p)
 
 	-- Remove trailing /., if applicable
-	return full:match("(.-)/%.") or full
+	return full:match("(.-)/%.$") or full
 end
 
 -- Returns the leaf of a full path.
@@ -193,11 +193,11 @@ function love.boot()
 
 	local o = love.arg.options
 
-	local abs_arg0 = love.path.getfull(love.arg.getLow(arg))
-	love.filesystem.init(abs_arg0)
+	local arg0 = love.arg.getLow(arg)
+	love.filesystem.init(arg0)
 
 	-- Is this one of those fancy "fused" games?
-	local can_has_game = love.filesystem.isFile(abs_arg0) and not love.filesystem.isDirectory(abs_arg0) and pcall(love.filesystem.setSource, abs_arg0)
+	local can_has_game = pcall(love.filesystem.setSource, arg0)
 
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local full_source =  love.path.getfull(o.game.arg[1])
@@ -288,7 +288,7 @@ function love.init()
 
 	-- Setup screen here.
 	if c.screen and c.modules.graphics then
-		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) then
+		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) or (c.screen.width == 0 and c.screen.height == 0) then
 			assert(love.graphics.setMode(c.screen.width, c.screen.height, c.screen.fullscreen, c.screen.vsync, c.screen.fsaa), "Could not set screen mode")
 		else
 			error("Could not set screen mode")

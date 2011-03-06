@@ -31,7 +31,7 @@ namespace physics
 namespace box2d
 {
 	PulleyJoint::PulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio)
-		: Joint(body1, body2)
+		: Joint(body1, body2), joint(NULL)
 	{
 		b2PulleyJointDef def;
 		def.Initialize(body1->body, body2->body, world->scaleDown(groundAnchor1), world->scaleDown(groundAnchor2), \

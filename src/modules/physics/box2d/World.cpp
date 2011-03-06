@@ -96,14 +96,14 @@ namespace box2d
 	}
 
 	World::World(b2AABB aabb)
-		: meter(DEFAULT_METER)
+		: meter(DEFAULT_METER), world(NULL)
 	{
 		world = new b2World(scaleDown(aabb), b2Vec2(0,0), true);
 		world->SetContactListener(this);
 	}
 
 	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter)
-		: meter(meter)
+		: meter(meter), world(NULL)
 	{
 		world = new b2World(scaleDown(aabb), scaleDown(gravity), sleep);
 		world->SetContactListener(this);

@@ -165,20 +165,24 @@ namespace opengl
 
 		// Get caption.
 
-		// Special case for fullscreen -> windowed. Windows XP did not
-		// work well with "normal" display mode change in this case.
-		// The application window does leave fullscreen, but the desktop
-		// resolution does not revert to the correct one. Restarting the
-		// SDL video subsystem does the trick, though.
-		if( currentMode.fullscreen && !fullscreen )
+		// We need to restart the subsystem for two reasons:
+		// 1) Special case for fullscreen -> windowed. Windows XP did not
+		//    work well with "normal" display mode change in this case.
+		//    The application window does leave fullscreen, but the desktop
+		//    resolution does not revert to the correct one. Restarting the
+		//    SDL video subsystem does the trick, though.
+		// 2) Restart the event system (for whatever reason the event system
+		//    started and stopped with SDL_INIT_VIDEO, see:
+		//    http://sdl.beuc.net/sdl.wiki/Introduction_to_Events)
+		//    because the mouse position will not be able to exceed
+		//    the previous' video mode window size (i.e. alway
+		//    love.mouse.getX() < 800 when switching from 800x600 to a
+		//    higher resolution)
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		{
-			// Restart.
-			SDL_QuitSubSystem(SDL_INIT_VIDEO);
-			if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-			{
-				std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
-				return false;
-			}
+			std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
+			return false;
 		}
 
 		// Set caption.
@@ -299,14 +303,11 @@ namespace opengl
 	bool Graphics::toggleFullscreen()
 	{
 		// Try to do the change.
-		if(!setMode(currentMode.width,
+		return setMode(currentMode.width,
 			currentMode.height,
 			!currentMode.fullscreen,
 			currentMode.vsync,
-			currentMode.fsaa))
-			return false;
-		currentMode.fullscreen = !currentMode.fullscreen;
-		return true;
+			currentMode.fsaa);
 	}
 
 
@@ -829,20 +830,20 @@ namespace opengl
 
 		if (args % 2) // an odd number of arguments, no good for a polyline
 			return luaL_error(L, "Number of vertices must be a multiple of two");
+		else if (args < 4)
+			return luaL_error(L, "Need at least two vertices to draw a line");
 
 		// right, let's draw this polyline, then
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_LINE_STRIP);
 		if (table) {
-			lua_pushnil(L);
-			while (true) {
-				if(lua_next(L, 1) == 0) break;
-				GLfloat x = (GLfloat)lua_tonumber(L, -1);
-				lua_pop(L, 1); // pop value
-				if(lua_next(L, 1) == 0) break;
-				GLfloat y = (GLfloat)lua_tonumber(L, -1);
-				lua_pop(L, 1); // pop value
-				glVertex2f(x, y);
+			for (int i = 1; i < args; i += 2) {
+				lua_pushnumber(L, i);   // x coordinate
+				lua_rawget(L, 1);
+				lua_pushnumber(L, i+1); // y coordinate
+				lua_rawget(L, 1);
+				glVertex2f((GLfloat)lua_tonumber(L, -2), (GLfloat)lua_tonumber(L, -1));
+				lua_pop(L, 2);
 			}
 		} else {
 			for (int i = 1; i < args; i+=2) {

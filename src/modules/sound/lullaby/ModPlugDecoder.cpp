@@ -38,7 +38,19 @@ namespace lullaby
 		settings.mBits = 16;
 		settings.mFrequency = sampleRate;
 		settings.mResamplingMode = MODPLUG_RESAMPLE_LINEAR;
+
+		// fill with modplug defaults (modplug _memsets_, so we could get
+		// garbage settings when the struct is only partially initialized)
+		settings.mStereoSeparation = 128;
+		settings.mMaxMixChannels = 32;
+		settings.mReverbDepth = 0;
+		settings.mReverbDelay = 0;
+		settings.mBassAmount = 0;
+		settings.mBassRange = 0;
+		settings.mSurroundDepth = 0;
+		settings.mSurroundDelay = 0;
 		settings.mLoopCount = 0;
+
 		ModPlug_SetSettings(&settings);
 
 		// Load the module.
@@ -47,7 +59,8 @@ namespace lullaby
 		if(plug == 0)
 			throw love::Exception("Could not load file with ModPlug.");
 
-		ModPlug_SetMasterVolume(plug, 512);
+		// set master volume for delicate ears
+		ModPlug_SetMasterVolume(plug, 128);
 	}
 
 	ModPlugDecoder::~ModPlugDecoder()
@@ -101,7 +114,7 @@ namespace lullaby
 		// Let's reload.
 		ModPlug_Unload(plug);
 		plug = ModPlug_Load(data->getData(), data->getSize());
-		ModPlug_SetMasterVolume(plug, 512);
+		ModPlug_SetMasterVolume(plug, 128);
 		eof = false;
 		return (plug != 0);
 	}

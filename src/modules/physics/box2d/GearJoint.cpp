@@ -31,7 +31,7 @@ namespace physics
 namespace box2d
 {
 	GearJoint::GearJoint(Joint * joint1, Joint * joint2, float ratio)
-		: Joint(joint1->body2, joint2->body2)
+		: Joint(joint1->body2, joint2->body2), joint(NULL)
 	{
 		b2GearJointDef def;
 		def.joint1 = joint1->joint;

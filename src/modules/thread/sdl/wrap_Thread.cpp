@@ -77,14 +77,14 @@ namespace sdl
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
 		t->lock();
-		ThreadVariant *v = t->get(name);
+		ThreadVariant *v = t->receive(name);
+		t->clear(name);
+		t->unlock();
 		if (!v)
 		{
 			lua_pushnil(L);
 			return 1;
 		}
-		t->clear(name);
-		t->unlock();
 		switch(v->type)
 		{
 			case BOOLEAN:
@@ -123,13 +123,13 @@ namespace sdl
 		std::string name = luax_checklstring(L, 2);
 		t->lock();
 		ThreadVariant *v = t->demand(name);
+		t->clear(name);
+		t->unlock();
 		if (!v)
 		{
 			lua_pushnil(L);
 			return 1;
 		}
-		t->clear(name);
-		t->unlock();
 		switch(v->type)
 		{
 			case BOOLEAN:
@@ -166,7 +166,9 @@ namespace sdl
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checklstring(L, 2);
-		ThreadVariant *v = t->get(name);
+		t->lock();
+		ThreadVariant *v = t->receive(name);
+		t->unlock();
 		if (!v)
 		{
 			lua_pushnil(L);
@@ -282,7 +284,14 @@ namespace sdl
 		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
 		if (luax_istype(L, 2, FILESYSTEM_FILE_T))
-			data = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T)->read();
+		{
+			Data * d;
+			try {
+				data = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T)->read();
+			} catch (love::Exception & e) {
+				return luaL_error(L, e.what());
+			}
+		}
 		else
 			data = luax_checktype<love::Data>(L, 2, "Data", DATA_T);
 		Thread *t = instance->newThread(name, data);
@@ -300,12 +309,12 @@ namespace sdl
 		lua_newtable(L);
 		for (unsigned int i = 0; i<count; i++)
 		{
+			// allow names containing \0
+			lua_pushlstring(L, list[i]->getName().c_str(), list[i]->getName().length());
 			luax_newtype(L, "Thread", THREAD_THREAD_T, (void*) list[i]);
 			list[i]->lock();
 			list[i]->retain();
 			list[i]->unlock();
-			// allow names containing \0
-			lua_pushlstring(L, list[i]->getName().c_str(), list[i]->getName().length());
 			lua_settable(L, -3);
 		}
 		delete[] list;

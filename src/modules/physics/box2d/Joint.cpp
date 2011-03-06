@@ -117,7 +117,8 @@ namespace box2d
 
 	void Joint::destroyJoint(b2Joint * joint)
 	{
-		world->world->DestroyJoint(joint);
+		if (joint != NULL)
+			world->world->DestroyJoint(joint);
 	}
 
 } // box2d

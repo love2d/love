@@ -20,6 +20,8 @@
 
 #include <common/config.h>
 
+#include <iostream>
+
 #include <common/utf8.h>
 #include <common/b64.h>
 

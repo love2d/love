@@ -110,8 +110,8 @@ namespace physfs
 	{
 		bool isOpen = (file != 0);
 
-		if(!isOpen)
-			open(READ);
+		if(!isOpen && !open(READ))
+			throw love::Exception("Could not read file %s.", filename.c_str());
 
 		int max = (int)PHYSFS_fileLength(file);
 		size = (size == ALL) ? max : size;
