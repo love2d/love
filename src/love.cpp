@@ -67,18 +67,18 @@
 
 static const luaL_Reg modules[] = {
 	{ "love.audio", love::audio::luaopen_love_audio },
-	{ "love.event", love::event::sdl::luaopen_love_event },
-	{ "love.filesystem", love::filesystem::physfs::luaopen_love_filesystem },
-	{ "love.font", love::font::freetype::luaopen_love_font },
-	{ "love.graphics", love::graphics::opengl::luaopen_love_graphics },
+	{ "love.event.sdl", love::event::sdl::luaopen_love_event },
+	{ "love.filesystem.physfs", love::filesystem::physfs::luaopen_love_filesystem },
+	{ "love.font.freetype", love::font::freetype::luaopen_love_font },
+	{ "love.graphics.opengl", love::graphics::opengl::luaopen_love_graphics },
 	{ "love.image", love::image::luaopen_love_image },
-	{ "love.joystick", love::joystick::sdl::luaopen_love_joystick },
-	{ "love.keyboard", love::keyboard::sdl::luaopen_love_keyboard },
-	{ "love.mouse", love::mouse::sdl::luaopen_love_mouse },
-	{ "love.physics", love::physics::box2d::luaopen_love_physics },
+	{ "love.joystick.sdl", love::joystick::sdl::luaopen_love_joystick },
+	{ "love.keyboard.sdl", love::keyboard::sdl::luaopen_love_keyboard },
+	{ "love.mouse.sdl", love::mouse::sdl::luaopen_love_mouse },
+	{ "love.physics.box2d", love::physics::box2d::luaopen_love_physics },
 	{ "love.sound", love::sound::luaopen_love_sound },
-	{ "love.timer", love::timer::sdl::luaopen_love_timer },
-	{ "love.thread", love::thread::sdl::luaopen_love_thread },
+	{ "love.timer.sdl", love::timer::sdl::luaopen_love_timer },
+	{ "love.thread.sdl", love::thread::sdl::luaopen_love_thread },
 	{ 0, 0 }
 };
 
