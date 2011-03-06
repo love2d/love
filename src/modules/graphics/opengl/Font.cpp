@@ -20,9 +20,12 @@
 
 #include "Font.h"
 #include <font/GlyphData.h>
+#include "Quad.h"
 
 #include <common/math.h>
 #include <math.h>
+
+#include <algorithm> // for max
 
 namespace love
 {
@@ -31,33 +34,102 @@ namespace graphics
 namespace opengl
 {
 
-	Font::Font(love::font::FontData * data, const Image::Filter& filter)
-	: height(data->getHeight()), lineHeight(1), mSpacing(1)
+	Font::Font(love::font::Rasterizer * r, const Image::Filter& filter)
+	: rasterizer(r), height(r->getHeight()), lineHeight(1), mSpacing(1), filter(filter)
 	{
-		glyphs = new Glyph*[MAX_CHARS];
-		type = FONT_UNKNOWN;
-		love::font::GlyphData * gd;
-
-		for(unsigned int i = 0; i < MAX_CHARS; i++)
-		{
-			gd = data->getGlyphData(i);
-			glyphs[i] = new Glyph(gd, filter);
-			glyphs[i]->load();
-			widths[i] = gd->getWidth();
-			spacing[i] = gd->getAdvance();
-			bearingX[i] = gd->getBearingX();
-			bearingY[i] = gd->getBearingY();
-			if (type == FONT_UNKNOWN) type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
-		}
+		love::font::GlyphData * gd = r->getGlyphData(32);
+		type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
+		delete gd;
+		createTexture();
 	}
 
 	Font::~Font()
 	{
-		for(unsigned int i = 0; i < MAX_CHARS; i++)
-		{
-			glyphs[i]->release();
+		unloadVolatile();
+	}
+	
+	void Font::createTexture()
+	{
+		texture_x = texture_y = rowHeight = 0;
+		GLuint t;
+		glGenTextures(1, &t);
+		textures.push_back(t);
+		glBindTexture(GL_TEXTURE_2D, t);
+		
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+						(filter.mag == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+						(filter.min == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
+		glTexImage2D(GL_TEXTURE_2D, 
+					 0, 
+					 GL_RGBA, 
+					 (GLsizei)TEXTURE_WIDTH, 
+					 (GLsizei)TEXTURE_HEIGHT, 
+					 0, 
+					 format, 
+					 GL_UNSIGNED_BYTE, 
+					 NULL);
+	}
+	
+	Font::Glyph * Font::addGlyph(int glyph)
+	{
+		Glyph * g = new Glyph;
+		g->list = glGenLists(1);
+		if (g->list == 0) { // opengl failed to generate the list
+			delete g;
+			return NULL;
 		}
-		delete[] glyphs;
+		love::font::GlyphData *gd = rasterizer->getGlyphData(glyph);
+		g->spacing = gd->getAdvance();
+		int w = gd->getWidth();
+		int h = gd->getHeight();
+		if (texture_x + w > TEXTURE_WIDTH) { // out of space - new row!
+			texture_x = 0;
+			texture_y += rowHeight;
+			rowHeight = 0;
+		}
+		if (texture_y + h > TEXTURE_HEIGHT) { // totally out of space - new texture!
+			createTexture();
+		}
+		GLuint t = textures.back();
+		glBindTexture(GL_TEXTURE_2D, t);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w, h, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
+		
+		Quad::Viewport v;
+		v.x = texture_x;
+		v.y = texture_y;
+		v.w = w;
+		v.h = h;
+		Quad * q = new Quad(v, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+		const vertex * verts = q->getVertices();
+		
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].s);
+		
+		glNewList(g->list, GL_COMPILE);
+		glBindTexture(GL_TEXTURE_2D, t);
+		glPushMatrix();
+		glTranslatef(static_cast<float>(gd->getBearingX()), static_cast<float>(-gd->getBearingY()), 0.0f);
+		glDrawArrays(GL_QUADS, 0, 4);
+		glPopMatrix();
+		glEndList();
+		
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		
+		delete q;
+		delete gd;
+		
+		texture_x += w;
+		rowHeight = std::max(rowHeight, h);
+		
+		glyphs[glyph] = g;
+		return g;
 	}
 
 	float Font::getHeight() const
@@ -65,7 +137,7 @@ namespace opengl
 		return static_cast<float>(height);
 	}
 
-	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
+	void Font::print(std::string text, float x, float y, float angle, float sx, float sy)
 	{
 		float dx = 0.0f; // spacing counter for newline handling
 		glPushMatrix();
@@ -80,57 +152,66 @@ namespace opengl
 				dx = 0.0f;
 				continue;
 			}
-			if (!glyphs[g]) g = 32; // space
+			Glyph * glyph = glyphs[g];
+			if (!glyph) glyph = addGlyph(g);
 			glPushMatrix();
 			// 1.25 is magic line height for true type fonts
 			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() / 1.25f + 0.5f), 0);
-			glyphs[g]->draw(0, 0, 0, 1, 1, 0, 0);
+			glCallList(glyph->list);
 			glPopMatrix();
-			glTranslatef(static_cast<GLfloat>(spacing[g]), 0, 0);
-			dx += spacing[g];
+			glTranslatef(static_cast<GLfloat>(glyph->spacing), 0, 0);
+			dx += glyph->spacing;
 		}
 		glPopMatrix();
 	}
 
-	void Font::print(char character, float x, float y) const
+	void Font::print(char character, float x, float y)
 	{
-		if (!glyphs[(int)character]) character = ' ';
+		Glyph * glyph = glyphs[character];
+		if (!glyph) glyph = addGlyph(character);
 		glPushMatrix();
 		glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
-		glCallList(list+character);
+		glCallList(glyph->list);
 		glPopMatrix();
 	}
 
-	int Font::getWidth(const std::string & line) const
+	int Font::getWidth(const std::string & line)
 	{
 		if(line.size() == 0) return 0;
 		int temp = 0;
+		
+		Glyph * g;
 
 		for(unsigned int i = 0; i < line.size(); i++)
 		{
-			temp += static_cast<int>((spacing[(int)line[i]] * mSpacing));
+			g = glyphs[line[i]];
+			if (!g) g = addGlyph(line[i]);
+			temp += static_cast<int>(g->spacing * mSpacing);
 		}
 
 		return temp;
 	}
 
-	int Font::getWidth(const char * line) const
+	int Font::getWidth(const char * line)
 	{
 		return this->getWidth(std::string(line));
 	}
 
-	int Font::getWidth(const char character) const
+	int Font::getWidth(const char character)
 	{
-		return spacing[(int)character];
+		Glyph * g = glyphs[character];
+		if (!g) g = addGlyph(character);
+		return g->spacing;
 	}
 
-	int Font::getWrap(const std::string & line, float wrap, int * lines) const
+	int Font::getWrap(const std::string & line, float wrap, int * lines)
 	{
 		if(line.size() == 0) return 0;
 		int maxw = 0;
 		int linen = 1;
 		int temp = 0;
 		std::string text;
+		Glyph * g;
 
 		for(unsigned int i = 0; i < line.size(); i++)
 		{
@@ -144,7 +225,9 @@ namespace opengl
 				temp = getWidth(text);
 				linen++;
 			}
-			temp += static_cast<int>((spacing[(int)line[i]] * mSpacing));
+			g = glyphs[line[i]];
+			if (!g) g = addGlyph(line[i]);
+			temp += static_cast<int>(g->spacing * mSpacing);
 			text += line[i];
 		}
 
@@ -154,7 +237,7 @@ namespace opengl
 		return maxw;
 	}
 
-	int Font::getWrap(const char * line, float wrap, int * lines) const
+	int Font::getWrap(const char * line, float wrap, int * lines)
 	{
 		return getWrap(std::string(line), wrap, lines);
 	}
@@ -181,21 +264,26 @@ namespace opengl
 
 	bool Font::loadVolatile()
 	{
-		// reload all glyphs
-		for(unsigned int i = 0; i < MAX_CHARS; i++)
-		{
-			glyphs[i]->load();
-			glNewList(list + i, GL_COMPILE);
-			glyphs[i]->draw(0, 0, 0, 1, 1, 0, 0);
-			glEndList();
-		}
-		return true;
+		createTexture();
 	}
 
 	void Font::unloadVolatile()
 	{
-		// delete the glyphs
-		glDeleteLists(list, MAX_CHARS);
+		// nuke everything from orbit
+		std::map<int, Glyph *>::iterator it = glyphs.begin();
+		Glyph * g;
+		while (it != glyphs.end()) {
+			g = it->second;
+			glDeleteLists(g->list, 1);
+			delete g;
+			glyphs.erase(it++);
+		}
+		std::vector<GLuint>::iterator iter = textures.begin();
+		while (iter != textures.end()) {
+			glDeleteTextures(1, (GLuint*)&*iter);
+			iter++;
+		}
+		textures.clear();
 	}
 
 } // opengl

@@ -63,7 +63,6 @@ namespace freetype
 		Rasterizer * newRasterizer(love::image::ImageData * data, std::string glyphs);
 		Rasterizer * newRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length);
 		GlyphData * newGlyphData(Rasterizer * r, unsigned short glyph);
-		FontData * newFontData(Rasterizer * r);
 		
 		// Implement Module
 		const char * getName() const;

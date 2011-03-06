@@ -281,6 +281,9 @@ namespace opengl
 		// Reset modelview matrix
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		
+		// Set pixel row alignment
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 
 		// Set the new display mode as the current display mode.
 		currentMode.width = width;
@@ -472,9 +475,9 @@ namespace opengl
 		return new Quad(v, sw, sh);
 	}
 
-	Font * Graphics::newFont(love::font::FontData * data, const Image::Filter& filter)
+	Font * Graphics::newFont(love::font::Rasterizer * r, const Image::Filter& filter)
 	{
-		Font * font = new Font(data, filter);
+		Font * font = new Font(r, filter);
 
 		// Load it and check for errors.
 		if(!font)
