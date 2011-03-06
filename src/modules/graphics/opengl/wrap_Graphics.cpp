@@ -255,10 +255,6 @@ namespace opengl
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
 
-		// Convert to FontData, if necessary.
-		if(luax_istype(L, 1, FONT_RASTERIZER_T))
-			luax_convobj(L, 1, "font", "newFontData");
-
 		love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
 		// Create the font.
@@ -449,10 +445,6 @@ namespace opengl
 				int idxs[] = {1, 2};
 				luax_convobj(L, idxs, 2, "font", "newRasterizer");
 			}
-
-			// Convert to FontData, if necessary.
-			if(luax_istype(L, 1, FONT_RASTERIZER_T))
-				luax_convobj(L, 1, "font", "newFontData");
 
 			love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 

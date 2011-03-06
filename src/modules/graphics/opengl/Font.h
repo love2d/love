@@ -22,7 +22,9 @@
 #define LOVE_GRAPHICS_OPENGL_FONT_H
 
 // STD
+#include <map>
 #include <string>
+#include <vector>
 
 // LOVE
 #include <common/Object.h>
@@ -48,13 +50,30 @@ namespace opengl
 			FONT_UNKNOWN
 		};
 		
+		struct Glyph
+		{
+			GLuint list;
+			int spacing;
+		};
+		
 		love::font::Rasterizer * rasterizer;
 
 		int height;
 		float lineHeight;
 		float mSpacing; // modifies the spacing by multiplying it with this value
-		GLuint list; // the list of glyphs, for quicker drawing
+		std::vector<GLuint> textures; // vector of packed textures
+		std::map<int, Glyph *> glyphs; // maps glyphs to display lists
 		FontType type;
+		Image::Filter filter;
+		
+		static const int TEXTURE_WIDTH = 512;
+		static const int TEXTURE_HEIGHT = 512;
+		
+		int texture_x, texture_y;
+		int rowHeight;
+		
+		void createTexture();
+		Glyph * addGlyph(int glyph);
 
 	public:
 
@@ -75,7 +94,7 @@ namespace opengl
 		* @param y The y-coordinate.
 		* @param angle The amount of rotation.
 		**/
-		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f) const;
+		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f);
 
 		/**
 		* Prints the character at the designated position.
@@ -84,7 +103,7 @@ namespace opengl
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
 		**/
-		void print(char character, float x, float y) const;
+		void print(char character, float x, float y);
 
 		/**
 		* Returns the height of the font.
@@ -96,15 +115,15 @@ namespace opengl
 		*
 		* @param line A line of text.
 		**/
-		int getWidth(const std::string & line) const;
-		int getWidth(const char * line) const;
+		int getWidth(const std::string & line);
+		int getWidth(const char * line);
 
 		/**
 		* Returns the width of the passed character.
 		*
 		* @param character A character.
 		**/
-		int getWidth(const char character) const;
+		int getWidth(const char character);
 
 		/**
 		 * Returns the maximal width of a wrapped string
@@ -114,8 +133,8 @@ namespace opengl
 		 * @param wrap The number of pixels to wrap at
 		 * @param lines Optional output of the number of lines needed
 		 **/
-		int getWrap(const std::string & line, float wrap, int *lines = 0) const;
-		int getWrap(const char * line, float wrap, int *lines = 0) const;
+		int getWrap(const std::string & line, float wrap, int *lines = 0);
+		int getWrap(const char * line, float wrap, int *lines = 0);
 
 		/**
 		* Sets the line height (which should be a number to multiply the font size by,
