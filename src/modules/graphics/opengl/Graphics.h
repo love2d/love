@@ -33,8 +33,6 @@
 // LOVE
 #include <graphics/Graphics.h>
 
-#include <font/FontData.h>
-
 #include <image/Image.h>
 #include <image/ImageData.h>
 
@@ -261,7 +259,7 @@ namespace opengl
 		/**
 		* Creates a Font object.
 		**/
-		Font * newFont(love::font::FontData * data, const Image::Filter& filter = Image::Filter());
+		Font * newFont(love::font::Rasterizer * data, const Image::Filter& filter = Image::Filter());
 
 		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
 

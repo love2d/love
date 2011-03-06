@@ -22,7 +22,6 @@
 
 #include <image/ImageData.h>
 #include <font/Rasterizer.h>
-#include <font/FontData.h>
 
 #include <scripts/graphics.lua.h>
 
@@ -175,20 +174,6 @@ namespace opengl
 		return 1;
 	}
 
-	int w_newGlyph(lua_State * L)
-	{
-		love::font::GlyphData * data = luax_checktype<love::font::GlyphData>(L, 1, "GlyphData", FONT_GLYPH_DATA_T);
-
-		// Create the image.
-		Glyph * t = new Glyph(data);
-		t->load();
-
-		// Push the type.
-		luax_newtype(L, "Glyph", GRAPHICS_GLYPH_T, (void*)t);
-
-		return 1;
-	}
-
 	int w_newQuad(lua_State * L)
 	{
 		int x = luaL_checkint(L, 1);
@@ -234,14 +219,10 @@ namespace opengl
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
 
-		// Convert to FontData, if necessary.
-		if(luax_istype(L, 1, FONT_RASTERIZER_T))
-			luax_convobj(L, 1, "font", "newFontData");
-
-		love::font::FontData * data = luax_checktype<love::font::FontData>(L, 1, "FontData", FONT_FONT_DATA_T);
+		love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
 		// Create the font.
-		Font * font = instance->newFont(data);
+		Font * font = instance->newFont(rasterizer);
 
 		if(font == 0)
 			return luaL_error(L, "Could not load font.");
@@ -278,10 +259,10 @@ namespace opengl
 		if(luax_istype(L, 1, FONT_RASTERIZER_T))
 			luax_convobj(L, 1, "font", "newFontData");
 
-		love::font::FontData * data = luax_checktype<love::font::FontData>(L, 1, "FontData", FONT_FONT_DATA_T);
+		love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
 		// Create the font.
-		Font * font = instance->newFont(data, img_filter);
+		Font * font = instance->newFont(rasterizer, img_filter);
 
 		if(font == 0)
 			return luaL_error(L, "Could not load font.");
@@ -473,10 +454,10 @@ namespace opengl
 			if(luax_istype(L, 1, FONT_RASTERIZER_T))
 				luax_convobj(L, 1, "font", "newFontData");
 
-			love::font::FontData * data = luax_checktype<love::font::FontData>(L, 1, "FontData", FONT_FONT_DATA_T);
+			love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
 			// Create the font.
-			font = instance->newFont(data);
+			font = instance->newFont(rasterizer);
 
 			if(font == 0)
 				return luaL_error(L, "Could not load font.");
@@ -934,7 +915,6 @@ namespace opengl
 		{ "present", w_present },
 
 		{ "newImage", w_newImage },
-		{ "newGlyph", w_newGlyph },
 		{ "newQuad", w_newQuad },
 		{ "newFont1", w_newFont1 },
 		{ "newImageFont", w_newImageFont },
@@ -1017,7 +997,6 @@ namespace opengl
 	static const lua_CFunction types[] = {
 		luaopen_font,
 		luaopen_image,
-		luaopen_glyph,
 		luaopen_frame,
 		luaopen_spritebatch,
 		luaopen_particlesystem,

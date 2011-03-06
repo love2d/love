@@ -472,9 +472,9 @@ namespace opengl
 		return new Quad(v, sw, sh);
 	}
 
-	Font * Graphics::newFont(love::font::FontData * data, const Image::Filter& filter)
+	Font * Graphics::newFont(love::font::Rasterizer * r, const Image::Filter& filter)
 	{
-		Font * font = new Font(data, filter);
+		Font * font = new Font(r, filter);
 
 		// Load it and check for errors.
 		if(!font)

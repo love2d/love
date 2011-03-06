@@ -26,9 +26,10 @@
 
 // LOVE
 #include <common/Object.h>
-#include <font/FontData.h>
+#include <font/Rasterizer.h>
 #include <graphics/Image.h>
-#include "Glyph.h"
+
+#include "GLee.h"
 
 namespace love
 {
@@ -46,11 +47,12 @@ namespace opengl
 			FONT_IMAGE,
 			FONT_UNKNOWN
 		};
+		
+		love::font::Rasterizer * rasterizer;
 
 		int height;
 		float lineHeight;
 		float mSpacing; // modifies the spacing by multiplying it with this value
-		Glyph ** glyphs;
 		GLuint list; // the list of glyphs, for quicker drawing
 		FontType type;
 
@@ -70,7 +72,7 @@ namespace opengl
 		*
 		* @param data The font data to construct from.
 		**/
-		Font(love::font::FontData * data, const Image::Filter& filter = Image::Filter());
+		Font(love::font::Rasterizer * r, const Image::Filter& filter = Image::Filter());
 
 		virtual ~Font();
 

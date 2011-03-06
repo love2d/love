@@ -66,11 +66,6 @@ namespace freetype
 	{
 		return r->getGlyphData(glyph);
 	}
-	
-	FontData * Font::newFontData(Rasterizer * r)
-	{
-		return new FontData(r);
-	}
 
 	const char * Font::getName() const
 	{

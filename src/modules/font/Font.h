@@ -22,7 +22,6 @@
 #define LOVE_FONT_FONT_H
 
 // LOVE
-#include "FontData.h"
 #include "Rasterizer.h"
 #include <image/ImageData.h>
 #include <common/Module.h>
@@ -44,7 +43,6 @@ namespace font
 		virtual Rasterizer * newRasterizer(love::image::ImageData * data, std::string glyphs) = 0;
 		virtual Rasterizer * newRasterizer(love::image::ImageData * data, unsigned short * glyphs, int length) = 0;
 		virtual GlyphData * newGlyphData(Rasterizer * r, unsigned short glyph) = 0;
-		virtual FontData * newFontData(Rasterizer * r) = 0;
 
 		// Implement Module
 		virtual const char * getName() const = 0;

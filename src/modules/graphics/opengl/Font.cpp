@@ -31,18 +31,15 @@ namespace graphics
 namespace opengl
 {
 
-	Font::Font(love::font::FontData * data, const Image::Filter& filter)
-	: height(data->getHeight()), lineHeight(1), mSpacing(1)
+	Font::Font(love::font::Rasterizer * r, const Image::Filter& filter)
+	: rasterizer(r), height(r->getHeight()), lineHeight(1), mSpacing(1)
 	{
-		glyphs = new Glyph*[MAX_CHARS];
 		type = FONT_UNKNOWN;
 		love::font::GlyphData * gd;
 
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
-			gd = data->getGlyphData(i);
-			glyphs[i] = new Glyph(gd, filter);
-			glyphs[i]->load();
+			gd = r->getGlyphData(i);
 			widths[i] = gd->getWidth();
 			spacing[i] = gd->getAdvance();
 			bearingX[i] = gd->getBearingX();
@@ -53,11 +50,6 @@ namespace opengl
 
 	Font::~Font()
 	{
-		for(unsigned int i = 0; i < MAX_CHARS; i++)
-		{
-			glyphs[i]->release();
-		}
-		delete[] glyphs;
 	}
 
 	float Font::getHeight() const
@@ -67,7 +59,7 @@ namespace opengl
 
 	void Font::print(std::string text, float x, float y, float angle, float sx, float sy) const
 	{
-		float dx = 0.0f; // spacing counter for newline handling
+		/*float dx = 0.0f; // spacing counter for newline handling
 		glPushMatrix();
 
 		glTranslatef(ceil(x), ceil(y), 0.0f);
@@ -89,16 +81,16 @@ namespace opengl
 			glTranslatef(static_cast<GLfloat>(spacing[g]), 0, 0);
 			dx += spacing[g];
 		}
-		glPopMatrix();
+		glPopMatrix();*/
 	}
 
 	void Font::print(char character, float x, float y) const
 	{
-		if (!glyphs[(int)character]) character = ' ';
+		/*if (!glyphs[(int)character]) character = ' ';
 		glPushMatrix();
 		glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
 		glCallList(list+character);
-		glPopMatrix();
+		glPopMatrix();*/
 	}
 
 	int Font::getWidth(const std::string & line) const
@@ -181,7 +173,7 @@ namespace opengl
 
 	bool Font::loadVolatile()
 	{
-		// reload all glyphs
+		/*// reload all glyphs
 		for(unsigned int i = 0; i < MAX_CHARS; i++)
 		{
 			glyphs[i]->load();
@@ -189,13 +181,13 @@ namespace opengl
 			glyphs[i]->draw(0, 0, 0, 1, 1, 0, 0);
 			glEndList();
 		}
-		return true;
+		return true;*/
 	}
 
 	void Font::unloadVolatile()
 	{
-		// delete the glyphs
-		glDeleteLists(list, MAX_CHARS);
+		/*// delete the glyphs
+		glDeleteLists(list, MAX_CHARS);*/
 	}
 
 } // opengl
