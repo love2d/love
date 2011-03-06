@@ -265,6 +265,7 @@ namespace opengl
 	bool Font::loadVolatile()
 	{
 		createTexture();
+		return true;
 	}
 
 	void Font::unloadVolatile()

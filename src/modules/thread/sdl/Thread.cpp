@@ -118,7 +118,7 @@ namespace sdl
 	}
 
 	ThreadData::ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond)
-		: mutex(mutex), cond(cond), len(len)
+		: len(len), mutex(mutex), cond(cond)
 	{
 		this->name = new char[len+1];
 		memset(this->name, 0, len+1);
