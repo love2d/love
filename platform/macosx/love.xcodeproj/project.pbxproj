@@ -562,6 +562,10 @@
 		A93E6E4810420B4A007D418B /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		A93E6E5210420B57007D418B /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
 		A93E6E5310420B57007D418B /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
+		A944D58C13244E5D0039937C /* checked.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = checked.h; sourceTree = "<group>"; };
+		A944D58D13244E5D0039937C /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
+		A944D58E13244E5D0039937C /* unchecked.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unchecked.h; sourceTree = "<group>"; };
+		A944D58F13244E5D0039937C /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8.h; sourceTree = "<group>"; };
 		A946CE801172BCD6005E1462 /* wrap_EncodedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_EncodedImageData.h; sourceTree = "<group>"; };
 		A946CE811172BCD7005E1462 /* wrap_EncodedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_EncodedImageData.cpp; sourceTree = "<group>"; };
 		A946D4421176AC42005E1462 /* Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Font.h; sourceTree = "<group>"; };
@@ -746,6 +750,7 @@
 			isa = PBXGroup;
 			children = (
 				A93E6A0210420ABF007D418B /* luasocket */,
+				A944D58A13244E5D0039937C /* utf8 */,
 			);
 			path = libraries;
 			sourceTree = "<group>";
@@ -1382,6 +1387,25 @@
 			path = scripts;
 			sourceTree = "<group>";
 		};
+		A944D58A13244E5D0039937C /* utf8 */ = {
+			isa = PBXGroup;
+			children = (
+				A944D58B13244E5D0039937C /* utf8 */,
+				A944D58F13244E5D0039937C /* utf8.h */,
+			);
+			path = utf8;
+			sourceTree = "<group>";
+		};
+		A944D58B13244E5D0039937C /* utf8 */ = {
+			isa = PBXGroup;
+			children = (
+				A944D58C13244E5D0039937C /* checked.h */,
+				A944D58D13244E5D0039937C /* core.h */,
+				A944D58E13244E5D0039937C /* unchecked.h */,
+			);
+			path = utf8;
+			sourceTree = "<group>";
+		};
 		A986DEAF113249A700810279 /* thread */ = {
 			isa = PBXGroup;
 			children = (
@@ -1714,6 +1738,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					/Library/Frameworks/Lua.framework/Headers,
+					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					../../src,
 					../../src/modules,

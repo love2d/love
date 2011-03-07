@@ -22,6 +22,8 @@
 #include <font/GlyphData.h>
 #include "Quad.h"
 
+#include <libraries/utf8/utf8.h>
+
 #include <common/math.h>
 #include <math.h>
 
@@ -145,8 +147,10 @@ namespace opengl
 		glTranslatef(ceil(x), ceil(y), 0.0f);
 		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
-		for (unsigned int i = 0; i < text.size(); i++) {
-			unsigned char g = (unsigned char)text[i];
+		utf8::iterator<std::string::iterator> i (text.begin(), text.begin(), text.end());
+		utf8::iterator<std::string::iterator> end (text.end(), text.begin(), text.end());
+		while (i != end) {
+			int g = *i++;
 			if (g == '\n') { // wrap newline, but do not print it
 				glTranslatef(-dx, floor(getHeight() * getLineHeight() + 0.5f), 0);
 				dx = 0.0f;
@@ -182,10 +186,12 @@ namespace opengl
 		
 		Glyph * g;
 
-		for(unsigned int i = 0; i < line.size(); i++)
-		{
-			g = glyphs[line[i]];
-			if (!g) g = addGlyph(line[i]);
+		utf8::iterator<std::string::const_iterator> i (line.begin(), line.begin(), line.end());
+		utf8::iterator<std::string::const_iterator> end (line.end(), line.begin(), line.end());
+		while (i != end) {
+			int c = *i++;
+			g = glyphs[c];
+			if (!g) g = addGlyph(c);
 			temp += static_cast<int>(g->spacing * mSpacing);
 		}
 
@@ -213,8 +219,10 @@ namespace opengl
 		std::string text;
 		Glyph * g;
 
-		for(unsigned int i = 0; i < line.size(); i++)
-		{
+		
+		utf8::iterator<std::string::const_iterator> i (line.begin(), line.begin(), line.end());
+		utf8::iterator<std::string::const_iterator> end (line.end(), line.begin(), line.end());
+		while (i != end) {
 			if(temp > wrap && text.find(" ") != std::string::npos)
 			{
 				unsigned int space = text.find_last_of(' ');
@@ -225,10 +233,11 @@ namespace opengl
 				temp = getWidth(text);
 				linen++;
 			}
-			g = glyphs[line[i]];
-			if (!g) g = addGlyph(line[i]);
+			int c = *i++;
+			g = glyphs[c];
+			if (!g) g = addGlyph(c);
 			temp += static_cast<int>(g->spacing * mSpacing);
-			text += line[i];
+			utf8::append(c, text.end());
 		}
 
 		if(temp > maxw) maxw = temp;
