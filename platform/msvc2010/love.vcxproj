@@ -56,14 +56,12 @@
     <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_File.cpp" />
     <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_FileData.cpp" />
     <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp" />
-    <ClCompile Include="..\..\src\modules\font\FontData.cpp" />
     <ClCompile Include="..\..\src\modules\font\freetype\Font.cpp" />
     <ClCompile Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.cpp" />
     <ClCompile Include="..\..\src\modules\font\freetype\wrap_Font.cpp" />
     <ClCompile Include="..\..\src\modules\font\GlyphData.cpp" />
     <ClCompile Include="..\..\src\modules\font\ImageRasterizer.cpp" />
     <ClCompile Include="..\..\src\modules\font\Rasterizer.cpp" />
-    <ClCompile Include="..\..\src\modules\font\wrap_FontData.cpp" />
     <ClCompile Include="..\..\src\modules\font\wrap_GlyphData.cpp" />
     <ClCompile Include="..\..\src\modules\font\wrap_Rasterizer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Drawable.cpp" />
@@ -72,7 +70,6 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\Font.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Framebuffer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Glyph.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
@@ -80,7 +77,6 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Glyph.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp" />
@@ -201,6 +197,10 @@
     <ClInclude Include="..\..\src\common\version.h" />
     <ClInclude Include="..\..\src\common\wrap_Data.h" />
     <ClInclude Include="..\..\src\libraries\luasocket\luasocket.h" />
+    <ClInclude Include="..\..\src\libraries\utf8\utf8.h" />
+    <ClInclude Include="..\..\src\libraries\utf8\utf8\checked.h" />
+    <ClInclude Include="..\..\src\libraries\utf8\utf8\core.h" />
+    <ClInclude Include="..\..\src\libraries\utf8\utf8\unchecked.h" />
     <ClInclude Include="..\..\src\modules\audio\Audio.h" />
     <ClInclude Include="..\..\src\modules\audio\null\Audio.h" />
     <ClInclude Include="..\..\src\modules\audio\null\Source.h" />
@@ -221,14 +221,12 @@
     <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_FileData.h" />
     <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.h" />
     <ClInclude Include="..\..\src\modules\font\Font.h" />
-    <ClInclude Include="..\..\src\modules\font\FontData.h" />
     <ClInclude Include="..\..\src\modules\font\freetype\Font.h" />
     <ClInclude Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.h" />
     <ClInclude Include="..\..\src\modules\font\freetype\wrap_Font.h" />
     <ClInclude Include="..\..\src\modules\font\GlyphData.h" />
     <ClInclude Include="..\..\src\modules\font\ImageRasterizer.h" />
     <ClInclude Include="..\..\src\modules\font\Rasterizer.h" />
-    <ClInclude Include="..\..\src\modules\font\wrap_FontData.h" />
     <ClInclude Include="..\..\src\modules\font\wrap_GlyphData.h" />
     <ClInclude Include="..\..\src\modules\font\wrap_Rasterizer.h" />
     <ClInclude Include="..\..\src\modules\graphics\Drawable.h" />
@@ -237,7 +235,6 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\Font.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Framebuffer.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Glyph.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
@@ -245,7 +242,6 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Glyph.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h" />

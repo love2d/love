@@ -97,6 +97,12 @@
     <Filter Include="common">
       <UniqueIdentifier>{f4054111-5d0f-40d9-90a9-da5da444bc50}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utf8">
+      <UniqueIdentifier>{1aa85882-2a85-47c7-8d4b-19b41feb6b82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utf8\utf8">
+      <UniqueIdentifier>{014c1d0d-8028-42fc-a870-19f78d93b083}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\love.cpp" />
@@ -154,9 +160,6 @@
     <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp">
       <Filter>modules\filesystem\physfs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\font\FontData.cpp">
-      <Filter>modules\font</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\font\GlyphData.cpp">
       <Filter>modules\font</Filter>
     </ClCompile>
@@ -164,9 +167,6 @@
       <Filter>modules\font</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\font\Rasterizer.cpp">
-      <Filter>modules\font</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\font\wrap_FontData.cpp">
       <Filter>modules\font</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\font\wrap_GlyphData.cpp">
@@ -202,9 +202,6 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c">
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Glyph.cpp">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp">
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
@@ -221,9 +218,6 @@
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Glyph.cpp">
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp">
@@ -660,9 +654,6 @@
     <ClInclude Include="..\..\src\modules\font\Font.h">
       <Filter>modules\font</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\font\FontData.h">
-      <Filter>modules\font</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\modules\font\GlyphData.h">
       <Filter>modules\font</Filter>
     </ClInclude>
@@ -670,9 +661,6 @@
       <Filter>modules\font</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\font\Rasterizer.h">
-      <Filter>modules\font</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\font\wrap_FontData.h">
       <Filter>modules\font</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\font\wrap_GlyphData.h">
@@ -708,9 +696,6 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h">
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Glyph.h">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h">
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
@@ -727,9 +712,6 @@
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Glyph.h">
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h">
@@ -965,6 +947,18 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.h">
       <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\utf8\utf8.h">
+      <Filter>utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\utf8\utf8\checked.h">
+      <Filter>utf8\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\utf8\utf8\core.h">
+      <Filter>utf8\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\utf8\utf8\unchecked.h">
+      <Filter>utf8\utf8</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
