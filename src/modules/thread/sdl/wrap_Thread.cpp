@@ -287,7 +287,6 @@ namespace sdl
 			luax_convobj(L, 2, "filesystem", "newFile");
 		if (luax_istype(L, 2, FILESYSTEM_FILE_T))
 		{
-			Data * d;
 			try {
 				data = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T)->read();
 			} catch (love::Exception & e) {
