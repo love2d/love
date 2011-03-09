@@ -17,7 +17,7 @@
 *    misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 **/
-
+#include <common/config.h>
 #include "Font.h"
 #include <font/GlyphData.h>
 #include "Quad.h"
