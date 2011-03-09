@@ -735,7 +735,7 @@ namespace opengl
 
 		using namespace std;
 		string text(str);
-		const float width_space = currentFont->getWidth(' ');
+		const float width_space = static_cast<float>(currentFont->getWidth(' '));
 		vector<string> lines_to_draw;
 
 		//split text at newlines
@@ -760,7 +760,7 @@ namespace opengl
 				if (width >= wrap) {
 					lines_to_draw.push_back( string_builder.str() );
 					string_builder.str( "" );
-					width = currentFont->getWidth( word );
+					width = static_cast<float>(currentFont->getWidth( word ));
 				}
 				string_builder << word << " ";
 				width += width_space;
@@ -772,7 +772,7 @@ namespace opengl
 		// now for the actual printing
 		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
 		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter) {
-			float width = currentFont->getWidth( *line_iter );
+			float width = static_cast<float>(currentFont->getWidth( *line_iter ));
 			switch (align) {
 				case ALIGN_RIGHT:
 					currentFont->print(*line_iter, ceil(x + wrap - width), ceil(y));
