@@ -21,19 +21,45 @@
     <ClCompile Include="..\..\src\common\utf8.cpp" />
     <ClCompile Include="..\..\src\common\Vector.cpp" />
     <ClCompile Include="..\..\src\common\wrap_Data.cpp" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\auxiliar.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\buffer.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\except.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\inet.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\io.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\luasocket.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\mime.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\options.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\select.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\tcp.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\timeout.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\udp.c" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c" />
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\auxiliar.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\buffer.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\except.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\inet.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\io.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\luasocket.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\mime.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\options.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\select.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\tcp.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\timeout.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\udp.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp" />
     <ClCompile Include="..\..\src\love.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
@@ -71,7 +97,9 @@
     <ClCompile Include="..\..\src\modules\graphics\Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Font.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Framebuffer.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\Glyph.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
