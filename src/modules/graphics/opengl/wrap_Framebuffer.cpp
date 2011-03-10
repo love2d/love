@@ -51,7 +51,7 @@ namespace opengl
 		if (!Image::getConstant(minstr, f.min))
 			return luaL_error(L, "Invalid min filter mode: %s", minstr);
 		if (!Image::getConstant(magstr, f.mag))
-			return luaL_error(L, "Invalid max filter mode: %s", minstr);
+			return luaL_error(L, "Invalid max filter mode: %s", magstr);
 
 		fbo->setFilter(f);
 		return 0;
@@ -73,11 +73,45 @@ namespace opengl
 		return 2;
 	}
 
+	int w_Framebuffer_setWrap(lua_State * L)
+	{
+		Framebuffer * fbo = luax_checkfbo(L, 1);
+		const char * wrap_s = luaL_checkstring(L, 2);
+		const char * wrap_t = luaL_checkstring(L, 3);
+
+		Image::Wrap w;
+		if (!Image::getConstant(wrap_s, w.s))
+			return luaL_error(L, "Invalid wrap mode: %s", wrap_s);
+		if (!Image::getConstant(wrap_t, w.t))
+			return luaL_error(L, "Invalid wrap mode: %s", wrap_t);
+
+		fbo->setWrap(w);
+		return 0;
+	}
+
+	int w_Framebuffer_getWrap(lua_State * L)
+	{
+		Framebuffer * fbo = luax_checkfbo(L, 1);
+		Image::Wrap w = fbo->getWrap();
+
+		const char * wrap_s;
+		const char * wrap_t;
+		Image::getConstant(w.s, wrap_s);
+		Image::getConstant(w.t, wrap_t);
+
+		lua_pushstring(L, wrap_s);
+		lua_pushstring(L, wrap_t);
+
+		return 2;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "renderTo", w_Framebuffer_renderTo },
 		{ "getImageData", w_Framebuffer_getImageData },
 		{ "setFilter", w_Framebuffer_setFilter },
 		{ "getFilter", w_Framebuffer_getFilter },
+		{ "setWrap", w_Framebuffer_setWrap },
+		{ "getWrap", w_Framebuffer_getWrap },
 		{ 0, 0 }
 	};
 
