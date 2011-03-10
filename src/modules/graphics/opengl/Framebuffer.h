@@ -32,8 +32,11 @@ namespace opengl
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 		love::image::ImageData * getImageData(love::image::Image * image);
 
-		void setFilter(Image::Filter f);
+		void setFilter(const Image::Filter &f);
 		Image::Filter getFilter() const;
+
+		void setWrap(const Image::Wrap &w);
+		Image::Wrap getWrap() const;
 
 		bool loadVolatile();
 		void unloadVolatile();
@@ -51,6 +54,7 @@ namespace opengl
 
 		struct {
 			Image::Filter filter;
+			Image::Wrap wrap;
 		} settings;
 	};
 

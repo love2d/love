@@ -286,7 +286,7 @@ namespace opengl
 		return img;
 	}
 
-	void Framebuffer::setFilter(Image::Filter f)
+	void Framebuffer::setFilter(const Image::Filter &f)
 	{
 		GLint gmin = (f.min == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
 		GLint gmag = (f.mag == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
@@ -311,18 +311,45 @@ namespace opengl
 		return f;
 	}
 
+	void Framebuffer::setWrap(const Image::Wrap &w)
+	{
+		GLint wrap_s = (w.s == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+		GLint wrap_t = (w.t == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+
+		glBindTexture(GL_TEXTURE_2D, img);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
+	}
+
+	Image::Wrap Framebuffer::getWrap() const
+	{
+		GLint wrap_s, wrap_t;
+		glBindTexture(GL_TEXTURE_2D, img);
+		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &wrap_s);
+		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &wrap_t);
+
+		Image::Wrap w;
+		w.s = (wrap_s == GL_CLAMP_TO_EDGE) ? Image::WRAP_CLAMP : Image::WRAP_REPEAT;
+		w.t = (wrap_t == GL_CLAMP_TO_EDGE) ? Image::WRAP_CLAMP : Image::WRAP_REPEAT;
+
+		return w;
+	}
+
 	bool Framebuffer::loadVolatile()
 	{
 		status = strategy->createFBO(fbo, depthbuffer, img, width, height);
-		if (status == GL_FRAMEBUFFER_COMPLETE)
-			setFilter(settings.filter);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+			return false;
 
-		return (status == GL_FRAMEBUFFER_COMPLETE);
+		setFilter(settings.filter);
+		setWrap(settings.wrap);
+		return true;
 	}
 	
 	void Framebuffer::unloadVolatile()
 	{
 		settings.filter = getFilter();
+		settings.wrap   = getWrap();
 		strategy->deleteFBO(fbo, depthbuffer, img);
 	}
 
