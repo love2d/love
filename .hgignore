@@ -22,6 +22,8 @@ glob:*.exe
 glob:*.bat
 glob:platform/macosx/build
 glob:platform/macosx/love.xcodeproj/bill*
+glob:platform/macosx/love.xcodeproj/xcuserdata
+glob:platform/macosx/love.xcodeproj/project.xcworkspace
 glob:*.DS_Store
 glob:*.dylib
 glob:*.dmg*
