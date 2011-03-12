@@ -39,6 +39,7 @@ namespace opengl
 	Font::Font(love::font::Rasterizer * r, const Image::Filter& filter)
 	: rasterizer(r), height(r->getHeight()), lineHeight(1), mSpacing(1), filter(filter)
 	{
+		r->retain();
 		love::font::GlyphData * gd = r->getGlyphData(32);
 		type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
 		delete gd;
@@ -47,6 +48,7 @@ namespace opengl
 
 	Font::~Font()
 	{
+		rasterizer->release();
 		unloadVolatile();
 	}
 	
