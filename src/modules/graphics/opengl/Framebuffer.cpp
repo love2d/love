@@ -199,10 +199,9 @@ namespace opengl
 			current->stopGrab();
 
 		// bind buffer and clear screen
-		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_TRANSFORM_BIT);
+		glPushAttrib(GL_VIEWPORT_BIT | GL_DEPTH_BUFFER_BIT | GL_TRANSFORM_BIT);
 		strategy->bindFBO(fbo);
-		glClearColor(.0f, .0f, .0f, .0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, width, height);
 		
 		// Reset the projection matrix
