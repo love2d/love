@@ -386,14 +386,18 @@ namespace opengl
 			lua_gettable(L, -2);
 			c.b = (unsigned char)luaL_checkint(L, -1);
 			lua_pop(L, 1);
+			lua_pushinteger(L, 4);
+			lua_gettable(L, -2);
+			c.a = (unsigned char)luaL_optint(L, -1, 255);
+			lua_pop(L, 1);
 		}
 		else
 		{
 			c.r = (unsigned char)luaL_checkint(L, 1);
 			c.g = (unsigned char)luaL_checkint(L, 2);
 			c.b = (unsigned char)luaL_checkint(L, 3);
+			c.a = (unsigned char)luaL_optint(L, 4, 255);
 		}
-		c.a = 255;
 		instance->setBackgroundColor(c);
 		return 0;
 	}

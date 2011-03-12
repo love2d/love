@@ -525,7 +525,7 @@ namespace opengl
 
 	void Graphics::setBackgroundColor(Color c)
 	{
-		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, 1.0f);
+		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
 	}
 
 	Color Graphics::getBackgroundColor()
