@@ -15,6 +15,8 @@ namespace graphics
 {
 namespace opengl
 {
+	struct Color; // forward declaration for clear
+
 	class Framebuffer : public Drawable, public Volatile
 	{
 	public:
@@ -28,6 +30,8 @@ namespace opengl
 
 		void startGrab();
 		void stopGrab();
+
+		void clear(const Color& c);
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 		love::image::ImageData * getImageData(love::image::Image * image);

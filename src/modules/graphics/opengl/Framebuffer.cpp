@@ -1,4 +1,5 @@
 #include "Framebuffer.h"
+#include "Graphics.h"
 #include <common/Matrix.h>
 
 #include <cstring> // For memcpy
@@ -231,6 +232,22 @@ namespace opengl
 		glPopMatrix();
 		glPopAttrib();
 		current = NULL;
+	}
+
+
+	void Framebuffer::clear(const Color& c)
+	{
+		GLuint previous = 0;
+		if (current != NULL)
+			previous = current->fbo;
+
+		strategy->bindFBO(fbo);
+		glPushAttrib(GL_COLOR_BUFFER_BIT);
+		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glPopAttrib();
+
+		strategy->bindFBO(previous);
 	}
 
 	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
