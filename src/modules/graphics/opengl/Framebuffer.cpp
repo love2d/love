@@ -359,6 +359,9 @@ namespace opengl
 
 		setFilter(settings.filter);
 		setWrap(settings.wrap);
+		Color c;
+		c.r = c.g = c.b = c.a = 0;
+		clear(c);
 		return true;
 	}
 	
