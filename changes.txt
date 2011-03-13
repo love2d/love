@@ -1,3 +1,14 @@
+LOVE 0.7.2 [Game Slave]
+-----------------------
+
+ * Updated PhysicsFS version to 2.0.2 on Windows
+ * Updated OpenAL Soft version to 1.13 on Windows
+ * Updated libmodplug version to 0.8.8.1 on Windows
+ * Updated FreeType version to 2.4.4 on Windows
+ * Updated libmpg123 version to 1.13.2 on Windows
+ * Windows binary no longer depends on VC2005 runtime.
+ * Windows binary no longer depends on SSE2 support.
+
 LOVE 0.7.1 [Game Slave]
 -----------------------
 
