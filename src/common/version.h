@@ -26,10 +26,10 @@ namespace love
 	// Version stuff.
 	const int VERSION_MAJOR = 0;
 	const int VERSION_MINOR = 7;
-	const int VERSION_REV = 1;
+	const int VERSION_REV = 2;
 	const int VERSION = VERSION_MAJOR*100 + VERSION_MINOR*10 + VERSION_REV;
-	const int VERSION_COMPATIBILITY[] =  { VERSION, 070, 0 };
-	const char * VERSION_STR = "0.7.1";
+	const int VERSION_COMPATIBILITY[] =  { VERSION, 071, 070, 0 };
+	const char * VERSION_STR = "0.7.2";
 	const char * VERSION_CODENAME = "Game Slave";
 
 } // love
