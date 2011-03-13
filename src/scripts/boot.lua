@@ -281,7 +281,7 @@ function love.init()
 		filesystem = "physfs",
 		font = "freetype",
 		graphics = "opengl",
-		image = false,
+		image = "devil",
 		joystick = "sdl",
 		keyboard = "sdl",
 		mouse = "sdl",

@@ -46,7 +46,7 @@
 #include <filesystem/physfs/wrap_Filesystem.h>
 #include <font/freetype/wrap_Font.h>
 #include <graphics/opengl/wrap_Graphics.h>
-#include <image/wrap_Image.h>
+#include <image/devil/wrap_Image.h>
 #include <joystick/sdl/wrap_Joystick.h>
 #include <keyboard/sdl/wrap_Keyboard.h>
 #include <mouse/sdl/wrap_Mouse.h>
@@ -71,7 +71,7 @@ static const luaL_Reg modules[] = {
 	{ "love.filesystem.physfs", love::filesystem::physfs::luaopen_love_filesystem },
 	{ "love.font.freetype", love::font::freetype::luaopen_love_font },
 	{ "love.graphics.opengl", love::graphics::opengl::luaopen_love_graphics },
-	{ "love.image", love::image::luaopen_love_image },
+	{ "love.image.devil", love::image::devil::luaopen_love_image },
 	{ "love.joystick.sdl", love::joystick::sdl::luaopen_love_joystick },
 	{ "love.keyboard.sdl", love::keyboard::sdl::luaopen_love_keyboard },
 	{ "love.mouse.sdl", love::mouse::sdl::luaopen_love_mouse },
