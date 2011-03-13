@@ -184,6 +184,7 @@
 		A986EC84132CE6DB00F048C8 /* b2PulleyJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986EC0D132CE6D800F048C8 /* b2PulleyJoint.cpp */; };
 		A986EC85132CE6DB00F048C8 /* b2RevoluteJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986EC0F132CE6D800F048C8 /* b2RevoluteJoint.cpp */; };
 		A986EC86132CE6DB00F048C8 /* b2WeldJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986EC11132CE6D800F048C8 /* b2WeldJoint.cpp */; };
+		A986ECAF132CEBB000F048C8 /* Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986ECAD132CEB9300F048C8 /* Fixture.cpp */; };
 		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
@@ -598,6 +599,8 @@
 		A986EC11132CE6D800F048C8 /* b2WeldJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2WeldJoint.cpp; sourceTree = "<group>"; };
 		A986EC12132CE6D800F048C8 /* b2WeldJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2WeldJoint.h; sourceTree = "<group>"; };
 		A986ECAC132CE82F00F048C8 /* Box2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2D.h; sourceTree = "<group>"; };
+		A986ECAD132CEB9300F048C8 /* Fixture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fixture.cpp; sourceTree = "<group>"; };
+		A986ECAE132CEB9B00F048C8 /* Fixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fixture.h; sourceTree = "<group>"; };
 		A98D913E10507BF9008E03F2 /* EncodedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodedImageData.h; sourceTree = "<group>"; };
 		A98D914310507C97008E03F2 /* EncodedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EncodedImageData.cpp; sourceTree = "<group>"; };
 		A9B1AE451197293000D496EB /* love_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = love_Prefix.pch; sourceTree = "<group>"; };
@@ -1144,6 +1147,8 @@
 				A93E6AF010420AC7007D418B /* Contact.h */,
 				A93E6AF110420AC7007D418B /* DistanceJoint.cpp */,
 				A93E6AF210420AC7007D418B /* DistanceJoint.h */,
+				A986ECAD132CEB9300F048C8 /* Fixture.cpp */,
+				A986ECAE132CEB9B00F048C8 /* Fixture.h */,
 				A93E6AF310420AC7007D418B /* GearJoint.cpp */,
 				A93E6AF410420AC7007D418B /* GearJoint.h */,
 				A93E6AF510420AC7007D418B /* graham */,
@@ -1672,6 +1677,7 @@
 				A986EC84132CE6DB00F048C8 /* b2PulleyJoint.cpp in Sources */,
 				A986EC85132CE6DB00F048C8 /* b2RevoluteJoint.cpp in Sources */,
 				A986EC86132CE6DB00F048C8 /* b2WeldJoint.cpp in Sources */,
+				A986ECAF132CEBB000F048C8 /* Fixture.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

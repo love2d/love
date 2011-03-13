@@ -78,41 +78,40 @@ namespace box2d
 		return new CircleShape(body, &def);
 	}
 
-	PolygonShape * Physics::newRectangleShape(Body * body, float w, float h)
+	PolygonShape * Physics::newRectangleShape(float w, float h)
 	{
 		return newRectangleShape(body, 0, 0, w, h, 0);
 	}
 
-	PolygonShape * Physics::newRectangleShape(Body * body, float x, float y, float w, float h)
+	PolygonShape * Physics::newRectangleShape(float x, float y, float w, float h)
 	{
 		return newRectangleShape(body, x, y, w, h, 0);
 	}
 
-	PolygonShape * Physics::newRectangleShape(Body * body, float x, float y, float w, float h, float angle)
+	PolygonShape * Physics::newRectangleShape(float x, float y, float w, float h, float angle)
 	{
-		b2PolygonDef def;
-		def.friction = 0.5f;
-		def.restitution = 0.1f;
-		def.density = 1.0f;
-		def.SetAsBox(w/2.0f, h/2.0f, b2Vec2(x, y), angle);
-		return new PolygonShape(body, &def);
+		b2PolygonShape s;
+		s.SetAsBox(w/2.0f, h/2.0f, b2Vec2(x, y), angle);
+		return new PolygonShape(&s);
+	}
+	
+	PolygonShape * Physics::newEdgeShape(float x1, float y1, float x2, float y2)
+	{
+		b2PolygonShape s;
+		s.SetAsEdge(b2vec2(x1, y1), b2vec2(x2, y2));
+		return new PolygonShape(&s);
 	}
 
 	int Physics::newPolygonShape(lua_State * L)
 	{
 		int argc = lua_gettop(L);
-		int vcount = (int)(argc-1)/2;
-		// 1 body + 3 vertices
-		love::luax_assert_argc(L, 1 + (2 * 3));
+		int vcount = (int)argc/2;
+		// 3 vertices
+		love::luax_assert_argc(L, 2 * 3);
 
-		Body * b = luax_checkbody(L, 1);
+		b2PolygonShape s;
 
-		b2PolygonDef def;
-		def.friction = 0.5f;
-		def.restitution = 0.1f;
-		def.density = 1.0f;
-
-		std::vector<point2d> points(def.vertexCount);
+		std::vector<point2d> points(s.m_vertexCount);
 		std::vector<point2d> convex_hull;
 
 		for(int i = 0;i<vcount;i++)
@@ -126,16 +125,22 @@ namespace box2d
 
 		// Compute convex hull.
 		GrahamScanConvexHull()(points, convex_hull);
+		
+		int count = convex_hull.size();
 
-		def.vertexCount = (int32)convex_hull.size();
-
-		if(def.vertexCount < 3)
+		if(count < 3)
 			return luaL_error(L, "Polygon degenerated to less than three points.");
+		
+		b2vec2 vecs[] = new b2vec2[count];
+		
+		for (int i = 0; i < count; i++) {
+			vecs[i].Set(convex_hull[i].x, convex_hull[i].y);
+		}
+		
+		s.Set(vecs, count);
 
-		for(int i = 0;i<def.vertexCount;i++)
-			def.vertices[def.vertexCount-i-1].Set((float)convex_hull[i].x, (float)convex_hull[i].y);
-
-		PolygonShape * p = new PolygonShape(b, &def);
+		PolygonShape * p = new PolygonShape(&s);
+		delete[] vecs;
 
 		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)p);
 

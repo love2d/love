@@ -34,8 +34,7 @@ namespace box2d
 {
 	CircleShape * luax_checkcircleshape(lua_State * L, int idx);
 	int w_CircleShape_getRadius(lua_State * L);
-	int w_CircleShape_getLocalCenter(lua_State * L);
-	int w_CircleShape_getWorldCenter(lua_State * L);
+	int w_CircleShape_setRadius(lua_State * L);
 	int luaopen_circleshape(lua_State * L);
 
 } // box2d

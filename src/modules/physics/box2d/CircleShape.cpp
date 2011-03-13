@@ -30,41 +30,28 @@ namespace physics
 {
 namespace box2d
 {
-	CircleShape::CircleShape(Body * body, b2CircleDef * def)
-		: Shape(body)
+	CircleShape::CircleShape(b2CircleShape * c)
 	{
-		def->localPosition = body->world->scaleDown(def->localPosition);
-		def->radius = body->world->scaleDown(def->radius);
-		radius = def->radius;
-		this->localPosition = def->localPosition;
-
-		def->userData = (void*)data;
-		shape = body->body->CreateShape(def);
+		shape = c;
 	}
 
 	CircleShape::~CircleShape()
 	{
+        shape = NULL;
 	}
-
-	float CircleShape::getRadius() const
-	{
-		return body->world->scaleUp(radius);
-	}
-
-	void CircleShape::getLocalCenter(float & x, float & y) const
-	{
-		x = localPosition.x;
-		y = localPosition.y;
-		body->world->scaleUp(x, y);
-	}
-
-	void CircleShape::getWorldCenter(float & x, float & y) const
-	{
-		b2Vec2 worldCenter = body->body->GetWorldPoint(localPosition);
-		worldCenter = body->world->scaleUp(worldCenter);
-		x = worldCenter.x;
-		y = worldCenter.y;
-	}
+    
+    float CircleShape::getRadius() const
+    {
+        return shape->m_radius;
+    }
+    
+    /**
+     * Gets the radius for the circle.
+     **/
+    void CircleShape::setRadius(float r)
+    {
+        shape->m_radius = r;
+    }
 
 } // box2d
 } // physics

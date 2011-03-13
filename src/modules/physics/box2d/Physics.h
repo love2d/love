@@ -92,7 +92,7 @@ namespace box2d
 		* @param body The Body to create the Shape on.
 		* @param radius The radius of the circle.
 		**/
-		CircleShape * newCircleShape(Body * body, float radius);
+		CircleShape * newCircleShape(float radius);
 
 		/**
 		* Creates a new CircleShape at (x,y) in local coorinates.
@@ -101,7 +101,7 @@ namespace box2d
 		* @param y The offset along the y-axis.
 		* @param radius The radius of the circle.
 		**/
-		CircleShape * newCircleShape(Body * body, float x, float y, float radius);
+		CircleShape * newCircleShape(float x, float y, float radius);
 
 		/**
 		* Shorthand for creating rectangular PolygonShapes. The rectangle
@@ -109,7 +109,7 @@ namespace box2d
 		* @param w The width of the rectangle.
 		* @param h The height of the rectangle.
 		**/
-		PolygonShape * newRectangleShape(Body * body, float w, float h);
+		PolygonShape * newRectangleShape(float w, float h);
 
 		/**
 		* Shorthand for creating rectangular PolygonShapes. The rectangle
@@ -119,7 +119,7 @@ namespace box2d
 		* @param w The width of the rectangle.
 		* @param h The height of the rectangle.
 		**/
-		PolygonShape * newRectangleShape(Body * body, float x, float y, float w, float h);
+		PolygonShape * newRectangleShape(float x, float y, float w, float h);
 
 		/**
 		* Shorthand for creating rectangular PolygonShapes. The rectangle
@@ -130,7 +130,18 @@ namespace box2d
 		* @param h The height of the rectangle.
 		* @param angle The angle of the rectangle. (rad)
 		**/
-		PolygonShape * newRectangleShape(Body * body, float x, float y, float w, float h, float angle);
+		PolygonShape * newRectangleShape(float x, float y, float w, float h, float angle);
+        
+        /**
+         * Shorthand for creating edge PolygonShapes. The edge
+         * will be created at (x,y) in local coordinates.
+         * @param x The offset along the x-axis.
+         * @param y The offset along the y-axis.
+         * @param w The width of the rectangle.
+         * @param h The height of the rectangle.
+         * @param angle The angle of the rectangle. (rad)
+         **/
+		PolygonShape * newEdgeShape(float x1, float y1, float x2, float y2);
 
 		/**
 		* Creates a new PolygonShape.
