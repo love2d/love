@@ -63,22 +63,21 @@ namespace box2d
 
 	int w_newCircleShape(lua_State * L)
 	{
-		Body * body = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		int top = lua_gettop(L);
 
-		if(top == 2)
+		if(top == 1)
 		{
-			float radius = (float)luaL_checknumber(L, 2);
-			CircleShape * shape = instance->newCircleShape(body, radius);
+			float radius = (float)luaL_checknumber(L, 1);
+			CircleShape * shape = instance->newCircleShape(radius);
 			luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
 			return 1;
 		}
-		else if(top == 4)
+		else if(top == 3)
 		{
-			float x = (float)luaL_checknumber(L, 2);
-			float y = (float)luaL_checknumber(L, 3);
-			float radius = (float)luaL_checknumber(L, 4);
-			CircleShape * shape = instance->newCircleShape(body, x, y, radius);
+			float x = (float)luaL_checknumber(L, 1);
+			float y = (float)luaL_checknumber(L, 2);
+			float radius = (float)luaL_checknumber(L, 3);
+			CircleShape * shape = instance->newCircleShape(x, y, radius);
 			luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
 			return 1;
 		}
@@ -88,30 +87,40 @@ namespace box2d
 
 	int w_newRectangleShape(lua_State * L)
 	{
-		Body * body = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		int top = lua_gettop(L);
 
-		if(top == 3)
+		if(top == 2)
 		{
-			float w = (float)luaL_checknumber(L, 2);
-			float h = (float)luaL_checknumber(L, 3);
-			PolygonShape * shape = instance->newRectangleShape(body, w, h);
+			float w = (float)luaL_checknumber(L, 1);
+			float h = (float)luaL_checknumber(L, 2);
+			PolygonShape * shape = instance->newRectangleShape(w, h);
 			luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
 			return 1;
 		}
-		else if(top == 5 || top == 6)
+		else if(top == 4 || top == 5)
 		{
-			float x = (float)luaL_checknumber(L, 2);
-			float y = (float)luaL_checknumber(L, 3);
-			float w = (float)luaL_checknumber(L, 4);
-			float h = (float)luaL_checknumber(L, 5);
-			float angle = (float)luaL_optnumber(L, 6, 0);
-			PolygonShape * shape = instance->newRectangleShape(body, x, y, w, h, angle);
+			float x = (float)luaL_checknumber(L, 1);
+			float y = (float)luaL_checknumber(L, 2);
+			float w = (float)luaL_checknumber(L, 3);
+			float h = (float)luaL_checknumber(L, 4);
+			float angle = (float)luaL_optnumber(L, 5, 0);
+			PolygonShape * shape = instance->newRectangleShape(x, y, w, h, angle);
 			luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
 			return 1;
 		}
 		else
 			return luaL_error(L, "Incorrect number of parameters");
+	}
+	
+	int w_newEdgeShape(lua_State * L)
+	{
+		float x1 = (float)luaL_checknumber(L, 1);
+		float y1 = (float)luaL_checknumber(L, 2);
+		float x2 = (float)luaL_checknumber(L, 3);
+		float y2 = (float)luaL_checknumber(L, 4);
+		PolygonShape * shape = instance->newEdgeShape(x1, y1, x2, y2);
+		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
+		return 1;
 	}
 
 	int w_newPolygonShape(lua_State * L)

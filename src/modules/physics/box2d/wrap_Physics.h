@@ -48,7 +48,8 @@ namespace box2d
 	int w_newBody(lua_State * L);
 	int w_newCircleShape(lua_State * L);
 	int w_newRectangleShape(lua_State * L);
-	int w_newPolygonShape(lua_State * L);;
+    int w_newEdgeShape(lua_State * L);
+	int w_newPolygonShape(lua_State * L);
 	int w_newDistanceJoint(lua_State * L);
 	int w_newMouseJoint(lua_State * L);
 	int w_newRevoluteJoint(lua_State * L);
