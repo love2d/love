@@ -41,7 +41,7 @@
 #include <SDL.h>
 
 // Modules
-#include <audio/wrap_Audio.h>
+#include <audio/openal/wrap_Audio.h>
 #include <event/sdl/wrap_Event.h>
 #include <filesystem/physfs/wrap_Filesystem.h>
 #include <font/freetype/wrap_Font.h>
@@ -66,7 +66,7 @@
 #ifdef LOVE_BUILD_STANDALONE
 
 static const luaL_Reg modules[] = {
-	{ "love.audio", love::audio::luaopen_love_audio },
+	{ "love.audio.openal", love::audio::openal::luaopen_love_audio },
 	{ "love.event.sdl", love::event::sdl::luaopen_love_event },
 	{ "love.filesystem.physfs", love::filesystem::physfs::luaopen_love_filesystem },
 	{ "love.font.freetype", love::font::freetype::luaopen_love_font },

@@ -276,7 +276,7 @@ function love.init()
 	end
 
 	local defaultmodules = {
-		audio = false,
+		audio = "openal",
 		event = "sdl",
 		filesystem = "physfs",
 		font = "freetype",
