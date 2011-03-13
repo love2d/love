@@ -46,32 +46,32 @@ namespace box2d
 
 	void DistanceJoint::setLength(float length)
 	{
-		joint->m_length = world->scaleDown(length);
+		joint->SetLength(world->scaleDown(length));
 	}
 
 	float DistanceJoint::getLength() const
 	{
-		return world->scaleUp(joint->m_length);
+		return world->scaleUp(joint->GetLength());
 	}
 
 	void DistanceJoint::setFrequency(float hz)
 	{
-		joint->m_frequencyHz = hz;
+		joint->SetFrequency(hz);
 	}
 
 	float DistanceJoint::getFrequency() const
 	{
-		return joint->m_frequencyHz;
+		return joint->GetFrequency();
 	}
 
 	void DistanceJoint::setDampingRatio(float d)
 	{
-		joint->m_dampingRatio = d;
+		joint->SetDampingRatio(d);
 	}
 
 	float DistanceJoint::getDampingRatio() const
 	{
-		return joint->m_dampingRatio;
+		return joint->GetDampingRatio();
 	}
 
 

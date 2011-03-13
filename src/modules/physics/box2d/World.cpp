@@ -100,6 +100,8 @@ namespace box2d
 	{
 		world = new b2World(scaleDown(aabb), b2Vec2(0,0), true);
 		world->SetContactListener(this);
+		b2BodyDef def;
+		groundBody = world->CreateBody(def);
 	}
 
 	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter)
@@ -111,6 +113,7 @@ namespace box2d
 
 	World::~World()
 	{
+		world->DestroyBody(groundBody);
 		delete world;
 	}
 
@@ -271,6 +274,11 @@ namespace box2d
 		t.lowerBound = scaleUp(aabb.lowerBound);
 		t.upperBound = scaleUp(aabb.upperBound);
 		return t;
+	}
+	
+	b2Body * World::getGroundBody()
+	{
+		return groundBody;
 	}
 
 } // box2d

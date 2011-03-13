@@ -72,12 +72,7 @@ namespace box2d
 	{
 		joint->SetMaxMotorForce(force);
 	}
-
-	float PrismaticJoint::getMaxMotorForce() const
-	{
-		return joint->m_maxMotorForce;
-	}
-
+	
 	void PrismaticJoint::setMotorSpeed(float speed)
 	{
 		joint->SetMotorSpeed(speed);

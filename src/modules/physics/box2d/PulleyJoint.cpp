@@ -48,47 +48,11 @@ namespace box2d
 
 	int PulleyJoint::getGroundAnchors(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchor1().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchor1().y));
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchor2().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchor2().y));
+		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorA().x));
+		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorA().y));
+		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorB().x));
+		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorB().y));
 		return 4;
-	}
-	
-	void PulleyJoint::setMaxLengths(float maxlength1, float maxlength2)
-	{	
-		// Apply Box2D's maximum lengths too. They know better.
-		
-		if (maxlength1 > 0)
-		{
-			joint->m_maxLength1 = b2Min(world->scaleDown(maxlength1), joint->m_constant - joint->m_ratio * b2_minPulleyLength);
-		}
-		
-		if (maxlength2 > 0)
-		{
-			joint->m_maxLength2 = b2Min(world->scaleDown(maxlength2), (joint->m_constant - b2_minPulleyLength) / joint->m_ratio);
-		}
-	}
-	
-	int PulleyJoint::getMaxLengths(lua_State * L)
-	{
-		lua_pushnumber(L, world->scaleUp(joint->m_maxLength1));
-		lua_pushnumber(L, world->scaleUp(joint->m_maxLength2));
-		return 2;
-	}
-	
-	void PulleyJoint::setConstant(float constant)
-	{
-		joint->m_constant = world->scaleDown(constant);
-		
-		// Update the max lengths, as does Box2D
-		joint->m_maxLength1 = joint->m_constant - joint->m_ratio * b2_minPulleyLength;
-		joint->m_maxLength2 = (joint->m_constant - b2_minPulleyLength) / joint->m_ratio;
-	}
-	
-	float PulleyJoint::getConstant() const
-	{
-		return world->scaleUp(joint->m_constant);
 	}
 	
 	float PulleyJoint::getLength1() const
@@ -101,14 +65,9 @@ namespace box2d
 		return world->scaleUp(joint->GetLength2());
 	}
 	
-	void PulleyJoint::setRatio(float ratio)
-	{
-		joint->m_ratio = ratio;
-	}
-	
 	float PulleyJoint::getRatio() const
 	{
-		return joint->m_ratio;
+		return joint->GetRatio();
 	}
 
 } // box2d

@@ -76,11 +76,6 @@ namespace box2d
 		void setMaxMotorForce(float force);
 
 		/**
-		* Get the current motor force, usually in N.
-		**/
-		float getMaxMotorForce() const;
-
-		/**
 		* Set the motor speed, usually in meters per second.
 		**/
 		void setMotorSpeed(float speed);

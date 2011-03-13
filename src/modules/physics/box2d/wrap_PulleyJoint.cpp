@@ -37,37 +37,6 @@ namespace box2d
 		lua_remove(L, 1);
 		return t->getGroundAnchors(L);
 	}
-	
-	int w_PulleyJoint_setMaxLengths(lua_State * L)
-	{
-		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
-		float arg1 = (float)luaL_optnumber(L, 2, 0.0);
-		float arg2 = (float)luaL_optnumber(L, 3, 0.0);
-		t->setMaxLengths(arg1, arg2);
-		return 0;
-	}
-	
-	int w_PulleyJoint_getMaxLengths(lua_State * L)
-	{
-		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
-		lua_remove(L, 1);
-		return t->getMaxLengths(L);
-	}
-	
-	int w_PulleyJoint_setConstant(lua_State * L)
-	{
-		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
-		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setConstant(arg1);
-		return 0;
-	}
-	
-	int w_PulleyJoint_getConstant(lua_State * L)
-	{
-		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
-		lua_pushnumber(L, t->getConstant());
-		return 1;
-	}
 
 	int w_PulleyJoint_getLength1(lua_State * L)
 	{
@@ -83,14 +52,6 @@ namespace box2d
 		return 1;
 	}
 	
-	int w_PulleyJoint_setRatio(lua_State * L)
-	{
-		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
-		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setRatio(arg1);
-		return 0;
-	}
-	
 	int w_PulleyJoint_getRatio(lua_State * L)
 	{
 		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
@@ -100,13 +61,8 @@ namespace box2d
 
 	static const luaL_Reg functions[] = {
 		{ "getGroundAnchors", w_PulleyJoint_getGroundAnchors },
-		{ "setMaxLengths", w_PulleyJoint_setMaxLengths },
-		{ "getMaxLengths", w_PulleyJoint_getMaxLengths },
-		{ "setConstant", w_PulleyJoint_setConstant },
-		{ "getConstant", w_PulleyJoint_getConstant },
 		{ "getLength1", w_PulleyJoint_getLength1 },
 		{ "getLength2", w_PulleyJoint_getLength2 },
-		{ "setRatio", w_PulleyJoint_setRatio },
 		{ "getRatio", w_PulleyJoint_getRatio },
 		// From Joint.
 		{ "getType", w_Joint_getType },

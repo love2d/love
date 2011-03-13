@@ -38,7 +38,6 @@ namespace box2d
 	int w_RevoluteJoint_setMotorEnabled(lua_State * L);
 	int w_RevoluteJoint_isMotorEnabled(lua_State * L);
 	int w_RevoluteJoint_setMaxMotorTorque(lua_State * L);
-	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L);
 	int w_RevoluteJoint_setMotorSpeed(lua_State * L);
 	int w_RevoluteJoint_getMotorSpeed(lua_State * L);
 	int w_RevoluteJoint_getMotorTorque(lua_State * L);

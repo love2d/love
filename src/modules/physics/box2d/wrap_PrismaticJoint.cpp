@@ -68,13 +68,6 @@ namespace box2d
 		return 0;
 	}
 
-	int w_PrismaticJoint_getMaxMotorForce(lua_State * L)
-	{
-		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
-		lua_pushnumber(L, t->getMaxMotorForce());
-		return 1;
-	}
-
 	int w_PrismaticJoint_setMotorSpeed(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
@@ -164,7 +157,6 @@ namespace box2d
 		{ "setMotorEnabled", w_PrismaticJoint_setMotorEnabled },
 		{ "isMotorEnabled", w_PrismaticJoint_isMotorEnabled },
 		{ "setMaxMotorForce", w_PrismaticJoint_setMaxMotorForce },
-		{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
 		{ "setMotorSpeed", w_PrismaticJoint_setMotorSpeed },
 		{ "getMotorSpeed", w_PrismaticJoint_getMotorSpeed },
 		{ "getMotorForce", w_PrismaticJoint_getMotorForce },

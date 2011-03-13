@@ -68,13 +68,6 @@ namespace box2d
 		return 0;
 	}
 
-	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L)
-	{
-		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
-		lua_pushnumber(L, t->getMaxMotorTorque());
-		return 1;
-	}
-
 	int w_RevoluteJoint_setMotorSpeed(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
@@ -164,7 +157,6 @@ namespace box2d
 		{ "setMotorEnabled", w_RevoluteJoint_setMotorEnabled },
 		{ "isMotorEnabled", w_RevoluteJoint_isMotorEnabled },
 		{ "setMaxMotorTorque", w_RevoluteJoint_setMaxMotorTorque },
-		{ "getMaxMotorTorque", w_RevoluteJoint_getMaxMotorTorque },
 		{ "setMotorSpeed", w_RevoluteJoint_setMotorSpeed },
 		{ "getMotorSpeed", w_RevoluteJoint_getMotorSpeed },
 		{ "getMotorTorque", w_RevoluteJoint_getMotorTorque },

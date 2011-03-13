@@ -35,8 +35,8 @@ namespace box2d
 	{
 		b2MouseJointDef def;
 		
-		def.body1 = body1->world->world->GetGroundBody();
-		def.body2 = body1->body;
+		def.bodyA = body1->world->getGroundBody();
+		def.bodyB = body1->body;
 		def.maxForce = 1000.0f * body1->body->GetMass();
 		def.target = body1->world->scaleDown(b2Vec2(x,y));
 		joint = (b2MouseJoint*)createJoint(&def);
@@ -55,19 +55,19 @@ namespace box2d
 
 	int MouseJoint::getTarget(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->m_target.x));
-		lua_pushnumber(L, world->scaleUp(joint->m_target.y));
+		lua_pushnumber(L, world->scaleUp(joint->GetTarget().x));
+		lua_pushnumber(L, world->scaleUp(joint->GetTarget().y));
 		return 2;
 	}
 
 	void MouseJoint::setMaxForce(float force)
 	{
-		joint->m_maxForce = force;
+		joint->SetMaxForce(force);
 	}
 
 	float MouseJoint::getMaxForce() const
 	{
-		return joint->m_maxForce;
+		return joint->GetMaxForce();
 	}
 
 } // box2d

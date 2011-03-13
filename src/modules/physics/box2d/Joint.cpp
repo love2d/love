@@ -79,34 +79,25 @@ namespace box2d
 
 	int Joint::getAnchors(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor1().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor1().y));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor2().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor2().y));
+		lua_pushnumber(L, world->scaleUp(joint->GetAnchorA().x));
+		lua_pushnumber(L, world->scaleUp(joint->GetAnchorA().y));
+		lua_pushnumber(L, world->scaleUp(joint->GetAnchorB().x));
+		lua_pushnumber(L, world->scaleUp(joint->GetAnchorB().y));
 		return 4;
 	}
 
 	int Joint::getReactionForce(lua_State * L)
 	{
-		b2Vec2 v = joint->GetReactionForce();
+		float dt = (float)luaL_checknumber(L, 2);
+		b2Vec2 v = joint->GetReactionForce(dt);
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		return 2;
 	}
 
-	float Joint::getReactionTorque()
+	float Joint::getReactionTorque(float dt)
 	{
-		return joint->GetReactionTorque();
-	}
-
-	void Joint::setCollideConnected(bool collide)
-	{
-		joint->m_collideConnected = collide;
-	}
-
-	bool Joint::getCollideConnected() const
-	{
-		return joint->m_collideConnected;
+		return joint->GetReactionTorque(dt);
 	}
 
 	b2Joint * Joint::createJoint(b2JointDef * def)

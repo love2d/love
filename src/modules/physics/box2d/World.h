@@ -77,6 +77,9 @@ namespace box2d
 
 		// Pointer to the Box2D world.
 		b2World * world;
+        
+        // Ground body
+        b2Body * groundBody;
 
 		// Contact callbacks.
 		ContactCallback add, persist, remove, result;
@@ -241,6 +244,12 @@ namespace box2d
 		* @return The scaled AABB.
 		**/
 		b2AABB scaleUp(const b2AABB & aabb);
+        
+        /**
+        * Gets the ground body.
+        * @return The ground body.
+        **/
+        b2Body * getGroundBody();
 
 	};
 

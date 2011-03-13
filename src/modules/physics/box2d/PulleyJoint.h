@@ -57,29 +57,6 @@ namespace box2d
 		int getGroundAnchors(lua_State * L);
 		
 		/**
-		* Sets the max rope lengths (a value of zero keeps it
-		* unchanged). Beware that Box2D also imposes a maximum,
-		* so the smallest of these is actually set.
-		**/
-		void setMaxLengths(float maxlength1, float maxlength2);
-		
-		/**
-		* Gets the max rope lengths.
-		**/
-		int getMaxLengths(lua_State * L);
-				
-		/**
-		* Sets the total length of the rope and updates the 
-		* MaxLengths values accordingly.
-		**/
-		void setConstant(float length);
-		
-		/**
-		* Gets the total length of the rope.
-		**/
-		float getConstant() const;
-		
-		/**
 		* Gets the current length of the segment attached to body1.
 		**/
 		float getLength1() const;

@@ -131,7 +131,7 @@ namespace box2d
 		if(count < 3)
 			return luaL_error(L, "Polygon degenerated to less than three points.");
 		
-		b2vec2 vecs[] = new b2vec2[count];
+		b2Vec2 vecs[] = new b2vec2[count];
 		
 		for (int i = 0; i < count; i++) {
 			vecs[i].Set(convex_hull[i].x, convex_hull[i].y);

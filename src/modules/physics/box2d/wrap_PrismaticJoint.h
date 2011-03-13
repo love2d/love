@@ -38,7 +38,6 @@ namespace box2d
 	int w_PrismaticJoint_setMotorEnabled(lua_State * L);
 	int w_PrismaticJoint_isMotorEnabled(lua_State * L);
 	int w_PrismaticJoint_setMaxMotorForce(lua_State * L);
-	int w_PrismaticJoint_getMaxMotorForce(lua_State * L);
 	int w_PrismaticJoint_setMotorSpeed(lua_State * L);
 	int w_PrismaticJoint_getMotorSpeed(lua_State * L);
 	int w_PrismaticJoint_getMotorForce(lua_State * L);

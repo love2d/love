@@ -76,11 +76,6 @@ namespace box2d
 		void setMaxMotorTorque(float torque);
 
 		/**
-		* Gets the maximum motor torque, usually in N-m.
-		**/
-		float getMaxMotorTorque() const;
-
-		/**
 		* Sets the motor speed in degrees per second.
 		**/
 		void setMotorSpeed(float speed);

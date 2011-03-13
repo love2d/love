@@ -97,19 +97,7 @@ namespace box2d
 		/**
 		* Gets the reaction torque on body2.
 		**/
-		float getReactionTorque();
-
-		/**
-		* Sets whether connected bodies should collide
-		* or not. Default is false.
-		**/
-		void setCollideConnected(bool collide);
-
-		/**
-		* Gets whether connected bodies should collide
-		* or not.
-		**/
-		bool getCollideConnected() const;
+		float getReactionTorque(float dt);
 
 	protected:
 
