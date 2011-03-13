@@ -356,7 +356,7 @@ namespace sdl
 		0
 	};
 
-	int luaopen_love_thread(lua_State *L)
+	int luaopen_love_thread_sdl(lua_State *L)
 	{
 		if(instance == 0)
 		{

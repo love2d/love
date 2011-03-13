@@ -43,7 +43,7 @@ namespace devil
 		0
 	};
 	
-	int luaopen_love_image(lua_State * L)
+	int luaopen_love_image_devil(lua_State * L)
 	{
 		if(instance == 0)
 		{

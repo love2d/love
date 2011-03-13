@@ -100,7 +100,7 @@ namespace opengl
 	int w_scale(lua_State * L);
 	int w_translate(lua_State * L);
 	int w_hasFocus(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_graphics_opengl(lua_State * L);
 
 } // opengl
 } // graphics

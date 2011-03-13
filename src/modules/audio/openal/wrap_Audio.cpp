@@ -63,7 +63,7 @@ namespace openal
 		0
 	};
 
-	int luaopen_love_audio(lua_State * L)
+	int luaopen_love_audio_openal(lua_State * L)
 	{
 		if(instance == 0)
 		{

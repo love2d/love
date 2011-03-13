@@ -78,7 +78,7 @@ namespace sdl
 	};
 
 
-	int luaopen_love_timer(lua_State * L)
+	int luaopen_love_timer_sdl(lua_State * L)
 	{
 		if(instance == 0)
 		{

@@ -66,19 +66,19 @@
 #ifdef LOVE_BUILD_STANDALONE
 
 static const luaL_Reg modules[] = {
-	{ "love.audio.openal", love::audio::openal::luaopen_love_audio },
-	{ "love.event.sdl", love::event::sdl::luaopen_love_event },
-	{ "love.filesystem.physfs", love::filesystem::physfs::luaopen_love_filesystem },
-	{ "love.font.freetype", love::font::freetype::luaopen_love_font },
-	{ "love.graphics.opengl", love::graphics::opengl::luaopen_love_graphics },
-	{ "love.image.devil", love::image::devil::luaopen_love_image },
-	{ "love.joystick.sdl", love::joystick::sdl::luaopen_love_joystick },
-	{ "love.keyboard.sdl", love::keyboard::sdl::luaopen_love_keyboard },
-	{ "love.mouse.sdl", love::mouse::sdl::luaopen_love_mouse },
-	{ "love.physics.box2d", love::physics::box2d::luaopen_love_physics },
-	{ "love.sound.lullaby", love::sound::lullaby::luaopen_love_sound },
-	{ "love.timer.sdl", love::timer::sdl::luaopen_love_timer },
-	{ "love.thread.sdl", love::thread::sdl::luaopen_love_thread },
+	{ "love.audio.openal", love::audio::openal::luaopen_love_audio_openal },
+	{ "love.event.sdl", love::event::sdl::luaopen_love_event_sdl },
+	{ "love.filesystem.physfs", love::filesystem::physfs::luaopen_love_filesystem_physfs },
+	{ "love.font.freetype", love::font::freetype::luaopen_love_font_freetype },
+	{ "love.graphics.opengl", love::graphics::opengl::luaopen_love_graphics_opengl },
+	{ "love.image.devil", love::image::devil::luaopen_love_image_devil },
+	{ "love.joystick.sdl", love::joystick::sdl::luaopen_love_joystick_sdl },
+	{ "love.keyboard.sdl", love::keyboard::sdl::luaopen_love_keyboard_sdl },
+	{ "love.mouse.sdl", love::mouse::sdl::luaopen_love_mouse_sdl },
+	{ "love.physics.box2d", love::physics::box2d::luaopen_love_physics_box2d },
+	{ "love.sound.lullaby", love::sound::lullaby::luaopen_love_sound_lullaby },
+	{ "love.timer.sdl", love::timer::sdl::luaopen_love_timer_sdl },
+	{ "love.thread.sdl", love::thread::sdl::luaopen_love_thread_sdl },
 	{ 0, 0 }
 };
 

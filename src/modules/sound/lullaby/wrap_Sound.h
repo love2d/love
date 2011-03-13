@@ -31,7 +31,7 @@ namespace sound
 {
 namespace lullaby
 {
-	extern "C" LOVE_EXPORT int luaopen_love_sound(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_sound_lullaby(lua_State * L);
 
 } // lullaby
 } // sound

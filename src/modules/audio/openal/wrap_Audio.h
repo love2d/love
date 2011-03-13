@@ -30,7 +30,7 @@ namespace audio
 {
 namespace openal
 {
-	extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_audio_openal(lua_State * L);
 
 } // openal
 } // audio

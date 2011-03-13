@@ -55,7 +55,7 @@ namespace box2d
 	int w_newPrismaticJoint(lua_State * L);
 	int w_newPulleyJoint(lua_State * L);
 	int w_newGearJoint(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_physics_box2d(lua_State * L);
 
 } // box2d
 } // physics

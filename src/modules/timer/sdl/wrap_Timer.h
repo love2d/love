@@ -37,7 +37,7 @@ namespace sdl
 	int w_sleep(lua_State * L);
 	int w_getTime(lua_State * L);
 	int w_getMicroTime(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_timer(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_timer_sdl(lua_State * L);
 
 } // sdl
 } // timer

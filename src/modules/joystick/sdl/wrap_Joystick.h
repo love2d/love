@@ -45,7 +45,7 @@ namespace sdl
 	int w_isDown(lua_State * L);
 	int w_getHat(lua_State * L);
 	int w_close(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_joystick_sdl(lua_State * L);
 
 } // sdl
 } // joystick

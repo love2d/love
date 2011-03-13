@@ -31,7 +31,7 @@ namespace image
 {
 namespace devil
 {
-	extern "C" LOVE_EXPORT int luaopen_love_image(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_image_devil(lua_State * L);
 
 } //devil
 } // image

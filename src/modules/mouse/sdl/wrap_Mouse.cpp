@@ -109,7 +109,7 @@ namespace sdl
 		{ 0, 0 }
 	};
 
-	int luaopen_love_mouse(lua_State * L)
+	int luaopen_love_mouse_sdl(lua_State * L)
 	{
 		if(instance == 0)
 		{

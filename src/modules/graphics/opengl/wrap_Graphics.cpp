@@ -1000,7 +1000,7 @@ namespace opengl
 		0
 	};
 
-	int luaopen_love_graphics(lua_State * L)
+	int luaopen_love_graphics_opengl(lua_State * L)
 	{
 		if(instance == 0)
 		{

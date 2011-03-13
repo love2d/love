@@ -42,7 +42,7 @@ namespace lullaby
 		0
 	};
 
-	int luaopen_love_sound(lua_State * L)
+	int luaopen_love_sound_lullaby(lua_State * L)
 	{
 		if(instance == 0)
 		{
