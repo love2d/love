@@ -27,7 +27,7 @@
 #include <common/Reference.h>
 
 // Box2D
-#include "Include/Box2D.h"
+#include <Box2D/Box2D.h>
 
 namespace love
 {
