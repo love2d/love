@@ -286,7 +286,7 @@ function love.init()
 		keyboard = "sdl",
 		mouse = "sdl",
 		physics = "box2d",
-		sound = false,
+		sound = "lullaby",
 		timer = "sdl",
 		thread = "sdl"
 	}

@@ -51,7 +51,7 @@
 #include <keyboard/sdl/wrap_Keyboard.h>
 #include <mouse/sdl/wrap_Mouse.h>
 #include <physics/box2d/wrap_Physics.h>
-#include <sound/wrap_Sound.h>
+#include <sound/lullaby/wrap_Sound.h>
 #include <timer/sdl/wrap_Timer.h>
 #include <thread/sdl/wrap_Thread.h>
 
@@ -76,7 +76,7 @@ static const luaL_Reg modules[] = {
 	{ "love.keyboard.sdl", love::keyboard::sdl::luaopen_love_keyboard },
 	{ "love.mouse.sdl", love::mouse::sdl::luaopen_love_mouse },
 	{ "love.physics.box2d", love::physics::box2d::luaopen_love_physics },
-	{ "love.sound", love::sound::luaopen_love_sound },
+	{ "love.sound.lullaby", love::sound::lullaby::luaopen_love_sound },
 	{ "love.timer.sdl", love::timer::sdl::luaopen_love_timer },
 	{ "love.thread.sdl", love::thread::sdl::luaopen_love_thread },
 	{ 0, 0 }
