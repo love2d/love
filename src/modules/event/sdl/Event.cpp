@@ -73,6 +73,16 @@ namespace sdl
 		return ok && (SDL_PushEvent(&e) == 0);
 	}
 
+	void Event::clear()
+	{
+		static SDL_Event e;
+
+		while(SDL_PollEvent(&e))
+		{
+			// Do nothing with 'e' ...
+		}
+	}
+
 	bool Event::convert(SDL_Event & e, Message & m)
 	{
 		switch(e.type)

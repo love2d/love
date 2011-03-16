@@ -177,12 +177,19 @@ namespace sdl
 		return 1;
 	}
 
+	int w_clear(lua_State * L)
+	{
+		instance->clear();
+		return 0;
+	}
+
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "pump", w_pump },
 		{ "poll", w_poll },
 		{ "wait", w_wait },
 		{ "push", w_push },
+		{ "clear", w_clear },
 		{ 0, 0 }
 	};
 

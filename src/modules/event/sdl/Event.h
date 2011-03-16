@@ -74,6 +74,11 @@ namespace sdl
 		**/
 		bool push(Message & message);
 
+		/**
+		 * Clears the event queue.
+		 */
+		void clear();
+
 	private:
 
 		bool convert(SDL_Event & e, Message & m);
