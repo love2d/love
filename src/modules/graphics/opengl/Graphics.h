@@ -28,7 +28,6 @@
 // SDL
 #include <SDL.h>
 #include "GLee.h"
-#include <SDL_opengl.h>
 
 // LOVE
 #include <graphics/Graphics.h>
@@ -483,6 +482,8 @@ namespace opengl
 		* @param points Amount of points to use to draw the circle.
 		**/
 		void circle(DrawMode mode, float x, float y, float radius, int points = 10);
+        
+        void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
 		/**
 		* Draws a polygon with an arbitrary number of vertices.

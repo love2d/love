@@ -94,6 +94,7 @@ namespace opengl
 	int w_rectangle(lua_State * L);
 	int w_quad(lua_State * L);
 	int w_circle(lua_State * L);
+	int w_arc(lua_State * L);
 	int w_push(lua_State * L);
 	int w_pop(lua_State * L);
 	int w_rotate(lua_State * L);

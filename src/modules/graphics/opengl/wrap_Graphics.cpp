@@ -853,6 +853,23 @@ namespace opengl
 		instance->circle(mode, x, y, radius, points);
 		return 0;
 	}
+	
+	int w_arc(lua_State * L)
+	{
+		Graphics::DrawMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Incorrect draw mode %s", str);
+		
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float radius = (float)luaL_checknumber(L, 4);
+		float angle1 = (float)luaL_checknumber(L, 5);
+		float angle2 = (float)luaL_checknumber(L, 6);
+		int points = luaL_optint(L, 7, 10);
+		instance->arc(mode, x, y, radius, angle1, angle2, points);
+		return 0;
+	}
 
 	int w_polygon(lua_State * L)
 	{
@@ -974,6 +991,7 @@ namespace opengl
 		{ "rectangle", w_rectangle },
 		{ "quad", w_quad },
 		{ "circle", w_circle },
+		{ "arc", w_arc },
 
 		{ "polygon", w_polygon },
 

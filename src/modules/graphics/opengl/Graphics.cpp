@@ -950,7 +950,7 @@ namespace opengl
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points )
+	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
 	{
 		float two_pi = static_cast<float>(LOVE_M_PI * 2);
 		if(points <= 0) points = 1;
@@ -983,6 +983,48 @@ namespace opengl
 			break;
 		}
 
+		glPopMatrix();
+		glEnable(GL_TEXTURE_2D);
+	}
+	
+	void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
+	{
+		float angle = angle2 - angle1;
+		while (angle < 0) angle += LOVE_M_PI * 2;
+		if(points <= 0) points = 1;
+		float angle_shift = (angle / points);
+		
+		glDisable(GL_TEXTURE_2D);
+		glPushMatrix();
+		
+		glTranslatef(x, y, 0.0f);
+		
+		switch(mode)
+		{
+			case DRAW_LINE:
+				glBegin(GL_LINE_LOOP);
+				
+				glVertex2f(0, 0);
+				
+				for(float i = 0; i <= angle+angle_shift/2; i+= angle_shift)
+					glVertex2f(radius * cos(i+angle1),radius * sin(i+angle1));
+				
+				glEnd();
+				break;
+				
+			default:
+			case DRAW_FILL:
+				glBegin(GL_TRIANGLE_FAN);
+				
+				glVertex2f(0, 0);
+				
+				for(float i = 0; i <= angle+angle_shift/2; i+= angle_shift)
+					glVertex2f(radius * cos(i+angle1),radius * sin(i+angle1));
+				
+				glEnd();
+				break;
+		}
+		
 		glPopMatrix();
 		glEnable(GL_TEXTURE_2D);
 	}
