@@ -43,6 +43,7 @@ namespace sdl
 		keylist[counter] = Keyboard::KEY_MAX_ENUM;
 		
 		luax_pushboolean(L, instance->isDown(keylist));
+		delete[] keylist;
 		return 1;
 	}
 
