@@ -990,6 +990,7 @@ namespace opengl
 	void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
 	{
 		float angle = angle2 - angle1;
+		if (angle == 0) return;
 		while (angle < 0) angle += LOVE_M_PI * 2;
 		if(points <= 0) points = 1;
 		float angle_shift = (angle / points);
