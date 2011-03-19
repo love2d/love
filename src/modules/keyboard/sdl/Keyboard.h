@@ -46,7 +46,7 @@ namespace sdl
 		* @param key A key identifier.
 		* @return boolean
 		**/
-		bool isDown(Key key) const;
+		bool isDown(Key * keylist) const;
 
 		/**
 		* Enables key repeating.

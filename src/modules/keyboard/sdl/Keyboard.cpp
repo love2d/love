@@ -31,14 +31,15 @@ namespace sdl
 		return "love.keyboard.sdl";
 	}
 
-	bool Keyboard::isDown(Key key) const
+	bool Keyboard::isDown(Key * keylist) const
 	{
 		SDLKey k;
-
-		if(keys.find(key, k))
+		Uint8 * keystate = SDL_GetKeyState(0);
+		
+		for (Key key = *keylist; key != KEY_MAX_ENUM; key = *(++keylist))
 		{
-			Uint8 * keystate = SDL_GetKeyState(0);
-			return keystate[(unsigned)k] == 1;
+			if (keys.find(key, k) && keystate[(unsigned)k] == 1)
+				return true;
 		}
 
 		return false;

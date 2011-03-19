@@ -31,16 +31,18 @@ namespace sdl
 	int w_isDown(lua_State * L)
 	{
 		Keyboard::Key k;
-
-		if(Keyboard::getConstant(luaL_checkstring(L, 1), k))
+		unsigned int num = lua_gettop(L);
+		Keyboard::Key * keylist = new Keyboard::Key[num+1];
+		unsigned int counter = 0;
+		
+		for (unsigned int i = 0; i < num; i++)
 		{
-			luax_pushboolean(L, instance->isDown(k));
+			if(Keyboard::getConstant(luaL_checkstring(L, i+1), k))
+				keylist[counter++] = k;
 		}
-		else
-		{
-			luax_pushboolean(L, false);
-		}
-
+		keylist[counter] = Keyboard::KEY_MAX_ENUM;
+		
+		luax_pushboolean(L, instance->isDown(keylist));
 		return 1;
 	}
 
