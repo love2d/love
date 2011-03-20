@@ -39,6 +39,13 @@ namespace audio
 			TYPE_STREAM,
 			TYPE_MAX_ENUM
 		}; // Type
+		
+		enum Unit
+		{
+			UNIT_SECONDS = 1,
+			UNIT_SAMPLES,
+			UNIT_MAX_ENUM
+		};
 
 	protected:
 		Type type;
@@ -64,6 +71,9 @@ namespace audio
 
 		virtual void setVolume(float volume) = 0;
 		virtual float getVolume() const = 0;
+		
+		virtual void seek(float offset, Unit unit) = 0;
+		virtual float tell(Unit unit) const = 0;
 
 		// all float * v must be of size 3
 		virtual void setPosition(float * v) = 0;
@@ -79,11 +89,15 @@ namespace audio
 
 		static bool getConstant(const char * in, Type & out);
 		static bool getConstant(Type in, const char *& out);
+		static bool getConstant(const char * in, Unit & out);
+		static bool getConstant(Unit in, const char *& out);
 
 	private:
 
 		static StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[];
 		static StringMap<Type, TYPE_MAX_ENUM> types;
+		static StringMap<Unit, UNIT_MAX_ENUM>::Entry unitEntries[];
+		static StringMap<Unit, UNIT_MAX_ENUM> units;
 
 	}; // Source
 

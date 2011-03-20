@@ -200,6 +200,41 @@ namespace openal
 		// In case the Source isn't playing.
 		return volume;
 	}
+	
+	void Source::seek(float offset, Source::Unit unit)
+	{
+		if (valid)
+		{
+			switch (unit) {
+				case Source::UNIT_SAMPLES:
+					alSourcef(source, AL_SAMPLE_OFFSET, offset);
+					break;
+				case Source::UNIT_SECONDS:	
+				default:
+					alSourcef(source, AL_SEC_OFFSET, offset);
+					break;
+			}
+		}
+	}
+	
+	float Source::tell(Source::Unit unit) const
+	{
+		if (valid)
+		{
+			ALfloat offset;
+			switch (unit) {
+				case Source::UNIT_SAMPLES:
+					alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
+					break;
+				case Source::UNIT_SECONDS:
+				default:
+					alGetSourcef(source, AL_SEC_OFFSET, &offset);
+					break;
+			}
+			return offset;
+		}
+		return 0.0f;
+	}
 
 	void Source::setPosition(float * v)
 	{

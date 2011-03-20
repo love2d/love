@@ -84,6 +84,8 @@ namespace openal
 		virtual float getPitch() const;
 		virtual void setVolume(float volume);
 		virtual float getVolume() const;
+		virtual void seek(float offset, Unit unit);
+		virtual float tell(Unit unit) const;
 		virtual void setPosition(float * v);
 		virtual void getPosition(float * v) const;
 		virtual void setVelocity(float * v);
