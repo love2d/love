@@ -62,6 +62,9 @@ namespace openal
 		float velocity[3];
 		float direction[3];
 		bool looping;
+		
+		float offsetSamples;
+		float offsetSeconds;
 
 		love::sound::Decoder * decoder;
 

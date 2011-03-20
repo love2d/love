@@ -34,7 +34,7 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::SoundData * soundData)
 		: love::audio::Source(Source::TYPE_STATIC), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), decoder(0)
+		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0), decoder(0)
 	{
 		alGenBuffers(1, buffers);
 		ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
@@ -49,7 +49,7 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::Decoder * decoder)
 		: love::audio::Source(Source::TYPE_STREAM), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), decoder(decoder)
+		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0), decoder(decoder)
 	{
 		decoder->retain();
 		alGenBuffers(MAX_BUFFERS, buffers);
@@ -147,10 +147,28 @@ namespace openal
 			while(processed--)
 			{
 				ALuint buffer;
-
+				
+				float curOffsetSamples, curOffsetSecs;
+				
+				alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
+				
+				ALint b;
+				alGetSourcei(source, AL_BUFFER, &b);
+				int freq;
+				alGetBufferi(b, AL_FREQUENCY, &freq);
+				curOffsetSecs = curOffsetSamples / freq;
+				
 				// Get a free buffer.
 				alSourceUnqueueBuffers(source, 1, &buffer);
-
+				
+				float newOffsetSamples, newOffsetSecs;
+				
+				alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
+				newOffsetSecs = newOffsetSamples / freq;
+				
+				offsetSamples += (curOffsetSamples - newOffsetSamples);
+				offsetSeconds += (curOffsetSecs - newOffsetSecs);
+				
 				if(streamAtomic(buffer, decoder) > 0)
 					alSourceQueueBuffers(source, 1, &buffer);
 			}
@@ -207,10 +225,12 @@ namespace openal
 		{
 			switch (unit) {
 				case Source::UNIT_SAMPLES:
+					if (type == TYPE_STREAM) offset -= offsetSamples;
 					alSourcef(source, AL_SAMPLE_OFFSET, offset);
 					break;
 				case Source::UNIT_SECONDS:	
 				default:
+					if (type == TYPE_STREAM) offset -= offsetSeconds;
 					alSourcef(source, AL_SEC_OFFSET, offset);
 					break;
 			}
@@ -221,14 +241,21 @@ namespace openal
 	{
 		if (valid)
 		{
-			ALfloat offset;
+			float offset;
 			switch (unit) {
 				case Source::UNIT_SAMPLES:
 					alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
+					if (type == TYPE_STREAM) offset += offsetSamples;
 					break;
 				case Source::UNIT_SECONDS:
 				default:
-					alGetSourcef(source, AL_SEC_OFFSET, &offset);
+					alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
+					ALint buffer;
+					alGetSourcei(source, AL_BUFFER, &buffer);
+					int freq;
+					alGetBufferi(buffer, AL_FREQUENCY, &freq);
+					offset /= freq;
+					if (type == TYPE_STREAM) offset += offsetSeconds;
 					break;
 			}
 			return offset;
@@ -383,6 +410,8 @@ namespace openal
 		else if(valid && type == TYPE_STREAM)
 		{
 			decoder->rewind();
+			offsetSamples = 0;
+			offsetSeconds = 0;
 		}
 	}
 
@@ -426,8 +455,11 @@ namespace openal
 		if(decoded > 0 && fmt != 0)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 
-		if(decoded < d->getSize() && isLooping())
+		if(decoded < d->getSize() && isLooping()) {
+			offsetSamples = 0;
+			offsetSeconds = 0;
 			d->rewind();
+		}
 
 		return decoded;
 	}
