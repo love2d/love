@@ -19,8 +19,6 @@
 **/
 
 #include "wrap_Image.h"
-#include "image/EncodedImageData.h"
-#include "image/wrap_EncodedImageData.h"
 
 namespace love
 {
@@ -33,13 +31,11 @@ namespace devil
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "newImageData",  w_newImageData },
-		{ "newEncodedImageData", w_newEncodedImageData },
 		{ 0, 0 }
 	};
 
 	static const lua_CFunction types[] = {
 		luaopen_imagedata,
-		luaopen_encodedimagedata,
 		0
 	};
 	

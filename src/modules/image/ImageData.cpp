@@ -45,6 +45,27 @@ namespace image
 	{
 		return (x >= 0 && x < getWidth() && y >= 0 && y < getHeight());
 	}
+	
+	bool ImageData::getConstant(const char * in, ImageData::Format & out)
+	{
+		return formats.find(in, out);
+	}
+	
+	bool ImageData::getConstant(ImageData::Format in, const char *& out)
+	{
+		return formats.find(in, out);
+	}
+	
+	StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
+	{
+		{"tga", ImageData::FORMAT_TGA},
+		{"bmp", ImageData::FORMAT_BMP},
+		{"gif", ImageData::FORMAT_GIF},
+		{"jpg", ImageData::FORMAT_JPG},
+		{"png", ImageData::FORMAT_PNG},
+	};
+	
+	StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM> ImageData::formats(ImageData::formatEntries, sizeof(ImageData::formatEntries));
 
 } // image
 } // love

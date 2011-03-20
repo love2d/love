@@ -25,6 +25,7 @@
 
 // LOVE
 #include <common/Exception.h>
+#include <filesystem/File.h>
 
 namespace love
 {
@@ -170,106 +171,34 @@ namespace devil
 		return pixels[y*width+x];
 	}
 
-	EncodedImageData * ImageData::encode(EncodedImageData::Format f) {
+	void ImageData::encode(love::filesystem::File * f, ImageData::Format format) {
 		ilBindImage(image);
-		ILubyte * data;
-		ILuint w = getWidth();
-		int h = getHeight(); // has to be a signed int so we can make it negative for BMPs
-		int headerLen, bpp, row, size, padding, filesize;
-		switch (f) {
-			case EncodedImageData::FORMAT_BMP:
-				headerLen = 54;
-				bpp = 3;
-				row = w * bpp;
-				padding = row & 3;
-				size = h * (row + padding);
-				filesize = size + headerLen;
-				data = new ILubyte[filesize];
-				// Here's the header for the BMP file format.
-				data[0] = 66; // "B"
-				data[1] = 77; // "M"
-				data[2] = filesize & 255; // size of the file
-				data[3] = (filesize >> 8) & 255;
-				data[4] = (filesize >> 16) & 255;
-				data[5] = (filesize >> 24) & 255;
-				data[6] = data[7] = data[8] = data[9] = 0; // useless reserved values
-				data[10] = headerLen; // offset where pixel data begins
-				data[11] = (headerLen >> 8) & 255;
-				data[12] = (headerLen >> 16) & 255;
-				data[13] = (headerLen >> 24) & 255;
-				data[14] = headerLen - 14; // length of this part of the header
-				data[15] = ((headerLen - 14) >> 8) & 255;
-				data[16] = ((headerLen - 14) >> 16) & 255;
-				data[17] = ((headerLen - 14) >> 24) & 255;
-				data[18] = w & 255; // width of the bitmap
-				data[19] = (w >> 8) & 255;
-				data[20] = (w >> 16) & 255;
-				data[21] = (w >> 24) & 255;
-				data[22] = -h & 255; // negative height of the bitmap - used so we don't have to flip the data
-				data[23] = ((-h) >> 8) & 255;
-				data[24] = ((-h) >> 16) & 255;
-				data[25] = ((-h) >> 24) & 255;
-				data[26] = 1; // number of color planes
-				data[27] = 0;
-				data[28] = bpp * 8; // bits per pixel
-				data[29] = 0;
-				data[30] = data[31] = data[32] = data[33] = 0; // RGB - no compression
-				data[34] = (row + padding) * h; // length of the pixel data
-				data[35] = (((row + padding) * h) >> 8) & 255;
-				data[36] = (((row + padding) * h) >> 16) & 255;
-				data[37] = (((row + padding) * h) >> 24) & 255;
-				data[38] = 2835 & 255; // horizontal pixels per meter
-				data[39] = (2835 >> 8) & 255;
-				data[40] = (2835 >> 16) & 255;
-				data[41] = (2835 >> 24) & 255;
-				data[42] = 2835 & 255; // vertical pixels per meter
-				data[43] = data[39];
-				data[44] = data[40];
-				data[45] = data[41];
-				data[46] = data[47] = data[48] = data[49] = 0; // number of colors in the palette
-				data[50] = data[51] = data[52] = data[53] = 0; // all colors are important!
-				// Okay, header's done! Now for the pixel data...
-				data += headerLen;
-				for (int i = 0; i < h; i++) { // we've got to loop through the rows, adding the pixel data plus padding
-					ilCopyPixels(0,i,0,w,1,1,IL_BGR,IL_UNSIGNED_BYTE,data);
-					data += row;
-				}
-				data -= filesize;
+		ILuint ilFormat;
+		switch (format) {
+			case ImageData::FORMAT_BMP:
+				ilFormat = IL_BMP;
 				break;
-			case EncodedImageData::FORMAT_TGA:
-			default: // TGA is the default format
-				headerLen = 18;
-				bpp = 4;
-				size = h * w * bpp;
-				data = new ILubyte[size + headerLen];
-				// here's the header for the Targa file format.
-				data[0] = 0; // ID field size
-				data[1] = 0; // colormap type
-				data[2] = 2; // image type
-				data[3] = data[4] = 0; // colormap start
-				data[5] = data[6] = 0; // colormap length
-				data[7] = 32; // colormap bits
-				data[8] = data[9] = 0; // x origin
-				data[10] = data[11] = 0; // y origin
-				// Targa is little endian, so:
-				data[12] = w & 255; // least significant byte of width
-				data[13] = w >> 8; // most significant byte of width
-				data[14] = h & 255; // least significant byte of height
-				data[15] = h >> 8; // most significant byte of height
-				data[16] = bpp * 8; // bits per pixel
-				data[17] = 0x20; // descriptor bits (flip bits: 0x10 horizontal, 0x20 vertical)
-				// header done. write the pixel data to TGA:
-				data += headerLen;
-				ilCopyPixels(0,0,0,w,h,1,IL_BGRA,IL_UNSIGNED_BYTE,data); // convert the pixels to BGRA (remember, little-endian) and copy them to data
-
-				data -= headerLen;
+			case ImageData::FORMAT_TGA:
+				ilFormat = IL_TGA;
+				break;
+			case ImageData::FORMAT_GIF:
+				ilFormat = IL_GIF;
+				break;
+			case ImageData::FORMAT_JPG:
+				ilFormat = IL_JPG;
+				break;
+			case ImageData::FORMAT_PNG:
+			default: // PNG is the default format
+				ilFormat = IL_PNG;
+				break;
 		}
-		return new EncodedImageData(data, f, size + headerLen, freeData);
-	}
-
-	void ImageData::freeData(void *data)
-	{
-		delete[] (ILubyte*) data;
+		ILuint size = ilSaveL(ilFormat, NULL, 0);
+		ILubyte * data = new ILubyte[size];
+		ilSaveL(ilFormat, data, size);
+		f->open(love::filesystem::File::WRITE);
+		f->write(data, size);
+		f->close();
+		delete[] data;
 	}
 
 } // devil
