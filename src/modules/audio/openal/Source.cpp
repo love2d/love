@@ -225,13 +225,24 @@ namespace openal
 		{
 			switch (unit) {
 				case Source::UNIT_SAMPLES:
-					if (type == TYPE_STREAM) offset -= offsetSamples;
-					alSourcef(source, AL_SAMPLE_OFFSET, offset);
+					if (type == TYPE_STREAM) {
+						ALint buffer;
+						alGetSourcei(source, AL_BUFFER, &buffer);
+						int freq;
+						alGetBufferi(buffer, AL_FREQUENCY, &freq);
+						offset /= freq;
+						decoder->seek(offset);
+					} else {
+						alSourcef(source, AL_SAMPLE_OFFSET, offset);
+					}
 					break;
 				case Source::UNIT_SECONDS:	
 				default:
-					if (type == TYPE_STREAM) offset -= offsetSeconds;
-					alSourcef(source, AL_SEC_OFFSET, offset);
+					if (type == TYPE_STREAM) {
+						decoder->seek(offset);
+					} else {
+						alSourcef(source, AL_SEC_OFFSET, offset);
+					}
 					break;
 			}
 		}
