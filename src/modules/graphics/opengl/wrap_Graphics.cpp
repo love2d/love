@@ -556,20 +556,6 @@ namespace opengl
 		return 0;
 	}
 
-	int w_setLineStipple(lua_State * L)
-	{
-		if(lua_gettop(L) == 0)
-		{
-			instance->setLineStipple();
-			return 0;
-		}
-
-		unsigned short pattern = (unsigned short)luaL_checkint(L, 1);
-		int repeat = luaL_optint(L, 2, 1);
-		instance->setLineStipple(pattern, repeat);
-		return 0;
-	}
-
 	int w_getLineWidth(lua_State * L)
 	{
 		lua_pushnumber(L, instance->getLineWidth());
@@ -583,11 +569,6 @@ namespace opengl
 		Graphics::getConstant(style, str);
 		lua_pushstring(L, str);
 		return 1;
-	}
-
-	int w_getLineStipple(lua_State * L)
-	{
-		return instance->getLineStipple(L);
 	}
 
 	int w_setPointSize(lua_State * L)
@@ -776,15 +757,32 @@ namespace opengl
 	int w_line(lua_State * L)
 	{
 		int args = lua_gettop(L);
-		if( args == 1 || args > 4) {
-			instance->polyline(L);
-		} else {
-			float x1 = (float)luaL_checknumber(L, 1);
-			float y1 = (float)luaL_checknumber(L, 2);
-			float x2 = (float)luaL_checknumber(L, 3);
-			float y2 = (float)luaL_checknumber(L, 4);
-			instance->line(x1, y1, x2, y2);
+		bool is_table = false;
+		if (args == 1 && lua_istable(L, 1)) {
+			args = lua_objlen(L, 1);
+			is_table = true;
 		}
+		if (args % 2 != 0)
+			return luaL_error(L, "Number of vertices must be a multiple of two");
+		else if (args < 4)
+			return luaL_error(L, "Need at least two vertices to draw a line");
+
+		float* coords = new float[args];
+		if (is_table) {
+			for (int i = 0; i < args; ++i) {
+				lua_pushnumber(L, i + 1);
+				lua_rawget(L, 1);
+				coords[i] = lua_tonumber(L, -1);
+				lua_pop(L, 1);
+			}
+		} else {
+			for (int i = 0; i < args; ++i)
+				coords[i] = lua_tonumber(L, i + 1);
+		}
+
+		instance->polyline(coords, args);
+
+		delete[] coords;
 		return 0;
 	}
 
@@ -873,7 +871,46 @@ namespace opengl
 
 	int w_polygon(lua_State * L)
 	{
-		return instance->polygon(L);
+		int args = lua_gettop(L) - 1;
+
+		Graphics::DrawMode mode;
+		const char * str = luaL_checkstring(L, 1);
+		if(!Graphics::getConstant(str, mode))
+			return luaL_error(L, "Invalid draw mode: %s", str);
+
+		bool is_table = false;
+		float* coords;
+		if (args == 1 && lua_istable(L, 2)) {
+			args = lua_objlen(L, 2);
+			is_table = true;
+		}
+
+		if (args % 2 != 0)
+			return luaL_error(L, "Number of vertices must be a multiple of two");
+		else if (args < 6)
+			return luaL_error(L, "Need at least three vertices to draw a polygon");
+
+		// fetch coords
+		coords = new float[args + 2];
+		if (is_table) {
+			for (int i = 0; i < args; ++i) {
+				lua_pushnumber(L, i + 1);
+				lua_rawget(L, 2);
+				coords[i] = lua_tonumber(L, -1);
+				lua_pop(L, 1);
+			}
+		} else {
+			for (int i = 0; i < args; ++i)
+				coords[i] = lua_tonumber(L, i + 1);
+		}
+
+		// make a closed loop
+		coords[args]   = coords[0];
+		coords[args+1] = coords[1];
+		instance->polygon(mode, coords, args+2);
+		delete[] coords;
+	
+		return 0;
 	}
 
 	int w_push(lua_State *)
@@ -950,10 +987,8 @@ namespace opengl
 		{ "setLineWidth", w_setLineWidth },
 		{ "setLineStyle", w_setLineStyle },
 		{ "setLine", w_setLine },
-		{ "setLineStipple", w_setLineStipple },
 		{ "getLineWidth", w_getLineWidth },
 		{ "getLineStyle", w_getLineStyle },
-		{ "getLineStipple", w_getLineStipple },
 		{ "setPointSize", w_setPointSize },
 		{ "setPointStyle", w_setPointStyle },
 		{ "setPoint", w_setPoint },
