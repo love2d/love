@@ -36,7 +36,7 @@ namespace sdl
 	int w_wait(lua_State * L);
 	int w_push(lua_State * L);
 
-	extern "C" LOVE_EXPORT int luaopen_love_event_sdl(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_event(lua_State * L);
 
 } // sdl
 } // event

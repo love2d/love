@@ -25,7 +25,7 @@
 #ifdef LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love(lua_State * L);
 #endif // LOVE_BUILD_STANDALONE
-extern "C" int luaopen_love_thread_sdl(lua_State *L);
+extern "C" int luaopen_love_thread(lua_State *L);
 
 namespace love
 {
@@ -41,7 +41,7 @@ namespace sdl
 		love::luax_preload(L, luaopen_love, "love");
 		luaopen_love(L);
 	#endif // LOVE_BUILD_STANDALONE
-		luaopen_love_thread_sdl(L);
+		luaopen_love_thread(L);
 		{
 			size_t len;
 			const char *name = comm->getName(&len);

@@ -23,11 +23,13 @@
 #include <common/Data.h>
 #include <common/StringMap.h>
 
+#include "devil/Image.h"
+
 namespace love
 {
 namespace image
 {
-	Image * instance = 0;
+	static Image * instance = 0;
 
 	int w_newImageData(lua_State * L)
 	{
@@ -72,6 +74,43 @@ namespace image
 		}
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 		return 1;
+	}
+	
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "newImageData",  w_newImageData },
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_imagedata,
+		0
+	};
+
+	int luaopen_love_image(lua_State * L)
+	{
+		if(instance == 0)
+		{
+			try
+			{
+				instance = new love::image::devil::Image();
+			}
+			catch(Exception & e)
+			{
+				return luaL_error(L, e.what());
+			}
+		}
+		else
+			instance->retain();
+
+		WrappedModule w;
+		w.module = instance;
+		w.name = "image";
+		w.flags = MODULE_IMAGE_T;
+		w.functions = functions;
+		w.types = types;
+
+		return luax_register_module(L, w);
 	}
 
 } // image

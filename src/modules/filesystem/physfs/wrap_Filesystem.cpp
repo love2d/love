@@ -318,7 +318,7 @@ namespace physfs
 		0
 	};
 
-	int luaopen_love_filesystem_physfs(lua_State * L)
+	int luaopen_love_filesystem(lua_State * L)
 	{
 		if(instance == 0)
 		{

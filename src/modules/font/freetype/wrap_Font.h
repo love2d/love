@@ -34,7 +34,7 @@ namespace freetype
 	int w_newRasterizer(lua_State * L);
 	int w_newGlyphData(lua_State * L);
 	int w_newFontData(lua_State * L);
-	extern "C" LOVE_EXPORT int luaopen_love_font_freetype(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_font(lua_State * L);
 
 } // freetype
 } // font

@@ -21,6 +21,7 @@
 // LOVE
 #include "wrap_Audio.h"
 
+#include "openal/Audio.h"
 #include "null/Audio.h"
 
 #include <scripts/audio.lua.h>
@@ -31,7 +32,7 @@ namespace love
 {
 namespace audio
 {
-	Audio * instance = 0;
+	static Audio * instance = 0;
 
 	int w_getNumSources(lua_State * L)
 	{
@@ -233,6 +234,82 @@ namespace audio
 		return 1;
 	}
 	
+
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "getNumSources", w_getNumSources },
+		{ "newSource1", w_newSource1 },
+		{ "play", w_play },
+		{ "stop", w_stop },
+		{ "pause", w_pause },
+		{ "resume", w_resume },
+		{ "rewind", w_rewind },
+		{ "setVolume", w_setVolume },
+		{ "getVolume", w_getVolume },
+		{ "setPosition", w_setPosition },
+		{ "getPosition", w_getPosition },
+		{ "setOrientation", w_setOrientation },
+		{ "getOrientation", w_getOrientation },
+		{ "setVelocity", w_setVelocity },
+		{ "getVelocity", w_getVelocity },
+		/*{ "record", w_record },
+		{ "getRecordedData", w_getRecordedData },
+		{ "stopRecording", w_stopRecording },*/
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_source,
+		0
+	};
+
+	int luaopen_love_audio(lua_State * L)
+	{
+		if(instance == 0)
+		{
+			// Try OpenAL first.
+			try
+			{
+				instance = new love::audio::openal::Audio();
+			}
+			catch(love::Exception & e)
+			{
+				std::cout << e.what() << std::endl;
+			}
+		}
+		else
+			instance->retain();
+
+		if(instance == 0)
+		{
+			// Fall back to nullaudio.
+			try
+			{
+				instance = new love::audio::null::Audio();
+			}
+			catch(love::Exception & e)
+			{
+				std::cout << e.what() << std::endl;
+			}
+		}
+
+		if(instance == 0)
+			return luaL_error(L, "Could not open any audio module.");
+
+		WrappedModule w;
+		w.module = instance;
+		w.name = "audio";
+		w.flags = MODULE_T;
+		w.functions = functions;
+		w.types = types;
+
+		luax_register_module(L, w);
+
+		if (luaL_loadbuffer(L, (const char *)audio_lua, sizeof(audio_lua), "audio.lua") == 0)
+			lua_call(L, 0, 0);
+
+		return 0;
+	}
 
 } // audio
 } // love

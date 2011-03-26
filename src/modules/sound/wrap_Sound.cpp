@@ -20,11 +20,14 @@
 
 #include "wrap_Sound.h"
 
+// Implementations.
+#include "lullaby/Sound.h"
+
 namespace love
 {
 namespace sound
 {
-	Sound * instance = 0;
+	static Sound * instance = 0;
 
 	int w_newSoundData(lua_State * L)
 	{
@@ -95,6 +98,46 @@ namespace sound
 		}
 
 		return 1;
+	}
+
+	// List of functions to wrap.
+	static const luaL_Reg functions[] = {
+		{ "newSoundData",  w_newSoundData },
+		{ "newDecoder",  w_newDecoder },
+		{ 0, 0 }
+	};
+
+	static const lua_CFunction types[] = {
+		luaopen_sounddata,
+		luaopen_decoder,
+		0
+	};
+
+	int luaopen_love_sound(lua_State * L)
+	{
+		if(instance == 0)
+		{
+			try
+			{
+				instance = new lullaby::Sound();
+			}
+			catch(Exception & e)
+			{
+				return luaL_error(L, e.what());
+			}
+		}
+		else
+			instance->retain();
+
+
+		WrappedModule w;
+		w.module = instance;
+		w.name = "sound";
+		w.flags = MODULE_SOUND_T;
+		w.functions = functions;
+		w.types = types;
+
+		return luax_register_module(L, w);
 	}
 
 } // sound

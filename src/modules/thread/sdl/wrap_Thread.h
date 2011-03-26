@@ -48,7 +48,7 @@ namespace sdl
 	int w_getThreads(lua_State *L);
 	int w_getThread(lua_State *L);
 
-	extern "C" LOVE_EXPORT int luaopen_love_thread_sdl(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_thread(lua_State * L);
 } // sdl
 } // thread
 } // love

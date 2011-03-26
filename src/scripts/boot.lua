@@ -187,7 +187,7 @@ function love.boot()
 
 	-- This is absolutely needed.
 	require("love")
-	require("love.filesystem.physfs")
+	require("love.filesystem")
 
 	love.arg.parse_options()
 
@@ -275,29 +275,10 @@ function love.init()
 		c.console = true
 	end
 
-	local defaultmodules = {
-		audio = "openal",
-		event = "sdl",
-		filesystem = "physfs",
-		font = "freetype",
-		graphics = "opengl",
-		image = "devil",
-		joystick = "sdl",
-		keyboard = "sdl",
-		mouse = "sdl",
-		physics = "box2d",
-		sound = "lullaby",
-		timer = "sdl",
-		thread = "sdl"
-	}
-
 	-- Gets desired modules.
 	for k,v in pairs(c.modules) do
 		if v then
-			if type(v) ~= "string" then
-				v = defaultmodules[k]
-			end
-			require((v and "love.%s.%s" or "love.%s"):format(k, v))
+			require("love." .. k)
 		end
 	end
 

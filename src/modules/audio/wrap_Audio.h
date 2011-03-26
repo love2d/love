@@ -50,6 +50,7 @@ namespace audio
 	int w_getRecordedData(lua_State * L);
 	int w_stopRecording(lua_State * L);
 	int w_canRecord(lua_State * L);
+	extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State * L);
 
 } // audio
 } // love
