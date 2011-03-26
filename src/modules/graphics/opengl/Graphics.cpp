@@ -871,12 +871,12 @@ namespace opengl
 	
 	void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
 	{
-		angle1 = fmod(angle1, 2 * LOVE_M_PI);
-		angle2 = fmod(angle2, 2 * LOVE_M_PI);
+		angle1 = fmod(angle1, 2.0f * (float)LOVE_M_PI);
+		angle2 = fmod(angle2, 2.0f * (float)LOVE_M_PI);
 		if (angle1 == angle2)
 			return;
 		else if (angle1 > angle2)
-			angle2 += LOVE_M_PI * 2;
+			angle2 += (float)LOVE_M_PI * 2.0f;
 
 
 		if(points <= 0) points = 1;
