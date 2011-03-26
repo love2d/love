@@ -113,9 +113,7 @@
     <ClCompile Include="..\..\src\modules\graphics\Volatile.cpp" />
     <ClCompile Include="..\..\src\modules\image\devil\Image.cpp" />
     <ClCompile Include="..\..\src\modules\image\devil\ImageData.cpp" />
-    <ClCompile Include="..\..\src\modules\image\EncodedImageData.cpp" />
     <ClCompile Include="..\..\src\modules\image\ImageData.cpp" />
-    <ClCompile Include="..\..\src\modules\image\wrap_EncodedImageData.cpp" />
     <ClCompile Include="..\..\src\modules\image\wrap_Image.cpp" />
     <ClCompile Include="..\..\src\modules\image\wrap_ImageData.cpp" />
     <ClCompile Include="..\..\src\modules\joystick\Joystick.cpp" />
@@ -278,10 +276,8 @@
     <ClInclude Include="..\..\src\modules\graphics\Volatile.h" />
     <ClInclude Include="..\..\src\modules\image\devil\Image.h" />
     <ClInclude Include="..\..\src\modules\image\devil\ImageData.h" />
-    <ClInclude Include="..\..\src\modules\image\EncodedImageData.h" />
     <ClInclude Include="..\..\src\modules\image\Image.h" />
     <ClInclude Include="..\..\src\modules\image\ImageData.h" />
-    <ClInclude Include="..\..\src\modules\image\wrap_EncodedImageData.h" />
     <ClInclude Include="..\..\src\modules\image\wrap_Image.h" />
     <ClInclude Include="..\..\src\modules\image\wrap_ImageData.h" />
     <ClInclude Include="..\..\src\modules\joystick\Joystick.h" />

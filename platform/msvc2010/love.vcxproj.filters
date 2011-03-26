@@ -235,13 +235,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp">
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\image\EncodedImageData.cpp">
-      <Filter>modules\image</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\image\ImageData.cpp">
-      <Filter>modules\image</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\image\wrap_EncodedImageData.cpp">
       <Filter>modules\image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\image\wrap_Image.cpp">
@@ -729,16 +723,10 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h">
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\image\EncodedImageData.h">
-      <Filter>modules\image</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\modules\image\Image.h">
       <Filter>modules\image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\image\ImageData.h">
-      <Filter>modules\image</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\image\wrap_EncodedImageData.h">
       <Filter>modules\image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\image\wrap_Image.h">
