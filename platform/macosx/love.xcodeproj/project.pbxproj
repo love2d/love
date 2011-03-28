@@ -29,7 +29,6 @@
 		A946D680104248DA002BF36C /* Matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E310420ABF007D418B /* Matrix.cpp */; };
 		A946D681104248DA002BF36C /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E810420ABF007D418B /* Object.cpp */; };
 		A946D682104248DA002BF36C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69EF10420ABF007D418B /* Vector.cpp */; };
-		A946D683104248DA002BF36C /* MemoryData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E510420ABF007D418B /* MemoryData.cpp */; };
 		A946D684104248DA002BF36C /* wrap_Data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69F210420ABF007D418B /* wrap_Data.cpp */; };
 		A946D685104248DA002BF36C /* runtime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69EC10420ABF007D418B /* runtime.cpp */; };
 		A946D686104248DA002BF36C /* Exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E69E010420ABF007D418B /* Exception.cpp */; };
@@ -236,8 +235,6 @@
 		A93E69E210420ABF007D418B /* math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math.h; sourceTree = "<group>"; };
 		A93E69E310420ABF007D418B /* Matrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Matrix.cpp; sourceTree = "<group>"; };
 		A93E69E410420ABF007D418B /* Matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Matrix.h; sourceTree = "<group>"; };
-		A93E69E510420ABF007D418B /* MemoryData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryData.cpp; sourceTree = "<group>"; };
-		A93E69E610420ABF007D418B /* MemoryData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryData.h; sourceTree = "<group>"; };
 		A93E69E710420ABF007D418B /* Module.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Module.h; sourceTree = "<group>"; };
 		A93E69E810420ABF007D418B /* Object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Object.cpp; sourceTree = "<group>"; };
 		A93E69E910420ABF007D418B /* Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Object.h; sourceTree = "<group>"; };
@@ -731,8 +728,6 @@
 				A93E69E210420ABF007D418B /* math.h */,
 				A93E69E310420ABF007D418B /* Matrix.cpp */,
 				A93E69E410420ABF007D418B /* Matrix.h */,
-				A93E69E510420ABF007D418B /* MemoryData.cpp */,
-				A93E69E610420ABF007D418B /* MemoryData.h */,
 				A93E69E710420ABF007D418B /* Module.h */,
 				A93E69E810420ABF007D418B /* Object.cpp */,
 				A93E69E910420ABF007D418B /* Object.h */,
@@ -1505,7 +1500,6 @@
 				A946D680104248DA002BF36C /* Matrix.cpp in Sources */,
 				A946D681104248DA002BF36C /* Object.cpp in Sources */,
 				A946D682104248DA002BF36C /* Vector.cpp in Sources */,
-				A946D683104248DA002BF36C /* MemoryData.cpp in Sources */,
 				A946D684104248DA002BF36C /* wrap_Data.cpp in Sources */,
 				A946D685104248DA002BF36C /* runtime.cpp in Sources */,
 				A946D686104248DA002BF36C /* Exception.cpp in Sources */,

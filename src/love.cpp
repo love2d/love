@@ -22,7 +22,6 @@
 #include <common/config.h>
 #include <common/version.h>
 #include <common/runtime.h>
-#include <common/MemoryData.h>
 
 #ifdef LOVE_WINDOWS
 #include <windows.h>
