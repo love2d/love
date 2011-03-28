@@ -191,10 +191,6 @@
 		A9F169A7109E824900FC83D1 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
 		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
-		A9F69691132EB30F008B33A6 /* wrap_Audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F6968F132EB30F008B33A6 /* wrap_Audio.cpp */; };
-		A9F69694132EB31A008B33A6 /* wrap_Audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F69692132EB31A008B33A6 /* wrap_Audio.cpp */; };
-		A9F69697132EB358008B33A6 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F69695132EB358008B33A6 /* wrap_Image.cpp */; };
-		A9F6969A132EB382008B33A6 /* wrap_Sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F69698132EB382008B33A6 /* wrap_Sound.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -599,14 +595,6 @@
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
-		A9F6968F132EB30F008B33A6 /* wrap_Audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Audio.cpp; sourceTree = "<group>"; };
-		A9F69690132EB30F008B33A6 /* wrap_Audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Audio.h; sourceTree = "<group>"; };
-		A9F69692132EB31A008B33A6 /* wrap_Audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Audio.cpp; sourceTree = "<group>"; };
-		A9F69693132EB31A008B33A6 /* wrap_Audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Audio.h; sourceTree = "<group>"; };
-		A9F69695132EB358008B33A6 /* wrap_Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Image.cpp; sourceTree = "<group>"; };
-		A9F69696132EB358008B33A6 /* wrap_Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Image.h; sourceTree = "<group>"; };
-		A9F69698132EB382008B33A6 /* wrap_Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Sound.cpp; sourceTree = "<group>"; };
-		A9F69699132EB382008B33A6 /* wrap_Sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Sound.h; sourceTree = "<group>"; };
 		A9F8833511163C8C00831E98 /* audio.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = audio.lua; sourceTree = "<group>"; };
 		A9F8833611163C8C00831E98 /* audio.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.lua.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -863,8 +851,6 @@
 				A93E6A3C10420AC0007D418B /* Audio.h */,
 				A93E6A4110420AC0007D418B /* Source.cpp */,
 				A93E6A4210420AC0007D418B /* Source.h */,
-				A9F69692132EB31A008B33A6 /* wrap_Audio.cpp */,
-				A9F69693132EB31A008B33A6 /* wrap_Audio.h */,
 			);
 			path = null;
 			sourceTree = "<group>";
@@ -878,8 +864,6 @@
 				A93E6A4910420AC0007D418B /* Pool.h */,
 				A93E6A4C10420AC0007D418B /* Source.cpp */,
 				A93E6A4D10420AC0007D418B /* Source.h */,
-				A9F6968F132EB30F008B33A6 /* wrap_Audio.cpp */,
-				A9F69690132EB30F008B33A6 /* wrap_Audio.h */,
 			);
 			path = openal;
 			sourceTree = "<group>";
@@ -1041,8 +1025,6 @@
 				A93E6AAA10420AC3007D418B /* Image.h */,
 				A93E6AAB10420AC3007D418B /* ImageData.cpp */,
 				A93E6AAC10420AC3007D418B /* ImageData.h */,
-				A9F69695132EB358008B33A6 /* wrap_Image.cpp */,
-				A9F69696132EB358008B33A6 /* wrap_Image.h */,
 			);
 			path = devil;
 			sourceTree = "<group>";
@@ -1355,8 +1337,6 @@
 				A93E6B8010420ACB007D418B /* Sound.h */,
 				A93E6B8110420ACB007D418B /* VorbisDecoder.cpp */,
 				A93E6B8210420ACB007D418B /* VorbisDecoder.h */,
-				A9F69698132EB382008B33A6 /* wrap_Sound.cpp */,
-				A9F69699132EB382008B33A6 /* wrap_Sound.h */,
 			);
 			path = lullaby;
 			sourceTree = "<group>";
@@ -1656,10 +1636,6 @@
 				A9BD60741226C988007DEC63 /* Framebuffer.cpp in Sources */,
 				A9BD60751226C988007DEC63 /* wrap_Framebuffer.cpp in Sources */,
 				A95684F7125D3555001B276B /* b64.cpp in Sources */,
-				A9F69691132EB30F008B33A6 /* wrap_Audio.cpp in Sources */,
-				A9F69694132EB31A008B33A6 /* wrap_Audio.cpp in Sources */,
-				A9F69697132EB358008B33A6 /* wrap_Image.cpp in Sources */,
-				A9F6969A132EB382008B33A6 /* wrap_Sound.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
