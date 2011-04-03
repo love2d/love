@@ -568,7 +568,7 @@ namespace opengl
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		else if (mode == BLEND_MULTIPLICATIVE)
 			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-		else
+		else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	}
 
@@ -580,16 +580,21 @@ namespace opengl
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 
-	Graphics::BlendMode Graphics::getBlendMode()
+	Graphics::BlendMode Graphics::getBlendMode ()
 	{
-		GLint dst, src;
+		GLint dst, src, equation;
 		glGetIntegerv(GL_BLEND_DST, &dst);
 		glGetIntegerv(GL_BLEND_SRC, &src);
+		glGetIntegerv(GL_BLEND_EQUATION, &equation);
 
-		if(src == GL_SRC_ALPHA && dst == GL_ONE)
+		if (equation == GL_FUNC_REVERSE_SUBTRACT) // && src == GL_SRC_ALPHA && dst == GL_ONE
+			return BLEND_SUBTRACTIVE;
+		else if(src == GL_SRC_ALPHA && dst == GL_ONE) // && equation == GL_FUNC_ADD
 			return BLEND_ADDITIVE;
-		else // src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA
+		else if (src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
 			return BLEND_ALPHA;
+		else // src == GL_DST_COLOR && dst == GL_ONE_MINUS_SRC_ALPHA && equation == GL_FUNC_ADD
+			return BLEND_MULTIPLICATIVE;
 	}
 
 	Graphics::ColorMode Graphics::getColorMode()
