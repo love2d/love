@@ -63,14 +63,17 @@ namespace sdl
 		SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
 	}
 
-	bool Mouse::isDown(Button button) const
+	bool Mouse::isDown(Button * buttonlist) const
 	{
-		unsigned b = 0;
+		Uint8 buttonstate = SDL_GetMouseState(0, 0);
 
-		if(!buttons.find(button, b))
-			return false;
+		for (Button button = *buttonlist; button != BUTTON_MAX_ENUM; button = *(++buttonlist))
+		{
+			if (buttonstate & SDL_BUTTON(button))
+				return true;
+		}
 
-		return (SDL_GetMouseState(0, 0) & SDL_BUTTON(b)) != 0;
+		return false;
 	}
 
 	bool Mouse::isVisible() const

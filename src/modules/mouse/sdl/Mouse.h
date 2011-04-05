@@ -43,7 +43,7 @@ namespace sdl
 		void getPosition(int & x, int & y) const;
 		void setPosition(int x, int y);
 		void setVisible(bool visible);
-		bool isDown(Button button) const;
+		bool isDown(Button * buttonlist) const;
 		bool isVisible() const;
 		void setGrab(bool grab);
 		bool isGrabbed() const;
