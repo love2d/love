@@ -182,7 +182,6 @@
 		A968F0D91083A9FC00A895AA /* Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D81083A9FC00A895AA /* Mouse.cpp */; };
 		A968F0DD1083AA6600A895AA /* Shape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0DB1083AA6600A895AA /* Shape.cpp */; };
 		A968F0DE1083AA6600A895AA /* Joint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0DC1083AA6600A895AA /* Joint.cpp */; };
-		A97E3843132A9EDE00198A2F /* love-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A97E3842132A9EDE00198A2F /* love-Info.plist */; };
 		A986DEB5113249A800810279 /* Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986DEB1113249A800810279 /* Thread.cpp */; };
 		A986DEB6113249A800810279 /* wrap_Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986DEB3113249A800810279 /* wrap_Thread.cpp */; };
 		A98D914410507C97008E03F2 /* EncodedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A98D914310507C97008E03F2 /* EncodedImageData.cpp */; };
@@ -1477,7 +1476,6 @@
 			files = (
 				A9DEC1C11046EFA70049C70C /* Love.icns in Resources */,
 				A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */,
-				A97E3843132A9EDE00198A2F /* love-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
