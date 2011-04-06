@@ -26,7 +26,9 @@
 #include <common/math.h>
 #include <common/Vector.h>
 #include <graphics/Drawable.h>
+#include <graphics/Color.h>
 #include "Image.h"
+#include <vector>
 
 namespace love
 {
@@ -50,14 +52,14 @@ namespace opengl
 		float tangentialAcceleration;
 
 		float size;
-		float sizeStart;
-		float sizeEnd;
+		float sizeOffset;
+		float sizeIntervalSize;
 
 		float rotation;
 		float spinStart;
 		float spinEnd;
 
-		float color[4];
+		Colorf color;
 	};
 
 	/**
@@ -127,8 +129,7 @@ namespace opengl
 		float tangentialAccelerationMax;
 
 		// Size.
-		float sizeStart;
-		float sizeEnd;
+		std::vector<float> sizes;
 		float sizeVariation;
 
 		// Rotation
@@ -145,8 +146,7 @@ namespace opengl
 		float offsetY;
 
 		// Color.
-		unsigned char colorStart[4];
-		unsigned char colorEnd[4];
+		std::vector<Colorf> colors;
 
 		void add();
 		void remove(particle * p);
@@ -279,19 +279,11 @@ namespace opengl
 		void setSize(float size);
 
 		/**
-		* Sets the size of the sprite upon creation and upon death (1.0 being the default size).
-		* @param start The size of the sprite upon creation
-		* @param end The size of the sprite upon death.
-		**/
-		void setSize(float start, float end);
-
-		/**
 		* Sets the size of the sprite upon creation and upon death (1.0 being the default size) and any variation.
-		* @param start The size of the sprite upon creation
-		* @param end The size of the sprite upon death.
+		* @param newSizes Array of sizes
 		* @param variation The amount of variation on the starting size (0 being no variation and 1.0 a random size between start and end).
 		**/
-		void setSize(float start, float end, float variation);
+		void setSize(const std::vector<float>& newSizes, float variation = 0.0f);
 
 		/**
 		* Sets the amount of variation to the sprite's beginning size (0 being no variation and 1.0 a random size between start and end).
@@ -343,7 +335,7 @@ namespace opengl
 		* Sets the color of the particles.
 		* @param color The color.
 		**/
-		void setColor(unsigned char * color);
+		void setColor(const Color& color);
 		
 		/**
 		* Sets the particles' offsets for rotation.
@@ -354,10 +346,9 @@ namespace opengl
 		
 		/**
 		* Sets the color of the particles.
-		* @param start The color of the particle when created.
-		* @param end The color of the particle upon death.
+		* @param newColors Array of colors
 		**/
-		void setColor(unsigned char * start, unsigned char * end);
+		void setColor(const std::vector<Color>& newColors);
 
 		/**
 		* Returns the x-coordinate of the emitter's position.
