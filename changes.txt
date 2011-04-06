@@ -3,13 +3,14 @@ LOVE 0.7.2 [Game Slave]
 
   * Added Framebuffer:get/setWrap.
   * Added love.event.clear.
-  * Added support for any number of arguments to love.keyboard.isDown.
+  * Added support for any number of arguments to love.keyboard.isDown and love.mouse.isDown.
  
   * Fixed fused games not working.
   * Fixed ParticleSystem:setSize ignoring the variation argument.
   * Fixed some file-opening exceptions not being caught.
   * Fixed files loaded by libmodplug being too loud.
   * Fixed paths with periods in them not working.
+  * Fixed love.graphics.getBlendMode not detecting subtractive and multiplicative blend modes.
 
   * Updated PhysicsFS version to 2.0.2 on Windows
   * Updated OpenAL Soft version to 1.13 on Windows
