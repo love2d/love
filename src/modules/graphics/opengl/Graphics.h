@@ -31,6 +31,7 @@
 
 // LOVE
 #include <graphics/Graphics.h>
+#include <graphics/Color.h>
 
 #include <image/Image.h>
 #include <image/ImageData.h>
@@ -48,10 +49,6 @@ namespace graphics
 {
 namespace opengl
 {
-	struct Color
-	{
-		unsigned char r, g, b, a;
-	};
 
 	struct DisplayMode
 	{
@@ -93,10 +90,7 @@ namespace opengl
 		// Default values.
 		DisplayState()
 		{
-			color.r = 255;
-			color.g = 255;
-			color.b = 255;
-			color.a = 255;
+			color.set(255,255,255,255);
 			backgroundColor.r = 0;
 			backgroundColor.g = 0;
 			backgroundColor.b = 0;
@@ -265,7 +259,7 @@ namespace opengl
 		/**
 		* Sets the foreground color.
 		**/
-		void setColor(Color c);
+		void setColor(const Color& c);
 
 		/**
 		* Gets current color.
@@ -275,7 +269,7 @@ namespace opengl
 		/**
 		* Sets the background Color.
 		**/
-		void setBackgroundColor(Color c);
+		void setBackgroundColor(const Color& c);
 
 		/**
 		* Gets the current background color.

@@ -4,6 +4,7 @@
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
 #include <graphics/Image.h>
+#include <graphics/Color.h>
 #include <image/Image.h>
 #include <image/ImageData.h>
 #include <common/math.h>
@@ -15,8 +16,6 @@ namespace graphics
 {
 namespace opengl
 {
-	struct Color; // forward declaration for clear
-
 	class Framebuffer : public Drawable, public Volatile
 	{
 	public:

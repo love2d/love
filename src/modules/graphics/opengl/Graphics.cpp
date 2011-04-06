@@ -82,16 +82,10 @@ namespace opengl
 		float color[4];
 		//get the color
 		glGetFloatv(GL_CURRENT_COLOR, color);
-		s.color.r = (GLubyte)(color[0]*255.0f);
-		s.color.g = (GLubyte)(color[1]*255.0f);
-		s.color.b = (GLubyte)(color[2]*255.0f);
-		s.color.a = (GLubyte)(color[3]*255.0f);
+		s.color.set( (color[0]*255.0f), (color[1]*255.0f), (color[2]*255.0f), (color[3]*255.0f) );
 		//get the background color
 		glGetFloatv(GL_COLOR_CLEAR_VALUE, color);
-		s.backgroundColor.r = (GLubyte)(color[0]*255.0f);
-		s.backgroundColor.g = (GLubyte)(color[1]*255.0f);
-		s.backgroundColor.b = (GLubyte)(color[2]*255.0f);
-		s.backgroundColor.a = (GLubyte)(color[3]*255.0f);
+		s.backgroundColor.set( color[0]*255.0f, color[1]*255.0f, color[2]*255.0f, color[3]*255.0f );
 		//store modes here
 		GLint mode;
 		//get blend mode
@@ -489,7 +483,7 @@ namespace opengl
 		return new Framebuffer(width, height);
 	}
 
-	void Graphics::setColor(Color c)
+	void Graphics::setColor(const Color& c)
 	{
 		glColor4ubv(&c.r);
 	}
@@ -508,7 +502,7 @@ namespace opengl
 		return t;
 	}
 
-	void Graphics::setBackgroundColor(Color c)
+	void Graphics::setBackgroundColor(const Color& c)
 	{
 		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
 	}
