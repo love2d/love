@@ -3,7 +3,7 @@ LOVE 0.7.2 [Game Slave]
 
   * Added Framebuffer:get/setWrap.
   * Added love.event.clear.
-  * Added support for any number of arguments to love.keyboard.isDown and love.mouse.isDown.
+  * Added support for any number of arguments to love.keyboard.isDown, love.mouse.isDown and love.joystick.isDown.
  
   * Fixed fused games not working.
   * Fixed ParticleSystem:setSize ignoring the variation argument.

@@ -189,15 +189,20 @@ namespace sdl
 		return 2;		
 	}
 
-	bool Joystick::isDown(int index, int button)
+	bool Joystick::isDown(int index, int * buttonlist)
 	{
 		if(!verifyJoystick(index))
 			return false;
+			
+		int num = getNumButtons(index);
+			
+		for (int button = *buttonlist; button != -1; button = *(++buttonlist))
+		{
+			if (button < num && SDL_JoystickGetButton(joysticks[index], button) == 1)
+				return true;
+		}
 
-		if(button >= getNumButtons(index))
-			return false;
-
-		return (SDL_JoystickGetButton(joysticks[index], button) == 1);
+		return false;
 	}
 
 	Joystick::Hat Joystick::getHat(int index, int hat)

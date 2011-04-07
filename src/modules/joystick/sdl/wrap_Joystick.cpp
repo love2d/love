@@ -104,8 +104,18 @@ namespace sdl
 	int w_isDown(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1);
-		int button = luaL_checkint(L, 2);
-		luax_pushboolean(L, instance->isDown(index, button));
+		unsigned int num = lua_gettop(L);
+		int * buttonlist = new int[num];
+		unsigned int counter = 0;
+		
+		for (unsigned int i = 1; i < num; i++)
+		{
+			buttonlist[counter++] = luaL_checknumber(L, i+1);
+		}
+		buttonlist[counter] = -1;
+		
+		luax_pushboolean(L, instance->isDown(index, buttonlist));
+		delete[] buttonlist;
 		return 1;
 	}
 
