@@ -41,11 +41,9 @@ namespace lullaby
 
 		// fill with modplug defaults (modplug _memsets_, so we could get
 		// garbage settings when the struct is only partially initialized)
-#ifndef LOVE_WINDOWS
 		// This does not exist yet on Windows.
 		settings.mStereoSeparation = 128;
 		settings.mMaxMixChannels = 32;
-#endif // LOVE_WINDOWS
 		settings.mReverbDepth = 0;
 		settings.mReverbDelay = 0;
 		settings.mBassAmount = 0;
