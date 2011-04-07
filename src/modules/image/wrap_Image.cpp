@@ -43,7 +43,12 @@ namespace image
 		{
 			int w = luaL_checkint(L, 1);
 			int h = luaL_checkint(L, 2);
-			ImageData * t = instance->newImageData(w, h);
+			ImageData * t = 0;
+			try {
+				t = instance->newImageData(w, h);
+			} catch (love::Exception & e) {
+				return luaL_error(L, e.what());
+			}
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 			return 1;
 		}

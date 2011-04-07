@@ -11,6 +11,7 @@ LOVE 0.7.2 [Game Slave]
   * Fixed files loaded by libmodplug being too loud.
   * Fixed paths with periods in them not working.
   * Fixed love.graphics.getBlendMode not detecting subtractive and multiplicative blend modes.
+  * Fixed crash when there was no memory available for newImageData(w, h).
 
   * Updated PhysicsFS version to 2.0.2 on Windows
   * Updated OpenAL Soft version to 1.13 on Windows

@@ -88,7 +88,28 @@ namespace devil
 		// Bind the image.
 		ilBindImage(image);
 
-		ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
+		bool success = ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
+		int err = ilGetError();
+		if (err != IL_NO_ERROR){
+			switch (err) {
+				case IL_ILLEGAL_OPERATION:
+					throw love::Exception("Error: Illegal operation");
+					break;
+				case IL_INVALID_PARAM:
+					throw love::Exception("Error: invalid parameters");
+					break;
+				case IL_OUT_OF_MEMORY:
+					throw love::Exception("Error: out of memory");
+					break;
+				default:
+					throw love::Exception("Error: unknown error");
+					break;
+			}
+		}
+
+		if(!success) {
+			throw love::Exception("Could not decode image data.");
+		}
 
 		// Set to black.
 		memset((void*)ilGetData(), 0, width*height*4);
