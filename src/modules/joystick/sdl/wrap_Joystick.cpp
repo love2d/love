@@ -110,7 +110,7 @@ namespace sdl
 		
 		for (unsigned int i = 1; i < num; i++)
 		{
-			buttonlist[counter++] = luaL_checknumber(L, i+1);
+			buttonlist[counter++] = (int) luaL_checknumber(L, i+1);
 		}
 		buttonlist[counter] = -1;
 		

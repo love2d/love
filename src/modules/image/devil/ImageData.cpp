@@ -88,7 +88,7 @@ namespace devil
 		// Bind the image.
 		ilBindImage(image);
 
-		bool success = ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
+		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0) == IL_TRUE);
 		int err = ilGetError();
 		if (err != IL_NO_ERROR){
 			switch (err) {
