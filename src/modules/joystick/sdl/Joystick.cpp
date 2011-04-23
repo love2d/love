@@ -198,7 +198,7 @@ namespace sdl
 			
 		for (int button = *buttonlist; button != -1; button = *(++buttonlist))
 		{
-			if (button < num && SDL_JoystickGetButton(joysticks[index], button) == 1)
+			if (button >= 0 && button < num && SDL_JoystickGetButton(joysticks[index], button) == 1)
 				return true;
 		}
 
