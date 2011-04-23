@@ -89,9 +89,9 @@ namespace devil
 		ilBindImage(image);
 
 		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0) == IL_TRUE);
-		int err = ilGetError();
 
 		if(!success) {
+			int err = ilGetError();
 			if (err != IL_NO_ERROR){
 				switch (err) {
 					case IL_ILLEGAL_OPERATION:
@@ -126,6 +126,7 @@ namespace devil
 		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
 
 		if(!success) {
+			int err = ilGetError();
 			if (err != IL_NO_ERROR){
 				switch (err) {
 					case IL_ILLEGAL_OPERATION:
