@@ -914,7 +914,7 @@ namespace opengl
 			glDisable(GL_TEXTURE_2D);
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)coords);
-			glDrawArrays(GL_POLYGON, 0, count / 2); // opengl will close the polygon for us
+			glDrawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
 			glDisableClientState(GL_VERTEX_ARRAY);
 			glEnable(GL_TEXTURE_2D);
 		}

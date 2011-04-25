@@ -901,7 +901,7 @@ namespace opengl
 			}
 		} else {
 			for (int i = 0; i < args; ++i)
-				coords[i] = lua_tonumber(L, i + 1);
+				coords[i] = lua_tonumber(L, i + 2);
 		}
 
 		// make a closed loop
