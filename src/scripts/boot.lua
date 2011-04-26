@@ -828,12 +828,8 @@ function love.errhand(msg)
 		return
 	end
 
-	love.graphics.setRenderTarget()
-
 	-- Load.
-	love.graphics.setScissor()
-	love.graphics.setMask()
-	love.graphics.setBlendMode("alpha")
+	love.graphics.reset()
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(14)
 	love.graphics.setFont(font)

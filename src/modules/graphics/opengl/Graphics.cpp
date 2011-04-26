@@ -297,6 +297,8 @@ namespace opengl
 	void Graphics::reset()
 	{
 		DisplayState s;
+		discardMask();
+		Framebuffer::bindDefaultBuffer();
 		restoreState(s);
 	}
 
