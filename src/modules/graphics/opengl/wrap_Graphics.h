@@ -50,6 +50,8 @@ namespace opengl
 	int w_isCreated(lua_State * L);
 	int w_setScissor(lua_State * L);
 	int w_getScissor(lua_State * L);
+	int w_defineMask(lua_State * L);
+	int w_setMask(lua_State * L);
 	int w_newImage(lua_State * L);
 	int w_newQuad(lua_State * L);
 	int w_newFrame(lua_State * L);

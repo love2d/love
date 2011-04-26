@@ -173,6 +173,7 @@ namespace opengl
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 0);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, (vsync ? 1 : 0));
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 
 		// FSAA
 		if(fsaa > 0)
@@ -423,6 +424,28 @@ namespace opengl
 		lua_pushnumber(L, scissor[3]);
 
 		return 4;
+	}
+
+	void Graphics::defineMask()
+	{
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glEnable(GL_STENCIL_TEST);
+		glClear(GL_STENCIL_BUFFER_BIT);
+		glStencilFunc(GL_ALWAYS, 1, 1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	}
+
+	void Graphics::useMask()
+	{
+		glStencilFunc(GL_EQUAL, 1, 1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	}
+
+	void Graphics::discardMask()
+	{
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDisable(GL_STENCIL_TEST);
 	}
 
 	Image * Graphics::newImage(love::image::ImageData * data)

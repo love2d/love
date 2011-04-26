@@ -235,6 +235,22 @@ namespace opengl
 		int getScissor(lua_State * L);
 
 		/**
+		 * Enables the stencil buffer and set stencil function to fill it
+		 */
+		void defineMask();
+
+		/**
+		 * Set stencil function to mask the following drawing calls using
+		 * the current stencil buffer
+		 */
+		void useMask();
+
+		/**
+		 * Disables the stencil buffer
+		 */
+		void discardMask();
+
+		/**
 		* Creates an Image object with padding and/or optimization.
 		**/
 		Image * newImage(love::filesystem::File * file);

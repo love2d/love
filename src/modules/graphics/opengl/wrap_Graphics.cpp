@@ -144,6 +144,33 @@ namespace opengl
 		return instance->getScissor(L);
 	}
 
+	int w_defineMask(lua_State * L)
+	{
+		// just return the function
+		if (!lua_isfunction(L, 1))
+			return luaL_typerror(L, 1, "function");
+		lua_settop(L, 1);
+		return 1;
+	}
+
+	int w_setMask(lua_State * L)
+	{
+		// no argument -> clear mask
+		if (lua_isnoneornil(L, 1)) {
+			instance->discardMask();
+			return 0;
+		}
+
+		if (!lua_isfunction(L, 1))
+			return luaL_typerror(L, 1, "mask");
+
+		instance->defineMask();
+		lua_call(L, lua_gettop(L) - 1, 0); // call mask(...)
+		instance->useMask();
+
+		return 0;
+	}
+
 	int w_newImage(lua_State * L)
 	{
 		// Convert to File, if necessary.
@@ -1019,6 +1046,9 @@ namespace opengl
 
 		{ "setScissor", w_setScissor },
 		{ "getScissor", w_getScissor },
+
+		{ "defineMask", w_defineMask },
+		{ "setMask", w_setMask },
 
 		{ "point", w_point },
 		{ "line", w_line },
