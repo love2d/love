@@ -171,6 +171,13 @@ namespace opengl
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
+	void SpriteBatch::setImage(Image * newimage)
+	{
+		image->release();
+		image = newimage;
+		image->retain();
+	}
+
 	void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
 	{
 		static Matrix t;

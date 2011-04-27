@@ -81,12 +81,21 @@ namespace opengl
 		return 0;
 	}
 
+	int w_SpriteBatch_setImage(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+		Image * image = luax_checktype<Image>(L, 2, "Image", GRAPHICS_IMAGE_T);
+		t->setImage(image);
+		return 0;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "add", w_SpriteBatch_add },
 		{ "addq", w_SpriteBatch_addq },
 		{ "clear", w_SpriteBatch_clear },
 		{ "lock", w_SpriteBatch_lock },
 		{ "unlock", w_SpriteBatch_unlock },
+		{ "setImage", w_SpriteBatch_setImage },
 		{ 0, 0 }
 	};
 

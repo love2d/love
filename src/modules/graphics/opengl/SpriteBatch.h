@@ -96,6 +96,8 @@ namespace opengl
 		void * lock();
 		void unlock();
 
+		void setImage(Image * newimage);
+
 		// Implements Drawable.
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 
