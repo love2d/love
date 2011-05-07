@@ -28,12 +28,10 @@
 // SDL
 #include <SDL.h>
 #include "GLee.h"
-#include <SDL_opengl.h>
 
 // LOVE
 #include <graphics/Graphics.h>
-
-#include <font/FontData.h>
+#include <graphics/Color.h>
 
 #include <image/Image.h>
 #include <image/ImageData.h>
@@ -51,10 +49,6 @@ namespace graphics
 {
 namespace opengl
 {
-	struct Color
-	{
-		unsigned char r, g, b, a;
-	};
 
 	struct DisplayMode
 	{
@@ -79,11 +73,7 @@ namespace opengl
 		Graphics::ColorMode colorMode;
 
 		// Line.
-		float lineWidth;
 		Graphics::LineStyle lineStyle;
-		bool stipple;
-		GLint stippleRepeat;
-		GLint stipplePattern;
 
 		// Point.
 		float pointSize;
@@ -100,19 +90,14 @@ namespace opengl
 		// Default values.
 		DisplayState()
 		{
-			color.r = 255;
-			color.g = 255;
-			color.b = 255;
-			color.a = 255;
+			color.set(255,255,255,255);
 			backgroundColor.r = 0;
 			backgroundColor.g = 0;
 			backgroundColor.b = 0;
 			backgroundColor.a = 255;
 			blendMode = Graphics::BLEND_ALPHA;
 			colorMode = Graphics::COLOR_MODULATE;
-			lineWidth = 1.0f;
 			lineStyle = Graphics::LINE_SMOOTH;
-			stipple = false;
 			pointSize = 1.0f;
 			pointStyle = Graphics::POINT_SMOOTH;
 			scissor = false;
@@ -128,6 +113,8 @@ namespace opengl
 
 		Font * currentFont;
 		DisplayMode currentMode;
+
+		float lineWidth;
 
 	public:
 
@@ -248,6 +235,22 @@ namespace opengl
 		int getScissor(lua_State * L);
 
 		/**
+		 * Enables the stencil buffer and set stencil function to fill it
+		 */
+		void defineMask();
+
+		/**
+		 * Set stencil function to mask the following drawing calls using
+		 * the current stencil buffer
+		 */
+		void useMask();
+
+		/**
+		 * Disables the stencil buffer
+		 */
+		void discardMask();
+
+		/**
 		* Creates an Image object with padding and/or optimization.
 		**/
 		Image * newImage(love::filesystem::File * file);
@@ -261,7 +264,7 @@ namespace opengl
 		/**
 		* Creates a Font object.
 		**/
-		Font * newFont(love::font::FontData * data, const Image::Filter& filter = Image::Filter());
+		Font * newFont(love::font::Rasterizer * data, const Image::Filter& filter = Image::Filter());
 
 		SpriteBatch * newSpriteBatch(Image * image, int size, int usage);
 
@@ -272,7 +275,7 @@ namespace opengl
 		/**
 		* Sets the foreground color.
 		**/
-		void setColor(Color c);
+		void setColor(const Color& c);
 
 		/**
 		* Gets current color.
@@ -282,7 +285,7 @@ namespace opengl
 		/**
 		* Sets the background Color.
 		**/
-		void setBackgroundColor(Color c);
+		void setBackgroundColor(const Color& c);
 
 		/**
 		* Gets the current background color.
@@ -339,16 +342,6 @@ namespace opengl
 		void setLine(float width, LineStyle style);
 
 		/**
-		* Disables line stippling.
-		**/
-		void setLineStipple();
-
-		/**
-		* Sets a line stipple pattern.
-		**/
-		void setLineStipple(unsigned short pattern, int repeat = 1);
-
-		/**
 		* Gets the line width.
 		**/
 		float getLineWidth();
@@ -357,13 +350,6 @@ namespace opengl
 		* Gets the line style.
 		**/
 		LineStyle getLineStyle();
-
-		/**
-		* Gets the line stipple pattern and repeat factor.
-		* @return pattern The stipplie bit-pattern.
-		* @return repeat The reapeat factor.
-		**/
-		int getLineStipple(lua_State * L);
 
 		/**
 		* Sets the size of points.
@@ -427,19 +413,12 @@ namespace opengl
 		void point(float x, float y);
 
 		/**
-		* Draws a line from (x1,y1) to (x2,y2).
-		* @param x1 First x-coordinate.
-		* @param y1 First y-coordinate.
-		* @param x2 Second x-coordinate.
-		* @param y2 Second y-coordinate.
-		**/
-		void line(float x1, float y1, float x2, float y2);
-
-		/**
 		* Draws a series of lines connecting the given vertices.
-		* @param ... Vertex components (x1, y1, x2, y2, etc.)
+		* @param coords Vertex components (x1, y1, x2, y2, etc.)
+		* @param count Coord array size
+		* @param looping Wether the line is joining itself
 		**/
-		int polyline(lua_State * L);
+		void polyline(const float* coords, size_t count, bool looping = false);
 
 		/**
 		* Draws a triangle using the three coordinates passed.
@@ -485,13 +464,16 @@ namespace opengl
 		* @param points Amount of points to use to draw the circle.
 		**/
 		void circle(DrawMode mode, float x, float y, float radius, int points = 10);
+        
+        void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
 		/**
 		* Draws a polygon with an arbitrary number of vertices.
 		* @param type The type of drawing (line/filled).
-		* @param ... Vertex components (x1, y1, x2, y2, etc).
+		* @param coords Vertex components (x1, y1, x2, y2, etc.)
+		* @param count Coord array size
 		**/
-		int polygon(lua_State * L);
+		void polygon(DrawMode mode, const float* coords, size_t count);
 
 		/**
 		* Creates a screenshot of the view and saves it to the default folder.

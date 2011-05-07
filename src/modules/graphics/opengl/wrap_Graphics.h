@@ -24,7 +24,6 @@
 // LOVE
 #include "wrap_Font.h"
 #include "wrap_Image.h"
-#include "wrap_Glyph.h"
 #include "wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
@@ -51,8 +50,9 @@ namespace opengl
 	int w_isCreated(lua_State * L);
 	int w_setScissor(lua_State * L);
 	int w_getScissor(lua_State * L);
+	int w_defineMask(lua_State * L);
+	int w_setMask(lua_State * L);
 	int w_newImage(lua_State * L);
-	int w_newGlyph(lua_State * L);
 	int w_newQuad(lua_State * L);
 	int w_newFrame(lua_State * L);
 	int w_newFont1(lua_State * L);
@@ -96,6 +96,7 @@ namespace opengl
 	int w_rectangle(lua_State * L);
 	int w_quad(lua_State * L);
 	int w_circle(lua_State * L);
+	int w_arc(lua_State * L);
 	int w_push(lua_State * L);
 	int w_pop(lua_State * L);
 	int w_rotate(lua_State * L);

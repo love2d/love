@@ -389,7 +389,6 @@ namespace love
 
 		// Image
 		{"ImageData", IMAGE_IMAGE_DATA_ID},
-		{"EncodedImageData", IMAGE_ENCODED_IMAGE_DATA_ID},
 
 		// Audio
 		{"Source", AUDIO_SOURCE_ID},

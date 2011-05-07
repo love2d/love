@@ -4,6 +4,7 @@
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
 #include <graphics/Image.h>
+#include <graphics/Color.h>
 #include <image/Image.h>
 #include <image/ImageData.h>
 #include <common/math.h>
@@ -28,6 +29,8 @@ namespace opengl
 
 		void startGrab();
 		void stopGrab();
+
+		void clear(const Color& c);
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
 		love::image::ImageData * getImageData(love::image::Image * image);

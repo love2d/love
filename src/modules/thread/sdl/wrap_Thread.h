@@ -37,10 +37,10 @@ namespace sdl
 	int w_Thread_kill(lua_State *L);
 	int w_Thread_wait(lua_State *L);
 	int w_Thread_getName(lua_State *L);
-	int w_Thread_receive(lua_State *L);
+	int w_Thread_get(lua_State *L);
 	int w_Thread_demand(lua_State *L);
 	int w_Thread_peek(lua_State *L);
-	int w_Thread_send(lua_State *L);
+	int w_Thread_set(lua_State *L);
 
 	int luaopen_thread(lua_State *L);
 

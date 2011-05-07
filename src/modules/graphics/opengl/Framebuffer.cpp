@@ -1,4 +1,5 @@
 #include "Framebuffer.h"
+#include "Graphics.h"
 #include <common/Matrix.h>
 
 #include <cstring> // For memcpy
@@ -199,10 +200,9 @@ namespace opengl
 			current->stopGrab();
 
 		// bind buffer and clear screen
-		glPushAttrib(GL_VIEWPORT_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_TRANSFORM_BIT);
+		glPushAttrib(GL_VIEWPORT_BIT | GL_DEPTH_BUFFER_BIT | GL_TRANSFORM_BIT);
 		strategy->bindFBO(fbo);
-		glClearColor(.0f, .0f, .0f, .0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, width, height);
 		
 		// Reset the projection matrix
@@ -232,6 +232,22 @@ namespace opengl
 		glPopMatrix();
 		glPopAttrib();
 		current = NULL;
+	}
+
+
+	void Framebuffer::clear(const Color& c)
+	{
+		GLuint previous = 0;
+		if (current != NULL)
+			previous = current->fbo;
+
+		strategy->bindFBO(fbo);
+		glPushAttrib(GL_COLOR_BUFFER_BIT);
+		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glPopAttrib();
+
+		strategy->bindFBO(previous);
 	}
 
 	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
@@ -343,6 +359,9 @@ namespace opengl
 
 		setFilter(settings.filter);
 		setWrap(settings.wrap);
+		Color c;
+		c.r = c.g = c.b = c.a = 0;
+		clear(c);
 		return true;
 	}
 	

@@ -25,7 +25,6 @@
 #include <SDL_opengl.h>
 #include <cmath>
 #include <cstdlib>
-#include <cstring>
 
 namespace love
 {
@@ -33,6 +32,13 @@ namespace graphics
 {
 namespace opengl
 {
+
+	namespace
+	{
+		Colorf colorToFloat(const Color& c) {
+			return Colorf( (GLfloat)c.r/255.0f, (GLfloat)c.g/255.0f, (GLfloat)c.b/255.0f, (GLfloat)c.a/255.0f );
+		}
+	}
 
 	float calculate_variation(float inner, float outer, float var)
 	{
@@ -48,14 +54,14 @@ namespace opengl
 															direction(0), spread(0), relative(false), speedMin(0), speedMax(0), gravityMin(0),
 															gravityMax(0), radialAccelerationMin(0), radialAccelerationMax(0),
 															tangentialAccelerationMin(0), tangentialAccelerationMax(0),
-															sizeStart(1), sizeEnd(1), sizeVariation(0), rotationMin(0), rotationMax(0),
+															sizeVariation(0), rotationMin(0), rotationMax(0),
 															spinStart(0), spinEnd(0), spinVariation(0), offsetX(sprite->getWidth()*0.5f),
 															offsetY(sprite->getHeight()*0.5f)
 	{
 		this->sprite = sprite;
 		sprite->retain();
-		memset(colorStart, 255, 4);
-		memset(colorEnd, 255, 4);
+		sizes.push_back(1.0f);
+		colors.push_back( Colorf(1.0f, 1.0f, 1.0f, 1.0f) );
 		setBufferSize(buffer);
 	}
 
@@ -107,9 +113,9 @@ namespace opengl
 		max = tangentialAccelerationMax;
 		pLast->tangentialAcceleration = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
 
-		pLast->sizeStart = calculate_variation(sizeStart, sizeEnd, sizeVariation);
-		pLast->sizeEnd = calculate_variation(sizeEnd, sizeStart, sizeVariation);
-		pLast->size = pLast->sizeStart;
+		pLast->sizeOffset       = (rand() / (float(RAND_MAX)+1)) * sizeVariation; // time offset for size change
+		pLast->sizeIntervalSize = (1.0 - (rand() / (float(RAND_MAX)+1)) * sizeVariation) - pLast->sizeOffset;
+		pLast->size = sizes[(size_t)(pLast->sizeOffset - .5f) * (sizes.size() - 1)];
 
 		min = rotationMin;
 		max = rotationMax;
@@ -117,10 +123,7 @@ namespace opengl
 		pLast->spinEnd = calculate_variation(spinEnd, spinStart, spinVariation);
 		pLast->rotation = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;;
 
-		pLast->color[0] = (float)colorStart[0] / 255;
-		pLast->color[1] = (float)colorStart[1] / 255;
-		pLast->color[2] = (float)colorStart[2] / 255;
-		pLast->color[3] = (float)colorStart[3] / 255;
+		pLast->color = colors[0];
 
 		pLast++;
 	}
@@ -237,20 +240,13 @@ namespace opengl
 
 	void ParticleSystem::setSize(float size)
 	{
-		sizeStart = size;
-		sizeEnd = size;
+		sizes.resize(1);
+		sizes[0] = size;
 	}
 
-	void ParticleSystem::setSize(float start, float end)
+	void ParticleSystem::setSize(const std::vector<float>& newSizes, float variation)
 	{
-		sizeStart = start;
-		sizeEnd = end;
-	}
-
-	void ParticleSystem::setSize(float start, float end, float variation)
-	{
-		sizeStart = start;
-		sizeEnd = end;
+		sizes = newSizes;
 		sizeVariation = variation;
 	}
 
@@ -294,16 +290,17 @@ namespace opengl
 		spinVariation = variation;
 	}
 
-	void ParticleSystem::setColor(unsigned char * color)
+	void ParticleSystem::setColor(const Color& color)
 	{
-		memcpy(colorStart, color, 4);
-		memcpy(colorEnd, color, 4);
+		colors.resize(1);
+		colors[0] = colorToFloat(color);
 	}
 
-	void ParticleSystem::setColor(unsigned char * start, unsigned char * end)
+	void ParticleSystem::setColor(const std::vector<Color>& newColors)
 	{
-		memcpy(colorStart, start, 4);
-		memcpy(colorEnd, end, 4);
+		colors.resize( newColors.size() );
+		for (size_t i = 0; i < newColors.size(); ++i)
+			colors[i] = colorToFloat( newColors[i] );
 	}
 
 	void ParticleSystem::setOffset(float x, float y)
@@ -403,12 +400,8 @@ namespace opengl
 		{
 			glPushMatrix();
 
-			glColor4f(p->color[0],p->color[1],p->color[2],p->color[3]);
-			glTranslatef(p->position[0],p->position[1],0.0f);
-			glRotatef(LOVE_TODEG(p->rotation), 0.0f, 0.0f, 1.0f); // rad * (180 / pi)
-			glScalef(p->size,p->size,1.0f);
-			glTranslatef(-offsetX,-offsetY,0.0f);
-			sprite->draw(0,0, 0, 1, 1, 0, 0);
+			glColor4f(p->color.r, p->color.g, p->color.b, p->color.a);
+			sprite->draw(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY);
 
 			glPopMatrix();
 			p++;
@@ -481,19 +474,32 @@ namespace opengl
 				p->position[0] = ppos.getX();
 				p->position[1] = ppos.getY();
 
-				const float t = p->life / p->lifetime;
-
-				// Change size.
-				p->size = p->sizeEnd - ((p->sizeEnd - p->sizeStart) * t);
+				const float t = 1.0f - p->life / p->lifetime;
 
 				// Rotate.
-				p->rotation += (p->spinStart*(1-t) + p->spinEnd*t)*dt;
+				p->rotation += (p->spinStart * (1.0f - t) + p->spinEnd * t)*dt;
 
-				// Update color.
-				p->color[0] = (float)(colorEnd[0]*(1.0f-t) + colorStart[0] * t)/255.0f;
-				p->color[1] = (float)(colorEnd[1]*(1.0f-t) + colorStart[1] * t)/255.0f;
-				p->color[2] = (float)(colorEnd[2]*(1.0f-t) + colorStart[2] * t)/255.0f;
-				p->color[3] = (float)(colorEnd[3]*(1.0f-t) + colorStart[3] * t)/255.0f;
+				// Change size according to given intervals:
+				// i = 0       1       2      3          n-1
+				//     |-------|-------|------|--- ... ---|
+				// t = 0    1/(n-1)        3/(n-1)        1
+				//
+				// `s' is the interpolation variable scaled to the current
+				// interval width, e.g. if n = 5 and t = 0.3, then the current
+				// indices are 1,2 and s = 0.3 - 0.25 = 0.05
+				float s = p->sizeOffset + t * p->sizeIntervalSize; // size variation
+				s *= (float)(sizes.size() - 1); // 0 <= s < sizes.size()
+				size_t i = (size_t)s;
+				size_t k = (i == sizes.size() - 1) ? i : i + 1; // boundary check (prevents failing on t = 1.0f)
+				s -= (float)i; // transpose s to be in interval [0:1]: i <= s < i + 1 ~> 0 <= s < 1
+				p->size = sizes[i] * (1.0f - t) + sizes[k] * t;
+
+				// Update color according to given intervals (as above)
+				s = t * (float)(colors.size() - 1);
+				i = (size_t)s;
+				k = (i == colors.size() - 1) ? i : i + 1;
+				s -= (float)i;                            // 0 <= s <= 1
+				p->color = colors[i] * (1.0f - s) + colors[k] * s;
 
 				// Next particle.
 				p++;

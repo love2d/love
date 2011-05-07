@@ -100,6 +100,15 @@ namespace null
 	{
 		return volume;
 	}
+	
+	void Source::seek(float, Source::Unit)
+	{
+	}
+	
+	float Source::tell(Source::Unit) const
+	{
+		return 0.0f;
+	}
 
 	void Source::setPosition(float *)
 	{

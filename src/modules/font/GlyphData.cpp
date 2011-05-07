@@ -28,7 +28,7 @@ namespace font
 {
 
 	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
-		: glyph(glyph), metrics(glyphMetrics), data(0), format(f), padded(false)
+		: glyph(glyph), metrics(glyphMetrics), data(0), format(f)
 	{
 		if (metrics.width && metrics.height) {
 			switch (f) {
@@ -69,12 +69,12 @@ namespace font
 
 	int GlyphData::getHeight() const
 	{
-		return (padded ? getPaddedHeight() : metrics.height);
+		return metrics.height;
 	}
 
 	int GlyphData::getWidth() const
 	{
-		return (padded ? getPaddedWidth() : metrics.width);
+		return metrics.width;
 	}
 
 	int GlyphData::getAdvance() const
@@ -116,71 +116,6 @@ namespace font
 	{
 		return format;
 	}
-
-	void GlyphData::pad()
-	{
-		if (data == 0)
-			return;
-		int w = getWidth();
-		int h = getHeight();
-		int pw = next_p2(w);
-		int ph = next_p2(h);
-		unsigned char * d = new unsigned char[pw * ph * (format == GlyphData::FORMAT_LUMINANCE_ALPHA ? 2 : 4)];
-		for (int j = 0; j < ph; j++) {
-			for (int i = 0; i < pw; i++) {
-				int n = i+j*w;
-				int p = i+j*pw;
-				if (i < w && j < h) {
-					if (format == GlyphData::FORMAT_LUMINANCE_ALPHA) {
-						p *= 2;
-						n *= 2;
-						d[p] = data[n];
-						d[p+1] = data[n+1];
-					} else {
-						p *= 4;
-						n *= 4;
-						d[p] = data[n];
-						d[p+1] = data[n+1];
-						d[p+2] = data[n+2];
-						d[p+3] = data[n+3];
-					}
-				} else {
-					if (format == GlyphData::FORMAT_LUMINANCE_ALPHA) {
-						p *= 2;
-						d[p] = d[p+1] = 0;
-					} else {
-						p *= 4;
-						d[p] = d[p+1] = d[p+2] = d[p+3] = 0;
-					}
-				}
-			}
-		}
-		delete[] data;
-		data = d;
-		padded = true;
-	}
-
-	bool GlyphData::isPadded() const
-	{
-		return padded;
-	}
-
-	int GlyphData::getPaddedWidth() const
-	{
-		return next_p2(metrics.width);
-	}
-
-	int GlyphData::getPaddedHeight() const
-	{
-		return next_p2(metrics.height);
-	}
-
-	inline int GlyphData::next_p2(int num) const
-	{
-		int powered = 2;
-		while(powered < num) powered <<= 1;
-		return powered;
-	}
-
+	
 } // font
 } // love

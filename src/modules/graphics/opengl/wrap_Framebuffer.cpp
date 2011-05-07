@@ -1,3 +1,4 @@
+#include "Graphics.h"
 #include "wrap_Framebuffer.h"
 
 namespace love
@@ -105,6 +106,40 @@ namespace opengl
 		return 2;
 	}
 
+	int w_Framebuffer_clear(lua_State * L)
+	{
+		Framebuffer * fbo = luax_checkfbo(L, 1);
+		Color c;
+		if (lua_isnoneornil(L, 2)) {
+			c.r = 0;
+			c.g = 0;
+			c.b = 0;
+			c.a = 0;
+		} else if (lua_istable(L, 2)) {
+			lua_pushinteger(L, 1);
+			lua_gettable(L, 2);
+			c.r = (unsigned char)luaL_checkint(L, -1);
+			lua_pushinteger(L, 2);
+			lua_gettable(L, 2);
+			c.g = (unsigned char)luaL_checkint(L, -1);
+			lua_pushinteger(L, 3);
+			lua_gettable(L, 2);
+			c.b = (unsigned char)luaL_checkint(L, -1);
+			lua_pushinteger(L, 4);
+			lua_gettable(L, 2);
+			c.g = (unsigned char)luaL_optint(L, -1, 255);
+			lua_pop(L, 4);
+		} else {
+			c.r = (unsigned char)luaL_checkint(L, 2);
+			c.g = (unsigned char)luaL_checkint(L, 3);
+			c.b = (unsigned char)luaL_checkint(L, 4);
+			c.a = (unsigned char)luaL_optint(L, 5, 255);
+		}
+		fbo->clear(c);
+
+		return 0;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "renderTo", w_Framebuffer_renderTo },
 		{ "getImageData", w_Framebuffer_getImageData },
@@ -112,6 +147,7 @@ namespace opengl
 		{ "getFilter", w_Framebuffer_getFilter },
 		{ "setWrap", w_Framebuffer_setWrap },
 		{ "getWrap", w_Framebuffer_getWrap },
+		{ "clear", w_Framebuffer_clear },
 		{ 0, 0 }
 	};
 

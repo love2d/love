@@ -21,6 +21,7 @@
 #include "wrap_ImageData.h"
 
 #include <common/wrap_Data.h>
+#include <filesystem/File.h>
 
 namespace love
 {
@@ -130,12 +131,19 @@ namespace image
 	int w_ImageData_encode(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
-		const char * fmt = luaL_checkstring(L, 2);
-		EncodedImageData::Format f;
-		EncodedImageData::getConstant(fmt, f);
-		EncodedImageData * eid = t->encode(f);
-		luax_newtype(L, "EncodedImageData", IMAGE_ENCODED_IMAGE_DATA_T, (void*)eid);
-		return 1;
+		if(lua_isstring(L, 2))
+			luax_convobj(L, 2, "filesystem", "newFile");
+		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T);
+		const char * fmt;
+		if (lua_isnoneornil(L, 3)) {
+			fmt = file->getExtension().c_str();
+		} else {
+			fmt = luaL_checkstring(L, 3);
+		}
+		ImageData::Format format;
+		ImageData::getConstant(fmt, format);
+		t->encode(file, format);
+		return 0;
 	}
 
 	static const luaL_Reg functions[] = {

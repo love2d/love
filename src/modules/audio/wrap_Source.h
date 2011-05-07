@@ -38,6 +38,8 @@ namespace audio
 	int w_Source_getPitch(lua_State * L);
 	int w_Source_setVolume(lua_State * L);
 	int w_Source_getVolume(lua_State * L);
+	int w_Source_seek(lua_State * L);
+	int w_Source_tell(lua_State * L);
 	int w_Source_setPosition(lua_State * L);
 	int w_Source_getPosition(lua_State * L);
 	int w_Source_setVelocity(lua_State * L);

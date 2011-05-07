@@ -249,7 +249,7 @@ namespace sdl
 		return name;
 	}
 
-	ThreadVariant *Thread::receive(const std::string & name)
+	ThreadVariant *Thread::get(const std::string & name)
 	{
 		ThreadVariant *v = comm->getValue(name);
 		if (v)
@@ -276,7 +276,7 @@ namespace sdl
 		comm->clearValue(name);
 	}
 
-	void Thread::send(const std::string & name, ThreadVariant *v)
+	void Thread::set(const std::string & name, ThreadVariant *v)
 	{
 		lock(); //this function explicitly locks
 		comm->setValue(name, v); //because we need

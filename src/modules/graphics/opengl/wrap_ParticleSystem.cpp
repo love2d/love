@@ -143,13 +143,19 @@ namespace opengl
 		return 0;
 	}
 
-	int w_ParticleSystem_setSize(lua_State * L)
+	int w_ParticleSystem_setSizes(lua_State * L)
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
-		float arg1 = (float)luaL_checknumber(L, 2);
-		float arg2 = (float)luaL_optnumber(L, 3, arg1);
-		float arg3 = (float)luaL_optnumber(L, 4, 0);
-		t->setSize(arg1, arg2, arg3);
+		size_t nSizes = lua_gettop(L) - 1;
+		if (nSizes == 1) {
+			t->setSize(luaL_checknumber(L, 2));
+		} else {
+			std::vector<float> sizes(nSizes);
+			for (size_t i = 0; i < nSizes; ++i)
+				sizes[i] = luaL_checknumber(L, 1 + i + 1);
+
+			t->setSize(sizes);
+		}
 		return 0;
 	}
 
@@ -188,28 +194,26 @@ namespace opengl
 		return 0;
 	}
 
-	int w_ParticleSystem_setColor(lua_State * L)
+	int w_ParticleSystem_setColors(lua_State * L)
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
-		
-		unsigned char start[4];
+		size_t nColors = (lua_gettop(L) - 1) / 4;
 
-		start[0] = (unsigned char)luaL_checkint(L, 2);
-		start[1] = (unsigned char)luaL_checkint(L, 3);
-		start[2] = (unsigned char)luaL_checkint(L, 4);
-		start[3] = (unsigned char)luaL_checkint(L, 5);
-
-		if(lua_gettop(L) > 5)
-		{
-			unsigned char end[4];
-			end[0] = (unsigned char)luaL_checkint(L, 6);
-			end[1] = (unsigned char)luaL_checkint(L, 7);
-			end[2] = (unsigned char)luaL_checkint(L, 8);
-			end[3] = (unsigned char)luaL_checkint(L, 9);
-			t->setColor(start, end);
+		if (nColors == 1) {
+			t->setColor(Color(luaL_checkint(L,2),
+						luaL_checkint(L,3),
+						luaL_checkint(L,4),
+						luaL_checkint(L,5)));
+		} else {
+			std::vector<Color> colors(nColors);
+			for (size_t i = 0; i < nColors; ++i) {
+				colors[i] = Color(luaL_checkint(L, 1 + i*4 + 1),
+						luaL_checkint(L, 1 + i*4 + 2),
+						luaL_checkint(L, 1 + i*4 + 3),
+						luaL_checkint(L, 1 + i*4 + 4));
+			}
+			t->setColor(colors);
 		}
-		else
-			t->setColor(start);
 
 		return 0;
 	}
@@ -343,12 +347,12 @@ namespace opengl
 		{ "setGravity", w_ParticleSystem_setGravity },
 		{ "setRadialAcceleration", w_ParticleSystem_setRadialAcceleration },
 		{ "setTangentialAcceleration", w_ParticleSystem_setTangentialAcceleration },
-		{ "setSize", w_ParticleSystem_setSize },
+		{ "setSizes", w_ParticleSystem_setSizes },
 		{ "setSizeVariation", w_ParticleSystem_setSizeVariation },
 		{ "setRotation", w_ParticleSystem_setRotation },
 		{ "setSpin", w_ParticleSystem_setSpin },
 		{ "setSpinVariation", w_ParticleSystem_setSpinVariation },
-		{ "setColor", w_ParticleSystem_setColor },
+		{ "setColors", w_ParticleSystem_setColors },
 		{ "setOffset", w_ParticleSystem_setOffset },
 		{ "getX", w_ParticleSystem_getX },
 		{ "getY", w_ParticleSystem_getY },

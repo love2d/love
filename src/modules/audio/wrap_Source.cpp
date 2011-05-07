@@ -93,6 +93,27 @@ namespace audio
 		lua_pushnumber(L, t->getVolume());
 		return 1;
 	}
+	
+	int w_Source_seek(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float offset = (float)luaL_checknumber(L, 2);
+		const char * unit = luaL_optstring(L, 3, "seconds");
+		Source::Unit u;
+		t->getConstant(unit, u);
+		t->seek(offset, u);
+		return 0;
+	}
+	
+	int w_Source_tell(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		const char * unit = luaL_optstring(L, 2, "seconds");
+		Source::Unit u;
+		t->getConstant(unit, u);
+		lua_pushnumber(L, t->tell(u));
+		return 1;
+	}
 
 	int w_Source_setPosition(lua_State * L)
 	{
@@ -206,6 +227,8 @@ namespace audio
 		{ "getPitch", w_Source_getPitch },
 		{ "setVolume", w_Source_setVolume },
 		{ "getVolume", w_Source_getVolume },
+		{ "seek", w_Source_seek },
+		{ "tell", w_Source_tell },
 		{ "setPosition", w_Source_setPosition },
 		{ "getPosition", w_Source_getPosition },
 		{ "setVelocity", w_Source_setVelocity },

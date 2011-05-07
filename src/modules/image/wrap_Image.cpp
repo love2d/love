@@ -20,14 +20,10 @@
 
 #include "wrap_Image.h"
 
-#include "EncodedImageData.h"
-#include "wrap_EncodedImageData.h"
-
 #include <common/Data.h>
 #include <common/StringMap.h>
 
 #include "devil/Image.h"
-#include "devil/ImageData.h"
 
 namespace love
 {
@@ -84,27 +80,15 @@ namespace image
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 		return 1;
 	}
-
-	int w_newEncodedImageData(lua_State * L) {
-		ImageData * t = luax_checkimagedata(L, 1);
-		const char * fmt = luaL_checkstring(L, 2);
-		EncodedImageData::Format f;
-		EncodedImageData::getConstant(fmt, f);
-		EncodedImageData * eid = t->encode(f);
-		luax_newtype(L, "EncodedImageData", IMAGE_ENCODED_IMAGE_DATA_T, (void*)eid);
-		return 1;
-	}
 	
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "newImageData",  w_newImageData },
-		{ "newEncodedImageData", w_newEncodedImageData },
 		{ 0, 0 }
 	};
 
 	static const lua_CFunction types[] = {
 		luaopen_imagedata,
-		luaopen_encodedimagedata,
 		0
 	};
 

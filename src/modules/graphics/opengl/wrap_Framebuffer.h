@@ -19,6 +19,7 @@ namespace opengl
 	int w_Framebuffer_getFilter(lua_State * L);
 	int w_Framebuffer_setWrap(lua_State * L);
 	int w_Framebuffer_getWrap(lua_State * L);
+	int w_Framebuffer_clear(lua_State * L);
 	int luaopen_framebuffer(lua_State * L);
 
 } // opengl
