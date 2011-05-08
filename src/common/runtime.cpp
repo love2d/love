@@ -381,11 +381,10 @@ namespace love
 		{"Drawable", GRAPHICS_DRAWABLE_ID},
 		{"Image", GRAPHICS_IMAGE_ID},
 		{"Quad", GRAPHICS_QUAD_ID},
-		{"Glyph", GRAPHICS_GLYPH_ID},
 		{"Font", GRAPHICS_FONT_ID},
 		{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
 		{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
-		{"VertexBuffer", GRAPHICS_VERTEX_BUFFER_ID},
+		{"Framebuffer", GRAPHICS_FRAMEBUFFER_ID},
 
 		// Image
 		{"ImageData", IMAGE_IMAGE_DATA_ID},
