@@ -7,28 +7,18 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>love</string>
-			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>LoveDocument.icns</string>
-			<key>CFBundleTypeMIMETypes</key>
-			<array>
-				<string>application/x-love-game</string>
-			</array>
 			<key>CFBundleTypeName</key>
-			<string>Love Project</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>LOVE</string>
-			</array>
+			<string>LÖVE Project</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
-			<key>LSIsAppleDefaultForType</key>
-			<true/>
-			<key>LSTypeIsPackage</key>
-			<true/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.love2d.love-game</string>
+			</array>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
@@ -39,6 +29,8 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -50,13 +42,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>love</string>
+	<string>LÖVE</string>
 	<key>CFBundlePackageType</key>
-	<string>LoVe</string>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.8.0</string>
 	<key>CFBundleSignature</key>
 	<string>LoVe</string>
-	<key>CFBundleVersion</key>
-	<string>0.7.2</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2006-2011 LÖVE Development Team</string>
 	<key>NSMainNibFile</key>
 	<string>SDLMain</string>
 	<key>NSPrincipalClass</key>
@@ -69,7 +63,7 @@
 				<string>com.pkware.zip-archive</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Love Project</string>
+			<string>LÖVE Project</string>
 			<key>UTTypeIconFile</key>
 			<string>LoveDocument.icns</string>
 			<key>UTTypeIdentifier</key>
