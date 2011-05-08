@@ -241,7 +241,7 @@ namespace opengl
 		}
 
 		// Convert to Rasterizer, if necessary.
-		if(luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, FONT_FONT_DATA_T)) {
+		if(luax_istype(L, 1, DATA_T)) {
 			int idxs[] = {1, 2};
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
@@ -266,7 +266,7 @@ namespace opengl
 		Image::Filter img_filter;
 
 		// Convert to ImageData if necessary.
-		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T) && !luax_istype(L, 1, FONT_FONT_DATA_T)))
+		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
 			luax_convobj(L, 1, "image", "newImageData");
 		else if(luax_istype(L, 1, GRAPHICS_IMAGE_T)) {
 			Image * i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
@@ -472,7 +472,7 @@ namespace opengl
 			}
 
 			// Convert to Rasterizer, if necessary.
-			if(luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, FONT_FONT_DATA_T)) {
+			if(luax_istype(L, 1, DATA_T)) {
 				int idxs[] = {1, 2};
 				luax_convobj(L, idxs, 2, "font", "newRasterizer");
 			}
