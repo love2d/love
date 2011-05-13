@@ -32,6 +32,9 @@
 // String
 #include <string.h>
 
+// Math
+#include <math.h>
+
 namespace love
 {
 namespace image
@@ -56,6 +59,9 @@ namespace devil
 
 		// DevIL image identifier.
 		ILuint image;
+
+		// Create PO2 imagedata.
+		void createPo2(int width, int height, void * data = 0);
 
 		void load(Data * data);
 

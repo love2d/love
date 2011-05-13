@@ -33,97 +33,19 @@ namespace image
 {
 namespace devil
 {
-	void ImageData::load(Data * data)
+	void ImageData::createPo2(int width, int height, void * data)
 	{
-		// Generate DevIL image.
+		//create the image
 		ilGenImages(1, &image);
 
-		// Bind the image.
+		//bind it
 		ilBindImage(image);
 
-		// Try to load the image.
-		ILboolean success = ilLoadL(IL_TYPE_UNKNOWN, (void*)data->getData(), data->getSize());
+		//scale to nearest bigger po2
+		width = pow(2, ceil(log((double) width)/log(2.0)));
+		height = pow(2, ceil(log((double) height)/log(2.0)));
 
-		// Check for errors
-		if(!success)
-		{
-			throw love::Exception("Could not decode image!");
-			return;
-		}
-
-		width = ilGetInteger(IL_IMAGE_WIDTH);
-		height = ilGetInteger(IL_IMAGE_HEIGHT);
-		origin = ilGetInteger(IL_IMAGE_ORIGIN);
-
-		// Make sure the image is in RGBA format.
-		ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-
-		// This should always be four.
-		bpp = ilGetInteger(IL_IMAGE_BPP);
-
-		if(bpp != 4)
-		{
-			std::cerr << "Bits per pixel != 4" << std::endl;
-			return;
-		}
-	}
-
-	ImageData::ImageData(Data * data)
-	{
-		load(data);
-	}
-
-	ImageData::ImageData(filesystem::File * file)
-	{
-		Data * data = file->read();
-		load(data);
-		data->release();
-	}
-
-	ImageData::ImageData(int width, int height)
-		: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
-	{
-		// Generate DevIL image.
-		ilGenImages(1, &image);
-
-		// Bind the image.
-		ilBindImage(image);
-
-		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0) == IL_TRUE);
-
-		if(!success) {
-			int err = ilGetError();
-			if (err != IL_NO_ERROR){
-				switch (err) {
-					case IL_ILLEGAL_OPERATION:
-						throw love::Exception("Error: Illegal operation");
-						break;
-					case IL_INVALID_PARAM:
-						throw love::Exception("Error: invalid parameters");
-						break;
-					case IL_OUT_OF_MEMORY:
-						throw love::Exception("Error: out of memory");
-						break;
-					default:
-						throw love::Exception("Error: unknown error");
-						break;
-				}
-			}
-			throw love::Exception("Could not decode image data.");
-		}
-
-		// Set to black.
-		memset((void*)ilGetData(), 0, width*height*4);
-	}
-
-	ImageData::ImageData(int width, int height, void *data)
-	: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
-	{
-		// Generate DevIL image.
-		ilGenImages(1, &image);
-		// Bind the image.
-		ilBindImage(image);
-		// Try to load the data.
+		//create and populate the image
 		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
 
 		if(!success) {
@@ -146,6 +68,79 @@ namespace devil
 			}
 			throw love::Exception("Could not decode image data.");
 		}
+	}
+
+	void ImageData::load(Data * data)
+	{
+		// Create a temporary image to store
+		// the decoded image in.
+		ILuint tempimage;
+
+		// Generate DevIL image.
+		ilGenImages(1, &tempimage);
+
+		// Bind the image.
+		ilBindImage(tempimage);
+
+		// Try to load the image.
+		ILboolean success = ilLoadL(IL_TYPE_UNKNOWN, (void*)data->getData(), data->getSize());
+
+		// Check for errors
+		if(!success)
+		{
+			ilDeleteImages(1, &tempimage);
+			throw love::Exception("Could not decode image!");
+			return;
+		}
+
+		width = ilGetInteger(IL_IMAGE_WIDTH);
+		height = ilGetInteger(IL_IMAGE_HEIGHT);
+		origin = ilGetInteger(IL_IMAGE_ORIGIN);
+
+		// Make sure the image is in RGBA format.
+		ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+
+		// This should always be four.
+		bpp = ilGetInteger(IL_IMAGE_BPP);
+
+		if(bpp != 4)
+		{
+			ilDeleteImages(1, &tempimage);
+			std::cerr << "Bits per pixel != 4" << std::endl;
+			return;
+		}
+
+		// Create a new, PO2, image based on it
+		createPo2(width, height, ilGetData());
+		// Delete the temporary image.
+		ilDeleteImages(1, &tempimage);
+	}
+
+	ImageData::ImageData(Data * data)
+	{
+		load(data);
+	}
+
+	ImageData::ImageData(filesystem::File * file)
+	{
+		Data * data = file->read();
+		load(data);
+		data->release();
+	}
+
+	ImageData::ImageData(int width, int height)
+		: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
+	{
+		createPo2(width, height);
+
+		// Set to black.
+		memset((void*)ilGetData(), 0, width*height*4);
+	}
+
+	ImageData::ImageData(int width, int height, void *data)
+	: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
+	{
+		createPo2(width, height, data);
 	}
 
 	ImageData::~ImageData()
