@@ -734,6 +734,7 @@ namespace opengl
 
 			// put words back together until a wrap occurs
 			float width = 0.0f;
+			float oldwidth = 0.0f;
 			ostringstream string_builder;
 			vector<string>::const_iterator word_iter;
 			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter) {
@@ -741,13 +742,14 @@ namespace opengl
 				width += currentFont->getWidth( word );
 
 				// on wordwrap, push line to line buffer and clear string builder
-				if (width >= wrap) {
+				if (width >= wrap && oldwidth > 0) {
 					lines_to_draw.push_back( string_builder.str() );
 					string_builder.str( "" );
 					width = static_cast<float>(currentFont->getWidth( word ));
 				}
 				string_builder << word << " ";
 				width += width_space;
+				oldwidth = width;
 			}
 			// push last line
 			lines_to_draw.push_back( string_builder.str() );
