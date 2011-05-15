@@ -27,6 +27,18 @@
 #include <common/Exception.h>
 #include <filesystem/File.h>
 
+int toPo2(int n)
+{
+	n -= 1;
+	n |= n >> 1;
+	n |= n >> 2;
+	n |= n >> 4;
+	n |= n >> 8;
+	n |= n >> 16;
+	n |= n >> 32;
+	return n+1;
+}
+
 namespace love
 {
 namespace image
@@ -42,8 +54,8 @@ namespace devil
 		ilBindImage(image);
 
 		//scale to nearest bigger po2
-		width = pow(2, ceil(log((double) width)/log(2.0)));
-		height = pow(2, ceil(log((double) height)/log(2.0)));
+		width = toPo2(width);
+		height = toPo2(height);
 
 		//create and populate the image
 		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
