@@ -53,8 +53,8 @@ namespace devil
 		// DevIL image identifier.
 		ILuint image;
 
-		// Create PO2 imagedata.
-		void createPo2(int width, int height, void * data = 0);
+		// Create imagedata.
+		void create(int width, int height, void * data = 0);
 
 		void load(Data * data);
 

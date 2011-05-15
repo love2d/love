@@ -35,17 +35,13 @@ namespace image
 {
 namespace devil
 {
-	void ImageData::createPo2(int width, int height, void * data)
+	void ImageData::create(int width, int height, void * data)
 	{
 		//create the image
 		ilGenImages(1, &image);
 
 		//bind it
 		ilBindImage(image);
-
-		//scale to nearest bigger po2
-		width  = next_p2(width);
-		height = next_p2(height);
 
 		//create and populate the image
 		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
@@ -74,15 +70,11 @@ namespace devil
 
 	void ImageData::load(Data * data)
 	{
-		// Create a temporary image to store
-		// the decoded image in.
-		ILuint tempimage;
-
 		// Generate DevIL image.
-		ilGenImages(1, &tempimage);
+		ilGenImages(1, &image);
 
 		// Bind the image.
-		ilBindImage(tempimage);
+		ilBindImage(image);
 
 		// Try to load the image.
 		ILboolean success = ilLoadL(IL_TYPE_UNKNOWN, (void*)data->getData(), data->getSize());
@@ -90,7 +82,6 @@ namespace devil
 		// Check for errors
 		if(!success)
 		{
-			ilDeleteImages(1, &tempimage);
 			throw love::Exception("Could not decode image!");
 			return;
 		}
@@ -107,15 +98,9 @@ namespace devil
 
 		if(bpp != 4)
 		{
-			ilDeleteImages(1, &tempimage);
 			std::cerr << "Bits per pixel != 4" << std::endl;
 			return;
 		}
-
-		// Create a new, PO2, image based on it
-		createPo2(width, height, ilGetData());
-		// Delete the temporary image.
-		ilDeleteImages(1, &tempimage);
 	}
 
 	ImageData::ImageData(Data * data)
@@ -133,7 +118,7 @@ namespace devil
 	ImageData::ImageData(int width, int height)
 		: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
 	{
-		createPo2(width, height);
+		create(width, height);
 
 		// Set to black.
 		memset((void*)ilGetData(), 0, width*height*4);
@@ -142,7 +127,7 @@ namespace devil
 	ImageData::ImageData(int width, int height, void *data)
 	: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
 	{
-		createPo2(width, height, data);
+		create(width, height, data);
 	}
 
 	ImageData::~ImageData()

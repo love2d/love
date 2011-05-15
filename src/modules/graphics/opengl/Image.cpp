@@ -284,13 +284,33 @@ namespace opengl
 
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		float p2width = next_p2(width);
+		float p2height = next_p2(height);
+		float t = width/p2width;
+		float s = height/p2height;
+		
+		vertices[1].t = t;
+		vertices[2].t = t;
+		vertices[2].s = s;
+		vertices[3].s = s;
 
 		glTexImage2D(GL_TEXTURE_2D,
 			0,
 			GL_RGBA8,
+			(GLsizei)p2width,
+			(GLsizei)p2height,
+			0,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			0);
+			
+		glTexSubImage2D(GL_TEXTURE_2D,
+			0,
+			0,
+			0,
 			(GLsizei)width,
 			(GLsizei)height,
-			0,
 			GL_RGBA,
 			GL_UNSIGNED_BYTE,
 			data->getData());
