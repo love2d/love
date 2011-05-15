@@ -23,17 +23,10 @@
 
 // LOVE
 #include <filesystem/File.h>
-#include <image/Image.h>
 #include <image/ImageData.h>
 
 // DevIL
 #include <IL/il.h>
-
-// String
-#include <string.h>
-
-// Math
-#include <math.h>
 
 namespace love
 {

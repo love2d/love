@@ -21,6 +21,8 @@
 #ifndef LOVE_MATH_H
 #define LOVE_MATH_H
 
+#include <climits> // for CHAR_BIT
+
 /* Definitions of useful mathematical constants
  * M_E        - e
  * M_LOG2E    - log2(e)
@@ -64,6 +66,14 @@ struct vertex
 	float x, y;
 	float s, t;
 };
+	
+inline int next_p2(int x)
+{
+	x += (x == 0);
+	x--;
+	for (unsigned int i = 1; i < sizeof(int)*CHAR_BIT; i <<= 1) x |= x >> i;
+	return ++x;
+}
 
 } // love
 
