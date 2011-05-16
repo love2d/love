@@ -556,9 +556,6 @@
     <ClCompile Include="..\..\src\common\Matrix.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\common\MemoryData.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\common\Object.cpp">
       <Filter>common</Filter>
     </ClCompile>
@@ -892,9 +889,6 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\common\Matrix.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\common\MemoryData.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\common\Module.h">

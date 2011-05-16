@@ -14,7 +14,6 @@
     <ClCompile Include="..\..\src\common\b64.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
     <ClCompile Include="..\..\src\common\Matrix.cpp" />
-    <ClCompile Include="..\..\src\common\MemoryData.cpp" />
     <ClCompile Include="..\..\src\common\Object.cpp" />
     <ClCompile Include="..\..\src\common\Reference.cpp" />
     <ClCompile Include="..\..\src\common\runtime.cpp" />
@@ -211,7 +210,6 @@
     <ClInclude Include="..\..\src\common\Exception.h" />
     <ClInclude Include="..\..\src\common\math.h" />
     <ClInclude Include="..\..\src\common\Matrix.h" />
-    <ClInclude Include="..\..\src\common\MemoryData.h" />
     <ClInclude Include="..\..\src\common\Module.h" />
     <ClInclude Include="..\..\src\common\Object.h" />
     <ClInclude Include="..\..\src\common\Reference.h" />
