@@ -177,7 +177,7 @@ namespace sdl
 		return 1;
 	}
 
-	int w_clear(lua_State * L)
+	int w_clear(lua_State *)
 	{
 		instance->clear();
 		return 0;
