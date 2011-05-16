@@ -43,6 +43,8 @@ namespace opengl
 
 	void Quad::refresh(const Viewport & v, int sw, int sh)
 	{
+		sw = next_p2(sw);
+		sh = next_p2(sh);
 		viewport = v;
 
 		vertices[0].x = 0; 
