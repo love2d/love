@@ -287,8 +287,8 @@ namespace opengl
 		
 		float p2width = next_p2(width);
 		float p2height = next_p2(height);
-		float t = width/p2width;
-		float s = height/p2height;
+		float s = width/p2width;
+		float t = height/p2height;
 		
 		vertices[1].t = t;
 		vertices[2].t = t;
