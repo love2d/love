@@ -1,3 +1,29 @@
+LOVE 0.8.0 [Name pending]
+-------------------------
+
+  * Added release error screen.
+  * Added alpha to love.graphics.setBackgroundColor.
+  * Added framebuffer:clear(r, g, b, a).
+  * Added love.graphics.arc.
+  * Added seek and tell to Source objects.
+  * Added Color class.
+  * Added color interpolation to ParticleSystem.
+  * Added alpha masking.
+  * Added automatic PO2 padding.
+  * Added UTF-8 support for fonts.
+
+  * Fixed polygon drawing (was off by one).
+  * Fixed wrapping for single words.
+  * Fixed tracebacks not showing filenames.
+
+  * Updated love.joystick to be 1-indexed.
+  * Updated love.thread to use get/set instead of send/receive.
+  * Updated font engine.
+  * Updated line drawing to a custom system.
+
+  * Removed framebuffer auto-clearing.
+  * Removed EncodedImageData.
+
 LOVE 0.7.2 [Game Slave]
 -----------------------
 
