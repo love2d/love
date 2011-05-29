@@ -267,7 +267,8 @@ function love.init()
 	if c.release then
 		love._release = {
 			title = c.title ~= "Untitled" and c.title or nil,
-			author = c.author ~= "Unnamed" and c.author or nil
+			author = c.author ~= "Unnamed" and c.author or nil,
+			url = c.url
 		}
 	end
 
@@ -892,8 +893,7 @@ function love.releaseerrhand(msg)
 	love.graphics.setRenderTarget()
 
 	-- Load.
-	love.graphics.setScissor()
-	love.graphics.setBlendMode("alpha")
+	love.graphics.reset()
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(14)
 	love.graphics.setFont(font)
@@ -904,7 +904,7 @@ function love.releaseerrhand(msg)
 
 	local err = {}
 
-	p = string.format("An error has occured that caused %s to stop\nyou can notify %s about this.", love._release.title or "this game", love._release.author or "the author")
+	p = string.format("An error has occured that caused %s to stop.\nYou can notify %s about this%s.", love._release.title or "this game", love._release.author or "the author", love._release.url and " at " .. love._release.url or "")
 
 	local function draw()
 		love.graphics.clear()
@@ -937,7 +937,7 @@ end
 
 local result = xpcall(love.boot, error_printer)
 if not result then return end
-local result = xpcall(love.init, love.errhand)
+local result = xpcall(love.init, love._release and love.releaseerrhand or love.errhand)
 if not result then return end
 local result = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
 if not result then return end
