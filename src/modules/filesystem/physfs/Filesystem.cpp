@@ -530,19 +530,19 @@ namespace physfs
 		if(!lua_isstring(L, -1))
 			return luaL_error(L, "The argument must be a string.");
 
-		const char * filename = lua_tostring(L, -1);
+		std::string filename = lua_tostring(L, -1);
 
 		// The file must exist.
-		if(!exists(filename))
-			return luaL_error(L, "File %s does not exist.", filename);
+		if(!exists(filename.c_str()))
+			return luaL_error(L, "File %s does not exist.", filename.c_str());
 
 		// Create the file.
-		File * file = newFile(filename);
+		File * file = newFile(filename.c_str());
 
 		// Get the data from the file.
 		Data * data = file->read();
 
-		int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), filename);
+		int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
 
 		data->release();
 		file->release();
