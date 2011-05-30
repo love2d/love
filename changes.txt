@@ -6,7 +6,6 @@ LOVE 0.8.0 [Name pending]
   * Added framebuffer:clear(r, g, b, a).
   * Added love.graphics.arc.
   * Added seek and tell to Source objects.
-  * Added Color class.
   * Added color interpolation to ParticleSystem.
   * Added alpha masking.
   * Added automatic PO2 padding.
