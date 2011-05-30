@@ -144,7 +144,7 @@ namespace opengl
 		return instance->getScissor(L);
 	}
 
-	int w_defineMask(lua_State * L)
+	int w_newMask(lua_State * L)
 	{
 		// just return the function
 		if (!lua_isfunction(L, 1))
@@ -153,7 +153,7 @@ namespace opengl
 		return 1;
 	}
 
-	int w_setMask(lua_State * L)
+	static int setMask(lua_State * L, bool invert)
 	{
 		// no argument -> clear mask
 		if (lua_isnoneornil(L, 1)) {
@@ -166,9 +166,19 @@ namespace opengl
 
 		instance->defineMask();
 		lua_call(L, lua_gettop(L) - 1, 0); // call mask(...)
-		instance->useMask();
+		instance->useMask(invert);
 
 		return 0;
+	}
+
+	int w_setMask(lua_State * L)
+	{
+		return setMask(L, false);
+	}
+
+	int w_setInvertedMask(lua_State * L)
+	{
+		return setMask(L, true);
 	}
 
 	int w_newImage(lua_State * L)
@@ -1047,8 +1057,9 @@ namespace opengl
 		{ "setScissor", w_setScissor },
 		{ "getScissor", w_getScissor },
 
-		{ "defineMask", w_defineMask },
+		{ "newMask", w_newMask },
 		{ "setMask", w_setMask },
+		{ "setInvertedMask", w_setInvertedMask },
 
 		{ "point", w_point },
 		{ "line", w_line },

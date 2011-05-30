@@ -242,8 +242,10 @@ namespace opengl
 		/**
 		 * Set stencil function to mask the following drawing calls using
 		 * the current stencil buffer
+		 * @param invert Invert the mask, i.e. draw everywhere expect where
+		 *               the mask is defined.
 		 */
-		void useMask();
+		void useMask(bool invert = false);
 
 		/**
 		 * Disables the stencil buffer

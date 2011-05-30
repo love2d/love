@@ -437,9 +437,9 @@ namespace opengl
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	}
 
-	void Graphics::useMask()
+	void Graphics::useMask(bool invert)
 	{
-		glStencilFunc(GL_EQUAL, 1, 1);
+		glStencilFunc(GL_EQUAL, (int)(!invert), 1); // invert ? 0 : 1
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	}
