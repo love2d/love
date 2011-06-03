@@ -477,7 +477,7 @@ namespace opengl
 		* @param angle2 The angle at which the arc terminates.
 		* @param points Number of points to use to draw the arc.
 		**/
-        void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
+		void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
 		/**
 		* Draws a polygon with an arbitrary number of vertices.
