@@ -259,7 +259,7 @@ namespace opengl
 		Image * newImage(love::image::ImageData * data);
 
 		/**
-		* Creates a Frame
+		* Creates a Quad object.
 		**/
 		Quad * newQuad(int x, int y, int w, int h, int sw, int sh);
 
@@ -276,6 +276,7 @@ namespace opengl
 
 		/**
 		* Sets the foreground color.
+		* @param c The new foreground color.
 		**/
 		void setColor(const Color& c);
 
@@ -291,13 +292,12 @@ namespace opengl
 
 		/**
 		* Gets the current background color.
-		* @param c Array of size 3 (r,g,b).
 		**/
 		Color getBackgroundColor();
 
 		/**
 		* Sets the current font.
-		* @parm font A Font object.
+		* @param font A Font object.
 		**/
 		void setFont(Font * font);
 		/**
@@ -417,8 +417,8 @@ namespace opengl
 		/**
 		* Draws a series of lines connecting the given vertices.
 		* @param coords Vertex components (x1, y1, x2, y2, etc.)
-		* @param count Coord array size
-		* @param looping Wether the line is joining itself
+		* @param count Number of coordinates in the array.
+		* @param looping Whether the line joins up with itself.
 		**/
 		void polyline(const float* coords, size_t count, bool looping = false);
 
@@ -463,10 +463,20 @@ namespace opengl
 		* @param x X-coordinate.
 		* @param y Y-coordinate.
 		* @param radius Radius of the circle.
-		* @param points Amount of points to use to draw the circle.
+		* @param points Number of points to use to draw the circle.
 		**/
 		void circle(DrawMode mode, float x, float y, float radius, int points = 10);
-        
+		
+		/**
+		* Draws an arc using the specified arguments.
+		* @param mode The mode of drawing (line/filled).
+		* @param x X-coordinate.
+		* @param y Y-coordinate.
+		* @param radius Radius of the arc.
+		* @param angle1 The angle at which the arc begins.
+		* @param angle2 The angle at which the arc terminates.
+		* @param points Number of points to use to draw the arc.
+		**/
         void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
 		/**
@@ -479,7 +489,7 @@ namespace opengl
 
 		/**
 		* Creates a screenshot of the view and saves it to the default folder.
-		* @param file The file to write the screenshot to.
+		* @param image The love.image module.
 		**/
 		love::image::ImageData * newScreenshot(love::image::Image * image);
 
