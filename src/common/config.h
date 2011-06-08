@@ -68,4 +68,10 @@
 #	define NOMINMAX
 #endif
 
+// Autotools config.h
+#ifdef HAVE_CONFIG_H
+#	include <../config.h>
+#	undef VERSION
+#endif
+
 #endif // LOVE_CONFIG_H

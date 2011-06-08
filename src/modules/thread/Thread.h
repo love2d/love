@@ -24,6 +24,7 @@
 // STL
 #include <map>
 #include <string>
+#include <string.h>
 
 // LOVE
 #include <filesystem/File.h>
