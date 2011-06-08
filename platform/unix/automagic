@@ -1,10 +1,25 @@
 #!/bin/bash
-if ! sh platform/unix/gen-makefile; then
-	echo "You should be doing this from the root directory of the project."
-	exit 1
+
+automagic() {
+	if ! sh platform/unix/gen-makefile; then
+		echo "You should be doing this from the root directory of the project."
+		exit 1
+	fi
+	autoheader 2>&1 || return 1 # Gimmie config.h.in
+	libtoolize --force 2>&1 || return 1
+	aclocal 2>&1 || return 1
+	autoconf 2>&1 || return 1
+	automake -a 2>&1 || return 1
+}
+
+if [[ $1 == "-d" ]]; then
+	automagic
+else
+	automagic > /dev/null
 fi
-autoheader # Gimmie config.h.in
-libtoolize --force
-aclocal
-autoconf
-automake -a
+if [ $? -eq 1 ]; then
+	echo "Failed, please contact the developers."
+	exit 1
+else
+	echo "Success, carry on configuring."
+fi
