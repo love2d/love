@@ -66,24 +66,31 @@ namespace box2d
 		Body * body = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		int top = lua_gettop(L);
 
-		if(top == 2)
+		try
 		{
-			float radius = (float)luaL_checknumber(L, 2);
-			CircleShape * shape = instance->newCircleShape(body, radius);
-			luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
-			return 1;
+			if(top == 2)
+			{
+				float radius = (float)luaL_checknumber(L, 2);
+				CircleShape * shape = instance->newCircleShape(body, radius);
+				luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
+				return 1;
+			}
+			else if(top == 4)
+			{
+				float x = (float)luaL_checknumber(L, 2);
+				float y = (float)luaL_checknumber(L, 3);
+				float radius = (float)luaL_checknumber(L, 4);
+				CircleShape * shape = instance->newCircleShape(body, x, y, radius);
+				luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
+				return 1;
+			}
+			else
+				return luaL_error(L, "Incorrect number of parameters");
 		}
-		else if(top == 4)
+		catch (love::Exception e)
 		{
-			float x = (float)luaL_checknumber(L, 2);
-			float y = (float)luaL_checknumber(L, 3);
-			float radius = (float)luaL_checknumber(L, 4);
-			CircleShape * shape = instance->newCircleShape(body, x, y, radius);
-			luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
-			return 1;
+			return luaL_error(L, "Box2D error: %s", e.what());
 		}
-		else
-			return luaL_error(L, "Incorrect number of parameters");
 	}
 
 	int w_newRectangleShape(lua_State * L)
@@ -91,32 +98,46 @@ namespace box2d
 		Body * body = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		int top = lua_gettop(L);
 
-		if(top == 3)
+		try
 		{
-			float w = (float)luaL_checknumber(L, 2);
-			float h = (float)luaL_checknumber(L, 3);
-			PolygonShape * shape = instance->newRectangleShape(body, w, h);
-			luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
-			return 1;
+			if(top == 3)
+			{
+				float w = (float)luaL_checknumber(L, 2);
+				float h = (float)luaL_checknumber(L, 3);
+				PolygonShape * shape = instance->newRectangleShape(body, w, h);
+				luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
+				return 1;
+			}
+			else if(top == 5 || top == 6)
+			{
+				float x = (float)luaL_checknumber(L, 2);
+				float y = (float)luaL_checknumber(L, 3);
+				float w = (float)luaL_checknumber(L, 4);
+				float h = (float)luaL_checknumber(L, 5);
+				float angle = (float)luaL_optnumber(L, 6, 0);
+				PolygonShape * shape = instance->newRectangleShape(body, x, y, w, h, angle);
+				luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
+				return 1;
+			}
+			else
+				return luaL_error(L, "Incorrect number of parameters");
 		}
-		else if(top == 5 || top == 6)
+		catch (love::Exception e)
 		{
-			float x = (float)luaL_checknumber(L, 2);
-			float y = (float)luaL_checknumber(L, 3);
-			float w = (float)luaL_checknumber(L, 4);
-			float h = (float)luaL_checknumber(L, 5);
-			float angle = (float)luaL_optnumber(L, 6, 0);
-			PolygonShape * shape = instance->newRectangleShape(body, x, y, w, h, angle);
-			luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
-			return 1;
+			return luaL_error(L, "Box2D error: %s", e.what());
 		}
-		else
-			return luaL_error(L, "Incorrect number of parameters");
 	}
 
 	int w_newPolygonShape(lua_State * L)
 	{
-		return instance->newPolygonShape(L);
+		try
+		{
+			return instance->newPolygonShape(L);
+		}
+		catch (love::Exception e)
+		{
+			return luaL_error(L, "Box2D error: %s", e.what());
+		}
 	}
 
 	int w_newDistanceJoint(lua_State * L)
