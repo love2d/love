@@ -25,17 +25,15 @@
 #include "Object.h"
 #include "Reference.h"
 #include "StringMap.h"
+#include <thread/threads.h>
 
 // STD
 #include <iostream>
 
-// SDL
-#include <SDL_mutex.h>
-#include <SDL_thread.h>
 
 namespace love
 {
-	static SDL_mutex *gcmutex = 0;
+	static thread::Mutex *gcmutex = 0;
 	void *_gcmutex = 0;
 	unsigned int _gcthread = 0;
 	/**
@@ -46,17 +44,16 @@ namespace love
 	{
 		if (!gcmutex)
 		{
-			gcmutex = SDL_CreateMutex();
+			gcmutex = new thread::Mutex();
 			_gcmutex = (void*) gcmutex;
 		}
 		Proxy * p = (Proxy *)lua_touserdata(L, 1);
 		Object * t = (Object *)p->data;
 		if(p->own)
 		{
-			SDL_mutexP(gcmutex);
-			_gcthread = (unsigned int) SDL_ThreadID();
+			thread::Lock lock(gcmutex);
+			_gcthread = thread::ThreadBase::threadId();
 			t->release();
-			SDL_mutexV(gcmutex);
 		}
 		return 0;
 	}

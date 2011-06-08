@@ -52,7 +52,7 @@
 #include <physics/box2d/wrap_Physics.h>
 #include <sound/wrap_Sound.h>
 #include <timer/sdl/wrap_Timer.h>
-#include <thread/sdl/wrap_Thread.h>
+#include <thread/wrap_Thread.h>
 
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
@@ -77,7 +77,7 @@ static const luaL_Reg modules[] = {
 	{ "love.physics", love::physics::box2d::luaopen_love_physics },
 	{ "love.sound", love::sound::luaopen_love_sound },
 	{ "love.timer", love::timer::sdl::luaopen_love_timer },
-	{ "love.thread", love::thread::sdl::luaopen_love_thread },
+	{ "love.thread", love::thread::luaopen_love_thread },
 	{ 0, 0 }
 };
 

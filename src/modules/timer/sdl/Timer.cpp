@@ -19,6 +19,7 @@
 **/
 
 #include <common/config.h>
+#include <common/delay.h>
 
 #ifdef LOVE_WINDOWS
 #	include <windows.h>
@@ -81,7 +82,7 @@ namespace sdl
 	void Timer::sleep(int ms)
 	{
 		if(ms > 0)
-			SDL_Delay(ms);
+			delay(ms);
 	}
 
 	float Timer::getDelta() const

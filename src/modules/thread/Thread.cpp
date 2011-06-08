@@ -31,10 +31,14 @@ namespace love
 {
 namespace thread
 {
-namespace sdl
-{
-	int threadfunc(ThreadData *comm)
+
+	Thread::ThreadThread::ThreadThread(ThreadData* comm)
+		: comm(comm)
 	{
+
+	}
+
+	void Thread::ThreadThread::main() {
 		lua_State * L = lua_open();
 		luaL_openlibs(L);
 	#ifdef LOVE_BUILD_STANDALONE
@@ -53,16 +57,17 @@ namespace sdl
 		lua_setfield(L, -2, "_curthread");
 		if(luaL_dostring(L, comm->getCode()) == 1)
 		{
-			SDL_mutexP((SDL_mutex*) comm->mutex);
-			ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1), lua_strlen(L, -1));
-			comm->setValue("error", v);
-			v->release();
-			SDL_mutexV((SDL_mutex*) comm->mutex);
-			SDL_CondBroadcast((SDL_cond*) comm->cond);
+			{
+				Lock lock((Mutex*) comm->mutex);
+				ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1), lua_strlen(L, -1));
+				comm->setValue("error", v);
+				v->release();
+			}
+			((Conditional*) comm->cond)->broadcast();
 		}
 		lua_close(L);
-		return 0;
 	}
+
 
 	ThreadVariant::ThreadVariant(bool boolean)
 	{
@@ -183,8 +188,8 @@ namespace sdl
 		this->data = new char[len+1];
 		memset(this->data, 0, len+1);
 		memcpy(this->data, data->getData(), len);
-		mutex = SDL_CreateMutex();
-		cond = SDL_CreateCond();
+		mutex = new Mutex();
+		cond = new Conditional();
 		comm = new ThreadData(name.c_str(), name.length(), this->data, mutex, cond);
 	}
 
@@ -192,8 +197,8 @@ namespace sdl
 		: handle(0), module(module), name(name), data(0), isThread(false)
 	{
 		module->retain();
-		mutex = SDL_CreateMutex();
-		cond = SDL_CreateCond();
+		mutex = new Mutex();
+		cond = new Conditional();
 		comm = new ThreadData(name.c_str(), name.length(), NULL, mutex, cond);
 	}
 
@@ -203,25 +208,27 @@ namespace sdl
 			delete[] data;
 		delete comm;
 		module->unregister(name);
-		SDL_DestroyMutex(mutex);
-		SDL_DestroyCond(cond);
+		delete mutex;
+		delete cond;
 		module->release();
 	}
 
 	void Thread::start()
 	{
-		if (!handle && isThread)
-			handle = SDL_CreateThread((int (*)(void*)) threadfunc, (void*) comm);
+		if (!handle && isThread) {
+			handle = new ThreadThread(comm);
+			handle->start();
+		}
 	}
 
 	void Thread::kill()
 	{
 		if (handle)
 		{
-			SDL_mutexP((SDL_mutex *) _gcmutex);
-			SDL_KillThread(handle);
+			Lock lock((Mutex *) _gcmutex);
+			handle->kill();
+			delete handle;
 			handle = 0;
-			SDL_mutexV((SDL_mutex *) _gcmutex);
 		}
 	}
 
@@ -229,19 +236,20 @@ namespace sdl
 	{
 		if (handle)
 		{
-			SDL_WaitThread(handle, NULL);
+			handle->wait();
+			delete handle;
 			handle = 0;
 		}
 	}
 
 	void Thread::lock()
 	{
-		SDL_mutexP(mutex);
+		mutex->lock();
 	}
 
 	void Thread::unlock()
 	{
-		SDL_mutexV(mutex);
+		mutex->unlock();
 	}
 
 	std::string Thread::getName()
@@ -264,7 +272,7 @@ namespace sdl
 		{
 			if (comm->getValue("error"))
 				return 0;
-			SDL_CondWait(cond, mutex);
+			cond->wait(mutex);
 			v = comm->getValue(name);
 		}
 		v->retain();
@@ -281,7 +289,7 @@ namespace sdl
 		lock(); //this function explicitly locks
 		comm->setValue(name, v); //because we need
 		unlock(); //it to unlock here for the cond
-		SDL_CondBroadcast(cond);
+		cond->broadcast();
 	}
 
 	ThreadModule::ThreadModule()
@@ -294,6 +302,7 @@ namespace sdl
 		for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++)
 		{
 			i->second->kill();
+			delete i->second;
 		}
 	}
 
@@ -333,6 +342,7 @@ namespace sdl
 		if (threads.count(name) == 0)
 			return;
 		threadlist_t::iterator i = threads.find(name);
+		// FIXME: shouldn't the thread be deleted?
 		threads.erase(i);
 	}
 
@@ -340,6 +350,6 @@ namespace sdl
 	{
 		return "love.thread.sdl";
 	}
-} // sdl
+
 } // thread
 } // love

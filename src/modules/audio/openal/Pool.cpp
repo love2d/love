@@ -44,7 +44,7 @@ namespace openal
 		alGenSources(NUM_SOURCES, sources);
 
 		// Create the mutex.
-		mutex = SDL_CreateMutex();
+		mutex = new thread::Mutex();
 
 		if(alGetError() != AL_NO_ERROR)
 			throw love::Exception("Could not generate sources.");
@@ -58,7 +58,7 @@ namespace openal
 	{
 		stop();
 
-		SDL_DestroyMutex(mutex);
+		delete mutex;
 
 		// Free all sources.
 		alDeleteSources(NUM_SOURCES, sources);
@@ -67,28 +67,30 @@ namespace openal
 	bool Pool::isAvailable() const
 	{
 		bool has = false;
-		LOCK(mutex);
-		has = !available.empty();
-		UNLOCK(mutex);
+		{
+			thread::Lock lock(mutex);
+			has = !available.empty();
+		}
 		return has;
 	}
 
 	bool Pool::isPlaying(Source * s)
 	{
 		bool p = false;
-		LOCK(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
-			if(i->first == s)
-				p = true;
+			thread::Lock lock(mutex);
+			for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+			{
+				if(i->first == s)
+					p = true;
+			}
 		}
-		UNLOCK(mutex);
 		return p;
 	}
 
 	void Pool::update()
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 
 		std::map<Source *, ALuint>::iterator i = playing.begin();
 
@@ -107,8 +109,6 @@ namespace openal
 				i++;
 			}
 		}
-
-		UNLOCK(mutex);
 	}
 
 	int Pool::getNumSources() const
@@ -126,7 +126,7 @@ namespace openal
 		bool ok;
 		out = 0;
 
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 
 		bool alreadyPlaying = findSource(source, out);
 
@@ -160,14 +160,12 @@ namespace openal
 			ok = true;
 		}
 
-		UNLOCK(mutex);
-
 		return ok;
 	}
 
 	void Pool::stop()
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
 			i->first->stopAtomic();
@@ -175,66 +173,57 @@ namespace openal
 		}
 
 		playing.clear();
-
-		UNLOCK(mutex);
 	}
 
 	void Pool::stop(Source * source)
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		removeSource(source);
-		UNLOCK(mutex);
 	}
 
 	void Pool::pause()
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->pauseAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::pause(Source * source)
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		ALuint out;
 		if(findSource(source, out))
 			source->pauseAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::resume()
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->resumeAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::resume(Source * source)
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		ALuint out;
 		if(findSource(source, out))
 			source->resumeAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::rewind()
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->rewindAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::rewind(Source * source)
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		ALuint out;
 		if(findSource(source, out))
 			source->rewindAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::release(Source * source)

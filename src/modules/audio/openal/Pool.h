@@ -33,6 +33,7 @@
 // LOVE
 #include <common/config.h>
 #include <common/Exception.h>
+#include <thread/threads.h>
 
 // OpenAL
 #ifdef LOVE_MACOSX
@@ -70,7 +71,7 @@ namespace openal
 
 		// Only one thread can access this object at the same time. This mutex will
 		// make sure of that.
-		SDL_mutex * mutex;
+		thread::Mutex* mutex;
 
 	public:
 

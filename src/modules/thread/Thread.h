@@ -21,25 +21,24 @@
 #ifndef LOVE_THREAD_SDL_THREAD_H
 #define LOVE_THREAD_SDL_THREAD_H
 
-// SDL
-#include <SDL_thread.h>
-#include <SDL_mutex.h>
-
 // STL
 #include <map>
 #include <string>
 
 // LOVE
-#include <thread/ThreadModule.h>
 #include <filesystem/File.h>
 #include <common/runtime.h>
+#include <common/Module.h>
+#include <thread/threads.h>
+
 
 namespace love
 {
 namespace thread
 {
-namespace sdl
-{
+
+	class ThreadModule;
+
 	enum ThreadVariantType
 	{
 		UNKNOWN = 0,
@@ -98,14 +97,27 @@ namespace sdl
 	class Thread : public love::Object
 	{
 	private:
-		SDL_Thread *handle;
-		love::thread::ThreadModule *module;
+		class ThreadThread: public ThreadBase {
+		private:
+			ThreadData* comm;
+
+		protected:
+			virtual void main();
+
+		public:
+			ThreadThread(ThreadData* comm);
+		};
+
+		ThreadThread *handle;
+
+		ThreadModule *module;
 		ThreadData *comm;
 		std::string name;
 		char *data;
-		SDL_mutex *mutex;
-		SDL_cond *cond;
+		Mutex *mutex;
+		Conditional *cond;
 		bool isThread;
+
 
 	public:
 		Thread(love::thread::ThreadModule *module, const std::string & name, love::Data *data);
@@ -125,7 +137,7 @@ namespace sdl
 
 	typedef std::map<std::string, Thread*> threadlist_t;
 
-	class ThreadModule : public love::thread::ThreadModule
+	class ThreadModule : public love::Module
 	{
 	private:
 		threadlist_t threads;
@@ -140,7 +152,6 @@ namespace sdl
 		void unregister(const std::string & name);
 		const char *getName() const;
 	}; // ThreadModule
-} // sdl
 } // thread
 } // love
 

@@ -19,6 +19,7 @@
 **/
 
 #include "Audio.h"
+#include <common/delay.h>
 
 #include <sound/Decoder.h>
 
@@ -28,8 +29,34 @@ namespace audio
 {
 namespace openal
 {
+	Audio::PoolThread::PoolThread(Pool* pool)
+	: pool(pool), finish(false) {
+
+	}
+
+	void Audio::PoolThread::main()
+	{
+		while(true) {
+			{
+				thread::Lock lock(mutex);
+				if (finish) {
+					return;
+				}
+			}
+
+			pool->update();
+			delay(5);
+		}
+	}
+
+	void Audio::PoolThread::setFinish()
+	{
+		thread::Lock lock(mutex);
+		finish = true;
+	}
+
+
 	Audio::Audio()
-		: finish(false)
 	{
 		// Passing zero for default device.
 		device = alcOpenDevice(0);
@@ -67,15 +94,16 @@ namespace openal
 		// pool must be allocated after AL context.
 		pool = new Pool();
 
-		thread = SDL_CreateThread(Audio::run, (void*)this);
+		poolThread = new PoolThread(pool);
+		poolThread->start();
 	}
 
 	Audio::~Audio()
 	{
-		finish = true;
+		poolThread->setFinish();
+		poolThread->wait();
 
-		SDL_WaitThread(thread, 0);
-
+		delete poolThread;
 		delete pool;
 		
 		alcMakeContextCurrent(0);
@@ -84,18 +112,6 @@ namespace openal
 		alcCloseDevice(device);
 	}
 
-	int Audio::run(void * d)
-	{
-		Audio * instance = (Audio*)d;
-		
-		while(!instance->finish)
-		{
-			instance->pool->update();
-			SDL_Delay(5);
-		}
-
-		return 0;
-	}
 
 	const char * Audio::getName() const
 	{

@@ -36,8 +36,6 @@ namespace love
 {
 namespace thread
 {
-namespace sdl
-{
 	Thread *luax_checkthread(lua_State *L, int idx)
 	{
 		return luax_checktype<Thread>(L, idx, "Thread", THREAD_THREAD_T);
@@ -388,6 +386,5 @@ namespace sdl
 
 		return luax_register_module(L, w);
 	}
-}
 }
 }

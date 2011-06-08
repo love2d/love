@@ -18,24 +18,16 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_THREAD_THREAD_H
-#define LOVE_THREAD_THREAD_H
+#ifndef DELAY_H_
+#define DELAY_H_
 
-#include <common/Module.h>
-#include <string>
+#include <thread/threads.h>
 
-namespace love
-{
-namespace thread
-{
-	class ThreadModule : public Module
-	{
-	public:
-		virtual ~ThreadModule(){};
-		virtual void unregister(const std::string & name) = 0;
-	}; // ThreadModule
 
-} // thread
-} // love
+namespace love {
 
-#endif // LOVE_THREAD_THREAD_H
+	void delay(unsigned int ms);
+
+}; // namespace love
+
+#endif /* DELAY_H_ */
