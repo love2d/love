@@ -37,7 +37,7 @@ namespace opengl
 {
 
 	Graphics::Graphics()
-		: currentFont(0), lineWidth(1)
+		: currentFont(0), lineWidth(1), matrixLimit(0), userMatrices(0)
 	{
 		// Indicates that there is no screen
 		// created yet.
@@ -279,6 +279,11 @@ namespace opengl
 
 		// Restore the display state.
 		restoreState(tempState);
+		
+		// Get the maximum number of matrices
+		// subtract a few to give the engine some room.
+		glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
+		matrixLimit -= 5;
 
 		return true;
 	}
@@ -984,12 +989,18 @@ namespace opengl
 
 	void Graphics::push()
 	{
+		if (userMatrices == matrixLimit)
+			throw Exception("Maximum stack depth reached.");
 		glPushMatrix();
+		++userMatrices;
 	}
 
 	void Graphics::pop()
 	{
+		if (userMatrices < 1)
+			throw Exception("Minimum stack depth reached. (More pops than pushes?)");
 		glPopMatrix();
+		--userMatrices;
 	}
 
 	void Graphics::rotate(float r)

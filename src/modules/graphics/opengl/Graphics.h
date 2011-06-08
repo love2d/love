@@ -115,6 +115,8 @@ namespace opengl
 		DisplayMode currentMode;
 
 		float lineWidth;
+		GLint matrixLimit;
+		GLint userMatrices;
 
 	public:
 

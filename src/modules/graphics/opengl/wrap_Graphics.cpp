@@ -950,15 +950,29 @@ namespace opengl
 		return 0;
 	}
 
-	int w_push(lua_State *)
+	int w_push(lua_State *L)
 	{
-		instance->push();
+		try
+		{
+			instance->push();
+		}
+		catch (love::Exception e)
+		{
+			return luaL_error(L, e.what());
+		}
 		return 0;
 	}
 
-	int w_pop(lua_State *)
+	int w_pop(lua_State *L)
 	{
-		instance->pop();
+		try
+		{
+			instance->pop();
+		}
+		catch (love::Exception e)
+		{
+			return luaL_error(L, e.what());
+		}
 		return 0;
 	}
 
