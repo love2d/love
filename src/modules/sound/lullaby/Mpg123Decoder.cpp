@@ -129,6 +129,7 @@ namespace lullaby
 				continue;
 			case MPG123_NEED_MORE:
 				{
+					size += numbytes;
 					int v = feed(8192);
 
 					switch(v)

@@ -193,13 +193,13 @@ namespace lullaby
 			else if(result <= OV_EREAD)
 				return -1;
 			else if(result == 0)
+			{
+				eof = true;
 				break;
+			}
 			else if(result > 0)
 				size += result;
 		}
-
-		if(oggFile.dataSize - oggFile.dataRead == 0)
-			eof = true;
 
 		return size;
 	}

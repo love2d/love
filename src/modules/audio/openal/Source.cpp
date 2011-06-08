@@ -169,8 +169,8 @@ namespace openal
 				offsetSamples += (curOffsetSamples - newOffsetSamples);
 				offsetSeconds += (curOffsetSecs - newOffsetSecs);
 				
-				if(streamAtomic(buffer, decoder) > 0)
-					alSourceQueueBuffers(source, 1, &buffer);
+				streamAtomic(buffer, decoder);
+				alSourceQueueBuffers(source, 1, &buffer);
 			}
 		}
 	}
@@ -349,7 +349,7 @@ namespace openal
 			{
 				int decoded = streamAtomic(buffers[i], decoder);
 				++usedBuffers;
-				if(decoded < decoder->getSize())
+				if(decoder->isFinished())
 					break;
 			}
 
@@ -466,7 +466,7 @@ namespace openal
 		if(decoded > 0 && fmt != 0)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 
-		if(decoded < d->getSize() && isLooping()) {
+		if(decoder->isFinished() && isLooping()) {
 			offsetSamples = 0;
 			offsetSeconds = 0;
 			d->rewind();
