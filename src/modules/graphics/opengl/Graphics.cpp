@@ -365,6 +365,13 @@ namespace opengl
 		return currentMode.height;
 	}
 
+	int Graphics::getRenderHeight()
+	{
+		if (Framebuffer::current)
+			return Framebuffer::current->getHeight();
+		return currentMode.height;
+	}
+
 	bool Graphics::isCreated()
 	{
 		return (currentMode.width > 0) || (currentMode.height > 0);
@@ -409,7 +416,7 @@ namespace opengl
 	void Graphics::setScissor(int x, int y, int width, int height)
 	{
 		glEnable(GL_SCISSOR_TEST);
-		glScissor(x, getHeight() - (y + height), width, height); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
+		glScissor(x, getRenderHeight() - (y + height), width, height); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
 	}
 
 	void Graphics::setScissor()
@@ -426,7 +433,7 @@ namespace opengl
 		glGetIntegerv(GL_SCISSOR_BOX, scissor);
 
 		lua_pushnumber(L, scissor[0]);
-		lua_pushnumber(L, getHeight() - (scissor[1] + scissor[3])); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
+		lua_pushnumber(L, getRenderHeight() - (scissor[1] + scissor[3])); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
 		lua_pushnumber(L, scissor[2]);
 		lua_pushnumber(L, scissor[3]);
 

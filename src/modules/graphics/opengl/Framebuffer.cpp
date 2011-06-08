@@ -372,6 +372,16 @@ namespace opengl
 		strategy->deleteFBO(fbo, depthbuffer, img);
 	}
 
+	int Framebuffer::getWidth()
+	{
+		return width;
+	}
+
+	int Framebuffer::getHeight()
+	{
+		return height;
+	}
+
 } // opengl
 } // graphics
 } // love

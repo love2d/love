@@ -41,6 +41,9 @@ namespace opengl
 		void setWrap(const Image::Wrap &w);
 		Image::Wrap getWrap() const;
 
+		int getWidth();
+		int getHeight();
+
 		bool loadVolatile();
 		void unloadVolatile();
 

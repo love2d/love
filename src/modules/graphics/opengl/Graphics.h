@@ -118,6 +118,8 @@ namespace opengl
 		GLint matrixLimit;
 		GLint userMatrices;
 
+		int getRenderHeight();
+
 	public:
 
 		Graphics();
