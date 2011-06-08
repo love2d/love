@@ -10,10 +10,14 @@ LOVE 0.8.0 [Name pending]
   * Added alpha masking.
   * Added automatic PO2 padding.
   * Added UTF-8 support for fonts.
+  * Added box2d error handling for some commonly failing functions.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
   * Fixed tracebacks not showing filenames.
+  * Fixed love.graphics.push/pop capable of causing overflows/underflows.
+  * Fixed setScissor on framebuffers.
+  * Fixed several issues with audio, e.g. clicks and pops in mp3s.
 
   * Updated love.joystick to be 1-indexed.
   * Updated love.thread to use get/set instead of send/receive.
