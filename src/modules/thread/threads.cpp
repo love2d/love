@@ -40,9 +40,7 @@ namespace thread
 		return "win32";
 #elif LOVE_THREADS == LOVE_THREADS_SDL
 		return "sdl";
-#else
-		return "unknown"; // ?!?!?!
 #endif
 	}
-} // namespace thread
-} // namespace love
+} // thread
+} // love
