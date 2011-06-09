@@ -59,20 +59,17 @@ namespace thread
 
 	ThreadBase::~ThreadBase()
 	{
-		if (running) {
+		if (running)
 			wait();
-		}
 	}
 
 	bool ThreadBase::start()
 	{
-		thread = CreateThread(NULL, 0, thread_runner, this, NULL);
-		if (thread == NULL) {
+		thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) thread_runner, this, 0, NULL);
+		if (thread == NULL)
 			return false;
-		} else {
-			running = true;
-			return true;
-		}
+		else
+			return (running = true);
 	}
 
 	void ThreadBase::wait()
@@ -93,15 +90,10 @@ namespace thread
 		return (unsigned int)GetCurrentThreadId();
 	}
 
-	Semaphore::Semaphore()
-		: Semaphore(0)
-	{
-	}
-
 	Semaphore::Semaphore(unsigned int initial_value)
 		: count(initial_value)
 	{
-		semaphore = CreateSemaphore(NULL, initial_value, 65535, NULL);
+		semaphore = CreateSemaphore(NULL, initial_value, UINT_MAX, NULL);
 	}
 
 	Semaphore::~Semaphore()
@@ -117,9 +109,8 @@ namespace thread
 	void Semaphore::post()
 	{
 		InterlockedIncrement(&count);
-		if (ReleaseSemaphore(semaphore, 1, NULL) == FALSE) {
+		if (ReleaseSemaphore(semaphore, 1, NULL) == FALSE)
 			InterlockedDecrement(&count);
-		}
 	}
 
 	bool Semaphore::wait(int timeout)
@@ -132,15 +123,8 @@ namespace thread
 			InterlockedDecrement(&count);
 			return true;
 		}
-		else if (result == WAIT_TIMEOUT)
-		{
-			return false;
-		}
 		else
-		{
-			// error
 			return false;
-		}
 	}
 
 	bool Semaphore::tryWait()
@@ -187,9 +171,11 @@ namespace thread
 		{
 			int num = waiting - signals;
 			signals = waiting;
-			for(int i = 0; i < num; i++) sem.post();
+			for (int i = 0; i < num; i++)
+				sem.post();
 			mutex.unlock();
-			for(int i = 0; i < num; i++) done.wait();
+			for (int i = 0; i < num; i++)
+				done.wait();
 		}
 		else
 		{
@@ -206,7 +192,6 @@ namespace thread
 		cmutex->unlock();
 		bool ret = sem.wait(timeout);
 
-
 		mutex.lock();
 		if (signals > 0)
 		{
@@ -218,6 +203,8 @@ namespace thread
 		waiting--;
 		mutex.unlock();
 		cmutex->lock();
+		
+		return true;
 	}
 
 } // thread

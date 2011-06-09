@@ -22,7 +22,7 @@
 #define LOVE_THREAD_WIN32_THREADS_H
 
 #include <windows.h>
-
+#include <limits.h>
 
 namespace love
 {
@@ -50,7 +50,7 @@ namespace thread
 		ThreadBase(ThreadBase& thread) {}
 		bool running;
 
-		static int thread_runner(void* param);
+		static int WINAPI thread_runner(void* param);
 
 	protected:
 
@@ -76,8 +76,7 @@ namespace thread
 		unsigned int count;
 
 	public:
-		Semaphore();
-		Semaphore(unsigned int initial_value);
+		Semaphore(unsigned int initial_value = 0);
 		~Semaphore();
 
 		unsigned int value();
