@@ -25,53 +25,48 @@ namespace love
 namespace thread
 {
 
-	Mutex::Mutex() {
+	Mutex::Mutex()
+	{
 		InitializeCriticalSection(&mutex);
 	}
 
-
-
-	Mutex::~Mutex() {
+	Mutex::~Mutex()
+	{
 		DeleteCriticalSection(&mutex);
 	}
 
-
-
-	void Mutex::lock() {
+	void Mutex::lock()
+	{
 		EnterCriticalSection(&mutex);
 	}
 
-
-
-	void Mutex::unlock() {
+	void Mutex::unlock()
+	{
 		LeaveCriticalSection(&mutex);
 	}
 
-
-
-
-	int ThreadBase::thread_runner(void* param) {
+	int ThreadBase::thread_runner(void* param)
+	{
 		ThreadBase* thread = (ThreadBase*)param;
 		thread->main();
 		return 0;
 	}
 
-	ThreadBase::ThreadBase() : running(false) {
-		HANDLE thread;
+	ThreadBase::ThreadBase()
+		: running(false)
+	{
 	}
 
-
-
-	ThreadBase::~ThreadBase() {
+	ThreadBase::~ThreadBase()
+	{
 		if (running) {
 			wait();
 		}
 	}
 
-
-
-	bool ThreadBase::start() {
-		thread = CreateThread(NULL, 0, run_thread, rd, NULL);
+	bool ThreadBase::start()
+	{
+		thread = CreateThread(NULL, 0, thread_runner, this, NULL);
 		if (thread == NULL) {
 			return false;
 		} else {
@@ -80,60 +75,76 @@ namespace thread
 		}
 	}
 
-	void ThreadBase::wait() {
+	void ThreadBase::wait()
+	{
 		WaitForSingleObject(thread, INFINITE);
 		CloseHandle(thread);
 		running = false;
 	}
 
-	void ThreadBase::kill() {
+	void ThreadBase::kill()
+	{
 		TerminateThread(thread, FALSE);
 		running = false;
 	}
 
-	unsigned int ThreadBase::threadId() {
+	unsigned int ThreadBase::threadId()
+	{
 		return (unsigned int)GetCurrentThreadId();
 	}
 
-
-
+	Semaphore::Semaphore()
+		: Semaphore(0)
+	{
+	}
 
 	Semaphore::Semaphore(unsigned int initial_value)
-	: count(initial_value) {
+		: count(initial_value)
+	{
 		semaphore = CreateSemaphore(NULL, initial_value, 65535, NULL);
 	}
 
-	Semaphore::~Semaphore() {
+	Semaphore::~Semaphore()
+	{
 		CloseHandle(semaphore);
 	}
 
-	unsigned int Semaphore::value() {
+	unsigned int Semaphore::value()
+	{
 		return count;
 	}
 
-	void Semaphore::post() {
+	void Semaphore::post()
+	{
 		InterlockedIncrement(&count);
 		if (ReleaseSemaphore(semaphore, 1, NULL) == FALSE) {
 			InterlockedDecrement(&count);
 		}
 	}
 
-	bool Semaphore::wait(int timeout)  {
+	bool Semaphore::wait(int timeout)
+	{
 		int result;
 
 		result = WaitForSingleObject(semaphore, timeout < 0 ? INFINITE : timeout);
-		if (result == WAIT_OBJECT_0) {
+		if (result == WAIT_OBJECT_0)
+		{
 			InterlockedDecrement(&count);
 			return true;
-		} else if (result == WAIT_TIMEOUT) {
+		}
+		else if (result == WAIT_TIMEOUT)
+		{
 			return false;
-		} else {
+		}
+		else
+		{
 			// error
 			return false;
 		}
 	}
 
-	bool Semaphore::tryWait() {
+	bool Semaphore::tryWait()
+	{
 		return wait(0);
 	}
 
@@ -145,40 +156,49 @@ namespace thread
 
 
 	Conditional::Conditional()
-	: waiting(0), signals(0) {
-
+		: waiting(0), signals(0)
+	{
 	}
 
-	Conditional::~Conditional() {
-
+	Conditional::~Conditional()
+	{
 	}
 
-	void Conditional::signal() {
+	void Conditional::signal()
+	{
 		mutex.lock();
-		if (waiting > signals) {
+		if (waiting > signals)
+		{
 			signals++;
 			sem.post();
 			mutex.unlock();
 			done.wait();
-		} else {
+		}
+		else
+		{
 			mutex.unlock();
 		}
 	}
 
-	void Conditional::broadcast() {
+	void Conditional::broadcast()
+	{
 		mutex.lock();
-		if (waiting > signals) {
+		if (waiting > signals)
+		{
 			int num = waiting - signals;
 			signals = waiting;
 			for(int i = 0; i < num; i++) sem.post();
 			mutex.unlock();
 			for(int i = 0; i < num; i++) done.wait();
-		} else {
+		}
+		else
+		{
 			mutex.unlock();
 		}
 	}
 
-	bool Conditional::wait(Mutex* cmutex, int timeout) {
+	bool Conditional::wait(Mutex* cmutex, int timeout)
+	{
 		mutex.lock();
 		waiting++;
 		mutex.unlock();
@@ -188,8 +208,10 @@ namespace thread
 
 
 		mutex.lock();
-		if (signals > 0) {
-			if (!ret) sem.wait();
+		if (signals > 0)
+		{
+			if (!ret)
+				sem.wait();
 			done.post();
 			signals--;
 		}
@@ -198,5 +220,5 @@ namespace thread
 		cmutex->lock();
 	}
 
-} // namespace thread
-} // namespace love
+} // thread
+} // love

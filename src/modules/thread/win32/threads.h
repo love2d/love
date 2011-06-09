@@ -18,8 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_PLATFROM_WIN32_THREADS_H_
-#define LOVE_PLATFROM_WIN32_THREADS_H_
+#ifndef LOVE_THREAD_WIN32_THREADS_H
+#define LOVE_THREAD_WIN32_THREADS_H
 
 #include <windows.h>
 
@@ -29,7 +29,8 @@ namespace love
 namespace thread
 {
 
-	class Mutex {
+	class Mutex
+	{
 	private:
 		CRITICAL_SECTION mutex;
 		Mutex(const Mutex& mutex) {}
@@ -42,7 +43,8 @@ namespace thread
 		 void unlock();
 	};
 
-	class ThreadBase {
+	class ThreadBase
+	{
 	private:
 		HANDLE thread;
 		ThreadBase(ThreadBase& thread) {}
@@ -66,13 +68,15 @@ namespace thread
 	};
 
 
-	class Semaphore {
+	class Semaphore
+	{
 	private:
 		Semaphore(const Semaphore& sem) {}
 		HANDLE semaphore;
 		unsigned int count;
 
 	public:
+		Semaphore();
 		Semaphore(unsigned int initial_value);
 		~Semaphore();
 
@@ -84,7 +88,8 @@ namespace thread
 
 
 	// Should conditional inherit from mutex?
-	class Conditional {
+	class Conditional
+	{
 	private:
 		Mutex mutex;
 		int waiting;
@@ -100,7 +105,7 @@ namespace thread
 		void broadcast();
 		bool wait(Mutex* cmutex, int timeout=-1);
 	};
-} // namespace thread
-} // namespace love
+} // thread
+} // love
 
-#endif /* LOVE_PLATFROM_WIN32_THREADS_H_ */
+#endif /* LOVE_THREAD_WIN32_THREADS_H */

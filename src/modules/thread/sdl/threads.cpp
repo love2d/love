@@ -24,141 +24,137 @@ namespace love
 {
 namespace thread
 {
-
-	Mutex::Mutex() {
+	Mutex::Mutex()
+	{
 		mutex = SDL_CreateMutex();
 	}
 
-	Mutex::~Mutex() {
+	Mutex::~Mutex()
+	{
 		SDL_DestroyMutex(mutex);
 	}
 
-	void Mutex::lock() {
+	void Mutex::lock()
+	{
 		SDL_mutexP(mutex);
 	}
 
-	void Mutex::unlock() {
+	void Mutex::unlock()
+	{
 		SDL_mutexV(mutex);
 	}
 
-
-
-	int ThreadBase::thread_runner(void* param) {
+	int ThreadBase::thread_runner(void* param)
+	{
 		ThreadBase* thread = (ThreadBase*)param;
 		thread->main();
 		return 0;
 	}
 
-	ThreadBase::ThreadBase() : running(false) {
-		SDL_Thread* thread;
+	ThreadBase::ThreadBase()
+		: running(false)
+	{
 	}
 
-	ThreadBase::~ThreadBase() {
-		if (running) {
+	ThreadBase::~ThreadBase()
+	{
+		if (running)
+		{
 			wait();
 		}
 	}
 
-	bool ThreadBase::start() {
+	bool ThreadBase::start()
+	{
 		thread = SDL_CreateThread(thread_runner, this);
-		if (thread == NULL) {
+		if (thread == NULL)
 			return false;
-		} else {
-			running = true;
-			return true;
-		}
+		else
+			return (running = true);
 	}
 
-	void ThreadBase::wait() {
+	void ThreadBase::wait()
+	{
 		SDL_WaitThread(thread, NULL);
 		running = false;
 	}
 
-	void ThreadBase::kill() {
+	void ThreadBase::kill()
+	{
 		SDL_KillThread(thread);
 		running = false;
 	}
 
-	unsigned int ThreadBase::threadId() {
+	unsigned int ThreadBase::threadId()
+	{
 		return (unsigned int)SDL_ThreadID();
 	}
 
-	Semaphore::Semaphore(unsigned int initial_value) {
+	Semaphore::Semaphore(unsigned int initial_value)
+	{
 		semaphore = SDL_CreateSemaphore(initial_value);
 	}
 
-	Semaphore::~Semaphore() {
+	Semaphore::~Semaphore()
+	{
 		SDL_DestroySemaphore(semaphore);
 	}
 
-	unsigned int Semaphore::value() {
+	unsigned int Semaphore::value()
+	{
 		return SDL_SemValue(semaphore);
 	}
 
-	void Semaphore::post() {
+	void Semaphore::post()
+	{
 		SDL_SemPost(semaphore);
 	}
 
-	bool Semaphore::wait(int timeout) {
-		if (timeout < 0) {
+	bool Semaphore::wait(int timeout)
+	{
+		if (timeout < 0)
 			return SDL_SemWait(semaphore) ? false : true;
-		} else if (timeout == 0) {
+		else if (timeout == 0)
 			return SDL_SemTryWait(semaphore) ? false : true;
-		} else {
+		else
+		{
 			int ret = SDL_SemWaitTimeout(semaphore, timeout);
-			if (ret == SDL_MUTEX_TIMEDOUT) {
-				return false;
-			} else if (ret == 0) {
-				return true;
-			} else {
-				// some nasty error
-				return false;
-			}
+			return (ret == 0);
 		}
 	}
 
-	bool Semaphore::tryWait() {
+	bool Semaphore::tryWait()
+	{
 		return SDL_SemTryWait(semaphore) ? false : true;
 	}
 
-
-
-	Conditional::Conditional() {
+	Conditional::Conditional()
+	{
 		cond = SDL_CreateCond();
 	}
 
-	Conditional::~Conditional() {
+	Conditional::~Conditional()
+	{
 		SDL_DestroyCond(cond);
 	}
 
-	void Conditional::signal() {
+	void Conditional::signal()
+	{
 		SDL_CondSignal(cond);
 	}
 
-	void Conditional::broadcast()  {
+	void Conditional::broadcast()
+	{
 		SDL_CondBroadcast(cond);
 	}
 
-	bool Conditional::wait(Mutex* mutex, int timeout) {
-		if (timeout < 0) {
-			if (SDL_CondWait(cond, mutex->mutex)) {
-				// error
-				return false;
-			} else {
-				return true;
-			}
-		} else {
-			int ret = SDL_CondWaitTimeout(cond, mutex->mutex, timeout);
-			if (ret == SDL_MUTEX_TIMEDOUT) {
-				return false;
-			} else if (ret == 0) {
-				return true;
-			} else {
-				// some bad error
-				return false;
-			}
-		}
+	bool Conditional::wait(Mutex* mutex, int timeout)
+	{
+		if (timeout < 0)
+			return !SDL_CondWait(cond, mutex->mutex);
+		else
+			return (SDL_CondWaitTimeout(cond, mutex->mutex, timeout) == 0);
 	}
 
-} // namespace thread
-} // namespace love
+} // thread
+} // love

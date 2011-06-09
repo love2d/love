@@ -32,8 +32,8 @@ namespace love
 {
 namespace thread
 {
-
-	const char* threadAPI() {
+	const char* threadAPI()
+	{
 #if LOVE_THREADS == LOVE_THREADS_POSIX
 		return "posix";
 #elif LOVE_THREADS == LOVE_THREADS_WIN32
@@ -44,6 +44,5 @@ namespace thread
 		return "unknown"; // ?!?!?!
 #endif
 	}
-
 } // namespace thread
 } // namespace love

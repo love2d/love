@@ -18,8 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_PLATFORM_POSIX_THREADS_H_
-#define LOVE_PLATFORM_POSIX_THREADS_H_
+#ifndef LOVE_THREAD_POSIX_THREADS_H
+#define LOVE_THREAD_POSIX_THREADS_H
 
 #include <pthread.h>
 #include <semaphore.h>
@@ -28,8 +28,8 @@ namespace love
 {
 namespace thread
 {
-
-	class Mutex {
+	class Mutex
+	{
 	private:
 		pthread_mutex_t mutex;
 		Mutex(const Mutex& mutex) {}
@@ -45,7 +45,8 @@ namespace thread
 	};
 
 
-	class ThreadBase {
+	class ThreadBase
+	{
 	private:
 		pthread_t thread;
 		ThreadBase(ThreadBase& thread) {}
@@ -67,7 +68,8 @@ namespace thread
 		static unsigned int threadId();
 	};
 
-	class Semaphore {
+	class Semaphore
+	{
 	private:
 		Semaphore(const Semaphore& sem) {}
 		sem_t semaphore;
@@ -83,7 +85,8 @@ namespace thread
 	};
 
 	// Should conditional inherit from mutex?
-	class Conditional {
+	class Conditional
+	{
 	private:
 		pthread_cond_t cond;
 
@@ -96,8 +99,8 @@ namespace thread
 		bool wait(Mutex* mutex, int timeout=-1);
 	};
 
-} // namespace thread
-} // namespace love
+} // thread
+} // love
 
 
-#endif // !LOVE_PLATFORM_POSIX_THREADS_H_
+#endif // LOVE_THREAD_POSIX_THREADS_H

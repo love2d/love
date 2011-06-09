@@ -24,83 +24,83 @@ namespace love
 {
 namespace thread
 {
-
-	Mutex::Mutex() {
+	Mutex::Mutex()
+	{
 		pthread_create_mutex(&mutex, NULL);
 	}
 
-	Mutex::~Mutex() {
+	Mutex::~Mutex()
+	{
 		pthread_mutex_destroy(&mutex);
 	}
 
-	void Mutex::lock() {
+	void Mutex::lock()
+	{
 		pthread_mutex_lock(&mutex);
 	}
 
-	void Mutex::unlock() {
+	void Mutex::unlock()
+	{
 		pthread_mutex_unlock(&mutex);
 	}
 
-
-
-
-	void* ThreadBase::thread_runner(void* param) {
+	void* ThreadBase::thread_runner(void* param)
+	{
 		ThreadBase* thread = (ThreadBase*)param;
 		thread->main();
 		return NULL;
 	}
 
-
-
-	ThreadBase::ThreadBase() : running(false) {
+	ThreadBase::ThreadBase()
+		: running(false)
+	{
 		pthread_t thread;
 	}
 
-
-
-	ThreadBase::~ThreadBase() {
-		if (running) {
+	ThreadBase::~ThreadBase()
+	{
+		if (running)
+		{
 			wait();
 		}
 	}
 
-
-
-	bool ThreadBase::start() {
-		if (pthread_create(&thread, NULL, thread_runner, this)) {
+	bool ThreadBase::start()
+	{
+		if (pthread_create(&thread, NULL, thread_runner, this))
 			return false;
-		} else {
-			running = true;
-			return true;
-		}
+		return (running = true);
 	}
 
-
-	void ThreadBase::wait() {
+	void ThreadBase::wait()
+	{
 		pthread_join(thread, NULL);
 		running = false;
 	}
 
-
-	void ThreadBase::kill() {
-		// FIXME: I'm not sure about that one.
+	void ThreadBase::kill()
+	{
 		pthread_kill(thread, 9);
 		running = false;
 	}
 
-	unsigned int ThreadBase::threadId() {
+	unsigned int ThreadBase::threadId()
+	{
 		return (unsigned int)((size_t)pthread_self());
 	}
 
-	Semaphore::Semaphore(unsigned int initial_value) {
+	Semaphore::Semaphore(unsigned int initial_value)
+	{
 		sem_init(&sem, 0, initial_value);
 	}
 
-	Semaphore::~Semaphore() {
+	Semaphore::~Semaphore()
+	{
 		sem_destroy(&sem);
 	}
 
-	unsigned int Semaphore::value() {
+	unsigned int Semaphore::value()
+	{
 		int val = 0;
 		if (sem_getvalue(&sem, &val)) {
 			return 0;
@@ -109,71 +109,57 @@ namespace thread
 		}
 	}
 
-	void Semaphore::post() {
+	void Semaphore::post()
+	{
 		sem_post(&sem);
 	}
 
-	bool Semaphore::wait(int timeout) {
-		if (timeout < 0) {
-			if (sem_wait(&sem)) {
-				return false;
-			} else {
-				return true;
-			}
-		} else if (timeout == 0) {
-			if (sem_trywait(&sem)) {
-				return false;
-			} else {
-				return true;
-			}
-		} else {
+	bool Semaphore::wait(int timeout)
+	{
+		if (timeout < 0)
+			return !sem_wait(&sem);
+		else if (timeout == 0)
+			return !sem_trywait(&sem);
+		else
+		{
 			struct timespec ts;
 			ts.tv_sec = timeout/1000;
 			ts.tv_nsec = (timeout % 1000) * 1000000;
-			if (sem_timedwait(&sem, &ts)) {
-				return false; // either timeout or error...
-			} else {
-				return true;
-			}
+			return !sem_timedwait(&sem, &ts);
 		}
 	}
 
-
-	bool Semaphore::tryWait() {
-		if (sem_trywait(&sem)) {
-			return false;
-		} else {
-			return true;
-		}
+	bool Semaphore::tryWait()
+	{
+		return !sem_trywait(&sem);
 	}
 
-
-
-
-	Conditional::Conditional() {
+	Conditional::Conditional()
+	{
 		pthread_cond_init(&cond, NULL);
 	}
 
-	Conditional::~Conditional() {
+	Conditional::~Conditional()
+	{
 		pthread_cond_destroy(&cond);
 	}
 
-	void Conditional::signal() {
+	void Conditional::signal()
+	{
 		pthread_cond_signal(&cond);
 	}
 
-	void Conditional::broadcast() {
+	void Conditional::broadcast()
+	{
 		pthread_cond_broadcast(&cond);
 	}
 
-	bool Conditional::wait(Mutex* mutex, int timeout) {
-		if (timeout < 0) {
-			if (pthread_cond_wait(cond, mutex->mutex)) {
-				return false;
-			} else {
-				return true;
-			}
-		} else {
+	bool Conditional::wait(Mutex* mutex, int timeout)
+	{
+		if (timeout < 0)
+			return !pthread_cond_wait(cond, mutex->mutex);
+		else
+		{
 			struct timespec ts;
 			int ret;
 
@@ -181,16 +167,9 @@ namespace thread
 			ts.tv_nsec = (timeout % 1000) * 1000000;
 
 			ret = pthread_cond_timedwait(&cond, mutex->mutex, &ts);
-			if (ret == ETIMEDOUT) {
-				return false;
-			} else if (ret == 0) {
-				return true;
-			} else {
-				// something bad happend!
-				return false;
-			}
+			return (ret == 0);
 		}
 	}
-} // namespace thread
-} // namespace love
+} // thread
+} // love
 

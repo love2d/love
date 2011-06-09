@@ -18,8 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_PLATFORM_SDL_THREADS_H_
-#define LOVE_PLATFORM_SDL_THREADS_H_
+#ifndef LOVE_THREAD_SDL_THREADS_H
+#define LOVE_THREAD_SDL_THREADS_H
 
 #include "SDL.h"
 
@@ -97,8 +97,8 @@ namespace thread
 		bool wait(Mutex* mutex, int timeout=-1);
 	};
 
-} // namespace thread
-} // namespace love
+} // thread
+} // love
 
 
-#endif // !LOVE_PLATFORM_SDL_THREADS_H_
+#endif // LOVE_THREAD_SDL_THREADS_H

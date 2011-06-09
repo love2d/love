@@ -35,10 +35,10 @@ namespace thread
 	Thread::ThreadThread::ThreadThread(ThreadData* comm)
 		: comm(comm)
 	{
-
 	}
 
-	void Thread::ThreadThread::main() {
+	void Thread::ThreadThread::main()
+	{
 		lua_State * L = lua_open();
 		luaL_openlibs(L);
 	#ifdef LOVE_BUILD_STANDALONE

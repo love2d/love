@@ -18,8 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_THREADS_H_
-#define LOVE_THREADS_H_
+#ifndef LOVE_THREAD_THREADS_H
+#define LOVE_THREAD_THREADS_H
 
 #define LOVE_THREADS_SDL	0
 #define LOVE_THREADS_WIN32	1
@@ -56,7 +56,8 @@ namespace thread
 
 	const char* threadAPI();
 
-	class Lock {
+	class Lock
+	{
 	private:
 		Mutex* mutex;
 
@@ -76,7 +77,7 @@ namespace thread
 		}
 	};
 
-} // namespace thread
-} // namespace love
+} // thread
+} // love
 
-#endif /* LOVE_THREADS_H_ */
+#endif /* LOVE_THREAD_THREADS_H */
