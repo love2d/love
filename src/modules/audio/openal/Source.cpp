@@ -137,7 +137,7 @@ namespace openal
 			// Looping mode could have changed.
 			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 		}
-		else if(valid && type == TYPE_STREAM)
+		else if(valid && type == TYPE_STREAM && !(!isLooping() && isFinished()))
 		{
 			// Number of processed buffers.
 			ALint processed;
@@ -463,7 +463,7 @@ namespace openal
 
 		int fmt = getFormat(d->getChannels(), d->getBits());
 
-		if(decoded > 0 && fmt != 0)
+		if(fmt != 0)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 
 		if(decoder->isFinished() && isLooping()) {
