@@ -40,6 +40,7 @@ namespace box2d
 {
 
 	class Contact;
+	class Body;
 
 	/**
 	* The World is the "God" container class,
@@ -83,6 +84,9 @@ namespace box2d
 
 		// The length of one meter in pixels.
 		int meter;
+		
+		// The list of to be destructed bodies.
+		std::vector<Body*> destructBodies;
 
 	public:
 
@@ -241,6 +245,12 @@ namespace box2d
 		* @return The scaled AABB.
 		**/
 		b2AABB scaleUp(const b2AABB & aabb);
+		
+		/**
+		 * Mark a body for destruction.
+		 * To be called from Body
+		 **/
+		void destroyBody(Body * b);
 
 	};
 

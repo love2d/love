@@ -123,6 +123,14 @@ namespace box2d
 		persist.process();
 		remove.process();
 		result.process();
+		
+		// Really destroy all marked bodies.
+		for (std::vector<Body*>::iterator i = destructBodies.begin(); i < destructBodies.end(); i++)
+		{
+			Body * b = *i;
+			b->release();
+		}
+		destructBodies.clear();
 	}
 
 	void World::Add(const b2ContactPoint* point)
@@ -271,6 +279,11 @@ namespace box2d
 		t.lowerBound = scaleUp(aabb.lowerBound);
 		t.upperBound = scaleUp(aabb.upperBound);
 		return t;
+	}
+	
+	void World::destroyBody(Body * b)
+	{
+		destructBodies.push_back(b);
 	}
 
 } // box2d

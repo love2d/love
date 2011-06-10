@@ -329,6 +329,11 @@ namespace box2d
 		return 2;
 	}
 
+	void Body::destroy()
+	{
+		world->destroyBody(this);
+	}
+
 } // box2d
 } // physics
 } // love
