@@ -18,6 +18,10 @@ LOVE 0.8.0 [Name pending]
   * Fixed love.graphics.push/pop capable of causing overflows/underflows.
   * Fixed setScissor on framebuffers.
   * Fixed several issues with audio, e.g. clicks and pops in mp3s.
+  * Fixed crashes when bodies were destroyed during collisions.
+  * Fixed bound SpriteBatches corrupting when drawing.
+
+  * Renamed SpriteBatch's lock/unlock to bind/unbind.
 
   * Updated love.joystick to be 1-indexed.
   * Updated love.thread to use get/set instead of send/receive.
