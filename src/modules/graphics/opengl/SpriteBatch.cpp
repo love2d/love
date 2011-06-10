@@ -161,11 +161,13 @@ namespace opengl
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		lockp = (vertex *)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		return lockp;
 	}
 
 	void SpriteBatch::unlock()
 	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 		lockp = 0;
 		glBindBuffer(GL_ARRAY_BUFFER, 0);

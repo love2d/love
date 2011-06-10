@@ -67,14 +67,14 @@ namespace opengl
 		return 0;
 	}
 
-	int w_SpriteBatch_lock(lua_State * L)
+	int w_SpriteBatch_bind(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
-		lua_pushlightuserdata(L, t->lock());
-		return 1;
+		t->lock();
+		return 0;
 	}
 
-	int w_SpriteBatch_unlock(lua_State * L)
+	int w_SpriteBatch_unbind(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
 		t->unlock();
@@ -93,8 +93,8 @@ namespace opengl
 		{ "add", w_SpriteBatch_add },
 		{ "addq", w_SpriteBatch_addq },
 		{ "clear", w_SpriteBatch_clear },
-		{ "lock", w_SpriteBatch_lock },
-		{ "unlock", w_SpriteBatch_unlock },
+		{ "bind", w_SpriteBatch_bind },
+		{ "unbind", w_SpriteBatch_unbind },
 		{ "setImage", w_SpriteBatch_setImage },
 		{ 0, 0 }
 	};
