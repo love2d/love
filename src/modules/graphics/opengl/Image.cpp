@@ -29,7 +29,6 @@ namespace graphics
 {
 namespace opengl
 {
-
 	Image::Image(love::image::ImageData * data)
 		: width((float)(data->getWidth())), height((float)(data->getHeight())), texture(0)
 	{
@@ -277,6 +276,14 @@ namespace opengl
 
 	bool Image::loadVolatile()
 	{
+		if (GLEE_ARB_texture_non_power_of_two)
+			return loadVolatileNPOT();
+		else
+			return loadVolatilePOT();
+	}
+
+	bool Image::loadVolatilePOT()
+	{
 		glGenTextures(1,(GLuint*)&texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -311,6 +318,32 @@ namespace opengl
 			0,
 			(GLsizei)width,
 			(GLsizei)height,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			data->getData());
+
+		setFilter(settings.filter);
+		setWrap(settings.wrap);
+
+		return true;
+	}
+
+	bool Image::loadVolatileNPOT()
+	{
+		glGenTextures(1,(GLuint*)&texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		glTexImage2D(GL_TEXTURE_2D,
+			0,
+			GL_RGBA8,
+			(GLsizei)width,
+			(GLsizei)height,
+			0,
 			GL_RGBA,
 			GL_UNSIGNED_BYTE,
 			data->getData());

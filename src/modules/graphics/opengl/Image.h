@@ -69,6 +69,9 @@ namespace opengl
 			Image::Wrap wrap;
 		} settings;
 
+		bool loadVolatilePOT();
+		bool loadVolatileNPOT();
+
 	public:
 
 		/**
