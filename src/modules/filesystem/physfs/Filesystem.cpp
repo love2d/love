@@ -34,7 +34,7 @@ namespace filesystem
 namespace physfs
 {
 	Filesystem::Filesystem()
-		: open_count(0), buffer(0), isInited(false)
+		: open_count(0), buffer(0), isInited(false), release(false), releaseSet(false)
 	{
 	}
 
@@ -59,6 +59,14 @@ namespace physfs
 		isInited = true;
 	}
 
+	void Filesystem::setRelease(bool release)
+	{
+		if (releaseSet)
+			return;
+		this->release = release;
+		releaseSet = true;
+	}
+
 	bool Filesystem::setIdentity( const char * ident )
 	{
 		if(!isInited)
@@ -68,11 +76,14 @@ namespace physfs
 		save_identity = std::string(ident);
 
 		// Generate the relative path to the game save folder.
-		save_path_relative = std::string(LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
+		save_path_relative = std::string(LOVE_APPDATA_PREFIX LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
 
 		// Generate the full path to the game save folder.
 		save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR);
-		save_path_full += save_path_relative;
+		if (release)
+			save_path_full += std::string(LOVE_APPDATA_PREFIX) + save_identity;
+		else
+			save_path_full += save_path_relative;
 
 		// We now have something like:
 		// save_identity: game
@@ -120,7 +131,13 @@ namespace physfs
 			return false;
 
 		// Create the save folder. (We're now "at" %APPDATA%).
-		if(!mkdir(save_path_relative.c_str()))
+		bool success = false;
+		if (release)
+			success = mkdir(save_identity.c_str());
+		else
+			success = mkdir(save_path_relative.c_str());
+
+		if(!success)
 		{
 			PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
 			return false;

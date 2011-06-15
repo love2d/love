@@ -182,6 +182,8 @@ function love.createhandlers()
 
 end
 
+local is_fused_game = false
+
 -- This can't be overriden.
 function love.boot()
 
@@ -198,6 +200,7 @@ function love.boot()
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, arg0)
+	is_fused_game = can_has_game
 
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local full_source =  love.path.getfull(o.game.arg[1])
@@ -297,9 +300,11 @@ function love.init()
 		love.graphics.setCaption(c.title)
 	end
 
-	if love.filesystem and c.identity then love.filesystem.setIdentity(c.identity) end
-
-	if love.filesystem and love.filesystem.exists("main.lua") then require("main.lua") end
+	if love.filesystem then
+		love.filesystem.setRelease(c.release and is_fused_game)
+		if c.identity then love.filesystem.setIdentity(c.identity) end
+		if love.filesystem.exists("main.lua") then require("main.lua") end
+	end
 
 	if no_game_code then
 		error("No code to run\nYour game might be packaged incorrectly\nMake sure main.lua is at the top level of the zip")

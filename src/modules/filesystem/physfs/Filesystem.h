@@ -46,6 +46,7 @@
 
 // In Windows, we would like to use "LOVE" as the
 // application folder, but in Linux, we like .love.
+#define LOVE_APPDATA_PREFIX ""
 #ifdef LOVE_WINDOWS
 #	define LOVE_APPDATA_FOLDER "LOVE"
 #	define LOVE_PATH_SEPARATOR "/"
@@ -56,7 +57,8 @@
 #	elif defined(LOVE_LINUX)
 #		define LOVE_APPDATA_FOLDER "love"
 #	else
-#		define LOVE_APPDATA_FOLDER ".love"
+#		define LOVE_APPDATA_PREFIX "."
+#		define LOVE_APPDATA_FOLDER "love"
 #	endif
 #	define LOVE_PATH_SEPARATOR "/"
 #	define LOVE_MAX_PATH MAXPATHLEN
@@ -99,6 +101,11 @@ namespace physfs
 		// Workaround for machines without PhysFS 2.0
 		bool isInited;
 
+		// Allow saving outside of the LOVE_APPDATA_FOLDER
+		// for release 'builds'
+		bool release;
+		bool releaseSet;
+
 	protected:
 
 	public:
@@ -110,6 +117,8 @@ namespace physfs
 		const char * getName() const;
 
 		void init(const char * arg0);
+
+		void setRelease(bool release);
 
 		/**
 		* This sets up the save directory. If the

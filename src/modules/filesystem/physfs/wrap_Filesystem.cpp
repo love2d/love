@@ -52,6 +52,14 @@ namespace physfs
 		return 0;
 	}
 
+	int w_setRelease(lua_State * L)
+	{
+		// no error checking needed, everything, even nothing
+		// can be converted to a boolean
+		instance->setRelease(lua_toboolean(L, 1));
+		return 0;
+	}
+
 	int w_setIdentity(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
@@ -290,6 +298,7 @@ namespace physfs
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "init",  w_init },
+		{ "setRelease", w_setRelease },
 		{ "setIdentity",  w_setIdentity },
 		{ "setSource",  w_setSource },
 		{ "newFile",  w_newFile },
