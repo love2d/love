@@ -8,9 +8,10 @@ LOVE 0.8.0 [Name pending]
   * Added seek and tell to Source objects.
   * Added color interpolation to ParticleSystem.
   * Added alpha masking.
-  * Added automatic PO2 padding.
+  * Added automatic PO2 padding for systems not supporting the OpenGL extension.
   * Added UTF-8 support for fonts.
   * Added box2d error handling for some commonly failing functions.
+  * Added ability for fused release games to have their write dir in appdata.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
