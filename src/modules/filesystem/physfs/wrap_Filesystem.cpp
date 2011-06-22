@@ -244,14 +244,9 @@ namespace physfs
 		const char * filename = lua_tostring(L, -1);
 
 		std::string tmp(filename);
+		tmp += ".lua";
 
 		int size = tmp.size();
-
-		if(size <= 4 || strcmp(filename + (size-4), ".lua") != 0)
-		{
-			tmp.append(".lua");
-			size = tmp.size();
-		}
 
 		for(int i=0;i<size-4;i++)
 		{
@@ -291,7 +286,7 @@ namespace physfs
 			}
 		}
 
-		lua_pushfstring(L, "\n\tno file \"%s\" in LOVE game directories.\n", tmp.c_str());
+		lua_pushfstring(L, "\n\tno file \"%s\" in LOVE game directories.\n", (tmp + ".lua").c_str());
 		return 1;
 	}
 

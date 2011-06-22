@@ -254,7 +254,7 @@ function love.init()
 
 	-- If config file exists, load it and allow it to update config table.
 	if not love.conf and love.filesystem and love.filesystem.exists("conf.lua") then
-		require("conf.lua")
+		require("conf")
 	end
 
 	-- Yes, conf.lua might not exist, but there are other ways of making
@@ -303,7 +303,7 @@ function love.init()
 	if love.filesystem then
 		love.filesystem.setRelease(c.release and is_fused_game)
 		if c.identity then love.filesystem.setIdentity(c.identity) end
-		if love.filesystem.exists("main.lua") then require("main.lua") end
+		if love.filesystem.exists("main.lua") then require("main") end
 	end
 
 	if no_game_code then
