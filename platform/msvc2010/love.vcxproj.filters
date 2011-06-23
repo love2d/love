@@ -496,12 +496,6 @@
     <ClCompile Include="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp">
       <Filter>modules\sound\lullaby</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\sdl\Thread.cpp">
-      <Filter>modules\thread\sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\sdl\wrap_Thread.cpp">
-      <Filter>modules\thread\sdl</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp">
       <Filter>modules\timer\sdl</Filter>
     </ClCompile>
@@ -582,6 +576,18 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.cpp">
       <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\Thread.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp">
+      <Filter>modules\thread\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\delay.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -858,12 +864,6 @@
     <ClInclude Include="..\..\src\modules\thread\ThreadModule.h">
       <Filter>modules\thread</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\sdl\Thread.h">
-      <Filter>modules\thread\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\sdl\wrap_Thread.h">
-      <Filter>modules\thread\sdl</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h">
       <Filter>modules\timer\sdl</Filter>
     </ClInclude>
@@ -941,6 +941,18 @@
     </ClInclude>
     <ClInclude Include="..\..\src\libraries\utf8\utf8\unchecked.h">
       <Filter>utf8\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\Thread.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h">
+      <Filter>modules\thread\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\delay.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

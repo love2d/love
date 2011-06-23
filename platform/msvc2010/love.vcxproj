@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\common\b64.cpp" />
+    <ClCompile Include="..\..\src\common\delay.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
     <ClCompile Include="..\..\src\common\Matrix.cpp" />
     <ClCompile Include="..\..\src\common\Object.cpp" />
@@ -197,8 +198,9 @@
     <ClCompile Include="..\..\src\modules\sound\wrap_Decoder.cpp" />
     <ClCompile Include="..\..\src\modules\sound\wrap_Sound.cpp" />
     <ClCompile Include="..\..\src\modules\sound\wrap_SoundData.cpp" />
-    <ClCompile Include="..\..\src\modules\thread\sdl\Thread.cpp" />
-    <ClCompile Include="..\..\src\modules\thread\sdl\wrap_Thread.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\Thread.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp" />
     <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp" />
     <ClCompile Include="..\..\src\modules\timer\sdl\wrap_Timer.cpp" />
   </ItemGroup>
@@ -206,6 +208,7 @@
     <ClInclude Include="..\..\src\common\b64.h" />
     <ClInclude Include="..\..\src\common\config.h" />
     <ClInclude Include="..\..\src\common\Data.h" />
+    <ClInclude Include="..\..\src\common\delay.h" />
     <ClInclude Include="..\..\src\common\EnumMap.h" />
     <ClInclude Include="..\..\src\common\Exception.h" />
     <ClInclude Include="..\..\src\common\math.h" />
@@ -317,8 +320,9 @@
     <ClInclude Include="..\..\src\modules\physics\box2d\wrap_World.h" />
     <ClInclude Include="..\..\src\modules\physics\Joint.h" />
     <ClInclude Include="..\..\src\modules\physics\Shape.h" />
-    <ClInclude Include="..\..\src\modules\thread\sdl\Thread.h" />
-    <ClInclude Include="..\..\src\modules\thread\sdl\wrap_Thread.h" />
+    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h" />
+    <ClInclude Include="..\..\src\modules\thread\Thread.h" />
+    <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h" />
     <ClInclude Include="..\..\src\modules\thread\ThreadModule.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h" />
