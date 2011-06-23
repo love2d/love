@@ -759,7 +759,14 @@ namespace opengl
 		float angle = (float)luaL_optnumber(L, 4, 0.0f);
 		float sx = (float)luaL_optnumber(L, 5, 1.0f);
 		float sy = (float)luaL_optnumber(L, 6, sx);
-		instance->print(str, x, y, angle, sx, sy);
+		try
+		{
+			instance->print(str, x, y, angle, sx, sy);
+		}
+		catch (love::Exception e)
+		{
+			return luaL_error(L, "Decoding error: %s", e.what());
+		}
 		return 0;
 	}
 
@@ -779,7 +786,14 @@ namespace opengl
 				return luaL_error(L, "Incorrect alignment: %s", str);
 		}
 
-		instance->printf(str, x, y, wrap, align);
+		try
+		{
+			instance->printf(str, x, y, wrap, align);
+		}
+		catch (love::Exception e)
+		{
+			return luaL_error(L, "Decoding error: %s", e.what());
+		}
 		return 0;
 	}
 

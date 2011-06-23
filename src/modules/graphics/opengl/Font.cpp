@@ -149,24 +149,32 @@ namespace opengl
 		glTranslatef(ceil(x), ceil(y), 0.0f);
 		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
 		glScalef(sx, sy, 1.0f);
-		utf8::iterator<std::string::iterator> i (text.begin(), text.begin(), text.end());
-		utf8::iterator<std::string::iterator> end (text.end(), text.begin(), text.end());
-		while (i != end) {
-			int g = *i++;
-			if (g == '\n') { // wrap newline, but do not print it
-				glTranslatef(-dx, floor(getHeight() * getLineHeight() + 0.5f), 0);
-				dx = 0.0f;
-				continue;
+		try
+		{
+			utf8::iterator<std::string::iterator> i (text.begin(), text.begin(), text.end());
+			utf8::iterator<std::string::iterator> end (text.end(), text.begin(), text.end());
+			while (i != end) {
+				int g = *i++;
+				if (g == '\n') { // wrap newline, but do not print it
+					glTranslatef(-dx, floor(getHeight() * getLineHeight() + 0.5f), 0);
+					dx = 0.0f;
+					continue;
+				}
+				Glyph * glyph = glyphs[g];
+				if (!glyph) glyph = addGlyph(g);
+				glPushMatrix();
+				// 1.25 is magic line height for true type fonts
+				if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() / 1.25f + 0.5f), 0);
+				glCallList(glyph->list);
+				glPopMatrix();
+				glTranslatef(static_cast<GLfloat>(glyph->spacing), 0, 0);
+				dx += glyph->spacing;
 			}
-			Glyph * glyph = glyphs[g];
-			if (!glyph) glyph = addGlyph(g);
-			glPushMatrix();
-			// 1.25 is magic line height for true type fonts
-			if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() / 1.25f + 0.5f), 0);
-			glCallList(glyph->list);
+		}
+		catch (utf8::invalid_utf8 e)
+		{
 			glPopMatrix();
-			glTranslatef(static_cast<GLfloat>(glyph->spacing), 0, 0);
-			dx += glyph->spacing;
+			throw love::Exception(e.what());
 		}
 		glPopMatrix();
 	}
