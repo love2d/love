@@ -21,6 +21,8 @@
 #ifndef LOVE_THREAD_THREADS_H
 #define LOVE_THREAD_THREADS_H
 
+#include <common/config.h>
+
 #define LOVE_THREADS_SDL	0
 #define LOVE_THREADS_WIN32	1
 #define LOVE_THREADS_POSIX	2

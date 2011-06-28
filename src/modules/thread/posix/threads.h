@@ -23,6 +23,7 @@
 
 #include <pthread.h>
 #include <semaphore.h>
+#include <signal.h>
 
 namespace love
 {
@@ -52,6 +53,7 @@ namespace thread
 		ThreadBase(ThreadBase& thread) {}
 
 		static void* thread_runner(void* param);
+		bool running;
 
 	protected:
 
@@ -72,7 +74,7 @@ namespace thread
 	{
 	private:
 		Semaphore(const Semaphore& sem) {}
-		sem_t semaphore;
+		sem_t sem;
 
 	public:
 		Semaphore(unsigned int initial_value);

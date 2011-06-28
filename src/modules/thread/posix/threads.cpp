@@ -26,7 +26,7 @@ namespace thread
 {
 	Mutex::Mutex()
 	{
-		pthread_create_mutex(&mutex, NULL);
+		pthread_mutex_init(&mutex, NULL);
 	}
 
 	Mutex::~Mutex()
@@ -157,7 +157,7 @@ namespace thread
 	bool Conditional::wait(Mutex* mutex, int timeout)
 	{
 		if (timeout < 0)
-			return !pthread_cond_wait(cond, mutex->mutex);
+			return !pthread_cond_wait(&cond, &mutex->mutex);
 		else
 		{
 			struct timespec ts;
@@ -166,7 +166,7 @@ namespace thread
 			ts.tv_sec = timeout / 1000;
 			ts.tv_nsec = (timeout % 1000) * 1000000;
 
-			ret = pthread_cond_timedwait(&cond, mutex->mutex, &ts);
+			ret = pthread_cond_timedwait(&cond, &mutex->mutex, &ts);
 			return (ret == 0);
 		}
 	}
