@@ -19,6 +19,9 @@
 **/
 
 #include "threads.h"
+#ifdef LOVE_MACOSX
+#include <common/delay.h> // for Mac OS X's fake sem_timedwait
+#endif
 
 namespace love
 {
@@ -122,10 +125,22 @@ namespace thread
 			return !sem_trywait(&sem);
 		else
 		{
+#ifdef LOVE_MACOSX
+			// OS X lacks sem_timedwait, so we fake it with a busy loop
+			time_t timer = time(NULL)*1000 + timeout;
+			int retval = 0;
+			do {
+				retval = sem_trywait(&sem);
+				if (retval == 0) break;
+				delay(1);
+			} while (time(NULL)*1000 < timer);
+			return !retval;
+#else
 			struct timespec ts;
 			ts.tv_sec = timeout/1000;
 			ts.tv_nsec = (timeout % 1000) * 1000000;
 			return !sem_timedwait(&sem, &ts);
+#endif
 		}
 	}
 
