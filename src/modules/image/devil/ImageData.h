@@ -24,9 +24,12 @@
 // LOVE
 #include <filesystem/File.h>
 #include <image/ImageData.h>
+#include <thread/threads.h>
 
 // DevIL
 #include <IL/il.h>
+
+using love::thread::Mutex;
 
 namespace love
 {
@@ -50,13 +53,18 @@ namespace devil
 		// The bits per pixel.
 		int bpp;
 
-		// DevIL image identifier.
-		ILuint image;
+		// The actual data
+		unsigned char *data;
 
 		// Create imagedata.
 		void create(int width, int height, void * data = 0);
 
 		void load(Data * data);
+
+		// We need to be thread-safe
+		// so we lock when we're accessing our
+		// data
+		Mutex mutex;
 
 	public:
 
@@ -74,7 +82,7 @@ namespace devil
 		int getWidth() const ;
 		int getHeight() const ;
 		void setPixel(int x, int y, pixel c);
-		pixel getPixel(int x, int y) const;
+		pixel getPixel(int x, int y);
 		void encode(love::filesystem::File * f, Format format);
 
 	}; // ImageData

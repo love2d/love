@@ -107,7 +107,7 @@ namespace image
 		* @param y The location along the y-axis.
 		* @return The color for the given location.
 		**/
-		virtual pixel getPixel(int x, int y) const = 0;
+		virtual pixel getPixel(int x, int y) = 0;
 		
 		/**
 		 * Encodes raw pixel data into a given format.
