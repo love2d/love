@@ -73,7 +73,7 @@ namespace audio
 		virtual float getVolume() const = 0;
 		
 		virtual void seek(float offset, Unit unit) = 0;
-		virtual float tell(Unit unit) const = 0;
+		virtual float tell(Unit unit) = 0;
 
 		// all float * v must be of size 3
 		virtual void setPosition(float * v) = 0;

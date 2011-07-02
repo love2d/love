@@ -105,7 +105,7 @@ namespace null
 	{
 	}
 	
-	float Source::tell(Source::Unit) const
+	float Source::tell(Source::Unit)
 	{
 		return 0.0f;
 	}

@@ -221,11 +221,11 @@ namespace openal
 		return volume;
 	}
 	
-	void Source::seek(float offset, Source::Unit unit)
+	void Source::seekAtomic(float offset, void * unit)
 	{
 		if (valid)
 		{
-			switch (unit) {
+			switch (*((Source::Unit*) unit)) {
 				case Source::UNIT_SAMPLES:
 					if (type == TYPE_STREAM) {
 						ALint buffer;
@@ -249,13 +249,18 @@ namespace openal
 			}
 		}
 	}
+
+	void Source::seek(float offset, Source::Unit unit)
+	{
+		return pool->seek(this, offset, &unit);
+	}
 	
-	float Source::tell(Source::Unit unit) const
+	float Source::tellAtomic(void * unit) const
 	{
 		if (valid)
 		{
 			float offset;
-			switch (unit) {
+			switch (*((Source::Unit*) unit)) {
 				case Source::UNIT_SAMPLES:
 					alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
 					if (type == TYPE_STREAM) offset += offsetSamples;
@@ -274,6 +279,11 @@ namespace openal
 			return offset;
 		}
 		return 0.0f;
+	}
+
+	float Source::tell(Source::Unit unit)
+	{
+		return pool->tell(this, &unit);
 	}
 
 	void Source::setPosition(float * v)

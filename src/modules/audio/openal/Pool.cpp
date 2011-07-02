@@ -237,6 +237,18 @@ namespace openal
 		}
 	}
 
+	void Pool::seek(Source * source, float offset, void * unit)
+	{
+		thread::Lock lock(mutex);
+		return source->seekAtomic(offset, unit);
+	}
+
+	float Pool::tell(Source * source, void * unit)
+	{
+		thread::Lock lock(mutex);
+		return source->tellAtomic(unit);
+	}
+
 	ALuint Pool::findi(const Source * source) const
 	{
 		std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
