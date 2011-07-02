@@ -1,4 +1,4 @@
-LOVE 0.8.0 [Name pending]
+LOVE 0.8.0 [Rubber Piggy]
 -------------------------
 
   * Added release error screen.
@@ -21,6 +21,8 @@ LOVE 0.8.0 [Name pending]
   * Fixed several issues with audio, e.g. clicks and pops in mp3s.
   * Fixed crashes when bodies were destroyed during collisions.
   * Fixed bound SpriteBatches corrupting when drawing.
+  * Fixed thread-safety issues with ImageData.
+  * Fixed memory leak in audio sources.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
 
@@ -31,6 +33,7 @@ LOVE 0.8.0 [Name pending]
 
   * Removed framebuffer auto-clearing.
   * Removed EncodedImageData.
+  * Removed old syntax for require (with extension).
 
 LOVE 0.7.2 [Game Slave]
 -----------------------
