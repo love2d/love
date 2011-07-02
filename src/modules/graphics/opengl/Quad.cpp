@@ -21,6 +21,9 @@
 #include "Quad.h"
 #include <common/Matrix.h>
 
+// GLee
+#include "GLee.h"
+
 // STD
 #include <cstring> // For memcpy
 
@@ -43,8 +46,11 @@ namespace opengl
 
 	void Quad::refresh(const Viewport & v, int sw, int sh)
 	{
-		sw = next_p2(sw);
-		sh = next_p2(sh);
+		if (GLEE_ARB_texture_non_power_of_two)
+		{
+			sw = next_p2(sw);
+			sh = next_p2(sh);
+		}
 		viewport = v;
 
 		vertices[0].x = 0; 
