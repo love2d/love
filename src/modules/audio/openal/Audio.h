@@ -27,9 +27,6 @@
 #include <iostream>
 #include <cmath>
 
-// SDL
-#include <SDL.h>
-
 // LOVE
 #include <audio/Audio.h>
 #include <common/config.h>

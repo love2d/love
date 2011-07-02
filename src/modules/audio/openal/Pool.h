@@ -27,9 +27,6 @@
 #include <iostream>
 #include <cmath>
 
-// SDL
-#include <SDL.h>
-
 // LOVE
 #include <common/config.h>
 #include <common/Exception.h>
