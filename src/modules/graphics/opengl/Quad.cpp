@@ -46,7 +46,7 @@ namespace opengl
 
 	void Quad::refresh(const Viewport & v, int sw, int sh)
 	{
-		if (GLEE_ARB_texture_non_power_of_two)
+		if (!GLEE_ARB_texture_non_power_of_two)
 		{
 			sw = next_p2(sw);
 			sh = next_p2(sh);
