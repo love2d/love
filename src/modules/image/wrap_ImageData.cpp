@@ -51,7 +51,15 @@ namespace image
 		ImageData * t = luax_checkimagedata(L, 1);
 		int x = luaL_checkint(L, 2);
 		int y = luaL_checkint(L, 3);
-		pixel c = t->getPixel(x, y);
+		pixel c;
+		try
+		{
+			pixel c = t->getPixel(x, y);
+		}
+		catch (love::Exception *e)
+		{
+			return luaL_error(L, "%s", e->what());
+		}
 		lua_pushnumber(L, c.r);
 		lua_pushnumber(L, c.g);
 		lua_pushnumber(L, c.b);
@@ -69,7 +77,14 @@ namespace image
 		c.g = luaL_checkint(L, 5);
 		c.b = luaL_checkint(L, 6);
 		c.a = luaL_checkint(L, 7);
-		t->setPixel(x, y, c);
+		try
+		{
+			t->setPixel(x, y, c);
+		}
+		catch (love::Exception *e)
+		{
+			return luaL_error(L, "%s", e->what());
+		}
 		return 0;
 	}
 
