@@ -22,16 +22,6 @@
 
 #include "Source.h"
 
-#define MUTEX_ASSERT(fn, sval) \
-	if(fn != sval) \
-	{ \
-		std::cout << "Mutex lock/unlock failure. " << SDL_GetError() << std::endl; \
-		exit(-1); \
-	} \
-
-#define LOCK(m) MUTEX_ASSERT(SDL_LockMutex(m), 0)
-#define UNLOCK(m) MUTEX_ASSERT(SDL_UnlockMutex(m), 0)
-
 namespace love
 {
 namespace audio
