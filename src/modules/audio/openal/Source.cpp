@@ -65,6 +65,8 @@ namespace openal
 	{
 		stop();
 		alDeleteBuffers((type == TYPE_STATIC) ? 1 : MAX_BUFFERS, buffers);
+		if (decoder)
+			decoder->release();
 	}
 
 	love::audio::Source * Source::copy()
