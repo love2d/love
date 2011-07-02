@@ -67,11 +67,6 @@ namespace box2d
 		float getLength2() const;
 		
 		/**
-		* Sets the pulley ratio.
-		**/
-		void setRatio(float ratio);
-		
-		/**
 		* Gets the pulley ratio.
 		**/
 		float getRatio() const;

@@ -45,11 +45,11 @@ namespace box2d
 		return 1;
 	}
 
-	int w_RevoluteJoint_setMotorEnabled(lua_State * L)
+	int w_RevoluteJoint_enableMotor(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
-		t->setMotorEnabled(arg1);
+		t->enableMotor(arg1);
 		return 0;
 	}
 
@@ -90,18 +90,18 @@ namespace box2d
 		return 1;
 	}
 
-	int w_RevoluteJoint_setLimitsEnabled(lua_State * L)
+	int w_RevoluteJoint_enableLimit(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
-		t->setLimitsEnabled(arg1);
+		t->enableLimit(arg1);
 		return 0;
 	}
 
-	int w_RevoluteJoint_isLimitsEnabled(lua_State * L)
+	int w_RevoluteJoint_isLimitEnabled(lua_State * L)
 	{
 		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
-		luax_pushboolean(L, t->isLimitsEnabled());
+		luax_pushboolean(L, t->isLimitEnabled());
 		return 1;
 	}
 
@@ -154,14 +154,14 @@ namespace box2d
 	static const luaL_Reg functions[] = {
 		{ "getJointAngle", w_RevoluteJoint_getJointAngle },
 		{ "getJointSpeed", w_RevoluteJoint_getJointSpeed },
-		{ "setMotorEnabled", w_RevoluteJoint_setMotorEnabled },
+		{ "enableMotor", w_RevoluteJoint_enableMotor },
 		{ "isMotorEnabled", w_RevoluteJoint_isMotorEnabled },
 		{ "setMaxMotorTorque", w_RevoluteJoint_setMaxMotorTorque },
 		{ "setMotorSpeed", w_RevoluteJoint_setMotorSpeed },
 		{ "getMotorSpeed", w_RevoluteJoint_getMotorSpeed },
 		{ "getMotorTorque", w_RevoluteJoint_getMotorTorque },
-		{ "setLimitsEnabled", w_RevoluteJoint_setLimitsEnabled },
-		{ "isLimitsEnabled", w_RevoluteJoint_isLimitsEnabled },
+		{ "enableLimit", w_RevoluteJoint_enableLimit },
+		{ "isLimitEnabled", w_RevoluteJoint_isLimitEnabled },
 		{ "setUpperLimit", w_RevoluteJoint_setUpperLimit },
 		{ "setLowerLimit", w_RevoluteJoint_setLowerLimit },
 		{ "setLimits", w_RevoluteJoint_setLimits },

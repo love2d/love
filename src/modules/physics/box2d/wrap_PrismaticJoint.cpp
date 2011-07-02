@@ -45,11 +45,11 @@ namespace box2d
 		return 1;
 	}
 
-	int w_PrismaticJoint_setMotorEnabled(lua_State * L)
+	int w_PrismaticJoint_enableMotor(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
-		t->setMotorEnabled(arg1);
+		t->enableMotor(arg1);
 		return 0;
 	}
 
@@ -90,18 +90,18 @@ namespace box2d
 		return 1;
 	}
 
-	int w_PrismaticJoint_setLimitsEnabled(lua_State * L)
+	int w_PrismaticJoint_enableLimit(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
 		bool arg1 = luax_toboolean(L, 2);
-		t->setLimitsEnabled(arg1);
+		t->enableLimit(arg1);
 		return 0;
 	}
 
-	int w_PrismaticJoint_isLimitsEnabled(lua_State * L)
+	int w_PrismaticJoint_isLimitEnabled(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
-		luax_pushboolean(L, t->isLimitsEnabled());
+		luax_pushboolean(L, t->isLimitEnabled());
 		return 1;
 	}
 
@@ -154,14 +154,14 @@ namespace box2d
 	static const luaL_Reg functions[] = {
 		{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
 		{ "getJointSpeed", w_PrismaticJoint_getJointSpeed },
-		{ "setMotorEnabled", w_PrismaticJoint_setMotorEnabled },
+		{ "enableMotor", w_PrismaticJoint_enableMotor },
 		{ "isMotorEnabled", w_PrismaticJoint_isMotorEnabled },
 		{ "setMaxMotorForce", w_PrismaticJoint_setMaxMotorForce },
 		{ "setMotorSpeed", w_PrismaticJoint_setMotorSpeed },
 		{ "getMotorSpeed", w_PrismaticJoint_getMotorSpeed },
 		{ "getMotorForce", w_PrismaticJoint_getMotorForce },
-		{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
-		{ "isLimitsEnabled", w_PrismaticJoint_isLimitsEnabled },
+		{ "enableLimit", w_PrismaticJoint_enableLimit },
+		{ "isLimitEnabled", w_PrismaticJoint_isLimitEnabled },
 		{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
 		{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
 		{ "setLimits", w_PrismaticJoint_setLimits },

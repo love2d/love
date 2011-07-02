@@ -111,6 +111,11 @@ namespace box2d
 		if (joint != NULL)
 			world->world->DestroyJoint(joint);
 	}
+	
+	bool Joint::isActive() const
+	{
+		return joint->IsActive();
+	}
 
 } // box2d
 } // physics

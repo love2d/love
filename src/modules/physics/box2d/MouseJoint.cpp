@@ -69,6 +69,26 @@ namespace box2d
 	{
 		return joint->GetMaxForce();
 	}
+	
+	void MouseJoint::setFrequency(float hz)
+	{
+		joint->SetFrequency(hz);
+	}
+	
+	float MouseJoint::getFrequency() const
+	{
+		return joint->GetFrequency();
+	}
+	
+	void MouseJoint::setDampingRatio(float d)
+	{
+		joint->SetDampingRatio(d);
+	}
+	
+	float MouseJoint::getDampingRatio() const
+	{
+		return joint->GetDampingRatio();
+	}
 
 } // box2d
 } // physics

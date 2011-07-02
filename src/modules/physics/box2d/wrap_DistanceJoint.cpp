@@ -81,8 +81,8 @@ namespace box2d
 		{ "getLength", w_DistanceJoint_getLength },
 		{ "setFrequency", w_DistanceJoint_setFrequency },
 		{ "getFrequency", w_DistanceJoint_getFrequency },
-		{ "setDamping", w_DistanceJoint_setDampingRatio },
-		{ "getDamping", w_DistanceJoint_getDampingRatio },
+		{ "setDampingRatio", w_DistanceJoint_setDampingRatio },
+		{ "getDampingRatio", w_DistanceJoint_getDampingRatio },
 		// From Joint.
 		{ "getType", w_Joint_getType },
 		{ "getAnchors", w_Joint_getAnchors },

@@ -63,7 +63,7 @@ namespace box2d
 		/**
 		* Enable/disable the joint motor.
 		**/
-		void setMotorEnabled(bool motor);
+		void enableMotor(bool motor);
 
 		/**
 		* Checks whether the motor is enabled.
@@ -93,12 +93,12 @@ namespace box2d
 		/**
 		* Enable/disable the joint limit.
 		**/
-		void setLimitsEnabled(bool limit);
+		void enableLimit(bool limit);
 
 		/**
 		* Checks whether limits are enabled.
 		**/
-		bool isLimitsEnabled() const;
+		bool isLimitEnabled() const;
 
 		/**
 		* Sets the upper limit, usually in meters.

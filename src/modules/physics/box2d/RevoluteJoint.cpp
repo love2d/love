@@ -56,7 +56,7 @@ namespace box2d
 		return joint->GetJointSpeed();
 	}
 
-	void RevoluteJoint::setMotorEnabled(bool motor)
+	void RevoluteJoint::enableMotor(bool motor)
 	{
 		return joint->EnableMotor(motor);
 	}
@@ -86,12 +86,12 @@ namespace box2d
 		return joint->GetMotorTorque();
 	}
 
-	void RevoluteJoint::setLimitsEnabled(bool limit)
+	void RevoluteJoint::enableLimit(bool limit)
 	{
 		joint->EnableLimit(limit);
 	}
 
-	bool RevoluteJoint::isLimitsEnabled() const
+	bool RevoluteJoint::isLimitEnabled() const
 	{
 		return joint->IsLimitEnabled();
 	}

@@ -98,6 +98,8 @@ namespace box2d
 		* Gets the reaction torque on body2.
 		**/
 		float getReactionTorque(float dt);
+		
+		bool isActive() const;
 
 	protected:
 
