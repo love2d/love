@@ -54,7 +54,7 @@ namespace image
 		pixel c;
 		try
 		{
-			pixel c = t->getPixel(x, y);
+			c = t->getPixel(x, y);
 		}
 		catch (love::Exception *e)
 		{
