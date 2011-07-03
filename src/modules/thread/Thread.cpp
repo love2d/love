@@ -101,10 +101,15 @@ namespace thread
 	{
 		type = FUSERDATA;
 		this->udatatype = udatatype;
-		Proxy *p = (Proxy *) userdata;
-		flags = p->flags;
-		data.userdata = p->data;
-		((love::Object *) data.userdata)->retain();
+		if (udatatype != INVALID_ID)
+		{
+			Proxy *p = (Proxy *) userdata;
+			flags = p->flags;
+			data.userdata = p->data;
+			((love::Object *) data.userdata)->retain();
+		}
+		else
+			data.userdata = userdata;
 	}
 
 	ThreadVariant::~ThreadVariant()
