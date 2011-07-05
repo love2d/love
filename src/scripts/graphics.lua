@@ -1293,16 +1293,27 @@ AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 
 	local draw = love.graphics.draw
 	function love.graphics.draw(drawable, x, y, ...)
-		draw(drawable, x, y, unpack_transform(...))
+		return draw(drawable, x, y, unpack_transform(...))
 	end
 
 	local drawq = love.graphics.drawq
 	function love.graphics.drawq(img, quad, x, y, ...)
-		drawq(img, quad, x, y, unpack_transform(...))
+		return drawq(img, quad, x, y, unpack_transform(...))
 	end
 
 	local lgprint = love.graphics.print1 -- << notice the 1
 	function love.graphics.print(text, x,y, ...)
-		lgprint(text, x,y, unpack_transform(...))
+		return lgprint(text, x,y, unpack_transform(...))
+	end
+
+	local temp_img = love.graphics.newImage(love.image.newImageData(0,0))
+	local temp_spritebatch = love.graphics.newSpriteBatch(temp_img, 0)
+	local sb_meta = getmetatable(temp_spritebatch)
+	local add, addq = sb_meta.add, sb_meta.addq
+	function sb_meta:add(x,y, ...)
+		return add(self, x,y, unpack_transform(...))
+	end
+	function sb_meta:addq(quad, x,y, ...)
+		return addq(self, quad, x,y, unpack_transform(...))
 	end
 end
