@@ -204,7 +204,9 @@ namespace thread
 				return luaL_error(L, "Expected boolean, number, string or userdata");
 		}
 		t->set(name, v);
+		t->lock();
 		v->release();
+		t->unlock();
 		return 0;
 	}
 
