@@ -507,7 +507,14 @@ namespace opengl
 
 	SpriteBatch * Graphics::newSpriteBatch(Image * image, int size, int usage)
 	{
-		return new SpriteBatch(image, size, usage);
+		SpriteBatch * t = NULL;
+		try {
+			t = new SpriteBatch(image, size, usage);
+		} catch (love::Exception& e) {
+			if (t) delete t;
+			throw e;
+		}
+		return t;
 	}
 
 	ParticleSystem * Graphics::newParticleSystem(Image * image, int size)

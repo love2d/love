@@ -36,6 +36,9 @@ namespace opengl
 	SpriteBatch::SpriteBatch(Image * image, int size, int usage)
 		: image(image), size(size), next(0), usage(usage), lockp(0)
 	{
+		if (!(GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5))
+			throw love::Exception("Your OpenGL version does not support SpriteBatches. Go upgrade!");
+
 		image->retain();
 
 		vertices = new vertex[size*4];
@@ -69,20 +72,20 @@ namespace opengl
 	bool SpriteBatch::loadVolatile()
 	{
 		// Find out which OpenGL VBO usage hint to use.
-		gl_usage = GL_STREAM_DRAW;
-		gl_usage = (usage == USAGE_DYNAMIC) ? GL_DYNAMIC_DRAW : gl_usage;
-		gl_usage = (usage == USAGE_STATIC) ? GL_STATIC_DRAW : gl_usage;
-		gl_usage = (usage == USAGE_STREAM) ? GL_STREAM_DRAW : gl_usage;
+		gl_usage = GL_STREAM_DRAW_ARB;
+		gl_usage = (usage == USAGE_DYNAMIC) ? GL_DYNAMIC_DRAW_ARB : gl_usage;
+		gl_usage = (usage == USAGE_STATIC) ? GL_STATIC_DRAW_ARB : gl_usage;
+		gl_usage = (usage == USAGE_STREAM) ? GL_STREAM_DRAW_ARB : gl_usage;
 
-		glGenBuffers(2, vbo);
+		glGenBuffersARB(2, vbo);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex)*size*4, vertices, gl_usage);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(vertex)*size*4, vertices, gl_usage);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort)*size*6, indices, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo[1]);
+		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeof(GLushort)*size*6, indices, GL_STATIC_DRAW_ARB);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 
 		return true;
 	}
@@ -98,7 +101,7 @@ namespace opengl
 
 		// Delete the buffers.
 		if(vbo[0] != 0 && vbo[1] != 0)
-			glDeleteBuffers(2, vbo);
+			glDeleteBuffersARB(2, vbo);
 	}
 
 	void SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -159,18 +162,18 @@ namespace opengl
 		if(lockp != 0)
 			return lockp;
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		lockp = (vertex *)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
+		lockp = (vertex *)glMapBufferARB(GL_ARRAY_BUFFER_ARB, GL_READ_WRITE_ARB);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 		return lockp;
 	}
 
 	void SpriteBatch::unlock()
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		glUnmapBuffer(GL_ARRAY_BUFFER);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
+		glUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
 		lockp = 0;
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	}
 
 	void SpriteBatch::setImage(Image * newimage)
@@ -196,8 +199,8 @@ namespace opengl
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 		// Bind the VBO buffer.
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo[1]);
 		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4));
 		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4+sizeof(float)*2));
 		
@@ -207,8 +210,8 @@ namespace opengl
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
 
 		glPopMatrix();
 	}
@@ -223,9 +226,9 @@ namespace opengl
 		else
 		{
 			// ... use glBufferSubData otherwise.
-			glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-			glBufferSubData(GL_ARRAY_BUFFER, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
+			glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 		}
 	}
 

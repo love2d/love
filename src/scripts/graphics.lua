@@ -1306,14 +1306,22 @@ AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 		return lgprint(text, x,y, unpack_transform(...))
 	end
 
-	local temp_img = love.graphics.newImage(love.image.newImageData(0,0))
-	local temp_spritebatch = love.graphics.newSpriteBatch(temp_img, 0)
-	local sb_meta = getmetatable(temp_spritebatch)
-	local add, addq = sb_meta.add, sb_meta.addq
-	function sb_meta:add(x,y, ...)
-		return add(self, x,y, unpack_transform(...))
-	end
-	function sb_meta:addq(quad, x,y, ...)
-		return addq(self, quad, x,y, unpack_transform(...))
+	local newSpritebatch = love.graphics.newSpriteBatch
+	function love.graphics.newSpriteBatch(image, size)
+		local sb = newSpritebatch(image, size)
+		local meta = getmetatable(sb)
+
+		local add = meta.add
+		function meta:add(x,y, ...)
+			return add(self, x,y, unpack_transform(...))
+		end
+
+		local addq = meta.addq
+		function meta:addq(quad, x,y, ...)
+			return addq(self, quad, x,y, unpack_transform(...))
+		end
+
+		love.graphics.newSpriteBatch = newSpritebatch
+		return sb
 	end
 end

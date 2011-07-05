@@ -311,7 +311,12 @@ namespace opengl
 		Image * image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
 		int size = luaL_optint(L, 2, 1000);
 		int usage = luaL_optint(L, 3, SpriteBatch::USAGE_DYNAMIC);
-		SpriteBatch * t = instance->newSpriteBatch(image, size, usage);
+		SpriteBatch * t = NULL;
+		try {
+			t = instance->newSpriteBatch(image, size, usage);
+		} catch(love::Exception& e) {
+			return luaL_error(L, e.what());
+		}
 		luax_newtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, (void*)t);
 		return 1;
 	}
