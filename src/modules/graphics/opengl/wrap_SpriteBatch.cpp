@@ -41,7 +41,9 @@ namespace opengl
 		float sy = (float)luaL_optnumber(L, 6, sx);
 		float ox = (float)luaL_optnumber(L, 7, 0);
 		float oy = (float)luaL_optnumber(L, 8, 0);
-		t->add(x, y, angle, sx, sy, ox, oy);
+		float kx = (float)luaL_optnumber(L, 10, 0);
+		float ky = (float)luaL_optnumber(L, 11, 0);
+		t->add(x, y, angle, sx, sy, ox, oy, kx, ky);
 		return 0;
 	}
 
@@ -56,7 +58,9 @@ namespace opengl
 		float sy = (float)luaL_optnumber(L, 7, sx);
 		float ox = (float)luaL_optnumber(L, 8, 0);
 		float oy = (float)luaL_optnumber(L, 9, 0);
-		t->addq(q, x, y, angle, sx, sy, ox, oy);
+		float kx = (float)luaL_optnumber(L, 10, 0);
+		float ky = (float)luaL_optnumber(L, 11, 0);
+		t->addq(q, x, y, angle, sx, sy, ox, oy, kx, ky);
 		return 0;
 	}
 

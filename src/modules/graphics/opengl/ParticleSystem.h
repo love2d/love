@@ -425,7 +425,7 @@ namespace opengl
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
 		**/
-		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 		/**
 		* Updates the particle system.

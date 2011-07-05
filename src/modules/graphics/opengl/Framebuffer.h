@@ -32,7 +32,7 @@ namespace opengl
 
 		void clear(const Color& c);
 
-		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 		love::image::ImageData * getImageData(love::image::Image * image);
 
 		void setFilter(const Image::Filter &f);

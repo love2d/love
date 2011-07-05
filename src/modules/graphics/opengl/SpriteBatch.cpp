@@ -101,7 +101,7 @@ namespace opengl
 			glDeleteBuffers(2, vbo);
 	}
 
-	void SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy)
+	void SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
 		// Only do this if there's a free slot.
 		if(next < size)
@@ -114,7 +114,7 @@ namespace opengl
 
 			// Transform.
 			Matrix t;
-			t.setTransformation(x, y, a, sx, sy, ox, oy);
+			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 			t.transform(v, v, 4);
 
 			addv(v);
@@ -124,7 +124,7 @@ namespace opengl
 		}
 	}
 
-	void SpriteBatch::addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy)
+	void SpriteBatch::addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
 		// Only do this if there's a free slot.
 		if(next < size)
@@ -137,7 +137,7 @@ namespace opengl
 
 			// Transform.
 			Matrix t;
-			t.setTransformation(x, y, a, sx, sy, ox, oy);
+			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 			t.transform(v, v, 4);
 
 			addv(v);
@@ -180,13 +180,13 @@ namespace opengl
 		image->retain();
 	}
 
-	void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
+	void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
 		static Matrix t;
 
 		glPushMatrix();
 
-		t.setTransformation(x, y, angle, sx, sy, ox, oy);
+		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 		glMultMatrixf((const GLfloat*)t.getElements());
 
 		image->bind();

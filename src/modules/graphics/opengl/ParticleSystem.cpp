@@ -383,17 +383,16 @@ namespace opengl
 		return pLast == pEnd;
 	}
 
-	void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
+	void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
 		if(sprite == 0) return; // just in case of failure
 
 		glPushMatrix();
 		glPushAttrib(GL_CURRENT_BIT);
 
-		glTranslatef(x, y, 0);
-		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
-		glScalef(sx, sy, 1.0f);
-		glTranslatef( ox, oy, 0);
+		Matrix t;
+		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+		glMultMatrixf((const GLfloat*)t.getElements());
 
 		particle * p = pStart;
 		while(p != pLast)
@@ -401,7 +400,7 @@ namespace opengl
 			glPushMatrix();
 
 			glColor4f(p->color.r, p->color.g, p->color.b, p->color.a);
-			sprite->draw(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY);
+			sprite->draw(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
 
 			glPopMatrix();
 			p++;

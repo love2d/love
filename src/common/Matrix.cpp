@@ -116,23 +116,30 @@ namespace love
 		e[5] = sy;
 	}
 
-	void Matrix::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy)
+	void Matrix::setShear(float kx, float ky)
+	{
+		setIdentity();
+		e[1] = ky;
+		e[4] = kx;
+	}
+
+	void Matrix::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
 		memset(e, 0, sizeof(float)*16); // zero out matrix
 		float c = cos(angle), s = sin(angle);
 		// matrix multiplication carried out on paper:
-		// |1     x| |c -s    | |sx       | |1     -ox|
-		// |  1   y| |s  c    | |   sy    | |  1   -oy|
-		// |    1  | |     1  | |      1  | |    1    |
-		// |      1| |       1| |        1| |       1 |
-		//   move      rotate      scale       origin
+		// |1     x| |c -s    | |sx       | | 1 ky    | |1     -ox|
+		// |  1   y| |s  c    | |   sy    | |kx  1    | |  1   -oy|
+		// |    1  | |     1  | |      1  | |      1  | |    1    |
+		// |      1| |       1| |        1| |        1| |       1 |
+		//   move      rotate      scale       skew       origin
 		e[10] = e[15] = 1.0f;
-		e[0] = sx * c;
-		e[1] = sx * s;
-		e[4] = -sy * s;
-		e[5] = sy * c;
-		e[12] = -ox * e[0] - oy * e[4] + x;
-		e[13] = -ox * e[1] - oy * e[5] + y;
+		e[0]  = c * sx - ky * s * sy; // = a
+		e[1]  = s * sx + ky * c * sy; // = b
+		e[4]  = kx * c * sx - s * sy; // = c
+		e[5]  = kx * s * sx + c * sy; // = d
+		e[12] = x - ox * e[0] - oy * e[4];
+		e[13] = y - ox * e[1] - oy * e[5];
 	}
 
 	void Matrix::translate(float x, float y)
@@ -153,6 +160,13 @@ namespace love
 	{
 		Matrix t;
 		t.setScale(sx, sy);
+		this->operator *=(t);
+	}
+
+	void Matrix::shear(float kx, float ky)
+	{
+		Matrix t;
+		t.setShear(kx,ky);
 		this->operator *=(t);
 	}
 

@@ -25,6 +25,7 @@
 #include <libraries/utf8/utf8.h>
 
 #include <common/math.h>
+#include <common/Matrix.h>
 #include <math.h>
 
 #include <algorithm> // for max
@@ -141,14 +142,14 @@ namespace opengl
 		return static_cast<float>(height);
 	}
 
-	void Font::print(std::string text, float x, float y, float angle, float sx, float sy)
+	void Font::print(std::string text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
 		float dx = 0.0f; // spacing counter for newline handling
 		glPushMatrix();
 
-		glTranslatef(ceil(x), ceil(y), 0.0f);
-		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
-		glScalef(sx, sy, 1.0f);
+		Matrix t;
+		t.setTransformation(ceil(x), ceil(y), angle, sx, sy, ox, oy, kx, ky);
+		glMultMatrixf((const GLfloat*)t.getElements());
 		try
 		{
 			utf8::iterator<std::string::iterator> i (text.begin(), text.begin(), text.end());

@@ -1276,4 +1276,33 @@ AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 		love.graphics.printf = love.graphics.printf1
 	end
 
+
+	local function unpack_transform(transform, ...)
+		if type(transform) ~= "table" then
+			return transform, ...
+		end
+
+		local r = transform.rot or transform.r or 0
+		local sx = transform.sx or transform.scale or 1
+		local sy = transform.sy or transform.scale or 1
+		local ox, oy = transform.ox or 0, transform.oy or 0
+		local kx, ky = transform.kx or 0, transform.ky or 0
+
+		return r,sx,sy,ox,oy,kx,ky
+	end
+
+	local draw = love.graphics.draw
+	function love.graphics.draw(drawable, x, y, ...)
+		draw(drawable, x, y, unpack_transform(...))
+	end
+
+	local drawq = love.graphics.drawq
+	function love.graphics.drawq(img, quad, x, y, ...)
+		drawq(img, quad, x, y, unpack_transform(...))
+	end
+
+	local lgprint = love.graphics.print1 -- << notice the 1
+	function love.graphics.print(text, x,y, ...)
+		lgprint(text, x,y, unpack_transform(...))
+	end
 end

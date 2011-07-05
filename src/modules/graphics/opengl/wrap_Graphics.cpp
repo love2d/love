@@ -694,6 +694,8 @@ namespace opengl
 	* @param sy The scale factor along the y-axis. (1 = normal).
 	* @param ox The offset along the x-axis.
 	* @param oy The offset along the y-axis.
+	* @param kx Shear along the x-axis.
+	* @param ky Shear along the y-axis.
 	**/
 	int w_draw(lua_State * L)
 	{
@@ -705,7 +707,9 @@ namespace opengl
 		float sy = (float)luaL_optnumber(L, 6, sx);
 		float ox = (float)luaL_optnumber(L, 7, 0);
 		float oy = (float)luaL_optnumber(L, 8, 0);
-		drawable->draw(x, y, angle, sx, sy, ox, oy);
+		float kx = (float)luaL_optnumber(L, 9, 0);
+		float ky = (float)luaL_optnumber(L, 10, 0);
+		drawable->draw(x, y, angle, sx, sy, ox, oy, kx, ky);
 		return 0;
 	}
 
@@ -721,6 +725,8 @@ namespace opengl
 	* @param sy The scale factor along the y-axis. (1 = normal).
 	* @param ox The offset along the x-axis.
 	* @param oy The offset along the y-axis.
+	* @param kx Shear along the x-axis.
+	* @param ky Shear along the y-axis.
 	**/
 	int w_drawq(lua_State * L)
 	{
@@ -733,7 +739,9 @@ namespace opengl
 		float sy = (float)luaL_optnumber(L, 7, sx);
 		float ox = (float)luaL_optnumber(L, 8, 0);
 		float oy = (float)luaL_optnumber(L, 9, 0);
-		image->drawq(q, x, y, angle, sx, sy, ox, oy);
+		float kx = (float)luaL_optnumber(L, 9, 0);
+		float ky = (float)luaL_optnumber(L, 10, 0);
+		image->drawq(q, x, y, angle, sx, sy, ox, oy, kx, ky);
 		return 0;
 	}
 
@@ -759,9 +767,13 @@ namespace opengl
 		float angle = (float)luaL_optnumber(L, 4, 0.0f);
 		float sx = (float)luaL_optnumber(L, 5, 1.0f);
 		float sy = (float)luaL_optnumber(L, 6, sx);
+		float ox = (float)luaL_optnumber(L, 7, 0.0f);
+		float oy = (float)luaL_optnumber(L, 8, 0.0f);
+		float kx = (float)luaL_optnumber(L, 9, 0.0f);
+		float ky = (float)luaL_optnumber(L, 10, 0.0f);
 		try
 		{
-			instance->print(str, x, y, angle, sx, sy);
+			instance->print(str, x, y, angle, sx, sy, ox, oy, kx,ky);
 		}
 		catch (love::Exception e)
 		{
@@ -1013,6 +1025,14 @@ namespace opengl
 		return 0;
 	}
 
+	int w_shear(lua_State * L)
+	{
+		float kx = (float)luaL_checknumber(L, 1);
+		float ky = (float)luaL_checknumber(L, 2);
+		instance->shear(kx, ky);
+		return 0;
+	}
+
 	int w_hasFocus(lua_State * L)
 	{
 		luax_pushboolean(L, instance->hasFocus());
@@ -1103,8 +1123,8 @@ namespace opengl
 		{ "pop", w_pop },
 		{ "rotate", w_rotate },
 		{ "scale", w_scale },
-
 		{ "translate", w_translate },
+		{ "shear", w_shear },
 
 		{ "hasFocus", w_hasFocus },
 

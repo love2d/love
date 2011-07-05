@@ -51,8 +51,10 @@ namespace graphics
 		* @param sy The scale factor along the y-axis.
 		* @param ox The origin offset along the x-axis.
 		* @param oy The origin offset along the y-axis.
+		* @param kx Shear along the x-axis.
+		* @param ky Shear along the y-axis.
 		**/
-		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const = 0;
+		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const = 0;
 	};
 
 } // graphics

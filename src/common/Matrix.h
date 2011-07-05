@@ -87,7 +87,7 @@ namespace love
 		void setTranslation(float x, float y);
 
 		/**
-		* Resets this Matrix to a rotaion.
+		* Resets this Matrix to a rotation.
 		* @param r The angle in radians.
 		**/
 		void setRotation(float r);
@@ -100,6 +100,13 @@ namespace love
 		void setScale(float sx, float sy);
 
 		/**
+		* Resets this Matrix to a shear transformation.
+		* @param kx Shear along x-axis.
+		* @param ky Shear along y-axis.
+		**/
+		void setShear(float kx, float ky);
+
+		/**
 		* Creates a transformation with a certain position, orientation, scale
 		* and offset. Perfect for Drawables -- what a coincidence!
 		* 
@@ -110,8 +117,10 @@ namespace love
 		* @param sy Scale along y-axis.
 		* @param ox The offset for rotation along the x-axis.
 		* @param oy The offset for rotation along the y-axis.
+		* @param kx Shear along x-axis
+		* @param ky Shear along y-axis
 		**/
-		void setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy);
+		void setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 		/**
 		* Multiplies this Matrix with a translation.
@@ -132,7 +141,14 @@ namespace love
 		* @param sy Scale factor along the y-axis.
 		**/
 		void scale(float sx, float sy);
-		
+
+		/**
+		* Multiplies this Matrix with a shear transformation.
+		* @param kx Shear along the x-axis.
+		* @param ky Shear along the y-axis.
+		**/
+		void shear(float kx, float ky);
+
 		/**
 		* Transforms an array of vertices by this Matrix. The sources and
 		* destination arrays may be the same. 

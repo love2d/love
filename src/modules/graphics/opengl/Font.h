@@ -93,8 +93,14 @@ namespace opengl
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
 		* @param angle The amount of rotation.
+		* @param sx Scale along the x axis.
+		* @param sy Scale along the y axis.
+		* @param ox The origin offset along the x-axis.
+		* @param oy The origin offset along the y-axis.
+		* @param kx Shear along the x axis.
+		* @param ky Shear along the y axis.
 		**/
-		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f);
+		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 		/**
 		* Prints the character at the designated position.

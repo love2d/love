@@ -89,8 +89,8 @@ namespace opengl
 		bool loadVolatile();
 		void unloadVolatile();
 
-		void add(float x, float y, float a, float sx, float sy, float ox, float oy);
-		void addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy);
+		void add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
+		void addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
 		void clear();
 
 		void * lock();
@@ -99,7 +99,7 @@ namespace opengl
 		void setImage(Image * newimage);
 
 		// Implements Drawable.
-		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	private:
 

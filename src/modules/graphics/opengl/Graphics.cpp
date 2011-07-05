@@ -715,12 +715,12 @@ namespace opengl
 		return (int)max;
 	}
 
-	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy)
+	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
 		if(currentFont != 0)
 		{
 			std::string text(str);
-			currentFont->print(text, x, y, angle, sx, sy);
+			currentFont->print(text, x, y, angle, sx, sy, ox, oy, kx, ky);
 		}
 	}
 
@@ -1023,6 +1023,13 @@ namespace opengl
 	void Graphics::translate(float x, float y)
 	{
 		glTranslatef(x, y, 0);
+	}
+
+	void Graphics::shear(float kx, float ky)
+	{
+		Matrix t;
+		t.setShear(kx, ky);
+		glMultMatrixf((const GLfloat*)t.getElements());
 	}
 
 	void Graphics::drawTest(Image * image, float x, float y, float a, float sx, float sy, float ox, float oy)

@@ -111,7 +111,7 @@ namespace opengl
 		/**
 		* @copydoc Drawable::draw()
 		**/
-		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 		/**
 		* This function draws a section of the image using a Quad object.
@@ -119,7 +119,7 @@ namespace opengl
 		* @copydetails Image::draws()
 		* @param frame Represents the region of the Image to draw.
 		**/
-		void drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+		void drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 		/**
 		* Sets the filter mode.

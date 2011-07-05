@@ -250,10 +250,10 @@ namespace opengl
 		strategy->bindFBO(previous);
 	}
 
-	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
+	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
 		static Matrix t;
-		t.setTransformation(x, y, angle, sx, sy, ox, oy);
+		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 		glPushMatrix();
 		glMultMatrixf((const GLfloat*)t.getElements());

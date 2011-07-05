@@ -397,8 +397,12 @@ namespace opengl
 		* @param angle The amount of rotation.
 		* @param sx The scale factor along the x-axis. (1 = normal).
 		* @param sy The scale factor along the y-axis. (1 = normal).
+		* @param ox The origin offset along the x-axis.
+		* @param oy The origin offset along the y-axis.
+		* @param kx Shear along the x-axis.
+		* @param ky Shear along the y-axis.
 		**/
-		void print(const char * str, float x, float y , float angle = 0.0f, float sx = 1.0f, float sy = 1.0f);
+		void print(const char * str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 		/**
 		* Draw formatted text on screen at the specified coordinates.
@@ -502,6 +506,7 @@ namespace opengl
 		void rotate(float r);
 		void scale(float x, float y = 1.0f);
 		void translate(float x, float y);
+		void shear(float kx, float ky);
 
 		void drawTest(Image * image, float x, float y, float a, float sx, float sy, float ox, float oy);
 
