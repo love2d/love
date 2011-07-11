@@ -229,7 +229,10 @@ namespace opengl
 
 			// Don't fail because of this, but issue a warning.
 			if ( ! buffers || (samples != fsaa))
+			{
 				std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
+				fsaa = !buffers ? 0 : samples;
+			}
 		}
 
 		// Okay, setup OpenGL.
@@ -265,13 +268,17 @@ namespace opengl
 		// Set pixel row alignment
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 
+		// Get the actual vsync status
+		int real_vsync;
+		SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &real_vsync);
+
 		// Set the new display mode as the current display mode.
 		currentMode.width = width;
 		currentMode.height = height;
 		currentMode.colorDepth = 32;
 		currentMode.fsaa = fsaa;
 		currentMode.fullscreen = fullscreen;
-		currentMode.vsync = vsync;
+		currentMode.vsync = real_vsync;
 
 		// Reload all volatile objects.
 		if(!Volatile::loadAll())
@@ -286,6 +293,15 @@ namespace opengl
 		matrixLimit -= 5;
 
 		return true;
+	}
+
+	void Graphics::getMode(int *width, int *height, bool *fullscreen, bool *vsync, int *fsaa)
+	{
+		*width = currentMode.width;
+		*height = currentMode.height;
+		*fullscreen = currentMode.fullscreen;
+		*vsync = currentMode.vsync;
+		*fsaa = currentMode.fsaa;
 	}
 
 	bool Graphics::toggleFullscreen()

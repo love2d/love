@@ -53,6 +53,19 @@ namespace opengl
 		return 1;
 	}
 
+	int w_getMode(lua_State * L)
+	{
+		int w, h, fsaa;
+		bool fs, vsync;
+		instance->getMode(&w, &h, &fs, &vsync, &fsaa);
+		lua_pushnumber(L, w);
+		lua_pushnumber(L, h);
+		lua_pushboolean(L, fs);
+		lua_pushboolean(L, vsync);
+		lua_pushnumber(L, fsaa);
+		return 5;
+	}
+
 	int w_toggleFullscreen(lua_State * L)
 	{
 		luax_pushboolean(L, instance->toggleFullscreen());
@@ -1049,6 +1062,7 @@ namespace opengl
 	static const luaL_Reg functions[] = {
 		{ "checkMode", w_checkMode },
 		{ "setMode", w_setMode },
+		{ "getMode", w_getMode },
 		{ "toggleFullscreen", w_toggleFullscreen },
 		{ "reset", w_reset },
 		{ "clear", w_clear },

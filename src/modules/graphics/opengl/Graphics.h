@@ -152,6 +152,16 @@ namespace opengl
 		bool setMode(int width, int height, bool fullscreen, bool vsync, int fsaa);
 
 		/**
+		* Gets the current display mode.
+		* @param width Pointer to an integer for the window width.
+		* @param height Pointer to an integer for the window height.
+		* @param fullscreen Pointer to a boolean for the fullscreen status.
+		* @param vsync Pointer to a boolean for the vsync status.
+		* @param fsaa Pointer to an integer for the current number of full scene anti-aliasing buffers.
+		**/
+		void getMode(int * width, int * height, bool * fullscreen, bool * vsync, int * fsaa);
+
+		/**
 		* Toggles fullscreen. Note that this also needs to reload the
 		* entire OpenGL context.
 		**/

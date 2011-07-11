@@ -38,6 +38,7 @@ namespace opengl
 {
 	int w_checkMode(lua_State * L);
 	int w_setMode(lua_State * L);
+	int w_getMode(lua_State * L);
 	int w_toggleFullscreen(lua_State * L);
 	int w_reset(lua_State * L);
 	int w_clear(lua_State * L);
@@ -59,7 +60,7 @@ namespace opengl
 	int w_newImageFont(lua_State * L);
 	int w_newSpriteBatch(lua_State * L);
 	int w_newParticleSystem(lua_State * L);
-	int w_newFramebuffer(lua_State * L); // commetns in function
+	int w_newFramebuffer(lua_State * L); // comments in function
 	int w_setColor(lua_State * L);
 	int w_getColor(lua_State * L);
 	int w_setBackgroundColor(lua_State * L);
