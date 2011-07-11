@@ -218,21 +218,17 @@ namespace opengl
 			height = videoinfo->current_h;
 		}
 
-		// Check if FSAA failed or not
-		if(fsaa > 0)
+		GLint buffers;
+		GLint samples;
+
+		glGetIntegerv( GL_SAMPLE_BUFFERS_ARB, & buffers ) ;
+		glGetIntegerv( GL_SAMPLES_ARB, & samples ) ;
+
+		// Don't fail because of this, but issue a warning.
+		if ( (! buffers && fsaa) || (samples != fsaa))
 		{
-			GLint buffers;
-			GLint samples;
-
-			glGetIntegerv( GL_SAMPLE_BUFFERS_ARB, & buffers ) ;
-			glGetIntegerv( GL_SAMPLES_ARB, & samples ) ;
-
-			// Don't fail because of this, but issue a warning.
-			if ( ! buffers || (samples != fsaa))
-			{
-				std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
-				fsaa = !buffers ? 0 : samples;
-			}
+			std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
+			fsaa = !buffers ? 0 : samples;
 		}
 
 		// Okay, setup OpenGL.
