@@ -601,12 +601,12 @@ function love.nogame()
 	end
 
 	function love.conf(t)
-                t.title = "LOVE " .. love._version_string .. " (" .. love._version_codename .. ")"
-                t.modules.audio = false
-                t.modules.sound = false
-                t.modules.physics = false
-                t.modules.joystick = false
-        end
+		t.title = "L\195\150VE " .. love._version_string .. " (" .. love._version_codename .. ")"
+		t.modules.audio = false
+		t.modules.sound = false
+		t.modules.physics = false
+		t.modules.joystick = false
+	end
 end
 
 -----------------------------------------------------------
