@@ -1302,7 +1302,7 @@ AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 	end
 
 	local lgprint = love.graphics.print1 -- << notice the 1
-	function love.graphics.print(text, x,y, ...)
+	function love.graphics.print1(text, x,y, ...)
 		return lgprint(text, x,y, unpack_transform(...))
 	end
 
