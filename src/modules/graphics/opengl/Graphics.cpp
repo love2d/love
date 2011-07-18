@@ -96,7 +96,8 @@ namespace opengl
 		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
 		s.colorMode = (mode == GL_MODULATE) ? Graphics::COLOR_MODULATE : Graphics::COLOR_REPLACE;
 		//get line style
-		s.lineStyle = (glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE) ? Graphics::LINE_SMOOTH : Graphics::LINE_ROUGH;
+		//s.lineStyle = (glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE) ? Graphics::LINE_SMOOTH : Graphics::LINE_ROUGH;
+		s.lineStyle = Graphics::LINE_ROUGH;
 		//get the point size
 		glGetFloatv(GL_POINT_SIZE, &s.pointSize);
 		//get point style
@@ -180,6 +181,7 @@ namespace opengl
 		{
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa ) ;
+			glEnable(GL_MULTISAMPLE);
 		}
 
 		// Fullscreen?
@@ -653,16 +655,16 @@ namespace opengl
 
 	void Graphics::setLineStyle(Graphics::LineStyle style )
 	{
-		// XXX: actually enables antialiasing for _all_ polygons.
-		// may need investigation if wanted or not
-		// maybe rename to something else?
-		if(style == LINE_ROUGH)
-			glDisable (GL_POLYGON_SMOOTH);
-		else // type == LINE_SMOOTH
-		{
-			glEnable (GL_POLYGON_SMOOTH);
-			glHint (GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-		}
+		//// XXX: actually enables antialiasing for _all_ polygons.
+		//// may need investigation if wanted or not
+		//// maybe rename to something else?
+		//if(style == LINE_ROUGH)
+		//	glDisable (GL_POLYGON_SMOOTH);
+		//else // type == LINE_SMOOTH
+		//{
+		//	glEnable (GL_POLYGON_SMOOTH);
+		//	glHint (GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+		//}
 	}
 
 	void Graphics::setLine( float width, Graphics::LineStyle style )
@@ -683,9 +685,9 @@ namespace opengl
 
 	Graphics::LineStyle Graphics::getLineStyle()
 	{
-		if(glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE)
-			return LINE_SMOOTH;
-		else
+		//if(glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE)
+		//	return LINE_SMOOTH;
+		//else
 			return LINE_ROUGH;
 	}
 
