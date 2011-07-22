@@ -102,7 +102,7 @@ namespace openal
 		bool isStatic() const;
 
 		void playAtomic();
-		void stopAtomic();
+		void stopAtomic(bool rewind = true);
 		void pauseAtomic();
 		void resumeAtomic();
 		void rewindAtomic();

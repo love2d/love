@@ -228,11 +228,13 @@ namespace openal
 			switch (*((Source::Unit*) unit)) {
 				case Source::UNIT_SAMPLES:
 					if (type == TYPE_STREAM) {
+						offsetSamples = offset;
 						ALint buffer;
 						alGetSourcei(source, AL_BUFFER, &buffer);
 						int freq;
 						alGetBufferi(buffer, AL_FREQUENCY, &freq);
 						offset /= freq;
+						offsetSeconds = offset;
 						decoder->seek(offset);
 					} else {
 						alSourcef(source, AL_SAMPLE_OFFSET, offset);
@@ -241,11 +243,25 @@ namespace openal
 				case Source::UNIT_SECONDS:	
 				default:
 					if (type == TYPE_STREAM) {
+						offsetSeconds = offset;
 						decoder->seek(offset);
+						ALint buffer;
+						alGetSourcei(source, AL_BUFFER, &buffer);
+						int freq;
+						alGetBufferi(buffer, AL_FREQUENCY, &freq);
+						offsetSamples = offset*freq;
 					} else {
 						alSourcef(source, AL_SEC_OFFSET, offset);
 					}
 					break;
+			}
+			if (type == TYPE_STREAM)
+			{
+				// Because we still have old data
+				// from before the seek in the buffers
+				// let's empty them.
+				stopAtomic(false);
+				playAtomic();
 			}
 		}
 	}
@@ -380,7 +396,7 @@ namespace openal
 		//but this prevents a horrible, horrible bug
 	}
 
-	void Source::stopAtomic()
+	void Source::stopAtomic(bool rewind)
 	{
 		if(valid)
 		{
@@ -404,7 +420,8 @@ namespace openal
 
 			alSourcei(source, AL_BUFFER, AL_NONE);
 		}
-		rewindAtomic();
+		if (rewind)
+			rewindAtomic();
 		valid = false;
 	}
 
