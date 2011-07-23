@@ -93,6 +93,25 @@ namespace opengl
 		return 0;
 	}
 
+	int w_SpriteBatch_setColor(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+
+		if (lua_gettop(L) <= 1)
+			t->setColor();
+		else
+		{
+			Color c;
+			c.r = (unsigned char)luaL_checkint(L, 2);
+			c.g = (unsigned char)luaL_checkint(L, 3);
+			c.b = (unsigned char)luaL_checkint(L, 4);
+			c.a = (unsigned char)luaL_optint(L, 5, 255);
+			t->setColor(c);
+		}
+
+		return 0;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "add", w_SpriteBatch_add },
 		{ "addq", w_SpriteBatch_addq },
@@ -100,6 +119,7 @@ namespace opengl
 		{ "bind", w_SpriteBatch_bind },
 		{ "unbind", w_SpriteBatch_unbind },
 		{ "setImage", w_SpriteBatch_setImage },
+		{ "setColor", w_SpriteBatch_setColor },
 		{ 0, 0 }
 	};
 

@@ -34,7 +34,7 @@ namespace graphics
 namespace opengl
 {
 	SpriteBatch::SpriteBatch(Image * image, int size, int usage)
-		: image(image), size(size), next(0), usage(usage), lockp(0)
+		: image(image), size(size), next(0), usage(usage), lockp(0), color(0)
 	{
 		if (!(GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5))
 			throw love::Exception("Your OpenGL version does not support SpriteBatches. Go upgrade!");
@@ -67,6 +67,7 @@ namespace opengl
 
 		delete [] vertices;
 		delete [] indices;
+		delete color;
 	}
 
 	bool SpriteBatch::loadVolatile()
@@ -120,6 +121,9 @@ namespace opengl
 			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 			t.transform(v, v, 4);
 
+			if (color)
+				setColorv(v, *color);
+
 			addv(v);
 
 			// Increment counter.
@@ -142,6 +146,9 @@ namespace opengl
 			Matrix t;
 			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 			t.transform(v, v, 4);
+
+			if (color)
+				setColorv(v, *color);
 
 			addv(v);
 
@@ -183,6 +190,20 @@ namespace opengl
 		image->retain();
 	}
 
+	void SpriteBatch::setColor(const Color & color)
+	{
+		if(!this->color)
+			this->color = new Color(color);
+		else
+			*(this->color) = color;
+	}
+
+	void SpriteBatch::setColor()
+	{
+		delete color;
+		color = 0;
+	}
+
 	void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
 		static Matrix t;
@@ -201,12 +222,21 @@ namespace opengl
 		// Bind the VBO buffer.
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
 		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo[1]);
+
+		// Apply per-sprite color, if a color is set.
+		if (color)
+		{
+			glEnableClientState(GL_COLOR_ARRAY);
+			glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), 0);
+		}
+
 		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4));
 		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4+sizeof(float)*2));
 		
 		glDrawElements(GL_TRIANGLES, next*6, GL_UNSIGNED_SHORT, 0);
 
 		// Disable vertex arrays.
+		glDisableClientState(GL_COLOR_ARRAY);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -230,6 +260,14 @@ namespace opengl
 			glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
 			glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 		}
+	}
+
+	void SpriteBatch::setColorv(vertex * v, const Color & color)
+	{
+		v[0].r = color.r; v[0].g = color.g; v[0].b = color.b; v[0].a = color.a;
+		v[1].r = color.r; v[1].g = color.g; v[1].b = color.b; v[1].a = color.a;
+		v[2].r = color.r; v[2].g = color.g; v[2].b = color.b; v[2].a = color.a;
+		v[3].r = color.r; v[3].g = color.g; v[3].b = color.b; v[3].a = color.a;
 	}
 
 } // opengl

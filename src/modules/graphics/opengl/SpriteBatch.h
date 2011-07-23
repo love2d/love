@@ -31,6 +31,7 @@
 #include <common/Matrix.h>
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
+#include <graphics/Color.h>
 
 // OpenGL
 #include "GLee.h"
@@ -73,6 +74,10 @@ namespace opengl
 		// If the buffer is locked, this pointer is nonzero.
 		vertex * lockp;
 
+		// Current color. This color, if present, will be applied to the next
+		// added quad.
+		Color * color;
+
 	public:
 
 		enum UsageHint
@@ -98,12 +103,36 @@ namespace opengl
 
 		void setImage(Image * newimage);
 
+		/**
+		 * Set the current color for this SpriteBatch. The geometry added
+		 * after this call will use this color. Note that global color
+		 * will not longer apply to the SpriteBatch if this is used.
+		 *
+		 * @param color The color to use for the following geometry.
+		 */
+		void setColor(const Color & color);
+
+		/**
+		 * Disable per-quad colors for this SpriteBatch. The next call to
+		 * draw will use the global color for all sprites.
+		 */
+		void setColor();
+
 		// Implements Drawable.
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	private:
 
 		void addv(const vertex * v);
+
+		/**
+		 * Set the color for vertices.
+		 *
+		 * @param v The vertices to set the color for. Must be an array of
+		 *          of size 4.
+		 * @param color The color to assign to each vertex.
+		 */
+		void setColorv(vertex * v, const Color & color);
 
 	}; // SpriteBatch
 
