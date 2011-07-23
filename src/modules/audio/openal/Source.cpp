@@ -264,6 +264,7 @@ namespace openal
 				// let's empty them.
 				stopAtomic(false);
 				playAtomic();
+				toLoop = 0;
 			}
 		}
 	}
