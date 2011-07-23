@@ -68,6 +68,8 @@ namespace openal
 
 		love::sound::Decoder * decoder;
 
+		unsigned int toLoop;
+
 	public:
 		Source(Pool * pool, love::sound::SoundData * soundData);
 		Source(Pool * pool, love::sound::Decoder * decoder);

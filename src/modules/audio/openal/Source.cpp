@@ -34,7 +34,8 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::SoundData * soundData)
 		: love::audio::Source(Source::TYPE_STATIC), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0), decoder(0)
+		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0),
+		decoder(0), toLoop(0)
 	{
 		alGenBuffers(1, buffers);
 		ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
@@ -49,7 +50,8 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::Decoder * decoder)
 		: love::audio::Source(Source::TYPE_STREAM), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0), decoder(decoder)
+		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0),
+		decoder(decoder), toLoop(0)
 	{
 		decoder->retain();
 		alGenBuffers(MAX_BUFFERS, buffers);
@@ -496,9 +498,23 @@ namespace openal
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 
 		if(decoder->isFinished() && isLooping()) {
-			offsetSamples = 0;
-			offsetSeconds = 0;
+			int queued, processed;
+			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
+			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+			if (queued > processed)
+				toLoop = queued-processed;
+			else
+				toLoop = MAX_BUFFERS-processed;
 			d->rewind();
+		}
+
+		if (toLoop > 0)
+		{
+			if (--toLoop == 0)
+			{
+				offsetSamples = 0;
+				offsetSeconds = 0;
+			}
 		}
 
 		return decoded;
