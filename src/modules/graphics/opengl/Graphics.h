@@ -42,6 +42,7 @@
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Framebuffer.h"
+#include "PixelEffect.h"
 
 namespace love
 {
@@ -287,6 +288,8 @@ namespace opengl
 		ParticleSystem * newParticleSystem(Image * image, int size);
 
 		Framebuffer * newFramebuffer(int width, int height);
+
+		PixelEffect * newPixelEffect(const std::string& code);
 
 		/**
 		* Sets the foreground color.

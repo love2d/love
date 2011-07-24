@@ -147,6 +147,9 @@ namespace opengl
 
 		void drawv(const Matrix & t, const vertex * v) const;
 
+		friend class PixelEffect;
+		GLuint getTextureName() const { return texture; }
+
 	}; // Image
 
 } // opengl

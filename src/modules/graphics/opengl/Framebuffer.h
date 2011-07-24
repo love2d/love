@@ -48,6 +48,9 @@ namespace opengl
 		void unloadVolatile();
 
 	private:
+		friend class PixelEffect;
+		GLuint getTextureName() const { return img; }
+
 		GLsizei width;
 		GLsizei height;
 		GLuint fbo;

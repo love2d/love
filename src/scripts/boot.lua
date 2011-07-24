@@ -689,6 +689,7 @@ function love.releaseerrhand(msg)
 	end
 
 	love.graphics.setRenderTarget()
+	love.graphics.setPixelEffect()
 
 	-- Load.
 	love.graphics.reset()

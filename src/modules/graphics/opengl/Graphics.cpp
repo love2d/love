@@ -325,6 +325,7 @@ namespace opengl
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		glLoadIdentity();
+		PixelEffect::detach();
 	}
 
 	void Graphics::present()
@@ -539,6 +540,19 @@ namespace opengl
 	Framebuffer * Graphics::newFramebuffer(int width, int height)
 	{
 		return new Framebuffer(width, height);
+	}
+
+	PixelEffect * Graphics::newPixelEffect(const std::string& code)
+	{
+		PixelEffect * effect = NULL;
+		try {
+			effect = new PixelEffect(code);
+		} catch (love::Exception& e) {
+			if (effect)
+				delete effect;
+			throw(e);
+		}
+		return effect;
 	}
 
 	void Graphics::setColor(const Color& c)

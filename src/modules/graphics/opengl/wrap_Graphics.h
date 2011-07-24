@@ -28,6 +28,7 @@
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
 #include "wrap_Framebuffer.h"
+#include "wrap_PixelEffect.h"
 #include "Graphics.h"
 
 namespace love
@@ -61,6 +62,7 @@ namespace opengl
 	int w_newSpriteBatch(lua_State * L);
 	int w_newParticleSystem(lua_State * L);
 	int w_newFramebuffer(lua_State * L); // comments in function
+	int w_newPixelEffect(lua_State * L);
 	int w_setColor(lua_State * L);
 	int w_getColor(lua_State * L);
 	int w_setBackgroundColor(lua_State * L);
@@ -86,6 +88,9 @@ namespace opengl
 	int w_getMaxPointSize(lua_State * L);
 	int w_newScreenshot(lua_State * L);
 	int w_setRenderTarget(lua_State * L);
+	int w_setPixelEffect(lua_State * L);
+	int w_hasPixelEffects(lua_State * L);
+	int w_getGLSLVersion(lua_State * L);
 	int w_draw(lua_State * L);
 	int w_drawq(lua_State * L);
 	int w_drawTest(lua_State * L);

@@ -24,6 +24,7 @@
 #include <font/Rasterizer.h>
 
 #include <scripts/graphics.lua.h>
+#include "GLInfo.h"
 
 namespace love
 {
@@ -383,6 +384,33 @@ namespace opengl
 		return 1;
 	}
 
+	int w_newPixelEffect(lua_State * L)
+	{
+		if (!PixelEffect::isSupported())
+			return luaL_error(L, "Sorry, your graphics card does not support pixel effects.");
+
+		try {
+			luaL_checkstring(L, 1);
+
+			luax_getfunction(L, "graphics", "_effectCodeToGLSL");
+			lua_pushvalue(L, 1);
+			lua_pcall(L, 1, 1, 0);
+
+			const char* code = lua_tostring(L, -1);
+			PixelEffect * effect = instance->newPixelEffect(code);
+			luax_newtype(L, "PixelEffect", GRAPHICS_PIXELEFFECT_T, (void*)effect);
+		} catch (love::Exception& e) {
+			// memory is freed in Graphics::newPixelEffect
+			luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
+			lua_pushstring(L, e.what());
+			lua_pcall(L, 1,1, 0);
+			const char* err = lua_tostring(L, -1);
+			return luaL_error(L, err);
+		}
+
+		return 1;
+	}
+
 	int w_setColor(lua_State * L)
 	{
 		Color c;
@@ -700,6 +728,24 @@ namespace opengl
 		fbo->startGrab();
 
 		return 0;
+	}
+
+	int w_setPixelEffect(lua_State * L)
+	{
+		if (lua_isnoneornil(L,1)) {
+			PixelEffect::detach();
+			return 0;
+		}
+
+		PixelEffect * effect = luax_checkpixeleffect(L, 1);
+		effect->attach();
+		return 0;
+	}
+
+	int w_hasPixelEffects(lua_State * L)
+	{
+		lua_pushboolean(L, PixelEffect::isSupported());
+		return 1;
 	}
 
 	/**
@@ -1075,6 +1121,7 @@ namespace opengl
 		{ "newSpriteBatch", w_newSpriteBatch },
 		{ "newParticleSystem", w_newParticleSystem },
 		{ "newFramebuffer", w_newFramebuffer },
+		{ "newPixelEffect", w_newPixelEffect },
 
 		{ "setColor", w_setColor },
 		{ "getColor", w_getColor },
@@ -1101,6 +1148,9 @@ namespace opengl
 		{ "getMaxPointSize", w_getMaxPointSize },
 		{ "newScreenshot", w_newScreenshot },
 		{ "setRenderTarget", w_setRenderTarget },
+
+		{ "setPixelEffect", w_setPixelEffect },
+		{ "hasPixelEffects", w_hasPixelEffects },
 
 		{ "draw", w_draw },
 		{ "drawq", w_drawq },
@@ -1158,6 +1208,7 @@ namespace opengl
 		luaopen_spritebatch,
 		luaopen_particlesystem,
 		luaopen_framebuffer,
+		luaopen_pixeleffect,
 		0
 	};
 
