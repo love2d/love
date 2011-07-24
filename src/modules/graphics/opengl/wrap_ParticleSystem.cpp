@@ -147,6 +147,10 @@ namespace opengl
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
 		size_t nSizes = lua_gettop(L) - 1;
+
+		if (nSizes > 8)
+			return luaL_error(L, "At most eight (8) sizes may be used.");
+
 		if (nSizes == 1) {
 			t->setSize(luax_checkfloat(L, 2));
 		} else {
@@ -198,6 +202,9 @@ namespace opengl
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
 		size_t nColors = (lua_gettop(L) - 1) / 4;
+
+		if (nColors > 8)
+			return luaL_error(L, "At most eight (8) colors may be used.");
 
 		if (nColors == 1) {
 			t->setColor(Color(luaL_checkint(L,2),
