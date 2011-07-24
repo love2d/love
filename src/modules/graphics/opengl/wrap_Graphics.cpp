@@ -24,7 +24,6 @@
 #include <font/Rasterizer.h>
 
 #include <scripts/graphics.lua.h>
-#include "GLInfo.h"
 
 namespace love
 {
