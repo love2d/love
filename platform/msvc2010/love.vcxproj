@@ -101,6 +101,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\PixelEffect.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp" />
@@ -108,6 +109,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Volatile.cpp" />
@@ -265,6 +267,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\PixelEffect.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h" />
@@ -272,6 +275,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\Volatile.h" />
@@ -371,7 +375,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <PreprocessorDefinitions>VC_EXTRALEAN;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;VC_EXTRALEAN;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -391,7 +395,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <ObjectFileName>%(Identity).obj</ObjectFileName>
-      <PreprocessorDefinitions>VC_EXTRALEAN;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;VC_EXTRALEAN;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>
       </StringPooling>
       <MinimalRebuild>
