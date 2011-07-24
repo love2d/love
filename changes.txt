@@ -12,6 +12,12 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added UTF-8 support for fonts.
   * Added box2d error handling for some commonly failing functions.
   * Added ability for fused release games to have their write dir in appdata.
+  * Added shear transformation to drawing functions.
+  * Added origin to font printing.
+  * Added love.graphics.getMode.
+  * Added per-sprite colors on SpriteBatches.
+  * Added pixel effects.
+  * Added love.graphics.isSupported.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
@@ -22,7 +28,10 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed crashes when bodies were destroyed during collisions.
   * Fixed bound SpriteBatches corrupting when drawing.
   * Fixed thread-safety issues with ImageData.
-  * Fixed memory leak in audio sources.
+  * Fixed memory leaks in audio sources.
+  * Fixed thread's set (previously send) accidentally changing the type.
+  * Fixed SoundData allocating the wrong number of samples.
+  * Fixed SpriteBatch support on intel cards.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
 
