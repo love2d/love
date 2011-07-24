@@ -70,6 +70,11 @@ namespace opengl
 		delete color;
 	}
 
+	bool SpriteBatch::isSupported()
+	{
+		return (GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5);
+	}
+
 	bool SpriteBatch::loadVolatile()
 	{
 		// Find out which OpenGL VBO usage hint to use.

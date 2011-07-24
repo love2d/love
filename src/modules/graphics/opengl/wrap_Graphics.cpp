@@ -761,6 +761,10 @@ namespace opengl
 					if (!PixelEffect::isSupported())
 						supported = false;
 					break;
+				case Graphics::SUPPORT_SPRITEBATCHES:
+					if (!SpriteBatch::isSupported())
+						supported = false;
+					break;
 				default:
 					supported = false;
 			}

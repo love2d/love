@@ -90,6 +90,8 @@ namespace opengl
 		SpriteBatch(Image * image, int size, int usage);
 		virtual ~SpriteBatch();
 
+		static bool isSupported();
+
 		// Implements Volatile.
 		bool loadVolatile();
 		void unloadVolatile();
