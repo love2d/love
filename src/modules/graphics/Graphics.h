@@ -78,6 +78,13 @@ namespace graphics
 			POINT_MAX_ENUM
 		};
 
+		enum Support
+		{
+			SUPPORT_FRAMEBUFFERS = 1,
+			SUPPORT_PIXELEFFECTS,
+			SUPPORT_MAX_ENUM
+		};
+
 		virtual ~Graphics();
 
 		static bool getConstant(const char * in, DrawMode & out);
@@ -98,6 +105,9 @@ namespace graphics
 		static bool getConstant(const char * in, PointStyle & out);
 		static bool getConstant(PointStyle in, const char *& out);
 
+		static bool getConstant(const char * in, Support & out);
+		static bool getConstant(Support in, const char *& out);
+
 	private:
 
 		static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -117,6 +127,9 @@ namespace graphics
 
 		static StringMap<PointStyle, POINT_MAX_ENUM>::Entry pointStyleEntries[];
 		static StringMap<PointStyle, POINT_MAX_ENUM> pointStyles;
+
+		static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
+		static StringMap<Support, SUPPORT_MAX_ENUM> support;
 
 	}; // Graphics
 

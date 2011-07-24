@@ -22,6 +22,8 @@ namespace opengl
 		Framebuffer(int width, int height);
 		virtual ~Framebuffer();
 
+		static bool isSupported();
+
 		unsigned int getStatus() const { return status; }
 
 		static Framebuffer* current;

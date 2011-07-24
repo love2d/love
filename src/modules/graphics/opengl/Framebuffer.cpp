@@ -183,6 +183,19 @@ namespace opengl
 		unloadVolatile();
 	}
 
+	bool Framebuffer::isSupported()
+	{
+		if (!strategy) {
+			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+				strategy = &strategyGL3;
+			else if (GLEE_EXT_framebuffer_object)
+				strategy = &strategyEXT;
+			else
+				strategy = &strategyNone;
+		}
+		return (strategy != &strategyNone);
+	}
+
 	void Framebuffer::bindDefaultBuffer()
 	{
 		if (current != NULL)

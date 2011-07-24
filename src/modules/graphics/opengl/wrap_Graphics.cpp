@@ -741,9 +741,33 @@ namespace opengl
 		return 0;
 	}
 
-	int w_hasPixelEffects(lua_State * L)
+	int w_isSupported(lua_State * L)
 	{
-		lua_pushboolean(L, PixelEffect::isSupported());
+		bool supported = true;
+		size_t len = lua_gettop(L);
+		Graphics::Support support;
+		for (unsigned int i = 1; i <= len; i++)
+		{
+			const char * str = luaL_checkstring(L, i);
+			if(!Graphics::getConstant(str, support))
+				supported = false;
+			switch(support)
+			{
+				case Graphics::SUPPORT_FRAMEBUFFERS:
+					if (!Framebuffer::isSupported())
+						supported = false;
+					break;
+				case Graphics::SUPPORT_PIXELEFFECTS:
+					if (!PixelEffect::isSupported())
+						supported = false;
+					break;
+				default:
+					supported = false;
+			}
+			if (!supported)
+				break;
+		}
+		lua_pushboolean(L, supported);
 		return 1;
 	}
 
@@ -1149,7 +1173,8 @@ namespace opengl
 		{ "setRenderTarget", w_setRenderTarget },
 
 		{ "setPixelEffect", w_setPixelEffect },
-		{ "hasPixelEffects", w_hasPixelEffects },
+
+		{ "isSupported", w_isSupported },
 
 		{ "draw", w_draw },
 		{ "drawq", w_drawq },

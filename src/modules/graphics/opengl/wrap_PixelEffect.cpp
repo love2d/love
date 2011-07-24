@@ -31,8 +31,8 @@ namespace opengl
 			return luaL_error(L, "Invalid variable count (expected 1-4, got %d).", count);
 
 		float values[4] = {0,0,0,0};
-		for (int i = 0; i < count; ++i)
-			values[i] = luaL_checknumber(L, i+1 + 2);
+		for (unsigned int i = 0; i < count; ++i)
+			values[i] = (float) luaL_checknumber(L, i+1 + 2);
 
 		try {
 			effect->sendFloat(name, count, values);
@@ -54,8 +54,8 @@ namespace opengl
 			return luaL_error(L, "Invalid matrix size: %dx%d (only 2x2, 3x3 and 4x4 matrices are supported).", count, count);
 
 		float values[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-		for (int i = 0; i < count; ++i)
-			values[i] = luaL_checknumber(L, i+1 + 3);
+		for (unsigned int i = 0; i < count; ++i)
+			values[i] = (float) luaL_checknumber(L, i+1 + 3);
 
 		try {
 			effect->sendFloat(name, size, values);

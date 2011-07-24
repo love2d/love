@@ -88,6 +88,16 @@ namespace graphics
 		return pointStyles.find(in, out);
 	}
 
+	bool Graphics::getConstant(const char * in, Support & out)
+	{
+		return support.find(in, out);
+	}
+
+	bool Graphics::getConstant(Support in, const char *& out)
+	{
+		return support.find(in, out);
+	}
+
 	StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
 	{
 		{ "line", Graphics::DRAW_LINE },
@@ -138,6 +148,14 @@ namespace graphics
 	};
 
 	StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM> Graphics::pointStyles(Graphics::pointStyleEntries, sizeof(Graphics::pointStyleEntries));
+
+	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
+	{
+		{ "framebuffers", Graphics::SUPPORT_FRAMEBUFFERS },
+		{ "pixeleffects", Graphics::SUPPORT_PIXELEFFECTS }
+	};
+
+	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));
 
 } // graphics
 } // love
