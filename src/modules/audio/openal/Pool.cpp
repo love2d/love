@@ -159,6 +159,7 @@ namespace openal
 		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
 			i->first->stopAtomic();
+			i->first->release();
 			available.push(i->second);
 		}
 
