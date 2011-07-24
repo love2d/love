@@ -46,6 +46,9 @@ namespace opengl
 		float position[2];
 		float direction;
 
+		// Particles gravitate towards this point.
+		love::Vector origin;
+
 		love::Vector speed;
 		float gravity;
 		float radialAcceleration;

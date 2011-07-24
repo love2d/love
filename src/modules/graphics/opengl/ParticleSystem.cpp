@@ -95,6 +95,8 @@ namespace opengl
 		max = direction + spread/2.0f;
 		pLast->direction = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
 
+		pLast->origin = position;
+
 		min = speedMin;
 		max = speedMax;
 		float speed = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
@@ -447,7 +449,7 @@ namespace opengl
 				love::Vector ppos(p->position[0], p->position[1]);
 
 				// Get vector from particle center to particle.
-				radial = ppos - position;
+				radial = ppos - p->origin;
 				radial.normalize();
 				tangential = radial;
 
