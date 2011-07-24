@@ -274,6 +274,28 @@ namespace love
 	Type luax_type(lua_State * L, int idx);
 
 	/**
+	 * Convert the value at the specified index to an Lua number, and then
+	 * convert to a float.
+	 *
+	 * @param L The Lua state.
+	 * @param idx The index on the stack.
+	 */
+	inline float luax_tofloat(lua_State *L, int idx)
+	{
+		return static_cast<float>(lua_tonumber(L, idx));
+	}
+
+	/**
+	 * Like luax_tofloat, but checks that the value is a number.
+	 *
+	 * @see luax_tofloat
+	 */
+	inline float luax_checkfloat(lua_State *L, int idx)
+	{
+		return static_cast<float>(luaL_checknumber(L, idx));
+	}
+
+	/**
 	* Converts the value at idx to the specified type without checking that
 	* this conversion is valid. If the type has been previously verified with
 	* luax_istype, then this can be safely used. Otherwise, use luax_checktype.

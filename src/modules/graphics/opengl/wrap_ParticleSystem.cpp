@@ -148,11 +148,11 @@ namespace opengl
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
 		size_t nSizes = lua_gettop(L) - 1;
 		if (nSizes == 1) {
-			t->setSize(luaL_checknumber(L, 2));
+			t->setSize(luax_checkfloat(L, 2));
 		} else {
 			std::vector<float> sizes(nSizes);
 			for (size_t i = 0; i < nSizes; ++i)
-				sizes[i] = luaL_checknumber(L, 1 + i + 1);
+				sizes[i] = luax_checkfloat(L, 1 + i + 1);
 
 			t->setSize(sizes);
 		}

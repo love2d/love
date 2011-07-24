@@ -114,7 +114,7 @@ namespace opengl
 		pLast->tangentialAcceleration = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
 
 		pLast->sizeOffset       = (rand() / (float(RAND_MAX)+1)) * sizeVariation; // time offset for size change
-		pLast->sizeIntervalSize = (1.0 - (rand() / (float(RAND_MAX)+1)) * sizeVariation) - pLast->sizeOffset;
+		pLast->sizeIntervalSize = (1.0f - (rand() / (float(RAND_MAX)+1)) * sizeVariation) - pLast->sizeOffset;
 		pLast->size = sizes[(size_t)(pLast->sizeOffset - .5f) * (sizes.size() - 1)];
 
 		min = rotationMin;

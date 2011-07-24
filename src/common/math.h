@@ -66,13 +66,18 @@ struct vertex
 	float x, y;
 	float s, t;
 };
-	
+
 inline int next_p2(int x)
 {
 	x += (x == 0);
 	x--;
 	for (unsigned int i = 1; i < sizeof(int)*CHAR_BIT; i <<= 1) x |= x >> i;
 	return ++x;
+}
+
+inline float next_p2(float x)
+{
+	return static_cast<float>(next_p2(static_cast<int>(x)));
 }
 
 } // love

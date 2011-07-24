@@ -56,7 +56,7 @@ namespace physfs
 	{
 		// no error checking needed, everything, even nothing
 		// can be converted to a boolean
-		instance->setRelease(lua_toboolean(L, 1));
+		instance->setRelease(luax_toboolean(L, 1));
 		return 0;
 	}
 

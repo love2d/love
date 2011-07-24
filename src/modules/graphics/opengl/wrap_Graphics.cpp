@@ -926,12 +926,12 @@ namespace opengl
 			for (int i = 0; i < args; ++i) {
 				lua_pushnumber(L, i + 1);
 				lua_rawget(L, 1);
-				coords[i] = lua_tonumber(L, -1);
+				coords[i] = luax_tofloat(L, -1);
 				lua_pop(L, 1);
 			}
 		} else {
 			for (int i = 0; i < args; ++i)
-				coords[i] = lua_tonumber(L, i + 1);
+				coords[i] = luax_tofloat(L, i + 1);
 		}
 
 		instance->polyline(coords, args);
@@ -1050,12 +1050,12 @@ namespace opengl
 			for (int i = 0; i < args; ++i) {
 				lua_pushnumber(L, i + 1);
 				lua_rawget(L, 2);
-				coords[i] = lua_tonumber(L, -1);
+				coords[i] = luax_tofloat(L, -1);
 				lua_pop(L, 1);
 			}
 		} else {
 			for (int i = 0; i < args; ++i)
-				coords[i] = lua_tonumber(L, i + 2);
+				coords[i] = luax_tofloat(L, i + 2);
 		}
 
 		// make a closed loop

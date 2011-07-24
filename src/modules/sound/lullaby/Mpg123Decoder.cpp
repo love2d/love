@@ -164,7 +164,7 @@ namespace lullaby
 
 	bool Mpg123Decoder::seek(float s)
 	{
-		off_t offset = s * sampleRate;
+		off_t offset = static_cast<off_t>(s * static_cast<float>(sampleRate));
 
 		if(offset < 0)
 			return false;

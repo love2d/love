@@ -78,14 +78,10 @@ namespace opengl
 	DisplayState Graphics::saveState()
 	{
 		DisplayState s;
-		//create a table in which to store the color data in float format, before converting it
-		float color[4];
-		//get the color
-		glGetFloatv(GL_CURRENT_COLOR, color);
-		s.color.set( (color[0]*255.0f), (color[1]*255.0f), (color[2]*255.0f), (color[3]*255.0f) );
-		//get the background color
-		glGetFloatv(GL_COLOR_CLEAR_VALUE, color);
-		s.backgroundColor.set( color[0]*255.0f, color[1]*255.0f, color[2]*255.0f, color[3]*255.0f );
+
+		s.color = getColor();
+		s.backgroundColor = getBackgroundColor();
+
 		//store modes here
 		GLint mode;
 		//get blend mode
@@ -276,7 +272,7 @@ namespace opengl
 		currentMode.colorDepth = 32;
 		currentMode.fsaa = fsaa;
 		currentMode.fullscreen = fullscreen;
-		currentMode.vsync = real_vsync;
+		currentMode.vsync = (real_vsync != 0);
 
 		// Reload all volatile objects.
 		if(!Volatile::loadAll())
