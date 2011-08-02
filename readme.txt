@@ -26,6 +26,19 @@ Windows:
 OSX:
 	Use the XCode project in platform/macosx.
 
+Dependencies
+------------
+-SDL
+-OpenGL
+-OpenAL
+-Lua
+-LuaJIT
+-DevIL with MNG and TIFF
+-FreeType
+-PhysicsFS
+-ModPlug
+-mpg123
+-Vorbisfile
 
 ! WARNING ! 
 -----------
