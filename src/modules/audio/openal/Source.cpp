@@ -264,7 +264,6 @@ namespace openal
 				// let's empty them.
 				stopAtomic(false);
 				playAtomic();
-				toLoop = 0;
 			}
 		}
 	}
@@ -425,6 +424,7 @@ namespace openal
 		}
 		if (rewind)
 			rewindAtomic();
+		toLoop = 0;
 		valid = false;
 	}
 
