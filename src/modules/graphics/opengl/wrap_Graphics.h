@@ -88,6 +88,7 @@ namespace opengl
 	int w_getMaxPointSize(lua_State * L);
 	int w_newScreenshot(lua_State * L);
 	int w_setRenderTarget(lua_State * L);
+	int w_getRenderTarget(lua_State * L);
 	int w_setPixelEffect(lua_State * L);
 	int w_isSupported(lua_State * L);
 	int w_getGLSLVersion(lua_State * L);

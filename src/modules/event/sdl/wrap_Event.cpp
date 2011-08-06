@@ -183,6 +183,14 @@ namespace sdl
 		return 0;
 	}
 
+	int w_quit(lua_State * L)
+	{
+		static Event::Message m;
+		m.type = Event::TYPE_QUIT;
+		luax_pushboolean(L, instance->push(m));
+		return 1;
+	}
+
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "pump", w_pump },
@@ -190,6 +198,7 @@ namespace sdl
 		{ "wait", w_wait },
 		{ "push", w_push },
 		{ "clear", w_clear },
+		{ "quit", w_quit },
 		{ 0, 0 }
 	};
 
