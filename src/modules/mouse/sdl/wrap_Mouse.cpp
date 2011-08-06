@@ -89,7 +89,7 @@ namespace sdl
 		return 1;
 	}
 
-	int w_setGrap(lua_State * L)
+	int w_setGrab(lua_State * L)
 	{
 		bool b = luax_toboolean(L, 1);
 		instance->setGrab(b);
@@ -111,7 +111,7 @@ namespace sdl
 		{ "setVisible", w_setVisible },
 		{ "isVisible", w_isVisible },
 		{ "getPosition", w_getPosition },
-		{ "setGrab", w_setGrap },
+		{ "setGrab", w_setGrab },
 		{ "isGrabbed", w_isGrabbed },
 		{ 0, 0 }
 	};
