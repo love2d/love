@@ -221,7 +221,14 @@ namespace physfs
 
 	int w_lines(lua_State * L)
 	{
-		return instance->lines(L);
+		try
+		{
+			return instance->lines(L);
+		}
+		catch (Exception &e)
+		{
+			return luaL_error(L, e.what());
+		}
 	}
 
 	int w_load(lua_State * L)
