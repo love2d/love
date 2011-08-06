@@ -23,6 +23,7 @@
 
 // LOVE
 #include <common/runtime.h>
+#include "Filesystem.h"
 #include "File.h"
 
 namespace love
@@ -41,7 +42,6 @@ namespace physfs
 	int w_File_tell(lua_State * L);
 	int w_File_seek(lua_State * L);
 	int w_File_lines(lua_State * L);
-	int lines_i(lua_State * L);
 	int luaopen_file(lua_State * L);
 } // physfs
 } // filesystem

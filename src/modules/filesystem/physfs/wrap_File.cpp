@@ -162,7 +162,7 @@ namespace physfs
 		if(luax_istype(L, 1, FILESYSTEM_FILE_T))
 		{
 			file = luax_checktype<File>(L, 1, "File", FILESYSTEM_FILE_T);
-			lua_pushboolean(L, 0); // 0 = do not close.
+			lua_pushnumber(L, 0); // 0 = do not close.
 		}
 		else
 			return luaL_error(L, "Expected file handle.");
@@ -171,88 +171,8 @@ namespace physfs
 		if(!file->seek(0))
 		return luaL_error(L, "File does not appear to be open.\n");
 
-		lua_pushcclosure(L, lines_i, 2);
+		lua_pushcclosure(L, Filesystem::lines_i, 2);
 		return 1;
-	}
-
-	int lines_i(lua_State * L)
-	{
-		// We're using a 1k buffer.
-		const static int bufsize = 1024;
-		static char buf[bufsize];
-
-		File * file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
-		int close = (int)lua_tointeger(L, lua_upvalueindex(2));
-
-		// Find the next newline.
-		// pos must be at the start of the line we're trying to find.
-		int pos = file->tell();
-		int newline = -1;
-		int totalread = 0;
-
-		while(!file->eof())
-		{
-			int current = file->tell();
-			int read = file->read(buf, bufsize);
-			totalread += read;
-
-			if(read < 0)
-				return luaL_error(L, "Readline failed!");
-
-			for(int i = 0;i<read;i++)
-			{
-				if(buf[i] == '\n')
-				{
-					newline = current+i;
-					break;
-				}
-			}
-
-			if(newline > 0)
-				break;
-		}
-
-		// Special case for the last "line".
-		if(newline <= 0 && file->eof() && totalread > 0)
-			newline = pos + totalread;
-
-		// We've got a newline.
-		if(newline > 0)
-		{
-			// Ok, we've got a line.
-			int linesize = (newline-pos);
-
-			// Allocate memory for the string.
-			char * str = new char[linesize];
-
-			// Read it.
-			file->seek(pos);
-			if(file->read(str, linesize) == -1)
-			return luaL_error(L, "Read error.");
-
-			if(str[linesize-1]=='\r')
-			linesize -= 1;
-
-			lua_pushlstring(L, str, linesize);
-
-			// Free the memory. Lua has a copy now.
-			delete[] str;
-
-			// Set the beginning of the next line.
-			if(!file->eof())
-				file->seek(newline+1);
-
-			return 1;
-		}
-
-		if(close)
-		{
-			file->close();
-			file->release();
-		}
-
-		// else: (newline <= 0)
-		return 0;
 	}
 
 	static const luaL_Reg functions[] = { 

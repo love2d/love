@@ -445,7 +445,7 @@ namespace physfs
 			lua_pop(L, 1);
 
 			luax_newtype(L, "File", FILESYSTEM_FILE_T, file, false);
-			lua_pushboolean(L, 1); // 1 = autoclose.
+			lua_pushnumber(L, 1); // 1 = autoclose.
 		}
 		else
 			return luaL_error(L, "Expected filename.");
