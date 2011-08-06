@@ -524,12 +524,7 @@ namespace physfs
 			// Set the beginning of the next line.
 			if(!file->eof())
 				file->seek(newline+1);
-			else if(close)
-			{
-				file->close();
-				file->release();
-			}
-
+	
 			return 1;
 		}
 
