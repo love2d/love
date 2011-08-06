@@ -37,7 +37,14 @@ namespace physfs
 	int w_File_getSize(lua_State * L)
 	{
 		File * t = luax_checkfile(L, 1);
-		lua_pushinteger(L, t->getSize());
+		try
+		{
+			lua_pushinteger(L, t->getSize());
+		}
+		catch (Exception & e)
+		{
+			return luaL_error(L, e.what());
+		}
 		return 1;
 	}
 

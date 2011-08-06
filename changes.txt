@@ -37,6 +37,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed love.filesystem.lines() leaking.
   * Fixed Source controls inconsistencies.
   * Fixed most leaking on unclosed File objects.
+  * Fixed crash when File:getSize() was called on a non-existent file.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
 
