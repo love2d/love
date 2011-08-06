@@ -729,6 +729,19 @@ namespace opengl
 		return 0;
 	}
 
+	int w_getRenderTarget(lua_State * L)
+	{
+		Framebuffer *fbo = Framebuffer::current;
+		if (fbo)
+		{
+			fbo->retain();
+			luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*) fbo);
+		}
+		else
+			lua_pushnil(L);
+		return 1;
+	}
+
 	int w_setPixelEffect(lua_State * L)
 	{
 		if (lua_isnoneornil(L,1)) {
@@ -1175,6 +1188,7 @@ namespace opengl
 		{ "getMaxPointSize", w_getMaxPointSize },
 		{ "newScreenshot", w_newScreenshot },
 		{ "setRenderTarget", w_setRenderTarget },
+		{ "getRenderTarget", w_getRenderTarget },
 
 		{ "setPixelEffect", w_setPixelEffect },
 
