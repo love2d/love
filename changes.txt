@@ -18,6 +18,8 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added per-sprite colors on SpriteBatches.
   * Added pixel effects.
   * Added love.graphics.isSupported.
+  * Added love.graphics.getRenderTarget.
+  * Added love.event.quit.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
@@ -32,6 +34,9 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed thread's set (previously send) accidentally changing the type.
   * Fixed SoundData allocating the wrong number of samples.
   * Fixed SpriteBatch support on intel cards.
+  * Fixed love.filesystem.lines() leaking.
+  * Fixed Source controls inconsistencies.
+  * Fixed most leaking on unclosed File objects.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
 
