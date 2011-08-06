@@ -62,6 +62,7 @@ namespace openal
 		float velocity[3];
 		float direction[3];
 		bool looping;
+		bool paused;
 		
 		float offsetSamples;
 		float offsetSeconds;

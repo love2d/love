@@ -34,8 +34,8 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::SoundData * soundData)
 		: love::audio::Source(Source::TYPE_STATIC), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0),
-		decoder(0), toLoop(0)
+		pitch(1.0f), volume(1.0f), looping(false), paused(false), offsetSamples(0),
+		offsetSeconds(0), decoder(0), toLoop(0)
 	{
 		alGenBuffers(1, buffers);
 		ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
@@ -50,8 +50,8 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::Decoder * decoder)
 		: love::audio::Source(Source::TYPE_STREAM), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), offsetSamples(0), offsetSeconds(0),
-		decoder(decoder), toLoop(0)
+		pitch(1.0f), volume(1.0f), looping(false), paused(false), offsetSamples(0),
+		offsetSeconds(0), decoder(decoder), toLoop(0)
 	{
 		decoder->retain();
 		alGenBuffers(MAX_BUFFERS, buffers);
@@ -78,6 +78,12 @@ namespace openal
 
 	void Source::play()
 	{
+		if (valid && paused)
+		{
+			pool->resume(this);
+			return;
+		}
+
 		valid = pool->play(this, source);
 
 		if(valid)
@@ -433,14 +439,16 @@ namespace openal
 		if(valid)
 		{
 			alSourcePause(source);
+			paused = true;
 		}
 	}
 
 	void Source::resumeAtomic()
 	{
-		if(valid)
+		if(valid && paused)
 		{
 			alSourcePlay(source);
+			paused = false;
 		}
 	}
 
@@ -449,6 +457,8 @@ namespace openal
 		if(valid && type == TYPE_STATIC)
 		{
 			alSourceRewind(source);
+			if (!paused)
+				alSourcePlay(source);
 		}
 		else if(valid && type == TYPE_STREAM)
 		{
