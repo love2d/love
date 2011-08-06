@@ -42,6 +42,8 @@ namespace physfs
 
 	File::~File()
 	{
+		if (mode != CLOSED)
+			close();
 	}
 	
 	bool File::open(Mode mode)
