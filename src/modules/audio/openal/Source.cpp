@@ -265,11 +265,14 @@ namespace openal
 			}
 			if (type == TYPE_STREAM)
 			{
+				bool waspaused = paused;
 				// Because we still have old data
 				// from before the seek in the buffers
 				// let's empty them.
 				stopAtomic(false);
 				playAtomic();
+				if (waspaused)
+					pauseAtomic();
 			}
 		}
 	}
@@ -462,7 +465,15 @@ namespace openal
 		}
 		else if(valid && type == TYPE_STREAM)
 		{
+			bool waspaused = paused;
 			decoder->rewind();
+			// Because we still have old data
+			// from before the seek in the buffers
+			// let's empty them.
+			stopAtomic(false);
+			playAtomic();
+			if (waspaused)
+				pauseAtomic();
 			offsetSamples = 0;
 			offsetSeconds = 0;
 		}
