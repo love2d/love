@@ -168,9 +168,23 @@ namespace physfs
 		return write(data->getData(), (size == ALL) ? data->getSize() : size);
 	}
 
+#ifdef LOVE_WINDOWS
+	inline bool test_eof(File * this, PHYSFS_File *)
+	{
+		int pos = this->tell();
+		int size = this->getSize();
+		return pos == -1 || size == -1 || pos >= size;
+	}
+#else
+	inline bool test_eof(File *, PHYSFS_File * file)
+	{
+		return PHYSFS_eof(file);
+	}
+#endif
+
 	bool File::eof()
 	{
-		if(file == 0 || PHYSFS_eof(file))
+		if(file == 0 || test_eof(this, file))
 			return true;
 		return false;
 	}
