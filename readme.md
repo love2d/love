@@ -3,8 +3,8 @@ LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, 
 Documentation
 -------------
 
-We use our [wiki] for documentation.
-If you need further help, feel free to ask on our [forums], and last but not least there's the irc channel [#love on Freenode][irc].
+We use our [wiki][wiki] for documentation.
+If you need further help, feel free to ask on our [forums][forums], and last but not least there's the irc channel [#love on Freenode][irc].
 
 Compilation
 -----------
@@ -12,10 +12,10 @@ Compilation
 ###Windows
 Use the project files for Visual C++ 2008 or 2010 (2010 preferred) located in the platform dir.
 
-###*nix:
+###*nix
 Run platform/unix/automagic, then run ./configure and make.
 
-###OSX:
+###OSX
 Use the XCode project in platform/macosx.
 
 For both Windows and OSX there are dependencies available [here][dependencies].
