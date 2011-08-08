@@ -65,7 +65,7 @@ namespace openal
 
 	Source::~Source()
 	{
-		stop();
+		pool->stop(this);
 		alDeleteBuffers((type == TYPE_STATIC) ? 1 : MAX_BUFFERS, buffers);
 		if (decoder)
 			decoder->release();
@@ -93,7 +93,10 @@ namespace openal
 	void Source::stop()
 	{
 		if (!isStopped())
+		{
 			pool->stop(this);
+			rewind();
+		}
 	}
 
 	void Source::pause()
@@ -269,7 +272,7 @@ namespace openal
 				// Because we still have old data
 				// from before the seek in the buffers
 				// let's empty them.
-				stopAtomic(false);
+				stopAtomic();
 				playAtomic();
 				if (waspaused)
 					pauseAtomic();
@@ -407,7 +410,7 @@ namespace openal
 		//but this prevents a horrible, horrible bug
 	}
 
-	void Source::stopAtomic(bool rewind)
+	void Source::stopAtomic()
 	{
 		if(valid)
 		{
@@ -418,21 +421,17 @@ namespace openal
 			else if(type == TYPE_STREAM)
 			{
 				alSourceStop(source);
-
 				int queued = 0;
 				alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
 
-				while(queued--)
+				while (queued--)
 				{
 					ALuint buffer;
 					alSourceUnqueueBuffers(source, 1, &buffer);
 				}
 			}
-
 			alSourcei(source, AL_BUFFER, AL_NONE);
 		}
-		if (rewind)
-			rewindAtomic();
 		toLoop = 0;
 		valid = false;
 	}
@@ -470,7 +469,7 @@ namespace openal
 			// Because we still have old data
 			// from before the seek in the buffers
 			// let's empty them.
-			stopAtomic(false);
+			stopAtomic();
 			playAtomic();
 			if (waspaused)
 				pauseAtomic();
