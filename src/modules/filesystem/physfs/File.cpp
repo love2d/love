@@ -169,10 +169,13 @@ namespace physfs
 	}
 
 #ifdef LOVE_WINDOWS
-	inline bool test_eof(File * this, PHYSFS_File *)
+	// MSVC doesn't like the 'this' keyword
+	// well, we'll use 'that'.
+	// It zigs, we zag.
+	inline bool test_eof(File * that, PHYSFS_File *)
 	{
-		int pos = this->tell();
-		int size = this->getSize();
+		int pos = that->tell();
+		int size = that->getSize();
 		return pos == -1 || size == -1 || pos >= size;
 	}
 #else
