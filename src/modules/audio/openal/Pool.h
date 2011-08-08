@@ -100,6 +100,7 @@ namespace openal
 		void resume(Source * source);
 		void rewind();
 		void rewind(Source * source);
+		void softRewind(Source * source);
 		void seek(Source * source, float offset, void * unit);
 		float tell(Source * source, void * unit);
 

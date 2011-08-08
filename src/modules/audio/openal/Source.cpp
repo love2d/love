@@ -95,7 +95,7 @@ namespace openal
 		if (!isStopped())
 		{
 			pool->stop(this);
-			rewind();
+			pool->softRewind(this);
 		}
 	}
 
@@ -473,6 +473,12 @@ namespace openal
 			playAtomic();
 			if (waspaused)
 				pauseAtomic();
+			offsetSamples = 0;
+			offsetSeconds = 0;
+		}
+		else if (type == TYPE_STREAM)
+		{
+			decoder->rewind();
 			offsetSamples = 0;
 			offsetSeconds = 0;
 		}

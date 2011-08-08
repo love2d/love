@@ -209,6 +209,13 @@ namespace openal
 			i->first->rewindAtomic();
 	}
 
+	// For those times we don't need it backed.
+	void Pool::softRewind(Source * source)
+	{
+		thread::Lock lock(mutex);
+		source->rewindAtomic();
+	}
+
 	void Pool::rewind(Source * source)
 	{
 		thread::Lock lock(mutex);
