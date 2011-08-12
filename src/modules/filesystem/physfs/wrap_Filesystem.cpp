@@ -297,6 +297,59 @@ namespace physfs
 		return 1;
 	}
 
+	inline const char * library_extension()
+	{
+#ifdef LOVE_WINDOWS
+		return ".dll";
+#elif defined(LOVE_MACOSX) || defined(LOVE_MACOS)
+		return ".dylib";
+#else
+		return ".so";
+#endif
+	}
+
+	int extloader(lua_State * L)
+	{
+		const char * filename = lua_tostring(L, -1);
+		std::string tokenized_name(filename);
+		std::string tokenized_function(filename);
+
+		for (int i = 0; i < tokenized_name.size(); i++)
+		{
+			if (tokenized_name[i] == '.')
+			{
+				tokenized_name[i] = '/';
+				tokenized_function[i] = '_';
+			}
+		}
+
+		tokenized_name += library_extension();
+
+		void * handle = SDL_LoadObject((std::string(instance->getAppdataDirectory()) + LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR + tokenized_name).c_str());
+		if (!handle && instance->isRelease())
+			handle = SDL_LoadObject((std::string(instance->getSaveDirectory()) + LOVE_PATH_SEPARATOR + tokenized_name).c_str());
+
+		if (!handle)
+		{
+			lua_pushfstring(L, "\n\tno extension \"%s\" in LOVE paths.\n", filename);
+			return 1;
+		}
+
+		void * func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
+		if (!func)
+			func = SDL_LoadFunction(handle, ("luaopen_" + tokenized_function).c_str());
+
+		if (!func)
+		{
+			SDL_UnloadObject(handle);
+			lua_pushfstring(L, "\n\textension \"%s\" is incompatible.\n", filename);
+			return 1;
+		}
+
+		lua_pushcfunction(L, (lua_CFunction) func);
+		return 1;
+	}
+
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "init",  w_init },
@@ -337,6 +390,7 @@ namespace physfs
 			{
 				instance = new Filesystem();
 				love::luax_register_searcher(L, loader);
+				love::luax_register_searcher(L, extloader);
 			}
 			catch(Exception & e)
 			{

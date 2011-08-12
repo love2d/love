@@ -119,6 +119,7 @@ namespace physfs
 		void init(const char * arg0);
 
 		void setRelease(bool release);
+		bool isRelease() const;
 
 		/**
 		* This sets up the save directory. If the

@@ -67,6 +67,13 @@ namespace physfs
 		releaseSet = true;
 	}
 
+	bool Filesystem::isRelease() const
+	{
+		if (!releaseSet)
+			return false;
+		return release;
+	}
+
 	bool Filesystem::setIdentity( const char * ident )
 	{
 		if(!isInited)

@@ -26,6 +26,9 @@
 #include "wrap_File.h"
 #include "wrap_FileData.h"
 
+// SDL
+#include <SDL_loadso.h>
+
 namespace love
 {
 namespace filesystem
@@ -60,6 +63,7 @@ namespace physfs
 	int w_load(lua_State * L);
 	int w_getLastModified(lua_State * L);
 	int loader(lua_State * L);
+	int extloader(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State * L);
 
 } // physfs
