@@ -23,6 +23,7 @@
 #include "common/Exception.h"
 
 #include <cstdlib>
+#include <cstring>
 
 namespace love
 {
