@@ -3,7 +3,7 @@ LOVE 0.8.0 [Rubber Piggy]
 
   * Added release error screen.
   * Added alpha to love.graphics.setBackgroundColor.
-  * Added framebuffer:clear(r, g, b, a).
+  * Added canvas:clear(r, g, b, a).
   * Added love.graphics.arc.
   * Added seek and tell to Source objects.
   * Added color interpolation to ParticleSystem.
@@ -20,6 +20,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added love.graphics.isSupported.
   * Added love.graphics.getRenderTarget.
   * Added love.event.quit.
+  # Added stencils.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
@@ -40,13 +41,14 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed crashes when operating on non-existent files.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
+  * Renamed Framebuffer to Canvas
 
   * Updated love.joystick to be 1-indexed.
   * Updated love.thread to use get/set instead of send/receive.
   * Updated font engine.
   * Updated line drawing to a custom system.
 
-  * Removed framebuffer auto-clearing.
+  * Removed canvas auto-clearing.
   * Removed EncodedImageData.
   * Removed old syntax for require (with extension).
 
