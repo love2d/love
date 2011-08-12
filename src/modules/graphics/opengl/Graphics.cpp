@@ -312,7 +312,7 @@ namespace opengl
 	void Graphics::reset()
 	{
 		DisplayState s;
-		discardMask();
+		discardStencil();
 		Canvas::bindDefaultCanvas();
 		restoreState(s);
 	}
@@ -451,7 +451,7 @@ namespace opengl
 		return 4;
 	}
 
-	void Graphics::defineMask()
+	void Graphics::defineStencil()
 	{
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		glEnable(GL_STENCIL_TEST);
@@ -460,14 +460,14 @@ namespace opengl
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	}
 
-	void Graphics::useMask(bool invert)
+	void Graphics::useStencil(bool invert)
 	{
 		glStencilFunc(GL_EQUAL, (int)(!invert), 1); // invert ? 0 : 1
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	}
 
-	void Graphics::discardMask()
+	void Graphics::discardStencil()
 	{
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glDisable(GL_STENCIL_TEST);

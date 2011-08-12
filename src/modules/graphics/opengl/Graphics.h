@@ -252,7 +252,7 @@ namespace opengl
 		/**
 		 * Enables the stencil buffer and set stencil function to fill it
 		 */
-		void defineMask();
+		void defineStencil();
 
 		/**
 		 * Set stencil function to mask the following drawing calls using
@@ -260,12 +260,12 @@ namespace opengl
 		 * @param invert Invert the mask, i.e. draw everywhere expect where
 		 *               the mask is defined.
 		 */
-		void useMask(bool invert = false);
+		void useStencil(bool invert = false);
 
 		/**
 		 * Disables the stencil buffer
 		 */
-		void discardMask();
+		void discardStencil();
 
 		/**
 		* Creates an Image object with padding and/or optimization.

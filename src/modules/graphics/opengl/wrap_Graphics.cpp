@@ -157,7 +157,7 @@ namespace opengl
 		return instance->getScissor(L);
 	}
 
-	int w_newMask(lua_State * L)
+	int w_newStencil(lua_State * L)
 	{
 		// just return the function
 		if (!lua_isfunction(L, 1))
@@ -166,32 +166,32 @@ namespace opengl
 		return 1;
 	}
 
-	static int setMask(lua_State * L, bool invert)
+	static int setStencil(lua_State * L, bool invert)
 	{
 		// no argument -> clear mask
 		if (lua_isnoneornil(L, 1)) {
-			instance->discardMask();
+			instance->discardStencil();
 			return 0;
 		}
 
 		if (!lua_isfunction(L, 1))
 			return luaL_typerror(L, 1, "mask");
 
-		instance->defineMask();
+		instance->defineStencil();
 		lua_call(L, lua_gettop(L) - 1, 0); // call mask(...)
-		instance->useMask(invert);
+		instance->useStencil(invert);
 
 		return 0;
 	}
 
-	int w_setMask(lua_State * L)
+	int w_setStencil(lua_State * L)
 	{
-		return setMask(L, false);
+		return setStencil(L, false);
 	}
 
-	int w_setInvertedMask(lua_State * L)
+	int w_setInvertedStencil(lua_State * L)
 	{
-		return setMask(L, true);
+		return setStencil(L, true);
 	}
 
 	int w_newImage(lua_State * L)
@@ -1192,9 +1192,9 @@ namespace opengl
 		{ "setScissor", w_setScissor },
 		{ "getScissor", w_getScissor },
 
-		{ "newMask", w_newMask },
-		{ "setMask", w_setMask },
-		{ "setInvertedMask", w_setInvertedMask },
+		{ "newStencil", w_newStencil },
+		{ "setStencil", w_setStencil },
+		{ "setInvertedStencil", w_setInvertedStencil },
 
 		{ "point", w_point },
 		{ "line", w_line },
