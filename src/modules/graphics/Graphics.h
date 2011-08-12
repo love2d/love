@@ -80,7 +80,7 @@ namespace graphics
 
 		enum Support
 		{
-			SUPPORT_FRAMEBUFFERS = 1,
+			SUPPORT_CANVAS = 1,
 			SUPPORT_PIXELEFFECTS,
 			SUPPORT_MAX_ENUM
 		};

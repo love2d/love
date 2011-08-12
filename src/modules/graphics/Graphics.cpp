@@ -151,7 +151,7 @@ namespace graphics
 
 	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
 	{
-		{ "framebuffers", Graphics::SUPPORT_FRAMEBUFFERS },
+		{ "canvas", Graphics::SUPPORT_CANVAS },
 		{ "pixeleffects", Graphics::SUPPORT_PIXELEFFECTS },
 	};
 

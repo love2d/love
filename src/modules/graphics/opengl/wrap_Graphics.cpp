@@ -746,7 +746,7 @@ namespace opengl
 				supported = false;
 			switch(support)
 			{
-				case Graphics::SUPPORT_FRAMEBUFFERS:
+				case Graphics::SUPPORT_CANVAS:
 					if (!Canvas::isSupported())
 						supported = false;
 					break;
