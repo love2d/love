@@ -1324,8 +1324,8 @@ do
 			self:sendFloat(name, value, ...)
 		elseif type(value) == "userdata" and value:typeOf("Image") then
 			self:sendImage(name, value)
-		elseif type(value) == "userdata" and value:typeOf("Framebuffer") then
-			self:sendFramebuffer(name, value)
+		elseif type(value) == "userdata" and value:typeOf("Canvas") then
+			self:sendCanvas(name, value)
 		elseif type(value) == "table" then      -- vector or matrix
 			if type(value[1]) == "number" then
 				self:sendFloat(name, unpack(value))

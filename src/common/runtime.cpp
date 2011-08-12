@@ -381,7 +381,7 @@ namespace love
 		{"Font", GRAPHICS_FONT_ID},
 		{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
 		{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
-		{"Framebuffer", GRAPHICS_FRAMEBUFFER_ID},
+		{"Canvas", GRAPHICS_CANVAS_ID},
 
 		// Image
 		{"ImageData", IMAGE_IMAGE_DATA_ID},

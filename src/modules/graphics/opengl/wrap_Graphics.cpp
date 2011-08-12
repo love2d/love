@@ -343,43 +343,24 @@ namespace opengl
 		return 1;
 	}
 
-	int w_newFramebuffer(lua_State * L)
+	int w_newCanvas(lua_State * L)
 	{
 		// check if width and height are given. else default to screen dimensions.
 		int width  = luaL_optint(L, 1, instance->getWidth());
 		int height = luaL_optint(L, 2, instance->getHeight());
 		glGetError(); // clear opengl error flag
-		Framebuffer * framebuffer = instance->newFramebuffer(width, height);
 
-		//and there we go with the status... still disliked
-		if (framebuffer->getStatus() != GL_FRAMEBUFFER_COMPLETE) {
-			switch (framebuffer->getStatus()) {
-				case GL_FRAMEBUFFER_UNSUPPORTED:
-					return luaL_error(L, "Cannot create Framebuffer: "
-							"Not supported by your OpenGL implementation");
-				// remaining error codes are highly unlikely:
-				case GL_FRAMEBUFFER_UNDEFINED:
-				case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-				case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-				case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-				case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-				case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-					return luaL_error(L, "Cannot create Framebuffer: "
-							"Error in implementation (please inform the love devs)");
-				default:
-					// my intel hda card wrongly returns 0 to glCheckFramebufferStatus() but sets
-					// no error flag. I think it meant to return GL_FRAMEBUFFER_UNSUPPORTED, but who
-					// knows.
-					if (glGetError() == GL_NO_ERROR)
-						return luaL_error(L, "Cannot create Framebuffer: "
-								"May not be supported by your OpenGL implementation.");
-					// the remaining error is an indication of a serious fuckup since it should
-					// only be returned if glCheckFramebufferStatus() was called with the wrong
-					// arguments.
-					return luaL_error(L, "Cannot create Framebuffer: Aliens did it (OpenGL error code: %d)", glGetError());
-			}
+		Canvas * canvas = NULL;
+		try {
+			canvas = instance->newCanvas(width, height);
+		} catch (Exception& e) {
+			return luaL_error(L, e.what());
 		}
-		luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*)framebuffer);
+
+		if (NULL == canvas)
+			return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
+
+		luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void*)canvas);
 		return 1;
 	}
 
@@ -718,24 +699,23 @@ namespace opengl
 	{
 		// called with nil or none -> reset to default buffer
 		if (lua_isnoneornil(L,1)) {
-			Framebuffer::bindDefaultBuffer();
+			Canvas::bindDefaultCanvas();
 			return 0;
 		}
 
-		Framebuffer * fbo = luax_checkfbo(L, 1);
+		Canvas * canvas = luax_checkcanvas(L, 1);
 		// this unbinds the previous fbo
-		fbo->startGrab();
+		canvas->startGrab();
 
 		return 0;
 	}
 
 	int w_getRenderTarget(lua_State * L)
 	{
-		Framebuffer *fbo = Framebuffer::current;
-		if (fbo)
-		{
-			fbo->retain();
-			luax_newtype(L, "Framebuffer", GRAPHICS_FRAMEBUFFER_T, (void*) fbo);
+		Canvas *canvas = Canvas::current;
+		if (canvas) {
+			canvas->retain();
+			luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void*) canvas);
 		}
 		else
 			lua_pushnil(L);
@@ -767,7 +747,7 @@ namespace opengl
 			switch(support)
 			{
 				case Graphics::SUPPORT_FRAMEBUFFERS:
-					if (!Framebuffer::isSupported())
+					if (!Canvas::isSupported())
 						supported = false;
 					break;
 				case Graphics::SUPPORT_PIXELEFFECTS:
@@ -1156,7 +1136,7 @@ namespace opengl
 		{ "newImageFont", w_newImageFont },
 		{ "newSpriteBatch", w_newSpriteBatch },
 		{ "newParticleSystem", w_newParticleSystem },
-		{ "newFramebuffer", w_newFramebuffer },
+		{ "newCanvas", w_newCanvas },
 		{ "newPixelEffect", w_newPixelEffect },
 
 		{ "setColor", w_setColor },
@@ -1245,7 +1225,7 @@ namespace opengl
 		luaopen_frame,
 		luaopen_spritebatch,
 		luaopen_particlesystem,
-		luaopen_framebuffer,
+		luaopen_canvas,
 		luaopen_pixeleffect,
 		0
 	};

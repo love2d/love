@@ -27,7 +27,7 @@
 #include "wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
-#include "wrap_Framebuffer.h"
+#include "wrap_Canvas.h"
 #include "wrap_PixelEffect.h"
 #include "Graphics.h"
 
@@ -61,7 +61,7 @@ namespace opengl
 	int w_newImageFont(lua_State * L);
 	int w_newSpriteBatch(lua_State * L);
 	int w_newParticleSystem(lua_State * L);
-	int w_newFramebuffer(lua_State * L); // comments in function
+	int w_newCanvas(lua_State * L); // comments in function
 	int w_newPixelEffect(lua_State * L);
 	int w_setColor(lua_State * L);
 	int w_getColor(lua_State * L);

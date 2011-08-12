@@ -1,4 +1,4 @@
-#include "Framebuffer.h"
+#include "Canvas.h"
 #include "Graphics.h"
 #include <common/Matrix.h>
 
@@ -140,9 +140,9 @@ namespace opengl
 	
 	FramebufferStrategyEXT strategyEXT;
 	
-	Framebuffer* Framebuffer::current = NULL;
+	Canvas* Canvas::current = NULL;
 
-	Framebuffer::Framebuffer(int width, int height) :
+	Canvas::Canvas(int width, int height) :
 		width(width), height(height)
 	{
 		strategy = NULL;
@@ -174,7 +174,7 @@ namespace opengl
 		loadVolatile();
 	}
 
-	Framebuffer::~Framebuffer()
+	Canvas::~Canvas()
 	{
 		// reset framebuffer if still using this one
 		if (current == this)
@@ -183,7 +183,7 @@ namespace opengl
 		unloadVolatile();
 	}
 
-	bool Framebuffer::isSupported()
+	bool Canvas::isSupported()
 	{
 		if (!strategy) {
 			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
@@ -196,13 +196,13 @@ namespace opengl
 		return (strategy != &strategyNone);
 	}
 
-	void Framebuffer::bindDefaultBuffer()
+	void Canvas::bindDefaultCanvas()
 	{
 		if (current != NULL)
 			current->stopGrab();
 	}
 
-	void Framebuffer::startGrab()
+	void Canvas::startGrab()
 	{
 		// already grabbing
 		if (current == this)
@@ -233,7 +233,7 @@ namespace opengl
 		current = this;
 	}
 
-	void Framebuffer::stopGrab()
+	void Canvas::stopGrab()
 	{
 		// i am not grabbing. leave me alone
 		if (current != this)
@@ -248,7 +248,7 @@ namespace opengl
 	}
 
 
-	void Framebuffer::clear(const Color& c)
+	void Canvas::clear(const Color& c)
 	{
 		GLuint previous = 0;
 		if (current != NULL)
@@ -263,7 +263,7 @@ namespace opengl
 		strategy->bindFBO(previous);
 	}
 
-	void Framebuffer::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+	void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
 		static Matrix t;
 		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -284,7 +284,7 @@ namespace opengl
 		glPopMatrix();
 	}
 
-	love::image::ImageData * Framebuffer::getImageData(love::image::Image * image)
+	love::image::ImageData * Canvas::getImageData(love::image::Image * image)
 	{
 		int row = 4 * width;
 		int size = row * height;
@@ -315,7 +315,7 @@ namespace opengl
 		return img;
 	}
 
-	void Framebuffer::setFilter(const Image::Filter &f)
+	void Canvas::setFilter(const Image::Filter &f)
 	{
 		GLint gmin = (f.min == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
 		GLint gmag = (f.mag == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
@@ -326,7 +326,7 @@ namespace opengl
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
 	}
 
-	Image::Filter Framebuffer::getFilter() const
+	Image::Filter Canvas::getFilter() const
 	{
 		GLint gmin, gmag;
 
@@ -340,7 +340,7 @@ namespace opengl
 		return f;
 	}
 
-	void Framebuffer::setWrap(const Image::Wrap &w)
+	void Canvas::setWrap(const Image::Wrap &w)
 	{
 		GLint wrap_s = (w.s == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
 		GLint wrap_t = (w.t == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
@@ -350,7 +350,7 @@ namespace opengl
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
 	}
 
-	Image::Wrap Framebuffer::getWrap() const
+	Image::Wrap Canvas::getWrap() const
 	{
 		GLint wrap_s, wrap_t;
 		glBindTexture(GL_TEXTURE_2D, img);
@@ -364,7 +364,7 @@ namespace opengl
 		return w;
 	}
 
-	bool Framebuffer::loadVolatile()
+	bool Canvas::loadVolatile()
 	{
 		status = strategy->createFBO(fbo, depthbuffer, img, width, height);
 		if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -378,19 +378,19 @@ namespace opengl
 		return true;
 	}
 	
-	void Framebuffer::unloadVolatile()
+	void Canvas::unloadVolatile()
 	{
 		settings.filter = getFilter();
 		settings.wrap   = getWrap();
 		strategy->deleteFBO(fbo, depthbuffer, img);
 	}
 
-	int Framebuffer::getWidth()
+	int Canvas::getWidth()
 	{
 		return width;
 	}
 
-	int Framebuffer::getHeight()
+	int Canvas::getHeight()
 	{
 		return height;
 	}

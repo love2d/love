@@ -313,7 +313,7 @@ namespace opengl
 	{
 		DisplayState s;
 		discardMask();
-		Framebuffer::bindDefaultBuffer();
+		Canvas::bindDefaultCanvas();
 		restoreState(s);
 	}
 
@@ -378,8 +378,8 @@ namespace opengl
 
 	int Graphics::getRenderHeight()
 	{
-		if (Framebuffer::current)
-			return Framebuffer::current->getHeight();
+		if (Canvas::current)
+			return Canvas::current->getHeight();
 		return currentMode.height;
 	}
 
@@ -533,9 +533,50 @@ namespace opengl
 		return new ParticleSystem(image, size);
 	}
 
-	Framebuffer * Graphics::newFramebuffer(int width, int height)
+	Canvas * Graphics::newCanvas(int width, int height)
 	{
-		return new Framebuffer(width, height);
+		Canvas * canvas = new Canvas(width, height);
+		GLenum err = canvas->getStatus();
+
+		// everything ok, reaturn canvas (early out)
+		if (err == GL_FRAMEBUFFER_COMPLETE)
+			return canvas;
+
+		// create error message
+		std::stringstream error_string;
+		error_string << "Cannot create canvas: ";
+		switch (err) {
+
+			case GL_FRAMEBUFFER_UNSUPPORTED:
+				error_string << "Not supported by your OpenGL implementation.";
+				break;
+
+			// remaining error codes are highly unlikely:
+			case GL_FRAMEBUFFER_UNDEFINED:
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+				error_string << "Error in implementation. Possible fix: Make canvas width and height powers of two.";
+				break;
+
+			default:
+				// my intel hda card wrongly returns 0 to glCheckFramebufferStatus() but sets
+				// no error flag. I think it meant to return GL_FRAMEBUFFER_UNSUPPORTED, but who
+				// knows.
+				if (glGetError() == GL_NO_ERROR)
+					error_string << "May not be supported by your OpenGL implementation.";
+				// the remaining error is an indication of a serious fuckup since it should
+				// only be returned if glCheckFramebufferStatus() was called with the wrong
+				// arguments.
+				else
+					error_string << "Cannot create canvas: Aliens did it (OpenGL error code: " << glGetError() << ")";
+		}
+
+		canvas->release();
+		throw Exception(error_string.str().c_str());
+		return NULL; // never reached
 	}
 
 	PixelEffect * Graphics::newPixelEffect(const std::string& code)

@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 #include "Image.h"
-#include "Framebuffer.h"
+#include "Canvas.h"
 
 namespace love
 {
@@ -31,7 +31,7 @@ namespace opengl
 		void sendFloat(const std::string& name, int count, const GLfloat* vec);
 		void sendMatrix(const std::string& name, int size, const GLfloat* m);
 		void sendImage(const std::string& name, const Image& image);
-		void sendFramebuffer(const std::string& name, const Framebuffer& fb);
+		void sendCanvas(const std::string& name, const Canvas& canvas);
 
 	private:
 		GLint getUniformLocation(const std::string& name);

@@ -1,6 +1,6 @@
 #include "wrap_PixelEffect.h"
 #include "wrap_Image.h"
-#include "wrap_Framebuffer.h"
+#include "wrap_Canvas.h"
 #include <string>
 
 namespace love
@@ -81,14 +81,14 @@ namespace opengl
 		return 0;
 	}
 
-	int w_PixelEffect_sendFramebuffer(lua_State * L)
+	int w_PixelEffect_sendCanvas(lua_State * L)
 	{
 		PixelEffect * effect = luax_checkpixeleffect(L, 1);
 		const char* name = luaL_checkstring(L, 2);
-		Framebuffer* fb = luax_checkfbo(L, 3);
+		Canvas* canvas = luax_checkcanvas(L, 3);
 
 		try {
-			effect->sendFramebuffer(name, *fb);
+			effect->sendCanvas(name, *canvas);
 		} catch(love::Exception& e) {
 			luaL_error(L, e.what());
 		}
@@ -98,11 +98,11 @@ namespace opengl
 
 
 	static const luaL_Reg functions[] = {
-		{ "getWarnings",     w_PixelEffect_getWarnings },
-		{ "sendFloat",       w_PixelEffect_sendFloat },
-		{ "sendMatrix",      w_PixelEffect_sendMatrix },
-		{ "sendImage",       w_PixelEffect_sendImage },
-		{ "sendFramebuffer", w_PixelEffect_sendFramebuffer },
+		{ "getWarnings", w_PixelEffect_getWarnings },
+		{ "sendFloat",   w_PixelEffect_sendFloat },
+		{ "sendMatrix",  w_PixelEffect_sendMatrix },
+		{ "sendImage",   w_PixelEffect_sendImage },
+		{ "sendCanvas",  w_PixelEffect_sendCanvas },
 		{ 0, 0 }
 	};
 

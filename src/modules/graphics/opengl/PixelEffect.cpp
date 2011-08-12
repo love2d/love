@@ -223,7 +223,7 @@ namespace opengl
 		checkSetUniformError();
 	}
 
-	void PixelEffect::sendFramebuffer(const std::string& name, const Framebuffer& fb)
+	void PixelEffect::sendCanvas(const std::string& name, const Canvas& canvas)
 	{
 		GLint texture_unit = getTextureUnit(name);
 
@@ -231,7 +231,7 @@ namespace opengl
 		GLint location = getUniformLocation(name);
 
 		glActiveTexture(GL_TEXTURE0 + texture_unit);
-		glBindTexture(GL_TEXTURE_2D, fb.getTextureName());
+		glBindTexture(GL_TEXTURE_2D, canvas.getTextureName());
 		glUniform1i(location, texture_unit);
 
 		// reset texture unit

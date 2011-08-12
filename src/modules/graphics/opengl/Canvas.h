@@ -1,5 +1,5 @@
-#ifndef LOVE_GRAPHICS_FRAMEBUFFER_H
-#define LOVE_GRAPHICS_FRAMEBUFFER_H
+#ifndef LOVE_GRAPHICS_CANVAS_H
+#define LOVE_GRAPHICS_CANVAS_H
 
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
@@ -16,18 +16,18 @@ namespace graphics
 {
 namespace opengl
 {
-	class Framebuffer : public Drawable, public Volatile
+	class Canvas : public Drawable, public Volatile
 	{
 	public:
-		Framebuffer(int width, int height);
-		virtual ~Framebuffer();
+		Canvas(int width, int height);
+		virtual ~Canvas();
 
 		static bool isSupported();
 
 		unsigned int getStatus() const { return status; }
 
-		static Framebuffer* current;
-		static void bindDefaultBuffer();
+		static Canvas* current;
+		static void bindDefaultCanvas();
 
 		void startGrab();
 		void stopGrab();
@@ -73,4 +73,4 @@ namespace opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_FRAMEBUFFER_H
+#endif // LOVE_GRAPHICS_CANVAS_H
