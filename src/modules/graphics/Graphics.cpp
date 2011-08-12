@@ -152,7 +152,7 @@ namespace graphics
 	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
 	{
 		{ "canvas", Graphics::SUPPORT_CANVAS },
-		{ "pixeleffects", Graphics::SUPPORT_PIXELEFFECTS },
+		{ "pixeleffect", Graphics::SUPPORT_PIXELEFFECT },
 	};
 
 	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));

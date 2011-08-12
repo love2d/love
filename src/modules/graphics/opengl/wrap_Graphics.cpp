@@ -750,7 +750,7 @@ namespace opengl
 					if (!Canvas::isSupported())
 						supported = false;
 					break;
-				case Graphics::SUPPORT_PIXELEFFECTS:
+				case Graphics::SUPPORT_PIXELEFFECT:
 					if (!PixelEffect::isSupported())
 						supported = false;
 					break;

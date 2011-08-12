@@ -81,7 +81,7 @@ namespace graphics
 		enum Support
 		{
 			SUPPORT_CANVAS = 1,
-			SUPPORT_PIXELEFFECTS,
+			SUPPORT_PIXELEFFECT,
 			SUPPORT_MAX_ENUM
 		};
 
