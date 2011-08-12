@@ -46,8 +46,9 @@ namespace opengl
 	// Forward declarations.
 	class Image;
 	class Quad;
+	class VertexBuffer;
 
-	class SpriteBatch : public Drawable, public Volatile
+	class SpriteBatch : public Drawable
 	{
 	private:
 
@@ -59,24 +60,14 @@ namespace opengl
 		// The next free element.
 		int next;
 
-		GLuint vbo[2];
-
-		// Vertex Buffer.
-		vertex * vertices;
-
-		// Index buffer.
-		GLushort * indices;
-
-		// The uage hint for the vertex buffer.
-		int usage;
-		int gl_usage;
-
-		// If the buffer is locked, this pointer is nonzero.
-		vertex * lockp;
+		vertex sprite[4];
 
 		// Current color. This color, if present, will be applied to the next
 		// added quad.
 		Color * color;
+
+		VertexBuffer *array_buf;
+		VertexBuffer *element_buf;
 
 	public:
 
@@ -89,12 +80,6 @@ namespace opengl
 
 		SpriteBatch(Image * image, int size, int usage);
 		virtual ~SpriteBatch();
-
-		static bool isSupported();
-
-		// Implements Volatile.
-		bool loadVolatile();
-		void unloadVolatile();
 
 		void add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
 		void addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);

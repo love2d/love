@@ -104,6 +104,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\PixelEffect.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\VertexBuffer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
@@ -270,6 +271,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\PixelEffect.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\VertexBuffer.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />

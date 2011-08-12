@@ -26,6 +26,7 @@
 // LOVE
 #include "Image.h"
 #include "Quad.h"
+#include "VertexBuffer.h"
 
 namespace love
 {
@@ -34,80 +35,68 @@ namespace graphics
 namespace opengl
 {
 	SpriteBatch::SpriteBatch(Image * image, int size, int usage)
-		: image(image), size(size), next(0), usage(usage), lockp(0), color(0)
+		: image(image)
+		, size(size)
+		, next(0)
+		, color(0)
+		, array_buf(0)
+		, element_buf(0)
 	{
-		if (!(GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5))
-			throw love::Exception("Your OpenGL version does not support SpriteBatches. Go upgrade!");
-
 		image->retain();
 
-		vertices = new vertex[size*4];
-		indices = new GLushort[size*6];
+		GLenum gl_usage;
 
-		for(int i = 0; i<size; i++)
+		switch (usage)
 		{
-			indices[i*6+0] = 0+(i*4);
-			indices[i*6+1] = 1+(i*4);
-			indices[i*6+2] = 2+(i*4);
-
-			indices[i*6+3] = 0+(i*4);
-			indices[i*6+4] = 2+(i*4);
-			indices[i*6+5] = 3+(i*4);
+		default:
+		case USAGE_DYNAMIC:
+			gl_usage = GL_DYNAMIC_DRAW;
+			break;
+		case USAGE_STATIC:
+			gl_usage = GL_STATIC_DRAW;
+			break;
+		case USAGE_STREAM:
+			gl_usage = GL_STREAM_DRAW;
+			break;
 		}
 
-		loadVolatile();
+		int vertex_size = sizeof(vertex) * 4 * size;
+		int element_size = sizeof(GLushort) * 6 * size;
+
+		array_buf = VertexArray::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
+		element_buf = VertexArray::Create(element_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+
+		// Fill element buffer.
+		{
+			VertexBuffer::Bind bind(*element_buf);
+
+			GLushort *indices = static_cast<GLushort*>(element_buf->map(GL_WRITE_ONLY));
+
+			if (indices)
+			{
+				for (int i = 0; i < size; ++i)
+				{
+					indices[i*6+0] = 0+(i*4);
+					indices[i*6+1] = 1+(i*4);
+					indices[i*6+2] = 2+(i*4);
+
+					indices[i*6+3] = 0+(i*4);
+					indices[i*6+4] = 2+(i*4);
+					indices[i*6+5] = 3+(i*4);
+				}
+			}
+
+			element_buf->unmap();
+		}
 	}
 
 	SpriteBatch::~SpriteBatch()
 	{
 		image->release();
 
-		if(vbo[0] != 0 && vbo[1] != 0)
-			glDeleteBuffers(2, vbo);
-
-		delete [] vertices;
-		delete [] indices;
 		delete color;
-	}
-
-	bool SpriteBatch::isSupported()
-	{
-		return (GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5);
-	}
-
-	bool SpriteBatch::loadVolatile()
-	{
-		// Find out which OpenGL VBO usage hint to use.
-		gl_usage = GL_STREAM_DRAW_ARB;
-		gl_usage = (usage == USAGE_DYNAMIC) ? GL_DYNAMIC_DRAW_ARB : gl_usage;
-		gl_usage = (usage == USAGE_STATIC) ? GL_STATIC_DRAW_ARB : gl_usage;
-		gl_usage = (usage == USAGE_STREAM) ? GL_STREAM_DRAW_ARB : gl_usage;
-
-		glGenBuffersARB(2, vbo);
-
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
-		glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(vertex)*size*4, vertices, gl_usage);
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo[1]);
-		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, sizeof(GLushort)*size*6, indices, GL_STATIC_DRAW_ARB);
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
-
-		return true;
-	}
-
-	void SpriteBatch::unloadVolatile()
-	{
-		vertex * v = (vertex *)lock();
-
-		// Copy to system memory.
-		memcpy(vertices, v, sizeof(vertex)*size*4);
-
-		unlock();
-
-		// Delete the buffers.
-		if(vbo[0] != 0 && vbo[1] != 0)
-			glDeleteBuffersARB(2, vbo);
+		delete array_buf;
+		delete element_buf;
 	}
 
 	void SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -115,21 +104,18 @@ namespace opengl
 		// Only do this if there's a free slot.
 		if(next < size)
 		{
-			// Get a pointer to the correct insertion position.
-			vertex * v = vertices + next*4;
-
 			// Needed for texture coordinates.
-			memcpy(v, image->getVertices(), sizeof(vertex)*4);
+			memcpy(sprite, image->getVertices(), sizeof(vertex)*4);
 
 			// Transform.
 			Matrix t;
 			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-			t.transform(v, v, 4);
+			t.transform(sprite, sprite, 4);
 
 			if (color)
-				setColorv(v, *color);
+				setColorv(sprite, *color);
 
-			addv(v);
+			addv(sprite);
 
 			// Increment counter.
 			next++;
@@ -141,21 +127,18 @@ namespace opengl
 		// Only do this if there's a free slot.
 		if(next < size)
 		{
-			// Get a pointer to the correct insertion position.
-			vertex * v = vertices + next*4;
-
 			// Needed for colors.
-			memcpy(v, quad->getVertices(), sizeof(vertex)*4);
+			memcpy(sprite, quad->getVertices(), sizeof(vertex)*4);
 
 			// Transform.
 			Matrix t;
 			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-			t.transform(v, v, 4);
+			t.transform(sprite, sprite, 4);
 
 			if (color)
-				setColorv(v, *color);
+				setColorv(sprite, *color);
 
-			addv(v);
+			addv(sprite);
 
 			// Increment counter.
 			next++;
@@ -170,22 +153,16 @@ namespace opengl
 
 	void * SpriteBatch::lock()
 	{
-		// If already locked, prevent from locking again.
-		if(lockp != 0)
-			return lockp;
+		VertexArray::Bind bind(*array_buf);
 
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
-		lockp = (vertex *)glMapBufferARB(GL_ARRAY_BUFFER_ARB, GL_READ_WRITE_ARB);
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-		return lockp;
+		return array_buf->map(GL_READ_WRITE);
 	}
 
 	void SpriteBatch::unlock()
 	{
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
-		glUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
-		lockp = 0;
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+		VertexArray::Bind bind(*array_buf);
+
+		array_buf->unmap();
 	}
 
 	void SpriteBatch::setImage(Image * newimage)
@@ -211,6 +188,10 @@ namespace opengl
 
 	void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
+		const int color_offset = 0;
+		const int vertex_offset = sizeof(unsigned char) * 4;
+		const int texel_offset = sizeof(unsigned char) * 4 + sizeof(float) * 2;
+
 		static Matrix t;
 
 		glPushMatrix();
@@ -220,51 +201,38 @@ namespace opengl
 
 		image->bind();
 
-		// Enable vertex arrays.
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-		// Bind the VBO buffer.
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, vbo[1]);
+		VertexBuffer::Bind array_bind(*array_buf);
+		VertexBuffer::Bind element_bind(*element_buf);
 
 		// Apply per-sprite color, if a color is set.
 		if (color)
 		{
 			glEnableClientState(GL_COLOR_ARRAY);
-			glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), 0);
+			glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), array_buf->getPointer(color_offset));
 		}
 
-		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4));
-		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)(sizeof(unsigned char)*4+sizeof(float)*2));
-		
-		glDrawElements(GL_TRIANGLES, next*6, GL_UNSIGNED_SHORT, 0);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(2, GL_FLOAT, sizeof(vertex), array_buf->getPointer(vertex_offset));
 
-		// Disable vertex arrays.
-		glDisableClientState(GL_COLOR_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), array_buf->getPointer(texel_offset));
+
+		glDrawElements(GL_TRIANGLES, next*6, GL_UNSIGNED_SHORT, element_buf->getPointer(0));
+
 		glDisableClientState(GL_VERTEX_ARRAY);
-
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_COLOR_ARRAY);
 
 		glPopMatrix();
 	}
 
 	void SpriteBatch::addv(const vertex * v)
 	{
-		if(lockp != 0)
-		{
-			// Copy into mapped memory if buffer is locked.
-			memcpy(lockp + (next*4), v,  sizeof(vertex)*4);
-		}
-		else
-		{
-			// ... use glBufferSubData otherwise.
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo[0]);
-			glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, (next*4)*sizeof(vertex), sizeof(vertex)*4, v);
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-		}
+		int sprite_size = sizeof(vertex) * 4;
+
+		VertexArray::Bind bind(*array_buf);
+
+		array_buf->fill(next * sprite_size, sprite_size, v);
 	}
 
 	void SpriteBatch::setColorv(vertex * v, const Color & color)
