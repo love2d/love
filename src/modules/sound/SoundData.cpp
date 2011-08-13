@@ -44,6 +44,9 @@ namespace sound
 			// memory to other locations.
 			data = (char*)realloc(data, size + decoder->getSize());
 
+			if (!data)
+				throw love::Exception("Not enough memory."); // I know, I know, little memory, creating objects..
+
 			// Copy memory into new part of memory.
 			memcpy(data + size, decoder->getBuffer(), decoded);
 
@@ -61,13 +64,25 @@ namespace sound
 	SoundData::SoundData(int samples, int sampleRate, int bits, int channels)
 		: data(0), size(samples*(bits/8)*channels), sampleRate(sampleRate), bits(bits), channels(channels)
 	{
+		unsigned double realsize = samples;
+		realsize *= (bits/8)*channels;
+		if (realsize > INT_MAX)
+			throw love::Exception("Data is too big!");
 		data = (char*)malloc(size);
+		if (!data)
+			throw love::Exception("Not enough memory.");
 	}
 	
 	SoundData::SoundData(void * d, int samples, int sampleRate, int bits, int channels)
 		: data(0), size(samples*(bits/8)*channels), sampleRate(sampleRate), bits(bits), channels(channels)
 	{
+		unsigned double realsize = samples;
+		realsize *= (bits/8)*channels;
+		if (realsize > INT_MAX)
+			throw love::Exception("Data is too big!");
 		data = (char*)malloc(size);
+		if (!data)
+			throw love::Exception("Not enough memory.");
 		memcpy(data, d, size);
 	}
 
