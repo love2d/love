@@ -36,6 +36,7 @@ namespace thread
 	int w_Thread_wait(lua_State *L);
 	int w_Thread_getName(lua_State *L);
 	int w_Thread_get(lua_State *L);
+	int w_Thread_getKeys(lua_State *L);
 	int w_Thread_demand(lua_State *L);
 	int w_Thread_peek(lua_State *L);
 	int w_Thread_set(lua_State *L);

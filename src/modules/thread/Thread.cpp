@@ -185,6 +185,16 @@ namespace thread
 		shared[name] = v;
 	}
 
+	std::vector<std::string> ThreadData::getKeys()
+	{
+		std::vector<std::string> keys;
+		for (std::map<std::string, ThreadVariant*>::iterator it = shared.begin(); it != shared.end(); it++)
+		{
+			keys.push_back(it->first);
+		}
+		return keys;
+	}
+
 	Thread::Thread(love::thread::ThreadModule *module, const std::string & name, love::Data *data)
 		: handle(0), module(module), name(name), isThread(true)
 	{
@@ -268,6 +278,11 @@ namespace thread
 		if (v)
 			v->retain();
 		return v;
+	}
+
+	std::vector<std::string> Thread::getKeys()
+	{
+		return comm->getKeys();
 	}
 
 	ThreadVariant *Thread::demand(const std::string & name)

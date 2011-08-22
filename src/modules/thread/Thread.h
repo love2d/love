@@ -24,7 +24,8 @@
 // STL
 #include <map>
 #include <string>
-#include <string.h>
+#include <vector>
+#include <cstring>
 
 // LOVE
 #include <filesystem/File.h>
@@ -90,6 +91,7 @@ namespace thread
 		ThreadVariant* getValue(const std::string & name);
 		void clearValue(const std::string & name);
 		void setValue(const std::string & name, ThreadVariant *v);
+		std::vector<std::string> getKeys();
 
 		void *mutex;
 		void *cond;
@@ -129,6 +131,7 @@ namespace thread
 		void wait();
 		std::string getName();
 		ThreadVariant *get(const std::string & name);
+		std::vector<std::string> getKeys();
 		ThreadVariant *demand(const std::string & name);
 		void clear(const std::string & name);
 		void set(const std::string & name, ThreadVariant *v);

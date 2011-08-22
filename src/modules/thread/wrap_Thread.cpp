@@ -128,6 +128,23 @@ namespace thread
 		return 1;
 	}
 
+	int w_Thread_getKeys(lua_State *L)
+	{
+		Thread *t = luax_checkthread(L, 1);
+		t->lock();
+		std::vector<std::string> keys = t->getKeys();
+		t->unlock();
+		lua_createtable(L, keys.size(), 0);
+		int i = 0;
+		for (std::vector<std::string>::iterator it = keys.begin(); it != keys.end(); it++)
+		{
+			lua_pushnumber(L, i++);
+			lua_pushlstring(L, it->c_str(), it->length());
+			lua_settable(L, -3);
+		}
+		return 1;
+	}
+
 	int w_Thread_demand(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
@@ -216,6 +233,7 @@ namespace thread
 		{ "wait", w_Thread_wait },
 		{ "getName", w_Thread_getName },
 		{ "get", w_Thread_get },
+		{ "getKeys", w_Thread_getKeys },
 		{ "demand", w_Thread_demand },
 		{ "peek", w_Thread_peek },
 		{ "set", w_Thread_set },
