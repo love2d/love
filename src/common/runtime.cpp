@@ -215,8 +215,32 @@ namespace love
 		lua_pop(L, 1); // Pops metatable.
 		return 0;
 	}
+	
+	int luax_table_insert(lua_State * L, int tindex, int vindex, int pos)
+	{
+		if (tindex < 0)
+			tindex = lua_gettop(L)+1+tindex;
+		if (vindex < 0)
+			vindex = lua_gettop(L)+1+vindex;
+		if (pos == -1)
+		{
+			lua_pushvalue(L, vindex);
+			lua_rawseti(L, tindex, lua_objlen(L, tindex)+1);
+			return 0;
+		}
+		else if (pos < 0)
+			pos = lua_objlen(L, tindex)+1+pos;
+		for (int i = lua_objlen(L, tindex)+1; i > pos; i--)
+		{
+			lua_rawgeti(L, tindex, i-1);
+			lua_rawseti(L, tindex, i);
+		}
+		lua_pushvalue(L, vindex);
+		lua_rawseti(L, tindex, pos);
+		return 0;
+	}
 
-	int luax_register_searcher(lua_State * L, lua_CFunction f)
+	int luax_register_searcher(lua_State * L, lua_CFunction f, int pos)
 	{
 		// Add the package loader to the package.loaders table.
 		lua_getglobal(L, "package");
@@ -229,11 +253,9 @@ namespace love
 		if(lua_isnil(L, -1))
 			return luaL_error(L, "Can't register searcher: package.loaders table does not exist.");
 
-		int len = lua_objlen(L, -1);
-		lua_pushinteger(L, len+1);
 		lua_pushcfunction(L, f);
-		lua_settable(L, -3);
-		lua_pop(L, 2);
+		luax_table_insert(L, -2, -1, pos);
+		lua_pop(L, 3);
 		return 0;
 	}
 

@@ -177,12 +177,22 @@ namespace love
 	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * f = 0);
 
 	/**
+	 * Do a table.insert from C
+	 * @param L the state
+	 * @param tindex the stack index of the table
+	 * @param vindex the stack index of the value
+	 * @param pos the position to insert it in
+	 **/
+	int luax_table_insert(lua_State * L, int tindex, int vindex, int pos = -1);
+
+	/**
 	* Register a new searcher function for package.loaders. This can for instance enable
 	* loading of files through love.filesystem using standard require.
 	* @param L The Lua state.
 	* @param f The searcher function.
+	* @param pos The position to insert the loader in.
 	**/
-	int luax_register_searcher(lua_State * L, lua_CFunction f);
+	int luax_register_searcher(lua_State * L, lua_CFunction f, int pos = -1);
 
 	/**
 	* Creates a new Lua-accessible object of the given type, and put it on the stack.
