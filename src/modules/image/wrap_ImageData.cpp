@@ -157,7 +157,14 @@ namespace image
 		}
 		ImageData::Format format;
 		ImageData::getConstant(fmt, format);
-		t->encode(file, format);
+		try
+		{
+			t->encode(file, format);
+		}
+		catch (love::Exception & e)
+		{
+			return luaL_error(L, e.what());
+		}
 		return 0;
 	}
 
