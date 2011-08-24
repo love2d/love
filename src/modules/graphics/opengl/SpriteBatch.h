@@ -29,6 +29,7 @@
 #include <common/Object.h>
 #include <common/Vector.h>
 #include <common/Matrix.h>
+#include <common/StringMap.h>
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
 #include <graphics/Color.h>
@@ -73,9 +74,10 @@ namespace opengl
 
 		enum UsageHint
 		{
-			USAGE_DYNAMIC,
+			USAGE_DYNAMIC = 1,
 			USAGE_STATIC,
-			USAGE_STREAM
+			USAGE_STREAM,
+			USAGE_MAX_ENUM
 		};
 
 		SpriteBatch(Image * image, int size, int usage);
@@ -108,6 +110,9 @@ namespace opengl
 		// Implements Drawable.
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
+		static bool getConstant(const char * in, UsageHint & out);
+		static bool getConstant(UsageHint in, const char *& out);
+
 	private:
 
 		void addv(const vertex * v);
@@ -120,6 +125,9 @@ namespace opengl
 		 * @param color The color to assign to each vertex.
 		 */
 		void setColorv(vertex * v, const Color & color);
+
+		static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
+		static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
 
 	}; // SpriteBatch
 

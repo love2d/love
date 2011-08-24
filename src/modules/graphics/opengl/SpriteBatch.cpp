@@ -243,6 +243,24 @@ namespace opengl
 		v[3].r = color.r; v[3].g = color.g; v[3].b = color.b; v[3].a = color.a;
 	}
 
+	bool SpriteBatch::getConstant(const char * in, UsageHint & out)
+	{
+		return usageHints.find(in, out);
+	}
+
+	bool SpriteBatch::getConstant(UsageHint in, const char *& out)
+	{
+		return usageHints.find(in, out);
+	}
+
+	StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM>::Entry SpriteBatch::usageHintEntries[] =
+	{
+		{"dynamic", SpriteBatch::USAGE_DYNAMIC},
+		{"static", SpriteBatch::USAGE_STATIC},
+		{"stream", SpriteBatch::USAGE_STREAM},
+	};
+
+	StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM> SpriteBatch::usageHints(usageHintEntries, sizeof(usageHintEntries));
 } // opengl
 } // graphics
 } // love

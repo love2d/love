@@ -323,7 +323,12 @@ namespace opengl
 	{
 		Image * image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
 		int size = luaL_optint(L, 2, 1000);
-		int usage = luaL_optint(L, 3, SpriteBatch::USAGE_DYNAMIC);
+		SpriteBatch::UsageHint usage = SpriteBatch::USAGE_DYNAMIC;
+		if (lua_gettop(L) > 2)
+		{
+			if (!SpriteBatch::getConstant(luaL_checkstring(L, 3), usage))
+				usage = SpriteBatch::USAGE_DYNAMIC;
+		}
 		SpriteBatch * t = NULL;
 		try {
 			t = instance->newSpriteBatch(image, size, usage);
