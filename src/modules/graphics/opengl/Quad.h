@@ -38,7 +38,7 @@ namespace opengl
 
 		struct Viewport
 		{
-			int x, y, w, h;
+			float x, y, w, h;
 		};
 
 	private:
@@ -46,7 +46,7 @@ namespace opengl
 		vertex vertices[4];
 
 		Viewport viewport;
-		int sw, sh;
+		float sw, sh;
 
 	public:
 
@@ -58,11 +58,11 @@ namespace opengl
 		* @param sw Width of the source image.
 		* @param sh Height of the source image.
 		**/
-		Quad(const Viewport & v, int sw, int sh);
+		Quad(const Viewport & v, float sw, float sh);
 
 		virtual ~Quad();
 
-		void refresh(const Viewport & v, int sw, int sh);
+		void refresh(const Viewport & v, float sw, float sh);
 
 		void setViewport(const Viewport & v);
 		Viewport getViewport() const;
