@@ -276,7 +276,7 @@ namespace opengl
 		/**
 		* Creates a Quad object.
 		**/
-		Quad * newQuad(int x, int y, int w, int h, int sw, int sh);
+		Quad * newQuad(float x, float y, float w, float h, float sw, float sh);
 
 		/**
 		* Creates a Font object.

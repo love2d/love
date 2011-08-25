@@ -226,12 +226,12 @@ namespace opengl
 
 	int w_newQuad(lua_State * L)
 	{
-		int x = luaL_checknumber(L, 1);
-		int y = luaL_checknumber(L, 2);
-		int w = luaL_checknumber(L, 3);
-		int h = luaL_checknumber(L, 4);
-		int sw = luaL_checknumber(L, 5);
-		int sh = luaL_checknumber(L, 6);
+		float x = (float) luaL_checknumber(L, 1);
+		float y = (float) luaL_checknumber(L, 2);
+		float w = (float) luaL_checknumber(L, 3);
+		float h = (float) luaL_checknumber(L, 4);
+		float sw = (float) luaL_checknumber(L, 5);
+		float sh = (float) luaL_checknumber(L, 6);
 
 		Quad * frame = instance->newQuad(x, y, w, h, sw, sh);
 

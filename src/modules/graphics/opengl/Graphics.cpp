@@ -492,7 +492,7 @@ namespace opengl
 		return image;
 	}
 
-	Quad * Graphics::newQuad(int x, int y, int w, int h, int sw, int sh)
+	Quad * Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
 	{
 		Quad::Viewport v;
 		v.x = x;
