@@ -42,7 +42,7 @@ Section "LOVE" MainProg
 	File "${LOVEBINDIR}\DevIL.dll"
 	File "${LOVEBINDIR}\SDL.dll"
 	File "${LOVEBINDIR}\OpenAL32.dll"
-	File "${LOVEBINDIR}\lua51.dll"
+	# File "${LOVEBINDIR}\lua51.dll"
 	File "${LOVEICODIR}\love.ico"
 	File "${LOVEICODIR}\game.ico"
 
@@ -89,7 +89,7 @@ Section "Uninstall"
 	Delete $INSTDIR\"SDL.dll"
 	Delete $INSTDIR\"love.exe"
 	Delete $INSTDIR\"OpenAL32.dll"
-	Delete $INSTDIR\"lua51.dll"
+	# Delete $INSTDIR\"lua51.dll"
 	Delete $INSTDIR\"game.ico"
 	Delete $INSTDIR\"love.ico"
 	RMDir $INSTDIR
