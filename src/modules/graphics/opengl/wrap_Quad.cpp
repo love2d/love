@@ -43,10 +43,10 @@ namespace opengl
 	{
 		Quad * quad = luax_checktype<Quad>(L, 1, "Quad", GRAPHICS_QUAD_T);
 		Quad::Viewport v;
-		v.x = luaL_checknumber(L, 2);
-		v.y = luaL_checknumber(L, 3);
-		v.w = luaL_checknumber(L, 4);
-		v.h = luaL_checknumber(L, 5);
+		v.x = (float) luaL_checknumber(L, 2);
+		v.y = (float) luaL_checknumber(L, 3);
+		v.w = (float) luaL_checknumber(L, 4);
+		v.h = (float) luaL_checknumber(L, 5);
 		quad->setViewport(v);
 		return 0;
 	}

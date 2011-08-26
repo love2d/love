@@ -104,11 +104,11 @@ namespace opengl
 		glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w, h, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
 		
 		Quad::Viewport v;
-		v.x = texture_x;
-		v.y = texture_y;
-		v.w = w;
-		v.h = h;
-		Quad * q = new Quad(v, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+		v.x = (float) texture_x;
+		v.y = (float) texture_y;
+		v.w = (float) w;
+		v.h = (float) h;
+		Quad * q = new Quad(v, (const float) TEXTURE_WIDTH, (const float) TEXTURE_HEIGHT);
 		const vertex * verts = q->getVertices();
 		
 		glEnableClientState(GL_VERTEX_ARRAY);

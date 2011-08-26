@@ -314,7 +314,7 @@ namespace physfs
 		std::string tokenized_name(filename);
 		std::string tokenized_function(filename);
 
-		for (int i = 0; i < tokenized_name.size(); i++)
+		for (unsigned int i = 0; i < tokenized_name.size(); i++)
 		{
 			if (tokenized_name[i] == '.')
 			{

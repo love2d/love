@@ -389,7 +389,7 @@ namespace openal
 
 			for(unsigned int i = 0; i < MAX_BUFFERS; i++)
 			{
-				int decoded = streamAtomic(buffers[i], decoder);
+				streamAtomic(buffers[i], decoder);
 				++usedBuffers;
 				if(decoder->isFinished())
 					break;
