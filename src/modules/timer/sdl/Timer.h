@@ -88,9 +88,9 @@ namespace sdl
 		/**
 		* Tries to sleep for the specified amount of time. The precision is
 		* usually 1ms.
-		* @param ms The number of milliseconds to sleep for.
+		* @param seconds The number of seconds to sleep for.
 		**/
-		void sleep(int ms);
+		void sleep(float seconds);
 
 		/**
 		* Gets the time between the last two frames, assuming step is called

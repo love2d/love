@@ -79,10 +79,10 @@ namespace sdl
 		}
 	}
 
-	void Timer::sleep(int ms)
+	void Timer::sleep(float seconds)
 	{
-		if(ms > 0)
-			delay(ms);
+		if(seconds > 0)
+			delay((int) (seconds*1000));
 	}
 
 	float Timer::getDelta() const

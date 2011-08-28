@@ -49,8 +49,7 @@ namespace sdl
 
 	int w_sleep(lua_State * L)
 	{
-		int ms = luaL_checkint(L, 1);
-		instance->sleep(ms);
+		instance->sleep((float) luaL_checknumber(L, 1));
 		return 0;
 	}
 
