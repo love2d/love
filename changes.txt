@@ -20,6 +20,10 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added love.graphics.getRenderTarget.
   * Added love.event.quit.
   * Added stencil masks.
+  * Added alternative SpriteBatch provider, it should work everywhere now.
+  * Added a loader for binary modules.
+  * Added thread:getKeys().
+  * Added option of fractions for quads.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
@@ -38,6 +42,9 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed Source controls inconsistencies.
   * Fixed most leaking on unclosed File objects.
   * Fixed crashes when operating on non-existent files.
+  * Fixed a bug where empty files on windows would never reach eof.
+  * Fixed crash when SoundData runs out of memory.
+  * Fixed ordering of loaders, love should have priority over lua.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
   * Renamed Framebuffer to Canvas
@@ -46,6 +53,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Updated love.thread to use get/set instead of send/receive.
   * Updated font engine.
   * Updated line drawing to a custom system.
+  * Updated love.timer.sleep to use seconds, like the rest of love.
 
   * Removed canvas auto-clearing.
   * Removed EncodedImageData.
