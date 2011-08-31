@@ -135,7 +135,7 @@ namespace thread
 		std::vector<std::string> keys = t->getKeys();
 		t->unlock();
 		lua_createtable(L, keys.size(), 0);
-		int i = 0;
+		int i = 1;
 		for (std::vector<std::string>::iterator it = keys.begin(); it != keys.end(); it++)
 		{
 			lua_pushnumber(L, i++);
