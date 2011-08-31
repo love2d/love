@@ -54,6 +54,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Updated font engine.
   * Updated line drawing to a custom system.
   * Updated love.timer.sleep to use seconds, like the rest of love.
+  * Updated love.graphics.circle to have max(10, r) as default for segments.
 
   * Removed canvas auto-clearing.
   * Removed EncodedImageData.

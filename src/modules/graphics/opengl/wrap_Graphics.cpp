@@ -995,7 +995,11 @@ namespace opengl
 		float x = (float)luaL_checknumber(L, 2);
 		float y = (float)luaL_checknumber(L, 3);
 		float radius = (float)luaL_checknumber(L, 4);
-		int points = luaL_optint(L, 5, 10);
+		int points;
+		if (lua_gettop(L) > 4)
+			points = lua_tointeger(L, 5);
+		else
+			points = radius > 10 ? radius : 10;
 		instance->circle(mode, x, y, radius, points);
 		return 0;
 	}
