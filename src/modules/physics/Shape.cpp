@@ -42,6 +42,8 @@ namespace physics
 	{
 		{"circle", Shape::SHAPE_CIRCLE},
 		{"polygon", Shape::SHAPE_POLYGON},
+		{"edge", Shape::SHAPE_EDGE},
+		{"chain", Shape::SHAPE_CHAIN},
 	};
 
 	StringMap<Shape::Type, Shape::SHAPE_MAX_ENUM> Shape::types(Shape::typeEntries, sizeof(Shape::typeEntries));
