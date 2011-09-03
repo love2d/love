@@ -52,9 +52,10 @@ namespace opengl
 		Font * t = luax_checkfont(L, 1);
 		const char * str = luaL_checkstring(L, 2);
 		float wrap = (float) luaL_checknumber(L, 3);
-		int lines = 0;
-		lua_pushinteger(L, t->getWrap(str, wrap, &lines));
-		lua_pushinteger(L, lines);
+		int max_width = 0;
+		std::vector<std::string> lines = t->getWrap(str, wrap, &max_width);
+		lua_pushinteger(L, max_width);
+		lua_pushinteger(L, lines.size());
 		return 2;
 	}
 

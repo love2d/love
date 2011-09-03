@@ -803,41 +803,7 @@ namespace opengl
 
 		using namespace std;
 		string text(str);
-		const float width_space = static_cast<float>(currentFont->getWidth(' '));
-		vector<string> lines_to_draw;
-
-		//split text at newlines
-		istringstream iss( text );
-		string line;
-		while (getline(iss, line, '\n')) {
-			// split line into words
-			vector<string> words;
-			istringstream word_iss(line);
-			copy(istream_iterator<string>(word_iss), istream_iterator<string>(),
-					back_inserter< vector<string> >(words));
-
-			// put words back together until a wrap occurs
-			float width = 0.0f;
-			float oldwidth = 0.0f;
-			ostringstream string_builder;
-			vector<string>::const_iterator word_iter;
-			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter) {
-				string word( *word_iter );
-				width += currentFont->getWidth( word );
-
-				// on wordwrap, push line to line buffer and clear string builder
-				if (width >= wrap && oldwidth > 0) {
-					lines_to_draw.push_back( string_builder.str() );
-					string_builder.str( "" );
-					width = static_cast<float>(currentFont->getWidth( word ));
-				}
-				string_builder << word << " ";
-				width += width_space;
-				oldwidth = width;
-			}
-			// push last line
-			lines_to_draw.push_back( string_builder.str() );
-		}
+		vector<string> lines_to_draw = currentFont->getWrap(text, wrap);
 
 		// now for the actual printing
 		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();

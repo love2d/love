@@ -135,12 +135,12 @@ namespace opengl
 		 * Returns the maximal width of a wrapped string
 		 * and optionally the number of lines
 		 *
-		 * @param line A line of text
+		 * @param text The input text
 		 * @param wrap The number of pixels to wrap at
-		 * @param lines Optional output of the number of lines needed
+		 * @param max_width Optional output of the maximum width
+		 * Returns a vector with the lines.
 		 **/
-		int getWrap(const std::string & line, float wrap, int *lines = 0);
-		int getWrap(const char * line, float wrap, int *lines = 0);
+		std::vector<std::string> getWrap(const std::string text, float wrap, int * max_width = 0);
 
 		/**
 		* Sets the line height (which should be a number to multiply the font size by,
