@@ -199,13 +199,20 @@ namespace opengl
 		
 		Glyph * g;
 
-		utf8::iterator<std::string::const_iterator> i (line.begin(), line.begin(), line.end());
-		utf8::iterator<std::string::const_iterator> end (line.end(), line.begin(), line.end());
-		while (i != end) {
-			int c = *i++;
-			g = glyphs[c];
-			if (!g) g = addGlyph(c);
-			temp += static_cast<int>(g->spacing * mSpacing);
+		try
+		{
+			utf8::iterator<std::string::const_iterator> i (line.begin(), line.begin(), line.end());
+			utf8::iterator<std::string::const_iterator> end (line.end(), line.begin(), line.end());
+			while (i != end) {
+				int c = *i++;
+				g = glyphs[c];
+				if (!g) g = addGlyph(c);
+				temp += static_cast<int>(g->spacing * mSpacing);
+			}
+		}
+		catch (utf8::invalid_utf8 e)
+		{
+			throw love::Exception(e.what());
 		}
 
 		return temp;
@@ -251,11 +258,13 @@ namespace opengl
 
 				// on wordwrap, push line to line buffer and clear string builder
 				if (width >= wrap && oldwidth > 0) {
-					if (width > maxw)
-						maxw = width;
+					int realw = width;
 					lines_to_draw.push_back( string_builder.str() );
 					string_builder.str( "" );
 					width = static_cast<float>(getWidth( word ));
+					realw -= width;
+					if (realw > maxw)
+						maxw = realw;
 				}
 				string_builder << word << " ";
 				width += width_space;
