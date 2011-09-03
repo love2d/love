@@ -36,6 +36,7 @@
 #include "RevoluteJoint.h"
 #include "PulleyJoint.h"
 #include "GearJoint.h"
+#include "FrictionJoint.h"
 
 namespace love
 {
@@ -199,6 +200,13 @@ namespace box2d
 		* @param ratio The gear ratio.
 		**/
 		GearJoint * newGearJoint(Joint * joint1, Joint * joint2, float ratio);
+
+		/**
+		* Creates a new FrictionJoint connecting body1 with body2.
+		* @param x Anchor along the x-axis. (World coordinates)
+		* @param y Anchor along the y-axis. (World coordinates)
+		**/
+		FrictionJoint * newFrictionJoint(Body * body1, Body * body2, float x, float y);
 
 
 	}; // Physics

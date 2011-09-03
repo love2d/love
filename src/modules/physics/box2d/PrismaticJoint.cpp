@@ -58,7 +58,7 @@ namespace box2d
 		return world->scaleDown(joint->GetJointSpeed());
 	}
 
-	void PrismaticJoint::setMotorEnabled(bool motor)
+	void PrismaticJoint::enableMotor(bool motor)
 	{
 		return joint->EnableMotor(motor);
 	}
@@ -70,30 +70,30 @@ namespace box2d
 
 	void PrismaticJoint::setMaxMotorForce(float force)
 	{
-		joint->SetMaxMotorForce(force);
+		joint->SetMaxMotorForce(world->scaleDown(force));
 	}
 	
 	void PrismaticJoint::setMotorSpeed(float speed)
 	{
-		joint->SetMotorSpeed(speed);
+		joint->SetMotorSpeed(world->scaleDown(speed));
 	}
 
 	float PrismaticJoint::getMotorSpeed() const
 	{
-		return joint->GetMotorSpeed();
+		return world->scaleUp(joint->GetMotorSpeed());
 	}
 
-	float PrismaticJoint::getMotorForce() const
+	float PrismaticJoint::getMotorForce(float inv_dt) const
 	{
-		return joint->GetMotorForce();
+		return world->scaleUp(joint->GetMotorForce(inv_dt));
 	}
 
-	void PrismaticJoint::setLimitsEnabled(bool limit)
+	void PrismaticJoint::enableLimit(bool limit)
 	{
 		joint->EnableLimit(limit);
 	}
 
-	bool PrismaticJoint::isLimitsEnabled() const
+	bool PrismaticJoint::isLimitEnabled() const
 	{
 		return joint->IsLimitEnabled();
 	}

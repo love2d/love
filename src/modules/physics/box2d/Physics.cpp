@@ -176,6 +176,11 @@ namespace box2d
 	{
 		return new GearJoint(joint1, joint2, ratio);
 	}
+	
+	FrictionJoint * Physics::newFrictionJoint(Body * body1, Body * body2, float x, float y)
+	{
+		return new FrictionJoint(body1, body2, x, y);
+	}
 
 } // box2d
 } // physics

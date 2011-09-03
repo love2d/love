@@ -72,6 +72,14 @@ namespace box2d
 			return JOINT_MOUSE;
 		case e_gearJoint: 
 			return JOINT_GEAR;
+		case e_frictionJoint:
+			return JOINT_FRICTION;
+		case e_weldJoint:
+			return JOINT_WELD;
+		case e_wheelJoint:
+			return JOINT_WHEEL;
+		case e_ropeJoint:
+			return JOINT_ROPE;
 		default:
 			return JOINT_INVALID;
 		}
@@ -115,6 +123,11 @@ namespace box2d
 	bool Joint::isActive() const
 	{
 		return joint->IsActive();
+	}
+	
+	bool Joint::getCollideConnected() const
+	{
+		return joint->GetCollideConnected();
 	}
 
 } // box2d

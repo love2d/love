@@ -63,14 +63,6 @@ namespace box2d
 		return 1;
 	}
 
-	int w_Joint_setCollideConnected(lua_State * L)
-	{
-		Joint * t = luax_checkjoint(L, 1);
-		bool arg1 = luax_toboolean(L, 2);
-		t->setCollideConnected(arg1);
-		return 0;
-	}
-
 	int w_Joint_getCollideConnected(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
@@ -94,7 +86,6 @@ namespace box2d
 		{ "getAnchors", w_Joint_getAnchors },
 		{ "getReactionForce", w_Joint_getReactionForce },
 		{ "getReactionTorque", w_Joint_getReactionTorque },
-		{ "setCollideConnected", w_Joint_setCollideConnected },
 		{ "getCollideConnected", w_Joint_getCollideConnected },
 		{ "destroy", w_Joint_destroy },
 		{ 0, 0 }

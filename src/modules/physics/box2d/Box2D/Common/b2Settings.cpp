@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
 #include <Box2D/Common/b2Settings.h>
 #include <cstdlib>
 
-b2Version b2_version = {2, 1, 2};
+b2Version b2_version = {2, 2, 0};
 
 // Memory allocators. Modify these to use your own allocator.
 void* b2Alloc(int32 size)

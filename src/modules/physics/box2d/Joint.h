@@ -100,6 +100,8 @@ namespace box2d
 		float getReactionTorque(float dt);
 		
 		bool isActive() const;
+		
+		bool getCollideConnected() const;
 
 	protected:
 

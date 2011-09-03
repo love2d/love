@@ -37,6 +37,7 @@
 #include "wrap_RevoluteJoint.h"
 #include "wrap_PulleyJoint.h"
 #include "wrap_GearJoint.h"
+#include "wrap_FrictionJoint.h"
 
 namespace love
 {
@@ -56,6 +57,7 @@ namespace box2d
 	int w_newPrismaticJoint(lua_State * L);
 	int w_newPulleyJoint(lua_State * L);
 	int w_newGearJoint(lua_State * L);
+	int w_newFrictionJoint(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
 
 } // box2d

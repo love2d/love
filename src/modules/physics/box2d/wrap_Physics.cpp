@@ -204,6 +204,17 @@ namespace box2d
 		luax_newtype(L, "GearJoint", PHYSICS_GEAR_JOINT_T, (void*)j);
 		return 1;
 	}
+	
+	int w_newFrictionJoint(lua_State * L)
+	{
+		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
+		Body * body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
+		float x = (float)luaL_checknumber(L, 3);
+		float y = (float)luaL_checknumber(L, 4);
+		FrictionJoint * j = instance->newFrictionJoint(body1, body2, x, y);
+		luax_newtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, (void*)j);
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -218,6 +229,7 @@ namespace box2d
 		{ "newPrismaticJoint", w_newPrismaticJoint },
 		{ "newPulleyJoint", w_newPulleyJoint },
 		{ "newGearJoint", w_newGearJoint },
+		{ "newFrictionJoint", w_newFrictionJoint },
 		{ 0, 0 },
 	};
 
@@ -235,6 +247,7 @@ namespace box2d
 		luaopen_revolutejoint,
 		luaopen_pulleyjoint,
 		luaopen_gearjoint,
+		luaopen_frictionjoint,
 		0
 	};
 
