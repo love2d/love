@@ -51,6 +51,10 @@ namespace box2d
 			return SHAPE_CIRCLE;
 		case b2Shape::e_polygon:
 			return SHAPE_POLYGON;
+		case b2Shape::e_edge:
+			return SHAPE_EDGE;
+		case b2Shape::e_chain:
+			return SHAPE_CHAIN;
 		default:
 			return SHAPE_INVALID;
 		}

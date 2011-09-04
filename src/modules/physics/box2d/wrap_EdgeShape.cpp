@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -18,11 +18,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#include "CircleShape.h"
-
-// Module
-#include "Body.h"
-#include "World.h"
+#include "wrap_EdgeShape.h"
 
 namespace love
 {
@@ -30,25 +26,22 @@ namespace physics
 {
 namespace box2d
 {
-	CircleShape::CircleShape(b2CircleShape * c)
+	EdgeShape * luax_checkedgeshape(lua_State * L, int idx)
 	{
-		shape = c;
+		return luax_checktype<EdgeShape>(L, idx, "EdgeShape", PHYSICS_EDGE_SHAPE_T);
 	}
 
-	CircleShape::~CircleShape()
+	static const luaL_Reg functions[] = {
+		// From Shape.
+		{ "getType", w_Shape_getType },
+		{ "destroy", w_Shape_destroy },
+		{ 0, 0 }
+	};
+
+	int luaopen_edgeshape(lua_State * L)
 	{
-        shape = NULL;
+		return luax_register_type(L, "EdgeShape", functions);
 	}
-    
-    float CircleShape::getRadius() const
-    {
-        return shape->m_radius;
-    }
-	
-    void CircleShape::setRadius(float r)
-    {
-        shape->m_radius = r;
-    }
 
 } // box2d
 } // physics

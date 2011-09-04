@@ -118,8 +118,8 @@ namespace box2d
 		float y1 = (float)luaL_checknumber(L, 2);
 		float x2 = (float)luaL_checknumber(L, 3);
 		float y2 = (float)luaL_checknumber(L, 4);
-		PolygonShape * shape = instance->newEdgeShape(x1, y1, x2, y2);
-		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
+		EdgeShape * shape = instance->newEdgeShape(x1, y1, x2, y2);
+		luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, (void*)shape);
 		return 1;
 	}
 
@@ -215,6 +215,30 @@ namespace box2d
 		luax_newtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, (void*)j);
 		return 1;
 	}
+	
+	int w_newWeldJoint(lua_State * L)
+	{
+		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
+		Body * body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
+		float x = (float)luaL_checknumber(L, 3);
+		float y = (float)luaL_checknumber(L, 4);
+		WeldJoint * j = instance->newWeldJoint(body1, body2, x, y);
+		luax_newtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, (void*)j);
+		return 1;
+	}
+	
+	int w_newWheelJoint(lua_State * L)
+	{
+		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
+		Body * body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
+		float x = (float)luaL_checknumber(L, 3);
+		float y = (float)luaL_checknumber(L, 4);
+		float ax = (float)luaL_checknumber(L, 5);
+		float ay = (float)luaL_checknumber(L, 6);
+		WheelJoint * j = instance->newWheelJoint(body1, body2, x, y, ax, ay);
+		luax_newtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, (void*)j);
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -223,6 +247,7 @@ namespace box2d
 		{ "newCircleShape", w_newCircleShape },
 		{ "newRectangleShape", w_newRectangleShape },
 		{ "newPolygonShape", w_newPolygonShape },
+		{ "newEdgeShape", w_newEdgeShape },
 		{ "newDistanceJoint", w_newDistanceJoint },
 		{ "newMouseJoint", w_newMouseJoint },
 		{ "newRevoluteJoint", w_newRevoluteJoint },
@@ -230,6 +255,8 @@ namespace box2d
 		{ "newPulleyJoint", w_newPulleyJoint },
 		{ "newGearJoint", w_newGearJoint },
 		{ "newFrictionJoint", w_newFrictionJoint },
+		{ "newWeldJoint", w_newWeldJoint },
+		{ "newWheelJoint", w_newWheelJoint },
 		{ 0, 0 },
 	};
 
@@ -240,6 +267,7 @@ namespace box2d
 		luaopen_shape,
 		luaopen_circleshape,
 		luaopen_polygonshape,
+		luaopen_edgeshape,
 		luaopen_joint,
 		luaopen_mousejoint,
 		luaopen_distancejoint,
@@ -248,6 +276,7 @@ namespace box2d
 		luaopen_pulleyjoint,
 		luaopen_gearjoint,
 		luaopen_frictionjoint,
+		luaopen_weldjoint,
 		0
 	};
 

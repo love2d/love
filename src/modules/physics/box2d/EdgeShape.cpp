@@ -18,13 +18,11 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_PHYSICS_BOX2D_WRAP_WHEEL_JOINT_H
-#define LOVE_PHYSICS_BOX2D_WRAP_WHEEL_JOINT_H
+#include "EdgeShape.h"
 
-// LOVE
-#include <common/runtime.h>
-#include "wrap_Joint.h"
-#include "WheelJoint.h"
+// Module
+#include "Body.h"
+#include "World.h"
 
 namespace love
 {
@@ -32,24 +30,15 @@ namespace physics
 {
 namespace box2d
 {
-	WheelJoint * luax_checkwheeljoint(lua_State * L, int idx);
-	int w_WheelJoint_getJointTranslation(lua_State * L);
-	int w_WheelJoint_getJointSpeed(lua_State * L);
-	int w_WheelJoint_enableMotor(lua_State * L);
-	int w_WheelJoint_isMotorEnabled(lua_State * L);
-	int w_WheelJoint_setMotorSpeed(lua_State * L);
-	int w_WheelJoint_getMotorSpeed(lua_State * L);
-	int w_WheelJoint_setMaxMotorTorque(lua_State * L);
-	int w_WheelJoint_getMaxMotorTorque(lua_State * L);
-	int w_WheelJoint_getMotorTorque(lua_State * L);
-	int w_WheelJoint_setSpringFrequencyHz(lua_State * L);
-	int w_WheelJoint_getSpringFrequencyHz(lua_State * L);
-	int w_WheelJoint_setSpringDampingRatio(lua_State * L);
-	int w_WheelJoint_getSpringDampingRatio(lua_State * L);
-	int luaopen_wheeljoint(lua_State * L);
+	EdgeShape::EdgeShape(b2EdgeShape * e)
+	{
+		shape = e;
+	}
+
+	EdgeShape::~EdgeShape()
+	{
+	}
 
 } // box2d
 } // physics
 } // love
-
-#endif // LOVE_PHYSICS_BOX2D_WRAP_WHEEL_JOINT_H

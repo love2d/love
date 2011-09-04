@@ -29,6 +29,7 @@
 #include "Shape.h"
 #include "CircleShape.h"
 #include "PolygonShape.h"
+#include "EdgeShape.h"
 #include "Joint.h"
 #include "MouseJoint.h"
 #include "DistanceJoint.h"
@@ -37,6 +38,8 @@
 #include "PulleyJoint.h"
 #include "GearJoint.h"
 #include "FrictionJoint.h"
+#include "WeldJoint.h"
+#include "WheelJoint.h"
 
 namespace love
 {
@@ -89,15 +92,13 @@ namespace box2d
 		Body * newBody(World * world);
 
 		/**
-		* Creates a new CircleShape at the Body origin.
-		* @param body The Body to create the Shape on.
+		* Creates a new CircleShape at (0, 0).
 		* @param radius The radius of the circle.
 		**/
 		CircleShape * newCircleShape(float radius);
 
 		/**
-		* Creates a new CircleShape at (x,y) in local coorinates.
-		* @param body The Body to create the Shape on.
+		* Creates a new CircleShape at (x,y) in local coordinates.
 		* @param x The offset along the x-axis.
 		* @param y The offset along the y-axis.
 		* @param radius The radius of the circle.
@@ -134,19 +135,17 @@ namespace box2d
 		PolygonShape * newRectangleShape(float x, float y, float w, float h, float angle);
         
         /**
-         * Shorthand for creating edge PolygonShapes. The edge
-         * will be created at (x,y) in local coordinates.
-         * @param x The offset along the x-axis.
-         * @param y The offset along the y-axis.
-         * @param w The width of the rectangle.
-         * @param h The height of the rectangle.
-         * @param angle The angle of the rectangle. (rad)
-         **/
-		PolygonShape * newEdgeShape(float x1, float y1, float x2, float y2);
+		* Creates a new EdgeShape. The edge will be created from
+		* (x1,y1) to (x2,y2) in local coordinates.
+		* @param x1 The x coordinate of the first point.
+		* @param y1 The y coordinate of the first point.
+		* @param x2 The x coordinate of the second point.
+		* @param y2 The y coordinate of the second point.
+		**/
+		EdgeShape * newEdgeShape(float x1, float y1, float x2, float y2);
 
 		/**
 		* Creates a new PolygonShape.
-		* @param body The body to create this shape on.
 		* @param ... A variable number of vertices.
 		**/
 		int newPolygonShape(lua_State * L);
@@ -207,6 +206,22 @@ namespace box2d
 		* @param y Anchor along the y-axis. (World coordinates)
 		**/
 		FrictionJoint * newFrictionJoint(Body * body1, Body * body2, float x, float y);
+		
+		/**
+		* Creates a new WeldJoint connecting body1 with body2.
+		* @param x Anchor along the x-axis. (World coordinates)
+		* @param y Anchor along the y-axis. (World coordinates)
+		**/
+		WeldJoint * newWeldJoint(Body * body1, Body * body2, float x, float y);
+		
+		/**
+		* Creates a new WheelJoint connecting body1 with body2.
+		* @param x Anchor along the x-axis. (World coordinates)
+		* @param y Anchor along the y-axis. (World coordinates)
+		* @param ax The x-component of the world-axis.
+		* @param ay The y-component of the world-axis.
+		**/
+		WheelJoint * newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay);
 
 
 	}; // Physics

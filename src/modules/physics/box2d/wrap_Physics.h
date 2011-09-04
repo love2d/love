@@ -30,6 +30,7 @@
 #include "wrap_Shape.h"
 #include "wrap_CircleShape.h"
 #include "wrap_PolygonShape.h"
+#include "wrap_EdgeShape.h"
 #include "wrap_Joint.h"
 #include "wrap_MouseJoint.h"
 #include "wrap_DistanceJoint.h"
@@ -38,6 +39,8 @@
 #include "wrap_PulleyJoint.h"
 #include "wrap_GearJoint.h"
 #include "wrap_FrictionJoint.h"
+#include "wrap_WeldJoint.h"
+#include "wrap_WheelJoint.h"
 
 namespace love
 {
@@ -49,8 +52,8 @@ namespace box2d
 	int w_newBody(lua_State * L);
 	int w_newCircleShape(lua_State * L);
 	int w_newRectangleShape(lua_State * L);
-    int w_newEdgeShape(lua_State * L);
 	int w_newPolygonShape(lua_State * L);
+    int w_newEdgeShape(lua_State * L);
 	int w_newDistanceJoint(lua_State * L);
 	int w_newMouseJoint(lua_State * L);
 	int w_newRevoluteJoint(lua_State * L);
@@ -58,6 +61,8 @@ namespace box2d
 	int w_newPulleyJoint(lua_State * L);
 	int w_newGearJoint(lua_State * L);
 	int w_newFrictionJoint(lua_State * L);
+	int w_newWeldJoint(lua_State * L);
+	int w_newWheelJoint(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
 
 } // box2d

@@ -163,6 +163,8 @@
 		A96F41861412AFF80067FE9A /* WeldJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F41841412AFEB0067FE9A /* WeldJoint.cpp */; };
 		A96F41891412B36D0067FE9A /* wrap_WheelJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F41871412B35B0067FE9A /* wrap_WheelJoint.cpp */; };
 		A96F418C1412B3AD0067FE9A /* WheelJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F418A1412B3A30067FE9A /* WheelJoint.cpp */; };
+		A96F41A41412C91F0067FE9A /* EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F41A21412C91E0067FE9A /* EdgeShape.cpp */; };
+		A96F41A71412C92B0067FE9A /* wrap_EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F41A51412C92B0067FE9A /* wrap_EdgeShape.cpp */; };
 		A986DEB5113249A800810279 /* Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986DEB1113249A800810279 /* Thread.cpp */; };
 		A986DEB6113249A800810279 /* wrap_Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986DEB3113249A800810279 /* wrap_Thread.cpp */; };
 		A986EC64132CE6DB00F048C8 /* b2BroadPhase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986EBC8132CE6D800F048C8 /* b2BroadPhase.cpp */; };
@@ -571,6 +573,10 @@
 		A96F41881412B3610067FE9A /* wrap_WheelJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_WheelJoint.h; sourceTree = "<group>"; };
 		A96F418A1412B3A30067FE9A /* WheelJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WheelJoint.cpp; sourceTree = "<group>"; };
 		A96F418B1412B3A80067FE9A /* WheelJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WheelJoint.h; sourceTree = "<group>"; };
+		A96F41A21412C91E0067FE9A /* EdgeShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EdgeShape.cpp; sourceTree = "<group>"; };
+		A96F41A31412C91E0067FE9A /* EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EdgeShape.h; sourceTree = "<group>"; };
+		A96F41A51412C92B0067FE9A /* wrap_EdgeShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_EdgeShape.cpp; sourceTree = "<group>"; };
+		A96F41A61412C92B0067FE9A /* wrap_EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_EdgeShape.h; sourceTree = "<group>"; };
 		A97E3842132A9EDE00198A2F /* love-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "love-Info.plist"; sourceTree = "<group>"; };
 		A986DEB1113249A800810279 /* Thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Thread.cpp; sourceTree = "<group>"; };
 		A986DEB2113249A800810279 /* Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
@@ -1195,6 +1201,8 @@
 				A93E6AF010420AC7007D418B /* Contact.h */,
 				A93E6AF110420AC7007D418B /* DistanceJoint.cpp */,
 				A93E6AF210420AC7007D418B /* DistanceJoint.h */,
+				A96F41A21412C91E0067FE9A /* EdgeShape.cpp */,
+				A96F41A31412C91E0067FE9A /* EdgeShape.h */,
 				A986ECAD132CEB9300F048C8 /* Fixture.cpp */,
 				A986ECAE132CEB9B00F048C8 /* Fixture.h */,
 				A9B6432A13BF833900DC3C7E /* FrictionJoint.cpp */,
@@ -1232,6 +1240,8 @@
 				A93E6B5510420ACA007D418B /* wrap_Contact.h */,
 				A93E6B5610420ACA007D418B /* wrap_DistanceJoint.cpp */,
 				A93E6B5710420ACA007D418B /* wrap_DistanceJoint.h */,
+				A96F41A51412C92B0067FE9A /* wrap_EdgeShape.cpp */,
+				A96F41A61412C92B0067FE9A /* wrap_EdgeShape.h */,
 				A9B6432D13BF87E400DC3C7E /* wrap_FrictionJoint.cpp */,
 				A9B6432E13BF87EA00DC3C7E /* wrap_FrictionJoint.h */,
 				A93E6B5810420ACA007D418B /* wrap_GearJoint.cpp */,
@@ -1786,6 +1796,8 @@
 				A96F41861412AFF80067FE9A /* WeldJoint.cpp in Sources */,
 				A96F41891412B36D0067FE9A /* wrap_WheelJoint.cpp in Sources */,
 				A96F418C1412B3AD0067FE9A /* WheelJoint.cpp in Sources */,
+				A96F41A41412C91F0067FE9A /* EdgeShape.cpp in Sources */,
+				A96F41A71412C92B0067FE9A /* wrap_EdgeShape.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

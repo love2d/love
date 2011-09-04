@@ -62,30 +62,27 @@ namespace box2d
 		return new Body(world, b2Vec2(0, 0), 1, 1);
 	}
 
-	CircleShape * Physics::newCircleShape(Body * body, float radius)
+	CircleShape * Physics::newCircleShape(float radius)
 	{
-		return newCircleShape(body, 0, 0, radius);
+		return newCircleShape(0, 0, radius);
 	}
 
-	CircleShape * Physics::newCircleShape(Body * body, float x, float y, float radius)
+	CircleShape * Physics::newCircleShape(float x, float y, float radius)
 	{
-		b2CircleDef def;
-		def.density = 1.0f;
-		def.localPosition.Set(x, y);
-		def.friction = 0.5f;
-		def.restitution = 0.1f;
-		def.radius = radius;
-		return new CircleShape(body, &def);
+		b2CircleShape s;
+		s.m_p = b2Vec2(x, y);
+		s.m_radius = radius;
+		return new CircleShape(&s);
 	}
 
 	PolygonShape * Physics::newRectangleShape(float w, float h)
 	{
-		return newRectangleShape(body, 0, 0, w, h, 0);
+		return newRectangleShape(0, 0, w, h, 0);
 	}
 
 	PolygonShape * Physics::newRectangleShape(float x, float y, float w, float h)
 	{
-		return newRectangleShape(body, x, y, w, h, 0);
+		return newRectangleShape(x, y, w, h, 0);
 	}
 
 	PolygonShape * Physics::newRectangleShape(float x, float y, float w, float h, float angle)
@@ -95,11 +92,11 @@ namespace box2d
 		return new PolygonShape(&s);
 	}
 	
-	PolygonShape * Physics::newEdgeShape(float x1, float y1, float x2, float y2)
+	EdgeShape * Physics::newEdgeShape(float x1, float y1, float x2, float y2)
 	{
-		b2PolygonShape s;
-		s.SetAsEdge(b2vec2(x1, y1), b2vec2(x2, y2));
-		return new PolygonShape(&s);
+		b2EdgeShape s;
+		s.Set(b2Vec2(x1, y1), b2Vec2(x2, y2));
+		return new EdgeShape(&s);
 	}
 
 	int Physics::newPolygonShape(lua_State * L)
@@ -180,6 +177,16 @@ namespace box2d
 	FrictionJoint * Physics::newFrictionJoint(Body * body1, Body * body2, float x, float y)
 	{
 		return new FrictionJoint(body1, body2, x, y);
+	}
+	
+	WeldJoint * Physics::newWeldJoint(Body * body1, Body * body2, float x, float y)
+	{
+		return new WeldJoint(body1, body2, x, y);
+	}
+	
+	WheelJoint * Physics::newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay)
+	{
+		return new WheelJoint(body1, body2, x, y, ax, ay);
 	}
 
 } // box2d
