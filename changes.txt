@@ -49,7 +49,7 @@ LOVE 0.8.0 [Rubber Piggy]
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
   * Renamed Framebuffer to Canvas.
-  * Renamed love.thread.get/set to send/receive.
+  * Renamed love.thread.send/receive to set/get.
 
   * Removed canvas auto-clearing.
   * Removed EncodedImageData.
