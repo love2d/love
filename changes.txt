@@ -9,7 +9,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added color interpolation to ParticleSystem.
   * Added automatic PO2 padding for systems not supporting the OpenGL extension.
   * Added UTF-8 support for fonts.
-  * Added box2d error handling for some commonly failing functions.
+  * Added Box2D error handling for some commonly failing functions.
   * Added ability for fused release games to have their write dir in appdata.
   * Added shear transformation to drawing functions.
   * Added origin to font printing.
@@ -22,14 +22,15 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added stencil masks.
   * Added alternative SpriteBatch provider, it should work everywhere now.
   * Added a loader for binary modules.
-  * Added thread:getKeys().
-  * Added option of fractions for quads.
+  * Added Thread:getKeys.
+  * Added option of fractions for Quads.
+  * Added PNG, JPEG and GIF support to ImageData:encode.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
   * Fixed tracebacks not showing filenames.
   * Fixed love.graphics.push/pop capable of causing overflows/underflows.
-  * Fixed setScissor on framebuffers.
+  * Fixed setScissor on Canvases.
   * Fixed several issues with audio, e.g. clicks and pops in mp3s.
   * Fixed crashes when bodies were destroyed during collisions.
   * Fixed bound SpriteBatches corrupting when drawing.
@@ -37,7 +38,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed memory leaks in audio sources.
   * Fixed thread's set (previously send) accidentally changing the type.
   * Fixed SoundData allocating the wrong number of samples.
-  * Fixed SpriteBatch support on intel cards.
+  * Fixed SpriteBatch support on Intel cards.
   * Fixed love.filesystem.lines() leaking.
   * Fixed Source controls inconsistencies.
   * Fixed most leaking on unclosed File objects.
@@ -47,18 +48,19 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed ordering of loaders, love should have priority over lua.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
-  * Renamed Framebuffer to Canvas
-
-  * Updated love.joystick to be 1-indexed.
-  * Updated love.thread to use get/set instead of send/receive.
-  * Updated font engine.
-  * Updated line drawing to a custom system.
-  * Updated love.timer.sleep to use seconds, like the rest of love.
-  * Updated love.graphics.circle to have max(10, r) as default for segments.
+  * Renamed Framebuffer to Canvas.
+  * Renamed love.thread.get/set to send/receive.
 
   * Removed canvas auto-clearing.
   * Removed EncodedImageData.
   * Removed old syntax for require (with extension).
+
+  * Updated love.joystick to be 1-indexed.
+  * Updated font engine.
+  * Updated line drawing to a custom system.
+  * Updated love.timer.sleep to use seconds, like the rest of love.
+  * Updated love.graphics.circle to have max(10, r) as default for segments.
+  * Updated ImageData:encode to write to files directly.
 
 LOVE 0.7.2 [Game Slave]
 -----------------------
