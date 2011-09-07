@@ -24,6 +24,7 @@
 #include <font/Rasterizer.h>
 
 #include <scripts/graphics.lua.h>
+#include <cassert>
 
 namespace love
 {
@@ -168,6 +169,9 @@ namespace opengl
 
 	static int setStencil(lua_State * L, bool invert)
 	{
+		// stencils require the default fb to work properly
+		Canvas::TemporaryUnbinder unbinder;
+
 		// no argument -> clear mask
 		if (lua_isnoneornil(L, 1)) {
 			instance->discardStencil();
