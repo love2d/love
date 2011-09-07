@@ -80,15 +80,15 @@ namespace opengl
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &strlen);
 			char *error_str = new char[strlen];
 			glGetShaderInfoLog(shader, strlen, NULL, error_str);
-
-			std::stringstream error_message;
-			error_message << "Cannot compile shader:" << std::endl << std::string(error_str);
+			std::string tmp(error_str);
 
 			// cleanup before throw
 			delete[] error_str;
 			glDeleteShader(shader);
 			glDeleteProgram(_program);
-			throw love::Exception(error_message.str().c_str());
+
+			// XXX: errorlog may contain escape sequences.
+			throw love::Exception("Cannot compile shader:\n%s", tmp.c_str());
 		}
 
 		// link fragment shader
@@ -99,13 +99,12 @@ namespace opengl
 		if (GL_FALSE == link_ok) {
 			// this should not happen if compiling is ok, but one can never be too careful
 			// get linker error
-			std::stringstream error_message;
-			error_message << "Cannot compile shader:" << std::endl << getWarnings();
+			std::string tmp(getWarnings());
 
 			// cleanup before throw
 			glDeleteShader(shader);
 			glDeleteProgram(_program);
-			throw love::Exception(error_message.str().c_str());
+			throw love::Exception("Cannot compile shader:\n%s", tmp.c_str());
 		}
 
 		glDeleteShader(shader);
