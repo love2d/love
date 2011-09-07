@@ -1318,9 +1318,26 @@ do
 		return table.concat(lines, "\n")
 	end
 
+	-- helper to transform a matrix from {{a,b,c}, {d,e,f}, ...} to
+	-- {a, b, c, d, e, f, ...}
+	local function flattenMatrices(mat, ...)
+		if not mat then return end
+
+		local ret,l = {}, 1
+		ret.dimension = #mat
+
+		for i = 1,#mat do
+			for k = 1,#mat[i] do
+				ret[l], l = tonumber(mat[i][k]), l+1
+			end
+		end
+
+		return ret, flattenMatrices(...)
+	end
+
 	-- automagic uniform setter
 	local function pixeleffect_dispatch_send(self, name, value, ...)
-		if type(value) == "number" then         -- scalar or vector
+		if type(value) == "number" then         -- scalar
 			self:sendFloat(name, value, ...)
 		elseif type(value) == "userdata" and value:typeOf("Image") then
 			self:sendImage(name, value)
@@ -1328,15 +1345,9 @@ do
 			self:sendCanvas(name, value)
 		elseif type(value) == "table" then      -- vector or matrix
 			if type(value[1]) == "number" then
-				self:sendFloat(name, unpack(value))
+				self:sendFloat(name, value, ...)
 			elseif type(value[1]) == "table" then
-				local m,l = {}, 0
-				for i = 1,#value do
-					for k = 1,#value[i] do
-						m[l], l = tonumber(value[i][k]), l+1
-					end
-				end
-				self:sendMatrix(name, #value, unpack(m))
+				self:sendMatrix(name, flattenMatrices(value, ...))
 			else
 				error("Cannot send value (unsupported type: {"..type(value[1]).."}).")
 			end

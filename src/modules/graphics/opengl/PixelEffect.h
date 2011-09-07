@@ -28,8 +28,8 @@ namespace opengl
 		static void detach();
 		static bool isSupported();
 
-		void sendFloat(const std::string& name, int count, const GLfloat* vec);
-		void sendMatrix(const std::string& name, int size, const GLfloat* m);
+		void sendFloat(const std::string& name, int size, const GLfloat* vec, int count);
+		void sendMatrix(const std::string& name, int size, const GLfloat* m, int count);
 		void sendImage(const std::string& name, const Image& image);
 		void sendCanvas(const std::string& name, const Canvas& canvas);
 

@@ -2,7 +2,6 @@
 #include "GLee.h"
 #include <limits>
 #include <sstream>
-#include <iostream>
 
 namespace
 {
@@ -148,28 +147,28 @@ namespace opengl
 		glUseProgram(0);
 	}
 
-	void PixelEffect::sendFloat(const std::string& name, int count, const GLfloat* vec)
+	void PixelEffect::sendFloat(const std::string& name, int size, const GLfloat* vec, int count)
 	{
 		TemporaryAttacher attacher(this);
 		GLint location = getUniformLocation(name);
 
-		if (count < 1 || count > 4) {
-			throw love::Exception("Invalid variable count: %d (expected 1-4).", count);
+		if (size < 1 || size > 4) {
+			throw love::Exception("Invalid variable size: %d (expected 1-4).", size);
 		}
 
-		switch (count) {
+		switch (size) {
 			case 4:
-				glUniform4fv(location, 1, vec);
+				glUniform4fv(location, count, vec);
 				break;
 			case 3:
-				glUniform3fv(location, 1, vec);
+				glUniform3fv(location, count, vec);
 				break;
 			case 2:
-				glUniform2fv(location, 1, vec);
+				glUniform2fv(location, count, vec);
 				break;
 			case 1:
 			default:
-				glUniform1fv(location, 1, vec);
+				glUniform1fv(location, count, vec);
 				break;
 		}
 
@@ -177,7 +176,7 @@ namespace opengl
 		checkSetUniformError();
 	}
 
-	void PixelEffect::sendMatrix(const std::string& name, int size, const GLfloat* m)
+	void PixelEffect::sendMatrix(const std::string& name, int size, const GLfloat* m, int count)
 	{
 		TemporaryAttacher attacher(this);
 		GLint location = getUniformLocation(name);
@@ -189,14 +188,14 @@ namespace opengl
 
 		switch (size) {
 			case 4:
-				glUniformMatrix4fv(location, 1, GL_FALSE, m);
+				glUniformMatrix4fv(location, count, GL_FALSE, m);
 				break;
 			case 3:
-				glUniformMatrix3fv(location, 1, GL_FALSE, m);
+				glUniformMatrix3fv(location, count, GL_FALSE, m);
 				break;
 			case 2:
 			default:
-				glUniformMatrix2fv(location, 1, GL_FALSE, m);
+				glUniformMatrix2fv(location, count, GL_FALSE, m);
 				break;
 		}
 
@@ -257,9 +256,9 @@ namespace opengl
 		if (GL_INVALID_OPERATION == error_code) {
 			throw love::Exception(
 				"Invalid operation:\n"
-				"Trying to send more than one value to a float variable, or"
-				"Size of shader variable does not match indicated size, or"
-				"Invalid variable name.");
+				"- Trying to send the wrong value type to shader variable, or\n"
+				"- Trying to send array values with wrong dimension, or\n"
+				"- Invalid variable name.");
 		}
 	}
 } // opengl
