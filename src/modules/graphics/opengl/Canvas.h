@@ -77,7 +77,7 @@ namespace opengl
 		GLsizei width;
 		GLsizei height;
 		GLuint fbo;
-		GLuint depthbuffer;
+		GLuint stencilbuffer;
 		GLuint img;
 
 		vertex vertices[4];

@@ -14,39 +14,44 @@ namespace opengl
 	// strategy for fbo creation, interchangable at runtime:
 	// none, opengl >= 3.0, extensions
 	struct FramebufferStrategy {
-		/// create a new framebuffer, depthbuffer and texture
+		/// create a new framebuffer, stencilbuffer and texture
 		/**
-		 * @param[out] framebuffer Framebuffer name
-		 * @param[out] depthbuffer Depthbuffer name
-		 * @param[out] img         Texture name
-		 * @param[in]  width       Width of framebuffer
-		 * @param[in]  height      Height of framebuffer
+		 * @param[out] framebuffer   Framebuffer name
+		 * @param[out] stencilbuffer Stencilbuffer name
+		 * @param[out] img           Texture name
+		 * @param[in]  width         Width of framebuffer
+		 * @param[in]  height        Height of framebuffer
 		 * @return Creation status
 		 */
 		virtual GLenum createFBO(GLuint&, GLuint&, GLuint&, int, int)
 		{ return GL_FRAMEBUFFER_UNSUPPORTED; }
 		/// remove objects
 		/**
-		 * @param[in] framebuffer Framebuffer name
-		 * @param[in] depthbuffer Depthbuffer name
-		 * @param[in] img         Texture name
+		 * @param[in] framebuffer   Framebuffer name
+		 * @param[in] stencilbuffer Stencilbuffer name
+		 * @param[in] img           Texture name
 		 */
 		virtual void deleteFBO(GLuint, GLuint, GLuint) {}
 		virtual void bindFBO(GLuint) {}
 	};
 
 	struct FramebufferStrategyGL3 : public FramebufferStrategy {
-		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depthbuffer, GLuint& img, int width, int height)
+		virtual GLenum createFBO(GLuint& framebuffer, GLuint& stencilbuffer,  GLuint& img, int width, int height)
 		{
 			// get currently bound fbo to reset to it later
 			GLint current_fbo;
 			glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
 
-			// generate depth buffer
-			glGenRenderbuffers(1, &depthbuffer);
-			glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+			// create framebuffer
+			glGenFramebuffers(1, &framebuffer);
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+			// create stencil buffer
+			glGenRenderbuffers(1, &stencilbuffer);
+			glBindRenderbuffer(GL_RENDERBUFFER, stencilbuffer);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX, width, height);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+					GL_RENDERBUFFER, stencilbuffer);
 
 			// generate texture save target
 			glGenTextures(1, &img);
@@ -56,24 +61,21 @@ namespace opengl
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
 					0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 			glBindTexture(GL_TEXTURE_2D, 0);
-
-			// create framebuffer
-			glGenFramebuffers(1, &framebuffer);
-			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 					GL_TEXTURE_2D, img, 0);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-					GL_RENDERBUFFER, depthbuffer);
+
+			// check status
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 			// unbind framebuffer
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
 			glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)current_fbo);
 			return status;
 		}
-		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img)
+		virtual void deleteFBO(GLuint framebuffer, GLuint stencilbuffer,  GLuint img)
 		{
 			glDeleteTextures(1, &img);
-			glDeleteRenderbuffers(1, &depthbuffer);
+			glDeleteRenderbuffers(1, &stencilbuffer);
 			glDeleteFramebuffers(1, &framebuffer);
 		}
 
@@ -85,16 +87,21 @@ namespace opengl
 
 	struct FramebufferStrategyEXT : public FramebufferStrategy {
 
-		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depthbuffer, GLuint& img, int width, int height)
+		virtual GLenum createFBO(GLuint& framebuffer, GLuint& stencilbuffer, GLuint& img, int width, int height)
 		{
 			GLint current_fbo;
 			glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &current_fbo);
 
-			// generate depth buffer
-			glGenRenderbuffersEXT(1, &depthbuffer);
-			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
-			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, width, height);
-			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+			// create framebuffer
+			glGenFramebuffersEXT(1, &framebuffer);
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+
+			// create stencil buffer
+			glGenRenderbuffersEXT(1, &stencilbuffer);
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencilbuffer);
+			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX, width, height);
+			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+					GL_RENDERBUFFER_EXT, stencilbuffer);
 
 			// generate texture save target
 			glGenTextures(1, &img);
@@ -104,25 +111,22 @@ namespace opengl
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
 					0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 			glBindTexture(GL_TEXTURE_2D, 0);
-
-			// create framebuffer
-			glGenFramebuffersEXT(1, &framebuffer);
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
 					GL_TEXTURE_2D, img, 0);
-			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-					GL_RENDERBUFFER_EXT, depthbuffer);
+
+			// check status
 			GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 
 			// unbind framebuffer
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint)current_fbo);
 			return status;
 		}
 
-		virtual void deleteFBO(GLuint framebuffer, GLuint depthbuffer, GLuint img)
+		virtual void deleteFBO(GLuint framebuffer, GLuint stencilbuffer, GLuint img)
 		{
 			glDeleteTextures(1, &img);
-			glDeleteRenderbuffersEXT(1, &depthbuffer);
+			glDeleteRenderbuffersEXT(1, &stencilbuffer);
 			glDeleteFramebuffersEXT(1, &framebuffer);
 		}
 
@@ -213,9 +217,8 @@ namespace opengl
 			current->stopGrab();
 
 		// bind buffer and clear screen
-		glPushAttrib(GL_VIEWPORT_BIT | GL_DEPTH_BUFFER_BIT | GL_TRANSFORM_BIT);
+		glPushAttrib(GL_VIEWPORT_BIT | GL_TRANSFORM_BIT);
 		strategy->bindFBO(fbo);
-		glClear(GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, width, height);
 		
 		// Reset the projection matrix
@@ -366,7 +369,7 @@ namespace opengl
 
 	bool Canvas::loadVolatile()
 	{
-		status = strategy->createFBO(fbo, depthbuffer, img, width, height);
+		status = strategy->createFBO(fbo, stencilbuffer, img, width, height);
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 			return false;
 
@@ -382,7 +385,7 @@ namespace opengl
 	{
 		settings.filter = getFilter();
 		settings.wrap   = getWrap();
-		strategy->deleteFBO(fbo, depthbuffer, img);
+		strategy->deleteFBO(fbo, stencilbuffer, img);
 	}
 
 	int Canvas::getWidth()
