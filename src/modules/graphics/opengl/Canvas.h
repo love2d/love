@@ -49,27 +49,6 @@ namespace opengl
 		bool loadVolatile();
 		void unloadVolatile();
 
-		/// Unbind the current canvas on construction and rebind it upon destruction.
-		// Exception safe temporary unbinding/rebinding for techniques that require
-		// the default canvas to work (e.g. stencils).
-		// XXX: If a canvas is switched between creating and destroying an unbinder
-		//      object, the canvas will not be switched back.
-		struct TemporaryUnbinder
-		{
-			Canvas * canvas;
-			inline TemporaryUnbinder() : canvas(Canvas::current)
-			{
-				if (NULL != canvas)
-					Canvas::bindDefaultCanvas();
-			}
-
-			inline ~TemporaryUnbinder()
-			{
-				if (NULL != canvas && NULL == Canvas::current)
-					canvas->startGrab();
-			}
-		};
-
 	private:
 		friend class PixelEffect;
 		GLuint getTextureName() const { return img; }
@@ -77,7 +56,7 @@ namespace opengl
 		GLsizei width;
 		GLsizei height;
 		GLuint fbo;
-		GLuint stencilbuffer;
+		GLuint depth_stencil;
 		GLuint img;
 
 		vertex vertices[4];

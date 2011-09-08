@@ -14,10 +14,10 @@ namespace opengl
 	// strategy for fbo creation, interchangable at runtime:
 	// none, opengl >= 3.0, extensions
 	struct FramebufferStrategy {
-		/// create a new framebuffer, stencilbuffer and texture
+		/// create a new framebuffer, depth_stencil and texture
 		/**
 		 * @param[out] framebuffer   Framebuffer name
-		 * @param[out] stencilbuffer Stencilbuffer name
+		 * @param[out] depth_stencil Name for packed depth and stencil buffer
 		 * @param[out] img           Texture name
 		 * @param[in]  width         Width of framebuffer
 		 * @param[in]  height        Height of framebuffer
@@ -28,7 +28,7 @@ namespace opengl
 		/// remove objects
 		/**
 		 * @param[in] framebuffer   Framebuffer name
-		 * @param[in] stencilbuffer Stencilbuffer name
+		 * @param[in] depth_stencil Name for packed depth and stencil buffer
 		 * @param[in] img           Texture name
 		 */
 		virtual void deleteFBO(GLuint, GLuint, GLuint) {}
@@ -36,7 +36,7 @@ namespace opengl
 	};
 
 	struct FramebufferStrategyGL3 : public FramebufferStrategy {
-		virtual GLenum createFBO(GLuint& framebuffer, GLuint& stencilbuffer,  GLuint& img, int width, int height)
+		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depth_stencil,  GLuint& img, int width, int height)
 		{
 			// get currently bound fbo to reset to it later
 			GLint current_fbo;
@@ -47,11 +47,13 @@ namespace opengl
 			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
 			// create stencil buffer
-			glGenRenderbuffers(1, &stencilbuffer);
-			glBindRenderbuffer(GL_RENDERBUFFER, stencilbuffer);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX, width, height);
+			glGenRenderbuffers(1, &depth_stencil);
+			glBindRenderbuffer(GL_RENDERBUFFER, depth_stencil);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-					GL_RENDERBUFFER, stencilbuffer);
+					GL_RENDERBUFFER, depth_stencil);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+					GL_RENDERBUFFER, depth_stencil);
 
 			// generate texture save target
 			glGenTextures(1, &img);
@@ -72,10 +74,10 @@ namespace opengl
 			glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)current_fbo);
 			return status;
 		}
-		virtual void deleteFBO(GLuint framebuffer, GLuint stencilbuffer,  GLuint img)
+		virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil,  GLuint img)
 		{
 			glDeleteTextures(1, &img);
-			glDeleteRenderbuffers(1, &stencilbuffer);
+			glDeleteRenderbuffers(1, &depth_stencil);
 			glDeleteFramebuffers(1, &framebuffer);
 		}
 
@@ -87,7 +89,7 @@ namespace opengl
 
 	struct FramebufferStrategyEXT : public FramebufferStrategy {
 
-		virtual GLenum createFBO(GLuint& framebuffer, GLuint& stencilbuffer, GLuint& img, int width, int height)
+		virtual GLenum createFBO(GLuint& framebuffer, GLuint& depth_stencil, GLuint& img, int width, int height)
 		{
 			GLint current_fbo;
 			glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &current_fbo);
@@ -97,11 +99,13 @@ namespace opengl
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
 
 			// create stencil buffer
-			glGenRenderbuffersEXT(1, &stencilbuffer);
-			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencilbuffer);
-			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX, width, height);
+			glGenRenderbuffersEXT(1, &depth_stencil);
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil);
+			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, width, height);
 			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-					GL_RENDERBUFFER_EXT, stencilbuffer);
+					GL_RENDERBUFFER_EXT, depth_stencil);
+			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+					GL_RENDERBUFFER_EXT, depth_stencil);
 
 			// generate texture save target
 			glGenTextures(1, &img);
@@ -123,10 +127,10 @@ namespace opengl
 			return status;
 		}
 
-		virtual void deleteFBO(GLuint framebuffer, GLuint stencilbuffer, GLuint img)
+		virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil, GLuint img)
 		{
 			glDeleteTextures(1, &img);
-			glDeleteRenderbuffersEXT(1, &stencilbuffer);
+			glDeleteRenderbuffersEXT(1, &depth_stencil);
 			glDeleteFramebuffersEXT(1, &framebuffer);
 		}
 
@@ -145,6 +149,18 @@ namespace opengl
 	FramebufferStrategyEXT strategyEXT;
 	
 	Canvas* Canvas::current = NULL;
+
+	static void loadStrategy()
+	{
+		if (!strategy) {
+			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+				strategy = &strategyGL3;
+			else if (GLEE_EXT_framebuffer_object && GLEE_EXT_packed_depth_stencil)
+				strategy = &strategyEXT;
+			else
+				strategy = &strategyNone;
+		}
+	}
 
 	Canvas::Canvas(int width, int height) :
 		width(width), height(height)
@@ -166,14 +182,7 @@ namespace opengl
 		vertices[2].s = 1;     vertices[2].t = 0;
 		vertices[3].s = 1;     vertices[3].t = 1;
 
-		if (!strategy) {
-			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
-				strategy = &strategyGL3;
-			else if (GLEE_EXT_framebuffer_object)
-				strategy = &strategyEXT;
-			else
-				strategy = &strategyNone;
-		}
+		loadStrategy();
 
 		loadVolatile();
 	}
@@ -189,14 +198,7 @@ namespace opengl
 
 	bool Canvas::isSupported()
 	{
-		if (!strategy) {
-			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
-				strategy = &strategyGL3;
-			else if (GLEE_EXT_framebuffer_object)
-				strategy = &strategyEXT;
-			else
-				strategy = &strategyNone;
-		}
+		loadStrategy();
 		return (strategy != &strategyNone);
 	}
 
@@ -260,7 +262,7 @@ namespace opengl
 		strategy->bindFBO(fbo);
 		glPushAttrib(GL_COLOR_BUFFER_BIT);
 		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glPopAttrib();
 
 		strategy->bindFBO(previous);
@@ -369,7 +371,7 @@ namespace opengl
 
 	bool Canvas::loadVolatile()
 	{
-		status = strategy->createFBO(fbo, stencilbuffer, img, width, height);
+		status = strategy->createFBO(fbo, depth_stencil, img, width, height);
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 			return false;
 
@@ -385,7 +387,7 @@ namespace opengl
 	{
 		settings.filter = getFilter();
 		settings.wrap   = getWrap();
-		strategy->deleteFBO(fbo, stencilbuffer, img);
+		strategy->deleteFBO(fbo, depth_stencil, img);
 	}
 
 	int Canvas::getWidth()
