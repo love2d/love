@@ -174,7 +174,7 @@ namespace opengl
 				dx += glyph->spacing;
 			}
 		}
-		catch (utf8::invalid_utf8 e)
+		catch (utf8::exception e)
 		{
 			glPopMatrix();
 			throw love::Exception(e.what());
@@ -210,7 +210,7 @@ namespace opengl
 				temp += static_cast<int>(g->spacing * mSpacing);
 			}
 		}
-		catch (utf8::invalid_utf8 e)
+		catch (utf8::exception e)
 		{
 			throw love::Exception(e.what());
 		}
