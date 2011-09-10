@@ -86,18 +86,14 @@ namespace openal
 
 		while(i != playing.end())
 		{
-			if(i->first->isStopped())
+			if(!i->first->update())
 			{
 				i->first->stopAtomic();
 				i->first->release();
 				available.push(i->second);
-				playing.erase(i++);
+				playing.erase(i);
 			}
-			else
-			{
-				i->first->update();
-				i++;
-			}
+			i++;
 		}
 	}
 
@@ -219,9 +215,7 @@ namespace openal
 	void Pool::rewind(Source * source)
 	{
 		thread::Lock lock(mutex);
-		ALuint out;
-		if(findSource(source, out))
-			source->rewindAtomic();
+		source->rewindAtomic();
 	}
 
 	void Pool::release(Source * source)

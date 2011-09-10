@@ -77,8 +77,9 @@ namespace null
 		return true;
 	}
 
-	void Source::update()
+	bool Source::update()
 	{
+		return false;
 	}
 
 	void Source::setPitch(float pitch)

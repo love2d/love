@@ -143,49 +143,67 @@ namespace openal
 		return type == TYPE_STATIC ? isStopped() : isStopped() && !isLooping() && decoder->isFinished();
 	}
 
-	void Source::update()
+	bool Source::update()
 	{
-		if(valid && type == TYPE_STATIC)
+		if (!valid)
+			return false;
+		if (type == TYPE_STATIC)
 		{
 			// Looping mode could have changed.
 			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
+			return !isStopped();
 		}
-		else if(valid && type == TYPE_STREAM && !(!isLooping() && isFinished()))
+		else if (type == TYPE_STREAM)
 		{
-			// Number of processed buffers.
-			ALint processed;
-
-			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
-
-			while(processed--)
+			if (isLooping() || !isFinished())
 			{
-				ALuint buffer;
-				
-				float curOffsetSamples, curOffsetSecs;
-				
-				alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
-				
-				ALint b;
-				alGetSourcei(source, AL_BUFFER, &b);
-				int freq;
-				alGetBufferi(b, AL_FREQUENCY, &freq);
-				curOffsetSecs = curOffsetSamples / freq;
-				
-				// Get a free buffer.
-				alSourceUnqueueBuffers(source, 1, &buffer);
-				
-				float newOffsetSamples, newOffsetSecs;
-				
-				alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
-				newOffsetSecs = newOffsetSamples / freq;
-				
-				offsetSamples += (curOffsetSamples - newOffsetSamples);
-				offsetSeconds += (curOffsetSecs - newOffsetSecs);
-				
-				streamAtomic(buffer, decoder);
-				alSourceQueueBuffers(source, 1, &buffer);
+				// Number of processed buffers.
+				ALint processed;
+
+				alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+
+				while(processed--)
+				{
+					ALuint buffer;
+
+					float curOffsetSamples, curOffsetSecs;
+
+					alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
+
+					ALint b;
+					alGetSourcei(source, AL_BUFFER, &b);
+					int freq;
+					alGetBufferi(b, AL_FREQUENCY, &freq);
+					curOffsetSecs = curOffsetSamples / freq;
+
+					// Get a free buffer.
+					alSourceUnqueueBuffers(source, 1, &buffer);
+
+					float newOffsetSamples, newOffsetSecs;
+
+					alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
+					newOffsetSecs = newOffsetSamples / freq;
+
+					offsetSamples += (curOffsetSamples - newOffsetSamples);
+					offsetSeconds += (curOffsetSecs - newOffsetSecs);
+
+					streamAtomic(buffer, decoder);
+					alSourceQueueBuffers(source, 1, &buffer);
+				}
+				return true;
+			}
+			else
+			{
+				// Actually stop the source,
+				// 'just running out' is bad
+				// practice, and prevents
+				// rewinds.
+				stopAtomic();
+				rewindAtomic();
+				return false;
 			}
 		}
+		return false;
 	}
 
 	void Source::setPitch(float pitch)

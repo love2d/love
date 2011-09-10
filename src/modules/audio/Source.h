@@ -64,7 +64,7 @@ namespace audio
 		virtual bool isStopped() const = 0;
 		virtual bool isPaused() const = 0;
 		virtual bool isFinished() const = 0;
-		virtual void update() = 0;
+		virtual bool update() = 0;
 
 		virtual void setPitch(float pitch) = 0;
 		virtual float getPitch() const = 0;
