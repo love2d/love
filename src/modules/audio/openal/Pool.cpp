@@ -89,6 +89,7 @@ namespace openal
 			if(!i->first->update())
 			{
 				i->first->stopAtomic();
+				i->first->rewindAtomic();
 				i->first->release();
 				available.push(i->second);
 				playing.erase(i);

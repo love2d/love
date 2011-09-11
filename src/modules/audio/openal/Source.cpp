@@ -153,55 +153,42 @@ namespace openal
 			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 			return !isStopped();
 		}
-		else if (type == TYPE_STREAM)
+		else if (type == TYPE_STREAM && (isLooping() || !isFinished()))
 		{
-			if (isLooping() || !isFinished())
+			// Number of processed buffers.
+			ALint processed;
+
+			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+
+			while(processed--)
 			{
-				// Number of processed buffers.
-				ALint processed;
+				ALuint buffer;
 
-				alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+				float curOffsetSamples, curOffsetSecs;
 
-				while(processed--)
-				{
-					ALuint buffer;
+				alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
 
-					float curOffsetSamples, curOffsetSecs;
+				ALint b;
+				alGetSourcei(source, AL_BUFFER, &b);
+				int freq;
+				alGetBufferi(b, AL_FREQUENCY, &freq);
+				curOffsetSecs = curOffsetSamples / freq;
 
-					alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
+				// Get a free buffer.
+				alSourceUnqueueBuffers(source, 1, &buffer);
 
-					ALint b;
-					alGetSourcei(source, AL_BUFFER, &b);
-					int freq;
-					alGetBufferi(b, AL_FREQUENCY, &freq);
-					curOffsetSecs = curOffsetSamples / freq;
+				float newOffsetSamples, newOffsetSecs;
 
-					// Get a free buffer.
-					alSourceUnqueueBuffers(source, 1, &buffer);
+				alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
+				newOffsetSecs = newOffsetSamples / freq;
 
-					float newOffsetSamples, newOffsetSecs;
+				offsetSamples += (curOffsetSamples - newOffsetSamples);
+				offsetSeconds += (curOffsetSecs - newOffsetSecs);
 
-					alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
-					newOffsetSecs = newOffsetSamples / freq;
-
-					offsetSamples += (curOffsetSamples - newOffsetSamples);
-					offsetSeconds += (curOffsetSecs - newOffsetSecs);
-
-					streamAtomic(buffer, decoder);
-					alSourceQueueBuffers(source, 1, &buffer);
-				}
-				return true;
+				streamAtomic(buffer, decoder);
+				alSourceQueueBuffers(source, 1, &buffer);
 			}
-			else
-			{
-				// Actually stop the source,
-				// 'just running out' is bad
-				// practice, and prevents
-				// rewinds.
-				stopAtomic();
-				rewindAtomic();
-				return false;
-			}
+			return true;
 		}
 		return false;
 	}
