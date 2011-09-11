@@ -174,6 +174,16 @@ namespace opengl
 				dx += glyph->spacing;
 			}
 		}
+		catch (utf8::invalid_code_point e)
+		{
+			glPopMatrix();
+			throw love::Exception(e.what());
+		}
+		catch (utf8::invalid_utf8 e)
+		{
+			glPopMatrix();
+			throw love::Exception(e.what());
+		}
 		catch (utf8::exception e)
 		{
 			glPopMatrix();
@@ -209,6 +219,16 @@ namespace opengl
 				if (!g) g = addGlyph(c);
 				temp += static_cast<int>(g->spacing * mSpacing);
 			}
+		}
+		catch (utf8::invalid_code_point e)
+		{
+			glPopMatrix();
+			throw love::Exception(e.what());
+		}
+		catch (utf8::invalid_utf8 e)
+		{
+			glPopMatrix();
+			throw love::Exception(e.what());
 		}
 		catch (utf8::exception e)
 		{
