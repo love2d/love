@@ -30,6 +30,11 @@ namespace love
 		va_end(args);
 	}
 
+	Exception::Exception(int unparsed, const char * str)
+	{
+		strncpy(buffer, str, BUFFER_SIZE);
+	}
+
 	const char * Exception::what() const throw()
 	{
 		return (const char *)buffer;

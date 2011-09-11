@@ -24,6 +24,7 @@
 #include <exception>
 #include <cstdarg> // vararg
 #include <cstdio> // vsnprintf
+#include <cstring> // strncpy
 
 namespace love
 {
@@ -54,6 +55,7 @@ namespace love
 		* @param fmt The format string (see printf).
 		**/
 		Exception(const char * fmt, ...);
+		Exception(int unparsed, const char * str);
 
 		/**
 		* Returns a string containing reason for the exception.

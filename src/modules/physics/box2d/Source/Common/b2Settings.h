@@ -25,7 +25,7 @@
 
 #define B2_NOT_USED(x) x
 //#define b2Assert(A) assert(A)
-#define b2Assert(A) {if(!(A)) throw love::Exception(#A);}
+#define b2Assert(A) {if(!(A)) throw love::Exception(1, #A);}
 
 
 // need to include NDS jtypes.h instead of
