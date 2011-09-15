@@ -193,6 +193,70 @@ namespace box2d
 	{
 		return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
 	}
+	
+	
+	
+	void Physics::setMeter(int meter)
+	{
+		Physics::meter = meter;
+	}
+	
+	int Physics::getMeter()
+	{
+		return meter;
+	}
+	
+	void Physics::scaleDown(float & x, float & y)
+	{
+		x /= (float)meter;
+		y /= (float)meter;
+	}
+	
+	void Physics::scaleUp(float & x, float & y)
+	{
+		x *= (float)meter;
+		y *= (float)meter;
+	}
+	
+	float Physics::scaleDown(float f)
+	{
+		return f/(float)meter;
+	}
+	
+	float Physics::scaleUp(float f)
+	{
+		return f*(float)meter;
+	}
+	
+	b2Vec2 Physics::scaleDown(const b2Vec2 & v)
+	{
+		b2Vec2 t = v;
+		scaleDown(t.x, t.y);
+		return t;
+	}
+	
+	b2Vec2 Physics::scaleUp(const b2Vec2 & v)
+	{
+		b2Vec2 t = v;
+		scaleUp(t.x, t.y);
+		return t;
+	}
+	
+	b2AABB Physics::scaleDown(const b2AABB & aabb)
+	{
+		b2AABB t;
+		t.lowerBound = scaleDown(aabb.lowerBound);
+		t.upperBound = scaleDown(aabb.upperBound);
+		return t;
+	}
+	
+	b2AABB Physics::scaleUp(const b2AABB & aabb)
+	{
+		b2AABB t;
+		t.lowerBound = scaleUp(aabb.lowerBound);
+		t.upperBound = scaleUp(aabb.upperBound);
+		return t;
+	}
 
 } // box2d
 } // physics

@@ -98,21 +98,6 @@ namespace box2d
 		lua_pushinteger(L, t->getJointCount());
 		return 1;
 	}
-	
-	int w_World_setMeter(lua_State * L)
-	{
-		World * t = luax_checkworld(L, 1);
-		int arg1 = luaL_checkint(L, 2);
-		t->setMeter(arg1);
-		return 0;
-		
-	}
-	int w_World_getMeter(lua_State * L)
-	{
-		World * t = luax_checkworld(L, 1);
-		lua_pushinteger(L, t->getMeter());
-		return 1;
-	}
 
 	static const luaL_Reg functions[] = {
 		{ "update", w_World_update },
@@ -124,8 +109,6 @@ namespace box2d
 		{ "isAllowSleep", w_World_isAllowSleep },
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
-		{ "setMeter", w_World_setMeter },
-		{ "getMeter", w_World_getMeter },
 		{ 0, 0 }
 	};
 

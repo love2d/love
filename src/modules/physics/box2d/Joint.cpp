@@ -26,6 +26,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -87,10 +88,10 @@ namespace box2d
 
 	int Joint::getAnchors(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchorA().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchorA().y));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchorB().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchorB().y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorA().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorA().y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorB().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorB().y));
 		return 4;
 	}
 

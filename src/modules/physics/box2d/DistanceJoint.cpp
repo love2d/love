@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -34,7 +35,7 @@ namespace box2d
 		: Joint(body1, body2), joint(NULL)
 	{
 		b2DistanceJointDef def;
-		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x1,y1)), world->scaleDown(b2Vec2(x2,y2)));
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x1,y1)), Physics::scaleDown(b2Vec2(x2,y2)));
 		def.collideConnected = collideConnected;
 		joint = (b2DistanceJoint*)createJoint(&def);
 	}
@@ -47,12 +48,12 @@ namespace box2d
 
 	void DistanceJoint::setLength(float length)
 	{
-		joint->SetLength(world->scaleDown(length));
+		joint->SetLength(Physics::scaleDown(length));
 	}
 
 	float DistanceJoint::getLength() const
 	{
-		return world->scaleUp(joint->GetLength());
+		return Physics::scaleUp(joint->GetLength());
 	}
 
 	void DistanceJoint::setFrequency(float hz)

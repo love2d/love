@@ -23,6 +23,7 @@
 #include <common/math.h>
 
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -35,7 +36,7 @@ namespace box2d
 	{
 		world->retain();
 		b2BodyDef def;
-		def.position = world->scaleDown(p);
+		def.position = Physics::scaleDown(p);
 		def.massData.mass = m;
 		def.massData.I = i;
 		body = world->world->CreateBody(&def);
@@ -50,24 +51,24 @@ namespace box2d
 
 	float Body::getX()
 	{
-		return world->scaleUp(body->GetPosition().x);
+		return Physics::scaleUp(body->GetPosition().x);
 	}
 
 	float Body::getY()
 	{
-		return world->scaleUp(body->GetPosition().y);
+		return Physics::scaleUp(body->GetPosition().y);
 	}
 
 	void Body::getPosition(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetPosition());
+		b2Vec2 v = Physics::scaleUp(body->GetPosition());
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLinearVelocity(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLinearVelocity());
+		b2Vec2 v = Physics::scaleUp(body->GetLinearVelocity());
 		x_o = v.x;
 		y_o = v.y;
 	}
@@ -79,14 +80,14 @@ namespace box2d
 
 	void Body::getWorldCenter(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetWorldCenter());
+		b2Vec2 v = Physics::scaleUp(body->GetWorldCenter());
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLocalCenter(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLocalCenter());
+		b2Vec2 v = Physics::scaleUp(body->GetLocalCenter());
 		x_o = v.x;
 		y_o = v.y;
 	}
@@ -123,7 +124,7 @@ namespace box2d
 
 	void Body::applyImpulse(float jx, float jy, float rx, float ry)
 	{
-		body->ApplyImpulse(b2Vec2(jx, jy), world->scaleDown(b2Vec2(rx, ry)));
+		body->ApplyImpulse(b2Vec2(jx, jy), Physics::scaleDown(b2Vec2(rx, ry)));
 	}
 
 	void Body::applyTorque(float t)
@@ -133,7 +134,7 @@ namespace box2d
 
 	void Body::applyForce(float fx, float fy, float rx, float ry)
 	{
-		body->ApplyForce(b2Vec2(fx, fy), world->scaleDown(b2Vec2(rx, ry)));
+		body->ApplyForce(b2Vec2(fx, fy), Physics::scaleDown(b2Vec2(rx, ry)));
 	}
 
 	void Body::applyForce(float fx, float fy)
@@ -143,17 +144,17 @@ namespace box2d
 
 	void Body::setX(float x)
 	{
-		body->SetXForm(world->scaleDown(b2Vec2(x, getY())), getAngle());
+		body->SetXForm(Physics::scaleDown(b2Vec2(x, getY())), getAngle());
 	}
 
 	void Body::setY(float y)
 	{
-		body->SetXForm(world->scaleDown(b2Vec2(getX(), y)), getAngle());
+		body->SetXForm(Physics::scaleDown(b2Vec2(getX(), y)), getAngle());
 	}
 
 	void Body::setLinearVelocity(float x, float y)
 	{
-		body->SetLinearVelocity(world->scaleDown(b2Vec2(x, y)));
+		body->SetLinearVelocity(Physics::scaleDown(b2Vec2(x, y)));
 	}
 
 	void Body::setAngle(float d)
@@ -168,7 +169,7 @@ namespace box2d
 
 	void Body::setPosition(float x, float y)
 	{
-		body->SetXForm(world->scaleDown(b2Vec2(x, y)), body->GetAngle());
+		body->SetXForm(Physics::scaleDown(b2Vec2(x, y)), body->GetAngle());
 	}
 
 	void Body::setAngularDamping(float d)
@@ -189,7 +190,7 @@ namespace box2d
 	void Body::setMass(float x, float y, float m, float i)
 	{
 		b2MassData massData;
-		massData.center = world->scaleDown(b2Vec2(x, y));
+		massData.center = Physics::scaleDown(b2Vec2(x, y));
 		massData.mass = m;
 		massData.I = i;
 		body->SetMass(&massData);
@@ -206,42 +207,42 @@ namespace box2d
 
 	void Body::getWorldPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetWorldPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetWorldPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getWorldVector(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetWorldVector(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetWorldVector(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLocalPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLocalPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLocalPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLocalVector(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLocalVector(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLocalVector(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLinearVelocityFromWorldPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLinearVelocityFromWorldPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLinearVelocityFromWorldPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLinearVelocityFromLocalPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLinearVelocityFromLocalPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLinearVelocityFromLocalPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}

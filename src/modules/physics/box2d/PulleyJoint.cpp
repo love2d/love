@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -34,8 +35,8 @@ namespace box2d
 		: Joint(body1, body2), joint(NULL)
 	{
 		b2PulleyJointDef def;
-		def.Initialize(body1->body, body2->body, world->scaleDown(groundAnchor1), world->scaleDown(groundAnchor2), \
-			 world->scaleDown(anchor1), world->scaleDown(anchor2), ratio);
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(groundAnchor1), Physics::scaleDown(groundAnchor2), \
+			 Physics::scaleDown(anchor1), Physics::scaleDown(anchor2), ratio);
 		def.collideConnected = collideConnected;
 		
 		joint = (b2PulleyJoint*)createJoint(&def);
@@ -49,21 +50,21 @@ namespace box2d
 
 	int PulleyJoint::getGroundAnchors(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorA().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorA().y));
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorB().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetGroundAnchorB().y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetGroundAnchorA().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetGroundAnchorA().y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetGroundAnchorB().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetGroundAnchorB().y));
 		return 4;
 	}
 	
 	float PulleyJoint::getLength1() const
 	{
-		return world->scaleUp(joint->GetLength1());
+		return Physics::scaleUp(joint->GetLength1());
 	}
 		
 	float PulleyJoint::getLength2() const
 	{
-		return world->scaleUp(joint->GetLength2());
+		return Physics::scaleUp(joint->GetLength2());
 	}
 	
 	float PulleyJoint::getRatio() const

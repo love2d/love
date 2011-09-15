@@ -25,6 +25,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -36,7 +37,7 @@ namespace box2d
 		: Joint(body1, body2), joint(NULL)
 	{	
 		b2FrictionJointDef def;
-		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x,y)));
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x,y)));
 		def.collideConnected = collideConnected;
 		joint = (b2FrictionJoint*)createJoint(&def);
 	}

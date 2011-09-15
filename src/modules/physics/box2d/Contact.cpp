@@ -20,6 +20,7 @@
 
 #include "Contact.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -41,30 +42,30 @@ namespace box2d
 	int Contact::getPosition(lua_State * L)
 	{
 		love::luax_assert_argc(L, 1, 1);
-		lua_pushnumber(L, world->scaleUp(point.position.x));
-		lua_pushnumber(L, world->scaleUp(point.position.y));
+		lua_pushnumber(L, Physics::scaleUp(point.position.x));
+		lua_pushnumber(L, Physics::scaleUp(point.position.y));
 		return 2;
 	}
 
 	int Contact::getVelocity(lua_State * L)
 	{
 		love::luax_assert_argc(L, 1, 1);
-		lua_pushnumber(L, world->scaleUp(point.velocity.x));
-		lua_pushnumber(L, world->scaleUp(point.velocity.y));
+		lua_pushnumber(L, Physics::scaleUp(point.velocity.x));
+		lua_pushnumber(L, Physics::scaleUp(point.velocity.y));
 		return 2;
 	}
 
 	int Contact::getNormal(lua_State * L)
 	{
 		love::luax_assert_argc(L, 1, 1);
-		lua_pushnumber(L, world->scaleUp(point.normal.x));
-		lua_pushnumber(L, world->scaleUp(point.normal.y));
+		lua_pushnumber(L, Physics::scaleUp(point.normal.x));
+		lua_pushnumber(L, Physics::scaleUp(point.normal.y));
 		return 2;
 	}
 
 	float Contact::getSeparation() const
 	{
-		return world->scaleUp(point.separation);
+		return Physics::scaleUp(point.separation);
 	}
 
 	float Contact::getFriction() const

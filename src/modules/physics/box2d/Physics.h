@@ -50,6 +50,11 @@ namespace box2d
 {
 	class Physics : public Module
 	{
+	private:
+		
+		// The length of one meter in pixels.
+		static int meter;
+
 	public:
 
 		// Implements Module.
@@ -242,6 +247,74 @@ namespace box2d
 		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		RopeJoint * newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
+		
+		/**
+		 * Sets the number of pixels in one meter.
+		 * @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+		 **/
+		static void setMeter(int meter);
+		
+		/**
+		 * Gets the number of pixels in one meter.
+		 * @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+		 **/
+		static int getMeter();
+		
+		/**
+		 * Scales a value down according to the current meter in pixels.
+		 * @param f The unscaled input value.
+		 **/
+		static float scaleDown(float f);
+		
+		/**
+		 * Scales a value up according to the current meter in pixels.
+		 * @param f The unscaled input value.
+		 **/
+		static float scaleUp(float f);
+		
+		/**
+		 * Scales a point down according to the current meter
+		 * in pixels, for instance x = x0/meter, y = x0/meter.
+		 * @param x The x-coordinate of the point to scale.
+		 * @param y The y-coordinate of the point to scale.
+		 **/
+		static void scaleDown(float & x, float & y);
+		
+		/**
+		 * Scales a point up according to the current meter
+		 * in pixels, for instance x = x0/meter, y = x0/meter.
+		 * @param x The x-coordinate of the point to scale.
+		 * @param y The y-coordinate of the point to scale.
+		 **/
+		static void scaleUp(float & x, float & y);
+		
+		/**
+		 * Scales a b2Vec2 down according to the current meter in pixels.
+		 * @param v The unscaled input vector.
+		 * @return The scaled vector.
+		 **/
+		static b2Vec2 scaleDown(const b2Vec2 & v);
+		
+		/**
+		 * Scales a b2Vec up according to the current meter in pixels.
+		 * @param v The unscaled input vector.
+		 * @return The scaled vector.
+		 **/
+		static b2Vec2 scaleUp(const b2Vec2 & v);
+		
+		/**
+		 * Scales a b2AABB down according to the current meter in pixels.
+		 * @param v The unscaled input AABB.
+		 * @return The scaled AABB.
+		 **/
+		static b2AABB scaleDown(const b2AABB & aabb);
+		
+		/**
+		 * Scales a b2AABB up according to the current meter in pixels.
+		 * @param v The unscaled input AABB.
+		 * @return The scaled AABB.
+		 **/
+		static b2AABB scaleUp(const b2AABB & aabb);
 
 
 	}; // Physics

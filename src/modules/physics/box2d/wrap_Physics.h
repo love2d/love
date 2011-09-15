@@ -65,6 +65,8 @@ namespace box2d
 	int w_newWeldJoint(lua_State * L);
 	int w_newWheelJoint(lua_State * L);
 	int w_newRopeJoint(lua_State * L);
+	int w_setMeter(lua_State * L);
+	int w_getMeter(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
 
 } // box2d

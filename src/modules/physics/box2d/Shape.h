@@ -44,8 +44,6 @@ namespace box2d
 	**/
 	class Shape : public love::physics::Shape
 	{
-	private:
-		World * world; // We need a reference for scaling up/down
 	
 	protected:
 
@@ -57,7 +55,7 @@ namespace box2d
 		/**
 		* Creates a Shape.
 		**/
-		Shape(World * world);
+		Shape();
 
 		virtual ~Shape();
 

@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -35,7 +36,7 @@ namespace box2d
 	{
 		b2WheelJointDef def;
 		
-		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x,y)), b2Vec2(ax,ay));
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x,y)), b2Vec2(ax,ay));
 		def.collideConnected = collideConnected;
 		joint = (b2WheelJoint*)createJoint(&def);
 	}
@@ -48,12 +49,12 @@ namespace box2d
 
 	float WheelJoint::getJointTranslation() const
 	{
-		return world->scaleDown(joint->GetJointTranslation());
+		return Physics::scaleDown(joint->GetJointTranslation());
 	}
 
 	float WheelJoint::getJointSpeed() const
 	{
-		return world->scaleDown(joint->GetJointSpeed());
+		return Physics::scaleDown(joint->GetJointSpeed());
 	}
 
 	void WheelJoint::enableMotor(bool motor)
@@ -68,47 +69,47 @@ namespace box2d
 	
 	void WheelJoint::setMotorSpeed(float speed)
 	{
-		joint->SetMotorSpeed(world->scaleDown(speed));
+		joint->SetMotorSpeed(Physics::scaleDown(speed));
 	}
 
 	float WheelJoint::getMotorSpeed() const
 	{
-		return world->scaleUp(joint->GetMotorSpeed());
+		return Physics::scaleUp(joint->GetMotorSpeed());
 	}
 	
 	void WheelJoint::setMaxMotorTorque(float torque)
 	{
-		joint->SetMaxMotorTorque(world->scaleDown(torque));
+		joint->SetMaxMotorTorque(Physics::scaleDown(torque));
 	}
 	
 	float WheelJoint::getMaxMotorTorque() const
 	{
-		return world->scaleUp(joint->GetMaxMotorTorque());
+		return Physics::scaleUp(joint->GetMaxMotorTorque());
 	}
 
 	float WheelJoint::getMotorTorque(float inv_dt) const
 	{
-		return world->scaleUp(joint->getMotorTorque(inv_dt));
+		return Physics::scaleUp(joint->GetMotorTorque(inv_dt));
 	}
 	
 	void WheelJoint::setSpringFrequencyHz(float hz)
 	{
-		joint->SetSpringFrequencyHz(world->scaleDown(hz));
+		joint->SetSpringFrequencyHz(Physics::scaleDown(hz));
 	}
 	
 	float WheelJoint::getSpringFrequencyHz() const
 	{
-		return world->scaleUp(joint->GetSpringFrequencyHz());
+		return Physics::scaleUp(joint->GetSpringFrequencyHz());
 	}
 	
 	void WheelJoint::setSpringDampingRatio(float ratio)
 	{
-		joint->SetSpringDampingRatio(world->scaleDown(ratio));
+		joint->SetSpringDampingRatio(Physics::scaleDown(ratio));
 	}
 	
 	float WheelJoint::getSpringDampingRatio() const
 	{
-		return world->scaleUp(joint->GetSpringDampingRatio());
+		return Physics::scaleUp(joint->GetSpringDampingRatio());
 	}
 
 

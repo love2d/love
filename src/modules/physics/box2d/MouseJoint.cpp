@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -38,7 +39,7 @@ namespace box2d
 		def.bodyA = body1->world->getGroundBody();
 		def.bodyB = body1->body;
 		def.maxForce = 1000.0f * body1->body->GetMass();
-		def.target = body1->world->scaleDown(b2Vec2(x,y));
+		def.target = Physics::scaleDown(b2Vec2(x,y));
 		joint = (b2MouseJoint*)createJoint(&def);
 	}
 
@@ -50,13 +51,13 @@ namespace box2d
 
 	void MouseJoint::setTarget(float x, float y)
 	{
-		joint->SetTarget(world->scaleDown(b2Vec2(x, y)));
+		joint->SetTarget(Physics::scaleDown(b2Vec2(x, y)));
 	}
 
 	int MouseJoint::getTarget(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->GetTarget().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetTarget().y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetTarget().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetTarget().y));
 		return 2;
 	}
 

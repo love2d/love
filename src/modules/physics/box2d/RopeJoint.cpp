@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -36,9 +37,9 @@ namespace box2d
 		b2RopeJointDef def;
 		def.bodyA = body1->body;
 		def.bodyB = body2->body;
-		def.localAnchorA = world->scaleDown(b2Vec2(x1,y1));
-		def.localAnchorB = world->scaleDown(b2Vec2(x2,y2));
-		def.maxLength = world->scaleDown(maxLength);
+		def.localAnchorA = Physics::scaleDown(b2Vec2(x1,y1));
+		def.localAnchorB = Physics::scaleDown(b2Vec2(x2,y2));
+		def.maxLength = Physics::scaleDown(maxLength);
 		def.collideConnected = collideConnected;
 		joint = (b2RopeJoint*)createJoint(&def);
 	}
@@ -51,7 +52,7 @@ namespace box2d
 
 	float RopeJoint::getMaxLength() const
 	{
-		return world->scaleUp(joint->GetMaxLength());
+		return Physics::scaleUp(joint->GetMaxLength());
 	}
 
 

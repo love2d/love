@@ -262,6 +262,19 @@ namespace box2d
 		luax_newtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, (void*)j);
 		return 1;
 	}
+	
+	int w_setMeter(lua_State * L)
+	{
+		int arg1 = luaL_checkint(L, 1);
+		Physics::setMeter(arg1);
+		return 0;
+		
+	}
+	int w_getMeter(lua_State * L)
+	{
+		lua_pushinteger(L, Physics::getMeter());
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -281,6 +294,8 @@ namespace box2d
 		{ "newWeldJoint", w_newWeldJoint },
 		{ "newWheelJoint", w_newWheelJoint },
 		{ "newRopeJoint", w_newRopeJoint },
+		{ "getMeter", w_getMeter },
+		{ "setMeter", w_setMeter },
 		{ 0, 0 },
 	};
 

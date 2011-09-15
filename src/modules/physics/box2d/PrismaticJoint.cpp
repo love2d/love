@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -35,7 +36,7 @@ namespace box2d
 	{
 		b2PrismaticJointDef def;
 		
-		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x,y)), b2Vec2(ax,ay));
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x,y)), b2Vec2(ax,ay));
 		def.lowerTranslation = 0.0f;
 		def.upperTranslation = 100.0f;
 		def.enableLimit = true;
@@ -51,12 +52,12 @@ namespace box2d
 
 	float PrismaticJoint::getJointTranslation() const
 	{
-		return world->scaleDown(joint->GetJointTranslation());
+		return Physics::scaleDown(joint->GetJointTranslation());
 	}
 
 	float PrismaticJoint::getJointSpeed() const
 	{
-		return world->scaleDown(joint->GetJointSpeed());
+		return Physics::scaleDown(joint->GetJointSpeed());
 	}
 
 	void PrismaticJoint::enableMotor(bool motor)
@@ -71,22 +72,22 @@ namespace box2d
 
 	void PrismaticJoint::setMaxMotorForce(float force)
 	{
-		joint->SetMaxMotorForce(world->scaleDown(force));
+		joint->SetMaxMotorForce(Physics::scaleDown(force));
 	}
 	
 	void PrismaticJoint::setMotorSpeed(float speed)
 	{
-		joint->SetMotorSpeed(world->scaleDown(speed));
+		joint->SetMotorSpeed(Physics::scaleDown(speed));
 	}
 
 	float PrismaticJoint::getMotorSpeed() const
 	{
-		return world->scaleUp(joint->GetMotorSpeed());
+		return Physics::scaleUp(joint->GetMotorSpeed());
 	}
 
 	float PrismaticJoint::getMotorForce(float inv_dt) const
 	{
-		return world->scaleUp(joint->GetMotorForce(inv_dt));
+		return Physics::scaleUp(joint->GetMotorForce(inv_dt));
 	}
 
 	void PrismaticJoint::enableLimit(bool limit)
@@ -101,33 +102,33 @@ namespace box2d
 
 	void PrismaticJoint::setUpperLimit(float limit)
 	{
-		joint->SetLimits(joint->GetLowerLimit(), world->scaleDown(limit));
+		joint->SetLimits(joint->GetLowerLimit(), Physics::scaleDown(limit));
 	}
 
 	void PrismaticJoint::setLowerLimit(float limit)
 	{
-		joint->SetLimits(world->scaleDown(limit), joint->GetUpperLimit());
+		joint->SetLimits(Physics::scaleDown(limit), joint->GetUpperLimit());
 	}
 
 	void PrismaticJoint::setLimits(float lower, float upper)
 	{
-		joint->SetLimits(world->scaleDown(lower), world->scaleDown(upper));
+		joint->SetLimits(Physics::scaleDown(lower), Physics::scaleDown(upper));
 	}
 
 	float PrismaticJoint::getLowerLimit() const
 	{
-		return world->scaleUp(joint->GetLowerLimit());
+		return Physics::scaleUp(joint->GetLowerLimit());
 	}
 
 	float PrismaticJoint::getUpperLimit() const
 	{
-		return world->scaleUp(joint->GetUpperLimit());
+		return Physics::scaleUp(joint->GetUpperLimit());
 	}
 
 	int PrismaticJoint::getLimits(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->GetLowerLimit()));
-		lua_pushnumber(L, world->scaleUp(joint->GetUpperLimit()));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetLowerLimit()));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetUpperLimit()));
 		return 2;
 	}
 
