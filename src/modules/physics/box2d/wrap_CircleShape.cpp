@@ -51,6 +51,12 @@ namespace box2d
 		{ "setRadius", w_CircleShape_setRadius },
 		// From Shape.
 		{ "getType", w_Shape_getType },
+		{ "getRadius", w_Shape_getRadius },
+		{ "getChildCount", w_Shape_getChildCount },
+		{ "testPoint", w_Shape_testPoint },
+		{ "rayCast", w_Shape_rayCast },
+		{ "computeAABB", w_Shape_computeAABB },
+		{ "computeMass", w_Shape_computeMass },
 		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};

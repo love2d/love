@@ -40,6 +40,56 @@ namespace box2d
 		lua_pushstring(L, type);
 		return 1;
 	}
+	
+	int w_Shape_getRadius(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		float radius = t->getRadius();
+		lua_pushnumber(L, radius);
+		return 1;
+	}
+	
+	int w_Shape_getChildCount(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		int childCount = t->getChildCount();
+		lua_pushinteger(L, childCount);
+		return 1;
+	}
+	
+	int w_Shape_testPoint(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		float x = (float)luaL_checknumber(L, 1);
+		float y = (float)luaL_checknumber(L, 2);
+		float r = (float)luaL_checknumber(L, 3);
+		float px = (float)luaL_checknumber(L, 4);
+		float py = (float)luaL_checknumber(L, 5);
+		bool result = t->testPoint(x, y, r, px, py);
+		lua_pushboolean(L, result);
+		return 1;
+	}
+	
+	int w_Shape_rayCast(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
+		return t->rayCast(L);
+	}
+	
+	int w_Shape_computeAABB(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
+		return t->computeAABB(L);
+	}
+	
+	int w_Shape_computeMass(lua_State * L)
+	{
+		Shape * t = luax_checkshape(L, 1);
+		lua_remove(L, 1);
+		return t->computeMass(L);
+	}
 
 	int w_Shape_destroy(lua_State * L)
 	{
@@ -53,6 +103,12 @@ namespace box2d
 
 	static const luaL_Reg functions[] = {
 		{ "getType", w_Shape_getType },
+		{ "getRadius", w_Shape_getRadius },
+		{ "getChildCount", w_Shape_getChildCount },
+		{ "testPoint", w_Shape_testPoint },
+		{ "rayCast", w_Shape_rayCast },
+		{ "computeAABB", w_Shape_computeAABB },
+		{ "computeMass", w_Shape_computeMass },
 		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};

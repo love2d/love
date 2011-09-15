@@ -44,6 +44,9 @@ namespace box2d
 	**/
 	class Shape : public love::physics::Shape
 	{
+	private:
+		World * world; // We need a reference for scaling up/down
+	
 	protected:
 
 		// The Box2D shape.
@@ -54,7 +57,7 @@ namespace box2d
 		/**
 		* Creates a Shape.
 		**/
-		Shape();
+		Shape(World * world);
 
 		virtual ~Shape();
 
@@ -63,6 +66,12 @@ namespace box2d
 		* debug drawing.
 		**/
 		Type getType() const;
+		float getRadius() const;
+		int getChildCount() const;
+		bool testPoint(float x, float y, float r, float px, float py) const;
+		int rayCast(lua_State * L) const;
+		int computeAABB(lua_State * L) const;
+		int computeMass(lua_State * L) const;
 	};
 
 } // box2d
