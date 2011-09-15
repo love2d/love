@@ -157,6 +157,7 @@ namespace box2d
 		* @param y1 Anchor1 along the y-axis. (World coordinates)
 		* @param x2 Anchor2 along the x-axis. (World coordinates)
 		* @param y2 Anchor2 along the y-axis. (World coordinates)
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		DistanceJoint * newDistanceJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, bool collideConnected);
 
@@ -171,6 +172,7 @@ namespace box2d
 		* Creates a new RevoluteJoint connecting body1 with body2.
 		* @param x Anchor along the x-axis. (World coordinates)
 		* @param y Anchor along the y-axis. (World coordinates)
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		RevoluteJoint * newRevoluteJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 
@@ -180,6 +182,7 @@ namespace box2d
 		* @param y World-anchor along the y-axis.
 		* @param ax The x-component of the world-axis.
 		* @param ay The y-component of the world-axis.
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		PrismaticJoint * newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected);
 
@@ -190,6 +193,7 @@ namespace box2d
 		* @param anchor1 World anchor on body1.
 		* @param anchor2 World anchor on body2.
 		* @param ratio The pulley ratio.
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to true.
 		**/
 		PulleyJoint * newPulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected);
 
@@ -198,6 +202,7 @@ namespace box2d
 		* @param joint1 The first joint.
 		* @param joint2 The second joint.
 		* @param ratio The gear ratio.
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		GearJoint * newGearJoint(Joint * joint1, Joint * joint2, float ratio, bool collideConnected);
 
@@ -205,6 +210,7 @@ namespace box2d
 		* Creates a new FrictionJoint connecting body1 with body2.
 		* @param x Anchor along the x-axis. (World coordinates)
 		* @param y Anchor along the y-axis. (World coordinates)
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		FrictionJoint * newFrictionJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 		
@@ -212,6 +218,7 @@ namespace box2d
 		* Creates a new WeldJoint connecting body1 with body2.
 		* @param x Anchor along the x-axis. (World coordinates)
 		* @param y Anchor along the y-axis. (World coordinates)
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		WeldJoint * newWeldJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 		
@@ -221,6 +228,7 @@ namespace box2d
 		* @param y Anchor along the y-axis. (World coordinates)
 		* @param ax The x-component of the world-axis.
 		* @param ay The y-component of the world-axis.
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		WheelJoint * newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected);
 		
@@ -231,6 +239,7 @@ namespace box2d
 		* @param x2 Anchor2 along the x-axis. (Local coordinates)
 		* @param y2 Anchor2 along the y-axis. (Local coordinates)
 		* @param maxLength The maximum distance for the bodies.
+		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		RopeJoint * newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
 
