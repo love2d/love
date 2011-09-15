@@ -127,6 +127,11 @@ namespace box2d
 	{
 		return instance->newPolygonShape(L);
 	}
+	
+	int w_newChainShape(lua_State * L)
+	{
+		return instance->newChainShape(L);
+	}
 
 	int w_newDistanceJoint(lua_State * L)
 	{
@@ -284,6 +289,7 @@ namespace box2d
 		{ "newRectangleShape", w_newRectangleShape },
 		{ "newPolygonShape", w_newPolygonShape },
 		{ "newEdgeShape", w_newEdgeShape },
+		{ "newChainShape", w_newChainShape },
 		{ "newDistanceJoint", w_newDistanceJoint },
 		{ "newMouseJoint", w_newMouseJoint },
 		{ "newRevoluteJoint", w_newRevoluteJoint },
@@ -307,6 +313,7 @@ namespace box2d
 		luaopen_circleshape,
 		luaopen_polygonshape,
 		luaopen_edgeshape,
+		luaopen_chainshape,
 		luaopen_joint,
 		luaopen_mousejoint,
 		luaopen_distancejoint,

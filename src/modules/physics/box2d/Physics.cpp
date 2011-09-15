@@ -128,7 +128,7 @@ namespace box2d
 		if(count < 3)
 			return luaL_error(L, "Polygon degenerated to less than three points.");
 		
-		b2Vec2 vecs[] = new b2vec2[count];
+		b2Vec2 * vecs = new b2Vec2[count];
 		
 		for (int i = 0; i < count; i++) {
 			vecs[i].Set(convex_hull[i].x, convex_hull[i].y);
@@ -141,6 +141,38 @@ namespace box2d
 
 		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)p);
 
+		return 1;
+	}
+	
+	int Physics::newChainShape(lua_State * L)
+	{
+		int argc = lua_gettop(L)-1; // first argument is looping
+		int vcount = (int)argc/2;
+		
+		b2ChainShape s;
+		
+		bool loop = luax_toboolean(L, 1);
+		
+		b2Vec2 * vecs = new b2Vec2[vcount];
+		
+		for(int i = 0;i<vcount;i++)
+		{
+			float x = (float)lua_tonumber(L, -2);
+			float y = (float)lua_tonumber(L, -1);
+			vecs[i].Set(x, y);
+			lua_pop(L, 2);
+		}
+		
+		if (loop)
+			s.CreateLoop(vecs, vcount);
+		else
+			s.CreateChain(vecs, vcount);
+		
+		ChainShape * c = new ChainShape(&s);
+		delete[] vecs;
+		
+		luax_newtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, (void*)c);
+		
 		return 1;
 	}
 

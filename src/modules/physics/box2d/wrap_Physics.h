@@ -31,6 +31,7 @@
 #include "wrap_CircleShape.h"
 #include "wrap_PolygonShape.h"
 #include "wrap_EdgeShape.h"
+#include "wrap_ChainShape.h"
 #include "wrap_Joint.h"
 #include "wrap_MouseJoint.h"
 #include "wrap_DistanceJoint.h"
@@ -55,6 +56,7 @@ namespace box2d
 	int w_newRectangleShape(lua_State * L);
 	int w_newPolygonShape(lua_State * L);
     int w_newEdgeShape(lua_State * L);
+	int w_newChainShape(lua_State * L);
 	int w_newDistanceJoint(lua_State * L);
 	int w_newMouseJoint(lua_State * L);
 	int w_newRevoluteJoint(lua_State * L);

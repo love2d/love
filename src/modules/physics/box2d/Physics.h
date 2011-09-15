@@ -30,6 +30,7 @@
 #include "CircleShape.h"
 #include "PolygonShape.h"
 #include "EdgeShape.h"
+#include "ChainShape.h"
 #include "Joint.h"
 #include "MouseJoint.h"
 #include "DistanceJoint.h"
@@ -155,6 +156,12 @@ namespace box2d
 		* @param ... A variable number of vertices.
 		**/
 		int newPolygonShape(lua_State * L);
+		
+		/**
+		* Creates a new ChainShape.
+		* @param ... A variable number of vertices.
+		**/
+		int newChainShape(lua_State * L);
 
 		/**
 		* Creates a new DistanceJoint connecting body1 with body2.

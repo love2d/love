@@ -211,6 +211,8 @@
 		A9CF0E8610B9EB1000E6F37E /* utf8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9CF0E8510B9EB1000E6F37E /* utf8.cpp */; };
 		A9D1D20214224E1300A8BC2F /* RopeJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D1D20114224E1300A8BC2F /* RopeJoint.cpp */; };
 		A9D1D2041422578C00A8BC2F /* wrap_RopeJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D1D2031422578A00A8BC2F /* wrap_RopeJoint.cpp */; };
+		A9D1D20A1422959100A8BC2F /* ChainShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D1D2091422959100A8BC2F /* ChainShape.cpp */; };
+		A9D1D20D14229B6500A8BC2F /* wrap_ChainShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D1D20C14229B5800A8BC2F /* wrap_ChainShape.cpp */; };
 		A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
@@ -675,6 +677,10 @@
 		A9D1D20114224E1300A8BC2F /* RopeJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RopeJoint.cpp; sourceTree = "<group>"; };
 		A9D1D2031422578A00A8BC2F /* wrap_RopeJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RopeJoint.cpp; sourceTree = "<group>"; };
 		A9D1D2051422579500A8BC2F /* wrap_RopeJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RopeJoint.h; sourceTree = "<group>"; };
+		A9D1D2091422959100A8BC2F /* ChainShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ChainShape.cpp; sourceTree = "<group>"; };
+		A9D1D20B142295A800A8BC2F /* ChainShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChainShape.h; sourceTree = "<group>"; };
+		A9D1D20C14229B5800A8BC2F /* wrap_ChainShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ChainShape.cpp; sourceTree = "<group>"; };
+		A9D1D20E14229B7300A8BC2F /* wrap_ChainShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ChainShape.h; sourceTree = "<group>"; };
 		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
 		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
@@ -1201,6 +1207,8 @@
 				A93E6AEB10420AC7007D418B /* Body.cpp */,
 				A93E6AEC10420AC7007D418B /* Body.h */,
 				A986EBC3132CE6D800F048C8 /* Box2D */,
+				A9D1D2091422959100A8BC2F /* ChainShape.cpp */,
+				A9D1D20B142295A800A8BC2F /* ChainShape.h */,
 				A93E6AED10420AC7007D418B /* CircleShape.cpp */,
 				A93E6AEE10420AC7007D418B /* CircleShape.h */,
 				A93E6AEF10420AC7007D418B /* Contact.cpp */,
@@ -1242,6 +1250,8 @@
 				A93E6B4F10420ACA007D418B /* World.h */,
 				A93E6B5010420ACA007D418B /* wrap_Body.cpp */,
 				A93E6B5110420ACA007D418B /* wrap_Body.h */,
+				A9D1D20C14229B5800A8BC2F /* wrap_ChainShape.cpp */,
+				A9D1D20E14229B7300A8BC2F /* wrap_ChainShape.h */,
 				A93E6B5210420ACA007D418B /* wrap_CircleShape.cpp */,
 				A93E6B5310420ACA007D418B /* wrap_CircleShape.h */,
 				A93E6B5410420ACA007D418B /* wrap_Contact.cpp */,
@@ -1810,6 +1820,8 @@
 				A96F41A71412C92B0067FE9A /* wrap_EdgeShape.cpp in Sources */,
 				A9D1D20214224E1300A8BC2F /* RopeJoint.cpp in Sources */,
 				A9D1D2041422578C00A8BC2F /* wrap_RopeJoint.cpp in Sources */,
+				A9D1D20A1422959100A8BC2F /* ChainShape.cpp in Sources */,
+				A9D1D20D14229B6500A8BC2F /* wrap_ChainShape.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
