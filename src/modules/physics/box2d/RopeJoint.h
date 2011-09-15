@@ -44,7 +44,7 @@ namespace box2d
 		/**
 		* Creates a RopeJoint connecting body1 to body2. 
 		**/
-		RopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength);
+		RopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
 		
 		virtual ~RopeJoint();
 		

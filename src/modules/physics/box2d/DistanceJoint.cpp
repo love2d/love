@@ -30,11 +30,12 @@ namespace physics
 {
 namespace box2d
 {
-	DistanceJoint::DistanceJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2)
+	DistanceJoint::DistanceJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
 	{
 		b2DistanceJointDef def;
 		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x1,y1)), world->scaleDown(b2Vec2(x2,y2)));
+		def.collideConnected = collideConnected;
 		joint = (b2DistanceJoint*)createJoint(&def);
 	}
 

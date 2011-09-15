@@ -52,7 +52,7 @@ namespace box2d
 		/**
 		* Creates a GearJoint connecting joint1 to joint2. 
 		**/
-		GearJoint(Joint * joint1, Joint * joint2, float ratio);
+		GearJoint(Joint * joint1, Joint * joint2, float ratio, bool collideConnected);
 		
 		virtual ~GearJoint();
 		

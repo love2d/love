@@ -144,9 +144,9 @@ namespace box2d
 		return 1;
 	}
 
-	DistanceJoint * Physics::newDistanceJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2)
+	DistanceJoint * Physics::newDistanceJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, bool collideConnected)
 	{
-		return new DistanceJoint(body1, body2, x1, y1, x2, y2);
+		return new DistanceJoint(body1, body2, x1, y1, x2, y2, collideConnected);
 	}
 
 	MouseJoint * Physics::newMouseJoint(Body * body, float x, float y)
@@ -154,44 +154,44 @@ namespace box2d
 		return new MouseJoint(body, x, y);
 	}
 
-	RevoluteJoint * Physics::newRevoluteJoint(Body * body1, Body * body2, float x, float y)
+	RevoluteJoint * Physics::newRevoluteJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
 	{
-		return new RevoluteJoint(body1, body2, x, y);
+		return new RevoluteJoint(body1, body2, x, y, collideConnected);
 	}
 
-	PrismaticJoint * Physics::newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay)
+	PrismaticJoint * Physics::newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected)
 	{
-		return new PrismaticJoint(body1, body2, x, y, ax, ay);
+		return new PrismaticJoint(body1, body2, x, y, ax, ay, collideConnected);
 	}
 
-	PulleyJoint * Physics::newPulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio)
+	PulleyJoint * Physics::newPulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected)
 	{
-		return new PulleyJoint(body1, body2, groundAnchor1, groundAnchor2, anchor1, anchor2, ratio);
+		return new PulleyJoint(body1, body2, groundAnchor1, groundAnchor2, anchor1, anchor2, ratio, collideConnected);
 	}
 
-	GearJoint * Physics::newGearJoint(Joint * joint1, Joint * joint2, float ratio)
+	GearJoint * Physics::newGearJoint(Joint * joint1, Joint * joint2, float ratio, bool collideConnected)
 	{
-		return new GearJoint(joint1, joint2, ratio);
+		return new GearJoint(joint1, joint2, ratio, collideConnected);
 	}
 	
-	FrictionJoint * Physics::newFrictionJoint(Body * body1, Body * body2, float x, float y)
+	FrictionJoint * Physics::newFrictionJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
 	{
-		return new FrictionJoint(body1, body2, x, y);
+		return new FrictionJoint(body1, body2, x, y, collideConnected);
 	}
 	
-	WeldJoint * Physics::newWeldJoint(Body * body1, Body * body2, float x, float y)
+	WeldJoint * Physics::newWeldJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
 	{
-		return new WeldJoint(body1, body2, x, y);
+		return new WeldJoint(body1, body2, x, y, collideConnected);
 	}
 	
-	WheelJoint * Physics::newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay)
+	WheelJoint * Physics::newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected)
 	{
-		return new WheelJoint(body1, body2, x, y, ax, ay);
+		return new WheelJoint(body1, body2, x, y, ax, ay, collideConnected);
 	}
 	
-	RopeJoint * Physics::newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength)
+	RopeJoint * Physics::newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected)
 	{
-		return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength);
+		return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
 	}
 
 } // box2d

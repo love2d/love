@@ -45,7 +45,7 @@ namespace box2d
 		/**
 		* Creates a new FrictionJoint connecting body1 and body2.
 		**/
-		FrictionJoint(Body * body1, Body * body2, float x, float y);
+		FrictionJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 		
 		virtual ~FrictionJoint();
 

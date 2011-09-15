@@ -46,7 +46,7 @@ namespace box2d
 		/**
 		* Creates a new RevoluteJoint connecting body1 and body2.
 		**/
-		RevoluteJoint(Body * body1, Body * body2, float x, float y);
+		RevoluteJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 		
 		virtual ~RevoluteJoint();
 

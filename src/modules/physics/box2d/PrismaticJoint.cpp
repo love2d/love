@@ -30,7 +30,7 @@ namespace physics
 {
 namespace box2d
 {
-	PrismaticJoint::PrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay)
+	PrismaticJoint::PrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
 	{
 		b2PrismaticJointDef def;
@@ -39,6 +39,7 @@ namespace box2d
 		def.lowerTranslation = 0.0f;
 		def.upperTranslation = 100.0f;
 		def.enableLimit = true;
+		def.collideConnected = collideConnected;
 		joint = (b2PrismaticJoint*)createJoint(&def);
 	}
 

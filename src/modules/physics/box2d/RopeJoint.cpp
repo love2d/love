@@ -30,7 +30,7 @@ namespace physics
 {
 namespace box2d
 {
-	RopeJoint::RopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength)
+	RopeJoint::RopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
 	{
 		b2RopeJointDef def;
@@ -39,6 +39,7 @@ namespace box2d
 		def.localAnchorA = world->scaleDown(b2Vec2(x1,y1));
 		def.localAnchorB = world->scaleDown(b2Vec2(x2,y2));
 		def.maxLength = world->scaleDown(maxLength);
+		def.collideConnected = collideConnected;
 		joint = (b2RopeJoint*)createJoint(&def);
 	}
 

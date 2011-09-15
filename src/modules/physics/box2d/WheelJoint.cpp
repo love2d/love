@@ -30,12 +30,13 @@ namespace physics
 {
 namespace box2d
 {
-	WheelJoint::WheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay)
+	WheelJoint::WheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
 	{
 		b2WheelJointDef def;
 		
 		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x,y)), b2Vec2(ax,ay));
+		def.collideConnected = collideConnected;
 		joint = (b2WheelJoint*)createJoint(&def);
 	}
 

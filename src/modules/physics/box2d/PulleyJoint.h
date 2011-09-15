@@ -46,7 +46,7 @@ namespace box2d
 		/**
 		* Creates a PulleyJoint connecting body1 to body2. 
 		**/
-		PulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio);
+		PulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected);
 		
 		virtual ~PulleyJoint();
 		

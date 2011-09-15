@@ -158,7 +158,7 @@ namespace box2d
 		* @param x2 Anchor2 along the x-axis. (World coordinates)
 		* @param y2 Anchor2 along the y-axis. (World coordinates)
 		**/
-		DistanceJoint * newDistanceJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2);
+		DistanceJoint * newDistanceJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, bool collideConnected);
 
 		/**
 		* Creates a new MouseJoint connecting the body with an arbitrary point.
@@ -172,7 +172,7 @@ namespace box2d
 		* @param x Anchor along the x-axis. (World coordinates)
 		* @param y Anchor along the y-axis. (World coordinates)
 		**/
-		RevoluteJoint * newRevoluteJoint(Body * body1, Body * body2, float x, float y);
+		RevoluteJoint * newRevoluteJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 
 		/**
 		* Creates a new PrismaticJoint connecting body1 with body2.
@@ -181,7 +181,7 @@ namespace box2d
 		* @param ax The x-component of the world-axis.
 		* @param ay The y-component of the world-axis.
 		**/
-		PrismaticJoint * newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay);
+		PrismaticJoint * newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected);
 
 		/**
 		* Creates a new PulleyJoint connecting body1 with body2.
@@ -191,7 +191,7 @@ namespace box2d
 		* @param anchor2 World anchor on body2.
 		* @param ratio The pulley ratio.
 		**/
-		PulleyJoint * newPulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio);
+		PulleyJoint * newPulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected);
 
 		/**
 		* Creates a new GearJoint connecting joint1 with joint2.
@@ -199,21 +199,21 @@ namespace box2d
 		* @param joint2 The second joint.
 		* @param ratio The gear ratio.
 		**/
-		GearJoint * newGearJoint(Joint * joint1, Joint * joint2, float ratio);
+		GearJoint * newGearJoint(Joint * joint1, Joint * joint2, float ratio, bool collideConnected);
 
 		/**
 		* Creates a new FrictionJoint connecting body1 with body2.
 		* @param x Anchor along the x-axis. (World coordinates)
 		* @param y Anchor along the y-axis. (World coordinates)
 		**/
-		FrictionJoint * newFrictionJoint(Body * body1, Body * body2, float x, float y);
+		FrictionJoint * newFrictionJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 		
 		/**
 		* Creates a new WeldJoint connecting body1 with body2.
 		* @param x Anchor along the x-axis. (World coordinates)
 		* @param y Anchor along the y-axis. (World coordinates)
 		**/
-		WeldJoint * newWeldJoint(Body * body1, Body * body2, float x, float y);
+		WeldJoint * newWeldJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 		
 		/**
 		* Creates a new WheelJoint connecting body1 with body2.
@@ -222,7 +222,7 @@ namespace box2d
 		* @param ax The x-component of the world-axis.
 		* @param ay The y-component of the world-axis.
 		**/
-		WheelJoint * newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay);
+		WheelJoint * newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected);
 		
 		/**
 		* Creates a new RopeJoint connecting body1 with body2.
@@ -232,7 +232,7 @@ namespace box2d
 		* @param y2 Anchor2 along the y-axis. (Local coordinates)
 		* @param maxLength The maximum distance for the bodies.
 		**/
-		RopeJoint * newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength);
+		RopeJoint * newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
 
 
 	}; // Physics

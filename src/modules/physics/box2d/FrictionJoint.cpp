@@ -32,11 +32,12 @@ namespace physics
 {
 namespace box2d
 {
-	FrictionJoint::FrictionJoint(Body * body1, Body * body2, float x, float y)
+	FrictionJoint::FrictionJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
 	{	
 		b2FrictionJointDef def;
 		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x,y)));
+		def.collideConnected = collideConnected;
 		joint = (b2FrictionJoint*)createJoint(&def);
 	}
 
