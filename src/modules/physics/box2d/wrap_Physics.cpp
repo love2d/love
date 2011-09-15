@@ -239,6 +239,20 @@ namespace box2d
 		luax_newtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, (void*)j);
 		return 1;
 	}
+	
+	int w_newRopeJoint(lua_State * L)
+	{
+		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
+		Body * body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
+		float x1 = (float)luaL_checknumber(L, 3);
+		float y1 = (float)luaL_checknumber(L, 4);
+		float x2 = (float)luaL_checknumber(L, 5);
+		float y2 = (float)luaL_checknumber(L, 6);
+		float maxLength = (float)luaL_checknumber(L, 7);
+		RopeJoint * j = instance->newRopeJoint(body1, body2, x1, y1, x2, y2, maxLength);
+		luax_newtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, (void*)j);
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -257,6 +271,7 @@ namespace box2d
 		{ "newFrictionJoint", w_newFrictionJoint },
 		{ "newWeldJoint", w_newWeldJoint },
 		{ "newWheelJoint", w_newWheelJoint },
+		{ "newRopeJoint", w_newRopeJoint },
 		{ 0, 0 },
 	};
 
@@ -277,6 +292,8 @@ namespace box2d
 		luaopen_gearjoint,
 		luaopen_frictionjoint,
 		luaopen_weldjoint,
+		luaopen_wheeljoint,
+		luaopen_ropejoint,
 		0
 	};
 

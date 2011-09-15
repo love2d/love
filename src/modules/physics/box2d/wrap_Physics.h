@@ -41,6 +41,7 @@
 #include "wrap_FrictionJoint.h"
 #include "wrap_WeldJoint.h"
 #include "wrap_WheelJoint.h"
+#include "wrap_RopeJoint.h"
 
 namespace love
 {
@@ -63,6 +64,7 @@ namespace box2d
 	int w_newFrictionJoint(lua_State * L);
 	int w_newWeldJoint(lua_State * L);
 	int w_newWheelJoint(lua_State * L);
+	int w_newRopeJoint(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
 
 } // box2d

@@ -40,6 +40,7 @@
 #include "FrictionJoint.h"
 #include "WeldJoint.h"
 #include "WheelJoint.h"
+#include "RopeJoint.h"
 
 namespace love
 {
@@ -222,6 +223,16 @@ namespace box2d
 		* @param ay The y-component of the world-axis.
 		**/
 		WheelJoint * newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay);
+		
+		/**
+		* Creates a new RopeJoint connecting body1 with body2.
+		* @param x1 Anchor1 along the x-axis. (Local coordinates)
+		* @param y1 Anchor1 along the y-axis. (Local coordinates)
+		* @param x2 Anchor2 along the x-axis. (Local coordinates)
+		* @param y2 Anchor2 along the y-axis. (Local coordinates)
+		* @param maxLength The maximum distance for the bodies.
+		**/
+		RopeJoint * newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength);
 
 
 	}; // Physics

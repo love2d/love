@@ -209,6 +209,8 @@
 		A9BD60741226C988007DEC63 /* Framebuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9BD60701226C988007DEC63 /* Framebuffer.cpp */; };
 		A9BD60751226C988007DEC63 /* wrap_Framebuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9BD60721226C988007DEC63 /* wrap_Framebuffer.cpp */; };
 		A9CF0E8610B9EB1000E6F37E /* utf8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9CF0E8510B9EB1000E6F37E /* utf8.cpp */; };
+		A9D1D20214224E1300A8BC2F /* RopeJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D1D20114224E1300A8BC2F /* RopeJoint.cpp */; };
+		A9D1D2041422578C00A8BC2F /* wrap_RopeJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D1D2031422578A00A8BC2F /* wrap_RopeJoint.cpp */; };
 		A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
@@ -669,6 +671,10 @@
 		A9BFAA851137C1CE005FE0AD /* ThreadModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadModule.h; sourceTree = "<group>"; };
 		A9CF0E8410B9EB1000E6F37E /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8.h; sourceTree = "<group>"; };
 		A9CF0E8510B9EB1000E6F37E /* utf8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8.cpp; sourceTree = "<group>"; };
+		A9D1D20014224DFF00A8BC2F /* RopeJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RopeJoint.h; sourceTree = "<group>"; };
+		A9D1D20114224E1300A8BC2F /* RopeJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RopeJoint.cpp; sourceTree = "<group>"; };
+		A9D1D2031422578A00A8BC2F /* wrap_RopeJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RopeJoint.cpp; sourceTree = "<group>"; };
+		A9D1D2051422579500A8BC2F /* wrap_RopeJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RopeJoint.h; sourceTree = "<group>"; };
 		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
 		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
@@ -1222,6 +1228,8 @@
 				A93E6B0310420AC8007D418B /* PrismaticJoint.h */,
 				A93E6B0410420AC8007D418B /* PulleyJoint.cpp */,
 				A93E6B0510420AC8007D418B /* PulleyJoint.h */,
+				A9D1D20114224E1300A8BC2F /* RopeJoint.cpp */,
+				A9D1D20014224DFF00A8BC2F /* RopeJoint.h */,
 				A93E6B0610420AC8007D418B /* RevoluteJoint.cpp */,
 				A93E6B0710420AC8007D418B /* RevoluteJoint.h */,
 				A93E6B0810420AC8007D418B /* Shape.cpp */,
@@ -1260,6 +1268,8 @@
 				A93E6B6510420ACA007D418B /* wrap_PulleyJoint.h */,
 				A93E6B6610420ACA007D418B /* wrap_RevoluteJoint.cpp */,
 				A93E6B6710420ACA007D418B /* wrap_RevoluteJoint.h */,
+				A9D1D2031422578A00A8BC2F /* wrap_RopeJoint.cpp */,
+				A9D1D2051422579500A8BC2F /* wrap_RopeJoint.h */,
 				A93E6B6810420ACA007D418B /* wrap_Shape.cpp */,
 				A93E6B6910420ACA007D418B /* wrap_Shape.h */,
 				A96F41811412AFB70067FE9A /* wrap_WeldJoint.cpp */,
@@ -1798,6 +1808,8 @@
 				A96F418C1412B3AD0067FE9A /* WheelJoint.cpp in Sources */,
 				A96F41A41412C91F0067FE9A /* EdgeShape.cpp in Sources */,
 				A96F41A71412C92B0067FE9A /* wrap_EdgeShape.cpp in Sources */,
+				A9D1D20214224E1300A8BC2F /* RopeJoint.cpp in Sources */,
+				A9D1D2041422578C00A8BC2F /* wrap_RopeJoint.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

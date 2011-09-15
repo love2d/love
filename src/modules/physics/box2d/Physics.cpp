@@ -188,6 +188,11 @@ namespace box2d
 	{
 		return new WheelJoint(body1, body2, x, y, ax, ay);
 	}
+	
+	RopeJoint * Physics::newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength)
+	{
+		return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength);
+	}
 
 } // box2d
 } // physics
