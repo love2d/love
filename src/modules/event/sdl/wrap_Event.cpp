@@ -108,8 +108,8 @@ namespace sdl
 			return 4;
 		case Event::TYPE_JOYSTICK_PRESSED:
 		case Event::TYPE_JOYSTICK_RELEASED:
-			lua_pushinteger(L, msg.joystick.index);
-			lua_pushinteger(L, msg.joystick.button);
+			lua_pushinteger(L, msg.joystick.index+1);
+			lua_pushinteger(L, msg.joystick.button+1);
 			return 3;
 		case Event::TYPE_FOCUS:
 			lua_pushboolean(L, msg.focus.f);
