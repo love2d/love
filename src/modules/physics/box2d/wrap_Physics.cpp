@@ -53,6 +53,15 @@ namespace box2d
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
 	}
+	
+	int w_newFixture(lua_State * L)
+	{
+		Body * body = luax_checkbody(L, 1);
+		Shape * shape = luax_checkshape(L, 2);
+		Fixture * fixture = instance->newFixture(body, shape);
+		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
+		return 1;
+	}
 
 	int w_newCircleShape(lua_State * L)
 	{

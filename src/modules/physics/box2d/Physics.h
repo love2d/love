@@ -26,6 +26,7 @@
 #include "World.h"
 #include "Contact.h"
 #include "Body.h"
+#include "Fixture.h"
 #include "Shape.h"
 #include "CircleShape.h"
 #include "PolygonShape.h"
@@ -98,6 +99,13 @@ namespace box2d
 		* @param world The world to create the Body in.
 		**/
 		Body * newBody(World * world);
+		
+		/**
+		* Creates a new Fixture.
+		* @param body The body to attach the Fixture to.
+		* @param shape The shape to attach to the Fixture.
+		**/
+		Fixture * newFixture(Body * body, Shape * shape);
 
 		/**
 		* Creates a new CircleShape at (0, 0).

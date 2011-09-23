@@ -59,6 +59,11 @@ namespace box2d
 	{
 		return new Body(world, b2Vec2(0, 0), 1, 1);
 	}
+	
+	Fixture * Physics::newFixture(Body * body, Shape * shape)
+	{
+		return new Fixture(body, shape);
+	}
 
 	CircleShape * Physics::newCircleShape(float radius)
 	{

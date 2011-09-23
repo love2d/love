@@ -59,6 +59,8 @@ namespace box2d
 	{
 	protected:
 		
+		Body * body;
+		Shape * shape;
 		b2Fixture * fixture;
 		fixtureudata * data;
 
@@ -76,6 +78,64 @@ namespace box2d
 		* debug drawing.
 		**/
 		Shape::Type getType() const;
+		
+		/**
+		* Gets the Shape attached to this Fixture.
+		**/
+		Shape * getShape() const;
+
+		/**
+		* Checks whether this Fixture acts as a sensor.
+		* @return True if sensor, false otherwise.
+		**/
+		bool isSensor() const;
+
+		/**
+		* Set whether this Fixture should be a sensor or not.
+		* @param sensor True if sensor, false if not.
+		**/
+		void setSensor(bool sensor);
+		
+		/**
+		* Gets the Body this Fixture is attached to.
+		**/
+		Body * getBody() const;
+		
+		/**
+		* Gets the next Fixture attached to the parent Body.
+		**/
+		Fixture * getNext() const;
+		
+		
+		
+		/**
+		 * Sets the filter data. An integer array is used even though the
+		 * first two elements are unsigned shorts. The elements are:
+		 * category (16-bits), mask (16-bits) and group (32-bits/int).
+		 **/
+		void setFilterData(int * v);
+		
+		/**
+		 * Gets the filter data. An integer array is used even though the
+		 * first two elements are unsigned shorts. The elements are:
+		 * category (16-bits), mask (16-bits) and group (32-bits/int).
+		 **/
+		void getFilterData(int * v);
+		
+		/**
+		* This function stores an in-C reference to
+		* arbitrary Lua data in the Box2D Fixture object.
+		*
+		* The data set here will be passed to the collision
+		* handler when collisions occur.
+		**/
+		int setUserData(lua_State * L);
+
+		/**
+		* Gets the data set with setData. If no
+		* data is set, nil is returned.
+		**/
+		int getUserData(lua_State * L);
 
 		/**
 		* Sets the friction of the Fixture.
@@ -96,12 +156,6 @@ namespace box2d
 		void setDensity(float density);
 
 		/**
-		* Set whether this Fixture should be a sensor or not.
-		* @param sensor True if sensor, false if not.
-		**/
-		void setSensor(bool sensor);
-
-		/**
 		* Gets the friction of the Fixture.
 		* @returns The friction.
 		**/
@@ -118,45 +172,19 @@ namespace box2d
 		* @return The density.
 		**/
 		float getDensity() const;
-
-		/**
-		* Checks whether this Fixture acts as a sensor.
-		* @return True if sensor, false otherwise.
-		**/
-		bool isSensor() const;
-
-		/**
-		* Get the body attatched to this Fixture.
-		* @return The parent Body.
-		**/
-		Body * getBody() const;
-
+		
 		/**
 		* Checks if a point is inside the Fixture.
-		* @param x The x-component of the Fixture.
-		* @param y The y-component of the Fixture.
+		* @param x The x-component of the point.
+		* @param y The y-component of the point.
 		**/
 		bool testPoint(float x, float y) const;
-
+		
 		/**
-		* Tests whether a line segment intersects a Fixture.
+		* Cast a ray against this Fixture.
 		**/
-		int testSegment(lua_State * L);
-
-		/**
-		* Sets the filter data. An integer array is used even though the
-		* first two elements are unsigned shorts. The elements are:
-		* category (16-bits), mask (16-bits) and group (32-bits/int).
-		**/
-		void setFilterData(int * v);
-
-		/**
-		* Gets the filter data. An integer array is used even though the
-		* first two elements are unsigned shorts. The elements are:
-		* category (16-bits), mask (16-bits) and group (32-bits/int).
-		**/
-		void getFilterData(int * v);
-
+		int rayCast(lua_State * L) const;
+		
 		void setGroupIndex(int index);
 		int getGroupIndex() const;
 
@@ -168,26 +196,17 @@ namespace box2d
 		int pushBits(lua_State * L, uint16 bits);
 
 		/**
-		* This function stores an in-C reference to
-		* arbitrary Lua data in the Box2D Fixture object.
-		*
-		* The data set here will be passed to the collision
-		* handler when collisions occur.
-		**/
-		int setData(lua_State * L);
-
-		/**
-		* Gets the data set with setData. If no
-		* data is set, nil is returned.
-		**/
-		int getData(lua_State * L);
-
-		/**
 		* Gets the bounding box for this Fixture.
 		* The function returns eight values which can be
 		* passed directly to love.graphics.polygon.
 		**/
-		int getBoundingBox(lua_State * L);
+		int getBoundingBox(lua_State * L) const;
+		
+		/**
+		* Gets the mass data for this Fixture.
+		* This operation may be expensive.
+		**/
+		int getMassData(lua_State * L) const;
 	};
 
 } // box2d

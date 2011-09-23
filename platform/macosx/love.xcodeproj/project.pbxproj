@@ -139,6 +139,7 @@
 		A946D85510425002002BF36C /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B9110420ACC007D418B /* wrap_Timer.cpp */; };
 		A946D85610425002002BF36C /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8F10420ACC007D418B /* Timer.cpp */; };
 		A95684F7125D3555001B276B /* b64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A95684F5125D3555001B276B /* b64.cpp */; };
+		A958F911142D364C007F320F /* wrap_Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A958F910142D3627007F320F /* wrap_Fixture.cpp */; };
 		A968F0CF1083A9A900A895AA /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0CE1083A9A900A895AA /* Event.cpp */; };
 		A968F0D11083A9B900A895AA /* File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D01083A9B900A895AA /* File.cpp */; };
 		A968F0D31083A9D400A895AA /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D21083A9D400A895AA /* Graphics.cpp */; };
@@ -535,6 +536,8 @@
 		A946D4421176AC42005E1462 /* Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Font.h; sourceTree = "<group>"; };
 		A95684F5125D3555001B276B /* b64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b64.cpp; sourceTree = "<group>"; };
 		A95684F6125D3555001B276B /* b64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b64.h; sourceTree = "<group>"; };
+		A958F910142D3627007F320F /* wrap_Fixture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Fixture.cpp; sourceTree = "<group>"; };
+		A958F912142D3687007F320F /* wrap_Fixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Fixture.h; sourceTree = "<group>"; };
 		A968F0C61083A07B00A895AA /* EnumMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumMap.h; sourceTree = "<group>"; };
 		A968F0C71083A07C00A895AA /* StringMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		A968F0CE1083A9A900A895AA /* Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Event.cpp; sourceTree = "<group>"; };
@@ -1260,6 +1263,8 @@
 				A93E6B5710420ACA007D418B /* wrap_DistanceJoint.h */,
 				A96F41A51412C92B0067FE9A /* wrap_EdgeShape.cpp */,
 				A96F41A61412C92B0067FE9A /* wrap_EdgeShape.h */,
+				A958F910142D3627007F320F /* wrap_Fixture.cpp */,
+				A958F912142D3687007F320F /* wrap_Fixture.h */,
 				A9B6432D13BF87E400DC3C7E /* wrap_FrictionJoint.cpp */,
 				A9B6432E13BF87EA00DC3C7E /* wrap_FrictionJoint.h */,
 				A93E6B5810420ACA007D418B /* wrap_GearJoint.cpp */,
@@ -1822,6 +1827,7 @@
 				A9D1D2041422578C00A8BC2F /* wrap_RopeJoint.cpp in Sources */,
 				A9D1D20A1422959100A8BC2F /* ChainShape.cpp in Sources */,
 				A9D1D20D14229B6500A8BC2F /* wrap_ChainShape.cpp in Sources */,
+				A958F911142D364C007F320F /* wrap_Fixture.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
