@@ -87,25 +87,18 @@ namespace box2d
 	public:
 
 		/**
-		* 30 pixels in one meter by default.
+		* Creates a new world.
 		**/
-		static const int DEFAULT_METER = 30;
+		World();
 
 		/**
-		* Creates a new world with the given bounding box.
-		* @param aabb The bounding box.
-		**/
-		World(b2AABB aabb);
-
-		/**
-		* Creates a new world with the given bounding box, gravity
+		* Creates a new world with the given gravity
 		* and whether or not the bodies should sleep when appropriate.
-		* @param aabb The bounding box.
 		* @param gravity The gravity of the World.
 		* @param sleep True if the bodies should be able to sleep,
 		* false otherwise.
 		**/
-		World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter = DEFAULT_METER);
+		World(b2Vec2 gravity, bool sleep);
 
 		virtual ~World();
 

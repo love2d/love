@@ -96,19 +96,19 @@ namespace box2d
 
 	}
 
-	World::World(b2AABB aabb)
-		: world(NULL), meter(DEFAULT_METER)
+	World::World()
+		: world(NULL)
 	{
-		world = new b2World(Physics::scaleDown(aabb), b2Vec2(0,0), true);
+		world = new b2World(b2Vec2(0,0), true);
 		world->SetContactListener(this);
 		b2BodyDef def;
 		groundBody = world->CreateBody(def);
 	}
 
-	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter)
-		: world(NULL), meter(meter)
+	World::World(b2Vec2 gravity, bool sleep)
+		: world(NULL)
 	{
-		world = new b2World(Physics::scaleDown(aabb), Physics::scaleDown(gravity), sleep);
+		world = new b2World(Physics::scaleDown(gravity), sleep);
 		world->SetContactListener(this);
 	}
 

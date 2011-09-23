@@ -39,12 +39,10 @@ namespace box2d
 		return "love.physics.box2d";
 	}
 
-	World * Physics::newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep, int meter)
+	World * Physics::newWorld(float gx, float gy, bool sleep, int meter)
 	{
-		b2AABB aabb;
-		aabb.lowerBound.Set(lx, ly);
-		aabb.upperBound.Set(ux, uy);
-		return new World(aabb, b2Vec2(gx, gy), sleep, meter);
+		Physics::setMeter(meter);
+		return new World(b2Vec2(gx, gy), sleep);
 	}
 
 	Body * Physics::newBody(World * world, float x, float y, float mass, float i)

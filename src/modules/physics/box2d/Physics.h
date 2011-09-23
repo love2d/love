@@ -57,22 +57,23 @@ namespace box2d
 		static int meter;
 
 	public:
+		
+		/**
+		* 30 pixels in one meter by default.
+		**/
+		static const int DEFAULT_METER = 30;
 
 		// Implements Module.
 		const char * getName() const;
 
 		/**
 		* Creates a new World.
-		* @param lx Lower bound on the x-axis.
-		* @param ly Lower bound on the y-axis.
-		* @param ux Upper bound on the x-axis.
-		* @param uy Upper bound on the y-axis.
 		* @param gx Gravity along x-axis.
 		* @param gy Gravity along y-axis.
 		* @param sleep Whether the World allows sleep.
 		* @param meter The scale in px/m.
 		**/
-		World * newWorld(float lx, float ly, float ux, float uy, float gx, float gy, bool sleep, int meter);
+		World * newWorld(float gx, float gy, bool sleep, int meter);
 
 		/**
 		* Creates a new Body at the specified position.
