@@ -69,7 +69,7 @@ namespace box2d
 			std::vector<Contact *> contacts;
 			ContactCallback();
 			~ContactCallback();
-			void add(World * world, const b2ContactPoint* point);
+			void add(World * world, const b2Contact* contact);
 			void process();
 		};
 
@@ -82,7 +82,7 @@ namespace box2d
         b2Body * groundBody;
 
 		// Contact callbacks.
-		ContactCallback add, persist, remove, result;
+		ContactCallback begin, end, presolve, postsolve;
 
 	public:
 
@@ -111,16 +111,16 @@ namespace box2d
 		void update(float dt);
 
 		// From b2ContactListener
-		void Add(const b2ContactPoint* point);
-		void Persist(const b2ContactPoint* point);
-		void Remove(const b2ContactPoint* point);
-		void Result(const b2ContactPoint* point);
+		void BeginContact(b2Contact* contact);
+		void EndContact(b2Contact* contact);
+		void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);
+		void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
 
 		/**
 		* Receives up to four Lua functions as arguments. Each function is
-		* collision callback for the four events (in order): add, persist,
-		* remove and result. The value "nil" is accepted if one or more events
-		* are uninteresting.
+		* collision callback for the four events (in order): begin, end,
+		* presolve and postsolve. The value "nil" is accepted if one or
+		* more events are uninteresting.
 		**/
 		int setCallbacks(lua_State * L);
 
@@ -147,13 +147,13 @@ namespace box2d
 		* Sets whether this World allows sleep.
 		* @param allow True to allow, false to disallow.
 		**/
-		void setAllowSleep(bool allow);
+		void setAllowSleeping(bool allow);
 
 		/**
 		* Returns whether this World allows sleep.
 		* @return True if allowed, false if disallowed.
 		**/
-		bool isAllowSleep() const;
+		bool getAllowSleeping() const;
 
 		/**
 		* Get the current body count.

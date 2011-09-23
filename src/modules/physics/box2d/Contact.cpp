@@ -28,8 +28,8 @@ namespace physics
 {
 namespace box2d
 {
-	Contact::Contact(World * world, const b2ContactPoint * point)
-		: point(*point), world(world)
+	Contact::Contact(World * world, b2Contact * contact)
+		: contact(contact), world(world)
 	{
 		world->retain();
 	}

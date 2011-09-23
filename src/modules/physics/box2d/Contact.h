@@ -49,8 +49,8 @@ namespace box2d
 
 	private:
 
-		// The Box2D contact point.
-		b2ContactPoint point;
+		// The Box2D contact.
+		b2Contact* contact;
 
 		// The parent world. Needed for scaling.
 		World * world;
@@ -63,7 +63,7 @@ namespace box2d
 		* data pointed to.
 		* @param point Pointer to the Box2D contact.
 		**/
-		Contact(World * world, const b2ContactPoint * point);
+		Contact(World * world, const b2Contact * contact);
 
 		virtual ~Contact();
 

@@ -20,6 +20,7 @@
 
 #include "World.h"
 
+#include "Fixture.h"
 #include "Shape.h"
 #include "Contact.h"
 #include "Physics.h"
@@ -43,7 +44,7 @@ namespace box2d
 			delete ref;
 	}
 
-	void World::ContactCallback::add(World * world, const b2ContactPoint* point)
+	void World::ContactCallback::add(World * world, const b2Contact* contact)
 	{
 		/**
 		* We must copy contacts, since we're not allowed to process
@@ -52,7 +53,7 @@ namespace box2d
 		**/
 
 		if(ref != 0)
-			contacts.push_back(new Contact(world, point));
+			contacts.push_back(new Contact(world, contact));
 	}
 
 	void World::ContactCallback::process()
@@ -68,16 +69,16 @@ namespace box2d
 
 				// Push first userdata.
 				{
-					shapeudata * d = (shapeudata *)(contacts[i]->point.shape1->GetUserData());
+					fixtureudata * d = (fixtureudata *)(contacts[i]->contact->GetFixtureA()->GetUserData());
 					if(d->ref != 0)
 						d->ref->push();
 					else
 						lua_pushnil(L);
 				}
 
-				// Push first userdata.
+				// Push second userdata.
 				{
-					shapeudata * d = (shapeudata *)(contacts[i]->point.shape2->GetUserData());
+					fixtureudata * d = (fixtureudata *)(contacts[i]->contact->GetFixtureB()->GetUserData());
 					if(d->ref != 0)
 						d->ref->push();
 					else
@@ -99,16 +100,18 @@ namespace box2d
 	World::World()
 		: world(NULL)
 	{
-		world = new b2World(b2Vec2(0,0), true);
+		world = new b2World(b2Vec2(0,0));
+		world->SetAllowSleeping(true);
 		world->SetContactListener(this);
 		b2BodyDef def;
-		groundBody = world->CreateBody(def);
+		groundBody = world->CreateBody(&def);
 	}
 
 	World::World(b2Vec2 gravity, bool sleep)
 		: world(NULL)
 	{
-		world = new b2World(Physics::scaleDown(gravity), sleep);
+		world = new b2World(Physics::scaleDown(gravity));
+		world->SetAllowSleeping(sleep);
 		world->SetContactListener(this);
 	}
 
@@ -120,33 +123,33 @@ namespace box2d
 
 	void World::update(float dt)
 	{
-		world->Step(dt, 10);
+		world->Step(dt, 8, 6);
 
 
-		add.process();
-		persist.process();
-		remove.process();
-		result.process();
+		begin.process();
+		end.process();
+		presolve.process();
+		postsolve.process();
 	}
 
-	void World::Add(const b2ContactPoint* point)
+	void World::BeginContact(b2Contact* contact)
 	{
-		add.add(this, point);
+		begin.add(this, contact);
 	}
 
-	void World::Persist(const b2ContactPoint* point)
+	void World::EndContact(b2Contact* contact)
 	{
-		persist.add(this, point);
+		end.add(this, contact);
 	}
 
-	void World::Remove(const b2ContactPoint* point)
+	void World::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
-		remove.add(this, point);
+		presolve.add(this, contact);
 	}
 
-	void World::Result(const b2ContactPoint* point)
+	void World::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
-		result.add(this, point);
+		postsolve.add(this, contact);
 	}
 
 	int World::setCallbacks(lua_State * L)
@@ -157,17 +160,17 @@ namespace box2d
 		switch(n)
 		{
 		case 4:
-			if (result.ref) delete result.ref;
-			result.ref = luax_refif(L, LUA_TFUNCTION);
+			if (postsolve.ref) delete postsolve.ref;
+			postsolve.ref = luax_refif(L, LUA_TFUNCTION);
 		case 3:
-			if (remove.ref) delete remove.ref;
-			remove.ref = luax_refif(L, LUA_TFUNCTION);
+			if (presolve.ref) delete presolve.ref;
+			presolve.ref = luax_refif(L, LUA_TFUNCTION);
 		case 2:
-			if (persist.ref) delete persist.ref;
-			persist.ref = luax_refif(L, LUA_TFUNCTION);
+			if (end.ref) delete end.ref;
+			end.ref = luax_refif(L, LUA_TFUNCTION);
 		case 1:
-			if (add.ref) delete add.ref;
-			add.ref = luax_refif(L, LUA_TFUNCTION);
+			if (begin.ref) delete begin.ref;
+			begin.ref = luax_refif(L, LUA_TFUNCTION);
 		}
 
 		return 0;
@@ -175,10 +178,10 @@ namespace box2d
 
 	int World::getCallbacks(lua_State * L)
 	{
-		add.ref ? add.ref->push() : lua_pushnil(L);
-		persist.ref ? persist.ref->push() : lua_pushnil(L);
-		remove.ref ? remove.ref->push() : lua_pushnil(L);
-		result.ref ? result.ref->push() : lua_pushnil(L);
+		begin.ref ? begin.ref->push() : lua_pushnil(L);
+		end.ref ? end.ref->push() : lua_pushnil(L);
+		presolve.ref ? presolve.ref->push() : lua_pushnil(L);
+		postsolve.ref ? postsolve.ref->push() : lua_pushnil(L);
 		return lua_gettop(L);
 	}
 
@@ -189,20 +192,20 @@ namespace box2d
 
 	int World::getGravity(lua_State * L)
 	{
-		b2Vec2 v = Physics::scaleUp(world->m_gravity);
+		b2Vec2 v = Physics::scaleUp(world->GetGravity());
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		return 2;
 	}
 
-	void World::setAllowSleep(bool allow)
+	void World::setAllowSleeping(bool allow)
 	{
-		world->m_allowSleep = allow;
+		world->SetAllowSleeping(allow);
 	}
 
-	bool World::isAllowSleep() const
+	bool World::getAllowSleeping() const
 	{
-		return world->m_allowSleep;
+		return world->GetAllowSleeping();
 	}
 
 	int World::getBodyCount()

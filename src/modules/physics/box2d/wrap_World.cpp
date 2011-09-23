@@ -70,18 +70,18 @@ namespace box2d
 		return t->getGravity(L);
 	}
 
-	int w_World_setAllowSleep(lua_State * L)
+	int w_World_setAllowSleeping(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
 		bool b = luax_toboolean(L, 2);
-		t->setAllowSleep(b);
+		t->setAllowSleeping(b);
 		return 0;
 	}
 
-	int w_World_isAllowSleep(lua_State * L)
+	int w_World_getAllowSleeping(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
-		luax_pushboolean(L, t->isAllowSleep());
+		luax_pushboolean(L, t->getAllowSleeping());
 		return 1;
 	}
 
@@ -105,8 +105,8 @@ namespace box2d
 		{ "getCallbacks", w_World_getCallbacks },
 		{ "setGravity", w_World_setGravity },
 		{ "getGravity", w_World_getGravity },
-		{ "setAllowSleep", w_World_setAllowSleep },
-		{ "isAllowSleep", w_World_isAllowSleep },
+		{ "setAllowSleeping", w_World_setAllowSleeping },
+		{ "getAllowSleeping", w_World_getAllowSleeping },
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
 		{ 0, 0 }
