@@ -33,6 +33,12 @@ namespace physics
 namespace box2d
 {
 	WeldJoint * luax_checkweldjoint(lua_State * L, int idx);
+	
+	int w_WeldJoint_setFrequency(lua_State * L);
+	int w_WeldJoint_getFrequency(lua_State * L);
+	int w_WeldJoint_setDampingRatio(lua_State * L);
+	int w_WeldJoint_getDampingRatio(lua_State * L);
+	
 	int luaopen_weldjoint(lua_State * L);
 
 } // box2d

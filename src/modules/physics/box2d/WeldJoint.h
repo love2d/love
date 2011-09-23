@@ -49,6 +49,28 @@ namespace box2d
 		
 		virtual ~WeldJoint();
 
+		/**
+		* Sets the response speed.
+		**/
+		void setFrequency(float hz);
+
+		/**
+		* Gets the response speed.
+		**/
+		float getFrequency() const;
+
+		/**
+		* Sets the damping ratio.
+		* 0 = no damping, 1 = critical damping.
+		**/
+		void setDampingRatio(float d);
+
+		/**
+		* Gets the damping ratio.
+		* 0 = no damping, 1 = critical damping.
+		**/
+		float getDampingRatio() const;
+
 	};
 
 } // box2d

@@ -47,6 +47,26 @@ namespace box2d
 		destroyJoint(joint);
 		joint = 0;
 	}
+	
+	void WeldJoint::setFrequency(float hz)
+	{
+		joint->SetFrequency(hz);
+	}
+
+	float WeldJoint::getFrequency() const
+	{
+		return joint->GetFrequency();
+	}
+
+	void WeldJoint::setDampingRatio(float d)
+	{
+		joint->SetDampingRatio(d);
+	}
+
+	float WeldJoint::getDampingRatio() const
+	{
+		return joint->GetDampingRatio();
+	}
 
 } // box2d
 } // physics
