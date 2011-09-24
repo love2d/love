@@ -133,6 +133,8 @@ namespace box2d
 		world = new b2World(Physics::scaleDown(gravity));
 		world->SetAllowSleeping(sleep);
 		world->SetContactListener(this);
+		b2BodyDef def;
+		groundBody = world->CreateBody(&def);
 	}
 
 	World::~World()
