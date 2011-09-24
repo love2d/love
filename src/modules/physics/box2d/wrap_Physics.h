@@ -27,6 +27,7 @@
 #include "wrap_World.h"
 #include "wrap_Contact.h"
 #include "wrap_Body.h"
+#include "wrap_Fixture.h"
 #include "wrap_Shape.h"
 #include "wrap_CircleShape.h"
 #include "wrap_PolygonShape.h"

@@ -300,6 +300,7 @@ namespace box2d
 		luaopen_world,
 		luaopen_contact,
 		luaopen_body,
+		luaopen_fixture,
 		luaopen_shape,
 		luaopen_circleshape,
 		luaopen_polygonshape,
