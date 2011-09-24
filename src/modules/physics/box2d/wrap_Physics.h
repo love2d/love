@@ -53,6 +53,7 @@ namespace box2d
 {
 	int w_newWorld(lua_State * L);
 	int w_newBody(lua_State * L);
+	int w_newFixture(lua_State * L);
 	int w_newCircleShape(lua_State * L);
 	int w_newRectangleShape(lua_State * L);
 	int w_newPolygonShape(lua_State * L);

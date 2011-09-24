@@ -373,10 +373,6 @@ namespace box2d
 		* Get the World this Body resides in.
 		*/
 		World * getWorld() const;
-		
-		Fixture * createFixture(Shape * shape, float density);
-		
-		void destroyFixture(Fixture * fixture);
 	private:
 
 		/**

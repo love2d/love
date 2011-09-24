@@ -499,24 +499,6 @@ namespace box2d
 		luax_pushboolean(L, b);
 		return 1;
 	}
-	
-	int w_Body_createFixture(lua_State * L)
-	{
-		Body * t = luax_checkbody(L, 1);
-		Shape * s = luax_checktype<Shape>(L, 2, "Shape", PHYSICS_SHAPE_T);
-		float d = (float)luaL_checknumber(L, 3);
-		Fixture * f = t->createFixture(s, d);
-		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
-		return 1;
-	}
-	
-	int w_Body_destroyFixture(lua_State * L)
-	{
-		Body * t = luax_checkbody(L, 1);
-		Fixture * f = luax_checktype<Fixture>(L, 2, "Fixture", PHYSICS_FIXTURE_T);
-		t->destroyFixture(f);
-		return 0;
-	}
 
 	int w_Body_destroy(lua_State * L)
 	{
@@ -579,8 +561,6 @@ namespace box2d
 		{ "setAwake", w_Body_setAwake },
 		{ "setFixedRotation", w_Body_setFixedRotation },
 		{ "isFixedRotation", w_Body_isFixedRotation },
-		{ "createFixture", w_Body_createFixture },
-		{ "destroyFixture", w_Body_destroyFixture },
 		{ "destroy", w_Body_destroy },
 		{ 0, 0 }
 	};

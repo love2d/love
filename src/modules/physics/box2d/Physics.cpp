@@ -203,6 +203,11 @@ namespace box2d
 		return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
 	}
 	
+	Fixture * Physics::newFixture(Body * body, Shape * shape, float density)
+	{
+		return new Fixture(body, shape, density);
+	}
+	
 	void Physics::setMeter(int meter)
 	{
 		Physics::meter = meter;

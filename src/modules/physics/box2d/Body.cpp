@@ -383,16 +383,6 @@ namespace box2d
 	{
 		return world;
 	}
-	
-	Fixture * Body::createFixture(Shape * shape, float density)
-	{
-		return new Fixture(this, shape, density);
-	}
-	
-	void Body::destroyFixture(Fixture * fixture)
-	{
-		fixture->release();
-	}
 
 	b2Vec2 Body::getVector(lua_State * L)
 	{

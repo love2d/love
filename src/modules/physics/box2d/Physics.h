@@ -250,73 +250,81 @@ namespace box2d
 		RopeJoint * newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
 		
 		/**
-		 * Sets the number of pixels in one meter.
-		 * @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
-		 **/
+		* Creates a new Fixture attaching shape to body.
+		* @param body The body to attach the Fixture to.
+		* @param shape The shape to attach to the Fixture,
+		* @param density The density of the Fixture.
+		**/
+		
+		Fixture * newFixture(Body * body, Shape * shape, float density);
+		
+		/**
+		* Sets the number of pixels in one meter.
+		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+		**/
 		static void setMeter(int meter);
 		
 		/**
-		 * Gets the number of pixels in one meter.
-		 * @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
-		 **/
+		* Gets the number of pixels in one meter.
+		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+		**/
 		static int getMeter();
 		
 		/**
-		 * Scales a value down according to the current meter in pixels.
-		 * @param f The unscaled input value.
-		 **/
+		* Scales a value down according to the current meter in pixels.
+		* @param f The unscaled input value.
+		**/
 		static float scaleDown(float f);
 		
 		/**
-		 * Scales a value up according to the current meter in pixels.
-		 * @param f The unscaled input value.
-		 **/
+		* Scales a value up according to the current meter in pixels.
+		* @param f The unscaled input value.
+		**/
 		static float scaleUp(float f);
 		
 		/**
-		 * Scales a point down according to the current meter
-		 * in pixels, for instance x = x0/meter, y = x0/meter.
-		 * @param x The x-coordinate of the point to scale.
-		 * @param y The y-coordinate of the point to scale.
-		 **/
+		* Scales a point down according to the current meter
+		* in pixels, for instance x = x0/meter, y = x0/meter.
+		* @param x The x-coordinate of the point to scale.
+		* @param y The y-coordinate of the point to scale.
+		**/
 		static void scaleDown(float & x, float & y);
 		
 		/**
-		 * Scales a point up according to the current meter
-		 * in pixels, for instance x = x0/meter, y = x0/meter.
-		 * @param x The x-coordinate of the point to scale.
-		 * @param y The y-coordinate of the point to scale.
-		 **/
+		* Scales a point up according to the current meter
+		* in pixels, for instance x = x0/meter, y = x0/meter.
+		* @param x The x-coordinate of the point to scale.
+		* @param y The y-coordinate of the point to scale.
+		**/
 		static void scaleUp(float & x, float & y);
 		
 		/**
-		 * Scales a b2Vec2 down according to the current meter in pixels.
-		 * @param v The unscaled input vector.
-		 * @return The scaled vector.
-		 **/
+		* Scales a b2Vec2 down according to the current meter in pixels.
+		* @param v The unscaled input vector.
+		* @return The scaled vector.
+		**/
 		static b2Vec2 scaleDown(const b2Vec2 & v);
 		
 		/**
-		 * Scales a b2Vec up according to the current meter in pixels.
-		 * @param v The unscaled input vector.
-		 * @return The scaled vector.
-		 **/
+		* Scales a b2Vec up according to the current meter in pixels.
+		* @param v The unscaled input vector.
+		* @return The scaled vector.
+		**/
 		static b2Vec2 scaleUp(const b2Vec2 & v);
 		
 		/**
-		 * Scales a b2AABB down according to the current meter in pixels.
-		 * @param v The unscaled input AABB.
-		 * @return The scaled AABB.
-		 **/
+		* Scales a b2AABB down according to the current meter in pixels.
+		* @param v The unscaled input AABB.
+		* @return The scaled AABB.
+		**/
 		static b2AABB scaleDown(const b2AABB & aabb);
 		
 		/**
-		 * Scales a b2AABB up according to the current meter in pixels.
-		 * @param v The unscaled input AABB.
-		 * @return The scaled AABB.
-		 **/
+		* Scales a b2AABB up according to the current meter in pixels.
+		* @param v The unscaled input AABB.
+		* @return The scaled AABB.
+		**/
 		static b2AABB scaleUp(const b2AABB & aabb);
-
 
 	}; // Physics
 

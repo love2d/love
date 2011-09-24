@@ -54,6 +54,16 @@ namespace box2d
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
 	}
+	
+	int w_newFixture(lua_State * L)
+	{
+		Body * body = luax_checkbody(L, 1);
+		Shape * shape = luax_checkshape(L, 2);
+		float density = (float)luaL_checknumber(L, 3);
+		Fixture * fixture = instance->newFixture(body, shape, density);
+		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
+		return 1;
+	}
 
 	int w_newCircleShape(lua_State * L)
 	{
@@ -279,6 +289,7 @@ namespace box2d
 	static const luaL_Reg functions[] = {
 		{ "newWorld", w_newWorld },
 		{ "newBody", w_newBody },
+		{ "newFixture", w_newFixture },
 		{ "newCircleShape", w_newCircleShape },
 		{ "newRectangleShape", w_newRectangleShape },
 		{ "newPolygonShape", w_newPolygonShape },
