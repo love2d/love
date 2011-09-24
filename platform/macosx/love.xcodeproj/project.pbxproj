@@ -115,7 +115,6 @@
 		A946D7F910424E57002BF36C /* wrap_World.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B6A10420ACA007D418B /* wrap_World.cpp */; };
 		A946D7FA10424E57002BF36C /* wrap_RevoluteJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B6610420ACA007D418B /* wrap_RevoluteJoint.cpp */; };
 		A946D7FB10424E57002BF36C /* wrap_PrismaticJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B6210420ACA007D418B /* wrap_PrismaticJoint.cpp */; };
-		A946D7FC10424E57002BF36C /* GrahamScanConvexHull.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AF610420AC7007D418B /* GrahamScanConvexHull.cpp */; };
 		A946D7FE10424E57002BF36C /* wrap_MouseJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B5C10420ACA007D418B /* wrap_MouseJoint.cpp */; };
 		A946D7FF10424E57002BF36C /* wrap_Physics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B5E10420ACA007D418B /* wrap_Physics.cpp */; };
 		A946D80210424E57002BF36C /* PrismaticJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B0210420AC8007D418B /* PrismaticJoint.cpp */; };
@@ -442,8 +441,6 @@
 		A93E6AF210420AC7007D418B /* DistanceJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DistanceJoint.h; sourceTree = "<group>"; };
 		A93E6AF310420AC7007D418B /* GearJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GearJoint.cpp; sourceTree = "<group>"; };
 		A93E6AF410420AC7007D418B /* GearJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GearJoint.h; sourceTree = "<group>"; };
-		A93E6AF610420AC7007D418B /* GrahamScanConvexHull.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GrahamScanConvexHull.cpp; sourceTree = "<group>"; };
-		A93E6AF710420AC8007D418B /* GrahamScanConvexHull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrahamScanConvexHull.h; sourceTree = "<group>"; };
 		A93E6AFA10420AC8007D418B /* Joint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Joint.cpp; sourceTree = "<group>"; };
 		A93E6AFB10420AC8007D418B /* Joint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Joint.h; sourceTree = "<group>"; };
 		A93E6AFC10420AC8007D418B /* MouseJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MouseJoint.cpp; sourceTree = "<group>"; };
@@ -572,9 +569,9 @@
 		A96F417814127EFD0067FE9A /* b2EdgeAndCircleContact.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2EdgeAndCircleContact.cpp; sourceTree = "<group>"; };
 		A96F417914127EFD0067FE9A /* b2EdgeAndCircleContact.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2EdgeAndCircleContact.h; sourceTree = "<group>"; };
 		A96F417A14127EFD0067FE9A /* b2EdgeAndPolygonContact.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2EdgeAndPolygonContact.cpp; sourceTree = "<group>"; };
-		A96F417B14127EFD0067FE9A /* b2EdgeAndPolygonContact.h */ = {isa = PBXFileReference; fileEncoding = 4; path = b2EdgeAndPolygonContact.h; sourceTree = "<group>"; };
+		A96F417B14127EFD0067FE9A /* b2EdgeAndPolygonContact.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2EdgeAndPolygonContact.h; sourceTree = "<group>"; };
 		A96F417E14127FC20067FE9A /* b2EdgeShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2EdgeShape.cpp; sourceTree = "<group>"; };
-		A96F417F14127FC20067FE9A /* b2EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; path = b2EdgeShape.h; sourceTree = "<group>"; };
+		A96F417F14127FC20067FE9A /* b2EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2EdgeShape.h; sourceTree = "<group>"; };
 		A96F41811412AFB70067FE9A /* wrap_WeldJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_WeldJoint.cpp; sourceTree = "<group>"; };
 		A96F41821412AFC60067FE9A /* wrap_WeldJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_WeldJoint.h; sourceTree = "<group>"; };
 		A96F41841412AFEB0067FE9A /* WeldJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WeldJoint.cpp; sourceTree = "<group>"; };
@@ -1231,7 +1228,6 @@
 				A9B6432B13BF837800DC3C7E /* FrictionJoint.h */,
 				A93E6AF310420AC7007D418B /* GearJoint.cpp */,
 				A93E6AF410420AC7007D418B /* GearJoint.h */,
-				A93E6AF510420AC7007D418B /* graham */,
 				A93E6AFA10420AC8007D418B /* Joint.cpp */,
 				A93E6AFB10420AC8007D418B /* Joint.h */,
 				A93E6AFC10420AC8007D418B /* MouseJoint.cpp */,
@@ -1300,15 +1296,6 @@
 				A93E6B6B10420ACB007D418B /* wrap_World.h */,
 			);
 			path = box2d;
-			sourceTree = "<group>";
-		};
-		A93E6AF510420AC7007D418B /* graham */ = {
-			isa = PBXGroup;
-			children = (
-				A93E6AF610420AC7007D418B /* GrahamScanConvexHull.cpp */,
-				A93E6AF710420AC8007D418B /* GrahamScanConvexHull.h */,
-			);
-			path = graham;
 			sourceTree = "<group>";
 		};
 		A93E6B7410420ACB007D418B /* sound */ = {
@@ -1730,7 +1717,6 @@
 				A946D7F910424E57002BF36C /* wrap_World.cpp in Sources */,
 				A946D7FA10424E57002BF36C /* wrap_RevoluteJoint.cpp in Sources */,
 				A946D7FB10424E57002BF36C /* wrap_PrismaticJoint.cpp in Sources */,
-				A946D7FC10424E57002BF36C /* GrahamScanConvexHull.cpp in Sources */,
 				A946D7FE10424E57002BF36C /* wrap_MouseJoint.cpp in Sources */,
 				A946D7FF10424E57002BF36C /* wrap_Physics.cpp in Sources */,
 				A946D80210424E57002BF36C /* PrismaticJoint.cpp in Sources */,

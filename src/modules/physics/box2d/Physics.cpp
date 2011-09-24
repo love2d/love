@@ -20,9 +20,6 @@
 
 #include "Physics.h"
 
-// Convex Hull Scan
-#include "graham/GrahamScanConvexHull.h"
-
 // LOVE
 #include <common/math.h>
 #include "wrap_Body.h"
@@ -102,35 +99,18 @@ namespace box2d
 		love::luax_assert_argc(L, 2 * 3);
 
 		b2PolygonShape* s = new b2PolygonShape();
-
-		std::vector<point2d> points(s->m_vertexCount);
-		std::vector<point2d> convex_hull;
+		
+		b2Vec2 * vecs = new b2Vec2[vcount];
 
 		for(int i = 0;i<vcount;i++)
 		{
 			float x = (float)lua_tonumber(L, -2);
 			float y = (float)lua_tonumber(L, -1);
-			point2d tmp(x, y);
-			points.push_back(tmp);
+			vecs[i] = (Physics::scaleDown(b2Vec2(x, y)));
 			lua_pop(L, 2);
 		}
-
-		// Compute convex hull.
-		GrahamScanConvexHull()(points, convex_hull);
 		
-		int count = convex_hull.size();
-
-		if(count < 3)
-			return luaL_error(L, "Polygon degenerated to less than three points.");
-		
-		b2Vec2 * vecs = new b2Vec2[count];
-		
-		for (int i = 0; i < count; i++) {
-			vecs[i].Set(convex_hull[i].x, convex_hull[i].y);
-			vecs[i] = Physics::scaleDown(vecs[i]);
-		}
-		
-		s->Set(vecs, count);
+		s->Set(vecs, vcount);
 
 		PolygonShape * p = new PolygonShape(s);
 		delete[] vecs;
