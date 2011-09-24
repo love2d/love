@@ -33,6 +33,8 @@ namespace physics
 {
 namespace box2d
 {
+	
+	int Physics::meter = Physics::DEFAULT_METER;
 
 	const char * Physics::getName() const
 	{
@@ -218,8 +220,6 @@ namespace box2d
 	{
 		return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
 	}
-	
-	
 	
 	void Physics::setMeter(int meter)
 	{
