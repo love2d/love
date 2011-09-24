@@ -282,6 +282,12 @@ namespace box2d
 		* @returns The y-coordinate of the vector in world coordinates.
 		**/
 		void getWorldVector(float x, float y, float & x_o, float & y_o);
+		
+		/**
+		* Transforms a series of points (x, y) from local coordinates
+		* to world coordinates.
+		**/
+		int getWorldPoints(lua_State * L);
 
 		/**
 		* Transforms a point (x, y) from world coordinates

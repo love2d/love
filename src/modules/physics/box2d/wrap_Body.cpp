@@ -360,6 +360,13 @@ namespace box2d
 
 		return 2;
 	}
+	
+	int w_Body_getWorldPoints(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		lua_remove(L, 1);
+		return t->getWorldPoints(L);
+	}
 
 	int w_Body_getLocalPoint(lua_State * L)
 	{
@@ -557,6 +564,7 @@ namespace box2d
 		{ "setType", w_Body_setType },
 		{ "getWorldPoint", w_Body_getWorldPoint },
 		{ "getWorldVector", w_Body_getWorldVector },
+		{ "getWorldPoints", w_Body_getWorldPoints },
 		{ "getLocalPoint", w_Body_getLocalPoint },
 		{ "getLocalVector", w_Body_getLocalVector },
 		{ "getLinearVelocityFromWorldPoint", w_Body_getLinearVelocityFromWorldPoint },

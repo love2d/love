@@ -67,6 +67,7 @@ namespace box2d
 	int w_Body_setType(lua_State * L);
 	int w_Body_getWorldPoint(lua_State * L);
 	int w_Body_getWorldVector(lua_State * L);
+	int w_Body_getWorldPoints(lua_State * L);
 	int w_Body_getLocalPoint(lua_State * L);
 	int w_Body_getLocalVector(lua_State * L);
 	int w_Body_getLinearVelocityFromWorldPoint(lua_State * L);

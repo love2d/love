@@ -281,6 +281,25 @@ namespace box2d
 		x_o = v.x;
 		y_o = v.y;
 	}
+	
+	int Body::getWorldPoints(lua_State * L)
+	{
+		int argc = lua_gettop(L);
+		int vcount = (int)argc/2;
+		// at least one point
+		love::luax_assert_argc(L, 2);
+		
+		for(int i = 0;i<vcount;i++)
+		{
+			float x = (float)lua_tonumber(L, i*2+1);
+			float y = (float)lua_tonumber(L, i*2+2);
+			b2Vec2 point = Physics::scaleUp(body->GetWorldPoint(Physics::scaleDown(b2Vec2(x, y))));
+			lua_pushnumber(L, point.x);
+			lua_pushnumber(L, point.y);
+		}
+		
+		return argc;
+	}
 
 	void Body::getLocalPoint(float x, float y, float & x_o, float & y_o)
 	{
