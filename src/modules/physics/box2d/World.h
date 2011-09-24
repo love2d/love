@@ -214,6 +214,30 @@ namespace box2d
 		* @return The number of joints.
 		**/
 		int getJointCount();
+		
+		/**
+		* Get the current contact count.
+		* @return The number of contacts.
+		**/
+		int getContactCount();
+		
+		/**
+		* Get an array of all the Bodies in the World.
+		* @return An array of Bodies.
+		**/
+		int getBodyList(lua_State * L);
+		
+		/**
+		* Get an array of all the Joints in the World.
+		* @return An array of Joints.
+		**/
+		int getJointList(lua_State * L);
+		
+		/**
+		* Get an array of all the Contacts in the World.
+		* @return An array of Contacts.
+		**/
+		int getContactList(lua_State * L);
         
         /**
         * Gets the ground body.

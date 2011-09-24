@@ -113,6 +113,34 @@ namespace box2d
 		return 1;
 	}
 	
+	int w_World_getContactCount(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_pushinteger(L, t->getContactCount());
+		return 1;
+	}
+	
+	int w_World_getBodyList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getBodyList(L);
+	}
+	
+	int w_World_getJointList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getJointList(L);
+	}
+	
+	int w_World_getContactList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getContactList(L);
+	}
+	
 	int w_World_queryBoundingBox(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
@@ -139,6 +167,10 @@ namespace box2d
 		{ "getAllowSleeping", w_World_getAllowSleeping },
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
+		{ "getContactCount", w_World_getContactCount },
+		{ "getBodyList", w_World_getBodyList },
+		{ "getJointList", w_World_getJointList },
+		{ "getContactList", w_World_getContactList },
 		{ "queryBoundingBox", w_World_queryBoundingBox },
 		{ "rayCast", w_World_rayCast },
 		{ 0, 0 }

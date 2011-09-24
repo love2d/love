@@ -22,6 +22,8 @@
 #include "World.h"
 #include "Physics.h"
 
+#include <common/Memoizer.h>
+
 namespace love
 {
 namespace physics
@@ -31,10 +33,12 @@ namespace box2d
 	Contact::Contact(b2Contact * contact)
 		: contact(contact)
 	{
+		Memoizer::add(contact, this);
 	}
 
 	Contact::~Contact()
 	{
+		Memoizer::remove(contact);
 	}
 
 	int Contact::getPositions(lua_State * L)
