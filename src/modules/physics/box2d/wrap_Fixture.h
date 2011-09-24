@@ -43,6 +43,7 @@ namespace box2d
 	int w_Fixture_isSensor(lua_State * L);
 	int w_Fixture_getBody(lua_State * L);
 	int w_Fixture_getShape(lua_State * L);
+	int w_Fixture_getNext(lua_State * L);
 	int w_Fixture_testPoint(lua_State * L);
 	int w_Fixture_rayCast(lua_State * L);
 	int w_Fixture_setFilterData(lua_State * L);

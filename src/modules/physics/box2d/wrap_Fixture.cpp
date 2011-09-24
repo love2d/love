@@ -122,6 +122,16 @@ namespace box2d
 		luax_newtype(L, "Shape", PHYSICS_SHAPE_T, (void*)shape);
 		return 1;
 	}
+	
+	int w_Fixture_getNext(lua_State * L)
+	{
+		Fixture * t = luax_checkfixture(L, 1);
+		Fixture * f = t->getNext();
+		if (f == 0) return 0;
+		f->retain();
+		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
+		return 1;
+	}
 
 	int w_Fixture_testPoint(lua_State * L)
 	{
@@ -254,6 +264,7 @@ namespace box2d
 		{ "getDensity", w_Fixture_getDensity },
 		{ "getBody", w_Fixture_getBody },
 		{ "getShape", w_Fixture_getShape },
+		{ "getNext", w_Fixture_getNext },
 		{ "isSensor", w_Fixture_isSensor },
 		{ "testPoint", w_Fixture_testPoint },
 		{ "rayCast", w_Fixture_rayCast },
