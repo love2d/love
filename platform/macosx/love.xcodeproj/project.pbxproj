@@ -216,6 +216,7 @@
 		A9D1D20D14229B6500A8BC2F /* wrap_ChainShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D1D20C14229B5800A8BC2F /* wrap_ChainShape.cpp */; };
 		A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
+		A9D5C47D142E32EE0044ECF7 /* Memoizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9D5C47C142E32ED0044ECF7 /* Memoizer.cpp */; };
 		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
 		A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1C01046EFA70049C70C /* LoveDocument.icns */; };
 		A9F16927109E7BAD00FC83D1 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
@@ -685,6 +686,8 @@
 		A9D1D20C14229B5800A8BC2F /* wrap_ChainShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ChainShape.cpp; sourceTree = "<group>"; };
 		A9D1D20E14229B7300A8BC2F /* wrap_ChainShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ChainShape.h; sourceTree = "<group>"; };
 		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
+		A9D5C47B142E31350044ECF7 /* Memoizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Memoizer.h; sourceTree = "<group>"; };
+		A9D5C47C142E32ED0044ECF7 /* Memoizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Memoizer.cpp; sourceTree = "<group>"; };
 		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
@@ -810,6 +813,8 @@
 				A93E69E210420ABF007D418B /* math.h */,
 				A93E69E310420ABF007D418B /* Matrix.cpp */,
 				A93E69E410420ABF007D418B /* Matrix.h */,
+				A9D5C47C142E32ED0044ECF7 /* Memoizer.cpp */,
+				A9D5C47B142E31350044ECF7 /* Memoizer.h */,
 				A93E69E510420ABF007D418B /* MemoryData.cpp */,
 				A93E69E610420ABF007D418B /* MemoryData.h */,
 				A93E69E710420ABF007D418B /* Module.h */,
@@ -1819,6 +1824,7 @@
 				A9D1D20D14229B6500A8BC2F /* wrap_ChainShape.cpp in Sources */,
 				A958F911142D364C007F320F /* wrap_Fixture.cpp in Sources */,
 				A958F917142D6B3A007F320F /* Body.cpp in Sources */,
+				A9D5C47D142E32EE0044ECF7 /* Memoizer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
