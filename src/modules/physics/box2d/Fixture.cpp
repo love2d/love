@@ -37,10 +37,9 @@ namespace physics
 namespace box2d
 {
 	Fixture::Fixture(Body * body, Shape * shape, float density)
-		: body(body), shape(shape), fixture(NULL)
+		: body(body), fixture(NULL)
 	{
 		body->retain();
-		shape->retain();
 		data = new fixtureudata();
 		data->ref = 0;
 		b2FixtureDef def;
@@ -48,6 +47,7 @@ namespace box2d
 		def.userData = (void *)data;
 		def.density = density;
 		fixture = body->body->CreateFixture(&def);
+		shape = new Shape(fixture->GetShape());
 		Memoizer::add(fixture, this);
 	}
 	
@@ -60,7 +60,7 @@ namespace box2d
 		body->retain();
 		shape = (Shape *)Memoizer::find(f->GetShape());
 		if (!shape) shape = new Shape(f->GetShape());
-		shape->retain();
+		else shape->retain();
 		Memoizer::add(fixture, this);
 	}
 
@@ -77,6 +77,7 @@ namespace box2d
 		fixture = 0;
 
 		body->release();
+		shape->release();
 	}
 
 	Shape::Type Fixture::getType() const
