@@ -259,6 +259,15 @@ namespace box2d
 		Fixture * newFixture(Body * body, Shape * shape, float density);
 		
 		/**
+		* Calculates the distance between two Fixtures.
+		* @param fixtureA The first Fixture.
+		* @param fixtureB The sceond Fixture.
+		* @return The distance between them, and the two points closest
+		*         to each other.
+		**/
+		int getDistance(lua_State * L);
+		
+		/**
 		* Sets the number of pixels in one meter.
 		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
 		**/

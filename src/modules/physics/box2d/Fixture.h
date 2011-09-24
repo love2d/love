@@ -57,6 +57,8 @@ namespace box2d
 	**/
 	class Fixture : public Object
 	{
+	friend class Physics;
+	
 	protected:
 		
 		Body * body;

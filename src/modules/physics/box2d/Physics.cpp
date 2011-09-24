@@ -208,6 +208,31 @@ namespace box2d
 		return new Fixture(body, shape, density);
 	}
 	
+	int Physics::getDistance(lua_State * L)
+	{
+		Fixture * fixtureA = luax_checktype<Fixture>(L, 1, "Fixture", PHYSICS_FIXTURE_T);
+		Fixture * fixtureB = luax_checktype<Fixture>(L, 2, "Fixture", PHYSICS_FIXTURE_T);
+		b2DistanceInput i;
+		b2DistanceProxy pA;
+		pA.Set(fixtureA->fixture->GetShape(), 0);
+		b2DistanceProxy pB;
+		pB.Set(fixtureB->fixture->GetShape(), 0);
+		i.proxyA = pA;
+		i.proxyB = pB;
+		i.transformA = fixtureA->fixture->GetBody()->GetTransform();
+		i.transformB = fixtureB->fixture->GetBody()->GetTransform();
+		i.useRadii = true;
+		b2DistanceOutput o;
+		b2SimplexCache c;
+		b2Distance(&o, &c, &i);
+		lua_pushnumber(L, o.distance);
+		lua_pushnumber(L, Physics::scaleUp(o.pointA.x));
+		lua_pushnumber(L, Physics::scaleUp(o.pointA.y));
+		lua_pushnumber(L, Physics::scaleUp(o.pointB.x));
+		lua_pushnumber(L, Physics::scaleUp(o.pointB.y));
+		return 5;
+	}
+	
 	void Physics::setMeter(int meter)
 	{
 		Physics::meter = meter;

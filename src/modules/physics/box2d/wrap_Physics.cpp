@@ -272,6 +272,11 @@ namespace box2d
 		return 1;
 	}
 	
+	int w_getDistance(lua_State * L)
+	{
+		return instance->getDistance(L);
+	}
+	
 	int w_setMeter(lua_State * L)
 	{
 		int arg1 = luaL_checkint(L, 1);
