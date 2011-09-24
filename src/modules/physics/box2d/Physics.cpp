@@ -64,10 +64,10 @@ namespace box2d
 
 	CircleShape * Physics::newCircleShape(float x, float y, float radius)
 	{
-		b2CircleShape s;
-		s.m_p = b2Vec2(x, y);
-		s.m_radius = radius;
-		return new CircleShape(&s);
+		b2CircleShape *s = new b2CircleShape();
+		s->m_p = b2Vec2(x, y);
+		s->m_radius = radius;
+		return new CircleShape(s);
 	}
 
 	PolygonShape * Physics::newRectangleShape(float w, float h)
@@ -82,16 +82,16 @@ namespace box2d
 
 	PolygonShape * Physics::newRectangleShape(float x, float y, float w, float h, float angle)
 	{
-		b2PolygonShape s;
-		s.SetAsBox(w/2.0f, h/2.0f, b2Vec2(x, y), angle);
-		return new PolygonShape(&s);
+		b2PolygonShape* s = new b2PolygonShape();
+		s->SetAsBox(w/2.0f, h/2.0f, b2Vec2(x, y), angle);
+		return new PolygonShape(s);
 	}
 	
 	EdgeShape * Physics::newEdgeShape(float x1, float y1, float x2, float y2)
 	{
-		b2EdgeShape s;
-		s.Set(b2Vec2(x1, y1), b2Vec2(x2, y2));
-		return new EdgeShape(&s);
+		b2EdgeShape* s = new b2EdgeShape();
+		s->Set(b2Vec2(x1, y1), b2Vec2(x2, y2));
+		return new EdgeShape(s);
 	}
 
 	int Physics::newPolygonShape(lua_State * L)
@@ -101,9 +101,9 @@ namespace box2d
 		// 3 vertices
 		love::luax_assert_argc(L, 2 * 3);
 
-		b2PolygonShape s;
+		b2PolygonShape* s = new b2PolygonShape();
 
-		std::vector<point2d> points(s.m_vertexCount);
+		std::vector<point2d> points(s->m_vertexCount);
 		std::vector<point2d> convex_hull;
 
 		for(int i = 0;i<vcount;i++)
@@ -129,9 +129,9 @@ namespace box2d
 			vecs[i].Set(convex_hull[i].x, convex_hull[i].y);
 		}
 		
-		s.Set(vecs, count);
+		s->Set(vecs, count);
 
-		PolygonShape * p = new PolygonShape(&s);
+		PolygonShape * p = new PolygonShape(s);
 		delete[] vecs;
 
 		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)p);
@@ -144,7 +144,7 @@ namespace box2d
 		int argc = lua_gettop(L)-1; // first argument is looping
 		int vcount = (int)argc/2;
 		
-		b2ChainShape s;
+		b2ChainShape* s = new b2ChainShape();
 		
 		bool loop = luax_toboolean(L, 1);
 		
@@ -159,11 +159,11 @@ namespace box2d
 		}
 		
 		if (loop)
-			s.CreateLoop(vecs, vcount);
+			s->CreateLoop(vecs, vcount);
 		else
-			s.CreateChain(vecs, vcount);
+			s->CreateChain(vecs, vcount);
 		
-		ChainShape * c = new ChainShape(&s);
+		ChainShape * c = new ChainShape(s);
 		delete[] vecs;
 		
 		luax_newtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, (void*)c);

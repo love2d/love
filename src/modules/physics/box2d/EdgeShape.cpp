@@ -37,6 +37,8 @@ namespace box2d
 
 	EdgeShape::~EdgeShape()
 	{
+		delete shape;
+		shape = NULL;
 	}
 
 } // box2d

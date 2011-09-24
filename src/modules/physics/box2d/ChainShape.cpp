@@ -39,6 +39,8 @@ namespace box2d
 
 	ChainShape::~ChainShape()
 	{
+		delete shape;
+		shape = NULL;
 	}
 	
 	void ChainShape::setNextVertex(float x, float y)

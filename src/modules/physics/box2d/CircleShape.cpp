@@ -37,6 +37,7 @@ namespace box2d
 
 	CircleShape::~CircleShape()
 	{
+		delete shape;
         shape = NULL;
 	}
     

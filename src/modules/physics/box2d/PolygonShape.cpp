@@ -37,6 +37,8 @@ namespace box2d
 
 	PolygonShape::~PolygonShape()
 	{
+		delete shape;
+		shape = NULL;
 	}
 
 	int PolygonShape::getPoints(lua_State * L)
