@@ -50,6 +50,13 @@ namespace box2d
 		return 0;
 	}
 	
+	int w_ChainShape_getChildCount(lua_State * L)
+	{
+		ChainShape * c = luax_checkchainshape(L, 1);
+		lua_pushinteger(L, c->getChildCount());
+		return 1;
+	}
+	
 	int w_ChainShape_getChildEdge(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
@@ -96,6 +103,7 @@ namespace box2d
 	static const luaL_Reg functions[] = {
 		{ "setNextVertex", w_ChainShape_setNextVertex },
 		{ "setPrevVertex", w_ChainShape_setPrevVertex },
+		{ "getChildCount", w_ChainShape_getChildCount },
 		{ "getChildEdge", w_ChainShape_getChildEdge },
 		{ "getVertexCount", w_ChainShape_getVertexCount },
 		{ "getVertex", w_ChainShape_getVertex },

@@ -71,23 +71,29 @@ namespace box2d
 		return new EdgeShape(&e);
 	}
 	
+	int ChainShape::getChildCount() const
+	{
+		b2ChainShape * c = (b2ChainShape *)shape;
+		return c->GetChildCount();
+	}
+	
 	int ChainShape::getVertexCount() const
 	{
 		b2ChainShape * c = (b2ChainShape *)shape;
-		return c->GetVertexCount();
+		return c->m_count;
 	}
 	
 	b2Vec2 ChainShape::getVertex(int index) const
 	{
 		b2ChainShape * c = (b2ChainShape *)shape;
-		const b2Vec2 & v = c->GetVertex(index);
+		const b2Vec2 & v = c->m_vertices[index];
 		return Physics::scaleUp(v);
 	}
 	
 	const b2Vec2 * ChainShape::getVertices() const
 	{
 		b2ChainShape * c = (b2ChainShape *)shape;
-		return c->GetVertices();
+		return c->m_vertices;
 	}
 
 } // box2d
