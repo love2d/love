@@ -24,6 +24,8 @@
 #include "Body.h"
 #include "World.h"
 
+#include <common/Memoizer.h>
+
 namespace love
 {
 namespace physics
@@ -33,10 +35,12 @@ namespace box2d
 	CircleShape::CircleShape(b2CircleShape * c)
 	{
 		shape = c;
+		Memoizer::add(shape, this);
 	}
 
 	CircleShape::~CircleShape()
 	{
+		Memoizer::remove(shape);
 		delete shape;
         shape = NULL;
 	}

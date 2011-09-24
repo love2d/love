@@ -24,6 +24,7 @@
 #include "Shape.h"
 #include "Contact.h"
 #include "Physics.h"
+#include <common/Memoizer.h>
 #include <common/Reference.h>
 
 namespace love
@@ -125,6 +126,7 @@ namespace box2d
 		world->SetContactListener(this);
 		b2BodyDef def;
 		groundBody = world->CreateBody(&def);
+		Memoizer::add(world, this);
 	}
 
 	World::World(b2Vec2 gravity, bool sleep)
@@ -135,11 +137,13 @@ namespace box2d
 		world->SetContactListener(this);
 		b2BodyDef def;
 		groundBody = world->CreateBody(&def);
+		Memoizer::add(world, this);
 	}
 
 	World::~World()
 	{
 		world->DestroyBody(groundBody);
+		Memoizer::remove(world);
 		delete world;
 	}
 

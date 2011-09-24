@@ -25,6 +25,8 @@
 #include "World.h"
 #include "Physics.h"
 
+#include <common/Memoizer.h>
+
 // STD
 #include <bitset>
 
@@ -38,9 +40,18 @@ namespace box2d
 		: shape(NULL)
 	{
 	}
+	Shape::Shape(b2Shape * shape)
+		: shape(shape)
+	{
+		Memoizer::add(shape, this);
+	}
 
 	Shape::~Shape()
 	{
+		if (shape) {
+			Memoizer::remove(shape);
+			delete shape;
+		}
 		shape = 0;
 	}
 

@@ -25,6 +25,8 @@
 #include "World.h"
 #include "Physics.h"
 
+#include <common/Memoizer.h>
+
 namespace love
 {
 namespace physics
@@ -34,10 +36,12 @@ namespace box2d
 	PolygonShape::PolygonShape(b2PolygonShape * p)
 	{
 		shape = p;
+		Memoizer::add(shape, this);
 	}
 
 	PolygonShape::~PolygonShape()
 	{
+		Memoizer::remove(shape);
 		delete shape;
 		shape = NULL;
 	}

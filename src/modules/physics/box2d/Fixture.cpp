@@ -25,6 +25,8 @@
 #include "World.h"
 #include "Physics.h"
 
+#include <common/Memoizer.h>
+
 // STD
 #include <bitset>
 
@@ -46,6 +48,20 @@ namespace box2d
 		def.userData = (void *)data;
 		def.density = density;
 		fixture = body->body->CreateFixture(&def);
+		Memoizer::add(fixture, this);
+	}
+	
+	Fixture::Fixture(b2Fixture * f)
+		: fixture(f)
+	{
+		data = (fixtureudata *)f->GetUserData();
+		body = (Body *)Memoizer::find(f->GetBody());
+		if (!body) body = new Body(f->GetBody());
+		body->retain();
+		shape = (Shape *)Memoizer::find(f->GetShape());
+		if (!shape) shape = new Shape(f->GetShape());
+		shape->retain();
+		Memoizer::add(fixture, this);
 	}
 
 	Fixture::~Fixture()

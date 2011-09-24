@@ -70,6 +70,11 @@ namespace box2d
 		* Creates a Fixture.
 		**/
 		Fixture(Body * body, Shape * shape, float density);
+		
+		/**
+		* Creates a Fixture.
+		**/
+		Fixture(b2Fixture * f);
 
 		virtual ~Fixture();
 

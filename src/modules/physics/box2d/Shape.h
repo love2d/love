@@ -57,6 +57,7 @@ namespace box2d
 		* Creates a Shape.
 		**/
 		Shape();
+		Shape(b2Shape * shape);
 
 		virtual ~Shape();
 

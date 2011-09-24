@@ -21,6 +21,7 @@
 #include "Body.h"
 
 #include <common/math.h>
+#include <common/Memoizer.h>
 
 #include "Shape.h"
 #include "Fixture.h"
@@ -41,10 +42,20 @@ namespace box2d
 		def.position = Physics::scaleDown(p);
 		body = world->world->CreateBody(&def);
 		this->setType(type);
+		Memoizer::add(body, this);
+	}
+	
+	Body::Body(b2Body * b)
+		: body(b)
+	{
+		world = (World *)Memoizer::find(b->GetWorld());
+		world->retain();
+		Memoizer::add(body, this);
 	}
 
 	Body::~Body()
 	{
+		Memoizer::remove(body);
 		world->world->DestroyBody(body);
 		world->release();
 		body = 0;

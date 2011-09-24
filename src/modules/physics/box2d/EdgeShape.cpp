@@ -24,6 +24,8 @@
 #include "Body.h"
 #include "World.h"
 
+#include <common/Memoizer.h>
+
 namespace love
 {
 namespace physics
@@ -33,10 +35,12 @@ namespace box2d
 	EdgeShape::EdgeShape(b2EdgeShape * e)
 	{
 		shape = e;
+		Memoizer::add(shape, this);
 	}
 
 	EdgeShape::~EdgeShape()
 	{
+		Memoizer::remove(shape);
 		delete shape;
 		shape = NULL;
 	}
