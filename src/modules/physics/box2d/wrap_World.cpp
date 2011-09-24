@@ -98,6 +98,13 @@ namespace box2d
 		luax_pushboolean(L, t->getAllowSleeping());
 		return 1;
 	}
+	
+	int w_World_isLocked(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		luax_pushboolean(L, t->isLocked());
+		return 1;
+	}
 
 	int w_World_getBodyCount(lua_State * L)
 	{
@@ -165,6 +172,7 @@ namespace box2d
 		{ "getGravity", w_World_getGravity },
 		{ "setAllowSleeping", w_World_setAllowSleeping },
 		{ "getAllowSleeping", w_World_getAllowSleeping },
+		{ "isLocked", w_World_isLocked },
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
 		{ "getContactCount", w_World_getContactCount },

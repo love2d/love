@@ -341,23 +341,28 @@ namespace box2d
 	{
 		return world->GetAllowSleeping();
 	}
+	
+	bool World::isLocked() const
+	{
+		return world->IsLocked();
+	}
 
-	int World::getBodyCount()
+	int World::getBodyCount() const
 	{
 		return world->GetBodyCount();
 	}
 
-	int World::getJointCount()
+	int World::getJointCount() const
 	{
 		return world->GetJointCount();
 	}
 	
-	int World::getContactCount()
+	int World::getContactCount() const
 	{
 		return world->GetContactCount();
 	}
 	
-	int World::getBodyList(lua_State * L)
+	int World::getBodyList(lua_State * L) const
 	{
 		lua_newtable(L);
 		b2Body * b = world->GetBodyList();
@@ -372,7 +377,7 @@ namespace box2d
 		return 1;
 	}
 	
-	int World::getJointList(lua_State * L)
+	int World::getJointList(lua_State * L) const
 	{
 		lua_newtable(L);
 		b2Joint * j = world->GetJointList();
@@ -387,7 +392,7 @@ namespace box2d
 		return 1;
 	}
 	
-	int World::getContactList(lua_State * L)
+	int World::getContactList(lua_State * L) const
 	{
 		lua_newtable(L);
 		b2Contact * c = world->GetContactList();
@@ -402,7 +407,7 @@ namespace box2d
 		return 1;
 	}
 	
-	b2Body * World::getGroundBody()
+	b2Body * World::getGroundBody() const
 	{
 		return groundBody;
 	}

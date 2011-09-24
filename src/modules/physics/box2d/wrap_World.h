@@ -41,6 +41,7 @@ namespace box2d
 	int w_World_getGravity(lua_State * L);
 	int w_World_setAllowSleeping(lua_State * L);
 	int w_World_getAllowSleeping(lua_State * L);
+	int w_World_isLocked(lua_State * L);
 	int w_World_getBodyCount(lua_State * L);
 	int w_World_getJointCount(lua_State * L);
 	int w_World_getContactCount(lua_State * L);

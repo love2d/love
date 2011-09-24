@@ -202,48 +202,55 @@ namespace box2d
 		* @return True if allowed, false if disallowed.
 		**/
 		bool getAllowSleeping() const;
+		
+		/**
+		* Returns whether this World is currently locked.
+		* If it's locked, it's in the middle of a timestep.
+		* @return Whether the World is locked.
+		**/
+		bool isLocked() const;
 
 		/**
 		* Get the current body count.
 		* @return The number of bodies.
 		**/
-		int getBodyCount();
+		int getBodyCount() const;
 
 		/**
 		* Get the current joint count.
 		* @return The number of joints.
 		**/
-		int getJointCount();
+		int getJointCount() const;
 		
 		/**
 		* Get the current contact count.
 		* @return The number of contacts.
 		**/
-		int getContactCount();
+		int getContactCount() const;
 		
 		/**
 		* Get an array of all the Bodies in the World.
 		* @return An array of Bodies.
 		**/
-		int getBodyList(lua_State * L);
+		int getBodyList(lua_State * L) const;
 		
 		/**
 		* Get an array of all the Joints in the World.
 		* @return An array of Joints.
 		**/
-		int getJointList(lua_State * L);
+		int getJointList(lua_State * L) const;
 		
 		/**
 		* Get an array of all the Contacts in the World.
 		* @return An array of Contacts.
 		**/
-		int getContactList(lua_State * L);
+		int getContactList(lua_State * L) const;
         
         /**
         * Gets the ground body.
         * @return The ground body.
         **/
-        b2Body * getGroundBody();
+        b2Body * getGroundBody() const;
 		
 		/**
 		* Gets all fixtures that overlap a given bounding box.
