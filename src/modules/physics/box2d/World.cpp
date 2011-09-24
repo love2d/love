@@ -142,6 +142,32 @@ namespace box2d
 		}
 		return true;
 	}
+	
+	World::QueryCallback::QueryCallback()
+	: ref(0)
+	{
+	}
+	
+	World::QueryCallback::~QueryCallback()
+	{
+		if(ref != 0)
+			delete ref;
+	}
+	
+	bool World::QueryCallback::ReportFixture(b2Fixture * fixture)
+	{
+		if (ref != 0)
+		{
+			lua_State * L = ref->getL();
+			ref->push();
+			Fixture * f = (Fixture *)Memoizer::find(fixture);
+			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
+			lua_call(L, 1, 1);
+			return luax_toboolean(L, -1);
+		}
+		return true;
+	}
 
 	World::World()
 		: world(NULL)
@@ -175,7 +201,6 @@ namespace box2d
 	void World::update(float dt)
 	{
 		world->Step(dt, 8, 6);
-
 
 		begin.process();
 		end.process();
@@ -297,6 +322,22 @@ namespace box2d
 	b2Body * World::getGroundBody()
 	{
 		return groundBody;
+	}
+	
+	int World::queryBoundingBox(lua_State * L)
+	{
+		luax_assert_argc(L, 5);
+		b2AABB box;
+		float lx = (float)luaL_checknumber(L, 1);
+		float ly = (float)luaL_checknumber(L, 2);
+		float ux = (float)luaL_checknumber(L, 3);
+		float uy = (float)luaL_checknumber(L, 4);
+		box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
+		box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
+		if (query.ref) delete query.ref;
+		query.ref = luax_refif(L, LUA_TFUNCTION);
+		world->QueryAABB(&query, box);
+		return 0;
 	}
 
 } // box2d

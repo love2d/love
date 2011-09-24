@@ -86,6 +86,15 @@ namespace box2d
 			~ContactFilter();
 			bool process(Fixture * a, Fixture * b);
 		};
+		
+		class QueryCallback : public b2QueryCallback
+		{
+		public:
+			Reference * ref;
+			QueryCallback();
+			~QueryCallback();
+			virtual bool ReportFixture(b2Fixture * fixture);
+		};
 
 	private:
 
@@ -98,6 +107,7 @@ namespace box2d
 		// Contact callbacks.
 		ContactCallback begin, end, presolve, postsolve;
 		ContactFilter filter;
+		QueryCallback query;
 
 	public:
 
@@ -200,6 +210,11 @@ namespace box2d
         * @return The ground body.
         **/
         b2Body * getGroundBody();
+		
+		/**
+		* Gets all fixtures that overlap a given bounding box.
+		**/
+		int queryBoundingBox(lua_State * L);
 
 	};
 

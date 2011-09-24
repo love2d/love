@@ -112,6 +112,13 @@ namespace box2d
 		lua_pushinteger(L, t->getJointCount());
 		return 1;
 	}
+	
+	int w_World_queryBoundingBox(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->queryBoundingBox(L);
+	}
 
 	static const luaL_Reg functions[] = {
 		{ "update", w_World_update },
@@ -125,6 +132,7 @@ namespace box2d
 		{ "getAllowSleeping", w_World_getAllowSleeping },
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
+		{ "queryBoundingBox", w_World_queryBoundingBox },
 		{ 0, 0 }
 	};
 
