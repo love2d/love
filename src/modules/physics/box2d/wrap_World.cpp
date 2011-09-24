@@ -119,6 +119,13 @@ namespace box2d
 		lua_remove(L, 1);
 		return t->queryBoundingBox(L);
 	}
+	
+	int w_World_rayCast(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->rayCast(L);
+	}
 
 	static const luaL_Reg functions[] = {
 		{ "update", w_World_update },
@@ -133,6 +140,7 @@ namespace box2d
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
 		{ "queryBoundingBox", w_World_queryBoundingBox },
+		{ "rayCast", w_World_rayCast },
 		{ 0, 0 }
 	};
 

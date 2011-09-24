@@ -95,6 +95,15 @@ namespace box2d
 			~QueryCallback();
 			virtual bool ReportFixture(b2Fixture * fixture);
 		};
+		
+		class RayCastCallback : public b2RayCastCallback
+		{
+		public:
+			Reference * ref;
+			RayCastCallback();
+			~RayCastCallback();
+			virtual float32 ReportFixture(b2Fixture * fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
+		};
 
 	private:
 
@@ -108,6 +117,7 @@ namespace box2d
 		ContactCallback begin, end, presolve, postsolve;
 		ContactFilter filter;
 		QueryCallback query;
+		RayCastCallback	raycast;
 
 	public:
 
@@ -215,6 +225,11 @@ namespace box2d
 		* Gets all fixtures that overlap a given bounding box.
 		**/
 		int queryBoundingBox(lua_State * L);
+		
+		/**
+		* Raycasts the World for all Fixtures in the path of the ray.
+		**/
+		int rayCast(lua_State * L);
 
 	};
 

@@ -168,6 +168,39 @@ namespace box2d
 		}
 		return true;
 	}
+	
+	World::RayCastCallback::RayCastCallback()
+	: ref(0)
+	{
+	}
+	
+	World::RayCastCallback::~RayCastCallback()
+	{
+		if(ref != 0)
+			delete ref;
+	}
+	
+	float32 World::RayCastCallback::ReportFixture(b2Fixture * fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
+	{
+		if (ref != 0)
+		{
+			lua_State * L = ref->getL();
+			ref->push();
+			Fixture * f = (Fixture *)Memoizer::find(fixture);
+			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
+			b2Vec2 scaledPoint = Physics::scaleUp(point);
+			lua_pushnumber(L, scaledPoint.x);
+			lua_pushnumber(L, scaledPoint.y);
+			b2Vec2 scaledNormal = Physics::scaleUp(normal);
+			lua_pushnumber(L, scaledNormal.x);
+			lua_pushnumber(L, scaledNormal.y);
+			lua_pushnumber(L, fraction);
+			lua_call(L, 6, 1);
+			return (float32)luaL_checknumber(L, -1);
+		}
+		return 0;
+	}
 
 	World::World()
 		: world(NULL)
@@ -337,6 +370,21 @@ namespace box2d
 		if (query.ref) delete query.ref;
 		query.ref = luax_refif(L, LUA_TFUNCTION);
 		world->QueryAABB(&query, box);
+		return 0;
+	}
+	
+	int World::rayCast(lua_State * L)
+	{
+		luax_assert_argc(L, 5);
+		float x1 = (float)luaL_checknumber(L, 1);
+		float y1 = (float)luaL_checknumber(L, 2);
+		float x2 = (float)luaL_checknumber(L, 3);
+		float y2 = (float)luaL_checknumber(L, 4);
+		b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
+		b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
+		if (raycast.ref) delete raycast.ref;
+		raycast.ref = luax_refif(L, LUA_TFUNCTION);
+		world->RayCast(&raycast, v1, v2);
 		return 0;
 	}
 
