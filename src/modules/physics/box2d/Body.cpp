@@ -394,6 +394,21 @@ namespace box2d
 	{
 		return world;
 	}
+	
+	int Body::getFixtureList(lua_State * L) const
+	{
+		lua_newtable(L);
+		b2Fixture * f = body->GetFixtureList();
+		int i = 1;
+		do {
+			if (!f) break;
+			Fixture * fixture = (Fixture *)Memoizer::find(f);
+			if (!fixture) throw love::Exception("A fixture has escaped Memoizer!");
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
+			lua_rawseti(L, -1, i);
+		} while ((f = f->GetNext()));
+		return 1;
+	}
 
 	b2Vec2 Body::getVector(lua_State * L)
 	{

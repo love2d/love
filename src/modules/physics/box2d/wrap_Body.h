@@ -82,6 +82,7 @@ namespace box2d
 	int w_Body_setAwake(lua_State * L);
 	int w_Body_setFixedRotation(lua_State * L);
 	int w_Body_isFixedRotation(lua_State * L);
+	int w_Body_getFixtureList(lua_State * L);
 	int w_Body_destroy(lua_State * L);
 	int luaopen_body(lua_State * L);
 

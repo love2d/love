@@ -378,6 +378,13 @@ namespace box2d
 		* Get the World this Body resides in.
 		*/
 		World * getWorld() const;
+		
+		/**
+		* Get an array of all the Fixtures attached to this Body.
+		* @return An array of Fixtures.
+		**/
+		int getFixtureList(lua_State * L) const;
+		
 	private:
 
 		/**

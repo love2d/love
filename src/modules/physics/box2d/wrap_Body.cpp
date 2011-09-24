@@ -499,6 +499,13 @@ namespace box2d
 		luax_pushboolean(L, b);
 		return 1;
 	}
+	
+	int w_Body_getFixtureList(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		lua_remove(L, 1);
+		return t->getFixtureList(L);
+	}
 
 	int w_Body_destroy(lua_State * L)
 	{
@@ -561,6 +568,7 @@ namespace box2d
 		{ "setAwake", w_Body_setAwake },
 		{ "setFixedRotation", w_Body_setFixedRotation },
 		{ "isFixedRotation", w_Body_isFixedRotation },
+		{ "getFixtureList", w_Body_getFixtureList },
 		{ "destroy", w_Body_destroy },
 		{ 0, 0 }
 	};
