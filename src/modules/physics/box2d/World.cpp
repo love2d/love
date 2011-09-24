@@ -162,8 +162,9 @@ namespace box2d
 		end.add(contact);
 	}
 
-	void World::PreSolve(b2Contact* contact)
+	void World::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
+		B2_NOT_USED(oldManifold); // not sure what to do with this
 		presolve.add(contact);
 	}
 

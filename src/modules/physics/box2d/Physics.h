@@ -81,16 +81,6 @@ namespace box2d
 		* @param world The world to create the Body in.
 		* @param x The position along the x-axis.
 		* @param x The position along the y-axis.
-		* @param m The mass.
-		* @param i The rotational inertia.
-		**/
-		Body * newBody(World * world, float x, float y, float m, float i);
-
-		/**
-		* Creates a new Body at the specified position.
-		* @param world The world to create the Body in.
-		* @param x The position along the x-axis.
-		* @param x The position along the y-axis.
 		**/
 		Body * newBody(World * world, float x, float y);
 
@@ -99,13 +89,6 @@ namespace box2d
 		* @param world The world to create the Body in.
 		**/
 		Body * newBody(World * world);
-		
-		/**
-		* Creates a new Fixture.
-		* @param body The body to attach the Fixture to.
-		* @param shape The shape to attach to the Fixture.
-		**/
-		Fixture * newFixture(Body * body, Shape * shape);
 
 		/**
 		* Creates a new CircleShape at (0, 0).

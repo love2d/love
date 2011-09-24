@@ -22,6 +22,8 @@
 
 #include <common/math.h>
 
+#include "Shape.h"
+#include "Fixture.h"
 #include "World.h"
 #include "Physics.h"
 
@@ -31,14 +33,12 @@ namespace physics
 {
 namespace box2d
 {
-	Body::Body(World * world, b2Vec2 p, float m, float i)
+	Body::Body(World * world, b2Vec2 p)
 		: world(world)
 	{
 		world->retain();
 		b2BodyDef def;
 		def.position = Physics::scaleDown(p);
-		def.massData.mass = m;
-		def.massData.I = i;
 		body = world->world->CreateBody(&def);
 	}
 
@@ -106,25 +106,65 @@ namespace box2d
 	{
 		return body->GetInertia();
 	}
+	
+	int Body::getMassData(lua_State * L)
+	{
+		b2MassData data;
+		body->GetMassData(&data);
+		b2Vec2 center = Physics::scaleUp(data.center);
+		lua_pushnumber(L, center.x);
+		lua_pushnumber(L, center.y);
+		lua_pushnumber(L, data.mass);
+		lua_pushnumber(L, data.I);
+		return 4;
+	}
 
 	float Body::getAngularDamping() const
 	{
-		return body->m_angularDamping;
+		return body->GetAngularDamping();
 	}
 
 	float Body::getLinearDamping() const
 	{
-		return body->m_linearDamping;
+		return body->GetLinearDamping();
+	}
+	
+	float Body::getGravityScale() const
+	{
+		return body->GetGravityScale();
+	}
+	
+	Body::Type Body::getType() const
+	{
+		switch (body->GetType()) {
+			case b2_staticBody:
+				return BODY_STATIC;
+				break;
+			case b2_dynamicBody:
+				return BODY_DYNAMIC;
+				break;
+			case b2_kinematicBody:
+				return BODY_KINEMATIC;
+				break;
+			default:
+				return BODY_INVALID;
+				break;
+		}
 	}
 
-	void Body::applyImpulse(float jx, float jy)
+	void Body::applyLinearImpulse(float jx, float jy)
 	{
-		body->ApplyImpulse(b2Vec2(jx, jy), body->GetWorldCenter());
+		body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), body->GetWorldCenter());
 	}
 
-	void Body::applyImpulse(float jx, float jy, float rx, float ry)
+	void Body::applyLinearImpulse(float jx, float jy, float rx, float ry)
 	{
-		body->ApplyImpulse(b2Vec2(jx, jy), Physics::scaleDown(b2Vec2(rx, ry)));
+		body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), Physics::scaleDown(b2Vec2(rx, ry)));
+	}
+	
+	void Body::applyAngularImpulse(float impulse)
+	{
+		body->ApplyAngularImpulse(Physics::scaleDown(impulse));
 	}
 
 	void Body::applyTorque(float t)
@@ -144,12 +184,12 @@ namespace box2d
 
 	void Body::setX(float x)
 	{
-		body->SetXForm(Physics::scaleDown(b2Vec2(x, getY())), getAngle());
+		body->SetTransform(Physics::scaleDown(b2Vec2(x, getY())), getAngle());
 	}
 
 	void Body::setY(float y)
 	{
-		body->SetXForm(Physics::scaleDown(b2Vec2(getX(), y)), getAngle());
+		body->SetTransform(Physics::scaleDown(b2Vec2(getX(), y)), getAngle());
 	}
 
 	void Body::setLinearVelocity(float x, float y)
@@ -159,7 +199,7 @@ namespace box2d
 
 	void Body::setAngle(float d)
 	{
-		body->SetXForm(body->GetPosition(), d);
+		body->SetTransform(body->GetPosition(), d);
 	}
 
 	void Body::setAngularVelocity(float r)
@@ -169,31 +209,31 @@ namespace box2d
 
 	void Body::setPosition(float x, float y)
 	{
-		body->SetXForm(Physics::scaleDown(b2Vec2(x, y)), body->GetAngle());
+		body->SetTransform(Physics::scaleDown(b2Vec2(x, y)), body->GetAngle());
 	}
 
 	void Body::setAngularDamping(float d)
 	{
-		body->m_angularDamping = d;
+		body->SetAngularDamping(d);
 	}
 
 	void Body::setLinearDamping(float d)
 	{
-		body->m_linearDamping = d;
+		body->SetLinearDamping(d);
 	}
 
-	void Body::setMassFromShapes()
+	void Body::resetMassData()
 	{
-		body->SetMassFromShapes();
+		body->ResetMassData();
 	}
 
-	void Body::setMass(float x, float y, float m, float i)
+	void Body::setMassData(float x, float y, float m, float i)
 	{
 		b2MassData massData;
 		massData.center = Physics::scaleDown(b2Vec2(x, y));
 		massData.mass = m;
 		massData.I = i;
-		body->SetMass(&massData);
+		body->SetMassData(&massData);
 	}
 
 	void Body::setInertia(float i)
@@ -202,7 +242,29 @@ namespace box2d
 		massData.center = body->GetLocalCenter();
 		massData.mass = body->GetMass();
 		massData.I = i;
-		body->SetMass(&massData);
+		body->SetMassData(&massData);
+	}
+	
+	void Body::setGravityScale(float scale)
+	{
+		body->SetGravityScale(scale);
+	}
+	
+	void Body::setType(Body::Type type)
+	{
+		switch (type) {
+			case Body::BODY_STATIC:
+				body->SetType(b2_staticBody);
+				break;
+			case Body::BODY_DYNAMIC:
+				body->SetType(b2_dynamicBody);
+				break;
+			case Body::BODY_KINEMATIC:
+				body->SetType(b2_kinematicBody);
+				break;
+			default:
+				break;
+		}
 	}
 
 	void Body::getWorldPoint(float x, float y, float & x_o, float & y_o)
@@ -257,62 +319,59 @@ namespace box2d
 		return body->SetBullet(bullet);
 	}
 
-	bool Body::isStatic() const
+	bool Body::isActive() const
 	{
-		return body->IsStatic();
+		return body->IsActive();
 	}
 
-	bool Body::isDynamic() const
+	bool Body::isAwake() const
 	{
-		return body->IsDynamic();
+		return body->IsAwake();
 	}
 
-	bool Body::isFrozen() const
+	void Body::setSleepingAllowed(bool allow)
 	{
-		return body->IsFrozen();
+		body->SetSleepingAllowed(allow);
 	}
 
-	bool Body::isSleeping() const
+	bool Body::isSleepingAllowed() const
 	{
-		return body->IsSleeping();
+		return body->IsSleepingAllowed();
+	}
+	
+	void Body::setActive(bool active)
+	{
+		body->SetActive(active);
 	}
 
-	void Body::setAllowSleeping(bool allow)
+	void Body::setAwake(bool awake)
 	{
-		body->AllowSleeping(allow);
-	}
-
-	bool Body::getAllowSleeping()
-	{
-		return (body->m_flags & b2Body::e_allowSleepFlag) != 0;
-	}
-
-	void Body::putToSleep()
-	{
-		body->PutToSleep();
-	}
-
-	void Body::wakeUp()
-	{
-		body->WakeUp();
+		body->SetAwake(awake);
 	}
 
 	void Body::setFixedRotation(bool fixed)
 	{
-		if(fixed)
-			body->m_flags |= b2Body::e_fixedRotationFlag;
-		else
-			body->m_flags &= ~(b2Body::e_fixedRotationFlag);
+		body->SetFixedRotation(fixed);
 	}
 
-	bool Body::getFixedRotation() const
+	bool Body::isFixedRotation() const
 	{
-		return (body->m_flags & b2Body::e_fixedRotationFlag) != 0;
+		return body->IsFixedRotation();
 	}
 
 	World * Body::getWorld() const
 	{
 		return world;
+	}
+	
+	Fixture * Body::createFixture(Shape * shape)
+	{
+		return new Fixture(this, shape);
+	}
+	
+	void Body::destroyFixture(Fixture * fixture)
+	{
+		fixture->release();
 	}
 
 	b2Vec2 Body::getVector(lua_State * L)

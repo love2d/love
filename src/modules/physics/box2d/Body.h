@@ -25,7 +25,7 @@
 #include <common/math.h>
 #include <common/runtime.h>
 #include <common/Object.h>
-
+#include <physics/Body.h>
 
 // Box2D
 #include <Box2D/Box2D.h>
@@ -38,6 +38,8 @@ namespace box2d
 {
 	// Forward declarations.
 	class World;
+	class Shape;
+	class Fixture;
 
 	/**
 	* A Body is an entity which has position and orientation
@@ -45,7 +47,7 @@ namespace box2d
 	* by itself, but depend on an arbitrary number of child Shape objects
 	* which together constitute the final geometry for the Body.
 	**/
-	class Body : public Object
+	class Body : public love::physics::Body
 	{
 		// Friends.
 		friend class Joint;
@@ -73,7 +75,7 @@ namespace box2d
 		/**
 		* Create a Body at position p.
 		**/
-		Body(World * world, b2Vec2 p, float m, float i);
+		Body(World * world, b2Vec2 p);
 
 		virtual ~Body();
 
@@ -134,6 +136,11 @@ namespace box2d
 		* Gets the Body's intertia.
 		**/
 		float getInertia() const;
+		
+		/**
+		* Gets mass properties.
+		**/
+		int getMassData(lua_State * L);
 
 		/**
 		* Gets the Body's angular damping.
@@ -144,16 +151,31 @@ namespace box2d
 		* Gets the Body's linear damping.
 		**/
 		float getLinearDamping() const;
+		
+		/**
+		* Gets the Body's gravity scale.
+		**/
+		float getGravityScale() const;
+		
+		/**
+		* Gets the type of body this is.
+		**/
+		Type getType() const;
 
 		/**
 		* Apply an impulse (jx, jy) with offset (0, 0).
 		**/
-		void applyImpulse(float jx, float jy);
+		void applyLinearImpulse(float jx, float jy);
 
 		/**
 		* Apply an impulse (jx, jy) with offset (rx, ry).
 		**/
-		void applyImpulse(float jx, float jy, float rx, float ry);
+		void applyLinearImpulse(float jx, float jy, float rx, float ry);
+		
+		/**
+		* Apply an angular impulse to the body.
+		**/
+		void applyAngularImpulse(float impulse);
 
 		/**
 		* Apply torque (t).
@@ -203,7 +225,7 @@ namespace box2d
 		/**
 		* Sets the mass from the currently attatched shapes.
 		**/
-		void setMassFromShapes();
+		void resetMassData();
 
 		/**
 		* Sets mass properties.
@@ -212,7 +234,7 @@ namespace box2d
 		* @param m The mass.
 		* @param i The inertia.
 		**/
-		void setMass(float x, float y, float m, float i);
+		void setMassData(float x, float y, float m, float i);
 
 		/**
 		* Sets the inertia while keeping the other properties
@@ -230,6 +252,16 @@ namespace box2d
 		* Sets the Body's linear damping.
 		**/
 		void setLinearDamping(float d);
+		
+		/**
+		* Sets the Body's gravity scale.
+		**/
+		void setGravityScale(float scale);
+		
+		/**
+		* Sets the type of body this is.
+		**/
+		void setType(Type type);
 
 		/**
 		* Transforms a point (x, y) from local coordinates
@@ -301,51 +333,44 @@ namespace box2d
 		void setBullet(bool bullet);
 
 		/**
-		* Checks whether a Body is static or not, i.e. terrain
-		* or not.
+		* Checks whether a Body is active or not. An inactive body
+		* cannot be interacted with.
 		**/
-		bool isStatic() const;
+		bool isActive() const;
 
 		/**
-		* The opposite of isStatic.
-		**/
-		bool isDynamic() const;
-
-		/**
-		* Checks whether a Body is frozen or not.
-		* A Body will freeze if hits the world bounding box.
-		**/
-		bool isFrozen() const;
-
-		/**
-		* Checks whether a Body is sleeping or nor. A Body
+		* Checks whether a Body is awake or not. A Body
 		* will fall to sleep if nothing happens to it for while.
 		**/
-		bool isSleeping() const;
+		bool isAwake() const;
 
 		/**
 		* Controls whether this Body should be allowed to sleep.
 		**/
-		void setAllowSleeping(bool allow);
-		bool getAllowSleeping();
+		void setSleepingAllowed(bool allow);
+		bool isSleepingAllowed() const;
+		
+		/**
+		* Changes the body's active state.
+		**/
+		void setActive(bool active);
 
 		/**
-		* Puts the body to sleep.
+		* Changes the body's sleep state.
 		**/
-		void putToSleep();
-
-		/**
-		* Wakes the Body up.
-		**/
-		void wakeUp();
+		void setAwake(bool awake);
 
 		void setFixedRotation(bool fixed);
-		bool getFixedRotation() const;
+		bool isFixedRotation() const;
 
 		/**
 		* Get the World this Body resides in.
 		*/
 		World * getWorld() const;
+		
+		Fixture * createFixture(Shape * shape);
+		
+		void destroyFixture(Fixture * fixture);
 	private:
 
 		/**

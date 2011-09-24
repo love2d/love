@@ -102,13 +102,6 @@ namespace box2d
 		Body * getBody() const;
 		
 		/**
-		* Gets the next Fixture attached to the parent Body.
-		**/
-		Fixture * getNext() const;
-		
-		
-		
-		/**
 		 * Sets the filter data. An integer array is used even though the
 		 * first two elements are unsigned shorts. The elements are:
 		 * category (16-bits), mask (16-bits) and group (32-bits/int).

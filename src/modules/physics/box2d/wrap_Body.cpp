@@ -120,6 +120,13 @@ namespace box2d
 		lua_pushnumber(L, t->getInertia());
 		return 1;
 	}
+	
+	int w_Body_getMassData(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		lua_remove(L, 1);
+		return t->getMassData(L);
+	}
 
 	int w_Body_getAngularDamping(lua_State * L)
 	{
@@ -134,8 +141,24 @@ namespace box2d
 		lua_pushnumber(L, t->getLinearDamping());
 		return 1;
 	}
+	
+	int w_Body_getGravityScale(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		lua_pushnumber(L, t->getGravityScale());
+		return 1;
+	}
+	
+	int w_Body_getType(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		const char * type = "";
+		Body::getConstant(t->getType(), type);
+		lua_pushstring(L, type);
+		return 1;
+	}
 
-	int w_Body_applyImpulse(lua_State * L)
+	int w_Body_applyLinearImpulse(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		float jx = (float)luaL_checknumber(L, 2);
@@ -143,19 +166,27 @@ namespace box2d
 
 		if(lua_gettop(L) == 3)
 		{
-			t->applyImpulse(jx, jy);
+			t->applyLinearImpulse(jx, jy);
 		}
 		else if(lua_gettop(L) == 5)
 		{
 			float rx = (float)luaL_checknumber(L, 4);
 			float ry = (float)luaL_checknumber(L, 5);
-			t->applyImpulse(jx, jy, rx, ry);
+			t->applyLinearImpulse(jx, jy, rx, ry);
 		}
 		else
 		{
 			return luaL_error(L, "Wrong number of parameters.");
 		}
 
+		return 0;
+	}
+	
+	int w_Body_applyAngularImpulse(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		float i = (float)luaL_checknumber(L, 2);
+		t->applyAngularImpulse(i);
 		return 0;
 	}
 
@@ -242,21 +273,21 @@ namespace box2d
 		return 0;
 	}
 
-	int w_Body_setMassFromShapes(lua_State * L)
+	int w_Body_resetMassData(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		t->setMassFromShapes();
+		t->resetMassData();
 		return 0;
 	}
 
-	int w_Body_setMass(lua_State * L)
+	int w_Body_setMassData(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		float x = (float)luaL_checknumber(L, 2);
 		float y = (float)luaL_checknumber(L, 3);
 		float m = (float)luaL_checknumber(L, 4);
 		float i = (float)luaL_checknumber(L, 5);
-		t->setMass(x, y, m, i);
+		t->setMassData(x, y, m, i);
 		return 0;
 	}
 
@@ -281,6 +312,24 @@ namespace box2d
 		Body * t = luax_checkbody(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
 		t->setLinearDamping(arg1);
+		return 0;
+	}
+	
+	int w_Body_setGravityScale(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		float arg1 = (float)luaL_checknumber(L, 2);
+		t->setGravityScale(arg1);
+		return 0;
+	}
+	
+	int w_Body_setType(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		const char * typeStr = luaL_checkstring(L, 2);
+		Body::Type type;
+		Body::getConstant(typeStr, type);
+		t->setType(type);
 		return 0;
 	}
 
@@ -383,60 +432,48 @@ namespace box2d
 		return 0;
 	}
 
-	int w_Body_isStatic(lua_State * L)
+	int w_Body_isActive(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		luax_pushboolean(L, t->isStatic());
+		luax_pushboolean(L, t->isActive());
 		return 1;
 	}
 
-	int w_Body_isDynamic(lua_State * L)
+	int w_Body_isAwake(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		luax_pushboolean(L, t->isDynamic());
+		luax_pushboolean(L, t->isAwake());
 		return 1;
 	}
 
-	int w_Body_isFrozen(lua_State * L)
-	{
-		Body * t = luax_checkbody(L, 1);
-		luax_pushboolean(L, t->isFrozen());
-		return 1;
-	}
-
-	int w_Body_isSleeping(lua_State * L)
-	{
-		Body * t = luax_checkbody(L, 1);
-		luax_pushboolean(L, t->isSleeping());
-		return 1;
-	}
-
-	int w_Body_setAllowSleeping(lua_State * L)
+	int w_Body_setSleepingAllowed(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		bool b = luax_toboolean(L, 2);
-		t->setAllowSleeping(b);
+		t->setSleepingAllowed(b);
 		return 0;
 	}
 
-	int w_Body_getAllowSleeping(lua_State * L)
+	int w_Body_isSleepingAllowed(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		lua_pushboolean(L, t->getAllowSleeping());
+		lua_pushboolean(L, t->isSleepingAllowed());
 		return 1;
 	}
 
-	int w_Body_putToSleep(lua_State * L)
+	int w_Body_setActive(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		t->putToSleep();
+		bool b = luax_toboolean(L, 2);
+		t->setActive(b);
 		return 0;
 	}
 
-	int w_Body_wakeUp(lua_State * L)
+	int w_Body_setAwake(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		t->wakeUp();
+		bool b = luax_toboolean(L, 2);
+		t->setAwake(b);
 		return 0;
 	}
 
@@ -448,12 +485,29 @@ namespace box2d
 		return 0;
 	}
 
-	int w_Body_getFixedRotation(lua_State * L)
+	int w_Body_isFixedRotation(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
-		bool b = t->getFixedRotation();
+		bool b = t->isFixedRotation();
 		luax_pushboolean(L, b);
 		return 1;
+	}
+	
+	int w_Body_createFixture(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		Shape * s = luax_checktype<Shape>(L, 2, "Shape", PHYSICS_SHAPE_T);
+		Fixture * f = t->createFixture(s);
+		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
+		return 1;
+	}
+	
+	int w_Body_destroyFixture(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		Fixture * f = luax_checktype<Fixture>(L, 2, "Fixture", PHYSICS_FIXTURE_T);
+		t->destroyFixture(f);
+		return 0;
 	}
 
 	int w_Body_destroy(lua_State * L)
@@ -478,9 +532,13 @@ namespace box2d
 		{ "getAngularVelocity", w_Body_getAngularVelocity },
 		{ "getMass", w_Body_getMass },
 		{ "getInertia", w_Body_getInertia },
+		{ "getMassData", w_Body_getMassData },
 		{ "getAngularDamping", w_Body_getAngularDamping },
 		{ "getLinearDamping", w_Body_getLinearDamping },
-		{ "applyImpulse", w_Body_applyImpulse },
+		{ "getGravityScale", w_Body_getGravityScale },
+		{ "getType", w_Body_getType },
+		{ "applyLinearImpulse", w_Body_applyLinearImpulse },
+		{ "applyAngularImpulse", w_Body_applyAngularImpulse },
 		{ "applyTorque", w_Body_applyTorque },
 		{ "applyForce", w_Body_applyForce },
 		{ "setX", w_Body_setX },
@@ -489,11 +547,13 @@ namespace box2d
 		{ "setAngle", w_Body_setAngle },
 		{ "setAngularVelocity", w_Body_setAngularVelocity },
 		{ "setPosition", w_Body_setPosition },
-		{ "setMassFromShapes", w_Body_setMassFromShapes },
-		{ "setMass", w_Body_setMass },
+		{ "resetMassData", w_Body_resetMassData },
+		{ "setMassData", w_Body_setMassData },
 		{ "setInertia", w_Body_setInertia },
 		{ "setAngularDamping", w_Body_setAngularDamping },
 		{ "setLinearDamping", w_Body_setLinearDamping },
+		{ "setGravityScale", w_Body_setGravityScale },
+		{ "setType", w_Body_setType },
 		{ "getWorldPoint", w_Body_getWorldPoint },
 		{ "getWorldVector", w_Body_getWorldVector },
 		{ "getLocalPoint", w_Body_getLocalPoint },
@@ -502,16 +562,16 @@ namespace box2d
 		{ "getLinearVelocityFromLocalPoint", w_Body_getLinearVelocityFromLocalPoint },
 		{ "isBullet", w_Body_isBullet },
 		{ "setBullet", w_Body_setBullet },
-		{ "isStatic", w_Body_isStatic },
-		{ "isDynamic", w_Body_isDynamic },
-		{ "isFrozen", w_Body_isFrozen },
-		{ "isSleeping", w_Body_isSleeping },
-		{ "setAllowSleeping", w_Body_setAllowSleeping },
-		{ "getAllowSleeping", w_Body_getAllowSleeping },
-		{ "putToSleep", w_Body_putToSleep },
-		{ "wakeUp", w_Body_wakeUp },
+		{ "isActive", w_Body_isActive },
+		{ "isAwake", w_Body_isAwake },
+		{ "setSleepingAllowed", w_Body_setSleepingAllowed },
+		{ "isSleepingAllowde", w_Body_isSleepingAllowed },
+		{ "setActive", w_Body_setActive },
+		{ "setAwake", w_Body_setAwake },
 		{ "setFixedRotation", w_Body_setFixedRotation },
-		{ "getFixedRotation", w_Body_getFixedRotation },
+		{ "isFixedRotation", w_Body_isFixedRotation },
+		{ "createFixture", w_Body_createFixture },
+		{ "destroyFixture", w_Body_destroyFixture },
 		{ "destroy", w_Body_destroy },
 		{ 0, 0 }
 	};

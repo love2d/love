@@ -45,26 +45,16 @@ namespace box2d
 		return new World(b2Vec2(gx, gy), sleep);
 	}
 
-	Body * Physics::newBody(World * world, float x, float y, float mass, float i)
-	{
-		return new Body(world, b2Vec2(x, y), mass, i);
-	}
-
 	Body * Physics::newBody(World * world, float x, float y)
 	{
-		return new Body(world, b2Vec2(x, y), 1, 1);
+		return new Body(world, b2Vec2(x, y));
 	}
 
 	Body * Physics::newBody(World * world)
 	{
-		return new Body(world, b2Vec2(0, 0), 1, 1);
+		return new Body(world, b2Vec2(0, 0));
 	}
 	
-	Fixture * Physics::newFixture(Body * body, Shape * shape)
-	{
-		return new Fixture(body, shape);
-	}
-
 	CircleShape * Physics::newCircleShape(float radius)
 	{
 		return newCircleShape(0, 0, radius);

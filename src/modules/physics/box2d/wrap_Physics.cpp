@@ -47,19 +47,8 @@ namespace box2d
 		World * world = luax_checktype<World>(L, 1, "World", PHYSICS_WORLD_T);
 		float x = (float)luaL_optnumber(L, 2, 0.0);
 		float y = (float)luaL_optnumber(L, 3, 0.0);
-		float m = (float)luaL_optnumber(L, 4, 0.0);
-		float i = (float)luaL_optnumber(L, 5, 0.0);
-		Body * body = instance->newBody(world, x, y, m, i);
+		Body * body = instance->newBody(world, x, y);
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
-		return 1;
-	}
-	
-	int w_newFixture(lua_State * L)
-	{
-		Body * body = luax_checkbody(L, 1);
-		Shape * shape = luax_checkshape(L, 2);
-		Fixture * fixture = instance->newFixture(body, shape);
-		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
 		return 1;
 	}
 
