@@ -40,6 +40,7 @@ namespace box2d
 {
 
 	class Contact;
+	class Fixture;
 
 	/**
 	* The World is the "God" container class,
@@ -52,7 +53,7 @@ namespace box2d
 	* The world also controls global parameters, like
 	* gravity.
 	**/
-	class World : public Object, public b2ContactListener
+	class World : public Object, public b2ContactListener, public b2ContactFilter
 	{
 		// Friends.
 		friend class Joint;
@@ -76,6 +77,15 @@ namespace box2d
 			void add(b2Contact* contact, const b2ContactImpulse* impulse);
 			void process();
 		};
+		
+		class ContactFilter
+		{
+		public:
+			Reference * ref;
+			ContactFilter();
+			~ContactFilter();
+			bool process(Fixture * a, Fixture * b);
+		};
 
 	private:
 
@@ -87,6 +97,7 @@ namespace box2d
 
 		// Contact callbacks.
 		ContactCallback begin, end, presolve, postsolve;
+		ContactFilter filter;
 
 	public:
 
@@ -119,6 +130,9 @@ namespace box2d
 		void EndContact(b2Contact* contact);
 		void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);
 		void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
+		
+		// From b2ContactFilter
+		bool ShouldCollide(b2Fixture* fixtureA, b2Fixture* fixtureB);
 
 		/**
 		* Receives up to four Lua functions as arguments. Each function is
@@ -132,6 +146,16 @@ namespace box2d
 		* Returns the functions previously set by setCallbacks.
 		**/
 		int getCallbacks(lua_State * L);
+		
+		/**
+		* Sets the ContactFilter callback.
+		**/
+		int setContactFilter(lua_State * L);
+		
+		/**
+		* Gets the ContactFilter callback.
+		**/
+		int getContactFilter(lua_State * L);
 
 		/**
 		* Sets the current gravity of the World.

@@ -35,6 +35,8 @@ namespace box2d
 	int w_World_update(lua_State * L);
 	int w_World_setCallbacks(lua_State * L);
 	int w_World_getCallbacks(lua_State * L);
+	int w_World_setContactFilter(lua_State * L);
+	int w_World_getContactFilter(lua_State * L);
 	int w_World_setGravity(lua_State * L);
 	int w_World_getGravity(lua_State * L);
 	int w_World_setAllowSleeping(lua_State * L);

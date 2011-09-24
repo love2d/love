@@ -117,6 +117,31 @@ namespace box2d
 		}
 
 	}
+	
+	World::ContactFilter::ContactFilter()
+	: ref(0)
+	{
+	}
+	
+	World::ContactFilter::~ContactFilter()
+	{
+		if(ref != 0)
+			delete ref;
+	}
+	
+	bool World::ContactFilter::process(Fixture * a, Fixture * b)
+	{
+		if (ref != 0)
+		{
+			lua_State * L = ref->getL();
+			ref->push();
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
+			lua_call(L, 2, 1);
+			return luax_toboolean(L, -1);
+		}
+		return true;
+	}
 
 	World::World()
 		: world(NULL)
@@ -178,6 +203,16 @@ namespace box2d
 	{
 		postsolve.add(contact, impulse);
 	}
+	
+	bool World::ShouldCollide(b2Fixture * fixtureA, b2Fixture * fixtureB)
+	{
+		// Fixtures should be memoized, if we created them
+		Fixture * a = (Fixture *)Memoizer::find(fixtureA);
+		if (!a) throw love::Exception("A fixture has escaped Memoizer!");
+		Fixture * b = (Fixture *)Memoizer::find(fixtureB);
+		if (!b) throw love::Exception("A fixture has escaped Memoizer!");
+		return filter.process(a, b);
+	}
 
 	int World::setCallbacks(lua_State * L)
 	{
@@ -209,6 +244,20 @@ namespace box2d
 		end.ref ? end.ref->push() : lua_pushnil(L);
 		presolve.ref ? presolve.ref->push() : lua_pushnil(L);
 		postsolve.ref ? postsolve.ref->push() : lua_pushnil(L);
+		return lua_gettop(L);
+	}
+	
+	int World::setContactFilter(lua_State * L)
+	{
+		luax_assert_argc(L, 1);
+		if (filter.ref) delete filter.ref;
+		filter.ref = luax_refif(L, LUA_TFUNCTION);
+		return 0;
+	}
+	
+	int World::getContactFilter(lua_State * L)
+	{
+		filter.ref ? filter.ref->push() : lua_pushnil(L);
 		return lua_gettop(L);
 	}
 

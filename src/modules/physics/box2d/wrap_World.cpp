@@ -53,6 +53,20 @@ namespace box2d
 		lua_remove(L, 1);
 		return t->getCallbacks(L);
 	}
+	
+	int w_World_setContactFilter(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->setContactFilter(L);
+	}
+	
+	int w_World_getContactFilter(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getContactFilter(L);
+	}
 
 	int w_World_setGravity(lua_State * L)
 	{
@@ -103,6 +117,8 @@ namespace box2d
 		{ "update", w_World_update },
 		{ "setCallbacks", w_World_setCallbacks },
 		{ "getCallbacks", w_World_getCallbacks },
+		{ "setContactFilter", w_World_setContactFilter },
+		{ "getContactFilter", w_World_getContactFilter },
 		{ "setGravity", w_World_setGravity },
 		{ "getGravity", w_World_getGravity },
 		{ "setAllowSleeping", w_World_setAllowSleeping },
