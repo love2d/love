@@ -47,7 +47,6 @@ namespace box2d
 		def.userData = (void *)data;
 		def.density = density;
 		fixture = body->body->CreateFixture(&def);
-		shape = new Shape(fixture->GetShape());
 		Memoizer::add(fixture, this);
 	}
 	
@@ -57,10 +56,7 @@ namespace box2d
 		data = (fixtureudata *)f->GetUserData();
 		body = (Body *)Memoizer::find(f->GetBody());
 		if (!body) body = new Body(f->GetBody());
-		body->retain();
-		shape = (Shape *)Memoizer::find(f->GetShape());
-		if (!shape) shape = new Shape(f->GetShape());
-		else shape->retain();
+		else body->retain();
 		Memoizer::add(fixture, this);
 	}
 
@@ -77,12 +73,11 @@ namespace box2d
 		fixture = 0;
 
 		body->release();
-		shape->release();
 	}
 
 	Shape::Type Fixture::getType() const
 	{
-		return shape->getType();
+		return Shape(fixture->GetShape()).getType();
 	}
 
 	void Fixture::setFriction(float friction)
@@ -132,7 +127,10 @@ namespace box2d
 	
 	Shape * Fixture::getShape() const
 	{
-		return shape;
+		if (!fixture->GetShape()) return NULL;
+		Shape * s = (Shape *)Memoizer::find(fixture->GetShape());
+		if (!s) s = new Shape(fixture->GetShape());
+		return s;
 	}
 	
 	Fixture * Fixture::getNext() const

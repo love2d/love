@@ -60,7 +60,6 @@ namespace box2d
 	protected:
 		
 		Body * body;
-		Shape * shape;
 		b2Fixture * fixture;
 		fixtureudata * data;
 
