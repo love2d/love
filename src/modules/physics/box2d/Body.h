@@ -75,7 +75,7 @@ namespace box2d
 		/**
 		* Create a Body at position p.
 		**/
-		Body(World * world, b2Vec2 p);
+		Body(World * world, b2Vec2 p, Type type);
 
 		virtual ~Body();
 

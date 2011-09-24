@@ -47,7 +47,10 @@ namespace box2d
 		World * world = luax_checktype<World>(L, 1, "World", PHYSICS_WORLD_T);
 		float x = (float)luaL_optnumber(L, 2, 0.0);
 		float y = (float)luaL_optnumber(L, 3, 0.0);
-		Body * body = instance->newBody(world, x, y);
+		const char * type = luaL_optstring(L, 4, "static");
+		Body::Type bodyType;
+		Body::getConstant(type, bodyType);
+		Body * body = instance->newBody(world, x, y, bodyType);
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
 	}

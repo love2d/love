@@ -47,14 +47,14 @@ namespace box2d
 		return new World(b2Vec2(gx, gy), sleep);
 	}
 
-	Body * Physics::newBody(World * world, float x, float y)
+	Body * Physics::newBody(World * world, float x, float y, Body::Type type)
 	{
-		return new Body(world, b2Vec2(x, y));
+		return new Body(world, b2Vec2(x, y), type);
 	}
 
-	Body * Physics::newBody(World * world)
+	Body * Physics::newBody(World * world, Body::Type type)
 	{
-		return new Body(world, b2Vec2(0, 0));
+		return new Body(world, b2Vec2(0, 0), type);
 	}
 	
 	CircleShape * Physics::newCircleShape(float radius)

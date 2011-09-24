@@ -81,14 +81,16 @@ namespace box2d
 		* @param world The world to create the Body in.
 		* @param x The position along the x-axis.
 		* @param x The position along the y-axis.
+		* @param type The type of body to create.
 		**/
-		Body * newBody(World * world, float x, float y);
+		Body * newBody(World * world, float x, float y, Body::Type type);
 
 		/**
 		* Creates a new Body at (0, 0)
 		* @param world The world to create the Body in.
+		* @param type The type of Body to create.
 		**/
-		Body * newBody(World * world);
+		Body * newBody(World * world, Body::Type type);
 
 		/**
 		* Creates a new CircleShape at (0, 0).

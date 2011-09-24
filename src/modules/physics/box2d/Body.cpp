@@ -33,13 +33,14 @@ namespace physics
 {
 namespace box2d
 {
-	Body::Body(World * world, b2Vec2 p)
+	Body::Body(World * world, b2Vec2 p, Body::Type type)
 		: world(world)
 	{
 		world->retain();
 		b2BodyDef def;
 		def.position = Physics::scaleDown(p);
 		body = world->world->CreateBody(&def);
+		this->setType(type);
 	}
 
 	Body::~Body()
