@@ -32,29 +32,16 @@ namespace box2d
 		return luax_checktype<Contact>(L, idx, "Contact", PHYSICS_CONTACT_T);
 	}
 
-	int w_Contact_getPosition(lua_State * L)
+	int w_Contact_getPositions(lua_State * L)
 	{
 		Contact * t = luax_checkcontact(L, 1);
-		return t->getPosition(L);
+		return t->getPositions(L);
 	}
-
-	int w_Contact_getVelocity(lua_State * L)
-	{
-		Contact * t = luax_checkcontact(L, 1);
-		return t->getVelocity(L);
-	}
-
+	
 	int w_Contact_getNormal(lua_State * L)
 	{
 		Contact * t = luax_checkcontact(L, 1);
 		return t->getNormal(L);
-	}
-
-	int w_Contact_getSeparation(lua_State * L)
-	{
-		Contact * t = luax_checkcontact(L, 1);
-		lua_pushnumber(L, t->getSeparation());
-		return 1;
 	}
 
 	int w_Contact_getFriction(lua_State * L)
@@ -70,16 +57,73 @@ namespace box2d
 		lua_pushnumber(L, t->getRestitution());
 		return 1;
 	}
+	
+	int w_Contact_isEnabled(lua_State * L)
+	{
+		Contact * t = luax_checkcontact(L, 1);
+		lua_pushboolean(L, t->isEnabled());
+		return 1;
+	}
+	
+	int w_Contact_isTouching(lua_State * L)
+	{
+		Contact * t = luax_checkcontact(L, 1);
+		lua_pushboolean(L, t->isTouching());
+		return 1;
+	}
+	
+	int w_Contact_setFriction(lua_State * L)
+	{
+		Contact * t = luax_checkcontact(L, 1);
+		float f = (float)luaL_checknumber(L, 2);
+		t->setFriction(f);
+		return 0;
+	}
+	
+	int w_Contact_setRestitution(lua_State * L)
+	{
+		Contact * t = luax_checkcontact(L, 1);
+		float r = (float)luaL_checknumber(L, 2);
+		t->setRestitution(r);
+		return 0;
+	}
+	
+	int w_Contact_setEnabled(lua_State * L)
+	{
+		Contact * t = luax_checkcontact(L, 1);
+		bool e = luax_toboolean(L, 2);
+		t->setEnabled(e);
+		return 0;
+	}
+	
+	int w_Contact_resetFriction(lua_State * L)
+	{
+		Contact * t = luax_checkcontact(L, 1);
+		t->resetFriction();
+		return 0;
+	}
+	
+	int w_Contact_resetRestitution(lua_State * L)
+	{
+		Contact * t = luax_checkcontact(L, 1);
+		t->resetRestitution();
+		return 0;
+	}
 
 	int luaopen_contact(lua_State * L)
 	{
 		static const luaL_Reg functions[] = {
-			{ "getPosition", w_Contact_getPosition },
-			{ "getVelocity", w_Contact_getVelocity },
+			{ "getPositions", w_Contact_getPositions },
 			{ "getNormal", w_Contact_getNormal },
-			{ "getSeparation", w_Contact_getSeparation },
 			{ "getFriction", w_Contact_getFriction },
 			{ "getRestitution", w_Contact_getRestitution },
+			{ "isEnabled", w_Contact_isEnabled },
+			{ "isTouching", w_Contact_isTouching },
+			{ "setFriction", w_Contact_setFriction },
+			{ "setRestitution", w_Contact_setRestitution },
+			{ "setEnabled", w_Contact_setEnabled },
+			{ "resetFriction", w_Contact_resetFriction },
+			{ "resetRestitution", w_Contact_resetRestitution },
 			{ 0, 0 }
 		};
 

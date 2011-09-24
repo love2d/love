@@ -44,7 +44,7 @@ namespace box2d
 			delete ref;
 	}
 
-	void World::ContactCallback::add(World * world, const b2Contact* contact)
+	void World::ContactCallback::add(b2Contact* contact)
 	{
 		/**
 		* We must copy contacts, since we're not allowed to process
@@ -53,7 +53,15 @@ namespace box2d
 		**/
 
 		if(ref != 0)
-			contacts.push_back(new Contact(world, contact));
+			contacts.push_back(new Contact(contact));
+	}
+	
+	void World::ContactCallback::add(b2Contact* contact, const b2ContactImpulse* impulse)
+	{
+		if(ref != 0) {
+			contacts.push_back(new Contact(contact));
+			impulses.push_back(impulse);
+		}
 	}
 
 	void World::ContactCallback::process()
@@ -86,13 +94,25 @@ namespace box2d
 				}
 
 				luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)contacts[i], false);
-				lua_call(L, 3, 0);
+				
+				int args = 3;
+				if ((int)impulses.size() > i) {
+					const b2ContactImpulse * impulse = impulses[i];
+					for (int c = 0; c < impulse->count; c++) {
+						lua_pushnumber(L, Physics::scaleUp(impulse->normalImpulses[c]));
+						lua_pushnumber(L, Physics::scaleUp(impulse->tangentImpulses[c]));
+						args += 2;
+					}
+				}
+				lua_call(L, args, 0);
 			}
 
 			// Clear contacts.
 			for(int i = 0;i<(int)contacts.size();i++)
 				delete contacts[i];
 			contacts.clear();
+			// Clear impulses.
+			impulses.clear();
 		}
 
 	}
@@ -134,22 +154,22 @@ namespace box2d
 
 	void World::BeginContact(b2Contact* contact)
 	{
-		begin.add(this, contact);
+		begin.add(contact);
 	}
 
 	void World::EndContact(b2Contact* contact)
 	{
-		end.add(this, contact);
+		end.add(contact);
 	}
 
-	void World::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
+	void World::PreSolve(b2Contact* contact)
 	{
-		presolve.add(this, contact);
+		presolve.add(contact);
 	}
 
 	void World::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
-		postsolve.add(this, contact);
+		postsolve.add(contact, impulse);
 	}
 
 	int World::setCallbacks(lua_State * L)

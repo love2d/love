@@ -67,9 +67,13 @@ namespace box2d
 		public:
 			Reference * ref;
 			std::vector<Contact *> contacts;
+			std::vector<const b2ContactImpulse *> impulses;
+			b2Manifold* oldManifold;
+			b2ContactImpulse* impulse;
 			ContactCallback();
 			~ContactCallback();
-			void add(World * world, const b2Contact* contact);
+			void add(b2Contact* contact);
+			void add(b2Contact* contact, const b2ContactImpulse* impulse);
 			void process();
 		};
 
@@ -113,7 +117,7 @@ namespace box2d
 		// From b2ContactListener
 		void BeginContact(b2Contact* contact);
 		void EndContact(b2Contact* contact);
-		void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);
+		void PreSolve(b2Contact* contact);
 		void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
 
 		/**
