@@ -83,9 +83,9 @@ namespace box2d
 		return joint->GetMotorSpeed();
 	}
 
-	float RevoluteJoint::getMotorTorque() const
+	float RevoluteJoint::getMotorTorque(float inv_dt) const
 	{
-		return joint->GetMotorTorque();
+		return joint->GetMotorTorque(inv_dt);
 	}
 
 	void RevoluteJoint::enableLimit(bool limit)

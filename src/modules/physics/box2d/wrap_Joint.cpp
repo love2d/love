@@ -59,7 +59,8 @@ namespace box2d
 	int w_Joint_getReactionTorque(lua_State * L)
 	{
 		Joint * t = luax_checkjoint(L, 1);
-		lua_pushnumber(L, t->getReactionTorque());
+		float inv_dt = (float)luaL_checknumber(L, 2);
+		lua_pushnumber(L, t->getReactionTorque(inv_dt));
 		return 1;
 	}
 

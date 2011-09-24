@@ -86,7 +86,8 @@ namespace box2d
 	int w_PrismaticJoint_getMotorForce(lua_State * L)
 	{
 		PrismaticJoint * t = luax_checkprismaticjoint(L, 1);
-		lua_pushnumber(L, t->getMotorForce());
+		float inv_dt = (float)luaL_checknumber(L, 2);
+		lua_pushnumber(L, t->getMotorForce(inv_dt));
 		return 1;
 	}
 

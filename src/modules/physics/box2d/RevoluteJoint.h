@@ -87,8 +87,9 @@ namespace box2d
 
 		/**
 		* Get the current motor torque, usually in N-m.
+		* @param inv_dt The inverse timestep.
 		**/
-		float getMotorTorque() const;
+		float getMotorTorque(float inv_dt) const;
 
 		/**
 		* Enable/disable the joint limit.

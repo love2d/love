@@ -34,8 +34,8 @@ namespace box2d
 {
 	PulleyJoint * luax_checkpulleyjoint(lua_State * L, int idx);
 	int w_PulleyJoint_getGroundAnchors(lua_State * L);
-	int w_PulleyJoint_getLength1(lua_State * L);
-	int w_PulleyJoint_getLength2(lua_State * L);
+	int w_PulleyJoint_getLengthA(lua_State * L);
+	int w_PulleyJoint_getLengthB(lua_State * L);
 	int w_PulleyJoint_getRatio(lua_State * L);
 	int luaopen_pulleyjoint(lua_State * L);
 

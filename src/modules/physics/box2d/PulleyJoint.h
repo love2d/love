@@ -44,9 +44,9 @@ namespace box2d
 	public:
 
 		/**
-		* Creates a PulleyJoint connecting body1 to body2. 
+		* Creates a PulleyJoint connecting bodyA to bodyB. 
 		**/
-		PulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected);
+		PulleyJoint(Body * bodyA, Body * bodyB, b2Vec2 groundAnchorA, b2Vec2 groundAnchorB, b2Vec2 anchorA, b2Vec2 anchorB, float ratio, bool collideConnected);
 		
 		virtual ~PulleyJoint();
 		
@@ -57,14 +57,14 @@ namespace box2d
 		int getGroundAnchors(lua_State * L);
 		
 		/**
-		* Gets the current length of the segment attached to body1.
+		* Gets the current length of the segment attached to bodyA.
 		**/
-		float getLength1() const;
+		float getLengthA() const;
 	
 		/**
-		* Gets the current length of the segment attached to body2.
+		* Gets the current length of the segment attached to bodyB.
 		**/
-		float getLength2() const;
+		float getLengthB() const;
 		
 		/**
 		* Gets the pulley ratio.

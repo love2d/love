@@ -38,17 +38,17 @@ namespace box2d
 		return t->getGroundAnchors(L);
 	}
 
-	int w_PulleyJoint_getLength1(lua_State * L)
+	int w_PulleyJoint_getLengthA(lua_State * L)
 	{
 		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
-		lua_pushnumber(L, t->getLength1());
+		lua_pushnumber(L, t->getLengthA());
 		return 1;
 	}
 	
-	int w_PulleyJoint_getLength2(lua_State * L)
+	int w_PulleyJoint_getLengthB(lua_State * L)
 	{
 		PulleyJoint * t = luax_checkpulleyjoint(L, 1);
-		lua_pushnumber(L, t->getLength2());
+		lua_pushnumber(L, t->getLengthB());
 		return 1;
 	}
 	
@@ -61,8 +61,8 @@ namespace box2d
 
 	static const luaL_Reg functions[] = {
 		{ "getGroundAnchors", w_PulleyJoint_getGroundAnchors },
-		{ "getLength1", w_PulleyJoint_getLength1 },
-		{ "getLength2", w_PulleyJoint_getLength2 },
+		{ "getLengthA", w_PulleyJoint_getLengthA },
+		{ "getLengthB", w_PulleyJoint_getLengthB },
 		{ "getRatio", w_PulleyJoint_getRatio },
 		// From Joint.
 		{ "getType", w_Joint_getType },

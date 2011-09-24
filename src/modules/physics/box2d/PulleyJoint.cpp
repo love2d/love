@@ -31,12 +31,12 @@ namespace physics
 {
 namespace box2d
 {
-	PulleyJoint::PulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected)
-		: Joint(body1, body2), joint(NULL)
+	PulleyJoint::PulleyJoint(Body * bodyA, Body * bodyB, b2Vec2 groundAnchorA, b2Vec2 groundAnchorB, b2Vec2 anchorA, b2Vec2 anchorB, float ratio, bool collideConnected)
+		: Joint(bodyA, bodyB), joint(NULL)
 	{
 		b2PulleyJointDef def;
-		def.Initialize(body1->body, body2->body, Physics::scaleDown(groundAnchor1), Physics::scaleDown(groundAnchor2), \
-			 Physics::scaleDown(anchor1), Physics::scaleDown(anchor2), ratio);
+		def.Initialize(bodyA->body, bodyB->body, Physics::scaleDown(groundAnchorA), Physics::scaleDown(groundAnchorB), \
+			 Physics::scaleDown(anchorA), Physics::scaleDown(anchorB), ratio);
 		def.collideConnected = collideConnected;
 		
 		joint = (b2PulleyJoint*)createJoint(&def);
@@ -57,14 +57,14 @@ namespace box2d
 		return 4;
 	}
 	
-	float PulleyJoint::getLength1() const
+	float PulleyJoint::getLengthA() const
 	{
-		return Physics::scaleUp(joint->GetLength1());
+		return Physics::scaleUp(joint->GetLengthA());
 	}
 		
-	float PulleyJoint::getLength2() const
+	float PulleyJoint::getLengthB() const
 	{
-		return Physics::scaleUp(joint->GetLength2());
+		return Physics::scaleUp(joint->GetLengthB());
 	}
 	
 	float PulleyJoint::getRatio() const
