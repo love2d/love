@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -48,7 +49,7 @@ namespace box2d
 		int count = p->GetVertexCount();
 		for(int i = 0;i<count; i++)
 		{
-			b2Vec2 v = p->GetVertex(i);
+			b2Vec2 v = Physics::scaleUp(p->GetVertex(i));
 			lua_pushnumber(L, v.x);
 			lua_pushnumber(L, v.y);
 		}

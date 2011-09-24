@@ -65,7 +65,7 @@ namespace box2d
 	CircleShape * Physics::newCircleShape(float x, float y, float radius)
 	{
 		b2CircleShape *s = new b2CircleShape();
-		s->m_p = b2Vec2(x, y);
+		s->m_p = Physics::scaleDown(b2Vec2(x, y));
 		s->m_radius = radius;
 		return new CircleShape(s);
 	}
@@ -83,14 +83,14 @@ namespace box2d
 	PolygonShape * Physics::newRectangleShape(float x, float y, float w, float h, float angle)
 	{
 		b2PolygonShape* s = new b2PolygonShape();
-		s->SetAsBox(w/2.0f, h/2.0f, b2Vec2(x, y), angle);
+		s->SetAsBox(Physics::scaleDown(w/2.0f), Physics::scaleDown(h/2.0f), Physics::scaleDown(b2Vec2(x, y)), angle);
 		return new PolygonShape(s);
 	}
 	
 	EdgeShape * Physics::newEdgeShape(float x1, float y1, float x2, float y2)
 	{
 		b2EdgeShape* s = new b2EdgeShape();
-		s->Set(b2Vec2(x1, y1), b2Vec2(x2, y2));
+		s->Set(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
 		return new EdgeShape(s);
 	}
 
@@ -127,6 +127,7 @@ namespace box2d
 		
 		for (int i = 0; i < count; i++) {
 			vecs[i].Set(convex_hull[i].x, convex_hull[i].y);
+			vecs[i] = Physics::scaleDown(vecs[i]);
 		}
 		
 		s->Set(vecs, count);
@@ -155,6 +156,7 @@ namespace box2d
 			float x = (float)lua_tonumber(L, -2);
 			float y = (float)lua_tonumber(L, -1);
 			vecs[i].Set(x, y);
+			vecs[i] = Physics::scaleDown(vecs[i]);
 			lua_pop(L, 2);
 		}
 		
