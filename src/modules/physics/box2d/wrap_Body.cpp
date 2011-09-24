@@ -556,7 +556,7 @@ namespace box2d
 		{ "isActive", w_Body_isActive },
 		{ "isAwake", w_Body_isAwake },
 		{ "setSleepingAllowed", w_Body_setSleepingAllowed },
-		{ "isSleepingAllowde", w_Body_isSleepingAllowed },
+		{ "isSleepingAllowed", w_Body_isSleepingAllowed },
 		{ "setActive", w_Body_setActive },
 		{ "setAwake", w_Body_setAwake },
 		{ "setFixedRotation", w_Body_setFixedRotation },
