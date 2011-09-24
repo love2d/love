@@ -34,10 +34,8 @@ namespace physics
 namespace box2d
 {
 	ChainShape::ChainShape(b2ChainShape * c, bool loop)
-		: loop(loop)
+		: Shape(c), loop(loop)
 	{
-		shape = c;
-		Memoizer::add(shape, this);
 	}
 
 	ChainShape::~ChainShape()

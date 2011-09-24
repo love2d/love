@@ -33,9 +33,8 @@ namespace physics
 namespace box2d
 {
 	CircleShape::CircleShape(b2CircleShape * c)
+		: Shape(c)
 	{
-		shape = c;
-		Memoizer::add(shape, this);
 	}
 
 	CircleShape::~CircleShape()

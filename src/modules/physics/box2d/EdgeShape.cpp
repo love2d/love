@@ -33,9 +33,8 @@ namespace physics
 namespace box2d
 {
 	EdgeShape::EdgeShape(b2EdgeShape * e)
+		: Shape(e)
 	{
-		shape = e;
-		Memoizer::add(shape, this);
 	}
 
 	EdgeShape::~EdgeShape()
