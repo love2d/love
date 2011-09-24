@@ -76,22 +76,22 @@ namespace box2d
 				// Push the function.
 				ref->push();
 
-				// Push first userdata.
+				// Push first fixture.
 				{
-					fixtureudata * d = (fixtureudata *)(contacts[i]->contact->GetFixtureA()->GetUserData());
-					if(d->ref != 0)
-						d->ref->push();
+					Fixture * a = (Fixture *)Memoizer::find(contacts[i]->contact->GetFixtureA());
+					if(a != 0)
+						luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
 					else
-						lua_pushnil(L);
+						throw love::Exception("A fixture has escaped Memoizer!");
 				}
 
 				// Push second userdata.
 				{
-					fixtureudata * d = (fixtureudata *)(contacts[i]->contact->GetFixtureB()->GetUserData());
-					if(d->ref != 0)
-						d->ref->push();
+					Fixture * b = (Fixture *)Memoizer::find(contacts[i]->contact->GetFixtureB());
+					if(b != 0)
+						luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
 					else
-						lua_pushnil(L);
+						throw love::Exception("A fixture has escaped Memoizer!");
 				}
 
 				luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)contacts[i], false);
