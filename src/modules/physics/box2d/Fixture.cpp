@@ -132,15 +132,6 @@ namespace box2d
 		if (!s) s = new Shape(fixture->GetShape());
 		return s;
 	}
-	
-	Fixture * Fixture::getNext() const
-	{
-		b2Fixture * f = fixture->GetNext();
-		if (!f) return NULL;
-		Fixture * fix = (Fixture *)Memoizer::find(f);
-		if (!fix) fix = new Fixture(f);
-		return fix;
-	}
 
 	void Fixture::setFilterData(int * v)
 	{
