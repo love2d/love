@@ -34,7 +34,7 @@ namespace physics
 {
 namespace box2d
 {
-	Fixture::Fixture(Body * body, Shape * shape)
+	Fixture::Fixture(Body * body, Shape * shape, float density)
 		: body(body), shape(shape), fixture(NULL)
 	{
 		body->retain();
@@ -44,6 +44,7 @@ namespace box2d
 		b2FixtureDef def;
 		def.shape = shape->shape;
 		def.userData = (void *)data;
+		def.density = density;
 		fixture = body->body->CreateFixture(&def);
 	}
 

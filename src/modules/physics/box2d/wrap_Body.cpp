@@ -497,7 +497,8 @@ namespace box2d
 	{
 		Body * t = luax_checkbody(L, 1);
 		Shape * s = luax_checktype<Shape>(L, 2, "Shape", PHYSICS_SHAPE_T);
-		Fixture * f = t->createFixture(s);
+		float d = (float)luaL_checknumber(L, 3);
+		Fixture * f = t->createFixture(s, d);
 		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
 		return 1;
 	}

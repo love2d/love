@@ -368,7 +368,7 @@ namespace box2d
 		*/
 		World * getWorld() const;
 		
-		Fixture * createFixture(Shape * shape);
+		Fixture * createFixture(Shape * shape, float density);
 		
 		void destroyFixture(Fixture * fixture);
 	private:
