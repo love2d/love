@@ -310,6 +310,7 @@ namespace box2d
 		{ "newWeldJoint", w_newWeldJoint },
 		{ "newWheelJoint", w_newWheelJoint },
 		{ "newRopeJoint", w_newRopeJoint },
+		{ "getDistance", w_getDistance },
 		{ "getMeter", w_getMeter },
 		{ "setMeter", w_setMeter },
 		{ 0, 0 },
