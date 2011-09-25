@@ -79,8 +79,10 @@ namespace box2d
 				// Push first fixture.
 				{
 					Fixture * a = (Fixture *)Memoizer::find(contacts[i]->contact->GetFixtureA());
-					if(a != 0)
+					if(a != 0) {
+						a->retain();
 						luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
+					}
 					else
 						throw love::Exception("A fixture has escaped Memoizer!");
 				}
@@ -88,8 +90,10 @@ namespace box2d
 				// Push second userdata.
 				{
 					Fixture * b = (Fixture *)Memoizer::find(contacts[i]->contact->GetFixtureB());
-					if(b != 0)
+					if(b != 0) {
+						b->retain();
 						luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
+					}
 					else
 						throw love::Exception("A fixture has escaped Memoizer!");
 				}
@@ -162,6 +166,7 @@ namespace box2d
 			ref->push();
 			Fixture * f = (Fixture *)Memoizer::find(fixture);
 			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			f->retain();
 			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
 			lua_call(L, 1, 1);
 			return luax_toboolean(L, -1);
@@ -188,6 +193,7 @@ namespace box2d
 			ref->push();
 			Fixture * f = (Fixture *)Memoizer::find(fixture);
 			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			f->retain();
 			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
 			b2Vec2 scaledPoint = Physics::scaleUp(point);
 			lua_pushnumber(L, scaledPoint.x);
@@ -267,8 +273,10 @@ namespace box2d
 		// Fixtures should be memoized, if we created them
 		Fixture * a = (Fixture *)Memoizer::find(fixtureA);
 		if (!a) throw love::Exception("A fixture has escaped Memoizer!");
+		a->retain();
 		Fixture * b = (Fixture *)Memoizer::find(fixtureB);
 		if (!b) throw love::Exception("A fixture has escaped Memoizer!");
+		b->retain();
 		return filter.process(a, b);
 	}
 
@@ -370,6 +378,7 @@ namespace box2d
 			if (!b) return 1;
 			Body * body = (Body *)Memoizer::find(b);
 			if (!body) throw love::Exception("A body has escaped Memoizer!");
+			body->retain();
 			luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 			lua_rawseti(L, -1, i);
 			b = b->GetNext();
@@ -385,6 +394,7 @@ namespace box2d
 			if (!j) return 1;
 			Joint * joint = (Joint *)Memoizer::find(j);
 			if (!joint) throw love::Exception("A joint has escaped Memoizer!");
+			joint->retain();
 			luax_newtype(L, "Joint", PHYSICS_JOINT_T, (void*)joint);
 			lua_rawseti(L, -1, i);
 			j = j->GetNext();
@@ -400,6 +410,7 @@ namespace box2d
 			if (!c) return 1;
 			Contact	* contact = (Contact *)Memoizer::find(c);
 			if (!contact) throw love::Exception("A contact has escaped Memoizer!");
+			contact->retain();
 			luax_newtype(L, "Contact", PHYSICS_CONTACT_T, (void*)contact);
 			lua_rawseti(L, -1, i);
 			c = c->GetNext();
