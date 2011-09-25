@@ -380,6 +380,7 @@ namespace box2d
 			if (b == groundBody) continue;
 			Body * body = (Body *)Memoizer::find(b);
 			if (!body) throw love::Exception("A body has escaped Memoizer!");
+			body->retain();
 			luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 			lua_rawseti(L, -2, i);
 			i++;
@@ -396,6 +397,7 @@ namespace box2d
 			if (!j) break;
 			Joint * joint = (Joint *)Memoizer::find(j);
 			if (!joint) throw love::Exception("A joint has escaped Memoizer!");
+			joint->retain();
 			luax_newtype(L, "Joint", PHYSICS_JOINT_T, (void*)joint);
 			lua_rawseti(L, -2, i);
 			i++;
@@ -412,6 +414,7 @@ namespace box2d
 			if (!c) break;
 			Contact * contact = (Contact *)Memoizer::find(c);
 			if (!contact) throw love::Exception("A contact has escaped Memoizer!");
+			contact->retain();
 			luax_newtype(L, "Contact", PHYSICS_CONTACT_T, (void*)contact);
 			lua_rawseti(L, -2, i);
 			i++;

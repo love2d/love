@@ -404,6 +404,7 @@ namespace box2d
 			if (!f) break;
 			Fixture * fixture = (Fixture *)Memoizer::find(f);
 			if (!fixture) throw love::Exception("A fixture has escaped Memoizer!");
+			fixture->retain();
 			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
 			lua_rawseti(L, -2, i);
 			i++;
