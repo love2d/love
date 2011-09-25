@@ -34,9 +34,8 @@ namespace box2d
 		float gx = (float)luaL_optnumber(L, 1, 0);
 		float gy = (float)luaL_optnumber(L, 2, 0);
 		bool sleep = luax_optboolean(L, 3, true);
-		int meter = (int)luaL_optnumber(L, 4, Physics::DEFAULT_METER);
 
-		World * w = instance->newWorld(gx, gy, sleep, meter);
+		World * w = instance->newWorld(gx, gy, sleep);
 		luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
 
 		return 1;

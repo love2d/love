@@ -72,9 +72,8 @@ namespace box2d
 		* @param gx Gravity along x-axis.
 		* @param gy Gravity along y-axis.
 		* @param sleep Whether the World allows sleep.
-		* @param meter The scale in px/m.
 		**/
-		World * newWorld(float gx, float gy, bool sleep, int meter);
+		World * newWorld(float gx, float gy, bool sleep);
 
 		/**
 		* Creates a new Body at the specified position.

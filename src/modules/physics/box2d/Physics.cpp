@@ -38,9 +38,8 @@ namespace box2d
 		return "love.physics.box2d";
 	}
 
-	World * Physics::newWorld(float gx, float gy, bool sleep, int meter)
+	World * Physics::newWorld(float gx, float gy, bool sleep)
 	{
-		Physics::setMeter(meter);
 		return new World(b2Vec2(gx, gy), sleep);
 	}
 
