@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 #include <common/Memoizer.h>
 
@@ -46,12 +47,12 @@ namespace box2d
     
     float CircleShape::getRadius() const
     {
-        return shape->m_radius;
+        return Physics::scaleUp(shape->m_radius);
     }
 	
     void CircleShape::setRadius(float r)
     {
-        shape->m_radius = r;
+        shape->m_radius = Physics::scaleDown(r);
     }
 
 } // box2d

@@ -63,7 +63,7 @@ namespace box2d
 	{
 		b2CircleShape *s = new b2CircleShape();
 		s->m_p = Physics::scaleDown(b2Vec2(x, y));
-		s->m_radius = radius;
+		s->m_radius = Physics::scaleDown(radius);
 		return new CircleShape(s);
 	}
 
@@ -225,7 +225,7 @@ namespace box2d
 		b2DistanceOutput o;
 		b2SimplexCache c;
 		b2Distance(&o, &c, &i);
-		lua_pushnumber(L, o.distance);
+		lua_pushnumber(L, Physics::scaleUp(o.distance));
 		lua_pushnumber(L, Physics::scaleUp(o.pointA.x));
 		lua_pushnumber(L, Physics::scaleUp(o.pointA.y));
 		lua_pushnumber(L, Physics::scaleUp(o.pointB.x));
