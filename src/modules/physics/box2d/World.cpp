@@ -357,7 +357,7 @@ namespace box2d
 
 	int World::getBodyCount() const
 	{
-		return world->GetBodyCount();
+		return world->GetBodyCount()-1; // ignore the ground body
 	}
 
 	int World::getJointCount() const
@@ -374,15 +374,16 @@ namespace box2d
 	{
 		lua_newtable(L);
 		b2Body * b = world->GetBodyList();
-		for (int i = 1; i <= world->GetBodyCount(); i++) {
-			if (!b) return 1;
+		int i = 1;
+		do {
+			if (!b) break;
+			if (b == groundBody) continue;
 			Body * body = (Body *)Memoizer::find(b);
 			if (!body) throw love::Exception("A body has escaped Memoizer!");
-			body->retain();
 			luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
-			lua_rawseti(L, -1, i);
-			b = b->GetNext();
-		}
+			lua_rawseti(L, -2, i);
+			i++;
+		} while ((b = b->GetNext()));
 		return 1;
 	}
 	
@@ -390,15 +391,15 @@ namespace box2d
 	{
 		lua_newtable(L);
 		b2Joint * j = world->GetJointList();
-		for (int i = 1; i <= world->GetJointCount(); i++) {
-			if (!j) return 1;
+		int i = 1;
+		do {
+			if (!j) break;
 			Joint * joint = (Joint *)Memoizer::find(j);
 			if (!joint) throw love::Exception("A joint has escaped Memoizer!");
-			joint->retain();
 			luax_newtype(L, "Joint", PHYSICS_JOINT_T, (void*)joint);
-			lua_rawseti(L, -1, i);
-			j = j->GetNext();
-		}
+			lua_rawseti(L, -2, i);
+			i++;
+		} while ((j = j->GetNext()));
 		return 1;
 	}
 	
@@ -406,15 +407,15 @@ namespace box2d
 	{
 		lua_newtable(L);
 		b2Contact * c = world->GetContactList();
-		for (int i = 1; i <= world->GetContactCount(); i++) {
-			if (!c) return 1;
-			Contact	* contact = (Contact *)Memoizer::find(c);
+		int i = 1;
+		do {
+			if (!c) break;
+			Contact * contact = (Contact *)Memoizer::find(c);
 			if (!contact) throw love::Exception("A contact has escaped Memoizer!");
-			contact->retain();
 			luax_newtype(L, "Contact", PHYSICS_CONTACT_T, (void*)contact);
-			lua_rawseti(L, -1, i);
-			c = c->GetNext();
-		}
+			lua_rawseti(L, -2, i);
+			i++;
+		} while ((c = c->GetNext()));
 		return 1;
 	}
 	
