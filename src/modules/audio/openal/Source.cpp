@@ -65,7 +65,8 @@ namespace openal
 
 	Source::~Source()
 	{
-		pool->stop(this);
+		if (valid)
+			pool->stop(this);
 		alDeleteBuffers((type == TYPE_STATIC) ? 1 : MAX_BUFFERS, buffers);
 		if (decoder)
 			decoder->release();

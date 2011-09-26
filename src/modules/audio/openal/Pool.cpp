@@ -271,9 +271,9 @@ namespace openal
 		if(i != playing.end())
 		{
 			source->stopAtomic();
-			source->release();
 			available.push(i->second);
 			playing.erase(i++);
+			source->release();
 			return true;
 		}
 
