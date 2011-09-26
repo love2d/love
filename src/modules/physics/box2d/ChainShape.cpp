@@ -72,7 +72,12 @@ namespace box2d
 		b2ChainShape * c = (b2ChainShape *)shape;
 		b2EdgeShape e;
 		c->GetChildEdge(&e, index);
-		return new EdgeShape(&e);
+		EdgeShape * edge = (EdgeShape *)Memoizer::find(&e);
+		if (!edge) return new EdgeShape(&e);
+		else {
+			edge->retain();
+			return edge;
+		}
 	}
 	
 	int ChainShape::getChildCount() const
@@ -87,14 +92,14 @@ namespace box2d
 		return c->m_count;
 	}
 	
-	b2Vec2 ChainShape::getVertex(int index) const
+	b2Vec2 ChainShape::getPoint(int index) const
 	{
 		b2ChainShape * c = (b2ChainShape *)shape;
 		const b2Vec2 & v = c->m_vertices[index];
 		return Physics::scaleUp(v);
 	}
 	
-	const b2Vec2 * ChainShape::getVertices() const
+	const b2Vec2 * ChainShape::getPoints() const
 	{
 		b2ChainShape * c = (b2ChainShape *)shape;
 		return c->m_vertices;

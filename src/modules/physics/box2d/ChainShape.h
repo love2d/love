@@ -89,13 +89,13 @@ namespace box2d
 		* @param index The index of the vertex.
 		* @returns The specified vertex.
 		**/
-		b2Vec2 getVertex(int index) const;
+		b2Vec2 getPoint(int index) const;
 		
 		/**
 		* Returns all of the vertices.
 		* @returns The vertices the shape comprises.
 		**/
-		const b2Vec2 * getVertices() const;
+		const b2Vec2 * getPoints() const;
 		
 	};
 

@@ -74,30 +74,27 @@ namespace box2d
 		return 1;
 	}
 	
-	int w_ChainShape_getVertex(lua_State * L)
+	int w_ChainShape_getPoint(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
 		int index = luaL_checkint(L, 2);
-		b2Vec2 v = c->getVertex(index);
+		b2Vec2 v = c->getPoint(index);
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		return 2;
 	}
 	
-	int w_ChainShape_getVertices(lua_State * L)
+	int w_ChainShape_getPoints(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
-		const b2Vec2 * verts = c->getVertices();
+		const b2Vec2 * verts = c->getPoints();
 		int count = c->getVertexCount();
-		lua_createtable(L, count*2, 0);
 		for (int i = 0; i < count; i++) {
 			b2Vec2 v = Physics::scaleUp(verts[i]);
 			lua_pushnumber(L, v.x);
-			lua_rawseti(L, -2, i*2+1);
 			lua_pushnumber(L, v.y);
-			lua_rawseti(L, -2, i*2+2);
 		}
-		return 1;
+		return count*2;
 	}
 
 	static const luaL_Reg functions[] = {
@@ -106,8 +103,8 @@ namespace box2d
 		{ "getChildCount", w_ChainShape_getChildCount },
 		{ "getChildEdge", w_ChainShape_getChildEdge },
 		{ "getVertexCount", w_ChainShape_getVertexCount },
-		{ "getVertex", w_ChainShape_getVertex },
-		{ "getVertices", w_ChainShape_getVertices },
+		{ "getPoint", w_ChainShape_getPoint },
+		{ "getPoints", w_ChainShape_getPoints },
 		// From Shape.
 		{ "getType", w_Shape_getType },
 		{ "getRadius", w_Shape_getRadius },

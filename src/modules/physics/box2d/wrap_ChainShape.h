@@ -39,8 +39,8 @@ namespace box2d
 	int w_ChainShape_getChildCount(lua_State * L);
 	int w_ChainShape_getChildEdge(lua_State * L);
 	int w_ChainShape_getVertexCount(lua_State * L);
-	int w_ChainShape_getVertex(lua_State * L);
-	int w_ChainShape_getVertices(lua_State * L);
+	int w_ChainShape_getPoint(lua_State * L);
+	int w_ChainShape_getPoints(lua_State * L);
 	
 	int luaopen_chainshape(lua_State * L);
 
