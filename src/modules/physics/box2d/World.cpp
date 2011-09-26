@@ -61,7 +61,15 @@ namespace box2d
 	{
 		if(ref != 0) {
 			contacts.push_back(new Contact(contact));
-			impulses.push_back(impulse);
+			// copy the impulse struct
+			b2ContactImpulse * i = new b2ContactImpulse();
+			i->normalImpulses[0] = impulse->normalImpulses[0];
+			i->normalImpulses[1] = impulse->normalImpulses[1];
+			i->tangentImpulses[0] = impulse->tangentImpulses[0];
+			i->tangentImpulses[1] = impulse->tangentImpulses[1];
+			i->count = impulse->count;
+			
+			impulses.push_back(i);
 		}
 	}
 
@@ -117,6 +125,8 @@ namespace box2d
 				delete contacts[i];
 			contacts.clear();
 			// Clear impulses.
+			for(int i = 0;i<(int)impulses.size();i++)
+				delete impulses[i];
 			impulses.clear();
 		}
 
