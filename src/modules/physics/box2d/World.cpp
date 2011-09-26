@@ -310,7 +310,7 @@ namespace box2d
 		end.ref ? end.ref->push() : lua_pushnil(L);
 		presolve.ref ? presolve.ref->push() : lua_pushnil(L);
 		postsolve.ref ? postsolve.ref->push() : lua_pushnil(L);
-		return lua_gettop(L);
+		return 4;
 	}
 	
 	int World::setContactFilter(lua_State * L)
@@ -324,7 +324,7 @@ namespace box2d
 	int World::getContactFilter(lua_State * L)
 	{
 		filter.ref ? filter.ref->push() : lua_pushnil(L);
-		return lua_gettop(L);
+		return 1;
 	}
 
 	void World::setGravity(float x, float y)
