@@ -192,9 +192,9 @@ namespace box2d
 		return new WeldJoint(body1, body2, x, y, collideConnected);
 	}
 	
-	WheelJoint * Physics::newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected)
+	WheelJoint * Physics::newWheelJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 	{
-		return new WheelJoint(body1, body2, x, y, ax, ay, collideConnected);
+		return new WheelJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
 	}
 	
 	RopeJoint * Physics::newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected)

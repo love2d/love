@@ -231,13 +231,15 @@ namespace box2d
 		
 		/**
 		* Creates a new WheelJoint connecting body1 with body2.
-		* @param x Anchor along the x-axis. (World coordinates)
-		* @param y Anchor along the y-axis. (World coordinates)
+		* @param xA Anchor for body 1 along the x-axis. (World coordinates)
+		* @param yA Anchor for body 1 along the y-axis. (World coordinates)
+		* @param xB Anchor for body 2 along the x-axis. (World coordinates)
+		* @param yB Anchor for body 2 along the y-axis. (World coordinates)
 		* @param ax The x-component of the world-axis.
 		* @param ay The y-component of the world-axis.
 		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
-		WheelJoint * newWheelJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected);
+		WheelJoint * newWheelJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
 		
 		/**
 		* Creates a new RopeJoint connecting body1 with body2.
