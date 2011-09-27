@@ -119,7 +119,23 @@ namespace box2d
 		if(shape == 0)
 			return 0;
 		shape->retain();
-		luax_newtype(L, "Shape", PHYSICS_SHAPE_T, (void*)shape);
+		switch (shape->getType()) {
+			case Shape::SHAPE_EDGE:
+				luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, (void*)shape);
+				break;
+			case Shape::SHAPE_CHAIN:
+				luax_newtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, (void*)shape);
+				break;
+			case Shape::SHAPE_CIRCLE:
+				luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
+				break;
+			case Shape::SHAPE_POLYGON:
+				luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
+				break;
+			default:
+				luax_newtype(L, "Shape", PHYSICS_SHAPE_T, (void*)shape);
+				break;
+		}
 		return 1;
 	}
 

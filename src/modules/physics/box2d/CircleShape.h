@@ -59,7 +59,7 @@ namespace box2d
 		float getRadius() const;
 		
 		/**
-		* Gets the radius for the circle.
+		* Sets the radius for the circle.
 		**/
 		void setRadius(float r);
 	};
