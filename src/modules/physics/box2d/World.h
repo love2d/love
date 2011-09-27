@@ -67,15 +67,9 @@ namespace box2d
 		{
 		public:
 			Reference * ref;
-			std::vector<Contact *> contacts;
-			std::vector<const b2ContactImpulse *> impulses;
-			b2Manifold* oldManifold;
-			b2ContactImpulse* impulse;
 			ContactCallback();
 			~ContactCallback();
-			void add(b2Contact* contact);
-			void add(b2Contact* contact, const b2ContactImpulse* impulse);
-			void process();
+			void process(b2Contact* contact, const b2ContactImpulse* impulse = NULL);
 		};
 		
 		class ContactFilter

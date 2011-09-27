@@ -44,90 +44,50 @@ namespace box2d
 		if(ref != 0)
 			delete ref;
 	}
-
-	void World::ContactCallback::add(b2Contact* contact)
-	{
-		/**
-		* We must copy contacts, since we're not allowed to process
-		* them inside this function. Removing bodies in this function
-		* pretty much guarantees segfault. ^^
-		**/
-
-		if(ref != 0)
-			contacts.push_back(new Contact(contact));
-	}
 	
-	void World::ContactCallback::add(b2Contact* contact, const b2ContactImpulse* impulse)
-	{
-		if(ref != 0) {
-			contacts.push_back(new Contact(contact));
-			// copy the impulse struct
-			b2ContactImpulse * i = new b2ContactImpulse();
-			i->normalImpulses[0] = impulse->normalImpulses[0];
-			i->normalImpulses[1] = impulse->normalImpulses[1];
-			i->tangentImpulses[0] = impulse->tangentImpulses[0];
-			i->tangentImpulses[1] = impulse->tangentImpulses[1];
-			i->count = impulse->count;
-			
-			impulses.push_back(i);
-		}
-	}
-
-	void World::ContactCallback::process()
+	void World::ContactCallback::process(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
 		// Process contacts.
 		if(ref != 0)
 		{
 			lua_State * L = ref->getL();
-			for(int i = 0;i<(int)contacts.size();i++)
+			ref->push();
+
+			// Push first fixture.
 			{
-				// Push the function.
-				ref->push();
-
-				// Push first fixture.
-				{
-					Fixture * a = (Fixture *)Memoizer::find(contacts[i]->contact->GetFixtureA());
-					if(a != 0) {
-						a->retain();
-						luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
-					}
-					else
-						throw love::Exception("A fixture has escaped Memoizer!");
+				Fixture * a = (Fixture *)Memoizer::find(contact->GetFixtureA());
+				if(a != 0) {
+					a->retain();
+					luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
 				}
-
-				// Push second userdata.
-				{
-					Fixture * b = (Fixture *)Memoizer::find(contacts[i]->contact->GetFixtureB());
-					if(b != 0) {
-						b->retain();
-						luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
-					}
-					else
-						throw love::Exception("A fixture has escaped Memoizer!");
-				}
-
-				luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)contacts[i], false);
-				
-				int args = 3;
-				if ((int)impulses.size() > i) {
-					const b2ContactImpulse * impulse = impulses[i];
-					for (int c = 0; c < impulse->count; c++) {
-						lua_pushnumber(L, Physics::scaleUp(impulse->normalImpulses[c]));
-						lua_pushnumber(L, Physics::scaleUp(impulse->tangentImpulses[c]));
-						args += 2;
-					}
-				}
-				lua_call(L, args, 0);
+				else
+					throw love::Exception("A fixture has escaped Memoizer!");
 			}
 
-			// Clear contacts.
-			for(int i = 0;i<(int)contacts.size();i++)
-				delete contacts[i];
-			contacts.clear();
-			// Clear impulses.
-			for(int i = 0;i<(int)impulses.size();i++)
-				delete impulses[i];
-			impulses.clear();
+			// Push second userdata.
+			{
+				Fixture * b = (Fixture *)Memoizer::find(contact->GetFixtureB());
+				if(b != 0) {
+					b->retain();
+					luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
+				}
+				else
+					throw love::Exception("A fixture has escaped Memoizer!");
+			}
+		
+			Contact * c = new Contact(contact);
+
+			luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)c, false);
+			
+			int args = 3;
+			if (impulse) {
+				for (int c = 0; c < impulse->count; c++) {
+					lua_pushnumber(L, Physics::scaleUp(impulse->normalImpulses[c]));
+					lua_pushnumber(L, Physics::scaleUp(impulse->tangentImpulses[c]));
+					args += 2;
+				}
+			}
+			lua_call(L, args, 0);
 		}
 
 	}
@@ -250,32 +210,27 @@ namespace box2d
 	void World::update(float dt)
 	{
 		world->Step(dt, 8, 6);
-
-		begin.process();
-		end.process();
-		presolve.process();
-		postsolve.process();
 	}
 
 	void World::BeginContact(b2Contact* contact)
 	{
-		begin.add(contact);
+		begin.process(contact);
 	}
 
 	void World::EndContact(b2Contact* contact)
 	{
-		end.add(contact);
+		end.process(contact);
 	}
 
 	void World::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
 		B2_NOT_USED(oldManifold); // not sure what to do with this
-		presolve.add(contact);
+		presolve.process(contact);
 	}
 
 	void World::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
-		postsolve.add(contact, impulse);
+		postsolve.process(contact, impulse);
 	}
 	
 	bool World::ShouldCollide(b2Fixture * fixtureA, b2Fixture * fixtureB)
