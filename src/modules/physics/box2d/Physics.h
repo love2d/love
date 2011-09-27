@@ -183,13 +183,15 @@ namespace box2d
 
 		/**
 		* Creates a new PrismaticJoint connecting body1 with body2.
-		* @param x World-anchor along the x-axis.
-		* @param y World-anchor along the y-axis.
+		* @param xA World-anchor for body1 along the x-axis.
+		* @param yA World-anchor for body1 along the y-axis.
+		* @param xB World-anchor for body2 along the x-axis.
+		* @param yB World-anchor for body2 along the y-axis.
 		* @param ax The x-component of the world-axis.
 		* @param ay The y-component of the world-axis.
 		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
-		PrismaticJoint * newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected);
+		PrismaticJoint * newPrismaticJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
 
 		/**
 		* Creates a new PulleyJoint connecting body1 with body2.

@@ -46,7 +46,7 @@ namespace box2d
 		/**
 		* Creates a new PrismaticJoint connecting body1 and body2.
 		**/
-		PrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected);
+		PrismaticJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
 
 		virtual ~PrismaticJoint();
 

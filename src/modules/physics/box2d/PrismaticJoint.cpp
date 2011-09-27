@@ -31,12 +31,13 @@ namespace physics
 {
 namespace box2d
 {
-	PrismaticJoint::PrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected)
+	PrismaticJoint::PrismaticJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
 	{
 		b2PrismaticJointDef def;
 		
-		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x,y)), b2Vec2(ax,ay));
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(xA,yA)), b2Vec2(ax,ay));
+		def.localAnchorB = body2->body->GetLocalPoint(Physics::scaleDown(b2Vec2(xB, yB)));
 		def.lowerTranslation = 0.0f;
 		def.upperTranslation = 100.0f;
 		def.enableLimit = true;
@@ -52,12 +53,12 @@ namespace box2d
 
 	float PrismaticJoint::getJointTranslation() const
 	{
-		return Physics::scaleDown(joint->GetJointTranslation());
+		return Physics::scaleUp(joint->GetJointTranslation());
 	}
 
 	float PrismaticJoint::getJointSpeed() const
 	{
-		return Physics::scaleDown(joint->GetJointSpeed());
+		return Physics::scaleUp(joint->GetJointSpeed());
 	}
 
 	void PrismaticJoint::enableMotor(bool motor)

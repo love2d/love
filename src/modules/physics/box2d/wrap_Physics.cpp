@@ -176,12 +176,24 @@ namespace box2d
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		Body * body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
-		float x = (float)luaL_checknumber(L, 3);
-		float y = (float)luaL_checknumber(L, 4);
-		float ax = (float)luaL_checknumber(L, 5);
-		float ay = (float)luaL_checknumber(L, 6);
-		bool collideConnected = luax_optboolean(L, 7, false);
-		PrismaticJoint * j = instance->newPrismaticJoint(body1, body2, x, y, ax, ay, collideConnected);
+		float xA = (float)luaL_checknumber(L, 3);
+		float yA = (float)luaL_checknumber(L, 4);
+		float xB, yB, ax, ay;
+		bool collideConnected;
+		if (lua_gettop(L) >= 8) {
+			xB = (float)luaL_checknumber(L, 5);
+			yB = (float)luaL_checknumber(L, 6);
+			ax = (float)luaL_checknumber(L, 7);
+			ay = (float)luaL_checknumber(L, 8);
+			collideConnected = luax_optboolean(L, 9, false);
+		} else {
+			xB = xA;
+			yB = yA;
+			ax = (float)luaL_checknumber(L, 5);
+			ay = (float)luaL_checknumber(L, 6);
+			collideConnected = luax_optboolean(L, 7, false);
+		}
+		PrismaticJoint * j = instance->newPrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
 		luax_newtype(L, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T, (void*)j);
 		return 1;
 	}

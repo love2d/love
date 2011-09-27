@@ -167,9 +167,9 @@ namespace box2d
 		return new RevoluteJoint(body1, body2, x, y, collideConnected);
 	}
 
-	PrismaticJoint * Physics::newPrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay, bool collideConnected)
+	PrismaticJoint * Physics::newPrismaticJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 	{
-		return new PrismaticJoint(body1, body2, x, y, ax, ay, collideConnected);
+		return new PrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
 	}
 
 	PulleyJoint * Physics::newPulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected)
