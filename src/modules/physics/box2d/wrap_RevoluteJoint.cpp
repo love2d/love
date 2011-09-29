@@ -90,6 +90,13 @@ namespace box2d
 		lua_pushnumber(L, t->getMotorTorque(inv_dt));
 		return 1;
 	}
+	
+	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L)
+	{
+		RevoluteJoint * t = luax_checkrevolutejoint(L, 1);
+		lua_pushnumber(L, t->getMaxMotorTorque());
+		return 1;
+	}
 
 	int w_RevoluteJoint_enableLimit(lua_State * L)
 	{
@@ -161,6 +168,7 @@ namespace box2d
 		{ "setMotorSpeed", w_RevoluteJoint_setMotorSpeed },
 		{ "getMotorSpeed", w_RevoluteJoint_getMotorSpeed },
 		{ "getMotorTorque", w_RevoluteJoint_getMotorTorque },
+		{ "getMaxMotorTorque", w_RevoluteJoint_getMaxMotorTorque },
 		{ "enableLimit", w_RevoluteJoint_enableLimit },
 		{ "isLimitEnabled", w_RevoluteJoint_isLimitEnabled },
 		{ "setUpperLimit", w_RevoluteJoint_setUpperLimit },

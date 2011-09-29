@@ -92,6 +92,11 @@ namespace box2d
 		float getMotorTorque(float inv_dt) const;
 
 		/**
+		* Get the maximum motor torque, usually in N-m.
+		**/
+		float getMaxMotorTorque();
+
+		/**
 		* Enable/disable the joint limit.
 		**/
 		void enableLimit(bool limit);

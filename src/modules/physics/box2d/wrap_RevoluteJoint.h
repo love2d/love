@@ -41,6 +41,7 @@ namespace box2d
 	int w_RevoluteJoint_setMotorSpeed(lua_State * L);
 	int w_RevoluteJoint_getMotorSpeed(lua_State * L);
 	int w_RevoluteJoint_getMotorTorque(lua_State * L);
+	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L);
 	int w_RevoluteJoint_enableLimit(lua_State * L);
 	int w_RevoluteJoint_isLimitEnabled(lua_State * L);
 	int w_RevoluteJoint_setUpperLimit(lua_State * L);

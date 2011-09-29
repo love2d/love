@@ -87,6 +87,11 @@ namespace box2d
 	{
 		return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 	}
+	
+	float RevoluteJoint::getMaxMotorTorque()
+	{
+		return Physics::scaleUp(Physics::scaleUp(joint->GetMaxMotorTorque()));
+	}
 
 	void RevoluteJoint::enableLimit(bool limit)
 	{
