@@ -30,8 +30,16 @@ namespace box2d
 	{
 		return luax_checktype<EdgeShape>(L, idx, "EdgeShape", PHYSICS_EDGE_SHAPE_T);
 	}
+	
+	int w_EdgeShape_getPoints(lua_State * L)
+	{
+		EdgeShape * t = luax_checkedgeshape(L, 1);
+		lua_remove(L, 1);
+		return t->getPoints(L);
+	}
 
 	static const luaL_Reg functions[] = {
+		{ "getPoints", w_EdgeShape_getPoints },
 		// From Shape.
 		{ "getType", w_Shape_getType },
 		{ "getRadius", w_Shape_getRadius },

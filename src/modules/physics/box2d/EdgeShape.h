@@ -45,6 +45,14 @@ namespace box2d
 		EdgeShape(b2EdgeShape * e);
 
 		virtual ~EdgeShape();
+
+		/**
+		* Returns the transformed points of the edge shape.
+		* This function is useful for debug drawing and such.
+		*
+		* The result can be directly passed into love.graphics.line().
+		**/
+		int getPoints(lua_State * L);
 	};
 
 } // box2d

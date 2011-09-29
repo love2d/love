@@ -33,6 +33,7 @@ namespace physics
 namespace box2d
 {
 	EdgeShape * luax_checkedgeshape(lua_State * L, int idx);
+	int w_EdgeShape_getPoints(lua_State * L);
 	int luaopen_edgeshape(lua_State * L);
 
 } // box2d

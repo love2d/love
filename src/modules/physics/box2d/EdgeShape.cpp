@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 #include <common/Memoizer.h>
 
@@ -42,6 +43,19 @@ namespace box2d
 		Memoizer::remove(shape);
 		delete shape;
 		shape = NULL;
+	}
+	
+	int EdgeShape::getPoints(lua_State * L)
+	{
+		b2EdgeShape * e = (b2EdgeShape *)shape;
+		b2Vec2 v1 = Physics::scaleUp(e->m_vertex1);
+		b2Vec2 v2 = Physics::scaleUp(e->m_vertex2);
+		lua_pushnumber(L, v1.x);
+		lua_pushnumber(L, v1.y);
+		lua_pushnumber(L, v2.x);
+		lua_pushnumber(L, v2.y);
+		return 4;
+		
 	}
 
 } // box2d
