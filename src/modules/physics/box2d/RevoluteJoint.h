@@ -94,7 +94,7 @@ namespace box2d
 		/**
 		* Get the maximum motor torque, usually in N-m.
 		**/
-		float getMaxMotorTorque();
+		float getMaxMotorTorque() const;
 
 		/**
 		* Enable/disable the joint limit.

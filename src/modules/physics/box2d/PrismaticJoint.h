@@ -92,6 +92,11 @@ namespace box2d
 		float getMotorForce(float inv_dt) const;
 
 		/**
+		* Get the maximum motor force, usually in N.
+		**/
+		float getMaxMotorForce() const;
+
+		/**
 		* Enable/disable the joint limit.
 		**/
 		void enableLimit(bool limit);

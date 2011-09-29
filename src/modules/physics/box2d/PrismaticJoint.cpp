@@ -90,6 +90,11 @@ namespace box2d
 	{
 		return Physics::scaleUp(joint->GetMotorForce(inv_dt));
 	}
+	
+	float PrismaticJoint::getMaxMotorForce() const
+	{
+		return Physics::scaleUp(joint->GetMaxMotorForce());
+	}
 
 	void PrismaticJoint::enableLimit(bool limit)
 	{

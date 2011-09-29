@@ -88,7 +88,7 @@ namespace box2d
 		return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 	}
 	
-	float RevoluteJoint::getMaxMotorTorque()
+	float RevoluteJoint::getMaxMotorTorque() const
 	{
 		return Physics::scaleUp(Physics::scaleUp(joint->GetMaxMotorTorque()));
 	}
