@@ -98,7 +98,7 @@ namespace box2d
 	int Joint::getReactionForce(lua_State * L)
 	{
 		float dt = (float)luaL_checknumber(L, 2);
-		b2Vec2 v = joint->GetReactionForce(dt);
+		b2Vec2 v = Physics::scaleUp(joint->GetReactionForce(dt));
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		return 2;
@@ -106,7 +106,7 @@ namespace box2d
 
 	float Joint::getReactionTorque(float dt)
 	{
-		return joint->GetReactionTorque(dt);
+		return Physics::scaleUp(Physics::scaleUp(joint->GetReactionTorque(dt)));
 	}
 
 	b2Joint * Joint::createJoint(b2JointDef * def)

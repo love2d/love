@@ -176,22 +176,24 @@ namespace box2d
 	
 	void Body::applyAngularImpulse(float impulse)
 	{
-		body->ApplyAngularImpulse(Physics::scaleDown(impulse));
+		// Angular impulse is in kg*m^2/s, meaning it needs to be scaled twice
+		body->ApplyAngularImpulse(Physics::scaleDown(Physics::scaleDown(impulse)));
 	}
 
 	void Body::applyTorque(float t)
 	{
-		body->ApplyTorque(t);
+		// Torque is in N*m, or kg*m^2/s^2, meaning it also needs to be scaled twice
+		body->ApplyTorque(Physics::scaleDown(Physics::scaleDown(t)));
 	}
 
 	void Body::applyForce(float fx, float fy, float rx, float ry)
 	{
-		body->ApplyForce(b2Vec2(fx, fy), Physics::scaleDown(b2Vec2(rx, ry)));
+		body->ApplyForce(Physics::scaleDown(b2Vec2(fx, fy)), Physics::scaleDown(b2Vec2(rx, ry)));
 	}
 
 	void Body::applyForce(float fx, float fy)
 	{
-		body->ApplyForce(b2Vec2(fx, fy), body->GetWorldCenter());
+		body->ApplyForce(Physics::scaleDown(b2Vec2(fx, fy)), body->GetWorldCenter());
 	}
 
 	void Body::setX(float x)

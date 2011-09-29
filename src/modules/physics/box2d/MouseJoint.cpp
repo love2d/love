@@ -63,12 +63,12 @@ namespace box2d
 
 	void MouseJoint::setMaxForce(float force)
 	{
-		joint->SetMaxForce(force);
+		joint->SetMaxForce(Physics::scaleDown(force));
 	}
 
 	float MouseJoint::getMaxForce() const
 	{
-		return joint->GetMaxForce();
+		return Physics::scaleUp(joint->GetMaxForce());
 	}
 	
 	void MouseJoint::setFrequency(float hz)

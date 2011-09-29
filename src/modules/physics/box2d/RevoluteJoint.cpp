@@ -70,7 +70,7 @@ namespace box2d
 
 	void RevoluteJoint::setMaxMotorTorque(float torque)
 	{
-		joint->SetMaxMotorTorque(torque);
+		joint->SetMaxMotorTorque(Physics::scaleDown(Physics::scaleDown(torque)));
 	}
 	
 	void RevoluteJoint::setMotorSpeed(float speed)
@@ -85,7 +85,7 @@ namespace box2d
 
 	float RevoluteJoint::getMotorTorque(float inv_dt) const
 	{
-		return joint->GetMotorTorque(inv_dt);
+		return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 	}
 
 	void RevoluteJoint::enableLimit(bool limit)

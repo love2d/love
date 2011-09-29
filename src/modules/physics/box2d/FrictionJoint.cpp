@@ -50,22 +50,22 @@ namespace box2d
 	
 	void FrictionJoint::setMaxForce(float force)
 	{
-		joint->SetMaxForce(force);
+		joint->SetMaxForce(Physics::scaleDown(force));
 	}
 
 	float FrictionJoint::getMaxForce() const
 	{
-		return joint->GetMaxForce();
+		return Physics::scaleUp(joint->GetMaxForce());
 	}
 	
 	void FrictionJoint::setMaxTorque(float torque)
 	{
-		joint->SetMaxTorque(torque);
+		joint->SetMaxTorque(Physics::scaleDown(Physics::scaleDown(torque)));
 	}
 	
 	float FrictionJoint::getMaxTorque() const
 	{
-		return joint->GetMaxTorque();
+		return Physics::scaleUp(Physics::scaleUp(joint->GetMaxTorque()));
 	}
 
 

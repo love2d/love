@@ -70,47 +70,47 @@ namespace box2d
 	
 	void WheelJoint::setMotorSpeed(float speed)
 	{
-		joint->SetMotorSpeed(Physics::scaleDown(speed));
+		joint->SetMotorSpeed(speed);
 	}
 
 	float WheelJoint::getMotorSpeed() const
 	{
-		return Physics::scaleUp(joint->GetMotorSpeed());
+		return joint->GetMotorSpeed();
 	}
 	
 	void WheelJoint::setMaxMotorTorque(float torque)
 	{
-		joint->SetMaxMotorTorque(Physics::scaleDown(torque));
+		joint->SetMaxMotorTorque(Physics::scaleDown(Physics::scaleDown(torque)));
 	}
 	
 	float WheelJoint::getMaxMotorTorque() const
 	{
-		return Physics::scaleUp(joint->GetMaxMotorTorque());
+		return Physics::scaleUp(Physics::scaleUp(joint->GetMaxMotorTorque()));
 	}
 
 	float WheelJoint::getMotorTorque(float inv_dt) const
 	{
-		return Physics::scaleUp(joint->GetMotorTorque(inv_dt));
+		return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 	}
 	
 	void WheelJoint::setSpringFrequencyHz(float hz)
 	{
-		joint->SetSpringFrequencyHz(Physics::scaleDown(hz));
+		joint->SetSpringFrequencyHz(hz);
 	}
 	
 	float WheelJoint::getSpringFrequencyHz() const
 	{
-		return Physics::scaleUp(joint->GetSpringFrequencyHz());
+		return joint->GetSpringFrequencyHz();
 	}
 	
 	void WheelJoint::setSpringDampingRatio(float ratio)
 	{
-		joint->SetSpringDampingRatio(Physics::scaleDown(ratio));
+		joint->SetSpringDampingRatio(ratio);
 	}
 	
 	float WheelJoint::getSpringDampingRatio() const
 	{
-		return Physics::scaleUp(joint->GetSpringDampingRatio());
+		return joint->GetSpringDampingRatio();
 	}
 
 
