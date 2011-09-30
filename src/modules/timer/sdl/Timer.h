@@ -41,25 +41,22 @@ namespace sdl
 	{
 	private:
 
-		// Timing vars for benchmarking.
-		Uint32 time_init;
-
 		// Frame delta vars.
 		Uint32 currTime;
 		Uint32 prevTime;
 		Uint32 prevFpsUpdate;
 
 		// Updated with a certain frequency.
-		float fps;
+		double fps;
 
 		// The frequency by which to update the FPS.
-		float fpsUpdateFrequency;
+		double fpsUpdateFrequency;
 
 		// Frames since last FPS update.
 		int frames;
 
 		// The current timestep.
-		float dt;
+		double dt;
 
 	public:
 
@@ -90,34 +87,34 @@ namespace sdl
 		* usually 1ms.
 		* @param seconds The number of seconds to sleep for.
 		**/
-		void sleep(float seconds);
+		void sleep(double seconds);
 
 		/**
 		* Gets the time between the last two frames, assuming step is called
 		* each frame.
 		**/
-		float getDelta() const;
+		double getDelta() const;
 
 		/**
 		* Gets the average FPS over the last second. Beucase the value is only updated
 		* once per second, it does not look erratic when displayed on screen.
 		* @return The "current" FPS.
 		**/
-		float getFPS() const;
+		double getFPS() const;
 
 		/**
 		* Gets the amount of time since the program started. Only useful for timing
 		* code or measuring intervals.
 		* @return The time (in seconds) since the program started.
 		**/
-		float getTime() const;
+		double getTime() const;
 
 		/**
 		 * Gets the amount of time passed since an unspecified time. The time is accurate
 		 * to the microsecond, and is limited to 24 hours.
 		 * @return The time (in seconds)
 		 **/
-		float getMicroTime() const;
+		double getMicroTime() const;
 
 	}; // Timer
 

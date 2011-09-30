@@ -37,7 +37,7 @@ namespace timer
 namespace sdl
 {
 	Timer::Timer()
-		: time_init(0), currTime(0), prevFpsUpdate(0), fps(0), fpsUpdateFrequency(1),
+		: currTime(0), prevFpsUpdate(0), fps(0), fpsUpdateFrequency(1),
 		frames(0), dt(0)
 	{
 		// Init the SDL timer system.
@@ -68,10 +68,10 @@ namespace sdl
 		currTime = SDL_GetTicks();
 
 		// Convert to number of seconds
-		dt = (currTime - prevTime)/1000.0f;
+		dt = (currTime - prevTime)/1000.0;
 
 		// Update FPS?
-		if((currTime - prevFpsUpdate)/1000.0f > fpsUpdateFrequency)
+		if((currTime - prevFpsUpdate)/1000.0 > fpsUpdateFrequency)
 		{
 			fps = frames/fpsUpdateFrequency;
 			prevFpsUpdate = currTime;
@@ -79,28 +79,28 @@ namespace sdl
 		}
 	}
 
-	void Timer::sleep(float seconds)
+	void Timer::sleep(double seconds)
 	{
 		if(seconds > 0)
 			delay((int) (seconds*1000));
 	}
 
-	float Timer::getDelta() const
+	double Timer::getDelta() const
 	{
 		return dt;
 	}
 
-	float Timer::getFPS() const
+	double Timer::getFPS() const
 	{
 		return fps;
 	}
 
-	float Timer::getTime() const
+	double Timer::getTime() const
 	{
-		return (SDL_GetTicks() - time_init)/1000.0f;
+		return SDL_GetTicks()/1000.0;
 	}
 
-	float Timer::getMicroTime() const
+	double Timer::getMicroTime() const
 	{
 #ifdef LOVE_WINDOWS
 		__int64 ticks, freq;
@@ -110,12 +110,12 @@ namespace sdl
 		QueryPerformanceFrequency(&temp);
 		freq = temp.QuadPart;
 		__int64 secs = ticks/freq;
-		__int64 usecs = static_cast<__int64>((ticks%freq)/(freq/1000000.0f));
-		return secs%86400 + usecs/1000000.0f;
+		__int64 usecs = static_cast<__int64>((ticks%freq)/(freq/1000000.0));
+		return secs%86400 + usecs/1000000.0;
 #else
 		timeval t;
 		gettimeofday(&t, NULL);
-		return t.tv_sec%86400 + t.tv_usec/1000000.0f;
+		return t.tv_sec%86400 + t.tv_usec/1000000.0;
 #endif
 	}
 
