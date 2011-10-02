@@ -234,10 +234,20 @@ namespace box2d
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		Body * body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
-		float x = (float)luaL_checknumber(L, 3);
-		float y = (float)luaL_checknumber(L, 4);
-		bool collideConnected = luax_optboolean(L, 5, false);
-		FrictionJoint * j = instance->newFrictionJoint(body1, body2, x, y, collideConnected);
+		float xA = (float)luaL_checknumber(L, 3);
+		float yA = (float)luaL_checknumber(L, 4);
+		float xB, yB;
+		bool collideConnected;
+		if (lua_gettop(L) >= 6) {
+			xB = (float)luaL_checknumber(L, 5);
+			yB = (float)luaL_checknumber(L, 6);
+			collideConnected = luax_optboolean(L, 7, false);
+		} else {
+			xB = xA;
+			yB = yA;
+			collideConnected = luax_optboolean(L, 5, false);
+		}
+		FrictionJoint * j = instance->newFrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 		luax_newtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -246,10 +256,20 @@ namespace box2d
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		Body * body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
-		float x = (float)luaL_checknumber(L, 3);
-		float y = (float)luaL_checknumber(L, 4);
-		bool collideConnected = luax_optboolean(L, 5, false);
-		WeldJoint * j = instance->newWeldJoint(body1, body2, x, y, collideConnected);
+		float xA = (float)luaL_checknumber(L, 3);
+		float yA = (float)luaL_checknumber(L, 4);
+		float xB, yB;
+		bool collideConnected;
+		if (lua_gettop(L) >= 6) {
+			xB = (float)luaL_checknumber(L, 5);
+			yB = (float)luaL_checknumber(L, 6);
+			collideConnected = luax_optboolean(L, 7, false);
+		} else {
+			xB = xA;
+			yB = yA;
+			collideConnected = luax_optboolean(L, 5, false);
+		}
+		WeldJoint * j = instance->newWeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 		luax_newtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, (void*)j);
 		return 1;
 	}

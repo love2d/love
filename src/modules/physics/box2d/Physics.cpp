@@ -182,14 +182,14 @@ namespace box2d
 		return new GearJoint(joint1, joint2, ratio, collideConnected);
 	}
 	
-	FrictionJoint * Physics::newFrictionJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
+	FrictionJoint * Physics::newFrictionJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	{
-		return new FrictionJoint(body1, body2, x, y, collideConnected);
+		return new FrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 	}
 	
-	WeldJoint * Physics::newWeldJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
+	WeldJoint * Physics::newWeldJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	{
-		return new WeldJoint(body1, body2, x, y, collideConnected);
+		return new WeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 	}
 	
 	WheelJoint * Physics::newWheelJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)

@@ -33,11 +33,12 @@ namespace physics
 {
 namespace box2d
 {
-	WeldJoint::WeldJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
+	WeldJoint::WeldJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
 	{	
 		b2WeldJointDef def;
-		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x,y)));
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(xA,yA)));
+		def.localAnchorB = Physics::scaleDown(b2Vec2(xB, yB));
 		def.collideConnected = collideConnected;
 		joint = (b2WeldJoint*)createJoint(&def);
 	}

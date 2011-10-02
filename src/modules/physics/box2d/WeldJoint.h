@@ -45,7 +45,7 @@ namespace box2d
 		/**
 		* Creates a new WeldJoint connecting body1 and body2.
 		**/
-		WeldJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
+		WeldJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected);
 		
 		virtual ~WeldJoint();
 
