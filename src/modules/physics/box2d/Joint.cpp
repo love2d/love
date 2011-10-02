@@ -97,7 +97,7 @@ namespace box2d
 
 	int Joint::getReactionForce(lua_State * L)
 	{
-		float dt = (float)luaL_checknumber(L, 2);
+		float dt = (float)luaL_checknumber(L, 1);
 		b2Vec2 v = Physics::scaleUp(joint->GetReactionForce(dt));
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
