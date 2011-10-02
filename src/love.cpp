@@ -92,11 +92,8 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 	love::luax_insistglobal(L, "love");
 
 	// Set version information.
-	lua_pushinteger(L, love::VERSION);
+	lua_pushstring(L, love::VERSION);
 	lua_setfield(L, -2, "_version");
-
-	lua_pushstring(L, love::VERSION_STR);
-	lua_setfield(L, -2, "_version_string");
 
 	lua_pushstring(L, love::VERSION_CODENAME);
 	lua_setfield(L, -2, "_version_codename");
@@ -110,7 +107,7 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 
 	for(int i = 0; love::VERSION_COMPATIBILITY[i] != 0; ++i)
 	{
-		lua_pushinteger(L, love::VERSION_COMPATIBILITY[i]);
+		lua_pushstring(L, love::VERSION_COMPATIBILITY[i]);
 		lua_rawseti(L, -2, i+1);
 	}
 
@@ -239,7 +236,7 @@ int main(int argc, char ** argv)
 
 	// Oh, you just want the version? Okay!
 	if(argc > 1 && strcmp(argv[1],"--version") == 0) {
-		printf("LOVE %s (%s)\n", love::VERSION_STR, love::VERSION_CODENAME);
+		printf("LOVE %s (%s)\n", love::VERSION, love::VERSION_CODENAME);
 		return 0;
 	}
 

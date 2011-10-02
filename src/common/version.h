@@ -27,9 +27,8 @@ namespace love
 	const int VERSION_MAJOR = 0;
 	const int VERSION_MINOR = 8;
 	const int VERSION_REV = 0;
-	const int VERSION = VERSION_MAJOR*100 + VERSION_MINOR*10 + VERSION_REV;
-	const int VERSION_COMPATIBILITY[] =  { VERSION, 072, 071, 070, 0 };
-	const char * VERSION_STR = "0.8.0";
+	const char * VERSION = "0.8.0";
+	const char * VERSION_COMPATIBILITY[] =  { VERSION };
 	const char * VERSION_CODENAME = "Rubber Piggy";
 
 } // love
