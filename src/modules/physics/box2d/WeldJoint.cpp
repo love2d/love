@@ -38,7 +38,7 @@ namespace box2d
 	{	
 		b2WeldJointDef def;
 		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(xA,yA)));
-		def.localAnchorB = Physics::scaleDown(b2Vec2(xB, yB));
+		def.localAnchorB = body2->body->GetLocalPoint(Physics::scaleDown(b2Vec2(xB, yB)));
 		def.collideConnected = collideConnected;
 		joint = (b2WeldJoint*)createJoint(&def);
 	}
