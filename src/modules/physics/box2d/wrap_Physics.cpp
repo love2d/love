@@ -304,7 +304,11 @@ namespace box2d
 	int w_setMeter(lua_State * L)
 	{
 		int arg1 = luaL_checkint(L, 1);
-		Physics::setMeter(arg1);
+		try {
+			Physics::setMeter(arg1);
+		} catch (love::Exception e) {
+			return luaL_error(L, e.what());
+		}
 		return 0;
 		
 	}

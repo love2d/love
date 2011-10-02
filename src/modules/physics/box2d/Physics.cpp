@@ -234,6 +234,7 @@ namespace box2d
 	
 	void Physics::setMeter(int meter)
 	{
+		if (meter < 1) throw love::Exception("Physics error: invalid meter");
 		Physics::meter = meter;
 	}
 	
