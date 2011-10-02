@@ -225,7 +225,7 @@ function love.init()
 	local c = {
 		title = "Untitled",
 		author = "Unnamed",
-		version = 0,
+		version = love._version,
 		screen = {
 			width = 800,
 			height = 600,
@@ -313,6 +313,33 @@ function love.init()
 	-- Console hack
 	if c.console and love._openConsole then
 		love._openConsole()
+	end
+
+	-- Check the version
+	local compat = false
+	c.version = tostring(c.version)
+	for i, v in ipairs(love._version_compat) do
+		if c.version == v then
+			compat = true
+		end
+	end
+	if not compat then
+		local major, minor, revision = c.version:match("^(%d+)%.(%d+)%.(%d+)$")
+		if (not major or not minor or not revision) or (major ~= love._version_major and minor ~= love._version_minor) then
+			local msg = "This game was made for a version that is probably incompatible.\n"..
+				"The game might still work, but it is not guaranteed.\n" ..
+				"Furthermore, this means one should not judge this game or the engine if not."
+			print(msg)
+			if love.graphics and love.timer and love.event then
+				love.event.pump()
+				love.graphics.setBackgroundColor(89, 157, 220)
+				love.graphics.clear()
+				love.graphics.print(msg, 70, 70)
+				love.graphics.present()
+				love.graphics.setBackgroundColor(0, 0, 0)
+				love.timer.sleep(3)
+			end
+		end
 	end
 
 end
