@@ -140,6 +140,20 @@ namespace opengl
 		return 0;
 	}
 
+	int w_Canvas_getWidth(lua_State * L)
+	{
+		Canvas * canvas = luax_checkcanvas(L, 1);
+		lua_pushnumber(L, canvas->getWidth());
+		return 1;
+	}
+
+	int w_Canvas_getHeight(lua_State * L)
+	{
+		Canvas * canvas = luax_checkcanvas(L, 1);
+		lua_pushnumber(L, canvas->getHeight());
+		return 1;
+	}
+
 	static const luaL_Reg functions[] = {
 		{ "renderTo", w_Canvas_renderTo },
 		{ "getImageData", w_Canvas_getImageData },
@@ -148,6 +162,8 @@ namespace opengl
 		{ "setWrap", w_Canvas_setWrap },
 		{ "getWrap", w_Canvas_getWrap },
 		{ "clear", w_Canvas_clear },
+		{ "getWidth", w_Canvas_getWidth },
+		{ "getHeight", w_Canvas_getHeight },
 		{ 0, 0 }
 	};
 
