@@ -3,7 +3,9 @@ LOVE 0.8.0 [Rubber Piggy]
 
   * Added release error screen.
   * Added alpha to love.graphics.setBackgroundColor.
-  * Added canvas:clear(r, g, b, a).
+  * Added Canvas:clear(r, g, b, a).
+  * Added Canvas:drawq.
+  * Added Canvas:getWidth and Canvas:getHeight.
   * Added love.graphics.arc.
   * Added seek and tell to Source objects.
   * Added color interpolation to ParticleSystem.
@@ -25,6 +27,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added Thread:getKeys.
   * Added option of fractions for Quads.
   * Added PNG, JPEG and GIF support to ImageData:encode.
+  * Added 64-bit support for Mac OS X.
 
   * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
@@ -56,11 +59,14 @@ LOVE 0.8.0 [Rubber Piggy]
   * Removed old syntax for require (with extension).
 
   * Updated love.joystick to be 1-indexed.
+  * Updated Sources to update more cleanly and control more intuitively.
   * Updated font engine.
   * Updated line drawing to a custom system.
   * Updated love.timer.sleep to use seconds, like the rest of love.
+  * Updated love.timer to be more accurate.
   * Updated love.graphics.circle to have max(10, r) as default for segments.
   * Updated ImageData:encode to write to files directly.
+  * Updated version compatibility system to actually do something.
 
 LOVE 0.7.2 [Game Slave]
 -----------------------
