@@ -19,7 +19,7 @@
 **/
 
 #include "wrap_Graphics.h"
-#include "DrawQable.h"
+#include <graphics/DrawQable.h>
 #include <image/ImageData.h>
 #include <font/Rasterizer.h>
 
