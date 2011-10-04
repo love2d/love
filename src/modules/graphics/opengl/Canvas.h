@@ -8,7 +8,9 @@
 #include <image/Image.h>
 #include <image/ImageData.h>
 #include <common/math.h>
+#include <common/Matrix.h>
 #include "GLee.h"
+#include "Quad.h"
 
 namespace love
 {
@@ -35,6 +37,14 @@ namespace opengl
 		void clear(const Color& c);
 
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+
+		/**
+		* This function draws a section of the canvas using a Quad object.
+		*
+		* @param quad Represents the region of the Canvas to draw.
+		**/
+		void drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+		
 		love::image::ImageData * getImageData(love::image::Image * image);
 
 		void setFilter(const Image::Filter &f);
@@ -67,6 +77,8 @@ namespace opengl
 			Image::Filter filter;
 			Image::Wrap wrap;
 		} settings;
+		
+		void drawv(const Matrix & t, const vertex * v) const;
 	};
 
 } // opengl

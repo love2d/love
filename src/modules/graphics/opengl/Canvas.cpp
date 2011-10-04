@@ -177,10 +177,10 @@ namespace opengl
 		vertices[3].x = w; vertices[3].y = 0;
 
 		// texture coordinates
-		vertices[0].s = 0;     vertices[0].t = 1;
-		vertices[1].s = 0;     vertices[1].t = 0;
-		vertices[2].s = 1;     vertices[2].t = 0;
-		vertices[3].s = 1;     vertices[3].t = 1;
+		vertices[0].s = 0;     vertices[0].t = 0;
+		vertices[1].s = 0;     vertices[1].t = 1;
+		vertices[2].s = 1;     vertices[2].t = 1;
+		vertices[3].s = 1;     vertices[3].t = 0;
 
 		loadStrategy();
 
@@ -228,8 +228,8 @@ namespace opengl
 		glPushMatrix();
 		glLoadIdentity();
 		
-		// Set up orthographic view (no depth)
-		glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
+		// Set up upside-down orthographic view (no depth)
+		glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
 		
 		// Switch back to modelview matrix
 		glMatrixMode(GL_MODELVIEW);
@@ -273,20 +273,16 @@ namespace opengl
 		static Matrix t;
 		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-		glPushMatrix();
-		glMultMatrixf((const GLfloat*)t.getElements());
-
-		glBindTexture(GL_TEXTURE_2D, img);
-
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&vertices[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&vertices[0].s);
-		glDrawArrays(GL_QUADS, 0, 4);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_VERTEX_ARRAY);
-
-		glPopMatrix();
+		drawv(t, vertices);
+	}
+	
+	void Canvas::drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+	{
+		static Matrix t;
+		const vertex * v = quad->getVertices();
+		
+		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+		drawv(t, v);
 	}
 
 	love::image::ImageData * Canvas::getImageData(love::image::Image * image)
@@ -398,6 +394,25 @@ namespace opengl
 	int Canvas::getHeight()
 	{
 		return height;
+	}
+	
+	void Canvas::drawv(const Matrix & t, const vertex * v) const
+	{
+		glPushMatrix();
+		
+		glMultMatrixf((const GLfloat*)t.getElements());
+		
+		glBindTexture(GL_TEXTURE_2D, img);
+		
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&v[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&v[0].s);
+		glDrawArrays(GL_QUADS, 0, 4);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		
+		glPopMatrix();
 	}
 
 } // opengl
