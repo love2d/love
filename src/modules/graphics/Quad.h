@@ -18,57 +18,44 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_QUAD_H
-#define LOVE_GRAPHICS_OPENGL_QUAD_H
+#ifndef LOVE_GRAPHICS_QUAD_H
+#define LOVE_GRAPHICS_QUAD_H
 
 // LOVE
+#include <common/Object.h>
 #include <common/math.h>
-#include <graphics/Quad.h>
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
-	class Quad : public love::graphics::Quad
+	class Quad : public Object
 	{
-		
-	protected:
-		
-		vertex vertices[4];
-		
-		Viewport viewport;
-		float sw, sh;
-
 	public:
 
-		/**
-		* Creates a new Quad of size (w,h), using (x,y) as the top-left
-		* anchor point in the source image. The size of the source image is
-		* is specified by (sw,sh).
-		* 
-		* @param sw Width of the source image.
-		* @param sh Height of the source image.
-		**/
-		Quad(const Viewport & v, float sw, float sh);
+		struct Viewport
+		{
+			float x, y, w, h;
+		};
+
+	public:
+		Quad();
 
 		virtual ~Quad();
 
-		void refresh(const Viewport & v, float sw, float sh);
+		virtual void refresh(const Viewport & v, float sw, float sh) = 0;
 
-		void setViewport(const Viewport & v);
-		Viewport getViewport() const;
+		virtual void setViewport(const Viewport & v) = 0;
+		virtual Viewport getViewport() const = 0;
 
-		void flip(bool x, bool y);
+		virtual void flip(bool x, bool y) = 0;
 
 		/**
 		* Gets a pointer to the vertices.
 		**/
-		const vertex * getVertices() const;
+		virtual const vertex * getVertices() const = 0;
 	};
-} // opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_QUAD_H
+#endif // LOVE_GRAPHICS_QUAD_H

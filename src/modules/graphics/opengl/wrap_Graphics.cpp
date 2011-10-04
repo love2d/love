@@ -19,7 +19,7 @@
 **/
 
 #include "wrap_Graphics.h"
-
+#include "DrawQable.h"
 #include <image/ImageData.h>
 #include <font/Rasterizer.h>
 
@@ -800,7 +800,7 @@ namespace opengl
 	}
 
 	/**
-	* Draws an Quad of an Image at the specified coordinates,
+	* Draws an Quad of a DrawQable at the specified coordinates,
 	* with rotation and scaling along both axes.
 	*
 	* @param q The Quad to draw.
@@ -816,7 +816,7 @@ namespace opengl
 	**/
 	int w_drawq(lua_State * L)
 	{
-		Image * image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+		DrawQable * dq = luax_checktype<DrawQable>(L, 1, "DrawQable", GRAPHICS_DRAWQABLE_T);
 		Quad * q = luax_checkframe(L, 2);
 		float x = (float)luaL_checknumber(L, 3);
 		float y = (float)luaL_checknumber(L, 4);
@@ -827,7 +827,7 @@ namespace opengl
 		float oy = (float)luaL_optnumber(L, 9, 0);
 		float kx = (float)luaL_optnumber(L, 10, 0);
 		float ky = (float)luaL_optnumber(L, 11, 0);
-		image->drawq(q, x, y, angle, sx, sy, ox, oy, kx, ky);
+		dq->drawq(q, x, y, angle, sx, sy, ox, oy, kx, ky);
 		return 0;
 	}
 

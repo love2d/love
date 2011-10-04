@@ -276,7 +276,7 @@ namespace opengl
 		drawv(t, vertices);
 	}
 	
-	void Canvas::drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+	void Canvas::drawq(love::graphics::Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
 		static Matrix t;
 		const vertex * v = quad->getVertices();

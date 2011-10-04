@@ -18,57 +18,47 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_QUAD_H
-#define LOVE_GRAPHICS_OPENGL_QUAD_H
+#ifndef LOVE_GRAPHICS_DRAWQABLE_H
+#define LOVE_GRAPHICS_DRAWQABLE_H
 
 // LOVE
-#include <common/math.h>
-#include <graphics/Quad.h>
+#include "Drawable.h"
+#include "Quad.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
-	class Quad : public love::graphics::Quad
+	/**
+	* A DrawQable is anything that be drawn in part with a Quad.
+	**/
+	class DrawQable : public Drawable
 	{
-		
-	protected:
-		
-		vertex vertices[4];
-		
-		Viewport viewport;
-		float sw, sh;
-
 	public:
 
 		/**
-		* Creates a new Quad of size (w,h), using (x,y) as the top-left
-		* anchor point in the source image. The size of the source image is
-		* is specified by (sw,sh).
-		* 
-		* @param sw Width of the source image.
-		* @param sh Height of the source image.
+		* Destructor.
 		**/
-		Quad(const Viewport & v, float sw, float sh);
-
-		virtual ~Quad();
-
-		void refresh(const Viewport & v, float sw, float sh);
-
-		void setViewport(const Viewport & v);
-		Viewport getViewport() const;
-
-		void flip(bool x, bool y);
+		virtual ~DrawQable();
 
 		/**
-		* Gets a pointer to the vertices.
+		* Draws the object with the specified transformation.
+		* 
+		* @param quad The Quad to use to draw the object.
+		* @param x The position of the object along the x-axis.
+		* @param y The position of the object along the y-axis.
+		* @param angle The angle of the object (in radians).
+		* @param sx The scale factor along the x-axis.
+		* @param sy The scale factor along the y-axis.
+		* @param ox The origin offset along the x-axis.
+		* @param oy The origin offset along the y-axis.
+		* @param kx Shear along the x-axis.
+		* @param ky Shear along the y-axis.
 		**/
-		const vertex * getVertices() const;
+		virtual void drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const = 0;
 	};
-} // opengl
+
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_QUAD_H
+#endif // LOVE_GRAPHICS_DRAWQABLE_H

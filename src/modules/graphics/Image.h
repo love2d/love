@@ -23,7 +23,7 @@
 
 // LOVE
 #include <graphics/Volatile.h>
-#include <graphics/Drawable.h>
+#include <graphics/DrawQable.h>
 #include <common/StringMap.h>
 
 namespace love
@@ -31,7 +31,7 @@ namespace love
 namespace graphics
 {
 	
-	class Image : public Drawable, public Volatile
+	class Image : public DrawQable, public Volatile
 	{
 	public:
 	

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		A901B882143B65C500D77063 /* DrawQable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A901B880143B65C400D77063 /* DrawQable.cpp */; };
+		A901B885143B661400D77063 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A901B883143B661300D77063 /* Quad.cpp */; };
 		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
 		A9255DD21043183600BA1496 /* SDL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
 		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
@@ -223,6 +225,10 @@
 /* Begin PBXFileReference section */
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		8D1107320486CEB800E47090 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A901B880143B65C400D77063 /* DrawQable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawQable.cpp; sourceTree = "<group>"; };
+		A901B881143B65C400D77063 /* DrawQable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawQable.h; sourceTree = "<group>"; };
+		A901B883143B661300D77063 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
+		A901B884143B661300D77063 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		A9255DEA1043188D00BA1496 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = "<group>"; };
 		A9255DEB1043188D00BA1496 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
@@ -977,11 +983,15 @@
 			children = (
 				A93E6A8210420AC2007D418B /* Drawable.cpp */,
 				A93E6A8310420AC2007D418B /* Drawable.h */,
+				A901B880143B65C400D77063 /* DrawQable.cpp */,
+				A901B881143B65C400D77063 /* DrawQable.h */,
 				A968F0D21083A9D400A895AA /* Graphics.cpp */,
 				A93E6A8410420AC2007D418B /* Graphics.h */,
 				A93A3AB41121E86E003B04A4 /* Image.cpp */,
 				A93E6A8510420AC2007D418B /* Image.h */,
 				A93E6A8610420AC2007D418B /* opengl */,
+				A901B883143B661300D77063 /* Quad.cpp */,
+				A901B884143B661300D77063 /* Quad.h */,
 				A93E6AA510420AC3007D418B /* Volatile.cpp */,
 				A93E6AA610420AC3007D418B /* Volatile.h */,
 			);
@@ -1695,6 +1705,8 @@
 				A96F41981412BC000067FE9A /* VertexBuffer.cpp in Sources */,
 				A96F419B1412BC070067FE9A /* wrap_Canvas.cpp in Sources */,
 				A96F419E1412BC0E0067FE9A /* wrap_PixelEffect.cpp in Sources */,
+				A901B882143B65C500D77063 /* DrawQable.cpp in Sources */,
+				A901B885143B661400D77063 /* Quad.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

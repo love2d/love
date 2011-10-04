@@ -27,11 +27,9 @@
 #include <common/config.h>
 #include <image/ImageData.h>
 #include <graphics/Image.h>
-#include "Quad.h"
 
 // OpenGL
 #include "GLee.h"
-#include <SDL/SDL_opengl.h>
 
 namespace love
 {
@@ -114,12 +112,9 @@ namespace opengl
 		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 		/**
-		* This function draws a section of the image using a Quad object.
-		*
-		* @copydetails Image::draws()
-		* @param frame Represents the region of the Image to draw.
+		* @copydoc DrawQable::drawq()
 		**/
-		void drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+		void drawq(love::graphics::Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 		/**
 		* Sets the filter mode.

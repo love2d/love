@@ -1,7 +1,7 @@
-#ifndef LOVE_GRAPHICS_CANVAS_H
-#define LOVE_GRAPHICS_CANVAS_H
+#ifndef LOVE_GRAPHICS_OPENGL_CANVAS_H
+#define LOVE_GRAPHICS_OPENGL_CANVAS_H
 
-#include <graphics/Drawable.h>
+#include <graphics/DrawQable.h>
 #include <graphics/Volatile.h>
 #include <graphics/Image.h>
 #include <graphics/Color.h>
@@ -10,7 +10,6 @@
 #include <common/math.h>
 #include <common/Matrix.h>
 #include "GLee.h"
-#include "Quad.h"
 
 namespace love
 {
@@ -18,7 +17,7 @@ namespace graphics
 {
 namespace opengl
 {
-	class Canvas : public Drawable, public Volatile
+	class Canvas : public DrawQable, public Volatile
 	{
 	public:
 		Canvas(int width, int height);
@@ -39,11 +38,9 @@ namespace opengl
 		virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 		/**
-		* This function draws a section of the canvas using a Quad object.
-		*
-		* @param quad Represents the region of the Canvas to draw.
+		* @copydoc DrawQable::drawq()
 		**/
-		void drawq(Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+		void drawq(love::graphics::Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 		
 		love::image::ImageData * getImageData(love::image::Image * image);
 
@@ -85,4 +82,4 @@ namespace opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_CANVAS_H
+#endif // LOVE_GRAPHICS_OPENGL_CANVAS_H
