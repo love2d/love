@@ -4,7 +4,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added release error screen.
   * Added alpha to love.graphics.setBackgroundColor.
   * Added Canvas:clear(r, g, b, a).
-  * Added Canvas:drawq.
+  * Added Canvas support to love.graphics.drawq.
   * Added Canvas:getWidth and Canvas:getHeight.
   * Added love.graphics.arc.
   * Added seek and tell to Source objects.
