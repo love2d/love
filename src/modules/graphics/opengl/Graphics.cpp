@@ -659,6 +659,8 @@ namespace opengl
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		else if (mode == BLEND_MULTIPLICATIVE)
 			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+		else if (mode == BLEND_PREMULTIPLIED)
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	}
@@ -684,8 +686,12 @@ namespace opengl
 			return BLEND_ADDITIVE;
 		else if (src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
 			return BLEND_ALPHA;
-		else // src == GL_DST_COLOR && dst == GL_ONE_MINUS_SRC_ALPHA && equation == GL_FUNC_ADD
+		else if (src == GL_DST_COLOR && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
 			return BLEND_MULTIPLICATIVE;
+		else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
+			return BLEND_PREMULTIPLIED;
+			
+		return BLEND_MAX_ENUM; // Should never be reached.
 	}
 
 	Graphics::ColorMode Graphics::getColorMode()

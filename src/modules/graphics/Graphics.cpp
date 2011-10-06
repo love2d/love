@@ -121,6 +121,7 @@ namespace graphics
 		{ "additive", Graphics::BLEND_ADDITIVE },
 		{ "subtractive", Graphics::BLEND_SUBTRACTIVE },
 		{ "multiplicative", Graphics::BLEND_MULTIPLICATIVE },
+		{ "premultiplied", Graphics::BLEND_PREMULTIPLIED },
 	};
 
 	StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
