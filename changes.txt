@@ -28,8 +28,9 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added option of fractions for Quads.
   * Added PNG, JPEG and GIF support to ImageData:encode.
   * Added 64-bit support for Mac OS X.
+  * Added premultiplied blending mode.
+  * Added functions to set/get default image filter modes.
 
-  * Fixed polygon drawing (was off by one).
   * Fixed wrapping for single words.
   * Fixed tracebacks not showing filenames.
   * Fixed love.graphics.push/pop capable of causing overflows/underflows.
@@ -48,7 +49,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed crashes when operating on non-existent files.
   * Fixed a bug where empty files on windows would never reach eof.
   * Fixed crash when SoundData runs out of memory.
-  * Fixed ordering of loaders, love should have priority over lua.
+  * Fixed ordering of loaders, love should have priority over Lua.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
   * Renamed Framebuffer to Canvas.
@@ -75,7 +76,7 @@ LOVE 0.7.2 [Game Slave]
   * Added love.event.clear.
   * Added support for any number of arguments to love.keyboard.isDown, love.mouse.isDown and love.joystick.isDown.
   * Added SpriteBatch:setImage().
- 
+
   * Fixed fused games not working.
   * Fixed ParticleSystem:setSize ignoring the variation argument.
   * Fixed some file-opening exceptions not being caught.
