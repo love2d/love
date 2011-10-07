@@ -39,6 +39,9 @@ namespace opengl
 		GLuint _program;
 		std::string _code; // volatile and stuff
 
+		// uniform location buffer
+		std::map<std::string, GLint> _uniforms;
+
 		// texture unit pool for setting images
 		static std::map<std::string, GLint> _texture_unit_pool;
 		static GLint _current_texture_unit;

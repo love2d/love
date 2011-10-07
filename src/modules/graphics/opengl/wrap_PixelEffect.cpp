@@ -47,7 +47,7 @@ namespace opengl
 
 	static int _sendVectors(lua_State * L, PixelEffect * effect, const char * name, int count)
 	{
-		int dimension = lua_objlen(L, 3);
+		size_t dimension = lua_objlen(L, 3);
 		float * values = new float[count * dimension];
 
 		for (int i = 0; i < count; ++i) {
@@ -61,7 +61,7 @@ namespace opengl
 				                     3+i, dimension, lua_objlen(L, 3+i));
 			}
 
-			for (int k = 1; k <= dimension; ++k) {
+			for (size_t k = 1; k <= dimension; ++k) {
 				lua_rawgeti(L, 3 + i, k);
 				values[i * dimension + k - 1] = (float)lua_tonumber(L, -1);
 			}
@@ -131,7 +131,6 @@ namespace opengl
 			for (int k = 1; k <= dimension*dimension; ++k) {
 				lua_rawgeti(L, 3+i, k);
 				values[i * dimension * dimension + k - 1] = (float)lua_tonumber(L, -1);
-				cout << i << "." << k << " = " << (float)lua_tonumber(L, -1) << endl;
 			}
 
 			lua_pop(L, 1 + dimension);

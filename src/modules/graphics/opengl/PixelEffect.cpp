@@ -241,12 +241,18 @@ namespace opengl
 
 	GLint PixelEffect::getUniformLocation(const std::string& name)
 	{
+		std::map<std::string, GLint>::const_iterator it = _uniforms.find(name);
+		if (it != _uniforms.end())
+			return it->second;
+
 		GLint location = glGetUniformLocation(_program, name.c_str());
 		if (location == -1) {
 			throw love::Exception(
 					"Cannot get location of shader variable `%s'.\n"
 					"A common error is to define but not use the variable.", name.c_str());
 		}
+
+		_uniforms[name] = location;
 		return location;
 	}
 
