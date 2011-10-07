@@ -29,7 +29,7 @@ namespace graphics
 {
 namespace opengl
 {
-	Image::Image(love::image::ImageData * data)
+	Image::Image(love::image::ImageData * data, const Image::Filter& filter)
 		: width((float)(data->getWidth())), height((float)(data->getHeight())), texture(0)
 	{
 		data->retain();
@@ -47,6 +47,7 @@ namespace opengl
 		vertices[2].s = 1; vertices[2].t = 1;
 		vertices[3].s = 1; vertices[3].t = 0;
 
+		setFilter(filter);
 	}
 
 	Image::~Image()
@@ -119,7 +120,7 @@ namespace opengl
 		drawv(t, v);
 	}
 
-	void Image::setFilter(Image::Filter f)
+	void Image::setFilter(const Image::Filter& f)
 	{
 		GLint gmin, gmag;
 		gmin = gmag = 0; // so that they're not used uninitialized

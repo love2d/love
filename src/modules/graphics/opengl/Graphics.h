@@ -113,6 +113,7 @@ namespace opengl
 	private:
 
 		Font * currentFont;
+		Image::Filter currentImageFilter;
 		DisplayMode currentMode;
 
 		float lineWidth;
@@ -333,6 +334,11 @@ namespace opengl
 		void setColorMode (ColorMode mode);
 
 		/**
+		 * Sets the current image filter.
+		 **/
+		void setDefaultImageFilter(const Image::Filter& f);
+
+		/**
 		* Gets the current blend mode.
 		**/
 		BlendMode getBlendMode();
@@ -341,6 +347,11 @@ namespace opengl
 		* Gets the current color mode.
 		**/
 		ColorMode getColorMode();
+
+		/**
+		 * Gets the current image filter.
+		 **/
+		const Image::Filter& getDefaultImageFilter() const;
 
 		/**
 		* Sets the line width.

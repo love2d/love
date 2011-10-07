@@ -568,6 +568,25 @@ namespace opengl
 		return 0;
 	}
 
+	int w_setDefaultImageFilter(lua_State * L)
+	{
+		Image::FilterMode min;
+		Image::FilterMode mag;
+		const char * minstr = luaL_checkstring(L, 1);
+		const char * magstr = luaL_checkstring(L, 2);
+		if (!Image::getConstant(minstr, min))
+			return luaL_error(L, "Invalid filter mode: %s", minstr);
+		if (!Image::getConstant(magstr, mag))
+			return luaL_error(L, "Invalid filter mode: %s", magstr);
+
+		Image::Filter f;
+		f.min = min;
+		f.mag = mag;
+		instance->setDefaultImageFilter(f);
+
+		return 0;
+	}
+
 	int w_getBlendMode(lua_State * L)
 	{
 		Graphics::BlendMode mode = instance->getBlendMode();
@@ -588,6 +607,18 @@ namespace opengl
 
 		lua_pushstring(L, str);
 		return 1;
+	}
+
+	int w_getDefaultImageFilter(lua_State * L)
+	{
+		const Image::Filter& f = instance->getDefaultImageFilter();
+		const char * minstr;
+		const char * magstr;
+		Image::getConstant(f.min, minstr);
+		Image::getConstant(f.mag, magstr);
+		lua_pushstring(L, minstr);
+		lua_pushstring(L, magstr);
+		return 2;
 	}
 
 	int w_setLineWidth(lua_State * L)
@@ -1159,8 +1190,10 @@ namespace opengl
 
 		{ "setBlendMode", w_setBlendMode },
 		{ "setColorMode", w_setColorMode },
+		{ "setDefaultImageFilter", w_setDefaultImageFilter },
 		{ "getBlendMode", w_getBlendMode },
 		{ "getColorMode", w_getColorMode },
+		{ "getDefaultImageFilter", w_getDefaultImageFilter },
 		{ "setLineWidth", w_setLineWidth },
 		{ "setLineStyle", w_setLineStyle },
 		{ "setLine", w_setLine },

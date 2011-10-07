@@ -37,7 +37,7 @@ namespace opengl
 {
 
 	Graphics::Graphics()
-		: currentFont(0), lineWidth(1), matrixLimit(0), userMatrices(0)
+		: currentFont(0), currentImageFilter(), lineWidth(1), matrixLimit(0), userMatrices(0)
 	{
 		// Indicates that there is no screen
 		// created yet.
@@ -476,7 +476,7 @@ namespace opengl
 	Image * Graphics::newImage(love::image::ImageData * data)
 	{
 		// Create the image.
-		Image * image = new Image(data);
+		Image * image = new Image(data, currentImageFilter);
 		bool success;
 		try {
 			success = image->load();
@@ -673,6 +673,11 @@ namespace opengl
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 
+	void Graphics::setDefaultImageFilter(const Image::Filter& f)
+	{
+		currentImageFilter = f;
+	}
+
 	Graphics::BlendMode Graphics::getBlendMode ()
 	{
 		GLint dst, src, equation;
@@ -703,6 +708,11 @@ namespace opengl
 			return COLOR_MODULATE;
 		else // // mode == GL_REPLACE
 			return COLOR_REPLACE;
+	}
+
+	const Image::Filter& Graphics::getDefaultImageFilter() const
+	{
+		return currentImageFilter;
 	}
 
 	void Graphics::setLineWidth( float width )

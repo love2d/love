@@ -67,7 +67,7 @@ namespace opengl
 
 	int w_Image_getFilter(lua_State * L)
 	{
-		Image * t = luax_checkimage(L, 1); 
+		Image * t = luax_checkimage(L, 1);
 		Image::Filter f = t->getFilter();
 		Image::FilterMode min = f.min;
 		Image::FilterMode mag = f.mag;
