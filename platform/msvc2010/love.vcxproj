@@ -91,10 +91,11 @@
     <ClCompile Include="..\..\src\modules\font\wrap_GlyphData.cpp" />
     <ClCompile Include="..\..\src\modules\font\wrap_Rasterizer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Drawable.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\DrawQable.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Image.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Canvas.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Font.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Framebuffer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
@@ -105,14 +106,15 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\VertexBuffer.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Canvas.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Volatile.cpp" />
     <ClCompile Include="..\..\src\modules\image\devil\Image.cpp" />
     <ClCompile Include="..\..\src\modules\image\devil\ImageData.cpp" />
@@ -201,8 +203,20 @@
     <ClCompile Include="..\..\src\modules\sound\wrap_Decoder.cpp" />
     <ClCompile Include="..\..\src\modules\sound\wrap_Sound.cpp" />
     <ClCompile Include="..\..\src\modules\sound\wrap_SoundData.cpp" />
-    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\posix\threads.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\modules\thread\Thread.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\threads.cpp" />
+    <ClCompile Include="..\..\src\modules\thread\win32\threads.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp" />
     <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp" />
     <ClCompile Include="..\..\src\modules\timer\sdl\wrap_Timer.cpp" />
@@ -260,10 +274,11 @@
     <ClInclude Include="..\..\src\modules\font\wrap_GlyphData.h" />
     <ClInclude Include="..\..\src\modules\font\wrap_Rasterizer.h" />
     <ClInclude Include="..\..\src\modules\graphics\Drawable.h" />
+    <ClInclude Include="..\..\src\modules\graphics\DrawQable.h" />
     <ClInclude Include="..\..\src\modules\graphics\Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\Image.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Canvas.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Font.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Framebuffer.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
@@ -272,14 +287,15 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\VertexBuffer.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Canvas.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h" />
+    <ClInclude Include="..\..\src\modules\graphics\Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\Volatile.h" />
     <ClInclude Include="..\..\src\modules\image\devil\Image.h" />
     <ClInclude Include="..\..\src\modules\image\devil\ImageData.h" />
@@ -326,10 +342,21 @@
     <ClInclude Include="..\..\src\modules\physics\box2d\wrap_World.h" />
     <ClInclude Include="..\..\src\modules\physics\Joint.h" />
     <ClInclude Include="..\..\src\modules\physics\Shape.h" />
-    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h" />
+    <ClInclude Include="..\..\src\modules\thread\posix\threads.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\src\modules\thread\Thread.h" />
+    <ClInclude Include="..\..\src\modules\thread\threads.h" />
+    <ClInclude Include="..\..\src\modules\thread\win32\threads.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h" />
-    <ClInclude Include="..\..\src\modules\thread\ThreadModule.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h" />
   </ItemGroup>

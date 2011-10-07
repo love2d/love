@@ -79,9 +79,6 @@
     <Filter Include="modules\thread">
       <UniqueIdentifier>{6e32c8cf-d49d-4a78-a1d8-21240da24dab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="modules\thread\sdl">
-      <UniqueIdentifier>{734b78fd-00fa-4000-9b6d-9bb4fb090c37}</UniqueIdentifier>
-    </Filter>
     <Filter Include="modules\timer">
       <UniqueIdentifier>{60308813-dcf2-47cb-869b-f3d7bb7c805d}</UniqueIdentifier>
     </Filter>
@@ -102,6 +99,15 @@
     </Filter>
     <Filter Include="utf8\utf8">
       <UniqueIdentifier>{014c1d0d-8028-42fc-a870-19f78d93b083}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\thread\win32">
+      <UniqueIdentifier>{07055354-8f1c-4db7-8129-87e07b6da216}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\thread\sdl">
+      <UniqueIdentifier>{ef6d45be-dfa4-4260-9152-d671571e93d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\thread\posix">
+      <UniqueIdentifier>{58b00bbb-5c09-4510-8a23-5c3f869354b2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -571,21 +577,6 @@
     <ClCompile Include="..\..\src\common\b64.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Framebuffer.cpp">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.cpp">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp">
-      <Filter>modules\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\Thread.cpp">
-      <Filter>modules\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp">
-      <Filter>modules\thread\sdl</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\common\delay.cpp">
       <Filter>common</Filter>
     </ClCompile>
@@ -597,6 +588,36 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\VertexBuffer.cpp">
       <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\Thread.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\threads.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\win32\threads.cpp">
+      <Filter>modules\thread\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp">
+      <Filter>modules\thread\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\posix\threads.cpp">
+      <Filter>modules\thread\posix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\DrawQable.cpp">
+      <Filter>modules\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Canvas.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Canvas.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\Quad.cpp">
+      <Filter>modules\graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -870,9 +891,6 @@
     <ClInclude Include="..\..\src\modules\physics\box2d\wrap_World.h">
       <Filter>modules\physics\box2d</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\ThreadModule.h">
-      <Filter>modules\thread</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h">
       <Filter>modules\timer\sdl</Filter>
     </ClInclude>
@@ -933,12 +951,6 @@
     <ClInclude Include="..\..\src\common\b64.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Framebuffer.h">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Framebuffer.h">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libraries\utf8\utf8.h">
       <Filter>utf8</Filter>
     </ClInclude>
@@ -951,15 +963,6 @@
     <ClInclude Include="..\..\src\libraries\utf8\utf8\unchecked.h">
       <Filter>utf8\utf8</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h">
-      <Filter>modules\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\Thread.h">
-      <Filter>modules\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h">
-      <Filter>modules\thread\sdl</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\common\delay.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -971,6 +974,36 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\VertexBuffer.h">
       <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\Thread.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\threads.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\win32\threads.h">
+      <Filter>modules\thread\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h">
+      <Filter>modules\thread\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\posix\threads.h">
+      <Filter>modules\thread\posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\DrawQable.h">
+      <Filter>modules\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Canvas.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Canvas.h">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\Quad.h">
+      <Filter>modules\graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
