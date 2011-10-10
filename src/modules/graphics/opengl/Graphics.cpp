@@ -476,7 +476,7 @@ namespace opengl
 	Image * Graphics::newImage(love::image::ImageData * data)
 	{
 		// Create the image.
-		Image * image = new Image(data, currentImageFilter);
+		Image * image = new Image(data);
 		bool success;
 		try {
 			success = image->load();
@@ -488,6 +488,8 @@ namespace opengl
 			image->release();
 			return 0;
 		}
+
+		image->setFilter(currentImageFilter);
 
 		return image;
 	}

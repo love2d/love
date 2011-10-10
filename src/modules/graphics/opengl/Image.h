@@ -78,7 +78,7 @@ namespace opengl
 		*
 		* @param file The file from which to load the image.
 		**/
-		Image(love::image::ImageData * data, const Image::Filter& f = Image::Filter());
+		Image(love::image::ImageData * data);
 
 		/**
 		* Destructor. Deletes the hardware texture and other resources.

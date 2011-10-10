@@ -23,13 +23,16 @@
 // STD
 #include <cstring> // For memcpy
 
+#include <iostream>
+using namespace std;
+
 namespace love
 {
 namespace graphics
 {
 namespace opengl
 {
-	Image::Image(love::image::ImageData * data, const Image::Filter& filter)
+	Image::Image(love::image::ImageData * data)
 		: width((float)(data->getWidth())), height((float)(data->getHeight())), texture(0)
 	{
 		data->retain();
@@ -46,8 +49,6 @@ namespace opengl
 		vertices[1].s = 0; vertices[1].t = 1;
 		vertices[2].s = 1; vertices[2].t = 1;
 		vertices[3].s = 1; vertices[3].t = 0;
-
-		setFilter(filter);
 	}
 
 	Image::~Image()
