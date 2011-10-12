@@ -49,7 +49,7 @@ namespace opengl
 			// create stencil buffer
 			glGenRenderbuffers(1, &depth_stencil);
 			glBindRenderbuffer(GL_RENDERBUFFER, depth_stencil);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
 					GL_RENDERBUFFER, depth_stencil);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
@@ -101,7 +101,7 @@ namespace opengl
 			// create stencil buffer
 			glGenRenderbuffersEXT(1, &depth_stencil);
 			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil);
-			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT, width, height);
+			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT, width, height);
 			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
 					GL_RENDERBUFFER_EXT, depth_stencil);
 			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
