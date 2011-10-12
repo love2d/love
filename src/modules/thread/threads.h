@@ -63,7 +63,7 @@ namespace thread
 	private:
 		Mutex* mutex;
 
-		Lock(Lock& lock) {}
+		Lock(Lock& lock) {LOVE_UNUSED(lock);}
 
 	public:
 		Lock(Mutex* m): mutex(m) {

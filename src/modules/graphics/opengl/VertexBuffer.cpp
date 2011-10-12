@@ -21,6 +21,7 @@
 #include "VertexBuffer.h"
 
 #include "common/Exception.h"
+#include <common/config.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -88,6 +89,7 @@ namespace opengl
 
 	void *VertexArray::map(GLenum access)
 	{
+		LOVE_UNUSED(access);
 		return buf;
 	}
 

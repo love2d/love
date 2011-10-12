@@ -734,6 +734,7 @@ namespace opengl
 		//	glEnable (GL_POLYGON_SMOOTH);
 		//	glHint (GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		//}
+		LOVE_UNUSED(style);
 	}
 
 	void Graphics::setLine( float width, Graphics::LineStyle style )

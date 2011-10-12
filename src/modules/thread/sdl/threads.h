@@ -22,6 +22,7 @@
 #define LOVE_THREAD_SDL_THREADS_H
 
 #include "SDL.h"
+#include <common/config.h>
 
 namespace love
 {
@@ -31,7 +32,7 @@ namespace thread
 	class Mutex {
 	private:
 		SDL_mutex* mutex;
-		Mutex(const Mutex& mutex) {}
+		Mutex(const Mutex& mutex) {LOVE_UNUSED(mutex);}
 
 		friend class Conditional;
 
@@ -48,7 +49,7 @@ namespace thread
 	class ThreadBase {
 	private:
 		SDL_Thread* thread;
-		ThreadBase(ThreadBase& thread) {}
+		ThreadBase(ThreadBase& thread) {LOVE_UNUSED(thread);}
 		bool running;
 
 		static int thread_runner(void* param);
@@ -70,7 +71,7 @@ namespace thread
 
 	class Semaphore {
 	private:
-		Semaphore(const Semaphore& sem) {}
+		Semaphore(const Semaphore& sem) {LOVE_UNUSED(sem);}
 		SDL_sem* semaphore;
 
 	public:

@@ -19,6 +19,7 @@
 **/
 
 #include "Exception.h"
+#include <common/config.h>
 
 namespace love
 {
@@ -32,6 +33,7 @@ namespace love
 
 	Exception::Exception(int unparsed, const char * str)
 	{
+		LOVE_UNUSED(unparsed);
 		strncpy(buffer, str, BUFFER_SIZE);
 	}
 

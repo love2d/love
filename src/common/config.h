@@ -48,6 +48,10 @@
 #	define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#ifndef LOVE_UNUSED
+#	define LOVE_UNUSED(x) (void)sizeof(x)
+#endif
+
 #ifndef LOVE_BUILD
 #	define LOVE_BUILD
 #	define LOVE_BUILD_STANDALONE
