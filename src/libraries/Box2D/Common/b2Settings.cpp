@@ -21,6 +21,8 @@
 #include <cstdio>
 #include <cstdarg>
 
+#include "common/Exception.h"
+
 b2Version b2_version = {2, 2, 1};
 
 // Memory allocators. Modify these to use your own allocator.
@@ -41,4 +43,10 @@ void b2Log(const char* string, ...)
 	va_start(args, string);
 	vprintf(string, args);
 	va_end(args);
+}
+
+void loveAssert(bool test, const char *teststr)
+{
+	if (!test)
+		throw love::Exception("Box2D error: %s", teststr);
 }

@@ -35,7 +35,8 @@ namespace box2d
 		float gy = (float)luaL_optnumber(L, 2, 0);
 		bool sleep = luax_optboolean(L, 3, true);
 
-		World * w = instance->newWorld(gx, gy, sleep);
+		World * w;
+		ASSERT_GUARD(w = instance->newWorld(gx, gy, sleep);)
 		luax_newtype(L, "World", PHYSICS_WORLD_T, (void*)w);
 
 		return 1;
@@ -49,7 +50,8 @@ namespace box2d
 		const char * type = luaL_optstring(L, 4, "static");
 		Body::Type bodyType;
 		Body::getConstant(type, bodyType);
-		Body * body = instance->newBody(world, x, y, bodyType);
+		Body * body;
+		ASSERT_GUARD(body = instance->newBody(world, x, y, bodyType);)
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
 	}
@@ -59,7 +61,8 @@ namespace box2d
 		Body * body = luax_checkbody(L, 1);
 		Shape * shape = luax_checkshape(L, 2);
 		float density = (float)luaL_checknumber(L, 3);
-		Fixture * fixture = instance->newFixture(body, shape, density);
+		Fixture * fixture;
+		ASSERT_GUARD(fixture = instance->newFixture(body, shape, density);)
 		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
 		return 1;
 	}
@@ -71,7 +74,8 @@ namespace box2d
 		if(top == 1)
 		{
 			float radius = (float)luaL_checknumber(L, 1);
-			CircleShape * shape = instance->newCircleShape(radius);
+			CircleShape * shape;
+			ASSERT_GUARD(shape = instance->newCircleShape(radius);)
 			luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
 			return 1;
 		}
@@ -80,7 +84,8 @@ namespace box2d
 			float x = (float)luaL_checknumber(L, 1);
 			float y = (float)luaL_checknumber(L, 2);
 			float radius = (float)luaL_checknumber(L, 3);
-			CircleShape * shape = instance->newCircleShape(x, y, radius);
+			CircleShape * shape;
+			ASSERT_GUARD(shape = instance->newCircleShape(x, y, radius);)
 			luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
 			return 1;
 		}
@@ -96,7 +101,8 @@ namespace box2d
 		{
 			float w = (float)luaL_checknumber(L, 1);
 			float h = (float)luaL_checknumber(L, 2);
-			PolygonShape * shape = instance->newRectangleShape(w, h);
+			PolygonShape * shape;
+			ASSERT_GUARD(shape = instance->newRectangleShape(w, h);)
 			luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
 			return 1;
 		}
@@ -107,7 +113,8 @@ namespace box2d
 			float w = (float)luaL_checknumber(L, 3);
 			float h = (float)luaL_checknumber(L, 4);
 			float angle = (float)luaL_optnumber(L, 5, 0);
-			PolygonShape * shape = instance->newRectangleShape(x, y, w, h, angle);
+			PolygonShape * shape;
+			ASSERT_GUARD(shape = instance->newRectangleShape(x, y, w, h, angle);)
 			luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
 			return 1;
 		}
@@ -121,19 +128,20 @@ namespace box2d
 		float y1 = (float)luaL_checknumber(L, 2);
 		float x2 = (float)luaL_checknumber(L, 3);
 		float y2 = (float)luaL_checknumber(L, 4);
-		EdgeShape * shape = instance->newEdgeShape(x1, y1, x2, y2);
+		EdgeShape * shape;
+		ASSERT_GUARD(shape = instance->newEdgeShape(x1, y1, x2, y2);)
 		luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, (void*)shape);
 		return 1;
 	}
 
 	int w_newPolygonShape(lua_State * L)
 	{
-		return instance->newPolygonShape(L);
+		ASSERT_GUARD(return instance->newPolygonShape(L);)
 	}
 	
 	int w_newChainShape(lua_State * L)
 	{
-		return instance->newChainShape(L);
+		ASSERT_GUARD(return instance->newChainShape(L);)
 	}
 
 	int w_newDistanceJoint(lua_State * L)
@@ -145,7 +153,8 @@ namespace box2d
 		float x2 = (float)luaL_checknumber(L, 5);
 		float y2 = (float)luaL_checknumber(L, 6);
 		bool collideConnected = luax_optboolean(L, 7, false);
-		DistanceJoint * j = instance->newDistanceJoint(body1, body2, x1, y1, x2, y2, collideConnected);
+		DistanceJoint * j;
+		ASSERT_GUARD(j = instance->newDistanceJoint(body1, body2, x1, y1, x2, y2, collideConnected);)
 		luax_newtype(L, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -155,7 +164,8 @@ namespace box2d
 		Body * body = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
 		float x = (float)luaL_checknumber(L, 2);
 		float y = (float)luaL_checknumber(L, 3);
-		MouseJoint * j = instance->newMouseJoint(body, x, y);
+		MouseJoint * j;
+		ASSERT_GUARD(j = instance->newMouseJoint(body, x, y);)
 		luax_newtype(L, "MouseJoint", PHYSICS_MOUSE_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -167,7 +177,8 @@ namespace box2d
 		float x = (float)luaL_checknumber(L, 3);
 		float y = (float)luaL_checknumber(L, 4);
 		bool collideConnected = luax_optboolean(L, 5, false);
-		RevoluteJoint * j = instance->newRevoluteJoint(body1, body2, x, y, collideConnected);
+		RevoluteJoint * j;
+		ASSERT_GUARD(j = instance->newRevoluteJoint(body1, body2, x, y, collideConnected);)
 		luax_newtype(L, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -193,7 +204,8 @@ namespace box2d
 			ay = (float)luaL_checknumber(L, 6);
 			collideConnected = luax_optboolean(L, 7, false);
 		}
-		PrismaticJoint * j = instance->newPrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
+		PrismaticJoint * j;
+		ASSERT_GUARD(j = instance->newPrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
 		luax_newtype(L, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -213,7 +225,8 @@ namespace box2d
 		float ratio = (float)luaL_optnumber(L, 11, 1.0);
 		bool collideConnected = luax_optboolean(L, 12, true); // PulleyJoints default to colliding connected bodies, see b2PulleyJoint.h
 
-		PulleyJoint * j = instance->newPulleyJoint(body1, body2, b2Vec2(gx1,gy1), b2Vec2(gx2,gy2), b2Vec2(x1,y1), b2Vec2(x2,y2), ratio, collideConnected);
+		PulleyJoint * j;
+		ASSERT_GUARD(j = instance->newPulleyJoint(body1, body2, b2Vec2(gx1,gy1), b2Vec2(gx2,gy2), b2Vec2(x1,y1), b2Vec2(x2,y2), ratio, collideConnected);)
 		luax_newtype(L, "PulleyJoint", PHYSICS_PULLEY_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -225,7 +238,8 @@ namespace box2d
 		float ratio = (float)luaL_optnumber(L, 3, 1.0);
 		bool collideConnected = luax_optboolean(L, 4, false);
 
-		GearJoint * j = instance->newGearJoint(joint1, joint2, ratio, collideConnected);
+		GearJoint * j;
+		ASSERT_GUARD(j = instance->newGearJoint(joint1, joint2, ratio, collideConnected);)
 		luax_newtype(L, "GearJoint", PHYSICS_GEAR_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -247,7 +261,8 @@ namespace box2d
 			yB = yA;
 			collideConnected = luax_optboolean(L, 5, false);
 		}
-		FrictionJoint * j = instance->newFrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);
+		FrictionJoint * j;
+		ASSERT_GUARD(j = instance->newFrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
 		luax_newtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -269,7 +284,8 @@ namespace box2d
 			yB = yA;
 			collideConnected = luax_optboolean(L, 5, false);
 		}
-		WeldJoint * j = instance->newWeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);
+		WeldJoint * j;
+		ASSERT_GUARD(j = instance->newWeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
 		luax_newtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -296,7 +312,8 @@ namespace box2d
 			collideConnected = luax_optboolean(L, 7, false);
 		}
 
-		WheelJoint * j = instance->newWheelJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
+		WheelJoint * j;
+		ASSERT_GUARD(j = instance->newWheelJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
 		luax_newtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, (void*)j);
 		return 1;
 	}
@@ -311,7 +328,8 @@ namespace box2d
 		float y2 = (float)luaL_checknumber(L, 6);
 		float maxLength = (float)luaL_checknumber(L, 7);
 		bool collideConnected = luax_optboolean(L, 8, false);
-		RopeJoint * j = instance->newRopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
+		RopeJoint * j;
+		ASSERT_GUARD(j = instance->newRopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);)
 		luax_newtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, (void*)j);
 		return 1;
 	}

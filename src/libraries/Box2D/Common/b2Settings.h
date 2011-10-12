@@ -22,8 +22,11 @@
 #include <cassert>
 #include <cmath>
 
+void loveAssert(bool test, const char *teststr);
+
 #define B2_NOT_USED(x) ((void)(x))
-#define b2Assert(A) assert(A)
+//#define b2Assert(A) assert(A)
+#define b2Assert(A) loveAssert((A), #A)
 
 typedef signed char	int8;
 typedef signed short int16;
