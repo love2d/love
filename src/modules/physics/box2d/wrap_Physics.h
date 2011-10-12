@@ -45,7 +45,7 @@
 #include "wrap_WheelJoint.h"
 #include "wrap_RopeJoint.h"
 
-#define ASSERT_GUARD(A) try { A } catch (love::Exception & e) { return luaL_error(L, e.what()); }
+#define ASSERT_GUARD(A) try { A } catch (love::Exception & e) { return luaL_error(L, "%s", e.what()); }
 
 namespace love
 {
