@@ -140,7 +140,7 @@ namespace opengl
 		}
 	};
 	
-	FramebufferStrategy* strategy;
+	FramebufferStrategy* strategy = NULL;
 	
 	FramebufferStrategy strategyNone;
 	
@@ -165,8 +165,6 @@ namespace opengl
 	Canvas::Canvas(int width, int height) :
 		width(width), height(height)
 	{
-		strategy = NULL;
-
 		float w = static_cast<float>(width);
 		float h = static_cast<float>(height);
 
