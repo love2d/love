@@ -75,9 +75,9 @@ namespace lullaby
 				   ogg_int64_t offset	/*offset from the point we wish to seek to*/,
 				   int whence			/*where we want to seek to*/)
 	{
-		size_t				spaceToEOF;		// How much more we can read till we hit the EOF marker
-		ogg_int64_t			actualOffset;	// How much we can actually offset it by
-		SOggFile*			vorbisData;		// The data we passed in (for the typecast)
+		int         spaceToEOF;   // How much more we can read till we hit the EOF marker
+		ogg_int64_t actualOffset; // How much we can actually offset it by
+		SOggFile*   vorbisData;   // The data we passed in (for the typecast)
 
 		// Get the data in the right format
 		vorbisData = (SOggFile*) datasource;
