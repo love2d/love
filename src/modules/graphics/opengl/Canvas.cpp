@@ -280,20 +280,14 @@ namespace opengl
 	{
 		static Matrix t;
 		const vertex * v = quad->getVertices();
-		
+
 		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 		drawv(t, v);
 	}
 
 	love::image::ImageData * Canvas::getImageData(love::image::Image * image)
 	{
-		int row = 4 * width;
-		int size = row * height;
-
-		// see Graphics::newScreenshot. OpenGL reads from lower-left,
-		// but we need the pixels from upper-left.
-		GLubyte* pixels = new GLubyte[size];
-		GLubyte* screenshot = new GLubyte[size];
+		GLubyte pixels[4*width*height];
 
 		strategy->bindFBO( fbo );
 		glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -302,16 +296,7 @@ namespace opengl
 		else
 			strategy->bindFBO( 0 );
 
-		GLubyte* src = pixels - row; // second line of buffer
-		GLubyte* dst = screenshot + size; // end of buffer
-
-		for (int i = 0; i < height; ++i)
-			memcpy(dst -= row, src += row, row);
-
-		love::image::ImageData * img = image->newImageData(width, height, (void*)screenshot);
-
-		delete[] screenshot;
-		delete[] pixels;
+		love::image::ImageData * img = image->newImageData(width, height, (void*)pixels);
 
 		return img;
 	}
