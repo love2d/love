@@ -40,6 +40,7 @@ namespace box2d
 {
 
 	class Contact;
+	class Body;
 	class Fixture;
 
 	/**
@@ -106,6 +107,9 @@ namespace box2d
         
         // Ground body
         b2Body * groundBody;
+		
+		// The list of to be destructed bodies.
+		std::vector<Body*> destructBodies;
 
 		// Contact callbacks.
 		ContactCallback begin, end, presolve, postsolve;
@@ -255,6 +259,12 @@ namespace box2d
 		* Raycasts the World for all Fixtures in the path of the ray.
 		**/
 		int rayCast(lua_State * L);
+		
+		/**
+		* Mark a body for destruction.
+		* To be called from Body
+		**/
+		void destroyBody(Body * b);
 
 	};
 

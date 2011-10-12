@@ -210,6 +210,14 @@ namespace box2d
 	void World::update(float dt)
 	{
 		world->Step(dt, 8, 6);
+		
+		// Really destroy all marked bodies.
+		for (std::vector<Body*>::iterator i = destructBodies.begin(); i < destructBodies.end(); i++)
+		{
+			Body * b = *i;
+			b->release();
+		}
+		destructBodies.clear();
 	}
 
 	void World::BeginContact(b2Contact* contact)
@@ -421,6 +429,11 @@ namespace box2d
 		raycast.ref = luax_refif(L, LUA_TFUNCTION);
 		world->RayCast(&raycast, v1, v2);
 		return 0;
+	}
+	
+	void World::destroyBody(Body * b)
+	{
+		destructBodies.push_back(b);
 	}
 
 } // box2d

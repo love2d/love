@@ -385,6 +385,11 @@ namespace box2d
 		**/
 		int getFixtureList(lua_State * L) const;
 		
+		/**
+		* Mark the body for destruction
+		**/
+		void destroy();
+		
 	private:
 
 		/**
