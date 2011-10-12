@@ -1294,7 +1294,7 @@ do
 		code = code:gsub("#include (%b'')", include)
 		code = code:gsub('#include (%b"")', include)
 
-		return table.concat{header, code, footer}
+		return table.concat{header, "\n", code, footer}
 	end
 
 	function love.graphics._transformGLSLErrorMessages(message)
