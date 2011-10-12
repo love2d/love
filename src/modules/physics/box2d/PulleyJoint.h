@@ -44,9 +44,9 @@ namespace box2d
 	public:
 
 		/**
-		* Creates a PulleyJoint connecting body1 to body2. 
+		* Creates a PulleyJoint connecting bodyA to bodyB. 
 		**/
-		PulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio);
+		PulleyJoint(Body * bodyA, Body * bodyB, b2Vec2 groundAnchorA, b2Vec2 groundAnchorB, b2Vec2 anchorA, b2Vec2 anchorB, float ratio, bool collideConnected);
 		
 		virtual ~PulleyJoint();
 		
@@ -57,42 +57,14 @@ namespace box2d
 		int getGroundAnchors(lua_State * L);
 		
 		/**
-		* Sets the max rope lengths (a value of zero keeps it
-		* unchanged). Beware that Box2D also imposes a maximum,
-		* so the smallest of these is actually set.
+		* Gets the current length of the segment attached to bodyA.
 		**/
-		void setMaxLengths(float maxlength1, float maxlength2);
-		
-		/**
-		* Gets the max rope lengths.
-		**/
-		int getMaxLengths(lua_State * L);
-				
-		/**
-		* Sets the total length of the rope and updates the 
-		* MaxLengths values accordingly.
-		**/
-		void setConstant(float length);
-		
-		/**
-		* Gets the total length of the rope.
-		**/
-		float getConstant() const;
-		
-		/**
-		* Gets the current length of the segment attached to body1.
-		**/
-		float getLength1() const;
+		float getLengthA() const;
 	
 		/**
-		* Gets the current length of the segment attached to body2.
+		* Gets the current length of the segment attached to bodyB.
 		**/
-		float getLength2() const;
-		
-		/**
-		* Sets the pulley ratio.
-		**/
-		void setRatio(float ratio);
+		float getLengthB() const;
 		
 		/**
 		* Gets the pulley ratio.

@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -35,10 +36,10 @@ namespace box2d
 	{
 		b2MouseJointDef def;
 		
-		def.body1 = body1->world->world->GetGroundBody();
-		def.body2 = body1->body;
+		def.bodyA = body1->world->getGroundBody();
+		def.bodyB = body1->body;
 		def.maxForce = 1000.0f * body1->body->GetMass();
-		def.target = body1->world->scaleDown(b2Vec2(x,y));
+		def.target = Physics::scaleDown(b2Vec2(x,y));
 		joint = (b2MouseJoint*)createJoint(&def);
 	}
 
@@ -50,24 +51,44 @@ namespace box2d
 
 	void MouseJoint::setTarget(float x, float y)
 	{
-		joint->SetTarget(world->scaleDown(b2Vec2(x, y)));
+		joint->SetTarget(Physics::scaleDown(b2Vec2(x, y)));
 	}
 
 	int MouseJoint::getTarget(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->m_target.x));
-		lua_pushnumber(L, world->scaleUp(joint->m_target.y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetTarget().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetTarget().y));
 		return 2;
 	}
 
 	void MouseJoint::setMaxForce(float force)
 	{
-		joint->m_maxForce = force;
+		joint->SetMaxForce(Physics::scaleDown(force));
 	}
 
 	float MouseJoint::getMaxForce() const
 	{
-		return joint->m_maxForce;
+		return Physics::scaleUp(joint->GetMaxForce());
+	}
+	
+	void MouseJoint::setFrequency(float hz)
+	{
+		joint->SetFrequency(hz);
+	}
+	
+	float MouseJoint::getFrequency() const
+	{
+		return joint->GetFrequency();
+	}
+	
+	void MouseJoint::setDampingRatio(float d)
+	{
+		joint->SetDampingRatio(d);
+	}
+	
+	float MouseJoint::getDampingRatio() const
+	{
+		return joint->GetDampingRatio();
 	}
 
 } // box2d

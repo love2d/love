@@ -27,9 +27,12 @@
 #include "wrap_World.h"
 #include "wrap_Contact.h"
 #include "wrap_Body.h"
+#include "wrap_Fixture.h"
 #include "wrap_Shape.h"
 #include "wrap_CircleShape.h"
 #include "wrap_PolygonShape.h"
+#include "wrap_EdgeShape.h"
+#include "wrap_ChainShape.h"
 #include "wrap_Joint.h"
 #include "wrap_MouseJoint.h"
 #include "wrap_DistanceJoint.h"
@@ -37,6 +40,10 @@
 #include "wrap_RevoluteJoint.h"
 #include "wrap_PulleyJoint.h"
 #include "wrap_GearJoint.h"
+#include "wrap_FrictionJoint.h"
+#include "wrap_WeldJoint.h"
+#include "wrap_WheelJoint.h"
+#include "wrap_RopeJoint.h"
 
 namespace love
 {
@@ -46,15 +53,25 @@ namespace box2d
 {
 	int w_newWorld(lua_State * L);
 	int w_newBody(lua_State * L);
+	int w_newFixture(lua_State * L);
 	int w_newCircleShape(lua_State * L);
 	int w_newRectangleShape(lua_State * L);
-	int w_newPolygonShape(lua_State * L);;
+	int w_newPolygonShape(lua_State * L);
+    int w_newEdgeShape(lua_State * L);
+	int w_newChainShape(lua_State * L);
 	int w_newDistanceJoint(lua_State * L);
 	int w_newMouseJoint(lua_State * L);
 	int w_newRevoluteJoint(lua_State * L);
 	int w_newPrismaticJoint(lua_State * L);
 	int w_newPulleyJoint(lua_State * L);
 	int w_newGearJoint(lua_State * L);
+	int w_newFrictionJoint(lua_State * L);
+	int w_newWeldJoint(lua_State * L);
+	int w_newWheelJoint(lua_State * L);
+	int w_newRopeJoint(lua_State * L);
+	int w_getDistance(lua_State * L);
+	int w_setMeter(lua_State * L);
+	int w_getMeter(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_physics(lua_State * L);
 
 } // box2d

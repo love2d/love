@@ -35,14 +35,21 @@ namespace box2d
 	int w_World_update(lua_State * L);
 	int w_World_setCallbacks(lua_State * L);
 	int w_World_getCallbacks(lua_State * L);
+	int w_World_setContactFilter(lua_State * L);
+	int w_World_getContactFilter(lua_State * L);
 	int w_World_setGravity(lua_State * L);
 	int w_World_getGravity(lua_State * L);
-	int w_World_setAllowSleep(lua_State * L);
-	int w_World_isAllowSleep(lua_State * L);
+	int w_World_setAllowSleeping(lua_State * L);
+	int w_World_getAllowSleeping(lua_State * L);
+	int w_World_isLocked(lua_State * L);
 	int w_World_getBodyCount(lua_State * L);
 	int w_World_getJointCount(lua_State * L);
-	int w_World_setMeter(lua_State * L);
-	int w_World_getMeter(lua_State * L);
+	int w_World_getContactCount(lua_State * L);
+	int w_World_getBodyList(lua_State * L);
+	int w_World_getJointList(lua_State * L);
+	int w_World_getContactList(lua_State * L);
+	int w_World_queryBoundingBox(lua_State * L);
+	int w_World_rayCast(lua_State * L);
 	int luaopen_world(lua_State * L);
 
 } // box2d

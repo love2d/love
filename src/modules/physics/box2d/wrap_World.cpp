@@ -53,6 +53,20 @@ namespace box2d
 		lua_remove(L, 1);
 		return t->getCallbacks(L);
 	}
+	
+	int w_World_setContactFilter(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->setContactFilter(L);
+	}
+	
+	int w_World_getContactFilter(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getContactFilter(L);
+	}
 
 	int w_World_setGravity(lua_State * L)
 	{
@@ -70,18 +84,25 @@ namespace box2d
 		return t->getGravity(L);
 	}
 
-	int w_World_setAllowSleep(lua_State * L)
+	int w_World_setAllowSleeping(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
 		bool b = luax_toboolean(L, 2);
-		t->setAllowSleep(b);
+		t->setAllowSleeping(b);
 		return 0;
 	}
 
-	int w_World_isAllowSleep(lua_State * L)
+	int w_World_getAllowSleeping(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
-		luax_pushboolean(L, t->isAllowSleep());
+		luax_pushboolean(L, t->getAllowSleeping());
+		return 1;
+	}
+	
+	int w_World_isLocked(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		luax_pushboolean(L, t->isLocked());
 		return 1;
 	}
 
@@ -99,33 +120,67 @@ namespace box2d
 		return 1;
 	}
 	
-	int w_World_setMeter(lua_State * L)
+	int w_World_getContactCount(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
-		int arg1 = luaL_checkint(L, 2);
-		t->setMeter(arg1);
-		return 0;
-		
-	}
-	int w_World_getMeter(lua_State * L)
-	{
-		World * t = luax_checkworld(L, 1);
-		lua_pushinteger(L, t->getMeter());
+		lua_pushinteger(L, t->getContactCount());
 		return 1;
+	}
+	
+	int w_World_getBodyList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getBodyList(L);
+	}
+	
+	int w_World_getJointList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getJointList(L);
+	}
+	
+	int w_World_getContactList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getContactList(L);
+	}
+	
+	int w_World_queryBoundingBox(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->queryBoundingBox(L);
+	}
+	
+	int w_World_rayCast(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->rayCast(L);
 	}
 
 	static const luaL_Reg functions[] = {
 		{ "update", w_World_update },
 		{ "setCallbacks", w_World_setCallbacks },
 		{ "getCallbacks", w_World_getCallbacks },
+		{ "setContactFilter", w_World_setContactFilter },
+		{ "getContactFilter", w_World_getContactFilter },
 		{ "setGravity", w_World_setGravity },
 		{ "getGravity", w_World_getGravity },
-		{ "setAllowSleep", w_World_setAllowSleep },
-		{ "isAllowSleep", w_World_isAllowSleep },
+		{ "setAllowSleeping", w_World_setAllowSleeping },
+		{ "getAllowSleeping", w_World_getAllowSleeping },
+		{ "isLocked", w_World_isLocked },
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
-		{ "setMeter", w_World_setMeter },
-		{ "getMeter", w_World_getMeter },
+		{ "getContactCount", w_World_getContactCount },
+		{ "getBodyList", w_World_getBodyList },
+		{ "getJointList", w_World_getJointList },
+		{ "getContactList", w_World_getContactList },
+		{ "queryBoundingBox", w_World_queryBoundingBox },
+		{ "rayCast", w_World_rayCast },
 		{ 0, 0 }
 	};
 

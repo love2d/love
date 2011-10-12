@@ -23,6 +23,9 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
+
+#include <common/Memoizer.h>
 
 namespace love
 {
@@ -30,41 +33,27 @@ namespace physics
 {
 namespace box2d
 {
-	CircleShape::CircleShape(Body * body, b2CircleDef * def)
-		: Shape(body)
+	CircleShape::CircleShape(b2CircleShape * c)
+		: Shape(c)
 	{
-		def->localPosition = body->world->scaleDown(def->localPosition);
-		def->radius = body->world->scaleDown(def->radius);
-		radius = def->radius;
-		this->localPosition = def->localPosition;
-
-		def->userData = (void*)data;
-		shape = body->body->CreateShape(def);
 	}
 
 	CircleShape::~CircleShape()
 	{
+		Memoizer::remove(shape);
+		delete shape;
+        shape = NULL;
 	}
-
-	float CircleShape::getRadius() const
-	{
-		return body->world->scaleUp(radius);
-	}
-
-	void CircleShape::getLocalCenter(float & x, float & y) const
-	{
-		x = localPosition.x;
-		y = localPosition.y;
-		body->world->scaleUp(x, y);
-	}
-
-	void CircleShape::getWorldCenter(float & x, float & y) const
-	{
-		b2Vec2 worldCenter = body->body->GetWorldPoint(localPosition);
-		worldCenter = body->world->scaleUp(worldCenter);
-		x = worldCenter.x;
-		y = worldCenter.y;
-	}
+    
+    float CircleShape::getRadius() const
+    {
+        return Physics::scaleUp(shape->m_radius);
+    }
+	
+    void CircleShape::setRadius(float r)
+    {
+        shape->m_radius = Physics::scaleDown(r);
+    }
 
 } // box2d
 } // physics

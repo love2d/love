@@ -30,15 +30,16 @@ namespace physics
 {
 namespace box2d
 {
-	GearJoint::GearJoint(Joint * joint1, Joint * joint2, float ratio)
+	GearJoint::GearJoint(Joint * joint1, Joint * joint2, float ratio, bool collideConnected)
 		: Joint(joint1->body2, joint2->body2), joint(NULL)
 	{
 		b2GearJointDef def;
 		def.joint1 = joint1->joint;
 		def.joint2 = joint2->joint;
-		def.body1 = joint1->body2->body;
-		def.body2 = joint2->body2->body;
+		def.bodyA = joint1->body2->body;
+		def.bodyB = joint2->body2->body;
 		def.ratio = ratio;
+		def.collideConnected = collideConnected;
 		
 		joint = (b2GearJoint*)createJoint(&def);
 	}
@@ -51,12 +52,12 @@ namespace box2d
 	
 	void GearJoint::setRatio(float ratio)
 	{
-		joint->m_ratio = ratio;
+		joint->SetRatio(ratio);
 	}
 	
 	float GearJoint::getRatio() const
 	{
-		return joint->m_ratio;
+		return joint->GetRatio();
 	}
 
 } // box2d

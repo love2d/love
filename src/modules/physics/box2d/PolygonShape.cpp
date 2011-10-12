@@ -23,6 +23,9 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
+
+#include <common/Memoizer.h>
 
 namespace love
 {
@@ -30,29 +33,26 @@ namespace physics
 {
 namespace box2d
 {
-	PolygonShape::PolygonShape(Body * body, b2PolygonDef * def)
-		: Shape(body)
+	PolygonShape::PolygonShape(b2PolygonShape * p)
+		: Shape(p)
 	{
-		for(int i = 0; i<def->vertexCount; i++)
-			def->vertices[i] = body->world->scaleDown(def->vertices[i]);
-
-		def->userData = (void*)data;
-		shape = body->body->CreateShape(def);
 	}
 
 	PolygonShape::~PolygonShape()
 	{
+		Memoizer::remove(shape);
+		delete shape;
+		shape = NULL;
 	}
 
 	int PolygonShape::getPoints(lua_State * L)
 	{
 		love::luax_assert_argc(L, 0);
 		b2PolygonShape * p = (b2PolygonShape *)shape;
-		const b2Vec2 * vertices = p->GetVertices();
 		int count = p->GetVertexCount();
 		for(int i = 0;i<count; i++)
 		{
-			b2Vec2 v = body->world->scaleUp(body->body->GetWorldPoint(vertices[i]));
+			b2Vec2 v = Physics::scaleUp(p->GetVertex(i));
 			lua_pushnumber(L, v.x);
 			lua_pushnumber(L, v.y);
 		}

@@ -20,8 +20,11 @@
 
 #include "World.h"
 
+#include "Fixture.h"
 #include "Shape.h"
 #include "Contact.h"
+#include "Physics.h"
+#include <common/Memoizer.h>
 #include <common/Reference.h>
 
 namespace love
@@ -41,116 +44,205 @@ namespace box2d
 		if(ref != 0)
 			delete ref;
 	}
-
-	void World::ContactCallback::add(World * world, const b2ContactPoint* point)
-	{
-		/**
-		* We must copy contacts, since we're not allowed to process
-		* them inside this function. Removing bodies in this function
-		* pretty much guarantees segfault. ^^
-		**/
-
-		if(ref != 0)
-			contacts.push_back(new Contact(world, point));
-	}
-
-	void World::ContactCallback::process()
+	
+	void World::ContactCallback::process(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
 		// Process contacts.
 		if(ref != 0)
 		{
 			lua_State * L = ref->getL();
-			for(int i = 0;i<(int)contacts.size();i++)
+			ref->push();
+
+			// Push first fixture.
 			{
-				// Push the function.
-				ref->push();
-
-				// Push first userdata.
-				{
-					shapeudata * d = (shapeudata *)(contacts[i]->point.shape1->GetUserData());
-					if(d->ref != 0)
-						d->ref->push();
-					else
-						lua_pushnil(L);
+				Fixture * a = (Fixture *)Memoizer::find(contact->GetFixtureA());
+				if(a != 0) {
+					a->retain();
+					luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
 				}
-
-				// Push first userdata.
-				{
-					shapeudata * d = (shapeudata *)(contacts[i]->point.shape2->GetUserData());
-					if(d->ref != 0)
-						d->ref->push();
-					else
-						lua_pushnil(L);
-				}
-
-				luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)contacts[i], false);
-				lua_call(L, 3, 0);
+				else
+					throw love::Exception("A fixture has escaped Memoizer!");
 			}
 
-			// Clear contacts.
-			for(int i = 0;i<(int)contacts.size();i++)
-				delete contacts[i];
-			contacts.clear();
+			// Push second userdata.
+			{
+				Fixture * b = (Fixture *)Memoizer::find(contact->GetFixtureB());
+				if(b != 0) {
+					b->retain();
+					luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
+				}
+				else
+					throw love::Exception("A fixture has escaped Memoizer!");
+			}
+		
+			Contact * c = new Contact(contact);
+
+			luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)c, false);
+			
+			int args = 3;
+			if (impulse) {
+				for (int c = 0; c < impulse->count; c++) {
+					lua_pushnumber(L, Physics::scaleUp(impulse->normalImpulses[c]));
+					lua_pushnumber(L, Physics::scaleUp(impulse->tangentImpulses[c]));
+					args += 2;
+				}
+			}
+			lua_call(L, args, 0);
 		}
 
 	}
-
-	World::World(b2AABB aabb)
-		: world(NULL), meter(DEFAULT_METER)
+	
+	World::ContactFilter::ContactFilter()
+	: ref(0)
 	{
-		world = new b2World(scaleDown(aabb), b2Vec2(0,0), true);
-		world->SetContactListener(this);
+	}
+	
+	World::ContactFilter::~ContactFilter()
+	{
+		if(ref != 0)
+			delete ref;
+	}
+	
+	bool World::ContactFilter::process(Fixture * a, Fixture * b)
+	{
+		if (ref != 0)
+		{
+			lua_State * L = ref->getL();
+			ref->push();
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
+			lua_call(L, 2, 1);
+			return luax_toboolean(L, -1);
+		}
+		return true;
+	}
+	
+	World::QueryCallback::QueryCallback()
+	: ref(0)
+	{
+	}
+	
+	World::QueryCallback::~QueryCallback()
+	{
+		if(ref != 0)
+			delete ref;
+	}
+	
+	bool World::QueryCallback::ReportFixture(b2Fixture * fixture)
+	{
+		if (ref != 0)
+		{
+			lua_State * L = ref->getL();
+			ref->push();
+			Fixture * f = (Fixture *)Memoizer::find(fixture);
+			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			f->retain();
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
+			lua_call(L, 1, 1);
+			return luax_toboolean(L, -1);
+		}
+		return true;
+	}
+	
+	World::RayCastCallback::RayCastCallback()
+	: ref(0)
+	{
+	}
+	
+	World::RayCastCallback::~RayCastCallback()
+	{
+		if(ref != 0)
+			delete ref;
+	}
+	
+	float32 World::RayCastCallback::ReportFixture(b2Fixture * fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
+	{
+		if (ref != 0)
+		{
+			lua_State * L = ref->getL();
+			ref->push();
+			Fixture * f = (Fixture *)Memoizer::find(fixture);
+			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			f->retain();
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
+			b2Vec2 scaledPoint = Physics::scaleUp(point);
+			lua_pushnumber(L, scaledPoint.x);
+			lua_pushnumber(L, scaledPoint.y);
+			b2Vec2 scaledNormal = Physics::scaleUp(normal);
+			lua_pushnumber(L, scaledNormal.x);
+			lua_pushnumber(L, scaledNormal.y);
+			lua_pushnumber(L, fraction);
+			lua_call(L, 6, 1);
+			return (float32)luaL_checknumber(L, -1);
+		}
+		return 0;
 	}
 
-	World::World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter)
-		: world(NULL), meter(meter)
+	World::World()
+		: world(NULL)
 	{
-		world = new b2World(scaleDown(aabb), scaleDown(gravity), sleep);
+		world = new b2World(b2Vec2(0,0));
+		world->SetAllowSleeping(true);
 		world->SetContactListener(this);
+		b2BodyDef def;
+		groundBody = world->CreateBody(&def);
+		Memoizer::add(world, this);
+	}
+
+	World::World(b2Vec2 gravity, bool sleep)
+		: world(NULL)
+	{
+		world = new b2World(Physics::scaleDown(gravity));
+		world->SetAllowSleeping(sleep);
+		world->SetContactListener(this);
+		b2BodyDef def;
+		groundBody = world->CreateBody(&def);
+		Memoizer::add(world, this);
 	}
 
 	World::~World()
 	{
+		world->DestroyBody(groundBody);
+		Memoizer::remove(world);
 		delete world;
 	}
 
 	void World::update(float dt)
 	{
-		world->Step(dt, 10);
-
-
-		add.process();
-		persist.process();
-		remove.process();
-		result.process();
-		
-		// Really destroy all marked bodies.
-		for (std::vector<Body*>::iterator i = destructBodies.begin(); i < destructBodies.end(); i++)
-		{
-			Body * b = *i;
-			b->release();
-		}
-		destructBodies.clear();
+		world->Step(dt, 8, 6);
 	}
 
-	void World::Add(const b2ContactPoint* point)
+	void World::BeginContact(b2Contact* contact)
 	{
-		add.add(this, point);
+		begin.process(contact);
 	}
 
-	void World::Persist(const b2ContactPoint* point)
+	void World::EndContact(b2Contact* contact)
 	{
-		persist.add(this, point);
+		end.process(contact);
 	}
 
-	void World::Remove(const b2ContactPoint* point)
+	void World::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
-		remove.add(this, point);
+		B2_NOT_USED(oldManifold); // not sure what to do with this
+		presolve.process(contact);
 	}
 
-	void World::Result(const b2ContactPoint* point)
+	void World::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
-		result.add(this, point);
+		postsolve.process(contact, impulse);
+	}
+	
+	bool World::ShouldCollide(b2Fixture * fixtureA, b2Fixture * fixtureB)
+	{
+		// Fixtures should be memoized, if we created them
+		Fixture * a = (Fixture *)Memoizer::find(fixtureA);
+		if (!a) throw love::Exception("A fixture has escaped Memoizer!");
+		a->retain();
+		Fixture * b = (Fixture *)Memoizer::find(fixtureB);
+		if (!b) throw love::Exception("A fixture has escaped Memoizer!");
+		b->retain();
+		return filter.process(a, b);
 	}
 
 	int World::setCallbacks(lua_State * L)
@@ -161,17 +253,17 @@ namespace box2d
 		switch(n)
 		{
 		case 4:
-			if (result.ref) delete result.ref;
-			result.ref = luax_refif(L, LUA_TFUNCTION);
+			if (postsolve.ref) delete postsolve.ref;
+			postsolve.ref = luax_refif(L, LUA_TFUNCTION);
 		case 3:
-			if (remove.ref) delete remove.ref;
-			remove.ref = luax_refif(L, LUA_TFUNCTION);
+			if (presolve.ref) delete presolve.ref;
+			presolve.ref = luax_refif(L, LUA_TFUNCTION);
 		case 2:
-			if (persist.ref) delete persist.ref;
-			persist.ref = luax_refif(L, LUA_TFUNCTION);
+			if (end.ref) delete end.ref;
+			end.ref = luax_refif(L, LUA_TFUNCTION);
 		case 1:
-			if (add.ref) delete add.ref;
-			add.ref = luax_refif(L, LUA_TFUNCTION);
+			if (begin.ref) delete begin.ref;
+			begin.ref = luax_refif(L, LUA_TFUNCTION);
 		}
 
 		return 0;
@@ -179,111 +271,156 @@ namespace box2d
 
 	int World::getCallbacks(lua_State * L)
 	{
-		add.ref ? add.ref->push() : lua_pushnil(L);
-		persist.ref ? persist.ref->push() : lua_pushnil(L);
-		remove.ref ? remove.ref->push() : lua_pushnil(L);
-		result.ref ? result.ref->push() : lua_pushnil(L);
-		return lua_gettop(L);
+		begin.ref ? begin.ref->push() : lua_pushnil(L);
+		end.ref ? end.ref->push() : lua_pushnil(L);
+		presolve.ref ? presolve.ref->push() : lua_pushnil(L);
+		postsolve.ref ? postsolve.ref->push() : lua_pushnil(L);
+		return 4;
+	}
+	
+	int World::setContactFilter(lua_State * L)
+	{
+		luax_assert_argc(L, 1);
+		if (filter.ref) delete filter.ref;
+		filter.ref = luax_refif(L, LUA_TFUNCTION);
+		return 0;
+	}
+	
+	int World::getContactFilter(lua_State * L)
+	{
+		filter.ref ? filter.ref->push() : lua_pushnil(L);
+		return 1;
 	}
 
 	void World::setGravity(float x, float y)
 	{
-		world->SetGravity(scaleDown(b2Vec2(x, y)));
+		world->SetGravity(Physics::scaleDown(b2Vec2(x, y)));
 	}
 
 	int World::getGravity(lua_State * L)
 	{
-		b2Vec2 v = scaleUp(world->m_gravity);
+		b2Vec2 v = Physics::scaleUp(world->GetGravity());
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		return 2;
 	}
 
-	void World::setAllowSleep(bool allow)
+	void World::setAllowSleeping(bool allow)
 	{
-		world->m_allowSleep = allow;
+		world->SetAllowSleeping(allow);
 	}
 
-	bool World::isAllowSleep() const
+	bool World::getAllowSleeping() const
 	{
-		return world->m_allowSleep;
+		return world->GetAllowSleeping();
+	}
+	
+	bool World::isLocked() const
+	{
+		return world->IsLocked();
 	}
 
-	int World::getBodyCount()
+	int World::getBodyCount() const
 	{
-		return world->GetBodyCount();
+		return world->GetBodyCount()-1; // ignore the ground body
 	}
 
-	int World::getJointCount()
+	int World::getJointCount() const
 	{
 		return world->GetJointCount();
 	}
-
-	void World::setMeter(int meter)
+	
+	int World::getContactCount() const
 	{
-		this->meter = meter;
-	}
-
-	int World::getMeter() const
-	{
-		return this->meter;
-	}
-
-	void World::scaleDown(float & x, float & y)
-	{
-		x /= (float)meter;
-		y /= (float)meter;
-	}
-
-	void World::scaleUp(float & x, float & y)
-	{
-		x *= (float)meter;
-		y *= (float)meter;
-	}
-
-	float World::scaleDown(float f)
-	{
-		return f/(float)meter;
-	}
-
-	float World::scaleUp(float f)
-	{
-		return f*(float)meter;
-	}
-
-	b2Vec2 World::scaleDown(const b2Vec2 & v)
-	{
-		b2Vec2 t = v;
-		scaleDown(t.x, t.y);
-		return t;
-	}
-
-	b2Vec2 World::scaleUp(const b2Vec2 & v)
-	{
-		b2Vec2 t = v;
-		scaleUp(t.x, t.y);
-		return t;
-	}
-
-	b2AABB World::scaleDown(const b2AABB & aabb)
-	{
-		b2AABB t;
-		t.lowerBound = scaleDown(aabb.lowerBound);
-		t.upperBound = scaleDown(aabb.upperBound);
-		return t;
-	}
-
-	b2AABB World::scaleUp(const b2AABB & aabb)
-	{
-		b2AABB t;
-		t.lowerBound = scaleUp(aabb.lowerBound);
-		t.upperBound = scaleUp(aabb.upperBound);
-		return t;
+		return world->GetContactCount();
 	}
 	
-	void World::destroyBody(Body * b)
+	int World::getBodyList(lua_State * L) const
 	{
-		destructBodies.push_back(b);
+		lua_newtable(L);
+		b2Body * b = world->GetBodyList();
+		int i = 1;
+		do {
+			if (!b) break;
+			if (b == groundBody) continue;
+			Body * body = (Body *)Memoizer::find(b);
+			if (!body) throw love::Exception("A body has escaped Memoizer!");
+			body->retain();
+			luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
+			lua_rawseti(L, -2, i);
+			i++;
+		} while ((b = b->GetNext()));
+		return 1;
+	}
+	
+	int World::getJointList(lua_State * L) const
+	{
+		lua_newtable(L);
+		b2Joint * j = world->GetJointList();
+		int i = 1;
+		do {
+			if (!j) break;
+			Joint * joint = (Joint *)Memoizer::find(j);
+			if (!joint) throw love::Exception("A joint has escaped Memoizer!");
+			joint->retain();
+			luax_newtype(L, "Joint", PHYSICS_JOINT_T, (void*)joint);
+			lua_rawseti(L, -2, i);
+			i++;
+		} while ((j = j->GetNext()));
+		return 1;
+	}
+	
+	int World::getContactList(lua_State * L) const
+	{
+		lua_newtable(L);
+		b2Contact * c = world->GetContactList();
+		int i = 1;
+		do {
+			if (!c) break;
+			Contact * contact = (Contact *)Memoizer::find(c);
+			if (!contact) throw love::Exception("A contact has escaped Memoizer!");
+			contact->retain();
+			luax_newtype(L, "Contact", PHYSICS_CONTACT_T, (void*)contact);
+			lua_rawseti(L, -2, i);
+			i++;
+		} while ((c = c->GetNext()));
+		return 1;
+	}
+	
+	b2Body * World::getGroundBody() const
+	{
+		return groundBody;
+	}
+	
+	int World::queryBoundingBox(lua_State * L)
+	{
+		luax_assert_argc(L, 5);
+		b2AABB box;
+		float lx = (float)luaL_checknumber(L, 1);
+		float ly = (float)luaL_checknumber(L, 2);
+		float ux = (float)luaL_checknumber(L, 3);
+		float uy = (float)luaL_checknumber(L, 4);
+		box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
+		box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
+		if (query.ref) delete query.ref;
+		query.ref = luax_refif(L, LUA_TFUNCTION);
+		world->QueryAABB(&query, box);
+		return 0;
+	}
+	
+	int World::rayCast(lua_State * L)
+	{
+		luax_assert_argc(L, 5);
+		float x1 = (float)luaL_checknumber(L, 1);
+		float y1 = (float)luaL_checknumber(L, 2);
+		float x2 = (float)luaL_checknumber(L, 3);
+		float y2 = (float)luaL_checknumber(L, 4);
+		b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
+		b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
+		if (raycast.ref) delete raycast.ref;
+		raycast.ref = luax_refif(L, LUA_TFUNCTION);
+		world->RayCast(&raycast, v1, v2);
+		return 0;
 	}
 
 } // box2d

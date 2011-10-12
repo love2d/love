@@ -38,6 +38,8 @@ namespace physics
 			SHAPE_INVALID,
 			SHAPE_CIRCLE, 
 			SHAPE_POLYGON,
+			SHAPE_EDGE,
+			SHAPE_CHAIN,
 			SHAPE_MAX_ENUM
 		};
 

@@ -42,6 +42,10 @@ namespace physics
 			JOINT_MOUSE,
 			JOINT_PULLEY,
 			JOINT_GEAR,
+			JOINT_FRICTION,
+			JOINT_WELD,
+			JOINT_WHEEL,
+			JOINT_ROPE,
 			JOINT_MAX_ENUM
 		};
 

@@ -21,8 +21,12 @@
 #include "Body.h"
 
 #include <common/math.h>
+#include <common/Memoizer.h>
 
+#include "Shape.h"
+#include "Fixture.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -30,19 +34,28 @@ namespace physics
 {
 namespace box2d
 {
-	Body::Body(World * world, b2Vec2 p, float m, float i)
+	Body::Body(World * world, b2Vec2 p, Body::Type type)
 		: world(world)
 	{
 		world->retain();
 		b2BodyDef def;
-		def.position = world->scaleDown(p);
-		def.massData.mass = m;
-		def.massData.I = i;
+		def.position = Physics::scaleDown(p);
 		body = world->world->CreateBody(&def);
+		this->setType(type);
+		Memoizer::add(body, this);
+	}
+	
+	Body::Body(b2Body * b)
+		: body(b)
+	{
+		world = (World *)Memoizer::find(b->GetWorld());
+		world->retain();
+		Memoizer::add(body, this);
 	}
 
 	Body::~Body()
 	{
+		Memoizer::remove(body);
 		world->world->DestroyBody(body);
 		world->release();
 		body = 0;
@@ -50,24 +63,24 @@ namespace box2d
 
 	float Body::getX()
 	{
-		return world->scaleUp(body->GetPosition().x);
+		return Physics::scaleUp(body->GetPosition().x);
 	}
 
 	float Body::getY()
 	{
-		return world->scaleUp(body->GetPosition().y);
+		return Physics::scaleUp(body->GetPosition().y);
 	}
 
 	void Body::getPosition(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetPosition());
+		b2Vec2 v = Physics::scaleUp(body->GetPosition());
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLinearVelocity(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLinearVelocity());
+		b2Vec2 v = Physics::scaleUp(body->GetLinearVelocity());
 		x_o = v.x;
 		y_o = v.y;
 	}
@@ -79,14 +92,14 @@ namespace box2d
 
 	void Body::getWorldCenter(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetWorldCenter());
+		b2Vec2 v = Physics::scaleUp(body->GetWorldCenter());
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLocalCenter(float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLocalCenter());
+		b2Vec2 v = Physics::scaleUp(body->GetLocalCenter());
 		x_o = v.x;
 		y_o = v.y;
 	}
@@ -105,60 +118,102 @@ namespace box2d
 	{
 		return body->GetInertia();
 	}
+	
+	int Body::getMassData(lua_State * L)
+	{
+		b2MassData data;
+		body->GetMassData(&data);
+		b2Vec2 center = Physics::scaleUp(data.center);
+		lua_pushnumber(L, center.x);
+		lua_pushnumber(L, center.y);
+		lua_pushnumber(L, data.mass);
+		lua_pushnumber(L, data.I);
+		return 4;
+	}
 
 	float Body::getAngularDamping() const
 	{
-		return body->m_angularDamping;
+		return body->GetAngularDamping();
 	}
 
 	float Body::getLinearDamping() const
 	{
-		return body->m_linearDamping;
+		return body->GetLinearDamping();
+	}
+	
+	float Body::getGravityScale() const
+	{
+		return body->GetGravityScale();
+	}
+	
+	Body::Type Body::getType() const
+	{
+		switch (body->GetType()) {
+			case b2_staticBody:
+				return BODY_STATIC;
+				break;
+			case b2_dynamicBody:
+				return BODY_DYNAMIC;
+				break;
+			case b2_kinematicBody:
+				return BODY_KINEMATIC;
+				break;
+			default:
+				return BODY_INVALID;
+				break;
+		}
 	}
 
-	void Body::applyImpulse(float jx, float jy)
+	void Body::applyLinearImpulse(float jx, float jy)
 	{
-		body->ApplyImpulse(b2Vec2(jx, jy), body->GetWorldCenter());
+		body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), body->GetWorldCenter());
 	}
 
-	void Body::applyImpulse(float jx, float jy, float rx, float ry)
+	void Body::applyLinearImpulse(float jx, float jy, float rx, float ry)
 	{
-		body->ApplyImpulse(b2Vec2(jx, jy), world->scaleDown(b2Vec2(rx, ry)));
+		body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), Physics::scaleDown(b2Vec2(rx, ry)));
+	}
+	
+	void Body::applyAngularImpulse(float impulse)
+	{
+		// Angular impulse is in kg*m^2/s, meaning it needs to be scaled twice
+		body->ApplyAngularImpulse(Physics::scaleDown(Physics::scaleDown(impulse)));
 	}
 
 	void Body::applyTorque(float t)
 	{
-		body->ApplyTorque(t);
+		// Torque is in N*m, or kg*m^2/s^2, meaning it also needs to be scaled twice
+		body->ApplyTorque(Physics::scaleDown(Physics::scaleDown(t)));
 	}
 
 	void Body::applyForce(float fx, float fy, float rx, float ry)
 	{
-		body->ApplyForce(b2Vec2(fx, fy), world->scaleDown(b2Vec2(rx, ry)));
+		body->ApplyForce(Physics::scaleDown(b2Vec2(fx, fy)), Physics::scaleDown(b2Vec2(rx, ry)));
 	}
 
 	void Body::applyForce(float fx, float fy)
 	{
-		body->ApplyForce(b2Vec2(fx, fy), body->GetWorldCenter());
+		body->ApplyForce(Physics::scaleDown(b2Vec2(fx, fy)), body->GetWorldCenter());
 	}
 
 	void Body::setX(float x)
 	{
-		body->SetXForm(world->scaleDown(b2Vec2(x, getY())), getAngle());
+		body->SetTransform(Physics::scaleDown(b2Vec2(x, getY())), getAngle());
 	}
 
 	void Body::setY(float y)
 	{
-		body->SetXForm(world->scaleDown(b2Vec2(getX(), y)), getAngle());
+		body->SetTransform(Physics::scaleDown(b2Vec2(getX(), y)), getAngle());
 	}
 
 	void Body::setLinearVelocity(float x, float y)
 	{
-		body->SetLinearVelocity(world->scaleDown(b2Vec2(x, y)));
+		body->SetLinearVelocity(Physics::scaleDown(b2Vec2(x, y)));
 	}
 
 	void Body::setAngle(float d)
 	{
-		body->SetXForm(body->GetPosition(), d);
+		body->SetTransform(body->GetPosition(), d);
 	}
 
 	void Body::setAngularVelocity(float r)
@@ -168,31 +223,31 @@ namespace box2d
 
 	void Body::setPosition(float x, float y)
 	{
-		body->SetXForm(world->scaleDown(b2Vec2(x, y)), body->GetAngle());
+		body->SetTransform(Physics::scaleDown(b2Vec2(x, y)), body->GetAngle());
 	}
 
 	void Body::setAngularDamping(float d)
 	{
-		body->m_angularDamping = d;
+		body->SetAngularDamping(d);
 	}
 
 	void Body::setLinearDamping(float d)
 	{
-		body->m_linearDamping = d;
+		body->SetLinearDamping(d);
 	}
 
-	void Body::setMassFromShapes()
+	void Body::resetMassData()
 	{
-		body->SetMassFromShapes();
+		body->ResetMassData();
 	}
 
-	void Body::setMass(float x, float y, float m, float i)
+	void Body::setMassData(float x, float y, float m, float i)
 	{
 		b2MassData massData;
-		massData.center = world->scaleDown(b2Vec2(x, y));
+		massData.center = Physics::scaleDown(b2Vec2(x, y));
 		massData.mass = m;
 		massData.I = i;
-		body->SetMass(&massData);
+		body->SetMassData(&massData);
 	}
 
 	void Body::setInertia(float i)
@@ -201,47 +256,88 @@ namespace box2d
 		massData.center = body->GetLocalCenter();
 		massData.mass = body->GetMass();
 		massData.I = i;
-		body->SetMass(&massData);
+		body->SetMassData(&massData);
+	}
+	
+	void Body::setGravityScale(float scale)
+	{
+		body->SetGravityScale(scale);
+	}
+	
+	void Body::setType(Body::Type type)
+	{
+		switch (type) {
+			case Body::BODY_STATIC:
+				body->SetType(b2_staticBody);
+				break;
+			case Body::BODY_DYNAMIC:
+				body->SetType(b2_dynamicBody);
+				break;
+			case Body::BODY_KINEMATIC:
+				body->SetType(b2_kinematicBody);
+				break;
+			default:
+				break;
+		}
 	}
 
 	void Body::getWorldPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetWorldPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetWorldPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getWorldVector(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetWorldVector(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetWorldVector(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
+	}
+	
+	int Body::getWorldPoints(lua_State * L)
+	{
+		int argc = lua_gettop(L);
+		int vcount = (int)argc/2;
+		// at least one point
+		love::luax_assert_argc(L, 2);
+		
+		for(int i = 0;i<vcount;i++)
+		{
+			float x = (float)lua_tonumber(L, i*2+1);
+			float y = (float)lua_tonumber(L, i*2+2);
+			b2Vec2 point = Physics::scaleUp(body->GetWorldPoint(Physics::scaleDown(b2Vec2(x, y))));
+			lua_pushnumber(L, point.x);
+			lua_pushnumber(L, point.y);
+		}
+		
+		return argc;
 	}
 
 	void Body::getLocalPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLocalPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLocalPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLocalVector(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLocalVector(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLocalVector(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLinearVelocityFromWorldPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLinearVelocityFromWorldPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLinearVelocityFromWorldPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
 
 	void Body::getLinearVelocityFromLocalPoint(float x, float y, float & x_o, float & y_o)
 	{
-		b2Vec2 v = world->scaleUp(body->GetLinearVelocityFromLocalPoint(world->scaleDown(b2Vec2(x, y))));
+		b2Vec2 v = Physics::scaleUp(body->GetLinearVelocityFromLocalPoint(Physics::scaleDown(b2Vec2(x, y))));
 		x_o = v.x;
 		y_o = v.y;
 	}
@@ -256,62 +352,66 @@ namespace box2d
 		return body->SetBullet(bullet);
 	}
 
-	bool Body::isStatic() const
+	bool Body::isActive() const
 	{
-		return body->IsStatic();
+		return body->IsActive();
 	}
 
-	bool Body::isDynamic() const
+	bool Body::isAwake() const
 	{
-		return body->IsDynamic();
+		return body->IsAwake();
 	}
 
-	bool Body::isFrozen() const
+	void Body::setSleepingAllowed(bool allow)
 	{
-		return body->IsFrozen();
+		body->SetSleepingAllowed(allow);
 	}
 
-	bool Body::isSleeping() const
+	bool Body::isSleepingAllowed() const
 	{
-		return body->IsSleeping();
+		return body->IsSleepingAllowed();
+	}
+	
+	void Body::setActive(bool active)
+	{
+		body->SetActive(active);
 	}
 
-	void Body::setAllowSleeping(bool allow)
+	void Body::setAwake(bool awake)
 	{
-		body->AllowSleeping(allow);
-	}
-
-	bool Body::getAllowSleeping()
-	{
-		return (body->m_flags & b2Body::e_allowSleepFlag) != 0;
-	}
-
-	void Body::putToSleep()
-	{
-		body->PutToSleep();
-	}
-
-	void Body::wakeUp()
-	{
-		body->WakeUp();
+		body->SetAwake(awake);
 	}
 
 	void Body::setFixedRotation(bool fixed)
 	{
-		if(fixed)
-			body->m_flags |= b2Body::e_fixedRotationFlag;
-		else
-			body->m_flags &= ~(b2Body::e_fixedRotationFlag);
+		body->SetFixedRotation(fixed);
 	}
 
-	bool Body::getFixedRotation() const
+	bool Body::isFixedRotation() const
 	{
-		return (body->m_flags & b2Body::e_fixedRotationFlag) != 0;
+		return body->IsFixedRotation();
 	}
 
 	World * Body::getWorld() const
 	{
 		return world;
+	}
+	
+	int Body::getFixtureList(lua_State * L) const
+	{
+		lua_newtable(L);
+		b2Fixture * f = body->GetFixtureList();
+		int i = 1;
+		do {
+			if (!f) break;
+			Fixture * fixture = (Fixture *)Memoizer::find(f);
+			if (!fixture) throw love::Exception("A fixture has escaped Memoizer!");
+			fixture->retain();
+			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
+			lua_rawseti(L, -2, i);
+			i++;
+		} while ((f = f->GetNext()));
+		return 1;
 	}
 
 	b2Vec2 Body::getVector(lua_State * L)

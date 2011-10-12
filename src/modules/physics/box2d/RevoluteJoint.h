@@ -46,7 +46,7 @@ namespace box2d
 		/**
 		* Creates a new RevoluteJoint connecting body1 and body2.
 		**/
-		RevoluteJoint(Body * body1, Body * body2, float x, float y);
+		RevoluteJoint(Body * body1, Body * body2, float x, float y, bool collideConnected);
 		
 		virtual ~RevoluteJoint();
 
@@ -63,7 +63,7 @@ namespace box2d
 		/**
 		* Enable/disable the joint motor.
 		**/
-		void setMotorEnabled(bool motor);
+		void enableMotor(bool motor);
 
 		/**
 		* Checks whether the motor is enabled.
@@ -76,34 +76,35 @@ namespace box2d
 		void setMaxMotorTorque(float torque);
 
 		/**
-		* Gets the maximum motor torque, usually in N-m.
-		**/
-		float getMaxMotorTorque() const;
-
-		/**
-		* Sets the motor speed in degrees per second.
+		* Sets the motor speed in radians per second.
 		**/
 		void setMotorSpeed(float speed);
 
 		/**
-		* Gets the motor speed in degrees per second.
+		* Gets the motor speed in radians per second.
 		**/
 		float getMotorSpeed() const;
 
 		/**
 		* Get the current motor torque, usually in N-m.
+		* @param inv_dt The inverse timestep.
 		**/
-		float getMotorTorque() const;
+		float getMotorTorque(float inv_dt) const;
+
+		/**
+		* Get the maximum motor torque, usually in N-m.
+		**/
+		float getMaxMotorTorque() const;
 
 		/**
 		* Enable/disable the joint limit.
 		**/
-		void setLimitsEnabled(bool limit);
+		void enableLimit(bool limit);
 
 		/**
 		* Checks whether limits are enabled.
 		**/
-		bool isLimitsEnabled() const;
+		bool isLimitEnabled() const;
 
 		/**
 		* Sets the upper limit in degrees.

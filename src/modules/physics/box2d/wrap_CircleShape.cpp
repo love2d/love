@@ -38,54 +38,25 @@ namespace box2d
 		return 1;
 	}
 
-	int w_CircleShape_getLocalCenter(lua_State * L)
-	{
-		CircleShape * c = luax_checkcircleshape(L, 1);
-		float x, y;
-		c->getLocalCenter(x, y);
-		lua_pushnumber(L, x);
-		lua_pushnumber(L, y);
-		return 2;
-	}
-
-	int w_CircleShape_getWorldCenter(lua_State * L)
-	{
-		CircleShape * c = luax_checkcircleshape(L, 1);
-		float x, y;
-		c->getWorldCenter(x, y);
-		lua_pushnumber(L, x);
-		lua_pushnumber(L, y);
-		return 2;
+	int w_CircleShape_setRadius(lua_State * L)
+    {
+        CircleShape * c = luax_checkcircleshape(L, 1);
+        float r = (float)luaL_checknumber(L, 2);
+		c->setRadius(r);
+		return 0;
 	}
 
 	static const luaL_Reg functions[] = {
 		{ "getRadius", w_CircleShape_getRadius },
-		{ "getLocalCenter", w_CircleShape_getLocalCenter },
-		{ "getWorldCenter", w_CircleShape_getWorldCenter },
+		{ "setRadius", w_CircleShape_setRadius },
 		// From Shape.
 		{ "getType", w_Shape_getType },
-		{ "setFriction", w_Shape_setFriction },
-		{ "setRestitution", w_Shape_setRestitution },
-		{ "setDensity", w_Shape_setDensity },
-		{ "setSensor", w_Shape_setSensor },
-		{ "getFriction", w_Shape_getFriction },
-		{ "getRestitution", w_Shape_getRestitution },
-		{ "getDensity", w_Shape_getDensity },
-		{ "getBody", w_Shape_getBody },
-		{ "isSensor", w_Shape_isSensor },
+		{ "getRadius", w_Shape_getRadius },
+		{ "getChildCount", w_Shape_getChildCount },
 		{ "testPoint", w_Shape_testPoint },
-		{ "testSegment", w_Shape_testSegment },
-		{ "setFilterData", w_Shape_setFilterData },
-		{ "getFilterData", w_Shape_getFilterData },
-		{ "setCategory", w_Shape_setCategory },
-		{ "getCategory", w_Shape_getCategory },
-		{ "setMask", w_Shape_setMask },
-		{ "getMask", w_Shape_getMask },
-		{ "setData", w_Shape_setData },
-		{ "getData", w_Shape_getData },
-		{ "getBoundingBox", w_Shape_getBoundingBox },
-		{ "getGroupIndex", w_Shape_getGroupIndex },
-		{ "setGroupIndex", w_Shape_setGroupIndex },
+		{ "rayCast", w_Shape_rayCast },
+		{ "computeAABB", w_Shape_computeAABB },
+		{ "computeMass", w_Shape_computeMass },
 		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};

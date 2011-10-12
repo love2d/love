@@ -71,6 +71,14 @@ namespace love
 		luax_pushboolean(L, p->flags[t]);
 		return 1;
 	}
+	
+	static int w__eq(lua_State * L)
+	{
+		Proxy * p1 = (Proxy *)lua_touserdata(L, 1);
+		Proxy * p2 = (Proxy *)lua_touserdata(L, 2);
+		luax_pushboolean(L, p1->data == p2->data);
+		return 1;
+	}
 
 	Reference * luax_refif(lua_State * L, int type)
 	{
@@ -194,6 +202,10 @@ namespace love
 		// setup gc
 		lua_pushcfunction(L, w__gc);
 		lua_setfield(L, -2, "__gc");
+		
+		// Add equality
+		lua_pushcfunction(L, w__eq);
+		lua_setfield(L, -2, "__eq");
 
 		// Add tostring function.
 		lua_pushstring(L, tname);

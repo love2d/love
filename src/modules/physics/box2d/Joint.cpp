@@ -26,6 +26,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -72,6 +73,14 @@ namespace box2d
 			return JOINT_MOUSE;
 		case e_gearJoint: 
 			return JOINT_GEAR;
+		case e_frictionJoint:
+			return JOINT_FRICTION;
+		case e_weldJoint:
+			return JOINT_WELD;
+		case e_wheelJoint:
+			return JOINT_WHEEL;
+		case e_ropeJoint:
+			return JOINT_ROPE;
 		default:
 			return JOINT_INVALID;
 		}
@@ -79,34 +88,25 @@ namespace box2d
 
 	int Joint::getAnchors(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor1().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor1().y));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor2().x));
-		lua_pushnumber(L, world->scaleUp(joint->GetAnchor2().y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorA().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorA().y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorB().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorB().y));
 		return 4;
 	}
 
 	int Joint::getReactionForce(lua_State * L)
 	{
-		b2Vec2 v = joint->GetReactionForce();
+		float dt = (float)luaL_checknumber(L, 1);
+		b2Vec2 v = Physics::scaleUp(joint->GetReactionForce(dt));
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		return 2;
 	}
 
-	float Joint::getReactionTorque()
+	float Joint::getReactionTorque(float dt)
 	{
-		return joint->GetReactionTorque();
-	}
-
-	void Joint::setCollideConnected(bool collide)
-	{
-		joint->m_collideConnected = collide;
-	}
-
-	bool Joint::getCollideConnected() const
-	{
-		return joint->m_collideConnected;
+		return Physics::scaleUp(Physics::scaleUp(joint->GetReactionTorque(dt)));
 	}
 
 	b2Joint * Joint::createJoint(b2JointDef * def)
@@ -119,6 +119,16 @@ namespace box2d
 	{
 		if (joint != NULL)
 			world->world->DestroyJoint(joint);
+	}
+	
+	bool Joint::isActive() const
+	{
+		return joint->IsActive();
+	}
+	
+	bool Joint::getCollideConnected() const
+	{
+		return joint->GetCollideConnected();
 	}
 
 } // box2d

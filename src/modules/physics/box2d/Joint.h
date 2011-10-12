@@ -26,7 +26,7 @@
 #include <physics/Joint.h>
 
 // Box2D
-#include "Include/Box2D.h"
+#include <Box2D/Box2D.h>
 
 namespace love
 {
@@ -97,18 +97,10 @@ namespace box2d
 		/**
 		* Gets the reaction torque on body2.
 		**/
-		float getReactionTorque();
-
-		/**
-		* Sets whether connected bodies should collide
-		* or not. Default is false.
-		**/
-		void setCollideConnected(bool collide);
-
-		/**
-		* Gets whether connected bodies should collide
-		* or not.
-		**/
+		float getReactionTorque(float dt);
+		
+		bool isActive() const;
+		
 		bool getCollideConnected() const;
 
 	protected:

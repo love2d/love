@@ -40,179 +40,55 @@ namespace box2d
 		lua_pushstring(L, type);
 		return 1;
 	}
-
-	int w_Shape_setFriction(lua_State * L)
+	
+	int w_Shape_getRadius(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
-		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setFriction(arg1);
-		return 0;
-	}
-
-	int w_Shape_setRestitution(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setRestitution(arg1);
-		return 0;
-	}
-
-	int w_Shape_setDensity(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setDensity(arg1);
-		return 0;
-	}
-
-	int w_Shape_setSensor(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		bool arg1 = luax_toboolean(L, 2);
-		t->setSensor(arg1);
-		return 0;
-	}
-
-	int w_Shape_getFriction(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_pushnumber(L, t->getFriction());
+		float radius = t->getRadius();
+		lua_pushnumber(L, radius);
 		return 1;
 	}
-
-	int w_Shape_getRestitution(lua_State * L)
+	
+	int w_Shape_getChildCount(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
-		lua_pushnumber(L, t->getRestitution());
+		int childCount = t->getChildCount();
+		lua_pushinteger(L, childCount);
 		return 1;
 	}
-
-	int w_Shape_getDensity(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_pushnumber(L, t->getDensity());
-		return 1;
-	}
-
-	int w_Shape_isSensor(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		luax_pushboolean(L, t->isSensor());
-		return 1;
-	}
-
-	int w_Shape_getBody(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		Body * body = t->getBody();
-		if(body == 0)
-			return 0;
-		body->retain();
-		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
-		return 1;
-	}
-
+	
 	int w_Shape_testPoint(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
-		float x = (float)luaL_checknumber(L, 2);
-		float y = (float)luaL_checknumber(L, 3);
-		luax_pushboolean(L, t->testPoint(x, y));
+		float x = (float)luaL_checknumber(L, 1);
+		float y = (float)luaL_checknumber(L, 2);
+		float r = (float)luaL_checknumber(L, 3);
+		float px = (float)luaL_checknumber(L, 4);
+		float py = (float)luaL_checknumber(L, 5);
+		bool result = t->testPoint(x, y, r, px, py);
+		lua_pushboolean(L, result);
 		return 1;
 	}
-
-	int w_Shape_testSegment(lua_State * L)
+	
+	int w_Shape_rayCast(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_remove(L, 1);
-		return t->testSegment(L);
+		return t->rayCast(L);
 	}
-
-	int w_Shape_setFilterData(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		int v[3];
-		v[0] = luaL_checkint(L, 2);
-		v[1] = luaL_checkint(L, 3);
-		v[2] = luaL_checkint(L, 4);
-		t->setFilterData(v);
-		return 0;
-	}
-
-	int w_Shape_getFilterData(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		int v[3];
-		t->getFilterData(v);
-		lua_pushinteger(L, v[0]);
-		lua_pushinteger(L, v[1]);
-		lua_pushinteger(L, v[2]);
-		return 3;
-	}
-
-	int w_Shape_setCategory(lua_State * L)
+	
+	int w_Shape_computeAABB(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_remove(L, 1);
-		return t->setCategory(L);
+		return t->computeAABB(L);
 	}
-
-	int w_Shape_getCategory(lua_State * L)
+	
+	int w_Shape_computeMass(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_remove(L, 1);
-		return t->getCategory(L);
-	}
-
-	int w_Shape_setMask(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->setMask(L);
-	}
-
-	int w_Shape_getMask(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->getMask(L);
-	}
-
-	int w_Shape_setData(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->setData(L);
-	}
-
-	int w_Shape_getData(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->getData(L);
-	}
-
-	int w_Shape_getBoundingBox(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		lua_remove(L, 1);
-		return t->getBoundingBox(L);
-	}
-
-	int w_Shape_getGroupIndex(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		int i = t->getGroupIndex();
-		lua_pushinteger(L, i);
-		return 1;
-	}
-
-	int w_Shape_setGroupIndex(lua_State * L)
-	{
-		Shape * t = luax_checkshape(L, 1);
-		int i = luaL_checkint(L, 2);
-		t->setGroupIndex(i);
-		return 0;
+		return t->computeMass(L);
 	}
 
 	int w_Shape_destroy(lua_State * L)
@@ -227,28 +103,12 @@ namespace box2d
 
 	static const luaL_Reg functions[] = {
 		{ "getType", w_Shape_getType },
-		{ "setFriction", w_Shape_setFriction },
-		{ "setRestitution", w_Shape_setRestitution },
-		{ "setDensity", w_Shape_setDensity },
-		{ "setSensor", w_Shape_setSensor },
-		{ "getFriction", w_Shape_getFriction },
-		{ "getRestitution", w_Shape_getRestitution },
-		{ "getDensity", w_Shape_getDensity },
-		{ "getBody", w_Shape_getBody },
-		{ "isSensor", w_Shape_isSensor },
+		{ "getRadius", w_Shape_getRadius },
+		{ "getChildCount", w_Shape_getChildCount },
 		{ "testPoint", w_Shape_testPoint },
-		{ "testSegment", w_Shape_testSegment },
-		{ "setFilterData", w_Shape_setFilterData },
-		{ "getFilterData", w_Shape_getFilterData },
-		{ "setCategory", w_Shape_setCategory },
-		{ "getCategory", w_Shape_getCategory },
-		{ "setMask", w_Shape_setMask },
-		{ "getMask", w_Shape_getMask },
-		{ "setData", w_Shape_setData },
-		{ "getData", w_Shape_getData },
-		{ "getBoundingBox", w_Shape_getBoundingBox },
-		{ "getGroupIndex", w_Shape_getGroupIndex },
-		{ "setGroupIndex", w_Shape_setGroupIndex },
+		{ "rayCast", w_Shape_rayCast },
+		{ "computeAABB", w_Shape_computeAABB },
+		{ "computeMass", w_Shape_computeMass },
 		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};

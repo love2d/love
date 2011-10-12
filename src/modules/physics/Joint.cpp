@@ -46,6 +46,10 @@ namespace physics
 		{"mouse", Joint::JOINT_MOUSE},
 		{"pulley", Joint::JOINT_PULLEY},
 		{"gear", Joint::JOINT_GEAR},
+		{"friction", Joint::JOINT_FRICTION},
+		{"weld", Joint::JOINT_WELD},
+		{"wheel", Joint::JOINT_WHEEL},
+		{"rope", Joint::JOINT_ROPE},
 	};
 
 	StringMap<Joint::Type, Joint::JOINT_MAX_ENUM> Joint::types(Joint::typeEntries, sizeof(Joint::typeEntries));

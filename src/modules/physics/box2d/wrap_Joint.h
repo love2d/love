@@ -36,7 +36,6 @@ namespace box2d
 	int w_Joint_getAnchors(lua_State * L);
 	int w_Joint_getReactionForce(lua_State * L);
 	int w_Joint_getReactionTorque(lua_State * L);
-	int w_Joint_setCollideConnected(lua_State * L);
 	int w_Joint_getCollideConnected(lua_State * L);
 	int w_Joint_destroy(lua_State * L);
 	int luaopen_joint(lua_State * L);
