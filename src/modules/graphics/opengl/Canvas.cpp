@@ -287,7 +287,7 @@ namespace opengl
 
 	love::image::ImageData * Canvas::getImageData(love::image::Image * image)
 	{
-		GLubyte pixels[4*width*height];
+		GLubyte * pixels = new GLubyte[4*width*height];
 
 		strategy->bindFBO( fbo );
 		glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -297,6 +297,8 @@ namespace opengl
 			strategy->bindFBO( 0 );
 
 		love::image::ImageData * img = image->newImageData(width, height, (void*)pixels);
+		
+		delete[] pixels;
 
 		return img;
 	}
