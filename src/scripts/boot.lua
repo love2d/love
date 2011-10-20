@@ -655,6 +655,7 @@ function love.errhand(msg)
 	end
 
 	-- Load.
+	if love.audio then love.audio.stop() end
 	love.graphics.reset()
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(14)
@@ -719,6 +720,7 @@ function love.releaseerrhand(msg)
 	love.graphics.setPixelEffect()
 
 	-- Load.
+	if love.audio then love.audio.stop() end
 	love.graphics.reset()
 	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.newFont(14)
