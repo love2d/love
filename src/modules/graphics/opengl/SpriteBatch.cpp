@@ -99,50 +99,54 @@ namespace opengl
 		delete element_buf;
 	}
 
-	void SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
+	int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 	{
 		// Only do this if there's a free slot.
-		if(next < size)
-		{
-			// Needed for texture coordinates.
-			memcpy(sprite, image->getVertices(), sizeof(vertex)*4);
+		if((index == -1 && next >= size) || index < -1 || index >= size)
+			return -1;
 
-			// Transform.
-			Matrix t;
-			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-			t.transform(sprite, sprite, 4);
+		// Needed for colors.
+		memcpy(sprite, image->getVertices(), sizeof(vertex)*4);
 
-			if (color)
-				setColorv(sprite, *color);
+		// Transform.
+		Matrix t;
+		t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
+		t.transform(sprite, sprite, 4);
 
-			addv(sprite);
+		if (color)
+			setColorv(sprite, *color);
 
-			// Increment counter.
-			next++;
-		}
+		addv(sprite, (index == -1 ? next : index));
+
+		// Increment counter.
+		if (index == -1)
+			return next++;
+		return index;
 	}
 
-	void SpriteBatch::addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
+	int SpriteBatch::addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 	{
 		// Only do this if there's a free slot.
-		if(next < size)
-		{
-			// Needed for colors.
-			memcpy(sprite, quad->getVertices(), sizeof(vertex)*4);
+		if((index == -1 && next >= size) || index < -1 || index >= next)
+			return -1;
 
-			// Transform.
-			Matrix t;
-			t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-			t.transform(sprite, sprite, 4);
+		// Needed for colors.
+		memcpy(sprite, quad->getVertices(), sizeof(vertex)*4);
 
-			if (color)
-				setColorv(sprite, *color);
+		// Transform.
+		Matrix t;
+		t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
+		t.transform(sprite, sprite, 4);
 
-			addv(sprite);
+		if (color)
+			setColorv(sprite, *color);
 
-			// Increment counter.
-			next++;
-		}
+		addv(sprite, (index == -1 ? next : index));
+
+		// Increment counter.
+		if (index == -1)
+			return next++;
+		return index;
 	}
 
 	void SpriteBatch::clear()
@@ -226,13 +230,13 @@ namespace opengl
 		glPopMatrix();
 	}
 
-	void SpriteBatch::addv(const vertex * v)
+	void SpriteBatch::addv(const vertex * v, int index)
 	{
 		int sprite_size = sizeof(vertex) * 4;
 
 		VertexArray::Bind bind(*array_buf);
 
-		array_buf->fill(next * sprite_size, sprite_size, v);
+		array_buf->fill(index * sprite_size, sprite_size, v);
 	}
 
 	void SpriteBatch::setColorv(vertex * v, const Color & color)

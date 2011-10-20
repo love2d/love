@@ -41,10 +41,10 @@ namespace opengl
 		float sy = (float)luaL_optnumber(L, 6, sx);
 		float ox = (float)luaL_optnumber(L, 7, 0);
 		float oy = (float)luaL_optnumber(L, 8, 0);
-		float kx = (float)luaL_optnumber(L, 10, 0);
-		float ky = (float)luaL_optnumber(L, 11, 0);
-		t->add(x, y, angle, sx, sy, ox, oy, kx, ky);
-		return 0;
+		float kx = (float)luaL_optnumber(L, 9, 0);
+		float ky = (float)luaL_optnumber(L, 10, 0);
+		lua_pushnumber(L, t->add(x, y, angle, sx, sy, ox, oy, kx, ky));
+		return 1;
 	}
 
 	int w_SpriteBatch_addq(lua_State * L)
@@ -60,9 +60,45 @@ namespace opengl
 		float oy = (float)luaL_optnumber(L, 9, 0);
 		float kx = (float)luaL_optnumber(L, 10, 0);
 		float ky = (float)luaL_optnumber(L, 11, 0);
-		t->addq(q, x, y, angle, sx, sy, ox, oy, kx, ky);
+		lua_pushnumber(L, t->addq(q, x, y, angle, sx, sy, ox, oy, kx, ky));
+		return 1;
+	}
+
+	int w_SpriteBatch_set(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+		int index = luaL_checkinteger(L, 2);
+		float x = (float)luaL_optnumber(L, 3, 0.0f);
+		float y = (float)luaL_optnumber(L, 4, 0.0f);
+		float angle = (float)luaL_optnumber(L, 5, 0.0f);
+		float sx = (float)luaL_optnumber(L, 6, 1.0f);
+		float sy = (float)luaL_optnumber(L, 7, sx);
+		float ox = (float)luaL_optnumber(L, 8, 0);
+		float oy = (float)luaL_optnumber(L, 9, 0);
+		float kx = (float)luaL_optnumber(L, 10, 0);
+		float ky = (float)luaL_optnumber(L, 11, 0);
+		t->add(x, y, angle, sx, sy, ox, oy, kx, ky, index);
 		return 0;
 	}
+
+	int w_SpriteBatch_setq(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+		int index = luaL_checkinteger(L, 2);
+		Quad * q = luax_checktype<Quad>(L, 3, "Quad", GRAPHICS_QUAD_T);
+		float x = (float)luaL_optnumber(L, 4, 0.0f);
+		float y = (float)luaL_optnumber(L, 5, 0.0f);
+		float angle = (float)luaL_optnumber(L, 6, 0.0f);
+		float sx = (float)luaL_optnumber(L, 7, 1.0f);
+		float sy = (float)luaL_optnumber(L, 8, sx);
+		float ox = (float)luaL_optnumber(L, 9, 0);
+		float oy = (float)luaL_optnumber(L, 10, 0);
+		float kx = (float)luaL_optnumber(L, 11, 0);
+		float ky = (float)luaL_optnumber(L, 12, 0);
+		t->addq(q, x, y, angle, sx, sy, ox, oy, kx, ky, index);
+		return 0;
+	}
+
 
 	int w_SpriteBatch_clear(lua_State * L)
 	{
@@ -115,6 +151,8 @@ namespace opengl
 	static const luaL_Reg functions[] = {
 		{ "add", w_SpriteBatch_add },
 		{ "addq", w_SpriteBatch_addq },
+		{ "set", w_SpriteBatch_set },
+		{ "setq", w_SpriteBatch_setq },
 		{ "clear", w_SpriteBatch_clear },
 		{ "bind", w_SpriteBatch_bind },
 		{ "unbind", w_SpriteBatch_unbind },

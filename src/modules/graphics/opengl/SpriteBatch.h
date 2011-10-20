@@ -83,8 +83,8 @@ namespace opengl
 		SpriteBatch(Image * image, int size, int usage);
 		virtual ~SpriteBatch();
 
-		void add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
-		void addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
+		int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
+		int addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
 		void clear();
 
 		void * lock();
@@ -115,7 +115,7 @@ namespace opengl
 
 	private:
 
-		void addv(const vertex * v);
+		void addv(const vertex * v, int index);
 
 		/**
 		 * Set the color for vertices.
