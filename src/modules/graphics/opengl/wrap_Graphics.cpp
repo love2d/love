@@ -791,6 +791,10 @@ namespace opengl
 					if (!PixelEffect::isSupported())
 						supported = false;
 					break;
+				case Graphics::SUPPORT_NPOT:
+					if (!Image::hasNpot())
+						supported = false;
+					break;
 				default:
 					supported = false;
 			}

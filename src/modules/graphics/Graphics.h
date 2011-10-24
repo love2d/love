@@ -83,6 +83,7 @@ namespace graphics
 		{
 			SUPPORT_CANVAS = 1,
 			SUPPORT_PIXELEFFECT,
+			SUPPORT_NPOT,
 			SUPPORT_MAX_ENUM
 		};
 

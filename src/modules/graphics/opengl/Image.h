@@ -37,7 +37,6 @@ namespace graphics
 {
 namespace opengl
 {
-
 	/**
 	* A drawable image based on OpenGL-textures. This class takes ImageData
 	* objects and create textures on the GPU for fast drawing.
@@ -137,6 +136,8 @@ namespace opengl
 		// Implements Volatile.
 		bool loadVolatile();
 		void unloadVolatile();
+
+		static bool hasNpot();
 
 	private:
 

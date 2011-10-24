@@ -278,7 +278,7 @@ namespace opengl
 
 	bool Image::loadVolatile()
 	{
-		if (GLEE_ARB_texture_non_power_of_two)
+		if (hasNpot())
 			return loadVolatileNPOT();
 		else
 			return loadVolatilePOT();
@@ -385,6 +385,11 @@ namespace opengl
 		glDisableClientState(GL_VERTEX_ARRAY);
 
 		glPopMatrix();
+	}
+
+	bool Image::hasNpot()
+	{
+		return GLEE_ARB_texture_non_power_of_two;
 	}
 
 } // opengl
