@@ -391,7 +391,7 @@ namespace opengl
 			lua_pushstring(L, e.what());
 			lua_pcall(L, 1,1, 0);
 			const char* err = lua_tostring(L, -1);
-			return luaL_error(L, err);
+			return luaL_error(L, "%s", err);
 		}
 
 		return 1;
