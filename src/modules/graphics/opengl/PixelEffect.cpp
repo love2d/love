@@ -2,6 +2,7 @@
 #include "GLee.h"
 #include <limits>
 #include <sstream>
+#include <iostream>
 
 namespace
 {
@@ -43,7 +44,6 @@ namespace opengl
 		_texture_unit_pool[name] = _current_texture_unit;
 		return _current_texture_unit;
 	}
-
 
 	PixelEffect::PixelEffect(const std::string& code)
 		: _program(0), _code(code)
@@ -120,9 +120,26 @@ namespace opengl
 		glDeleteProgram(_program);
 	}
 
+	std::string PixelEffect::getGLSLVersion()
+	{
+		// GL_SHADING_LANGUAGE_VERSION is not available in OpenGL < 2.1.
+		// Be very pessimistic about the GLSL version in that case.
+		if (!GLEE_VERSION_2_1)
+			return "0.0";
+
+		// the version string always begins with a version number of the format
+		//   major_number.minor_number
+		// or
+		//   major_number.minor_number.release_number
+		std::string versionString((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+		size_t minorEndPos = versionString.find(" ");
+		return versionString.substr(0, minorEndPos);
+	}
+
+
 	bool PixelEffect::isSupported()
 	{
-		return GLEE_VERSION_2_0 && GLEE_ARB_shader_objects && GLEE_ARB_fragment_shader;
+		return GLEE_VERSION_2_0 && GLEE_ARB_shader_objects && GLEE_ARB_fragment_shader && getGLSLVersion() >= "1.2";
 	}
 
 	std::string PixelEffect::getWarnings() const

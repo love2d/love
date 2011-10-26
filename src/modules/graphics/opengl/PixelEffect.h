@@ -26,6 +26,7 @@ namespace opengl
 
 		void attach();
 		static void detach();
+		static std::string getGLSLVersion();
 		static bool isSupported();
 
 		void sendFloat(const std::string& name, int size, const GLfloat* vec, int count);

@@ -93,7 +93,6 @@ namespace opengl
 	int w_getRenderTarget(lua_State * L);
 	int w_setPixelEffect(lua_State * L);
 	int w_isSupported(lua_State * L);
-	int w_getGLSLVersion(lua_State * L);
 	int w_draw(lua_State * L);
 	int w_drawq(lua_State * L);
 	int w_drawTest(lua_State * L);
