@@ -18,13 +18,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+#include <common/config.h>
+
 #include "Keyboard.h"
 
 namespace love
 {
 namespace keyboard
 {
-
 	bool Keyboard::getConstant(const char * in, Keyboard::Key & out)
 	{
 		return keys.find(in, out);

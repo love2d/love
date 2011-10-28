@@ -18,72 +18,72 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-// LOVE
-#include "wrap_Timer.h"
+#include <common/config.h>
+
+#include "wrap_Keyboard.h"
+
+#include "sdl/Keyboard.h"
 
 namespace love
 {
-namespace timer
+namespace keyboard
 {
-namespace sdl
-{
-	static Timer * instance = 0;
+	static Keyboard * instance;
 
-	int w_step(lua_State *)
+	int w_isDown(lua_State * L)
 	{
-		instance->step();
+		Keyboard::Key k;
+		unsigned int num = lua_gettop(L);
+		Keyboard::Key * keylist = new Keyboard::Key[num+1];
+		unsigned int counter = 0;
+		
+		for (unsigned int i = 0; i < num; i++)
+		{
+			if(Keyboard::getConstant(luaL_checkstring(L, i+1), k))
+				keylist[counter++] = k;
+		}
+		keylist[counter] = Keyboard::KEY_MAX_ENUM;
+		
+		luax_pushboolean(L, instance->isDown(keylist));
+		delete[] keylist;
+		return 1;
+	}
+
+	int w_setKeyRepeat(lua_State * L)
+	{
+		if(lua_gettop(L) == 0)
+		{
+			// Disables key repeat.
+			instance->setKeyRepeat(0, 0);
+			return 0;
+		}
+
+		instance->setKeyRepeat(luaL_optint(L, 1, Keyboard::DEFAULT), luaL_optint(L, 2, Keyboard::DEFAULT));
 		return 0;
 	}
 
-	int w_getDelta(lua_State * L)
+	int w_getKeyRepeat(lua_State * L)
 	{
-		lua_pushnumber(L, instance->getDelta());
-		return 1;
-	}
-
-	int w_getFPS(lua_State * L)
-	{
-		lua_pushnumber(L, instance->getFPS());
-		return 1;
-	}
-
-	int w_sleep(lua_State * L)
-	{
-		instance->sleep((float) luaL_checknumber(L, 1));
-		return 0;
-	}
-
-	int w_getTime(lua_State * L)
-	{
-		lua_pushnumber(L, instance->getTime());
-		return 1;
-	}
-
-	int w_getMicroTime(lua_State * L)
-	{
-		lua_pushnumber(L, instance->getMicroTime());
-		return 1;
+		lua_pushnumber(L, instance->getKeyRepeatDelay());
+		lua_pushnumber(L, instance->getKeyRepeatInterval());
+		return 2;
 	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
-		{ "step", w_step },
-		{ "getDelta", w_getDelta },
-		{ "getFPS", w_getFPS },
-		{ "sleep", w_sleep },
-		{ "getTime", w_getTime },
-		{ "getMicroTime", w_getMicroTime },
+		{ "isDown", w_isDown },
+		{ "setKeyRepeat", w_setKeyRepeat },
+		{ "getKeyRepeat", w_getKeyRepeat },
 		{ 0, 0 }
 	};
 
-
-	int luaopen_love_timer(lua_State * L)
+	int luaopen_love_keyboard(lua_State * L)
 	{
 		if(instance == 0)
 		{
 			try
 			{
-				instance = new Timer();
+				instance = new love::keyboard::sdl::Keyboard();
 			}
 			catch(Exception & e)
 			{
@@ -95,14 +95,12 @@ namespace sdl
 
 		WrappedModule w;
 		w.module = instance;
-		w.name = "timer";
+		w.name = "keyboard";
 		w.flags = MODULE_T;
 		w.functions = functions;
 		w.types = 0;
 
 		return luax_register_module(L, w);
 	}
-
-} // sdl
-} // timer
+} // keyboard
 } // love

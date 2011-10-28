@@ -18,13 +18,15 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+#include <common/config.h>
+
+#include "sdl/Mouse.h"
+
 #include "wrap_Mouse.h"
 
 namespace love
 {
 namespace mouse
-{
-namespace sdl
 {
 	static Mouse * instance = 0;
 
@@ -122,7 +124,7 @@ namespace sdl
 		{
 			try
 			{
-				instance = new Mouse();
+				instance = new love::mouse::sdl::Mouse();
 			}
 			catch(Exception & e)
 			{
@@ -142,6 +144,5 @@ namespace sdl
 		return luax_register_module(L, w);
 	}
 
-} // sdl
 } // mouse
 } // love

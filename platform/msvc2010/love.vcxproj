@@ -172,10 +172,10 @@
     <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_Joystick.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
-    <ClCompile Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.cpp" />
+    <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
-    <ClCompile Include="..\..\src\modules\mouse\sdl\wrap_Mouse.cpp" />
+    <ClCompile Include="..\..\src\modules\mouse\wrap_Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\physics\Body.cpp" />
     <ClCompile Include="..\..\src\modules\physics\box2d\Body.cpp" />
     <ClCompile Include="..\..\src\modules\physics\box2d\ChainShape.cpp" />
@@ -248,7 +248,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp" />
     <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp" />
-    <ClCompile Include="..\..\src\modules\timer\sdl\wrap_Timer.cpp" />
+    <ClCompile Include="..\..\src\modules\timer\wrap_Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\common\b64.h" />
@@ -384,10 +384,10 @@
     <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_Joystick.h" />
     <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
-    <ClInclude Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.h" />
+    <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
     <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
-    <ClInclude Include="..\..\src\modules\mouse\sdl\wrap_Mouse.h" />
+    <ClInclude Include="..\..\src\modules\mouse\wrap_Mouse.h" />
     <ClInclude Include="..\..\src\modules\physics\Body.h" />
     <ClInclude Include="..\..\src\modules\physics\box2d\Body.h" />
     <ClInclude Include="..\..\src\modules\physics\box2d\ChainShape.h" />
@@ -449,7 +449,8 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h" />
     <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h" />
-    <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h" />
+    <ClInclude Include="..\..\src\modules\timer\Timer.h" />
+    <ClInclude Include="..\..\src\modules\timer\wrap_Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />

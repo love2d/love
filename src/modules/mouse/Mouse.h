@@ -48,6 +48,16 @@ namespace mouse
 
 		virtual ~Mouse(){};
 
+		virtual int getX() const = 0;
+		virtual int getY() const = 0;
+		virtual void getPosition(int & x, int & y) const = 0;
+		virtual void setPosition(int x, int y) = 0;
+		virtual void setVisible(bool visible) = 0;
+		virtual bool isDown(Button * buttonlist) const = 0;
+		virtual bool isVisible() const = 0;
+		virtual void setGrab(bool grab) = 0;
+		virtual bool isGrabbed() const = 0;
+
 		static bool getConstant(const char * in, Button & out);
 		static bool getConstant(Button in, const char *& out);
 

@@ -184,6 +184,32 @@ namespace keyboard
 
 		virtual ~Keyboard(){}
 
+		/**
+		* Checks whether a certain key is down or not.
+		* @param key A key identifier.
+		* @return boolean
+		**/
+		virtual bool isDown(Key * keylist) const = 0;
+
+		/**
+		* Enables key repeating.
+		* @param delay The amount of delay before repeating the key (in milliseconds)
+		* @param interval Specifies the amount of time between repeats (in milliseconds)
+		**/
+		virtual void setKeyRepeat(int delay, int interval) const = 0;
+
+		/**
+		* Gets the specified delay for the key repeat.
+		* @return int
+		**/
+		virtual int getKeyRepeatDelay() const = 0;
+
+		/**
+		* Gets the specified interval for the key repeat.
+		* @return int
+		**/
+		virtual int getKeyRepeatInterval() const = 0;
+
 		static bool getConstant(const char * in, Key & out);
 		static bool getConstant(Key in, const char *& out);
 

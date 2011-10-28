@@ -23,7 +23,6 @@
 
 // LOVE
 #include <mouse/Mouse.h>
-#include <common/EnumMap.h>
 
 namespace love
 {
@@ -47,12 +46,6 @@ namespace sdl
 		bool isVisible() const;
 		void setGrab(bool grab);
 		bool isGrabbed() const;
-
-	public:
-
-		static EnumMap<Button, unsigned, BUTTON_MAX_ENUM>::Entry buttonEntries[];
-		static EnumMap<Button, unsigned, BUTTON_MAX_ENUM> buttons;
-
 	}; // Mouse
 
 } // sdl

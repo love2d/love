@@ -286,24 +286,6 @@
     <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_Joystick.cpp">
       <Filter>modules\joystick\sdl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp">
-      <Filter>modules\keyboard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp">
-      <Filter>modules\keyboard\sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.cpp">
-      <Filter>modules\keyboard\sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp">
-      <Filter>modules\mouse</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp">
-      <Filter>modules\mouse\sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\mouse\sdl\wrap_Mouse.cpp">
-      <Filter>modules\mouse\sdl</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\sound\Sound.cpp">
       <Filter>modules\sound</Filter>
     </ClCompile>
@@ -336,12 +318,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp">
       <Filter>modules\sound\lullaby</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp">
-      <Filter>modules\timer\sdl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\timer\sdl\wrap_Timer.cpp">
-      <Filter>modules\timer\sdl</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp">
       <Filter>luasocket</Filter>
@@ -727,6 +703,30 @@
     <ClCompile Include="..\..\src\common\Memoizer.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp">
+      <Filter>modules\timer\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\timer\wrap_Timer.cpp">
+      <Filter>modules\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\wrap_Mouse.cpp">
+      <Filter>modules\mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp">
+      <Filter>modules\mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp">
+      <Filter>modules\keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp">
+      <Filter>modules\keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp">
+      <Filter>modules\keyboard\sdl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\modules\audio\Audio.h">
@@ -890,30 +890,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_Joystick.h">
       <Filter>modules\joystick\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h">
-      <Filter>modules\keyboard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h">
-      <Filter>modules\keyboard\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\keyboard\sdl\wrap_Keyboard.h">
-      <Filter>modules\keyboard\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\mouse\Mouse.h">
-      <Filter>modules\mouse</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h">
-      <Filter>modules\mouse\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\mouse\sdl\wrap_Mouse.h">
-      <Filter>modules\mouse\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h">
-      <Filter>modules\timer\sdl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\timer\sdl\wrap_Timer.h">
-      <Filter>modules\timer\sdl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libraries\luasocket\luasocket.h">
       <Filter>luasocket</Filter>
@@ -1298,6 +1274,33 @@
     </ClInclude>
     <ClInclude Include="..\..\src\common\Memoizer.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h">
+      <Filter>modules\timer\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\timer\Timer.h">
+      <Filter>modules\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\timer\wrap_Timer.h">
+      <Filter>modules\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\Mouse.h">
+      <Filter>modules\mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\wrap_Mouse.h">
+      <Filter>modules\mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h">
+      <Filter>modules\keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h">
+      <Filter>modules\keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h">
+      <Filter>modules\keyboard\sdl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -40,31 +40,9 @@ namespace sdl
 
 		// Implements Module.
 		const char * getName() const;
-		
-		/**
-		* Checks whether a certain key is down or not.
-		* @param key A key identifier.
-		* @return boolean
-		**/
 		bool isDown(Key * keylist) const;
-
-		/**
-		* Enables key repeating.
-		* @param delay The amount of delay before repeating the key (in milliseconds)
-		* @param interval Specifies the amount of time between repeats (in milliseconds)
-		**/
 		void setKeyRepeat(int delay, int interval) const;
-
-		/**
-		* Gets the specified delay for the key repeat.
-		* @return int
-		**/
 		int getKeyRepeatDelay() const;
-
-		/**
-		* Gets the specified interval for the key repeat.
-		* @return int
-		**/
 		int getKeyRepeatInterval() const;
 
 	private:

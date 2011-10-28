@@ -18,29 +18,21 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_KEYBOARD_SDL_WRAP_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_WRAP_KEYBOARD_H
+#ifndef LOVE_KEYBOARD_WRAP_KEYBOARD_H
+#define LOVE_KEYBOARD_WRAP_KEYBOARD_H
 
 // LOVE
-#include <common/config.h>
 #include "Keyboard.h"
-
-// SDL
-#include <SDL.h>
 
 namespace love
 {
 namespace keyboard
 {
-namespace sdl
-{
 	int w_isDown(lua_State * L);
 	int w_setKeyRepeat(lua_State * L);
 	int w_getKeyRepeat(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State * L);
-
-} // sdl
 } // keyboard
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_WRAP_KEYBOARD_H
+#endif // LOVE_KEYBOARD_WRAP_KEYBOARD_H
