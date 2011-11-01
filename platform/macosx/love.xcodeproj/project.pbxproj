@@ -94,9 +94,7 @@
 		A946D73410424AA4002BF36C /* wrap_Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AB910420AC3007D418B /* wrap_Joystick.cpp */; };
 		A946D73510424AA4002BF36C /* Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AB710420AC3007D418B /* Joystick.cpp */; };
 		A946D73910424AB8002BF36C /* Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6ABE10420AC3007D418B /* Keyboard.cpp */; };
-		A946D73A10424AB8002BF36C /* wrap_Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AC010420AC3007D418B /* wrap_Keyboard.cpp */; };
 		A946D73C10424AC7002BF36C /* Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AC510420AC3007D418B /* Mouse.cpp */; };
-		A946D73D10424AC7002BF36C /* wrap_Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6AC710420AC3007D418B /* wrap_Mouse.cpp */; };
 		A946D7DA10424E57002BF36C /* wrap_GearJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B5810420ACA007D418B /* wrap_GearJoint.cpp */; };
 		A946D7DC10424E57002BF36C /* wrap_Shape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B6810420ACA007D418B /* wrap_Shape.cpp */; };
 		A946D7DD10424E57002BF36C /* wrap_PolygonShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B6010420ACA007D418B /* wrap_PolygonShape.cpp */; };
@@ -135,7 +133,6 @@
 		A946D83110424EE3002BF36C /* wrap_SoundData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8B10420ACB007D418B /* wrap_SoundData.cpp */; };
 		A946D83210424EE3002BF36C /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8110420ACB007D418B /* VorbisDecoder.cpp */; };
 		A946D83310424EE3002BF36C /* SoundData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8510420ACB007D418B /* SoundData.cpp */; };
-		A946D85510425002002BF36C /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B9110420ACC007D418B /* wrap_Timer.cpp */; };
 		A946D85610425002002BF36C /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6B8F10420ACC007D418B /* Timer.cpp */; };
 		A95684F7125D3555001B276B /* b64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A95684F5125D3555001B276B /* b64.cpp */; };
 		A958F911142D364C007F320F /* wrap_Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A958F910142D3627007F320F /* wrap_Fixture.cpp */; };
@@ -163,6 +160,9 @@
 		A96F419E1412BC0E0067FE9A /* wrap_PixelEffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F419C1412BC0E0067FE9A /* wrap_PixelEffect.cpp */; };
 		A96F41A41412C91F0067FE9A /* EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F41A21412C91E0067FE9A /* EdgeShape.cpp */; };
 		A96F41A71412C92B0067FE9A /* wrap_EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A96F41A51412C92B0067FE9A /* wrap_EdgeShape.cpp */; };
+		A97E632514604BC200020E43 /* wrap_Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A97E632314604BC200020E43 /* wrap_Keyboard.cpp */; };
+		A97E632814604BCF00020E43 /* wrap_Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A97E632614604BCF00020E43 /* wrap_Mouse.cpp */; };
+		A97E632C14604BDF00020E43 /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A97E632A14604BDF00020E43 /* wrap_Timer.cpp */; };
 		A986ECAF132CEBB000F048C8 /* Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986ECAD132CEB9300F048C8 /* Fixture.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
@@ -431,13 +431,9 @@
 		A93E6ABC10420AC3007D418B /* Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Keyboard.h; sourceTree = "<group>"; };
 		A93E6ABE10420AC3007D418B /* Keyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Keyboard.cpp; sourceTree = "<group>"; };
 		A93E6ABF10420AC3007D418B /* Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Keyboard.h; sourceTree = "<group>"; };
-		A93E6AC010420AC3007D418B /* wrap_Keyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Keyboard.cpp; sourceTree = "<group>"; };
-		A93E6AC110420AC3007D418B /* wrap_Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Keyboard.h; sourceTree = "<group>"; };
 		A93E6AC310420AC3007D418B /* Mouse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mouse.h; sourceTree = "<group>"; };
 		A93E6AC510420AC3007D418B /* Mouse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mouse.cpp; sourceTree = "<group>"; };
 		A93E6AC610420AC3007D418B /* Mouse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mouse.h; sourceTree = "<group>"; };
-		A93E6AC710420AC3007D418B /* wrap_Mouse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Mouse.cpp; sourceTree = "<group>"; };
-		A93E6AC810420AC3007D418B /* wrap_Mouse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mouse.h; sourceTree = "<group>"; };
 		A93E6AEB10420AC7007D418B /* Body.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Body.cpp; sourceTree = "<group>"; };
 		A93E6AEC10420AC7007D418B /* Body.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Body.h; sourceTree = "<group>"; };
 		A93E6AED10420AC7007D418B /* CircleShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CircleShape.cpp; sourceTree = "<group>"; };
@@ -521,8 +517,6 @@
 		A93E6B8C10420ACB007D418B /* wrap_SoundData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_SoundData.h; sourceTree = "<group>"; };
 		A93E6B8F10420ACC007D418B /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
 		A93E6B9010420ACC007D418B /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
-		A93E6B9110420ACC007D418B /* wrap_Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Timer.cpp; sourceTree = "<group>"; };
-		A93E6B9210420ACC007D418B /* wrap_Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Timer.h; sourceTree = "<group>"; };
 		A93E6B9710420ACC007D418B /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = boot.lua; sourceTree = "<group>"; };
 		A93E6B9810420ACC007D418B /* boot.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = boot.lua.h; sourceTree = "<group>"; };
 		A93E6B9910420ACC007D418B /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = graphics.lua; sourceTree = "<group>"; };
@@ -590,6 +584,13 @@
 		A96F41A51412C92B0067FE9A /* wrap_EdgeShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_EdgeShape.cpp; sourceTree = "<group>"; };
 		A96F41A61412C92B0067FE9A /* wrap_EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_EdgeShape.h; sourceTree = "<group>"; };
 		A97E3842132A9EDE00198A2F /* love-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "love-Info.plist"; sourceTree = "<group>"; };
+		A97E632314604BC200020E43 /* wrap_Keyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Keyboard.cpp; sourceTree = "<group>"; };
+		A97E632414604BC200020E43 /* wrap_Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Keyboard.h; sourceTree = "<group>"; };
+		A97E632614604BCF00020E43 /* wrap_Mouse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Mouse.cpp; sourceTree = "<group>"; };
+		A97E632714604BCF00020E43 /* wrap_Mouse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mouse.h; sourceTree = "<group>"; };
+		A97E632914604BDF00020E43 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
+		A97E632A14604BDF00020E43 /* wrap_Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Timer.cpp; sourceTree = "<group>"; };
+		A97E632B14604BDF00020E43 /* wrap_Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Timer.h; sourceTree = "<group>"; };
 		A986ECAD132CEB9300F048C8 /* Fixture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fixture.cpp; sourceTree = "<group>"; };
 		A986ECAE132CEB9B00F048C8 /* Fixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fixture.h; sourceTree = "<group>"; };
 		A9B1AE451197293000D496EB /* love_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = love_Prefix.pch; sourceTree = "<group>"; };
@@ -1186,6 +1187,8 @@
 				A968F0D61083A9F200A895AA /* Keyboard.cpp */,
 				A93E6ABC10420AC3007D418B /* Keyboard.h */,
 				A93E6ABD10420AC3007D418B /* sdl */,
+				A97E632314604BC200020E43 /* wrap_Keyboard.cpp */,
+				A97E632414604BC200020E43 /* wrap_Keyboard.h */,
 			);
 			path = keyboard;
 			sourceTree = "<group>";
@@ -1195,8 +1198,6 @@
 			children = (
 				A93E6ABE10420AC3007D418B /* Keyboard.cpp */,
 				A93E6ABF10420AC3007D418B /* Keyboard.h */,
-				A93E6AC010420AC3007D418B /* wrap_Keyboard.cpp */,
-				A93E6AC110420AC3007D418B /* wrap_Keyboard.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
@@ -1207,6 +1208,8 @@
 				A968F0D81083A9FC00A895AA /* Mouse.cpp */,
 				A93E6AC310420AC3007D418B /* Mouse.h */,
 				A93E6AC410420AC3007D418B /* sdl */,
+				A97E632614604BCF00020E43 /* wrap_Mouse.cpp */,
+				A97E632714604BCF00020E43 /* wrap_Mouse.h */,
 			);
 			path = mouse;
 			sourceTree = "<group>";
@@ -1216,8 +1219,6 @@
 			children = (
 				A93E6AC510420AC3007D418B /* Mouse.cpp */,
 				A93E6AC610420AC3007D418B /* Mouse.h */,
-				A93E6AC710420AC3007D418B /* wrap_Mouse.cpp */,
-				A93E6AC810420AC3007D418B /* wrap_Mouse.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
@@ -1369,6 +1370,9 @@
 			isa = PBXGroup;
 			children = (
 				A93E6B8E10420ACB007D418B /* sdl */,
+				A97E632914604BDF00020E43 /* Timer.h */,
+				A97E632A14604BDF00020E43 /* wrap_Timer.cpp */,
+				A97E632B14604BDF00020E43 /* wrap_Timer.h */,
 			);
 			path = timer;
 			sourceTree = "<group>";
@@ -1378,8 +1382,6 @@
 			children = (
 				A93E6B8F10420ACC007D418B /* Timer.cpp */,
 				A93E6B9010420ACC007D418B /* Timer.h */,
-				A93E6B9110420ACC007D418B /* wrap_Timer.cpp */,
-				A93E6B9210420ACC007D418B /* wrap_Timer.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
@@ -1748,9 +1750,7 @@
 				A946D73410424AA4002BF36C /* wrap_Joystick.cpp in Sources */,
 				A946D73510424AA4002BF36C /* Joystick.cpp in Sources */,
 				A946D73910424AB8002BF36C /* Keyboard.cpp in Sources */,
-				A946D73A10424AB8002BF36C /* wrap_Keyboard.cpp in Sources */,
 				A946D73C10424AC7002BF36C /* Mouse.cpp in Sources */,
-				A946D73D10424AC7002BF36C /* wrap_Mouse.cpp in Sources */,
 				A946D7DA10424E57002BF36C /* wrap_GearJoint.cpp in Sources */,
 				A946D7DC10424E57002BF36C /* wrap_Shape.cpp in Sources */,
 				A946D7DD10424E57002BF36C /* wrap_PolygonShape.cpp in Sources */,
@@ -1789,7 +1789,6 @@
 				A946D83110424EE3002BF36C /* wrap_SoundData.cpp in Sources */,
 				A946D83210424EE3002BF36C /* VorbisDecoder.cpp in Sources */,
 				A946D83310424EE3002BF36C /* SoundData.cpp in Sources */,
-				A946D85510425002002BF36C /* wrap_Timer.cpp in Sources */,
 				A946D85610425002002BF36C /* Timer.cpp in Sources */,
 				A9255DEC1043188D00BA1496 /* SDLMain.m in Sources */,
 				A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */,
@@ -1877,6 +1876,9 @@
 				A9D5C513142E5F7F0044ECF7 /* b2WeldJoint.cpp in Sources */,
 				A9D5C514142E5F7F0044ECF7 /* b2WheelJoint.cpp in Sources */,
 				A9D5C515142E5F7F0044ECF7 /* b2Rope.cpp in Sources */,
+				A97E632514604BC200020E43 /* wrap_Keyboard.cpp in Sources */,
+				A97E632814604BCF00020E43 /* wrap_Mouse.cpp in Sources */,
+				A97E632C14604BDF00020E43 /* wrap_Timer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
