@@ -1,8 +1,5 @@
 #include "PixelEffect.h"
 #include "GLee.h"
-#include <limits>
-#include <sstream>
-#include <iostream>
 
 namespace
 {
@@ -144,10 +141,13 @@ namespace opengl
 
 	std::string PixelEffect::getWarnings() const
 	{
-		GLint strlen;
+		GLint strlen, nullpos;
 		glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &strlen);
-		char *temp_str = new char[strlen];
-		glGetProgramInfoLog(_program, strlen, NULL, temp_str);
+		char *temp_str = new char[strlen+1];
+		// be extra sure that the error string will be 0-terminated
+		memset(temp_str, '\0', strlen+1);
+		glGetProgramInfoLog(_program, strlen, &nullpos, temp_str);
+		temp_str[nullpos] = '\0';
 
 		std::string warnings(temp_str);
 		delete[] temp_str;
