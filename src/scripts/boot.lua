@@ -321,6 +321,7 @@ function love.init()
 	for i, v in ipairs(love._version_compat) do
 		if c.version == v then
 			compat = true
+			break
 		end
 	end
 	if not compat then
