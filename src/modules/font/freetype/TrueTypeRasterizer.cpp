@@ -51,10 +51,15 @@ namespace freetype
 		metrics.ascent = s.ascender >> 6;
 		metrics.descent = s.descender >> 6;
 		metrics.height = s.height >> 6;
+
+		ref = WeakReference::obtain(this);
 	}
 
 	TrueTypeRasterizer::~TrueTypeRasterizer()
 	{
+		ref->destroy();
+		ref->release();
+
 		FT_Done_Face(face);
 		data->release();
 	}

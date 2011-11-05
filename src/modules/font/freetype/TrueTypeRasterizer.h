@@ -24,6 +24,7 @@
 // LOVE
 #include <filesystem/File.h>
 #include <font/Rasterizer.h>
+#include <common/WeakReference.h>
 
 // TrueType2
 #include <ft2build.h>
@@ -51,6 +52,8 @@ namespace freetype
 
 		// File data
 		Data * data;
+
+		WeakReference * ref;
 		
 	public:
 		TrueTypeRasterizer(FT_Library library, Data * data, int size);

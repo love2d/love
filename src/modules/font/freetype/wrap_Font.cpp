@@ -49,7 +49,7 @@ namespace freetype
 			int size = luaL_checkint(L, 2);
 			t = instance->newRasterizer(d, size);
 		}
-		
+
 		luax_newtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 		return 1;
 	}

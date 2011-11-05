@@ -28,6 +28,7 @@
 
 // LOVE
 #include <common/Object.h>
+#include <common/WeakReference.h>
 #include <font/Rasterizer.h>
 #include <graphics/Image.h>
 
@@ -56,7 +57,7 @@ namespace opengl
 			int spacing;
 		};
 		
-		love::font::Rasterizer * rasterizer;
+		WeakReference *rasterizer;
 
 		int height;
 		float lineHeight;

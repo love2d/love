@@ -40,9 +40,9 @@ namespace opengl
 {
 
 	Font::Font(love::font::Rasterizer * r, const Image::Filter& filter)
-	: rasterizer(r), height(r->getHeight()), lineHeight(1), mSpacing(1), filter(filter)
+	: height(r->getHeight()), lineHeight(1), mSpacing(1), filter(filter)
 	{
-		r->retain();
+		rasterizer = WeakReference::obtain(r);
 		love::font::GlyphData * gd = r->getGlyphData(32);
 		type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
 		delete gd;
@@ -51,6 +51,7 @@ namespace opengl
 
 	Font::~Font()
 	{
+		rasterizer->destroy();
 		rasterizer->release();
 		unloadVolatile();
 	}
@@ -83,13 +84,15 @@ namespace opengl
 	
 	Font::Glyph * Font::addGlyph(int glyph)
 	{
+		if (!rasterizer->isValid) return 0;
+		love::font::Rasterizer *r = (love::font::Rasterizer*) rasterizer->getData();
 		Glyph * g = new Glyph;
 		g->list = glGenLists(1);
 		if (g->list == 0) { // opengl failed to generate the list
 			delete g;
 			return NULL;
 		}
-		love::font::GlyphData *gd = rasterizer->getGlyphData(glyph);
+		love::font::GlyphData *gd = r->getGlyphData(glyph);
 		g->spacing = gd->getAdvance();
 		int w = gd->getWidth();
 		int h = gd->getHeight();
