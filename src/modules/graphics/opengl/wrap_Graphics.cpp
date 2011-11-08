@@ -245,6 +245,7 @@ namespace opengl
 
 	int w_newFont1(lua_State * L)
 	{
+		Data * font_data = NULL;
 		// Convert to File, if necessary.
 		if(lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
@@ -252,15 +253,14 @@ namespace opengl
 		// Convert to Data, if necessary.
 		if(luax_istype(L, 1, FILESYSTEM_FILE_T)) {
 			love::filesystem::File * f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-			Data * d;
 			try {
-				d = f->read();
+				font_data = f->read();
 			}
 			catch (love::Exception & e) {
 				return luaL_error(L, e.what());
 			}
 			lua_remove(L, 1); // get rid of the file
-			luax_newtype(L, "Data", DATA_T, (void*)d);
+			luax_newtype(L, "Data", DATA_T, (void*)font_data);
 			lua_insert(L, 1); // put it at the bottom of the stack
 		}
 
@@ -269,6 +269,9 @@ namespace opengl
 			int idxs[] = {1, 2};
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
+
+		if (font_data)
+			font_data->release();
 
 		love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 

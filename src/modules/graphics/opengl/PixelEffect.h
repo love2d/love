@@ -14,7 +14,7 @@ namespace graphics
 namespace opengl
 {
 	// A fragment shader
-	class PixelEffect : public Volatile // Volatile?
+	class PixelEffect : public Volatile, public Object
 	{
 	public:
 		PixelEffect(const std::string& code);

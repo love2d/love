@@ -36,12 +36,12 @@ namespace love
 		// Convert to UTF-8.
 		int ok = WideCharToMultiByte(CP_UTF8, 0, wstr, wide_len, utf8_str, utf8_size, 0, 0);
 
-		if(!ok)
-		{
-			delete [] utf8_str;
-		}
+		std::string ret;
+		if (ok)
+			ret = utf8_str;
 
-		return ok ? std::string(utf8_str) : std::string();
+		delete utf8_str;
+		return ret;
 	}
 
 	void replace_char(std::string & str, char find, char replace)
