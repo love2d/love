@@ -20,7 +20,7 @@ misrepresented as being the original software.
 
 do
 
-	local vera_ttf_b64 = [[
+	local vera_ttf = love.filesystem.newFileData([[
 	AAEAAAARAQAABAAQT1MvMrRf9GMAAOtwAAAAVlBDTFTRil6XAADryAAAADZjbWFwpMPooAAA
 	sWwAAANYY3Z0IP/THTkAAB78AAAB/GZwZ23ntPHEAAAmYAAAAItnYXNwAAcABwABAUgAAAAM
 	Z2x5Zgx0Qc8AACbsAACKfmhkbXg08CEOAADsAAAAFUhoZWFk3YSi0AABAVQAAAA2aGhlYRBF
@@ -1242,12 +1242,12 @@ do
 	DhwPDwkJFw4REQUSCwsSEg4JCQ8mExITEhIICAgIFhYWFRUVCA4ODg4ODg4ODg4QCBIPEw8J
 	FhERERESFxcLCwsbGxsWEggSDxQPFA8SCgkSDg4ODg4OCw4OAAAAAAACAAgAAv//AAMAAQAA
 	AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
-	]]
+	]], "Vera.ttf", "base64")
 
 	love.graphics.newFont = function(font, size)
 		if type(font) == "number" or not font then
 			size = font
-			font = love.filesystem.newFileData(vera_ttf_b64, "Vera.ttf", "base64")
+			font = vera_ttf
 		end
 		return love.graphics.newFont1(font, size or 12)
 	end
@@ -1255,7 +1255,7 @@ do
 	love.graphics.setFont = function(font, size)
 		if type(font) == "number" or not font then
 			size = font
-			font = love.filesystem.newFileData(vera_ttf_b64, "Vera.ttf", "base64")
+			font = vera_ttf
 		end
 		return love.graphics.setFont1(font, size or 12)
 	end
