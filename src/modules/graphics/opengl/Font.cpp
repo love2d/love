@@ -177,7 +177,7 @@ namespace opengl
 		catch (utf8::exception & e)
 		{
 			glPopMatrix();
-			throw love::Exception(1, e.what());
+			throw love::Exception("%s", e.what());
 		}
 		glPopMatrix();
 	}
@@ -212,7 +212,7 @@ namespace opengl
 		}
 		catch (utf8::exception & e)
 		{
-			throw love::Exception(1, e.what());
+			throw love::Exception("%s", e.what());
 		}
 
 		return temp;

@@ -20,26 +20,43 @@
 
 #include "Exception.h"
 #include <common/config.h>
+#include <iostream>
+using namespace std;
 
 namespace love
 {
 	Exception::Exception(const char * fmt, ...)
 	{
 		va_list args;
-		va_start(args, fmt);
-		vsnprintf(buffer, BUFFER_SIZE, fmt, args);
-		va_end(args);
-	}
+		int size_buffer = 256, size_out;
+		char * buffer;
+		while (true) {
+			buffer = new char[size_buffer];
+			memset(buffer, 0, size_buffer);
 
-	Exception::Exception(int unparsed, const char * str)
-	{
-		LOVE_UNUSED(unparsed);
-		strncpy(buffer, str, BUFFER_SIZE);
-	}
+			va_start(args, fmt);
+			size_out = vsnprintf(buffer, size_buffer, fmt, args);
+			va_end(args);
 
-	const char * Exception::what() const throw()
-	{
-		return (const char *)buffer;
+			// see http://perfec.to/vsnprintf/pasprintf.c
+			// if size_out ...
+			//      == -1             --> output was truncated
+			//      == size_buffer    --> output was truncated
+			//      == size_buffer-1  --> ambiguous, /may/ have been truncated
+			//       > size_buffer    --> output was truncated, and size_out
+			//                            bytes would have been written
+			if (size_out == size_buffer || size_out == -1 || size_out == size_buffer-1)
+				size_buffer *= 2;
+			else if (size_out > size_buffer)
+				size_buffer = size_out + 2; // to avoid the ambiguous case
+			else
+				break;
+
+			delete[] buffer;
+		}
+		message = std::string(buffer);
+		cerr << message << endl;
+		delete[] buffer;
 	}
 
 }

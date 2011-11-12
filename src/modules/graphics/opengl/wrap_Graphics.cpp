@@ -388,7 +388,7 @@ namespace opengl
 			const char* code = lua_tostring(L, -1);
 			PixelEffect * effect = instance->newPixelEffect(code);
 			luax_newtype(L, "PixelEffect", GRAPHICS_PIXELEFFECT_T, (void*)effect);
-		} catch (love::Exception& e) {
+		} catch (const love::Exception& e) {
 			// memory is freed in Graphics::newPixelEffect
 			luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
 			lua_pushstring(L, e.what());

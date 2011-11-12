@@ -25,6 +25,7 @@
 #include <cstdarg> // vararg
 #include <cstdio> // vsnprintf
 #include <cstring> // strncpy
+#include <string>
 
 namespace love
 {
@@ -35,15 +36,7 @@ namespace love
 	{
 	private:
 
-		/**
-		* The vsnprintf operates on a buffer this large.
-		**/
-		static const int BUFFER_SIZE = 256;
-
-		/**
-		* The buffer for vsnprintf.
-		**/
-		char buffer[BUFFER_SIZE];
+		std::string message;
 
 	public:
 
@@ -55,13 +48,14 @@ namespace love
 		* @param fmt The format string (see printf).
 		**/
 		Exception(const char * fmt, ...);
-		Exception(int unparsed, const char * str);
+		virtual ~Exception() throw() {}
 
 		/**
 		* Returns a string containing reason for the exception.
 		* @return A description of the exception.
 		**/
-		virtual const char * what() const throw();
+		inline virtual const char * what() const throw()
+		{ return message.c_str(); }
 
 	}; // class
 
