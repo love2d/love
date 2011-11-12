@@ -262,8 +262,13 @@ namespace thread
 			}
 		}
 		else
+		{
 			data = luax_checktype<love::Data>(L, 2, "Data", DATA_T);
+			data->retain();
+		}
 		Thread *t = instance->newThread(name, data);
+		// do not worry, file->read() returns retained data
+		data->release();
 		if (!t)
 			return luaL_error(L, "A thread with that name already exists.");
 		luax_newtype(L, "Thread", THREAD_THREAD_T, (void*)t);

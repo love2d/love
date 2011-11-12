@@ -77,7 +77,7 @@ namespace box2d
 		
 			Contact * c = new Contact(contact);
 
-			luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)c, false);
+			luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)c, true);
 			
 			int args = 3;
 			if (impulse) {
