@@ -222,6 +222,8 @@ end
 function love.init()
 
 	-- Create default configuration settings.
+	-- NOTE: Adding a new module to the modules list
+	-- will NOT make it load, see below.
 	local c = {
 		title = "Untitled",
 		author = "Unnamed",
@@ -280,9 +282,22 @@ function love.init()
 	end
 
 	-- Gets desired modules.
-	for k,v in pairs(c.modules) do
-		if v then
-			require("love." .. k)
+	for k,v in ipairs{
+		"thread",
+		"timer",
+		"event",
+		"keyboard",
+		"joystick",
+		"mouse",
+		"sound",
+		"audio",
+		"image",
+		"font",
+		"graphics",
+		"physics",
+	} do
+		if c.modules[v] then
+			require("love." .. v)
 		end
 	end
 
