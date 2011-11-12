@@ -55,7 +55,6 @@ namespace love
 			delete[] buffer;
 		}
 		message = std::string(buffer);
-		cerr << message << endl;
 		delete[] buffer;
 	}
 
