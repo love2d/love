@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -33,11 +33,12 @@ namespace opengl
 {
 	class Quad : public love::graphics::Quad
 	{
-		
+
 	protected:
-		
-		vertex vertices[4];
-		
+
+		static const unsigned int NUM_VERTICES = 4;
+		vertex vertices[NUM_VERTICES];
+
 		Viewport viewport;
 		float sw, sh;
 
@@ -47,7 +48,7 @@ namespace opengl
 		* Creates a new Quad of size (w,h), using (x,y) as the top-left
 		* anchor point in the source image. The size of the source image is
 		* is specified by (sw,sh).
-		* 
+		*
 		* @param sw Width of the source image.
 		* @param sh Height of the source image.
 		**/
@@ -61,6 +62,7 @@ namespace opengl
 		Viewport getViewport() const;
 
 		void flip(bool x, bool y);
+		void mirror(bool x, bool y);
 
 		/**
 		* Gets a pointer to the vertices.

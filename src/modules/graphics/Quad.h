@@ -51,6 +51,11 @@ namespace graphics
 		virtual void flip(bool x, bool y) = 0;
 
 		/**
+		 * Mirror texture coordinates around 0.5
+		 */
+		virtual void mirror(bool x, bool y) = 0;
+
+		/**
 		* Gets a pointer to the vertices.
 		**/
 		virtual const vertex * getVertices() const = 0;
