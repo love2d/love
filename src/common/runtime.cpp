@@ -117,6 +117,18 @@ namespace love
 			return (lua_toboolean(L, idx) == 1 ? true : false);
 		return b;
 	}
+	
+	std::string luax_checkstring(lua_State * L, int idx)
+	{
+		size_t len;
+		const char * str = luaL_checklstring(L, idx, &len);
+		return std::string(str, len);
+	}
+	
+	void luax_pushstring(lua_State * L, std::string str)
+	{
+		lua_pushlstring(L, str.data(), str.size());
+	}
 
 	int luax_assert_argc(lua_State * L, int min)
 	{

@@ -109,7 +109,7 @@ namespace love
 	* Converts the value at idx to a bool. It follow the same rules
 	* as lua_toboolean, but returns a bool instead of an int.
 	* @param L The Lua state.
-	* @param idx The index on the Lua state.
+	* @param idx The index on the Lua stack.
 	* @return True if the value evaluates to true, false otherwise.
 	**/
 	bool luax_toboolean(lua_State * L, int idx);
@@ -118,19 +118,36 @@ namespace love
 	* Pushes a bool onto the stack. It's the same as lua_pushboolean,
 	* but with bool instead of int.
 	* @param L The Lua state.
-	* @paarm b The bool to push.
+	* @param b The bool to push.
 	**/
 	void luax_pushboolean(lua_State * L, bool b);
 
 	/**
 	* Converts the value at idx to a bool, or if not present, b is returned.
 	* @param L The Lua state.
-	* @param idx The index of the Lua state.
+	* @param idx The index of the Lua stack.
 	* @param b The value to return if no value exist at the specified index.
 	* @return True if the value evaluates to true, false otherwise.
 	**/
 	bool luax_optboolean(lua_State * L, int idx, bool b);
 
+	/**
+	* Converts the value at idx to a std::string. It takes care of the string
+	* size and possible embedded nulls.
+	* @param L The Lua state.
+	* @param idx The index on the Lua stack.
+	* @return Copy of the string at the specified index.
+	**/
+	std::string luax_checkstring(lua_State * L, int idx);
+
+	/**
+	* Pushes a std::string onto the stack. It uses the length of the string
+	* for lua_pushlstring's len argument.
+	* @param L The Lua state.
+	* @param str The string to push.
+	**/
+	void luax_pushstring(lua_State * L, std::string str);
+	
 	/**
 	* Require at least 'min' number of items on the stack.
 	* @param L The Lua state.
