@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -151,9 +151,12 @@ namespace opengl
 		if (nSizes > 8)
 			return luaL_error(L, "At most eight (8) sizes may be used.");
 
-		if (nSizes == 1) {
+		if (nSizes == 1)
+		{
 			t->setSize(luax_checkfloat(L, 2));
-		} else {
+		}
+		else
+		{
 			std::vector<float> sizes(nSizes);
 			for (size_t i = 0; i < nSizes; ++i)
 				sizes[i] = luax_checkfloat(L, 1 + i + 1);
@@ -206,14 +209,18 @@ namespace opengl
 		if (nColors > 8)
 			return luaL_error(L, "At most eight (8) colors may be used.");
 
-		if (nColors == 1) {
+		if (nColors == 1)
+		{
 			t->setColor(Color(luaL_checkint(L,2),
 						luaL_checkint(L,3),
 						luaL_checkint(L,4),
 						luaL_checkint(L,5)));
-		} else {
+		}
+		else
+		{
 			std::vector<Color> colors(nColors);
-			for (size_t i = 0; i < nColors; ++i) {
+			for (size_t i = 0; i < nColors; ++i)
+			{
 				colors[i] = Color(luaL_checkint(L, 1 + i*4 + 1),
 						luaL_checkint(L, 1 + i*4 + 2),
 						luaL_checkint(L, 1 + i*4 + 3),
@@ -224,7 +231,7 @@ namespace opengl
 
 		return 0;
 	}
-	
+
 	int w_ParticleSystem_setOffset(lua_State * L)
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
@@ -261,21 +268,21 @@ namespace opengl
 		lua_pushnumber(L, t->getSpread());
 		return 1;
 	}
-	
+
 	int w_ParticleSystem_getOffsetX(lua_State * L)
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
 		lua_pushnumber(L, t->getOffsetX());
 		return 1;
 	}
-	
+
 	int w_ParticleSystem_getOffsetY(lua_State * L)
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);
 		lua_pushnumber(L, t->getOffsetY());
 		return 1;
 	}
-	
+
 	int w_ParticleSystem_count(lua_State * L)
 	{
 		ParticleSystem * t = luax_checkparticlesystem(L, 1);

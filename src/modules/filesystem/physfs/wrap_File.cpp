@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -53,14 +53,14 @@ namespace physfs
 		File * file = luax_checkfile(L, 1);
 		File::Mode mode;
 
-		if(!File::getConstant(luaL_checkstring(L, 2), mode))
+		if (!File::getConstant(luaL_checkstring(L, 2), mode))
 			return luaL_error(L, "Incorrect file open mode: %s", luaL_checkstring(L, 2));
 
 		try
 		{
 			lua_pushboolean(L, file->open(mode) ? 1 : 0);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -84,7 +84,7 @@ namespace physfs
 		{
 			d = file->read(luaL_optint(L, 2, file->getSize()));
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -107,18 +107,20 @@ namespace physfs
 			{
 				result = file->write(lua_tostring(L, 2), luaL_optint(L, 3, lua_objlen(L, 2)));
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				return luaL_error(L, e.what());
 			}
-			
+
 		}
-		else if( luax_istype(L, 2, DATA_T)) {
+		else if ( luax_istype(L, 2, DATA_T))
+		{
 			try
 			{
 				love::Data * data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
 				result = file->write(data, luaL_optint(L, 3, data->getSize()));
-			} catch(Exception e)
+			}
+			catch (Exception e)
 			{
 				return luaL_error(L, e.what());
 			}
@@ -159,7 +161,7 @@ namespace physfs
 	{
 		File * file;
 
-		if(luax_istype(L, 1, FILESYSTEM_FILE_T))
+		if (luax_istype(L, 1, FILESYSTEM_FILE_T))
 		{
 			file = luax_checktype<File>(L, 1, "File", FILESYSTEM_FILE_T);
 			lua_pushnumber(L, 0); // 0 = do not close.
@@ -168,14 +170,14 @@ namespace physfs
 			return luaL_error(L, "Expected file handle.");
 
 		// Reset the file position.
-		if(!file->seek(0))
+		if (!file->seek(0))
 		return luaL_error(L, "File does not appear to be open.\n");
 
 		lua_pushcclosure(L, Filesystem::lines_i, 2);
 		return 1;
 	}
 
-	static const luaL_Reg functions[] = { 
+	static const luaL_Reg functions[] = {
 			{ "getSize", w_File_getSize },
 			{ "open", w_File_open },
 			{ "close", w_File_close },
@@ -192,7 +194,7 @@ namespace physfs
 	{
 		return luax_register_type(L, "File", functions);
 	}
-	
+
 } // physfs
 } // filesystem
 } // love

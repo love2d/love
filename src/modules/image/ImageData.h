@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -26,23 +26,23 @@
 #include <filesystem/File.h>
 
 namespace love
-{	
+{
 namespace image
 {
-	// Pixel format structure. 
-	struct pixel 
+	// Pixel format structure.
+	struct pixel
 	{
 		// Red, green, blue, alpha.
 		unsigned char r, g, b, a;
 	};
 
 	/**
-	* Represents raw pixel data. 
+	* Represents raw pixel data.
 	**/
 	class ImageData : public Data
 	{
 	public:
-		
+
 		enum Format
 		{
 			FORMAT_TGA = 1,
@@ -57,7 +57,7 @@ namespace image
 		* Destructor.
 		**/
 		virtual ~ImageData(){};
-		
+
 		static bool getConstant(const char * in, Format & out);
 		static bool getConstant(Format in, const char *& out);
 
@@ -75,7 +75,7 @@ namespace image
 
 		/**
 		* Checks whether a position is inside this ImageData. Useful for checking bounds.
-		* @param x The position along the x-axis. 
+		* @param x The position along the x-axis.
 		* @param y The position along the y-axis.
 		**/
 		bool inside(int x, int y) const;
@@ -94,7 +94,7 @@ namespace image
 
 		/**
 		* Sets the pixel at location (x,y). No effect if out of bounds.
-		* @param x The location along the x-axis. 
+		* @param x The location along the x-axis.
 		* @param y The location along the y-axis.
 		* @param p The color to use for the given location.
 		**/
@@ -103,19 +103,19 @@ namespace image
 		/**
 		* Gets the pixel at location (x,y). Returns black (0,0,0,0) if out
 		* out of bounds.
-		* @param x The location along the x-axis. 
+		* @param x The location along the x-axis.
 		* @param y The location along the y-axis.
 		* @return The color for the given location.
 		**/
 		virtual pixel getPixel(int x, int y) = 0;
-		
+
 		/**
 		 * Encodes raw pixel data into a given format.
 		 * @param f The format to convert to.
 		 * @return A pointer to the encoded image data.
 		 **/
 		virtual void encode(love::filesystem::File * f, Format format) = 0;
-		
+
 	private:
 		static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
 		static StringMap<Format, FORMAT_MAX_ENUM> formats;

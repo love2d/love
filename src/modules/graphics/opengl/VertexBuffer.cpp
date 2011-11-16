@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -41,7 +41,8 @@ namespace opengl
 			// Try to create a VBO.
 			return new VBO(size, target, usage);
 
-		} catch (const love::Exception &e)
+		}
+		catch (const love::Exception &e)
 		{
 			(void)e;
 
@@ -196,7 +197,7 @@ namespace opengl
 
 		// Copy the old buffer only if 'restore' was requested.
 		const GLvoid *src = restore ? buffer_copy : 0;
-		
+
 		// Note that if 'src' is '0', no data will be copied.
 		glBufferDataARB(getTarget(), getSize(), src, getUsage());
 

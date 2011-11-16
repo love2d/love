@@ -30,7 +30,7 @@ namespace box2d
 	{
 		return luax_checktype<EdgeShape>(L, idx, "EdgeShape", PHYSICS_EDGE_SHAPE_T);
 	}
-	
+
 	int w_EdgeShape_getPoints(lua_State * L)
 	{
 		EdgeShape * t = luax_checkedgeshape(L, 1);

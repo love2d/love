@@ -36,14 +36,14 @@ namespace keyboard
 		unsigned int num = lua_gettop(L);
 		Keyboard::Key * keylist = new Keyboard::Key[num+1];
 		unsigned int counter = 0;
-		
+
 		for (unsigned int i = 0; i < num; i++)
 		{
-			if(Keyboard::getConstant(luaL_checkstring(L, i+1), k))
+			if (Keyboard::getConstant(luaL_checkstring(L, i+1), k))
 				keylist[counter++] = k;
 		}
 		keylist[counter] = Keyboard::KEY_MAX_ENUM;
-		
+
 		luax_pushboolean(L, instance->isDown(keylist));
 		delete[] keylist;
 		return 1;
@@ -51,7 +51,7 @@ namespace keyboard
 
 	int w_setKeyRepeat(lua_State * L)
 	{
-		if(lua_gettop(L) == 0)
+		if (lua_gettop(L) == 0)
 		{
 			// Disables key repeat.
 			instance->setKeyRepeat(0, 0);
@@ -79,13 +79,13 @@ namespace keyboard
 
 	int luaopen_love_keyboard(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new love::keyboard::sdl::Keyboard();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

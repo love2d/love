@@ -58,9 +58,9 @@ namespace box2d
 	class Fixture : public Object
 	{
 	friend class Physics;
-	
+
 	protected:
-		
+
 		Body * body;
 		b2Fixture * fixture;
 		fixtureudata * data;
@@ -71,7 +71,7 @@ namespace box2d
 		* Creates a Fixture.
 		**/
 		Fixture(Body * body, Shape * shape, float density);
-		
+
 		/**
 		* Creates a Fixture.
 		**/
@@ -84,7 +84,7 @@ namespace box2d
 		* debug drawing.
 		**/
 		Shape::Type getType() const;
-		
+
 		/**
 		* Gets the Shape attached to this Fixture.
 		**/
@@ -101,26 +101,26 @@ namespace box2d
 		* @param sensor True if sensor, false if not.
 		**/
 		void setSensor(bool sensor);
-		
+
 		/**
 		* Gets the Body this Fixture is attached to.
 		**/
 		Body * getBody() const;
-		
+
 		/**
 		 * Sets the filter data. An integer array is used even though the
 		 * first two elements are unsigned shorts. The elements are:
 		 * category (16-bits), mask (16-bits) and group (32-bits/int).
 		 **/
 		void setFilterData(int * v);
-		
+
 		/**
 		 * Gets the filter data. An integer array is used even though the
 		 * first two elements are unsigned shorts. The elements are:
 		 * category (16-bits), mask (16-bits) and group (32-bits/int).
 		 **/
 		void getFilterData(int * v);
-		
+
 		/**
 		* This function stores an in-C reference to
 		* arbitrary Lua data in the Box2D Fixture object.
@@ -171,19 +171,19 @@ namespace box2d
 		* @return The density.
 		**/
 		float getDensity() const;
-		
+
 		/**
 		* Checks if a point is inside the Fixture.
 		* @param x The x-component of the point.
 		* @param y The y-component of the point.
 		**/
 		bool testPoint(float x, float y) const;
-		
+
 		/**
 		* Cast a ray against this Fixture.
 		**/
 		int rayCast(lua_State * L) const;
-		
+
 		void setGroupIndex(int index);
 		int getGroupIndex() const;
 
@@ -200,7 +200,7 @@ namespace box2d
 		* passed directly to love.graphics.polygon.
 		**/
 		int getBoundingBox(lua_State * L) const;
-		
+
 		/**
 		* Gets the mass data for this Fixture.
 		* This operation may be expensive.

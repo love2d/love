@@ -65,14 +65,14 @@ namespace mouse
 		unsigned int num = lua_gettop(L);
 		Mouse::Button * buttonlist = new Mouse::Button[num+1];
 		unsigned int counter = 0;
-		
+
 		for (unsigned int i = 0; i < num; i++)
 		{
-			if(Mouse::getConstant(luaL_checkstring(L, i+1), b))
+			if (Mouse::getConstant(luaL_checkstring(L, i+1), b))
 				buttonlist[counter++] = b;
 		}
 		buttonlist[counter] = Mouse::BUTTON_MAX_ENUM;
-		
+
 		luax_pushboolean(L, instance->isDown(buttonlist));
 		delete[] buttonlist;
 		return 1;
@@ -120,13 +120,13 @@ namespace mouse
 
 	int luaopen_love_mouse(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new love::mouse::sdl::Mouse();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

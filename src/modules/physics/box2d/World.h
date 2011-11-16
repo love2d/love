@@ -72,7 +72,7 @@ namespace box2d
 			~ContactCallback();
 			void process(b2Contact* contact, const b2ContactImpulse* impulse = NULL);
 		};
-		
+
 		class ContactFilter
 		{
 		public:
@@ -81,7 +81,7 @@ namespace box2d
 			~ContactFilter();
 			bool process(Fixture * a, Fixture * b);
 		};
-		
+
 		class QueryCallback : public b2QueryCallback
 		{
 		public:
@@ -90,7 +90,7 @@ namespace box2d
 			~QueryCallback();
 			virtual bool ReportFixture(b2Fixture * fixture);
 		};
-		
+
 		class RayCastCallback : public b2RayCastCallback
 		{
 		public:
@@ -104,10 +104,10 @@ namespace box2d
 
 		// Pointer to the Box2D world.
 		b2World * world;
-        
+
         // Ground body
         b2Body * groundBody;
-		
+
 		// The list of to be destructed bodies.
 		std::vector<Body*> destructBodies;
 
@@ -148,7 +148,7 @@ namespace box2d
 		void EndContact(b2Contact* contact);
 		void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);
 		void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
-		
+
 		// From b2ContactFilter
 		bool ShouldCollide(b2Fixture* fixtureA, b2Fixture* fixtureB);
 
@@ -164,12 +164,12 @@ namespace box2d
 		* Returns the functions previously set by setCallbacks.
 		**/
 		int getCallbacks(lua_State * L);
-		
+
 		/**
 		* Sets the ContactFilter callback.
 		**/
 		int setContactFilter(lua_State * L);
-		
+
 		/**
 		* Gets the ContactFilter callback.
 		**/
@@ -200,7 +200,7 @@ namespace box2d
 		* @return True if allowed, false if disallowed.
 		**/
 		bool getAllowSleeping() const;
-		
+
 		/**
 		* Returns whether this World is currently locked.
 		* If it's locked, it's in the middle of a timestep.
@@ -219,47 +219,47 @@ namespace box2d
 		* @return The number of joints.
 		**/
 		int getJointCount() const;
-		
+
 		/**
 		* Get the current contact count.
 		* @return The number of contacts.
 		**/
 		int getContactCount() const;
-		
+
 		/**
 		* Get an array of all the Bodies in the World.
 		* @return An array of Bodies.
 		**/
 		int getBodyList(lua_State * L) const;
-		
+
 		/**
 		* Get an array of all the Joints in the World.
 		* @return An array of Joints.
 		**/
 		int getJointList(lua_State * L) const;
-		
+
 		/**
 		* Get an array of all the Contacts in the World.
 		* @return An array of Contacts.
 		**/
 		int getContactList(lua_State * L) const;
-        
+
         /**
         * Gets the ground body.
         * @return The ground body.
         **/
         b2Body * getGroundBody() const;
-		
+
 		/**
 		* Gets all fixtures that overlap a given bounding box.
 		**/
 		int queryBoundingBox(lua_State * L);
-		
+
 		/**
 		* Raycasts the World for all Fixtures in the path of the ray.
 		**/
 		int rayCast(lua_State * L);
-		
+
 		/**
 		* Mark a body for destruction.
 		* To be called from Body

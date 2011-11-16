@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -49,9 +49,9 @@ namespace box2d
 
 	Joint::~Joint()
 	{
-		if(body1 != 0)
+		if (body1 != 0)
 			body1->release();
-		if(body2 != 0)
+		if (body2 != 0)
 			body2->release();
 
 		joint = 0;
@@ -61,17 +61,17 @@ namespace box2d
 	{
 		switch(joint->GetType())
 		{
-		case e_revoluteJoint: 
+		case e_revoluteJoint:
 			return JOINT_REVOLUTE;
-		case e_prismaticJoint: 
+		case e_prismaticJoint:
 			return JOINT_PRISMATIC;
-		case e_distanceJoint: 
+		case e_distanceJoint:
 			return JOINT_DISTANCE;
-		case e_pulleyJoint: 
+		case e_pulleyJoint:
 			return JOINT_PULLEY;
-		case e_mouseJoint: 
+		case e_mouseJoint:
 			return JOINT_MOUSE;
-		case e_gearJoint: 
+		case e_gearJoint:
 			return JOINT_GEAR;
 		case e_frictionJoint:
 			return JOINT_FRICTION;
@@ -120,12 +120,12 @@ namespace box2d
 		if (joint != NULL)
 			world->world->DestroyJoint(joint);
 	}
-	
+
 	bool Joint::isActive() const
 	{
 		return joint->IsActive();
 	}
-	
+
 	bool Joint::getCollideConnected() const
 	{
 		return joint->GetCollideConnected();

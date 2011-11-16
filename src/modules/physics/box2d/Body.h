@@ -76,7 +76,7 @@ namespace box2d
 		* Create a Body at position p.
 		**/
 		Body(World * world, b2Vec2 p, Type type);
-		
+
 		/**
 		* Create a Body from an extant b2Body.
 		**/
@@ -141,7 +141,7 @@ namespace box2d
 		* Gets the Body's intertia.
 		**/
 		float getInertia() const;
-		
+
 		/**
 		* Gets mass properties.
 		**/
@@ -156,12 +156,12 @@ namespace box2d
 		* Gets the Body's linear damping.
 		**/
 		float getLinearDamping() const;
-		
+
 		/**
 		* Gets the Body's gravity scale.
 		**/
 		float getGravityScale() const;
-		
+
 		/**
 		* Gets the type of body this is.
 		**/
@@ -176,7 +176,7 @@ namespace box2d
 		* Apply an impulse (jx, jy) with offset (rx, ry).
 		**/
 		void applyLinearImpulse(float jx, float jy, float rx, float ry);
-		
+
 		/**
 		* Apply an angular impulse to the body.
 		**/
@@ -257,12 +257,12 @@ namespace box2d
 		* Sets the Body's linear damping.
 		**/
 		void setLinearDamping(float d);
-		
+
 		/**
 		* Sets the Body's gravity scale.
 		**/
 		void setGravityScale(float scale);
-		
+
 		/**
 		* Sets the type of body this is.
 		**/
@@ -287,7 +287,7 @@ namespace box2d
 		* @returns The y-coordinate of the vector in world coordinates.
 		**/
 		void getWorldVector(float x, float y, float & x_o, float & y_o);
-		
+
 		/**
 		* Transforms a series of points (x, y) from local coordinates
 		* to world coordinates.
@@ -360,7 +360,7 @@ namespace box2d
 		**/
 		void setSleepingAllowed(bool allow);
 		bool isSleepingAllowed() const;
-		
+
 		/**
 		* Changes the body's active state.
 		**/
@@ -378,18 +378,18 @@ namespace box2d
 		* Get the World this Body resides in.
 		*/
 		World * getWorld() const;
-		
+
 		/**
 		* Get an array of all the Fixtures attached to this Body.
 		* @return An array of Fixtures.
 		**/
 		int getFixtureList(lua_State * L) const;
-		
+
 		/**
 		* Mark the body for destruction
 		**/
 		void destroy();
-		
+
 	private:
 
 		/**

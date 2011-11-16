@@ -147,7 +147,7 @@ namespace love
 	* @param str The string to push.
 	**/
 	void luax_pushstring(lua_State * L, std::string str);
-	
+
 	/**
 	* Require at least 'min' number of items on the stack.
 	* @param L The Lua state.
@@ -348,12 +348,12 @@ namespace love
 	template <typename T>
 	T * luax_checktype(lua_State * L, int idx, const char * name, love::bits type)
 	{
-		if(lua_isuserdata(L, idx) == 0)
+		if (lua_isuserdata(L, idx) == 0)
 			luaL_error(L, "Incorrect parameter type: expected userdata.");
 
 		Proxy * u = (Proxy *)lua_touserdata(L, idx);
 
-		if((u->flags & type) != type)
+		if ((u->flags & type) != type)
 			luaL_error(L, "Incorrect parameter type: expected %s", name);
 
 		return (T *)u->data;
@@ -365,12 +365,12 @@ namespace love
 		luax_getregistry(L, REGISTRY_MODULES);
 		lua_getfield(L, -1, k);
 
-		if(!lua_isuserdata(L, -1))
+		if (!lua_isuserdata(L, -1))
 			luaL_error(L, "Tried to get nonexisting module %s.", k);
 
 		Proxy * u = (Proxy *)lua_touserdata(L, -1);
 
-		if((u->flags & type) != type)
+		if ((u->flags & type) != type)
 			luaL_error(L, "Incorrect module %s", k);
 
 		lua_pop(L, 2);

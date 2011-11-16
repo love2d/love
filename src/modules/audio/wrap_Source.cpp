@@ -93,7 +93,7 @@ namespace audio
 		lua_pushnumber(L, t->getVolume());
 		return 1;
 	}
-	
+
 	int w_Source_seek(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
@@ -104,7 +104,7 @@ namespace audio
 		t->seek(offset, u);
 		return 0;
 	}
-	
+
 	int w_Source_tell(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);

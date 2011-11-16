@@ -53,7 +53,7 @@ namespace opengl
 
 	Image::~Image()
 	{
-		if(data != 0)
+		if (data != 0)
 			data->release();
 		unload();
 	}
@@ -262,7 +262,7 @@ namespace opengl
 
 	void Image::bind() const
 	{
-		if(texture != 0)
+		if (texture != 0)
 			glBindTexture(GL_TEXTURE_2D,texture);
 	}
 
@@ -293,12 +293,12 @@ namespace opengl
 
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		
+
 		float p2width = next_p2(width);
 		float p2height = next_p2(height);
 		float s = width/p2width;
 		float t = height/p2height;
-		
+
 		vertices[1].t = t;
 		vertices[2].t = t;
 		vertices[2].s = s;
@@ -313,7 +313,7 @@ namespace opengl
 			GL_RGBA,
 			GL_UNSIGNED_BYTE,
 			0);
-			
+
 		glTexSubImage2D(GL_TEXTURE_2D,
 			0,
 			0,
@@ -339,7 +339,7 @@ namespace opengl
 
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		
+
 		glTexImage2D(GL_TEXTURE_2D,
 			0,
 			GL_RGBA8,
@@ -361,7 +361,7 @@ namespace opengl
 		settings.filter = getFilter();
 		settings.wrap = getWrap();
 		// Delete the hardware texture.
-		if(texture != 0)
+		if (texture != 0)
 		{
 			glDeleteTextures(1, (GLuint*)&texture);
 			texture = 0;

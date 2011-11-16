@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -39,7 +39,7 @@ namespace box2d
 	private:
 		// True if this ChainShape is a loop.
 		bool loop;
-		
+
 	public:
 
 		/**
@@ -49,7 +49,7 @@ namespace box2d
 		ChainShape(b2ChainShape * c, bool loop = false);
 
 		virtual ~ChainShape();
-		
+
 		/**
 		* Establish connectivity to a vertex that follows
 		* the last vertex. Fails if called on a loop.
@@ -57,7 +57,7 @@ namespace box2d
 		* @param y The y-coordinate of the vertex.
 		**/
 		void setNextVertex(float x, float y);
-		
+
 		/**
 		* Establish connectivity to a vertex that precedes
 		* the first vertex. Fails if called on a loop.
@@ -65,38 +65,38 @@ namespace box2d
 		* @param y The y-coordinate of the vertex.
 		**/
 		void setPrevVertex(float x, float y);
-		
+
 		/**
 		* Gets the number of children shapes.
 		**/
 		int getChildCount() const;
-		
+
 		/**
 		* Returns a child EdgeShape.
 		* @param index The index of the child shape.
 		* @returns The specified child.
 		**/
 		EdgeShape * getChildEdge(int index) const;
-		
+
 		/**
 		* Returns the number of vertices in the shape.
 		* @returns The number of vertices in the shape.
 		**/
 		int getVertexCount() const;
-		
+
 		/**
 		* Returns the vertex at the given index.
 		* @param index The index of the vertex.
 		* @returns The specified vertex.
 		**/
 		b2Vec2 getPoint(int index) const;
-		
+
 		/**
 		* Returns all of the vertices.
 		* @returns The vertices the shape comprises.
 		**/
 		const b2Vec2 * getPoints() const;
-		
+
 	};
 
 } // box2d

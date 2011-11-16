@@ -40,7 +40,7 @@ namespace physfs
 
 	Filesystem::~Filesystem()
 	{
-		if(isInited)
+		if (isInited)
 		{
 			isInited = false;
 			PHYSFS_deinit();
@@ -54,7 +54,7 @@ namespace physfs
 
 	void Filesystem::init(const char * arg0)
 	{
-		if(!PHYSFS_init(arg0))
+		if (!PHYSFS_init(arg0))
 			throw Exception(PHYSFS_getLastError());
 		isInited = true;
 	}
@@ -76,7 +76,7 @@ namespace physfs
 
 	bool Filesystem::setIdentity( const char * ident )
 	{
-		if(!isInited)
+		if (!isInited)
 			return false;
 
 		// Store the save directory.
@@ -106,15 +106,15 @@ namespace physfs
 
 	bool Filesystem::setSource(const char * source)
 	{
-		if(!isInited)
+		if (!isInited)
 			return false;
 
 		// Check whether directory is already set.
-		if(!game_source.empty())
+		if (!game_source.empty())
 			return false;
 
 		// Add the directory.
-		if(!PHYSFS_addToSearchPath(source, 1))
+		if (!PHYSFS_addToSearchPath(source, 1))
 			return false;
 
 		// Save the game source.
@@ -125,16 +125,16 @@ namespace physfs
 
 	bool Filesystem::setupWriteDirectory()
 	{
-		if(!isInited)
+		if (!isInited)
 			return false;
 
 		// These must all be set.
-		if(save_identity.empty() || save_path_full.empty() || save_path_relative.empty())
+		if (save_identity.empty() || save_path_full.empty() || save_path_relative.empty())
 			return false;
 
 		// Set the appdata folder as writable directory.
 		// (We must create the save folder before mounting it).
-		if(!PHYSFS_setWriteDir(getAppdataDirectory()))
+		if (!PHYSFS_setWriteDir(getAppdataDirectory()))
 			return false;
 
 		// Create the save folder. (We're now "at" %APPDATA%).
@@ -144,18 +144,18 @@ namespace physfs
 		else
 			success = mkdir(save_path_relative.c_str());
 
-		if(!success)
+		if (!success)
 		{
 			PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
 			return false;
 		}
 
 		// Set the final write directory.
-		if(!PHYSFS_setWriteDir(save_path_full.c_str()))
+		if (!PHYSFS_setWriteDir(save_path_full.c_str()))
 			return false;
 
 		// Add the directory. (Will not be readded if already present).
-		if(!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
+		if (!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
 		{
 			PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
 			return false;
@@ -195,7 +195,7 @@ namespace physfs
 
 	const char * Filesystem::getWorkingDirectory()
 	{
-		if(cwd.empty())
+		if (cwd.empty())
 		{
 #ifdef LOVE_WINDOWS
 
@@ -206,7 +206,7 @@ namespace physfs
 #else
 			char * cwd_char = new char[LOVE_MAX_PATH];
 
-			if(getcwd(cwd_char, LOVE_MAX_PATH))
+			if (getcwd(cwd_char, LOVE_MAX_PATH))
 				cwd = cwd_char; // if getcwd fails, cwd_char (and thus cwd) will still be empty
 
 			delete [] cwd_char;
@@ -224,7 +224,7 @@ namespace physfs
 	const char * Filesystem::getAppdataDirectory()
 	{
 #ifdef LOVE_WINDOWS
-		if(appdata.empty())
+		if (appdata.empty())
 		{
 			wchar_t * w_appdata = _wgetenv(TEXT("APPDATA"));
 			appdata = to_utf8(w_appdata);
@@ -232,7 +232,7 @@ namespace physfs
 		}
 		return appdata.c_str();
 #elif defined(LOVE_MACOSX)
-		if(appdata.empty())
+		if (appdata.empty())
 		{
 			std::string udir = getUserDirectory();
 			udir.append("/Library/Application Support");
@@ -240,7 +240,7 @@ namespace physfs
 		}
 		return appdata.c_str();
 #elif defined(LOVE_LINUX)
-		if(appdata.empty())
+		if (appdata.empty())
 		{
 			char * xdgdatahome = getenv("XDG_DATA_HOME");
 			if (!xdgdatahome)
@@ -262,14 +262,14 @@ namespace physfs
 
 	bool Filesystem::exists(const char * file)
 	{
-		if(PHYSFS_exists(file))
+		if (PHYSFS_exists(file))
 			return true;
 		return false;
 	}
 
 	bool Filesystem::isDirectory(const char * file)
 	{
-		if(PHYSFS_isDirectory(file))
+		if (PHYSFS_isDirectory(file))
 			return true;
 		return false;
 	}
@@ -281,20 +281,20 @@ namespace physfs
 
 	bool Filesystem::mkdir(const char * file)
 	{
-		if(PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
+		if (PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
 			return false;
 
-		if(!PHYSFS_mkdir(file))
+		if (!PHYSFS_mkdir(file))
 			return false;
 		return true;
 	}
 
 	bool Filesystem::remove(const char * file)
 	{
-		if(PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
+		if (PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
 			return false;
 
-		if(!PHYSFS_delete(file))
+		if (!PHYSFS_delete(file))
 			return false;
 		return true;
 	}
@@ -305,7 +305,7 @@ namespace physfs
 		// on-the-fly, or passed as a parameter.
 		File * file;
 
-        if(lua_isstring(L, 1))
+        if (lua_isstring(L, 1))
 		{
 			// Create the file.
 			file = newFile(lua_tostring(L, 1));
@@ -321,12 +321,12 @@ namespace physfs
 		Data * data = file->read(count);
 
 		// Error check.
-		if(data == 0)
+		if (data == 0)
 			return luaL_error(L, "File could not be read.");
 
 		// Close and delete the file, if we created it.
 		// (I.e. if the first parameter is a string).
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 			file->release();
 
 		// Push the string.
@@ -349,10 +349,10 @@ namespace physfs
 
 		// We know for sure that we need a second parameter, so
 		// let's check that first.
-		if(lua_isnoneornil(L, 2))
+		if (lua_isnoneornil(L, 2))
 			return luaL_error(L, "Second argument needed.");
 
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 		{
 			// Create the file.
 			file = newFile(lua_tostring(L, 1));
@@ -363,26 +363,31 @@ namespace physfs
 		// Get the current mode of the file.
 		File::Mode mode = file->getMode();
 
-		if(mode == File::CLOSED)
+		if (mode == File::CLOSED)
 		{
 			// It should be possible to use append mode, but
 			// normal File::Mode::Write is the default.
 			int mode = luaL_optint(L, 4, File::WRITE);
 
 			// Open the file.
-			if(!file->open((File::Mode)mode))
+			if (!file->open((File::Mode)mode))
 				return luaL_error(L, "Could not open file.");
 		}
 
 		size_t length = 0;
 		const char * input;
-		if(lua_isstring(L, 2)) {
+		if (lua_isstring(L, 2))
+		{
 			input = lua_tolstring(L, 2, &length);
-		} else if (luax_istype(L, 2, DATA_T)) {
+		}
+		else if (luax_istype(L, 2, DATA_T))
+		{
 			love::Data * data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
 			length = data->getSize();
 			input = (char *)data->getData();
-		} else {
+		}
+		else
+		{
 			return luaL_error(L, "Expected string or data for argument #2.");
 		}
 
@@ -394,14 +399,14 @@ namespace physfs
 
 		// Close and delete the file, if we created
 		// it in this function.
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 		{
 			// Kill the file if "we" created it.
 			file->close();
 			file->release();
 		}
 
-		if(!success)
+		if (!success)
 			return luaL_error(L, "Data could not be written.");
 
 		lua_pushboolean(L, success);
@@ -412,12 +417,12 @@ namespace physfs
 	{
 		int n = lua_gettop(L);
 
-		if( n != 1 )
+		if ( n != 1 )
 			return luaL_error(L, "Function requires a single parameter.");
 
 		int type = lua_type(L, 1);
 
-		if(type != LUA_TSTRING)
+		if (type != LUA_TSTRING)
 			return luaL_error(L, "Function requires parameter of type string.");
 
 		const char * dir = lua_tostring(L, 1);
@@ -444,10 +449,10 @@ namespace physfs
 	{
 		File * file;
 
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 		{
 			file = newFile(lua_tostring(L, 1));
-			if(!file->open(File::READ))
+			if (!file->open(File::READ))
 				return luaL_error(L, "Could not open file %s.\n", lua_tostring(L, 1));
 			lua_pop(L, 1);
 
@@ -458,7 +463,7 @@ namespace physfs
 			return luaL_error(L, "Expected filename.");
 
 		// Reset the file position.
-		if(!file->seek(0))
+		if (!file->seek(0))
 			return luaL_error(L, "File does not appear to be open.\n");
 
 		lua_pushcclosure(L, lines_i, 2);
@@ -480,34 +485,34 @@ namespace physfs
 		int newline = -1;
 		int totalread = 0;
 
-		while(!file->eof())
+		while (!file->eof())
 		{
 			int current = file->tell();
 			int read = file->read(buf, bufsize);
 			totalread += read;
 
-			if(read < 0)
+			if (read < 0)
 				return luaL_error(L, "Readline failed!");
 
-			for(int i = 0;i<read;i++)
+			for (int i = 0;i<read;i++)
 			{
-				if(buf[i] == '\n')
+				if (buf[i] == '\n')
 				{
 					newline = current+i;
 					break;
 				}
 			}
 
-			if(newline > 0)
+			if (newline > 0)
 				break;
 		}
 
 		// Special case for the last "line".
-		if(newline <= 0 && file->eof() && totalread > 0)
+		if (newline <= 0 && file->eof() && totalread > 0)
 			newline = pos + totalread;
 
 		// We've got a newline.
-		if(newline > 0)
+		if (newline > 0)
 		{
 			// Ok, we've got a line.
 			int linesize = (newline-pos);
@@ -517,10 +522,10 @@ namespace physfs
 
 			// Read it.
 			file->seek(pos);
-			if(file->read(str, linesize) == -1)
+			if (file->read(str, linesize) == -1)
 				return luaL_error(L, "Read error.");
 
-			if(str[linesize-1]=='\r')
+			if (str[linesize-1]=='\r')
 				linesize -= 1;
 
 			lua_pushlstring(L, str, linesize);
@@ -529,13 +534,13 @@ namespace physfs
 			delete[] str;
 
 			// Set the beginning of the next line.
-			if(!file->eof())
+			if (!file->eof())
 				file->seek(newline+1);
-	
+
 			return 1;
 		}
 
-		if(close)
+		if (close)
 		{
 			file->close();
 			file->release();
@@ -550,13 +555,13 @@ namespace physfs
 		luax_assert_argc(L, 1, 1);
 
 		// Must be string.
-		if(!lua_isstring(L, -1))
+		if (!lua_isstring(L, -1))
 			return luaL_error(L, "The argument must be a string.");
 
 		std::string filename = lua_tostring(L, -1);
 
 		// The file must exist.
-		if(!exists(filename.c_str()))
+		if (!exists(filename.c_str()))
 			return luaL_error(L, "File %s does not exist.", filename.c_str());
 
 		// Create the file.

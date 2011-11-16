@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -35,7 +35,7 @@ namespace box2d
 	* can be a revolute or prismatic joint. You specify a gear ratio
 	* to bind the motions together:
 	* coordinate1 + ratio * coordinate2 = constant
-	* 
+	*
 	* The ratio can be negative or positive. If one joint is a revolute joint
 	* and the other joint is a prismatic joint, then the ratio will have units
 	* of length or units of 1/length.
@@ -50,22 +50,22 @@ namespace box2d
 	public:
 
 		/**
-		* Creates a GearJoint connecting joint1 to joint2. 
+		* Creates a GearJoint connecting joint1 to joint2.
 		**/
 		GearJoint(Joint * joint1, Joint * joint2, float ratio, bool collideConnected);
-		
+
 		virtual ~GearJoint();
-		
+
 		/**
 		* Sets the ratio.
 		**/
 		void setRatio(float ratio);
-		
+
 		/**
 		* Gets the ratio.
 		**/
 		float getRatio() const;
-		
+
 	};
 
 } // box2d

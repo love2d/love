@@ -36,11 +36,11 @@ namespace openal
 		// Create the mutex.
 		mutex = new thread::Mutex();
 
-		if(alGetError() != AL_NO_ERROR)
+		if (alGetError() != AL_NO_ERROR)
 			throw love::Exception("Could not generate sources.");
 
 		// Make all sources available initially.
-		for(int i = 0; i < NUM_SOURCES; i++)
+		for (int i = 0; i < NUM_SOURCES; i++)
 			available.push(sources[i]);
 	}
 
@@ -69,9 +69,9 @@ namespace openal
 		bool p = false;
 		{
 			thread::Lock lock(mutex);
-			for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+			for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			{
-				if(i->first == s)
+				if (i->first == s)
 					p = true;
 			}
 		}
@@ -84,9 +84,9 @@ namespace openal
 
 		std::map<Source *, ALuint>::iterator i = playing.begin();
 
-		while(i != playing.end())
+		while (i != playing.end())
 		{
-			if(!i->first->update())
+			if (!i->first->update())
 			{
 				i->first->stopAtomic();
 				i->first->rewindAtomic();
@@ -118,10 +118,10 @@ namespace openal
 
 		bool alreadyPlaying = findSource(source, out);
 
-		if(!alreadyPlaying)
+		if (!alreadyPlaying)
 		{
 			// Try to play.
-			if(!available.empty())
+			if (!available.empty())
 			{
 				// Get the first available source.
 				out = available.front();
@@ -154,7 +154,7 @@ namespace openal
 	void Pool::stop()
 	{
 		thread::Lock lock(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
 			i->first->stopAtomic();
 			i->first->release();
@@ -173,7 +173,7 @@ namespace openal
 	void Pool::pause()
 	{
 		thread::Lock lock(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->pauseAtomic();
 	}
 
@@ -181,14 +181,14 @@ namespace openal
 	{
 		thread::Lock lock(mutex);
 		ALuint out;
-		if(findSource(source, out))
+		if (findSource(source, out))
 			source->pauseAtomic();
 	}
 
 	void Pool::resume()
 	{
 		thread::Lock lock(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->resumeAtomic();
 	}
 
@@ -196,14 +196,14 @@ namespace openal
 	{
 		thread::Lock lock(mutex);
 		ALuint out;
-		if(findSource(source, out))
+		if (findSource(source, out))
 			source->resumeAtomic();
 	}
 
 	void Pool::rewind()
 	{
 		thread::Lock lock(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->rewindAtomic();
 	}
 
@@ -224,7 +224,7 @@ namespace openal
 	{
 		ALuint s = findi(source);
 
-		if(s != 0)
+		if (s != 0)
 		{
 			available.push(s);
 			playing.erase(source);
@@ -247,7 +247,7 @@ namespace openal
 	{
 		std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
 
-		if(i != playing.end())
+		if (i != playing.end())
 			return i->second;
 
 		return 0;
@@ -259,7 +259,7 @@ namespace openal
 
 		bool found = i != playing.end();
 
-		if(found)
+		if (found)
 			out = i->second;
 
 		return found;
@@ -269,7 +269,7 @@ namespace openal
 	{
 		std::map<Source *, ALuint>::iterator i = playing.find((Source *)source);
 
-		if(i != playing.end())
+		if (i != playing.end())
 		{
 			source->stopAtomic();
 			available.push(i->second);

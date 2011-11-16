@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -29,11 +29,11 @@ namespace image
 		pixel * s = (pixel *)src->getData();
 		pixel * d = (pixel *)getData();
 
-		for(int i = 0; i < sh; i++)
+		for (int i = 0; i < sh; i++)
 		{
-			for(int j = 0; j < sw; j++)
+			for (int j = 0; j < sw; j++)
 			{
-				if(inside(dx+j, dy+i) && src->inside(sx+j, sy+i))
+				if (inside(dx+j, dy+i) && src->inside(sx+j, sy+i))
 				{
 					d[(dy+i)*getWidth() + (dx+j)] = s[(sy+i)*src->getWidth() + (sx+j)];
 				}
@@ -45,17 +45,17 @@ namespace image
 	{
 		return (x >= 0 && x < getWidth() && y >= 0 && y < getHeight());
 	}
-	
+
 	bool ImageData::getConstant(const char * in, ImageData::Format & out)
 	{
 		return formats.find(in, out);
 	}
-	
+
 	bool ImageData::getConstant(ImageData::Format in, const char *& out)
 	{
 		return formats.find(in, out);
 	}
-	
+
 	StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
 	{
 		{"tga", ImageData::FORMAT_TGA},
@@ -64,7 +64,7 @@ namespace image
 		{"jpg", ImageData::FORMAT_JPG},
 		{"png", ImageData::FORMAT_PNG},
 	};
-	
+
 	StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM> ImageData::formats(ImageData::formatEntries, sizeof(ImageData::formatEntries));
 
 } // image

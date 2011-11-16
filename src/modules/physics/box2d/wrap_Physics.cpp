@@ -55,7 +55,7 @@ namespace box2d
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
 	}
-	
+
 	int w_newFixture(lua_State * L)
 	{
 		Body * body = luax_checkbody(L, 1);
@@ -71,7 +71,7 @@ namespace box2d
 	{
 		int top = lua_gettop(L);
 
-		if(top == 1)
+		if (top == 1)
 		{
 			float radius = (float)luaL_checknumber(L, 1);
 			CircleShape * shape;
@@ -79,7 +79,7 @@ namespace box2d
 			luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void*)shape);
 			return 1;
 		}
-		else if(top == 3)
+		else if (top == 3)
 		{
 			float x = (float)luaL_checknumber(L, 1);
 			float y = (float)luaL_checknumber(L, 2);
@@ -97,7 +97,7 @@ namespace box2d
 	{
 		int top = lua_gettop(L);
 
-		if(top == 2)
+		if (top == 2)
 		{
 			float w = (float)luaL_checknumber(L, 1);
 			float h = (float)luaL_checknumber(L, 2);
@@ -106,7 +106,7 @@ namespace box2d
 			luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)shape);
 			return 1;
 		}
-		else if(top == 4 || top == 5)
+		else if (top == 4 || top == 5)
 		{
 			float x = (float)luaL_checknumber(L, 1);
 			float y = (float)luaL_checknumber(L, 2);
@@ -121,7 +121,7 @@ namespace box2d
 		else
 			return luaL_error(L, "Incorrect number of parameters");
 	}
-	
+
 	int w_newEdgeShape(lua_State * L)
 	{
 		float x1 = (float)luaL_checknumber(L, 1);
@@ -138,7 +138,7 @@ namespace box2d
 	{
 		ASSERT_GUARD(return instance->newPolygonShape(L);)
 	}
-	
+
 	int w_newChainShape(lua_State * L)
 	{
 		ASSERT_GUARD(return instance->newChainShape(L);)
@@ -191,13 +191,16 @@ namespace box2d
 		float yA = (float)luaL_checknumber(L, 4);
 		float xB, yB, ax, ay;
 		bool collideConnected;
-		if (lua_gettop(L) >= 8) {
+		if (lua_gettop(L) >= 8)
+		{
 			xB = (float)luaL_checknumber(L, 5);
 			yB = (float)luaL_checknumber(L, 6);
 			ax = (float)luaL_checknumber(L, 7);
 			ay = (float)luaL_checknumber(L, 8);
 			collideConnected = luax_optboolean(L, 9, false);
-		} else {
+		}
+		else
+		{
 			xB = xA;
 			yB = yA;
 			ax = (float)luaL_checknumber(L, 5);
@@ -243,7 +246,7 @@ namespace box2d
 		luax_newtype(L, "GearJoint", PHYSICS_GEAR_JOINT_T, (void*)j);
 		return 1;
 	}
-	
+
 	int w_newFrictionJoint(lua_State * L)
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
@@ -252,11 +255,14 @@ namespace box2d
 		float yA = (float)luaL_checknumber(L, 4);
 		float xB, yB;
 		bool collideConnected;
-		if (lua_gettop(L) >= 6) {
+		if (lua_gettop(L) >= 6)
+		{
 			xB = (float)luaL_checknumber(L, 5);
 			yB = (float)luaL_checknumber(L, 6);
 			collideConnected = luax_optboolean(L, 7, false);
-		} else {
+		}
+		else
+		{
 			xB = xA;
 			yB = yA;
 			collideConnected = luax_optboolean(L, 5, false);
@@ -266,7 +272,7 @@ namespace box2d
 		luax_newtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, (void*)j);
 		return 1;
 	}
-	
+
 	int w_newWeldJoint(lua_State * L)
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
@@ -275,11 +281,14 @@ namespace box2d
 		float yA = (float)luaL_checknumber(L, 4);
 		float xB, yB;
 		bool collideConnected;
-		if (lua_gettop(L) >= 6) {
+		if (lua_gettop(L) >= 6)
+		{
 			xB = (float)luaL_checknumber(L, 5);
 			yB = (float)luaL_checknumber(L, 6);
 			collideConnected = luax_optboolean(L, 7, false);
-		} else {
+		}
+		else
+		{
 			xB = xA;
 			yB = yA;
 			collideConnected = luax_optboolean(L, 5, false);
@@ -289,7 +298,7 @@ namespace box2d
 		luax_newtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, (void*)j);
 		return 1;
 	}
-	
+
 	int w_newWheelJoint(lua_State * L)
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
@@ -298,13 +307,16 @@ namespace box2d
 		float yA = (float)luaL_checknumber(L, 4);
 		float xB, yB, ax, ay;
 		bool collideConnected;
-		if (lua_gettop(L) >= 8) {
+		if (lua_gettop(L) >= 8)
+		{
 			xB = (float)luaL_checknumber(L, 5);
 			yB = (float)luaL_checknumber(L, 6);
 			ax = (float)luaL_checknumber(L, 7);
 			ay = (float)luaL_checknumber(L, 8);
 			collideConnected = luax_optboolean(L, 9, false);
-		} else {
+		}
+		else
+		{
 			xB = xA;
 			yB = yA;
 			ax = (float)luaL_checknumber(L, 5);
@@ -317,7 +329,7 @@ namespace box2d
 		luax_newtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, (void*)j);
 		return 1;
 	}
-	
+
 	int w_newRopeJoint(lua_State * L)
 	{
 		Body * body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
@@ -333,22 +345,25 @@ namespace box2d
 		luax_newtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, (void*)j);
 		return 1;
 	}
-	
+
 	int w_getDistance(lua_State * L)
 	{
 		return instance->getDistance(L);
 	}
-	
+
 	int w_setMeter(lua_State * L)
 	{
 		int arg1 = luaL_checkint(L, 1);
-		try {
+		try
+		{
 			Physics::setMeter(arg1);
-		} catch (love::Exception e) {
+		}
+		catch (love::Exception e)
+		{
 			return luaL_error(L, e.what());
 		}
 		return 0;
-		
+
 	}
 	int w_getMeter(lua_State * L)
 	{
@@ -408,13 +423,13 @@ namespace box2d
 
 	int luaopen_love_physics(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Physics();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

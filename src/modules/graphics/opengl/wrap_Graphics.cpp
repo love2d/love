@@ -135,7 +135,7 @@ namespace opengl
 
 	int w_setScissor(lua_State * L)
 	{
-		if(lua_gettop(L) == 0)
+		if (lua_gettop(L) == 0)
 		{
 			instance->setScissor();
 			return 0;
@@ -170,7 +170,8 @@ namespace opengl
 	static int setStencil(lua_State * L, bool invert)
 	{
 		// no argument -> clear mask
-		if (lua_isnoneornil(L, 1)) {
+		if (lua_isnoneornil(L, 1))
+		{
 			instance->discardStencil();
 			return 0;
 		}
@@ -198,24 +199,27 @@ namespace opengl
 	int w_newImage(lua_State * L)
 	{
 		// Convert to File, if necessary.
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		// Convert to ImageData, if necessary.
-		if(luax_istype(L, 1, FILESYSTEM_FILE_T))
+		if (luax_istype(L, 1, FILESYSTEM_FILE_T))
 			luax_convobj(L, 1, "image", "newImageData");
 
 		love::image::ImageData * data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 
 		// Create the image.
 		Image * image = 0;
-		try {
+		try
+		{
 			image = instance->newImage(data);
-		} catch (love::Exception & e) {
+		}
+		catch (love::Exception & e)
+		{
 			luaL_error(L, e.what());
 		}
 
-		if(image == 0)
+		if (image == 0)
 			return luaL_error(L, "Could not load image.");
 
 
@@ -247,16 +251,19 @@ namespace opengl
 	{
 		Data * font_data = NULL;
 		// Convert to File, if necessary.
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		// Convert to Data, if necessary.
-		if(luax_istype(L, 1, FILESYSTEM_FILE_T)) {
+		if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+		{
 			love::filesystem::File * f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-			try {
+			try
+			{
 				font_data = f->read();
 			}
-			catch (love::Exception & e) {
+			catch (love::Exception & e)
+			{
 				return luaL_error(L, e.what());
 			}
 			lua_remove(L, 1); // get rid of the file
@@ -265,7 +272,8 @@ namespace opengl
 		}
 
 		// Convert to Rasterizer, if necessary.
-		if(luax_istype(L, 1, DATA_T)) {
+		if (luax_istype(L, 1, DATA_T))
+		{
 			int idxs[] = {1, 2};
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
@@ -278,7 +286,7 @@ namespace opengl
 		// Create the font.
 		Font * font = instance->newFont(rasterizer);
 
-		if(font == 0)
+		if (font == 0)
 			return luaL_error(L, "Could not load font.");
 
 		// Push the type.
@@ -293,9 +301,10 @@ namespace opengl
 		Image::Filter img_filter;
 
 		// Convert to ImageData if necessary.
-		if(lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
+		if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
 			luax_convobj(L, 1, "image", "newImageData");
-		else if(luax_istype(L, 1, GRAPHICS_IMAGE_T)) {
+		else if (luax_istype(L, 1, GRAPHICS_IMAGE_T))
+		{
 			Image * i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
 			img_filter = i->getFilter();
 			love::image::ImageData * id = i->getData();
@@ -304,7 +313,8 @@ namespace opengl
 		}
 
 		// Convert to Rasterizer if necessary.
-		if(luax_istype(L, 1, IMAGE_IMAGE_DATA_T)) {
+		if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
+		{
 			int idxs[] = {1, 2};
 			luax_convobj(L, idxs, 2, "font", "newRasterizer");
 		}
@@ -314,7 +324,7 @@ namespace opengl
 		// Create the font.
 		Font * font = instance->newFont(rasterizer, img_filter);
 
-		if(font == 0)
+		if (font == 0)
 			return luaL_error(L, "Could not load font.");
 
 		// Push the type.
@@ -334,9 +344,12 @@ namespace opengl
 				usage = SpriteBatch::USAGE_DYNAMIC;
 		}
 		SpriteBatch * t = NULL;
-		try {
+		try
+		{
 			t = instance->newSpriteBatch(image, size, usage);
-		} catch(love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			return luaL_error(L, e.what());
 		}
 		luax_newtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, (void*)t);
@@ -360,9 +373,12 @@ namespace opengl
 		glGetError(); // clear opengl error flag
 
 		Canvas * canvas = NULL;
-		try {
+		try
+		{
 			canvas = instance->newCanvas(width, height);
-		} catch (Exception& e) {
+		}
+		catch (Exception& e)
+		{
 			return luaL_error(L, e.what());
 		}
 
@@ -378,7 +394,8 @@ namespace opengl
 		if (!PixelEffect::isSupported())
 			return luaL_error(L, "Sorry, your graphics card does not support pixel effects.");
 
-		try {
+		try
+		{
 			luaL_checkstring(L, 1);
 
 			luax_getfunction(L, "graphics", "_effectCodeToGLSL");
@@ -388,7 +405,9 @@ namespace opengl
 			const char* code = lua_tostring(L, -1);
 			PixelEffect * effect = instance->newPixelEffect(code);
 			luax_newtype(L, "PixelEffect", GRAPHICS_PIXELEFFECT_T, (void*)effect);
-		} catch (const love::Exception& e) {
+		}
+		catch (const love::Exception& e)
+		{
 			// memory is freed in Graphics::newPixelEffect
 			luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
 			lua_pushstring(L, e.what());
@@ -403,7 +422,8 @@ namespace opengl
 	int w_setColor(lua_State * L)
 	{
 		Color c;
-		if (lua_istable(L, 1)) {
+		if (lua_istable(L, 1))
+		{
 			lua_pushinteger(L, 1);
 			lua_gettable(L, -2);
 			c.r = (unsigned char)luaL_checkint(L, -1);
@@ -445,7 +465,8 @@ namespace opengl
 	int w_setBackgroundColor(lua_State * L)
 	{
 		Color c;
-		if (lua_istable(L, 1)) {
+		if (lua_istable(L, 1))
+		{
 			lua_pushinteger(L, 1);
 			lua_gettable(L, -2);
 			c.r = (unsigned char)luaL_checkint(L, -1);
@@ -494,21 +515,26 @@ namespace opengl
 		bool created = false;
 
 		// If the first parameter isn't a Font, create a new one
-		if (!luax_istype(L, 1, GRAPHICS_FONT_T)) {
+		if (!luax_istype(L, 1, GRAPHICS_FONT_T))
+		{
 			created = true;
 			lua_pushinteger(L, size); // push the size
 			lua_insert(L, 2); // move it to its proper place
 			// Convert to File, if necessary.
-			if(lua_isstring(L, 1))
+			if (lua_isstring(L, 1))
 				luax_convobj(L, 1, "filesystem", "newFile");
 
 			// Convert to Data, if necessary.
-			if(luax_istype(L, 1, FILESYSTEM_FILE_T)) {
+			if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+			{
 				love::filesystem::File * f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 				Data * d;
-				try {
+				try
+				{
 					d = f->read();
-				} catch (love::Exception & e) {
+				}
+				catch (love::Exception & e)
+				{
 					return luaL_error(L, e.what());
 				}
 				lua_remove(L, 1); // get rid of the file
@@ -517,7 +543,8 @@ namespace opengl
 			}
 
 			// Convert to Rasterizer, if necessary.
-			if(luax_istype(L, 1, DATA_T)) {
+			if (luax_istype(L, 1, DATA_T))
+			{
 				int idxs[] = {1, 2};
 				luax_convobj(L, idxs, 2, "font", "newRasterizer");
 			}
@@ -527,7 +554,7 @@ namespace opengl
 			// Create the font.
 			font = instance->newFont(rasterizer);
 
-			if(font == 0)
+			if (font == 0)
 				return luaL_error(L, "Could not load font.");
 		}
 		else font = luax_checktype<Font>(L, 1, "Font", GRAPHICS_FONT_T);
@@ -541,7 +568,7 @@ namespace opengl
 	{
 		Font * f = instance->getFont();
 
-		if(f == 0)
+		if (f == 0)
 			return 0;
 
 		f->retain();
@@ -553,7 +580,7 @@ namespace opengl
 	{
 		Graphics::BlendMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Invalid blend mode: %s", str);
 
 		instance->setBlendMode(mode);
@@ -564,7 +591,7 @@ namespace opengl
 	{
 		Graphics::ColorMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Invalid color mode: %s", str);
 
 		instance->setColorMode(mode);
@@ -594,7 +621,7 @@ namespace opengl
 	{
 		Graphics::BlendMode mode = instance->getBlendMode();
 		const char * str;
-		if(!Graphics::getConstant(mode, str))
+		if (!Graphics::getConstant(mode, str))
 			return luaL_error(L, "Invalid blend mode: %s", str);
 
 		lua_pushstring(L, str);
@@ -605,7 +632,7 @@ namespace opengl
 	{
 		Graphics::ColorMode mode = instance->getColorMode();
 		const char * str;
-		if(!Graphics::getConstant(mode, str))
+		if (!Graphics::getConstant(mode, str))
 			return luaL_error(L, "Invalid color mode: %s", str);
 
 		lua_pushstring(L, str);
@@ -635,7 +662,7 @@ namespace opengl
 	{
 		Graphics::LineStyle style;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, style))
+		if (!Graphics::getConstant(str, style))
 			return luaL_error(L, "Invalid line style: %s", str);
 
 		instance->setLineStyle(style);
@@ -648,10 +675,10 @@ namespace opengl
 
 		Graphics::LineStyle style = Graphics::LINE_SMOOTH;
 
-		if(lua_gettop(L) >= 2)
+		if (lua_gettop(L) >= 2)
 		{
 			const char * str = luaL_checkstring(L, 2);
-			if(!Graphics::getConstant(str, style))
+			if (!Graphics::getConstant(str, style))
 				return luaL_error(L, "Invalid line style: %s", str);
 		}
 
@@ -685,10 +712,10 @@ namespace opengl
 	{
 		Graphics::PointStyle style = Graphics::POINT_SMOOTH;
 
-		if(lua_gettop(L) >= 2)
+		if (lua_gettop(L) >= 2)
 		{
 			const char * str = luaL_checkstring(L, 1);
-			if(!Graphics::getConstant(str, style))
+			if (!Graphics::getConstant(str, style))
 				return luaL_error(L, "Invalid point style: %s", str);
 		}
 
@@ -702,7 +729,7 @@ namespace opengl
 
 		Graphics::PointStyle style;
 		const char * str = luaL_checkstring(L, 2);
-		if(!Graphics::getConstant(str, style))
+		if (!Graphics::getConstant(str, style))
 			return luaL_error(L, "Invalid point style: %s", str);
 
 		instance->setPoint(size, style);
@@ -738,7 +765,8 @@ namespace opengl
 	int w_setRenderTarget(lua_State * L)
 	{
 		// called with nil or none -> reset to default buffer
-		if (lua_isnoneornil(L,1)) {
+		if (lua_isnoneornil(L,1))
+		{
 			Canvas::bindDefaultCanvas();
 			return 0;
 		}
@@ -753,7 +781,8 @@ namespace opengl
 	int w_getRenderTarget(lua_State * L)
 	{
 		Canvas *canvas = Canvas::current;
-		if (canvas) {
+		if (canvas)
+		{
 			canvas->retain();
 			luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void*) canvas);
 		}
@@ -764,7 +793,8 @@ namespace opengl
 
 	int w_setPixelEffect(lua_State * L)
 	{
-		if (lua_isnoneornil(L,1)) {
+		if (lua_isnoneornil(L,1))
+		{
 			PixelEffect::detach();
 			return 0;
 		}
@@ -782,7 +812,7 @@ namespace opengl
 		for (unsigned int i = 1; i <= len; i++)
 		{
 			const char * str = luaL_checkstring(L, i);
-			if(!Graphics::getConstant(str, support))
+			if (!Graphics::getConstant(str, support))
 				supported = false;
 			switch(support)
 			{
@@ -915,10 +945,10 @@ namespace opengl
 
 		Graphics::AlignMode align = Graphics::ALIGN_LEFT;
 
-		if(lua_gettop(L) >= 5)
+		if (lua_gettop(L) >= 5)
 		{
 			const char * str = luaL_checkstring(L, 5);
-			if(!Graphics::getConstant(str, align))
+			if (!Graphics::getConstant(str, align))
 				return luaL_error(L, "Incorrect alignment: %s", str);
 		}
 
@@ -945,7 +975,8 @@ namespace opengl
 	{
 		int args = lua_gettop(L);
 		bool is_table = false;
-		if (args == 1 && lua_istable(L, 1)) {
+		if (args == 1 && lua_istable(L, 1))
+		{
 			args = lua_objlen(L, 1);
 			is_table = true;
 		}
@@ -955,14 +986,18 @@ namespace opengl
 			return luaL_error(L, "Need at least two vertices to draw a line");
 
 		float* coords = new float[args];
-		if (is_table) {
-			for (int i = 0; i < args; ++i) {
+		if (is_table)
+		{
+			for (int i = 0; i < args; ++i)
+			{
 				lua_pushnumber(L, i + 1);
 				lua_rawget(L, 1);
 				coords[i] = luax_tofloat(L, -1);
 				lua_pop(L, 1);
 			}
-		} else {
+		}
+		else
+		{
 			for (int i = 0; i < args; ++i)
 				coords[i] = luax_tofloat(L, i + 1);
 		}
@@ -977,7 +1012,7 @@ namespace opengl
 	{
 		Graphics::DrawMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Incorrect draw mode %s", str);
 
 		float x1 = (float)luaL_checknumber(L, 2);
@@ -994,7 +1029,7 @@ namespace opengl
 	{
 		Graphics::DrawMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Incorrect draw mode %s", str);
 
 		float x = (float)luaL_checknumber(L, 2);
@@ -1009,7 +1044,7 @@ namespace opengl
 	{
 		Graphics::DrawMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Incorrect draw mode %s", str);
 
 		float x1 = (float)luaL_checknumber(L, 2);
@@ -1028,7 +1063,7 @@ namespace opengl
 	{
 		Graphics::DrawMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Incorrect draw mode %s", str);
 
 		float x = (float)luaL_checknumber(L, 2);
@@ -1042,14 +1077,14 @@ namespace opengl
 		instance->circle(mode, x, y, radius, points);
 		return 0;
 	}
-	
+
 	int w_arc(lua_State * L)
 	{
 		Graphics::DrawMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Incorrect draw mode %s", str);
-		
+
 		float x = (float)luaL_checknumber(L, 2);
 		float y = (float)luaL_checknumber(L, 3);
 		float radius = (float)luaL_checknumber(L, 4);
@@ -1066,12 +1101,13 @@ namespace opengl
 
 		Graphics::DrawMode mode;
 		const char * str = luaL_checkstring(L, 1);
-		if(!Graphics::getConstant(str, mode))
+		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Invalid draw mode: %s", str);
 
 		bool is_table = false;
 		float* coords;
-		if (args == 1 && lua_istable(L, 2)) {
+		if (args == 1 && lua_istable(L, 2))
+		{
 			args = lua_objlen(L, 2);
 			is_table = true;
 		}
@@ -1083,14 +1119,18 @@ namespace opengl
 
 		// fetch coords
 		coords = new float[args + 2];
-		if (is_table) {
-			for (int i = 0; i < args; ++i) {
+		if (is_table)
+		{
+			for (int i = 0; i < args; ++i)
+			{
 				lua_pushnumber(L, i + 1);
 				lua_rawget(L, 2);
 				coords[i] = luax_tofloat(L, -1);
 				lua_pop(L, 1);
 			}
-		} else {
+		}
+		else
+		{
 			for (int i = 0; i < args; ++i)
 				coords[i] = luax_tofloat(L, i + 2);
 		}
@@ -1100,7 +1140,7 @@ namespace opengl
 		coords[args+1] = coords[1];
 		instance->polygon(mode, coords, args+2);
 		delete[] coords;
-	
+
 		return 0;
 	}
 
@@ -1282,13 +1322,13 @@ namespace opengl
 
 	int luaopen_love_graphics(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Graphics();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

@@ -29,8 +29,8 @@ namespace love
 namespace graphics
 {
 namespace opengl
-{	
-		
+{
+
 	// strategy for fbo creation, interchangable at runtime:
 	// none, opengl >= 3.0, extensions
 	struct FramebufferStrategy {
@@ -159,20 +159,21 @@ namespace opengl
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
 		}
 	};
-	
+
 	FramebufferStrategy* strategy = NULL;
-	
+
 	FramebufferStrategy strategyNone;
-	
+
 	FramebufferStrategyGL3 strategyGL3;
-	
+
 	FramebufferStrategyEXT strategyEXT;
-	
+
 	Canvas* Canvas::current = NULL;
 
 	static void loadStrategy()
 	{
-		if (!strategy) {
+		if (!strategy)
+		{
 			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
 				strategy = &strategyGL3;
 			else if (GLEE_EXT_framebuffer_object && GLEE_EXT_packed_depth_stencil)
@@ -240,15 +241,15 @@ namespace opengl
 		glPushAttrib(GL_VIEWPORT_BIT | GL_TRANSFORM_BIT);
 		strategy->bindFBO(fbo);
 		glViewport(0, 0, width, height);
-		
+
 		// Reset the projection matrix
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 		glLoadIdentity();
-		
+
 		// Set up orthographic view (no depth)
 		glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
-		
+
 		// Switch back to modelview matrix
 		glMatrixMode(GL_MODELVIEW);
 
@@ -293,7 +294,7 @@ namespace opengl
 
 		drawv(t, vertices);
 	}
-	
+
 	void Canvas::drawq(love::graphics::Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
 		static Matrix t;
@@ -326,7 +327,7 @@ namespace opengl
 			memcpy(dst -= row, src += row, row);
 
 		love::image::ImageData* img = image->newImageData(width, height, (void*)screenshot);
-		
+
 		delete[] screenshot;
 		delete[] pixels;
 
@@ -395,7 +396,7 @@ namespace opengl
 		clear(c);
 		return true;
 	}
-	
+
 	void Canvas::unloadVolatile()
 	{
 		settings.filter = getFilter();
@@ -412,15 +413,15 @@ namespace opengl
 	{
 		return height;
 	}
-	
+
 	void Canvas::drawv(const Matrix & t, const vertex * v) const
 	{
 		glPushMatrix();
-		
+
 		glMultMatrixf((const GLfloat*)t.getElements());
-		
+
 		glBindTexture(GL_TEXTURE_2D, img);
-		
+
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid*)&v[0].x);
@@ -428,7 +429,7 @@ namespace opengl
 		glDrawArrays(GL_QUADS, 0, 4);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
-		
+
 		glPopMatrix();
 	}
 

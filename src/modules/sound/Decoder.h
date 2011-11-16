@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -29,8 +29,8 @@ namespace love
 namespace sound
 {
 	/**
-	* Decoder objects are responsible for decoding audio files. They maintain 
-	* an interal buffer into which they write raw decoded audio data. 
+	* Decoder objects are responsible for decoding audio files. They maintain
+	* an interal buffer into which they write raw decoded audio data.
 	**/
 	class Decoder : public Object
 	{
@@ -43,7 +43,7 @@ namespace sound
 		static const int DEFAULT_BUFFER_SIZE = 2048;
 
 		/**
-		* Indicates the quality of the sound. 
+		* Indicates the quality of the sound.
 		**/
 		static const int DEFAULT_SAMPLE_RATE = 44100;
 
@@ -58,14 +58,14 @@ namespace sound
 		static const int DEFAULT_BITS = 16;
 
 		/**
-		* Creates a deep of itself. The sound stream can (and should) be 
+		* Creates a deep of itself. The sound stream can (and should) be
 		* rewound, and does not have to be at the same place.
-		* @return A new Decoder object. 
+		* @return A new Decoder object.
 		**/
 		virtual Decoder * clone() = 0;
 
 		/**
-		* Destructor. Should free internal buffer. 
+		* Destructor. Should free internal buffer.
 		**/
 		virtual ~Decoder(){};
 
@@ -79,12 +79,12 @@ namespace sound
 
 		/**
 		* Gets the size of the buffer (NOT the size of the entire stream).
-		* @return The size of the buffer. 
+		* @return The size of the buffer.
 		**/
 		virtual int getSize() const = 0;
 
 		/**
-		* Gets a pointer to the actual data. The contents of this buffer will 
+		* Gets a pointer to the actual data. The contents of this buffer will
 		* change with each call to decode, so the client must copy the data.
 		* @return A buffer to raw sound data.
 		**/
@@ -117,7 +117,7 @@ namespace sound
 		virtual bool isFinished() = 0;
 
 		/**
-		* Gets the number of channels in a stream. Supported values are 1 (mono) or 2 (stereo). 
+		* Gets the number of channels in a stream. Supported values are 1 (mono) or 2 (stereo).
 		* @return Either 1 for mono, 2 for stereo, or 0 on errors.
 		**/
 		virtual int getChannels() const = 0;
@@ -130,7 +130,7 @@ namespace sound
 
 		/**
 		* Gets the sample rate for the Decoder, that is, samples per second.
-		* @return The sample rate, eg. 44100. 
+		* @return The sample rate, eg. 44100.
 		**/
 		virtual int getSampleRate() const = 0;
 

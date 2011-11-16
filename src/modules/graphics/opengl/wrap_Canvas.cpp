@@ -36,7 +36,8 @@ namespace opengl
 	{
 		// As startGrab() clears the framebuffer, better not allow
 		// grabbing inside another grabbing
-		if (Canvas::current != NULL) {
+		if (Canvas::current != NULL)
+		{
 			Canvas::bindDefaultCanvas();
 			return luaL_error(L, "Current render target not the default canvas!");
 		}
@@ -130,12 +131,15 @@ namespace opengl
 	{
 		Canvas * canvas = luax_checkcanvas(L, 1);
 		Color c;
-		if (lua_isnoneornil(L, 2)) {
+		if (lua_isnoneornil(L, 2))
+		{
 			c.r = 0;
 			c.g = 0;
 			c.b = 0;
 			c.a = 0;
-		} else if (lua_istable(L, 2)) {
+		}
+		else if (lua_istable(L, 2))
+		{
 			lua_pushinteger(L, 1);
 			lua_gettable(L, 2);
 			c.r = (unsigned char)luaL_checkint(L, -1);
@@ -149,7 +153,9 @@ namespace opengl
 			lua_gettable(L, 2);
 			c.g = (unsigned char)luaL_optint(L, -1, 255);
 			lua_pop(L, 4);
-		} else {
+		}
+		else
+		{
 			c.r = (unsigned char)luaL_checkint(L, 2);
 			c.g = (unsigned char)luaL_checkint(L, 3);
 			c.b = (unsigned char)luaL_checkint(L, 4);

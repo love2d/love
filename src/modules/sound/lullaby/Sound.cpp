@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -49,20 +49,20 @@ namespace lullaby
 	{
 		Data * data = file->read();
 		std::string ext = file->getExtension();
-		
+
 		sound::Decoder * decoder = 0;
 
 		// Find a suitable decoder here, and return it.
-		if(ModPlugDecoder::accepts(ext))
+		if (ModPlugDecoder::accepts(ext))
 			decoder = new ModPlugDecoder(data, ext, bufferSize);
-		else if(Mpg123Decoder::accepts(ext))
+		else if (Mpg123Decoder::accepts(ext))
 			decoder = new Mpg123Decoder(data, ext, bufferSize);
-		else if(VorbisDecoder::accepts(ext))
+		else if (VorbisDecoder::accepts(ext))
 			decoder = new VorbisDecoder(data, ext, bufferSize);
 		/*else if (FLACDecoder::accepts(ext))
 			decoder = new FLACDecoder(data, ext, bufferSize);*/
 
-		// else if(OtherDecoder::accept(ext))
+		// else if (OtherDecoder::accept(ext))
 
 		data->release();
 

@@ -38,23 +38,23 @@ namespace sdl
 	{
 		const char * str = luaL_checkstring(L, 1);
 
-		if(!Event::getConstant(str, msg.type))
+		if (!Event::getConstant(str, msg.type))
 			return false;
 
 		switch(msg.type)
 		{
 		case Event::TYPE_KEY_PRESSED:
-			if(!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
+			if (!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
 				return false;
 			msg.keyboard.u = (unsigned short)luaL_optint(L, 3, 0);
 			return true;
 		case Event::TYPE_KEY_RELEASED:
-			if(!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
+			if (!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
 				return false;
 			return true;
 		case Event::TYPE_MOUSE_PRESSED:
 		case Event::TYPE_MOUSE_RELEASED:
-			if(!Event::getConstant(luaL_checkstring(L, 2), msg.mouse.b))
+			if (!Event::getConstant(luaL_checkstring(L, 2), msg.mouse.b))
 				return false;
 			msg.mouse.x = luaL_checkint(L, 3);
 			msg.mouse.y = luaL_checkint(L, 4);
@@ -80,7 +80,7 @@ namespace sdl
 	{
 		const char * str = 0;
 
-		if(!Event::getConstant(msg.type, str))
+		if (!Event::getConstant(msg.type, str))
 			return 0;
 
 		lua_pushstring(L, str);
@@ -88,19 +88,19 @@ namespace sdl
 		switch(msg.type)
 		{
 		case Event::TYPE_KEY_PRESSED:
-			if(!Event::getConstant(msg.keyboard.k, str))
+			if (!Event::getConstant(msg.keyboard.k, str))
 				return 0;
 			lua_pushstring(L, str);
 			lua_pushinteger(L, msg.keyboard.u);
 			return 3;
 		case Event::TYPE_KEY_RELEASED:
-			if(!Event::getConstant(msg.keyboard.k, str))
+			if (!Event::getConstant(msg.keyboard.k, str))
 				return 0;
 			lua_pushstring(L, str);
 			return 2;
 		case Event::TYPE_MOUSE_PRESSED:
 		case Event::TYPE_MOUSE_RELEASED:
-			if(!Event::getConstant(msg.mouse.b, str))
+			if (!Event::getConstant(msg.mouse.b, str))
 				return 0;
 			lua_pushinteger(L, msg.mouse.x);
 			lua_pushinteger(L, msg.mouse.y);
@@ -127,10 +127,10 @@ namespace sdl
 	{
 		static Event::Message m;
 
-		while(instance->poll(m))
+		while (instance->poll(m))
 		{
 			int args = push_message(L, m);
-			if(args > 0)
+			if (args > 0)
 				return args;
 		}
 
@@ -154,7 +154,7 @@ namespace sdl
 	{
 		static Event::Message m;
 
-		if(instance->wait(m))
+		if (instance->wait(m))
 		{
 			return push_message(L, m);
 		}
@@ -166,7 +166,7 @@ namespace sdl
 	{
 		static Event::Message m;
 
-		if(!to_message(L, m))
+		if (!to_message(L, m))
 		{
 			luax_pushboolean(L, false);
 			return 1;
@@ -204,13 +204,13 @@ namespace sdl
 
 	int luaopen_love_event(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Event();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

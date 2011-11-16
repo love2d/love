@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -35,18 +35,18 @@ namespace sound
 
 	/**
 	* The Sound module is responsible for decoding sound data. It is
-	* not responsible for playing it. 
+	* not responsible for playing it.
 	**/
 	class Sound : public Module
 	{
-		
+
 	public:
 
 		/**
 		* Destructor.
 		**/
 		virtual ~Sound();
-		
+
 		/**
 		* Creates new SoundData from a decoder. Fully expands the
 		* encoded sound data into raw sound data. Not recommended
@@ -59,8 +59,8 @@ namespace sound
 		/**
 		* Creates a new SoundData with the specified number of samples and format.
 		* @param duration In seconds.
-		* @param sampleRate Number of samples per second. 
-		* @param bits Bits per sample (8 or 16). 
+		* @param sampleRate Number of samples per second.
+		* @param bits Bits per sample (8 or 16).
 		* @param channels Either 1 for mono, or 2 for stereo.
 		* @return A new SoundData object, or zero in case of errors.
 		**/

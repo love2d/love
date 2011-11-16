@@ -87,7 +87,7 @@ namespace openal
 
 		valid = pool->play(this, source);
 
-		if(valid)
+		if (valid)
 			reset(source);
 	}
 
@@ -117,7 +117,7 @@ namespace openal
 
 	bool Source::isStopped() const
 	{
-		if(valid)
+		if (valid)
 		{
 			ALenum state;
 			alGetSourcei(source, AL_SOURCE_STATE, &state);
@@ -129,7 +129,7 @@ namespace openal
 
 	bool Source::isPaused() const
 	{
-		if(valid)
+		if (valid)
 		{
 			ALenum state;
 			alGetSourcei(source, AL_SOURCE_STATE, &state);
@@ -161,7 +161,7 @@ namespace openal
 
 			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 
-			while(processed--)
+			while (processed--)
 			{
 				ALuint buffer;
 
@@ -196,7 +196,7 @@ namespace openal
 
 	void Source::setPitch(float pitch)
 	{
-		if(valid)
+		if (valid)
 			alSourcef(source, AL_PITCH, pitch);
 
 		this->pitch = pitch;
@@ -204,7 +204,7 @@ namespace openal
 
 	float Source::getPitch() const
 	{
-		if(valid)
+		if (valid)
 		{
 			ALfloat f;
 			alGetSourcef(source, AL_PITCH, &f);
@@ -217,7 +217,7 @@ namespace openal
 
 	void Source::setVolume(float volume)
 	{
-		if(valid)
+		if (valid)
 		{
 			alSourcef(source, AL_GAIN, volume);
 		}
@@ -227,7 +227,7 @@ namespace openal
 
 	float Source::getVolume() const
 	{
-		if(valid)
+		if (valid)
 		{
 			ALfloat f;
 			alGetSourcef(source, AL_GAIN, &f);
@@ -237,14 +237,15 @@ namespace openal
 		// In case the Source isn't playing.
 		return volume;
 	}
-	
+
 	void Source::seekAtomic(float offset, void * unit)
 	{
 		if (valid)
 		{
 			switch (*((Source::Unit*) unit)) {
 				case Source::UNIT_SAMPLES:
-					if (type == TYPE_STREAM) {
+					if (type == TYPE_STREAM)
+					{
 						offsetSamples = offset;
 						ALint buffer;
 						alGetSourcei(source, AL_BUFFER, &buffer);
@@ -253,13 +254,16 @@ namespace openal
 						offset /= freq;
 						offsetSeconds = offset;
 						decoder->seek(offset);
-					} else {
+					}
+					else
+					{
 						alSourcef(source, AL_SAMPLE_OFFSET, offset);
 					}
 					break;
-				case Source::UNIT_SECONDS:	
+				case Source::UNIT_SECONDS:
 				default:
-					if (type == TYPE_STREAM) {
+					if (type == TYPE_STREAM)
+					{
 						offsetSeconds = offset;
 						decoder->seek(offset);
 						ALint buffer;
@@ -267,7 +271,9 @@ namespace openal
 						int freq;
 						alGetBufferi(buffer, AL_FREQUENCY, &freq);
 						offsetSamples = offset*freq;
-					} else {
+					}
+					else
+					{
 						alSourcef(source, AL_SEC_OFFSET, offset);
 					}
 					break;
@@ -290,7 +296,7 @@ namespace openal
 	{
 		return pool->seek(this, offset, &unit);
 	}
-	
+
 	float Source::tellAtomic(void * unit) const
 	{
 		if (valid)
@@ -324,7 +330,7 @@ namespace openal
 
 	void Source::setPosition(float * v)
 	{
-		if(valid)
+		if (valid)
 			alSourcefv(source, AL_POSITION, v);
 
 		setFloatv(position, v);
@@ -332,7 +338,7 @@ namespace openal
 
 	void Source::getPosition(float * v) const
 	{
-		if(valid)
+		if (valid)
 			alGetSourcefv(source, AL_POSITION, v);
 		else
 			setFloatv(v, position);
@@ -340,7 +346,7 @@ namespace openal
 
 	void Source::setVelocity(float * v)
 	{
-		if(valid)
+		if (valid)
 			alSourcefv(source, AL_VELOCITY, v);
 
 		setFloatv(velocity, v);
@@ -348,7 +354,7 @@ namespace openal
 
 	void Source::getVelocity(float * v) const
 	{
-		if(valid)
+		if (valid)
 			alGetSourcefv(source, AL_VELOCITY, v);
 		else
 			setFloatv(v, velocity);
@@ -356,7 +362,7 @@ namespace openal
 
 	void Source::setDirection(float * v)
 	{
-		if(valid)
+		if (valid)
 			alSourcefv(source, AL_DIRECTION, v);
 		else
 			setFloatv(direction, v);
@@ -364,7 +370,7 @@ namespace openal
 
 	void Source::getDirection(float * v) const
 	{
-		if(valid)
+		if (valid)
 			alGetSourcefv(source, AL_DIRECTION, v);
 		else
 			setFloatv(v, direction);
@@ -372,7 +378,7 @@ namespace openal
 
 	void Source::setLooping(bool looping)
 	{
-		if(valid && type == TYPE_STATIC)
+		if (valid && type == TYPE_STATIC)
 			alSourcei(source, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
 
 		this->looping = looping;
@@ -385,23 +391,23 @@ namespace openal
 
 	void Source::playAtomic()
 	{
-		if(type == TYPE_STATIC)
+		if (type == TYPE_STATIC)
 		{
 			alSourcei(source, AL_BUFFER, buffers[0]);
 		}
-		else if(type == TYPE_STREAM)
+		else if (type == TYPE_STREAM)
 		{
 			int usedBuffers = 0;
 
-			for(unsigned int i = 0; i < MAX_BUFFERS; i++)
+			for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 			{
 				streamAtomic(buffers[i], decoder);
 				++usedBuffers;
-				if(decoder->isFinished())
+				if (decoder->isFinished())
 					break;
 			}
 
-			if(usedBuffers > 0)
+			if (usedBuffers > 0)
 				alSourceQueueBuffers(source, usedBuffers, buffers);
 		}
 
@@ -418,13 +424,13 @@ namespace openal
 
 	void Source::stopAtomic()
 	{
-		if(valid)
+		if (valid)
 		{
-			if(type == TYPE_STATIC)
+			if (type == TYPE_STATIC)
 			{
 				alSourceStop(source);
 			}
-			else if(type == TYPE_STREAM)
+			else if (type == TYPE_STREAM)
 			{
 				alSourceStop(source);
 				int queued = 0;
@@ -444,7 +450,7 @@ namespace openal
 
 	void Source::pauseAtomic()
 	{
-		if(valid)
+		if (valid)
 		{
 			alSourcePause(source);
 			paused = true;
@@ -453,7 +459,7 @@ namespace openal
 
 	void Source::resumeAtomic()
 	{
-		if(valid && paused)
+		if (valid && paused)
 		{
 			alSourcePlay(source);
 			paused = false;
@@ -462,13 +468,13 @@ namespace openal
 
 	void Source::rewindAtomic()
 	{
-		if(valid && type == TYPE_STATIC)
+		if (valid && type == TYPE_STATIC)
 		{
 			alSourceRewind(source);
 			if (!paused)
 				alSourcePlay(source);
 		}
-		else if(valid && type == TYPE_STREAM)
+		else if (valid && type == TYPE_STREAM)
 		{
 			bool waspaused = paused;
 			decoder->rewind();
@@ -508,13 +514,13 @@ namespace openal
 
 	ALenum Source::getFormat(int channels, int bits) const
 	{
-		if(channels == 1 && bits == 8)
+		if (channels == 1 && bits == 8)
 			return AL_FORMAT_MONO8;
-		else if(channels == 1 && bits == 16)
+		else if (channels == 1 && bits == 16)
 			return AL_FORMAT_MONO16;
-		else if(channels == 2 && bits == 8)
+		else if (channels == 2 && bits == 8)
 			return AL_FORMAT_STEREO8;
-		else if(channels == 2 && bits == 16)
+		else if (channels == 2 && bits == 16)
 			return AL_FORMAT_STEREO16;
 		else
 			return 0;
@@ -527,10 +533,11 @@ namespace openal
 
 		int fmt = getFormat(d->getChannels(), d->getBits());
 
-		if(fmt != 0)
+		if (fmt != 0)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 
-		if(decoder->isFinished() && isLooping()) {
+		if (decoder->isFinished() && isLooping())
+		{
 			int queued, processed;
 			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
 			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);

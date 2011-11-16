@@ -34,13 +34,13 @@ namespace box2d
 	Shape * luax_checkshape(lua_State * L, int idx);
 	int w_Shape_getType(lua_State * L);
 	int w_Shape_getRadius(lua_State * L);
-	
+
 	int w_Shape_getChildCount(lua_State * L);
 	int w_Shape_testPoint(lua_State * L);
 	int w_Shape_rayCast(lua_State * L);
 	int w_Shape_computeAABB(lua_State * L);
 	int w_Shape_computeMass(lua_State * L);
-	
+
 	int w_Shape_destroy(lua_State * L);
 	int luaopen_shape(lua_State * L);
 

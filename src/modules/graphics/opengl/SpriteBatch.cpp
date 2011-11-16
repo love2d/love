@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -102,7 +102,7 @@ namespace opengl
 	int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 	{
 		// Only do this if there's a free slot.
-		if((index == -1 && next >= size) || index < -1 || index >= size)
+		if ((index == -1 && next >= size) || index < -1 || index >= size)
 			return -1;
 
 		// Needed for colors.
@@ -127,7 +127,7 @@ namespace opengl
 	int SpriteBatch::addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 	{
 		// Only do this if there's a free slot.
-		if((index == -1 && next >= size) || index < -1 || index >= next)
+		if ((index == -1 && next >= size) || index < -1 || index >= next)
 			return -1;
 
 		// Needed for colors.
@@ -178,7 +178,7 @@ namespace opengl
 
 	void SpriteBatch::setColor(const Color & color)
 	{
-		if(!this->color)
+		if (!this->color)
 			this->color = new Color(color);
 		else
 			*(this->color) = color;

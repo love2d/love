@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented = 0; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -34,7 +34,7 @@ namespace sound
 namespace audio
 {
 	/**
-	* The Audio module is responsible for playing back raw sound samples. 
+	* The Audio module is responsible for playing back raw sound samples.
 	**/
 	class Audio : public Module
 	{
@@ -125,13 +125,13 @@ namespace audio
 
 		/**
 		* Gets the position of the listener.
-		* @param v A float array of size 3 containing (x,y,z) in that order. 
+		* @param v A float array of size 3 containing (x,y,z) in that order.
 		**/
 		virtual void getPosition(float * v) const = 0;
 
 		/**
 		* Sets the position of the listener.
-		* @param v A float array of size 3 containing [x,y,z] in that order. 
+		* @param v A float array of size 3 containing [x,y,z] in that order.
 		**/
 		virtual void setPosition(float * v) = 0;
 
@@ -151,21 +151,21 @@ namespace audio
 
 		/**
 		* Gets the velocity of the listener.
-		* @param v A float array of size 3 containing [x,y,z] in that order. 
+		* @param v A float array of size 3 containing [x,y,z] in that order.
 		**/
 		virtual void getVelocity(float * v) const = 0;
 
 		/**
 		* Sets the velocity of the listener.
-		* @param v A float array of size 3 containing [x,y,z] in that order. 
+		* @param v A float array of size 3 containing [x,y,z] in that order.
 		**/
 		virtual void setVelocity(float * v) = 0;
-		
+
 		/**
 		* Begins recording audio input from the microphone.
 		**/
 		virtual void record() = 0;
-		
+
 		/**
 		* Gets a section of recorded audio.
 		* Per OpenAL, the measurement begins from the start of the
@@ -175,7 +175,7 @@ namespace audio
 		* @return All the recorded SoundData thus far.
 		**/
 		virtual love::sound::SoundData * getRecordedData() = 0;
-		
+
 		/**
 		* Stops recording and, if passed true, returns all the recorded audio
 		* not already gotten by getRecordedData.
@@ -184,7 +184,7 @@ namespace audio
 		* otherwise NULL.
 		**/
 		virtual love::sound::SoundData * stopRecording(bool returnData) = 0;
-		
+
 		/**
 		* Checks whether LOVE is able to record audio input.
 		* @return hasMic Whether LOVE has a microphone enabled.

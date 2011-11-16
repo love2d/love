@@ -42,20 +42,20 @@ namespace opengl
 	class Font : public Object, public Volatile
 	{
 	private:
-		
+
 		enum FontType
 		{
 			FONT_TRUETYPE = 1,
 			FONT_IMAGE,
 			FONT_UNKNOWN
 		};
-		
+
 		struct Glyph
 		{
 			GLuint list;
 			int spacing;
 		};
-		
+
 		love::font::Rasterizer * rasterizer;
 
 		int height;
@@ -65,13 +65,13 @@ namespace opengl
 		std::map<int, Glyph *> glyphs; // maps glyphs to display lists
 		FontType type;
 		Image::Filter filter;
-		
+
 		static const int TEXTURE_WIDTH = 512;
 		static const int TEXTURE_HEIGHT = 512;
-		
+
 		int texture_x, texture_y;
 		int rowHeight;
-		
+
 		void createTexture();
 		Glyph * addGlyph(int glyph);
 
@@ -166,10 +166,10 @@ namespace opengl
 		* Returns the spacing modifier.
 		**/
 		float getSpacing() const;
-		
+
 		// Implements Volatile.
 		bool loadVolatile();
-		void unloadVolatile();	
+		void unloadVolatile();
 
 	}; // Font
 

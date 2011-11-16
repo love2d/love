@@ -37,9 +37,9 @@ namespace lullaby
 
 	Decoder::~Decoder()
 	{
-		if(buffer != 0)
+		if (buffer != 0)
 			delete [] (char*) buffer;
-		if(data != 0)
+		if (data != 0)
 			data->release();
 	}
 

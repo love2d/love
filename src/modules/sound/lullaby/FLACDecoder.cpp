@@ -55,9 +55,9 @@ namespace lullaby
 			"flac", ""
 		};
 
-		for(int i = 0; !(supported[i].empty()); i++)
+		for (int i = 0; !(supported[i].empty()); i++)
 		{
-			if(supported[i].compare(ext) == 0)
+			if (supported[i].compare(ext) == 0)
 				return true;
 		}
 

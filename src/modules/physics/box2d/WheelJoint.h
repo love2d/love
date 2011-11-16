@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -80,17 +80,17 @@ namespace box2d
 		* Get the motor speed, usually in meters per second.
 		**/
 		float getMotorSpeed() const;
-		
+
 		/**
 		* Set the maximum motor torque, usually in N.
 		**/
 		void setMaxMotorTorque(float torque);
-		
+
 		/**
 		* Get the maximum motor torque, usually in N.
 		**/
 		float getMaxMotorTorque() const;
-		
+
 		/**
 		* Get the current motor torque, usually in N.
 		* @param inv_dt The inverse time step.
@@ -102,22 +102,22 @@ namespace box2d
 		* disables the spring.
 		**/
 		void setSpringFrequencyHz(float hz);
-		
+
 		/**
 		* Get the spring frequency, in hertz.
 		**/
 		float getSpringFrequencyHz() const;
-		
+
 		/**
 		* Set the spring damping ratio.
 		**/
 		void setSpringDampingRatio(float ratio);
-		
+
 		/**
 		* Get the spring damping ratio.
 		**/
 		float getSpringDampingRatio() const;
-		
+
 	};
 
 } // box2d

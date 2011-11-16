@@ -39,7 +39,7 @@ namespace audio
 			TYPE_STREAM,
 			TYPE_MAX_ENUM
 		}; // Type
-		
+
 		enum Unit
 		{
 			UNIT_SECONDS = 1,
@@ -71,7 +71,7 @@ namespace audio
 
 		virtual void setVolume(float volume) = 0;
 		virtual float getVolume() const = 0;
-		
+
 		virtual void seek(float offset, Unit unit) = 0;
 		virtual float tell(Unit unit) = 0;
 

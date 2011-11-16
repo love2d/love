@@ -31,7 +31,7 @@ namespace physfs
 
 	bool hack_setupWriteDirectory()
 	{
-		if(instance != 0)
+		if (instance != 0)
 			return instance->setupWriteDirectory();
 		return false;
 	}
@@ -44,7 +44,7 @@ namespace physfs
 		{
 			instance->init(arg0);
 		}
-		catch(Exception & e)
+		catch (Exception & e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -64,7 +64,7 @@ namespace physfs
 	{
 		const char * arg = luaL_checkstring(L, 1);
 
-		if(!instance->setIdentity(arg))
+		if (!instance->setIdentity(arg))
 			return luaL_error(L, "Could not set write directory.");
 
 		return 0;
@@ -74,7 +74,7 @@ namespace physfs
 	{
 		const char * arg = luaL_checkstring(L, 1);
 
-		if(!instance->setSource(arg))
+		if (!instance->setSource(arg))
 			return luaL_error(L, "Could not set source.");
 
 		return 0;
@@ -88,7 +88,7 @@ namespace physfs
 		{
 			t = instance->newFile(filename);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -98,9 +98,9 @@ namespace physfs
 
 	int w_newFileData(lua_State * L)
 	{
-		if(!lua_isstring(L, 1))
+		if (!lua_isstring(L, 1))
 			return luaL_error(L, "String expected.");
-		if(!lua_isstring(L, 2))
+		if (!lua_isstring(L, 2))
 			return luaL_error(L, "String expected.");
 
 		size_t length = 0;
@@ -110,7 +110,7 @@ namespace physfs
 
 		FileData::Decoder decoder = FileData::FILE;
 
-		if(decstr)
+		if (decstr)
 			FileData::getConstant(decstr, decoder);
 
 		FileData * t = 0;
@@ -196,7 +196,7 @@ namespace physfs
 		{
 			return instance->read(L);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -208,7 +208,7 @@ namespace physfs
 		{
 			return instance->write(L);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -233,10 +233,12 @@ namespace physfs
 
 	int w_load(lua_State * L)
 	{
-		try {
+		try
+		{
 			return instance->load(L);
 		}
-		catch (love::Exception & e) {
+		catch (love::Exception & e)
+		{
 			return luaL_error(L, e.what());
 		}
 	}
@@ -255,16 +257,16 @@ namespace physfs
 
 		int size = tmp.size();
 
-		for(int i=0;i<size-4;i++)
+		for (int i=0;i<size-4;i++)
 		{
-			if(tmp[i] == '.')
+			if (tmp[i] == '.')
 			{
 				tmp[i] = '/';
 			}
 		}
 
 		// Check whether file exists.
-		if(instance->exists(tmp.c_str()))
+		if (instance->exists(tmp.c_str()))
 		{
 			lua_pop(L, 1);
 			lua_pushstring(L, tmp.c_str());
@@ -274,9 +276,9 @@ namespace physfs
 
 		tmp = filename;
 		size = tmp.size();
-		for(int i=0;i<size;i++)
+		for (int i=0;i<size;i++)
 		{
-			if(tmp[i] == '.')
+			if (tmp[i] == '.')
 			{
 				tmp[i] = '/';
 			}
@@ -285,7 +287,8 @@ namespace physfs
 		if (instance->isDirectory(tmp.c_str()))
 		{
 			tmp += "/init.lua";
-			if (instance->exists(tmp.c_str())) {
+			if (instance->exists(tmp.c_str()))
+			{
 				lua_pop(L, 1);
 				lua_pushstring(L, tmp.c_str());
 				// Ok, load it.
@@ -384,7 +387,7 @@ namespace physfs
 
 	int luaopen_love_filesystem(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
@@ -392,7 +395,7 @@ namespace physfs
 				love::luax_register_searcher(L, loader, 1);
 				love::luax_register_searcher(L, extloader, 2);
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

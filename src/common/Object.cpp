@@ -45,7 +45,7 @@ namespace love
 
 	void Object::release()
 	{
-		if(--count <= 0)
+		if (--count <= 0)
 			delete this;
 	}
 

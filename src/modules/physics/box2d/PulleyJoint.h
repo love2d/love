@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -31,9 +31,9 @@ namespace physics
 namespace box2d
 {
 	/**
-	* The PulleyJoint The pulley connects two bodies to ground and 
-	* to each other. As one body goes up, the other goes down. The 
-	* total length of the pulley rope is conserved according to the 
+	* The PulleyJoint The pulley connects two bodies to ground and
+	* to each other. As one body goes up, the other goes down. The
+	* total length of the pulley rope is conserved according to the
 	* initial configuration: length1 + ratio * length2 <= constant.
 	**/
 	class PulleyJoint : public Joint
@@ -44,33 +44,33 @@ namespace box2d
 	public:
 
 		/**
-		* Creates a PulleyJoint connecting bodyA to bodyB. 
+		* Creates a PulleyJoint connecting bodyA to bodyB.
 		**/
 		PulleyJoint(Body * bodyA, Body * bodyB, b2Vec2 groundAnchorA, b2Vec2 groundAnchorB, b2Vec2 anchorA, b2Vec2 anchorB, float ratio, bool collideConnected);
-		
+
 		virtual ~PulleyJoint();
-		
+
 		/**
 		* Gets the ground anchors position in world
 		* coordinates.
 		**/
 		int getGroundAnchors(lua_State * L);
-		
+
 		/**
 		* Gets the current length of the segment attached to bodyA.
 		**/
 		float getLengthA() const;
-	
+
 		/**
 		* Gets the current length of the segment attached to bodyB.
 		**/
 		float getLengthB() const;
-		
+
 		/**
 		* Gets the pulley ratio.
 		**/
 		float getRatio() const;
-		
+
 	};
 
 } // box2d

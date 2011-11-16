@@ -67,22 +67,22 @@ namespace opengl
 
 	ParticleSystem::~ParticleSystem()
 	{
-		if(this->sprite != 0)
+		if (this->sprite != 0)
 			this->sprite->release();
 
-		if(pStart != 0)
+		if (pStart != 0)
 			delete [] pStart;
 	}
 
 	void ParticleSystem::add()
 	{
-		if(isFull()) return;
+		if (isFull()) return;
 
 		float min,max;
 
 		min = particleLifeMin;
 		max = particleLifeMax;
-		if(min == max)
+		if (min == max)
 			pLast->life = min;
 		else
 			pLast->life = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
@@ -132,7 +132,7 @@ namespace opengl
 
 	void ParticleSystem::remove(particle * p)
 	{
-		if(!isEmpty())
+		if (!isEmpty())
 		{
 			*p = *(--pLast);
 		}
@@ -140,7 +140,7 @@ namespace opengl
 
 	void ParticleSystem::setSprite(Image * image)
 	{
-		if(sprite != 0)
+		if (sprite != 0)
 			sprite->release();
 
 		sprite = image;
@@ -170,7 +170,7 @@ namespace opengl
 	void ParticleSystem::setParticleLife(float min, float max)
 	{
 		particleLifeMin = min;
-		if(max == 0)
+		if (max == 0)
 			particleLifeMax = min;
 		else
 			particleLifeMax = max;
@@ -387,7 +387,7 @@ namespace opengl
 
 	void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
-		if(sprite == 0) return; // just in case of failure
+		if (sprite == 0) return; // just in case of failure
 
 		glPushMatrix();
 		glPushAttrib(GL_CURRENT_BIT);
@@ -397,7 +397,7 @@ namespace opengl
 		glMultMatrixf((const GLfloat*)t.getElements());
 
 		particle * p = pStart;
-		while(p != pLast)
+		while (p != pLast)
 		{
 			glPushMatrix();
 
@@ -418,30 +418,30 @@ namespace opengl
 		particle * p = pStart;
 
 		// Make some more particles.
-		if(active)
+		if (active)
 		{
 			float rate = 1.0f / emissionRate; // the amount of time between each particle emit
 			emitCounter += dt;
-			while(emitCounter > rate)
+			while (emitCounter > rate)
 			{
 				add();
 				emitCounter -= rate;
 			}
 			/*int particles = (int)(emissionRate * dt);
-			for(int i = 0; i != particles; i++)
+			for (int i = 0; i != particles; i++)
 				add();*/
 
 			life -= dt;
-			if(lifetime != -1 && life < 0)
+			if (lifetime != -1 && life < 0)
 				stop();
 		}
 
-		while(p != pLast)
+		while (p != pLast)
 		{
 			// Decrease lifespan.
 			p->life -= dt;
 
-			if(p->life > 0)
+			if (p->life > 0)
 			{
 
 				// Temp variables.
@@ -509,7 +509,7 @@ namespace opengl
 			{
 				remove(p);
 
-				if(p >= pLast)
+				if (p >= pLast)
 					return;
 			} // else
 		} // while

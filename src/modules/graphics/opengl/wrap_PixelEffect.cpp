@@ -46,17 +46,22 @@ namespace opengl
 	static int _sendScalars(lua_State * L, PixelEffect * effect, const char * name, int count)
 	{
 		float * values = new float[count];
-		for (int i = 0; i < count; ++i) {
-			if (!lua_isnumber(L, 3 + i)) { 
+		for (int i = 0; i < count; ++i)
+		{
+			if (!lua_isnumber(L, 3 + i))
+			{
 				delete[] values;
 				return luaL_typerror(L, 3 + i, "number");
 			}
 			values[i] = (float)lua_tonumber(L, 3 + i);
 		}
 
-		try {
+		try
+		{
 			effect->sendFloat(name, 1, values, count);
-		} catch(love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			delete[] values;
 			return luaL_error(L, e.what());
 		}
@@ -70,12 +75,15 @@ namespace opengl
 		size_t dimension = lua_objlen(L, 3);
 		float * values = new float[count * dimension];
 
-		for (int i = 0; i < count; ++i) {
-			if (!lua_istable(L, 3 + i)) {
+		for (int i = 0; i < count; ++i)
+		{
+			if (!lua_istable(L, 3 + i))
+			{
 				delete[] values;
 				return luaL_typerror(L, 3 + i, "table");
 			}
-			if (lua_objlen(L, 3 + i) != dimension) {
+			if (lua_objlen(L, 3 + i) != dimension)
+			{
 				delete[] values;
 				return luaL_error(L, "Error in argument %d: Expected table size %d, got %d.",
 				                     3+i, dimension, lua_objlen(L, 3+i));
@@ -88,9 +96,12 @@ namespace opengl
 			lua_pop(L, dimension);
 		}
 
-		try {
+		try
+		{
 			effect->sendFloat(name, dimension, values, count);
-		} catch(love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			delete[] values;
 			return luaL_error(L, e.what());
 		}
@@ -134,9 +145,11 @@ namespace opengl
 			                     count, count);
 
 		float * values = new float[dimension * dimension * count];
-		for (int i = 0; i < count; ++i) {
+		for (int i = 0; i < count; ++i)
+		{
 			lua_getfield(L, 3+i, "dimension");
-			if (lua_tointeger(L, -1) != dimension) {
+			if (lua_tointeger(L, -1) != dimension)
+			{
 				// You unlock this door with the key of imagination. Beyond it is
 				// another dimension: a dimension of sound, a dimension of sight,
 				// a dimension of mind. You're moving into a land of both shadow
@@ -156,9 +169,12 @@ namespace opengl
 			lua_pop(L, 1 + dimension);
 		}
 
-		try {
+		try
+		{
 			effect->sendMatrix(name, dimension, values, count);
-		} catch(love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			delete[] values;
 			return luaL_error(L, e.what());
 		}
@@ -173,9 +189,12 @@ namespace opengl
 		const char* name = luaL_checkstring(L, 2);
 		Image* img = luax_checkimage(L, 3);
 
-		try {
+		try
+		{
 			effect->sendImage(name, *img);
-		} catch(love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			luaL_error(L, e.what());
 		}
 
@@ -188,9 +207,12 @@ namespace opengl
 		const char* name = luaL_checkstring(L, 2);
 		Canvas* canvas = luax_checkcanvas(L, 3);
 
-		try {
+		try
+		{
 			effect->sendCanvas(name, *canvas);
-		} catch(love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			luaL_error(L, e.what());
 		}
 

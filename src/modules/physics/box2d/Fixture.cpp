@@ -49,7 +49,7 @@ namespace box2d
 		fixture = body->body->CreateFixture(&def);
 		Memoizer::add(fixture, this);
 	}
-	
+
 	Fixture::Fixture(b2Fixture * f)
 		: fixture(f)
 	{
@@ -62,7 +62,7 @@ namespace box2d
 
 	Fixture::~Fixture()
 	{
-		if(data->ref != 0)
+		if (data->ref != 0)
 			delete data->ref;
 
 		delete data;
@@ -124,7 +124,7 @@ namespace box2d
 	{
 		return body;
 	}
-	
+
 	Shape * Fixture::getShape() const
 	{
 		if (!fixture->GetShape()) return NULL;
@@ -197,10 +197,10 @@ namespace box2d
 		// The new bitset.
 		std::bitset<16> b;
 
-		for(int i = 1;i<=argc;i++)
+		for (int i = 1;i<=argc;i++)
 		{
 			size_t bpos = (size_t)(lua_tointeger(L, i)-1);
-			if(bpos > 16)
+			if (bpos > 16)
 				return luaL_error(L, "Values must be in range 1-16.");
 			b.set(bpos, true);
 		}
@@ -214,8 +214,8 @@ namespace box2d
 		std::bitset<16> b((int)bits);
 
 		// Push all set bits.
-		for(int i = 0;i<16;i++)
-			if(b.test(i))
+		for (int i = 0;i<16;i++)
+			if (b.test(i))
 				lua_pushinteger(L, i+1);
 
 		// Count number of set bits.
@@ -226,7 +226,7 @@ namespace box2d
 	{
 		love::luax_assert_argc(L, 1, 1);
 
-		if(data->ref != 0)
+		if (data->ref != 0)
 		{
 			delete data->ref;
 			data->ref = 0;
@@ -239,19 +239,19 @@ namespace box2d
 	int Fixture::getUserData(lua_State * L)
 	{
 		love::luax_assert_argc(L, 0, 0);
-		if(data->ref != 0)
+		if (data->ref != 0)
 			data->ref->push();
 		else
 			lua_pushnil(L);
 
 		return 1;
 	}
-	
+
 	bool Fixture::testPoint(float x, float y) const
 	{
 		return fixture->TestPoint(Physics::scaleDown(b2Vec2(x, y)));
 	}
-	
+
 	int Fixture::rayCast(lua_State * L) const
 	{
 		float p1x = Physics::scaleDown((float)luaL_checknumber(L, 1));
@@ -275,7 +275,7 @@ namespace box2d
 		lua_pushnumber(L, output.fraction);
 		return 3;
 	}
-	
+
 	int Fixture::getBoundingBox(lua_State * L) const
 	{
 		int childIndex = (int)luaL_optint(L, 1, 0);
@@ -287,7 +287,7 @@ namespace box2d
 		lua_pushnumber(L, box.upperBound.y);
 		return 4;
 	}
-	
+
 	int Fixture::getMassData(lua_State * L) const
 	{
 		b2MassData data;
@@ -299,8 +299,8 @@ namespace box2d
 		lua_pushnumber(L, data.I);
 		return 4;
 	}
-	
-	
+
+
 } // box2d
 } // physics
 } // love

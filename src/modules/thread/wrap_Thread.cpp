@@ -243,9 +243,12 @@ namespace thread
 			luax_convobj(L, 2, "filesystem", "newFile");
 		if (luax_istype(L, 2, FILESYSTEM_FILE_T))
 		{
-			try {
+			try
+			{
 				data = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T)->read();
-			} catch (love::Exception & e) {
+			}
+			catch (love::Exception & e)
+			{
 				return luaL_error(L, e.what());
 			}
 		}
@@ -321,7 +324,7 @@ namespace thread
 
 	int luaopen_love_thread(lua_State *L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
@@ -334,7 +337,7 @@ namespace thread
 				luax_newtype(L, "Thread", THREAD_THREAD_T, (void*)curthread);
 				lua_setfield(L, -2, "_curthread");
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -40,7 +40,7 @@ namespace box2d
 		def.bodyB = joint2->body2->body;
 		def.ratio = ratio;
 		def.collideConnected = collideConnected;
-		
+
 		joint = (b2GearJoint*)createJoint(&def);
 	}
 
@@ -49,12 +49,12 @@ namespace box2d
 		destroyJoint(joint);
 		joint = 0;
 	}
-	
+
 	void GearJoint::setRatio(float ratio)
 	{
 		joint->SetRatio(ratio);
 	}
-	
+
 	float GearJoint::getRatio() const
 	{
 		return joint->GetRatio();

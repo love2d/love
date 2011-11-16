@@ -54,7 +54,7 @@ namespace opengl
 		rasterizer->release();
 		unloadVolatile();
 	}
-	
+
 	void Font::createTexture()
 	{
 		texture_x = texture_y = rowHeight = 0;
@@ -62,7 +62,7 @@ namespace opengl
 		glGenTextures(1, &t);
 		textures.push_back(t);
 		glBindTexture(GL_TEXTURE_2D, t);
-		
+
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 						(filter.mag == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -70,22 +70,23 @@ namespace opengl
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
-		glTexImage2D(GL_TEXTURE_2D, 
-					 0, 
-					 GL_RGBA, 
-					 (GLsizei)TEXTURE_WIDTH, 
-					 (GLsizei)TEXTURE_HEIGHT, 
-					 0, 
-					 format, 
-					 GL_UNSIGNED_BYTE, 
+		glTexImage2D(GL_TEXTURE_2D,
+					 0,
+					 GL_RGBA,
+					 (GLsizei)TEXTURE_WIDTH,
+					 (GLsizei)TEXTURE_HEIGHT,
+					 0,
+					 format,
+					 GL_UNSIGNED_BYTE,
 					 NULL);
 	}
-	
+
 	Font::Glyph * Font::addGlyph(int glyph)
 	{
 		Glyph * g = new Glyph;
 		g->list = glGenLists(1);
-		if (g->list == 0) { // opengl failed to generate the list
+		if (g->list == 0)
+		{ // opengl failed to generate the list
 			delete g;
 			return NULL;
 		}
@@ -93,18 +94,20 @@ namespace opengl
 		g->spacing = gd->getAdvance();
 		int w = gd->getWidth();
 		int h = gd->getHeight();
-		if (texture_x + w > TEXTURE_WIDTH) { // out of space - new row!
+		if (texture_x + w > TEXTURE_WIDTH)
+		{ // out of space - new row!
 			texture_x = 0;
 			texture_y += rowHeight;
 			rowHeight = 0;
 		}
-		if (texture_y + h > TEXTURE_HEIGHT) { // totally out of space - new texture!
+		if (texture_y + h > TEXTURE_HEIGHT)
+		{ // totally out of space - new texture!
 			createTexture();
 		}
 		GLuint t = textures.back();
 		glBindTexture(GL_TEXTURE_2D, t);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w, h, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
-		
+
 		Quad::Viewport v;
 		v.x = (float) texture_x;
 		v.y = (float) texture_y;
@@ -112,12 +115,12 @@ namespace opengl
 		v.h = (float) h;
 		Quad * q = new Quad(v, (const float) TEXTURE_WIDTH, (const float) TEXTURE_HEIGHT);
 		const vertex * verts = q->getVertices();
-		
+
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].x);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].s);
-		
+
 		glNewList(g->list, GL_COMPILE);
 		glBindTexture(GL_TEXTURE_2D, t);
 		glPushMatrix();
@@ -125,16 +128,16 @@ namespace opengl
 		glDrawArrays(GL_QUADS, 0, 4);
 		glPopMatrix();
 		glEndList();
-		
+
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
-		
+
 		delete q;
 		delete gd;
-		
+
 		texture_x += w;
 		rowHeight = std::max(rowHeight, h);
-		
+
 		glyphs[glyph] = g;
 		return g;
 	}
@@ -156,9 +159,11 @@ namespace opengl
 		{
 			utf8::iterator<std::string::iterator> i (text.begin(), text.begin(), text.end());
 			utf8::iterator<std::string::iterator> end (text.end(), text.begin(), text.end());
-			while (i != end) {
+			while (i != end)
+			{
 				int g = *i++;
-				if (g == '\n') { // wrap newline, but do not print it
+				if (g == '\n')
+				{ // wrap newline, but do not print it
 					glTranslatef(-dx, floor(getHeight() * getLineHeight() + 0.5f), 0);
 					dx = 0.0f;
 					continue;
@@ -194,16 +199,17 @@ namespace opengl
 
 	int Font::getWidth(const std::string & line)
 	{
-		if(line.size() == 0) return 0;
+		if (line.size() == 0) return 0;
 		int temp = 0;
-		
+
 		Glyph * g;
 
 		try
 		{
 			utf8::iterator<std::string::const_iterator> i (line.begin(), line.begin(), line.end());
 			utf8::iterator<std::string::const_iterator> end (line.end(), line.begin(), line.end());
-			while (i != end) {
+			while (i != end)
+			{
 				int c = *i++;
 				g = glyphs[c];
 				if (!g) g = addGlyph(c);
@@ -240,7 +246,8 @@ namespace opengl
 		//split text at newlines
 		istringstream iss( text );
 		string line;
-		while (getline(iss, line, '\n')) {
+		while (getline(iss, line, '\n'))
+		{
 			// split line into words
 			vector<string> words;
 			istringstream word_iss(line);
@@ -252,12 +259,14 @@ namespace opengl
 			float oldwidth = 0.0f;
 			ostringstream string_builder;
 			vector<string>::const_iterator word_iter;
-			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter) {
+			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter)
+			{
 				string word( *word_iter );
 				width += getWidth( word );
 
 				// on wordwrap, push line to line buffer and clear string builder
-				if (width >= wrap && oldwidth > 0) {
+				if (width >= wrap && oldwidth > 0)
+				{
 					int realw = width;
 					lines_to_draw.push_back( string_builder.str() );
 					string_builder.str( "" );
@@ -313,14 +322,16 @@ namespace opengl
 		// nuke everything from orbit
 		std::map<int, Glyph *>::iterator it = glyphs.begin();
 		Glyph * g;
-		while (it != glyphs.end()) {
+		while (it != glyphs.end())
+		{
 			g = it->second;
 			glDeleteLists(g->list, 1);
 			delete g;
 			glyphs.erase(it++);
 		}
 		std::vector<GLuint>::iterator iter = textures.begin();
-		while (iter != textures.end()) {
+		while (iter != textures.end())
+		{
 			glDeleteTextures(1, (GLuint*)&*iter);
 			iter++;
 		}

@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -41,7 +41,7 @@ namespace love
 		Value values_u[PEAK];
 
 	public:
-		
+
 		struct Entry
 		{
 			T t;
@@ -52,27 +52,27 @@ namespace love
 		{
 			unsigned n = size/sizeof(Entry);
 
-			for(unsigned i = 0; i<n; ++i)
+			for (unsigned i = 0; i<n; ++i)
 			{
 				unsigned e_t = (unsigned)entries[i].t;
 				unsigned e_u = (unsigned)entries[i].u;
 
-				if(e_t < PEAK)
+				if (e_t < PEAK)
 				{
 					values_u[e_t].v = e_u;
 					values_u[e_t].set = true;
 				}
-				if(e_u < PEAK)
+				if (e_u < PEAK)
 				{
 					values_t[e_u].v = e_t;
 					values_t[e_u].set = true;
 				}
 			}
 		}
-			
+
 		bool find(T t, U & u)
 		{
-			if((unsigned)t < PEAK && values_u[(unsigned)t].set)
+			if ((unsigned)t < PEAK && values_u[(unsigned)t].set)
 			{
 				u = (U)values_u[(unsigned)t].v;
 				return true;
@@ -83,7 +83,7 @@ namespace love
 
 		bool find(U u, T & t)
 		{
-			if((unsigned)u < PEAK && values_t[(unsigned)u].set)
+			if ((unsigned)u < PEAK && values_t[(unsigned)u].set)
 			{
 				t = (T)values_t[(unsigned)u].v;
 				return true;

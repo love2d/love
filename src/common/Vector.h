@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -31,7 +31,7 @@ namespace love
 {
 	/**
 	* 2D Vector class.
-	* 
+	*
 	* @author Anders Ruud
 	* @date 2006-05-13
 	**/
@@ -59,7 +59,7 @@ namespace love
 		* @return The length of the Vector.
 		*
 		* This method requires sqrt() and should be used
-		* carefully. 
+		* carefully.
 		**/
 		float getLength() const;
 
@@ -108,7 +108,7 @@ namespace love
 		* Reverses the Vector.
 		* @return The reversed Vector.
 		**/
-		Vector operator - () const; 
+		Vector operator - () const;
 
 		/**
 		* Adds a Vector to this Vector, and also saves changes in the first Vector.
@@ -154,7 +154,7 @@ namespace love
 		* @return The x value of the Vector.
 		**/
 		float getX() const;
-		
+
 		/**
 		* Gets the x value of the Vector.
 		* @return The x value of the Vector.
@@ -180,17 +180,17 @@ namespace love
 		return sqrt(x*x + y*y);
 	}
 
-	inline Vector Vector::getNormal() const 
+	inline Vector Vector::getNormal() const
 	{
 		return Vector(-y, x);
 	}
 
 	inline float Vector::normalize()
 	{
-		
+
 		float len = getLength();
 
-		if(len > 0)
+		if (len > 0)
 			(*this) /= len;
 
 		return len;
@@ -221,7 +221,7 @@ namespace love
 	{
 		return Vector(x - v.getX(), y - v.getY());
 	}
-	
+
 	inline Vector Vector::operator * (float s) const
 	{
 		return Vector(x*s, y*s);
@@ -237,13 +237,13 @@ namespace love
 		return Vector(-x, -y);
 	}
 
-	inline void Vector::operator += (const Vector & v) 
+	inline void Vector::operator += (const Vector & v)
 	{
 		x += v.getX();
 		y += v.getY();
 	}
 
-	inline void Vector::operator -= (const Vector & v) 
+	inline void Vector::operator -= (const Vector & v)
 	{
 		x -= v.getX();
 		y -= v.getY();

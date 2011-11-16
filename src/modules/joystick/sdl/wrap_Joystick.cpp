@@ -107,13 +107,13 @@ namespace sdl
 		unsigned int num = lua_gettop(L);
 		int * buttonlist = new int[num];
 		unsigned int counter = 0;
-		
+
 		for (unsigned int i = 1; i < num; i++)
 		{
 			buttonlist[counter++] = (int) luaL_checknumber(L, i+1)-1;
 		}
 		buttonlist[counter] = -1;
-		
+
 		luax_pushboolean(L, instance->isDown(index, buttonlist));
 		delete[] buttonlist;
 		return 1;
@@ -163,13 +163,13 @@ namespace sdl
 
 	int luaopen_love_joystick(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Joystick();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

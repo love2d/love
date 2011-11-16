@@ -147,7 +147,7 @@ namespace lullaby
 		oggFile.dataRead = 0;
 
 		// Open Vorbis handle
-		if(ov_open_callbacks(&oggFile, &handle, NULL, 0, vorbisCallbacks) < 0)
+		if (ov_open_callbacks(&oggFile, &handle, NULL, 0, vorbisCallbacks) < 0)
 			throw love::Exception("Could not read Ogg bitstream");
 
 		// Get info and comments
@@ -166,9 +166,9 @@ namespace lullaby
 			"ogg", "oga", ""
 		};
 
-		for(int i = 0; !(supported[i].empty()); i++)
+		for (int i = 0; !(supported[i].empty()); i++)
 		{
-			if(supported[i].compare(ext) == 0)
+			if (supported[i].compare(ext) == 0)
 				return true;
 		}
 
@@ -184,20 +184,20 @@ namespace lullaby
 	{
 		int size = 0;
 
-		while(size < bufferSize)
+		while (size < bufferSize)
 		{
 			int result = ov_read(&handle, (char*) buffer + size, bufferSize - size, endian, (getBits() == 16 ? 2 : 1), 1, 0);
 
-			if(result == OV_HOLE)
+			if (result == OV_HOLE)
 				continue;
-			else if(result <= OV_EREAD)
+			else if (result <= OV_EREAD)
 				return -1;
-			else if(result == 0)
+			else if (result == 0)
 			{
 				eof = true;
 				break;
 			}
-			else if(result > 0)
+			else if (result > 0)
 				size += result;
 		}
 
@@ -208,7 +208,7 @@ namespace lullaby
 	{
 		int result = ov_time_seek(&handle, s);
 
-		if(result == 0)
+		if (result == 0)
 		{
 			eof = false;
 			return true;
@@ -221,7 +221,7 @@ namespace lullaby
 	{
 		int result = ov_pcm_seek(&handle, 0);
 
-		if(result == 0)
+		if (result == 0)
 		{
 			eof = false;
 			return true;

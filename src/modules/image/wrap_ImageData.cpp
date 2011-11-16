@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -92,15 +92,15 @@ namespace image
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 
-		if(!lua_isfunction(L, 2))
+		if (!lua_isfunction(L, 2))
 			return luaL_error(L, "Function expected");
-		
+
 		int w = t->getWidth();
 		int h = t->getHeight();
 
-		for(int i = 0; i < w; i++)
+		for (int i = 0; i < w; i++)
 		{
-			for(int j = 0; j < h; j++)
+			for (int j = 0; j < h; j++)
 			{
 				lua_pushvalue(L, 2);
 				lua_pushnumber(L, i);
@@ -142,17 +142,20 @@ namespace image
 		t->paste((love::image::ImageData *)src, dx, dy, sx, sy, sw, sh);
 		return 0;
 	}
-	
+
 	int w_ImageData_encode(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
-		if(lua_isstring(L, 2))
+		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T);
 		const char * fmt;
-		if (lua_isnoneornil(L, 3)) {
+		if (lua_isnoneornil(L, 3))
+		{
 			fmt = file->getExtension().c_str();
-		} else {
+		}
+		else
+		{
 			fmt = luaL_checkstring(L, 3);
 		}
 		ImageData::Format format;

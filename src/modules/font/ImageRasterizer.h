@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -38,7 +38,7 @@ namespace font
 	private:
 		// Load all the glyph positions into memory
 		void load();
-		
+
 		// The image data
 		love::image::ImageData * imageData;
 		// The glyphs in the font
@@ -51,7 +51,7 @@ namespace font
 		unsigned int * widths;
 		// The spacing of each glyph
 		unsigned int * spacing;
-	
+
 	public:
 		ImageRasterizer(love::image::ImageData * imageData, unsigned short * glyphs, int length);
 		virtual ~ImageRasterizer();
@@ -60,9 +60,9 @@ namespace font
 		virtual int getLineHeight() const;
 		virtual GlyphData * getGlyphData(unsigned short glyph) const;
 		virtual int getNumGlyphs() const;
-		
+
 		static const unsigned int MAX_CHARS = 256;
-		
+
 	}; // ImageRasterizer
 
 } // font

@@ -498,7 +498,7 @@ namespace opengl
 		* @param points Number of points to use to draw the circle.
 		**/
 		void circle(DrawMode mode, float x, float y, float radius, int points = 10);
-		
+
 		/**
 		* Draws an arc using the specified arguments.
 		* @param mode The mode of drawing (line/filled).

@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -61,7 +61,7 @@ namespace box2d
 		lua_pushnumber(L, t->getMaxForce());
 		return 1;
 	}
-	
+
 	int w_MouseJoint_setFrequency(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);
@@ -69,14 +69,14 @@ namespace box2d
 		t->setFrequency(arg1);
 		return 0;
 	}
-	
+
 	int w_MouseJoint_getFrequency(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);
 		lua_pushnumber(L, t->getFrequency());
 		return 1;
 	}
-	
+
 	int w_MouseJoint_setDampingRatio(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);
@@ -84,7 +84,7 @@ namespace box2d
 		t->setDampingRatio(arg1);
 		return 0;
 	}
-	
+
 	int w_MouseJoint_getDampingRatio(lua_State * L)
 	{
 		MouseJoint * t = luax_checkmousejoint(L, 1);

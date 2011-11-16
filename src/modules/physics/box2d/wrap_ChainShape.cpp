@@ -31,7 +31,7 @@ namespace box2d
 	{
 		return luax_checktype<ChainShape>(L, idx, "ChainShape", PHYSICS_CHAIN_SHAPE_T);
 	}
-	
+
 	int w_ChainShape_setNextVertex(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
@@ -40,7 +40,7 @@ namespace box2d
 		c->setNextVertex(x, y);
 		return 0;
 	}
-	
+
 	int w_ChainShape_setPrevVertex(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
@@ -49,14 +49,14 @@ namespace box2d
 		c->setPrevVertex(x, y);
 		return 0;
 	}
-	
+
 	int w_ChainShape_getChildCount(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
 		lua_pushinteger(L, c->getChildCount());
 		return 1;
 	}
-	
+
 	int w_ChainShape_getChildEdge(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
@@ -65,7 +65,7 @@ namespace box2d
 		luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, e);
 		return 1;
 	}
-	
+
 	int w_ChainShape_getVertexCount(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
@@ -73,7 +73,7 @@ namespace box2d
 		lua_pushinteger(L, count);
 		return 1;
 	}
-	
+
 	int w_ChainShape_getPoint(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
@@ -83,13 +83,14 @@ namespace box2d
 		lua_pushnumber(L, v.y);
 		return 2;
 	}
-	
+
 	int w_ChainShape_getPoints(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
 		const b2Vec2 * verts = c->getPoints();
 		int count = c->getVertexCount();
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < count; i++)
+		{
 			b2Vec2 v = Physics::scaleUp(verts[i]);
 			lua_pushnumber(L, v.x);
 			lua_pushnumber(L, v.y);

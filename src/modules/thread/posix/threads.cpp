@@ -105,11 +105,10 @@ namespace thread
 	unsigned int Semaphore::value()
 	{
 		int val = 0;
-		if (sem_getvalue(&sem, &val)) {
+		if (sem_getvalue(&sem, &val))
 			return 0;
-		} else {
+		else
 			return val;
-		}
 	}
 
 	void Semaphore::post()

@@ -81,14 +81,14 @@ namespace timer
 
 	int luaopen_love_timer(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new love::timer::sdl::Timer();
-				
+
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

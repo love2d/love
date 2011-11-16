@@ -50,9 +50,9 @@ namespace sdl
 
 		SDL_EnableUNICODE(1);
 
-		while(SDL_PollEvent(&e))
+		while (SDL_PollEvent(&e))
 		{
-			if(convert(e, message))
+			if (convert(e, message))
 				return true;
 		}
 
@@ -77,7 +77,7 @@ namespace sdl
 	{
 		static SDL_Event e;
 
-		while(SDL_PollEvent(&e))
+		while (SDL_PollEvent(&e))
 		{
 			// Do nothing with 'e' ...
 		}
@@ -107,11 +107,14 @@ namespace sdl
 			m.joystick.index = e.jbutton.which;
 			return true;
 		case SDL_ACTIVEEVENT:
-			if (e.active.state & SDL_APPINPUTFOCUS) {
+			if (e.active.state & SDL_APPINPUTFOCUS)
+			{
 				m.type = Event::TYPE_FOCUS;
 				m.focus.f = (e.active.gain != 0);
 				return true;
-			} else break;
+			}
+			else
+				break;
 		case SDL_QUIT:
 			m.type = Event::TYPE_QUIT;
 			return true;

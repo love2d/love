@@ -42,12 +42,12 @@ namespace audio
 	{
 		return types.find(in, out);
 	}
-	
+
 	bool Source::getConstant(const char * in, Unit & out)
 	{
 		return units.find(in, out);
 	}
-	
+
 	bool Source::getConstant(Unit in, const char *& out)
 	{
 		return units.find(in, out);
@@ -60,13 +60,13 @@ namespace audio
 	};
 
 	StringMap<Source::Type, Source::TYPE_MAX_ENUM> Source::types(Source::typeEntries, sizeof(Source::typeEntries));
-	
+
 	StringMap<Source::Unit, Source::UNIT_MAX_ENUM>::Entry Source::unitEntries[] =
 	{
 		{"seconds", Source::UNIT_SECONDS},
 		{"samples", Source::UNIT_SAMPLES},
 	};
-	
+
 	StringMap<Source::Unit, Source::UNIT_MAX_ENUM> Source::units(Source::unitEntries, sizeof(Source::unitEntries));
 
 } // audio

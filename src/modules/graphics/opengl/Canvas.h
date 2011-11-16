@@ -61,7 +61,7 @@ namespace opengl
 		* @copydoc DrawQable::drawq()
 		**/
 		void drawq(love::graphics::Quad * quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
-		
+
 		love::image::ImageData * getImageData(love::image::Image * image);
 
 		void setFilter(const Image::Filter &f);
@@ -94,7 +94,7 @@ namespace opengl
 			Image::Filter filter;
 			Image::Wrap wrap;
 		} settings;
-		
+
 		void drawv(const Matrix & t, const vertex * v) const;
 	};
 

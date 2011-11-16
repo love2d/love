@@ -45,7 +45,7 @@ namespace box2d
 	class Shape : public love::physics::Shape
 	{
 		friend class Fixture;
-	
+
 	protected:
 
 		// The Box2D shape.

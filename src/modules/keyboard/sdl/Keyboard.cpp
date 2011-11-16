@@ -37,7 +37,7 @@ namespace sdl
 	{
 		SDLKey k;
 		Uint8 * keystate = SDL_GetKeyState(0);
-		
+
 		for (Key key = *keylist; key != KEY_MAX_ENUM; key = *(++keylist))
 		{
 			if (keys.find(key, k) && keystate[(unsigned)k] == 1)

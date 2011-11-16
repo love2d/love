@@ -105,18 +105,18 @@ namespace box2d
 	{
 		Fixture * t = luax_checkfixture(L, 1);
 		Body * body = t->getBody();
-		if(body == 0)
+		if (body == 0)
 			return 0;
 		body->retain();
 		luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 		return 1;
 	}
-	
+
 	int w_Fixture_getShape(lua_State * L)
 	{
 		Fixture * t = luax_checkfixture(L, 1);
 		Shape * shape = t->getShape();
-		if(shape == 0)
+		if (shape == 0)
 			return 0;
 		shape->retain();
 		switch (shape->getType()) {
@@ -225,7 +225,7 @@ namespace box2d
 		lua_remove(L, 1);
 		return t->getBoundingBox(L);
 	}
-	
+
 	int w_Fixture_getMassData(lua_State * L)
 	{
 		Fixture * t = luax_checkfixture(L, 1);

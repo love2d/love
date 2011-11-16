@@ -112,7 +112,7 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 
 	lua_newtable(L);
 
-	for(int i = 0; love::VERSION_COMPATIBILITY[i] != 0; ++i)
+	for (int i = 0; love::VERSION_COMPATIBILITY[i] != 0; ++i)
 	{
 		lua_pushstring(L, love::VERSION_COMPATIBILITY[i]);
 		lua_rawseti(L, -2, i+1);
@@ -125,7 +125,7 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 #ifdef LOVE_BUILD_STANDALONE
 
 	// Preload module loaders.
-	for(int i = 0; modules[i].name != 0; i++)
+	for (int i = 0; modules[i].name != 0; i++)
 	{
 		love::luax_preload(L, modules[i].func, modules[i].name);
 	}
@@ -143,14 +143,14 @@ void get_utf8_arguments(int & argc, char **& argv)
 {
 	LPWSTR cmd = GetCommandLineW();
 
-	if(!cmd)
+	if (!cmd)
 		return;
 
 	LPWSTR * argv_w = CommandLineToArgvW(cmd, &argc);
 
 	argv = new char*[argc];
 
-	for(int i = 0; i<argc; ++i)
+	for (int i = 0; i<argc; ++i)
 	{
 		// Size of wide char buffer (plus one for trailing '\0').
 		size_t wide_len = wcslen(argv_w[i])+1;
@@ -165,7 +165,7 @@ void get_utf8_arguments(int & argc, char **& argv)
 
 		int len = strlen(argv[i]);
 
-		if(!ok)
+		if (!ok)
 			printf("Warning: could not convert to UTF8.\n");
 	}
 
@@ -180,7 +180,7 @@ int w__openConsole(lua_State * L)
 {
 	static bool is_open = false;
 
-	if(is_open)
+	if (is_open)
 		return 0;
 
 	static const int MAX_CONSOLE_LINES = 5000;
@@ -242,7 +242,8 @@ int main(int argc, char ** argv)
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
 	// Oh, you just want the version? Okay!
-	if(argc > 1 && strcmp(argv[1],"--version") == 0) {
+	if (argc > 1 && strcmp(argv[1],"--version") == 0)
+	{
 		printf("LOVE %s (%s)\n", love::VERSION, love::VERSION_CODENAME);
 		return 0;
 	}
@@ -259,7 +260,7 @@ int main(int argc, char ** argv)
 	{
 		lua_newtable(L);
 
-		if(argc > 0)
+		if (argc > 0)
 		{
 			lua_pushstring(L, argv[0]);
 			lua_rawseti(L, -2, -2);
@@ -268,7 +269,7 @@ int main(int argc, char ** argv)
 		lua_pushstring(L, "embedded boot.lua");
 		lua_rawseti(L, -2, -1);
 
-		for(int i = 1; i<argc; i++)
+		for (int i = 1; i<argc; i++)
 		{
 			lua_pushstring(L, argv[i]);
 			lua_rawseti(L, -2, i);
@@ -295,9 +296,9 @@ int main(int argc, char ** argv)
 	lua_close(L);
 
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
-	if(hack_argv)
+	if (hack_argv)
 	{
-		for(int i = 0; i<hack_argc; ++i)
+		for (int i = 0; i<hack_argc; ++i)
 			delete [] hack_argv[i];
 		delete [] hack_argv;
 	}

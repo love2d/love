@@ -105,7 +105,8 @@ namespace opengl
 
 	void Quad::mirror(bool x, bool y)
 	{
-		for (size_t i = 0; i < NUM_VERTICES; ++i) {
+		for (size_t i = 0; i < NUM_VERTICES; ++i)
+		{
 			if (x)
 				vertices[i].s = 1.0 - vertices[i].s;
 			if (y)

@@ -55,7 +55,7 @@ namespace thread
 		lua_getglobal(L, "love");
 		lua_pushvalue(L, -2);
 		lua_setfield(L, -2, "_curthread");
-		if(luaL_dostring(L, comm->getCode()) == 1)
+		if (luaL_dostring(L, comm->getCode()) == 1)
 		{
 			{
 				Lock lock((Mutex*) comm->mutex);
@@ -230,7 +230,8 @@ namespace thread
 
 	void Thread::start()
 	{
-		if (!handle && isThread) {
+		if (!handle && isThread)
+		{
 			handle = new ThreadThread(comm);
 			handle->start();
 		}

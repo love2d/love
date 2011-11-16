@@ -41,14 +41,14 @@ namespace box2d
 
 	World::ContactCallback::~ContactCallback()
 	{
-		if(ref != 0)
+		if (ref != 0)
 			delete ref;
 	}
-	
+
 	void World::ContactCallback::process(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
 		// Process contacts.
-		if(ref != 0)
+		if (ref != 0)
 		{
 			lua_State * L = ref->getL();
 			ref->push();
@@ -56,7 +56,8 @@ namespace box2d
 			// Push first fixture.
 			{
 				Fixture * a = (Fixture *)Memoizer::find(contact->GetFixtureA());
-				if(a != 0) {
+				if (a != 0)
+				{
 					a->retain();
 					luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)a);
 				}
@@ -67,21 +68,24 @@ namespace box2d
 			// Push second userdata.
 			{
 				Fixture * b = (Fixture *)Memoizer::find(contact->GetFixtureB());
-				if(b != 0) {
+				if (b != 0)
+				{
 					b->retain();
 					luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)b);
 				}
 				else
 					throw love::Exception("A fixture has escaped Memoizer!");
 			}
-		
+
 			Contact * c = new Contact(contact);
 
 			luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)c, true);
-			
+
 			int args = 3;
-			if (impulse) {
-				for (int c = 0; c < impulse->count; c++) {
+			if (impulse)
+			{
+				for (int c = 0; c < impulse->count; c++)
+				{
 					lua_pushnumber(L, Physics::scaleUp(impulse->normalImpulses[c]));
 					lua_pushnumber(L, Physics::scaleUp(impulse->tangentImpulses[c]));
 					args += 2;
@@ -91,18 +95,18 @@ namespace box2d
 		}
 
 	}
-	
+
 	World::ContactFilter::ContactFilter()
 	: ref(0)
 	{
 	}
-	
+
 	World::ContactFilter::~ContactFilter()
 	{
-		if(ref != 0)
+		if (ref != 0)
 			delete ref;
 	}
-	
+
 	bool World::ContactFilter::process(Fixture * a, Fixture * b)
 	{
 		if (ref != 0)
@@ -116,18 +120,18 @@ namespace box2d
 		}
 		return true;
 	}
-	
+
 	World::QueryCallback::QueryCallback()
 	: ref(0)
 	{
 	}
-	
+
 	World::QueryCallback::~QueryCallback()
 	{
-		if(ref != 0)
+		if (ref != 0)
 			delete ref;
 	}
-	
+
 	bool World::QueryCallback::ReportFixture(b2Fixture * fixture)
 	{
 		if (ref != 0)
@@ -143,18 +147,18 @@ namespace box2d
 		}
 		return true;
 	}
-	
+
 	World::RayCastCallback::RayCastCallback()
 	: ref(0)
 	{
 	}
-	
+
 	World::RayCastCallback::~RayCastCallback()
 	{
-		if(ref != 0)
+		if (ref != 0)
 			delete ref;
 	}
-	
+
 	float32 World::RayCastCallback::ReportFixture(b2Fixture * fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
 	{
 		if (ref != 0)
@@ -210,7 +214,7 @@ namespace box2d
 	void World::update(float dt)
 	{
 		world->Step(dt, 8, 6);
-		
+
 		// Really destroy all marked bodies.
 		for (std::vector<Body*>::iterator i = destructBodies.begin(); i < destructBodies.end(); i++)
 		{
@@ -240,7 +244,7 @@ namespace box2d
 	{
 		postsolve.process(contact, impulse);
 	}
-	
+
 	bool World::ShouldCollide(b2Fixture * fixtureA, b2Fixture * fixtureB)
 	{
 		// Fixtures should be memoized, if we created them
@@ -285,7 +289,7 @@ namespace box2d
 		postsolve.ref ? postsolve.ref->push() : lua_pushnil(L);
 		return 4;
 	}
-	
+
 	int World::setContactFilter(lua_State * L)
 	{
 		luax_assert_argc(L, 1);
@@ -293,7 +297,7 @@ namespace box2d
 		filter.ref = luax_refif(L, LUA_TFUNCTION);
 		return 0;
 	}
-	
+
 	int World::getContactFilter(lua_State * L)
 	{
 		filter.ref ? filter.ref->push() : lua_pushnil(L);
@@ -322,7 +326,7 @@ namespace box2d
 	{
 		return world->GetAllowSleeping();
 	}
-	
+
 	bool World::isLocked() const
 	{
 		return world->IsLocked();
@@ -337,12 +341,12 @@ namespace box2d
 	{
 		return world->GetJointCount();
 	}
-	
+
 	int World::getContactCount() const
 	{
 		return world->GetContactCount();
 	}
-	
+
 	int World::getBodyList(lua_State * L) const
 	{
 		lua_newtable(L);
@@ -360,7 +364,7 @@ namespace box2d
 		} while ((b = b->GetNext()));
 		return 1;
 	}
-	
+
 	int World::getJointList(lua_State * L) const
 	{
 		lua_newtable(L);
@@ -377,7 +381,7 @@ namespace box2d
 		} while ((j = j->GetNext()));
 		return 1;
 	}
-	
+
 	int World::getContactList(lua_State * L) const
 	{
 		lua_newtable(L);
@@ -394,12 +398,12 @@ namespace box2d
 		} while ((c = c->GetNext()));
 		return 1;
 	}
-	
+
 	b2Body * World::getGroundBody() const
 	{
 		return groundBody;
 	}
-	
+
 	int World::queryBoundingBox(lua_State * L)
 	{
 		luax_assert_argc(L, 5);
@@ -415,7 +419,7 @@ namespace box2d
 		world->QueryAABB(&query, box);
 		return 0;
 	}
-	
+
 	int World::rayCast(lua_State * L)
 	{
 		luax_assert_argc(L, 5);
@@ -430,7 +434,7 @@ namespace box2d
 		world->RayCast(&raycast, v1, v2);
 		return 0;
 	}
-	
+
 	void World::destroyBody(Body * b)
 	{
 		destructBodies.push_back(b);

@@ -41,7 +41,7 @@ namespace sdl
 		frames(0), dt(0)
 	{
 		// Init the SDL timer system.
-		if(SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
+		if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
 			throw Exception(SDL_GetError());
 	}
 
@@ -71,7 +71,7 @@ namespace sdl
 		dt = (currTime - prevTime)/1000.0;
 
 		// Update FPS?
-		if((currTime - prevFpsUpdate)/1000.0 > fpsUpdateFrequency)
+		if ((currTime - prevFpsUpdate)/1000.0 > fpsUpdateFrequency)
 		{
 			fps = frames/fpsUpdateFrequency;
 			prevFpsUpdate = currTime;
@@ -81,7 +81,7 @@ namespace sdl
 
 	void Timer::sleep(double seconds)
 	{
-		if(seconds > 0)
+		if (seconds > 0)
 			delay((int) (seconds*1000));
 	}
 

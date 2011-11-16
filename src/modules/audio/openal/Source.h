@@ -63,7 +63,7 @@ namespace openal
 		float direction[3];
 		bool looping;
 		bool paused;
-		
+
 		float offsetSamples;
 		float offsetSeconds;
 

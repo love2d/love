@@ -30,7 +30,7 @@ namespace physics
 {
 namespace box2d
 {
-	
+
 	int Physics::meter = Physics::DEFAULT_METER;
 
 	const char * Physics::getName() const
@@ -52,7 +52,7 @@ namespace box2d
 	{
 		return new Body(world, b2Vec2(0, 0), type);
 	}
-	
+
 	CircleShape * Physics::newCircleShape(float radius)
 	{
 		return newCircleShape(0, 0, radius);
@@ -82,7 +82,7 @@ namespace box2d
 		s->SetAsBox(Physics::scaleDown(w/2.0f), Physics::scaleDown(h/2.0f), Physics::scaleDown(b2Vec2(x, y)), angle);
 		return new PolygonShape(s);
 	}
-	
+
 	EdgeShape * Physics::newEdgeShape(float x1, float y1, float x2, float y2)
 	{
 		b2EdgeShape* s = new b2EdgeShape();
@@ -98,17 +98,17 @@ namespace box2d
 		love::luax_assert_argc(L, 2 * 3);
 
 		b2PolygonShape* s = new b2PolygonShape();
-		
+
 		b2Vec2 * vecs = new b2Vec2[vcount];
 
-		for(int i = 0;i<vcount;i++)
+		for (int i = 0;i<vcount;i++)
 		{
 			float x = (float)lua_tonumber(L, -2);
 			float y = (float)lua_tonumber(L, -1);
 			vecs[i] = (Physics::scaleDown(b2Vec2(x, y)));
 			lua_pop(L, 2);
 		}
-		
+
 		s->Set(vecs, vcount);
 
 		PolygonShape * p = new PolygonShape(s);
@@ -118,19 +118,19 @@ namespace box2d
 
 		return 1;
 	}
-	
+
 	int Physics::newChainShape(lua_State * L)
 	{
 		int argc = lua_gettop(L)-1; // first argument is looping
 		int vcount = (int)argc/2;
-		
+
 		b2ChainShape* s = new b2ChainShape();
-		
+
 		bool loop = luax_toboolean(L, 1);
-		
+
 		b2Vec2 * vecs = new b2Vec2[vcount];
-		
-		for(int i = 0;i<vcount;i++)
+
+		for (int i = 0;i<vcount;i++)
 		{
 			float x = (float)lua_tonumber(L, -2);
 			float y = (float)lua_tonumber(L, -1);
@@ -138,17 +138,17 @@ namespace box2d
 			vecs[i] = Physics::scaleDown(vecs[i]);
 			lua_pop(L, 2);
 		}
-		
+
 		if (loop)
 			s->CreateLoop(vecs, vcount);
 		else
 			s->CreateChain(vecs, vcount);
-		
+
 		ChainShape * c = new ChainShape(s);
 		delete[] vecs;
-		
+
 		luax_newtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, (void*)c);
-		
+
 		return 1;
 	}
 
@@ -181,32 +181,32 @@ namespace box2d
 	{
 		return new GearJoint(joint1, joint2, ratio, collideConnected);
 	}
-	
+
 	FrictionJoint * Physics::newFrictionJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	{
 		return new FrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 	}
-	
+
 	WeldJoint * Physics::newWeldJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	{
 		return new WeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 	}
-	
+
 	WheelJoint * Physics::newWheelJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 	{
 		return new WheelJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
 	}
-	
+
 	RopeJoint * Physics::newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected)
 	{
 		return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
 	}
-	
+
 	Fixture * Physics::newFixture(Body * body, Shape * shape, float density)
 	{
 		return new Fixture(body, shape, density);
 	}
-	
+
 	int Physics::getDistance(lua_State * L)
 	{
 		Fixture * fixtureA = luax_checktype<Fixture>(L, 1, "Fixture", PHYSICS_FIXTURE_T);
@@ -231,54 +231,54 @@ namespace box2d
 		lua_pushnumber(L, Physics::scaleUp(o.pointB.y));
 		return 5;
 	}
-	
+
 	void Physics::setMeter(int meter)
 	{
 		if (meter < 1) throw love::Exception("Physics error: invalid meter");
 		Physics::meter = meter;
 	}
-	
+
 	int Physics::getMeter()
 	{
 		return meter;
 	}
-	
+
 	void Physics::scaleDown(float & x, float & y)
 	{
 		x /= (float)meter;
 		y /= (float)meter;
 	}
-	
+
 	void Physics::scaleUp(float & x, float & y)
 	{
 		x *= (float)meter;
 		y *= (float)meter;
 	}
-	
+
 	float Physics::scaleDown(float f)
 	{
 		return f/(float)meter;
 	}
-	
+
 	float Physics::scaleUp(float f)
 	{
 		return f*(float)meter;
 	}
-	
+
 	b2Vec2 Physics::scaleDown(const b2Vec2 & v)
 	{
 		b2Vec2 t = v;
 		scaleDown(t.x, t.y);
 		return t;
 	}
-	
+
 	b2Vec2 Physics::scaleUp(const b2Vec2 & v)
 	{
 		b2Vec2 t = v;
 		scaleUp(t.x, t.y);
 		return t;
 	}
-	
+
 	b2AABB Physics::scaleDown(const b2AABB & aabb)
 	{
 		b2AABB t;
@@ -286,7 +286,7 @@ namespace box2d
 		t.upperBound = scaleDown(aabb.upperBound);
 		return t;
 	}
-	
+
 	b2AABB Physics::scaleUp(const b2AABB & aabb)
 	{
 		b2AABB t;

@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -35,7 +35,7 @@ namespace physfs
 {
 	extern bool hack_setupWriteDirectory();
 
-	File::File(std::string filename) 
+	File::File(std::string filename)
 		: filename(filename), file(0), mode(filesystem::File::CLOSED)
 	{
 	}
@@ -45,22 +45,22 @@ namespace physfs
 		if (mode != CLOSED)
 			close();
 	}
-	
+
 	bool File::open(Mode mode)
 	{
-		if(mode == CLOSED)
+		if (mode == CLOSED)
 			return true;
 
 		// File must exist if read mode.
-		if((mode == READ) && !PHYSFS_exists(filename.c_str()))
+		if ((mode == READ) && !PHYSFS_exists(filename.c_str()))
 			throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
 
 		// Check whether the write directory is set.
-		if((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
+		if ((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
 			throw love::Exception("Could not set write directory.");
 
 		// File already open?
-		if(file != 0)
+		if (file != 0)
 			return false;
 
 		this->mode = mode;
@@ -82,10 +82,10 @@ namespace physfs
 
 		return (file != 0);
 	}
-	
+
 	bool File::close()
 	{
-		if(!PHYSFS_close(file))
+		if (!PHYSFS_close(file))
 			return false;
 		mode = CLOSED;
 		file = 0;
@@ -96,7 +96,7 @@ namespace physfs
 	{
 		// If the file is closed, open it to
 		// check the size.
-		if(file == 0)
+		if (file == 0)
 		{
 			open(READ);
 			unsigned int size = (unsigned int)PHYSFS_fileLength(file);
@@ -112,7 +112,7 @@ namespace physfs
 	{
 		bool isOpen = (file != 0);
 
-		if(!isOpen && !open(READ))
+		if (!isOpen && !open(READ))
 			throw love::Exception("Could not read file %s.", filename.c_str());
 
 		int max = (int)PHYSFS_fileLength(file);
@@ -123,7 +123,7 @@ namespace physfs
 
 		read(fileData->getData(), size);
 
-		if(!isOpen)
+		if (!isOpen)
 			close();
 
 		return fileData;
@@ -133,7 +133,7 @@ namespace physfs
 	{
 		bool isOpen = (file != 0);
 
-		if(!isOpen)
+		if (!isOpen)
 			open(READ);
 
 		int max = (int)PHYSFS_fileLength(file);
@@ -142,7 +142,7 @@ namespace physfs
 
 		int read = (int)PHYSFS_read(file, dst, 1, size);
 
-		if(!isOpen)
+		if (!isOpen)
 			close();
 
 		return read;
@@ -150,14 +150,14 @@ namespace physfs
 
 	bool File::write(const void * data, int size)
 	{
-		if(file == 0)
+		if (file == 0)
 			throw love::Exception("Could not write to file. File not open.");
 
 		// Try to write.
 		int written = static_cast<int>(PHYSFS_write(file, data, 1, size));
 
 		// Check that correct amount of data was written.
-		if(written != size)
+		if (written != size)
 			return false;
 
 		return true;
@@ -187,14 +187,14 @@ namespace physfs
 
 	bool File::eof()
 	{
-		if(file == 0 || test_eof(this, file))
+		if (file == 0 || test_eof(this, file))
 			return true;
 		return false;
 	}
 
 	int File::tell()
 	{
-		if(file == 0)
+		if (file == 0)
 			return -1;
 
 		return (int)PHYSFS_tell(file);
@@ -202,10 +202,10 @@ namespace physfs
 
 	bool File::seek(int pos)
 	{
-		if(file == 0)
+		if (file == 0)
 			return false;
-		
-		if(!PHYSFS_seek(file, (PHYSFS_uint64)pos))
+
+		if (!PHYSFS_seek(file, (PHYSFS_uint64)pos))
 			return false;
 		return true;
 	}
@@ -219,7 +219,7 @@ namespace physfs
 	{
 		std::string::size_type idx = filename.rfind('.');
 
-		if(idx != std::string::npos)
+		if (idx != std::string::npos)
 			return filename.substr(idx+1);
 		else
 			return std::string();

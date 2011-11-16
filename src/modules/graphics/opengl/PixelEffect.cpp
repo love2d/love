@@ -78,7 +78,8 @@ namespace opengl
 
 		GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
 		// should only fail if this is called between a glBegin()/glEnd() pair
-		if (shader == 0) {
+		if (shader == 0)
+		{
 			glDeleteProgram(_program);
 			throw love::Exception("Cannot create shader object.");
 		}
@@ -91,7 +92,8 @@ namespace opengl
 
 		GLint compile_ok;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_ok);
-		if (GL_FALSE == compile_ok) {
+		if (GL_FALSE == compile_ok)
+		{
 			// get compiler error
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &strlen);
 			char *error_str = new char[strlen];
@@ -112,7 +114,8 @@ namespace opengl
 		glAttachShader(_program, shader);
 		glLinkProgram(_program);
 		glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
-		if (GL_FALSE == link_ok) {
+		if (GL_FALSE == link_ok)
+		{
 			// this should not happen if compiling is ok, but one can never be too careful
 			// get linker error
 			std::string tmp(getWarnings());
@@ -189,7 +192,8 @@ namespace opengl
 		TemporaryAttacher attacher(this);
 		GLint location = getUniformLocation(name);
 
-		if (size < 1 || size > 4) {
+		if (size < 1 || size > 4)
+		{
 			throw love::Exception("Invalid variable size: %d (expected 1-4).", size);
 		}
 
@@ -218,7 +222,8 @@ namespace opengl
 		TemporaryAttacher attacher(this);
 		GLint location = getUniformLocation(name);
 
-		if (size < 2 || size > 4) {
+		if (size < 2 || size > 4)
+		{
 			throw love::Exception("Invalid matrix size: %dx%d "
 					"(can only set 2x2, 3x3 or 4x4 matrices).", size,size);
 		}
@@ -283,7 +288,8 @@ namespace opengl
 			return it->second;
 
 		GLint location = glGetUniformLocation(_program, name.c_str());
-		if (location == -1) {
+		if (location == -1)
+		{
 			throw love::Exception(
 					"Cannot get location of shader variable `%s'.\n"
 					"A common error is to define but not use the variable.", name.c_str());
@@ -296,7 +302,8 @@ namespace opengl
 	void PixelEffect::checkSetUniformError()
 	{
 		GLenum error_code = glGetError();
-		if (GL_INVALID_OPERATION == error_code) {
+		if (GL_INVALID_OPERATION == error_code)
+		{
 			throw love::Exception(
 				"Invalid operation:\n"
 				"- Trying to send the wrong value type to shader variable, or\n"

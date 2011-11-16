@@ -33,7 +33,7 @@ namespace sound
 	{
 		SoundData * t = 0;
 
-		if(lua_isnumber(L, 1))
+		if (lua_isnumber(L, 1))
 		{
 			int samples = luaL_checkint(L, 1);
 			int sampleRate = luaL_optint(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
@@ -44,7 +44,7 @@ namespace sound
 			{
 				t = instance->newSoundData(samples, sampleRate, bits, channels);
 			}
-			catch(love::Exception & e)
+			catch (love::Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}
@@ -55,7 +55,7 @@ namespace sound
 		{
 
 			// Convert to Decoder, if necessary.
-			if(!luax_istype(L, 1, SOUND_DECODER_T))
+			if (!luax_istype(L, 1, SOUND_DECODER_T))
 			{
 				w_newDecoder(L);
 				lua_replace(L, 1);
@@ -65,7 +65,7 @@ namespace sound
 			{
 				t = instance->newSoundData(luax_checkdecoder(L, 1));
 			}
-			catch(love::Exception & e)
+			catch (love::Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}
@@ -79,7 +79,7 @@ namespace sound
 	int w_newDecoder(lua_State * L)
 	{
 		// Convert to File, if necessary.
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
@@ -88,11 +88,11 @@ namespace sound
 		try
 		{
 			Decoder * t = instance->newDecoder(file, bufferSize);
-			if(t == 0)
+			if (t == 0)
 				return luaL_error(L, "Extension \"%s\" not supported.", file->getExtension().c_str());
 			luax_newtype(L, "Decoder", SOUND_DECODER_T, (void*)t);
 		}
-		catch(love::Exception & e)
+		catch (love::Exception & e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -115,13 +115,13 @@ namespace sound
 
 	int luaopen_love_sound(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new lullaby::Sound();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

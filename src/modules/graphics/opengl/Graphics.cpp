@@ -48,13 +48,13 @@ namespace opengl
 		// Window should be centered.
 		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
 
-		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 			throw Exception(SDL_GetError());
 	}
 
 	Graphics::~Graphics()
 	{
-		if(currentFont != 0)
+		if (currentFont != 0)
 			currentFont->release();
 
 		SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -156,7 +156,7 @@ namespace opengl
 		//    love.mouse.getX() < 800 when switching from 800x600 to a
 		//    higher resolution)
 		SDL_QuitSubSystem(SDL_INIT_VIDEO);
-		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		{
 			std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
 			return false;
@@ -173,7 +173,7 @@ namespace opengl
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 
 		// FSAA
-		if(fsaa > 0)
+		if (fsaa > 0)
 		{
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa ) ;
@@ -183,14 +183,14 @@ namespace opengl
 		// Fullscreen?
 		Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
 
-		if(!isCreated())
+		if (!isCreated())
 			setCaption("");
 
 		// Have SDL set the video mode.
-		if(SDL_SetVideoMode(width, height, 32, sdlflags ) == 0)
+		if (SDL_SetVideoMode(width, height, 32, sdlflags ) == 0)
 		{
 			bool failed = true;
-			if(fsaa > 0)
+			if (fsaa > 0)
 			{
 				// FSAA might have failed, disable it and try again
 				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
@@ -202,7 +202,7 @@ namespace opengl
 					failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
 				}
 			}
-			if(failed)
+			if (failed)
 			{
 				std::cerr << "Could not set video mode: "  << SDL_GetError() << std::endl;
 				return false;
@@ -258,7 +258,7 @@ namespace opengl
 		// Reset modelview matrix
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		
+
 		// Set pixel row alignment
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 
@@ -275,12 +275,12 @@ namespace opengl
 		currentMode.vsync = (real_vsync != 0);
 
 		// Reload all volatile objects.
-		if(!Volatile::loadAll())
+		if (!Volatile::loadAll())
 			std::cerr << "Could not reload all volatile objects." << std::endl;
 
 		// Restore the display state.
 		restoreState(tempState);
-		
+
 		// Get the maximum number of matrices
 		// subtract a few to give the engine some room.
 		glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
@@ -392,14 +392,14 @@ namespace opengl
 	{
 		SDL_Rect ** modes = SDL_ListModes(0, SDL_OPENGL | SDL_FULLSCREEN);
 
-		if(modes == (SDL_Rect **)0 || modes == (SDL_Rect **)-1)
+		if (modes == (SDL_Rect **)0 || modes == (SDL_Rect **)-1)
 			return 0;
 
 		int index = 1;
 
 		lua_newtable(L);
 
-		for(int i=0;modes[i];++i)
+		for (int i=0;modes[i];++i)
 		{
 			lua_pushinteger(L, index);
 			lua_newtable(L);
@@ -437,7 +437,7 @@ namespace opengl
 
 	int Graphics::getScissor(lua_State * L)
 	{
-		if(glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
+		if (glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
 			return 0;
 
 		GLint scissor[4];
@@ -478,13 +478,17 @@ namespace opengl
 		// Create the image.
 		Image * image = new Image(data);
 		bool success;
-		try {
+		try
+		{
 			success = image->load();
-		} catch (love::Exception & e) {
+		}
+		catch (love::Exception & e)
+		{
 			image->release();
 			throw love::Exception(e.what());
 		}
-		if (!success) {
+		if (!success)
+		{
 			image->release();
 			return 0;
 		}
@@ -509,7 +513,7 @@ namespace opengl
 		Font * font = new Font(r, filter);
 
 		// Load it and check for errors.
-		if(!font)
+		if (!font)
 		{
 			delete font;
 			return 0;
@@ -521,9 +525,12 @@ namespace opengl
 	SpriteBatch * Graphics::newSpriteBatch(Image * image, int size, int usage)
 	{
 		SpriteBatch * t = NULL;
-		try {
+		try
+		{
 			t = new SpriteBatch(image, size, usage);
-		} catch (love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			if (t) delete t;
 			throw e;
 		}
@@ -584,9 +591,12 @@ namespace opengl
 	PixelEffect * Graphics::newPixelEffect(const std::string& code)
 	{
 		PixelEffect * effect = NULL;
-		try {
+		try
+		{
 			effect = new PixelEffect(code);
-		} catch (love::Exception& e) {
+		}
+		catch (love::Exception& e)
+		{
 			if (effect)
 				delete effect;
 			throw(e);
@@ -634,12 +644,12 @@ namespace opengl
 
 	void Graphics::setFont( Font * font )
 	{
-		if(currentFont != 0)
+		if (currentFont != 0)
 			currentFont->release();
 
 		currentFont = font;
 
-		if(font != 0)
+		if (font != 0)
 			currentFont->retain();
 	}
 
@@ -669,7 +679,7 @@ namespace opengl
 
 	void Graphics::setColorMode ( Graphics::ColorMode mode )
 	{
-		if(mode == COLOR_MODULATE)
+		if (mode == COLOR_MODULATE)
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else // mode = COLOR_REPLACE
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -689,7 +699,7 @@ namespace opengl
 
 		if (equation == GL_FUNC_REVERSE_SUBTRACT) // && src == GL_SRC_ALPHA && dst == GL_ONE
 			return BLEND_SUBTRACTIVE;
-		else if(src == GL_SRC_ALPHA && dst == GL_ONE) // && equation == GL_FUNC_ADD
+		else if (src == GL_SRC_ALPHA && dst == GL_ONE) // && equation == GL_FUNC_ADD
 			return BLEND_ADDITIVE;
 		else if (src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
 			return BLEND_ALPHA;
@@ -697,7 +707,7 @@ namespace opengl
 			return BLEND_MULTIPLICATIVE;
 		else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
 			return BLEND_PREMULTIPLIED;
-			
+
 		return BLEND_MAX_ENUM; // Should never be reached.
 	}
 
@@ -706,7 +716,7 @@ namespace opengl
 		GLint mode;
 		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
 
-		if(mode == GL_MODULATE)
+		if (mode == GL_MODULATE)
 			return COLOR_MODULATE;
 		else // // mode == GL_REPLACE
 			return COLOR_REPLACE;
@@ -727,7 +737,7 @@ namespace opengl
 		//// XXX: actually enables antialiasing for _all_ polygons.
 		//// may need investigation if wanted or not
 		//// maybe rename to something else?
-		//if(style == LINE_ROUGH)
+		//if (style == LINE_ROUGH)
 		//	glDisable (GL_POLYGON_SMOOTH);
 		//else // type == LINE_SMOOTH
 		//{
@@ -741,7 +751,7 @@ namespace opengl
 	{
 		setLineWidth(width);
 
-		if(style == 0)
+		if (style == 0)
 			return;
 		setLineStyle(style);
 	}
@@ -755,7 +765,7 @@ namespace opengl
 
 	Graphics::LineStyle Graphics::getLineStyle()
 	{
-		//if(glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE)
+		//if (glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE)
 		//	return LINE_SMOOTH;
 		//else
 			return LINE_ROUGH;
@@ -768,7 +778,7 @@ namespace opengl
 
 	void Graphics::setPointStyle( Graphics::PointStyle style )
 	{
-		if( style == POINT_SMOOTH )
+		if ( style == POINT_SMOOTH )
 			glEnable(GL_POINT_SMOOTH);
 		else // love::POINT_ROUGH
 			glDisable(GL_POINT_SMOOTH);
@@ -776,7 +786,7 @@ namespace opengl
 
 	void Graphics::setPoint( float size, Graphics::PointStyle style )
 	{
-		if( style == POINT_SMOOTH )
+		if ( style == POINT_SMOOTH )
 			glEnable(GL_POINT_SMOOTH);
 		else // POINT_ROUGH
 			glDisable(GL_POINT_SMOOTH);
@@ -793,7 +803,7 @@ namespace opengl
 
 	Graphics::PointStyle Graphics::getPointStyle()
 	{
-		if(glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
+		if (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
 			return POINT_SMOOTH;
 		else
 			return POINT_ROUGH;
@@ -808,7 +818,7 @@ namespace opengl
 
 	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
-		if(currentFont != 0)
+		if (currentFont != 0)
 		{
 			std::string text(str);
 			currentFont->print(text, x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -826,7 +836,8 @@ namespace opengl
 
 		// now for the actual printing
 		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
-		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter) {
+		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter)
+		{
 			float width = static_cast<float>(currentFont->getWidth( *line_iter ));
 			switch (align) {
 				case ALIGN_RIGHT:
@@ -875,7 +886,8 @@ namespace opengl
 		d2 *= halfwidth;
 
 		// lines parallel -> assume intersection at displacement points
-		if (fabs(det_norm) <= .03) {
+		if (fabs(det_norm) <= .03)
+		{
 			vertices[pos]     = q - d2;
 			vertices[pos + 1] = q + d2;
 			return;
@@ -903,7 +915,8 @@ namespace opengl
 		if (looping) q = Vector(coords[count-4], coords[count-3]);
 		else         q = r * 2 - Vector(coords[2], coords[3]);
 
-		for (size_t i = 0; i+3 < count; i += 2) {
+		for (size_t i = 0; i+3 < count; i += 2)
+		{
 			p = q;
 			q = r;
 			r = Vector(coords[i+2], coords[i+3]);
@@ -946,12 +959,13 @@ namespace opengl
 	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
 	{
 		float two_pi = static_cast<float>(LOVE_M_PI * 2);
-		if(points <= 0) points = 1;
+		if (points <= 0) points = 1;
 		float angle_shift = (two_pi / points);
 		float phi = .0f;
 
 		float *coords = new float[2 * (points + 1)];
-		for (int i = 0; i < points; ++i, phi += angle_shift) {
+		for (int i = 0; i < points; ++i, phi += angle_shift)
+		{
 			coords[2*i]   = x + radius * cos(phi);
 			coords[2*i+1] = y + radius * sin(phi);
 		}
@@ -963,7 +977,7 @@ namespace opengl
 
 		delete[] coords;
 	}
-	
+
 	void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
 	{
 		angle1 = fmod(angle1, 2.0f * (float)LOVE_M_PI);
@@ -974,23 +988,27 @@ namespace opengl
 			angle2 += (float)LOVE_M_PI * 2.0f;
 
 
-		if(points <= 0) points = 1;
+		if (points <= 0) points = 1;
 		float angle_shift = ((angle2 - angle1) / points);
 		float phi = angle1;
 
 		// GL_POLYGON can only fill-draw convex polygons, so we need to do stuff manually here
-		if (mode == DRAW_LINE) {
+		if (mode == DRAW_LINE)
+		{
 			float *coords = new float[(points + 3) * 2];
 			coords[0] = coords[2 * points + 4] = x;
 			coords[1] = coords[2 * points + 5] = y;
-			for (int i = 0; i <= points; ++i, phi += angle_shift) {
+			for (int i = 0; i <= points; ++i, phi += angle_shift)
+			{
 				coords[2 * (i+1)]     = x + radius * cos(phi);
 				coords[2 * (i+1) + 1] = y - radius * sin(phi);
 			}
 			polyline(coords, (points + 3) * 2); // artifacts at sharp angles if set to looping
 
 			delete[] coords;
-		} else {
+		}
+		else
+		{
 			glDisable(GL_TEXTURE_2D);
 			glBegin(GL_TRIANGLE_FAN);
 			glVertex2f(x, y);
@@ -1009,9 +1027,12 @@ namespace opengl
 	{
 		// coords is an array of a closed loop of vertices, i.e.
 		// coords[count-2] = coords[0], coords[count-1] = coords[1]
-		if (mode == DRAW_LINE) {
+		if (mode == DRAW_LINE)
+		{
 			polyline(coords, count, true);
-		} else {
+		}
+		else
+		{
 			glDisable(GL_TEXTURE_2D);
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)coords);
@@ -1039,7 +1060,8 @@ namespace opengl
 
 		GLubyte *src = pixels - row, *dst = screenshot + size;
 
-		for (int i = 0; i < h; ++i) {
+		for (int i = 0; i < h; ++i)
+		{
 			memcpy(dst-=row, src+=row, row);
 		}
 

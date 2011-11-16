@@ -120,7 +120,7 @@ namespace box2d
 		lua_pushnumber(L, t->getInertia());
 		return 1;
 	}
-	
+
 	int w_Body_getMassData(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
@@ -141,14 +141,14 @@ namespace box2d
 		lua_pushnumber(L, t->getLinearDamping());
 		return 1;
 	}
-	
+
 	int w_Body_getGravityScale(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
 		lua_pushnumber(L, t->getGravityScale());
 		return 1;
 	}
-	
+
 	int w_Body_getType(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
@@ -164,11 +164,11 @@ namespace box2d
 		float jx = (float)luaL_checknumber(L, 2);
 		float jy = (float)luaL_checknumber(L, 3);
 
-		if(lua_gettop(L) == 3)
+		if (lua_gettop(L) == 3)
 		{
 			t->applyLinearImpulse(jx, jy);
 		}
-		else if(lua_gettop(L) == 5)
+		else if (lua_gettop(L) == 5)
 		{
 			float rx = (float)luaL_checknumber(L, 4);
 			float ry = (float)luaL_checknumber(L, 5);
@@ -181,7 +181,7 @@ namespace box2d
 
 		return 0;
 	}
-	
+
 	int w_Body_applyAngularImpulse(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
@@ -205,11 +205,11 @@ namespace box2d
 		float fy = (float)luaL_checknumber(L, 3);
 
 
-		if(lua_gettop(L) == 3)
+		if (lua_gettop(L) == 3)
 		{
 			t->applyForce(fx, fy);
 		}
-		else if(lua_gettop(L) == 5)
+		else if (lua_gettop(L) == 5)
 		{
 			float rx = (float)luaL_checknumber(L, 4);
 			float ry = (float)luaL_checknumber(L, 5);
@@ -314,7 +314,7 @@ namespace box2d
 		t->setLinearDamping(arg1);
 		return 0;
 	}
-	
+
 	int w_Body_setGravityScale(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
@@ -322,7 +322,7 @@ namespace box2d
 		t->setGravityScale(arg1);
 		return 0;
 	}
-	
+
 	int w_Body_setType(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
@@ -360,7 +360,7 @@ namespace box2d
 
 		return 2;
 	}
-	
+
 	int w_Body_getWorldPoints(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
@@ -499,7 +499,7 @@ namespace box2d
 		luax_pushboolean(L, b);
 		return 1;
 	}
-	
+
 	int w_Body_getFixtureList(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);

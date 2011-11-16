@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -53,7 +53,7 @@ namespace love
 	Matrix Matrix::operator * (const Matrix & m) const
 	{
 		Matrix t;
-		
+
 		t.e[0] = (e[0]*m.e[0]) + (e[4]*m.e[1]) + (e[8]*m.e[2]) + (e[12]*m.e[3]);
 		t.e[4] = (e[0]*m.e[4]) + (e[4]*m.e[5]) + (e[8]*m.e[6]) + (e[12]*m.e[7]);
 		t.e[8] = (e[0]*m.e[8]) + (e[4]*m.e[9]) + (e[8]*m.e[10]) + (e[12]*m.e[11]);
@@ -181,7 +181,7 @@ namespace love
 
 	void Matrix::transform(vertex * dst, const vertex * src, int size) const
 	{
-		for(int i = 0;i<size;i++)
+		for (int i = 0;i<size;i++)
 		{
 			// Store in temp variables in case src = dst
 			float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (0) + (e[12]);

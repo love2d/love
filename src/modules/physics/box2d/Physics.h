@@ -53,12 +53,12 @@ namespace box2d
 	class Physics : public Module
 	{
 	private:
-		
+
 		// The length of one meter in pixels.
 		static int meter;
 
 	public:
-		
+
 		/**
 		* 30 pixels in one meter by default.
 		**/
@@ -133,7 +133,7 @@ namespace box2d
 		* @param angle The angle of the rectangle. (rad)
 		**/
 		PolygonShape * newRectangleShape(float x, float y, float w, float h, float angle);
-        
+
         /**
 		* Creates a new EdgeShape. The edge will be created from
 		* (x1,y1) to (x2,y2) in local coordinates.
@@ -149,7 +149,7 @@ namespace box2d
 		* @param ... A variable number of vertices.
 		**/
 		int newPolygonShape(lua_State * L);
-		
+
 		/**
 		* Creates a new ChainShape.
 		* @param ... A variable number of vertices.
@@ -222,7 +222,7 @@ namespace box2d
 		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		FrictionJoint * newFrictionJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected);
-		
+
 		/**
 		* Creates a new WeldJoint connecting body1 with body2.
 		* @param xA Anchor for body 1 along the x-axis. (World coordinates)
@@ -232,7 +232,7 @@ namespace box2d
 		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		WeldJoint * newWeldJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, bool collideConnected);
-		
+
 		/**
 		* Creates a new WheelJoint connecting body1 with body2.
 		* @param xA Anchor for body 1 along the x-axis. (World coordinates)
@@ -244,7 +244,7 @@ namespace box2d
 		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		WheelJoint * newWheelJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
-		
+
 		/**
 		* Creates a new RopeJoint connecting body1 with body2.
 		* @param x1 Anchor1 along the x-axis. (Local coordinates)
@@ -255,16 +255,16 @@ namespace box2d
 		* @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 		**/
 		RopeJoint * newRopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
-		
+
 		/**
 		* Creates a new Fixture attaching shape to body.
 		* @param body The body to attach the Fixture to.
 		* @param shape The shape to attach to the Fixture,
 		* @param density The density of the Fixture.
 		**/
-		
+
 		Fixture * newFixture(Body * body, Shape * shape, float density);
-		
+
 		/**
 		* Calculates the distance between two Fixtures.
 		* @param fixtureA The first Fixture.
@@ -273,31 +273,31 @@ namespace box2d
 		*         to each other.
 		**/
 		int getDistance(lua_State * L);
-		
+
 		/**
 		* Sets the number of pixels in one meter.
 		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
 		**/
 		static void setMeter(int meter);
-		
+
 		/**
 		* Gets the number of pixels in one meter.
 		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
 		**/
 		static int getMeter();
-		
+
 		/**
 		* Scales a value down according to the current meter in pixels.
 		* @param f The unscaled input value.
 		**/
 		static float scaleDown(float f);
-		
+
 		/**
 		* Scales a value up according to the current meter in pixels.
 		* @param f The unscaled input value.
 		**/
 		static float scaleUp(float f);
-		
+
 		/**
 		* Scales a point down according to the current meter
 		* in pixels, for instance x = x0/meter, y = x0/meter.
@@ -305,7 +305,7 @@ namespace box2d
 		* @param y The y-coordinate of the point to scale.
 		**/
 		static void scaleDown(float & x, float & y);
-		
+
 		/**
 		* Scales a point up according to the current meter
 		* in pixels, for instance x = x0/meter, y = x0/meter.
@@ -313,28 +313,28 @@ namespace box2d
 		* @param y The y-coordinate of the point to scale.
 		**/
 		static void scaleUp(float & x, float & y);
-		
+
 		/**
 		* Scales a b2Vec2 down according to the current meter in pixels.
 		* @param v The unscaled input vector.
 		* @return The scaled vector.
 		**/
 		static b2Vec2 scaleDown(const b2Vec2 & v);
-		
+
 		/**
 		* Scales a b2Vec up according to the current meter in pixels.
 		* @param v The unscaled input vector.
 		* @return The scaled vector.
 		**/
 		static b2Vec2 scaleUp(const b2Vec2 & v);
-		
+
 		/**
 		* Scales a b2AABB down according to the current meter in pixels.
 		* @param v The unscaled input AABB.
 		* @return The scaled AABB.
 		**/
 		static b2AABB scaleDown(const b2AABB & aabb);
-		
+
 		/**
 		* Scales a b2AABB up according to the current meter in pixels.
 		* @param v The unscaled input AABB.

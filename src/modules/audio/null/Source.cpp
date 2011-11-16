@@ -101,11 +101,11 @@ namespace null
 	{
 		return volume;
 	}
-	
+
 	void Source::seek(float, Source::Unit)
 	{
 	}
-	
+
 	float Source::tell(Source::Unit)
 	{
 		return 0.0f;

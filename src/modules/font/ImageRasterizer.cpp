@@ -72,7 +72,8 @@ namespace font
 		if (gm.width == 0) return g;
 		unsigned char * gd = (unsigned char*)g->getData();
 		love::image::pixel * pixels = (love::image::pixel *)(imageData->getData());
-		for (unsigned int i = 0; i < widths[glyph]*getHeight(); i++) {
+		for (unsigned int i = 0; i < widths[glyph]*getHeight(); i++)
+		{
 			love::image::pixel p = pixels[ positions[glyph] + (i % widths[glyph]) + (imageData->getWidth() * (i / widths[glyph])) ];
 			gd[i*4] = p.r;
 			gd[i*4+1] = p.g;
@@ -99,27 +100,27 @@ namespace font
 		unsigned int start = 0;
 		unsigned int end = 0;
 
-		for(unsigned int i = 0; i < length; ++i)
+		for (unsigned int i = 0; i < length; ++i)
 		{
-			if(i >= MAX_CHARS)
+			if (i >= MAX_CHARS)
 				break;
 
 			start = end;
 
 			// Finds out where the first character starts
-			while(start < imgw && equal(pixels[start], spacer))
+			while (start < imgw && equal(pixels[start], spacer))
 				++start;
 
-			if(i > 0)
+			if (i > 0)
 				spacing[glyphs[i - 1]] = (start > end) ? (start - end) : 0;
 
 			end = start;
 
 			// Find where glyph ends.
-			while(end < imgw && !equal(pixels[end], spacer))
+			while (end < imgw && !equal(pixels[end], spacer))
 				++end;
 
-			if(start >= end)
+			if (start >= end)
 				break;
 
 			unsigned c = glyphs[i];
@@ -129,9 +130,9 @@ namespace font
 		}
 
 		// Replace spacer color with an empty pixel
-		for(unsigned int i = 0; i < imgs; ++i)
+		for (unsigned int i = 0; i < imgs; ++i)
 		{
-			if(equal(pixels[i], spacer))
+			if (equal(pixels[i], spacer))
 			{
 				pixels[i].r = 0;
 				pixels[i].g = 0;

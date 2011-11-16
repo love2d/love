@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -38,7 +38,7 @@ namespace box2d
 		def.Initialize(bodyA->body, bodyB->body, Physics::scaleDown(groundAnchorA), Physics::scaleDown(groundAnchorB), \
 			 Physics::scaleDown(anchorA), Physics::scaleDown(anchorB), ratio);
 		def.collideConnected = collideConnected;
-		
+
 		joint = (b2PulleyJoint*)createJoint(&def);
 	}
 
@@ -56,17 +56,17 @@ namespace box2d
 		lua_pushnumber(L, Physics::scaleUp(joint->GetGroundAnchorB().y));
 		return 4;
 	}
-	
+
 	float PulleyJoint::getLengthA() const
 	{
 		return Physics::scaleUp(joint->GetLengthA());
 	}
-		
+
 	float PulleyJoint::getLengthB() const
 	{
 		return Physics::scaleUp(joint->GetLengthB());
 	}
-	
+
 	float PulleyJoint::getRatio() const
 	{
 		return joint->GetRatio();

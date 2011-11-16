@@ -44,7 +44,7 @@ namespace box2d
 		this->setType(type);
 		Memoizer::add(body, this);
 	}
-	
+
 	Body::Body(b2Body * b)
 		: body(b)
 	{
@@ -118,7 +118,7 @@ namespace box2d
 	{
 		return body->GetInertia();
 	}
-	
+
 	int Body::getMassData(lua_State * L)
 	{
 		b2MassData data;
@@ -140,12 +140,12 @@ namespace box2d
 	{
 		return body->GetLinearDamping();
 	}
-	
+
 	float Body::getGravityScale() const
 	{
 		return body->GetGravityScale();
 	}
-	
+
 	Body::Type Body::getType() const
 	{
 		switch (body->GetType()) {
@@ -173,7 +173,7 @@ namespace box2d
 	{
 		body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), Physics::scaleDown(b2Vec2(rx, ry)));
 	}
-	
+
 	void Body::applyAngularImpulse(float impulse)
 	{
 		// Angular impulse is in kg*m^2/s, meaning it needs to be scaled twice
@@ -258,12 +258,12 @@ namespace box2d
 		massData.I = i;
 		body->SetMassData(&massData);
 	}
-	
+
 	void Body::setGravityScale(float scale)
 	{
 		body->SetGravityScale(scale);
 	}
-	
+
 	void Body::setType(Body::Type type)
 	{
 		switch (type) {
@@ -294,15 +294,15 @@ namespace box2d
 		x_o = v.x;
 		y_o = v.y;
 	}
-	
+
 	int Body::getWorldPoints(lua_State * L)
 	{
 		int argc = lua_gettop(L);
 		int vcount = (int)argc/2;
 		// at least one point
 		love::luax_assert_argc(L, 2);
-		
-		for(int i = 0;i<vcount;i++)
+
+		for (int i = 0;i<vcount;i++)
 		{
 			float x = (float)lua_tonumber(L, i*2+1);
 			float y = (float)lua_tonumber(L, i*2+2);
@@ -310,7 +310,7 @@ namespace box2d
 			lua_pushnumber(L, point.x);
 			lua_pushnumber(L, point.y);
 		}
-		
+
 		return argc;
 	}
 
@@ -371,7 +371,7 @@ namespace box2d
 	{
 		return body->IsSleepingAllowed();
 	}
-	
+
 	void Body::setActive(bool active)
 	{
 		body->SetActive(active);
@@ -396,7 +396,7 @@ namespace box2d
 	{
 		return world;
 	}
-	
+
 	int Body::getFixtureList(lua_State * L) const
 	{
 		lua_newtable(L);

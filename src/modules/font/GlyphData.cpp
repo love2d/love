@@ -30,7 +30,8 @@ namespace font
 	GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
 		: glyph(glyph), metrics(glyphMetrics), data(0), format(f)
 	{
-		if (metrics.width && metrics.height) {
+		if (metrics.width && metrics.height)
+		{
 			switch (f) {
 				case GlyphData::FORMAT_LUMINANCE_ALPHA:
 					data = new unsigned char[metrics.width * metrics.height * 2];
@@ -116,6 +117,6 @@ namespace font
 	{
 		return format;
 	}
-	
+
 } // font
 } // love

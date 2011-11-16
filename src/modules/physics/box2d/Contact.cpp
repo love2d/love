@@ -47,7 +47,8 @@ namespace box2d
 		b2WorldManifold manifold;
 		contact->GetWorldManifold(&manifold);
 		int points = contact->GetManifold()->pointCount;
-		for (int i = 0; i < points; i++) {
+		for (int i = 0; i < points; i++)
+		{
 			b2Vec2 position = Physics::scaleUp(manifold.points[i]);
 			lua_pushnumber(L, position.x);
 			lua_pushnumber(L, position.y);
@@ -74,37 +75,37 @@ namespace box2d
 	{
 		return contact->GetRestitution();
 	}
-	
+
 	bool Contact::isEnabled() const
 	{
 		return contact->IsEnabled();
 	}
-	
+
 	bool Contact::isTouching() const
 	{
 		return contact->IsTouching();
 	}
-	
+
 	void Contact::setFriction(float friction)
 	{
 		contact->SetFriction(friction);
 	}
-	
+
 	void Contact::setRestitution(float restitution)
 	{
 		contact->SetRestitution(restitution);
 	}
-	
+
 	void Contact::setEnabled(bool enabled)
 	{
 		contact->SetEnabled(enabled);
 	}
-	
+
 	void Contact::resetFriction()
 	{
 		contact->ResetFriction();
 	}
-	
+
 	void Contact::resetRestitution()
 	{
 		contact->ResetRestitution();

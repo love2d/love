@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -58,7 +58,7 @@ namespace opengl
 			return luaL_error(L, "Invalid filter mode: %s", minstr);
 		if (!Image::getConstant(magstr, mag))
 			return luaL_error(L, "Invalid filter mode: %s", magstr);
-		
+
 		f.min = min;
 		f.mag = mag;
 		t->setFilter(f);
@@ -82,7 +82,7 @@ namespace opengl
 
 	int w_Image_setWrap(lua_State * L)
 	{
-		Image * i = luax_checkimage(L, 1); 
+		Image * i = luax_checkimage(L, 1);
 		Image::Wrap w;
 		Image::WrapMode s;
 		Image::WrapMode t;
@@ -92,7 +92,7 @@ namespace opengl
 			return luaL_error(L, "Invalid wrap mode: %s", sstr);
 		if (!Image::getConstant(tstr, t))
 			return luaL_error(L, "Invalid wrap mode, %s", tstr);
-		
+
 		w.s = s;
 		w.t = t;
 		i->setWrap(w);
@@ -101,7 +101,7 @@ namespace opengl
 
 	int w_Image_getWrap(lua_State * L)
 	{
-		Image * i = luax_checkimage(L, 1); 
+		Image * i = luax_checkimage(L, 1);
 		Image::Wrap w = i->getWrap();
 		Image::WrapMode s = w.s;
 		Image::WrapMode t = w.t;

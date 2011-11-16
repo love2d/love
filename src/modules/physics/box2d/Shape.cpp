@@ -48,7 +48,8 @@ namespace box2d
 
 	Shape::~Shape()
 	{
-		if (shape) {
+		if (shape)
+		{
 			Memoizer::remove(shape);
 			delete shape;
 		}
@@ -71,24 +72,24 @@ namespace box2d
 			return SHAPE_INVALID;
 		}
 	}
-	
+
 	float Shape::getRadius() const
 	{
 		return Physics::scaleUp(shape->m_radius);
 	}
-	
+
 	int Shape::getChildCount() const
 	{
 		return shape->GetChildCount();
 	}
-	
+
 	bool Shape::testPoint(float x, float y, float r, float px, float py) const
 	{
 		b2Vec2 point(px, py);
 		b2Transform transform(Physics::scaleDown(b2Vec2(x, y)), b2Rot(r));
 		return shape->TestPoint(transform, Physics::scaleDown(point));
 	}
-	
+
 	int Shape::rayCast(lua_State * L) const
 	{
 		float p1x = Physics::scaleDown((float)luaL_checknumber(L, 1));
@@ -112,7 +113,7 @@ namespace box2d
 		lua_pushnumber(L, output.fraction);
 		return 3;
 	}
-	
+
 	int Shape::computeAABB(lua_State * L) const
 	{
 		float x = Physics::scaleDown((float)luaL_checknumber(L, 1));
@@ -129,7 +130,7 @@ namespace box2d
 		lua_pushnumber(L, box.upperBound.y);
 		return 4;
 	}
-	
+
 	int Shape::computeMass(lua_State * L) const
 	{
 		float density = Physics::scaleDown((float)luaL_checknumber(L, 1));

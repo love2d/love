@@ -50,13 +50,13 @@ namespace devil
 		//bind it
 		ilBindImage(image);
 
-		while(ilGetError() != IL_NO_ERROR);
-		
+		while (ilGetError() != IL_NO_ERROR);
+
 		//create and populate the image
 		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
 
 		ILenum err = ilGetError();
-		while(ilGetError() != IL_NO_ERROR);
+		while (ilGetError() != IL_NO_ERROR);
 
 		if (!success)
 		{
@@ -110,7 +110,7 @@ namespace devil
 		ILboolean success = ilLoadL(IL_TYPE_UNKNOWN, (void*)data->getData(), data->getSize());
 
 		// Check for errors
-		if(!success)
+		if (!success)
 		{
 			throw love::Exception("Could not decode image!");
 		}
@@ -125,7 +125,7 @@ namespace devil
 		// This should always be four.
 		bpp = ilGetInteger(IL_IMAGE_BPP);
 
-		if(bpp != 4)
+		if (bpp != 4)
 		{
 			ilDeleteImages(1, &image);
 			std::cerr << "Bits per pixel != 4" << std::endl;
@@ -136,7 +136,7 @@ namespace devil
 		{
 			this->data = new unsigned char[width*height*bpp];
 		}
-		catch(std::bad_alloc)
+		catch (std::bad_alloc)
 		{
 			ilDeleteImages(1, &image);
 			throw love::Exception("Out of memory");
@@ -206,7 +206,7 @@ namespace devil
 		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
 		if (x > width-1 || y > height-1 || x < 0 || y < 0)
 			throw love::Exception("Attempt to set out-of-range pixel!");
-			
+
 		pixel * pixels = (pixel *)getData();
 		pixels[y*width+x] = c;
 	}
@@ -218,7 +218,7 @@ namespace devil
 		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
 		if (x > width-1 || y > height-1 || x < 0 || y < 0)
 			throw love::Exception("Attempt to get out-of-range pixel!");
-			
+
 		pixel * pixels = (pixel *)getData();
 		return pixels[y*width+x];
 	}
@@ -231,12 +231,12 @@ namespace devil
 		ilGenImages(1, &tempimage);
 		ilBindImage(tempimage);
 
-		while(ilGetError() != IL_NO_ERROR);
+		while (ilGetError() != IL_NO_ERROR);
 
 		bool success = ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, this->data) == IL_TRUE;
 
 		ILenum err = ilGetError();
-		while(ilGetError() != IL_NO_ERROR);
+		while (ilGetError() != IL_NO_ERROR);
 
 		if (!success)
 		{
@@ -295,7 +295,7 @@ namespace devil
 		{
 			encoded_data = new ILubyte[size];
 		}
-		catch(std::bad_alloc)
+		catch (std::bad_alloc)
 		{
 			ilDeleteImages(1, &tempimage);
 			throw love::Exception("Out of memory");

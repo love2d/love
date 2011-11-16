@@ -203,7 +203,7 @@ namespace thread
 		waiting--;
 		mutex.unlock();
 		cmutex->lock();
-		
+
 		return true;
 	}
 

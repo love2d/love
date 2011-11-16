@@ -1,14 +1,14 @@
 /**
 * Copyright (c) 2006-2011 LOVE Development Team
-* 
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -31,7 +31,7 @@ namespace physics
 namespace box2d
 {
 	/**
-	* The RopeJoint enforces a maximum distance between two points 
+	* The RopeJoint enforces a maximum distance between two points
 	* on two bodies. It has no other effect.
 	**/
 	class RopeJoint : public Joint
@@ -42,17 +42,17 @@ namespace box2d
 	public:
 
 		/**
-		* Creates a RopeJoint connecting body1 to body2. 
+		* Creates a RopeJoint connecting body1 to body2.
 		**/
 		RopeJoint(Body * body1, Body * body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
-		
+
 		virtual ~RopeJoint();
-		
+
 		/**
 		* Gets the maximum length of the rope.
 		**/
 		float getMaxLength() const;
-		
+
 	};
 
 } // box2d
