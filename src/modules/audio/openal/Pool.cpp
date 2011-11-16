@@ -92,9 +92,10 @@ namespace openal
 				i->first->rewindAtomic();
 				i->first->release();
 				available.push(i->second);
-				playing.erase(i);
+				playing.erase(i++);
 			}
-			i++;
+			else
+				i++;
 		}
 	}
 
