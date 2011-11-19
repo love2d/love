@@ -110,7 +110,7 @@ namespace opengl
 			if (x)
 				vertices[i].s = 1.0 - vertices[i].s;
 			if (y)
-				vertices[i].s = 1.0 - vertices[i].s;
+				vertices[i].t = 1.0 - vertices[i].t;
 		}
 	}
 
