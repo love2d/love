@@ -315,6 +315,11 @@ function love.init()
 		love.graphics.setCaption(c.title)
 	end
 
+	-- Our first timestep, because screen creation can take some time
+	if love.timer then
+		love.timer.step()
+	end
+
 	if love.filesystem then
 		love.filesystem.setRelease(c.release and is_fused_game)
 		if c.identity then love.filesystem.setIdentity(c.identity) end
@@ -368,16 +373,6 @@ function love.run()
 
 	-- Main loop time.
 	while true do
-		if love.timer then
-			love.timer.step()
-			dt = love.timer.getDelta()
-		end
-		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
-		if love.graphics then
-			love.graphics.clear()
-			if love.draw then love.draw() end
-		end
-
 		-- Process events.
 		if love.event then
 			for e,a,b,c in love.event.poll() do
@@ -391,6 +386,19 @@ function love.run()
 				end
 				love.handlers[e](a,b,c)
 			end
+		end
+
+		-- Update dt, as we'll be passing it to update
+		if love.timer then
+			love.timer.step()
+			dt = love.timer.getDelta()
+		end
+
+		-- Call update and draw
+		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
+		if love.graphics then
+			love.graphics.clear()
+			if love.draw then love.draw() end
 		end
 
 		if love.timer then love.timer.sleep(0.001) end
