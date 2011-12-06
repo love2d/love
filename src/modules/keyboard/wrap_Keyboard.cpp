@@ -58,14 +58,17 @@ namespace keyboard
 			return 0;
 		}
 
-		instance->setKeyRepeat(luaL_optint(L, 1, Keyboard::DEFAULT), luaL_optint(L, 2, Keyboard::DEFAULT));
+		lua_Number delay = luaL_optnumber(L, 1, Keyboard::DEFAULT) * 1000 + 0.5;
+		lua_Number interval = luaL_optnumber(L, 2, Keyboard::DEFAULT) * 1000 + 0.5;
+
+		instance->setKeyRepeat((int) delay, (int) interval);
 		return 0;
 	}
 
 	int w_getKeyRepeat(lua_State * L)
 	{
-		lua_pushnumber(L, instance->getKeyRepeatDelay());
-		lua_pushnumber(L, instance->getKeyRepeatInterval());
+		lua_pushnumber(L, (lua_Number) instance->getKeyRepeatDelay() * 0.001);
+		lua_pushnumber(L, (lua_Number) instance->getKeyRepeatInterval() * 0.001);
 		return 2;
 	}
 

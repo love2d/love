@@ -57,14 +57,14 @@ namespace sdl
 
 	int Keyboard::getKeyRepeatDelay() const
 	{
-		int delay, interval = 0;
+		int delay, interval;
 		SDL_GetKeyRepeat(&delay, &interval);
 		return delay;
 	}
 
 	int Keyboard::getKeyRepeatInterval() const
 	{
-		int delay, interval = 0;
+		int delay, interval;
 		SDL_GetKeyRepeat(&delay, &interval);
 		return interval;
 	}
