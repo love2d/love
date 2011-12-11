@@ -23,6 +23,7 @@
 #include <common/Vector.h>
 
 #include "Graphics.h"
+#include <window/sdl/Window.h>
 
 #include <vector>
 #include <sstream>
@@ -39,17 +40,7 @@ namespace opengl
 	Graphics::Graphics()
 		: currentFont(0), currentImageFilter(), lineWidth(1), matrixLimit(0), userMatrices(0)
 	{
-		// Indicates that there is no screen
-		// created yet.
-		currentMode.width = 0;
-		currentMode.height = 0;
-		currentMode.fullscreen = 0;
-
-		// Window should be centered.
-		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
-
-		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-			throw Exception(SDL_GetError());
+		currentWindow = love::window::sdl::Window::getSingleton();
 	}
 
 	Graphics::~Graphics()
@@ -57,7 +48,7 @@ namespace opengl
 		if (currentFont != 0)
 			currentFont->release();
 
-		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+		currentWindow->release();
 	}
 
 	const char * Graphics::getName() const
@@ -67,12 +58,7 @@ namespace opengl
 
 	bool Graphics::checkMode(int width, int height, bool fullscreen)
 	{
-		Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
-
-		// Check if mode is supported
-		int bpp = SDL_VideoModeOK(width, height, 32, sdlflags);
-
-		return (bpp >= 16);
+		return currentWindow->checkWindowSize(width, height, fullscreen);
 	}
 
 	DisplayState Graphics::saveState()
@@ -104,10 +90,6 @@ namespace opengl
 		if (s.scissor)
 			glGetIntegerv(GL_SCISSOR_BOX, s.scissorBox);
 
-		char *cap = 0;
-		SDL_WM_GetCaption(&cap, 0);
-		s.caption = cap;
-		s.mouseVisible = (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
 		return s;
 	}
 
@@ -123,9 +105,6 @@ namespace opengl
 			setScissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3]);
 		else
 			setScissor();
-
-		setCaption(s.caption.c_str());
-		SDL_ShowCursor(s.mouseVisible ? SDL_ENABLE : SDL_DISABLE);
 	}
 
 	bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int fsaa)
@@ -140,95 +119,7 @@ namespace opengl
 		// the display mode change.
 		Volatile::unloadAll();
 
-		// Get caption.
-
-		// We need to restart the subsystem for two reasons:
-		// 1) Special case for fullscreen -> windowed. Windows XP did not
-		//    work well with "normal" display mode change in this case.
-		//    The application window does leave fullscreen, but the desktop
-		//    resolution does not revert to the correct one. Restarting the
-		//    SDL video subsystem does the trick, though.
-		// 2) Restart the event system (for whatever reason the event system
-		//    started and stopped with SDL_INIT_VIDEO, see:
-		//    http://sdl.beuc.net/sdl.wiki/Introduction_to_Events)
-		//    because the mouse position will not be able to exceed
-		//    the previous' video mode window size (i.e. alway
-		//    love.mouse.getX() < 800 when switching from 800x600 to a
-		//    higher resolution)
-		SDL_QuitSubSystem(SDL_INIT_VIDEO);
-		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-		{
-			std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
-			return false;
-		}
-
-		// Set caption.
-
-		// Set GL attributes
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, (vsync ? 1 : 0));
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
-
-		// FSAA
-		if (fsaa > 0)
-		{
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa ) ;
-			glEnable(GL_MULTISAMPLE);
-		}
-
-		// Fullscreen?
-		Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
-
-		if (!isCreated())
-			setCaption("");
-
-		// Have SDL set the video mode.
-		if (SDL_SetVideoMode(width, height, 32, sdlflags ) == 0)
-		{
-			bool failed = true;
-			if (fsaa > 0)
-			{
-				// FSAA might have failed, disable it and try again
-				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-				failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
-				if (failed)
-				{
-					// There might be no FSAA at all
-					SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-					failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
-				}
-			}
-			if (failed)
-			{
-				std::cerr << "Could not set video mode: "  << SDL_GetError() << std::endl;
-				return false;
-			}
-		}
-
-		if (width == 0 || height == 0)
-		{
-			const SDL_VideoInfo* videoinfo = SDL_GetVideoInfo();
-			width = videoinfo->current_w;
-			height = videoinfo->current_h;
-		}
-
-		GLint buffers;
-		GLint samples;
-
-		glGetIntegerv( GL_SAMPLE_BUFFERS_ARB, & buffers ) ;
-		glGetIntegerv( GL_SAMPLES_ARB, & samples ) ;
-
-		// Don't fail because of this, but issue a warning.
-		if ( (! buffers && fsaa) || (samples != fsaa))
-		{
-			std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
-			fsaa = !buffers ? 0 : samples;
-		}
+		currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
 
 		// Okay, setup OpenGL.
 
@@ -263,18 +154,6 @@ namespace opengl
 		// Set pixel row alignment
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 
-		// Get the actual vsync status
-		int real_vsync;
-		SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &real_vsync);
-
-		// Set the new display mode as the current display mode.
-		currentMode.width = width;
-		currentMode.height = height;
-		currentMode.colorDepth = 32;
-		currentMode.fsaa = fsaa;
-		currentMode.fullscreen = fullscreen;
-		currentMode.vsync = (real_vsync != 0);
-
 		// Reload all volatile objects.
 		if (!Volatile::loadAll())
 			std::cerr << "Could not reload all volatile objects." << std::endl;
@@ -290,23 +169,17 @@ namespace opengl
 		return true;
 	}
 
-	void Graphics::getMode(int *width, int *height, bool *fullscreen, bool *vsync, int *fsaa)
+	void Graphics::getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa)
 	{
-		*width = currentMode.width;
-		*height = currentMode.height;
-		*fullscreen = currentMode.fullscreen;
-		*vsync = currentMode.vsync;
-		*fsaa = currentMode.fsaa;
+		currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
 	}
 
 	bool Graphics::toggleFullscreen()
 	{
-		// Try to do the change.
-		return setMode(currentMode.width,
-			currentMode.height,
-			!currentMode.fullscreen,
-			currentMode.vsync,
-			currentMode.fsaa);
+		int width, height, fsaa;
+		bool fullscreen, vsync;
+		currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
+		return currentWindow->setWindow(width, height, !fullscreen, vsync, fsaa);
 	}
 
 
@@ -327,101 +200,82 @@ namespace opengl
 
 	void Graphics::present()
 	{
-		SDL_GL_SwapBuffers();
+		currentWindow->swapBuffers();
 	}
 
 	void Graphics::setIcon(Image * image)
 	{
-		Uint32 rmask, gmask, bmask, amask;
-#ifdef LOVE_BIG_ENDIAN
-		rmask = 0xFF000000;
-		gmask = 0x00FF0000;
-		bmask = 0x0000FF00;
-		amask = 0x000000FF;
-#else
-		rmask = 0x000000FF;
-		gmask = 0x0000FF00;
-		bmask = 0x00FF0000;
-		amask = 0xFF000000;
-#endif
-
-		int w = static_cast<int>(image->getWidth());
-		int h = static_cast<int>(image->getHeight());
-		int pitch = static_cast<int>(image->getWidth() * 4);
-
-		SDL_Surface * icon = SDL_CreateRGBSurfaceFrom(image->getData()->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
-		SDL_WM_SetIcon(icon, NULL);
-		SDL_FreeSurface(icon);
+		currentWindow->setIcon(image->getData());
 	}
 
 	void Graphics::setCaption(const char * caption)
 	{
-		SDL_WM_SetCaption(caption, 0);
+		std::string title(caption);
+		currentWindow->setWindowTitle(title);
 	}
 
 	int Graphics::getCaption(lua_State * L)
 	{
-		char * title = 0;
-		SDL_WM_GetCaption(&title, 0);
-		lua_pushstring(L, title);
+		std::string title = currentWindow->getWindowTitle();
+		lua_pushstring(L, title.c_str());
 		return 1;
 	}
 
 	int Graphics::getWidth()
 	{
-		return currentMode.width;
+		return currentWindow->getWidth();
 	}
 
 	int Graphics::getHeight()
 	{
-		return currentMode.height;
+		return currentWindow->getHeight();
 	}
 
 	int Graphics::getRenderHeight()
 	{
 		if (Canvas::current)
 			return Canvas::current->getHeight();
-		return currentMode.height;
+		return getHeight();
 	}
 
 	bool Graphics::isCreated()
 	{
-		return (currentMode.width > 0) || (currentMode.height > 0);
+		return currentWindow->isCreated();
 	}
 
 	int Graphics::getModes(lua_State * L)
 	{
-		SDL_Rect ** modes = SDL_ListModes(0, SDL_OPENGL | SDL_FULLSCREEN);
+		int n;
+		love::window::Window::WindowSize ** modes = currentWindow->getFullscreenSizes(n);
 
-		if (modes == (SDL_Rect **)0 || modes == (SDL_Rect **)-1)
+		if (modes == 0)
 			return 0;
-
-		int index = 1;
 
 		lua_newtable(L);
 
-		for (int i=0;modes[i];++i)
+		for (int i = 0; i < n ; i++)
 		{
-			lua_pushinteger(L, index);
+			lua_pushinteger(L, i+1);
 			lua_newtable(L);
 
 			// Inner table attribs.
 
 			lua_pushstring(L, "width");
-			lua_pushinteger(L, modes[i]->w);
+			lua_pushinteger(L, modes[i]->width);
 			lua_settable(L, -3);
 
 			lua_pushstring(L, "height");
-			lua_pushinteger(L, modes[i]->h);
+			lua_pushinteger(L, modes[i]->height);
 			lua_settable(L, -3);
 
 			// Inner table attribs end.
 
 			lua_settable(L, -3);
 
-			index++;
+			delete modes[i];
 		}
 
+		delete[] modes;
 		return 1;
 	}
 
@@ -1139,7 +993,7 @@ namespace opengl
 
 	bool Graphics::hasFocus()
 	{
-		return (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
+		return currentWindow->hasFocus();
 	}
 } // opengl
 } // graphics

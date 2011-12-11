@@ -58,7 +58,7 @@ namespace opengl
 	{
 		int w, h, fsaa;
 		bool fs, vsync;
-		instance->getMode(&w, &h, &fs, &vsync, &fsaa);
+		instance->getMode(w, h, fs, vsync, fsaa);
 		lua_pushnumber(L, w);
 		lua_pushnumber(L, h);
 		lua_pushboolean(L, fs);

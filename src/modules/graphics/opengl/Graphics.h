@@ -25,8 +25,7 @@
 #include <iostream>
 #include <cmath>
 
-// SDL
-#include <SDL.h>
+// OpenGL
 #include "GLee.h"
 
 // LOVE
@@ -35,6 +34,8 @@
 
 #include <image/Image.h>
 #include <image/ImageData.h>
+
+#include <window/Window.h>
 
 #include "Font.h"
 #include "Image.h"
@@ -50,15 +51,6 @@ namespace graphics
 {
 namespace opengl
 {
-
-	struct DisplayMode
-	{
-		int width, height; // The size of the screen.
-		int colorDepth; // The color depth of the display mode.
-		bool fullscreen; // Fullscreen (true), or windowed (false).
-		bool vsync; // Vsync enabled (true), or disabled (false).
-		int fsaa; // 0 for no FSAA, otherwise 1, 2 or 4.
-	};
 
 	// During display mode changing, certain
 	// variables about the OpenGL context are
@@ -114,7 +106,7 @@ namespace opengl
 
 		Font * currentFont;
 		Image::Filter currentImageFilter;
-		DisplayMode currentMode;
+		love::window::Window *currentWindow;
 
 		float lineWidth;
 		GLint matrixLimit;
@@ -161,7 +153,7 @@ namespace opengl
 		* @param vsync Pointer to a boolean for the vsync status.
 		* @param fsaa Pointer to an integer for the current number of full scene anti-aliasing buffers.
 		**/
-		void getMode(int * width, int * height, bool * fullscreen, bool * vsync, int * fsaa);
+		void getMode(int & width, int & height, bool & fullscreen, bool & vsync, int & fsaa);
 
 		/**
 		* Toggles fullscreen. Note that this also needs to reload the

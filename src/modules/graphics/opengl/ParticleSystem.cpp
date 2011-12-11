@@ -22,7 +22,7 @@
 
 #include <common/math.h>
 
-#include <SDL_opengl.h>
+#include <GL/gl.h>
 #include <cmath>
 #include <cstdlib>
 
