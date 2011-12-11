@@ -762,7 +762,7 @@ namespace opengl
 		return 1;
 	}
 
-	int w_setRenderTarget(lua_State * L)
+	int w_setCanvas(lua_State * L)
 	{
 		// called with nil or none -> reset to default buffer
 		if (lua_isnoneornil(L,1))
@@ -778,7 +778,7 @@ namespace opengl
 		return 0;
 	}
 
-	int w_getRenderTarget(lua_State * L)
+	int w_getCanvas(lua_State * L)
 	{
 		Canvas *canvas = Canvas::current;
 		if (canvas)
@@ -1253,8 +1253,8 @@ namespace opengl
 		{ "getPointStyle", w_getPointStyle },
 		{ "getMaxPointSize", w_getMaxPointSize },
 		{ "newScreenshot", w_newScreenshot },
-		{ "setRenderTarget", w_setRenderTarget },
-		{ "getRenderTarget", w_getRenderTarget },
+		{ "setCanvas", w_setCanvas },
+		{ "getCanvas", w_getCanvas },
 
 		{ "setPixelEffect", w_setPixelEffect },
 
