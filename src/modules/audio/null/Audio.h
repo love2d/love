@@ -36,6 +36,7 @@ namespace null
 	{
 	private:
 		float volume;
+		DistanceModel distanceModel;
 	public:
 
 		Audio();
@@ -73,6 +74,9 @@ namespace null
 		love::sound::SoundData * getRecordedData();
 		love::sound::SoundData * stopRecording(bool returnData);
 		bool canRecord();
+
+		DistanceModel getDistanceModel() const;
+		void setDistanceModel(DistanceModel distanceModel);
 
 	}; // Audio
 

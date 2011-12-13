@@ -22,6 +22,7 @@
 #define LOVE_AUDIO_AUDIO_H
 
 #include <common/Module.h>
+#include <common/StringMap.h>
 #include "Source.h"
 
 namespace love
@@ -39,6 +40,24 @@ namespace audio
 	class Audio : public Module
 	{
 	public:
+
+		/**
+		* Attenuation by distance.
+		*/
+		enum DistanceModel
+		{
+			DISTANCE_NONE = 1,
+			DISTANCE_INVERSE,
+			DISTANCE_INVERSE_CLAMPED,
+			DISTANCE_LINEAR,
+			DISTANCE_LINEAR_CLAMPED,
+			DISTANCE_EXPONENT,
+			DISTANCE_EXPONENT_CLAMPED,
+			DISTANCE_MAX_ENUM
+		};
+		
+		static bool getConstant(const char * in, DistanceModel & out);
+		static bool getConstant(DistanceModel in, const char *& out);
 
 		/**
 		* Destructor.
@@ -191,6 +210,22 @@ namespace audio
 		**/
 		virtual bool canRecord() = 0;
 
+		/**
+		* Gets the distance model used for attenuation.
+		* @return Distance model.
+		*/
+		virtual DistanceModel getDistanceModel() const = 0;
+
+		/**
+		* Sets the distance model used for attenuation.
+		* @param distanceModel Distance model.
+		*/
+		virtual void setDistanceModel(DistanceModel distanceModel) = 0;
+
+	private:
+			
+		static StringMap<DistanceModel, DISTANCE_MAX_ENUM>::Entry distanceModelEntries[];
+		static StringMap<DistanceModel, DISTANCE_MAX_ENUM> distanceModels;
 	}; // Audio
 
 } // audio

@@ -86,6 +86,18 @@ namespace audio
 		virtual void setLooping(bool looping) = 0;
 		virtual bool isLooping() const = 0;
 		virtual bool isStatic() const = 0;
+		
+		virtual void setMinVolume(float volume) = 0;
+		virtual float getMinVolume() const = 0;
+		virtual void setMaxVolume(float volume) = 0;
+		virtual float getMaxVolume() const = 0;
+
+		virtual void setReferenceDistance(float distance) = 0;
+		virtual float getReferenceDistance() const = 0;
+		virtual void setRolloffFactor(float factor) = 0;
+		virtual float getRolloffFactor() const = 0;
+		virtual void setMaxDistance(float distance) = 0;
+		virtual float getMaxDistance() const = 0;
 
 		static bool getConstant(const char * in, Type & out);
 		static bool getConstant(Type in, const char *& out);

@@ -149,6 +149,56 @@ namespace null
 	{
 		return (type == TYPE_STATIC);
 	}
+	
+	void Source::setMinVolume(float volume)
+	{
+		this->minVolume = volume;
+	}
+
+	float Source::getMinVolume() const
+	{
+		return this->minVolume;
+	}
+
+	void Source::setMaxVolume(float volume)
+	{
+		this->maxVolume = volume;
+	}
+
+	float Source::getMaxVolume() const
+	{
+		return this->maxVolume;
+	}
+
+	void Source::setReferenceDistance(float distance)
+	{
+		this->referenceDistance = distance;
+	}
+
+	float Source::getReferenceDistance() const
+	{
+		return this->referenceDistance;
+	}
+
+	void Source::setRolloffFactor(float factor)
+	{
+		this->rolloffFactor = factor;
+	}
+
+	float Source::getRolloffFactor() const
+	{
+		return this->rolloffFactor;
+	}
+
+	void Source::setMaxDistance(float distance)
+	{
+		this->maxDistance = distance;
+	}
+
+	float Source::getMaxDistance() const
+	{
+		return this->maxDistance;
+	}
 
 } // null
 } // audio

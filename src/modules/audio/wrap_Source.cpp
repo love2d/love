@@ -211,10 +211,81 @@ namespace audio
 
 	int w_Source_isStatic(lua_State * L)
 	{
-		Source * t= luax_checksource(L, 1);
+		Source * t = luax_checksource(L, 1);
 		luax_pushboolean(L, t->isStatic());
 		return 1;
 	}
+
+	int w_Source_setMinVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setMinVolume((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getMinVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getMinVolume());
+		return 1;
+	}
+
+	int w_Source_setMaxVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setMaxVolume((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getMaxVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getMaxVolume());
+		return 1;
+	}
+
+	int w_Source_setReferenceDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setReferenceDistance((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getReferenceDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getReferenceDistance());
+		return 1;
+	}
+
+	int w_Source_setRolloffFactor(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setRolloffFactor((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getRolloffFactor(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getRolloffFactor());
+		return 1;
+	}
+
+	int w_Source_setMaxDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setMaxDistance((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getMaxDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getMaxDistance());
+		return 1;
+	}
+
 
 	static const luaL_Reg functions[] = {
 		{ "play", w_Source_play },
@@ -241,6 +312,18 @@ namespace audio
 		{ "isStopped", w_Source_isStopped },
 		{ "isPaused", w_Source_isPaused },
 		{ "isStatic", w_Source_isStatic },
+		
+		{ "setMinVolume", w_Source_setMinVolume },
+		{ "getMinVolume", w_Source_getMinVolume },
+		{ "setMaxVolume", w_Source_setMaxVolume },
+		{ "getMaxVolume", w_Source_getMaxVolume },
+		{ "setReferenceDistance", w_Source_setReferenceDistance },
+		{ "getReferenceDistance", w_Source_getReferenceDistance },
+		{ "setRolloffFactor", w_Source_setRolloffFactor },
+		{ "getRolloffFactor", w_Source_getRolloffFactor },
+		{ "setMaxDistance", w_Source_setMaxDistance },
+		{ "getMaxDistance", w_Source_getMaxDistance },
+
 		{ 0, 0 }
 	};
 

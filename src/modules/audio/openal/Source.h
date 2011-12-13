@@ -63,6 +63,11 @@ namespace openal
 		float direction[3];
 		bool looping;
 		bool paused;
+		float minVolume;
+		float maxVolume;
+		float referenceDistance;
+		float rolloffFactor;
+		float maxDistance;
 
 		float offsetSamples;
 		float offsetSeconds;
@@ -103,6 +108,16 @@ namespace openal
 		void setLooping(bool looping);
 		bool isLooping() const;
 		bool isStatic() const;
+		virtual void setMinVolume(float volume);
+		virtual float getMinVolume() const;
+		virtual void setMaxVolume(float volume);
+		virtual float getMaxVolume() const;
+		virtual void setReferenceDistance(float distance);
+		virtual float getReferenceDistance() const;
+		virtual void setRolloffFactor(float factor);
+		virtual float getRolloffFactor() const;
+		virtual void setMaxDistance(float distance);
+		virtual float getMaxDistance() const;
 
 		void playAtomic();
 		void stopAtomic();

@@ -58,7 +58,7 @@ namespace openal
 	}
 
 
-	Audio::Audio()
+	Audio::Audio() : distanceModel(DISTANCE_INVERSE_CLAMPED)
 	{
 		// Passing zero for default device.
 		device = alcOpenDevice(0);
@@ -267,7 +267,50 @@ namespace openal
 	{
 		return (capture != NULL);
 	}
+	
+	Audio::DistanceModel Audio::getDistanceModel() const
+	{
+		return this->distanceModel;
+	}
 
+	void Audio::setDistanceModel(DistanceModel distanceModel)
+	{
+		this->distanceModel = distanceModel;
+		
+		switch (distanceModel)
+		{
+		case DISTANCE_NONE:
+			alDistanceModel(AL_NONE);
+			break;
+			
+		case DISTANCE_INVERSE:
+			alDistanceModel(AL_INVERSE_DISTANCE);
+			break;
+
+		case DISTANCE_INVERSE_CLAMPED:
+			alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+			break;
+			
+		case DISTANCE_LINEAR:
+			alDistanceModel(AL_LINEAR_DISTANCE);
+			break;
+
+		case DISTANCE_LINEAR_CLAMPED:
+			alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+			break;
+			
+		case DISTANCE_EXPONENT:
+			alDistanceModel(AL_EXPONENT_DISTANCE);
+			break;
+
+		case DISTANCE_EXPONENT_CLAMPED:
+			alDistanceModel(AL_EXPONENT_DISTANCE_CLAMPED);
+			break;
+
+		default:
+			break;
+		}
+	}
 } // openal
 } // audio
 } // love

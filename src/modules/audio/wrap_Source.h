@@ -51,6 +51,16 @@ namespace audio
 	int w_Source_isStopped(lua_State * L);
 	int w_Source_isPaused(lua_State * L);
 	int w_Source_isStatic(lua_State * L);
+	int w_Source_setMinVolume(lua_State * L);
+	int w_Source_getMinVolume(lua_State * L);
+	int w_Source_setMaxVolume(lua_State * L);
+	int w_Source_getMinVolume(lua_State * L);
+	int w_Source_setReferenceDistance(lua_State * L);
+	int w_Source_getReferenceDistance(lua_State * L);
+	int w_Source_setRolloffFactor(lua_State * L);
+	int w_Source_getRolloffFactor(lua_State * L);
+	int w_Source_setMaxDistance(lua_State * L);
+	int w_Source_getMaxDistance(lua_State * L);
 	int luaopen_source(lua_State * L);
 
 } // audio
