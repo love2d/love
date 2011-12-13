@@ -1252,9 +1252,15 @@ do
 		return love.graphics.newFont1(font, size or 12)
 	end
 
+	love.graphics.setNewFont = function(...)
+		local font = love.graphics.newFont(...)
+		love.graphics.setFont(font)
+		return font
+	end
+
 	love.graphics.print = function (...)
 		if not love.graphics.getFont() then
-			love.graphics.newFont(12):set()
+			love.graphics.setNewFont(12)
 		end
 		love.graphics.print1(...)
 		love.graphics.print = love.graphics.print1
@@ -1262,7 +1268,7 @@ do
 
 	love.graphics.printf = function (...)
 		if not love.graphics.getFont() then
-			love.graphics.newFont(12):set()
+			love.graphics.setNewFont(12)
 		end
 		love.graphics.printf1(...)
 		love.graphics.printf = love.graphics.printf1

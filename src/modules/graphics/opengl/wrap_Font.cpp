@@ -19,7 +19,6 @@
 **/
 
 // LOVE
-#include "Graphics.h"
 #include "wrap_Font.h"
 
 namespace love
@@ -28,8 +27,6 @@ namespace graphics
 {
 namespace opengl
 {
-	extern Graphics * instance;
-
 	Font * luax_checkfont(lua_State * L, int idx)
 	{
 		return luax_checktype<Font>(L, idx, "Font", GRAPHICS_FONT_T);
@@ -92,20 +89,12 @@ namespace opengl
 		return 1;
 	}
 
-	int w_Font_set(lua_State * L)
-	{
-		Font * t = luax_checkfont(L, 1);
-		instance->setFont(t);
-		return 0;
-	}
-
 	static const luaL_Reg functions[] = {
 		{ "getHeight", w_Font_getHeight },
 		{ "getWidth", w_Font_getWidth },
 		{ "getWrap", w_Font_getWrap },
 		{ "setLineHeight", w_Font_setLineHeight },
 		{ "getLineHeight", w_Font_getLineHeight },
-		{ "set", w_Font_set },
 		{ 0, 0 }
 	};
 

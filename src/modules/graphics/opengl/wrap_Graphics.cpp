@@ -32,7 +32,7 @@ namespace graphics
 {
 namespace opengl
 {
-	Graphics * instance = 0;
+	static Graphics * instance = 0;
 
 	int w_checkMode(lua_State * L)
 	{
