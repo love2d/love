@@ -58,58 +58,21 @@ namespace thread
 		return 1;
 	}
 
-	bool __pushThreadVariant(lua_State *L, ThreadVariant *v)
-	{
-		if (!v)
-		{
-			lua_pushnil(L);
-			return false;
-		}
-		switch(v->type)
-		{
-			case BOOLEAN:
-				lua_pushboolean(L, v->data.boolean);
-				break;
-			case NUMBER:
-				lua_pushnumber(L, v->data.number);
-				break;
-			case STRING:
-				lua_pushlstring(L, v->data.string.str, v->data.string.len);
-				break;
-			case LUSERDATA:
-				lua_pushlightuserdata(L, v->data.userdata);
-				break;
-			case FUSERDATA:
-				if (v->udatatype != INVALID_ID)
-				{
-					const char *name = NULL;
-					love::types.find(v->udatatype, name);
-					((love::Object *) v->data.userdata)->retain();
-					luax_newtype(L, name, v->flags, v->data.userdata);
-				}
-				else
-					lua_pushlightuserdata(L, v->data.userdata);
-				// I know this is not the same
-				// sadly, however, it's the most
-				// I can do (at the moment).
-				break;
-			default:
-				lua_pushnil(L);
-				break;
-		}
-		return true;
-	}
 
 	int w_Thread_get(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checkstring(L, 2);
 		t->lock();
-		ThreadVariant *v = t->get(name);
+		Variant *v = t->get(name);
 		t->clear(name);
 		t->unlock();
-		if (!__pushThreadVariant(L, v))
+		if (!v)
+		{
+			lua_pushnil(L);
 			return 1;
+		}
+		v->toLua(L);
 		t->lock();
 		v->release();
 		t->unlock();
@@ -138,11 +101,15 @@ namespace thread
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checkstring(L, 2);
 		t->lock();
-		ThreadVariant *v = t->demand(name);
+		Variant *v = t->demand(name);
 		t->clear(name);
 		t->unlock();
-		if (!__pushThreadVariant(L, v))
+		if (!v)
+		{
+			lua_pushnil(L);
 			return 1;
+		}
+		v->toLua(L);
 		t->lock();
 		v->release();
 		t->unlock();
@@ -154,60 +121,28 @@ namespace thread
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checkstring(L, 2);
 		t->lock();
-		ThreadVariant *v = t->get(name);
+		Variant *v = t->get(name);
 		t->unlock();
-		if (!__pushThreadVariant(L, v))
+		if (!v)
+		{
+			lua_pushnil(L);
 			return 1;
+		}
+		v->toLua(L);
 		t->lock();
 		v->release();
 		t->unlock();
 		return 1;
 	}
 
-	Type extractudatatype(lua_State * L, int idx)
-        {
-                Type t = INVALID_ID;
-                if (!lua_isuserdata(L, idx))
-                        return t;
-                if (luaL_getmetafield (L, idx, "__tostring") == 0)
-                        return t;
-                lua_pushvalue(L, idx);
-                int result = lua_pcall(L, 1, 1, 0);
-                if (result == 0)
-                        types.find(lua_tostring(L, -1), t);
-                if (result == 0 || result == LUA_ERRRUN)
-                        lua_pop(L, 1);
-                return t;
-        }
 
 	int w_Thread_set(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
 		std::string name = luax_checkstring(L, 2);
-		ThreadVariant *v;
-		size_t len;
-		const char *str;
-		switch(lua_type(L, 3))
-		{
-			case LUA_TBOOLEAN:
-				v = new ThreadVariant(luax_toboolean(L, 3));
-				break;
-			case LUA_TNUMBER:
-				v = new ThreadVariant(lua_tonumber(L, 3));
-				break;
-			case LUA_TSTRING:
-				str = lua_tolstring(L, 3, &len);
-				v = new ThreadVariant(str, len);
-				break;
-			case LUA_TLIGHTUSERDATA:
-				v = new ThreadVariant(lua_touserdata(L, 3));
-				break;
-			case LUA_TUSERDATA:
-				v = new ThreadVariant(extractudatatype(L, 3), lua_touserdata(L, 3));
-				break;
-			default:
-				return luaL_error(L, "Expected boolean, number, string or userdata");
-		}
+		Variant *v = Variant::fromLua(L, 3);
+		if (!v)
+			return luaL_error(L, "Expected boolean, number, string or userdata");
 		t->set(name, v);
 		t->lock();
 		v->release();

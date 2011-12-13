@@ -18,37 +18,56 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#ifndef LOVE_THREAD_SDL_WRAP_THREAD_H
-#define LOVE_THREAD_SDL_WRAP_THREAD_H
+#ifndef LOVE_VARIANT_H
+#define LOVE_VARIANT_H
 
-// LOVE
-#include <common/config.h>
-#include "Thread.h"
+#include <common/runtime.h>
+#include <common/Object.h>
+
+#include <cstring>
 
 namespace love
 {
-namespace thread
-{
-	Thread *luax_checkthread(lua_State *L, int idx);
-	int w_Thread_start(lua_State *L);
-	int w_Thread_kill(lua_State *L);
-	int w_Thread_wait(lua_State *L);
-	int w_Thread_getName(lua_State *L);
-	int w_Thread_get(lua_State *L);
-	int w_Thread_getKeys(lua_State *L);
-	int w_Thread_demand(lua_State *L);
-	int w_Thread_peek(lua_State *L);
-	int w_Thread_set(lua_State *L);
+	class Variant : public love::Object
+	{
+	private:
+		enum Type
+		{
+			UNKNOWN = 0,
+			BOOLEAN,
+			NUMBER,
+			CHARACTER,
+			STRING,
+			LUSERDATA,
+			FUSERDATA
+		} type;
+		union
+		{
+			bool boolean;
+			char character;
+			double number;
+			struct {
+				const char *str;
+				size_t len;
+			} string;
+			void *userdata;
+		} data;
+		love::Type udatatype;
+		bits flags;
 
-	int luaopen_thread(lua_State *L);
+	public:
+		
+		Variant(bool boolean);
+		Variant(double number);
+		Variant(const char *string, size_t len);
+		Variant(char c);
+		Variant(void *userdata);
+		Variant(love::Type udatatype, void *userdata);
+		virtual ~Variant();
 
-	int w_newThread(lua_State *L);
-	int w_getThreads(lua_State *L);
-	int w_getThread(lua_State *L);
-
-	extern "C" LOVE_EXPORT int luaopen_love_thread(lua_State * L);
-
-} // thread
+		static Variant *fromLua(lua_State *L, int n);
+		void toLua(lua_State *L);
+	}; // Variant
 } // love
 
-#endif // LOVE_THREAD_SDL_WRAP_THREAD_H
+#endif // LOVE_VARIANT_H

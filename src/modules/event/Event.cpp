@@ -24,18 +24,65 @@ namespace love
 {
 namespace event
 {
+	Message::Message(std::string name, int nargs, ...)
+		: name(name), nargs(nargs)
+	{
+		args = new Variant*[nargs];
+		va_list arg;
+		va_start(arg, nargs);
+		for (int i = 0; i < nargs; i++)
+		{
+			args[i] = va_arg(arg, Variant*);
+			args[i]->retain();
+		}
+		va_end(arg);
+	}
+
+	Message::~Message()
+	{
+		for (int i = 0; i < nargs; i++)
+			args[i]->release();
+	}
+
+	int Message::toLua(lua_State *L)
+	{
+		lua_pushstring(L, name.c_str());
+		for (int i = 0; i < nargs; i++)
+			args[i]->toLua(L);
+		return nargs+1;
+	}
+
+	Message *Message::fromLua(lua_State *L, int n)
+	{
+		std::string name = luaL_checkstring(L, n);
+		Message *m = new Message(name, 0);
+		int nargs = lua_gettop(L)-n;
+		delete[] m->args;
+		m->args = new Variant*[nargs];
+		for (int i = 0; i < nargs; i++)
+		{
+			m->args[i] = Variant::fromLua(L, n+i);
+		}
+		return m;
+	}
+
 	Event::~Event()
 	{
 	}
 
-	bool Event::getConstant(const char * in, Event::Type & out)
+	void Event::push(Message *msg)
 	{
-		return types.find(in, out);
+		msg->retain();
+		queue.push(msg);
 	}
 
-	bool Event::getConstant(Event::Type in, const char *& out)
+	bool Event::poll(Message *&msg)
 	{
-		return types.find(in, out);
+		if (queue.empty())
+			return false;
+		msg = queue.front();
+		queue.pop();
+		return true;
 	}
 
 	bool Event::getConstant(const char * in, love::mouse::Mouse::Button & out)
@@ -57,20 +104,6 @@ namespace event
 	{
 		return keys.find(in, out);
 	}
-
-	StringMap<Event::Type, Event::TYPE_MAX_ENUM>::Entry Event::typeEntries[] =
-	{
-		{"kp", Event::TYPE_KEY_PRESSED},
-		{"kr", Event::TYPE_KEY_RELEASED},
-		{"mp", Event::TYPE_MOUSE_PRESSED},
-		{"mr", Event::TYPE_MOUSE_RELEASED},
-		{"jp", Event::TYPE_JOYSTICK_PRESSED},
-		{"jr", Event::TYPE_JOYSTICK_RELEASED},
-		{"f", Event::TYPE_FOCUS},
-		{"q", Event::TYPE_QUIT},
-	};
-
-	StringMap<Event::Type, Event::TYPE_MAX_ENUM> Event::types(Event::typeEntries, sizeof(Event::typeEntries));
 
 	StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
 	{

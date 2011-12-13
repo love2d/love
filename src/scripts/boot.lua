@@ -153,32 +153,36 @@ end
 function love.createhandlers()
 
 	-- Standard callback handlers.
-	love.handlers = {
-		kp = function (b, u)
+	love.handlers = setmetatable({
+		keypressed = function (b, u)
 			if love.keypressed then love.keypressed(b, u) end
 		end,
-		kr = function (b)
+		keyreleased = function (b)
 			if love.keyreleased then love.keyreleased(b) end
 		end,
-		mp = function (x,y,b)
+		mousepressed = function (x,y,b)
 			if love.mousepressed then love.mousepressed(x,y,b) end
 		end,
-		mr = function (x,y,b)
+		mousereleased = function (x,y,b)
 			if love.mousereleased then love.mousereleased(x,y,b) end
 		end,
-		jp = function (j,b)
+		joypressed = function (j,b)
 			if love.joystickpressed then love.joystickpressed(j,b) end
 		end,
-		jr = function (j,b)
+		joyrreleased = function (j,b)
 			if love.joystickreleased then love.joystickreleased(j,b) end
 		end,
-		f = function (f)
+		focus = function (f)
 			if love.focus then love.focus(f) end
 		end,
-		q = function ()
+		quit = function ()
 			return
 		end,
-	}
+	}, {
+		__index = function(self, name)
+			error("Unknown event: " .. name)
+		end,
+	})
 
 end
 
@@ -375,8 +379,9 @@ function love.run()
 	while true do
 		-- Process events.
 		if love.event then
+			love.event.pump()
 			for e,a,b,c in love.event.poll() do
-				if e == "q" then
+				if e == "quit" then
 					if not love.quit or not love.quit() then
 						if love.audio then
 							love.audio.stop()
@@ -647,7 +652,7 @@ function love.nogame()
 	
 	function love.keyreleased(key)
 		if key == "escape" then
-			love.event.push("q")
+			love.event.quit()
 		end
 	end
 
@@ -721,10 +726,10 @@ function love.errhand(msg)
 	while true do
 		e, a, b, c = love.event.wait()
 
-		if e == "q" then
+		if e == "quit" then
 			return
 		end
-		if e == "kp" and a == "escape" then
+		if e == "keypressed" and a == "escape" then
 			return
 		end
 
@@ -771,10 +776,10 @@ function love.releaseerrhand(msg)
 	while true do
 		e, a, b, c = love.event.wait()
 
-		if e == "q" then
+		if e == "quit" then
 			return
 		end
-		if e == "kp" and a == "escape" then
+		if e == "keypressed" and a == "escape" then
 			return
 		end
 

@@ -59,72 +59,13 @@ namespace thread
 		{
 			{
 				Lock lock((Mutex*) comm->mutex);
-				ThreadVariant *v = new ThreadVariant(lua_tostring(L, -1), lua_strlen(L, -1));
+				Variant *v = new Variant(lua_tostring(L, -1), lua_strlen(L, -1));
 				comm->setValue("error", v);
 				v->release();
 			}
 			((Conditional*) comm->cond)->broadcast();
 		}
 		lua_close(L);
-	}
-
-
-	ThreadVariant::ThreadVariant(bool boolean)
-	{
-		type = BOOLEAN;
-		data.boolean = boolean;
-	}
-
-	ThreadVariant::ThreadVariant(double number)
-	{
-		type = NUMBER;
-		data.number = number;
-	}
-
-	ThreadVariant::ThreadVariant(const char *string, size_t len)
-	{
-		type = STRING;
-		char *buf = new char[len+1];
-		memset(buf, 0, len+1);
-		memcpy(buf, string, len);
-		data.string.str = buf;
-		data.string.len = len;
-	}
-
-	ThreadVariant::ThreadVariant(void *userdata)
-	{
-		type = LUSERDATA;
-		data.userdata = userdata;
-	}
-
-	ThreadVariant::ThreadVariant(Type udatatype, void *userdata)
-	{
-		type = FUSERDATA;
-		this->udatatype = udatatype;
-		if (udatatype != INVALID_ID)
-		{
-			Proxy *p = (Proxy *) userdata;
-			flags = p->flags;
-			data.userdata = p->data;
-			((love::Object *) data.userdata)->retain();
-		}
-		else
-			data.userdata = userdata;
-	}
-
-	ThreadVariant::~ThreadVariant()
-	{
-		switch(type)
-		{
-			case STRING:
-				delete[] data.string.str;
-				break;
-			case FUSERDATA:
-				((love::Object *) data.userdata)->release();
-				break;
-			default:
-				break;
-		}
 	}
 
 	ThreadData::ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond)
@@ -162,7 +103,7 @@ namespace thread
 		return name;
 	}
 
-	ThreadVariant* ThreadData::getValue(const std::string & name)
+	Variant* ThreadData::getValue(const std::string & name)
 	{
 		if (shared.count(name) == 0)
 			return 0;
@@ -177,7 +118,7 @@ namespace thread
 		shared.erase(name);
 	}
 
-	void ThreadData::setValue(const std::string & name, ThreadVariant *v)
+	void ThreadData::setValue(const std::string & name, Variant *v)
 	{
 		if (shared.count(name) != 0)
 			shared[name]->release();
@@ -188,7 +129,7 @@ namespace thread
 	std::vector<std::string> ThreadData::getKeys()
 	{
 		std::vector<std::string> keys;
-		for (std::map<std::string, ThreadVariant*>::iterator it = shared.begin(); it != shared.end(); it++)
+		for (std::map<std::string, Variant*>::iterator it = shared.begin(); it != shared.end(); it++)
 		{
 			keys.push_back(it->first);
 		}
@@ -273,9 +214,9 @@ namespace thread
 		return name;
 	}
 
-	ThreadVariant *Thread::get(const std::string & name)
+	Variant *Thread::get(const std::string & name)
 	{
-		ThreadVariant *v = comm->getValue(name);
+		Variant *v = comm->getValue(name);
 		if (v)
 			v->retain();
 		return v;
@@ -286,9 +227,9 @@ namespace thread
 		return comm->getKeys();
 	}
 
-	ThreadVariant *Thread::demand(const std::string & name)
+	Variant *Thread::demand(const std::string & name)
 	{
-		ThreadVariant *v = comm->getValue(name);
+		Variant *v = comm->getValue(name);
 		while (!v)
 		{
 			if (comm->getValue("error"))
@@ -305,7 +246,7 @@ namespace thread
 		comm->clearValue(name);
 	}
 
-	void Thread::set(const std::string & name, ThreadVariant *v)
+	void Thread::set(const std::string & name, Variant *v)
 	{
 		lock(); //this function explicitly locks
 		comm->setValue(name, v); //because we need

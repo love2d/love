@@ -34,104 +34,15 @@ namespace sdl
 {
 	static Event * instance = 0;
 
-	static bool to_message(lua_State * L, Event::Message & msg)
-	{
-		const char * str = luaL_checkstring(L, 1);
-
-		if (!Event::getConstant(str, msg.type))
-			return false;
-
-		switch(msg.type)
-		{
-		case Event::TYPE_KEY_PRESSED:
-			if (!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
-				return false;
-			msg.keyboard.u = (unsigned short)luaL_optint(L, 3, 0);
-			return true;
-		case Event::TYPE_KEY_RELEASED:
-			if (!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
-				return false;
-			return true;
-		case Event::TYPE_MOUSE_PRESSED:
-		case Event::TYPE_MOUSE_RELEASED:
-			if (!Event::getConstant(luaL_checkstring(L, 2), msg.mouse.b))
-				return false;
-			msg.mouse.x = luaL_checkint(L, 3);
-			msg.mouse.y = luaL_checkint(L, 4);
-			return true;
-		case Event::TYPE_JOYSTICK_PRESSED:
-		case Event::TYPE_JOYSTICK_RELEASED:
-			msg.joystick.index = luaL_checkint(L, 2);
-			msg.joystick.button = luaL_checkint(L, 3);
-			return true;
-		case Event::TYPE_FOCUS:
-			msg.focus.f = luax_toboolean(L, 2);
-			return true;
-		case Event::TYPE_QUIT:
-			return true;
-		default:
-			return false;
-		}
-
-		return false;
-	}
-
-	static int push_message(lua_State * L, const Event::Message & msg)
-	{
-		const char * str = 0;
-
-		if (!Event::getConstant(msg.type, str))
-			return 0;
-
-		lua_pushstring(L, str);
-
-		switch(msg.type)
-		{
-		case Event::TYPE_KEY_PRESSED:
-			if (!Event::getConstant(msg.keyboard.k, str))
-				return 0;
-			lua_pushstring(L, str);
-			lua_pushinteger(L, msg.keyboard.u);
-			return 3;
-		case Event::TYPE_KEY_RELEASED:
-			if (!Event::getConstant(msg.keyboard.k, str))
-				return 0;
-			lua_pushstring(L, str);
-			return 2;
-		case Event::TYPE_MOUSE_PRESSED:
-		case Event::TYPE_MOUSE_RELEASED:
-			if (!Event::getConstant(msg.mouse.b, str))
-				return 0;
-			lua_pushinteger(L, msg.mouse.x);
-			lua_pushinteger(L, msg.mouse.y);
-			lua_pushstring(L, str);
-			return 4;
-		case Event::TYPE_JOYSTICK_PRESSED:
-		case Event::TYPE_JOYSTICK_RELEASED:
-			lua_pushinteger(L, msg.joystick.index+1);
-			lua_pushinteger(L, msg.joystick.button+1);
-			return 3;
-		case Event::TYPE_FOCUS:
-			lua_pushboolean(L, msg.focus.f);
-			return 2;
-		case Event::TYPE_QUIT:
-			return 1;
-		default:
-			return 0;
-		}
-
-		return 0;
-	}
-
 	static int poll_i(lua_State * L)
 	{
-		static Event::Message m;
+		Message *m;
 
 		while (instance->poll(m))
 		{
-			int args = push_message(L, m);
-			if (args > 0)
-				return args;
+			int args = m->toLua(L);
+			m->release();
+			return args;
 		}
 
 		// No pending events.
@@ -152,11 +63,13 @@ namespace sdl
 
 	int w_wait(lua_State * L)
 	{
-		static Event::Message m;
+		static Message *m;
 
-		if (instance->wait(m))
+		if ((m = instance->wait()))
 		{
-			return push_message(L, m);
+			int args = m->toLua(L);
+			m->release();
+			return args;
 		}
 
 		return 0;
@@ -164,17 +77,18 @@ namespace sdl
 
 	int w_push(lua_State * L)
 	{
-		static Event::Message m;
+		static Message *m;
 
-		if (!to_message(L, m))
+		if (!(m = Message::fromLua(L, 1)))
 		{
 			luax_pushboolean(L, false);
 			return 1;
 		}
 
-		luax_pushboolean(L, instance->push(m));
+		instance->push(m);
+		m->release();
 
-		return 1;
+		return 0;
 	}
 
 	int w_clear(lua_State *)
@@ -185,9 +99,8 @@ namespace sdl
 
 	int w_quit(lua_State * L)
 	{
-		static Event::Message m;
-		m.type = Event::TYPE_QUIT;
-		luax_pushboolean(L, instance->push(m));
+		Message *m = new Message("quit", 0);
+		instance->push(m);
 		return 1;
 	}
 

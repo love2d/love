@@ -52,27 +52,11 @@ namespace sdl
 		void pump();
 
 		/**
-		* Checks if there are messages in the queue.
-		*
-		* @param message The next message in the queue, if the return value is true.
-		* @return True if there a message was found, false otherwise.
-		**/
-		bool poll(Message & message);
-
-		/**
 		* Waits for the next event (indefinitely). Useful for creating games where
 		* the screen and game state only needs updating when the user interacts with
 		* the window.
 		**/
-		bool wait(Message & message);
-
-		/**
-		* Push a message onto the event queue.
-		*
-		* @param message The message to push onto the queue.
-		* @return True on success, false if the queue was full.
-		**/
-		bool push(Message & message);
+		Message *wait();
 
 		/**
 		 * Clears the event queue.
@@ -81,8 +65,7 @@ namespace sdl
 
 	private:
 
-		bool convert(SDL_Event & e, Message & m);
-		bool convert(Message & m, SDL_Event & e);
+		Message *convert(SDL_Event & e);
 
 		static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
 		static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;

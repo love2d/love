@@ -42,35 +42,30 @@ namespace sdl
 	void Event::pump()
 	{
 		SDL_PumpEvents();
-	}
 
-	bool Event::poll(Message & message)
-	{
 		static SDL_Event e;
-
 		SDL_EnableUNICODE(1);
+
+		Message *msg;
 
 		while (SDL_PollEvent(&e))
 		{
-			if (convert(e, message))
-				return true;
+			msg = convert(e);
+			if (msg)
+			{
+				push(msg);
+				msg->release();
+			}
 		}
-
-		return false;
 	}
 
-	bool Event::wait(Message & message)
+	Message *Event::wait()
 	{
 		static SDL_Event e;
 		bool ok = (SDL_WaitEvent(&e) == 1);
-		return ok && convert(e, message);
-	}
-
-	bool Event::push(Message & message)
-	{
-		static SDL_Event e;
-		bool ok = convert(message, e);
-		return ok && (SDL_PushEvent(&e) == 0);
+		if (!ok)
+			return NULL;
+		return convert(e);
 	}
 
 	void Event::clear()
@@ -81,83 +76,78 @@ namespace sdl
 		{
 			// Do nothing with 'e' ...
 		}
+
+		while (!queue.empty())
+		{
+			queue.back()->release();
+			queue.pop();
+		}
 	}
 
-	bool Event::convert(SDL_Event & e, Message & m)
+	Message *Event::convert(SDL_Event & e)
 	{
+		Message *msg = NULL;
+		love::keyboard::Keyboard::Key key;
+		love::mouse::Mouse::Button button;
+		Variant *arg1, *arg2, *arg3;
+		const char *txt;
 		switch(e.type)
 		{
 		case SDL_KEYDOWN:
-			m.type = Event::TYPE_KEY_PRESSED;
-			m.keyboard.u = e.key.keysym.unicode;
-			return keys.find(e.key.keysym.sym, m.keyboard.k);
+			if (keys.find(e.key.keysym.sym, key) && love::event::Event::keys.find(key, txt))
+			{
+				arg1 = new Variant(txt, strlen(txt));
+				arg2 = new Variant((double) e.key.keysym.unicode);
+				msg = new Message("keypressed", 2, arg1, arg2);
+				arg1->release();
+				arg2->release();
+			}
+			break;
 		case SDL_KEYUP:
-			m.type = Event::TYPE_KEY_RELEASED;
-			return keys.find(e.key.keysym.sym, m.keyboard.k);
+			if (keys.find(e.key.keysym.sym, key) && love::event::Event::keys.find(key, txt))
+			{
+				arg1 = new Variant(txt, strlen(txt));
+				msg = new Message("keyreleased", 1, arg1);
+				arg1->release();
+			}
+			break;
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
-			m.type = (e.type == SDL_MOUSEBUTTONDOWN) ? Event::TYPE_MOUSE_PRESSED : Event::TYPE_MOUSE_RELEASED;
-			m.mouse.x = e.button.x;
-			m.mouse.y = e.button.y;
-			return buttons.find(e.button.button, m.mouse.b);
+			if (buttons.find(e.button.button, button) && love::event::Event::buttons.find(button, txt))
+			{
+				arg1 = new Variant((double) e.button.x);
+				arg2 = new Variant((double) e.button.y);
+				arg3 = new Variant(txt, strlen(txt));
+				msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
+						"mousepressed" : "mousereleased", 3,
+						arg1, arg2, arg3);
+				arg1->release();
+				arg2->release();
+				arg3->release();
+			}
+			break;
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYBUTTONUP:
-			m.type = (e.type == SDL_JOYBUTTONDOWN) ? Event::TYPE_JOYSTICK_PRESSED : Event::TYPE_JOYSTICK_RELEASED;
-			m.joystick.button = e.jbutton.button;
-			m.joystick.index = e.jbutton.which;
-			return true;
+			arg1 = new Variant((double) (e.jbutton.which+1));
+			arg2 = new Variant((double) (e.jbutton.button+1));
+			msg = new Message((e.type == SDL_JOYBUTTONDOWN) ?
+					"joystickpressed" : "joystickreleased", 2,
+					arg1, arg2);
+			arg1->release();
+			arg2->release();
+			break;
 		case SDL_ACTIVEEVENT:
+			arg1 = new Variant(e.active.gain != 0);
 			if (e.active.state & SDL_APPINPUTFOCUS)
-			{
-				m.type = Event::TYPE_FOCUS;
-				m.focus.f = (e.active.gain != 0);
-				return true;
-			}
-			else
-				break;
+				msg = new Message("focus", 1, arg1);
+			arg1->release();
+			break;
 		case SDL_QUIT:
-			m.type = Event::TYPE_QUIT;
-			return true;
+			msg = new Message("quit", 0);
+			break;
 		}
 
-		return false;
-	}
-
-	bool Event::convert(Message & m, SDL_Event & e)
-	{
-		switch(m.type)
-		{
-		case Event::TYPE_KEY_PRESSED:
-			e.type = SDL_KEYDOWN;
-			e.key.keysym.unicode = (Uint16)m.keyboard.u;
-			return keys.find(m.keyboard.k, e.key.keysym.sym);
-		case Event::TYPE_KEY_RELEASED:
-			e.type = SDL_KEYUP;
-			return keys.find(m.keyboard.k, e.key.keysym.sym);
-		case Event::TYPE_MOUSE_PRESSED:
-		case Event::TYPE_MOUSE_RELEASED:
-			e.type = (m.type == Event::TYPE_MOUSE_PRESSED) ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
-			e.button.x = m.mouse.x;
-			e.button.y = m.mouse.y;
-			return buttons.find(m.mouse.b, e.button.button);
-		case Event::TYPE_JOYSTICK_PRESSED:
-		case Event::TYPE_JOYSTICK_RELEASED:
-			e.type = (m.type == Event::TYPE_JOYSTICK_PRESSED) ? SDL_JOYBUTTONDOWN : SDL_JOYBUTTONUP;
-			e.jbutton.which = m.joystick.index;
-			e.jbutton.button = m.joystick.button;
-			return true;
-		case Event::TYPE_FOCUS:
-			e.type = SDL_ACTIVEEVENT;
-			e.active.state = SDL_APPINPUTFOCUS;
-			e.active.gain = m.focus.f;
-		case Event::TYPE_QUIT:
-			e.type = SDL_QUIT;
-			return true;
-		default:
-			return true;
-		}
-
-		return true;
+		return msg;
 	}
 
 	EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry Event::keyEntries[] =

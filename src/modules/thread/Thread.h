@@ -31,8 +31,8 @@
 #include <filesystem/File.h>
 #include <common/runtime.h>
 #include <common/Module.h>
+#include <common/Variant.h>
 #include <thread/threads.h>
-
 
 namespace love
 {
@@ -41,46 +41,12 @@ namespace thread
 
 	class ThreadModule;
 
-	enum ThreadVariantType
-	{
-		UNKNOWN = 0,
-		BOOLEAN,
-		NUMBER,
-		STRING,
-		LUSERDATA,
-		FUSERDATA
-	};
-
-	class ThreadVariant : public love::Object
-	{
-	public:
-		ThreadVariant(bool boolean);
-		ThreadVariant(double number);
-		ThreadVariant(const char *string, size_t len);
-		ThreadVariant(void *userdata);
-		ThreadVariant(Type udatatype, void *userdata);
-		virtual ~ThreadVariant();
-		ThreadVariantType type;
-		union
-		{
-			bool boolean;
-			double number;
-			struct {
-				const char *str;
-				size_t len;
-			} string;
-			void *userdata;
-		} data;
-		Type udatatype;
-		bits flags;
-	};
-
 	class ThreadData
 	{
 	private:
 		char *code;
 		char *name;
-		std::map<std::string, ThreadVariant*> shared;
+		std::map<std::string, Variant*> shared;
 		size_t len;
 
 	public:
@@ -88,9 +54,9 @@ namespace thread
 		~ThreadData();
 		const char *getCode();
 		const char *getName(size_t *len = 0);
-		ThreadVariant* getValue(const std::string & name);
+		Variant* getValue(const std::string & name);
 		void clearValue(const std::string & name);
-		void setValue(const std::string & name, ThreadVariant *v);
+		void setValue(const std::string & name, Variant *v);
 		std::vector<std::string> getKeys();
 
 		void *mutex;
@@ -130,11 +96,11 @@ namespace thread
 		void kill();
 		void wait();
 		std::string getName();
-		ThreadVariant *get(const std::string & name);
+		Variant *get(const std::string & name);
 		std::vector<std::string> getKeys();
-		ThreadVariant *demand(const std::string & name);
+		Variant *demand(const std::string & name);
 		void clear(const std::string & name);
-		void set(const std::string & name, ThreadVariant *v);
+		void set(const std::string & name, Variant *v);
 		void lock();
 		void unlock();
 	}; // Thread
