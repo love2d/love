@@ -111,6 +111,7 @@ namespace lullaby
 			{
 			case MPG123_NEW_FORMAT:
 				{
+					size += numbytes;
 					long rate = 0;
 					int encoding = 0;
 					int ret = mpg123_getformat(handle, &rate, &channels, &encoding);
