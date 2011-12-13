@@ -32,7 +32,7 @@ namespace graphics
 {
 namespace opengl
 {
-	static Graphics * instance = 0;
+	Graphics * instance = 0;
 
 	int w_checkMode(lua_State * L)
 	{
@@ -505,62 +505,13 @@ namespace opengl
 		return 4;
 	}
 
-	int w_setFont1(lua_State * L)
+	int w_setFont(lua_State * L)
 	{
 		// The second parameter is an optional int.
 		int size = luaL_optint(L, 2, 12);
 
-		Font * font;
-
-		bool created = false;
-
-		// If the first parameter isn't a Font, create a new one
-		if (!luax_istype(L, 1, GRAPHICS_FONT_T))
-		{
-			created = true;
-			lua_pushinteger(L, size); // push the size
-			lua_insert(L, 2); // move it to its proper place
-			// Convert to File, if necessary.
-			if (lua_isstring(L, 1))
-				luax_convobj(L, 1, "filesystem", "newFile");
-
-			// Convert to Data, if necessary.
-			if (luax_istype(L, 1, FILESYSTEM_FILE_T))
-			{
-				love::filesystem::File * f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-				Data * d;
-				try
-				{
-					d = f->read();
-				}
-				catch (love::Exception & e)
-				{
-					return luaL_error(L, e.what());
-				}
-				lua_remove(L, 1); // get rid of the file
-				luax_newtype(L, "Data", DATA_T, (void*)d);
-				lua_insert(L, 1); // put it at the bottom of the stack
-			}
-
-			// Convert to Rasterizer, if necessary.
-			if (luax_istype(L, 1, DATA_T))
-			{
-				int idxs[] = {1, 2};
-				luax_convobj(L, idxs, 2, "font", "newRasterizer");
-			}
-
-			love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
-
-			// Create the font.
-			font = instance->newFont(rasterizer);
-
-			if (font == 0)
-				return luaL_error(L, "Could not load font.");
-		}
-		else font = luax_checktype<Font>(L, 1, "Font", GRAPHICS_FONT_T);
+		Font * font = luax_checktype<Font>(L, 1, "Font", GRAPHICS_FONT_T);
 		instance->setFont(font);
-		if (created)
-			font->release();
 		return 0;
 	}
 
@@ -1232,7 +1183,7 @@ namespace opengl
 		{ "setBackgroundColor", w_setBackgroundColor },
 		{ "getBackgroundColor", w_getBackgroundColor },
 
-		{ "setFont1", w_setFont1 },
+		{ "setFont", w_setFont },
 		{ "getFont", w_getFont },
 
 		{ "setBlendMode", w_setBlendMode },

@@ -1252,17 +1252,9 @@ do
 		return love.graphics.newFont1(font, size or 12)
 	end
 
-	love.graphics.setFont = function(font, size)
-		if type(font) == "number" or not font then
-			size = font
-			font = vera_ttf
-		end
-		return love.graphics.setFont1(font, size or 12)
-	end
-
 	love.graphics.print = function (...)
 		if not love.graphics.getFont() then
-			love.graphics.setFont(12)
+			love.graphics.newFont(12):set()
 		end
 		love.graphics.print1(...)
 		love.graphics.print = love.graphics.print1
@@ -1270,7 +1262,7 @@ do
 
 	love.graphics.printf = function (...)
 		if not love.graphics.getFont() then
-			love.graphics.setFont(12)
+			love.graphics.newFont(12):set()
 		end
 		love.graphics.printf1(...)
 		love.graphics.printf = love.graphics.printf1

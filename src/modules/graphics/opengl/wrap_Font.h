@@ -37,6 +37,7 @@ namespace opengl
 	int w_Font_getWrap(lua_State * L);
 	int w_Font_setLineHeight(lua_State * L);
 	int w_Font_getLineHeight(lua_State * L);
+	int w_Font_set(lua_State * L);
 	int luaopen_font(lua_State * L);
 
 } // opengl

@@ -67,7 +67,7 @@ namespace opengl
 	int w_getColor(lua_State * L);
 	int w_setBackgroundColor(lua_State * L);
 	int w_getBackgroundColor(lua_State * L);
-	int w_setFont1(lua_State * L);
+	int w_setFont(lua_State * L);
 	int w_getFont(lua_State * L);
 	int w_setBlendMode(lua_State * L);
 	int w_setColorMode(lua_State * L);
