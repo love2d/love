@@ -130,6 +130,12 @@
     <Filter Include="modules\physics\box2d">
       <UniqueIdentifier>{9282b1b4-0df5-4180-8840-ea58561dc7b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\window">
+      <UniqueIdentifier>{d3e343d0-39a3-4144-884b-dc37d5f12c6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\window\sdl">
+      <UniqueIdentifier>{240a0dac-971b-43f6-829c-b06e54bddd7a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\love.cpp" />
@@ -727,6 +733,15 @@
     <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp">
       <Filter>modules\keyboard\sdl</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\common\Variant.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\window\Window.cpp">
+      <Filter>modules\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\window\sdl\Window.cpp">
+      <Filter>modules\window\sdl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\modules\audio\Audio.h">
@@ -1301,6 +1316,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h">
       <Filter>modules\keyboard\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common\Variant.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\window\Window.h">
+      <Filter>modules\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\window\sdl\Window.h">
+      <Filter>modules\window\sdl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
