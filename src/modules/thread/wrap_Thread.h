@@ -31,7 +31,6 @@ namespace thread
 {
 	Thread *luax_checkthread(lua_State *L, int idx);
 	int w_Thread_start(lua_State *L);
-	int w_Thread_kill(lua_State *L);
 	int w_Thread_wait(lua_State *L);
 	int w_Thread_getName(lua_State *L);
 	int w_Thread_get(lua_State *L);

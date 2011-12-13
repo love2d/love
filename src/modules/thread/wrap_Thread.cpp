@@ -36,13 +36,6 @@ namespace thread
 		return 0;
 	}
 
-	int w_Thread_kill(lua_State *L)
-	{
-		Thread *t = luax_checkthread(L, 1);
-		t->kill();
-		return 0;
-	}
-
 	int w_Thread_wait(lua_State *L)
 	{
 		Thread *t = luax_checkthread(L, 1);
@@ -152,7 +145,6 @@ namespace thread
 
 	static const luaL_Reg type_functions[] = {
 		{ "start", w_Thread_start },
-		{ "kill", w_Thread_kill },
 		{ "wait", w_Thread_wait },
 		{ "getName", w_Thread_getName },
 		{ "get", w_Thread_get },
