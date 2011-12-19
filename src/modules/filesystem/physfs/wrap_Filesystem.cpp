@@ -304,8 +304,6 @@ namespace physfs
 	{
 #ifdef LOVE_WINDOWS
 		return ".dll";
-#elif defined(LOVE_MACOSX) || defined(LOVE_MACOS)
-		return ".dylib";
 #else
 		return ".so";
 #endif
