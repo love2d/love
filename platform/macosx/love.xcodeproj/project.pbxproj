@@ -164,6 +164,9 @@
 		A97E632814604BCF00020E43 /* wrap_Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A97E632614604BCF00020E43 /* wrap_Mouse.cpp */; };
 		A97E632C14604BDF00020E43 /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A97E632A14604BDF00020E43 /* wrap_Timer.cpp */; };
 		A986ECAF132CEBB000F048C8 /* Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A986ECAD132CEB9300F048C8 /* Fixture.cpp */; };
+		A9A5BE47149F0ACB00D9931C /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9A5BE43149F0ACB00D9931C /* Window.cpp */; };
+		A9A5BE48149F0ACB00D9931C /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9A5BE45149F0ACB00D9931C /* Window.cpp */; };
+		A9A5BE4B149F0B0200D9931C /* Variant.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9A5BE49149F0B0200D9931C /* Variant.cpp */; };
 		A9B4BA9C1045937F001DBC80 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */; };
 		A9B4BA9D1045937F001DBC80 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B4BA9B1045937F001DBC80 /* wrap_ParticleSystem.cpp */; };
 		A9B6432C13BF83AB00DC3C7E /* FrictionJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9B6432A13BF833900DC3C7E /* FrictionJoint.cpp */; };
@@ -593,6 +596,12 @@
 		A97E632B14604BDF00020E43 /* wrap_Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Timer.h; sourceTree = "<group>"; };
 		A986ECAD132CEB9300F048C8 /* Fixture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fixture.cpp; sourceTree = "<group>"; };
 		A986ECAE132CEB9B00F048C8 /* Fixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fixture.h; sourceTree = "<group>"; };
+		A9A5BE43149F0ACB00D9931C /* Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Window.cpp; sourceTree = "<group>"; };
+		A9A5BE44149F0ACB00D9931C /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
+		A9A5BE45149F0ACB00D9931C /* Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Window.cpp; sourceTree = "<group>"; };
+		A9A5BE46149F0ACB00D9931C /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
+		A9A5BE49149F0B0200D9931C /* Variant.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Variant.cpp; sourceTree = "<group>"; };
+		A9A5BE4A149F0B0200D9931C /* Variant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Variant.h; sourceTree = "<group>"; };
 		A9B1AE451197293000D496EB /* love_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = love_Prefix.pch; sourceTree = "<group>"; };
 		A9B4BA981045937F001DBC80 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
@@ -847,6 +856,8 @@
 				A93E69EE10420ABF007D418B /* types.h */,
 				A9CF0E8510B9EB1000E6F37E /* utf8.cpp */,
 				A9CF0E8410B9EB1000E6F37E /* utf8.h */,
+				A9A5BE49149F0B0200D9931C /* Variant.cpp */,
+				A9A5BE4A149F0B0200D9931C /* Variant.h */,
 				A93E69EF10420ABF007D418B /* Vector.cpp */,
 				A93E69F010420ABF007D418B /* Vector.h */,
 				A93E69F110420ABF007D418B /* version.h */,
@@ -945,6 +956,7 @@
 				A93E6B7410420ACB007D418B /* sound */,
 				A96E253C13B9892100456DEA /* thread */,
 				A93E6B8D10420ACB007D418B /* timer */,
+				A9A5BE41149F0ACB00D9931C /* window */,
 			);
 			path = modules;
 			sourceTree = "<group>";
@@ -1461,6 +1473,25 @@
 			path = win32;
 			sourceTree = "<group>";
 		};
+		A9A5BE41149F0ACB00D9931C /* window */ = {
+			isa = PBXGroup;
+			children = (
+				A9A5BE42149F0ACB00D9931C /* sdl */,
+				A9A5BE45149F0ACB00D9931C /* Window.cpp */,
+				A9A5BE46149F0ACB00D9931C /* Window.h */,
+			);
+			path = window;
+			sourceTree = "<group>";
+		};
+		A9A5BE42149F0ACB00D9931C /* sdl */ = {
+			isa = PBXGroup;
+			children = (
+				A9A5BE43149F0ACB00D9931C /* Window.cpp */,
+				A9A5BE44149F0ACB00D9931C /* Window.h */,
+			);
+			path = sdl;
+			sourceTree = "<group>";
+		};
 		A9D5C484142E5F7F0044ECF7 /* Box2D */ = {
 			isa = PBXGroup;
 			children = (
@@ -1879,6 +1910,9 @@
 				A97E632514604BC200020E43 /* wrap_Keyboard.cpp in Sources */,
 				A97E632814604BCF00020E43 /* wrap_Mouse.cpp in Sources */,
 				A97E632C14604BDF00020E43 /* wrap_Timer.cpp in Sources */,
+				A9A5BE47149F0ACB00D9931C /* Window.cpp in Sources */,
+				A9A5BE48149F0ACB00D9931C /* Window.cpp in Sources */,
+				A9A5BE4B149F0B0200D9931C /* Variant.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
