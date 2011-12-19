@@ -166,10 +166,10 @@ function love.createhandlers()
 		mousereleased = function (x,y,b)
 			if love.mousereleased then love.mousereleased(x,y,b) end
 		end,
-		joypressed = function (j,b)
+		joystickpressed = function (j,b)
 			if love.joystickpressed then love.joystickpressed(j,b) end
 		end,
-		joyrreleased = function (j,b)
+		joystickreleased = function (j,b)
 			if love.joystickreleased then love.joystickreleased(j,b) end
 		end,
 		focus = function (f)
