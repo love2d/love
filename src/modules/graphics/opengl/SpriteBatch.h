@@ -36,7 +36,6 @@
 
 // OpenGL
 #include "GLee.h"
-#include <GL/gl.h>
 
 namespace love
 {

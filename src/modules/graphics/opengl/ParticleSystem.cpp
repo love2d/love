@@ -22,7 +22,7 @@
 
 #include <common/math.h>
 
-#include <GL/gl.h>
+#include "GLee.h"
 #include <cmath>
 #include <cstdlib>
 
