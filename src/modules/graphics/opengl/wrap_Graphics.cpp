@@ -507,9 +507,6 @@ namespace opengl
 
 	int w_setFont(lua_State * L)
 	{
-		// The second parameter is an optional int.
-		int size = luaL_optint(L, 2, 12);
-
 		Font * font = luax_checktype<Font>(L, 1, "Font", GRAPHICS_FONT_T);
 		instance->setFont(font);
 		return 0;
