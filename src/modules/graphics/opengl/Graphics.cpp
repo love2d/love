@@ -587,7 +587,7 @@ namespace opengl
 		lineWidth = width;
 	}
 
-	void Graphics::setLineStyle(Graphics::LineStyle style )
+	void Graphics::setLineStyle(Graphics::LineStyle/* style*/ )
 	{
 		//// XXX: actually enables antialiasing for _all_ polygons.
 		//// may need investigation if wanted or not
@@ -599,7 +599,6 @@ namespace opengl
 		//	glEnable (GL_POLYGON_SMOOTH);
 		//	glHint (GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		//}
-		LOVE_UNUSED(style);
 	}
 
 	void Graphics::setLine( float width, Graphics::LineStyle style )

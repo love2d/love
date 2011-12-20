@@ -32,7 +32,7 @@ namespace thread
 	class Mutex {
 	private:
 		SDL_mutex* mutex;
-		Mutex(const Mutex& mutex) {LOVE_UNUSED(mutex);}
+		Mutex(const Mutex&/* mutex*/) {}
 
 		friend class Conditional;
 
@@ -49,7 +49,7 @@ namespace thread
 	class ThreadBase {
 	private:
 		SDL_Thread* thread;
-		ThreadBase(ThreadBase& thread) {LOVE_UNUSED(thread);}
+		ThreadBase(ThreadBase&/* thread*/) {}
 		bool running;
 
 		static int thread_runner(void* param);
@@ -71,7 +71,7 @@ namespace thread
 
 	class Semaphore {
 	private:
-		Semaphore(const Semaphore& sem) {LOVE_UNUSED(sem);}
+		Semaphore(const Semaphore&/* sem*/) {}
 		SDL_sem* semaphore;
 
 	public:

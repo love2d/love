@@ -88,9 +88,8 @@ namespace opengl
 		delete [] buf;
 	}
 
-	void *VertexArray::map(GLenum access)
+	void *VertexArray::map(GLenum/* access*/)
 	{
-		LOVE_UNUSED(access);
 		return buf;
 	}
 
