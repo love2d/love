@@ -98,7 +98,7 @@ namespace sdl
 			{
 				arg1 = new Variant(txt, strlen(txt));
 				arg2 = new Variant((double) e.key.keysym.unicode);
-				msg = new Message("keypressed", 2, arg1, arg2);
+				msg = new Message("keypressed", arg1, arg2);
 				arg1->release();
 				arg2->release();
 			}
@@ -107,7 +107,7 @@ namespace sdl
 			if (keys.find(e.key.keysym.sym, key) && love::event::Event::keys.find(key, txt))
 			{
 				arg1 = new Variant(txt, strlen(txt));
-				msg = new Message("keyreleased", 1, arg1);
+				msg = new Message("keyreleased", arg1);
 				arg1->release();
 			}
 			break;
@@ -119,7 +119,7 @@ namespace sdl
 				arg2 = new Variant((double) e.button.y);
 				arg3 = new Variant(txt, strlen(txt));
 				msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
-						"mousepressed" : "mousereleased", 3,
+						"mousepressed" : "mousereleased",
 						arg1, arg2, arg3);
 				arg1->release();
 				arg2->release();
@@ -131,7 +131,7 @@ namespace sdl
 			arg1 = new Variant((double) (e.jbutton.which+1));
 			arg2 = new Variant((double) (e.jbutton.button+1));
 			msg = new Message((e.type == SDL_JOYBUTTONDOWN) ?
-					"joystickpressed" : "joystickreleased", 2,
+					"joystickpressed" : "joystickreleased",
 					arg1, arg2);
 			arg1->release();
 			arg2->release();
@@ -139,11 +139,11 @@ namespace sdl
 		case SDL_ACTIVEEVENT:
 			arg1 = new Variant(e.active.gain != 0);
 			if (e.active.state & SDL_APPINPUTFOCUS)
-				msg = new Message("focus", 1, arg1);
+				msg = new Message("focus", arg1);
 			arg1->release();
 			break;
 		case SDL_QUIT:
-			msg = new Message("quit", 0);
+			msg = new Message("quit");
 			break;
 		}
 

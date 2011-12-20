@@ -380,7 +380,7 @@ function love.run()
 		-- Process events.
 		if love.event then
 			love.event.pump()
-			for e,a,b,c in love.event.poll() do
+			for e,a,b,c,d in love.event.poll() do
 				if e == "quit" then
 					if not love.quit or not love.quit() then
 						if love.audio then
@@ -389,7 +389,7 @@ function love.run()
 						return
 					end
 				end
-				love.handlers[e](a,b,c)
+				love.handlers[e](a,b,c,d)
 			end
 		end
 

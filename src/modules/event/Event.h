@@ -39,11 +39,11 @@ namespace event
 	{
 	private:
 		std::string name;
-		Variant **args;
+		Variant *args[4];
 		int nargs;
 
 	public:
-		Message(std::string name, int nargs, ...);
+		Message(std::string name, Variant *a = NULL, Variant *b = NULL, Variant *c = NULL, Variant *d = NULL);
 		~Message();
 
 		int toLua(lua_State *L);

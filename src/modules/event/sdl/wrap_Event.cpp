@@ -99,7 +99,7 @@ namespace sdl
 
 	int w_quit(lua_State * L)
 	{
-		Message *m = new Message("quit", 0);
+		Message *m = new Message("quit");
 		instance->push(m);
 		return 1;
 	}

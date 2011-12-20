@@ -24,18 +24,20 @@ namespace love
 {
 namespace event
 {
-	Message::Message(std::string name, int nargs, ...)
-		: name(name), nargs(nargs)
+	Message::Message(std::string name, Variant *a, Variant *b, Variant *c, Variant *d)
+		: name(name), nargs(0)
 	{
-		args = new Variant*[nargs];
-		va_list arg;
-		va_start(arg, nargs);
-		for (int i = 0; i < nargs; i++)
+		args[0] = a;
+		args[1] = b;
+		args[2] = c;
+		args[3] = d;
+		for (int i = 0; i < 4; i++)
 		{
-			args[i] = va_arg(arg, Variant*);
+			if (!args[i])
+				continue;
 			args[i]->retain();
+			nargs++;
 		}
-		va_end(arg);
 	}
 
 	Message::~Message()
@@ -55,13 +57,16 @@ namespace event
 	Message *Message::fromLua(lua_State *L, int n)
 	{
 		std::string name = luaL_checkstring(L, n);
-		Message *m = new Message(name, 0);
-		int nargs = lua_gettop(L)-n;
-		delete[] m->args;
-		m->args = new Variant*[nargs];
-		for (int i = 0; i < nargs; i++)
+		n++;
+		Message *m = new Message(name);
+		for (int i = 0; i < 4; i++)
 		{
+			if (lua_isnoneornil(L, n+i))
+				break;
 			m->args[i] = Variant::fromLua(L, n+i);
+			if (!m->args[i])
+				break;
+			m->nargs++;
 		}
 		return m;
 	}
