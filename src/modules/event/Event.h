@@ -27,6 +27,7 @@
 #include <common/Variant.h>
 #include <keyboard/Keyboard.h>
 #include <mouse/Mouse.h>
+#include <thread/threads.h>
 
 // STL
 #include <queue>
@@ -66,6 +67,7 @@ namespace event
 		static bool getConstant(love::keyboard::Keyboard::Key in, const char *& out);
 
 	protected:
+		thread::Mutex mutex;
 		std::queue<Message*> queue;
 		static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
 		static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;

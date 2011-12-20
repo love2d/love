@@ -20,6 +20,9 @@
 
 #include "Event.h"
 
+using love::thread::Mutex;
+using love::thread::Lock;
+
 namespace love
 {
 namespace event
@@ -48,7 +51,7 @@ namespace event
 
 	int Message::toLua(lua_State *L)
 	{
-		lua_pushstring(L, name.c_str());
+		luax_pushstring(L, name);
 		for (int i = 0; i < nargs; i++)
 			args[i]->toLua(L);
 		return nargs+1;
@@ -56,7 +59,7 @@ namespace event
 
 	Message *Message::fromLua(lua_State *L, int n)
 	{
-		std::string name = luaL_checkstring(L, n);
+		std::string name = luax_checkstring(L, n);
 		n++;
 		Message *m = new Message(name);
 		for (int i = 0; i < 4; i++)
@@ -65,7 +68,11 @@ namespace event
 				break;
 			m->args[i] = Variant::fromLua(L, n+i);
 			if (!m->args[i])
-				break;
+			{
+				delete m;
+				luaL_error(L, "Argument %d can't be stored safely\nExpected boolean, number, string or userdata.", n+i);
+				return NULL;
+			}
 			m->nargs++;
 		}
 		return m;
@@ -77,12 +84,14 @@ namespace event
 
 	void Event::push(Message *msg)
 	{
+		Lock lock(mutex);
 		msg->retain();
 		queue.push(msg);
 	}
 
 	bool Event::poll(Message *&msg)
 	{
+		Lock lock(mutex);
 		if (queue.empty())
 			return false;
 		msg = queue.front();
