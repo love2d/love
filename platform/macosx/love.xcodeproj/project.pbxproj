@@ -602,6 +602,7 @@
 		A9A5BE46149F0ACB00D9931C /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
 		A9A5BE49149F0B0200D9931C /* Variant.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Variant.cpp; sourceTree = "<group>"; };
 		A9A5BE4A149F0B0200D9931C /* Variant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Variant.h; sourceTree = "<group>"; };
+		A9A5BE4C14A2D2D000D9931C /* int.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = int.h; sourceTree = "<group>"; };
 		A9B1AE451197293000D496EB /* love_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = love_Prefix.pch; sourceTree = "<group>"; };
 		A9B4BA981045937F001DBC80 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
@@ -840,6 +841,7 @@
 				A968F0C61083A07B00A895AA /* EnumMap.h */,
 				A93E69E010420ABF007D418B /* Exception.cpp */,
 				A93E69E110420ABF007D418B /* Exception.h */,
+				A9A5BE4C14A2D2D000D9931C /* int.h */,
 				A93E69E210420ABF007D418B /* math.h */,
 				A93E69E310420ABF007D418B /* Matrix.cpp */,
 				A93E69E410420ABF007D418B /* Matrix.h */,
