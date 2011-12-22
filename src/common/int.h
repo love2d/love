@@ -21,6 +21,8 @@
 #ifndef LOVE_INT_H
 #define LOVE_INT_H
 
+#include <common/config.h>
+
 #ifndef LOVE_WINDOWS
 #include <stdint.h>
 #endif
