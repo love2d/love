@@ -30,6 +30,7 @@
 // LOVE
 #include <common/Module.h>
 #include <common/config.h>
+#include <common/int.h>
 #include <filesystem/FileData.h>
 #include "File.h"
 
@@ -153,7 +154,7 @@ namespace physfs
 		* @param size The size of the data.
 		* @param filename The full filename used to file type identification.
 		**/
-		FileData * newFileData(void * data, int size, const char * filename);
+		FileData * newFileData(void * data, unsigned int size, const char * filename);
 
 		/**
 		* Creates a new FileData object from base64 data.
@@ -261,7 +262,7 @@ namespace physfs
 		* Seek to a position within a file.
 		* @param pos The position to seek to.
 		**/
-		bool seek(File * file, int pos);
+		bool seek(File * file, uint64 pos);
 
 		/**
 		* This "native" method returns a table of all

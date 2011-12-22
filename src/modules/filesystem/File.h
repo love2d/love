@@ -28,6 +28,7 @@
 #include <common/Data.h>
 #include <common/Object.h>
 #include <common/StringMap.h>
+#include <common/int.h>
 
 namespace love
 {
@@ -56,7 +57,7 @@ namespace filesystem
 		/**
 		* Used to indicate ALL data in a file.
 		**/
-		static const int ALL = -1;
+		static const int64 ALL = -1;
 
 		/**
 		* Destructor.
@@ -83,7 +84,7 @@ namespace filesystem
 		*
 		* @return The size of the file.
 		**/
-		virtual unsigned int getSize() = 0;
+		virtual int64 getSize() = 0;
 
 		/**
 		* Reads data from the file and allocates a Data object.
@@ -91,7 +92,7 @@ namespace filesystem
 		* @param size The number of bytes to attempt reading, or -1 for EOF.
 		* @return A newly allocated Data object.
 		**/
-		virtual Data * read(int size = ALL) = 0;
+		virtual Data * read(int64 size = ALL) = 0;
 
 		/**
 		* Reads data into the destination buffer.
@@ -100,7 +101,7 @@ namespace filesystem
 		* @param size The number of bytes to attempt reading.
 		* @return The number of bytes actually read.
 		**/
-		virtual int read(void * dst, int size) = 0;
+		virtual int64 read(void * dst, int64 size) = 0;
 
 		/**
 		* Writes data into the File.
@@ -109,7 +110,7 @@ namespace filesystem
 		* @param size The size of the buffer.
 		* @return True of success, false otherwise.
 		**/
-		virtual bool write(const void * data, int size) = 0;
+		virtual bool write(const void * data, int64 size) = 0;
 
 		/**
 		* Writes a Data object into the File.
@@ -118,7 +119,7 @@ namespace filesystem
 		* @param size The number of bytes to attempt writing, or -1 for everything.
 		* @return True of success, false otherwise.
 		**/
-		virtual bool write(const Data * data, int size = ALL) = 0;
+		virtual bool write(const Data * data, int64 size = ALL) = 0;
 
 		/**
 		* Checks whether we are currently at end-of-file.
@@ -132,7 +133,7 @@ namespace filesystem
 		*
 		* @return The current byte position in the File.
 		**/
-		virtual int tell() = 0;
+		virtual int64 tell() = 0;
 
 		/**
 		* Seeks to a certain position in the File.
@@ -140,7 +141,7 @@ namespace filesystem
 		* @param pos The byte position in the file.
 		* @return True on success, false otherwise.
 		**/
-		virtual bool seek(int pos) = 0;
+		virtual bool seek(uint64 pos) = 0;
 
 		/**
 		* Gets the current mode of the File.

@@ -38,7 +38,7 @@ namespace filesystem
 		char * data;
 
 		// Size of the data.
-		int size;
+		unsigned int size;
 
 		// The filename used for error purposes.
 		std::string filename;
@@ -55,7 +55,7 @@ namespace filesystem
 			DECODE_MAX_ENUM
 		}; // Decoder
 
-		FileData(int size, const std::string & filename);
+		FileData(unsigned int size, const std::string & filename);
 
 		virtual ~FileData();
 

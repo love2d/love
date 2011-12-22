@@ -169,7 +169,7 @@ namespace physfs
 		return new File(filename);
 	}
 
-	FileData * Filesystem::newFileData(void * data, int size, const char * filename)
+	FileData * Filesystem::newFileData(void * data, unsigned int size, const char * filename)
 	{
 		FileData * fd = new FileData(size, std::string(filename));
 
@@ -315,7 +315,7 @@ namespace physfs
 
 		// Optionally, the caller can specify whether to read
 		// the whole file, or just a part of it.
-		int count = luaL_optint(L, 2, file->getSize());
+		int count = luaL_optint(L, 2, (lua_Integer)file->getSize()); // FIXME
 
 		// Read the data.
 		Data * data = file->read(count);

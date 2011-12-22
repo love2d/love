@@ -67,14 +67,14 @@ namespace physfs
 		// Implements love::filesystem::File.
 		bool open(Mode mode);
 		bool close();
-		unsigned int getSize();
-		Data * read(int size = ALL);
-		int read(void * dst, int size);
-		bool write(const void * data, int size);
-		bool write(const Data * data, int size = ALL);
+		int64 getSize();
+		Data * read(int64 size = ALL);
+		int64 read(void * dst, int64 size);
+		bool write(const void * data, int64 size);
+		bool write(const Data * data, int64 size = ALL);
 		bool eof();
-		int tell();
-		bool seek(int pos);
+		int64 tell();
+		bool seek(uint64 pos);
 		Mode getMode();
 		std::string getFilename() const;
 		std::string getExtension() const;

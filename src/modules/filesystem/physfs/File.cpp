@@ -92,30 +92,30 @@ namespace physfs
 		return true;
 	}
 
-	unsigned int File::getSize()
+	int64 File::getSize()
 	{
 		// If the file is closed, open it to
 		// check the size.
 		if (file == 0)
 		{
 			open(READ);
-			unsigned int size = (unsigned int)PHYSFS_fileLength(file);
+			int64 size = (int64)PHYSFS_fileLength(file);
 			close();
 			return size;
 		}
 
-		return (unsigned int)PHYSFS_fileLength(file);
+		return (int64)PHYSFS_fileLength(file);
 	}
 
 
-	Data * File::read(int size)
+	Data * File::read(int64 size)
 	{
 		bool isOpen = (file != 0);
 
 		if (!isOpen && !open(READ))
 			throw love::Exception("Could not read file %s.", filename.c_str());
 
-		int max = (int)PHYSFS_fileLength(file);
+		int64 max = (int64)PHYSFS_fileLength(file);
 		size = (size == ALL) ? max : size;
 		size = (size > max) ? max : size;
 
@@ -129,18 +129,18 @@ namespace physfs
 		return fileData;
 	}
 
-	int File::read(void * dst, int size)
+	int64 File::read(void * dst, int64 size)
 	{
 		bool isOpen = (file != 0);
 
 		if (!isOpen)
 			open(READ);
 
-		int max = (int)PHYSFS_fileLength(file);
+		int64 max = (int64)PHYSFS_fileLength(file);
 		size = (size == ALL) ? max : size;
 		size = (size > max) ? max : size;
 
-		int read = (int)PHYSFS_read(file, dst, 1, size);
+		int64 read = (int64)PHYSFS_read(file, dst, 1, size);
 
 		if (!isOpen)
 			close();
@@ -148,13 +148,13 @@ namespace physfs
 		return read;
 	}
 
-	bool File::write(const void * data, int size)
+	bool File::write(const void * data, int64 size)
 	{
 		if (file == 0)
 			throw love::Exception("Could not write to file. File not open.");
 
 		// Try to write.
-		int written = static_cast<int>(PHYSFS_write(file, data, 1, size));
+		int written = static_cast<int64>(PHYSFS_write(file, data, 1, size));
 
 		// Check that correct amount of data was written.
 		if (written != size)
@@ -163,7 +163,7 @@ namespace physfs
 		return true;
 	}
 
-	bool File::write(const Data * data, int size)
+	bool File::write(const Data * data, int64 size)
 	{
 		return write(data->getData(), (size == ALL) ? data->getSize() : size);
 	}
@@ -192,15 +192,15 @@ namespace physfs
 		return false;
 	}
 
-	int File::tell()
+	int64 File::tell()
 	{
 		if (file == 0)
 			return -1;
 
-		return (int)PHYSFS_tell(file);
+		return (int64)PHYSFS_tell(file);
 	}
 
-	bool File::seek(int pos)
+	bool File::seek(uint64 pos)
 	{
 		if (file == 0)
 			return false;

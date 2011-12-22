@@ -27,7 +27,7 @@ namespace love
 {
 namespace filesystem
 {
-	FileData::FileData(int size, const std::string & filename)
+	FileData::FileData(unsigned int size, const std::string & filename)
 		: data(new char[size]), size(size), filename(filename)
 	{
 		if (filename.rfind('.') != std::string::npos)

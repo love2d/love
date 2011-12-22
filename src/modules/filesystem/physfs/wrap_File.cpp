@@ -22,6 +22,7 @@
 
 #include <common/Data.h>
 #include <common/Exception.h>
+#include <common/int.h>
 
 namespace love
 {
@@ -37,14 +38,14 @@ namespace physfs
 	int w_File_getSize(lua_State * L)
 	{
 		File * t = luax_checkfile(L, 1);
-		try
-		{
-			lua_pushinteger(L, t->getSize());
-		}
-		catch (Exception & e)
-		{
-			return luaL_error(L, e.what());
-		}
+		int64 size = t->getSize();
+		
+		// Push nil on failure or if size does not fit into a double precision floating-point number.
+		if (size == -1 || size >= 0x20000000000000LL)
+			lua_pushnil(L);
+		else
+			lua_pushnumber(L, (lua_Number)size);
+		
 		return 1;
 	}
 
@@ -79,10 +80,12 @@ namespace physfs
 	{
 		File * file = luax_checkfile(L, 1);
 		Data * d = 0;
+		
+		int64 size = (int64)luaL_optnumber(L, 2, file->getSize());
 
 		try
 		{
-			d = file->read(luaL_optint(L, 2, file->getSize()));
+			d = file->read(size);
 		}
 		catch (Exception e)
 		{
@@ -136,22 +139,33 @@ namespace physfs
 	int w_File_eof(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
-		lua_pushboolean(L, file->eof() ? 1 : 0);
+		luax_pushboolean(L, file->eof());
 		return 1;
 	}
 
 	int w_File_tell(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
-		lua_pushinteger(L, file->tell());
+		int64 pos = file->tell();
+		// Push nil on failure or if pos does not fit into a double precision floating-point number.
+		if (pos == -1 || pos >= 0x20000000000000LL)
+			lua_pushnil(L);
+		else
+			lua_pushnumber(L, (lua_Number)pos);
 		return 1;
 	}
 
 	int w_File_seek(lua_State * L)
 	{
 		File * file = luax_checkfile(L, 1);
-		int pos = luaL_checkinteger(L, 2);
-		lua_pushboolean(L, file->seek(pos) ? 1 : 0);
+		lua_Number pos = luaL_checknumber(L, 2);
+		
+		// Push false on negative and precision-problematic numbers.
+		// Better fail than seek to an unknown position.
+		if (pos < 0.0 || pos >= 9007199254740992.0)
+			luax_pushboolean(L, false);
+		else
+			luax_pushboolean(L, file->seek((uint64)pos));
 		return 1;
 	}
 
