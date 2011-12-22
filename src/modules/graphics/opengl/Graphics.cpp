@@ -834,44 +834,48 @@ namespace opengl
 
 	void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
 	{
-		angle1 = fmod(angle1, 2.0f * (float)LOVE_M_PI);
-		angle2 = fmod(angle2, 2.0f * (float)LOVE_M_PI);
-		if (angle1 == angle2)
+		// Nothing to display with no points or equal angles. (Or is there with line mode?)
+		if (points <= 0 || angle1 == angle2)
 			return;
-		else if (angle1 > angle2)
-			angle2 += (float)LOVE_M_PI * 2.0f;
 
+		// Oh, you want to draw a circle?
+		if (fabs(angle1 - angle2) >= 2.0f * (float) LOVE_M_PI)
+		{
+			circle(mode, x, y, radius, points);
+			return;
+		}
 
-		if (points <= 0) points = 1;
-		float angle_shift = ((angle2 - angle1) / points);
+		float angle_shift = (angle2 - angle1) / points;
+		// Bail on precision issues.
+		if (angle_shift == 0.0)
+			return;
+
 		float phi = angle1;
+		int num_coords = (points + 3) * 2;
+		float * coords = new float[num_coords];
+		coords[0] = coords[num_coords - 2] = x;
+		coords[1] = coords[num_coords - 1] = y;
+
+		for (int i = 0; i <= points; ++i, phi += angle_shift)
+		{
+			coords[2 * (i+1)]     = x + radius * cos(phi);
+			coords[2 * (i+1) + 1] = y + radius * sin(phi);
+		}
 
 		// GL_POLYGON can only fill-draw convex polygons, so we need to do stuff manually here
 		if (mode == DRAW_LINE)
-		{
-			float *coords = new float[(points + 3) * 2];
-			coords[0] = coords[2 * points + 4] = x;
-			coords[1] = coords[2 * points + 5] = y;
-			for (int i = 0; i <= points; ++i, phi += angle_shift)
-			{
-				coords[2 * (i+1)]     = x + radius * cos(phi);
-				coords[2 * (i+1) + 1] = y - radius * sin(phi);
-			}
-			polyline(coords, (points + 3) * 2); // artifacts at sharp angles if set to looping
-
-			delete[] coords;
-		}
+			polyline(coords, num_coords); // Artifacts at sharp angles if set to looping.
 		else
 		{
 			glDisable(GL_TEXTURE_2D);
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex2f(x, y);
-			for (int i = 0; i <= points; ++i, phi += angle_shift)
-				glVertex2f(x + radius * cos(phi), y - radius * sin(phi));
-			glEnd();
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, points + 2);
+			glDisableClientState(GL_VERTEX_ARRAY);
 			glEnable(GL_TEXTURE_2D);
 		}
 
+		delete[] coords;
 	}
 
 	/// @param mode    the draw mode

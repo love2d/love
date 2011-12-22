@@ -1018,10 +1018,11 @@ namespace opengl
 		float y = (float)luaL_checknumber(L, 3);
 		float radius = (float)luaL_checknumber(L, 4);
 		int points;
-		if (lua_gettop(L) > 4)
-			points = lua_tointeger(L, 5);
-		else
+		if (lua_isnoneornil(L, 5))
 			points = radius > 10 ? radius : 10;
+		else
+			points = luaL_checkint(L, 5);
+
 		instance->circle(mode, x, y, radius, points);
 		return 0;
 	}
@@ -1038,7 +1039,12 @@ namespace opengl
 		float radius = (float)luaL_checknumber(L, 4);
 		float angle1 = (float)luaL_checknumber(L, 5);
 		float angle2 = (float)luaL_checknumber(L, 6);
-		int points = luaL_optint(L, 7, 10);
+		int points;
+		if (lua_isnoneornil(L, 7))
+			points = radius > 10 ? radius : 10;
+		else
+			points = luaL_checkint(L, 7);
+
 		instance->arc(mode, x, y, radius, angle1, angle2, points);
 		return 0;
 	}
