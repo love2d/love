@@ -77,11 +77,7 @@ namespace sdl
 			// Do nothing with 'e' ...
 		}
 
-		while (!queue.empty())
-		{
-			queue.back()->release();
-			queue.pop();
-		}
+		love::event::Event::clear();
 	}
 
 	Message *Event::convert(SDL_Event & e)

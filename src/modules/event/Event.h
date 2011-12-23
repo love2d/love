@@ -58,6 +58,7 @@ namespace event
 
 		void push(Message *msg);
 		bool poll(Message *&msg);
+		virtual void clear();
 
 		virtual void pump() = 0;
 

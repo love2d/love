@@ -99,6 +99,16 @@ namespace event
 		return true;
 	}
 
+	void Event::clear()
+	{
+		Lock lock(mutex);
+		while (!queue.empty())
+		{
+			queue.back()->release();
+			queue.pop();
+		}
+	}
+
 	bool Event::getConstant(const char * in, love::mouse::Mouse::Button & out)
 	{
 		return buttons.find(in, out);
