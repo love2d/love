@@ -50,7 +50,7 @@ namespace box2d
 	int w_PrismaticJoint_getLowerLimit(lua_State * L);
 	int w_PrismaticJoint_getUpperLimit(lua_State * L);
 	int w_PrismaticJoint_getLimits(lua_State * L);
-	int luaopen_prismaticjoint(lua_State * L);
+	extern "C" int luaopen_prismaticjoint(lua_State * L);
 
 } // box2d
 } // physics

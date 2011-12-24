@@ -68,7 +68,7 @@ namespace opengl
 	int w_ParticleSystem_isEmpty(lua_State * L);
 	int w_ParticleSystem_isFull(lua_State * L);
 	int w_ParticleSystem_update(lua_State * L);
-	int luaopen_particlesystem(lua_State * L);
+	extern "C" int luaopen_particlesystem(lua_State * L);
 
 } // opengl
 } // graphics

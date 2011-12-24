@@ -110,7 +110,7 @@ namespace box2d
 		return 0;
 	}
 
-	int luaopen_contact(lua_State * L)
+	extern "C" int luaopen_contact(lua_State * L)
 	{
 		static const luaL_Reg functions[] = {
 			{ "getPositions", w_Contact_getPositions },

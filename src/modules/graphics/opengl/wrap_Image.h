@@ -35,7 +35,7 @@ namespace opengl
 	int w_Image_getWidth(lua_State * L);
 	int w_Image_getHeight(lua_State * L);
 	int w_Image_setFilter(lua_State * L);
-	int luaopen_image(lua_State * L);
+	extern "C" int luaopen_image(lua_State * L);
 
 } // opengl
 } // graphics

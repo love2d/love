@@ -41,7 +41,7 @@ namespace box2d
 	int w_MouseJoint_getFrequency(lua_State * L);
 	int w_MouseJoint_setDampingRatio(lua_State * L);
 	int w_MouseJoint_getDampingRatio(lua_State * L);
-	int luaopen_mousejoint(lua_State * L);
+	extern "C" int luaopen_mousejoint(lua_State * L);
 
 } // box2d
 } // physics

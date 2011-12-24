@@ -59,7 +59,7 @@ namespace physfs
 		{ 0, 0 }
 	};
 
-	int luaopen_filedata(lua_State * L)
+	extern "C" int luaopen_filedata(lua_State * L)
 	{
 		return luax_register_type(L, "FileData", w_FileData_functions);
 	}

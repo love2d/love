@@ -50,7 +50,7 @@ namespace box2d
 	int w_RevoluteJoint_getLowerLimit(lua_State * L);
 	int w_RevoluteJoint_getUpperLimit(lua_State * L);
 	int w_RevoluteJoint_getLimits(lua_State * L);
-	int luaopen_revolutejoint(lua_State * L);
+	extern "C" int luaopen_revolutejoint(lua_State * L);
 
 } // box2d
 } // physics

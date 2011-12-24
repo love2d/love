@@ -39,7 +39,7 @@ namespace thread
 	int w_Thread_peek(lua_State *L);
 	int w_Thread_set(lua_State *L);
 
-	int luaopen_thread(lua_State *L);
+	extern "C" int luaopen_thread(lua_State *L);
 
 	int w_newThread(lua_State *L);
 	int w_getThreads(lua_State *L);

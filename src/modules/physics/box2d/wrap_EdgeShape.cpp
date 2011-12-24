@@ -52,7 +52,7 @@ namespace box2d
 		{ 0, 0 }
 	};
 
-	int luaopen_edgeshape(lua_State * L)
+	extern "C" int luaopen_edgeshape(lua_State * L)
 	{
 		return luax_register_type(L, "EdgeShape", functions);
 	}

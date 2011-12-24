@@ -115,7 +115,7 @@ namespace sdl
 		{ 0, 0 }
 	};
 
-	int luaopen_love_event(lua_State * L)
+	extern "C" int luaopen_love_event(lua_State * L)
 	{
 		if (instance == 0)
 		{

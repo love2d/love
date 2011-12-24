@@ -244,7 +244,7 @@ namespace audio
 		{ 0, 0 }
 	};
 
-	int luaopen_source(lua_State * L)
+	extern "C" int luaopen_source(lua_State * L)
 	{
 		return luax_register_type(L, "Source", functions);
 	}

@@ -42,7 +42,7 @@ namespace box2d
 	int w_ChainShape_getPoint(lua_State * L);
 	int w_ChainShape_getPoints(lua_State * L);
 
-	int luaopen_chainshape(lua_State * L);
+	extern "C" int luaopen_chainshape(lua_State * L);
 
 } // box2d
 } // physics

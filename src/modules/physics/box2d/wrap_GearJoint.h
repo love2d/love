@@ -35,7 +35,7 @@ namespace box2d
 	GearJoint * luax_checkgearjoint(lua_State * L, int idx);
 	int w_GearJoint_setRatio(lua_State * L);
 	int w_GearJoint_getRatio(lua_State * L);
-	int luaopen_gearjoint(lua_State * L);
+	extern "C" int luaopen_gearjoint(lua_State * L);
 
 } // box2d
 } // physics

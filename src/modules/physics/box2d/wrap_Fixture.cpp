@@ -289,7 +289,7 @@ namespace box2d
 		{ 0, 0 }
 	};
 
-	int luaopen_fixture(lua_State * L)
+	extern "C" int luaopen_fixture(lua_State * L)
 	{
 		return luax_register_type(L, "Fixture", functions);
 	}

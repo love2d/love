@@ -35,7 +35,7 @@ namespace font
 		{ 0, 0 }
 	};
 
-	int luaopen_rasterizer(lua_State * L)
+	extern "C" int luaopen_rasterizer(lua_State * L)
 	{
 		return luax_register_type(L, "Rasterizer", functions);
 	}

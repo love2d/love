@@ -46,7 +46,7 @@ namespace box2d
 	int w_WheelJoint_getSpringFrequencyHz(lua_State * L);
 	int w_WheelJoint_setSpringDampingRatio(lua_State * L);
 	int w_WheelJoint_getSpringDampingRatio(lua_State * L);
-	int luaopen_wheeljoint(lua_State * L);
+	extern "C" int luaopen_wheeljoint(lua_State * L);
 
 } // box2d
 } // physics

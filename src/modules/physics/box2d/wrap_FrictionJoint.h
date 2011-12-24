@@ -37,7 +37,7 @@ namespace box2d
 	int w_FrictionJoint_getMaxForce(lua_State * L);
 	int w_FrictionJoint_setMaxTorque(lua_State * L);
 	int w_FrictionJoint_getMaxTorque(lua_State * L);
-	int luaopen_frictionjoint(lua_State * L);
+	extern "C" int luaopen_frictionjoint(lua_State * L);
 
 } // box2d
 } // physics

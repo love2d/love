@@ -79,7 +79,7 @@ namespace freetype
 		0
 	};
 
-	int luaopen_love_font(lua_State * L)
+	extern "C" int luaopen_love_font(lua_State * L)
 	{
 		if (instance == 0)
 		{

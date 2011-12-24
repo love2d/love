@@ -93,7 +93,7 @@ namespace box2d
 		{ 0, 0 }
 	};
 
-	int luaopen_distancejoint(lua_State * L)
+	extern "C" int luaopen_distancejoint(lua_State * L)
 	{
 		return luax_register_type(L, "DistanceJoint", functions);
 	}

@@ -39,21 +39,6 @@
 // SDL
 #include <SDL.h>
 
-// Modules
-#include <audio/wrap_Audio.h>
-#include <event/sdl/wrap_Event.h>
-#include <filesystem/physfs/wrap_Filesystem.h>
-#include <font/freetype/wrap_Font.h>
-#include <graphics/opengl/wrap_Graphics.h>
-#include <image/wrap_Image.h>
-#include <joystick/sdl/wrap_Joystick.h>
-#include <keyboard/wrap_Keyboard.h>
-#include <mouse/wrap_Mouse.h>
-#include <physics/box2d/wrap_Physics.h>
-#include <sound/wrap_Sound.h>
-#include <timer/wrap_Timer.h>
-#include <thread/wrap_Thread.h>
-
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
 
@@ -64,20 +49,40 @@
 
 #ifdef LOVE_BUILD_STANDALONE
 
+// All modules define a c-accessible luaopen
+// so let's make use of those, instead
+// of addressing implementations directly.
+extern "C"
+{
+	extern int luaopen_love_audio(lua_State*);
+	extern int luaopen_love_event(lua_State*);
+	extern int luaopen_love_filesystem(lua_State*);
+	extern int luaopen_love_font(lua_State*);
+	extern int luaopen_love_graphics(lua_State*);
+	extern int luaopen_love_image(lua_State*);
+	extern int luaopen_love_joystick(lua_State*);
+	extern int luaopen_love_keyboard(lua_State*);
+	extern int luaopen_love_mouse(lua_State*);
+	extern int luaopen_love_physics(lua_State*);
+	extern int luaopen_love_sound(lua_State*);
+	extern int luaopen_love_timer(lua_State*);
+	extern int luaopen_love_thread(lua_State*);
+}
+
 static const luaL_Reg modules[] = {
-	{ "love.audio", love::audio::luaopen_love_audio },
-	{ "love.event", love::event::sdl::luaopen_love_event },
-	{ "love.filesystem", love::filesystem::physfs::luaopen_love_filesystem },
-	{ "love.font", love::font::freetype::luaopen_love_font },
-	{ "love.graphics", love::graphics::opengl::luaopen_love_graphics },
-	{ "love.image", love::image::luaopen_love_image },
-	{ "love.joystick", love::joystick::sdl::luaopen_love_joystick },
-	{ "love.keyboard", love::keyboard::luaopen_love_keyboard },
-	{ "love.mouse", love::mouse::luaopen_love_mouse },
-	{ "love.physics", love::physics::box2d::luaopen_love_physics },
-	{ "love.sound", love::sound::luaopen_love_sound },
-	{ "love.timer", love::timer::luaopen_love_timer },
-	{ "love.thread", love::thread::luaopen_love_thread },
+	{ "love.audio", luaopen_love_audio },
+	{ "love.event", luaopen_love_event },
+	{ "love.filesystem", luaopen_love_filesystem },
+	{ "love.font", luaopen_love_font },
+	{ "love.graphics", luaopen_love_graphics },
+	{ "love.image", luaopen_love_image },
+	{ "love.joystick", luaopen_love_joystick },
+	{ "love.keyboard", luaopen_love_keyboard },
+	{ "love.mouse", luaopen_love_mouse },
+	{ "love.physics", luaopen_love_physics },
+	{ "love.sound", luaopen_love_sound },
+	{ "love.timer", luaopen_love_timer },
+	{ "love.thread", luaopen_love_thread },
 	{ 0, 0 }
 };
 

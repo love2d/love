@@ -79,7 +79,7 @@ namespace timer
 	};
 
 
-	int luaopen_love_timer(lua_State * L)
+	extern "C" int luaopen_love_timer(lua_State * L)
 	{
 		if (instance == 0)
 		{

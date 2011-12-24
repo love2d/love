@@ -37,7 +37,7 @@ namespace box2d
 	int w_PulleyJoint_getLengthA(lua_State * L);
 	int w_PulleyJoint_getLengthB(lua_State * L);
 	int w_PulleyJoint_getRatio(lua_State * L);
-	int luaopen_pulleyjoint(lua_State * L);
+	extern "C" int luaopen_pulleyjoint(lua_State * L);
 
 } // box2d
 } // physics

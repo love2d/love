@@ -40,7 +40,7 @@ namespace opengl
 	int w_SpriteBatch_unlock(lua_State * L);
 	int w_SpriteBatch_setImage(lua_State * L);
 
-	int luaopen_spritebatch(lua_State * L);
+	extern "C" int luaopen_spritebatch(lua_State * L);
 
 } // opengl
 } // graphics

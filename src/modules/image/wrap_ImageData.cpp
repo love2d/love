@@ -188,7 +188,7 @@ namespace image
 		{ 0, 0 }
 	};
 
-	int luaopen_imagedata(lua_State * L)
+	extern "C" int luaopen_imagedata(lua_State * L)
 	{
 		return luax_register_type(L, "ImageData", functions);
 	}

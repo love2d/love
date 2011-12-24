@@ -421,7 +421,7 @@ namespace box2d
 		0
 	};
 
-	int luaopen_love_physics(lua_State * L)
+	extern "C" int luaopen_love_physics(lua_State * L)
 	{
 		if (instance == 0)
 		{

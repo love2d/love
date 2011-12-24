@@ -386,7 +386,7 @@ namespace opengl
 		{ 0, 0 }
 	};
 
-	int luaopen_particlesystem(lua_State * L)
+	extern "C" int luaopen_particlesystem(lua_State * L)
 	{
 		return luax_register_type(L, "ParticleSystem", functions);
 	}

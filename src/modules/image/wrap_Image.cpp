@@ -101,7 +101,7 @@ namespace image
 		0
 	};
 
-	int luaopen_love_image(lua_State * L)
+	extern "C" int luaopen_love_image(lua_State * L)
 	{
 		if (instance == 0)
 		{

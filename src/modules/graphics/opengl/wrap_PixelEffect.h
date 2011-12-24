@@ -35,7 +35,7 @@ namespace opengl
 	int w_PixelEffect_sendFloat(lua_State * L);
 	int w_PixelEffect_sendMatrix(lua_State * L);
 	int w_PixelEffect_sendImage(lua_State * L);
-	int luaopen_pixeleffect(lua_State * L);
+	extern "C" int luaopen_pixeleffect(lua_State * L);
 } // opengl
 } // graphics
 } // love

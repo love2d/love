@@ -74,7 +74,7 @@ namespace box2d
 		{ 0, 0 }
 	};
 
-	int luaopen_pulleyjoint(lua_State * L)
+	extern "C" int luaopen_pulleyjoint(lua_State * L)
 	{
 		return luax_register_type(L, "PulleyJoint", functions);
 	}

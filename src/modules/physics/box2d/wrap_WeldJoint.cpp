@@ -76,7 +76,7 @@ namespace box2d
 		{ 0, 0 }
 	};
 
-	int luaopen_weldjoint(lua_State * L)
+	extern "C" int luaopen_weldjoint(lua_State * L)
 	{
 		return luax_register_type(L, "WeldJoint", functions);
 	}

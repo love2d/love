@@ -57,7 +57,7 @@ namespace sound
 		{ 0, 0 }
 	};
 
-	int luaopen_decoder(lua_State * L)
+	extern "C" int luaopen_decoder(lua_State * L)
 	{
 		return luax_register_type(L, "Decoder", functions);
 	}

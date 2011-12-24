@@ -33,7 +33,7 @@ namespace sound
 	int w_Decoder_getChannels(lua_State * L);
 	int w_Decoder_getBits(lua_State * L);
 	int w_Decoder_getSampleRate(lua_State * L);
-	int luaopen_decoder(lua_State * L);
+	extern "C" int luaopen_decoder(lua_State * L);
 
 } // sound
 } // love

@@ -39,7 +39,7 @@ namespace box2d
 	}
 
 	int w_CircleShape_setRadius(lua_State * L)
-    {
+	{
         CircleShape * c = luax_checkcircleshape(L, 1);
         float r = (float)luaL_checknumber(L, 2);
 		c->setRadius(r);
@@ -61,7 +61,7 @@ namespace box2d
 		{ 0, 0 }
 	};
 
-	int luaopen_circleshape(lua_State * L)
+	extern "C" int luaopen_circleshape(lua_State * L)
 	{
 		return luax_register_type(L, "CircleShape", functions);
 	}

@@ -32,7 +32,7 @@ namespace love
 namespace font
 {
 	GlyphData * luax_checkglyphdata(lua_State * L, int idx);
-	int luaopen_glyphdata(lua_State * L);
+	extern "C" int luaopen_glyphdata(lua_State * L);
 
 } // font
 } // love

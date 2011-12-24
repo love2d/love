@@ -42,7 +42,7 @@ namespace opengl
 	int w_Canvas_clear(lua_State * L);
 	int w_Canvas_getWidth(lua_State * L);
 	int w_Canvas_getHeight(lua_State * L);
-	int luaopen_canvas(lua_State * L);
+	extern "C" int luaopen_canvas(lua_State * L);
 
 } // opengl
 } // graphics

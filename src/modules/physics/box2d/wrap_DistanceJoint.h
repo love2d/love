@@ -39,7 +39,7 @@ namespace box2d
 	int w_DistanceJoint_getFrequency(lua_State * L);
 	int w_DistanceJoint_setDampingRatio(lua_State * L);
 	int w_DistanceJoint_getDampingRatio(lua_State * L);
-	int luaopen_distancejoint(lua_State * L);
+	extern "C" int luaopen_distancejoint(lua_State * L);
 
 } // box2d
 } // physics

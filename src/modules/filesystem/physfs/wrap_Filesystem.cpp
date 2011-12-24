@@ -383,7 +383,7 @@ namespace physfs
 		0
 	};
 
-	int luaopen_love_filesystem(lua_State * L)
+	extern "C" int luaopen_love_filesystem(lua_State * L)
 	{
 		if (instance == 0)
 		{

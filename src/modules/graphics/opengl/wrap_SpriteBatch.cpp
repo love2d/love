@@ -161,7 +161,7 @@ namespace opengl
 		{ 0, 0 }
 	};
 
-	int luaopen_spritebatch(lua_State * L)
+	extern "C" int luaopen_spritebatch(lua_State * L)
 	{
 		return luax_register_type(L, "SpriteBatch", functions);
 	}

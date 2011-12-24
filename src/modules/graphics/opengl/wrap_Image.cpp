@@ -124,7 +124,7 @@ namespace opengl
 		{ 0, 0 }
 	};
 
-	int luaopen_image(lua_State * L)
+	extern "C" int luaopen_image(lua_State * L)
 	{
 		return luax_register_type(L, "Image", functions);
 	}

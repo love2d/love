@@ -573,7 +573,7 @@ namespace box2d
 		{ 0, 0 }
 	};
 
-	int luaopen_body(lua_State * L)
+	extern "C" int luaopen_body(lua_State * L)
 	{
 		return luax_register_type(L, "Body", functions);
 	}

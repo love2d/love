@@ -35,7 +35,7 @@ namespace opengl
 	int w_Quad_flip(lua_State *L);
 	int w_Quad_setViewport(lua_State * L);
 	int w_Quad_getViewport(lua_State * L);
-	int luaopen_frame(lua_State * L);
+	extern "C" int luaopen_frame(lua_State * L);
 
 } // opengl
 } // graphics

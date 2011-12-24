@@ -83,7 +83,7 @@ namespace sound
 		{ 0, 0 }
 	};
 
-	int luaopen_sounddata(lua_State * L)
+	extern "C" int luaopen_sounddata(lua_State * L)
 	{
 		return luax_register_type(L, "SoundData", functions);
 	}

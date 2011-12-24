@@ -193,7 +193,7 @@ namespace opengl
 		{ 0, 0 }
 	};
 
-	int luaopen_canvas(lua_State * L)
+	extern "C" int luaopen_canvas(lua_State * L)
 	{
 		return luax_register_type(L, "Canvas", functions);
 	}

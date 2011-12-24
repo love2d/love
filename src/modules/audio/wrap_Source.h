@@ -51,7 +51,7 @@ namespace audio
 	int w_Source_isStopped(lua_State * L);
 	int w_Source_isPaused(lua_State * L);
 	int w_Source_isStatic(lua_State * L);
-	int luaopen_source(lua_State * L);
+	extern "C" int luaopen_source(lua_State * L);
 
 } // audio
 } // love

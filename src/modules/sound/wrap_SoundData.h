@@ -37,7 +37,7 @@ namespace sound
 	int w_getSampleRate(lua_State * L);
 	int w_setSample(lua_State * L);
 	int w_getSample(lua_State * L);
-	int luaopen_sounddata(lua_State * L);
+	extern "C" int luaopen_sounddata(lua_State * L);
 
 } // sound
 } // love

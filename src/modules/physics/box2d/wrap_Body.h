@@ -84,7 +84,7 @@ namespace box2d
 	int w_Body_isFixedRotation(lua_State * L);
 	int w_Body_getFixtureList(lua_State * L);
 	int w_Body_destroy(lua_State * L);
-	int luaopen_body(lua_State * L);
+	extern "C" int luaopen_body(lua_State * L);
 
 } // box2d
 } // physics

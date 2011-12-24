@@ -155,7 +155,7 @@ namespace thread
 		{ 0, 0 }
 	};
 
-	int luaopen_thread(lua_State *L)
+	extern "C" int luaopen_thread(lua_State *L)
 	{
 		return luax_register_type(L, "Thread", type_functions);
 	}
@@ -249,7 +249,7 @@ namespace thread
 		0
 	};
 
-	int luaopen_love_thread(lua_State *L)
+	extern "C" int luaopen_love_thread(lua_State *L)
 	{
 		if (instance == 0)
 		{
