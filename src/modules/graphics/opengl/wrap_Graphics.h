@@ -78,10 +78,8 @@ namespace opengl
 	int w_setLineWidth(lua_State * L);
 	int w_setLineStyle(lua_State * L);
 	int w_setLine(lua_State * L);
-	int w_setLineStipple(lua_State * L);
 	int w_getLineWidth(lua_State * L);
 	int w_getLineStyle(lua_State * L);
-	int w_getLineStipple(lua_State * L);
 	int w_setPointSize(lua_State * L);
 	int w_setPointStyle(lua_State * L);
 	int w_setPoint(lua_State * L);

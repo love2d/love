@@ -108,6 +108,7 @@ namespace opengl
 		Image::Filter currentImageFilter;
 		love::window::Window *currentWindow;
 
+		LineStyle lineStyle;
 		float lineWidth;
 		GLint matrixLimit;
 		GLint userMatrices;
@@ -440,11 +441,10 @@ namespace opengl
 
 		/**
 		* Draws a series of lines connecting the given vertices.
-		* @param coords Vertex components (x1, y1, x2, y2, etc.)
-		* @param count Number of coordinates in the array.
-		* @param looping Whether the line joins up with itself.
+		* @param coords Vertex components (x1, y1, ..., xn, yn). If x1,y1 == xn,yn the line will be drawn closed.
+		* @param count Number of items in the array, i.e. count = 2 * n
 		**/
-		void polyline(const float* coords, size_t count, bool looping = false);
+		void polyline(const float* coords, size_t count);
 
 		/**
 		* Draws a triangle using the three coordinates passed.

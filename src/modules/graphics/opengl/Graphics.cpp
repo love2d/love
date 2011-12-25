@@ -38,7 +38,7 @@ namespace opengl
 {
 
 	Graphics::Graphics()
-		: currentFont(0), currentImageFilter(), lineWidth(1), matrixLimit(0), userMatrices(0)
+		: currentFont(0), currentImageFilter(), lineStyle(LINE_SMOOTH), lineWidth(1), matrixLimit(0), userMatrices(0)
 	{
 		currentWindow = love::window::sdl::Window::getSingleton();
 	}
@@ -78,8 +78,7 @@ namespace opengl
 		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
 		s.colorMode = (mode == GL_MODULATE) ? Graphics::COLOR_MODULATE : Graphics::COLOR_REPLACE;
 		//get line style
-		//s.lineStyle = (glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE) ? Graphics::LINE_SMOOTH : Graphics::LINE_ROUGH;
-		s.lineStyle = Graphics::LINE_ROUGH;
+		s.lineStyle = lineStyle;
 		//get the point size
 		glGetFloatv(GL_POINT_SIZE, &s.pointSize);
 		//get point style
@@ -587,18 +586,9 @@ namespace opengl
 		lineWidth = width;
 	}
 
-	void Graphics::setLineStyle(Graphics::LineStyle/* style*/ )
+	void Graphics::setLineStyle(Graphics::LineStyle style)
 	{
-		//// XXX: actually enables antialiasing for _all_ polygons.
-		//// may need investigation if wanted or not
-		//// maybe rename to something else?
-		//if (style == LINE_ROUGH)
-		//	glDisable (GL_POLYGON_SMOOTH);
-		//else // type == LINE_SMOOTH
-		//{
-		//	glEnable (GL_POLYGON_SMOOTH);
-		//	glHint (GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-		//}
+		lineStyle = style;
 	}
 
 	void Graphics::setLine( float width, Graphics::LineStyle style )
@@ -619,10 +609,7 @@ namespace opengl
 
 	Graphics::LineStyle Graphics::getLineStyle()
 	{
-		//if (glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE)
-		//	return LINE_SMOOTH;
-		//else
-			return LINE_ROUGH;
+		return lineStyle;
 	}
 
 	void Graphics::setPointSize( float size )
@@ -722,75 +709,167 @@ namespace opengl
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	// calculate line boundary intersection vertices for current line
-	// dependent on the current *and next* line segment
-	static void pushIntersectionPoints(Vector *vertices, int pos, float halfwidth, const Vector& p, const Vector& q, const Vector& r)
+	// Calculate line boundary points u1 and u2. Sketch:
+	//              u1
+	// -------------+---...___
+	//              |         ```'''--  ---
+	// p- - - - - - q- - . _ _           | w/2
+	//              |          ` ' ' r   +
+	// -------------+---...___           | w/2
+	//              u2         ```'''-- ---
+	//
+	// u1 and u2 depend on four things:
+	//   - the half line width w/2
+	//   - the previous line vertex p
+	//   - the current line vertex q
+	//   - the next line vertex r
+	//
+	// u1/u2 are the intersection points of the parallel lines to p-q and q-r,
+	// i.e. the point where
+	//
+	//    (p + w/2 * n1) + mu * (q - p) = (q + w/2 * n2) + lambda * (r - q)   (u1)
+	//    (p - w/2 * n1) + mu * (q - p) = (q - w/2 * n2) + lambda * (r - q)   (u2)
+	//
+	// with n1,n2 being the normals on the segments p-q and q-r:
+	//
+	//    n1 = perp(q - p) / |q - p|
+	//    n2 = perp(r - q) / |r - q|
+	//
+	// The intersection points can be calculated using cramers rule.
+	static void pushIntersectionPoints(Vector *vertices, int pos, float halfwidth, const Vector& p, const Vector& q, const Vector& r,
+			Vector* overdraw_top, Vector* overdraw_bottom, float halo)
 	{
 		// calculate line directions
 		Vector s = (q - p);
 		Vector t = (r - q);
 
 		// calculate vertex displacement vectors
-		Vector d1 = s.getNormal();
-		Vector d2 = t.getNormal();
-		d1.normalize();
-		d2.normalize();
-		float det_norm = d1 ^ d2;
-		d1 *= halfwidth;
-		d2 *= halfwidth;
+		Vector n1 = s.getNormal();
+		Vector n2 = t.getNormal();
+		n1.normalize();
+		n2.normalize();
+		float det_norm = n1 ^ n2; // will be close to zero if the angle between the normals is sharp
+		n1 *= halfwidth;
+		n2 *= halfwidth;
 
 		// lines parallel -> assume intersection at displacement points
 		if (fabs(det_norm) <= .03)
 		{
-			vertices[pos]     = q - d2;
-			vertices[pos + 1] = q + d2;
-			return;
+			vertices[pos]     = q - n2;
+			vertices[pos + 1] = q + n2;
+		}
+		else // real intersection -> calculate boundary intersection points with cramers rule
+		{
+			float det = s ^ t;
+			Vector d = n1 - n2;
+			Vector b = s - d; // s = q - p
+			Vector c = s + d;
+			float lambda = (b ^ t) / det;
+			float mu     = (c ^ t) / det;
+
+			// ordering for GL_TRIANGLE_STRIP
+			vertices[pos]   = p + s*mu - n1;     // u1
+			vertices[pos+1] = p + s*lambda + n1; // u2
 		}
 
-		// real intersection -> calculate boundary intersection points
-		float det = s ^ t;
-		Vector d = d1 - d2;
-		Vector b = s - d; // s = q - p
-		Vector c = s + d;
-		float lambda = (b ^ t) / det;
-		float mu     = (c ^ t) / det;
+		if (overdraw_top && overdraw_bottom)
+		{
+			overdraw_top[pos]   = vertices[pos];
+			overdraw_top[pos+1] = vertices[pos] * halo + q * (1. - halo);
 
-		// ordering for GL_TRIANGLE_STRIP
-		vertices[pos]   = p - d1 + s * mu;
-		vertices[pos+1] = p + d1 + s * lambda;
+			overdraw_bottom[pos]   = vertices[pos+1];
+			overdraw_bottom[pos+1] = vertices[pos+1] * halo + q * (1. - halo);
+		}
 	}
 
-	void Graphics::polyline(const float* coords, size_t count, bool looping)
+	void Graphics::polyline(const float* coords, size_t count)
 	{
 		Vector *vertices = new Vector[count]; // two vertices for every line end-point
-		Vector p,q,r;
+		Vector *overdraw_top = NULL;
+		Vector *overdraw_bottom = NULL;
 
+		Vector p,q,r;
+		bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
+
+		if (lineStyle == LINE_SMOOTH)
+		{
+			overdraw_top = new Vector[count];
+			overdraw_bottom = new Vector[count];
+		}
+
+		// get line vertex boundaries
+		// if not looping, extend the line at the beginning, else use last point as `p'
+		float halfwidth = lineWidth/2.0f;
+		float halo = 1. + 1./halfwidth; // XXX: customizable?
 		r = Vector(coords[0], coords[1]);
-		if (looping) q = Vector(coords[count-4], coords[count-3]);
-		else         q = r * 2 - Vector(coords[2], coords[3]);
+		if (!looping)
+			q = r * 2 - Vector(coords[2], coords[3]);
+		else
+			q = Vector(coords[count-4], coords[count-3]);
 
 		for (size_t i = 0; i+3 < count; i += 2)
 		{
-			p = q;
-			q = r;
+			p = q; q = r;
 			r = Vector(coords[i+2], coords[i+3]);
-			pushIntersectionPoints(vertices, i, lineWidth/2, p,q,r);
+			pushIntersectionPoints(vertices, i, halfwidth, p,q,r, overdraw_top, overdraw_bottom, halo);
 		}
 
-		p = q;
-		q = r;
-		if (looping) r = Vector(coords[2], coords[3]);
-		else         r += (q-p);
-		pushIntersectionPoints(vertices, count-2, lineWidth/2, p,q,r);
+		// if not looping, extend the line at the end, else use first point as `r'
+		p = q; q = r;
+		if (!looping)
+			r += q - p;
+		else
+			r = Vector(coords[2], coords[3]);
+		pushIntersectionPoints(vertices, count-2, halfwidth, p,q,r, overdraw_top, overdraw_bottom, halo);
+		// end get line vertex boundaries
 
+		// draw the core line
 		glDisable(GL_TEXTURE_2D);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)vertices);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+
+		// draw the line halo (antialiasing)
+		if (lineStyle == LINE_SMOOTH)
+		{
+			// prepare colors:
+			// even indices in overdraw* point to inner vertices => alpha = current-alpha,
+			// odd indices point to outer vertices => alpha = 0.
+			Colorf tmp;
+			glGetFloatv(GL_CURRENT_COLOR, (GLfloat*)(&tmp));
+			Color color(tmp.r * 255.0f, tmp.g * 255.0f, tmp.b * 255.0f, tmp.a * 255.0f);
+
+			Color *colors = new Color[count];
+			for (int i = 0; i < count; ++i)
+			{
+				colors[i] = color;
+				colors[i].a *= int(i%2 == 0); // avoids branching. equiv to colors[i].a *= (i%2==0) ? 1 : 0;
+			}
+
+			// TODO: overdraw at line start and end
+
+			// draw faded out line halos
+			glEnableClientState(GL_COLOR_ARRAY);
+			glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
+			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)overdraw_top);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)overdraw_bottom);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+			glDisableClientState(GL_COLOR_ARRAY);
+
+			delete[] colors;
+		}
+
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glEnable(GL_TEXTURE_2D);
 
+		// cleanup
 		delete[] vertices;
+		if (lineStyle == LINE_SMOOTH)
+		{
+			delete[] overdraw_top;
+			delete[] overdraw_bottom;
+		}
 	}
 
 	void Graphics::triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3 )
@@ -864,7 +943,9 @@ namespace opengl
 
 		// GL_POLYGON can only fill-draw convex polygons, so we need to do stuff manually here
 		if (mode == DRAW_LINE)
+		{
 			polyline(coords, num_coords); // Artifacts at sharp angles if set to looping.
+		}
 		else
 		{
 			glDisable(GL_TEXTURE_2D);
@@ -887,7 +968,7 @@ namespace opengl
 		// coords[count-2] = coords[0], coords[count-1] = coords[1]
 		if (mode == DRAW_LINE)
 		{
-			polyline(coords, count, true);
+			polyline(coords, count);
 		}
 		else
 		{
