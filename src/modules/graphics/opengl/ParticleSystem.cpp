@@ -493,7 +493,7 @@ namespace opengl
 				size_t i = (size_t)s;
 				size_t k = (i == sizes.size() - 1) ? i : i + 1; // boundary check (prevents failing on t = 1.0f)
 				s -= (float)i; // transpose s to be in interval [0:1]: i <= s < i + 1 ~> 0 <= s < 1
-				p->size = sizes[i] * (1.0f - t) + sizes[k] * t;
+				p->size = sizes[i] * (1.0f - s) + sizes[k] * s;
 
 				// Update color according to given intervals (as above)
 				s = t * (float)(colors.size() - 1);
