@@ -139,6 +139,8 @@ namespace physfs
 		int64 max = (int64)PHYSFS_fileLength(file);
 		size = (size == ALL) ? max : size;
 		size = (size > max) ? max : size;
+		// Sadly, we'll have to clamp to 32 bits here
+		size = (size > UINT32_MAX) ? UINT32_MAX : size;
 
 		int64 read = (int64)PHYSFS_read(file, dst, 1, size);
 
@@ -153,8 +155,11 @@ namespace physfs
 		if (file == 0)
 			throw love::Exception("Could not write to file. File not open.");
 
+		// Another clamp, for the time being.
+		size = (size > UINT32_MAX) ? UINT32_MAX : size;
+
 		// Try to write.
-		int written = static_cast<int64>(PHYSFS_write(file, data, 1, size));
+		int64 written = static_cast<int64>(PHYSFS_write(file, data, 1, size));
 
 		// Check that correct amount of data was written.
 		if (written != size)
@@ -174,8 +179,8 @@ namespace physfs
 	// It zigs, we zag.
 	inline bool test_eof(File * that, PHYSFS_File *)
 	{
-		int pos = that->tell();
-		int size = that->getSize();
+		int64 pos = that->tell();
+		int64 size = that->getSize();
 		return pos == -1 || size == -1 || pos >= size;
 	}
 #else

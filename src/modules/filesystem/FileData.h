@@ -25,6 +25,7 @@
 #include <string>
 #include <common/Data.h>
 #include <common/StringMap.h>
+#include <common/int.h>
 
 namespace love
 {
@@ -38,7 +39,7 @@ namespace filesystem
 		char * data;
 
 		// Size of the data.
-		unsigned int size;
+		uint64 size;
 
 		// The filename used for error purposes.
 		std::string filename;
@@ -55,12 +56,14 @@ namespace filesystem
 			DECODE_MAX_ENUM
 		}; // Decoder
 
-		FileData(unsigned int size, const std::string & filename);
+		FileData(uint64 size, const std::string & filename);
 
 		virtual ~FileData();
 
 		// Implements Data.
 		void * getData() const;
+		//TODO: Enable this
+		//uint64 getSize() const;
 		int getSize() const;
 
 		const std::string & getFilename() const;

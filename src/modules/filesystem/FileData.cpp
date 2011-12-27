@@ -22,12 +22,13 @@
 
 // STD
 #include <iostream>
+#include <climits>
 
 namespace love
 {
 namespace filesystem
 {
-	FileData::FileData(unsigned int size, const std::string & filename)
+	FileData::FileData(uint64 size, const std::string & filename)
 		: data(new char[size]), size(size), filename(filename)
 	{
 		if (filename.rfind('.') != std::string::npos)
@@ -44,9 +45,15 @@ namespace filesystem
 		return (void*)data;
 	}
 
-	int FileData::getSize() const
+	// TODO: Enable this
+	/*uint64 FileData::getSize() const
 	{
 		return size;
+	}*/
+
+	int FileData::getSize() const
+	{
+		return size > INT_MAX ? INT_MAX : (int) size;
 	}
 
 	const std::string & FileData::getFilename() const

@@ -108,9 +108,9 @@ namespace opengl
 		for (size_t i = 0; i < NUM_VERTICES; ++i)
 		{
 			if (x)
-				vertices[i].s = 1.0 - vertices[i].s;
+				vertices[i].s = 1.0f - vertices[i].s;
 			if (y)
-				vertices[i].t = 1.0 - vertices[i].t;
+				vertices[i].t = 1.0f - vertices[i].t;
 		}
 	}
 

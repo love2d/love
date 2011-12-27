@@ -1019,7 +1019,7 @@ namespace opengl
 		float radius = (float)luaL_checknumber(L, 4);
 		int points;
 		if (lua_isnoneornil(L, 5))
-			points = radius > 10 ? radius : 10;
+			points = radius > 10 ? (int) (radius) : 10;
 		else
 			points = luaL_checkint(L, 5);
 
@@ -1041,7 +1041,7 @@ namespace opengl
 		float angle2 = (float)luaL_checknumber(L, 6);
 		int points;
 		if (lua_isnoneornil(L, 7))
-			points = radius > 10 ? radius : 10;
+			points = radius > 10 ? (int) (radius) : 10;
 		else
 			points = luaL_checkint(L, 7);
 

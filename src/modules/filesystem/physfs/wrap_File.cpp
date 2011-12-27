@@ -81,7 +81,7 @@ namespace physfs
 		File * file = luax_checkfile(L, 1);
 		Data * d = 0;
 		
-		int64 size = (int64)luaL_optnumber(L, 2, file->getSize());
+		int64 size = (int64)luaL_optnumber(L, 2, (lua_Number) file->getSize());
 
 		try
 		{

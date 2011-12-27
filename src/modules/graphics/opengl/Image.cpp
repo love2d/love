@@ -389,7 +389,7 @@ namespace opengl
 
 	bool Image::hasNpot()
 	{
-		return GLEE_ARB_texture_non_power_of_two;
+		return GLEE_ARB_texture_non_power_of_two != 0;
 	}
 
 } // opengl

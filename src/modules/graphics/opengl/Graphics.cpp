@@ -775,10 +775,10 @@ namespace opengl
 		if (overdraw_top && overdraw_bottom)
 		{
 			overdraw_top[pos]   = vertices[pos];
-			overdraw_top[pos+1] = vertices[pos] * halo + q * (1. - halo);
+			overdraw_top[pos+1] = vertices[pos] * halo + q * (1.f - halo);
 
 			overdraw_bottom[pos]   = vertices[pos+1];
-			overdraw_bottom[pos+1] = vertices[pos+1] * halo + q * (1. - halo);
+			overdraw_bottom[pos+1] = vertices[pos+1] * halo + q * (1.f - halo);
 		}
 	}
 
@@ -800,7 +800,7 @@ namespace opengl
 		// get line vertex boundaries
 		// if not looping, extend the line at the beginning, else use last point as `p'
 		float halfwidth = lineWidth/2.0f;
-		float halo = 1. + 1./halfwidth; // XXX: customizable?
+		float halo = 1.f + 1.f/halfwidth; // XXX: customizable?
 		r = Vector(coords[0], coords[1]);
 		if (!looping)
 			q = r * 2 - Vector(coords[2], coords[3]);
@@ -837,10 +837,10 @@ namespace opengl
 			// odd indices point to outer vertices => alpha = 0.
 			Colorf tmp;
 			glGetFloatv(GL_CURRENT_COLOR, (GLfloat*)(&tmp));
-			Color color(tmp.r * 255.0f, tmp.g * 255.0f, tmp.b * 255.0f, tmp.a * 255.0f);
+			Color color((unsigned char) (tmp.r * 255.0f), (unsigned char) (tmp.g * 255.0f), (unsigned char) (tmp.b * 255.0f), (unsigned char) (tmp.a * 255.0f));
 
 			Color *colors = new Color[count];
-			for (int i = 0; i < count; ++i)
+			for (unsigned int i = 0; i < count; ++i)
 			{
 				colors[i] = color;
 				colors[i].a *= int(i%2 == 0); // avoids branching. equiv to colors[i].a *= (i%2==0) ? 1 : 0;

@@ -267,11 +267,11 @@ namespace opengl
 				// on wordwrap, push line to line buffer and clear string builder
 				if (width >= wrap && oldwidth > 0)
 				{
-					int realw = width;
+					int realw = (int) width;
 					lines_to_draw.push_back( string_builder.str() );
 					string_builder.str( "" );
 					width = static_cast<float>(getWidth( word ));
-					realw -= width;
+					realw -= (int) width;
 					if (realw > maxw)
 						maxw = realw;
 				}
@@ -281,7 +281,7 @@ namespace opengl
 			}
 			// push last line
 			if (width > maxw)
-				maxw = width;
+				maxw = (int) width;
 			lines_to_draw.push_back( string_builder.str() );
 		}
 

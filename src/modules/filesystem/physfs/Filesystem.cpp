@@ -481,14 +481,14 @@ namespace physfs
 
 		// Find the next newline.
 		// pos must be at the start of the line we're trying to find.
-		int pos = file->tell();
+		int64 pos = file->tell();
 		int newline = -1;
 		int totalread = 0;
 
 		while (!file->eof())
 		{
-			int current = file->tell();
-			int read = file->read(buf, bufsize);
+			int64 current = file->tell();
+			int64 read = file->read(buf, bufsize);
 			totalread += read;
 
 			if (read < 0)
