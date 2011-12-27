@@ -835,15 +835,14 @@ namespace opengl
 			// prepare colors:
 			// even indices in overdraw* point to inner vertices => alpha = current-alpha,
 			// odd indices point to outer vertices => alpha = 0.
-			Colorf tmp;
-			glGetFloatv(GL_CURRENT_COLOR, (GLfloat*)(&tmp));
-			Color color((unsigned char) (tmp.r * 255.0f), (unsigned char) (tmp.g * 255.0f), (unsigned char) (tmp.b * 255.0f), (unsigned char) (tmp.a * 255.0f));
+			GLfloat c[4];
+			glGetFloatv(GL_CURRENT_COLOR, c);
 
 			Color *colors = new Color[count];
-			for (unsigned int i = 0; i < count; ++i)
+			for (size_t i = 0; i < count; ++i)
 			{
-				colors[i] = color;
-				colors[i].a *= int(i%2 == 0); // avoids branching. equiv to colors[i].a *= (i%2==0) ? 1 : 0;
+				colors[i] = Color(c[0] * 255.f, c[1] * 255.f, c[2] * 255.f,
+						c[3] * 255.f * int(i%2 == 0));// avoids branching. equiv to colors[i].a *= (i%2==0) ? 1 : 0;
 			}
 
 			// TODO: overdraw at line start and end
@@ -856,6 +855,9 @@ namespace opengl
 			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)overdraw_bottom);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
 			glDisableClientState(GL_COLOR_ARRAY);
+			// "if GL_COLOR_ARRAY is enabled, the value of the current color is
+			// undefined after glDrawArrays executes"
+			glColor4fv(c);
 
 			delete[] colors;
 		}
