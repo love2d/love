@@ -140,7 +140,7 @@ namespace physfs
 		size = (size == ALL) ? max : size;
 		size = (size > max) ? max : size;
 		// Sadly, we'll have to clamp to 32 bits here
-		size = (size > UINT32_MAX) ? UINT32_MAX : size;
+		size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 
 		int64 read = (int64)PHYSFS_read(file, dst, 1, size);
 
@@ -156,7 +156,7 @@ namespace physfs
 			throw love::Exception("Could not write to file. File not open.");
 
 		// Another clamp, for the time being.
-		size = (size > UINT32_MAX) ? UINT32_MAX : size;
+		size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 
 		// Try to write.
 		int64 written = static_cast<int64>(PHYSFS_write(file, data, 1, size));
