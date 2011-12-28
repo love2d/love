@@ -841,8 +841,11 @@ namespace opengl
 			Color *colors = new Color[count];
 			for (size_t i = 0; i < count; ++i)
 			{
-				colors[i] = Color(c[0] * 255.f, c[1] * 255.f, c[2] * 255.f,
-						c[3] * 255.f * int(i%2 == 0));// avoids branching. equiv to colors[i].a *= (i%2==0) ? 1 : 0;
+				colors[i] = Color(GLubyte(c[0] * 255.f),
+						GLubyte(c[1] * 255.f),
+						GLubyte(c[2] * 255.f),
+						// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
+						GLubyte(c[3] * 255.f) * GLubyte(i%2 == 0));
 			}
 
 			// TODO: overdraw at line start and end

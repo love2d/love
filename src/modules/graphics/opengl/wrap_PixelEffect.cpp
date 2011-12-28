@@ -93,7 +93,7 @@ namespace opengl
 				lua_rawgeti(L, 3 + i, k);
 				values[i * dimension + k - 1] = (float)lua_tonumber(L, -1);
 			}
-			lua_pop(L, dimension);
+			lua_pop(L, int(dimension));
 		}
 
 		try
