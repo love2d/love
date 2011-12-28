@@ -489,7 +489,7 @@ namespace physfs
 		{
 			int64 current = file->tell();
 			int64 read = file->read(buf, bufsize);
-			totalread += read;
+			totalread += (int) read; //TODO: Support integer-overflowing files/lines
 
 			if (read < 0)
 				return luaL_error(L, "Readline failed!");
@@ -498,7 +498,7 @@ namespace physfs
 			{
 				if (buf[i] == '\n')
 				{
-					newline = current+i;
+					newline = (int) current+i; // TODO: See above
 					break;
 				}
 			}
@@ -509,13 +509,13 @@ namespace physfs
 
 		// Special case for the last "line".
 		if (newline <= 0 && file->eof() && totalread > 0)
-			newline = pos + totalread;
+			newline = (int) pos + totalread; // TODO: See above
 
 		// We've got a newline.
 		if (newline > 0)
 		{
 			// Ok, we've got a line.
-			int linesize = (newline-pos);
+			int linesize = (newline-(int) pos); // TODO: See above
 
 			// Allocate memory for the string.
 			char * str = new char[linesize];

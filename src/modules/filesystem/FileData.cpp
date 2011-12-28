@@ -29,7 +29,7 @@ namespace love
 namespace filesystem
 {
 	FileData::FileData(uint64 size, const std::string & filename)
-		: data(new char[size]), size(size), filename(filename)
+		: data(new char[(size_t) size]), size(size), filename(filename)
 	{
 		if (filename.rfind('.') != std::string::npos)
 			extension = filename.substr(filename.rfind('.')+1);

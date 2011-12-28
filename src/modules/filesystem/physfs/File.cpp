@@ -142,7 +142,7 @@ namespace physfs
 		// Sadly, we'll have to clamp to 32 bits here
 		size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 
-		int64 read = (int64)PHYSFS_read(file, dst, 1, size);
+		int64 read = (int64)PHYSFS_read(file, dst, 1, (int) size);
 
 		if (!isOpen)
 			close();
@@ -159,7 +159,7 @@ namespace physfs
 		size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 
 		// Try to write.
-		int64 written = static_cast<int64>(PHYSFS_write(file, data, 1, size));
+		int64 written = static_cast<int64>(PHYSFS_write(file, data, 1, (int) size));
 
 		// Check that correct amount of data was written.
 		if (written != size)
