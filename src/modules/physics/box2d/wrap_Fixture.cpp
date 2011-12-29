@@ -152,7 +152,7 @@ namespace box2d
 	{
 		Fixture * t = luax_checkfixture(L, 1);
 		lua_remove(L, 1);
-		return t->rayCast(L);
+		ASSERT_GUARD(return t->rayCast(L);)
 	}
 
 	int w_Fixture_setFilterData(lua_State * L)

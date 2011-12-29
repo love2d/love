@@ -24,6 +24,7 @@
 // LOVE
 #include <common/runtime.h>
 #include "Fixture.h"
+#include "wrap_Physics.h"
 
 namespace love
 {

@@ -74,7 +74,7 @@ namespace box2d
 	{
 		Shape * t = luax_checkshape(L, 1);
 		lua_remove(L, 1);
-		return t->rayCast(L);
+		ASSERT_GUARD(return t->rayCast(L);)
 	}
 
 	int w_Shape_computeAABB(lua_State * L)

@@ -24,6 +24,7 @@
 // LOVE
 #include <common/runtime.h>
 #include "Shape.h"
+#include "wrap_Physics.h"
 
 namespace love
 {

@@ -159,7 +159,7 @@ namespace box2d
 	{
 		World * t = luax_checkworld(L, 1);
 		lua_remove(L, 1);
-		return t->rayCast(L);
+		ASSERT_GUARD(return t->rayCast(L);)
 	}
 
 	static const luaL_Reg functions[] = {
