@@ -236,7 +236,24 @@ namespace audio
 		luax_pushboolean(L, instance->canRecord());
 		return 1;
 	}
+	
+	int w_setDistanceModel(lua_State * L)
+	{
+		const char *modelStr = luaL_checkstring(L, 1);
+		Audio::DistanceModel distanceModel;
+		Audio::getConstant(modelStr, distanceModel);
+		instance->setDistanceModel(distanceModel);
+		return 0;
+	}
 
+	int w_getDistanceModel(lua_State * L)
+	{
+		Audio::DistanceModel distanceModel = instance->getDistanceModel();
+		const char *modelStr;
+		Audio::getConstant(distanceModel, modelStr);
+		lua_pushstring(L, modelStr);
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -258,6 +275,8 @@ namespace audio
 		/*{ "record", w_record },
 		{ "getRecordedData", w_getRecordedData },
 		{ "stopRecording", w_stopRecording },*/
+		{ "setDistanceModel", w_setDistanceModel },
+		{ "getDistanceModel", w_getDistanceModel },
 		{ 0, 0 }
 	};
 

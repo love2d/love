@@ -89,6 +89,8 @@ namespace openal
 
 		PoolThread* poolThread;
 
+		DistanceModel distanceModel;
+
 	public:
 
 		Audio();
@@ -126,7 +128,9 @@ namespace openal
 		love::sound::SoundData * getRecordedData();
 		love::sound::SoundData * stopRecording(bool returnData);
 		bool canRecord();
-
+		
+		DistanceModel getDistanceModel() const;
+		void setDistanceModel(DistanceModel distanceModel);
 	}; // Audio
 
 } // openal

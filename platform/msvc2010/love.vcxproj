@@ -111,6 +111,7 @@
     <ClCompile Include="..\..\src\love.cpp">
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
     </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Source.cpp" />
     <ClCompile Include="..\..\src\modules\audio\openal\Audio.cpp" />
@@ -536,6 +537,7 @@
       <AdditionalDependencies>opengl32.lib;glu32.lib;DevIL.lib;freetype244MT.lib;libmpg123.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua.lib;modplug.lib;OpenAL32.lib;physfs.lib;SDL.lib;SDLmain.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

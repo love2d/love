@@ -26,7 +26,7 @@ namespace audio
 {
 namespace null
 {
-	Audio::Audio()
+	Audio::Audio() : distanceModel(DISTANCE_NONE)
 	{
 	}
 
@@ -150,6 +150,16 @@ namespace null
 	bool Audio::canRecord()
 	{
 		return false;
+	}
+	
+	Audio::DistanceModel Audio::getDistanceModel() const
+	{
+		return this->distanceModel;
+	}
+
+	void Audio::setDistanceModel(DistanceModel distanceModel)
+	{
+		this->distanceModel = distanceModel;
 	}
 
 } // null

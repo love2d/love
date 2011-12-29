@@ -292,9 +292,6 @@
     <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_Joystick.cpp">
       <Filter>modules\joystick\sdl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\sound\Sound.cpp">
-      <Filter>modules\sound</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\sound\SoundData.cpp">
       <Filter>modules\sound</Filter>
     </ClCompile>
@@ -736,11 +733,17 @@
     <ClCompile Include="..\..\src\common\Variant.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\Sound.cpp">
+      <Filter>modules\sound</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\modules\window\Window.cpp">
       <Filter>modules\window</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\window\sdl\Window.cpp">
       <Filter>modules\window\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\audio\Audio.cpp">
+      <Filter>modules\audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

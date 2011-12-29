@@ -24,6 +24,7 @@
 
 // STD
 #include <iostream>
+#include <float.h>
 
 namespace love
 {
@@ -34,8 +35,9 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::SoundData * soundData)
 		: love::audio::Source(Source::TYPE_STATIC), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), paused(false), offsetSamples(0),
-		offsetSeconds(0), decoder(0), toLoop(0)
+		pitch(1.0f), volume(1.0f), looping(false), paused(false), minVolume(0.0f),
+		maxVolume(1.0f), referenceDistance(1.0f), rolloffFactor(1.0f), maxDistance(FLT_MAX),
+		offsetSamples(0), offsetSeconds(0), decoder(0), toLoop(0)
 	{
 		alGenBuffers(1, buffers);
 		ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
@@ -50,8 +52,9 @@ namespace openal
 
 	Source::Source(Pool * pool, love::sound::Decoder * decoder)
 		: love::audio::Source(Source::TYPE_STREAM), pool(pool), valid(false),
-		pitch(1.0f), volume(1.0f), looping(false), paused(false), offsetSamples(0),
-		offsetSeconds(0), decoder(decoder), toLoop(0)
+		pitch(1.0f), volume(1.0f), looping(false), paused(false), minVolume(0.0f),
+		maxVolume(1.0f), referenceDistance(1.0f), rolloffFactor(1.0f), maxDistance(FLT_MAX),
+		offsetSamples(0), offsetSeconds(0), decoder(decoder), toLoop(0)
 	{
 		decoder->retain();
 		alGenBuffers(MAX_BUFFERS, buffers);
@@ -415,6 +418,11 @@ namespace openal
 		// been without an AL source.
 		alSourcef(source, AL_PITCH, pitch);
 		alSourcef(source, AL_GAIN, volume);
+		alSourcef(source, AL_MIN_GAIN, minVolume);
+		alSourcef(source, AL_MAX_GAIN, maxVolume);
+		alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
+		alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
+		alSourcef(source, AL_MAX_DISTANCE, maxDistance);
 
 		alSourcePlay(source);
 
@@ -503,6 +511,11 @@ namespace openal
 		alSourcefv(source, AL_DIRECTION, direction);
 		alSourcef(source, AL_PITCH, pitch);
 		alSourcef(source, AL_GAIN, volume);
+		alSourcef(source, AL_MIN_GAIN, minVolume);
+		alSourcef(source, AL_MAX_GAIN, maxVolume);
+		alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
+		alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
+		alSourcef(source, AL_MAX_DISTANCE, maxDistance);
 	}
 
 	void Source::setFloatv(float * dst, const float * src) const
@@ -563,6 +576,121 @@ namespace openal
 	bool Source::isStatic() const
 	{
 		return (type == TYPE_STATIC);
+	}
+	
+	void Source::setMinVolume(float volume)
+	{
+		if (valid)
+		{
+			alSourcef(source, AL_MIN_GAIN, volume);
+		}
+
+		this->minVolume = volume;
+	}
+
+	float Source::getMinVolume() const
+	{
+		if (valid)
+		{
+			ALfloat f;
+			alGetSourcef(source, AL_MIN_GAIN, &f);
+			return f;
+		}
+
+		// In case the Source isn't playing.
+		return this->minVolume;
+	}
+
+	void Source::setMaxVolume(float volume)
+	{
+		if (valid)
+		{
+			alSourcef(source, AL_MAX_GAIN, volume);
+		}
+
+		this->maxVolume = volume;
+	}
+
+	float Source::getMaxVolume() const
+	{
+		if (valid)
+		{
+			ALfloat f;
+			alGetSourcef(source, AL_MAX_GAIN, &f);
+			return f;
+		}
+
+		// In case the Source isn't playing.
+		return this->maxVolume;
+	}
+
+	void Source::setReferenceDistance(float distance)
+	{
+		if (valid)
+		{
+			alSourcef(source, AL_REFERENCE_DISTANCE, distance);
+		}
+
+		this->referenceDistance = distance;
+	}
+
+	float Source::getReferenceDistance() const
+	{
+		if (valid)
+		{
+			ALfloat f;
+			alGetSourcef(source, AL_REFERENCE_DISTANCE, &f);
+			return f;
+		}
+
+		// In case the Source isn't playing.
+		return this->referenceDistance;
+	}
+
+	void Source::setRolloffFactor(float factor)
+	{
+		if (valid)
+		{
+			alSourcef(source, AL_ROLLOFF_FACTOR, factor);
+		}
+
+		this->rolloffFactor = factor;
+	}
+
+	float Source::getRolloffFactor() const
+	{
+		if (valid)
+		{
+			ALfloat f;
+			alGetSourcef(source, AL_ROLLOFF_FACTOR, &f);
+			return f;
+		}
+
+		// In case the Source isn't playing.
+		return this->rolloffFactor;
+	}
+
+	void Source::setMaxDistance(float distance)
+	{
+		if (valid)
+		{
+			alSourcef(source, AL_MAX_DISTANCE, distance);
+		}
+
+		this->maxDistance = distance;
+	}
+
+	float Source::getMaxDistance() const
+	{
+		if (valid)
+		{
+			ALfloat f;
+			alGetSourcef(source, AL_MAX_DISTANCE, &f);
+			return f;
+		}
+
+		// In case the Source isn't playing.
+		return this->maxDistance;
 	}
 
 } // openal

@@ -211,8 +211,67 @@ namespace audio
 
 	int w_Source_isStatic(lua_State * L)
 	{
-		Source * t= luax_checksource(L, 1);
+		Source * t = luax_checksource(L, 1);
 		luax_pushboolean(L, t->isStatic());
+		return 1;
+	}
+
+	int w_Source_setMinVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setMinVolume((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getMinVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getMinVolume());
+		return 1;
+	}
+
+	int w_Source_setMaxVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setMaxVolume((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getMaxVolume(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getMaxVolume());
+		return 1;
+	}
+
+	int w_Source_setDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setReferenceDistance((float)luaL_checknumber(L, 2));
+		if (!lua_isnoneornil(L, 3)) // lua_isnoneornil instead of lua_isnumber to throw an error
+			t->setMaxDistance((float)luaL_checknumber(L, 3)); // in case of invalid argument type
+		return 0;
+	}
+
+	int w_Source_getDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getReferenceDistance());
+		lua_pushnumber(L, t->getMaxDistance());
+		return 2;
+	}
+
+	int w_Source_setRolloffFactor(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		t->setRolloffFactor((float)luaL_checknumber(L, 2));
+		return 0;
+	}
+
+	int w_Source_getRolloffFactor(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getRolloffFactor());
 		return 1;
 	}
 
@@ -241,6 +300,16 @@ namespace audio
 		{ "isStopped", w_Source_isStopped },
 		{ "isPaused", w_Source_isPaused },
 		{ "isStatic", w_Source_isStatic },
+
+		{ "setMinVolume", w_Source_setMinVolume },
+		{ "getMinVolume", w_Source_getMinVolume },
+		{ "setMaxVolume", w_Source_setMaxVolume },
+		{ "getMaxVolume", w_Source_getMaxVolume },
+		{ "setDistance", w_Source_setDistance },
+		{ "getDistance", w_Source_setDistance },
+		{ "setRolloffFactor", w_Source_setRolloffFactor },
+		{ "getRolloffFactor", w_Source_getRolloffFactor },
+
 		{ 0, 0 }
 	};
 
