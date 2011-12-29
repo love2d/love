@@ -736,8 +736,9 @@ namespace opengl
 	//    n2 = perp(r - q) / |r - q|
 	//
 	// The intersection points can be calculated using cramers rule.
-	static void pushIntersectionPoints(Vector *vertices, int pos, float halfwidth, const Vector& p, const Vector& q, const Vector& r,
-			Vector* overdraw_top, Vector* overdraw_bottom, float halo)
+	static void pushIntersectionPoints(Vector *vertices, Vector* overdraw,
+			int pos, int count, float hw, float inv_hw,
+			const Vector& p, const Vector& q, const Vector& r)
 	{
 		// calculate line directions
 		Vector s = (q - p);
@@ -749,16 +750,17 @@ namespace opengl
 		n1.normalize();
 		n2.normalize();
 		float det_norm = n1 ^ n2; // will be close to zero if the angle between the normals is sharp
-		n1 *= halfwidth;
-		n2 *= halfwidth;
+		n1 *= hw;
+		n2 *= hw;
 
 		// lines parallel -> assume intersection at displacement points
 		if (fabs(det_norm) <= .03)
 		{
-			vertices[pos]     = q - n2;
-			vertices[pos + 1] = q + n2;
+			vertices[pos]   = q - n2;
+			vertices[pos+1] = q + n2;
 		}
-		else // real intersection -> calculate boundary intersection points with cramers rule
+		// real intersection -> calculate boundary intersection points with cramers rule
+		else
 		{
 			float det = s ^ t;
 			Vector d = n1 - n2;
@@ -772,35 +774,93 @@ namespace opengl
 			vertices[pos+1] = p + s*lambda + n1; // u2
 		}
 
-		if (overdraw_top && overdraw_bottom)
+		if (overdraw)
 		{
-			overdraw_top[pos]   = vertices[pos];
-			overdraw_top[pos+1] = vertices[pos] * halo + q * (1.f - halo);
+			// displacement of the overdraw vertices (works by magic).
+			Vector x = (vertices[pos] - q) * inv_hw;
 
-			overdraw_bottom[pos]   = vertices[pos+1];
-			overdraw_bottom[pos+1] = vertices[pos+1] * halo + q * (1.f - halo);
+			overdraw[pos]   = vertices[pos];
+			overdraw[pos+1] = vertices[pos] + x;
+
+			overdraw[2*count-pos-2] = vertices[pos+1];
+			overdraw[2*count-pos-1] = vertices[pos+1] - x;
 		}
+	}
+
+	// precondition:
+	// glEnableClientState(GL_VERTEX_ARRAY);
+	static void draw_overdraw(Vector* overdraw, size_t count, bool looping)
+	{
+		// if not looping, the outer overdraw vertices need to be displaced
+		// to cover the line endings, i.e.:
+		// +- - - - //- - +         +- - - - - //- - - +
+		// +-------//-----+         : +-------//-----+ :
+		// | core // line |   -->   : | core // line | :
+		// +-----//-------+         : +-----//-------+ :
+		// +- - //- - - - +         +- - - //- - - - - +
+		if (!looping)
+		{
+			Vector s = overdraw[1] - overdraw[3];
+			s.normalize();
+			overdraw[1] += s;
+			overdraw[2*count-1] += s;
+
+			Vector t = overdraw[count-1] - overdraw[count-3];
+			t.normalize();
+			overdraw[count-1] += t;
+			overdraw[count+1] += t;
+
+			// we need to draw two more triangles to close the
+			// overdraw at the line start.
+			overdraw[2*count]   = overdraw[0];
+			overdraw[2*count+1] = overdraw[1];
+		}
+
+		// prepare colors:
+		// even indices in overdraw* point to inner vertices => alpha = current-alpha,
+		// odd indices point to outer vertices => alpha = 0.
+		GLfloat c[4];
+		glGetFloatv(GL_CURRENT_COLOR, c);
+
+		Color *colors = new Color[2*count+1];
+		for (size_t i = 0; i < 2*count+1; ++i)
+		{
+			colors[i] = Color(GLubyte(c[0] * 255.f),
+					GLubyte(c[1] * 255.f),
+					GLubyte(c[2] * 255.f),
+					// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
+					GLubyte(c[3] * 255.f) * GLubyte(i%2 == 0));
+		}
+
+		// draw faded out line halos
+		glEnableClientState(GL_COLOR_ARRAY);
+		glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
+		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)overdraw);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*count + 2 * int(!looping));
+		glDisableClientState(GL_COLOR_ARRAY);
+		// "if GL_COLOR_ARRAY is enabled, the value of the current color is
+		// undefined after glDrawArrays executes"
+		glColor4fv(c);
+
+		delete[] colors;
 	}
 
 	void Graphics::polyline(const float* coords, size_t count)
 	{
 		Vector *vertices = new Vector[count]; // two vertices for every line end-point
-		Vector *overdraw_top = NULL;
-		Vector *overdraw_bottom = NULL;
+		Vector *overdraw = NULL;
 
 		Vector p,q,r;
 		bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
 
 		if (lineStyle == LINE_SMOOTH)
-		{
-			overdraw_top = new Vector[count];
-			overdraw_bottom = new Vector[count];
-		}
+			overdraw = new Vector[2*count+2];
+
+		float halfwidth = lineWidth/2.f;
+		float inv_hw    = 1.f / halfwidth;
 
 		// get line vertex boundaries
 		// if not looping, extend the line at the beginning, else use last point as `p'
-		float halfwidth = lineWidth/2.0f;
-		float halo = 1.f + 1.f/halfwidth; // XXX: customizable?
 		r = Vector(coords[0], coords[1]);
 		if (!looping)
 			q = r * 2 - Vector(coords[2], coords[3]);
@@ -811,7 +871,7 @@ namespace opengl
 		{
 			p = q; q = r;
 			r = Vector(coords[i+2], coords[i+3]);
-			pushIntersectionPoints(vertices, i, halfwidth, p,q,r, overdraw_top, overdraw_bottom, halo);
+			pushIntersectionPoints(vertices, overdraw, i, count, halfwidth, inv_hw, p,q,r);
 		}
 
 		// if not looping, extend the line at the end, else use first point as `r'
@@ -820,7 +880,7 @@ namespace opengl
 			r += q - p;
 		else
 			r = Vector(coords[2], coords[3]);
-		pushIntersectionPoints(vertices, count-2, halfwidth, p,q,r, overdraw_top, overdraw_bottom, halo);
+		pushIntersectionPoints(vertices, overdraw, count-2, count, halfwidth, inv_hw, p,q,r);
 		// end get line vertex boundaries
 
 		// draw the core line
@@ -831,39 +891,7 @@ namespace opengl
 
 		// draw the line halo (antialiasing)
 		if (lineStyle == LINE_SMOOTH)
-		{
-			// prepare colors:
-			// even indices in overdraw* point to inner vertices => alpha = current-alpha,
-			// odd indices point to outer vertices => alpha = 0.
-			GLfloat c[4];
-			glGetFloatv(GL_CURRENT_COLOR, c);
-
-			Color *colors = new Color[count];
-			for (size_t i = 0; i < count; ++i)
-			{
-				colors[i] = Color(GLubyte(c[0] * 255.f),
-						GLubyte(c[1] * 255.f),
-						GLubyte(c[2] * 255.f),
-						// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
-						GLubyte(c[3] * 255.f) * GLubyte(i%2 == 0));
-			}
-
-			// TODO: overdraw at line start and end
-
-			// draw faded out line halos
-			glEnableClientState(GL_COLOR_ARRAY);
-			glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
-			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)overdraw_top);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
-			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)overdraw_bottom);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
-			glDisableClientState(GL_COLOR_ARRAY);
-			// "if GL_COLOR_ARRAY is enabled, the value of the current color is
-			// undefined after glDrawArrays executes"
-			glColor4fv(c);
-
-			delete[] colors;
-		}
+			draw_overdraw(overdraw, count, looping);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glEnable(GL_TEXTURE_2D);
@@ -871,10 +899,7 @@ namespace opengl
 		// cleanup
 		delete[] vertices;
 		if (lineStyle == LINE_SMOOTH)
-		{
-			delete[] overdraw_top;
-			delete[] overdraw_bottom;
-		}
+			delete[] overdraw;
 	}
 
 	void Graphics::triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3 )
