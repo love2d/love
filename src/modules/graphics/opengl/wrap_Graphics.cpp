@@ -712,6 +712,9 @@ namespace opengl
 
 	int w_setCanvas(lua_State * L)
 	{
+		// discard stencil testing
+		instance->discardStencil();
+
 		// called with nil or none -> reset to default buffer
 		if (lua_isnoneornil(L,1))
 		{
