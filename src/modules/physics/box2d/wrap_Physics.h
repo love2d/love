@@ -24,26 +24,6 @@
 // LOVE
 #include <common/config.h>
 #include "Physics.h"
-#include "wrap_World.h"
-#include "wrap_Contact.h"
-#include "wrap_Body.h"
-#include "wrap_Fixture.h"
-#include "wrap_Shape.h"
-#include "wrap_CircleShape.h"
-#include "wrap_PolygonShape.h"
-#include "wrap_EdgeShape.h"
-#include "wrap_ChainShape.h"
-#include "wrap_Joint.h"
-#include "wrap_MouseJoint.h"
-#include "wrap_DistanceJoint.h"
-#include "wrap_PrismaticJoint.h"
-#include "wrap_RevoluteJoint.h"
-#include "wrap_PulleyJoint.h"
-#include "wrap_GearJoint.h"
-#include "wrap_FrictionJoint.h"
-#include "wrap_WeldJoint.h"
-#include "wrap_WheelJoint.h"
-#include "wrap_RopeJoint.h"
 
 #define ASSERT_GUARD(A) try { A } catch (love::Exception & e) { return luaL_error(L, "%s", e.what()); }
 
