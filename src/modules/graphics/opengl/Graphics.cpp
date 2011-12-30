@@ -859,6 +859,11 @@ namespace opengl
 		float halfwidth = lineWidth/2.f;
 		float inv_hw    = 1.f / halfwidth;
 
+		// Overdraw changes visible line width. account for that.
+		// Value of 0.15 chosen empirically.
+		if (lineStyle == LINE_SMOOTH)
+			halfwidth -= .15f;
+
 		// get line vertex boundaries
 		// if not looping, extend the line at the beginning, else use last point as `p'
 		r = Vector(coords[0], coords[1]);
