@@ -30,6 +30,9 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added 64-bit support for Mac OS X.
   * Added premultiplied blending mode.
   * Added functions to set/get default image filter modes.
+  * Added SpriteBatch:set.
+  * Added new events system, with support for custom events and long event names.
+  * Added sound attenuation by distance.
 
   * Fixed wrapping for single words.
   * Fixed tracebacks not showing filenames.
@@ -50,6 +53,12 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed a bug where empty files on windows would never reach eof.
   * Fixed crash when SoundData runs out of memory.
   * Fixed ordering of loaders, love should have priority over Lua.
+  * Fixed several miscellaneous memory leaks.
+  * Fixed love.filesystem's priority for require.
+  * Fixed a few cases where strings with \0 in them would not be stored correctly.
+  * Fixed love's startup time being in the first dt.
+  * Fixed internal string conversions, they are faster now.
+  * Fixed (bad) performance of ImageData:paste.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
   * Renamed Framebuffer to Canvas.
@@ -58,6 +67,8 @@ LOVE 0.8.0 [Rubber Piggy]
   * Removed canvas auto-clearing.
   * Removed EncodedImageData.
   * Removed old syntax for require (with extension).
+  * Removed love.graphics.setFont([file], [size]).
+  * Removed Thread:kill.
 
   * Updated love.joystick to be 1-indexed.
   * Updated Sources to update more cleanly and control more intuitively.
@@ -68,6 +79,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Updated love.graphics.circle to have max(10, r) as default for segments.
   * Updated ImageData:encode to write to files directly.
   * Updated version compatibility system to actually do something.
+  * Updated love.run's order, events are checked just before update.
 
 LOVE 0.7.2 [Game Slave]
 -----------------------
