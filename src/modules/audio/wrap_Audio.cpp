@@ -241,7 +241,8 @@ namespace audio
 	{
 		const char *modelStr = luaL_checkstring(L, 1);
 		Audio::DistanceModel distanceModel;
-		Audio::getConstant(modelStr, distanceModel);
+		if (!Audio::getConstant(modelStr, distanceModel))
+			return luaL_error(L, "Invalid distance model: %s", modelStr);
 		instance->setDistanceModel(distanceModel);
 		return 0;
 	}
@@ -250,7 +251,8 @@ namespace audio
 	{
 		Audio::DistanceModel distanceModel = instance->getDistanceModel();
 		const char *modelStr;
-		Audio::getConstant(distanceModel, modelStr);
+		if (!Audio::getConstant(distanceModel, modelStr))
+			return 0;
 		lua_pushstring(L, modelStr);
 		return 1;
 	}
