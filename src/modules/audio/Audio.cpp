@@ -30,13 +30,13 @@ namespace audio
 		{"inverse", Audio::DISTANCE_INVERSE},
 		{"inverse clamped", Audio::DISTANCE_INVERSE_CLAMPED},
 		{"linear", Audio::DISTANCE_LINEAR},
-		{"linear clamped", Audio::DISTANCE_LINEAR},
+		{"linear clamped", Audio::DISTANCE_LINEAR_CLAMPED},
 		{"exponent", Audio::DISTANCE_EXPONENT},
-		{"exponent clamped", Audio::DISTANCE_EXPONENT}
+		{"exponent clamped", Audio::DISTANCE_EXPONENT_CLAMPED}
 	};
-	
+
 	StringMap<Audio::DistanceModel, Audio::DISTANCE_MAX_ENUM> Audio::distanceModels(Audio::distanceModelEntries, sizeof(Audio::distanceModelEntries));
-	
+
 	bool Audio::getConstant(const char * in, DistanceModel & out)
 	{
 		return distanceModels.find(in, out);
