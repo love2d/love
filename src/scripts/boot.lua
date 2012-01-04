@@ -187,6 +187,7 @@ function love.createhandlers()
 end
 
 local is_fused_game = false
+local no_game_code = false
 
 -- This can't be overriden.
 function love.boot()
@@ -746,7 +747,7 @@ function love.releaseerrhand(msg)
 		return
 	end
 
-	love.graphics.setRenderTarget()
+	love.graphics.setCanvas()
 	love.graphics.setPixelEffect()
 
 	-- Load.
