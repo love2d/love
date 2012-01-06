@@ -97,27 +97,27 @@ namespace sdl
 		// FSAA
 		if (fsaa > 0)
 		{
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa ) ;
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, fsaa);
 		}
 
 		// Fullscreen?
 		Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
 
 		// Have SDL set the video mode.
-		if (SDL_SetVideoMode(width, height, 32, sdlflags ) == 0)
+		if (SDL_SetVideoMode(width, height, 32, sdlflags) == 0)
 		{
 			bool failed = true;
 			if (fsaa > 0)
 			{
 				// FSAA might have failed, disable it and try again
 				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-				failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
+				failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
 				if (failed)
 				{
 					// There might be no FSAA at all
 					SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-					failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
+					failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
 				}
 			}
 			if (failed)
@@ -142,11 +142,11 @@ namespace sdl
 		GLint buffers;
 		GLint samples;
 
-		glGetIntegerv( GL_SAMPLE_BUFFERS_ARB, & buffers ) ;
-		glGetIntegerv( GL_SAMPLES_ARB, & samples ) ;
+		glGetIntegerv(GL_SAMPLE_BUFFERS_ARB, &buffers);
+		glGetIntegerv(GL_SAMPLES_ARB, &samples);
 
 		// Don't fail because of this, but issue a warning.
-		if ( (! buffers && fsaa) || (samples != fsaa))
+		if ((!buffers && fsaa) || (samples != fsaa))
 		{
 			std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
 			fsaa = !buffers ? 0 : samples;
