@@ -99,7 +99,6 @@ namespace sdl
 		{
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa ) ;
-			glEnable(GL_MULTISAMPLE);
 		}
 
 		// Fullscreen?
@@ -136,6 +135,9 @@ namespace sdl
 			width = videoinfo->current_w;
 			height = videoinfo->current_h;
 		}
+
+		if (fsaa > 0)
+			glEnable(GL_MULTISAMPLE);
 
 		GLint buffers;
 		GLint samples;
