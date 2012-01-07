@@ -1300,12 +1300,12 @@ namespace opengl
 		w.functions = functions;
 		w.types = types;
 
-		luax_register_module(L, w);
+		int n = luax_register_module(L, w);
 
 		if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "graphics.lua") == 0)
 			lua_call(L, 0, 0);
 
-		return 0;
+		return n;
 	}
 
 } // opengl

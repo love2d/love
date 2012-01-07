@@ -125,8 +125,6 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 
 	lua_setfield(L, -2, "_version_compat");
 
-	lua_pop(L, 1); // love
-
 #ifdef LOVE_BUILD_STANDALONE
 
 	// Preload module loaders.
@@ -139,7 +137,7 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 
 #endif // LOVE_BUILD_STANDALONE
 
-	return 0;
+	return 1;
 }
 
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK

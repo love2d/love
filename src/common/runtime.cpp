@@ -187,10 +187,11 @@ namespace love
 			for (const lua_CFunction * t = m.types; *t != 0; t++)
 				(*t)(L);
 
-		lua_setfield(L, -2, m.name); // love.graphics = table
-		lua_pop(L, 1); // love
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -3, m.name); // love.graphics = table
+		lua_remove(L, -2); // love
 
-		return 0;
+		return 1;
 	}
 
 	int luax_preload(lua_State * L, lua_CFunction f, const char * name)
