@@ -262,8 +262,15 @@ namespace opengl
 
 	void Image::bind() const
 	{
-		if (texture != 0)
-			glBindTexture(GL_TEXTURE_2D,texture);
+		if (texture == 0)
+			return;
+
+		GLuint boundTex;
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *)&boundTex);
+
+		// only bind if this texture is not already bound
+		if (boundTex != texture)
+			glBindTexture(GL_TEXTURE_2D, texture);
 	}
 
 	bool Image::load()
