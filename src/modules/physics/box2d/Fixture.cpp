@@ -273,7 +273,8 @@ namespace box2d
 		input.maxFraction = maxFraction;
 		b2Transform transform(b2Vec2(x, y), b2Rot(r));
 		b2RayCastOutput output;
-		fixture->RayCast(&output, input, childIndex);
+		if (!fixture->RayCast(&output, input, childIndex))
+			return 0; // Nothing hit.
 		lua_pushnumber(L, Physics::scaleUp(output.normal.x));
 		lua_pushnumber(L, Physics::scaleUp(output.normal.y));
 		lua_pushnumber(L, output.fraction);
