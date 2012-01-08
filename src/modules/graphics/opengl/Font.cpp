@@ -57,7 +57,8 @@ namespace opengl
 
 	void Font::createTexture()
 	{
-		texture_x = texture_y = rowHeight = 0;
+		texture_x = texture_y = 1;
+		rowHeight = 0;
 		GLuint t;
 		glGenTextures(1, &t);
 		textures.push_back(t);
@@ -92,12 +93,12 @@ namespace opengl
 		}
 		love::font::GlyphData *gd = rasterizer->getGlyphData(glyph);
 		g->spacing = gd->getAdvance();
-		int w = gd->getWidth();
-		int h = gd->getHeight();
+		int w = gd->getWidth()+1;
+		int h = gd->getHeight()+1;
 		if (texture_x + w > TEXTURE_WIDTH)
 		{ // out of space - new row!
-			texture_x = 0;
-			texture_y += rowHeight;
+			texture_x = 1;
+			texture_y += rowHeight+1;
 			rowHeight = 0;
 		}
 		if (texture_y + h > TEXTURE_HEIGHT)
@@ -106,7 +107,7 @@ namespace opengl
 		}
 		GLuint t = textures.back();
 		glBindTexture(GL_TEXTURE_2D, t);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w, h, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
+		glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w-1, h-1, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
 
 		Quad::Viewport v;
 		v.x = (float) texture_x;
