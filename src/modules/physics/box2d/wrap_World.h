@@ -23,6 +23,7 @@
 
 // LOVE
 #include <common/runtime.h>
+#include <common/Exception.h>
 #include "World.h"
 #include "wrap_Physics.h"
 
@@ -51,6 +52,7 @@ namespace box2d
 	int w_World_getContactList(lua_State * L);
 	int w_World_queryBoundingBox(lua_State * L);
 	int w_World_rayCast(lua_State * L);
+	int w_World_destroy(lua_State * L);
 	extern "C" int luaopen_world(lua_State * L);
 
 } // box2d

@@ -44,8 +44,6 @@ namespace box2d
 
 	RevoluteJoint::~RevoluteJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	float RevoluteJoint::getJointAngle() const

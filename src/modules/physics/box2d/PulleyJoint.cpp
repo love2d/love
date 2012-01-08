@@ -44,8 +44,6 @@ namespace box2d
 
 	PulleyJoint::~PulleyJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	int PulleyJoint::getGroundAnchors(lua_State * L)

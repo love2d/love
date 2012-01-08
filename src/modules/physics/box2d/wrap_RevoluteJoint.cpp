@@ -28,7 +28,10 @@ namespace box2d
 {
 	RevoluteJoint * luax_checkrevolutejoint(lua_State * L, int idx)
 	{
-		return luax_checktype<RevoluteJoint>(L, idx, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T);
+		RevoluteJoint * j = luax_checktype<RevoluteJoint>(L, idx, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_RevoluteJoint_getJointAngle(lua_State * L)

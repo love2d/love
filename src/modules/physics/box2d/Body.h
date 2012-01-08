@@ -56,6 +56,7 @@ namespace box2d
 		friend class CircleShape;
 		friend class PolygonShape;
 		friend class Shape;
+		friend class Fixture;
 
 	private:
 
@@ -386,7 +387,7 @@ namespace box2d
 		int getFixtureList(lua_State * L) const;
 
 		/**
-		* Mark the body for destruction
+		* Destroy this body.
 		**/
 		void destroy();
 

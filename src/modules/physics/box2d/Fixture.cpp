@@ -39,7 +39,6 @@ namespace box2d
 	Fixture::Fixture(Body * body, Shape * shape, float density)
 		: body(body), fixture(NULL)
 	{
-		body->retain();
 		data = new fixtureudata();
 		data->ref = 0;
 		b2FixtureDef def;
@@ -47,6 +46,7 @@ namespace box2d
 		def.userData = (void *)data;
 		def.density = density;
 		fixture = body->body->CreateFixture(&def);
+		this->retain();
 		Memoizer::add(fixture, this);
 	}
 
@@ -55,8 +55,9 @@ namespace box2d
 	{
 		data = (fixtureudata *)f->GetUserData();
 		body = (Body *)Memoizer::find(f->GetBody());
-		if (!body) body = new Body(f->GetBody());
-		else body->retain();
+		if (!body)
+			body = new Body(f->GetBody());
+		this->retain();
 		Memoizer::add(fixture, this);
 	}
 
@@ -66,13 +67,9 @@ namespace box2d
 			delete data->ref;
 
 		delete data;
-		data = 0;
+		data = NULL;
 
-		if (fixture)
-			body->body->DestroyFixture(fixture);
-		fixture = 0;
-
-		body->release();
+		fixture = NULL;
 	}
 
 	Shape::Type Fixture::getType() const
@@ -127,10 +124,17 @@ namespace box2d
 
 	Shape * Fixture::getShape() const
 	{
-		if (!fixture->GetShape()) return NULL;
+		if (!fixture->GetShape())
+			return NULL;
 		Shape * s = (Shape *)Memoizer::find(fixture->GetShape());
-		if (!s) s = new Shape(fixture->GetShape());
+		if (!s)
+			s = new Shape(fixture->GetShape());
 		return s;
+	}
+
+	bool Fixture::isValid() const
+	{
+		return fixture != 0;
 	}
 
 	void Fixture::setFilterData(int * v)
@@ -300,6 +304,24 @@ namespace box2d
 		return 4;
 	}
 
+	void Fixture::destroy(bool implicit)
+	{
+		if (body->world->world->IsLocked())
+		{
+			// Called during time step. Save reference for destruction afterwards.
+			this->retain();
+			body->world->destructFixtures.push_back(this);
+			return;
+		}
+
+		if (!implicit && fixture != 0)
+			body->body->DestroyFixture(fixture);
+		Memoizer::remove(fixture);
+		fixture = NULL;
+
+		// Box2D fixture destroyed. Release its reference to the love Fixture.
+		this->release();
+	}
 
 } // box2d
 } // physics

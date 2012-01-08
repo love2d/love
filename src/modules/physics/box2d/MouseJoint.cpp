@@ -45,8 +45,6 @@ namespace box2d
 
 	MouseJoint::~MouseJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	void MouseJoint::setTarget(float x, float y)

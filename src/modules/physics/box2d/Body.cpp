@@ -41,6 +41,8 @@ namespace box2d
 		b2BodyDef def;
 		def.position = Physics::scaleDown(p);
 		body = world->world->CreateBody(&def);
+		// Box2D body holds a reference to the love Body.
+		this->retain();
 		this->setType(type);
 		Memoizer::add(body, this);
 	}
@@ -50,13 +52,13 @@ namespace box2d
 	{
 		world = (World *)Memoizer::find(b->GetWorld());
 		world->retain();
+		// Box2D body holds a reference to the love Body.
+		this->retain();
 		Memoizer::add(body, this);
 	}
 
 	Body::~Body()
 	{
-		Memoizer::remove(body);
-		world->world->DestroyBody(body);
 		world->release();
 		body = 0;
 	}
@@ -148,7 +150,8 @@ namespace box2d
 
 	Body::Type Body::getType() const
 	{
-		switch (body->GetType()) {
+		switch (body->GetType())
+		{
 			case b2_staticBody:
 				return BODY_STATIC;
 				break;
@@ -266,7 +269,8 @@ namespace box2d
 
 	void Body::setType(Body::Type type)
 	{
-		switch (type) {
+		switch (type)
+		{
 			case Body::BODY_STATIC:
 				body->SetType(b2_staticBody);
 				break;
@@ -403,9 +407,11 @@ namespace box2d
 		b2Fixture * f = body->GetFixtureList();
 		int i = 1;
 		do {
-			if (!f) break;
+			if (!f)
+				break;
 			Fixture * fixture = (Fixture *)Memoizer::find(f);
-			if (!fixture) throw love::Exception("A fixture has escaped Memoizer!");
+			if (!fixture)
+				throw love::Exception("A fixture has escaped Memoizer!");
 			fixture->retain();
 			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
 			lua_rawseti(L, -2, i);
@@ -431,7 +437,20 @@ namespace box2d
 
 	void Body::destroy()
 	{
-		world->destroyBody(this);
+		if (world->world->IsLocked())
+		{
+			// Called during time step. Save reference for destruction afterwards.
+			this->retain();
+			world->destructBodies.push_back(this);
+			return;
+		}
+
+		world->world->DestroyBody(body);
+		Memoizer::remove(body);
+		body = NULL;
+
+		// Box2D body destroyed. Release its reference to the love Body.
+		this->release();
 	}
 
 } // box2d

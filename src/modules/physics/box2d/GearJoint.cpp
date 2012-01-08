@@ -46,8 +46,6 @@ namespace box2d
 
 	GearJoint::~GearJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	void GearJoint::setRatio(float ratio)

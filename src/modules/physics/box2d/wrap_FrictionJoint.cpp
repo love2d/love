@@ -28,7 +28,10 @@ namespace box2d
 {
 	FrictionJoint * luax_checkfrictionjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<FrictionJoint>(L, idx, "FrictionJoint", PHYSICS_FRICTION_JOINT_T);
+		FrictionJoint * j = luax_checktype<FrictionJoint>(L, idx, "FrictionJoint", PHYSICS_FRICTION_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_FrictionJoint_setMaxForce(lua_State * L)

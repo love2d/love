@@ -28,7 +28,10 @@ namespace box2d
 {
 	GearJoint * luax_checkgearjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<GearJoint>(L, idx, "GearJoint", PHYSICS_GEAR_JOINT_T);
+		GearJoint * j = luax_checktype<GearJoint>(L, idx, "GearJoint", PHYSICS_GEAR_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_GearJoint_setRatio(lua_State * L)

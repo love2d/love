@@ -45,8 +45,6 @@ namespace box2d
 
 	FrictionJoint::~FrictionJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	void FrictionJoint::setMaxForce(float force)

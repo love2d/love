@@ -378,7 +378,7 @@ namespace box2d
 		{
 			Physics::setMeter(arg1);
 		}
-		catch (love::Exception e)
+		catch (love::Exception & e)
 		{
 			return luaL_error(L, e.what());
 		}

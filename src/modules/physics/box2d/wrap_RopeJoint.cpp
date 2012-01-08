@@ -28,7 +28,10 @@ namespace box2d
 {
 	RopeJoint * luax_checkropejoint(lua_State * L, int idx)
 	{
-		return luax_checktype<RopeJoint>(L, idx, "RopeJoint", PHYSICS_ROPE_JOINT_T);
+		RopeJoint * j = luax_checktype<RopeJoint>(L, idx, "RopeJoint", PHYSICS_ROPE_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_RopeJoint_getMaxLength(lua_State * L)

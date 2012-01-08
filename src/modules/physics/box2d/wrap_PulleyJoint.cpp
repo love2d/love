@@ -28,7 +28,10 @@ namespace box2d
 {
 	PulleyJoint * luax_checkpulleyjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<PulleyJoint>(L, idx, "PulleyJoint", PHYSICS_PULLEY_JOINT_T);
+		PulleyJoint * j = luax_checktype<PulleyJoint>(L, idx, "PulleyJoint", PHYSICS_PULLEY_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_PulleyJoint_getGroundAnchors(lua_State * L)

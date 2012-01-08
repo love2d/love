@@ -28,7 +28,10 @@ namespace box2d
 {
 	WeldJoint * luax_checkweldjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<WeldJoint>(L, idx, "WeldJoint", PHYSICS_WELD_JOINT_T);
+		WeldJoint * j = luax_checktype<WeldJoint>(L, idx, "WeldJoint", PHYSICS_WELD_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_WeldJoint_setFrequency(lua_State * L)

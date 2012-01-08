@@ -28,7 +28,10 @@ namespace box2d
 {
 	WheelJoint * luax_checkwheeljoint(lua_State * L, int idx)
 	{
-		return luax_checktype<WheelJoint>(L, idx, "WheelJoint", PHYSICS_WHEEL_JOINT_T);
+		WheelJoint * j = luax_checktype<WheelJoint>(L, idx, "WheelJoint", PHYSICS_WHEEL_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_WheelJoint_getJointTranslation(lua_State * L)

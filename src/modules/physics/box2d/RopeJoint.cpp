@@ -46,8 +46,6 @@ namespace box2d
 
 	RopeJoint::~RopeJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	float RopeJoint::getMaxLength() const

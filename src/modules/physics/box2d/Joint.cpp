@@ -23,10 +23,14 @@
 // STD
 #include <bitset>
 
+// LOVE
+#include <common/Memoizer.h>
+
 // Module
 #include "Body.h"
 #include "World.h"
 #include "Physics.h"
+
 
 namespace love
 {
@@ -37,24 +41,15 @@ namespace box2d
 	Joint::Joint(Body * body1)
 		: body1(body1), body2(0), world(body1->world)
 	{
-		body1->retain();
 	}
 
 	Joint::Joint(Body * body1, Body * body2)
 		: body1(body1), body2(body2), world(body1->world)
 	{
-		body1->retain();
-		body2->retain();
 	}
 
 	Joint::~Joint()
 	{
-		if (body1 != 0)
-			body1->release();
-		if (body2 != 0)
-			body2->release();
-
-		joint = 0;
 	}
 
 	Joint::Type Joint::getType() const
@@ -86,6 +81,11 @@ namespace box2d
 		}
 	}
 
+	bool Joint::isValid() const
+	{
+		return joint != 0;
+	}
+
 	int Joint::getAnchors(lua_State * L)
 	{
 		lua_pushnumber(L, Physics::scaleUp(joint->GetAnchorA().x));
@@ -112,13 +112,28 @@ namespace box2d
 	b2Joint * Joint::createJoint(b2JointDef * def)
 	{
 		joint = world->world->CreateJoint(def);
+		Memoizer::add(joint, this);
+		// Box2D joint has a reference to this love Joint.
+		this->retain();
 		return joint;
 	}
 
-	void Joint::destroyJoint(b2Joint * joint)
+	void Joint::destroyJoint(bool implicit)
 	{
-		if (joint != NULL)
+		if (world->world->IsLocked())
+		{
+			// Called during time step. Save reference for destruction afterwards.
+			this->retain();
+			world->destructJoints.push_back(this);
+			return;
+		}
+
+		if (!implicit && joint != 0)
 			world->world->DestroyJoint(joint);
+		Memoizer::remove(joint);
+		joint = NULL;
+		// Release the reference of the Box2D joint.
+		this->release();
 	}
 
 	bool Joint::isActive() const

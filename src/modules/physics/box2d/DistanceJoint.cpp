@@ -42,8 +42,6 @@ namespace box2d
 
 	DistanceJoint::~DistanceJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	void DistanceJoint::setLength(float length)

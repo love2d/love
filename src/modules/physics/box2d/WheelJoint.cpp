@@ -44,8 +44,6 @@ namespace box2d
 
 	WheelJoint::~WheelJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	float WheelJoint::getJointTranslation() const

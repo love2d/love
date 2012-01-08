@@ -62,8 +62,8 @@ namespace box2d
 	protected:
 
 		Body * body;
-		b2Fixture * fixture;
 		fixtureudata * data;
+		b2Fixture * fixture;
 
 	public:
 
@@ -89,6 +89,11 @@ namespace box2d
 		* Gets the Shape attached to this Fixture.
 		**/
 		Shape * getShape() const;
+
+		/**
+		* Returns true if the fixture is active in a Box2D world.
+		**/
+		bool isValid() const;
 
 		/**
 		* Checks whether this Fixture acts as a sensor.
@@ -206,6 +211,11 @@ namespace box2d
 		* This operation may be expensive.
 		**/
 		int getMassData(lua_State * L) const;
+
+		/**
+		* Destroys this fixture.
+		**/
+		void destroy(bool implicit = false);
 	};
 
 } // box2d

@@ -47,8 +47,6 @@ namespace box2d
 
 	PrismaticJoint::~PrismaticJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	float PrismaticJoint::getJointTranslation() const

@@ -28,7 +28,10 @@ namespace box2d
 {
 	Body * luax_checkbody(lua_State * L, int idx)
 	{
-		return luax_checktype<Body>(L, idx, "Body", PHYSICS_BODY_T);
+		Body * b = luax_checktype<Body>(L, idx, "Body", PHYSICS_BODY_T);
+		if (b->body == 0)
+			luaL_error(L, "Attempt to use destroyed body.");
+		return b;
 	}
 
 	int w_Body_getX(lua_State * L)
@@ -509,12 +512,15 @@ namespace box2d
 
 	int w_Body_destroy(lua_State * L)
 	{
-		Proxy * p = (Proxy *)lua_touserdata(L, 1);
-		p->own = false;
-
-		Body * t = (Body *)p->data;
-		t->destroy();
-
+		Body * t = luax_checkbody(L, 1);
+		try
+		{
+			t->destroy();
+		}
+		catch (love::Exception & e)
+		{
+			luaL_error(L, "%s", e.what());
+		}
 		return 0;
 	}
 

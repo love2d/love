@@ -29,7 +29,10 @@ namespace box2d
 {
 	Fixture * luax_checkfixture(lua_State * L, int idx)
 	{
-		return luax_checktype<Fixture>(L, idx, "Fixture", PHYSICS_FIXTURE_T);
+		Fixture * f = luax_checktype<Fixture>(L, idx, "Fixture", PHYSICS_FIXTURE_T);
+		if (!f->isValid())
+			luaL_error(L, "Attempt to use destroyed fixture.");
+		return f;
 	}
 
 	int w_Fixture_getType(lua_State * L)
@@ -251,11 +254,15 @@ namespace box2d
 
 	int w_Fixture_destroy(lua_State * L)
 	{
-		Proxy * p = (Proxy *)lua_touserdata(L, 1);
-		p->own = false;
-
-		Fixture * t = (Fixture *)p->data;
-		t->release();
+		Fixture * t = luax_checkfixture(L, 1);
+		try
+		{
+			t->destroy();
+		}
+		catch (love::Exception & e)
+		{
+			luaL_error(L, "%s", e.what());
+		}
 		return 0;
 	}
 

@@ -42,6 +42,7 @@ namespace box2d
 	class Contact;
 	class Body;
 	class Fixture;
+	class Joint;
 
 	/**
 	* The World is the "God" container class,
@@ -54,13 +55,14 @@ namespace box2d
 	* The world also controls global parameters, like
 	* gravity.
 	**/
-	class World : public Object, public b2ContactListener, public b2ContactFilter
+	class World : public Object, public b2ContactListener, public b2ContactFilter, public b2DestructionListener
 	{
 		// Friends.
 		friend class Joint;
 		friend class DistanceJoint;
 		friend class MouseJoint;
 		friend class Body;
+		friend class Fixture;
 
 	public:
 
@@ -110,6 +112,9 @@ namespace box2d
 
 		// The list of to be destructed bodies.
 		std::vector<Body*> destructBodies;
+		std::vector<Fixture*> destructFixtures;
+		std::vector<Joint*> destructJoints;
+		bool destructWorld;
 
 		// Contact callbacks.
 		ContactCallback begin, end, presolve, postsolve;
@@ -151,6 +156,15 @@ namespace box2d
 
 		// From b2ContactFilter
 		bool ShouldCollide(b2Fixture* fixtureA, b2Fixture* fixtureB);
+
+		// From b2DestructionListener
+		void SayGoodbye(b2Fixture* fixture);
+		void SayGoodbye(b2Joint* joint);
+
+		/**
+		* Returns true if the Box2D world is alive.
+		**/
+		bool isValid() const;
 
 		/**
 		* Receives up to four Lua functions as arguments. Each function is
@@ -261,10 +275,9 @@ namespace box2d
 		int rayCast(lua_State * L);
 
 		/**
-		* Mark a body for destruction.
-		* To be called from Body
+		* Destroy this world.
 		**/
-		void destroyBody(Body * b);
+		void destroy();
 
 	};
 

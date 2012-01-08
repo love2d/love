@@ -29,7 +29,10 @@ namespace box2d
 
 	World * luax_checkworld(lua_State * L, int idx)
 	{
-		return luax_checktype<World>(L, idx, "World", PHYSICS_WORLD_T);
+		World * w = luax_checktype<World>(L, idx, "World", PHYSICS_WORLD_T);
+		if (!w->isValid())
+			luaL_error(L, "Attempt to use destroyed world.");
+		return w;
 	}
 
 	int w_World_update(lua_State * L)
@@ -162,6 +165,21 @@ namespace box2d
 		ASSERT_GUARD(return t->rayCast(L);)
 	}
 
+	int w_World_destroy(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		try
+		{
+			t->destroy();
+		}
+		catch (love::Exception & e)
+		{
+			luaL_error(L, "%s", e.what());
+		}
+		return 0;
+	}
+
+
 	static const luaL_Reg functions[] = {
 		{ "update", w_World_update },
 		{ "setCallbacks", w_World_setCallbacks },
@@ -181,6 +199,7 @@ namespace box2d
 		{ "getContactList", w_World_getContactList },
 		{ "queryBoundingBox", w_World_queryBoundingBox },
 		{ "rayCast", w_World_rayCast },
+		{ "destroy", w_World_destroy },
 		{ 0, 0 }
 	};
 

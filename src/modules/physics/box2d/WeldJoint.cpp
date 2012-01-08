@@ -45,8 +45,6 @@ namespace box2d
 
 	WeldJoint::~WeldJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	void WeldJoint::setFrequency(float hz)

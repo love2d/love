@@ -30,7 +30,10 @@ namespace box2d
 {
 	Joint * luax_checkjoint(lua_State * L, int idx)
 	{
-		return luax_checktype<Joint>(L, idx, "Joint", PHYSICS_JOINT_T);
+		Joint * t = luax_checktype<Joint>(L, idx, "Joint", PHYSICS_JOINT_T);
+		if (!t->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return t;
 	}
 
 	int w_Joint_getType(lua_State * L)
@@ -73,12 +76,15 @@ namespace box2d
 
 	int w_Joint_destroy(lua_State * L)
 	{
-		Proxy * p = (Proxy *)lua_touserdata(L, 1);
-		p->own = false;
-
-		Joint * t = (Joint *)p->data;
-		t->release();
-
+		Joint * t = luax_checkjoint(L, 1);
+		try
+		{
+			t->destroyJoint();
+		}
+		catch (love::Exception & e)
+		{
+			luaL_error(L, "%s", e.what());
+		}
 		return 0;
 	}
 

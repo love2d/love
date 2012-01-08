@@ -79,7 +79,7 @@ namespace box2d
 
 			Contact * c = new Contact(contact);
 
-			luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)c, true);
+			luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void*)c);
 
 			int args = 3;
 			if (impulse)
@@ -97,7 +97,7 @@ namespace box2d
 	}
 
 	World::ContactFilter::ContactFilter()
-	: ref(0)
+		: ref(0)
 	{
 	}
 
@@ -122,7 +122,7 @@ namespace box2d
 	}
 
 	World::QueryCallback::QueryCallback()
-	: ref(0)
+		: ref(0)
 	{
 	}
 
@@ -139,7 +139,8 @@ namespace box2d
 			lua_State * L = ref->getL();
 			ref->push();
 			Fixture * f = (Fixture *)Memoizer::find(fixture);
-			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			if (!f)
+				throw love::Exception("A fixture has escaped Memoizer!");
 			f->retain();
 			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
 			lua_call(L, 1, 1);
@@ -166,7 +167,8 @@ namespace box2d
 			lua_State * L = ref->getL();
 			ref->push();
 			Fixture * f = (Fixture *)Memoizer::find(fixture);
-			if (!f) throw love::Exception("A fixture has escaped Memoizer!");
+			if (!f)
+				throw love::Exception("A fixture has escaped Memoizer!");
 			f->retain();
 			luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)f);
 			b2Vec2 scaledPoint = Physics::scaleUp(point);
@@ -182,23 +184,42 @@ namespace box2d
 		return 0;
 	}
 
+	void World::SayGoodbye(b2Fixture* fixture)
+	{
+		Fixture * f = (Fixture *)Memoizer::find(fixture);
+		// Hint implicit destruction with true.
+		if (f) f->destroy(true);
+	}
+
+	void World::SayGoodbye(b2Joint* joint)
+	{
+		Joint * j = (Joint *)Memoizer::find(joint);
+		// Hint implicit destruction with true.
+		if (j) j->destroyJoint(true);
+	}
+
 	World::World()
-		: world(NULL)
+		: world(NULL), destructWorld(false)
 	{
 		world = new b2World(b2Vec2(0,0));
+		this->retain(); // The Box2D world holds a reference to this World.
 		world->SetAllowSleeping(true);
 		world->SetContactListener(this);
+		world->SetDestructionListener(this);
 		b2BodyDef def;
 		groundBody = world->CreateBody(&def);
 		Memoizer::add(world, this);
 	}
 
 	World::World(b2Vec2 gravity, bool sleep)
-		: world(NULL)
+		: world(NULL), destructWorld(false)
 	{
 		world = new b2World(Physics::scaleDown(gravity));
+		// The Box2D world holds a reference to this World.
+		this->retain();
 		world->SetAllowSleeping(sleep);
 		world->SetContactListener(this);
+		world->SetDestructionListener(this);
 		b2BodyDef def;
 		groundBody = world->CreateBody(&def);
 		Memoizer::add(world, this);
@@ -206,22 +227,43 @@ namespace box2d
 
 	World::~World()
 	{
-		world->DestroyBody(groundBody);
-		Memoizer::remove(world);
-		delete world;
 	}
 
 	void World::update(float dt)
 	{
 		world->Step(dt, 8, 6);
 
-		// Really destroy all marked bodies.
+		// Destroy all objects marked during the time step.
+		if (destructWorld)
+		{
+			destroy();
+			return;
+		}
+
 		for (std::vector<Body*>::iterator i = destructBodies.begin(); i < destructBodies.end(); i++)
 		{
 			Body * b = *i;
+			if (b->body != 0) b->destroy();
+			// Release for reference in vector.
 			b->release();
 		}
+		for (std::vector<Fixture*>::iterator i = destructFixtures.begin(); i < destructFixtures.end(); i++)
+		{
+			Fixture * f = *i;
+			if (f->isValid()) f->destroy();
+			// Release for reference in vector.
+			f->release();
+		}
+		for (std::vector<Joint*>::iterator i = destructJoints.begin(); i < destructJoints.end(); i++)
+		{
+			Joint * j = *i;
+			if (j->isValid()) j->destroyJoint();
+			// Release for reference in vector.
+			j->release();
+		}
 		destructBodies.clear();
+		destructFixtures.clear();
+		destructJoints.clear();
 	}
 
 	void World::BeginContact(b2Contact* contact)
@@ -249,12 +291,19 @@ namespace box2d
 	{
 		// Fixtures should be memoized, if we created them
 		Fixture * a = (Fixture *)Memoizer::find(fixtureA);
-		if (!a) throw love::Exception("A fixture has escaped Memoizer!");
+		if (!a)
+			throw love::Exception("A fixture has escaped Memoizer!");
 		a->retain();
 		Fixture * b = (Fixture *)Memoizer::find(fixtureB);
-		if (!b) throw love::Exception("A fixture has escaped Memoizer!");
+		if (!b)
+			throw love::Exception("A fixture has escaped Memoizer!");
 		b->retain();
 		return filter.process(a, b);
+	}
+
+	bool World::isValid() const
+	{
+		return world != 0;
 	}
 
 	int World::setCallbacks(lua_State * L)
@@ -265,16 +314,20 @@ namespace box2d
 		switch(n)
 		{
 		case 4:
-			if (postsolve.ref) delete postsolve.ref;
+			if (postsolve.ref)
+				delete postsolve.ref;
 			postsolve.ref = luax_refif(L, LUA_TFUNCTION);
 		case 3:
-			if (presolve.ref) delete presolve.ref;
+			if (presolve.ref)
+				delete presolve.ref;
 			presolve.ref = luax_refif(L, LUA_TFUNCTION);
 		case 2:
-			if (end.ref) delete end.ref;
+			if (end.ref)
+				delete end.ref;
 			end.ref = luax_refif(L, LUA_TFUNCTION);
 		case 1:
-			if (begin.ref) delete begin.ref;
+			if (begin.ref)
+				delete begin.ref;
 			begin.ref = luax_refif(L, LUA_TFUNCTION);
 		}
 
@@ -293,7 +346,8 @@ namespace box2d
 	int World::setContactFilter(lua_State * L)
 	{
 		luax_assert_argc(L, 1);
-		if (filter.ref) delete filter.ref;
+		if (filter.ref)
+			delete filter.ref;
 		filter.ref = luax_refif(L, LUA_TFUNCTION);
 		return 0;
 	}
@@ -353,10 +407,13 @@ namespace box2d
 		b2Body * b = world->GetBodyList();
 		int i = 1;
 		do {
-			if (!b) break;
-			if (b == groundBody) continue;
+			if (!b)
+				break;
+			if (b == groundBody)
+				continue;
 			Body * body = (Body *)Memoizer::find(b);
-			if (!body) throw love::Exception("A body has escaped Memoizer!");
+			if (!body)
+				throw love::Exception("A body has escaped Memoizer!");
 			body->retain();
 			luax_newtype(L, "Body", PHYSICS_BODY_T, (void*)body);
 			lua_rawseti(L, -2, i);
@@ -429,15 +486,42 @@ namespace box2d
 		float y2 = (float)luaL_checknumber(L, 4);
 		b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
 		b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
-		if (raycast.ref) delete raycast.ref;
+		if (raycast.ref)
+			delete raycast.ref;
 		raycast.ref = luax_refif(L, LUA_TFUNCTION);
 		world->RayCast(&raycast, v1, v2);
 		return 0;
 	}
 
-	void World::destroyBody(Body * b)
+	void World::destroy()
 	{
-		destructBodies.push_back(b);
+		if (world->IsLocked())
+		{
+			destructWorld = true;
+			return;
+		}
+
+		// Cleaning up the world.
+		b2Body * b = world->GetBodyList();
+		while (b)
+		{
+			b2Body * t = b;
+			b = b->GetNext();
+			if (t == groundBody)
+				continue;
+			Body * body = (Body *)Memoizer::find(t);
+			if (!body)
+				throw love::Exception("A body has escaped Memoizer!");
+			body->destroy();
+		}
+
+		world->DestroyBody(groundBody);
+		Memoizer::remove(world);
+		delete world;
+		world = 0;
+
+		// Box2D world destroyed. Release its reference.
+		this->release();
 	}
 
 } // box2d

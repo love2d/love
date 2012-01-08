@@ -79,6 +79,12 @@ namespace box2d
 		virtual ~Joint();
 
 		/**
+		* Returns true if the joint is active in a Box2D world.
+		**/
+		bool isValid() const;
+
+
+		/**
 		* Gets the type of joint.
 		**/
 		Type getType() const;
@@ -103,8 +109,6 @@ namespace box2d
 
 		bool getCollideConnected() const;
 
-	protected:
-
 		/**
 		* Joints require pointers to a Box2D joint objects at
 		* different polymorphic levels, which is why these function
@@ -112,16 +116,20 @@ namespace box2d
 		**/
 
 		/**
+		* Destroys the joint. This function was created just to
+		* get some cinsistency.
+		**/
+		void destroyJoint(bool implicit = false);
+
+	protected:
+
+		/**
 		* Creates a Joint, and ensures that the parent class
 		* gets a copy of the pointer.
 		**/
 		b2Joint * createJoint(b2JointDef * def);
 
-		/**
-		* Destroys the joint. This function was created just to
-		* get some cinsistency.
-		**/
-		void destroyJoint(b2Joint * joint);
+
 	};
 
 } // box2d
