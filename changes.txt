@@ -19,7 +19,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added per-sprite colors on SpriteBatches.
   * Added pixel effects.
   * Added love.graphics.isSupported.
-  * Added love.graphics.getRenderTarget.
+  * Added love.graphics.getCanvas.
   * Added love.event.quit.
   * Added stencil masks.
   * Added alternative SpriteBatch provider, it should work everywhere now.
@@ -63,6 +63,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
   * Renamed Framebuffer to Canvas.
   * Renamed love.thread.send/receive to set/get.
+  * Renamed love.graphics.setRenderTarget to setCanvas.
 
   * Removed canvas auto-clearing.
   * Removed EncodedImageData.
@@ -80,6 +81,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Updated ImageData:encode to write to files directly.
   * Updated version compatibility system to actually do something.
   * Updated love.run's order, events are checked just before update.
+  * Updated Box2D to version 2.2.1.
 
 LOVE 0.7.2 [Game Slave]
 -----------------------
