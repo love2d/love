@@ -176,6 +176,11 @@ namespace opengl
 		image->retain();
 	}
 
+	Image *SpriteBatch::getImage()
+	{
+		return image;
+	}
+
 	void SpriteBatch::setColor(const Color & color)
 	{
 		if (!this->color)

@@ -33,6 +33,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added SpriteBatch:set.
   * Added new events system, with support for custom events and long event names.
   * Added sound attenuation by distance.
+  * Added SpriteBatch:getImage.
 
   * Fixed wrapping for single words.
   * Fixed tracebacks not showing filenames.

@@ -18,6 +18,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+#include "Image.h"
 #include "wrap_SpriteBatch.h"
 
 namespace love
@@ -129,6 +130,15 @@ namespace opengl
 		return 0;
 	}
 
+	int w_SpriteBatch_getImage(lua_State * L)
+	{
+		SpriteBatch * t = luax_checkspritebatch(L, 1);
+		Image * image = t->getImage();
+		image->retain();
+		luax_newtype(L, "Image", GRAPHICS_IMAGE_T, (void*)image);
+		return 1;
+	}
+
 	int w_SpriteBatch_setColor(lua_State * L)
 	{
 		SpriteBatch * t = luax_checkspritebatch(L, 1);
@@ -157,6 +167,7 @@ namespace opengl
 		{ "bind", w_SpriteBatch_bind },
 		{ "unbind", w_SpriteBatch_unbind },
 		{ "setImage", w_SpriteBatch_setImage },
+		{ "getImage", w_SpriteBatch_getImage },
 		{ "setColor", w_SpriteBatch_setColor },
 		{ 0, 0 }
 	};

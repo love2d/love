@@ -90,6 +90,7 @@ namespace opengl
 		void unlock();
 
 		void setImage(Image * newimage);
+		Image *getImage();
 
 		/**
 		 * Set the current color for this SpriteBatch. The geometry added
