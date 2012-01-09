@@ -230,6 +230,7 @@
 		A9F169A7109E824900FC83D1 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
 		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
+		A9F2D09114BA85EC0035D2A5 /* Audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F2D09014BA85EC0035D2A5 /* Audio.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -721,6 +722,7 @@
 		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
+		A9F2D09014BA85EC0035D2A5 /* Audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Audio.cpp; sourceTree = "<group>"; };
 		A9F8833511163C8C00831E98 /* audio.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = audio.lua; sourceTree = "<group>"; };
 		A9F8833611163C8C00831E98 /* audio.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.lua.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -966,6 +968,7 @@
 		A93E6A3610420AC0007D418B /* audio */ = {
 			isa = PBXGroup;
 			children = (
+				A9F2D09014BA85EC0035D2A5 /* Audio.cpp */,
 				A93E6A3810420AC0007D418B /* Audio.h */,
 				A93E6A3A10420AC0007D418B /* null */,
 				A93E6A4310420AC0007D418B /* openal */,
@@ -1915,6 +1918,7 @@
 				A9A5BE47149F0ACB00D9931C /* Window.cpp in Sources */,
 				A9A5BE48149F0ACB00D9931C /* Window.cpp in Sources */,
 				A9A5BE4B149F0B0200D9931C /* Variant.cpp in Sources */,
+				A9F2D09114BA85EC0035D2A5 /* Audio.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
