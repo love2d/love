@@ -50,7 +50,7 @@
 	<key>CFBundleSignature</key>
 	<string>LoVe</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2006-2011 LÖVE Development Team</string>
+	<string>© 2006-2012 LÖVE Development Team</string>
 	<key>NSMainNibFile</key>
 	<string>SDLMain</string>
 	<key>NSPrincipalClass</key>
