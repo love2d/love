@@ -68,6 +68,7 @@ namespace opengl
 
 		static const int TEXTURE_WIDTH = 512;
 		static const int TEXTURE_HEIGHT = 512;
+		static const int TEXTURE_PADDING = 1;
 
 		int texture_x, texture_y;
 		int rowHeight;

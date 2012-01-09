@@ -57,7 +57,7 @@ namespace opengl
 
 	void Font::createTexture()
 	{
-		texture_x = texture_y = rowHeight = 0;
+		texture_x = texture_y = rowHeight = TEXTURE_PADDING;
 		GLuint t;
 		glGenTextures(1, &t);
 		textures.push_back(t);
@@ -70,6 +70,7 @@ namespace opengl
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
+		// Initialize the texture
 		glTexImage2D(GL_TEXTURE_2D,
 					 0,
 					 GL_RGBA,
@@ -79,6 +80,17 @@ namespace opengl
 					 format,
 					 GL_UNSIGNED_BYTE,
 					 NULL);
+		// Fill the texture with transparent black
+		std::vector<GLubyte> emptyData(TEXTURE_WIDTH * TEXTURE_HEIGHT * (type == FONT_TRUETYPE ? 2 : 4), 0);
+		glTexSubImage2D(GL_TEXTURE_2D,
+						0,
+						0,
+						0,
+						(GLsizei)TEXTURE_WIDTH,
+						(GLsizei)TEXTURE_HEIGHT,
+						format,
+						GL_UNSIGNED_BYTE,
+						&emptyData[0]);
 	}
 
 	Font::Glyph * Font::addGlyph(int glyph)
@@ -94,13 +106,13 @@ namespace opengl
 		g->spacing = gd->getAdvance();
 		int w = gd->getWidth();
 		int h = gd->getHeight();
-		if (texture_x + w > TEXTURE_WIDTH)
+		if (texture_x + w + TEXTURE_PADDING > TEXTURE_WIDTH)
 		{ // out of space - new row!
-			texture_x = 0;
+			texture_x = TEXTURE_PADDING;
 			texture_y += rowHeight;
-			rowHeight = 0;
+			rowHeight = TEXTURE_PADDING;
 		}
-		if (texture_y + h > TEXTURE_HEIGHT)
+		if (texture_y + h + TEXTURE_PADDING > TEXTURE_HEIGHT)
 		{ // totally out of space - new texture!
 			createTexture();
 		}
@@ -135,8 +147,8 @@ namespace opengl
 		delete q;
 		delete gd;
 
-		texture_x += w;
-		rowHeight = std::max(rowHeight, h);
+		texture_x += (w + TEXTURE_PADDING);
+		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
 
 		glyphs[glyph] = g;
 		return g;
