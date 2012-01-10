@@ -61,7 +61,7 @@ namespace opengl
 		GLuint t;
 		glGenTextures(1, &t);
 		textures.push_back(t);
-		glBindTexture(GL_TEXTURE_2D, t);
+		bindTexture(t);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 						(filter.mag == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
@@ -117,8 +117,10 @@ namespace opengl
 			createTexture();
 		}
 		GLuint t = textures.back();
-		glBindTexture(GL_TEXTURE_2D, t);
+		bindTexture(t);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w, h, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
+
+		g->texture = t;
 
 		Quad::Viewport v;
 		v.x = (float) texture_x;
@@ -134,7 +136,6 @@ namespace opengl
 		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].s);
 
 		glNewList(g->list, GL_COMPILE);
-		glBindTexture(GL_TEXTURE_2D, t);
 		glPushMatrix();
 		glTranslatef(static_cast<float>(gd->getBearingX()), static_cast<float>(-gd->getBearingY()), 0.0f);
 		glDrawArrays(GL_QUADS, 0, 4);
@@ -185,6 +186,7 @@ namespace opengl
 				glPushMatrix();
 				// 1.25 is magic line height for true type fonts
 				if (type == FONT_TRUETYPE) glTranslatef(0, floor(getHeight() / 1.25f + 0.5f), 0);
+				bindTexture(glyph->texture);
 				glCallList(glyph->list);
 				glPopMatrix();
 				glTranslatef(static_cast<GLfloat>(glyph->spacing), 0, 0);
@@ -205,6 +207,7 @@ namespace opengl
 		if (!glyph) glyph = addGlyph(character);
 		glPushMatrix();
 		glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
+		bindTexture(glyph->texture);
 		glCallList(glyph->list);
 		glPopMatrix();
 	}
@@ -344,7 +347,7 @@ namespace opengl
 		std::vector<GLuint>::iterator iter = textures.begin();
 		while (iter != textures.end())
 		{
-			glDeleteTextures(1, (GLuint*)&*iter);
+			deleteTexture(*iter);
 			iter++;
 		}
 		textures.clear();

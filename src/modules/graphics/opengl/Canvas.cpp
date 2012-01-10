@@ -77,12 +77,12 @@ namespace opengl
 
 			// generate texture save target
 			glGenTextures(1, &img);
-			glBindTexture(GL_TEXTURE_2D, img);
+			bindTexture(img);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
 					0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			bindTexture(0);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 					GL_TEXTURE_2D, img, 0);
 
@@ -96,7 +96,7 @@ namespace opengl
 		}
 		virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil,  GLuint img)
 		{
-			glDeleteTextures(1, &img);
+			deleteTexture(img);
 			glDeleteRenderbuffers(1, &depth_stencil);
 			glDeleteFramebuffers(1, &framebuffer);
 		}
@@ -129,12 +129,12 @@ namespace opengl
 
 			// generate texture save target
 			glGenTextures(1, &img);
-			glBindTexture(GL_TEXTURE_2D, img);
+			bindTexture(img);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
 					0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			bindTexture(0);
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
 					GL_TEXTURE_2D, img, 0);
 
@@ -149,7 +149,7 @@ namespace opengl
 
 		virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil, GLuint img)
 		{
-			glDeleteTextures(1, &img);
+			deleteTexture(img);
 			glDeleteRenderbuffersEXT(1, &depth_stencil);
 			glDeleteFramebuffersEXT(1, &framebuffer);
 		}
@@ -339,7 +339,7 @@ namespace opengl
 		GLint gmin = (f.min == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
 		GLint gmag = (f.mag == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
 
-		glBindTexture(GL_TEXTURE_2D, img);
+		bindTexture(img);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
@@ -349,7 +349,7 @@ namespace opengl
 	{
 		GLint gmin, gmag;
 
-		glBindTexture(GL_TEXTURE_2D, img);
+		bindTexture(img);
 		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
 		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
 
@@ -364,7 +364,7 @@ namespace opengl
 		GLint wrap_s = (w.s == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
 		GLint wrap_t = (w.t == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
 
-		glBindTexture(GL_TEXTURE_2D, img);
+		bindTexture(img);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
 	}
@@ -372,7 +372,7 @@ namespace opengl
 	Image::Wrap Canvas::getWrap() const
 	{
 		GLint wrap_s, wrap_t;
-		glBindTexture(GL_TEXTURE_2D, img);
+		bindTexture(img);
 		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &wrap_s);
 		glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &wrap_t);
 
@@ -420,7 +420,7 @@ namespace opengl
 
 		glMultMatrixf((const GLfloat*)t.getElements());
 
-		glBindTexture(GL_TEXTURE_2D, img);
+		bindTexture(img);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);

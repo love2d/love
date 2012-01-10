@@ -24,6 +24,7 @@
 #include <common/Object.h>
 #include <string>
 #include <map>
+#include "OpenGL.h"
 #include "Image.h"
 #include "Canvas.h"
 

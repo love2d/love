@@ -31,6 +31,7 @@
 #include <font/Rasterizer.h>
 #include <graphics/Image.h>
 
+#include "OpenGL.h"
 #include "GLee.h"
 
 namespace love
@@ -53,6 +54,7 @@ namespace opengl
 		struct Glyph
 		{
 			GLuint list;
+			GLuint texture;
 			int spacing;
 		};
 

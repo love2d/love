@@ -37,6 +37,7 @@
 
 #include <window/Window.h>
 
+#include "OpenGL.h"
 #include "Font.h"
 #include "Image.h"
 #include "Quad.h"

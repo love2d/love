@@ -29,6 +29,7 @@
 #include <image/ImageData.h>
 #include <common/math.h>
 #include <common/Matrix.h>
+#include "OpenGL.h"
 #include "GLee.h"
 
 namespace love

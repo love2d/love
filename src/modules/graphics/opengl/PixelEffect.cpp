@@ -253,7 +253,7 @@ namespace opengl
 		GLint location = getUniformLocation(name);
 
 		glActiveTexture(GL_TEXTURE0 + texture_unit);
-		glBindTexture(GL_TEXTURE_2D, image.getTextureName());
+		bindTexture(image.getTextureName(), true); // guarantee it gets bound
 		glUniform1i(location, texture_unit);
 
 		// reset texture unit
@@ -271,7 +271,7 @@ namespace opengl
 		GLint location = getUniformLocation(name);
 
 		glActiveTexture(GL_TEXTURE0 + texture_unit);
-		glBindTexture(GL_TEXTURE_2D, canvas.getTextureName());
+		bindTexture(canvas.getTextureName(), true); // guarantee it gets bound
 		glUniform1i(location, texture_unit);
 
 		// reset texture unit
