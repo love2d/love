@@ -253,7 +253,7 @@ namespace box2d
 		body->SetMassData(&massData);
 	}
 
-	int Body::setMass(float m)
+	void Body::setMass(float m)
 	{
 		b2MassData data;
 		body->GetMassData(&data);
