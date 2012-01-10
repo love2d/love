@@ -79,16 +79,16 @@ namespace sdl
 	{
 		static Message *m;
 
-		if (!(m = Message::fromLua(L, 1)))
-		{
-			luax_pushboolean(L, false);
+		bool success = (m = Message::fromLua(L, 1)) != NULL;
+		luax_pushboolean(L, success);
+
+		if (!success)
 			return 1;
-		}
 
 		instance->push(m);
 		m->release();
 
-		return 0;
+		return 1;
 	}
 
 	int w_clear(lua_State *)
@@ -97,10 +97,12 @@ namespace sdl
 		return 0;
 	}
 
-	int w_quit(lua_State *)
+	int w_quit(lua_State * L)
 	{
 		Message *m = new Message("quit");
 		instance->push(m);
+		m->release();
+		luax_pushboolean(L, true);
 		return 1;
 	}
 
