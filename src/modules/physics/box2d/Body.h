@@ -243,6 +243,12 @@ namespace box2d
 		void setMassData(float x, float y, float m, float i);
 
 		/**
+		* Sets just the mass. This is provided as a LOVE bonus. Lovely!
+		* @param m The mass.
+		**/
+		void setMass(float m);
+
+		/**
 		* Sets the inertia while keeping the other properties
 		* (mass and local center).
 		* @param i The inertia.
