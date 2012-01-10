@@ -294,6 +294,14 @@ namespace box2d
 		return 0;
 	}
 
+	int w_Body_setMass(lua_State * L)
+	{
+		Body * t = luax_checkbody(L, 1);
+		float m = (float)luaL_checknumber(L, 2);
+		t->setMass(m);
+		return 0;
+	}
+
 	int w_Body_setInertia(lua_State * L)
 	{
 		Body * t = luax_checkbody(L, 1);
@@ -552,6 +560,7 @@ namespace box2d
 		{ "setPosition", w_Body_setPosition },
 		{ "resetMassData", w_Body_resetMassData },
 		{ "setMassData", w_Body_setMassData },
+		{ "setMass", w_Body_setMass },
 		{ "setInertia", w_Body_setInertia },
 		{ "setAngularDamping", w_Body_setAngularDamping },
 		{ "setLinearDamping", w_Body_setLinearDamping },
