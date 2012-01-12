@@ -352,6 +352,10 @@ namespace love
 
 	int luax_insist(lua_State * L, int idx, const char * k)
 	{
+		// Convert to absolute index if necessary.
+		if (idx < 0 && idx > LUA_REGISTRYINDEX)
+			idx = lua_gettop(L) + ++idx;
+
 		lua_getfield(L, idx, k);
 
 		// Create if necessary.
@@ -360,7 +364,7 @@ namespace love
 			lua_pop(L, 1); // Pop the non-table.
 			lua_newtable(L);
 			lua_pushvalue(L, -1); // Duplicate the table to leave on top.
-			lua_setfield(L, -3, k); // k[idx] = table
+			lua_setfield(L, idx, k); // lua_stack[idx][k] = lua_stack[-1] (table)
 		}
 
 		return 1;
