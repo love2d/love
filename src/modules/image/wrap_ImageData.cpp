@@ -149,16 +149,18 @@ namespace image
 		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T);
+		std::string ext;
 		const char * fmt;
 		if (lua_isnoneornil(L, 3))
 		{
-			fmt = file->getExtension().c_str();
+			ext = file->getExtension();
+			fmt = ext.c_str();
 		}
 		else
 		{
 			fmt = luaL_checkstring(L, 3);
 		}
-		ImageData::Format format;
+		ImageData::Format format = ImageData::FORMAT_PNG;
 		ImageData::getConstant(fmt, format);
 		try
 		{
