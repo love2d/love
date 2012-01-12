@@ -65,7 +65,7 @@ namespace box2d
 					throw love::Exception("A fixture has escaped Memoizer!");
 			}
 
-			// Push second userdata.
+			// Push second fixture.
 			{
 				Fixture * b = (Fixture *)Memoizer::find(contact->GetFixtureB());
 				if (b != 0)
