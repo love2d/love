@@ -39,13 +39,13 @@ namespace physfs
 	{
 		File * t = luax_checkfile(L, 1);
 		int64 size = t->getSize();
-		
+
 		// Push nil on failure or if size does not fit into a double precision floating-point number.
 		if (size == -1 || size >= 0x20000000000000LL)
 			lua_pushnil(L);
 		else
 			lua_pushnumber(L, (lua_Number)size);
-		
+
 		return 1;
 	}
 
@@ -80,7 +80,7 @@ namespace physfs
 	{
 		File * file = luax_checkfile(L, 1);
 		Data * d = 0;
-		
+
 		int64 size = (int64)luaL_optnumber(L, 2, (lua_Number) file->getSize());
 
 		try
@@ -159,7 +159,7 @@ namespace physfs
 	{
 		File * file = luax_checkfile(L, 1);
 		lua_Number pos = luaL_checknumber(L, 2);
-		
+
 		// Push false on negative and precision-problematic numbers.
 		// Better fail than seek to an unknown position.
 		if (pos < 0.0 || pos >= 9007199254740992.0)
@@ -169,8 +169,6 @@ namespace physfs
 		return 1;
 	}
 
-	//yes, the following two are copy-pasted and slightly edited
-
 	int w_File_lines(lua_State * L)
 	{
 		File * file;
@@ -178,30 +176,43 @@ namespace physfs
 		if (luax_istype(L, 1, FILESYSTEM_FILE_T))
 		{
 			file = luax_checktype<File>(L, 1, "File", FILESYSTEM_FILE_T);
-			lua_pushnumber(L, 0); // 0 = do not close.
+			lua_pushnumber(L, 0); // File position.
+			luax_pushboolean(L, file->getMode() != File::CLOSED); // Save current file mode.
 		}
 		else
-			return luaL_error(L, "Expected file handle.");
+			return luaL_error(L, "Expected File.");
 
-		// Reset the file position.
-		if (!file->seek(0))
-		return luaL_error(L, "File does not appear to be open.\n");
+		if (file->getMode() != File::READ)
+		{
+			if (file->getMode() != File::CLOSED)
+				file->close();
 
-		lua_pushcclosure(L, Filesystem::lines_i, 2);
+			try
+			{
+				if (!file->open(File::READ))
+					return luaL_error(L, "Could not open file.");
+			}
+			catch (love::Exception & e)
+			{
+				return luaL_error(L, "%s", e.what());
+			}
+		}
+
+		lua_pushcclosure(L, Filesystem::lines_i, 3);
 		return 1;
 	}
 
 	static const luaL_Reg functions[] = {
-			{ "getSize", w_File_getSize },
-			{ "open", w_File_open },
-			{ "close", w_File_close },
-			{ "read", w_File_read },
-			{ "write", w_File_write },
-			{ "eof", w_File_eof },
-			{ "tell", w_File_tell },
-			{ "seek", w_File_seek },
-			{ "lines", w_File_lines },
-			{ 0, 0 }
+		{ "getSize", w_File_getSize },
+		{ "open", w_File_open },
+		{ "close", w_File_close },
+		{ "read", w_File_read },
+		{ "write", w_File_write },
+		{ "eof", w_File_eof },
+		{ "tell", w_File_tell },
+		{ "seek", w_File_seek },
+		{ "lines", w_File_lines },
+		{ 0, 0 }
 	};
 
 	extern "C" int luaopen_file(lua_State * L)

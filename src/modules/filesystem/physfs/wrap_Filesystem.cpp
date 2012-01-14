@@ -221,14 +221,27 @@ namespace physfs
 
 	int w_lines(lua_State * L)
 	{
-		try
+		File * file;
+
+		if(lua_isstring(L, 1))
 		{
-			return instance->lines(L);
+			file = instance->newFile(lua_tostring(L, 1));
+			try
+			{
+				if (!file->open(File::READ))
+					return luaL_error(L, "Could not open file.");
+			}
+			catch (love::Exception & e)
+			{
+				return luaL_error(L, "%s", e.what());
+			}
+			luax_newtype(L, "File", FILESYSTEM_FILE_T, file);
 		}
-		catch (Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		else
+			return luaL_error(L, "Expected filename.");
+
+		lua_pushcclosure(L, Filesystem::lines_i, 1);
+		return 1;
 	}
 
 	int w_load(lua_State * L)

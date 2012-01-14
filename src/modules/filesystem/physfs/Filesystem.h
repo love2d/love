@@ -271,17 +271,6 @@ namespace physfs
 		int enumerate(lua_State * L);
 
 		/**
-		* Returns an iterator which iterates over
-		* lines in files.
-		**/
-		int lines(lua_State * L);
-
-		/**
-		* The line iterator function.
-		**/
-		static int lines_i(lua_State * L);
-
-		/**
 		* Loads a file without running it. The loaded
 		* chunk is returned as a function.
 		* @param filename The filename of the file to load.
@@ -290,6 +279,13 @@ namespace physfs
 		int load(lua_State * L);
 
 		int getLastModified(lua_State * L);
+
+		/**
+		* Text file line-reading iterator function used and
+		* pushed on the Lua stack by love.filesystem.lines
+		* and File:lines.
+		**/
+		static int lines_i(lua_State * L);
 
 	}; // Filesystem
 
