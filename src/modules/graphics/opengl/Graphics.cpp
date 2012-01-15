@@ -824,8 +824,8 @@ namespace opengl
 		GLfloat c[4];
 		glGetFloatv(GL_CURRENT_COLOR, c);
 
-		Color *colors = new Color[2*count+1];
-		for (size_t i = 0; i < 2*count+1; ++i)
+		Color *colors = new Color[2*count+2];
+		for (size_t i = 0; i < 2*count+2; ++i)
 		{
 			colors[i] = Color(GLubyte(c[0] * 255.f),
 					GLubyte(c[1] * 255.f),
@@ -855,16 +855,15 @@ namespace opengl
 		Vector p,q,r;
 		bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
 
-		if (lineStyle == LINE_SMOOTH)
-			overdraw = new Vector[2*count+2];
-
 		float halfwidth = lineWidth/2.f;
 		float inv_hw    = 1.f / halfwidth;
 
-		// Overdraw changes visible line width. account for that.
-		// Value of 0.15 chosen empirically.
-		if (lineStyle == LINE_SMOOTH)
-			halfwidth -= .15f;
+		if (lineStyle == LINE_SMOOTH) {
+			overdraw = new Vector[2*count+2];
+			// Overdraw changes visible line width. account for that.
+			// Value of 0.2 chosen empirically.
+			halfwidth -= .2f;
+		}
 
 		// get line vertex boundaries
 		// if not looping, extend the line at the beginning, else use last point as `p'
