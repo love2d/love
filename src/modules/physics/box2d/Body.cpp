@@ -316,9 +316,14 @@ namespace box2d
 
 		for (int i = 0;i<vcount;i++)
 		{
-			float x = (float)lua_tonumber(L, i*2+1);
-			float y = (float)lua_tonumber(L, i*2+2);
+			float x = (float)lua_tonumber(L, 1);
+			float y = (float)lua_tonumber(L, 2);
+			// Remove them, so we don't run out of stack space
+			lua_remove(L, 1);
+			lua_remove(L, 1);
+			// Time for scaling
 			b2Vec2 point = Physics::scaleUp(body->GetWorldPoint(Physics::scaleDown(b2Vec2(x, y))));
+			// And then we push the result
 			lua_pushnumber(L, point.x);
 			lua_pushnumber(L, point.y);
 		}
