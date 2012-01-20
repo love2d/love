@@ -151,9 +151,10 @@ namespace opengl
 		if (nSizes > 8)
 			return luaL_error(L, "At most eight (8) sizes may be used.");
 
-		if (nSizes == 1)
+		if (nSizes <= 1)
 		{
-			t->setSize(luax_checkfloat(L, 2));
+			float size = luax_checkfloat(L, 2);
+			t->setSize(size);
 		}
 		else
 		{
