@@ -59,7 +59,7 @@ namespace opengl
 		 * @param usage GL_DYNAMIC_DRAW, etc.
 		 * @return A new VertexBuffer.
 		 */
-		static VertexBuffer *Create(int size, GLenum target, GLenum usage);
+		static VertexBuffer *Create(size_t size, GLenum target, GLenum usage);
 
 		/**
 		 * Constructor.
@@ -68,7 +68,7 @@ namespace opengl
 		 * @param target The target VertexBuffer object, e.g. GL_ARRAY_BUFFER.
 		 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
 		 */
-		VertexBuffer(int size, GLenum target, GLenum usage);
+		VertexBuffer(size_t size, GLenum target, GLenum usage);
 
 		/**
 		 * Destructor. Does nothing, but must be declared virtual.
@@ -80,7 +80,7 @@ namespace opengl
 		 *
 		 * @return The size of the VertexBuffer.
 		 */
-		int getSize() const { return size; }
+		size_t getSize() const { return size; }
 
 		/**
 		 * Get the target buffer object.
@@ -139,7 +139,7 @@ namespace opengl
 		 * @param size The size of the incoming data.
 		 * @param data Pointer to memory to copy data from.
 		 */
-		virtual void fill(int offset, int size, const void *data) = 0;
+		virtual void fill(size_t offset, size_t size, const void *data) = 0;
 
 		/**
 		 * Get a pointer which represents the specified byte offset.
@@ -147,7 +147,7 @@ namespace opengl
 		 * @param offset The byte offset. (0 is first byte).
 		 * @return A pointer which represents the offset.
 		 */
-		virtual const void *getPointer(int offset) const = 0;
+		virtual const void *getPointer(size_t offset) const = 0;
 
 		/**
 		 * This helper class can bind a VertexArray temporarily, and
@@ -176,7 +176,7 @@ namespace opengl
 	private:
 
 		// The size of the buffer, in bytes.
-		int size;
+		size_t size;
 
 		// The target buffer object. (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER).
 		GLenum target;
@@ -198,7 +198,7 @@ namespace opengl
 		/**
 		 * @copydoc VertexBuffer(int, GLenum, GLenum)
 		 */
-		VertexArray(int size, GLenum target, GLenum usage);
+		VertexArray(size_t size, GLenum target, GLenum usage);
 
 		/**
 		 * Frees the data we've allocated.
@@ -210,8 +210,8 @@ namespace opengl
 		virtual void unmap();
 		virtual void bind();
 		virtual void unbind();
-		virtual void fill(int offset, int size, const void *data);
-		virtual const void *getPointer(int offset) const ;
+		virtual void fill(size_t offset, size_t size, const void *data);
+		virtual const void *getPointer(size_t offset) const ;
 
 	private:
 		// Holds the data.
@@ -230,9 +230,9 @@ namespace opengl
 	public:
 
 		/**
-		 * @copydoc VertexBuffer(int, GLenum, GLenum)
+		 * @copydoc VertexBuffer(size_t, GLenum, GLenum)
 		 */
-		VBO(int size, GLenum target, GLenum usage);
+		VBO(size_t size, GLenum target, GLenum usage);
 
 		/**
 		 * Deletes the VBOs from OpenGL.
@@ -244,8 +244,8 @@ namespace opengl
 		virtual void unmap();
 		virtual void bind();
 		virtual void unbind();
-		virtual void fill(int offset, int size, const void *data);
-		virtual const void *getPointer(int offset) const ;
+		virtual void fill(size_t offset, size_t size, const void *data);
+		virtual const void *getPointer(size_t offset) const ;
 
 		// Implements Volatile.
 		bool loadVolatile();

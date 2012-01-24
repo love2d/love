@@ -34,24 +34,21 @@ namespace opengl
 {
 	// VertexBuffer
 
-	VertexBuffer *VertexBuffer::Create(int size, GLenum target, GLenum usage)
+	VertexBuffer *VertexBuffer::Create(size_t size, GLenum target, GLenum usage)
 	{
 		try
 		{
 			// Try to create a VBO.
 			return new VBO(size, target, usage);
-
 		}
-		catch (const love::Exception &e)
+		catch (const love::Exception &)
 		{
-			(void)e;
-
 			// VBO not supported ... create regular array.
 			return new VertexArray(size, target, usage);
 		}
 	}
 
-	VertexBuffer::VertexBuffer(int size, GLenum target, GLenum usage)
+	VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage)
 		: size(size)
 		, target(target)
 		, usage(usage)
@@ -77,7 +74,7 @@ namespace opengl
 
 	// VertexArray
 
-	VertexArray::VertexArray(int size, GLenum target, GLenum usage)
+	VertexArray::VertexArray(size_t size, GLenum target, GLenum usage)
 		: VertexBuffer(size, target, usage)
 		, buf(new char[size])
 	{
@@ -105,19 +102,19 @@ namespace opengl
 	{
 	}
 
-	void VertexArray::fill(int offset, int size, const void *data)
+	void VertexArray::fill(size_t offset, size_t size, const void *data)
 	{
 		memcpy(buf + offset, data, size);
 	}
 
-	const void *VertexArray::getPointer(int offset) const
+	const void *VertexArray::getPointer(size_t offset) const
 	{
 		return buf + offset;
 	}
 
 	// VBO
 
-	VBO::VBO(int size, GLenum target, GLenum usage)
+	VBO::VBO(size_t size, GLenum target, GLenum usage)
 		: VertexBuffer(size, target, usage)
 		, vbo(0)
 		, buffer_copy(0)
@@ -165,7 +162,7 @@ namespace opengl
 		glBindBufferARB(getTarget(), 0);
 	}
 
-	void VBO::fill(int offset, int size, const void *data)
+	void VBO::fill(size_t offset, size_t size, const void *data)
 	{
 		if (mapped)
 			memcpy(static_cast<char*>(mapped) + offset, data, size);
@@ -173,7 +170,7 @@ namespace opengl
 			glBufferSubDataARB(getTarget(), offset, size, data);
 	}
 
-	const void *VBO::getPointer(int offset) const
+	const void *VBO::getPointer(size_t offset) const
 	{
 		return reinterpret_cast<const void*>(offset);
 	}
