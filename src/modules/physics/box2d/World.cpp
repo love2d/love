@@ -234,12 +234,6 @@ namespace box2d
 		world->Step(dt, 8, 6);
 
 		// Destroy all objects marked during the time step.
-		if (destructWorld)
-		{
-			destroy();
-			return;
-		}
-
 		for (std::vector<Body*>::iterator i = destructBodies.begin(); i < destructBodies.end(); i++)
 		{
 			Body * b = *i;
@@ -264,6 +258,9 @@ namespace box2d
 		destructBodies.clear();
 		destructFixtures.clear();
 		destructJoints.clear();
+
+		if (destructWorld)
+			destroy();
 	}
 
 	void World::BeginContact(b2Contact* contact)
