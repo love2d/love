@@ -62,6 +62,7 @@ namespace graphics
 		{
 			COLOR_MODULATE = 1,
 			COLOR_REPLACE,
+			COLOR_COMBINE,
 			COLOR_MAX_ENUM
 		};
 

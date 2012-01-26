@@ -530,6 +530,11 @@ namespace opengl
 	{
 		if (mode == COLOR_MODULATE)
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		else if (mode == COLOR_COMBINE) {
+			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD_SIGNED);
+			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+		}
 		else // mode = COLOR_REPLACE
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
@@ -567,7 +572,9 @@ namespace opengl
 
 		if (mode == GL_MODULATE)
 			return COLOR_MODULATE;
-		else // // mode == GL_REPLACE
+		else if (mode == GL_COMBINE)
+			return COLOR_COMBINE;
+		else // mode == GL_REPLACE
 			return COLOR_REPLACE;
 	}
 

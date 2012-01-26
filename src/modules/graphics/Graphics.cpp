@@ -130,6 +130,7 @@ namespace graphics
 	{
 		{ "replace", Graphics::COLOR_REPLACE },
 		{ "modulate", Graphics::COLOR_MODULATE },
+		{ "combine", Graphics::COLOR_COMBINE },
 	};
 
 	StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM> Graphics::colorModes(Graphics::colorModeEntries, sizeof(Graphics::colorModeEntries));
