@@ -137,6 +137,7 @@
 		A95684F7125D3555001B276B /* b64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A95684F5125D3555001B276B /* b64.cpp */; };
 		A958F911142D364C007F320F /* wrap_Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A958F910142D3627007F320F /* wrap_Fixture.cpp */; };
 		A958F917142D6B3A007F320F /* Body.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A958F916142D6B37007F320F /* Body.cpp */; };
+		A9642D7514D1A66000CE0B02 /* OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9642D7314D1A66000CE0B02 /* OpenGL.cpp */; };
 		A968F0CF1083A9A900A895AA /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0CE1083A9A900A895AA /* Event.cpp */; };
 		A968F0D11083A9B900A895AA /* File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D01083A9B900A895AA /* File.cpp */; };
 		A968F0D31083A9D400A895AA /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A968F0D21083A9D400A895AA /* Graphics.cpp */; };
@@ -541,6 +542,8 @@
 		A958F912142D3687007F320F /* wrap_Fixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Fixture.h; sourceTree = "<group>"; };
 		A958F916142D6B37007F320F /* Body.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Body.cpp; sourceTree = "<group>"; };
 		A958F918142D6B60007F320F /* Body.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Body.h; sourceTree = "<group>"; };
+		A9642D7314D1A66000CE0B02 /* OpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGL.cpp; sourceTree = "<group>"; };
+		A9642D7414D1A66000CE0B02 /* OpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGL.h; sourceTree = "<group>"; };
 		A968F0C61083A07B00A895AA /* EnumMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumMap.h; sourceTree = "<group>"; };
 		A968F0C71083A07C00A895AA /* StringMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		A968F0CE1083A9A900A895AA /* Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Event.cpp; sourceTree = "<group>"; };
@@ -1121,6 +1124,8 @@
 				A93E6A8E10420AC2007D418B /* Graphics.h */,
 				A93E6A8F10420AC2007D418B /* Image.cpp */,
 				A93E6A9010420AC2007D418B /* Image.h */,
+				A9642D7314D1A66000CE0B02 /* OpenGL.cpp */,
+				A9642D7414D1A66000CE0B02 /* OpenGL.h */,
 				A9B4BA9A1045937F001DBC80 /* ParticleSystem.cpp */,
 				A9B4BA981045937F001DBC80 /* ParticleSystem.h */,
 				A96F41931412BBF80067FE9A /* PixelEffect.cpp */,
@@ -1919,6 +1924,7 @@
 				A9A5BE48149F0ACB00D9931C /* Window.cpp in Sources */,
 				A9A5BE4B149F0B0200D9931C /* Variant.cpp in Sources */,
 				A9F2D09114BA85EC0035D2A5 /* Audio.cpp in Sources */,
+				A9642D7514D1A66000CE0B02 /* OpenGL.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
