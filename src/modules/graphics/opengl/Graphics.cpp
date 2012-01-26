@@ -69,16 +69,9 @@ namespace opengl
 
 		s.color = getColor();
 		s.backgroundColor = getBackgroundColor();
-
-		//store modes here
-		GLint mode;
-		//get blend mode
-		glGetIntegerv(GL_BLEND_DST, &mode);
-		//following syntax seems better than if-else every time
-		s.blendMode = (mode == GL_ONE) ? Graphics::BLEND_ADDITIVE : Graphics::BLEND_ALPHA;
-		//get color mode
-		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
-		s.colorMode = (mode == GL_MODULATE) ? Graphics::COLOR_MODULATE : Graphics::COLOR_REPLACE;
+		
+		s.blendMode = getBlendMode();
+		s.colorMode = getColorMode();
 		//get line style
 		s.lineStyle = lineStyle;
 		//get the point size
