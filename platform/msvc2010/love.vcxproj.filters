@@ -745,6 +745,9 @@
     <ClCompile Include="..\..\src\modules\audio\Audio.cpp">
       <Filter>modules\audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\OpenGL.cpp">
+      <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\modules\audio\Audio.h">
@@ -1328,6 +1331,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\window\sdl\Window.h">
       <Filter>modules\window\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\OpenGL.h">
+      <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

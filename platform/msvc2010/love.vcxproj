@@ -149,6 +149,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\OpenGL.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\PixelEffect.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
@@ -363,6 +364,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\OpenGL.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\PixelEffect.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
