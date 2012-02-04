@@ -134,14 +134,14 @@ namespace box2d
 
 	int Shape::computeMass(lua_State * L) const
 	{
-		float density = Physics::scaleDown((float)luaL_checknumber(L, 1));
+		float density = (float)luaL_checknumber(L, 1);
 		b2MassData data;
 		shape->ComputeMass(&data, density);
 		b2Vec2 center = Physics::scaleUp(data.center);
 		lua_pushnumber(L, center.x);
 		lua_pushnumber(L, center.y);
 		lua_pushnumber(L, data.mass);
-		lua_pushnumber(L, data.I);
+		lua_pushnumber(L, Physics::scaleUp(Physics::scaleUp(data.I)));
 		return 4;
 	}
 
