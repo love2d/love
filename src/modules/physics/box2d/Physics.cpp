@@ -93,29 +93,67 @@ namespace box2d
 	int Physics::newPolygonShape(lua_State * L)
 	{
 		int argc = lua_gettop(L);
-		int vcount = (int)argc/2;
-		// 3 vertices
-		love::luax_assert_argc(L, 2 * 3);
+		if (argc%2 != 0)
+			return luaL_error(L, "Number of vertices must be a multiple of two.");
+		// 3 to 8 (b2_maxPolygonVertices) vertices
+		int vcount = argc / 2;
+		if (vcount < 3)
+			luaL_error(L, "Expected a minimum of 3 vertices, got %d.", vcount);
+		else if (vcount > b2_maxPolygonVertices)
+			luaL_error(L, "Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, vcount);
 
 		b2PolygonShape* s = new b2PolygonShape();
 
-		b2Vec2 * vecs = new b2Vec2[vcount];
+		bool reverse = false;
+		b2Vec2 edge1;
+		b2Vec2 vecs[b2_maxPolygonVertices];
 
-		for (int i = 0;i<vcount;i++)
+		for (int i = 0; i < vcount; i++)
 		{
-			float x = (float)lua_tonumber(L, -2);
-			float y = (float)lua_tonumber(L, -1);
-			vecs[i] = (Physics::scaleDown(b2Vec2(x, y)));
+			float x = (float)luaL_checknumber(L, -2);
+			float y = (float)luaL_checknumber(L, -1);
+			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
 			lua_pop(L, 2);
+
+			if (!reverse)
+			{
+				// Detect clockwise winding.
+				if (i == 1)
+				{
+					edge1 = vecs[1] - vecs[0];
+				}
+				else if (i == vcount - 1)
+				{
+					b2Vec2 edge2 = vecs[i] - vecs[i-1];
+					// Also check the edge from the last and first point.
+					b2Vec2 edge3 = vecs[0] - vecs[i];
+					if (b2Cross(edge1, edge2) < 0.0f || b2Cross(edge2, edge3) < 0.0f)
+						reverse = true;
+				}
+				else if (i > 1)
+				{
+					b2Vec2 edge2 = vecs[i] - vecs[i-1];
+					if (b2Cross(edge1, edge2) < 0.0f)
+						reverse = true;
+					edge1 = edge2;
+				}
+			}
+		}
+
+		if (reverse)
+		{
+			for (int i = 0, j = vcount-1; i < j; ++i, --j)
+			{
+				b2Vec2 swap = vecs[i];
+				vecs[i] = vecs[j];
+				vecs[j] = swap;
+			}
 		}
 
 		s->Set(vecs, vcount);
-
 		PolygonShape * p = new PolygonShape(s);
-		delete[] vecs;
 
 		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void*)p);
-
 		return 1;
 	}
 
