@@ -1,3 +1,113 @@
+LOVE 0.8.0 [Rubber Piggy]
+-------------------------
+
+  * Added release error screen.
+  * Added alpha to love.graphics.setBackgroundColor.
+  * Added Canvas:clear(r, g, b, a).
+  * Added Canvas support to love.graphics.drawq.
+  * Added Canvas:getWidth and Canvas:getHeight.
+  * Added love.graphics.arc.
+  * Added seek and tell to Source objects.
+  * Added color interpolation to ParticleSystem.
+  * Added automatic PO2 padding for systems not supporting the OpenGL extension.
+  * Added UTF-8 support for fonts.
+  * Added Box2D error handling for some commonly failing functions.
+  * Added ability for fused release games to have their write dir in appdata.
+  * Added shear transformation to drawing functions.
+  * Added origin to font printing.
+  * Added love.graphics.getMode.
+  * Added per-sprite colors on SpriteBatches.
+  * Added pixel effects.
+  * Added love.graphics.isSupported.
+  * Added love.graphics.getCanvas.
+  * Added love.event.quit.
+  * Added stencil masks.
+  * Added alternative SpriteBatch provider, it should work everywhere now.
+  * Added a loader for binary modules.
+  * Added Thread:getKeys.
+  * Added option of fractions for Quads.
+  * Added PNG, JPEG and GIF support to ImageData:encode.
+  * Added 64-bit support for Mac OS X.
+  * Added premultiplied blending mode.
+  * Added functions to set/get default image filter modes.
+  * Added SpriteBatch:set.
+  * Added new events system, with support for custom events and long event names.
+  * Added sound attenuation by distance.
+  * Added SpriteBatch:getImage.
+
+  * Fixed wrapping for single words.
+  * Fixed tracebacks not showing filenames.
+  * Fixed love.graphics.push/pop capable of causing overflows/underflows.
+  * Fixed setScissor on Canvases.
+  * Fixed several issues with audio, e.g. clicks and pops in mp3s.
+  * Fixed crashes when bodies were destroyed during collisions.
+  * Fixed bound SpriteBatches corrupting when drawing.
+  * Fixed thread-safety issues with ImageData.
+  * Fixed memory leaks in audio sources.
+  * Fixed thread's set (previously send) accidentally changing the type.
+  * Fixed SoundData allocating the wrong number of samples.
+  * Fixed SpriteBatch support on Intel cards.
+  * Fixed love.filesystem.lines() leaking.
+  * Fixed Source controls inconsistencies.
+  * Fixed most leaking on unclosed File objects.
+  * Fixed crashes when operating on non-existent files.
+  * Fixed a bug where empty files on windows would never reach eof.
+  * Fixed crash when SoundData runs out of memory.
+  * Fixed ordering of loaders, love should have priority over Lua.
+  * Fixed several miscellaneous memory leaks.
+  * Fixed love.filesystem's priority for require.
+  * Fixed a few cases where strings with \0 in them would not be stored correctly.
+  * Fixed love's startup time being in the first dt.
+  * Fixed internal string conversions, they are faster now.
+  * Fixed (bad) performance of ImageData:paste.
+
+  * Renamed SpriteBatch's lock/unlock to bind/unbind.
+  * Renamed Framebuffer to Canvas.
+  * Renamed love.thread.send/receive to set/get.
+  * Renamed love.graphics.setRenderTarget to setCanvas.
+
+  * Removed canvas auto-clearing.
+  * Removed EncodedImageData.
+  * Removed old syntax for require (with extension).
+  * Removed love.graphics.setFont([file], [size]).
+  * Removed Thread:kill.
+
+  * Updated love.joystick to be 1-indexed.
+  * Updated Sources to update more cleanly and control more intuitively.
+  * Updated font engine.
+  * Updated line drawing to a custom system.
+  * Updated love.timer.sleep to use seconds, like the rest of love.
+  * Updated love.timer to be more accurate.
+  * Updated love.graphics.circle to have max(10, r) as default for segments.
+  * Updated ImageData:encode to write to files directly.
+  * Updated version compatibility system to actually do something.
+  * Updated love.run's order, events are checked just before update.
+  * Updated Box2D to version 2.2.1.
+
+LOVE 0.7.2 [Game Slave]
+-----------------------
+
+  * Added Framebuffer:get/setWrap.
+  * Added love.event.clear.
+  * Added support for any number of arguments to love.keyboard.isDown, love.mouse.isDown and love.joystick.isDown.
+  * Added SpriteBatch:setImage().
+
+  * Fixed fused games not working.
+  * Fixed ParticleSystem:setSize ignoring the variation argument.
+  * Fixed some file-opening exceptions not being caught.
+  * Fixed files loaded by libmodplug being too loud.
+  * Fixed paths with periods in them not working.
+  * Fixed love.graphics.getBlendMode not detecting subtractive and multiplicative blend modes.
+  * Fixed crash when there was no memory available for newImageData(w, h).
+
+  * Updated PhysicsFS version to 2.0.2 on Windows
+  * Updated OpenAL Soft version to 1.13 on Windows
+  * Updated libmodplug version to 0.8.8.1 on Windows
+  * Updated FreeType version to 2.4.4 on Windows
+  * Updated libmpg123 version to 1.13.2 on Windows
+  * Windows binary no longer depends on VC2005 runtime.
+  * Windows binary no longer depends on SSE2 support.
+
 LOVE 0.7.1 [Game Slave]
 -----------------------
 

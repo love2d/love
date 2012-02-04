@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -54,6 +54,7 @@ namespace graphics
 			BLEND_ADDITIVE,
 			BLEND_SUBTRACTIVE,
 			BLEND_MULTIPLICATIVE,
+			BLEND_PREMULTIPLIED,
 			BLEND_MAX_ENUM
 		};
 
@@ -61,6 +62,7 @@ namespace graphics
 		{
 			COLOR_MODULATE = 1,
 			COLOR_REPLACE,
+			COLOR_COMBINE,
 			COLOR_MAX_ENUM
 		};
 
@@ -76,6 +78,14 @@ namespace graphics
 			POINT_ROUGH = 1,
 			POINT_SMOOTH,
 			POINT_MAX_ENUM
+		};
+
+		enum Support
+		{
+			SUPPORT_CANVAS = 1,
+			SUPPORT_PIXELEFFECT,
+			SUPPORT_NPOT,
+			SUPPORT_MAX_ENUM
 		};
 
 		virtual ~Graphics();
@@ -98,6 +108,9 @@ namespace graphics
 		static bool getConstant(const char * in, PointStyle & out);
 		static bool getConstant(PointStyle in, const char *& out);
 
+		static bool getConstant(const char * in, Support & out);
+		static bool getConstant(Support in, const char *& out);
+
 	private:
 
 		static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -117,6 +130,9 @@ namespace graphics
 
 		static StringMap<PointStyle, POINT_MAX_ENUM>::Entry pointStyleEntries[];
 		static StringMap<PointStyle, POINT_MAX_ENUM> pointStyles;
+
+		static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
+		static StringMap<Support, SUPPORT_MAX_ENUM> support;
 
 	}; // Graphics
 

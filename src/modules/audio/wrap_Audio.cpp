@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -44,12 +44,12 @@ namespace audio
 	{
 		Source * t = 0;
 
-		if(luax_istype(L, 1, SOUND_SOUND_DATA_T))
+		if (luax_istype(L, 1, SOUND_SOUND_DATA_T))
 			t = instance->newSource(luax_totype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T));
-		else if(luax_istype(L, 1, SOUND_DECODER_T))
+		else if (luax_istype(L, 1, SOUND_DECODER_T))
 			t = instance->newSource(luax_totype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T));
 
-		if(t)
+		if (t)
 		{
 			luax_newtype(L, "Source", AUDIO_SOURCE_T, (void*)t);
 			return 1;
@@ -69,7 +69,7 @@ namespace audio
 
 	int w_stop(lua_State * L)
 	{
-		if(lua_gettop(L) == 0)
+		if (lua_gettop(L) == 0)
 		{
 			instance->stop();
 		}
@@ -83,7 +83,7 @@ namespace audio
 
 	int w_pause(lua_State * L)
 	{
-		if(lua_gettop(L) == 0)
+		if (lua_gettop(L) == 0)
 		{
 			instance->pause();
 		}
@@ -98,7 +98,7 @@ namespace audio
 
 	int w_resume(lua_State * L)
 	{
-		if(lua_gettop(L) == 0)
+		if (lua_gettop(L) == 0)
 		{
 			instance->resume();
 		}
@@ -112,7 +112,7 @@ namespace audio
 
 	int w_rewind(lua_State * L)
 	{
-		if(lua_gettop(L) == 0)
+		if (lua_gettop(L) == 0)
 		{
 			instance->rewind();
 		}
@@ -202,24 +202,27 @@ namespace audio
 		lua_pushnumber(L, v[2]);
 		return 3;
 	}
-	
+
 	int w_record(lua_State *)
 	{
 		instance->record();
 		return 0;
 	}
-	
+
 	int w_getRecordedData(lua_State * L)
 	{
 		love::sound::SoundData * sd = instance->getRecordedData();
-		if (!sd) lua_pushnil(L);
-		else luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
+		if (!sd)
+			lua_pushnil(L);
+		else
+			luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
 		return 1;
 	}
-	
+
 	int w_stopRecording(lua_State * L)
 	{
-		if (luax_optboolean(L, 1, true)) {
+		if (luax_optboolean(L, 1, true))
+		{
 			love::sound::SoundData * sd = instance->stopRecording(true);
 			if (!sd) lua_pushnil(L);
 			else luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void*)sd);
@@ -228,12 +231,31 @@ namespace audio
 		instance->stopRecording(false);
 		return 0;
 	}
-	
+
 	int w_canRecord(lua_State * L) {
 		luax_pushboolean(L, instance->canRecord());
 		return 1;
 	}
 	
+	int w_setDistanceModel(lua_State * L)
+	{
+		const char *modelStr = luaL_checkstring(L, 1);
+		Audio::DistanceModel distanceModel;
+		if (!Audio::getConstant(modelStr, distanceModel))
+			return luaL_error(L, "Invalid distance model: %s", modelStr);
+		instance->setDistanceModel(distanceModel);
+		return 0;
+	}
+
+	int w_getDistanceModel(lua_State * L)
+	{
+		Audio::DistanceModel distanceModel = instance->getDistanceModel();
+		const char *modelStr;
+		if (!Audio::getConstant(distanceModel, modelStr))
+			return 0;
+		lua_pushstring(L, modelStr);
+		return 1;
+	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
@@ -255,6 +277,8 @@ namespace audio
 		/*{ "record", w_record },
 		{ "getRecordedData", w_getRecordedData },
 		{ "stopRecording", w_stopRecording },*/
+		{ "setDistanceModel", w_setDistanceModel },
+		{ "getDistanceModel", w_getDistanceModel },
 		{ 0, 0 }
 	};
 
@@ -263,16 +287,16 @@ namespace audio
 		0
 	};
 
-	int luaopen_love_audio(lua_State * L)
+	extern "C" int luaopen_love_audio(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			// Try OpenAL first.
 			try
 			{
 				instance = new love::audio::openal::Audio();
 			}
-			catch(love::Exception & e)
+			catch (love::Exception & e)
 			{
 				std::cout << e.what() << std::endl;
 			}
@@ -280,20 +304,20 @@ namespace audio
 		else
 			instance->retain();
 
-		if(instance == 0)
+		if (instance == 0)
 		{
 			// Fall back to nullaudio.
 			try
 			{
 				instance = new love::audio::null::Audio();
 			}
-			catch(love::Exception & e)
+			catch (love::Exception & e)
 			{
 				std::cout << e.what() << std::endl;
 			}
 		}
 
-		if(instance == 0)
+		if (instance == 0)
 			return luaL_error(L, "Could not open any audio module.");
 
 		WrappedModule w;
@@ -303,12 +327,12 @@ namespace audio
 		w.functions = functions;
 		w.types = types;
 
-		luax_register_module(L, w);
+		int n = luax_register_module(L, w);
 
 		if (luaL_loadbuffer(L, (const char *)audio_lua, sizeof(audio_lua), "audio.lua") == 0)
 			lua_call(L, 0, 0);
 
-		return 0;
+		return n;
 	}
 
 } // audio

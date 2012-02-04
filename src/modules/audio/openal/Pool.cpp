@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -22,16 +22,6 @@
 
 #include "Source.h"
 
-#define MUTEX_ASSERT(fn, sval) \
-	if(fn != sval) \
-	{ \
-		std::cout << "Mutex lock/unlock failure. " << SDL_GetError() << std::endl; \
-		exit(-1); \
-	} \
-
-#define LOCK(m) MUTEX_ASSERT(SDL_LockMutex(m), 0)
-#define UNLOCK(m) MUTEX_ASSERT(SDL_UnlockMutex(m), 0)
-
 namespace love
 {
 namespace audio
@@ -44,13 +34,13 @@ namespace openal
 		alGenSources(NUM_SOURCES, sources);
 
 		// Create the mutex.
-		mutex = SDL_CreateMutex();
+		mutex = new thread::Mutex();
 
-		if(alGetError() != AL_NO_ERROR)
+		if (alGetError() != AL_NO_ERROR)
 			throw love::Exception("Could not generate sources.");
 
 		// Make all sources available initially.
-		for(int i = 0; i < NUM_SOURCES; i++)
+		for (int i = 0; i < NUM_SOURCES; i++)
 			available.push(sources[i]);
 	}
 
@@ -58,7 +48,7 @@ namespace openal
 	{
 		stop();
 
-		SDL_DestroyMutex(mutex);
+		delete mutex;
 
 		// Free all sources.
 		alDeleteSources(NUM_SOURCES, sources);
@@ -67,48 +57,46 @@ namespace openal
 	bool Pool::isAvailable() const
 	{
 		bool has = false;
-		LOCK(mutex);
-		has = !available.empty();
-		UNLOCK(mutex);
+		{
+			thread::Lock lock(mutex);
+			has = !available.empty();
+		}
 		return has;
 	}
 
 	bool Pool::isPlaying(Source * s)
 	{
 		bool p = false;
-		LOCK(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
-			if(i->first == s)
-				p = true;
+			thread::Lock lock(mutex);
+			for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+			{
+				if (i->first == s)
+					p = true;
+			}
 		}
-		UNLOCK(mutex);
 		return p;
 	}
 
 	void Pool::update()
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 
 		std::map<Source *, ALuint>::iterator i = playing.begin();
 
-		while(i != playing.end())
+		while (i != playing.end())
 		{
-			if(i->first->isStopped())
+			if (!i->first->update())
 			{
 				i->first->stopAtomic();
+				i->first->rewindAtomic();
 				i->first->release();
 				available.push(i->second);
 				playing.erase(i++);
 			}
 			else
-			{
-				i->first->update();
 				i++;
-			}
 		}
-
-		UNLOCK(mutex);
 	}
 
 	int Pool::getNumSources() const
@@ -126,14 +114,14 @@ namespace openal
 		bool ok;
 		out = 0;
 
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 
 		bool alreadyPlaying = findSource(source, out);
 
-		if(!alreadyPlaying)
+		if (!alreadyPlaying)
 		{
 			// Try to play.
-			if(!available.empty())
+			if (!available.empty())
 			{
 				// Get the first available source.
 				out = available.front();
@@ -160,99 +148,106 @@ namespace openal
 			ok = true;
 		}
 
-		UNLOCK(mutex);
-
 		return ok;
 	}
 
 	void Pool::stop()
 	{
-		LOCK(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		thread::Lock lock(mutex);
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 		{
 			i->first->stopAtomic();
+			i->first->release();
 			available.push(i->second);
 		}
 
 		playing.clear();
-
-		UNLOCK(mutex);
 	}
 
 	void Pool::stop(Source * source)
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		removeSource(source);
-		UNLOCK(mutex);
 	}
 
 	void Pool::pause()
 	{
-		LOCK(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		thread::Lock lock(mutex);
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->pauseAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::pause(Source * source)
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		ALuint out;
-		if(findSource(source, out))
+		if (findSource(source, out))
 			source->pauseAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::resume()
 	{
-		LOCK(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		thread::Lock lock(mutex);
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->resumeAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::resume(Source * source)
 	{
-		LOCK(mutex);
+		thread::Lock lock(mutex);
 		ALuint out;
-		if(findSource(source, out))
+		if (findSource(source, out))
 			source->resumeAtomic();
-		UNLOCK(mutex);
 	}
 
 	void Pool::rewind()
 	{
-		LOCK(mutex);
-		for(std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		thread::Lock lock(mutex);
+		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
 			i->first->rewindAtomic();
-		UNLOCK(mutex);
+	}
+
+	// For those times we don't need it backed.
+	void Pool::softRewind(Source * source)
+	{
+		thread::Lock lock(mutex);
+		source->rewindAtomic();
 	}
 
 	void Pool::rewind(Source * source)
 	{
-		LOCK(mutex);
-		ALuint out;
-		if(findSource(source, out))
-			source->rewindAtomic();
-		UNLOCK(mutex);
+		thread::Lock lock(mutex);
+		source->rewindAtomic();
 	}
 
 	void Pool::release(Source * source)
 	{
 		ALuint s = findi(source);
 
-		if(s != 0)
+		if (s != 0)
 		{
 			available.push(s);
 			playing.erase(source);
 		}
 	}
 
+	void Pool::seek(Source * source, float offset, void * unit)
+	{
+		thread::Lock lock(mutex);
+		return source->seekAtomic(offset, unit);
+	}
+
+	float Pool::tell(Source * source, void * unit)
+	{
+		thread::Lock lock(mutex);
+		return source->tellAtomic(unit);
+	}
+
 	ALuint Pool::findi(const Source * source) const
 	{
 		std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
 
-		if(i != playing.end())
+		if (i != playing.end())
 			return i->second;
 
 		return 0;
@@ -264,7 +259,7 @@ namespace openal
 
 		bool found = i != playing.end();
 
-		if(found)
+		if (found)
 			out = i->second;
 
 		return found;
@@ -274,12 +269,12 @@ namespace openal
 	{
 		std::map<Source *, ALuint>::iterator i = playing.find((Source *)source);
 
-		if(i != playing.end())
+		if (i != playing.end())
 		{
 			source->stopAtomic();
-			source->release();
 			available.push(i->second);
 			playing.erase(i++);
+			source->release();
 			return true;
 		}
 

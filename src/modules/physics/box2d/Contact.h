@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -27,7 +27,7 @@
 #include "World.h"
 
 // Box2D
-#include "Include/Box2D.h"
+#include <Box2D/Box2D.h>
 
 namespace love
 {
@@ -49,11 +49,8 @@ namespace box2d
 
 	private:
 
-		// The Box2D contact point.
-		b2ContactPoint point;
-
-		// The parent world. Needed for scaling.
-		World * world;
+		// The Box2D contact.
+		b2Contact* contact;
 
 	public:
 
@@ -63,23 +60,16 @@ namespace box2d
 		* data pointed to.
 		* @param point Pointer to the Box2D contact.
 		**/
-		Contact(World * world, const b2ContactPoint * point);
+		Contact(b2Contact * contact);
 
 		virtual ~Contact();
 
 		/**
-		* Gets the position of the Contact.
+		* Gets the position of each point of contact.
 		* @return The position along the x-axis.
 		* @return The position along the y-axis.
 		**/
-		int getPosition(lua_State * L);
-
-		/**
-		* Gets the linear impact velocity.
-		* @return The velocity along the x-axis.
-		* @return The velocity along the y-axis.
-		**/
-		int getVelocity(lua_State * L);
+		int getPositions(lua_State * L);
 
 		/**
 		* Gets the collision normal.
@@ -89,22 +79,55 @@ namespace box2d
 		int getNormal(lua_State * L);
 
 		/**
-		* How far apart the shapes are. If they are intersecting
-		* this value is negative.
-		**/
-		float getSeparation() const;
-
-		/**
-		* The mixed friction between the two shapes at
+		* The mixed friction between the two fixtures at
 		* the point of impact.
 		**/
 		float getFriction() const;
 
 		/**
-		* The mixed restitution of the two shapes
+		* The mixed restitution of the two fixtures
 		* at the point of impact.
 		**/
 		float getRestitution() const;
+
+		/**
+		* Check if the contact is enabled.
+		**/
+		bool isEnabled() const;
+
+		/**
+		* Check if the contact is touching.
+		**/
+		bool isTouching() const;
+
+		// Only call the setters in PreSolve
+
+		/**
+		* Override the default friction mixture.
+		**/
+		void setFriction(float friction);
+
+		/**
+		* Override the default restitution mixture.
+		**/
+		void setRestitution(float restitution);
+
+		/**
+		* Enable/disable this contact.
+		**/
+		void setEnabled(bool enabled);
+
+		/**
+		* Reset the friction mixture to the default
+		* value.
+		**/
+		void resetFriction();
+
+		/**
+		* Reset the restitution mixture to the default
+		* value.
+		**/
+		void resetRestitution();
 
 	};
 

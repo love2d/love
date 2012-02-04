@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -43,7 +43,14 @@ namespace opengl
 	{
 		Font * t = luax_checkfont(L, 1);
 		const char * str = luaL_checkstring(L, 2);
-		lua_pushinteger(L, t->getWidth(str));
+		try
+		{
+			lua_pushinteger(L, t->getWidth(str));
+		}
+		catch (love::Exception & e)
+		{
+			return luaL_error(L, e.what());
+		}
 		return 1;
 	}
 
@@ -52,9 +59,18 @@ namespace opengl
 		Font * t = luax_checkfont(L, 1);
 		const char * str = luaL_checkstring(L, 2);
 		float wrap = (float) luaL_checknumber(L, 3);
-		int lines = 0;
-		lua_pushinteger(L, t->getWrap(str, wrap, &lines));
-		lua_pushinteger(L, lines);
+		int max_width = 0, numlines = 0;
+		try
+		{
+			std::vector<std::string> lines = t->getWrap(str, wrap, &max_width);
+			numlines = lines.size();
+		}
+		catch (love::Exception & e)
+		{
+			return luaL_error(L, e.what());
+		}
+		lua_pushinteger(L, max_width);
+		lua_pushinteger(L, numlines);
 		return 2;
 	}
 
@@ -82,7 +98,7 @@ namespace opengl
 		{ 0, 0 }
 	};
 
-	int luaopen_font(lua_State * L)
+	extern "C" int luaopen_font(lua_State * L)
 	{
 		return luax_register_type(L, "Font", functions);
 	}

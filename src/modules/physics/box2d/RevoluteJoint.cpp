@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -25,6 +25,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -32,18 +33,17 @@ namespace physics
 {
 namespace box2d
 {
-	RevoluteJoint::RevoluteJoint(Body * body1, Body * body2, float x, float y)
+	RevoluteJoint::RevoluteJoint(Body * body1, Body * body2, float x, float y, bool collideConnected)
 		: Joint(body1, body2), joint(NULL)
-	{	
+	{
 		b2RevoluteJointDef def;
-		def.Initialize(body1->body, body2->body, world->scaleDown(b2Vec2(x,y)));
+		def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x,y)));
+		def.collideConnected = collideConnected;
 		joint = (b2RevoluteJoint*)createJoint(&def);
 	}
 
 	RevoluteJoint::~RevoluteJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	float RevoluteJoint::getJointAngle() const
@@ -56,7 +56,7 @@ namespace box2d
 		return joint->GetJointSpeed();
 	}
 
-	void RevoluteJoint::setMotorEnabled(bool motor)
+	void RevoluteJoint::enableMotor(bool motor)
 	{
 		return joint->EnableMotor(motor);
 	}
@@ -68,12 +68,7 @@ namespace box2d
 
 	void RevoluteJoint::setMaxMotorTorque(float torque)
 	{
-		joint->SetMaxMotorTorque(torque);
-	}
-
-	float RevoluteJoint::getMaxMotorTorque() const
-	{
-		return joint->m_maxMotorTorque;
+		joint->SetMaxMotorTorque(Physics::scaleDown(Physics::scaleDown(torque)));
 	}
 
 	void RevoluteJoint::setMotorSpeed(float speed)
@@ -86,17 +81,22 @@ namespace box2d
 		return joint->GetMotorSpeed();
 	}
 
-	float RevoluteJoint::getMotorTorque() const
+	float RevoluteJoint::getMotorTorque(float inv_dt) const
 	{
-		return joint->GetMotorTorque();
+		return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 	}
 
-	void RevoluteJoint::setLimitsEnabled(bool limit)
+	float RevoluteJoint::getMaxMotorTorque() const
+	{
+		return Physics::scaleUp(Physics::scaleUp(joint->GetMaxMotorTorque()));
+	}
+
+	void RevoluteJoint::enableLimit(bool limit)
 	{
 		joint->EnableLimit(limit);
 	}
 
-	bool RevoluteJoint::isLimitsEnabled() const
+	bool RevoluteJoint::isLimitEnabled() const
 	{
 		return joint->IsLimitEnabled();
 	}

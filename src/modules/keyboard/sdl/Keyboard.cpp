@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -18,6 +18,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+#include <common/config.h>
+
 #include "Keyboard.h"
 
 namespace love
@@ -31,14 +33,15 @@ namespace sdl
 		return "love.keyboard.sdl";
 	}
 
-	bool Keyboard::isDown(Key key) const
+	bool Keyboard::isDown(Key * keylist) const
 	{
 		SDLKey k;
+		Uint8 * keystate = SDL_GetKeyState(0);
 
-		if(keys.find(key, k))
+		for (Key key = *keylist; key != KEY_MAX_ENUM; key = *(++keylist))
 		{
-			Uint8 * keystate = SDL_GetKeyState(0);
-			return keystate[(unsigned)k] == 1;
+			if (keys.find(key, k) && keystate[(unsigned)k] == 1)
+				return true;
 		}
 
 		return false;
@@ -54,14 +57,14 @@ namespace sdl
 
 	int Keyboard::getKeyRepeatDelay() const
 	{
-		int delay, interval = 0;
+		int delay, interval;
 		SDL_GetKeyRepeat(&delay, &interval);
 		return delay;
 	}
 
 	int Keyboard::getKeyRepeatInterval() const
 	{
-		int delay, interval = 0;
+		int delay, interval;
 		SDL_GetKeyRepeat(&delay, &interval);
 		return interval;
 	}

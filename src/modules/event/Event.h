@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -24,77 +24,52 @@
 // LOVE
 #include <common/Module.h>
 #include <common/StringMap.h>
+#include <common/Variant.h>
 #include <keyboard/Keyboard.h>
 #include <mouse/Mouse.h>
+#include <thread/threads.h>
+
+// STL
+#include <queue>
 
 namespace love
 {
 namespace event
 {
+	class Message : public Object
+	{
+	private:
+		std::string name;
+		Variant *args[4];
+		int nargs;
+
+	public:
+		Message(std::string name, Variant *a = NULL, Variant *b = NULL, Variant *c = NULL, Variant *d = NULL);
+		~Message();
+
+		int toLua(lua_State *L);
+		static Message *fromLua(lua_State *L, int n);
+	};
+
 	class Event : public Module
 	{
 	public:
-
-		enum Type
-		{
-		   TYPE_INVALID,
-		   TYPE_KEY_PRESSED,
-		   TYPE_KEY_RELEASED,
-		   TYPE_MOUSE_PRESSED,
-		   TYPE_MOUSE_RELEASED,
-		   TYPE_JOYSTICK_RELEASED,
-		   TYPE_JOYSTICK_PRESSED,
-		   TYPE_FOCUS,
-		   TYPE_QUIT,
-		   TYPE_MAX_ENUM = 32
-		};
-
-		union Message
-		{
-			Type type;
-
-			struct
-			{
-				Type type;
-				love::mouse::Mouse::Button b;
-				unsigned x;
-				unsigned y;
-			} mouse;
-
-			struct
-			{
-				Type type;
-				unsigned index;
-				unsigned button;
-			} joystick;
-
-			struct
-			{
-				Type type;
-				love::keyboard::Keyboard::Key k;
-				unsigned short u;
-			} keyboard;
-
-			struct
-			{
-				Type type;
-				bool f;
-			} focus;
-		};
-
 		virtual ~Event();
 
-		static bool getConstant(const char * in, Type & out);
-		static bool getConstant(Type in, const char *& out);
+		void push(Message *msg);
+		bool poll(Message *&msg);
+		virtual void clear();
+
+		virtual void pump() = 0;
+
 		static bool getConstant(const char * in, love::mouse::Mouse::Button & out);
 		static bool getConstant(love::mouse::Mouse::Button in, const char *& out);
 		static bool getConstant(const char * in, love::keyboard::Keyboard::Key & out);
 		static bool getConstant(love::keyboard::Keyboard::Key in, const char *& out);
 
-	private:
-
-		static StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[];
-		static StringMap<Type, TYPE_MAX_ENUM> types;
+	protected:
+		thread::Mutex mutex;
+		std::queue<Message*> queue;
 		static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
 		static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
 		static StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];

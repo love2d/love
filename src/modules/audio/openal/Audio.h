@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -27,9 +27,6 @@
 #include <iostream>
 #include <cmath>
 
-// SDL
-#include <SDL.h>
-
 // LOVE
 #include <audio/Audio.h>
 #include <common/config.h>
@@ -37,6 +34,7 @@
 
 #include "Source.h"
 #include "Pool.h"
+#include <thread/threads.h>
 
 // OpenAL
 #ifdef LOVE_MACOSX
@@ -59,24 +57,39 @@ namespace openal
 
 		// The OpenAL device.
 		ALCdevice * device;
-		
+
 		// The OpenAL capture device (microphone).
 		ALCdevice * capture;
 
 		// The OpenAL context.
 		ALCcontext * context;
 
-		SDL_Thread * thread;
-
 		// The Pool.
 		Pool * pool;
 
-		// Set this to true when the thread should finish.
-		// Main thread will write to this value, and Audio::run
-		// will read from it.
-		bool finish;
 
-		static int run(void * unused);
+		class PoolThread: public thread::ThreadBase {
+		protected:
+			Pool* pool;
+
+			// Set this to true when the thread should finish.
+			// Main thread will write to this value, and PoolThread
+			// will read from it.
+			volatile bool finish;
+
+			// finish lock
+			thread::Mutex mutex;
+
+			virtual void main();
+
+		public:
+			PoolThread(Pool* pool);
+			void setFinish();
+		};
+
+		PoolThread* poolThread;
+
+		DistanceModel distanceModel;
 
 	public:
 
@@ -110,12 +123,14 @@ namespace openal
 		void setOrientation(float * v);
 		void getVelocity(float * v) const;
 		void setVelocity(float * v);
-		
+
 		void record();
 		love::sound::SoundData * getRecordedData();
 		love::sound::SoundData * stopRecording(bool returnData);
 		bool canRecord();
-
+		
+		DistanceModel getDistanceModel() const;
+		void setDistanceModel(DistanceModel distanceModel);
 	}; // Audio
 
 } // openal

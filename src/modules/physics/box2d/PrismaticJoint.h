@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -46,7 +46,7 @@ namespace box2d
 		/**
 		* Creates a new PrismaticJoint connecting body1 and body2.
 		**/
-		PrismaticJoint(Body * body1, Body * body2, float x, float y, float ax, float ay);
+		PrismaticJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
 
 		virtual ~PrismaticJoint();
 
@@ -63,7 +63,7 @@ namespace box2d
 		/**
 		* Enable/disable the joint motor.
 		**/
-		void setMotorEnabled(bool motor);
+		void enableMotor(bool motor);
 
 		/**
 		* Checks whether the motor is enabled.
@@ -74,11 +74,6 @@ namespace box2d
 		* Set the maximum motor force, usually in N.
 		**/
 		void setMaxMotorForce(float force);
-
-		/**
-		* Get the current motor force, usually in N.
-		**/
-		float getMaxMotorForce() const;
 
 		/**
 		* Set the motor speed, usually in meters per second.
@@ -92,18 +87,24 @@ namespace box2d
 
 		/**
 		* Get the current motor force, usually in N.
+		* @param inv_dt The inverse time step.
 		**/
-		float getMotorForce() const;
+		float getMotorForce(float inv_dt) const;
+
+		/**
+		* Get the maximum motor force, usually in N.
+		**/
+		float getMaxMotorForce() const;
 
 		/**
 		* Enable/disable the joint limit.
 		**/
-		void setLimitsEnabled(bool limit);
+		void enableLimit(bool limit);
 
 		/**
 		* Checks whether limits are enabled.
 		**/
-		bool isLimitsEnabled() const;
+		bool isLimitEnabled() const;
 
 		/**
 		* Sets the upper limit, usually in meters.
@@ -129,14 +130,14 @@ namespace box2d
 		* Gets the upper limit, usually in meters.
 		**/
 		float getUpperLimit() const;
-		
+
 		/**
 		* Gets the limits, usually in meters.
 		* @returns The upper limit.
 		* @returns The lower limit.
 		**/
 		int getLimits(lua_State * L);
-		
+
 	};
 
 } // box2d

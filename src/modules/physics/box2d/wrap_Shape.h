@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // LOVE
 #include <common/runtime.h>
 #include "Shape.h"
+#include "wrap_Physics.h"
 
 namespace love
 {
@@ -33,30 +34,16 @@ namespace box2d
 {
 	Shape * luax_checkshape(lua_State * L, int idx);
 	int w_Shape_getType(lua_State * L);
-	int w_Shape_setFriction(lua_State * L);
-	int w_Shape_setRestitution(lua_State * L);
-	int w_Shape_setDensity(lua_State * L);
-	int w_Shape_setSensor(lua_State * L);
-	int w_Shape_getFriction(lua_State * L);
-	int w_Shape_getRestitution(lua_State * L);
-	int w_Shape_getDensity(lua_State * L);
-	int w_Shape_isSensor(lua_State * L);
-	int w_Shape_getBody(lua_State * L);
+	int w_Shape_getRadius(lua_State * L);
+
+	int w_Shape_getChildCount(lua_State * L);
 	int w_Shape_testPoint(lua_State * L);
-	int w_Shape_testSegment(lua_State * L);
-	int w_Shape_setFilterData(lua_State * L);
-	int w_Shape_getFilterData(lua_State * L);
-	int w_Shape_setCategory(lua_State * L);
-	int w_Shape_getCategory(lua_State * L);
-	int w_Shape_setMask(lua_State * L);
-	int w_Shape_getMask(lua_State * L);
-	int w_Shape_setData(lua_State * L);
-	int w_Shape_getData(lua_State * L);
-	int w_Shape_getBoundingBox(lua_State * L);
-	int w_Shape_getGroupIndex(lua_State * L);
-	int w_Shape_setGroupIndex(lua_State * L);
+	int w_Shape_rayCast(lua_State * L);
+	int w_Shape_computeAABB(lua_State * L);
+	int w_Shape_computeMass(lua_State * L);
+
 	int w_Shape_destroy(lua_State * L);
-	int luaopen_shape(lua_State * L);
+	extern "C" int luaopen_shape(lua_State * L);
 
 } // box2d
 } // physics

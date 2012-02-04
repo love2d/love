@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -31,9 +31,9 @@ namespace physics
 namespace box2d
 {
 	/**
-	* The PulleyJoint The pulley connects two bodies to ground and 
-	* to each other. As one body goes up, the other goes down. The 
-	* total length of the pulley rope is conserved according to the 
+	* The PulleyJoint The pulley connects two bodies to ground and
+	* to each other. As one body goes up, the other goes down. The
+	* total length of the pulley rope is conserved according to the
 	* initial configuration: length1 + ratio * length2 <= constant.
 	**/
 	class PulleyJoint : public Joint
@@ -44,61 +44,33 @@ namespace box2d
 	public:
 
 		/**
-		* Creates a PulleyJoint connecting body1 to body2. 
+		* Creates a PulleyJoint connecting bodyA to bodyB.
 		**/
-		PulleyJoint(Body * body1, Body * body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio);
-		
+		PulleyJoint(Body * bodyA, Body * bodyB, b2Vec2 groundAnchorA, b2Vec2 groundAnchorB, b2Vec2 anchorA, b2Vec2 anchorB, float ratio, bool collideConnected);
+
 		virtual ~PulleyJoint();
-		
+
 		/**
 		* Gets the ground anchors position in world
 		* coordinates.
 		**/
 		int getGroundAnchors(lua_State * L);
-		
+
 		/**
-		* Sets the max rope lengths (a value of zero keeps it
-		* unchanged). Beware that Box2D also imposes a maximum,
-		* so the smallest of these is actually set.
+		* Gets the current length of the segment attached to bodyA.
 		**/
-		void setMaxLengths(float maxlength1, float maxlength2);
-		
+		float getLengthA() const;
+
 		/**
-		* Gets the max rope lengths.
+		* Gets the current length of the segment attached to bodyB.
 		**/
-		int getMaxLengths(lua_State * L);
-				
-		/**
-		* Sets the total length of the rope and updates the 
-		* MaxLengths values accordingly.
-		**/
-		void setConstant(float length);
-		
-		/**
-		* Gets the total length of the rope.
-		**/
-		float getConstant() const;
-		
-		/**
-		* Gets the current length of the segment attached to body1.
-		**/
-		float getLength1() const;
-	
-		/**
-		* Gets the current length of the segment attached to body2.
-		**/
-		float getLength2() const;
-		
-		/**
-		* Sets the pulley ratio.
-		**/
-		void setRatio(float ratio);
-		
+		float getLengthB() const;
+
 		/**
 		* Gets the pulley ratio.
 		**/
 		float getRatio() const;
-		
+
 	};
 
 } // box2d

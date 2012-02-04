@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -51,7 +51,15 @@ namespace image
 		ImageData * t = luax_checkimagedata(L, 1);
 		int x = luaL_checkint(L, 2);
 		int y = luaL_checkint(L, 3);
-		pixel c = t->getPixel(x, y);
+		pixel c;
+		try
+		{
+			c = t->getPixel(x, y);
+		}
+		catch (love::Exception *e)
+		{
+			return luaL_error(L, "%s", e->what());
+		}
 		lua_pushnumber(L, c.r);
 		lua_pushnumber(L, c.g);
 		lua_pushnumber(L, c.b);
@@ -69,7 +77,14 @@ namespace image
 		c.g = luaL_checkint(L, 5);
 		c.b = luaL_checkint(L, 6);
 		c.a = luaL_checkint(L, 7);
-		t->setPixel(x, y, c);
+		try
+		{
+			t->setPixel(x, y, c);
+		}
+		catch (love::Exception *e)
+		{
+			return luaL_error(L, "%s", e->what());
+		}
 		return 0;
 	}
 
@@ -77,15 +92,15 @@ namespace image
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
 
-		if(!lua_isfunction(L, 2))
+		if (!lua_isfunction(L, 2))
 			return luaL_error(L, "Function expected");
-		
+
 		int w = t->getWidth();
 		int h = t->getHeight();
 
-		for(int i = 0; i < w; i++)
+		for (int i = 0; i < w; i++)
 		{
-			for(int j = 0; j < h; j++)
+			for (int j = 0; j < h; j++)
 			{
 				lua_pushvalue(L, 2);
 				lua_pushnumber(L, i);
@@ -127,22 +142,34 @@ namespace image
 		t->paste((love::image::ImageData *)src, dx, dy, sx, sy, sw, sh);
 		return 0;
 	}
-	
+
 	int w_ImageData_encode(lua_State * L)
 	{
 		ImageData * t = luax_checkimagedata(L, 1);
-		if(lua_isstring(L, 2))
+		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T);
+		std::string ext;
 		const char * fmt;
-		if (lua_isnoneornil(L, 3)) {
-			fmt = file->getExtension().c_str();
-		} else {
+		if (lua_isnoneornil(L, 3))
+		{
+			ext = file->getExtension();
+			fmt = ext.c_str();
+		}
+		else
+		{
 			fmt = luaL_checkstring(L, 3);
 		}
-		ImageData::Format format;
+		ImageData::Format format = ImageData::FORMAT_PNG;
 		ImageData::getConstant(fmt, format);
-		t->encode(file, format);
+		try
+		{
+			t->encode(file, format);
+		}
+		catch (love::Exception & e)
+		{
+			return luaL_error(L, e.what());
+		}
 		return 0;
 	}
 
@@ -163,7 +190,7 @@ namespace image
 		{ 0, 0 }
 	};
 
-	int luaopen_imagedata(lua_State * L)
+	extern "C" int luaopen_imagedata(lua_State * L)
 	{
 		return luax_register_type(L, "ImageData", functions);
 	}

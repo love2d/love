@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -25,17 +25,15 @@
 #include "Object.h"
 #include "Reference.h"
 #include "StringMap.h"
+#include <thread/threads.h>
 
 // STD
 #include <iostream>
 
-// SDL
-#include <SDL_mutex.h>
-#include <SDL_thread.h>
 
 namespace love
 {
-	static SDL_mutex *gcmutex = 0;
+	static thread::Mutex *gcmutex = 0;
 	void *_gcmutex = 0;
 	unsigned int _gcthread = 0;
 	/**
@@ -46,17 +44,16 @@ namespace love
 	{
 		if (!gcmutex)
 		{
-			gcmutex = SDL_CreateMutex();
+			gcmutex = new thread::Mutex();
 			_gcmutex = (void*) gcmutex;
 		}
 		Proxy * p = (Proxy *)lua_touserdata(L, 1);
 		Object * t = (Object *)p->data;
-		if(p->own)
+		if (p->own)
 		{
-			SDL_mutexP(gcmutex);
-			_gcthread = (unsigned int) SDL_ThreadID();
+			thread::Lock lock(gcmutex);
+			_gcthread = thread::ThreadBase::threadId();
 			t->release();
-			SDL_mutexV(gcmutex);
 		}
 		return 0;
 	}
@@ -75,12 +72,20 @@ namespace love
 		return 1;
 	}
 
+	static int w__eq(lua_State * L)
+	{
+		Proxy * p1 = (Proxy *)lua_touserdata(L, 1);
+		Proxy * p2 = (Proxy *)lua_touserdata(L, 2);
+		luax_pushboolean(L, p1->data == p2->data);
+		return 1;
+	}
+
 	Reference * luax_refif(lua_State * L, int type)
 	{
 		Reference * r = 0;
 
 		// Create a reference only if the test succeeds.
-		if(lua_type(L, -1) == type)
+		if (lua_type(L, -1) == type)
 			r = new Reference(L);
 		else // Pop the value even if it fails (but also if it succeeds).
 			lua_pop(L, 1);
@@ -90,7 +95,7 @@ namespace love
 
 	void luax_printstack(lua_State * L)
 	{
-		for(int i = 1;i<=lua_gettop(L);i++)
+		for (int i = 1;i<=lua_gettop(L);i++)
 		{
 			std::cout << i << " - " << luaL_typename(L, i) << std::endl;
 		}
@@ -108,15 +113,27 @@ namespace love
 
 	bool luax_optboolean(lua_State * L, int idx, bool b)
 	{
-		if(lua_isboolean(L, idx) == 1)
+		if (lua_isboolean(L, idx) == 1)
 			return (lua_toboolean(L, idx) == 1 ? true : false);
 		return b;
+	}
+
+	std::string luax_checkstring(lua_State * L, int idx)
+	{
+		size_t len;
+		const char * str = luaL_checklstring(L, idx, &len);
+		return std::string(str, len);
+	}
+
+	void luax_pushstring(lua_State * L, std::string str)
+	{
+		lua_pushlstring(L, str.data(), str.size());
 	}
 
 	int luax_assert_argc(lua_State * L, int min)
 	{
 		int argc = lua_gettop(L);
-		if( argc < min )
+		if ( argc < min )
 			return luaL_error(L, "Incorrect number of arguments. Got [%d], expected at least [%d]", argc, min);
 		return 0;
 	}
@@ -124,14 +141,14 @@ namespace love
 	int luax_assert_argc(lua_State * L, int min, int max)
 	{
 		int argc = lua_gettop(L);
-		if( argc < min || argc > max)
+		if ( argc < min || argc > max)
 			return luaL_error(L, "Incorrect number of arguments. Got [%d], expected [%d-%d]", argc, min, max);
 		return 0;
 	}
 
 	int luax_assert_function(lua_State * L, int n)
 	{
-		if(!lua_isfunction(L, n))
+		if (!lua_isfunction(L, n))
 			return luaL_error(L, "Argument must be of type \"function\".");
 		return 0;
 	}
@@ -166,14 +183,15 @@ namespace love
 		luaL_register(L, 0, m.functions);
 
 		// Register types.
-		if(m.types != 0)
-			for(const lua_CFunction * t = m.types; *t != 0; t++)
+		if (m.types != 0)
+			for (const lua_CFunction * t = m.types; *t != 0; t++)
 				(*t)(L);
 
-		lua_setfield(L, -2, m.name); // love.graphics = table
-		lua_pop(L, 1); // love
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -3, m.name); // love.graphics = table
+		lua_remove(L, -2); // love
 
-		return 0;
+		return 1;
 	}
 
 	int luax_preload(lua_State * L, lua_CFunction f, const char * name)
@@ -198,6 +216,10 @@ namespace love
 		lua_pushcfunction(L, w__gc);
 		lua_setfield(L, -2, "__gc");
 
+		// Add equality
+		lua_pushcfunction(L, w__eq);
+		lua_setfield(L, -2, "__eq");
+
 		// Add tostring function.
 		lua_pushstring(L, tname);
 		lua_pushcclosure(L, w__tostring, 1);
@@ -212,31 +234,53 @@ namespace love
 		lua_pushcfunction(L, w__typeOf);
 		lua_setfield(L, -2, "typeOf");
 
-		if(f != 0)
+		if (f != 0)
 			luaL_register(L, 0, f);
 
 		lua_pop(L, 1); // Pops metatable.
 		return 0;
 	}
 
-	int luax_register_searcher(lua_State * L, lua_CFunction f)
+	int luax_table_insert(lua_State * L, int tindex, int vindex, int pos)
+	{
+		if (tindex < 0)
+			tindex = lua_gettop(L)+1+tindex;
+		if (vindex < 0)
+			vindex = lua_gettop(L)+1+vindex;
+		if (pos == -1)
+		{
+			lua_pushvalue(L, vindex);
+			lua_rawseti(L, tindex, lua_objlen(L, tindex)+1);
+			return 0;
+		}
+		else if (pos < 0)
+			pos = lua_objlen(L, tindex)+1+pos;
+		for (int i = lua_objlen(L, tindex)+1; i > pos; i--)
+		{
+			lua_rawgeti(L, tindex, i-1);
+			lua_rawseti(L, tindex, i);
+		}
+		lua_pushvalue(L, vindex);
+		lua_rawseti(L, tindex, pos);
+		return 0;
+	}
+
+	int luax_register_searcher(lua_State * L, lua_CFunction f, int pos)
 	{
 		// Add the package loader to the package.loaders table.
 		lua_getglobal(L, "package");
 
-		if(lua_isnil(L, -1))
+		if (lua_isnil(L, -1))
 			return luaL_error(L, "Can't register searcher: package table does not exist.");
 
 		lua_getfield(L, -1, "loaders");
 
-		if(lua_isnil(L, -1))
+		if (lua_isnil(L, -1))
 			return luaL_error(L, "Can't register searcher: package.loaders table does not exist.");
 
-		int len = lua_objlen(L, -1);
-		lua_pushinteger(L, len+1);
 		lua_pushcfunction(L, f);
-		lua_settable(L, -3);
-		lua_pop(L, 2);
+		luax_table_insert(L, -2, -1, pos);
+		lua_pop(L, 3);
 		return 0;
 	}
 
@@ -254,7 +298,7 @@ namespace love
 
 	bool luax_istype(lua_State * L, int idx, love::bits type)
 	{
-		if(lua_isuserdata(L, idx) == 0)
+		if (lua_isuserdata(L, idx) == 0)
 			return false;
 
 		return ((((Proxy *)lua_touserdata(L, idx))->flags & type) == type);
@@ -263,11 +307,11 @@ namespace love
 	int luax_getfunction(lua_State * L, const char * mod, const char * fn)
 	{
 		lua_getglobal(L, "love");
-		if(lua_isnil(L, -1)) return luaL_error(L, "Could not find global love!");
+		if (lua_isnil(L, -1)) return luaL_error(L, "Could not find global love!");
 		lua_getfield(L, -1, mod);
-		if(lua_isnil(L, -1)) return luaL_error(L, "Could not find love.%s!", mod);
+		if (lua_isnil(L, -1)) return luaL_error(L, "Could not find love.%s!", mod);
 		lua_getfield(L, -1, fn);
-		if(lua_isnil(L, -1)) return luaL_error(L, "Could not find love.%s.%s!", mod, fn);
+		if (lua_isnil(L, -1)) return luaL_error(L, "Could not find love.%s.%s!", mod, fn);
 
 		lua_remove(L, -2); // remove mod
 		lua_remove(L, -2); // remove fn
@@ -287,7 +331,8 @@ namespace love
 	int luax_convobj(lua_State * L, int idxs[], int n, const char * mod, const char * fn)
 	{
 		luax_getfunction(L, mod, fn);
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++)
+		{
 			lua_pushvalue(L, idxs[i]); // The arguments.
 		}
 		lua_call(L, n, 1); // Call the function, n args, one return value.
@@ -307,15 +352,19 @@ namespace love
 
 	int luax_insist(lua_State * L, int idx, const char * k)
 	{
+		// Convert to absolute index if necessary.
+		if (idx < 0 && idx > LUA_REGISTRYINDEX)
+			idx = lua_gettop(L) + ++idx;
+
 		lua_getfield(L, idx, k);
 
 		// Create if necessary.
-		if(!lua_istable(L, -1))
+		if (!lua_istable(L, -1))
 		{
 			lua_pop(L, 1); // Pop the non-table.
 			lua_newtable(L);
 			lua_pushvalue(L, -1); // Duplicate the table to leave on top.
-			lua_setfield(L, -3, k); // k[idx] = table
+			lua_setfield(L, idx, k); // lua_stack[idx][k] = lua_stack[-1] (table)
 		}
 
 		return 1;
@@ -325,7 +374,7 @@ namespace love
 	{
 		lua_getglobal(L, k);
 
-		if(!lua_istable(L, -1))
+		if (!lua_istable(L, -1))
 		{
 			lua_pop(L, 1); // Pop the non-table.
 			lua_newtable(L);
@@ -381,11 +430,10 @@ namespace love
 		{"Drawable", GRAPHICS_DRAWABLE_ID},
 		{"Image", GRAPHICS_IMAGE_ID},
 		{"Quad", GRAPHICS_QUAD_ID},
-		{"Glyph", GRAPHICS_GLYPH_ID},
 		{"Font", GRAPHICS_FONT_ID},
 		{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
 		{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
-		{"VertexBuffer", GRAPHICS_VERTEX_BUFFER_ID},
+		{"Canvas", GRAPHICS_CANVAS_ID},
 
 		// Image
 		{"ImageData", IMAGE_IMAGE_DATA_ID},

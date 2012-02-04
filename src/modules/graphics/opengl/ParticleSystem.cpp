@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #include <common/math.h>
 
-#include <SDL_opengl.h>
+#include "GLee.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -69,22 +69,22 @@ namespace opengl
 
 	ParticleSystem::~ParticleSystem()
 	{
-		if(this->sprite != 0)
+		if (this->sprite != 0)
 			this->sprite->release();
 
-		if(pStart != 0)
+		if (pStart != 0)
 			delete [] pStart;
 	}
 
 	void ParticleSystem::add()
 	{
-		if(isFull()) return;
+		if (isFull()) return;
 
 		float min,max;
 
 		min = particleLifeMin;
 		max = particleLifeMax;
-		if(min == max)
+		if (min == max)
 			pLast->life = min;
 		else
 			pLast->life = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
@@ -96,6 +96,8 @@ namespace opengl
 		min = direction - spread/2.0f;
 		max = direction + spread/2.0f;
 		pLast->direction = random<float>(min, max);
+
+		pLast->origin = position;
 
 		min = speedMin;
 		max = speedMax;
@@ -132,7 +134,7 @@ namespace opengl
 
 	void ParticleSystem::remove(particle * p)
 	{
-		if(!isEmpty())
+		if (!isEmpty())
 		{
 			*p = *(--pLast);
 		}
@@ -140,7 +142,7 @@ namespace opengl
 
 	void ParticleSystem::setSprite(Image * image)
 	{
-		if(sprite != 0)
+		if (sprite != 0)
 			sprite->release();
 
 		sprite = image;
@@ -170,7 +172,7 @@ namespace opengl
 	void ParticleSystem::setParticleLife(float min, float max)
 	{
 		particleLifeMin = min;
-		if(max == 0)
+		if (max == 0)
 			particleLifeMax = min;
 		else
 			particleLifeMax = max;
@@ -320,6 +322,11 @@ namespace opengl
 	{
 		return position.getY();
 	}
+	
+	const love::Vector& ParticleSystem::getPosition() const
+	{
+		return position;
+	}
 
 	float ParticleSystem::getDirection() const
 	{
@@ -385,25 +392,24 @@ namespace opengl
 		return pLast == pEnd;
 	}
 
-	void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const
+	void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 	{
-		if(sprite == 0) return; // just in case of failure
+		if (sprite == 0) return; // just in case of failure
 
 		glPushMatrix();
 		glPushAttrib(GL_CURRENT_BIT);
 
-		glTranslatef(x, y, 0);
-		glRotatef(LOVE_TODEG(angle), 0, 0, 1.0f);
-		glScalef(sx, sy, 1.0f);
-		glTranslatef( ox, oy, 0);
+		Matrix t;
+		t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+		glMultMatrixf((const GLfloat*)t.getElements());
 
 		particle * p = pStart;
-		while(p != pLast)
+		while (p != pLast)
 		{
 			glPushMatrix();
 
 			glColor4f(p->color.r, p->color.g, p->color.b, p->color.a);
-			sprite->draw(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY);
+			sprite->draw(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
 
 			glPopMatrix();
 			p++;
@@ -419,30 +425,30 @@ namespace opengl
 		particle * p = pStart;
 
 		// Make some more particles.
-		if(active)
+		if (active)
 		{
 			float rate = 1.0f / emissionRate; // the amount of time between each particle emit
 			emitCounter += dt;
-			while(emitCounter > rate)
+			while (emitCounter > rate)
 			{
 				add();
 				emitCounter -= rate;
 			}
 			/*int particles = (int)(emissionRate * dt);
-			for(int i = 0; i != particles; i++)
+			for (int i = 0; i != particles; i++)
 				add();*/
 
 			life -= dt;
-			if(lifetime != -1 && life < 0)
+			if (lifetime != -1 && life < 0)
 				stop();
 		}
 
-		while(p != pLast)
+		while (p != pLast)
 		{
 			// Decrease lifespan.
 			p->life -= dt;
 
-			if(p->life > 0)
+			if (p->life > 0)
 			{
 
 				// Temp variables.
@@ -450,7 +456,7 @@ namespace opengl
 				love::Vector ppos(p->position[0], p->position[1]);
 
 				// Get vector from particle center to particle.
-				radial = ppos - position;
+				radial = ppos - p->origin;
 				radial.normalize();
 				tangential = radial;
 
@@ -494,7 +500,7 @@ namespace opengl
 				size_t i = (size_t)s;
 				size_t k = (i == sizes.size() - 1) ? i : i + 1; // boundary check (prevents failing on t = 1.0f)
 				s -= (float)i; // transpose s to be in interval [0:1]: i <= s < i + 1 ~> 0 <= s < 1
-				p->size = sizes[i] * (1.0f - t) + sizes[k] * t;
+				p->size = sizes[i] * (1.0f - s) + sizes[k] * s;
 
 				// Update color according to given intervals (as above)
 				s = t * (float)(colors.size() - 1);
@@ -510,7 +516,7 @@ namespace opengl
 			{
 				remove(p);
 
-				if(p >= pLast)
+				if (p >= pLast)
 					return;
 			} // else
 		} // while

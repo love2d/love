@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@ namespace lullaby
 
 		int ret;
 
-		if(!inited)
+		if (!inited)
 		{
 			ret = mpg123_init();
 			if (ret != MPG123_OK)
@@ -76,9 +76,9 @@ namespace lullaby
 			"mp3", ""
 		};
 
-		for(int i = 0; !(supported[i].empty()); i++)
+		for (int i = 0; !(supported[i].empty()); i++)
 		{
-			if(supported[i].compare(ext) == 0)
+			if (supported[i].compare(ext) == 0)
 				return true;
 		}
 
@@ -87,7 +87,7 @@ namespace lullaby
 
 	void Mpg123Decoder::quit()
 	{
-		if(inited)
+		if (inited)
 			mpg123_exit();
 	}
 
@@ -101,7 +101,7 @@ namespace lullaby
 		int size = 0;
 		bool done = false;
 
-		while(size < bufferSize && !done && !eof)
+		while (size < bufferSize && !done && !eof)
 		{
 			size_t numbytes = 0;
 
@@ -111,6 +111,7 @@ namespace lullaby
 			{
 			case MPG123_NEW_FORMAT:
 				{
+					size += numbytes;
 					long rate = 0;
 					int encoding = 0;
 					int ret = mpg123_getformat(handle, &rate, &channels, &encoding);
@@ -129,6 +130,7 @@ namespace lullaby
 				continue;
 			case MPG123_NEED_MORE:
 				{
+					size += numbytes;
 					int v = feed(8192);
 
 					switch(v)
@@ -136,7 +138,7 @@ namespace lullaby
 					case MPG123_OK:
 						continue;
 					case MPG123_DONE:
-						if(numbytes == 0)
+						if (numbytes == 0)
 							eof = true;
 						break;
 					default:
@@ -163,12 +165,12 @@ namespace lullaby
 
 	bool Mpg123Decoder::seek(float s)
 	{
-		off_t offset = s * sampleRate;
+		off_t offset = static_cast<off_t>(s * static_cast<float>(sampleRate));
 
-		if(offset < 0)
+		if (offset < 0)
 			return false;
 
-		if(mpg123_feedseek(handle, offset, SEEK_SET, &offset) >= 0)
+		if (mpg123_feedseek(handle, offset, SEEK_SET, &offset) >= 0)
 		{
 			data_offset = offset;
 			eof = false;
@@ -183,7 +185,7 @@ namespace lullaby
 		eof = false;
 		off_t offset;
 
-		if(mpg123_feedseek(handle, 0, SEEK_SET, &offset) >= 0)
+		if (mpg123_feedseek(handle, 0, SEEK_SET, &offset) >= 0)
 		{
 			data_offset = offset;
 			return true;
@@ -211,14 +213,14 @@ namespace lullaby
 	{
 		int remaining = data_size - data_offset;
 
-		if(remaining <= 0)
+		if (remaining <= 0)
 			return MPG123_DONE;
 
 		int feed_bytes = remaining < bytes ? remaining : bytes;
 
 		int r = mpg123_feed(handle, (unsigned char*)data->getData() + data_offset, feed_bytes);
 
-		if(r == MPG123_OK || r == MPG123_DONE)
+		if (r == MPG123_OK || r == MPG123_DONE)
 			data_offset += feed_bytes;
 
 		return r;

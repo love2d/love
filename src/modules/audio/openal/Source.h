@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -62,11 +62,19 @@ namespace openal
 		float velocity[3];
 		float direction[3];
 		bool looping;
-		
+		bool paused;
+		float minVolume;
+		float maxVolume;
+		float referenceDistance;
+		float rolloffFactor;
+		float maxDistance;
+
 		float offsetSamples;
 		float offsetSeconds;
 
 		love::sound::Decoder * decoder;
+
+		unsigned int toLoop;
 
 	public:
 		Source(Pool * pool, love::sound::SoundData * soundData);
@@ -82,13 +90,15 @@ namespace openal
 		virtual bool isStopped() const;
 		virtual bool isPaused() const;
 		virtual bool isFinished() const;
-		virtual void update();
+		virtual bool update();
 		virtual void setPitch(float pitch);
 		virtual float getPitch() const;
 		virtual void setVolume(float volume);
 		virtual float getVolume() const;
+		virtual void seekAtomic(float offset, void * unit);
 		virtual void seek(float offset, Unit unit);
-		virtual float tell(Unit unit) const;
+		virtual float tellAtomic(void * unit) const;
+		virtual float tell(Unit unit);
 		virtual void setPosition(float * v);
 		virtual void getPosition(float * v) const;
 		virtual void setVelocity(float * v);
@@ -98,6 +108,16 @@ namespace openal
 		void setLooping(bool looping);
 		bool isLooping() const;
 		bool isStatic() const;
+		virtual void setMinVolume(float volume);
+		virtual float getMinVolume() const;
+		virtual void setMaxVolume(float volume);
+		virtual float getMaxVolume() const;
+		virtual void setReferenceDistance(float distance);
+		virtual float getReferenceDistance() const;
+		virtual void setRolloffFactor(float factor);
+		virtual float getRolloffFactor() const;
+		virtual void setMaxDistance(float distance);
+		virtual float getMaxDistance() const;
 
 		void playAtomic();
 		void stopAtomic();

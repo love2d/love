@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@
 #include <vector>
 
 // Box2D
-#include "Include/Box2D.h"
+#include <Box2D/Box2D.h>
 
 namespace love
 {
@@ -40,6 +40,9 @@ namespace box2d
 {
 
 	class Contact;
+	class Body;
+	class Fixture;
+	class Joint;
 
 	/**
 	* The World is the "God" container class,
@@ -52,13 +55,14 @@ namespace box2d
 	* The world also controls global parameters, like
 	* gravity.
 	**/
-	class World : public Object, public b2ContactListener
+	class World : public Object, public b2ContactListener, public b2ContactFilter, public b2DestructionListener
 	{
 		// Friends.
 		friend class Joint;
 		friend class DistanceJoint;
 		friend class MouseJoint;
 		friend class Body;
+		friend class Fixture;
 
 	public:
 
@@ -66,11 +70,36 @@ namespace box2d
 		{
 		public:
 			Reference * ref;
-			std::vector<Contact *> contacts;
 			ContactCallback();
 			~ContactCallback();
-			void add(World * world, const b2ContactPoint* point);
-			void process();
+			void process(b2Contact* contact, const b2ContactImpulse* impulse = NULL);
+		};
+
+		class ContactFilter
+		{
+		public:
+			Reference * ref;
+			ContactFilter();
+			~ContactFilter();
+			bool process(Fixture * a, Fixture * b);
+		};
+
+		class QueryCallback : public b2QueryCallback
+		{
+		public:
+			Reference * ref;
+			QueryCallback();
+			~QueryCallback();
+			virtual bool ReportFixture(b2Fixture * fixture);
+		};
+
+		class RayCastCallback : public b2RayCastCallback
+		{
+		public:
+			Reference * ref;
+			RayCastCallback();
+			~RayCastCallback();
+			virtual float32 ReportFixture(b2Fixture * fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction);
 		};
 
 	private:
@@ -78,34 +107,36 @@ namespace box2d
 		// Pointer to the Box2D world.
 		b2World * world;
 
-		// Contact callbacks.
-		ContactCallback add, persist, remove, result;
+        // Ground body
+        b2Body * groundBody;
 
-		// The length of one meter in pixels.
-		int meter;
+		// The list of to be destructed bodies.
+		std::vector<Body*> destructBodies;
+		std::vector<Fixture*> destructFixtures;
+		std::vector<Joint*> destructJoints;
+		bool destructWorld;
+
+		// Contact callbacks.
+		ContactCallback begin, end, presolve, postsolve;
+		ContactFilter filter;
+		QueryCallback query;
+		RayCastCallback	raycast;
 
 	public:
 
 		/**
-		* 30 pixels in one meter by default.
+		* Creates a new world.
 		**/
-		static const int DEFAULT_METER = 30;
+		World();
 
 		/**
-		* Creates a new world with the given bounding box.
-		* @param aabb The bounding box.
-		**/
-		World(b2AABB aabb);
-
-		/**
-		* Creates a new world with the given bounding box, gravity
+		* Creates a new world with the given gravity
 		* and whether or not the bodies should sleep when appropriate.
-		* @param aabb The bounding box.
 		* @param gravity The gravity of the World.
 		* @param sleep True if the bodies should be able to sleep,
 		* false otherwise.
 		**/
-		World(b2AABB aabb, b2Vec2 gravity, bool sleep, int meter = DEFAULT_METER);
+		World(b2Vec2 gravity, bool sleep);
 
 		virtual ~World();
 
@@ -118,16 +149,28 @@ namespace box2d
 		void update(float dt);
 
 		// From b2ContactListener
-		void Add(const b2ContactPoint* point);
-		void Persist(const b2ContactPoint* point);
-		void Remove(const b2ContactPoint* point);
-		void Result(const b2ContactPoint* point);
+		void BeginContact(b2Contact* contact);
+		void EndContact(b2Contact* contact);
+		void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);
+		void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse);
+
+		// From b2ContactFilter
+		bool ShouldCollide(b2Fixture* fixtureA, b2Fixture* fixtureB);
+
+		// From b2DestructionListener
+		void SayGoodbye(b2Fixture* fixture);
+		void SayGoodbye(b2Joint* joint);
+
+		/**
+		* Returns true if the Box2D world is alive.
+		**/
+		bool isValid() const;
 
 		/**
 		* Receives up to four Lua functions as arguments. Each function is
-		* collision callback for the four events (in order): add, persist,
-		* remove and result. The value "nil" is accepted if one or more events
-		* are uninteresting.
+		* collision callback for the four events (in order): begin, end,
+		* presolve and postsolve. The value "nil" is accepted if one or
+		* more events are uninteresting.
 		**/
 		int setCallbacks(lua_State * L);
 
@@ -135,6 +178,16 @@ namespace box2d
 		* Returns the functions previously set by setCallbacks.
 		**/
 		int getCallbacks(lua_State * L);
+
+		/**
+		* Sets the ContactFilter callback.
+		**/
+		int setContactFilter(lua_State * L);
+
+		/**
+		* Gets the ContactFilter callback.
+		**/
+		int getContactFilter(lua_State * L);
 
 		/**
 		* Sets the current gravity of the World.
@@ -154,93 +207,77 @@ namespace box2d
 		* Sets whether this World allows sleep.
 		* @param allow True to allow, false to disallow.
 		**/
-		void setAllowSleep(bool allow);
+		void setAllowSleeping(bool allow);
 
 		/**
 		* Returns whether this World allows sleep.
 		* @return True if allowed, false if disallowed.
 		**/
-		bool isAllowSleep() const;
+		bool getAllowSleeping() const;
+
+		/**
+		* Returns whether this World is currently locked.
+		* If it's locked, it's in the middle of a timestep.
+		* @return Whether the World is locked.
+		**/
+		bool isLocked() const;
 
 		/**
 		* Get the current body count.
 		* @return The number of bodies.
 		**/
-		int getBodyCount();
+		int getBodyCount() const;
 
 		/**
 		* Get the current joint count.
 		* @return The number of joints.
 		**/
-		int getJointCount();
+		int getJointCount() const;
 
 		/**
-		* Sets the number of pixels in one meter.
-		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+		* Get the current contact count.
+		* @return The number of contacts.
 		**/
-		void setMeter(int meter);
+		int getContactCount() const;
 
 		/**
-		* Gets the number of pixels in one meter.
-		* @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+		* Get an array of all the Bodies in the World.
+		* @return An array of Bodies.
 		**/
-		int getMeter() const;
+		int getBodyList(lua_State * L) const;
 
 		/**
-		* Scales a value down according to the current meter in pixels.
-		* @param f The unscaled input value.
+		* Get an array of all the Joints in the World.
+		* @return An array of Joints.
 		**/
-		float scaleDown(float f);
+		int getJointList(lua_State * L) const;
 
 		/**
-		* Scales a value up according to the current meter in pixels.
-		* @param f The unscaled input value.
+		* Get an array of all the Contacts in the World.
+		* @return An array of Contacts.
 		**/
-		float scaleUp(float f);
+		int getContactList(lua_State * L) const;
+
+        /**
+        * Gets the ground body.
+        * @return The ground body.
+        **/
+        b2Body * getGroundBody() const;
 
 		/**
-		* Scales a point down according to the current meter
-		* in pixels, for instance x = x0/meter, y = x0/meter.
-		* @param x The x-coordinate of the point to scale.
-		* @param y The y-coordinate of the point to scale.
+		* Gets all fixtures that overlap a given bounding box.
 		**/
-		void scaleDown(float & x, float & y);
+		int queryBoundingBox(lua_State * L);
 
 		/**
-		* Scales a point up according to the current meter
-		* in pixels, for instance x = x0/meter, y = x0/meter.
-		* @param x The x-coordinate of the point to scale.
-		* @param y The y-coordinate of the point to scale.
+		* Raycasts the World for all Fixtures in the path of the ray.
 		**/
-		void scaleUp(float & x, float & y);
+		int rayCast(lua_State * L);
 
 		/**
-		* Scales a b2Vec2 down according to the current meter in pixels.
-		* @param v The unscaled input vector.
-		* @return The scaled vector.
+		* Destroy this world.
 		**/
-		b2Vec2 scaleDown(const b2Vec2 & v);
-
-		/**
-		* Scales a b2Vec up according to the current meter in pixels.
-		* @param v The unscaled input vector.
-		* @return The scaled vector.
-		**/
-		b2Vec2 scaleUp(const b2Vec2 & v);
-
-		/**
-		* Scales a b2AABB down according to the current meter in pixels.
-		* @param v The unscaled input AABB.
-		* @return The scaled AABB.
-		**/
-		b2AABB scaleDown(const b2AABB & aabb);
-
-		/**
-		* Scales a b2AABB up according to the current meter in pixels.
-		* @param v The unscaled input AABB.
-		* @return The scaled AABB.
-		**/
-		b2AABB scaleUp(const b2AABB & aabb);
+		void destroy();
 
 	};
 

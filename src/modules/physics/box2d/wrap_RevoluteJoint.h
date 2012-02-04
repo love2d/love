@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -35,22 +35,22 @@ namespace box2d
 	RevoluteJoint * luax_checkrevolutejoint(lua_State * L, int idx);
 	int w_RevoluteJoint_getJointAngle(lua_State * L);
 	int w_RevoluteJoint_getJointSpeed(lua_State * L);
-	int w_RevoluteJoint_setMotorEnabled(lua_State * L);
+	int w_RevoluteJoint_enableMotor(lua_State * L);
 	int w_RevoluteJoint_isMotorEnabled(lua_State * L);
 	int w_RevoluteJoint_setMaxMotorTorque(lua_State * L);
-	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L);
 	int w_RevoluteJoint_setMotorSpeed(lua_State * L);
 	int w_RevoluteJoint_getMotorSpeed(lua_State * L);
 	int w_RevoluteJoint_getMotorTorque(lua_State * L);
-	int w_RevoluteJoint_setLimitsEnabled(lua_State * L);
-	int w_RevoluteJoint_isLimitsEnabled(lua_State * L);
+	int w_RevoluteJoint_getMaxMotorTorque(lua_State * L);
+	int w_RevoluteJoint_enableLimit(lua_State * L);
+	int w_RevoluteJoint_isLimitEnabled(lua_State * L);
 	int w_RevoluteJoint_setUpperLimit(lua_State * L);
 	int w_RevoluteJoint_setLowerLimit(lua_State * L);
 	int w_RevoluteJoint_setLimits(lua_State * L);
 	int w_RevoluteJoint_getLowerLimit(lua_State * L);
 	int w_RevoluteJoint_getUpperLimit(lua_State * L);
 	int w_RevoluteJoint_getLimits(lua_State * L);
-	int luaopen_revolutejoint(lua_State * L);
+	extern "C" int luaopen_revolutejoint(lua_State * L);
 
 } // box2d
 } // physics

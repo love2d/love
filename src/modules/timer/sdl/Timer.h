@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 #include <SDL.h>
 
 // LOVE
-#include <common/Module.h>
+#include <timer/Timer.h>
 
 namespace love
 {
@@ -37,8 +37,28 @@ namespace sdl
 	* An SDL timer module. Can keep track of time between certain function
 	* calls, and provides access to a FPS metric which updates once each second.
 	**/
-	class Timer : public Module
+	class Timer : public love::timer::Timer
 	{
+	public:
+
+		/**
+		* Constructor. Initializes the SDL/timer subsystem.
+		**/
+		Timer();
+
+		/**
+		* Destructor.
+		**/
+		virtual ~Timer();
+
+		const char * getName() const;
+		void step();
+		void sleep(double seconds);
+		double getDelta() const;
+		double getFPS() const;
+		double getTime() const;
+		double getMicroTime() const;
+
 	private:
 
 		// Timing vars for benchmarking.
@@ -50,74 +70,16 @@ namespace sdl
 		Uint32 prevFpsUpdate;
 
 		// Updated with a certain frequency.
-		float fps;
+		double fps;
 
 		// The frequency by which to update the FPS.
-		float fpsUpdateFrequency;
+		double fpsUpdateFrequency;
 
 		// Frames since last FPS update.
 		int frames;
 
 		// The current timestep.
-		float dt;
-
-	public:
-
-		/**
-		* Constructor. Initializes the SDL/timer subsystem.
-		**/
-		Timer();
-
-		/**
-		* Destructor.
-		**/
-		~Timer();
-
-		/**
-		* Gets the name of the module.
-		* @return Always returns "love.timer.sdl".
-		**/
-		const char * getName() const;
-
-		/**
-		* Measures the time between this call and the previous call,
-		* and updates internal values accordinly.
-		**/
-		void step();
-
-		/**
-		* Tries to sleep for the specified amount of time. The precision is
-		* usually 1ms.
-		* @param ms The number of milliseconds to sleep for.
-		**/
-		void sleep(int ms);
-
-		/**
-		* Gets the time between the last two frames, assuming step is called
-		* each frame.
-		**/
-		float getDelta() const;
-
-		/**
-		* Gets the average FPS over the last second. Beucase the value is only updated
-		* once per second, it does not look erratic when displayed on screen.
-		* @return The "current" FPS.
-		**/
-		float getFPS() const;
-
-		/**
-		* Gets the amount of time since the program started. Only useful for timing
-		* code or measuring intervals.
-		* @return The time (in seconds) since the program started.
-		**/
-		float getTime() const;
-
-		/**
-		 * Gets the amount of time passed since an unspecified time. The time is accurate
-		 * to the microsecond, and is limited to 24 hours.
-		 * @return The time (in seconds)
-		 **/
-		float getMicroTime() const;
+		double dt;
 
 	}; // Timer
 

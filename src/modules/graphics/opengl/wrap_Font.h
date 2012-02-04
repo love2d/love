@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@ namespace opengl
 	int w_Font_getWrap(lua_State * L);
 	int w_Font_setLineHeight(lua_State * L);
 	int w_Font_getLineHeight(lua_State * L);
-	int luaopen_font(lua_State * L);
+	extern "C" int luaopen_font(lua_State * L);
 
 } // opengl
 } // graphics

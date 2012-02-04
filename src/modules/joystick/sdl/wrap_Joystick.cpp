@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -104,8 +104,18 @@ namespace sdl
 	int w_isDown(lua_State * L)
 	{
 		int index = luaL_checkint(L, 1)-1;
-		int button = luaL_checkint(L, 2)-1;
-		luax_pushboolean(L, instance->isDown(index, button));
+		unsigned int num = lua_gettop(L);
+		int * buttonlist = new int[num];
+		unsigned int counter = 0;
+
+		for (unsigned int i = 1; i < num; i++)
+		{
+			buttonlist[counter++] = (int) luaL_checknumber(L, i+1)-1;
+		}
+		buttonlist[counter] = -1;
+
+		luax_pushboolean(L, instance->isDown(index, buttonlist));
+		delete[] buttonlist;
 		return 1;
 	}
 
@@ -151,15 +161,15 @@ namespace sdl
 		{ 0, 0 }
 	};
 
-	int luaopen_love_joystick(lua_State * L)
+	extern "C" int luaopen_love_joystick(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Joystick();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -28,7 +28,10 @@ namespace box2d
 {
 	DistanceJoint * luax_checkdistancejoint(lua_State * L, int idx)
 	{
-		return luax_checktype<DistanceJoint>(L, idx, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T);
+		DistanceJoint * j = luax_checktype<DistanceJoint>(L, idx, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T);
+		if (!j->isValid())
+			luaL_error(L, "Attempt to use destroyed joint.");
+		return j;
 	}
 
 	int w_DistanceJoint_setLength(lua_State * L)
@@ -81,20 +84,19 @@ namespace box2d
 		{ "getLength", w_DistanceJoint_getLength },
 		{ "setFrequency", w_DistanceJoint_setFrequency },
 		{ "getFrequency", w_DistanceJoint_getFrequency },
-		{ "setDamping", w_DistanceJoint_setDampingRatio },
-		{ "getDamping", w_DistanceJoint_getDampingRatio },
+		{ "setDampingRatio", w_DistanceJoint_setDampingRatio },
+		{ "getDampingRatio", w_DistanceJoint_getDampingRatio },
 		// From Joint.
 		{ "getType", w_Joint_getType },
 		{ "getAnchors", w_Joint_getAnchors },
 		{ "getReactionForce", w_Joint_getReactionForce },
 		{ "getReactionTorque", w_Joint_getReactionTorque },
-		{ "setCollideConnected", w_Joint_setCollideConnected },
 		{ "getCollideConnected", w_Joint_getCollideConnected },
 		{ "destroy", w_Joint_destroy },
 		{ 0, 0 }
 	};
 
-	int luaopen_distancejoint(lua_State * L)
+	extern "C" int luaopen_distancejoint(lua_State * L)
 	{
 		return luax_register_type(L, "DistanceJoint", functions);
 	}

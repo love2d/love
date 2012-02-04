@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -35,23 +35,34 @@ namespace image
 	{
 
 		// Case 1: Integers.
-		if(lua_isnumber(L, 1))
+		if (lua_isnumber(L, 1))
 		{
 			int w = luaL_checkint(L, 1);
 			int h = luaL_checkint(L, 2);
-			ImageData * t = instance->newImageData(w, h);
+			ImageData * t = 0;
+			try
+			{
+				t = instance->newImageData(w, h);
+			}
+			catch (love::Exception & e)
+			{
+				return luaL_error(L, e.what());
+			}
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 			return 1;
 		}
 
 		// Case 2: Data
-		if(luax_istype(L, 1, DATA_T))
+		if (luax_istype(L, 1, DATA_T))
 		{
 			Data * d = luax_checktype<Data>(L, 1, "Data", DATA_T);
 			ImageData * t = 0;
-			try {
+			try
+			{
 				t = instance->newImageData(d);
-			} catch (love::Exception & e) {
+			}
+			catch (love::Exception & e)
+			{
 				return luaL_error(L, e.what());
 			}
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
@@ -61,21 +72,24 @@ namespace image
 		// Case 3: String/File.
 
 		// Convert to File, if necessary.
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
 
 		ImageData * t = 0;
-		try {
+		try
+		{
 			t = instance->newImageData(file);
-		} catch (love::Exception & e) {
+		}
+		catch (love::Exception & e)
+		{
 			return luaL_error(L, e.what());
 		}
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 		return 1;
 	}
-	
+
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "newImageData",  w_newImageData },
@@ -87,15 +101,15 @@ namespace image
 		0
 	};
 
-	int luaopen_love_image(lua_State * L)
+	extern "C" int luaopen_love_image(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new love::image::devil::Image();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

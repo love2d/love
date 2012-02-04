@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -75,9 +75,9 @@ namespace lullaby
 				   ogg_int64_t offset	/*offset from the point we wish to seek to*/,
 				   int whence			/*where we want to seek to*/)
 	{
-		size_t				spaceToEOF;		// How much more we can read till we hit the EOF marker
-		ogg_int64_t			actualOffset;	// How much we can actually offset it by
-		SOggFile*			vorbisData;		// The data we passed in (for the typecast)
+		int         spaceToEOF;   // How much more we can read till we hit the EOF marker
+		ogg_int64_t actualOffset; // How much we can actually offset it by
+		SOggFile*   vorbisData;   // The data we passed in (for the typecast)
 
 		// Get the data in the right format
 		vorbisData = (SOggFile*) datasource;
@@ -147,7 +147,7 @@ namespace lullaby
 		oggFile.dataRead = 0;
 
 		// Open Vorbis handle
-		if(ov_open_callbacks(&oggFile, &handle, NULL, 0, vorbisCallbacks) < 0)
+		if (ov_open_callbacks(&oggFile, &handle, NULL, 0, vorbisCallbacks) < 0)
 			throw love::Exception("Could not read Ogg bitstream");
 
 		// Get info and comments
@@ -166,9 +166,9 @@ namespace lullaby
 			"ogg", "oga", ""
 		};
 
-		for(int i = 0; !(supported[i].empty()); i++)
+		for (int i = 0; !(supported[i].empty()); i++)
 		{
-			if(supported[i].compare(ext) == 0)
+			if (supported[i].compare(ext) == 0)
 				return true;
 		}
 
@@ -184,22 +184,22 @@ namespace lullaby
 	{
 		int size = 0;
 
-		while(size < bufferSize)
+		while (size < bufferSize)
 		{
 			int result = ov_read(&handle, (char*) buffer + size, bufferSize - size, endian, (getBits() == 16 ? 2 : 1), 1, 0);
 
-			if(result == OV_HOLE)
+			if (result == OV_HOLE)
 				continue;
-			else if(result <= OV_EREAD)
+			else if (result <= OV_EREAD)
 				return -1;
-			else if(result == 0)
+			else if (result == 0)
+			{
+				eof = true;
 				break;
-			else if(result > 0)
+			}
+			else if (result > 0)
 				size += result;
 		}
-
-		if(oggFile.dataSize - oggFile.dataRead == 0)
-			eof = true;
 
 		return size;
 	}
@@ -208,7 +208,7 @@ namespace lullaby
 	{
 		int result = ov_time_seek(&handle, s);
 
-		if(result == 0)
+		if (result == 0)
 		{
 			eof = false;
 			return true;
@@ -221,7 +221,7 @@ namespace lullaby
 	{
 		int result = ov_pcm_seek(&handle, 0);
 
-		if(result == 0)
+		if (result == 0)
 		{
 			eof = false;
 			return true;

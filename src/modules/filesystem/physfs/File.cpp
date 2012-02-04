@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -35,30 +35,32 @@ namespace physfs
 {
 	extern bool hack_setupWriteDirectory();
 
-	File::File(std::string filename) 
+	File::File(std::string filename)
 		: filename(filename), file(0), mode(filesystem::File::CLOSED)
 	{
 	}
 
 	File::~File()
 	{
+		if (mode != CLOSED)
+			close();
 	}
-	
+
 	bool File::open(Mode mode)
 	{
-		if(mode == CLOSED)
+		if (mode == CLOSED)
 			return true;
 
 		// File must exist if read mode.
-		if((mode == READ) && !PHYSFS_exists(filename.c_str()))
+		if ((mode == READ) && !PHYSFS_exists(filename.c_str()))
 			throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
 
 		// Check whether the write directory is set.
-		if((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
+		if ((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
 			throw love::Exception("Could not set write directory.");
 
 		// File already open?
-		if(file != 0)
+		if (file != 0)
 			return false;
 
 		this->mode = mode;
@@ -80,40 +82,40 @@ namespace physfs
 
 		return (file != 0);
 	}
-	
+
 	bool File::close()
 	{
-		if(!PHYSFS_close(file))
+		if (!PHYSFS_close(file))
 			return false;
 		mode = CLOSED;
 		file = 0;
 		return true;
 	}
 
-	unsigned int File::getSize()
+	int64 File::getSize()
 	{
 		// If the file is closed, open it to
 		// check the size.
-		if(file == 0)
+		if (file == 0)
 		{
 			open(READ);
-			unsigned int size = (unsigned int)PHYSFS_fileLength(file);
+			int64 size = (int64)PHYSFS_fileLength(file);
 			close();
 			return size;
 		}
 
-		return (unsigned int)PHYSFS_fileLength(file);
+		return (int64)PHYSFS_fileLength(file);
 	}
 
 
-	Data * File::read(int size)
+	Data * File::read(int64 size)
 	{
 		bool isOpen = (file != 0);
 
-		if(!isOpen && !open(READ))
+		if (!isOpen && !open(READ))
 			throw love::Exception("Could not read file %s.", filename.c_str());
 
-		int max = (int)PHYSFS_fileLength(file);
+		int64 max = (int64)PHYSFS_fileLength(file);
 		size = (size == ALL) ? max : size;
 		size = (size > max) ? max : size;
 
@@ -121,72 +123,94 @@ namespace physfs
 
 		read(fileData->getData(), size);
 
-		if(!isOpen)
+		if (!isOpen)
 			close();
 
 		return fileData;
 	}
 
-	int File::read(void * dst, int size)
+	int64 File::read(void * dst, int64 size)
 	{
 		bool isOpen = (file != 0);
 
-		if(!isOpen)
+		if (!isOpen)
 			open(READ);
 
-		int max = (int)PHYSFS_fileLength(file);
+		int64 max = (int64)PHYSFS_fileLength(file);
 		size = (size == ALL) ? max : size;
 		size = (size > max) ? max : size;
+		// Sadly, we'll have to clamp to 32 bits here
+		size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 
-		int read = (int)PHYSFS_read(file, dst, 1, size);
+		int64 read = (int64)PHYSFS_read(file, dst, 1, (int) size);
 
-		if(!isOpen)
+		if (!isOpen)
 			close();
 
 		return read;
 	}
 
-	bool File::write(const void * data, int size)
+	bool File::write(const void * data, int64 size)
 	{
-		if(file == 0)
+		if (file == 0)
 			throw love::Exception("Could not write to file. File not open.");
 
+		// Another clamp, for the time being.
+		size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
+
 		// Try to write.
-		int written = static_cast<int>(PHYSFS_write(file, data, 1, size));
+		int64 written = static_cast<int64>(PHYSFS_write(file, data, 1, (int) size));
 
 		// Check that correct amount of data was written.
-		if(written != size)
+		if (written != size)
 			return false;
 
 		return true;
 	}
 
-	bool File::write(const Data * data, int size)
+	bool File::write(const Data * data, int64 size)
 	{
 		return write(data->getData(), (size == ALL) ? data->getSize() : size);
 	}
 
+#ifdef LOVE_WINDOWS
+	// MSVC doesn't like the 'this' keyword
+	// well, we'll use 'that'.
+	// It zigs, we zag.
+	inline bool test_eof(File * that, PHYSFS_File *)
+	{
+		int64 pos = that->tell();
+		int64 size = that->getSize();
+		return pos == -1 || size == -1 || pos >= size;
+	}
+#else
+	inline bool test_eof(File *, PHYSFS_File * file)
+	{
+		return PHYSFS_eof(file);
+	}
+#endif
+
 	bool File::eof()
 	{
-		if(file == 0 || PHYSFS_eof(file))
+		if (file == 0 || test_eof(this, file))
 			return true;
 		return false;
 	}
 
-	int File::tell()
+	int64 File::tell()
 	{
-		if(file == 0)
+		if (file == 0)
 			return -1;
 
-		return (int)PHYSFS_tell(file);
+		return (int64)PHYSFS_tell(file);
 	}
 
-	bool File::seek(int pos)
+	bool File::seek(uint64 pos)
 	{
-		if(file == 0)
+		if (file == 0)
 			return false;
-		
-		if(!PHYSFS_seek(file, (PHYSFS_uint64)pos))
+
+		if (!PHYSFS_seek(file, (PHYSFS_uint64)pos))
 			return false;
 		return true;
 	}
@@ -200,7 +224,7 @@ namespace physfs
 	{
 		std::string::size_type idx = filename.rfind('.');
 
-		if(idx != std::string::npos)
+		if (idx != std::string::npos)
 			return filename.substr(idx+1);
 		else
 			return std::string();

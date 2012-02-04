@@ -21,3 +21,6 @@
 ./modules/native/tcc/libtcc/stab.h
 ./libraries/luasocket/libluasocket/wsocket.*
 ./modules/sound/lullaby/FLACDecoder.*
+./modules/thread/sdl/*
+./modules/thread/win32/*
+./modules/thread/posix/*

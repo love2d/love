@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -63,18 +63,18 @@ namespace physfs
 		File(std::string filename);
 
 		virtual ~File();
-		
+
 		// Implements love::filesystem::File.
 		bool open(Mode mode);
 		bool close();
-		unsigned int getSize();
-		Data * read(int size = ALL);
-		int read(void * dst, int size);
-		bool write(const void * data, int size);
-		bool write(const Data * data, int size = ALL);
+		int64 getSize();
+		Data * read(int64 size = ALL);
+		int64 read(void * dst, int64 size);
+		bool write(const void * data, int64 size);
+		bool write(const Data * data, int64 size = ALL);
 		bool eof();
-		int tell();
-		bool seek(int pos);
+		int64 tell();
+		bool seek(uint64 pos);
 		Mode getMode();
 		std::string getFilename() const;
 		std::string getExtension() const;

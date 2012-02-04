@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -27,12 +27,10 @@
 #include <iostream>
 #include <cmath>
 
-// SDL
-#include <SDL.h>
-
 // LOVE
 #include <common/config.h>
 #include <common/Exception.h>
+#include <thread/threads.h>
 
 // OpenAL
 #ifdef LOVE_MACOSX
@@ -70,7 +68,7 @@ namespace openal
 
 		// Only one thread can access this object at the same time. This mutex will
 		// make sure of that.
-		SDL_mutex * mutex;
+		thread::Mutex* mutex;
 
 	public:
 
@@ -102,6 +100,9 @@ namespace openal
 		void resume(Source * source);
 		void rewind();
 		void rewind(Source * source);
+		void softRewind(Source * source);
+		void seek(Source * source, float offset, void * unit);
+		float tell(Source * source, void * unit);
 
 	private:
 

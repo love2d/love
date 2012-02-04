@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -35,22 +35,22 @@ namespace box2d
 	PrismaticJoint * luax_checkprismaticjoint(lua_State * L, int idx);
 	int w_PrismaticJoint_getJointTranslation(lua_State * L);
 	int w_PrismaticJoint_getJointSpeed(lua_State * L);
-	int w_PrismaticJoint_setMotorEnabled(lua_State * L);
+	int w_PrismaticJoint_enableMotor(lua_State * L);
 	int w_PrismaticJoint_isMotorEnabled(lua_State * L);
 	int w_PrismaticJoint_setMaxMotorForce(lua_State * L);
-	int w_PrismaticJoint_getMaxMotorForce(lua_State * L);
 	int w_PrismaticJoint_setMotorSpeed(lua_State * L);
 	int w_PrismaticJoint_getMotorSpeed(lua_State * L);
 	int w_PrismaticJoint_getMotorForce(lua_State * L);
-	int w_PrismaticJoint_setLimitsEnabled(lua_State * L);
-	int w_PrismaticJoint_isLimitsEnabled(lua_State * L);
+	int w_PrismaticJoint_getMaxMotorForce(lua_State * L);
+	int w_PrismaticJoint_enableLimit(lua_State * L);
+	int w_PrismaticJoint_isLimitEnabled(lua_State * L);
 	int w_PrismaticJoint_setUpperLimit(lua_State * L);
 	int w_PrismaticJoint_setLowerLimit(lua_State * L);
 	int w_PrismaticJoint_setLimits(lua_State * L);
 	int w_PrismaticJoint_getLowerLimit(lua_State * L);
 	int w_PrismaticJoint_getUpperLimit(lua_State * L);
 	int w_PrismaticJoint_getLimits(lua_State * L);
-	int luaopen_prismaticjoint(lua_State * L);
+	extern "C" int luaopen_prismaticjoint(lua_State * L);
 
 } // box2d
 } // physics

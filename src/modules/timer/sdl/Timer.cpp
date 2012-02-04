@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -19,6 +19,7 @@
 **/
 
 #include <common/config.h>
+#include <common/delay.h>
 
 #ifdef LOVE_WINDOWS
 #	include <windows.h>
@@ -36,11 +37,11 @@ namespace timer
 namespace sdl
 {
 	Timer::Timer()
-		: time_init(0), currTime(0), prevFpsUpdate(0), fps(0), fpsUpdateFrequency(1),
+		: currTime(0), prevFpsUpdate(0), fps(0), fpsUpdateFrequency(1),
 		frames(0), dt(0)
 	{
 		// Init the SDL timer system.
-		if(SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
+		if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
 			throw Exception(SDL_GetError());
 	}
 
@@ -67,10 +68,10 @@ namespace sdl
 		currTime = SDL_GetTicks();
 
 		// Convert to number of seconds
-		dt = (currTime - prevTime)/1000.0f;
+		dt = (currTime - prevTime)/1000.0;
 
 		// Update FPS?
-		if((currTime - prevFpsUpdate)/1000.0f > fpsUpdateFrequency)
+		if ((currTime - prevFpsUpdate)/1000.0 > fpsUpdateFrequency)
 		{
 			fps = frames/fpsUpdateFrequency;
 			prevFpsUpdate = currTime;
@@ -78,43 +79,51 @@ namespace sdl
 		}
 	}
 
-	void Timer::sleep(int ms)
+	void Timer::sleep(double seconds)
 	{
-		if(ms > 0)
-			SDL_Delay(ms);
+		if (seconds > 0)
+			delay((int) (seconds*1000));
 	}
 
-	float Timer::getDelta() const
+	double Timer::getDelta() const
 	{
 		return dt;
 	}
 
-	float Timer::getFPS() const
+	double Timer::getFPS() const
 	{
 		return fps;
 	}
 
-	float Timer::getTime() const
+	double Timer::getTime() const
 	{
-		return (SDL_GetTicks() - time_init)/1000.0f;
+		return SDL_GetTicks()/1000.0;
 	}
 
-	float Timer::getMicroTime() const
+	double Timer::getMicroTime() const
 	{
 #ifdef LOVE_WINDOWS
-		__int64 ticks, freq;
-		LARGE_INTEGER temp;
-		QueryPerformanceCounter(&temp);
-		ticks = temp.QuadPart;
-		QueryPerformanceFrequency(&temp);
-		freq = temp.QuadPart;
-		__int64 secs = ticks/freq;
-		__int64 usecs = static_cast<__int64>((ticks%freq)/(freq/1000000.0f));
-		return secs%86400 + usecs/1000000.0f;
+		static __int64 freq = 0;
+
+		if (!freq)
+		{
+			LARGE_INTEGER temp;
+			QueryPerformanceFrequency(&temp);
+
+			freq = (__int64) temp.QuadPart;
+		}
+
+		LARGE_INTEGER microTime;
+		QueryPerformanceCounter(&microTime);
+
+		// The 64 to 32 bit integer conversion, assuming the fraction part down
+		// to microseconds takes 20 bits, should not be a problem unless the
+		// system has an uptime of a few decades.
+		return (double) microTime.QuadPart / (double) freq;
 #else
 		timeval t;
 		gettimeofday(&t, NULL);
-		return t.tv_sec%86400 + t.tv_usec/1000000.0f;
+		return t.tv_sec + t.tv_usec/1000000.0;
 #endif
 	}
 

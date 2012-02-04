@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -38,18 +38,20 @@ namespace freetype
 	int w_newRasterizer(lua_State * L)
 	{
 		Rasterizer * t = NULL;
-		if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T)) {
+		if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
+		{
 			love::image::ImageData * d = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 			const char * g = luaL_checkstring(L, 2);
 			std::string glyphs(g);
 			t = instance->newRasterizer(d, glyphs);
 		}
-		else if (luax_istype(L, 1, DATA_T)) {
+		else if (luax_istype(L, 1, DATA_T))
+		{
 			Data * d = luax_checkdata(L, 1);
 			int size = luaL_checkint(L, 2);
 			t = instance->newRasterizer(d, size);
 		}
-		
+
 		luax_newtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 		return 1;
 	}
@@ -77,15 +79,15 @@ namespace freetype
 		0
 	};
 
-	int luaopen_love_font(lua_State * L)
+	extern "C" int luaopen_love_font(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Font();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

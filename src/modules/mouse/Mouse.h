@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -32,7 +32,7 @@ namespace mouse
 	class Mouse : public Module
 	{
 	public:
-		
+
 		enum Button
 		{
 			BUTTON_INVALID,
@@ -47,6 +47,16 @@ namespace mouse
 		};
 
 		virtual ~Mouse(){};
+
+		virtual int getX() const = 0;
+		virtual int getY() const = 0;
+		virtual void getPosition(int & x, int & y) const = 0;
+		virtual void setPosition(int x, int y) = 0;
+		virtual void setVisible(bool visible) = 0;
+		virtual bool isDown(Button * buttonlist) const = 0;
+		virtual bool isVisible() const = 0;
+		virtual void setGrab(bool grab) = 0;
+		virtual bool isGrabbed() const = 0;
 
 		static bool getConstant(const char * in, Button & out);
 		static bool getConstant(Button in, const char *& out);

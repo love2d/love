@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -88,6 +88,16 @@ namespace graphics
 		return pointStyles.find(in, out);
 	}
 
+	bool Graphics::getConstant(const char * in, Support & out)
+	{
+		return support.find(in, out);
+	}
+
+	bool Graphics::getConstant(Support in, const char *& out)
+	{
+		return support.find(in, out);
+	}
+
 	StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
 	{
 		{ "line", Graphics::DRAW_LINE },
@@ -111,6 +121,7 @@ namespace graphics
 		{ "additive", Graphics::BLEND_ADDITIVE },
 		{ "subtractive", Graphics::BLEND_SUBTRACTIVE },
 		{ "multiplicative", Graphics::BLEND_MULTIPLICATIVE },
+		{ "premultiplied", Graphics::BLEND_PREMULTIPLIED },
 	};
 
 	StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
@@ -119,6 +130,7 @@ namespace graphics
 	{
 		{ "replace", Graphics::COLOR_REPLACE },
 		{ "modulate", Graphics::COLOR_MODULATE },
+		{ "combine", Graphics::COLOR_COMBINE },
 	};
 
 	StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM> Graphics::colorModes(Graphics::colorModeEntries, sizeof(Graphics::colorModeEntries));
@@ -138,6 +150,15 @@ namespace graphics
 	};
 
 	StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM> Graphics::pointStyles(Graphics::pointStyleEntries, sizeof(Graphics::pointStyleEntries));
+
+	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
+	{
+		{ "canvas", Graphics::SUPPORT_CANVAS },
+		{ "pixeleffect", Graphics::SUPPORT_PIXELEFFECT },
+		{ "npot", Graphics::SUPPORT_NPOT },
+	};
+
+	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));
 
 } // graphics
 } // love

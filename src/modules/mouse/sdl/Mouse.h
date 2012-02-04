@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -23,7 +23,6 @@
 
 // LOVE
 #include <mouse/Mouse.h>
-#include <common/EnumMap.h>
 
 namespace love
 {
@@ -37,22 +36,16 @@ namespace sdl
 
 		// Implements Module.
 		const char * getName() const;
-		
+
 		int getX() const;
 		int getY() const;
 		void getPosition(int & x, int & y) const;
 		void setPosition(int x, int y);
 		void setVisible(bool visible);
-		bool isDown(Button button) const;
+		bool isDown(Button * buttonlist) const;
 		bool isVisible() const;
 		void setGrab(bool grab);
 		bool isGrabbed() const;
-
-	public:
-
-		static EnumMap<Button, unsigned, BUTTON_MAX_ENUM>::Entry buttonEntries[];
-		static EnumMap<Button, unsigned, BUTTON_MAX_ENUM> buttons;
-
 	}; // Mouse
 
 } // sdl

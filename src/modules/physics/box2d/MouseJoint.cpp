@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
 
 namespace love
 {
@@ -34,40 +35,58 @@ namespace box2d
 		: Joint(body1), joint(NULL)
 	{
 		b2MouseJointDef def;
-		
-		def.body1 = body1->world->world->GetGroundBody();
-		def.body2 = body1->body;
+
+		def.bodyA = body1->world->getGroundBody();
+		def.bodyB = body1->body;
 		def.maxForce = 1000.0f * body1->body->GetMass();
-		def.target = body1->world->scaleDown(b2Vec2(x,y));
+		def.target = Physics::scaleDown(b2Vec2(x,y));
 		joint = (b2MouseJoint*)createJoint(&def);
 	}
 
 	MouseJoint::~MouseJoint()
 	{
-		destroyJoint(joint);
-		joint = 0;
 	}
 
 	void MouseJoint::setTarget(float x, float y)
 	{
-		joint->SetTarget(world->scaleDown(b2Vec2(x, y)));
+		joint->SetTarget(Physics::scaleDown(b2Vec2(x, y)));
 	}
 
 	int MouseJoint::getTarget(lua_State * L)
 	{
-		lua_pushnumber(L, world->scaleUp(joint->m_target.x));
-		lua_pushnumber(L, world->scaleUp(joint->m_target.y));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetTarget().x));
+		lua_pushnumber(L, Physics::scaleUp(joint->GetTarget().y));
 		return 2;
 	}
 
 	void MouseJoint::setMaxForce(float force)
 	{
-		joint->m_maxForce = force;
+		joint->SetMaxForce(Physics::scaleDown(force));
 	}
 
 	float MouseJoint::getMaxForce() const
 	{
-		return joint->m_maxForce;
+		return Physics::scaleUp(joint->GetMaxForce());
+	}
+
+	void MouseJoint::setFrequency(float hz)
+	{
+		joint->SetFrequency(hz);
+	}
+
+	float MouseJoint::getFrequency() const
+	{
+		return joint->GetFrequency();
+	}
+
+	void MouseJoint::setDampingRatio(float d)
+	{
+		joint->SetDampingRatio(d);
+	}
+
+	float MouseJoint::getDampingRatio() const
+	{
+		return joint->GetDampingRatio();
 	}
 
 } // box2d

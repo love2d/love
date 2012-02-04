@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -25,9 +25,10 @@
 #include <string>
 #include <common/Data.h>
 #include <common/StringMap.h>
+#include <common/int.h>
 
 namespace love
-{	
+{
 namespace filesystem
 {
 	class FileData : public Data
@@ -38,7 +39,7 @@ namespace filesystem
 		char * data;
 
 		// Size of the data.
-		int size;
+		uint64 size;
 
 		// The filename used for error purposes.
 		std::string filename;
@@ -55,12 +56,14 @@ namespace filesystem
 			DECODE_MAX_ENUM
 		}; // Decoder
 
-		FileData(int size, const std::string & filename);
+		FileData(uint64 size, const std::string & filename);
 
 		virtual ~FileData();
 
 		// Implements Data.
 		void * getData() const;
+		//TODO: Enable this
+		//uint64 getSize() const;
 		int getSize() const;
 
 		const std::string & getFilename() const;

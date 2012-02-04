@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,22 +20,93 @@
 
 #include "Event.h"
 
+using love::thread::Mutex;
+using love::thread::Lock;
+
 namespace love
 {
 namespace event
 {
+	Message::Message(std::string name, Variant *a, Variant *b, Variant *c, Variant *d)
+		: name(name), nargs(0)
+	{
+		args[0] = a;
+		args[1] = b;
+		args[2] = c;
+		args[3] = d;
+		for (int i = 0; i < 4; i++)
+		{
+			if (!args[i])
+				continue;
+			args[i]->retain();
+			nargs++;
+		}
+	}
+
+	Message::~Message()
+	{
+		for (int i = 0; i < nargs; i++)
+			args[i]->release();
+	}
+
+	int Message::toLua(lua_State *L)
+	{
+		luax_pushstring(L, name);
+		for (int i = 0; i < nargs; i++)
+			args[i]->toLua(L);
+		return nargs+1;
+	}
+
+	Message *Message::fromLua(lua_State *L, int n)
+	{
+		std::string name = luax_checkstring(L, n);
+		n++;
+		Message *m = new Message(name);
+		for (int i = 0; i < 4; i++)
+		{
+			if (lua_isnoneornil(L, n+i))
+				break;
+			m->args[i] = Variant::fromLua(L, n+i);
+			if (!m->args[i])
+			{
+				delete m;
+				luaL_error(L, "Argument %d can't be stored safely\nExpected boolean, number, string or userdata.", n+i);
+				return NULL;
+			}
+			m->nargs++;
+		}
+		return m;
+	}
+
 	Event::~Event()
 	{
 	}
 
-	bool Event::getConstant(const char * in, Event::Type & out)
+	void Event::push(Message *msg)
 	{
-		return types.find(in, out);
+		Lock lock(mutex);
+		msg->retain();
+		queue.push(msg);
 	}
 
-	bool Event::getConstant(Event::Type in, const char *& out)
+	bool Event::poll(Message *&msg)
 	{
-		return types.find(in, out);
+		Lock lock(mutex);
+		if (queue.empty())
+			return false;
+		msg = queue.front();
+		queue.pop();
+		return true;
+	}
+
+	void Event::clear()
+	{
+		Lock lock(mutex);
+		while (!queue.empty())
+		{
+			queue.back()->release();
+			queue.pop();
+		}
 	}
 
 	bool Event::getConstant(const char * in, love::mouse::Mouse::Button & out)
@@ -57,20 +128,6 @@ namespace event
 	{
 		return keys.find(in, out);
 	}
-
-	StringMap<Event::Type, Event::TYPE_MAX_ENUM>::Entry Event::typeEntries[] =
-	{
-		{"kp", Event::TYPE_KEY_PRESSED},
-		{"kr", Event::TYPE_KEY_RELEASED},
-		{"mp", Event::TYPE_MOUSE_PRESSED},
-		{"mr", Event::TYPE_MOUSE_RELEASED},
-		{"jp", Event::TYPE_JOYSTICK_PRESSED},
-		{"jr", Event::TYPE_JOYSTICK_RELEASED},
-		{"f", Event::TYPE_FOCUS},
-		{"q", Event::TYPE_QUIT},
-	};
-
-	StringMap<Event::Type, Event::TYPE_MAX_ENUM> Event::types(Event::typeEntries, sizeof(Event::typeEntries));
 
 	StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
 	{

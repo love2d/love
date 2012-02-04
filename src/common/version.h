@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -25,12 +25,11 @@ namespace love
 {
 	// Version stuff.
 	const int VERSION_MAJOR = 0;
-	const int VERSION_MINOR = 7;
-	const int VERSION_REV = 1;
-	const int VERSION = VERSION_MAJOR*100 + VERSION_MINOR*10 + VERSION_REV;
-	const int VERSION_COMPATIBILITY[] =  { VERSION, 070, 0 };
-	const char * VERSION_STR = "0.7.1";
-	const char * VERSION_CODENAME = "Game Slave";
+	const int VERSION_MINOR = 8;
+	const int VERSION_REV = 0;
+	const char * VERSION = "0.8.0";
+	const char * VERSION_COMPATIBILITY[] =  { VERSION, 0 };
+	const char * VERSION_CODENAME = "Rubber Piggy";
 
 } // love
 

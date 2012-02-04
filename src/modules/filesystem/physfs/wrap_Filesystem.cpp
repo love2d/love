@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@ namespace physfs
 
 	bool hack_setupWriteDirectory()
 	{
-		if(instance != 0)
+		if (instance != 0)
 			return instance->setupWriteDirectory();
 		return false;
 	}
@@ -44,7 +44,7 @@ namespace physfs
 		{
 			instance->init(arg0);
 		}
-		catch(Exception & e)
+		catch (Exception & e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -52,11 +52,19 @@ namespace physfs
 		return 0;
 	}
 
+	int w_setRelease(lua_State * L)
+	{
+		// no error checking needed, everything, even nothing
+		// can be converted to a boolean
+		instance->setRelease(luax_toboolean(L, 1));
+		return 0;
+	}
+
 	int w_setIdentity(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
 
-		if(!instance->setIdentity(arg))
+		if (!instance->setIdentity(arg))
 			return luaL_error(L, "Could not set write directory.");
 
 		return 0;
@@ -66,7 +74,7 @@ namespace physfs
 	{
 		const char * arg = luaL_checkstring(L, 1);
 
-		if(!instance->setSource(arg))
+		if (!instance->setSource(arg))
 			return luaL_error(L, "Could not set source.");
 
 		return 0;
@@ -80,7 +88,7 @@ namespace physfs
 		{
 			t = instance->newFile(filename);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -90,9 +98,9 @@ namespace physfs
 
 	int w_newFileData(lua_State * L)
 	{
-		if(!lua_isstring(L, 1))
+		if (!lua_isstring(L, 1))
 			return luaL_error(L, "String expected.");
-		if(!lua_isstring(L, 2))
+		if (!lua_isstring(L, 2))
 			return luaL_error(L, "String expected.");
 
 		size_t length = 0;
@@ -102,7 +110,7 @@ namespace physfs
 
 		FileData::Decoder decoder = FileData::FILE;
 
-		if(decstr)
+		if (decstr)
 			FileData::getConstant(decstr, decoder);
 
 		FileData * t = 0;
@@ -188,7 +196,7 @@ namespace physfs
 		{
 			return instance->read(L);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -200,7 +208,7 @@ namespace physfs
 		{
 			return instance->write(L);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			return luaL_error(L, e.what());
 		}
@@ -213,15 +221,37 @@ namespace physfs
 
 	int w_lines(lua_State * L)
 	{
-		return instance->lines(L);
+		File * file;
+
+		if(lua_isstring(L, 1))
+		{
+			file = instance->newFile(lua_tostring(L, 1));
+			try
+			{
+				if (!file->open(File::READ))
+					return luaL_error(L, "Could not open file.");
+			}
+			catch (love::Exception & e)
+			{
+				return luaL_error(L, "%s", e.what());
+			}
+			luax_newtype(L, "File", FILESYSTEM_FILE_T, file);
+		}
+		else
+			return luaL_error(L, "Expected filename.");
+
+		lua_pushcclosure(L, Filesystem::lines_i, 1);
+		return 1;
 	}
 
 	int w_load(lua_State * L)
 	{
-		try {
+		try
+		{
 			return instance->load(L);
 		}
-		catch (love::Exception & e) {
+		catch (love::Exception & e)
+		{
 			return luaL_error(L, e.what());
 		}
 	}
@@ -236,25 +266,20 @@ namespace physfs
 		const char * filename = lua_tostring(L, -1);
 
 		std::string tmp(filename);
+		tmp += ".lua";
 
 		int size = tmp.size();
 
-		if(size <= 4 || strcmp(filename + (size-4), ".lua") != 0)
+		for (int i=0;i<size-4;i++)
 		{
-			tmp.append(".lua");
-			size = tmp.size();
-		}
-
-		for(int i=0;i<size-4;i++)
-		{
-			if(tmp[i] == '.')
+			if (tmp[i] == '.')
 			{
 				tmp[i] = '/';
 			}
 		}
 
 		// Check whether file exists.
-		if(instance->exists(tmp.c_str()))
+		if (instance->exists(tmp.c_str()))
 		{
 			lua_pop(L, 1);
 			lua_pushstring(L, tmp.c_str());
@@ -264,9 +289,9 @@ namespace physfs
 
 		tmp = filename;
 		size = tmp.size();
-		for(int i=0;i<size;i++)
+		for (int i=0;i<size;i++)
 		{
-			if(tmp[i] == '.')
+			if (tmp[i] == '.')
 			{
 				tmp[i] = '/';
 			}
@@ -275,7 +300,8 @@ namespace physfs
 		if (instance->isDirectory(tmp.c_str()))
 		{
 			tmp += "/init.lua";
-			if (instance->exists(tmp.c_str())) {
+			if (instance->exists(tmp.c_str()))
+			{
 				lua_pop(L, 1);
 				lua_pushstring(L, tmp.c_str());
 				// Ok, load it.
@@ -283,13 +309,65 @@ namespace physfs
 			}
 		}
 
-		lua_pushfstring(L, "\n\tno file \"%s\" in LOVE game directories.\n", tmp.c_str());
+		lua_pushfstring(L, "\n\tno file \"%s\" in LOVE game directories.\n", (tmp + ".lua").c_str());
+		return 1;
+	}
+
+	inline const char * library_extension()
+	{
+#ifdef LOVE_WINDOWS
+		return ".dll";
+#else
+		return ".so";
+#endif
+	}
+
+	int extloader(lua_State * L)
+	{
+		const char * filename = lua_tostring(L, -1);
+		std::string tokenized_name(filename);
+		std::string tokenized_function(filename);
+
+		for (unsigned int i = 0; i < tokenized_name.size(); i++)
+		{
+			if (tokenized_name[i] == '.')
+			{
+				tokenized_name[i] = '/';
+				tokenized_function[i] = '_';
+			}
+		}
+
+		tokenized_name += library_extension();
+
+		void * handle = SDL_LoadObject((std::string(instance->getAppdataDirectory()) + LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR + tokenized_name).c_str());
+		if (!handle && instance->isRelease())
+			handle = SDL_LoadObject((std::string(instance->getSaveDirectory()) + LOVE_PATH_SEPARATOR + tokenized_name).c_str());
+
+		if (!handle)
+		{
+			lua_pushfstring(L, "\n\tno extension \"%s\" in LOVE paths.\n", filename);
+			return 1;
+		}
+
+		void * func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
+		if (!func)
+			func = SDL_LoadFunction(handle, ("luaopen_" + tokenized_function).c_str());
+
+		if (!func)
+		{
+			SDL_UnloadObject(handle);
+			lua_pushfstring(L, "\n\textension \"%s\" is incompatible.\n", filename);
+			return 1;
+		}
+
+		lua_pushcfunction(L, (lua_CFunction) func);
 		return 1;
 	}
 
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
 		{ "init",  w_init },
+		{ "setRelease", w_setRelease },
 		{ "setIdentity",  w_setIdentity },
 		{ "setSource",  w_setSource },
 		{ "newFile",  w_newFile },
@@ -318,16 +396,17 @@ namespace physfs
 		0
 	};
 
-	int luaopen_love_filesystem(lua_State * L)
+	extern "C" int luaopen_love_filesystem(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Filesystem();
-				love::luax_register_searcher(L, loader);
+				love::luax_register_searcher(L, loader, 1);
+				love::luax_register_searcher(L, extloader, 2);
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}
@@ -335,7 +414,8 @@ namespace physfs
 		else
 		{
 			instance->retain();
-			love::luax_register_searcher(L, loader);
+			love::luax_register_searcher(L, loader, 1);
+			love::luax_register_searcher(L, extloader, 2);
 		}
 
 		WrappedModule w;

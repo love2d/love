@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -25,10 +25,10 @@
 #include <common/math.h>
 #include <common/runtime.h>
 #include <common/Object.h>
-
+#include <physics/Body.h>
 
 // Box2D
-#include "Include/Box2D.h"
+#include <Box2D/Box2D.h>
 
 namespace love
 {
@@ -38,6 +38,8 @@ namespace box2d
 {
 	// Forward declarations.
 	class World;
+	class Shape;
+	class Fixture;
 
 	/**
 	* A Body is an entity which has position and orientation
@@ -45,7 +47,7 @@ namespace box2d
 	* by itself, but depend on an arbitrary number of child Shape objects
 	* which together constitute the final geometry for the Body.
 	**/
-	class Body : public Object
+	class Body : public love::physics::Body
 	{
 		// Friends.
 		friend class Joint;
@@ -54,6 +56,7 @@ namespace box2d
 		friend class CircleShape;
 		friend class PolygonShape;
 		friend class Shape;
+		friend class Fixture;
 
 	private:
 
@@ -73,7 +76,12 @@ namespace box2d
 		/**
 		* Create a Body at position p.
 		**/
-		Body(World * world, b2Vec2 p, float m, float i);
+		Body(World * world, b2Vec2 p, Type type);
+
+		/**
+		* Create a Body from an extant b2Body.
+		**/
+		Body(b2Body * b);
 
 		virtual ~Body();
 
@@ -136,6 +144,11 @@ namespace box2d
 		float getInertia() const;
 
 		/**
+		* Gets mass properties.
+		**/
+		int getMassData(lua_State * L);
+
+		/**
 		* Gets the Body's angular damping.
 		**/
 		float getAngularDamping() const;
@@ -146,14 +159,29 @@ namespace box2d
 		float getLinearDamping() const;
 
 		/**
+		* Gets the Body's gravity scale.
+		**/
+		float getGravityScale() const;
+
+		/**
+		* Gets the type of body this is.
+		**/
+		Type getType() const;
+
+		/**
 		* Apply an impulse (jx, jy) with offset (0, 0).
 		**/
-		void applyImpulse(float jx, float jy);
+		void applyLinearImpulse(float jx, float jy);
 
 		/**
 		* Apply an impulse (jx, jy) with offset (rx, ry).
 		**/
-		void applyImpulse(float jx, float jy, float rx, float ry);
+		void applyLinearImpulse(float jx, float jy, float rx, float ry);
+
+		/**
+		* Apply an angular impulse to the body.
+		**/
+		void applyAngularImpulse(float impulse);
 
 		/**
 		* Apply torque (t).
@@ -203,7 +231,7 @@ namespace box2d
 		/**
 		* Sets the mass from the currently attatched shapes.
 		**/
-		void setMassFromShapes();
+		void resetMassData();
 
 		/**
 		* Sets mass properties.
@@ -212,7 +240,13 @@ namespace box2d
 		* @param m The mass.
 		* @param i The inertia.
 		**/
-		void setMass(float x, float y, float m, float i);
+		void setMassData(float x, float y, float m, float i);
+
+		/**
+		* Sets just the mass. This is provided as a LOVE bonus. Lovely!
+		* @param m The mass.
+		**/
+		void setMass(float m);
 
 		/**
 		* Sets the inertia while keeping the other properties
@@ -230,6 +264,16 @@ namespace box2d
 		* Sets the Body's linear damping.
 		**/
 		void setLinearDamping(float d);
+
+		/**
+		* Sets the Body's gravity scale.
+		**/
+		void setGravityScale(float scale);
+
+		/**
+		* Sets the type of body this is.
+		**/
+		void setType(Type type);
 
 		/**
 		* Transforms a point (x, y) from local coordinates
@@ -250,6 +294,12 @@ namespace box2d
 		* @returns The y-coordinate of the vector in world coordinates.
 		**/
 		void getWorldVector(float x, float y, float & x_o, float & y_o);
+
+		/**
+		* Transforms a series of points (x, y) from local coordinates
+		* to world coordinates.
+		**/
+		int getWorldPoints(lua_State * L);
 
 		/**
 		* Transforms a point (x, y) from world coordinates
@@ -301,51 +351,52 @@ namespace box2d
 		void setBullet(bool bullet);
 
 		/**
-		* Checks whether a Body is static or not, i.e. terrain
-		* or not.
+		* Checks whether a Body is active or not. An inactive body
+		* cannot be interacted with.
 		**/
-		bool isStatic() const;
+		bool isActive() const;
 
 		/**
-		* The opposite of isStatic.
-		**/
-		bool isDynamic() const;
-
-		/**
-		* Checks whether a Body is frozen or not.
-		* A Body will freeze if hits the world bounding box.
-		**/
-		bool isFrozen() const;
-
-		/**
-		* Checks whether a Body is sleeping or nor. A Body
+		* Checks whether a Body is awake or not. A Body
 		* will fall to sleep if nothing happens to it for while.
 		**/
-		bool isSleeping() const;
+		bool isAwake() const;
 
 		/**
 		* Controls whether this Body should be allowed to sleep.
 		**/
-		void setAllowSleeping(bool allow);
-		bool getAllowSleeping();
+		void setSleepingAllowed(bool allow);
+		bool isSleepingAllowed() const;
 
 		/**
-		* Puts the body to sleep.
+		* Changes the body's active state.
 		**/
-		void putToSleep();
+		void setActive(bool active);
 
 		/**
-		* Wakes the Body up.
+		* Changes the body's sleep state.
 		**/
-		void wakeUp();
+		void setAwake(bool awake);
 
 		void setFixedRotation(bool fixed);
-		bool getFixedRotation() const;
+		bool isFixedRotation() const;
 
 		/**
 		* Get the World this Body resides in.
 		*/
 		World * getWorld() const;
+
+		/**
+		* Get an array of all the Fixtures attached to this Body.
+		* @return An array of Fixtures.
+		**/
+		int getFixtureList(lua_State * L) const;
+
+		/**
+		* Destroy this body.
+		**/
+		void destroy();
+
 	private:
 
 		/**

@@ -8,20 +8,20 @@ InstallDir $PROGRAMFILES\LOVE
 InstallDirRegKey HKCU "Software\LOVE" ""
 
 # Graphics
-!define MUI_ICON "love\extra\nsis\love.ico"
-!define MUI_UNICON "love\extra\nsis\love.ico"
+!define MUI_ICON "${LOVEICODIR}\love.ico"
+!define MUI_UNICON "${LOVEICODIR}\love.ico"
 !define MUI_ABORTWARNING
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "love\extra\nsis\top.bmp" # optional
-!define MUI_WELCOMEFINISHPAGE_BITMAP "love\extra\nsis\left.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "love\extra\nsis\left.bmp"
+!define MUI_HEADERIMAGE_BITMAP "${LOVEICODIR}\top.bmp" # optional
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${LOVEICODIR}\left.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${LOVEICODIR}\left.bmp"
 
 !define MUI_WELCOMEPAGE_TITLE "LÖVE Setup"
 !define MUI_WELCOMEPAGE_TEXT "This will install LÖVE, the unquestionably awesome Lua game framework."
 
 # Pages
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "love\license.txt"
+!insertmacro MUI_PAGE_LICENSE "${LOVELICDIR}\license.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -38,12 +38,13 @@ Section "LOVE" MainProg
 
 	SectionIn RO
 	SetOutPath $INSTDIR
-	File "love\platform\msvc2010\Release\love.exe"
-	File "love\platform\msvc2010\DevIL.dll"
-	File "love\platform\msvc2010\SDL.dll"
-	File "love\platform\msvc2010\OpenAL32.dll"
-	File "love\extra\nsis\love.ico"
-	File "love\extra\nsis\game.ico"
+	File "${LOVEBINDIR}\love.exe"
+	File "${LOVEBINDIR}\DevIL.dll"
+	File "${LOVEBINDIR}\SDL.dll"
+	File "${LOVEBINDIR}\OpenAL32.dll"
+	# File "${LOVEBINDIR}\lua51.dll"
+	File "${LOVEICODIR}\love.ico"
+	File "${LOVEICODIR}\game.ico"
 
 	# Uninstaller
 	WriteUninstaller $INSTDIR\Uninstall.exe
@@ -88,6 +89,7 @@ Section "Uninstall"
 	Delete $INSTDIR\"SDL.dll"
 	Delete $INSTDIR\"love.exe"
 	Delete $INSTDIR\"OpenAL32.dll"
+	# Delete $INSTDIR\"lua51.dll"
 	Delete $INSTDIR\"game.ico"
 	Delete $INSTDIR\"love.ico"
 	RMDir $INSTDIR

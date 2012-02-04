@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -77,8 +77,9 @@ namespace null
 		return true;
 	}
 
-	void Source::update()
+	bool Source::update()
 	{
+		return false;
 	}
 
 	void Source::setPitch(float pitch)
@@ -100,12 +101,12 @@ namespace null
 	{
 		return volume;
 	}
-	
+
 	void Source::seek(float, Source::Unit)
 	{
 	}
-	
-	float Source::tell(Source::Unit) const
+
+	float Source::tell(Source::Unit)
 	{
 		return 0.0f;
 	}
@@ -147,6 +148,56 @@ namespace null
 	bool Source::isStatic() const
 	{
 		return (type == TYPE_STATIC);
+	}
+	
+	void Source::setMinVolume(float volume)
+	{
+		this->minVolume = volume;
+	}
+
+	float Source::getMinVolume() const
+	{
+		return this->minVolume;
+	}
+
+	void Source::setMaxVolume(float volume)
+	{
+		this->maxVolume = volume;
+	}
+
+	float Source::getMaxVolume() const
+	{
+		return this->maxVolume;
+	}
+
+	void Source::setReferenceDistance(float distance)
+	{
+		this->referenceDistance = distance;
+	}
+
+	float Source::getReferenceDistance() const
+	{
+		return this->referenceDistance;
+	}
+
+	void Source::setRolloffFactor(float factor)
+	{
+		this->rolloffFactor = factor;
+	}
+
+	float Source::getRolloffFactor() const
+	{
+		return this->rolloffFactor;
+	}
+
+	void Source::setMaxDistance(float distance)
+	{
+		this->maxDistance = distance;
+	}
+
+	float Source::getMaxDistance() const
+	{
+		return this->maxDistance;
 	}
 
 } // null

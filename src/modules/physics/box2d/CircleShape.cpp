@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -23,6 +23,9 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "Physics.h"
+
+#include <common/Memoizer.h>
 
 namespace love
 {
@@ -30,41 +33,27 @@ namespace physics
 {
 namespace box2d
 {
-	CircleShape::CircleShape(Body * body, b2CircleDef * def)
-		: Shape(body)
+	CircleShape::CircleShape(b2CircleShape * c)
+		: Shape(c)
 	{
-		def->localPosition = body->world->scaleDown(def->localPosition);
-		def->radius = body->world->scaleDown(def->radius);
-		radius = def->radius;
-		this->localPosition = def->localPosition;
-
-		def->userData = (void*)data;
-		shape = body->body->CreateShape(def);
 	}
 
 	CircleShape::~CircleShape()
 	{
+		Memoizer::remove(shape);
+		delete shape;
+        shape = NULL;
 	}
 
-	float CircleShape::getRadius() const
-	{
-		return body->world->scaleUp(radius);
-	}
+    float CircleShape::getRadius() const
+    {
+        return Physics::scaleUp(shape->m_radius);
+    }
 
-	void CircleShape::getLocalCenter(float & x, float & y) const
-	{
-		x = localPosition.x;
-		y = localPosition.y;
-		body->world->scaleUp(x, y);
-	}
-
-	void CircleShape::getWorldCenter(float & x, float & y) const
-	{
-		b2Vec2 worldCenter = body->body->GetWorldPoint(localPosition);
-		worldCenter = body->world->scaleUp(worldCenter);
-		x = worldCenter.x;
-		y = worldCenter.y;
-	}
+    void CircleShape::setRadius(float r)
+    {
+        shape->m_radius = Physics::scaleDown(r);
+    }
 
 } // box2d
 } // physics

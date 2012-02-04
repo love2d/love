@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -29,7 +29,10 @@ namespace box2d
 
 	World * luax_checkworld(lua_State * L, int idx)
 	{
-		return luax_checktype<World>(L, idx, "World", PHYSICS_WORLD_T);
+		World * w = luax_checktype<World>(L, idx, "World", PHYSICS_WORLD_T);
+		if (!w->isValid())
+			luaL_error(L, "Attempt to use destroyed world.");
+		return w;
 	}
 
 	int w_World_update(lua_State * L)
@@ -54,6 +57,20 @@ namespace box2d
 		return t->getCallbacks(L);
 	}
 
+	int w_World_setContactFilter(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->setContactFilter(L);
+	}
+
+	int w_World_getContactFilter(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getContactFilter(L);
+	}
+
 	int w_World_setGravity(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
@@ -70,18 +87,25 @@ namespace box2d
 		return t->getGravity(L);
 	}
 
-	int w_World_setAllowSleep(lua_State * L)
+	int w_World_setAllowSleeping(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
 		bool b = luax_toboolean(L, 2);
-		t->setAllowSleep(b);
+		t->setAllowSleeping(b);
 		return 0;
 	}
 
-	int w_World_isAllowSleep(lua_State * L)
+	int w_World_getAllowSleeping(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
-		luax_pushboolean(L, t->isAllowSleep());
+		luax_pushboolean(L, t->getAllowSleeping());
+		return 1;
+	}
+
+	int w_World_isLocked(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		luax_pushboolean(L, t->isLocked());
 		return 1;
 	}
 
@@ -98,38 +122,88 @@ namespace box2d
 		lua_pushinteger(L, t->getJointCount());
 		return 1;
 	}
-	
-	int w_World_setMeter(lua_State * L)
+
+	int w_World_getContactCount(lua_State * L)
 	{
 		World * t = luax_checkworld(L, 1);
-		int arg1 = luaL_checkint(L, 2);
-		t->setMeter(arg1);
-		return 0;
-		
-	}
-	int w_World_getMeter(lua_State * L)
-	{
-		World * t = luax_checkworld(L, 1);
-		lua_pushinteger(L, t->getMeter());
+		lua_pushinteger(L, t->getContactCount());
 		return 1;
 	}
+
+	int w_World_getBodyList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getBodyList(L);
+	}
+
+	int w_World_getJointList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getJointList(L);
+	}
+
+	int w_World_getContactList(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->getContactList(L);
+	}
+
+	int w_World_queryBoundingBox(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		return t->queryBoundingBox(L);
+	}
+
+	int w_World_rayCast(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		lua_remove(L, 1);
+		ASSERT_GUARD(return t->rayCast(L);)
+	}
+
+	int w_World_destroy(lua_State * L)
+	{
+		World * t = luax_checkworld(L, 1);
+		try
+		{
+			t->destroy();
+		}
+		catch (love::Exception & e)
+		{
+			luaL_error(L, "%s", e.what());
+		}
+		return 0;
+	}
+
 
 	static const luaL_Reg functions[] = {
 		{ "update", w_World_update },
 		{ "setCallbacks", w_World_setCallbacks },
 		{ "getCallbacks", w_World_getCallbacks },
+		{ "setContactFilter", w_World_setContactFilter },
+		{ "getContactFilter", w_World_getContactFilter },
 		{ "setGravity", w_World_setGravity },
 		{ "getGravity", w_World_getGravity },
-		{ "setAllowSleep", w_World_setAllowSleep },
-		{ "isAllowSleep", w_World_isAllowSleep },
+		{ "setAllowSleeping", w_World_setAllowSleeping },
+		{ "getAllowSleeping", w_World_getAllowSleeping },
+		{ "isLocked", w_World_isLocked },
 		{ "getBodyCount", w_World_getBodyCount },
 		{ "getJointCount", w_World_getJointCount },
-		{ "setMeter", w_World_setMeter },
-		{ "getMeter", w_World_getMeter },
+		{ "getContactCount", w_World_getContactCount },
+		{ "getBodyList", w_World_getBodyList },
+		{ "getJointList", w_World_getJointList },
+		{ "getContactList", w_World_getContactList },
+		{ "queryBoundingBox", w_World_queryBoundingBox },
+		{ "rayCast", w_World_rayCast },
+		{ "destroy", w_World_destroy },
 		{ 0, 0 }
 	};
 
-	int luaopen_world(lua_State * L)
+	extern "C" int luaopen_world(lua_State * L)
 	{
 		return luax_register_type(L, "World", functions);
 	}

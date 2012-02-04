@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 #include <common/Vector.h>
 
 #include "Graphics.h"
+#include <window/sdl/Window.h>
 
 #include <vector>
 #include <sstream>
@@ -37,27 +38,19 @@ namespace opengl
 {
 
 	Graphics::Graphics()
-		: currentFont(0), lineWidth(1)
+		: currentFont(0), currentImageFilter(), lineStyle(LINE_SMOOTH), lineWidth(1), matrixLimit(0), userMatrices(0)
 	{
-		// Indicates that there is no screen
-		// created yet.
-		currentMode.width = 0;
-		currentMode.height = 0;
-		currentMode.fullscreen = 0;
+		currentWindow = love::window::sdl::Window::getSingleton();
 
-		// Window should be centered.
-		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
-
-		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-			throw Exception(SDL_GetError());
+		resetBoundTexture();
 	}
 
 	Graphics::~Graphics()
 	{
-		if(currentFont != 0)
+		if (currentFont != 0)
 			currentFont->release();
 
-		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+		currentWindow->release();
 	}
 
 	const char * Graphics::getName() const
@@ -67,36 +60,20 @@ namespace opengl
 
 	bool Graphics::checkMode(int width, int height, bool fullscreen)
 	{
-		Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
-
-		// Check if mode is supported
-		int bpp = SDL_VideoModeOK(width, height, 32, sdlflags);
-
-		return (bpp >= 16);
+		return currentWindow->checkWindowSize(width, height, fullscreen);
 	}
 
 	DisplayState Graphics::saveState()
 	{
 		DisplayState s;
-		//create a table in which to store the color data in float format, before converting it
-		float color[4];
-		//get the color
-		glGetFloatv(GL_CURRENT_COLOR, color);
-		s.color.set( (color[0]*255.0f), (color[1]*255.0f), (color[2]*255.0f), (color[3]*255.0f) );
-		//get the background color
-		glGetFloatv(GL_COLOR_CLEAR_VALUE, color);
-		s.backgroundColor.set( color[0]*255.0f, color[1]*255.0f, color[2]*255.0f, color[3]*255.0f );
-		//store modes here
-		GLint mode;
-		//get blend mode
-		glGetIntegerv(GL_BLEND_DST, &mode);
-		//following syntax seems better than if-else every time
-		s.blendMode = (mode == GL_ONE) ? Graphics::BLEND_ADDITIVE : Graphics::BLEND_ALPHA;
-		//get color mode
-		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
-		s.colorMode = (mode == GL_MODULATE) ? Graphics::COLOR_MODULATE : Graphics::COLOR_REPLACE;
+
+		s.color = getColor();
+		s.backgroundColor = getBackgroundColor();
+		
+		s.blendMode = getBlendMode();
+		s.colorMode = getColorMode();
 		//get line style
-		s.lineStyle = (glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE) ? Graphics::LINE_SMOOTH : Graphics::LINE_ROUGH;
+		s.lineStyle = lineStyle;
 		//get the point size
 		glGetFloatv(GL_POINT_SIZE, &s.pointSize);
 		//get point style
@@ -107,10 +84,6 @@ namespace opengl
 		if (s.scissor)
 			glGetIntegerv(GL_SCISSOR_BOX, s.scissorBox);
 
-		char *cap = 0;
-		SDL_WM_GetCaption(&cap, 0);
-		s.caption = cap;
-		s.mouseVisible = (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
 		return s;
 	}
 
@@ -126,9 +99,6 @@ namespace opengl
 			setScissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3]);
 		else
 			setScissor();
-
-		setCaption(s.caption.c_str());
-		SDL_ShowCursor(s.mouseVisible ? SDL_ENABLE : SDL_DISABLE);
 	}
 
 	bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int fsaa)
@@ -143,94 +113,7 @@ namespace opengl
 		// the display mode change.
 		Volatile::unloadAll();
 
-		// Get caption.
-
-		// We need to restart the subsystem for two reasons:
-		// 1) Special case for fullscreen -> windowed. Windows XP did not
-		//    work well with "normal" display mode change in this case.
-		//    The application window does leave fullscreen, but the desktop
-		//    resolution does not revert to the correct one. Restarting the
-		//    SDL video subsystem does the trick, though.
-		// 2) Restart the event system (for whatever reason the event system
-		//    started and stopped with SDL_INIT_VIDEO, see:
-		//    http://sdl.beuc.net/sdl.wiki/Introduction_to_Events)
-		//    because the mouse position will not be able to exceed
-		//    the previous' video mode window size (i.e. alway
-		//    love.mouse.getX() < 800 when switching from 800x600 to a
-		//    higher resolution)
-		SDL_QuitSubSystem(SDL_INIT_VIDEO);
-		if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-		{
-			std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
-			return false;
-		}
-
-		// Set caption.
-
-		// Set GL attributes
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 0);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 0);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 0);
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, (vsync ? 1 : 0));
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
-
-		// FSAA
-		if(fsaa > 0)
-		{
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa ) ;
-		}
-
-		// Fullscreen?
-		Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
-
-		if(!isCreated())
-			setCaption("");
-
-		// Have SDL set the video mode.
-		if(SDL_SetVideoMode(width, height, 32, sdlflags ) == 0)
-		{
-			bool failed = true;
-			if(fsaa > 0)
-			{
-				// FSAA might have failed, disable it and try again
-				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-				failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
-				if (failed)
-				{
-					// There might be no FSAA at all
-					SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-					failed = SDL_SetVideoMode(width, height, 32, sdlflags ) == 0;
-				}
-			}
-			if(failed)
-			{
-				std::cerr << "Could not set video mode: "  << SDL_GetError() << std::endl;
-				return false;
-			}
-		}
-
-		if (width == 0 || height == 0)
-		{
-			const SDL_VideoInfo* videoinfo = SDL_GetVideoInfo();
-			width = videoinfo->current_w;
-			height = videoinfo->current_h;
-		}
-
-		// Check if FSAA failed or not
-		if(fsaa > 0)
-		{
-			GLint buffers;
-			GLint samples;
-
-			glGetIntegerv( GL_SAMPLE_BUFFERS_ARB, & buffers ) ;
-			glGetIntegerv( GL_SAMPLES_ARB, & samples ) ;
-
-			// Don't fail because of this, but issue a warning.
-			if ( ! buffers || (samples != fsaa))
-				std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
-		}
+		currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
 
 		// Okay, setup OpenGL.
 
@@ -261,44 +144,44 @@ namespace opengl
 		// Reset modelview matrix
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		
+
 		// Set pixel row alignment
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 
-		// Set the new display mode as the current display mode.
-		currentMode.width = width;
-		currentMode.height = height;
-		currentMode.colorDepth = 32;
-		currentMode.fsaa = fsaa;
-		currentMode.fullscreen = fullscreen;
-		currentMode.vsync = vsync;
-
 		// Reload all volatile objects.
-		if(!Volatile::loadAll())
+		if (!Volatile::loadAll())
 			std::cerr << "Could not reload all volatile objects." << std::endl;
 
 		// Restore the display state.
 		restoreState(tempState);
 
+		// Get the maximum number of matrices
+		// subtract a few to give the engine some room.
+		glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
+		matrixLimit -= 5;
+
 		return true;
+	}
+
+	void Graphics::getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa)
+	{
+		currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
 	}
 
 	bool Graphics::toggleFullscreen()
 	{
-		// Try to do the change.
-		return setMode(currentMode.width,
-			currentMode.height,
-			!currentMode.fullscreen,
-			currentMode.vsync,
-			currentMode.fsaa);
+		int width, height, fsaa;
+		bool fullscreen, vsync;
+		currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
+		return currentWindow->setWindow(width, height, !fullscreen, vsync, fsaa);
 	}
 
 
 	void Graphics::reset()
 	{
 		DisplayState s;
-		discardMask();
-		Framebuffer::bindDefaultBuffer();
+		discardStencil();
+		Canvas::bindDefaultCanvas();
 		restoreState(s);
 	}
 
@@ -306,105 +189,94 @@ namespace opengl
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		glLoadIdentity();
+		PixelEffect::detach();
 	}
 
 	void Graphics::present()
 	{
-		SDL_GL_SwapBuffers();
+		currentWindow->swapBuffers();
 	}
 
 	void Graphics::setIcon(Image * image)
 	{
-		Uint32 rmask, gmask, bmask, amask;
-#ifdef LOVE_BIG_ENDIAN
-		rmask = 0xFF000000;
-		gmask = 0x00FF0000;
-		bmask = 0x0000FF00;
-		amask = 0x000000FF;
-#else
-		rmask = 0x000000FF;
-		gmask = 0x0000FF00;
-		bmask = 0x00FF0000;
-		amask = 0xFF000000;
-#endif
-
-		int w = static_cast<int>(image->getWidth());
-		int h = static_cast<int>(image->getHeight());
-		int pitch = static_cast<int>(image->getWidth() * 4);
-
-		SDL_Surface * icon = SDL_CreateRGBSurfaceFrom(image->getData()->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
-		SDL_WM_SetIcon(icon, NULL);
-		SDL_FreeSurface(icon);
+		currentWindow->setIcon(image->getData());
 	}
 
 	void Graphics::setCaption(const char * caption)
 	{
-		SDL_WM_SetCaption(caption, 0);
+		std::string title(caption);
+		currentWindow->setWindowTitle(title);
 	}
 
 	int Graphics::getCaption(lua_State * L)
 	{
-		char * title = 0;
-		SDL_WM_GetCaption(&title, 0);
-		lua_pushstring(L, title);
+		std::string title = currentWindow->getWindowTitle();
+		lua_pushstring(L, title.c_str());
 		return 1;
 	}
 
 	int Graphics::getWidth()
 	{
-		return currentMode.width;
+		return currentWindow->getWidth();
 	}
 
 	int Graphics::getHeight()
 	{
-		return currentMode.height;
+		return currentWindow->getHeight();
+	}
+
+	int Graphics::getRenderHeight()
+	{
+		if (Canvas::current)
+			return Canvas::current->getHeight();
+		return getHeight();
 	}
 
 	bool Graphics::isCreated()
 	{
-		return (currentMode.width > 0) || (currentMode.height > 0);
+		return currentWindow->isCreated();
 	}
 
 	int Graphics::getModes(lua_State * L)
 	{
-		SDL_Rect ** modes = SDL_ListModes(0, SDL_OPENGL | SDL_FULLSCREEN);
+		int n;
+		love::window::Window::WindowSize ** modes = currentWindow->getFullscreenSizes(n);
 
-		if(modes == (SDL_Rect **)0 || modes == (SDL_Rect **)-1)
+		if (modes == 0)
 			return 0;
-
-		int index = 1;
 
 		lua_newtable(L);
 
-		for(int i=0;modes[i];++i)
+		for (int i = 0; i < n ; i++)
 		{
-			lua_pushinteger(L, index);
+			lua_pushinteger(L, i+1);
 			lua_newtable(L);
 
 			// Inner table attribs.
 
 			lua_pushstring(L, "width");
-			lua_pushinteger(L, modes[i]->w);
+			lua_pushinteger(L, modes[i]->width);
 			lua_settable(L, -3);
 
 			lua_pushstring(L, "height");
-			lua_pushinteger(L, modes[i]->h);
+			lua_pushinteger(L, modes[i]->height);
 			lua_settable(L, -3);
 
 			// Inner table attribs end.
 
 			lua_settable(L, -3);
 
-			index++;
+			delete modes[i];
 		}
 
+		delete[] modes;
 		return 1;
 	}
 
 	void Graphics::setScissor(int x, int y, int width, int height)
 	{
 		glEnable(GL_SCISSOR_TEST);
-		glScissor(x, getHeight() - (y + height), width, height); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
+		glScissor(x, getRenderHeight() - (y + height), width, height); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
 	}
 
 	void Graphics::setScissor()
@@ -414,21 +286,21 @@ namespace opengl
 
 	int Graphics::getScissor(lua_State * L)
 	{
-		if(glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
+		if (glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
 			return 0;
 
 		GLint scissor[4];
 		glGetIntegerv(GL_SCISSOR_BOX, scissor);
 
 		lua_pushnumber(L, scissor[0]);
-		lua_pushnumber(L, getHeight() - (scissor[1] + scissor[3])); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
+		lua_pushnumber(L, getRenderHeight() - (scissor[1] + scissor[3])); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
 		lua_pushnumber(L, scissor[2]);
 		lua_pushnumber(L, scissor[3]);
 
 		return 4;
 	}
 
-	void Graphics::defineMask()
+	void Graphics::defineStencil()
 	{
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		glEnable(GL_STENCIL_TEST);
@@ -437,14 +309,14 @@ namespace opengl
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	}
 
-	void Graphics::useMask()
+	void Graphics::useStencil(bool invert)
 	{
-		glStencilFunc(GL_EQUAL, 1, 1);
+		glStencilFunc(GL_EQUAL, (int)(!invert), 1); // invert ? 0 : 1
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	}
 
-	void Graphics::discardMask()
+	void Graphics::discardStencil()
 	{
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glDisable(GL_STENCIL_TEST);
@@ -455,21 +327,27 @@ namespace opengl
 		// Create the image.
 		Image * image = new Image(data);
 		bool success;
-		try {
+		try
+		{
 			success = image->load();
-		} catch (love::Exception & e) {
+		}
+		catch (love::Exception & e)
+		{
 			image->release();
 			throw love::Exception(e.what());
 		}
-		if (!success) {
+		if (!success)
+		{
 			image->release();
 			return 0;
 		}
 
+		image->setFilter(currentImageFilter);
+
 		return image;
 	}
 
-	Quad * Graphics::newQuad(int x, int y, int w, int h, int sw, int sh)
+	Quad * Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
 	{
 		Quad::Viewport v;
 		v.x = x;
@@ -484,7 +362,7 @@ namespace opengl
 		Font * font = new Font(r, filter);
 
 		// Load it and check for errors.
-		if(!font)
+		if (!font)
 		{
 			delete font;
 			return 0;
@@ -495,7 +373,17 @@ namespace opengl
 
 	SpriteBatch * Graphics::newSpriteBatch(Image * image, int size, int usage)
 	{
-		return new SpriteBatch(image, size, usage);
+		SpriteBatch * t = NULL;
+		try
+		{
+			t = new SpriteBatch(image, size, usage);
+		}
+		catch (love::Exception& e)
+		{
+			if (t) delete t;
+			throw e;
+		}
+		return t;
 	}
 
 	ParticleSystem * Graphics::newParticleSystem(Image * image, int size)
@@ -503,9 +391,66 @@ namespace opengl
 		return new ParticleSystem(image, size);
 	}
 
-	Framebuffer * Graphics::newFramebuffer(int width, int height)
+	Canvas * Graphics::newCanvas(int width, int height)
 	{
-		return new Framebuffer(width, height);
+		Canvas * canvas = new Canvas(width, height);
+		GLenum err = canvas->getStatus();
+
+		// everything ok, reaturn canvas (early out)
+		if (err == GL_FRAMEBUFFER_COMPLETE)
+			return canvas;
+
+		// create error message
+		std::stringstream error_string;
+		error_string << "Cannot create canvas: ";
+		switch (err) {
+
+			case GL_FRAMEBUFFER_UNSUPPORTED:
+				error_string << "Not supported by your OpenGL implementation.";
+				break;
+
+			// remaining error codes are highly unlikely:
+			case GL_FRAMEBUFFER_UNDEFINED:
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+				error_string << "Error in implementation. Possible fix: Make canvas width and height powers of two.";
+				break;
+
+			default:
+				// my intel hda card wrongly returns 0 to glCheckFramebufferStatus() but sets
+				// no error flag. I think it meant to return GL_FRAMEBUFFER_UNSUPPORTED, but who
+				// knows.
+				if (glGetError() == GL_NO_ERROR)
+					error_string << "May not be supported by your OpenGL implementation.";
+				// the remaining error is an indication of a serious fuckup since it should
+				// only be returned if glCheckFramebufferStatus() was called with the wrong
+				// arguments.
+				else
+					error_string << "Cannot create canvas: Aliens did it (OpenGL error code: " << glGetError() << ")";
+		}
+
+		canvas->release();
+		throw Exception(error_string.str().c_str());
+		return NULL; // never reached
+	}
+
+	PixelEffect * Graphics::newPixelEffect(const std::string& code)
+	{
+		PixelEffect * effect = NULL;
+		try
+		{
+			effect = new PixelEffect(code);
+		}
+		catch (love::Exception& e)
+		{
+			if (effect)
+				delete effect;
+			throw(e);
+		}
+		return effect;
 	}
 
 	void Graphics::setColor(const Color& c)
@@ -548,12 +493,12 @@ namespace opengl
 
 	void Graphics::setFont( Font * font )
 	{
-		if(currentFont != 0)
+		if (currentFont != 0)
 			currentFont->release();
 
 		currentFont = font;
 
-		if(font != 0)
+		if (font != 0)
 			currentFont->retain();
 	}
 
@@ -575,28 +520,49 @@ namespace opengl
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		else if (mode == BLEND_MULTIPLICATIVE)
 			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-		else
+		else if (mode == BLEND_PREMULTIPLIED)
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	}
 
 	void Graphics::setColorMode ( Graphics::ColorMode mode )
 	{
-		if(mode == COLOR_MODULATE)
+		if (mode == COLOR_MODULATE)
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		else if (mode == COLOR_COMBINE) {
+			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD_SIGNED);
+			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+		}
 		else // mode = COLOR_REPLACE
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 
-	Graphics::BlendMode Graphics::getBlendMode()
+	void Graphics::setDefaultImageFilter(const Image::Filter& f)
 	{
-		GLint dst, src;
+		currentImageFilter = f;
+	}
+
+	Graphics::BlendMode Graphics::getBlendMode ()
+	{
+		GLint dst, src, equation;
 		glGetIntegerv(GL_BLEND_DST, &dst);
 		glGetIntegerv(GL_BLEND_SRC, &src);
+		glGetIntegerv(GL_BLEND_EQUATION, &equation);
 
-		if(src == GL_SRC_ALPHA && dst == GL_ONE)
+		if (equation == GL_FUNC_REVERSE_SUBTRACT) // && src == GL_SRC_ALPHA && dst == GL_ONE
+			return BLEND_SUBTRACTIVE;
+		else if (src == GL_SRC_ALPHA && dst == GL_ONE) // && equation == GL_FUNC_ADD
 			return BLEND_ADDITIVE;
-		else // src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA
+		else if (src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
 			return BLEND_ALPHA;
+		else if (src == GL_DST_COLOR && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
+			return BLEND_MULTIPLICATIVE;
+		else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA) // && equation == GL_FUNC_ADD
+			return BLEND_PREMULTIPLIED;
+
+		return BLEND_MAX_ENUM; // Should never be reached.
 	}
 
 	Graphics::ColorMode Graphics::getColorMode()
@@ -604,10 +570,17 @@ namespace opengl
 		GLint mode;
 		glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
 
-		if(mode == GL_MODULATE)
+		if (mode == GL_MODULATE)
 			return COLOR_MODULATE;
-		else // // mode == GL_REPLACE
+		else if (mode == GL_COMBINE)
+			return COLOR_COMBINE;
+		else // mode == GL_REPLACE
 			return COLOR_REPLACE;
+	}
+
+	const Image::Filter& Graphics::getDefaultImageFilter() const
+	{
+		return currentImageFilter;
 	}
 
 	void Graphics::setLineWidth( float width )
@@ -615,25 +588,16 @@ namespace opengl
 		lineWidth = width;
 	}
 
-	void Graphics::setLineStyle(Graphics::LineStyle style )
+	void Graphics::setLineStyle(Graphics::LineStyle style)
 	{
-		// XXX: actually enables antialiasing for _all_ polygons.
-		// may need investigation if wanted or not
-		// maybe rename to something else?
-		if(style == LINE_ROUGH)
-			glDisable (GL_POLYGON_SMOOTH);
-		else // type == LINE_SMOOTH
-		{
-			glEnable (GL_POLYGON_SMOOTH);
-			glHint (GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-		}
+		lineStyle = style;
 	}
 
 	void Graphics::setLine( float width, Graphics::LineStyle style )
 	{
 		setLineWidth(width);
 
-		if(style == 0)
+		if (style == 0)
 			return;
 		setLineStyle(style);
 	}
@@ -647,10 +611,7 @@ namespace opengl
 
 	Graphics::LineStyle Graphics::getLineStyle()
 	{
-		if(glIsEnabled(GL_POLYGON_SMOOTH) == GL_TRUE)
-			return LINE_SMOOTH;
-		else
-			return LINE_ROUGH;
+		return lineStyle;
 	}
 
 	void Graphics::setPointSize( float size )
@@ -660,7 +621,7 @@ namespace opengl
 
 	void Graphics::setPointStyle( Graphics::PointStyle style )
 	{
-		if( style == POINT_SMOOTH )
+		if ( style == POINT_SMOOTH )
 			glEnable(GL_POINT_SMOOTH);
 		else // love::POINT_ROUGH
 			glDisable(GL_POINT_SMOOTH);
@@ -668,7 +629,7 @@ namespace opengl
 
 	void Graphics::setPoint( float size, Graphics::PointStyle style )
 	{
-		if( style == POINT_SMOOTH )
+		if ( style == POINT_SMOOTH )
 			glEnable(GL_POINT_SMOOTH);
 		else // POINT_ROUGH
 			glDisable(GL_POINT_SMOOTH);
@@ -685,7 +646,7 @@ namespace opengl
 
 	Graphics::PointStyle Graphics::getPointStyle()
 	{
-		if(glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
+		if (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
 			return POINT_SMOOTH;
 		else
 			return POINT_ROUGH;
@@ -698,12 +659,12 @@ namespace opengl
 		return (int)max;
 	}
 
-	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy)
+	void Graphics::print( const char * str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
-		if(currentFont != 0)
+		if (currentFont != 0)
 		{
 			std::string text(str);
-			currentFont->print(text, x, y, angle, sx, sy);
+			currentFont->print(text, x, y, angle, sx, sy, ox, oy, kx, ky);
 		}
 	}
 
@@ -714,43 +675,12 @@ namespace opengl
 
 		using namespace std;
 		string text(str);
-		const float width_space = static_cast<float>(currentFont->getWidth(' '));
-		vector<string> lines_to_draw;
-
-		//split text at newlines
-		istringstream iss( text );
-		string line;
-		while (getline(iss, line, '\n')) {
-			// split line into words
-			vector<string> words;
-			istringstream word_iss(line);
-			copy(istream_iterator<string>(word_iss), istream_iterator<string>(),
-					back_inserter< vector<string> >(words));
-
-			// put words back together until a wrap occurs
-			float width = 0.0f;
-			ostringstream string_builder;
-			vector<string>::const_iterator word_iter;
-			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter) {
-				string word( *word_iter );
-				width += currentFont->getWidth( word );
-
-				// on wordwrap, push line to line buffer and clear string builder
-				if (width >= wrap) {
-					lines_to_draw.push_back( string_builder.str() );
-					string_builder.str( "" );
-					width = static_cast<float>(currentFont->getWidth( word ));
-				}
-				string_builder << word << " ";
-				width += width_space;
-			}
-			// push last line
-			lines_to_draw.push_back( string_builder.str() );
-		}
+		vector<string> lines_to_draw = currentFont->getWrap(text, wrap);
 
 		// now for the actual printing
 		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
-		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter) {
+		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter)
+		{
 			float width = static_cast<float>(currentFont->getWidth( *line_iter ));
 			switch (align) {
 				case ALIGN_RIGHT:
@@ -781,73 +711,201 @@ namespace opengl
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	// calculate line boundary intersection vertices for current line
-	// dependent on the current *and next* line segment
-	static void pushIntersectionPoints(Vector *vertices, int pos, float halfwidth, const Vector& p, const Vector& q, const Vector& r)
+	// Calculate line boundary points u1 and u2. Sketch:
+	//              u1
+	// -------------+---...___
+	//              |         ```'''--  ---
+	// p- - - - - - q- - . _ _           | w/2
+	//              |          ` ' ' r   +
+	// -------------+---...___           | w/2
+	//              u2         ```'''-- ---
+	//
+	// u1 and u2 depend on four things:
+	//   - the half line width w/2
+	//   - the previous line vertex p
+	//   - the current line vertex q
+	//   - the next line vertex r
+	//
+	// u1/u2 are the intersection points of the parallel lines to p-q and q-r,
+	// i.e. the point where
+	//
+	//    (p + w/2 * n1) + mu * (q - p) = (q + w/2 * n2) + lambda * (r - q)   (u1)
+	//    (p - w/2 * n1) + mu * (q - p) = (q - w/2 * n2) + lambda * (r - q)   (u2)
+	//
+	// with n1,n2 being the normals on the segments p-q and q-r:
+	//
+	//    n1 = perp(q - p) / |q - p|
+	//    n2 = perp(r - q) / |r - q|
+	//
+	// The intersection points can be calculated using cramers rule.
+	static void pushIntersectionPoints(Vector *vertices, Vector* overdraw,
+			int pos, int count, float hw, float inv_hw,
+			const Vector& p, const Vector& q, const Vector& r)
 	{
 		// calculate line directions
 		Vector s = (q - p);
 		Vector t = (r - q);
 
 		// calculate vertex displacement vectors
-		Vector d1 = s.getNormal();
-		Vector d2 = t.getNormal();
-		d1.normalize();
-		d2.normalize();
-		float det_norm = d1 ^ d2;
-		d1 *= halfwidth;
-		d2 *= halfwidth;
+		Vector n1 = s.getNormal();
+		Vector n2 = t.getNormal();
+		n1.normalize();
+		n2.normalize();
+		float det_norm = n1 ^ n2; // will be close to zero if the angle between the normals is sharp
+		n1 *= hw;
+		n2 *= hw;
 
 		// lines parallel -> assume intersection at displacement points
-		if (fabs(det_norm) <= .03) {
-			vertices[pos]     = q - d2;
-			vertices[pos + 1] = q + d2;
-			return;
+		if (fabs(det_norm) <= .03)
+		{
+			vertices[pos]   = q - n2;
+			vertices[pos+1] = q + n2;
+		}
+		// real intersection -> calculate boundary intersection points with cramers rule
+		else
+		{
+			float det = s ^ t;
+			Vector d = n1 - n2;
+			Vector b = s - d; // s = q - p
+			Vector c = s + d;
+			float lambda = (b ^ t) / det;
+			float mu     = (c ^ t) / det;
+
+			// ordering for GL_TRIANGLE_STRIP
+			vertices[pos]   = p + s*mu - n1;     // u1
+			vertices[pos+1] = p + s*lambda + n1; // u2
 		}
 
-		// real intersection -> calculate boundary intersection points
-		float det = s ^ t;
-		Vector d = d1 - d2;
-		Vector b = s - d; // s = q - p
-		Vector c = s + d;
-		float lambda = (b ^ t) / det;
-		float mu     = (c ^ t) / det;
+		if (overdraw)
+		{
+			// displacement of the overdraw vertices (works by magic).
+			Vector x = (vertices[pos] - q) * inv_hw;
 
-		// ordering for GL_TRIANGLE_STRIP
-		vertices[pos]   = p - d1 + s * mu;
-		vertices[pos+1] = p + d1 + s * lambda;
+			overdraw[pos]   = vertices[pos];
+			overdraw[pos+1] = vertices[pos] + x;
+
+			overdraw[2*count-pos-2] = vertices[pos+1];
+			overdraw[2*count-pos-1] = vertices[pos+1] - x;
+		}
 	}
 
-	void Graphics::polyline(const float* coords, size_t count, bool looping)
+	// precondition:
+	// glEnableClientState(GL_VERTEX_ARRAY);
+	static void draw_overdraw(Vector* overdraw, size_t count, bool looping)
 	{
-		Vector *vertices = new Vector[count]; // two vertices for every line end-point
-		Vector p,q,r;
+		// if not looping, the outer overdraw vertices need to be displaced
+		// to cover the line endings, i.e.:
+		// +- - - - //- - +         +- - - - - //- - - +
+		// +-------//-----+         : +-------//-----+ :
+		// | core // line |   -->   : | core // line | :
+		// +-----//-------+         : +-----//-------+ :
+		// +- - //- - - - +         +- - - //- - - - - +
+		if (!looping)
+		{
+			Vector s = overdraw[1] - overdraw[3];
+			s.normalize();
+			overdraw[1] += s;
+			overdraw[2*count-1] += s;
 
-		r = Vector(coords[0], coords[1]);
-		if (looping) q = Vector(coords[count-4], coords[count-3]);
-		else         q = r * 2 - Vector(coords[2], coords[3]);
+			Vector t = overdraw[count-1] - overdraw[count-3];
+			t.normalize();
+			overdraw[count-1] += t;
+			overdraw[count+1] += t;
 
-		for (size_t i = 0; i+3 < count; i += 2) {
-			p = q;
-			q = r;
-			r = Vector(coords[i+2], coords[i+3]);
-			pushIntersectionPoints(vertices, i, lineWidth/2, p,q,r);
+			// we need to draw two more triangles to close the
+			// overdraw at the line start.
+			overdraw[2*count]   = overdraw[0];
+			overdraw[2*count+1] = overdraw[1];
 		}
 
-		p = q;
-		q = r;
-		if (looping) r = Vector(coords[2], coords[3]);
-		else         r += (q-p);
-		pushIntersectionPoints(vertices, count-2, lineWidth/2, p,q,r);
+		// prepare colors:
+		// even indices in overdraw* point to inner vertices => alpha = current-alpha,
+		// odd indices point to outer vertices => alpha = 0.
+		GLfloat c[4];
+		glGetFloatv(GL_CURRENT_COLOR, c);
 
+		Color *colors = new Color[2*count+2];
+		for (size_t i = 0; i < 2*count+2; ++i)
+		{
+			colors[i] = Color(GLubyte(c[0] * 255.f),
+					GLubyte(c[1] * 255.f),
+					GLubyte(c[2] * 255.f),
+					// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
+					GLubyte(c[3] * 255.f) * GLubyte(i%2 == 0));
+		}
+
+		// draw faded out line halos
+		glEnableClientState(GL_COLOR_ARRAY);
+		glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
+		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)overdraw);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*count + 2 * int(!looping));
+		glDisableClientState(GL_COLOR_ARRAY);
+		// "if GL_COLOR_ARRAY is enabled, the value of the current color is
+		// undefined after glDrawArrays executes"
+		glColor4fv(c);
+
+		delete[] colors;
+	}
+
+	void Graphics::polyline(const float* coords, size_t count)
+	{
+		Vector *vertices = new Vector[count]; // two vertices for every line end-point
+		Vector *overdraw = NULL;
+
+		Vector p,q,r;
+		bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
+
+		float halfwidth = lineWidth/2.f;
+		float inv_hw    = 1.f / halfwidth;
+
+		if (lineStyle == LINE_SMOOTH) {
+			overdraw = new Vector[2*count+2];
+			// Overdraw changes visible line width. account for that.
+			// Value of 0.2 chosen empirically.
+			halfwidth -= .2f;
+		}
+
+		// get line vertex boundaries
+		// if not looping, extend the line at the beginning, else use last point as `p'
+		r = Vector(coords[0], coords[1]);
+		if (!looping)
+			q = r * 2 - Vector(coords[2], coords[3]);
+		else
+			q = Vector(coords[count-4], coords[count-3]);
+
+		for (size_t i = 0; i+3 < count; i += 2)
+		{
+			p = q; q = r;
+			r = Vector(coords[i+2], coords[i+3]);
+			pushIntersectionPoints(vertices, overdraw, i, count, halfwidth, inv_hw, p,q,r);
+		}
+
+		// if not looping, extend the line at the end, else use first point as `r'
+		p = q; q = r;
+		if (!looping)
+			r += q - p;
+		else
+			r = Vector(coords[2], coords[3]);
+		pushIntersectionPoints(vertices, overdraw, count-2, count, halfwidth, inv_hw, p,q,r);
+		// end get line vertex boundaries
+
+		// draw the core line
 		glDisable(GL_TEXTURE_2D);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)vertices);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+
+		// draw the line halo (antialiasing)
+		if (lineStyle == LINE_SMOOTH)
+			draw_overdraw(overdraw, count, looping);
+
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glEnable(GL_TEXTURE_2D);
 
+		// cleanup
 		delete[] vertices;
+		if (lineStyle == LINE_SMOOTH)
+			delete[] overdraw;
 	}
 
 	void Graphics::triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3 )
@@ -870,12 +928,13 @@ namespace opengl
 	void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
 	{
 		float two_pi = static_cast<float>(LOVE_M_PI * 2);
-		if(points <= 0) points = 1;
+		if (points <= 0) points = 1;
 		float angle_shift = (two_pi / points);
 		float phi = .0f;
 
 		float *coords = new float[2 * (points + 1)];
-		for (int i = 0; i < points; ++i, phi += angle_shift) {
+		for (int i = 0; i < points; ++i, phi += angle_shift)
+		{
 			coords[2*i]   = x + radius * cos(phi);
 			coords[2*i+1] = y + radius * sin(phi);
 		}
@@ -887,43 +946,53 @@ namespace opengl
 
 		delete[] coords;
 	}
-	
+
 	void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
 	{
-		angle1 = fmod(angle1, 2.0f * (float)LOVE_M_PI);
-		angle2 = fmod(angle2, 2.0f * (float)LOVE_M_PI);
-		if (angle1 == angle2)
+		// Nothing to display with no points or equal angles. (Or is there with line mode?)
+		if (points <= 0 || angle1 == angle2)
 			return;
-		else if (angle1 > angle2)
-			angle2 += (float)LOVE_M_PI * 2.0f;
 
+		// Oh, you want to draw a circle?
+		if (fabs(angle1 - angle2) >= 2.0f * (float) LOVE_M_PI)
+		{
+			circle(mode, x, y, radius, points);
+			return;
+		}
 
-		if(points <= 0) points = 1;
-		float angle_shift = ((angle2 - angle1) / points);
+		float angle_shift = (angle2 - angle1) / points;
+		// Bail on precision issues.
+		if (angle_shift == 0.0)
+			return;
+
 		float phi = angle1;
+		int num_coords = (points + 3) * 2;
+		float * coords = new float[num_coords];
+		coords[0] = coords[num_coords - 2] = x;
+		coords[1] = coords[num_coords - 1] = y;
+
+		for (int i = 0; i <= points; ++i, phi += angle_shift)
+		{
+			coords[2 * (i+1)]     = x + radius * cos(phi);
+			coords[2 * (i+1) + 1] = y + radius * sin(phi);
+		}
 
 		// GL_POLYGON can only fill-draw convex polygons, so we need to do stuff manually here
-		if (mode == DRAW_LINE) {
-			float *coords = new float[(points + 3) * 2];
-			coords[0] = coords[2 * points + 4] = x;
-			coords[1] = coords[2 * points + 5] = y;
-			for (int i = 0; i <= points; ++i, phi += angle_shift) {
-				coords[2 * (i+1)]     = x + radius * cos(phi);
-				coords[2 * (i+1) + 1] = y - radius * sin(phi);
-			}
-			polyline(coords, (points + 3) * 2); // artifacts at sharp angles if set to looping
-
-			delete[] coords;
-		} else {
+		if (mode == DRAW_LINE)
+		{
+			polyline(coords, num_coords); // Artifacts at sharp angles if set to looping.
+		}
+		else
+		{
 			glDisable(GL_TEXTURE_2D);
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex2f(x, y);
-			for (int i = 0; i <= points; ++i, phi += angle_shift)
-				glVertex2f(x + radius * cos(phi), y - radius * sin(phi));
-			glEnd();
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, points + 2);
+			glDisableClientState(GL_VERTEX_ARRAY);
 			glEnable(GL_TEXTURE_2D);
 		}
 
+		delete[] coords;
 	}
 
 	/// @param mode    the draw mode
@@ -933,9 +1002,12 @@ namespace opengl
 	{
 		// coords is an array of a closed loop of vertices, i.e.
 		// coords[count-2] = coords[0], coords[count-1] = coords[1]
-		if (mode == DRAW_LINE) {
-			polyline(coords, count, true);
-		} else {
+		if (mode == DRAW_LINE)
+		{
+			polyline(coords, count);
+		}
+		else
+		{
 			glDisable(GL_TEXTURE_2D);
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glVertexPointer(2, GL_FLOAT, 0, (const GLvoid*)coords);
@@ -963,7 +1035,8 @@ namespace opengl
 
 		GLubyte *src = pixels - row, *dst = screenshot + size;
 
-		for (int i = 0; i < h; ++i) {
+		for (int i = 0; i < h; ++i)
+		{
 			memcpy(dst-=row, src+=row, row);
 		}
 
@@ -977,12 +1050,18 @@ namespace opengl
 
 	void Graphics::push()
 	{
+		if (userMatrices == matrixLimit)
+			throw Exception("Maximum stack depth reached.");
 		glPushMatrix();
+		++userMatrices;
 	}
 
 	void Graphics::pop()
 	{
+		if (userMatrices < 1)
+			throw Exception("Minimum stack depth reached. (More pops than pushes?)");
 		glPopMatrix();
+		--userMatrices;
 	}
 
 	void Graphics::rotate(float r)
@@ -998,6 +1077,13 @@ namespace opengl
 	void Graphics::translate(float x, float y)
 	{
 		glTranslatef(x, y, 0);
+	}
+
+	void Graphics::shear(float kx, float ky)
+	{
+		Matrix t;
+		t.setShear(kx, ky);
+		glMultMatrixf((const GLfloat*)t.getElements());
 	}
 
 	void Graphics::drawTest(Image * image, float x, float y, float a, float sx, float sy, float ox, float oy)
@@ -1027,7 +1113,7 @@ namespace opengl
 
 	bool Graphics::hasFocus()
 	{
-		return (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
+		return currentWindow->hasFocus();
 	}
 } // opengl
 } // graphics

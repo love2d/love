@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,9 @@
 
 #include "Contact.h"
 #include "World.h"
+#include "Physics.h"
+
+#include <common/Memoizer.h>
 
 namespace love
 {
@@ -27,54 +30,85 @@ namespace physics
 {
 namespace box2d
 {
-	Contact::Contact(World * world, const b2ContactPoint * point)
-		: point(*point), world(world)
+	Contact::Contact(b2Contact * contact)
+		: contact(contact)
 	{
-		world->retain();
+		Memoizer::add(contact, this);
 	}
 
 	Contact::~Contact()
 	{
-		world->release();
+		Memoizer::remove(contact);
 	}
 
-	int Contact::getPosition(lua_State * L)
+	int Contact::getPositions(lua_State * L)
 	{
 		love::luax_assert_argc(L, 1, 1);
-		lua_pushnumber(L, world->scaleUp(point.position.x));
-		lua_pushnumber(L, world->scaleUp(point.position.y));
-		return 2;
-	}
-
-	int Contact::getVelocity(lua_State * L)
-	{
-		love::luax_assert_argc(L, 1, 1);
-		lua_pushnumber(L, world->scaleUp(point.velocity.x));
-		lua_pushnumber(L, world->scaleUp(point.velocity.y));
-		return 2;
+		b2WorldManifold manifold;
+		contact->GetWorldManifold(&manifold);
+		int points = contact->GetManifold()->pointCount;
+		for (int i = 0; i < points; i++)
+		{
+			b2Vec2 position = Physics::scaleUp(manifold.points[i]);
+			lua_pushnumber(L, position.x);
+			lua_pushnumber(L, position.y);
+		}
+		return points*2;
 	}
 
 	int Contact::getNormal(lua_State * L)
 	{
 		love::luax_assert_argc(L, 1, 1);
-		lua_pushnumber(L, world->scaleUp(point.normal.x));
-		lua_pushnumber(L, world->scaleUp(point.normal.y));
+		b2WorldManifold manifold;
+		contact->GetWorldManifold(&manifold);
+		lua_pushnumber(L, Physics::scaleUp(manifold.normal.x));
+		lua_pushnumber(L, Physics::scaleUp(manifold.normal.y));
 		return 2;
-	}
-
-	float Contact::getSeparation() const
-	{
-		return world->scaleUp(point.separation);
 	}
 
 	float Contact::getFriction() const
 	{
-		return point.friction;
+		return contact->GetFriction();
 	}
 
 	float Contact::getRestitution() const
 	{
-		return point.restitution;
+		return contact->GetRestitution();
+	}
+
+	bool Contact::isEnabled() const
+	{
+		return contact->IsEnabled();
+	}
+
+	bool Contact::isTouching() const
+	{
+		return contact->IsTouching();
+	}
+
+	void Contact::setFriction(float friction)
+	{
+		contact->SetFriction(friction);
+	}
+
+	void Contact::setRestitution(float restitution)
+	{
+		contact->SetRestitution(restitution);
+	}
+
+	void Contact::setEnabled(bool enabled)
+	{
+		contact->SetEnabled(enabled);
+	}
+
+	void Contact::resetFriction()
+	{
+		contact->ResetFriction();
+	}
+
+	void Contact::resetRestitution()
+	{
+		contact->ResetRestitution();
 	}
 
 } // box2d

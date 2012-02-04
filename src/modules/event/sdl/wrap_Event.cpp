@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -34,104 +34,15 @@ namespace sdl
 {
 	static Event * instance = 0;
 
-	static bool to_message(lua_State * L, Event::Message & msg)
-	{
-		const char * str = luaL_checkstring(L, 1);
-
-		if(!Event::getConstant(str, msg.type))
-			return false;
-
-		switch(msg.type)
-		{
-		case Event::TYPE_KEY_PRESSED:
-			if(!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
-				return false;
-			msg.keyboard.u = (unsigned short)luaL_optint(L, 3, 0);
-			return true;
-		case Event::TYPE_KEY_RELEASED:
-			if(!Event::getConstant(luaL_checkstring(L, 2), msg.keyboard.k))
-				return false;
-			return true;
-		case Event::TYPE_MOUSE_PRESSED:
-		case Event::TYPE_MOUSE_RELEASED:
-			if(!Event::getConstant(luaL_checkstring(L, 2), msg.mouse.b))
-				return false;
-			msg.mouse.x = luaL_checkint(L, 3);
-			msg.mouse.y = luaL_checkint(L, 4);
-			return true;
-		case Event::TYPE_JOYSTICK_PRESSED:
-		case Event::TYPE_JOYSTICK_RELEASED:
-			msg.joystick.index = luaL_checkint(L, 2);
-			msg.joystick.button = luaL_checkint(L, 3);
-			return true;
-		case Event::TYPE_FOCUS:
-			msg.focus.f = luax_toboolean(L, 2);
-			return true;
-		case Event::TYPE_QUIT:
-			return true;
-		default:
-			return false;
-		}
-
-		return false;
-	}
-
-	static int push_message(lua_State * L, const Event::Message & msg)
-	{
-		const char * str = 0;
-
-		if(!Event::getConstant(msg.type, str))
-			return 0;
-
-		lua_pushstring(L, str);
-
-		switch(msg.type)
-		{
-		case Event::TYPE_KEY_PRESSED:
-			if(!Event::getConstant(msg.keyboard.k, str))
-				return 0;
-			lua_pushstring(L, str);
-			lua_pushinteger(L, msg.keyboard.u);
-			return 3;
-		case Event::TYPE_KEY_RELEASED:
-			if(!Event::getConstant(msg.keyboard.k, str))
-				return 0;
-			lua_pushstring(L, str);
-			return 2;
-		case Event::TYPE_MOUSE_PRESSED:
-		case Event::TYPE_MOUSE_RELEASED:
-			if(!Event::getConstant(msg.mouse.b, str))
-				return 0;
-			lua_pushinteger(L, msg.mouse.x);
-			lua_pushinteger(L, msg.mouse.y);
-			lua_pushstring(L, str);
-			return 4;
-		case Event::TYPE_JOYSTICK_PRESSED:
-		case Event::TYPE_JOYSTICK_RELEASED:
-			lua_pushinteger(L, msg.joystick.index);
-			lua_pushinteger(L, msg.joystick.button);
-			return 3;
-		case Event::TYPE_FOCUS:
-			lua_pushboolean(L, msg.focus.f);
-			return 2;
-		case Event::TYPE_QUIT:
-			return 1;
-		default:
-			return 0;
-		}
-
-		return 0;
-	}
-
 	static int poll_i(lua_State * L)
 	{
-		static Event::Message m;
+		Message *m;
 
-		while(instance->poll(m))
+		while (instance->poll(m))
 		{
-			int args = push_message(L, m);
-			if(args > 0)
-				return args;
+			int args = m->toLua(L);
+			m->release();
+			return args;
 		}
 
 		// No pending events.
@@ -152,11 +63,13 @@ namespace sdl
 
 	int w_wait(lua_State * L)
 	{
-		static Event::Message m;
+		static Message *m;
 
-		if(instance->wait(m))
+		if ((m = instance->wait()))
 		{
-			return push_message(L, m);
+			int args = m->toLua(L);
+			m->release();
+			return args;
 		}
 
 		return 0;
@@ -164,16 +77,32 @@ namespace sdl
 
 	int w_push(lua_State * L)
 	{
-		static Event::Message m;
+		static Message *m;
 
-		if(!to_message(L, m))
-		{
-			luax_pushboolean(L, false);
+		bool success = (m = Message::fromLua(L, 1)) != NULL;
+		luax_pushboolean(L, success);
+
+		if (!success)
 			return 1;
-		}
 
-		luax_pushboolean(L, instance->push(m));
+		instance->push(m);
+		m->release();
 
+		return 1;
+	}
+
+	int w_clear(lua_State *)
+	{
+		instance->clear();
+		return 0;
+	}
+
+	int w_quit(lua_State * L)
+	{
+		Message *m = new Message("quit");
+		instance->push(m);
+		m->release();
+		luax_pushboolean(L, true);
 		return 1;
 	}
 
@@ -183,18 +112,20 @@ namespace sdl
 		{ "poll", w_poll },
 		{ "wait", w_wait },
 		{ "push", w_push },
+		{ "clear", w_clear },
+		{ "quit", w_quit },
 		{ 0, 0 }
 	};
 
-	int luaopen_love_event(lua_State * L)
+	extern "C" int luaopen_love_event(lua_State * L)
 	{
-		if(instance == 0)
+		if (instance == 0)
 		{
 			try
 			{
 				instance = new Event();
 			}
-			catch(Exception & e)
+			catch (Exception & e)
 			{
 				return luaL_error(L, e.what());
 			}

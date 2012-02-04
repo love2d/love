@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -22,6 +22,8 @@
 
 namespace love
 {
+	const char REFERENCE_TABLE_NAME[] = "love-references";
+
 	Reference::Reference()
 		: L(0), idx(LUA_REFNIL)
 	{
@@ -42,22 +44,31 @@ namespace love
 	{
 		unref(); // Just to be safe.
 		this->L = L;
-		idx = luaL_ref(L, LUA_GLOBALSINDEX);
+		luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
+		lua_insert(L, -2); // Move reference table behind value.
+		idx = luaL_ref(L, -2);
+		lua_pop(L, 1);
 	}
 
 	void Reference::unref()
 	{
-		if(idx != LUA_REFNIL)
+		if (idx != LUA_REFNIL)
 		{
-			luaL_unref(L, LUA_GLOBALSINDEX, idx);
+			luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
+			luaL_unref(L, -1, idx);
+			lua_pop(L, 1);
 			idx = LUA_REFNIL;
 		}
 	}
 
 	void Reference::push()
 	{
-		if(idx != LUA_REFNIL)
-			lua_rawgeti(L, LUA_GLOBALSINDEX, idx);
+		if (idx != LUA_REFNIL)
+		{
+			luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
+			lua_rawgeti(L, -1, idx);
+			lua_remove(L, -2);
+		}
 		else
 			lua_pushnil(L);
 	}

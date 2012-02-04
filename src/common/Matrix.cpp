@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -53,7 +53,7 @@ namespace love
 	Matrix Matrix::operator * (const Matrix & m) const
 	{
 		Matrix t;
-		
+
 		t.e[0] = (e[0]*m.e[0]) + (e[4]*m.e[1]) + (e[8]*m.e[2]) + (e[12]*m.e[3]);
 		t.e[4] = (e[0]*m.e[4]) + (e[4]*m.e[5]) + (e[8]*m.e[6]) + (e[12]*m.e[7]);
 		t.e[8] = (e[0]*m.e[8]) + (e[4]*m.e[9]) + (e[8]*m.e[10]) + (e[12]*m.e[11]);
@@ -116,23 +116,30 @@ namespace love
 		e[5] = sy;
 	}
 
-	void Matrix::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy)
+	void Matrix::setShear(float kx, float ky)
+	{
+		setIdentity();
+		e[1] = ky;
+		e[4] = kx;
+	}
+
+	void Matrix::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 	{
 		memset(e, 0, sizeof(float)*16); // zero out matrix
 		float c = cos(angle), s = sin(angle);
 		// matrix multiplication carried out on paper:
-		// |1     x| |c -s    | |sx       | |1     -ox|
-		// |  1   y| |s  c    | |   sy    | |  1   -oy|
-		// |    1  | |     1  | |      1  | |    1    |
-		// |      1| |       1| |        1| |       1 |
-		//   move      rotate      scale       origin
+		// |1     x| |c -s    | |sx       | | 1 ky    | |1     -ox|
+		// |  1   y| |s  c    | |   sy    | |kx  1    | |  1   -oy|
+		// |    1  | |     1  | |      1  | |      1  | |    1    |
+		// |      1| |       1| |        1| |        1| |       1 |
+		//   move      rotate      scale       skew       origin
 		e[10] = e[15] = 1.0f;
-		e[0] = sx * c;
-		e[1] = sx * s;
-		e[4] = -sy * s;
-		e[5] = sy * c;
-		e[12] = -ox * e[0] - oy * e[4] + x;
-		e[13] = -ox * e[1] - oy * e[5] + y;
+		e[0]  = c * sx - ky * s * sy; // = a
+		e[1]  = s * sx + ky * c * sy; // = b
+		e[4]  = kx * c * sx - s * sy; // = c
+		e[5]  = kx * s * sx + c * sy; // = d
+		e[12] = x - ox * e[0] - oy * e[4];
+		e[13] = y - ox * e[1] - oy * e[5];
 	}
 
 	void Matrix::translate(float x, float y)
@@ -156,6 +163,13 @@ namespace love
 		this->operator *=(t);
 	}
 
+	void Matrix::shear(float kx, float ky)
+	{
+		Matrix t;
+		t.setShear(kx,ky);
+		this->operator *=(t);
+	}
+
 	//                 | x |
 	//                 | y |
 	//                 | 0 |
@@ -167,7 +181,7 @@ namespace love
 
 	void Matrix::transform(vertex * dst, const vertex * src, int size) const
 	{
-		for(int i = 0;i<size;i++)
+		for (int i = 0;i<size;i++)
 		{
 			// Store in temp variables in case src = dst
 			float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (0) + (e[12]);

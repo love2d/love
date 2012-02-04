@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -34,13 +34,13 @@ namespace filesystem
 namespace physfs
 {
 	Filesystem::Filesystem()
-		: open_count(0), buffer(0), isInited(false)
+		: open_count(0), buffer(0), isInited(false), release(false), releaseSet(false)
 	{
 	}
 
 	Filesystem::~Filesystem()
 	{
-		if(isInited)
+		if (isInited)
 		{
 			isInited = false;
 			PHYSFS_deinit();
@@ -54,25 +54,43 @@ namespace physfs
 
 	void Filesystem::init(const char * arg0)
 	{
-		if(!PHYSFS_init(arg0))
+		if (!PHYSFS_init(arg0))
 			throw Exception(PHYSFS_getLastError());
 		isInited = true;
 	}
 
+	void Filesystem::setRelease(bool release)
+	{
+		if (releaseSet)
+			return;
+		this->release = release;
+		releaseSet = true;
+	}
+
+	bool Filesystem::isRelease() const
+	{
+		if (!releaseSet)
+			return false;
+		return release;
+	}
+
 	bool Filesystem::setIdentity( const char * ident )
 	{
-		if(!isInited)
+		if (!isInited)
 			return false;
 
 		// Store the save directory.
 		save_identity = std::string(ident);
 
 		// Generate the relative path to the game save folder.
-		save_path_relative = std::string(LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
+		save_path_relative = std::string(LOVE_APPDATA_PREFIX LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
 
 		// Generate the full path to the game save folder.
 		save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR);
-		save_path_full += save_path_relative;
+		if (release)
+			save_path_full += std::string(LOVE_APPDATA_PREFIX) + save_identity;
+		else
+			save_path_full += save_path_relative;
 
 		// We now have something like:
 		// save_identity: game
@@ -88,15 +106,15 @@ namespace physfs
 
 	bool Filesystem::setSource(const char * source)
 	{
-		if(!isInited)
+		if (!isInited)
 			return false;
 
 		// Check whether directory is already set.
-		if(!game_source.empty())
+		if (!game_source.empty())
 			return false;
 
 		// Add the directory.
-		if(!PHYSFS_addToSearchPath(source, 1))
+		if (!PHYSFS_addToSearchPath(source, 1))
 			return false;
 
 		// Save the game source.
@@ -107,31 +125,37 @@ namespace physfs
 
 	bool Filesystem::setupWriteDirectory()
 	{
-		if(!isInited)
+		if (!isInited)
 			return false;
 
 		// These must all be set.
-		if(save_identity.empty() || save_path_full.empty() || save_path_relative.empty())
+		if (save_identity.empty() || save_path_full.empty() || save_path_relative.empty())
 			return false;
 
 		// Set the appdata folder as writable directory.
 		// (We must create the save folder before mounting it).
-		if(!PHYSFS_setWriteDir(getAppdataDirectory()))
+		if (!PHYSFS_setWriteDir(getAppdataDirectory()))
 			return false;
 
 		// Create the save folder. (We're now "at" %APPDATA%).
-		if(!mkdir(save_path_relative.c_str()))
+		bool success = false;
+		if (release)
+			success = mkdir(save_identity.c_str());
+		else
+			success = mkdir(save_path_relative.c_str());
+
+		if (!success)
 		{
 			PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
 			return false;
 		}
 
 		// Set the final write directory.
-		if(!PHYSFS_setWriteDir(save_path_full.c_str()))
+		if (!PHYSFS_setWriteDir(save_path_full.c_str()))
 			return false;
 
 		// Add the directory. (Will not be readded if already present).
-		if(!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
+		if (!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
 		{
 			PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
 			return false;
@@ -145,7 +169,7 @@ namespace physfs
 		return new File(filename);
 	}
 
-	FileData * Filesystem::newFileData(void * data, int size, const char * filename)
+	FileData * Filesystem::newFileData(void * data, unsigned int size, const char * filename)
 	{
 		FileData * fd = new FileData(size, std::string(filename));
 
@@ -171,7 +195,7 @@ namespace physfs
 
 	const char * Filesystem::getWorkingDirectory()
 	{
-		if(cwd.empty())
+		if (cwd.empty())
 		{
 #ifdef LOVE_WINDOWS
 
@@ -182,7 +206,7 @@ namespace physfs
 #else
 			char * cwd_char = new char[LOVE_MAX_PATH];
 
-			if(getcwd(cwd_char, LOVE_MAX_PATH))
+			if (getcwd(cwd_char, LOVE_MAX_PATH))
 				cwd = cwd_char; // if getcwd fails, cwd_char (and thus cwd) will still be empty
 
 			delete [] cwd_char;
@@ -200,7 +224,7 @@ namespace physfs
 	const char * Filesystem::getAppdataDirectory()
 	{
 #ifdef LOVE_WINDOWS
-		if(appdata.empty())
+		if (appdata.empty())
 		{
 			wchar_t * w_appdata = _wgetenv(TEXT("APPDATA"));
 			appdata = to_utf8(w_appdata);
@@ -208,7 +232,7 @@ namespace physfs
 		}
 		return appdata.c_str();
 #elif defined(LOVE_MACOSX)
-		if(appdata.empty())
+		if (appdata.empty())
 		{
 			std::string udir = getUserDirectory();
 			udir.append("/Library/Application Support");
@@ -216,7 +240,7 @@ namespace physfs
 		}
 		return appdata.c_str();
 #elif defined(LOVE_LINUX)
-		if(appdata.empty())
+		if (appdata.empty())
 		{
 			char * xdgdatahome = getenv("XDG_DATA_HOME");
 			if (!xdgdatahome)
@@ -238,14 +262,14 @@ namespace physfs
 
 	bool Filesystem::exists(const char * file)
 	{
-		if(PHYSFS_exists(file))
+		if (PHYSFS_exists(file))
 			return true;
 		return false;
 	}
 
 	bool Filesystem::isDirectory(const char * file)
 	{
-		if(PHYSFS_isDirectory(file))
+		if (PHYSFS_isDirectory(file))
 			return true;
 		return false;
 	}
@@ -257,20 +281,20 @@ namespace physfs
 
 	bool Filesystem::mkdir(const char * file)
 	{
-		if(PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
+		if (PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
 			return false;
 
-		if(!PHYSFS_mkdir(file))
+		if (!PHYSFS_mkdir(file))
 			return false;
 		return true;
 	}
 
 	bool Filesystem::remove(const char * file)
 	{
-		if(PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
+		if (PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
 			return false;
 
-		if(!PHYSFS_delete(file))
+		if (!PHYSFS_delete(file))
 			return false;
 		return true;
 	}
@@ -281,7 +305,7 @@ namespace physfs
 		// on-the-fly, or passed as a parameter.
 		File * file;
 
-        if(lua_isstring(L, 1))
+        if (lua_isstring(L, 1))
 		{
 			// Create the file.
 			file = newFile(lua_tostring(L, 1));
@@ -291,18 +315,18 @@ namespace physfs
 
 		// Optionally, the caller can specify whether to read
 		// the whole file, or just a part of it.
-		int count = luaL_optint(L, 2, file->getSize());
+		int count = luaL_optint(L, 2, (lua_Integer)file->getSize()); // FIXME
 
 		// Read the data.
 		Data * data = file->read(count);
 
 		// Error check.
-		if(data == 0)
+		if (data == 0)
 			return luaL_error(L, "File could not be read.");
 
 		// Close and delete the file, if we created it.
 		// (I.e. if the first parameter is a string).
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 			file->release();
 
 		// Push the string.
@@ -325,10 +349,10 @@ namespace physfs
 
 		// We know for sure that we need a second parameter, so
 		// let's check that first.
-		if(lua_isnoneornil(L, 2))
+		if (lua_isnoneornil(L, 2))
 			return luaL_error(L, "Second argument needed.");
 
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 		{
 			// Create the file.
 			file = newFile(lua_tostring(L, 1));
@@ -339,26 +363,31 @@ namespace physfs
 		// Get the current mode of the file.
 		File::Mode mode = file->getMode();
 
-		if(mode == File::CLOSED)
+		if (mode == File::CLOSED)
 		{
 			// It should be possible to use append mode, but
 			// normal File::Mode::Write is the default.
 			int mode = luaL_optint(L, 4, File::WRITE);
 
 			// Open the file.
-			if(!file->open((File::Mode)mode))
+			if (!file->open((File::Mode)mode))
 				return luaL_error(L, "Could not open file.");
 		}
 
 		size_t length = 0;
 		const char * input;
-		if(lua_isstring(L, 2)) {
+		if (lua_isstring(L, 2))
+		{
 			input = lua_tolstring(L, 2, &length);
-		} else if (luax_istype(L, 2, DATA_T)) {
+		}
+		else if (luax_istype(L, 2, DATA_T))
+		{
 			love::Data * data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
 			length = data->getSize();
 			input = (char *)data->getData();
-		} else {
+		}
+		else
+		{
 			return luaL_error(L, "Expected string or data for argument #2.");
 		}
 
@@ -370,14 +399,14 @@ namespace physfs
 
 		// Close and delete the file, if we created
 		// it in this function.
-		if(lua_isstring(L, 1))
+		if (lua_isstring(L, 1))
 		{
 			// Kill the file if "we" created it.
 			file->close();
 			file->release();
 		}
 
-		if(!success)
+		if (!success)
 			return luaL_error(L, "Data could not be written.");
 
 		lua_pushboolean(L, success);
@@ -388,12 +417,12 @@ namespace physfs
 	{
 		int n = lua_gettop(L);
 
-		if( n != 1 )
+		if ( n != 1 )
 			return luaL_error(L, "Function requires a single parameter.");
 
 		int type = lua_type(L, 1);
 
-		if(type != LUA_TSTRING)
+		if (type != LUA_TSTRING)
 			return luaL_error(L, "Function requires parameter of type string.");
 
 		const char * dir = lua_tostring(L, 1);
@@ -416,110 +445,103 @@ namespace physfs
 		return 1;
 	}
 
-	int Filesystem::lines(lua_State * L)
-	{
-		File * file;
-
-		if(lua_isstring(L, 1))
-		{
-			file = newFile(lua_tostring(L, 1));
-			if(!file->open(File::READ))
-				return luaL_error(L, "Could not open file %s.\n", lua_tostring(L, 1));
-			lua_pop(L, 1);
-
-			luax_newtype(L, "File", FILESYSTEM_FILE_T, file, false);
-			lua_pushboolean(L, 1); // 1 = autoclose.
-		}
-		else
-			return luaL_error(L, "Expected filename.");
-
-		// Reset the file position.
-		if(!file->seek(0))
-			return luaL_error(L, "File does not appear to be open.\n");
-
-		lua_pushcclosure(L, lines_i, 2);
-		return 1;
-	}
-
 	int Filesystem::lines_i(lua_State * L)
 	{
-		// We're using a 1k buffer.
-		const static int bufsize = 8;
-		static char buf[bufsize];
+		const int bufsize = 1024;
+		char buf[bufsize];
+		int linesize = 0;
+		bool newline = false;
 
 		File * file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
-		int close = (int)lua_tointeger(L, lua_upvalueindex(2));
 
-		// Find the next newline.
-		// pos must be at the start of the line we're trying to find.
-		int pos = file->tell();
-		int newline = -1;
-		int totalread = 0;
+		// Only accept read mode at this point.
+		if (file->getMode() != File::READ)
+			return luaL_error(L, "File needs to stay in read mode.");
 
-		while(!file->eof())
+		int64 pos = file->tell();
+		int64 userpos = -1;
+
+		if (lua_isnoneornil(L, lua_upvalueindex(2)) == 0)
 		{
-			int current = file->tell();
-			int read = file->read(buf, bufsize);
-			totalread += read;
+			// User may have changed the file position.
+			userpos = pos;
+			pos = (int64) lua_tonumber(L, lua_upvalueindex(2));
+			if (userpos != pos)
+				file->seek(pos);
+		}
 
-			if(read < 0)
-				return luaL_error(L, "Readline failed!");
+		while (!newline && !file->eof())
+		{
+			// This 64-bit to 32-bit integer cast should be safe as it never exceeds bufsize.
+			int read = (int) file->read(buf, bufsize);
+			if (read < 0)
+				return luaL_error(L, "Could not read from file.");
 
-			for(int i = 0;i<read;i++)
+			linesize += read;
+
+			for (int i = 0; i < read; i++)
 			{
-				if(buf[i] == '\n')
+				if (buf[i] == '\n')
 				{
-					newline = current+i;
+					linesize -= read - i;
+					newline = true;
 					break;
 				}
 			}
-
-			if(newline > 0)
-				break;
 		}
 
-		// Special case for the last "line".
-		if(newline <= 0 && file->eof() && totalread > 0)
-			newline = pos + totalread;
-
-		// We've got a newline.
-		if(newline > 0)
+		if (newline || (file->eof() && linesize > 0))
 		{
-			// Ok, we've got a line.
-			int linesize = (newline-pos);
+			if (linesize < bufsize)
+			{
+				// We have the line in the buffer on the stack. No 'new' and 'read' needed.
+				lua_pushlstring(L, buf, linesize > 0 && buf[linesize - 1] == '\r' ? linesize - 1 : linesize);
+				if (userpos < 0)
+					file->seek(pos + linesize + 1);
+			}
+			else
+			{
+				char * str;
+				try
+				{
+					str = new char[linesize + 1];
+				}
+				catch (std::bad_alloc &)
+				{
+					return luaL_error(L, "Out of memory");
+				}
+				file->seek(pos);
 
-			// Allocate memory for the string.
-			char * str = new char[linesize];
+				// Read the \n anyway and save us a call to seek.
+				if (file->read(str, linesize + 1) == -1)
+				{
+					delete [] str;
+					return luaL_error(L, "Could not read from file.");
+				}
 
-			// Read it.
-			file->seek(pos);
-			if(file->read(str, linesize) == -1)
-				return luaL_error(L, "Read error.");
+				lua_pushlstring(L, str, str[linesize - 1] == '\r' ? linesize - 1 : linesize);
+				delete [] str;
+			}
 
-			if(str[linesize-1]=='\r')
-				linesize -= 1;
-
-			lua_pushlstring(L, str, linesize);
-
-			// Free the memory. Lua has a copy now.
-			delete[] str;
-
-			// Set the beginning of the next line.
-			if(!file->eof())
-				file->seek(newline+1);
+			if (userpos >= 0)
+			{
+				// Save new position in upvalue.
+				lua_pushnumber(L, (lua_Number) (pos + linesize + 1));
+				lua_replace(L, lua_upvalueindex(2));
+				file->seek(userpos);
+			}
 
 			return 1;
 		}
 
-		if(close)
-		{
+		// EOF reached.
+		if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(3)))
+			file->seek(userpos);
+		else
 			file->close();
-			file->release();
-		}
 
-		// else: (newline <= 0)
 		return 0;
-	}
+ 	}
 
 	int Filesystem::load(lua_State * L)
 	{
@@ -527,22 +549,22 @@ namespace physfs
 		luax_assert_argc(L, 1, 1);
 
 		// Must be string.
-		if(!lua_isstring(L, -1))
+		if (!lua_isstring(L, -1))
 			return luaL_error(L, "The argument must be a string.");
 
-		const char * filename = lua_tostring(L, -1);
+		std::string filename = lua_tostring(L, -1);
 
 		// The file must exist.
-		if(!exists(filename))
-			return luaL_error(L, "File %s does not exist.", filename);
+		if (!exists(filename.c_str()))
+			return luaL_error(L, "File %s does not exist.", filename.c_str());
 
 		// Create the file.
-		File * file = newFile(filename);
+		File * file = newFile(filename.c_str());
 
 		// Get the data from the file.
 		Data * data = file->read();
 
-		int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), filename);
+		int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
 
 		data->release();
 		file->release();

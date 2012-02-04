@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,7 @@
 // LOVE
 #include <common/Module.h>
 #include <common/config.h>
+#include <common/int.h>
 #include <filesystem/FileData.h>
 #include "File.h"
 
@@ -46,6 +47,7 @@
 
 // In Windows, we would like to use "LOVE" as the
 // application folder, but in Linux, we like .love.
+#define LOVE_APPDATA_PREFIX ""
 #ifdef LOVE_WINDOWS
 #	define LOVE_APPDATA_FOLDER "LOVE"
 #	define LOVE_PATH_SEPARATOR "/"
@@ -56,7 +58,8 @@
 #	elif defined(LOVE_LINUX)
 #		define LOVE_APPDATA_FOLDER "love"
 #	else
-#		define LOVE_APPDATA_FOLDER ".love"
+#		define LOVE_APPDATA_PREFIX "."
+#		define LOVE_APPDATA_FOLDER "love"
 #	endif
 #	define LOVE_PATH_SEPARATOR "/"
 #	define LOVE_MAX_PATH MAXPATHLEN
@@ -99,6 +102,11 @@ namespace physfs
 		// Workaround for machines without PhysFS 2.0
 		bool isInited;
 
+		// Allow saving outside of the LOVE_APPDATA_FOLDER
+		// for release 'builds'
+		bool release;
+		bool releaseSet;
+
 	protected:
 
 	public:
@@ -110,6 +118,9 @@ namespace physfs
 		const char * getName() const;
 
 		void init(const char * arg0);
+
+		void setRelease(bool release);
+		bool isRelease() const;
 
 		/**
 		* This sets up the save directory. If the
@@ -143,7 +154,7 @@ namespace physfs
 		* @param size The size of the data.
 		* @param filename The full filename used to file type identification.
 		**/
-		FileData * newFileData(void * data, int size, const char * filename);
+		FileData * newFileData(void * data, unsigned int size, const char * filename);
 
 		/**
 		* Creates a new FileData object from base64 data.
@@ -251,24 +262,13 @@ namespace physfs
 		* Seek to a position within a file.
 		* @param pos The position to seek to.
 		**/
-		bool seek(File * file, int pos);
+		bool seek(File * file, uint64 pos);
 
 		/**
 		* This "native" method returns a table of all
 		* files in a given directory.
 		**/
 		int enumerate(lua_State * L);
-
-		/**
-		* Returns an iterator which iterates over
-		* lines in files.
-		**/
-		int lines(lua_State * L);
-
-		/**
-		* The line iterator function.
-		**/
-		static int lines_i(lua_State * L);
 
 		/**
 		* Loads a file without running it. The loaded
@@ -279,6 +279,13 @@ namespace physfs
 		int load(lua_State * L);
 
 		int getLastModified(lua_State * L);
+
+		/**
+		* Text file line-reading iterator function used and
+		* pushed on the Lua stack by love.filesystem.lines
+		* and File:lines.
+		**/
+		static int lines_i(lua_State * L);
 
 	}; // Filesystem
 

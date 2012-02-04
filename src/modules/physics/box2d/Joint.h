@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -26,7 +26,7 @@
 #include <physics/Joint.h>
 
 // Box2D
-#include "Include/Box2D.h"
+#include <Box2D/Box2D.h>
 
 namespace love
 {
@@ -39,21 +39,21 @@ namespace box2d
 	class World;
 
 	/**
-	* A Joint acts as positioning constraints on Bodies. 
-	* A Joint can be used to prevent Bodies from going to 
+	* A Joint acts as positioning constraints on Bodies.
+	* A Joint can be used to prevent Bodies from going to
 	* far apart, or coming too close together.
 	**/
 	class Joint : public love::physics::Joint
 	{
 		friend class GearJoint;
-		
+
 	private:
-		
-		// A Joint must be destroyed *before* the bodies it acts upon, 
+
+		// A Joint must be destroyed *before* the bodies it acts upon,
 		// and the world they reside in. We therefore need refs
 		// parents and associations to prevent wrong destruction order.
 		Body * body1, * body2;
-		
+
 
 		// The Box2D joint object.
 		b2Joint * joint;
@@ -64,9 +64,9 @@ namespace box2d
 	public:
 
 		/**
-		* This constructor will connect one end of the joint to body1, 
+		* This constructor will connect one end of the joint to body1,
 		* and the other one to the default ground body.
-		* 
+		*
 		* This constructor is mainly used by MouseJoint.
 		**/
 		Joint(Body * body1);
@@ -77,6 +77,12 @@ namespace box2d
 		Joint(Body * body1, Body * body2);
 
 		virtual ~Joint();
+
+		/**
+		* Returns true if the joint is active in a Box2D world.
+		**/
+		bool isValid() const;
+
 
 		/**
 		* Gets the type of joint.
@@ -97,27 +103,25 @@ namespace box2d
 		/**
 		* Gets the reaction torque on body2.
 		**/
-		float getReactionTorque();
+		float getReactionTorque(float dt);
 
-		/**
-		* Sets whether connected bodies should collide
-		* or not. Default is false.
-		**/
-		void setCollideConnected(bool collide);
+		bool isActive() const;
 
-		/**
-		* Gets whether connected bodies should collide
-		* or not.
-		**/
 		bool getCollideConnected() const;
-
-	protected:
 
 		/**
 		* Joints require pointers to a Box2D joint objects at
-		* different polymorphic levels, which is why these function 
+		* different polymorphic levels, which is why these function
 		* were created.
 		**/
+
+		/**
+		* Destroys the joint. This function was created just to
+		* get some cinsistency.
+		**/
+		void destroyJoint(bool implicit = false);
+
+	protected:
 
 		/**
 		* Creates a Joint, and ensures that the parent class
@@ -125,11 +129,7 @@ namespace box2d
 		**/
 		b2Joint * createJoint(b2JointDef * def);
 
-		/**
-		* Destroys the joint. This function was created just to 
-		* get some cinsistency.
-		**/
-		void destroyJoint(b2Joint * joint);
+
 	};
 
 } // box2d

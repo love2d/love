@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -55,6 +55,7 @@ namespace opengl
 	int w_ParticleSystem_setOffset(lua_State * L);
 	int w_ParticleSystem_getX(lua_State * L);
 	int w_ParticleSystem_getY(lua_State * L);
+	int w_ParticleSystem_getPosition(lua_State * L);
 	int w_ParticleSystem_getDirection(lua_State * L);
 	int w_ParticleSystem_getSpread(lua_State * L);
 	int w_ParticleSystem_getOffsetX(lua_State * L);
@@ -68,7 +69,7 @@ namespace opengl
 	int w_ParticleSystem_isEmpty(lua_State * L);
 	int w_ParticleSystem_isFull(lua_State * L);
 	int w_ParticleSystem_update(lua_State * L);
-	int luaopen_particlesystem(lua_State * L);
+	extern "C" int luaopen_particlesystem(lua_State * L);
 
 } // opengl
 } // graphics

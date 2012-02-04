@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -24,42 +24,38 @@
 #include <exception>
 #include <cstdarg> // vararg
 #include <cstdio> // vsnprintf
+#include <cstring> // strncpy
+#include <string>
 
 namespace love
 {
 	/**
-	* A convenient vararg-enabled exception class. 
+	* A convenient vararg-enabled exception class.
 	**/
 	class Exception : public std::exception
 	{
 	private:
 
-		/**
-		* The vsnprintf operates on a buffer this large.
-		**/
-		static const int BUFFER_SIZE = 256;
-
-		/**
-		* The buffer for vsnprintf.
-		**/
-		char buffer[BUFFER_SIZE];
+		std::string message;
 
 	public:
 
 		/**
 		* Creates a new Exception according to printf-rules.
-		* 
+		*
 		* See: http://www.cplusplus.com/reference/clibrary/cstdio/printf/
-		* 
+		*
 		* @param fmt The format string (see printf).
 		**/
 		Exception(const char * fmt, ...);
+		virtual ~Exception() throw() {}
 
 		/**
 		* Returns a string containing reason for the exception.
 		* @return A description of the exception.
 		**/
-		virtual const char * what() const throw();
+		inline virtual const char * what() const throw()
+		{ return message.c_str(); }
 
 	}; // class
 

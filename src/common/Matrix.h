@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -28,8 +28,8 @@ namespace love
 {
 	/**
 	* This class is the basis for all transformations in LOVE. Althought not
-	* really needed for 2D, it contains 4x4 elements to be compatible with 
-	* OpenGL without conversions. 
+	* really needed for 2D, it contains 4x4 elements to be compatible with
+	* OpenGL without conversions.
 	**/
 	class Matrix
 	{
@@ -87,7 +87,7 @@ namespace love
 		void setTranslation(float x, float y);
 
 		/**
-		* Resets this Matrix to a rotaion.
+		* Resets this Matrix to a rotation.
 		* @param r The angle in radians.
 		**/
 		void setRotation(float r);
@@ -100,9 +100,16 @@ namespace love
 		void setScale(float sx, float sy);
 
 		/**
+		* Resets this Matrix to a shear transformation.
+		* @param kx Shear along x-axis.
+		* @param ky Shear along y-axis.
+		**/
+		void setShear(float kx, float ky);
+
+		/**
 		* Creates a transformation with a certain position, orientation, scale
 		* and offset. Perfect for Drawables -- what a coincidence!
-		* 
+		*
 		* @param x The translation along the x-axis.
 		* @param y The translation along the y-axis.
 		* @param angle The rotation (rad) around the center with offset (ox,oy).
@@ -110,8 +117,10 @@ namespace love
 		* @param sy Scale along y-axis.
 		* @param ox The offset for rotation along the x-axis.
 		* @param oy The offset for rotation along the y-axis.
+		* @param kx Shear along x-axis
+		* @param ky Shear along y-axis
 		**/
-		void setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy);
+		void setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 		/**
 		* Multiplies this Matrix with a translation.
@@ -132,11 +141,18 @@ namespace love
 		* @param sy Scale factor along the y-axis.
 		**/
 		void scale(float sx, float sy);
-		
+
+		/**
+		* Multiplies this Matrix with a shear transformation.
+		* @param kx Shear along the x-axis.
+		* @param ky Shear along the y-axis.
+		**/
+		void shear(float kx, float ky);
+
 		/**
 		* Transforms an array of vertices by this Matrix. The sources and
-		* destination arrays may be the same. 
-		* 
+		* destination arrays may be the same.
+		*
 		* @param dst Storage for the transformed vertices.
 		* @param src The source vertices.
 		* @param size The number of vertices.

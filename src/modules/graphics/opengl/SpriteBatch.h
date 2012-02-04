@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -29,12 +29,13 @@
 #include <common/Object.h>
 #include <common/Vector.h>
 #include <common/Matrix.h>
+#include <common/StringMap.h>
 #include <graphics/Drawable.h>
 #include <graphics/Volatile.h>
+#include <graphics/Color.h>
 
 // OpenGL
 #include "GLee.h"
-#include <SDL/SDL_opengl.h>
 
 namespace love
 {
@@ -45,8 +46,9 @@ namespace opengl
 	// Forward declarations.
 	class Image;
 	class Quad;
+	class VertexBuffer;
 
-	class SpriteBatch : public Drawable, public Volatile
+	class SpriteBatch : public Drawable
 	{
 	private:
 
@@ -58,50 +60,74 @@ namespace opengl
 		// The next free element.
 		int next;
 
-		GLuint vbo[2];
+		vertex sprite[4];
 
-		// Vertex Buffer.
-		vertex * vertices;
+		// Current color. This color, if present, will be applied to the next
+		// added quad.
+		Color * color;
 
-		// Index buffer.
-		GLushort * indices;
-
-		// The uage hint for the vertex buffer.
-		int usage;
-		int gl_usage;
-
-		// If the buffer is locked, this pointer is nonzero.
-		vertex * lockp;
+		VertexBuffer *array_buf;
+		VertexBuffer *element_buf;
 
 	public:
 
 		enum UsageHint
 		{
-			USAGE_DYNAMIC,
+			USAGE_DYNAMIC = 1,
 			USAGE_STATIC,
-			USAGE_STREAM
+			USAGE_STREAM,
+			USAGE_MAX_ENUM
 		};
 
 		SpriteBatch(Image * image, int size, int usage);
 		virtual ~SpriteBatch();
 
-		// Implements Volatile.
-		bool loadVolatile();
-		void unloadVolatile();
-
-		void add(float x, float y, float a, float sx, float sy, float ox, float oy);
-		void addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy);
+		int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
+		int addq(Quad * quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
 		void clear();
 
 		void * lock();
 		void unlock();
 
+		void setImage(Image * newimage);
+		Image *getImage();
+
+		/**
+		 * Set the current color for this SpriteBatch. The geometry added
+		 * after this call will use this color. Note that global color
+		 * will not longer apply to the SpriteBatch if this is used.
+		 *
+		 * @param color The color to use for the following geometry.
+		 */
+		void setColor(const Color & color);
+
+		/**
+		 * Disable per-quad colors for this SpriteBatch. The next call to
+		 * draw will use the global color for all sprites.
+		 */
+		void setColor();
+
 		// Implements Drawable.
-		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy) const;
+		void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+
+		static bool getConstant(const char * in, UsageHint & out);
+		static bool getConstant(UsageHint in, const char *& out);
 
 	private:
 
-		void addv(const vertex * v);
+		void addv(const vertex * v, int index);
+
+		/**
+		 * Set the color for vertices.
+		 *
+		 * @param v The vertices to set the color for. Must be an array of
+		 *          of size 4.
+		 * @param color The color to assign to each vertex.
+		 */
+		void setColorv(vertex * v, const Color & color);
+
+		static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
+		static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
 
 	}; // SpriteBatch
 

@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -26,6 +26,9 @@
 #include "wrap_File.h"
 #include "wrap_FileData.h"
 
+// SDL
+#include <SDL_loadso.h>
+
 namespace love
 {
 namespace filesystem
@@ -34,6 +37,7 @@ namespace physfs
 {
 	bool hack_setupWriteDirectory();
 	int w_init(lua_State * L);
+	int w_setRelease(lua_State * L);
 	int w_setIdentity(lua_State * L);
 	int w_setSource(lua_State * L);
 	int w_newFile(lua_State * L);
@@ -59,6 +63,7 @@ namespace physfs
 	int w_load(lua_State * L);
 	int w_getLastModified(lua_State * L);
 	int loader(lua_State * L);
+	int extloader(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State * L);
 
 } // physfs

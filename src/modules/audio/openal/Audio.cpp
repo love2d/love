@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -19,6 +19,7 @@
 **/
 
 #include "Audio.h"
+#include <common/delay.h>
 
 #include <sound/Decoder.h>
 
@@ -28,38 +29,69 @@ namespace audio
 {
 namespace openal
 {
-	Audio::Audio()
-		: finish(false)
+	Audio::PoolThread::PoolThread(Pool* pool)
+	: pool(pool), finish(false)
+	{
+	}
+
+	void Audio::PoolThread::main()
+	{
+		while (true)
+		{
+			{
+				thread::Lock lock(mutex);
+				if (finish)
+				{
+					return;
+				}
+			}
+
+			pool->update();
+			delay(5);
+		}
+	}
+
+	void Audio::PoolThread::setFinish()
+	{
+		thread::Lock lock(mutex);
+		finish = true;
+	}
+
+
+	Audio::Audio() : distanceModel(DISTANCE_INVERSE_CLAMPED)
 	{
 		// Passing zero for default device.
 		device = alcOpenDevice(0);
 
-		if(device == 0)
+		if (device == 0)
 			throw love::Exception("Could not open device.");
 
 		context = alcCreateContext(device, 0);
 
-		if(context == 0)
+		if (context == 0)
 			throw love::Exception("Could not create context.");
 
 		alcMakeContextCurrent(context);
 
-		if(alcGetError(device) != ALC_NO_ERROR)
+		if (alcGetError(device) != ALC_NO_ERROR)
 			throw love::Exception("Could not make context current.");
-		
+
 		/*std::string captureName(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
 		const ALCchar * devices = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
-		while (*devices) {
+		while (*devices)
+		{
 			std::string device(devices);
 			devices += device.size() + 1;
-			if (device.find("Mic") != std::string::npos || device.find("mic") != std::string::npos) {
+			if (device.find("Mic") != std::string::npos || device.find("mic") != std::string::npos)
+			{
 				captureName = device;
 			}
 		}
-		
+
 		capture = alcCaptureOpenDevice(captureName.c_str(), 8000, AL_FORMAT_MONO16, 262144); // about 32 seconds
-		
-		if (!capture) {
+
+		if (!capture)
+		{
 			// We're not going to prevent LOVE from running without a microphone, but we should warn, at least
 			std::cerr << "Warning, couldn't open capture device! No audio input!" << std::endl;
 		}*/
@@ -67,35 +99,24 @@ namespace openal
 		// pool must be allocated after AL context.
 		pool = new Pool();
 
-		thread = SDL_CreateThread(Audio::run, (void*)this);
+		poolThread = new PoolThread(pool);
+		poolThread->start();
 	}
 
 	Audio::~Audio()
 	{
-		finish = true;
+		poolThread->setFinish();
+		poolThread->wait();
 
-		SDL_WaitThread(thread, 0);
-
+		delete poolThread;
 		delete pool;
-		
+
 		alcMakeContextCurrent(0);
 		alcDestroyContext(context);
 		//if (capture) alcCaptureCloseDevice(capture);
 		alcCloseDevice(device);
 	}
 
-	int Audio::run(void * d)
-	{
-		Audio * instance = (Audio*)d;
-		
-		while(!instance->finish)
-		{
-			instance->pool->update();
-			SDL_Delay(5);
-		}
-
-		return 0;
-	}
 
 	const char * Audio::getName() const
 	{
@@ -151,7 +172,7 @@ namespace openal
 	{
 		source->resume();
 	}
-	
+
 	void Audio::resume()
 	{
 		pool->resume();
@@ -208,16 +229,17 @@ namespace openal
 	{
 		alListenerfv(AL_VELOCITY, v);
 	}
-	
+
 	void Audio::record()
 	{
 		if (!canRecord()) return;
 		alcCaptureStart(capture);
 	}
-	
+
 	love::sound::SoundData * Audio::getRecordedData()
 	{
-		if (!canRecord()) return NULL;
+		if (!canRecord())
+			return NULL;
 		int samplerate = 8000;
 		ALCint samples;
 		alcGetIntegerv(capture, ALC_CAPTURE_SAMPLES, 4, &samples);
@@ -227,23 +249,68 @@ namespace openal
 		free(data);
 		return sd;
 	}
-	
+
 	love::sound::SoundData * Audio::stopRecording(bool returnData)
 	{
-		if (!canRecord()) return NULL;
+		if (!canRecord())
+			return NULL;
 		love::sound::SoundData * sd = NULL;
-		if (returnData) {
+		if (returnData)
+		{
 			sd = getRecordedData();
 		}
 		alcCaptureStop(capture);
 		return sd;
 	}
-	
+
 	bool Audio::canRecord()
 	{
 		return (capture != NULL);
 	}
+	
+	Audio::DistanceModel Audio::getDistanceModel() const
+	{
+		return this->distanceModel;
+	}
 
+	void Audio::setDistanceModel(DistanceModel distanceModel)
+	{
+		this->distanceModel = distanceModel;
+		
+		switch (distanceModel)
+		{
+		case DISTANCE_NONE:
+			alDistanceModel(AL_NONE);
+			break;
+			
+		case DISTANCE_INVERSE:
+			alDistanceModel(AL_INVERSE_DISTANCE);
+			break;
+
+		case DISTANCE_INVERSE_CLAMPED:
+			alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+			break;
+			
+		case DISTANCE_LINEAR:
+			alDistanceModel(AL_LINEAR_DISTANCE);
+			break;
+
+		case DISTANCE_LINEAR_CLAMPED:
+			alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+			break;
+			
+		case DISTANCE_EXPONENT:
+			alDistanceModel(AL_EXPONENT_DISTANCE);
+			break;
+
+		case DISTANCE_EXPONENT_CLAMPED:
+			alDistanceModel(AL_EXPONENT_DISTANCE_CLAMPED);
+			break;
+
+		default:
+			break;
+		}
+	}
 } // openal
 } // audio
 } // love

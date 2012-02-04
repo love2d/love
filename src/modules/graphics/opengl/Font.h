@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,7 @@
 #include <font/Rasterizer.h>
 #include <graphics/Image.h>
 
+#include "OpenGL.h"
 #include "GLee.h"
 
 namespace love
@@ -42,20 +43,21 @@ namespace opengl
 	class Font : public Object, public Volatile
 	{
 	private:
-		
+
 		enum FontType
 		{
 			FONT_TRUETYPE = 1,
 			FONT_IMAGE,
 			FONT_UNKNOWN
 		};
-		
+
 		struct Glyph
 		{
 			GLuint list;
+			GLuint texture;
 			int spacing;
 		};
-		
+
 		love::font::Rasterizer * rasterizer;
 
 		int height;
@@ -65,13 +67,14 @@ namespace opengl
 		std::map<int, Glyph *> glyphs; // maps glyphs to display lists
 		FontType type;
 		Image::Filter filter;
-		
+
 		static const int TEXTURE_WIDTH = 512;
 		static const int TEXTURE_HEIGHT = 512;
-		
+		static const int TEXTURE_PADDING = 1;
+
 		int texture_x, texture_y;
 		int rowHeight;
-		
+
 		void createTexture();
 		Glyph * addGlyph(int glyph);
 
@@ -93,8 +96,14 @@ namespace opengl
 		* @param x The x-coordinate.
 		* @param y The y-coordinate.
 		* @param angle The amount of rotation.
+		* @param sx Scale along the x axis.
+		* @param sy Scale along the y axis.
+		* @param ox The origin offset along the x-axis.
+		* @param oy The origin offset along the y-axis.
+		* @param kx Shear along the x axis.
+		* @param ky Shear along the y axis.
 		**/
-		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f);
+		void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 		/**
 		* Prints the character at the designated position.
@@ -129,12 +138,12 @@ namespace opengl
 		 * Returns the maximal width of a wrapped string
 		 * and optionally the number of lines
 		 *
-		 * @param line A line of text
+		 * @param text The input text
 		 * @param wrap The number of pixels to wrap at
-		 * @param lines Optional output of the number of lines needed
+		 * @param max_width Optional output of the maximum width
+		 * Returns a vector with the lines.
 		 **/
-		int getWrap(const std::string & line, float wrap, int *lines = 0);
-		int getWrap(const char * line, float wrap, int *lines = 0);
+		std::vector<std::string> getWrap(const std::string text, float wrap, int * max_width = 0);
 
 		/**
 		* Sets the line height (which should be a number to multiply the font size by,
@@ -160,10 +169,10 @@ namespace opengl
 		* Returns the spacing modifier.
 		**/
 		float getSpacing() const;
-		
+
 		// Implements Volatile.
 		bool loadVolatile();
-		void unloadVolatile();	
+		void unloadVolatile();
 
 	}; // Font
 

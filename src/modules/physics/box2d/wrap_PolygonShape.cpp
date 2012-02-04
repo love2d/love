@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -42,33 +42,17 @@ namespace box2d
 		{ "getPoints", w_PolygonShape_getPoints },
 		// From Shape.
 		{ "getType", w_Shape_getType },
-		{ "setFriction", w_Shape_setFriction },
-		{ "setRestitution", w_Shape_setRestitution },
-		{ "setDensity", w_Shape_setDensity },
-		{ "setSensor", w_Shape_setSensor },
-		{ "getFriction", w_Shape_getFriction },
-		{ "getRestitution", w_Shape_getRestitution },
-		{ "getDensity", w_Shape_getDensity },
-		{ "getBody", w_Shape_getBody },
-		{ "isSensor", w_Shape_isSensor },
+		{ "getRadius", w_Shape_getRadius },
+		{ "getChildCount", w_Shape_getChildCount },
 		{ "testPoint", w_Shape_testPoint },
-		{ "testSegment", w_Shape_testSegment },
-		{ "setFilterData", w_Shape_setFilterData },
-		{ "getFilterData", w_Shape_getFilterData },
-		{ "setCategory", w_Shape_setCategory },
-		{ "getCategory", w_Shape_getCategory },
-		{ "setMask", w_Shape_setMask },
-		{ "getMask", w_Shape_getMask },
-		{ "setData", w_Shape_setData },
-		{ "getData", w_Shape_getData },
-		{ "getBoundingBox", w_Shape_getBoundingBox },
-		{ "getGroupIndex", w_Shape_getGroupIndex },
-		{ "setGroupIndex", w_Shape_setGroupIndex },
+		{ "rayCast", w_Shape_rayCast },
+		{ "computeAABB", w_Shape_computeAABB },
+		{ "computeMass", w_Shape_computeMass },
 		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};
 
-	int luaopen_polygonshape(lua_State * L)
+	extern "C" int luaopen_polygonshape(lua_State * L)
 	{
 		return luax_register_type(L, "PolygonShape", functions);
 	}

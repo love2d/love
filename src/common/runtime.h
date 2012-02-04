@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -109,7 +109,7 @@ namespace love
 	* Converts the value at idx to a bool. It follow the same rules
 	* as lua_toboolean, but returns a bool instead of an int.
 	* @param L The Lua state.
-	* @param idx The index on the Lua state.
+	* @param idx The index on the Lua stack.
 	* @return True if the value evaluates to true, false otherwise.
 	**/
 	bool luax_toboolean(lua_State * L, int idx);
@@ -118,18 +118,35 @@ namespace love
 	* Pushes a bool onto the stack. It's the same as lua_pushboolean,
 	* but with bool instead of int.
 	* @param L The Lua state.
-	* @paarm b The bool to push.
+	* @param b The bool to push.
 	**/
 	void luax_pushboolean(lua_State * L, bool b);
 
 	/**
 	* Converts the value at idx to a bool, or if not present, b is returned.
 	* @param L The Lua state.
-	* @param idx The index of the Lua state.
+	* @param idx The index of the Lua stack.
 	* @param b The value to return if no value exist at the specified index.
 	* @return True if the value evaluates to true, false otherwise.
 	**/
 	bool luax_optboolean(lua_State * L, int idx, bool b);
+
+	/**
+	* Converts the value at idx to a std::string. It takes care of the string
+	* size and possible embedded nulls.
+	* @param L The Lua state.
+	* @param idx The index on the Lua stack.
+	* @return Copy of the string at the specified index.
+	**/
+	std::string luax_checkstring(lua_State * L, int idx);
+
+	/**
+	* Pushes a std::string onto the stack. It uses the length of the string
+	* for lua_pushlstring's len argument.
+	* @param L The Lua state.
+	* @param str The string to push.
+	**/
+	void luax_pushstring(lua_State * L, std::string str);
 
 	/**
 	* Require at least 'min' number of items on the stack.
@@ -177,12 +194,22 @@ namespace love
 	int luax_register_type(lua_State * L, const char * tname, const luaL_Reg * f = 0);
 
 	/**
+	 * Do a table.insert from C
+	 * @param L the state
+	 * @param tindex the stack index of the table
+	 * @param vindex the stack index of the value
+	 * @param pos the position to insert it in
+	 **/
+	int luax_table_insert(lua_State * L, int tindex, int vindex, int pos = -1);
+
+	/**
 	* Register a new searcher function for package.loaders. This can for instance enable
 	* loading of files through love.filesystem using standard require.
 	* @param L The Lua state.
 	* @param f The searcher function.
+	* @param pos The position to insert the loader in.
 	**/
-	int luax_register_searcher(lua_State * L, lua_CFunction f);
+	int luax_register_searcher(lua_State * L, lua_CFunction f, int pos = -1);
 
 	/**
 	* Creates a new Lua-accessible object of the given type, and put it on the stack.
@@ -274,6 +301,28 @@ namespace love
 	Type luax_type(lua_State * L, int idx);
 
 	/**
+	 * Convert the value at the specified index to an Lua number, and then
+	 * convert to a float.
+	 *
+	 * @param L The Lua state.
+	 * @param idx The index on the stack.
+	 */
+	inline float luax_tofloat(lua_State *L, int idx)
+	{
+		return static_cast<float>(lua_tonumber(L, idx));
+	}
+
+	/**
+	 * Like luax_tofloat, but checks that the value is a number.
+	 *
+	 * @see luax_tofloat
+	 */
+	inline float luax_checkfloat(lua_State *L, int idx)
+	{
+		return static_cast<float>(luaL_checknumber(L, idx));
+	}
+
+	/**
 	* Converts the value at idx to the specified type without checking that
 	* this conversion is valid. If the type has been previously verified with
 	* luax_istype, then this can be safely used. Otherwise, use luax_checktype.
@@ -299,12 +348,12 @@ namespace love
 	template <typename T>
 	T * luax_checktype(lua_State * L, int idx, const char * name, love::bits type)
 	{
-		if(lua_isuserdata(L, idx) == 0)
+		if (lua_isuserdata(L, idx) == 0)
 			luaL_error(L, "Incorrect parameter type: expected userdata.");
 
 		Proxy * u = (Proxy *)lua_touserdata(L, idx);
 
-		if((u->flags & type) != type)
+		if ((u->flags & type) != type)
 			luaL_error(L, "Incorrect parameter type: expected %s", name);
 
 		return (T *)u->data;
@@ -316,12 +365,12 @@ namespace love
 		luax_getregistry(L, REGISTRY_MODULES);
 		lua_getfield(L, -1, k);
 
-		if(!lua_isuserdata(L, -1))
+		if (!lua_isuserdata(L, -1))
 			luaL_error(L, "Tried to get nonexisting module %s.", k);
 
 		Proxy * u = (Proxy *)lua_touserdata(L, -1);
 
-		if((u->flags & type) != type)
+		if ((u->flags & type) != type)
 			luaL_error(L, "Incorrect module %s", k);
 
 		lua_pop(L, 2);

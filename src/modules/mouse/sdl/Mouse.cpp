@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -63,14 +63,17 @@ namespace sdl
 		SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
 	}
 
-	bool Mouse::isDown(Button button) const
+	bool Mouse::isDown(Button * buttonlist) const
 	{
-		unsigned b = 0;
+		Uint8 buttonstate = SDL_GetMouseState(0, 0);
 
-		if(!buttons.find(button, b))
-			return false;
+		for (Button button = *buttonlist; button != BUTTON_MAX_ENUM; button = *(++buttonlist))
+		{
+			if (buttonstate & SDL_BUTTON(button))
+				return true;
+		}
 
-		return (SDL_GetMouseState(0, 0) & SDL_BUTTON(b)) != 0;
+		return false;
 	}
 
 	bool Mouse::isVisible() const
@@ -87,19 +90,6 @@ namespace sdl
 	{
 		return (SDL_WM_GrabInput(SDL_GRAB_QUERY) ==  SDL_GRAB_ON ? true : false);
 	}
-
-	EnumMap<Mouse::Button, unsigned, Mouse::BUTTON_MAX_ENUM>::Entry Mouse::buttonEntries[] = 
-	{
-		{ Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
-		{ Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},
-		{ Mouse::BUTTON_RIGHT, SDL_BUTTON_RIGHT},
-		{ Mouse::BUTTON_WHEELUP, SDL_BUTTON_WHEELUP},
-		{ Mouse::BUTTON_WHEELDOWN, SDL_BUTTON_WHEELDOWN},
-		{ Mouse::BUTTON_X1, SDL_BUTTON_X1},
-		{ Mouse::BUTTON_X2, SDL_BUTTON_X2},
-	};
-
-	EnumMap<Mouse::Button, unsigned, Mouse::BUTTON_MAX_ENUM> Mouse::buttons(Mouse::buttonEntries, sizeof(Mouse::buttonEntries));
 
 } // sdl
 } // mouse

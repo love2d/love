@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -93,7 +93,7 @@ namespace audio
 		lua_pushnumber(L, t->getVolume());
 		return 1;
 	}
-	
+
 	int w_Source_seek(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
@@ -104,7 +104,7 @@ namespace audio
 		t->seek(offset, u);
 		return 0;
 	}
-	
+
 	int w_Source_tell(lua_State * L)
 	{
 		Source * t = luax_checksource(L, 1);
@@ -211,8 +211,65 @@ namespace audio
 
 	int w_Source_isStatic(lua_State * L)
 	{
-		Source * t= luax_checksource(L, 1);
+		Source * t = luax_checksource(L, 1);
 		luax_pushboolean(L, t->isStatic());
+		return 1;
+	}
+
+	int w_Source_setVolumeLimits(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float vmin = (float)luaL_checknumber(L, 2);
+		float vmax = (float)luaL_checknumber(L, 3);
+		if (vmin < .0f || vmin > 1.f || vmax < .0f || vmax > 1.f)
+			return luaL_error(L, "Invalid volume limits: [%f:%f]. Must be in [0:1]", vmin, vmax);
+		t->setMinVolume(vmin);
+		t->setMaxVolume(vmin);
+		return 0;
+	}
+
+	int w_Source_getVolumeLimits(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getMinVolume());
+		lua_pushnumber(L, t->getMaxVolume());
+		return 2;
+	}
+
+	int w_Source_setDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float dref = (float)luaL_checknumber(L, 2);
+		float dmax = (float)luaL_checknumber(L, 3);
+		if (dref < .0f || dmax < .0f)
+			return luaL_error(L, "Invalid distances: %f, %f. Must be > 0", dref, dmax);
+		t->setReferenceDistance(dref);
+		t->setMaxDistance(dmax);
+		return 0;
+	}
+
+	int w_Source_getDistance(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getReferenceDistance());
+		lua_pushnumber(L, t->getMaxDistance());
+		return 2;
+	}
+
+	int w_Source_setRolloff(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		float rolloff = (float)luaL_checknumber(L, 2);
+		if (rolloff < .0f)
+			return luaL_error(L, "Invalid rolloff: %f. Must be > 0.", rolloff);
+		t->setRolloffFactor(rolloff);
+		return 0;
+	}
+
+	int w_Source_getRolloff(lua_State * L)
+	{
+		Source * t = luax_checksource(L, 1);
+		lua_pushnumber(L, t->getRolloffFactor());
 		return 1;
 	}
 
@@ -241,10 +298,18 @@ namespace audio
 		{ "isStopped", w_Source_isStopped },
 		{ "isPaused", w_Source_isPaused },
 		{ "isStatic", w_Source_isStatic },
+
+		{ "setVolumeLimits", w_Source_setVolumeLimits },
+		{ "getVolumeLimits", w_Source_getVolumeLimits },
+		{ "setDistance", w_Source_setDistance },
+		{ "getDistance", w_Source_setDistance },
+		{ "setRolloff", w_Source_setRolloff},
+		{ "getRolloff", w_Source_getRolloff},
+
 		{ 0, 0 }
 	};
 
-	int luaopen_source(lua_State * L)
+	extern "C" int luaopen_source(lua_State * L)
 	{
 		return luax_register_type(L, "Source", functions);
 	}

@@ -1,14 +1,14 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
-* 
+* Copyright (c) 2006-2012 LOVE Development Team
+*
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
 * arising from the use of this software.
-* 
+*
 * Permission is granted to anyone to use this software for any purpose,
 * including commercial applications, and to alter it and redistribute it
 * freely, subject to the following restrictions:
-* 
+*
 * 1. The origin of this software must not be misrepresented; you must not
 *    claim that you wrote the original software. If you use this software
 *    in a product, an acknowledgment in the product documentation would be
@@ -21,6 +21,7 @@
 #ifndef LOVE_MATH_H
 #define LOVE_MATH_H
 
+#include <climits> // for CHAR_BIT
 #include <cstdlib> // for rand()
 
 /* Definitions of useful mathematical constants
@@ -66,6 +67,19 @@ struct vertex
 	float x, y;
 	float s, t;
 };
+
+inline int next_p2(int x)
+{
+	x += (x == 0);
+	x--;
+	for (unsigned int i = 1; i < sizeof(int)*CHAR_BIT; i <<= 1) x |= x >> i;
+	return ++x;
+}
+
+inline float next_p2(float x)
+{
+	return static_cast<float>(next_p2(static_cast<int>(x)));
+}
 
 template<typename T>
 inline T random()

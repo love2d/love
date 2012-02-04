@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2011 LOVE Development Team
+* Copyright (c) 2006-2012 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -21,11 +21,17 @@
 #include "ImageData.h"
 
 // STD
+#include <cstring>
 #include <iostream>
 
 // LOVE
 #include <common/Exception.h>
+#include <common/math.h>
 #include <filesystem/File.h>
+
+using love::thread::Lock;
+
+static Mutex devilMutex;
 
 namespace love
 {
@@ -33,8 +39,67 @@ namespace image
 {
 namespace devil
 {
+	void ImageData::create(int width, int height, void * data)
+	{
+		Lock lock(devilMutex); //automatically lock and unlock
+		ILuint image;
+
+		//create the image
+		ilGenImages(1, &image);
+
+		//bind it
+		ilBindImage(image);
+
+		while (ilGetError() != IL_NO_ERROR);
+
+		//create and populate the image
+		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
+
+		ILenum err = ilGetError();
+		while (ilGetError() != IL_NO_ERROR);
+
+		if (!success)
+		{
+			ilDeleteImages(1, &image);
+
+			if (err != IL_NO_ERROR)
+			{
+				switch (err)
+				{
+					case IL_ILLEGAL_OPERATION:
+						throw love::Exception("Illegal operation");
+					case IL_INVALID_PARAM:
+						throw love::Exception("Invalid parameters");
+					case IL_OUT_OF_MEMORY:
+						throw love::Exception("Out of memory");
+					default:
+						throw love::Exception("Unknown error (%d)", (int) err);
+				}
+			}
+
+			throw love::Exception("Could not decode image data.");
+		}
+
+		try
+		{
+			this->data = new unsigned char[width*height*bpp];
+		}
+		catch (std::bad_alloc)
+		{
+			ilDeleteImages(1, &image);
+			throw love::Exception("Out of memory");
+		}
+
+		memcpy(this->data, ilGetData(), width*height*bpp);
+
+		ilDeleteImages(1, &image);
+	}
+
 	void ImageData::load(Data * data)
 	{
+		Lock lock(devilMutex);
+		ILuint image;
+
 		// Generate DevIL image.
 		ilGenImages(1, &image);
 
@@ -45,10 +110,9 @@ namespace devil
 		ILboolean success = ilLoadL(IL_TYPE_UNKNOWN, (void*)data->getData(), data->getSize());
 
 		// Check for errors
-		if(!success)
+		if (!success)
 		{
 			throw love::Exception("Could not decode image!");
-			return;
 		}
 
 		width = ilGetInteger(IL_IMAGE_WIDTH);
@@ -61,11 +125,26 @@ namespace devil
 		// This should always be four.
 		bpp = ilGetInteger(IL_IMAGE_BPP);
 
-		if(bpp != 4)
+		if (bpp != 4)
 		{
+			ilDeleteImages(1, &image);
 			std::cerr << "Bits per pixel != 4" << std::endl;
 			return;
 		}
+
+		try
+		{
+			this->data = new unsigned char[width*height*bpp];
+		}
+		catch (std::bad_alloc)
+		{
+			ilDeleteImages(1, &image);
+			throw love::Exception("Out of memory");
+		}
+
+		memcpy(this->data, ilGetData(), width*height*bpp);
+
+		ilDeleteImages(1, &image);
 	}
 
 	ImageData::ImageData(Data * data)
@@ -83,53 +162,21 @@ namespace devil
 	ImageData::ImageData(int width, int height)
 		: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
 	{
-		// Generate DevIL image.
-		ilGenImages(1, &image);
-
-		// Bind the image.
-		ilBindImage(image);
-
-		ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, 0);
+		create(width, height);
 
 		// Set to black.
-		memset((void*)ilGetData(), 0, width*height*4);
+		memset(data, 0, width*height*4);
 	}
 
 	ImageData::ImageData(int width, int height, void *data)
 	: width(width), height(height), origin(IL_ORIGIN_UPPER_LEFT), bpp(4)
 	{
-		// Generate DevIL image.
-		ilGenImages(1, &image);
-		// Bind the image.
-		ilBindImage(image);
-		// Try to load the data.
-		bool success = (ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, data) == IL_TRUE);
-		int err = ilGetError();
-		if (err != IL_NO_ERROR){
-			switch (err) {
-				case IL_ILLEGAL_OPERATION:
-					throw love::Exception("Error: Illegal operation");
-					break;
-				case IL_INVALID_PARAM:
-					throw love::Exception("Error: invalid parameters");
-					break;
-				case IL_OUT_OF_MEMORY:
-					throw love::Exception("Error: out of memory");
-					break;
-				default:
-					throw love::Exception("Error: unknown error");
-					break;
-			}
-		}
-
-		if(!success) {
-			throw love::Exception("Could not decode image data.");
-		}
+		create(width, height, data);
 	}
 
 	ImageData::~ImageData()
 	{
-		ilDeleteImages(1, &image);
+		delete[] data;
 	}
 
 	int ImageData::getWidth() const
@@ -144,8 +191,7 @@ namespace devil
 
 	void * ImageData::getData() const
 	{
-		ilBindImage(image);
-		return ilGetData();
+		return data;
 	}
 
 	int ImageData::getSize() const
@@ -155,26 +201,70 @@ namespace devil
 
 	void ImageData::setPixel(int x, int y, pixel c)
 	{
+		Lock lock(mutex);
 		//int tx = x > width-1 ? width-1 : x;
 		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
-		if (x > width-1 || y > height-1 || x < 0 || y < 0) throw love::Exception("Attempt to set out-of-range pixel!");
+		if (x > width-1 || y > height-1 || x < 0 || y < 0)
+			throw love::Exception("Attempt to set out-of-range pixel!");
+
 		pixel * pixels = (pixel *)getData();
 		pixels[y*width+x] = c;
 	}
 
-	pixel ImageData::getPixel(int x, int y) const
+	pixel ImageData::getPixel(int x, int y)
 	{
+		Lock lock(mutex);
 		//int tx = x > width-1 ? width-1 : x;
 		//int ty = y > height-1 ? height-1 : y; // not using these seems to not break anything
-		if (x > width-1 || y > height-1 || x < 0 || y < 0) throw love::Exception("Attempt to get out-of-range pixel!");
+		if (x > width-1 || y > height-1 || x < 0 || y < 0)
+			throw love::Exception("Attempt to get out-of-range pixel!");
+
 		pixel * pixels = (pixel *)getData();
 		return pixels[y*width+x];
 	}
 
 	void ImageData::encode(love::filesystem::File * f, ImageData::Format format) {
-		ilBindImage(image);
+		Lock lock(devilMutex);
+		Lock lock2(mutex);
+
+		ILuint tempimage;
+		ilGenImages(1, &tempimage);
+		ilBindImage(tempimage);
+
+		while (ilGetError() != IL_NO_ERROR);
+
+		bool success = ilTexImage(width, height, 1, bpp, IL_RGBA, IL_UNSIGNED_BYTE, this->data) == IL_TRUE;
+
+		ILenum err = ilGetError();
+		while (ilGetError() != IL_NO_ERROR);
+
+		if (!success)
+		{
+			ilDeleteImages(1, &tempimage);
+
+			if (err != IL_NO_ERROR)
+			{
+				switch (err)
+				{
+					case IL_ILLEGAL_OPERATION:
+						throw love::Exception("Illegal operation");
+					case IL_INVALID_PARAM:
+						throw love::Exception("Invalid parameters");
+					case IL_OUT_OF_MEMORY:
+						throw love::Exception("Out of memory");
+					default:
+						throw love::Exception("Unknown error (%d)", (int) err);
+				}
+			}
+
+			throw love::Exception("Could not create image for the encoding!");
+		}
+
+		ilRegisterOrigin(IL_ORIGIN_UPPER_LEFT);
+
 		ILuint ilFormat;
-		switch (format) {
+		switch (format)
+		{
 			case ImageData::FORMAT_BMP:
 				ilFormat = IL_BMP;
 				break;
@@ -192,13 +282,33 @@ namespace devil
 				ilFormat = IL_PNG;
 				break;
 		}
+
 		ILuint size = ilSaveL(ilFormat, NULL, 0);
-		ILubyte * data = new ILubyte[size];
-		ilSaveL(ilFormat, data, size);
+		if (!size)
+		{
+			ilDeleteImages(1, &tempimage);
+			throw love::Exception("Could not encode image!");
+		}
+
+		ILubyte * encoded_data;
+		try
+		{
+			encoded_data = new ILubyte[size];
+		}
+		catch (std::bad_alloc)
+		{
+			ilDeleteImages(1, &tempimage);
+			throw love::Exception("Out of memory");
+		}
+
+		ilSaveL(ilFormat, encoded_data, size);
+		ilDeleteImages(1, &tempimage);
+
 		f->open(love::filesystem::File::WRITE);
-		f->write(data, size);
+		f->write(encoded_data, size);
 		f->close();
-		delete[] data;
+
+		delete[] encoded_data;
 	}
 
 } // devil
