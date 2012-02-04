@@ -19,6 +19,7 @@
 **/
 
 #include "wrap_Body.h"
+#include "wrap_Physics.h"
 
 namespace love
 {
@@ -290,7 +291,7 @@ namespace box2d
 		float y = (float)luaL_checknumber(L, 3);
 		float m = (float)luaL_checknumber(L, 4);
 		float i = (float)luaL_checknumber(L, 5);
-		t->setMassData(x, y, m, i);
+		ASSERT_GUARD(t->setMassData(x, y, m, i);)
 		return 0;
 	}
 
