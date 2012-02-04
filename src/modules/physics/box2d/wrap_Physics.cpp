@@ -80,7 +80,7 @@ namespace box2d
 	{
 		Body * body = luax_checkbody(L, 1);
 		Shape * shape = luax_checkshape(L, 2);
-		float density = (float)luaL_checknumber(L, 3);
+		float density = (float)luaL_optnumber(L, 3, 1.0f);
 		Fixture * fixture;
 		ASSERT_GUARD(fixture = instance->newFixture(body, shape, density);)
 		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void*)fixture);
