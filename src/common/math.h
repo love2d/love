@@ -21,6 +21,8 @@
 #ifndef LOVE_MATH_H
 #define LOVE_MATH_H
 
+#include <cstdlib> // for rand()
+
 /* Definitions of useful mathematical constants
  * M_E        - e
  * M_LOG2E    - log2(e)
@@ -64,6 +66,18 @@ struct vertex
 	float x, y;
 	float s, t;
 };
+
+template<typename T>
+inline T random()
+{
+	return T(rand()) / (T(RAND_MAX)+T(1));
+}
+
+template<typename T>
+inline T random(T min, T max)
+{
+	return random<T>() * (max - min) + min;
+}
 
 } // love
 

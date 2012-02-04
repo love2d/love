@@ -40,12 +40,14 @@ namespace opengl
 		}
 	}
 
-	float calculate_variation(float inner, float outer, float var)
+	// returns a value in the range [-x/2:x/2] around mean, where
+	// x = margin * scale; so margin and scale determine the width
+	// of the interval to chose the value from, while mean names
+	// the expected value.
+	inline float calculate_variation(float mean, float margin, float scale)
 	{
-		float low = inner - (outer/2.0f)*var;
-		float high = inner + (outer/2.0f)*var;
-		float r = (rand() / (float(RAND_MAX)+1));
-		return low*(1-r)+high*r;
+		// same as random(mean - scale*margin*.5, mean + scale*margin*.5)
+		return mean + scale * margin * (random<float>() - .5f);
 	}
 
 
@@ -93,7 +95,7 @@ namespace opengl
 
 		min = direction - spread/2.0f;
 		max = direction + spread/2.0f;
-		pLast->direction = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
+		pLast->direction = random<float>(min, max);
 
 		min = speedMin;
 		max = speedMax;
@@ -113,8 +115,8 @@ namespace opengl
 		max = tangentialAccelerationMax;
 		pLast->tangentialAcceleration = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
 
-		pLast->sizeOffset       = (rand() / (float(RAND_MAX)+1)) * sizeVariation; // time offset for size change
-		pLast->sizeIntervalSize = (1.0 - (rand() / (float(RAND_MAX)+1)) * sizeVariation) - pLast->sizeOffset;
+		pLast->sizeOffset       = random<float>() * sizeVariation; // time offset for size change
+		pLast->sizeIntervalSize = (1.0f - random<float>() * sizeVariation) - pLast->sizeOffset;
 		pLast->size = sizes[(size_t)(pLast->sizeOffset - .5f) * (sizes.size() - 1)];
 
 		min = rotationMin;
