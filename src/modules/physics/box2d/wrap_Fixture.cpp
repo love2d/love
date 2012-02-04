@@ -121,7 +121,6 @@ namespace box2d
 		Shape * shape = t->getShape();
 		if (shape == 0)
 			return 0;
-		shape->retain();
 		switch (shape->getType()) {
 			case Shape::SHAPE_EDGE:
 				luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, (void*)shape);

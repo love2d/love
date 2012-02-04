@@ -128,7 +128,12 @@ namespace box2d
 			return NULL;
 		Shape * s = (Shape *)Memoizer::find(fixture->GetShape());
 		if (!s)
-			s = new Shape(fixture->GetShape());
+		{
+			b2BlockAllocator a;
+			s = new Shape(fixture->GetShape()->Clone(&a));
+		}
+		else
+			s->retain();
 		return s;
 	}
 
