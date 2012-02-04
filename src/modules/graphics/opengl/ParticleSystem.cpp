@@ -320,6 +320,11 @@ namespace opengl
 	{
 		return position.getY();
 	}
+	
+	const love::Vector& ParticleSystem::getPosition() const
+	{
+		return position;
+	}
 
 	float ParticleSystem::getDirection() const
 	{

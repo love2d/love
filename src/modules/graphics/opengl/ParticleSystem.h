@@ -364,6 +364,11 @@ namespace opengl
 		float getY() const;
 
 		/**
+		* Returns the position of the emitter.
+		**/
+		const love::Vector& getPosition() const;
+
+		/**
 		* Returns the direction of the emitter (in degrees).
 		**/
 		float getDirection() const;

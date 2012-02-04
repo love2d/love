@@ -55,6 +55,7 @@ namespace opengl
 	int w_ParticleSystem_setOffset(lua_State * L);
 	int w_ParticleSystem_getX(lua_State * L);
 	int w_ParticleSystem_getY(lua_State * L);
+	int w_ParticleSystem_getPosition(lua_State * L);
 	int w_ParticleSystem_getDirection(lua_State * L);
 	int w_ParticleSystem_getSpread(lua_State * L);
 	int w_ParticleSystem_getOffsetX(lua_State * L);

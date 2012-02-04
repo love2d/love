@@ -20,6 +20,8 @@
 
 #include "wrap_ParticleSystem.h"
 
+#include <common/Vector.h>
+
 #include <cstring>
 
 namespace love
@@ -260,6 +262,15 @@ namespace opengl
 		lua_pushnumber(L, t->getY());
 		return 1;
 	}
+	
+	int w_ParticleSystem_getPosition(lua_State * L)
+	{
+		ParticleSystem * t = luax_checkparticlesystem(L, 1);
+		const love::Vector& p = t->getPosition();
+		lua_pushnumber(L, p.x);
+		lua_pushnumber(L, p.y);
+		return 2;
+	}
 
 	int w_ParticleSystem_getDirection(lua_State * L)
 	{
@@ -376,6 +387,7 @@ namespace opengl
 		{ "setOffset", w_ParticleSystem_setOffset },
 		{ "getX", w_ParticleSystem_getX },
 		{ "getY", w_ParticleSystem_getY },
+		{ "getPosition", w_ParticleSystem_getPosition },
 		{ "getDirection", w_ParticleSystem_getDirection },
 		{ "getSpread", w_ParticleSystem_getSpread },
 		{ "getOffsetX", w_ParticleSystem_getOffsetX },
