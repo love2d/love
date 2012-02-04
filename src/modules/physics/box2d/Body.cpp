@@ -118,7 +118,7 @@ namespace box2d
 
 	float Body::getInertia() const
 	{
-		return body->GetInertia();
+		return Physics::scaleUp(Physics::scaleUp(body->GetInertia()));
 	}
 
 	int Body::getMassData(lua_State * L)
@@ -129,7 +129,7 @@ namespace box2d
 		lua_pushnumber(L, center.x);
 		lua_pushnumber(L, center.y);
 		lua_pushnumber(L, data.mass);
-		lua_pushnumber(L, data.I);
+		lua_pushnumber(L, Physics::scaleUp(Physics::scaleUp(data.I)));
 		return 4;
 	}
 
@@ -249,7 +249,7 @@ namespace box2d
 		b2MassData massData;
 		massData.center = Physics::scaleDown(b2Vec2(x, y));
 		massData.mass = m;
-		massData.I = i;
+		massData.I = Physics::scaleDown(Physics::scaleDown(i));
 		body->SetMassData(&massData);
 	}
 
@@ -266,7 +266,7 @@ namespace box2d
 		b2MassData massData;
 		massData.center = body->GetLocalCenter();
 		massData.mass = body->GetMass();
-		massData.I = i;
+		massData.I = Physics::scaleDown(Physics::scaleDown(i));
 		body->SetMassData(&massData);
 	}
 
