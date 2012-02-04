@@ -48,7 +48,6 @@ namespace box2d
 		{ "rayCast", w_Shape_rayCast },
 		{ "computeAABB", w_Shape_computeAABB },
 		{ "computeMass", w_Shape_computeMass },
-		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};
 

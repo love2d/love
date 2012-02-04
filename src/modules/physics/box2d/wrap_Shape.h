@@ -42,7 +42,6 @@ namespace box2d
 	int w_Shape_computeAABB(lua_State * L);
 	int w_Shape_computeMass(lua_State * L);
 
-	int w_Shape_destroy(lua_State * L);
 	extern "C" int luaopen_shape(lua_State * L);
 
 } // box2d

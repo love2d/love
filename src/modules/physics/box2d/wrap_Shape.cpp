@@ -91,16 +91,6 @@ namespace box2d
 		return t->computeMass(L);
 	}
 
-	int w_Shape_destroy(lua_State * L)
-	{
-		Proxy * p = (Proxy *)lua_touserdata(L, 1);
-		p->own = false;
-
-		Shape * t = (Shape *)p->data;
-		t->release();
-		return 0;
-	}
-
 	static const luaL_Reg functions[] = {
 		{ "getType", w_Shape_getType },
 		{ "getRadius", w_Shape_getRadius },
@@ -109,7 +99,6 @@ namespace box2d
 		{ "rayCast", w_Shape_rayCast },
 		{ "computeAABB", w_Shape_computeAABB },
 		{ "computeMass", w_Shape_computeMass },
-		{ "destroy", w_Shape_destroy },
 		{ 0, 0 }
 	};
 
