@@ -268,15 +268,11 @@ namespace box2d
 		float p2x = Physics::scaleDown((float)luaL_checknumber(L, 3));
 		float p2y = Physics::scaleDown((float)luaL_checknumber(L, 4));
 		float maxFraction = (float)luaL_checknumber(L, 5);
-		float x = Physics::scaleDown((float)luaL_checknumber(L, 6));
-		float y = Physics::scaleDown((float)luaL_checknumber(L, 7));
-		float r = (float)luaL_checknumber(L, 8);
-		int childIndex = (int)luaL_optint(L, 9, 0);
+		int childIndex = (int)luaL_optint(L, 6, 0);
 		b2RayCastInput input;
 		input.p1.Set(p1x, p1y);
 		input.p2.Set(p2x, p2y);
 		input.maxFraction = maxFraction;
-		b2Transform transform(b2Vec2(x, y), b2Rot(r));
 		b2RayCastOutput output;
 		if (!fixture->RayCast(&output, input, childIndex))
 			return 0; // Nothing hit.
