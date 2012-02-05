@@ -37,8 +37,8 @@ namespace box2d
 		b2RopeJointDef def;
 		def.bodyA = body1->body;
 		def.bodyB = body2->body;
-		def.localAnchorA = Physics::scaleDown(b2Vec2(x1,y1));
-		def.localAnchorB = Physics::scaleDown(b2Vec2(x2,y2));
+		body1->getLocalPoint(Physics::scaleDown(x1), Physics::scaleDown(y1), def.localAnchorA.x, def.localAnchorA.y);
+		body2->getLocalPoint(Physics::scaleDown(x2), Physics::scaleDown(y2), def.localAnchorB.x, def.localAnchorB.y);
 		def.maxLength = Physics::scaleDown(maxLength);
 		def.collideConnected = collideConnected;
 		joint = (b2RopeJoint*)createJoint(&def);
