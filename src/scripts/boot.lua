@@ -372,6 +372,9 @@ end
 
 function love.run()
 
+	math.randomseed(os.time())
+	math.random() math.random()
+
 	if love.load then love.load(arg) end
 
 	local dt = 0
