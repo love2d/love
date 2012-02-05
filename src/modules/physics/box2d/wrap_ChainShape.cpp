@@ -19,6 +19,7 @@
 **/
 
 #include "wrap_ChainShape.h"
+#include "wrap_Physics.h"
 #include "Physics.h"
 
 namespace love
@@ -60,7 +61,7 @@ namespace box2d
 	int w_ChainShape_getChildEdge(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
-		int index = luaL_checkint(L, 2);
+		int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
 		EdgeShape * e = c->getChildEdge(index);
 		luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, e);
 		return 1;
@@ -77,8 +78,9 @@ namespace box2d
 	int w_ChainShape_getPoint(lua_State * L)
 	{
 		ChainShape * c = luax_checkchainshape(L, 1);
-		int index = luaL_checkint(L, 2);
-		b2Vec2 v = c->getPoint(index);
+		int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
+		b2Vec2 v;
+		ASSERT_GUARD(v = c->getPoint(index);)
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		return 2;

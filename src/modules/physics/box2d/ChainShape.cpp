@@ -99,6 +99,8 @@ namespace box2d
 	b2Vec2 ChainShape::getPoint(int index) const
 	{
 		b2ChainShape * c = (b2ChainShape *)shape;
+		if (index < 0 || index >= c->m_count)
+			throw love::Exception("Physics error: index out of bounds");
 		const b2Vec2 & v = c->m_vertices[index];
 		return Physics::scaleUp(v);
 	}

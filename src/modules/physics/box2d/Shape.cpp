@@ -100,7 +100,7 @@ namespace box2d
 		float x = Physics::scaleDown((float)luaL_checknumber(L, 6));
 		float y = Physics::scaleDown((float)luaL_checknumber(L, 7));
 		float r = (float)luaL_checknumber(L, 8);
-		int childIndex = (int)luaL_optint(L, 9, 0);
+		int childIndex = (int)luaL_optint(L, 9, 1) - 1; // Convert from 1-based index
 		b2RayCastInput input;
 		input.p1.Set(p1x, p1y);
 		input.p2.Set(p2x, p2y);
@@ -120,7 +120,7 @@ namespace box2d
 		float x = Physics::scaleDown((float)luaL_checknumber(L, 1));
 		float y = Physics::scaleDown((float)luaL_checknumber(L, 2));
 		float r = (float)luaL_checknumber(L, 3);
-		int childIndex = (int)luaL_optint(L, 4, 0);
+		int childIndex = (int)luaL_optint(L, 4, 1) - 1; // Convert from 1-based index
 		b2Transform transform(b2Vec2(x, y), b2Rot(r));
 		b2AABB box;
 		shape->ComputeAABB(&box, transform, childIndex);

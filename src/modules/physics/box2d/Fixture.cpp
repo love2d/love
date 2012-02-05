@@ -268,7 +268,7 @@ namespace box2d
 		float p2x = Physics::scaleDown((float)luaL_checknumber(L, 3));
 		float p2y = Physics::scaleDown((float)luaL_checknumber(L, 4));
 		float maxFraction = (float)luaL_checknumber(L, 5);
-		int childIndex = (int)luaL_optint(L, 6, 0);
+		int childIndex = (int)luaL_optint(L, 6, 1) - 1; // Convert from 1-based index
 		b2RayCastInput input;
 		input.p1.Set(p1x, p1y);
 		input.p2.Set(p2x, p2y);
@@ -284,7 +284,7 @@ namespace box2d
 
 	int Fixture::getBoundingBox(lua_State * L) const
 	{
-		int childIndex = (int)luaL_optint(L, 1, 0);
+		int childIndex = (int)luaL_optint(L, 1, 1) - 1; // Convert from 1-based index
 		b2AABB box = fixture->GetAABB(childIndex);
 		box = Physics::scaleUp(box);
 		lua_pushnumber(L, box.lowerBound.x);
