@@ -205,6 +205,7 @@ namespace box2d
 		this->retain(); // The Box2D world holds a reference to this World.
 		world->SetAllowSleeping(true);
 		world->SetContactListener(this);
+		world->SetContactFilter(this);
 		world->SetDestructionListener(this);
 		b2BodyDef def;
 		groundBody = world->CreateBody(&def);
@@ -219,6 +220,7 @@ namespace box2d
 		this->retain();
 		world->SetAllowSleeping(sleep);
 		world->SetContactListener(this);
+		world->SetContactFilter(this);
 		world->SetDestructionListener(this);
 		b2BodyDef def;
 		groundBody = world->CreateBody(&def);
