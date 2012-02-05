@@ -209,7 +209,7 @@ namespace box2d
 		for (int i = 1;i<=argc;i++)
 		{
 			size_t bpos = (size_t)(lua_tointeger(L, i)-1);
-			if (bpos > 16)
+			if (bpos >= 16)
 				return luaL_error(L, "Values must be in range 1-16.");
 			b.set(bpos, true);
 		}
