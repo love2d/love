@@ -17,7 +17,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added origin to font printing.
   * Added love.graphics.getMode.
   * Added per-sprite colors on SpriteBatches.
-  * Added pixel effects.
+  * Added PixelEffects.
   * Added love.graphics.isSupported.
   * Added love.graphics.getCanvas.
   * Added love.event.quit.
@@ -34,6 +34,8 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added new events system, with support for custom events and long event names.
   * Added sound attenuation by distance.
   * Added SpriteBatch:getImage.
+  * Added combine color mode.
+  * Added automatic random seeding to love.run.
 
   * Fixed wrapping for single words.
   * Fixed tracebacks not showing filenames.
@@ -48,14 +50,12 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed SoundData allocating the wrong number of samples.
   * Fixed SpriteBatch support on Intel cards.
   * Fixed love.filesystem.lines() leaking.
-  * Fixed Source controls inconsistencies.
   * Fixed most leaking on unclosed File objects.
   * Fixed crashes when operating on non-existent files.
   * Fixed a bug where empty files on windows would never reach eof.
   * Fixed crash when SoundData runs out of memory.
-  * Fixed ordering of loaders, love should have priority over Lua.
+  * Fixed ordering of loaders, love should have priority over lua.
   * Fixed several miscellaneous memory leaks.
-  * Fixed love.filesystem's priority for require.
   * Fixed a few cases where strings with \0 in them would not be stored correctly.
   * Fixed love's startup time being in the first dt.
   * Fixed internal string conversions, they are faster now.
