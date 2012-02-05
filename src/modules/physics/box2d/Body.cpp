@@ -196,7 +196,7 @@ namespace box2d
 
 	void Body::applyForce(float fx, float fy)
 	{
-		body->ApplyForce(Physics::scaleDown(b2Vec2(fx, fy)), body->GetWorldCenter());
+		body->ApplyForceToCenter(Physics::scaleDown(b2Vec2(fx, fy)));
 	}
 
 	void Body::setX(float x)
