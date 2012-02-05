@@ -650,7 +650,6 @@
 		A9D5C499142E5F7F0044ECF7 /* b2EdgeShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2EdgeShape.cpp; sourceTree = "<group>"; };
 		A9D5C49A142E5F7F0044ECF7 /* b2EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2EdgeShape.h; sourceTree = "<group>"; };
 		A9D5C49B142E5F7F0044ECF7 /* b2PolygonShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2PolygonShape.cpp; sourceTree = "<group>"; };
-		A9D5C49C142E5F7F0044ECF7 /* b2PolygonShape.cpp.orig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = b2PolygonShape.cpp.orig; sourceTree = "<group>"; };
 		A9D5C49D142E5F7F0044ECF7 /* b2PolygonShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2PolygonShape.h; sourceTree = "<group>"; };
 		A9D5C49E142E5F7F0044ECF7 /* b2Shape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2Shape.h; sourceTree = "<group>"; };
 		A9D5C4A0142E5F7F0044ECF7 /* b2BlockAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2BlockAllocator.cpp; sourceTree = "<group>"; };
@@ -1545,7 +1544,6 @@
 				A9D5C499142E5F7F0044ECF7 /* b2EdgeShape.cpp */,
 				A9D5C49A142E5F7F0044ECF7 /* b2EdgeShape.h */,
 				A9D5C49B142E5F7F0044ECF7 /* b2PolygonShape.cpp */,
-				A9D5C49C142E5F7F0044ECF7 /* b2PolygonShape.cpp.orig */,
 				A9D5C49D142E5F7F0044ECF7 /* b2PolygonShape.h */,
 				A9D5C49E142E5F7F0044ECF7 /* b2Shape.h */,
 			);
