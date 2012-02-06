@@ -91,12 +91,12 @@ namespace box2d
 		return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 	}
 
-	void WheelJoint::setSpringFrequencyHz(float hz)
+	void WheelJoint::setSpringFrequency(float hz)
 	{
 		joint->SetSpringFrequencyHz(hz);
 	}
 
-	float WheelJoint::getSpringFrequencyHz() const
+	float WheelJoint::getSpringFrequency() const
 	{
 		return joint->GetSpringFrequencyHz();
 	}

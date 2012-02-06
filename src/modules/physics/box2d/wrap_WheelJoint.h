@@ -42,8 +42,8 @@ namespace box2d
 	int w_WheelJoint_setMaxMotorTorque(lua_State * L);
 	int w_WheelJoint_getMaxMotorTorque(lua_State * L);
 	int w_WheelJoint_getMotorTorque(lua_State * L);
-	int w_WheelJoint_setSpringFrequencyHz(lua_State * L);
-	int w_WheelJoint_getSpringFrequencyHz(lua_State * L);
+	int w_WheelJoint_setSpringFrequency(lua_State * L);
+	int w_WheelJoint_getSpringFrequency(lua_State * L);
 	int w_WheelJoint_setSpringDampingRatio(lua_State * L);
 	int w_WheelJoint_getSpringDampingRatio(lua_State * L);
 	extern "C" int luaopen_wheeljoint(lua_State * L);

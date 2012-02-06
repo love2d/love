@@ -101,12 +101,12 @@ namespace box2d
 		* Set the spring frequency, in hertz. Setting the frequency to 0
 		* disables the spring.
 		**/
-		void setSpringFrequencyHz(float hz);
+		void setSpringFrequency(float hz);
 
 		/**
 		* Get the spring frequency, in hertz.
 		**/
-		float getSpringFrequencyHz() const;
+		float getSpringFrequency() const;
 
 		/**
 		* Set the spring damping ratio.

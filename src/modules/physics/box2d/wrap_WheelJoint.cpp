@@ -101,18 +101,18 @@ namespace box2d
 		return 1;
 	}
 
-	int w_WheelJoint_setSpringFrequencyHz(lua_State * L)
+	int w_WheelJoint_setSpringFrequency(lua_State * L)
 	{
 		WheelJoint * t = luax_checkwheeljoint(L, 1);
 		float arg1 = (float)luaL_checknumber(L, 2);
-		t->setSpringFrequencyHz(arg1);
+		t->setSpringFrequency(arg1);
 		return 0;
 	}
 
-	int w_WheelJoint_getSpringFrequencyHz(lua_State * L)
+	int w_WheelJoint_getSpringFrequency(lua_State * L)
 	{
 		WheelJoint * t = luax_checkwheeljoint(L, 1);
-		lua_pushnumber(L, t->getSpringFrequencyHz());
+		lua_pushnumber(L, t->getSpringFrequency());
 		return 1;
 	}
 
@@ -141,8 +141,8 @@ namespace box2d
 		{ "setMaxMotorTorque", w_WheelJoint_setMaxMotorTorque },
 		{ "getMaxMotorTorque", w_WheelJoint_getMaxMotorTorque },
 		{ "getMotorTorque", w_WheelJoint_getMotorTorque },
-		{ "setSpringFrequencyHz", w_WheelJoint_setSpringFrequencyHz },
-		{ "getSpringFrequencyHz", w_WheelJoint_getSpringFrequencyHz },
+		{ "setSpringFrequency", w_WheelJoint_setSpringFrequency },
+		{ "getSpringFrequency", w_WheelJoint_getSpringFrequency },
 		{ "setSpringDampingRatio", w_WheelJoint_setSpringDampingRatio },
 		{ "getSpringDampingRatio", w_WheelJoint_getSpringDampingRatio },
 		// From Joint.
