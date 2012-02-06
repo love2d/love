@@ -46,7 +46,7 @@ namespace box2d
 		* Create a new ChainShape from a Box2D chain shape.
 		* @param c The chain shape.
 		**/
-		ChainShape(b2ChainShape * c, bool loop = false);
+		ChainShape(b2ChainShape * c, bool loop = false, bool own = true);
 
 		virtual ~ChainShape();
 

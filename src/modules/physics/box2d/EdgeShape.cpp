@@ -33,16 +33,13 @@ namespace physics
 {
 namespace box2d
 {
-	EdgeShape::EdgeShape(b2EdgeShape * e)
-		: Shape(e)
+	EdgeShape::EdgeShape(b2EdgeShape * e, bool own)
+		: Shape(e, own)
 	{
 	}
 
 	EdgeShape::~EdgeShape()
 	{
-		Memoizer::remove(shape);
-		delete shape;
-		shape = NULL;
 	}
 
 	int EdgeShape::getPoints(lua_State * L)

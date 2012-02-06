@@ -126,15 +126,8 @@ namespace box2d
 	{
 		if (!fixture->GetShape())
 			return NULL;
-		Shape * s = (Shape *)Memoizer::find(fixture->GetShape());
-		if (!s)
-		{
-			b2BlockAllocator a;
-			s = new Shape(fixture->GetShape()->Clone(&a));
-		}
-		else
-			s->retain();
-		return s;
+		
+		return new Shape(fixture->GetShape(), false);
 	}
 
 	bool Fixture::isValid() const

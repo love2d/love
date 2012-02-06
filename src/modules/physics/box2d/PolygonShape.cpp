@@ -33,16 +33,13 @@ namespace physics
 {
 namespace box2d
 {
-	PolygonShape::PolygonShape(b2PolygonShape * p)
-		: Shape(p)
+	PolygonShape::PolygonShape(b2PolygonShape * p, bool own)
+		: Shape(p, own)
 	{
 	}
 
 	PolygonShape::~PolygonShape()
 	{
-		Memoizer::remove(shape);
-		delete shape;
-		shape = NULL;
 	}
 
 	int PolygonShape::getPoints(lua_State * L)

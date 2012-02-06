@@ -47,7 +47,7 @@ namespace box2d
 		* @param body The parent Body.
 		* @param def The polygon definition.
 		**/
-		PolygonShape(b2PolygonShape * p);
+		PolygonShape(b2PolygonShape * p, bool own = true);
 
 		virtual ~PolygonShape();
 

@@ -33,16 +33,13 @@ namespace physics
 {
 namespace box2d
 {
-	CircleShape::CircleShape(b2CircleShape * c)
-		: Shape(c)
+	CircleShape::CircleShape(b2CircleShape * c, bool own)
+		: Shape(c, own)
 	{
 	}
 
 	CircleShape::~CircleShape()
 	{
-		Memoizer::remove(shape);
-		delete shape;
-        shape = NULL;
 	}
 
     float CircleShape::getRadius() const

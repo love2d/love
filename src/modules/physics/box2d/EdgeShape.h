@@ -42,7 +42,7 @@ namespace box2d
 		* Create a new EdgeShape from a Box2D edge shape.
 		* @param e The edge shape.
 		**/
-		EdgeShape(b2EdgeShape * e);
+		EdgeShape(b2EdgeShape * e, bool own = true);
 
 		virtual ~EdgeShape();
 

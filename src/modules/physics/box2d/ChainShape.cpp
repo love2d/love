@@ -33,16 +33,13 @@ namespace physics
 {
 namespace box2d
 {
-	ChainShape::ChainShape(b2ChainShape * c, bool loop)
-		: Shape(c), loop(loop)
+	ChainShape::ChainShape(b2ChainShape * c, bool loop, bool own)
+		: Shape(c, own), loop(loop)
 	{
 	}
 
 	ChainShape::~ChainShape()
 	{
-		Memoizer::remove(shape);
-		delete shape;
-		shape = NULL;
 	}
 
 	void ChainShape::setNextVertex(float x, float y)

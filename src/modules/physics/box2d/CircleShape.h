@@ -49,7 +49,7 @@ namespace box2d
 		* @param body The parent body.
 		* @param def The CircleShape definition.
 		**/
-		CircleShape(b2CircleShape * c);
+		CircleShape(b2CircleShape * c, bool own = true);
 
 		virtual ~CircleShape();
 

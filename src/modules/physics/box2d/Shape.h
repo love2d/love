@@ -50,6 +50,7 @@ namespace box2d
 
 		// The Box2D shape.
 		b2Shape * shape;
+		bool own;
 
 	public:
 
@@ -57,7 +58,7 @@ namespace box2d
 		* Creates a Shape.
 		**/
 		Shape();
-		Shape(b2Shape * shape);
+		Shape(b2Shape * shape, bool own = true);
 
 		virtual ~Shape();
 

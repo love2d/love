@@ -37,18 +37,20 @@ namespace physics
 namespace box2d
 {
 	Shape::Shape()
-		: shape(NULL)
+		: shape(NULL), own(false)
 	{
 	}
-	Shape::Shape(b2Shape * shape)
-		: shape(shape)
+
+	Shape::Shape(b2Shape * shape, bool own)
+		: shape(shape), own(own)
 	{
-		Memoizer::add(shape, this);
+		if (own)
+			Memoizer::add(shape, this);
 	}
 
 	Shape::~Shape()
 	{
-		if (shape)
+		if (shape && own)
 		{
 			Memoizer::remove(shape);
 			delete shape;
