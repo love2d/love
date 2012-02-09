@@ -109,6 +109,22 @@ namespace box2d
 
 	bool World::ContactFilter::process(Fixture * a, Fixture * b)
 	{
+		// Handle masks, reimplemented from the manual
+		int filterA[3], filterB[3];
+		// [0] categoryBits
+		// [1] maskBits
+		// [2] groupIndex
+		a->getFilterData(filterA);
+		b->getFilterData(filterB);
+
+		if (filterA[2] != 0 && // 0 is the default group, so this does not count
+			filterA[2] == filterB[2]) // if they are in the same group
+			return filterA[2] > 0; // Negative indexes mean you don't collide
+
+		if ((filterA[1] & filterB[0]) == 0 ||
+			(filterB[1] & filterA[0]) == 0)
+			return false; // A and B aren't set to collide
+
 		if (ref != 0)
 		{
 			lua_State * L = ref->getL();
