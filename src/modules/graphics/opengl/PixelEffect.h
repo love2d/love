@@ -49,6 +49,8 @@ namespace opengl
 		static void detach();
 		static std::string getGLSLVersion();
 		static bool isSupported();
+		
+		static PixelEffect * current;
 
 		void sendFloat(const std::string& name, int size, const GLfloat* vec, int count);
 		void sendMatrix(const std::string& name, int size, const GLfloat* m, int count);

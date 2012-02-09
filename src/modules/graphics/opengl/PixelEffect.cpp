@@ -44,6 +44,8 @@ namespace graphics
 {
 namespace opengl
 {
+	PixelEffect * PixelEffect::current = NULL;
+
 	std::map<std::string, GLint> PixelEffect::_texture_unit_pool;
 	GLint PixelEffect::_current_texture_unit = 0;
 	GLint PixelEffect::_max_texture_units = 0;
@@ -180,11 +182,13 @@ namespace opengl
 	void PixelEffect::attach()
 	{
 		glUseProgram(_program);
+		current = this;
 	}
 
 	void PixelEffect::detach()
 	{
 		glUseProgram(0);
+		current = NULL;
 	}
 
 	void PixelEffect::sendFloat(const std::string& name, int size, const GLfloat* vec, int count)

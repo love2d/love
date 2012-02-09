@@ -754,6 +754,20 @@ namespace opengl
 		effect->attach();
 		return 0;
 	}
+	
+	int w_getPixelEffect(lua_State * L)
+	{
+		PixelEffect * effect = PixelEffect::current;
+		if (effect)
+		{
+			effect->retain();
+			luax_newtype(L, "PixelEffect", GRAPHICS_PIXELEFFECT_T, (void*) effect);
+		}
+		else
+			lua_pushnil(L);
+		
+		return 1;
+	}
 
 	int w_isSupported(lua_State * L)
 	{
@@ -1214,6 +1228,7 @@ namespace opengl
 		{ "getCanvas", w_getCanvas },
 
 		{ "setPixelEffect", w_setPixelEffect },
+		{ "getPixelEffect", w_getPixelEffect },
 
 		{ "isSupported", w_isSupported },
 
