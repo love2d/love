@@ -24,38 +24,38 @@ namespace love
 {
 namespace image
 {
-        void ImageData::paste(ImageData * src, int dx, int dy, int sx, int sy, int sw, int sh)
-        {
-                pixel * s = (pixel *)src->getData();
-                pixel * d = (pixel *)getData();
+	void ImageData::paste(ImageData * src, int dx, int dy, int sx, int sy, int sw, int sh)
+	{
+		pixel * s = (pixel *)src->getData();
+		pixel * d = (pixel *)getData();
 
-                // Check bounds; if the data ends up completely out of bounds, get out early.
-                if (sx >= src->getWidth() || sx + sw < 0 || sy >= src->getHeight() || sy + sh < 0
-                 || dx >= getWidth() || dx + sw < 0 || dy >= getHeight() || dy + sh < 0)
-                        return;
+		// Check bounds; if the data ends up completely out of bounds, get out early.
+		if (sx >= src->getWidth() || sx + sw < 0 || sy >= src->getHeight() || sy + sh < 0
+		 || dx >= getWidth() || dx + sw < 0 || dy >= getHeight() || dy + sh < 0)
+			return;
 
-                // Normalize values to the inside of both images.
-                if (dx < 0) { sw += dx; sx -= dx; dx = 0; }
-                if (dy < 0) { sh += dy; sy -= dy; dy = 0; }
-                if (sx < 0) { sw += sx; dx -= sx; sx = 0; }
-                if (sy < 0) { sh += sy; dy -= sy; sy = 0; }
-                if (dx + sw > getWidth()) { sw = getWidth() - dx; }
-                if (dy + sh > getHeight()) { sh = getHeight() - dy; }
-                if (sx + sw > src->getWidth()) { sw = src->getWidth() - sx; }
-                if (sy + sh > src->getHeight()) { sh = src->getHeight() - sy; }
+		// Normalize values to the inside of both images.
+		if (dx < 0) { sw += dx; sx -= dx; dx = 0; }
+		if (dy < 0) { sh += dy; sy -= dy; dy = 0; }
+		if (sx < 0) { sw += sx; dx -= sx; sx = 0; }
+		if (sy < 0) { sh += sy; dy -= sy; sy = 0; }
+		if (dx + sw > getWidth()) { sw = getWidth() - dx; }
+		if (dy + sh > getHeight()) { sh = getHeight() - dy; }
+		if (sx + sw > src->getWidth()) { sw = src->getWidth() - sx; }
+		if (sy + sh > src->getHeight()) { sh = src->getHeight() - sy; }
 
-                // If the dimensions match up, copy the entire memory stream in one go
-                if (sw == getWidth() && getWidth() == src->getWidth()
-                 && sh == getHeight() && getHeight() == src->getHeight())
-                        memcpy(d, s, sizeof(pixel) * sw * sh);
-                else    // Otherwise, copy each row individually
-                {
-                        for (int i = 0; i < sh; i++)
-                        {
-                                memcpy(d + dx + i * getWidth(), s + sx + i * src->getWidth(), sizeof(pixel) * sw);
-                        }
-                }
-        }
+		// If the dimensions match up, copy the entire memory stream in one go
+		if (sw == getWidth() && getWidth() == src->getWidth()
+		 && sh == getHeight() && getHeight() == src->getHeight())
+			memcpy(d, s, sizeof(pixel) * sw * sh);
+		else if (sw > 0 && sh > 0) // Otherwise, copy each row individually
+		{
+			for (int i = 0; i < sh; i++)
+			{
+				memcpy(d + dx + (i + dy) * getWidth(), s + sx + (i + sy) * src->getWidth(), sizeof(pixel) * sw);
+			}
+		}
+	}
 
 	bool ImageData::inside(int x, int y) const
 	{
