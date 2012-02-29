@@ -173,7 +173,7 @@ namespace opengl
 		int width, height, fsaa;
 		bool fullscreen, vsync;
 		currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
-		return currentWindow->setWindow(width, height, !fullscreen, vsync, fsaa);
+		return setMode(width, height, !fullscreen, vsync, fsaa);
 	}
 
 
