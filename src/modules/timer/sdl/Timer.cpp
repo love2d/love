@@ -70,10 +70,11 @@ namespace sdl
 		// Convert to number of seconds
 		dt = (currTime - prevTime)/1000.0;
 
+		int timeSinceLast = (currTime - prevFpsUpdate)/1000.0;
 		// Update FPS?
-		if ((currTime - prevFpsUpdate)/1000.0 > fpsUpdateFrequency)
+		if (timeSinceLast > fpsUpdateFrequency)
 		{
-			fps = frames/fpsUpdateFrequency;
+			fps = frames/timeSinceLast;
 			prevFpsUpdate = currTime;
 			frames = 0;
 		}
