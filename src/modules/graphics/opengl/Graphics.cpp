@@ -182,6 +182,7 @@ namespace opengl
 		DisplayState s;
 		discardStencil();
 		Canvas::bindDefaultCanvas();
+		PixelEffect::detach();
 		restoreState(s);
 	}
 
@@ -189,7 +190,6 @@ namespace opengl
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		glLoadIdentity();
-		PixelEffect::detach();
 	}
 
 	void Graphics::present()
