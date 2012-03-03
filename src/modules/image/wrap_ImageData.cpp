@@ -56,9 +56,9 @@ namespace image
 		{
 			c = t->getPixel(x, y);
 		}
-		catch (love::Exception *e)
+		catch (love::Exception & e)
 		{
-			return luaL_error(L, "%s", e->what());
+			return luaL_error(L, "%s", e.what());
 		}
 		lua_pushnumber(L, c.r);
 		lua_pushnumber(L, c.g);
@@ -81,9 +81,9 @@ namespace image
 		{
 			t->setPixel(x, y, c);
 		}
-		catch (love::Exception *e)
+		catch (love::Exception & e)
 		{
-			return luaL_error(L, "%s", e->what());
+			return luaL_error(L, "%s", e.what());
 		}
 		return 0;
 	}
