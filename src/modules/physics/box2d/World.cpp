@@ -195,7 +195,9 @@ namespace box2d
 			lua_pushnumber(L, scaledNormal.y);
 			lua_pushnumber(L, fraction);
 			lua_call(L, 6, 1);
-			return (float32)luaL_checknumber(L, -1);
+			if (!lua_isnumber(L, -1))
+				luaL_error(L, "Raycast callback didn't return a number!");
+			return (float32)lua_tonumber(L, -1);
 		}
 		return 0;
 	}
