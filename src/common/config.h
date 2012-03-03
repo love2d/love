@@ -72,6 +72,10 @@
 #	define NOMINMAX
 #endif
 
+#if defined(LOVE_MACOSX)
+#	define LOVE_LEGENDARY_LIBSTDCXX_HACK
+#endif
+
 // Autotools config.h
 #ifdef HAVE_CONFIG_H
 #	include <../config.h>
