@@ -61,7 +61,7 @@ namespace timer
 		* once per second, it does not look erratic when displayed on screen.
 		* @return The "current" FPS.
 		**/
-		virtual double getFPS() const = 0;
+		virtual int getFPS() const = 0;
 
 		/**
 		* Gets the amount of time since the program started. Only useful for timing

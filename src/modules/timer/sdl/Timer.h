@@ -55,7 +55,7 @@ namespace sdl
 		void step();
 		void sleep(double seconds);
 		double getDelta() const;
-		double getFPS() const;
+		int getFPS() const;
 		double getTime() const;
 		double getMicroTime() const;
 
@@ -70,7 +70,7 @@ namespace sdl
 		Uint32 prevFpsUpdate;
 
 		// Updated with a certain frequency.
-		double fps;
+		int fps;
 
 		// The frequency by which to update the FPS.
 		double fpsUpdateFrequency;

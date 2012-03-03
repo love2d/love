@@ -70,11 +70,11 @@ namespace sdl
 		// Convert to number of seconds
 		dt = (currTime - prevTime)/1000.0;
 
-		int timeSinceLast = (currTime - prevFpsUpdate)/1000.0;
+		double timeSinceLast = (currTime - prevFpsUpdate)/1000.0;
 		// Update FPS?
 		if (timeSinceLast > fpsUpdateFrequency)
 		{
-			fps = frames/timeSinceLast;
+			fps = int((frames/timeSinceLast) + 0.5);
 			prevFpsUpdate = currTime;
 			frames = 0;
 		}
@@ -91,7 +91,7 @@ namespace sdl
 		return dt;
 	}
 
-	double Timer::getFPS() const
+	int Timer::getFPS() const
 	{
 		return fps;
 	}
