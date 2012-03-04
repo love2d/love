@@ -511,10 +511,24 @@ namespace opengl
 	{
 		glAlphaFunc(GL_GEQUAL, 0);
 
-		if (mode == BLEND_SUBTRACTIVE)
-			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-		else
-			glBlendEquation(GL_FUNC_ADD);
+		if (GLEE_VERSION_1_4 || GLEE_ARB_imaging) {
+			if (mode == BLEND_SUBTRACTIVE) {
+				glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+			} else {
+				glBlendEquation(GL_FUNC_ADD);
+			}
+		} else if (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract) {
+			if (mode == BLEND_SUBTRACTIVE) {
+				glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
+			} else {
+				glBlendEquationEXT(GL_FUNC_ADD_EXT);
+			}
+		} else {
+			if (mode == BLEND_SUBTRACTIVE) {
+				std::cerr << "This graphics card does not support the subtract blend mode!" << std::endl;
+			}
+			// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
+		}
 
 		if (mode == BLEND_ALPHA)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

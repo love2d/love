@@ -156,6 +156,7 @@ namespace graphics
 		{ "canvas", Graphics::SUPPORT_CANVAS },
 		{ "pixeleffect", Graphics::SUPPORT_PIXELEFFECT },
 		{ "npot", Graphics::SUPPORT_NPOT },
+		{ "subtractive", Graphics::SUPPORT_SUBTRACTIVE },
 	};
 
 	StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));

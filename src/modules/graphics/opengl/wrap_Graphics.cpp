@@ -19,6 +19,7 @@
 **/
 
 #include "wrap_Graphics.h"
+#include "GLee.h"
 #include <graphics/DrawQable.h>
 #include <image/ImageData.h>
 #include <font/Rasterizer.h>
@@ -792,6 +793,9 @@ namespace opengl
 				case Graphics::SUPPORT_NPOT:
 					if (!Image::hasNpot())
 						supported = false;
+					break;
+				case Graphics::SUPPORT_SUBTRACTIVE:
+					supported = (GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract);
 					break;
 				default:
 					supported = false;
