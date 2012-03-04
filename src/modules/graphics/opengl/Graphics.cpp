@@ -525,7 +525,7 @@ namespace opengl
 			}
 		} else {
 			if (mode == BLEND_SUBTRACTIVE) {
-				std::cerr << "This graphics card does not support the subtract blend mode!" << std::endl;
+				throw Exception("This graphics card does not support the subtract blend mode!");
 			}
 			// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
 		}

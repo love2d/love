@@ -532,7 +532,14 @@ namespace opengl
 		if (!Graphics::getConstant(str, mode))
 			return luaL_error(L, "Invalid blend mode: %s", str);
 
-		instance->setBlendMode(mode);
+		try
+		{
+			instance->setBlendMode(mode);
+		}
+		catch (love::Exception &e)
+		{
+			return luaL_error(L, e.what());
+		}
 		return 0;
 	}
 
