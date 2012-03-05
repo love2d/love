@@ -194,8 +194,10 @@ namespace opengl
 		// Copy the old buffer only if 'restore' was requested.
 		const GLvoid *src = restore ? buffer_copy : 0;
 
+		while (GL_NO_ERROR != glGetError())
+			/* clear error messages */;
+
 		// Note that if 'src' is '0', no data will be copied.
-		glGetError();
 		glBufferDataARB(getTarget(), getSize(), src, getUsage());
 		GLenum err = glGetError();
 
