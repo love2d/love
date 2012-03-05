@@ -205,7 +205,7 @@ namespace opengl
 		delete[] buffer_copy;
 		buffer_copy = 0;
 
-		return (GL_NO_ERROR != err);
+		return (GL_NO_ERROR == err);
 	}
 
 	void VBO::unload(bool save)
