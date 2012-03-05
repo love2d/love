@@ -195,13 +195,15 @@ namespace opengl
 		const GLvoid *src = restore ? buffer_copy : 0;
 
 		// Note that if 'src' is '0', no data will be copied.
+		glGetError();
 		glBufferDataARB(getTarget(), getSize(), src, getUsage());
+		GLenum err = glGetError();
 
 		// Clean up buffer_copy, if it exists.
 		delete[] buffer_copy;
 		buffer_copy = 0;
 
-		return true;
+		return (GL_NO_ERROR != err);
 	}
 
 	void VBO::unload(bool save)
