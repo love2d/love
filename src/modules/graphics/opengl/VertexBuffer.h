@@ -173,6 +173,33 @@ namespace opengl
 			VertexBuffer &buf;
 		};
 
+		class Mapper
+		{
+		public:
+			/**
+			 * Memory-maps a VertexBuffer.
+			 */
+			Mapper(VertexBuffer& buffer, GLenum access)
+				: buf(buffer)
+			{ elems = buf.map(access); }
+
+			/**
+			 * unmaps the buffer
+			 */
+			~Mapper()
+			{ buf.unmap(); }
+
+			/**
+			 * Get pointer to memory mapped region
+			 */
+			void* get()
+			{ return elems; }
+
+		private:
+			VertexBuffer &buf;
+			void* elems;
+		};
+
 	private:
 
 		// The size of the buffer, in bytes.

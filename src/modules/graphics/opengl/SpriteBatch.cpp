@@ -69,8 +69,9 @@ namespace opengl
 		// Fill element buffer.
 		{
 			VertexBuffer::Bind bind(*element_buf);
+			VertexBuffer::Mapper mapper(*element_buf, GL_WRITE_ONLY);
 
-			GLushort *indices = static_cast<GLushort*>(element_buf->map(GL_WRITE_ONLY));
+			GLushort *indices = static_cast<GLushort*>(mapper.get());
 
 			if (indices)
 			{
@@ -85,8 +86,6 @@ namespace opengl
 					indices[i*6+5] = 3+(i*4);
 				}
 			}
-
-			element_buf->unmap();
 		}
 	}
 
