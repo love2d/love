@@ -131,13 +131,14 @@ namespace opengl
 		mapped = malloc(getSize());
 		if (!mapped)
 			throw love::Exception("Out of memory (oh the humanity!)");
+		glGetBufferSubDataARB(getTarget(), 0, getSize(), mapped);
 
 		return mapped;
 	}
 
 	void VBO::unmap()
 	{
-		glBufferSubDataARB(getTarget(), 0, getSize(), (void*)mapped);
+		glBufferSubDataARB(getTarget(), 0, getSize(), mapped);
 		free(mapped);
 		mapped = 0;
 	}
