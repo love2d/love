@@ -59,19 +59,6 @@ namespace opengl
 	{
 	}
 
-	// VertexBuffer::Bind
-
-	VertexBuffer::Bind::Bind(VertexBuffer &buf)
-		: buf(buf)
-	{
-		buf.bind();
-	}
-
-	VertexBuffer::Bind::~Bind()
-	{
-		buf.unbind();
-	}
-
 	// VertexArray
 
 	VertexArray::VertexArray(size_t size, GLenum target, GLenum usage)

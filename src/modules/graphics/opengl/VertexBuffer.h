@@ -160,12 +160,15 @@ namespace opengl
 			/**
 			 * Bind a VertexBuffer.
 			 */
-			Bind(VertexBuffer &buf);
+			Bind(VertexBuffer &buf)
+				: buf(buf)
+			{ buf.bind(); }
 
 			/**
 			 * Unbinds a VertexBuffer.
 			 */
-			~Bind();
+			~Bind()
+			{ buf.unbind(); }
 
 		private:
 
