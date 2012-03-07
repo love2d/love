@@ -63,8 +63,8 @@ namespace opengl
 		int vertex_size = sizeof(vertex) * 4 * size;
 		int element_size = sizeof(GLushort) * 6 * size;
 
-		array_buf = VertexArray::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
-		element_buf = VertexArray::Create(element_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+		array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
+		element_buf = VertexBuffer::Create(element_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
 
 		// Fill element buffer.
 		{
@@ -157,14 +157,14 @@ namespace opengl
 
 	void * SpriteBatch::lock()
 	{
-		VertexArray::Bind bind(*array_buf);
+		VertexBuffer::Bind bind(*array_buf);
 
 		return array_buf->map(GL_READ_WRITE);
 	}
 
 	void SpriteBatch::unlock()
 	{
-		VertexArray::Bind bind(*array_buf);
+		VertexBuffer::Bind bind(*array_buf);
 
 		array_buf->unmap();
 	}
@@ -239,7 +239,7 @@ namespace opengl
 	{
 		int sprite_size = sizeof(vertex) * 4;
 
-		VertexArray::Bind bind(*array_buf);
+		VertexBuffer::Bind bind(*array_buf);
 
 		array_buf->fill(index * sprite_size, sprite_size, v);
 	}
