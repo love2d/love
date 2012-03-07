@@ -129,6 +129,8 @@ namespace opengl
 			throw love::Exception("VBO is already mapped!");
 
 		mapped = malloc(getSize());
+		if (!mapped)
+			throw love::Exception("Out of memory (oh the humanity!)");
 
 		return mapped;
 	}
