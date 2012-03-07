@@ -72,7 +72,7 @@ namespace opengl
 		delete [] buf;
 	}
 
-	void *VertexArray::map(GLenum/* access*/)
+	void *VertexArray::map()
 	{
 		return buf;
 	}
@@ -122,20 +122,21 @@ namespace opengl
 			unload(false);
 	}
 
-	void *VBO::map(GLenum access)
+	void *VBO::map()
 	{
-		// Don't map twice.
+		// mapping twice could result in memory leaks
 		if (mapped)
-			return mapped;
+			throw love::Exception("VBO is already mapped!");
 
-		mapped = glMapBufferARB(getTarget(), access);
+		mapped = malloc(getSize());
 
 		return mapped;
 	}
 
 	void VBO::unmap()
 	{
-		glUnmapBufferARB(getTarget());
+		glBufferSubDataARB(getTarget(), 0, getSize(), (void*)mapped);
+		free(mapped);
 		mapped = 0;
 	}
 
@@ -209,7 +210,7 @@ namespace opengl
 			GLint size;
 			glGetBufferParameterivARB(getTarget(), GL_BUFFER_SIZE, &size);
 
-			const char *src = static_cast<char *>(map(GL_READ_ONLY));
+			const char *src = static_cast<char *>(map());
 
 			if (src)
 			{

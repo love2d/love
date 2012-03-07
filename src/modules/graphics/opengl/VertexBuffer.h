@@ -104,10 +104,9 @@ namespace opengl
 		 *
 		 * The VertexBuffer must be bound to use this function.
 		 *
-		 * @param access GL_READ_ONLY, GL_WRITE_ONLY, GL_READ_WRITE.
 		 * @return A pointer to memory which represents the buffer.
 		 */
-		virtual void *map(GLenum access) = 0;
+		virtual void *map() = 0;
 
 		/**
 		 * Unmap a previously mapped VertexBuffer. The buffer must be unmapped
@@ -182,9 +181,9 @@ namespace opengl
 			/**
 			 * Memory-maps a VertexBuffer.
 			 */
-			Mapper(VertexBuffer& buffer, GLenum access)
+			Mapper(VertexBuffer& buffer)
 				: buf(buffer)
-			{ elems = buf.map(access); }
+			{ elems = buf.map(); }
 
 			/**
 			 * unmaps the buffer
@@ -236,7 +235,7 @@ namespace opengl
 		virtual ~VertexArray();
 
 		// Implements VertexBuffer.
-		virtual void *map(GLenum access);
+		virtual void *map();
 		virtual void unmap();
 		virtual void bind();
 		virtual void unbind();
@@ -270,7 +269,7 @@ namespace opengl
 		virtual ~VBO();
 
 		// Implements VertexBuffer.
-		virtual void *map(GLenum access);
+		virtual void *map();
 		virtual void unmap();
 		virtual void bind();
 		virtual void unbind();
@@ -307,6 +306,10 @@ namespace opengl
 		// A pointer to mapped memory. Zero if memory is currently
 		// not mapped.
 		void *mapped;
+
+		// Usage hint for map()/unmap() pair. Same as `access' parameter in
+		// glBufferData or 0 if not mapped.
+		GLenum mapped_access;
 	};
 
 } // opengl

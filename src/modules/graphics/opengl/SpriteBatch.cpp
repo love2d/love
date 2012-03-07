@@ -69,7 +69,7 @@ namespace opengl
 		// Fill element buffer.
 		{
 			VertexBuffer::Bind bind(*element_buf);
-			VertexBuffer::Mapper mapper(*element_buf, GL_WRITE_ONLY);
+			VertexBuffer::Mapper mapper(*element_buf);
 
 			GLushort *indices = static_cast<GLushort*>(mapper.get());
 
@@ -158,7 +158,7 @@ namespace opengl
 	{
 		VertexBuffer::Bind bind(*array_buf);
 
-		return array_buf->map(GL_READ_WRITE);
+		return array_buf->map();
 	}
 
 	void SpriteBatch::unlock()
