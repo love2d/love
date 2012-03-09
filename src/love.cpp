@@ -124,6 +124,17 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 	}
 
 	lua_setfield(L, -2, "_version_compat");
+	
+#ifdef LOVE_WINDOWS
+	lua_pushstring(L, "Windows");
+#elif defined(LOVE_MACOSX)
+	lua_pushstring(L, "OS X");
+#elif defined(LOVE_LINUX)
+	lua_pushstring(L, "Linux");
+#else
+	lua_pushstring(L, "Unknown");
+#endif
+	lua_setfield(L, -2, "_os");
 
 #ifdef LOVE_BUILD_STANDALONE
 
