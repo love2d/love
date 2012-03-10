@@ -157,7 +157,7 @@ namespace sdl
 	int Joystick::getAxes(lua_State * L)
 	{
 		love::luax_assert_argc(L, 1, 1);
-		int index = (int)lua_tointeger(L, 1);
+		int index = (int)lua_tointeger(L, 1) - 1;
 
 		if (!verifyJoystick(index))
 			return 0;
@@ -172,8 +172,8 @@ namespace sdl
 	int Joystick::getBall(lua_State * L)
 	{
 		love::luax_assert_argc(L, 2, 2);
-		int index = (int)lua_tointeger(L, 1);
-		int ball = (int)lua_tointeger(L, 2);
+		int index = (int)lua_tointeger(L, 1) - 1;
+		int ball = (int)lua_tointeger(L, 2) - 1;
 
 		if (!verifyJoystick(index))
 			return 0;
