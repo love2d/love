@@ -6,7 +6,6 @@ inc_modules="$inc_current/modules"
 inc_libraries="$inc_current/libraries"
 echo "AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I/usr/include/AL -I/usr/include/freetype2  \$(INCLUDE_LUA) -I/usr/include/SDL \$(FILE_OFFSET)
 AUTOMAKE_OPTIONS = subdir-objects
-DEFAULT_INCLUDES =
 SUBDIRS =
 
 # LÖVE executable
