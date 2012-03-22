@@ -261,6 +261,7 @@ namespace opengl
 		//split text at newlines
 		istringstream iss( text );
 		string line;
+		ostringstream string_builder;
 		while (getline(iss, line, '\n'))
 		{
 			// split line into words
@@ -272,19 +273,22 @@ namespace opengl
 			// put words back together until a wrap occurs
 			float width = 0.0f;
 			float oldwidth = 0.0f;
-			ostringstream string_builder;
-			vector<string>::const_iterator word_iter;
-			for (word_iter = words.begin(); word_iter != words.end(); ++word_iter)
+			string_builder.str("");
+			vector<string>::const_iterator word_iter, wend = words.end();
+			for (word_iter = words.begin(); word_iter != wend; ++word_iter)
 			{
-				string word( *word_iter );
+				const string& word = *word_iter;
 				width += getWidth( word );
 
 				// on wordwrap, push line to line buffer and clear string builder
 				if (width >= wrap && oldwidth > 0)
 				{
 					int realw = (int) width;
-					lines_to_draw.push_back( string_builder.str() );
-					string_builder.str( "" );
+
+					// remove trailing space
+					string tmp = string_builder.str();
+					lines_to_draw.push_back( tmp.substr(0,tmp.size()-1) );
+					string_builder.str("");
 					width = static_cast<float>(getWidth( word ));
 					realw -= (int) width;
 					if (realw > maxw)
@@ -297,7 +301,8 @@ namespace opengl
 			// push last line
 			if (width > maxw)
 				maxw = (int) width;
-			lines_to_draw.push_back( string_builder.str() );
+			string tmp = string_builder.str();
+			lines_to_draw.push_back( tmp.substr(0,tmp.size()-1) );
 		}
 
 		if (max_width)
