@@ -51,8 +51,6 @@ AS_IF([test "$lua" == "llvm-lua"],
       )
 
 AC_SEARCH_LIBS([ilInit], [IL], [], AC_MSG_ERROR([Can't LÖVE without DevIL]))
-AC_SEARCH_LIBS([mng_initialize], [mng], [], AC_MSG_ERROR([DevIL needs MNG]))
-AC_SEARCH_LIBS([TIFFOpen], [tiff], [], AC_MSG_ERROR([DevIL needs TIFF]))
 AC_SEARCH_LIBS([FT_Load_Glyph], [freetype], [], AC_MSG_ERROR([Can't LÖVE without FreeType]))
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], AC_MSG_ERROR([Can't LÖVE without PhysicsFS]))
 AC_SEARCH_LIBS([ModPlug_Load], [modplug], [], AC_MSG_ERROR([Can't LÖVE without ModPlug]))
