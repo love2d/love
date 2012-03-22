@@ -1,15 +1,33 @@
 #!/bin/bash
 
+die() {
+	echo "Fatal: "$@
+	exit 1
+}
+
+AUTOHEADER=$(which autoheader)
+AUTOCONF=$(which autoconf)
+LIBTOOLIZE=$(which libtoolize)
+ACLOCAL=$(which aclocal)
+AUTOMAKE=$(which automake)
+
+[[ -x ${AUTOHEADER} ]] || die "Could not find autoheader. Install autoconf."
+[[ -x ${AUTOCONF} ]]   || die "Could not find autoconf."
+[[ -x ${LIBTOOLIZE} ]] || die "Could not find libtoolize. Install libtool."
+[[ -x ${ACLOCAL} ]]    || die "Could not find aclocal. Install automake."
+[[ -x ${AUTOMAKE} ]]   || die "Could not find automake."
+
 automagic() {
 	if ! sh platform/unix/gen-makefile; then
 		echo "You should be doing this from the root directory of the project."
 		exit 1
 	fi
-	autoheader 2>&1 || return 1 # Gimmie config.h.in
-	libtoolize --force 2>&1 || return 1
-	aclocal 2>&1 || return 1
-	autoconf 2>&1 || return 1
-	automake -a 2>&1 || return 1
+
+	${AUTOHEADER} 2>&1 || return 1 # Gimmie config.h.in
+	${LIBTOOLIZE} --force 2>&1 || return 1
+	${ACLOCAL} 2>&1 || return 1
+	${AUTOCONF} 2>&1 || return 1
+	${AUTOMAKE} -a 2>&1 || return 1
 }
 
 if [[ $1 == "-d" ]]; then
