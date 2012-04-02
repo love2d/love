@@ -36,6 +36,8 @@ LOVE 0.8.0 [Rubber Piggy]
   * Added SpriteBatch:getImage.
   * Added combine color mode.
   * Added automatic random seeding to love.run.
+  * Added support for the subtract BlendMode on older graphics cards.
+  * Added love._os field, which contains the OS the game is running on.
 
   * Fixed wrapping for single words.
   * Fixed tracebacks not showing filenames.
@@ -60,6 +62,7 @@ LOVE 0.8.0 [Rubber Piggy]
   * Fixed love's startup time being in the first dt.
   * Fixed internal string conversions, they are faster now.
   * Fixed (bad) performance of ImageData:paste.
+  * Fixed love.graphics.toggleFullscreen not maintaining graphics state.
 
   * Renamed SpriteBatch's lock/unlock to bind/unbind.
   * Renamed Framebuffer to Canvas.
