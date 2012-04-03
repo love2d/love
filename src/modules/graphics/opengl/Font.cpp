@@ -95,17 +95,10 @@ namespace opengl
 
 	Font::Glyph * Font::addGlyph(int glyph)
 	{
-		Glyph * g = new Glyph;
-		g->list = glGenLists(1);
-		if (g->list == 0)
-		{ // opengl failed to generate the list
-			delete g;
-			return NULL;
-		}
 		love::font::GlyphData *gd = rasterizer->getGlyphData(glyph);
-		g->spacing = gd->getAdvance();
 		int w = gd->getWidth();
 		int h = gd->getHeight();
+
 		if (texture_x + w + TEXTURE_PADDING > TEXTURE_WIDTH)
 		{ // out of space - new row!
 			texture_x = TEXTURE_PADDING;
@@ -116,41 +109,59 @@ namespace opengl
 		{ // totally out of space - new texture!
 			createTexture();
 		}
-		GLuint t = textures.back();
-		bindTexture(t);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w, h, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
 
-		g->texture = t;
+		Glyph * g = new Glyph;
+		g->list = g->texture = 0;
+		g->spacing = gd->getAdvance();
 
-		Quad::Viewport v;
-		v.x = (float) texture_x;
-		v.y = (float) texture_y;
-		v.w = (float) w;
-		v.h = (float) h;
-		Quad * q = new Quad(v, (const float) TEXTURE_WIDTH, (const float) TEXTURE_HEIGHT);
-		const vertex * verts = q->getVertices();
+		// don't waste space for empty glyphs. also fixes a division by zero bug with ati drivers
+		if (w > 0 && h > 0)
+		{
+			g->list = glGenLists(1);
+			if (0 == g->list)
+			{
+				delete g;
+				return NULL;
+			}
 
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].s);
+			GLuint t = textures.back();
+			bindTexture(t);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, texture_x, texture_y, w, h, (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA), GL_UNSIGNED_BYTE, gd->getData());
 
-		glNewList(g->list, GL_COMPILE);
-		glPushMatrix();
-		glTranslatef(static_cast<float>(gd->getBearingX()), static_cast<float>(-gd->getBearingY()), 0.0f);
-		glDrawArrays(GL_QUADS, 0, 4);
-		glPopMatrix();
-		glEndList();
+			g->texture = t;
 
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_VERTEX_ARRAY);
+			Quad::Viewport v;
+			v.x = (float) texture_x;
+			v.y = (float) texture_y;
+			v.w = (float) w;
+			v.h = (float) h;
+			Quad * q = new Quad(v, (const float) TEXTURE_WIDTH, (const float) TEXTURE_HEIGHT);
+			const vertex * verts = q->getVertices();
 
-		delete q;
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].x);
+			glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&verts[0].s);
+
+			glNewList(g->list, GL_COMPILE);
+			glPushMatrix();
+			glTranslatef(static_cast<float>(gd->getBearingX()), static_cast<float>(-gd->getBearingY()), 0.0f);
+			glDrawArrays(GL_QUADS, 0, 4);
+			glPopMatrix();
+			glEndList();
+
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+
+			delete q;
+		}
+
+		if (w > 0)
+			texture_x += (w + TEXTURE_PADDING);
+		if (h > 0)
+			rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
+
 		delete gd;
-
-		texture_x += (w + TEXTURE_PADDING);
-		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
-
 		glyphs[glyph] = g;
 		return g;
 	}
@@ -205,11 +216,15 @@ namespace opengl
 	{
 		Glyph * glyph = glyphs[character];
 		if (!glyph) glyph = addGlyph(character);
-		glPushMatrix();
-		glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
-		bindTexture(glyph->texture);
-		glCallList(glyph->list);
-		glPopMatrix();
+
+		if (0 != glyph->texture)
+		{
+			glPushMatrix();
+			glTranslatef(x, floor(y+getHeight() + 0.5f), 0.0f);
+			bindTexture(glyph->texture);
+			glCallList(glyph->list);
+			glPopMatrix();
+		}
 	}
 
 	int Font::getWidth(const std::string & line)
