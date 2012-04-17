@@ -61,8 +61,8 @@ namespace box2d
 		love::luax_assert_argc(L, 1, 1);
 		b2WorldManifold manifold;
 		contact->GetWorldManifold(&manifold);
-		lua_pushnumber(L, Physics::scaleUp(manifold.normal.x));
-		lua_pushnumber(L, Physics::scaleUp(manifold.normal.y));
+		lua_pushnumber(L, manifold.normal.x);
+		lua_pushnumber(L, manifold.normal.y);
 		return 2;
 	}
 
