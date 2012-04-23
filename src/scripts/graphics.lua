@@ -1351,7 +1351,7 @@ do
 			end
 		else
 			local t = type(value)
-			if t == "userdata" and value.type then t = valye.type end
+			if t == "userdata" and value.type then t = value.type end
 			error("Cannot send value (unsupported type: "..t..").")
 		end
 	end
