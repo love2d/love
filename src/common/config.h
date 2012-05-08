@@ -80,6 +80,13 @@
 #ifdef HAVE_CONFIG_H
 #	include <../config.h>
 #	undef VERSION
+#	ifdef WORDS_BIGENDIAN
+#		undef LOVE_LITTLE_ENDIAN
+#		define LOVE_BIG_ENDIAN 1
+#	else
+#		undef LOVE_BIG_ENDIAN
+#		define LOVE_LITTLE_ENDIAN 1
+#	endif
 #endif
 
 #endif // LOVE_CONFIG_H
