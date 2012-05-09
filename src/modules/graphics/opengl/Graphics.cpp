@@ -807,7 +807,7 @@ namespace opengl
 
 	// precondition:
 	// glEnableClientState(GL_VERTEX_ARRAY);
-	static void draw_overdraw(Vector* overdraw, size_t count, bool looping)
+	static void draw_overdraw(Vector* overdraw, size_t count, float pixel_size, bool looping)
 	{
 		// if not looping, the outer overdraw vertices need to be displaced
 		// to cover the line endings, i.e.:
@@ -820,11 +820,13 @@ namespace opengl
 		{
 			Vector s = overdraw[1] - overdraw[3];
 			s.normalize();
+			s *= pixel_size;
 			overdraw[1] += s;
 			overdraw[2*count-1] += s;
 
 			Vector t = overdraw[count-1] - overdraw[count-3];
 			t.normalize();
+			t *= pixel_size;
 			overdraw[count-1] += t;
 			overdraw[count+1] += t;
 
@@ -872,6 +874,7 @@ namespace opengl
 		bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
 
 		float halfwidth       = lineWidth/2.f;
+		float pixel_size      = 1.f;
 		float overdraw_factor = .0f;
 
 		if (lineStyle == LINE_SMOOTH) {
@@ -879,9 +882,9 @@ namespace opengl
 			// TODO: is there a better way to get the pixel size at the current scale?
 			GLfloat m[16];
 			glGetFloatv(GL_MODELVIEW_MATRIX, m);
-			float det = m[0]*m[5]*m[10] + m[4]*m[9]*m[2] + m[8]*m[1]*m[6];
-			det      -= m[2]*m[5]*m[8]  + m[6]*m[9]*m[0] + m[10]*m[1]*m[4];
-			float pixel_size = 1. / sqrt(det);
+			float det  = m[0]*m[5]*m[10] + m[4]*m[9]*m[2] + m[8]*m[1]*m[6];
+			det       -= m[2]*m[5]*m[8]  + m[6]*m[9]*m[0] + m[10]*m[1]*m[4];
+			pixel_size = 1.f / sqrt(det);
 
 			overdraw_factor = pixel_size / halfwidth;
 			halfwidth = std::max(.0f, halfwidth - .25f*pixel_size);
@@ -919,7 +922,7 @@ namespace opengl
 
 		// draw the line halo (antialiasing)
 		if (lineStyle == LINE_SMOOTH)
-			draw_overdraw(overdraw, count, looping);
+			draw_overdraw(overdraw, count, pixel_size, looping);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glEnable(GL_TEXTURE_2D);
