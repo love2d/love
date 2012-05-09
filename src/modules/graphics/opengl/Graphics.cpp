@@ -755,7 +755,7 @@ namespace opengl
 	//
 	// The intersection points can be calculated using cramers rule.
 	static void pushIntersectionPoints(Vector *vertices, Vector* overdraw,
-			int pos, int count, float hw, float inv_hw,
+			int pos, int count, float hw, float overdraw_factor,
 			const Vector& p, const Vector& q, const Vector& r)
 	{
 		// calculate line directions
@@ -794,8 +794,8 @@ namespace opengl
 
 		if (overdraw)
 		{
-			// displacement of the overdraw vertices (works by magic).
-			Vector x = (vertices[pos] - q) * inv_hw;
+			// displacement of the overdraw vertices
+			Vector x = (vertices[pos] - q) * overdraw_factor;
 
 			overdraw[pos]   = vertices[pos];
 			overdraw[pos+1] = vertices[pos] + x;
@@ -871,14 +871,20 @@ namespace opengl
 		Vector p,q,r;
 		bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
 
-		float halfwidth = lineWidth/2.f;
-		float inv_hw    = 1.f / halfwidth;
+		float halfwidth       = lineWidth/2.f;
+		float overdraw_factor = .0f;
 
 		if (lineStyle == LINE_SMOOTH) {
 			overdraw = new Vector[2*count+2];
-			// Overdraw changes visible line width. account for that.
-			// Value of 0.2 chosen empirically.
-			halfwidth -= .2f;
+			// TODO: is there a better way to get the pixel size at the current scale?
+			GLfloat m[16];
+			glGetFloatv(GL_MODELVIEW_MATRIX, m);
+			float det = m[0]*m[5]*m[10] + m[4]*m[9]*m[2] + m[8]*m[1]*m[6];
+			det      -= m[2]*m[5]*m[8]  + m[6]*m[9]*m[0] + m[10]*m[1]*m[4];
+			float pixel_size = 1. / sqrt(det);
+
+			overdraw_factor = pixel_size / halfwidth;
+			halfwidth = std::max(.0f, halfwidth - .25f*pixel_size);
 		}
 
 		// get line vertex boundaries
@@ -893,7 +899,7 @@ namespace opengl
 		{
 			p = q; q = r;
 			r = Vector(coords[i+2], coords[i+3]);
-			pushIntersectionPoints(vertices, overdraw, i, count, halfwidth, inv_hw, p,q,r);
+			pushIntersectionPoints(vertices, overdraw, i, count, halfwidth, overdraw_factor, p,q,r);
 		}
 
 		// if not looping, extend the line at the end, else use first point as `r'
@@ -902,7 +908,7 @@ namespace opengl
 			r += q - p;
 		else
 			r = Vector(coords[2], coords[3]);
-		pushIntersectionPoints(vertices, overdraw, count-2, count, halfwidth, inv_hw, p,q,r);
+		pushIntersectionPoints(vertices, overdraw, count-2, count, halfwidth, overdraw_factor, p,q,r);
 		// end get line vertex boundaries
 
 		// draw the core line
