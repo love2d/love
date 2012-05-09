@@ -24,7 +24,7 @@ AC_ARG_WITH([llvm-lua],
 	    [lua=llvm-lua],
 	    [])
 
-AS_IF([test "$lua" == "lua"],
+AS_IF([test "$lua" = "lua"],
 	AC_SEARCH_LIBS(
 		[lua_pcall],
 		[lua lua5.1],
@@ -34,7 +34,7 @@ AS_IF([test "$lua" == "lua"],
 		AC_MSG_ERROR([Can't LÖVE without Lua])
 	)
       )
-AS_IF([test "$lua" == "luajit"],
+AS_IF([test "$lua" = "luajit"],
 	AC_SEARCH_LIBS(
 		[lua_pcall],
 		[luajit luajit-5.1],
@@ -42,7 +42,7 @@ AS_IF([test "$lua" == "luajit"],
 		AC_MSG_ERROR([Can't LÖVE without LuaJIT])
 	)
       )
-AS_IF([test "$lua" == "llvm-lua"],
+AS_IF([test "$lua" = "llvm-lua"],
 	AC_SEARCH_LIBS(
 		[lua_pcall],
 		[llvm-lua],
