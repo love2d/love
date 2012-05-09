@@ -111,8 +111,8 @@ namespace box2d
 		b2RayCastOutput output;
 		if (!shape->RayCast(&output, input, transform, childIndex))
 			return 0; // No hit.
-		lua_pushnumber(L, Physics::scaleUp(output.normal.x));
-		lua_pushnumber(L, Physics::scaleUp(output.normal.y));
+		lua_pushnumber(L, output.normal.x);
+		lua_pushnumber(L, output.normal.y);
 		lua_pushnumber(L, output.fraction);
 		return 3;
 	}

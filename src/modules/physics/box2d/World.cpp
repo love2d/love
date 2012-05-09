@@ -190,9 +190,8 @@ namespace box2d
 			b2Vec2 scaledPoint = Physics::scaleUp(point);
 			lua_pushnumber(L, scaledPoint.x);
 			lua_pushnumber(L, scaledPoint.y);
-			b2Vec2 scaledNormal = Physics::scaleUp(normal);
-			lua_pushnumber(L, scaledNormal.x);
-			lua_pushnumber(L, scaledNormal.y);
+			lua_pushnumber(L, normal.x);
+			lua_pushnumber(L, normal.y);
 			lua_pushnumber(L, fraction);
 			lua_call(L, 6, 1);
 			if (!lua_isnumber(L, -1))
