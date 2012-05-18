@@ -106,7 +106,6 @@ namespace opengl
 	private:
 
 		Font * currentFont;
-		Image::Filter currentImageFilter;
 		love::window::Window *currentWindow;
 
 		LineStyle lineStyle;

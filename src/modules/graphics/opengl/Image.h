@@ -71,6 +71,9 @@ namespace opengl
 		bool loadVolatilePOT();
 		bool loadVolatileNPOT();
 
+		// The default image filter
+		static Image::Filter defaultFilter;
+
 	public:
 
 		/**
@@ -140,6 +143,10 @@ namespace opengl
 		void unloadVolatile();
 
 		static bool hasNpot();
+
+		// The default filter.
+		static void setDefaultFilter(const Image::Filter &f);
+		static const Image::Filter &getDefaultFilter();
 
 	private:
 

@@ -38,7 +38,7 @@ namespace opengl
 {
 
 	Graphics::Graphics()
-		: currentFont(0), currentImageFilter(), lineStyle(LINE_SMOOTH), lineWidth(1), matrixLimit(0), userMatrices(0)
+		: currentFont(0), lineStyle(LINE_SMOOTH), lineWidth(1), matrixLimit(0), userMatrices(0)
 	{
 		currentWindow = love::window::sdl::Window::getSingleton();
 
@@ -342,8 +342,6 @@ namespace opengl
 			return 0;
 		}
 
-		image->setFilter(currentImageFilter);
-
 		return image;
 	}
 
@@ -557,7 +555,7 @@ namespace opengl
 
 	void Graphics::setDefaultImageFilter(const Image::Filter& f)
 	{
-		currentImageFilter = f;
+		Image::setDefaultFilter(f);
 	}
 
 	Graphics::BlendMode Graphics::getBlendMode ()
@@ -596,7 +594,7 @@ namespace opengl
 
 	const Image::Filter& Graphics::getDefaultImageFilter() const
 	{
-		return currentImageFilter;
+		return Image::getDefaultFilter();
 	}
 
 	void Graphics::setLineWidth( float width )

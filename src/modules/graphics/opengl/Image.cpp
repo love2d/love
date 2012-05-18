@@ -32,6 +32,8 @@ namespace graphics
 {
 namespace opengl
 {
+	Image::Filter Image::defaultFilter;
+
 	Image::Image(love::image::ImageData * data)
 		: width((float)(data->getWidth())), height((float)(data->getHeight())), texture(0)
 	{
@@ -49,6 +51,8 @@ namespace opengl
 		vertices[1].s = 0; vertices[1].t = 1;
 		vertices[2].s = 1; vertices[2].t = 1;
 		vertices[3].s = 1; vertices[3].t = 0;
+
+		settings.filter = defaultFilter;
 	}
 
 	Image::~Image()
@@ -394,6 +398,15 @@ namespace opengl
 		return GLEE_ARB_texture_non_power_of_two != 0;
 	}
 
+	void Image::setDefaultFilter(const Image::Filter &f)
+	{
+		defaultFilter = f;
+	}
+
+	const Image::Filter &Image::getDefaultFilter()
+	{
+		return defaultFilter;
+	}
 } // opengl
 } // graphics
 } // love
