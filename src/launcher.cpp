@@ -19,6 +19,7 @@
 **/
 
 #include <common/config.h>
+#include <SDL.h>
 
 extern "C"
 {
