@@ -289,7 +289,7 @@ namespace love
 	void boot(lua_State *L)
 	{
 		if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
-		lua_call(L, 0, 0);
+		lua_call(L, 0, LUA_MULTRET);
 	}
 } // love
 
@@ -353,6 +353,11 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 
 	// Boot
 	love::boot(L);
+	
+	int retval = 0;
+	if (lua_isnumber(L, -1))
+		retval = lua_tonumber(L, -1);
+
 	lua_close(L);
 
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
@@ -363,6 +368,6 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 		delete [] hack_argv;
 	}
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
-	return 0;
+	return retval;
 }
 

@@ -802,8 +802,10 @@ end
 -----------------------------------------------------------
 
 local result = xpcall(love.boot, error_printer)
-if not result then return end
+if not result then return 1 end
 local result = xpcall(love.init, love._release and love.releaseerrhand or love.errhand)
-if not result then return end
+if not result then return 1 end
 local result = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
-if not result then return end
+if not result then return 1 end
+
+return 0
