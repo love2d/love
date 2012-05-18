@@ -142,7 +142,7 @@ namespace audio
 		float v[3];
 		v[0] = (float)luaL_checknumber(L, 1);
 		v[1] = (float)luaL_checknumber(L, 2);
-		v[2] = (float)luaL_checknumber(L, 3);
+		v[2] = (float)luaL_optnumber(L, 3, 0);
 		instance->setPosition(v);
 		return 0;
 	}
@@ -188,7 +188,7 @@ namespace audio
 		float v[3];
 		v[0] = (float)luaL_checknumber(L, 1);
 		v[1] = (float)luaL_checknumber(L, 2);
-		v[2] = (float)luaL_checknumber(L, 3);
+		v[2] = (float)luaL_optnumber(L, 3, 0);
 		instance->setVelocity(v);
 		return 0;
 	}

@@ -121,7 +121,7 @@ namespace audio
 		float v[3];
 		v[0] = (float)luaL_checknumber(L, 2);
 		v[1] = (float)luaL_checknumber(L, 3);
-		v[2] = (float)luaL_checknumber(L, 4);
+		v[2] = (float)luaL_optnumber(L, 4, 0);
 		t->setPosition(v);
 		return 0;
 	}
@@ -143,7 +143,7 @@ namespace audio
 		float v[3];
 		v[0] = (float)luaL_checknumber(L, 2);
 		v[1] = (float)luaL_checknumber(L, 3);
-		v[2] = (float)luaL_checknumber(L, 4);
+		v[2] = (float)luaL_optnumber(L, 4, 0);
 		t->setVelocity(v);
 		return 0;
 	}
@@ -165,7 +165,7 @@ namespace audio
 		float v[3];
 		v[0] = (float)luaL_checknumber(L, 2);
 		v[1] = (float)luaL_checknumber(L, 3);
-		v[2] = (float)luaL_checknumber(L, 4);
+		v[2] = (float)luaL_optnumber(L, 4, 0);
 		t->setDirection(v);
 		return 0;
 	}
