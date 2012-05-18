@@ -285,7 +285,7 @@ namespace opengl
 		love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
 		// Create the font.
-		Font * font = instance->newFont(rasterizer);
+		Font * font = instance->newFont(rasterizer, instance->getDefaultImageFilter());
 
 		if (font == 0)
 			return luaL_error(L, "Could not load font.");
@@ -300,6 +300,7 @@ namespace opengl
 	{
 		// filter for glyphs, defaults to linear/linear
 		Image::Filter img_filter;
+		bool setFilter = false;
 
 		// Convert to ImageData if necessary.
 		if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
@@ -308,6 +309,7 @@ namespace opengl
 		{
 			Image * i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
 			img_filter = i->getFilter();
+			setFilter = true;
 			love::image::ImageData * id = i->getData();
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)id, false);
 			lua_replace(L, 1);
@@ -321,6 +323,25 @@ namespace opengl
 		}
 
 		love::font::Rasterizer * rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
+
+		if (lua_isstring(L, 2) && lua_isstring(L, 3))
+		{
+			Image::FilterMode min;
+			Image::FilterMode mag;
+			const char * minstr = luaL_checkstring(L, 2);
+			const char * magstr = luaL_checkstring(L, 3);
+			if (!Image::getConstant(minstr, min))
+				return luaL_error(L, "Invalid filter mode: %s", minstr);
+			if (!Image::getConstant(magstr, mag))
+				return luaL_error(L, "Invalid filter mode: %s", magstr);
+
+			img_filter.min = min;
+			img_filter.mag = mag;
+			setFilter = true;
+		}
+
+		if (!setFilter)
+			img_filter = instance->getDefaultImageFilter();
 
 		// Create the font.
 		Font * font = instance->newFont(rasterizer, img_filter);
