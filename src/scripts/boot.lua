@@ -212,7 +212,11 @@ function love.boot()
 	end
 
 	if not can_has_game and o.game.set and o.game.arg[1] then
-		local full_source =  love.path.getfull(o.game.arg[1])
+		local nouri = o.game.arg[1]
+		if nouri:sub(1, 7) == "file://" then
+			nouri = nouri:sub(8)
+		end
+		local full_source =  love.path.getfull(nouri)
 		local leaf = love.path.leaf(full_source)
 		love.filesystem.setIdentity(leaf)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
