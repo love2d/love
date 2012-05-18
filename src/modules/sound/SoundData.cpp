@@ -36,16 +36,22 @@ namespace sound
 	SoundData::SoundData(Decoder * decoder)
 		: data(0), size(0), sampleRate(Decoder::DEFAULT_SAMPLE_RATE), bits(0), channels(0)
 	{
+		size_t bufferSize = 524288;
 		int decoded = decoder->decode();
 
 		while (decoded > 0)
 		{
 			// Expand or allocate buffer. Note that realloc may move
 			// memory to other locations.
-			data = (char*)realloc(data, size + decoder->getSize());
+			if (!data || bufferSize < (size_t) size + decoded)
+			{
+				while (bufferSize < (size_t) size + decoded)
+					bufferSize <<= 1;
+				data = (char*)realloc(data, bufferSize);
+			}
 
 			if (!data)
-				throw love::Exception("Not enough memory."); // I know, I know, little memory, creating objects..
+				throw love::Exception("Not enough memory.");
 
 			// Copy memory into new part of memory.
 			memcpy(data + size, decoder->getBuffer(), decoded);
@@ -53,8 +59,19 @@ namespace sound
 			// Keep this up to date.
 			size += decoded;
 
+			// Overflow check.
+			if (size < 0)
+			{
+				free(data);
+				throw love::Exception("Not enough memory.");
+			}
+
 			decoded = decoder->decode();
 		}
+
+		// Shrink buffer if necessary.
+		if (data && bufferSize > (size_t) size)
+			data = (char*) realloc(data, size);
 
 		channels = decoder->getChannels();
 		bits = decoder->getBits();
