@@ -37,7 +37,9 @@ namespace lullaby
 
 	Sound::~Sound()
 	{
+#ifndef LOVE_NOMPG123
 		Mpg123Decoder::quit();
+#endif // LOVE_NOMPG123
 	}
 
 	const char * Sound::getName() const
@@ -55,8 +57,10 @@ namespace lullaby
 		// Find a suitable decoder here, and return it.
 		if (ModPlugDecoder::accepts(ext))
 			decoder = new ModPlugDecoder(data, ext, bufferSize);
+#ifndef LOVE_NOMPG123
 		else if (Mpg123Decoder::accepts(ext))
 			decoder = new Mpg123Decoder(data, ext, bufferSize);
+#endif // LOVE_NOMPG123
 		else if (VorbisDecoder::accepts(ext))
 			decoder = new VorbisDecoder(data, ext, bufferSize);
 		/*else if (FLACDecoder::accepts(ext))

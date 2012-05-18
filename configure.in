@@ -55,12 +55,15 @@ AC_SEARCH_LIBS([ilInit], [IL], [], AC_MSG_ERROR([Can't LÖVE without DevIL]))
 AC_SEARCH_LIBS([FT_Load_Glyph], [freetype], [], AC_MSG_ERROR([Can't LÖVE without FreeType]))
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], AC_MSG_ERROR([Can't LÖVE without PhysicsFS]))
 AC_SEARCH_LIBS([ModPlug_Load], [modplug], [], AC_MSG_ERROR([Can't LÖVE without ModPlug]))
-AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [], AC_MSG_ERROR([Can't LÖVE without Mpg123]))
-AC_SEARCH_LIBS([mpg123_seek_64], [mpg123], AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]), AC_SUBST([FILE_OFFSET],[]))
 AC_SEARCH_LIBS([ov_open], [vorbisfile], [], AC_MSG_ERROR([Can't LÖVE without VorbisFile]))
-AC_ARG_ENABLE([headless],
-	      [  --enable-headless Build with less SDL],
-	      AC_DEFINE([LOVE_HEADLESS], [], [Build with less SDL]), [])
+
+AC_ARG_ENABLE([mpg123], AC_HELP_STRING([--disable-mpg123], [Disable mp3 support, for patent-free builds]), [], [enable_mpg123=yes])
+AS_IF([test "x$enable_mpg123" != xno],
+	AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [], AC_MSG_ERROR([Can't LÖVE without Mpg123])),
+	AC_DEFINE([LOVE_NOMPG123], [], [Build without mpg123]))
+AS_IF([test "x$enable_mpg123" != xno],
+	AC_SEARCH_LIBS([mpg123_seek_64], [mpg123], AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]), AC_SUBST([FILE_OFFSET],[])))
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
