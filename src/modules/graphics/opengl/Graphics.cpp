@@ -69,7 +69,7 @@ namespace opengl
 
 		s.color = getColor();
 		s.backgroundColor = getBackgroundColor();
-		
+
 		s.blendMode = getBlendMode();
 		s.colorMode = getColorMode();
 		//get line style
@@ -113,7 +113,11 @@ namespace opengl
 		// the display mode change.
 		Volatile::unloadAll();
 
-		currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
+		bool success = currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
+		// Regardless of failure, we'll have to set up OpenGL once again.
+
+		width = currentWindow->getWidth();
+		height = currentWindow->getHeight();
 
 		// Okay, setup OpenGL.
 
@@ -132,14 +136,14 @@ namespace opengl
 		glEnable(GL_TEXTURE_2D);
 
 		// Set the viewport to top-left corner
-		glViewport(0,0, width, height);
+		glViewport(0, 0, width, height);
 
 		// Reset the projection matrix
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
 		// Set up orthographic view (no depth)
-		glOrtho(0.0, width, height,0.0, -1.0, 1.0);
+		glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
 
 		// Reset modelview matrix
 		glMatrixMode(GL_MODELVIEW);
@@ -160,7 +164,7 @@ namespace opengl
 		glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 		matrixLimit -= 5;
 
-		return true;
+		return success;
 	}
 
 	void Graphics::getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa)
