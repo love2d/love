@@ -112,6 +112,7 @@ end
 
 love.arg.options = {
 	console = { a = 0 },
+	fused = {a = 0 },
 	game = { a = 1 }
 }
 
@@ -206,6 +207,9 @@ function love.boot()
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, arg0)
 	is_fused_game = can_has_game
+	if love.arg.options.fused.set then
+		is_fused_game = true
+	end
 
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local full_source =  love.path.getfull(o.game.arg[1])
