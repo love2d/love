@@ -28,6 +28,19 @@ namespace sdl
 {
 	static Joystick * instance = 0;
 
+	int w_reload(lua_State * L)
+	{
+		try
+		{
+			instance->reload();
+		}
+		catch (love::Exception & e)
+		{
+			return luaL_error(L, "%s", e.what());
+		}
+		return 0;
+	}
+
 	int w_getNumJoysticks(lua_State * L)
 	{
 		lua_pushinteger(L, instance->getNumJoysticks());
@@ -38,20 +51,6 @@ namespace sdl
 	{
 		int index = luaL_checkint(L, 1)-1;
 		lua_pushstring(L, instance->getName(index));
-		return 1;
-	}
-
-	int w_open(lua_State * L)
-	{
-		int index = luaL_checkint(L, 1)-1;
-		luax_pushboolean(L, instance->open(index));
-		return 1;
-	}
-
-	int w_isOpen(lua_State * L)
-	{
-		int index = luaL_checkint(L, 1)-1;
-		luax_pushboolean(L, instance->isOpen(index));
 		return 1;
 	}
 
@@ -133,19 +132,11 @@ namespace sdl
 		return 1;
 	}
 
-	int w_close(lua_State * L)
-	{
-		int index = luaL_checkint(L, 1)-1;
-		instance->close(index);
-		return 0;
-	}
-
 	// List of functions to wrap.
 	static const luaL_Reg functions[] = {
+		{ "reload", w_reload },
 		{ "getNumJoysticks", w_getNumJoysticks },
 		{ "getName", w_getName },
-		{ "open", w_open },
-		{ "isOpen", w_isOpen },
 		{ "getNumAxes", w_getNumAxes },
 		{ "getNumBalls", w_getNumBalls },
 		{ "getNumButtons", w_getNumButtons },
@@ -157,7 +148,6 @@ namespace sdl
 
 		{ "isDown", w_isDown },
 		{ "getHat", w_getHat },
-		{ "close", w_close },
 		{ 0, 0 }
 	};
 

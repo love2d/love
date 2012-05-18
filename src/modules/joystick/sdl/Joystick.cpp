@@ -34,7 +34,7 @@ namespace sdl
 	{
 		// Init the SDL joystick system.
 		if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
-			throw Exception(SDL_GetError());
+			throw love::Exception("%s", SDL_GetError());
 
 		// Start joystick event watching.
 		SDL_JoystickEventState(SDL_ENABLE);
@@ -59,6 +59,29 @@ namespace sdl
 		free(joysticks);
 
 		SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+	}
+
+	void Joystick::reload()
+	{
+		// Closes any open joysticks.
+		for (int i = 0; i != getNumJoysticks(); i++)
+		{
+			if (isOpen(i))
+				close(i);
+		}
+
+		free(joysticks);
+
+		SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+
+		if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
+			throw love::Exception("%s", SDL_GetError());
+
+		int numjoysticks = this->getNumJoysticks();
+		this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick*));
+
+		for (int i = 0;i<numjoysticks;i++)
+			this->open(i);
 	}
 
 	const char * Joystick::getName() const

@@ -45,6 +45,7 @@ namespace sdl
 		// Implements Module.
 		const char * getName() const;
 
+		void reload();
 		bool checkIndex(int index);
 		int getNumJoysticks();
 		const char * getName(int index);

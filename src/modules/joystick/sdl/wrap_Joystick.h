@@ -31,10 +31,9 @@ namespace joystick
 {
 namespace sdl
 {
+	int w_reload(lua_State * L);
 	int w_getNumJoysticks(lua_State * L);
 	int w_getName(lua_State * L);
-	int w_open(lua_State * L);
-	int w_isOpen(lua_State * L);
 	int w_getNumAxes(lua_State * L);
 	int w_getNumBalls(lua_State * L);
 	int w_getNumButtons(lua_State * L);
@@ -44,7 +43,6 @@ namespace sdl
 	int w_getBall(lua_State * L);
 	int w_isDown(lua_State * L);
 	int w_getHat(lua_State * L);
-	int w_close(lua_State * L);
 	extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State * L);
 
 } // sdl
