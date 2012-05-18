@@ -11,9 +11,13 @@ SUBDIRS =
 # LÖVE executable
 bin_PROGRAMS = love
 #love_LDFLAGS =
-#love_LDADD =
+love_LDADD = liblove.la
+love_SOURCES = launcher.cpp
 
-love_SOURCES = \\" > Makefile.am.tmp
+# libLÖVE
+lib_LTLIBRARIES = liblove.la
+liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
+liblove_la_SOURCES = \\" > Makefile.am.tmp
 find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) \) -exec echo '{}' \\ \; >> Makefile.am.tmp
 cat Makefile.am.tmp | grep -v -f"../platform/unix/exclude" | head -c -3 > Makefile.am
 #head -c -3 Makefile.am.tmp > Makefile.am

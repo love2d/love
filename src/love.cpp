@@ -284,9 +284,16 @@ _GLIBCXX_END_NAMESPACE
 
 #endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
 
-#ifdef LOVE_BUILD_EXE
+namespace love
+{
+	void boot(lua_State *L)
+	{
+		if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
+		lua_call(L, 0, 0);
+	}
+} // love
 
-int main(int argc, char ** argv)
+extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 {
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 	int hack_argc = 0;
@@ -345,9 +352,7 @@ int main(int argc, char ** argv)
 	}
 
 	// Boot
-	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
-		lua_call(L, 0, 0);
-
+	love::boot(L);
 	lua_close(L);
 
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
@@ -361,4 +366,3 @@ int main(int argc, char ** argv)
 	return 0;
 }
 
-#endif // LOVE_BUILD_EXE
