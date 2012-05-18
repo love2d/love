@@ -60,11 +60,11 @@ namespace box2d
 	int w_Shape_testPoint(lua_State * L)
 	{
 		Shape * t = luax_checkshape(L, 1);
-		float x = (float)luaL_checknumber(L, 1);
-		float y = (float)luaL_checknumber(L, 2);
-		float r = (float)luaL_checknumber(L, 3);
-		float px = (float)luaL_checknumber(L, 4);
-		float py = (float)luaL_checknumber(L, 5);
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		float r = (float)luaL_checknumber(L, 4);
+		float px = (float)luaL_checknumber(L, 5);
+		float py = (float)luaL_checknumber(L, 6);
 		bool result = t->testPoint(x, y, r, px, py);
 		lua_pushboolean(L, result);
 		return 1;
