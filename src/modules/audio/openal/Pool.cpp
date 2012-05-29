@@ -41,7 +41,13 @@ namespace openal
 
 		// Make all sources available initially.
 		for (int i = 0; i < NUM_SOURCES; i++)
+		{
+#ifdef AL_DIRECT_CHANNELS_SOFT
+			// Bypassing virtualization of speakers for multi-channel sources in OpenAL Soft.
+			alSourcei(sources[i], AL_DIRECT_CHANNELS_SOFT, AL_TRUE);
+#endif
 			available.push(sources[i]);
+		}
 	}
 
 	Pool::~Pool()
