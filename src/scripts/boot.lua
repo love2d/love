@@ -805,11 +805,13 @@ end
 -- The root of all calls.
 -----------------------------------------------------------
 
-local result = xpcall(love.boot, error_printer)
-if not result then return 1 end
-local result = xpcall(love.init, love._release and love.releaseerrhand or love.errhand)
-if not result then return 1 end
-local result, retval = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
-if not result then return 1 end
+return function()
+	local result = xpcall(love.boot, error_printer)
+	if not result then return 1 end
+	local result = xpcall(love.init, love._release and love.releaseerrhand or love.errhand)
+	if not result then return 1 end
+	local result, retval = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
+	if not result then return 1 end
 
-return tonumber(retval) or 0
+	return tonumber(retval) or 0
+end

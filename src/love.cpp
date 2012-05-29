@@ -67,6 +67,7 @@ extern "C"
 	extern int luaopen_love_sound(lua_State*);
 	extern int luaopen_love_timer(lua_State*);
 	extern int luaopen_love_thread(lua_State*);
+	extern int luaopen_love_boot(lua_State*);
 }
 
 static const luaL_Reg modules[] = {
@@ -83,6 +84,7 @@ static const luaL_Reg modules[] = {
 	{ "love.sound", luaopen_love_sound },
 	{ "love.timer", luaopen_love_timer },
 	{ "love.thread", luaopen_love_thread },
+	{ "love.boot", luaopen_love_boot },
 	{ 0, 0 }
 };
 
@@ -284,14 +286,12 @@ _GLIBCXX_END_NAMESPACE
 
 #endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
 
-namespace love
+extern "C" LOVE_EXPORT int luaopen_love_boot(lua_State *L)
 {
-	void boot(lua_State *L)
-	{
-		if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
-		lua_call(L, 0, LUA_MULTRET);
-	}
-} // love
+	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
+	lua_call(L, 0, 1);
+	return 1;
+}
 
 extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 {
@@ -352,11 +352,12 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 	}
 
 	// Boot
-	love::boot(L);
+	luaopen_love_boot(L);
+	lua_call(L, 0, 1);
 	
 	int retval = 0;
-	if (lua_isnumber(L, -1))
-		retval = lua_tonumber(L, -1);
+	if (lua_isnumber(L, 1))
+		retval = lua_tonumber(L, 1);
 
 	lua_close(L);
 
