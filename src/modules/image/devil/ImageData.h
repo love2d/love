@@ -24,12 +24,10 @@
 // LOVE
 #include <filesystem/File.h>
 #include <image/ImageData.h>
-#include <thread/threads.h>
 
 // DevIL
 #include <IL/il.h>
 
-using love::thread::Mutex;
 
 namespace love
 {
@@ -37,34 +35,16 @@ namespace image
 {
 namespace devil
 {
+
 	class ImageData : public love::image::ImageData
 	{
 	private:
 
-		// The width of the image data.
-		int width;
-
-		// The height of the image data.
-		int height;
-
-		// The origin of the image.
-		int origin;
-
-		// The bits per pixel.
-		int bpp;
-
-		// The actual data
-		unsigned char *data;
-
-		// Create imagedata.
+		// Create imagedata. Initialize with data if not null.
 		void create(int width, int height, void * data = 0);
 
+		// Load an encoded format.
 		void load(Data * data);
-
-		// We need to be thread-safe
-		// so we lock when we're accessing our
-		// data
-		Mutex mutex;
 
 	public:
 
@@ -74,15 +54,7 @@ namespace devil
 		ImageData(int width, int height, void *data);
 		virtual ~ImageData();
 
-		// Implements Data.
-		void * getData() const;
-		int getSize() const;
-
 		// Implements ImageData.
-		int getWidth() const ;
-		int getHeight() const ;
-		void setPixel(int x, int y, pixel c);
-		pixel getPixel(int x, int y);
 		void encode(love::filesystem::File * f, Format format);
 
 	}; // ImageData

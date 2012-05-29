@@ -20,12 +20,64 @@
 
 #include "ImageData.h"
 
+using love::thread::Lock;
+
 namespace love
 {
 namespace image
 {
+	void * ImageData::getData() const
+	{
+		return data;
+	}
+
+	int ImageData::getSize() const
+	{
+		return getWidth()*getHeight()*sizeof(pixel);
+	}
+
+	int ImageData::getWidth() const
+	{
+		return width;
+	}
+
+	int ImageData::getHeight() const
+	{
+		return height;
+	}
+
+	bool ImageData::inside(int x, int y) const
+	{
+		return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
+	}
+
+	void ImageData::setPixel(int x, int y, pixel c)
+	{
+		if (!inside(x, y))
+			throw love::Exception("Attempt to set out-of-range pixel!");
+
+		Lock lock(mutex);
+
+		pixel * pixels = (pixel *)getData();
+		pixels[y*getWidth()+x] = c;
+	}
+
+	pixel ImageData::getPixel(int x, int y)
+	{
+		if (!inside(x, y))
+			throw love::Exception("Attempt to get out-of-range pixel!");
+
+		Lock lock(mutex);
+
+		pixel * pixels = (pixel *)getData();
+		return pixels[y*getWidth()+x];
+	}
+
 	void ImageData::paste(ImageData * src, int dx, int dy, int sx, int sy, int sw, int sh)
 	{
+		Lock lock2(src->mutex);
+		Lock lock1(mutex);
+
 		pixel * s = (pixel *)src->getData();
 		pixel * d = (pixel *)getData();
 
@@ -55,11 +107,6 @@ namespace image
 				memcpy(d + dx + (i + dy) * getWidth(), s + sx + (i + sy) * src->getWidth(), sizeof(pixel) * sw);
 			}
 		}
-	}
-
-	bool ImageData::inside(int x, int y) const
-	{
-		return (x >= 0 && x < getWidth() && y >= 0 && y < getHeight());
 	}
 
 	bool ImageData::getConstant(const char * in, ImageData::Format & out)

@@ -33,12 +33,14 @@ namespace image
 
 	int w_newImageData(lua_State * L)
 	{
-
 		// Case 1: Integers.
 		if (lua_isnumber(L, 1))
 		{
 			int w = luaL_checkint(L, 1);
 			int h = luaL_checkint(L, 2);
+			if (w <= 0 || h <= 0)
+				return luaL_error(L, "Invalid image size.");
+
 			ImageData * t = 0;
 			try
 			{
@@ -46,7 +48,7 @@ namespace image
 			}
 			catch (love::Exception & e)
 			{
-				return luaL_error(L, e.what());
+				return luaL_error(L, "%s", e.what());
 			}
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 			return 1;
@@ -63,7 +65,7 @@ namespace image
 			}
 			catch (love::Exception & e)
 			{
-				return luaL_error(L, e.what());
+				return luaL_error(L, "%s", e.what());
 			}
 			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 			return 1;
@@ -84,7 +86,7 @@ namespace image
 		}
 		catch (love::Exception & e)
 		{
-			return luaL_error(L, e.what());
+			return luaL_error(L, "%s", e.what());
 		}
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*)t);
 		return 1;
@@ -111,7 +113,7 @@ namespace image
 			}
 			catch (Exception & e)
 			{
-				return luaL_error(L, e.what());
+				return luaL_error(L, "%s", e.what());
 			}
 		}
 		else

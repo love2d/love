@@ -43,7 +43,7 @@ namespace image
 		/**
 		* Destructor.
 		**/
-		virtual ~Image(){};
+		virtual ~Image() {};
 
 		/**
 		* Creates new ImageData from a file.

@@ -145,23 +145,28 @@ namespace image
 
 	int w_ImageData_encode(lua_State * L)
 	{
+		std::string ext;
+		const char * fmt;
+		ImageData::Format format = ImageData::FORMAT_MAX_ENUM;
 		ImageData * t = luax_checkimagedata(L, 1);
+
 		if (lua_isstring(L, 2))
 			luax_convobj(L, 2, "filesystem", "newFile");
 		love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T);
-		std::string ext;
-		const char * fmt;
+
 		if (lua_isnoneornil(L, 3))
 		{
 			ext = file->getExtension();
 			fmt = ext.c_str();
+			ImageData::getConstant(fmt, format);
 		}
 		else
 		{
 			fmt = luaL_checkstring(L, 3);
+			if (!ImageData::getConstant(fmt, format))
+				luaL_error(L, "Invalid image format.");
 		}
-		ImageData::Format format = ImageData::FORMAT_PNG;
-		ImageData::getConstant(fmt, format);
+
 		try
 		{
 			t->encode(file, format);

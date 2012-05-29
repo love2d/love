@@ -24,6 +24,9 @@
 // LOVE
 #include <common/Data.h>
 #include <filesystem/File.h>
+#include <thread/threads.h>
+
+using love::thread::Mutex;
 
 namespace love
 {
@@ -41,6 +44,22 @@ namespace image
 	**/
 	class ImageData : public Data
 	{
+	protected:
+
+		// The width of the image data.
+		int width;
+
+		// The height of the image data.
+		int height;
+
+		// The actual data.
+		unsigned char * data;
+
+		// We need to be thread-safe
+		// so we lock when we're accessing our
+		// data
+		Mutex mutex;
+
 	public:
 
 		enum Format
@@ -56,7 +75,7 @@ namespace image
 		/**
 		* Destructor.
 		**/
-		virtual ~ImageData(){};
+		virtual ~ImageData() {};
 
 		static bool getConstant(const char * in, Format & out);
 		static bool getConstant(Format in, const char *& out);
@@ -84,37 +103,40 @@ namespace image
 		* Gets the width of this ImageData.
 		* @return The width of this ImageData.
 		**/
-		virtual int getWidth() const = 0;
+		int getWidth() const;
 
 		/**
 		* Gets the height of this ImageData.
 		* @return The height of this ImageData.
 		**/
-		virtual int getHeight() const  = 0;
+		int getHeight() const;
 
 		/**
-		* Sets the pixel at location (x,y). No effect if out of bounds.
+		* Sets the pixel at location (x,y).
 		* @param x The location along the x-axis.
 		* @param y The location along the y-axis.
 		* @param p The color to use for the given location.
 		**/
-		virtual void setPixel(int x, int y, pixel p) = 0;
+		void setPixel(int x, int y, pixel p);
 
 		/**
-		* Gets the pixel at location (x,y). Returns black (0,0,0,0) if out
-		* out of bounds.
+		* Gets the pixel at location (x,y).
 		* @param x The location along the x-axis.
 		* @param y The location along the y-axis.
 		* @return The color for the given location.
 		**/
-		virtual pixel getPixel(int x, int y) = 0;
+		pixel getPixel(int x, int y);
 
 		/**
 		 * Encodes raw pixel data into a given format.
-		 * @param f The format to convert to.
-		 * @return A pointer to the encoded image data.
+		 * @param f The file to save the encoded image data to.
+		 * @param format The format of the encoded data.
 		 **/
 		virtual void encode(love::filesystem::File * f, Format format) = 0;
+
+		// Implements Data.
+		void * getData() const;
+		int getSize() const;
 
 	private:
 		static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];

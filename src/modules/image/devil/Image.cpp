@@ -55,15 +55,7 @@ namespace devil
 
 	love::image::ImageData * Image::newImageData(Data * data)
 	{
-		try
-		{
-			return new ImageData(data);
-		}
-		catch (love::Exception & e)
-		{
-			throw love::Exception(e.what());
-		}
-
+		return new ImageData(data);
 	}
 
 	love::image::ImageData * Image::newImageData(int width, int height)
