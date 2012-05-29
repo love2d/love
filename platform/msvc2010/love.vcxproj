@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\src\common\Variant.cpp" />
     <ClCompile Include="..\..\src\common\Vector.cpp" />
     <ClCompile Include="..\..\src\common\wrap_Data.cpp" />
+    <ClCompile Include="..\..\src\launcher.cpp" />
     <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2BroadPhase.cpp" />
     <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2CollideCircle.cpp" />
     <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2CollideEdge.cpp" />

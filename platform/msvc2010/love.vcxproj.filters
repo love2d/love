@@ -748,6 +748,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\OpenGL.cpp">
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\launcher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\modules\audio\Audio.h">
