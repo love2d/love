@@ -68,7 +68,7 @@ namespace lullaby
 
 	Mpg123Decoder::~Mpg123Decoder()
 	{
-		mpg123_close(handle);
+		mpg123_delete(handle);
 
 	}
 
