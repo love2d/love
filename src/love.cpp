@@ -286,7 +286,7 @@ _GLIBCXX_END_NAMESPACE
 
 #endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
 
-extern "C" LOVE_EXPORT int luaopen_love_boot(lua_State *L)
+extern "C" int luaopen_love_boot(lua_State *L)
 {
 	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
 	lua_call(L, 0, 1);
@@ -357,7 +357,7 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 	
 	int retval = 0;
 	if (lua_isnumber(L, 1))
-		retval = lua_tonumber(L, 1);
+		retval = (int) lua_tonumber(L, 1);
 
 	lua_close(L);
 
