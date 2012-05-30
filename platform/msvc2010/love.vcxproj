@@ -1,548 +1,265 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
+    <ProjectConfiguration Include="Debug Dynamic|Win32">
+      <Configuration>Debug Dynamic</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="Debug Dynamic|x64">
+      <Configuration>Debug Dynamic</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Dynamic|Win32">
+      <Configuration>Release Dynamic</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\common\b64.cpp" />
-    <ClCompile Include="..\..\src\common\delay.cpp" />
-    <ClCompile Include="..\..\src\common\Exception.cpp" />
-    <ClCompile Include="..\..\src\common\Matrix.cpp" />
-    <ClCompile Include="..\..\src\common\Memoizer.cpp" />
-    <ClCompile Include="..\..\src\common\Object.cpp" />
-    <ClCompile Include="..\..\src\common\Reference.cpp" />
-    <ClCompile Include="..\..\src\common\runtime.cpp" />
-    <ClCompile Include="..\..\src\common\utf8.cpp" />
-    <ClCompile Include="..\..\src\common\Variant.cpp" />
-    <ClCompile Include="..\..\src\common\Vector.cpp" />
-    <ClCompile Include="..\..\src\common\wrap_Data.cpp" />
-    <ClCompile Include="..\..\src\launcher.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2BroadPhase.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2CollideCircle.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2CollideEdge.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2CollidePolygon.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2Collision.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2Distance.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2DynamicTree.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\b2TimeOfImpact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\Shapes\b2ChainShape.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\Shapes\b2CircleShape.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\Shapes\b2EdgeShape.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Collision\Shapes\b2PolygonShape.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Common\b2BlockAllocator.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Common\b2Draw.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Common\b2Math.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Common\b2Settings.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Common\b2StackAllocator.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Common\b2Timer.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\b2Body.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\b2ContactManager.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\b2Fixture.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\b2Island.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\b2World.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\b2WorldCallbacks.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2CircleContact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2Contact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2ContactSolver.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2PolygonContact.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2DistanceJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2FrictionJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2GearJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2Joint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2MouseJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2PrismaticJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2PulleyJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2RevoluteJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2RopeJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2WeldJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2WheelJoint.cpp" />
-    <ClCompile Include="..\..\src\libraries\Box2D\Rope\b2Rope.cpp" />
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\auxiliar.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\buffer.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\except.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\inet.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\io.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\luasocket.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\mime.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\options.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\select.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\tcp.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\timeout.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\udp.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp" />
-    <ClCompile Include="..\..\src\love.cpp">
-      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\audio\Audio.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\null\Audio.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\null\Source.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\openal\Audio.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\openal\Pool.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\openal\Source.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\Source.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\wrap_Audio.cpp" />
-    <ClCompile Include="..\..\src\modules\audio\wrap_Source.cpp" />
-    <ClCompile Include="..\..\src\modules\event\Event.cpp" />
-    <ClCompile Include="..\..\src\modules\event\sdl\Event.cpp" />
-    <ClCompile Include="..\..\src\modules\event\sdl\wrap_Event.cpp" />
-    <ClCompile Include="..\..\src\modules\filesystem\File.cpp" />
-    <ClCompile Include="..\..\src\modules\filesystem\FileData.cpp" />
-    <ClCompile Include="..\..\src\modules\filesystem\physfs\File.cpp" />
-    <ClCompile Include="..\..\src\modules\filesystem\physfs\Filesystem.cpp" />
-    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_File.cpp" />
-    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_FileData.cpp" />
-    <ClCompile Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.cpp" />
-    <ClCompile Include="..\..\src\modules\font\freetype\Font.cpp" />
-    <ClCompile Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.cpp" />
-    <ClCompile Include="..\..\src\modules\font\freetype\wrap_Font.cpp" />
-    <ClCompile Include="..\..\src\modules\font\GlyphData.cpp" />
-    <ClCompile Include="..\..\src\modules\font\ImageRasterizer.cpp" />
-    <ClCompile Include="..\..\src\modules\font\Rasterizer.cpp" />
-    <ClCompile Include="..\..\src\modules\font\wrap_GlyphData.cpp" />
-    <ClCompile Include="..\..\src\modules\font\wrap_Rasterizer.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\Drawable.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\DrawQable.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\Graphics.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\Image.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Canvas.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Font.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\GLee.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Graphics.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\OpenGL.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\PixelEffect.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\VertexBuffer.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Canvas.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Font.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\Quad.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\Volatile.cpp" />
-    <ClCompile Include="..\..\src\modules\image\devil\Image.cpp" />
-    <ClCompile Include="..\..\src\modules\image\devil\ImageData.cpp" />
-    <ClCompile Include="..\..\src\modules\image\ImageData.cpp" />
-    <ClCompile Include="..\..\src\modules\image\wrap_Image.cpp" />
-    <ClCompile Include="..\..\src\modules\image\wrap_ImageData.cpp" />
-    <ClCompile Include="..\..\src\modules\joystick\Joystick.cpp" />
-    <ClCompile Include="..\..\src\modules\joystick\sdl\Joystick.cpp" />
-    <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_Joystick.cpp" />
-    <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp" />
-    <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
-    <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
-    <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
-    <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
-    <ClCompile Include="..\..\src\modules\mouse\wrap_Mouse.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\Body.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\Body.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\ChainShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\CircleShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\Contact.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\DistanceJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\EdgeShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\Fixture.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\FrictionJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\GearJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\Joint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\MouseJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\Physics.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\PolygonShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\PrismaticJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\PulleyJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\RevoluteJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\RopeJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\Shape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\WeldJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\WheelJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\World.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Body.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_ChainShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_CircleShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Contact.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_DistanceJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_EdgeShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Fixture.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_FrictionJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_GearJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Joint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_MouseJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Physics.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PolygonShape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PrismaticJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_PulleyJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_RevoluteJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_RopeJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_Shape.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_WeldJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_WheelJoint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\box2d\wrap_World.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\Joint.cpp" />
-    <ClCompile Include="..\..\src\modules\physics\Shape.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\lullaby\Decoder.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\lullaby\FLACDecoder.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\lullaby\ModPlugDecoder.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\lullaby\Mpg123Decoder.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\lullaby\Sound.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\Sound.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\SoundData.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\wrap_Decoder.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\wrap_Sound.cpp" />
-    <ClCompile Include="..\..\src\modules\sound\wrap_SoundData.cpp" />
-    <ClCompile Include="..\..\src\modules\thread\posix\threads.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\Thread.cpp" />
-    <ClCompile Include="..\..\src\modules\thread\threads.cpp" />
-    <ClCompile Include="..\..\src\modules\thread\win32\threads.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp" />
-    <ClCompile Include="..\..\src\modules\timer\sdl\Timer.cpp" />
-    <ClCompile Include="..\..\src\modules\timer\wrap_Timer.cpp" />
-    <ClCompile Include="..\..\src\modules\window\sdl\Window.cpp" />
-    <ClCompile Include="..\..\src\modules\window\Window.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\common\b64.h" />
-    <ClInclude Include="..\..\src\common\config.h" />
-    <ClInclude Include="..\..\src\common\Data.h" />
-    <ClInclude Include="..\..\src\common\delay.h" />
-    <ClInclude Include="..\..\src\common\EnumMap.h" />
-    <ClInclude Include="..\..\src\common\Exception.h" />
-    <ClInclude Include="..\..\src\common\math.h" />
-    <ClInclude Include="..\..\src\common\Matrix.h" />
-    <ClInclude Include="..\..\src\common\Memoizer.h" />
-    <ClInclude Include="..\..\src\common\Module.h" />
-    <ClInclude Include="..\..\src\common\Object.h" />
-    <ClInclude Include="..\..\src\common\Reference.h" />
-    <ClInclude Include="..\..\src\common\runtime.h" />
-    <ClInclude Include="..\..\src\common\StringMap.h" />
-    <ClInclude Include="..\..\src\common\types.h" />
-    <ClInclude Include="..\..\src\common\utf8.h" />
-    <ClInclude Include="..\..\src\common\Variant.h" />
-    <ClInclude Include="..\..\src\common\Vector.h" />
-    <ClInclude Include="..\..\src\common\version.h" />
-    <ClInclude Include="..\..\src\common\wrap_Data.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Box2D.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\b2BroadPhase.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\b2Collision.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\b2Distance.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\b2DynamicTree.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\b2TimeOfImpact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\Shapes\b2ChainShape.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\Shapes\b2CircleShape.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\Shapes\b2EdgeShape.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\Shapes\b2PolygonShape.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Collision\Shapes\b2Shape.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Common\b2BlockAllocator.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Common\b2Draw.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Common\b2GrowableStack.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Common\b2Math.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Common\b2Settings.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Common\b2StackAllocator.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Common\b2Timer.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\b2Body.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\b2ContactManager.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\b2Fixture.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\b2Island.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\b2TimeStep.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\b2World.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\b2WorldCallbacks.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2CircleContact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2Contact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2ContactSolver.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Contacts\b2PolygonContact.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2DistanceJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2FrictionJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2GearJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2Joint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2MouseJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2PrismaticJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2PulleyJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2RevoluteJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2RopeJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2WeldJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2WheelJoint.h" />
-    <ClInclude Include="..\..\src\libraries\Box2D\Rope\b2Rope.h" />
-    <ClInclude Include="..\..\src\libraries\luasocket\luasocket.h" />
-    <ClInclude Include="..\..\src\libraries\utf8\utf8.h" />
-    <ClInclude Include="..\..\src\libraries\utf8\utf8\checked.h" />
-    <ClInclude Include="..\..\src\libraries\utf8\utf8\core.h" />
-    <ClInclude Include="..\..\src\libraries\utf8\utf8\unchecked.h" />
-    <ClInclude Include="..\..\src\modules\audio\Audio.h" />
-    <ClInclude Include="..\..\src\modules\audio\null\Audio.h" />
-    <ClInclude Include="..\..\src\modules\audio\null\Source.h" />
-    <ClInclude Include="..\..\src\modules\audio\openal\Audio.h" />
-    <ClInclude Include="..\..\src\modules\audio\openal\Pool.h" />
-    <ClInclude Include="..\..\src\modules\audio\openal\Source.h" />
-    <ClInclude Include="..\..\src\modules\audio\Source.h" />
-    <ClInclude Include="..\..\src\modules\audio\wrap_Audio.h" />
-    <ClInclude Include="..\..\src\modules\audio\wrap_Source.h" />
-    <ClInclude Include="..\..\src\modules\event\Event.h" />
-    <ClInclude Include="..\..\src\modules\event\sdl\Event.h" />
-    <ClInclude Include="..\..\src\modules\event\sdl\wrap_Event.h" />
-    <ClInclude Include="..\..\src\modules\filesystem\File.h" />
-    <ClInclude Include="..\..\src\modules\filesystem\FileData.h" />
-    <ClInclude Include="..\..\src\modules\filesystem\physfs\File.h" />
-    <ClInclude Include="..\..\src\modules\filesystem\physfs\Filesystem.h" />
-    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_File.h" />
-    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_FileData.h" />
-    <ClInclude Include="..\..\src\modules\filesystem\physfs\wrap_Filesystem.h" />
-    <ClInclude Include="..\..\src\modules\font\Font.h" />
-    <ClInclude Include="..\..\src\modules\font\freetype\Font.h" />
-    <ClInclude Include="..\..\src\modules\font\freetype\TrueTypeRasterizer.h" />
-    <ClInclude Include="..\..\src\modules\font\freetype\wrap_Font.h" />
-    <ClInclude Include="..\..\src\modules\font\GlyphData.h" />
-    <ClInclude Include="..\..\src\modules\font\ImageRasterizer.h" />
-    <ClInclude Include="..\..\src\modules\font\Rasterizer.h" />
-    <ClInclude Include="..\..\src\modules\font\wrap_GlyphData.h" />
-    <ClInclude Include="..\..\src\modules\font\wrap_Rasterizer.h" />
-    <ClInclude Include="..\..\src\modules\graphics\Drawable.h" />
-    <ClInclude Include="..\..\src\modules\graphics\DrawQable.h" />
-    <ClInclude Include="..\..\src\modules\graphics\Graphics.h" />
-    <ClInclude Include="..\..\src\modules\graphics\Image.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Canvas.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Font.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\GLee.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Graphics.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\OpenGL.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\PixelEffect.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\VertexBuffer.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Canvas.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Font.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h" />
-    <ClInclude Include="..\..\src\modules\graphics\Quad.h" />
-    <ClInclude Include="..\..\src\modules\graphics\Volatile.h" />
-    <ClInclude Include="..\..\src\modules\image\devil\Image.h" />
-    <ClInclude Include="..\..\src\modules\image\devil\ImageData.h" />
-    <ClInclude Include="..\..\src\modules\image\Image.h" />
-    <ClInclude Include="..\..\src\modules\image\ImageData.h" />
-    <ClInclude Include="..\..\src\modules\image\wrap_Image.h" />
-    <ClInclude Include="..\..\src\modules\image\wrap_ImageData.h" />
-    <ClInclude Include="..\..\src\modules\joystick\Joystick.h" />
-    <ClInclude Include="..\..\src\modules\joystick\sdl\Joystick.h" />
-    <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_Joystick.h" />
-    <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h" />
-    <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
-    <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
-    <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
-    <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
-    <ClInclude Include="..\..\src\modules\mouse\wrap_Mouse.h" />
-    <ClInclude Include="..\..\src\modules\physics\Body.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\Body.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\ChainShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\CircleShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\Contact.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\DistanceJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\EdgeShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\Fixture.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\FrictionJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\GearJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\Joint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\MouseJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\Physics.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\PolygonShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\PrismaticJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\PulleyJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\RevoluteJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\RopeJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\Shape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\WeldJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\WheelJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\World.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Body.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_ChainShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_CircleShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Contact.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_DistanceJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_EdgeShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Fixture.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_FrictionJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_GearJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Joint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_MouseJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Physics.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PolygonShape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PrismaticJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_PulleyJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_RevoluteJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_RopeJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_Shape.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_WeldJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_WheelJoint.h" />
-    <ClInclude Include="..\..\src\modules\physics\box2d\wrap_World.h" />
-    <ClInclude Include="..\..\src\modules\physics\Joint.h" />
-    <ClInclude Include="..\..\src\modules\physics\Shape.h" />
-    <ClInclude Include="..\..\src\modules\thread\posix\threads.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\Thread.h" />
-    <ClInclude Include="..\..\src\modules\thread\threads.h" />
-    <ClInclude Include="..\..\src\modules\thread\win32\threads.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h" />
-    <ClInclude Include="..\..\src\modules\timer\sdl\Timer.h" />
-    <ClInclude Include="..\..\src\modules\timer\Timer.h" />
-    <ClInclude Include="..\..\src\modules\timer\wrap_Timer.h" />
-    <ClInclude Include="..\..\src\modules\window\sdl\Window.h" />
-    <ClInclude Include="..\..\src\modules\window\Window.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="app.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="love.ico" />
+    <ProjectConfiguration Include="Release Dynamic|x64">
+      <Configuration>Release Dynamic</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Static|Win32">
+      <Configuration>Release Static</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Static|x64">
+      <Configuration>Release Static</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{AED6D87B-9F81-49D0-8C6B-1C9F64421ECC}</ProjectGuid>
-    <RootNamespace>love</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'" Label="Configuration">
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'" Label="Configuration">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Debug\MD\</OutDir>
+    <IntDir>$(ProjectName)\$(PlatformShortName)\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Debug\MD\</OutDir>
+    <IntDir>$(ProjectName)\$(PlatformShortName)\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MD\</OutDir>
+    <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MD\</OutDir>
+    <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">
+    <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MT\</OutDir>
+    <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">
+    <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MT\</OutDir>
+    <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|Win32'">
     <ClCompile>
+      <PreprocessorDefinitions>DEBUG;_DEBUG%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <ObjectFileName>%(Identity)_d.obj</ObjectFileName>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;VC_EXTRALEAN;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include\SDL;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>
+      </MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Debug\MD\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>DEBUG;_DEBUG%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>include\SDL;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>
+      </MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;DevIL.lib;freetype244MT.lib;libmpg123.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua.lib;modplug_d.lib;OpenAL32.lib;physfs.lib;SDL.lib;SDLmain.lib;libFLAC_static_D.lib;libFLAC++_static_D.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
-      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Debug\MT\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua5.1.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level1</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>include\SDL;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OmitFramePointers>true</OmitFramePointers>
+      <StringPooling>true</StringPooling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <ObjectFileName>%(Identity).obj</ObjectFileName>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;VC_EXTRALEAN;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>
-      </StringPooling>
-      <MinimalRebuild>
-      </MinimalRebuild>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>
+      </GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;DevIL.lib;freetype244MT.lib;libmpg123.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua.lib;modplug.lib;OpenAL32.lib;physfs.lib;SDL.lib;SDLmain.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
-      <SubSystem>Windows</SubSystem>
-      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MD\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level1</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>include\SDL;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OmitFramePointers>true</OmitFramePointers>
+      <StringPooling>true</StringPooling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>
+      </GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MD\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>include\SDL;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OmitFramePointers>true</OmitFramePointers>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalDependencies>libcmt.lib;libcpmt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua5.1.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MT\</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>include\SDL;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OmitFramePointers>true</OmitFramePointers>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalDependencies>libcmt.lib;libcpmt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua5.1.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MT\</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\launcher.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="love.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="liblove.vcxproj">
+      <Project>{a3fcc735-3e18-4d6b-9da9-01d9e910b7f8}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
