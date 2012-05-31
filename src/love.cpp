@@ -126,7 +126,7 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 	}
 
 	lua_setfield(L, -2, "_version_compat");
-	
+
 #ifdef LOVE_WINDOWS
 	lua_pushstring(L, "Windows");
 #elif defined(LOVE_MACOSX)
@@ -199,13 +199,29 @@ int w__openConsole(lua_State * L)
 	if (is_open)
 		return 0;
 
+	is_open = true;
+
 	static const int MAX_CONSOLE_LINES = 5000;
 	long std_handle;
 	int console_handle;
 	CONSOLE_SCREEN_BUFFER_INFO console_info;
 	FILE *fp;
 
-	AllocConsole();
+	/* Legendary AttachConsole bug workaround.
+	 * AttachConsole breaks console allocation completely if it fails.
+	 * Let's check through the environment variable PROMPT if love was
+	 * started with cmd.exe.
+	*/
+	if (GetEnvironmentVariable(TEXT("PROMPT"), NULL, 0) != 0)
+	{
+		if (AttachConsole(ATTACH_PARENT_PROCESS) == 0)
+			return 0;
+	}
+	else
+	{
+		if (AllocConsole() == 0)
+			return 0;
+	}
 
 	// Set size.
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
@@ -237,8 +253,6 @@ int w__openConsole(lua_State * L)
 
 	// Sync std::cout, std::cerr, etc.
 	std::ios::sync_with_stdio();
-
-	is_open = true;
 
 	return 0;
 }
@@ -306,6 +320,9 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1],"--version") == 0)
 	{
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+		w__openConsole(NULL);
+#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 		printf("LOVE %s (%s)\n", love::VERSION, love::VERSION_CODENAME);
 		return 0;
 	}
