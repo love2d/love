@@ -135,6 +135,7 @@ namespace physfs
 		* to create the folder in the LOVE data folder.
 		**/
 		bool setIdentity(const char * ident);
+		const char * getIdentity() const;
 
 		/**
 		* Sets the path to the game source.

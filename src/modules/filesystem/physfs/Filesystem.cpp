@@ -104,6 +104,11 @@ namespace physfs
 		return true;
 	}
 
+	const char * Filesystem::getIdentity() const
+	{
+		return save_identity.c_str();
+	}
+
 	bool Filesystem::setSource(const char * source)
 	{
 		if (!isInited)

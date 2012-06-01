@@ -70,6 +70,12 @@ namespace physfs
 		return 0;
 	}
 
+	int w_getIdentity(lua_State * L)
+	{
+		lua_pushstring(L, instance->getIdentity());
+		return 1;
+	}
+
 	int w_setSource(lua_State * L)
 	{
 		const char * arg = luaL_checkstring(L, 1);
@@ -369,6 +375,7 @@ namespace physfs
 		{ "init",  w_init },
 		{ "setRelease", w_setRelease },
 		{ "setIdentity",  w_setIdentity },
+		{ "getIdentity", w_getIdentity },
 		{ "setSource",  w_setSource },
 		{ "newFile",  w_newFile },
 		{ "getWorkingDirectory",  w_getWorkingDirectory },
