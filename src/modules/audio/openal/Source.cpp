@@ -160,7 +160,7 @@ namespace openal
 		else if (type == TYPE_STREAM && (isLooping() || !isFinished()))
 		{
 			// Number of processed buffers.
-			ALint processed;
+			ALint processed = 0;
 
 			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 
