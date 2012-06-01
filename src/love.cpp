@@ -126,7 +126,7 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 	}
 
 	lua_setfield(L, -2, "_version_compat");
-	
+
 #ifdef LOVE_WINDOWS
 	lua_pushstring(L, "Windows");
 #elif defined(LOVE_MACOSX)
@@ -195,17 +195,15 @@ void get_utf8_arguments(int & argc, char **& argv)
 int w__openConsole(lua_State * L)
 {
 	static bool is_open = false;
-
 	if (is_open)
 		return 0;
+	is_open = true;
 
-	static const int MAX_CONSOLE_LINES = 5000;
-	long std_handle;
-	int console_handle;
+	if (GetConsoleWindow() != NULL || AllocConsole() == 0)
+		return 0;
+
+	const int MAX_CONSOLE_LINES = 5000;
 	CONSOLE_SCREEN_BUFFER_INFO console_info;
-	FILE *fp;
-
-	AllocConsole();
 
 	// Set size.
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
@@ -214,31 +212,22 @@ int w__openConsole(lua_State * L)
 
 	SetConsoleTitle(TEXT("LOVE Console"));
 
+	FILE * fp;
+
 	// Redirect stdout.
-	std_handle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-	console_handle = _open_osfhandle(std_handle, _O_TEXT);
-	fp = _fdopen(console_handle, "w");
-	*stdout = *fp;
-	setvbuf(stdout, NULL, _IONBF, 0);
+	fp = freopen("CONOUT$", "w", stdout);
+	if (L && fp == NULL)
+		luaL_error(L, "Console redirection of stdout failed.");
 
 	// Redirect stdin.
-	std_handle = (long)GetStdHandle(STD_INPUT_HANDLE);
-	console_handle = _open_osfhandle(std_handle, _O_TEXT);
-	fp = _fdopen(console_handle, "r");
-	*stdin = *fp;
-	setvbuf(stdin, NULL, _IONBF, 0);
+	fp = freopen("CONIN$", "r", stdin);
+	if (L && fp == NULL)
+		luaL_error(L, "Console redirection of stdin failed.");
 
 	// Redirect stderr.
-	std_handle = (long)GetStdHandle(STD_ERROR_HANDLE);
-	console_handle = _open_osfhandle(std_handle, _O_TEXT);
-	fp = _fdopen(console_handle, "w");
-	*stderr = *fp;
-	setvbuf(stderr, NULL, _IONBF, 0);
-
-	// Sync std::cout, std::cerr, etc.
-	std::ios::sync_with_stdio();
-
-	is_open = true;
+	fp = freopen("CONOUT$", "w", stderr);
+	if (L && fp == NULL)
+		luaL_error(L, "Console redirection of stderr failed.");
 
 	return 0;
 }
@@ -354,7 +343,7 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 	// Boot
 	luaopen_love_boot(L);
 	lua_call(L, 0, 1);
-	
+
 	int retval = 0;
 	if (lua_isnumber(L, 1))
 		retval = (int) lua_tonumber(L, 1);
