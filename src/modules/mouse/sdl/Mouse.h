@@ -40,6 +40,8 @@ namespace sdl
 		int getX() const;
 		int getY() const;
 		void getPosition(int & x, int & y) const;
+		void setX(int x);
+		void setY(int y);
 		void setPosition(int x, int y);
 		void setVisible(bool visible);
 		bool isDown(Button * buttonlist) const;

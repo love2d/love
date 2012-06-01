@@ -51,6 +51,20 @@ namespace mouse
 		return 2;
 	}
 
+	int w_setX(lua_State * L)
+	{
+		int x = luaL_checkint(L, 1);
+		instance->setX(x);
+		return 0;
+	}
+
+	int w_setY(lua_State * L)
+	{
+		int y = luaL_checkint(L, 1);
+		instance->setY(y);
+		return 0;
+	}
+
 	int w_setPosition(lua_State * L)
 	{
 		int x = luaL_checkint(L, 1);
@@ -108,6 +122,8 @@ namespace mouse
 	static const luaL_Reg functions[] = {
 		{ "getX", w_getX },
 		{ "getY", w_getY },
+		{ "setX", w_setX },
+		{ "setY", w_setY },
 		{ "setPosition", w_setPosition },
 		{ "isDown", w_isDown },
 		{ "setVisible", w_setVisible },

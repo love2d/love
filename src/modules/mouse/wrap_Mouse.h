@@ -31,6 +31,8 @@ namespace mouse
 	int w_getX(lua_State * L);
 	int w_getY(lua_State * L);
 	int w_getPosition(lua_State * L);
+	int w_setX(lua_State * L);
+	int w_setY(lua_State * L);
 	int w_setPosition(lua_State * L);
 	int w_isDown(lua_State * L);
 	int w_setVisible(lua_State * L);

@@ -51,6 +51,8 @@ namespace mouse
 		virtual int getX() const = 0;
 		virtual int getY() const = 0;
 		virtual void getPosition(int & x, int & y) const = 0;
+		virtual void setX(int x) = 0;
+		virtual void setY(int y) = 0;
 		virtual void setPosition(int x, int y) = 0;
 		virtual void setVisible(bool visible) = 0;
 		virtual bool isDown(Button * buttonlist) const = 0;

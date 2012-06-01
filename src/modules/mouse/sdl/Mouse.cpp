@@ -58,6 +58,18 @@ namespace sdl
 		SDL_WarpMouse(x, y);
 	}
 
+	void Mouse::setX(int x)
+	{
+		int y = getY();
+		setPosition(x, y);
+	}
+
+	void Mouse::setY(int y)
+	{
+		int x = getX();
+		setPosition(x, y);
+	}
+
 	void Mouse::setVisible(bool visible)
 	{
 		SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
