@@ -11,6 +11,8 @@ glob:*.o
 glob:*.dirstamp
 glob:*.m4
 glob:*.Po
+glob:*.lo
+glob:*.Plo
 glob:*.dll
 glob:*.user
 glob:*.suo
@@ -35,3 +37,7 @@ relre:platform/msvc2010/(.*)txt
 relre:platform/msvc2010/(.*)suo
 relre:platform/msvc2010/(.*)sdf
 relre:platform/msvc2010/(.*)ipch
+glob:.*.swp
+glob:autom4te.cache/
+glob:src/.libs/
+glob:*~
