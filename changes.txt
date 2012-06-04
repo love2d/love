@@ -3,8 +3,8 @@ LOVE 0.8.1 [Rubber Piggy]
 
   * Added --fused command line argument, to simulate fusing.
   * Added liblove.
-  * Added the ability to have return values.
-  * Added return value of 1 in case of error by default.
+  * Added the ability to have exit values.
+  * Added exit value of 1 in case of error by default.
   * Added love.joystick.reload.
   * Added basic support for the file:// uri scheme.
   * Added love.mouse.setX/setY.
