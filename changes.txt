@@ -7,7 +7,7 @@ LOVE 0.8.1 [Rubber Piggy]
   * Added return value of 1 in case of error by default.
   * Added love.joystick.reload.
   * Added basic support for the file:// uri scheme.
-  * Added love.mouse.getX/getY.
+  * Added love.mouse.setX/setY.
   * Added love.filesystem.getIdentity.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -16,7 +16,7 @@ LOVE 0.8.1 [Rubber Piggy]
   * Fixed ImageFonts ignoring default image filter.
   * Fixed getMode and friends returning wrong values when using desktop size.
   * Fixed memory leak in the mp3 decoder.
-  * Fixed sound issues on windows, by enabling OpenAL direct channels.
+  * Fixed sound issues with some versions of OpenAL soft, by enabling direct channels.
   * Fixed 'random' hangs in audio.
 
   * Renamed love's boot script to 'love.boot', which can be required.
