@@ -622,9 +622,7 @@ namespace opengl
 
 	float Graphics::getLineWidth()
 	{
-		float w;
-		glGetFloatv(GL_LINE_WIDTH, &w);
-		return w;
+		return lineWidth;
 	}
 
 	Graphics::LineStyle Graphics::getLineStyle()
