@@ -1,29 +1,29 @@
 /**
-* Copyright (c) 2006-2012 LOVE Development Team
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-*
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-*
-* 1. The origin of this software must not be misrepresented; you must not
-*    claim that you wrote the original software. If you use this software
-*    in a product, an acknowledgment in the product documentation would be
-*    appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-*    misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-**/
+ * Copyright (c) 2006-2012 LOVE Development Team
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ **/
 
-#include <common/config.h>
+#include "common/config.h"
 
 #include "Thread.h"
 
 #ifdef LOVE_BUILD_STANDALONE
-extern "C" int luaopen_love(lua_State * L);
+extern "C" int luaopen_love(lua_State *L);
 #endif // LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love_thread(lua_State *L);
 
@@ -32,286 +32,286 @@ namespace love
 namespace thread
 {
 
-	Thread::ThreadThread::ThreadThread(ThreadData* comm)
-		: comm(comm)
-	{
-	}
+Thread::ThreadThread::ThreadThread(ThreadData *comm)
+	: comm(comm)
+{
+}
 
-	void Thread::ThreadThread::main()
+void Thread::ThreadThread::main()
+{
+	lua_State *L = lua_open();
+	luaL_openlibs(L);
+#ifdef LOVE_BUILD_STANDALONE
+	love::luax_preload(L, luaopen_love, "love");
+	luaopen_love(L);
+#endif // LOVE_BUILD_STANDALONE
+	luaopen_love_thread(L);
 	{
-		lua_State * L = lua_open();
-		luaL_openlibs(L);
-	#ifdef LOVE_BUILD_STANDALONE
-		love::luax_preload(L, luaopen_love, "love");
-		luaopen_love(L);
-	#endif // LOVE_BUILD_STANDALONE
-		luaopen_love_thread(L);
+		size_t len;
+		const char *name = comm->getName(&len);
+		lua_pushlstring(L, name, len);
+	}
+	luax_convobj(L, lua_gettop(L), "thread", "getThread");
+	lua_getglobal(L, "love");
+	lua_pushvalue(L, -2);
+	lua_setfield(L, -2, "_curthread");
+	if (luaL_dostring(L, comm->getCode()) == 1)
+	{
 		{
-			size_t len;
-			const char *name = comm->getName(&len);
-			lua_pushlstring(L, name, len);
+			Lock lock((Mutex *) comm->mutex);
+			Variant *v = new Variant(lua_tostring(L, -1), lua_strlen(L, -1));
+			comm->setValue("error", v);
+			v->release();
 		}
- 		luax_convobj(L, lua_gettop(L), "thread", "getThread");
-		lua_getglobal(L, "love");
-		lua_pushvalue(L, -2);
-		lua_setfield(L, -2, "_curthread");
-		if (luaL_dostring(L, comm->getCode()) == 1)
-		{
-			{
-				Lock lock((Mutex*) comm->mutex);
-				Variant *v = new Variant(lua_tostring(L, -1), lua_strlen(L, -1));
-				comm->setValue("error", v);
-				v->release();
-			}
-			((Conditional*) comm->cond)->broadcast();
-		}
-		lua_close(L);
+		((Conditional *) comm->cond)->broadcast();
 	}
+	lua_close(L);
+}
 
-	ThreadData::ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond)
-		: len(len), mutex(mutex), cond(cond)
+ThreadData::ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond)
+	: len(len), mutex(mutex), cond(cond)
+{
+	this->name = new char[len+1];
+	memset(this->name, 0, len+1);
+	memcpy(this->name, name, len);
+	if (code)
 	{
-		this->name = new char[len+1];
-		memset(this->name, 0, len+1);
-		memcpy(this->name, name, len);
-		if (code)
-		{
-			len = strlen(code);
-			this->code = new char[len+1];
-			memset(this->code, 0, len+1);
-			memcpy(this->code, code, len);
-		}
-		else
-			this->code = 0;
+		len = strlen(code);
+		this->code = new char[len+1];
+		memset(this->code, 0, len+1);
+		memcpy(this->code, code, len);
 	}
+	else
+		this->code = 0;
+}
 
-	ThreadData::~ThreadData()
-	{
-		delete[] name;
-		delete[] code;
-	}
+ThreadData::~ThreadData()
+{
+	delete[] name;
+	delete[] code;
+}
 
-	const char *ThreadData::getCode()
-	{
-		return code;
-	}
+const char *ThreadData::getCode()
+{
+	return code;
+}
 
-	const char *ThreadData::getName(size_t *len)
-	{
-		if (len)
-			*len = this->len;
-		return name;
-	}
+const char *ThreadData::getName(size_t *len)
+{
+	if (len)
+		 *len = this->len;
+	return name;
+}
 
-	Variant* ThreadData::getValue(const std::string & name)
-	{
-		if (shared.count(name) == 0)
-			return 0;
-		return shared[name];
-	}
+Variant *ThreadData::getValue(const std::string &name)
+{
+	if (shared.count(name) == 0)
+		return 0;
+	return shared[name];
+}
 
-	void ThreadData::clearValue(const std::string & name)
-	{
-		if (shared.count(name) == 0)
-			return;
+void ThreadData::clearValue(const std::string &name)
+{
+	if (shared.count(name) == 0)
+		return;
+	shared[name]->release();
+	shared.erase(name);
+}
+
+void ThreadData::setValue(const std::string &name, Variant *v)
+{
+	if (shared.count(name) != 0)
 		shared[name]->release();
-		shared.erase(name);
-	}
+	v->retain();
+	shared[name] = v;
+}
 
-	void ThreadData::setValue(const std::string & name, Variant *v)
+std::vector<std::string> ThreadData::getKeys()
+{
+	std::vector<std::string> keys;
+	for (std::map<std::string, Variant *>::iterator it = shared.begin(); it != shared.end(); it++)
 	{
-		if (shared.count(name) != 0)
-			shared[name]->release();
+		keys.push_back(it->first);
+	}
+	return keys;
+}
+
+Thread::Thread(love::thread::ThreadModule *module, const std::string &name, love::Data *data)
+	: handle(0), module(module), name(name), isThread(true)
+{
+	module->retain();
+	unsigned int len = data->getSize();
+	this->data = new char[len+1];
+	memset(this->data, 0, len+1);
+	memcpy(this->data, data->getData(), len);
+	mutex = new Mutex();
+	cond = new Conditional();
+	comm = new ThreadData(name.c_str(), name.length(), this->data, mutex, cond);
+}
+
+Thread::Thread(love::thread::ThreadModule *module, const std::string &name)
+	: handle(0), module(module), name(name), data(0), isThread(false)
+{
+	module->retain();
+	mutex = new Mutex();
+	cond = new Conditional();
+	comm = new ThreadData(name.c_str(), name.length(), NULL, mutex, cond);
+}
+
+Thread::~Thread()
+{
+	if (data)
+		delete[] data;
+	delete comm;
+	module->unregister(name);
+	delete mutex;
+	delete cond;
+	module->release();
+}
+
+void Thread::start()
+{
+	if (!handle && isThread)
+	{
+		handle = new ThreadThread(comm);
+		handle->start();
+	}
+}
+
+void Thread::kill()
+{
+	if (handle)
+	{
+		Lock lock((Mutex *) _gcmutex);
+		handle->kill();
+		delete handle;
+		handle = 0;
+	}
+}
+
+void Thread::wait()
+{
+	if (handle)
+	{
+		handle->wait();
+		delete handle;
+		handle = 0;
+	}
+}
+
+void Thread::lock()
+{
+	mutex->lock();
+}
+
+void Thread::unlock()
+{
+	mutex->unlock();
+}
+
+std::string Thread::getName()
+{
+	return name;
+}
+
+Variant *Thread::get(const std::string &name)
+{
+	Variant *v = comm->getValue(name);
+	if (v)
 		v->retain();
-		shared[name] = v;
-	}
+	return v;
+}
 
-	std::vector<std::string> ThreadData::getKeys()
-	{
-		std::vector<std::string> keys;
-		for (std::map<std::string, Variant*>::iterator it = shared.begin(); it != shared.end(); it++)
-		{
-			keys.push_back(it->first);
-		}
-		return keys;
-	}
+std::vector<std::string> Thread::getKeys()
+{
+	return comm->getKeys();
+}
 
-	Thread::Thread(love::thread::ThreadModule *module, const std::string & name, love::Data *data)
-		: handle(0), module(module), name(name), isThread(true)
+Variant *Thread::demand(const std::string &name)
+{
+	Variant *v = comm->getValue(name);
+	while (!v)
 	{
-		module->retain();
-		unsigned int len = data->getSize();
-		this->data = new char[len+1];
-		memset(this->data, 0, len+1);
-		memcpy(this->data, data->getData(), len);
-		mutex = new Mutex();
-		cond = new Conditional();
-		comm = new ThreadData(name.c_str(), name.length(), this->data, mutex, cond);
-	}
-
-	Thread::Thread(love::thread::ThreadModule *module, const std::string & name)
-		: handle(0), module(module), name(name), data(0), isThread(false)
-	{
-		module->retain();
-		mutex = new Mutex();
-		cond = new Conditional();
-		comm = new ThreadData(name.c_str(), name.length(), NULL, mutex, cond);
-	}
-
-	Thread::~Thread()
-	{
-		if (data)
-			delete[] data;
-		delete comm;
-		module->unregister(name);
-		delete mutex;
-		delete cond;
-		module->release();
-	}
-
-	void Thread::start()
-	{
-		if (!handle && isThread)
-		{
-			handle = new ThreadThread(comm);
-			handle->start();
-		}
-	}
-
-	void Thread::kill()
-	{
-		if (handle)
-		{
-			Lock lock((Mutex *) _gcmutex);
-			handle->kill();
-			delete handle;
-			handle = 0;
-		}
-	}
-
-	void Thread::wait()
-	{
-		if (handle)
-		{
-			handle->wait();
-			delete handle;
-			handle = 0;
-		}
-	}
-
-	void Thread::lock()
-	{
-		mutex->lock();
-	}
-
-	void Thread::unlock()
-	{
-		mutex->unlock();
-	}
-
-	std::string Thread::getName()
-	{
-		return name;
-	}
-
-	Variant *Thread::get(const std::string & name)
-	{
-		Variant *v = comm->getValue(name);
-		if (v)
-			v->retain();
-		return v;
-	}
-
-	std::vector<std::string> Thread::getKeys()
-	{
-		return comm->getKeys();
-	}
-
-	Variant *Thread::demand(const std::string & name)
-	{
-		Variant *v = comm->getValue(name);
-		while (!v)
-		{
-			if (comm->getValue("error"))
-				return 0;
-			cond->wait(mutex);
-			v = comm->getValue(name);
-		}
-		v->retain();
-		return v;
-	}
-
-	void Thread::clear(const std::string & name)
-	{
-		comm->clearValue(name);
-	}
-
-	void Thread::set(const std::string & name, Variant *v)
-	{
-		lock(); //this function explicitly locks
-		comm->setValue(name, v); //because we need
-		unlock(); //it to unlock here for the cond
-		cond->broadcast();
-	}
-
-	ThreadModule::ThreadModule()
-	{
-		threads["main"] = new Thread(this, "main");
-	}
-
-	ThreadModule::~ThreadModule()
-	{
-		for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++)
-		{
-			i->second->kill();
-			delete i->second;
-		}
-	}
-
-	Thread *ThreadModule::newThread(const std::string & name, love::Data *data)
-	{
-		if (threads.count(name) != 0)
+		if (comm->getValue("error"))
 			return 0;
-		Thread *t = new Thread(this, name, data);
-		threads[name] = t;
-		return t;
+		cond->wait(mutex);
+		v = comm->getValue(name);
 	}
+	v->retain();
+	return v;
+}
 
-	Thread *ThreadModule::getThread(const std::string & name)
-	{
-		if (threads.count(name) == 0)
-			return 0;
-		threadlist_t::iterator i = threads.find(name);
-		return i->second;
-	}
+void Thread::clear(const std::string &name)
+{
+	comm->clearValue(name);
+}
 
-	void ThreadModule::getThreads(Thread ** list)
-	{
-		int c = 0;
-		for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++, c++)
-		{
-			list[c] = i->second;
-		}
-	}
+void Thread::set(const std::string &name, Variant *v)
+{
+	lock(); //this function explicitly locks
+	comm->setValue(name, v); //because we need
+	unlock(); //it to unlock here for the cond
+	cond->broadcast();
+}
 
-	unsigned ThreadModule::getThreadCount() const
-	{
-		return threads.size();
-	}
+ThreadModule::ThreadModule()
+{
+	threads["main"] = new Thread(this, "main");
+}
 
-	void ThreadModule::unregister(const std::string & name)
+ThreadModule::~ThreadModule()
+{
+	for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++)
 	{
-		if (threads.count(name) == 0)
-			return;
-		threadlist_t::iterator i = threads.find(name);
-		// FIXME: shouldn't the thread be deleted?
-		threads.erase(i);
+		i->second->kill();
+		delete i->second;
 	}
+}
 
-	const char *ThreadModule::getName() const
+Thread *ThreadModule::newThread(const std::string &name, love::Data *data)
+{
+	if (threads.count(name) != 0)
+		return 0;
+	Thread *t = new Thread(this, name, data);
+	threads[name] = t;
+	return t;
+}
+
+Thread *ThreadModule::getThread(const std::string &name)
+{
+	if (threads.count(name) == 0)
+		return 0;
+	threadlist_t::iterator i = threads.find(name);
+	return i->second;
+}
+
+void ThreadModule::getThreads(Thread **list)
+{
+	int c = 0;
+	for (threadlist_t::iterator i = threads.begin(); i != threads.end(); i++, c++)
 	{
-		return "love.thread.sdl";
+		list[c] = i->second;
 	}
+}
+
+unsigned ThreadModule::getThreadCount() const
+{
+	return threads.size();
+}
+
+void ThreadModule::unregister(const std::string &name)
+{
+	if (threads.count(name) == 0)
+		return;
+	threadlist_t::iterator i = threads.find(name);
+	// FIXME: shouldn't the thread be deleted?
+	threads.erase(i);
+}
+
+const char *ThreadModule::getName() const
+{
+	return "love.thread.sdl";
+}
 
 } // thread
 } // love

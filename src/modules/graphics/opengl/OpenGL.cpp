@@ -26,31 +26,32 @@ namespace graphics
 {
 namespace opengl
 {
-	static GLuint boundTexture = 0;
-	
-	void resetBoundTexture()
+
+static GLuint boundTexture = 0;
+
+void resetBoundTexture()
+{
+	// OpenGL might not be initialized yet, so we can't do a real reset
+	boundTexture = 0;
+}
+
+void bindTexture(GLuint texture, bool override)
+{
+	if (texture != boundTexture || texture == 0 || override)
 	{
-		// OpenGL might not be initialized yet, so we can't do a real reset
+		boundTexture = texture;
+		glBindTexture(GL_TEXTURE_2D, texture);
+	}
+}
+
+void deleteTexture(GLuint texture)
+{
+	if (texture == boundTexture)
 		boundTexture = 0;
-	}
-	
-	void bindTexture(GLuint texture, bool override)
-	{
-		if (texture != boundTexture || texture == 0 || override)
-		{
-			boundTexture = texture;
-			glBindTexture(GL_TEXTURE_2D, texture);
-		}
-	}
-	
-	void deleteTexture(GLuint texture)
-	{
-		if (texture == boundTexture)
-			boundTexture = 0;
-		
-		glDeleteTextures(1, &texture);
-	}
-	
+
+	glDeleteTextures(1, &texture);
+}
+
 } // opengl
 } // graphics
 } // love

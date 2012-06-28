@@ -30,24 +30,24 @@ namespace graphics
 namespace opengl
 {
 
-	// resets the stored bound texture id
-	void resetBoundTexture();
-		
-	/**
-	 * Helper for binding an OpenGL texture.
-	 * Makes sure we aren't redundantly binding textures.
-	 * @param texture The texture to bind.
-	 * @param override Overrides the checks to guarantee texture bind
-	 **/
-	void bindTexture(GLuint texture, bool override = false);
-	
-	/**
-	 * Helper for deleting an OpenGL texture.
-	 * Cleans up if the texture is currently bound.
-	 * @param texture The texture to delete.
-	 **/
-	void deleteTexture(GLuint texture);
-	
+// resets the stored bound texture id
+void resetBoundTexture();
+
+/**
+ * Helper for binding an OpenGL texture.
+ * Makes sure we aren't redundantly binding textures.
+ * @param texture The texture to bind.
+ * @param override Overrides the checks to guarantee texture bind
+ **/
+void bindTexture(GLuint texture, bool override = false);
+
+/**
+ * Helper for deleting an OpenGL texture.
+ * Cleans up if the texture is currently bound.
+ * @param texture The texture to delete.
+ **/
+void deleteTexture(GLuint texture);
+
 } // opengl
 } // graphics
 } // love

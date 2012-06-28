@@ -1,31 +1,31 @@
 /**
-* Copyright (c) 2006-2012 LOVE Development Team
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-*
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-*
-* 1. The origin of this software must not be misrepresented; you must not
-*    claim that you wrote the original software. If you use this software
-*    in a product, an acknowledgment in the product documentation would be
-*    appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-*    misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-**/
+ * Copyright (c) 2006-2012 LOVE Development Team
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ **/
 
 #ifndef LOVE_PHYSICS_BOX2D_BODY_H
 #define LOVE_PHYSICS_BOX2D_BODY_H
 
 // LOVE
-#include <common/math.h>
-#include <common/runtime.h>
-#include <common/Object.h>
-#include <physics/Body.h>
+#include "common/math.h"
+#include "common/runtime.h"
+#include "common/Object.h"
+#include "physics/Body.h"
 
 // Box2D
 #include <Box2D/Box2D.h>
@@ -36,380 +36,377 @@ namespace physics
 {
 namespace box2d
 {
-	// Forward declarations.
-	class World;
-	class Shape;
-	class Fixture;
+// Forward declarations.
+class World;
+class Shape;
+class Fixture;
+
+/**
+ * A Body is an entity which has position and orientation
+ * in world space. A Body does have collision geometry
+ * by itself, but depend on an arbitrary number of child Shape objects
+ * which together constitute the final geometry for the Body.
+ **/
+class Body : public love::physics::Body
+{
+public:
+	// Friends.
+	friend class Joint;
+	friend class DistanceJoint;
+	friend class MouseJoint;
+	friend class CircleShape;
+	friend class PolygonShape;
+	friend class Shape;
+	friend class Fixture;
+
+	// The Box2D body. (Should not be public?)
+	b2Body *body;
 
 	/**
-	* A Body is an entity which has position and orientation
-	* in world space. A Body does have collision geometry
-	* by itself, but depend on an arbitrary number of child Shape objects
-	* which together constitute the final geometry for the Body.
-	**/
-	class Body : public love::physics::Body
-	{
-		// Friends.
-		friend class Joint;
-		friend class DistanceJoint;
-		friend class MouseJoint;
-		friend class CircleShape;
-		friend class PolygonShape;
-		friend class Shape;
-		friend class Fixture;
+	 * Create a Body at position p.
+	 **/
+	Body(World *world, b2Vec2 p, Type type);
 
-	private:
+	/**
+	 * Create a Body from an extant b2Body.
+	 **/
+	Body(b2Body *b);
 
-		// We need a shared_ptr to the parent World,
-		// because World can not be destroyed as long as
-		// bodies exists in it.
-		//
-		// This ensures that a World only can be destroyed
-		// once all bodies have been destroyed too.
-		World * world;
+	virtual ~Body();
 
-	public:
+	/**
+	 * Gets the current x-position of the Body.
+	 **/
+	float getX();
 
-		// The Box2D body. (Should not be public?)
-		b2Body * body;
+	/**
+	 * Gets the current y-position of the Body.
+	 **/
+	float getY();
 
-		/**
-		* Create a Body at position p.
-		**/
-		Body(World * world, b2Vec2 p, Type type);
+	/**
+	 * Gets the current angle (deg) of the Body.
+	 **/
+	float getAngle();
 
-		/**
-		* Create a Body from an extant b2Body.
-		**/
-		Body(b2Body * b);
+	/**
+	 * Gets the current position of the Body.
+	 * @returns The current position.
+	 **/
+	void getPosition(float &x_o, float &y_o);
 
-		virtual ~Body();
+	/**
+	 * Gets the velocity in the current center of mass.
+	 * @returns The velocity in the current center of mass.
+	 **/
+	void getLinearVelocity(float &x_o, float &y_o);
 
-		/**
-		* Gets the current x-position of the Body.
-		**/
-		float getX();
+	/**
+	 * The current center of mass for the Body in world
+	 * coordinates.
+	 * @returns The x-component of the point.
+	 * @returns The y-component of the point.
+	 **/
+	void getWorldCenter(float &x_o, float &y_o);
 
-		/**
-		* Gets the current y-position of the Body.
-		**/
-		float getY();
+	/**
+	 * The current center of mass for the Body in local
+	 * coordinates.
+	 * @returns The x-component of the point.
+	 * @returns The y-component of the point.
+	 **/
+	void getLocalCenter(float &x_o, float &y_o);
 
-		/**
-		* Gets the current angle (deg) of the Body.
-		**/
-		float getAngle();
+	/**
+	 * Get the current Body spin. (Angular velocity).
+	 **/
+	float getAngularVelocity() const;
 
-		/**
-		* Gets the current position of the Body.
-		* @returns The current position.
-		**/
-		void getPosition(float & x_o, float & y_o);
+	/**
+	 * Gets the Body's mass.
+	 **/
+	float getMass() const;
 
-		/**
-		* Gets the velocity in the current center of mass.
-		* @returns The velocity in the current center of mass.
-		**/
-		void getLinearVelocity(float & x_o, float & y_o);
+	/**
+	 * Gets the Body's intertia.
+	 **/
+	float getInertia() const;
 
-		/**
-		* The current center of mass for the Body in world
-		* coordinates.
-		* @returns The x-component of the point.
-		* @returns The y-component of the point.
-		**/
-		void getWorldCenter(float & x_o, float & y_o);
+	/**
+	 * Gets mass properties.
+	 **/
+	int getMassData(lua_State *L);
 
-		/**
-		* The current center of mass for the Body in local
-		* coordinates.
-		* @returns The x-component of the point.
-		* @returns The y-component of the point.
-		**/
-		void getLocalCenter(float & x_o, float & y_o);
+	/**
+	 * Gets the Body's angular damping.
+	 **/
+	float getAngularDamping() const;
 
-		/**
-		* Get the current Body spin. (Angular velocity).
-		**/
-		float getAngularVelocity() const;
+	/**
+	 * Gets the Body's linear damping.
+	 **/
+	float getLinearDamping() const;
 
-		/**
-		* Gets the Body's mass.
-		**/
-		float getMass() const;
+	/**
+	 * Gets the Body's gravity scale.
+	 **/
+	float getGravityScale() const;
 
-		/**
-		* Gets the Body's intertia.
-		**/
-		float getInertia() const;
+	/**
+	 * Gets the type of body this is.
+	 **/
+	Type getType() const;
 
-		/**
-		* Gets mass properties.
-		**/
-		int getMassData(lua_State * L);
+	/**
+	 * Apply an impulse (jx, jy) with offset (0, 0).
+	 **/
+	void applyLinearImpulse(float jx, float jy);
 
-		/**
-		* Gets the Body's angular damping.
-		**/
-		float getAngularDamping() const;
+	/**
+	 * Apply an impulse (jx, jy) with offset (rx, ry).
+	 **/
+	void applyLinearImpulse(float jx, float jy, float rx, float ry);
 
-		/**
-		* Gets the Body's linear damping.
-		**/
-		float getLinearDamping() const;
+	/**
+	 * Apply an angular impulse to the body.
+	 **/
+	void applyAngularImpulse(float impulse);
 
-		/**
-		* Gets the Body's gravity scale.
-		**/
-		float getGravityScale() const;
+	/**
+	 * Apply torque (t).
+	 **/
+	void applyTorque(float t);
 
-		/**
-		* Gets the type of body this is.
-		**/
-		Type getType() const;
+	/**
+	 * Apply force (fx, fy) with offset (0, 0).
+	 **/
+	void applyForce(float fx, float fy);
 
-		/**
-		* Apply an impulse (jx, jy) with offset (0, 0).
-		**/
-		void applyLinearImpulse(float jx, float jy);
+	/**
+	 * Apply force (fx, fy) with offset (rx, ry).
+	 **/
+	void applyForce(float fx, float fy, float rx, float ry);
 
-		/**
-		* Apply an impulse (jx, jy) with offset (rx, ry).
-		**/
-		void applyLinearImpulse(float jx, float jy, float rx, float ry);
+	/**
+	 * Sets the x-position of the Body.
+	 **/
+	void setX(float x);
 
-		/**
-		* Apply an angular impulse to the body.
-		**/
-		void applyAngularImpulse(float impulse);
+	/**
+	 * Sets the Y-position of the Body.
+	 **/
+	void setY(float y);
 
-		/**
-		* Apply torque (t).
-		**/
-		void applyTorque(float t);
+	/**
+	 * Sets the current velocity of the Body.
+	 **/
+	void setLinearVelocity(float x, float y);
 
-		/**
-		* Apply force (fx, fy) with offset (0, 0).
-		**/
-		void applyForce(float fx, float fy);
+	/**
+	 * Sets the angle of the Body.
+	 **/
+	void setAngle(float d);
 
-		/**
-		* Apply force (fx, fy) with offset (rx, ry).
-		**/
-		void applyForce(float fx, float fy, float rx, float ry);
+	/**
+	 * Sets the current spin of the Body.
+	 **/
+	void setAngularVelocity(float r);
 
-		/**
-		* Sets the x-position of the Body.
-		**/
-		void setX(float x);
+	/**
+	 * Sets the current position of the Body.
+	 **/
+	void setPosition(float x, float y);
 
-		/**
-		* Sets the Y-position of the Body.
-		**/
-		void setY(float y);
+	/**
+	 * Sets the mass from the currently attatched shapes.
+	 **/
+	void resetMassData();
 
-		/**
-		* Sets the current velocity of the Body.
-		**/
-		void setLinearVelocity(float x, float y);
+	/**
+	 * Sets mass properties.
+	 * @param x The x-coordinate for the local center of mass.
+	 * @param y The y-coordinate for the local center of mass.
+	 * @param m The mass.
+	 * @param i The inertia.
+	 **/
+	void setMassData(float x, float y, float m, float i);
 
-		/**
-		* Sets the angle of the Body.
-		**/
-		void setAngle(float d);
+	/**
+	 * Sets just the mass. This is provided as a LOVE bonus. Lovely!
+	 * @param m The mass.
+	 **/
+	void setMass(float m);
 
-		/**
-		* Sets the current spin of the Body.
-		**/
-		void setAngularVelocity(float r);
+	/**
+	 * Sets the inertia while keeping the other properties
+	 * (mass and local center).
+	 * @param i The inertia.
+	 **/
+	void setInertia(float i);
 
-		/**
-		* Sets the current position of the Body.
-		**/
-		void setPosition(float x, float y);
+	/**
+	 * Sets the Body's angular damping.
+	 **/
+	void setAngularDamping(float d);
 
-		/**
-		* Sets the mass from the currently attatched shapes.
-		**/
-		void resetMassData();
+	/**
+	 * Sets the Body's linear damping.
+	 **/
+	void setLinearDamping(float d);
 
-		/**
-		* Sets mass properties.
-		* @param x The x-coordinate for the local center of mass.
-		* @param y The y-coordinate for the local center of mass.
-		* @param m The mass.
-		* @param i The inertia.
-		**/
-		void setMassData(float x, float y, float m, float i);
+	/**
+	 * Sets the Body's gravity scale.
+	 **/
+	void setGravityScale(float scale);
 
-		/**
-		* Sets just the mass. This is provided as a LOVE bonus. Lovely!
-		* @param m The mass.
-		**/
-		void setMass(float m);
+	/**
+	 * Sets the type of body this is.
+	 **/
+	void setType(Type type);
 
-		/**
-		* Sets the inertia while keeping the other properties
-		* (mass and local center).
-		* @param i The inertia.
-		**/
-		void setInertia(float i);
+	/**
+	 * Transforms a point (x, y) from local coordinates
+	 * to world coordinates.
+	 * @param x The x-coordinate of the local point.
+	 * @param y The y-coordinate of the local point.
+	 * @returns The x-coordinate of the point in world coordinates.
+	 * @returns The y-coordinate of the point in world coordinates.
+	 **/
+	void getWorldPoint(float x, float y, float &x_o, float &y_o);
 
-		/**
-		* Sets the Body's angular damping.
-		**/
-		void setAngularDamping(float d);
+	/**
+	 * Transforms a vector (x, y) from local coordinates
+	 * to world coordinates.
+	 * @param x The x-coordinate of the local vector.
+	 * @param y The y-coordinate of the local vector.
+	 * @returns The x-coordinate of the vector in world coordinates.
+	 * @returns The y-coordinate of the vector in world coordinates.
+	 **/
+	void getWorldVector(float x, float y, float &x_o, float &y_o);
 
-		/**
-		* Sets the Body's linear damping.
-		**/
-		void setLinearDamping(float d);
+	/**
+	 * Transforms a series of points (x, y) from local coordinates
+	 * to world coordinates.
+	 **/
+	int getWorldPoints(lua_State *L);
 
-		/**
-		* Sets the Body's gravity scale.
-		**/
-		void setGravityScale(float scale);
+	/**
+	 * Transforms a point (x, y) from world coordinates
+	 * to local coordinates.
+	 * @param x The x-coordinate of the world point.
+	 * @param y The y-coordinate of the world point.
+	 * @returns The x-coordinate of the point in local coordinates.
+	 * @returns The y-coordinate of the point in local coordinates.
+	 **/
+	void getLocalPoint(float x, float y, float &x_o, float &y_o);
 
-		/**
-		* Sets the type of body this is.
-		**/
-		void setType(Type type);
+	/**
+	 * Transforms a vector (x, y) from world coordinates
+	 * to local coordinates.
+	 * @param x The x-coordinate of the world vector.
+	 * @param y The y-coordinate of the world vector.
+	 * @returns The x-coordinate of the vector in local coordinates.
+	 * @returns The y-coordinate of the vector in local coordinates.
+	 **/
+	void getLocalVector(float x, float y, float &x_o, float &y_o);
 
-		/**
-		* Transforms a point (x, y) from local coordinates
-		* to world coordinates.
-		* @param x The x-coordinate of the local point.
-		* @param y The y-coordinate of the local point.
-		* @returns The x-coordinate of the point in world coordinates.
-		* @returns The y-coordinate of the point in world coordinates.
-		**/
-		void getWorldPoint(float x, float y, float & x_o, float & y_o);
+	/**
+	 * Gets the velocity on the Body for the given world point.
+	 * @param x The x-coordinate of the world point.
+	 * @param y The y-coordinate of the world point.
+	 * @returns The x-component of the velocity vector.
+	 * @returns The y-component of the velocity vector.
+	 **/
+	void getLinearVelocityFromWorldPoint(float x, float y, float &x_o, float &y_o);
 
-		/**
-		* Transforms a vector (x, y) from local coordinates
-		* to world coordinates.
-		* @param x The x-coordinate of the local vector.
-		* @param y The y-coordinate of the local vector.
-		* @returns The x-coordinate of the vector in world coordinates.
-		* @returns The y-coordinate of the vector in world coordinates.
-		**/
-		void getWorldVector(float x, float y, float & x_o, float & y_o);
+	/**
+	 * Gets the velocity on the Body for the given local point.
+	 * @param x The x-coordinate of the local point.
+	 * @param y The y-coordinate of the local point.
+	 * @returns The x-component of the velocity vector.
+	 * @returns The y-component of the velocity vector.
+	 **/
+	void getLinearVelocityFromLocalPoint(float x, float y, float &x_o, float &y_o);
 
-		/**
-		* Transforms a series of points (x, y) from local coordinates
-		* to world coordinates.
-		**/
-		int getWorldPoints(lua_State * L);
+	/**
+	 * Returns true if the Body is a bullet, false otherwise.
+	 **/
+	bool isBullet() const;
 
-		/**
-		* Transforms a point (x, y) from world coordinates
-		* to local coordinates.
-		* @param x The x-coordinate of the world point.
-		* @param y The y-coordinate of the world point.
-		* @returns The x-coordinate of the point in local coordinates.
-		* @returns The y-coordinate of the point in local coordinates.
-		**/
-		void getLocalPoint(float x, float y, float & x_o, float & y_o);
+	/**
+	 * Set whether this Body should be treated as a bullet.
+	 * Bullets require more processing power than normal shapes.
+	 **/
+	void setBullet(bool bullet);
 
-		/**
-		* Transforms a vector (x, y) from world coordinates
-		* to local coordinates.
-		* @param x The x-coordinate of the world vector.
-		* @param y The y-coordinate of the world vector.
-		* @returns The x-coordinate of the vector in local coordinates.
-		* @returns The y-coordinate of the vector in local coordinates.
-		**/
-		void getLocalVector(float x, float y, float & x_o, float & y_o);
+	/**
+	 * Checks whether a Body is active or not. An inactive body
+	 * cannot be interacted with.
+	 **/
+	bool isActive() const;
 
-		/**
-		* Gets the velocity on the Body for the given world point.
-		* @param x The x-coordinate of the world point.
-		* @param y The y-coordinate of the world point.
-		* @returns The x-component of the velocity vector.
-		* @returns The y-component of the velocity vector.
-		**/
-		void getLinearVelocityFromWorldPoint(float x, float y, float & x_o, float & y_o);
+	/**
+	 * Checks whether a Body is awake or not. A Body
+	 * will fall to sleep if nothing happens to it for while.
+	 **/
+	bool isAwake() const;
 
-		/**
-		* Gets the velocity on the Body for the given local point.
-		* @param x The x-coordinate of the local point.
-		* @param y The y-coordinate of the local point.
-		* @returns The x-component of the velocity vector.
-		* @returns The y-component of the velocity vector.
-		**/
-		void getLinearVelocityFromLocalPoint(float x, float y, float & x_o, float & y_o);
+	/**
+	 * Controls whether this Body should be allowed to sleep.
+	 **/
+	void setSleepingAllowed(bool allow);
+	bool isSleepingAllowed() const;
 
-		/**
-		* Returns true if the Body is a bullet, false otherwise.
-		**/
-		bool isBullet() const;
+	/**
+	 * Changes the body's active state.
+	 **/
+	void setActive(bool active);
 
-		/**
-		* Set whether this Body should be treated as a bullet.
-		* Bullets require more processing power than normal shapes.
-		**/
-		void setBullet(bool bullet);
+	/**
+	 * Changes the body's sleep state.
+	 **/
+	void setAwake(bool awake);
 
-		/**
-		* Checks whether a Body is active or not. An inactive body
-		* cannot be interacted with.
-		**/
-		bool isActive() const;
+	void setFixedRotation(bool fixed);
+	bool isFixedRotation() const;
 
-		/**
-		* Checks whether a Body is awake or not. A Body
-		* will fall to sleep if nothing happens to it for while.
-		**/
-		bool isAwake() const;
+	/**
+	 * Get the World this Body resides in.
+	 */
+	World *getWorld() const;
 
-		/**
-		* Controls whether this Body should be allowed to sleep.
-		**/
-		void setSleepingAllowed(bool allow);
-		bool isSleepingAllowed() const;
+	/**
+	 * Get an array of all the Fixtures attached to this Body.
+	 * @return An array of Fixtures.
+	 **/
+	int getFixtureList(lua_State *L) const;
 
-		/**
-		* Changes the body's active state.
-		**/
-		void setActive(bool active);
+	/**
+	 * Destroy this body.
+	 **/
+	void destroy();
 
-		/**
-		* Changes the body's sleep state.
-		**/
-		void setAwake(bool awake);
+private:
 
-		void setFixedRotation(bool fixed);
-		bool isFixedRotation() const;
+	/**
+	 * Gets a 2d vector from the arguments on the stack.
+	 **/
+	b2Vec2 getVector(lua_State *L);
 
-		/**
-		* Get the World this Body resides in.
-		*/
-		World * getWorld() const;
+	/**
+	 * Pushed the x- and y-components of a vector on
+	 * the stack.
+	 **/
+	int pushVector(lua_State *L, const b2Vec2 &v);
 
-		/**
-		* Get an array of all the Fixtures attached to this Body.
-		* @return An array of Fixtures.
-		**/
-		int getFixtureList(lua_State * L) const;
-
-		/**
-		* Destroy this body.
-		**/
-		void destroy();
-
-	private:
-
-		/**
-		* Gets a 2d vector from the arguments on the stack.
-		**/
-		b2Vec2 getVector(lua_State * L);
-
-		/**
-		* Pushed the x- and y-components of a vector on
-		* the stack.
-		**/
-		int pushVector(lua_State * L, const b2Vec2 & v);
-	};
+	// We need a shared_ptr to the parent World,
+	// because World can not be destroyed as long as
+	// bodies exists in it.
+	//
+	// This ensures that a World only can be destroyed
+	// once all bodies have been destroyed too.
+	World *world;
+};
 
 } // box2d
 } // physics
