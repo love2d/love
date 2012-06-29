@@ -12,7 +12,7 @@ SUBDIRS =
 bin_PROGRAMS = love
 #love_LDFLAGS =
 love_LDADD = liblove.la
-love_SOURCES = launcher.cpp
+love_SOURCES = love.cpp
 
 # libLÖVE
 lib_LTLIBRARIES = liblove.la

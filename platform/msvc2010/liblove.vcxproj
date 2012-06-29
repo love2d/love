@@ -364,7 +364,6 @@
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\udp.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp" />
-    <ClCompile Include="..\..\src\love.cpp" />
     <ClCompile Include="..\..\src\modules\audio\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Source.cpp" />
@@ -428,6 +427,7 @@
     <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
+    <ClCompile Include="..\..\src\modules\love\love.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\wrap_Mouse.cpp" />
@@ -655,6 +655,7 @@
     <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
+    <ClInclude Include="..\..\src\modules\love\love.h" />
     <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\wrap_Mouse.h" />

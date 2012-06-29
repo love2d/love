@@ -18,158 +18,39 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
-#include "common/config.h"
-#include "common/version.h"
-#include "common/runtime.h"
+#include "modules/love/love.h"
+#include <SDL.h>
+
+#ifdef LOVE_BUILD_EXE
+
+// Lua
+extern "C" {
+	#include <lua.h>
+	#include <lualib.h>
+	#include <lauxlib.h>
+}
 
 #ifdef LOVE_WINDOWS
 #include <windows.h>
 #endif // LOVE_WINDOWS
 
-#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
-#include <fcntl.h>
-#include <io.h>
-#include <iostream>
-#include <fstream>
-#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
-
-#ifdef LOVE_BUILD_EXE
-
-// SDL
-#include <SDL.h>
-
-// Libraries.
-#include "libraries/luasocket/luasocket.h"
-
-// Scripts
-#include "scripts/boot.lua.h"
-
-#endif // LOVE_BUILD_EXE
-
-#ifdef LOVE_BUILD_STANDALONE
-
-// All modules define a c-accessible luaopen
-// so let's make use of those, instead
-// of addressing implementations directly.
-extern "C"
-{
-	extern int luaopen_love_audio(lua_State*);
-	extern int luaopen_love_event(lua_State*);
-	extern int luaopen_love_filesystem(lua_State*);
-	extern int luaopen_love_font(lua_State*);
-	extern int luaopen_love_graphics(lua_State*);
-	extern int luaopen_love_image(lua_State*);
-	extern int luaopen_love_joystick(lua_State*);
-	extern int luaopen_love_keyboard(lua_State*);
-	extern int luaopen_love_mouse(lua_State*);
-	extern int luaopen_love_physics(lua_State*);
-	extern int luaopen_love_sound(lua_State*);
-	extern int luaopen_love_timer(lua_State*);
-	extern int luaopen_love_thread(lua_State*);
-	extern int luaopen_love_boot(lua_State*);
-}
-
-static const luaL_Reg modules[] = {
-	{ "love.audio", luaopen_love_audio },
-	{ "love.event", luaopen_love_event },
-	{ "love.filesystem", luaopen_love_filesystem },
-	{ "love.font", luaopen_love_font },
-	{ "love.graphics", luaopen_love_graphics },
-	{ "love.image", luaopen_love_image },
-	{ "love.joystick", luaopen_love_joystick },
-	{ "love.keyboard", luaopen_love_keyboard },
-	{ "love.mouse", luaopen_love_mouse },
-	{ "love.physics", luaopen_love_physics },
-	{ "love.sound", luaopen_love_sound },
-	{ "love.timer", luaopen_love_timer },
-	{ "love.thread", luaopen_love_thread },
-	{ "love.boot", luaopen_love_boot },
-	{ 0, 0 }
-};
-
-#endif // LOVE_BUILD_STANDALONE
-
-#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
-int w__openConsole(lua_State * L);
-#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
-
-extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
-{
-	love::luax_insistglobal(L, "love");
-
-	// Set version information.
-	lua_pushstring(L, love::VERSION);
-	lua_setfield(L, -2, "_version");
-
-	lua_pushnumber(L, love::VERSION_MAJOR);
-	lua_setfield(L, -2, "_version_major");
-	lua_pushnumber(L, love::VERSION_MINOR);
-	lua_setfield(L, -2, "_version_minor");
-	lua_pushnumber(L, love::VERSION_REV);
-	lua_setfield(L, -2, "_version_revision");
-
-	lua_pushstring(L, love::VERSION_CODENAME);
-	lua_setfield(L, -2, "_version_codename");
-
-#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
-	lua_pushcfunction(L, w__openConsole);
-	lua_setfield(L, -2, "_openConsole");
-#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
-
-	lua_newtable(L);
-
-	for (int i = 0; love::VERSION_COMPATIBILITY[i] != 0; ++i)
-	{
-		lua_pushstring(L, love::VERSION_COMPATIBILITY[i]);
-		lua_rawseti(L, -2, i+1);
-	}
-
-	lua_setfield(L, -2, "_version_compat");
-
-#ifdef LOVE_WINDOWS
-	lua_pushstring(L, "Windows");
-#elif defined(LOVE_MACOSX)
-	lua_pushstring(L, "OS X");
-#elif defined(LOVE_LINUX)
-	lua_pushstring(L, "Linux");
-#else
-	lua_pushstring(L, "Unknown");
-#endif
-	lua_setfield(L, -2, "_os");
-
-#ifdef LOVE_BUILD_STANDALONE
-
-	// Preload module loaders.
-	for (int i = 0; modules[i].name != 0; i++)
-	{
-		love::luax_preload(L, modules[i].func, modules[i].name);
-	}
-
-	love::luasocket::__open(L);
-
-#endif // LOVE_BUILD_STANDALONE
-
-	return 1;
-}
-
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 
-void get_utf8_arguments(int & argc, char **& argv)
+void get_utf8_arguments(int &argc, char **&argv)
 {
 	LPWSTR cmd = GetCommandLineW();
 
 	if (!cmd)
 		return;
 
-	LPWSTR * argv_w = CommandLineToArgvW(cmd, &argc);
+	LPWSTR *argv_w = CommandLineToArgvW(cmd, &argc);
 
-	argv = new char*[argc];
+	argv = new char *[argc];
 
-	for (int i = 0; i<argc; ++i)
+	for (int i = 0; i < argc; ++i)
 	{
 		// Size of wide char buffer (plus one for trailing '\0').
-		size_t wide_len = wcslen(argv_w[i])+1;
+		size_t wide_len = wcslen(argv_w[i]) + 1;
 
 		// Get size in UTF-8.
 		int utf8_size = WideCharToMultiByte(CP_UTF8, 0, argv_w[i], wide_len, argv[i], 0, 0, 0);
@@ -189,50 +70,6 @@ void get_utf8_arguments(int & argc, char **& argv)
 }
 
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
-
-#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
-
-int w__openConsole(lua_State * L)
-{
-	static bool is_open = false;
-	if (is_open)
-		return 0;
-	is_open = true;
-
-	if (GetConsoleWindow() != NULL || AllocConsole() == 0)
-		return 0;
-
-	const int MAX_CONSOLE_LINES = 5000;
-	CONSOLE_SCREEN_BUFFER_INFO console_info;
-
-	// Set size.
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
-	console_info.dwSize.Y = MAX_CONSOLE_LINES;
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), console_info.dwSize);
-
-	SetConsoleTitle(TEXT("LOVE Console"));
-
-	FILE * fp;
-
-	// Redirect stdout.
-	fp = freopen("CONOUT$", "w", stdout);
-	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stdout failed.");
-
-	// Redirect stdin.
-	fp = freopen("CONIN$", "r", stdin);
-	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stdin failed.");
-
-	// Redirect stderr.
-	fp = freopen("CONOUT$", "w", stderr);
-	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stderr failed.");
-
-	return 0;
-}
-
-#endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
 #ifdef LOVE_LEGENDARY_LIBSTDCXX_HACK
 
@@ -275,18 +112,20 @@ _GLIBCXX_END_NAMESPACE
 
 #endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
 
-extern "C" int luaopen_love_boot(lua_State *L)
+static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 {
-	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
-	lua_call(L, 0, 1);
-	return 1;
+	lua_getglobal(L, "package");
+	lua_getfield(L, -1, "preload");
+	lua_pushcfunction(L, f);
+	lua_setfield(L, -2, name);
+	lua_pop(L, 2);
+	return 0;
 }
 
-extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
+int main(int argc, char **argv)
 {
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
-	int hack_argc = 0;
-	char ** hack_argv = 0;
+	int hack_argc = 0;	char **hack_argv = 0;
 	get_utf8_arguments(hack_argc, hack_argv);
 	argc = hack_argc;
 	argv = hack_argv;
@@ -295,15 +134,15 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1],"--version") == 0)
 	{
-		printf("LOVE %s (%s)\n", love::VERSION, love::VERSION_CODENAME);
+		printf("LOVE %s (%s)\n", love_version(), love_codename());
 		return 0;
 	}
 
 	// Create the virtual machine.
-	lua_State * L = lua_open();
+	lua_State *L = lua_open();
 	luaL_openlibs(L);
 
-	love::luax_preload(L, luaopen_love, "love");
+	love_preload(L, luaopen_love, "love");
 
 	luaopen_love(L);
 
@@ -361,3 +200,4 @@ extern "C" LOVE_EXPORT int lovemain(int argc, char ** argv)
 	return retval;
 }
 
+#endif // LOVE_BUILD_EXE

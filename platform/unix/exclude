@@ -24,4 +24,4 @@
 ./modules/thread/sdl/*
 ./modules/thread/win32/*
 ./modules/thread/posix/*
-./launcher.cpp
+./love.cpp

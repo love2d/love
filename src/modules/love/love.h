@@ -18,17 +18,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "common/config.h"
-#include <SDL.h>
 
-extern "C"
-{
-	extern int lovemain(int argc, char **argv);
-}
+// Forward declare lua_State.
+struct lua_State;
 
-#ifdef LOVE_BUILD_EXE
-int main(int argc, char **argv)
-{
-	return lovemain(argc, argv);
-}
-#endif // LOVE_BUILD_EXE
+extern "C" LOVE_EXPORT const char *love_version();
+extern "C" LOVE_EXPORT const char *love_codename();
+extern "C" LOVE_EXPORT int luaopen_love(lua_State *L);
+extern "C" LOVE_EXPORT int luaopen_love_boot(lua_State *L);
