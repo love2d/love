@@ -65,6 +65,11 @@ AS_IF([test "x$enable_mpg123" != xno],
 AS_IF([test "x$enable_mpg123" != xno],
 	AC_SEARCH_LIBS([mpg123_seek_64], [mpg123], AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]), AC_SUBST([FILE_OFFSET],[])))
 
+AC_ARG_ENABLE([exe], AC_HELP_STRING([--disable-exe], [Disable building of executable launcher]), [], [enable_exe=yes])
+AS_IF([test "x$enable_exe" != xno],
+	  AC_DEFINE([LOVE_BUILD_EXE], [], [Don't build launcher]))
+AM_CONDITIONAL([LOVE_BUILD_EXE], [test "x$enable_exe" != xno])
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile

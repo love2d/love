@@ -36,17 +36,11 @@
 #include <fstream>
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-#ifdef LOVE_BUILD_EXE
-
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
 
 // Scripts
 #include "scripts/boot.lua.h"
-
-#endif // LOVE_BUILD_EXE
-
-#ifdef LOVE_BUILD_STANDALONE
 
 // All modules define a c-accessible luaopen
 // so let's make use of those, instead
@@ -87,23 +81,21 @@ static const luaL_Reg modules[] = {
 	{ 0, 0 }
 };
 
-#endif // LOVE_BUILD_STANDALONE
-
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 int w__openConsole(lua_State * L);
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-extern "C" LOVE_EXPORT const char *love_version()
+const char *love_version()
 {
 	return love::VERSION;
 }
 
-extern "C" LOVE_EXPORT const char *love_codename()
+const char *love_codename()
 {
 	return love::VERSION_CODENAME;
 }
 
-extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
+int luaopen_love(lua_State * L)
 {
 	love::luax_insistglobal(L, "love");
 
@@ -147,8 +139,6 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 #endif
 	lua_setfield(L, -2, "_os");
 
-#ifdef LOVE_BUILD_STANDALONE
-
 	// Preload module loaders.
 	for (int i = 0; modules[i].name != 0; i++)
 	{
@@ -156,8 +146,6 @@ extern "C" LOVE_EXPORT int luaopen_love(lua_State * L)
 	}
 
 	love::luasocket::__open(L);
-
-#endif // LOVE_BUILD_STANDALONE
 
 	return 1;
 }
@@ -206,7 +194,7 @@ int w__openConsole(lua_State * L)
 
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-extern "C" LOVE_EXPORT int luaopen_love_boot(lua_State *L)
+int luaopen_love_boot(lua_State *L)
 {
 	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
 	lua_call(L, 0, 1);

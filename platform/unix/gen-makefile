@@ -8,11 +8,13 @@ echo "AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I/usr/includ
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
 
+if LOVE_BUILD_EXE
 # LÖVE executable
 bin_PROGRAMS = love
 #love_LDFLAGS =
 love_LDADD = liblove.la
 love_SOURCES = love.cpp
+endif
 
 # libLÖVE
 lib_LTLIBRARIES = liblove.la
