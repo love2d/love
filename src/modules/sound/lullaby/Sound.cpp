@@ -18,11 +18,14 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
+
 #include "Sound.h"
 
 #include "ModPlugDecoder.h"
 #include "Mpg123Decoder.h"
 #include "VorbisDecoder.h"
+#include "GmeDecoder.h"
 //#include "FLACDecoder.h"
 
 namespace love
@@ -64,6 +67,10 @@ sound::Decoder *Sound::newDecoder(love::filesystem::File *file, int bufferSize)
 #endif // LOVE_NOMPG123
 	else if (VorbisDecoder::accepts(ext))
 		decoder = new VorbisDecoder(data, ext, bufferSize);
+#ifdef LOVE_SUPPORT_GME
+	else if (GmeDecoder::accepts(ext))
+		decoder = new GmeDecoder(data, ext, bufferSize);
+#endif // LOVE_SUPPORT_GME
 	/*else if (FLACDecoder::accepts(ext))
 		decoder = new FLACDecoder(data, ext, bufferSize);*/
 
