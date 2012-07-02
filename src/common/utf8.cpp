@@ -41,7 +41,7 @@ std::string to_utf8(LPCWSTR wstr)
 	if (ok)
 		ret = utf8_str;
 
-	delete utf8_str;
+	delete[] utf8_str;
 	return ret;
 }
 
