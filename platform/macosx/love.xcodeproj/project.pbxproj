@@ -232,6 +232,8 @@
 		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
 		A9F2D09114BA85EC0035D2A5 /* Audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F2D09014BA85EC0035D2A5 /* Audio.cpp */; };
+		A9F6E6AE15A1080D00C86200 /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F6E6AC15A1080D00C86200 /* love.cpp */; };
+		A9F6E6B115A1099C00C86200 /* GmeDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F6E6AF15A1099C00C86200 /* GmeDecoder.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -725,6 +727,10 @@
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		A9F2D09014BA85EC0035D2A5 /* Audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Audio.cpp; sourceTree = "<group>"; };
+		A9F6E6AC15A1080D00C86200 /* love.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = love.cpp; sourceTree = "<group>"; };
+		A9F6E6AD15A1080D00C86200 /* love.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = love.h; sourceTree = "<group>"; };
+		A9F6E6AF15A1099C00C86200 /* GmeDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GmeDecoder.cpp; sourceTree = "<group>"; };
+		A9F6E6B015A1099C00C86200 /* GmeDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GmeDecoder.h; sourceTree = "<group>"; };
 		A9F8833511163C8C00831E98 /* audio.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = audio.lua; sourceTree = "<group>"; };
 		A9F8833611163C8C00831E98 /* audio.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.lua.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -957,6 +963,7 @@
 				A93E6AA710420AC3007D418B /* image */,
 				A93E6AB410420AC3007D418B /* joystick */,
 				A93E6ABB10420AC3007D418B /* keyboard */,
+				A9F6E6AB15A1080D00C86200 /* love */,
 				A93E6AC210420AC3007D418B /* mouse */,
 				A93E6AE910420AC7007D418B /* physics */,
 				A93E6B7410420ACB007D418B /* sound */,
@@ -1375,6 +1382,8 @@
 				A93E6B7810420ACB007D418B /* Decoder.h */,
 				A93E6B7910420ACB007D418B /* FLACDecoder.cpp */,
 				A93E6B7A10420ACB007D418B /* FLACDecoder.h */,
+				A9F6E6AF15A1099C00C86200 /* GmeDecoder.cpp */,
+				A9F6E6B015A1099C00C86200 /* GmeDecoder.h */,
 				A93E6B7B10420ACB007D418B /* ModPlugDecoder.cpp */,
 				A93E6B7C10420ACB007D418B /* ModPlugDecoder.h */,
 				A93E6B7D10420ACB007D418B /* Mpg123Decoder.cpp */,
@@ -1655,6 +1664,15 @@
 			path = Rope;
 			sourceTree = "<group>";
 		};
+		A9F6E6AB15A1080D00C86200 /* love */ = {
+			isa = PBXGroup;
+			children = (
+				A9F6E6AC15A1080D00C86200 /* love.cpp */,
+				A9F6E6AD15A1080D00C86200 /* love.h */,
+			);
+			path = love;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1923,6 +1941,8 @@
 				A9A5BE4B149F0B0200D9931C /* Variant.cpp in Sources */,
 				A9F2D09114BA85EC0035D2A5 /* Audio.cpp in Sources */,
 				A9642D7514D1A66000CE0B02 /* OpenGL.cpp in Sources */,
+				A9F6E6AE15A1080D00C86200 /* love.cpp in Sources */,
+				A9F6E6B115A1099C00C86200 /* GmeDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1960,7 +1980,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -1993,7 +2013,6 @@
 					/Library/Frameworks/SDL.framework/Headers,
 				);
 				INFOPLIST_FILE = "love-Info.plist";
-				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
@@ -2012,7 +2031,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				DEPLOYMENT_POSTPROCESSING = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = NO;
@@ -2047,14 +2066,12 @@
 				);
 				INFOPLIST_FILE = "love-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = love;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "";
 				WARNING_CFLAGS = (
 					"-W",
 					"-Wall",

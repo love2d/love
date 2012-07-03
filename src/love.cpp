@@ -73,6 +73,8 @@ void get_utf8_arguments(int &argc, char **&argv)
 
 #ifdef LOVE_LEGENDARY_LIBSTDCXX_HACK
 
+#include <iostream>
+
 // Workarounds for symbols that are missing from Leopard stdlibc++.dylib.
 // http://stackoverflow.com/questions/3484043/os-x-program-runs-on-dev-machine-crashing-horribly-on-others
 _GLIBCXX_BEGIN_NAMESPACE(std)
