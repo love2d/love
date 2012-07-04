@@ -65,10 +65,7 @@ namespace thread
 		delete mutex;
 		delete cond;
 		if (named)
-		{
-			Lock l(namedChannelMutex);
 			namedChannels.erase(name);
-		}
 	}
 
 	void Channel::push(Variant *var)
@@ -133,6 +130,11 @@ namespace thread
 	void Channel::clear()
 	{
 		Lock l(mutex);
+
+		// We're already empty.
+		if (queue.empty())
+			return;
+
 		while (!queue.empty())
 		{
 			queue.front()->release();
@@ -143,6 +145,17 @@ namespace thread
 		// reference if we're named.
 		if (named)
 			release();
+	}
+
+	void Channel::release()
+	{
+		if (named)
+			namedChannelMutex->lock();
+
+		Object::release();
+
+		if (named)
+			namedChannelMutex->unlock();
 	}
 } // thread
 } // love

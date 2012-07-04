@@ -54,6 +54,8 @@ namespace thread
 		Variant *peek();
 		int count();
 		void clear();
+
+		void release();
 	}; // Channel
 } // thread
 } // love
