@@ -26,76 +26,82 @@ namespace love
 namespace graphics
 {
 
-	template <typename T>
-	struct ColorT
+template <typename T>
+struct ColorT
+{
+	T r;
+	T g;
+	T b;
+	T a;
+
+	ColorT() : r(0), g(0), b(0), a(0) {}
+	ColorT(T r_, T g_, T b_, T a_) : r(r_), g(g_), b(b_), a(a_) {}
+	void set(T r_, T g_, T b_, T a_)
 	{
-		T r;
-		T g;
-		T b;
-		T a;
-
-		ColorT() : r(0), g(0), b(0), a(0) {}
-		ColorT(T r_, T g_, T b_, T a_) : r(r_), g(g_), b(b_), a(a_) {}
-		void set(T r_, T g_, T b_, T a_) { r = r_; g = g_; b = b_; a = a_; }
-
-		ColorT<T> operator+=(const ColorT<T>& other);
-		ColorT<T> operator*=(T s);
-		ColorT<T> operator/=(T s);
-	};
-
-	template <typename T>
-	ColorT<T> ColorT<T>::operator+=(const ColorT<T>& other)
-	{
-		r += other.r;
-		g += other.g;
-		b += other.b;
-		a += other.a;
-		return *this;
+		r = r_;
+		g = g_;
+		b = b_;
+		a = a_;
 	}
 
-	template <typename T>
-	ColorT<T> ColorT<T>::operator*=(T s)
-	{
-		r *= s;
-		g *= s;
-		b *= s;
-		a *= s;
-		return *this;
-	}
+	ColorT<T> operator+=(const ColorT<T> &other);
+	ColorT<T> operator*=(T s);
+	ColorT<T> operator/=(T s);
+};
 
-	template <typename T>
-	ColorT<T> ColorT<T>::operator/=(T s)
-	{
-		r /= s;
-		g /= s;
-		b /= s;
-		a /= s;
-		return *this;
-	}
+template <typename T>
+ColorT<T> ColorT<T>::operator+=(const ColorT<T> &other)
+{
+	r += other.r;
+	g += other.g;
+	b += other.b;
+	a += other.a;
+	return *this;
+}
 
-	template <typename T>
-	ColorT<T> operator+(const ColorT<T>& a, const ColorT<T>& b)
-	{
-		ColorT<T> tmp(a);
-		return tmp += b;
-	}
+template <typename T>
+ColorT<T> ColorT<T>::operator*=(T s)
+{
+	r *= s;
+	g *= s;
+	b *= s;
+	a *= s;
+	return *this;
+}
 
-	template <typename T>
-	ColorT<T> operator*(const ColorT<T>& a, T s)
-	{
-		ColorT<T> tmp(a);
-		return tmp *= s;
-	}
+template <typename T>
+ColorT<T> ColorT<T>::operator/=(T s)
+{
+	r /= s;
+	g /= s;
+	b /= s;
+	a /= s;
+	return *this;
+}
 
-	template <typename T>
-	ColorT<T> operator/(const ColorT<T>& a, T s)
-	{
-		ColorT<T> tmp(a);
-		return tmp /= s;
-	}
+template <typename T>
+ColorT<T> operator+(const ColorT<T> &a, const ColorT<T> &b)
+{
+	ColorT<T> tmp(a);
+	return tmp += b;
+}
 
-	typedef ColorT<unsigned char> Color;
-	typedef ColorT<float> Colorf;
+template <typename T>
+ColorT<T> operator*(const ColorT<T> &a, T s)
+{
+	ColorT<T> tmp(a);
+	return tmp *= s;
+}
+
+template <typename T>
+ColorT<T> operator/(const ColorT<T> &a, T s)
+{
+	ColorT<T> tmp(a);
+	return tmp /= s;
+}
+
+typedef ColorT<unsigned char> Color;
+typedef ColorT<float> Colorf;
 
 } // graphics
 } // love

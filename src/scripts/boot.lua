@@ -112,6 +112,7 @@ end
 
 love.arg.options = {
 	console = { a = 0 },
+	fused = {a = 0 },
 	game = { a = 1 }
 }
 
@@ -206,9 +207,16 @@ function love.boot()
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, arg0)
 	is_fused_game = can_has_game
+	if love.arg.options.fused.set then
+		is_fused_game = true
+	end
 
 	if not can_has_game and o.game.set and o.game.arg[1] then
-		local full_source =  love.path.getfull(o.game.arg[1])
+		local nouri = o.game.arg[1]
+		if nouri:sub(1, 7) == "file://" then
+			nouri = nouri:sub(8)
+		end
+		local full_source =  love.path.getfull(nouri)
 		local leaf = love.path.leaf(full_source)
 		love.filesystem.setIdentity(leaf)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
@@ -371,6 +379,9 @@ function love.init()
 end
 
 function love.run()
+
+	math.randomseed(os.time())
+	math.random() math.random()
 
 	if love.load then love.load(arg) end
 
@@ -794,9 +805,13 @@ end
 -- The root of all calls.
 -----------------------------------------------------------
 
-local result = xpcall(love.boot, error_printer)
-if not result then return end
-local result = xpcall(love.init, love._release and love.releaseerrhand or love.errhand)
-if not result then return end
-local result = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
-if not result then return end
+return function()
+	local result = xpcall(love.boot, error_printer)
+	if not result then return 1 end
+	local result = xpcall(love.init, love._release and love.releaseerrhand or love.errhand)
+	if not result then return 1 end
+	local result, retval = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
+	if not result then return 1 end
+
+	return tonumber(retval) or 0
+end

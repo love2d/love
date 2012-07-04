@@ -1,22 +1,22 @@
 /**
-* Copyright (c) 2006-2012 LOVE Development Team
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-*
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-*
-* 1. The origin of this software must not be misrepresented; you must not
-*    claim that you wrote the original software. If you use this software
-*    in a product, an acknowledgment in the product documentation would be
-*    appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-*    misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-**/
+ * Copyright (c) 2006-2012 LOVE Development Team
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ **/
 
 #ifndef LOVE_PHYSICS_BOX2D_PRISMATIC_JOINT_H
 #define LOVE_PHYSICS_BOX2D_PRISMATIC_JOINT_H
@@ -30,115 +30,115 @@ namespace physics
 {
 namespace box2d
 {
+
+/**
+ * PrismaticJoints allow shapes to move in relation to eachother
+ * along a defined axis.
+ **/
+class PrismaticJoint : public Joint
+{
+public:
+
 	/**
-	* PrismaticJoints allow shapes to move in relation to eachother
-	* along a defined axis.
-	**/
-	class PrismaticJoint : public Joint
-	{
-	private:
+	 * Creates a new PrismaticJoint connecting body1 and body2.
+	 **/
+	PrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
 
-		// The Box2D prismatic joint object.
-		b2PrismaticJoint * joint;
+	virtual ~PrismaticJoint();
 
-	public:
+	/**
+	 * Get the current joint translation, usually in meters.
+	 **/
+	float getJointTranslation() const;
 
-		/**
-		* Creates a new PrismaticJoint connecting body1 and body2.
-		**/
-		PrismaticJoint(Body * body1, Body * body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
+	/**
+	 * Get the current joint translation speed, usually in meters per second.
+	 **/
+	float getJointSpeed() const;
 
-		virtual ~PrismaticJoint();
+	/**
+	 * Enable/disable the joint motor.
+	 **/
+	void enableMotor(bool motor);
 
-		/**
-		* Get the current joint translation, usually in meters.
-		**/
-		float getJointTranslation() const;
+	/**
+	 * Checks whether the motor is enabled.
+	 **/
+	bool isMotorEnabled() const;
 
-		/**
-		* Get the current joint translation speed, usually in meters per second.
-		**/
-		float getJointSpeed() const;
+	/**
+	 * Set the maximum motor force, usually in N.
+	 **/
+	void setMaxMotorForce(float force);
 
-		/**
-		* Enable/disable the joint motor.
-		**/
-		void enableMotor(bool motor);
+	/**
+	 * Set the motor speed, usually in meters per second.
+	 **/
+	void setMotorSpeed(float speed);
 
-		/**
-		* Checks whether the motor is enabled.
-		**/
-		bool isMotorEnabled() const;
+	/**
+	 * Get the motor speed, usually in meters per second.
+	 **/
+	float getMotorSpeed() const;
 
-		/**
-		* Set the maximum motor force, usually in N.
-		**/
-		void setMaxMotorForce(float force);
+	/**
+	 * Get the current motor force, usually in N.
+	 * @param inv_dt The inverse time step.
+	 **/
+	float getMotorForce(float inv_dt) const;
 
-		/**
-		* Set the motor speed, usually in meters per second.
-		**/
-		void setMotorSpeed(float speed);
+	/**
+	 * Get the maximum motor force, usually in N.
+	 **/
+	float getMaxMotorForce() const;
 
-		/**
-		* Get the motor speed, usually in meters per second.
-		**/
-		float getMotorSpeed() const;
+	/**
+	 * Enable/disable the joint limit.
+	 **/
+	void enableLimit(bool limit);
 
-		/**
-		* Get the current motor force, usually in N.
-		* @param inv_dt The inverse time step.
-		**/
-		float getMotorForce(float inv_dt) const;
+	/**
+	 * Checks whether limits are enabled.
+	 **/
+	bool isLimitEnabled() const;
 
-		/**
-		* Get the maximum motor force, usually in N.
-		**/
-		float getMaxMotorForce() const;
+	/**
+	 * Sets the upper limit, usually in meters.
+	 **/
+	void setUpperLimit(float limit);
 
-		/**
-		* Enable/disable the joint limit.
-		**/
-		void enableLimit(bool limit);
+	/**
+	 * Sets the lower limit, usually in meters.
+	 **/
+	void setLowerLimit(float limit);
 
-		/**
-		* Checks whether limits are enabled.
-		**/
-		bool isLimitEnabled() const;
+	/**
+	 * Sets the limits, usually in meters.
+	 **/
+	void setLimits(float lower, float upper);
 
-		/**
-		* Sets the upper limit, usually in meters.
-		**/
-		void setUpperLimit(float limit);
+	/**
+	 * Gets the lower limit, usually in meters.
+	 **/
+	float getLowerLimit() const;
 
-		/**
-		* Sets the lower limit, usually in meters.
-		**/
-		void setLowerLimit(float limit);
+	/**
+	 * Gets the upper limit, usually in meters.
+	 **/
+	float getUpperLimit() const;
 
-		/**
-		* Sets the limits, usually in meters.
-		**/
-		void setLimits(float lower, float upper);
+	/**
+	 * Gets the limits, usually in meters.
+	 * @returns The upper limit.
+	 * @returns The lower limit.
+	 **/
+	int getLimits(lua_State *L);
 
-		/**
-		* Gets the lower limit, usually in meters.
-		**/
-		float getLowerLimit() const;
+private:
 
-		/**
-		* Gets the upper limit, usually in meters.
-		**/
-		float getUpperLimit() const;
-
-		/**
-		* Gets the limits, usually in meters.
-		* @returns The upper limit.
-		* @returns The lower limit.
-		**/
-		int getLimits(lua_State * L);
-
-	};
+	// The Box2D prismatic joint object.
+	b2PrismaticJoint *joint;
+};
 
 } // box2d
 } // physics

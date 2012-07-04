@@ -1,22 +1,22 @@
 /**
-* Copyright (c) 2006-2012 LOVE Development Team
-*
-* This software is provided 'as-is', without any express or implied
-* warranty.  In no event will the authors be held liable for any damages
-* arising from the use of this software.
-*
-* Permission is granted to anyone to use this software for any purpose,
-* including commercial applications, and to alter it and redistribute it
-* freely, subject to the following restrictions:
-*
-* 1. The origin of this software must not be misrepresented; you must not
-*    claim that you wrote the original software. If you use this software
-*    in a product, an acknowledgment in the product documentation would be
-*    appreciated but is not required.
-* 2. Altered source versions must be plainly marked as such, and must not be
-*    misrepresented as being the original software.
-* 3. This notice may not be removed or altered from any source distribution.
-**/
+ * Copyright (c) 2006-2012 LOVE Development Team
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ **/
 
 #include "Audio.h"
 
@@ -26,141 +26,142 @@ namespace audio
 {
 namespace null
 {
-	Audio::Audio() : distanceModel(DISTANCE_NONE)
-	{
-	}
 
-	Audio::~Audio()
-	{
-	}
+Audio::Audio() : distanceModel(DISTANCE_NONE)
+{
+}
 
-	const char * Audio::getName() const
-	{
-		return "love.audio.null";
-	}
+Audio::~Audio()
+{
+}
 
-	love::audio::Source * Audio::newSource(love::sound::Decoder *)
-	{
-		return new Source();
-	}
+const char *Audio::getName() const
+{
+	return "love.audio.null";
+}
 
-	love::audio::Source * Audio::newSource(love::sound::SoundData *)
-	{
-		return new Source();
-	}
+love::audio::Source *Audio::newSource(love::sound::Decoder *)
+{
+	return new Source();
+}
 
-	int Audio::getNumSources() const
-	{
-		return 0;
-	}
+love::audio::Source *Audio::newSource(love::sound::SoundData *)
+{
+	return new Source();
+}
 
-	int Audio::getMaxSources() const
-	{
-		return 0;
-	}
+int Audio::getNumSources() const
+{
+	return 0;
+}
 
-	void Audio::play(love::audio::Source *)
-	{
-	}
+int Audio::getMaxSources() const
+{
+	return 0;
+}
 
-	void Audio::play()
-	{
-	}
+void Audio::play(love::audio::Source *)
+{
+}
 
-	void Audio::stop(love::audio::Source *)
-	{
-	}
+void Audio::play()
+{
+}
 
-	void Audio::stop()
-	{
-	}
+void Audio::stop(love::audio::Source *)
+{
+}
 
-	void Audio::pause(love::audio::Source *)
-	{
-	}
+void Audio::stop()
+{
+}
 
-	void Audio::pause()
-	{
-	}
+void Audio::pause(love::audio::Source *)
+{
+}
 
-	void Audio::resume(love::audio::Source *)
-	{
-	}
+void Audio::pause()
+{
+}
 
-	void Audio::resume()
-	{
-	}
+void Audio::resume(love::audio::Source *)
+{
+}
 
-	void Audio::rewind(love::audio::Source *)
-	{
-	}
+void Audio::resume()
+{
+}
 
-	void Audio::rewind()
-	{
-	}
+void Audio::rewind(love::audio::Source *)
+{
+}
 
-	void Audio::setVolume(float volume)
-	{
-		this->volume = volume;
-	}
+void Audio::rewind()
+{
+}
 
-	float Audio::getVolume() const
-	{
-		return volume;
-	}
+void Audio::setVolume(float volume)
+{
+	this->volume = volume;
+}
 
-	void Audio::getPosition(float *) const
-	{
-	}
+float Audio::getVolume() const
+{
+	return volume;
+}
 
-	void Audio::setPosition(float *)
-	{
-	}
+void Audio::getPosition(float *) const
+{
+}
 
-	void Audio::getOrientation(float *) const
-	{
-	}
+void Audio::setPosition(float *)
+{
+}
 
-	void Audio::setOrientation(float *)
-	{
-	}
+void Audio::getOrientation(float *) const
+{
+}
 
-	void Audio::getVelocity(float *) const
-	{
-	}
+void Audio::setOrientation(float *)
+{
+}
 
-	void Audio::setVelocity(float *)
-	{
-	}
+void Audio::getVelocity(float *) const
+{
+}
 
-	void Audio::record()
-	{
-	}
+void Audio::setVelocity(float *)
+{
+}
 
-	love::sound::SoundData * Audio::getRecordedData()
-	{
-		return NULL;
-	}
+void Audio::record()
+{
+}
 
-	love::sound::SoundData * Audio::stopRecording(bool)
-	{
-		return NULL;
-	}
+love::sound::SoundData *Audio::getRecordedData()
+{
+	return NULL;
+}
 
-	bool Audio::canRecord()
-	{
-		return false;
-	}
-	
-	Audio::DistanceModel Audio::getDistanceModel() const
-	{
-		return this->distanceModel;
-	}
+love::sound::SoundData *Audio::stopRecording(bool)
+{
+	return NULL;
+}
 
-	void Audio::setDistanceModel(DistanceModel distanceModel)
-	{
-		this->distanceModel = distanceModel;
-	}
+bool Audio::canRecord()
+{
+	return false;
+}
+
+Audio::DistanceModel Audio::getDistanceModel() const
+{
+	return this->distanceModel;
+}
+
+void Audio::setDistanceModel(DistanceModel distanceModel)
+{
+	this->distanceModel = distanceModel;
+}
 
 } // null
 } // audio

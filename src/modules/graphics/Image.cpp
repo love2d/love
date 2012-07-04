@@ -24,53 +24,58 @@ namespace love
 {
 namespace graphics
 {
-	Image::Filter::Filter() : min(FILTER_LINEAR), mag(FILTER_LINEAR)
-	{
-	}
 
-	Image::Wrap::Wrap() : s(WRAP_CLAMP), t(WRAP_CLAMP)
-	{
-	}
+Image::Filter::Filter()
+	: min(FILTER_LINEAR)
+	, mag(FILTER_LINEAR)
+{
+}
 
-	Image::~Image()
-	{
-	}
+Image::Wrap::Wrap()
+	: s(WRAP_CLAMP)
+	, t(WRAP_CLAMP)
+{
+}
 
-	bool Image::getConstant(const char * in, FilterMode & out)
-	{
-		return filterModes.find(in, out);
-	}
+Image::~Image()
+{
+}
 
-	bool Image::getConstant(FilterMode in, const char *& out)
-	{
-		return filterModes.find(in, out);
-	}
+bool Image::getConstant(const char *in, FilterMode &out)
+{
+	return filterModes.find(in, out);
+}
 
-	bool Image::getConstant(const char * in, WrapMode & out)
-	{
-		return wrapModes.find(in, out);
-	}
+bool Image::getConstant(FilterMode in, const char  *&out)
+{
+	return filterModes.find(in, out);
+}
 
-	bool Image::getConstant(WrapMode in, const char *& out)
-	{
-		return wrapModes.find(in, out);
-	}
+bool Image::getConstant(const char *in, WrapMode &out)
+{
+	return wrapModes.find(in, out);
+}
 
-	StringMap<Image::FilterMode, Image::FILTER_MAX_ENUM>::Entry Image::filterModeEntries[] =
-	{
-		{ "linear", Image::FILTER_LINEAR },
-		{ "nearest", Image::FILTER_NEAREST },
-	};
+bool Image::getConstant(WrapMode in, const char  *&out)
+{
+	return wrapModes.find(in, out);
+}
 
-	StringMap<Image::FilterMode, Image::FILTER_MAX_ENUM> Image::filterModes(Image::filterModeEntries, sizeof(Image::filterModeEntries));
+StringMap<Image::FilterMode, Image::FILTER_MAX_ENUM>::Entry Image::filterModeEntries[] =
+{
+	{ "linear", Image::FILTER_LINEAR },
+	{ "nearest", Image::FILTER_NEAREST },
+};
 
-	StringMap<Image::WrapMode, Image::WRAP_MAX_ENUM>::Entry Image::wrapModeEntries[] =
-	{
-		{ "clamp", Image::WRAP_CLAMP },
-		{ "repeat", Image::WRAP_REPEAT },
-	};
+StringMap<Image::FilterMode, Image::FILTER_MAX_ENUM> Image::filterModes(Image::filterModeEntries, sizeof(Image::filterModeEntries));
 
-	StringMap<Image::WrapMode, Image::WRAP_MAX_ENUM> Image::wrapModes(Image::wrapModeEntries, sizeof(Image::wrapModeEntries));
+StringMap<Image::WrapMode, Image::WRAP_MAX_ENUM>::Entry Image::wrapModeEntries[] =
+{
+	{ "clamp", Image::WRAP_CLAMP },
+	{ "repeat", Image::WRAP_REPEAT },
+};
+
+StringMap<Image::WrapMode, Image::WRAP_MAX_ENUM> Image::wrapModes(Image::wrapModeEntries, sizeof(Image::wrapModeEntries));
 
 
 } // graphics
