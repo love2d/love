@@ -6,6 +6,7 @@ AC_CONFIG_SRCDIR([src/love.cpp])
 AM_INIT_AUTOMAKE([foreign -Wall foreign tar-ustar silent-rules])
 AM_SILENT_RULES
 AC_PREFIX_DEFAULT([/usr])
+AM_PROG_AR
 AC_PROG_LIBTOOL
 AC_PROG_CC
 AC_PROG_CXX
@@ -60,7 +61,8 @@ AC_SEARCH_LIBS([ov_open], [vorbisfile], [], AC_MSG_ERROR([Can't LÖVE without Vo
 
 AC_ARG_ENABLE([mpg123], AC_HELP_STRING([--disable-mpg123], [Disable mp3 support, for patent-free builds]), [], [enable_mpg123=yes])
 AS_IF([test "x$enable_mpg123" != xno],
-	AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [], AC_MSG_ERROR([Can't LÖVE without Mpg123])),
+	AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [], AC_MSG_ERROR([Can't LÖVE without Mpg123])))
+AS_IF([test "x$enable_mpg123" != xno],
 	AC_DEFINE([LOVE_NOMPG123], [], [Build without mpg123]))
 AS_IF([test "x$enable_mpg123" != xno],
 	AC_SEARCH_LIBS([mpg123_seek_64], [mpg123], AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]), AC_SUBST([FILE_OFFSET],[])))
@@ -69,6 +71,12 @@ AC_ARG_ENABLE([exe], AC_HELP_STRING([--disable-exe], [Disable building of execut
 AS_IF([test "x$enable_exe" != xno],
 	  AC_DEFINE([LOVE_BUILD_EXE], [], [Don't build launcher]))
 AM_CONDITIONAL([LOVE_BUILD_EXE], [test "x$enable_exe" != xno])
+
+AC_ARG_ENABLE([gme], AC_HELP_STRING([--enable-gme], [Enable GME support, for more chiptuney goodness]), [], [enable_gme=no])
+AS_IF([test "x$enable_gme" == xyes],
+	  AC_SEARCH_LIBS([gme_open_data], [gme], [], AC_MSG_ERROR([Can't LÖVE without gme])))
+AS_IF([test "x$enable_gme" == xyes],
+	  AC_DEFINE([LOVE_SUPPORT_GME], [], [Enable gme]))
 
 AC_CONFIG_FILES([
 	Makefile
