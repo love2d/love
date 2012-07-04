@@ -19,12 +19,14 @@
  **/
 
 #include "threads.h"
+#include "Thread.h"
 
 namespace love
 {
 namespace thread
 {
-
+namespace sdl
+{
 Mutex::Mutex()
 {
 	mutex = SDL_CreateMutex();
@@ -43,90 +45,6 @@ void Mutex::lock()
 void Mutex::unlock()
 {
 	SDL_mutexV(mutex);
-}
-
-int ThreadBase::thread_runner(void *param)
-{
-	ThreadBase *thread = (ThreadBase *)param;
-	thread->main();
-	return 0;
-}
-
-ThreadBase::ThreadBase()
-	: running(false)
-{
-}
-
-ThreadBase::~ThreadBase()
-{
-	if (running)
-	{
-		wait();
-	}
-}
-
-bool ThreadBase::start()
-{
-	thread = SDL_CreateThread(thread_runner, this);
-	if (thread == NULL)
-		return false;
-	else
-		return (running = true);
-}
-
-void ThreadBase::wait()
-{
-	SDL_WaitThread(thread, NULL);
-	running = false;
-}
-
-void ThreadBase::kill()
-{
-	SDL_KillThread(thread);
-	running = false;
-}
-
-unsigned int ThreadBase::threadId()
-{
-	return (unsigned int)SDL_ThreadID();
-}
-
-Semaphore::Semaphore(unsigned int initial_value)
-{
-	semaphore = SDL_CreateSemaphore(initial_value);
-}
-
-Semaphore::~Semaphore()
-{
-	SDL_DestroySemaphore(semaphore);
-}
-
-unsigned int Semaphore::value()
-{
-	return SDL_SemValue(semaphore);
-}
-
-void Semaphore::post()
-{
-	SDL_SemPost(semaphore);
-}
-
-bool Semaphore::wait(int timeout)
-{
-	if (timeout < 0)
-		return SDL_SemWait(semaphore) ? false : true;
-	else if (timeout == 0)
-		return SDL_SemTryWait(semaphore) ? false : true;
-	else
-	{
-		int ret = SDL_SemWaitTimeout(semaphore, timeout);
-		return (ret == 0);
-	}
-}
-
-bool Semaphore::tryWait()
-{
-	return SDL_SemTryWait(semaphore) ? false : true;
 }
 
 Conditional::Conditional()
@@ -149,12 +67,33 @@ void Conditional::broadcast()
 	SDL_CondBroadcast(cond);
 }
 
-bool Conditional::wait(Mutex *mutex, int timeout)
+bool Conditional::wait(thread::Mutex *_mutex, int timeout)
 {
+	// Yes, I realise this can be dangerous,
+	// however, you're asking for it if you're
+	// mixing thread implementations.
+	Mutex *mutex = (Mutex*) _mutex;
 	if (timeout < 0)
 		return !SDL_CondWait(cond, mutex->mutex);
 	else
 		return (SDL_CondWaitTimeout(cond, mutex->mutex, timeout) == 0);
+}
+
+} // sdl
+
+thread::Mutex *newMutex()
+{
+	return new sdl::Mutex();
+}
+
+thread::Conditional *newConditional()
+{
+	return new sdl::Conditional();
+}
+
+thread::Thread *newThread(Threadable *t)
+{
+	return new sdl::Thread(t);
 }
 
 } // thread

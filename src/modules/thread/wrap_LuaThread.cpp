@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2010 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,37 +18,54 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_THREAD_SDL_WRAP_THREAD_H
-#define LOVE_THREAD_SDL_WRAP_THREAD_H
-
-// LOVE
-#include "common/config.h"
-#include "Thread.h"
+#include "wrap_LuaThread.h"
 
 namespace love
 {
 namespace thread
 {
 
-Thread *luax_checkthread(lua_State *L, int idx);
-int w_Thread_start(lua_State *L);
-int w_Thread_wait(lua_State *L);
-int w_Thread_getName(lua_State *L);
-int w_Thread_get(lua_State *L);
-int w_Thread_getKeys(lua_State *L);
-int w_Thread_demand(lua_State *L);
-int w_Thread_peek(lua_State *L);
-int w_Thread_set(lua_State *L);
+LuaThread *luax_checkthread(lua_State *L, int idx)
+{
+	return luax_checktype<LuaThread>(L, idx, "Thread", THREAD_THREAD_T);
+}
 
-extern "C" int luaopen_thread(lua_State *L);
+int w_Thread_start(lua_State *L)
+{
+	LuaThread *t = luax_checkthread(L, 1);
+	luax_pushboolean(L, t->start());
+	return 1;
+}
 
-int w_newThread(lua_State *L);
-int w_getThreads(lua_State *L);
-int w_getThread(lua_State *L);
+int w_Thread_wait(lua_State *L)
+{
+	LuaThread *t = luax_checkthread(L, 1);
+	t->wait();
+	return 0;
+}
 
-extern "C" LOVE_EXPORT int luaopen_love_thread(lua_State *L);
+int w_Thread_getError(lua_State *L)
+{
+	LuaThread *t = luax_checkthread(L, 1);
+	std::string err = t->getError();
+	if (err.length() == 0)
+		lua_pushnil(L);
+	else
+		luax_pushstring(L, err);
+	return 1;
+}
+
+static const luaL_Reg type_functions[] = {
+	{ "start", w_Thread_start },
+	{ "wait", w_Thread_wait },
+	{ "getError", w_Thread_getError },
+	{ 0, 0 }
+};
+
+extern "C" int luaopen_thread(lua_State *L)
+{
+	return luax_register_type(L, "Thread", type_functions);
+}
 
 } // thread
 } // love
-
-#endif // LOVE_THREAD_SDL_WRAP_THREAD_H

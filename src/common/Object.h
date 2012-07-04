@@ -70,7 +70,6 @@ private:
 	// The reference count.
 	int count;
 }; // Object
-
 } // love
 
 #endif // LOVE_OBJECT_H

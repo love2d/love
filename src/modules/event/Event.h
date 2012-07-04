@@ -54,6 +54,7 @@ public:
 class Event : public Module
 {
 public:
+	Event();
 	virtual ~Event();
 
 	void push(Message *msg);
@@ -68,13 +69,12 @@ public:
 	static bool getConstant(love::keyboard::Keyboard::Key in, const char  *&out);
 
 protected:
-	thread::Mutex mutex;
+	thread::Mutex *mutex;
 	std::queue<Message *> queue;
 	static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
 	static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
 	static StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
 	static StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;
-
 }; // Event
 
 } // event

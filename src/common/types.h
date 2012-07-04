@@ -89,6 +89,7 @@ enum Type
 
 	// Thread
 	THREAD_THREAD_ID,
+	THREAD_CHANNEL_ID,
 
 	// The modules themselves. Only add abstracted modules here.
 	MODULE_FILESYSTEM_ID,
@@ -160,6 +161,7 @@ const bits PHYSICS_WHEEL_JOINT_T = (bits(1) << PHYSICS_WHEEL_JOINT_ID) | PHYSICS
 
 // Thread.
 const bits THREAD_THREAD_T = (bits(1) << THREAD_THREAD_ID) | OBJECT_T;
+const bits THREAD_CHANNEL_T = (bits(1) << THREAD_CHANNEL_ID) | OBJECT_T;
 
 // Modules.
 const bits MODULE_FILESYSTEM_T = (bits(1) << MODULE_FILESYSTEM_ID) | MODULE_T;

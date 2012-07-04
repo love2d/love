@@ -59,7 +59,7 @@ protected:
 	// We need to be thread-safe
 	// so we lock when we're accessing our
 	// data
-	Mutex mutex;
+	Mutex *mutex;
 
 public:
 
@@ -73,10 +73,12 @@ public:
 		FORMAT_MAX_ENUM
 	};
 
+	ImageData();
+
 	/**
 	 * Destructor.
 	 **/
-	virtual ~ImageData() {};
+	virtual ~ImageData();
 
 	static bool getConstant(const char *in, Format &out);
 	static bool getConstant(Format in, const char  *&out);

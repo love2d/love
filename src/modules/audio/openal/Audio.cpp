@@ -23,6 +23,8 @@
 
 #include "sound/Decoder.h"
 
+#include <cstdlib>
+
 namespace love
 {
 namespace audio
@@ -34,9 +36,16 @@ Audio::PoolThread::PoolThread(Pool *pool)
 	: pool(pool)
 	, finish(false)
 {
+	mutex = thread::newMutex();
 }
 
-void Audio::PoolThread::main()
+Audio::PoolThread::~PoolThread()
+{
+	delete mutex;
+}
+
+
+void Audio::PoolThread::threadFunction()
 {
 	while (true)
 	{
@@ -58,7 +67,6 @@ void Audio::PoolThread::setFinish()
 	thread::Lock lock(mutex);
 	finish = true;
 }
-
 
 Audio::Audio() : distanceModel(DISTANCE_INVERSE_CLAMPED)
 {

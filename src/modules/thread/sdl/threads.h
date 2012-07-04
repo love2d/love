@@ -21,87 +21,51 @@
 #ifndef LOVE_THREAD_SDL_THREADS_H
 #define LOVE_THREAD_SDL_THREADS_H
 
-#include "SDL.h"
-#include "common/config.h"
+#include <common/config.h>
+#include <thread/threads.h>
+
+#include <SDL_thread.h>
 
 namespace love
 {
 namespace thread
 {
-
-class Mutex
+namespace sdl
 {
-public:
-	Mutex();
-	~Mutex();
+	class Conditional;
 
-	void lock();
-	void unlock();
-private:
-	SDL_mutex *mutex;
-	Mutex(const Mutex &/* mutex*/) {}
+	class Mutex : public thread::Mutex
+	{
+	public:
+		Mutex();
+		~Mutex();
 
-	friend class Conditional;
-};
+		void lock();
+		void unlock();
 
+	private:
+		SDL_mutex* mutex;
+		Mutex(const Mutex&/* mutex*/) {}
 
+		friend class Conditional;
+	};
 
-class ThreadBase
-{
-public:
-	ThreadBase();
-	virtual ~ThreadBase();
+	class Conditional : public thread::Conditional
+	{
+	public:
+		Conditional();
+		~Conditional();
 
-	bool start();
-	void wait();
-	void kill(); // FIXME: not supported by SDL (SDL's kill is probably cancel)?
+		void signal();
+		void broadcast();
+		bool wait(thread::Mutex* mutex, int timeout=-1);
 
-	static unsigned int threadId();
+	private:
+		SDL_cond* cond;
+	};
 
-protected:
-	virtual void main() = 0;
-
-private:
-	SDL_Thread *thread;
-	ThreadBase(ThreadBase &/* thread*/) {}
-	bool running;
-
-	static int thread_runner(void *param);
-};
-
-class Semaphore
-{
-public:
-	Semaphore(unsigned int initial_value);
-	~Semaphore();
-
-	unsigned int value();
-	void post();
-	bool wait(int timeout = -1);
-	bool tryWait();
-
-private:
-	Semaphore(const Semaphore &/* sem*/) {}
-	SDL_sem *semaphore;
-};
-
-// Should conditional inherit from mutex?
-class Conditional
-{
-public:
-	Conditional();
-	~Conditional();
-
-	void signal();
-	void broadcast();
-	bool wait(Mutex *mutex, int timeout=-1);
-
-private:
-	SDL_cond *cond;
-};
-
+} // sdl
 } // thread
 } // love
 
-
-#endif // LOVE_THREAD_SDL_THREADS_H
+#endif /* LOVE_THREAD_SDL_THREADS_H */

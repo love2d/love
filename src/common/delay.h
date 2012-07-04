@@ -21,8 +21,6 @@
 #ifndef DELAY_H_
 #define DELAY_H_
 
-#include <thread/threads.h>
-
 namespace love
 {
 

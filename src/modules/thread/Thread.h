@@ -18,108 +18,28 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_THREAD_SDL_THREAD_H
-#define LOVE_THREAD_SDL_THREAD_H
-
-// STL
-#include <map>
-#include <string>
-#include <vector>
-#include <cstring>
+#ifndef LOVE_THREAD_THREAD_H
+#define LOVE_THREAD_THREAD_H
 
 // LOVE
-#include "filesystem/File.h"
-#include "common/runtime.h"
-#include "common/Module.h"
-#include "common/Variant.h"
-#include "thread/threads.h"
+#include <common/runtime.h>
+#include <common/Object.h>
 
 namespace love
 {
 namespace thread
 {
 
-class ThreadModule;
-
-class ThreadData
+class Thread
 {
 public:
-	ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond);
-	~ThreadData();
-	const char *getCode();
-	const char *getName(size_t *len = 0);
-	Variant *getValue(const std::string &name);
-	void clearValue(const std::string &name);
-	void setValue(const std::string &name, Variant *v);
-	std::vector<std::string> getKeys();
+	virtual ~Thread() {}
+	virtual bool start() = 0;
+	virtual void wait() = 0;
+	virtual void kill() = 0;
+}; // ThreadObject
 
-	void *mutex;
-	void *cond;
-private:
-	char *code;
-	char *name;
-	std::map<std::string, Variant *> shared;
-	size_t len;
-};
-
-class Thread : public love::Object
-{
-public:
-	Thread(love::thread::ThreadModule *module, const std::string &name, love::Data *data);
-	Thread(love::thread::ThreadModule *module, const std::string &name);
-	virtual ~Thread();
-	void start();
-	void kill();
-	void wait();
-	std::string getName();
-	Variant *get(const std::string &name);
-	std::vector<std::string> getKeys();
-	Variant *demand(const std::string &name);
-	void clear(const std::string &name);
-	void set(const std::string &name, Variant *v);
-	void lock();
-	void unlock();
-private:
-	class ThreadThread: public ThreadBase
-	{
-	private:
-		ThreadData *comm;
-
-	protected:
-		virtual void main();
-
-	public:
-		ThreadThread(ThreadData *comm);
-	};
-
-	ThreadThread *handle;
-
-	ThreadModule *module;
-	ThreadData *comm;
-	std::string name;
-	char *data;
-	Mutex *mutex;
-	Conditional *cond;
-	bool isThread;
-}; // Thread
-
-typedef std::map<std::string, Thread *> threadlist_t;
-
-class ThreadModule : public love::Module
-{
-public:
-	ThreadModule();
-	virtual ~ThreadModule();
-	Thread *newThread(const std::string &name, love::Data *data);
-	void getThreads(Thread **list);
-	Thread *getThread(const std::string &name);
-	unsigned getThreadCount() const;
-	void unregister(const std::string &name);
-	const char *getName() const;
-private:
-	threadlist_t threads;
-}; // ThreadModule
 } // thread
 } // love
 
-#endif // LOVE_THREAD_SDL_THREAD_H
+#endif // LOVE_THREAD_THREAD_H

@@ -25,7 +25,7 @@
 #include "Object.h"
 #include "Reference.h"
 #include "StringMap.h"
-#include "thread/threads.h"
+#include <thread/threads.h>
 
 // STD
 #include <iostream>
@@ -35,7 +35,6 @@ namespace love
 
 static thread::Mutex *gcmutex = 0;
 void *_gcmutex = 0;
-unsigned int _gcthread = 0;
 /**
  * Called when an object is collected. The object is released
  * once in this function, possibly deleting it.
@@ -44,7 +43,7 @@ static int w__gc(lua_State *L)
 {
 	if (!gcmutex)
 	{
-		gcmutex = new thread::Mutex();
+		gcmutex = thread::newMutex();
 		_gcmutex = (void *) gcmutex;
 	}
 	Proxy *p = (Proxy *)lua_touserdata(L, 1);
@@ -52,7 +51,6 @@ static int w__gc(lua_State *L)
 	if (p->own)
 	{
 		thread::Lock lock(gcmutex);
-		_gcthread = thread::ThreadBase::threadId();
 		t->release();
 	}
 	return 0;
@@ -116,6 +114,13 @@ bool luax_optboolean(lua_State *L, int idx, bool b)
 	if (lua_isboolean(L, idx) == 1)
 		return (lua_toboolean(L, idx) == 1 ? true : false);
 	return b;
+}
+
+std::string luax_tostring(lua_State *L, int idx)
+{
+	size_t len;
+	const char *str = lua_tolstring(L, idx, &len);
+	return std::string(str, len);
 }
 
 std::string luax_checkstring(lua_State *L, int idx)
@@ -462,6 +467,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// Thread
 	{"Thread", THREAD_THREAD_ID},
+	{"Channel", THREAD_CHANNEL_ID},
 
 	// The modules themselves. Only add abstracted modules here.
 	{"filesystem", MODULE_FILESYSTEM_ID},

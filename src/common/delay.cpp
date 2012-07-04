@@ -19,24 +19,14 @@
  **/
 
 #include "delay.h"
+#include <SDL.h>
 
 namespace love
 {
 
 void delay(unsigned int ms)
 {
-#if LOVE_THREADS == LOVE_THREADS_POSIX
-	struct timespec ts1, ts2;
-
-	ts1.tv_sec = ms / 1000;
-	ts1.tv_nsec = (ms % 1000) * 1000000;
-	// FIXME: handle signals
-	nanosleep(&ts1, &ts2);
-#elif LOVE_THREADS == LOVE_THREADS_WIN32
-	Sleep(ms);
-#elif LOVE_THREADS == LOVE_THREADS_SDL
 	SDL_Delay(ms);
-#endif
 }
 
 } // love

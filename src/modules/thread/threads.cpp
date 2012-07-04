@@ -20,28 +20,51 @@
 
 #include "threads.h"
 
-#if LOVE_THREADS == LOVE_THREADS_POSIX
-#  include "posix/threads.cpp"
-#elif LOVE_THREADS == LOVE_THREADS_WIN32
-#  include "win32/threads.cpp"
-#elif LOVE_THREADS == LOVE_THREADS_SDL
-#  include "sdl/threads.cpp"
-#endif
-
 namespace love
 {
 namespace thread
 {
 
-const char *threadAPI()
+Lock::Lock(Mutex *m)
+	: mutex(m)
 {
-#if LOVE_THREADS == LOVE_THREADS_POSIX
-	return "posix";
-#elif LOVE_THREADS == LOVE_THREADS_WIN32
-	return "win32";
-#elif LOVE_THREADS == LOVE_THREADS_SDL
-	return "sdl";
-#endif
+	mutex->lock();
+}
+
+Lock::Lock(Mutex &m)
+	: mutex(&m)
+{
+	mutex->lock();
+}
+
+Lock::~Lock()
+{
+	mutex->unlock();
+}
+
+Threadable::Threadable()
+{
+	owner = newThread(this);
+}
+
+Threadable::~Threadable()
+{
+	delete owner;
+}
+
+bool Threadable::start()
+{
+	return owner->start();
+}
+
+void Threadable::wait()
+{
+	owner->wait();
+}
+
+void Threadable::kill()
+{
+	owner->kill();
 }
 
 } // thread

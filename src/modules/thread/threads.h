@@ -21,65 +21,63 @@
 #ifndef LOVE_THREAD_THREADS_H
 #define LOVE_THREAD_THREADS_H
 
-#include "common/config.h"
-
-#define LOVE_THREADS_SDL	0
-#define LOVE_THREADS_WIN32	1
-#define LOVE_THREADS_POSIX	2
-
-// Choose correct threads API.
-// Headless love uses either windows threads or posix threads.
-// Headed (standard) love uses SDL threads.
-#ifdef LOVE_HEADLESS
-#  ifdef WIN32
-#    define LOVE_THREADS	LOVE_THREADS_WIN32
-#  else
-#    define LOVE_THREADS	LOVE_THREADS_POSIX
-#  endif
-#else
-#  define LOVE_THREADS	LOVE_THREADS_SDL
-#endif
-
-
-// include the correct header
-#if LOVE_THREADS == LOVE_THREADS_POSIX
-#  include "posix/threads.h"
-#elif LOVE_THREADS == LOVE_THREADS_WIN32
-#  include "win32/threads.h"
-#elif LOVE_THREADS == LOVE_THREADS_SDL
-#  include "sdl/threads.h"
-#endif
-
+#include <common/config.h>
+#include "Thread.h"
 
 namespace love
 {
 namespace thread
 {
 
-const char *threadAPI();
+class Mutex
+{
+public:
+	virtual ~Mutex() {}
+
+	virtual void lock() = 0;
+	virtual void unlock() = 0;
+};
+
+class Conditional
+{
+public:
+	virtual ~Conditional() {}
+
+	virtual void signal() = 0;
+	virtual void broadcast() = 0;
+	virtual bool wait(Mutex* mutex, int timeout=-1) = 0;
+};
 
 class Lock
 {
 public:
-	Lock(Mutex *m): mutex(m)
-	{
-		mutex->lock();
-	}
+	Lock(Mutex* m);
+	Lock(Mutex& m);
+	~Lock();
 
-	Lock(Mutex &m): mutex(&m)
-	{
-		mutex->lock();
-	}
-
-	~Lock()
-	{
-		mutex->unlock();
-	}
 private:
 	Mutex *mutex;
-
-	Lock(Lock &/* lock*/) {}
 };
+
+class Threadable
+{
+public:
+	Threadable();
+	virtual ~Threadable();
+
+	virtual void threadFunction() = 0;
+
+	bool start();
+	void wait();
+	void kill();
+
+protected:
+	Thread *owner;
+};
+
+Mutex *newMutex();
+Conditional *newConditional();
+Thread *newThread(Threadable *t);
 
 } // thread
 } // love

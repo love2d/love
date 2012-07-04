@@ -35,7 +35,7 @@ Pool::Pool()
 	alGenSources(NUM_SOURCES, sources);
 
 	// Create the mutex.
-	mutex = new thread::Mutex();
+	mutex = thread::newMutex();
 
 	if (alGetError() != AL_NO_ERROR)
 		throw love::Exception("Could not generate sources.");
