@@ -121,15 +121,6 @@ LOVE 0.8.0 [Rubber Piggy]
   * Updated version compatibility system to actually do something.
   * Updated love.run's order, events are checked just before update.
   * Updated Box2D to version 2.2.1.
-  * Updated sdl to 1.2.15 on Windows
-  * Updated freetype to 2.4.9 on Windows
-  * Updated libjpeg to 8d on Windows
-  * Updated libmodplug to 0.8.8.4 on Windows
-  * Updated libogg to 1.3.0 on Windows
-  * Updated libpng to 1.5.10 on Windows
-  * Updated mpg123 to 1.13.7 on Windows
-  * Updated openal-soft to 1.14 on Windows
-  * Updated zlib to 1.2.6 on Windows
 
 LOVE 0.7.2 [Game Slave]
 -----------------------
