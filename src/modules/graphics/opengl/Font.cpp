@@ -234,36 +234,45 @@ void Font::print(char character, float x, float y)
 	}
 }
 
-int Font::getWidth(const std::string &line)
+int Font::getWidth(const std::string &str)
 {
-	if (line.size() == 0) return 0;
-	int temp = 0;
+	if (str.size() == 0) return 0;
 
+	std::istringstream iss(str);
+	std::string line;
 	Glyph *g;
+	int max_width = 0;
 
-	try
+	while (getline(iss, line, '\n'))
 	{
-		utf8::iterator<std::string::const_iterator> i(line.begin(), line.begin(), line.end());
-		utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
-		while (i != end)
+		int width = 0;
+		try
 		{
-			int c = *i++;
-			g = glyphs[c];
-			if (!g) g = addGlyph(c);
-			temp += static_cast<int>(g->spacing * mSpacing);
+			utf8::iterator<std::string::const_iterator> i(line.begin(), line.begin(), line.end());
+			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
+			while (i != end)
+			{
+				int c = *i++;
+				g = glyphs[c];
+				if (!g) g = addGlyph(c);
+				width += static_cast<int>(g->spacing * mSpacing);
+			}
 		}
-	}
-	catch(utf8::exception &e)
-	{
-		throw love::Exception("%s", e.what());
+		catch(utf8::exception &e)
+		{
+			throw love::Exception("%s", e.what());
+		}
+
+		if (width > max_width)
+			max_width = width;
 	}
 
-	return temp;
+	return max_width;
 }
 
-int Font::getWidth(const char *line)
+int Font::getWidth(const char *str)
 {
-	return this->getWidth(std::string(line));
+	return this->getWidth(std::string(str));
 }
 
 int Font::getWidth(const char character)
