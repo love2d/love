@@ -33,30 +33,31 @@ namespace love
 {
 namespace thread
 {
-	class Channel : public love::Object
-	{
-	private:
-		Mutex *mutex;
-		Conditional *cond;
-		std::queue<Variant*> queue;
-		bool named;
-		std::string name;
-		Channel(const std::string &name);
+class Channel : public love::Object
+{
+private:
+	Mutex *mutex;
+	Conditional *cond;
+	std::queue<Variant*> queue;
+	bool named;
+	std::string name;
+	Channel(const std::string &name);
 
-	public:
-		Channel();
-		~Channel();
-		static Channel *getChannel(const std::string &name);
+public:
+	Channel();
+	~Channel();
+	static Channel *getChannel(const std::string &name);
 
-		void push(Variant *var);
-		Variant *pop();
-		Variant *demand();
-		Variant *peek();
-		int count();
-		void clear();
+	void push(Variant *var);
+	Variant *pop();
+	Variant *demand();
+	Variant *peek();
+	int count();
+	void clear();
 
-		void release();
-	}; // Channel
+	void retain();
+	void release();
+}; // Channel
 } // thread
 } // love
 
