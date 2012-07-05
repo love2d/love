@@ -249,7 +249,7 @@ int w_newQuad(lua_State *L)
 	return 1;
 }
 
-int w_newFont1(lua_State *L)
+int w_newFont(lua_State *L)
 {
 	Data *font_data = NULL;
 	// Convert to File, if necessary.
@@ -911,7 +911,7 @@ int w_drawTest(lua_State *L)
 	return 0;
 }
 
-int w_print1(lua_State *L)
+int w_print(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
@@ -934,7 +934,7 @@ int w_print1(lua_State *L)
 	return 0;
 }
 
-int w_printf1(lua_State *L)
+int w_printf(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
@@ -1225,7 +1225,7 @@ static const luaL_Reg functions[] =
 
 	{ "newImage", w_newImage },
 	{ "newQuad", w_newQuad },
-	{ "newFont1", w_newFont1 },
+	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
@@ -1270,8 +1270,8 @@ static const luaL_Reg functions[] =
 	{ "drawq", w_drawq },
 	{ "drawTest", w_drawTest },
 
-	{ "print1", w_print1 },
-	{ "printf1", w_printf1 },
+	{ "print", w_print },
+	{ "printf", w_printf },
 
 	{ "setCaption", w_setCaption },
 	{ "getCaption", w_getCaption },
