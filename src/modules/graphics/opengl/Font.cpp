@@ -177,7 +177,7 @@ float Font::getHeight() const
 	return static_cast<float>(height);
 }
 
-void Font::print(std::string text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Font::print(std::string text, float x, float y, float letter_spacing, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	float dx = 0.0f; // spacing counter for newline handling
 	glPushMatrix();
@@ -207,8 +207,8 @@ void Font::print(std::string text, float x, float y, float angle, float sx, floa
 			bindTexture(glyph->texture);
 			glCallList(glyph->list);
 			glPopMatrix();
-			glTranslatef(static_cast<GLfloat>(glyph->spacing), 0, 0);
-			dx += glyph->spacing;
+			glTranslatef(static_cast<GLfloat>(glyph->spacing + letter_spacing), 0, 0);
+			dx += glyph->spacing + letter_spacing;
 		}
 	}
 	catch(utf8::exception &e)

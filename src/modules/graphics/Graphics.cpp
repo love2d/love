@@ -112,6 +112,7 @@ StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM>::Entry Graphics::alignM
 	{ "left", Graphics::ALIGN_LEFT },
 	{ "right", Graphics::ALIGN_RIGHT },
 	{ "center", Graphics::ALIGN_CENTER },
+	{ "justify", Graphics::ALIGN_JUSTIFY },
 };
 
 StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM> Graphics::alignModes(Graphics::alignModeEntries, sizeof(Graphics::alignModeEntries));

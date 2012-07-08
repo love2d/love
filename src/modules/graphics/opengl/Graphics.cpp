@@ -686,7 +686,7 @@ void Graphics::print(const char *str, float x, float y , float angle, float sx, 
 	if (currentFont != 0)
 	{
 		std::string text(str);
-		currentFont->print(text, x, y, angle, sx, sy, ox, oy, kx, ky);
+		currentFont->print(text, x, y, 0.0, angle, sx, sy, ox, oy, kx, ky);
 	}
 }
 
@@ -701,6 +701,7 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 
 	// now for the actual printing
 	vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
+	float letter_spacing = 0.0f;
 	for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter)
 	{
 		float width = static_cast<float>(currentFont->getWidth(*line_iter));
@@ -711,6 +712,13 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 			break;
 		case ALIGN_CENTER:
 			currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y));
+			break;
+		case ALIGN_JUSTIFY:
+			if (line_iter->length() > 1 && (line_iter+1) != line_end)
+				letter_spacing = (wrap - width) / float(line_iter->length() - 1);
+			else
+				letter_spacing = 0.0f;
+			currentFont->print(*line_iter, ceil(x), ceil(y), letter_spacing);
 			break;
 		case ALIGN_LEFT:
 		default:
