@@ -211,7 +211,7 @@ public:
 	int getModes(lua_State *L);
 
 	/**
-	 * Scissor defines a box such that everything outside that box is discared and not drawn.
+	 * Scissor defines a box such that everything outside that box is discarded and not drawn.
 	 * Scissoring is automatically enabled.
 	 * @param x The x-coordinate of the top-left corner.
 	 * @param y The y-coordinate of the top-left corner.

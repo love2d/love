@@ -113,7 +113,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	if (isCreated())
 		tempState = saveState();
 
-	// Unlad all volatile objects. These must be reloaded after
+	// Unload all volatile objects. These must be reloaded after
 	// the display mode change.
 	Volatile::unloadAll();
 
@@ -402,7 +402,7 @@ Canvas *Graphics::newCanvas(int width, int height)
 	Canvas *canvas = new Canvas(width, height);
 	GLenum err = canvas->getStatus();
 
-	// everything ok, reaturn canvas (early out)
+	// everything ok, return canvas (early out)
 	if (err == GL_FRAMEBUFFER_COMPLETE)
 		return canvas;
 

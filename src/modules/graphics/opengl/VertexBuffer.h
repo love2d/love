@@ -36,7 +36,7 @@ namespace opengl
 {
 
 /**
- * VertexBuffer is an abstraction over VBOs (Vertex Buffer Objecys), which
+ * VertexBuffer is an abstraction over VBOs (Vertex Buffer Objects), which
  * falls back to regular vertex arrays if VBOs are not supported.
  *
  * This allows code to take advantage of VBOs where available, but still
