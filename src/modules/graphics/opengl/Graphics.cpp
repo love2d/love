@@ -516,8 +516,6 @@ Font *Graphics::getFont()
 
 void Graphics::setBlendMode(Graphics::BlendMode mode)
 {
-	glAlphaFunc(GL_GEQUAL, 0);
-
 	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging)
 	{
 		if (mode == BLEND_SUBTRACTIVE)
