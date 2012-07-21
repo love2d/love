@@ -745,8 +745,9 @@ int w_setCanvas(lua_State *L)
 	// discard stencil testing
 	instance->discardStencil();
 
-	// called with nil or none -> reset to default buffer
-	if (lua_isnoneornil(L,1))
+	// called with none -> reset to default buffer
+	// nil is an error, to help people with typoes
+	if (lua_isnone(L,1))
 	{
 		Canvas::bindDefaultCanvas();
 		return 0;
