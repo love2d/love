@@ -1244,12 +1244,13 @@ do
 	AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 	]], "Vera.ttf", "base64")
 
+	local _newFont = love.graphics.newFont
 	love.graphics.newFont = function(font, size)
 		if type(font) == "number" or not font then
 			size = font
 			font = vera_ttf
 		end
-		return love.graphics.newFont1(font, size or 12)
+		return _newFont(font, size or 12)
 	end
 
 	love.graphics.setNewFont = function(...)
@@ -1258,20 +1259,28 @@ do
 		return font
 	end
 
-	love.graphics.print = function (...)
-		if not love.graphics.getFont() then
-			love.graphics.setNewFont(12)
+	local _getFont = love.graphics.getFont
+	love.graphics.getFont = function(...)
+		local font = _getFont()
+		if not font then
+			font = love.graphics.setNewFont(12)
 		end
-		love.graphics.print1(...)
-		love.graphics.print = love.graphics.print1
+		love.graphics.getFont = _getFont
+		return font
 	end
 
+	local _print = love.graphics.print
+	love.graphics.print = function (...)
+		love.graphics.getFont() -- make sure we have a font
+		love.graphics.print = _print
+		love.graphics.print(...)
+	end
+
+	local _printf = love.graphics.printf
 	love.graphics.printf = function (...)
-		if not love.graphics.getFont() then
-			love.graphics.setNewFont(12)
-		end
-		love.graphics.printf1(...)
-		love.graphics.printf = love.graphics.printf1
+		love.graphics.getFont() -- make sure we have a font
+		love.graphics.printf = _printf
+		love.graphics.printf(...)
 	end
 
 	-- PIXEL EFFECTS

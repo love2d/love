@@ -60,6 +60,7 @@ public:
 	 * @param text A string.
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
+	 * @param letter_spacing Additional spacing between letters.
 	 * @param angle The amount of rotation.
 	 * @param sx Scale along the x axis.
 	 * @param sy Scale along the y axis.
@@ -68,7 +69,7 @@ public:
 	 * @param kx Shear along the x axis.
 	 * @param ky Shear along the y axis.
 	 **/
-	void print(std::string text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+	void print(std::string text, float x, float y, float letter_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 	/**
 	 * Prints the character at the designated position.

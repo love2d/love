@@ -4,13 +4,13 @@ Documentation
 -------------
 
 We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], and last but not least there's the irc channel [#love on Freenode][irc].
+If you need further help, feel free to ask on our [forums][forums], and last but not least there's the irc channel [#love on OFTC][irc].
 
 Compilation
 -----------
 
 ###Windows
-Use the project files for Visual C++ 2008 or 2010 (2010 preferred) located in the platform dir.
+Use the project files for Visual Studio 2010 located in the platform dir.
 
 ###*nix
 Run platform/unix/automagic, then run ./configure and make.
@@ -59,7 +59,7 @@ Dependencies
 [site]: http://love2d.org
 [wiki]: http://love2d.org/wiki
 [forums]: http://love2d.org/forums
-[irc]: irc://irc.freenode.net/love
+[irc]: irc://irc.oftc.net/love
 [dependencies]: http://love2d.org/sdk
 [winbuilds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
