@@ -142,6 +142,13 @@ Message *Event::convert(SDL_Event &e)
 	case SDL_QUIT:
 		msg = new Message("quit");
 		break;
+	case SDL_VIDEORESIZE:
+		arg1 = new Variant((double) e.resize.w);
+		arg2 = new Variant((double) e.resize.h);
+		msg = new Message("resize", arg1, arg2);
+		arg1->release();
+		arg2->release();
+		break;
 	}
 
 	return msg;

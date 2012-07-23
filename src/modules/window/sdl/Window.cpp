@@ -60,8 +60,23 @@ Window::_currentMode::_currentMode()
 {
 }
 
-bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int fsaa)
+bool Window::setWindow(int width, int height, WindowFlags *flags)
 {
+	bool fullscreen = false;
+	bool vsync = true;
+	int fsaa = 0;
+	bool resizable = false;
+	bool borderless = false;
+
+	if (flags)
+	{
+		fullscreen = flags->fullscreen;
+		vsync = flags->vsync;
+		fsaa = flags->fsaa;
+		resizable = flags->resizable;
+		borderless = flags->borderless;
+	}
+
 	bool mouseVisible = getMouseVisible();
 
 	// We need to restart the subsystem for two reasons:
@@ -104,23 +119,30 @@ bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int f
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, fsaa);
 	}
 
-	// Fullscreen?
-	Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
+	Uint32 sdlflags = SDL_OPENGL;
+	// Flags
+	if (fullscreen)
+		sdlflags |= SDL_FULLSCREEN;
+	if (resizable)
+		sdlflags |= SDL_RESIZABLE;
+	if (borderless)
+		sdlflags |= SDL_NOFRAME;
 
 	// Have SDL set the video mode.
-	if (SDL_SetVideoMode(width, height, 32, sdlflags) == 0)
+	SDL_Surface *surface;
+	if ((surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0)
 	{
 		bool failed = true;
 		if (fsaa > 0)
 		{
 			// FSAA might have failed, disable it and try again
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
+			failed = (surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0;
 			if (failed)
 			{
 				// There might be no FSAA at all
 				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-				failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
+				failed = (surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0;
 			}
 		}
 		if (failed)
@@ -165,17 +187,21 @@ bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int f
 	currentMode.fsaa = fsaa;
 	currentMode.fullscreen = fullscreen;
 	currentMode.vsync = (real_vsync != 0);
+	currentMode.resizable = ((surface->flags & SDL_RESIZABLE) != 0);
+	currentMode.borderless = ((surface->flags & SDL_NOFRAME) != 0);
 
 	return true;
 }
 
-void Window::getWindow(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa)
+void Window::getWindow(int &width, int &height, WindowFlags &flags)
 {
 	width = currentMode.width;
 	height = currentMode.height;
-	fullscreen = currentMode.fullscreen;
-	vsync = currentMode.vsync;
-	fsaa = currentMode.fsaa;
+	flags.fullscreen = currentMode.fullscreen;
+	flags.vsync = currentMode.vsync;
+	flags.fsaa = currentMode.fsaa;
+	flags.resizable = currentMode.resizable;
+	flags.borderless = currentMode.borderless;
 }
 
 bool Window::checkWindowSize(int width, int height, bool fullscreen)

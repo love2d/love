@@ -46,6 +46,8 @@
 #include "Canvas.h"
 #include "PixelEffect.h"
 
+using love::window::WindowFlags;
+
 namespace love
 {
 namespace graphics
@@ -128,21 +130,17 @@ public:
 	 * Sets the current display mode.
 	 * @param width The window width.
 	 * @param height The window height.
-	 * @param fullscreen True if fullscreen, false otherwise.
-	 * @param vsync True if we should wait for vsync, false otherwise.
-	 * @param fsaa Number of full scene anti-aliasing buffer, or 0 for disabled.
+	 * @param flags An optional WindowFlags structure.
 	 **/
-	bool setMode(int width, int height, bool fullscreen, bool vsync, int fsaa);
+	bool setMode(int width, int height, WindowFlags *flags);
 
 	/**
 	 * Gets the current display mode.
 	 * @param width Pointer to an integer for the window width.
 	 * @param height Pointer to an integer for the window height.
-	 * @param fullscreen Pointer to a boolean for the fullscreen status.
-	 * @param vsync Pointer to a boolean for the vsync status.
-	 * @param fsaa Pointer to an integer for the current number of full scene anti-aliasing buffers.
+	 * @param flags A WindowFlags structure.
 	 **/
-	void getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa);
+	void getMode(int &width, int &height, WindowFlags &flags);
 
 	/**
 	 * Toggles fullscreen. Note that this also needs to reload the

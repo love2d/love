@@ -27,6 +27,8 @@
 #include "scripts/graphics.lua.h"
 #include <cassert>
 
+using love::window::WindowFlags;
+
 namespace love
 {
 namespace graphics
@@ -35,6 +37,34 @@ namespace opengl
 {
 
 static Graphics *instance = 0;
+
+bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue)
+{
+	lua_getfield(L, table_index, key);
+
+	bool retval;
+	if (lua_isnoneornil(L, -1))
+		retval = defaultValue;
+	else
+		retval = lua_toboolean(L, -1);
+
+	lua_pop(L, 1);
+	return retval;
+}
+
+int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue)
+{
+	lua_getfield(L, table_index, key);
+
+	int retval;
+	if (!lua_isnumber(L, -1))
+		retval = defaultValue;
+	else
+		retval = lua_tonumber(L, -1);
+
+	lua_pop(L, 1);
+	return retval;
+}
 
 int w_checkMode(lua_State *L)
 {
@@ -49,24 +79,52 @@ int w_setMode(lua_State *L)
 {
 	int w = luaL_checkint(L, 1);
 	int h = luaL_checkint(L, 2);
-	bool fs = luax_optboolean(L, 3, false);
-	bool vsync = luax_optboolean(L, 4, true);
-	int fsaa = luaL_optint(L, 5, 0);
-	luax_pushboolean(L, instance->setMode(w, h, fs, vsync, fsaa));
+	if (lua_isnoneornil(L, 3))
+	{
+		luax_pushboolean(L, instance->setMode(w, h, 0));
+		return 1;
+	}
+
+	luaL_checktype(L, 3, LUA_TTABLE);
+
+	WindowFlags flags;
+
+	flags.fullscreen = luax_boolflag(L, 3, "fullscreen", false);
+	flags.vsync = luax_boolflag(L, 3, "vsync", true);
+	flags.fsaa = luax_intflag(L, 3, "fsaa", 0);
+	flags.resizable = luax_boolflag(L, 3, "resizable", false);
+	flags.borderless = luax_boolflag(L, 3, "borderless", false);
+
+	luax_pushboolean(L, instance->setMode(w, h, &flags));
 	return 1;
 }
 
 int w_getMode(lua_State *L)
 {
-	int w, h, fsaa;
-	bool fs, vsync;
-	instance->getMode(w, h, fs, vsync, fsaa);
+	int w, h;
+	WindowFlags flags;
+	instance->getMode(w, h, flags);
 	lua_pushnumber(L, w);
 	lua_pushnumber(L, h);
-	lua_pushboolean(L, fs);
-	lua_pushboolean(L, vsync);
-	lua_pushnumber(L, fsaa);
-	return 5;
+
+	lua_newtable(L);
+
+	luax_pushboolean(L, flags.fullscreen);
+	lua_setfield(L, -2, "fullscreen");
+
+	luax_pushboolean(L, flags.vsync);
+	lua_setfield(L, -2, "vsync");
+
+	lua_pushnumber(L, flags.fsaa);
+	lua_setfield(L, -2, "fsaa");
+
+	luax_pushboolean(L, flags.resizable);
+	lua_setfield(L, -2, "resizable");
+
+	luax_pushboolean(L, flags.borderless);
+	lua_setfield(L, -2, "borderless");
+
+	return 3;
 }
 
 int w_toggleFullscreen(lua_State *L)

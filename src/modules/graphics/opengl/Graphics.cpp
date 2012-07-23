@@ -30,6 +30,8 @@
 #include <algorithm>
 #include <iterator>
 
+using love::window::WindowFlags;
+
 namespace love
 {
 namespace graphics
@@ -105,7 +107,7 @@ void Graphics::restoreState(const DisplayState &s)
 		setScissor();
 }
 
-bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int fsaa)
+bool Graphics::setMode(int width, int height, WindowFlags *flags)
 {
 	// This operation destroys the OpenGL context, so
 	// we must save the state.
@@ -117,7 +119,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	// the display mode change.
 	Volatile::unloadAll();
 
-	bool success = currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
+	bool success = currentWindow->setWindow(width, height, flags);
 	// Regardless of failure, we'll have to set up OpenGL once again.
 
 	width = currentWindow->getWidth();
@@ -171,17 +173,18 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	return success;
 }
 
-void Graphics::getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa)
+void Graphics::getMode(int &width, int &height, WindowFlags &flags)
 {
-	currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
+	currentWindow->getWindow(width, height, flags);
 }
 
 bool Graphics::toggleFullscreen()
 {
-	int width, height, fsaa;
-	bool fullscreen, vsync;
-	currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
-	return setMode(width, height, !fullscreen, vsync, fsaa);
+	int width, height;
+	WindowFlags flags;
+	currentWindow->getWindow(width, height, flags);
+	flags.fullscreen = !flags.fullscreen;
+	return setMode(width, height, &flags);
 }
 
 

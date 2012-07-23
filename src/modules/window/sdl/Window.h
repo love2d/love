@@ -37,8 +37,8 @@ public:
 	Window();
 	~Window();
 
-	bool setWindow(int width = 800, int height = 600, bool fullscreen = false, bool vsync = true, int fsaa = 0);
-	void getWindow(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa);
+	bool setWindow(int width, int height, WindowFlags *flags = 0);
+	void getWindow(int &width, int &height, WindowFlags &flags);
 
 	bool checkWindowSize(int width, int height, bool fullscreen);
 	WindowSize **getFullscreenSizes(int &n);
@@ -72,6 +72,8 @@ private:
 		bool fullscreen;
 		bool vsync;
 		int fsaa;
+		bool resizable;
+		bool borderless;
 	} currentMode;
 	bool created;
 	bool mouseVisible;

@@ -179,6 +179,11 @@ function love.createhandlers()
 		quit = function ()
 			return
 		end,
+		resize = function(w, h)
+			local ow, oh, flags = love.graphics.getMode()
+			love.graphics.setMode(w, h, flags)
+			if love.resize then love.resize(w, h) end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)
@@ -321,7 +326,14 @@ function love.init()
 	-- Setup screen here.
 	if c.screen and c.modules.graphics then
 		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) or (c.screen.width == 0 and c.screen.height == 0) then
-			assert(love.graphics.setMode(c.screen.width, c.screen.height, c.screen.fullscreen, c.screen.vsync, c.screen.fsaa), "Could not set screen mode")
+			assert(love.graphics.setMode(c.screen.width, c.screen.height,
+			{
+				fullscreen = c.screen.fullscreen,
+				vsync = c.screen.vsync,
+				fsaa = c.screen.fsaa,
+				resizable = c.screen.resizable,
+				borderless = c.screen.borderless,
+			}), "Could not set screen mode")
 		else
 			error("Could not set screen mode")
 		end
