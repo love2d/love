@@ -39,7 +39,21 @@ Contact::Contact(b2Contact *contact)
 
 Contact::~Contact()
 {
-	Memoizer::remove(contact);
+	invalidate();
+}
+
+void Contact::invalidate()
+{
+	if (contact != NULL)
+	{
+		Memoizer::remove(contact);
+		contact = NULL;
+	}
+}
+
+bool Contact::isValid()
+{
+	return contact != NULL ? true : false;
 }
 
 int Contact::getPositions(lua_State *L)
