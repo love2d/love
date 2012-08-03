@@ -303,6 +303,9 @@ int w_newImageFont(lua_State *L)
 	Image::Filter img_filter;
 	bool setFilter = false;
 
+	// For the filter modes..
+	int startIndex = 2;
+
 	// Convert to ImageData if necessary.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
 		luax_convobj(L, 1, "image", "newImageData");
@@ -321,16 +324,17 @@ int w_newImageFont(lua_State *L)
 	{
 		int idxs[] = {1, 2};
 		luax_convobj(L, idxs, 2, "font", "newRasterizer");
+		startIndex = 3; // There's a glyphs args in there, move up
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
-	if (lua_isstring(L, 2) && lua_isstring(L, 3))
+	if (lua_isstring(L, startIndex) && lua_isstring(L, startIndex+1))
 	{
 		Image::FilterMode min;
 		Image::FilterMode mag;
-		const char *minstr = luaL_checkstring(L, 2);
-		const char *magstr = luaL_checkstring(L, 3);
+		const char *minstr = luaL_checkstring(L, startIndex);
+		const char *magstr = luaL_checkstring(L, startIndex+1);
 		if (!Image::getConstant(minstr, min))
 			return luaL_error(L, "Invalid filter mode: %s", minstr);
 		if (!Image::getConstant(magstr, mag))
