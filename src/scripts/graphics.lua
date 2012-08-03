@@ -1290,6 +1290,7 @@ do
 		#define Image sampler2D
 		#define extern uniform
 		#define Texel texture2D
+		layout(origin_upper_left) in vec4 gl_FragCoord;
 		uniform sampler2D _tex0_;]]
 		local footer = [[void main() {
 			// fix weird crashing issue in OSX when _tex0_ is unused within effect()
