@@ -1290,17 +1290,13 @@ do
 		#define Image sampler2D
 		#define extern uniform
 		#define Texel texture2D
-		layout(origin_upper_left) in vec4 gl_FragCoord;
-		uniform sampler2D _tex0_;]]
+		uniform sampler2D _tex0_;
+		uniform vec2 love_ScreenSize;]]
 		local footer = [[void main() {
 			// fix weird crashing issue in OSX when _tex0_ is unused within effect()
 			float dummy = texture2D(_tex0_, vec2(.5)).r;
-			gl_FragColor = effect(gl_Color, _tex0_, gl_TexCoord[0].xy, gl_FragCoord.xy);
+			gl_FragColor = effect(gl_Color, _tex0_, gl_TexCoord[0].xy, love_ScreenSize - gl_FragCoord.xy);
 		}]]
-
-		local function include(quoted_path) return (love.filesystem.read(quoted_path:sub(2,-2))) end
-		code = code:gsub("#include (%b'')", include)
-		code = code:gsub('#include (%b"")', include)
 
 		return table.concat{header, "\n", code, footer}
 	end
@@ -1318,7 +1314,7 @@ do
 				linenumber, what, message = l:match("^%w+: 0:(%d+):%s*(%w+)%([^%)]+%)%s*(.+)$")
 			end
 			if linenumber and what and message then
-				lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber - 5, what, message)
+				lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber - 7, what, message)
 			end
 		end
 		-- did not match any known error messages

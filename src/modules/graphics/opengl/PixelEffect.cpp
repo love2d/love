@@ -20,6 +20,7 @@
 
 #include "PixelEffect.h"
 #include "GLee.h"
+#include "Graphics.h"
 
 namespace
 {
@@ -134,6 +135,11 @@ bool PixelEffect::loadVolatile()
 	}
 
 	glDeleteShader(shader);
+
+	Graphics *instance = (Graphics*)Module::getInstance("love.graphics.opengl");
+	GLfloat screenSize[2] = {(float)instance->getWidth(), (float)instance->getHeight()};
+	sendFloat("love_ScreenSize", 2, screenSize, 1);
+
 	return true;
 }
 

@@ -197,13 +197,13 @@ Canvas::Canvas(int width, int height)
 
 	// world coordinates
 	vertices[0].x = 0;
-	vertices[0].y = 0;
+	vertices[0].y = h;
 	vertices[1].x = 0;
-	vertices[1].y = h;
+	vertices[1].y = 0;
 	vertices[2].x = w;
-	vertices[2].y = h;
+	vertices[2].y = 0;
 	vertices[3].x = w;
-	vertices[3].y = 0;
+	vertices[3].y = h;
 
 	// texture coordinates
 	vertices[0].s = 0;
@@ -262,7 +262,7 @@ void Canvas::startGrab()
 	glLoadIdentity();
 
 	// Set up orthographic view (no depth)
-	glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
+	glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
 
 	// Switch back to modelview matrix
 	glMatrixMode(GL_MODELVIEW);
@@ -312,12 +312,10 @@ void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, f
 void Canvas::drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	static Matrix t;
-	quad->mirror(false, true);
 	const vertex *v = quad->getVertices();
 
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	drawv(t, v);
-	quad->mirror(false, true);
 }
 
 love::image::ImageData *Canvas::getImageData(love::image::Image *image)
@@ -325,7 +323,6 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	int row = 4 * width;
 	int size = row * height;
 	GLubyte *pixels = new GLubyte[size];
-	GLubyte *screenshot = new GLubyte[size];
 
 	strategy->bindFBO(fbo);
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -334,15 +331,8 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	else
 		strategy->bindFBO(0);
 
-	GLubyte *src = pixels - row;  // second line of source image
-	GLubyte *dst = screenshot + size;  // last row of destination image
+	love::image::ImageData *img = image->newImageData(width, height, (void *)pixels);
 
-	for (int i = 0; i < height; ++i)
-		memcpy(dst -= row, src += row, row);
-
-	love::image::ImageData *img = image->newImageData(width, height, (void *)screenshot);
-
-	delete[] screenshot;
 	delete[] pixels;
 
 	return img;

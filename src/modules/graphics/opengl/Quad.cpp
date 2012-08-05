@@ -113,17 +113,6 @@ void Quad::flip(bool x, bool y)
 	}
 }
 
-void Quad::mirror(bool x, bool y)
-{
-	for (size_t i = 0; i < NUM_VERTICES; ++i)
-	{
-		if (x)
-			vertices[i].s = 1.0f - vertices[i].s;
-		if (y)
-			vertices[i].t = 1.0f - vertices[i].t;
-	}
-}
-
 const vertex *Quad::getVertices() const
 {
 	return vertices;

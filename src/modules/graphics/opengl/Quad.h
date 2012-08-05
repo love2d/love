@@ -54,7 +54,6 @@ public:
 	Viewport getViewport() const;
 
 	void flip(bool x, bool y);
-	void mirror(bool x, bool y);
 
 	/**
 	 * Gets a pointer to the vertices.
