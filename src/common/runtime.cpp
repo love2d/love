@@ -191,6 +191,9 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	lua_setfield(L, -3, m.name); // love.graphics = table
 	lua_remove(L, -2); // love
 
+	// Register module instance
+	Module::registerInstance(m.module);
+
 	return 1;
 }
 
