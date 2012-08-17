@@ -738,6 +738,9 @@
     <ClCompile Include="..\..\src\modules\love\love.cpp">
       <Filter>modules\love</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\common\Module.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\scripts\boot.lua">

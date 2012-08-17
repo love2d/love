@@ -298,6 +298,7 @@
     <ClCompile Include="..\..\src\common\Exception.cpp" />
     <ClCompile Include="..\..\src\common\Matrix.cpp" />
     <ClCompile Include="..\..\src\common\Memoizer.cpp" />
+    <ClCompile Include="..\..\src\common\Module.cpp" />
     <ClCompile Include="..\..\src\common\Object.cpp" />
     <ClCompile Include="..\..\src\common\Reference.cpp" />
     <ClCompile Include="..\..\src\common\runtime.cpp" />
