@@ -27,7 +27,11 @@
 #include "common/Data.h"
 #include "Decoder.h"
 
+#ifdef LOVE_MACOSX
+#include <Game_Music_Emu/gme.h>
+#else
 #include <gme.h>
+#endif
 
 namespace love
 {

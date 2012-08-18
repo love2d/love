@@ -10,6 +10,9 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		A901B882143B65C500D77063 /* DrawQable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A901B880143B65C400D77063 /* DrawQable.cpp */; };
 		A901B885143B661400D77063 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A901B883143B661300D77063 /* Quad.cpp */; };
+		A911D2DB15DFECC8005B7EB8 /* Module.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A911D2DA15DFECC8005B7EB8 /* Module.cpp */; };
+		A911D3C815DFF24D005B7EB8 /* Game_Music_Emu.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */; };
+		A911D3C915DFF25D005B7EB8 /* Game_Music_Emu.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */; };
 		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
 		A9255DD21043183600BA1496 /* SDL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5210420B57007D418B /* SDL.framework */; };
 		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
@@ -252,6 +255,7 @@
 				A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */,
 				A9255DD21043183600BA1496 /* SDL.framework in Copy Frameworks */,
 				A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */,
+				A911D3C915DFF25D005B7EB8 /* Game_Music_Emu.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -265,6 +269,8 @@
 		A901B881143B65C400D77063 /* DrawQable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawQable.h; sourceTree = "<group>"; };
 		A901B883143B661300D77063 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		A901B884143B661300D77063 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
+		A911D2DA15DFECC8005B7EB8 /* Module.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Module.cpp; sourceTree = "<group>"; };
+		A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Game_Music_Emu.framework; path = ../../../../../Library/Frameworks/Game_Music_Emu.framework; sourceTree = "<group>"; };
 		A9255DEA1043188D00BA1496 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = "<group>"; };
 		A9255DEB1043188D00BA1496 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
@@ -740,11 +746,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A9255F461043247300BA1496 /* IL.framework in Frameworks */,
-				A9255EE810431BD000BA1496 /* Vorbis.framework in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				A93E6E4910420B4A007D418B /* OpenAL.framework in Frameworks */,
 				A93E6E4A10420B4A007D418B /* OpenGL.framework in Frameworks */,
+				A9255F461043247300BA1496 /* IL.framework in Frameworks */,
+				A9255EE810431BD000BA1496 /* Vorbis.framework in Frameworks */,
 				A93E6E4B10420B4A007D418B /* FreeType.framework in Frameworks */,
 				A93E6E5410420B57007D418B /* SDL.framework in Frameworks */,
 				A93E6E5510420B57007D418B /* Lua.framework in Frameworks */,
@@ -752,6 +758,7 @@
 				A9D307EA106635C3004FEDF8 /* physfs.framework in Frameworks */,
 				A9F16927109E7BAD00FC83D1 /* libmodplug.framework in Frameworks */,
 				A9F169A7109E824900FC83D1 /* mpg123.framework in Frameworks */,
+				A911D3C815DFF24D005B7EB8 /* Game_Music_Emu.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -761,6 +768,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */,
 				A9F169A6109E824900FC83D1 /* mpg123.framework */,
 				A9F16926109E7BAD00FC83D1 /* libmodplug.framework */,
 				A9D307E9106635C3004FEDF8 /* physfs.framework */,
@@ -857,6 +865,7 @@
 				A93E69E410420ABF007D418B /* Matrix.h */,
 				A9D5C47C142E32ED0044ECF7 /* Memoizer.cpp */,
 				A9D5C47B142E31350044ECF7 /* Memoizer.h */,
+				A911D2DA15DFECC8005B7EB8 /* Module.cpp */,
 				A93E69E710420ABF007D418B /* Module.h */,
 				A93E69E810420ABF007D418B /* Object.cpp */,
 				A93E69E910420ABF007D418B /* Object.h */,
@@ -1943,6 +1952,7 @@
 				A9642D7514D1A66000CE0B02 /* OpenGL.cpp in Sources */,
 				A9F6E6AE15A1080D00C86200 /* love.cpp in Sources */,
 				A9F6E6B115A1099C00C86200 /* GmeDecoder.cpp in Sources */,
+				A911D2DB15DFECC8005B7EB8 /* Module.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1959,6 +1969,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = love_Prefix.pch;
 				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_CFLAGS = "-DLOVE_SUPPORT_GME=1";
 				PRODUCT_NAME = love;
 			};
 			name = Debug;
@@ -1971,6 +1982,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = love_Prefix.pch;
 				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_CFLAGS = "-DLOVE_SUPPORT_GME=1";
 				PRODUCT_NAME = love;
 			};
 			name = Release;
