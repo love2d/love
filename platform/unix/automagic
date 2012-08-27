@@ -18,7 +18,7 @@ AUTOMAKE=$(which automake)
 [[ -x ${AUTOMAKE} ]]   || die "Could not find automake."
 
 automagic() {
-	cp platform/unix/configure.in .
+	cp platform/unix/configure.ac .
 	cp platform/unix/Makefile.am .
 
 	if ! sh platform/unix/gen-makefile; then
