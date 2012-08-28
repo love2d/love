@@ -39,7 +39,7 @@ int w_World_update(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	float dt = (float)luaL_checknumber(L, 2);
-	t->update(dt);
+	ASSERT_GUARD(t->update(dt);)
 	return 0;
 }
 
