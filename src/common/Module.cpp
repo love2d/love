@@ -42,8 +42,13 @@ namespace love
 		std::string name(instance->getName());
 
 		std::map<std::string, Module*>::iterator it = registry.find(name);
+
 		if (registry.end() != it)
+		{
+			if (it->second == instance)
+				return;
 			throw Exception("Module %s already registered!", instance->getName());
+		}
 
 		registry.insert(make_pair(name, instance));
 	}
