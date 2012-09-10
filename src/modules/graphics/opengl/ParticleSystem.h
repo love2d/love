@@ -72,6 +72,16 @@ struct particle
 class ParticleSystem : public Drawable
 {
 public:
+	/**
+	 * Type of distribution new particles are drawn from: None, uniform, normal.
+	 */
+	enum AreaSpreadDistribution
+	{
+		DISTRIBUTION_NONE,
+		DISTRIBUTION_UNIFORM,
+		DISTRIBUTION_NORMAL,
+		DISTRIBUTION_MAX_ENUM,
+	};
 
 	/**
 	 * Creates a particle system with the specified buffersize and sprite.
@@ -121,6 +131,19 @@ public:
 	 * @param y The y-coordinate.
 	 **/
 	void setPosition(float x, float y);
+
+	/**
+	 * Sets the emission area spread parameters and distribution type. The interpretation of
+	 * the parameters depends on the distribution type:
+	 *
+	 * * None:    Parameters are ignored. No area spread.
+	 * * Uniform: Parameters denote maximal (symmetric) displacement from emitter position.
+	 * * Normal:  Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
+	 * @param x First parameter. Interpretation depends on distribution type.
+	 * @param y Second parameter. Interpretation depends on distribution type.
+	 * @param distribution Distribution type
+	 * */
+	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y);
 
 	/**
 	 * Sets the direction and the spread of the particle emitter.
@@ -286,6 +309,16 @@ public:
 	const love::Vector &getPosition() const;
 
 	/**
+	 * Returns area spread distribution type.
+	 */
+	AreaSpreadDistribution getAreaSpreadDistribution() const;
+
+	/**
+	 * Returns area spread parameters.
+	 */
+	const love::Vector &getAreaSpreadParameters() const;
+
+	/**
 	 * Returns the direction of the emitter (in degrees).
 	 **/
 	float getDirection() const;
@@ -357,6 +390,9 @@ public:
 	 * @param dt Time since last update.
 	 **/
 	void update(float dt);
+
+	static bool getConstant(const char *in, AreaSpreadDistribution &out);
+	static bool getConstant(AreaSpreadDistribution in, const char *&out);
 protected:
 
 	// The max amount of particles.
@@ -385,6 +421,10 @@ protected:
 
 	// The relative position of the particle emitter.
 	love::Vector position;
+
+	// Emission area spread.
+	AreaSpreadDistribution areaSpreadDistribution;
+	love::Vector areaSpread;
 
 	// The lifetime of the particle emitter (-1 means infinite) and the life it has left.
 	float lifetime;
@@ -439,6 +479,9 @@ protected:
 
 	void add();
 	void remove(particle *p);
+
+	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];
+	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM> distributions;
 };
 
 } // opengl

@@ -172,7 +172,7 @@ std::string PixelEffect::getGLSLVersion()
 
 bool PixelEffect::isSupported()
 {
-	return GLEE_VERSION_2_0 && GLEE_ARB_shader_objects && GLEE_ARB_fragment_shader && getGLSLVersion() >= "1.2";
+	return (GLEE_VERSION_2_0 || (GLEE_ARB_shader_objects && GLEE_ARB_fragment_shader)) && getGLSLVersion() >= "1.2";
 }
 
 std::string PixelEffect::getWarnings() const
