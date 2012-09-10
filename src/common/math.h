@@ -22,6 +22,7 @@
 #define LOVE_MATH_H
 
 #include <climits> // for CHAR_BIT
+#include <cstdlib> // for rand() and RAND_MAX
 
 /* Definitions of useful mathematical constants
  * M_E        - e
@@ -79,6 +80,41 @@ inline float next_p2(float x)
 {
 	return static_cast<float>(next_p2(static_cast<int>(x)));
 }
+
+/**
+ * Draws a random number from a uniform distribution.
+ * @returns Uniformly distributed random number in [0:1).
+ */
+inline float random()
+{
+	return float(rand()) / (float(RAND_MAX) + 1.0f);
+}
+
+/**
+ * Draws a random number from a uniform distribution.
+ * @return Uniformly distributed random number in [0:max).
+ */
+inline float random(float max)
+{
+	return random() * max;
+}
+
+/**
+ * Draws a random number from a uniform distribution.
+ * @return Uniformly distributed random number in [min:max).
+ */
+inline float random(float min, float max)
+{
+	return random(max - min) + min;
+}
+
+/**
+ * Draws a random number from a normal/gaussian distribution.
+ * @param o Standard deviation of the distribution.
+ * @returns Normal distributed random number with mean 0 and variance o^2.
+ */
+float random_normal(float o = 1.);
+#define random_gaussion random_normal
 
 } // love
 
