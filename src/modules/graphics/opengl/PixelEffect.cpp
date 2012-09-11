@@ -156,7 +156,7 @@ void PixelEffect::unloadVolatile()
 std::string PixelEffect::getGLSLVersion()
 {
 	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
-	const char *tmp = glGetString(GL_SHADING_LANGUAGE_VERSION);
+	const char *tmp = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	if (NULL == tmp)
 		return "0.0";
 
@@ -164,7 +164,7 @@ std::string PixelEffect::getGLSLVersion()
 	//   major_number.minor_number
 	// or
 	//   major_number.minor_number.release_number
-	std::string versionString((const char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
+	std::string versionString(tmp);
 	size_t minorEndPos = versionString.find(" ");
 	return versionString.substr(0, minorEndPos);
 }
