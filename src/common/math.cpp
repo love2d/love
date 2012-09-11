@@ -4,9 +4,9 @@
 
 namespace
 {
-	// The Box–Muller transform generates two random numbers, one of which we cache here.
-	// A value +infinity is used to signal the cache is invalid and that new numbers have
-	// to be generated.
+	// The Box–Muller transform generates two random numbers, one of which we
+	// cache here. A value of +infinity is used to signal the cache is invalid
+	// and that new numbers have to be generated.
 	float last_randnormal = std::numeric_limits<float>::infinity();
 }
 
@@ -25,7 +25,7 @@ float random_normal(float o)
 
 	// else: generate numbers using the Box-Muller transform
 	float a = sqrt(-2.0f * log(random()));
-	float b = LOVE_M_PI * 2.0f * random();
+	float b = float(LOVE_M_PI) * 2.0f * random();
 	last_randnormal = a * cos(b);
 	return a * sin(b) * o;
 }

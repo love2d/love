@@ -87,7 +87,8 @@ inline float next_p2(float x)
  */
 inline float random()
 {
-	return float(rand()) / (float(RAND_MAX) + 1.0f);
+	// to satisfy picky compilers...
+	return float(double(rand() % RAND_MAX) / double(RAND_MAX));
 }
 
 /**
@@ -114,7 +115,7 @@ inline float random(float min, float max)
  * @returns Normal distributed random number with mean 0 and variance o^2.
  */
 float random_normal(float o = 1.);
-#define random_gaussion random_normal
+#define random_gaussian random_normal
 
 } // love
 
