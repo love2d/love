@@ -155,9 +155,9 @@ void PixelEffect::unloadVolatile()
 
 std::string PixelEffect::getGLSLVersion()
 {
-	// GL_SHADING_LANGUAGE_VERSION is not available in OpenGL < 2.1.
-	// Be very pessimistic about the GLSL version in that case.
-	if (!GLEE_VERSION_2_1)
+	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
+	const char *tmp = glGetString(GL_SHADING_LANGUAGE_VERSION);
+	if (NULL == tmp)
 		return "0.0";
 
 	// the version string always begins with a version number of the format
