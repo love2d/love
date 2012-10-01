@@ -296,6 +296,7 @@
     <ClCompile Include="..\..\src\common\b64.cpp" />
     <ClCompile Include="..\..\src\common\delay.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
+    <ClCompile Include="..\..\src\common\math.cpp" />
     <ClCompile Include="..\..\src\common\Matrix.cpp" />
     <ClCompile Include="..\..\src\common\Memoizer.cpp" />
     <ClCompile Include="..\..\src\common\Module.cpp" />
