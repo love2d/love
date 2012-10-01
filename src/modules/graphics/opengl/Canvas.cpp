@@ -75,27 +75,27 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glBindRenderbuffer(GL_RENDERBUFFER, depth_stencil);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-								  GL_RENDERBUFFER, depth_stencil);
+			GL_RENDERBUFFER, depth_stencil);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-								  GL_RENDERBUFFER, depth_stencil);
+			GL_RENDERBUFFER, depth_stencil);
 
 		// generate texture save target
 		glGenTextures(1, &img);
 		bindTexture(img);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-					 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+			GL_UNSIGNED_BYTE, NULL);
 		bindTexture(0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-							   GL_TEXTURE_2D, img, 0);
+			GL_TEXTURE_2D, img, 0);
 
 		// check status
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		// unbind framebuffer
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)current_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint) current_fbo);
 		return status;
 	}
 	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil,  GLuint img)
@@ -111,9 +111,8 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 	}
 };
 
-struct FramebufferStrategyEXT : public FramebufferStrategy
+struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 {
-
 	virtual GLenum createFBO(GLuint &framebuffer, GLuint &depth_stencil, GLuint &img, int width, int height)
 	{
 		GLint current_fbo;
@@ -126,29 +125,30 @@ struct FramebufferStrategyEXT : public FramebufferStrategy
 		// create stencil buffer
 		glGenRenderbuffersEXT(1, &depth_stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT, width, height);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
+			width, height);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-									 GL_RENDERBUFFER_EXT, depth_stencil);
+			GL_RENDERBUFFER_EXT, depth_stencil);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-									 GL_RENDERBUFFER_EXT, depth_stencil);
+			GL_RENDERBUFFER_EXT, depth_stencil);
 
 		// generate texture save target
 		glGenTextures(1, &img);
 		bindTexture(img);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-					 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+			GL_UNSIGNED_BYTE, NULL);
 		bindTexture(0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-								  GL_TEXTURE_2D, img, 0);
+			GL_TEXTURE_2D, img, 0);
 
 		// check status
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 
 		// unbind framebuffer
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint)current_fbo);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint) current_fbo);
 		return status;
 	}
 
@@ -165,11 +165,61 @@ struct FramebufferStrategyEXT : public FramebufferStrategy
 	}
 };
 
+struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
+{
+	virtual GLenum createFBO(GLuint &framebuffer, GLuint &stencil, GLuint &img, int width, int height)
+	{
+		GLint current_fbo;
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &current_fbo);
+
+		// create framebuffer
+		glGenFramebuffersEXT(1, &framebuffer);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+
+		// create stencil buffer
+		glGenRenderbuffersEXT(1, &stencil);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX,
+			width, height);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+			GL_RENDERBUFFER_EXT, stencil);
+
+		// generate texture save target
+		glGenTextures(1, &img);
+		bindTexture(img);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+			GL_UNSIGNED_BYTE, NULL);
+		bindTexture(0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+			GL_TEXTURE_2D, img, 0);
+
+		// check status
+		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+
+		// unbind framebuffer
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint) current_fbo);
+		return status;
+	}
+
+	bool isSupported()
+	{
+		GLuint fb, stencil, img;
+		GLenum status = createFBO(fb, stencil, img, 2, 2);
+		deleteFBO(fb, stencil, img);
+		return status == GL_FRAMEBUFFER_COMPLETE;
+	}
+};
+
 FramebufferStrategy *strategy = NULL;
 
 FramebufferStrategy strategyNone;
 
 FramebufferStrategyGL3 strategyGL3;
+
+FramebufferStrategyPackedEXT strategyPackedEXT;
 
 FramebufferStrategyEXT strategyEXT;
 
@@ -182,6 +232,8 @@ static void loadStrategy()
 		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
 			strategy = &strategyGL3;
 		else if (GLEE_EXT_framebuffer_object && GLEE_EXT_packed_depth_stencil)
+			strategy = &strategyPackedEXT;
+		else if (GLEE_EXT_framebuffer_object && strategyEXT.isSupported())
 			strategy = &strategyEXT;
 		else
 			strategy = &strategyNone;
