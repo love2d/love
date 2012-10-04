@@ -160,15 +160,16 @@ std::string PixelEffect::getGLSLVersion()
 	//   major_number.minor_number
 	// or
 	//   major_number.minor_number.release_number
+	// we can keep release_number, since it does not affect the check below.
 	std::string versionString(tmp);
-	size_t minorEndPos = versionString.find(" ");
+	size_t minorEndPos = versionString.find(' ');
 	return versionString.substr(0, minorEndPos);
 }
 
 
 bool PixelEffect::isSupported()
 {
-	return (GLEE_VERSION_2_0 || (GLEE_ARB_shader_objects && GLEE_ARB_fragment_shader)) && getGLSLVersion() >= "1.2";
+	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
 
 std::string PixelEffect::getWarnings() const
