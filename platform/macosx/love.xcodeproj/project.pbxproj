@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		A5474CEF1624903B00C8EEAC /* math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A5474CEE1624903B00C8EEAC /* math.cpp */; };
 		A901B882143B65C500D77063 /* DrawQable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A901B880143B65C400D77063 /* DrawQable.cpp */; };
 		A901B885143B661400D77063 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A901B883143B661300D77063 /* Quad.cpp */; };
 		A911D2DB15DFECC8005B7EB8 /* Module.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A911D2DA15DFECC8005B7EB8 /* Module.cpp */; };
@@ -265,12 +266,13 @@
 /* Begin PBXFileReference section */
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		8D1107320486CEB800E47090 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A5474CEE1624903B00C8EEAC /* math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = math.cpp; sourceTree = "<group>"; };
 		A901B880143B65C400D77063 /* DrawQable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawQable.cpp; sourceTree = "<group>"; };
 		A901B881143B65C400D77063 /* DrawQable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawQable.h; sourceTree = "<group>"; };
 		A901B883143B661300D77063 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		A901B884143B661300D77063 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		A911D2DA15DFECC8005B7EB8 /* Module.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Module.cpp; sourceTree = "<group>"; };
-		A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Game_Music_Emu.framework; path = ../../../../../Library/Frameworks/Game_Music_Emu.framework; sourceTree = "<group>"; };
+		A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Game_Music_Emu.framework; path = /Library/Frameworks/Game_Music_Emu.framework; sourceTree = "<absolute>"; };
 		A9255DEA1043188D00BA1496 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = "<group>"; };
 		A9255DEB1043188D00BA1496 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
@@ -860,6 +862,7 @@
 				A93E69E010420ABF007D418B /* Exception.cpp */,
 				A93E69E110420ABF007D418B /* Exception.h */,
 				A9A5BE4C14A2D2D000D9931C /* int.h */,
+				A5474CEE1624903B00C8EEAC /* math.cpp */,
 				A93E69E210420ABF007D418B /* math.h */,
 				A93E69E310420ABF007D418B /* Matrix.cpp */,
 				A93E69E410420ABF007D418B /* Matrix.h */,
@@ -1953,6 +1956,7 @@
 				A9F6E6AE15A1080D00C86200 /* love.cpp in Sources */,
 				A9F6E6B115A1099C00C86200 /* GmeDecoder.cpp in Sources */,
 				A911D2DB15DFECC8005B7EB8 /* Module.cpp in Sources */,
+				A5474CEF1624903B00C8EEAC /* math.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
