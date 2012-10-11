@@ -269,7 +269,7 @@ public:
 
 	ParticleSystem *newParticleSystem(Image *image, int size);
 
-	Canvas *newCanvas(int width, int height);
+	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
 	PixelEffect *newPixelEffect(const std::string &code);
 

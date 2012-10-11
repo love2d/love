@@ -42,18 +42,14 @@ namespace opengl
 class Canvas : public DrawQable, public Volatile
 {
 public:
-	Canvas(int width, int height);
+	enum TextureType {
+		TYPE_NORMAL,
+		TYPE_HDR,
+		TYPE_MAX_ENUM
+	};
+
+	Canvas(int width, int height, TextureType texture_type = TYPE_NORMAL);
 	virtual ~Canvas();
-
-	static bool isSupported();
-
-	unsigned int getStatus() const
-	{
-		return status;
-	}
-
-	static Canvas *current;
-	static void bindDefaultCanvas();
 
 	void startGrab();
 	void stopGrab();
@@ -78,8 +74,26 @@ public:
 	int getWidth();
 	int getHeight();
 
+	unsigned int getStatus() const
+	{
+		return status;
+	}
+
+	TextureType getTextureType() const
+	{
+		return texture_type;
+	}
+
 	bool loadVolatile();
 	void unloadVolatile();
+
+	static bool isSupported();
+	static bool isHdrSupported();
+	static bool getConstant(const char *in, TextureType &out);
+	static bool getConstant(TextureType in, const char *&out);
+
+	static Canvas *current;
+	static void bindDefaultCanvas();
 
 private:
 	friend class PixelEffect;
@@ -94,6 +108,8 @@ private:
 	GLuint depth_stencil;
 	GLuint img;
 
+	TextureType texture_type;
+
 	vertex vertices[4];
 
 	GLenum status;
@@ -101,10 +117,13 @@ private:
 	struct
 	{
 		Image::Filter filter;
-		Image::Wrap wrap;
+		Image::Wrap   wrap;
 	} settings;
 
 	void drawv(const Matrix &t, const vertex *v) const;
+
+	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
+	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;
 };
 
 } // opengl

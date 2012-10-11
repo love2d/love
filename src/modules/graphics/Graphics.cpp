@@ -156,6 +156,7 @@ StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM> Graphics::pointStyles(
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
 {
 	{ "canvas", Graphics::SUPPORT_CANVAS },
+	{ "hdrcanvas", Graphics::SUPPORT_HDR_CANVAS },
 	{ "pixeleffect", Graphics::SUPPORT_PIXELEFFECT },
 	{ "npot", Graphics::SUPPORT_NPOT },
 	{ "subtractive", Graphics::SUPPORT_SUBTRACTIVE },

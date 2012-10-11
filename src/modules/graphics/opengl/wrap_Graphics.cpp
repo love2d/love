@@ -395,14 +395,17 @@ int w_newParticleSystem(lua_State *L)
 int w_newCanvas(lua_State *L)
 {
 	// check if width and height are given. else default to screen dimensions.
-	int width  = luaL_optint(L, 1, instance->getWidth());
-	int height = luaL_optint(L, 2, instance->getHeight());
-	glGetError(); // clear opengl error flag
+	int width       = luaL_optint(L, 1, instance->getWidth());
+	int height      = luaL_optint(L, 2, instance->getHeight());
+	const char *str = luaL_optstring(L, 3, "normal");
+
+	Canvas::TextureType texture_type;
+	Canvas::getConstant(str, texture_type);
 
 	Canvas *canvas = NULL;
 	try
 	{
-		canvas = instance->newCanvas(width, height);
+		canvas = instance->newCanvas(width, height, texture_type);
 	}
 	catch(Exception &e)
 	{
@@ -818,6 +821,10 @@ int w_isSupported(lua_State *L)
 		{
 		case Graphics::SUPPORT_CANVAS:
 			if (!Canvas::isSupported())
+				supported = false;
+			break;
+		case Graphics::SUPPORT_HDR_CANVAS:
+			if (!Canvas::isHdrSupported())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_PIXELEFFECT:
