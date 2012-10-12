@@ -400,7 +400,8 @@ int w_newCanvas(lua_State *L)
 	const char *str = luaL_optstring(L, 3, "normal");
 
 	Canvas::TextureType texture_type;
-	Canvas::getConstant(str, texture_type);
+	if (!Canvas::getConstant(str, texture_type))
+		return luaL_error(L, "Invalid canvas type: %s", str);
 
 	Canvas *canvas = NULL;
 	try
