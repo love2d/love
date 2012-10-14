@@ -83,18 +83,31 @@ int w_newDecoder(lua_State *L)
 	if (lua_isstring(L, 1))
 		luax_convobj(L, 1, "filesystem", "newFile");
 
-	love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
+	love::filesystem::FileData *data;
+	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+	{
+		love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
+		data = file->read();
+	}
+	else
+	{
+		data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
+		data->retain();
+	}
+
 	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
 
 	try
 	{
-		Decoder *t = instance->newDecoder(file, bufferSize);
+		Decoder *t = instance->newDecoder(data, bufferSize);
+		data->release();
 		if (t == 0)
-			return luaL_error(L, "Extension \"%s\" not supported.", file->getExtension().c_str());
+			return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
 		luax_newtype(L, "Decoder", SOUND_DECODER_T, (void *)t);
 	}
 	catch(love::Exception &e)
 	{
+		data->release();
 		return luaL_error(L, e.what());
 	}
 

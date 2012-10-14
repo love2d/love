@@ -51,10 +51,9 @@ const char *Sound::getName() const
 	return "love.sound.lullaby";
 }
 
-sound::Decoder *Sound::newDecoder(love::filesystem::File *file, int bufferSize)
+sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSize)
 {
-	Data *data = file->read();
-	std::string ext = file->getExtension();
+	std::string ext = data->getExtension();
 
 	sound::Decoder *decoder = 0;
 
@@ -75,8 +74,6 @@ sound::Decoder *Sound::newDecoder(love::filesystem::File *file, int bufferSize)
 		decoder = new FLACDecoder(data, ext, bufferSize);*/
 
 	// else if (OtherDecoder::accept(ext))
-
-	data->release();
 
 	return decoder;
 }

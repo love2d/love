@@ -59,7 +59,7 @@ public:
 	const char *getName() const;
 
 	/// @copydoc love::sound::Sound::newDecoder
-	sound::Decoder *newDecoder(love::filesystem::File *file, int bufferSize);
+	sound::Decoder *newDecoder(love::filesystem::FileData *file, int bufferSize);
 
 }; // Sound
 

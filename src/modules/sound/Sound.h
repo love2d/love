@@ -74,7 +74,7 @@ public:
 	 * @param sampleRate Samples per second, or quality of the audio. 44100 is a good value.
 	 * @return A Decoder object on success, or zero if no decoder could be found.
 	 **/
-	virtual Decoder *newDecoder(filesystem::File *file, int bufferSize) = 0;
+	virtual Decoder *newDecoder(filesystem::FileData *file, int bufferSize) = 0;
 
 }; // Sound
 

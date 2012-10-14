@@ -111,7 +111,7 @@ int64 File::getSize()
 }
 
 
-Data *File::read(int64 size)
+FileData *File::read(int64 size)
 {
 	bool isOpen = (file != 0);
 
