@@ -9,6 +9,7 @@ LOVE 0.8.1 [Rubber Piggy]
   * Added basic support for the file:// uri scheme.
   * Added love.mouse.setX/setY.
   * Added love.filesystem.getIdentity.
+  * Added HDR canvas support.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -21,6 +22,10 @@ LOVE 0.8.1 [Rubber Piggy]
   * Fixed 'random' hangs in audio.
   * Fixed love.graphics.getLineWidth returning incorrect values.
   * Fixed possible memory leak in utf-8 decoder.
+  * Fixed love.sound.newDecoder not accepting FileData.
+  * Fixed multiplicative blend mode.
+  * Fixed Box2D exception in World:update.
+  * Fixed spacing for the last character in an ImageFont.
 
   * Moved love's startup to modules/love.
 
@@ -32,6 +37,7 @@ LOVE 0.8.1 [Rubber Piggy]
   * Updated Source:set* functions to default z to 0.
   * Updated the windows console, it now tries to re-use an active one first.
   * Updated love.image memory handling, improves errors and thread-safety.
+  * Updated order of sleep/present in love.run (now draws, *then* sleeps).
 
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------
