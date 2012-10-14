@@ -46,11 +46,19 @@ GmeDecoder::GmeDecoder(Data *data, const std::string &ext, int bufferSize)
 
 	num_tracks = gme_track_count(emu);
 
-	if (num_tracks <= 0)
-		throw love::Exception("Game music file has no tracks");
+	try
+	{
+		if (num_tracks <= 0)
+			throw love::Exception("Game music file has no tracks");
 
-	if (gme_start_track(emu, cur_track) != 0)
-		throw love::Exception("Could not start game music playback");
+		if (gme_start_track(emu, cur_track) != 0)
+			throw love::Exception("Could not start game music playback");
+	}
+	catch (love::Exception &)
+	{
+		gme_delete(emu);
+		throw;
+	}
 }
 
 GmeDecoder::~GmeDecoder()

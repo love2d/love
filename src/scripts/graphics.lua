@@ -1284,24 +1284,20 @@ do
 	end
 
 	-- PIXEL EFFECTS
+	local GLSL_HEADER_LINE_COUNT = 6
+	local GLSL_HEADER = [[#version 120
+	#define number float
+	#define Image sampler2D
+	#define extern uniform
+	#define Texel texture2D
+	uniform sampler2D _tex0_;]]
+	local GLSL_FOOTER = [[void main() {
+		// fix weird crashing issue in OSX when _tex0_ is unused within effect()
+		float dummy = texture2D(_tex0_, vec2(.5)).r;
+		gl_FragColor = effect(gl_Color, _tex0_, gl_TexCoord[0].xy, gl_FragCoord.xy);
+	}]]
 	function love.graphics._effectCodeToGLSL(code)
-		local header = [[#version 120
-		#define number float
-		#define Image sampler2D
-		#define extern uniform
-		#define Texel texture2D
-		uniform sampler2D _tex0_;]]
-		local footer = [[void main() {
-			// fix weird crashing issue in OSX when _tex0_ is unused within effect()
-			float dummy = texture2D(_tex0_, vec2(.5)).r;
-			gl_FragColor = effect(gl_Color, _tex0_, gl_TexCoord[0].xy, gl_FragCoord.xy);
-		}]]
-
-		local function include(quoted_path) return (love.filesystem.read(quoted_path:sub(2,-2))) end
-		code = code:gsub("#include (%b'')", include)
-		code = code:gsub('#include (%b"")', include)
-
-		return table.concat{header, "\n", code, footer}
+		return table.concat{GLSL_HEADER, "\n", code, GLSL_FOOTER}
 	end
 
 	function love.graphics._transformGLSLErrorMessages(message)
@@ -1317,7 +1313,8 @@ do
 				linenumber, what, message = l:match("^%w+: 0:(%d+):%s*(%w+)%([^%)]+%)%s*(.+)$")
 			end
 			if linenumber and what and message then
-				lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber - 5, what, message)
+				linenumber = linenumber - GLSL_HEADER_LINE_COUNT
+				lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber, what, message)
 			end
 		end
 		-- did not match any known error messages

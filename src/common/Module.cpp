@@ -18,55 +18,48 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_SOUND_LULLABY_GME_DECODER_H
-#define LOVE_SOUND_LULLABY_GME_DECODER_H
-
-#ifdef LOVE_SUPPORT_GME
-
 // LOVE
-#include "common/Data.h"
-#include "Decoder.h"
+#include "Module.h"
+#include "Exception.h"
 
-#ifdef LOVE_MACOSX
-#include <Game_Music_Emu/gme.h>
-#else
-#include <gme.h>
-#endif
+// std
+#include <map>
+#include <utility>
+#include <string>
+
+namespace
+{
+	std::map<std::string, love::Module*> registry;
+} // anonymous namespace
 
 namespace love
 {
-namespace sound
-{
-namespace lullaby
-{
+	void Module::registerInstance(Module *instance)
+	{
+		if (instance == NULL)
+			throw Exception("Module instance is NULL");
 
-class GmeDecoder : public Decoder
-{
-public:
+		std::string name(instance->getName());
 
-	GmeDecoder(Data *data, const std::string &ext, int bufferSize);
-	virtual ~GmeDecoder();
+		std::map<std::string, Module*>::iterator it = registry.find(name);
 
-	static bool accepts(const std::string &ext);
+		if (registry.end() != it)
+		{
+			if (it->second == instance)
+				return;
+			throw Exception("Module %s already registered!", instance->getName());
+		}
 
-	love::sound::Decoder *clone();
-	int decode();
-	bool seek(float s);
-	bool rewind();
-	bool isSeekable();
-	int getChannels() const;
-	int getBits() const;
+		registry.insert(make_pair(name, instance));
+	}
 
-private:
-	Music_Emu *emu;
-	int num_tracks;
-	int cur_track;
-}; // Decoder
+	Module *Module::getInstance(const char *name)
+	{
+		std::map<std::string, Module*>::iterator it = registry.find(std::string(name));
 
-} // lullaby
-} // sound
-} // love
+		if (registry.end() == it)
+			return NULL;
 
-#endif // LOVE_SUPPORT_GME
-
-#endif // LOVE_SOUND_LULLABY_GME_DECODER_H
+		return it->second;
+	}
+} // namespace love

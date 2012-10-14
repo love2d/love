@@ -77,9 +77,13 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 				throw love::Exception("A fixture has escaped Memoizer!");
 		}
 
-		Contact *c = new Contact(contact);
+		Contact *cobj = (Contact *)Memoizer::find(contact);
+		if (!cobj)
+			cobj = new Contact(contact);
+		else
+			cobj->retain();
 
-		luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void *)c);
+		luax_newtype(L, "Contact", (PHYSICS_CONTACT_T), (void *)cobj);
 
 		int args = 3;
 		if (impulse)
@@ -117,12 +121,12 @@ bool World::ContactFilter::process(Fixture *a, Fixture *b)
 	a->getFilterData(filterA);
 	b->getFilterData(filterB);
 
-	if (filterA[2] != 0 &&  // 0 is the default group, so this does not count
-			filterA[2] == filterB[2]) // if they are in the same group
+	if (filterA[2] != 0 && // 0 is the default group, so this does not count
+		filterA[2] == filterB[2]) // if they are in the same group
 		return filterA[2] > 0; // Negative indexes mean you don't collide
 
 	if ((filterA[1] & filterB[0]) == 0 ||
-			(filterB[1] & filterA[0]) == 0)
+		(filterB[1] & filterA[0]) == 0)
 		return false; // A and B aren't set to collide
 
 	if (ref != 0)
@@ -290,6 +294,11 @@ void World::BeginContact(b2Contact *contact)
 void World::EndContact(b2Contact *contact)
 {
 	end.process(contact);
+
+	// Letting the Contact know that the b2Contact will be destroyed any second.
+	Contact *c = (Contact *)Memoizer::find(contact);
+	if (c != NULL)
+		c->invalidate();
 }
 
 void World::PreSolve(b2Contact *contact, const b2Manifold *oldManifold)
@@ -332,19 +341,19 @@ int World::setCallbacks(lua_State *L)
 	case 4:
 		if (postsolve.ref)
 			delete postsolve.ref;
-		postsolve.ref = luax_refif (L, LUA_TFUNCTION);
+		postsolve.ref = luax_refif(L, LUA_TFUNCTION);
 	case 3:
 		if (presolve.ref)
 			delete presolve.ref;
-		presolve.ref = luax_refif (L, LUA_TFUNCTION);
+		presolve.ref = luax_refif(L, LUA_TFUNCTION);
 	case 2:
 		if (end.ref)
 			delete end.ref;
-		end.ref = luax_refif (L, LUA_TFUNCTION);
+		end.ref = luax_refif(L, LUA_TFUNCTION);
 	case 1:
 		if (begin.ref)
 			delete begin.ref;
-		begin.ref = luax_refif (L, LUA_TFUNCTION);
+		begin.ref = luax_refif(L, LUA_TFUNCTION);
 	}
 
 	return 0;
@@ -364,7 +373,7 @@ int World::setContactFilter(lua_State *L)
 	luax_assert_argc(L, 1);
 	if (filter.ref)
 		delete filter.ref;
-	filter.ref = luax_refif (L, LUA_TFUNCTION);
+	filter.ref = luax_refif(L, LUA_TFUNCTION);
 	return 0;
 }
 
@@ -468,8 +477,10 @@ int World::getContactList(lua_State *L) const
 	{
 		if (!c) break;
 		Contact *contact = (Contact *)Memoizer::find(c);
-		if (!contact) throw love::Exception("A contact has escaped Memoizer!");
-		contact->retain();
+		if (!contact)
+			contact = new Contact(c);
+		else
+			contact->retain();
 		luax_newtype(L, "Contact", PHYSICS_CONTACT_T, (void *)contact);
 		lua_rawseti(L, -2, i);
 		i++;
@@ -494,7 +505,7 @@ int World::queryBoundingBox(lua_State *L)
 	box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
 	box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
 	if (query.ref) delete query.ref;
-	query.ref = luax_refif (L, LUA_TFUNCTION);
+	query.ref = luax_refif(L, LUA_TFUNCTION);
 	world->QueryAABB(&query, box);
 	return 0;
 }
@@ -510,7 +521,7 @@ int World::rayCast(lua_State *L)
 	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
 	if (raycast.ref)
 		delete raycast.ref;
-	raycast.ref = luax_refif (L, LUA_TFUNCTION);
+	raycast.ref = luax_refif(L, LUA_TFUNCTION);
 	world->RayCast(&raycast, v1, v2);
 	return 0;
 }

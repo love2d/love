@@ -20,6 +20,7 @@
 
 #include "PixelEffect.h"
 #include "GLee.h"
+#include "Graphics.h"
 
 namespace
 {
@@ -134,6 +135,7 @@ bool PixelEffect::loadVolatile()
 	}
 
 	glDeleteShader(shader);
+
 	return true;
 }
 
@@ -149,24 +151,25 @@ void PixelEffect::unloadVolatile()
 
 std::string PixelEffect::getGLSLVersion()
 {
-	// GL_SHADING_LANGUAGE_VERSION is not available in OpenGL < 2.1.
-	// Be very pessimistic about the GLSL version in that case.
-	if (!GLEE_VERSION_2_1)
+	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
+	const char *tmp = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+	if (NULL == tmp)
 		return "0.0";
 
 	// the version string always begins with a version number of the format
 	//   major_number.minor_number
 	// or
 	//   major_number.minor_number.release_number
-	std::string versionString((const char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
-	size_t minorEndPos = versionString.find(" ");
+	// we can keep release_number, since it does not affect the check below.
+	std::string versionString(tmp);
+	size_t minorEndPos = versionString.find(' ');
 	return versionString.substr(0, minorEndPos);
 }
 
 
 bool PixelEffect::isSupported()
 {
-	return GLEE_VERSION_2_0 && GLEE_ARB_shader_objects && GLEE_ARB_fragment_shader && getGLSLVersion() >= "1.2";
+	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
 
 std::string PixelEffect::getWarnings() const

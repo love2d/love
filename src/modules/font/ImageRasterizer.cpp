@@ -131,6 +131,16 @@ void ImageRasterizer::load()
 		widths[c] = (end - start);
 	}
 
+	// Find spacing of last glyph
+	if (length > 0)
+	{
+		start = end;
+		while (start < imgw && equal(pixels[start], spacer))
+			++start;
+
+		spacing[glyphs[length - 1]] = (start > end) ? (start - end) : 0;
+	}
+
 	// Replace spacer color with an empty pixel
 	for (unsigned int i = 0; i < imgs; ++i)
 	{

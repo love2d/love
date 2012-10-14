@@ -60,6 +60,18 @@ public:
 	virtual ~Contact();
 
 	/**
+	 * Removes the b2Contact pointer from Memoizer and sets it
+	 * to null on the Contact.
+	 **/
+	void invalidate();
+
+	/**
+	 * Returns if the Contact still points to a valid b2Contact.
+	 * @return True if the contact is still valid or false if it has been destroyed.
+	 **/
+	bool isValid();
+
+	/**
 	 * Gets the position of each point of contact.
 	 * @return The position along the x-axis.
 	 * @return The position along the y-axis.

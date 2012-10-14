@@ -45,9 +45,17 @@ float calculate_variation(float inner, float outer, float var)
 {
 	float low = inner - (outer/2.0f)*var;
 	float high = inner + (outer/2.0f)*var;
-	float r = (rand() / (float(RAND_MAX)+1));
+	float r = random();
 	return low*(1-r)+high*r;
 }
+
+StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM>::Entry ParticleSystem::distributionsEntries[] = {
+	{ "none",     ParticleSystem::DISTRIBUTION_NONE },
+	{ "uniform",  ParticleSystem::DISTRIBUTION_UNIFORM },
+	{ "normal",   ParticleSystem::DISTRIBUTION_NORMAL },
+};
+
+StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));
 
 
 ParticleSystem::ParticleSystem(Image *sprite, unsigned int buffer)
@@ -57,6 +65,7 @@ ParticleSystem::ParticleSystem(Image *sprite, unsigned int buffer)
 	, active(true)
 	, emissionRate(0)
 	, emitCounter(0)
+	, areaSpreadDistribution(DISTRIBUTION_NONE)
 	, lifetime(-1)
 	, life(0)
 	, particleLifeMin(0)
@@ -108,45 +117,60 @@ void ParticleSystem::add()
 	if (min == max)
 		pLast->life = min;
 	else
-		pLast->life = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
+		pLast->life = random(min, max);
 	pLast->lifetime = pLast->life;
 
 	pLast->position[0] = position.getX();
 	pLast->position[1] = position.getY();
 
+	switch (areaSpreadDistribution)
+	{
+		case DISTRIBUTION_UNIFORM:
+			pLast->position[0] += random(-areaSpread.getX(), areaSpread.getX());
+			pLast->position[1] += random(-areaSpread.getY(), areaSpread.getY());
+			break;
+		case DISTRIBUTION_NORMAL:
+			pLast->position[0] += random_normal(areaSpread.getX());
+			pLast->position[1] += random_normal(areaSpread.getY());
+			break;
+		case DISTRIBUTION_NONE:
+		default:
+			break;
+	}
+
 	min = direction - spread/2.0f;
 	max = direction + spread/2.0f;
-	pLast->direction = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
+	pLast->direction = random(min, max);
 
 	pLast->origin = position;
 
 	min = speedMin;
 	max = speedMax;
-	float speed = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
+	float speed = random(min, max);
 	pLast->speed = love::Vector(cos(pLast->direction), sin(pLast->direction));
 	pLast->speed *= speed;
 
 	min = gravityMin;
 	max = gravityMax;
-	pLast->gravity = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
+	pLast->gravity = random(min, max);
 
 	min = radialAccelerationMin;
 	max = radialAccelerationMax;
-	pLast->radialAcceleration = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
+	pLast->radialAcceleration = random(min, max);
 
 	min = tangentialAccelerationMin;
 	max = tangentialAccelerationMax;
-	pLast->tangentialAcceleration = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;
+	pLast->tangentialAcceleration = random(min, max);
 
-	pLast->sizeOffset       = (rand() / (float(RAND_MAX)+1)) * sizeVariation; // time offset for size change
-	pLast->sizeIntervalSize = (1.0f - (rand() / (float(RAND_MAX)+1)) * sizeVariation) - pLast->sizeOffset;
+	pLast->sizeOffset       = random(sizeVariation); // time offset for size change
+	pLast->sizeIntervalSize = (1.0f - random(sizeVariation)) - pLast->sizeOffset;
 	pLast->size = sizes[(size_t)(pLast->sizeOffset - .5f) * (sizes.size() - 1)];
 
 	min = rotationMin;
 	max = rotationMax;
 	pLast->spinStart = calculate_variation(spinStart, spinEnd, spinVariation);
 	pLast->spinEnd = calculate_variation(spinEnd, spinStart, spinVariation);
-	pLast->rotation = (rand() / (float(RAND_MAX)+1)) * (max - min) + min;;
+	pLast->rotation = random(min, max);
 
 	pLast->color = colors[0];
 
@@ -202,6 +226,13 @@ void ParticleSystem::setParticleLife(float min, float max)
 void ParticleSystem::setPosition(float x, float y)
 {
 	position = love::Vector(x, y);
+}
+
+
+void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y)
+{
+	areaSpread = love::Vector(x, y);
+	areaSpreadDistribution = distribution;
 }
 
 void ParticleSystem::setDirection(float direction)
@@ -347,6 +378,16 @@ float ParticleSystem::getY() const
 const love::Vector &ParticleSystem::getPosition() const
 {
 	return position;
+}
+
+ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution() const
+{
+	return areaSpreadDistribution;
+}
+
+const love::Vector &ParticleSystem::getAreaSpreadParameters() const
+{
+	return areaSpread;
 }
 
 float ParticleSystem::getDirection() const
@@ -541,6 +582,16 @@ void ParticleSystem::update(float dt)
 				return;
 		} // else
 	} // while
+}
+
+bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)
+{
+	return distributions.find(in, out);
+}
+
+bool ParticleSystem::getConstant(AreaSpreadDistribution in, const char *&out)
+{
+	return distributions.find(in, out);
 }
 
 } // opengl

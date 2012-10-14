@@ -91,22 +91,24 @@ Message *Event::convert(SDL_Event &e)
 	switch (e.type)
 	{
 	case SDL_KEYDOWN:
-		if (keys.find(e.key.keysym.sym, key) && love::event::Event::keys.find(key, txt))
-		{
-			arg1 = new Variant(txt, strlen(txt));
-			arg2 = new Variant((double) e.key.keysym.unicode);
-			msg = new Message("keypressed", arg1, arg2);
-			arg1->release();
-			arg2->release();
-		}
+		if (!keys.find(e.key.keysym.sym, key))
+			key = love::keyboard::Keyboard::KEY_UNKNOWN;
+		if (!love::event::Event::keys.find(key, txt))
+			txt = "unknown";
+		arg1 = new Variant(txt, strlen(txt));
+		arg2 = new Variant((double) e.key.keysym.unicode);
+		msg = new Message("keypressed", arg1, arg2);
+		arg1->release();
+		arg2->release();
 		break;
 	case SDL_KEYUP:
-		if (keys.find(e.key.keysym.sym, key) && love::event::Event::keys.find(key, txt))
-		{
-			arg1 = new Variant(txt, strlen(txt));
-			msg = new Message("keyreleased", arg1);
-			arg1->release();
-		}
+		if (!keys.find(e.key.keysym.sym, key))
+			key = love::keyboard::Keyboard::KEY_UNKNOWN;
+		if (!love::event::Event::keys.find(key, txt))
+			txt = "unknown";
+		arg1 = new Variant(txt, strlen(txt));
+		msg = new Message("keyreleased", arg1);
+		arg1->release();
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:

@@ -143,18 +143,37 @@ int w_SpriteBatch_getImage(lua_State *L)
 int w_SpriteBatch_setColor(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
+	Color c;
 
 	if (lua_gettop(L) <= 1)
+	{
 		t->setColor();
+		return 0;
+	}
+	else if (lua_istable(L, 2))
+	{
+		lua_rawgeti(L, 2, 1);
+		c.r = (unsigned char) luaL_checkint(L, -1);
+		lua_pop(L, 1);
+		lua_rawgeti(L, 2, 2);
+		c.g = (unsigned char) luaL_checkint(L, -1);
+		lua_pop(L, 1);
+		lua_rawgeti(L, 2, 3);
+		c.b = (unsigned char) luaL_checkint(L, -1);
+		lua_pop(L, 1);
+		lua_rawgeti(L, 2, 4);
+		c.a = (unsigned char) luaL_optint(L, -1, 255);
+		lua_pop(L, 1);
+	}
 	else
 	{
-		Color c;
 		c.r = (unsigned char)luaL_checkint(L, 2);
 		c.g = (unsigned char)luaL_checkint(L, 3);
 		c.b = (unsigned char)luaL_checkint(L, 4);
 		c.a = (unsigned char)luaL_optint(L, 5, 255);
-		t->setColor(c);
 	}
+
+	t->setColor(c);
 
 	return 0;
 }

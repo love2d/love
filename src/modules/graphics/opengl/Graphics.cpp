@@ -400,9 +400,15 @@ ParticleSystem *Graphics::newParticleSystem(Image *image, int size)
 	return new ParticleSystem(image, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height)
+Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_type)
 {
-	Canvas *canvas = new Canvas(width, height);
+	if (texture_type == Canvas::TYPE_HDR && !Canvas::isHdrSupported())
+		throw Exception("HDR Canvases are not supported by your OpenGL implementation");
+
+	while (GL_NO_ERROR != glGetError())
+		/* clear opengl error flag */;
+
+	Canvas *canvas = new Canvas(width, height, texture_type);
 	GLenum err = canvas->getStatus();
 
 	// everything ok, return canvas (early out)
@@ -543,7 +549,7 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 	if (mode == BLEND_ALPHA)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	else if (mode == BLEND_MULTIPLICATIVE)
-		glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_DST_COLOR, GL_ZERO);
 	else if (mode == BLEND_PREMULTIPLIED)
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
@@ -582,7 +588,7 @@ Graphics::BlendMode Graphics::getBlendMode()
 		return BLEND_ADDITIVE;
 	else if (src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
 		return BLEND_ALPHA;
-	else if (src == GL_DST_COLOR && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
+	else if (src == GL_DST_COLOR && dst == GL_ZERO)  // && equation == GL_FUNC_ADD
 		return BLEND_MULTIPLICATIVE;
 	else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
 		return BLEND_PREMULTIPLIED;

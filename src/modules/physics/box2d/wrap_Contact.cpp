@@ -29,7 +29,10 @@ namespace box2d
 
 Contact *luax_checkcontact(lua_State *L, int idx)
 {
-	return luax_checktype<Contact>(L, idx, "Contact", PHYSICS_CONTACT_T);
+	Contact *c = luax_checktype<Contact>(L, idx, "Contact", PHYSICS_CONTACT_T);
+	if (!c->isValid())
+		luaL_error(L, "Attempt to use destroyed contact.");
+	return c;
 }
 
 int w_Contact_getPositions(lua_State *L)

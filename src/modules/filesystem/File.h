@@ -29,6 +29,7 @@
 #include "common/Object.h"
 #include "common/StringMap.h"
 #include "common/int.h"
+#include "FileData.h"
 
 namespace love
 {
@@ -93,7 +94,7 @@ public:
 	 * @param size The number of bytes to attempt reading, or -1 for EOF.
 	 * @return A newly allocated Data object.
 	 **/
-	virtual Data *read(int64 size = ALL) = 0;
+	virtual FileData *read(int64 size = ALL) = 0;
 
 	/**
 	 * Reads data into the destination buffer.

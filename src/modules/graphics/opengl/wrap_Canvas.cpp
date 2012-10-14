@@ -181,6 +181,16 @@ int w_Canvas_getHeight(lua_State *L)
 	return 1;
 }
 
+int w_Canvas_getType(lua_State *L)
+{
+	Canvas *canvas = luax_checkcanvas(L, 1);
+	Canvas::TextureType type = canvas->getTextureType();
+	const char *str;
+	Canvas::getConstant(type, str);
+	lua_pushstring(L, str);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "renderTo", w_Canvas_renderTo },
@@ -192,6 +202,7 @@ static const luaL_Reg functions[] =
 	{ "clear", w_Canvas_clear },
 	{ "getWidth", w_Canvas_getWidth },
 	{ "getHeight", w_Canvas_getHeight },
+	{ "getType", w_Canvas_getType },
 	{ 0, 0 }
 };
 

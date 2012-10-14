@@ -48,6 +48,21 @@ public:
 	 **/
 	virtual const char *getName() const = 0;
 
+	/**
+	 * Add module to internal registry. To be used /only/ in
+	 * runtime.cpp:luax_register_module()
+	 * @param instance The module instance.
+	 */
+	static void registerInstance(Module *instance);
+
+	/**
+	 * Retrieve module instance from internal registry. May return NULL
+	 * if module not registered.
+	 * @param name The full name of the module.
+	 * @returns Module instance of NULL if the module is not registered.
+	 */
+	static Module *getInstance(const char *name);
+
 }; // Module
 
 } // love

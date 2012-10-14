@@ -42,9 +42,10 @@ struct FramebufferStrategy
 	 * @param[out] img           Texture name
 	 * @param[in]  width         Width of framebuffer
 	 * @param[in]  height        Height of framebuffer
+	 * @param[in]  texture_type  Type of the canvas texture.
 	 * @return Creation status
 	 */
-	virtual GLenum createFBO(GLuint &, GLuint &, GLuint &, int, int)
+	virtual GLenum createFBO(GLuint &, GLuint &, GLuint &, int, int, Canvas::TextureType)
 	{
 		return GL_FRAMEBUFFER_UNSUPPORTED;
 	}
@@ -60,7 +61,7 @@ struct FramebufferStrategy
 
 struct FramebufferStrategyGL3 : public FramebufferStrategy
 {
-	virtual GLenum createFBO(GLuint &framebuffer, GLuint &depth_stencil,  GLuint &img, int width, int height)
+	virtual GLenum createFBO(GLuint &framebuffer, GLuint &depth_stencil,  GLuint &img, int width, int height, Canvas::TextureType texture_type)
 	{
 		// get currently bound fbo to reset to it later
 		GLint current_fbo;
@@ -75,27 +76,41 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glBindRenderbuffer(GL_RENDERBUFFER, depth_stencil);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-								  GL_RENDERBUFFER, depth_stencil);
+			GL_RENDERBUFFER, depth_stencil);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-								  GL_RENDERBUFFER, depth_stencil);
+			GL_RENDERBUFFER, depth_stencil);
 
 		// generate texture save target
+		GLint internalFormat;
+		GLenum format;
+		switch (texture_type)
+		{
+			case Canvas::TYPE_HDR:
+				internalFormat = GL_RGBA16F;
+				format = GL_FLOAT;
+				break;
+			case Canvas::TYPE_NORMAL:
+			default:
+				internalFormat = GL_RGBA8;
+				format = GL_UNSIGNED_BYTE;
+		}
+
 		glGenTextures(1, &img);
 		bindTexture(img);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-					 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
+			0, GL_RGBA, format, NULL);
 		bindTexture(0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-							   GL_TEXTURE_2D, img, 0);
+			GL_TEXTURE_2D, img, 0);
 
 		// check status
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		// unbind framebuffer
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)current_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint) current_fbo);
 		return status;
 	}
 	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil,  GLuint img)
@@ -111,10 +126,9 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 	}
 };
 
-struct FramebufferStrategyEXT : public FramebufferStrategy
+struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 {
-
-	virtual GLenum createFBO(GLuint &framebuffer, GLuint &depth_stencil, GLuint &img, int width, int height)
+	virtual GLenum createFBO(GLuint &framebuffer, GLuint &depth_stencil, GLuint &img, int width, int height, Canvas::TextureType texture_type)
 	{
 		GLint current_fbo;
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &current_fbo);
@@ -126,29 +140,45 @@ struct FramebufferStrategyEXT : public FramebufferStrategy
 		// create stencil buffer
 		glGenRenderbuffersEXT(1, &depth_stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT, width, height);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
+			width, height);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-									 GL_RENDERBUFFER_EXT, depth_stencil);
+			GL_RENDERBUFFER_EXT, depth_stencil);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-									 GL_RENDERBUFFER_EXT, depth_stencil);
+			GL_RENDERBUFFER_EXT, depth_stencil);
 
 		// generate texture save target
+		GLint internalFormat;
+		GLenum format;
+		switch (texture_type)
+		{
+			case Canvas::TYPE_HDR:
+				internalFormat = GL_RGBA16F;
+				format = GL_FLOAT;
+				break;
+			case Canvas::TYPE_NORMAL:
+			default:
+				internalFormat = GL_RGBA8;
+				format = GL_UNSIGNED_BYTE;
+		}
+
 		glGenTextures(1, &img);
 		bindTexture(img);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-					 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
+			0, GL_RGBA, format, NULL);
 		bindTexture(0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-								  GL_TEXTURE_2D, img, 0);
+			GL_TEXTURE_2D, img, 0);
 
 		// check status
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 
 		// unbind framebuffer
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint)current_fbo);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint) current_fbo);
 		return status;
 	}
 
@@ -165,45 +195,112 @@ struct FramebufferStrategyEXT : public FramebufferStrategy
 	}
 };
 
+struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
+{
+	virtual GLenum createFBO(GLuint &framebuffer, GLuint &stencil, GLuint &img, int width, int height, Canvas::TextureType texture_type)
+	{
+		GLint current_fbo;
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &current_fbo);
+
+		// create framebuffer
+		glGenFramebuffersEXT(1, &framebuffer);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+
+		// create stencil buffer
+		glGenRenderbuffersEXT(1, &stencil);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX,
+			width, height);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+			GL_RENDERBUFFER_EXT, stencil);
+
+		// generate texture save target
+		GLint internalFormat;
+		GLenum format;
+		switch (texture_type)
+		{
+			case Canvas::TYPE_HDR:
+				internalFormat = GL_RGBA16F;
+				format = GL_FLOAT;
+				break;
+			case Canvas::TYPE_NORMAL:
+			default:
+				internalFormat = GL_RGBA8;
+				format = GL_UNSIGNED_BYTE;
+		}
+
+		glGenTextures(1, &img);
+		bindTexture(img);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
+			0, GL_RGBA, format, NULL);
+		bindTexture(0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+			GL_TEXTURE_2D, img, 0);
+
+		// check status
+		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+
+		// unbind framebuffer
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint) current_fbo);
+		return status;
+	}
+
+	bool isSupported()
+	{
+		GLuint fb, stencil, img;
+		GLenum status = createFBO(fb, stencil, img, 2, 2, Canvas::TYPE_NORMAL);
+		deleteFBO(fb, stencil, img);
+		return status == GL_FRAMEBUFFER_COMPLETE;
+	}
+};
+
 FramebufferStrategy *strategy = NULL;
 
 FramebufferStrategy strategyNone;
 
 FramebufferStrategyGL3 strategyGL3;
 
+FramebufferStrategyPackedEXT strategyPackedEXT;
+
 FramebufferStrategyEXT strategyEXT;
 
 Canvas *Canvas::current = NULL;
 
-static void loadStrategy()
+static void getStrategy()
 {
 	if (!strategy)
 	{
 		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
 			strategy = &strategyGL3;
 		else if (GLEE_EXT_framebuffer_object && GLEE_EXT_packed_depth_stencil)
+			strategy = &strategyPackedEXT;
+		else if (GLEE_EXT_framebuffer_object && strategyEXT.isSupported())
 			strategy = &strategyEXT;
 		else
 			strategy = &strategyNone;
 	}
 }
 
-Canvas::Canvas(int width, int height)
+Canvas::Canvas(int width, int height, TextureType texture_type)
 	: width(width)
 	, height(height)
+	, texture_type(texture_type)
 {
 	float w = static_cast<float>(width);
 	float h = static_cast<float>(height);
 
 	// world coordinates
 	vertices[0].x = 0;
-	vertices[0].y = 0;
+	vertices[0].y = h;
 	vertices[1].x = 0;
-	vertices[1].y = h;
+	vertices[1].y = 0;
 	vertices[2].x = w;
-	vertices[2].y = h;
+	vertices[2].y = 0;
 	vertices[3].x = w;
-	vertices[3].y = 0;
+	vertices[3].y = h;
 
 	// texture coordinates
 	vertices[0].s = 0;
@@ -215,7 +312,7 @@ Canvas::Canvas(int width, int height)
 	vertices[3].s = 1;
 	vertices[3].t = 1;
 
-	loadStrategy();
+	getStrategy();
 
 	loadVolatile();
 }
@@ -231,8 +328,13 @@ Canvas::~Canvas()
 
 bool Canvas::isSupported()
 {
-	loadStrategy();
+	getStrategy();
 	return (strategy != &strategyNone);
+}
+
+bool Canvas::isHdrSupported()
+{
+	return GLEE_VERSION_3_0 || GLEE_ARB_texture_float;
 }
 
 void Canvas::bindDefaultCanvas()
@@ -262,7 +364,7 @@ void Canvas::startGrab()
 	glLoadIdentity();
 
 	// Set up orthographic view (no depth)
-	glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
+	glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
 
 	// Switch back to modelview matrix
 	glMatrixMode(GL_MODELVIEW);
@@ -312,12 +414,10 @@ void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, f
 void Canvas::drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	static Matrix t;
-	quad->mirror(false, true);
 	const vertex *v = quad->getVertices();
 
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	drawv(t, v);
-	quad->mirror(false, true);
 }
 
 love::image::ImageData *Canvas::getImageData(love::image::Image *image)
@@ -325,7 +425,6 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	int row = 4 * width;
 	int size = row * height;
 	GLubyte *pixels = new GLubyte[size];
-	GLubyte *screenshot = new GLubyte[size];
 
 	strategy->bindFBO(fbo);
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -334,15 +433,8 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	else
 		strategy->bindFBO(0);
 
-	GLubyte *src = pixels - row;  // second line of source image
-	GLubyte *dst = screenshot + size;  // last row of destination image
+	love::image::ImageData *img = image->newImageData(width, height, (void *)pixels);
 
-	for (int i = 0; i < height; ++i)
-		memcpy(dst -= row, src += row, row);
-
-	love::image::ImageData *img = image->newImageData(width, height, (void *)screenshot);
-
-	delete[] screenshot;
 	delete[] pixels;
 
 	return img;
@@ -399,7 +491,7 @@ Image::Wrap Canvas::getWrap() const
 
 bool Canvas::loadVolatile()
 {
-	status = strategy->createFBO(fbo, depth_stencil, img, width, height);
+	status = strategy->createFBO(fbo, depth_stencil, img, width, height, texture_type);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 		return false;
 
@@ -446,6 +538,23 @@ void Canvas::drawv(const Matrix &t, const vertex *v) const
 
 	glPopMatrix();
 }
+
+bool Canvas::getConstant(const char *in, Canvas::TextureType &out)
+{
+	return textureTypes.find(in, out);
+}
+
+bool Canvas::getConstant(Canvas::TextureType in, const char *&out)
+{
+	return textureTypes.find(in, out);
+}
+
+StringMap<Canvas::TextureType, Canvas::TYPE_MAX_ENUM>::Entry Canvas::textureTypeEntries[] =
+{
+	{"normal", Canvas::TYPE_NORMAL},
+	{"hdr",    Canvas::TYPE_HDR},
+};
+StringMap<Canvas::TextureType, Canvas::TYPE_MAX_ENUM> Canvas::textureTypes(Canvas::textureTypeEntries, sizeof(Canvas::textureTypeEntries));
 
 } // opengl
 } // graphics

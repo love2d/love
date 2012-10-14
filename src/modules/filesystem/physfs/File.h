@@ -69,7 +69,7 @@ public:
 	bool open(Mode mode);
 	bool close();
 	int64 getSize();
-	Data *read(int64 size = ALL);
+	FileData *read(int64 size = ALL);
 	int64 read(void *dst, int64 size);
 	bool write(const void *data, int64 size);
 	bool write(const Data *data, int64 size = ALL);

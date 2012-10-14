@@ -86,6 +86,24 @@ int w_ParticleSystem_setPosition(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_setAreaSpread(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+
+	ParticleSystem::AreaSpreadDistribution distribution;
+	const char *str = luaL_checkstring(L, 2);
+	if (!ParticleSystem::getConstant(str, distribution))
+		return luaL_error(L, "Invalid distribution: '%s'", str);
+
+	float x = (float)luaL_checknumber(L, 3);
+	float y = (float)luaL_checknumber(L, 4);
+	if (x < 0.0f || y < 0.0f)
+		return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
+
+	t->setAreaSpread(distribution, x, y);
+	return 0;
+}
+
 int w_ParticleSystem_setDirection(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -273,6 +291,21 @@ int w_ParticleSystem_getPosition(lua_State *L)
 	return 2;
 }
 
+int w_ParticleSystem_getAreaSpread(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	ParticleSystem::AreaSpreadDistribution distribution = t-> getAreaSpreadDistribution();
+	const char *str;
+	ParticleSystem::getConstant(distribution, str);
+	const love::Vector &p = t->getAreaSpreadParameters();
+
+	lua_pushstring(L, str);
+	lua_pushnumber(L, p.x);
+	lua_pushnumber(L, p.y);
+
+	return 3;
+}
+
 int w_ParticleSystem_getDirection(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -373,6 +406,7 @@ static const luaL_Reg functions[] =
 	{ "setLifetime", w_ParticleSystem_setLifetime },
 	{ "setParticleLife", w_ParticleSystem_setParticleLife },
 	{ "setPosition", w_ParticleSystem_setPosition },
+	{ "setAreaSpread", w_ParticleSystem_setAreaSpread },
 	{ "setDirection", w_ParticleSystem_setDirection },
 	{ "setSpread", w_ParticleSystem_setSpread },
 	{ "setRelativeDirection", w_ParticleSystem_setRelativeDirection },
@@ -390,6 +424,7 @@ static const luaL_Reg functions[] =
 	{ "getX", w_ParticleSystem_getX },
 	{ "getY", w_ParticleSystem_getY },
 	{ "getPosition", w_ParticleSystem_getPosition },
+	{ "getAreaSpread", w_ParticleSystem_getAreaSpread },
 	{ "getDirection", w_ParticleSystem_getDirection },
 	{ "getSpread", w_ParticleSystem_getSpread },
 	{ "getOffsetX", w_ParticleSystem_getOffsetX },
