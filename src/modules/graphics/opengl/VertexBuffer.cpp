@@ -139,9 +139,12 @@ void *VBO::map()
 
 void VBO::unmap()
 {
-	glBufferSubDataARB(getTarget(), 0, getSize(), mapped);
-	free(mapped);
-	mapped = 0;
+	if (mapped)
+	{
+		glBufferSubDataARB(getTarget(), 0, getSize(), mapped);
+		free(mapped);
+		mapped = 0;
+	}
 }
 
 void VBO::bind()
