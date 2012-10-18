@@ -65,6 +65,8 @@ public:
 
 	love::image::ImageData *getImageData(love::image::Image *image);
 
+	void getPixel(unsigned char* pixel_rgba, int x, int y);
+
 	void setFilter(const Image::Filter &f);
 	Image::Filter getFilter() const;
 
