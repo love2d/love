@@ -304,13 +304,13 @@ Canvas::Canvas(int width, int height, TextureType texture_type)
 
 	// texture coordinates
 	vertices[0].s = 0;
-	vertices[0].t = 1;
+	vertices[0].t = 0;
 	vertices[1].s = 0;
-	vertices[1].t = 0;
+	vertices[1].t = 1;
 	vertices[2].s = 1;
-	vertices[2].t = 0;
+	vertices[2].t = 1;
 	vertices[3].s = 1;
-	vertices[3].t = 1;
+	vertices[3].t = 0;
 
 	getStrategy();
 
@@ -364,7 +364,7 @@ void Canvas::startGrab()
 	glLoadIdentity();
 
 	// Set up orthographic view (no depth)
-	glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
+	glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
 
 	// Switch back to modelview matrix
 	glMatrixMode(GL_MODELVIEW);
@@ -413,18 +413,26 @@ void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, f
 
 void Canvas::drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	static Matrix t;
 	const vertex *v = quad->getVertices();
 
+	// mirror quad on x axis
+	vertex w[4];
+	memcpy(w, v, sizeof(vertex)*4);
+	for (size_t i = 0; i < 4; ++i)
+		w[i].t = 1. - w[i].t;
+
+	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-	drawv(t, v);
+
+	drawv(t, w);
 }
 
 love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 {
 	int row = 4 * width;
 	int size = row * height;
-	GLubyte *pixels = new GLubyte[size];
+	GLubyte *pixels  = new GLubyte[size];
+	GLubyte *flipped = new GLubyte[size];
 
 	strategy->bindFBO(fbo);
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -433,7 +441,13 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	else
 		strategy->bindFBO(0);
 
-	love::image::ImageData *img = image->newImageData(width, height, (void *)pixels);
+	GLubyte *src = pixels, *dst = flipped + size - row;
+	for (int i = 0; i < height; ++i, dst -= row, src += row)
+	{
+		memcpy(dst, src, row);
+	}
+
+	love::image::ImageData *img = image->newImageData(width, height, (void *)flipped);
 
 	delete[] pixels;
 
