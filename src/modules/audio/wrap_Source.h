@@ -51,6 +51,7 @@ int w_Source_setLooping(lua_State *L);
 int w_Source_isLooping(lua_State *L);
 int w_Source_isStopped(lua_State *L);
 int w_Source_isPaused(lua_State *L);
+int w_Source_isPlaying(lua_State *L);
 int w_Source_isStatic(lua_State *L);
 int w_Source_setVolumeLimits(lua_State *L);
 int w_Source_getVolumeLimits(lua_State *L);
