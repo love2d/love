@@ -406,6 +406,9 @@ protected:
 
 	// Pointer to the end of the memory allocation.
 	particle *pEnd;
+	
+	// array of transformed vertex data for all particles, for drawing
+	vertex * particleVerts;
 
 	// The sprite to be drawn.
 	Image *sprite;
