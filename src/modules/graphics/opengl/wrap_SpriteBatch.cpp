@@ -112,7 +112,14 @@ int w_SpriteBatch_clear(lua_State *L)
 int w_SpriteBatch_bind(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	t->lock();
+	try
+	{
+		t->lock();
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 
