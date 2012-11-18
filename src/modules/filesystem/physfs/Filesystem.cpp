@@ -236,7 +236,7 @@ const char *Filesystem::getAppdataDirectory()
 #ifdef LOVE_WINDOWS
 	if (appdata.empty())
 	{
-		wchar_t *w_appdata = _wgetenv(TEXT("APPDATA"));
+		wchar_t *w_appdata = _wgetenv(L"APPDATA");
 		appdata = to_utf8(w_appdata);
 		replace_char(appdata, '\\', '/');
 	}
