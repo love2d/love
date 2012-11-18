@@ -210,6 +210,13 @@ int w_Source_isPaused(lua_State *L)
 	return 1;
 }
 
+int w_Source_isPlaying(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	luax_pushboolean(L, !t->isStopped() && !t->isPaused());
+	return 1;
+}
+
 int w_Source_isStatic(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -299,6 +306,7 @@ static const luaL_Reg functions[] =
 	{ "isLooping", w_Source_isLooping },
 	{ "isStopped", w_Source_isStopped },
 	{ "isPaused", w_Source_isPaused },
+	{ "isPlaying", w_Source_isPlaying },
 	{ "isStatic", w_Source_isStatic },
 
 	{ "setVolumeLimits", w_Source_setVolumeLimits },
