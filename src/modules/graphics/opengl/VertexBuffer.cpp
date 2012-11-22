@@ -154,9 +154,9 @@ void VBO::unmap()
 		return;
 
 	// "orphan" current buffer to avoid implicit synchronisation on the gpu:
-	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf)
-	glBufferDataARB(getTarget(), getSize(), NULL, getUsage());
-	glBufferSubDataARB(getTarget(), 0, getSize(), memory_map);
+	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
+	glBufferDataARB(getTarget(), getSize(), NULL,       getUsage());
+	glBufferDataARB(getTarget(), getSize(), memory_map, getUsage());
 	is_mapped = false;
 }
 
