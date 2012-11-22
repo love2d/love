@@ -233,7 +233,7 @@ void VBO::unload(bool save)
 		unmap();
 	}
 
-	glDeleteBuffers(1, &vbo);
+	glDeleteBuffersARB(1, &vbo);
 	vbo = 0;
 }
 
