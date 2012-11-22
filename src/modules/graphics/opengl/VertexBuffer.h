@@ -320,12 +320,17 @@ private:
 	// The VBO identifier. Assigned by OpenGL.
 	GLuint vbo;
 
-	// *May* contain data saved by 'unload'.
-	char *buffer_copy;
+	// A pointer to mapped memory. Will be inialized on the first
+	// call to map().
+	void *memory_map;
 
-	// A pointer to mapped memory. Zero if memory is currently
-	// not mapped.
-	void *mapped;
+	// Set if the vbo currently operates on main instead of gpu
+	// memory.
+	bool is_mapped;
+
+	// Set if the buffer was modified while operating on gpu memory
+	// and needs to be synchronized.
+	bool is_dirty;
 
 	// Usage hint for map()/unmap() pair. Same as `access' parameter in
 	// glBufferData or 0 if not mapped.
