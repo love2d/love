@@ -1098,7 +1098,7 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image)
 void Graphics::push()
 {
 	if (userMatrices == matrixLimit)
-		throw Exception("Maximum stack depth reached.");
+		throw Exception("Maximum stack depth reached. (More pushes than pops?)");
 	glPushMatrix();
 	++userMatrices;
 }
