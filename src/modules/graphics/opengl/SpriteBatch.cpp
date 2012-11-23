@@ -43,8 +43,6 @@ SpriteBatch::SpriteBatch(Image *image, int size, int usage)
 	, array_buf(0)
 	, element_buf(0)
 {
-	image->retain();
-
 	GLenum gl_usage;
 
 	switch (usage)
@@ -61,33 +59,27 @@ SpriteBatch::SpriteBatch(Image *image, int size, int usage)
 		break;
 	}
 
-	int vertex_size = sizeof(vertex) * 4 * size;
-	int element_size = sizeof(GLushort) * 6 * size;
+	const size_t vertex_size = sizeof(vertex) * 4 * size;
 
-	array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
-	element_buf = VertexBuffer::Create(element_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-
-	// Fill element buffer.
+	try
 	{
-		VertexBuffer::Bind bind(*element_buf);
-		VertexBuffer::Mapper mapper(*element_buf);
-
-		GLushort *indices = static_cast<GLushort *>(mapper.get());
-
-		if (indices)
-		{
-			for (int i = 0; i < size; ++i)
-			{
-				indices[i*6+0] = 0+(i*4);
-				indices[i*6+1] = 1+(i*4);
-				indices[i*6+2] = 2+(i*4);
-
-				indices[i*6+3] = 0+(i*4);
-				indices[i*6+4] = 2+(i*4);
-				indices[i*6+5] = 3+(i*4);
-			}
-		}
+		array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
+		element_buf = new VertexIndex(size);
 	}
+	catch (love::Exception &)
+	{
+		delete array_buf;
+		delete element_buf;
+		throw;
+	}
+	catch (std::bad_alloc &)
+	{
+		delete array_buf;
+		delete element_buf;
+		throw love::Exception("Out of memory.");
+	}
+
+	image->retain();
 }
 
 SpriteBatch::~SpriteBatch()
@@ -186,7 +178,7 @@ void SpriteBatch::setColor(const Color &color)
 	if (!this->color)
 		this->color = new Color(color);
 	else
-		 *(this->color) = color;
+		*(this->color) = color;
 }
 
 void SpriteBatch::setColor()
@@ -211,7 +203,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	image->bind();
 
 	VertexBuffer::Bind array_bind(*array_buf);
-	VertexBuffer::Bind element_bind(*element_buf);
+	VertexBuffer::Bind element_bind(*element_buf->getVertexBuffer());
 
 	// Apply per-sprite color, if a color is set.
 	if (color)
@@ -226,7 +218,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), array_buf->getPointer(texel_offset));
 
-	glDrawElements(GL_TRIANGLES, next*6, GL_UNSIGNED_SHORT, element_buf->getPointer(0));
+	glDrawElements(GL_TRIANGLES, element_buf->getIndexCount(next), element_buf->getType(), element_buf->getPointer(0));
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -269,7 +261,7 @@ bool SpriteBatch::getConstant(const char *in, UsageHint &out)
 	return usageHints.find(in, out);
 }
 
-bool SpriteBatch::getConstant(UsageHint in, const char  *&out)
+bool SpriteBatch::getConstant(UsageHint in, const char *&out)
 {
 	return usageHints.find(in, out);
 }

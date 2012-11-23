@@ -25,6 +25,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 
 namespace love
 {
@@ -105,8 +106,9 @@ const void *VertexArray::getPointer(size_t offset) const
 VBO::VBO(size_t size, GLenum target, GLenum usage)
 	: VertexBuffer(size, target, usage)
 	, vbo(0)
-	, buffer_copy(0)
-	, mapped(0)
+	, memory_map(0)
+	, is_mapped(false)
+	, is_dirty(true)
 {
 	if (!(GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5))
 		throw love::Exception("Not supported");
@@ -121,48 +123,67 @@ VBO::~VBO()
 {
 	if (vbo != 0)
 		unload(false);
+
+	if (memory_map)
+		free(memory_map);
 }
 
 void *VBO::map()
 {
-	// mapping twice could result in memory leaks
-	if (mapped)
-		throw love::Exception("VBO is already mapped!");
+	if (is_mapped)
+		return memory_map;
 
-	mapped = malloc(getSize());
-	if (!mapped)
-		throw love::Exception("Out of memory (oh the humanity!)");
-	glGetBufferSubDataARB(getTarget(), 0, getSize(), mapped);
+	if (!memory_map)
+	{
+		memory_map = malloc(getSize());
+		if (!memory_map)
+			throw love::Exception("Out of memory (oh the humanity!)");
+	}
 
-	return mapped;
+	if (is_dirty)
+		glGetBufferSubDataARB(getTarget(), 0, getSize(), memory_map);
+
+	is_mapped = true;
+	is_dirty = false;
+
+	return memory_map;
 }
 
 void VBO::unmap()
 {
-	if (mapped)
-	{
-		glBufferSubDataARB(getTarget(), 0, getSize(), mapped);
-		free(mapped);
-		mapped = 0;
-	}
+	if (!is_mapped)
+		return;
+
+	// "orphan" current buffer to avoid implicit synchronisation on the gpu:
+	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
+	glBufferDataARB(getTarget(), getSize(), NULL,       getUsage());
+	glBufferDataARB(getTarget(), getSize(), memory_map, getUsage());
+	is_mapped = false;
 }
 
 void VBO::bind()
 {
-	glBindBufferARB(getTarget(), vbo);
+	if (!is_mapped)
+		glBindBufferARB(getTarget(), vbo);
 }
 
 void VBO::unbind()
 {
-	glBindBufferARB(getTarget(), 0);
+	if (!is_mapped)
+		glBindBufferARB(getTarget(), 0);
 }
 
 void VBO::fill(size_t offset, size_t size, const void *data)
 {
-	if (mapped)
-		memcpy(static_cast<char *>(mapped) + offset, data, size);
+	if (is_mapped)
+	{
+		memcpy(static_cast<char *>(memory_map) + offset, data, size);
+	}
 	else
+	{
 		glBufferSubDataARB(getTarget(), offset, size, data);
+		is_dirty = true;
+	}
 }
 
 const void *VBO::getPointer(size_t offset) const
@@ -187,7 +208,7 @@ bool VBO::load(bool restore)
 	VertexBuffer::Bind bind(*this);
 
 	// Copy the old buffer only if 'restore' was requested.
-	const GLvoid *src = restore ? buffer_copy : 0;
+	const GLvoid *src = restore ? memory_map : 0;
 
 	while (GL_NO_ERROR != glGetError())
 		/* clear error messages */;
@@ -196,19 +217,11 @@ bool VBO::load(bool restore)
 	glBufferDataARB(getTarget(), getSize(), src, getUsage());
 	GLenum err = glGetError();
 
-	// Clean up buffer_copy, if it exists.
-	delete[] buffer_copy;
-	buffer_copy = 0;
-
 	return (GL_NO_ERROR == err);
 }
 
 void VBO::unload(bool save)
 {
-	// Clean up buffer_copy, if it exists.
-	delete[] buffer_copy;
-	buffer_copy = 0;
-
 	// Save data before unloading.
 	if (save)
 	{
@@ -217,18 +230,161 @@ void VBO::unload(bool save)
 		GLint size;
 		glGetBufferParameterivARB(getTarget(), GL_BUFFER_SIZE, &size);
 
-		const char *src = static_cast<char *>(map());
-
-		if (src)
-		{
-			buffer_copy = new char[size];
-			memcpy(buffer_copy, src, size);
-			unmap();
-		}
+		map(); // saves buffer content to memory_map.
+		unmap();
 	}
 
-	glDeleteBuffers(1, &vbo);
+	glDeleteBuffersARB(1, &vbo);
 	vbo = 0;
+}
+
+
+// VertexIndex
+
+size_t VertexIndex::maxSize = 0;
+std::list<size_t> VertexIndex::sizeRefs;
+VertexBuffer *VertexIndex::element_array = NULL;
+
+VertexIndex::VertexIndex(size_t size)
+	: size(size)
+{
+	// The upper limit is the maximum of GLuint divided by six (the number
+	// of indices per size) and divided by the size of GLuint. This guarantees
+	// no overflows when calculating the array size in bytes.
+	// Memory issues will be handled by other exceptions.
+	if (size == 0 || size > ((GLuint) -1) / 6 / sizeof(GLuint))
+		throw love::Exception("Invalid size.");
+
+	addSize(size);
+}
+
+VertexIndex::~VertexIndex()
+{
+	removeSize(size);
+}
+
+size_t VertexIndex::getSize() const
+{
+	return size;
+}
+
+size_t VertexIndex::getIndexCount(size_t elements) const
+{
+	return elements * 6;
+}
+
+GLenum VertexIndex::getType(size_t s) const
+{
+	// Calculates if unsigned short is big enough to hold all the vertex indices.
+	static const GLint type_table[] = {GL_UNSIGNED_INT, GL_UNSIGNED_SHORT};
+	return type_table[int(GLushort(-1) < s * 4)];
+}
+
+VertexBuffer *VertexIndex::getVertexBuffer() const
+{
+	return element_array;
+}
+
+const void *VertexIndex::getPointer(size_t offset) const
+{
+	return element_array->getPointer(offset);
+}
+
+void VertexIndex::addSize(size_t newSize)
+{
+	if (newSize <= maxSize)
+	{
+		// Current size is bigger. Append the size to list and sort.
+		sizeRefs.push_back(newSize);
+		sizeRefs.sort();
+		return;
+	}
+
+	// Try to resize before adding it to the list because resize may throw.
+	resize(newSize);
+	sizeRefs.push_back(newSize);
+}
+
+void VertexIndex::removeSize(size_t oldSize)
+{
+	// TODO: For debugging purposes, this should check if the size was actually found.
+	sizeRefs.erase(std::find(sizeRefs.begin(), sizeRefs.end(), oldSize));
+	if (sizeRefs.size() == 0)
+	{
+		resize(0);
+		return;
+	}
+
+	if (oldSize == maxSize)
+	{
+		// Shrink if there's a smaller size.
+		size_t newSize = sizeRefs.back();
+		if (newSize < maxSize)
+			resize(newSize);
+	}
+}
+
+void VertexIndex::resize(size_t size)
+{
+	if (size == 0)
+	{
+		delete element_array;
+		element_array = NULL;
+		maxSize = 0;
+		return;
+	}
+
+	VertexBuffer *new_element_array;
+	// Depending on the size, a switch to int and more memory is needed.
+	GLenum target_type = getType(size);
+	size_t array_size = (target_type == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint)) * 6 * size;
+
+	// Create may throw out-of-memory exceptions.
+	// VertexIndex will propagate the exception and keep the old VertexBuffer.
+	try
+	{
+		new_element_array = VertexBuffer::Create(array_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
+
+	// Allocation of the new VertexBuffer succeeded.
+	// The old VertexBuffer can now be deleted.
+	delete element_array;
+	element_array = new_element_array;
+	maxSize = size;
+
+	switch (target_type)
+	{
+	case GL_UNSIGNED_SHORT:
+		fill<GLushort>();
+		break;
+	case GL_UNSIGNED_INT:
+		fill<GLuint>();
+		break;
+	}
+}
+
+template <typename T>
+void VertexIndex::fill()
+{
+	VertexBuffer::Bind bind(*element_array);
+	VertexBuffer::Mapper mapper(*element_array);
+
+	T *indices = (T *) mapper.get();
+
+	for (size_t i = 0; i < maxSize; ++i)
+	{
+		indices[i*6+0] = i * 4 + 0;
+		indices[i*6+1] = i * 4 + 1;
+		indices[i*6+2] = i * 4 + 2;
+
+		indices[i*6+3] = i * 4 + 0;
+		indices[i*6+4] = i * 4 + 2;
+		indices[i*6+5] = i * 4 + 3;
+	}
 }
 
 } // opengl

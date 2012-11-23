@@ -48,6 +48,7 @@ namespace opengl
 class Image;
 class Quad;
 class VertexBuffer;
+class VertexIndex;
 
 class SpriteBatch : public Drawable
 {
@@ -93,7 +94,7 @@ public:
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	static bool getConstant(const char *in, UsageHint &out);
-	static bool getConstant(UsageHint in, const char  *&out);
+	static bool getConstant(UsageHint in, const char *&out);
 
 private:
 
@@ -126,7 +127,8 @@ private:
 	Color *color;
 
 	VertexBuffer *array_buf;
-	VertexBuffer *element_buf;
+	VertexIndex *element_buf;
+
 }; // SpriteBatch
 
 } // opengl

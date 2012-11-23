@@ -312,7 +312,7 @@ static const luaL_Reg functions[] =
 	{ "setVolumeLimits", w_Source_setVolumeLimits },
 	{ "getVolumeLimits", w_Source_getVolumeLimits },
 	{ "setDistance", w_Source_setDistance },
-	{ "getDistance", w_Source_setDistance },
+	{ "getDistance", w_Source_getDistance },
 	{ "setRolloff", w_Source_setRolloff},
 	{ "getRolloff", w_Source_getRolloff},
 
