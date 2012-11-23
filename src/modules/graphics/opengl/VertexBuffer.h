@@ -337,6 +337,140 @@ private:
 	GLenum mapped_access;
 };
 
+/**
+ * VertexIndex manages one shared VertexBuffer that stores the indices for an
+ * element array. Vertex arrays using the vertex structure (or anything else
+ * that can use the pattern below) can request a size and use it for the
+ * drawElements call.
+ *
+ *  indices[i*6 + 0] = i*4 + 0;
+ *  indices[i*6 + 1] = i*4 + 1;
+ *  indices[i*6 + 2] = i*4 + 2;
+ *
+ *  indices[i*6 + 3] = i*4 + 0;
+ *  indices[i*6 + 4] = i*4 + 2;
+ *  indices[i*6 + 5] = i*4 + 3;
+ *
+ * There will always be a large enough VertexBuffer around until all
+ * VertexIndex instances have been deleted.
+ *
+ * Q: Why have something like VertexIndex?
+ * A: The indices for the SpriteBatch do not change, only the array size
+ * varies. Using one VertexBuffer for all element arrays removes this
+ * duplicated data and saves some memory.
+ */
+class VertexIndex
+{
+public:
+	/**
+	 * Adds an entry to the list of sizes and resizes the VertexBuffer
+	 * if needed. A size of 1 allocates a group of 6 indices for 4 vertices
+	 * creating 1 face.
+	 *
+	 * @param size The requested size in groups of 6 indices.
+	 */
+	VertexIndex(size_t size);
+
+	/**
+	 * Removes an entry from the list of sizes and resizes the VertexBuffer
+	 * if needed.
+	 */
+	~VertexIndex();
+
+	/**
+	 * Returns the number of index groups.
+	 * This can be used for getIndexCount to get the full count of indices.
+	 *
+	 * @return The number of index groups.
+	 */
+	size_t getSize() const;
+
+	/**
+	 * Returns the number of indices that the passed element count will have.
+	 * Use VertexIndex::getSize to get the full index count for that
+	 * VertexIndex instance.
+	 *
+	 * @param elements The number of elements to calculate the index count for.
+	 * @return The index count.
+	 */
+	size_t getIndexCount(size_t elements) const;
+
+	/**
+	 * Returns the integer type of the element array.
+	 * If an optional nonzero size argument is passed, the function returns
+	 * the integer type of the element array of that size.
+	 *
+	 * @param s The size of the array to calculated the integer type of.
+	 * @return The element array integer type.
+	 */
+	GLenum getType(size_t s) const;
+	inline GLenum getType() const
+	{
+		return getType(maxSize);
+	}
+
+	/**
+	 * Returns the pointer to the VertexBuffer.
+	 * The pointer will change if a new size request or removal causes
+	 * a VertexBuffer resize. It is recommended to retrieve the pointer
+	 * value directly before the drawing call.
+	 *
+	 * @return The pointer to the VertexBuffer.
+	 */
+	VertexBuffer *getVertexBuffer() const;
+
+	/**
+	 * Returns a pointer which represents the specified byte offset.
+	 *
+	 * @param offset The offset in bytes.
+	 * @return A pointer which represents the offset.
+	 */
+	const void *getPointer(size_t offset) const;
+
+private:
+
+	/**
+	 * Adds a new size to the size list, then sorts and resizes it if needed.
+	 *
+	 * @param newSize The new size to be added.
+	 */
+	void addSize(size_t newSize);
+
+	/**
+	 * Removes a size from the size list, then sorts and resizes it if needed.
+	 *
+	 * @param oldSize The old size to be removed.
+	 */
+	void removeSize(size_t oldSize);
+
+	/**
+	 * Resizes the VertexBuffer to the requested size.
+	 * This function takes care of choosing the correct integer type and
+	 * allocating and deleting the VertexBuffer instance. It also has some
+	 * fallback logic in case the memory ran out.
+	 *
+	 * @param size The requested VertexBuffer size. Passing 0 deletes the VertexBuffer without allocating a new one.
+	 */
+	void resize(size_t size);
+
+	/**
+	 * Adds all indices to the array with the type T.
+	 * There are no checks for the correct types or overflows. The calling
+	 * function should check for that.
+	 */
+	template <typename T> void fill();
+
+	// The size of the array requested by this instance.
+	size_t size;
+
+	// The current VertexBuffer size. 0 means no VertexBuffer.
+	static size_t maxSize;
+	// The list of sizes. Needs to be kept sorted in ascending order.
+	static std::list<size_t> sizeRefs;
+	// The VertexBuffer for the element array. Can be NULL.
+	static VertexBuffer *element_array;
+};
+
 } // opengl
 } // graphics
 } // love
