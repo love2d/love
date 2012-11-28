@@ -276,7 +276,7 @@ size_t VertexIndex::getIndexCount(size_t elements) const
 GLenum VertexIndex::getType(size_t s) const
 {
 	// Calculates if unsigned short is big enough to hold all the vertex indices.
-	static const GLenum type_table[] = {GL_UNSIGNED_INT, GL_UNSIGNED_SHORT};
+	static const GLenum type_table[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
 	return type_table[int(GLushort(-1) < s * 4)];
 }
 
