@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <limits>
 
 namespace love
 {
@@ -277,7 +278,8 @@ GLenum VertexIndex::getType(size_t s) const
 {
 	// Calculates if unsigned short is big enough to hold all the vertex indices.
 	static const GLenum type_table[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-	return type_table[int(GLushort(-1) < s * 4)];
+	return type_table[s * 4 > std::numeric_limits<GLushort>::max()];
+	// if buffer-size > max(GLushort) then GL_UNSIGNED_INT else GL_UNSIGNED_SHORT
 }
 
 VertexBuffer *VertexIndex::getVertexBuffer() const
