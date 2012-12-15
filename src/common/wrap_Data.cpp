@@ -44,7 +44,7 @@ int w_Data_getSize(lua_State *L)
 
 const luaL_Reg w_Data_functions[] =
 {
-	{ "getPointer", w_Data_getPointer },
+//	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 	{ 0, 0 }
 };
