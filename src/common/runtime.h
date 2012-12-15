@@ -267,6 +267,10 @@ int luax_convobj(lua_State *L, int idx, const char *module, const char *function
  **/
 int luax_convobj(lua_State *L, int idxs[], int n, const char *module, const char *function);
 
+// pcall versions of the above
+int luax_pconvobj(lua_State *L, int idx, const char *module, const char *function);
+int luax_pconvobj(lua_State *L, int idxs[], int n, const char *module, const char *function);
+
 /**
  * 'Insist' that a table 'k' exists in the table at idx. Insistence involves that the
  * table (k) is created if it does not exist in the table at idx. The table at idx must

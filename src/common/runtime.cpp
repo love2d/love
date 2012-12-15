@@ -343,6 +343,30 @@ int luax_convobj(lua_State *L, int idxs[], int n, const char *mod, const char *f
 	return 0;
 }
 
+int luax_pconvobj(lua_State *L, int idx, const char *mod, const char *fn)
+{
+	// Convert string to a file.
+	luax_getfunction(L, mod, fn);
+	lua_pushvalue(L, idx); // The initial argument.
+	int ret = lua_pcall(L, 1, 1, 0); // Call the function, one arg, one return value.
+	if (ret == 0)
+		lua_replace(L, idx); // Replace the initial argument with the new object.
+	return ret;
+}
+
+int luax_pconvobj(lua_State *L, int idxs[], int n, const char *mod, const char *fn)
+{
+	luax_getfunction(L, mod, fn);
+	for (int i = 0; i < n; i++)
+	{
+		lua_pushvalue(L, idxs[i]); // The arguments.
+	}
+	int ret = lua_pcall(L, n, 1, 0); // Call the function, n args, one return value.
+	if (ret == 0)
+		lua_replace(L, idxs[0]); // Replace the initial argument with the new object.
+	return ret;
+}
+
 int luax_strtofile(lua_State *L, int idx)
 {
 	return luax_convobj(L, idx, "filesystem", "newFile");

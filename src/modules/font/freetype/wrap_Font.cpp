@@ -39,18 +39,25 @@ static Font *instance = 0;
 int w_newRasterizer(lua_State *L)
 {
 	Rasterizer *t = NULL;
-	if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
+	try
 	{
-		love::image::ImageData *d = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
-		const char *g = luaL_checkstring(L, 2);
-		std::string glyphs(g);
-		t = instance->newRasterizer(d, glyphs);
+		if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
+		{
+			love::image::ImageData *d = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+			const char *g = luaL_checkstring(L, 2);
+			std::string glyphs(g);
+			t = instance->newRasterizer(d, glyphs);
+		}
+		else if (luax_istype(L, 1, DATA_T))
+		{
+			Data *d = luax_checkdata(L, 1);
+			int size = luaL_checkint(L, 2);
+			t = instance->newRasterizer(d, size);
+		}
 	}
-	else if (luax_istype(L, 1, DATA_T))
+	catch (love::Exception &e)
 	{
-		Data *d = luax_checkdata(L, 1);
-		int size = luaL_checkint(L, 2);
-		t = instance->newRasterizer(d, size);
+		return luaL_error(L, "%s", e.what());
 	}
 
 	luax_newtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
