@@ -290,8 +290,16 @@ int w_newFont(lua_State *L)
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
-	// Create the font.
-	Font *font = instance->newFont(rasterizer, instance->getDefaultImageFilter());
+	Font *font = NULL;
+	try
+	{
+		// Create the font.
+		font = instance->newFont(rasterizer, instance->getDefaultImageFilter());
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, e.what());
+	}
 
 	if (font == 0)
 		return luaL_error(L, "Could not load font.");

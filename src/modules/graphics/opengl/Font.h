@@ -32,7 +32,6 @@
 #include "graphics/Image.h"
 
 #include "OpenGL.h"
-#include "GLee.h"
 
 namespace love
 {
@@ -69,16 +68,7 @@ public:
 	 * @param kx Shear along the x axis.
 	 * @param ky Shear along the y axis.
 	 **/
-	void print(std::string text, float x, float y, float letter_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
-
-	/**
-	 * Prints the character at the designated position.
-	 *
-	 * @param character A character.
-	 * @param x The x-coordinate.
-	 * @param y The y-coordinate.
-	 **/
-	void print(char character, float x, float y);
+	void print(const std::string &text, float x, float y, float letter_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 	/**
 	 * Returns the height of the font.
@@ -109,7 +99,7 @@ public:
 	 * @param max_width Optional output of the maximum width
 	 * Returns a vector with the lines.
 	 **/
-	std::vector<std::string> getWrap(const std::string text, float wrap, int *max_width = 0);
+	std::vector<std::string> getWrap(const std::string &text, float wrap, int *max_width = 0);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
@@ -139,6 +129,7 @@ public:
 	// Implements Volatile.
 	bool loadVolatile();
 	void unloadVolatile();
+	
 private:
 
 	enum FontType
@@ -147,12 +138,35 @@ private:
 		FONT_IMAGE,
 		FONT_UNKNOWN
 	};
+	
+	// thin wrapper for an array of 4 vertices
+	struct GlyphQuad
+	{
+		vertex vertices[4];
+	};
 
 	struct Glyph
 	{
-		GLuint list;
 		GLuint texture;
 		int spacing;
+		GlyphQuad quad;
+	};
+	
+	// used to determine when to change textures in the vertex array generated when printing text
+	struct GlyphArrayDrawInfo
+	{
+		GLuint texture;
+		int startquad, numquads;
+		
+		// used when sorting with std::sort
+		// sorts by texture first (binding textures is expensive) and relative position in memory second
+		bool operator < (const GlyphArrayDrawInfo &other) const
+		{
+			if (texture != other.texture)
+				return texture < other.texture;
+			else
+				return startquad < other.startquad;
+		};
 	};
 
 	love::font::Rasterizer *rasterizer;
@@ -160,20 +174,29 @@ private:
 	int height;
 	float lineHeight;
 	float mSpacing; // modifies the spacing by multiplying it with this value
+	
+	int texture_size_index;
+	int texture_width;
+	int texture_height;
+	
 	std::vector<GLuint> textures; // vector of packed textures
-	std::map<int, Glyph *> glyphs; // maps glyphs to display lists
+	std::map<int, Glyph *> glyphs; // maps glyphs to quad information
 	FontType type;
 	Image::Filter filter;
+	
+	static const int NUM_TEXTURE_SIZES = 7;
+	static const int TEXTURE_WIDTHS[NUM_TEXTURE_SIZES];
+	static const int TEXTURE_HEIGHTS[NUM_TEXTURE_SIZES];
 
-	static const int TEXTURE_WIDTH = 512;
-	static const int TEXTURE_HEIGHT = 512;
 	static const int TEXTURE_PADDING = 1;
 
 	int texture_x, texture_y;
 	int rowHeight;
 
+	bool initializeTexture(GLint format);
 	void createTexture();
-	Glyph *addGlyph(int glyph);
+	Glyph *addGlyph(const int glyph);
+	Glyph *findGlyph (const int glyph);
 }; // Font
 
 } // opengl
