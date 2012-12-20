@@ -24,6 +24,7 @@
 #include "common/Object.h"
 #include <string>
 #include <map>
+#include <vector>
 #include "OpenGL.h"
 #include "Image.h"
 #include "Canvas.h"
@@ -38,7 +39,7 @@ namespace opengl
 class PixelEffect : public Object, public Volatile
 {
 public:
-	PixelEffect(const std::string &code);
+	PixelEffect(const std::string &vertcode, const std::string &fragcode);
 	virtual ~PixelEffect();
 	std::string getWarnings() const;
 
@@ -60,8 +61,12 @@ public:
 private:
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
+	GLuint createShader(GLenum type, const std::string &code);
+	GLuint createProgram(const std::vector<GLuint> &shaders);
+	
 	GLuint _program;
-	std::string _code; // volatile and stuff
+	std::string _vertcode;
+	std::string _fragcode; // volatile and stuff
 
 	// uniform location buffer
 	std::map<std::string, GLint> _uniforms;

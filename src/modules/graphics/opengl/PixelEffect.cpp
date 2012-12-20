@@ -69,72 +69,130 @@ GLint PixelEffect::getTextureUnit(const std::string &name)
 	return _current_texture_unit;
 }
 
-PixelEffect::PixelEffect(const std::string &code)
+	PixelEffect::PixelEffect(const std::string &vertcode, const std::string &fragcode)
 	: _program(0)
-	, _code(code)
+	, _vertcode(vertcode)
+	, _fragcode(fragcode)
 {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_max_texture_units);
 	loadVolatile();
 }
 
-bool PixelEffect::loadVolatile()
+GLuint PixelEffect::createShader(GLenum type, const std::string &code)
 {
-	_program = glCreateProgram();
-	// should only fail if this is called between a glBegin()/glEnd() pair
-	if (_program == 0)
-		throw love::Exception("Cannot create shader program object.");
-
-	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
-	// should only fail if this is called between a glBegin()/glEnd() pair
-	if (shader == 0)
+	const char *shadertypename = NULL;
+	switch (type)
 	{
-		glDeleteProgram(_program);
-		throw love::Exception("Cannot create shader object.");
+	case GL_VERTEX_SHADER:
+		shadertypename = "vertex";
+		break;
+	case GL_GEOMETRY_SHADER_ARB:
+		shadertypename = "geometry";
+	case GL_FRAGMENT_SHADER:
+	default:
+		shadertypename = "fragment";
+		break;
 	}
-
-	// compile fragment shader code
-	const char *src = _code.c_str();
-	GLint strlen = _code.length();
-	glShaderSource(shader, 1, (const GLchar **)&src, &strlen);
+	
+	GLuint shader = glCreateShader(type);
+	if (shader == 0) // should only fail when called between glBegin() and glEnd()
+		throw love::Exception("Cannot create %s shader object.", shadertypename);
+	
+	const char *src = code.c_str();
+	size_t srclen = code.length();
+	glShaderSource(shader, 1, (const GLchar **)&src, (GLint *)&srclen);
+	
 	glCompileShader(shader);
-
-	GLint compile_ok;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_ok);
-	if (GL_FALSE == compile_ok)
+	
+	GLint compile_status;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+	if (compile_status == GL_FALSE)
 	{
-		// get compiler error
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &strlen);
-		char *error_str = new char[strlen];
-		glGetShaderInfoLog(shader, strlen, NULL, error_str);
-		std::string tmp(error_str);
-
-		// cleanup before throw
-		delete[] error_str;
+		GLint infologlen;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infologlen);
+		
+		GLchar *errorlog = new GLchar[infologlen + 1];
+		glGetShaderInfoLog(shader, infologlen, NULL, errorlog);
+		
+		std::string tmp(errorlog);
+		
+		delete[] errorlog;
 		glDeleteShader(shader);
-		glDeleteProgram(_program);
-
-		// XXX: errorlog may contain escape sequences.
-		throw love::Exception("Cannot compile shader:\n%s", tmp.c_str());
+		
+		throw love::Exception("Cannot compile %s shader:\n%s", shadertypename, tmp.c_str());
 	}
+	
+	return shader;
+}
 
-	// link fragment shader
+GLuint PixelEffect::createProgram(const std::vector<GLuint> &shaders)
+{
+	GLuint program = glCreateProgram();
+	if (program == 0) // should only fail when called between glBegin() and glEnd()
+		throw love::Exception("Cannot create shader program object.");
+	
+	std::vector<GLuint>::const_iterator it;
+	for (it = shaders.begin(); it != shaders.end(); ++it)
+		glAttachShader(program, *it);
+	
+	glLinkProgram(program);
+	
+	for (it = shaders.begin(); it != shaders.end(); ++it)
+		glDetachShader(program, *it);
+	
 	GLint link_ok;
-	glAttachShader(_program, shader);
-	glLinkProgram(_program);
-	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
-	if (GL_FALSE == link_ok)
+	glGetProgramiv(program, GL_LINK_STATUS, &link_ok);
+	if (link_ok == GL_FALSE)
 	{
-		// this should not happen if compiling is ok, but one can never be too careful
-		// get linker error
-		std::string tmp(getWarnings());
+		GLint strlen, nullpos;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &strlen);
+		
+		char *temp_str = new char[strlen+1];
+		// be extra sure that the error string will be 0-terminated
+		memset(temp_str, '\0', strlen+1);
+		glGetProgramInfoLog(program, strlen, &nullpos, temp_str);
+		temp_str[nullpos] = '\0';
+		
+		std::string warnings(temp_str);
+		delete[] temp_str;
 
-		// cleanup before throw
-		glDeleteShader(shader);
-		glDeleteProgram(_program);
-		throw love::Exception("Cannot compile shader:\n%s", tmp.c_str());
+		glDeleteProgram(program);
+		
+		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
+	
+	return program;
+}
 
-	glDeleteShader(shader);
+bool PixelEffect::loadVolatile()
+{	
+	std::vector<GLuint> shaders;
+	
+	if (_vertcode.length() > 0)
+		shaders.push_back(createShader(GL_VERTEX_SHADER, _vertcode));
+	
+	if (_fragcode.length() > 0)
+		shaders.push_back(createShader(GL_FRAGMENT_SHADER, _fragcode));
+	
+	if (shaders.size() == 0)
+		throw love::Exception("Cannot create PixelEffect: no source code!");
+	
+	try
+	{
+		_program = createProgram(shaders);
+	}
+	catch (love::Exception &e)
+	{
+		std::vector<GLuint>::iterator it;
+		for (it = shaders.begin(); it != shaders.end(); ++it)
+			glDeleteShader(*it);
+		
+		throw;
+	}
+	
+	std::vector<GLuint>::iterator it;
+	for (it = shaders.begin(); it != shaders.end(); ++it)
+		glDeleteShader(*it);
 
 	return true;
 }
@@ -146,7 +204,8 @@ PixelEffect::~PixelEffect()
 
 void PixelEffect::unloadVolatile()
 {
-	glDeleteProgram(_program);
+	if (_program != 0)
+		glDeleteProgram(_program);
 }
 
 std::string PixelEffect::getGLSLVersion()

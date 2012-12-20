@@ -455,7 +455,7 @@ PixelEffect *Graphics::newPixelEffect(const std::string &code)
 	PixelEffect *effect = NULL;
 	try
 	{
-		effect = new PixelEffect(code);
+		effect = new PixelEffect("", code);
 	}
 	catch(love::Exception &e)
 	{
