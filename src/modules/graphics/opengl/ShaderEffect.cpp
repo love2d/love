@@ -27,17 +27,23 @@ namespace
 // reattaches the originally active program when destroyed
 struct TemporaryAttacher
 {
-	TemporaryAttacher(love::graphics::opengl::ShaderEffect *sp) : s(sp)
+	TemporaryAttacher(love::graphics::opengl::ShaderEffect *sp)
+	: cureffect(sp)
+	, preveffect(love::graphics::opengl::ShaderEffect::current)
 	{
-		glGetIntegerv(GL_CURRENT_PROGRAM, &activeProgram);
-		s->attach();
+		cureffect->attach();
 	}
+	
 	~TemporaryAttacher()
 	{
-		glUseProgram(activeProgram);
+		if (preveffect != NULL)
+			preveffect->attach();
+		else
+			cureffect->detach();
 	}
-	love::graphics::opengl::ShaderEffect *s;
-	GLint activeProgram;
+	
+	love::graphics::opengl::ShaderEffect *cureffect;
+	love::graphics::opengl::ShaderEffect *preveffect;
 };
 } // anonymous namespace
 
@@ -50,14 +56,24 @@ namespace opengl
 
 ShaderEffect *ShaderEffect::current = NULL;
 
+GLint ShaderEffect::_current_texture_unit = 0;
+GLint ShaderEffect::_max_texture_units = 0;
+
 ShaderEffect::ShaderEffect(const std::string &vertcode, const std::string &fragcode)
 	: _program(0)
 	, _vertcode(vertcode)
 	, _fragcode(fragcode)
-	, _current_texture_unit(0)
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &_max_texture_units);
 	loadVolatile();
+}
+
+ShaderEffect::~ShaderEffect()
+{
+	if (current == this)
+		detach();
+	
+	unloadVolatile();
 }
 
 GLint ShaderEffect::getTextureUnit(const std::string &name)
@@ -68,7 +84,7 @@ GLint ShaderEffect::getTextureUnit(const std::string &name)
 		return it->second;
 	
 	if (++_current_texture_unit >= _max_texture_units)
-		throw love::Exception("No more texture units available");
+		throw love::Exception("No more texture units available for shaders");
 	
 	_texture_unit_pool[name] = _current_texture_unit;
 	return _current_texture_unit;
@@ -149,7 +165,7 @@ void ShaderEffect::createProgram(const std::vector<GLuint> &shaders)
 }
 
 bool ShaderEffect::loadVolatile()
-{	
+{
 	std::vector<GLuint> shaders;
 	
 	if (_vertcode.length() > 0)
@@ -177,19 +193,22 @@ bool ShaderEffect::loadVolatile()
 	std::vector<GLuint>::iterator it;
 	for (it = shaders.begin(); it != shaders.end(); ++it)
 		glDeleteShader(*it);
+	
+	if (current == this)
+		glUseProgram(_program);
 
 	return true;
 }
 
-ShaderEffect::~ShaderEffect()
-{
-	unloadVolatile();
-}
-
 void ShaderEffect::unloadVolatile()
 {
+	if (current == this)
+		glUseProgram(0);
+	
 	if (_program != 0)
 		glDeleteProgram(_program);
+	
+	_program = 0;
 }
 
 std::string ShaderEffect::getGLSLVersion()
@@ -232,13 +251,17 @@ std::string ShaderEffect::getWarnings() const
 
 void ShaderEffect::attach()
 {
-	glUseProgram(_program);
+	if (current != this)
+		glUseProgram(_program);
+	
 	current = this;
 }
 
 void ShaderEffect::detach()
 {
-	glUseProgram(0);
+	if (current != NULL)
+		glUseProgram(0);
+	
 	current = NULL;
 }
 

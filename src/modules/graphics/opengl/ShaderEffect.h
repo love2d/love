@@ -72,9 +72,9 @@ private:
 	std::map<std::string, GLint> _uniforms;
 
 	// texture unit pool for setting images
+	static GLint _current_texture_unit;
+	static GLint _max_texture_units;
 	std::map<std::string, GLint> _texture_unit_pool;
-	GLint _current_texture_unit;
-	GLint _max_texture_units;
 	GLint getTextureUnit(const std::string &name);
 	
 	void sendTexture(const std::string &name, GLuint texture);
