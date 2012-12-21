@@ -1284,25 +1284,78 @@ do
 	end
 
 	-- PIXEL EFFECTS
-	local GLSL_HEADER_LINE_COUNT = 6
-	local GLSL_HEADER = [[#version 120
-	#define number float
-	#define Image sampler2D
-	#define extern uniform
-	#define Texel texture2D
-	uniform sampler2D _tex0_;]]
-	local GLSL_FOOTER = [[void main() {
-		// fix weird crashing issue in OSX when _tex0_ is unused within effect()
-		float dummy = texture2D(_tex0_, vec2(.5)).r;
-		gl_FragColor = effect(gl_Color, _tex0_, gl_TexCoord[0].xy, gl_FragCoord.xy);
-	}]]
-	function love.graphics._effectCodeToGLSL(code)
-		return table.concat{GLSL_HEADER, "\n", code, GLSL_FOOTER}
+	local HEADER_LINE_COUNT = 7
+	
+	local GLSL_VERT = {
+		HEADER = [[
+#version 120
+#define number float
+#define Image sampler2D
+#define extern uniform
+#define Texel texture2D
+#define VERTEX
+uniform sampler2D _tex0_;]],
+		FOOTER = [[
+void main() {
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+	gl_FrontColor = gl_Color;
+	gl_Position = transform(gl_Vertex);
+}]],
+	}
+	
+	local GLSL_FRAG = {
+		HEADER = [[
+#version 120
+#define number float
+#define Image sampler2D
+#define extern uniform
+#define Texel texture2D
+#define PIXEL
+uniform sampler2D _tex0_;]],
+		FOOTER = [[
+void main() {
+	// fix weird crashing issue in OSX when _tex0_ is unused within effect()
+	float dummy = texture2D(_tex0_, vec2(.5)).r;
+	gl_FragColor = effect(gl_Color, _tex0_, gl_TexCoord[0].xy, gl_FragCoord.xy);
+}]],
+	}
+
+	function love.graphics._effectCodeToGLSL(vertcode, fragcode)
+		if vertcode then
+			local s = vertcode:gsub("\r\n\t", " ")
+			s = s:gsub("%w+(%s+)%(", "")
+			if s:match("vec4 effect%(") then
+				fragcode = vertcode
+			end
+			if not s:match("vec4 transform%(") then
+				vertcode = nil
+			end
+		end
+		if fragcode then
+			local s = fragcode:gsub("\r\n\t", " ")
+			s = s:gsub("%w+(%s+)%(", "")
+			if s:match("vec4 transform%(") then
+				vertcode = fragcode
+			end
+			if not s:match("vec4 effect%(") then
+				fragcode = nil
+			end
+		end
+
+		if vertcode then
+			vertcode = table.concat{GLSL_VERT.HEADER, "\n", vertcode, GLSL_VERT.FOOTER}
+		end
+		if fragcode then
+			fragcode = table.concat{GLSL_FRAG.HEADER, "\n", fragcode, GLSL_FRAG.FOOTER}
+		end
+		
+		return vertcode, fragcode 
 	end
 
 	function love.graphics._transformGLSLErrorMessages(message)
-		if not message:match("Cannot compile shader") then return message end
-		local lines = {"Cannot compile shader:"}
+		local shadertype = message:match("Cannot compile (%a+) shader")
+		if not shadertype then return message end
+		local lines = {"Cannot compile "..shadertype.." shader:"}
 		for l in message:gmatch("[^\n]+") do
 			-- nvidia compiler message:
 			-- 0(<linenumber>) : error/warning [NUMBER]: <error message>
@@ -1340,7 +1393,7 @@ do
 	end
 
 	-- automagic uniform setter
-	local function pixeleffect_dispatch_send(self, name, value, ...)
+	local function shadereffect_dispatch_send(self, name, value, ...)
 		if type(value) == "number" then         -- scalar
 			self:sendFloat(name, value, ...)
 		elseif type(value) == "userdata" and value:typeOf("Image") then
@@ -1362,19 +1415,37 @@ do
 		end
 	end
 
-	local newPixelEffect = love.graphics.newPixelEffect
-	function love.graphics.newPixelEffect(code)
-		love.graphics.newPixelEffect = function(code)
-			if love.filesystem and love.filesystem.exists(code) then
-				code = love.filesystem.read(code)
+	local newShaderEffect = love.graphics.newShaderEffect
+	function love.graphics.newShaderEffect(vertcode, fragcode)
+		love.graphics.newShaderEffect = function(vertcode, fragcode)
+			if love.filesystem then
+				if vertcode and love.filesystem.exists(vertcode) then
+					vertcode = love.filesystem.read(vertcode)
+				end
+				if fragcode and love.filesystem.exists(fragcode) then
+					fragcode = love.filesystem.read(fragcode)
+				end
 			end
-			return newPixelEffect(code)
+			return newShaderEffect(vertcode, fragcode)
 		end
 
-		local effect = love.graphics.newPixelEffect(code)
+		local effect = love.graphics.newShaderEffect(vertcode, fragcode)
 		local meta = getmetatable(effect)
-		meta.send = pixeleffect_dispatch_send
+		meta.send = shadereffect_dispatch_send
 		return effect
 	end
-
+	
+	function love.graphics.newPixelEffect(fragcode)
+		return love.graphics.newShaderEffect(nil, fragcode)
+	end
+	
+	function love.graphics.newVertexEffect(vertcode)
+		return love.graphics.newShaderEffect(vertcode, nil)
+	end
+	
+	love.graphics.setPixelEffect = love.graphics.setShaderEffect
+	love.graphics.getPixelEffect = love.graphics.getShaderEffect
+	
+	love.graphics.setVertexEffect = love.graphics.setShaderEffect
+	love.graphics.getVertexEffect = love.graphics.getShaderEffect
 end

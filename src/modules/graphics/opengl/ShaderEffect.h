@@ -36,11 +36,11 @@ namespace graphics
 namespace opengl
 {
 // A fragment shader
-class PixelEffect : public Object, public Volatile
+class ShaderEffect : public Object, public Volatile
 {
 public:
-	PixelEffect(const std::string &vertcode, const std::string &fragcode);
-	virtual ~PixelEffect();
+	ShaderEffect(const std::string &vertcode, const std::string &fragcode);
+	virtual ~ShaderEffect();
 	std::string getWarnings() const;
 
 	virtual bool loadVolatile();
@@ -51,7 +51,7 @@ public:
 	static std::string getGLSLVersion();
 	static bool isSupported();
 
-	static PixelEffect *current;
+	static ShaderEffect *current;
 
 	void sendFloat(const std::string &name, int size, const GLfloat *vec, int count);
 	void sendMatrix(const std::string &name, int size, const GLfloat *m, int count);
@@ -62,7 +62,7 @@ private:
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
 	GLuint createShader(GLenum type, const std::string &code);
-	GLuint createProgram(const std::vector<GLuint> &shaders);
+	void createProgram(const std::vector<GLuint> &shaders);
 	
 	GLuint _program;
 	std::string _vertcode;

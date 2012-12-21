@@ -126,7 +126,7 @@ private:
 
 	void drawv(const Matrix &t, const vertex *v) const;
 
-	friend class PixelEffect;
+	friend class ShaderEffect;
 	GLuint getTextureName() const
 	{
 		return texture;

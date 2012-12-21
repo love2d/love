@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "PixelEffect.h"
+#include "ShaderEffect.h"
 #include "GLee.h"
 #include "Graphics.h"
 
@@ -28,7 +28,7 @@ namespace
 // reattaches the originally active program when destroyed
 struct TemporaryAttacher
 {
-	TemporaryAttacher(love::graphics::opengl::PixelEffect *sp) : s(sp)
+	TemporaryAttacher(love::graphics::opengl::ShaderEffect *sp) : s(sp)
 	{
 		glGetIntegerv(GL_CURRENT_PROGRAM, &activeProgram);
 		s->attach();
@@ -37,7 +37,7 @@ struct TemporaryAttacher
 	{
 		glUseProgram(activeProgram);
 	}
-	love::graphics::opengl::PixelEffect *s;
+	love::graphics::opengl::ShaderEffect *s;
 	GLint activeProgram;
 };
 } // anonymous namespace
@@ -49,13 +49,13 @@ namespace graphics
 namespace opengl
 {
 
-PixelEffect *PixelEffect::current = NULL;
+ShaderEffect *ShaderEffect::current = NULL;
 
-std::map<std::string, GLint> PixelEffect::_texture_unit_pool;
-GLint PixelEffect::_current_texture_unit = 0;
-GLint PixelEffect::_max_texture_units = 0;
+std::map<std::string, GLint> ShaderEffect::_texture_unit_pool;
+GLint ShaderEffect::_current_texture_unit = 0;
+GLint ShaderEffect::_max_texture_units = 0;
 
-GLint PixelEffect::getTextureUnit(const std::string &name)
+GLint ShaderEffect::getTextureUnit(const std::string &name)
 {
 	std::map<std::string, GLint>::const_iterator it = _texture_unit_pool.find(name);
 
@@ -69,7 +69,7 @@ GLint PixelEffect::getTextureUnit(const std::string &name)
 	return _current_texture_unit;
 }
 
-	PixelEffect::PixelEffect(const std::string &vertcode, const std::string &fragcode)
+ShaderEffect::ShaderEffect(const std::string &vertcode, const std::string &fragcode)
 	: _program(0)
 	, _vertcode(vertcode)
 	, _fragcode(fragcode)
@@ -78,7 +78,7 @@ GLint PixelEffect::getTextureUnit(const std::string &name)
 	loadVolatile();
 }
 
-GLuint PixelEffect::createShader(GLenum type, const std::string &code)
+GLuint ShaderEffect::createShader(GLenum type, const std::string &code)
 {
 	const char *shadertypename = NULL;
 	switch (type)
@@ -125,46 +125,33 @@ GLuint PixelEffect::createShader(GLenum type, const std::string &code)
 	return shader;
 }
 
-GLuint PixelEffect::createProgram(const std::vector<GLuint> &shaders)
+void ShaderEffect::createProgram(const std::vector<GLuint> &shaders)
 {
-	GLuint program = glCreateProgram();
-	if (program == 0) // should only fail when called between glBegin() and glEnd()
+	_program = glCreateProgram();
+	if (_program == 0) // should only fail when called between glBegin() and glEnd()
 		throw love::Exception("Cannot create shader program object.");
 	
 	std::vector<GLuint>::const_iterator it;
 	for (it = shaders.begin(); it != shaders.end(); ++it)
-		glAttachShader(program, *it);
+		glAttachShader(_program, *it);
 	
-	glLinkProgram(program);
+	glLinkProgram(_program);
 	
 	for (it = shaders.begin(); it != shaders.end(); ++it)
-		glDetachShader(program, *it);
+		glDetachShader(_program, *it);
 	
 	GLint link_ok;
-	glGetProgramiv(program, GL_LINK_STATUS, &link_ok);
+	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
 	if (link_ok == GL_FALSE)
 	{
-		GLint strlen, nullpos;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &strlen);
-		
-		char *temp_str = new char[strlen+1];
-		// be extra sure that the error string will be 0-terminated
-		memset(temp_str, '\0', strlen+1);
-		glGetProgramInfoLog(program, strlen, &nullpos, temp_str);
-		temp_str[nullpos] = '\0';
-		
-		std::string warnings(temp_str);
-		delete[] temp_str;
-
-		glDeleteProgram(program);
+		const std::string warnings = getWarnings();
+		glDeleteProgram(_program);
 		
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
-	
-	return program;
 }
 
-bool PixelEffect::loadVolatile()
+bool ShaderEffect::loadVolatile()
 {	
 	std::vector<GLuint> shaders;
 	
@@ -175,11 +162,11 @@ bool PixelEffect::loadVolatile()
 		shaders.push_back(createShader(GL_FRAGMENT_SHADER, _fragcode));
 	
 	if (shaders.size() == 0)
-		throw love::Exception("Cannot create PixelEffect: no source code!");
+		throw love::Exception("Cannot create ShaderEffect: no source code!");
 	
 	try
 	{
-		_program = createProgram(shaders);
+		createProgram(shaders);
 	}
 	catch (love::Exception &e)
 	{
@@ -197,18 +184,18 @@ bool PixelEffect::loadVolatile()
 	return true;
 }
 
-PixelEffect::~PixelEffect()
+ShaderEffect::~ShaderEffect()
 {
 	unloadVolatile();
 }
 
-void PixelEffect::unloadVolatile()
+void ShaderEffect::unloadVolatile()
 {
 	if (_program != 0)
 		glDeleteProgram(_program);
 }
 
-std::string PixelEffect::getGLSLVersion()
+std::string ShaderEffect::getGLSLVersion()
 {
 	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
 	const char *tmp = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -226,12 +213,12 @@ std::string PixelEffect::getGLSLVersion()
 }
 
 
-bool PixelEffect::isSupported()
+bool ShaderEffect::isSupported()
 {
 	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
 
-std::string PixelEffect::getWarnings() const
+std::string ShaderEffect::getWarnings() const
 {
 	GLint strlen, nullpos;
 	glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &strlen);
@@ -246,19 +233,19 @@ std::string PixelEffect::getWarnings() const
 	return warnings;
 }
 
-void PixelEffect::attach()
+void ShaderEffect::attach()
 {
 	glUseProgram(_program);
 	current = this;
 }
 
-void PixelEffect::detach()
+void ShaderEffect::detach()
 {
 	glUseProgram(0);
 	current = NULL;
 }
 
-void PixelEffect::sendFloat(const std::string &name, int size, const GLfloat *vec, int count)
+void ShaderEffect::sendFloat(const std::string &name, int size, const GLfloat *vec, int count)
 {
 	TemporaryAttacher attacher(this);
 	GLint location = getUniformLocation(name);
@@ -289,7 +276,7 @@ void PixelEffect::sendFloat(const std::string &name, int size, const GLfloat *ve
 	checkSetUniformError();
 }
 
-void PixelEffect::sendMatrix(const std::string &name, int size, const GLfloat *m, int count)
+void ShaderEffect::sendMatrix(const std::string &name, int size, const GLfloat *m, int count)
 {
 	TemporaryAttacher attacher(this);
 	GLint location = getUniformLocation(name);
@@ -318,7 +305,7 @@ void PixelEffect::sendMatrix(const std::string &name, int size, const GLfloat *m
 	checkSetUniformError();
 }
 
-void PixelEffect::sendImage(const std::string &name, const Image &image)
+void ShaderEffect::sendImage(const std::string &name, const Image &image)
 {
 	GLint texture_unit = getTextureUnit(name);
 
@@ -336,7 +323,7 @@ void PixelEffect::sendImage(const std::string &name, const Image &image)
 	checkSetUniformError();
 }
 
-void PixelEffect::sendCanvas(const std::string &name, const Canvas &canvas)
+void ShaderEffect::sendCanvas(const std::string &name, const Canvas &canvas)
 {
 	GLint texture_unit = getTextureUnit(name);
 
@@ -354,7 +341,7 @@ void PixelEffect::sendCanvas(const std::string &name, const Canvas &canvas)
 	checkSetUniformError();
 }
 
-GLint PixelEffect::getUniformLocation(const std::string &name)
+GLint ShaderEffect::getUniformLocation(const std::string &name)
 {
 	std::map<std::string, GLint>::const_iterator it = _uniforms.find(name);
 	if (it != _uniforms.end())
@@ -372,7 +359,7 @@ GLint PixelEffect::getUniformLocation(const std::string &name)
 	return location;
 }
 
-void PixelEffect::checkSetUniformError()
+void ShaderEffect::checkSetUniformError()
 {
 	GLenum error_code = glGetError();
 	if (GL_INVALID_OPERATION == error_code)

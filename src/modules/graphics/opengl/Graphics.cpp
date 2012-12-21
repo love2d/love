@@ -190,7 +190,7 @@ void Graphics::reset()
 	DisplayState s;
 	discardStencil();
 	Canvas::bindDefaultCanvas();
-	PixelEffect::detach();
+	ShaderEffect::detach();
 	restoreState(s);
 }
 
@@ -450,12 +450,12 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	return NULL; // never reached
 }
 
-PixelEffect *Graphics::newPixelEffect(const std::string &code)
+ShaderEffect *Graphics::newShaderEffect(const std::string &vertcode, const std::string &fragcode)
 {
-	PixelEffect *effect = NULL;
+	ShaderEffect *effect = NULL;
 	try
 	{
-		effect = new PixelEffect("", code);
+		effect = new ShaderEffect(vertcode, fragcode);
 	}
 	catch(love::Exception &e)
 	{

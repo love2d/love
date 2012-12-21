@@ -28,7 +28,7 @@
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
 #include "wrap_Canvas.h"
-#include "wrap_PixelEffect.h"
+#include "wrap_ShaderEffect.h"
 #include "Graphics.h"
 
 namespace love
@@ -63,7 +63,7 @@ int w_newImageFont(lua_State *L);
 int w_newSpriteBatch(lua_State *L);
 int w_newParticleSystem(lua_State *L);
 int w_newCanvas(lua_State *L);  // comments in function
-int w_newPixelEffect(lua_State *L);
+int w_newShaderEffect(lua_State *L);
 int w_setColor(lua_State *L);
 int w_getColor(lua_State *L);
 int w_setBackgroundColor(lua_State *L);
@@ -90,7 +90,8 @@ int w_getMaxPointSize(lua_State *L);
 int w_newScreenshot(lua_State *L);
 int w_setCanvas(lua_State *L);
 int w_getCanvas(lua_State *L);
-int w_setPixelEffect(lua_State *L);
+int w_setShaderEffect(lua_State *L);
+int w_getShaderEffect(lua_State *L);
 int w_isSupported(lua_State *L);
 int w_draw(lua_State *L);
 int w_drawq(lua_State *L);

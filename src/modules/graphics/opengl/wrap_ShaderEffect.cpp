@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_PixelEffect.h"
+#include "wrap_ShaderEffect.h"
 #include "wrap_Image.h"
 #include "wrap_Canvas.h"
 #include <string>
@@ -32,19 +32,19 @@ namespace graphics
 namespace opengl
 {
 
-PixelEffect *luax_checkpixeleffect(lua_State *L, int idx)
+ShaderEffect *luax_checkshadereffect(lua_State *L, int idx)
 {
-	return luax_checktype<PixelEffect>(L, idx, "PixelEffect", GRAPHICS_PIXELEFFECT_T);
+	return luax_checktype<ShaderEffect>(L, idx, "ShaderEffect", GRAPHICS_SHADEREFFECT_T);
 }
 
-int w_PixelEffect_getWarnings(lua_State *L)
+int w_ShaderEffect_getWarnings(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	ShaderEffect *effect = luax_checkshadereffect(L, 1);
 	lua_pushstring(L, effect->getWarnings().c_str());
 	return 1;
 }
 
-static int _sendScalars(lua_State *L, PixelEffect *effect, const char *name, int count)
+static int _sendScalars(lua_State *L, ShaderEffect *effect, const char *name, int count)
 {
 	float *values = new float[count];
 	for (int i = 0; i < count; ++i)
@@ -71,7 +71,7 @@ static int _sendScalars(lua_State *L, PixelEffect *effect, const char *name, int
 	return 0;
 }
 
-static int _sendVectors(lua_State *L, PixelEffect *effect, const char *name, int count)
+static int _sendVectors(lua_State *L, ShaderEffect *effect, const char *name, int count)
 {
 	size_t dimension = lua_objlen(L, 3);
 	float *values = new float[count * dimension];
@@ -112,9 +112,9 @@ static int _sendVectors(lua_State *L, PixelEffect *effect, const char *name, int
 	return 0;
 }
 
-int w_PixelEffect_sendFloat(lua_State *L)
+int w_ShaderEffect_sendFloat(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	ShaderEffect *effect = luax_checkshadereffect(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	int count = lua_gettop(L) - 2;
 
@@ -129,10 +129,10 @@ int w_PixelEffect_sendFloat(lua_State *L)
 	return luaL_typerror(L, 3, "number or table");
 }
 
-int w_PixelEffect_sendMatrix(lua_State *L)
+int w_ShaderEffect_sendMatrix(lua_State *L)
 {
 	int count = lua_gettop(L) - 2;
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	ShaderEffect *effect = luax_checkshadereffect(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 
 	if (!lua_istable(L, 3))
@@ -186,9 +186,9 @@ int w_PixelEffect_sendMatrix(lua_State *L)
 	return 0;
 }
 
-int w_PixelEffect_sendImage(lua_State *L)
+int w_ShaderEffect_sendImage(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	ShaderEffect *effect = luax_checkshadereffect(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	Image *img = luax_checkimage(L, 3);
 
@@ -204,9 +204,9 @@ int w_PixelEffect_sendImage(lua_State *L)
 	return 0;
 }
 
-int w_PixelEffect_sendCanvas(lua_State *L)
+int w_ShaderEffect_sendCanvas(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	ShaderEffect *effect = luax_checkshadereffect(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	Canvas *canvas = luax_checkcanvas(L, 3);
 
@@ -225,17 +225,17 @@ int w_PixelEffect_sendCanvas(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "getWarnings", w_PixelEffect_getWarnings },
-	{ "sendFloat",   w_PixelEffect_sendFloat },
-	{ "sendMatrix",  w_PixelEffect_sendMatrix },
-	{ "sendImage",   w_PixelEffect_sendImage },
-	{ "sendCanvas",  w_PixelEffect_sendCanvas },
+	{ "getWarnings", w_ShaderEffect_getWarnings },
+	{ "sendFloat",   w_ShaderEffect_sendFloat },
+	{ "sendMatrix",  w_ShaderEffect_sendMatrix },
+	{ "sendImage",   w_ShaderEffect_sendImage },
+	{ "sendCanvas",  w_ShaderEffect_sendCanvas },
 	{ 0, 0 }
 };
 
-extern "C" int luaopen_pixeleffect(lua_State *L)
+extern "C" int luaopen_shadereffect(lua_State *L)
 {
-	return luax_register_type(L, "PixelEffect", functions);
+	return luax_register_type(L, "ShaderEffect", functions);
 }
 
 } // opengl

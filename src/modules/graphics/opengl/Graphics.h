@@ -44,7 +44,7 @@
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
-#include "PixelEffect.h"
+#include "ShaderEffect.h"
 
 namespace love
 {
@@ -271,7 +271,7 @@ public:
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
-	PixelEffect *newPixelEffect(const std::string &code);
+	ShaderEffect *newShaderEffect(const std::string &vertcode, const std::string &fragcode);
 
 	/**
 	 * Sets the foreground color.
