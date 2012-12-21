@@ -1299,7 +1299,7 @@ uniform sampler2D _tex0_;]],
 void main() {
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	gl_FrontColor = gl_Color;
-	gl_Position = transform(gl_Vertex);
+	gl_Position = transform(gl_ModelViewProjectionMatrix, gl_Vertex);
 }]],
 	}
 	
@@ -1349,7 +1349,7 @@ void main() {
 			fragcode = table.concat{GLSL_FRAG.HEADER, "\n", fragcode, GLSL_FRAG.FOOTER}
 		end
 		
-		return vertcode, fragcode 
+		return vertcode, fragcode
 	end
 
 	function love.graphics._transformGLSLErrorMessages(message)
@@ -1366,7 +1366,11 @@ void main() {
 				linenumber, what, message = l:match("^%w+: 0:(%d+):%s*(%w+)%([^%)]+%)%s*(.+)$")
 			end
 			if linenumber and what and message then
-				linenumber = linenumber - GLSL_HEADER_LINE_COUNT
+				local headerlinecount = GLSL_FRAG.HEADER_LINE_COUNT
+				if shadertype == "vertex" then
+					headerlinecount = GLSL_VERT.HEADER_LINE_COUNT
+				end
+				linenumber = linenumber - headerlinecount
 				lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber, what, message)
 			end
 		end

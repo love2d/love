@@ -19,7 +19,6 @@
  **/
 
 #include "ShaderEffect.h"
-#include "GLee.h"
 #include "Graphics.h"
 
 namespace
@@ -51,36 +50,34 @@ namespace opengl
 
 ShaderEffect *ShaderEffect::current = NULL;
 
-std::map<std::string, GLint> ShaderEffect::_texture_unit_pool;
-GLint ShaderEffect::_current_texture_unit = 0;
-GLint ShaderEffect::_max_texture_units = 0;
-
-GLint ShaderEffect::getTextureUnit(const std::string &name)
-{
-	std::map<std::string, GLint>::const_iterator it = _texture_unit_pool.find(name);
-
-	if (it != _texture_unit_pool.end())
-		return it->second;
-
-	if (++_current_texture_unit >= _max_texture_units)
-		throw love::Exception("No more texture units available");
-
-	_texture_unit_pool[name] = _current_texture_unit;
-	return _current_texture_unit;
-}
-
 ShaderEffect::ShaderEffect(const std::string &vertcode, const std::string &fragcode)
 	: _program(0)
 	, _vertcode(vertcode)
 	, _fragcode(fragcode)
+	, _current_texture_unit(0)
 {
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_max_texture_units);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &_max_texture_units);
 	loadVolatile();
+}
+
+GLint ShaderEffect::getTextureUnit(const std::string &name)
+{
+	std::map<std::string, GLint>::const_iterator it = _texture_unit_pool.find(name);
+	
+	if (it != _texture_unit_pool.end())
+		return it->second;
+	
+	if (++_current_texture_unit >= _max_texture_units)
+		throw love::Exception("No more texture units available");
+	
+	_texture_unit_pool[name] = _current_texture_unit;
+	return _current_texture_unit;
 }
 
 GLuint ShaderEffect::createShader(GLenum type, const std::string &code)
 {
 	const char *shadertypename = NULL;
+	
 	switch (type)
 	{
 	case GL_VERTEX_SHADER:
@@ -138,7 +135,7 @@ void ShaderEffect::createProgram(const std::vector<GLuint> &shaders)
 	glLinkProgram(_program);
 	
 	for (it = shaders.begin(); it != shaders.end(); ++it)
-		glDetachShader(_program, *it);
+		glDetachShader(_program, *it); // we can freely detach shaders after linking
 	
 	GLint link_ok;
 	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
@@ -162,7 +159,7 @@ bool ShaderEffect::loadVolatile()
 		shaders.push_back(createShader(GL_FRAGMENT_SHADER, _fragcode));
 	
 	if (shaders.size() == 0)
-		throw love::Exception("Cannot create ShaderEffect: no source code!");
+		throw love::Exception("Cannot create shader effect: no source code!");
 	
 	try
 	{
@@ -305,40 +302,32 @@ void ShaderEffect::sendMatrix(const std::string &name, int size, const GLfloat *
 	checkSetUniformError();
 }
 
-void ShaderEffect::sendImage(const std::string &name, const Image &image)
+void ShaderEffect::sendTexture(const std::string &name, GLuint texture)
 {
-	GLint texture_unit = getTextureUnit(name);
-
 	TemporaryAttacher attacher(this);
 	GLint location = getUniformLocation(name);
-
+	
+	GLint texture_unit = getTextureUnit(name);
+	
 	glActiveTexture(GL_TEXTURE0 + texture_unit);
-	bindTexture(image.getTextureName(), true); // guarantee it gets bound
+	bindTexture(texture, true); // guarantee it gets bound
 	glUniform1i(location, texture_unit);
-
+	
 	// reset texture unit
 	glActiveTexture(GL_TEXTURE0);
-
+	
 	// throw error if needed
 	checkSetUniformError();
 }
 
+void ShaderEffect::sendImage(const std::string &name, const Image &image)
+{
+	sendTexture(name, image.getTextureName());
+}
+
 void ShaderEffect::sendCanvas(const std::string &name, const Canvas &canvas)
 {
-	GLint texture_unit = getTextureUnit(name);
-
-	TemporaryAttacher attacher(this);
-	GLint location = getUniformLocation(name);
-
-	glActiveTexture(GL_TEXTURE0 + texture_unit);
-	bindTexture(canvas.getTextureName(), true); // guarantee it gets bound
-	glUniform1i(location, texture_unit);
-
-	// reset texture unit
-	glActiveTexture(GL_TEXTURE0);
-
-	// throw error if needed
-	checkSetUniformError();
+	sendTexture(name, canvas.getTextureName());
 }
 
 GLint ShaderEffect::getUniformLocation(const std::string &name)
