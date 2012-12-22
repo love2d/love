@@ -332,12 +332,12 @@ void ShaderEffect::sendTexture(const std::string &name, GLuint texture)
 	
 	GLint texture_unit = getTextureUnit(name);
 	
-	glActiveTexture(GL_TEXTURE0 + texture_unit);
-	bindTexture(texture, true); // guarantee it gets bound
+	setActiveTextureUnit(GL_TEXTURE0 + texture_unit);
+	bindTexture(texture);
 	glUniform1i(location, texture_unit);
 	
 	// reset texture unit
-	glActiveTexture(GL_TEXTURE0);
+	setActiveTextureUnit(GL_TEXTURE0);
 	
 	// throw error if needed
 	checkSetUniformError();

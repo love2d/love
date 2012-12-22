@@ -30,16 +30,22 @@ namespace graphics
 namespace opengl
 {
 
-// resets the stored bound texture id
-void resetBoundTexture();
+void initializeContext();
+
+void uninitializeContext();
+
+/**
+ * Helper for setting the active texture unit
+ * @param textureunit The GL texture unit to set
+ **/
+void setActiveTextureUnit(GLenum textureunit);
 
 /**
  * Helper for binding an OpenGL texture.
  * Makes sure we aren't redundantly binding textures.
  * @param texture The texture to bind.
- * @param override Overrides the checks to guarantee texture bind
  **/
-void bindTexture(GLuint texture, bool override = false);
+void bindTexture(GLuint texture);
 
 /**
  * Helper for deleting an OpenGL texture.

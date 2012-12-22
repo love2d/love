@@ -45,8 +45,6 @@ Graphics::Graphics()
 	, userMatrices(0)
 {
 	currentWindow = love::window::sdl::Window::getSingleton();
-
-	resetBoundTexture();
 }
 
 Graphics::~Graphics()
@@ -116,6 +114,8 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	// Unload all volatile objects. These must be reloaded after
 	// the display mode change.
 	Volatile::unloadAll();
+	
+	uninitializeContext();
 
 	bool success = currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
 	// Regardless of failure, we'll have to set up OpenGL once again.
@@ -124,6 +124,8 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	height = currentWindow->getHeight();
 
 	// Okay, setup OpenGL.
+	
+	initializeContext();
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -138,6 +140,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
+	setActiveTextureUnit(GL_TEXTURE0);
 
 	// Set the viewport to top-left corner
 	glViewport(0, 0, width, height);
