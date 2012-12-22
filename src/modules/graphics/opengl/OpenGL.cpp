@@ -57,10 +57,27 @@ void initializeContext()
 		
 		textureUnits.resize(maxtextureunits, 0);
 		
-		GLenum activeTextureUnit;
-		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *)&activeTextureUnit);
+		GLenum activetextureunit;
+		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *)&activetextureunit);
 		
-		curTextureUnitIndex = activeTextureUnit - GL_TEXTURE0;
+		curTextureUnitIndex = activetextureunit - GL_TEXTURE0;
+		
+		GLuint boundtexture;
+		for (size_t i = 0; i < textureUnits.size(); ++i)
+		{
+			if (GLEE_VERSION_1_3)
+				glActiveTexture(GL_TEXTURE0 + i);
+			else
+				glActiveTextureARB(GL_TEXTURE0 + i);
+			
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &boundtexture);
+			textureUnits[i] = boundtexture;
+		}
+		
+		if (GLEE_VERSION_1_3)
+			glActiveTexture(activetextureunit);
+		else
+			glActiveTextureARB(activetextureunit);
 	}
 	else
 	{
@@ -105,6 +122,28 @@ void bindTexture(GLuint texture)
 	{
 		textureUnits[curTextureUnitIndex] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
+	}
+}
+
+void bindTextureToUnit(GLuint texture, GLenum textureunit, bool restoreprev)
+{
+	initializeContext();
+	
+	int textureunitindex = textureunit - GL_TEXTURE0;
+	
+	if (textureunitindex < 0 || (size_t) textureunitindex >= textureUnits.size())
+		throw love::Exception("Invalid texture unit index.");
+	
+	if (texture != textureUnits[textureunitindex] || texture == 0)
+	{
+		int oldtexunitindex = curTextureUnitIndex;
+		setActiveTextureUnit(textureunit);
+		
+		textureUnits[textureunitindex] = texture;
+		glBindTexture(GL_TEXTURE_2D, texture);
+		
+		if (restoreprev)
+			setActiveTextureUnit(GL_TEXTURE0 + oldtexunitindex);
 	}
 }
 

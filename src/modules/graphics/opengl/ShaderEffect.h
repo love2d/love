@@ -35,7 +35,7 @@ namespace graphics
 {
 namespace opengl
 {
-// A fragment shader
+// A GLSL shader
 class ShaderEffect : public Object, public Volatile
 {
 public:
@@ -46,7 +46,7 @@ public:
 	virtual bool loadVolatile();
 	virtual void unloadVolatile();
 
-	void attach();
+	void attach(bool temporary = false);
 	static void detach();
 	
 	static std::string getGLSLVersion();
@@ -75,7 +75,9 @@ private:
 	// texture unit pool for setting images
 	static GLint _current_texture_unit;
 	static GLint _max_texture_units;
+	
 	std::map<std::string, GLint> _texture_unit_pool;
+	std::vector<GLuint> _texture_id_list;
 	GLint getTextureUnit(const std::string &name);
 	
 	void sendTexture(const std::string &name, GLuint texture);

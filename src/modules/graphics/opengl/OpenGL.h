@@ -48,6 +48,14 @@ void setActiveTextureUnit(GLenum textureunit);
 void bindTexture(GLuint texture);
 
 /**
+ * Helper for binding a texture to a specific texture unit
+ * @param texture The texture to bind
+ * @param textureunit The texture unit to switch to
+ * @param resoreprev Restore previous texture unit when done
+ **/
+void bindTextureToUnit(GLuint texture, GLenum textureunit, bool restoreprev);
+
+/**
  * Helper for deleting an OpenGL texture.
  * Cleans up if the texture is currently bound.
  * @param texture The texture to delete.
