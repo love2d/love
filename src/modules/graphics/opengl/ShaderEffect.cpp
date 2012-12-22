@@ -56,8 +56,8 @@ namespace opengl
 
 ShaderEffect *ShaderEffect::current = NULL;
 
-GLint ShaderEffect::_current_texture_unit = 0;
 GLint ShaderEffect::_max_texture_units = 0;
+std::vector<int> ShaderEffect::_texture_id_counters;
 
 ShaderEffect::ShaderEffect(const std::string &vertcode, const std::string &fragcode)
 	: _program(0)
@@ -65,6 +65,12 @@ ShaderEffect::ShaderEffect(const std::string &vertcode, const std::string &fragc
 	, _fragcode(fragcode)
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &_max_texture_units);
+	_max_texture_units = std::max(_max_texture_units - 1, 0);
+	
+	// initialize global texture id counters if needed
+	if (_texture_id_counters.size() < (size_t) _max_texture_units)
+		_texture_id_counters.resize(_max_texture_units, 0);
+	
 	loadVolatile();
 }
 
@@ -153,8 +159,8 @@ void ShaderEffect::createProgram(const std::vector<GLuint> &shaders)
 bool ShaderEffect::loadVolatile()
 {
 	// zero out texture id list
-	_texture_id_list.resize(_max_texture_units - 1, 0);
-	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units-1, 0);
+	_texture_id_list.clear();
+	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units, 0);
 	
 	std::vector<GLuint> shaders;
 	
@@ -203,9 +209,16 @@ void ShaderEffect::unloadVolatile()
 	
 	_program = 0;
 	
+	// decrement global texture id counters for texture units which had textures bound from this shader
+	for (size_t i = 0; i < _texture_id_list.size(); ++i)
+	{
+		if (_texture_id_list[i] != 0)
+			_texture_id_counters[i] = std::max(_texture_id_counters[i] - 1, 0);
+	}
+	
 	// texture list is probably invalid, clear it
 	_texture_id_list.clear();
-	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units-1, 0);
+	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units, 0);
 	
 	// same with uniform location list
 	_uniforms.clear();
@@ -353,6 +366,10 @@ void ShaderEffect::sendTexture(const std::string &name, GLuint texture)
 	// reset texture unit
 	setActiveTextureUnit(GL_TEXTURE0);
 	
+	// increment global shader texture id counter for this texture unit, if we haven't already
+	if (_texture_id_list[texture_unit-1] == 0)
+		++_texture_id_counters[texture_unit-1];
+	
 	// store texture id so it can be re-bound to the proper texture unit when necessary
 	_texture_id_list[texture_unit-1] = texture;
 	
@@ -395,11 +412,15 @@ GLint ShaderEffect::getTextureUnit(const std::string &name)
 	if (it != _texture_unit_pool.end())
 		return it->second;
 	
+	int nextunitindex = 1;
+	
 	// prefer texture units which are unused by all other shaders
-	int nextunitindex = ++_current_texture_unit % _max_texture_units;
-	if (nextunitindex == 0)
+	std::vector<int>::iterator nextfreeunit = std::find(_texture_id_counters.begin(), _texture_id_counters.end(), 0);
+	if (nextfreeunit != _texture_id_counters.end())
+		nextunitindex = std::distance(_texture_id_counters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
+	else
 	{
-		// no completely unused texture units, try to use next free slot in our own list
+		// no completely unused texture units exist, try to use next free slot in our own list
 		std::vector<GLuint>::iterator nexttexunit = std::find(_texture_id_list.begin(), _texture_id_list.end(), 0);
 		if (nexttexunit == _texture_id_list.end())
 			throw love::Exception("No more texture units available for shader.");

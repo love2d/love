@@ -72,10 +72,10 @@ private:
 	// uniform location buffer
 	std::map<std::string, GLint> _uniforms;
 
-	// texture unit pool for setting images
-	static GLint _current_texture_unit;
 	static GLint _max_texture_units;
+	static std::vector<int> _texture_id_counters; // counts total number of textures bound to each texture unit in all shaders
 	
+	// texture unit pool for setting images
 	std::map<std::string, GLint> _texture_unit_pool;
 	std::vector<GLuint> _texture_id_list;
 	GLint getTextureUnit(const std::string &name);
