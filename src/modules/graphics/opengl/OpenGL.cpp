@@ -41,11 +41,13 @@ void initializeContext()
 	
 	contextInitialized = true;
 	
+	// initialize multiple texture unit support, if available
 	if (GLEE_ARB_multitexture || GLEE_VERSION_1_3)
 	{
 		GLint maxtextureunits;
 		glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxtextureunits);
 		
+		// shaders/GL2.0 added "Texture Image Units." Total max texture units is the greater of the two
 		if (GLEE_VERSION_2_0 || GLEE_ARB_vertex_shader)
 		{
 			GLint maxtextureimageunits;
@@ -55,6 +57,7 @@ void initializeContext()
 				maxtextureunits = maxtextureimageunits;
 		}
 		
+		textureUnits.clear();
 		textureUnits.resize(maxtextureunits, 0);
 		
 		GLenum activetextureunit;
@@ -62,7 +65,6 @@ void initializeContext()
 		
 		curTextureUnitIndex = activetextureunit - GL_TEXTURE0;
 		
-		GLuint boundtexture;
 		for (size_t i = 0; i < textureUnits.size(); ++i)
 		{
 			if (GLEE_VERSION_1_3)
@@ -70,8 +72,7 @@ void initializeContext()
 			else
 				glActiveTextureARB(GL_TEXTURE0 + i);
 			
-			glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &boundtexture);
-			textureUnits[i] = boundtexture;
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &textureUnits[i]);
 		}
 		
 		if (GLEE_VERSION_1_3)
@@ -82,8 +83,11 @@ void initializeContext()
 	else
 	{
 		// multitexturing not supported so we only have 1 texture unit
+		textureUnits.clear();
 		textureUnits.resize(1, 0);
 		curTextureUnitIndex = 0;
+		
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &textureUnits[0]);
 	}
 }
 

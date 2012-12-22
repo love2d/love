@@ -23,7 +23,6 @@
 #include "wrap_Canvas.h"
 #include <string>
 #include <iostream>
-using namespace std;
 
 namespace love
 {
