@@ -82,7 +82,7 @@ private:
 	GLuint createShader(const ShaderSource &source);
 	void createProgram(const std::vector<GLuint> &shaders);
 	
-	std::vector<ShaderSource> _shaders; // all shader code attached to this ShaderEffect
+	std::vector<ShaderSource> _shadersources; // list of all shader code attached to this ShaderEffect
 	
 	GLuint _program; // volatile
 

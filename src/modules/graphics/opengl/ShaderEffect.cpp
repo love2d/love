@@ -60,15 +60,11 @@ GLint ShaderEffect::_max_texture_units = 0;
 std::vector<int> ShaderEffect::_texture_id_counters;
 
 ShaderEffect::ShaderEffect(const std::vector<ShaderSource> &shadersources)
-	: _program(0)
+	: _shadersources(shadersources)
+	, _program(0)
 {
 	if (shadersources.size() == 0)
 		throw love::Exception("Cannot create shader effect: no source code!");
-	
-	// copy shader sources from list to this ShaderEffect
-	std::vector<ShaderSource>::const_iterator it;
-	for (it = shadersources.begin(); it != shadersources.end(); ++it)
-		_shaders.push_back(*it);
 	
 	GLint maxtextureunits;
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
@@ -193,9 +189,9 @@ bool ShaderEffect::loadVolatile()
 	
 	std::vector<GLuint> shaderids;
 	
-	std::vector<ShaderSource>::const_iterator curshader;
-	for (curshader = _shaders.begin(); curshader != _shaders.end(); ++curshader)
-		shaderids.push_back(createShader(*curshader));
+	std::vector<ShaderSource>::const_iterator cursource;
+	for (cursource = _shadersources.begin(); cursource != _shadersources.end(); ++cursource)
+		shaderids.push_back(createShader(*cursource));
 	
 	if (shaderids.size() == 0)
 		throw love::Exception("Cannot create shader effect: no valid source code!");
