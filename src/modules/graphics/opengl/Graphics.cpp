@@ -453,12 +453,12 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	return NULL; // never reached
 }
 
-ShaderEffect *Graphics::newShaderEffect(const std::string &vertcode, const std::string &fragcode)
+ShaderEffect *Graphics::newShaderEffect(const std::vector<ShaderEffect::ShaderSource> shadersources)
 {
 	ShaderEffect *effect = NULL;
 	try
 	{
-		effect = new ShaderEffect(vertcode, fragcode);
+		effect = new ShaderEffect(shadersources);
 	}
 	catch(love::Exception &e)
 	{

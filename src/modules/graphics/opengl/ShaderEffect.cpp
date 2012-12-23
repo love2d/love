@@ -39,7 +39,7 @@ struct TemporaryAttacher
 		if (preveffect != NULL)
 			preveffect->attach();
 		else
-			cureffect->detach();
+			love::graphics::opengl::ShaderEffect::detach();
 	}
 	
 	love::graphics::opengl::ShaderEffect *cureffect;
@@ -59,11 +59,17 @@ ShaderEffect *ShaderEffect::current = NULL;
 GLint ShaderEffect::_max_texture_units = 0;
 std::vector<int> ShaderEffect::_texture_id_counters;
 
-ShaderEffect::ShaderEffect(const std::string &vertcode, const std::string &fragcode)
+ShaderEffect::ShaderEffect(const std::vector<ShaderSource> &shadersources)
 	: _program(0)
-	, _vertcode(vertcode)
-	, _fragcode(fragcode)
 {
+	if (shadersources.size() == 0)
+		throw love::Exception("Cannot create shader effect: no source code!");
+	
+	// copy shader sources from list to this ShaderEffect
+	std::vector<ShaderSource>::const_iterator it;
+	for (it = shadersources.begin(); it != shadersources.end(); ++it)
+		_shaders.push_back(*it);
+	
 	GLint maxtextureunits;
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
 	_max_texture_units = std::max(maxtextureunits - 1, 0);
@@ -72,6 +78,7 @@ ShaderEffect::ShaderEffect(const std::string &vertcode, const std::string &fragc
 	if (_texture_id_counters.size() < (size_t) _max_texture_units)
 		_texture_id_counters.resize(_max_texture_units, 0);
 	
+	// load shader source and create program object
 	loadVolatile();
 }
 
@@ -83,71 +90,92 @@ ShaderEffect::~ShaderEffect()
 	unloadVolatile();
 }
 
-GLuint ShaderEffect::createShader(GLenum type, const std::string &code)
+GLuint ShaderEffect::createShader(const ShaderSource &source)
 {
+	GLenum shadertype;
 	const char *shadertypename = NULL;
 	
-	switch (type)
+	switch (source.type)
 	{
-	case GL_VERTEX_SHADER:
+	case TYPE_VERTEX:
+		shadertype = GL_VERTEX_SHADER;
 		shadertypename = "vertex";
 		break;
-	case GL_GEOMETRY_SHADER_ARB:
+	case TYPE_GEOMETRY:
+		shadertype = GL_GEOMETRY_SHADER_ARB;
 		shadertypename = "geometry";
-	case GL_FRAGMENT_SHADER:
-	default:
+		break;
+	case TYPE_FRAGMENT:
+		shadertype = GL_FRAGMENT_SHADER;
 		shadertypename = "fragment";
+		break;
+	default:
+		// tesselation control and evaluation shaders aren't recognized by current version of GLee
+		throw love::Exception("Cannot create shader object: unknown shader type.");
 		break;
 	}
 	
-	GLuint shader = glCreateShader(type);
-	if (shader == 0) // should only fail when called between glBegin() and glEnd()
-		throw love::Exception("Cannot create %s shader object.", shadertypename);
+	// clear existing errors
+	while (glGetError() != GL_NO_ERROR);
 	
-	const char *src = code.c_str();
-	size_t srclen = code.length();
-	glShaderSource(shader, 1, (const GLchar **)&src, (GLint *)&srclen);
+	GLuint shaderid = glCreateShader(shadertype);
 	
-	glCompileShader(shader);
+	if (shaderid == 0) // oh no!
+	{
+		GLenum err = glGetError();
+		
+		if (err == GL_INVALID_OPERATION) // should only happen between glBegin() and glEnd()
+			throw love::Exception("Cannot create %s shader object.", shadertypename);
+		else if (err == GL_INVALID_ENUM)
+			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", shadertypename, shadertypename);
+	}
+	
+	const char *src = source.code.c_str();
+	size_t srclen = source.code.length();
+	glShaderSource(shaderid, 1, (const GLchar **)&src, (GLint *)&srclen);
+	
+	glCompileShader(shaderid);
 	
 	GLint compile_status;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &compile_status);
+	
 	if (compile_status == GL_FALSE)
 	{
 		GLint infologlen;
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infologlen);
+		glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
 		
 		GLchar *errorlog = new GLchar[infologlen + 1];
-		glGetShaderInfoLog(shader, infologlen, NULL, errorlog);
+		glGetShaderInfoLog(shaderid, infologlen, NULL, errorlog);
 		
 		std::string tmp(errorlog);
 		
 		delete[] errorlog;
-		glDeleteShader(shader);
+		glDeleteShader(shaderid);
 		
 		throw love::Exception("Cannot compile %s shader:\n%s", shadertypename, tmp.c_str());
 	}
 	
-	return shader;
+	return shaderid;
 }
 
-void ShaderEffect::createProgram(const std::vector<GLuint> &shaders)
+void ShaderEffect::createProgram(const std::vector<GLuint> &shaderids)
 {
 	_program = glCreateProgram();
 	if (_program == 0) // should only fail when called between glBegin() and glEnd()
 		throw love::Exception("Cannot create shader program object.");
 	
 	std::vector<GLuint>::const_iterator it;
-	for (it = shaders.begin(); it != shaders.end(); ++it)
+	for (it = shaderids.begin(); it != shaderids.end(); ++it)
 		glAttachShader(_program, *it);
 	
 	glLinkProgram(_program);
 	
-	for (it = shaders.begin(); it != shaders.end(); ++it)
+	for (it = shaderids.begin(); it != shaderids.end(); ++it)
 		glDetachShader(_program, *it); // we can freely detach shaders after linking
 	
 	GLint link_ok;
 	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
+	
 	if (link_ok == GL_FALSE)
 	{
 		const std::string warnings = getWarnings();
@@ -163,32 +191,30 @@ bool ShaderEffect::loadVolatile()
 	_texture_id_list.clear();
 	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units, 0);
 	
-	std::vector<GLuint> shaders;
+	std::vector<GLuint> shaderids;
 	
-	if (_vertcode.length() > 0)
-		shaders.push_back(createShader(GL_VERTEX_SHADER, _vertcode));
+	std::vector<ShaderSource>::const_iterator curshader;
+	for (curshader = _shaders.begin(); curshader != _shaders.end(); ++curshader)
+		shaderids.push_back(createShader(*curshader));
 	
-	if (_fragcode.length() > 0)
-		shaders.push_back(createShader(GL_FRAGMENT_SHADER, _fragcode));
-	
-	if (shaders.size() == 0)
-		throw love::Exception("Cannot create shader effect: no source code!");
+	if (shaderids.size() == 0)
+		throw love::Exception("Cannot create shader effect: no valid source code!");
 	
 	try
 	{
-		createProgram(shaders);
+		createProgram(shaderids);
 	}
 	catch (love::Exception &e)
 	{
 		std::vector<GLuint>::const_iterator it;
-		for (it = shaders.begin(); it != shaders.end(); ++it)
+		for (it = shaderids.begin(); it != shaderids.end(); ++it)
 			glDeleteShader(*it);
 		
 		throw;
 	}
 	
 	std::vector<GLuint>::const_iterator it;
-	for (it = shaders.begin(); it != shaders.end(); ++it)
+	for (it = shaderids.begin(); it != shaderids.end(); ++it)
 		glDeleteShader(*it);
 	
 	if (current == this)

@@ -271,7 +271,7 @@ public:
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
-	ShaderEffect *newShaderEffect(const std::string &vertcode, const std::string &fragcode);
+	ShaderEffect *newShaderEffect(const std::vector<ShaderEffect::ShaderSource> shadersources);
 
 	/**
 	 * Sets the foreground color.

@@ -39,7 +39,24 @@ namespace opengl
 class ShaderEffect : public Object, public Volatile
 {
 public:
-	ShaderEffect(const std::string &vertcode, const std::string &fragcode);
+	enum ShaderType
+	{
+		TYPE_VERTEX,
+		TYPE_TESSCONTROL,
+		TYPE_TESSEVAL,
+		TYPE_GEOMETRY,
+		TYPE_FRAGMENT,
+		TYPE_MAX_ENUM
+	};
+	
+	// thin wrapper for GLSL source code
+	struct ShaderSource
+	{
+		std::string code;
+		ShaderType type;
+	};
+	
+	ShaderEffect(const std::vector<ShaderSource> &shadersources);
 	virtual ~ShaderEffect();
 	std::string getWarnings() const;
 
@@ -62,12 +79,12 @@ public:
 private:
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
-	GLuint createShader(GLenum type, const std::string &code);
+	GLuint createShader(const ShaderSource &source);
 	void createProgram(const std::vector<GLuint> &shaders);
 	
-	GLuint _program;
-	std::string _vertcode;
-	std::string _fragcode; // volatile and stuff
+	std::vector<ShaderSource> _shaders; // all shader code attached to this ShaderEffect
+	
+	GLuint _program; // volatile
 
 	// uniform location buffer
 	std::map<std::string, GLint> _uniforms;
