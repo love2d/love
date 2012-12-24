@@ -1282,11 +1282,9 @@ do
 		love.graphics.printf = _printf
 		love.graphics.printf(...)
 	end
-
-	-- PIXEL EFFECTS
-	local HEADER_LINE_COUNT = 7
 	
 	local GLSL_VERT = {
+		HEADER_LINE_COUNT = 7,
 		HEADER = [[
 #version 120
 #define number float
@@ -1304,6 +1302,7 @@ void main() {
 	}
 	
 	local GLSL_FRAG = {
+		HEADER_LINE_COUNT = 7,
 		HEADER = [[
 #version 120
 #define number float
@@ -1325,20 +1324,20 @@ void main() {
 			local s = vertcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
 			if s:match("vec4 effect%(") then
-				fragcode = vertcode
+				fragcode = vertcode -- first argument contains frag shader code
 			end
 			if not s:match("vec4 transform%(") then
-				vertcode = nil
+				vertcode = nil -- first argument doesn't contain vert shader code
 			end
 		end
 		if fragcode then
 			local s = fragcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
 			if s:match("vec4 transform%(") then
-				vertcode = fragcode
+				vertcode = fragcode -- second argument contains vert shader code
 			end
 			if not s:match("vec4 effect%(") then
-				fragcode = nil
+				fragcode = nil -- second argument doesn't contain frag shader code
 			end
 		end
 
@@ -1364,10 +1363,17 @@ void main() {
 				-- ati compiler message:
 				-- ERROR 0:<linenumber>: error/warning(#[NUMBER]) [ERRORNAME]: <errormessage>
 				linenumber, what, message = l:match("^%w+: 0:(%d+):%s*(%w+)%([^%)]+%)%s*(.+)$")
+				if not linenumber then
+					-- OSX compiler message:
+					-- ERROR: 0:<linenumber>: <errormessage>
+					what, linenumber, message = l:match("^(%w+): %d+:(%d+): (.+)$")
+				end
 			end
 			if linenumber and what and message then
-				local headerlinecount = GLSL_FRAG.HEADER_LINE_COUNT
-				if shadertype == "vertex" then
+				local headerlinecount = 0
+				if shadertype == "fragment" then
+					headerlinecount = GLSL_FRAG.HEADER_LINE_COUNT
+				elseif shadertype == "vertex" then
 					headerlinecount = GLSL_VERT.HEADER_LINE_COUNT
 				end
 				linenumber = linenumber - headerlinecount

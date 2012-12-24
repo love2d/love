@@ -122,7 +122,7 @@ GLuint ShaderEffect::createShader(const ShaderSource &source)
 		
 		if (err == GL_INVALID_OPERATION) // should only happen between glBegin() and glEnd()
 			throw love::Exception("Cannot create %s shader object.", shadertypename);
-		else if (err == GL_INVALID_ENUM)
+		else if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
 			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", shadertypename, shadertypename);
 	}
 	
@@ -189,9 +189,9 @@ bool ShaderEffect::loadVolatile()
 	
 	std::vector<GLuint> shaderids;
 	
-	std::vector<ShaderSource>::const_iterator cursource;
-	for (cursource = _shadersources.begin(); cursource != _shadersources.end(); ++cursource)
-		shaderids.push_back(createShader(*cursource));
+	std::vector<ShaderSource>::const_iterator source;
+	for (source = _shadersources.begin(); source != _shadersources.end(); ++source)
+		shaderids.push_back(createShader(*source));
 	
 	if (shaderids.size() == 0)
 		throw love::Exception("Cannot create shader effect: no valid source code!");
@@ -323,9 +323,7 @@ void ShaderEffect::sendFloat(const std::string &name, int size, const GLfloat *v
 	GLint location = getUniformLocation(name);
 
 	if (size < 1 || size > 4)
-	{
 		throw love::Exception("Invalid variable size: %d (expected 1-4).", size);
-	}
 
 	switch (size)
 	{

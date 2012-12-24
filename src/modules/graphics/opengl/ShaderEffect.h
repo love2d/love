@@ -58,6 +58,7 @@ public:
 	
 	ShaderEffect(const std::vector<ShaderSource> &shadersources);
 	virtual ~ShaderEffect();
+	
 	std::string getWarnings() const;
 
 	virtual bool loadVolatile();
@@ -69,7 +70,7 @@ public:
 	static std::string getGLSLVersion();
 	static bool isSupported();
 
-	static ShaderEffect *current;
+	static ShaderEffect *current; // pointer to currently active ShaderEffect
 
 	void sendFloat(const std::string &name, int size, const GLfloat *vec, int count);
 	void sendMatrix(const std::string &name, int size, const GLfloat *m, int count);
@@ -82,7 +83,7 @@ private:
 	GLuint createShader(const ShaderSource &source);
 	void createProgram(const std::vector<GLuint> &shaders);
 	
-	std::vector<ShaderSource> _shadersources; // list of all shader code attached to this ShaderEffect
+	std::vector<ShaderSource> _shadersources; // all shader code attached to this ShaderEffect
 	
 	GLuint _program; // volatile
 
