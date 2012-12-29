@@ -1284,7 +1284,6 @@ do
 	end
 	
 	local GLSL_VERT = {
-		HEADER_LINE_COUNT = 7,
 		HEADER = [[
 #version 120
 #define number float
@@ -1292,7 +1291,8 @@ do
 #define extern uniform
 #define Texel texture2D
 #define VERTEX
-uniform sampler2D _tex0_;]],
+uniform sampler2D _tex0_;
+#line 0]],
 		FOOTER = [[
 void main() {
 	gl_TexCoord[0] = gl_MultiTexCoord0;
@@ -1302,7 +1302,6 @@ void main() {
 	}
 	
 	local GLSL_FRAG = {
-		HEADER_LINE_COUNT = 7,
 		HEADER = [[
 #version 120
 #define number float
@@ -1310,7 +1309,8 @@ void main() {
 #define extern uniform
 #define Texel texture2D
 #define PIXEL
-uniform sampler2D _tex0_;]],
+uniform sampler2D _tex0_;
+#line 0]],
 		FOOTER = [[
 void main() {
 	// fix weird crashing issue in OSX when _tex0_ is unused within effect()
@@ -1342,10 +1342,10 @@ void main() {
 		end
 
 		if vertcode then
-			vertcode = table.concat{GLSL_VERT.HEADER, "\n", vertcode, GLSL_VERT.FOOTER}
+			vertcode = table.concat({GLSL_VERT.HEADER, vertcode, GLSL_VERT.FOOTER}, "\n")
 		end
 		if fragcode then
-			fragcode = table.concat{GLSL_FRAG.HEADER, "\n", fragcode, GLSL_FRAG.FOOTER}
+			fragcode = table.concat({GLSL_FRAG.HEADER, fragcode, GLSL_FRAG.FOOTER}, "\n")
 		end
 		
 		return vertcode, fragcode
@@ -1370,13 +1370,6 @@ void main() {
 				end
 			end
 			if linenumber and what and message then
-				local headerlinecount = 0
-				if shadertype == "fragment" then
-					headerlinecount = GLSL_FRAG.HEADER_LINE_COUNT
-				elseif shadertype == "vertex" then
-					headerlinecount = GLSL_VERT.HEADER_LINE_COUNT
-				end
-				linenumber = linenumber - headerlinecount
 				lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber, what, message)
 			end
 		end

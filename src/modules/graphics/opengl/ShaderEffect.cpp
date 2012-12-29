@@ -167,7 +167,7 @@ void ShaderEffect::createProgram(const std::vector<GLuint> &shaderids)
 	glLinkProgram(_program);
 	
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glDetachShader(_program, *it); // we can freely detach shaders after linking
+		glDeleteShader(*it); // flag shaders for deletion as soon as program object is deleted
 	
 	GLint link_ok;
 	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
@@ -196,22 +196,7 @@ bool ShaderEffect::loadVolatile()
 	if (shaderids.size() == 0)
 		throw love::Exception("Cannot create shader effect: no valid source code!");
 	
-	try
-	{
-		createProgram(shaderids);
-	}
-	catch (love::Exception &e)
-	{
-		std::vector<GLuint>::const_iterator it;
-		for (it = shaderids.begin(); it != shaderids.end(); ++it)
-			glDeleteShader(*it);
-		
-		throw;
-	}
-	
-	std::vector<GLuint>::const_iterator it;
-	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glDeleteShader(*it);
+	createProgram(shaderids);
 	
 	if (current == this)
 	{

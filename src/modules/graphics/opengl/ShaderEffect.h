@@ -81,7 +81,7 @@ private:
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
 	GLuint createShader(const ShaderSource &source);
-	void createProgram(const std::vector<GLuint> &shaders);
+	void createProgram(const std::vector<GLuint> &shaderids);
 	
 	std::vector<ShaderSource> _shadersources; // all shader code attached to this ShaderEffect
 	
