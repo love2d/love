@@ -1323,20 +1323,20 @@ void main() {
 		if vertcode then
 			local s = vertcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
-			if s:match("vec4 effect%(") then
+			if s:match("vec4%s*effect%(") then
 				fragcode = vertcode -- first argument contains frag shader code
 			end
-			if not s:match("vec4 transform%(") then
+			if not s:match("vec4%s*transform%(") then
 				vertcode = nil -- first argument doesn't contain vert shader code
 			end
 		end
 		if fragcode then
 			local s = fragcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
-			if s:match("vec4 transform%(") then
+			if s:match("vec4%s*transform%(") then
 				vertcode = fragcode -- second argument contains vert shader code
 			end
-			if not s:match("vec4 effect%(") then
+			if not s:match("vec4%s*effect%(") then
 				fragcode = nil -- second argument doesn't contain frag shader code
 			end
 		end
@@ -1382,6 +1382,8 @@ void main() {
 	-- {a, b, c, d, e, f, ...}
 	local function flattenMatrices(mat, ...)
 		if not mat then return end
+		
+		local tonumber = tonumber
 
 		local ret,l = {}, 1
 		ret.dimension = #mat
@@ -1437,6 +1439,9 @@ void main() {
 		meta.send = shadereffect_dispatch_send
 		return effect
 	end
+	
+	
+	-- compatibility functions
 	
 	function love.graphics.newPixelEffect(fragcode)
 		return love.graphics.newShaderEffect(nil, fragcode)

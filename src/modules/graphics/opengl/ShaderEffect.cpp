@@ -167,7 +167,7 @@ void ShaderEffect::createProgram(const std::vector<GLuint> &shaderids)
 	glLinkProgram(_program);
 	
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glDeleteShader(*it); // flag shaders for deletion as soon as program object is deleted
+		glDeleteShader(*it); // flag shaders for auto-deletion when program object is deleted
 	
 	GLint link_ok;
 	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
@@ -250,7 +250,6 @@ std::string ShaderEffect::getGLSLVersion()
 	size_t minorEndPos = versionString.find(' ');
 	return versionString.substr(0, minorEndPos);
 }
-
 
 bool ShaderEffect::isSupported()
 {
