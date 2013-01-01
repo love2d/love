@@ -26,7 +26,7 @@
 #include <cmath>
 
 // OpenGL
-#include "GLee.h"
+#include "OpenGL.h"
 
 // LOVE
 #include "graphics/Graphics.h"
@@ -37,7 +37,6 @@
 
 #include "window/Window.h"
 
-#include "OpenGL.h"
 #include "Font.h"
 #include "Image.h"
 #include "Quad.h"

@@ -114,7 +114,6 @@ GLuint ShaderEffect::createShader(const ShaderSource &source)
 		shadertypename = "fragment";
 		break;
 	default:
-		// tesselation control and evaluation shaders aren't recognized by current version of GLee
 		throw love::Exception("Cannot create shader object: unknown shader type.");
 		break;
 	}

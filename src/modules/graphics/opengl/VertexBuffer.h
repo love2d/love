@@ -26,7 +26,7 @@
 #include "graphics/Volatile.h"
 
 // OpenGL
-#include "GLee.h"
+#include "OpenGL.h"
 
 namespace love
 {

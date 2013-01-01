@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Graphics.h"
-#include "GLee.h"
+#include "OpenGL.h"
 #include "graphics/DrawQable.h"
 #include "image/ImageData.h"
 #include "font/Rasterizer.h"

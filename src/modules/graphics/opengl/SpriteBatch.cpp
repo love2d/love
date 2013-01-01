@@ -23,6 +23,9 @@
 // STD
 #include <iostream>
 
+// OpenGL
+#include "OpenGL.h"
+
 // LOVE
 #include "Image.h"
 #include "Quad.h"

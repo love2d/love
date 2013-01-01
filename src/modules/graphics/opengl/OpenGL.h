@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_COMMON_OPENGL_H
-#define LOVE_COMMON_OPENGL_H
+#ifndef LOVE_GRAPHICS_OPENGL_OPENGL_H
+#define LOVE_GRAPHICS_OPENGL_OPENGL_H
 
 #include "GLee.h"
 
