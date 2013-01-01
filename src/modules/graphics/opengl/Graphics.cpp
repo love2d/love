@@ -742,11 +742,10 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 
 void Graphics::point(float x, float y)
 {
-	glDisable(GL_TEXTURE_2D);
+	bindTexture(0);
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
 	glEnd();
-	glEnable(GL_TEXTURE_2D);
 }
 
 // Calculate line boundary points u1 and u2. Sketch:
@@ -940,7 +939,7 @@ void Graphics::polyline(const float *coords, size_t count)
 	// end get line vertex boundaries
 
 	// draw the core line
-	glDisable(GL_TEXTURE_2D);
+	bindTexture(0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)vertices);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
@@ -950,7 +949,6 @@ void Graphics::polyline(const float *coords, size_t count)
 		draw_overdraw(overdraw, count, pixel_size, looping);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glEnable(GL_TEXTURE_2D);
 
 	// cleanup
 	delete[] vertices;
@@ -1034,12 +1032,11 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
+		bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, points + 2);
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glEnable(GL_TEXTURE_2D);
 	}
 
 	delete[] coords;
@@ -1058,12 +1055,11 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
+		bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)coords);
 		glDrawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glEnable(GL_TEXTURE_2D);
 	}
 }
 
