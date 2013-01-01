@@ -122,7 +122,7 @@ void bindTexture(GLuint texture)
 {
 	initializeContext();
 	
-	if (texture != textureUnits[curTextureUnitIndex] || texture == 0)
+	if (texture != textureUnits[curTextureUnitIndex])
 	{
 		textureUnits[curTextureUnitIndex] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
@@ -138,7 +138,7 @@ void bindTextureToUnit(GLuint texture, GLenum textureunit, bool restoreprev)
 	if (textureunitindex < 0 || (size_t) textureunitindex >= textureUnits.size())
 		throw love::Exception("Invalid texture unit index.");
 	
-	if (texture != textureUnits[textureunitindex] || texture == 0)
+	if (texture != textureUnits[textureunitindex])
 	{
 		int oldtexunitindex = curTextureUnitIndex;
 		setActiveTextureUnit(textureunit);
