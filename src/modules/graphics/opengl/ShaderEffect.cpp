@@ -97,8 +97,16 @@ GLuint ShaderEffect::createShader(const ShaderSource &source)
 		shadertype = GL_VERTEX_SHADER;
 		shadertypename = "vertex";
 		break;
+	case TYPE_TESSCONTROL:
+		shadertype = GL_TESS_CONTROL_SHADER;
+		shadertypename = "tesselation control";
+		break;
+	case TYPE_TESSEVAL:
+		shadertype = GL_TESS_EVALUATION_SHADER;
+		shadertypename = "tesselation evaluation";
+		break;
 	case TYPE_GEOMETRY:
-		shadertype = GL_GEOMETRY_SHADER_ARB;
+		shadertype = GL_GEOMETRY_SHADER;
 		shadertypename = "geometry";
 		break;
 	case TYPE_FRAGMENT:
