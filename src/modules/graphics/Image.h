@@ -46,6 +46,7 @@ public:
 	{
 		FILTER_LINEAR = 1,
 		FILTER_NEAREST,
+		FILTER_NONE,
 		FILTER_MAX_ENUM
 	};
 
@@ -54,6 +55,7 @@ public:
 		Filter();
 		FilterMode min;
 		FilterMode mag;
+		FilterMode mipmap;
 	};
 
 	struct Wrap

@@ -56,16 +56,27 @@ void setTextureFilter(const graphics::Image::Filter &f)
 {
 	GLint gmin, gmag;
 	
-	switch (f.min)
+	if (f.mipmap == Image::FILTER_NONE)
 	{
-	case Image::FILTER_NEAREST:
-		gmin = GL_NEAREST;
-		break;
-	case Image::FILTER_LINEAR:
-	default:
-		gmin = GL_LINEAR;
-		break;
+		if (f.min == Image::FILTER_NEAREST)
+			gmin = GL_NEAREST;
+		else // f.min == Image::FILTER_LINEAR
+			gmin = GL_LINEAR;
 	}
+	else
+	{
+		if (f.min == f.mipmap == Image::FILTER_NEAREST)
+			gmin = GL_NEAREST_MIPMAP_NEAREST;
+		else if (f.min == Image::FILTER_NEAREST && f.mipmap == Image::FILTER_LINEAR)
+			gmin = GL_NEAREST_MIPMAP_LINEAR;
+		else if (f.min == Image::FILTER_LINEAR && f.mipmap == Image::FILTER_NEAREST)
+			gmin = GL_LINEAR_MIPMAP_NEAREST;
+		else if (f.min == f.mipmap == Image::FILTER_LINEAR)
+			gmin = GL_LINEAR_MIPMAP_LINEAR;
+		else
+			gmin = GL_LINEAR;
+	}
+	
 	
 	switch (f.mag)
 	{
@@ -94,10 +105,26 @@ graphics::Image::Filter getTextureFilter()
 	{
 	case GL_NEAREST:
 		f.min = Image::FILTER_NEAREST;
+		f.mipmap = Image::FILTER_NONE;
+		break;
+	case GL_NEAREST_MIPMAP_NEAREST:
+		f.min = f.mipmap = Image::FILTER_NEAREST;
+		break;
+	case GL_NEAREST_MIPMAP_LINEAR:
+		f.min = Image::FILTER_NEAREST;
+		f.mipmap = Image::FILTER_LINEAR;
+		break;
+	case GL_LINEAR_MIPMAP_NEAREST:
+		f.min = Image::FILTER_LINEAR;
+		f.mipmap = Image::FILTER_NEAREST;
+		break;
+	case GL_LINEAR_MIPMAP_LINEAR:
+		f.min = f.mipmap = Image::FILTER_LINEAR;
 		break;
 	case GL_LINEAR:
 	default:
 		f.min = Image::FILTER_LINEAR;
+		f.mipmap = Image::FILTER_NONE;
 		break;
 	}
 	

@@ -30,6 +30,7 @@ Image::Filter Image::defaultFilter;
 Image::Filter::Filter()
 	: min(FILTER_LINEAR)
 	, mag(FILTER_LINEAR)
+	, mipmap(FILTER_NONE)
 {
 }
 
