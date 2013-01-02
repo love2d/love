@@ -22,9 +22,9 @@
 
 // STD
 #include <cstring> // For memcpy
+#include <algorithm> // for min/max
 
 #include <iostream>
-using namespace std;
 
 namespace love
 {
@@ -37,6 +37,7 @@ Image::Image(love::image::ImageData *data)
 	: width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
+	, mipmapsharpness(0.0f)
 {
 	data->retain();
 	this->data = data;
@@ -61,7 +62,7 @@ Image::Image(love::image::ImageData *data)
 	vertices[3].s = 1;
 	vertices[3].t = 0;
 
-	settings.filter = getDefaultFilter();
+	filter = getDefaultFilter();
 }
 
 Image::~Image()
@@ -144,26 +145,72 @@ void Image::drawq(love::graphics::Quad *quad, float x, float y, float angle, flo
 
 void Image::setFilter(const Image::Filter &f)
 {
+	filter = f;
+	
 	bind();
+	
+	if (f.mipmap == FILTER_NEAREST || f.mipmap == FILTER_LINEAR)
+	{
+		if (!hasMipmapSupport())
+			throw love::Exception("Mipmaps are not supported on this system!");
+		
+		if (width != next_p2(width) || height != next_p2(height))
+			throw love::Exception("Could not generate mipmaps: image does not have power of two dimensions!");
+		
+		GLboolean aremipmapscreated;
+		glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&aremipmapscreated);
+		
+		// generate mipmaps for this image if we haven't already
+		if (!aremipmapscreated)
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+			
+			if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+				glGenerateMipmap(GL_TEXTURE_2D);
+			else if (GLEE_EXT_framebuffer_object)
+				glGenerateMipmapEXT(GL_TEXTURE_2D);
+			else
+				// modify single pixel in texture to trigger mip chain generation
+				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (GLsizei)width, (GLsizei)height, GL_RGBA, GL_UNSIGNED_BYTE, getData());
+		}
+	}
+	
 	setTextureFilter(f);
 }
 
-Image::Filter Image::getFilter() const
+const Image::Filter &Image::getFilter() const
 {
-	bind();
-	return getTextureFilter();
+	return filter;
 }
 
 void Image::setWrap(Image::Wrap &w)
 {
+	wrap = w;
+	
 	bind();
 	setTextureWrap(w);
 }
 
-Image::Wrap Image::getWrap() const
+const Image::Wrap &Image::getWrap() const
 {
+	return wrap;
+}
+
+void Image::setMipmapSharpness(float sharpness)
+{
+	if (!(GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias))
+		return;
+	
+	// LOD bias has the range (-maxbias, maxbias)
+	mipmapsharpness = std::min(std::max(sharpness, -maxmipmapsharpness + 0.01f), maxmipmapsharpness - 0.01f);
+	
 	bind();
-	return getTextureWrap();
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness);
+}
+
+float Image::getMipmapSharpness() const
+{
+	return mipmapsharpness;
 }
 
 void Image::bind() const
@@ -186,6 +233,8 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
+	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
+	
 	if (hasNpot())
 		return loadVolatileNPOT();
 	else
@@ -196,9 +245,10 @@ bool Image::loadVolatilePOT()
 {
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
+	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
+	
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -221,6 +271,13 @@ bool Image::loadVolatilePOT()
 				 GL_RGBA,
 				 GL_UNSIGNED_BYTE,
 				 0);
+	
+	if (hasMipmapSupport())
+	{
+		// auto-generate mipmaps when texture is modified, if mipmapping is enabled
+		bool genmipmaps = (filter.mipmap == FILTER_LINEAR) || (filter.mipmap == FILTER_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, genmipmaps ? GL_TRUE : GL_FALSE);
+	}
 
 	glTexSubImage2D(GL_TEXTURE_2D,
 					0,
@@ -231,9 +288,9 @@ bool Image::loadVolatilePOT()
 					GL_RGBA,
 					GL_UNSIGNED_BYTE,
 					data->getData());
-
-	setFilter(settings.filter);
-	setWrap(settings.wrap);
+	
+	setFilter(filter);
+	setWrap(wrap);
 
 	return true;
 }
@@ -242,11 +299,19 @@ bool Image::loadVolatileNPOT()
 {
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
+	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
+	
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	if (hasMipmapSupport())
+	{
+		// auto-generate mipmaps when texture is modified, if mipmapping is enabled
+		bool genmipmaps = (filter.mipmap == FILTER_LINEAR) || (filter.mipmap == FILTER_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, genmipmaps ? GL_TRUE : GL_FALSE);
+	}
 
 	glTexImage2D(GL_TEXTURE_2D,
 				 0,
@@ -257,17 +322,15 @@ bool Image::loadVolatileNPOT()
 				 GL_RGBA,
 				 GL_UNSIGNED_BYTE,
 				 data->getData());
-
-	setFilter(settings.filter);
-	setWrap(settings.wrap);
+	
+	setFilter(filter);
+	setWrap(wrap);
 
 	return true;
 }
 
 void Image::unloadVolatile()
 {
-	settings.filter = getFilter();
-	settings.wrap = getWrap();
 	// Delete the hardware texture.
 	if (texture != 0)
 	{
@@ -298,6 +361,11 @@ void Image::drawv(const Matrix &t, const vertex *v) const
 bool Image::hasNpot()
 {
 	return GLEE_ARB_texture_non_power_of_two != 0;
+}
+
+bool Image::hasMipmapSupport()
+{
+	return (GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap) != 0;
 }
 
 } // opengl

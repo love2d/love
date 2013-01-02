@@ -101,11 +101,15 @@ public:
 	 **/
 	void setFilter(const Image::Filter &f);
 
-	Image::Filter getFilter() const;
+	const Image::Filter &getFilter() const;
 
 	void setWrap(Image::Wrap &w);
 
-	Image::Wrap getWrap() const;
+	const Image::Wrap &getWrap() const;
+	
+	void setMipmapSharpness(float sharpness);
+	
+	float getMipmapSharpness() const;
 
 	void bind() const;
 
@@ -117,6 +121,7 @@ public:
 	void unloadVolatile();
 
 	static bool hasNpot();
+	static bool hasMipmapSupport();
 
 private:
 
@@ -138,13 +143,17 @@ private:
 
 	// The source vertices of the image.
 	vertex vertices[4];
-
-	// The settings we need to save when reloading.
-	struct
-	{
-		Image::Filter filter;
-		Image::Wrap wrap;
-	} settings;
+	
+	// Mipmap texture LOD bias value
+	float mipmapsharpness;
+	
+	float maxmipmapsharpness;
+	
+	// The image's filter mode
+	Image::Filter filter;
+	
+	// The image's wrap mode
+	Image::Wrap wrap;
 
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();

@@ -36,6 +36,13 @@ Image *luax_checkimage(lua_State *L, int idx);
 int w_Image_getWidth(lua_State *L);
 int w_Image_getHeight(lua_State *L);
 int w_Image_setFilter(lua_State *L);
+int w_image_getFilter(lua_State *L);
+int w_Image_setWrap(lua_State *L);
+int w_Image_getWrap(lua_State *L);
+int w_Image_setMipmapFilter(lua_State *L);
+int w_Image_getMipmapFilter(lua_State *L);
+int w_Image_setMipmapSharpness(lua_State *L);
+int w_Image_getMipmapSharpness(lua_State *L);
 extern "C" int luaopen_image(lua_State *L);
 
 } // opengl
