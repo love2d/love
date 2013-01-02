@@ -289,6 +289,7 @@ bool Image::loadVolatilePOT()
 					GL_UNSIGNED_BYTE,
 					data->getData());
 	
+	setMipmapSharpness(mipmapsharpness);
 	setFilter(filter);
 	setWrap(wrap);
 
@@ -323,6 +324,7 @@ bool Image::loadVolatileNPOT()
 				 GL_UNSIGNED_BYTE,
 				 data->getData());
 	
+	setMipmapSharpness(mipmapsharpness);
 	setFilter(filter);
 	setWrap(wrap);
 
