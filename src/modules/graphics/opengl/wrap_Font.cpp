@@ -94,20 +94,15 @@ int w_Font_setFilter(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
 	
-	Image::FilterMode min;
-	Image::FilterMode mag;
+	Image::Filter f;
 	
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
 	
-	if (!Image::getConstant(minstr, min))
+	if (!Image::getConstant(minstr, f.min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, mag))
+	if (!Image::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
-	
-	Image::Filter f;
-	f.min = min;
-	f.mag = mag;
 	
 	t->setFilter(f);
 	
@@ -117,13 +112,11 @@ int w_Font_setFilter(lua_State *L)
 int w_Font_getFilter(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
-	Image::Filter f = t->getFilter();
-	Image::FilterMode min = f.min;
-	Image::FilterMode mag = f.mag;
+	const Image::Filter f = t->getFilter();
 	const char *minstr;
 	const char *magstr;
-	Image::getConstant(min, minstr);
-	Image::getConstant(mag, magstr);
+	Image::getConstant(f.min, minstr);
+	Image::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
 	return 2;

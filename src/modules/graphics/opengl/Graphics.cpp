@@ -342,7 +342,7 @@ Image *Graphics::newImage(love::image::ImageData *data)
 	catch(love::Exception &e)
 	{
 		image->release();
-		throw love::Exception(e.what());
+		throw;
 	}
 	if (!success)
 	{

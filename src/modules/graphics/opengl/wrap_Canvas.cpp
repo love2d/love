@@ -68,20 +68,15 @@ int w_Canvas_setFilter(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	
-	Image::FilterMode min;
-	Image::FilterMode mag;
+	Image::Filter f;
 	
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
 	
-	if (!Image::getConstant(minstr, min))
+	if (!Image::getConstant(minstr, f.min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, mag))
+	if (!Image::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
-	
-	Image::Filter f;
-	f.min = min;
-	f.mag = mag;
 	
 	canvas->setFilter(f);
 	
@@ -92,7 +87,7 @@ int w_Canvas_setFilter(lua_State *L)
 int w_Canvas_getFilter(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	Image::Filter f = canvas->getFilter();
+	const Image::Filter f = canvas->getFilter();
 
 	const char *minstr;
 	const char *magstr;
@@ -109,20 +104,15 @@ int w_Canvas_setWrap(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	
-	Image::WrapMode s;
-	Image::WrapMode t;
+	Image::Wrap w;
 	
 	const char *sstr = luaL_checkstring(L, 2);
 	const char *tstr = luaL_optstring(L, 3, sstr);
 	
-	if (!Image::getConstant(sstr, s))
+	if (!Image::getConstant(sstr, w.s))
 		return luaL_error(L, "Invalid wrap mode: %s", sstr);
-	if (!Image::getConstant(tstr, t))
+	if (!Image::getConstant(tstr, w.t))
 		return luaL_error(L, "Invalid wrap mode, %s", tstr);
-	
-	Image::Wrap w;
-	w.s = s;
-	w.t = t;
 	
 	canvas->setWrap(w);
 	
@@ -132,7 +122,7 @@ int w_Canvas_setWrap(lua_State *L)
 int w_Canvas_getWrap(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	Image::Wrap w = canvas->getWrap();
+	const Image::Wrap w = canvas->getWrap();
 
 	const char *wrap_s;
 	const char *wrap_t;

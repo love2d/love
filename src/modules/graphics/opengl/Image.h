@@ -96,14 +96,13 @@ public:
 
 	/**
 	 * Sets the filter mode.
-	 *
 	 * @param f The filter mode.
 	 **/
 	void setFilter(const Image::Filter &f);
 
 	const Image::Filter &getFilter() const;
 
-	void setWrap(Image::Wrap &w);
+	void setWrap(const Image::Wrap &w);
 
 	const Image::Wrap &getWrap() const;
 	
@@ -122,6 +121,7 @@ public:
 
 	static bool hasNpot();
 	static bool hasMipmapSupport();
+	static bool hasMipmapSharpnessSupport();
 
 private:
 
@@ -147,7 +147,7 @@ private:
 	// Mipmap texture LOD bias value
 	float mipmapsharpness;
 	
-	// Implementation-dependent maximum/minimum sharpness values
+	// Implementation-dependent maximum/minimum mipmap sharpness values
 	float maxmipmapsharpness;
 	
 	// The image's filter mode
@@ -158,6 +158,8 @@ private:
 
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();
+	
+	void checkMipmapsCreated() const;
 
 }; // Image
 

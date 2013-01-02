@@ -88,12 +88,12 @@ int w_Image_getFilter(lua_State *L)
 	const Image::Filter f = t->getFilter();
 	const char *minstr;
 	const char *magstr;
-	const char *mipmapstr;
 	Image::getConstant(f.min, minstr);
 	Image::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
 	
+	const char *mipmapstr;
 	if (Image::getConstant(f.mipmap, mipmapstr))
 		lua_pushstring(L, mipmapstr);
 	else
@@ -147,10 +147,7 @@ int w_Image_setMipmapSharpness(lua_State *L)
 int w_Image_getMipmapSharpness(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	
-	float sharpness = i->getMipmapSharpness();
-	lua_pushnumber(L, sharpness);
-	
+	lua_pushnumber(L, i->getMipmapSharpness());
 	return 1;
 }
 
