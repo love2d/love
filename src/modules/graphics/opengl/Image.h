@@ -97,7 +97,7 @@ public:
 	/**
 	 * Sets the filter mode.
 	 *
-	 * @param mode The filter mode.
+	 * @param f The filter mode.
 	 **/
 	void setFilter(const Image::Filter &f);
 
@@ -147,6 +147,7 @@ private:
 	// Mipmap texture LOD bias value
 	float mipmapsharpness;
 	
+	// Implementation-dependent maximum/minimum sharpness values
 	float maxmipmapsharpness;
 	
 	// The image's filter mode

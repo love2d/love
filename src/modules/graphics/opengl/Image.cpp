@@ -152,16 +152,16 @@ void Image::setFilter(const Image::Filter &f)
 	if (f.mipmap == FILTER_NEAREST || f.mipmap == FILTER_LINEAR)
 	{
 		if (!hasMipmapSupport())
-			throw love::Exception("Mipmaps are not supported on this system!");
+			throw love::Exception("Mipmap filtering is not supported on this system!");
 		
 		if (width != next_p2(width) || height != next_p2(height))
 			throw love::Exception("Could not generate mipmaps: image does not have power of two dimensions!");
 		
-		GLboolean aremipmapscreated;
-		glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&aremipmapscreated);
+		GLboolean mipmapscreated;
+		glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&mipmapscreated);
 		
 		// generate mipmaps for this image if we haven't already
-		if (!aremipmapscreated)
+		if (!mipmapscreated)
 		{
 			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 			
@@ -170,7 +170,7 @@ void Image::setFilter(const Image::Filter &f)
 			else if (GLEE_EXT_framebuffer_object)
 				glGenerateMipmapEXT(GL_TEXTURE_2D);
 			else
-				// modify single pixel in texture to trigger mip chain generation
+				// modify single pixel in texture to trigger mipmap chain generation
 				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (GLsizei)width, (GLsizei)height, GL_RGBA, GL_UNSIGNED_BYTE, getData());
 		}
 	}
@@ -205,7 +205,7 @@ void Image::setMipmapSharpness(float sharpness)
 	mipmapsharpness = std::min(std::max(sharpness, -maxmipmapsharpness + 0.01f), maxmipmapsharpness - 0.01f);
 	
 	bind();
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness); // negative bias is sharper
 }
 
 float Image::getMipmapSharpness() const
@@ -274,7 +274,7 @@ bool Image::loadVolatilePOT()
 	
 	if (hasMipmapSupport())
 	{
-		// auto-generate mipmaps when texture is modified, if mipmapping is enabled
+		// tell GL to auto-generate mipmaps when texture is modified, if mipmapping is enabled
 		bool genmipmaps = (filter.mipmap == FILTER_LINEAR) || (filter.mipmap == FILTER_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, genmipmaps ? GL_TRUE : GL_FALSE);
 	}
@@ -308,7 +308,7 @@ bool Image::loadVolatileNPOT()
 	
 	if (hasMipmapSupport())
 	{
-		// auto-generate mipmaps when texture is modified, if mipmapping is enabled
+		// tell GL to auto-generate mipmaps when texture is modified, if mipmapping is enabled
 		bool genmipmaps = (filter.mipmap == FILTER_LINEAR) || (filter.mipmap == FILTER_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, genmipmaps ? GL_TRUE : GL_FALSE);
 	}
