@@ -154,7 +154,10 @@ void Image::setFilter(const Image::Filter &f)
 		if (!hasMipmapSupport())
 			throw love::Exception("Mipmap filtering is not supported on this system!");
 		
-		if (width != next_p2(width) || height != next_p2(height))
+		// some old GPUs/systems claim support for NPOT textures, but fail when generating mipmaps for them
+		// we can't detect which systems will do this, so it's better to fail gracefully for all NPOT images
+		int w = int(width), h = int(height);
+		if (w != next_p2(w) || h != next_p2(h))
 			throw love::Exception("Could not generate mipmaps: image does not have power of two dimensions!");
 		
 		GLboolean mipmapscreated;
@@ -170,8 +173,8 @@ void Image::setFilter(const Image::Filter &f)
 			else if (GLEE_EXT_framebuffer_object)
 				glGenerateMipmapEXT(GL_TEXTURE_2D);
 			else
-				// modify single pixel in texture to trigger mipmap chain generation
-				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (GLsizei)width, (GLsizei)height, GL_RGBA, GL_UNSIGNED_BYTE, getData());
+				// modify single texel in texture to trigger mipmap chain generation
+				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data->getData());
 		}
 	}
 	
@@ -233,7 +236,8 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
-	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
+	if (GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias)
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
 	
 	if (hasNpot())
 		return loadVolatileNPOT();
@@ -271,13 +275,6 @@ bool Image::loadVolatilePOT()
 				 GL_RGBA,
 				 GL_UNSIGNED_BYTE,
 				 0);
-	
-	if (hasMipmapSupport())
-	{
-		// tell GL to auto-generate mipmaps when texture is modified, if mipmapping is enabled
-		bool genmipmaps = (filter.mipmap == FILTER_LINEAR) || (filter.mipmap == FILTER_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, genmipmaps ? GL_TRUE : GL_FALSE);
-	}
 
 	glTexSubImage2D(GL_TEXTURE_2D,
 					0,
@@ -306,13 +303,6 @@ bool Image::loadVolatileNPOT()
 	
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
-	if (hasMipmapSupport())
-	{
-		// tell GL to auto-generate mipmaps when texture is modified, if mipmapping is enabled
-		bool genmipmaps = (filter.mipmap == FILTER_LINEAR) || (filter.mipmap == FILTER_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, genmipmaps ? GL_TRUE : GL_FALSE);
-	}
 
 	glTexImage2D(GL_TEXTURE_2D,
 				 0,
