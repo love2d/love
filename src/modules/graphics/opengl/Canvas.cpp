@@ -97,8 +97,9 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 
 		glGenTextures(1, &img);
 		bindTexture(img);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		
+		setTextureFilter(Image::getDefaultFilter());
+		
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
 		bindTexture(0);
@@ -164,8 +165,8 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 
 		glGenTextures(1, &img);
 		bindTexture(img);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		
+		setTextureFilter(Image::getDefaultFilter());
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
@@ -231,8 +232,9 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 
 		glGenTextures(1, &img);
 		bindTexture(img);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		
+		setTextureFilter(Image::getDefaultFilter());
+		
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
 		bindTexture(0);
@@ -311,6 +313,8 @@ Canvas::Canvas(int width, int height, TextureType texture_type)
 	vertices[2].t = 1;
 	vertices[3].s = 1;
 	vertices[3].t = 0;
+	
+	settings.filter = Image::getDefaultFilter();
 
 	getStrategy();
 
@@ -456,51 +460,26 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 
 void Canvas::setFilter(const Image::Filter &f)
 {
-	GLint gmin = (f.min == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
-	GLint gmag = (f.mag == Image::FILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
-
 	bindTexture(img);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
+	setTextureFilter(f);
 }
 
 Image::Filter Canvas::getFilter() const
 {
-	GLint gmin, gmag;
-
 	bindTexture(img);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
-
-	Image::Filter f;
-	f.min = (gmin == GL_NEAREST) ? Image::FILTER_NEAREST : Image::FILTER_LINEAR;
-	f.mag = (gmag == GL_NEAREST) ? Image::FILTER_NEAREST : Image::FILTER_LINEAR;
-	return f;
+	return getTextureFilter();
 }
 
 void Canvas::setWrap(const Image::Wrap &w)
 {
-	GLint wrap_s = (w.s == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-	GLint wrap_t = (w.t == Image::WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-
 	bindTexture(img);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
+	setTextureWrap(w);
 }
 
 Image::Wrap Canvas::getWrap() const
 {
-	GLint wrap_s, wrap_t;
 	bindTexture(img);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &wrap_s);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &wrap_t);
-
-	Image::Wrap w;
-	w.s = (wrap_s == GL_CLAMP_TO_EDGE) ? Image::WRAP_CLAMP : Image::WRAP_REPEAT;
-	w.t = (wrap_t == GL_CLAMP_TO_EDGE) ? Image::WRAP_CLAMP : Image::WRAP_REPEAT;
-
-	return w;
+	return getTextureWrap();
 }
 
 bool Canvas::loadVolatile()

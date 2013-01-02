@@ -33,8 +33,6 @@ namespace graphics
 namespace opengl
 {
 
-Image::Filter Image::defaultFilter;
-
 Image::Image(love::image::ImageData *data)
 	: width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
@@ -63,7 +61,7 @@ Image::Image(love::image::ImageData *data)
 	vertices[3].s = 1;
 	vertices[3].t = 0;
 
-	settings.filter = defaultFilter;
+	settings.filter = getDefaultFilter();
 }
 
 Image::~Image()
@@ -146,141 +144,26 @@ void Image::drawq(love::graphics::Quad *quad, float x, float y, float angle, flo
 
 void Image::setFilter(const Image::Filter &f)
 {
-	GLint gmin, gmag;
-	gmin = gmag = 0; // so that they're not used uninitialized
-
-	switch (f.min)
-	{
-	case FILTER_LINEAR:
-		gmin = GL_LINEAR;
-		break;
-	case FILTER_NEAREST:
-		gmin = GL_NEAREST;
-		break;
-	default:
-		break;
-	}
-
-	switch (f.mag)
-	{
-	case FILTER_LINEAR:
-		gmag = GL_LINEAR;
-		break;
-	case FILTER_NEAREST:
-		gmag = GL_NEAREST;
-		break;
-	default:
-		break;
-	}
-
 	bind();
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
+	setTextureFilter(f);
 }
 
 Image::Filter Image::getFilter() const
 {
 	bind();
-
-	GLint gmin, gmag;
-
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
-
-	Image::Filter f;
-
-	switch (gmin)
-	{
-	case GL_NEAREST:
-		f.min = FILTER_NEAREST;
-		break;
-	case GL_LINEAR:
-	default:
-		f.min = FILTER_LINEAR;
-		break;
-	}
-
-	switch (gmin)
-	{
-	case GL_NEAREST:
-		f.mag = FILTER_NEAREST;
-		break;
-	case GL_LINEAR:
-	default:
-		f.mag = FILTER_LINEAR;
-		break;
-	}
-
-	return f;
+	return getTextureFilter();
 }
 
-void Image::setWrap(Image::Wrap w)
+void Image::setWrap(Image::Wrap &w)
 {
-	GLint gs, gt;
-
-	switch (w.s)
-	{
-	case WRAP_CLAMP:
-		gs = GL_CLAMP_TO_EDGE;
-		break;
-	case WRAP_REPEAT:
-	default:
-		gs = GL_REPEAT;
-		break;
-	}
-
-	switch (w.t)
-	{
-	case WRAP_CLAMP:
-		gt = GL_CLAMP_TO_EDGE;
-		break;
-	case WRAP_REPEAT:
-	default:
-		gt = GL_REPEAT;
-		break;
-	}
-
 	bind();
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gs);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gt);
+	setTextureWrap(w);
 }
 
 Image::Wrap Image::getWrap() const
 {
 	bind();
-
-	GLint gs, gt;
-
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &gs);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &gt);
-
-	Wrap w;
-
-	switch (gs)
-	{
-	case GL_CLAMP_TO_EDGE:
-		w.s = WRAP_CLAMP;
-		break;
-	case GL_REPEAT:
-	default:
-		w.s = WRAP_REPEAT;
-		break;
-	}
-
-	switch (gt)
-	{
-	case GL_CLAMP_TO_EDGE:
-		w.t = WRAP_CLAMP;
-		break;
-	case GL_REPEAT:
-	default:
-		w.t = WRAP_REPEAT;
-		break;
-	}
-
-	return w;
+	return getTextureWrap();
 }
 
 void Image::bind() const
@@ -415,16 +298,6 @@ void Image::drawv(const Matrix &t, const vertex *v) const
 bool Image::hasNpot()
 {
 	return GLEE_ARB_texture_non_power_of_two != 0;
-}
-
-void Image::setDefaultFilter(const Image::Filter &f)
-{
-	defaultFilter = f;
-}
-
-const Image::Filter &Image::getDefaultFilter()
-{
-	return defaultFilter;
 }
 
 } // opengl

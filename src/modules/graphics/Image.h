@@ -64,6 +64,10 @@ public:
 	};
 
 	virtual ~Image();
+	
+	// The default filter.
+	static void setDefaultFilter(const Filter &f);
+	static const Filter &getDefaultFilter();
 
 	static bool getConstant(const char *in, FilterMode &out);
 	static bool getConstant(FilterMode in, const char  *&out);
@@ -71,6 +75,9 @@ public:
 	static bool getConstant(WrapMode in, const char  *&out);
 
 private:
+	
+	// The default image filter
+	static Filter defaultFilter;
 
 	static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
 	static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;

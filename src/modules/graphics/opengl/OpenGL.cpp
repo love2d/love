@@ -52,6 +52,133 @@ void deleteTexture(GLuint texture)
 	glDeleteTextures(1, &texture);
 }
 
+void setTextureFilter(const graphics::Image::Filter &f)
+{
+	GLint gmin, gmag;
+	
+	switch (f.min)
+	{
+	case Image::FILTER_NEAREST:
+		gmin = GL_NEAREST;
+		break;
+	case Image::FILTER_LINEAR:
+	default:
+		gmin = GL_LINEAR;
+		break;
+	}
+	
+	switch (f.mag)
+	{
+	case Image::FILTER_NEAREST:
+		gmag = GL_NEAREST;
+		break;
+	case Image::FILTER_LINEAR:
+	default:
+		gmag = GL_LINEAR;
+		break;
+	}
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
+}
+
+graphics::Image::Filter getTextureFilter()
+{
+	GLint gmin, gmag;
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
+	
+	Image::Filter f;
+	
+	switch (gmin)
+	{
+	case GL_NEAREST:
+		f.min = Image::FILTER_NEAREST;
+		break;
+	case GL_LINEAR:
+	default:
+		f.min = Image::FILTER_LINEAR;
+		break;
+	}
+	
+	switch (gmag)
+	{
+	case GL_NEAREST:
+		f.mag = Image::FILTER_NEAREST;
+		break;
+	case GL_LINEAR:
+	default:
+		f.mag = Image::FILTER_LINEAR;
+		break;
+	}
+	
+	return f;
+}
+
+void setTextureWrap(const graphics::Image::Wrap &w)
+{
+	GLint gs, gt;
+	
+	switch (w.s)
+	{
+	case Image::WRAP_CLAMP:
+		gs = GL_CLAMP_TO_EDGE;
+		break;
+	case Image::WRAP_REPEAT:
+	default:
+		gs = GL_REPEAT;
+		break;
+	}
+	
+	switch (w.t)
+	{
+	case Image::WRAP_CLAMP:
+		gt = GL_CLAMP_TO_EDGE;
+		break;
+	case Image::WRAP_REPEAT:
+	default:
+		gt = GL_REPEAT;
+		break;
+	}
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gs);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gt);
+}
+
+graphics::Image::Wrap getTextureWrap()
+{
+	GLint gs, gt;
+	
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &gs);
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &gt);
+	
+	Image::Wrap w;
+	
+	switch (gs)
+	{
+	case GL_CLAMP_TO_EDGE:
+		w.s = Image::WRAP_CLAMP;
+		break;
+	case GL_REPEAT:
+	default:
+		w.s = Image::WRAP_REPEAT;
+		break;
+	}
+	
+	switch (gt)
+	{
+	case GL_CLAMP_TO_EDGE:
+		w.t = Image::WRAP_CLAMP;
+		break;
+	case GL_REPEAT:
+	default:
+		w.t = Image::WRAP_REPEAT;
+		break;
+	}
+	
+	return w;
+}
+
 } // opengl
 } // graphics
 } // love

@@ -50,19 +50,24 @@ int w_Image_getHeight(lua_State *L)
 int w_Image_setFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	Image::Filter f;
+	
 	Image::FilterMode min;
 	Image::FilterMode mag;
+	
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
+	
 	if (!Image::getConstant(minstr, min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
 	if (!Image::getConstant(magstr, mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
+	Image::Filter f;
 	f.min = min;
 	f.mag = mag;
+	
 	t->setFilter(f);
+	
 	return 0;
 }
 
@@ -84,19 +89,24 @@ int w_Image_getFilter(lua_State *L)
 int w_Image_setWrap(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	Image::Wrap w;
+	
 	Image::WrapMode s;
 	Image::WrapMode t;
+	
 	const char *sstr = luaL_checkstring(L, 2);
 	const char *tstr = luaL_optstring(L, 3, sstr);
+	
 	if (!Image::getConstant(sstr, s))
 		return luaL_error(L, "Invalid wrap mode: %s", sstr);
 	if (!Image::getConstant(tstr, t))
 		return luaL_error(L, "Invalid wrap mode, %s", tstr);
 
+	Image::Wrap w;
 	w.s = s;
 	w.t = t;
+	
 	i->setWrap(w);
+	
 	return 0;
 }
 

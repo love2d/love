@@ -22,6 +22,7 @@
 #define LOVE_COMMON_OPENGL_H
 
 #include "GLee.h"
+#include "graphics/Image.h"
 
 namespace love
 {
@@ -47,6 +48,28 @@ void bindTexture(GLuint texture, bool override = false);
  * @param texture The texture to delete.
  **/
 void deleteTexture(GLuint texture);
+
+/**
+ * Sets the image filter mode for the currently bound texture
+ * @param f The image filter to set
+ */
+void setTextureFilter(const graphics::Image::Filter &f);
+
+/**
+ * Returns the image filter mode for the currently bound texture
+ */
+graphics::Image::Filter getTextureFilter();
+
+/**
+ * Sets the image wrap mode for the currently bound texture
+ * @param w The wrap mode to set
+ */
+void setTextureWrap(const graphics::Image::Wrap &w);
+
+/**
+ * Returns the image wrap mode for the currently bound texture
+ */
+graphics::Image::Wrap getTextureWrap();
 
 } // opengl
 } // graphics

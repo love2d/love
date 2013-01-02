@@ -103,7 +103,7 @@ public:
 
 	Image::Filter getFilter() const;
 
-	void setWrap(Image::Wrap r);
+	void setWrap(Image::Wrap &w);
 
 	Image::Wrap getWrap() const;
 
@@ -117,10 +117,6 @@ public:
 	void unloadVolatile();
 
 	static bool hasNpot();
-
-	// The default filter.
-	static void setDefaultFilter(const Image::Filter &f);
-	static const Image::Filter &getDefaultFilter();
 
 private:
 
@@ -152,9 +148,6 @@ private:
 
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();
-
-	// The default image filter
-	static Image::Filter defaultFilter;
 
 }; // Image
 

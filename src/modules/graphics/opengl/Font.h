@@ -49,7 +49,7 @@ public:
 	 *
 	 * @param data The font data to construct from.
 	 **/
-	Font(love::font::Rasterizer *r, const Image::Filter &filter = Image::Filter());
+	Font(love::font::Rasterizer *r, const Image::Filter &filter = Image::getDefaultFilter());
 
 	virtual ~Font();
 
@@ -125,6 +125,9 @@ public:
 	 * Returns the spacing modifier.
 	 **/
 	float getSpacing() const;
+	
+	void setFilter(const Image::Filter &f);
+	Image::Filter getFilter();
 
 	// Implements Volatile.
 	bool loadVolatile();

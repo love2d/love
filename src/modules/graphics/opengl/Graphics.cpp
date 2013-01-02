@@ -567,11 +567,6 @@ void Graphics::setColorMode(Graphics::ColorMode mode)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
-void Graphics::setDefaultImageFilter(const Image::Filter &f)
-{
-	Image::setDefaultFilter(f);
-}
-
 Graphics::BlendMode Graphics::getBlendMode()
 {
 	GLint dst, src, equation;
@@ -604,6 +599,11 @@ Graphics::ColorMode Graphics::getColorMode()
 		return COLOR_COMBINE;
 	else // mode == GL_REPLACE
 		return COLOR_REPLACE;
+}
+
+void Graphics::setDefaultImageFilter(const Image::Filter &f)
+{
+	Image::setDefaultFilter(f);
 }
 
 const Image::Filter &Graphics::getDefaultImageFilter() const

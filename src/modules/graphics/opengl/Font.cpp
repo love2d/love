@@ -116,16 +116,15 @@ void Font::createTexture()
 	GLuint t;
 	glGenTextures(1, &t);
 	textures.push_back(t);
+	
 	bindTexture(t);
+	
+	setTextureFilter(filter);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-					(filter.mag == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-					(filter.min == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
 	
+	GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
 	
 	// try to initialize the texture, attempting smaller sizes if initialization fails
 	bool initialized = false;
@@ -491,6 +490,28 @@ void Font::setSpacing(float amount)
 float Font::getSpacing() const
 {
 	return mSpacing;
+}
+
+void Font::setFilter(const Image::Filter &f)
+{
+	std::vector<GLuint>::const_iterator it;
+	for (it = textures.begin(); it != textures.end(); ++it)
+	{
+		bindTexture(*it);
+		setTextureFilter(f);
+	}
+}
+
+Image::Filter Font::getFilter()
+{
+	std::vector<GLuint>::const_iterator it;
+	for (it = textures.begin(); it != textures.end(); ++it)
+	{
+		bindTexture(*it);
+		return getTextureFilter();
+	}
+	
+	return Image::getDefaultFilter();
 }
 
 bool Font::loadVolatile()
