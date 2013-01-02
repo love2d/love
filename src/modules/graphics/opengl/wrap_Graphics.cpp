@@ -853,7 +853,12 @@ int w_isSupported(lua_State *L)
 				supported = false;
 			break;
 		case Graphics::SUPPORT_SUBTRACTIVE:
-			supported = (GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract);
+			if (!((GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)))
+				supported = false;
+			break;
+		case Graphics::SUPPORT_MIPMAP:
+			if (!Image::hasMipmapSupport())
+				supported = false;
 			break;
 		default:
 			supported = false;
