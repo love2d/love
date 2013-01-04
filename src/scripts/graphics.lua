@@ -1323,6 +1323,10 @@ void main() {
 #define extern uniform
 #define Texel texture2D
 
+#define ModelViewMatrix gl_ModelViewMatrix
+#define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
+#define NormalMatrix gl_NormalMatrix
+#define ExternColor vec4(1.0)
 #define VaryingColor gl_Color
 #define VaryingTexCoord gl_TexCoord[0]
 
