@@ -21,38 +21,39 @@
 #include "ShaderEffect.h"
 #include "Graphics.h"
 
-namespace
-{
-// temporarily attaches a shader program (for setting uniforms, etc)
-// reattaches the originally active program when destroyed
-struct TemporaryAttacher
-{
-	TemporaryAttacher(love::graphics::opengl::ShaderEffect *sp)
-	: cureffect(sp)
-	, preveffect(love::graphics::opengl::ShaderEffect::current)
-	{
-		cureffect->attach(true);
-	}
-	
-	~TemporaryAttacher()
-	{
-		if (preveffect != NULL)
-			preveffect->attach();
-		else
-			love::graphics::opengl::ShaderEffect::detach();
-	}
-	
-	love::graphics::opengl::ShaderEffect *cureffect;
-	love::graphics::opengl::ShaderEffect *preveffect;
-};
-} // anonymous namespace
-
 namespace love
 {
 namespace graphics
 {
 namespace opengl
 {
+
+namespace
+{
+	// temporarily attaches a shader program (for setting uniforms, etc)
+	// reattaches the originally active program when destroyed
+	struct TemporaryAttacher
+	{
+		TemporaryAttacher(ShaderEffect *sp)
+		: cureffect(sp)
+		, preveffect(ShaderEffect::current)
+		{
+			cureffect->attach(true);
+		}
+		
+		~TemporaryAttacher()
+		{
+			if (preveffect != NULL)
+				preveffect->attach();
+			else
+				ShaderEffect::detach();
+		}
+		
+		ShaderEffect *cureffect;
+		ShaderEffect *preveffect;
+	};
+} // anonymous namespace
+
 
 ShaderEffect *ShaderEffect::current = NULL;
 

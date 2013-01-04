@@ -436,7 +436,7 @@ int w_newCanvas(lua_State *L)
 int w_newShaderEffect(lua_State *L)
 {
 	if (!ShaderEffect::isSupported())
-		return luaL_error(L, "Sorry, your graphics card does not support pixel effects.");
+		return luaL_error(L, "Sorry, your graphics card does not support shader effects.");
 
 	try
 	{

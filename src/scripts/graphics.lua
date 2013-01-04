@@ -1305,6 +1305,7 @@ do
 #define VertexPosition gl_Vertex
 
 uniform sampler2D _tex0_;
+
 #line 0]],
 		FOOTER = [[
 void main() {
@@ -1331,6 +1332,7 @@ void main() {
 #define VaryingTexCoord gl_TexCoord[0]
 
 uniform sampler2D _tex0_;
+
 #line 0]],
 		FOOTER = [[
 void main() {

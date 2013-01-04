@@ -41,6 +41,8 @@ void initializeContext()
 	
 	contextInitialized = true;
 	
+	textureUnits.clear();
+	
 	// initialize multiple texture unit support, if available
 	if (GLEE_ARB_multitexture || GLEE_VERSION_1_3)
 	{
@@ -57,7 +59,6 @@ void initializeContext()
 				maxtextureunits = maxtextureimageunits;
 		}
 		
-		textureUnits.clear();
 		textureUnits.resize(maxtextureunits, 0);
 		
 		GLenum activetextureunit;
@@ -83,7 +84,6 @@ void initializeContext()
 	else
 	{
 		// multitexturing not supported so we only have 1 texture unit
-		textureUnits.clear();
 		textureUnits.resize(1, 0);
 		curTextureUnitIndex = 0;
 		

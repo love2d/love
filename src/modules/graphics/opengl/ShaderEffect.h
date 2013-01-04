@@ -39,6 +39,7 @@ namespace opengl
 class ShaderEffect : public Object, public Volatile
 {
 public:
+	
 	enum ShaderType
 	{
 		TYPE_VERTEX,
@@ -78,6 +79,7 @@ public:
 	void sendCanvas(const std::string &name, const Canvas &canvas);
 
 private:
+	
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
 	GLuint createShader(const ShaderSource &source);
@@ -90,7 +92,7 @@ private:
 	// uniform location buffer
 	std::map<std::string, GLint> _uniforms;
 
-	static GLint _max_texture_units;
+	static GLint _max_texture_units; // total max GPU texture units for shaders
 	static std::vector<int> _texture_id_counters; // counts total number of textures bound to each texture unit in all shaders
 	
 	// texture unit pool for setting images
@@ -99,6 +101,7 @@ private:
 	GLint getTextureUnit(const std::string &name);
 	
 	void sendTexture(const std::string &name, GLuint texture);
+	
 };
 
 } // opengl
