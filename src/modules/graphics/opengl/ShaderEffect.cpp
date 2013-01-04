@@ -127,10 +127,10 @@ GLuint ShaderEffect::createShader(const ShaderSource &source)
 	{
 		GLenum err = glGetError();
 		
-		if (err == GL_INVALID_OPERATION) // should only happen between glBegin() and glEnd()
-			throw love::Exception("Cannot create %s shader object.", shadertypename);
-		else if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
+		if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
 			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", shadertypename, shadertypename);
+		else // other errors should only happen between glBegin() and glEnd()
+			throw love::Exception("Cannot create %s shader object.", shadertypename);
 	}
 	
 	const char *src = source.code.c_str();

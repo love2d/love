@@ -1283,39 +1283,56 @@ do
 		love.graphics.printf(...)
 	end
 	
+	local GLSL_VERSION = "#version 120"
+	
 	local GLSL_VERT = {
 		HEADER = [[
-#version 120
+#define VERTEX
+
 #define number float
 #define Image sampler2D
 #define extern uniform
 #define Texel texture2D
-#define VERTEX
+
+#define ModelViewMatrix gl_ModelViewMatrix
+#define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
+#define NormalMatrix gl_NormalMatrix
+#define ExternColor vec4(1.0)
+#define VertexColor gl_Color
+#define VaryingColor gl_FrontColor
+#define VertexTexCoord gl_MultiTexCoord0
+#define VaryingTexCoord gl_TexCoord[0]
+#define VertexPosition gl_Vertex
+
 uniform sampler2D _tex0_;
 #line 0]],
 		FOOTER = [[
 void main() {
-	gl_TexCoord[0] = gl_MultiTexCoord0;
-	gl_FrontColor = gl_Color;
-	gl_Position = transform(gl_ModelViewProjectionMatrix, gl_Vertex);
+	VaryingTexCoord = VertexTexCoord;
+	VaryingColor = VertexColor * ExternColor;
+	gl_Position = position(ModelViewProjectionMatrix, VertexPosition);
 }]],
 	}
 	
 	local GLSL_FRAG = {
 		HEADER = [[
-#version 120
+#define PIXEL
+
 #define number float
 #define Image sampler2D
 #define extern uniform
 #define Texel texture2D
-#define PIXEL
+
+#define VaryingColor gl_Color
+#define VaryingTexCoord gl_TexCoord[0]
+
 uniform sampler2D _tex0_;
 #line 0]],
 		FOOTER = [[
 void main() {
 	// fix weird crashing issue in OSX when _tex0_ is unused within effect()
 	float dummy = texture2D(_tex0_, vec2(.5)).r;
-	gl_FragColor = effect(gl_Color, _tex0_, gl_TexCoord[0].xy, gl_FragCoord.xy);
+	gl_FragColor = effect(VaryingColor, _tex0_, VaryingTexCoord.st, gl_FragCoord.xy);
 }]],
 	}
 
@@ -1326,14 +1343,14 @@ void main() {
 			if s:match("vec4%s*effect%(") then
 				fragcode = vertcode -- first argument contains frag shader code
 			end
-			if not s:match("vec4%s*transform%(") then
+			if not s:match("vec4%s*position%(") then
 				vertcode = nil -- first argument doesn't contain vert shader code
 			end
 		end
 		if fragcode then
 			local s = fragcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
-			if s:match("vec4%s*transform%(") then
+			if s:match("vec4%s*position%(") then
 				vertcode = fragcode -- second argument contains vert shader code
 			end
 			if not s:match("vec4%s*effect%(") then
@@ -1342,10 +1359,10 @@ void main() {
 		end
 
 		if vertcode then
-			vertcode = table.concat({GLSL_VERT.HEADER, vertcode, GLSL_VERT.FOOTER}, "\n")
+			vertcode = table.concat({GLSL_VERSION, GLSL_VERT.HEADER, vertcode, GLSL_VERT.FOOTER}, "\n")
 		end
 		if fragcode then
-			fragcode = table.concat({GLSL_FRAG.HEADER, fragcode, GLSL_FRAG.FOOTER}, "\n")
+			fragcode = table.concat({GLSL_VERSION, GLSL_FRAG.HEADER, fragcode, GLSL_FRAG.FOOTER}, "\n")
 		end
 		
 		return vertcode, fragcode
@@ -1364,7 +1381,7 @@ void main() {
 				-- ERROR 0:<linenumber>: error/warning(#[NUMBER]) [ERRORNAME]: <errormessage>
 				linenumber, what, message = l:match("^%w+: 0:(%d+):%s*(%w+)%([^%)]+%)%s*(.+)$")
 				if not linenumber then
-					-- OSX compiler message:
+					-- OSX compiler message (?):
 					-- ERROR: 0:<linenumber>: <errormessage>
 					what, linenumber, message = l:match("^(%w+): %d+:(%d+): (.+)$")
 				end
@@ -1399,13 +1416,14 @@ void main() {
 
 	-- automagic uniform setter
 	local function shadereffect_dispatch_send(self, name, value, ...)
-		if type(value) == "number" then         -- scalar
+		local valuetype = type(value)
+		if valuetype == "number" then         -- scalar
 			self:sendFloat(name, value, ...)
-		elseif type(value) == "userdata" and value:typeOf("Image") then
+		elseif valuetype == "userdata" and value:typeOf("Image") then
 			self:sendImage(name, value)
-		elseif type(value) == "userdata" and value:typeOf("Canvas") then
+		elseif valuetype == "userdata" and value:typeOf("Canvas") then
 			self:sendCanvas(name, value)
-		elseif type(value) == "table" then      -- vector or matrix
+		elseif valuetype == "table" then      -- vector or matrix
 			if type(value[1]) == "number" then
 				self:sendFloat(name, value, ...)
 			elseif type(value[1]) == "table" then
@@ -1414,9 +1432,8 @@ void main() {
 				error("Cannot send value (unsupported type: {"..type(value[1]).."}).")
 			end
 		else
-			local t = type(value)
-			if t == "userdata" and value.type then t = value.type end
-			error("Cannot send value (unsupported type: "..t..").")
+			if valuetype == "userdata" and value.type then valuetype = value.type end
+			error("Cannot send value (unsupported type: "..valuetype..").")
 		end
 	end
 
@@ -1447,13 +1464,6 @@ void main() {
 		return love.graphics.newShaderEffect(nil, fragcode)
 	end
 	
-	function love.graphics.newVertexEffect(vertcode)
-		return love.graphics.newShaderEffect(vertcode, nil)
-	end
-	
 	love.graphics.setPixelEffect = love.graphics.setShaderEffect
 	love.graphics.getPixelEffect = love.graphics.getShaderEffect
-	
-	love.graphics.setVertexEffect = love.graphics.setShaderEffect
-	love.graphics.getVertexEffect = love.graphics.getShaderEffect
 end
