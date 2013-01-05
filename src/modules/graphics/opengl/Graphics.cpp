@@ -460,11 +460,12 @@ ShaderEffect *Graphics::newShaderEffect(const std::vector<ShaderEffect::ShaderSo
 	{
 		effect = new ShaderEffect(shadersources);
 	}
-	catch(love::Exception &e)
+	catch(love::Exception &)
 	{
 		if (effect)
 			delete effect;
-		throw(e);
+		
+		throw;
 	}
 	return effect;
 }

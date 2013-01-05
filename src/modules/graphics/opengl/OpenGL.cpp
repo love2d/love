@@ -83,7 +83,7 @@ void initializeContext()
 	}
 	else
 	{
-		// multitexturing not supported so we only have 1 texture unit
+		// multitexturing not supported, so we only have 1 texture unit
 		textureUnits.resize(1, 0);
 		curTextureUnitIndex = 0;
 		

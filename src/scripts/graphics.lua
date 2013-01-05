@@ -1295,14 +1295,16 @@ do
 #define Texel texture2D
 
 #define ModelViewMatrix gl_ModelViewMatrix
+#define ProjectionMatrix gl_ProjectionMatrix
 #define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
 #define NormalMatrix gl_NormalMatrix
-#define ExternColor vec4(1.0)
+
 #define VertexColor gl_Color
-#define VaryingColor gl_FrontColor
 #define VertexTexCoord gl_MultiTexCoord0
-#define VaryingTexCoord gl_TexCoord[0]
 #define VertexPosition gl_Vertex
+
+#define VaryingColor gl_FrontColor
+#define VaryingTexCoord gl_TexCoord[0]
 
 uniform sampler2D _tex0_;
 
@@ -1310,7 +1312,7 @@ uniform sampler2D _tex0_;
 		FOOTER = [[
 void main() {
 	VaryingTexCoord = VertexTexCoord;
-	VaryingColor = VertexColor * ExternColor;
+	VaryingColor = VertexColor;
 	gl_Position = position(ModelViewProjectionMatrix, VertexPosition);
 }]],
 	}
@@ -1325,9 +1327,10 @@ void main() {
 #define Texel texture2D
 
 #define ModelViewMatrix gl_ModelViewMatrix
+#define ProjectionMatrix gl_ProjectionMatrix
 #define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
 #define NormalMatrix gl_NormalMatrix
-#define ExternColor vec4(1.0)
+
 #define VaryingColor gl_Color
 #define VaryingTexCoord gl_TexCoord[0]
 
