@@ -51,14 +51,14 @@ public:
 		TYPE_FRAGMENT,
 		TYPE_MAX_ENUM
 	};
-	
+
 	// thin wrapper for GLSL source code.
 	struct ShaderSource
 	{
 		std::string code;
 		ShaderType type;
 	};
-	
+
 	/**
 	 * Creates a new ShaderEffect using a list of source codes.
 	 * Must contain at least one vertex or fragment shader source.
@@ -66,7 +66,7 @@ public:
 	 * @param shadersources Vector of shader source codes.
 	 **/
 	ShaderEffect(const std::vector<ShaderSource> &shadersources);
-	
+
 	virtual ~ShaderEffect();
 
 	// Implements Volatile
@@ -79,23 +79,23 @@ public:
 	 * @param temporary True if we just want to send values to the shader with no intention of rendering.
 	 **/
 	void attach(bool temporary = false);
-	
+
 	/**
 	 * Detach the currently bound ShaderEffect.
 	 * Causes OpenGL to use fixed functionality in place of shader programs.
 	 **/
 	static void detach();
-	
+
 	/**
 	 * Returns any warnings this ShaderEffect may have generated.
 	 **/
 	std::string getWarnings() const;
-	
+
 	/**
 	 * Returns the maximum GLSL version supported on this system.
 	 **/
 	static std::string getGLSLVersion();
-	
+
 	/**
 	 * Returns whether ShaderEffects are supported on this system.
 	 **/
@@ -111,7 +111,7 @@ public:
 	 * @param count Number of float or vector values.
 	 **/
 	void sendFloat(const std::string &name, int size, const GLfloat *vec, int count);
-	
+
 	/**
 	 * Send at least one matrix to this ShaderEffect as a uniform.
 	 * 
@@ -121,7 +121,7 @@ public:
 	 * @param count Number of matrices to send.
 	 **/
 	void sendMatrix(const std::string &name, int size, const GLfloat *m, int count);
-	
+
 	/**
 	 * Send an image to this ShaderEffect as a uniform.
 	 * 
@@ -129,7 +129,7 @@ public:
 	 * @param image The image to send.
 	 **/
 	void sendImage(const std::string &name, const Image &image);
-	
+
 	/**
 	 * Send a canvas to this ShaderEffect as a uniform.
 	 *
@@ -137,38 +137,37 @@ public:
 	 * @param canvas The canvas to send.
 	 **/
 	void sendCanvas(const std::string &name, const Canvas &canvas);
-	
+
 	// pointer to currently active ShaderEffect.
 	static ShaderEffect *current;
 
 private:
-	
+
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
 	GLuint createShader(const ShaderSource &source);
 	void createProgram(const std::vector<GLuint> &shaderids);
-	
+
 	// list of all shader code attached to this ShaderEffect
 	std::vector<ShaderSource> _shadersources;
-	
+
 	GLuint _program; // volatile
 
 	// uniform location buffer map
 	std::map<std::string, GLint> _uniforms;
-	
+
 	// total max GPU texture units for shaders
 	static GLint _max_texture_units;
-	
+
 	// counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> _texture_id_counters;
-	
+
 	// texture unit pool for setting images
 	std::map<std::string, GLint> _texture_unit_pool;
 	std::vector<GLuint> _texture_id_list;
 	GLint getTextureUnit(const std::string &name);
-	
+
 	void sendTexture(const std::string &name, GLuint texture);
-	
 };
 
 } // opengl

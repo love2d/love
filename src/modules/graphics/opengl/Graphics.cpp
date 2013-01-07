@@ -124,7 +124,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	height = currentWindow->getHeight();
 
 	// Okay, setup OpenGL.
-	
+
 	initializeContext();
 
 	// Enable blending

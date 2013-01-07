@@ -40,7 +40,7 @@ namespace
 		{
 			cureffect->attach(true);
 		}
-		
+
 		~TemporaryAttacher()
 		{
 			if (preveffect != NULL)
@@ -48,7 +48,7 @@ namespace
 			else
 				ShaderEffect::detach();
 		}
-		
+
 		ShaderEffect *cureffect;
 		ShaderEffect *preveffect;
 	};
@@ -66,15 +66,15 @@ ShaderEffect::ShaderEffect(const std::vector<ShaderSource> &shadersources)
 {
 	if (shadersources.size() == 0)
 		throw love::Exception("Cannot create shader effect: no source code!");
-	
+
 	GLint maxtextureunits;
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
 	_max_texture_units = std::max(maxtextureunits - 1, 0);
-	
+
 	// initialize global texture id counters if needed
 	if (_texture_id_counters.size() < (size_t) _max_texture_units)
 		_texture_id_counters.resize(_max_texture_units, 0);
-	
+
 	// load shader source and create program object
 	loadVolatile();
 }
@@ -83,7 +83,7 @@ ShaderEffect::~ShaderEffect()
 {
 	if (current == this)
 		detach();
-	
+
 	unloadVolatile();
 }
 
@@ -91,7 +91,7 @@ GLuint ShaderEffect::createShader(const ShaderSource &source)
 {
 	GLenum shadertype;
 	const char *shadertypename = NULL;
-	
+
 	switch (source.type)
 	{
 	case TYPE_VERTEX:
@@ -118,47 +118,47 @@ GLuint ShaderEffect::createShader(const ShaderSource &source)
 		throw love::Exception("Cannot create shader object: unknown shader type.");
 		break;
 	}
-	
+
 	// clear existing errors
 	while (glGetError() != GL_NO_ERROR);
-	
+
 	GLuint shaderid = glCreateShader(shadertype);
-	
+
 	if (shaderid == 0) // oh no!
 	{
 		GLenum err = glGetError();
-		
+
 		if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
 			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", shadertypename, shadertypename);
 		else // other errors should only happen between glBegin() and glEnd()
 			throw love::Exception("Cannot create %s shader object.", shadertypename);
 	}
-	
+
 	const char *src = source.code.c_str();
 	size_t srclen = source.code.length();
 	glShaderSource(shaderid, 1, (const GLchar **)&src, (GLint *)&srclen);
-	
+
 	glCompileShader(shaderid);
-	
+
 	GLint compile_status;
 	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &compile_status);
-	
+
 	if (compile_status == GL_FALSE)
 	{
 		GLint infologlen;
 		glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
-		
+
 		GLchar *errorlog = new GLchar[infologlen + 1];
 		glGetShaderInfoLog(shaderid, infologlen, NULL, errorlog);
-		
+
 		std::string tmp(errorlog);
-		
+
 		delete[] errorlog;
 		glDeleteShader(shaderid);
-		
+
 		throw love::Exception("Cannot compile %s shader:\n%s", shadertypename, tmp.c_str());
 	}
-	
+
 	return shaderid;
 }
 
@@ -167,24 +167,24 @@ void ShaderEffect::createProgram(const std::vector<GLuint> &shaderids)
 	_program = glCreateProgram();
 	if (_program == 0) // should only fail when called between glBegin() and glEnd()
 		throw love::Exception("Cannot create shader program object.");
-	
+
 	std::vector<GLuint>::const_iterator it;
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
 		glAttachShader(_program, *it);
-	
+
 	glLinkProgram(_program);
-	
+
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
 		glDeleteShader(*it); // flag shaders for auto-deletion when program object is deleted
-	
+
 	GLint link_ok;
 	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
-	
+
 	if (link_ok == GL_FALSE)
 	{
 		const std::string warnings = getWarnings();
 		glDeleteProgram(_program);
-		
+
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
 }
@@ -194,18 +194,18 @@ bool ShaderEffect::loadVolatile()
 	// zero out texture id list
 	_texture_id_list.clear();
 	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units, 0);
-	
+
 	std::vector<GLuint> shaderids;
-	
+
 	std::vector<ShaderSource>::const_iterator source;
 	for (source = _shadersources.begin(); source != _shadersources.end(); ++source)
 		shaderids.push_back(createShader(*source));
-	
+
 	if (shaderids.size() == 0)
 		throw love::Exception("Cannot create shader effect: no valid source code!");
-	
+
 	createProgram(shaderids);
-	
+
 	if (current == this)
 	{
 		current = NULL; // make sure glUseProgram gets called
@@ -219,25 +219,25 @@ void ShaderEffect::unloadVolatile()
 {
 	if (current == this)
 		glUseProgram(0);
-	
+
 	if (_program != 0)
 		glDeleteProgram(_program);
-	
+
 	_program = 0;
-	
+
 	// decrement global texture id counters for texture units which had textures bound from this shader
 	for (size_t i = 0; i < _texture_id_list.size(); ++i)
 	{
 		if (_texture_id_list[i] == 0)
 			continue;
-		
+
 		_texture_id_counters[i] = std::max(_texture_id_counters[i] - 1, 0);
 	}
-	
+
 	// texture list is probably invalid, clear it
 	_texture_id_list.clear();
 	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units, 0);
-	
+
 	// same with uniform location list
 	_uniforms.clear();
 }
@@ -283,9 +283,9 @@ void ShaderEffect::attach(bool temporary)
 {
 	if (current != this)
 		glUseProgram(_program);
-	
+
 	current = this;
-	
+
 	if (!temporary)
 	{
 		// make sure all sent textures are properly bound to their respective texture units
@@ -294,7 +294,7 @@ void ShaderEffect::attach(bool temporary)
 		{
 			if (_texture_id_list[i] == 0)
 				continue;
-			
+
 			bindTextureToUnit(_texture_id_list[i], GL_TEXTURE0 + i + 1, false);
 		}
 		setActiveTextureUnit(GL_TEXTURE0);
@@ -305,7 +305,7 @@ void ShaderEffect::detach()
 {
 	if (current != NULL)
 		glUseProgram(0);
-	
+
 	current = NULL;
 }
 
@@ -372,21 +372,21 @@ void ShaderEffect::sendTexture(const std::string &name, GLuint texture)
 	TemporaryAttacher attacher(this);
 	GLint location = getUniformLocation(name);
 	GLint texture_unit = getTextureUnit(name);
-	
+
 	// bind texture to assigned texture unit and send uniform to bound shader program
 	bindTextureToUnit(texture, GL_TEXTURE0 + texture_unit, false);
 	glUniform1i(location, texture_unit);
-	
+
 	// reset texture unit
 	setActiveTextureUnit(GL_TEXTURE0);
-	
+
 	// increment global shader texture id counter for this texture unit, if we haven't already
 	if (_texture_id_list[texture_unit-1] == 0)
 		++_texture_id_counters[texture_unit-1];
-	
+
 	// store texture id so it can be re-bound to the proper texture unit when necessary
 	_texture_id_list[texture_unit-1] = texture;
-	
+
 	// throw error if needed
 	checkSetUniformError();
 }
@@ -422,28 +422,28 @@ GLint ShaderEffect::getUniformLocation(const std::string &name)
 GLint ShaderEffect::getTextureUnit(const std::string &name)
 {
 	std::map<std::string, GLint>::const_iterator it = _texture_unit_pool.find(name);
-	
+
 	if (it != _texture_unit_pool.end())
 		return it->second;
-	
+
 	int nextunitindex = 1;
-	
+
 	// prefer texture units which are unused by all other shaders
 	std::vector<int>::iterator nextfreeunit = std::find(_texture_id_counters.begin(), _texture_id_counters.end(), 0);
-	
+
 	if (nextfreeunit != _texture_id_counters.end())
 		nextunitindex = std::distance(_texture_id_counters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
 	else
 	{
 		// no completely unused texture units exist, try to use next free slot in our own list
 		std::vector<GLuint>::iterator nexttexunit = std::find(_texture_id_list.begin(), _texture_id_list.end(), 0);
-		
+
 		if (nexttexunit == _texture_id_list.end())
 			throw love::Exception("No more texture units available for shader.");
-		
+
 		nextunitindex = std::distance(_texture_id_list.begin(), nexttexunit) + 1; // we don't want to use unit 0
 	}
-	
+
 	_texture_unit_pool[name] = nextunitindex;
 	return nextunitindex;
 }

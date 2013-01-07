@@ -1282,9 +1282,10 @@ do
 		love.graphics.printf = _printf
 		love.graphics.printf(...)
 	end
-	
+
+
 	local GLSL_VERSION = "#version 120"
-	
+
 	local GLSL_VERT = {
 		HEADER = [[
 #define VERTEX
@@ -1294,17 +1295,17 @@ do
 #define extern uniform
 #define Texel texture2D
 
+#define VertexPosition gl_Vertex
+#define VertexTexCoord gl_MultiTexCoord0
+#define VertexColor gl_Color
+
 #define ModelViewMatrix gl_ModelViewMatrix
 #define ProjectionMatrix gl_ProjectionMatrix
 #define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
 #define NormalMatrix gl_NormalMatrix
 
-#define VertexColor gl_Color
-#define VertexTexCoord gl_MultiTexCoord0
-#define VertexPosition gl_Vertex
-
-#define VaryingColor gl_FrontColor
 #define VaryingTexCoord gl_TexCoord[0]
+#define VaryingColor gl_FrontColor
 
 uniform sampler2D _tex0_;
 
@@ -1316,7 +1317,7 @@ void main() {
 	gl_Position = position(ModelViewProjectionMatrix, VertexPosition);
 }]],
 	}
-	
+
 	local GLSL_FRAG = {
 		HEADER = [[
 #define PIXEL
@@ -1331,8 +1332,8 @@ void main() {
 #define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
 #define NormalMatrix gl_NormalMatrix
 
-#define VaryingColor gl_Color
 #define VaryingTexCoord gl_TexCoord[0]
+#define VaryingColor gl_Color
 
 uniform sampler2D _tex0_;
 
@@ -1373,7 +1374,7 @@ void main() {
 		if fragcode then
 			fragcode = table.concat({GLSL_VERSION, GLSL_FRAG.HEADER, fragcode, GLSL_FRAG.FOOTER}, "\n")
 		end
-		
+
 		return vertcode, fragcode
 	end
 
@@ -1408,7 +1409,7 @@ void main() {
 	-- {a, b, c, d, e, f, ...}
 	local function flattenMatrices(mat, ...)
 		if not mat then return end
-		
+
 		local tonumber = tonumber
 
 		local ret,l = {}, 1
@@ -1465,14 +1466,14 @@ void main() {
 		meta.send = shadereffect_dispatch_send
 		return effect
 	end
-	
-	
+
+
 	-- compatibility functions
-	
+
 	function love.graphics.newPixelEffect(fragcode)
 		return love.graphics.newShaderEffect(nil, fragcode)
 	end
-	
+
 	love.graphics.setPixelEffect = love.graphics.setShaderEffect
 	love.graphics.getPixelEffect = love.graphics.getShaderEffect
 end

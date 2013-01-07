@@ -444,16 +444,16 @@ int w_newShaderEffect(lua_State *L)
 		lua_settop(L, 2);
 
 		luax_getfunction(L, "graphics", "_effectCodeToGLSL");
-		
+
 		// push vertcode and fragcode strings to the top of the stack so they become arguments for the function
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);
-		
+
 		// call effectCodeToGLSL, returned values will be at the top of the stack
 		lua_pcall(L, 2, 2, 0);
-		
+
 		std::vector<ShaderEffect::ShaderSource> shaderlist;
-		
+
 		// vertex shader code
 		if (lua_isstring(L, -2))
 		{
@@ -462,7 +462,7 @@ int w_newShaderEffect(lua_State *L)
 			vertshader.code = luaL_checkstring(L, -2);
 			shaderlist.push_back(vertshader);
 		}
-		
+
 		// fragment shader code
 		if (lua_isstring(L, -1))
 		{
@@ -471,7 +471,7 @@ int w_newShaderEffect(lua_State *L)
 			fragshader.code = luaL_checkstring(L, -1);
 			shaderlist.push_back(fragshader);
 		}
-		
+
 		ShaderEffect *effect = instance->newShaderEffect(shaderlist);
 		luax_newtype(L, "ShaderEffect", GRAPHICS_SHADEREFFECT_T, (void *)effect);
 	}
