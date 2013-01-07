@@ -77,7 +77,7 @@ public:
 	static bool getConstant(WrapMode in, const char  *&out);
 
 private:
-	
+
 	// The default image filter
 	static Filter defaultFilter;
 

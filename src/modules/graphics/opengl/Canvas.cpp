@@ -97,9 +97,9 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 
 		glGenTextures(1, &img);
 		bindTexture(img);
-		
+
 		setTextureFilter(Image::getDefaultFilter());
-		
+
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
 		bindTexture(0);
@@ -165,7 +165,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 
 		glGenTextures(1, &img);
 		bindTexture(img);
-		
+
 		setTextureFilter(Image::getDefaultFilter());
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
@@ -232,9 +232,9 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 
 		glGenTextures(1, &img);
 		bindTexture(img);
-		
+
 		setTextureFilter(Image::getDefaultFilter());
-		
+
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
 		bindTexture(0);

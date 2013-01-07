@@ -105,9 +105,9 @@ public:
 	void setWrap(const Image::Wrap &w);
 
 	const Image::Wrap &getWrap() const;
-	
+
 	void setMipmapSharpness(float sharpness);
-	
+
 	float getMipmapSharpness() const;
 
 	void bind() const;
@@ -143,22 +143,22 @@ private:
 
 	// The source vertices of the image.
 	vertex vertices[4];
-	
+
 	// Mipmap texture LOD bias value
 	float mipmapsharpness;
-	
+
 	// Implementation-dependent maximum/minimum mipmap sharpness values
 	float maxmipmapsharpness;
-	
+
 	// The image's filter mode
 	Image::Filter filter;
-	
+
 	// The image's wrap mode
 	Image::Wrap wrap;
 
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();
-	
+
 	void checkMipmapsCreated() const;
 
 }; // Image

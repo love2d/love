@@ -65,13 +65,13 @@ void setTextureFilter(const graphics::Image::Filter &f)
 	}
 	else
 	{
-		if (f.min == f.mipmap == Image::FILTER_NEAREST)
+		if (f.min == Image::FILTER_NEAREST && f.mipmap == Image::FILTER_NEAREST)
 			gmin = GL_NEAREST_MIPMAP_NEAREST;
 		else if (f.min == Image::FILTER_NEAREST && f.mipmap == Image::FILTER_LINEAR)
 			gmin = GL_NEAREST_MIPMAP_LINEAR;
 		else if (f.min == Image::FILTER_LINEAR && f.mipmap == Image::FILTER_NEAREST)
 			gmin = GL_LINEAR_MIPMAP_NEAREST;
-		else if (f.min == f.mipmap == Image::FILTER_LINEAR)
+		else if (f.min == Image::FILTER_LINEAR && f.mipmap == Image::FILTER_LINEAR)
 			gmin = GL_LINEAR_MIPMAP_LINEAR;
 		else
 			gmin = GL_LINEAR;

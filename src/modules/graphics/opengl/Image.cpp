@@ -147,26 +147,26 @@ void Image::checkMipmapsCreated() const
 {
 	if (filter.mipmap != FILTER_NEAREST && filter.mipmap != FILTER_LINEAR)
 		return;
-	
+
 	if (!hasMipmapSupport())
 		throw love::Exception("Mipmap filtering is not supported on this system!");
-	
+
 	// some old GPUs/systems claim support for NPOT textures, but fail when generating mipmaps
 	// we can't detect which systems will do this, so we fail gracefully for all NPOT images
 	int w = int(width), h = int(height);
 	if (w != next_p2(w) || h != next_p2(h))
 		throw love::Exception("Could not generate mipmaps: image does not have power of two dimensions!");
-	
+
 	bind();
-	
+
 	GLboolean mipmapscreated;
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&mipmapscreated);
-	
+
 	// generate mipmaps for this image if we haven't already
 	if (!mipmapscreated)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-		
+
 		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
 			glGenerateMipmap(GL_TEXTURE_2D);
 		else if (GLEE_EXT_framebuffer_object)
@@ -180,7 +180,7 @@ void Image::checkMipmapsCreated() const
 void Image::setFilter(const Image::Filter &f)
 {
 	filter = f;
-	
+
 	bind();
 	checkMipmapsCreated();
 	setTextureFilter(f);
@@ -194,7 +194,7 @@ const Image::Filter &Image::getFilter() const
 void Image::setWrap(const Image::Wrap &w)
 {
 	wrap = w;
-	
+
 	bind();
 	setTextureWrap(w);
 }
@@ -208,10 +208,10 @@ void Image::setMipmapSharpness(float sharpness)
 {
 	if (!hasMipmapSharpnessSupport())
 		return;
-	
+
 	// LOD bias has the range (-maxbias, maxbias)
 	mipmapsharpness = std::min(std::max(sharpness, -maxmipmapsharpness + 0.01f), maxmipmapsharpness - 0.01f);
-	
+
 	bind();
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness); // negative bias is sharper
 }
@@ -243,7 +243,7 @@ bool Image::loadVolatile()
 {
 	if (hasMipmapSharpnessSupport())
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
-	
+
 	if (hasNpot())
 		return loadVolatileNPOT();
 	else
@@ -254,10 +254,10 @@ bool Image::loadVolatilePOT()
 {
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
+
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -290,7 +290,7 @@ bool Image::loadVolatilePOT()
 					GL_RGBA,
 					GL_UNSIGNED_BYTE,
 					data->getData());
-	
+
 	setMipmapSharpness(mipmapsharpness);
 	setFilter(filter);
 	setWrap(wrap);
@@ -302,10 +302,10 @@ bool Image::loadVolatileNPOT()
 {
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
+
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -318,7 +318,7 @@ bool Image::loadVolatileNPOT()
 				 GL_RGBA,
 				 GL_UNSIGNED_BYTE,
 				 data->getData());
-	
+
 	setMipmapSharpness(mipmapsharpness);
 	setFilter(filter);
 	setWrap(wrap);
