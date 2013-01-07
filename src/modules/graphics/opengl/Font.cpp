@@ -21,15 +21,15 @@
 #include "Font.h"
 #include "font/GlyphData.h"
 #include "Quad.h"
+#include "Image.h"
 
 #include "libraries/utf8/utf8.h"
 
 #include "common/math.h"
 #include "common/Matrix.h"
+
 #include <math.h>
-
 #include <sstream>
-
 #include <algorithm> // for max
 
 namespace love
@@ -39,8 +39,8 @@ namespace graphics
 namespace opengl
 {
 
-const int Font::TEXTURE_WIDTHS[] = {128, 256, 256, 512, 512, 1024, 1024};
-const int Font::TEXTURE_HEIGHTS[] = {128, 128, 256, 256, 512, 512, 1024};
+const int Font::TEXTURE_WIDTHS[]  = {128, 256, 256, 512, 512, 1024, 1024};
+const int Font::TEXTURE_HEIGHTS[] = {128, 128, 256, 256, 512, 512,  1024};
 
 Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	: rasterizer(r)
@@ -48,6 +48,7 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	, lineHeight(1)
 	, mSpacing(1)
 	, filter(filter)
+	, mipmapsharpness(0.0f)
 {
 	love::font::GlyphData *gd = r->getGlyphData(32);
 	type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
@@ -70,7 +71,7 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	texture_width = TEXTURE_WIDTHS[texture_size_index];
 	texture_height = TEXTURE_HEIGHTS[texture_size_index];
 
-	createTexture();
+	loadVolatile();
 
 	r->retain();
 }
@@ -111,7 +112,8 @@ void Font::createTexture()
 
 	bindTexture(t);
 
-	setTextureFilter(filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -153,6 +155,9 @@ void Font::createTexture()
 					format,
 					GL_UNSIGNED_BYTE,
 					&emptyData[0]);
+
+	setFilter(filter);
+	setMipmapSharpness(mipmapsharpness);
 }
 
 Font::Glyph *Font::addGlyph(const int glyph)
@@ -484,30 +489,85 @@ float Font::getSpacing() const
 	return mSpacing;
 }
 
+void Font::checkMipmapsCreated() const
+{
+	if (filter.mipmap != Image::FILTER_NEAREST && filter.mipmap != Image::FILTER_LINEAR)
+		return;
+
+	if (!Image::hasMipmapSupport())
+		throw love::Exception("Mipmap filtering is not supported on this system!");
+
+	GLboolean mipmapscreated;
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&mipmapscreated);
+
+	// generate mipmaps for this image if we haven't already
+	if (!mipmapscreated)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
+		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+			glGenerateMipmap(GL_TEXTURE_2D);
+		else if (GLEE_EXT_framebuffer_object)
+			glGenerateMipmapEXT(GL_TEXTURE_2D);
+		else
+		{
+			// modify single texel to trigger mipmap chain generation
+			std::vector<GLubyte> emptydata(type == FONT_TRUETYPE ? 2 : 4);
+			glTexSubImage2D(GL_TEXTURE_2D,
+							0,
+							0, 0,
+							1, 1,
+							type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA,
+							GL_UNSIGNED_BYTE,
+							&emptydata[0]);
+		}
+	}
+}
+
 void Font::setFilter(const Image::Filter &f)
 {
+	filter = f;
+
 	std::vector<GLuint>::const_iterator it;
 	for (it = textures.begin(); it != textures.end(); ++it)
 	{
 		bindTexture(*it);
+		checkMipmapsCreated();
 		setTextureFilter(f);
 	}
 }
 
-Image::Filter Font::getFilter()
+const Image::Filter &Font::getFilter()
 {
+	return filter;
+}
+
+void Font::setMipmapSharpness(float sharpness)
+{
+	if (!Image::hasMipmapSharpnessSupport())
+		return;
+
+	// LOD bias has the range (-maxbias, maxbias)
+	mipmapsharpness = std::min(std::max(sharpness, -maxmipmapsharpness + 0.01f), maxmipmapsharpness - 0.01f);
+
 	std::vector<GLuint>::const_iterator it;
 	for (it = textures.begin(); it != textures.end(); ++it)
 	{
 		bindTexture(*it);
-		return getTextureFilter();
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness); // negative bias is sharper
 	}
+}
 
-	return Image::getDefaultFilter();
+float Font::getMipmapSharpness() const
+{
+	return mipmapsharpness;
 }
 
 bool Font::loadVolatile()
 {
+	if (Image::hasMipmapSharpnessSupport())
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
+
 	createTexture();
 	return true;
 }
