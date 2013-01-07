@@ -137,7 +137,7 @@ int w_Image_getWrap(lua_State *L)
 int w_Image_setMipmapSharpness(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	
+
 	float sharpness = (float) luaL_checknumber(L, 2);
 	i->setMipmapSharpness(sharpness);
 

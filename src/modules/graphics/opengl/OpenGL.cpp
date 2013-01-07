@@ -55,7 +55,7 @@ void deleteTexture(GLuint texture)
 void setTextureFilter(const graphics::Image::Filter &f)
 {
 	GLint gmin, gmag;
-	
+
 	if (f.mipmap == Image::FILTER_NONE)
 	{
 		if (f.min == Image::FILTER_NEAREST)
@@ -76,8 +76,8 @@ void setTextureFilter(const graphics::Image::Filter &f)
 		else
 			gmin = GL_LINEAR;
 	}
-	
-	
+
+
 	switch (f.mag)
 	{
 	case Image::FILTER_NEAREST:
@@ -88,7 +88,7 @@ void setTextureFilter(const graphics::Image::Filter &f)
 		gmag = GL_LINEAR;
 		break;
 	}
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
 }
@@ -98,9 +98,9 @@ graphics::Image::Filter getTextureFilter()
 	GLint gmin, gmag;
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
-	
+
 	Image::Filter f;
-	
+
 	switch (gmin)
 	{
 	case GL_NEAREST:
@@ -127,7 +127,7 @@ graphics::Image::Filter getTextureFilter()
 		f.mipmap = Image::FILTER_NONE;
 		break;
 	}
-	
+
 	switch (gmag)
 	{
 	case GL_NEAREST:
@@ -138,14 +138,14 @@ graphics::Image::Filter getTextureFilter()
 		f.mag = Image::FILTER_LINEAR;
 		break;
 	}
-	
+
 	return f;
 }
 
 void setTextureWrap(const graphics::Image::Wrap &w)
 {
 	GLint gs, gt;
-	
+
 	switch (w.s)
 	{
 	case Image::WRAP_CLAMP:
@@ -156,7 +156,7 @@ void setTextureWrap(const graphics::Image::Wrap &w)
 		gs = GL_REPEAT;
 		break;
 	}
-	
+
 	switch (w.t)
 	{
 	case Image::WRAP_CLAMP:
@@ -167,7 +167,7 @@ void setTextureWrap(const graphics::Image::Wrap &w)
 		gt = GL_REPEAT;
 		break;
 	}
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gs);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gt);
 }
@@ -175,12 +175,12 @@ void setTextureWrap(const graphics::Image::Wrap &w)
 graphics::Image::Wrap getTextureWrap()
 {
 	GLint gs, gt;
-	
+
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &gs);
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &gt);
-	
+
 	Image::Wrap w;
-	
+
 	switch (gs)
 	{
 	case GL_CLAMP_TO_EDGE:
@@ -191,7 +191,7 @@ graphics::Image::Wrap getTextureWrap()
 		w.s = Image::WRAP_REPEAT;
 		break;
 	}
-	
+
 	switch (gt)
 	{
 	case GL_CLAMP_TO_EDGE:
@@ -202,7 +202,7 @@ graphics::Image::Wrap getTextureWrap()
 		w.t = Image::WRAP_REPEAT;
 		break;
 	}
-	
+
 	return w;
 }
 

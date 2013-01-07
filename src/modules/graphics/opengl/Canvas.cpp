@@ -313,7 +313,7 @@ Canvas::Canvas(int width, int height, TextureType texture_type)
 	vertices[2].t = 1;
 	vertices[3].s = 1;
 	vertices[3].t = 0;
-	
+
 	settings.filter = Image::getDefaultFilter();
 
 	getStrategy();
