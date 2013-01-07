@@ -317,7 +317,7 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 			dx += glyph->spacing + letter_spacing;
 		}
 	}
-	catch (love::Exception &e)
+	catch (love::Exception &)
 	{
 		glPopMatrix();
 		throw;
