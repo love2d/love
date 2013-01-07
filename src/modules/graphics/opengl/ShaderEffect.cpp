@@ -57,8 +57,8 @@ namespace
 
 ShaderEffect *ShaderEffect::current = NULL;
 
-GLint ShaderEffect::_max_texture_units = 0;
-std::vector<int> ShaderEffect::_texture_id_counters;
+GLint ShaderEffect::_maxtextureunits = 0;
+std::vector<int> ShaderEffect::_texturecounters;
 
 ShaderEffect::ShaderEffect(const std::vector<ShaderSource> &shadersources)
 	: _shadersources(shadersources)
@@ -69,11 +69,11 @@ ShaderEffect::ShaderEffect(const std::vector<ShaderSource> &shadersources)
 
 	GLint maxtextureunits;
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
-	_max_texture_units = std::max(maxtextureunits - 1, 0);
+	_maxtextureunits = std::max(maxtextureunits - 1, 0);
 
 	// initialize global texture id counters if needed
-	if (_texture_id_counters.size() < (size_t) _max_texture_units)
-		_texture_id_counters.resize(_max_texture_units, 0);
+	if (_texturecounters.size() < (size_t) _maxtextureunits)
+		_texturecounters.resize(_maxtextureunits, 0);
 
 	// load shader source and create program object
 	loadVolatile();
@@ -191,9 +191,9 @@ void ShaderEffect::createProgram(const std::vector<GLuint> &shaderids)
 
 bool ShaderEffect::loadVolatile()
 {
-	// zero out texture id list
-	_texture_id_list.clear();
-	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units, 0);
+	// zero out active texture list
+	_activetextureunits.clear();
+	_activetextureunits.insert(_activetextureunits.begin(), _maxtextureunits, 0);
 
 	std::vector<GLuint> shaderids;
 
@@ -226,42 +226,20 @@ void ShaderEffect::unloadVolatile()
 	_program = 0;
 
 	// decrement global texture id counters for texture units which had textures bound from this shader
-	for (size_t i = 0; i < _texture_id_list.size(); ++i)
+	for (size_t i = 0; i < _activetextureunits.size(); ++i)
 	{
-		if (_texture_id_list[i] == 0)
+		if (_activetextureunits[i] == 0)
 			continue;
 
-		_texture_id_counters[i] = std::max(_texture_id_counters[i] - 1, 0);
+		_texturecounters[i] = std::max(_texturecounters[i] - 1, 0);
 	}
 
-	// texture list is probably invalid, clear it
-	_texture_id_list.clear();
-	_texture_id_list.insert(_texture_id_list.begin(), _max_texture_units, 0);
+	// active texture list is probably invalid, clear it
+	_activetextureunits.clear();
+	_activetextureunits.insert(_activetextureunits.begin(), _maxtextureunits, 0);
 
 	// same with uniform location list
 	_uniforms.clear();
-}
-
-std::string ShaderEffect::getGLSLVersion()
-{
-	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
-	const char *tmp = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-	if (NULL == tmp)
-		return "0.0";
-
-	// the version string always begins with a version number of the format
-	//   major_number.minor_number
-	// or
-	//   major_number.minor_number.release_number
-	// we can keep release_number, since it does not affect the check below.
-	std::string versionString(tmp);
-	size_t minorEndPos = versionString.find(' ');
-	return versionString.substr(0, minorEndPos);
-}
-
-bool ShaderEffect::isSupported()
-{
-	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
 
 std::string ShaderEffect::getWarnings() const
@@ -290,12 +268,12 @@ void ShaderEffect::attach(bool temporary)
 	{
 		// make sure all sent textures are properly bound to their respective texture units
 		// note: list potentially contains texture ids of deleted/invalid textures!
-		for (size_t i = 0; i < _texture_id_list.size(); ++i)
+		for (size_t i = 0; i < _activetextureunits.size(); ++i)
 		{
-			if (_texture_id_list[i] == 0)
+			if (_activetextureunits[i] == 0)
 				continue;
 
-			bindTextureToUnit(_texture_id_list[i], GL_TEXTURE0 + i + 1, false);
+			bindTextureToUnit(_activetextureunits[i], GL_TEXTURE0 + i + 1, false);
 		}
 		setActiveTextureUnit(GL_TEXTURE0);
 	}
@@ -381,11 +359,11 @@ void ShaderEffect::sendTexture(const std::string &name, GLuint texture)
 	setActiveTextureUnit(GL_TEXTURE0);
 
 	// increment global shader texture id counter for this texture unit, if we haven't already
-	if (_texture_id_list[texture_unit-1] == 0)
-		++_texture_id_counters[texture_unit-1];
+	if (_activetextureunits[texture_unit-1] == 0)
+		++_texturecounters[texture_unit-1];
 
 	// store texture id so it can be re-bound to the proper texture unit when necessary
-	_texture_id_list[texture_unit-1] = texture;
+	_activetextureunits[texture_unit-1] = texture;
 
 	// throw error if needed
 	checkSetUniformError();
@@ -421,30 +399,30 @@ GLint ShaderEffect::getUniformLocation(const std::string &name)
 
 GLint ShaderEffect::getTextureUnit(const std::string &name)
 {
-	std::map<std::string, GLint>::const_iterator it = _texture_unit_pool.find(name);
+	std::map<std::string, GLint>::const_iterator it = _textureunitpool.find(name);
 
-	if (it != _texture_unit_pool.end())
+	if (it != _textureunitpool.end())
 		return it->second;
 
 	int nextunitindex = 1;
 
 	// prefer texture units which are unused by all other shaders
-	std::vector<int>::iterator nextfreeunit = std::find(_texture_id_counters.begin(), _texture_id_counters.end(), 0);
+	std::vector<int>::iterator nextfreeunit = std::find(_texturecounters.begin(), _texturecounters.end(), 0);
 
-	if (nextfreeunit != _texture_id_counters.end())
-		nextunitindex = std::distance(_texture_id_counters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
+	if (nextfreeunit != _texturecounters.end())
+		nextunitindex = std::distance(_texturecounters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
 	else
 	{
 		// no completely unused texture units exist, try to use next free slot in our own list
-		std::vector<GLuint>::iterator nexttexunit = std::find(_texture_id_list.begin(), _texture_id_list.end(), 0);
+		std::vector<GLuint>::iterator nexttexunit = std::find(_activetextureunits.begin(), _activetextureunits.end(), 0);
 
-		if (nexttexunit == _texture_id_list.end())
+		if (nexttexunit == _activetextureunits.end())
 			throw love::Exception("No more texture units available for shader.");
 
-		nextunitindex = std::distance(_texture_id_list.begin(), nexttexunit) + 1; // we don't want to use unit 0
+		nextunitindex = std::distance(_activetextureunits.begin(), nexttexunit) + 1; // we don't want to use unit 0
 	}
 
-	_texture_unit_pool[name] = nextunitindex;
+	_textureunitpool[name] = nextunitindex;
 	return nextunitindex;
 }
 
@@ -459,6 +437,28 @@ void ShaderEffect::checkSetUniformError()
 			"- Trying to send array values with wrong dimension, or\n"
 			"- Invalid variable name.");
 	}
+}
+
+std::string ShaderEffect::getGLSLVersion()
+{
+	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
+	const char *tmp = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+	if (NULL == tmp)
+		return "0.0";
+
+	// the version string always begins with a version number of the format
+	//   major_number.minor_number
+	// or
+	//   major_number.minor_number.release_number
+	// we can keep release_number, since it does not affect the check below.
+	std::string versionString(tmp);
+	size_t minorEndPos = versionString.find(' ');
+	return versionString.substr(0, minorEndPos);
+}
+
+bool ShaderEffect::isSupported()
+{
+	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
 
 } // opengl

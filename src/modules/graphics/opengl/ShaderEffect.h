@@ -92,16 +92,6 @@ public:
 	std::string getWarnings() const;
 
 	/**
-	 * Returns the maximum GLSL version supported on this system.
-	 **/
-	static std::string getGLSLVersion();
-
-	/**
-	 * Returns whether ShaderEffects are supported on this system.
-	 **/
-	static bool isSupported();
-
-	/**
 	 * Send at least one float or vector value to this ShaderEffect as a uniform.
 	 * 
 	 * @param name The name of the uniform variable in the source code.
@@ -138,6 +128,16 @@ public:
 	 **/
 	void sendCanvas(const std::string &name, const Canvas &canvas);
 
+	/**
+	 * Returns the maximum GLSL version supported on this system.
+	 **/
+	static std::string getGLSLVersion();
+
+	/**
+	 * Returns whether ShaderEffects are supported on this system.
+	 **/
+	static bool isSupported();
+
 	// pointer to currently active ShaderEffect.
 	static ShaderEffect *current;
 
@@ -145,8 +145,13 @@ private:
 
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
+	
 	GLuint createShader(const ShaderSource &source);
 	void createProgram(const std::vector<GLuint> &shaderids);
+
+	GLint getTextureUnit(const std::string &name);
+
+	void sendTexture(const std::string &name, GLuint texture);
 
 	// list of all shader code attached to this ShaderEffect
 	std::vector<ShaderSource> _shadersources;
@@ -156,18 +161,15 @@ private:
 	// uniform location buffer map
 	std::map<std::string, GLint> _uniforms;
 
+	// texture unit pool for setting images
+	std::map<std::string, GLint> _textureunitpool; // _textureunitpool[name] = textureunitindex
+	std::vector<GLuint> _activetextureunits; // _activetextureunits[textureunitindex-1] = textureid
+
 	// total max GPU texture units for shaders
-	static GLint _max_texture_units;
+	static GLint _maxtextureunits;
 
 	// counts total number of textures bound to each texture unit in all shaders
-	static std::vector<int> _texture_id_counters;
-
-	// texture unit pool for setting images
-	std::map<std::string, GLint> _texture_unit_pool;
-	std::vector<GLuint> _texture_id_list;
-	GLint getTextureUnit(const std::string &name);
-
-	void sendTexture(const std::string &name, GLuint texture);
+	static std::vector<int> _texturecounters;
 };
 
 } // opengl
