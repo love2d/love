@@ -1284,6 +1284,8 @@ do
 	end
 
 
+	-- SHADER EFFECTS
+
 	local GLSL_VERSION = "#version 120"
 
 	local GLSL_VERT = {

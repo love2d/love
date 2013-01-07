@@ -63,7 +63,7 @@ static int _sendScalars(lua_State *L, ShaderEffect *effect, const char *name, in
 	catch(love::Exception &e)
 	{
 		delete[] values;
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	delete[] values;
@@ -104,7 +104,7 @@ static int _sendVectors(lua_State *L, ShaderEffect *effect, const char *name, in
 	catch(love::Exception &e)
 	{
 		delete[] values;
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	delete[] values;
@@ -178,7 +178,7 @@ int w_ShaderEffect_sendMatrix(lua_State *L)
 	catch(love::Exception &e)
 	{
 		delete[] values;
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	delete[] values;
@@ -197,7 +197,7 @@ int w_ShaderEffect_sendImage(lua_State *L)
 	}
 	catch(love::Exception &e)
 	{
-		luaL_error(L, e.what());
+		luaL_error(L, "%s", e.what());
 	}
 
 	return 0;
@@ -215,7 +215,7 @@ int w_ShaderEffect_sendCanvas(lua_State *L)
 	}
 	catch(love::Exception &e)
 	{
-		luaL_error(L, e.what());
+		luaL_error(L, "%s", e.what());
 	}
 
 	return 0;
