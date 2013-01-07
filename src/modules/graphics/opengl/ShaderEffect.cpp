@@ -60,11 +60,11 @@ ShaderEffect *ShaderEffect::current = NULL;
 GLint ShaderEffect::_maxtextureunits = 0;
 std::vector<int> ShaderEffect::_texturecounters;
 
-ShaderEffect::ShaderEffect(const std::vector<ShaderSource> &shadersources)
+ShaderEffect::ShaderEffect(const ShaderSources &shadersources)
 	: _shadersources(shadersources)
 	, _program(0)
 {
-	if (shadersources.size() == 0)
+	if (shadersources.empty())
 		throw love::Exception("Cannot create shader effect: no source code!");
 
 	GLint maxtextureunits;
@@ -87,12 +87,12 @@ ShaderEffect::~ShaderEffect()
 	unloadVolatile();
 }
 
-GLuint ShaderEffect::createShader(const ShaderSource &source)
+GLuint ShaderEffect::createShader(const ShaderType &type, const std::string &code)
 {
 	GLenum shadertype;
 	const char *shadertypename = NULL;
 
-	switch (source.type)
+	switch (type)
 	{
 	case TYPE_VERTEX:
 		shadertype = GL_VERTEX_SHADER;
@@ -134,8 +134,8 @@ GLuint ShaderEffect::createShader(const ShaderSource &source)
 			throw love::Exception("Cannot create %s shader object.", shadertypename);
 	}
 
-	const char *src = source.code.c_str();
-	size_t srclen = source.code.length();
+	const char *src = code.c_str();
+	size_t srclen = code.length();
 	glShaderSource(shaderid, 1, (const GLchar **)&src, (GLint *)&srclen);
 
 	glCompileShader(shaderid);
@@ -197,9 +197,12 @@ bool ShaderEffect::loadVolatile()
 
 	std::vector<GLuint> shaderids;
 
-	std::vector<ShaderSource>::const_iterator source;
+	ShaderSources::const_iterator source;
 	for (source = _shadersources.begin(); source != _shadersources.end(); ++source)
-		shaderids.push_back(createShader(*source));
+	{
+		GLuint shaderid = createShader(source->first, source->second);
+		shaderids.push_back(shaderid);
+	}
 
 	if (shaderids.size() == 0)
 		throw love::Exception("Cannot create shader effect: no valid source code!");

@@ -453,7 +453,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	return NULL; // never reached
 }
 
-ShaderEffect *Graphics::newShaderEffect(const std::vector<ShaderEffect::ShaderSource> shadersources)
+ShaderEffect *Graphics::newShaderEffect(const ShaderEffect::ShaderSources &shadersources)
 {
 	ShaderEffect *effect = NULL;
 	try

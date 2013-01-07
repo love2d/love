@@ -52,20 +52,16 @@ public:
 		TYPE_MAX_ENUM
 	};
 
-	// thin wrapper for GLSL source code.
-	struct ShaderSource
-	{
-		std::string code;
-		ShaderType type;
-	};
+	// type for a list of shader source codes in the form of sources[shadertype] = code
+	typedef std::map<ShaderType, std::string> ShaderSources;
 
 	/**
 	 * Creates a new ShaderEffect using a list of source codes.
 	 * Must contain at least one vertex or fragment shader source.
 	 * 
-	 * @param shadersources Vector of shader source codes.
+	 * @param shadersources map of shader source codes.
 	 **/
-	ShaderEffect(const std::vector<ShaderSource> &shadersources);
+	ShaderEffect(const ShaderSources &shadersources);
 
 	virtual ~ShaderEffect();
 
@@ -146,7 +142,7 @@ private:
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
 	
-	GLuint createShader(const ShaderSource &source);
+	GLuint createShader(const ShaderType &type, const std::string &code);
 	void createProgram(const std::vector<GLuint> &shaderids);
 
 	GLint getTextureUnit(const std::string &name);
@@ -154,7 +150,7 @@ private:
 	void sendTexture(const std::string &name, GLuint texture);
 
 	// list of all shader code attached to this ShaderEffect
-	std::vector<ShaderSource> _shadersources;
+	ShaderSources _shadersources;
 
 	GLuint _program; // volatile
 
