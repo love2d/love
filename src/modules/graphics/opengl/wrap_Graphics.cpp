@@ -452,23 +452,23 @@ int w_newShaderEffect(lua_State *L)
 		// call effectCodeToGLSL, returned values will be at the top of the stack
 		lua_pcall(L, 2, 2, 0);
 
-		ShaderEffect::ShaderSources shadersources;
+		ShaderEffect::ShaderSources sources;
 
 		// vertex shader code
 		if (lua_isstring(L, -2))
 		{
 			std::string vertcode(luaL_checkstring(L, -2));
-			shadersources[ShaderEffect::TYPE_VERTEX] = vertcode;
+			sources[ShaderEffect::TYPE_VERTEX] = vertcode;
 		}
 
 		// fragment shader code
 		if (lua_isstring(L, -1))
 		{
 			std::string fragcode(luaL_checkstring(L, -1));
-			shadersources[ShaderEffect::TYPE_FRAGMENT] = fragcode;
+			sources[ShaderEffect::TYPE_FRAGMENT] = fragcode;
 		}
 
-		ShaderEffect *effect = instance->newShaderEffect(shadersources);
+		ShaderEffect *effect = instance->newShaderEffect(sources);
 		luax_newtype(L, "ShaderEffect", GRAPHICS_SHADEREFFECT_T, (void *)effect);
 	}
 	catch(const love::Exception &e)

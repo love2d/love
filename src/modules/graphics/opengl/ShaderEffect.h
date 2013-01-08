@@ -59,7 +59,7 @@ public:
 	 * Creates a new ShaderEffect using a list of source codes.
 	 * Must contain at least one vertex or fragment shader source.
 	 * 
-	 * @param shadersources map of shader source codes.
+	 * @param shadersources Map of shader types to source codes.
 	 **/
 	ShaderEffect(const ShaderSources &shadersources);
 
@@ -142,7 +142,7 @@ private:
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
 	
-	GLuint createShader(const ShaderType &type, const std::string &code);
+	GLuint createShader(ShaderType type, const std::string &code);
 	void createProgram(const std::vector<GLuint> &shaderids);
 
 	GLint getTextureUnit(const std::string &name);

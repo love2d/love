@@ -225,7 +225,9 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+
+	if (color)
+		glDisableClientState(GL_COLOR_ARRAY);
 
 	glPopMatrix();
 }

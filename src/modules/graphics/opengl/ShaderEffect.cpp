@@ -87,31 +87,31 @@ ShaderEffect::~ShaderEffect()
 	unloadVolatile();
 }
 
-GLuint ShaderEffect::createShader(const ShaderType &type, const std::string &code)
+GLuint ShaderEffect::createShader(ShaderType type, const std::string &code)
 {
-	GLenum shadertype;
+	GLenum glshadertype;
 	const char *shadertypename = NULL;
 
 	switch (type)
 	{
 	case TYPE_VERTEX:
-		shadertype = GL_VERTEX_SHADER;
+		glshadertype = GL_VERTEX_SHADER;
 		shadertypename = "vertex";
 		break;
 	case TYPE_TESSCONTROL:
-		shadertype = GL_TESS_CONTROL_SHADER;
+		glshadertype = GL_TESS_CONTROL_SHADER;
 		shadertypename = "tesselation control";
 		break;
 	case TYPE_TESSEVAL:
-		shadertype = GL_TESS_EVALUATION_SHADER;
+		glshadertype = GL_TESS_EVALUATION_SHADER;
 		shadertypename = "tesselation evaluation";
 		break;
 	case TYPE_GEOMETRY:
-		shadertype = GL_GEOMETRY_SHADER;
+		glshadertype = GL_GEOMETRY_SHADER;
 		shadertypename = "geometry";
 		break;
 	case TYPE_FRAGMENT:
-		shadertype = GL_FRAGMENT_SHADER;
+		glshadertype = GL_FRAGMENT_SHADER;
 		shadertypename = "fragment";
 		break;
 	default:
@@ -122,7 +122,7 @@ GLuint ShaderEffect::createShader(const ShaderType &type, const std::string &cod
 	// clear existing errors
 	while (glGetError() != GL_NO_ERROR);
 
-	GLuint shaderid = glCreateShader(shadertype);
+	GLuint shaderid = glCreateShader(glshadertype);
 
 	if (shaderid == 0) // oh no!
 	{
@@ -204,7 +204,7 @@ bool ShaderEffect::loadVolatile()
 		shaderids.push_back(shaderid);
 	}
 
-	if (shaderids.size() == 0)
+	if (shaderids.empty())
 		throw love::Exception("Cannot create shader effect: no valid source code!");
 
 	createProgram(shaderids);
