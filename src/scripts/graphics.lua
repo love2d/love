@@ -1291,22 +1291,22 @@ do
 
 	local GLSL_VERSION = "#version 120"
 	
+	local GLSL_SYNTAX = [[
+#define number float
+#define Image sampler2D
+#define extern uniform
+#define Texel texture2D]]
+
 	local GLSL_UNIFORMS = [[
 #define ModelViewMatrix gl_ModelViewMatrix
 #define ProjectionMatrix gl_ProjectionMatrix
 #define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
 #define NormalMatrix gl_NormalMatrix
-
 uniform sampler2D _tex0_;]]
 
 	local GLSL_VERT = {
 		HEADER = [[
 #define VERTEX
-
-#define number float
-#define Image sampler2D
-#define extern uniform
-#define Texel texture2D
 
 #define VertexPosition gl_Vertex
 #define VertexTexCoord gl_MultiTexCoord0
@@ -1314,6 +1314,7 @@ uniform sampler2D _tex0_;]]
 
 #define VaryingTexCoord gl_TexCoord[0]
 #define VaryingColor gl_FrontColor]],
+
 		FOOTER = [[
 void main() {
 	VaryingTexCoord = VertexTexCoord;
@@ -1326,13 +1327,9 @@ void main() {
 		HEADER = [[
 #define PIXEL
 
-#define number float
-#define Image sampler2D
-#define extern uniform
-#define Texel texture2D
-
 #define VaryingTexCoord gl_TexCoord[0]
 #define VaryingColor gl_Color]],
+
 		FOOTER = [[
 void main() {
 	// fix weird crashing issue in OSX when _tex0_ is unused within effect()
@@ -1343,7 +1340,8 @@ void main() {
 
 	local function createVertCode(vertcode)
 		local vertcodes = {
-			GLSL_VERSION, GLSL_VERT.HEADER, GLSL_UNIFORMS,
+			GLSL_VERSION,
+			GLSL_SYNTAX, GLSL_VERT.HEADER, GLSL_UNIFORMS,
 			"#line 0",
 			vertcode,
 			GLSL_VERT.FOOTER,
@@ -1353,7 +1351,8 @@ void main() {
 
 	local function createFragCode(fragcode)
 		local fragcodes = {
-			GLSL_VERSION, GLSL_FRAG.HEADER, GLSL_UNIFORMS,
+			GLSL_VERSION,
+			GLSL_SYNTAX, GLSL_FRAG.HEADER, GLSL_UNIFORMS,
 			"#line 0",
 			fragcode,
 			GLSL_FRAG.FOOTER
@@ -1483,7 +1482,7 @@ void main() {
 	end
 
 
-	-- compatibility functions
+	-- PixelEffect compatibility functions
 
 	function love.graphics.newPixelEffect(fragcode)
 		return love.graphics.newShaderEffect(nil, fragcode)
