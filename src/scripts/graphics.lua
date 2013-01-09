@@ -1243,6 +1243,9 @@ do
 	FhERERESFxcLCwsbGxsWEggSDxQPFA8SCgkSDg4ODg4OCw4OAAAAAAACAAgAAv//AAMAAQAA
 	AAIAAAxQCuxfDzz1AB8IAAAAAAC6ufC4AAAAALrCZ5H+if4dCkwHbQAAAAgAAQAAAAAAAA==
 	]], "Vera.ttf", "base64")
+	
+	local table_concat = table.concat
+	local type = type
 
 	local _newFont = love.graphics.newFont
 	love.graphics.newFont = function(font, size)
@@ -1287,6 +1290,14 @@ do
 	-- SHADER EFFECTS
 
 	local GLSL_VERSION = "#version 120"
+	
+	local GLSL_UNIFORMS = [[
+#define ModelViewMatrix gl_ModelViewMatrix
+#define ProjectionMatrix gl_ProjectionMatrix
+#define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
+#define NormalMatrix gl_NormalMatrix
+
+uniform sampler2D _tex0_;]]
 
 	local GLSL_VERT = {
 		HEADER = [[
@@ -1301,17 +1312,8 @@ do
 #define VertexTexCoord gl_MultiTexCoord0
 #define VertexColor gl_Color
 
-#define ModelViewMatrix gl_ModelViewMatrix
-#define ProjectionMatrix gl_ProjectionMatrix
-#define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
-#define NormalMatrix gl_NormalMatrix
-
 #define VaryingTexCoord gl_TexCoord[0]
-#define VaryingColor gl_FrontColor
-
-uniform sampler2D _tex0_;
-
-#line 0]],
+#define VaryingColor gl_FrontColor]],
 		FOOTER = [[
 void main() {
 	VaryingTexCoord = VertexTexCoord;
@@ -1329,17 +1331,8 @@ void main() {
 #define extern uniform
 #define Texel texture2D
 
-#define ModelViewMatrix gl_ModelViewMatrix
-#define ProjectionMatrix gl_ProjectionMatrix
-#define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
-#define NormalMatrix gl_NormalMatrix
-
 #define VaryingTexCoord gl_TexCoord[0]
-#define VaryingColor gl_Color
-
-uniform sampler2D _tex0_;
-
-#line 0]],
+#define VaryingColor gl_Color]],
 		FOOTER = [[
 void main() {
 	// fix weird crashing issue in OSX when _tex0_ is unused within effect()
@@ -1347,6 +1340,26 @@ void main() {
 	gl_FragColor = effect(VaryingColor, _tex0_, VaryingTexCoord.st, gl_FragCoord.xy);
 }]],
 	}
+
+	local function createVertCode(vertcode)
+		local vertcodes = {
+			GLSL_VERSION, GLSL_VERT.HEADER, GLSL_UNIFORMS,
+			"#line 0",
+			vertcode,
+			GLSL_VERT.FOOTER,
+		}
+		return table_concat(vertcodes, "\n")
+	end
+
+	local function createFragCode(fragcode)
+		local fragcodes = {
+			GLSL_VERSION, GLSL_FRAG.HEADER, GLSL_UNIFORMS,
+			"#line 0",
+			fragcode,
+			GLSL_FRAG.FOOTER
+		}
+		return table_concat(fragcodes, "\n")
+	end
 
 	function love.graphics._effectCodeToGLSL(vertcode, fragcode)
 		if vertcode then
@@ -1371,10 +1384,10 @@ void main() {
 		end
 
 		if vertcode then
-			vertcode = table.concat({GLSL_VERSION, GLSL_VERT.HEADER, vertcode, GLSL_VERT.FOOTER}, "\n")
+			vertcode = createVertCode(vertcode)
 		end
 		if fragcode then
-			fragcode = table.concat({GLSL_VERSION, GLSL_FRAG.HEADER, fragcode, GLSL_FRAG.FOOTER}, "\n")
+			fragcode = createFragCode(fragcode)
 		end
 
 		return vertcode, fragcode
@@ -1404,7 +1417,7 @@ void main() {
 		end
 		-- did not match any known error messages
 		if #lines == 1 then return message end
-		return table.concat(lines, "\n")
+		return table_concat(lines, "\n")
 	end
 
 	-- helper to transform a matrix from {{a,b,c}, {d,e,f}, ...} to

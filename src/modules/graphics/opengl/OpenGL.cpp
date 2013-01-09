@@ -19,6 +19,7 @@
  **/
 
 #include <vector>
+#include <algorithm>
 #include "OpenGL.h"
 #include "common/Exception.h"
 
@@ -44,7 +45,7 @@ void initializeContext()
 	textureUnits.clear();
 
 	// initialize multiple texture unit support, if available
-	if (GLEE_ARB_multitexture || GLEE_VERSION_1_3)
+	if (GLEE_VERSION_1_3 || GLEE_ARB_multitexture)
 	{
 		GLint maxtextureunits;
 		glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxtextureunits);
@@ -54,9 +55,7 @@ void initializeContext()
 		{
 			GLint maxtextureimageunits;
 			glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureimageunits);
-
-			if (maxtextureimageunits > maxtextureunits)
-				maxtextureunits = maxtextureimageunits;
+			maxtextureunits = std::max(maxtextureunits, maxtextureimageunits);
 		}
 
 		textureUnits.resize(maxtextureunits, 0);
@@ -66,6 +65,7 @@ void initializeContext()
 
 		curTextureUnitIndex = activetextureunit - GL_TEXTURE0;
 
+		// retrieve currently bound textures for each texture unit
 		for (size_t i = 0; i < textureUnits.size(); ++i)
 		{
 			if (GLEE_VERSION_1_3)
