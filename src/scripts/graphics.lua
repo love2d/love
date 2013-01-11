@@ -1455,6 +1455,8 @@ void main() {
 			else
 				error("Cannot send value (unsupported type: {"..type(value[1]).."}).")
 			end
+		elseif valuetype == "boolean" then
+			self:sendFloat(name, value and 1 or 0)
 		else
 			if valuetype == "userdata" and value.type then valuetype = value.type end
 			error("Cannot send value (unsupported type: "..valuetype..").")
