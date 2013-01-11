@@ -48,10 +48,14 @@ static int _sendScalars(lua_State *L, ShaderEffect *effect, const char *name, in
 	float *values = new float[count];
 	for (int i = 0; i < count; ++i)
 	{
-		if (!lua_isnumber(L, 3 + i))
+		if (lua_isnumber(L, 3 + i))
+			values[i] = (float)lua_tonumber(L, 3 + i);
+		else if (lua_isboolean(L, 3 + i))
+			values[i] = (float)lua_toboolean(L, 3 + i);
+		else
 		{
 			delete[] values;
-			return luaL_typerror(L, 3 + i, "number");
+			return luaL_typerror(L, 3 + i, "number or boolean");
 		}
 		values[i] = (float)lua_tonumber(L, 3 + i);
 	}
@@ -92,7 +96,10 @@ static int _sendVectors(lua_State *L, ShaderEffect *effect, const char *name, in
 		for (size_t k = 1; k <= dimension; ++k)
 		{
 			lua_rawgeti(L, 3 + i, k);
-			values[i * dimension + k - 1] = (float)lua_tonumber(L, -1);
+			if (lua_isboolean(L, -1))
+				values[i * dimension + k - 1] = (float)lua_toboolean(L, -1);
+			else
+				values[i * dimension + k - 1] = (float)lua_tonumber(L, -1);
 		}
 		lua_pop(L, int(dimension));
 	}
@@ -120,12 +127,12 @@ int w_ShaderEffect_sendFloat(lua_State *L)
 	if (count < 1)
 		return luaL_error(L, "No variable to send.");
 
-	if (lua_isnumber(L, 3))
+	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
 		return _sendScalars(L, effect, name, count);
 	else if (lua_istable(L, 3))
 		return _sendVectors(L, effect, name, count);
 
-	return luaL_typerror(L, 3, "number or table");
+	return luaL_typerror(L, 3, "number, boolean or table");
 }
 
 int w_ShaderEffect_sendMatrix(lua_State *L)

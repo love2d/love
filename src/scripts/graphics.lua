@@ -1441,22 +1441,21 @@ void main() {
 	-- automagic uniform setter
 	local function shadereffect_dispatch_send(self, name, value, ...)
 		local valuetype = type(value)
-		if valuetype == "number" then         -- scalar
+		if valuetype == "number" or valuetype == "boolean" then -- scalar
 			self:sendFloat(name, value, ...)
 		elseif valuetype == "userdata" and value:typeOf("Image") then
 			self:sendImage(name, value)
 		elseif valuetype == "userdata" and value:typeOf("Canvas") then
 			self:sendCanvas(name, value)
 		elseif valuetype == "table" then      -- vector or matrix
-			if type(value[1]) == "number" then
+			valuetype = type(value[1])
+			if valuetype == "number" or valuetype == "boolean" then
 				self:sendFloat(name, value, ...)
-			elseif type(value[1]) == "table" then
+			elseif valuetype == "table" then
 				self:sendMatrix(name, flattenMatrices(value, ...))
 			else
-				error("Cannot send value (unsupported type: {"..type(value[1]).."}).")
+				error("Cannot send value (unsupported type: {"..valuetype.."}).")
 			end
-		elseif valuetype == "boolean" then
-			self:sendFloat(name, value and 1 or 0)
 		else
 			if valuetype == "userdata" and value.type then valuetype = value.type end
 			error("Cannot send value (unsupported type: "..valuetype..").")
@@ -1480,6 +1479,7 @@ void main() {
 		local effect = love.graphics.newShaderEffect(vertcode, fragcode)
 		local meta = getmetatable(effect)
 		meta.send = shadereffect_dispatch_send
+		meta.sendBoolean = meta.sendFloat
 		return effect
 	end
 
