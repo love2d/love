@@ -118,13 +118,34 @@ FileData *File::read(int64 size)
 	if (!isOpen && !open(READ))
 		throw love::Exception("Could not read file %s.", filename.c_str());
 
-	int64 max = (int64)PHYSFS_fileLength(file);
+	int64 max = getSize();
+	int64 cur = tell();
 	size = (size == ALL) ? max : size;
-	size = (size > max) ? max : size;
+
+	// Clamping because the file offset may be in a weird position.
+	if (cur < 0)
+		cur = 0;
+	else if (cur > max)
+		cur = max;
+
+	if (cur + size > max)
+		size = max - cur;
 
 	FileData *fileData = new FileData(size, getFilename());
+	int64 bytesRead = read(fileData->getData(), size);
 
-	read(fileData->getData(), size);
+	if (bytesRead < 0 || (bytesRead == 0 && bytesRead != size))
+	{
+		delete fileData;
+		throw love::Exception("Could not read from file.");
+	}
+	if (bytesRead < size)
+	{
+		FileData *tmpFileData = new FileData(bytesRead, getFilename());
+		memcpy(tmpFileData->getData(), fileData->getData(), (size_t) bytesRead);
+		delete fileData;
+		fileData = tmpFileData;
+	}
 
 	if (!isOpen)
 		close();
