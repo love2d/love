@@ -21,15 +21,15 @@
 #include "Font.h"
 #include "font/GlyphData.h"
 #include "Quad.h"
+#include "Image.h"
 
 #include "libraries/utf8/utf8.h"
 
 #include "common/math.h"
 #include "common/Matrix.h"
+
 #include <math.h>
-
 #include <sstream>
-
 #include <algorithm> // for max
 
 namespace love
@@ -39,8 +39,8 @@ namespace graphics
 namespace opengl
 {
 
-const int Font::TEXTURE_WIDTHS[] = {128, 256, 256, 512, 512, 1024, 1024};
-const int Font::TEXTURE_HEIGHTS[] = {128, 128, 256, 256, 512, 512, 1024};
+const int Font::TEXTURE_WIDTHS[]  = {128, 256, 256, 512, 512, 1024, 1024};
+const int Font::TEXTURE_HEIGHTS[] = {128, 128, 256, 256, 512, 512,  1024};
 
 Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	: rasterizer(r)
@@ -48,13 +48,12 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	, lineHeight(1)
 	, mSpacing(1)
 	, filter(filter)
+	, mipmapsharpness(0.0f)
 {
-	r->retain();
-	
 	love::font::GlyphData *gd = r->getGlyphData(32);
 	type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
 	delete gd;
-	
+
 	// try to find the best texture size match for the font size
 	// default to the largest texture size if no rough match is found
 	texture_size_index = NUM_TEXTURE_SIZES - 1;
@@ -68,19 +67,13 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 			break;
 		}
 	}
-	
+
 	texture_width = TEXTURE_WIDTHS[texture_size_index];
 	texture_height = TEXTURE_HEIGHTS[texture_size_index];
-	
-	try
-	{
-		createTexture();
-	}
-	catch (love::Exception &e)
-	{
-		r->release();
-		throw;
-	}
+
+	loadVolatile();
+
+	r->retain();
 }
 
 Font::~Font()
@@ -92,10 +85,10 @@ Font::~Font()
 bool Font::initializeTexture(GLint format)
 {
 	GLint internalformat = (format == GL_LUMINANCE_ALPHA) ? GL_LUMINANCE8_ALPHA8 : GL_RGBA8;
-	
+
 	// clear errors before initializing
 	while (glGetError() != GL_NO_ERROR);
-	
+
 	glTexImage2D(GL_TEXTURE_2D,
 				 0,
 				 internalformat,
@@ -105,50 +98,50 @@ bool Font::initializeTexture(GLint format)
 				 format,
 				 GL_UNSIGNED_BYTE,
 				 NULL);
-	
+
 	return glGetError() == GL_NO_ERROR;
 }
 
 void Font::createTexture()
 {
 	texture_x = texture_y = rowHeight = TEXTURE_PADDING;
-	
+
 	GLuint t;
 	glGenTextures(1, &t);
 	textures.push_back(t);
+
 	bindTexture(t);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-					(filter.mag == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-					(filter.min == Image::FILTER_LINEAR) ? GL_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 	GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
-	
-	
+
 	// try to initialize the texture, attempting smaller sizes if initialization fails
 	bool initialized = false;
 	while (texture_size_index >= 0)
 	{
 		texture_width = TEXTURE_WIDTHS[texture_size_index];
 		texture_height = TEXTURE_HEIGHTS[texture_size_index];
-		
+
 		initialized = initializeTexture(format);
-		
+
 		if (initialized || texture_size_index <= 0)
 			break;
-		
+
 		--texture_size_index;
 	}
-	
+
 	if (!initialized)
 	{
 		// cleanup before throwing
 		deleteTexture(t);
 		bindTexture(0);
 		textures.pop_back();
-		
+
 		throw love::Exception("Could not create font texture!");
 	}
 	
@@ -162,6 +155,9 @@ void Font::createTexture()
 					format,
 					GL_UNSIGNED_BYTE,
 					&emptyData[0]);
+
+	setFilter(filter);
+	setMipmapSharpness(mipmapsharpness);
 }
 
 Font::Glyph *Font::addGlyph(const int glyph)
@@ -184,17 +180,17 @@ Font::Glyph *Font::addGlyph(const int glyph)
 	}
 
 	Glyph *g = new Glyph;
-	
+
 	g->texture = 0;
 	g->spacing = gd->getAdvance();
-	
+
 	memset(&g->quad, 0, sizeof(GlyphQuad));
 
 	// don't waste space for empty glyphs. also fixes a division by zero bug with ati drivers
 	if (w > 0 && h > 0)
 	{
 		const GLuint t = textures.back();
-		
+
 		bindTexture(t);
 		glTexSubImage2D(GL_TEXTURE_2D,
 						0,
@@ -212,10 +208,10 @@ Font::Glyph *Font::addGlyph(const int glyph)
 		v.y = (float) texture_y;
 		v.w = (float) w;
 		v.h = (float) h;
-		
+
 		Quad q = Quad(v, (const float) texture_width, (const float) texture_height);
 		const vertex *verts = q.getVertices();
-		
+
 		// copy vertex data to the glyph and set proper bearing
 		for (int i = 0; i < 4; i++)
 		{
@@ -231,9 +227,9 @@ Font::Glyph *Font::addGlyph(const int glyph)
 		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
 
 	delete gd;
-	
+
 	glyphs[glyph] = g;
-	
+
 	return g;
 }
 
@@ -242,7 +238,7 @@ Font::Glyph *Font::findGlyph(const int glyph)
 	Glyph *g = glyphs[glyph];
 	if (!g)
 		g = addGlyph(glyph);
-	
+
 	return g;
 }
 
@@ -255,15 +251,15 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 {
 	float dx = 0.0f; // spacing counter for newline handling
 	float dy = 0.0f;
-	
+
 	// keeps track of when we need to switch textures in our vertex array
 	std::vector<GlyphArrayDrawInfo> glyphinfolist;
-	
+
 	std::vector<GlyphQuad> glyphquads;
 	glyphquads.reserve(text.size()); // pre-allocate space for the maximum possible number of quads
-	
+
 	int quadindex = 0;
-	
+
 	glPushMatrix();
 
 	Matrix t;
@@ -274,11 +270,11 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 	{
 		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
 		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
-		
+
 		while (i != end)
 		{
 			int g = *i++;
-			
+
 			if (g == '\n')
 			{
 				// wrap newline, but do not print it
@@ -286,27 +282,27 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 				dx = 0.0f;
 				continue;
 			}
-			
+
 			Glyph *glyph = findGlyph(g);
-			
+
 			// we only care about the vertices of glyphs which have a texture
 			if (glyph->texture != 0)
 			{
 				// copy glyphquad (4 vertices) from original glyph to our current quad list
 				glyphquads.push_back(glyph->quad);
-				
+
 				// 1.25 is magic line height for true type fonts
 				float lineheight = (type == FONT_TRUETYPE) ? floor(getHeight() / 1.25f + 0.5f) : 0.0f;
-				
+
 				// set proper relative position
 				for (int i = 0; i < 4; i++)
 				{
 					glyphquads[quadindex].vertices[i].x += dx;
 					glyphquads[quadindex].vertices[i].y += dy + lineheight;
 				}
-				
+
 				size_t listsize = glyphinfolist.size();
-				
+
 				// check if current glyph texture has changed since the previous iteration
 				if (listsize == 0 || glyphinfolist[listsize-1].texture != glyph->texture)
 				{
@@ -317,16 +313,16 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 					glyphdrawinfo.texture = glyph->texture;
 					glyphinfolist.push_back(glyphdrawinfo);
 				}
-				
+
 				++quadindex;
 				++glyphinfolist[glyphinfolist.size()-1].numquads;
 			}
-			
+
 			// advance the x position for the next glyph
 			dx += glyph->spacing + letter_spacing;
 		}
 	}
-	catch (love::Exception &e)
+	catch (love::Exception &)
 	{
 		glPopMatrix();
 		throw;
@@ -338,32 +334,32 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 	}
 	
 	if (quadindex > 0 && glyphinfolist.size() > 0)
-	{		
+	{
 		// sort glyph draw info list by texture first, and quad position in memory second (using the struct's < operator)
 		std::sort(glyphinfolist.begin(), glyphinfolist.end());
-		
+
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		
+
 		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphquads[0].vertices[0].x);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphquads[0].vertices[0].s);
-		
+
 		// we need to draw a new vertex array for every section of the string that uses a different texture than the previous section
 		std::vector<GlyphArrayDrawInfo>::const_iterator it;
 		for (it = glyphinfolist.begin(); it != glyphinfolist.end(); ++it)
 		{
 			bindTexture(it->texture);
-			
+
 			int startvertex = it->startquad * 4;
 			int numvertices = it->numquads * 4;
-			
+
 			glDrawArrays(GL_QUADS, startvertex, numvertices);
 		}
-		
+
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
 	}
-		
+
 	glPopMatrix();
 }
 
@@ -493,8 +489,85 @@ float Font::getSpacing() const
 	return mSpacing;
 }
 
+void Font::checkMipmapsCreated() const
+{
+	if (filter.mipmap != Image::FILTER_NEAREST && filter.mipmap != Image::FILTER_LINEAR)
+		return;
+
+	if (!Image::hasMipmapSupport())
+		throw love::Exception("Mipmap filtering is not supported on this system!");
+
+	GLboolean mipmapscreated;
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&mipmapscreated);
+
+	// generate mipmaps for this image if we haven't already
+	if (!mipmapscreated)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
+		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+			glGenerateMipmap(GL_TEXTURE_2D);
+		else if (GLEE_EXT_framebuffer_object)
+			glGenerateMipmapEXT(GL_TEXTURE_2D);
+		else
+		{
+			// modify single texel to trigger mipmap chain generation
+			std::vector<GLubyte> emptydata(type == FONT_TRUETYPE ? 2 : 4);
+			glTexSubImage2D(GL_TEXTURE_2D,
+							0,
+							0, 0,
+							1, 1,
+							type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA,
+							GL_UNSIGNED_BYTE,
+							&emptydata[0]);
+		}
+	}
+}
+
+void Font::setFilter(const Image::Filter &f)
+{
+	filter = f;
+
+	std::vector<GLuint>::const_iterator it;
+	for (it = textures.begin(); it != textures.end(); ++it)
+	{
+		bindTexture(*it);
+		checkMipmapsCreated();
+		setTextureFilter(f);
+	}
+}
+
+const Image::Filter &Font::getFilter()
+{
+	return filter;
+}
+
+void Font::setMipmapSharpness(float sharpness)
+{
+	if (!Image::hasMipmapSharpnessSupport())
+		return;
+
+	// LOD bias has the range (-maxbias, maxbias)
+	mipmapsharpness = std::min(std::max(sharpness, -maxmipmapsharpness + 0.01f), maxmipmapsharpness - 0.01f);
+
+	std::vector<GLuint>::const_iterator it;
+	for (it = textures.begin(); it != textures.end(); ++it)
+	{
+		bindTexture(*it);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness); // negative bias is sharper
+	}
+}
+
+float Font::getMipmapSharpness() const
+{
+	return mipmapsharpness;
+}
+
 bool Font::loadVolatile()
 {
+	if (Image::hasMipmapSharpnessSupport())
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
+
 	createTexture();
 	return true;
 }

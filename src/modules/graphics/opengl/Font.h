@@ -49,7 +49,7 @@ public:
 	 *
 	 * @param data The font data to construct from.
 	 **/
-	Font(love::font::Rasterizer *r, const Image::Filter &filter = Image::Filter());
+	Font(love::font::Rasterizer *r, const Image::Filter &filter = Image::getDefaultFilter());
 
 	virtual ~Font();
 
@@ -126,10 +126,16 @@ public:
 	 **/
 	float getSpacing() const;
 
+	void setFilter(const Image::Filter &f);
+	const Image::Filter &getFilter();
+
+	void setMipmapSharpness(float sharpness);
+	float getMipmapSharpness() const;
+
 	// Implements Volatile.
 	bool loadVolatile();
 	void unloadVolatile();
-	
+
 private:
 
 	enum FontType
@@ -151,13 +157,13 @@ private:
 		int spacing;
 		GlyphQuad quad;
 	};
-	
+
 	// used to determine when to change textures in the vertex array generated when printing text
 	struct GlyphArrayDrawInfo
 	{
 		GLuint texture;
 		int startquad, numquads;
-		
+
 		// used when sorting with std::sort
 		// sorts by texture first (binding textures is expensive) and relative position in memory second
 		bool operator < (const GlyphArrayDrawInfo &other) const
@@ -174,16 +180,16 @@ private:
 	int height;
 	float lineHeight;
 	float mSpacing; // modifies the spacing by multiplying it with this value
-	
+
 	int texture_size_index;
 	int texture_width;
 	int texture_height;
-	
+
 	std::vector<GLuint> textures; // vector of packed textures
 	std::map<int, Glyph *> glyphs; // maps glyphs to quad information
 	FontType type;
 	Image::Filter filter;
-	
+
 	static const int NUM_TEXTURE_SIZES = 7;
 	static const int TEXTURE_WIDTHS[NUM_TEXTURE_SIZES];
 	static const int TEXTURE_HEIGHTS[NUM_TEXTURE_SIZES];
@@ -192,6 +198,14 @@ private:
 
 	int texture_x, texture_y;
 	int rowHeight;
+
+	// Mipmap texture LOD bias value
+	float mipmapsharpness;
+
+	// Implementation-dependent maximum/minimum mipmap sharpness values
+	float maxmipmapsharpness;
+
+	void checkMipmapsCreated() const;
 
 	bool initializeTexture(GLint format);
 	void createTexture();

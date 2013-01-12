@@ -105,7 +105,7 @@ ParticleSystem::~ParticleSystem()
 
 	if (pStart != 0)
 		delete [] pStart;
-	
+
 	if (particleVerts != 0)
 		delete [] particleVerts;
 }
@@ -207,10 +207,10 @@ void ParticleSystem::setBufferSize(unsigned int size)
 	pLast = pStart = new particle[size];
 
 	pEnd = pStart + size;
-	
+
 	if (particleVerts != 0)
 		delete [] particleVerts;
-	
+
 	// each particle has 4 vertices
 	particleVerts = new vertex[size*4];
 }
@@ -468,7 +468,7 @@ bool ParticleSystem::isFull() const
 void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	if (sprite == 0) return;  // just in case of failure
-	
+
 	int numParticles = count();
 	if (numParticles == 0) return; // don't bother if there's nothing to do
 
@@ -478,25 +478,26 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
-	
+
 	const vertex * imageVerts = sprite->getVertices();
-	
+
 	// set the vertex data for each particle (transformation, texcoords, color)
 	for (int i = 0; i < numParticles; i++)
 	{
 		particle * p = pStart + i;
-		
+
 		// particle vertices are sprite vertices transformed by particle information 
 		t.setTransformation(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
 		t.transform(&particleVerts[i*4], &imageVerts[0], 4);
-		
+
 		// set the texture coordinate and color data for particle vertices
-		for (int v = 0; v < 4; v++) {
+		for (int v = 0; v < 4; v++)
+		{
 			int vi = (i * 4) + v; // current vertex index for particle
-			
+
 			particleVerts[vi].s = imageVerts[v].s;
 			particleVerts[vi].t = imageVerts[v].t;
-			
+
 			// particle colors are stored as floats (0-1) but vertex colors are stored as unsigned bytes (0-255)
 			particleVerts[vi].r = p->color.r*255;
 			particleVerts[vi].g = p->color.g*255;
@@ -504,19 +505,19 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 			particleVerts[vi].a = p->color.a*255;
 		}
 	}
-	
+
 	sprite->bind();
-	
+
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
+
 	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&particleVerts[0].r);
 	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&particleVerts[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&particleVerts[0].s);
-	
+
 	glDrawArrays(GL_QUADS, 0, numParticles*4);
-	
+
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);

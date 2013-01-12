@@ -50,69 +50,105 @@ int w_Image_getHeight(lua_State *L)
 int w_Image_setFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
+
 	Image::Filter f;
-	Image::FilterMode min;
-	Image::FilterMode mag;
+
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
-	if (!Image::getConstant(minstr, min))
+
+	if (!Image::getConstant(minstr, f.min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, mag))
+	if (!Image::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
-	f.min = min;
-	f.mag = mag;
-	t->setFilter(f);
+	if (lua_isnoneornil(L, 4))
+		f.mipmap = Image::FILTER_NONE; // mipmapping is disabled unless third argument is given
+	else
+	{
+		const char *mipmapstr = luaL_checkstring(L, 4);
+		if (!Image::getConstant(mipmapstr, f.mipmap))
+			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
+	}
+
+	try
+	{
+		t->setFilter(f);
+	}
+	catch(love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+
 	return 0;
 }
 
 int w_Image_getFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	Image::Filter f = t->getFilter();
-	Image::FilterMode min = f.min;
-	Image::FilterMode mag = f.mag;
+	const Image::Filter f = t->getFilter();
 	const char *minstr;
 	const char *magstr;
-	Image::getConstant(min, minstr);
-	Image::getConstant(mag, magstr);
+	Image::getConstant(f.min, minstr);
+	Image::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	return 2;
+
+	const char *mipmapstr;
+	if (Image::getConstant(f.mipmap, mipmapstr))
+		lua_pushstring(L, mipmapstr);
+	else
+		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
+
+	return 3;
 }
 
 int w_Image_setWrap(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
+
 	Image::Wrap w;
-	Image::WrapMode s;
-	Image::WrapMode t;
+
 	const char *sstr = luaL_checkstring(L, 2);
 	const char *tstr = luaL_optstring(L, 3, sstr);
-	if (!Image::getConstant(sstr, s))
+
+	if (!Image::getConstant(sstr, w.s))
 		return luaL_error(L, "Invalid wrap mode: %s", sstr);
-	if (!Image::getConstant(tstr, t))
+	if (!Image::getConstant(tstr, w.t))
 		return luaL_error(L, "Invalid wrap mode, %s", tstr);
 
-	w.s = s;
-	w.t = t;
 	i->setWrap(w);
+
 	return 0;
 }
 
 int w_Image_getWrap(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	Image::Wrap w = i->getWrap();
-	Image::WrapMode s = w.s;
-	Image::WrapMode t = w.t;
+	const Image::Wrap w = i->getWrap();
 	const char *sstr;
 	const char *tstr;
-	Image::getConstant(s, sstr);
-	Image::getConstant(t, tstr);
+	Image::getConstant(w.s, sstr);
+	Image::getConstant(w.t, tstr);
 	lua_pushstring(L, sstr);
 	lua_pushstring(L, tstr);
 	return 2;
+}
+
+int w_Image_setMipmapSharpness(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+
+	float sharpness = (float) luaL_checknumber(L, 2);
+	i->setMipmapSharpness(sharpness);
+
+	return 0;
+}
+
+int w_Image_getMipmapSharpness(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+	lua_pushnumber(L, i->getMipmapSharpness());
+	return 1;
 }
 
 static const luaL_Reg functions[] =
@@ -123,6 +159,8 @@ static const luaL_Reg functions[] =
 	{ "getFilter", w_Image_getFilter },
 	{ "setWrap", w_Image_setWrap },
 	{ "getWrap", w_Image_getWrap },
+	{ "setMipmapSharpness", w_Image_setMipmapSharpness },
+	{ "getMipmapSharpness", w_Image_getMipmapSharpness },
 	{ 0, 0 }
 };
 

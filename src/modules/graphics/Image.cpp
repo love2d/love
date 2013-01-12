@@ -25,9 +25,12 @@ namespace love
 namespace graphics
 {
 
+Image::Filter Image::defaultFilter;
+
 Image::Filter::Filter()
 	: min(FILTER_LINEAR)
 	, mag(FILTER_LINEAR)
+	, mipmap(FILTER_NONE)
 {
 }
 
@@ -39,6 +42,16 @@ Image::Wrap::Wrap()
 
 Image::~Image()
 {
+}
+
+void Image::setDefaultFilter(const Filter &f)
+{
+	defaultFilter = f;
+}
+
+const Image::Filter &Image::getDefaultFilter()
+{
+	return defaultFilter;
 }
 
 bool Image::getConstant(const char *in, FilterMode &out)

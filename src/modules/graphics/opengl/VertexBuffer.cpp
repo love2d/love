@@ -28,6 +28,11 @@
 #include <algorithm>
 #include <limits>
 
+// Conflicts with std::numeric_limits<GLushort>::max() (Windows).
+#ifdef max
+# undef max
+#endif
+
 namespace love
 {
 namespace graphics
