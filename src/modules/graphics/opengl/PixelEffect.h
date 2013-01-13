@@ -24,6 +24,7 @@
 #include "common/Object.h"
 #include <string>
 #include <map>
+#include <vector>
 #include "OpenGL.h"
 #include "Image.h"
 #include "Canvas.h"
@@ -67,10 +68,9 @@ private:
 	std::map<std::string, GLint> _uniforms;
 
 	// texture unit pool for setting images
-	static std::map<std::string, GLint> _texture_unit_pool;
-	static GLint _current_texture_unit;
-	static GLint _max_texture_units;
-	static GLint getTextureUnit(const std::string &name);
+	std::map<std::string, GLint> _texture_unit_pool;
+	GLint getTextureUnit(const std::string &name);
+	static std::vector<bool> _unit_available;
 };
 
 } // opengl
