@@ -140,7 +140,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
-	setActiveTextureUnit(GL_TEXTURE0);
+	setActiveTextureUnit(0);
 
 	// Set the viewport to top-left corner
 	glViewport(0, 0, width, height);

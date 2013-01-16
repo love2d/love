@@ -31,61 +31,61 @@ namespace graphics
 namespace opengl
 {
 
+/**
+ * Initializes some required context state,
+ * based on current and default OpenGL state.
+ **/
 void initializeContext();
 
+/**
+ * Marks current context state as invalid.
+ **/
 void uninitializeContext();
 
 /**
- * Helper for setting the active texture unit
- * 
- * @param textureunit The GL texture unit to set
+ * Helper for setting the active texture unit.
+ *
+ * @param textureunit Index in the range of [0, maxtextureunits-1]
  **/
-void setActiveTextureUnit(GLenum textureunit);
+void setActiveTextureUnit(int textureunit);
 
 /**
  * Helper for binding an OpenGL texture.
  * Makes sure we aren't redundantly binding textures.
- * 
- * @param texture The texture to bind.
  **/
 void bindTexture(GLuint texture);
 
 /**
- * Helper for binding a texture to a specific texture unit
- * 
- * @param texture The texture to bind
- * @param textureunit The texture unit to switch to
- * @param resoreprev Restore previous texture unit when done
+ * Helper for binding a texture to a specific texture unit.
+ *
+ * @param textureunit Index in the range of [0, maxtextureunits-1]
+ * @param resoreprev Restore previously bound texture unit when done.
  **/
-void bindTextureToUnit(GLuint texture, GLenum textureunit, bool restoreprev);
+void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
 
 /**
  * Helper for deleting an OpenGL texture.
  * Cleans up if the texture is currently bound.
- * 
- * @param texture The texture to delete.
  **/
 void deleteTexture(GLuint texture);
 
 /**
- * Sets the image filter mode for the currently bound texture
- * @param f The image filter to set
+ * Sets the image filter mode for the currently bound texture.
  */
 void setTextureFilter(const graphics::Image::Filter &f);
 
 /**
- * Returns the image filter mode for the currently bound texture
+ * Returns the image filter mode for the currently bound texture.
  */
 graphics::Image::Filter getTextureFilter();
 
 /**
- * Sets the image wrap mode for the currently bound texture
- * @param w The wrap mode to set
+ * Sets the image wrap mode for the currently bound texture.
  */
 void setTextureWrap(const graphics::Image::Wrap &w);
 
 /**
- * Returns the image wrap mode for the currently bound texture
+ * Returns the image wrap mode for the currently bound texture.
  */
 graphics::Image::Wrap getTextureWrap();
 

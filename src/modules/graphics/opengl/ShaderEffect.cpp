@@ -18,6 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include <algorithm>
+
 #include "ShaderEffect.h"
 #include "Graphics.h"
 
@@ -34,8 +36,8 @@ namespace
 	// reattaches the originally active program when destroyed
 	struct TemporaryAttacher
 	{
-		TemporaryAttacher(ShaderEffect *sp)
-		: cureffect(sp)
+		TemporaryAttacher(ShaderEffect *effect)
+		: cureffect(effect)
 		, preveffect(ShaderEffect::current)
 		{
 			cureffect->attach(true);
@@ -231,10 +233,8 @@ void ShaderEffect::unloadVolatile()
 	// decrement global texture id counters for texture units which had textures bound from this shader
 	for (size_t i = 0; i < _activetextureunits.size(); ++i)
 	{
-		if (_activetextureunits[i] == 0)
-			continue;
-
-		_texturecounters[i] = std::max(_texturecounters[i] - 1, 0);
+		if (_activetextureunits[i] > 0)
+			_texturecounters[i] = std::max(_texturecounters[i] - 1, 0);
 	}
 
 	// active texture list is probably invalid, clear it
@@ -273,12 +273,10 @@ void ShaderEffect::attach(bool temporary)
 		// note: list potentially contains texture ids of deleted/invalid textures!
 		for (size_t i = 0; i < _activetextureunits.size(); ++i)
 		{
-			if (_activetextureunits[i] == 0)
-				continue;
-
-			bindTextureToUnit(_activetextureunits[i], GL_TEXTURE0 + i + 1, false);
+			if (_activetextureunits[i] > 0)
+				bindTextureToUnit(_activetextureunits[i], i + 1, false);
 		}
-		setActiveTextureUnit(GL_TEXTURE0);
+		setActiveTextureUnit(0);
 	}
 }
 
@@ -352,24 +350,24 @@ void ShaderEffect::sendTexture(const std::string &name, GLuint texture)
 {
 	TemporaryAttacher attacher(this);
 	GLint location = getUniformLocation(name);
-	GLint texture_unit = getTextureUnit(name);
+	int textureunit = getTextureUnit(name);
 
-	// bind texture to assigned texture unit and send uniform to bound shader program
-	bindTextureToUnit(texture, GL_TEXTURE0 + texture_unit, false);
-	glUniform1i(location, texture_unit);
+	// bind texture to assigned texture unit and send uniform to shader program
+	bindTextureToUnit(texture, textureunit, false);
+	glUniform1i(location, textureunit);
 
 	// reset texture unit
-	setActiveTextureUnit(GL_TEXTURE0);
-
-	// increment global shader texture id counter for this texture unit, if we haven't already
-	if (_activetextureunits[texture_unit-1] == 0)
-		++_texturecounters[texture_unit-1];
-
-	// store texture id so it can be re-bound to the proper texture unit when necessary
-	_activetextureunits[texture_unit-1] = texture;
+	setActiveTextureUnit(0);
 
 	// throw error if needed
 	checkSetUniformError();
+
+	// increment global shader texture id counter for this texture unit, if we haven't already
+	if (_activetextureunits[textureunit-1] == 0)
+		++_texturecounters[textureunit-1];
+
+	// store texture id so it can be re-bound to the proper texture unit when necessary
+	_activetextureunits[textureunit-1] = texture;
 }
 
 void ShaderEffect::sendImage(const std::string &name, const Image &image)
@@ -400,20 +398,20 @@ GLint ShaderEffect::getUniformLocation(const std::string &name)
 	return location;
 }
 
-GLint ShaderEffect::getTextureUnit(const std::string &name)
+int ShaderEffect::getTextureUnit(const std::string &name)
 {
 	std::map<std::string, GLint>::const_iterator it = _textureunitpool.find(name);
 
 	if (it != _textureunitpool.end())
 		return it->second;
 
-	int nextunitindex = 1;
+	int textureunit = 1;
 
 	// prefer texture units which are unused by all other shaders
 	std::vector<int>::iterator nextfreeunit = std::find(_texturecounters.begin(), _texturecounters.end(), 0);
 
 	if (nextfreeunit != _texturecounters.end())
-		nextunitindex = std::distance(_texturecounters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
+		textureunit = std::distance(_texturecounters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
 	else
 	{
 		// no completely unused texture units exist, try to use next free slot in our own list
@@ -422,11 +420,11 @@ GLint ShaderEffect::getTextureUnit(const std::string &name)
 		if (nexttexunit == _activetextureunits.end())
 			throw love::Exception("No more texture units available for shader.");
 
-		nextunitindex = std::distance(_activetextureunits.begin(), nexttexunit) + 1; // we don't want to use unit 0
+		textureunit = std::distance(_activetextureunits.begin(), nexttexunit) + 1; // we don't want to use unit 0
 	}
 
-	_textureunitpool[name] = nextunitindex;
-	return nextunitindex;
+	_textureunitpool[name] = textureunit;
+	return textureunit;
 }
 
 void ShaderEffect::checkSetUniformError()

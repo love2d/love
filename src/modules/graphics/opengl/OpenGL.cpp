@@ -32,7 +32,7 @@ namespace opengl
 
 static bool contextInitialized = false;
 
-static int curTextureUnitIndex = 0;
+static int curTextureUnit = 0;
 static std::vector<GLuint> textureUnits;
 
 void initializeContext()
@@ -60,10 +60,10 @@ void initializeContext()
 
 		textureUnits.resize(maxtextureunits, 0);
 
-		GLenum activetextureunit;
-		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *)&activetextureunit);
+		GLenum curgltextureunit;
+		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *)&curgltextureunit);
 
-		curTextureUnitIndex = activetextureunit - GL_TEXTURE0;
+		curTextureUnit = curgltextureunit - GL_TEXTURE0;
 
 		// retrieve currently bound textures for each texture unit
 		for (size_t i = 0; i < textureUnits.size(); ++i)
@@ -77,15 +77,15 @@ void initializeContext()
 		}
 
 		if (GLEE_VERSION_1_3)
-			glActiveTexture(activetextureunit);
+			glActiveTexture(curgltextureunit);
 		else
-			glActiveTextureARB(activetextureunit);
+			glActiveTextureARB(curgltextureunit);
 	}
 	else
 	{
 		// multitexturing not supported, so we only have 1 texture unit
 		textureUnits.resize(1, 0);
-		curTextureUnitIndex = 0;
+		curTextureUnit = 0;
 
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &textureUnits[0]);
 	}
@@ -96,58 +96,54 @@ void uninitializeContext()
 	contextInitialized = false;
 }
 
-void setActiveTextureUnit(GLenum textureunit)
+void setActiveTextureUnit(int textureunit)
 {
 	initializeContext();
 
-	int textureunitindex = textureunit - GL_TEXTURE0;
+	if (textureunit < 0 || (size_t) textureunit >= textureUnits.size())
+		throw love::Exception("Invalid texture unit index (%d).", textureunit);
 
-	if (textureunitindex < 0 || (size_t) textureunitindex >= textureUnits.size())
-		throw love::Exception("Invalid texture unit index.");
-
-	if (textureunitindex != curTextureUnitIndex)
+	if (textureunit != curTextureUnit)
 	{
 		if (GLEE_VERSION_1_3)
-			glActiveTexture(textureunit);
+			glActiveTexture(GL_TEXTURE0 + textureunit);
 		else if (GLEE_ARB_multitexture)
-			glActiveTextureARB(textureunit);
+			glActiveTextureARB(GL_TEXTURE0 + textureunit);
 		else
 			throw love::Exception("Multitexturing not supported.");
 	}
 
-	curTextureUnitIndex = textureunitindex;
+	curTextureUnit = textureunit;
 }
 
 void bindTexture(GLuint texture)
 {
 	initializeContext();
 
-	if (texture != textureUnits[curTextureUnitIndex])
+	if (texture != textureUnits[curTextureUnit])
 	{
-		textureUnits[curTextureUnitIndex] = texture;
+		textureUnits[curTextureUnit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 }
 
-void bindTextureToUnit(GLuint texture, GLenum textureunit, bool restoreprev)
+void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 {
 	initializeContext();
 
-	int textureunitindex = textureunit - GL_TEXTURE0;
-
-	if (textureunitindex < 0 || (size_t) textureunitindex >= textureUnits.size())
+	if (textureunit < 0 || (size_t) textureunit >= textureUnits.size())
 		throw love::Exception("Invalid texture unit index.");
 
-	if (texture != textureUnits[textureunitindex])
+	if (texture != textureUnits[textureunit])
 	{
-		int oldtexunitindex = curTextureUnitIndex;
+		int oldtextureunit = curTextureUnit;
 		setActiveTextureUnit(textureunit);
 
-		textureUnits[textureunitindex] = texture;
+		textureUnits[textureunit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 		if (restoreprev)
-			setActiveTextureUnit(GL_TEXTURE0 + oldtexunitindex);
+			setActiveTextureUnit(oldtextureunit);
 	}
 }
 
@@ -155,6 +151,7 @@ void deleteTexture(GLuint texture)
 {
 	initializeContext();
 
+	// glDeleteTextures binds texture 0 to all texture units the deleted texture was bound to
 	std::vector<GLuint>::iterator it;
 	for (it = textureUnits.begin(); it != textureUnits.end(); ++it)
 	{
@@ -167,6 +164,8 @@ void deleteTexture(GLuint texture)
 
 void setTextureFilter(const graphics::Image::Filter &f)
 {
+	initializeContext();
+
 	GLint gmin, gmag;
 
 	if (f.mipmap == Image::FILTER_NONE)
@@ -208,6 +207,8 @@ void setTextureFilter(const graphics::Image::Filter &f)
 
 graphics::Image::Filter getTextureFilter()
 {
+	initializeContext();
+
 	GLint gmin, gmag;
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
@@ -257,6 +258,8 @@ graphics::Image::Filter getTextureFilter()
 
 void setTextureWrap(const graphics::Image::Wrap &w)
 {
+	initializeContext();
+
 	GLint gs, gt;
 
 	switch (w.s)
@@ -287,6 +290,8 @@ void setTextureWrap(const graphics::Image::Wrap &w)
 
 graphics::Image::Wrap getTextureWrap()
 {
+	initializeContext();
+
 	GLint gs, gt;
 
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &gs);

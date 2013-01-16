@@ -132,7 +132,7 @@ int w_ShaderEffect_sendFloat(lua_State *L)
 	else if (lua_istable(L, 3))
 		return _sendVectors(L, effect, name, count);
 
-	return luaL_typerror(L, 3, "number, boolean or table");
+	return luaL_typerror(L, 3, "number, boolean, or table");
 }
 
 int w_ShaderEffect_sendMatrix(lua_State *L)
