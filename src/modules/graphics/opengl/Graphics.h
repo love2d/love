@@ -43,7 +43,7 @@
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
-#include "ShaderEffect.h"
+#include "Shader.h"
 
 namespace love
 {
@@ -270,7 +270,7 @@ public:
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
-	ShaderEffect *newShaderEffect(const ShaderEffect::ShaderSources &shadersources);
+	Shader *newShader(const Shader::ShaderSources &shadersources);
 
 	/**
 	 * Sets the foreground color.

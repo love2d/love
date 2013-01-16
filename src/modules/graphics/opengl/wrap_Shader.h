@@ -22,7 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_WRAP_PROGRAM_H
 
 #include "common/runtime.h"
-#include "ShaderEffect.h"
+#include "Shader.h"
 
 namespace love
 {
@@ -31,12 +31,12 @@ namespace graphics
 namespace opengl
 {
 
-ShaderEffect *luax_checkshadereffect(lua_State *L, int idx);
-int w_ShaderEffect_getWarnings(lua_State *L);
-int w_ShaderEffect_sendFloat(lua_State *L);
-int w_ShaderEffect_sendMatrix(lua_State *L);
-int w_ShaderEffect_sendImage(lua_State *L);
-extern "C" int luaopen_shadereffect(lua_State *L);
+Shader *luax_checkshader(lua_State *L, int idx);
+int w_Shader_getWarnings(lua_State *L);
+int w_Shader_sendFloat(lua_State *L);
+int w_Shader_sendMatrix(lua_State *L);
+int w_Shader_sendImage(lua_State *L);
+extern "C" int luaopen_shader(lua_State *L);
 
 } // opengl
 } // graphics

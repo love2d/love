@@ -1287,7 +1287,7 @@ do
 	end
 
 
-	-- SHADER EFFECTS
+	-- SHADERS
 
 	local GLSL_VERSION = "#version 120"
 	
@@ -1360,7 +1360,7 @@ void main() {
 		return table_concat(fragcodes, "\n")
 	end
 
-	function love.graphics._effectCodeToGLSL(vertcode, fragcode)
+	function love.graphics._shaderCodeToGLSL(vertcode, fragcode)
 		if vertcode then
 			local s = vertcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
@@ -1393,9 +1393,9 @@ void main() {
 	end
 
 	function love.graphics._transformGLSLErrorMessages(message)
-		local shadertype = message:match("Cannot compile (%a+) shader")
+		local shadertype = message:match("Cannot compile (%a+) shader code")
 		if not shadertype then return message end
-		local lines = {"Cannot compile "..shadertype.." shader:"}
+		local lines = {"Cannot compile "..shadertype.." shader code:"}
 		for l in message:gmatch("[^\n]+") do
 			-- nvidia compiler message:
 			-- 0(<linenumber>) : error/warning [NUMBER]: <error message>
@@ -1439,7 +1439,7 @@ void main() {
 	end
 
 	-- automagic uniform setter
-	local function shadereffect_dispatch_send(self, name, value, ...)
+	local function shader_dispatch_send(self, name, value, ...)
 		local valuetype = type(value)
 		if valuetype == "number" or valuetype == "boolean" then -- scalar
 			self:sendFloat(name, value, ...)
@@ -1462,9 +1462,9 @@ void main() {
 		end
 	end
 
-	local newShaderEffect = love.graphics.newShaderEffect
-	function love.graphics.newShaderEffect(vertcode, fragcode)
-		love.graphics.newShaderEffect = function(vertcode, fragcode)
+	local newShader = love.graphics.newShader
+	function love.graphics.newShader(vertcode, fragcode)
+		love.graphics.newShader = function(vertcode, fragcode)
 			if love.filesystem then
 				if vertcode and love.filesystem.exists(vertcode) then
 					vertcode = love.filesystem.read(vertcode)
@@ -1473,23 +1473,25 @@ void main() {
 					fragcode = love.filesystem.read(fragcode)
 				end
 			end
-			return newShaderEffect(vertcode, fragcode)
+			return newShader(vertcode, fragcode)
 		end
 
-		local effect = love.graphics.newShaderEffect(vertcode, fragcode)
-		local meta = getmetatable(effect)
-		meta.send = shadereffect_dispatch_send
+		local shader = love.graphics.newShader(vertcode, fragcode)
+		local meta = getmetatable(shader)
+		meta.send = shader_dispatch_send
 		meta.sendBoolean = meta.sendFloat
-		return effect
+		return shader
 	end
 
 
 	-- PixelEffect compatibility functions
 
 	function love.graphics.newPixelEffect(fragcode)
-		return love.graphics.newShaderEffect(nil, fragcode)
+		return love.graphics.newShader(nil, fragcode)
 	end
 
-	love.graphics.setPixelEffect = love.graphics.setShaderEffect
-	love.graphics.getPixelEffect = love.graphics.getShaderEffect
+	love.graphics.setPixelEffect = love.graphics.setShader
+	love.graphics.getPixelEffect = love.graphics.getShader
+	
+	love.graphics._effectCodeToGLSL = love.graphics._shaderCodeToGLSL
 end

@@ -404,7 +404,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\OpenGL.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\ShaderEffect.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Shader.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\VertexBuffer.cpp" />
@@ -413,7 +413,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ShaderEffect.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Shader.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Quad.cpp" />
@@ -631,7 +631,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\OpenGL.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\ShaderEffect.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Shader.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\VertexBuffer.h" />
@@ -640,7 +640,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ShaderEffect.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Shader.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\Quad.h" />

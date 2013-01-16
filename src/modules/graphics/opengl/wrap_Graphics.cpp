@@ -433,10 +433,10 @@ int w_newCanvas(lua_State *L)
 	return 1;
 }
 
-int w_newShaderEffect(lua_State *L)
+int w_newShader(lua_State *L)
 {
-	if (!ShaderEffect::isSupported())
-		return luaL_error(L, "Sorry, your graphics card does not support shader effects.");
+	if (!Shader::isSupported())
+		return luaL_error(L, "Sorry, your graphics card does not support shaders.");
 
 	try
 	{
@@ -452,28 +452,28 @@ int w_newShaderEffect(lua_State *L)
 		// call effectCodeToGLSL, returned values will be at the top of the stack
 		lua_pcall(L, 2, 2, 0);
 
-		ShaderEffect::ShaderSources sources;
+		Shader::ShaderSources sources;
 
 		// vertex shader code
 		if (lua_isstring(L, -2))
 		{
 			std::string vertcode(luaL_checkstring(L, -2));
-			sources[ShaderEffect::TYPE_VERTEX] = vertcode;
+			sources[Shader::TYPE_VERTEX] = vertcode;
 		}
 
 		// fragment shader code
 		if (lua_isstring(L, -1))
 		{
 			std::string fragcode(luaL_checkstring(L, -1));
-			sources[ShaderEffect::TYPE_FRAGMENT] = fragcode;
+			sources[Shader::TYPE_FRAGMENT] = fragcode;
 		}
 
-		ShaderEffect *effect = instance->newShaderEffect(sources);
-		luax_newtype(L, "ShaderEffect", GRAPHICS_SHADEREFFECT_T, (void *)effect);
+		Shader *shader = instance->newShader(sources);
+		luax_newtype(L, "Shader", GRAPHICS_SHADER_T, (void *)shader);
 	}
 	catch(const love::Exception &e)
 	{
-		// memory is freed in Graphics::newShaderEffect
+		// memory is freed in Graphics::newShader
 		luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
 		lua_pushstring(L, e.what());
 		lua_pcall(L, 1, 1, 0);
@@ -818,26 +818,26 @@ int w_getCanvas(lua_State *L)
 	return 1;
 }
 
-int w_setShaderEffect(lua_State *L)
+int w_setShader(lua_State *L)
 {
 	if (lua_isnoneornil(L,1))
 	{
-		ShaderEffect::detach();
+		Shader::detach();
 		return 0;
 	}
 
-	ShaderEffect *effect = luax_checkshadereffect(L, 1);
-	effect->attach();
+	Shader *shader = luax_checkshader(L, 1);
+	shader->attach();
 	return 0;
 }
 
-int w_getShaderEffect(lua_State *L)
+int w_getShader(lua_State *L)
 {
-	ShaderEffect *effect = ShaderEffect::current;
-	if (effect)
+	Shader *shader = Shader::current;
+	if (shader)
 	{
-		effect->retain();
-		luax_newtype(L, "ShaderEffect", GRAPHICS_SHADEREFFECT_T, (void *) effect);
+		shader->retain();
+		luax_newtype(L, "Shader", GRAPHICS_SHADER_T, (void *) shader);
 	}
 	else
 		lua_pushnil(L);
@@ -865,8 +865,8 @@ int w_isSupported(lua_State *L)
 			if (!Canvas::isHdrSupported())
 				supported = false;
 			break;
-		case Graphics::SUPPORT_SHADEREFFECT:
-			if (!ShaderEffect::isSupported())
+		case Graphics::SUPPORT_SHADER:
+			if (!Shader::isSupported())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_NPOT:
@@ -1285,7 +1285,7 @@ static const luaL_Reg functions[] =
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newCanvas", w_newCanvas },
-	{ "newShaderEffect", w_newShaderEffect },
+	{ "newShader", w_newShader },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -1316,8 +1316,8 @@ static const luaL_Reg functions[] =
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
 
-	{ "setShaderEffect", w_setShaderEffect },
-	{ "getShaderEffect", w_getShaderEffect },
+	{ "setShader", w_setShader },
+	{ "getShader", w_getShader },
 
 	{ "isSupported", w_isSupported },
 
@@ -1378,7 +1378,7 @@ static const lua_CFunction types[] =
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_canvas,
-	luaopen_shadereffect,
+	luaopen_shader,
 	0
 };
 

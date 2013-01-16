@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_ShaderEffect.h"
+#include "wrap_Shader.h"
 #include "wrap_Image.h"
 #include "wrap_Canvas.h"
 #include <string>
@@ -31,19 +31,19 @@ namespace graphics
 namespace opengl
 {
 
-ShaderEffect *luax_checkshadereffect(lua_State *L, int idx)
+Shader *luax_checkshader(lua_State *L, int idx)
 {
-	return luax_checktype<ShaderEffect>(L, idx, "ShaderEffect", GRAPHICS_SHADEREFFECT_T);
+	return luax_checktype<Shader>(L, idx, "Shader", GRAPHICS_SHADER_T);
 }
 
-int w_ShaderEffect_getWarnings(lua_State *L)
+int w_Shader_getWarnings(lua_State *L)
 {
-	ShaderEffect *effect = luax_checkshadereffect(L, 1);
-	lua_pushstring(L, effect->getWarnings().c_str());
+	Shader *shader = luax_checkshader(L, 1);
+	lua_pushstring(L, shader->getWarnings().c_str());
 	return 1;
 }
 
-static int _sendScalars(lua_State *L, ShaderEffect *effect, const char *name, int count)
+static int _sendScalars(lua_State *L, Shader *shader, const char *name, int count)
 {
 	float *values = new float[count];
 	for (int i = 0; i < count; ++i)
@@ -62,7 +62,7 @@ static int _sendScalars(lua_State *L, ShaderEffect *effect, const char *name, in
 
 	try
 	{
-		effect->sendFloat(name, 1, values, count);
+		shader->sendFloat(name, 1, values, count);
 	}
 	catch(love::Exception &e)
 	{
@@ -74,7 +74,7 @@ static int _sendScalars(lua_State *L, ShaderEffect *effect, const char *name, in
 	return 0;
 }
 
-static int _sendVectors(lua_State *L, ShaderEffect *effect, const char *name, int count)
+static int _sendVectors(lua_State *L, Shader *shader, const char *name, int count)
 {
 	size_t dimension = lua_objlen(L, 3);
 	float *values = new float[count * dimension];
@@ -106,7 +106,7 @@ static int _sendVectors(lua_State *L, ShaderEffect *effect, const char *name, in
 
 	try
 	{
-		effect->sendFloat(name, dimension, values, count);
+		shader->sendFloat(name, dimension, values, count);
 	}
 	catch(love::Exception &e)
 	{
@@ -118,9 +118,9 @@ static int _sendVectors(lua_State *L, ShaderEffect *effect, const char *name, in
 	return 0;
 }
 
-int w_ShaderEffect_sendFloat(lua_State *L)
+int w_Shader_sendFloat(lua_State *L)
 {
-	ShaderEffect *effect = luax_checkshadereffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	int count = lua_gettop(L) - 2;
 
@@ -128,17 +128,17 @@ int w_ShaderEffect_sendFloat(lua_State *L)
 		return luaL_error(L, "No variable to send.");
 
 	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
-		return _sendScalars(L, effect, name, count);
+		return _sendScalars(L, shader, name, count);
 	else if (lua_istable(L, 3))
-		return _sendVectors(L, effect, name, count);
+		return _sendVectors(L, shader, name, count);
 
 	return luaL_typerror(L, 3, "number, boolean, or table");
 }
 
-int w_ShaderEffect_sendMatrix(lua_State *L)
+int w_Shader_sendMatrix(lua_State *L)
 {
 	int count = lua_gettop(L) - 2;
-	ShaderEffect *effect = luax_checkshadereffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 
 	if (!lua_istable(L, 3))
@@ -180,7 +180,7 @@ int w_ShaderEffect_sendMatrix(lua_State *L)
 
 	try
 	{
-		effect->sendMatrix(name, dimension, values, count);
+		shader->sendMatrix(name, dimension, values, count);
 	}
 	catch(love::Exception &e)
 	{
@@ -192,15 +192,15 @@ int w_ShaderEffect_sendMatrix(lua_State *L)
 	return 0;
 }
 
-int w_ShaderEffect_sendImage(lua_State *L)
+int w_Shader_sendImage(lua_State *L)
 {
-	ShaderEffect *effect = luax_checkshadereffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	Image *img = luax_checkimage(L, 3);
 
 	try
 	{
-		effect->sendImage(name, *img);
+		shader->sendImage(name, *img);
 	}
 	catch(love::Exception &e)
 	{
@@ -210,15 +210,15 @@ int w_ShaderEffect_sendImage(lua_State *L)
 	return 0;
 }
 
-int w_ShaderEffect_sendCanvas(lua_State *L)
+int w_Shader_sendCanvas(lua_State *L)
 {
-	ShaderEffect *effect = luax_checkshadereffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	Canvas *canvas = luax_checkcanvas(L, 3);
 
 	try
 	{
-		effect->sendCanvas(name, *canvas);
+		shader->sendCanvas(name, *canvas);
 	}
 	catch(love::Exception &e)
 	{
@@ -231,17 +231,17 @@ int w_ShaderEffect_sendCanvas(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "getWarnings", w_ShaderEffect_getWarnings },
-	{ "sendFloat",   w_ShaderEffect_sendFloat },
-	{ "sendMatrix",  w_ShaderEffect_sendMatrix },
-	{ "sendImage",   w_ShaderEffect_sendImage },
-	{ "sendCanvas",  w_ShaderEffect_sendCanvas },
+	{ "getWarnings", w_Shader_getWarnings },
+	{ "sendFloat",   w_Shader_sendFloat },
+	{ "sendMatrix",  w_Shader_sendMatrix },
+	{ "sendImage",   w_Shader_sendImage },
+	{ "sendCanvas",  w_Shader_sendCanvas },
 	{ 0, 0 }
 };
 
-extern "C" int luaopen_shadereffect(lua_State *L)
+extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, "ShaderEffect", functions);
+	return luax_register_type(L, "Shader", functions);
 }
 
 } // opengl

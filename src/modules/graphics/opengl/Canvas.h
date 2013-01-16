@@ -95,7 +95,7 @@ public:
 	static void bindDefaultCanvas();
 
 private:
-	friend class ShaderEffect;
+	friend class Shader;
 	GLuint getTextureName() const
 	{
 		return img;

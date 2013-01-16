@@ -193,7 +193,7 @@ void Graphics::reset()
 	DisplayState s;
 	discardStencil();
 	Canvas::bindDefaultCanvas();
-	ShaderEffect::detach();
+	Shader::detach();
 	restoreState(s);
 }
 
@@ -453,21 +453,21 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	return NULL; // never reached
 }
 
-ShaderEffect *Graphics::newShaderEffect(const ShaderEffect::ShaderSources &shadersources)
+Shader *Graphics::newShader(const Shader::ShaderSources &shadersources)
 {
-	ShaderEffect *effect = NULL;
+	Shader *shader = NULL;
 	try
 	{
-		effect = new ShaderEffect(shadersources);
+		shader = new Shader(shadersources);
 	}
 	catch(love::Exception &)
 	{
-		if (effect)
-			delete effect;
+		if (shader)
+			delete shader;
 		
 		throw;
 	}
-	return effect;
+	return shader;
 }
 
 void Graphics::setColor(const Color &c)

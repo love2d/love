@@ -236,8 +236,8 @@
 		A9F2D09114BA85EC0035D2A5 /* Audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F2D09014BA85EC0035D2A5 /* Audio.cpp */; };
 		A9F6E6AE15A1080D00C86200 /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F6E6AC15A1080D00C86200 /* love.cpp */; };
 		A9F6E6B115A1099C00C86200 /* GmeDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A9F6E6AF15A1099C00C86200 /* GmeDecoder.cpp */; };
-		FADB91451683F5C600D84B22 /* ShaderEffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADB91431683F5C600D84B22 /* ShaderEffect.cpp */; };
-		FADB91481683F5FA00D84B22 /* wrap_ShaderEffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADB91461683F5F900D84B22 /* wrap_ShaderEffect.cpp */; };
+		FAE69DC516A6BE7800C1AC79 /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE69DC116A6BE7800C1AC79 /* Shader.cpp */; };
+		FAE69DC616A6BE7800C1AC79 /* wrap_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE69DC316A6BE7800C1AC79 /* wrap_Shader.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -532,7 +532,7 @@
 		A93E6B8C10420ACB007D418B /* wrap_SoundData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_SoundData.h; sourceTree = "<group>"; };
 		A93E6B8F10420ACC007D418B /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
 		A93E6B9010420ACC007D418B /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
-		A93E6B9710420ACC007D418B /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = boot.lua; sourceTree = "<group>"; };
+		A93E6B9710420ACC007D418B /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; lineEnding = 0; path = boot.lua; sourceTree = "<group>"; };
 		A93E6B9810420ACC007D418B /* boot.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = boot.lua.h; sourceTree = "<group>"; };
 		A93E6B9910420ACC007D418B /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; lineEnding = 0; path = graphics.lua; sourceTree = "<group>"; };
 		A93E6B9A10420ACC007D418B /* graphics.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graphics.lua.h; sourceTree = "<group>"; };
@@ -737,10 +737,10 @@
 		A9F6E6B015A1099C00C86200 /* GmeDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GmeDecoder.h; sourceTree = "<group>"; };
 		A9F8833511163C8C00831E98 /* audio.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lua; path = audio.lua; sourceTree = "<group>"; };
 		A9F8833611163C8C00831E98 /* audio.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.lua.h; sourceTree = "<group>"; };
-		FADB91431683F5C600D84B22 /* ShaderEffect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderEffect.cpp; sourceTree = "<group>"; };
-		FADB91441683F5C600D84B22 /* ShaderEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShaderEffect.h; sourceTree = "<group>"; };
-		FADB91461683F5F900D84B22 /* wrap_ShaderEffect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ShaderEffect.cpp; sourceTree = "<group>"; };
-		FADB91471683F5FA00D84B22 /* wrap_ShaderEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ShaderEffect.h; sourceTree = "<group>"; };
+		FAE69DC116A6BE7800C1AC79 /* Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shader.cpp; sourceTree = "<group>"; };
+		FAE69DC216A6BE7800C1AC79 /* Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shader.h; sourceTree = "<group>"; };
+		FAE69DC316A6BE7800C1AC79 /* wrap_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Shader.cpp; sourceTree = "<group>"; };
+		FAE69DC416A6BE7800C1AC79 /* wrap_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Shader.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1148,8 +1148,8 @@
 				A9B4BA981045937F001DBC80 /* ParticleSystem.h */,
 				A93E6A9310420AC2007D418B /* Quad.cpp */,
 				A93E6A9410420AC2007D418B /* Quad.h */,
-				FADB91431683F5C600D84B22 /* ShaderEffect.cpp */,
-				FADB91441683F5C600D84B22 /* ShaderEffect.h */,
+				FAE69DC116A6BE7800C1AC79 /* Shader.cpp */,
+				FAE69DC216A6BE7800C1AC79 /* Shader.h */,
 				A93E6A9510420AC2007D418B /* SpriteBatch.cpp */,
 				A93E6A9610420AC2007D418B /* SpriteBatch.h */,
 				A96F41961412BC000067FE9A /* VertexBuffer.cpp */,
@@ -1166,8 +1166,8 @@
 				A9B4BA991045937F001DBC80 /* wrap_ParticleSystem.h */,
 				A93E6AA110420AC3007D418B /* wrap_Quad.cpp */,
 				A93E6AA210420AC3007D418B /* wrap_Quad.h */,
-				FADB91461683F5F900D84B22 /* wrap_ShaderEffect.cpp */,
-				FADB91471683F5FA00D84B22 /* wrap_ShaderEffect.h */,
+				FAE69DC316A6BE7800C1AC79 /* wrap_Shader.cpp */,
+				FAE69DC416A6BE7800C1AC79 /* wrap_Shader.h */,
 				A93E6AA310420AC3007D418B /* wrap_SpriteBatch.cpp */,
 				A93E6AA410420AC3007D418B /* wrap_SpriteBatch.h */,
 			);
@@ -1955,8 +1955,8 @@
 				A9F6E6B115A1099C00C86200 /* GmeDecoder.cpp in Sources */,
 				A911D2DB15DFECC8005B7EB8 /* Module.cpp in Sources */,
 				A5474CEF1624903B00C8EEAC /* math.cpp in Sources */,
-				FADB91451683F5C600D84B22 /* ShaderEffect.cpp in Sources */,
-				FADB91481683F5FA00D84B22 /* wrap_ShaderEffect.cpp in Sources */,
+				FAE69DC516A6BE7800C1AC79 /* Shader.cpp in Sources */,
+				FAE69DC616A6BE7800C1AC79 /* wrap_Shader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
