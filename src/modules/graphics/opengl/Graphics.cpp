@@ -549,6 +549,8 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 		glBlendFunc(GL_DST_COLOR, GL_ZERO);
 	else if (mode == BLEND_PREMULTIPLIED)
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	else if (mode == BLEND_NONE)
+		glBlendFunc(GL_ONE, GL_ZERO);
 	else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 }
@@ -584,6 +586,8 @@ Graphics::BlendMode Graphics::getBlendMode()
 		return BLEND_MULTIPLICATIVE;
 	else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
 		return BLEND_PREMULTIPLIED;
+	else if (src == GL_ONE && dst == GL_ZERO)
+		return BLEND_NONE;
 
 	return BLEND_MAX_ENUM; // Should never be reached.
 }
