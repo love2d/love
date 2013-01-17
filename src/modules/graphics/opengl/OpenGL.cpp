@@ -89,6 +89,24 @@ void initializeContext()
 
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &textureUnits[0]);
 	}
+
+	// Set the 'default' texture (id 0) as a repeating white pixel.
+	// Otherwise, texture2D inside a shader would return black when drawing graphics primitives,
+	// which would create the need to use different "passthrough" shaders for untextured primitives vs images.
+
+	GLuint curtexture = textureUnits[curTextureUnit];
+	bindTexture(0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	GLubyte pixel = 255;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pixel);
+
+	bindTexture(curtexture);
 }
 
 void uninitializeContext()
