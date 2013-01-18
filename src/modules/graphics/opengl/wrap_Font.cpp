@@ -162,6 +162,27 @@ int w_Font_getMipmapSharpness(lua_State *L)
 	return 1;
 }
 
+int w_Font_getAscent(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	lua_pushnumber(L, t->getAscent());
+	return 1;
+}
+
+int w_Font_getDescent(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	lua_pushnumber(L, t->getDescent());
+	return 1;
+}
+
+int w_Font_getBaseline(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	lua_pushnumber(L, t->getBaseline());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getHeight", w_Font_getHeight },
@@ -173,6 +194,9 @@ static const luaL_Reg functions[] =
 	{ "getFilter", w_Font_getFilter },
 	{ "setMipmapSharpness", w_Font_setMipmapSharpness },
 	{ "getMipmapSharpness", w_Font_getMipmapSharpness },
+	{ "getAscent", w_Font_getAscent },
+	{ "getDescent", w_Font_getDescent },
+	{ "getBaseline", w_Font_getBaseline },
 	{ 0, 0 }
 };
 

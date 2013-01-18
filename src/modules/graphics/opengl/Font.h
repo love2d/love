@@ -136,6 +136,11 @@ public:
 	bool loadVolatile();
 	void unloadVolatile();
 
+	// Extra font metrics
+	int getAscent() const;
+	int getDescent() const;
+	float getBaseline() const;
+
 private:
 
 	enum FontType
