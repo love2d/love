@@ -357,7 +357,7 @@ void Image::drawv(const Matrix &t, const vertex *v) const
 
 bool Image::hasNpot()
 {
-	return GLEE_ARB_texture_non_power_of_two != 0;
+	return GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two;
 }
 
 bool Image::hasMipmapSupport()
