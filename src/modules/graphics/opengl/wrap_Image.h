@@ -37,6 +37,8 @@ int w_Image_getWidth(lua_State *L);
 int w_Image_getHeight(lua_State *L);
 int w_Image_setFilter(lua_State *L);
 int w_image_getFilter(lua_State *L);
+int w_Image_setMipmapFilter(lua_State *L);
+int w_Image_getMipmapFilter(lua_State *L);
 int w_Image_setWrap(lua_State *L);
 int w_Image_getWrap(lua_State *L);
 int w_Image_setMipmapSharpness(lua_State *L);
