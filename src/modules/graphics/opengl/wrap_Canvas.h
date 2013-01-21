@@ -36,6 +36,7 @@ namespace opengl
 Canvas *luax_checkcanvas(lua_State *L, int idx);
 int w_Canvas_renderTo(lua_State *L);
 int w_Canvas_getImageData(lua_State *L);
+int w_Canvas_getPixel(lua_State * L);
 int w_Canvas_setFilter(lua_State *L);
 int w_Canvas_getFilter(lua_State *L);
 int w_Canvas_setWrap(lua_State *L);

@@ -159,8 +159,8 @@ void Image::checkMipmapsCreated() const
 
 	bind();
 
-	GLboolean mipmapscreated;
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&mipmapscreated);
+	GLint mipmapscreated;
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &mipmapscreated);
 
 	// generate mipmaps for this image if we haven't already
 	if (!mipmapscreated)

@@ -291,8 +291,7 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 				// copy glyphquad (4 vertices) from original glyph to our current quad list
 				glyphquads.push_back(glyph->quad);
 
-				// 1.25 is magic line height for true type fonts
-				float lineheight = (type == FONT_TRUETYPE) ? floor(getHeight() / 1.25f + 0.5f) : 0.0f;
+				float lineheight = getBaseline();
 
 				// set proper relative position
 				for (int i = 0; i < 4; i++)
@@ -497,8 +496,8 @@ void Font::checkMipmapsCreated() const
 	if (!Image::hasMipmapSupport())
 		throw love::Exception("Mipmap filtering is not supported on this system!");
 
-	GLboolean mipmapscreated;
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (GLint *)&mipmapscreated);
+	GLint mipmapscreated;
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &mipmapscreated);
 
 	// generate mipmaps for this image if we haven't already
 	if (!mipmapscreated)
@@ -590,6 +589,22 @@ void Font::unloadVolatile()
 		iter++;
 	}
 	textures.clear();
+}
+
+int Font::getAscent() const
+{
+	return rasterizer->getAscent();
+}
+
+int Font::getDescent() const
+{
+	return rasterizer->getDescent();
+}
+
+float Font::getBaseline() const
+{
+	// 1.25 is magic line height for true type fonts
+	return (type == FONT_TRUETYPE) ? floor(getHeight() / 1.25f + 0.5f) : 0.0f;
 }
 
 } // opengl

@@ -733,14 +733,11 @@ int w_setPointSize(lua_State *L)
 
 int w_setPointStyle(lua_State *L)
 {
-	Graphics::PointStyle style = Graphics::POINT_SMOOTH;
+	Graphics::PointStyle style;
 
-	if (lua_gettop(L) >= 2)
-	{
-		const char *str = luaL_checkstring(L, 1);
-		if (!Graphics::getConstant(str, style))
-			return luaL_error(L, "Invalid point style: %s", str);
-	}
+	const char *str = luaL_checkstring(L, 1);
+	if (!Graphics::getConstant(str, style))
+		return luaL_error(L, "Invalid point style: %s", str);
 
 	instance->setPointStyle(style);
 	return 0;
@@ -750,10 +747,14 @@ int w_setPoint(lua_State *L)
 {
 	float size = (float)luaL_checknumber(L, 1);
 
-	Graphics::PointStyle style;
-	const char *str = luaL_checkstring(L, 2);
-	if (!Graphics::getConstant(str, style))
-		return luaL_error(L, "Invalid point style: %s", str);
+	Graphics::PointStyle style = Graphics::POINT_SMOOTH;
+
+	if (lua_gettop(L) >= 2)
+	{
+		const char *str = luaL_checkstring(L, 2);
+		if (!Graphics::getConstant(str, style))
+			return luaL_error(L, "Invalid point style: %s", str);
+	}
 
 	instance->setPoint(size, style);
 	return 0;
