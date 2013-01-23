@@ -47,8 +47,6 @@ public:
 	virtual GlyphData *getGlyphData(unsigned int glyph) const;
 	virtual int getNumGlyphs() const;
 
-	static const unsigned int MAX_CHARS = 256;
-
 private:
 	// Load all the glyph positions into memory
 	void load();
@@ -65,12 +63,15 @@ private:
 	// Information about a glyph in the ImageData
 	struct ImageGlyphData
 	{
-		unsigned int x, y;
+		unsigned int x;
 		unsigned int width;
 		unsigned int spacing;
 	};
 
-	std::map<unsigned int, ImageGlyphData> imageGlyphData;
+	std::map<unsigned int, ImageGlyphData> imageGlyphs;
+
+	// Color used to identify glyph separation in the source ImageData
+	love::image::pixel spacer;
 
 }; // ImageRasterizer
 
