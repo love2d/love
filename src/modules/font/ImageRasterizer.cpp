@@ -34,7 +34,7 @@ inline bool equal(const love::image::pixel &a, const love::image::pixel &b)
 	return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
 }
 
-ImageRasterizer::ImageRasterizer(love::image::ImageData *data, unsigned short *glyphs, int length)
+ImageRasterizer::ImageRasterizer(love::image::ImageData *data, unsigned int *glyphs, int length)
 	: imageData(data)
 	, glyphs(glyphs)
 	, length(length)
@@ -62,7 +62,7 @@ int ImageRasterizer::getLineHeight() const
 	return getHeight();
 }
 
-GlyphData *ImageRasterizer::getGlyphData(unsigned short glyph) const
+GlyphData *ImageRasterizer::getGlyphData(unsigned int glyph) const
 {
 	GlyphMetrics gm;
 	gm.height = metrics.height;

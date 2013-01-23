@@ -78,17 +78,17 @@ public:
 	/**
 	 * Returns the width of the passed string.
 	 *
-	 * @param line A line of text.
+	 * @param str A string of text.
 	 **/
-	int getWidth(const std::string &line);
-	int getWidth(const char *line);
+	int getWidth(const std::string &str);
+	int getWidth(const char *str);
 
 	/**
 	 * Returns the width of the passed character.
 	 *
 	 * @param character A character.
 	 **/
-	int getWidth(const char character);
+	int getWidth(unsigned int character);
 
 	/**
 	 * Returns the maximal width of a wrapped string
@@ -191,7 +191,7 @@ private:
 	int texture_height;
 
 	std::vector<GLuint> textures; // vector of packed textures
-	std::map<int, Glyph *> glyphs; // maps glyphs to quad information
+	std::map<unsigned int, Glyph *> glyphs; // maps glyphs to quad information
 	FontType type;
 	Image::Filter filter;
 
@@ -214,8 +214,8 @@ private:
 
 	bool initializeTexture(GLint format);
 	void createTexture();
-	Glyph *addGlyph(const int glyph);
-	Glyph *findGlyph (const int glyph);
+	Glyph *addGlyph(unsigned int glyph);
+	Glyph *findGlyph(unsigned int glyph);
 }; // Font
 
 } // opengl

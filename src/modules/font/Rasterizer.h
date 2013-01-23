@@ -82,7 +82,7 @@ public:
 	 * Gets a specific glyph.
 	 * @param glyph The (UNICODE) glyph to get data for
 	 **/
-	virtual GlyphData *getGlyphData(unsigned short glyph) const = 0;
+	virtual GlyphData *getGlyphData(unsigned int glyph) const = 0;
 
 	/**
 	 * Gets the number of glyphs the rasterizer has data for.

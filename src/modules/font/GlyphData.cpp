@@ -27,7 +27,7 @@ namespace love
 namespace font
 {
 
-GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
+GlyphData::GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
 	: glyph(glyph)
 	, metrics(glyphMetrics)
 	, data(0)

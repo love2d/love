@@ -56,8 +56,8 @@ public:
 	// Implements Font
 	Rasterizer *newRasterizer(Data *data, int size);
 	Rasterizer *newRasterizer(love::image::ImageData *data, std::string glyphs);
-	Rasterizer *newRasterizer(love::image::ImageData *data, unsigned short *glyphs, int length);
-	GlyphData *newGlyphData(Rasterizer *r, unsigned short glyph);
+	Rasterizer *newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int length);
+	GlyphData *newGlyphData(Rasterizer *r, unsigned int glyph);
 
 	// Implement Module
 	const char *getName() const;

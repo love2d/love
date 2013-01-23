@@ -43,7 +43,7 @@ private:
 	// The image data
 	love::image::ImageData *imageData;
 	// The glyphs in the font
-	unsigned short *glyphs;
+	unsigned int *glyphs;
 	// The length of the glyph array
 	unsigned int length;
 	// The positions of each glyph
@@ -54,12 +54,12 @@ private:
 	unsigned int *spacing;
 
 public:
-	ImageRasterizer(love::image::ImageData *imageData, unsigned short *glyphs, int length);
+	ImageRasterizer(love::image::ImageData *imageData, unsigned int *glyphs, int length);
 	virtual ~ImageRasterizer();
 
 	// Implement Rasterizer
 	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(unsigned short glyph) const;
+	virtual GlyphData *getGlyphData(unsigned int glyph) const;
 	virtual int getNumGlyphs() const;
 
 	static const unsigned int MAX_CHARS = 256;

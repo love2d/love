@@ -56,7 +56,7 @@ public:
 		FORMAT_RGBA
 	};
 
-	GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, Format f);
+	GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, Format f);
 	virtual ~GlyphData();
 
 	// Implements Data.
@@ -115,7 +115,7 @@ public:
 
 private:
 	// The glyph itself
-	unsigned short glyph;
+	unsigned int glyph;
 
 	// Glyph metrics
 	GlyphMetrics metrics;

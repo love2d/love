@@ -49,7 +49,7 @@ Rasterizer *Font::newRasterizer(Data *data, int size)
 Rasterizer *Font::newRasterizer(love::image::ImageData *data, std::string glyphs)
 {
 	int length = glyphs.size();
-	unsigned short *g = new unsigned short[length];
+	unsigned int *g = new unsigned int[length];
 	for (int i = 0; i < length; i++)
 	{
 		g[i] = (unsigned char)glyphs[i];
@@ -59,12 +59,12 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, std::string glyphs
 	return r;
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, unsigned short *glyphs, int length)
+Rasterizer *Font::newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int length)
 {
 	return new ImageRasterizer(data, glyphs, length);
 }
 
-GlyphData *Font::newGlyphData(Rasterizer *r, unsigned short glyph)
+GlyphData *Font::newGlyphData(Rasterizer *r, unsigned int glyph)
 {
 	return r->getGlyphData(glyph);
 }

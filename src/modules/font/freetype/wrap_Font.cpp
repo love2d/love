@@ -67,7 +67,7 @@ int w_newRasterizer(lua_State *L)
 int w_newGlyphData(lua_State *L)
 {
 	Rasterizer *r = luax_checkrasterizer(L, 1);
-	unsigned short g = (unsigned short)luaL_checkint(L, 2);
+	unsigned int g = (unsigned int)luaL_checknumber(L, 2);
 
 	GlyphData *t = instance->newGlyphData(r, g);
 	luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);

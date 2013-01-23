@@ -160,7 +160,7 @@ void Font::createTexture()
 	setMipmapSharpness(mipmapsharpness);
 }
 
-Font::Glyph *Font::addGlyph(const int glyph)
+Font::Glyph *Font::addGlyph(unsigned int glyph)
 {
 	love::font::GlyphData *gd = rasterizer->getGlyphData(glyph);
 	int w = gd->getWidth();
@@ -233,7 +233,7 @@ Font::Glyph *Font::addGlyph(const int glyph)
 	return g;
 }
 
-Font::Glyph *Font::findGlyph(const int glyph)
+Font::Glyph *Font::findGlyph(unsigned int glyph)
 {
 	Glyph *g = glyphs[glyph];
 	if (!g)
@@ -273,7 +273,7 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 
 		while (i != end)
 		{
-			int g = *i++;
+			unsigned int g = *i++;
 
 			if (g == '\n')
 			{
@@ -380,7 +380,7 @@ int Font::getWidth(const std::string &str)
 			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
 			while (i != end)
 			{
-				int c = *i++;
+				unsigned int c = *i++;
 				g = findGlyph(c);
 				width += static_cast<int>(g->spacing * mSpacing);
 			}
@@ -402,7 +402,7 @@ int Font::getWidth(const char *str)
 	return this->getWidth(std::string(str));
 }
 
-int Font::getWidth(const char character)
+int Font::getWidth(unsigned int character)
 {
 	Glyph *g = findGlyph(character);
 	return g->spacing;
@@ -574,7 +574,7 @@ bool Font::loadVolatile()
 void Font::unloadVolatile()
 {
 	// nuke everything from orbit
-	std::map<int, Glyph *>::iterator it = glyphs.begin();
+	std::map<unsigned int, Glyph *>::iterator it = glyphs.begin();
 	Glyph *g;
 	while (it != glyphs.end())
 	{
