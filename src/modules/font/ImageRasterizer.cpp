@@ -67,32 +67,27 @@ GlyphData *ImageRasterizer::getGlyphData(unsigned int glyph) const
 	}
 
 	gm.height = metrics.height;
-	
+
 	GlyphData *g = new GlyphData(glyph, gm, GlyphData::FORMAT_RGBA);
-	
+
 	if (gm.width == 0)
 		return g;
-	
-	unsigned char *gd = (unsigned char *) g->getData();
-	love::image::pixel *pixels = (love::image::pixel *) imageData->getData();
+
+	love::image::pixel *gdpixels = (love::image::pixel *) g->getData();
+	love::image::pixel *imagepixels = (love::image::pixel *) imageData->getData();
 
 	// copy glyph pixels from imagedata to glyphdata
-	for (unsigned int i = 0; i < gm.width * (unsigned int) getHeight(); i++)
+	for (int i = 0; i < g->getWidth() * g->getHeight(); i++)
 	{
-		love::image::pixel p = pixels[ it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width)) ];
+		love::image::pixel p = imagepixels[ it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width)) ];
 
-		// Replace spacer color with an empty pixel
+		// Use transparency instead of the spacer color
 		if (equal(p, spacer))
-			gd[i*4+0] = gd[i*4+1] = gd[i*4+2] = gd[i*4+3] = 0;
+			gdpixels[i].r = gdpixels[i].g = gdpixels[i].b = gdpixels[i].a = 0;
 		else
-		{
-			gd[i*4+0] = p.r;
-			gd[i*4+1] = p.g;
-			gd[i*4+2] = p.b;
-			gd[i*4+3] = p.a;
-		}
+			gdpixels[i] = p;
 	}
-	
+
 	return g;
 }
 
