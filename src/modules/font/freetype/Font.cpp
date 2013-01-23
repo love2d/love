@@ -48,7 +48,7 @@ Rasterizer *Font::newRasterizer(Data *data, int size)
 	return new TrueTypeRasterizer(library, data, size);
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, std::string text)
+Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string &text)
 {
 	size_t strlen = text.size();
 	size_t numglyphs = 0;
