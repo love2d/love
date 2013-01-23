@@ -34,27 +34,18 @@ inline bool equal(const love::image::pixel &a, const love::image::pixel &b)
 	return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
 }
 
-ImageRasterizer::ImageRasterizer(love::image::ImageData *data, unsigned int *glyphs, int length)
+ImageRasterizer::ImageRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs)
 	: imageData(data)
 	, glyphs(glyphs)
-	, length(length)
+	, numglyphs(numglyphs)
 {
 	imageData->retain();
-	positions = new unsigned int[MAX_CHARS];
-	memset(positions, 0, MAX_CHARS*4);
-	widths = new unsigned int[MAX_CHARS];
-	memset(widths, 0, MAX_CHARS*4);
-	spacing = new unsigned int[MAX_CHARS];
-	memset(spacing, 0, MAX_CHARS*4);
 	load();
 }
 
 ImageRasterizer::~ImageRasterizer()
 {
 	imageData->release();
-	delete[] positions;
-	delete[] widths;
-	delete[] spacing;
 }
 
 int ImageRasterizer::getLineHeight() const
@@ -65,23 +56,36 @@ int ImageRasterizer::getLineHeight() const
 GlyphData *ImageRasterizer::getGlyphData(unsigned int glyph) const
 {
 	GlyphMetrics gm;
-	gm.height = metrics.height;
-	gm.width = widths[glyph];
-	gm.advance = spacing[glyph] + widths[glyph];
-	gm.bearingX = 0;
-	gm.bearingY = 0;
-	GlyphData *g = new GlyphData(glyph, gm, GlyphData::FORMAT_RGBA);
-	if (gm.width == 0) return g;
-	unsigned char *gd = (unsigned char *)g->getData();
-	love::image::pixel *pixels = (love::image::pixel *)(imageData->getData());
-	for (unsigned int i = 0; i < widths[glyph]*getHeight(); i++)
+	memset(&gm, 0, sizeof(GlyphMetrics));
+
+	// Set relevant glyph metrics if the glyph is in this ImageFont
+	std::map<unsigned int, ImageGlyphData>::const_iterator it = imageGlyphData.find(glyph);
+	if (it != imageGlyphData.end())
 	{
-		love::image::pixel p = pixels[ positions[glyph] + (i % widths[glyph]) + (imageData->getWidth() * (i / widths[glyph])) ];
-		gd[i*4] = p.r;
+		gm.width = it->second.width;
+		gm.advance = it->second.width + it->second.spacing;
+	}
+
+	gm.height = metrics.height;
+	
+	GlyphData *g = new GlyphData(glyph, gm, GlyphData::FORMAT_RGBA);
+	
+	if (gm.width == 0)
+		return g;
+	
+	unsigned char *gd = (unsigned char *) g->getData();
+	love::image::pixel *pixels = (love::image::pixel *) imageData->getData();
+
+	// copy glyph from imagedata to glyphdata
+	for (unsigned int i = 0; i < gm.width * (unsigned int) getHeight(); i++)
+	{
+		love::image::pixel p = pixels[ it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width)) ];
+		gd[i*4+0] = p.r;
 		gd[i*4+1] = p.g;
 		gd[i*4+2] = p.b;
 		gd[i*4+3] = p.a;
 	}
+	
 	return g;
 }
 
@@ -89,9 +93,9 @@ void ImageRasterizer::load()
 {
 	love::image::pixel *pixels = (love::image::pixel *)(imageData->getData());
 
-	unsigned imgw = (unsigned)imageData->getWidth();
-	unsigned imgh = (unsigned)imageData->getHeight();
-	unsigned imgs = imgw*imgh;
+	unsigned int imgw = (unsigned int) imageData->getWidth();
+	unsigned int imgh = (unsigned int) imageData->getHeight();
+	unsigned int imgs = imgw*imgh;
 
 	// Set the only metric that matters
 	metrics.height = imgh;
@@ -102,19 +106,17 @@ void ImageRasterizer::load()
 	unsigned int start = 0;
 	unsigned int end = 0;
 
-	for (unsigned int i = 0; i < length; ++i)
+	for (unsigned int i = 0; i < numglyphs; ++i)
 	{
-		if (i >= MAX_CHARS)
-			break;
-
 		start = end;
 
 		// Finds out where the first character starts
 		while (start < imgw && equal(pixels[start], spacer))
 			++start;
 
-		if (i > 0)
-			spacing[glyphs[i - 1]] = (start > end) ? (start - end) : 0;
+		// set previous glyph's spacing
+		if (i > 0 && imageGlyphData.size() > 0)
+			imageGlyphData[glyphs[i - 1]].spacing = (start > end) ? (start - end) : 0;
 
 		end = start;
 
@@ -125,20 +127,22 @@ void ImageRasterizer::load()
 		if (start >= end)
 			break;
 
-		unsigned c = glyphs[i];
+		ImageGlyphData igd;
+		igd.x = start;
+		igd.y = 0; // todo?
+		igd.width = end - start;
 
-		positions[c] = start;
-		widths[c] = (end - start);
+		imageGlyphData[glyphs[i]] = igd;
 	}
 
 	// Find spacing of last glyph
-	if (length > 0)
+	if (numglyphs > 0)
 	{
 		start = end;
 		while (start < imgw && equal(pixels[start], spacer))
 			++start;
 
-		spacing[glyphs[length - 1]] = (start > end) ? (start - end) : 0;
+		imageGlyphData[glyphs[numglyphs - 1]].spacing = (start > end) ? (start - end) : 0;
 	}
 
 	// Replace spacer color with an empty pixel
@@ -156,7 +160,7 @@ void ImageRasterizer::load()
 
 int ImageRasterizer::getNumGlyphs() const
 {
-	return length;
+	return numglyphs;
 }
 
 } // font

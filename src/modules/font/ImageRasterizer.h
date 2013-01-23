@@ -26,6 +26,8 @@
 #include "font/Rasterizer.h"
 #include "image/ImageData.h"
 
+#include <map>
+
 namespace love
 {
 namespace font
@@ -36,25 +38,8 @@ namespace font
  **/
 class ImageRasterizer : public Rasterizer
 {
-private:
-	// Load all the glyph positions into memory
-	void load();
-
-	// The image data
-	love::image::ImageData *imageData;
-	// The glyphs in the font
-	unsigned int *glyphs;
-	// The length of the glyph array
-	unsigned int length;
-	// The positions of each glyph
-	unsigned int *positions;
-	// The widths of each glyph
-	unsigned int *widths;
-	// The spacing of each glyph
-	unsigned int *spacing;
-
 public:
-	ImageRasterizer(love::image::ImageData *imageData, unsigned int *glyphs, int length);
+	ImageRasterizer(love::image::ImageData *imageData, unsigned int *glyphs, int numglyphs);
 	virtual ~ImageRasterizer();
 
 	// Implement Rasterizer
@@ -63,6 +48,29 @@ public:
 	virtual int getNumGlyphs() const;
 
 	static const unsigned int MAX_CHARS = 256;
+
+private:
+	// Load all the glyph positions into memory
+	void load();
+
+	// The image data
+	love::image::ImageData *imageData;
+
+	// The glyphs in the font
+	unsigned int *glyphs;
+
+	// Number of glyphs in the font
+	unsigned int numglyphs;
+
+	// Information about a glyph in the ImageData
+	struct ImageGlyphData
+	{
+		unsigned int x, y;
+		unsigned int width;
+		unsigned int spacing;
+	};
+
+	std::map<unsigned int, ImageGlyphData> imageGlyphData;
 
 }; // ImageRasterizer
 
