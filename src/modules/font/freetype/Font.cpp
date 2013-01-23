@@ -61,17 +61,7 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, std::string text)
 		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
 
 		while (i != end)
-		{
-			if (numglyphs >= strlen)
-				throw love::Exception("foo");
-
 			glyphs[numglyphs++] = *i++;
-		}
-	}
-	catch (love::Exception &)
-	{
-		delete [] glyphs;
-		throw;
 	}
 	catch (utf8::exception &e)
 	{
