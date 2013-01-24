@@ -89,7 +89,7 @@ Shader::~Shader()
 	unloadVolatile();
 }
 
-GLuint Shader::compileShaderCode(ShaderType type, const std::string &code)
+GLuint Shader::compileCode(ShaderType type, const std::string &code)
 {
 	GLenum glshadertype;
 	const char *shadertypename = NULL;
@@ -99,18 +99,6 @@ GLuint Shader::compileShaderCode(ShaderType type, const std::string &code)
 	case TYPE_VERTEX:
 		glshadertype = GL_VERTEX_SHADER;
 		shadertypename = "vertex";
-		break;
-	case TYPE_TESSCONTROL:
-		glshadertype = GL_TESS_CONTROL_SHADER;
-		shadertypename = "tesselation control";
-		break;
-	case TYPE_TESSEVAL:
-		glshadertype = GL_TESS_EVALUATION_SHADER;
-		shadertypename = "tesselation evaluation";
-		break;
-	case TYPE_GEOMETRY:
-		glshadertype = GL_GEOMETRY_SHADER;
-		shadertypename = "geometry";
 		break;
 	case TYPE_FRAGMENT:
 		glshadertype = GL_FRAGMENT_SHADER;
@@ -202,7 +190,7 @@ bool Shader::loadVolatile()
 	ShaderSources::const_iterator source;
 	for (source = _shadersources.begin(); source != _shadersources.end(); ++source)
 	{
-		GLuint shaderid = compileShaderCode(source->first, source->second);
+		GLuint shaderid = compileCode(source->first, source->second);
 		shaderids.push_back(shaderid);
 	}
 

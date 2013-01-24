@@ -42,14 +42,10 @@ public:
 
 	// pointer to currently active Shader.
 	static Shader *current;
-	
-	// Only vertex and fragment shaders have guaranteed support in all Shaders.
+
 	enum ShaderType
 	{
 		TYPE_VERTEX,
-		TYPE_TESSCONTROL,
-		TYPE_TESSEVAL,
-		TYPE_GEOMETRY,
 		TYPE_FRAGMENT,
 		TYPE_MAX_ENUM
 	};
@@ -130,7 +126,7 @@ private:
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
 	
-	GLuint compileShaderCode(ShaderType type, const std::string &code);
+	GLuint compileCode(ShaderType type, const std::string &code);
 	void createProgram(const std::vector<GLuint> &shaderids);
 
 	int getTextureUnit(const std::string &name);
