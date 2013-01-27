@@ -192,6 +192,9 @@ int w_ParticleSystem_setSizeVariation(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
+	if (arg1 < 0.0f || arg1 > 1.0f)
+		return luaL_error(L, "Size variation has to be between 0 and 1, inclusive.");
+
 	t->setSizeVariation(arg1);
 	return 0;
 }

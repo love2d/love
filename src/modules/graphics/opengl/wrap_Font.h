@@ -38,6 +38,13 @@ int w_Font_getWidth(lua_State *L);
 int w_Font_getWrap(lua_State *L);
 int w_Font_setLineHeight(lua_State *L);
 int w_Font_getLineHeight(lua_State *L);
+int w_Font_setFilter(lua_State *L);
+int w_Font_getFilter(lua_State *L);
+int w_Font_setMipmapSharpness(lua_State *L);
+int w_Font_getMipmapSharpness(lua_State *L);
+int w_Font_getAscent(lua_State *L);
+int w_Font_getDescent(lua_State *L);
+int w_Font_getBaseline(lua_State *L);
 extern "C" int luaopen_font(lua_State *L);
 
 } // opengl

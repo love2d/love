@@ -694,7 +694,7 @@ end
 -- Error screen.
 -----------------------------------------------------------
 
-local debug = debug
+local debug, print = debug, print
 
 local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
@@ -813,6 +813,11 @@ function love.releaseerrhand(msg)
 	end
 end
 
+local function deferErrhand(...)
+	local handler = ((love._release and love.releaseerrhand) or love.errhand or error_printer)
+	return handler(...)
+end
+
 
 -----------------------------------------------------------
 -- The root of all calls.
@@ -821,9 +826,9 @@ end
 return function()
 	local result = xpcall(love.boot, error_printer)
 	if not result then return 1 end
-	local result = xpcall(love.init, love._release and love.releaseerrhand or love.errhand)
+	local result = xpcall(love.init, deferErrhand)
 	if not result then return 1 end
-	local result, retval = xpcall(love.run, love._release and love.releaseerrhand or love.errhand)
+	local result, retval = xpcall(love.run, deferErrhand)
 	if not result then return 1 end
 
 	return tonumber(retval) or 0

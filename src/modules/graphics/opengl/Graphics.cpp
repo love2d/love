@@ -342,10 +342,10 @@ Image *Graphics::newImage(love::image::ImageData *data)
 	{
 		success = image->load();
 	}
-	catch(love::Exception &e)
+	catch(love::Exception &)
 	{
 		image->release();
-		throw love::Exception(e.what());
+		throw;
 	}
 	if (!success)
 	{
@@ -552,6 +552,8 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 		glBlendFunc(GL_DST_COLOR, GL_ZERO);
 	else if (mode == BLEND_PREMULTIPLIED)
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	else if (mode == BLEND_NONE)
+		glBlendFunc(GL_ONE, GL_ZERO);
 	else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 }
@@ -568,11 +570,6 @@ void Graphics::setColorMode(Graphics::ColorMode mode)
 	}
 	else // mode = COLOR_REPLACE
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-}
-
-void Graphics::setDefaultImageFilter(const Image::Filter &f)
-{
-	Image::setDefaultFilter(f);
 }
 
 Graphics::BlendMode Graphics::getBlendMode()
@@ -592,6 +589,8 @@ Graphics::BlendMode Graphics::getBlendMode()
 		return BLEND_MULTIPLICATIVE;
 	else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
 		return BLEND_PREMULTIPLIED;
+	else if (src == GL_ONE && dst == GL_ZERO)
+		return BLEND_NONE;
 
 	return BLEND_MAX_ENUM; // Should never be reached.
 }
@@ -607,6 +606,11 @@ Graphics::ColorMode Graphics::getColorMode()
 		return COLOR_COMBINE;
 	else // mode == GL_REPLACE
 		return COLOR_REPLACE;
+}
+
+void Graphics::setDefaultImageFilter(const Image::Filter &f)
+{
+	Image::setDefaultFilter(f);
 }
 
 const Image::Filter &Graphics::getDefaultImageFilter() const

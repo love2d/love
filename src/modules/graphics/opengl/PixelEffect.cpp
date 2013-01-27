@@ -51,9 +51,7 @@ namespace opengl
 
 PixelEffect *PixelEffect::current = NULL;
 
-std::map<std::string, GLint> PixelEffect::_texture_unit_pool;
-GLint PixelEffect::_current_texture_unit = 0;
-GLint PixelEffect::_max_texture_units = 0;
+std::vector<bool> PixelEffect::_unit_available;
 
 GLint PixelEffect::getTextureUnit(const std::string &name)
 {
@@ -62,18 +60,35 @@ GLint PixelEffect::getTextureUnit(const std::string &name)
 	if (it != _texture_unit_pool.end())
 		return it->second;
 
-	if (++_current_texture_unit >= _max_texture_units)
+	GLint unit = -1;
+	for (int i = 1; i < _unit_available.size(); ++i)
+	{
+		if (_unit_available[i])
+		{
+			unit = i;
+			break;
+		}
+	}
+
+	if (unit == -1)
 		throw love::Exception("No more texture units available");
 
-	_texture_unit_pool[name] = _current_texture_unit;
-	return _current_texture_unit;
+	_unit_available[unit] = false;
+	_texture_unit_pool[name] = unit;
+	return unit;
 }
 
 PixelEffect::PixelEffect(const std::string &code)
 	: _program(0)
 	, _code(code)
 {
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_max_texture_units);
+	if (_unit_available.empty())
+	{
+		GLint max_units;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_units);
+		_unit_available.resize(max_units, true);
+		_unit_available[0] = false;
+	}
 	loadVolatile();
 }
 

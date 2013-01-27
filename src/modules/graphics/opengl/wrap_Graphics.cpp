@@ -659,8 +659,10 @@ int w_setDefaultImageFilter(lua_State *L)
 {
 	Image::FilterMode min;
 	Image::FilterMode mag;
+
 	const char *minstr = luaL_checkstring(L, 1);
 	const char *magstr = luaL_optstring(L, 2, minstr);
+
 	if (!Image::getConstant(minstr, min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
 	if (!Image::getConstant(magstr, mag))
@@ -669,6 +671,7 @@ int w_setDefaultImageFilter(lua_State *L)
 	Image::Filter f;
 	f.min = min;
 	f.mag = mag;
+
 	instance->setDefaultImageFilter(f);
 
 	return 0;
@@ -767,14 +770,11 @@ int w_setPointSize(lua_State *L)
 
 int w_setPointStyle(lua_State *L)
 {
-	Graphics::PointStyle style = Graphics::POINT_SMOOTH;
+	Graphics::PointStyle style;
 
-	if (lua_gettop(L) >= 2)
-	{
-		const char *str = luaL_checkstring(L, 1);
-		if (!Graphics::getConstant(str, style))
-			return luaL_error(L, "Invalid point style: %s", str);
-	}
+	const char *str = luaL_checkstring(L, 1);
+	if (!Graphics::getConstant(str, style))
+		return luaL_error(L, "Invalid point style: %s", str);
 
 	instance->setPointStyle(style);
 	return 0;
@@ -784,10 +784,14 @@ int w_setPoint(lua_State *L)
 {
 	float size = (float)luaL_checknumber(L, 1);
 
-	Graphics::PointStyle style;
-	const char *str = luaL_checkstring(L, 2);
-	if (!Graphics::getConstant(str, style))
-		return luaL_error(L, "Invalid point style: %s", str);
+	Graphics::PointStyle style = Graphics::POINT_SMOOTH;
+
+	if (lua_gettop(L) >= 2)
+	{
+		const char *str = luaL_checkstring(L, 2);
+		if (!Graphics::getConstant(str, style))
+			return luaL_error(L, "Invalid point style: %s", str);
+	}
 
 	instance->setPoint(size, style);
 	return 0;
@@ -908,7 +912,12 @@ int w_isSupported(lua_State *L)
 				supported = false;
 			break;
 		case Graphics::SUPPORT_SUBTRACTIVE:
-			supported = (GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract);
+			if (!((GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)))
+				supported = false;
+			break;
+		case Graphics::SUPPORT_MIPMAP:
+			if (!Image::hasMipmapSupport())
+				supported = false;
 			break;
 		default:
 			supported = false;

@@ -124,6 +124,7 @@ StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendM
 	{ "subtractive", Graphics::BLEND_SUBTRACTIVE },
 	{ "multiplicative", Graphics::BLEND_MULTIPLICATIVE },
 	{ "premultiplied", Graphics::BLEND_PREMULTIPLIED },
+	{ "none", Graphics::BLEND_NONE },
 };
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
@@ -160,6 +161,7 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 	{ "pixeleffect", Graphics::SUPPORT_PIXELEFFECT },
 	{ "npot", Graphics::SUPPORT_NPOT },
 	{ "subtractive", Graphics::SUPPORT_SUBTRACTIVE },
+	{ "mipmap", Graphics::SUPPORT_MIPMAP },
 };
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));
