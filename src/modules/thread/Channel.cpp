@@ -22,6 +22,30 @@
 #include <map>
 #include <string>
 
+namespace
+{
+	union uslong
+	{
+		unsigned long u;
+		long i;
+	};
+
+	// target <= current, but semi-wrapsafe, one wrap, anyway
+	inline bool past(unsigned int target, unsigned int current)
+	{
+		if (target > current)
+			return false;
+		if (target == current)
+			return true;
+
+		uslong t, c;
+		t.u = target;
+		c.u = current;
+
+		return !(t.i < 0 && c.i > 0);
+	}
+}
+
 namespace love
 {
 namespace thread
@@ -41,14 +65,14 @@ Channel *Channel::getChannel(const std::string &name)
 }
 
 Channel::Channel()
-	: named(false)
+	: named(false), sent(0), received(0)
 {
 	mutex = newMutex();
 	cond = newConditional();
 }
 
 Channel::Channel(const std::string &name)
-	: named(true), name(name)
+	: named(true), name(name), sent(0), received(0)
 {
 	mutex = newMutex();
 	cond = newConditional();
@@ -68,10 +92,10 @@ Channel::~Channel()
 		namedChannels.erase(name);
 }
 
-void Channel::push(Variant *var)
+unsigned long Channel::push(Variant *var)
 {
 	if (!var)
-		return;
+		return 0;
 	Lock l(mutex);
 	var->retain();
 	// Keep a reference to ourselves
@@ -79,7 +103,24 @@ void Channel::push(Variant *var)
 	if (named && queue.empty())
 		retain();
 	queue.push(var);
-	cond->signal();
+	cond->broadcast();
+
+	return ++sent;
+}
+
+void Channel::supply(Variant *var)
+{
+	if (!var)
+		return;
+
+	unsigned long id = push(var);
+
+	mutex->lock();
+	while (!past(id, received))
+	{
+		cond->wait(mutex);
+	}
+	mutex->unlock();
 }
 
 Variant *Channel::pop()
@@ -90,6 +131,9 @@ Variant *Channel::pop()
 
 	Variant *var = queue.front();
 	queue.pop();
+
+	received++;
+	cond->broadcast();
 
 	// Release our reference to ourselves
 	// if we're empty and named.

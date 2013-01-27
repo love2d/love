@@ -38,6 +38,15 @@ namespace thread
 		return 0;
 	}
 
+	int w_Channel_supply(lua_State *L)
+	{
+		Channel *c = luax_checkchannel(L, 1);
+		Variant *var = Variant::fromLua(L, 2);
+		c->supply(var);
+		var->release();
+		return 0;
+	}
+
 	int w_Channel_pop(lua_State *L)
 	{
 		Channel *c = luax_checkchannel(L, 1);
@@ -91,6 +100,7 @@ namespace thread
 
 	static const luaL_Reg type_functions[] = {
 		{ "push", w_Channel_push },
+		{ "supply", w_Channel_supply },
 		{ "pop", w_Channel_pop },
 		{ "demand", w_Channel_demand },
 		{ "peek", w_Channel_peek },

@@ -43,14 +43,18 @@ private:
 	std::string name;
 	Channel(const std::string &name);
 
+	unsigned long sent;
+	unsigned long received;
+
 public:
 	Channel();
 	~Channel();
 	static Channel *getChannel(const std::string &name);
 
-	void push(Variant *var);
+	unsigned long push(Variant *var);
+	void supply(Variant *var); // blocking push
 	Variant *pop();
-	Variant *demand();
+	Variant *demand(); // blocking pop
 	Variant *peek();
 	int count();
 	void clear();
