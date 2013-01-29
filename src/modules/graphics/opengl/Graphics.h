@@ -270,7 +270,7 @@ public:
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
-	Shader *newShader(const Shader::ShaderSources &shadersources);
+	Shader *newShader(const Shader::ShaderSources &sources);
 
 	/**
 	 * Sets the foreground color.

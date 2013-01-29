@@ -40,7 +40,7 @@ class Shader : public Object, public Volatile
 {
 public:
 
-	// pointer to currently active Shader.
+	// Pointer to currently active Shader.
 	static Shader *current;
 
 	enum ShaderType
@@ -50,14 +50,14 @@ public:
 		TYPE_MAX_ENUM
 	};
 
-	// type for a list of shader source codes in the form of sources[shadertype] = code
+	// Type for a list of shader source codes in the form of sources[shadertype] = code
 	typedef std::map<ShaderType, std::string> ShaderSources;
 
 	/**
 	 * Creates a new Shader using a list of source codes.
-	 * Sources must contain at least one vertex or fragment shader.
+	 * Sources must contain either vertex or fragment shader code, or both.
 	 **/
-	Shader(const ShaderSources &shadersources);
+	Shader(const ShaderSources &sources);
 
 	virtual ~Shader();
 
@@ -74,7 +74,7 @@ public:
 
 	/**
 	 * Detach the currently bound Shader.
-	 * Causes OpenGL to use fixed functionality in place of shader programs.
+	 * Causes the GPU rendering pipeline to use fixed functionality in place of shader programs.
 	 **/
 	static void detach();
 
@@ -125,7 +125,7 @@ private:
 
 	GLint getUniformLocation(const std::string &name);
 	void checkSetUniformError();
-	
+
 	GLuint compileCode(ShaderType type, const std::string &code);
 	void createProgram(const std::vector<GLuint> &shaderids);
 
@@ -133,23 +133,23 @@ private:
 
 	void sendTexture(const std::string &name, GLuint texture);
 
-	// list of all shader code attached to this Shader
-	ShaderSources _shadersources;
+	// List of all shader code attached to this Shader
+	ShaderSources shaderSources;
 
-	GLuint _program; // volatile
+	GLuint program; // volatile
 
-	// uniform location buffer map
-	std::map<std::string, GLint> _uniforms;
+	// Uniform location buffer map
+	std::map<std::string, GLint> uniforms;
 
-	// texture unit pool for setting images
-	std::map<std::string, GLint> _textureunitpool; // _textureunitpool[name] = textureunit
-	std::vector<GLuint> _activetextureunits; // _activetextureunits[textureunit-1] = textureid
+	// Texture unit pool for setting images
+	std::map<std::string, GLint> textureUnitPool; // textureUnitPool[name] = textureunit
+	std::vector<GLuint> activeTextureUnits; // activeTextureUnits[textureunit-1] = textureid
 
-	// max GPU texture units available for sent images
-	static GLint _maxtextureunits;
+	// Max GPU texture units available for sent images
+	static GLint maxTextureUnits;
 
-	// counts total number of textures bound to each texture unit in all shaders
-	static std::vector<int> _texturecounters;
+	// Counts total number of textures bound to each texture unit in all shaders
+	static std::vector<int> textureCounters;
 };
 
 } // opengl

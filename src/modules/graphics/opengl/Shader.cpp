@@ -37,45 +37,45 @@ namespace
 	struct TemporaryAttacher
 	{
 		TemporaryAttacher(Shader *shader)
-		: curshader(shader)
-		, prevshader(Shader::current)
+		: curShader(shader)
+		, prevShader(Shader::current)
 		{
-			curshader->attach(true);
+			curShader->attach(true);
 		}
 
 		~TemporaryAttacher()
 		{
-			if (prevshader != NULL)
-				prevshader->attach();
+			if (prevShader != NULL)
+				prevShader->attach();
 			else
 				Shader::detach();
 		}
 
-		Shader *curshader;
-		Shader *prevshader;
+		Shader *curShader;
+		Shader *prevShader;
 	};
 } // anonymous namespace
 
 
 Shader *Shader::current = NULL;
 
-GLint Shader::_maxtextureunits = 0;
-std::vector<int> Shader::_texturecounters;
+GLint Shader::maxTextureUnits = 0;
+std::vector<int> Shader::textureCounters;
 
-Shader::Shader(const ShaderSources &shadersources)
-	: _shadersources(shadersources)
-	, _program(0)
+Shader::Shader(const ShaderSources &sources)
+	: shaderSources(sources)
+	, program(0)
 {
-	if (shadersources.empty())
+	if (shaderSources.empty())
 		throw love::Exception("Cannot create shader: no source code!");
 
-	GLint maxtextureunits;
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
-	_maxtextureunits = std::max(maxtextureunits - 1, 0);
+	GLint maxtexunits;
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
+	maxTextureUnits = std::max(maxtexunits - 1, 0);
 
 	// initialize global texture id counters if needed
-	if (_texturecounters.size() < (size_t) _maxtextureunits)
-		_texturecounters.resize(_maxtextureunits, 0);
+	if (textureCounters.size() < (size_t) maxTextureUnits)
+		textureCounters.resize(maxTextureUnits, 0);
 
 	// load shader source and create program object
 	loadVolatile();
@@ -130,10 +130,10 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 
 	glCompileShader(shaderid);
 
-	GLint compile_status;
-	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &compile_status);
+	GLint status;
+	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &status);
 
-	if (compile_status == GL_FALSE)
+	if (status == GL_FALSE)
 	{
 		GLint infologlen;
 		glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
@@ -154,26 +154,26 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 
 void Shader::createProgram(const std::vector<GLuint> &shaderids)
 {
-	_program = glCreateProgram();
-	if (_program == 0) // should only fail when called between glBegin() and glEnd()
+	program = glCreateProgram();
+	if (program == 0) // should only fail when called between glBegin() and glEnd()
 		throw love::Exception("Cannot create shader program object.");
 
 	std::vector<GLuint>::const_iterator it;
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glAttachShader(_program, *it);
+		glAttachShader(program, *it);
 
-	glLinkProgram(_program);
+	glLinkProgram(program);
 
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
 		glDeleteShader(*it); // flag shaders for auto-deletion when program object is deleted
 
-	GLint link_ok;
-	glGetProgramiv(_program, GL_LINK_STATUS, &link_ok);
+	GLint status;
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
 
-	if (link_ok == GL_FALSE)
+	if (status == GL_FALSE)
 	{
 		const std::string warnings = getWarnings();
-		glDeleteProgram(_program);
+		glDeleteProgram(program);
 
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
@@ -182,13 +182,13 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 bool Shader::loadVolatile()
 {
 	// zero out active texture list
-	_activetextureunits.clear();
-	_activetextureunits.insert(_activetextureunits.begin(), _maxtextureunits, 0);
+	activeTextureUnits.clear();
+	activeTextureUnits.insert(activeTextureUnits.begin(), maxTextureUnits, 0);
 
 	std::vector<GLuint> shaderids;
 
 	ShaderSources::const_iterator source;
-	for (source = _shadersources.begin(); source != _shadersources.end(); ++source)
+	for (source = shaderSources.begin(); source != shaderSources.end(); ++source)
 	{
 		GLuint shaderid = compileCode(source->first, source->second);
 		shaderids.push_back(shaderid);
@@ -213,45 +213,45 @@ void Shader::unloadVolatile()
 	if (current == this)
 		glUseProgram(0);
 
-	if (_program != 0)
-		glDeleteProgram(_program);
+	if (program != 0)
+		glDeleteProgram(program);
 
-	_program = 0;
+	program = 0;
 
 	// decrement global texture id counters for texture units which had textures bound from this shader
-	for (size_t i = 0; i < _activetextureunits.size(); ++i)
+	for (size_t i = 0; i < activeTextureUnits.size(); ++i)
 	{
-		if (_activetextureunits[i] > 0)
-			_texturecounters[i] = std::max(_texturecounters[i] - 1, 0);
+		if (activeTextureUnits[i] > 0)
+			textureCounters[i] = std::max(textureCounters[i] - 1, 0);
 	}
 
 	// active texture list is probably invalid, clear it
-	_activetextureunits.clear();
-	_activetextureunits.insert(_activetextureunits.begin(), _maxtextureunits, 0);
+	activeTextureUnits.clear();
+	activeTextureUnits.insert(activeTextureUnits.begin(), maxTextureUnits, 0);
 
 	// same with uniform location list
-	_uniforms.clear();
+	uniforms.clear();
 }
 
 std::string Shader::getWarnings() const
 {
 	GLint strlen, nullpos;
-	glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &strlen);
-	char *temp_str = new char[strlen+1];
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &strlen);
+	char *tempstr = new char[strlen+1];
 	// be extra sure that the error string will be 0-terminated
-	memset(temp_str, '\0', strlen+1);
-	glGetProgramInfoLog(_program, strlen, &nullpos, temp_str);
-	temp_str[nullpos] = '\0';
+	memset(tempstr, '\0', strlen+1);
+	glGetProgramInfoLog(program, strlen, &nullpos, tempstr);
+	tempstr[nullpos] = '\0';
 
-	std::string warnings(temp_str);
-	delete[] temp_str;
+	std::string warnings(tempstr);
+	delete[] tempstr;
 	return warnings;
 }
 
 void Shader::attach(bool temporary)
 {
 	if (current != this)
-		glUseProgram(_program);
+		glUseProgram(program);
 
 	current = this;
 
@@ -259,10 +259,10 @@ void Shader::attach(bool temporary)
 	{
 		// make sure all sent textures are properly bound to their respective texture units
 		// note: list potentially contains texture ids of deleted/invalid textures!
-		for (size_t i = 0; i < _activetextureunits.size(); ++i)
+		for (size_t i = 0; i < activeTextureUnits.size(); ++i)
 		{
-			if (_activetextureunits[i] > 0)
-				bindTextureToUnit(_activetextureunits[i], i + 1, false);
+			if (activeTextureUnits[i] > 0)
+				bindTextureToUnit(activeTextureUnits[i], i + 1, false);
 		}
 		setActiveTextureUnit(0);
 	}
@@ -351,11 +351,11 @@ void Shader::sendTexture(const std::string &name, GLuint texture)
 	checkSetUniformError();
 
 	// increment global shader texture id counter for this texture unit, if we haven't already
-	if (_activetextureunits[textureunit-1] == 0)
-		++_texturecounters[textureunit-1];
+	if (activeTextureUnits[textureunit-1] == 0)
+		++textureCounters[textureunit-1];
 
 	// store texture id so it can be re-bound to the proper texture unit when necessary
-	_activetextureunits[textureunit-1] = texture;
+	activeTextureUnits[textureunit-1] = texture;
 }
 
 void Shader::sendImage(const std::string &name, const Image &image)
@@ -370,11 +370,11 @@ void Shader::sendCanvas(const std::string &name, const Canvas &canvas)
 
 GLint Shader::getUniformLocation(const std::string &name)
 {
-	std::map<std::string, GLint>::const_iterator it = _uniforms.find(name);
-	if (it != _uniforms.end())
+	std::map<std::string, GLint>::const_iterator it = uniforms.find(name);
+	if (it != uniforms.end())
 		return it->second;
 
-	GLint location = glGetUniformLocation(_program, name.c_str());
+	GLint location = glGetUniformLocation(program, name.c_str());
 	if (location == -1)
 	{
 		throw love::Exception(
@@ -382,36 +382,36 @@ GLint Shader::getUniformLocation(const std::string &name)
 			"A common error is to define but not use the variable.", name.c_str());
 	}
 
-	_uniforms[name] = location;
+	uniforms[name] = location;
 	return location;
 }
 
 int Shader::getTextureUnit(const std::string &name)
 {
-	std::map<std::string, GLint>::const_iterator it = _textureunitpool.find(name);
+	std::map<std::string, GLint>::const_iterator it = textureUnitPool.find(name);
 
-	if (it != _textureunitpool.end())
+	if (it != textureUnitPool.end())
 		return it->second;
 
 	int textureunit = 1;
 
 	// prefer texture units which are unused by all other shaders
-	std::vector<int>::iterator nextfreeunit = std::find(_texturecounters.begin(), _texturecounters.end(), 0);
+	std::vector<int>::iterator nextfreeunit = std::find(textureCounters.begin(), textureCounters.end(), 0);
 
-	if (nextfreeunit != _texturecounters.end())
-		textureunit = std::distance(_texturecounters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
+	if (nextfreeunit != textureCounters.end())
+		textureunit = std::distance(textureCounters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
 	else
 	{
 		// no completely unused texture units exist, try to use next free slot in our own list
-		std::vector<GLuint>::iterator nexttexunit = std::find(_activetextureunits.begin(), _activetextureunits.end(), 0);
+		std::vector<GLuint>::iterator nexttexunit = std::find(activeTextureUnits.begin(), activeTextureUnits.end(), 0);
 
-		if (nexttexunit == _activetextureunits.end())
+		if (nexttexunit == activeTextureUnits.end())
 			throw love::Exception("No more texture units available for shader.");
 
-		textureunit = std::distance(_activetextureunits.begin(), nexttexunit) + 1; // we don't want to use unit 0
+		textureunit = std::distance(activeTextureUnits.begin(), nexttexunit) + 1; // we don't want to use unit 0
 	}
 
-	_textureunitpool[name] = textureunit;
+	textureUnitPool[name] = textureunit;
 	return textureunit;
 }
 
@@ -431,8 +431,8 @@ void Shader::checkSetUniformError()
 std::string Shader::getGLSLVersion()
 {
 	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
-	const char *tmp = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-	if (NULL == tmp)
+	const char *tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
+	if (tmp == NULL)
 		return "0.0";
 
 	// the version string always begins with a version number of the format
@@ -440,9 +440,9 @@ std::string Shader::getGLSLVersion()
 	// or
 	//   major_number.minor_number.release_number
 	// we can keep release_number, since it does not affect the check below.
-	std::string versionString(tmp);
-	size_t minorEndPos = versionString.find(' ');
-	return versionString.substr(0, minorEndPos);
+	std::string versionstring(tmp);
+	size_t minorendpos = versionstring.find(' ');
+	return versionstring.substr(0, minorendpos);
 }
 
 bool Shader::isSupported()

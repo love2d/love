@@ -453,12 +453,12 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	return NULL; // never reached
 }
 
-Shader *Graphics::newShader(const Shader::ShaderSources &shadersources)
+Shader *Graphics::newShader(const Shader::ShaderSources &sources)
 {
 	Shader *shader = NULL;
 	try
 	{
-		shader = new Shader(shadersources);
+		shader = new Shader(sources);
 	}
 	catch(love::Exception &)
 	{
