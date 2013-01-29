@@ -18,10 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include <algorithm>
+#include "common/config.h"
 
 #include "Shader.h"
 #include "Graphics.h"
+
+#include <algorithm>
 
 namespace love
 {

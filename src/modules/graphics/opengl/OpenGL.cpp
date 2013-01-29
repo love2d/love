@@ -18,10 +18,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
+#include "common/Exception.h"
+
+#include "OpenGL.h"
+
 #include <vector>
 #include <algorithm>
-#include "OpenGL.h"
-#include "common/Exception.h"
 
 namespace love
 {
