@@ -28,10 +28,8 @@
 #include "image/ImageData.h"
 #include "graphics/Image.h"
 
-#include "OpenGL.h"
-
 // OpenGL
-#include "GLee.h"
+#include "OpenGL.h"
 
 namespace love
 {
@@ -127,7 +125,7 @@ private:
 
 	void drawv(const Matrix &t, const vertex *v) const;
 
-	friend class PixelEffect;
+	friend class Shader;
 	GLuint getTextureName() const
 	{
 		return texture;

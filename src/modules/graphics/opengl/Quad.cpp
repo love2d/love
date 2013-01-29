@@ -21,8 +21,8 @@
 #include "Quad.h"
 #include "common/Matrix.h"
 
-// GLee
-#include "GLee.h"
+// OpenGL
+#include "OpenGL.h"
 
 // STD
 #include <cstring> // For memcpy

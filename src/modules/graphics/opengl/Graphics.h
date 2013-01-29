@@ -26,7 +26,7 @@
 #include <cmath>
 
 // OpenGL
-#include "GLee.h"
+#include "OpenGL.h"
 
 // LOVE
 #include "graphics/Graphics.h"
@@ -37,14 +37,13 @@
 
 #include "window/Window.h"
 
-#include "OpenGL.h"
 #include "Font.h"
 #include "Image.h"
 #include "Quad.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
-#include "PixelEffect.h"
+#include "Shader.h"
 
 namespace love
 {
@@ -271,7 +270,7 @@ public:
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
-	PixelEffect *newPixelEffect(const std::string &code);
+	Shader *newShader(const Shader::ShaderSources &sources);
 
 	/**
 	 * Sets the foreground color.

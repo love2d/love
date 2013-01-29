@@ -63,6 +63,8 @@ Window::_currentMode::_currentMode()
 bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int fsaa)
 {
 	bool mouseVisible = getMouseVisible();
+	int keyrepeatDelay, keyrepeatInterval;
+	SDL_GetKeyRepeat(&keyrepeatDelay, &keyrepeatInterval);
 
 	// We need to restart the subsystem for two reasons:
 	// 1) Special case for fullscreen -> windowed. Windows XP did not
@@ -87,6 +89,7 @@ bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int f
 	// Set caption.
 	setWindowTitle(windowTitle);
 	setMouseVisible(mouseVisible);
+	SDL_EnableKeyRepeat(keyrepeatDelay, keyrepeatInterval);
 
 	// Set GL attributes
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);

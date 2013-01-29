@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Graphics.h"
-#include "GLee.h"
+#include "OpenGL.h"
 #include "graphics/DrawQable.h"
 #include "image/ImageData.h"
 #include "font/Rasterizer.h"
@@ -433,29 +433,50 @@ int w_newCanvas(lua_State *L)
 	return 1;
 }
 
-int w_newPixelEffect(lua_State *L)
+int w_newShader(lua_State *L)
 {
-	if (!PixelEffect::isSupported())
-		return luaL_error(L, "Sorry, your graphics card does not support pixel effects.");
+	if (!Shader::isSupported())
+		return luaL_error(L, "Sorry, your graphics card does not support shaders.");
 
 	try
 	{
-		luaL_checkstring(L, 1);
+		// clamp stack to 2 elements
+		lua_settop(L, 2);
 
 		luax_getfunction(L, "graphics", "_effectCodeToGLSL");
-		lua_pushvalue(L, 1);
-		lua_pcall(L, 1, 1, 0);
 
-		const char *code = lua_tostring(L, -1);
-		PixelEffect *effect = instance->newPixelEffect(code);
-		luax_newtype(L, "PixelEffect", GRAPHICS_PIXELEFFECT_T, (void *)effect);
+		// push vertcode and fragcode strings to the top of the stack so they become arguments for the function
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 2);
+
+		// call effectCodeToGLSL, returned values will be at the top of the stack
+		lua_pcall(L, 2, 2, 0);
+
+		Shader::ShaderSources sources;
+
+		// vertex shader code
+		if (lua_isstring(L, -2))
+		{
+			std::string vertcode(luaL_checkstring(L, -2));
+			sources[Shader::TYPE_VERTEX] = vertcode;
+		}
+
+		// fragment shader code
+		if (lua_isstring(L, -1))
+		{
+			std::string fragcode(luaL_checkstring(L, -1));
+			sources[Shader::TYPE_FRAGMENT] = fragcode;
+		}
+
+		Shader *shader = instance->newShader(sources);
+		luax_newtype(L, "Shader", GRAPHICS_SHADER_T, (void *)shader);
 	}
 	catch(const love::Exception &e)
 	{
-		// memory is freed in Graphics::newPixelEffect
+		// memory is freed in Graphics::newShader
 		luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
 		lua_pushstring(L, e.what());
-		lua_pcall(L, 1,1, 0);
+		lua_pcall(L, 1, 1, 0);
 		const char *err = lua_tostring(L, -1);
 		return luaL_error(L, "%s", err);
 	}
@@ -798,26 +819,26 @@ int w_getCanvas(lua_State *L)
 	return 1;
 }
 
-int w_setPixelEffect(lua_State *L)
+int w_setShader(lua_State *L)
 {
 	if (lua_isnoneornil(L,1))
 	{
-		PixelEffect::detach();
+		Shader::detach();
 		return 0;
 	}
 
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
-	effect->attach();
+	Shader *shader = luax_checkshader(L, 1);
+	shader->attach();
 	return 0;
 }
 
-int w_getPixelEffect(lua_State *L)
+int w_getShader(lua_State *L)
 {
-	PixelEffect *effect = PixelEffect::current;
-	if (effect)
+	Shader *shader = Shader::current;
+	if (shader)
 	{
-		effect->retain();
-		luax_newtype(L, "PixelEffect", GRAPHICS_PIXELEFFECT_T, (void *) effect);
+		shader->retain();
+		luax_newtype(L, "Shader", GRAPHICS_SHADER_T, (void *) shader);
 	}
 	else
 		lua_pushnil(L);
@@ -845,8 +866,8 @@ int w_isSupported(lua_State *L)
 			if (!Canvas::isHdrSupported())
 				supported = false;
 			break;
-		case Graphics::SUPPORT_PIXELEFFECT:
-			if (!PixelEffect::isSupported())
+		case Graphics::SUPPORT_SHADER:
+			if (!Shader::isSupported())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_NPOT:
@@ -1265,7 +1286,7 @@ static const luaL_Reg functions[] =
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newCanvas", w_newCanvas },
-	{ "newPixelEffect", w_newPixelEffect },
+	{ "newShader", w_newShader },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -1296,8 +1317,8 @@ static const luaL_Reg functions[] =
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
 
-	{ "setPixelEffect", w_setPixelEffect },
-	{ "getPixelEffect", w_getPixelEffect },
+	{ "setShader", w_setShader },
+	{ "getShader", w_getShader },
 
 	{ "isSupported", w_isSupported },
 
@@ -1358,7 +1379,7 @@ static const lua_CFunction types[] =
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_canvas,
-	luaopen_pixeleffect,
+	luaopen_shader,
 	0
 };
 

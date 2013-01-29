@@ -45,8 +45,6 @@ Graphics::Graphics()
 	, userMatrices(0)
 {
 	currentWindow = love::window::sdl::Window::getSingleton();
-
-	resetBoundTexture();
 }
 
 Graphics::~Graphics()
@@ -116,6 +114,8 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	// Unload all volatile objects. These must be reloaded after
 	// the display mode change.
 	Volatile::unloadAll();
+	
+	uninitializeContext();
 
 	bool success = currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
 	// Regardless of failure, we'll have to set up OpenGL once again.
@@ -124,6 +124,8 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	height = currentWindow->getHeight();
 
 	// Okay, setup OpenGL.
+
+	initializeContext();
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -138,6 +140,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
+	setActiveTextureUnit(0);
 
 	// Set the viewport to top-left corner
 	glViewport(0, 0, width, height);
@@ -190,7 +193,7 @@ void Graphics::reset()
 	DisplayState s;
 	discardStencil();
 	Canvas::bindDefaultCanvas();
-	PixelEffect::detach();
+	Shader::detach();
 	restoreState(s);
 }
 
@@ -450,20 +453,21 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	return NULL; // never reached
 }
 
-PixelEffect *Graphics::newPixelEffect(const std::string &code)
+Shader *Graphics::newShader(const Shader::ShaderSources &sources)
 {
-	PixelEffect *effect = NULL;
+	Shader *shader = NULL;
 	try
 	{
-		effect = new PixelEffect(code);
+		shader = new Shader(sources);
 	}
-	catch(love::Exception &e)
+	catch(love::Exception &)
 	{
-		if (effect)
-			delete effect;
-		throw(e);
+		if (shader)
+			delete shader;
+		
+		throw;
 	}
-	return effect;
+	return shader;
 }
 
 void Graphics::setColor(const Color &c)
@@ -743,11 +747,10 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 
 void Graphics::point(float x, float y)
 {
-	glDisable(GL_TEXTURE_2D);
+	bindTexture(0);
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
 	glEnd();
-	glEnable(GL_TEXTURE_2D);
 }
 
 // Calculate line boundary points u1 and u2. Sketch:
@@ -941,7 +944,7 @@ void Graphics::polyline(const float *coords, size_t count)
 	// end get line vertex boundaries
 
 	// draw the core line
-	glDisable(GL_TEXTURE_2D);
+	bindTexture(0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)vertices);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
@@ -951,7 +954,6 @@ void Graphics::polyline(const float *coords, size_t count)
 		draw_overdraw(overdraw, count, pixel_size, looping);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glEnable(GL_TEXTURE_2D);
 
 	// cleanup
 	delete[] vertices;
@@ -1035,12 +1037,11 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
+		bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, points + 2);
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glEnable(GL_TEXTURE_2D);
 	}
 
 	delete[] coords;
@@ -1059,12 +1060,11 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
+		bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)coords);
 		glDrawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glEnable(GL_TEXTURE_2D);
 	}
 }
 

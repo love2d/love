@@ -30,7 +30,6 @@
 #include "common/math.h"
 #include "common/Matrix.h"
 #include "OpenGL.h"
-#include "GLee.h"
 
 namespace love
 {
@@ -98,7 +97,7 @@ public:
 	static void bindDefaultCanvas();
 
 private:
-	friend class PixelEffect;
+	friend class Shader;
 	GLuint getTextureName() const
 	{
 		return img;

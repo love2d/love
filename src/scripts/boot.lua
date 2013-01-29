@@ -760,7 +760,7 @@ function love.releaseerrhand(msg)
 	end
 
 	love.graphics.setCanvas()
-	love.graphics.setPixelEffect()
+	love.graphics.setShader()
 
 	-- Load.
 	if love.audio then love.audio.stop() end

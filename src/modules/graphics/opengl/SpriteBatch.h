@@ -34,9 +34,6 @@
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
 
-// OpenGL
-#include "GLee.h"
-
 namespace love
 {
 namespace graphics

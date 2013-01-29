@@ -158,7 +158,8 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 {
 	{ "canvas", Graphics::SUPPORT_CANVAS },
 	{ "hdrcanvas", Graphics::SUPPORT_HDR_CANVAS },
-	{ "pixeleffect", Graphics::SUPPORT_PIXELEFFECT },
+	{ "shader", Graphics::SUPPORT_SHADER },
+	{ "pixeleffect", Graphics::SUPPORT_SHADER }, // for compatibility
 	{ "npot", Graphics::SUPPORT_NPOT },
 	{ "subtractive", Graphics::SUPPORT_SUBTRACTIVE },
 	{ "mipmap", Graphics::SUPPORT_MIPMAP },
