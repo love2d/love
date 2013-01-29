@@ -49,6 +49,8 @@ public:
 	virtual int getBits() const;
 	virtual int getSampleRate() const;
 
+	virtual int getDuration() const;
+
 	void setSample(int i, float sample);
 	float getSample(int i) const;
 

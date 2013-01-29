@@ -147,6 +147,11 @@ int SoundData::getSampleRate() const
 	return sampleRate;
 }
 
+int SoundData::getDuration() const
+{
+	return size/(channels*sampleRate*bits/8);
+}
+
 void SoundData::setSample(int i, float sample)
 {
 	// Check range.
