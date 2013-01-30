@@ -469,8 +469,7 @@ private:
 	size_t size;
 
 	// The size in bytes of an element in the element array.
-	size_t elementSize;
-
+	static size_t elementSize;
 	// The current VertexBuffer size. 0 means no VertexBuffer.
 	static size_t maxSize;
 	// The list of sizes. Needs to be kept sorted in ascending order.

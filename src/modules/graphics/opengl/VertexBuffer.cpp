@@ -248,12 +248,12 @@ void VBO::unload(bool save)
 // VertexIndex
 
 size_t VertexIndex::maxSize = 0;
+size_t VertexIndex::elementSize = 0;
 std::list<size_t> VertexIndex::sizeRefs;
 VertexBuffer *VertexIndex::element_array = NULL;
 
 VertexIndex::VertexIndex(size_t size)
 	: size(size)
-	, elementSize(0)
 {
 	// The upper limit is the maximum of GLuint divided by six (the number
 	// of indices per size) and divided by the size of GLuint. This guarantees
