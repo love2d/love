@@ -331,10 +331,6 @@ private:
 	// Set if the buffer was modified while operating on gpu memory
 	// and needs to be synchronized.
 	bool is_dirty;
-
-	// Usage hint for map()/unmap() pair. Same as `access' parameter in
-	// glBufferData or 0 if not mapped.
-	GLenum mapped_access;
 };
 
 /**
@@ -410,6 +406,15 @@ public:
 	}
 
 	/**
+	 * Returns the size in bytes of an element in the element array.
+	 * Can be used with getPointer to calculate an offset into the array based
+	 * on a number of elements.
+	 *
+	 * @return The size of an element in bytes.
+	 **/
+	size_t getElementSize();
+
+	/**
 	 * Returns the pointer to the VertexBuffer.
 	 * The pointer will change if a new size request or removal causes
 	 * a VertexBuffer resize. It is recommended to retrieve the pointer
@@ -462,6 +467,9 @@ private:
 
 	// The size of the array requested by this instance.
 	size_t size;
+
+	// The size in bytes of an element in the element array.
+	size_t elementSize;
 
 	// The current VertexBuffer size. 0 means no VertexBuffer.
 	static size_t maxSize;
