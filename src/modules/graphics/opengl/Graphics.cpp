@@ -127,6 +127,9 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 
 	initializeContext();
 
+	// Make sure antialiasing works when set elsewhere
+	glEnable(GL_MULTISAMPLE);
+
 	// Enable blending
 	glEnable(GL_BLEND);
 
@@ -137,6 +140,10 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	setLineStyle(LINE_SMOOTH);
 	glEnable(GL_POINT_SMOOTH);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+
+	// Auto-generated mipmaps should be the best quality possible
+	if (GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap)
+		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);

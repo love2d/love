@@ -1391,7 +1391,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 		{
 			instance = new Graphics();
 		}
-		catch(Exception &e)
+		catch (love::Exception &e)
 		{
 			return luaL_error(L, e.what());
 		}

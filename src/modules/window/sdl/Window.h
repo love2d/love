@@ -74,7 +74,6 @@ private:
 		int fsaa;
 	} currentMode;
 	bool created;
-	bool mouseVisible;
 }; // Window
 
 } // sdl

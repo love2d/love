@@ -24,9 +24,6 @@
 // SDL
 #include <SDL.h>
 
-// OpenGL
-#include <SDL/SDL_opengl.h>
-
 // LOVE
 #include "common/config.h"
 #include "Window.h"
@@ -41,13 +38,12 @@ namespace sdl
 Window::Window()
 	: windowTitle("")
 	, created(false)
-	, mouseVisible(true)
 {
 	// Window should be centered.
 	SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
 
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-		throw Exception(SDL_GetError());
+		throw love::Exception(SDL_GetError());
 }
 
 Window::~Window()
@@ -101,11 +97,8 @@ bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int f
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 
 	// FSAA
-	if (fsaa > 0)
-	{
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, fsaa);
-	}
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
 
 	// Fullscreen?
 	Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
@@ -116,15 +109,10 @@ bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int f
 		bool failed = true;
 		if (fsaa > 0)
 		{
-			// FSAA might have failed, disable it and try again
+			// FSAA might have caused the failure, disable it and try again
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
-			if (failed)
-			{
-				// There might be no FSAA at all
-				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-				failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
-			}
 		}
 		if (failed)
 		{
@@ -142,20 +130,17 @@ bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int f
 		height = videoinfo->current_h;
 	}
 
-	if (fsaa > 0)
-		glEnable(GL_MULTISAMPLE);
+	int buffers;
+	int samples;
 
-	GLint buffers;
-	GLint samples;
-
-	glGetIntegerv(GL_SAMPLE_BUFFERS_ARB, &buffers);
-	glGetIntegerv(GL_SAMPLES_ARB, &samples);
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
 	// Don't fail because of this, but issue a warning.
 	if ((!buffers && fsaa) || (samples != fsaa))
 	{
-		std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
-		fsaa = !buffers ? 0 : samples;
+		std::cerr << "Warning, FSAA setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
+		fsaa = (buffers > 0) ? samples : 0;
 	}
 
 	// Get the actual vsync status
