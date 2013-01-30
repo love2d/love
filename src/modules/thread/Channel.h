@@ -35,16 +35,9 @@ namespace thread
 {
 class Channel : public love::Object
 {
-private:
-	Mutex *mutex;
-	Conditional *cond;
-	std::queue<Variant*> queue;
-	bool named;
-	std::string name;
-	Channel(const std::string &name);
-
-	unsigned long sent;
-	unsigned long received;
+// FOR WRAPPER USE ONLY
+friend void retainVariant(Channel *, Variant *);
+friend void releaseVariant(Channel *, Variant *);
 
 public:
 	Channel();
@@ -61,6 +54,20 @@ public:
 
 	void retain();
 	void release();
+
+private:
+	Channel(const std::string &name);
+	void lockMutex();
+	void unlockMutex();
+
+	Mutex *mutex;
+	Conditional *cond;
+	std::queue<Variant *> queue;
+	bool named;
+	std::string name;
+
+	unsigned long sent;
+	unsigned long received;
 }; // Channel
 } // thread
 } // love

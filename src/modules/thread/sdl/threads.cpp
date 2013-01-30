@@ -72,7 +72,7 @@ bool Conditional::wait(thread::Mutex *_mutex, int timeout)
 	// Yes, I realise this can be dangerous,
 	// however, you're asking for it if you're
 	// mixing thread implementations.
-	Mutex *mutex = (Mutex*) _mutex;
+	Mutex *mutex = (Mutex *) _mutex;
 	if (timeout < 0)
 		return !SDL_CondWait(cond, mutex->mutex);
 	else

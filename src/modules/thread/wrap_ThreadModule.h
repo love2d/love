@@ -28,11 +28,11 @@ namespace love
 {
 namespace thread
 {
-	int w_newThread(lua_State *L);
-	int w_newChannel(lua_State *L);
-	int w_getChannel(lua_State *L);
+int w_newThread(lua_State *L);
+int w_newChannel(lua_State *L);
+int w_getChannel(lua_State *L);
 
-	extern "C" LOVE_EXPORT int luaopen_love_thread(lua_State * L);
+extern "C" LOVE_EXPORT int luaopen_love_thread(lua_State * L);
 
 } // thread
 } // love

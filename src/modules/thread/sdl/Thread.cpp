@@ -26,65 +26,67 @@ namespace thread
 {
 namespace sdl
 {
-	Thread::Thread(Threadable *t)
-		: t(t), running(false), thread(0)
-	{
-	}
+Thread::Thread(Threadable *t)
+	: t(t)
+	, running(false)
+	, thread(0)
+{
+}
 
-	Thread::~Thread()
-	{
-		if (!running) // Clean up handle
-			wait();
-		/*
-		if (running)
-			wait();
-		FIXME: Needed for proper thread cleanup
-		*/
-	}
+Thread::~Thread()
+{
+	if (!running) // Clean up handle
+		wait();
+	/*
+	if (running)
+		wait();
+	FIXME: Needed for proper thread cleanup
+	*/
+}
 
-	bool Thread::start()
-	{
-		Lock l(mutex);
-		if (running)
-			return false;
-		if (thread) // Clean old handle up
-			SDL_WaitThread(thread, 0);
-		thread = SDL_CreateThread(thread_runner, this);
-		running = (thread != 0);
-		return running;
-	}
-
-	void Thread::wait()
-	{
-		mutex.lock();
-		if (!thread)
-			return;
-		mutex.unlock();
+bool Thread::start()
+{
+	Lock l(mutex);
+	if (running)
+		return false;
+	if (thread) // Clean old handle up
 		SDL_WaitThread(thread, 0);
-		Lock l(mutex);
-		running = false;
-		thread = 0;
-	}
+	thread = SDL_CreateThread(thread_runner, this);
+	running = (thread != 0);
+	return running;
+}
 
-	void Thread::kill()
-	{
-		Lock l(mutex);
-		if (!running)
-			return;
-		SDL_KillThread(thread);
-		SDL_WaitThread(thread, 0);
-		running = false;
-		thread = 0;
-	}
+void Thread::wait()
+{
+	mutex.lock();
+	if (!thread)
+		return;
+	mutex.unlock();
+	SDL_WaitThread(thread, 0);
+	Lock l(mutex);
+	running = false;
+	thread = 0;
+}
 
-	int Thread::thread_runner(void *data)
-	{
-		Thread *self = (Thread*) data; // some compilers don't like 'this'
-		self->t->threadFunction();
-		Lock l(self->mutex);
-		self->running = false;
-		return 0;
-	}
+void Thread::kill()
+{
+	Lock l(mutex);
+	if (!running)
+		return;
+	SDL_KillThread(thread);
+	SDL_WaitThread(thread, 0);
+	running = false;
+	thread = 0;
+}
+
+int Thread::thread_runner(void *data)
+{
+	Thread *self = (Thread *) data; // some compilers don't like 'this'
+	self->t->threadFunction();
+	Lock l(self->mutex);
+	self->running = false;
+	return 0;
+}
 } // sdl
 } // thread
 } // love

@@ -24,26 +24,25 @@ namespace love
 {
 namespace thread
 {
-	const char *ThreadModule::getName() const
-	{
-		return "love.thread.sdl";
-	}
+const char *ThreadModule::getName() const
+{
+	return "love.thread.sdl";
+}
 
-	LuaThread *ThreadModule::newThread(const std::string &name, love::Data *data)
-	{
-		LuaThread *lt = new LuaThread(name, data);
-		return lt;
-	}
+LuaThread *ThreadModule::newThread(const std::string &name, love::Data *data)
+{
+	LuaThread *lt = new LuaThread(name, data);
+	return lt;
+}
 
-	Channel *ThreadModule::newChannel()
-	{
-		return new Channel();
-	}
+Channel *ThreadModule::newChannel()
+{
+	return new Channel();
+}
 
-	Channel *ThreadModule::getChannel(const std::string &name)
-	{
-		return Channel::getChannel(name);
-	}
-
+Channel *ThreadModule::getChannel(const std::string &name)
+{
+	return Channel::getChannel(name);
+}
 } // thread
 } // love

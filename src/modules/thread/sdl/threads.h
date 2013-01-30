@@ -32,37 +32,37 @@ namespace thread
 {
 namespace sdl
 {
-	class Conditional;
+class Conditional;
 
-	class Mutex : public thread::Mutex
-	{
-	public:
-		Mutex();
-		~Mutex();
+class Mutex : public thread::Mutex
+{
+public:
+	Mutex();
+	~Mutex();
 
-		void lock();
-		void unlock();
+	void lock();
+	void unlock();
 
-	private:
-		SDL_mutex* mutex;
-		Mutex(const Mutex&/* mutex*/) {}
+private:
+	SDL_mutex *mutex;
+	Mutex(const Mutex&/* mutex*/) {}
 
-		friend class Conditional;
-	};
+	friend class Conditional;
+};
 
-	class Conditional : public thread::Conditional
-	{
-	public:
-		Conditional();
-		~Conditional();
+class Conditional : public thread::Conditional
+{
+public:
+	Conditional();
+	~Conditional();
 
-		void signal();
-		void broadcast();
-		bool wait(thread::Mutex* mutex, int timeout=-1);
+	void signal();
+	void broadcast();
+	bool wait(thread::Mutex *mutex, int timeout=-1);
 
-	private:
-		SDL_cond* cond;
-	};
+private:
+	SDL_cond *cond;
+};
 
 } // sdl
 } // thread

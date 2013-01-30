@@ -33,19 +33,19 @@ namespace love
 {
 namespace thread
 {
-	class LuaThread : public love::Object, public Threadable
-	{
-	private:
-		love::Data *code;
-		std::string name;
-		std::string error;
+class LuaThread : public love::Object, public Threadable
+{
+public:
+	LuaThread(const std::string &name, love::Data *code);
+	~LuaThread();
+	void threadFunction();
+	const std::string &getError();
 
-	public:
-		LuaThread(const std::string &name, love::Data *code);
-		~LuaThread();
-		void threadFunction();
-		const std::string &getError();
-	};
+private:
+	love::Data *code;
+	std::string name;
+	std::string error;
+};
 } // thread
 } // love
 

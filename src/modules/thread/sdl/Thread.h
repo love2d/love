@@ -34,22 +34,22 @@ namespace thread
 {
 namespace sdl
 {
-	class Thread : public thread::Thread
-	{
-	private:
-		Threadable *t;
-		bool running;
-		SDL_Thread *thread;
-		static int thread_runner(void *data);
-		Mutex mutex;
+class Thread : public thread::Thread
+{
+private:
+	Threadable *t;
+	bool running;
+	SDL_Thread *thread;
+	static int thread_runner(void *data);
+	Mutex mutex;
 
-	public:
-		Thread(Threadable *t);
-		~Thread();
-		bool start();
-		void kill();
-		void wait();
-	}; // Thread
+public:
+	Thread(Threadable *t);
+	~Thread();
+	bool start();
+	void kill();
+	void wait();
+}; // Thread
 } // sdl
 } // thread
 } // love

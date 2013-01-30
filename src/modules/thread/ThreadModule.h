@@ -36,16 +36,16 @@ namespace love
 {
 namespace thread
 {
-	class ThreadModule : public love::Module
-	{
-	public:
-		virtual ~ThreadModule() {}
-		LuaThread *newThread(const std::string &name, love::Data *data);
-		Channel *newChannel();
-		Channel *getChannel(const std::string &name);
+class ThreadModule : public love::Module
+{
+public:
+	virtual ~ThreadModule() {}
+	LuaThread *newThread(const std::string &name, love::Data *data);
+	Channel *newChannel();
+	Channel *getChannel(const std::string &name);
 
-		const char *getName() const;
-	}; // ThreadModule
+	const char *getName() const;
+}; // ThreadModule
 } // thread
 } // love
 

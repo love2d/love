@@ -45,14 +45,14 @@ public:
 
 	virtual void signal() = 0;
 	virtual void broadcast() = 0;
-	virtual bool wait(Mutex* mutex, int timeout=-1) = 0;
+	virtual bool wait(Mutex *mutex, int timeout=-1) = 0;
 };
 
 class Lock
 {
 public:
-	Lock(Mutex* m);
-	Lock(Mutex& m);
+	Lock(Mutex *m);
+	Lock(Mutex &m);
 	~Lock();
 
 private:
