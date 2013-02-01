@@ -768,7 +768,10 @@ int w_getPointSize(lua_State *L)
 
 int w_getPointStyle(lua_State *L)
 {
-	lua_pushinteger(L, instance->getPointStyle());
+	Graphics::PointStyle style = instance->getPointStyle();
+	const char *str;
+	Graphics::getConstant(style, str);
+	lua_pushstring(L, str);
 	return 1;
 }
 
