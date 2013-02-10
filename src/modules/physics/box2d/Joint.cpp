@@ -40,16 +40,16 @@ namespace box2d
 {
 
 Joint::Joint(Body *body1)
-	: body1(body1)
+	: world(body1->world)
+	, body1(body1)
 	, body2(0)
-	, world(body1->world)
 {
 }
 
 Joint::Joint(Body *body1, Body *body2)
-	: body1(body1)
+	: world(body1->world)
+	, body1(body1)
 	, body2(body2)
-	, world(body1->world)
 {
 }
 

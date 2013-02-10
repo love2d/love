@@ -69,7 +69,7 @@ void Thread::ThreadThread::main()
 }
 
 ThreadData::ThreadData(const char *name, size_t len, const char *code, void *mutex, void *cond)
-	: len(len), mutex(mutex), cond(cond)
+	: mutex(mutex), cond(cond), len(len)
 {
 	this->name = new char[len+1];
 	memset(this->name, 0, len+1);

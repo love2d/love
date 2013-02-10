@@ -74,6 +74,11 @@ public:
 	virtual int getWidth() const;
 
 	/**
+	 * Gets the glyph itself.
+	 **/
+	unsigned int getGlyph() const;
+
+	/**
 	 * Gets the advance (the space the glyph takes up) of the glyph.
 	 **/
 	int getAdvance() const;

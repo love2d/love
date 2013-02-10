@@ -83,6 +83,11 @@ int GlyphData::getWidth() const
 	return metrics.width;
 }
 
+unsigned int GlyphData::getGlyph() const
+{
+	return glyph;
+}
+
 int GlyphData::getAdvance() const
 {
 	return metrics.advance;

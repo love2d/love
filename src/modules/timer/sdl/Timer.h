@@ -62,9 +62,6 @@ public:
 
 private:
 
-	// Timing vars for benchmarking.
-	Uint32 time_init;
-
 	// Frame delta vars.
 	Uint32 currTime;
 	Uint32 prevTime;
