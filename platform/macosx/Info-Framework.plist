@@ -13,13 +13,13 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>${PRODUCT_NAME}</string>
+	<string>LÖVE</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>
 	<string>0.8.0</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>LoVe</string>
 	<key>CFBundleVersion</key>
 	<string>0.8.0</string>
 	<key>NSPrincipalClass</key>

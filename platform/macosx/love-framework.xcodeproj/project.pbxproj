@@ -685,7 +685,7 @@
 		FA577A8C16C71D3600860150 /* auto.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = auto.lua; sourceTree = "<group>"; };
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577A8E16C71D3600860150 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
-		FA577AAF16C7507900860150 /* love framework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "love framework.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "love.framework"; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -959,7 +959,7 @@
 		2F654C0235EB60C744A22507 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FA577AAF16C7507900860150 /* love framework.framework */,
+				FA577AAF16C7507900860150 /* love.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1578,9 +1578,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		FA577AAE16C7507900860150 /* love framework */ = {
+		FA577AAE16C7507900860150 /* Framework */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "love framework" */;
+			buildConfigurationList = FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "Framework" */;
 			buildPhases = (
 				FA577AAA16C7507900860150 /* Sources */,
 				FA577AAB16C7507900860150 /* Frameworks */,
@@ -1591,9 +1591,9 @@
 			);
 			dependencies = (
 			);
-			name = "love framework";
+			name = Framework;
 			productName = love;
-			productReference = FA577AAF16C7507900860150 /* love framework.framework */;
+			productReference = FA577AAF16C7507900860150 /* love.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -1615,7 +1615,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				FA577AAE16C7507900860150 /* love framework */,
+				FA577AAE16C7507900860150 /* Framework */,
 			);
 		};
 /* End PBXProject section */
@@ -1951,7 +1951,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "love framework" */ = {
+		FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "Framework" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FA577AC016C7507900860150 /* Debug */,

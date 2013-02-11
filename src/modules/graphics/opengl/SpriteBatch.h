@@ -23,6 +23,7 @@
 
 // C
 #include <cstring>
+#include <deque>
 
 // LOVE
 #include "common/math.h"
@@ -64,6 +65,7 @@ public:
 
 	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
 	int addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
+	void remove(int index);
 	void clear();
 
 	void *lock();
@@ -125,6 +127,10 @@ private:
 
 	VertexBuffer *array_buf;
 	VertexIndex *element_buf;
+
+	// List of gaps in the SpriteBatch. Checked when adding sprites, and added
+	// to when removing them.
+	std::deque<int> gaps;
 
 }; // SpriteBatch
 

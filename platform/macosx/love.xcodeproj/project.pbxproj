@@ -29,6 +29,16 @@
 		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		FA08F6A616C77A4300F007B5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FA577A9316C7217800860150 /* love-framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = FA577AAF16C7507900860150;
+			remoteInfo = "love framework";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		A9255DDE1043185300BA1496 /* Copy Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -147,6 +157,14 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
+		FA08F6A316C77A4300F007B5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FA08F6A716C77A4300F007B5 /* love.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		FA577A9D16C7262E00860150 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -200,12 +218,29 @@
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* love */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = FA08F6A316C77A4300F007B5 /* Products */;
+					ProjectRef = FA577A9316C7217800860150 /* love-framework.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* love */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		FA08F6A716C77A4300F007B5 /* love.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			name = "love.framework";
+			path = love.framework;
+			remoteRef = FA08F6A616C77A4300F007B5 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8D1107290486CEB800E47090 /* Resources */ = {
