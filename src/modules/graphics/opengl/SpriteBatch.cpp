@@ -21,7 +21,7 @@
 #include "SpriteBatch.h"
 
 // STD
-#include <iostream>
+#include <algorithm> // std::find
 
 // OpenGL
 #include "OpenGL.h"

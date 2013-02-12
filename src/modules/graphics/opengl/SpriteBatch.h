@@ -28,7 +28,6 @@
 // LOVE
 #include "common/math.h"
 #include "common/Object.h"
-#include "common/Vector.h"
 #include "common/Matrix.h"
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
