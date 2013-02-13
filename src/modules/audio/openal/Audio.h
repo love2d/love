@@ -38,8 +38,8 @@
 
 // OpenAL
 #ifdef LOVE_MACOSX
-#include <OpenAL/alc.h>
-#include <OpenAL/al.h>
+#include <OpenAL-Soft/alc.h>
+#include <OpenAL-Soft/al.h>
 #else
 #include <AL/alc.h>
 #include <AL/al.h>
