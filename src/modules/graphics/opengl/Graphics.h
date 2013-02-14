@@ -511,8 +511,6 @@ public:
 	void translate(float x, float y);
 	void shear(float kx, float ky);
 
-	void drawTest(Image *image, float x, float y, float a, float sx, float sy, float ox, float oy);
-
 	bool hasFocus();
 private:
 

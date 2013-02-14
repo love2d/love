@@ -1144,31 +1144,6 @@ void Graphics::shear(float kx, float ky)
 	glMultMatrixf((const GLfloat *)t.getElements());
 }
 
-void Graphics::drawTest(Image *image, float x, float y, float a, float sx, float sy, float ox, float oy)
-{
-	image->bind();
-
-	// Buffer for transforming the image.
-	vertex buf[4];
-
-	Matrix t;
-	t.translate(x, y);
-	t.rotate(a);
-	t.scale(sx, sy);
-	t.translate(ox, oy);
-	t.transform(buf, image->getVertices(), 4);
-
-	const vertex *vertices = image->getVertices();
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&buf[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&vertices[0].s);
-	glDrawArrays(GL_QUADS, 0, 4);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-}
-
 bool Graphics::hasFocus()
 {
 	return currentWindow->hasFocus();

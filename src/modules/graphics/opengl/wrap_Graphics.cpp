@@ -956,20 +956,6 @@ int w_drawq(lua_State *L)
 	return 0;
 }
 
-int w_drawTest(lua_State *L)
-{
-	Image *image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
-	float x = (float)luaL_optnumber(L, 2, 0.0f);
-	float y = (float)luaL_optnumber(L, 3, 0.0f);
-	float angle = (float)luaL_optnumber(L, 4, 0.0f);
-	float sx = (float)luaL_optnumber(L, 5, 1.0f);
-	float sy = (float)luaL_optnumber(L, 6, sx);
-	float ox = (float)luaL_optnumber(L, 7, 0);
-	float oy = (float)luaL_optnumber(L, 8, 0);
-	instance->drawTest(image, x, y, angle, sx, sy, ox, oy);
-	return 0;
-}
-
 int w_print(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
@@ -1327,7 +1313,6 @@ static const luaL_Reg functions[] =
 
 	{ "draw", w_draw },
 	{ "drawq", w_drawq },
-	{ "drawTest", w_drawTest },
 
 	{ "print", w_print },
 	{ "printf", w_printf },
