@@ -50,10 +50,6 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	, filter(filter)
 	, mipmapsharpness(0.0f)
 {
-	love::font::GlyphData *gd = r->getGlyphData(32);
-	type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA ? FONT_TRUETYPE : FONT_IMAGE);
-	delete gd;
-
 	// try to find the best texture size match for the font size
 	// default to the largest texture size if no rough match is found
 	texture_size_index = NUM_TEXTURE_SIZES - 1;
@@ -71,9 +67,23 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	texture_width = TEXTURE_WIDTHS[texture_size_index];
 	texture_height = TEXTURE_HEIGHTS[texture_size_index];
 
-	loadVolatile();
+	love::font::GlyphData *gd = 0;
 
-	r->retain();
+	try
+	{
+		gd = r->getGlyphData(32);
+		loadVolatile();
+	}
+	catch (love::Exception &)
+	{
+		delete gd;
+		throw;
+	}
+
+	type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
+	delete gd;
+
+	rasterizer->retain();
 }
 
 Font::~Font()

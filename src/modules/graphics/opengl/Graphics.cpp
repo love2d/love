@@ -375,31 +375,12 @@ Quad *Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
 
 Font *Graphics::newFont(love::font::Rasterizer *r, const Image::Filter &filter)
 {
-	Font *font = new Font(r, filter);
-
-	// Load it and check for errors.
-	if (!font)
-	{
-		delete font;
-		return 0;
-	}
-
-	return font;
+	return new Font(r, filter);
 }
 
 SpriteBatch *Graphics::newSpriteBatch(Image *image, int size, int usage)
 {
-	SpriteBatch *t = NULL;
-	try
-	{
-		t = new SpriteBatch(image, size, usage);
-	}
-	catch(love::Exception &e)
-	{
-		if (t) delete t;
-		throw e;
-	}
-	return t;
+	return new SpriteBatch(image, size, usage);
 }
 
 ParticleSystem *Graphics::newParticleSystem(Image *image, int size)
@@ -462,19 +443,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 
 Shader *Graphics::newShader(const Shader::ShaderSources &sources)
 {
-	Shader *shader = NULL;
-	try
-	{
-		shader = new Shader(sources);
-	}
-	catch(love::Exception &)
-	{
-		if (shader)
-			delete shader;
-		
-		throw;
-	}
-	return shader;
+	return new Shader(sources);
 }
 
 void Graphics::setColor(const Color &c)
