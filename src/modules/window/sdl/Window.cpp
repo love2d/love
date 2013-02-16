@@ -157,7 +157,7 @@ bool Window::setWindow(int width, int height, bool fullscreen, bool vsync, int f
 	return true;
 }
 
-void Window::getWindow(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa)
+void Window::getWindow(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa) const
 {
 	width = currentMode.width;
 	height = currentMode.height;
@@ -166,7 +166,7 @@ void Window::getWindow(int &width, int &height, bool &fullscreen, bool &vsync, i
 	fsaa = currentMode.fsaa;
 }
 
-bool Window::checkWindowSize(int width, int height, bool fullscreen)
+bool Window::checkWindowSize(int width, int height, bool fullscreen) const
 {
 	Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
 
@@ -178,7 +178,7 @@ bool Window::checkWindowSize(int width, int height, bool fullscreen)
 
 typedef Window::WindowSize WindowSize;
 
-WindowSize **Window::getFullscreenSizes(int &n)
+WindowSize **Window::getFullscreenSizes(int &n) const
 {
 	SDL_Rect **modes = SDL_ListModes(0, SDL_OPENGL | SDL_FULLSCREEN);
 
@@ -203,17 +203,17 @@ WindowSize **Window::getFullscreenSizes(int &n)
 	return sizes;
 }
 
-int Window::getWidth()
+int Window::getWidth() const
 {
 	return currentMode.width;
 }
 
-int Window::getHeight()
+int Window::getHeight() const
 {
 	return currentMode.height;
 }
 
-bool Window::isCreated()
+bool Window::isCreated() const
 {
 	return created;
 }
@@ -224,7 +224,7 @@ void Window::setWindowTitle(std::string &title)
 	SDL_WM_SetCaption(windowTitle.c_str(), 0);
 }
 
-std::string Window::getWindowTitle()
+std::string Window::getWindowTitle() const
 {
 	// not a reference
 	// because we want this untouched
@@ -262,7 +262,7 @@ void Window::swapBuffers()
 	SDL_GL_SwapBuffers();
 }
 
-bool Window::hasFocus()
+bool Window::hasFocus() const
 {
 	return (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
 }
@@ -272,7 +272,7 @@ void Window::setMouseVisible(bool visible)
 	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
 }
 
-bool Window::getMouseVisible()
+bool Window::getMouseVisible() const
 {
 	return (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
 }

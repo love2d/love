@@ -117,7 +117,7 @@ public:
 	 * @param width The window width.
 	 * @param height The window height.
 	 **/
-	bool checkMode(int width, int height, bool fullscreen);
+	bool checkMode(int width, int height, bool fullscreen) const;
 
 	DisplayState saveState();
 
@@ -141,7 +141,7 @@ public:
 	 * @param vsync Pointer to a boolean for the vsync status.
 	 * @param fsaa Pointer to an integer for the current number of full scene anti-aliasing buffers.
 	 **/
-	void getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa);
+	void getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa) const;
 
 	/**
 	 * Toggles fullscreen. Note that this also needs to reload the
@@ -177,22 +177,22 @@ public:
 	 **/
 	void setCaption(const char *caption);
 
-	int getCaption(lua_State *L);
+	int getCaption(lua_State *L) const;
 
 	/**
 	 * Gets the width of the current display mode.
 	 **/
-	int getWidth();
+	int getWidth() const;
 
 	/**
 	 * Gets the height of the current display mode.
 	 **/
-	int getHeight();
+	int getHeight() const;
 
 	/**
 	 * True if some display mode is set.
 	 **/
-	bool isCreated();
+	bool isCreated() const;
 
 	/**
 	 * This native Lua function gets available modes
@@ -207,7 +207,7 @@ public:
 	 * Only fullscreen modes are returned here, as all
 	 * window sizes are supported (normally).
 	 **/
-	int getModes(lua_State *L);
+	int getModes(lua_State *L) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded and not drawn.
@@ -228,7 +228,7 @@ public:
 	 * This native Lua function gets the current scissor box in the order of:
 	 * x, y, width, height
 	 **/
-	int getScissor(lua_State *L);
+	int getScissor(lua_State *L) const;
 
 	/**
 	 * Enables the stencil buffer and set stencil function to fill it
@@ -281,7 +281,7 @@ public:
 	/**
 	 * Gets current color.
 	 **/
-	Color getColor();
+	Color getColor() const;
 
 	/**
 	 * Sets the background Color.
@@ -291,7 +291,7 @@ public:
 	/**
 	 * Gets the current background color.
 	 **/
-	Color getBackgroundColor();
+	Color getBackgroundColor() const;
 
 	/**
 	 * Sets the current font.
@@ -301,7 +301,7 @@ public:
 	/**
 	 * Gets the current Font, or nil if none.
 	 **/
-	Font *getFont();
+	Font *getFont() const;
 
 	/**
 	 * Sets the current blend mode.
@@ -321,12 +321,12 @@ public:
 	/**
 	 * Gets the current blend mode.
 	 **/
-	BlendMode getBlendMode();
+	BlendMode getBlendMode() const;
 
 	/**
 	 * Gets the current color mode.
 	 **/
-	ColorMode getColorMode();
+	ColorMode getColorMode() const;
 
 	/**
 	 * Gets the current image filter.
@@ -354,12 +354,12 @@ public:
 	/**
 	 * Gets the line width.
 	 **/
-	float getLineWidth();
+	float getLineWidth() const;
 
 	/**
 	 * Gets the line style.
 	 **/
-	LineStyle getLineStyle();
+	LineStyle getLineStyle() const;
 
 	/**
 	 * Sets the size of points.
@@ -380,18 +380,18 @@ public:
 	/**
 	 * Gets the point size.
 	 **/
-	float getPointSize();
+	float getPointSize() const;
 
 	/**
 	 * Gets the point style.
 	 **/
-	PointStyle getPointStyle();
+	PointStyle getPointStyle() const;
 
 	/**
 	 * Gets the maximum point size supported.
 	 * This may vary from computer to computer.
 	 **/
-	int getMaxPointSize();
+	int getMaxPointSize() const;
 
 	/**
 	 * Draws text at the specified coordinates, with rotation and
@@ -511,7 +511,7 @@ public:
 	void translate(float x, float y);
 	void shear(float kx, float ky);
 
-	bool hasFocus();
+	bool hasFocus() const;
 private:
 
 	Font *currentFont;
@@ -522,7 +522,7 @@ private:
 	GLint matrixLimit;
 	GLint userMatrices;
 
-	int getRenderHeight();
+	int getRenderHeight() const;
 }; // Graphics
 
 } // opengl

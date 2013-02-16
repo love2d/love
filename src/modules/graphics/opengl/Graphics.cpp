@@ -60,7 +60,7 @@ const char *Graphics::getName() const
 	return "love.graphics.opengl";
 }
 
-bool Graphics::checkMode(int width, int height, bool fullscreen)
+bool Graphics::checkMode(int width, int height, bool fullscreen) const
 {
 	return currentWindow->checkWindowSize(width, height, fullscreen);
 }
@@ -181,7 +181,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	return success;
 }
 
-void Graphics::getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa)
+void Graphics::getMode(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa) const
 {
 	currentWindow->getWindow(width, height, fullscreen, vsync, fsaa);
 }
@@ -226,36 +226,36 @@ void Graphics::setCaption(const char *caption)
 	currentWindow->setWindowTitle(title);
 }
 
-int Graphics::getCaption(lua_State *L)
+int Graphics::getCaption(lua_State *L) const
 {
 	std::string title = currentWindow->getWindowTitle();
 	lua_pushstring(L, title.c_str());
 	return 1;
 }
 
-int Graphics::getWidth()
+int Graphics::getWidth() const
 {
 	return currentWindow->getWidth();
 }
 
-int Graphics::getHeight()
+int Graphics::getHeight() const
 {
 	return currentWindow->getHeight();
 }
 
-int Graphics::getRenderHeight()
+int Graphics::getRenderHeight() const
 {
 	if (Canvas::current)
 		return Canvas::current->getHeight();
 	return getHeight();
 }
 
-bool Graphics::isCreated()
+bool Graphics::isCreated() const
 {
 	return currentWindow->isCreated();
 }
 
-int Graphics::getModes(lua_State *L)
+int Graphics::getModes(lua_State *L) const
 {
 	int n;
 	love::window::Window::WindowSize **modes = currentWindow->getFullscreenSizes(n);
@@ -302,7 +302,7 @@ void Graphics::setScissor()
 	glDisable(GL_SCISSOR_TEST);
 }
 
-int Graphics::getScissor(lua_State *L)
+int Graphics::getScissor(lua_State *L) const
 {
 	if (glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
 		return 0;
@@ -451,7 +451,7 @@ void Graphics::setColor(const Color &c)
 	glColor4ubv(&c.r);
 }
 
-Color Graphics::getColor()
+Color Graphics::getColor() const
 {
 	float c[4];
 	glGetFloatv(GL_CURRENT_COLOR, c);
@@ -470,7 +470,7 @@ void Graphics::setBackgroundColor(const Color &c)
 	glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
 }
 
-Color Graphics::getBackgroundColor()
+Color Graphics::getBackgroundColor() const
 {
 	float c[4];
 	glGetFloatv(GL_COLOR_CLEAR_VALUE, c);
@@ -495,7 +495,7 @@ void Graphics::setFont(Font *font)
 		currentFont->retain();
 }
 
-Font *Graphics::getFont()
+Font *Graphics::getFont() const
 {
 	return currentFont;
 }
@@ -549,7 +549,7 @@ void Graphics::setColorMode(Graphics::ColorMode mode)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
-Graphics::BlendMode Graphics::getBlendMode()
+Graphics::BlendMode Graphics::getBlendMode() const
 {
 	GLint dst, src, equation;
 	glGetIntegerv(GL_BLEND_DST, &dst);
@@ -572,7 +572,7 @@ Graphics::BlendMode Graphics::getBlendMode()
 	return BLEND_MAX_ENUM; // Should never be reached.
 }
 
-Graphics::ColorMode Graphics::getColorMode()
+Graphics::ColorMode Graphics::getColorMode() const
 {
 	GLint mode;
 	glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
@@ -614,12 +614,12 @@ void Graphics::setLine(float width, Graphics::LineStyle style)
 	setLineStyle(style);
 }
 
-float Graphics::getLineWidth()
+float Graphics::getLineWidth() const
 {
 	return lineWidth;
 }
 
-Graphics::LineStyle Graphics::getLineStyle()
+Graphics::LineStyle Graphics::getLineStyle() const
 {
 	return lineStyle;
 }
@@ -647,14 +647,14 @@ void Graphics::setPoint(float size, Graphics::PointStyle style)
 	glPointSize((GLfloat)size);
 }
 
-float Graphics::getPointSize()
+float Graphics::getPointSize() const
 {
 	GLfloat size;
 	glGetFloatv(GL_POINT_SIZE, &size);
 	return (float)size;
 }
 
-Graphics::PointStyle Graphics::getPointStyle()
+Graphics::PointStyle Graphics::getPointStyle() const
 {
 	if (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
 		return POINT_SMOOTH;
@@ -662,7 +662,7 @@ Graphics::PointStyle Graphics::getPointStyle()
 		return POINT_ROUGH;
 }
 
-int Graphics::getMaxPointSize()
+int Graphics::getMaxPointSize() const
 {
 	GLint max;
 	glGetIntegerv(GL_POINT_SIZE_MAX, &max);
@@ -1113,7 +1113,7 @@ void Graphics::shear(float kx, float ky)
 	glMultMatrixf((const GLfloat *)t.getElements());
 }
 
-bool Graphics::hasFocus()
+bool Graphics::hasFocus() const
 {
 	return currentWindow->hasFocus();
 }

@@ -38,26 +38,26 @@ public:
 	~Window();
 
 	bool setWindow(int width = 800, int height = 600, bool fullscreen = false, bool vsync = true, int fsaa = 0);
-	void getWindow(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa);
+	void getWindow(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa) const;
 
-	bool checkWindowSize(int width, int height, bool fullscreen);
-	WindowSize **getFullscreenSizes(int &n);
+	bool checkWindowSize(int width, int height, bool fullscreen) const;
+	WindowSize **getFullscreenSizes(int &n) const;
 
-	int getWidth();
-	int getHeight();
+	int getWidth() const;
+	int getHeight() const;
 
-	bool isCreated();
+	bool isCreated() const;
 
 	void setWindowTitle(std::string &title);
-	std::string getWindowTitle();
+	std::string getWindowTitle() const;
 
 	bool setIcon(love::image::ImageData *imgd);
 
 	void swapBuffers();
 
-	bool hasFocus();
+	bool hasFocus() const;
 	void setMouseVisible(bool visible);
-	bool getMouseVisible();
+	bool getMouseVisible() const;
 
 	static love::window::Window *getSingleton();
 
