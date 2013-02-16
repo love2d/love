@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 	}
 
 	// Create the virtual machine.
-	lua_State *L = lua_open();
+	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 
 	love_preload(L, luaopen_love, "love");

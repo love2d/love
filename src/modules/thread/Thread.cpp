@@ -39,7 +39,7 @@ Thread::ThreadThread::ThreadThread(ThreadData *comm)
 
 void Thread::ThreadThread::main()
 {
-	lua_State *L = lua_open();
+	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 #ifdef LOVE_BUILD_STANDALONE
 	love::luax_preload(L, luaopen_love, "love");
