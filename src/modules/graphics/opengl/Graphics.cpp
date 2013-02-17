@@ -551,10 +551,14 @@ void Graphics::setColorMode(Graphics::ColorMode mode)
 
 Graphics::BlendMode Graphics::getBlendMode() const
 {
-	GLint dst, src, equation;
+	GLint dst, src;
 	glGetIntegerv(GL_BLEND_DST, &dst);
 	glGetIntegerv(GL_BLEND_SRC, &src);
-	glGetIntegerv(GL_BLEND_EQUATION, &equation);
+
+	GLint equation = GL_FUNC_ADD;
+
+	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract))
+		glGetIntegerv(GL_BLEND_EQUATION, &equation);
 
 	if (equation == GL_FUNC_REVERSE_SUBTRACT)  // && src == GL_SRC_ALPHA && dst == GL_ONE
 		return BLEND_SUBTRACTIVE;
