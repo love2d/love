@@ -516,8 +516,6 @@ void Font::checkMipmapsCreated() const
 
 		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
 			glGenerateMipmap(GL_TEXTURE_2D);
-		else if (GLEE_EXT_framebuffer_object)
-			glGenerateMipmapEXT(GL_TEXTURE_2D);
 		else
 		{
 			// modify single texel to trigger mipmap chain generation
