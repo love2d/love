@@ -128,63 +128,6 @@ int w_Font_getFilter(lua_State *L)
 	return 2;
 }
 
-int w_Font_setMipmapFilter(lua_State *L)
-{
-	Font *t = luax_checkfont(L, 1);
-	Image::Filter f = t->getFilter();
-
-	if (lua_isnoneornil(L, 2))
-		f.mipmap = Image::FILTER_NONE; // mipmapping is disabled if no argument is given
-	else
-	{
-		const char *mipmapstr = luaL_checkstring(L, 2);
-		if (!Image::getConstant(mipmapstr, f.mipmap))
-			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
-	}
-
-	try
-	{
-		t->setFilter(f);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-	
-	return 0;
-}
-
-int w_Font_getMipmapFilter(lua_State *L)
-{
-	Font *t = luax_checkfont(L, 1);
-	const Image::Filter f = t->getFilter();
-
-	const char *mipmapstr;
-	if (!Image::getConstant(f.mipmap, mipmapstr))
-		return 0; // only return a mipmap filter if mipmapping is enabled
-
-	lua_pushstring(L, mipmapstr);
-
-	return 1;
-}
-
-int w_Font_setMipmapSharpness(lua_State *L)
-{
-	Font *t = luax_checkfont(L, 1);
-
-	float sharpness = (float) luaL_checknumber(L, 2);
-	t->setMipmapSharpness(sharpness);
-
-	return 0;
-}
-
-int w_Font_getMipmapSharpness(lua_State *L)
-{
-	Font *t = luax_checkfont(L, 1);
-	lua_pushnumber(L, t->getMipmapSharpness());
-	return 1;
-}
-
 int w_Font_getAscent(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
@@ -215,10 +158,6 @@ static const luaL_Reg functions[] =
 	{ "getLineHeight", w_Font_getLineHeight },
 	{ "setFilter", w_Font_setFilter },
 	{ "getFilter", w_Font_getFilter },
-	{ "setMipmapFilter", w_Font_setMipmapFilter },
-	{ "getMipmapFilter", w_Font_getMipmapFilter },
-	{ "setMipmapSharpness", w_Font_setMipmapSharpness },
-	{ "getMipmapSharpness", w_Font_getMipmapSharpness },
 	{ "getAscent", w_Font_getAscent },
 	{ "getDescent", w_Font_getDescent },
 	{ "getBaseline", w_Font_getBaseline },

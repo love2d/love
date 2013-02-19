@@ -48,7 +48,6 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	, lineHeight(1)
 	, mSpacing(1)
 	, filter(filter)
-	, mipmapsharpness(0.0f)
 {
 	// try to find the best texture size match for the font size
 	// default to the largest texture size if no rough match is found
@@ -125,8 +124,8 @@ void Font::createTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
 
@@ -167,7 +166,6 @@ void Font::createTexture()
 					&emptyData[0]);
 
 	setFilter(filter);
-	setMipmapSharpness(mipmapsharpness);
 }
 
 Font::Glyph *Font::addGlyph(unsigned int glyph)
@@ -498,39 +496,6 @@ float Font::getSpacing() const
 	return mSpacing;
 }
 
-void Font::checkMipmapsCreated() const
-{
-	if (filter.mipmap != Image::FILTER_NEAREST && filter.mipmap != Image::FILTER_LINEAR)
-		return;
-
-	if (!Image::hasMipmapSupport())
-		throw love::Exception("Mipmap filtering is not supported on this system!");
-
-	GLint mipmapscreated;
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &mipmapscreated);
-
-	// generate mipmaps for this image if we haven't already
-	if (!mipmapscreated)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-
-		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
-			glGenerateMipmap(GL_TEXTURE_2D);
-		else
-		{
-			// modify single texel to trigger mipmap chain generation
-			std::vector<GLubyte> emptydata(type == FONT_TRUETYPE ? 2 : 4);
-			glTexSubImage2D(GL_TEXTURE_2D,
-							0,
-							0, 0,
-							1, 1,
-							type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA,
-							GL_UNSIGNED_BYTE,
-							&emptydata[0]);
-		}
-	}
-}
-
 void Font::setFilter(const Image::Filter &f)
 {
 	filter = f;
@@ -539,7 +504,6 @@ void Font::setFilter(const Image::Filter &f)
 	for (it = textures.begin(); it != textures.end(); ++it)
 	{
 		bindTexture(*it);
-		checkMipmapsCreated();
 		setTextureFilter(f);
 	}
 }
@@ -549,32 +513,8 @@ const Image::Filter &Font::getFilter()
 	return filter;
 }
 
-void Font::setMipmapSharpness(float sharpness)
-{
-	if (!Image::hasMipmapSharpnessSupport())
-		return;
-
-	// LOD bias has the range (-maxbias, maxbias)
-	mipmapsharpness = std::min(std::max(sharpness, -maxmipmapsharpness + 0.01f), maxmipmapsharpness - 0.01f);
-
-	std::vector<GLuint>::const_iterator it;
-	for (it = textures.begin(); it != textures.end(); ++it)
-	{
-		bindTexture(*it);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness); // negative bias is sharper
-	}
-}
-
-float Font::getMipmapSharpness() const
-{
-	return mipmapsharpness;
-}
-
 bool Font::loadVolatile()
 {
-	if (Image::hasMipmapSharpnessSupport())
-		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
-
 	createTexture();
 	return true;
 }

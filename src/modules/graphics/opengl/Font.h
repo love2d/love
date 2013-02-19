@@ -129,9 +129,6 @@ public:
 	void setFilter(const Image::Filter &f);
 	const Image::Filter &getFilter();
 
-	void setMipmapSharpness(float sharpness);
-	float getMipmapSharpness() const;
-
 	// Implements Volatile.
 	bool loadVolatile();
 	void unloadVolatile();
@@ -203,14 +200,6 @@ private:
 
 	int texture_x, texture_y;
 	int rowHeight;
-
-	// Mipmap texture LOD bias value
-	float mipmapsharpness;
-
-	// Implementation-dependent maximum/minimum mipmap sharpness values
-	float maxmipmapsharpness;
-
-	void checkMipmapsCreated() const;
 
 	bool initializeTexture(GLint format);
 	void createTexture();
