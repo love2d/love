@@ -46,9 +46,8 @@ void initializeContext()
 
 	contextInitialized = true;
 
-	textureUnits.clear();
-
 	// initialize multiple texture unit support for shaders, if available
+	textureUnits.clear();
 	if (Shader::isSupported())
 	{
 		GLint maxtextureunits;
@@ -76,6 +75,24 @@ void initializeContext()
 		textureUnits.resize(1, 0);
 		curTextureUnit = 0;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &textureUnits[0]);
+	}
+
+	// The functionality of the core and ARB VBOs are identical, so we can
+	// assign the pointers of the core functions to the names of the ARB
+	// functions, if the latter isn't supported but the former is.
+	if (GLEE_VERSION_1_5 && !GLEE_ARB_vertex_buffer_object)
+	{
+		glBindBufferARB = (GLEEPFNGLBINDBUFFERARBPROC) glBindBuffer;
+		glBufferDataARB = (GLEEPFNGLBUFFERDATAARBPROC) glBufferData;
+		glBufferSubDataARB = (GLEEPFNGLBUFFERSUBDATAARBPROC) glBufferSubData;
+		glDeleteBuffersARB = (GLEEPFNGLDELETEBUFFERSARBPROC) glDeleteBuffers;
+		glGenBuffersARB = (GLEEPFNGLGENBUFFERSARBPROC) glGenBuffers;
+		glGetBufferParameterivARB = (GLEEPFNGLGETBUFFERPARAMETERIVARBPROC) glGetBufferParameteriv;
+		glGetBufferPointervARB = (GLEEPFNGLGETBUFFERPOINTERVARBPROC) glGetBufferPointerv;
+		glGetBufferSubDataARB = (GLEEPFNGLGETBUFFERSUBDATAARBPROC) glGetBufferSubData;
+		glIsBufferARB = (GLEEPFNGLISBUFFERARBPROC) glIsBuffer;
+		glMapBufferARB = (GLEEPFNGLMAPBUFFERARBPROC) glMapBuffer;
+		glUnmapBufferARB = (GLEEPFNGLUNMAPBUFFERARBPROC) glUnmapBuffer;
 	}
 
 	// Set the 'default' texture (id 0) as a repeating white pixel.
