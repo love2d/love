@@ -37,7 +37,8 @@ Image::Image(love::image::ImageData *data)
 	: width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
-	, mipmapsharpness(0.0f)
+	, mipmapSharpness(0.0f)
+	, mipmapsCreated(false)
 {
 	data->retain();
 	this->data = data;
@@ -143,36 +144,55 @@ void Image::drawq(love::graphics::Quad *quad, float x, float y, float angle, flo
 	drawv(t, v);
 }
 
-void Image::checkMipmapsCreated() const
+void Image::checkMipmapsCreated()
 {
-	if (filter.mipmap != FILTER_NEAREST && filter.mipmap != FILTER_LINEAR)
+	if (mipmapsCreated || (filter.mipmap != FILTER_NEAREST && filter.mipmap != FILTER_LINEAR))
 		return;
 
 	if (!hasMipmapSupport())
-		throw love::Exception("Mipmap filtering is not supported on this system!");
+		throw love::Exception("Mipmap filtering is not supported on this system.");
 
-	// some old GPUs/systems claim support for NPOT textures, but fail when generating mipmaps
-	// we can't detect which systems will do this, so we fail gracefully for all NPOT images
+	// Some old drivers claim support for NPOT textures, but fail when creating mipmaps.
+	// we can't detect which systems will do this, so we fail gracefully for all NPOT images.
 	int w = int(width), h = int(height);
 	if (w != next_p2(w) || h != next_p2(h))
-		throw love::Exception("Could not generate mipmaps: image does not have power of two dimensions!");
+		throw love::Exception("Could not create mipmaps: image does not have power of two dimensions.");
 
 	bind();
 
-	GLint mipmapscreated;
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &mipmapscreated);
+	if (hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	{
+		// AMD/ATI drivers have several bugs when generating mipmaps,
+		// re-uploading the entire base image seems to be required.
+		glTexImage2D(GL_TEXTURE_2D,
+					 0,
+					 GL_RGBA8,
+					 (GLsizei)width,
+					 (GLsizei)height,
+					 0,
+					 GL_RGBA,
+					 GL_UNSIGNED_BYTE,
+					 data->getData());
 
-	// generate mipmaps for this image if we haven't already
-	if (!mipmapscreated)
+		// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
+		glEnable(GL_TEXTURE_2D);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-
-		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
-			glGenerateMipmap(GL_TEXTURE_2D);
-		else
-			// modify single texel to trigger mipmap chain generation
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data->getData());
+		glTexSubImage2D(GL_TEXTURE_2D,
+						0,
+						0,
+						0,
+						(GLsizei)width,
+						(GLsizei)height,
+						GL_RGBA,
+						GL_UNSIGNED_BYTE,
+						data->getData());
 	}
+
+	mipmapsCreated = true;
 }
 
 void Image::setFilter(const Image::Filter &f)
@@ -180,8 +200,8 @@ void Image::setFilter(const Image::Filter &f)
 	filter = f;
 
 	bind();
-	checkMipmapsCreated();
 	setTextureFilter(f);
+	checkMipmapsCreated();
 }
 
 const Image::Filter &Image::getFilter() const
@@ -208,15 +228,15 @@ void Image::setMipmapSharpness(float sharpness)
 		return;
 
 	// LOD bias has the range (-maxbias, maxbias)
-	mipmapsharpness = std::min(std::max(sharpness, -maxmipmapsharpness + 0.01f), maxmipmapsharpness - 0.01f);
+	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
 	bind();
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapsharpness); // negative bias is sharper
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness); // negative bias is sharper
 }
 
 float Image::getMipmapSharpness() const
 {
-	return mipmapsharpness;
+	return mipmapSharpness;
 }
 
 void Image::bind() const
@@ -240,7 +260,7 @@ void Image::unload()
 bool Image::loadVolatile()
 {
 	if (hasMipmapSharpnessSupport())
-		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxmipmapsharpness);
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
 	if (hasNpot())
 		return loadVolatileNPOT();
@@ -253,11 +273,8 @@ bool Image::loadVolatilePOT()
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	setTextureFilter(filter);
+	setTextureWrap(wrap);
 
 	float p2width = next_p2(width);
 	float p2height = next_p2(height);
@@ -289,9 +306,9 @@ bool Image::loadVolatilePOT()
 					GL_UNSIGNED_BYTE,
 					data->getData());
 
-	setMipmapSharpness(mipmapsharpness);
-	setFilter(filter);
-	setWrap(wrap);
+	mipmapsCreated = false;
+	checkMipmapsCreated();
+	setMipmapSharpness(mipmapSharpness);
 
 	return true;
 }
@@ -301,11 +318,8 @@ bool Image::loadVolatileNPOT()
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	setTextureFilter(filter);
+	setTextureWrap(wrap);
 
 	glTexImage2D(GL_TEXTURE_2D,
 				 0,
@@ -317,9 +331,9 @@ bool Image::loadVolatileNPOT()
 				 GL_UNSIGNED_BYTE,
 				 data->getData());
 
-	setMipmapSharpness(mipmapsharpness);
-	setFilter(filter);
-	setWrap(wrap);
+	mipmapsCreated = false;
+	checkMipmapsCreated();
+	setMipmapSharpness(mipmapSharpness);
 
 	return true;
 }
@@ -360,12 +374,12 @@ bool Image::hasNpot()
 
 bool Image::hasMipmapSupport()
 {
-	return (GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap) != 0;
+	return GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap;
 }
 
 bool Image::hasMipmapSharpnessSupport()
 {
-	return (GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias) != 0;
+	return GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias;
 }
 
 } // opengl
