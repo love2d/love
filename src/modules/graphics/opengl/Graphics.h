@@ -510,6 +510,7 @@ public:
 	void scale(float x, float y = 1.0f);
 	void translate(float x, float y);
 	void shear(float kx, float ky);
+	void origin();
 
 	bool hasFocus() const;
 private:

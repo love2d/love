@@ -207,7 +207,6 @@ void Graphics::reset()
 void Graphics::clear()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
-	glLoadIdentity();
 }
 
 void Graphics::present()
@@ -1115,6 +1114,11 @@ void Graphics::shear(float kx, float ky)
 	Matrix t;
 	t.setShear(kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
+}
+
+void Graphics::origin()
+{
+	glLoadIdentity();
 }
 
 bool Graphics::hasFocus() const

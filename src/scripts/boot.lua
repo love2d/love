@@ -369,6 +369,7 @@ function love.init()
 				love.event.pump()
 				love.graphics.setBackgroundColor(89, 157, 220)
 				love.graphics.clear()
+				love.graphics.origin()
 				love.graphics.print(msg, 70, 70)
 				love.graphics.present()
 				love.graphics.setBackgroundColor(0, 0, 0)
@@ -416,6 +417,7 @@ function love.run()
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 		if love.graphics then
 			love.graphics.clear()
+			love.graphics.origin()
 			if love.draw then love.draw() end
 		end
 
@@ -709,6 +711,7 @@ function love.errhand(msg)
 	local trace = debug.traceback()
 
 	love.graphics.clear()
+	love.graphics.origin()
 
 	local err = {}
 
@@ -772,6 +775,7 @@ function love.releaseerrhand(msg)
 	love.graphics.setColor(255, 255, 255, 255)
 
 	love.graphics.clear()
+	love.graphics.origin()
 
 	local err = {}
 

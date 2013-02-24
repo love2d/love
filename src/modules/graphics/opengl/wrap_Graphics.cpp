@@ -1250,6 +1250,12 @@ int w_shear(lua_State *L)
 	return 0;
 }
 
+int w_origin(lua_State *L)
+{
+	instance->origin();
+	return 0;
+}
+
 int w_hasFocus(lua_State *L)
 {
 	luax_pushboolean(L, instance->hasFocus());
@@ -1352,6 +1358,7 @@ static const luaL_Reg functions[] =
 	{ "scale", w_scale },
 	{ "translate", w_translate },
 	{ "shear", w_shear },
+	{ "origin", w_origin },
 
 	{ "hasFocus", w_hasFocus },
 
