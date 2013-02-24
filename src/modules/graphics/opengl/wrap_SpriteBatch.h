@@ -36,7 +36,6 @@ int w_SpriteBatch_add(lua_State *L);
 int w_SpriteBatch_addq(lua_State *L);
 int w_SpriteBatch_set(lua_State *L);
 int w_SpriteBatch_setq(lua_State *L);
-int w_SpriteBatch_remove(lua_State *L);
 int w_SpriteBatch_clear(lua_State *L);
 int w_SpriteBatch_lock(lua_State *L);
 int w_SpriteBatch_unlock(lua_State *L);
