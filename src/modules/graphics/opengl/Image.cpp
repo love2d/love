@@ -309,12 +309,7 @@ bool Image::loadVolatilePOT()
 	                data->getData());
 
 	if (glGetError() != GL_NO_ERROR)
-	{
-		if (p2width > width || p2height > height)
-			throw love::Exception("Cannot create image: padded size may be larger than the maximum supported on this system.");
-		else
-			throw love::Exception("Cannot create image: size may be larger than the maximum supported on this system.");
-	}
+		throw love::Exception("Cannot create image: size may be too large for this system.");
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
@@ -344,7 +339,7 @@ bool Image::loadVolatileNPOT()
 	             data->getData());
 
 	if (glGetError() != GL_NO_ERROR)
-		throw love::Exception("Cannot create image: size may be larger than the maximum supported on this system.");
+		throw love::Exception("Cannot create image: size may be too large for this system.");
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
