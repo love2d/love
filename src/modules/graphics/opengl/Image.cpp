@@ -156,7 +156,7 @@ void Image::checkMipmapsCreated()
 	// we can't detect which systems will do this, so we fail gracefully for all NPOT images.
 	int w = int(width), h = int(height);
 	if (w != next_p2(w) || h != next_p2(h))
-		throw love::Exception("Could not create mipmaps: image does not have power of two dimensions.");
+		throw love::Exception("Cannot create mipmaps: image does not have power of two dimensions.");
 
 	bind();
 
@@ -165,14 +165,14 @@ void Image::checkMipmapsCreated()
 		// AMD/ATI drivers have several bugs when generating mipmaps,
 		// re-uploading the entire base image seems to be required.
 		glTexImage2D(GL_TEXTURE_2D,
-					 0,
-					 GL_RGBA8,
-					 (GLsizei)width,
-					 (GLsizei)height,
-					 0,
-					 GL_RGBA,
-					 GL_UNSIGNED_BYTE,
-					 data->getData());
+		             0,
+		             GL_RGBA8,
+		             (GLsizei)width,
+		             (GLsizei)height,
+		             0,
+		             GL_RGBA,
+		             GL_UNSIGNED_BYTE,
+		             data->getData());
 
 		// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
 		glEnable(GL_TEXTURE_2D);
@@ -182,14 +182,14 @@ void Image::checkMipmapsCreated()
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		glTexSubImage2D(GL_TEXTURE_2D,
-						0,
-						0,
-						0,
-						(GLsizei)width,
-						(GLsizei)height,
-						GL_RGBA,
-						GL_UNSIGNED_BYTE,
-						data->getData());
+		                0,
+		                0,
+		                0,
+		                (GLsizei)width,
+		                (GLsizei)height,
+		                GL_RGBA,
+		                GL_UNSIGNED_BYTE,
+		                data->getData());
 	}
 
 	mipmapsCreated = true;
@@ -286,25 +286,35 @@ bool Image::loadVolatilePOT()
 	vertices[2].s = s;
 	vertices[3].s = s;
 
+	while (glGetError() != GL_NO_ERROR); // clear errors
+
 	glTexImage2D(GL_TEXTURE_2D,
-				 0,
-				 GL_RGBA8,
-				 (GLsizei)p2width,
-				 (GLsizei)p2height,
-				 0,
-				 GL_RGBA,
-				 GL_UNSIGNED_BYTE,
-				 0);
+	             0,
+	             GL_RGBA8,
+	             (GLsizei)p2width,
+	             (GLsizei)p2height,
+	             0,
+	             GL_RGBA,
+	             GL_UNSIGNED_BYTE,
+	             0);
 
 	glTexSubImage2D(GL_TEXTURE_2D,
-					0,
-					0,
-					0,
-					(GLsizei)width,
-					(GLsizei)height,
-					GL_RGBA,
-					GL_UNSIGNED_BYTE,
-					data->getData());
+	                0,
+	                0,
+	                0,
+	                (GLsizei)width,
+	                (GLsizei)height,
+	                GL_RGBA,
+	                GL_UNSIGNED_BYTE,
+	                data->getData());
+
+	if (glGetError() != GL_NO_ERROR)
+	{
+		if (p2width > width || p2height > height)
+			throw love::Exception("Cannot create image: padded size may be larger than the maximum supported on this system.");
+		else
+			throw love::Exception("Cannot create image: size may be larger than the maximum supported on this system.");
+	}
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
@@ -321,15 +331,20 @@ bool Image::loadVolatileNPOT()
 	setTextureFilter(filter);
 	setTextureWrap(wrap);
 
+	while (glGetError() != GL_NO_ERROR); // clear errors
+
 	glTexImage2D(GL_TEXTURE_2D,
-				 0,
-				 GL_RGBA8,
-				 (GLsizei)width,
-				 (GLsizei)height,
-				 0,
-				 GL_RGBA,
-				 GL_UNSIGNED_BYTE,
-				 data->getData());
+	             0,
+	             GL_RGBA8,
+	             (GLsizei)width,
+	             (GLsizei)height,
+	             0,
+	             GL_RGBA,
+	             GL_UNSIGNED_BYTE,
+	             data->getData());
+
+	if (glGetError() != GL_NO_ERROR)
+		throw love::Exception("Cannot create image: size may be larger than the maximum supported on this system.");
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
