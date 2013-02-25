@@ -20,9 +20,6 @@
 
 #include "SpriteBatch.h"
 
-// STD
-#include <algorithm> // std::find
-
 // OpenGL
 #include "OpenGL.h"
 
@@ -97,24 +94,8 @@ SpriteBatch::~SpriteBatch()
 int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 {
 	// Only do this if there's a free slot.
-	if ((index == -1 && next >= size && gaps.size() == 0) || index < -1 || index >= size)
+	if ((index == -1 && next >= size) || index < -1 || index >= size)
 		return -1;
-
-	// Determine where in the vertex buffer to insert into, using the gap list
-	// if possible.
-	int realindex;
-	if (index == -1 && gaps.size() > 0)
-	{
-		realindex = gaps.front();
-		gaps.pop_front();
-	}
-	else
-	{
-		realindex = (index == -1) ? next : index;
-		std::deque<int>::iterator it = std::find(gaps.begin(), gaps.end(), realindex);
-		if (it != gaps.end())
-			gaps.erase(it); // This index is no longer a gap.
-	}
 
 	// Needed for colors.
 	memcpy(sprite, image->getVertices(), sizeof(vertex)*4);
@@ -128,36 +109,20 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 		setColorv(sprite, *color);
 	
 
-	addv(sprite, realindex);
+	addv(sprite, (index == -1) ? next : index);
 
 	// Increment counter.
-	if (index == -1 && realindex == next)
+	if (index == -1)
 		return next++;
 
-	return realindex;
+	return index;
 }
 
 int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 {
 	// Only do this if there's a free slot.
-	if ((index == -1 && next >= size && gaps.size() == 0) || index < -1 || index >= next)
+	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
-
-	// Determine where in the vertex buffer to insert into, using the gap list
-	// if possible.
-	int realindex;
-	if (index == -1 && gaps.size() > 0)
-	{
-		realindex = gaps.front();
-		gaps.pop_front();
-	}
-	else
-	{
-		realindex = (index == -1) ? next : index;
-		std::deque<int>::iterator it = std::find(gaps.begin(), gaps.end(), realindex);
-		if (it != gaps.end())
-			gaps.erase(it); // This index is no longer a gap.
-	}
 
 	// Needed for colors.
 	memcpy(sprite, quad->getVertices(), sizeof(vertex)*4);
@@ -170,53 +135,19 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	if (color)
 		setColorv(sprite, *color);
 
-	addv(sprite, realindex);
+	addv(sprite, (index == -1) ? next : index);
 
 	// Increment counter.
-	if (index == -1 && realindex == next)
+	if (index == -1)
 		return next++;
 
-	return realindex;
-}
-
-void SpriteBatch::remove(int index)
-{
-	if (index < 0 || index >= next || next <= 0)
-		return;
-
-	// If this is the last index in the sprite list, decrease the total sprite
-	// count instead of adding a dummy sprite.
-	if (index == next - 1)
-	{
-		int spritecount = index;
-
-		// Remove all consecutive gaps at the end of the sprite list.
-		std::deque<int>::iterator it;
-		while ((it = std::find(gaps.begin(), gaps.end(), --spritecount)) != gaps.end())
-			gaps.erase(it);
-
-		next = spritecount + 1;
-		return;
-	}
-	else if (std::find(gaps.begin(), gaps.end(), index) != gaps.end())
-		return; // Don't add the same index to the gap list twice.
-
-
-	// OpenGL won't render any primitive whose vertices are all identical.
-	for (int i = 0; i < 4; i++)
-		sprite[i].x = sprite[i].y = 0;
-
-	// Replace the existing sprite at this index with the dummy sprite.
-	addv(sprite, index);
-
-	gaps.push_back(index);
+	return index;
 }
 
 void SpriteBatch::clear()
 {
 	// Reset the position of the next index.
 	next = 0;
-	gaps.clear();
 }
 
 void *SpriteBatch::lock()

@@ -112,11 +112,13 @@
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Debug\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Debug\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|x64'">
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Debug\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Debug\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MT\</OutDir>
@@ -130,11 +132,13 @@
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|x64'">
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|Win32'">
     <ClCompile>

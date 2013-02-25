@@ -101,14 +101,6 @@ int w_SpriteBatch_setq(lua_State *L)
 	return 0;
 }
 
-int w_SpriteBatch_remove(lua_State *L)
-{
-	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int id = luaL_checkinteger(L, 2);
-	t->remove(id);
-	return 0;
-}
-
 int w_SpriteBatch_clear(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
@@ -198,7 +190,6 @@ static const luaL_Reg functions[] =
 	{ "addq", w_SpriteBatch_addq },
 	{ "set", w_SpriteBatch_set },
 	{ "setq", w_SpriteBatch_setq },
-	{ "remove", w_SpriteBatch_remove },
 	{ "clear", w_SpriteBatch_clear },
 	{ "bind", w_SpriteBatch_bind },
 	{ "unbind", w_SpriteBatch_unbind },
