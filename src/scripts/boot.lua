@@ -257,6 +257,7 @@ function love.init()
 			image = true,
 			graphics = true,
 			audio = true,
+			math = true,
 			physics = true,
 			sound = true,
 			font = true,
@@ -307,6 +308,7 @@ function love.init()
 		"image",
 		"font",
 		"graphics",
+		"math",
 		"physics",
 	} do
 		if c.modules[v] then
