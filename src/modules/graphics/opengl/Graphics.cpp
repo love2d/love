@@ -86,6 +86,9 @@ DisplayState Graphics::saveState()
 	if (s.scissor)
 		glGetIntegerv(GL_SCISSOR_BOX, s.scissorBox);
 
+	for (int i = 0; i < 4; i++)
+		s.colorMask[i] = colorMask[i];
+
 	return s;
 }
 
@@ -101,6 +104,7 @@ void Graphics::restoreState(const DisplayState &s)
 		setScissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3]);
 	else
 		setScissor();
+	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
 }
 
 bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int fsaa)
@@ -135,6 +139,9 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 
 	// "Normal" blending
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Enable all color component writes.
+	setColorMask(true, true, true, true);
 
 	// Enable line/point smoothing.
 	setLineStyle(LINE_SMOOTH);
@@ -331,12 +338,12 @@ void Graphics::useStencil(bool invert)
 {
 	glStencilFunc(GL_EQUAL, (int)(!invert), 1); // invert ? 0 : 1
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 }
 
 void Graphics::discardStencil()
 {
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 	glDisable(GL_STENCIL_TEST);
 }
 
@@ -498,6 +505,21 @@ void Graphics::setFont(Font *font)
 Font *Graphics::getFont() const
 {
 	return currentFont;
+}
+
+void Graphics::setColorMask(bool r, bool g, bool b, bool a)
+{
+	colorMask[0] = r;
+	colorMask[1] = g;
+	colorMask[2] = b;
+	colorMask[3] = a;
+
+	glColorMask((GLboolean) r, (GLboolean) g, (GLboolean) b, (GLboolean) a);
+}
+
+const bool *Graphics::getColorMask() const
+{
+	return colorMask;
 }
 
 void Graphics::setBlendMode(Graphics::BlendMode mode)

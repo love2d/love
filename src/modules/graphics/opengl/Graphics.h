@@ -76,6 +76,9 @@ struct DisplayState
 	bool scissor;
 	GLint scissorBox[4];
 
+	// Color mask.
+	bool colorMask[4];
+
 	// Window info.
 	std::string caption;
 	bool mouseVisible;
@@ -94,6 +97,7 @@ struct DisplayState
 		pointSize = 1.0f;
 		pointStyle = Graphics::POINT_SMOOTH;
 		scissor = false;
+		colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
 		caption = "";
 		mouseVisible = true;
 	}
@@ -302,6 +306,17 @@ public:
 	 * Gets the current Font, or nil if none.
 	 **/
 	Font *getFont() const;
+
+	/**
+	 * Sets the enabled color components when rendering.
+	 **/
+	void setColorMask(bool r, bool g, bool b, bool a);
+
+	/**
+	 * Gets the current color mask.
+	 * Returns an array of 4 booleans representing the mask.
+	 **/
+	const bool *getColorMask() const;
 
 	/**
 	 * Sets the current blend mode.
@@ -521,6 +536,7 @@ private:
 	float lineWidth;
 	GLint matrixLimit;
 	GLint userMatrices;
+	bool colorMask[4];
 
 	int getRenderHeight() const;
 }; // Graphics
