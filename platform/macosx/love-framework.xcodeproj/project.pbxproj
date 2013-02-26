@@ -224,6 +224,10 @@
 		FA577ACB16C7514400860150 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7316C719F900860150 /* physfs.framework */; };
 		FA577ACC16C7514700860150 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7516C719FF00860150 /* SDL.framework */; };
 		FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* Vorbis.framework */; };
+		FA7C937816DCC6C2006F2BEE /* ModMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937316DCC6C2006F2BEE /* ModMath.cpp */; };
+		FA7C937916DCC6C2006F2BEE /* ModMath.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937416DCC6C2006F2BEE /* ModMath.h */; };
+		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
+		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
 /* End PBXBuildFile section */
 
@@ -685,6 +689,10 @@
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577A8E16C71D3600860150 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA7C937316DCC6C2006F2BEE /* ModMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModMath.cpp; sourceTree = "<group>"; };
+		FA7C937416DCC6C2006F2BEE /* ModMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModMath.h; sourceTree = "<group>"; };
+		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
+		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -1224,6 +1232,7 @@
 				501126AD67DC2A4B527654EA /* joystick */,
 				752A4B4672B6166A2CA30E85 /* keyboard */,
 				70C250C41ADF59C0697925C2 /* love */,
+				FA7C937116DCC6C2006F2BEE /* math */,
 				130737AF4BD12D0356A65C87 /* mouse */,
 				67F10C1D58A96C1C53563B5C /* physics */,
 				4BAB08EE4A6B4A1A01DA50A4 /* sound */,
@@ -1565,6 +1574,17 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		FA7C937116DCC6C2006F2BEE /* math */ = {
+			isa = PBXGroup;
+			children = (
+				FA7C937316DCC6C2006F2BEE /* ModMath.cpp */,
+				FA7C937416DCC6C2006F2BEE /* ModMath.h */,
+				FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */,
+				FA7C937616DCC6C2006F2BEE /* wrap_Math.h */,
+			);
+			path = math;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1572,6 +1592,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA7C937916DCC6C2006F2BEE /* ModMath.h in Headers */,
+				FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1840,6 +1862,8 @@
 				FA08F67A16C754B100F007B5 /* wrap_Timer.cpp in Sources */,
 				FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */,
 				FA08F67C16C754BA00F007B5 /* Window.cpp in Sources */,
+				FA7C937816DCC6C2006F2BEE /* ModMath.cpp in Sources */,
+				FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
