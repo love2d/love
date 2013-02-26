@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_MATH_MATH_H
-#define LOVE_MATH_MATH_H
+#ifndef LOVE_MATH_MODMATH_H
+#define LOVE_MATH_MODMATH_H
 
 // LOVE
 #include "common/Module.h"
@@ -33,11 +33,11 @@ namespace love
 namespace math
 {
 
-class Math : public Module
+class ModMath : public Module
 {
 public:
-	Math();
-	virtual ~Math() {}
+	ModMath();
+	virtual ~ModMath() {}
 
 	/** Set pseudo random seed.
 	 *

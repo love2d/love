@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Math.h"
-#include "Math.h"
+#include "ModMath.h"
 
 #include <cmath>
 #include <iostream>
@@ -40,7 +40,7 @@ namespace love
 namespace math
 {
 
-static Math *instance = 0;
+static ModMath *instance = 0;
 
 int w_randomseed(lua_State *L)
 {
@@ -112,7 +112,7 @@ static const lua_CFunction types[] =
 extern "C" int luaopen_love_math(lua_State *L)
 {
 	if (instance == 0)
-		instance = new love::math::Math();
+		instance = new love::math::ModMath();
 	else
 		instance->retain();
 

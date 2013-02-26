@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Math.h"
+#include "ModMath.h"
 #include "common/math.h"
 
 #include <cmath>
@@ -30,13 +30,13 @@ namespace math
 
 // 64 bit Xorshift implementation taken from the end of Sec. 3 (page 4) in
 // George Marsaglia, "Xorshift RNGs", Journal of Statistical Software, Vol.8 (Issue 14), 2003
-Math::Math()
+ModMath::ModMath()
 {
 	RNGState.seed = 0x0139408DCBBF7A44;
 	RNGState.last_randnormal = std::numeric_limits<double>::infinity();
 }
 
-uint32_t Math::rand()
+uint32_t ModMath::rand()
 {
 	uint64_t &x = RNGState.seed;
 	x ^= (x << 13);
@@ -46,7 +46,7 @@ uint32_t Math::rand()
 }
 
 // Box–Muller transform
-double Math::randnormal(double stddev)
+double ModMath::randnormal(double stddev)
 {
 	if (RNGState.last_randnormal != std::numeric_limits<double>::infinity())
 	{
