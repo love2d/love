@@ -114,7 +114,7 @@ bool Graphics::setMode(int width, int height, bool fullscreen, bool vsync, int f
 	// Unload all volatile objects. These must be reloaded after
 	// the display mode change.
 	Volatile::unloadAll();
-	
+
 	uninitializeContext();
 
 	bool success = currentWindow->setWindow(width, height, fullscreen, vsync, fsaa);
@@ -502,37 +502,76 @@ Font *Graphics::getFont() const
 
 void Graphics::setBlendMode(Graphics::BlendMode mode)
 {
-	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging)
+	const int gl_1_4 = GLEE_VERSION_1_4;
+
+	GLenum func = GL_FUNC_ADD;
+	GLenum src_rgb = GL_ONE;
+	GLenum src_a = GL_ONE;
+	GLenum dst_rgb = GL_ZERO;
+	GLenum dst_a = GL_ZERO;
+
+	switch (mode)
 	{
-		if (mode == BLEND_SUBTRACTIVE)
-			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	case BLEND_ALPHA:
+		if (gl_1_4 || GLEE_EXT_blend_func_separate)
+		{
+			src_rgb = GL_SRC_ALPHA;
+			src_a = GL_ONE;
+			dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+		}
 		else
-			glBlendEquation(GL_FUNC_ADD);
+		{
+			// Fallback for OpenGL implementations without support for separate blend functions.
+			// This will most likely only be used for the Microsoft software renderer and
+			// since it's still stuck with OpenGL 1.1, the only expected difference is a
+			// different alpha value when reading back the default framebuffer (newScreenshot).
+			src_rgb = src_a = GL_SRC_ALPHA;
+			dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+		}
+		break;
+	case BLEND_MULTIPLICATIVE:
+		src_rgb = src_a = GL_DST_COLOR;
+		dst_rgb = dst_a = GL_ZERO;
+		break;
+	case BLEND_PREMULTIPLIED:
+		src_rgb = src_a = GL_ONE;
+		dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+		break;
+	case BLEND_SUBTRACTIVE:
+		func = GL_FUNC_REVERSE_SUBTRACT;
+	case BLEND_ADDITIVE:
+		src_rgb = src_a = GL_SRC_ALPHA;
+		dst_rgb = dst_a = GL_ONE;
+		break;
+	case BLEND_NONE:
+	default:
+		src_rgb = src_a = GL_ONE;
+		dst_rgb = dst_a = GL_ZERO;
+		break;
 	}
+
+	if (gl_1_4 || GLEE_ARB_imaging)
+		glBlendEquation(func);
 	else if (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)
-	{
-		if (mode == BLEND_SUBTRACTIVE)
-			glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
-		else
-			glBlendEquationEXT(GL_FUNC_ADD_EXT);
-	}
+		glBlendEquationEXT(func);
 	else
 	{
-		if (mode == BLEND_SUBTRACTIVE)
-			throw Exception("This graphics card does not support the subtract blend mode!");
+		if (func == GL_FUNC_REVERSE_SUBTRACT)
+			throw Exception("This graphics card does not support the subtractive blend mode!");
 		// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
 	}
 
-	if (mode == BLEND_ALPHA)
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	else if (mode == BLEND_MULTIPLICATIVE)
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
-	else if (mode == BLEND_PREMULTIPLIED)
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	else if (mode == BLEND_NONE)
-		glBlendFunc(GL_ONE, GL_ZERO);
-	else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	if (src_rgb == src_a && dst_rgb == dst_a)
+		glBlendFunc(src_rgb, dst_rgb);
+	else
+	{
+		if (gl_1_4)
+			glBlendFuncSeparate(src_rgb, dst_rgb, src_a, dst_a);
+		else if (GLEE_EXT_blend_func_separate)
+			glBlendFuncSeparateEXT(src_rgb, dst_rgb, src_a, dst_a);
+		else
+			throw Exception("This graphics card does not support separated rgb and alpha blend functions!");
+	}
 }
 
 void Graphics::setColorMode(Graphics::ColorMode mode)
@@ -551,29 +590,50 @@ void Graphics::setColorMode(Graphics::ColorMode mode)
 
 Graphics::BlendMode Graphics::getBlendMode() const
 {
-	GLint dst, src;
-	glGetIntegerv(GL_BLEND_DST, &dst);
-	glGetIntegerv(GL_BLEND_SRC, &src);
+	const int gl_1_4 = GLEE_VERSION_1_4;
 
+	GLint src_rgb, src_a, dst_rgb, dst_a;
 	GLint equation = GL_FUNC_ADD;
 
-	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract))
+	if (gl_1_4 || GLEE_EXT_blend_func_separate)
+	{
+		glGetIntegerv(GL_BLEND_SRC_RGB, &src_rgb);
+		glGetIntegerv(GL_BLEND_SRC_ALPHA, &src_a);
+		glGetIntegerv(GL_BLEND_DST_RGB, &dst_rgb);
+		glGetIntegerv(GL_BLEND_DST_ALPHA, &dst_a);
+	}
+	else
+	{
+		glGetIntegerv(GL_BLEND_SRC, &src_rgb);
+		glGetIntegerv(GL_BLEND_DST, &dst_rgb);
+		src_a = src_rgb;
+		dst_a = dst_rgb;
+	}
+
+	if (gl_1_4 || GLEE_ARB_imaging || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract))
 		glGetIntegerv(GL_BLEND_EQUATION, &equation);
 
 	if (equation == GL_FUNC_REVERSE_SUBTRACT)  // && src == GL_SRC_ALPHA && dst == GL_ONE
 		return BLEND_SUBTRACTIVE;
-	else if (src == GL_SRC_ALPHA && dst == GL_ONE)  // && equation == GL_FUNC_ADD
-		return BLEND_ADDITIVE;
-	else if (src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
+	// Everything else has equation == GL_FUNC_ADD.
+	else if (src_rgb == src_a && dst_rgb == dst_a)
+	{
+		if (src_rgb == GL_SRC_ALPHA && dst_rgb == GL_ONE)
+			return BLEND_ADDITIVE;
+		else if (src_rgb == GL_SRC_ALPHA && dst_rgb == GL_ONE_MINUS_SRC_ALPHA)
+			return BLEND_ALPHA; // alpha blend mode fallback for very old OpenGL versions.
+		else if (src_rgb == GL_DST_COLOR && dst_rgb == GL_ZERO)
+			return BLEND_MULTIPLICATIVE;
+		else if (src_rgb == GL_ONE && dst_rgb == GL_ONE_MINUS_SRC_ALPHA)
+			return BLEND_PREMULTIPLIED;
+		else if (src_rgb == GL_ONE && dst_rgb == GL_ZERO)
+			return BLEND_NONE;
+	}
+	else if (src_rgb == GL_SRC_ALPHA && src_a == GL_ONE &&
+		dst_rgb == GL_ONE_MINUS_SRC_ALPHA && dst_a == GL_ONE_MINUS_SRC_ALPHA)
 		return BLEND_ALPHA;
-	else if (src == GL_DST_COLOR && dst == GL_ZERO)  // && equation == GL_FUNC_ADD
-		return BLEND_MULTIPLICATIVE;
-	else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
-		return BLEND_PREMULTIPLIED;
-	else if (src == GL_ONE && dst == GL_ZERO)
-		return BLEND_NONE;
 
-	return BLEND_MAX_ENUM; // Should never be reached.
+	throw Exception("Unknown blend mode");
 }
 
 Graphics::ColorMode Graphics::getColorMode() const

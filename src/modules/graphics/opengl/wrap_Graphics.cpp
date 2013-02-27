@@ -642,13 +642,19 @@ int w_setDefaultImageFilter(lua_State *L)
 
 int w_getBlendMode(lua_State *L)
 {
-	Graphics::BlendMode mode = instance->getBlendMode();
-	const char *str;
-	if (!Graphics::getConstant(mode, str))
-		return luaL_error(L, "Invalid blend mode: %s", str);
-
-	lua_pushstring(L, str);
-	return 1;
+	try
+	{
+		Graphics::BlendMode mode = instance->getBlendMode();
+		const char *str;
+		if (!Graphics::getConstant(mode, str))
+			return luaL_error(L, "Unknown blend mode");
+		lua_pushstring(L, str);
+		return 1;
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 }
 
 int w_getColorMode(lua_State *L)
@@ -656,8 +662,7 @@ int w_getColorMode(lua_State *L)
 	Graphics::ColorMode mode = instance->getColorMode();
 	const char *str;
 	if (!Graphics::getConstant(mode, str))
-		return luaL_error(L, "Invalid color mode: %s", str);
-
+		return luaL_error(L, "Unknown color mode");
 	lua_pushstring(L, str);
 	return 1;
 }
@@ -667,8 +672,10 @@ int w_getDefaultImageFilter(lua_State *L)
 	const Image::Filter &f = instance->getDefaultImageFilter();
 	const char *minstr;
 	const char *magstr;
-	Image::getConstant(f.min, minstr);
-	Image::getConstant(f.mag, magstr);
+	if (!Image::getConstant(f.min, minstr))
+		return luaL_error(L, "Unknown filter mode for argument #1");
+	if (!Image::getConstant(f.mag, magstr))
+		return luaL_error(L, "Unknown filter mode for argument #2");
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
 	return 2;
@@ -719,7 +726,8 @@ int w_getLineStyle(lua_State *L)
 {
 	Graphics::LineStyle style = instance->getLineStyle();
 	const char *str;
-	Graphics::getConstant(style, str);
+	if (!Graphics::getConstant(style, str))
+		return luaL_error(L, "Unknown line style");
 	lua_pushstring(L, str);
 	return 1;
 }
@@ -770,7 +778,8 @@ int w_getPointStyle(lua_State *L)
 {
 	Graphics::PointStyle style = instance->getPointStyle();
 	const char *str;
-	Graphics::getConstant(style, str);
+	if (!Graphics::getConstant(style, str))
+		return luaL_error(L, "Unknown point style");
 	lua_pushstring(L, str);
 	return 1;
 }
@@ -858,7 +867,10 @@ int w_isSupported(lua_State *L)
 	{
 		const char *str = luaL_checkstring(L, i);
 		if (!Graphics::getConstant(str, support))
+		{
 			supported = false;
+			break;
+		}
 		switch (support)
 		{
 		case Graphics::SUPPORT_CANVAS:
