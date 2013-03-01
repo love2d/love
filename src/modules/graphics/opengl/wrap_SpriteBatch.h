@@ -37,10 +37,13 @@ int w_SpriteBatch_addq(lua_State *L);
 int w_SpriteBatch_set(lua_State *L);
 int w_SpriteBatch_setq(lua_State *L);
 int w_SpriteBatch_clear(lua_State *L);
-int w_SpriteBatch_lock(lua_State *L);
-int w_SpriteBatch_unlock(lua_State *L);
+int w_SpriteBatch_bind(lua_State *L);
+int w_SpriteBatch_unbind(lua_State *L);
 int w_SpriteBatch_setImage(lua_State *L);
 int w_SpriteBatch_getImage(lua_State *L);
+int w_SpriteBatch_setColor(lua_State *L);
+int w_SpriteBatch_isEmpty(lua_State *L);
+int w_SpriteBatch_isFull(lua_State *L);
 
 extern "C" int luaopen_spritebatch(lua_State *L);
 

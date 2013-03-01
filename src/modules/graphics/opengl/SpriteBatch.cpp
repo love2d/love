@@ -190,6 +190,16 @@ void SpriteBatch::setColor()
 	color = 0;
 }
 
+bool SpriteBatch::isEmpty() const
+{
+	return next == 0;
+}
+
+bool SpriteBatch::isFull() const
+{
+	return next >= size;
+}
+
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	const int color_offset = 0;
