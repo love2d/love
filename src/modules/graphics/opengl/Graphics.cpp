@@ -1003,21 +1003,10 @@ void Graphics::polyline(const float *coords, size_t count)
 		delete[] overdraw;
 }
 
-void Graphics::triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3)
-{
-	float coords[] = { x1,y1, x2,y2, x3,y3, x1,y1 };
-	polygon(mode, coords, 4 * 2);
-}
-
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 {
-	quad(mode, x,y, x,y+h, x+w,y+h, x+w,y);
-}
-
-void Graphics::quad(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
-{
-	float coords[] = { x1,y1, x2,y2, x3,y3, x4,y4, x1,y1 };
-	polygon(mode, coords, 5 * 2);
+	float coords[] = {x,y, x,y+h, x+w,y+h, x+w,y};
+	polygon(mode, coords, 4 * 2);
 }
 
 void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)

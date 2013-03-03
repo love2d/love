@@ -432,18 +432,6 @@ public:
 	void polyline(const float *coords, size_t count);
 
 	/**
-	 * Draws a triangle using the three coordinates passed.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x1 First x-coordinate.
-	 * @param y1 First y-coordinate.
-	 * @param x2 Second x-coordinate.
-	 * @param y2 Second y-coordinate.
-	 * @param x3 Third x-coordinate.
-	 * @param y3 Third y-coordinate.
-	 **/
-	void triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3);
-
-	/**
 	 * Draws a rectangle.
 	 * @param x Position along x-axis for top-left corner.
 	 * @param y Position along y-axis for top-left corner.
@@ -451,20 +439,6 @@ public:
 	 * @param h The height of the rectangle.
 	 **/
 	void rectangle(DrawMode mode, float x, float y, float w, float h);
-
-	/**
-	 * Draws a quadrilateral using the four coordinates passed.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x1 First x-coordinate.
-	 * @param y1 First y-coordinate.
-	 * @param x2 Second x-coordinate.
-	 * @param y2 Second y-coordinate.
-	 * @param x3 Third x-coordinate.
-	 * @param y3 Third y-coordinate.
-	 * @param x4 Fourth x-coordinate.
-	 * @param y4 Fourth y-coordinate.
-	 **/
-	void quad(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 
 	/**
 	 * Draws a circle using the specified arguments.

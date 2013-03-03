@@ -1121,23 +1121,6 @@ int w_line(lua_State *L)
 	return 0;
 }
 
-int w_triangle(lua_State *L)
-{
-	Graphics::DrawMode mode;
-	const char *str = luaL_checkstring(L, 1);
-	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Incorrect draw mode %s", str);
-
-	float x1 = (float)luaL_checknumber(L, 2);
-	float y1 = (float)luaL_checknumber(L, 3);
-	float x2 = (float)luaL_checknumber(L, 4);
-	float y2 = (float)luaL_checknumber(L, 5);
-	float x3 = (float)luaL_checknumber(L, 6);
-	float y3 = (float)luaL_checknumber(L, 7);
-	instance->triangle(mode, x1, y1, x2, y2, x3, y3);
-	return 0;
-}
-
 int w_rectangle(lua_State *L)
 {
 	Graphics::DrawMode mode;
@@ -1150,25 +1133,6 @@ int w_rectangle(lua_State *L)
 	float w = (float)luaL_checknumber(L, 4);
 	float h = (float)luaL_checknumber(L, 5);
 	instance->rectangle(mode, x, y, w, h);
-	return 0;
-}
-
-int w_quad(lua_State *L)
-{
-	Graphics::DrawMode mode;
-	const char *str = luaL_checkstring(L, 1);
-	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Incorrect draw mode %s", str);
-
-	float x1 = (float)luaL_checknumber(L, 2);
-	float y1 = (float)luaL_checknumber(L, 3);
-	float x2 = (float)luaL_checknumber(L, 4);
-	float y2 = (float)luaL_checknumber(L, 5);
-	float x3 = (float)luaL_checknumber(L, 6);
-	float y3 = (float)luaL_checknumber(L, 7);
-	float x4 = (float)luaL_checknumber(L, 8);
-	float y4 = (float)luaL_checknumber(L, 9);
-	instance->quad(mode, x1, y1, x2, y2, x3, y3, x4, y4);
 	return 0;
 }
 
@@ -1408,9 +1372,7 @@ static const luaL_Reg functions[] =
 
 	{ "point", w_point },
 	{ "line", w_line },
-	//{ "triangle", w_triangle },
 	{ "rectangle", w_rectangle },
-	//{ "quad", w_quad },
 	{ "circle", w_circle },
 	{ "arc", w_arc },
 
