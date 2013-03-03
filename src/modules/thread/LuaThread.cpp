@@ -31,7 +31,8 @@ namespace love
 namespace thread
 {
 LuaThread::LuaThread(const std::string &name, love::Data *code)
-	: name(name), code(code)
+	: code(code)
+	, name(name)
 {
 	code->retain();
 }
