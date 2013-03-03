@@ -13,12 +13,12 @@
 			<string>LÖVE Project</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>org.love2d.love-game</string>
 			</array>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
@@ -46,7 +46,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.8.0</string>
+	<string>0.9.0</string>
 	<key>CFBundleSignature</key>
 	<string>LoVe</string>
 	<key>NSHumanReadableCopyright</key>

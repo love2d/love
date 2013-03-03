@@ -26,11 +26,11 @@ namespace love
 
 // Version stuff.
 const int VERSION_MAJOR = 0;
-const int VERSION_MINOR = 8;
+const int VERSION_MINOR = 9;
 const int VERSION_REV = 0;
-const char *VERSION = "0.8.0";
+const char *VERSION = "0.9.0";
 const char *VERSION_COMPATIBILITY[] =  { VERSION, 0 };
-const char *VERSION_CODENAME = "Rubber Piggy";
+const char *VERSION_CODENAME = "";
 
 } // love
 
