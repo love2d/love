@@ -205,9 +205,7 @@
 		FA08F67316C754A100F007B5 /* Mpg123Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F875B224C4E1B9E35854766 /* Mpg123Decoder.cpp */; };
 		FA08F67416C754A100F007B5 /* Sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A5F7DCB40652F9B7D61073A /* Sound.cpp */; };
 		FA08F67516C754A100F007B5 /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 727648E06CD863A2582F798F /* VorbisDecoder.cpp */; };
-		FA08F67616C754A900F007B5 /* Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1D9B456C6C554F66660F7650 /* Thread.cpp */; };
 		FA08F67716C754A900F007B5 /* threads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6B3565203A1778431F8A5409 /* threads.cpp */; };
-		FA08F67816C754A900F007B5 /* wrap_Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3348511C3BCE65F003DA68CD /* wrap_Thread.cpp */; };
 		FA08F67916C754B100F007B5 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 113269E55FCF208D2D6754BC /* Timer.cpp */; };
 		FA08F67A16C754B100F007B5 /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 695E4ED13AA0689E64280573 /* wrap_Timer.cpp */; };
 		FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 351B09E51FDC338622F44624 /* Window.cpp */; };
@@ -229,6 +227,22 @@
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
+		FAF272A416E3D44400CC193A /* Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF2729816E3D44400CC193A /* Channel.cpp */; };
+		FAF272A516E3D44400CC193A /* Channel.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF2729916E3D44400CC193A /* Channel.h */; };
+		FAF272A616E3D44400CC193A /* LuaThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF2729A16E3D44400CC193A /* LuaThread.cpp */; };
+		FAF272A716E3D44400CC193A /* LuaThread.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF2729B16E3D44400CC193A /* LuaThread.h */; };
+		FAF272A816E3D44400CC193A /* ThreadModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF2729C16E3D44400CC193A /* ThreadModule.cpp */; };
+		FAF272A916E3D44400CC193A /* ThreadModule.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF2729D16E3D44400CC193A /* ThreadModule.h */; };
+		FAF272AA16E3D44400CC193A /* wrap_Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF2729E16E3D44400CC193A /* wrap_Channel.cpp */; };
+		FAF272AB16E3D44400CC193A /* wrap_Channel.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF2729F16E3D44400CC193A /* wrap_Channel.h */; };
+		FAF272AC16E3D44400CC193A /* wrap_LuaThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF272A016E3D44400CC193A /* wrap_LuaThread.cpp */; };
+		FAF272AD16E3D44400CC193A /* wrap_LuaThread.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF272A116E3D44400CC193A /* wrap_LuaThread.h */; };
+		FAF272AE16E3D44400CC193A /* wrap_ThreadModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF272A216E3D44400CC193A /* wrap_ThreadModule.cpp */; };
+		FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF272A316E3D44400CC193A /* wrap_ThreadModule.h */; };
+		FAF272B516E3D46400CC193A /* Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF272B116E3D46400CC193A /* Thread.cpp */; };
+		FAF272B616E3D46400CC193A /* Thread.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF272B216E3D46400CC193A /* Thread.h */; };
+		FAF272B716E3D46400CC193A /* threads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF272B316E3D46400CC193A /* threads.cpp */; };
+		FAF272B816E3D46400CC193A /* threads.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF272B416E3D46400CC193A /* threads.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -342,7 +356,6 @@
 		1CD02D1975803957282F28AB /* auxiliar.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = auxiliar.c; sourceTree = "<group>"; };
 		1CE84F1F19BC2AA412C638B1 /* timeout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = timeout.h; sourceTree = "<group>"; };
 		1D824A63414874DE584B59B2 /* Quad.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
-		1D9B456C6C554F66660F7650 /* Thread.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Thread.cpp; sourceTree = "<group>"; };
 		1DA41DFF0869489411A71AFC /* Image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		1E22646A710E5EFC27FE3932 /* FrictionJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FrictionJoint.cpp; sourceTree = "<group>"; };
 		1E27263847302FCA1F843B47 /* b2PrismaticJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2PrismaticJoint.cpp; sourceTree = "<group>"; };
@@ -417,7 +430,6 @@
 		32CC11481CD9164455455D72 /* b2Collision.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2Collision.cpp; sourceTree = "<group>"; };
 		32FD3FEE52FD1911405B3C59 /* b2BroadPhase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2BroadPhase.h; sourceTree = "<group>"; };
 		330F59B11A5B5D1B44DC07BF /* wrap_Source.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Source.h; sourceTree = "<group>"; };
-		3348511C3BCE65F003DA68CD /* wrap_Thread.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Thread.cpp; sourceTree = "<group>"; };
 		33627AE97E66147E76804EF9 /* b2DistanceJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2DistanceJoint.cpp; sourceTree = "<group>"; };
 		33FD508B0754314530A35EF3 /* StringMap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		340345481F165F8945C716AE /* wrap_FrictionJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_FrictionJoint.cpp; sourceTree = "<group>"; };
@@ -588,7 +600,6 @@
 		66F8479E6D2D587A592F2024 /* socket.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = socket.lua.h; sourceTree = "<group>"; };
 		677F545C76EA3B247329358D /* Joystick.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Joystick.cpp; sourceTree = "<group>"; };
 		678E42771C9B415628A3234D /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
-		68317360363E2C5339396995 /* wrap_Thread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Thread.h; sourceTree = "<group>"; };
 		68616BD516DB124312B47EB3 /* Image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		691C5C5828550E2F60754EF2 /* wrap_Event.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
 		695E4ED13AA0689E64280573 /* wrap_Timer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Timer.cpp; sourceTree = "<group>"; };
@@ -694,6 +705,22 @@
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAF2729816E3D44400CC193A /* Channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Channel.cpp; sourceTree = "<group>"; };
+		FAF2729916E3D44400CC193A /* Channel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Channel.h; sourceTree = "<group>"; };
+		FAF2729A16E3D44400CC193A /* LuaThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LuaThread.cpp; sourceTree = "<group>"; };
+		FAF2729B16E3D44400CC193A /* LuaThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LuaThread.h; sourceTree = "<group>"; };
+		FAF2729C16E3D44400CC193A /* ThreadModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ThreadModule.cpp; sourceTree = "<group>"; };
+		FAF2729D16E3D44400CC193A /* ThreadModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadModule.h; sourceTree = "<group>"; };
+		FAF2729E16E3D44400CC193A /* wrap_Channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Channel.cpp; sourceTree = "<group>"; };
+		FAF2729F16E3D44400CC193A /* wrap_Channel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Channel.h; sourceTree = "<group>"; };
+		FAF272A016E3D44400CC193A /* wrap_LuaThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_LuaThread.cpp; sourceTree = "<group>"; };
+		FAF272A116E3D44400CC193A /* wrap_LuaThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_LuaThread.h; sourceTree = "<group>"; };
+		FAF272A216E3D44400CC193A /* wrap_ThreadModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ThreadModule.cpp; sourceTree = "<group>"; };
+		FAF272A316E3D44400CC193A /* wrap_ThreadModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ThreadModule.h; sourceTree = "<group>"; };
+		FAF272B116E3D46400CC193A /* Thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Thread.cpp; sourceTree = "<group>"; };
+		FAF272B216E3D46400CC193A /* Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
+		FAF272B316E3D46400CC193A /* threads.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = threads.cpp; sourceTree = "<group>"; };
+		FAF272B416E3D46400CC193A /* threads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threads.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -738,12 +765,22 @@
 		02E0744773D13AD65E7C49DC /* thread */ = {
 			isa = PBXGroup;
 			children = (
-				1D9B456C6C554F66660F7650 /* Thread.cpp */,
+				FAF2729816E3D44400CC193A /* Channel.cpp */,
+				FAF2729916E3D44400CC193A /* Channel.h */,
+				FAF2729A16E3D44400CC193A /* LuaThread.cpp */,
+				FAF2729B16E3D44400CC193A /* LuaThread.h */,
+				FAF272B016E3D46400CC193A /* sdl */,
 				74215662418726B35C581E55 /* Thread.h */,
+				FAF2729C16E3D44400CC193A /* ThreadModule.cpp */,
+				FAF2729D16E3D44400CC193A /* ThreadModule.h */,
 				6B3565203A1778431F8A5409 /* threads.cpp */,
 				55AE226405CC1A55462E1D89 /* threads.h */,
-				3348511C3BCE65F003DA68CD /* wrap_Thread.cpp */,
-				68317360363E2C5339396995 /* wrap_Thread.h */,
+				FAF2729E16E3D44400CC193A /* wrap_Channel.cpp */,
+				FAF2729F16E3D44400CC193A /* wrap_Channel.h */,
+				FAF272A016E3D44400CC193A /* wrap_LuaThread.cpp */,
+				FAF272A116E3D44400CC193A /* wrap_LuaThread.h */,
+				FAF272A216E3D44400CC193A /* wrap_ThreadModule.cpp */,
+				FAF272A316E3D44400CC193A /* wrap_ThreadModule.h */,
 			);
 			path = thread;
 			sourceTree = "<group>";
@@ -1585,6 +1622,17 @@
 			path = math;
 			sourceTree = "<group>";
 		};
+		FAF272B016E3D46400CC193A /* sdl */ = {
+			isa = PBXGroup;
+			children = (
+				FAF272B116E3D46400CC193A /* Thread.cpp */,
+				FAF272B216E3D46400CC193A /* Thread.h */,
+				FAF272B316E3D46400CC193A /* threads.cpp */,
+				FAF272B416E3D46400CC193A /* threads.h */,
+			);
+			path = sdl;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1594,6 +1642,14 @@
 			files = (
 				FA7C937916DCC6C2006F2BEE /* ModMath.h in Headers */,
 				FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */,
+				FAF272A516E3D44400CC193A /* Channel.h in Headers */,
+				FAF272A716E3D44400CC193A /* LuaThread.h in Headers */,
+				FAF272A916E3D44400CC193A /* ThreadModule.h in Headers */,
+				FAF272AB16E3D44400CC193A /* wrap_Channel.h in Headers */,
+				FAF272AD16E3D44400CC193A /* wrap_LuaThread.h in Headers */,
+				FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */,
+				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
+				FAF272B816E3D46400CC193A /* threads.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1855,15 +1911,21 @@
 				FA08F67316C754A100F007B5 /* Mpg123Decoder.cpp in Sources */,
 				FA08F67416C754A100F007B5 /* Sound.cpp in Sources */,
 				FA08F67516C754A100F007B5 /* VorbisDecoder.cpp in Sources */,
-				FA08F67616C754A900F007B5 /* Thread.cpp in Sources */,
 				FA08F67716C754A900F007B5 /* threads.cpp in Sources */,
-				FA08F67816C754A900F007B5 /* wrap_Thread.cpp in Sources */,
 				FA08F67916C754B100F007B5 /* Timer.cpp in Sources */,
 				FA08F67A16C754B100F007B5 /* wrap_Timer.cpp in Sources */,
 				FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */,
 				FA08F67C16C754BA00F007B5 /* Window.cpp in Sources */,
 				FA7C937816DCC6C2006F2BEE /* ModMath.cpp in Sources */,
 				FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */,
+				FAF272A416E3D44400CC193A /* Channel.cpp in Sources */,
+				FAF272A616E3D44400CC193A /* LuaThread.cpp in Sources */,
+				FAF272A816E3D44400CC193A /* ThreadModule.cpp in Sources */,
+				FAF272AA16E3D44400CC193A /* wrap_Channel.cpp in Sources */,
+				FAF272AC16E3D44400CC193A /* wrap_LuaThread.cpp in Sources */,
+				FAF272AE16E3D44400CC193A /* wrap_ThreadModule.cpp in Sources */,
+				FAF272B516E3D46400CC193A /* Thread.cpp in Sources */,
+				FAF272B716E3D46400CC193A /* threads.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
