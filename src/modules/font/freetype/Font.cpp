@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,8 @@
 
 #include "TrueTypeRasterizer.h"
 #include "font/ImageRasterizer.h"
+
+#include "libraries/utf8/utf8.h"
 
 namespace love
 {
@@ -46,25 +48,39 @@ Rasterizer *Font::newRasterizer(Data *data, int size)
 	return new TrueTypeRasterizer(library, data, size);
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, std::string glyphs)
+Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string &text)
 {
-	int length = glyphs.size();
-	unsigned short *g = new unsigned short[length];
-	for (int i = 0; i < length; i++)
+	size_t strlen = text.size();
+	size_t numglyphs = 0;
+	
+	unsigned int *glyphs = new unsigned int[strlen];
+
+	try
 	{
-		g[i] = (unsigned char)glyphs[i];
+		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
+		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
+
+		while (i != end)
+			glyphs[numglyphs++] = *i++;
 	}
-	Rasterizer *r = newRasterizer(data, g, length);
-	delete [] g;
+	catch (utf8::exception &e)
+	{
+		delete [] glyphs;
+		throw love::Exception("%s", e.what());
+	}
+	
+	Rasterizer *r = newRasterizer(data, glyphs, numglyphs);
+	delete [] glyphs;
+	
 	return r;
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, unsigned short *glyphs, int length)
+Rasterizer *Font::newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs)
 {
-	return new ImageRasterizer(data, glyphs, length);
+	return new ImageRasterizer(data, glyphs, numglyphs);
 }
 
-GlyphData *Font::newGlyphData(Rasterizer *r, unsigned short glyph)
+GlyphData *Font::newGlyphData(Rasterizer *r, unsigned int glyph)
 {
 	return r->getGlyphData(glyph);
 }

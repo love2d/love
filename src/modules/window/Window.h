@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,28 +53,28 @@ public:
 
 	virtual ~Window();
 
-	virtual bool setWindow(int width, int height, WindowFlags *flags = 0) = 0;
-	virtual void getWindow(int &width, int &height, WindowFlags &flags) = 0;
+	virtual bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0) = 0;
+	virtual void getWindow(int &width, int &height, WindowFlags &flags) const = 0;
 
-	virtual bool checkWindowSize(int width, int height, bool fullscreen) = 0;
-	virtual WindowSize **getFullscreenSizes(int &n) = 0;
+	virtual bool checkWindowSize(int width, int height, bool fullscreen) const = 0;
+	virtual WindowSize **getFullscreenSizes(int &n) const = 0;
 
-	virtual int getWidth() = 0;
-	virtual int getHeight() = 0;
+	virtual int getWidth() const = 0;
+	virtual int getHeight() const = 0;
 
-	virtual bool isCreated() = 0;
+	virtual bool isCreated() const = 0;
 
 	virtual void setWindowTitle(std::string &title) = 0;
-	virtual std::string getWindowTitle() = 0;
+	virtual std::string getWindowTitle() const = 0;
 
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;
 
 	// default no-op implementation
 	virtual void swapBuffers();
 
-	virtual bool hasFocus() = 0;
+	virtual bool hasFocus() const = 0;
 	virtual void setMouseVisible(bool visible) = 0;
-	virtual bool getMouseVisible() = 0;
+	virtual bool getMouseVisible() const = 0;
 
 	//virtual static Window *getSingleton() = 0;
 	// No virtual statics, of course, but you are supposed to implement this static.

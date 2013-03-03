@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,8 +47,6 @@ Graphics::Graphics()
 	, userMatrices(0)
 {
 	currentWindow = love::window::sdl::Window::getSingleton();
-
-	resetBoundTexture();
 }
 
 Graphics::~Graphics()
@@ -64,7 +62,7 @@ const char *Graphics::getName() const
 	return "love.graphics.opengl";
 }
 
-bool Graphics::checkMode(int width, int height, bool fullscreen)
+bool Graphics::checkMode(int width, int height, bool fullscreen) const
 {
 	return currentWindow->checkWindowSize(width, height, fullscreen);
 }
@@ -119,13 +117,19 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	// the display mode change.
 	Volatile::unloadAll();
 
-	bool success = currentWindow->setWindow(width, height, flags);
-	// Regardless of failure, we'll have to set up OpenGL once again.
+	uninitializeContext();
 
+	bool success = currentWindow->setWindow(width, height, flags);
+
+	// Regardless of failure, we'll have to set up OpenGL once again.
 	width = currentWindow->getWidth();
 	height = currentWindow->getHeight();
 
 	// Okay, setup OpenGL.
+	initializeContext();
+
+	// Make sure antialiasing works when set elsewhere
+	glEnable(GL_MULTISAMPLE);
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -138,8 +142,13 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	glEnable(GL_POINT_SMOOTH);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
+	// Auto-generated mipmaps should be the best quality possible
+	if (GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap)
+		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
+	setActiveTextureUnit(0);
 
 	// Set the viewport to top-left corner
 	glViewport(0, 0, width, height);
@@ -173,7 +182,7 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	return success;
 }
 
-void Graphics::getMode(int &width, int &height, WindowFlags &flags)
+void Graphics::getMode(int &width, int &height, WindowFlags &flags) const
 {
 	currentWindow->getWindow(width, height, flags);
 }
@@ -193,7 +202,7 @@ void Graphics::reset()
 	DisplayState s;
 	discardStencil();
 	Canvas::bindDefaultCanvas();
-	PixelEffect::detach();
+	Shader::detach();
 	restoreState(s);
 }
 
@@ -219,36 +228,36 @@ void Graphics::setCaption(const char *caption)
 	currentWindow->setWindowTitle(title);
 }
 
-int Graphics::getCaption(lua_State *L)
+int Graphics::getCaption(lua_State *L) const
 {
 	std::string title = currentWindow->getWindowTitle();
 	lua_pushstring(L, title.c_str());
 	return 1;
 }
 
-int Graphics::getWidth()
+int Graphics::getWidth() const
 {
 	return currentWindow->getWidth();
 }
 
-int Graphics::getHeight()
+int Graphics::getHeight() const
 {
 	return currentWindow->getHeight();
 }
 
-int Graphics::getRenderHeight()
+int Graphics::getRenderHeight() const
 {
 	if (Canvas::current)
 		return Canvas::current->getHeight();
 	return getHeight();
 }
 
-bool Graphics::isCreated()
+bool Graphics::isCreated() const
 {
 	return currentWindow->isCreated();
 }
 
-int Graphics::getModes(lua_State *L)
+int Graphics::getModes(lua_State *L) const
 {
 	int n;
 	love::window::Window::WindowSize **modes = currentWindow->getFullscreenSizes(n);
@@ -295,7 +304,7 @@ void Graphics::setScissor()
 	glDisable(GL_SCISSOR_TEST);
 }
 
-int Graphics::getScissor(lua_State *L)
+int Graphics::getScissor(lua_State *L) const
 {
 	if (glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
 		return 0;
@@ -368,31 +377,12 @@ Quad *Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
 
 Font *Graphics::newFont(love::font::Rasterizer *r, const Image::Filter &filter)
 {
-	Font *font = new Font(r, filter);
-
-	// Load it and check for errors.
-	if (!font)
-	{
-		delete font;
-		return 0;
-	}
-
-	return font;
+	return new Font(r, filter);
 }
 
 SpriteBatch *Graphics::newSpriteBatch(Image *image, int size, int usage)
 {
-	SpriteBatch *t = NULL;
-	try
-	{
-		t = new SpriteBatch(image, size, usage);
-	}
-	catch(love::Exception &e)
-	{
-		if (t) delete t;
-		throw e;
-	}
-	return t;
+	return new SpriteBatch(image, size, usage);
 }
 
 ParticleSystem *Graphics::newParticleSystem(Image *image, int size)
@@ -453,20 +443,9 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	return NULL; // never reached
 }
 
-PixelEffect *Graphics::newPixelEffect(const std::string &code)
+Shader *Graphics::newShader(const Shader::ShaderSources &sources)
 {
-	PixelEffect *effect = NULL;
-	try
-	{
-		effect = new PixelEffect(code);
-	}
-	catch(love::Exception &e)
-	{
-		if (effect)
-			delete effect;
-		throw(e);
-	}
-	return effect;
+	return new Shader(sources);
 }
 
 void Graphics::setColor(const Color &c)
@@ -474,7 +453,7 @@ void Graphics::setColor(const Color &c)
 	glColor4ubv(&c.r);
 }
 
-Color Graphics::getColor()
+Color Graphics::getColor() const
 {
 	float c[4];
 	glGetFloatv(GL_CURRENT_COLOR, c);
@@ -493,7 +472,7 @@ void Graphics::setBackgroundColor(const Color &c)
 	glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
 }
 
-Color Graphics::getBackgroundColor()
+Color Graphics::getBackgroundColor() const
 {
 	float c[4];
 	glGetFloatv(GL_COLOR_CLEAR_VALUE, c);
@@ -518,44 +497,83 @@ void Graphics::setFont(Font *font)
 		currentFont->retain();
 }
 
-Font *Graphics::getFont()
+Font *Graphics::getFont() const
 {
 	return currentFont;
 }
 
 void Graphics::setBlendMode(Graphics::BlendMode mode)
 {
-	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging)
+	const int gl_1_4 = GLEE_VERSION_1_4;
+
+	GLenum func = GL_FUNC_ADD;
+	GLenum src_rgb = GL_ONE;
+	GLenum src_a = GL_ONE;
+	GLenum dst_rgb = GL_ZERO;
+	GLenum dst_a = GL_ZERO;
+
+	switch (mode)
 	{
-		if (mode == BLEND_SUBTRACTIVE)
-			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+	case BLEND_ALPHA:
+		if (gl_1_4 || GLEE_EXT_blend_func_separate)
+		{
+			src_rgb = GL_SRC_ALPHA;
+			src_a = GL_ONE;
+			dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+		}
 		else
-			glBlendEquation(GL_FUNC_ADD);
+		{
+			// Fallback for OpenGL implementations without support for separate blend functions.
+			// This will most likely only be used for the Microsoft software renderer and
+			// since it's still stuck with OpenGL 1.1, the only expected difference is a
+			// different alpha value when reading back the default framebuffer (newScreenshot).
+			src_rgb = src_a = GL_SRC_ALPHA;
+			dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+		}
+		break;
+	case BLEND_MULTIPLICATIVE:
+		src_rgb = src_a = GL_DST_COLOR;
+		dst_rgb = dst_a = GL_ZERO;
+		break;
+	case BLEND_PREMULTIPLIED:
+		src_rgb = src_a = GL_ONE;
+		dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+		break;
+	case BLEND_SUBTRACTIVE:
+		func = GL_FUNC_REVERSE_SUBTRACT;
+	case BLEND_ADDITIVE:
+		src_rgb = src_a = GL_SRC_ALPHA;
+		dst_rgb = dst_a = GL_ONE;
+		break;
+	case BLEND_NONE:
+	default:
+		src_rgb = src_a = GL_ONE;
+		dst_rgb = dst_a = GL_ZERO;
+		break;
 	}
+
+	if (gl_1_4 || GLEE_ARB_imaging)
+		glBlendEquation(func);
 	else if (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)
-	{
-		if (mode == BLEND_SUBTRACTIVE)
-			glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
-		else
-			glBlendEquationEXT(GL_FUNC_ADD_EXT);
-	}
+		glBlendEquationEXT(func);
 	else
 	{
-		if (mode == BLEND_SUBTRACTIVE)
-			throw Exception("This graphics card does not support the subtract blend mode!");
+		if (func == GL_FUNC_REVERSE_SUBTRACT)
+			throw Exception("This graphics card does not support the subtractive blend mode!");
 		// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
 	}
 
-	if (mode == BLEND_ALPHA)
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	else if (mode == BLEND_MULTIPLICATIVE)
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
-	else if (mode == BLEND_PREMULTIPLIED)
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	else if (mode == BLEND_NONE)
-		glBlendFunc(GL_ONE, GL_ZERO);
-	else // mode == BLEND_ADDITIVE || mode == BLEND_SUBTRACTIVE
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	if (src_rgb == src_a && dst_rgb == dst_a)
+		glBlendFunc(src_rgb, dst_rgb);
+	else
+	{
+		if (gl_1_4)
+			glBlendFuncSeparate(src_rgb, dst_rgb, src_a, dst_a);
+		else if (GLEE_EXT_blend_func_separate)
+			glBlendFuncSeparateEXT(src_rgb, dst_rgb, src_a, dst_a);
+		else
+			throw Exception("This graphics card does not support separated rgb and alpha blend functions!");
+	}
 }
 
 void Graphics::setColorMode(Graphics::ColorMode mode)
@@ -572,30 +590,55 @@ void Graphics::setColorMode(Graphics::ColorMode mode)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
-Graphics::BlendMode Graphics::getBlendMode()
+Graphics::BlendMode Graphics::getBlendMode() const
 {
-	GLint dst, src, equation;
-	glGetIntegerv(GL_BLEND_DST, &dst);
-	glGetIntegerv(GL_BLEND_SRC, &src);
-	glGetIntegerv(GL_BLEND_EQUATION, &equation);
+	const int gl_1_4 = GLEE_VERSION_1_4;
+
+	GLint src_rgb, src_a, dst_rgb, dst_a;
+	GLint equation = GL_FUNC_ADD;
+
+	if (gl_1_4 || GLEE_EXT_blend_func_separate)
+	{
+		glGetIntegerv(GL_BLEND_SRC_RGB, &src_rgb);
+		glGetIntegerv(GL_BLEND_SRC_ALPHA, &src_a);
+		glGetIntegerv(GL_BLEND_DST_RGB, &dst_rgb);
+		glGetIntegerv(GL_BLEND_DST_ALPHA, &dst_a);
+	}
+	else
+	{
+		glGetIntegerv(GL_BLEND_SRC, &src_rgb);
+		glGetIntegerv(GL_BLEND_DST, &dst_rgb);
+		src_a = src_rgb;
+		dst_a = dst_rgb;
+	}
+
+	if (gl_1_4 || GLEE_ARB_imaging || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract))
+		glGetIntegerv(GL_BLEND_EQUATION, &equation);
 
 	if (equation == GL_FUNC_REVERSE_SUBTRACT)  // && src == GL_SRC_ALPHA && dst == GL_ONE
 		return BLEND_SUBTRACTIVE;
-	else if (src == GL_SRC_ALPHA && dst == GL_ONE)  // && equation == GL_FUNC_ADD
-		return BLEND_ADDITIVE;
-	else if (src == GL_SRC_ALPHA && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
+	// Everything else has equation == GL_FUNC_ADD.
+	else if (src_rgb == src_a && dst_rgb == dst_a)
+	{
+		if (src_rgb == GL_SRC_ALPHA && dst_rgb == GL_ONE)
+			return BLEND_ADDITIVE;
+		else if (src_rgb == GL_SRC_ALPHA && dst_rgb == GL_ONE_MINUS_SRC_ALPHA)
+			return BLEND_ALPHA; // alpha blend mode fallback for very old OpenGL versions.
+		else if (src_rgb == GL_DST_COLOR && dst_rgb == GL_ZERO)
+			return BLEND_MULTIPLICATIVE;
+		else if (src_rgb == GL_ONE && dst_rgb == GL_ONE_MINUS_SRC_ALPHA)
+			return BLEND_PREMULTIPLIED;
+		else if (src_rgb == GL_ONE && dst_rgb == GL_ZERO)
+			return BLEND_NONE;
+	}
+	else if (src_rgb == GL_SRC_ALPHA && src_a == GL_ONE &&
+		dst_rgb == GL_ONE_MINUS_SRC_ALPHA && dst_a == GL_ONE_MINUS_SRC_ALPHA)
 		return BLEND_ALPHA;
-	else if (src == GL_DST_COLOR && dst == GL_ZERO)  // && equation == GL_FUNC_ADD
-		return BLEND_MULTIPLICATIVE;
-	else if (src == GL_ONE && dst == GL_ONE_MINUS_SRC_ALPHA)  // && equation == GL_FUNC_ADD
-		return BLEND_PREMULTIPLIED;
-	else if (src == GL_ONE && dst == GL_ZERO)
-		return BLEND_NONE;
 
-	return BLEND_MAX_ENUM; // Should never be reached.
+	throw Exception("Unknown blend mode");
 }
 
-Graphics::ColorMode Graphics::getColorMode()
+Graphics::ColorMode Graphics::getColorMode() const
 {
 	GLint mode;
 	glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
@@ -637,12 +680,12 @@ void Graphics::setLine(float width, Graphics::LineStyle style)
 	setLineStyle(style);
 }
 
-float Graphics::getLineWidth()
+float Graphics::getLineWidth() const
 {
 	return lineWidth;
 }
 
-Graphics::LineStyle Graphics::getLineStyle()
+Graphics::LineStyle Graphics::getLineStyle() const
 {
 	return lineStyle;
 }
@@ -670,14 +713,14 @@ void Graphics::setPoint(float size, Graphics::PointStyle style)
 	glPointSize((GLfloat)size);
 }
 
-float Graphics::getPointSize()
+float Graphics::getPointSize() const
 {
 	GLfloat size;
 	glGetFloatv(GL_POINT_SIZE, &size);
 	return (float)size;
 }
 
-Graphics::PointStyle Graphics::getPointStyle()
+Graphics::PointStyle Graphics::getPointStyle() const
 {
 	if (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
 		return POINT_SMOOTH;
@@ -685,7 +728,7 @@ Graphics::PointStyle Graphics::getPointStyle()
 		return POINT_ROUGH;
 }
 
-int Graphics::getMaxPointSize()
+int Graphics::getMaxPointSize() const
 {
 	GLint max;
 	glGetIntegerv(GL_POINT_SIZE_MAX, &max);
@@ -746,11 +789,10 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 
 void Graphics::point(float x, float y)
 {
-	glDisable(GL_TEXTURE_2D);
+	bindTexture(0);
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
 	glEnd();
-	glEnable(GL_TEXTURE_2D);
 }
 
 // Calculate line boundary points u1 and u2. Sketch:
@@ -944,7 +986,7 @@ void Graphics::polyline(const float *coords, size_t count)
 	// end get line vertex boundaries
 
 	// draw the core line
-	glDisable(GL_TEXTURE_2D);
+	bindTexture(0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)vertices);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
@@ -954,7 +996,6 @@ void Graphics::polyline(const float *coords, size_t count)
 		draw_overdraw(overdraw, count, pixel_size, looping);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glEnable(GL_TEXTURE_2D);
 
 	// cleanup
 	delete[] vertices;
@@ -1038,12 +1079,11 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
+		bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, points + 2);
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glEnable(GL_TEXTURE_2D);
 	}
 
 	delete[] coords;
@@ -1062,12 +1102,11 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
+		bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)coords);
 		glDrawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
 		glDisableClientState(GL_VERTEX_ARRAY);
-		glEnable(GL_TEXTURE_2D);
 	}
 }
 
@@ -1140,32 +1179,7 @@ void Graphics::shear(float kx, float ky)
 	glMultMatrixf((const GLfloat *)t.getElements());
 }
 
-void Graphics::drawTest(Image *image, float x, float y, float a, float sx, float sy, float ox, float oy)
-{
-	image->bind();
-
-	// Buffer for transforming the image.
-	vertex buf[4];
-
-	Matrix t;
-	t.translate(x, y);
-	t.rotate(a);
-	t.scale(sx, sy);
-	t.translate(ox, oy);
-	t.transform(buf, image->getVertices(), 4);
-
-	const vertex *vertices = image->getVertices();
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&buf[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&vertices[0].s);
-	glDrawArrays(GL_QUADS, 0, 4);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-bool Graphics::hasFocus()
+bool Graphics::hasFocus() const
 {
 	return currentWindow->hasFocus();
 }

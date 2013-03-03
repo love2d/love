@@ -112,11 +112,13 @@
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Debug\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Debug\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|x64'">
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Debug\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Debug\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MT\</OutDir>
@@ -130,11 +132,13 @@
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dynamic|x64'">
     <OutDir>$(SolutionDir)\bin\$(PlatformShortName)\Release\MD\</OutDir>
     <IntDir>$(ProjectName)\$(PlatformShortName)\Release\</IntDir>
     <GenerateManifest>false</GenerateManifest>
+    <TargetName>love</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Dynamic|Win32'">
     <ClCompile>
@@ -404,7 +408,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\OpenGL.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\PixelEffect.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Shader.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\VertexBuffer.cpp" />
@@ -413,7 +417,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Graphics.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.cpp" />
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Shader.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\Quad.cpp" />
@@ -430,6 +434,8 @@
     <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\love\love.cpp" />
+    <ClCompile Include="..\..\src\modules\math\ModMath.cpp" />
+    <ClCompile Include="..\..\src\modules\math\wrap_Math.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\wrap_Mouse.cpp" />
@@ -631,7 +637,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\OpenGL.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\PixelEffect.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Shader.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\VertexBuffer.h" />
@@ -640,7 +646,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Graphics.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_ParticleSystem.h" />
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_PixelEffect.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Shader.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\Quad.h" />
@@ -658,6 +664,8 @@
     <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
     <ClInclude Include="..\..\src\modules\love\love.h" />
+    <ClInclude Include="..\..\src\modules\math\ModMath.h" />
+    <ClInclude Include="..\..\src\modules\math\wrap_Math.h" />
     <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\wrap_Mouse.h" />

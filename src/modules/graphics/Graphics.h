@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -87,7 +87,7 @@ public:
 	{
 		SUPPORT_CANVAS = 1,
 		SUPPORT_HDR_CANVAS,
-		SUPPORT_PIXELEFFECT,
+		SUPPORT_SHADER,
 		SUPPORT_NPOT,
 		SUPPORT_SUBTRACTIVE,
 		SUPPORT_MIPMAP,

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,10 +28,8 @@
 #include "image/ImageData.h"
 #include "graphics/Image.h"
 
-#include "OpenGL.h"
-
 // OpenGL
-#include "GLee.h"
+#include "OpenGL.h"
 
 namespace love
 {
@@ -127,7 +125,7 @@ private:
 
 	void drawv(const Matrix &t, const vertex *v) const;
 
-	friend class PixelEffect;
+	friend class Shader;
 	GLuint getTextureName() const
 	{
 		return texture;
@@ -144,11 +142,14 @@ private:
 	// The source vertices of the image.
 	vertex vertices[4];
 
-	// Mipmap texture LOD bias value
-	float mipmapsharpness;
+	// Mipmap texture LOD bias (sharpness) value.
+	float mipmapSharpness;
 
-	// Implementation-dependent maximum/minimum mipmap sharpness values
-	float maxmipmapsharpness;
+	// Implementation-dependent min/max mipmap sharpness values.
+	float maxMipmapSharpness;
+
+	// True if mipmaps have been created for this Image.
+	bool mipmapsCreated;
 
 	// The image's filter mode
 	Image::Filter filter;
@@ -159,7 +160,7 @@ private:
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();
 
-	void checkMipmapsCreated() const;
+	void checkMipmapsCreated();
 
 }; // Image
 

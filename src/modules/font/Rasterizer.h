@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -82,7 +82,7 @@ public:
 	 * Gets a specific glyph.
 	 * @param glyph The (UNICODE) glyph to get data for
 	 **/
-	virtual GlyphData *getGlyphData(unsigned short glyph) const = 0;
+	virtual GlyphData *getGlyphData(unsigned int glyph) const = 0;
 
 	/**
 	 * Gets the number of glyphs the rasterizer has data for.

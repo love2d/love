@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
 #include <cmath>
 
 // OpenGL
-#include "GLee.h"
+#include "OpenGL.h"
 
 // LOVE
 #include "graphics/Graphics.h"
@@ -37,14 +37,13 @@
 
 #include "window/Window.h"
 
-#include "OpenGL.h"
 #include "Font.h"
 #include "Image.h"
 #include "Quad.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
-#include "PixelEffect.h"
+#include "Shader.h"
 
 using love::window::WindowFlags;
 
@@ -120,7 +119,7 @@ public:
 	 * @param width The window width.
 	 * @param height The window height.
 	 **/
-	bool checkMode(int width, int height, bool fullscreen);
+	bool checkMode(int width, int height, bool fullscreen) const;
 
 	DisplayState saveState();
 
@@ -140,7 +139,7 @@ public:
 	 * @param height Pointer to an integer for the window height.
 	 * @param flags A WindowFlags structure.
 	 **/
-	void getMode(int &width, int &height, WindowFlags &flags);
+	void getMode(int &width, int &height, WindowFlags &flags) const;
 
 	/**
 	 * Toggles fullscreen. Note that this also needs to reload the
@@ -176,22 +175,22 @@ public:
 	 **/
 	void setCaption(const char *caption);
 
-	int getCaption(lua_State *L);
+	int getCaption(lua_State *L) const;
 
 	/**
 	 * Gets the width of the current display mode.
 	 **/
-	int getWidth();
+	int getWidth() const;
 
 	/**
 	 * Gets the height of the current display mode.
 	 **/
-	int getHeight();
+	int getHeight() const;
 
 	/**
 	 * True if some display mode is set.
 	 **/
-	bool isCreated();
+	bool isCreated() const;
 
 	/**
 	 * This native Lua function gets available modes
@@ -206,7 +205,7 @@ public:
 	 * Only fullscreen modes are returned here, as all
 	 * window sizes are supported (normally).
 	 **/
-	int getModes(lua_State *L);
+	int getModes(lua_State *L) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded and not drawn.
@@ -227,7 +226,7 @@ public:
 	 * This native Lua function gets the current scissor box in the order of:
 	 * x, y, width, height
 	 **/
-	int getScissor(lua_State *L);
+	int getScissor(lua_State *L) const;
 
 	/**
 	 * Enables the stencil buffer and set stencil function to fill it
@@ -269,7 +268,7 @@ public:
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
-	PixelEffect *newPixelEffect(const std::string &code);
+	Shader *newShader(const Shader::ShaderSources &sources);
 
 	/**
 	 * Sets the foreground color.
@@ -280,7 +279,7 @@ public:
 	/**
 	 * Gets current color.
 	 **/
-	Color getColor();
+	Color getColor() const;
 
 	/**
 	 * Sets the background Color.
@@ -290,7 +289,7 @@ public:
 	/**
 	 * Gets the current background color.
 	 **/
-	Color getBackgroundColor();
+	Color getBackgroundColor() const;
 
 	/**
 	 * Sets the current font.
@@ -300,7 +299,7 @@ public:
 	/**
 	 * Gets the current Font, or nil if none.
 	 **/
-	Font *getFont();
+	Font *getFont() const;
 
 	/**
 	 * Sets the current blend mode.
@@ -320,12 +319,12 @@ public:
 	/**
 	 * Gets the current blend mode.
 	 **/
-	BlendMode getBlendMode();
+	BlendMode getBlendMode() const;
 
 	/**
 	 * Gets the current color mode.
 	 **/
-	ColorMode getColorMode();
+	ColorMode getColorMode() const;
 
 	/**
 	 * Gets the current image filter.
@@ -353,12 +352,12 @@ public:
 	/**
 	 * Gets the line width.
 	 **/
-	float getLineWidth();
+	float getLineWidth() const;
 
 	/**
 	 * Gets the line style.
 	 **/
-	LineStyle getLineStyle();
+	LineStyle getLineStyle() const;
 
 	/**
 	 * Sets the size of points.
@@ -379,18 +378,18 @@ public:
 	/**
 	 * Gets the point size.
 	 **/
-	float getPointSize();
+	float getPointSize() const;
 
 	/**
 	 * Gets the point style.
 	 **/
-	PointStyle getPointStyle();
+	PointStyle getPointStyle() const;
 
 	/**
 	 * Gets the maximum point size supported.
 	 * This may vary from computer to computer.
 	 **/
-	int getMaxPointSize();
+	int getMaxPointSize() const;
 
 	/**
 	 * Draws text at the specified coordinates, with rotation and
@@ -510,9 +509,7 @@ public:
 	void translate(float x, float y);
 	void shear(float kx, float ky);
 
-	void drawTest(Image *image, float x, float y, float a, float sx, float sy, float ox, float oy);
-
-	bool hasFocus();
+	bool hasFocus() const;
 private:
 
 	Font *currentFont;
@@ -523,7 +520,7 @@ private:
 	GLint matrixLimit;
 	GLint userMatrices;
 
-	int getRenderHeight();
+	int getRenderHeight() const;
 }; // Graphics
 
 } // opengl

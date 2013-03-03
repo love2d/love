@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,16 +30,9 @@ namespace font
 namespace freetype
 {
 
-struct la
-{
-	unsigned char l,a;
-};
-
 TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	: data(data)
 {
-	data->retain();
-
 	if (FT_New_Memory_Face(library,
 						  (const FT_Byte *)data->getData(),	/* first byte in memory */
 						  data->getSize(),					/* size in bytes        */
@@ -55,6 +48,8 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	metrics.ascent = s.ascender >> 6;
 	metrics.descent = s.descender >> 6;
 	metrics.height = s.height >> 6;
+
+	data->retain();
 }
 
 TrueTypeRasterizer::~TrueTypeRasterizer()
@@ -68,7 +63,7 @@ int TrueTypeRasterizer::getLineHeight() const
 	return (int)(getHeight() * 1.25);
 }
 
-GlyphData *TrueTypeRasterizer::getGlyphData(unsigned short glyph) const
+GlyphData *TrueTypeRasterizer::getGlyphData(unsigned int glyph) const
 {
 	love::font::GlyphMetrics glyphMetrics;
 	FT_Glyph ftglyph;
@@ -81,7 +76,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(unsigned short glyph) const
 		throw love::Exception("TrueTypeFont Loading vm->error: FT_Get_Glyph failed\n");
 
 	FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
-	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph)ftglyph;
+	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
 	FT_Bitmap &bitmap = bitmap_glyph->bitmap; //just to make things easier
 
 	// Get metrics
@@ -93,17 +88,15 @@ GlyphData *TrueTypeRasterizer::getGlyphData(unsigned short glyph) const
 
 	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 
-	{
-		int size = bitmap.rows*bitmap.width;
-		unsigned char *dst = (unsigned char *)glyphData->getData();
+	int size = bitmap.rows * bitmap.width;
+	unsigned char *dst = (unsigned char *) glyphData->getData();
 
-		// Note that bitmap.buffer contains only luminosity. We copy that single value to
-		// our luminosity-alpha format.
-		for (int i = 0; i<size; i++)
-		{
-			dst[2*i] = 255;
-			dst[2*i+1] = bitmap.buffer[i];
-		}
+	// Note that bitmap.buffer contains only luminosity. We copy that single value to
+	// our luminosity-alpha format.
+	for (int i = 0; i < size; i++)
+	{
+		dst[2*i] = 255;
+		dst[2*i+1] = bitmap.buffer[i];
 	}
 
 	// Having copied the data over, we can destroy the glyph
@@ -115,7 +108,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(unsigned short glyph) const
 
 int TrueTypeRasterizer::getNumGlyphs() const
 {
-	return 256;
+	return face->num_glyphs;
 }
 
 } // freetype

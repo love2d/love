@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -145,6 +145,11 @@ int SoundData::getBits() const
 int SoundData::getSampleRate() const
 {
 	return sampleRate;
+}
+
+int SoundData::getDuration() const
+{
+	return size/(channels*sampleRate*bits/8);
 }
 
 void SoundData::setSample(int i, float sample)

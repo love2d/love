@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -78,17 +78,17 @@ public:
 	/**
 	 * Returns the width of the passed string.
 	 *
-	 * @param line A line of text.
+	 * @param str A string of text.
 	 **/
-	int getWidth(const std::string &line);
-	int getWidth(const char *line);
+	int getWidth(const std::string &str);
+	int getWidth(const char *str);
 
 	/**
 	 * Returns the width of the passed character.
 	 *
 	 * @param character A character.
 	 **/
-	int getWidth(const char character);
+	int getWidth(unsigned int character);
 
 	/**
 	 * Returns the maximal width of a wrapped string
@@ -128,9 +128,6 @@ public:
 
 	void setFilter(const Image::Filter &f);
 	const Image::Filter &getFilter();
-
-	void setMipmapSharpness(float sharpness);
-	float getMipmapSharpness() const;
 
 	// Implements Volatile.
 	bool loadVolatile();
@@ -191,7 +188,7 @@ private:
 	int texture_height;
 
 	std::vector<GLuint> textures; // vector of packed textures
-	std::map<int, Glyph *> glyphs; // maps glyphs to quad information
+	std::map<unsigned int, Glyph *> glyphs; // maps glyphs to quad information
 	FontType type;
 	Image::Filter filter;
 
@@ -204,18 +201,10 @@ private:
 	int texture_x, texture_y;
 	int rowHeight;
 
-	// Mipmap texture LOD bias value
-	float mipmapsharpness;
-
-	// Implementation-dependent maximum/minimum mipmap sharpness values
-	float maxmipmapsharpness;
-
-	void checkMipmapsCreated() const;
-
 	bool initializeTexture(GLint format);
 	void createTexture();
-	Glyph *addGlyph(const int glyph);
-	Glyph *findGlyph (const int glyph);
+	Glyph *addGlyph(unsigned int glyph);
+	Glyph *findGlyph(unsigned int glyph);
 }; // Font
 
 } // opengl

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -52,7 +52,7 @@ enum Type
 	GRAPHICS_PARTICLE_SYSTEM_ID,
 	GRAPHICS_SPRITE_BATCH_ID,
 	GRAPHICS_CANVAS_ID,
-	GRAPHICS_PIXELEFFECT_ID,
+	GRAPHICS_SHADER_ID,
 
 	// Image
 	IMAGE_IMAGE_DATA_ID,
@@ -124,7 +124,7 @@ const bits GRAPHICS_FONT_T = (bits(1) << GRAPHICS_FONT_ID) | OBJECT_T;
 const bits GRAPHICS_PARTICLE_SYSTEM_T = (bits(1) << GRAPHICS_PARTICLE_SYSTEM_ID) | GRAPHICS_DRAWABLE_T;
 const bits GRAPHICS_SPRITE_BATCH_T = (bits(1) << GRAPHICS_SPRITE_BATCH_ID) | GRAPHICS_DRAWABLE_T;
 const bits GRAPHICS_CANVAS_T = (bits(1) << GRAPHICS_CANVAS_ID) | GRAPHICS_DRAWQABLE_T;
-const bits GRAPHICS_PIXELEFFECT_T = (bits(1) << GRAPHICS_PIXELEFFECT_ID) | OBJECT_T;
+const bits GRAPHICS_SHADER_T = (bits(1) << GRAPHICS_SHADER_ID) | OBJECT_T;
 
 // Image.
 const bits IMAGE_IMAGE_DATA_T = (bits(1) << IMAGE_IMAGE_DATA_ID) | DATA_T;

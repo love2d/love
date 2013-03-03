@@ -1,4 +1,4 @@
-LOVE 0.8.1 [Rubber Piggy]
+LOVE 0.9.0 []
 --------------
 
   * Added --fused command line argument, to simulate fusing.
@@ -10,6 +10,20 @@ LOVE 0.8.1 [Rubber Piggy]
   * Added love.mouse.setX/setY.
   * Added love.filesystem.getIdentity.
   * Added HDR canvas support.
+  * Added Source:isPlaying.
+  * Added mipmapping support (has isSupported test).
+  * Added Font:getAscent/getDescent/getBaseline.
+  * Added Canvas:getPixel.
+  * Added vertex shader support.
+  * Added boolean support to Shader:send.
+  * Added support for UTF-8 ImageFonts.
+  * Added SoundData:getDuration.
+  * Added new Channels api for love.thread.
+  * Added flags to setMode.
+  * Added support for resizable and borderless windows.
+  * Added resize event.
+  * Added love.math module.
+  * Added a platform-independent (good) random implementation to love.math.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -26,18 +40,29 @@ LOVE 0.8.1 [Rubber Piggy]
   * Fixed multiplicative blend mode.
   * Fixed Box2D exception in World:update.
   * Fixed spacing for the last character in an ImageFont.
+  * Fixed crash when locking SpriteBatches multiple times.
+  * Fixed File:read reading past end of file.
+  * Fixed keyrepeat settings being lost after (indirect) setMode.
 
   * Moved love's startup to modules/love.
 
   * Renamed love's boot script to 'love.boot', which can be required.
+  * Renamed PixelEffect to Shader (but now with vertex shaders).
 
   * Removed love.joystick.open and friends.
+  * Removed love.graphics.drawTest.
+  * Removed thread names.
+  * Removed old thread messaging api (see Channels).
+  * Removed love.graphics.quad/triangle.
 
   * Updated allocation for SoundData, it's more efficient and less wasteful.
   * Updated Source:set* functions to default z to 0.
   * Updated the windows console, it now tries to re-use an active one first.
   * Updated love.image memory handling, improves errors and thread-safety.
   * Updated order of sleep/present in love.run (now draws, *then* sleeps).
+  * Updated the setFilter and setWrap methods, the second argument is now optional.
+  * Updated font rendering code, now more performant.
+  * Updated error handling, error handlers now get resolved when the error occurs.
 
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------

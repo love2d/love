@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -248,6 +248,7 @@ void VBO::unload(bool save)
 // VertexIndex
 
 size_t VertexIndex::maxSize = 0;
+size_t VertexIndex::elementSize = 0;
 std::list<size_t> VertexIndex::sizeRefs;
 VertexBuffer *VertexIndex::element_array = NULL;
 
@@ -285,6 +286,11 @@ GLenum VertexIndex::getType(size_t s) const
 	static const GLenum type_table[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
 	return type_table[s * 4 > std::numeric_limits<GLushort>::max()];
 	// if buffer-size > max(GLushort) then GL_UNSIGNED_INT else GL_UNSIGNED_SHORT
+}
+
+size_t VertexIndex::getElementSize()
+{
+	return elementSize;
 }
 
 VertexBuffer *VertexIndex::getVertexBuffer() const
@@ -342,9 +348,12 @@ void VertexIndex::resize(size_t size)
 	}
 
 	VertexBuffer *new_element_array;
+	
 	// Depending on the size, a switch to int and more memory is needed.
 	GLenum target_type = getType(size);
-	size_t array_size = (target_type == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint)) * 6 * size;
+	size_t elem_size = (target_type == GL_UNSIGNED_SHORT) ? sizeof(GLushort) : sizeof(GLuint);
+
+	size_t array_size = elem_size * 6 * size;
 
 	// Create may throw out-of-memory exceptions.
 	// VertexIndex will propagate the exception and keep the old VertexBuffer.
@@ -362,6 +371,7 @@ void VertexIndex::resize(size_t size)
 	delete element_array;
 	element_array = new_element_array;
 	maxSize = size;
+	elementSize = elem_size;
 
 	switch (target_type)
 	{

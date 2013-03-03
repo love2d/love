@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,9 +61,6 @@ public:
 	double getMicroTime() const;
 
 private:
-
-	// Timing vars for benchmarking.
-	Uint32 time_init;
 
 	// Frame delta vars.
 	Uint32 currTime;

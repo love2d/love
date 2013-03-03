@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -101,7 +101,6 @@ int w_SpriteBatch_setq(lua_State *L)
 	return 0;
 }
 
-
 int w_SpriteBatch_clear(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
@@ -185,6 +184,20 @@ int w_SpriteBatch_setColor(lua_State *L)
 	return 0;
 }
 
+int w_SpriteBatch_isEmpty(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+	luax_pushboolean(L, t->isEmpty());
+	return 1;
+}
+
+int w_SpriteBatch_isFull(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+	luax_pushboolean(L, t->isFull());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "add", w_SpriteBatch_add },
@@ -197,6 +210,8 @@ static const luaL_Reg functions[] =
 	{ "setImage", w_SpriteBatch_setImage },
 	{ "getImage", w_SpriteBatch_getImage },
 	{ "setColor", w_SpriteBatch_setColor },
+	{ "isEmpty", w_SpriteBatch_isEmpty },
+	{ "isFull", w_SpriteBatch_isFull },
 	{ 0, 0 }
 };
 

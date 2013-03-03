@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,12 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_PixelEffect.h"
+#include "wrap_Shader.h"
 #include "wrap_Image.h"
 #include "wrap_Canvas.h"
 #include <string>
 #include <iostream>
-using namespace std;
 
 namespace love
 {
@@ -32,46 +31,50 @@ namespace graphics
 namespace opengl
 {
 
-PixelEffect *luax_checkpixeleffect(lua_State *L, int idx)
+Shader *luax_checkshader(lua_State *L, int idx)
 {
-	return luax_checktype<PixelEffect>(L, idx, "PixelEffect", GRAPHICS_PIXELEFFECT_T);
+	return luax_checktype<Shader>(L, idx, "Shader", GRAPHICS_SHADER_T);
 }
 
-int w_PixelEffect_getWarnings(lua_State *L)
+int w_Shader_getWarnings(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
-	lua_pushstring(L, effect->getWarnings().c_str());
+	Shader *shader = luax_checkshader(L, 1);
+	lua_pushstring(L, shader->getWarnings().c_str());
 	return 1;
 }
 
-static int _sendScalars(lua_State *L, PixelEffect *effect, const char *name, int count)
+static int _sendScalars(lua_State *L, Shader *shader, const char *name, int count)
 {
 	float *values = new float[count];
 	for (int i = 0; i < count; ++i)
 	{
-		if (!lua_isnumber(L, 3 + i))
+		if (lua_isnumber(L, 3 + i))
+			values[i] = (float)lua_tonumber(L, 3 + i);
+		else if (lua_isboolean(L, 3 + i))
+			values[i] = (float)lua_toboolean(L, 3 + i);
+		else
 		{
 			delete[] values;
-			return luaL_typerror(L, 3 + i, "number");
+			return luaL_typerror(L, 3 + i, "number or boolean");
 		}
 		values[i] = (float)lua_tonumber(L, 3 + i);
 	}
 
 	try
 	{
-		effect->sendFloat(name, 1, values, count);
+		shader->sendFloat(name, 1, values, count);
 	}
 	catch(love::Exception &e)
 	{
 		delete[] values;
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	delete[] values;
 	return 0;
 }
 
-static int _sendVectors(lua_State *L, PixelEffect *effect, const char *name, int count)
+static int _sendVectors(lua_State *L, Shader *shader, const char *name, int count)
 {
 	size_t dimension = lua_objlen(L, 3);
 	float *values = new float[count * dimension];
@@ -93,46 +96,49 @@ static int _sendVectors(lua_State *L, PixelEffect *effect, const char *name, int
 		for (size_t k = 1; k <= dimension; ++k)
 		{
 			lua_rawgeti(L, 3 + i, k);
-			values[i * dimension + k - 1] = (float)lua_tonumber(L, -1);
+			if (lua_isboolean(L, -1))
+				values[i * dimension + k - 1] = (float)lua_toboolean(L, -1);
+			else
+				values[i * dimension + k - 1] = (float)lua_tonumber(L, -1);
 		}
 		lua_pop(L, int(dimension));
 	}
 
 	try
 	{
-		effect->sendFloat(name, dimension, values, count);
+		shader->sendFloat(name, dimension, values, count);
 	}
 	catch(love::Exception &e)
 	{
 		delete[] values;
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	delete[] values;
 	return 0;
 }
 
-int w_PixelEffect_sendFloat(lua_State *L)
+int w_Shader_sendFloat(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	int count = lua_gettop(L) - 2;
 
 	if (count < 1)
 		return luaL_error(L, "No variable to send.");
 
-	if (lua_isnumber(L, 3))
-		return _sendScalars(L, effect, name, count);
+	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
+		return _sendScalars(L, shader, name, count);
 	else if (lua_istable(L, 3))
-		return _sendVectors(L, effect, name, count);
+		return _sendVectors(L, shader, name, count);
 
-	return luaL_typerror(L, 3, "number or table");
+	return luaL_typerror(L, 3, "number, boolean, or table");
 }
 
-int w_PixelEffect_sendMatrix(lua_State *L)
+int w_Shader_sendMatrix(lua_State *L)
 {
 	int count = lua_gettop(L) - 2;
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 
 	if (!lua_istable(L, 3))
@@ -174,49 +180,49 @@ int w_PixelEffect_sendMatrix(lua_State *L)
 
 	try
 	{
-		effect->sendMatrix(name, dimension, values, count);
+		shader->sendMatrix(name, dimension, values, count);
 	}
 	catch(love::Exception &e)
 	{
 		delete[] values;
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	delete[] values;
 	return 0;
 }
 
-int w_PixelEffect_sendImage(lua_State *L)
+int w_Shader_sendImage(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	Image *img = luax_checkimage(L, 3);
 
 	try
 	{
-		effect->sendImage(name, *img);
+		shader->sendImage(name, *img);
 	}
 	catch(love::Exception &e)
 	{
-		luaL_error(L, e.what());
+		luaL_error(L, "%s", e.what());
 	}
 
 	return 0;
 }
 
-int w_PixelEffect_sendCanvas(lua_State *L)
+int w_Shader_sendCanvas(lua_State *L)
 {
-	PixelEffect *effect = luax_checkpixeleffect(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	Canvas *canvas = luax_checkcanvas(L, 3);
 
 	try
 	{
-		effect->sendCanvas(name, *canvas);
+		shader->sendCanvas(name, *canvas);
 	}
 	catch(love::Exception &e)
 	{
-		luaL_error(L, e.what());
+		luaL_error(L, "%s", e.what());
 	}
 
 	return 0;
@@ -225,17 +231,17 @@ int w_PixelEffect_sendCanvas(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "getWarnings", w_PixelEffect_getWarnings },
-	{ "sendFloat",   w_PixelEffect_sendFloat },
-	{ "sendMatrix",  w_PixelEffect_sendMatrix },
-	{ "sendImage",   w_PixelEffect_sendImage },
-	{ "sendCanvas",  w_PixelEffect_sendCanvas },
+	{ "getWarnings", w_Shader_getWarnings },
+	{ "sendFloat",   w_Shader_sendFloat },
+	{ "sendMatrix",  w_Shader_sendMatrix },
+	{ "sendImage",   w_Shader_sendImage },
+	{ "sendCanvas",  w_Shader_sendCanvas },
 	{ 0, 0 }
 };
 
-extern "C" int luaopen_pixeleffect(lua_State *L)
+extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, "PixelEffect", functions);
+	return luax_register_type(L, "Shader", functions);
 }
 
 } // opengl

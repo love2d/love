@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,27 +37,27 @@ public:
 	Window();
 	~Window();
 
-	bool setWindow(int width, int height, WindowFlags *flags = 0);
-	void getWindow(int &width, int &height, WindowFlags &flags);
+	bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0);
+	void getWindow(int &width, int &height, WindowFlags &flags) const;
 
-	bool checkWindowSize(int width, int height, bool fullscreen);
-	WindowSize **getFullscreenSizes(int &n);
+	bool checkWindowSize(int width, int height, bool fullscreen) const;
+	WindowSize **getFullscreenSizes(int &n) const;
 
-	int getWidth();
-	int getHeight();
+	int getWidth() const;
+	int getHeight() const;
 
-	bool isCreated();
+	bool isCreated() const;
 
 	void setWindowTitle(std::string &title);
-	std::string getWindowTitle();
+	std::string getWindowTitle() const;
 
 	bool setIcon(love::image::ImageData *imgd);
 
 	void swapBuffers();
 
-	bool hasFocus();
+	bool hasFocus() const;
 	void setMouseVisible(bool visible);
-	bool getMouseVisible();
+	bool getMouseVisible() const;
 
 	static love::window::Window *getSingleton();
 
@@ -76,7 +76,6 @@ private:
 		bool borderless;
 	} currentMode;
 	bool created;
-	bool mouseVisible;
 }; // Window
 
 } // sdl

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@ namespace love
 namespace font
 {
 
-GlyphData::GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
+GlyphData::GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
 	: glyph(glyph)
 	, metrics(glyphMetrics)
 	, data(0)
@@ -81,6 +81,11 @@ int GlyphData::getHeight() const
 int GlyphData::getWidth() const
 {
 	return metrics.width;
+}
+
+unsigned int GlyphData::getGlyph() const
+{
+	return glyph;
 }
 
 int GlyphData::getAdvance() const

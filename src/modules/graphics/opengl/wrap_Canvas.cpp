@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -62,6 +62,27 @@ int w_Canvas_getImageData(lua_State *L)
 	love::image::ImageData *img = canvas->getImageData(image);
 	luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)img);
 	return 1;
+}
+
+int w_Canvas_getPixel(lua_State * L)
+{
+	Canvas * canvas = luax_checkcanvas(L, 1);
+	int x = luaL_checkint(L, 2);
+	int y = luaL_checkint(L, 3);
+	unsigned char c[4];
+	try
+	{
+		canvas->getPixel(c, x, y);
+	}
+	catch (love::Exception & e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+	lua_pushnumber(L, c[0]);
+	lua_pushnumber(L, c[1]);
+	lua_pushnumber(L, c[2]);
+	lua_pushnumber(L, c[3]);
+	return 4;
 }
 
 int w_Canvas_setFilter(lua_State *L)
@@ -202,6 +223,7 @@ static const luaL_Reg functions[] =
 {
 	{ "renderTo", w_Canvas_renderTo },
 	{ "getImageData", w_Canvas_getImageData },
+	{ "getPixel", w_Canvas_getPixel },
 	{ "setFilter", w_Canvas_setFilter },
 	{ "getFilter", w_Canvas_getFilter },
 	{ "setWrap", w_Canvas_setWrap },

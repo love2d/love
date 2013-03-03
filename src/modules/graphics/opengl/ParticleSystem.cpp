@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #include "common/math.h"
 
-#include "GLee.h"
+#include "OpenGL.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -63,6 +63,7 @@ ParticleSystem::ParticleSystem(Image *sprite, unsigned int buffer)
 	, pLast(0)
 	, pEnd(0)
 	, particleVerts(0)
+	, sprite(sprite)
 	, active(true)
 	, emissionRate(0)
 	, emitCounter(0)
@@ -91,11 +92,10 @@ ParticleSystem::ParticleSystem(Image *sprite, unsigned int buffer)
 	, offsetX(sprite->getWidth()*0.5f)
 	, offsetY(sprite->getHeight()*0.5f)
 {
-	this->sprite = sprite;
-	sprite->retain();
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 	setBufferSize(buffer);
+	sprite->retain();
 }
 
 ParticleSystem::~ParticleSystem()

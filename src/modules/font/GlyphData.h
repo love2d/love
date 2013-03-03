@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -56,7 +56,7 @@ public:
 		FORMAT_RGBA
 	};
 
-	GlyphData(unsigned short glyph, GlyphMetrics glyphMetrics, Format f);
+	GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, Format f);
 	virtual ~GlyphData();
 
 	// Implements Data.
@@ -72,6 +72,11 @@ public:
 	 * Gets the width of the glyph.
 	 **/
 	virtual int getWidth() const;
+
+	/**
+	 * Gets the glyph itself.
+	 **/
+	unsigned int getGlyph() const;
 
 	/**
 	 * Gets the advance (the space the glyph takes up) of the glyph.
@@ -115,7 +120,7 @@ public:
 
 private:
 	// The glyph itself
-	unsigned short glyph;
+	unsigned int glyph;
 
 	// Glyph metrics
 	GlyphMetrics metrics;

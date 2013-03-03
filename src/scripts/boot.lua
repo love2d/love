@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2006-2012 LOVE Development Team
+Copyright (c) 2006-2013 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -262,6 +262,7 @@ function love.init()
 			image = true,
 			graphics = true,
 			audio = true,
+			math = true,
 			physics = true,
 			sound = true,
 			font = true,
@@ -312,6 +313,7 @@ function love.init()
 		"image",
 		"font",
 		"graphics",
+		"math",
 		"physics",
 	} do
 		if c.modules[v] then
@@ -772,7 +774,7 @@ function love.releaseerrhand(msg)
 	end
 
 	love.graphics.setCanvas()
-	love.graphics.setPixelEffect()
+	love.graphics.setShader()
 
 	-- Load.
 	if love.audio then love.audio.stop() end

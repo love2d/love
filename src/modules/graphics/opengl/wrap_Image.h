@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,6 +37,8 @@ int w_Image_getWidth(lua_State *L);
 int w_Image_getHeight(lua_State *L);
 int w_Image_setFilter(lua_State *L);
 int w_image_getFilter(lua_State *L);
+int w_Image_setMipmapFilter(lua_State *L);
+int w_Image_getMipmapFilter(lua_State *L);
 int w_Image_setWrap(lua_State *L);
 int w_Image_getWrap(lua_State *L);
 int w_Image_setMipmapSharpness(lua_State *L);

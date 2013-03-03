@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,49 @@
 #include <fstream>
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+#ifdef LOVE_LEGENDARY_LIBSTDCXX_HACK
+
+#include <iostream>
+
+// Workarounds for symbols that are missing from Leopard stdlibc++.dylib.
+// http://stackoverflow.com/questions/3484043/os-x-program-runs-on-dev-machine-crashing-horribly-on-others
+_GLIBCXX_BEGIN_NAMESPACE(std)
+// From ostream_insert.h
+template ostream& __ostream_insert(ostream&, const char*, streamsize);
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+template wostream& __ostream_insert(wostream&, const wchar_t*, streamsize);
+#endif
+
+// From ostream.tcc
+template ostream& ostream::_M_insert(long);
+template ostream& ostream::_M_insert(unsigned long);
+template ostream& ostream::_M_insert(bool);
+#ifdef _GLIBCXX_USE_LONG_LONG
+template ostream& ostream::_M_insert(long long);
+template ostream& ostream::_M_insert(unsigned long long);
+#endif
+template ostream& ostream::_M_insert(double);
+template ostream& ostream::_M_insert(long double);
+template ostream& ostream::_M_insert(const void*);
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+template wostream& wostream::_M_insert(long);
+template wostream& wostream::_M_insert(unsigned long);
+template wostream& wostream::_M_insert(bool);
+#ifdef _GLIBCXX_USE_LONG_LONG
+template wostream& wostream::_M_insert(long long);
+template wostream& wostream::_M_insert(unsigned long long);
+#endif
+template wostream& wostream::_M_insert(double);
+template wostream& wostream::_M_insert(long double);
+template wostream& wostream::_M_insert(const void*);
+#endif
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
+
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
 
@@ -60,6 +103,7 @@ extern "C"
 	extern int luaopen_love_sound(lua_State*);
 	extern int luaopen_love_timer(lua_State*);
 	extern int luaopen_love_thread(lua_State*);
+	extern int luaopen_love_math(lua_State*);
 	extern int luaopen_love_boot(lua_State*);
 }
 
@@ -77,6 +121,7 @@ static const luaL_Reg modules[] = {
 	{ "love.sound", luaopen_love_sound },
 	{ "love.timer", luaopen_love_timer },
 	{ "love.thread", luaopen_love_thread },
+	{ "love.math", luaopen_love_math },
 	{ "love.boot", luaopen_love_boot },
 	{ 0, 0 }
 };

@@ -24,8 +24,8 @@ float random_normal(float o)
 	}
 
 	// else: generate numbers using the Box-Muller transform
-	float a = sqrt(-2.0f * log(random()));
-	float b = float(LOVE_M_PI) * 2.0f * random();
+	float a = sqrt(-2.0f * log(1. - random()));
+	float b = float(LOVE_M_PI) * 2.0f * (1. - random());
 	last_randnormal = a * cos(b);
 	return a * sin(b) * o;
 }

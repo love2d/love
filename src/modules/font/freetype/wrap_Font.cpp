@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -67,7 +67,7 @@ int w_newRasterizer(lua_State *L)
 int w_newGlyphData(lua_State *L)
 {
 	Rasterizer *r = luax_checkrasterizer(L, 1);
-	unsigned short g = (unsigned short)luaL_checkint(L, 2);
+	unsigned int g = (unsigned int)luaL_checknumber(L, 2);
 
 	GlyphData *t = instance->newGlyphData(r, g);
 	luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);

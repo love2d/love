@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,9 +24,6 @@
 // SDL
 #include <SDL.h>
 
-// OpenGL
-#include <SDL/SDL_opengl.h>
-
 // LOVE
 #include "common/config.h"
 #include "Window.h"
@@ -41,13 +38,12 @@ namespace sdl
 Window::Window()
 	: windowTitle("")
 	, created(false)
-	, mouseVisible(true)
 {
 	// Window should be centered.
 	SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
 
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-		throw Exception(SDL_GetError());
+		throw love::Exception(SDL_GetError());
 }
 
 Window::~Window()
@@ -78,6 +74,8 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	}
 
 	bool mouseVisible = getMouseVisible();
+	int keyrepeatDelay, keyrepeatInterval;
+	SDL_GetKeyRepeat(&keyrepeatDelay, &keyrepeatInterval);
 
 	// We need to restart the subsystem for two reasons:
 	// 1) Special case for fullscreen -> windowed. Windows XP did not
@@ -102,6 +100,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	// Set caption.
 	setWindowTitle(windowTitle);
 	setMouseVisible(mouseVisible);
+	SDL_EnableKeyRepeat(keyrepeatDelay, keyrepeatInterval);
 
 	// Set GL attributes
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -113,11 +112,8 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 
 	// FSAA
-	if (fsaa > 0)
-	{
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, fsaa);
-	}
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
 
 	Uint32 sdlflags = SDL_OPENGL;
 	// Flags
@@ -135,15 +131,10 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 		bool failed = true;
 		if (fsaa > 0)
 		{
-			// FSAA might have failed, disable it and try again
+			// FSAA might have caused the failure, disable it and try again
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			failed = (surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0;
-			if (failed)
-			{
-				// There might be no FSAA at all
-				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-				failed = (surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0;
-			}
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+			failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
 		}
 		if (failed)
 		{
@@ -161,20 +152,17 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 		height = videoinfo->current_h;
 	}
 
-	if (fsaa > 0)
-		glEnable(GL_MULTISAMPLE);
+	int buffers;
+	int samples;
 
-	GLint buffers;
-	GLint samples;
-
-	glGetIntegerv(GL_SAMPLE_BUFFERS_ARB, &buffers);
-	glGetIntegerv(GL_SAMPLES_ARB, &samples);
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
 	// Don't fail because of this, but issue a warning.
 	if ((!buffers && fsaa) || (samples != fsaa))
 	{
-		std::cerr << "Warning, quality setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
-		fsaa = !buffers ? 0 : samples;
+		std::cerr << "Warning, FSAA setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
+		fsaa = (buffers > 0) ? samples : 0;
 	}
 
 	// Get the actual vsync status
@@ -193,7 +181,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	return true;
 }
 
-void Window::getWindow(int &width, int &height, WindowFlags &flags)
+void Window::getWindow(int &width, int &height, WindowFlags &flags) const
 {
 	width = currentMode.width;
 	height = currentMode.height;
@@ -204,7 +192,7 @@ void Window::getWindow(int &width, int &height, WindowFlags &flags)
 	flags.borderless = currentMode.borderless;
 }
 
-bool Window::checkWindowSize(int width, int height, bool fullscreen)
+bool Window::checkWindowSize(int width, int height, bool fullscreen) const
 {
 	Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
 
@@ -216,7 +204,7 @@ bool Window::checkWindowSize(int width, int height, bool fullscreen)
 
 typedef Window::WindowSize WindowSize;
 
-WindowSize **Window::getFullscreenSizes(int &n)
+WindowSize **Window::getFullscreenSizes(int &n) const
 {
 	SDL_Rect **modes = SDL_ListModes(0, SDL_OPENGL | SDL_FULLSCREEN);
 
@@ -241,17 +229,17 @@ WindowSize **Window::getFullscreenSizes(int &n)
 	return sizes;
 }
 
-int Window::getWidth()
+int Window::getWidth() const
 {
 	return currentMode.width;
 }
 
-int Window::getHeight()
+int Window::getHeight() const
 {
 	return currentMode.height;
 }
 
-bool Window::isCreated()
+bool Window::isCreated() const
 {
 	return created;
 }
@@ -262,7 +250,7 @@ void Window::setWindowTitle(std::string &title)
 	SDL_WM_SetCaption(windowTitle.c_str(), 0);
 }
 
-std::string Window::getWindowTitle()
+std::string Window::getWindowTitle() const
 {
 	// not a reference
 	// because we want this untouched
@@ -300,7 +288,7 @@ void Window::swapBuffers()
 	SDL_GL_SwapBuffers();
 }
 
-bool Window::hasFocus()
+bool Window::hasFocus() const
 {
 	return (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
 }
@@ -310,7 +298,7 @@ void Window::setMouseVisible(bool visible)
 	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
 }
 
-bool Window::getMouseVisible()
+bool Window::getMouseVisible() const
 {
 	return (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,8 @@
 #include "font/Rasterizer.h"
 #include "image/ImageData.h"
 
+#include <map>
+
 namespace love
 {
 namespace font
@@ -36,33 +38,40 @@ namespace font
  **/
 class ImageRasterizer : public Rasterizer
 {
+public:
+	ImageRasterizer(love::image::ImageData *imageData, unsigned int *glyphs, int numglyphs);
+	virtual ~ImageRasterizer();
+
+	// Implement Rasterizer
+	virtual int getLineHeight() const;
+	virtual GlyphData *getGlyphData(unsigned int glyph) const;
+	virtual int getNumGlyphs() const;
+
 private:
 	// Load all the glyph positions into memory
 	void load();
 
 	// The image data
 	love::image::ImageData *imageData;
+
 	// The glyphs in the font
-	unsigned short *glyphs;
-	// The length of the glyph array
-	unsigned int length;
-	// The positions of each glyph
-	unsigned int *positions;
-	// The widths of each glyph
-	unsigned int *widths;
-	// The spacing of each glyph
-	unsigned int *spacing;
+	unsigned int *glyphs;
 
-public:
-	ImageRasterizer(love::image::ImageData *imageData, unsigned short *glyphs, int length);
-	virtual ~ImageRasterizer();
+	// Number of glyphs in the font
+	unsigned int numglyphs;
 
-	// Implement Rasterizer
-	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(unsigned short glyph) const;
-	virtual int getNumGlyphs() const;
+	// Information about a glyph in the ImageData
+	struct ImageGlyphData
+	{
+		unsigned int x;
+		unsigned int width;
+		unsigned int spacing;
+	};
 
-	static const unsigned int MAX_CHARS = 256;
+	std::map<unsigned int, ImageGlyphData> imageGlyphs;
+
+	// Color used to identify glyph separation in the source ImageData
+	love::image::pixel spacer;
 
 }; // ImageRasterizer
 

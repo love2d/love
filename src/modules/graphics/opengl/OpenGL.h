@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_COMMON_OPENGL_H
-#define LOVE_COMMON_OPENGL_H
+#ifndef LOVE_GRAPHICS_OPENGL_OPENGL_H
+#define LOVE_GRAPHICS_OPENGL_OPENGL_H
 
 #include "GLee.h"
 #include "graphics/Image.h"
@@ -31,43 +31,61 @@ namespace graphics
 namespace opengl
 {
 
-// resets the stored bound texture id
-void resetBoundTexture();
+/**
+ * Initializes some required context state,
+ * based on current and default OpenGL state.
+ **/
+void initializeContext();
+
+/**
+ * Marks current context state as invalid.
+ **/
+void uninitializeContext();
+
+/**
+ * Helper for setting the active texture unit.
+ *
+ * @param textureunit Index in the range of [0, maxtextureunits-1]
+ **/
+void setActiveTextureUnit(int textureunit);
 
 /**
  * Helper for binding an OpenGL texture.
  * Makes sure we aren't redundantly binding textures.
- * @param texture The texture to bind.
- * @param override Overrides the checks to guarantee texture bind
  **/
-void bindTexture(GLuint texture, bool override = false);
+void bindTexture(GLuint texture);
+
+/**
+ * Helper for binding a texture to a specific texture unit.
+ *
+ * @param textureunit Index in the range of [0, maxtextureunits-1]
+ * @param resoreprev Restore previously bound texture unit when done.
+ **/
+void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
 
 /**
  * Helper for deleting an OpenGL texture.
  * Cleans up if the texture is currently bound.
- * @param texture The texture to delete.
  **/
 void deleteTexture(GLuint texture);
 
 /**
- * Sets the image filter mode for the currently bound texture
- * @param f The image filter to set
+ * Sets the image filter mode for the currently bound texture.
  */
 void setTextureFilter(const graphics::Image::Filter &f);
 
 /**
- * Returns the image filter mode for the currently bound texture
+ * Returns the image filter mode for the currently bound texture.
  */
 graphics::Image::Filter getTextureFilter();
 
 /**
- * Sets the image wrap mode for the currently bound texture
- * @param w The wrap mode to set
+ * Sets the image wrap mode for the currently bound texture.
  */
 void setTextureWrap(const graphics::Image::Wrap &w);
 
 /**
- * Returns the image wrap mode for the currently bound texture
+ * Returns the image wrap mode for the currently bound texture.
  */
 graphics::Image::Wrap getTextureWrap();
 

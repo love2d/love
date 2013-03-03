@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -55,9 +55,9 @@ public:
 
 	// Implements Font
 	Rasterizer *newRasterizer(Data *data, int size);
-	Rasterizer *newRasterizer(love::image::ImageData *data, std::string glyphs);
-	Rasterizer *newRasterizer(love::image::ImageData *data, unsigned short *glyphs, int length);
-	GlyphData *newGlyphData(Rasterizer *r, unsigned short glyph);
+	Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &text);
+	Rasterizer *newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs);
+	GlyphData *newGlyphData(Rasterizer *r, unsigned int glyph);
 
 	// Implement Module
 	const char *getName() const;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,8 +34,8 @@
 
 // OpenAL
 #ifdef LOVE_MACOSX
-#include <OpenAL/alc.h>
-#include <OpenAL/al.h>
+#include <OpenAL-Soft/alc.h>
+#include <OpenAL-Soft/al.h>
 #else
 #include <AL/alc.h>
 #include <AL/al.h>

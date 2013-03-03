@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -50,8 +50,7 @@ int w_Image_getHeight(lua_State *L)
 int w_Image_setFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-
-	Image::Filter f;
+	Image::Filter f = t->getFilter();
 
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
@@ -60,15 +59,6 @@ int w_Image_setFilter(lua_State *L)
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
 	if (!Image::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
-
-	if (lua_isnoneornil(L, 4))
-		f.mipmap = Image::FILTER_NONE; // mipmapping is disabled unless third argument is given
-	else
-	{
-		const char *mipmapstr = luaL_checkstring(L, 4);
-		if (!Image::getConstant(mipmapstr, f.mipmap))
-			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
-	}
 
 	try
 	{
@@ -92,14 +82,47 @@ int w_Image_getFilter(lua_State *L)
 	Image::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
+	return 2;
+}
+
+int w_Image_setMipmapFilter(lua_State *L)
+{
+	Image *t = luax_checkimage(L, 1);
+	Image::Filter f = t->getFilter();
+
+	if (lua_isnoneornil(L, 2))
+		f.mipmap = Image::FILTER_NONE; // mipmapping is disabled if no argument is given
+	else
+	{
+		const char *mipmapstr = luaL_checkstring(L, 2);
+		if (!Image::getConstant(mipmapstr, f.mipmap))
+			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
+	}
+
+	try
+	{
+		t->setFilter(f);
+	}
+	catch(love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+	
+	return 0;
+}
+
+int w_Image_getMipmapFilter(lua_State *L)
+{
+	Image *t = luax_checkimage(L, 1);
+	const Image::Filter f = t->getFilter();
 
 	const char *mipmapstr;
-	if (Image::getConstant(f.mipmap, mipmapstr))
-		lua_pushstring(L, mipmapstr);
-	else
-		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
+	if (!Image::getConstant(f.mipmap, mipmapstr))
+		return 0; // only return a mipmap filter if mipmapping is enabled
 
-	return 3;
+	lua_pushstring(L, mipmapstr);
+
+	return 1;
 }
 
 int w_Image_setWrap(lua_State *L)
@@ -159,6 +182,8 @@ static const luaL_Reg functions[] =
 	{ "getFilter", w_Image_getFilter },
 	{ "setWrap", w_Image_setWrap },
 	{ "getWrap", w_Image_getWrap },
+	{ "setMipmapFilter", w_Image_setMipmapFilter },
+	{ "getMipmapFilter", w_Image_getMipmapFilter },
 	{ "setMipmapSharpness", w_Image_setMipmapSharpness },
 	{ "getMipmapSharpness", w_Image_getMipmapSharpness },
 	{ 0, 0 }

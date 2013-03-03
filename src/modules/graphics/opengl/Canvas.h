@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,6 @@
 #include "common/math.h"
 #include "common/Matrix.h"
 #include "OpenGL.h"
-#include "GLee.h"
 
 namespace love
 {
@@ -65,6 +64,8 @@ public:
 
 	love::image::ImageData *getImageData(love::image::Image *image);
 
+	void getPixel(unsigned char* pixel_rgba, int x, int y);
+
 	void setFilter(const Image::Filter &f);
 	Image::Filter getFilter() const;
 
@@ -96,7 +97,7 @@ public:
 	static void bindDefaultCanvas();
 
 private:
-	friend class PixelEffect;
+	friend class Shader;
 	GLuint getTextureName() const
 	{
 		return img;

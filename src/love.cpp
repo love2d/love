@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 	}
 
 	// Create the virtual machine.
-	lua_State *L = lua_open();
+	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 
 	love_preload(L, luaopen_love, "love");

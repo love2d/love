@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,15 +27,11 @@
 // LOVE
 #include "common/math.h"
 #include "common/Object.h"
-#include "common/Vector.h"
 #include "common/Matrix.h"
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
-
-// OpenGL
-#include "GLee.h"
 
 namespace love
 {
@@ -89,6 +85,16 @@ public:
 	 * draw will use the global color for all sprites.
 	 */
 	void setColor();
+
+	/**
+	 * Returns whether the SpriteBatch is empty of sprites or not.
+	 **/
+	bool isEmpty() const;
+
+	/**
+	 * Returns whether the amount of sprites has reached the buffer limit or not.
+	 **/
+	bool isFull() const;
 
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;

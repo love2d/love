@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,8 @@
 
 #include "SpriteBatch.h"
 
-// STD
-#include <iostream>
+// OpenGL
+#include "OpenGL.h"
 
 // LOVE
 #include "Image.h"
@@ -107,12 +107,14 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 
 	if (color)
 		setColorv(sprite, *color);
+	
 
-	addv(sprite, (index == -1 ? next : index));
+	addv(sprite, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
 		return next++;
+
 	return index;
 }
 
@@ -133,11 +135,12 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	if (color)
 		setColorv(sprite, *color);
 
-	addv(sprite, (index == -1 ? next : index));
+	addv(sprite, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
 		return next++;
+
 	return index;
 }
 
@@ -187,6 +190,16 @@ void SpriteBatch::setColor()
 	color = 0;
 }
 
+bool SpriteBatch::isEmpty() const
+{
+	return next == 0;
+}
+
+bool SpriteBatch::isFull() const
+{
+	return next >= size;
+}
+
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	const int color_offset = 0;
@@ -222,7 +235,9 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+
+	if (color)
+		glDisableClientState(GL_COLOR_ARRAY);
 
 	glPopMatrix();
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,8 +21,8 @@
 #include "Quad.h"
 #include "common/Matrix.h"
 
-// GLee
-#include "GLee.h"
+// OpenGL
+#include "OpenGL.h"
 
 // STD
 #include <cstring> // For memcpy

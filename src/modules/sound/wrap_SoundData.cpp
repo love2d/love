@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2013 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,6 +53,13 @@ int w_SoundData_getSampleRate(lua_State *L)
 	return 1;
 }
 
+int w_SoundData_getDuration(lua_State *L)
+{
+	SoundData *t = luax_checksounddata(L, 1);
+	lua_pushinteger(L, t->getDuration());
+	return 1;
+}
+
 int w_SoundData_setSample(lua_State *L)
 {
 	SoundData *sd = luax_checksounddata(L, 1);
@@ -80,6 +87,7 @@ static const luaL_Reg functions[] =
 	{ "getChannels", w_SoundData_getChannels },
 	{ "getBits", w_SoundData_getBits },
 	{ "getSampleRate", w_SoundData_getSampleRate },
+	{ "getDuration", w_SoundData_getDuration },
 	{ "setSample", w_SoundData_setSample },
 	{ "getSample", w_SoundData_getSample },
 	{ 0, 0 }
