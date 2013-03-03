@@ -33,6 +33,15 @@ namespace love
 namespace window
 {
 
+struct WindowFlags
+{
+	bool fullscreen; // = false
+	bool vsync; // = true
+	int fsaa; // = 0
+	bool resizable; // = false
+	bool borderless; // = false
+}; // WindowFlags
+
 class Window : public Module
 {
 public:
@@ -44,8 +53,8 @@ public:
 
 	virtual ~Window();
 
-	virtual bool setWindow(int width = 800, int height = 600, bool fullscreen = false, bool vsync = true, int fsaa = 0) = 0;
-	virtual void getWindow(int &width, int &height, bool &fullscreen, bool &vsync, int &fsaa) const = 0;
+	virtual bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0) = 0;
+	virtual void getWindow(int &width, int &height, WindowFlags &flags) const = 0;
 
 	virtual bool checkWindowSize(int width, int height, bool fullscreen) const = 0;
 	virtual WindowSize **getFullscreenSizes(int &n) const = 0;

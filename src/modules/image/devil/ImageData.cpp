@@ -31,7 +31,7 @@
 
 using love::thread::Lock;
 
-static Mutex devilMutex;
+static Mutex *devilMutex = 0;
 
 namespace love
 {
@@ -96,6 +96,9 @@ void ImageData::create(int width, int height, void *data)
 
 void ImageData::load(Data *data)
 {
+	if (!devilMutex)
+		devilMutex = thread::newMutex();
+
 	Lock lock(devilMutex);
 	ILuint image;
 	ilGenImages(1, &image);
@@ -132,6 +135,9 @@ void ImageData::load(Data *data)
 
 void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 {
+	if (!devilMutex)
+		devilMutex = thread::newMutex();
+
 	Lock lock1(devilMutex);
 	Lock lock2(mutex);
 

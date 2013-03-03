@@ -139,6 +139,15 @@ bool luax_optboolean(lua_State *L, int idx, bool b);
  * @param idx The index on the Lua stack.
  * @return Copy of the string at the specified index.
  **/
+std::string luax_tostring(lua_State *L, int idx);
+
+/**
+ * Converts the value at idx to a std::string. It takes care of the string
+ * size and possible embedded nulls.
+ * @param L The Lua state.
+ * @param idx The index on the Lua stack.
+ * @return Copy of the string at the specified index.
+ **/
 std::string luax_checkstring(lua_State *L, int idx);
 
 /**

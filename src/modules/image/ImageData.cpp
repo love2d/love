@@ -20,12 +20,24 @@
 
 #include "ImageData.h"
 
+#include <stdio.h>
+
 using love::thread::Lock;
 
 namespace love
 {
 namespace image
 {
+
+ImageData::ImageData()
+{
+	mutex = thread::newMutex();
+}
+
+ImageData::~ImageData()
+{
+	delete mutex;
+}
 
 void *ImageData::getData() const
 {

@@ -1,4 +1,4 @@
-LOVE 0.8.1 [Rubber Piggy]
+LOVE 0.9.0 []
 --------------
 
   * Added --fused command line argument, to simulate fusing.
@@ -18,6 +18,12 @@ LOVE 0.8.1 [Rubber Piggy]
   * Added boolean support to Shader:send.
   * Added support for UTF-8 ImageFonts.
   * Added SoundData:getDuration.
+  * Added new Channels api for love.thread.
+  * Added flags to setMode.
+  * Added support for resizable and borderless windows.
+  * Added resize event.
+  * Added love.math module.
+  * Added a platform-independent (good) random implementation to love.math.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -45,6 +51,9 @@ LOVE 0.8.1 [Rubber Piggy]
 
   * Removed love.joystick.open and friends.
   * Removed love.graphics.drawTest.
+  * Removed thread names.
+  * Removed old thread messaging api (see Channels).
+  * Removed love.graphics.quad/triangle.
 
   * Updated allocation for SoundData, it's more efficient and less wasteful.
   * Updated Source:set* functions to default z to 0.

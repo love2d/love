@@ -56,21 +56,20 @@ public:
 	 * Retains the Object, i.e. increases the
 	 * reference count by one.
 	 **/
-	void retain();
+	virtual void retain();
 
 	/**
 	 * Releases one reference to the Object, i.e. decrements the
 	 * reference count by one, and potentially deletes the Object
 	 * if there are no more references.
 	 **/
-	void release();
+	virtual void release();
 
 private:
 
 	// The reference count.
 	int count;
 }; // Object
-
 } // love
 
 #endif // LOVE_OBJECT_H

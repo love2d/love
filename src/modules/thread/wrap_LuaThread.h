@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2012 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,54 +18,25 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "threads.h"
+#ifndef LOVE_THREAD_WRAP_LUATHREAD_H
+#define LOVE_THREAD_WRAP_LUATHREAD_H
+
+// LOVE
+#include "ThreadModule.h"
 
 namespace love
 {
 namespace thread
 {
 
-Lock::Lock(Mutex *m)
-	: mutex(m)
-{
-	mutex->lock();
-}
+LuaThread *luax_checkthread(lua_State *L, int idx);
+int w_Thread_start(lua_State *L);
+int w_Thread_wait(lua_State *L);
+int w_Thread_getError(lua_State *L);
 
-Lock::Lock(Mutex &m)
-	: mutex(&m)
-{
-	mutex->lock();
-}
-
-Lock::~Lock()
-{
-	mutex->unlock();
-}
-
-Threadable::Threadable()
-{
-	owner = newThread(this);
-}
-
-Threadable::~Threadable()
-{
-	delete owner;
-}
-
-bool Threadable::start()
-{
-	return owner->start();
-}
-
-void Threadable::wait()
-{
-	owner->wait();
-}
-
-void Threadable::kill()
-{
-	owner->kill();
-}
+extern "C" int luaopen_thread(lua_State *L);
 
 } // thread
 } // love
+
+#endif // LOVE_THREAD_WRAP_LUATHREAD_H

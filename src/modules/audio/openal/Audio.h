@@ -109,7 +109,7 @@ private:
 	// The Pool.
 	Pool *pool;
 
-	class PoolThread: public thread::ThreadBase
+	class PoolThread: public thread::Threadable
 	{
 	protected:
 		Pool *pool;
@@ -120,13 +120,13 @@ private:
 		volatile bool finish;
 
 		// finish lock
-		thread::Mutex mutex;
-
-		virtual void main();
+		thread::Mutex *mutex;
 
 	public:
 		PoolThread(Pool *pool);
+		~PoolThread();
 		void setFinish();
+		void threadFunction();
 	};
 
 	PoolThread *poolThread;
