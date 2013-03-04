@@ -13,6 +13,7 @@ LOVE 0.9.0 []
   * Added Source:isPlaying.
   * Added mipmapping support (has isSupported test).
   * Added Font:getAscent/getDescent/getBaseline.
+  * Added Font:setFilter/getFilter.
   * Added Canvas:getPixel.
   * Added vertex shader support.
   * Added boolean support to Shader:send.
@@ -24,12 +25,15 @@ LOVE 0.9.0 []
   * Added resize event.
   * Added love.math module.
   * Added a platform-independent (good) random implementation to love.math.
+  * Added blend mode "none".
+  * Added SpriteBatch:isEmpty and SpriteBatch:isFull.
+  * Added support for extern Images in Shaders when drawing graphics primitives.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
   * Fixed scaling in several love.physics functions.
   * Fixed artifacts when drawing lines at huge scale.
-  * Fixed ImageFonts ignoring default image filter.
+  * Fixed Fonts and Canvases ignoring default image filter.
   * Fixed getMode and friends returning wrong values when using desktop size.
   * Fixed memory leak in the mp3 decoder.
   * Fixed sound issues with some versions of OpenAL soft, by enabling direct channels.
@@ -40,9 +44,13 @@ LOVE 0.9.0 []
   * Fixed multiplicative blend mode.
   * Fixed Box2D exception in World:update.
   * Fixed spacing for the last character in an ImageFont.
-  * Fixed crash when locking SpriteBatches multiple times.
+  * Fixed crash when binding SpriteBatches multiple times.
   * Fixed File:read reading past end of file.
   * Fixed keyrepeat settings being lost after (indirect) setMode.
+  * Fixed alpha blend mode.
+  * Fixed Shader:send with Images and Canvases failing sometimes.
+  * Fixed love.graphics.getPointStyle.
+  * Fixed line numbers in shader errors.
 
   * Moved love's startup to modules/love.
 
@@ -54,6 +62,7 @@ LOVE 0.9.0 []
   * Removed thread names.
   * Removed old thread messaging api (see Channels).
   * Removed love.graphics.quad/triangle.
+  * Removed ColorMode functions.
 
   * Updated allocation for SoundData, it's more efficient and less wasteful.
   * Updated Source:set* functions to default z to 0.
@@ -61,8 +70,11 @@ LOVE 0.9.0 []
   * Updated love.image memory handling, improves errors and thread-safety.
   * Updated order of sleep/present in love.run (now draws, *then* sleeps).
   * Updated the setFilter and setWrap methods, the second argument is now optional.
-  * Updated font rendering code, now more performant.
+  * Updated Font and ParticleSystem rendering code, now more performant.
   * Updated error handling, error handlers now get resolved when the error occurs.
+  * Updated SpriteBatch code, now more performant when (un)binding.
+  * Updated Image creation code to error when creation fails.
+  * Updated Canvas code to support more systems.
 
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------
