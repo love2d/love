@@ -75,7 +75,6 @@ DisplayState Graphics::saveState()
 	s.backgroundColor = getBackgroundColor();
 
 	s.blendMode = getBlendMode();
-	s.colorMode = getColorMode();
 	//get line style
 	s.lineStyle = lineStyle;
 	//get the point size
@@ -96,7 +95,6 @@ void Graphics::restoreState(const DisplayState &s)
 	setColor(s.color);
 	setBackgroundColor(s.backgroundColor);
 	setBlendMode(s.blendMode);
-	setColorMode(s.colorMode);
 	setLine(lineWidth, s.lineStyle);
 	setPoint(s.pointSize, s.pointStyle);
 	if (s.scissor)
@@ -576,20 +574,6 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 	}
 }
 
-void Graphics::setColorMode(Graphics::ColorMode mode)
-{
-	if (mode == COLOR_MODULATE)
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	else if (mode == COLOR_COMBINE)
-	{
-		glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD_SIGNED);
-		glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-	}
-	else // mode = COLOR_REPLACE
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-}
-
 Graphics::BlendMode Graphics::getBlendMode() const
 {
 	const int gl_1_4 = GLEE_VERSION_1_4;
@@ -636,19 +620,6 @@ Graphics::BlendMode Graphics::getBlendMode() const
 		return BLEND_ALPHA;
 
 	throw Exception("Unknown blend mode");
-}
-
-Graphics::ColorMode Graphics::getColorMode() const
-{
-	GLint mode;
-	glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &mode);
-
-	if (mode == GL_MODULATE)
-		return COLOR_MODULATE;
-	else if (mode == GL_COMBINE)
-		return COLOR_COMBINE;
-	else // mode == GL_REPLACE
-		return COLOR_REPLACE;
 }
 
 void Graphics::setDefaultImageFilter(const Image::Filter &f)

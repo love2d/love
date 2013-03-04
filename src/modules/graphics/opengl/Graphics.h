@@ -63,9 +63,8 @@ struct DisplayState
 	Color color;
 	Color backgroundColor;
 
-	// Blend and color modes.
+	// Blend mode.
 	Graphics::BlendMode blendMode;
-	Graphics::ColorMode colorMode;
 
 	// Line.
 	Graphics::LineStyle lineStyle;
@@ -91,7 +90,6 @@ struct DisplayState
 		backgroundColor.b = 0;
 		backgroundColor.a = 255;
 		blendMode = Graphics::BLEND_ALPHA;
-		colorMode = Graphics::COLOR_MODULATE;
 		lineStyle = Graphics::LINE_SMOOTH;
 		pointSize = 1.0f;
 		pointStyle = Graphics::POINT_SMOOTH;
@@ -307,11 +305,6 @@ public:
 	void setBlendMode(BlendMode mode);
 
 	/**
-	 * Sets the current color mode.
-	 **/
-	void setColorMode(ColorMode mode);
-
-	/**
 	 * Sets the current image filter.
 	 **/
 	void setDefaultImageFilter(const Image::Filter &f);
@@ -320,11 +313,6 @@ public:
 	 * Gets the current blend mode.
 	 **/
 	BlendMode getBlendMode() const;
-
-	/**
-	 * Gets the current color mode.
-	 **/
-	ColorMode getColorMode() const;
 
 	/**
 	 * Gets the current image filter.

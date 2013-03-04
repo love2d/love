@@ -666,17 +666,6 @@ int w_setBlendMode(lua_State *L)
 	return 0;
 }
 
-int w_setColorMode(lua_State *L)
-{
-	Graphics::ColorMode mode;
-	const char *str = luaL_checkstring(L, 1);
-	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Invalid color mode: %s", str);
-
-	instance->setColorMode(mode);
-	return 0;
-}
-
 int w_setDefaultImageFilter(lua_State *L)
 {
 	Image::FilterMode min;
@@ -714,16 +703,6 @@ int w_getBlendMode(lua_State *L)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
-}
-
-int w_getColorMode(lua_State *L)
-{
-	Graphics::ColorMode mode = instance->getColorMode();
-	const char *str;
-	if (!Graphics::getConstant(mode, str))
-		return luaL_error(L, "Unknown color mode");
-	lua_pushstring(L, str);
-	return 1;
 }
 
 int w_getDefaultImageFilter(lua_State *L)
@@ -1321,10 +1300,8 @@ static const luaL_Reg functions[] =
 	{ "getFont", w_getFont },
 
 	{ "setBlendMode", w_setBlendMode },
-	{ "setColorMode", w_setColorMode },
 	{ "setDefaultImageFilter", w_setDefaultImageFilter },
 	{ "getBlendMode", w_getBlendMode },
-	{ "getColorMode", w_getColorMode },
 	{ "getDefaultImageFilter", w_getDefaultImageFilter },
 	{ "setLineWidth", w_setLineWidth },
 	{ "setLineStyle", w_setLineStyle },
