@@ -23,6 +23,8 @@
 #include "keyboard/Keyboard.h"
 #include "mouse/Mouse.h"
 
+#include <cmath>
+
 namespace love
 {
 namespace event
@@ -86,7 +88,8 @@ Message *Event::convert(SDL_Event &e)
 	Message *msg = NULL;
 	love::keyboard::Keyboard::Key key;
 	love::mouse::Mouse::Button button;
-	Variant *arg1, *arg2, *arg3;
+	love::joystick::Joystick::Hat hat;
+	Variant *arg1, *arg2, *arg3, *arg4;
 	const char *txt;
 	switch (e.type)
 	{
@@ -134,6 +137,44 @@ Message *Event::convert(SDL_Event &e)
 						  arg1, arg2);
 		arg1->release();
 		arg2->release();
+		break;
+	case SDL_JOYAXISMOTION:
+		{
+			arg1 = new Variant((double)(e.jaxis.which+1));
+			arg2 = new Variant((double)(e.jaxis.axis+1));
+			float value = e.jaxis.value / 32768.0f;
+			if (fabsf(value) < 0.001f) value = 0.0f;
+			if (value < -0.99f) value = -1.0f;
+			if (value > 0.99f) value = 1.0f;
+			arg3 = new Variant((double) value);
+			msg = new Message("joystickaxismoved", arg1, arg2, arg3);
+			arg1->release();
+			arg2->release();
+			arg3->release();
+		}
+		break;
+	case SDL_JOYBALLMOTION:
+		arg1 = new Variant((double)(e.jball.which+1));
+		arg2 = new Variant((double)(e.jball.ball+1));
+		arg3 = new Variant((double)e.jball.xrel);
+		arg4 = new Variant((double)e.jball.yrel);
+		msg = new Message("joystickballmoved", arg1, arg2, arg3, arg4);
+		arg1->release();
+		arg2->release();
+		arg3->release();
+		arg4->release();
+		break;
+	case SDL_JOYHATMOTION:
+		if (hats.find(e.jhat.value, hat) && love::joystick::Joystick::getConstant(hat, txt))
+		{
+			arg1 = new Variant((double)(e.jhat.which+1));
+			arg2 = new Variant((double)(e.jhat.hat+1));
+			arg3 = new Variant(txt, strlen(txt));
+			msg = new Message("joystickhatmoved", arg1, arg2, arg3);
+			arg1->release();
+			arg2->release();
+			arg3->release();
+		}
 		break;
 	case SDL_ACTIVEEVENT:
 		arg1 = new Variant(e.active.gain != 0);
@@ -317,6 +358,21 @@ EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>:
 };
 
 EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> Event::buttons(Event::buttonEntries, sizeof(Event::buttonEntries));
+
+EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM>::Entry Event::hatEntries[] =
+{
+	{love::joystick::Joystick::HAT_CENTERED, SDL_HAT_CENTERED},
+	{love::joystick::Joystick::HAT_UP, SDL_HAT_UP},
+	{love::joystick::Joystick::HAT_RIGHT, SDL_HAT_RIGHT},
+	{love::joystick::Joystick::HAT_DOWN, SDL_HAT_DOWN},
+	{love::joystick::Joystick::HAT_LEFT, SDL_HAT_LEFT},
+	{love::joystick::Joystick::HAT_RIGHTUP, SDL_HAT_RIGHTUP},
+	{love::joystick::Joystick::HAT_RIGHTDOWN, SDL_HAT_RIGHTDOWN},
+	{love::joystick::Joystick::HAT_LEFTUP, SDL_HAT_LEFTUP},
+	{love::joystick::Joystick::HAT_LEFTDOWN, SDL_HAT_LEFTDOWN},
+};
+
+EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM> Event::hats(Event::hatEntries, sizeof(Event::hatEntries));
 
 } // sdl
 } // event
