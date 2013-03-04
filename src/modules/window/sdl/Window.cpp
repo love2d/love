@@ -134,7 +134,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 			// FSAA might have caused the failure, disable it and try again
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-			failed = SDL_SetVideoMode(width, height, 32, sdlflags) == 0;
+			failed = (surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0;
 		}
 		if (failed)
 		{

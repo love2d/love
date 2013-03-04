@@ -42,7 +42,8 @@ Joystick::Joystick()
 
 	// Open all connected joysticks.
 	int numjoysticks = this->getNumJoysticks();
-	this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
+	if (numjoysticks > 0)
+		this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
 
 	for (int i = 0; i<numjoysticks; i++)
 		this->open(i);
@@ -79,7 +80,8 @@ void Joystick::reload()
 		throw love::Exception("%s", SDL_GetError());
 
 	int numjoysticks = this->getNumJoysticks();
-	this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
+	if (numjoysticks > 0)
+		this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
 
 	for (int i = 0; i<numjoysticks; i++)
 		this->open(i);

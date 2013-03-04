@@ -338,7 +338,8 @@ int w_newFont(lua_State *L)
 		int ret = luax_pconvobj(L, idxs, 2, "font", "newRasterizer");
 		if (ret != 0)
 		{
-			font_data->release();
+			if (font_data)
+				font_data->release();
 			return lua_error(L);
 		}
 	}
