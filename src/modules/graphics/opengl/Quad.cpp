@@ -48,7 +48,7 @@ Quad::~Quad()
 
 void Quad::refresh(const Viewport &v, float sw, float sh)
 {
-	if (!GLEE_ARB_texture_non_power_of_two)
+	if (!(GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two))
 	{
 		sw = next_p2(sw);
 		sh = next_p2(sh);
