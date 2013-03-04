@@ -63,18 +63,10 @@ public:
 
 	virtual void pump() = 0;
 
-	static bool getConstant(const char *in, love::mouse::Mouse::Button &out);
-	static bool getConstant(love::mouse::Mouse::Button in, const char  *&out);
-	static bool getConstant(const char *in, love::keyboard::Keyboard::Key &out);
-	static bool getConstant(love::keyboard::Keyboard::Key in, const char  *&out);
-
 protected:
 	thread::Mutex *mutex;
 	std::queue<Message *> queue;
-	static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
-	static StringMap<love::mouse::Mouse::Button, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
-	static StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
-	static StringMap<love::keyboard::Keyboard::Key, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;
+
 }; // Event
 
 } // event

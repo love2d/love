@@ -93,7 +93,7 @@ Message *Event::convert(SDL_Event &e)
 	case SDL_KEYDOWN:
 		if (!keys.find(e.key.keysym.sym, key))
 			key = love::keyboard::Keyboard::KEY_UNKNOWN;
-		if (!love::event::Event::keys.find(key, txt))
+		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 		arg1 = new Variant(txt, strlen(txt));
 		arg2 = new Variant((double) e.key.keysym.unicode);
@@ -104,7 +104,7 @@ Message *Event::convert(SDL_Event &e)
 	case SDL_KEYUP:
 		if (!keys.find(e.key.keysym.sym, key))
 			key = love::keyboard::Keyboard::KEY_UNKNOWN;
-		if (!love::event::Event::keys.find(key, txt))
+		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 		arg1 = new Variant(txt, strlen(txt));
 		msg = new Message("keyreleased", arg1);
@@ -112,7 +112,7 @@ Message *Event::convert(SDL_Event &e)
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
-		if (buttons.find(e.button.button, button) && love::event::Event::buttons.find(button, txt))
+		if (buttons.find(e.button.button, button) && love::mouse::Mouse::getConstant(button, txt))
 		{
 			arg1 = new Variant((double) e.button.x);
 			arg2 = new Variant((double) e.button.y);
