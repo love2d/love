@@ -1482,16 +1482,4 @@ void main() {
 		meta.sendBoolean = meta.sendFloat
 		return shader
 	end
-
-
-	-- PixelEffect compatibility functions
-
-	function love.graphics.newPixelEffect(fragcode)
-		return love.graphics.newShader(nil, fragcode)
-	end
-
-	love.graphics.setPixelEffect = love.graphics.setShader
-	love.graphics.getPixelEffect = love.graphics.getShader
-	
-	love.graphics._effectCodeToGLSL = love.graphics._shaderCodeToGLSL
 end
