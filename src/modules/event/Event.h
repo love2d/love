@@ -27,6 +27,7 @@
 #include "common/Variant.h"
 #include "keyboard/Keyboard.h"
 #include "mouse/Mouse.h"
+#include "joystick/Joystick.h"
 #include "thread/threads.h"
 
 // STL
