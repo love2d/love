@@ -147,7 +147,7 @@ Message *Event::convert(SDL_Event &e)
 			if (value < -0.99f) value = -1.0f;
 			if (value > 0.99f) value = 1.0f;
 			arg3 = new Variant((double) value);
-			msg = new Message("joystickaxismoved", arg1, arg2, arg3);
+			msg = new Message("joystickaxis", arg1, arg2, arg3);
 			arg1->release();
 			arg2->release();
 			arg3->release();
@@ -158,7 +158,7 @@ Message *Event::convert(SDL_Event &e)
 		arg2 = new Variant((double)(e.jball.ball+1));
 		arg3 = new Variant((double)e.jball.xrel);
 		arg4 = new Variant((double)e.jball.yrel);
-		msg = new Message("joystickballmoved", arg1, arg2, arg3, arg4);
+		msg = new Message("joystickball", arg1, arg2, arg3, arg4);
 		arg1->release();
 		arg2->release();
 		arg3->release();
@@ -170,7 +170,7 @@ Message *Event::convert(SDL_Event &e)
 			arg1 = new Variant((double)(e.jhat.which+1));
 			arg2 = new Variant((double)(e.jhat.hat+1));
 			arg3 = new Variant(txt, strlen(txt));
-			msg = new Message("joystickhatmoved", arg1, arg2, arg3);
+			msg = new Message("joystickhat", arg1, arg2, arg3);
 			arg1->release();
 			arg2->release();
 			arg3->release();
