@@ -73,7 +73,7 @@ private:
 	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
 	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
 	static EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM>::Entry hatEntries[];
-	static EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::Joystick::HAT_MAX_ENUM> hats;
+	static EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM> hats;
 
 }; // System
 
