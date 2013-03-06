@@ -136,6 +136,9 @@
     <Filter Include="modules\math">
       <UniqueIdentifier>{5d2c2149-93bf-42a6-b8b5-6ddbac9485a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\thread\sdl">
+      <UniqueIdentifier>{5673936a-786e-40ee-96d2-1830e89c1532}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\common\Matrix.cpp">
@@ -717,15 +720,6 @@
     <ClCompile Include="..\..\src\modules\sound\lullaby\FLACDecoder.cpp">
       <Filter>modules\sound\lullaby</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\Thread.cpp">
-      <Filter>modules\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\threads.cpp">
-      <Filter>modules\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\thread\wrap_Thread.cpp">
-      <Filter>modules\thread</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\timer\wrap_Timer.cpp">
       <Filter>modules\timer</Filter>
     </ClCompile>
@@ -752,6 +746,33 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\math\wrap_Math.cpp">
       <Filter>modules\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\Channel.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\LuaThread.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\ThreadModule.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\threads.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\wrap_Channel.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\wrap_LuaThread.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\wrap_ThreadModule.cpp">
+      <Filter>modules\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\sdl\threads.cpp">
+      <Filter>modules\thread\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\thread\sdl\Thread.cpp">
+      <Filter>modules\thread\sdl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1408,15 +1429,6 @@
     <ClInclude Include="..\..\src\modules\sound\lullaby\FLACDecoder.h">
       <Filter>modules\sound\lullaby</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\Thread.h">
-      <Filter>modules\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\threads.h">
-      <Filter>modules\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\thread\wrap_Thread.h">
-      <Filter>modules\thread</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\modules\timer\Timer.h">
       <Filter>modules\timer</Filter>
     </ClInclude>
@@ -1440,6 +1452,36 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\math\wrap_Math.h">
       <Filter>modules\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\Channel.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\LuaThread.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\Thread.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\ThreadModule.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\threads.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\wrap_Channel.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\wrap_LuaThread.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\wrap_ThreadModule.h">
+      <Filter>modules\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\sdl\Thread.h">
+      <Filter>modules\thread\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\thread\sdl\threads.h">
+      <Filter>modules\thread\sdl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
