@@ -502,7 +502,7 @@ int w_newShader(lua_State *L)
 		// clamp stack to 2 elements
 		lua_settop(L, 2);
 
-		luax_getfunction(L, "graphics", "_effectCodeToGLSL");
+		luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
 
 		// push vertcode and fragcode strings to the top of the stack so they become arguments for the function
 		lua_pushvalue(L, 1);
