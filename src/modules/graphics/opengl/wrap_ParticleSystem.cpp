@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_ParticleSystem.h"
+#include "wrap_Quad.h"
 
 #include "common/Vector.h"
 
@@ -262,6 +263,32 @@ int w_ParticleSystem_setColors(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_setQuads(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	int nQuads = lua_gettop(L) - 1;
+
+	if (nQuads == 0)
+		t->setQuad();
+	else if (nQuads == 1)
+	{
+		love::graphics::Quad *q = luax_checkframe(L, 2);
+		t->setQuad(q);
+	}
+	else
+	{
+		std::vector<love::graphics::Quad *> quads(nQuads);
+		for (size_t i = 0; i < nQuads; i++)
+		{
+			love::graphics::Quad *q = luax_checkframe(L, i + 2);
+			quads[i] = q;
+		}
+		t->setQuad(quads);
+	}
+
+	return 0;
+}
+
 int w_ParticleSystem_setOffset(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -423,6 +450,7 @@ static const luaL_Reg functions[] =
 	{ "setSpin", w_ParticleSystem_setSpin },
 	{ "setSpinVariation", w_ParticleSystem_setSpinVariation },
 	{ "setColors", w_ParticleSystem_setColors },
+	{ "setQuads", w_ParticleSystem_setQuads },
 	{ "setOffset", w_ParticleSystem_setOffset },
 	{ "getX", w_ParticleSystem_getX },
 	{ "getY", w_ParticleSystem_getY },

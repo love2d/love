@@ -27,6 +27,7 @@
 #include "common/Vector.h"
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
+#include "graphics/Quad.h"
 #include "Image.h"
 #include <vector>
 
@@ -63,6 +64,8 @@ struct particle
 	float spinEnd;
 
 	Colorf color;
+
+	size_t quadIndex;
 };
 
 /**
@@ -294,6 +297,21 @@ public:
 	void setColor(const std::vector<Color> &newColors);
 
 	/**
+	 *
+	 **/
+	void setQuad(love::graphics::Quad *quad);
+
+	/**
+	 *
+	 **/
+	void setQuad(const std::vector<love::graphics::Quad *> &newQuads);
+
+	/**
+	 *
+	 **/
+	void setQuad();
+
+	/**
 	 * Returns the x-coordinate of the emitter's position.
 	 **/
 	float getX() const;
@@ -479,6 +497,8 @@ protected:
 
 	// Color.
 	std::vector<Colorf> colors;
+
+	std::vector<love::graphics::Quad *> quads;
 
 	void add();
 	void remove(particle *p);

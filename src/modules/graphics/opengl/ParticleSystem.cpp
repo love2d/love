@@ -204,7 +204,7 @@ void ParticleSystem::setBufferSize(unsigned int size)
 	if (pStart != 0)
 		delete [] pStart;
 
-	pLast = pStart = new particle[size];
+	pLast = pStart = new particle[size]();
 
 	pEnd = pStart + size;
 
@@ -370,6 +370,40 @@ void ParticleSystem::setColor(const std::vector<Color> &newColors)
 		colors[i] = colorToFloat(newColors[i]);
 }
 
+void ParticleSystem::setQuad(love::graphics::Quad *quad)
+{
+
+	for (size_t i = 0; i < quads.size(); i++)
+		quads[i]->release();
+
+	quads.resize(1);
+
+	quads[0] = quad;
+	quad->retain();
+}
+
+void ParticleSystem::setQuad(const std::vector<love::graphics::Quad *> &newQuads)
+{
+	for (size_t i = 0; i < quads.size(); i++)
+		quads[i]->release();
+
+	quads.resize(newQuads.size());
+
+	for (size_t i = 0; i < newQuads.size(); i++)
+	{
+		quads[i] = newQuads[i];
+		quads[i]->retain();
+	}
+}
+
+void ParticleSystem::setQuad()
+{
+	for (size_t i = 0; i < quads.size(); i++)
+		quads[i]->release();
+
+	quads.resize(0);
+}
+
 void ParticleSystem::setOffset(float x, float y)
 {
 	offsetX = x;
@@ -479,24 +513,36 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	const vertex * imageVerts = sprite->getVertices();
+	const vertex *imageVerts = sprite->getVertices();
+	const vertex *tVerts;
+	size_t numQuads = quads.size();
+	size_t quadIndex = 0;
 
 	// set the vertex data for each particle (transformation, texcoords, color)
 	for (int i = 0; i < numParticles; i++)
 	{
-		particle * p = pStart + i;
+		particle *p = pStart + i;
+
+		if (numQuads > 0)
+		{
+			// Make sure the quad index is valid
+			quadIndex = (p->quadIndex >= numQuads) ? numQuads - 1 : p->quadIndex;
+			tVerts = quads[quadIndex]->getVertices();
+		}
+		else
+			tVerts = imageVerts;
 
 		// particle vertices are sprite vertices transformed by particle information 
 		t.setTransformation(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
-		t.transform(&particleVerts[i*4], &imageVerts[0], 4);
+		t.transform(&particleVerts[i*4], &tVerts[0], 4);
 
 		// set the texture coordinate and color data for particle vertices
 		for (int v = 0; v < 4; v++)
 		{
 			int vi = (i * 4) + v; // current vertex index for particle
 
-			particleVerts[vi].s = imageVerts[v].s;
-			particleVerts[vi].t = imageVerts[v].t;
+			particleVerts[vi].s = tVerts[v].s;
+			particleVerts[vi].t = tVerts[v].t;
 
 			// particle colors are stored as floats (0-1) but vertex colors are stored as unsigned bytes (0-255)
 			particleVerts[vi].r = p->color.r*255;
@@ -615,6 +661,17 @@ void ParticleSystem::update(float dt)
 			k = (i == colors.size() - 1) ? i : i + 1;
 			s -= (float)i;                            // 0 <= s <= 1
 			p->color = colors[i] * (1.0f - s) + colors[k] * s;
+
+			// Update quad index
+			if (quads.size() > 0)
+			{
+				k = quads.size() - 1;
+				s = t * (float) k;
+				i = (s > 0) ? (size_t) s : 0;
+				p->quadIndex = (i <= k) ? i : k;
+			}
+			else
+				p->quadIndex = 0;
 
 			// Next particle.
 			p++;
