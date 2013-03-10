@@ -74,6 +74,7 @@ private:
 		int fsaa;
 		bool resizable;
 		bool borderless;
+		bool centered;
 	} currentMode;
 	bool created;
 }; // Window

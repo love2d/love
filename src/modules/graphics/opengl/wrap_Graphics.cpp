@@ -94,6 +94,7 @@ int w_setMode(lua_State *L)
 	flags.fsaa = luax_intflag(L, 3, "fsaa", 0);
 	flags.resizable = luax_boolflag(L, 3, "resizable", false);
 	flags.borderless = luax_boolflag(L, 3, "borderless", false);
+	flags.centered = luax_boolflag(L, 3, "centered", true);
 
 	luax_pushboolean(L, instance->setMode(w, h, &flags));
 	return 1;
@@ -123,6 +124,9 @@ int w_getMode(lua_State *L)
 
 	luax_pushboolean(L, flags.borderless);
 	lua_setfield(L, -2, "borderless");
+
+	luax_pushboolean(L, flags.centered);
+	lua_setfield(L, -2, "centered");
 
 	return 3;
 }

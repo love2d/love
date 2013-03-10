@@ -35,11 +35,13 @@ namespace window
 
 struct WindowFlags
 {
+	WindowFlags();
 	bool fullscreen; // = false
 	bool vsync; // = true
 	int fsaa; // = 0
 	bool resizable; // = false
 	bool borderless; // = false
+	bool centered; // = true
 }; // WindowFlags
 
 class Window : public Module

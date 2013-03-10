@@ -261,6 +261,9 @@ function love.init()
 			fullscreen = false,
 			vsync = true,
 			fsaa = 0,
+			borderless = false,
+			resizable = false,
+			centered = true,
 		},
 		modules = {
 			event = true,
@@ -345,6 +348,7 @@ function love.init()
 				fsaa = c.screen.fsaa,
 				resizable = c.screen.resizable,
 				borderless = c.screen.borderless,
+				centered = c.screen.centered,
 			}), "Could not set screen mode")
 		else
 			error("Could not set screen mode")

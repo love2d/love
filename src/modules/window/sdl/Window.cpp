@@ -39,9 +39,6 @@ Window::Window()
 	: windowTitle("")
 	, created(false)
 {
-	// Window should be centered.
-	SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
-
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception(SDL_GetError());
 }
@@ -63,6 +60,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	int fsaa = 0;
 	bool resizable = false;
 	bool borderless = false;
+	bool centered = true;
 
 	if (flags)
 	{
@@ -71,6 +69,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 		fsaa = flags->fsaa;
 		resizable = flags->resizable;
 		borderless = flags->borderless;
+		centered = flags->centered;
 	}
 
 	bool mouseVisible = getMouseVisible();
@@ -91,6 +90,12 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	//    love.mouse.getX() < 800 when switching from 800x600 to a
 	//    higher resolution)
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+	if (centered) // Window should be centered.
+		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
+	else
+		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED="));
+
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 	{
 		std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
@@ -177,6 +182,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	currentMode.vsync = (real_vsync != 0);
 	currentMode.resizable = ((surface->flags & SDL_RESIZABLE) != 0);
 	currentMode.borderless = ((surface->flags & SDL_NOFRAME) != 0);
+	currentMode.centered = centered;
 
 	return true;
 }
@@ -190,6 +196,7 @@ void Window::getWindow(int &width, int &height, WindowFlags &flags) const
 	flags.fsaa = currentMode.fsaa;
 	flags.resizable = currentMode.resizable;
 	flags.borderless = currentMode.borderless;
+	flags.centered = currentMode.centered;
 }
 
 bool Window::checkWindowSize(int width, int height, bool fullscreen) const

@@ -38,5 +38,15 @@ void Window::swapBuffers()
 {
 }
 
+WindowFlags::WindowFlags()
+	: fullscreen(false)
+	, vsync(true)
+	, fsaa(0)
+	, resizable(false)
+	, borderless(false)
+	, centered(true)
+{
+}
+
 } // window
 } // love
