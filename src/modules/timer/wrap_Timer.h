@@ -32,6 +32,7 @@ namespace timer
 int w_step(lua_State *L);
 int w_getDelta(lua_State *L);
 int w_getFPS(lua_State *L);
+int w_getAverageDelta(lua_State *L);
 int w_sleep(lua_State *L);
 int w_getTime(lua_State *L);
 int w_getMicroTime(lua_State *L);

@@ -41,6 +41,7 @@ Timer::Timer()
 	: currTime(0)
 	, prevFpsUpdate(0)
 	, fps(0)
+	, averageDelta(0)
 	, fpsUpdateFrequency(1)
 	, frames(0)
 	, dt(0)
@@ -80,12 +81,13 @@ void Timer::step()
 	if (timeSinceLast > fpsUpdateFrequency)
 	{
 		fps = int((frames/timeSinceLast) + 0.5);
+		averageDelta = timeSinceLast/frames;
 		prevFpsUpdate = currTime;
 		frames = 0;
 	}
 }
 
-void Timer::sleep(double seconds)
+void Timer::sleep(double seconds) const
 {
 	if (seconds > 0)
 		delay((int)(seconds*1000));
@@ -99,6 +101,11 @@ double Timer::getDelta() const
 int Timer::getFPS() const
 {
 	return fps;
+}
+
+double Timer::getAverageDelta() const
+{
+	return averageDelta;
 }
 
 double Timer::getTime() const

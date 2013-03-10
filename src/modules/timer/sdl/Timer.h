@@ -54,9 +54,10 @@ public:
 
 	const char *getName() const;
 	void step();
-	void sleep(double seconds);
+	void sleep(double seconds) const;
 	double getDelta() const;
 	int getFPS() const;
+	double getAverageDelta() const;
 	double getTime() const;
 	double getMicroTime() const;
 
@@ -69,6 +70,7 @@ private:
 
 	// Updated with a certain frequency.
 	int fps;
+	double averageDelta;
 
 	// The frequency by which to update the FPS.
 	double fpsUpdateFrequency;

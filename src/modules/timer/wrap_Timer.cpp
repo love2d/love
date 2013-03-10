@@ -50,6 +50,12 @@ int w_getFPS(lua_State *L)
 	return 1;
 }
 
+int w_getAverageDelta(lua_State *L)
+{
+	lua_pushnumber(L, instance->getAverageDelta());
+	return 1;
+}
+
 int w_sleep(lua_State *L)
 {
 	instance->sleep((float) luaL_checknumber(L, 1));
@@ -74,6 +80,7 @@ static const luaL_Reg functions[] =
 	{ "step", w_step },
 	{ "getDelta", w_getDelta },
 	{ "getFPS", w_getFPS },
+	{ "getAverageDelta", w_getAverageDelta },
 	{ "sleep", w_sleep },
 	{ "getTime", w_getTime },
 	{ "getMicroTime", w_getMicroTime },

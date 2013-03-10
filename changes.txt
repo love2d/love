@@ -28,6 +28,7 @@ LOVE 0.9.0 []
   * Added blend mode "none".
   * Added SpriteBatch:isEmpty and SpriteBatch:isFull.
   * Added support for extern Images in Shaders when drawing graphics primitives.
+  * Added love.timer.getAverageDelta.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.

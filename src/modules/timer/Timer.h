@@ -49,7 +49,7 @@ public:
 	 * usually 1ms.
 	 * @param seconds The number of seconds to sleep for.
 	 **/
-	virtual void sleep(double seconds) = 0;
+	virtual void sleep(double seconds) const = 0;
 
 	/**
 	 * Gets the time between the last two frames, assuming step is called
@@ -63,6 +63,7 @@ public:
 	 * @return The "current" FPS.
 	 **/
 	virtual int getFPS() const = 0;
+	virtual double getAverageDelta() const = 0;
 
 	/**
 	 * Gets the amount of time since the program started. Only useful for timing
