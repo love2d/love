@@ -71,12 +71,12 @@ void Timer::step()
 	prevTime = currTime;
 
 	// Get ticks from SDL
-	currTime = SDL_GetTicks();
+	currTime = getMicroTime();
 
 	// Convert to number of seconds
-	dt = (currTime - prevTime)/1000.0;
+	dt = currTime - prevTime;
 
-	double timeSinceLast = (currTime - prevFpsUpdate)/1000.0;
+	double timeSinceLast = currTime - prevFpsUpdate;
 	// Update FPS?
 	if (timeSinceLast > fpsUpdateFrequency)
 	{
