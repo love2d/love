@@ -297,19 +297,15 @@ public:
 	void setColor(const std::vector<Color> &newColors);
 
 	/**
-	 *
+	 * Sets the quads used when drawing the particles.
+	 * @param newQuads Array of quads.
 	 **/
-	void setQuad(love::graphics::Quad *quad);
+	void setQuads(const std::vector<love::graphics::Quad *> &newQuads);
 
 	/**
-	 *
+	 * Removes all quads from the particle system.
 	 **/
-	void setQuad(const std::vector<love::graphics::Quad *> &newQuads);
-
-	/**
-	 *
-	 **/
-	void setQuad();
+	void setQuads();
 
 	/**
 	 * Returns the x-coordinate of the emitter's position.

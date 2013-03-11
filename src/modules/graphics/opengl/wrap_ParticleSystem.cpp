@@ -266,25 +266,37 @@ int w_ParticleSystem_setColors(lua_State *L)
 int w_ParticleSystem_setQuads(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int nQuads = lua_gettop(L) - 1;
 
+	int nQuads = lua_gettop(L) - 1;
+	if (lua_istable(L, 2))
+		nQuads = lua_objlen(L, 2);
+
+	// Remove all quads if no argument is given.
 	if (nQuads == 0)
-		t->setQuad();
-	else if (nQuads == 1)
 	{
-		love::graphics::Quad *q = luax_checkframe(L, 2);
-		t->setQuad(q);
+		t->setQuads();
+		return 0;
+	}
+
+	std::vector<love::graphics::Quad *> quads(nQuads);
+
+	if (lua_istable(L, 2))
+	{
+		for (int i = 0; i < nQuads; i++)
+		{
+			lua_pushnumber(L, i + 1); // array index
+			lua_gettable(L, 2);
+			quads[i] = luax_checkframe(L, -1);
+			lua_pop(L, 1);
+		}
 	}
 	else
 	{
-		std::vector<love::graphics::Quad *> quads(nQuads);
-		for (size_t i = 0; i < nQuads; i++)
-		{
-			love::graphics::Quad *q = luax_checkframe(L, i + 2);
-			quads[i] = q;
-		}
-		t->setQuad(quads);
+		for (int i = 0; i < nQuads; i++)
+			quads[i] = luax_checkframe(L, i + 2);
 	}
+
+	t->setQuads(quads);
 
 	return 0;
 }

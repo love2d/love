@@ -100,6 +100,9 @@ ParticleSystem::ParticleSystem(Image *sprite, unsigned int buffer)
 
 ParticleSystem::~ParticleSystem()
 {
+	for (size_t i = 0; i < quads.size(); i++)
+		quads[i]->release();
+
 	if (this->sprite != 0)
 		this->sprite->release();
 
@@ -370,19 +373,7 @@ void ParticleSystem::setColor(const std::vector<Color> &newColors)
 		colors[i] = colorToFloat(newColors[i]);
 }
 
-void ParticleSystem::setQuad(love::graphics::Quad *quad)
-{
-
-	for (size_t i = 0; i < quads.size(); i++)
-		quads[i]->release();
-
-	quads.resize(1);
-
-	quads[0] = quad;
-	quad->retain();
-}
-
-void ParticleSystem::setQuad(const std::vector<love::graphics::Quad *> &newQuads)
+void ParticleSystem::setQuads(const std::vector<love::graphics::Quad *> &newQuads)
 {
 	for (size_t i = 0; i < quads.size(); i++)
 		quads[i]->release();
@@ -396,7 +387,7 @@ void ParticleSystem::setQuad(const std::vector<love::graphics::Quad *> &newQuads
 	}
 }
 
-void ParticleSystem::setQuad()
+void ParticleSystem::setQuads()
 {
 	for (size_t i = 0; i < quads.size(); i++)
 		quads[i]->release();
@@ -515,8 +506,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	const vertex *imageVerts = sprite->getVertices();
 	const vertex *tVerts;
+
 	size_t numQuads = quads.size();
-	size_t quadIndex = 0;
 
 	// set the vertex data for each particle (transformation, texcoords, color)
 	for (int i = 0; i < numParticles; i++)
@@ -526,7 +517,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		if (numQuads > 0)
 		{
 			// Make sure the quad index is valid
-			quadIndex = (p->quadIndex >= numQuads) ? numQuads - 1 : p->quadIndex;
+			size_t quadIndex = (p->quadIndex >= numQuads) ? numQuads - 1 : p->quadIndex;
 			tVerts = quads[quadIndex]->getVertices();
 		}
 		else
@@ -663,12 +654,12 @@ void ParticleSystem::update(float dt)
 			p->color = colors[i] * (1.0f - s) + colors[k] * s;
 
 			// Update quad index
-			if (quads.size() > 0)
+			k = quads.size();
+			if (k > 0)
 			{
-				k = quads.size() - 1;
-				s = t * (float) k;
+				s = t * (float) k; // [0:numquads-1]
 				i = (s > 0) ? (size_t) s : 0;
-				p->quadIndex = (i <= k) ? i : k;
+				p->quadIndex = (i < k) ? i : k - 1;
 			}
 			else
 				p->quadIndex = 0;
