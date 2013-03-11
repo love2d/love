@@ -209,6 +209,14 @@ int w_Canvas_getHeight(lua_State *L)
 	return 1;
 }
 
+int w_Canvas_getDimensions(lua_State *L)
+{
+	Canvas *canvas = luax_checkcanvas(L, 1);
+	lua_pushnumber(L, canvas->getWidth());
+	lua_pushnumber(L, canvas->getHeight());
+	return 2;
+}
+
 int w_Canvas_getType(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
@@ -231,6 +239,7 @@ static const luaL_Reg functions[] =
 	{ "clear", w_Canvas_clear },
 	{ "getWidth", w_Canvas_getWidth },
 	{ "getHeight", w_Canvas_getHeight },
+	{ "getDimensions", w_Canvas_getDimensions },
 	{ "getType", w_Canvas_getType },
 	{ 0, 0 }
 };

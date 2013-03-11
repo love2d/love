@@ -47,6 +47,14 @@ int w_ImageData_getHeight(lua_State *L)
 	return 1;
 }
 
+int w_ImageData_getDimensions(lua_State *L)
+{
+	ImageData *t = luax_checkimagedata(L, 1);
+	lua_pushinteger(L, t->getWidth());
+	lua_pushinteger(L, t->getHeight());
+	return 2;
+}
+
 int w_ImageData_getPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
@@ -188,6 +196,7 @@ static const luaL_Reg functions[] =
 
 	{ "getWidth", w_ImageData_getWidth },
 	{ "getHeight", w_ImageData_getHeight },
+	{ "getDimensions", w_ImageData_getDimensions },
 	{ "getPixel", w_ImageData_getPixel },
 	{ "setPixel", w_ImageData_setPixel },
 	{ "mapPixel", w_ImageData_mapPixel },

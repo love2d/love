@@ -35,6 +35,7 @@ namespace opengl
 Image *luax_checkimage(lua_State *L, int idx);
 int w_Image_getWidth(lua_State *L);
 int w_Image_getHeight(lua_State *L);
+int w_Image_getDimensions(lua_State *L);
 int w_Image_setFilter(lua_State *L);
 int w_image_getFilter(lua_State *L);
 int w_Image_setMipmapFilter(lua_State *L);

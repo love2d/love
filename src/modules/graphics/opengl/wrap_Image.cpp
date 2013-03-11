@@ -47,6 +47,14 @@ int w_Image_getHeight(lua_State *L)
 	return 1;
 }
 
+int w_Image_getDimensions(lua_State *L)
+{
+	Image *t = luax_checkimage(L, 1);
+	lua_pushnumber(L, t->getWidth());
+	lua_pushnumber(L, t->getHeight());
+	return 2;
+}
+
 int w_Image_setFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
@@ -178,6 +186,7 @@ static const luaL_Reg functions[] =
 {
 	{ "getWidth", w_Image_getWidth },
 	{ "getHeight", w_Image_getHeight },
+	{ "getDimensions", w_Image_getDimensions },
 	{ "setFilter", w_Image_setFilter },
 	{ "getFilter", w_Image_getFilter },
 	{ "setWrap", w_Image_setWrap },

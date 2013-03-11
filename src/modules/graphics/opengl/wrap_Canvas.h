@@ -44,6 +44,7 @@ int w_Canvas_getWrap(lua_State *L);
 int w_Canvas_clear(lua_State *L);
 int w_Canvas_getWidth(lua_State *L);
 int w_Canvas_getHeight(lua_State *L);
+int w_Canvas_getDimensions(lua_State *L);
 int w_Canvas_getType(lua_State *L);
 extern "C" int luaopen_canvas(lua_State *L);
 

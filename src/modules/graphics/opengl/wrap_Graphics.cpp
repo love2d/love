@@ -186,6 +186,13 @@ int w_getHeight(lua_State *L)
 	return 1;
 }
 
+int w_getDimensions(lua_State *L)
+{
+	lua_pushnumber(L, instance->getWidth());
+	lua_pushnumber(L, instance->getHeight());
+	return 2;
+}
+
 int w_isCreated(lua_State *L)
 {
 	luax_pushboolean(L, instance->isCreated());
@@ -1340,6 +1347,7 @@ static const luaL_Reg functions[] =
 
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
+	{ "getDimensions", w_getDimensions },
 
 	{ "isCreated", w_isCreated },
 
