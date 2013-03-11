@@ -373,7 +373,7 @@ void ParticleSystem::setColor(const std::vector<Color> &newColors)
 		colors[i] = colorToFloat(newColors[i]);
 }
 
-void ParticleSystem::setQuads(const std::vector<love::graphics::Quad *> &newQuads)
+void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
 {
 	for (size_t i = 0; i < quads.size(); i++)
 		quads[i]->release();

@@ -32,7 +32,7 @@ namespace graphics
 namespace opengl
 {
 
-Quad *luax_checkframe(lua_State *L, int idx);
+Quad *luax_checkquad(lua_State *L, int idx);
 int w_Quad_flip(lua_State *L);
 int w_Quad_setViewport(lua_State *L);
 int w_Quad_getViewport(lua_State *L);

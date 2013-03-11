@@ -996,7 +996,7 @@ int w_draw(lua_State *L)
 int w_drawq(lua_State *L)
 {
 	DrawQable *dq = luax_checktype<DrawQable>(L, 1, "DrawQable", GRAPHICS_DRAWQABLE_T);
-	Quad *q = luax_checkframe(L, 2);
+	Quad *q = luax_checkquad(L, 2);
 	float x = (float)luaL_checknumber(L, 3);
 	float y = (float)luaL_checknumber(L, 4);
 	float angle = (float)luaL_optnumber(L, 5, 0);

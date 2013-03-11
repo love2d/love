@@ -278,7 +278,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 		return 0;
 	}
 
-	std::vector<love::graphics::Quad *> quads(nQuads);
+	std::vector<Quad *> quads(nQuads);
 
 	if (lua_istable(L, 2))
 	{
@@ -286,14 +286,14 @@ int w_ParticleSystem_setQuads(lua_State *L)
 		{
 			lua_pushnumber(L, i + 1); // array index
 			lua_gettable(L, 2);
-			quads[i] = luax_checkframe(L, -1);
+			quads[i] = luax_checkquad(L, -1);
 			lua_pop(L, 1);
 		}
 	}
 	else
 	{
 		for (int i = 0; i < nQuads; i++)
-			quads[i] = luax_checkframe(L, i + 2);
+			quads[i] = luax_checkquad(L, i + 2);
 	}
 
 	t->setQuads(quads);

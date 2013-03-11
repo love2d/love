@@ -28,7 +28,7 @@ namespace graphics
 namespace opengl
 {
 
-Quad *luax_checkframe(lua_State *L, int idx)
+Quad *luax_checkquad(lua_State *L, int idx)
 {
 	return luax_checktype<Quad>(L, idx, "Quad", GRAPHICS_QUAD_T);
 }

@@ -27,7 +27,7 @@
 #include "common/Vector.h"
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
-#include "graphics/Quad.h"
+#include "Quad.h"
 #include "Image.h"
 #include <vector>
 
@@ -300,7 +300,7 @@ public:
 	 * Sets the quads used when drawing the particles.
 	 * @param newQuads Array of quads.
 	 **/
-	void setQuads(const std::vector<love::graphics::Quad *> &newQuads);
+	void setQuads(const std::vector<Quad *> &newQuads);
 
 	/**
 	 * Removes all quads from the particle system.
@@ -494,7 +494,7 @@ protected:
 	// Color.
 	std::vector<Colorf> colors;
 
-	std::vector<love::graphics::Quad *> quads;
+	std::vector<Quad *> quads;
 
 	void add();
 	void remove(particle *p);
