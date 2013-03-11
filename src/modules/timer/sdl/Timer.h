@@ -64,9 +64,9 @@ public:
 private:
 
 	// Frame delta vars.
-	Uint32 currTime;
-	Uint32 prevTime;
-	Uint32 prevFpsUpdate;
+	double currTime;
+	double prevTime;
+	double prevFpsUpdate;
 
 	// Updated with a certain frequency.
 	int fps;
