@@ -309,12 +309,9 @@ int w_newQuad(lua_State *L)
 	float sw = (float) luaL_checknumber(L, 5);
 	float sh = (float) luaL_checknumber(L, 6);
 
-	Quad *frame = instance->newQuad(x, y, w, h, sw, sh);
+	Quad *quad = instance->newQuad(x, y, w, h, sw, sh);
 
-	if (frame == 0)
-		return luaL_error(L, "Could not create frame.");
-
-	luax_newtype(L, "Quad", GRAPHICS_QUAD_T, (void *)frame);
+	luax_newtype(L, "Quad", GRAPHICS_QUAD_T, (void *)quad);
 	return 1;
 }
 
@@ -1385,7 +1382,7 @@ static const lua_CFunction types[] =
 {
 	luaopen_font,
 	luaopen_image,
-	luaopen_frame,
+	luaopen_quad,
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_canvas,
