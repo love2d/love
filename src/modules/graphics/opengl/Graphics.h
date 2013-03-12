@@ -461,8 +461,9 @@ public:
 	/**
 	 * Creates a screenshot of the view and saves it to the default folder.
 	 * @param image The love.image module.
+	 * @param copyAlpha If the alpha channel should be copied or set to full opacity (255).
 	 **/
-	love::image::ImageData *newScreenshot(love::image::Image *image);
+	love::image::ImageData *newScreenshot(love::image::Image *image, bool copyAlpha = true);
 
 	void push();
 	void pop();

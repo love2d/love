@@ -839,7 +839,8 @@ int w_getMaxPointSize(lua_State *L)
 int w_newScreenshot(lua_State *L)
 {
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
-	love::image::ImageData *i = instance->newScreenshot(image);
+	bool copyAlpha = luax_optboolean(L, 1, false);
+	love::image::ImageData *i = instance->newScreenshot(image, copyAlpha);
 	luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)i);
 	return 1;
 }

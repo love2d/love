@@ -1070,7 +1070,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 }
 
-love::image::ImageData *Graphics::newScreenshot(love::image::Image *image)
+love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool copyAlpha)
 {
 	int w = getWidth();
 	int h = getHeight();
@@ -1084,16 +1084,21 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image)
 
 	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
+	if (!copyAlpha)
+	{
+		// Replace alpha values with full opacity.
+		for (int i = 3; i < size; i += 4)
+			pixels[i] = 255;
+	}
+
 	// OpenGL sucks and reads pixels from the lower-left. Let's fix that.
 
 	GLubyte *src = pixels - row, *dst = screenshot + size;
 
 	for (int i = 0; i < h; ++i)
-	{
 		memcpy(dst-=row, src+=row, row);
-	}
 
-	love::image::ImageData *img = image->newImageData(w, h, (void *)screenshot);
+	love::image::ImageData *img = image->newImageData(w, h, (void *) screenshot);
 
 	delete [] pixels;
 	delete [] screenshot;
