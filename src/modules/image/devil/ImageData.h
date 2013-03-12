@@ -57,11 +57,6 @@ public:
 	// Implements ImageData.
 	void encode(love::filesystem::File *f, Format format);
 
-	// We need to be thread-safe
-	// so we lock when we're accessing our
-	// data
-	Mutex *mutex;
-
 }; // ImageData
 
 } // devil
