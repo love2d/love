@@ -243,6 +243,13 @@ int Graphics::getHeight() const
 	return currentWindow->getHeight();
 }
 
+int Graphics::getRenderWidth() const
+{
+	if (Canvas::current)
+		return Canvas::current->getWidth();
+	return getWidth();
+}
+
 int Graphics::getRenderHeight() const
 {
 	if (Canvas::current)
@@ -1072,8 +1079,8 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 
 love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool copyAlpha)
 {
-	int w = getWidth();
-	int h = getHeight();
+	int w = getRenderWidth();
+	int h = getRenderHeight();
 
 	int row = 4*w;
 

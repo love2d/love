@@ -483,7 +483,9 @@ private:
 	GLint matrixLimit;
 	GLint userMatrices;
 
+	int getRenderWidth() const;
 	int getRenderHeight() const;
+
 }; // Graphics
 
 } // opengl
