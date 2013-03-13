@@ -33,6 +33,7 @@ namespace math
 int w_randomseed(lua_State *L);
 int w_random(lua_State *L);
 int w_randnormal(lua_State *L);
+int w_triangulate(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_math(lua_State *L);
 
 } // random

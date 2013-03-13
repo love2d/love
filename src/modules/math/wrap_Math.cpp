@@ -19,40 +19,32 @@
  **/
 
 #include "wrap_Math.h"
-#include "ModMath.h"
+#include "modules/math/Math.h"
 
 #include <cmath>
 #include <iostream>
-
-namespace
-{
-
-union SeedConverter
-{
-	double   seed_double;
-	uint64_t seed_uint;
-};
-
-} // anonymous namespace
 
 namespace love
 {
 namespace math
 {
 
-static ModMath *instance = 0;
-
 int w_randomseed(lua_State *L)
 {
-	SeedConverter s;
+	union
+	{
+		double   seed_double;
+		uint64_t seed_uint;
+	} s;
+
 	s.seed_double = luaL_checknumber(L, 1);
-	instance->randomseed(s.seed_uint);
+	Math::instance.randomseed(s.seed_uint);
 	return 0;
 }
 
 int w_random(lua_State *L)
 {
-	double r = instance->random();
+	double r = Math::instance.random();
 	int l, u;
 	// verbatim from lua 5.1.4 source code: lmathlib.c:185 ff.
 	switch (lua_gettop(L))
@@ -90,8 +82,82 @@ int w_randnormal(lua_State *L)
 		stddev = luaL_optnumber(L, 1, 1.);
 	}
 
-	double r = instance->randnormal(stddev);
+	double r = Math::instance.randnormal(stddev);
 	lua_pushnumber(L, r + mean);
+	return 1;
+}
+
+int w_triangulate(lua_State *L)
+{
+	std::vector<vertex> vertices;
+	if (lua_istable(L, 1))
+	{
+		size_t top = lua_objlen(L, 1);
+		vertices.reserve(top / 2);
+		for (size_t i = 1; i <= top; i += 2)
+		{
+			lua_rawgeti(L, 1, i);
+			lua_rawgeti(L, 1, i+1);
+
+			vertex v;
+			v.x = luaL_checknumber(L, -2);
+			v.y = luaL_checknumber(L, -1);
+			vertices.push_back(v);
+
+			lua_pop(L, 2);
+		}
+	}
+	else
+	{
+		size_t top = lua_gettop(L);
+		vertices.reserve(top / 2);
+		for (size_t i = 1; i <= top; i += 2)
+		{
+			vertex v;
+			v.x = luaL_checknumber(L, i);
+			v.y = luaL_checknumber(L, i+1);
+			vertices.push_back(v);
+		}
+	}
+
+	if (vertices.size() < 3)
+		return luaL_error(L, "Need at least 3 vertices to triangulate");
+
+	std::vector<Triangle> triangles;
+	try
+	{
+		if (vertices.size() == 3)
+			triangles.push_back(Triangle(vertices[0], vertices[1], vertices[2]));
+		else
+			triangles = Math::instance.triangulate(vertices);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, e.what());
+	}
+
+	lua_createtable(L, triangles.size(), 0);
+	for (size_t i = 0; i < triangles.size(); ++i)
+	{
+		Triangle &tri = triangles[i];
+
+		lua_createtable(L, 6, 0);
+		lua_pushnumber(L, tri.a.x);
+		lua_rawseti(L, -2, 1);
+		lua_pushnumber(L, tri.a.y);
+		lua_rawseti(L, -2, 2);
+		lua_pushnumber(L, tri.b.x);
+		lua_rawseti(L, -2, 3);
+		lua_pushnumber(L, tri.b.y);
+		lua_rawseti(L, -2, 4);
+		lua_pushnumber(L, tri.c.x);
+		lua_rawseti(L, -2, 5);
+		lua_pushnumber(L, tri.c.y);
+		lua_rawseti(L, -2, 6);
+
+		lua_rawseti(L, -2, i+1);
+	}
+
 	return 1;
 }
 
@@ -101,6 +167,7 @@ static const luaL_Reg functions[] =
 	{ "randomseed", w_randomseed },
 	{ "random", w_random },
 	{ "randnormal", w_randnormal },
+	{ "triangulate", w_triangulate },
 	{ 0, 0 }
 };
 
@@ -111,16 +178,9 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_math(lua_State *L)
 {
-	if (instance == 0)
-		instance = new love::math::ModMath();
-	else
-		instance->retain();
-
-	if (instance == 0)
-		return luaL_error(L, "Could not open module math.");
-
+	Math::instance.retain();
 	WrappedModule w;
-	w.module = instance;
+	w.module = &Math::instance;
 	w.name = "math";
 	w.flags = MODULE_T;
 	w.functions = functions;

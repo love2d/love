@@ -23,21 +23,23 @@
 
 // LOVE
 #include "common/Module.h"
+#include "common/math.h"
 
 // STL
 #include <limits>
 #include <stdint.h>
+#include <vector>
 
 namespace love
 {
 namespace math
 {
 
-class ModMath : public Module
+class Math : public Module
 {
 public:
-	ModMath();
-	virtual ~ModMath() {}
+	virtual ~Math()
+	{}
 
 	/** Set pseudo random seed.
 	 *
@@ -47,7 +49,7 @@ public:
 	 */
 	inline void randomseed(uint64_t seed)
 	{
-		RNGState.seed = seed;
+		rng_state = seed;
 	}
 
 	/** Return uniformly distributed pseudo random integer.
@@ -65,6 +67,24 @@ public:
 		return double(rand()) / (double(std::numeric_limits<uint32_t>::max()) + 1.0);
 	}
 
+	/** Get uniformly distributed pseudo random number in [0,max).
+	 *
+	 * @returns Pseudo random number in [0,max).
+	 */
+	inline double random(double max)
+	{
+		return random() * max;
+	}
+
+	/** Get uniformly distributed pseudo random number in [min, max).
+	 *
+	 * @returns Pseudo random number in [min, max).
+	 */
+	inline double random(double min, double max)
+	{
+		return random() * (max - min) + min;
+	}
+
 	/** Get normally distributed pseudo random number.
 	 *
 	 * @param stddev Standard deviation of the distribution.
@@ -77,12 +97,19 @@ public:
 		return "love.math";
 	}
 
+	/** Triangulate a simple polygon.
+	 * @param polygon Polygon to triangulate. Must not intersect itself.
+	 * @returns List of triangles the polygon is composed of.
+	 */
+	std::vector<Triangle> triangulate(const std::vector<vertex> &polygon);
+
+	static Math instance;
+
 private:
-	struct
-	{
-		uint64_t seed;
-		double last_randnormal;
-	} RNGState;
+	Math();
+
+	uint64_t rng_state;
+	double last_randnormal;
 };
 
 } // math
