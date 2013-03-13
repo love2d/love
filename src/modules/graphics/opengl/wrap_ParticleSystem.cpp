@@ -230,34 +230,75 @@ int w_ParticleSystem_setSpinVariation(lua_State *L)
 int w_ParticleSystem_setColors(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int cargs = lua_gettop(L) - 1;
-	size_t nColors = (cargs + 3) / 4; // nColors = ceil(color_args / 4)
-	if (cargs % 4 != 0 || cargs == 0)
-		return luaL_error(L, "Expected red, green, blue, and alpha. Only got %d of 4 components.", cargs % 4);
 
-	if (nColors > 8)
-		return luaL_error(L, "At most eight (8) colors may be used.");
+	if (lua_istable(L, 2)) // setColors({r,g,b,a}, {r,g,b,a}, ...)
+	{
+		size_t nColors = lua_gettop(L) - 1;
 
-	if (nColors == 1)
-	{
-		int r = luaL_checkint(L, 2);
-		int g = luaL_checkint(L, 3);
-		int b = luaL_checkint(L, 4);
-		int a = luaL_checkint(L, 5);
-		t->setColor(Color(r,g,b,a));
-	}
-	else
-	{
+		if (nColors > 8)
+			return luaL_error(L, "At most eight (8) colors may be used.");
+
 		std::vector<Color> colors(nColors);
-		for (size_t i = 0; i < nColors; ++i)
+
+		for (size_t i = 0; i < nColors; i++)
 		{
-			int r = luaL_checkint(L, 1 + i*4 + 1);
-			int g = luaL_checkint(L, 1 + i*4 + 2);
-			int b = luaL_checkint(L, 1 + i*4 + 3);
-			int a = luaL_checkint(L, 1 + i*4 + 4);
-			colors[i] = Color(r,g,b,a);
+			luaL_checktype(L, i + 2, LUA_TTABLE);
+
+			if (lua_objlen(L, i + 2) < 3)
+				return luaL_argerror(L, i + 2, "expected 4 color components");
+
+			for (int j = 0; j < 4; j++)
+			{
+				// push args[i+2][j+1] onto the stack
+				lua_pushnumber(L, j + 1);
+				lua_gettable(L, i + 2);
+			}
+
+			int r = luaL_checkint(L, -4);
+			int g = luaL_checkint(L, -3);
+			int b = luaL_checkint(L, -2);
+			int a = luaL_optint(L, -1, 255);
+
+			// pop the color components from the stack
+			lua_pop(L, 4);
+
+			colors[i] = Color(r, g, b, a);
 		}
+
 		t->setColor(colors);
+	}
+	else // setColors(r,g,b,a, r,g,b,a, ...)
+	{
+		int cargs = lua_gettop(L) - 1;
+		size_t nColors = (cargs + 3) / 4; // nColors = ceil(color_args / 4)
+
+		if (cargs % 4 != 0 || cargs == 0)
+			return luaL_error(L, "Expected red, green, blue, and alpha. Only got %d of 4 components.", cargs % 4);
+
+		if (nColors > 8)
+			return luaL_error(L, "At most eight (8) colors may be used.");
+
+		if (nColors == 1)
+		{
+			int r = luaL_checkint(L, 2);
+			int g = luaL_checkint(L, 3);
+			int b = luaL_checkint(L, 4);
+			int a = luaL_checkint(L, 5);
+			t->setColor(Color(r,g,b,a));
+		}
+		else
+		{
+			std::vector<Color> colors(nColors);
+			for (size_t i = 0; i < nColors; ++i)
+			{
+				int r = luaL_checkint(L, 1 + i*4 + 1);
+				int g = luaL_checkint(L, 1 + i*4 + 2);
+				int b = luaL_checkint(L, 1 + i*4 + 3);
+				int a = luaL_checkint(L, 1 + i*4 + 4);
+				colors[i] = Color(r,g,b,a);
+			}
+			t->setColor(colors);
+		}
 	}
 
 	return 0;
