@@ -446,7 +446,7 @@ std::vector<std::string> Font::getWrap(const std::string &text, float wrap, int 
 			width += getWidth(word);
 
 			// on wordwrap, push line to line buffer and clear string builder
-			if (width >= wrap && oldwidth > 0)
+			if (width > wrap && oldwidth > 0)
 			{
 				int realw = (int) width;
 
