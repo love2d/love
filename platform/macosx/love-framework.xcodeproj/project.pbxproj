@@ -19,7 +19,6 @@
 		FA08F5B916C7532A00F007B5 /* b64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D383DA1468545C30E7B5805 /* b64.cpp */; };
 		FA08F5BA16C7532A00F007B5 /* delay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36437CE95936736320710513 /* delay.cpp */; };
 		FA08F5BB16C7532A00F007B5 /* Exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3746164716797CF80D6B0CEE /* Exception.cpp */; };
-		FA08F5BC16C7532A00F007B5 /* math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 168502C6505A6D455C4F69AA /* math.cpp */; };
 		FA08F5BD16C7532A00F007B5 /* Matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0CB6025618505B055A4E75DD /* Matrix.cpp */; };
 		FA08F5BE16C7532A00F007B5 /* Memoizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40A0593B616A223A4CEF07C9 /* Memoizer.cpp */; };
 		FA08F5BF16C7532A00F007B5 /* Module.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E466F441EE727658716873 /* Module.cpp */; };
@@ -210,6 +209,8 @@
 		FA08F67A16C754B100F007B5 /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 695E4ED13AA0689E64280573 /* wrap_Timer.cpp */; };
 		FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 351B09E51FDC338622F44624 /* Window.cpp */; };
 		FA08F67C16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6CDD4F3320303D222C180CD0 /* Window.cpp */; };
+		FA5454C216F1310000D30303 /* MathModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA5454C016F1310000D30303 /* MathModule.cpp */; };
+		FA5454C316F1310000D30303 /* MathModule.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5454C116F1310000D30303 /* MathModule.h */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
 		FA577AC316C7512F00860150 /* Game_Music_Emu.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6B16C719E400860150 /* Game_Music_Emu.framework */; };
@@ -222,8 +223,6 @@
 		FA577ACB16C7514400860150 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7316C719F900860150 /* physfs.framework */; };
 		FA577ACC16C7514700860150 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7516C719FF00860150 /* SDL.framework */; };
 		FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* Vorbis.framework */; };
-		FA7C937816DCC6C2006F2BEE /* ModMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937316DCC6C2006F2BEE /* ModMath.cpp */; };
-		FA7C937916DCC6C2006F2BEE /* ModMath.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937416DCC6C2006F2BEE /* ModMath.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
@@ -327,7 +326,6 @@
 		14AE68E14C2C74526A612FA0 /* wrap_Image.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Image.cpp; sourceTree = "<group>"; };
 		15093E1B1A14176374C81299 /* wrap_CircleShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_CircleShape.h; sourceTree = "<group>"; };
 		153957EB332E1269671E7F4A /* b2CircleShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2CircleShape.h; sourceTree = "<group>"; };
-		168502C6505A6D455C4F69AA /* math.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = math.cpp; sourceTree = "<group>"; };
 		16C36B3C59A10CDC7ACE0DD4 /* http.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = http.lua.h; sourceTree = "<group>"; };
 		174D472C1AFE594D77A0322B /* b2ChainAndCircleContact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2ChainAndCircleContact.h; sourceTree = "<group>"; };
 		175A1B8D733B2D4803F64AC1 /* b2Distance.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2Distance.cpp; sourceTree = "<group>"; };
@@ -679,6 +677,8 @@
 		7F796B7A3362196075C62E61 /* wrap_Fixture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Fixture.cpp; sourceTree = "<group>"; };
 		7F911CF2107B22F44C5B2542 /* b2Collision.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2Collision.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
+		FA5454C016F1310000D30303 /* MathModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MathModule.cpp; sourceTree = "<group>"; };
+		FA5454C116F1310000D30303 /* MathModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MathModule.h; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6916C719DE00860150 /* IL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IL.framework; path = /Library/Frameworks/IL.framework; sourceTree = "<absolute>"; };
 		FA577A6B16C719E400860150 /* Game_Music_Emu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Game_Music_Emu.framework; path = /Library/Frameworks/Game_Music_Emu.framework; sourceTree = "<absolute>"; };
@@ -700,8 +700,6 @@
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577A8E16C71D3600860150 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FA7C937316DCC6C2006F2BEE /* ModMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModMath.cpp; sourceTree = "<group>"; };
-		FA7C937416DCC6C2006F2BEE /* ModMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModMath.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
@@ -798,7 +796,6 @@
 				3746164716797CF80D6B0CEE /* Exception.cpp */,
 				7A5C32955F016AB85EB55519 /* Exception.h */,
 				40BC14C607396F8B1B084012 /* int.h */,
-				168502C6505A6D455C4F69AA /* math.cpp */,
 				52D130DF3DC82D9D4C867B61 /* math.h */,
 				0CB6025618505B055A4E75DD /* Matrix.cpp */,
 				085B376E3FBB254F0FD37958 /* Matrix.h */,
@@ -1614,8 +1611,8 @@
 		FA7C937116DCC6C2006F2BEE /* math */ = {
 			isa = PBXGroup;
 			children = (
-				FA7C937316DCC6C2006F2BEE /* ModMath.cpp */,
-				FA7C937416DCC6C2006F2BEE /* ModMath.h */,
+				FA5454C016F1310000D30303 /* MathModule.cpp */,
+				FA5454C116F1310000D30303 /* MathModule.h */,
 				FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */,
 				FA7C937616DCC6C2006F2BEE /* wrap_Math.h */,
 			);
@@ -1640,7 +1637,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA7C937916DCC6C2006F2BEE /* ModMath.h in Headers */,
 				FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */,
 				FAF272A516E3D44400CC193A /* Channel.h in Headers */,
 				FAF272A716E3D44400CC193A /* LuaThread.h in Headers */,
@@ -1650,6 +1646,7 @@
 				FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */,
 				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
 				FAF272B816E3D46400CC193A /* threads.h in Headers */,
+				FA5454C316F1310000D30303 /* MathModule.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1725,7 +1722,6 @@
 				FA08F5B916C7532A00F007B5 /* b64.cpp in Sources */,
 				FA08F5BA16C7532A00F007B5 /* delay.cpp in Sources */,
 				FA08F5BB16C7532A00F007B5 /* Exception.cpp in Sources */,
-				FA08F5BC16C7532A00F007B5 /* math.cpp in Sources */,
 				FA08F5BD16C7532A00F007B5 /* Matrix.cpp in Sources */,
 				FA08F5BE16C7532A00F007B5 /* Memoizer.cpp in Sources */,
 				FA08F5BF16C7532A00F007B5 /* Module.cpp in Sources */,
@@ -1916,7 +1912,6 @@
 				FA08F67A16C754B100F007B5 /* wrap_Timer.cpp in Sources */,
 				FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */,
 				FA08F67C16C754BA00F007B5 /* Window.cpp in Sources */,
-				FA7C937816DCC6C2006F2BEE /* ModMath.cpp in Sources */,
 				FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */,
 				FAF272A416E3D44400CC193A /* Channel.cpp in Sources */,
 				FAF272A616E3D44400CC193A /* LuaThread.cpp in Sources */,
@@ -1926,6 +1921,7 @@
 				FAF272AE16E3D44400CC193A /* wrap_ThreadModule.cpp in Sources */,
 				FAF272B516E3D46400CC193A /* Thread.cpp in Sources */,
 				FAF272B716E3D46400CC193A /* threads.cpp in Sources */,
+				FA5454C216F1310000D30303 /* MathModule.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
