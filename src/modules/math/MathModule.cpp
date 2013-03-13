@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "modules/math/Math.h"
+#include "modules/math/MathModule.h"
 #include "common/math.h"
 
 #include <cmath>
@@ -90,11 +90,11 @@ Math::Math()
 	// i mean
 	union
 	{
-		uint64_t b64;
+		uint64 b64;
 		struct
 		{
-			uint32_t a;
-			uint32_t b;
+			uint32 a;
+			uint32 b;
 		} b32;
 	} converter;
 
@@ -111,7 +111,7 @@ Math::Math()
 	retain();
 }
 
-uint32_t Math::rand()
+uint64 Math::rand()
 {
 	rng_state ^= (rng_state << 13);
 	rng_state ^= (rng_state >> 7);

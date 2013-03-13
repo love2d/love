@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Module.h"
 #include "common/math.h"
+#include "common/int.h"
 
 // STL
 #include <limits>
@@ -54,9 +55,9 @@ public:
 
 	/** Return uniformly distributed pseudo random integer.
 	 *
-	 * @returns Pseudo random integer in [0,2^32).
+	 * @returns Pseudo random integer in [0,2^64).
 	 */
-	uint32_t rand();
+	uint64 rand();
 
 	/** Get uniformly distributed pseudo random number in [0,1).
 	 *
@@ -64,7 +65,7 @@ public:
 	 */
 	inline double random()
 	{
-		return double(rand()) / (double(std::numeric_limits<uint32_t>::max()) + 1.0);
+		return double(rand()) / (double(std::numeric_limits<uint64>::max()) + 1.0);
 	}
 
 	/** Get uniformly distributed pseudo random number in [0,max).
@@ -108,7 +109,7 @@ public:
 private:
 	Math();
 
-	uint64_t rng_state;
+	uint64 rng_state;
 	double last_randnormal;
 };
 

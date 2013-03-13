@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Math.h"
-#include "modules/math/Math.h"
+#include "modules/math/MathModule.h"
 
 #include <cmath>
 #include <iostream>

@@ -21,7 +21,7 @@
 #include "ParticleSystem.h"
 
 #include "common/math.h"
-#include "modules/math/Math.h"
+#include "modules/math/MathModule.h"
 
 #include "OpenGL.h"
 #include <cmath>
