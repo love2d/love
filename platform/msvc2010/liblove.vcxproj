@@ -300,7 +300,6 @@
     <ClCompile Include="..\..\src\common\b64.cpp" />
     <ClCompile Include="..\..\src\common\delay.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
-    <ClCompile Include="..\..\src\common\math.cpp" />
     <ClCompile Include="..\..\src\common\Matrix.cpp" />
     <ClCompile Include="..\..\src\common\Memoizer.cpp" />
     <ClCompile Include="..\..\src\common\Module.cpp" />
@@ -434,7 +433,7 @@
     <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\love\love.cpp" />
-    <ClCompile Include="..\..\src\modules\math\ModMath.cpp" />
+    <ClCompile Include="..\..\src\modules\math\MathModule.cpp" />
     <ClCompile Include="..\..\src\modules\math\wrap_Math.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
@@ -670,7 +669,7 @@
     <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
     <ClInclude Include="..\..\src\modules\love\love.h" />
-    <ClInclude Include="..\..\src\modules\math\ModMath.h" />
+    <ClInclude Include="..\..\src\modules\math\MathModule.h" />
     <ClInclude Include="..\..\src\modules\math\wrap_Math.h" />
     <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
