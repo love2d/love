@@ -983,7 +983,7 @@ void Graphics::polyline(const float *coords, size_t count)
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 {
-	float coords[] = {x,y, x,y+h, x+w,y+h, x+w,y};
+	float coords[] = {x,y, x,y+h, x+w,y+h, x+w,y, x,y};
 	polygon(mode, coords, 5 * 2);
 }
 
