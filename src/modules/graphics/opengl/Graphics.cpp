@@ -984,7 +984,7 @@ void Graphics::polyline(const float *coords, size_t count)
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 {
 	float coords[] = {x,y, x,y+h, x+w,y+h, x+w,y};
-	polygon(mode, coords, 4 * 2);
+	polygon(mode, coords, 5 * 2);
 }
 
 void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
