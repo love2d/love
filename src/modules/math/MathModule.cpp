@@ -144,22 +144,30 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 	else if (polygon.size() == 3)
 		return vector<Triangle>(1, Triangle(polygon[0], polygon[1], polygon[2]));
 
-	vector<size_t> next_vertex(polygon.size()), prev_vertex(polygon.size());
-
-	// collect list of connections
+	// collect list of connections and record leftmost item to check if the polygon
+	// has the expected winding
+	vector<size_t> next_idx(polygon.size()), prev_idx(polygon.size());
+	size_t idx_lm = 0;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
-		next_vertex[i] = i+1;
-		prev_vertex[i] = i-1;
+		const vertex &lm = polygon[idx_lm], &p = polygon[i];
+		if (p.x < lm.x || (p.x == lm.x && p.y < lm.y))
+			idx_lm = i;
+		next_idx[i] = i+1;
+		prev_idx[i] = i-1;
 	}
-	next_vertex[next_vertex.size()-1] = 0;
-	prev_vertex[0] = prev_vertex.size()-1;
+	next_idx[next_idx.size()-1] = 0;
+	prev_idx[0] = prev_idx.size()-1;
+
+	// check if the polygon has the expected winding and reverse polygon if needed
+	if (!is_oriented_ccw(polygon[prev_idx[idx_lm]], polygon[idx_lm], polygon[next_idx[idx_lm]]))
+		next_idx.swap(prev_idx);
 
 	// collect list of concave polygons
 	list<const vertex *> concave_vertices;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
-		if (!is_oriented_ccw(polygon[prev_vertex[i]], polygon[i], polygon[next_vertex[i]]))
+		if (!is_oriented_ccw(polygon[prev_idx[i]], polygon[i], polygon[next_idx[i]]))
 			concave_vertices.push_back(&polygon[i]);
 	}
 
@@ -169,14 +177,14 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 	size_t current = 1, skipped = 0, next, prev;
 	while (n_vertices > 3)
 	{
-		next = next_vertex[current];
-		prev = prev_vertex[current];
+		next = next_idx[current];
+		prev = prev_idx[current];
 		const vertex &a = polygon[prev], &b = polygon[current], &c = polygon[next];
 		if (is_ear(a,b,c, concave_vertices))
 		{
 			triangles.push_back(Triangle(a,b,c));
-			next_vertex[prev] = next;
-			prev_vertex[next] = prev;
+			next_idx[prev] = next;
+			prev_idx[next] = prev;
 			concave_vertices.remove(&b);
 			--n_vertices;
 			skipped = 0;
@@ -187,8 +195,8 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 		}
 		current = next;
 	}
-	next = next_vertex[current];
-	prev = prev_vertex[current];
+	next = next_idx[current];
+	prev = prev_idx[current];
 	triangles.push_back(Triangle(polygon[prev], polygon[current], polygon[next]));
 
 	return triangles;
