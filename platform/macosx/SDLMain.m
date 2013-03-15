@@ -422,17 +422,29 @@ int main (int argc, char **argv)
 		if (arg == NULL)
 			return FALSE;
 
-		newargv = (char **)realloc(gArgv, sizeof(char *) * (gArgc + 2));
-		if (newargv == NULL)
+		const char *fusedstr = "--fused";
+		size_t fusedarglen = SDL_strlen(fusedstr) + 1;
+
+		char *fusedarg = (char *) SDL_malloc(fusedarglen);
+		if (fusedarg == NULL)
 		{
 			SDL_free(arg);
 			return FALSE;
 		}
 
+		newargv = (char **) realloc(gArgv, sizeof(char *) * (gArgc + 3));
+		if (newargv == NULL)
+		{
+			SDL_free(arg);
+			SDL_free(fusedarg);
+			return FALSE;
+		}
+
 		gArgv = newargv;
 		SDL_strlcpy(arg, temparg, arglen);
+		SDL_strlcpy(fusedarg, fusedstr, fusedarglen);
 		gArgv[gArgc++] = arg;
-		gArgv[gArgc++] = "--fused"; // run in pseudo-fused mode
+		gArgv[gArgc++] = fusedarg; // run in pseudo-fused mode
 		gArgv[gArgc] = NULL;
 	}
 
