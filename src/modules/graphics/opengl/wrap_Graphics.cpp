@@ -505,40 +505,50 @@ int w_newShader(lua_State *L)
 	if (!Shader::isSupported())
 		return luaL_error(L, "Sorry, your graphics card does not support shaders.");
 
+	// clamp stack to 2 elements
+	lua_settop(L, 2);
+
+	luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
+
+	// push vertcode and fragcode strings to the top of the stack so they become arguments for the function
+	lua_pushvalue(L, 1);
+	lua_pushvalue(L, 2);
+
+	// call effectCodeToGLSL, returned values will be at the top of the stack
+	lua_pcall(L, 2, 2, 0);
+
+	Shader::ShaderSources sources;
+
+	// vertex shader code
+	if (lua_isstring(L, -2))
+	{
+		std::string vertcode(luaL_checkstring(L, -2));
+		sources[Shader::TYPE_VERTEX] = vertcode;
+	}
+
+	// fragment shader code
+	if (lua_isstring(L, -1))
+	{
+		std::string fragcode(luaL_checkstring(L, -1));
+		sources[Shader::TYPE_FRAGMENT] = fragcode;
+	}
+
+	if (sources.empty())
+	{
+		// Original args had source code, but effectCodeToGLSL couldn't translate it
+		for (int i = 1; i <= 2; i++)
+		{
+			if (lua_isstring(L, i))
+				return luaL_argerror(L, i, "invalid or incomplete shader code");
+		}
+	}
+
 	try
 	{
-		// clamp stack to 2 elements
-		lua_settop(L, 2);
-
-		luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
-
-		// push vertcode and fragcode strings to the top of the stack so they become arguments for the function
-		lua_pushvalue(L, 1);
-		lua_pushvalue(L, 2);
-
-		// call effectCodeToGLSL, returned values will be at the top of the stack
-		lua_pcall(L, 2, 2, 0);
-
-		Shader::ShaderSources sources;
-
-		// vertex shader code
-		if (lua_isstring(L, -2))
-		{
-			std::string vertcode(luaL_checkstring(L, -2));
-			sources[Shader::TYPE_VERTEX] = vertcode;
-		}
-
-		// fragment shader code
-		if (lua_isstring(L, -1))
-		{
-			std::string fragcode(luaL_checkstring(L, -1));
-			sources[Shader::TYPE_FRAGMENT] = fragcode;
-		}
-
 		Shader *shader = instance->newShader(sources);
 		luax_newtype(L, "Shader", GRAPHICS_SHADER_T, (void *)shader);
 	}
-	catch(const love::Exception &e)
+	catch (const love::Exception &e)
 	{
 		// memory is freed in Graphics::newShader
 		luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
