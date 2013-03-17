@@ -236,7 +236,7 @@ public:
 	 * @param filename The name of the file to read from.
 	 * @param size The size in bytes of the data to read.
 	 **/
-	Data *read(const char *filename, int64 size) const;
+	Data *read(const char *filename, int64 size = File::ALL) const;
 
 	/**
 	 * Write data to a file.
@@ -279,14 +279,11 @@ public:
 	int enumerate(lua_State *L);
 
 	/**
-	 * Loads a file without running it. The loaded
-	 * chunk is returned as a function.
-	 * @param filename The filename of the file to load.
-	 * @return A function.
+	 * Gets the last modification time of a file, in seconds
+	 * since the Unix epoch.
+	 * @param filename The name of the file.
 	 **/
-	int load(lua_State *L);
-
-	int getLastModified(lua_State *L);
+	int64 getLastModified(const char *filename) const;
 
 	/**
 	 * Gets the size of a file in bytes.

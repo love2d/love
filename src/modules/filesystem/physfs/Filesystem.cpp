@@ -471,56 +471,14 @@ int Filesystem::lines_i(lua_State *L)
 	return 0;
 }
 
-int Filesystem::load(lua_State *L)
+int64 Filesystem::getLastModified(const char *filename) const
 {
-	// Need only one arg.
-	luax_assert_argc(L, 1, 1);
-
-	// Must be string.
-	if (!lua_isstring(L, -1))
-		return luaL_error(L, "The argument must be a string.");
-
-	std::string filename = lua_tostring(L, -1);
-
-	// The file must exist.
-	if (!exists(filename.c_str()))
-		return luaL_error(L, "File %s does not exist.", filename.c_str());
-
-	// Create the file.
-	File *file = newFile(filename.c_str());
-
-	// Get the data from the file.
-	Data *data = file->read();
-
-	int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
-
-	data->release();
-	file->release();
-
-	// Load the chunk, but don't run it.
-	switch (status)
-	{
-	case LUA_ERRMEM:
-		return luaL_error(L, "Memory allocation error: %s\n", lua_tostring(L, -1));
-	case LUA_ERRSYNTAX:
-		return luaL_error(L, "Syntax error: %s\n", lua_tostring(L, -1));
-	default: // success
-		return 1;
-	}
-}
-
-int Filesystem::getLastModified(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
 	PHYSFS_sint64 time = PHYSFS_getLastModTime(filename);
+
 	if (time == -1)
-	{
-		lua_pushnil(L);
-		lua_pushstring(L, "Could not determine file modification date.");
-		return 2;
-	}
-	lua_pushnumber(L, static_cast<lua_Number>(time));
-	return 1;
+		throw love::Exception("Could not determine file modification date.");
+
+	return time;
 }
 
 int64 Filesystem::getSize(const char *filename) const

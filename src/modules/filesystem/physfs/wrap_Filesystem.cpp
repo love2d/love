@@ -307,19 +307,53 @@ int w_lines(lua_State *L)
 
 int w_load(lua_State *L)
 {
+	std::string filename = std::string(luaL_checkstring(L, 1));
+
+	Data *data = 0;
 	try
 	{
-		return instance->load(L);
+		data = instance->read(filename.c_str());
 	}
-	catch(love::Exception &e)
+	catch (love::Exception &e)
 	{
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
+	}
+
+	int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
+
+	data->release();
+
+	// Load the chunk, but don't run it.
+	switch (status)
+	{
+	case LUA_ERRMEM:
+		return luaL_error(L, "Memory allocation error: %s\n", lua_tostring(L, -1));
+	case LUA_ERRSYNTAX:
+		return luaL_error(L, "Syntax error: %s\n", lua_tostring(L, -1));
+	default: // success
+		return 1;
 	}
 }
 
 int w_getLastModified(lua_State *L)
 {
-	return instance->getLastModified(L);
+	const char *filename = luaL_checkstring(L, 1);
+
+	int64 time = 0;
+	try
+	{
+		time = instance->getLastModified(filename);
+	}
+	catch (love::Exception &e)
+	{
+		lua_pushnil(L);
+		lua_pushstring(L, e.what());
+		return 2;
+	}
+
+	lua_pushnumber(L, static_cast<lua_Number>(time));
+
+	return 1;
 }
 
 int w_getSize(lua_State *L)
@@ -370,7 +404,7 @@ int loader(lua_State *L)
 		lua_pop(L, 1);
 		lua_pushstring(L, tmp.c_str());
 		// Ok, load it.
-		return instance->load(L);
+		return w_load(L);
 	}
 
 	tmp = filename;
@@ -391,7 +425,7 @@ int loader(lua_State *L)
 			lua_pop(L, 1);
 			lua_pushstring(L, tmp.c_str());
 			// Ok, load it.
-			return instance->load(L);
+			return w_load(L);
 		}
 	}
 
