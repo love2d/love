@@ -21,14 +21,20 @@ LOVE 0.9.0 []
   * Added SoundData:getDuration.
   * Added new Channels api for love.thread.
   * Added flags to setMode.
-  * Added support for resizable and borderless windows.
+  * Added support for resizable, borderless, and non-centered windows.
   * Added resize event.
   * Added love.math module.
   * Added a platform-independent (good) random implementation to love.math.
+  * Added love.math.triangulate.
   * Added blend mode "none".
   * Added SpriteBatch:isEmpty and SpriteBatch:isFull.
   * Added support for extern Images in Shaders when drawing graphics primitives.
   * Added love.timer.getAverageDelta.
+  * Added love.joystickaxis/ball/hat event callbacks.
+  * Added ParticleSystem:setQuads.
+  * Added love.graphics.getDimensions and Image/Canvas/ImageData:getDimensions.
+  * Added love.filesystem.append.
+  * Added love.filesystem.getSize.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -52,6 +58,8 @@ LOVE 0.9.0 []
   * Fixed Shader:send with Images and Canvases failing sometimes.
   * Fixed love.graphics.getPointStyle.
   * Fixed line numbers in shader errors.
+  * Fixed line wrapping in love.graphics.printf.
+  * Fixed fused release mode in OS X.
 
   * Moved love's startup to modules/love.
 
@@ -76,6 +84,8 @@ LOVE 0.9.0 []
   * Updated SpriteBatch code, now more performant when (un)binding.
   * Updated Image creation code to error when creation fails.
   * Updated Canvas code to support more systems.
+  * Updated love.timer.getFPS to be microsecond-accurate.
+  * Updated love.graphics.newScreenshot to create a fully opaque image by default.
 
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------
