@@ -147,7 +147,7 @@ public:
 	/**
 	 * Creates a new file.
 	 **/
-	File *newFile(const char *filename);
+	File *newFile(const char *filename) const;
 
 	/**
 	 * Creates a new FileData object. Data will be copied.
@@ -155,13 +155,13 @@ public:
 	 * @param size The size of the data.
 	 * @param filename The full filename used to file type identification.
 	 **/
-	FileData *newFileData(void *data, unsigned int size, const char *filename);
+	FileData *newFileData(void *data, unsigned int size, const char *filename) const;
 
 	/**
 	 * Creates a new FileData object from base64 data.
 	 * @param b64 The base64 data.
 	 **/
-	FileData *newFileData(const char *b64, const char *filename);
+	FileData *newFileData(const char *b64, const char *filename) const;
 
 	/**
 	 * Gets the current working directory.
@@ -190,20 +190,20 @@ public:
 	 * or not.
 	 * @param file The filename to check.
 	 **/
-	bool exists(const char *file);
+	bool exists(const char *file) const;
 
 	/**
 	 * Checks if an existing file really is a directory.
 	 * @param file The filename to check.
 	 **/
-	bool isDirectory(const char *file);
+	bool isDirectory(const char *file) const;
 
 	/**
 	 * Checks if an existing file really is a file,
 	 * and not a directory.
 	 * @param file The filename to check.
 	 **/
-	bool isFile(const char *file);
+	bool isFile(const char *file) const;
 
 	/**
 	 * Creates a directory. Write dir must be set.
@@ -292,7 +292,7 @@ public:
 	 * Gets the size of a file in bytes.
 	 * @param filename The name of the file.
 	 **/
-	int64 getSize(const char *filename);
+	int64 getSize(const char *filename) const;
 
 	/**
 	 * Text file line-reading iterator function used and

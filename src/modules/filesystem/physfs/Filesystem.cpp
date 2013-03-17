@@ -174,12 +174,12 @@ bool Filesystem::setupWriteDirectory()
 	return true;
 }
 
-File *Filesystem::newFile(const char *filename)
+File *Filesystem::newFile(const char *filename) const
 {
 	return new File(filename);
 }
 
-FileData *Filesystem::newFileData(void *data, unsigned int size, const char *filename)
+FileData *Filesystem::newFileData(void *data, unsigned int size, const char *filename) const
 {
 	FileData *fd = new FileData(size, std::string(filename));
 
@@ -189,7 +189,7 @@ FileData *Filesystem::newFileData(void *data, unsigned int size, const char *fil
 	return fd;
 }
 
-FileData *Filesystem::newFileData(const char *b64, const char *filename)
+FileData *Filesystem::newFileData(const char *b64, const char *filename) const
 {
 	int size = strlen(b64);
 	int outsize = 0;
@@ -270,21 +270,21 @@ const char *Filesystem::getSaveDirectory()
 	return save_path_full.c_str();
 }
 
-bool Filesystem::exists(const char *file)
+bool Filesystem::exists(const char *file) const
 {
 	if (PHYSFS_exists(file))
 		return true;
 	return false;
 }
 
-bool Filesystem::isDirectory(const char *file)
+bool Filesystem::isDirectory(const char *file) const
 {
 	if (PHYSFS_isDirectory(file))
 		return true;
 	return false;
 }
 
-bool Filesystem::isFile(const char *file)
+bool Filesystem::isFile(const char *file) const
 {
 	return exists(file) && !isDirectory(file);
 }
@@ -523,7 +523,7 @@ int Filesystem::getLastModified(lua_State *L)
 	return 1;
 }
 
-int64 Filesystem::getSize(const char *filename)
+int64 Filesystem::getSize(const char *filename) const
 {
 	File file(filename);
 	int64 size = file.getSize();
