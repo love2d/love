@@ -102,9 +102,9 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 		glshadertype = GL_VERTEX_SHADER;
 		shadertypename = "vertex";
 		break;
-	case TYPE_FRAGMENT:
+	case TYPE_PIXEL:
 		glshadertype = GL_FRAGMENT_SHADER;
-		shadertypename = "fragment";
+		shadertypename = "pixel";
 		break;
 	default:
 		throw love::Exception("Cannot create shader object: unknown shader type.");

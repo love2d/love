@@ -46,7 +46,7 @@ public:
 	enum ShaderType
 	{
 		TYPE_VERTEX,
-		TYPE_FRAGMENT,
+		TYPE_PIXEL,
 		TYPE_MAX_ENUM
 	};
 
@@ -55,7 +55,7 @@ public:
 
 	/**
 	 * Creates a new Shader using a list of source codes.
-	 * Sources must contain either vertex or fragment shader code, or both.
+	 * Sources must contain either vertex or pixel shader code, or both.
 	 **/
 	Shader(const ShaderSources &sources);
 

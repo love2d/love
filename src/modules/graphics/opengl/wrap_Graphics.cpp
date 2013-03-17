@@ -526,11 +526,11 @@ int w_newShader(lua_State *L)
 		sources[Shader::TYPE_VERTEX] = vertcode;
 	}
 
-	// fragment shader code
+	// pixel shader code
 	if (lua_isstring(L, -1))
 	{
 		std::string fragcode(luaL_checkstring(L, -1));
-		sources[Shader::TYPE_FRAGMENT] = fragcode;
+		sources[Shader::TYPE_PIXEL] = fragcode;
 	}
 
 	if (sources.empty())
