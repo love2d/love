@@ -268,6 +268,40 @@ int w_getLastModified(lua_State *L)
 	return instance->getLastModified(L);
 }
 
+int w_getSize(lua_State *L)
+{
+	const char *filename = luaL_checkstring(L, 1);
+
+	int64 size = -1;
+	try
+	{
+		size = instance->getSize(filename);
+	}
+	catch (love::Exception &e)
+	{
+		// Return nil, errorstring
+		lua_pushnil(L);
+		lua_pushstring(L, e.what());
+		return 2;
+	}
+
+	// Return nil on failure or if size does not fit into a double precision floating-point number.
+	if (size == -1 || size >= 0x20000000000000LL)
+	{
+		lua_pushnil(L);
+		if (size == -1)
+			lua_pushstring(L, "Could not determine file size.");
+		else
+			lua_pushstring(L, "Size too large to fit into a Lua number!");
+		return 2;
+	}
+	else
+	{
+		lua_pushnumber(L, (lua_Number) size);
+		return 1;
+	}
+}
+
 int loader(lua_State *L)
 {
 	const char *filename = lua_tostring(L, -1);
@@ -395,6 +429,7 @@ static const luaL_Reg functions[] =
 	{ "lines",  w_lines },
 	{ "load",  w_load },
 	{ "getLastModified", w_getLastModified },
+	{ "getSize", w_getSize },
 	{ "newFileData", w_newFileData },
 	{ 0, 0 }
 };

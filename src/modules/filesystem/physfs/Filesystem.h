@@ -282,6 +282,12 @@ public:
 	int getLastModified(lua_State *L);
 
 	/**
+	 * Gets the size of a file in bytes.
+	 * @param filename The name of the file.
+	 **/
+	int64 getSize(const char *filename);
+
+	/**
 	 * Text file line-reading iterator function used and
 	 * pushed on the Lua stack by love.filesystem.lines
 	 * and File:lines.

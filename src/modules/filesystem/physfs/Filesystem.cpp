@@ -605,6 +605,13 @@ int Filesystem::getLastModified(lua_State *L)
 	return 1;
 }
 
+int64 Filesystem::getSize(const char *filename)
+{
+	File f(filename);
+	int64 size = f.getSize();
+	return size;
+}
+
 } // physfs
 } // filesystem
 } // love
