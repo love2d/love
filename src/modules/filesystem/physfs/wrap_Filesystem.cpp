@@ -199,26 +199,67 @@ int w_remove(lua_State *L)
 
 int w_read(lua_State *L)
 {
+	const char *filename = luaL_checkstring(L, 1);
+	int64 len = (int64) luaL_optinteger(L, 2, File::ALL);
+
+	Data *data = 0;
 	try
 	{
-		return instance->read(L);
+		data = instance->read(filename, len);
 	}
-	catch(Exception e)
+	catch (love::Exception &e)
 	{
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
+
+	if (data == 0)
+		return luaL_error(L, "File could not be read.");
+
+	// Push the string.
+	lua_pushlstring(L, (const char *) data->getData(), data->getSize());
+
+	// Push the size.
+	lua_pushinteger(L, data->getSize());
+
+	// Lua has a copy now, so we can free it.
+	data->release();
+
+	return 2;
 }
 
 int w_write(lua_State *L)
 {
+	const char *filename = luaL_checkstring(L, 1);
+
+	const char *input = 0;
+	size_t len = 0;
+
+	if (luax_istype(L, 2, DATA_T))
+	{
+		love::Data *data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
+		input = (const char *) data->getData();
+		len = data->getSize();
+	}
+	else if (lua_isstring(L, 2))
+		input = lua_tolstring(L, 2, &len);
+	else
+		return luaL_argerror(L, 2, "string or Data expected");
+
+	// Get how much we should write. Length of string default.
+	len = luaL_optinteger(L, 3, len);
+
 	try
 	{
-		return instance->write(L);
+		instance->write(filename, (const void *) input, len);
 	}
-	catch(Exception e)
+	catch (love::Exception &e)
 	{
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
+
+	luax_pushboolean(L, true);
+
+	return 1;
 }
 
 int w_enumerate(lua_State *L)
@@ -279,27 +320,18 @@ int w_getSize(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		// Return nil, errorstring
-		lua_pushnil(L);
-		lua_pushstring(L, e.what());
-		return 2;
+		return luaL_error(L, "%s", e.what());
 	}
 
-	// Return nil on failure or if size does not fit into a double precision floating-point number.
-	if (size == -1 || size >= 0x20000000000000LL)
-	{
-		lua_pushnil(L);
-		if (size == -1)
-			lua_pushstring(L, "Could not determine file size.");
-		else
-			lua_pushstring(L, "Size too large to fit into a Lua number!");
-		return 2;
-	}
-	else
-	{
-		lua_pushnumber(L, (lua_Number) size);
-		return 1;
-	}
+	// Error on failure or if size does not fit into a double precision floating-point number.
+	if (size == -1)
+		return luaL_error(L, "Could not determine file size.");
+	else if (size >= 0x20000000000000LL)
+		return luaL_error(L, "Size too large to fit into a Lua number!");
+
+
+	lua_pushnumber(L, (lua_Number) size);
+	return 1;
 }
 
 int loader(lua_State *L)

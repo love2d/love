@@ -309,118 +309,25 @@ bool Filesystem::remove(const char *file)
 	return true;
 }
 
-int Filesystem::read(lua_State *L)
+Data *Filesystem::read(const char *filename, int64 size) const
 {
-	// The file to read from. The file must either be created
-	// on-the-fly, or passed as a parameter.
-	File *file;
+	File file(filename);
 
-	if (lua_isstring(L, 1))
-	{
-		// Create the file.
-		file = newFile(lua_tostring(L, 1));
-	}
-	else
-		return luaL_error(L, "Expected filename.");
+	file.open(File::READ);
 
-	// Optionally, the caller can specify whether to read
-	// the whole file, or just a part of it.
-	int count = luaL_optint(L, 2, (lua_Integer)file->getSize()); // FIXME
-
-	// Read the data.
-	Data *data = file->read(count);
-
-	// Error check.
-	if (data == 0)
-		return luaL_error(L, "File could not be read.");
-
-	// Close and delete the file, if we created it.
-	// (I.e. if the first parameter is a string).
-	if (lua_isstring(L, 1))
-		file->release();
-
-	// Push the string.
-	lua_pushlstring(L, (char *)data->getData(), data->getSize());
-
-	// Push the size.
-	lua_pushinteger(L, data->getSize());
-
-	// Lua has a copy now, so we can free it.
-	data->release();
-
-	return 2;
+	// close() is called in the File destructor.
+	return file.read(size);
 }
 
-int Filesystem::write(lua_State *L)
+void Filesystem::write(const char *filename, const void *data, int64 size)
 {
-	// The file to write to. The file must either be created
-	// on-the-fly, or passed as a parameter.
-	File *file;
+	File file(filename);
 
-	// We know for sure that we need a second parameter, so
-	// let's check that first.
-	if (lua_isnoneornil(L, 2))
-		return luaL_error(L, "Second argument needed.");
+	file.open(File::WRITE);
 
-	if (lua_isstring(L, 1))
-	{
-		// Create the file.
-		file = newFile(lua_tostring(L, 1));
-	}
-	else
-		return luaL_error(L, "Expected filename.");
-
-	// Get the current mode of the file.
-	File::Mode mode = file->getMode();
-
-	if (mode == File::CLOSED)
-	{
-		// It should be possible to use append mode, but
-		// normal File::Mode::Write is the default.
-		int mode = luaL_optint(L, 4, File::WRITE);
-
-		// Open the file.
-		if (!file->open((File::Mode)mode))
-			return luaL_error(L, "Could not open file.");
-	}
-
-	size_t length = 0;
-	const char *input;
-	if (lua_isstring(L, 2))
-	{
-		input = lua_tolstring(L, 2, &length);
-	}
-	else if (luax_istype(L, 2, DATA_T))
-	{
-		love::Data *data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
-		length = data->getSize();
-		input = (char *)data->getData();
-	}
-	else
-	{
-		return luaL_error(L, "Expected string or data for argument #2.");
-	}
-
-	// Get how much we should write. Length of string default.
-	length = luaL_optint(L, 3, length);
-
-	// Write the data.
-	bool success = file->write(input, length);
-
-	// Close and delete the file, if we created
-	// it in this function.
-	if (lua_isstring(L, 1))
-	{
-		// Kill the file if "we" created it.
-		file->close();
-		file->release();
-	}
-
-	if (!success)
-		return luaL_error(L, "Data could not be written.");
-
-	lua_pushboolean(L, success);
-	return 1;
+	// close() is called in the File destructor.
+	if (!file.write(data, size))
+		throw love::Exception("Data could not be written.");
 }
 
 int Filesystem::enumerate(lua_State *L)
@@ -607,8 +514,8 @@ int Filesystem::getLastModified(lua_State *L)
 
 int64 Filesystem::getSize(const char *filename)
 {
-	File f(filename);
-	int64 size = f.getSize();
+	File file(filename);
+	int64 size = file.getSize();
 	return size;
 }
 

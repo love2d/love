@@ -232,20 +232,19 @@ public:
 	bool close(File *file);
 
 	/**
-	 * Reads count bytes from an open file.
-	 * The first parameter is either a File or
-	 * a string. An optional second parameter specified the
-	 * max number of bytes to read.
+	 * Reads data from a file.
+	 * @param filename The name of the file to read from.
+	 * @param size The size in bytes of the data to read.
 	 **/
-	int read(lua_State *L);
+	Data *read(const char *filename, int64 size) const;
 
 	/**
-	 * Write the bytes in data to the file. File
-	 * must be opened for write.
-	 * The first parameter is either a File or
-	 * a string.
+	 * Write data to a file.
+	 * @param filename The name of the file to write to.
+	 * @param data The data to write.
+	 * @param size The size in bytes of the data to write.
 	 **/
-	int write(lua_State *L);
+	void write(const char *filename, const void *data, int64 size);
 
 	/**
 	 * Check if end-of-file is reached.
