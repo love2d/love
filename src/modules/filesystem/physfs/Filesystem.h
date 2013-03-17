@@ -244,7 +244,15 @@ public:
 	 * @param data The data to write.
 	 * @param size The size in bytes of the data to write.
 	 **/
-	void write(const char *filename, const void *data, int64 size);
+	void write(const char *filename, const void *data, int64 size) const;
+
+	/**
+	 * Append data to a file, creating it if it doesn't exist.
+	 * @param filename The name of the file to write to.
+	 * @param data The data to append.
+	 * @param size The size in bytes of the data to append.
+	 **/
+	void append(const char *filename, const void *data, int64 size) const;
 
 	/**
 	 * Check if end-of-file is reached.

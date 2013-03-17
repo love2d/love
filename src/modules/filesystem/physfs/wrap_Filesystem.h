@@ -57,6 +57,7 @@ int w_open(lua_State *L);
 int w_close(lua_State *L);
 int w_read(lua_State *L);
 int w_write(lua_State *L);
+int w_append(lua_State *L);
 int w_eof(lua_State *L);
 int w_tell(lua_State *L);
 int w_seek(lua_State *L);

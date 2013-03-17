@@ -227,7 +227,7 @@ int w_read(lua_State *L)
 	return 2;
 }
 
-int w_write(lua_State *L)
+static int w_write_or_append(lua_State *L, File::Mode mode)
 {
 	const char *filename = luaL_checkstring(L, 1);
 
@@ -250,7 +250,10 @@ int w_write(lua_State *L)
 
 	try
 	{
-		instance->write(filename, (const void *) input, len);
+		if (mode == File::APPEND)
+			instance->append(filename, (const void *) input, len);
+		else
+			instance->write(filename, (const void *) input, len);
 	}
 	catch (love::Exception &e)
 	{
@@ -260,6 +263,16 @@ int w_write(lua_State *L)
 	luax_pushboolean(L, true);
 
 	return 1;
+}
+
+int w_write(lua_State *L)
+{
+	return w_write_or_append(L, File::WRITE);
+}
+
+int w_append(lua_State *L)
+{
+	return w_write_or_append(L, File::APPEND);
 }
 
 int w_enumerate(lua_State *L)
@@ -457,6 +470,7 @@ static const luaL_Reg functions[] =
 	{ "remove",  w_remove },
 	{ "read",  w_read },
 	{ "write",  w_write },
+	{ "append", w_append },
 	{ "enumerate",  w_enumerate },
 	{ "lines",  w_lines },
 	{ "load",  w_load },

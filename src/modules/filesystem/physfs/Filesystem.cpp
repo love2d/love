@@ -319,11 +319,22 @@ Data *Filesystem::read(const char *filename, int64 size) const
 	return file.read(size);
 }
 
-void Filesystem::write(const char *filename, const void *data, int64 size)
+void Filesystem::write(const char *filename, const void *data, int64 size) const
 {
 	File file(filename);
 
 	file.open(File::WRITE);
+
+	// close() is called in the File destructor.
+	if (!file.write(data, size))
+		throw love::Exception("Data could not be written.");
+}
+
+void Filesystem::append(const char *filename, const void *data, int64 size) const
+{
+	File file(filename);
+
+	file.open(File::APPEND);
 
 	// close() is called in the File destructor.
 	if (!file.write(data, size))
