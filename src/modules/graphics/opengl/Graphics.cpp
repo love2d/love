@@ -722,7 +722,7 @@ void Graphics::print(const char *str, float x, float y , float angle, float sx, 
 	}
 }
 
-void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode align)
+void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	if (currentFont == 0)
 		return;
@@ -731,34 +731,52 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 	string text(str);
 	vector<string> lines_to_draw = currentFont->getWrap(text, wrap);
 
-	// now for the actual printing
-	vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
-	float letter_spacing = 0.0f;
-	for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter)
+	glPushMatrix();
+
+	static Matrix t;
+	t.setTransformation(ceil(x), ceil(y), angle, sx, sy, ox, oy, kx, ky);
+	glMultMatrixf((const GLfloat *)t.getElements());
+
+	x = y = 0.0f;
+
+	try
 	{
-		float width = static_cast<float>(currentFont->getWidth(*line_iter));
-		switch (align)
+		// now for the actual printing
+		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
+		float letter_spacing = 0.0f;
+		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter)
 		{
-		case ALIGN_RIGHT:
-			currentFont->print(*line_iter, ceil(x + wrap - width), ceil(y));
-			break;
-		case ALIGN_CENTER:
-			currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y));
-			break;
-		case ALIGN_JUSTIFY:
-			if (line_iter->length() > 1 && (line_iter+1) != line_end)
-				letter_spacing = (wrap - width) / float(line_iter->length() - 1);
-			else
-				letter_spacing = 0.0f;
-			currentFont->print(*line_iter, ceil(x), ceil(y), letter_spacing);
-			break;
-		case ALIGN_LEFT:
-		default:
-			currentFont->print(*line_iter, ceil(x), ceil(y));
-			break;
+			float width = static_cast<float>(currentFont->getWidth(*line_iter));
+			switch (align)
+			{
+			case ALIGN_RIGHT:
+				currentFont->print(*line_iter, ceil(x + (wrap - width)), ceil(y), 0.0f);
+				break;
+			case ALIGN_CENTER:
+				currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y), 0.0f);
+				break;
+			case ALIGN_JUSTIFY:
+				if (line_iter->length() > 1 && (line_iter+1) != line_end)
+					letter_spacing = (wrap - width) / float(line_iter->length() - 1);
+				else
+					letter_spacing = 0.0f;
+				currentFont->print(*line_iter, ceil(x), ceil(y), letter_spacing);
+				break;
+			case ALIGN_LEFT:
+			default:
+				currentFont->print(*line_iter, ceil(x), ceil(y), 0.0f);
+				break;
+			}
+			y += currentFont->getHeight() * currentFont->getLineHeight();
 		}
-		y += currentFont->getHeight() * currentFont->getLineHeight();
 	}
+	catch (love::Exception &)
+	{
+		glPopMatrix();
+		throw;
+	}
+
+	glPopMatrix();
 }
 
 /**

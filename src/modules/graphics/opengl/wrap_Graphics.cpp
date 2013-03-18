@@ -1055,18 +1055,34 @@ int w_printf(lua_State *L)
 	float y = (float)luaL_checknumber(L, 3);
 	float wrap = (float)luaL_checknumber(L, 4);
 
+	float angle = 0.0f;
+	float sx = 1.0f, sy = 1.0f;
+	float ox = 0.0f, oy = 0.0f;
+	float kx = 0.0f, ky = 0.0f;
+
 	Graphics::AlignMode align = Graphics::ALIGN_LEFT;
 
 	if (lua_gettop(L) >= 5)
 	{
-		const char *str = luaL_checkstring(L, 5);
-		if (!Graphics::getConstant(str, align))
-			return luaL_error(L, "Incorrect alignment: %s", str);
+		if (!lua_isnil(L, 5))
+		{
+			const char *str = luaL_checkstring(L, 5);
+			if (!Graphics::getConstant(str, align))
+				return luaL_error(L, "Incorrect alignment: %s", str);
+		}
+
+		angle = (float) luaL_optnumber(L, 6, 0.0f);
+		sx = (float) luaL_optnumber(L, 7, 1.0f);
+		sy = (float) luaL_optnumber(L, 8, sx);
+		ox = (float) luaL_optnumber(L, 9, 0.0f);
+		oy = (float) luaL_optnumber(L, 10, 0.0f);
+		kx = (float) luaL_optnumber(L, 11, 0.0f);
+		ky = (float) luaL_optnumber(L, 12, 0.0f);
 	}
 
 	try
 	{
-		instance->printf(str, x, y, wrap, align);
+		instance->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);
 	}
 	catch(love::Exception e)
 	{
