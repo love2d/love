@@ -510,7 +510,7 @@ int w_newShader(lua_State *L)
 
 	luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
 
-	// push vertcode and fragcode strings to the top of the stack so they become arguments for the function
+	// push vertexcode and pixelcode strings to the top of the stack so they become arguments for the function
 	lua_pushvalue(L, 1);
 	lua_pushvalue(L, 2);
 
@@ -522,15 +522,15 @@ int w_newShader(lua_State *L)
 	// vertex shader code
 	if (lua_isstring(L, -2))
 	{
-		std::string vertcode(luaL_checkstring(L, -2));
-		sources[Shader::TYPE_VERTEX] = vertcode;
+		std::string vertexcode(luaL_checkstring(L, -2));
+		sources[Shader::TYPE_VERTEX] = vertexcode;
 	}
 
 	// pixel shader code
 	if (lua_isstring(L, -1))
 	{
-		std::string fragcode(luaL_checkstring(L, -1));
-		sources[Shader::TYPE_PIXEL] = fragcode;
+		std::string pixelcode(luaL_checkstring(L, -1));
+		sources[Shader::TYPE_PIXEL] = pixelcode;
 	}
 
 	if (sources.empty())

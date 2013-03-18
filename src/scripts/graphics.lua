@@ -1304,7 +1304,7 @@ do
 #define NormalMatrix gl_NormalMatrix
 uniform sampler2D _tex0_;]]
 
-	local GLSL_VERT = {
+	local GLSL_VERTEX = {
 		HEADER = [[
 #define VERTEX
 
@@ -1323,7 +1323,7 @@ void main() {
 }]],
 	}
 
-	local GLSL_FRAG = {
+	local GLSL_PIXEL = {
 		HEADER = [[
 #define PIXEL
 
@@ -1338,58 +1338,58 @@ void main() {
 }]],
 	}
 
-	local function createVertCode(vertcode)
-		local vertcodes = {
+	local function createVertexCode(vertexcode)
+		local vertexcodes = {
 			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_VERT.HEADER, GLSL_UNIFORMS,
+			GLSL_SYNTAX, GLSL_VERTEX.HEADER, GLSL_UNIFORMS,
 			"#line 0",
-			vertcode,
-			GLSL_VERT.FOOTER,
+			vertexcode,
+			GLSL_VERTEX.FOOTER,
 		}
-		return table_concat(vertcodes, "\n")
+		return table_concat(vertexcodes, "\n")
 	end
 
-	local function createFragCode(fragcode)
-		local fragcodes = {
+	local function createPixelCode(pixelcode)
+		local pixelcodes = {
 			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_FRAG.HEADER, GLSL_UNIFORMS,
+			GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
 			"#line 0",
-			fragcode,
-			GLSL_FRAG.FOOTER
+			pixelcode,
+			GLSL_PIXEL.FOOTER
 		}
-		return table_concat(fragcodes, "\n")
+		return table_concat(pixelcodes, "\n")
 	end
 
-	function love.graphics._shaderCodeToGLSL(vertcode, fragcode)
-		if vertcode then
-			local s = vertcode:gsub("\r\n\t", " ")
+	function love.graphics._shaderCodeToGLSL(vertexcode, pixelcode)
+		if vertexcode then
+			local s = vertexcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
 			if s:match("vec4%s*effect%(") then
-				fragcode = vertcode -- first argument contains frag shader code
+				pixelcode = vertexcode -- first argument contains pixel shader code
 			end
 			if not s:match("vec4%s*position%(") then
-				vertcode = nil -- first argument doesn't contain vert shader code
+				vertexcode = nil -- first argument doesn't contain vertex shader code
 			end
 		end
-		if fragcode then
-			local s = fragcode:gsub("\r\n\t", " ")
+		if pixelcode then
+			local s = pixelcode:gsub("\r\n\t", " ")
 			s = s:gsub("%w+(%s+)%(", "")
 			if s:match("vec4%s*position%(") then
-				vertcode = fragcode -- second argument contains vert shader code
+				vertexcode = pixelcode -- second argument contains vertex shader code
 			end
 			if not s:match("vec4%s*effect%(") then
-				fragcode = nil -- second argument doesn't contain frag shader code
+				pixelcode = nil -- second argument doesn't contain pixel shader code
 			end
 		end
 
-		if vertcode then
-			vertcode = createVertCode(vertcode)
+		if vertexcode then
+			vertexcode = createVertexCode(vertexcode)
 		end
-		if fragcode then
-			fragcode = createFragCode(fragcode)
+		if pixelcode then
+			pixelcode = createPixelCode(pixelcode)
 		end
 
-		return vertcode, fragcode
+		return vertexcode, pixelcode
 	end
 
 	function love.graphics._transformGLSLErrorMessages(message)
@@ -1463,20 +1463,20 @@ void main() {
 	end
 
 	local newShader = love.graphics.newShader
-	function love.graphics.newShader(vertcode, fragcode)
-		love.graphics.newShader = function(vertcode, fragcode)
+	function love.graphics.newShader(vertexcode, pixelcode)
+		love.graphics.newShader = function(vertexcode, pixelcode)
 			if love.filesystem then
-				if vertcode and love.filesystem.exists(vertcode) then
-					vertcode = love.filesystem.read(vertcode)
+				if vertexcode and love.filesystem.exists(vertexcode) then
+					vertexcode = love.filesystem.read(vertexcode)
 				end
-				if fragcode and love.filesystem.exists(fragcode) then
-					fragcode = love.filesystem.read(fragcode)
+				if pixelcode and love.filesystem.exists(pixelcode) then
+					pixelcode = love.filesystem.read(pixelcode)
 				end
 			end
-			return newShader(vertcode, fragcode)
+			return newShader(vertexcode, pixelcode)
 		end
 
-		local shader = love.graphics.newShader(vertcode, fragcode)
+		local shader = love.graphics.newShader(vertexcode, pixelcode)
 		local meta = getmetatable(shader)
 		meta.send = shader_dispatch_send
 		meta.sendBoolean = meta.sendFloat
