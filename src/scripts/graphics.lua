@@ -1361,8 +1361,6 @@ void main() {
 	end
 
 	function love.graphics._shaderCodeToGLSL(vertexcode, pixelcode)
-		local vertexarg, pixelarg = vertexcode, pixelcode
-
 		if vertexcode then
 			local s = vertexcode:gsub("\r\n\t", " ")
 			s = s:gsub("(%w+)(%s+)%(", "%1(")
@@ -1373,7 +1371,6 @@ void main() {
 				vertexcode = nil -- first argument doesn't contain vertex shader code
 			end
 		end
-
 		if pixelcode then
 			local s = pixelcode:gsub("\r\n\t", " ")
 			s = s:gsub("(%w+)(%s+)%(", "%1(")
@@ -1388,7 +1385,6 @@ void main() {
 		if vertexcode then
 			vertexcode = createVertexCode(vertexcode)
 		end
-
 		if pixelcode then
 			pixelcode = createPixelCode(pixelcode)
 		end

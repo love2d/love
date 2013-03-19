@@ -53,7 +53,15 @@ ImageData::ImageData(Data *data)
 ImageData::ImageData(filesystem::File *file)
 {
 	Data *data = file->read();
-	load(data);
+	try
+	{
+		load(data);
+	}
+	catch (love::Exception &)
+	{
+		data->release();
+		throw;
+	}
 	data->release();
 }
 
@@ -124,10 +132,10 @@ void ImageData::load(Data *data)
 
 		create(width, height, ilGetData());
 	}
-	catch(std::exception &)
+	catch(std::exception &e)
 	{
 		ilDeleteImages(1, &image);
-		throw;
+		throw love::Exception("%s", e.what());
 	}
 
 	ilDeleteImages(1, &image);
