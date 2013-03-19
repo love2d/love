@@ -508,14 +508,45 @@ int w_newShader(lua_State *L)
 	// clamp stack to 2 elements
 	lua_settop(L, 2);
 
+	// read any filepath arguments
+	for (int i = 1; i <= 2; i++)
+	{
+		if (!lua_isstring(L, i))
+			continue;
+
+		// call love.filesystem.isFile(arg_i)
+		luax_getfunction(L, "filesystem", "isFile");
+		lua_pushvalue(L, i);
+		lua_call(L, 1, 1);
+
+		bool isFile = luax_toboolean(L, -1);
+		lua_pop(L, 1);
+
+		if (isFile)
+		{
+			luax_getfunction(L, "filesystem", "read");
+			lua_pushvalue(L, i);
+			lua_call(L, 1, 1);
+			lua_replace(L, i);
+		}
+	}
+
+	bool has_arg1 = lua_isstring(L, 1);
+	bool has_arg2 = lua_isstring(L, 2);
+
+	// require at least one string argument
+	if (!(has_arg1 || has_arg2))
+		luaL_checkstring(L, 1);
+
 	luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
 
-	// push vertexcode and pixelcode strings to the top of the stack so they become arguments for the function
+	// push vertexcode and pixelcode strings to the top of the stack
 	lua_pushvalue(L, 1);
 	lua_pushvalue(L, 2);
 
 	// call effectCodeToGLSL, returned values will be at the top of the stack
-	lua_pcall(L, 2, 2, 0);
+	if (lua_pcall(L, 2, 2, 0) != 0)
+		return luaL_error(L, "%s", lua_tostring(L, -1));
 
 	Shader::ShaderSources sources;
 
@@ -525,6 +556,8 @@ int w_newShader(lua_State *L)
 		std::string vertexcode(luaL_checkstring(L, -2));
 		sources[Shader::TYPE_VERTEX] = vertexcode;
 	}
+	else if (has_arg1 && has_arg2)
+		return luaL_error(L, "Could not parse vertex shader code (missing 'position' function?)");
 
 	// pixel shader code
 	if (lua_isstring(L, -1))
@@ -532,6 +565,8 @@ int w_newShader(lua_State *L)
 		std::string pixelcode(luaL_checkstring(L, -1));
 		sources[Shader::TYPE_PIXEL] = pixelcode;
 	}
+	else if (has_arg1 && has_arg2)
+		return luaL_error(L, "Could not parse pixel shader code (missing 'effect' function?)");
 
 	if (sources.empty())
 	{
@@ -539,7 +574,7 @@ int w_newShader(lua_State *L)
 		for (int i = 1; i <= 2; i++)
 		{
 			if (lua_isstring(L, i))
-				return luaL_argerror(L, i, "invalid or incomplete shader code");
+				return luaL_argerror(L, i, "missing 'position' or 'effect' function?");
 		}
 	}
 

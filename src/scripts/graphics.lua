@@ -1361,9 +1361,11 @@ void main() {
 	end
 
 	function love.graphics._shaderCodeToGLSL(vertexcode, pixelcode)
+		local vertexarg, pixelarg = vertexcode, pixelcode
+
 		if vertexcode then
 			local s = vertexcode:gsub("\r\n\t", " ")
-			s = s:gsub("%w+(%s+)%(", "")
+			s = s:gsub("(%w+)(%s+)%(", "%1(")
 			if s:match("vec4%s*effect%(") then
 				pixelcode = vertexcode -- first argument contains pixel shader code
 			end
@@ -1371,9 +1373,10 @@ void main() {
 				vertexcode = nil -- first argument doesn't contain vertex shader code
 			end
 		end
+
 		if pixelcode then
 			local s = pixelcode:gsub("\r\n\t", " ")
-			s = s:gsub("%w+(%s+)%(", "")
+			s = s:gsub("(%w+)(%s+)%(", "%1(")
 			if s:match("vec4%s*position%(") then
 				vertexcode = pixelcode -- second argument contains vertex shader code
 			end
@@ -1385,6 +1388,7 @@ void main() {
 		if vertexcode then
 			vertexcode = createVertexCode(vertexcode)
 		end
+
 		if pixelcode then
 			pixelcode = createPixelCode(pixelcode)
 		end
@@ -1464,19 +1468,9 @@ void main() {
 
 	local newShader = love.graphics.newShader
 	function love.graphics.newShader(vertexcode, pixelcode)
-		love.graphics.newShader = function(vertexcode, pixelcode)
-			if love.filesystem then
-				if vertexcode and love.filesystem.exists(vertexcode) then
-					vertexcode = love.filesystem.read(vertexcode)
-				end
-				if pixelcode and love.filesystem.exists(pixelcode) then
-					pixelcode = love.filesystem.read(pixelcode)
-				end
-			end
-			return newShader(vertexcode, pixelcode)
-		end
+		love.graphics.newShader = newShader
 
-		local shader = love.graphics.newShader(vertexcode, pixelcode)
+		local shader = newShader(vertexcode, pixelcode)
 		local meta = getmetatable(shader)
 		meta.send = shader_dispatch_send
 		meta.sendBoolean = meta.sendFloat
