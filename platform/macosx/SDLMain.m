@@ -402,6 +402,8 @@ int main (int argc, char **argv)
 		gFinderLaunch = NO;
 	}
 
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
 	/* check to see if there are any .love files in Resources - props to stevejohnson/diordna */
 	NSArray *lovePaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"love" inDirectory:nil];
 
@@ -447,6 +449,8 @@ int main (int argc, char **argv)
 		gArgv[gArgc++] = fusedarg; // run in pseudo-fused mode
 		gArgv[gArgc] = NULL;
 	}
+
+	[pool drain];
 
 #if SDL_USE_NIB_FILE
 	[SDLApplication poseAsClass:[NSApplication class]];
