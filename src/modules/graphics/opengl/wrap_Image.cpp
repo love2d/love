@@ -115,6 +115,11 @@ int w_Image_setMipmapFilter(lua_State *L)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
+
+	float sharpness = luaL_optnumber(L, 3, 0);
+	float anisotropy = luaL_optnumber(L, 4, 0);
+
+	t->setMipmapSharpness(sharpness, anisotropy);
 	
 	return 0;
 }
@@ -122,15 +127,22 @@ int w_Image_setMipmapFilter(lua_State *L)
 int w_Image_getMipmapFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	const Image::Filter f = t->getFilter();
+
+	const Image::Filter &f = t->getFilter();
+
+	float sharpness, anisotropy;
+	t->getMipmapSharpness(&sharpness, &anisotropy);
 
 	const char *mipmapstr;
-	if (!Image::getConstant(f.mipmap, mipmapstr))
-		return 0; // only return a mipmap filter if mipmapping is enabled
+	if (Image::getConstant(f.mipmap, mipmapstr))
+		lua_pushstring(L, mipmapstr);
+	else
+		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
 
-	lua_pushstring(L, mipmapstr);
+	lua_pushnumber(L, sharpness);
+	lua_pushnumber(L, anisotropy);
 
-	return 1;
+	return 3;
 }
 
 int w_Image_setWrap(lua_State *L)
@@ -165,23 +177,6 @@ int w_Image_getWrap(lua_State *L)
 	return 2;
 }
 
-int w_Image_setMipmapSharpness(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-
-	float sharpness = (float) luaL_checknumber(L, 2);
-	i->setMipmapSharpness(sharpness);
-
-	return 0;
-}
-
-int w_Image_getMipmapSharpness(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-	lua_pushnumber(L, i->getMipmapSharpness());
-	return 1;
-}
-
 static const luaL_Reg functions[] =
 {
 	{ "getWidth", w_Image_getWidth },
@@ -193,8 +188,6 @@ static const luaL_Reg functions[] =
 	{ "getWrap", w_Image_getWrap },
 	{ "setMipmapFilter", w_Image_setMipmapFilter },
 	{ "getMipmapFilter", w_Image_getMipmapFilter },
-	{ "setMipmapSharpness", w_Image_setMipmapSharpness },
-	{ "getMipmapSharpness", w_Image_getMipmapSharpness },
 	{ 0, 0 }
 };
 

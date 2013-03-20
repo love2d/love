@@ -320,6 +320,12 @@ public:
 	const Image::Filter &getDefaultImageFilter() const;
 
 	/**
+	 * Default Image mipmap filtermode, sharpness, and anisotropy values.
+	 **/
+	void setDefaultMipmapFilter(Image::FilterMode filter, float sharpness, float anisotropy);
+	void getDefaultMipmapFilter(Image::FilterMode *filter, float *sharpness, float *anisotropy) const;
+
+	/**
 	 * Sets the line width.
 	 * @param width The new width of the line.
 	 **/

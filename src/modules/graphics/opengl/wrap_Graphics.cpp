@@ -772,6 +772,43 @@ int w_getDefaultImageFilter(lua_State *L)
 	return 2;
 }
 
+int w_setDefaultMipmapFilter(lua_State *L)
+{
+	Image::FilterMode filter = Image::FILTER_NONE;
+	if (!lua_isnoneornil(L, 1))
+	{
+		const char *str = luaL_checkstring(L, 1);
+		if (!Image::getConstant(str, filter))
+			return luaL_error(L, "Invalid filter mode: %s", str);
+	}
+
+	float sharpness = luaL_optnumber(L, 2, 0);
+	float anisotropy = luaL_optnumber(L, 3, 0);
+
+	instance->setDefaultMipmapFilter(filter, sharpness, anisotropy);
+
+	return 0;
+}
+
+int w_getDefaultMipmapFilter(lua_State *L)
+{
+	Image::FilterMode filter;
+	float sharpness, anisotropy;
+
+	instance->getDefaultMipmapFilter(&filter, &sharpness, &anisotropy);
+
+	const char *str;
+	if (Image::getConstant(filter, str))
+		lua_pushstring(L, str);
+	else
+		lua_pushnil(L);
+	
+	lua_pushnumber(L, sharpness);
+	lua_pushnumber(L, anisotropy);
+
+	return 3;
+}
+
 int w_setLineWidth(lua_State *L)
 {
 	float width = (float)luaL_checknumber(L, 1);
@@ -1373,6 +1410,8 @@ static const luaL_Reg functions[] =
 	{ "setDefaultImageFilter", w_setDefaultImageFilter },
 	{ "getBlendMode", w_getBlendMode },
 	{ "getDefaultImageFilter", w_getDefaultImageFilter },
+	{ "setDefaultMipmapFilter", w_setDefaultMipmapFilter },
+	{ "getDefaultMipmapFilter", w_getDefaultMipmapFilter },
 	{ "setLineWidth", w_setLineWidth },
 	{ "setLineStyle", w_setLineStyle },
 	{ "setLine", w_setLine },

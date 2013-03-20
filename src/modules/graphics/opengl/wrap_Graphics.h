@@ -75,6 +75,8 @@ int w_setBlendMode(lua_State *L);
 int w_setDefaultImageFilter(lua_State *L);
 int w_getBlendMode(lua_State *L);
 int w_getDefaultImageFilter(lua_State *L);
+int w_setDefaultMipmapFilter(lua_State *L);
+int w_getDefaultMipmapFilter(lua_State *L);
 int w_setLineWidth(lua_State *L);
 int w_setLineStyle(lua_State *L);
 int w_setLine(lua_State *L);

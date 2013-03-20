@@ -33,11 +33,19 @@ namespace graphics
 namespace opengl
 {
 
+float Image::maxMipmapSharpness = 0.0f;
+float Image::maxMipmapAnisotropy = 0.0f;
+
+Image::FilterMode Image::defaultMipmapFilter = Image::FILTER_NONE;
+float Image::defaultMipmapSharpness = 0.0f;
+float Image::defaultMipmapAnisotropy = 0.0f;
+
 Image::Image(love::image::ImageData *data)
 	: width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
-	, mipmapSharpness(0.0f)
+	, mipmapSharpness(defaultMipmapSharpness)
+	, mipmapAnisotropy(defaultMipmapAnisotropy)
 	, mipmapsCreated(false)
 {
 	data->retain();
@@ -64,6 +72,7 @@ Image::Image(love::image::ImageData *data)
 	vertices[3].t = 0;
 
 	filter = getDefaultFilter();
+	filter.mipmap = defaultMipmapFilter;
 }
 
 Image::~Image()
@@ -222,21 +231,34 @@ const Image::Wrap &Image::getWrap() const
 	return wrap;
 }
 
-void Image::setMipmapSharpness(float sharpness)
+void Image::setMipmapSharpness(float sharpness, float anisotropy)
 {
-	if (!hasMipmapSharpnessSupport())
-		return;
+	if (hasMipmapSharpnessSupport())
+	{
+		// LOD bias has the range (-maxbias, maxbias)
+		mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
-	// LOD bias has the range (-maxbias, maxbias)
-	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
+		bind();
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness); // negative bias is sharper
+	}
+	else
+		mipmapSharpness = 0.0f;
 
-	bind();
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness); // negative bias is sharper
+	if (hasMipmapAnisotropySupport())
+	{
+		mipmapAnisotropy = std::min(std::max(anisotropy, 0.0f), maxMipmapAnisotropy);
+
+		bind();
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, mipmapAnisotropy);
+	}
+	else
+		mipmapAnisotropy = 0.0f;
 }
 
-float Image::getMipmapSharpness() const
+void Image::getMipmapSharpness(float *sharpness, float *anisotropy) const
 {
-	return mipmapSharpness;
+	*sharpness = mipmapSharpness;
+	*anisotropy = mipmapAnisotropy;
 }
 
 void Image::bind() const
@@ -259,8 +281,11 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
-	if (hasMipmapSharpnessSupport())
+	if (hasMipmapSharpnessSupport() && maxMipmapSharpness == 0.0f)
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
+
+	if (hasMipmapAnisotropySupport() && maxMipmapAnisotropy == 0.0f)
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxMipmapAnisotropy);
 
 	if (hasNpot())
 		return loadVolatileNPOT();
@@ -313,7 +338,7 @@ bool Image::loadVolatilePOT()
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
-	setMipmapSharpness(mipmapSharpness);
+	setMipmapSharpness(mipmapSharpness, mipmapAnisotropy);
 
 	return true;
 }
@@ -343,7 +368,7 @@ bool Image::loadVolatileNPOT()
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
-	setMipmapSharpness(mipmapSharpness);
+	setMipmapSharpness(mipmapSharpness, mipmapAnisotropy);
 
 	return true;
 }
@@ -377,6 +402,28 @@ void Image::drawv(const Matrix &t, const vertex *v) const
 	glPopMatrix();
 }
 
+void Image::setDefaultMipmapSharpness(float sharpness, float anisotropy)
+{
+	defaultMipmapSharpness = sharpness;
+	defaultMipmapAnisotropy = anisotropy;
+}
+
+void Image::getDefaultMipmapSharpness(float *sharpness, float *anisotropy)
+{
+	*sharpness = defaultMipmapSharpness;
+	*anisotropy = defaultMipmapAnisotropy;
+}
+
+void Image::setDefaultMipmapFilter(Image::FilterMode f)
+{
+	defaultMipmapFilter = f;
+}
+
+Image::FilterMode Image::getDefaultMipmapFilter()
+{
+	return defaultMipmapFilter;
+}
+
 bool Image::hasNpot()
 {
 	return GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two;
@@ -390,6 +437,11 @@ bool Image::hasMipmapSupport()
 bool Image::hasMipmapSharpnessSupport()
 {
 	return GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias;
+}
+
+bool Image::hasMipmapAnisotropySupport()
+{
+	return GLEE_EXT_texture_filter_anisotropic;
 }
 
 } // opengl
