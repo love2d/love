@@ -56,6 +56,7 @@ public:
 		FilterMode min;
 		FilterMode mag;
 		FilterMode mipmap;
+		float anisotropy;
 	};
 
 	struct Wrap
@@ -71,10 +72,6 @@ public:
 	static void setDefaultFilter(const Filter &f);
 	static const Filter &getDefaultFilter();
 
-	// The default amount of anisotropic filtering.
-	static void setDefaultAnisotropy(float anisotropy);
-	static float getDefaultAnisotropy();
-
 	static bool getConstant(const char *in, FilterMode &out);
 	static bool getConstant(FilterMode in, const char  *&out);
 	static bool getConstant(const char *in, WrapMode &out);
@@ -82,11 +79,8 @@ public:
 
 private:
 
-	// The default image filter.
+	// The default texture filter.
 	static Filter defaultFilter;
-
-	// The default amount of anisotropic filtering.
-	static float defaultAnisotropy;
 
 	static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
 	static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;

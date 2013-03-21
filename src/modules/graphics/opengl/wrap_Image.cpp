@@ -68,6 +68,8 @@ int w_Image_setFilter(lua_State *L)
 	if (!Image::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
+	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
+
 	try
 	{
 		t->setFilter(f);
@@ -76,9 +78,6 @@ int w_Image_setFilter(lua_State *L)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
-
-	float anisotropy = (float) luaL_optnumber(L, 4, 1.0);
-	t->setAnisotropy(anisotropy);
 
 	return 0;
 }
@@ -93,7 +92,7 @@ int w_Image_getFilter(lua_State *L)
 	Image::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	lua_pushnumber(L, t->getAnisotropy());
+	lua_pushnumber(L, f.anisotropy);
 	return 3;
 }
 

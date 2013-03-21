@@ -39,6 +39,8 @@ static bool contextInitialized = false;
 static int curTextureUnit = 0;
 static std::vector<GLuint> textureUnits;
 
+static float maxAnisotropy = 1.0f;
+
 void initializeContext()
 {
 	if (contextInitialized)
@@ -94,6 +96,11 @@ void initializeContext()
 		glMapBufferARB = (GLEEPFNGLMAPBUFFERARBPROC) glMapBuffer;
 		glUnmapBufferARB = (GLEEPFNGLUNMAPBUFFERARBPROC) glUnmapBuffer;
 	}
+
+	if (GLEE_EXT_texture_filter_anisotropic)
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+	else
+		maxAnisotropy = 1.0f;
 
 	// Set the 'default' texture (id 0) as a repeating white pixel.
 	// Otherwise, texture2D inside a shader would return black when drawing graphics primitives,
@@ -175,7 +182,7 @@ void deleteTexture(GLuint texture)
 	glDeleteTextures(1, &texture);
 }
 
-void setTextureFilter(const graphics::Image::Filter &f)
+float setTextureFilter(const graphics::Image::Filter &f)
 {
 	GLint gmin, gmag;
 
@@ -214,6 +221,16 @@ void setTextureFilter(const graphics::Image::Filter &f)
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
+
+	float anisotropy = 1.0f;
+
+	if (GLEE_EXT_texture_filter_anisotropic)
+	{
+		anisotropy = std::min(std::max(f.anisotropy, 1.0f), maxAnisotropy);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+	}
+
+	return anisotropy;
 }
 
 graphics::Image::Filter getTextureFilter()
@@ -261,6 +278,9 @@ graphics::Image::Filter getTextureFilter()
 		f.mag = Image::FILTER_LINEAR;
 		break;
 	}
+
+	if (GLEE_EXT_texture_filter_anisotropic)
+		glGetTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, &f.anisotropy);
 
 	return f;
 }

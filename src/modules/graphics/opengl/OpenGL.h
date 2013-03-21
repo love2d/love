@@ -71,8 +71,9 @@ void deleteTexture(GLuint texture);
 
 /**
  * Sets the image filter mode for the currently bound texture.
+ * Returns the actual amount of anisotropic filtering set.
  */
-void setTextureFilter(const graphics::Image::Filter &f);
+float setTextureFilter(const graphics::Image::Filter &f);
 
 /**
  * Returns the image filter mode for the currently bound texture.

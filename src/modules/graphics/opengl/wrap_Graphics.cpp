@@ -749,14 +749,14 @@ int w_setDefaultFilter(lua_State *L)
 	if (!Image::getConstant(magstr, mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
+	float anisotropy = (float) luaL_optnumber(L, 3, 1.0);
+
 	Image::Filter f;
 	f.min = min;
 	f.mag = mag;
+	f.anisotropy = anisotropy;
 
 	instance->setDefaultFilter(f);
-
-	float anisotropy = (float) luaL_optnumber(L, 3, 1.0);
-	instance->setDefaultAnisotropy(anisotropy);
 	
 	return 0;
 }
@@ -772,7 +772,7 @@ int w_getDefaultFilter(lua_State *L)
 		return luaL_error(L, "Unknown magnification filter mode");
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	lua_pushnumber(L, instance->getDefaultAnisotropy());
+	lua_pushnumber(L, f.anisotropy);
 	return 3;
 }
 

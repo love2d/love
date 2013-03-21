@@ -639,16 +639,6 @@ const Image::Filter &Graphics::getDefaultFilter() const
 	return Image::getDefaultFilter();
 }
 
-void Graphics::setDefaultAnisotropy(float anisotropy)
-{
-	Image::setDefaultAnisotropy(anisotropy);
-}
-
-float Graphics::getDefaultAnisotropy() const
-{
-	return Image::getDefaultAnisotropy();
-}
-
 void Graphics::setDefaultMipmapFilter(Image::FilterMode filter, float sharpness)
 {
 	Image::setDefaultMipmapFilter(filter);

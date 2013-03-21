@@ -99,10 +99,9 @@ int w_Canvas_setFilter(lua_State *L)
 	if (!Image::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
-	canvas->setFilter(f);
+	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 
-	float anisotropy = (float) luaL_optnumber(L, 4, 1.0);
-	canvas->setAnisotropy(anisotropy);
+	canvas->setFilter(f);
 
 	return 0;
 
@@ -120,8 +119,7 @@ int w_Canvas_getFilter(lua_State *L)
 
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-
-	lua_pushnumber(L, canvas->getAnisotropy());
+	lua_pushnumber(L, f.anisotropy);
 
 	return 3;
 }

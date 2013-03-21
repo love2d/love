@@ -317,7 +317,6 @@ Canvas::Canvas(int width, int height, TextureType texture_type)
 	vertices[3].t = 0;
 
 	settings.filter = Image::getDefaultFilter();
-	settings.anisotropy = Image::getDefaultAnisotropy();
 
 	getStrategy();
 
@@ -497,24 +496,6 @@ Image::Wrap Canvas::getWrap() const
 	return getTextureWrap();
 }
 
-void Canvas::setAnisotropy(float anisotropy)
-{
-	if (Image::hasAnisotropicFilteringSupport())
-	{
-		settings.anisotropy = std::min(std::max(anisotropy, 1.0f), Image::getMaxAnisotropy());
-
-		bindTexture(img);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, settings.anisotropy);
-	}
-	else
-		settings.anisotropy = 1.0f;
-}
-
-float Canvas::getAnisotropy() const
-{
-	return settings.anisotropy;
-}
-
 bool Canvas::loadVolatile()
 {
 	status = strategy->createFBO(fbo, depth_stencil, img, width, height, texture_type);
@@ -523,7 +504,6 @@ bool Canvas::loadVolatile()
 
 	setFilter(settings.filter);
 	setWrap(settings.wrap);
-	setAnisotropy(settings.anisotropy);
 	Color c;
 	c.r = c.g = c.b = c.a = 0;
 	clear(c);

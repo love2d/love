@@ -34,7 +34,6 @@ namespace opengl
 {
 
 float Image::maxMipmapSharpness = 0.0f;
-float Image::maxAnisotropy = 1.0f;
 
 Image::FilterMode Image::defaultMipmapFilter = Image::FILTER_NONE;
 float Image::defaultMipmapSharpness = 0.0f;
@@ -45,7 +44,6 @@ Image::Image(love::image::ImageData *data)
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
-	, anisotropy(getDefaultAnisotropy())
 {
 	data->retain();
 	this->data = data;
@@ -208,7 +206,7 @@ void Image::setFilter(const Image::Filter &f)
 	filter = f;
 
 	bind();
-	setTextureFilter(f);
+	filter.anisotropy = setTextureFilter(f);
 	checkMipmapsCreated();
 }
 
@@ -249,24 +247,6 @@ float Image::getMipmapSharpness() const
 	return mipmapSharpness;
 }
 
-void Image::setAnisotropy(float anisotropy)
-{
-	if (hasAnisotropicFilteringSupport())
-	{
-		this->anisotropy = std::min(std::max(anisotropy, 1.0f), getMaxAnisotropy());
-
-		bind();
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, this->anisotropy);
-	}
-	else
-		this->anisotropy = 1.0f;
-}
-
-float Image::getAnisotropy() const
-{
-	return anisotropy;
-}
-
 void Image::bind() const
 {
 	if (texture == 0)
@@ -301,7 +281,7 @@ bool Image::loadVolatilePOT()
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
 
-	setTextureFilter(filter);
+	filter.anisotropy = setTextureFilter(filter);
 	setTextureWrap(wrap);
 
 	float p2width = next_p2(width);
@@ -343,7 +323,6 @@ bool Image::loadVolatilePOT()
 	checkMipmapsCreated();
 
 	setMipmapSharpness(mipmapSharpness);
-	setAnisotropy(anisotropy);
 
 	return true;
 }
@@ -353,7 +332,7 @@ bool Image::loadVolatileNPOT()
 	glGenTextures(1,(GLuint *)&texture);
 	bindTexture(texture);
 
-	setTextureFilter(filter);
+	filter.anisotropy = setTextureFilter(filter);
 	setTextureWrap(wrap);
 
 	while (glGetError() != GL_NO_ERROR); // clear errors
@@ -375,7 +354,6 @@ bool Image::loadVolatileNPOT()
 	checkMipmapsCreated();
 
 	setMipmapSharpness(mipmapSharpness);
-	setAnisotropy(anisotropy);
 
 	return true;
 }
@@ -427,14 +405,6 @@ void Image::setDefaultMipmapFilter(Image::FilterMode f)
 Image::FilterMode Image::getDefaultMipmapFilter()
 {
 	return defaultMipmapFilter;
-}
-
-float Image::getMaxAnisotropy()
-{
-	if (hasAnisotropicFilteringSupport() && maxAnisotropy == 1.0f)
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-
-	return maxAnisotropy;
 }
 
 bool Image::hasNpot()

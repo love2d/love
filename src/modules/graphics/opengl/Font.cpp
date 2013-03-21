@@ -47,7 +47,6 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	, height(r->getHeight())
 	, lineHeight(1)
 	, mSpacing(1)
-	, anisotropy(Image::getDefaultAnisotropy())
 	, filter(filter)
 {
 	// try to find the best texture size match for the font size
@@ -167,7 +166,6 @@ void Font::createTexture()
 					&emptyData[0]);
 
 	setFilter(filter);
-	setAnisotropy(anisotropy);
 }
 
 Font::Glyph *Font::addGlyph(unsigned int glyph)
@@ -506,35 +504,13 @@ void Font::setFilter(const Image::Filter &f)
 	for (it = textures.begin(); it != textures.end(); ++it)
 	{
 		bindTexture(*it);
-		setTextureFilter(f);
+		filter.anisotropy = setTextureFilter(f);
 	}
 }
 
 const Image::Filter &Font::getFilter()
 {
 	return filter;
-}
-
-void Font::setAnisotropy(float anisotropy)
-{
-	if (Image::hasAnisotropicFilteringSupport())
-	{
-		this->anisotropy = std::min(std::max(anisotropy, 1.0f), Image::getMaxAnisotropy());
-
-		std::vector<GLuint>::const_iterator it;
-		for (it = textures.begin(); it != textures.end(); ++it)
-		{
-			bindTexture(*it);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, this->anisotropy);
-		}
-	}
-	else
-		this->anisotropy = 1.0f;
-}
-
-float Font::getAnisotropy() const
-{
-	return anisotropy;
 }
 
 bool Font::loadVolatile()

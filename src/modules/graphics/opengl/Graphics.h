@@ -320,12 +320,6 @@ public:
 	const Image::Filter &getDefaultFilter() const;
 
 	/**
-	 * Default texture anisotropic filtering level.
-	 **/
-	void setDefaultAnisotropy(float anisotropy);
-	float getDefaultAnisotropy() const;
-
-	/**
 	 * Default Image mipmap filter mode and sharpness values.
 	 **/
 	void setDefaultMipmapFilter(Image::FilterMode filter, float sharpness);

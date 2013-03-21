@@ -104,9 +104,6 @@ public:
 
 	const Image::Wrap &getWrap() const;
 
-	void setAnisotropy(float anisotropy);
-	float getAnisotropy() const;
-
 	void setMipmapSharpness(float sharpness);
 	float getMipmapSharpness() const;
 
@@ -123,8 +120,6 @@ public:
 	static float getDefaultMipmapSharpness();
 	static void setDefaultMipmapFilter(FilterMode f);
 	static FilterMode getDefaultMipmapFilter();
-
-	static float getMaxAnisotropy();
 
 	static bool hasNpot();
 	static bool hasAnisotropicFilteringSupport();
@@ -158,9 +153,6 @@ private:
 	// True if mipmaps have been created for this Image.
 	bool mipmapsCreated;
 
-	// Anisotropic filtering value.
-	float anisotropy;
-
 	// The image's filter mode
 	Image::Filter filter;
 
@@ -173,7 +165,6 @@ private:
 	void checkMipmapsCreated();
 
 	static float maxMipmapSharpness;
-	static float maxAnisotropy;
 
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;

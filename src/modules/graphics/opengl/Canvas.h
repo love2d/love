@@ -72,9 +72,6 @@ public:
 	void setWrap(const Image::Wrap &w);
 	Image::Wrap getWrap() const;
 
-	void setAnisotropy(float anisotropy);
-	float getAnisotropy() const;
-
 	int getWidth();
 	int getHeight();
 
@@ -122,7 +119,6 @@ private:
 	{
 		Image::Filter filter;
 		Image::Wrap   wrap;
-		float anisotropy;
 	} settings;
 
 	void drawv(const Matrix &t, const vertex *v) const;
