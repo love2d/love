@@ -168,7 +168,6 @@ StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::forma
 {
 	{"tga", ImageData::FORMAT_TGA},
 	{"bmp", ImageData::FORMAT_BMP},
-	{"gif", ImageData::FORMAT_GIF},
 	{"jpg", ImageData::FORMAT_JPG},
 	{"png", ImageData::FORMAT_PNG},
 };

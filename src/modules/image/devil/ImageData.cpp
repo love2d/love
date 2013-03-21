@@ -194,9 +194,6 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 		case ImageData::FORMAT_TGA:
 			ilFormat = IL_TGA;
 			break;
-		case ImageData::FORMAT_GIF:
-			ilFormat = IL_GIF;
-			break;
 		case ImageData::FORMAT_JPG:
 			ilFormat = IL_JPG;
 			break;
