@@ -77,6 +77,9 @@ int w_Image_setFilter(lua_State *L)
 		return luaL_error(L, "%s", e.what());
 	}
 
+	float anisotropy = (float) luaL_optnumber(L, 4, 1.0);
+	t->setAnisotropy(anisotropy);
+
 	return 0;
 }
 
@@ -90,7 +93,8 @@ int w_Image_getFilter(lua_State *L)
 	Image::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	return 2;
+	lua_pushnumber(L, t->getAnisotropy());
+	return 3;
 }
 
 int w_Image_setMipmapFilter(lua_State *L)
@@ -117,9 +121,8 @@ int w_Image_setMipmapFilter(lua_State *L)
 	}
 
 	float sharpness = luaL_optnumber(L, 3, 0);
-	float anisotropy = luaL_optnumber(L, 4, 0);
 
-	t->setMipmapSharpness(sharpness, anisotropy);
+	t->setMipmapSharpness(sharpness);
 	
 	return 0;
 }
@@ -130,19 +133,15 @@ int w_Image_getMipmapFilter(lua_State *L)
 
 	const Image::Filter &f = t->getFilter();
 
-	float sharpness, anisotropy;
-	t->getMipmapSharpness(&sharpness, &anisotropy);
-
 	const char *mipmapstr;
 	if (Image::getConstant(f.mipmap, mipmapstr))
 		lua_pushstring(L, mipmapstr);
 	else
 		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
 
-	lua_pushnumber(L, sharpness);
-	lua_pushnumber(L, anisotropy);
+	lua_pushnumber(L, t->getMipmapSharpness());
 
-	return 3;
+	return 2;
 }
 
 int w_Image_setWrap(lua_State *L)

@@ -112,6 +112,9 @@ int w_Font_setFilter(lua_State *L)
 		return luaL_error(L, "%s", e.what());
 	}
 
+	float anisotropy = (float) luaL_optnumber(L, 4, 1.0);
+	t->setAnisotropy(anisotropy);
+
 	return 0;
 }
 
@@ -125,7 +128,8 @@ int w_Font_getFilter(lua_State *L)
 	Image::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	return 2;
+	lua_pushnumber(L, t->getAnisotropy());
+	return 3;
 }
 
 int w_Font_getAscent(lua_State *L)

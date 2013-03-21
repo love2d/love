@@ -129,6 +129,9 @@ public:
 	void setFilter(const Image::Filter &f);
 	const Image::Filter &getFilter();
 
+	void setAnisotropy(float anisotropy);
+	float getAnisotropy() const;
+
 	// Implements Volatile.
 	bool loadVolatile();
 	void unloadVolatile();
@@ -182,6 +185,8 @@ private:
 	int height;
 	float lineHeight;
 	float mSpacing; // modifies the spacing by multiplying it with this value
+
+	float anisotropy;
 
 	int texture_size_index;
 	int texture_width;

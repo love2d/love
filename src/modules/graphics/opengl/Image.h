@@ -104,8 +104,11 @@ public:
 
 	const Image::Wrap &getWrap() const;
 
-	void setMipmapSharpness(float sharpness, float anisotropy);
-	void getMipmapSharpness(float *sharpness, float *anisotropy) const;
+	void setAnisotropy(float anisotropy);
+	float getAnisotropy() const;
+
+	void setMipmapSharpness(float sharpness);
+	float getMipmapSharpness() const;
 
 	void bind() const;
 
@@ -116,15 +119,17 @@ public:
 	bool loadVolatile();
 	void unloadVolatile();
 
-	static void setDefaultMipmapSharpness(float sharpness, float anisotropy);
-	static void getDefaultMipmapSharpness(float *sharpness, float *anisotropy);
+	static void setDefaultMipmapSharpness(float sharpness);
+	static float getDefaultMipmapSharpness();
 	static void setDefaultMipmapFilter(FilterMode f);
 	static FilterMode getDefaultMipmapFilter();
 
+	static float getMaxAnisotropy();
+
 	static bool hasNpot();
+	static bool hasAnisotropicFilteringSupport();
 	static bool hasMipmapSupport();
 	static bool hasMipmapSharpnessSupport();
-	static bool hasMipmapAnisotropySupport();
 
 private:
 
@@ -150,11 +155,11 @@ private:
 	// Mipmap texture LOD bias (sharpness) value.
 	float mipmapSharpness;
 
-	// Mipmap texture anisotropic filtering value.
-	float mipmapAnisotropy;
-
 	// True if mipmaps have been created for this Image.
 	bool mipmapsCreated;
+
+	// Anisotropic filtering value.
+	float anisotropy;
 
 	// The image's filter mode
 	Image::Filter filter;
@@ -168,11 +173,10 @@ private:
 	void checkMipmapsCreated();
 
 	static float maxMipmapSharpness;
-	static float maxMipmapAnisotropy;
+	static float maxAnisotropy;
 
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
-	static float defaultMipmapAnisotropy;
 
 }; // Image
 

@@ -101,6 +101,9 @@ int w_Canvas_setFilter(lua_State *L)
 
 	canvas->setFilter(f);
 
+	float anisotropy = (float) luaL_optnumber(L, 4, 1.0);
+	canvas->setAnisotropy(anisotropy);
+
 	return 0;
 
 }
@@ -118,7 +121,9 @@ int w_Canvas_getFilter(lua_State *L)
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
 
-	return 2;
+	lua_pushnumber(L, canvas->getAnisotropy());
+
+	return 3;
 }
 
 int w_Canvas_setWrap(lua_State *L)

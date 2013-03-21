@@ -738,6 +738,9 @@ int w_setDefaultImageFilter(lua_State *L)
 
 	instance->setDefaultImageFilter(f);
 
+	float anisotropy = (float) luaL_optnumber(L, 3, 1.0);
+	instance->setDefaultAnisotropy(anisotropy);
+
 	return 0;
 }
 
@@ -764,12 +767,13 @@ int w_getDefaultImageFilter(lua_State *L)
 	const char *minstr;
 	const char *magstr;
 	if (!Image::getConstant(f.min, minstr))
-		return luaL_error(L, "Unknown filter mode for argument #1");
+		return luaL_error(L, "Unknown minification filter mode");
 	if (!Image::getConstant(f.mag, magstr))
-		return luaL_error(L, "Unknown filter mode for argument #2");
+		return luaL_error(L, "Unknown magnification filter mode");
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	return 2;
+	lua_pushnumber(L, instance->getDefaultAnisotropy());
+	return 3;
 }
 
 int w_setDefaultMipmapFilter(lua_State *L)
@@ -783,9 +787,8 @@ int w_setDefaultMipmapFilter(lua_State *L)
 	}
 
 	float sharpness = luaL_optnumber(L, 2, 0);
-	float anisotropy = luaL_optnumber(L, 3, 0);
 
-	instance->setDefaultMipmapFilter(filter, sharpness, anisotropy);
+	instance->setDefaultMipmapFilter(filter, sharpness);
 
 	return 0;
 }
@@ -793,9 +796,9 @@ int w_setDefaultMipmapFilter(lua_State *L)
 int w_getDefaultMipmapFilter(lua_State *L)
 {
 	Image::FilterMode filter;
-	float sharpness, anisotropy;
+	float sharpness;
 
-	instance->getDefaultMipmapFilter(&filter, &sharpness, &anisotropy);
+	instance->getDefaultMipmapFilter(&filter, &sharpness);
 
 	const char *str;
 	if (Image::getConstant(filter, str))
@@ -804,9 +807,8 @@ int w_getDefaultMipmapFilter(lua_State *L)
 		lua_pushnil(L);
 	
 	lua_pushnumber(L, sharpness);
-	lua_pushnumber(L, anisotropy);
 
-	return 3;
+	return 2;
 }
 
 int w_setLineWidth(lua_State *L)

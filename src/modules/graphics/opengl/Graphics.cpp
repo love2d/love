@@ -639,16 +639,26 @@ const Image::Filter &Graphics::getDefaultImageFilter() const
 	return Image::getDefaultFilter();
 }
 
-void Graphics::setDefaultMipmapFilter(Image::FilterMode filter, float sharpness, float anisotropy)
+void Graphics::setDefaultAnisotropy(float anisotropy)
 {
-	Image::setDefaultMipmapFilter(filter);
-	Image::setDefaultMipmapSharpness(sharpness, anisotropy);
+	Image::setDefaultAnisotropy(anisotropy);
 }
 
-void Graphics::getDefaultMipmapFilter(Image::FilterMode *filter, float *sharpness, float *anisotropy) const
+float Graphics::getDefaultAnisotropy() const
+{
+	return Image::getDefaultAnisotropy();
+}
+
+void Graphics::setDefaultMipmapFilter(Image::FilterMode filter, float sharpness)
+{
+	Image::setDefaultMipmapFilter(filter);
+	Image::setDefaultMipmapSharpness(sharpness);
+}
+
+void Graphics::getDefaultMipmapFilter(Image::FilterMode *filter, float *sharpness) const
 {
 	*filter = Image::getDefaultMipmapFilter();
-	Image::getDefaultMipmapSharpness(sharpness, anisotropy);
+	*sharpness = Image::getDefaultMipmapSharpness();
 }
 
 void Graphics::setLineWidth(float width)

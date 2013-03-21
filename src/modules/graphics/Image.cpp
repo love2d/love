@@ -26,6 +26,7 @@ namespace graphics
 {
 
 Image::Filter Image::defaultFilter;
+float Image::defaultAnisotropy = 1.0f;
 
 Image::Filter::Filter()
 	: min(FILTER_LINEAR)
@@ -52,6 +53,16 @@ void Image::setDefaultFilter(const Filter &f)
 const Image::Filter &Image::getDefaultFilter()
 {
 	return defaultFilter;
+}
+
+void Image::setDefaultAnisotropy(float anisotropy)
+{
+	defaultAnisotropy = anisotropy;
+}
+
+float Image::getDefaultAnisotropy()
+{
+	return defaultAnisotropy;
 }
 
 bool Image::getConstant(const char *in, FilterMode &out)

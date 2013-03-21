@@ -34,19 +34,18 @@ namespace opengl
 {
 
 float Image::maxMipmapSharpness = 0.0f;
-float Image::maxMipmapAnisotropy = 0.0f;
+float Image::maxAnisotropy = 1.0f;
 
 Image::FilterMode Image::defaultMipmapFilter = Image::FILTER_NONE;
 float Image::defaultMipmapSharpness = 0.0f;
-float Image::defaultMipmapAnisotropy = 0.0f;
 
 Image::Image(love::image::ImageData *data)
 	: width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
-	, mipmapAnisotropy(defaultMipmapAnisotropy)
 	, mipmapsCreated(false)
+	, anisotropy(getDefaultAnisotropy())
 {
 	data->retain();
 	this->data = data;
@@ -231,7 +230,7 @@ const Image::Wrap &Image::getWrap() const
 	return wrap;
 }
 
-void Image::setMipmapSharpness(float sharpness, float anisotropy)
+void Image::setMipmapSharpness(float sharpness)
 {
 	if (hasMipmapSharpnessSupport())
 	{
@@ -243,22 +242,29 @@ void Image::setMipmapSharpness(float sharpness, float anisotropy)
 	}
 	else
 		mipmapSharpness = 0.0f;
-
-	if (hasMipmapAnisotropySupport())
-	{
-		mipmapAnisotropy = std::min(std::max(anisotropy, 0.0f), maxMipmapAnisotropy);
-
-		bind();
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, mipmapAnisotropy);
-	}
-	else
-		mipmapAnisotropy = 0.0f;
 }
 
-void Image::getMipmapSharpness(float *sharpness, float *anisotropy) const
+float Image::getMipmapSharpness() const
 {
-	*sharpness = mipmapSharpness;
-	*anisotropy = mipmapAnisotropy;
+	return mipmapSharpness;
+}
+
+void Image::setAnisotropy(float anisotropy)
+{
+	if (hasAnisotropicFilteringSupport())
+	{
+		this->anisotropy = std::min(std::max(anisotropy, 1.0f), getMaxAnisotropy());
+
+		bind();
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, this->anisotropy);
+	}
+	else
+		this->anisotropy = 1.0f;
+}
+
+float Image::getAnisotropy() const
+{
+	return anisotropy;
 }
 
 void Image::bind() const
@@ -283,9 +289,6 @@ bool Image::loadVolatile()
 {
 	if (hasMipmapSharpnessSupport() && maxMipmapSharpness == 0.0f)
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
-
-	if (hasMipmapAnisotropySupport() && maxMipmapAnisotropy == 0.0f)
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxMipmapAnisotropy);
 
 	if (hasNpot())
 		return loadVolatileNPOT();
@@ -338,7 +341,9 @@ bool Image::loadVolatilePOT()
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
-	setMipmapSharpness(mipmapSharpness, mipmapAnisotropy);
+
+	setMipmapSharpness(mipmapSharpness);
+	setAnisotropy(anisotropy);
 
 	return true;
 }
@@ -368,7 +373,9 @@ bool Image::loadVolatileNPOT()
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
-	setMipmapSharpness(mipmapSharpness, mipmapAnisotropy);
+
+	setMipmapSharpness(mipmapSharpness);
+	setAnisotropy(anisotropy);
 
 	return true;
 }
@@ -402,16 +409,14 @@ void Image::drawv(const Matrix &t, const vertex *v) const
 	glPopMatrix();
 }
 
-void Image::setDefaultMipmapSharpness(float sharpness, float anisotropy)
+void Image::setDefaultMipmapSharpness(float sharpness)
 {
 	defaultMipmapSharpness = sharpness;
-	defaultMipmapAnisotropy = anisotropy;
 }
 
-void Image::getDefaultMipmapSharpness(float *sharpness, float *anisotropy)
+float Image::getDefaultMipmapSharpness()
 {
-	*sharpness = defaultMipmapSharpness;
-	*anisotropy = defaultMipmapAnisotropy;
+	return defaultMipmapSharpness;
 }
 
 void Image::setDefaultMipmapFilter(Image::FilterMode f)
@@ -424,9 +429,22 @@ Image::FilterMode Image::getDefaultMipmapFilter()
 	return defaultMipmapFilter;
 }
 
+float Image::getMaxAnisotropy()
+{
+	if (hasAnisotropicFilteringSupport() && maxAnisotropy == 1.0f)
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+
+	return maxAnisotropy;
+}
+
 bool Image::hasNpot()
 {
 	return GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two;
+}
+
+bool Image::hasAnisotropicFilteringSupport()
+{
+	return GLEE_EXT_texture_filter_anisotropic;
 }
 
 bool Image::hasMipmapSupport()
@@ -437,11 +455,6 @@ bool Image::hasMipmapSupport()
 bool Image::hasMipmapSharpnessSupport()
 {
 	return GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias;
-}
-
-bool Image::hasMipmapAnisotropySupport()
-{
-	return GLEE_EXT_texture_filter_anisotropic;
 }
 
 } // opengl
