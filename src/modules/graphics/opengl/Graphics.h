@@ -305,19 +305,19 @@ public:
 	void setBlendMode(BlendMode mode);
 
 	/**
-	 * Sets the current image filter.
-	 **/
-	void setDefaultImageFilter(const Image::Filter &f);
-
-	/**
 	 * Gets the current blend mode.
 	 **/
 	BlendMode getBlendMode() const;
 
 	/**
-	 * Gets the current image filter.
+	 * Sets the default filter for images, canvases, and fonts.
 	 **/
-	const Image::Filter &getDefaultImageFilter() const;
+	void setDefaultFilter(const Image::Filter &f);
+
+	/**
+	 * Gets the default filter for images, canvases, and fonts.
+	 **/
+	const Image::Filter &getDefaultFilter() const;
 
 	/**
 	 * Default texture anisotropic filtering level.
@@ -326,7 +326,7 @@ public:
 	float getDefaultAnisotropy() const;
 
 	/**
-	 * Default Image mipmap filtermode and sharpness values.
+	 * Default Image mipmap filter mode and sharpness values.
 	 **/
 	void setDefaultMipmapFilter(Image::FilterMode filter, float sharpness);
 	void getDefaultMipmapFilter(Image::FilterMode *filter, float *sharpness) const;

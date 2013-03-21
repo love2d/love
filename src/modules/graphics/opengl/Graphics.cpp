@@ -629,12 +629,12 @@ Graphics::BlendMode Graphics::getBlendMode() const
 	throw Exception("Unknown blend mode");
 }
 
-void Graphics::setDefaultImageFilter(const Image::Filter &f)
+void Graphics::setDefaultFilter(const Image::Filter &f)
 {
 	Image::setDefaultFilter(f);
 }
 
-const Image::Filter &Graphics::getDefaultImageFilter() const
+const Image::Filter &Graphics::getDefaultFilter() const
 {
 	return Image::getDefaultFilter();
 }

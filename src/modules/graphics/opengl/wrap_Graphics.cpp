@@ -361,7 +361,7 @@ int w_newFont(lua_State *L)
 	try
 	{
 		// Create the font.
-		font = instance->newFont(rasterizer, instance->getDefaultImageFilter());
+		font = instance->newFont(rasterizer, instance->getDefaultFilter());
 	}
 	catch (love::Exception &e)
 	{
@@ -426,7 +426,7 @@ int w_newImageFont(lua_State *L)
 	}
 
 	if (!setFilter)
-		img_filter = instance->getDefaultImageFilter();
+		img_filter = instance->getDefaultFilter();
 
 	// Create the font.
 	Font *font = instance->newFont(rasterizer, img_filter);
@@ -719,31 +719,6 @@ int w_setBlendMode(lua_State *L)
 	return 0;
 }
 
-int w_setDefaultImageFilter(lua_State *L)
-{
-	Image::FilterMode min;
-	Image::FilterMode mag;
-
-	const char *minstr = luaL_checkstring(L, 1);
-	const char *magstr = luaL_optstring(L, 2, minstr);
-
-	if (!Image::getConstant(minstr, min))
-		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, mag))
-		return luaL_error(L, "Invalid filter mode: %s", magstr);
-
-	Image::Filter f;
-	f.min = min;
-	f.mag = mag;
-
-	instance->setDefaultImageFilter(f);
-
-	float anisotropy = (float) luaL_optnumber(L, 3, 1.0);
-	instance->setDefaultAnisotropy(anisotropy);
-
-	return 0;
-}
-
 int w_getBlendMode(lua_State *L)
 {
 	try
@@ -761,9 +736,34 @@ int w_getBlendMode(lua_State *L)
 	}
 }
 
-int w_getDefaultImageFilter(lua_State *L)
+int w_setDefaultFilter(lua_State *L)
 {
-	const Image::Filter &f = instance->getDefaultImageFilter();
+	Image::FilterMode min;
+	Image::FilterMode mag;
+
+	const char *minstr = luaL_checkstring(L, 1);
+	const char *magstr = luaL_optstring(L, 2, minstr);
+
+	if (!Image::getConstant(minstr, min))
+		return luaL_error(L, "Invalid filter mode: %s", minstr);
+	if (!Image::getConstant(magstr, mag))
+		return luaL_error(L, "Invalid filter mode: %s", magstr);
+
+	Image::Filter f;
+	f.min = min;
+	f.mag = mag;
+
+	instance->setDefaultFilter(f);
+
+	float anisotropy = (float) luaL_optnumber(L, 3, 1.0);
+	instance->setDefaultAnisotropy(anisotropy);
+	
+	return 0;
+}
+
+int w_getDefaultFilter(lua_State *L)
+{
+	const Image::Filter &f = instance->getDefaultFilter();
 	const char *minstr;
 	const char *magstr;
 	if (!Image::getConstant(f.min, minstr))
@@ -1409,9 +1409,9 @@ static const luaL_Reg functions[] =
 	{ "getFont", w_getFont },
 
 	{ "setBlendMode", w_setBlendMode },
-	{ "setDefaultImageFilter", w_setDefaultImageFilter },
 	{ "getBlendMode", w_getBlendMode },
-	{ "getDefaultImageFilter", w_getDefaultImageFilter },
+	{ "setDefaultFilter", w_setDefaultFilter },
+	{ "getDefaultFilter", w_getDefaultFilter },
 	{ "setDefaultMipmapFilter", w_setDefaultMipmapFilter },
 	{ "getDefaultMipmapFilter", w_getDefaultMipmapFilter },
 	{ "setLineWidth", w_setLineWidth },
