@@ -59,6 +59,12 @@ struct FramebufferStrategy
 	 */
 	virtual void deleteFBO(GLuint, GLuint, GLuint) {}
 	virtual void bindFBO(GLuint) {}
+
+	/// attach additional canvases to this framebuffer for rendering
+	/**
+	 * @param[in] canvases List of canvases to attach
+	 **/
+	virtual void setAttachments(const std::vector<Canvas *> &canvases) {}
 };
 
 struct FramebufferStrategyGL3 : public FramebufferStrategy
@@ -126,6 +132,35 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 	virtual void bindFBO(GLuint framebuffer)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	}
+
+	virtual void setAttachments(const std::vector<Canvas *> &canvases)
+	{
+		if (canvases.size() == 0)
+		{
+			// set a single render target
+			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			return;
+		}
+
+		std::vector<GLenum> drawbuffers;
+		drawbuffers.push_back(GL_COLOR_ATTACHMENT0);
+
+		// attach the canvas framebuffer textures to the currently bound framebuffer
+		for (int i = 0; i < canvases.size(); i++)
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1 + i,
+				GL_TEXTURE_2D, canvases[i]->getTextureName(), 0);
+			drawbuffers.push_back(GL_COLOR_ATTACHMENT1 + i);
+		}
+
+		// set up multiple render targets
+		if (GLEE_VERSION_2_0)
+			glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
+		else if (GLEE_ARB_draw_buffers)
+			glDrawBuffersARB(drawbuffers.size(), &drawbuffers[0]);
+		else if (GLEE_ATI_draw_buffers)
+			glDrawBuffersATI(drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 
@@ -195,6 +230,35 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 	virtual void bindFBO(GLuint framebuffer)
 	{
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+	}
+
+	virtual void setAttachments(const std::vector<Canvas *> &canvases)
+	{
+		if (canvases.size() == 0)
+		{
+			// set a single render target
+			glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+			return;
+		}
+
+		std::vector<GLenum> drawbuffers;
+		drawbuffers.push_back(GL_COLOR_ATTACHMENT0_EXT);
+
+		// attach the canvas framebuffer textures to the currently bound framebuffer
+		for (int i = 0; i < canvases.size(); i++)
+		{
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1_EXT + i,
+								   GL_TEXTURE_2D, canvases[i]->getTextureName(), 0);
+			drawbuffers.push_back(GL_COLOR_ATTACHMENT1_EXT + i);
+		}
+
+		// set up multiple render targets
+		if (GLEE_VERSION_2_0)
+			glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
+		else if (GLEE_ARB_draw_buffers)
+			glDrawBuffersARB(drawbuffers.size(), &drawbuffers[0]);
+		else if (GLEE_ATI_draw_buffers)
+			glDrawBuffersATI(drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 
@@ -288,6 +352,9 @@ static void getStrategy()
 	}
 }
 
+static int maxFBOColorAttachments = 0;
+static int maxDrawBuffers = 0;
+
 Canvas::Canvas(int width, int height, TextureType texture_type)
 	: width(width)
 	, height(height)
@@ -338,9 +405,24 @@ bool Canvas::isSupported()
 	return (strategy != &strategyNone);
 }
 
-bool Canvas::isHdrSupported()
+bool Canvas::isHDRSupported()
 {
 	return GLEE_VERSION_3_0 || GLEE_ARB_texture_float;
+}
+
+bool Canvas::isMRTSupported()
+{
+	if (!(isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers || GLEE_ATI_draw_buffers)))
+		return false;
+
+	if (maxFBOColorAttachments == 0 || maxDrawBuffers == 0)
+	{
+		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxFBOColorAttachments);
+		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
+	}
+
+	// system must support at least 4 simultanious render targets
+	return maxFBOColorAttachments >= 4 && maxDrawBuffers >= 4;
 }
 
 void Canvas::bindDefaultCanvas()
@@ -379,6 +461,42 @@ void Canvas::startGrab()
 	current = this;
 }
 
+void Canvas::startGrab(const std::vector<Canvas *> &canvases)
+{
+	if (canvases.size() > 0)
+	{
+		if (!isMRTSupported())
+			throw love::Exception("Multiple render targets are not supported on this system.");
+
+		if (canvases.size() + 1 > maxDrawBuffers || canvases.size() + 1 > maxFBOColorAttachments)
+			throw love::Exception("This system can't support %d simultanious render targets.", canvases.size() + 1);
+	}
+
+	for (size_t i = 0; i < canvases.size(); i++)
+	{
+		if (canvases[i]->getWidth() != width || canvases[i]->getHeight() != height)
+			throw love::Exception("All canvas arguments must have the same dimensions.");
+	}
+
+	startGrab();
+
+	// don't attach anything if there's nothing to attach/detach
+	if (canvases.size() == 0 && attachedCanvases.size() == 0)
+		return;
+
+	strategy->setAttachments(canvases);
+
+	// retain newly attached canvases
+	for (size_t i = 0; i < canvases.size(); i++)
+		canvases[i]->retain();
+
+	// release previously attached canvases
+	for (size_t i = 0; i < attachedCanvases.size(); i++)
+		attachedCanvases[i]->release();
+
+	attachedCanvases = canvases;
+}
+
 void Canvas::stopGrab()
 {
 	// i am not grabbing. leave me alone
@@ -392,7 +510,6 @@ void Canvas::stopGrab()
 	glPopAttrib();
 	current = NULL;
 }
-
 
 void Canvas::clear(const Color &c)
 {
@@ -472,6 +589,11 @@ void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 		strategy->bindFBO( 0 );
 }
 
+const std::vector<Canvas *> &Canvas::getAttachedCanvases() const
+{
+	return attachedCanvases;
+}
+
 void Canvas::setFilter(const Image::Filter &f)
 {
 	bindTexture(img);
@@ -515,6 +637,12 @@ void Canvas::unloadVolatile()
 	settings.filter = getFilter();
 	settings.wrap   = getWrap();
 	strategy->deleteFBO(fbo, depth_stencil, img);
+
+	// release attached canvases
+	for (size_t i = 0; i < attachedCanvases.size(); i++)
+		attachedCanvases[i]->release();
+
+	attachedCanvases.clear();
 }
 
 int Canvas::getWidth()

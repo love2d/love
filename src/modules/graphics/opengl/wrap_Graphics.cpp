@@ -942,9 +942,41 @@ int w_setCanvas(lua_State *L)
 		return 0;
 	}
 
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	// this unbinds the previous fbo
-	canvas->startGrab();
+	bool is_table = lua_istable(L, 1);
+	std::vector<Canvas *> attachments;
+
+	Canvas *canvas = 0;
+
+	if (is_table)
+	{
+		lua_pushinteger(L, 1);
+		lua_gettable(L, 1);
+		canvas = luax_checkcanvas(L, -1);
+		lua_pop(L, 1);
+
+		for (int i = 2; i <= lua_objlen(L, 1); i++)
+		{
+			lua_pushinteger(L, i);
+			lua_gettable(L, 1);
+			attachments.push_back(luax_checkcanvas(L, -1));
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		canvas = luax_checkcanvas(L, 1);
+		for (int i = 2; i <= lua_gettop(L); i++)
+			attachments.push_back(luax_checkcanvas(L, i));
+	}
+
+	try
+	{
+		canvas->startGrab(attachments);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 
 	return 0;
 }
@@ -952,14 +984,25 @@ int w_setCanvas(lua_State *L)
 int w_getCanvas(lua_State *L)
 {
 	Canvas *canvas = Canvas::current;
+	int n = 1;
+
 	if (canvas)
 	{
 		canvas->retain();
 		luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void *) canvas);
+
+		const std::vector<Canvas *> &attachments = canvas->getAttachedCanvases();
+		for (size_t i = 0; i < attachments.size(); i++)
+		{
+			attachments[i]->retain();
+			luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void *) attachments[i]);
+			n++;
+		}
 	}
 	else
 		lua_pushnil(L);
-	return 1;
+
+	return n;
 }
 
 int w_setShader(lua_State *L)
@@ -1009,7 +1052,11 @@ int w_isSupported(lua_State *L)
 				supported = false;
 			break;
 		case Graphics::SUPPORT_HDR_CANVAS:
-			if (!Canvas::isHdrSupported())
+			if (!Canvas::isHDRSupported())
+				supported = false;
+			break;
+		case Graphics::SUPPORT_MRT_CANVAS:
+			if (!Canvas::isMRTSupported())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_SHADER:
@@ -1427,7 +1474,9 @@ static const luaL_Reg functions[] =
 	{ "getMaxPointSize", w_getMaxPointSize },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
+	{ "setCanvases", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
+	{ "getCanvases", w_getCanvas },
 
 	{ "setShader", w_setShader },
 	{ "getShader", w_getShader },
