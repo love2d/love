@@ -71,6 +71,8 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	try
 	{
 		gd = r->getGlyphData(32);
+		type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
+
 		loadVolatile();
 	}
 	catch (love::Exception &)
@@ -79,7 +81,6 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 		throw;
 	}
 
-	type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
 	delete gd;
 
 	rasterizer->retain();
