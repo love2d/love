@@ -86,7 +86,6 @@ int w_ImageData_setPixel(lua_State *L)
 	c.g = luaL_checkint(L, 5);
 	c.b = luaL_checkint(L, 6);
 	c.a = luaL_optint(L,7,255);
-	//c.a = luaL_checkint(L,7);
 	try
 	{
 		t->setPixel(x, y, c);
