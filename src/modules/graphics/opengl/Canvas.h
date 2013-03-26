@@ -101,7 +101,7 @@ public:
 
 	static bool isSupported();
 	static bool isHDRSupported();
-	static bool isMRTSupported();
+	static bool isMultiCanvasSupported();
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
 

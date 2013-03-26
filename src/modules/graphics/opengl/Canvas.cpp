@@ -423,7 +423,7 @@ bool Canvas::isHDRSupported()
 	return GLEE_VERSION_3_0 || GLEE_ARB_texture_float;
 }
 
-bool Canvas::isMRTSupported()
+bool Canvas::isMultiCanvasSupported()
 {
 	if (!(isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers || GLEE_ATI_draw_buffers)))
 		return false;
@@ -434,7 +434,7 @@ bool Canvas::isMRTSupported()
 		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
 	}
 
-	// system must support at least 4 simultanious render targets
+	// system must support at least 4 simultanious active canvases
 	return maxFBOColorAttachments >= 4 && maxDrawBuffers >= 4;
 }
 
@@ -478,11 +478,11 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 {
 	if (canvases.size() > 0)
 	{
-		if (!isMRTSupported())
-			throw love::Exception("Multiple render targets are not supported on this system.");
+		if (!isMultiCanvasSupported())
+			throw love::Exception("Multi-canvas rendering is not supported on this system.");
 
-		if (canvases.size() + 1 > maxDrawBuffers || canvases.size() + 1 > maxFBOColorAttachments)
-			throw love::Exception("This system can't support %d simultanious render targets.", canvases.size() + 1);
+		if (canvases.size()+1 > maxDrawBuffers || canvases.size()+1 > maxFBOColorAttachments)
+			throw love::Exception("This system can't simultaniously render to %d canvases.", canvases.size()+1);
 	}
 
 	for (size_t i = 0; i < canvases.size(); i++)
@@ -500,7 +500,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	if (canvases.size() == 0 && attachedCanvases.size() == 0)
 		return;
 
-	// attach the canvas textures to this FBO and set up multiple render targets
+	// attach the canvas textures to the active FBO and set up multiple render targets
 	strategy->setAttachments(canvases);
 
 	// retain newly attached canvases
@@ -521,7 +521,7 @@ void Canvas::startGrab()
 	if (attachedCanvases.size() == 0)
 		return;
 
-	// make sure the FBO is only using a single render target
+	// make sure the FBO is only using a single canvas
 	strategy->setAttachments();
 
 	// release any previously attached canvases
@@ -548,16 +548,31 @@ void Canvas::stopGrab()
 void Canvas::clear(const Color &c)
 {
 	GLuint previous = 0;
-	if (current != NULL)
-		previous = current->fbo;
 
-	strategy->bindFBO(fbo);
-	glPushAttrib(GL_COLOR_BUFFER_BIT);
+	if (current != this)
+	{
+		if (current != NULL)
+			previous = current->fbo;
+
+		strategy->bindFBO(fbo);
+		glPushAttrib(GL_COLOR_BUFFER_BIT);
+	}
+
+	// Make sure only this canvas is cleared when multi-canvas rendering is set
+	if (attachedCanvases.size() > 0)
+		strategy->setAttachments();
+
 	glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glPopAttrib();
 
-	strategy->bindFBO(previous);
+	if (attachedCanvases.size() > 0)
+		strategy->setAttachments(attachedCanvases);
+
+	if (current != this)
+	{
+		glPopAttrib();
+		strategy->bindFBO(previous);
+	}
 }
 
 void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const

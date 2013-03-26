@@ -1083,8 +1083,8 @@ int w_isSupported(lua_State *L)
 			if (!Canvas::isHDRSupported())
 				supported = false;
 			break;
-		case Graphics::SUPPORT_MRT_CANVAS:
-			if (!Canvas::isMRTSupported())
+		case Graphics::SUPPORT_MULTI_CANVAS:
+			if (!Canvas::isMultiCanvasSupported())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_SHADER:

@@ -1338,7 +1338,7 @@ void main() {
 	gl_FragColor = effect(VaryingColor, _tex0_, VaryingTexCoord.st, gl_FragCoord.xy);
 }]],
 
-		FOOTER_MRT = [[
+		FOOTER_MULTI_CANVAS = [[
 void main() {
 	// fix crashing issue in OSX when _tex0_ is unused within effect()
 	float dummy = texture2D(_tex0_, vec2(.5)).r;
@@ -1357,13 +1357,13 @@ void main() {
 		return table_concat(vertexcodes, "\n")
 	end
 
-	local function createPixelCode(pixelcode, is_mrt)
+	local function createPixelCode(pixelcode, is_multicanvas)
 		local pixelcodes = {
 			GLSL_VERSION,
 			GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
 			"#line 0",
 			pixelcode,
-			is_mrt and GLSL_PIXEL.FOOTER_MRT or GLSL_PIXEL.FOOTER,
+			is_multicanvas and GLSL_PIXEL.FOOTER_MULTI_CANVAS or GLSL_PIXEL.FOOTER,
 		}
 		return table_concat(pixelcodes, "\n")
 	end
@@ -1375,7 +1375,7 @@ void main() {
 	local function isPixelCode(code)
 		if code:match("vec4%s*effect%(") then
 			return true
-		elseif code:match("void%s*effects%(") then -- multiple render targets (MRT)
+		elseif code:match("void%s*effects%(") then -- render to multiple canvases simultaniously
 			return true, true
 		else
 			return false
@@ -1384,7 +1384,7 @@ void main() {
 
 	function love.graphics._shaderCodeToGLSL(arg1, arg2)
 		local vertexcode, pixelcode
-		local is_mrt = false -- whether pixel code has "effects" function instead of "effect"
+		local is_multicanvas = false -- whether pixel code has "effects" function instead of "effect"
 		
 		if arg1 then
 			local s = arg1:gsub("\r\n\t", " ") -- convert whitespace to spaces for parsing
@@ -1394,10 +1394,10 @@ void main() {
 				vertexcode = arg1 -- first arg contains vertex shader code
 			end
 
-			local ispixel, isMRT = isPixelCode(s)
+			local ispixel, isMultiCanvas = isPixelCode(s)
 			if ispixel then
 				pixelcode = arg1 -- first arg contains pixel shader code
-				is_mrt = isMRT
+				is_multicanvas = isMultiCanvas
 			end
 		end
 		
@@ -1409,10 +1409,10 @@ void main() {
 				vertexcode = arg2 -- second arg contains vertex shader code
 			end
 
-			local ispixel, isMRT = isPixelCode(s)
+			local ispixel, isMultiCanvas = isPixelCode(s)
 			if ispixel then
 				pixelcode = arg2 -- second arg contains pixel shader code
-				is_mrt = isMRT
+				is_multicanvas = isMultiCanvas
 			end
 		end
 
@@ -1420,7 +1420,7 @@ void main() {
 			vertexcode = createVertexCode(vertexcode)
 		end
 		if pixelcode then
-			pixelcode = createPixelCode(pixelcode, is_mrt)
+			pixelcode = createPixelCode(pixelcode, is_multicanvas)
 		end
 
 		return vertexcode, pixelcode
