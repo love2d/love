@@ -53,6 +53,13 @@ int w_SoundData_getSampleRate(lua_State *L)
 	return 1;
 }
 
+int w_SoundData_getSampleCount(lua_State *L)
+{
+	SoundData *t = luax_checksounddata(L, 1);
+	lua_pushinteger(L, t->getSampleCount());
+	return 1;
+}
+
 int w_SoundData_getDuration(lua_State *L)
 {
 	SoundData *t = luax_checksounddata(L, 1);
@@ -87,6 +94,7 @@ static const luaL_Reg functions[] =
 	{ "getChannels", w_SoundData_getChannels },
 	{ "getBits", w_SoundData_getBits },
 	{ "getSampleRate", w_SoundData_getSampleRate },
+	{ "getSampleCount", w_SoundData_getSampleCount },
 	{ "getDuration", w_SoundData_getDuration },
 	{ "setSample", w_SoundData_setSample },
 	{ "getSample", w_SoundData_getSample },

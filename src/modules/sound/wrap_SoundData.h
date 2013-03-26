@@ -36,6 +36,7 @@ int w_getSize(lua_State *L);
 int w_getChannels(lua_State *L);
 int w_getBits(lua_State *L);
 int w_getSampleRate(lua_State *L);
+int w_getSampleCount(lua_State *L);
 int w_getDuration(lua_State *L);
 int w_setSample(lua_State *L);
 int w_getSample(lua_State *L);
