@@ -59,6 +59,7 @@ public:
 	 * to allow drawing to multiple canvases at once.
 	 **/
 	void startGrab(const std::vector<Canvas *> &canvases);
+	void startGrab();
 	void stopGrab();
 
 	void clear(const Color &c);
@@ -135,7 +136,7 @@ private:
 
 	std::vector<Canvas *> attachedCanvases;
 
-	void startGrab();
+	void setupGrab();
 	void drawv(const Matrix &t, const vertex *v) const;
 
 	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];

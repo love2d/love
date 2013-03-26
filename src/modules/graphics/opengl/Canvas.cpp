@@ -60,11 +60,14 @@ struct FramebufferStrategy
 	virtual void deleteFBO(GLuint, GLuint, GLuint) {}
 	virtual void bindFBO(GLuint) {}
 
-	/// attach additional canvases to this framebuffer for rendering
+	/// attach additional canvases to the active framebuffer for rendering
 	/**
 	 * @param[in] canvases List of canvases to attach
 	 **/
 	virtual void setAttachments(const std::vector<Canvas *> &canvases) {}
+
+	/// stop using all additional attached canvases
+	virtual void setAttachments() {}
 };
 
 struct FramebufferStrategyGL3 : public FramebufferStrategy
@@ -134,12 +137,17 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	}
 
+	virtual void setAttachments()
+	{
+		// set a single render target
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	}
+
 	virtual void setAttachments(const std::vector<Canvas *> &canvases)
 	{
 		if (canvases.size() == 0)
 		{
-			// set a single render target
-			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			setAttachments();
 			return;
 		}
 
@@ -232,12 +240,17 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
 	}
 
+	virtual void setAttachments()
+	{
+		// set a single render target
+		glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+	}
+
 	virtual void setAttachments(const std::vector<Canvas *> &canvases)
 	{
 		if (canvases.size() == 0)
 		{
-			// set a single render target
-			glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+			setAttachments();
 			return;
 		}
 
@@ -431,7 +444,7 @@ void Canvas::bindDefaultCanvas()
 		current->stopGrab();
 }
 
-void Canvas::startGrab()
+void Canvas::setupGrab()
 {
 	// already grabbing
 	if (current == this)
@@ -476,14 +489,18 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	{
 		if (canvases[i]->getWidth() != width || canvases[i]->getHeight() != height)
 			throw love::Exception("All canvas arguments must have the same dimensions.");
+
+		if (canvases[i]->getTextureType() != texture_type)
+			throw love::Exception("All canvas arguments must have the same texture type.");
 	}
 
-	startGrab();
+	setupGrab();
 
 	// don't attach anything if there's nothing to attach/detach
 	if (canvases.size() == 0 && attachedCanvases.size() == 0)
 		return;
 
+	// attach the canvas textures to this FBO and set up multiple render targets
 	strategy->setAttachments(canvases);
 
 	// retain newly attached canvases
@@ -495,6 +512,23 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		attachedCanvases[i]->release();
 
 	attachedCanvases = canvases;
+}
+
+void Canvas::startGrab()
+{
+	setupGrab();
+
+	if (attachedCanvases.size() == 0)
+		return;
+
+	// make sure the FBO is only using a single render target
+	strategy->setAttachments();
+
+	// release any previously attached canvases
+	for (size_t i = 0; i < attachedCanvases.size(); i++)
+		attachedCanvases[i]->release();
+
+	attachedCanvases.clear();
 }
 
 void Canvas::stopGrab()

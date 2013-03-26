@@ -47,10 +47,9 @@ int w_Canvas_renderTo(lua_State *L)
 	if (!lua_isfunction(L, 2))
 		return luaL_error(L, "Need a function to render to canvas.");
 
-	static std::vector<Canvas *> attachments;
 	try
 	{
-		canvas->startGrab(attachments);
+		canvas->startGrab();
 	}
 	catch (love::Exception &e)
 	{
