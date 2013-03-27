@@ -452,6 +452,14 @@ int w_ParticleSystem_reset(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_emit(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	int num = luaL_checkint(L, 2);
+	t->emit(num);
+	return 0;
+}
+
 int w_ParticleSystem_isActive(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -518,6 +526,7 @@ static const luaL_Reg functions[] =
 	{ "stop", w_ParticleSystem_stop },
 	{ "pause", w_ParticleSystem_pause },
 	{ "reset", w_ParticleSystem_reset },
+	{ "emit", w_ParticleSystem_emit },
 	{ "isActive", w_ParticleSystem_isActive },
 	{ "isEmpty", w_ParticleSystem_isEmpty },
 	{ "isFull", w_ParticleSystem_isFull },

@@ -478,6 +478,20 @@ void ParticleSystem::reset()
 	emitCounter = 0;
 }
 
+void ParticleSystem::emit(int num)
+{
+	if (!active)
+		return;
+
+	for (int i = 0; i < num; i++)
+	{
+		if (isFull())
+			return;
+
+		add();
+	}
+}
+
 bool ParticleSystem::isActive() const
 {
 	return active;
