@@ -1500,10 +1500,14 @@ void main() {
 	function love.graphics.newShader(vertexcode, pixelcode)
 		love.graphics.newShader = newShader
 
-		local shader = newShader(vertexcode, pixelcode)
-		local meta = getmetatable(shader)
-		meta.send = shader_dispatch_send
-		meta.sendBoolean = meta.sendFloat
-		return shader
+		local success, shader = pcall(love.graphics.newShader, vertexcode, pixelcode)
+		if success then
+			local meta = getmetatable(shader)
+			meta.send = shader_dispatch_send
+			meta.sendBoolean = meta.sendFloat
+			return shader
+		else
+			return error(shader, 2)
+		end
 	end
 end
