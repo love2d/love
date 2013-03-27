@@ -701,6 +701,28 @@ int w_getFont(lua_State *L)
 	return 1;
 }
 
+int w_setColorMask(lua_State *L)
+{
+	bool mask[4];
+	for (int i = 0; i < 4; i++)
+		mask[i] = luax_toboolean(L, i + 1);
+
+	// r, g, b, a
+	instance->setColorMask(mask[0], mask[1], mask[2], mask[3]);
+
+	return 0;
+}
+
+int w_getColorMask(lua_State *L)
+{
+	const bool *mask = instance->getColorMask();
+
+	for (int i = 0; i < 4; i++)
+		luax_pushboolean(L, mask[i]);
+
+	return 4;
+}
+
 int w_setBlendMode(lua_State *L)
 {
 	Graphics::BlendMode mode;
@@ -1483,6 +1505,8 @@ static const luaL_Reg functions[] =
 	{ "setFont", w_setFont },
 	{ "getFont", w_getFont },
 
+	{ "setColorMask", w_setColorMask },
+	{ "getColorMask", w_getColorMask },
 	{ "setBlendMode", w_setBlendMode },
 	{ "getBlendMode", w_getBlendMode },
 	{ "setDefaultFilter", w_setDefaultFilter },

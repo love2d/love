@@ -71,6 +71,8 @@ int w_setBackgroundColor(lua_State *L);
 int w_getBackgroundColor(lua_State *L);
 int w_setFont(lua_State *L);
 int w_getFont(lua_State *L);
+int w_setColorMask(lua_State *L);
+int w_getColorMask(lua_State *L);
 int w_setBlendMode(lua_State *L);
 int w_getBlendMode(lua_State *L);
 int w_setDefaultFilter(lua_State *L);
