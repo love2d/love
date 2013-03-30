@@ -108,8 +108,7 @@ void ImageData::load(Data *data)
 		devilMutex = thread::newMutex();
 
 	Lock lock(devilMutex);
-	ILuint image;
-	ilGenImages(1, &image);
+	ILuint image = ilGenImage();
 	ilBindImage(image);
 
 	try
@@ -132,13 +131,18 @@ void ImageData::load(Data *data)
 
 		create(width, height, ilGetData());
 	}
-	catch(std::exception &e)
+	catch (love::Exception &)
 	{
-		ilDeleteImages(1, &image);
+		ilDeleteImage(image);
+		throw;
+	}
+	catch (std::exception &e)
+	{
+		ilDeleteImage(image);
 		throw love::Exception("%s", e.what());
 	}
 
-	ilDeleteImages(1, &image);
+	ilDeleteImage(image);
 }
 
 void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
@@ -149,8 +153,7 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 	Lock lock1(devilMutex);
 	Lock lock2(mutex);
 
-	ILuint tempimage;
-	ilGenImages(1, &tempimage);
+	ILuint tempimage = ilGenImage();
 	ilBindImage(tempimage);
 	ilxClearErrors();
 
@@ -222,14 +225,20 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 		f->write(encoded_data, size);
 		f->close();
 	}
-	catch(std::exception &)
+	catch (love::Exception &)
 	{
-		ilDeleteImages(1, &tempimage);
+		ilDeleteImage(tempimage);
 		delete[] encoded_data;
 		throw;
 	}
+	catch (std::exception &e)
+	{
+		ilDeleteImage(tempimage);
+		delete[] encoded_data;
+		throw love::Exception("%s", e.what());
+	}
 
-	ilDeleteImages(1, &tempimage);
+	ilDeleteImage(tempimage);
 	delete[] encoded_data;
 }
 
