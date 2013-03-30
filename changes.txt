@@ -20,6 +20,7 @@ LOVE 0.9.0 []
   * Added support for UTF-8 ImageFonts.
   * Added SoundData:getDuration.
   * Added new Channels api for love.thread.
+  * Added Thread:getError.
   * Added flags to setMode.
   * Added support for resizable, borderless, and non-centered windows.
   * Added resize event.
@@ -35,6 +36,11 @@ LOVE 0.9.0 []
   * Added love.graphics.getDimensions and Image/Canvas/ImageData:getDimensions.
   * Added love.filesystem.append.
   * Added love.filesystem.getSize.
+  * Added angle, scale, and shear parameters to love.graphics.printf.
+  * Added anisotropic filtering support for Images, Canvases, and Fonts.
+  * Added love.graphics.setCanvases.
+  * Added ParticleSystem:emit.
+  * Added love.graphics.setColorMask.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -65,6 +71,7 @@ LOVE 0.9.0 []
 
   * Renamed love's boot script to 'love.boot', which can be required.
   * Renamed PixelEffect to Shader (but now with vertex shaders).
+  * Renamed love.graphics.setDefaultImageFilter to love.graphics.setDefaultFilter.
 
   * Removed love.joystick.open and friends.
   * Removed love.graphics.drawTest.
@@ -86,6 +93,7 @@ LOVE 0.9.0 []
   * Updated Canvas code to support more systems.
   * Updated love.timer.getFPS to be microsecond-accurate.
   * Updated love.graphics.newScreenshot to create a fully opaque image by default.
+  * Updated ImageData:setPixel's alpha parameter to default to 255.
 
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------
