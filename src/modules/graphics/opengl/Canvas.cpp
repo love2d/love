@@ -507,7 +507,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	for (size_t i = 0; i < canvases.size(); i++)
 		canvases[i]->retain();
 
-	// release previously attached canvases
+	// release any old canvases
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
 		attachedCanvases[i]->release();
 
@@ -687,7 +687,6 @@ void Canvas::unloadVolatile()
 	settings.wrap   = getWrap();
 	strategy->deleteFBO(fbo, depth_stencil, img);
 
-	// release attached canvases
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
 		attachedCanvases[i]->release();
 

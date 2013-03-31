@@ -343,28 +343,17 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 
 int Filesystem::enumerate(lua_State *L)
 {
-	int n = lua_gettop(L);
+	const char *dir = luaL_checkstring(L, 1);
 
-	if (n != 1)
-		return luaL_error(L, "Function requires a single parameter.");
-
-	int type = lua_type(L, 1);
-
-	if (type != LUA_TSTRING)
-		return luaL_error(L, "Function requires parameter of type string.");
-
-	const char *dir = lua_tostring(L, 1);
 	char **rc = PHYSFS_enumerateFiles(dir);
-	char **i;
 	int index = 1;
 
 	lua_newtable(L);
 
-	for (i = rc; *i != 0; i++)
+	for (char **i = rc; *i != 0; i++)
 	{
-		lua_pushinteger(L, index);
 		lua_pushstring(L, *i);
-		lua_settable(L, -3);
+		lua_rawseti(L, -2, index);
 		index++;
 	}
 

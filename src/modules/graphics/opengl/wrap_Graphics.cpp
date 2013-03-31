@@ -601,14 +601,14 @@ int w_setColor(lua_State *L)
 	Color c;
 	if (lua_istable(L, 1))
 	{
-		lua_rawgeti(L, 1, 1);
-		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_rawgeti(L, 1, 2);
-		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_rawgeti(L, 1, 3);
-		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_rawgeti(L, 1, 4);
+		for (int i = 1; i <= 4; i++)
+			lua_rawgeti(L, 1, i);
+
+		c.r = (unsigned char)luaL_checkint(L, -4);
+		c.g = (unsigned char)luaL_checkint(L, -3);
+		c.b = (unsigned char)luaL_checkint(L, -2);
 		c.a = (unsigned char)luaL_optint(L, -1, 255);
+
 		lua_pop(L, 4);
 	}
 	else
@@ -637,14 +637,14 @@ int w_setBackgroundColor(lua_State *L)
 	Color c;
 	if (lua_istable(L, 1))
 	{
-		lua_rawgeti(L, 1, 1);
-		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_rawgeti(L, 1, 2);
-		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_rawgeti(L, 1, 3);
-		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_rawgeti(L, 1, 4);
+		for (int i = 1; i <= 4; i++)
+			lua_rawgeti(L, 1, i);
+
+		c.r = (unsigned char)luaL_checkint(L, -4);
+		c.g = (unsigned char)luaL_checkint(L, -3);
+		c.b = (unsigned char)luaL_checkint(L, -2);
 		c.a = (unsigned char)luaL_optint(L, -1, 255);
+
 		lua_pop(L, 4);
 	}
 	else
@@ -985,6 +985,7 @@ int w_setCanvases(lua_State *L)
 
 	if (is_table)
 	{
+		// grab the first canvas in the array and attach the rest
 		lua_rawgeti(L, 1, 1);
 		canvas = luax_checkcanvas(L, -1);
 		lua_pop(L, 1);

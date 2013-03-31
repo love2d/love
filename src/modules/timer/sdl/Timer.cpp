@@ -38,8 +38,8 @@ namespace sdl
 {
 
 Timer::Timer()
-	: currTime(getMicroTime())
-	, prevFpsUpdate(currTime)
+	: currTime(0)
+	, prevFpsUpdate(0)
 	, fps(0)
 	, averageDelta(0)
 	, fpsUpdateFrequency(1)
@@ -49,6 +49,8 @@ Timer::Timer()
 	// Init the SDL timer system.
 	if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
 		throw Exception(SDL_GetError());
+
+	prevFpsUpdate = currTime = getMicroTime();
 }
 
 Timer::~Timer()

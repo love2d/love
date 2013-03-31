@@ -59,14 +59,14 @@ public:
 	virtual void getWindow(int &width, int &height, WindowFlags &flags) const = 0;
 
 	virtual bool checkWindowSize(int width, int height, bool fullscreen) const = 0;
-	virtual WindowSize **getFullscreenSizes(int &n) const = 0;
+	virtual WindowSize *getFullscreenSizes(int &n) const = 0;
 
 	virtual int getWidth() const = 0;
 	virtual int getHeight() const = 0;
 
 	virtual bool isCreated() const = 0;
 
-	virtual void setWindowTitle(std::string &title) = 0;
+	virtual void setWindowTitle(const std::string &title) = 0;
 	virtual std::string getWindowTitle() const = 0;
 
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;

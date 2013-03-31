@@ -272,33 +272,29 @@ bool Graphics::isCreated() const
 int Graphics::getModes(lua_State *L) const
 {
 	int n;
-	love::window::Window::WindowSize **modes = currentWindow->getFullscreenSizes(n);
+	love::window::Window::WindowSize *modes = currentWindow->getFullscreenSizes(n);
 
 	if (modes == 0)
 		return 0;
 
-	lua_newtable(L);
+	lua_createtable(L, n, 0);
 
 	for (int i = 0; i < n ; i++)
 	{
 		lua_pushinteger(L, i+1);
-		lua_newtable(L);
+		lua_createtable(L, 0, 2);
 
 		// Inner table attribs.
 
-		lua_pushstring(L, "width");
-		lua_pushinteger(L, modes[i]->width);
-		lua_settable(L, -3);
+		lua_pushinteger(L, modes[i].width);
+		lua_setfield(L, -2, "width");
 
-		lua_pushstring(L, "height");
-		lua_pushinteger(L, modes[i]->height);
-		lua_settable(L, -3);
+		lua_pushinteger(L, modes[i].height);
+		lua_setfield(L, -2, "height");
 
 		// Inner table attribs end.
 
 		lua_settable(L, -3);
-
-		delete modes[i];
 	}
 
 	delete[] modes;

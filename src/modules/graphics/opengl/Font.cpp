@@ -51,20 +51,20 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 {
 	// try to find the best texture size match for the font size
 	// default to the largest texture size if no rough match is found
-	texture_size_index = NUM_TEXTURE_SIZES - 1;
+	textureSizeIndex = NUM_TEXTURE_SIZES - 1;
 	for (int i = 0; i < NUM_TEXTURE_SIZES; i++)
 	{
 		// base our chosen texture width/height on a very rough guess of the total size taken up by the font's used glyphs
 		// the estimate is likely larger than the actual total size taken up, which is good since texture changes are expensive
 		if ((height * 0.8) * height * 95 <= TEXTURE_WIDTHS[i] * TEXTURE_HEIGHTS[i])
 		{
-			texture_size_index = i;
+			textureSizeIndex = i;
 			break;
 		}
 	}
 
-	texture_width = TEXTURE_WIDTHS[texture_size_index];
-	texture_height = TEXTURE_HEIGHTS[texture_size_index];
+	textureWidth = TEXTURE_WIDTHS[textureSizeIndex];
+	textureHeight = TEXTURE_HEIGHTS[textureSizeIndex];
 
 	love::font::GlyphData *gd = 0;
 
@@ -102,8 +102,8 @@ bool Font::initializeTexture(GLint format)
 	glTexImage2D(GL_TEXTURE_2D,
 				 0,
 				 internalformat,
-				 (GLsizei)texture_width,
-				 (GLsizei)texture_height,
+				 (GLsizei)textureWidth,
+				 (GLsizei)textureHeight,
 				 0,
 				 format,
 				 GL_UNSIGNED_BYTE,
@@ -114,7 +114,7 @@ bool Font::initializeTexture(GLint format)
 
 void Font::createTexture()
 {
-	texture_x = texture_y = rowHeight = TEXTURE_PADDING;
+	textureX = textureY = rowHeight = TEXTURE_PADDING;
 
 	GLuint t;
 	glGenTextures(1, &t);
@@ -132,17 +132,17 @@ void Font::createTexture()
 
 	// try to initialize the texture, attempting smaller sizes if initialization fails
 	bool initialized = false;
-	while (texture_size_index >= 0)
+	while (textureSizeIndex >= 0)
 	{
-		texture_width = TEXTURE_WIDTHS[texture_size_index];
-		texture_height = TEXTURE_HEIGHTS[texture_size_index];
+		textureWidth = TEXTURE_WIDTHS[textureSizeIndex];
+		textureHeight = TEXTURE_HEIGHTS[textureSizeIndex];
 
 		initialized = initializeTexture(format);
 
-		if (initialized || texture_size_index <= 0)
+		if (initialized || textureSizeIndex <= 0)
 			break;
 
-		--texture_size_index;
+		--textureSizeIndex;
 	}
 
 	if (!initialized)
@@ -156,12 +156,12 @@ void Font::createTexture()
 	}
 	
 	// Fill the texture with transparent black
-	std::vector<GLubyte> emptyData(texture_width * texture_height * (type == FONT_TRUETYPE ? 2 : 4), 0);
+	std::vector<GLubyte> emptyData(textureWidth * textureHeight * (type == FONT_TRUETYPE ? 2 : 4), 0);
 	glTexSubImage2D(GL_TEXTURE_2D,
 					0,
 					0, 0,
-					(GLsizei)texture_width,
-					(GLsizei)texture_height,
+					(GLsizei)textureWidth,
+					(GLsizei)textureHeight,
 					format,
 					GL_UNSIGNED_BYTE,
 					&emptyData[0]);
@@ -175,14 +175,14 @@ Font::Glyph *Font::addGlyph(unsigned int glyph)
 	int w = gd->getWidth();
 	int h = gd->getHeight();
 
-	if (texture_x + w + TEXTURE_PADDING > texture_width)
+	if (textureX + w + TEXTURE_PADDING > textureWidth)
 	{
 		// out of space - new row!
-		texture_x = TEXTURE_PADDING;
-		texture_y += rowHeight;
+		textureX = TEXTURE_PADDING;
+		textureY += rowHeight;
 		rowHeight = TEXTURE_PADDING;
 	}
-	if (texture_y + h + TEXTURE_PADDING > texture_height)
+	if (textureY + h + TEXTURE_PADDING > textureHeight)
 	{
 		// totally out of space - new texture!
 		createTexture();
@@ -203,8 +203,8 @@ Font::Glyph *Font::addGlyph(unsigned int glyph)
 		bindTexture(t);
 		glTexSubImage2D(GL_TEXTURE_2D,
 						0,
-						texture_x,
-						texture_y,
+						textureX,
+						textureY,
 						w, h,
 						(type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA),
 						GL_UNSIGNED_BYTE,
@@ -213,12 +213,12 @@ Font::Glyph *Font::addGlyph(unsigned int glyph)
 		g->texture = t;
 
 		Quad::Viewport v;
-		v.x = (float) texture_x;
-		v.y = (float) texture_y;
+		v.x = (float) textureX;
+		v.y = (float) textureY;
 		v.w = (float) w;
 		v.h = (float) h;
 
-		Quad q = Quad(v, (const float) texture_width, (const float) texture_height);
+		Quad q = Quad(v, (const float) textureWidth, (const float) textureHeight);
 		const vertex *verts = q.getVertices();
 
 		// copy vertex data to the glyph and set proper bearing
@@ -231,7 +231,7 @@ Font::Glyph *Font::addGlyph(unsigned int glyph)
 	}
 
 	if (w > 0)
-		texture_x += (w + TEXTURE_PADDING);
+		textureX += (w + TEXTURE_PADDING);
 	if (h > 0)
 		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
 

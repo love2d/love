@@ -61,7 +61,7 @@ public:
 	 * @param source The source from which to load the file. (Archive or directory)
 	 * @param filename The relative filepath of the file to load from the source.
 	 **/
-	File(std::string filename);
+	File(const std::string &filename);
 
 	virtual ~File();
 

@@ -45,7 +45,7 @@ private:
 	int nargs;
 
 public:
-	Message(std::string name, Variant *a = NULL, Variant *b = NULL, Variant *c = NULL, Variant *d = NULL);
+	Message(const std::string &name, Variant *a = NULL, Variant *b = NULL, Variant *c = NULL, Variant *d = NULL);
 	~Message();
 
 	int toLua(lua_State *L);

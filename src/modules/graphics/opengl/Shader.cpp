@@ -71,9 +71,12 @@ Shader::Shader(const ShaderSources &sources)
 	if (shaderSources.empty())
 		throw love::Exception("Cannot create shader: no source code!");
 
-	GLint maxtexunits;
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
-	maxTextureUnits = std::max(maxtexunits - 1, 0);
+	if (maxTextureUnits <= 0)
+	{
+		GLint maxtexunits;
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
+		maxTextureUnits = std::max(maxtexunits - 1, 0);
+	}
 
 	// initialize global texture id counters if needed
 	if (textureCounters.size() < (size_t) maxTextureUnits)
@@ -174,7 +177,7 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 
 	if (status == GL_FALSE)
 	{
-		const std::string warnings = getWarnings();
+		std::string warnings = getWarnings();
 		glDeleteProgram(program);
 
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());

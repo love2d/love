@@ -131,13 +131,9 @@ void ImageData::load(Data *data)
 
 		create(width, height, ilGetData());
 	}
-	catch (love::Exception &)
-	{
-		ilDeleteImage(image);
-		throw;
-	}
 	catch (std::exception &e)
 	{
+		// catches love and std exceptions
 		ilDeleteImage(image);
 		throw love::Exception("%s", e.what());
 	}
@@ -225,14 +221,9 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 		f->write(encoded_data, size);
 		f->close();
 	}
-	catch (love::Exception &)
-	{
-		ilDeleteImage(tempimage);
-		delete[] encoded_data;
-		throw;
-	}
 	catch (std::exception &e)
 	{
+		// catches love and std exceptions
 		ilDeleteImage(tempimage);
 		delete[] encoded_data;
 		throw love::Exception("%s", e.what());
