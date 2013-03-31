@@ -38,8 +38,8 @@ namespace sdl
 {
 
 Timer::Timer()
-	: currTime(0)
-	, prevFpsUpdate(0)
+	: currTime(getMicroTime())
+	, prevFpsUpdate(currTime)
 	, fps(0)
 	, averageDelta(0)
 	, fpsUpdateFrequency(1)
