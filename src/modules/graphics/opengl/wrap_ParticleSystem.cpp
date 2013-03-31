@@ -248,11 +248,8 @@ int w_ParticleSystem_setColors(lua_State *L)
 				return luaL_argerror(L, i + 2, "expected 4 color components");
 
 			for (int j = 0; j < 4; j++)
-			{
 				// push args[i+2][j+1] onto the stack
-				lua_pushnumber(L, j + 1);
-				lua_gettable(L, i + 2);
-			}
+				lua_rawgeti(L, i + 2, j + 1);
 
 			int r = luaL_checkint(L, -4);
 			int g = luaL_checkint(L, -3);
@@ -325,8 +322,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 	{
 		for (int i = 0; i < nQuads; i++)
 		{
-			lua_pushnumber(L, i + 1); // array index
-			lua_gettable(L, 2);
+			lua_rawgeti(L, 2, i + 1); // array index
 			quads[i] = luax_checkquad(L, -1);
 			lua_pop(L, 1);
 		}

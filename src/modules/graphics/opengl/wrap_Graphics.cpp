@@ -601,22 +601,15 @@ int w_setColor(lua_State *L)
 	Color c;
 	if (lua_istable(L, 1))
 	{
-		lua_pushinteger(L, 1);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 1);
 		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 2);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 2);
 		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 3);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 3);
 		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 4);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 4);
 		c.a = (unsigned char)luaL_optint(L, -1, 255);
-		lua_pop(L, 1);
+		lua_pop(L, 4);
 	}
 	else
 	{
@@ -644,22 +637,15 @@ int w_setBackgroundColor(lua_State *L)
 	Color c;
 	if (lua_istable(L, 1))
 	{
-		lua_pushinteger(L, 1);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 1);
 		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 2);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 2);
 		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 3);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 3);
 		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 4);
-		lua_gettable(L, -2);
+		lua_rawgeti(L, 1, 4);
 		c.a = (unsigned char)luaL_optint(L, -1, 255);
-		lua_pop(L, 1);
+		lua_pop(L, 4);
 	}
 	else
 	{
@@ -999,15 +985,13 @@ int w_setCanvases(lua_State *L)
 
 	if (is_table)
 	{
-		lua_pushinteger(L, 1);
-		lua_gettable(L, 1);
+		lua_rawgeti(L, 1, 1);
 		canvas = luax_checkcanvas(L, -1);
 		lua_pop(L, 1);
 
 		for (int i = 2; i <= lua_objlen(L, 1); i++)
 		{
-			lua_pushinteger(L, i);
-			lua_gettable(L, 1);
+			lua_rawgeti(L, 1, i);
 			attachments.push_back(luax_checkcanvas(L, -1));
 			lua_pop(L, 1);
 		}
@@ -1289,8 +1273,7 @@ int w_line(lua_State *L)
 	{
 		for (int i = 0; i < args; ++i)
 		{
-			lua_pushnumber(L, i + 1);
-			lua_rawget(L, 1);
+			lua_rawgeti(L, 1, i + 1);
 			coords[i] = luax_tofloat(L, -1);
 			lua_pop(L, 1);
 		}
@@ -1392,8 +1375,7 @@ int w_polygon(lua_State *L)
 	{
 		for (int i = 0; i < args; ++i)
 		{
-			lua_pushnumber(L, i + 1);
-			lua_rawget(L, 2);
+			lua_rawgeti(L, 2, i + 1);
 			coords[i] = luax_tofloat(L, -1);
 			lua_pop(L, 1);
 		}

@@ -179,17 +179,13 @@ int w_Canvas_clear(lua_State *L)
 	}
 	else if (lua_istable(L, 2))
 	{
-		lua_pushinteger(L, 1);
-		lua_gettable(L, 2);
+		lua_rawgeti(L, 2, 1);
 		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_pushinteger(L, 2);
-		lua_gettable(L, 2);
+		lua_rawgeti(L, 2, 2);
 		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_pushinteger(L, 3);
-		lua_gettable(L, 2);
+		lua_rawgeti(L, 2, 3);
 		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_pushinteger(L, 4);
-		lua_gettable(L, 2);
+		lua_rawgeti(L, 2, 4);
 		c.g = (unsigned char)luaL_optint(L, -1, 255);
 		lua_pop(L, 4);
 	}
