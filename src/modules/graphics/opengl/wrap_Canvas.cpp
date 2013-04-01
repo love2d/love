@@ -185,7 +185,7 @@ int w_Canvas_clear(lua_State *L)
 		c.r = (unsigned char)luaL_checkint(L, -4);
 		c.g = (unsigned char)luaL_checkint(L, -3);
 		c.b = (unsigned char)luaL_checkint(L, -2);
-		c.g = (unsigned char)luaL_optint(L, -1, 255);
+		c.a = (unsigned char)luaL_optint(L, -1, 255);
 
 		lua_pop(L, 4);
 	}

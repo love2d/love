@@ -1168,8 +1168,8 @@ int w_drawq(lua_State *L)
 {
 	DrawQable *dq = luax_checktype<DrawQable>(L, 1, "DrawQable", GRAPHICS_DRAWQABLE_T);
 	Quad *q = luax_checkquad(L, 2);
-	float x = (float)luaL_checknumber(L, 3);
-	float y = (float)luaL_checknumber(L, 4);
+	float x = (float)luaL_optnumber(L, 3, 0.0f);
+	float y = (float)luaL_optnumber(L, 4, 0.0f);
 	float angle = (float)luaL_optnumber(L, 5, 0);
 	float sx = (float)luaL_optnumber(L, 6, 1);
 	float sy = (float)luaL_optnumber(L, 7, sx);
