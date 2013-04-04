@@ -21,6 +21,7 @@
 #include "Image.h"
 
 #include "ImageData.h"
+#include "CompressedData.h"
 
 // DevIL
 #include <IL/il.h>
@@ -31,6 +32,11 @@ namespace image
 {
 namespace devil
 {
+
+const std::string Image::compressedExts[] =
+{
+	".dds", ""
+};
 
 Image::Image()
 {
@@ -67,6 +73,47 @@ love::image::ImageData *Image::newImageData(int width, int height)
 love::image::ImageData *Image::newImageData(int width, int height, void *data)
 {
 	return new ImageData(width, height, data);
+}
+
+love::image::CompressedData *Image::newCompressedData(love::filesystem::File *file)
+{
+	return new CompressedData(file);
+}
+
+love::image::CompressedData *Image::newCompressedData(love::Data *data)
+{
+	return new CompressedData(data);
+}
+
+bool Image::isCompressed(love::filesystem::File *file)
+{
+	bool hasExt = false;
+
+	// Check whether the file has an extension known to contain compressed data.
+	const std::string &ext = file->getExtension();
+	for (int i = 0; !(compressedExts[i].empty()); i++)
+	{
+		if (compressedExts[i].compare(ext))
+		{
+			hasExt = true;
+			break;
+		}
+	}
+
+	if (!hasExt)
+		return false;
+
+	// Check whether the actual data is compressed.
+	Data *data = file->read();
+	bool compressed = CompressedData::isCompressed(data);
+	data->release();
+
+	return compressed;
+}
+
+bool Image::isCompressed(love::Data *data)
+{
+	return CompressedData::isCompressed(data);
 }
 
 } // devil

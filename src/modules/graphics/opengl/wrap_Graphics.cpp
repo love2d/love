@@ -269,21 +269,45 @@ int w_setInvertedStencil(lua_State *L)
 
 int w_newImage(lua_State *L)
 {
+	love::image::ImageData *data = 0;
+	love::image::CompressedData *cdata = 0;
+
 	// Convert to File, if necessary.
 	if (lua_isstring(L, 1))
 		luax_convobj(L, 1, "filesystem", "newFile");
 
-	// Convert to ImageData, if necessary.
+	// Convert to ImageData/CompressedData, if necessary.
 	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "image", "newImageData");
+	{
+		// Determine whether to convert to ImageData or CompressedData.
+		luax_getfunction(L, "image", "isCompressed");
+		lua_pushvalue(L, 1);
+		lua_call(L, 1, 1);
 
-	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+		bool compressed = luax_toboolean(L, -1);
+		lua_pop(L, 1);
+
+		if (compressed)
+			luax_convobj(L, 1, "image", "newCompressedData");
+		else
+			luax_convobj(L, 1, "image", "newImageData");
+	}
+
+	if (luax_istype(L, 1, IMAGE_COMPRESSED_DATA_T))
+		cdata = luax_checktype<love::image::CompressedData>(L, 1, "CompressedData", IMAGE_COMPRESSED_DATA_T);
+	else
+		data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 
 	// Create the image.
 	Image *image = 0;
 	try
 	{
-		image = instance->newImage(data);
+		if (cdata)
+			image = instance->newImage(cdata);
+		else if (data)
+			image = instance->newImage(data);
+		else
+			throw love::Exception("Error creating image.");
 	}
 	catch(love::Exception &e)
 	{
@@ -1108,6 +1132,18 @@ int w_isSupported(lua_State *L)
 			break;
 		case Graphics::SUPPORT_MIPMAP:
 			if (!Image::hasMipmapSupport())
+				supported = false;
+			break;
+		case Graphics::SUPPORT_DXT:
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_DXT5))
+				supported = false;
+			break;
+		case Graphics::SUPPORT_BC5:
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC5u))
+				supported = false;
+			break;
+		case Graphics::SUPPORT_BC7:
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC7))
 				supported = false;
 			break;
 		default:

@@ -39,14 +39,19 @@ ImageData::~ImageData()
 	delete mutex;
 }
 
+int ImageData::getSize() const
+{
+	return getWidth()*getHeight()*sizeof(pixel);
+}
+
 void *ImageData::getData() const
 {
 	return data;
 }
 
-int ImageData::getSize() const
+bool ImageData::inside(int x, int y) const
 {
-	return getWidth()*getHeight()*sizeof(pixel);
+	return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
 }
 
 int ImageData::getWidth() const
@@ -57,11 +62,6 @@ int ImageData::getWidth() const
 int ImageData::getHeight() const
 {
 	return height;
-}
-
-bool ImageData::inside(int x, int y) const
-{
-	return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
 }
 
 void ImageData::setPixel(int x, int y, pixel c)

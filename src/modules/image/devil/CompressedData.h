@@ -18,25 +18,43 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_WRAP_IMAGE_H
-#define LOVE_IMAGE_WRAP_IMAGE_H
+#ifndef LOVE_DEVIL_COMPRESSED_DATA_H
+#define LOVE_DEVIL_COMPRESSED_DATA_H
 
 // LOVE
-#include "Image.h"
-#include "wrap_ImageData.h"
-#include "wrap_CompressedData.h"
+#include "filesystem/File.h"
+#include "image/CompressedData.h"
+
+// dds parser
+#include "ddsparse/ddsparse.h"
 
 namespace love
 {
 namespace image
 {
+namespace devil
+{
 
-int w_newImageData(lua_State *L);
-int w_newCompressedData(lua_State *L);
-int w_isCompressed(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_image(lua_State *L);
+class CompressedData : public love::image::CompressedData
+{
+public:
 
+	CompressedData(love::filesystem::File *file);
+	CompressedData(Data *data);
+
+	virtual ~CompressedData();
+
+	static bool isCompressed(const Data *data);
+
+private:
+
+	bool convertFormat(dds::Format ddsformat);
+	void load(Data *data);
+
+}; // CompressedData
+
+} // devil
 } // image
 } // love
 
-#endif // LOVE_IMAGE_WRAP_IMAGE_H
+#endif // LOVE_DEVIL_COMPRESSED_DATA_H

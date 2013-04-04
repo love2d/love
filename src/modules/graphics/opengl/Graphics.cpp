@@ -373,6 +373,29 @@ Image *Graphics::newImage(love::image::ImageData *data)
 	return image;
 }
 
+Image *Graphics::newImage(love::image::CompressedData *cdata)
+{
+	// Create the image.
+	Image *image = new Image(cdata);
+	bool success;
+	try
+	{
+		success = image->load();
+	}
+	catch(love::Exception &)
+	{
+		image->release();
+		throw;
+	}
+	if (!success)
+	{
+		image->release();
+		return 0;
+	}
+
+	return image;
+}
+
 Quad *Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
 {
 	Quad::Viewport v;

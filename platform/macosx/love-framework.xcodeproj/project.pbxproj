@@ -225,7 +225,16 @@
 		FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* Vorbis.framework */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
+		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
+		FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAC6B01170A373A008A61C5 /* CompressedData.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
+		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
+		FAE010DC170DDE99006F29D0 /* ddsparse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010D9170DDE99006F29D0 /* ddsparse.cpp */; };
+		FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010DA170DDE99006F29D0 /* ddsparse.h */; };
+		FAE010E0170DE25E006F29D0 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010DE170DE25E006F29D0 /* CompressedData.cpp */; };
+		FAE010E1170DE25E006F29D0 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010DF170DE25E006F29D0 /* CompressedData.h */; };
+		FAE010E4170DF75C006F29D0 /* wrap_CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010E2170DF75B006F29D0 /* wrap_CompressedData.cpp */; };
+		FAE010E5170DF75C006F29D0 /* wrap_CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010E3170DF75C006F29D0 /* wrap_CompressedData.h */; };
 		FAF272A416E3D44400CC193A /* Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF2729816E3D44400CC193A /* Channel.cpp */; };
 		FAF272A516E3D44400CC193A /* Channel.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF2729916E3D44400CC193A /* Channel.h */; };
 		FAF272A616E3D44400CC193A /* LuaThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF2729A16E3D44400CC193A /* LuaThread.cpp */; };
@@ -702,7 +711,16 @@
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
+		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
+		FAAC6B01170A373A008A61C5 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
+		FAE010D9170DDE99006F29D0 /* ddsparse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ddsparse.cpp; sourceTree = "<group>"; };
+		FAE010DA170DDE99006F29D0 /* ddsparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsparse.h; sourceTree = "<group>"; };
+		FAE010DE170DE25E006F29D0 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
+		FAE010DF170DE25E006F29D0 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
+		FAE010E2170DF75B006F29D0 /* wrap_CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_CompressedData.cpp; sourceTree = "<group>"; };
+		FAE010E3170DF75C006F29D0 /* wrap_CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_CompressedData.h; sourceTree = "<group>"; };
 		FAF2729816E3D44400CC193A /* Channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Channel.cpp; sourceTree = "<group>"; };
 		FAF2729916E3D44400CC193A /* Channel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Channel.h; sourceTree = "<group>"; };
 		FAF2729A16E3D44400CC193A /* LuaThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LuaThread.cpp; sourceTree = "<group>"; };
@@ -748,14 +766,18 @@
 		003F4BA82B6046BC133B3F0F /* image */ = {
 			isa = PBXGroup;
 			children = (
+				FAAC6B00170A373A008A61C5 /* CompressedData.cpp */,
+				FAAC6B01170A373A008A61C5 /* CompressedData.h */,
+				13730AB030E309FF6E2961F1 /* devil */,
 				25C325DC2128769F6C6A54C3 /* Image.h */,
 				78115E763B723C0C40AD47CF /* ImageData.cpp */,
 				07B301984BE42246402F7D27 /* ImageData.h */,
-				13730AB030E309FF6E2961F1 /* devil */,
 				0B0728FA73B107B37A956A09 /* wrap_Image.cpp */,
 				006B015320155B4D42B43B61 /* wrap_Image.h */,
 				076840774B0B6E721D0C18D0 /* wrap_ImageData.cpp */,
 				31B85B507F466FE158A3718E /* wrap_ImageData.h */,
+				FAE010E2170DF75B006F29D0 /* wrap_CompressedData.cpp */,
+				FAE010E3170DF75C006F29D0 /* wrap_CompressedData.h */,
 			);
 			path = image;
 			sourceTree = "<group>";
@@ -912,6 +934,8 @@
 				68616BD516DB124312B47EB3 /* Image.h */,
 				1AA7781A230065F346E2313A /* ImageData.cpp */,
 				283342E174613897621A43F1 /* ImageData.h */,
+				FAE010DE170DE25E006F29D0 /* CompressedData.cpp */,
+				FAE010DF170DE25E006F29D0 /* CompressedData.h */,
 			);
 			path = devil;
 			sourceTree = "<group>";
@@ -1194,6 +1218,7 @@
 			isa = PBXGroup;
 			children = (
 				63287ED84D0F2EEB65D249A3 /* Box2D */,
+				FAE010D7170DDE99006F29D0 /* ddsparse */,
 				3AED1DE005A53DDB07902760 /* luasocket */,
 				36C14C81334735EC54E33637 /* utf8 */,
 			);
@@ -1619,6 +1644,16 @@
 			path = math;
 			sourceTree = "<group>";
 		};
+		FAE010D7170DDE99006F29D0 /* ddsparse */ = {
+			isa = PBXGroup;
+			children = (
+				FAE010D8170DDE99006F29D0 /* ddsinfo.h */,
+				FAE010D9170DDE99006F29D0 /* ddsparse.cpp */,
+				FAE010DA170DDE99006F29D0 /* ddsparse.h */,
+			);
+			path = ddsparse;
+			sourceTree = "<group>";
+		};
 		FAF272B016E3D46400CC193A /* sdl */ = {
 			isa = PBXGroup;
 			children = (
@@ -1647,6 +1682,11 @@
 				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
 				FAF272B816E3D46400CC193A /* threads.h in Headers */,
 				FA5454C316F1310000D30303 /* MathModule.h in Headers */,
+				FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */,
+				FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */,
+				FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */,
+				FAE010E1170DE25E006F29D0 /* CompressedData.h in Headers */,
+				FAE010E5170DF75C006F29D0 /* wrap_CompressedData.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1922,6 +1962,10 @@
 				FAF272B516E3D46400CC193A /* Thread.cpp in Sources */,
 				FAF272B716E3D46400CC193A /* threads.cpp in Sources */,
 				FA5454C216F1310000D30303 /* MathModule.cpp in Sources */,
+				FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */,
+				FAE010DC170DDE99006F29D0 /* ddsparse.cpp in Sources */,
+				FAE010E0170DE25E006F29D0 /* CompressedData.cpp in Sources */,
+				FAE010E4170DF75C006F29D0 /* wrap_CompressedData.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

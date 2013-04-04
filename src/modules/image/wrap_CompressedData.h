@@ -18,25 +18,27 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_WRAP_IMAGE_H
-#define LOVE_IMAGE_WRAP_IMAGE_H
+#ifndef LOVE_IMAGE_WRAP_COMRESSED_DATA_H
+#define LOVE_IMAGE_WRAP_COMRESSED_DATA_H
 
 // LOVE
-#include "Image.h"
-#include "wrap_ImageData.h"
-#include "wrap_CompressedData.h"
+#include "common/runtime.h"
+#include "CompressedData.h"
 
 namespace love
 {
 namespace image
 {
 
-int w_newImageData(lua_State *L);
-int w_newCompressedData(lua_State *L);
-int w_isCompressed(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_image(lua_State *L);
+CompressedData *luax_checkcompresseddata(lua_State *L, int idx);
+int w_CompressedData_getWidth(lua_State *L);
+int w_CompressedData_getHeight(lua_State *L);
+int w_CompressedData_getDimensions(lua_State *L);
+int w_CompressedData_getNumMipmaps(lua_State *L);
+int w_CompressedData_getType(lua_State *L);
+extern "C" int luaopen_compresseddata(lua_State *L);
 
 } // image
 } // love
 
-#endif // LOVE_IMAGE_WRAP_IMAGE_H
+#endif // LOVE_IMAGE_WRAP_COMRESSED_DATA_H

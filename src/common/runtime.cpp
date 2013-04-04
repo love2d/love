@@ -469,6 +469,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// Image
 	{"ImageData", IMAGE_IMAGE_DATA_ID},
+	{"CompressedData", IMAGE_COMPRESSED_DATA_ID},
 
 	// Audio
 	{"Source", AUDIO_SOURCE_ID},

@@ -26,6 +26,7 @@
 #include "common/math.h"
 #include "common/config.h"
 #include "image/ImageData.h"
+#include "image/CompressedData.h"
 #include "graphics/Image.h"
 
 // OpenGL
@@ -52,9 +53,16 @@ public:
 	 * Creates a new Image. Not that anything is ready to use
 	 * before load is called.
 	 *
-	 * @param file The file from which to load the image.
+	 * @param data The data from which to load the image.
 	 **/
 	Image(love::image::ImageData *data);
+
+	/**
+	 * Creates a new Image with compressed image data.
+	 *
+	 * @param cdata The compressed data from which to load the image.
+	 **/
+	Image(love::image::CompressedData *cdata);
 
 	/**
 	 * Destructor. Deletes the hardware texture and other resources.
@@ -126,6 +134,9 @@ public:
 	static bool hasMipmapSupport();
 	static bool hasMipmapSharpnessSupport();
 
+	static bool hasCompressedTextureSupport();
+	static bool hasCompressedTextureSupport(image::CompressedData::TextureType type);
+
 private:
 
 	void drawv(const Matrix &t, const vertex *v) const;
@@ -137,6 +148,9 @@ private:
 	}
 	// The ImageData from which the texture is created.
 	love::image::ImageData *data;
+
+	// Or the Compressed Image Data from which the texture is created.
+	love::image::CompressedData *cdata;
 
 	// Width and height of the hardware texture.
 	float width, height;
@@ -153,11 +167,15 @@ private:
 	// True if mipmaps have been created for this Image.
 	bool mipmapsCreated;
 
+	bool isCompressed;
+
 	// The image's filter mode
 	Image::Filter filter;
 
 	// The image's wrap mode
 	Image::Wrap wrap;
+
+	void preload();
 
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();
@@ -168,6 +186,8 @@ private:
 
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
+
+	GLenum getCompressedFormat(image::CompressedData::TextureType type) const;
 
 }; // Image
 

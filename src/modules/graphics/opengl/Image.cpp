@@ -39,43 +39,39 @@ Image::FilterMode Image::defaultMipmapFilter = Image::FILTER_NONE;
 float Image::defaultMipmapSharpness = 0.0f;
 
 Image::Image(love::image::ImageData *data)
-	: width((float)(data->getWidth()))
+	: cdata(0)
+	, width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
+	, isCompressed(false)
 {
 	data->retain();
 	this->data = data;
+	preload();
+}
 
-	memset(vertices, 255, sizeof(vertex)*4);
-
-	vertices[0].x = 0;
-	vertices[0].y = 0;
-	vertices[1].x = 0;
-	vertices[1].y = height;
-	vertices[2].x = width;
-	vertices[2].y = height;
-	vertices[3].x = width;
-	vertices[3].y = 0;
-
-	vertices[0].s = 0;
-	vertices[0].t = 0;
-	vertices[1].s = 0;
-	vertices[1].t = 1;
-	vertices[2].s = 1;
-	vertices[2].t = 1;
-	vertices[3].s = 1;
-	vertices[3].t = 0;
-
-	filter = getDefaultFilter();
-	filter.mipmap = defaultMipmapFilter;
+Image::Image(love::image::CompressedData *cdata)
+	: data(0)
+	, width((float)(cdata->getWidth(0)))
+	, height((float)(cdata->getHeight(0)))
+	, texture(0)
+	, mipmapSharpness(defaultMipmapSharpness)
+	, mipmapsCreated(false)
+	, isCompressed(true)
+{
+	cdata->retain();
+	this->cdata = cdata;
+	preload();
 }
 
 Image::~Image()
 {
 	if (data != 0)
 		data->release();
+	if (cdata != 0)
+		cdata->release();
 	unload();
 }
 
@@ -155,18 +151,46 @@ void Image::checkMipmapsCreated()
 	if (mipmapsCreated || (filter.mipmap != FILTER_NEAREST && filter.mipmap != FILTER_LINEAR))
 		return;
 
-	if (!hasMipmapSupport())
+	if (!(isCompressed && cdata) && !hasMipmapSupport())
 		throw love::Exception("Mipmap filtering is not supported on this system.");
 
 	// Some old drivers claim support for NPOT textures, but fail when creating mipmaps.
 	// we can't detect which systems will do this, so we fail gracefully for all NPOT images.
 	int w = int(width), h = int(height);
-	if (w != next_p2(w) || h != next_p2(h))
+	if (!isCompressed && (w != next_p2(w) || h != next_p2(h)))
 		throw love::Exception("Cannot create mipmaps: image does not have power of two dimensions.");
 
 	bind();
 
-	if (hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	if (isCompressed && cdata && hasCompressedTextureSupport(cdata->getType()))
+	{
+		int numMipmaps = cdata->getNumMipmaps();
+
+		// We have to inform OpenGL if the image doesn't have all mipmap levels.
+		if (GLEE_VERSION_1_2 || GLEE_SGIS_texture_lod)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipmaps - 1);
+		else if (cdata->getWidth(numMipmaps-1) > 1 || cdata->getHeight(numMipmaps-1) > 1)
+		{
+			// Telling OpenGL to ignore certain levels isn't always supported.
+			throw love::Exception("Cannot load mipmaps: "
+								  "compressed image does not have all required levels.");
+		}
+
+		GLenum format = getCompressedFormat(cdata->getType());
+
+		for (int i = 1; i < numMipmaps; i++)
+		{
+			glCompressedTexImage2DARB(GL_TEXTURE_2D,
+			                          i,
+			                          format,
+			                          cdata->getWidth(i),
+			                          cdata->getHeight(i),
+			                          0,
+			                          GLsizei(cdata->getSize(i)),
+			                          cdata->getData(i));
+		}
+	}
+	else if (data && hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
 	{
 		// AMD/ATI drivers have several bugs when generating mipmaps,
 		// re-uploading the entire base image seems to be required.
@@ -184,7 +208,7 @@ void Image::checkMipmapsCreated()
 		glEnable(GL_TEXTURE_2D);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
-	else
+	else if (data)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		glTexSubImage2D(GL_TEXTURE_2D,
@@ -197,6 +221,8 @@ void Image::checkMipmapsCreated()
 		                GL_UNSIGNED_BYTE,
 		                data->getData());
 	}
+	else
+		return;
 
 	mipmapsCreated = true;
 }
@@ -255,6 +281,32 @@ void Image::bind() const
 	bindTexture(texture);
 }
 
+void Image::preload()
+{
+	memset(vertices, 255, sizeof(vertex)*4);
+
+	vertices[0].x = 0;
+	vertices[0].y = 0;
+	vertices[1].x = 0;
+	vertices[1].y = height;
+	vertices[2].x = width;
+	vertices[2].y = height;
+	vertices[3].x = width;
+	vertices[3].y = 0;
+
+	vertices[0].s = 0;
+	vertices[0].t = 0;
+	vertices[1].s = 0;
+	vertices[1].t = 1;
+	vertices[2].s = 1;
+	vertices[2].t = 1;
+	vertices[3].s = 1;
+	vertices[3].t = 0;
+
+	filter = getDefaultFilter();
+	filter.mipmap = defaultMipmapFilter;
+}
+
 bool Image::load()
 {
 	return loadVolatile();
@@ -267,6 +319,18 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
+	if (isCompressed && cdata && !hasCompressedTextureSupport(cdata->getType()))
+	{
+		const char *str;
+		if (image::CompressedData::getConstant(cdata->getType(), str))
+		{
+			throw love::Exception("Cannot create image: "
+								  "%s compressed images are not supported on this system.", str);
+		}
+		else
+			throw love::Exception("cannot create image: format is not supported on this system.");
+	}
+
 	if (hasMipmapSharpnessSupport() && maxMipmapSharpness == 0.0f)
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
@@ -296,25 +360,47 @@ bool Image::loadVolatilePOT()
 
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
-	glTexImage2D(GL_TEXTURE_2D,
-	             0,
-	             GL_RGBA8,
-	             (GLsizei)p2width,
-	             (GLsizei)p2height,
-	             0,
-	             GL_RGBA,
-	             GL_UNSIGNED_BYTE,
-	             0);
+	if (isCompressed && cdata)
+	{
+		if (s != 1.0f || t != 1.0f)
+		{
+			throw love::Exception("Cannot create image: "
+								  "NPOT compressed images are not supported on this system.");
+		}
 
-	glTexSubImage2D(GL_TEXTURE_2D,
-	                0,
-	                0,
-	                0,
-	                (GLsizei)width,
-	                (GLsizei)height,
-	                GL_RGBA,
-	                GL_UNSIGNED_BYTE,
-	                data->getData());
+		GLenum format = getCompressedFormat(cdata->getType());
+
+		glCompressedTexImage2DARB(GL_TEXTURE_2D,
+		                          0,
+		                          format,
+		                          cdata->getWidth(0),
+		                          cdata->getHeight(0),
+		                          0,
+		                          GLsizei(cdata->getSize(0)),
+		                          cdata->getData(0));
+	}
+	else if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D,
+		             0,
+		             GL_RGBA8,
+		             (GLsizei)p2width,
+		             (GLsizei)p2height,
+		             0,
+		             GL_RGBA,
+		             GL_UNSIGNED_BYTE,
+		             0);
+
+		glTexSubImage2D(GL_TEXTURE_2D,
+		                0,
+		                0,
+		                0,
+		                (GLsizei)width,
+		                (GLsizei)height,
+		                GL_RGBA,
+		                GL_UNSIGNED_BYTE,
+		                data->getData());
+	}
 
 	if (glGetError() != GL_NO_ERROR)
 		throw love::Exception("Cannot create image: size may be too large for this system.");
@@ -337,15 +423,30 @@ bool Image::loadVolatileNPOT()
 
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
-	glTexImage2D(GL_TEXTURE_2D,
-	             0,
-	             GL_RGBA8,
-	             (GLsizei)width,
-	             (GLsizei)height,
-	             0,
-	             GL_RGBA,
-	             GL_UNSIGNED_BYTE,
-	             data->getData());
+	if (isCompressed && cdata)
+	{
+		GLenum format = getCompressedFormat(cdata->getType());
+		glCompressedTexImage2DARB(GL_TEXTURE_2D,
+		                          0,
+		                          format,
+		                          cdata->getWidth(0),
+		                          cdata->getHeight(0),
+		                          0,
+		                          GLsizei(cdata->getSize(0)),
+		                          cdata->getData(0));
+	}
+	else if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D,
+		             0,
+		             GL_RGBA8,
+		             (GLsizei)width,
+		             (GLsizei)height,
+		             0,
+		             GL_RGBA,
+		             GL_UNSIGNED_BYTE,
+		             data->getData());
+	}
 
 	if (glGetError() != GL_NO_ERROR)
 		throw love::Exception("Cannot create image: size may be too large for this system.");
@@ -407,6 +508,29 @@ Image::FilterMode Image::getDefaultMipmapFilter()
 	return defaultMipmapFilter;
 }
 
+GLenum Image::getCompressedFormat(image::CompressedData::TextureType type) const
+{
+	switch (type)
+	{
+	case image::CompressedData::TYPE_DXT1:
+		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+	case image::CompressedData::TYPE_DXT3:
+		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+	case image::CompressedData::TYPE_DXT5:
+		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	case image::CompressedData::TYPE_BC5s:
+		return GL_COMPRESSED_SIGNED_RG_RGTC2;
+	case image::CompressedData::TYPE_BC5u:
+		return GL_COMPRESSED_RG_RGTC2;
+	case image::CompressedData::TYPE_BC7:
+		return GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+	case image::CompressedData::TYPE_BC7srgb:
+		return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
+	default:
+		return GL_RGBA8;
+	}
+}
+
 bool Image::hasNpot()
 {
 	return GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two;
@@ -425,6 +549,37 @@ bool Image::hasMipmapSupport()
 bool Image::hasMipmapSharpnessSupport()
 {
 	return GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias;
+}
+
+bool Image::hasCompressedTextureSupport()
+{
+	return GLEE_VERSION_1_3 || GLEE_ARB_texture_compression;
+}
+
+bool Image::hasCompressedTextureSupport(image::CompressedData::TextureType type)
+{
+	if (!hasCompressedTextureSupport())
+		return false;
+
+	switch (type)
+	{
+	case image::CompressedData::TYPE_DXT1:
+	case image::CompressedData::TYPE_DXT3:
+	case image::CompressedData::TYPE_DXT5:
+		return GLEE_EXT_texture_compression_s3tc;
+
+	case image::CompressedData::TYPE_BC5s:
+	case image::CompressedData::TYPE_BC5u:
+		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc);
+
+	case image::CompressedData::TYPE_BC7:
+	case image::CompressedData::TYPE_BC7srgb:
+		return (GLEE_VERSION_4_2 || GLEE_ARB_texture_compression_bptc);
+
+	default:
+		return false;
+
+	}
 }
 
 } // opengl

@@ -24,6 +24,9 @@
 // LOVE
 #include "image/Image.h"
 
+// STL
+#include <string>
+
 namespace love
 {
 namespace image
@@ -45,6 +48,14 @@ public:
 	love::image::ImageData *newImageData(Data *data);
 	love::image::ImageData *newImageData(int width, int height);
 	love::image::ImageData *newImageData(int width, int height, void *data);
+
+	love::image::CompressedData *newCompressedData(love::filesystem::File *file);
+	love::image::CompressedData *newCompressedData(Data *data);
+
+	bool isCompressed(love::filesystem::File *file);
+	bool isCompressed(Data *data);
+
+	static const std::string compressedExts[];
 
 }; // Image
 

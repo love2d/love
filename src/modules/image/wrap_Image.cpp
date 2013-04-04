@@ -93,16 +93,98 @@ int w_newImageData(lua_State *L)
 	return 1;
 }
 
+int w_newCompressedData(lua_State *L)
+{
+	// Case 1: Data
+	if (luax_istype(L, 1, DATA_T))
+	{
+		Data *d = luax_checktype<Data>(L, 1, "Data", DATA_T);
+
+		CompressedData *t = 0;
+		try
+		{
+			t = instance->newCompressedData(d);
+		}
+		catch (love::Exception &e)
+		{
+			return luaL_error(L, "%s", e.what());
+		}
+		luax_newtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, (void *) t);
+
+		return 1;
+	}
+
+	// Case 2: String/File.
+
+	// Convert to File, if necessary.
+	if (lua_isstring(L, 1))
+		luax_convobj(L, 1, "filesystem", "newFile");
+
+	love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
+
+	CompressedData *t = 0;
+	try
+	{
+		t = instance->newCompressedData(file);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+	luax_newtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, (void *) t);
+
+	return 1;
+}
+
+int w_isCompressed(lua_State *L)
+{
+	if (luax_istype(L, 1, DATA_T))
+	{
+		Data *d = luax_checktype<Data>(L, 1, "Data", DATA_T);
+		try
+		{
+			bool compressed = instance->isCompressed(d);
+			luax_pushboolean(L,	compressed);
+		}
+		catch (love::Exception &e)
+		{
+			return luaL_error(L, "%s", e.what());
+		}
+		return 1;
+	}
+
+	// Convert to File, if necessary.
+	if (lua_isstring(L, 1))
+		luax_convobj(L, 1, "filesystem", "newFile");
+
+	filesystem::File *file = luax_checktype<filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
+
+	try
+	{
+		bool compressed = instance->isCompressed(file);
+		luax_pushboolean(L, compressed);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
 	{ "newImageData",  w_newImageData },
+	{ "newCompressedData", w_newCompressedData },
+	{ "isCompressed", w_isCompressed },
 	{ 0, 0 }
 };
 
 static const lua_CFunction types[] =
 {
 	luaopen_imagedata,
+	luaopen_compresseddata,
 	0
 };
 
