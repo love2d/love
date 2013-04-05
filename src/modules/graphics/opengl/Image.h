@@ -180,6 +180,8 @@ private:
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();
 
+	void uploadCompressedMipmaps();
+	void createMipmaps();
 	void checkMipmapsCreated();
 
 	static float maxMipmapSharpness;

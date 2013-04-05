@@ -158,7 +158,14 @@ int w_present(lua_State *)
 int w_setIcon(lua_State *L)
 {
 	Image *image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
-	instance->setIcon(image);
+	try
+	{
+		instance->setIcon(image);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 
@@ -1139,7 +1146,7 @@ int w_isSupported(lua_State *L)
 				supported = false;
 			break;
 		case Graphics::SUPPORT_BC5:
-			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC5u))
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC5))
 				supported = false;
 			break;
 		case Graphics::SUPPORT_BC7:

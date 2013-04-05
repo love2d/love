@@ -43,7 +43,7 @@ enum Format
 	FORMAT_DXT3,
 	FORMAT_DXT5,
 	FORMAT_BC5s,    // Signed.
-	FORMAT_BC5u,    // Unsigned.
+	FORMAT_BC5,     // Unsigned.
 	FORMAT_BC7,
 	FORMAT_BC7srgb, // sRGB color space.
 	FORMAT_UNKNOWN

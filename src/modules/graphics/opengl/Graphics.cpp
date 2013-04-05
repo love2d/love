@@ -224,7 +224,11 @@ void Graphics::present()
 
 void Graphics::setIcon(Image *image)
 {
-	currentWindow->setIcon(image->getData());
+	love::image::ImageData *data = image->getData();
+	if (data)
+		currentWindow->setIcon(data);
+	else
+		throw love::Exception("Cannot use compressed image data to set an icon.");
 }
 
 void Graphics::setCaption(const char *caption)

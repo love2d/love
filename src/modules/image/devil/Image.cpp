@@ -105,7 +105,7 @@ bool Image::isCompressed(love::filesystem::File *file)
 
 	// Check whether the actual data is compressed.
 	Data *data = file->read();
-	bool compressed = CompressedData::isCompressed(data);
+	bool compressed = isCompressed(data);
 	data->release();
 
 	return compressed;

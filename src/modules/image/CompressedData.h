@@ -36,19 +36,22 @@ namespace love
 namespace image
 {
 
-// 
+// CompressedData represents image data which is designed to be uploaded to the
+// GPU and rendered in its compressed form, without being un-compressed.
+// http://renderingpipeline.com/2012/07/texture-compression/
+
 class CompressedData : public Data
 {
 public:
 
-	// 
+	// Types of compressed image data.
 	enum TextureType
 	{
 		TYPE_DXT1,
 		TYPE_DXT3,
 		TYPE_DXT5,
 		TYPE_BC5s,
-		TYPE_BC5u,
+		TYPE_BC5,
 		TYPE_BC7,
 		TYPE_BC7srgb,
 		TYPE_MAX_ENUM

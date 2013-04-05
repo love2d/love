@@ -67,8 +67,8 @@ bool CompressedData::convertFormat(dds::Format ddsformat)
 	case dds::FORMAT_BC5s:
 		type = TYPE_BC5s;
 		break;
-	case dds::FORMAT_BC5u:
-		type = TYPE_BC5u;
+	case dds::FORMAT_BC5:
+		type = TYPE_BC5;
 		break;
 	case dds::FORMAT_BC7:
 		type = TYPE_BC7;

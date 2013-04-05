@@ -79,22 +79,28 @@ public:
 	virtual ImageData *newImageData(int width, int height, void *data) = 0;
 
 	/**
-	 *
+	 * Creates new CompressedData from a file.
+	 * @param file The file containing the compressed image data.
+	 * @return The new CompressedData.
 	 **/
 	virtual CompressedData *newCompressedData(love::filesystem::File *file) = 0;
 
 	/**
-	 *
+	 * Creates new CompressedData from a raw Data.
+	 * @param data The object containing the compressed image data.
+	 * @return The new CompressedData.
 	 **/
 	virtual CompressedData *newCompressedData(Data *data) = 0;
 
 	/**
-	 *
+	 * Determines whether a File is Compressed image data or not.
+	 * @param file The file to test.
 	 **/
 	virtual bool isCompressed(love::filesystem::File *file) = 0;
 
 	/**
-	 *
+	 * Determines whether a raw Data is Compressed image data or not.
+	 * @param data The data to test.
 	 **/
 	virtual bool isCompressed(Data *data) = 0;
 

@@ -24,8 +24,6 @@
 #include <cstring> // For memcpy
 #include <algorithm> // for min/max
 
-#include <iostream>
-
 namespace love
 {
 namespace graphics
@@ -146,81 +144,102 @@ void Image::drawq(love::graphics::Quad *quad, float x, float y, float angle, flo
 	drawv(t, v);
 }
 
-void Image::checkMipmapsCreated()
+void Image::uploadCompressedMipmaps()
 {
-	if (mipmapsCreated || (filter.mipmap != FILTER_NEAREST && filter.mipmap != FILTER_LINEAR))
+	if (!isCompressed || !cdata || !hasCompressedTextureSupport(cdata->getType()))
 		return;
-
-	if (!(isCompressed && cdata) && !hasMipmapSupport())
-		throw love::Exception("Mipmap filtering is not supported on this system.");
-
-	// Some old drivers claim support for NPOT textures, but fail when creating mipmaps.
-	// we can't detect which systems will do this, so we fail gracefully for all NPOT images.
-	int w = int(width), h = int(height);
-	if (!isCompressed && (w != next_p2(w) || h != next_p2(h)))
-		throw love::Exception("Cannot create mipmaps: image does not have power of two dimensions.");
 
 	bind();
 
-	if (isCompressed && cdata && hasCompressedTextureSupport(cdata->getType()))
+	int numMipmaps = cdata->getNumMipmaps();
+
+	// We have to inform OpenGL if the image doesn't have all mipmap levels.
+	if (GLEE_VERSION_1_2 || GLEE_SGIS_texture_lod)
 	{
-		int numMipmaps = cdata->getNumMipmaps();
-
-		// We have to inform OpenGL if the image doesn't have all mipmap levels.
-		if (GLEE_VERSION_1_2 || GLEE_SGIS_texture_lod)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipmaps - 1);
-		else if (cdata->getWidth(numMipmaps-1) > 1 || cdata->getHeight(numMipmaps-1) > 1)
-		{
-			// Telling OpenGL to ignore certain levels isn't always supported.
-			throw love::Exception("Cannot load mipmaps: "
-								  "compressed image does not have all required levels.");
-		}
-
-		GLenum format = getCompressedFormat(cdata->getType());
-
-		for (int i = 1; i < numMipmaps; i++)
-		{
-			glCompressedTexImage2DARB(GL_TEXTURE_2D,
-			                          i,
-			                          format,
-			                          cdata->getWidth(i),
-			                          cdata->getHeight(i),
-			                          0,
-			                          GLsizei(cdata->getSize(i)),
-			                          cdata->getData(i));
-		}
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipmaps - 1);
 	}
-	else if (data && hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	else if (cdata->getWidth(numMipmaps-1) > 1 || cdata->getHeight(numMipmaps-1) > 1)
+	{
+		// Telling OpenGL to ignore certain levels isn't always supported.
+		throw love::Exception("Cannot load mipmaps: "
+		      "compressed image does not have all required levels.");
+	}
+
+	for (int i = 1; i < numMipmaps; i++)
+	{
+		glCompressedTexImage2DARB(GL_TEXTURE_2D,
+		                          i,
+		                          getCompressedFormat(cdata->getType()),
+		                          cdata->getWidth(i),
+		                          cdata->getHeight(i),
+		                          0,
+		                          GLsizei(cdata->getSize(i)),
+		                          cdata->getData(i));
+	}
+}
+
+void Image::createMipmaps()
+{
+	if (!data)
+		return;
+
+	if (!hasMipmapSupport())
+		throw love::Exception("Mipmap filtering is not supported on this system.");
+
+	// Some old drivers claim support for NPOT textures, but fail when creating
+	// mipmaps. We can't detect which systems will do this, so we fail gracefully
+	// for all NPOT images.
+	int w = int(width), h = int(height);
+	if (w != next_p2(w) || h != next_p2(h))
+	{
+		throw love::Exception("Cannot create mipmaps: "
+		      "image does not have power of two dimensions.");
+	}
+
+	bind();
+
+	if (hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
 	{
 		// AMD/ATI drivers have several bugs when generating mipmaps,
 		// re-uploading the entire base image seems to be required.
 		glTexImage2D(GL_TEXTURE_2D,
-		             0,
-		             GL_RGBA8,
-		             (GLsizei)width,
-		             (GLsizei)height,
-		             0,
-		             GL_RGBA,
-		             GL_UNSIGNED_BYTE,
-		             data->getData());
+					 0,
+					 GL_RGBA8,
+					 (GLsizei)width,
+					 (GLsizei)height,
+					 0,
+					 GL_RGBA,
+					 GL_UNSIGNED_BYTE,
+					 data->getData());
 
 		// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
 		glEnable(GL_TEXTURE_2D);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
-	else if (data)
+	else
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		glTexSubImage2D(GL_TEXTURE_2D,
-		                0,
-		                0,
-		                0,
-		                (GLsizei)width,
-		                (GLsizei)height,
-		                GL_RGBA,
-		                GL_UNSIGNED_BYTE,
-		                data->getData());
+						0,
+						0,
+						0,
+						(GLsizei)width,
+						(GLsizei)height,
+						GL_RGBA,
+						GL_UNSIGNED_BYTE,
+						data->getData());
 	}
+}
+
+void Image::checkMipmapsCreated()
+{
+	if (mipmapsCreated || filter.mipmap == FILTER_NONE)
+		return;
+
+	if (isCompressed && cdata && hasCompressedTextureSupport(cdata->getType()))
+		uploadCompressedMipmaps();
+	else if (data)
+		createMipmaps();
 	else
 		return;
 
@@ -262,7 +281,9 @@ void Image::setMipmapSharpness(float sharpness)
 		mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
 		bind();
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness); // negative bias is sharper
+
+		// negative bias is sharper
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
 	}
 	else
 		mipmapSharpness = 0.0f;
@@ -325,7 +346,7 @@ bool Image::loadVolatile()
 		if (image::CompressedData::getConstant(cdata->getType(), str))
 		{
 			throw love::Exception("Cannot create image: "
-								  "%s compressed images are not supported on this system.", str);
+			      "%s compressed images are not supported on this system.", str);
 		}
 		else
 			throw love::Exception("cannot create image: format is not supported on this system.");
@@ -362,17 +383,15 @@ bool Image::loadVolatilePOT()
 
 	if (isCompressed && cdata)
 	{
-		if (s != 1.0f || t != 1.0f)
+		if (s < 1.0f || t < 1.0f)
 		{
 			throw love::Exception("Cannot create image: "
-								  "NPOT compressed images are not supported on this system.");
+				  "compressed NPOT images are not supported on this system.");
 		}
-
-		GLenum format = getCompressedFormat(cdata->getType());
 
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
 		                          0,
-		                          format,
+		                          getCompressedFormat(cdata->getType()),
 		                          cdata->getWidth(0),
 		                          cdata->getHeight(0),
 		                          0,
@@ -520,7 +539,7 @@ GLenum Image::getCompressedFormat(image::CompressedData::TextureType type) const
 		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 	case image::CompressedData::TYPE_BC5s:
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
-	case image::CompressedData::TYPE_BC5u:
+	case image::CompressedData::TYPE_BC5:
 		return GL_COMPRESSED_RG_RGTC2;
 	case image::CompressedData::TYPE_BC7:
 		return GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
@@ -569,8 +588,8 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::TextureType type)
 		return GLEE_EXT_texture_compression_s3tc;
 
 	case image::CompressedData::TYPE_BC5s:
-	case image::CompressedData::TYPE_BC5u:
-		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc);
+	case image::CompressedData::TYPE_BC5:
+		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc || GLEE_EXT_texture_compression_rgtc);
 
 	case image::CompressedData::TYPE_BC7:
 	case image::CompressedData::TYPE_BC7srgb:

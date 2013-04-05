@@ -81,7 +81,6 @@ bool Parser::isDDS(const void *data, size_t dataSize)
 		// Data must be big enough for both headers plus the magic value.
 		if (dataSize < (sizeof(uint32_t) + sizeof(DDSHeader) + sizeof(DDSHeader10)))
 			return false;
-
 	}
 
 	return true;
@@ -106,7 +105,6 @@ Parser::Parser(const Parser &other)
 		if ((options & OPTIONS_COPY_DATA) && img.dataSize > 0)
 		{
 			uint8_t *data = 0;
-
 			try
 			{
 				data = new uint8_t[img.dataSize];
@@ -116,7 +114,7 @@ Parser::Parser(const Parser &other)
 				clearData();
 				throw;
 			}
-
+			memcpy(data, it->data, img.dataSize);
 			img.data = data;
 		}
 
@@ -164,7 +162,9 @@ Format Parser::parseDDSFormat(const DDSPixelFormat &fmt) const
 		else if (fmt.fourCC == FourCC('D','X','T','5'))
 			return FORMAT_DXT5;
 		else if (fmt.fourCC == FourCC('A','T','I','2'))
-			return FORMAT_BC5u;
+			return FORMAT_BC5;
+		else if (fmt.fourCC == FourCC('B','C','5','S'))
+			return FORMAT_BC5s;
 	}
 
 	return FORMAT_UNKNOWN;
@@ -196,7 +196,7 @@ Format Parser::parseDX10Format(DXGIFormat fmt) const
 		break;
 	case DXGI_FORMAT_BC5_TYPELESS:
 	case DXGI_FORMAT_BC5_UNORM:
-		f = FORMAT_BC5u;
+		f = FORMAT_BC5;
 		break;
 	case DXGI_FORMAT_BC7_TYPELESS:
 	case DXGI_FORMAT_BC7_UNORM:
@@ -221,7 +221,7 @@ size_t Parser::parseImageSize(Format fmt, int width, int height) const
 	case FORMAT_DXT3:
 	case FORMAT_DXT5:
 	case FORMAT_BC5s:
-	case FORMAT_BC5u:
+	case FORMAT_BC5:
 	case FORMAT_BC7:
 	case FORMAT_BC7srgb:
 		{
@@ -269,7 +269,6 @@ bool Parser::parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int 
 		if (options & OPTIONS_COPY_DATA)
 		{
 			uint8_t *newData = 0;
-
 			try
 			{
 				newData = new uint8_t[img.dataSize];
@@ -280,7 +279,6 @@ bool Parser::parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int 
 				clearData();
 				throw;
 			}
-
 			memcpy(newData, &data[offset], img.dataSize);
 			img.data = newData;
 		}
