@@ -21,13 +21,17 @@
 #ifndef LOVE_GRAPHICS_SHADER_H
 #define LOVE_GRAPHICS_SHADER_H
 
+// LOVE
 #include "common/Object.h"
-#include <string>
-#include <map>
-#include <vector>
+#include "common/StringMap.h"
 #include "OpenGL.h"
 #include "Image.h"
 #include "Canvas.h"
+
+// STL
+#include <string>
+#include <map>
+#include <vector>
 
 namespace love
 {
@@ -156,6 +160,9 @@ private:
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
+
+	static StringMap<ShaderType, TYPE_MAX_ENUM>::Entry typeNameEntries[];
+	static StringMap<ShaderType, TYPE_MAX_ENUM> typeNames;
 };
 
 } // opengl

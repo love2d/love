@@ -97,17 +97,18 @@ Shader::~Shader()
 GLuint Shader::compileCode(ShaderType type, const std::string &code)
 {
 	GLenum glshadertype;
-	const char *shadertypestr = NULL;
+	const char *typestr;
+
+	if (!typeNames.find(type, typestr))
+		typestr = "";
 
 	switch (type)
 	{
 	case TYPE_VERTEX:
 		glshadertype = GL_VERTEX_SHADER;
-		shadertypestr = "vertex";
 		break;
 	case TYPE_PIXEL:
 		glshadertype = GL_FRAGMENT_SHADER;
-		shadertypestr = "pixel";
 		break;
 	default:
 		throw love::Exception("Cannot create shader object: unknown shader type.");
@@ -124,9 +125,9 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 		GLenum err = glGetError();
 
 		if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
-			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", shadertypestr, shadertypestr);
+			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", typestr, typestr);
 		else // other errors should only happen between glBegin() and glEnd()
-			throw love::Exception("Cannot create %s shader object.", shadertypestr);
+			throw love::Exception("Cannot create %s shader object.", typestr);
 	}
 
 	const char *src = code.c_str();
@@ -144,7 +145,7 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 
 	// Save any warnings for later querying
 	if (infologlen > 0)
-		shaderWarnings[type] = shadertypestr + std::string(" shader:\n") + infolog;
+		shaderWarnings[type] = infolog;
 
 	delete[] infolog;
 
@@ -154,7 +155,7 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 	if (status == GL_FALSE)
 	{
 		throw love::Exception("Cannot compile %s shader code:\n%s",
-		                      shadertypestr, shaderWarnings[type].c_str());
+		                      typestr, shaderWarnings[type].c_str());
 	}
 
 	return shaderid;
@@ -263,11 +264,15 @@ std::string Shader::getProgramWarnings() const
 std::string Shader::getWarnings() const
 {
 	std::string warnings;
+	const char *typestr;
 
 	// Get the individual shader stage warnings
 	std::map<ShaderType, std::string>::const_iterator it;
 	for (it = shaderWarnings.begin(); it != shaderWarnings.end(); ++it)
-		warnings += it->second;
+	{
+		if (typeNames.find(it->first, typestr))
+			warnings += std::string(typestr) + std::string(" shader:\n") + it->second;
+	}
 
 	warnings += getProgramWarnings();
 
@@ -475,6 +480,14 @@ bool Shader::isSupported()
 {
 	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
+
+StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntries[] =
+{
+	{"vertex", Shader::TYPE_VERTEX},
+	{"pixel", Shader::TYPE_PIXEL},
+};
+
+StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM> Shader::typeNames(Shader::typeNameEntries, sizeof(Shader::typeNameEntries));
 
 } // opengl
 } // graphics
