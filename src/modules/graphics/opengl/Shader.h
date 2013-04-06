@@ -133,8 +133,14 @@ private:
 
 	void sendTexture(const std::string &name, GLuint texture);
 
+	// Get any warnings or errors generated only by the shader program object.
+	std::string getProgramWarnings() const;
+
 	// List of all shader code attached to this Shader
 	ShaderSources shaderSources;
+
+	// Shader compiler warning strings for individual shader stages.
+	std::map<ShaderType, std::string> shaderWarnings;
 
 	GLuint program; // volatile
 
