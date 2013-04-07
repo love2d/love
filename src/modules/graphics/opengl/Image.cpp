@@ -537,10 +537,10 @@ GLenum Image::getCompressedFormat(image::CompressedData::TextureType type) const
 		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	case image::CompressedData::TYPE_DXT5:
 		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-	case image::CompressedData::TYPE_BC5s:
-		return GL_COMPRESSED_SIGNED_RG_RGTC2;
 	case image::CompressedData::TYPE_BC5:
 		return GL_COMPRESSED_RG_RGTC2;
+	case image::CompressedData::TYPE_BC5s:
+		return GL_COMPRESSED_SIGNED_RG_RGTC2;
 	case image::CompressedData::TYPE_BC7:
 		return GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 	case image::CompressedData::TYPE_BC7srgb:
@@ -587,8 +587,8 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::TextureType type)
 	case image::CompressedData::TYPE_DXT5:
 		return GLEE_EXT_texture_compression_s3tc;
 
-	case image::CompressedData::TYPE_BC5s:
 	case image::CompressedData::TYPE_BC5:
+	case image::CompressedData::TYPE_BC5s:
 		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc || GLEE_EXT_texture_compression_rgtc);
 
 	case image::CompressedData::TYPE_BC7:

@@ -18,16 +18,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "ImageData.h"
-
-// STD
-#include <cstring>
-#include <iostream>
+#include "DevilHandler.h"
 
 // LOVE
 #include "common/Exception.h"
 #include "common/math.h"
 #include "filesystem/File.h"
+#include "thread/threads.h"
+
+// DevIL
+#include <IL/il.h>
 
 using love::thread::Lock;
 
@@ -37,7 +37,7 @@ namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
 static inline void ilxClearErrors()
@@ -45,81 +45,61 @@ static inline void ilxClearErrors()
 	while (ilGetError() != IL_NO_ERROR);
 }
 
-ImageData::ImageData(Data *data)
+void DevilHandler::init()
 {
-	load(data);
+	ilInit();
+	ilEnable(IL_ORIGIN_SET);
+	ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
 }
 
-ImageData::ImageData(filesystem::File *file)
+void DevilHandler::quit()
 {
-	Data *data = file->read();
-	try
+	ilShutDown();
+}
+
+bool DevilHandler::canDecode(love::filesystem::FileData *data)
+{
+	// DevIL can decode a lot of formats...
+	return true;
+}
+
+bool DevilHandler::canEncode(ImageData::Format format)
+{
+	switch (format)
 	{
-		load(data);
-	}
-	catch (love::Exception &)
-	{
-		data->release();
-		throw;
-	}
-	data->release();
-}
-
-ImageData::ImageData(int width, int height)
-{
-	this->width = width;
-	this->height = height;
-	create(width, height);
-
-	// Set to black.
-	memset(data, 0, width*height*4);
-}
-
-ImageData::ImageData(int width, int height, void *data)
-{
-	this->width = width;
-	this->height = height;
-	create(width, height, data);
-}
-
-ImageData::~ImageData()
-{
-	delete[] data;
-}
-
-void ImageData::create(int width, int height, void *data)
-{
-	try
-	{
-		this->data = new unsigned char[width*height*sizeof(pixel)];
-	}
-	catch(std::bad_alloc &)
-	{
-		throw love::Exception("Out of memory");
+	case ImageData::FORMAT_BMP:
+	case ImageData::FORMAT_TGA:
+	case ImageData::FORMAT_JPG:
+	case ImageData::FORMAT_PNG:
+		return true;
+	default:
+		return false;
 	}
 
-	if (data)
-		memcpy(this->data, data, width*height*sizeof(pixel));
+	return false;
 }
 
-void ImageData::load(Data *data)
+DevilHandler::DecodedImage DevilHandler::decode(love::filesystem::FileData *data)
 {
 	if (!devilMutex)
 		devilMutex = thread::newMutex();
 
 	Lock lock(devilMutex);
+
 	ILuint image = ilGenImage();
 	ilBindImage(image);
 
+	DecodedImage img;
+
 	try
 	{
-		bool success = IL_TRUE == ilLoadL(IL_TYPE_UNKNOWN, (void *)data->getData(), data->getSize());
+		bool success = ilLoadL(IL_TYPE_UNKNOWN, (void *)data->getData(), data->getSize()) == IL_TRUE;
 
 		if (!success)
 			throw love::Exception("Could not decode image!");
 
-		width = ilGetInteger(IL_IMAGE_WIDTH);
-		height = ilGetInteger(IL_IMAGE_HEIGHT);
+		img.width = ilGetInteger(IL_IMAGE_WIDTH);
+		img.height = ilGetInteger(IL_IMAGE_HEIGHT);
 
 		// Make sure the image is in RGBA format.
 		ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
@@ -129,7 +109,18 @@ void ImageData::load(Data *data)
 		if (bpp != sizeof(pixel))
 			throw love::Exception("Could not convert image!");
 
-		create(width, height, ilGetData());
+		img.size = ilGetInteger(IL_IMAGE_SIZE_OF_DATA);
+
+		try
+		{
+			img.data = new ILubyte[img.size];
+		}
+		catch (std::bad_alloc &)
+		{
+			throw love::Exception("Out of memory.");
+		}
+
+		memcpy(img.data, ilGetData(), img.size);
 	}
 	catch (std::exception &e)
 	{
@@ -139,25 +130,26 @@ void ImageData::load(Data *data)
 	}
 
 	ilDeleteImage(image);
+
+	return img;
 }
 
-void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
+DevilHandler::EncodedImage DevilHandler::encode(const DecodedImage &img, ImageData::Format format)
 {
 	if (!devilMutex)
 		devilMutex = thread::newMutex();
 
-	Lock lock1(devilMutex);
-	Lock lock2(mutex);
+	Lock lock(devilMutex);
 
 	ILuint tempimage = ilGenImage();
 	ilBindImage(tempimage);
 	ilxClearErrors();
 
-	ILubyte *encoded_data = NULL;
+	EncodedImage encodedimg;
 
 	try
 	{
-		bool success = IL_TRUE == ilTexImage(width, height, 1, sizeof(pixel), IL_RGBA, IL_UNSIGNED_BYTE, this->data);
+		bool success = ilTexImage(img.width, img.height, 1, sizeof(pixel), IL_RGBA, IL_UNSIGNED_BYTE, img.data) ==  IL_TRUE;
 
 		ILenum err = ilGetError();
 		ilxClearErrors();
@@ -202,37 +194,34 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 			break;
 		}
 
-		ILuint size = ilSaveL(ilFormat, NULL, 0);
-		if (!size)
+		encodedimg.size = ilSaveL(ilFormat, NULL, 0);
+		if (!encodedimg.size)
 			throw love::Exception("Could not encode image!");
 
 		try
 		{
-			encoded_data = new ILubyte[size];
+			encodedimg.data = new ILubyte[encodedimg.size];
 		}
 		catch(std::bad_alloc &)
 		{
 			throw love::Exception("Out of memory");
 		}
 
-		ilSaveL(ilFormat, encoded_data, size);
-
-		f->open(love::filesystem::File::WRITE);
-		f->write(encoded_data, size);
-		f->close();
+		ilSaveL(ilFormat, encodedimg.data, encodedimg.size);
 	}
 	catch (std::exception &e)
 	{
 		// catches love and std exceptions
 		ilDeleteImage(tempimage);
-		delete[] encoded_data;
+		delete[] encodedimg.data;
 		throw love::Exception("%s", e.what());
 	}
 
 	ilDeleteImage(tempimage);
-	delete[] encoded_data;
+
+	return encodedimg;
 }
 
-} // devil
+} // magpie
 } // image
 } // love

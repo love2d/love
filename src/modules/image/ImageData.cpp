@@ -20,8 +20,6 @@
 
 #include "ImageData.h"
 
-#include <stdio.h>
-
 using love::thread::Lock;
 
 namespace love
@@ -30,6 +28,7 @@ namespace image
 {
 
 ImageData::ImageData()
+	: data(0)
 {
 	mutex = thread::newMutex();
 }

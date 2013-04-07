@@ -18,43 +18,37 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_DEVIL_COMPRESSED_DATA_H
-#define LOVE_DEVIL_COMPRESSED_DATA_H
+#ifndef LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
+#define LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
 
 // LOVE
 #include "filesystem/File.h"
 #include "image/CompressedData.h"
 
-// dds parser
-#include "ddsparse/ddsparse.h"
-
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
 class CompressedData : public love::image::CompressedData
 {
 public:
 
-	CompressedData(love::filesystem::File *file);
-	CompressedData(Data *data);
-
+	CompressedData(love::filesystem::FileData *data);
 	virtual ~CompressedData();
 
-	static bool isCompressed(const Data *data);
+	static bool isCompressed(love::filesystem::FileData *data);
 
 private:
 
-	bool convertFormat(dds::Format ddsformat);
-	void load(Data *data);
+	void load(love::filesystem::FileData *data);
 
 }; // CompressedData
 
-} // devil
+} // magpie
 } // image
 } // love
 
-#endif // LOVE_DEVIL_COMPRESSED_DATA_H
+#endif // LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H

@@ -47,18 +47,27 @@ public:
 	// Types of compressed image data.
 	enum TextureType
 	{
+		TYPE_UNKNOWN,
 		TYPE_DXT1,
 		TYPE_DXT3,
 		TYPE_DXT5,
-		TYPE_BC5s,
 		TYPE_BC5,
+		TYPE_BC5s,
 		TYPE_BC7,
 		TYPE_BC7srgb,
 		TYPE_MAX_ENUM
 	};
 
-	CompressedData();
+	// Compressed image data can have multiple mipmap levels, each represented
+	// by a sub-image.
+	struct SubImage
+	{
+		size_t size;
+		int width, height;
+		std::vector<unsigned char> data;
+	};
 
+	CompressedData();
 	virtual ~CompressedData();
 
 	// Implements Data.
@@ -101,17 +110,10 @@ public:
 
 protected:
 
-	struct MipmapInfo
-	{
-		size_t size;
-		int width, height;
-		std::vector<unsigned char> data;
-	};
-
 	TextureType type;
 
 	// Texture info for each mipmap level.
-	std::vector<MipmapInfo> dataMipmapInfo;
+	std::vector<SubImage> dataImages;
 
 	void checkMipmapLevelExists(int miplevel) const;
 

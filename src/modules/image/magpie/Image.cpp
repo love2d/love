@@ -20,47 +20,34 @@
 
 #include "Image.h"
 
-#include "ImageData.h"
+#include "imageData.h"
 #include "CompressedData.h"
 
-// DevIL
-#include <IL/il.h>
+#include "DevilHandler.h"
 
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
-
-const std::string Image::compressedExts[] =
-{
-	".dds", ""
-};
 
 Image::Image()
 {
-	ilInit();
-	ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
-	ilEnable(IL_ORIGIN_SET);
+	DevilHandler::init();
 }
 
 Image::~Image()
 {
-	ilShutDown();
+	DevilHandler::quit();
 }
 
 const char *Image::getName() const
 {
-	return "love.image.devil";
+	return "love.image.magpie";
 }
 
-love::image::ImageData *Image::newImageData(love::filesystem::File *file)
-{
-	return new ImageData(file);
-}
-
-love::image::ImageData *Image::newImageData(Data *data)
+love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
 {
 	return new ImageData(data);
 }
@@ -75,47 +62,16 @@ love::image::ImageData *Image::newImageData(int width, int height, void *data)
 	return new ImageData(width, height, data);
 }
 
-love::image::CompressedData *Image::newCompressedData(love::filesystem::File *file)
-{
-	return new CompressedData(file);
-}
-
-love::image::CompressedData *Image::newCompressedData(love::Data *data)
+love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)
 {
 	return new CompressedData(data);
 }
 
-bool Image::isCompressed(love::filesystem::File *file)
-{
-	bool hasExt = false;
-
-	// Check whether the file has an extension known to contain compressed data.
-	const std::string &ext = file->getExtension();
-	for (int i = 0; !(compressedExts[i].empty()); i++)
-	{
-		if (compressedExts[i].compare(ext))
-		{
-			hasExt = true;
-			break;
-		}
-	}
-
-	if (!hasExt)
-		return false;
-
-	// Check whether the actual data is compressed.
-	Data *data = file->read();
-	bool compressed = isCompressed(data);
-	data->release();
-
-	return compressed;
-}
-
-bool Image::isCompressed(love::Data *data)
+bool Image::isCompressed(love::filesystem::FileData *data)
 {
 	return CompressedData::isCompressed(data);
 }
 
-} // devil
+} // magpie
 } // image
 } // love

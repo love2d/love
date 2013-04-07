@@ -26,22 +26,20 @@ namespace image
 {
 
 CompressedData::CompressedData()
-	: type(TYPE_MAX_ENUM)
+	: type(TYPE_UNKNOWN)
 {
-	
 }
 
 CompressedData::~CompressedData()
 {
-	
 }
 
 int CompressedData::getSize() const
 {
-	size_t totalsize = sizeof(MipmapInfo) * dataMipmapInfo.size();
+	size_t totalsize = sizeof(SubImage) * dataImages.size();
 
-	for (size_t i = 0; i < dataMipmapInfo.size(); i++)
-		totalsize += dataMipmapInfo[i].size;
+	for (size_t i = 0; i < dataImages.size(); i++)
+		totalsize += dataImages[i].size;
 
 	return totalsize;
 }
@@ -49,40 +47,40 @@ int CompressedData::getSize() const
 void *CompressedData::getData() const
 {
 	// ?
-	return (void *) &dataMipmapInfo[0].data[0];
+	return (void *) &dataImages[0].data[0];
 }
 
 int CompressedData::getNumMipmaps() const
 {
-	return dataMipmapInfo.size();
+	return dataImages.size();
 }
 
 int CompressedData::getSize(int miplevel) const
 {
 	checkMipmapLevelExists(miplevel);
 
-	return dataMipmapInfo[miplevel].size;
+	return dataImages[miplevel].size;
 }
 
 void *CompressedData::getData(int miplevel) const
 {
 	checkMipmapLevelExists(miplevel);
 
-	return (void *) &dataMipmapInfo[miplevel].data[0];
+	return (void *) &dataImages[miplevel].data[0];
 }
 
 int CompressedData::getWidth(int miplevel) const
 {
 	checkMipmapLevelExists(miplevel);
 
-	return dataMipmapInfo[miplevel].width;
+	return dataImages[miplevel].width;
 }
 
 int CompressedData::getHeight(int miplevel) const
 {
 	checkMipmapLevelExists(miplevel);
 
-	return dataMipmapInfo[miplevel].height;
+	return dataImages[miplevel].height;
 }
 
 CompressedData::TextureType CompressedData::getType() const
@@ -92,7 +90,7 @@ CompressedData::TextureType CompressedData::getType() const
 
 void CompressedData::checkMipmapLevelExists(int miplevel) const
 {
-	if (miplevel < 0 || miplevel >= dataMipmapInfo.size())
+	if (miplevel < 0 || miplevel >= dataImages.size())
 		throw love::Exception("Mipmap level %d does not exist", miplevel);
 }
 
@@ -108,11 +106,12 @@ bool CompressedData::getConstant(CompressedData::TextureType in, const char *&ou
 
 StringMap<CompressedData::TextureType, CompressedData::TYPE_MAX_ENUM>::Entry CompressedData::typeEntries[] =
 {
+	{"unknown", CompressedData::TYPE_UNKNOWN},
 	{"dxt1", CompressedData::TYPE_DXT1},
 	{"dxt3", CompressedData::TYPE_DXT3},
 	{"dxt5", CompressedData::TYPE_DXT5},
-	{"bc5s", CompressedData::TYPE_BC5s},
 	{"bc5", CompressedData::TYPE_BC5},
+	{"bc5s", CompressedData::TYPE_BC5s},
 	{"bc7", CompressedData::TYPE_BC7},
 	{"bc7srgb", CompressedData::TYPE_BC7srgb},
 };

@@ -36,9 +36,9 @@ using namespace dds::dxinfo;
 static inline uint32_t FourCC(char a, char b, char c, char d)
 {
 	uint32_t fcc = ((uint32_t) a)
-	| (((uint32_t) b) << 8)
-	| (((uint32_t) c) << 16)
-	| (((uint32_t) d) << 24);
+	            | (((uint32_t) b) << 8)
+	            | (((uint32_t) c) << 16)
+	            | (((uint32_t) d) << 24);
 
 	return fcc;
 }
@@ -86,46 +86,54 @@ bool Parser::isDDS(const void *data, size_t dataSize)
 	return true;
 }
 
-Parser::Parser(const void *data, size_t dataSize, Options opts)
+bool Parser::isCompressedDDS(const void *data, size_t dataSize)
+{
+	if (!isDDS(data, dataSize))
+		return false;
+
+	const uint8_t *readData = (const uint8_t *) data;
+	ptrdiff_t offset = sizeof(uint32_t);
+
+	DDSHeader *header = (DDSHeader *) &readData[offset];
+	offset += sizeof(DDSHeader);
+
+	// Check for DX10 extension.
+	if ((header->format.flags & DDPF_FOURCC) && (header->format.fourCC == FourCC('D','X','1','0')))
+	{
+		DDSHeader10 *header10 = (DDSHeader10 *) &readData[offset];
+		return parseDX10Format(header10->dxgiFormat) != FORMAT_UNKNOWN;
+	}
+
+	return parseDDSFormat(header->format) != FORMAT_UNKNOWN;
+}
+
+Parser::Parser(const void *data, size_t dataSize)
 	: format(FORMAT_UNKNOWN)
-	, options(opts)
 {
 	parseData(data, dataSize);
 }
 
 Parser::Parser(const Parser &other)
-	: format(other.format)
-	, options(other.options)
+	: texData(other.texData)
+	, format(other.format)
 {
-	std::vector<Image>::const_iterator it;
-	for (it = other.texData.begin(); it != other.texData.end(); ++it)
-	{
-		Image img = *it;
+}
 
-		if ((options & OPTIONS_COPY_DATA) && img.dataSize > 0)
-		{
-			uint8_t *data = 0;
-			try
-			{
-				data = new uint8_t[img.dataSize];
-			}
-			catch (std::exception &)
-			{
-				clearData();
-				throw;
-			}
-			memcpy(data, it->data, img.dataSize);
-			img.data = data;
-		}
+Parser::Parser()
+	: format(FORMAT_UNKNOWN)
+{
+}
 
-		texData.push_back(img);
-	}
+Parser &Parser::operator = (const Parser &other)
+{
+	texData = other.texData;
+	format = other.format;
+
+	return *this;
 }
 
 Parser::~Parser()
 {
-	// Delete any data we created.
-	clearData();
 }
 
 Format Parser::getFormat() const
@@ -146,12 +154,7 @@ size_t Parser::getNumMipmaps() const
 	return texData.size();
 }
 
-bool Parser::ownsData() const
-{
-	return (options & OPTIONS_COPY_DATA) != 0;
-}
-
-Format Parser::parseDDSFormat(const DDSPixelFormat &fmt) const
+Format Parser::parseDDSFormat(const DDSPixelFormat &fmt)
 {
 	if (fmt.flags & DDPF_FOURCC)
 	{
@@ -161,7 +164,15 @@ Format Parser::parseDDSFormat(const DDSPixelFormat &fmt) const
 			return FORMAT_DXT3;
 		else if (fmt.fourCC == FourCC('D','X','T','5'))
 			return FORMAT_DXT5;
+		else if (fmt.fourCC == FourCC('A','T','I','1'))
+			return FORMAT_BC4;
 		else if (fmt.fourCC == FourCC('A','T','I','2'))
+			return FORMAT_BC5;
+		else if (fmt.fourCC == FourCC('B','C','4','U'))
+			return FORMAT_BC4;
+		else if (fmt.fourCC == FourCC('B','C','4','S'))
+			return FORMAT_BC4s;
+		else if (fmt.fourCC == FourCC('B','C','5','U'))
 			return FORMAT_BC5;
 		else if (fmt.fourCC == FourCC('B','C','5','S'))
 			return FORMAT_BC5s;
@@ -170,7 +181,7 @@ Format Parser::parseDDSFormat(const DDSPixelFormat &fmt) const
 	return FORMAT_UNKNOWN;
 }
 
-Format Parser::parseDX10Format(DXGIFormat fmt) const
+Format Parser::parseDX10Format(DXGIFormat fmt)
 {
 	Format f = FORMAT_UNKNOWN;
 
@@ -191,12 +202,26 @@ Format Parser::parseDX10Format(DXGIFormat fmt) const
 	case DXGI_FORMAT_BC3_UNORM_SRGB:
 		f = FORMAT_DXT5;
 		break;
-	case DXGI_FORMAT_BC5_SNORM:
-		f = FORMAT_BC5s;
+	case DXGI_FORMAT_BC4_TYPELESS:
+	case DXGI_FORMAT_BC4_UNORM:
+		f = FORMAT_BC4;
+		break;
+	case DXGI_FORMAT_BC4_SNORM:
+		f = FORMAT_BC4s;
 		break;
 	case DXGI_FORMAT_BC5_TYPELESS:
 	case DXGI_FORMAT_BC5_UNORM:
 		f = FORMAT_BC5;
+		break;
+	case DXGI_FORMAT_BC5_SNORM:
+		f = FORMAT_BC5s;
+		break;
+	case DXGI_FORMAT_BC6H_TYPELESS:
+	case DXGI_FORMAT_BC6H_UF16:
+		f = FORMAT_BC6H;
+		break;
+	case DXGI_FORMAT_BC6H_SF16:
+		f = FORAMT_BC6Hs;
 		break;
 	case DXGI_FORMAT_BC7_TYPELESS:
 	case DXGI_FORMAT_BC7_UNORM:
@@ -204,6 +229,7 @@ Format Parser::parseDX10Format(DXGIFormat fmt) const
 		break;
 	case DXGI_FORMAT_BC7_UNORM_SRGB:
 		f = FORMAT_BC7srgb;
+		break;
 	default:
 		break;
 	}
@@ -248,6 +274,7 @@ size_t Parser::parseImageSize(Format fmt, int width, int height) const
 bool Parser::parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int w, int h, int mips)
 {
 	size_t offset = 0;
+	std::vector<Image> newTexData;
 
 	for (int i = 0; i < mips; i++)
 	{
@@ -259,33 +286,12 @@ bool Parser::parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int 
 
 		// Make sure the data size is valid.
 		if (img.dataSize == 0 || (offset + img.dataSize) > dataSize)
-		{
-			// Clean up any data we allocated previously.
-			clearData();
 			return false;
-		}
 
-		// Create our own copy of the data, if requested.
-		if (options & OPTIONS_COPY_DATA)
-		{
-			uint8_t *newData = 0;
-			try
-			{
-				newData = new uint8_t[img.dataSize];
-			}
-			catch (std::exception &)
-			{
-				// Clean up before throwing.
-				clearData();
-				throw;
-			}
-			memcpy(newData, &data[offset], img.dataSize);
-			img.data = newData;
-		}
-		else
-			img.data = &data[offset];
+		// Store the memory address of the data representing this mip level.
+		img.data = &data[offset];
 
-		texData.push_back(img);
+		newTexData.push_back(img);
 
 		// Move to the next mip level.
 		offset += img.dataSize;
@@ -293,6 +299,8 @@ bool Parser::parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int 
 		w = std::max(w / 2, 1);
 		h = std::max(h / 2, 1);
 	}
+
+	texData = newTexData;
 
 	return true;
 }
@@ -345,22 +353,6 @@ bool Parser::parseData(const void *data, size_t dataSize)
 	int mips = std::max((int) header->mipMapCount, 1);
 
 	return parseTexData(&readData[offset], dataSize - offset, format, w, h, mips);
-}
-
-void Parser::clearData()
-{
-	if (options & OPTIONS_COPY_DATA)
-	{
-		// Delete any data we created.
-		std::vector<Image>::iterator it;
-		for (it = texData.begin(); it != texData.end(); ++it)
-		{
-			delete[] it->data;
-			it->data = 0;
-		}
-	}
-
-	texData.clear();
 }
 
 } // dds

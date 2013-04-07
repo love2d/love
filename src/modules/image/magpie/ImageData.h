@@ -18,49 +18,44 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_DEVIL_IMAGE_DATA_H
-#define LOVE_DEVIL_IMAGE_DATA_H
+#ifndef LOVE_IMAGE_MAGPIE_IMAGE_DATA_H
+#define LOVE_IMAGE_MAGPIE_IMAGE_DATA_H
 
 // LOVE
 #include "filesystem/File.h"
 #include "image/ImageData.h"
 
-// DevIL
-#include <IL/il.h>
-
-
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
 class ImageData : public love::image::ImageData
 {
+public:
+
+	ImageData(love::filesystem::FileData *data);
+	ImageData(int width, int height);
+	ImageData(int width, int height, void *data);
+	virtual ~ImageData();
+
+	// Implements image::ImageData.
+	virtual void encode(love::filesystem::File *f, ImageData::Format format);
+
 private:
 
 	// Create imagedata. Initialize with data if not null.
 	void create(int width, int height, void *data = 0);
 
-	// Load an encoded format.
-	void load(Data *data);
-
-public:
-
-	ImageData(Data *data);
-	ImageData(love::filesystem::File *file);
-	ImageData(int width, int height);
-	ImageData(int width, int height, void *data);
-	virtual ~ImageData();
-
-	// Implements ImageData.
-	void encode(love::filesystem::File *f, Format format);
+	// Decode and load an encoded format.
+	void decode(love::filesystem::FileData *data);
 
 }; // ImageData
 
-} // devil
+} // magpie
 } // image
 } // love
 
-#endif // LOVE_DEVIL_IMAGE_DATA_H
+#endif // LOVE_IMAGE_MAGPIE_IMAGE_DATA_H

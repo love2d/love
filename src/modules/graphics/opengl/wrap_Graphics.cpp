@@ -279,12 +279,12 @@ int w_newImage(lua_State *L)
 	love::image::ImageData *data = 0;
 	love::image::CompressedData *cdata = 0;
 
-	// Convert to File, if necessary.
-	if (lua_isstring(L, 1))
-		luax_convobj(L, 1, "filesystem", "newFile");
+	// Convert to FileData, if necessary.
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
 
 	// Convert to ImageData/CompressedData, if necessary.
-	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
 		// Determine whether to convert to ImageData or CompressedData.
 		luax_getfunction(L, "image", "isCompressed");

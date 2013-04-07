@@ -18,83 +18,53 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "CompressedData.h"
+#include "ddsHandler.h"
 
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
-CompressedData::CompressedData(Data *data)
+bool ddsHandler::canParse(const filesystem::FileData *data)
 {
-	load(data);
-}
-
-CompressedData::CompressedData(love::filesystem::File *file)
-{
-	Data *data = file->read();
-	try
-	{
-		load(data);
-	}
-	catch (love::Exception &)
-	{
-		data->release();
-		throw;
-	}
-}
-
-CompressedData::~CompressedData()
-{
-	
-}
-
-bool CompressedData::convertFormat(dds::Format ddsformat)
-{
-	switch (ddsformat)
-	{
-	case dds::FORMAT_DXT1:
-		type = TYPE_DXT1;
-		break;
-	case dds::FORMAT_DXT3:
-		type = TYPE_DXT3;
-		break;
-	case dds::FORMAT_DXT5:
-		type = TYPE_DXT5;
-		break;
-	case dds::FORMAT_BC5s:
-		type = TYPE_BC5s;
-		break;
-	case dds::FORMAT_BC5:
-		type = TYPE_BC5;
-		break;
-	case dds::FORMAT_BC7:
-		type = TYPE_BC7;
-		break;
-	case dds::FORMAT_BC7srgb:
-		type = TYPE_BC7srgb;
-		break;
-	default:
+	if (!accepts(data->getExtension()))
 		return false;
-	}
 
-	return true;
+	return dds::Parser::isCompressedDDS(data->getData(), data->getSize());
 }
 
-void CompressedData::load(Data *data)
+bool ddsHandler::accepts(const std::string &ext)
+{
+	static const std::string supported[] =
+	{
+		"dds", ""
+	};
+
+	for (int i = 0; !(supported[i].empty()); i++)
+	{
+		if (supported[i].compare(ext) == 0)
+			return true;
+	}
+
+	return false;
+}
+
+CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images)
 {
 	if (!dds::Parser::isDDS(data->getData(), data->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
+
+	CompressedData::TextureType textype = CompressedData::TYPE_UNKNOWN;
 
 	try
 	{
 		dds::Parser parser(data->getData(), data->getSize());
 
-		dds::Format format = parser.getFormat();
+		textype = convertFormat(parser.getFormat());
 
-		if (format == dds::FORMAT_UNKNOWN || !convertFormat(format))
+		if (textype == CompressedData::TYPE_UNKNOWN)
 			throw love::Exception("Could not parse compressed data: Unsupported format.");
 
 		if (parser.getNumMipmaps() == 0)
@@ -104,30 +74,49 @@ void CompressedData::load(Data *data)
 		{
 			const dds::Parser::Image *img = parser.getImageData(i);
 
-			MipmapInfo mip;
+			CompressedData::SubImage mip;
 
 			mip.width = img->width;
 			mip.height = img->height;
 			mip.size = img->dataSize;
+			mip.data.insert(mip.data.begin(), &img->data[0], &img->data[mip.size]);
 
-			mip.data.resize(mip.size);
-			memcpy(&mip.data[0], img->data, mip.size);
-
-			dataMipmapInfo.push_back(mip);
+			images.push_back(mip);
 		}
-		
 	}
 	catch (std::exception &e)
 	{
 		throw love::Exception(e.what());
 	}
+
+	return textype;
 }
 
-bool CompressedData::isCompressed(const Data *data)
+CompressedData::TextureType ddsHandler::convertFormat(dds::Format ddsformat)
 {
-	return dds::Parser::isDDS(data->getData(), data->getSize());
+	switch (ddsformat)
+	{
+	case dds::FORMAT_DXT1:
+		return CompressedData::TYPE_DXT1;
+	case dds::FORMAT_DXT3:
+		return CompressedData::TYPE_DXT3;
+	case dds::FORMAT_DXT5:
+		return CompressedData::TYPE_DXT5;
+	case dds::FORMAT_BC5:
+		return CompressedData::TYPE_BC5;
+	case dds::FORMAT_BC5s:
+		return CompressedData::TYPE_BC5s;
+	case dds::FORMAT_BC7:
+		return CompressedData::TYPE_BC7;
+	case dds::FORMAT_BC7srgb:
+		return CompressedData::TYPE_BC7srgb;
+	default:
+		return CompressedData::TYPE_UNKNOWN;
+	}
+
+	return CompressedData::TYPE_UNKNOWN;
 }
 
-} // devil
+} // magpie
 } // image
 } // love

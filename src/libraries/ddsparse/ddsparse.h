@@ -37,13 +37,18 @@ namespace dds
 {
 
 // Supported DDS formats.
+// Formats with an 's' suffix have signed data.
 enum Format
 {
 	FORMAT_DXT1,
 	FORMAT_DXT3,
 	FORMAT_DXT5,
-	FORMAT_BC5s,    // Signed.
-	FORMAT_BC5,     // Unsigned.
+	FORMAT_BC4,
+	FORMAT_BC4s,
+	FORMAT_BC5,
+	FORMAT_BC5s,
+	FORMAT_BC6H,
+	FORAMT_BC6Hs,
 	FORMAT_BC7,
 	FORMAT_BC7srgb, // sRGB color space.
 	FORMAT_UNKNOWN
@@ -52,12 +57,6 @@ enum Format
 class Parser
 {
 public:
-
-	enum Options
-	{
-		OPTIONS_NONE      = 0x00,
-		OPTIONS_COPY_DATA = 0x01 // Copy texture data internally when parsing.
-	};
 
 	// Represents a single mipmap level of a texture.
 	struct Image
@@ -71,20 +70,35 @@ public:
 	};
 
 	/**
-	 * Determines whether the input byte data is a valid DDS representation.
+	 * Determines whether the input byte data represents a valid DDS file.
+	 * Does not take into account whether the texture format is supported.
+	 *
+	 * @param data     The byte data to parse.
+	 * @param dataSize The size in bytes of the data.
 	 **/
 	static bool isDDS(const void *data, size_t dataSize);
 
 	/**
-	 * Constructor.
-	 * Attempts to parse byte data as DDS. May throw std::bad_alloc if out of
-	 * memory.
+	 * Determines whether the input byte data represents a valid compressed DDS
+	 * file. Takes into account texture format, but not type (3D textures, etc.)
+	 *
 	 * @param data     The byte data to parse.
 	 * @param dataSize The size in bytes of the data.
-	 * @param options  Any optional settings (see above.)
 	 **/
-	Parser(const void *data, size_t dataSize, Options opts = OPTIONS_NONE);
+	static bool isCompressedDDS(const void *data, size_t dataSize);
+
+	/**
+	 * Constructor.
+	 * Attempts to parse byte data as a compressed DDS file.
+	 *
+	 * @param data     The byte data to parse.
+	 * @param dataSize The size in bytes of the data.
+	 **/
+	Parser(const void *data, size_t dataSize);
 	Parser(const Parser &other);
+	Parser();
+
+	Parser &operator = (const Parser &other);
 
 	~Parser();
 
@@ -96,8 +110,9 @@ public:
 	/**
 	 * Gets the data of this texture at a mipmap level. Mipmap level 0
 	 * represents the base image.
+	 *
 	 * @param miplevel The mipmap level to get the data of.
-	 * @return Pointer to the image data, or 0 if miplevel is not within the
+	 * @return Pointer to the image data, or NULL if miplevel is not within the
 	 *         range of [0, numMipmaps).
 	 **/
 	const Image *getImageData(size_t miplevel = 0) const;
@@ -108,29 +123,19 @@ public:
 	 **/
 	size_t getNumMipmaps() const;
 
-	/**
-	 * Gets whether this Parser is using an internal copy of the texture data.
-	 * Accessing texture data from a Parser which hasn't internally copied the
-	 * DDS data will result in undefined behaviour if the original data is deleted.
-	 **/
-	bool ownsData() const;
-
 private:
 
-	Format parseDDSFormat(const dxinfo::DDSPixelFormat &fmt) const;
-	Format parseDX10Format(dxinfo::DXGIFormat fmt) const;
+	static Format parseDDSFormat(const dxinfo::DDSPixelFormat &fmt);
+	static Format parseDX10Format(dxinfo::DXGIFormat fmt);
+
 	size_t parseImageSize(Format fmt, int width, int height) const;
 
 	bool parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int w, int h, int mips);
 
 	bool parseData(const void *data, size_t dataSize);
 
-	// Delete any heap data created by this object.
-	void clearData();
-
 	std::vector<Image> texData;
 	Format format;
-	Options options;
 
 }; // Parser
 

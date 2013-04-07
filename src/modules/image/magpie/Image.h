@@ -18,22 +18,24 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_DEVIL_IMAGE_H
-#define LOVE_IMAGE_DEVIL_IMAGE_H
+#ifndef LOVE_IMAGE_MAGPIE_IMAGE_H
+#define LOVE_IMAGE_MAGPIE_IMAGE_H
 
 // LOVE
 #include "image/Image.h"
-
-// STL
-#include <string>
 
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
+/**
+ * Similar to love.sound's Lullaby module, love.image.magpie interfaces with
+ * multiple image libraries and determines the correct one to use on a
+ * per-image basis at runtime.
+ **/
 class Image : public love::image::Image
 {
 public:
@@ -44,23 +46,18 @@ public:
 	// Implements Module.
 	const char *getName() const;
 
-	love::image::ImageData *newImageData(love::filesystem::File *file);
-	love::image::ImageData *newImageData(Data *data);
+	love::image::ImageData *newImageData(love::filesystem::FileData *data);
 	love::image::ImageData *newImageData(int width, int height);
 	love::image::ImageData *newImageData(int width, int height, void *data);
 
-	love::image::CompressedData *newCompressedData(love::filesystem::File *file);
-	love::image::CompressedData *newCompressedData(Data *data);
+	love::image::CompressedData *newCompressedData(love::filesystem::FileData *data);
 
-	bool isCompressed(love::filesystem::File *file);
-	bool isCompressed(Data *data);
-
-	static const std::string compressedExts[];
+	bool isCompressed(love::filesystem::FileData *data);
 
 }; // Image
 
-} // devil
+} // magpie
 } // image
 } // love
 
-#endif // LOVE_IMAGE_DEVIL_IMAGE_H
+#endif // LOVE_IMAGE_MAGPIE_IMAGE_H
