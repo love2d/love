@@ -63,7 +63,7 @@ int w_SoundData_getSampleCount(lua_State *L)
 int w_SoundData_getDuration(lua_State *L)
 {
 	SoundData *t = luax_checksounddata(L, 1);
-	lua_pushinteger(L, t->getDuration());
+	lua_pushnumber(L, t->getDuration());
 	return 1;
 }
 

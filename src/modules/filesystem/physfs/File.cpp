@@ -36,7 +36,7 @@ namespace physfs
 
 extern bool hack_setupWriteDirectory();
 
-File::File(std::string filename)
+File::File(const std::string &filename)
 	: filename(filename)
 	, file(0)
 	, mode(filesystem::File::CLOSED)

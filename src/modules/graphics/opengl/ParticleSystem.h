@@ -378,6 +378,12 @@ public:
 	void reset();
 
 	/**
+	 * Instantly emits a number of particles.
+	 * @param num The number of particles to emit.
+	 **/
+	void emit(int num);
+
+	/**
 	 * Returns whether the particle emitter is active.
 	 **/
 	bool isActive() const;

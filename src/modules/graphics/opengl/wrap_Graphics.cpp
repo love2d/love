@@ -601,22 +601,15 @@ int w_setColor(lua_State *L)
 	Color c;
 	if (lua_istable(L, 1))
 	{
-		lua_pushinteger(L, 1);
-		lua_gettable(L, -2);
-		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 2);
-		lua_gettable(L, -2);
-		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 3);
-		lua_gettable(L, -2);
-		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 4);
-		lua_gettable(L, -2);
+		for (int i = 1; i <= 4; i++)
+			lua_rawgeti(L, 1, i);
+
+		c.r = (unsigned char)luaL_checkint(L, -4);
+		c.g = (unsigned char)luaL_checkint(L, -3);
+		c.b = (unsigned char)luaL_checkint(L, -2);
 		c.a = (unsigned char)luaL_optint(L, -1, 255);
-		lua_pop(L, 1);
+
+		lua_pop(L, 4);
 	}
 	else
 	{
@@ -644,22 +637,15 @@ int w_setBackgroundColor(lua_State *L)
 	Color c;
 	if (lua_istable(L, 1))
 	{
-		lua_pushinteger(L, 1);
-		lua_gettable(L, -2);
-		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 2);
-		lua_gettable(L, -2);
-		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 3);
-		lua_gettable(L, -2);
-		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_pop(L, 1);
-		lua_pushinteger(L, 4);
-		lua_gettable(L, -2);
+		for (int i = 1; i <= 4; i++)
+			lua_rawgeti(L, 1, i);
+
+		c.r = (unsigned char)luaL_checkint(L, -4);
+		c.g = (unsigned char)luaL_checkint(L, -3);
+		c.b = (unsigned char)luaL_checkint(L, -2);
 		c.a = (unsigned char)luaL_optint(L, -1, 255);
-		lua_pop(L, 1);
+
+		lua_pop(L, 4);
 	}
 	else
 	{
@@ -699,6 +685,28 @@ int w_getFont(lua_State *L)
 	f->retain();
 	luax_newtype(L, "Font", GRAPHICS_FONT_T, (void *)f);
 	return 1;
+}
+
+int w_setColorMask(lua_State *L)
+{
+	bool mask[4];
+	for (int i = 0; i < 4; i++)
+		mask[i] = luax_toboolean(L, i + 1);
+
+	// r, g, b, a
+	instance->setColorMask(mask[0], mask[1], mask[2], mask[3]);
+
+	return 0;
+}
+
+int w_getColorMask(lua_State *L)
+{
+	const bool *mask = instance->getColorMask();
+
+	for (int i = 0; i < 4; i++)
+		luax_pushboolean(L, mask[i]);
+
+	return 4;
 }
 
 int w_setBlendMode(lua_State *L)
@@ -943,8 +951,67 @@ int w_setCanvas(lua_State *L)
 	}
 
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	// this unbinds the previous fbo
-	canvas->startGrab();
+
+	try
+	{
+		// this unbinds the previous fbo
+		canvas->startGrab();
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+
+	return 0;
+}
+
+int w_setCanvases(lua_State *L)
+{
+	// discard stencil testing
+	instance->discardStencil();
+
+	// called with none -> reset to default buffer
+	// nil is an error, to help people with typoes
+	if (lua_isnone(L,1))
+	{
+		Canvas::bindDefaultCanvas();
+		return 0;
+	}
+
+	bool is_table = lua_istable(L, 1);
+	std::vector<Canvas *> attachments;
+
+	Canvas *canvas = 0;
+
+	if (is_table)
+	{
+		// grab the first canvas in the array and attach the rest
+		lua_rawgeti(L, 1, 1);
+		canvas = luax_checkcanvas(L, -1);
+		lua_pop(L, 1);
+
+		for (int i = 2; i <= lua_objlen(L, 1); i++)
+		{
+			lua_rawgeti(L, 1, i);
+			attachments.push_back(luax_checkcanvas(L, -1));
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		canvas = luax_checkcanvas(L, 1);
+		for (int i = 2; i <= lua_gettop(L); i++)
+			attachments.push_back(luax_checkcanvas(L, i));
+	}
+
+	try
+	{
+		canvas->startGrab(attachments);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 
 	return 0;
 }
@@ -952,14 +1019,25 @@ int w_setCanvas(lua_State *L)
 int w_getCanvas(lua_State *L)
 {
 	Canvas *canvas = Canvas::current;
+	int n = 1;
+
 	if (canvas)
 	{
 		canvas->retain();
 		luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void *) canvas);
+
+		const std::vector<Canvas *> &attachments = canvas->getAttachedCanvases();
+		for (size_t i = 0; i < attachments.size(); i++)
+		{
+			attachments[i]->retain();
+			luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void *) attachments[i]);
+			n++;
+		}
 	}
 	else
 		lua_pushnil(L);
-	return 1;
+
+	return n;
 }
 
 int w_setShader(lua_State *L)
@@ -1009,7 +1087,11 @@ int w_isSupported(lua_State *L)
 				supported = false;
 			break;
 		case Graphics::SUPPORT_HDR_CANVAS:
-			if (!Canvas::isHdrSupported())
+			if (!Canvas::isHDRSupported())
+				supported = false;
+			break;
+		case Graphics::SUPPORT_MULTI_CANVAS:
+			if (!Canvas::isMultiCanvasSupported())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_SHADER:
@@ -1086,8 +1168,8 @@ int w_drawq(lua_State *L)
 {
 	DrawQable *dq = luax_checktype<DrawQable>(L, 1, "DrawQable", GRAPHICS_DRAWQABLE_T);
 	Quad *q = luax_checkquad(L, 2);
-	float x = (float)luaL_checknumber(L, 3);
-	float y = (float)luaL_checknumber(L, 4);
+	float x = (float)luaL_optnumber(L, 3, 0.0f);
+	float y = (float)luaL_optnumber(L, 4, 0.0f);
 	float angle = (float)luaL_optnumber(L, 5, 0);
 	float sx = (float)luaL_optnumber(L, 6, 1);
 	float sy = (float)luaL_optnumber(L, 7, sx);
@@ -1192,8 +1274,7 @@ int w_line(lua_State *L)
 	{
 		for (int i = 0; i < args; ++i)
 		{
-			lua_pushnumber(L, i + 1);
-			lua_rawget(L, 1);
+			lua_rawgeti(L, 1, i + 1);
 			coords[i] = luax_tofloat(L, -1);
 			lua_pop(L, 1);
 		}
@@ -1295,8 +1376,7 @@ int w_polygon(lua_State *L)
 	{
 		for (int i = 0; i < args; ++i)
 		{
-			lua_pushnumber(L, i + 1);
-			lua_rawget(L, 2);
+			lua_rawgeti(L, 2, i + 1);
 			coords[i] = luax_tofloat(L, -1);
 			lua_pop(L, 1);
 		}
@@ -1408,6 +1488,8 @@ static const luaL_Reg functions[] =
 	{ "setFont", w_setFont },
 	{ "getFont", w_getFont },
 
+	{ "setColorMask", w_setColorMask },
+	{ "getColorMask", w_getColorMask },
 	{ "setBlendMode", w_setBlendMode },
 	{ "getBlendMode", w_getBlendMode },
 	{ "setDefaultFilter", w_setDefaultFilter },
@@ -1427,7 +1509,9 @@ static const luaL_Reg functions[] =
 	{ "getMaxPointSize", w_getMaxPointSize },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
+	{ "setCanvases", w_setCanvases },
 	{ "getCanvas", w_getCanvas },
+	{ "getCanvases", w_getCanvas },
 
 	{ "setShader", w_setShader },
 	{ "getShader", w_getShader },

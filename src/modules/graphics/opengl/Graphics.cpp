@@ -87,6 +87,9 @@ DisplayState Graphics::saveState()
 	if (s.scissor)
 		glGetIntegerv(GL_SCISSOR_BOX, s.scissorBox);
 
+	for (int i = 0; i < 4; i++)
+		s.colorMask[i] = colorMask[i];
+
 	return s;
 }
 
@@ -101,6 +104,7 @@ void Graphics::restoreState(const DisplayState &s)
 		setScissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3]);
 	else
 		setScissor();
+	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
 }
 
 bool Graphics::setMode(int width, int height, WindowFlags *flags)
@@ -134,6 +138,9 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 
 	// "Normal" blending
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Enable all color component writes.
+	setColorMask(true, true, true, true);
 
 	// Enable line/point smoothing.
 	setLineStyle(LINE_SMOOTH);
@@ -265,33 +272,29 @@ bool Graphics::isCreated() const
 int Graphics::getModes(lua_State *L) const
 {
 	int n;
-	love::window::Window::WindowSize **modes = currentWindow->getFullscreenSizes(n);
+	love::window::Window::WindowSize *modes = currentWindow->getFullscreenSizes(n);
 
 	if (modes == 0)
 		return 0;
 
-	lua_newtable(L);
+	lua_createtable(L, n, 0);
 
 	for (int i = 0; i < n ; i++)
 	{
 		lua_pushinteger(L, i+1);
-		lua_newtable(L);
+		lua_createtable(L, 0, 2);
 
 		// Inner table attribs.
 
-		lua_pushstring(L, "width");
-		lua_pushinteger(L, modes[i]->width);
-		lua_settable(L, -3);
+		lua_pushinteger(L, modes[i].width);
+		lua_setfield(L, -2, "width");
 
-		lua_pushstring(L, "height");
-		lua_pushinteger(L, modes[i]->height);
-		lua_settable(L, -3);
+		lua_pushinteger(L, modes[i].height);
+		lua_setfield(L, -2, "height");
 
 		// Inner table attribs end.
 
 		lua_settable(L, -3);
-
-		delete modes[i];
 	}
 
 	delete[] modes;
@@ -338,12 +341,12 @@ void Graphics::useStencil(bool invert)
 {
 	glStencilFunc(GL_EQUAL, (int)(!invert), 1); // invert ? 0 : 1
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 }
 
 void Graphics::discardStencil()
 {
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 	glDisable(GL_STENCIL_TEST);
 }
 
@@ -397,7 +400,7 @@ ParticleSystem *Graphics::newParticleSystem(Image *image, int size)
 
 Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_type)
 {
-	if (texture_type == Canvas::TYPE_HDR && !Canvas::isHdrSupported())
+	if (texture_type == Canvas::TYPE_HDR && !Canvas::isHDRSupported())
 		throw Exception("HDR Canvases are not supported by your OpenGL implementation");
 
 	while (GL_NO_ERROR != glGetError())
@@ -505,6 +508,21 @@ void Graphics::setFont(Font *font)
 Font *Graphics::getFont() const
 {
 	return currentFont;
+}
+
+void Graphics::setColorMask(bool r, bool g, bool b, bool a)
+{
+	colorMask[0] = r;
+	colorMask[1] = g;
+	colorMask[2] = b;
+	colorMask[3] = a;
+
+	glColorMask((GLboolean) r, (GLboolean) g, (GLboolean) b, (GLboolean) a);
+}
+
+const bool *Graphics::getColorMask() const
+{
+	return colorMask;
 }
 
 void Graphics::setBlendMode(Graphics::BlendMode mode)

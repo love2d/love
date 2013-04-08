@@ -158,6 +158,7 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 {
 	{ "canvas", Graphics::SUPPORT_CANVAS },
 	{ "hdrcanvas", Graphics::SUPPORT_HDR_CANVAS },
+	{ "multicanvas", Graphics::SUPPORT_MULTI_CANVAS },
 	{ "shader", Graphics::SUPPORT_SHADER },
 	{ "npot", Graphics::SUPPORT_NPOT },
 	{ "subtractive", Graphics::SUPPORT_SUBTRACTIVE },

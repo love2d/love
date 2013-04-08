@@ -211,7 +211,7 @@ bool Window::checkWindowSize(int width, int height, bool fullscreen) const
 
 typedef Window::WindowSize WindowSize;
 
-WindowSize **Window::getFullscreenSizes(int &n) const
+WindowSize *Window::getFullscreenSizes(int &n) const
 {
 	SDL_Rect **modes = SDL_ListModes(0, SDL_OPENGL | SDL_FULLSCREEN);
 
@@ -225,13 +225,12 @@ WindowSize **Window::getFullscreenSizes(int &n) const
 	for (int i = 0; modes[i]; i++)
 		n++;
 
-	WindowSize **sizes = new WindowSize*[n];
+	WindowSize *sizes = new WindowSize[n];
 
 	for (int i = 0; i < n; i++)
 	{
-		sizes[i] = new WindowSize;
-		sizes[i]->width = modes[i]->w;
-		sizes[i]->height = modes[i]->h;
+		WindowSize w = {modes[i]->w, modes[i]->h};
+		sizes[i] = w;
 	}
 	return sizes;
 }
@@ -251,7 +250,7 @@ bool Window::isCreated() const
 	return created;
 }
 
-void Window::setWindowTitle(std::string &title)
+void Window::setWindowTitle(const std::string &title)
 {
 	windowTitle = title;
 	SDL_WM_SetCaption(windowTitle.c_str(), 0);

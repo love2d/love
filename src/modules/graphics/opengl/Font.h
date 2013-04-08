@@ -183,12 +183,16 @@ private:
 	float lineHeight;
 	float mSpacing; // modifies the spacing by multiplying it with this value
 
-	int texture_size_index;
-	int texture_width;
-	int texture_height;
+	int textureSizeIndex;
+	int textureWidth;
+	int textureHeight;
 
-	std::vector<GLuint> textures; // vector of packed textures
-	std::map<unsigned int, Glyph *> glyphs; // maps glyphs to quad information
+	// vector of packed textures
+	std::vector<GLuint> textures;
+
+	// maps glyphs to glyph texture information
+	std::map<unsigned int, Glyph *> glyphs;
+
 	FontType type;
 	Image::Filter filter;
 
@@ -198,7 +202,7 @@ private:
 
 	static const int TEXTURE_PADDING = 1;
 
-	int texture_x, texture_y;
+	int textureX, textureY;
 	int rowHeight;
 
 	bool initializeTexture(GLint format);

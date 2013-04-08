@@ -21,6 +21,7 @@
 #ifndef LOVE_GRAPHICS_OPENGL_CANVAS_H
 #define LOVE_GRAPHICS_OPENGL_CANVAS_H
 
+// LOVE
 #include "graphics/DrawQable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Image.h"
@@ -30,6 +31,9 @@
 #include "common/math.h"
 #include "common/Matrix.h"
 #include "OpenGL.h"
+
+// STL
+#include <vector>
 
 namespace love
 {
@@ -50,6 +54,11 @@ public:
 	Canvas(int width, int height, TextureType texture_type = TYPE_NORMAL);
 	virtual ~Canvas();
 
+	/**
+	 * @param canvases A list of other canvases to temporarily attach to this one,
+	 * to allow drawing to multiple canvases at once.
+	 **/
+	void startGrab(const std::vector<Canvas *> &canvases);
 	void startGrab();
 	void stopGrab();
 
@@ -65,6 +74,8 @@ public:
 	love::image::ImageData *getImageData(love::image::Image *image);
 
 	void getPixel(unsigned char* pixel_rgba, int x, int y);
+
+	const std::vector<Canvas *> &getAttachedCanvases() const;
 
 	void setFilter(const Image::Filter &f);
 	Image::Filter getFilter() const;
@@ -89,19 +100,21 @@ public:
 	void unloadVolatile();
 
 	static bool isSupported();
-	static bool isHdrSupported();
+	static bool isHDRSupported();
+	static bool isMultiCanvasSupported();
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
 
 	static Canvas *current;
 	static void bindDefaultCanvas();
 
-private:
-	friend class Shader;
 	GLuint getTextureName() const
 	{
 		return img;
 	}
+
+private:
+	friend class Shader;
 
 	GLsizei width;
 	GLsizei height;
@@ -121,6 +134,9 @@ private:
 		Image::Wrap   wrap;
 	} settings;
 
+	std::vector<Canvas *> attachedCanvases;
+
+	void setupGrab();
 	void drawv(const Matrix &t, const vertex *v) const;
 
 	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];

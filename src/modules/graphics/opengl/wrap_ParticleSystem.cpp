@@ -248,11 +248,8 @@ int w_ParticleSystem_setColors(lua_State *L)
 				return luaL_argerror(L, i + 2, "expected 4 color components");
 
 			for (int j = 0; j < 4; j++)
-			{
 				// push args[i+2][j+1] onto the stack
-				lua_pushnumber(L, j + 1);
-				lua_gettable(L, i + 2);
-			}
+				lua_rawgeti(L, i + 2, j + 1);
 
 			int r = luaL_checkint(L, -4);
 			int g = luaL_checkint(L, -3);
@@ -325,8 +322,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 	{
 		for (int i = 0; i < nQuads; i++)
 		{
-			lua_pushnumber(L, i + 1); // array index
-			lua_gettable(L, 2);
+			lua_rawgeti(L, 2, i + 1); // array index
 			quads[i] = luax_checkquad(L, -1);
 			lua_pop(L, 1);
 		}
@@ -452,6 +448,14 @@ int w_ParticleSystem_reset(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_emit(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	int num = luaL_checkint(L, 2);
+	t->emit(num);
+	return 0;
+}
+
 int w_ParticleSystem_isActive(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -518,6 +522,7 @@ static const luaL_Reg functions[] =
 	{ "stop", w_ParticleSystem_stop },
 	{ "pause", w_ParticleSystem_pause },
 	{ "reset", w_ParticleSystem_reset },
+	{ "emit", w_ParticleSystem_emit },
 	{ "isActive", w_ParticleSystem_isActive },
 	{ "isEmpty", w_ParticleSystem_isEmpty },
 	{ "isFull", w_ParticleSystem_isFull },

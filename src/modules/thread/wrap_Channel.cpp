@@ -47,6 +47,8 @@ int w_Channel_push(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
 	Variant *var = Variant::fromLua(L, 2);
+	if (!var)
+		return luaL_argerror(L, 2, "boolean, number, string, or love userdata expected");
 	c->push(var);
 	releaseVariant(c, var);
 	return 0;
@@ -56,6 +58,8 @@ int w_Channel_supply(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
 	Variant *var = Variant::fromLua(L, 2);
+	if (!var)
+		return luaL_argerror(L, 2, "boolean, number, string, or love userdata expected");
 	c->supply(var);
 	releaseVariant(c, var);
 	return 0;

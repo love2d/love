@@ -47,7 +47,14 @@ int w_Canvas_renderTo(lua_State *L)
 	if (!lua_isfunction(L, 2))
 		return luaL_error(L, "Need a function to render to canvas.");
 
-	canvas->startGrab();
+	try
+	{
+		canvas->startGrab();
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	lua_settop(L, 2); // make sure the function is on top of the stack
 	lua_call(L, 0, 0);
 	canvas->stopGrab();
@@ -172,18 +179,14 @@ int w_Canvas_clear(lua_State *L)
 	}
 	else if (lua_istable(L, 2))
 	{
-		lua_pushinteger(L, 1);
-		lua_gettable(L, 2);
-		c.r = (unsigned char)luaL_checkint(L, -1);
-		lua_pushinteger(L, 2);
-		lua_gettable(L, 2);
-		c.g = (unsigned char)luaL_checkint(L, -1);
-		lua_pushinteger(L, 3);
-		lua_gettable(L, 2);
-		c.b = (unsigned char)luaL_checkint(L, -1);
-		lua_pushinteger(L, 4);
-		lua_gettable(L, 2);
-		c.g = (unsigned char)luaL_optint(L, -1, 255);
+		for (int i = 1; i <= 4; i++)
+			lua_rawgeti(L, 2, i);
+
+		c.r = (unsigned char)luaL_checkint(L, -4);
+		c.g = (unsigned char)luaL_checkint(L, -3);
+		c.b = (unsigned char)luaL_checkint(L, -2);
+		c.a = (unsigned char)luaL_optint(L, -1, 255);
+
 		lua_pop(L, 4);
 	}
 	else

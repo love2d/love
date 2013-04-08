@@ -71,9 +71,12 @@ Shader::Shader(const ShaderSources &sources)
 	if (shaderSources.empty())
 		throw love::Exception("Cannot create shader: no source code!");
 
-	GLint maxtexunits;
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
-	maxTextureUnits = std::max(maxtexunits - 1, 0);
+	if (maxTextureUnits <= 0)
+	{
+		GLint maxtexunits;
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
+		maxTextureUnits = std::max(maxtexunits - 1, 0);
+	}
 
 	// initialize global texture id counters if needed
 	if (textureCounters.size() < (size_t) maxTextureUnits)
@@ -94,17 +97,18 @@ Shader::~Shader()
 GLuint Shader::compileCode(ShaderType type, const std::string &code)
 {
 	GLenum glshadertype;
-	const char *shadertypename = NULL;
+	const char *typestr;
+
+	if (!typeNames.find(type, typestr))
+		typestr = "";
 
 	switch (type)
 	{
 	case TYPE_VERTEX:
 		glshadertype = GL_VERTEX_SHADER;
-		shadertypename = "vertex";
 		break;
 	case TYPE_PIXEL:
 		glshadertype = GL_FRAGMENT_SHADER;
-		shadertypename = "pixel";
 		break;
 	default:
 		throw love::Exception("Cannot create shader object: unknown shader type.");
@@ -121,9 +125,9 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 		GLenum err = glGetError();
 
 		if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
-			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", shadertypename, shadertypename);
+			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", typestr, typestr);
 		else // other errors should only happen between glBegin() and glEnd()
-			throw love::Exception("Cannot create %s shader object.", shadertypename);
+			throw love::Exception("Cannot create %s shader object.", typestr);
 	}
 
 	const char *src = code.c_str();
@@ -132,23 +136,26 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 
 	glCompileShader(shaderid);
 
+	// Get any warnings the shader compiler may have produced
+	GLint infologlen;
+	glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
+
+	GLchar *infolog = new GLchar[infologlen + 1];
+	glGetShaderInfoLog(shaderid, infologlen, NULL, infolog);
+
+	// Save any warnings for later querying
+	if (infologlen > 0)
+		shaderWarnings[type] = infolog;
+
+	delete[] infolog;
+
 	GLint status;
 	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &status);
 
 	if (status == GL_FALSE)
 	{
-		GLint infologlen;
-		glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
-
-		GLchar *errorlog = new GLchar[infologlen + 1];
-		glGetShaderInfoLog(shaderid, infologlen, NULL, errorlog);
-
-		std::string tmp(errorlog);
-
-		delete[] errorlog;
-		glDeleteShader(shaderid);
-
-		throw love::Exception("Cannot compile %s shader code:\n%s", shadertypename, tmp.c_str());
+		throw love::Exception("Cannot compile %s shader code:\n%s",
+		                      typestr, shaderWarnings[type].c_str());
 	}
 
 	return shaderid;
@@ -174,7 +181,7 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 
 	if (status == GL_FALSE)
 	{
-		const std::string warnings = getWarnings();
+		std::string warnings = getProgramWarnings();
 		glDeleteProgram(program);
 
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
@@ -233,12 +240,15 @@ void Shader::unloadVolatile()
 
 	// same with uniform location list
 	uniforms.clear();
+
+	shaderWarnings.clear();
 }
 
-std::string Shader::getWarnings() const
+std::string Shader::getProgramWarnings() const
 {
 	GLint strlen, nullpos;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &strlen);
+
 	char *tempstr = new char[strlen+1];
 	// be extra sure that the error string will be 0-terminated
 	memset(tempstr, '\0', strlen+1);
@@ -247,6 +257,25 @@ std::string Shader::getWarnings() const
 
 	std::string warnings(tempstr);
 	delete[] tempstr;
+
+	return warnings;
+}
+
+std::string Shader::getWarnings() const
+{
+	std::string warnings;
+	const char *typestr;
+
+	// Get the individual shader stage warnings
+	std::map<ShaderType, std::string>::const_iterator it;
+	for (it = shaderWarnings.begin(); it != shaderWarnings.end(); ++it)
+	{
+		if (typeNames.find(it->first, typestr))
+			warnings += std::string(typestr) + std::string(" shader:\n") + it->second;
+	}
+
+	warnings += getProgramWarnings();
+
 	return warnings;
 }
 
@@ -451,6 +480,14 @@ bool Shader::isSupported()
 {
 	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
+
+StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntries[] =
+{
+	{"vertex", Shader::TYPE_VERTEX},
+	{"pixel", Shader::TYPE_PIXEL},
+};
+
+StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM> Shader::typeNames(Shader::typeNameEntries, sizeof(Shader::typeNameEntries));
 
 } // opengl
 } // graphics

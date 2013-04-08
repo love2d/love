@@ -167,13 +167,14 @@ int w_ImageData_encode(lua_State *L)
 	{
 		ext = file->getExtension();
 		fmt = ext.c_str();
-		ImageData::getConstant(fmt, format);
+		if (!ImageData::getConstant(fmt, format))
+			return luaL_error(L, "Invalid image format '%s'.", fmt);
 	}
 	else
 	{
 		fmt = luaL_checkstring(L, 3);
 		if (!ImageData::getConstant(fmt, format))
-			luaL_error(L, "Invalid image format.");
+			return luaL_error(L, "Invalid image format '%s'.", fmt);
 	}
 
 	try
@@ -189,7 +190,6 @@ int w_ImageData_encode(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-
 	// Data
 	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },

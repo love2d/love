@@ -21,13 +21,17 @@
 #ifndef LOVE_GRAPHICS_SHADER_H
 #define LOVE_GRAPHICS_SHADER_H
 
+// LOVE
 #include "common/Object.h"
-#include <string>
-#include <map>
-#include <vector>
+#include "common/StringMap.h"
 #include "OpenGL.h"
 #include "Image.h"
 #include "Canvas.h"
+
+// STL
+#include <string>
+#include <map>
+#include <vector>
 
 namespace love
 {
@@ -133,8 +137,14 @@ private:
 
 	void sendTexture(const std::string &name, GLuint texture);
 
+	// Get any warnings or errors generated only by the shader program object.
+	std::string getProgramWarnings() const;
+
 	// List of all shader code attached to this Shader
 	ShaderSources shaderSources;
+
+	// Shader compiler warning strings for individual shader stages.
+	std::map<ShaderType, std::string> shaderWarnings;
 
 	GLuint program; // volatile
 
@@ -150,6 +160,9 @@ private:
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
+
+	static StringMap<ShaderType, TYPE_MAX_ENUM>::Entry typeNameEntries[];
+	static StringMap<ShaderType, TYPE_MAX_ENUM> typeNames;
 };
 
 } // opengl

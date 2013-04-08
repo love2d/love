@@ -1295,7 +1295,8 @@ do
 #define number float
 #define Image sampler2D
 #define extern uniform
-#define Texel texture2D]]
+#define Texel texture2D
+#define love_Canvases gl_FragData]]
 
 	local GLSL_UNIFORMS = [[
 #define ModelViewMatrix gl_ModelViewMatrix
@@ -1332,9 +1333,16 @@ void main() {
 
 		FOOTER = [[
 void main() {
-	// fix weird crashing issue in OSX when _tex0_ is unused within effect()
+	// fix crashing issue in OSX when _tex0_ is unused within effect()
 	float dummy = texture2D(_tex0_, vec2(.5)).r;
 	gl_FragColor = effect(VaryingColor, _tex0_, VaryingTexCoord.st, gl_FragCoord.xy);
+}]],
+
+		FOOTER_MULTI_CANVAS = [[
+void main() {
+	// fix crashing issue in OSX when _tex0_ is unused within effect()
+	float dummy = texture2D(_tex0_, vec2(.5)).r;
+	effects(VaryingColor, _tex0_, VaryingTexCoord.st, gl_FragCoord.xy);
 }]],
 	}
 
@@ -1349,36 +1357,62 @@ void main() {
 		return table_concat(vertexcodes, "\n")
 	end
 
-	local function createPixelCode(pixelcode)
+	local function createPixelCode(pixelcode, is_multicanvas)
 		local pixelcodes = {
 			GLSL_VERSION,
 			GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
 			"#line 0",
 			pixelcode,
-			GLSL_PIXEL.FOOTER
+			is_multicanvas and GLSL_PIXEL.FOOTER_MULTI_CANVAS or GLSL_PIXEL.FOOTER,
 		}
 		return table_concat(pixelcodes, "\n")
 	end
 
-	function love.graphics._shaderCodeToGLSL(vertexcode, pixelcode)
-		if vertexcode then
-			local s = vertexcode:gsub("\r\n\t", " ")
-			s = s:gsub("(%w+)(%s+)%(", "%1(")
-			if s:match("vec4%s*effect%(") then
-				pixelcode = vertexcode -- first argument contains pixel shader code
+	local function isVertexCode(code)
+		return code:match("vec4%s*position%(") ~= nil
+	end
+
+	local function isPixelCode(code)
+		if code:match("vec4%s*effect%(") then
+			return true
+		elseif code:match("void%s*effects%(") then -- render to multiple canvases simultaniously
+			return true, true
+		else
+			return false
+		end
+	end
+
+	function love.graphics._shaderCodeToGLSL(arg1, arg2)
+		local vertexcode, pixelcode
+		local is_multicanvas = false -- whether pixel code has "effects" function instead of "effect"
+		
+		if arg1 then
+			local s = arg1:gsub("\r\n\t", " ") -- convert whitespace to spaces for parsing
+			s = s:gsub("(%w+)(%s+)%(", "%1(") -- convert "func ()" to "func()"
+
+			if isVertexCode(s) then
+				vertexcode = arg1 -- first arg contains vertex shader code
 			end
-			if not s:match("vec4%s*position%(") then
-				vertexcode = nil -- first argument doesn't contain vertex shader code
+
+			local ispixel, isMultiCanvas = isPixelCode(s)
+			if ispixel then
+				pixelcode = arg1 -- first arg contains pixel shader code
+				is_multicanvas = isMultiCanvas
 			end
 		end
-		if pixelcode then
-			local s = pixelcode:gsub("\r\n\t", " ")
-			s = s:gsub("(%w+)(%s+)%(", "%1(")
-			if s:match("vec4%s*position%(") then
-				vertexcode = pixelcode -- second argument contains vertex shader code
+		
+		if arg2 then
+			local s = arg2:gsub("\r\n\t", " ") -- convert whitespace to spaces for parsing
+			s = s:gsub("(%w+)(%s+)%(", "%1(") -- convert "func ()" to "func()"
+
+			if isVertexCode(s) then
+				vertexcode = arg2 -- second arg contains vertex shader code
 			end
-			if not s:match("vec4%s*effect%(") then
-				pixelcode = nil -- second argument doesn't contain pixel shader code
+
+			local ispixel, isMultiCanvas = isPixelCode(s)
+			if ispixel then
+				pixelcode = arg2 -- second arg contains pixel shader code
+				is_multicanvas = isMultiCanvas
 			end
 		end
 
@@ -1386,7 +1420,7 @@ void main() {
 			vertexcode = createVertexCode(vertexcode)
 		end
 		if pixelcode then
-			pixelcode = createPixelCode(pixelcode)
+			pixelcode = createPixelCode(pixelcode, is_multicanvas)
 		end
 
 		return vertexcode, pixelcode
@@ -1466,10 +1500,14 @@ void main() {
 	function love.graphics.newShader(vertexcode, pixelcode)
 		love.graphics.newShader = newShader
 
-		local shader = newShader(vertexcode, pixelcode)
-		local meta = getmetatable(shader)
-		meta.send = shader_dispatch_send
-		meta.sendBoolean = meta.sendFloat
-		return shader
+		local success, shader = pcall(love.graphics.newShader, vertexcode, pixelcode)
+		if success then
+			local meta = getmetatable(shader)
+			meta.send = shader_dispatch_send
+			meta.sendBoolean = meta.sendFloat
+			return shader
+		else
+			return error(shader, 2)
+		end
 	end
 end

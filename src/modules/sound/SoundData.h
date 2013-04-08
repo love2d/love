@@ -50,7 +50,7 @@ public:
 	virtual int getSampleRate() const;
 	virtual int getSampleCount() const;
 
-	virtual int getDuration() const;
+	virtual float getDuration() const;
 
 	void setSample(int i, float sample);
 	float getSample(int i) const;

@@ -41,14 +41,14 @@ public:
 	void getWindow(int &width, int &height, WindowFlags &flags) const;
 
 	bool checkWindowSize(int width, int height, bool fullscreen) const;
-	WindowSize **getFullscreenSizes(int &n) const;
+	WindowSize *getFullscreenSizes(int &n) const;
 
 	int getWidth() const;
 	int getHeight() const;
 
 	bool isCreated() const;
 
-	void setWindowTitle(std::string &title);
+	void setWindowTitle(const std::string &title);
 	std::string getWindowTitle() const;
 
 	bool setIcon(love::image::ImageData *imgd);

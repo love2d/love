@@ -28,7 +28,7 @@ namespace love
 namespace event
 {
 
-Message::Message(std::string name, Variant *a, Variant *b, Variant *c, Variant *d)
+Message::Message(const std::string &name, Variant *a, Variant *b, Variant *c, Variant *d)
 	: name(name)
 	, nargs(0)
 {

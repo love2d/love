@@ -49,6 +49,8 @@ Timer::Timer()
 	// Init the SDL timer system.
 	if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
 		throw Exception(SDL_GetError());
+
+	prevFpsUpdate = currTime = getMicroTime();
 }
 
 Timer::~Timer()
