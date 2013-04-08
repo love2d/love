@@ -115,6 +115,11 @@ public:
 	void setMipmapSharpness(float sharpness);
 	float getMipmapSharpness() const;
 
+	/**
+	 * Whether this Image is using a compressed texture (via CompressedData).
+	 **/
+	bool isCompressed() const;
+
 	void bind() const;
 
 	bool load();
@@ -170,7 +175,8 @@ private:
 	// True if mipmaps have been created for this Image.
 	bool mipmapsCreated;
 
-	bool isCompressed;
+	// Whether this Image is using a compressed texture.
+	bool compressed;
 
 	// The image's filter mode
 	Image::Filter filter;

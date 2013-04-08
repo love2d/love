@@ -175,6 +175,13 @@ int w_Image_getWrap(lua_State *L)
 	return 2;
 }
 
+int w_Image_isCompressed(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+	luax_pushboolean(L, i->isCompressed());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getWidth", w_Image_getWidth },
@@ -186,6 +193,7 @@ static const luaL_Reg functions[] =
 	{ "getWrap", w_Image_getWrap },
 	{ "setMipmapFilter", w_Image_setMipmapFilter },
 	{ "getMipmapFilter", w_Image_getMipmapFilter },
+	{ "isCompressed", w_Image_isCompressed },
 	{ 0, 0 }
 };
 

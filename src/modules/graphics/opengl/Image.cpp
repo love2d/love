@@ -43,7 +43,7 @@ Image::Image(love::image::ImageData *data)
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
-	, isCompressed(false)
+	, compressed(false)
 {
 	data->retain();
 	this->data = data;
@@ -57,7 +57,7 @@ Image::Image(love::image::CompressedData *cdata)
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
-	, isCompressed(true)
+	, compressed(true)
 {
 	cdata->retain();
 	this->cdata = cdata;
@@ -146,7 +146,7 @@ void Image::drawq(love::graphics::Quad *quad, float x, float y, float angle, flo
 
 void Image::uploadCompressedMipmaps()
 {
-	if (!isCompressed || !cdata || !hasCompressedTextureSupport(cdata->getType()))
+	if (!isCompressed() || !cdata || !hasCompressedTextureSupport(cdata->getType()))
 		return;
 
 	bind();
@@ -236,7 +236,7 @@ void Image::checkMipmapsCreated()
 	if (mipmapsCreated || filter.mipmap == FILTER_NONE)
 		return;
 
-	if (isCompressed && cdata && hasCompressedTextureSupport(cdata->getType()))
+	if (isCompressed() && cdata && hasCompressedTextureSupport(cdata->getType()))
 		uploadCompressedMipmaps();
 	else if (data)
 		createMipmaps();
@@ -340,7 +340,7 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
-	if (isCompressed && cdata && !hasCompressedTextureSupport(cdata->getType()))
+	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getType()))
 	{
 		const char *str;
 		if (image::CompressedData::getConstant(cdata->getType(), str))
@@ -381,7 +381,7 @@ bool Image::loadVolatilePOT()
 
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
-	if (isCompressed && cdata)
+	if (isCompressed() && cdata)
 	{
 		if (s < 1.0f || t < 1.0f)
 		{
@@ -442,7 +442,7 @@ bool Image::loadVolatileNPOT()
 
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
-	if (isCompressed && cdata)
+	if (isCompressed() && cdata)
 	{
 		GLenum format = getCompressedFormat(cdata->getType());
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
@@ -525,6 +525,11 @@ void Image::setDefaultMipmapFilter(Image::FilterMode f)
 Image::FilterMode Image::getDefaultMipmapFilter()
 {
 	return defaultMipmapFilter;
+}
+
+bool Image::isCompressed() const
+{
+	return compressed;
 }
 
 GLenum Image::getCompressedFormat(image::CompressedData::TextureType type) const
