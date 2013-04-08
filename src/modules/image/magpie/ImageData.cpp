@@ -74,26 +74,26 @@ void ImageData::create(int width, int height, void *data)
 
 void ImageData::decode(love::filesystem::FileData *data)
 {
-	FormatHandler::DecodedImage decodedimg;
+	FormatHandler::DecodedImage decodedimage;
 
 	if (DevilHandler::canDecode(data))
-		decodedimg = DevilHandler::decode(data);
+		decodedimage = DevilHandler::decode(data);
 	else
-		throw love::Exception("Image format has no suitable decoder.");
+		throw love::Exception("Could not decode image: unrecognized format.");
 
 	// The decoder *must* output a 32 bits-per-pixel image.
-	if (decodedimg.size != decodedimg.width*decodedimg.height*sizeof(pixel))
+	if (decodedimage.size != decodedimage.width*decodedimage.height*sizeof(pixel))
 	{
-		delete[] decodedimg.data;
+		delete[] decodedimage.data;
 		throw love::Exception("Coult not convert image!");
 	}
 
 	if (this->data)
 		delete[] this->data;
 
-	this->width = decodedimg.width;
-	this->height = decodedimg.height;
-	this->data = decodedimg.data;
+	this->width = decodedimage.width;
+	this->height = decodedimage.height;
+	this->data = decodedimage.data;
 }
 
 void ImageData::encode(love::filesystem::File *f, ImageData::Format format)

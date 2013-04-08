@@ -118,7 +118,7 @@ int w_isCompressed(lua_State *L)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
-	luax_pushboolean(L,	compressed);
+	luax_pushboolean(L, compressed);
 	return 1;
 }
 

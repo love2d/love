@@ -32,6 +32,9 @@ namespace image
 namespace magpie
 {
 
+/**
+ * Interface between ImageData and DevIL.
+ **/
 class DevilHandler : public FormatHandler
 {
 public:

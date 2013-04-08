@@ -62,8 +62,8 @@ public:
 	// by a sub-image.
 	struct SubImage
 	{
-		size_t size;
 		int width, height;
+		size_t size;
 		std::vector<unsigned char> data;
 	};
 

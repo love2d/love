@@ -418,7 +418,7 @@ int w_newImageFont(lua_State *L)
 	int startIndex = 2;
 
 	// Convert to ImageData if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 		luax_convobj(L, 1, "image", "newImageData");
 	else if (luax_istype(L, 1, GRAPHICS_IMAGE_T))
 	{
@@ -426,6 +426,8 @@ int w_newImageFont(lua_State *L)
 		img_filter = i->getFilter();
 		setFilter = true;
 		love::image::ImageData *id = i->getData();
+		if (!id)
+			return luaL_argerror(L, 1, "image cannot be compressed");
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)id, false);
 		lua_replace(L, 1);
 	}

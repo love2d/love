@@ -40,16 +40,16 @@ CompressedData::~CompressedData()
 
 void CompressedData::load(love::filesystem::FileData *data)
 {
-	std::vector<SubImage> imageMipmaps;
+	std::vector<SubImage> parsedImages;
 	TextureType textype = TYPE_UNKNOWN;
 
 	if (ddsHandler::canParse(data))
-		textype = ddsHandler::parse(data, imageMipmaps);
+		textype = ddsHandler::parse(data, parsedImages);
 
 	if (textype == TYPE_UNKNOWN)
 		throw (love::Exception("Could not parse compressed data: Unknown format."));
 
-	dataImages = imageMipmaps;
+	dataImages = parsedImages;
 	type = textype;
 }
 

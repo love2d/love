@@ -146,10 +146,13 @@ private:
 	{
 		return texture;
 	}
-	// The ImageData from which the texture is created.
+
+	// The ImageData from which the texture is created. May be null if
+	// Compressed image data was used to create the texture.
 	love::image::ImageData *data;
 
-	// Or the Compressed Image Data from which the texture is created.
+	// Or the Compressed Image Data from which the texture is created. May be
+	// null if raw ImageData was used to create the texture.
 	love::image::CompressedData *cdata;
 
 	// Width and height of the hardware texture.

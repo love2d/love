@@ -29,26 +29,10 @@ namespace magpie
 
 bool ddsHandler::canParse(const filesystem::FileData *data)
 {
-	if (!accepts(data->getExtension()))
+	if (data->getExtension().compare("dds") != 0)
 		return false;
 
 	return dds::Parser::isCompressedDDS(data->getData(), data->getSize());
-}
-
-bool ddsHandler::accepts(const std::string &ext)
-{
-	static const std::string supported[] =
-	{
-		"dds", ""
-	};
-
-	for (int i = 0; !(supported[i].empty()); i++)
-	{
-		if (supported[i].compare(ext) == 0)
-			return true;
-	}
-
-	return false;
 }
 
 CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images)

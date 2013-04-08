@@ -145,7 +145,7 @@ DevilHandler::EncodedImage DevilHandler::encode(const DecodedImage &img, ImageDa
 	ilBindImage(tempimage);
 	ilxClearErrors();
 
-	EncodedImage encodedimg;
+	EncodedImage encodedimage;
 
 	try
 	{
@@ -194,32 +194,32 @@ DevilHandler::EncodedImage DevilHandler::encode(const DecodedImage &img, ImageDa
 			break;
 		}
 
-		encodedimg.size = ilSaveL(ilFormat, NULL, 0);
-		if (!encodedimg.size)
+		encodedimage.size = ilSaveL(ilFormat, NULL, 0);
+		if (!encodedimage.size)
 			throw love::Exception("Could not encode image!");
 
 		try
 		{
-			encodedimg.data = new ILubyte[encodedimg.size];
+			encodedimage.data = new ILubyte[encodedimage.size];
 		}
 		catch(std::bad_alloc &)
 		{
 			throw love::Exception("Out of memory");
 		}
 
-		ilSaveL(ilFormat, encodedimg.data, encodedimg.size);
+		ilSaveL(ilFormat, encodedimage.data, encodedimage.size);
 	}
 	catch (std::exception &e)
 	{
 		// catches love and std exceptions
 		ilDeleteImage(tempimage);
-		delete[] encodedimg.data;
+		delete[] encodedimage.data;
 		throw love::Exception("%s", e.what());
 	}
 
 	ilDeleteImage(tempimage);
 
-	return encodedimg;
+	return encodedimage;
 }
 
 } // magpie
