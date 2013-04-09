@@ -48,6 +48,7 @@ public:
 	virtual int getChannels() const;
 	virtual int getBits() const;
 	virtual int getSampleRate() const;
+	virtual int getSampleCount() const;
 
 	virtual float getDuration() const;
 
