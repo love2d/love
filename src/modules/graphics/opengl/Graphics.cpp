@@ -131,7 +131,8 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	initializeContext();
 
 	// Make sure antialiasing works when set elsewhere
-	glEnable(GL_MULTISAMPLE);
+	if (GLEE_VERSION_1_3 || GLEE_ARB_multisample)
+		glEnable(GL_MULTISAMPLE);
 
 	// Enable blending
 	glEnable(GL_BLEND);
