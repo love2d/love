@@ -615,13 +615,12 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 
 	GLubyte *src = pixels, *dst = flipped + size - row;
 	for (int i = 0; i < height; ++i, dst -= row, src += row)
-	{
 		memcpy(dst, src, row);
-	}
 
 	love::image::ImageData *img = image->newImageData(width, height, (void *)flipped);
 
 	delete[] pixels;
+	delete[] flipped;
 
 	return img;
 }
