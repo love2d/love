@@ -80,8 +80,6 @@ pixel ImageData::getPixel(int x, int y)
 	if (!inside(x, y))
 		throw love::Exception("Attempt to get out-of-range pixel!");
 
-	Lock lock(mutex);
-
 	pixel *pixels = (pixel *)getData();
 	return pixels[y*getWidth()+x];
 }
