@@ -93,40 +93,6 @@ love::image::ImageData *Image::getData() const
 	return data;
 }
 
-void Image::getRectangleVertices(int x, int y, int w, int h, vertex *vertices) const
-{
-	// Check upper.
-	x = (x+w > (int)width) ? (int)width-w : x;
-	y = (y+h > (int)height) ? (int)height-h : y;
-
-	// Check lower.
-	x = (x < 0) ? 0 : x;
-	y = (y < 0) ? 0 : y;
-
-	vertices[0].x = 0;
-	vertices[0].y = 0;
-	vertices[1].x = 0;
-	vertices[1].y = (float)h;
-	vertices[2].x = (float)w;
-	vertices[2].y = (float)h;
-	vertices[3].x = (float)w;
-	vertices[3].y = 0;
-
-	float tx = (float)x/width;
-	float ty = (float)y/height;
-	float tw = (float)w/width;
-	float th = (float)h/height;
-
-	vertices[0].s = tx;
-	vertices[0].t = ty;
-	vertices[1].s = tx;
-	vertices[1].t = ty+th;
-	vertices[2].s = tx+tw;
-	vertices[2].t = ty+th;
-	vertices[3].s = tx+tw;
-	vertices[3].t = ty;
-}
-
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	static Matrix t;

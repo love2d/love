@@ -23,7 +23,7 @@
 
 // LOVE
 #include "image/ImageData.h"
-#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 
 namespace love
 {

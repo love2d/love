@@ -22,7 +22,7 @@
 #define LOVE_IMAGE_MAGPIE_DEVIL_HANDLER_H
 
 // LOVE
-#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 #include "FormatHandler.h"
 
 namespace love

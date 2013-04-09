@@ -40,16 +40,20 @@ CompressedData::~CompressedData()
 
 void CompressedData::load(love::filesystem::FileData *data)
 {
-	std::vector<SubImage> parsedImages;
+	// SubImage vector will be populated by a parser.
+	std::vector<SubImage> parsedimages;
 	TextureType textype = TYPE_UNKNOWN;
 
 	if (ddsHandler::canParse(data))
-		textype = ddsHandler::parse(data, parsedImages);
+		textype = ddsHandler::parse(data, parsedimages);
 
 	if (textype == TYPE_UNKNOWN)
-		throw (love::Exception("Could not parse compressed data: Unknown format."));
+		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-	dataImages = parsedImages;
+	if (parsedimages.size() == 0)
+		throw love::Exception("Could not parse compressed data: No valid data?");
+
+	dataImages = parsedimages;
 	type = textype;
 }
 

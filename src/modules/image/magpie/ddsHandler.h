@@ -22,7 +22,7 @@
 #define LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
 
 // LOVE
-#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 #include "image/CompressedData.h"
 
 // dds parser
@@ -55,8 +55,8 @@ public:
 	/**
 	 * Parses Compressed image data into a list of sub-images.
 	 * @param[in]  data The data to parse.
-	 * @param[out] images The list of sub-images (including byte data for each),
-	 *             created by the parser.
+	 * @param[out] images The list of sub-images (including byte data for each)
+	 *             parsed from the file data.
 	 * @return The type of CompressedData.
 	 **/
 	static CompressedData::TextureType parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images);

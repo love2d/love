@@ -23,7 +23,6 @@
 // LOVE
 #include "common/Exception.h"
 #include "common/math.h"
-#include "filesystem/File.h"
 #include "thread/threads.h"
 
 // DevIL

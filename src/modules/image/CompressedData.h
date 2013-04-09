@@ -81,22 +81,22 @@ public:
 	int getNumMipmaps() const;
 
 	/**
-	 * Gets the size in bytes of the sub-image at the specified mipmap level.
+	 * Gets the size in bytes of a sub-image at the specified mipmap level.
 	 **/
 	int getSize(int miplevel) const;
 
 	/**
-	 * Gets the byte data of the sub-image at the specified mipmap level.
+	 * Gets the byte data of a sub-image at the specified mipmap level.
 	 **/
 	void *getData(int miplevel) const;
 
 	/**
-	 * Gets the width of the sub-image at the specified mipmap level.
+	 * Gets the width of a sub-image at the specified mipmap level.
 	 **/
 	int getWidth(int miplevel) const;
 
 	/**
-	 * Gets the height of the sub-image at the specified mipmap level.
+	 * Gets the height of a sub-image at the specified mipmap level.
 	 **/
 	int getHeight(int miplevel) const;
 

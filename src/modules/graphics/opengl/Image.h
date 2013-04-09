@@ -77,20 +77,6 @@ public:
 	love::image::ImageData *getData() const;
 
 	/**
-	 * Generate vertices according to a subimage.
-	 *
-	 * Note: out-of-range values will be clamped.
-	 * Note: the vertex colors will not be changed.
-	 *
-	 * @param x The top-left corner of the subimage along the x-axis.
-	 * @param y The top-left corner of the subimage along the y-axis.
-	 * @param w The width of the subimage.
-	 * @param h The height of the subimage.
-	 * @param vertices A vertex array of size four.
-	 **/
-	void getRectangleVertices(int x, int y, int w, int h, vertex *vertices) const;
-
-	/**
 	 * @copydoc Drawable::draw()
 	 **/
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;

@@ -22,7 +22,7 @@
 #define LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
 
 // LOVE
-#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 #include "image/CompressedData.h"
 
 namespace love
