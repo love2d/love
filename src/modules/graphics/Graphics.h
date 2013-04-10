@@ -83,6 +83,17 @@ public:
 		POINT_MAX_ENUM
 	};
 
+	enum AlphaTestMode
+	{
+		ALPHATEST_LESS = 1,
+		ALPHATEST_LEQUAL,
+		ALPHATEST_EQUAL,
+		ALPHATEST_NOTEQUAL,
+		ALPHATEST_GEQUAL,
+		ALPHATEST_GREATER,
+		ALPHATEST_MAX_ENUM
+	};
+
 	enum Support
 	{
 		SUPPORT_CANVAS = 1,
@@ -118,6 +129,9 @@ public:
 	static bool getConstant(const char *in, PointStyle &out);
 	static bool getConstant(PointStyle in, const char  *&out);
 
+	static bool getConstant(const char *in, AlphaTestMode &out);
+	static bool getConstant(AlphaTestMode in, const char *&out);
+
 	static bool getConstant(const char *in, Support &out);
 	static bool getConstant(Support in, const char  *&out);
 
@@ -140,6 +154,9 @@ private:
 
 	static StringMap<PointStyle, POINT_MAX_ENUM>::Entry pointStyleEntries[];
 	static StringMap<PointStyle, POINT_MAX_ENUM> pointStyles;
+
+	static StringMap<AlphaTestMode, ALPHATEST_MAX_ENUM>::Entry alphaTestEntries[];
+	static StringMap<AlphaTestMode, ALPHATEST_MAX_ENUM> alphaTests;
 
 	static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
 	static StringMap<Support, SUPPORT_MAX_ENUM> support;

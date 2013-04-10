@@ -73,6 +73,10 @@ struct DisplayState
 	float pointSize;
 	Graphics::PointStyle pointStyle;
 
+	bool alphaTest;
+	Graphics::AlphaTestMode alphaTestMode;
+	unsigned char alphaTestRef;
+
 	// Scissor.
 	bool scissor;
 	GLint scissorBox[4];
@@ -96,6 +100,7 @@ struct DisplayState
 		lineStyle = Graphics::LINE_SMOOTH;
 		pointSize = 1.0f;
 		pointStyle = Graphics::POINT_SMOOTH;
+		alphaTest = false;
 		scissor = false;
 		colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
 		caption = "";
@@ -247,6 +252,33 @@ public:
 	 * Disables the stencil buffer
 	 */
 	void discardStencil();
+
+	/**
+	 * Enables alpha testing for all following draw calls
+	 * @param mode The alpha comparison mode used when performing the alpha test
+	 * @param refalpha The reference alpha value used when perfoming the alpha test
+	 */
+	void setAlphaTest(Graphics::AlphaTestMode mode, unsigned char refalpha);
+
+	/**
+	 * Disables alpha testing
+	 */
+	void setAlphaTest();
+
+	/**
+	 * True if alpha testing is enabled
+	 */
+	bool isAlphaTestEnabled();
+
+	/**
+	 * Gets the current alpha test comparison mode
+	 */
+	Graphics::AlphaTestMode getAlphaTestMode();
+
+	/**
+	 * Gets the current alpha test reference alpha value (0-255)
+	 */
+	unsigned char getAlphaTestRef();
 
 	/**
 	 * Creates an Image object with padding and/or optimization.
