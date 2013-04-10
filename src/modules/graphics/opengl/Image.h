@@ -26,6 +26,7 @@
 #include "common/math.h"
 #include "common/config.h"
 #include "image/ImageData.h"
+#include "image/CompressedData.h"
 #include "graphics/Image.h"
 
 // OpenGL
@@ -52,9 +53,16 @@ public:
 	 * Creates a new Image. Not that anything is ready to use
 	 * before load is called.
 	 *
-	 * @param file The file from which to load the image.
+	 * @param data The data from which to load the image.
 	 **/
 	Image(love::image::ImageData *data);
+
+	/**
+	 * Creates a new Image with compressed image data.
+	 *
+	 * @param cdata The compressed data from which to load the image.
+	 **/
+	Image(love::image::CompressedData *cdata);
 
 	/**
 	 * Destructor. Deletes the hardware texture and other resources.
@@ -67,20 +75,6 @@ public:
 	const vertex *getVertices() const;
 
 	love::image::ImageData *getData() const;
-
-	/**
-	 * Generate vertices according to a subimage.
-	 *
-	 * Note: out-of-range values will be clamped.
-	 * Note: the vertex colors will not be changed.
-	 *
-	 * @param x The top-left corner of the subimage along the x-axis.
-	 * @param y The top-left corner of the subimage along the y-axis.
-	 * @param w The width of the subimage.
-	 * @param h The height of the subimage.
-	 * @param vertices A vertex array of size four.
-	 **/
-	void getRectangleVertices(int x, int y, int w, int h, vertex *vertices) const;
 
 	/**
 	 * @copydoc Drawable::draw()
@@ -107,6 +101,11 @@ public:
 	void setMipmapSharpness(float sharpness);
 	float getMipmapSharpness() const;
 
+	/**
+	 * Whether this Image is using a compressed texture (via CompressedData).
+	 **/
+	bool isCompressed() const;
+
 	void bind() const;
 
 	bool load();
@@ -126,6 +125,9 @@ public:
 	static bool hasMipmapSupport();
 	static bool hasMipmapSharpnessSupport();
 
+	static bool hasCompressedTextureSupport();
+	static bool hasCompressedTextureSupport(image::CompressedData::TextureType type);
+
 private:
 
 	void drawv(const Matrix &t, const vertex *v) const;
@@ -135,8 +137,14 @@ private:
 	{
 		return texture;
 	}
-	// The ImageData from which the texture is created.
+
+	// The ImageData from which the texture is created. May be null if
+	// Compressed image data was used to create the texture.
 	love::image::ImageData *data;
+
+	// Or the Compressed Image Data from which the texture is created. May be
+	// null if raw ImageData was used to create the texture.
+	love::image::CompressedData *cdata;
 
 	// Width and height of the hardware texture.
 	float width, height;
@@ -153,21 +161,30 @@ private:
 	// True if mipmaps have been created for this Image.
 	bool mipmapsCreated;
 
+	// Whether this Image is using a compressed texture.
+	bool compressed;
+
 	// The image's filter mode
 	Image::Filter filter;
 
 	// The image's wrap mode
 	Image::Wrap wrap;
 
+	void preload();
+
 	bool loadVolatilePOT();
 	bool loadVolatileNPOT();
 
+	void uploadCompressedMipmaps();
+	void createMipmaps();
 	void checkMipmapsCreated();
 
 	static float maxMipmapSharpness;
 
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
+
+	GLenum getCompressedFormat(image::CompressedData::TextureType type) const;
 
 }; // Image
 

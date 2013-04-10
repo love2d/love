@@ -225,6 +225,9 @@ void Graphics::present()
 
 void Graphics::setIcon(Image *image)
 {
+	if (image->isCompressed())
+		throw love::Exception("Cannot use compressed image data to set an icon.");
+
 	currentWindow->setIcon(image->getData());
 }
 
@@ -331,9 +334,11 @@ int Graphics::getScissor(lua_State *L) const
 
 void Graphics::defineStencil()
 {
+	// Disable color writes but don't save the mask values.
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glEnable(GL_STENCIL_TEST);
+
 	glClear(GL_STENCIL_BUFFER_BIT);
+	glEnable(GL_STENCIL_TEST);
 	glStencilFunc(GL_ALWAYS, 1, 1);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 }
@@ -355,6 +360,29 @@ Image *Graphics::newImage(love::image::ImageData *data)
 {
 	// Create the image.
 	Image *image = new Image(data);
+	bool success;
+	try
+	{
+		success = image->load();
+	}
+	catch(love::Exception &)
+	{
+		image->release();
+		throw;
+	}
+	if (!success)
+	{
+		image->release();
+		return 0;
+	}
+
+	return image;
+}
+
+Image *Graphics::newImage(love::image::CompressedData *cdata)
+{
+	// Create the image.
+	Image *image = new Image(cdata);
 	bool success;
 	try
 	{

@@ -158,7 +158,14 @@ int w_present(lua_State *)
 int w_setIcon(lua_State *L)
 {
 	Image *image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
-	instance->setIcon(image);
+	try
+	{
+		instance->setIcon(image);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 
@@ -269,21 +276,45 @@ int w_setInvertedStencil(lua_State *L)
 
 int w_newImage(lua_State *L)
 {
-	// Convert to File, if necessary.
-	if (lua_isstring(L, 1))
-		luax_convobj(L, 1, "filesystem", "newFile");
+	love::image::ImageData *data = 0;
+	love::image::CompressedData *cdata = 0;
 
-	// Convert to ImageData, if necessary.
-	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "image", "newImageData");
+	// Convert to FileData, if necessary.
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
 
-	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+	// Convert to ImageData/CompressedData, if necessary.
+	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	{
+		// Determine whether to convert to ImageData or CompressedData.
+		luax_getfunction(L, "image", "isCompressed");
+		lua_pushvalue(L, 1);
+		lua_call(L, 1, 1);
+
+		bool compressed = luax_toboolean(L, -1);
+		lua_pop(L, 1);
+
+		if (compressed)
+			luax_convobj(L, 1, "image", "newCompressedData");
+		else
+			luax_convobj(L, 1, "image", "newImageData");
+	}
+
+	if (luax_istype(L, 1, IMAGE_COMPRESSED_DATA_T))
+		cdata = luax_checktype<love::image::CompressedData>(L, 1, "CompressedData", IMAGE_COMPRESSED_DATA_T);
+	else
+		data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 
 	// Create the image.
 	Image *image = 0;
 	try
 	{
-		image = instance->newImage(data);
+		if (cdata)
+			image = instance->newImage(cdata);
+		else if (data)
+			image = instance->newImage(data);
+		else
+			throw love::Exception("Error creating image.");
 	}
 	catch(love::Exception &e)
 	{
@@ -387,7 +418,7 @@ int w_newImageFont(lua_State *L)
 	int startIndex = 2;
 
 	// Convert to ImageData if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || (luax_istype(L, 1, DATA_T) && !luax_istype(L, 1, IMAGE_IMAGE_DATA_T)))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 		luax_convobj(L, 1, "image", "newImageData");
 	else if (luax_istype(L, 1, GRAPHICS_IMAGE_T))
 	{
@@ -395,6 +426,8 @@ int w_newImageFont(lua_State *L)
 		img_filter = i->getFilter();
 		setFilter = true;
 		love::image::ImageData *id = i->getData();
+		if (!id)
+			return luaL_argerror(L, 1, "image cannot be compressed");
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)id, false);
 		lua_replace(L, 1);
 	}
@@ -1108,6 +1141,18 @@ int w_isSupported(lua_State *L)
 			break;
 		case Graphics::SUPPORT_MIPMAP:
 			if (!Image::hasMipmapSupport())
+				supported = false;
+			break;
+		case Graphics::SUPPORT_DXT:
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_DXT5))
+				supported = false;
+			break;
+		case Graphics::SUPPORT_BC5:
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC5))
+				supported = false;
+			break;
+		case Graphics::SUPPORT_BC7:
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC7))
 				supported = false;
 			break;
 		default:

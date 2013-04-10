@@ -18,25 +18,60 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_WRAP_IMAGE_H
-#define LOVE_IMAGE_WRAP_IMAGE_H
-
-// LOVE
 #include "Image.h"
-#include "wrap_ImageData.h"
-#include "wrap_CompressedData.h"
+
+#include "imageData.h"
+#include "CompressedData.h"
+
+#include "DevilHandler.h"
 
 namespace love
 {
 namespace image
 {
+namespace magpie
+{
 
-int w_newImageData(lua_State *L);
-int w_newCompressedData(lua_State *L);
-int w_isCompressed(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_image(lua_State *L);
+Image::Image()
+{
+	DevilHandler::init();
+}
 
+Image::~Image()
+{
+	DevilHandler::quit();
+}
+
+const char *Image::getName() const
+{
+	return "love.image.magpie";
+}
+
+love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
+{
+	return new ImageData(data);
+}
+
+love::image::ImageData *Image::newImageData(int width, int height)
+{
+	return new ImageData(width, height);
+}
+
+love::image::ImageData *Image::newImageData(int width, int height, void *data)
+{
+	return new ImageData(width, height, data);
+}
+
+love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)
+{
+	return new CompressedData(data);
+}
+
+bool Image::isCompressed(love::filesystem::FileData *data)
+{
+	return CompressedData::isCompressed(data);
+}
+
+} // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_WRAP_IMAGE_H

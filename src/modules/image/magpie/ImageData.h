@@ -18,25 +18,44 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_WRAP_IMAGE_H
-#define LOVE_IMAGE_WRAP_IMAGE_H
+#ifndef LOVE_IMAGE_MAGPIE_IMAGE_DATA_H
+#define LOVE_IMAGE_MAGPIE_IMAGE_DATA_H
 
 // LOVE
-#include "Image.h"
-#include "wrap_ImageData.h"
-#include "wrap_CompressedData.h"
+#include "filesystem/File.h"
+#include "image/ImageData.h"
 
 namespace love
 {
 namespace image
 {
+namespace magpie
+{
 
-int w_newImageData(lua_State *L);
-int w_newCompressedData(lua_State *L);
-int w_isCompressed(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_image(lua_State *L);
+class ImageData : public love::image::ImageData
+{
+public:
 
+	ImageData(love::filesystem::FileData *data);
+	ImageData(int width, int height);
+	ImageData(int width, int height, void *data);
+	virtual ~ImageData();
+
+	// Implements image::ImageData.
+	virtual void encode(love::filesystem::File *f, ImageData::Format format);
+
+private:
+
+	// Create imagedata. Initialize with data if not null.
+	void create(int width, int height, void *data = 0);
+
+	// Decode and load an encoded format.
+	void decode(love::filesystem::FileData *data);
+
+}; // ImageData
+
+} // magpie
 } // image
 } // love
 
-#endif // LOVE_IMAGE_WRAP_IMAGE_H
+#endif // LOVE_IMAGE_MAGPIE_IMAGE_DATA_H

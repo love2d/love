@@ -18,49 +18,53 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_DEVIL_IMAGE_DATA_H
-#define LOVE_DEVIL_IMAGE_DATA_H
+#include "CompressedData.h"
 
-// LOVE
-#include "filesystem/File.h"
-#include "image/ImageData.h"
-
-// DevIL
-#include <IL/il.h>
-
+#include "ddsHandler.h"
 
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
-class ImageData : public love::image::ImageData
+CompressedData::CompressedData(love::filesystem::FileData *data)
 {
-private:
+	load(data);
+}
 
-	// Create imagedata. Initialize with data if not null.
-	void create(int width, int height, void *data = 0);
+CompressedData::~CompressedData()
+{
+}
 
-	// Load an encoded format.
-	void load(Data *data);
+void CompressedData::load(love::filesystem::FileData *data)
+{
+	// SubImage vector will be populated by a parser.
+	std::vector<SubImage> parsedimages;
+	TextureType textype = TYPE_UNKNOWN;
 
-public:
+	if (ddsHandler::canParse(data))
+		textype = ddsHandler::parse(data, parsedimages);
 
-	ImageData(Data *data);
-	ImageData(love::filesystem::File *file);
-	ImageData(int width, int height);
-	ImageData(int width, int height, void *data);
-	virtual ~ImageData();
+	if (textype == TYPE_UNKNOWN)
+		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-	// Implements ImageData.
-	void encode(love::filesystem::File *f, Format format);
+	if (parsedimages.size() == 0)
+		throw love::Exception("Could not parse compressed data: No valid data?");
 
-}; // ImageData
+	dataImages = parsedimages;
+	type = textype;
+}
 
-} // devil
+bool CompressedData::isCompressed(love::filesystem::FileData *data)
+{
+	if (ddsHandler::canParse(data))
+		return true;
+
+	return false;
+}
+
+} // magpie
 } // image
 } // love
-
-#endif // LOVE_DEVIL_IMAGE_DATA_H

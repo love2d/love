@@ -45,22 +45,6 @@ struct pixel
  **/
 class ImageData : public Data
 {
-protected:
-
-	// The width of the image data.
-	int width;
-
-	// The height of the image data.
-	int height;
-
-	// The actual data.
-	unsigned char *data;
-
-	// We need to be thread-safe
-	// so we lock when we're accessing our
-	// data
-	Mutex *mutex;
-
 public:
 
 	enum Format
@@ -137,10 +121,27 @@ public:
 	virtual void encode(love::filesystem::File *f, Format format) = 0;
 
 	// Implements Data.
-	void *getData() const;
-	int getSize() const;
+	virtual void *getData() const;
+	virtual int getSize() const;
+
+protected:
+
+	// The width of the image data.
+	int width;
+
+	// The height of the image data.
+	int height;
+
+	// The actual data.
+	unsigned char *data;
+
+	// We need to be thread-safe
+	// so we lock when we're accessing our
+	// data
+	Mutex *mutex;
 
 private:
+
 	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
 	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 

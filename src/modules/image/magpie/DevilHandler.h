@@ -18,57 +18,42 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Image.h"
+#ifndef LOVE_IMAGE_MAGPIE_DEVIL_HANDLER_H
+#define LOVE_IMAGE_MAGPIE_DEVIL_HANDLER_H
 
-#include "ImageData.h"
-
-// DevIL
-#include <IL/il.h>
+// LOVE
+#include "filesystem/FileData.h"
+#include "FormatHandler.h"
 
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
-Image::Image()
+/**
+ * Interface between ImageData and DevIL.
+ **/
+class DevilHandler : public FormatHandler
 {
-	ilInit();
-	ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
-	ilEnable(IL_ORIGIN_SET);
-}
+public:
 
-Image::~Image()
-{
-	ilShutDown();
-}
+	static void init();
+	static void quit();
 
-const char *Image::getName() const
-{
-	return "love.image.devil";
-}
+	// Implements FormatHandler.
 
-love::image::ImageData *Image::newImageData(love::filesystem::File *file)
-{
-	return new ImageData(file);
-}
+	static bool canDecode(love::filesystem::FileData *data);
+	static bool canEncode(ImageData::Format format);
 
-love::image::ImageData *Image::newImageData(Data *data)
-{
-	return new ImageData(data);
-}
+	static DecodedImage decode(love::filesystem::FileData *data);
+	static EncodedImage encode(const DecodedImage &img, ImageData::Format format);
 
-love::image::ImageData *Image::newImageData(int width, int height)
-{
-	return new ImageData(width, height);
-}
+}; // DevilHandler
 
-love::image::ImageData *Image::newImageData(int width, int height, void *data)
-{
-	return new ImageData(width, height, data);
-}
-
-} // devil
+} // magpie
 } // image
 } // love
+
+#endif // LOVE_IMAGE_MAGPIE_DEVIL_HANDLER_H

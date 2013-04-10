@@ -105,14 +105,36 @@ int w_newFile(lua_State *L)
 
 int w_newFileData(lua_State *L)
 {
-	if (!lua_isstring(L, 1))
-		return luaL_error(L, "String expected.");
-	if (!lua_isstring(L, 2))
-		return luaL_error(L, "String expected.");
+	// Single argument: treat as filepath or File.
+	if (lua_gettop(L) == 1)
+	{
+		if (lua_isstring(L, 1))
+			luax_convobj(L, 1, "filesystem", "newFile");
+
+		// Get FileData from the File.
+		if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+		{
+			File *file = luax_checktype<File>(L, 1, "File", FILESYSTEM_FILE_T);
+
+			FileData *data = 0;
+			try
+			{
+				data = file->read();
+			}
+			catch (love::Exception &e)
+			{
+				return luaL_error(L, "%s", e.what());
+			}
+			luax_newtype(L, "FileData", FILESYSTEM_FILE_DATA_T, (void *) data);
+			return 1;
+		}
+		else
+			return luaL_argerror(L, 1, "string or File expected");
+	}
 
 	size_t length = 0;
-	const char *str = lua_tolstring(L, 1, &length);
-	const char *filename = lua_tostring(L, 2);
+	const char *str = luaL_checklstring(L, 1, &length);
+	const char *filename = luaL_checkstring(L, 2);
 	const char *decstr = lua_isstring(L, 3) ? lua_tostring(L, 3) : 0;
 
 	FileData::Decoder decoder = FileData::FILE;

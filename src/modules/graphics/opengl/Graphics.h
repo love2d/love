@@ -251,8 +251,8 @@ public:
 	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(love::filesystem::File *file);
 	Image *newImage(love::image::ImageData *data);
+	Image *newImage(love::image::CompressedData *cdata);
 
 	/**
 	 * Creates a Quad object.

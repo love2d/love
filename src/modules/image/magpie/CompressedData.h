@@ -18,38 +18,37 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_DEVIL_IMAGE_H
-#define LOVE_IMAGE_DEVIL_IMAGE_H
+#ifndef LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
+#define LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
 
 // LOVE
-#include "image/Image.h"
+#include "filesystem/FileData.h"
+#include "image/CompressedData.h"
 
 namespace love
 {
 namespace image
 {
-namespace devil
+namespace magpie
 {
 
-class Image : public love::image::Image
+class CompressedData : public love::image::CompressedData
 {
 public:
 
-	Image();
-	~Image();
+	CompressedData(love::filesystem::FileData *data);
+	virtual ~CompressedData();
 
-	// Implements Module.
-	const char *getName() const;
+	static bool isCompressed(love::filesystem::FileData *data);
 
-	love::image::ImageData *newImageData(love::filesystem::File *file);
-	love::image::ImageData *newImageData(Data *data);
-	love::image::ImageData *newImageData(int width, int height);
-	love::image::ImageData *newImageData(int width, int height, void *data);
+private:
 
-}; // Image
+	void load(love::filesystem::FileData *data);
 
-} // devil
+}; // CompressedData
+
+} // magpie
 } // image
 } // love
 
-#endif // LOVE_IMAGE_DEVIL_IMAGE_H
+#endif // LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
