@@ -70,7 +70,9 @@ public:
 	CompressedData();
 	virtual ~CompressedData();
 
-	// Implements Data.
+	// Implements Data. Note that data for different mipmap levels is not always
+	// stored contiguously in memory, so getData() and getSize() don't make
+	// much sense. Use getData(miplevel) and getSize(mipleveL) instead.
 	virtual void *getData() const;
 	virtual int getSize() const;
 
