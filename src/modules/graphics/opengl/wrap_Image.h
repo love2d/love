@@ -43,6 +43,7 @@ int w_Image_getMipmapFilter(lua_State *L);
 int w_Image_setWrap(lua_State *L);
 int w_Image_getWrap(lua_State *L);
 int w_Image_isCompressed(lua_State *L);
+int w_Image_refresh(lua_State *L);
 extern "C" int luaopen_image(lua_State *L);
 
 } // opengl

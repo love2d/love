@@ -182,6 +182,20 @@ int w_Image_isCompressed(lua_State *L)
 	return 1;
 }
 
+int w_Image_refresh(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+	try
+	{
+		i->refresh();
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getWidth", w_Image_getWidth },
@@ -194,6 +208,7 @@ static const luaL_Reg functions[] =
 	{ "setMipmapFilter", w_Image_setMipmapFilter },
 	{ "getMipmapFilter", w_Image_getMipmapFilter },
 	{ "isCompressed", w_Image_isCompressed },
+	{ "refresh", w_Image_refresh },
 	{ 0, 0 }
 };
 

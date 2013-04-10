@@ -169,14 +169,14 @@ void Image::createMipmaps()
 		// AMD/ATI drivers have several bugs when generating mipmaps,
 		// re-uploading the entire base image seems to be required.
 		glTexImage2D(GL_TEXTURE_2D,
-					 0,
-					 GL_RGBA8,
-					 (GLsizei)width,
-					 (GLsizei)height,
-					 0,
-					 GL_RGBA,
-					 GL_UNSIGNED_BYTE,
-					 data->getData());
+		             0,
+		             GL_RGBA8,
+		             (GLsizei)width,
+		             (GLsizei)height,
+		             0,
+		             GL_RGBA,
+		             GL_UNSIGNED_BYTE,
+		             data->getData());
 
 		// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
 		glEnable(GL_TEXTURE_2D);
@@ -186,14 +186,14 @@ void Image::createMipmaps()
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 		glTexSubImage2D(GL_TEXTURE_2D,
-						0,
-						0,
-						0,
-						(GLsizei)width,
-						(GLsizei)height,
-						GL_RGBA,
-						GL_UNSIGNED_BYTE,
-						data->getData());
+		                0,
+		                0,
+		                0,
+		                (GLsizei)width,
+		                (GLsizei)height,
+		                GL_RGBA,
+		                GL_UNSIGNED_BYTE,
+		                data->getData());
 	}
 }
 
@@ -378,8 +378,7 @@ bool Image::loadVolatilePOT()
 
 		glTexSubImage2D(GL_TEXTURE_2D,
 		                0,
-		                0,
-		                0,
+		                0, 0,
 		                (GLsizei)width,
 		                (GLsizei)height,
 		                GL_RGBA,
@@ -452,6 +451,44 @@ void Image::unloadVolatile()
 		deleteTexture(texture);
 		texture = 0;
 	}
+}
+
+bool Image::refresh()
+{
+	// No effect if the texture hasn't been created yet.
+	if (texture == 0)
+		return false;
+
+	bind();
+
+	if (isCompressed() && cdata)
+	{
+		GLenum format = getCompressedFormat(cdata->getType());
+		glCompressedTexSubImage2DARB(GL_TEXTURE_2D,
+		                             0,
+								     0, 0,
+		                             cdata->getWidth(0),
+		                             cdata->getHeight(0),
+		                             format,
+		                             GLsizei(cdata->getSize(0)),
+		                             cdata->getData(0));
+	}
+	else if (data)
+	{
+		glTexSubImage2D(GL_TEXTURE_2D,
+		                0,
+		                0, 0,
+		                (GLsizei)width,
+		                (GLsizei)height,
+		                GL_RGBA,
+		                GL_UNSIGNED_BYTE,
+		                data->getData());
+	}
+
+	mipmapsCreated = false;
+	checkMipmapsCreated();
+
+	return true;
 }
 
 void Image::drawv(const Matrix &t, const vertex *v) const

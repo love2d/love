@@ -115,6 +115,13 @@ public:
 	bool loadVolatile();
 	void unloadVolatile();
 
+	/**
+	 * Re-uploads the ImageData or CompressedData associated with this Image to
+	 * the GPU, allowing situations where lovers modify an ImageData after image
+	 * creation from the ImageData, and apply the changes with Image:refresh().
+	 **/
+	bool refresh();
+
 	static void setDefaultMipmapSharpness(float sharpness);
 	static float getDefaultMipmapSharpness();
 	static void setDefaultMipmapFilter(FilterMode f);
