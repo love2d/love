@@ -18,7 +18,7 @@ LOVE 0.9.0 []
   * Added vertex shader support.
   * Added boolean support to Shader:send.
   * Added support for UTF-8 ImageFonts.
-  * Added SoundData:getDuration.
+  * Added SoundData:getDuration and SoundData:getSampleCount.
   * Added new Channels api for love.thread.
   * Added Thread:getError.
   * Added flags to setMode.
@@ -41,6 +41,11 @@ LOVE 0.9.0 []
   * Added love.graphics.setCanvases.
   * Added ParticleSystem:emit.
   * Added love.graphics.setColorMask.
+  * Added DXT-compressed texture support via love.image.newCompressedData.
+  * Added love.image.isCompressed and Image:isCompressed.
+  * Added Image:refresh.
+  * Added love.graphics.setAlphaTest.
+  * Added love.graphics.origin.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
