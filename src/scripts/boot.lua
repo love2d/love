@@ -190,8 +190,10 @@ function love.createhandlers()
 		end,
 		resize = function(w, h)
 			local ow, oh, flags = love.graphics.getMode()
-			love.graphics.setMode(w, h, flags)
-			if love.resize then love.resize(w, h) end
+			if flags.resizable then
+				love.graphics.setMode(w, h, flags)
+				if love.resize then love.resize(w, h) end
+			end
 		end,
 	}, {
 		__index = function(self, name)
