@@ -514,8 +514,9 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	int numParticles = count();
 	if (numParticles == 0) return; // don't bother if there's nothing to do
 
+	Color curcolor = opengl::getCurrentColor();
+
 	glPushMatrix();
-	glPushAttrib(GL_CURRENT_BIT);
 
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -576,8 +577,9 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 
-	glPopAttrib();
 	glPopMatrix();
+
+	opengl::setCurrentColor(curcolor);
 }
 
 void ParticleSystem::update(float dt)
