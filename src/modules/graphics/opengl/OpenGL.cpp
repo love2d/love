@@ -36,6 +36,8 @@ namespace opengl
 
 static bool contextInitialized = false;
 
+static Color curColor;
+
 static int curTextureUnit = 0;
 static std::vector<GLuint> textureUnits;
 
@@ -47,6 +49,14 @@ void initializeContext()
 		return;
 
 	contextInitialized = true;
+
+	// Store the current color so we don't have to get it through GL later
+	GLfloat glcolor[4];
+	glGetFloatv(GL_CURRENT_COLOR, glcolor);
+	curColor.r = glcolor[0];
+	curColor.g = glcolor[1];
+	curColor.b = glcolor[2];
+	curColor.a = glcolor[3];
 
 	// initialize multiple texture unit support for shaders, if available
 	textureUnits.clear();
@@ -132,6 +142,17 @@ void initializeContext()
 void uninitializeContext()
 {
 	contextInitialized = false;
+}
+
+void setCurrentColor(const Color &c)
+{
+	glColor4ubv(&c.r);
+	curColor = c;
+}
+
+Color getCurrentColor()
+{
+	return curColor;
 }
 
 void setActiveTextureUnit(int textureunit)

@@ -576,21 +576,12 @@ Shader *Graphics::newShader(const Shader::ShaderSources &sources)
 
 void Graphics::setColor(const Color &c)
 {
-	glColor4ubv(&c.r);
+	opengl::setCurrentColor(c);
 }
 
 Color Graphics::getColor() const
 {
-	float c[4];
-	glGetFloatv(GL_CURRENT_COLOR, c);
-
-	Color t;
-	t.r = (unsigned char)(255.0f*c[0]);
-	t.g = (unsigned char)(255.0f*c[1]);
-	t.b = (unsigned char)(255.0f*c[2]);
-	t.a = (unsigned char)(255.0f*c[3]);
-
-	return t;
+	return opengl::getCurrentColor();
 }
 
 void Graphics::setBackgroundColor(const Color &c)
@@ -1051,17 +1042,14 @@ static void draw_overdraw(Vector *overdraw, size_t count, float pixel_size, bool
 	// prepare colors:
 	// even indices in overdraw* point to inner vertices => alpha = current-alpha,
 	// odd indices point to outer vertices => alpha = 0.
-	GLfloat c[4];
-	glGetFloatv(GL_CURRENT_COLOR, c);
+	Color c = opengl::getCurrentColor();
 
 	Color *colors = new Color[2*count+2];
 	for (size_t i = 0; i < 2*count+2; ++i)
 	{
-		colors[i] = Color(GLubyte(c[0] * 255.f),
-						  GLubyte(c[1] * 255.f),
-						  GLubyte(c[2] * 255.f),
-						  // avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
-						  GLubyte(c[3] * 255.f) * GLubyte(i%2 == 0));
+		colors[i] = c;
+		// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
+		colors[i].a *= GLubyte(i % 2 == 0);
 	}
 
 	// draw faded out line halos
@@ -1072,7 +1060,8 @@ static void draw_overdraw(Vector *overdraw, size_t count, float pixel_size, bool
 	glDisableClientState(GL_COLOR_ARRAY);
 	// "if GL_COLOR_ARRAY is enabled, the value of the current color is
 	// undefined after glDrawArrays executes"
-	glColor4fv(c);
+	
+	opengl::setCurrentColor(c);
 
 	delete[] colors;
 }

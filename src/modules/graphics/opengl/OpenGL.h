@@ -22,6 +22,8 @@
 #define LOVE_GRAPHICS_OPENGL_OPENGL_H
 
 #include "GLee.h"
+
+#include "graphics/Color.h"
 #include "graphics/Image.h"
 
 namespace love
@@ -41,6 +43,16 @@ void initializeContext();
  * Marks current context state as invalid.
  **/
 void uninitializeContext();
+
+/**
+ * Sets the current constant color.
+ **/
+void setCurrentColor(const Color &c);
+
+/**
+ * Gets the current constant color.
+ **/
+Color getCurrentColor();
 
 /**
  * Helper for setting the active texture unit.
