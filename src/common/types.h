@@ -58,6 +58,9 @@ enum Type
 	IMAGE_IMAGE_DATA_ID,
 	IMAGE_COMPRESSED_DATA_ID,
 
+	// Math
+	MATH_RANDOM_GENERATOR_ID,
+
 	// Audio
 	AUDIO_SOURCE_ID,
 
@@ -129,6 +132,9 @@ const bits GRAPHICS_SHADER_T = (bits(1) << GRAPHICS_SHADER_ID) | OBJECT_T;
 // Image.
 const bits IMAGE_IMAGE_DATA_T = (bits(1) << IMAGE_IMAGE_DATA_ID) | DATA_T;
 const bits IMAGE_COMPRESSED_DATA_T = (bits(1) << IMAGE_COMPRESSED_DATA_ID) | DATA_T;
+
+// Math.
+const bits MATH_RANDOM_GENERATOR_T = (bits(1) << MATH_RANDOM_GENERATOR_ID) | OBJECT_T;
 
 // Audio.
 const bits AUDIO_SOURCE_T = (bits(1) << AUDIO_SOURCE_ID) | OBJECT_T;
