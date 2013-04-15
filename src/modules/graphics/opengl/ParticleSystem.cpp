@@ -140,8 +140,8 @@ void ParticleSystem::add()
 			pLast->position[1] += Math::instance.random(-areaSpread.getY(), areaSpread.getY());
 			break;
 		case DISTRIBUTION_NORMAL:
-			pLast->position[0] += Math::instance.randnormal(areaSpread.getX());
-			pLast->position[1] += Math::instance.randnormal(areaSpread.getY());
+			pLast->position[0] += Math::instance.randomnormal(areaSpread.getX());
+			pLast->position[1] += Math::instance.randomnormal(areaSpread.getY());
 			break;
 		case DISTRIBUTION_NONE:
 		default:

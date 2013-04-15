@@ -32,7 +32,7 @@ namespace math
 // George Marsaglia, "Xorshift RNGs", Journal of Statistical Software, Vol.8 (Issue 14), 2003
 
 RandomGenerator::RandomGenerator()
-	: last_randnormal(std::numeric_limits<double>::infinity())
+	: last_randomnormal(std::numeric_limits<double>::infinity())
 {
 	// because it is too big for some compilers to handle ... if you know what
 	// i mean
@@ -66,20 +66,20 @@ uint64 RandomGenerator::rand()
 }
 
 // Box–Muller transform
-double RandomGenerator::randnormal(double stddev)
+double RandomGenerator::randomnormal(double stddev)
 {
 	// use cached number if possible
-	if (last_randnormal != std::numeric_limits<double>::infinity())
+	if (last_randomnormal != std::numeric_limits<double>::infinity())
 	{
-		double r = last_randnormal;
-		last_randnormal = std::numeric_limits<double>::infinity();
+		double r = last_randomnormal;
+		last_randomnormal = std::numeric_limits<double>::infinity();
 		return r * stddev;
 	}
 
 	double r   = sqrt(-2.0 * log(1. - random()));
 	double phi = 2.0 * LOVE_M_PI * (1. - random());
 
-	last_randnormal = r * cos(phi);
+	last_randomnormal = r * cos(phi);
 	return r * sin(phi) * stddev;
 }
 

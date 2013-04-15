@@ -42,7 +42,7 @@ int w_random(lua_State *L)
 	return luax_getrandom(L, 1, Math::instance.random());
 }
 
-int w_randnormal(lua_State *L)
+int w_randomnormal(lua_State *L)
 {
 	double mean = 0.0, stddev = 1.0;
 	if (lua_gettop(L) > 1)
@@ -55,7 +55,7 @@ int w_randnormal(lua_State *L)
 		stddev = luaL_optnumber(L, 1, 1.);
 	}
 
-	double r = Math::instance.randnormal(stddev);
+	double r = Math::instance.randomnormal(stddev);
 	lua_pushnumber(L, r + mean);
 	return 1;
 }
@@ -153,7 +153,7 @@ static const luaL_Reg functions[] =
 {
 	{ "randomseed", w_randomseed },
 	{ "random", w_random },
-	{ "randnormal", w_randnormal },
+	{ "randomnormal", w_randomnormal },
 	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "triangulate", w_triangulate },
 	{ 0, 0 }

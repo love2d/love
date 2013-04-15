@@ -96,12 +96,12 @@ public:
 	 * @param stddev Standard deviation of the distribution.
 	 * @return Normally distributed random number with mean 0 and variance (stddev)².
 	 **/
-	double randnormal(double stddev);
+	double randomnormal(double stddev);
 
 private:
 
 	uint64 rng_state;
-	double last_randnormal;
+	double last_randomnormal;
 
 }; // RandomGenerator
 

@@ -80,11 +80,11 @@ public:
 	}
 
 	/**
-	 * @copydoc RandomGenerator::randnormal()
+	 * @copydoc RandomGenerator::randomnormal()
 	 **/
-	inline double randnormal(double stddev)
+	inline double randomnormal(double stddev)
 	{
-		return rng->randnormal(stddev);
+		return rng->randomnormal(stddev);
 	}
 
 	/**

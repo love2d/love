@@ -85,7 +85,7 @@ int w_RandomGenerator_random(lua_State *L)
 	return luax_getrandom(L, 2, rng->random());
 }
 
-int w_RandomGenerator_randnormal(lua_State *L)
+int w_RandomGenerator_randomnormal(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
 
@@ -100,7 +100,7 @@ int w_RandomGenerator_randnormal(lua_State *L)
 		stddev = luaL_optnumber(L, 2, 1.0);
 	}
 
-	double r = rng->randnormal(stddev);
+	double r = rng->randomnormal(stddev);
 	lua_pushnumber(L, r + mean);
 	return 1;
 }
@@ -109,7 +109,7 @@ static const luaL_Reg functions[] =
 {
 	{ "randomseed", w_RandomGenerator_randomseed },
 	{ "random", w_RandomGenerator_random },
-	{ "randnormal", w_RandomGenerator_randnormal },
+	{ "randomnormal", w_RandomGenerator_randomnormal },
 	{ 0, 0 }
 };
 
