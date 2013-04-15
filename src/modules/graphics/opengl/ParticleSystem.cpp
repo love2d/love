@@ -21,13 +21,11 @@
 #include "ParticleSystem.h"
 
 #include "common/math.h"
-#include "modules/math/MathModule.h"
+#include "modules/math/RandomGenerator.h"
 
 #include "OpenGL.h"
 #include <cmath>
 #include <cstdlib>
-
-using love::math::Math;
 
 namespace love
 {
@@ -38,19 +36,23 @@ namespace opengl
 
 namespace
 {
+
+love::math::RandomGenerator rng;
+
 Colorf colorToFloat(const Color &c)
 {
 	return Colorf((GLfloat)c.r/255.0f, (GLfloat)c.g/255.0f, (GLfloat)c.b/255.0f, (GLfloat)c.a/255.0f);
-}
 }
 
 float calculate_variation(float inner, float outer, float var)
 {
 	float low = inner - (outer/2.0f)*var;
 	float high = inner + (outer/2.0f)*var;
-	float r = Math::instance.random();
+	float r = rng.random();
 	return low*(1-r)+high*r;
 }
+
+} // anonymous namespace
 
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM>::Entry ParticleSystem::distributionsEntries[] = {
 	{ "none",     ParticleSystem::DISTRIBUTION_NONE },
@@ -127,7 +129,7 @@ void ParticleSystem::add()
 	if (min == max)
 		pLast->life = min;
 	else
-		pLast->life = Math::instance.random(min, max);
+		pLast->life = rng.random(min, max);
 	pLast->lifetime = pLast->life;
 
 	pLast->position[0] = position.getX();
@@ -136,12 +138,12 @@ void ParticleSystem::add()
 	switch (areaSpreadDistribution)
 	{
 		case DISTRIBUTION_UNIFORM:
-			pLast->position[0] += Math::instance.random(-areaSpread.getX(), areaSpread.getX());
-			pLast->position[1] += Math::instance.random(-areaSpread.getY(), areaSpread.getY());
+			pLast->position[0] += rng.random(-areaSpread.getX(), areaSpread.getX());
+			pLast->position[1] += rng.random(-areaSpread.getY(), areaSpread.getY());
 			break;
 		case DISTRIBUTION_NORMAL:
-			pLast->position[0] += Math::instance.randomnormal(areaSpread.getX());
-			pLast->position[1] += Math::instance.randomnormal(areaSpread.getY());
+			pLast->position[0] += rng.randomnormal(areaSpread.getX());
+			pLast->position[1] += rng.randomnormal(areaSpread.getY());
 			break;
 		case DISTRIBUTION_NONE:
 		default:
@@ -150,37 +152,37 @@ void ParticleSystem::add()
 
 	min = direction - spread/2.0f;
 	max = direction + spread/2.0f;
-	pLast->direction = Math::instance.random(min, max);
+	pLast->direction = rng.random(min, max);
 
 	pLast->origin = position;
 
 	min = speedMin;
 	max = speedMax;
-	float speed = Math::instance.random(min, max);
+	float speed = rng.random(min, max);
 	pLast->speed = love::Vector(cos(pLast->direction), sin(pLast->direction));
 	pLast->speed *= speed;
 
 	min = gravityMin;
 	max = gravityMax;
-	pLast->gravity = Math::instance.random(min, max);
+	pLast->gravity = rng.random(min, max);
 
 	min = radialAccelerationMin;
 	max = radialAccelerationMax;
-	pLast->radialAcceleration = Math::instance.random(min, max);
+	pLast->radialAcceleration = rng.random(min, max);
 
 	min = tangentialAccelerationMin;
 	max = tangentialAccelerationMax;
-	pLast->tangentialAcceleration = Math::instance.random(min, max);
+	pLast->tangentialAcceleration = rng.random(min, max);
 
-	pLast->sizeOffset       = Math::instance.random(sizeVariation); // time offset for size change
-	pLast->sizeIntervalSize = (1.0f - Math::instance.random(sizeVariation)) - pLast->sizeOffset;
+	pLast->sizeOffset       = rng.random(sizeVariation); // time offset for size change
+	pLast->sizeIntervalSize = (1.0f - rng.random(sizeVariation)) - pLast->sizeOffset;
 	pLast->size = sizes[(size_t)(pLast->sizeOffset - .5f) * (sizes.size() - 1)];
 
 	min = rotationMin;
 	max = rotationMax;
 	pLast->spinStart = calculate_variation(spinStart, spinEnd, spinVariation);
 	pLast->spinEnd = calculate_variation(spinEnd, spinStart, spinVariation);
-	pLast->rotation = Math::instance.random(min, max);
+	pLast->rotation = rng.random(min, max);
 
 	pLast->color = colors[0];
 
