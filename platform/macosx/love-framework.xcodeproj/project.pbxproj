@@ -224,6 +224,10 @@
 		FA577ACB16C7514400860150 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7316C719F900860150 /* physfs.framework */; };
 		FA577ACC16C7514700860150 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7516C719FF00860150 /* SDL.framework */; };
 		FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* Vorbis.framework */; };
+		FA636D8A171B70920065623F /* RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D88171B70920065623F /* RandomGenerator.cpp */; };
+		FA636D8B171B70920065623F /* RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D89171B70920065623F /* RandomGenerator.h */; };
+		FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */; };
+		FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
 		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
@@ -715,6 +719,10 @@
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577A8E16C71D3600860150 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA636D88171B70920065623F /* RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RandomGenerator.cpp; sourceTree = "<group>"; };
+		FA636D89171B70920065623F /* RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RandomGenerator.h; sourceTree = "<group>"; };
+		FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RandomGenerator.cpp; sourceTree = "<group>"; };
+		FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RandomGenerator.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
 		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
@@ -1653,8 +1661,12 @@
 			children = (
 				FA5454C016F1310000D30303 /* MathModule.cpp */,
 				FA5454C116F1310000D30303 /* MathModule.h */,
+				FA636D88171B70920065623F /* RandomGenerator.cpp */,
+				FA636D89171B70920065623F /* RandomGenerator.h */,
 				FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */,
 				FA7C937616DCC6C2006F2BEE /* wrap_Math.h */,
+				FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */,
+				FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */,
 			);
 			path = math;
 			sourceTree = "<group>";
@@ -1705,6 +1717,8 @@
 				FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */,
 				FAEC808B1710FEA60057279A /* ImageData.h in Headers */,
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
+				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
+				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1986,6 +2000,8 @@
 				FAE010E4170DF75C006F29D0 /* wrap_CompressedData.cpp in Sources */,
 				FAEC808A1710FEA60057279A /* ImageData.cpp in Sources */,
 				FAEC808E1711E76C0057279A /* CompressedData.cpp in Sources */,
+				FA636D8A171B70920065623F /* RandomGenerator.cpp in Sources */,
+				FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

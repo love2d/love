@@ -19,7 +19,8 @@
  **/
 
 #include "wrap_Math.h"
-#include "modules/math/MathModule.h"
+#include "wrap_RandomGenerator.h"
+#include "MathModule.h"
 
 #include <cmath>
 #include <iostream>
@@ -31,45 +32,17 @@ namespace math
 
 int w_randomseed(lua_State *L)
 {
-	union
-	{
-		double   seed_double;
-		uint64_t seed_uint;
-	} s;
-
-	s.seed_double = luaL_checknumber(L, 1);
-	Math::instance.randomseed(s.seed_uint);
+	uint64 seed = luax_checkrandomseed(L, 1);
+	Math::instance.randomseed(seed);
 	return 0;
 }
 
 int w_random(lua_State *L)
 {
-	double r = Math::instance.random();
-	int l, u;
-	// verbatim from lua 5.1.4 source code: lmathlib.c:185 ff.
-	switch (lua_gettop(L))
-	{
-	case 0:
-		lua_pushnumber(L, r);
-		break;
-	case 1:
-		u = luaL_checkint(L, 1);
-		luaL_argcheck(L, 1 <= u, 1, "interval is empty");
-		lua_pushnumber(L, floor(r * u) + 1);
-		break;
-	case 2:
-		l = luaL_checkint(L, 1);
-		u = luaL_checkint(L, 2);
-		luaL_argcheck(L, l <= u, 2, "interval is empty");
-		lua_pushnumber(L, floor(r * (u - l + 1)) + l);
-		break;
-	default:
-		return luaL_error(L, "wrong number of arguments");
-	}
-	return 1;
+	return luax_getrandom(L, 1, Math::instance.random());
 }
 
-int w_randnormal(lua_State *L)
+int w_randomnormal(lua_State *L)
 {
 	double mean = 0.0, stddev = 1.0;
 	if (lua_gettop(L) > 1)
@@ -82,8 +55,22 @@ int w_randnormal(lua_State *L)
 		stddev = luaL_optnumber(L, 1, 1.);
 	}
 
-	double r = Math::instance.randnormal(stddev);
+	double r = Math::instance.randomnormal(stddev);
 	lua_pushnumber(L, r + mean);
+	return 1;
+}
+
+int w_newRandomGenerator(lua_State *L)
+{
+	RandomGenerator *t = Math::instance.newRandomGenerator();
+
+	if (lua_gettop(L) > 0)
+	{
+		uint64 seed = luax_checkrandomseed(L, 1);
+		t->randomseed(seed);
+	}
+
+	luax_newtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, (void *) t);
 	return 1;
 }
 
@@ -166,13 +153,15 @@ static const luaL_Reg functions[] =
 {
 	{ "randomseed", w_randomseed },
 	{ "random", w_random },
-	{ "randnormal", w_randnormal },
+	{ "randomnormal", w_randomnormal },
+	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "triangulate", w_triangulate },
 	{ 0, 0 }
 };
 
 static const lua_CFunction types[] =
 {
+	luaopen_randomgenerator,
 	0
 };
 

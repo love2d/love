@@ -18,10 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_MATH_WRAP_MATH_H
-#define LOVE_MATH_WRAP_MATH_H
+#ifndef LOVE_MATH_WRAP_RANDOM_GENERATOR_H
+#define LOVE_MATH_WRAP_RANDOM_GENERATOR_H
 
 // LOVE
+#include "RandomGenerator.h"
 #include "common/config.h"
 #include "common/runtime.h"
 
@@ -30,15 +31,17 @@ namespace love
 namespace math
 {
 
-int w_randomseed(lua_State *L);
-int w_random(lua_State *L);
-int w_randomnormal(lua_State *L);
-int w_newRandomGenerator(lua_State *L);
-int w_triangulate(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_math(lua_State *L);
+// Helper functions.
+uint64 luax_checkrandomseed(lua_State *L, int idx);
+int luax_getrandom(lua_State *L, int startidx, double r);
 
-} // random
+RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx);
+int w_RandomGenerator_randomseed(lua_State *L);
+int w_RandomGenerator_random(lua_State *L);
+int w_RandomGenerator_randomnormal(lua_State *L);
+extern "C" int luaopen_randomgenerator(lua_State *L);
+
+} // math
 } // love
 
-#endif // LOVE_MATH_WRAP_MATH_H
-
+#endif // LOVE_MATH_WRAP_RANDOM_GENERATOR_H

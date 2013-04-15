@@ -21,6 +21,8 @@
 #ifndef LOVE_MATH_MODMATH_H
 #define LOVE_MATH_MODMATH_H
 
+#include "RandomGenerator.h"
+
 // LOVE
 #include "common/Module.h"
 #include "common/math.h"
@@ -28,7 +30,6 @@
 
 // STL
 #include <limits>
-#include <stdint.h>
 #include <vector>
 
 namespace love
@@ -38,80 +39,79 @@ namespace math
 
 class Math : public Module
 {
-public:
-	virtual ~Math()
-	{}
+private:
 
-	/** Set pseudo random seed.
-	 *
-	 * It's up to the implementation how to use this.
-	 *
-	 * @param seed The random seed.
-	 */
-	inline void randomseed(uint64_t seed)
+	RandomGenerator *rng;
+
+public:
+
+	virtual ~Math();
+
+	/**
+	 * @copydoc RandomGenerator::randomseed()
+	 **/
+	inline void randomseed(uint64 seed)
 	{
-		rng_state = seed;
+		rng->randomseed(seed);
 	}
 
-	/** Return uniformly distributed pseudo random integer.
-	 *
-	 * @returns Pseudo random integer in [0,2^64).
-	 */
-	uint64 rand();
-
-	/** Get uniformly distributed pseudo random number in [0,1).
-	 *
-	 * @returns Pseudo random number in [0,1).
-	 */
+	/**
+	 * @copydoc RandomGenerator::random()
+	 **/
 	inline double random()
 	{
-		return double(rand()) / (double(std::numeric_limits<uint64>::max()) + 1.0);
+		return rng->random();
 	}
 
-	/** Get uniformly distributed pseudo random number in [0,max).
-	 *
-	 * @returns Pseudo random number in [0,max).
-	 */
+	/**
+	 * @copydoc RandomGenerator::random(double)
+	 **/
 	inline double random(double max)
 	{
-		return random() * max;
+		return rng->random(max);
 	}
 
-	/** Get uniformly distributed pseudo random number in [min, max).
-	 *
-	 * @returns Pseudo random number in [min, max).
-	 */
+	/**
+	 * @copydoc RandomGenerator::random(double,double)
+	 **/
 	inline double random(double min, double max)
 	{
-		return random() * (max - min) + min;
+		return rng->random(min, max);
 	}
 
-	/** Get normally distributed pseudo random number.
-	 *
-	 * @param stddev Standard deviation of the distribution.
-	 * @returns Normally distributed random number with mean 0 and variance (stddev)².
-	 */
-	double randnormal(double stddev);
+	/**
+	 * @copydoc RandomGenerator::randomnormal()
+	 **/
+	inline double randomnormal(double stddev)
+	{
+		return rng->randomnormal(stddev);
+	}
+
+	/**
+	 * Create a new random number generator.
+	 **/
+	RandomGenerator *newRandomGenerator();
 
 	virtual const char *getName() const
 	{
 		return "love.math";
 	}
 
-	/** Triangulate a simple polygon.
+	/**
+	 * Triangulate a simple polygon.
+	 *
 	 * @param polygon Polygon to triangulate. Must not intersect itself.
-	 * @returns List of triangles the polygon is composed of.
-	 */
+	 * @return List of triangles the polygon is composed of.
+	 **/
 	std::vector<Triangle> triangulate(const std::vector<vertex> &polygon);
 
 	static Math instance;
 
 private:
+
 	Math();
 
-	uint64 rng_state;
-	double last_randnormal;
-};
+}; // Math
 
 } // math
 } // love
