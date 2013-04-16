@@ -440,7 +440,9 @@
     <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\love\love.cpp" />
     <ClCompile Include="..\..\src\modules\math\MathModule.cpp" />
+    <ClCompile Include="..\..\src\modules\math\RandomGenerator.cpp" />
     <ClCompile Include="..\..\src\modules\math\wrap_Math.cpp" />
+    <ClCompile Include="..\..\src\modules\math\wrap_RandomGenerator.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\wrap_Mouse.cpp" />
@@ -684,7 +686,9 @@
     <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
     <ClInclude Include="..\..\src\modules\love\love.h" />
     <ClInclude Include="..\..\src\modules\math\MathModule.h" />
+    <ClInclude Include="..\..\src\modules\math\RandomGenerator.h" />
     <ClInclude Include="..\..\src\modules\math\wrap_Math.h" />
+    <ClInclude Include="..\..\src\modules\math\wrap_RandomGenerator.h" />
     <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
     <ClInclude Include="..\..\src\modules\mouse\wrap_Mouse.h" />

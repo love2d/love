@@ -792,6 +792,12 @@
     <ClCompile Include="..\..\src\modules\image\wrap_CompressedData.cpp">
       <Filter>modules\image</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\modules\math\RandomGenerator.cpp">
+      <Filter>modules\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\math\wrap_RandomGenerator.cpp">
+      <Filter>modules\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\scripts\boot.lua">
@@ -1524,6 +1530,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\image\wrap_CompressedData.h">
       <Filter>modules\image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\math\RandomGenerator.h">
+      <Filter>modules\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\math\wrap_RandomGenerator.h">
+      <Filter>modules\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
