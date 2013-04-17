@@ -217,7 +217,7 @@ void Image::setFilter(const Image::Filter &f)
 	filter = f;
 
 	bind();
-	filter.anisotropy = setTextureFilter(f);
+	filter.anisotropy = gl.setTextureFilter(f);
 	checkMipmapsCreated();
 }
 
@@ -231,7 +231,7 @@ void Image::setWrap(const Image::Wrap &w)
 	wrap = w;
 
 	bind();
-	setTextureWrap(w);
+	gl.setTextureWrap(w);
 }
 
 const Image::Wrap &Image::getWrap() const
@@ -265,7 +265,7 @@ void Image::bind() const
 	if (texture == 0)
 		return;
 
-	bindTexture(texture);
+	gl.bindTexture(texture);
 }
 
 void Image::preload()
@@ -330,10 +330,10 @@ bool Image::loadVolatile()
 bool Image::loadVolatilePOT()
 {
 	glGenTextures(1,(GLuint *)&texture);
-	bindTexture(texture);
+	gl.bindTexture(texture);
 
-	filter.anisotropy = setTextureFilter(filter);
-	setTextureWrap(wrap);
+	filter.anisotropy = gl.setTextureFilter(filter);
+	gl.setTextureWrap(wrap);
 
 	float p2width = next_p2(width);
 	float p2height = next_p2(height);
@@ -400,10 +400,10 @@ bool Image::loadVolatilePOT()
 bool Image::loadVolatileNPOT()
 {
 	glGenTextures(1,(GLuint *)&texture);
-	bindTexture(texture);
+	gl.bindTexture(texture);
 
-	filter.anisotropy = setTextureFilter(filter);
-	setTextureWrap(wrap);
+	filter.anisotropy = gl.setTextureFilter(filter);
+	gl.setTextureWrap(wrap);
 
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
@@ -448,7 +448,7 @@ void Image::unloadVolatile()
 	// Delete the hardware texture.
 	if (texture != 0)
 	{
-		deleteTexture(texture);
+		gl.deleteTexture(texture);
 		texture = 0;
 	}
 }

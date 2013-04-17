@@ -120,7 +120,7 @@ void Font::createTexture()
 	glGenTextures(1, &t);
 	textures.push_back(t);
 
-	bindTexture(t);
+	gl.bindTexture(t);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -148,8 +148,8 @@ void Font::createTexture()
 	if (!initialized)
 	{
 		// cleanup before throwing
-		deleteTexture(t);
-		bindTexture(0);
+		gl.deleteTexture(t);
+		gl.bindTexture(0);
 		textures.pop_back();
 
 		throw love::Exception("Could not create font texture!");
@@ -200,7 +200,7 @@ Font::Glyph *Font::addGlyph(unsigned int glyph)
 	{
 		const GLuint t = textures.back();
 
-		bindTexture(t);
+		gl.bindTexture(t);
 		glTexSubImage2D(GL_TEXTURE_2D,
 						0,
 						textureX,
@@ -356,7 +356,7 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 		std::vector<GlyphArrayDrawInfo>::const_iterator it;
 		for (it = glyphinfolist.begin(); it != glyphinfolist.end(); ++it)
 		{
-			bindTexture(it->texture);
+			gl.bindTexture(it->texture);
 
 			int startvertex = it->startquad * 4;
 			int numvertices = it->numquads * 4;
@@ -504,8 +504,8 @@ void Font::setFilter(const Image::Filter &f)
 	std::vector<GLuint>::const_iterator it;
 	for (it = textures.begin(); it != textures.end(); ++it)
 	{
-		bindTexture(*it);
-		filter.anisotropy = setTextureFilter(f);
+		gl.bindTexture(*it);
+		filter.anisotropy = gl.setTextureFilter(f);
 	}
 }
 
@@ -534,7 +534,7 @@ void Font::unloadVolatile()
 	std::vector<GLuint>::iterator iter = textures.begin();
 	while (iter != textures.end())
 	{
-		deleteTexture(*iter);
+		gl.deleteTexture(*iter);
 		iter++;
 	}
 	textures.clear();

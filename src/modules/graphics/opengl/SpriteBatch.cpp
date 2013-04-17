@@ -218,7 +218,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	VertexBuffer::Bind array_bind(*array_buf);
 	VertexBuffer::Bind element_bind(*element_buf->getVertexBuffer());
 
-	Color curcolor = opengl::getCurrentColor();
+	Color curcolor = gl.getColor();
 
 	// Apply per-sprite color, if a color is set.
 	if (color)
@@ -241,7 +241,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	if (color)
 	{
 		glDisableClientState(GL_COLOR_ARRAY);
-		opengl::setCurrentColor(curcolor);
+		gl.setColor(curcolor);
 	}
 
 	glPopMatrix();

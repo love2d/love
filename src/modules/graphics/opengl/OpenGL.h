@@ -23,8 +23,12 @@
 
 #include "GLee.h"
 
+// LOVE
 #include "graphics/Color.h"
 #include "graphics/Image.h"
+
+// STL
+#include <vector>
 
 namespace love
 {
@@ -34,76 +38,118 @@ namespace opengl
 {
 
 /**
- * Initializes some required context state,
- * based on current and default OpenGL state.
+ * Thin layer between OpenGL and the rest of the program.
+ * Internally shadows some OpenGL context state for improved efficiency and
+ * accuracy (compared to glGet etc.)
+ * A class is more convenient and readable than plain namespaced functions, but
+ * typically only one OpenGL object should be used (singleton.)
  **/
-void initializeContext();
+class OpenGL
+{
+public:
 
-/**
- * Marks current context state as invalid.
- **/
-void uninitializeContext();
+	OpenGL();
 
-/**
- * Sets the current constant color.
- **/
-void setCurrentColor(const Color &c);
+	/**
+	 * Initializes some required context state based on current and default
+	 * OpenGL state. Call this directly after creating an OpenGL context!
+	 **/
+	void initContext();
 
-/**
- * Gets the current constant color.
- **/
-Color getCurrentColor();
+	/**
+	 * Marks current context state as invalid and deletes OpenGL objects owned
+	 * by this class instance. Call this directly before potentially deleting
+	 * an OpenGL context!
+	 **/
+	void deInitContext();
 
-/**
- * Helper for setting the active texture unit.
- *
- * @param textureunit Index in the range of [0, maxtextureunits-1]
- **/
-void setActiveTextureUnit(int textureunit);
+	/**
+	 * Sets the current constant color.
+	 **/
+	void setColor(const Color &c);
 
-/**
- * Helper for binding an OpenGL texture.
- * Makes sure we aren't redundantly binding textures.
- **/
-void bindTexture(GLuint texture);
+	/**
+	 * Gets the current constant color.
+	 **/
+	Color getColor();
 
-/**
- * Helper for binding a texture to a specific texture unit.
- *
- * @param textureunit Index in the range of [0, maxtextureunits-1]
- * @param resoreprev Restore previously bound texture unit when done.
- **/
-void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
+	/**
+	 * Helper for setting the active texture unit.
+	 *
+	 * @param textureunit Index in the range of [0, maxtextureunits-1]
+	 **/
+	void setActiveTextureUnit(int textureunit);
 
-/**
- * Helper for deleting an OpenGL texture.
- * Cleans up if the texture is currently bound.
- **/
-void deleteTexture(GLuint texture);
+	/**
+	 * Helper for binding an OpenGL texture.
+	 * Makes sure we aren't redundantly binding textures.
+	 **/
+	void bindTexture(GLuint texture);
 
-/**
- * Sets the image filter mode for the currently bound texture.
- * Returns the actual amount of anisotropic filtering set.
- */
-float setTextureFilter(const graphics::Image::Filter &f);
+	/**
+	 * Helper for binding a texture to a specific texture unit.
+	 *
+	 * @param textureunit Index in the range of [0, maxtextureunits-1]
+	 * @param resoreprev Restore previously bound texture unit when done.
+	 **/
+	void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
 
-/**
- * Returns the image filter mode for the currently bound texture.
- */
-graphics::Image::Filter getTextureFilter();
+	/**
+	 * Helper for deleting an OpenGL texture.
+	 * Cleans up if the texture is currently bound.
+	 **/
+	void deleteTexture(GLuint texture);
 
-/**
- * Sets the image wrap mode for the currently bound texture.
- */
-void setTextureWrap(const graphics::Image::Wrap &w);
+	/**
+	 * Sets the image filter mode for the currently bound texture.
+	 * Returns the actual amount of anisotropic filtering set.
+	 */
+	float setTextureFilter(const graphics::Image::Filter &f);
 
-/**
- * Returns the image wrap mode for the currently bound texture.
- */
-graphics::Image::Wrap getTextureWrap();
+	/**
+	 * Returns the image filter mode for the currently bound texture.
+	 */
+	graphics::Image::Filter getTextureFilter();
+
+	/**
+	 * Sets the image wrap mode for the currently bound texture.
+	 */
+	void setTextureWrap(const graphics::Image::Wrap &w);
+
+	/**
+	 * Returns the image wrap mode for the currently bound texture.
+	 */
+	graphics::Image::Wrap getTextureWrap();
+
+private:
+
+	void initOpenGLFunctions();
+	void createDefaultTexture();
+
+	bool contexInitialized;
+	float maxAnisotropy;
+
+	// Tracked OpenGL state.
+	struct
+	{
+		// Current constant color.
+		Color color;
+
+		// Texture unit state (currently bound texture for each texture unit.)
+		std::vector<GLuint> textureUnits;
+
+		// Currently active texture unit.
+		int curTextureUnit;
+
+	} state;
+
+}; // OpenGL
+
+// OpenGL class instance singleton.
+extern OpenGL gl;
 
 } // opengl
 } // graphics
 } // love
 
-#endif
+#endif // LOVE_GRAPHICS_OPENGL_OPENGL_H

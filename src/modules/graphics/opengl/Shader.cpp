@@ -293,9 +293,9 @@ void Shader::attach(bool temporary)
 		for (size_t i = 0; i < activeTextureUnits.size(); ++i)
 		{
 			if (activeTextureUnits[i] > 0)
-				bindTextureToUnit(activeTextureUnits[i], i + 1, false);
+				gl.bindTextureToUnit(activeTextureUnits[i], i + 1, false);
 		}
-		setActiveTextureUnit(0);
+		gl.setActiveTextureUnit(0);
 	}
 }
 
@@ -372,11 +372,11 @@ void Shader::sendTexture(const std::string &name, GLuint texture)
 	int textureunit = getTextureUnit(name);
 
 	// bind texture to assigned texture unit and send uniform to shader program
-	bindTextureToUnit(texture, textureunit, false);
+	gl.bindTextureToUnit(texture, textureunit, false);
 	glUniform1i(location, textureunit);
 
 	// reset texture unit
-	setActiveTextureUnit(0);
+	gl.setActiveTextureUnit(0);
 
 	// throw error if needed
 	checkSetUniformError();

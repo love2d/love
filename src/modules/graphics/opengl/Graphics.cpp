@@ -131,7 +131,7 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	// the display mode change.
 	Volatile::unloadAll();
 
-	uninitializeContext();
+	gl.deInitContext();
 
 	bool success = currentWindow->setWindow(width, height, flags);
 
@@ -140,7 +140,7 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	height = currentWindow->getHeight();
 
 	// Okay, setup OpenGL.
-	initializeContext();
+	gl.initContext();
 
 	// Make sure antialiasing works when set elsewhere
 	if (GLEE_VERSION_1_3 || GLEE_ARB_multisample)
@@ -170,7 +170,7 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
-	setActiveTextureUnit(0);
+	gl.setActiveTextureUnit(0);
 
 	// Set the viewport to top-left corner
 	glViewport(0, 0, width, height);
@@ -576,12 +576,12 @@ Shader *Graphics::newShader(const Shader::ShaderSources &sources)
 
 void Graphics::setColor(const Color &c)
 {
-	opengl::setCurrentColor(c);
+	gl.setColor(c);
 }
 
 Color Graphics::getColor() const
 {
-	return opengl::getCurrentColor();
+	return gl.getColor();
 }
 
 void Graphics::setBackgroundColor(const Color &c)
@@ -924,7 +924,7 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 
 void Graphics::point(float x, float y)
 {
-	bindTexture(0);
+	gl.bindTexture(0);
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
 	glEnd();
@@ -1042,7 +1042,7 @@ static void draw_overdraw(Vector *overdraw, size_t count, float pixel_size, bool
 	// prepare colors:
 	// even indices in overdraw* point to inner vertices => alpha = current-alpha,
 	// odd indices point to outer vertices => alpha = 0.
-	Color c = opengl::getCurrentColor();
+	Color c = gl.getColor();
 
 	Color *colors = new Color[2*count+2];
 	for (size_t i = 0; i < 2*count+2; ++i)
@@ -1061,7 +1061,7 @@ static void draw_overdraw(Vector *overdraw, size_t count, float pixel_size, bool
 	// "if GL_COLOR_ARRAY is enabled, the value of the current color is
 	// undefined after glDrawArrays executes"
 	
-	opengl::setCurrentColor(c);
+	gl.setColor(c);
 
 	delete[] colors;
 }
@@ -1119,7 +1119,7 @@ void Graphics::polyline(const float *coords, size_t count)
 	// end get line vertex boundaries
 
 	// draw the core line
-	bindTexture(0);
+	gl.bindTexture(0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)vertices);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
@@ -1201,7 +1201,7 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	}
 	else
 	{
-		bindTexture(0);
+		gl.bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, points + 2);
@@ -1224,7 +1224,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
-		bindTexture(0);
+		gl.bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)coords);
 		glDrawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us

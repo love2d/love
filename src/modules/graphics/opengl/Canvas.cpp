@@ -107,13 +107,13 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		}
 
 		glGenTextures(1, &img);
-		bindTexture(img);
+		gl.bindTexture(img);
 
-		setTextureFilter(Image::getDefaultFilter());
+		gl.setTextureFilter(Image::getDefaultFilter());
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
-		bindTexture(0);
+		gl.bindTexture(0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			GL_TEXTURE_2D, img, 0);
 
@@ -127,7 +127,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 	}
 	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil,  GLuint img)
 	{
-		deleteTexture(img);
+		gl.deleteTexture(img);
 		glDeleteRenderbuffers(1, &depth_stencil);
 		glDeleteFramebuffers(1, &framebuffer);
 	}
@@ -209,13 +209,13 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		}
 
 		glGenTextures(1, &img);
-		bindTexture(img);
+		gl.bindTexture(img);
 
-		setTextureFilter(Image::getDefaultFilter());
+		gl.setTextureFilter(Image::getDefaultFilter());
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
-		bindTexture(0);
+		gl.bindTexture(0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
 			GL_TEXTURE_2D, img, 0);
 
@@ -230,7 +230,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 
 	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil, GLuint img)
 	{
-		deleteTexture(img);
+		gl.deleteTexture(img);
 		glDeleteRenderbuffersEXT(1, &depth_stencil);
 		glDeleteFramebuffersEXT(1, &framebuffer);
 	}
@@ -310,13 +310,13 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 		}
 
 		glGenTextures(1, &img);
-		bindTexture(img);
+		gl.bindTexture(img);
 
-		setTextureFilter(Image::getDefaultFilter());
+		gl.setTextureFilter(Image::getDefaultFilter());
 
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
 			0, GL_RGBA, format, NULL);
-		bindTexture(0);
+		gl.bindTexture(0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
 			GL_TEXTURE_2D, img, 0);
 
@@ -644,26 +644,26 @@ const std::vector<Canvas *> &Canvas::getAttachedCanvases() const
 
 void Canvas::setFilter(const Image::Filter &f)
 {
-	bindTexture(img);
-	setTextureFilter(f);
+	gl.bindTexture(img);
+	gl.setTextureFilter(f);
 }
 
 Image::Filter Canvas::getFilter() const
 {
-	bindTexture(img);
-	return getTextureFilter();
+	gl.bindTexture(img);
+	return gl.getTextureFilter();
 }
 
 void Canvas::setWrap(const Image::Wrap &w)
 {
-	bindTexture(img);
-	setTextureWrap(w);
+	gl.bindTexture(img);
+	gl.setTextureWrap(w);
 }
 
 Image::Wrap Canvas::getWrap() const
 {
-	bindTexture(img);
-	return getTextureWrap();
+	gl.bindTexture(img);
+	return gl.getTextureWrap();
 }
 
 bool Canvas::loadVolatile()
@@ -708,7 +708,7 @@ void Canvas::drawv(const Matrix &t, const vertex *v) const
 
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	bindTexture(img);
+	gl.bindTexture(img);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);

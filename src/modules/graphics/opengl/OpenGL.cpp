@@ -18,13 +18,14 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "OpenGL.h"
+
+// LOVE
 #include "common/config.h"
 #include "common/Exception.h"
-
-#include "OpenGL.h"
 #include "Shader.h"
 
-#include <vector>
+// STL
 #include <algorithm>
 
 namespace love
@@ -34,61 +35,83 @@ namespace graphics
 namespace opengl
 {
 
-static bool contextInitialized = false;
+// OpenGL class instance singleton.
+OpenGL gl;
 
-static Color curColor;
-
-static int curTextureUnit = 0;
-static std::vector<GLuint> textureUnits;
-
-static float maxAnisotropy = 1.0f;
-
-void initializeContext()
+OpenGL::OpenGL()
+	: contexInitialized(false)
+	, maxAnisotropy(1.0f)
+	, state()
 {
-	if (contextInitialized)
+}
+
+void OpenGL::initContext()
+{
+	if (contexInitialized)
 		return;
 
-	contextInitialized = true;
+	initOpenGLFunctions();
 
-	// Store the current color so we don't have to get it through GL later
+	// Store the current color so we don't have to get it through GL later.
 	GLfloat glcolor[4];
 	glGetFloatv(GL_CURRENT_COLOR, glcolor);
-	curColor.r = glcolor[0];
-	curColor.g = glcolor[1];
-	curColor.b = glcolor[2];
-	curColor.a = glcolor[3];
+	state.color.r = glcolor[0];
+	state.color.g = glcolor[1];
+	state.color.b = glcolor[2];
+	state.color.a = glcolor[3];
 
-	// initialize multiple texture unit support for shaders, if available
-	textureUnits.clear();
+	// Initialize multiple texture unit support for shaders, if available.
+	state.textureUnits.clear();
 	if (Shader::isSupported())
 	{
 		GLint maxtextureunits;
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
 
-		textureUnits.resize(maxtextureunits, 0);
+		state.textureUnits.resize(maxtextureunits, 0);
 
 		GLenum curgltextureunit;
 		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
 
-		curTextureUnit = curgltextureunit - GL_TEXTURE0;
+		state.curTextureUnit = curgltextureunit - GL_TEXTURE0;
 
-		// Retrieve currently bound textures for each texture unit
-		for (size_t i = 0; i < textureUnits.size(); i++)
+		// Retrieve currently bound textures for each texture unit.
+		for (size_t i = 0; i < state.textureUnits.size(); i++)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
-			glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &textureUnits[i]);
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[i]);
 		}
 
 		glActiveTexture(curgltextureunit);
 	}
 	else
 	{
-		// multitexturing not supported, so we only have 1 texture unit
-		textureUnits.resize(1, 0);
-		curTextureUnit = 0;
-		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &textureUnits[0]);
+		// Multitexturing not supported, so we only have 1 texture unit.
+		state.textureUnits.resize(1, 0);
+		state.curTextureUnit = 0;
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[0]);
 	}
 
+	// We'll need this value to clamp anisotropy.
+	if (GLEE_EXT_texture_filter_anisotropic)
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+	else
+		maxAnisotropy = 1.0f;
+
+	createDefaultTexture();
+
+	contexInitialized = true;
+}
+
+void OpenGL::deInitContext()
+{
+	if (!contexInitialized)
+		return;
+
+	contexInitialized = false;
+}
+
+void OpenGL::initOpenGLFunctions()
+{
 	// The functionality of the core and ARB VBOs are identical, so we can
 	// assign the pointers of the core functions to the names of the ARB
 	// functions, if the latter isn't supported but the former is.
@@ -114,17 +137,16 @@ void initializeContext()
 		glCompressedTexSubImage2DARB = (GLEEPFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC) glCompressedTexSubImage2D;
 		glGetCompressedTexImageARB = (GLEEPFNGLGETCOMPRESSEDTEXIMAGEARBPROC) glGetCompressedTexImage;
 	}
+}
 
-	if (GLEE_EXT_texture_filter_anisotropic)
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-	else
-		maxAnisotropy = 1.0f;
+void OpenGL::createDefaultTexture()
+{
+	// Set the 'default' texture (id 0) as a repeating white pixel. Otherwise,
+	// texture2D calls inside a shader would return black when drawing graphics
+	// primitives, which would create the need to use different "passthrough"
+	// shaders for untextured primitives vs images.
 
-	// Set the 'default' texture (id 0) as a repeating white pixel.
-	// Otherwise, texture2D inside a shader would return black when drawing graphics primitives,
-	// which would create the need to use different "passthrough" shaders for untextured primitives vs images.
-
-	GLuint curtexture = textureUnits[curTextureUnit];
+	GLuint curtexture = state.textureUnits[state.curTextureUnit];
 	bindTexture(0);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -133,64 +155,59 @@ void initializeContext()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	GLubyte pixel = 255;
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pixel);
+	GLubyte pix = 255;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pix);
 
 	bindTexture(curtexture);
 }
 
-void uninitializeContext()
-{
-	contextInitialized = false;
-}
-
-void setCurrentColor(const Color &c)
+void OpenGL::setColor(const Color &c)
 {
 	glColor4ubv(&c.r);
-	curColor = c;
+	state.color = c;
 }
 
-Color getCurrentColor()
+Color OpenGL::getColor()
 {
-	return curColor;
+	return state.color;
 }
 
-void setActiveTextureUnit(int textureunit)
+void OpenGL::setActiveTextureUnit(int textureunit)
 {
-	if (textureunit < 0 || (size_t) textureunit >= textureUnits.size())
+	if (textureunit < 0 || (size_t) textureunit >= state.textureUnits.size())
 		throw love::Exception("Invalid texture unit index (%d).", textureunit);
 
-	if (textureunit != curTextureUnit)
+	if (textureunit != state.curTextureUnit)
 	{
-		if (textureUnits.size() > 1)
+		if (state.textureUnits.size() > 1)
 			glActiveTexture(GL_TEXTURE0 + textureunit);
 		else
 			throw love::Exception("Multitexturing not supported.");
 	}
 
-	curTextureUnit = textureunit;
+	state.curTextureUnit = textureunit;
 }
 
-void bindTexture(GLuint texture)
+void OpenGL::bindTexture(GLuint texture)
 {
-	if (texture != textureUnits[curTextureUnit])
+	if (texture != state.textureUnits[state.curTextureUnit])
 	{
-		textureUnits[curTextureUnit] = texture;
+		state.textureUnits[state.curTextureUnit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 }
 
-void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
+void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 {
-	if (textureunit < 0 || (size_t) textureunit >= textureUnits.size())
+	if (textureunit < 0 || (size_t) textureunit >= state.textureUnits.size())
 		throw love::Exception("Invalid texture unit index.");
 
-	if (texture != textureUnits[textureunit])
+	if (texture != state.textureUnits[textureunit])
 	{
-		int oldtextureunit = curTextureUnit;
+		int oldtextureunit = state.curTextureUnit;
 		setActiveTextureUnit(textureunit);
 
-		textureUnits[textureunit] = texture;
+		state.textureUnits[textureunit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 		if (restoreprev)
@@ -198,11 +215,12 @@ void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 	}
 }
 
-void deleteTexture(GLuint texture)
+void OpenGL::deleteTexture(GLuint texture)
 {
-	// glDeleteTextures binds texture 0 to all texture units the deleted texture was bound to
+	// glDeleteTextures binds texture 0 to all texture units the deleted texture
+	// was bound to before deletion.
 	std::vector<GLuint>::iterator it;
-	for (it = textureUnits.begin(); it != textureUnits.end(); ++it)
+	for (it = state.textureUnits.begin(); it != state.textureUnits.end(); ++it)
 	{
 		if (*it == texture)
 			*it = 0;
@@ -211,7 +229,7 @@ void deleteTexture(GLuint texture)
 	glDeleteTextures(1, &texture);
 }
 
-float setTextureFilter(const graphics::Image::Filter &f)
+float OpenGL::setTextureFilter(const graphics::Image::Filter &f)
 {
 	GLint gmin, gmag;
 
@@ -262,7 +280,7 @@ float setTextureFilter(const graphics::Image::Filter &f)
 	return anisotropy;
 }
 
-graphics::Image::Filter getTextureFilter()
+graphics::Image::Filter OpenGL::getTextureFilter()
 {
 	GLint gmin, gmag;
 	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
@@ -314,7 +332,7 @@ graphics::Image::Filter getTextureFilter()
 	return f;
 }
 
-void setTextureWrap(const graphics::Image::Wrap &w)
+void OpenGL::setTextureWrap(const graphics::Image::Wrap &w)
 {
 	GLint gs, gt;
 
@@ -344,7 +362,7 @@ void setTextureWrap(const graphics::Image::Wrap &w)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gt);
 }
 
-graphics::Image::Wrap getTextureWrap()
+graphics::Image::Wrap OpenGL::getTextureWrap()
 {
 	GLint gs, gt;
 
