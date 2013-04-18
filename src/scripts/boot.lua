@@ -358,6 +358,11 @@ function love.init()
 		love.graphics.setCaption(c.title)
 	end
 
+	-- Console hack
+	if c.console and love._openConsole then
+		love._openConsole()
+	end
+
 	-- Our first timestep, because screen creation can take some time
 	if love.timer then
 		love.timer.step()
@@ -371,11 +376,6 @@ function love.init()
 
 	if no_game_code then
 		error("No code to run\nYour game might be packaged incorrectly\nMake sure main.lua is at the top level of the zip")
-	end
-
-	-- Console hack
-	if c.console and love._openConsole then
-		love._openConsole()
 	end
 
 	-- Check the version
