@@ -20,7 +20,7 @@
 
 #include "Image.h"
 
-#include "imageData.h"
+#include "ImageData.h"
 #include "CompressedData.h"
 
 #include "DevilHandler.h"
