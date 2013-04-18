@@ -35,11 +35,8 @@ namespace graphics
 namespace opengl
 {
 
-// OpenGL class instance singleton.
-OpenGL gl;
-
 OpenGL::OpenGL()
-	: contexInitialized(false)
+	: contextInitialized(false)
 	, maxAnisotropy(1.0f)
 	, state()
 {
@@ -47,7 +44,7 @@ OpenGL::OpenGL()
 
 void OpenGL::initContext()
 {
-	if (contexInitialized)
+	if (contextInitialized)
 		return;
 
 	initOpenGLFunctions();
@@ -99,15 +96,15 @@ void OpenGL::initContext()
 
 	createDefaultTexture();
 
-	contexInitialized = true;
+	contextInitialized = true;
 }
 
 void OpenGL::deInitContext()
 {
-	if (!contexInitialized)
+	if (!contextInitialized)
 		return;
 
-	contexInitialized = false;
+	contextInitialized = false;
 }
 
 void OpenGL::initOpenGLFunctions()
@@ -395,6 +392,9 @@ graphics::Image::Wrap OpenGL::getTextureWrap()
 
 	return w;
 }
+
+// OpenGL class instance singleton.
+OpenGL gl;
 
 } // opengl
 } // graphics

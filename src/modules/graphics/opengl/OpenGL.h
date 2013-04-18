@@ -103,22 +103,22 @@ public:
 	/**
 	 * Sets the image filter mode for the currently bound texture.
 	 * Returns the actual amount of anisotropic filtering set.
-	 */
+	 **/
 	float setTextureFilter(const graphics::Image::Filter &f);
 
 	/**
 	 * Returns the image filter mode for the currently bound texture.
-	 */
+	 **/
 	graphics::Image::Filter getTextureFilter();
 
 	/**
 	 * Sets the image wrap mode for the currently bound texture.
-	 */
+	 **/
 	void setTextureWrap(const graphics::Image::Wrap &w);
 
 	/**
 	 * Returns the image wrap mode for the currently bound texture.
-	 */
+	 **/
 	graphics::Image::Wrap getTextureWrap();
 
 private:
@@ -126,7 +126,7 @@ private:
 	void initOpenGLFunctions();
 	void createDefaultTexture();
 
-	bool contexInitialized;
+	bool contextInitialized;
 	float maxAnisotropy;
 
 	// Tracked OpenGL state.

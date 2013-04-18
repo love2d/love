@@ -82,16 +82,10 @@ namespace math
 Math Math::instance;
 
 Math::Math()
-	: rng(newRandomGenerator())
+	: rng()
 {
 	// prevent the runtime from free()-ing this
 	retain();
-}
-
-Math::~Math()
-{
-	if (rng)
-		rng->release();
 }
 
 RandomGenerator *Math::newRandomGenerator()

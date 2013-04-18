@@ -45,6 +45,7 @@ Graphics::Graphics()
 	, lineWidth(1)
 	, matrixLimit(0)
 	, userMatrices(0)
+	, colorMask()
 {
 	currentWindow = love::window::sdl::Window::getSingleton();
 }

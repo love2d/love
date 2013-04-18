@@ -41,18 +41,19 @@ class Math : public Module
 {
 private:
 
-	RandomGenerator *rng;
+	RandomGenerator rng;
 
 public:
 
-	virtual ~Math();
+	virtual ~Math()
+	{}
 
 	/**
 	 * @copydoc RandomGenerator::randomseed()
 	 **/
 	inline void randomseed(uint64 seed)
 	{
-		rng->randomseed(seed);
+		rng.randomseed(seed);
 	}
 
 	/**
@@ -60,7 +61,7 @@ public:
 	 **/
 	inline double random()
 	{
-		return rng->random();
+		return rng.random();
 	}
 
 	/**
@@ -68,7 +69,7 @@ public:
 	 **/
 	inline double random(double max)
 	{
-		return rng->random(max);
+		return rng.random(max);
 	}
 
 	/**
@@ -76,7 +77,7 @@ public:
 	 **/
 	inline double random(double min, double max)
 	{
-		return rng->random(min, max);
+		return rng.random(min, max);
 	}
 
 	/**
@@ -84,7 +85,7 @@ public:
 	 **/
 	inline double randomnormal(double stddev)
 	{
-		return rng->randomnormal(stddev);
+		return rng.randomnormal(stddev);
 	}
 
 	/**
