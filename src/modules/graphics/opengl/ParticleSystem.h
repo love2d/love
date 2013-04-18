@@ -87,9 +87,9 @@ public:
 	};
 
 	/**
-	 * Creates a particle system with the specified buffersize and sprite.
+	 * Creates a particle system with the specified buffersize and image.
 	 **/
-	ParticleSystem(Image *sprite, unsigned int buffer);
+	ParticleSystem(Image *image, unsigned int buffer);
 
 	/**
 	 * Deletes any allocated memory.
@@ -97,10 +97,15 @@ public:
 	virtual ~ParticleSystem();
 
 	/**
-	 * Sets the sprite used in the particle system.
-	 * @param sprite The new sprite.
+	 * Sets the image used in the particle system.
+	 * @param image The new image.
 	 **/
-	void setSprite(Image *image);
+	void setImage(Image *image);
+
+	/**
+	 * Returns the image used when drawing the particle system.
+	 **/
+	Image *getImage() const;
 
 	/**
 	 * Clears the current buffer and allocates the appropriate amount of space for the buffer.
@@ -109,16 +114,32 @@ public:
 	void setBufferSize(unsigned int size);
 
 	/**
+	 * Returns the total amount of particles this ParticleSystem can have active
+	 * at any given point in time.
+	 **/
+	int getBufferSize() const;
+
+	/**
 	 * Sets the emission rate.
 	 * @param rate The amount of particles per second.
 	 **/
 	void setEmissionRate(int rate);
 
 	/**
+	 * Returns the number of particles created per second.
+	 **/
+	int getEmissionRate() const;
+
+	/**
 	 * Sets the lifetime of the particle emitter (-1 means eternal)
 	 * @param life The lifetime (in seconds).
 	 **/
 	void setLifetime(float life);
+
+	/**
+	 * Returns the lifetime of the particle emitter.
+	 **/
+	float getLifetime() const;
 
 	/**
 	 * Sets the life range of the particles.
@@ -128,12 +149,34 @@ public:
 	void setParticleLife(float min, float max = 0);
 
 	/**
+	 * Gets the lifetime of a particle.
+	 * @param[out] min
+	 * @param[out] max
+	 **/
+	void getParticleLife(float *min, float *max) const;
+
+	/**
 	 * Sets the position of the center of the emitter and the direction (if set to relative).
 	 * Used to move the emitter without changing the position of already existing particles.
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
 	 **/
 	void setPosition(float x, float y);
+
+	/**
+	 * Returns the position of the emitter.
+	 **/
+	const love::Vector &getPosition() const;
+
+	/**
+	 * Returns the x-coordinate of the emitter's position.
+	 **/
+	float getX() const;
+
+	/**
+	 * Returns the y-coordinate of the emitter's position.
+	 **/
+	float getY() const;
 
 	/**
 	 * Sets the emission area spread parameters and distribution type. The interpretation of
@@ -145,26 +188,52 @@ public:
 	 * @param x First parameter. Interpretation depends on distribution type.
 	 * @param y Second parameter. Interpretation depends on distribution type.
 	 * @param distribution Distribution type
-	 * */
+	 **/
 	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y);
 
 	/**
-	 * Sets the direction and the spread of the particle emitter.
+	 * Returns area spread distribution type.
+	 **/
+	AreaSpreadDistribution getAreaSpreadDistribution() const;
+
+	/**
+	 * Returns area spread parameters.
+	 **/
+	const love::Vector &getAreaSpreadParameters() const;
+
+	/**
+	 * Sets the direction of the particle emitter.
 	 * @param direction The direction (in degrees).
 	 **/
 	void setDirection(float direction);
 
 	/**
+	 * Returns the direction of the particle emitter (in radians).
+	 **/
+	float getDirection() const;
+
+	/**
 	 * Sets the spread of the particle emitter.
-	 * @param spread The spread (in degrees).
+	 * @param spread The spread (in radians).
 	 **/
 	void setSpread(float spread);
 
 	/**
-	 * Sets whether the direction should be relative to the particle emitters movement. Used in conjunction with setPosition.
+	 * Returns the directional spread of the emitter (in radians).
+	 **/
+	float getSpread() const;
+
+	/**
+	 * Sets whether the direction should be relative to the particle emitter's movement. Used in conjunction with setPosition.
 	 * @param relative Whether to have relative direction.
 	 **/
 	void setRelativeDirection(bool relative);
+
+	/**
+	 * Returns whether the direction is relative to the particle emitter's
+	 * movement.
+	 **/
+	bool isRelativeDirection() const;
 
 	/**
 	 * Sets the speed of the particles.
@@ -180,6 +249,13 @@ public:
 	void setSpeed(float min, float max);
 
 	/**
+	 * Gets the speed of the particles.
+	 * @param[out] min
+	 * @param[out] max
+	 **/
+	void getSpeed(float *min, float *max) const;
+
+	/**
 	 * Sets the gravity of the particles (the acceleration along the y-axis).
 	 * @param gravity The amount of gravity.
 	 **/
@@ -191,6 +267,13 @@ public:
 	 * @param max The maximum gravity.
 	 **/
 	void setGravity(float min, float max);
+
+	/**
+	 * Gets the gravity (y-axis acceleration) of the particles.
+	 * @param[out] min
+	 * @param[out] max
+	 **/
+	void getGravity(float *min, float *max) const;
 
 	/**
 	 * Sets the radial acceleration (the acceleration towards the particle emitter).
@@ -206,6 +289,13 @@ public:
 	void setRadialAcceleration(float min, float max);
 
 	/**
+	 * Gets the radial acceleration.
+	 * @param[out] min
+	 * @param[out] max
+	 **/
+	void getRadialAcceleration(float *min, float *max) const;
+
+	/**
 	 * Sets the tangential acceleration (the acceleration perpendicular to the particle's direction).
 	 * @param acceleration The amount of acceleration.
 	 **/
@@ -217,6 +307,13 @@ public:
 	 * @param max The maximum acceleration.
 	 **/
 	void setTangentialAcceleration(float min, float max);
+
+	/**
+	 * Gets the tangential acceleration.
+	 * @param[out] min
+	 * @param[out] max
+	 **/
+	void getTangentialAcceleration(float *min, float *max) const;
 
 	/**
 	 * Sets the size of the sprite (1.0 being the default size).
@@ -232,10 +329,20 @@ public:
 	void setSize(const std::vector<float> &newSizes, float variation = 0.0f);
 
 	/**
+	 * Returns the size of the particle sprites.
+	 **/
+	const std::vector<float> &getSize() const;
+
+	/**
 	 * Sets the amount of variation to the sprite's beginning size (0 being no variation and 1.0 a random size between start and end).
 	 * @param variation The amount of variation.
 	 **/
 	void setSizeVariation(float variation);
+
+	/**
+	 * Returns the amount of initial size variation between particles.
+	 **/
+	float getSizeVariation() const;
 
 	/**
 	 * Sets the amount of rotation a sprite starts out with.
@@ -249,6 +356,13 @@ public:
 	 * @param max The maximum amount of rotation.
 	 **/
 	void setRotation(float min, float max);
+
+	/**
+	 * Gets the initial amount of rotation of a particle.
+	 * @param[out] min
+	 * @param[out] max
+	 **/
+	void getRotation(float *min, float *max) const;
 
 	/**
 	 * Sets the spin of the sprite.
@@ -272,16 +386,22 @@ public:
 	void setSpin(float start, float end, float variation);
 
 	/**
-	 * Sets the variation of the start spin (0 being no variation and 1 beign a random spin between start and end).
+	 * Gets the amount of spin of a particle during its lifetime.
+	 * @param[out] start
+	 * @param[out] end
+	 **/
+	void getSpin(float *start, float *end) const;
+
+	/**
+	 * Sets the variation of the start spin (0 being no variation and 1 being a random spin between start and end).
 	 * @param variation The variation in degrees.
 	 **/
 	void setSpinVariation(float variation);
 
 	/**
-	 * Sets the color of the particles.
-	 * @param color The color.
+	 * Returns the amount of variation of the start spin of a particle.
 	 **/
-	void setColor(const Color &color);
+	float getSpinVariation() const;
 
 	/**
 	 * Sets the particles' offsets for rotation.
@@ -291,10 +411,26 @@ public:
 	void setOffset(float x, float y);
 
 	/**
+	 * Returns of the particle offset.
+	 **/
+	love::Vector getOffset() const;
+
+	/**
+	 * Sets the color of the particles.
+	 * @param color The color.
+	 **/
+	void setColor(const Color &color);
+
+	/**
 	 * Sets the color of the particles.
 	 * @param newColors Array of colors
 	 **/
 	void setColor(const std::vector<Color> &newColors);
+
+	/**
+	 * Returns the color of the particles.
+	 **/
+	std::vector<Color> getColor() const;
 
 	/**
 	 * Sets the quads used when drawing the particles.
@@ -308,49 +444,9 @@ public:
 	void setQuads();
 
 	/**
-	 * Returns the x-coordinate of the emitter's position.
+	 * Returns the list of quads used when drawing the particles.
 	 **/
-	float getX() const;
-
-	/**
-	 * Returns the y-coordinate of the emitter's position.
-	 **/
-	float getY() const;
-
-	/**
-	 * Returns the position of the emitter.
-	 **/
-	const love::Vector &getPosition() const;
-
-	/**
-	 * Returns area spread distribution type.
-	 */
-	AreaSpreadDistribution getAreaSpreadDistribution() const;
-
-	/**
-	 * Returns area spread parameters.
-	 */
-	const love::Vector &getAreaSpreadParameters() const;
-
-	/**
-	 * Returns the direction of the emitter (in degrees).
-	 **/
-	float getDirection() const;
-
-	/**
-	 * Returns the directional spread of the emitter (in degrees).
-	 **/
-	float getSpread() const;
-
-	/**
-	 * Returns the X offset of the particles.
-	 **/
-	float getOffsetX() const;
-
-	/**
-	 * Returns the Y offset of the particles.
-	 **/
-	float getOffsetY() const;
+	const std::vector<Quad *> &getQuads() const;
 
 	/**
 	 * Returns the amount of particles that are currently active in the system.
@@ -430,8 +526,8 @@ protected:
 	// array of transformed vertex data for all particles, for drawing
 	vertex * particleVerts;
 
-	// The sprite to be drawn.
-	Image *sprite;
+	// The image to be drawn.
+	Image *image;
 
 	// Whether the particle emitter is active.
 	bool active;

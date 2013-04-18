@@ -63,12 +63,12 @@ StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_M
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));
 
 
-ParticleSystem::ParticleSystem(Image *sprite, unsigned int buffer)
+ParticleSystem::ParticleSystem(Image *image, unsigned int buffer)
 	: pStart(0)
 	, pLast(0)
 	, pEnd(0)
 	, particleVerts(0)
-	, sprite(sprite)
+	, image(image)
 	, active(true)
 	, emissionRate(0)
 	, emitCounter(0)
@@ -94,13 +94,13 @@ ParticleSystem::ParticleSystem(Image *sprite, unsigned int buffer)
 	, spinStart(0)
 	, spinEnd(0)
 	, spinVariation(0)
-	, offsetX(sprite->getWidth()*0.5f)
-	, offsetY(sprite->getHeight()*0.5f)
+	, offsetX(image->getWidth()*0.5f)
+	, offsetY(image->getHeight()*0.5f)
 {
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 	setBufferSize(buffer);
-	sprite->retain();
+	image->retain();
 }
 
 ParticleSystem::~ParticleSystem()
@@ -108,8 +108,8 @@ ParticleSystem::~ParticleSystem()
 	for (size_t i = 0; i < quads.size(); i++)
 		quads[i]->release();
 
-	if (this->sprite != 0)
-		this->sprite->release();
+	if (this->image != 0)
+		this->image->release();
 
 	if (pStart != 0)
 		delete [] pStart;
@@ -137,17 +137,17 @@ void ParticleSystem::add()
 
 	switch (areaSpreadDistribution)
 	{
-		case DISTRIBUTION_UNIFORM:
-			pLast->position[0] += rng.random(-areaSpread.getX(), areaSpread.getX());
-			pLast->position[1] += rng.random(-areaSpread.getY(), areaSpread.getY());
-			break;
-		case DISTRIBUTION_NORMAL:
-			pLast->position[0] += rng.randomnormal(areaSpread.getX());
-			pLast->position[1] += rng.randomnormal(areaSpread.getY());
-			break;
-		case DISTRIBUTION_NONE:
-		default:
-			break;
+	case DISTRIBUTION_UNIFORM:
+		pLast->position[0] += rng.random(-areaSpread.getX(), areaSpread.getX());
+		pLast->position[1] += rng.random(-areaSpread.getY(), areaSpread.getY());
+		break;
+	case DISTRIBUTION_NORMAL:
+		pLast->position[0] += rng.randomnormal(areaSpread.getX());
+		pLast->position[1] += rng.randomnormal(areaSpread.getY());
+		break;
+	case DISTRIBUTION_NONE:
+	default:
+		break;
 	}
 
 	min = direction - spread/2.0f;
@@ -197,13 +197,18 @@ void ParticleSystem::remove(particle *p)
 	}
 }
 
-void ParticleSystem::setSprite(Image *image)
+void ParticleSystem::setImage(Image *image)
 {
-	if (sprite != 0)
-		sprite->release();
+	if (this->image != 0)
+		this->image->release();
 
-	sprite = image;
-	sprite->retain();
+	this->image = image;
+	this->image->retain();
+}
+
+Image *ParticleSystem::getImage() const
+{
+	return image;
 }
 
 void ParticleSystem::setBufferSize(unsigned int size)
@@ -223,14 +228,29 @@ void ParticleSystem::setBufferSize(unsigned int size)
 	particleVerts = new vertex[size*4];
 }
 
+int ParticleSystem::getBufferSize() const
+{
+	return pEnd - pStart;
+}
+
 void ParticleSystem::setEmissionRate(int rate)
 {
 	emissionRate = rate;
 }
 
+int ParticleSystem::getEmissionRate() const
+{
+	return emissionRate;
+}
+
 void ParticleSystem::setLifetime(float life)
 {
 	this->life = lifetime = life;
+}
+
+float ParticleSystem::getLifetime() const
+{
+	return lifetime;
 }
 
 void ParticleSystem::setParticleLife(float min, float max)
@@ -242,11 +262,33 @@ void ParticleSystem::setParticleLife(float min, float max)
 		particleLifeMax = max;
 }
 
+void ParticleSystem::getParticleLife(float *min, float *max) const
+{
+	if (min)
+		*min = particleLifeMin;
+	if (max)
+		*max = particleLifeMax;
+}
+
 void ParticleSystem::setPosition(float x, float y)
 {
 	position = love::Vector(x, y);
 }
 
+const love::Vector &ParticleSystem::getPosition() const
+{
+	return position;
+}
+
+float ParticleSystem::getX() const
+{
+	return position.getX();
+}
+
+float ParticleSystem::getY() const
+{
+	return position.getY();
+}
 
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y)
 {
@@ -254,9 +296,24 @@ void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x,
 	areaSpreadDistribution = distribution;
 }
 
+ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution() const
+{
+	return areaSpreadDistribution;
+}
+
+const love::Vector &ParticleSystem::getAreaSpreadParameters() const
+{
+	return areaSpread;
+}
+
 void ParticleSystem::setDirection(float direction)
 {
 	this->direction = direction;
+}
+
+float ParticleSystem::getDirection() const
+{
+	return direction;
 }
 
 void ParticleSystem::setSpread(float spread)
@@ -264,9 +321,19 @@ void ParticleSystem::setSpread(float spread)
 	this->spread = spread;
 }
 
+float ParticleSystem::getSpread() const
+{
+	return spread;
+}
+
 void ParticleSystem::setRelativeDirection(bool relative)
 {
 	this->relative = relative;
+}
+
+bool ParticleSystem::isRelativeDirection() const
+{
+	return relative;
 }
 
 void ParticleSystem::setSpeed(float speed)
@@ -280,6 +347,14 @@ void ParticleSystem::setSpeed(float min, float max)
 	speedMax = max;
 }
 
+void ParticleSystem::getSpeed(float *min, float *max) const
+{
+	if (min)
+		*min = speedMin;
+	if (max)
+		*max = speedMax;
+}
+
 void ParticleSystem::setGravity(float gravity)
 {
 	gravityMin = gravityMax = gravity;
@@ -289,6 +364,14 @@ void ParticleSystem::setGravity(float min, float max)
 {
 	gravityMin = min;
 	gravityMax = max;
+}
+
+void ParticleSystem::getGravity(float *min, float *max) const
+{
+	if (min)
+		*min = gravityMin;
+	if (max)
+		*max = gravityMax;
 }
 
 void ParticleSystem::setRadialAcceleration(float acceleration)
@@ -302,6 +385,14 @@ void ParticleSystem::setRadialAcceleration(float min, float max)
 	radialAccelerationMax = max;
 }
 
+void ParticleSystem::getRadialAcceleration(float *min, float *max) const
+{
+	if (min)
+		*min = radialAccelerationMin;
+	if (max)
+		*max = radialAccelerationMax;
+}
+
 void ParticleSystem::setTangentialAcceleration(float acceleration)
 {
 	tangentialAccelerationMin = tangentialAccelerationMax = acceleration;
@@ -311,6 +402,14 @@ void ParticleSystem::setTangentialAcceleration(float min, float max)
 {
 	tangentialAccelerationMin = min;
 	tangentialAccelerationMax = max;
+}
+
+void ParticleSystem::getTangentialAcceleration(float *min, float *max) const
+{
+	if (min)
+		*min = tangentialAccelerationMin;
+	if (max)
+		*max = tangentialAccelerationMax;
 }
 
 void ParticleSystem::setSize(float size)
@@ -325,9 +424,19 @@ void ParticleSystem::setSize(const std::vector<float> &newSizes, float variation
 	sizeVariation = variation;
 }
 
+const std::vector<float> &ParticleSystem::getSize() const
+{
+	return sizes;
+}
+
 void ParticleSystem::setSizeVariation(float variation)
 {
 	sizeVariation = variation;
+}
+
+float ParticleSystem::getSizeVariation() const
+{
+	return sizeVariation;
 }
 
 void ParticleSystem::setRotation(float rotation)
@@ -339,6 +448,14 @@ void ParticleSystem::setRotation(float min, float max)
 {
 	rotationMin = min;
 	rotationMax = max;
+}
+
+void ParticleSystem::getRotation(float *min, float *max) const
+{
+	if (min)
+		*min = rotationMin;
+	if (max)
+		*max = rotationMax;
 }
 
 void ParticleSystem::setSpin(float spin)
@@ -360,9 +477,33 @@ void ParticleSystem::setSpin(float start, float end, float variation)
 	spinVariation = variation;
 }
 
+void ParticleSystem::getSpin(float *start, float *end) const
+{
+	if (start)
+		*start = spinStart;
+	if (end)
+		*end = spinEnd;
+}
+
 void ParticleSystem::setSpinVariation(float variation)
 {
 	spinVariation = variation;
+}
+
+float ParticleSystem::getSpinVariation() const
+{
+	return spinVariation;
+}
+
+void ParticleSystem::setOffset(float x, float y)
+{
+	offsetX = x;
+	offsetY = y;
+}
+
+love::Vector ParticleSystem::getOffset() const
+{
+	return love::Vector(offsetX, offsetY);
 }
 
 void ParticleSystem::setColor(const Color &color)
@@ -376,6 +517,17 @@ void ParticleSystem::setColor(const std::vector<Color> &newColors)
 	colors.resize(newColors.size());
 	for (size_t i = 0; i < newColors.size(); ++i)
 		colors[i] = colorToFloat(newColors[i]);
+}
+
+std::vector<Color> ParticleSystem::getColor() const
+{
+	// We store colors as floats...
+	std::vector<Color> ncolors(colors.size());
+
+	for (size_t i = 0; i < colors.size(); ++i)
+		ncolors[i] = Color(colors[i].r, colors[i].g, colors[i].b, colors[i].a);
+
+	return ncolors;
 }
 
 void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
@@ -400,55 +552,9 @@ void ParticleSystem::setQuads()
 	quads.resize(0);
 }
 
-void ParticleSystem::setOffset(float x, float y)
+const std::vector<Quad *> &ParticleSystem::getQuads() const
 {
-	offsetX = x;
-	offsetY = y;
-}
-
-float ParticleSystem::getX() const
-{
-	return position.getX();
-}
-
-float ParticleSystem::getY() const
-{
-	return position.getY();
-}
-
-const love::Vector &ParticleSystem::getPosition() const
-{
-	return position;
-}
-
-ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution() const
-{
-	return areaSpreadDistribution;
-}
-
-const love::Vector &ParticleSystem::getAreaSpreadParameters() const
-{
-	return areaSpread;
-}
-
-float ParticleSystem::getDirection() const
-{
-	return direction;
-}
-
-float ParticleSystem::getSpread() const
-{
-	return spread;
-}
-
-float ParticleSystem::getOffsetX() const
-{
-	return offsetX;
-}
-
-float ParticleSystem::getOffsetY() const
-{
-	return offsetY;
+	return quads;
 }
 
 int ParticleSystem::count() const
@@ -511,7 +617,7 @@ bool ParticleSystem::isFull() const
 
 void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	if (sprite == 0) return;  // just in case of failure
+	if (image == 0) return;  // just in case of failure
 
 	int numParticles = count();
 	if (numParticles == 0) return; // don't bother if there's nothing to do
@@ -524,7 +630,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	const vertex *imageVerts = sprite->getVertices();
+	const vertex *imageVerts = image->getVertices();
 	const vertex *tVerts;
 
 	size_t numQuads = quads.size();
@@ -543,7 +649,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		else
 			tVerts = imageVerts;
 
-		// particle vertices are sprite vertices transformed by particle information 
+		// particle vertices are image vertices transformed by particle information
 		t.setTransformation(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
 		t.transform(&particleVerts[i*4], &tVerts[0], 4);
 
@@ -563,7 +669,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		}
 	}
 
-	sprite->bind();
+	image->bind();
 
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
