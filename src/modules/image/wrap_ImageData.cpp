@@ -85,7 +85,7 @@ int w_ImageData_setPixel(lua_State *L)
 	c.r = luaL_checkint(L, 4);
 	c.g = luaL_checkint(L, 5);
 	c.b = luaL_checkint(L, 6);
-	c.a = luaL_optint(L,7,255);
+	c.a = luaL_optint(L, 7, 255);
 	try
 	{
 		t->setPixel(x, y, c);
@@ -123,7 +123,7 @@ int w_ImageData_mapPixel(lua_State *L)
 			c.r = luaL_optint(L, -4, 0);
 			c.g = luaL_optint(L, -3, 0);
 			c.b = luaL_optint(L, -2, 0);
-			c.a = luaL_optint(L, -1, 0);
+			c.a = luaL_optint(L, -1, 255);
 			t->setPixel(i, j, c);
 			lua_pop(L, 4);
 		}
