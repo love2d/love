@@ -51,7 +51,7 @@ struct particle
 	love::Vector origin;
 
 	love::Vector speed;
-	float gravity;
+	love::Vector linearAcceleration;
 	float radialAcceleration;
 	float tangentialAcceleration;
 
@@ -256,24 +256,27 @@ public:
 	void getSpeed(float *min, float *max) const;
 
 	/**
-	 * Sets the gravity of the particles (the acceleration along the y-axis).
-	 * @param gravity The amount of gravity.
+	 * Sets the linear acceleration (the acceleration along the x and y axes).
+	 * @param x The acceleration along the x-axis.
+	 * @param y The acceleration along the y-axis.
 	 **/
-	void setGravity(float gravity);
+	void setLinearAcceleration(float x, float y);
 
 	/**
-	 * Sets the gravity of the particles (the acceleration along the y-axis).
-	 * @param min The minimum gravity.
-	 * @param max The maximum gravity.
+	 * Sets the linear acceleration (the acceleration along the x and y axes).
+	 * @param xmin The minimum amount of acceleration along the x-axis.
+	 * @param ymin The minimum amount of acceleration along the y-axis.
+	 * @param xmax The maximum amount of acceleration along the x-axis.
+	 * @param ymax The maximum amount of acceleration along the y-axis.
 	 **/
-	void setGravity(float min, float max);
+	void setLinearAcceleration(float xmin, float ymin, float xmax, float ymax);
 
 	/**
-	 * Gets the gravity (y-axis acceleration) of the particles.
-	 * @param[out] min
-	 * @param[out] max
+	 * Gets the linear acceleration of the particles.
+	 * @param[out] min The minimum acceleration.
+	 * @param[out] max The maximum acceleration.
 	 **/
-	void getGravity(float *min, float *max) const;
+	void getLinearAcceleration(love::Vector *min, love::Vector *max) const;
 
 	/**
 	 * Sets the radial acceleration (the acceleration towards the particle emitter).
@@ -564,9 +567,9 @@ protected:
 	float speedMin;
 	float speedMax;
 
-	// Acceleration towards the bottom of the screen
-	float gravityMin;
-	float gravityMax;
+	// Acceleration along the x and y axes.
+	love::Vector linearAccelerationMin;
+	love::Vector linearAccelerationMax;
 
 	// Acceleration towards the emitter's center
 	float radialAccelerationMin;

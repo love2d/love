@@ -82,8 +82,6 @@ ParticleSystem::ParticleSystem(Image *image, unsigned int buffer)
 	, relative(false)
 	, speedMin(0)
 	, speedMax(0)
-	, gravityMin(0)
-	, gravityMax(0)
 	, radialAccelerationMin(0)
 	, radialAccelerationMax(0)
 	, tangentialAccelerationMin(0)
@@ -162,9 +160,8 @@ void ParticleSystem::add()
 	pLast->speed = love::Vector(cos(pLast->direction), sin(pLast->direction));
 	pLast->speed *= speed;
 
-	min = gravityMin;
-	max = gravityMax;
-	pLast->gravity = rng.random(min, max);
+	pLast->linearAcceleration.x = rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
+	pLast->linearAcceleration.y = rng.random(linearAccelerationMin.y, linearAccelerationMax.y);
 
 	min = radialAccelerationMin;
 	max = radialAccelerationMax;
@@ -355,23 +352,24 @@ void ParticleSystem::getSpeed(float *min, float *max) const
 		*max = speedMax;
 }
 
-void ParticleSystem::setGravity(float gravity)
+void ParticleSystem::setLinearAcceleration(float x, float y)
 {
-	gravityMin = gravityMax = gravity;
+	linearAccelerationMin.x = linearAccelerationMax.x = x;
+	linearAccelerationMin.y = linearAccelerationMax.y = y;
 }
 
-void ParticleSystem::setGravity(float min, float max)
+void ParticleSystem::setLinearAcceleration(float xmin, float ymin, float xmax, float ymax)
 {
-	gravityMin = min;
-	gravityMax = max;
+	linearAccelerationMin = love::Vector(xmin, ymin);
+	linearAccelerationMax = love::Vector(xmax, ymax);
 }
 
-void ParticleSystem::getGravity(float *min, float *max) const
+void ParticleSystem::getLinearAcceleration(love::Vector *min, love::Vector *max) const
 {
 	if (min)
-		*min = gravityMin;
+		*min = linearAccelerationMin;
 	if (max)
-		*max = gravityMax;
+		*max = linearAccelerationMax;
 }
 
 void ParticleSystem::setRadialAcceleration(float acceleration)
@@ -723,7 +721,7 @@ void ParticleSystem::update(float dt)
 		{
 
 			// Temp variables.
-			love::Vector radial, tangential, gravity(0, p->gravity);
+			love::Vector radial, tangential;
 			love::Vector ppos(p->position[0], p->position[1]);
 
 			// Get vector from particle center to particle.
@@ -745,7 +743,7 @@ void ParticleSystem::update(float dt)
 			tangential *= p->tangentialAcceleration;
 
 			// Update position.
-			p->speed += (radial+tangential+gravity)*dt;
+			p->speed += (radial+tangential+p->linearAcceleration)*dt;
 
 			// Modify position.
 			ppos += p->speed * dt;

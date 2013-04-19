@@ -247,23 +247,27 @@ int w_ParticleSystem_getSpeed(lua_State *L)
 	return 2;
 }
 
-int w_ParticleSystem_setGravity(lua_State *L)
+int w_ParticleSystem_setLinearAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	float arg1 = (float)luaL_checknumber(L, 2);
-	float arg2 = (float)luaL_optnumber(L, 3, arg1);
-	t->setGravity(arg1, arg2);
+	float xmin = (float) luaL_optnumber(L, 2, 0.0);
+	float ymin = (float) luaL_optnumber(L, 3, 0.0);
+	float xmax = (float) luaL_optnumber(L, 4, xmin);
+	float ymax = (float) luaL_optnumber(L, 5, ymin);
+	t->setLinearAcceleration(xmin, ymin, xmax, ymax);
 	return 0;
 }
 
-int w_ParticleSystem_getGravity(lua_State *L)
+int w_ParticleSystem_getLinearAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	float min, max;
-	t->getGravity(&min, &max);
-	lua_pushnumber(L, min);
-	lua_pushnumber(L, max);
-	return 2;
+	love::Vector min, max;
+	t->getLinearAcceleration(&min, &max);
+	lua_pushnumber(L, min.x);
+	lua_pushnumber(L, min.y);
+	lua_pushnumber(L, max.x);
+	lua_pushnumber(L, max.y);
+	return 4;
 }
 
 int w_ParticleSystem_setRadialAcceleration(lua_State *L)
@@ -676,8 +680,8 @@ static const luaL_Reg functions[] =
 	{ "isRelativeDirection", w_ParticleSystem_isRelativeDirection },
 	{ "setSpeed", w_ParticleSystem_setSpeed },
 	{ "getSpeed", w_ParticleSystem_getSpeed },
-	{ "setGravity", w_ParticleSystem_setGravity },
-	{ "getGravity", w_ParticleSystem_getGravity },
+	{ "setLinearAcceleration", w_ParticleSystem_setLinearAcceleration },
+	{ "getLinearAcceleration", w_ParticleSystem_getLinearAcceleration },
 	{ "setRadialAcceleration", w_ParticleSystem_setRadialAcceleration },
 	{ "getRadialAcceleration", w_ParticleSystem_getRadialAcceleration },
 	{ "setTangentialAcceleration", w_ParticleSystem_setTangentialAcceleration },
