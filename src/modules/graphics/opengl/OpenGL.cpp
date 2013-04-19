@@ -18,12 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "OpenGL.h"
-
 // LOVE
 #include "common/config.h"
-#include "common/Exception.h"
+#include "OpenGL.h"
+
 #include "Shader.h"
+#include "common/Exception.h"
 
 // STL
 #include <algorithm>
