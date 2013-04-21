@@ -108,10 +108,8 @@
 		FA08F61316C753E700F007B5 /* wrap_GlyphData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B4E22F1388E2B2E76E3377B /* wrap_GlyphData.cpp */; };
 		FA08F61416C753E700F007B5 /* wrap_Rasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11745DE315E859F71E881D76 /* wrap_Rasterizer.cpp */; };
 		FA08F61516C753F600F007B5 /* Drawable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58BA2BB460AF3C591B22690E /* Drawable.cpp */; };
-		FA08F61616C753F600F007B5 /* DrawQable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 346C3C7F62FA35DA2C9C4F69 /* DrawQable.cpp */; };
 		FA08F61716C753F600F007B5 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03F17FF546D637744E263961 /* Graphics.cpp */; };
 		FA08F61816C753F600F007B5 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58CC50E70A375FDF53EF01B6 /* Image.cpp */; };
-		FA08F61916C753F600F007B5 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D3B224C2F9D2359288028FD /* Quad.cpp */; };
 		FA08F61A16C753F600F007B5 /* Volatile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4B731754147B27AF73AC5358 /* Volatile.cpp */; };
 		FA08F61B16C7541400F007B5 /* Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4AD52074367950B735707CE1 /* Canvas.cpp */; };
 		FA08F61C16C7541400F007B5 /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 583037E9238A6EF00DD20B1A /* Font.cpp */; };
@@ -120,7 +118,6 @@
 		FA08F61F16C7541400F007B5 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56D6030A0B8F7397715062B9 /* Image.cpp */; };
 		FA08F62016C7541400F007B5 /* OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2E406F8328543EC63EB922C6 /* OpenGL.cpp */; };
 		FA08F62116C7541400F007B5 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48A206C9004150640C432100 /* ParticleSystem.cpp */; };
-		FA08F62216C7541400F007B5 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74504EB554D871C36DD55F17 /* Quad.cpp */; };
 		FA08F62316C7541400F007B5 /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA577A8516C71CF000860150 /* Shader.cpp */; };
 		FA08F62416C7541400F007B5 /* SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D700D182EAA46273D1E2CC4 /* SpriteBatch.cpp */; };
 		FA08F62516C7541400F007B5 /* VertexBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 426B1C4475DC54505B824B7F /* VertexBuffer.cpp */; };
@@ -129,7 +126,6 @@
 		FA08F62816C7541400F007B5 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A9810F758AC1D1E4B6431FD /* wrap_Graphics.cpp */; };
 		FA08F62916C7541400F007B5 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 14AE68E14C2C74526A612FA0 /* wrap_Image.cpp */; };
 		FA08F62A16C7541400F007B5 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F42052D7C8271A1105541DE /* wrap_ParticleSystem.cpp */; };
-		FA08F62B16C7541400F007B5 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4162283C11024AC35897618C /* wrap_Quad.cpp */; };
 		FA08F62C16C7541400F007B5 /* wrap_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA577A8716C71CF000860150 /* wrap_Shader.cpp */; };
 		FA08F62D16C7541400F007B5 /* wrap_SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C16FDB537A702F4D42534E /* wrap_SpriteBatch.cpp */; };
 		FA08F62E16C7542600F007B5 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 78115E763B723C0C40AD47CF /* ImageData.cpp */; };
@@ -233,6 +229,12 @@
 		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
 		FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAC6B01170A373A008A61C5 /* CompressedData.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
+		FAC86E631724552C00EED715 /* wrap_Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E611724552C00EED715 /* wrap_Geometry.cpp */; };
+		FAC86E641724552C00EED715 /* wrap_Geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Geometry.h */; };
+		FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E651724555D00EED715 /* DrawGable.cpp */; };
+		FAC86E6A1724555D00EED715 /* DrawGable.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E661724555D00EED715 /* DrawGable.h */; };
+		FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Geometry.cpp */; };
+		FAC86E6C1724555D00EED715 /* Geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Geometry.h */; };
 		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
 		FAE010DC170DDE99006F29D0 /* ddsparse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010D9170DDE99006F29D0 /* ddsparse.cpp */; };
 		FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010DA170DDE99006F29D0 /* ddsparse.h */; };
@@ -371,7 +373,6 @@
 		1CAA69E00D0808BA2108238B /* wrap_ChainShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ChainShape.cpp; sourceTree = "<group>"; };
 		1CD02D1975803957282F28AB /* auxiliar.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = auxiliar.c; sourceTree = "<group>"; };
 		1CE84F1F19BC2AA412C638B1 /* timeout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = timeout.h; sourceTree = "<group>"; };
-		1D824A63414874DE584B59B2 /* Quad.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		1DA41DFF0869489411A71AFC /* Image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		1E22646A710E5EFC27FE3932 /* FrictionJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FrictionJoint.cpp; sourceTree = "<group>"; };
 		1E27263847302FCA1F843B47 /* b2PrismaticJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2PrismaticJoint.cpp; sourceTree = "<group>"; };
@@ -435,7 +436,6 @@
 		2FF26CC52C28773750B812D9 /* PolygonShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PolygonShape.h; sourceTree = "<group>"; };
 		30E466F441EE727658716873 /* Module.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Module.cpp; sourceTree = "<group>"; };
 		30ED4BB03C5F11254AF12E98 /* Sound.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Sound.cpp; sourceTree = "<group>"; };
-		30FC314F4137398F63961338 /* wrap_Quad.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
 		31871B8B7E1A697A73576040 /* b2PolygonAndCircleContact.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2PolygonAndCircleContact.cpp; sourceTree = "<group>"; };
 		31A444CF0B4E6DA450120730 /* File.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = File.h; sourceTree = "<group>"; };
 		31B85B507F466FE158A3718E /* wrap_ImageData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_ImageData.h; sourceTree = "<group>"; };
@@ -450,7 +450,6 @@
 		33FD508B0754314530A35EF3 /* StringMap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringMap.h; sourceTree = "<group>"; };
 		340345481F165F8945C716AE /* wrap_FrictionJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_FrictionJoint.cpp; sourceTree = "<group>"; };
 		343E66751EBA75264C3400FA /* b2Draw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2Draw.h; sourceTree = "<group>"; };
-		346C3C7F62FA35DA2C9C4F69 /* DrawQable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DrawQable.cpp; sourceTree = "<group>"; };
 		34A36BB617BC5CCA5B870EA6 /* DistanceJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DistanceJoint.cpp; sourceTree = "<group>"; };
 		350C47C774835EA552130431 /* Object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Object.h; sourceTree = "<group>"; };
 		3512460642B046876D687B22 /* wrap_FileData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_FileData.h; sourceTree = "<group>"; };
@@ -482,7 +481,6 @@
 		3C965422252F672D3FF6598C /* CircleShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CircleShape.h; sourceTree = "<group>"; };
 		3CDA3E9B364F17A902384AAC /* wrap_Font.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Font.h; sourceTree = "<group>"; };
 		3CFE5C4A12D5675E7C9C7BF9 /* Image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
-		3D3B224C2F9D2359288028FD /* Quad.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		3D8460B2486A372825213933 /* Vector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
 		3DFF31EE26405E554C610C8F /* wrap_WeldJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_WeldJoint.cpp; sourceTree = "<group>"; };
 		3EA80A4E0CE0014052076037 /* Joint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Joint.cpp; sourceTree = "<group>"; };
@@ -492,7 +490,6 @@
 		40F412FF29F65F5A3D511B98 /* wrap_EdgeShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_EdgeShape.cpp; sourceTree = "<group>"; };
 		411B061C49172C971C622125 /* Object.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Object.cpp; sourceTree = "<group>"; };
 		415E1438178736BE0EA908D5 /* select.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = select.c; sourceTree = "<group>"; };
-		4162283C11024AC35897618C /* wrap_Quad.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Quad.cpp; sourceTree = "<group>"; };
 		426B1C4475DC54505B824B7F /* VertexBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VertexBuffer.cpp; sourceTree = "<group>"; };
 		427B4B2517C0516844370E3D /* b2CollidePolygon.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2CollidePolygon.cpp; sourceTree = "<group>"; };
 		439E46D768A266780E894800 /* Joystick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
@@ -655,7 +652,6 @@
 		74003CB27FA762A021183AD5 /* GlyphData.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GlyphData.cpp; sourceTree = "<group>"; };
 		74215662418726B35C581E55 /* Thread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
 		7423362764CF57574BB16CDA /* Window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
-		74504EB554D871C36DD55F17 /* Quad.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		74EE403977734BA53DDF16F0 /* core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
 		753F0B42534106D6545926C8 /* Memoizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Memoizer.h; sourceTree = "<group>"; };
 		755C2B980C106EA7423E7E5E /* EdgeShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = EdgeShape.cpp; sourceTree = "<group>"; };
@@ -682,10 +678,8 @@
 		7BAB25936D207169591A666A /* wrap_GearJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_GearJoint.h; sourceTree = "<group>"; };
 		7CA02BF51EBA65C263E15250 /* unchecked.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unchecked.h; sourceTree = "<group>"; };
 		7CC5707C79175FA6427B3D62 /* Audio.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Audio.cpp; sourceTree = "<group>"; };
-		7D13274605967A612D770598 /* Quad.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		7D48236B78EA06D346A86E3F /* smtp.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smtp.lua.h; sourceTree = "<group>"; };
 		7D9B03C2438B748D0DE93DD5 /* utf8.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utf8.cpp; sourceTree = "<group>"; };
-		7E1316A41EA850403C0C7343 /* DrawQable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DrawQable.h; sourceTree = "<group>"; };
 		7E4B280637927B532B456D5E /* Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
 		7E7A068041FD553876712F05 /* b2CollideCircle.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2CollideCircle.cpp; sourceTree = "<group>"; };
 		7EC570BC74C369747ED0183A /* Window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
@@ -728,6 +722,12 @@
 		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
 		FAAC6B01170A373A008A61C5 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAC86E611724552C00EED715 /* wrap_Geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Geometry.cpp; sourceTree = "<group>"; };
+		FAC86E621724552C00EED715 /* wrap_Geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Geometry.h; sourceTree = "<group>"; };
+		FAC86E651724555D00EED715 /* DrawGable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawGable.cpp; sourceTree = "<group>"; };
+		FAC86E661724555D00EED715 /* DrawGable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawGable.h; sourceTree = "<group>"; };
+		FAC86E671724555D00EED715 /* Geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Geometry.cpp; sourceTree = "<group>"; };
+		FAC86E681724555D00EED715 /* Geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Geometry.h; sourceTree = "<group>"; };
 		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
 		FAE010D9170DDE99006F29D0 /* ddsparse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ddsparse.cpp; sourceTree = "<group>"; };
 		FAE010DA170DDE99006F29D0 /* ddsparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsparse.h; sourceTree = "<group>"; };
@@ -1332,15 +1332,15 @@
 				4941079838020ECA049B5C21 /* Color.h */,
 				58BA2BB460AF3C591B22690E /* Drawable.cpp */,
 				5D93601669875EE06721689E /* Drawable.h */,
-				346C3C7F62FA35DA2C9C4F69 /* DrawQable.cpp */,
-				7E1316A41EA850403C0C7343 /* DrawQable.h */,
+				FAC86E651724555D00EED715 /* DrawGable.cpp */,
+				FAC86E661724555D00EED715 /* DrawGable.h */,
+				FAC86E671724555D00EED715 /* Geometry.cpp */,
+				FAC86E681724555D00EED715 /* Geometry.h */,
 				03F17FF546D637744E263961 /* Graphics.cpp */,
 				777352284E262F48543E6E7F /* Graphics.h */,
 				58CC50E70A375FDF53EF01B6 /* Image.cpp */,
 				1DA41DFF0869489411A71AFC /* Image.h */,
 				75093EE94918576801F50993 /* opengl */,
-				3D3B224C2F9D2359288028FD /* Quad.cpp */,
-				7D13274605967A612D770598 /* Quad.h */,
 				4B731754147B27AF73AC5358 /* Volatile.cpp */,
 				0CFF64090F0F4F481BB80CF0 /* Volatile.h */,
 			);
@@ -1524,8 +1524,6 @@
 				2C87695707B046B536F347D8 /* OpenGL.h */,
 				48A206C9004150640C432100 /* ParticleSystem.cpp */,
 				53EE57FF4DBD52BB22701160 /* ParticleSystem.h */,
-				74504EB554D871C36DD55F17 /* Quad.cpp */,
-				1D824A63414874DE584B59B2 /* Quad.h */,
 				FA577A8516C71CF000860150 /* Shader.cpp */,
 				FA577A8616C71CF000860150 /* Shader.h */,
 				4D700D182EAA46273D1E2CC4 /* SpriteBatch.cpp */,
@@ -1536,14 +1534,14 @@
 				3AFB3A18384A2D22352262B1 /* wrap_Canvas.h */,
 				7A3B52AF1FBE73FC36AD50C8 /* wrap_Font.cpp */,
 				3CDA3E9B364F17A902384AAC /* wrap_Font.h */,
+				FAC86E611724552C00EED715 /* wrap_Geometry.cpp */,
+				FAC86E621724552C00EED715 /* wrap_Geometry.h */,
 				1A9810F758AC1D1E4B6431FD /* wrap_Graphics.cpp */,
 				05DF237B657042515F3B4E52 /* wrap_Graphics.h */,
 				14AE68E14C2C74526A612FA0 /* wrap_Image.cpp */,
 				78A2127828793F7A778D7932 /* wrap_Image.h */,
 				5F42052D7C8271A1105541DE /* wrap_ParticleSystem.cpp */,
 				678E42771C9B415628A3234D /* wrap_ParticleSystem.h */,
-				4162283C11024AC35897618C /* wrap_Quad.cpp */,
-				30FC314F4137398F63961338 /* wrap_Quad.h */,
 				FA577A8716C71CF000860150 /* wrap_Shader.cpp */,
 				FA577A8816C71CF000860150 /* wrap_Shader.h */,
 				02C16FDB537A702F4D42534E /* wrap_SpriteBatch.cpp */,
@@ -1719,6 +1717,9 @@
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
 				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
+				FAC86E641724552C00EED715 /* wrap_Geometry.h in Headers */,
+				FAC86E6A1724555D00EED715 /* DrawGable.h in Headers */,
+				FAC86E6C1724555D00EED715 /* Geometry.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1883,10 +1884,8 @@
 				FA08F61316C753E700F007B5 /* wrap_GlyphData.cpp in Sources */,
 				FA08F61416C753E700F007B5 /* wrap_Rasterizer.cpp in Sources */,
 				FA08F61516C753F600F007B5 /* Drawable.cpp in Sources */,
-				FA08F61616C753F600F007B5 /* DrawQable.cpp in Sources */,
 				FA08F61716C753F600F007B5 /* Graphics.cpp in Sources */,
 				FA08F61816C753F600F007B5 /* Image.cpp in Sources */,
-				FA08F61916C753F600F007B5 /* Quad.cpp in Sources */,
 				FA08F61A16C753F600F007B5 /* Volatile.cpp in Sources */,
 				FA08F61B16C7541400F007B5 /* Canvas.cpp in Sources */,
 				FA08F61C16C7541400F007B5 /* Font.cpp in Sources */,
@@ -1895,7 +1894,6 @@
 				FA08F61F16C7541400F007B5 /* Image.cpp in Sources */,
 				FA08F62016C7541400F007B5 /* OpenGL.cpp in Sources */,
 				FA08F62116C7541400F007B5 /* ParticleSystem.cpp in Sources */,
-				FA08F62216C7541400F007B5 /* Quad.cpp in Sources */,
 				FA08F62316C7541400F007B5 /* Shader.cpp in Sources */,
 				FA08F62416C7541400F007B5 /* SpriteBatch.cpp in Sources */,
 				FA08F62516C7541400F007B5 /* VertexBuffer.cpp in Sources */,
@@ -1904,7 +1902,6 @@
 				FA08F62816C7541400F007B5 /* wrap_Graphics.cpp in Sources */,
 				FA08F62916C7541400F007B5 /* wrap_Image.cpp in Sources */,
 				FA08F62A16C7541400F007B5 /* wrap_ParticleSystem.cpp in Sources */,
-				FA08F62B16C7541400F007B5 /* wrap_Quad.cpp in Sources */,
 				FA08F62C16C7541400F007B5 /* wrap_Shader.cpp in Sources */,
 				FA08F62D16C7541400F007B5 /* wrap_SpriteBatch.cpp in Sources */,
 				FA08F62E16C7542600F007B5 /* ImageData.cpp in Sources */,
@@ -2002,6 +1999,9 @@
 				FAEC808E1711E76C0057279A /* CompressedData.cpp in Sources */,
 				FA636D8A171B70920065623F /* RandomGenerator.cpp in Sources */,
 				FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */,
+				FAC86E631724552C00EED715 /* wrap_Geometry.cpp in Sources */,
+				FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */,
+				FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
