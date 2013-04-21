@@ -107,7 +107,6 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 
 	if (color)
 		setColorv(sprite, *color);
-	
 
 	addv(sprite, (index == -1) ? next : index);
 
@@ -124,19 +123,29 @@ int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
-	// Needed for colors.
-	size_t vcount = geom->getVertexArraySize();
-	memcpy(sprite, geom->getVertexArray(), vcount * sizeof(vertex));
+	if (geom->getNumVertices() != 4)
+		throw love::Exception("Can only add quadliteral geometries to SpriteBatch");
+
+	sprite[0] = geom->getVertex(0);
+	sprite[1] = geom->getVertex(1);
+	sprite[2] = geom->getVertex(2);
+	sprite[3] = geom->getVertex(3);
 
 	// Transform.
 	Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-	t.transform(sprite, sprite, vcount);
+	t.transform(sprite, sprite, 4);
 
-	if (color)
-		setColorv(sprite, *color);
+	// color modulation
+	for (size_t i = 0; color && (i < 4); ++i)
+	{
+		sprite[i].r = (unsigned char)(double(sprite[i].r) * color->r / 255.);
+		sprite[i].g = (unsigned char)(double(sprite[i].g) * color->g / 255.);
+		sprite[i].b = (unsigned char)(double(sprite[i].b) * color->b / 255.);
+		sprite[i].a = (unsigned char)(double(sprite[i].a) * color->a / 255.);
+	}
 
-	addv(sprite, (index == -1) ? next : index, vcount);
+	addv(sprite, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
@@ -248,31 +257,22 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	glPopMatrix();
 }
 
-void SpriteBatch::addv(const vertex *v, int index, int sprite_size)
+void SpriteBatch::addv(const vertex *v, int index)
 {
-	sprite_size *= sizeof(vertex); // bytecount
+	static const int sprite_size = 4 * sizeof(vertex); // bytecount
 	VertexBuffer::Bind bind(*array_buf);
 	array_buf->fill(index * sprite_size, sprite_size, v);
 }
 
 void SpriteBatch::setColorv(vertex *v, const Color &color)
 {
-	v[0].r = color.r;
-	v[0].g = color.g;
-	v[0].b = color.b;
-	v[0].a = color.a;
-	v[1].r = color.r;
-	v[1].g = color.g;
-	v[1].b = color.b;
-	v[1].a = color.a;
-	v[2].r = color.r;
-	v[2].g = color.g;
-	v[2].b = color.b;
-	v[2].a = color.a;
-	v[3].r = color.r;
-	v[3].g = color.g;
-	v[3].b = color.b;
-	v[3].a = color.a;
+	for (size_t i = 0; i < 4; ++i)
+	{
+		v[i].r = color.r;
+		v[i].g = color.g;
+		v[i].b = color.b;
+		v[i].a = color.a;
+	}
 }
 
 bool SpriteBatch::getConstant(const char *in, UsageHint &out)

@@ -104,7 +104,7 @@ public:
 
 private:
 
-	void addv(const vertex *v, int index, int sprite_size = 4);
+	void addv(const vertex *v, int index);
 
 	/**
 	 * Set the color for vertices.
