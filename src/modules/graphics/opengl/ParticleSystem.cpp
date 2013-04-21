@@ -103,9 +103,6 @@ ParticleSystem::ParticleSystem(Image *image, unsigned int buffer)
 
 ParticleSystem::~ParticleSystem()
 {
-	for (size_t i = 0; i < quads.size(); i++)
-		quads[i]->release();
-
 	if (this->image != 0)
 		this->image->release();
 
@@ -528,33 +525,6 @@ std::vector<Color> ParticleSystem::getColor() const
 	return ncolors;
 }
 
-void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
-{
-	for (size_t i = 0; i < quads.size(); i++)
-		quads[i]->release();
-
-	quads.resize(newQuads.size());
-
-	for (size_t i = 0; i < newQuads.size(); i++)
-	{
-		quads[i] = newQuads[i];
-		quads[i]->retain();
-	}
-}
-
-void ParticleSystem::setQuads()
-{
-	for (size_t i = 0; i < quads.size(); i++)
-		quads[i]->release();
-
-	quads.resize(0);
-}
-
-const std::vector<Quad *> &ParticleSystem::getQuads() const
-{
-	return quads;
-}
-
 int ParticleSystem::count() const
 {
 	return (int)(pLast - pStart);
@@ -631,21 +601,12 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	const vertex *imageVerts = image->getVertices();
 	const vertex *tVerts;
 
-	size_t numQuads = quads.size();
-
 	// set the vertex data for each particle (transformation, texcoords, color)
 	for (int i = 0; i < numParticles; i++)
 	{
 		particle *p = pStart + i;
 
-		if (numQuads > 0)
-		{
-			// Make sure the quad index is valid
-			size_t quadIndex = (p->quadIndex >= numQuads) ? numQuads - 1 : p->quadIndex;
-			tVerts = quads[quadIndex]->getVertices();
-		}
-		else
-			tVerts = imageVerts;
+		tVerts = imageVerts;
 
 		// particle vertices are image vertices transformed by particle information
 		t.setTransformation(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
@@ -777,17 +738,6 @@ void ParticleSystem::update(float dt)
 			k = (i == colors.size() - 1) ? i : i + 1;
 			s -= (float)i;                            // 0 <= s <= 1
 			p->color = colors[i] * (1.0f - s) + colors[k] * s;
-
-			// Update quad index
-			k = quads.size();
-			if (k > 0)
-			{
-				s = t * (float) k; // [0:numquads-1]
-				i = (s > 0) ? (size_t) s : 0;
-				p->quadIndex = (i < k) ? i : k - 1;
-			}
-			else
-				p->quadIndex = 0;
 
 			// Next particle.
 			p++;

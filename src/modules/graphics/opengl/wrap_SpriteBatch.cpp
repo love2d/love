@@ -49,10 +49,11 @@ int w_SpriteBatch_add(lua_State *L)
 	return 1;
 }
 
-int w_SpriteBatch_addq(lua_State *L)
+int w_SpriteBatch_addg(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	Quad *q = luax_checktype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
+	Geometry *g = luax_checktype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+
 	float x = (float)luaL_optnumber(L, 3, 0.0f);
 	float y = (float)luaL_optnumber(L, 4, 0.0f);
 	float angle = (float)luaL_optnumber(L, 5, 0.0f);
@@ -62,7 +63,7 @@ int w_SpriteBatch_addq(lua_State *L)
 	float oy = (float)luaL_optnumber(L, 9, 0);
 	float kx = (float)luaL_optnumber(L, 10, 0);
 	float ky = (float)luaL_optnumber(L, 11, 0);
-	lua_pushnumber(L, t->addq(q, x, y, angle, sx, sy, ox, oy, kx, ky));
+	lua_pushnumber(L, t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky));
 	return 1;
 }
 
@@ -87,7 +88,8 @@ int w_SpriteBatch_setq(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	int index = luaL_checkinteger(L, 2);
-	Quad *q = luax_checktype<Quad>(L, 3, "Quad", GRAPHICS_QUAD_T);
+	Geometry *g = luax_checktype<Geometry>(L, 3, "Geometry", GRAPHICS_GEOMETRY_T);
+
 	float x = (float)luaL_optnumber(L, 4, 0.0f);
 	float y = (float)luaL_optnumber(L, 5, 0.0f);
 	float angle = (float)luaL_optnumber(L, 6, 0.0f);
@@ -97,7 +99,7 @@ int w_SpriteBatch_setq(lua_State *L)
 	float oy = (float)luaL_optnumber(L, 10, 0);
 	float kx = (float)luaL_optnumber(L, 11, 0);
 	float ky = (float)luaL_optnumber(L, 12, 0);
-	t->addq(q, x, y, angle, sx, sy, ox, oy, kx, ky, index);
+	t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky, index);
 	return 0;
 }
 
@@ -198,7 +200,7 @@ int w_SpriteBatch_isFull(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "add", w_SpriteBatch_add },
-	{ "addq", w_SpriteBatch_addq },
+	{ "addg", w_SpriteBatch_addg },
 	{ "set", w_SpriteBatch_set },
 	{ "setq", w_SpriteBatch_setq },
 	{ "clear", w_SpriteBatch_clear },

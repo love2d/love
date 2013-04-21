@@ -32,6 +32,7 @@
 #include "graphics/Drawable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
+#include "graphics/Geometry.h"
 
 namespace love
 {
@@ -42,7 +43,6 @@ namespace opengl
 
 // Forward declarations.
 class Image;
-class Quad;
 class VertexBuffer;
 class VertexIndex;
 
@@ -62,7 +62,7 @@ public:
 	virtual ~SpriteBatch();
 
 	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
-	int addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
+	int addg(Geometry *geom, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
 	void clear();
 
 	void *lock();
@@ -81,7 +81,7 @@ public:
 	void setColor(const Color &color);
 
 	/**
-	 * Disable per-quad colors for this SpriteBatch. The next call to
+	 * Disable per-geometry colors for this SpriteBatch. The next call to
 	 * draw will use the global color for all sprites.
 	 */
 	void setColor();
@@ -104,7 +104,7 @@ public:
 
 private:
 
-	void addv(const vertex *v, int index);
+	void addv(const vertex *v, int index, int sprite_size = 4);
 
 	/**
 	 * Set the color for vertices.
@@ -129,7 +129,7 @@ private:
 	vertex sprite[4];
 
 	// Current color. This color, if present, will be applied to the next
-	// added quad.
+	// added geometry.
 	Color *color;
 
 	VertexBuffer *array_buf;

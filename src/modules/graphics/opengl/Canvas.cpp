@@ -25,6 +25,7 @@
 #include "common/config.h"
 
 #include <cstring> // For memcpy
+#include <limits>
 
 namespace love
 {
@@ -64,7 +65,7 @@ struct FramebufferStrategy
 	/**
 	 * @param[in] canvases List of canvases to attach
 	 **/
-	virtual void setAttachments(const std::vector<Canvas *> &canvases) {}
+	virtual void setAttachments(const std::vector<Canvas *> &canvases) { (void)canvases; }
 
 	/// stop using all additional attached canvases
 	virtual void setAttachments() {}
@@ -155,7 +156,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		drawbuffers.push_back(GL_COLOR_ATTACHMENT0);
 
 		// attach the canvas framebuffer textures to the currently bound framebuffer
-		for (int i = 0; i < canvases.size(); i++)
+		for (size_t i = 0; i < canvases.size(); i++)
 		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1 + i,
 				GL_TEXTURE_2D, canvases[i]->getTextureName(), 0);
@@ -258,7 +259,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		drawbuffers.push_back(GL_COLOR_ATTACHMENT0_EXT);
 
 		// attach the canvas framebuffer textures to the currently bound framebuffer
-		for (int i = 0; i < canvases.size(); i++)
+		for (size_t i = 0; i < canvases.size(); i++)
 		{
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1_EXT + i,
 								   GL_TEXTURE_2D, canvases[i]->getTextureName(), 0);
@@ -481,7 +482,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if (!isMultiCanvasSupported())
 			throw love::Exception("Multi-canvas rendering is not supported on this system.");
 
-		if (canvases.size()+1 > maxDrawBuffers || canvases.size()+1 > maxFBOColorAttachments)
+		if (canvases.size()+1 > size_t(maxDrawBuffers) || canvases.size()+1 > size_t(maxFBOColorAttachments))
 			throw love::Exception("This system can't simultaniously render to %d canvases.", canvases.size()+1);
 	}
 
@@ -583,20 +584,27 @@ void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, f
 	drawv(t, vertices);
 }
 
-void Canvas::drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	const vertex *v = quad->getVertices();
-
-	// mirror quad on x axis
-	vertex w[4];
-	memcpy(w, v, sizeof(vertex)*4);
-	for (size_t i = 0; i < 4; ++i)
-		w[i].t = 1. - w[i].t;
-
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	drawv(t, w);
+	// flip texture coordinates vertically
+	size_t vcount = geom->getVertexArraySize();
+	const vertex *w = geom->getVertexArray();
+	vertex *v = new vertex[vcount];
+	for (size_t i = 0; i < vcount; ++i)
+	{
+		v[i] = w[i];
+		v[i].t = 1. - v[i].t;
+	}
+
+	// use colors stored in geometry (horrible, horrible hack)
+	glEnableClientState(GL_COLOR_ARRAY);
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&v->r);
+	drawv(t, v, vcount, GL_TRIANGLES);
+	glDisableClientState(GL_COLOR_ARRAY);
+	delete[] v;
 }
 
 love::image::ImageData *Canvas::getImageData(love::image::Image *image)
@@ -702,7 +710,7 @@ int Canvas::getHeight()
 	return height;
 }
 
-void Canvas::drawv(const Matrix &t, const vertex *v) const
+void Canvas::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode) const
 {
 	glPushMatrix();
 
@@ -712,9 +720,15 @@ void Canvas::drawv(const Matrix &t, const vertex *v) const
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	// XXX: drawg() enables/disables GL_COLOR_ARRAY in order to use the color
+	//      defined in the geometry to draw itself.
+	//      if the drawing method below is changed to use something other than
+	//      glDrawArrays(), drawg() needs to be updated accordingly!
 	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].s);
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawArrays(mode, 0, count);
+
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 

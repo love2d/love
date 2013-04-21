@@ -120,6 +120,12 @@ void Graphics::restoreState(const DisplayState &s)
 	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
 }
 
+static void APIENTRY myErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message, void *ud)
+{
+	(void)ud;
+	std::cerr << "source = " << source << ", type = " << type << ", id = " << id << ", severity = " << severity << ", length = " << length << "\n" << message << std::endl;
+}
+
 bool Graphics::setMode(int width, int height, WindowFlags *flags)
 {
 	// This operation destroys the OpenGL context, so
@@ -201,6 +207,13 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	// subtract a few to give the engine some room.
 	glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 	matrixLimit -= 5;
+
+	if (GLEE_ARB_debug_output)
+	{
+		std::cerr << "debug on" << std::endl;
+		glDebugMessageCallbackARB(myErrorCallback, NULL);
+		glEnable(GL_DEBUG_OUTPUT);
+	}
 
 	return success;
 }
@@ -492,14 +505,14 @@ Image *Graphics::newImage(love::image::CompressedData *cdata)
 	return image;
 }
 
-Quad *Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
+Geometry *Graphics::newGeometry(const std::vector<vertex> &vertices)
 {
-	Quad::Viewport v;
-	v.x = x;
-	v.y = y;
-	v.w = w;
-	v.h = h;
-	return new Quad(v, sw, sh);
+	return new Geometry(vertices);
+}
+
+Geometry *Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
+{
+	return new Geometry(x, y, w, h, sw, sh);
 }
 
 Font *Graphics::newFont(love::font::Rasterizer *r, const Image::Filter &filter)

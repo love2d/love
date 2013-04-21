@@ -49,7 +49,7 @@ extern unsigned int _gcthread;
 enum Registry
 {
 	REGISTRY_GC = 1,
-	REGISTRY_MODULES,
+	REGISTRY_MODULES
 };
 
 /**

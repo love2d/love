@@ -19,7 +19,6 @@
  **/
 
 #include "wrap_ParticleSystem.h"
-#include "wrap_Quad.h"
 
 #include "common/Vector.h"
 
@@ -530,58 +529,6 @@ int w_ParticleSystem_getColors(lua_State *L)
 	return colors.size();
 }
 
-int w_ParticleSystem_setQuads(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-
-	int nQuads = lua_gettop(L) - 1;
-	if (lua_istable(L, 2))
-		nQuads = lua_objlen(L, 2);
-
-	// Remove all quads if no argument is given.
-	if (nQuads == 0)
-	{
-		t->setQuads();
-		return 0;
-	}
-
-	std::vector<Quad *> quads(nQuads);
-
-	if (lua_istable(L, 2))
-	{
-		for (int i = 0; i < nQuads; i++)
-		{
-			lua_rawgeti(L, 2, i + 1); // array index
-			quads[i] = luax_checkquad(L, -1);
-			lua_pop(L, 1);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < nQuads; i++)
-			quads[i] = luax_checkquad(L, i + 2);
-	}
-
-	t->setQuads(quads);
-
-	return 0;
-}
-
-int w_ParticleSystem_getQuads(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-
-	const std::vector<Quad *> &quads = t->getQuads();
-
-	for (size_t i = 0; i < quads.size(); i++)
-	{
-		quads[i]->retain();
-		luax_newtype(L, "Quad", GRAPHICS_QUAD_T, (void *) quads[i]);
-	}
-
-	return quads.size();
-}
-
 int w_ParticleSystem_count(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -698,8 +645,6 @@ static const luaL_Reg functions[] =
 	{ "getSpinVariation", w_ParticleSystem_getSpinVariation },
 	{ "setColors", w_ParticleSystem_setColors },
 	{ "getColors", w_ParticleSystem_getColors },
-	{ "setQuads", w_ParticleSystem_setQuads },
-	{ "getQuads", w_ParticleSystem_getQuads },
 	{ "setOffset", w_ParticleSystem_setOffset },
 	{ "getOffset", w_ParticleSystem_getOffset },
 	{ "count", w_ParticleSystem_count },

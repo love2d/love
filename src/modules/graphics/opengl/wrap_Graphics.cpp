@@ -20,7 +20,7 @@
 
 #include "wrap_Graphics.h"
 #include "OpenGL.h"
-#include "graphics/DrawQable.h"
+#include "graphics/DrawGable.h"
 #include "image/ImageData.h"
 #include "font/Rasterizer.h"
 
@@ -372,6 +372,61 @@ int w_newImage(lua_State *L)
 	return 1;
 }
 
+int w_newGeometry(lua_State *L)
+{
+	std::vector<vertex> vertices;
+	if (!lua_istable(L, 1))
+		return luaL_typerror(L, 1, "table");
+
+	size_t n = lua_objlen(L, 1);
+	if (n < 3)
+		return luaL_error(L, "Need at least three points to construct a geometry.");
+
+	vertices.reserve(n);
+	for (size_t i = 0; i < n; ++i)
+	{
+		vertex v;
+		lua_rawgeti(L, 1, i+1);
+		if (!lua_istable(L, -1))
+			return luaL_typerror(L, 1, "table of tables");
+
+		lua_rawgeti(L, -1, 1);
+		v.x = luaL_checknumber(L, -1);
+
+		lua_rawgeti(L, -2, 2);
+		v.y = luaL_checknumber(L, -1);
+
+		lua_rawgeti(L, -3, 3);
+		v.s = luaL_checknumber(L, -1);
+
+		lua_rawgeti(L, -4, 4);
+		v.t = luaL_checknumber(L, -1);
+
+		lua_rawgeti(L, -5, 5);
+		v.r = luaL_optint(L, -1, 255);
+
+		lua_rawgeti(L, -6, 6);
+		v.g = luaL_optint(L, -1, 255);
+
+		lua_rawgeti(L, -7, 7);
+		v.b = luaL_optint(L, -1, 255);
+
+		lua_rawgeti(L, -8, 8);
+		v.a = luaL_optint(L, -1, 255);
+
+		lua_pop(L, 9);
+		vertices.push_back(v);
+	}
+
+	Geometry *geom = instance->newGeometry(vertices);
+
+	if (geom == 0)
+		return luaL_error(L, "Could not create geometry.");
+
+	luax_newtype(L, "Geometry", GRAPHICS_GEOMETRY_T, (void *)geom);
+	return 1;
+}
+
 int w_newQuad(lua_State *L)
 {
 	float x = (float) luaL_checknumber(L, 1);
@@ -381,9 +436,9 @@ int w_newQuad(lua_State *L)
 	float sw = (float) luaL_checknumber(L, 5);
 	float sh = (float) luaL_checknumber(L, 6);
 
-	Quad *quad = instance->newQuad(x, y, w, h, sw, sh);
+	Geometry *quad = instance->newQuad(x, y, w, h, sw, sh);
 
-	luax_newtype(L, "Quad", GRAPHICS_QUAD_T, (void *)quad);
+	luax_newtype(L, "Geometry", GRAPHICS_GEOMETRY_T, (void *)quad);
 	return 1;
 }
 
@@ -1064,7 +1119,7 @@ int w_setCanvases(lua_State *L)
 		canvas = luax_checkcanvas(L, -1);
 		lua_pop(L, 1);
 
-		for (int i = 2; i <= lua_objlen(L, 1); i++)
+		for (size_t i = 2; i <= lua_objlen(L, 1); i++)
 		{
 			lua_rawgeti(L, 1, i);
 			attachments.push_back(luax_checkcanvas(L, -1));
@@ -1236,7 +1291,7 @@ int w_draw(lua_State *L)
 }
 
 /**
- * Draws an Quad of a DrawQable at the specified coordinates,
+ * Draws a portion of a DrawGable at the specified coordinates,
  * with rotation and scaling along both axes.
  *
  * @param q The Quad to draw.
@@ -1250,10 +1305,10 @@ int w_draw(lua_State *L)
  * @param kx Shear along the x-axis.
  * @param ky Shear along the y-axis.
  **/
-int w_drawq(lua_State *L)
+int w_drawg(lua_State *L)
 {
-	DrawQable *dq = luax_checktype<DrawQable>(L, 1, "DrawQable", GRAPHICS_DRAWQABLE_T);
-	Quad *q = luax_checkquad(L, 2);
+	DrawGable *dq = luax_checktype<DrawGable>(L, 1, "DrawGable", GRAPHICS_DRAWGABLE_T);
+	Geometry *geom = luax_checkgeometry(L, 2);
 	float x = (float)luaL_optnumber(L, 3, 0.0f);
 	float y = (float)luaL_optnumber(L, 4, 0.0f);
 	float angle = (float)luaL_optnumber(L, 5, 0);
@@ -1263,7 +1318,7 @@ int w_drawq(lua_State *L)
 	float oy = (float)luaL_optnumber(L, 9, 0);
 	float kx = (float)luaL_optnumber(L, 10, 0);
 	float ky = (float)luaL_optnumber(L, 11, 0);
-	dq->drawq(q, x, y, angle, sx, sy, ox, oy, kx, ky);
+	dq->drawg(geom, x, y, angle, sx, sy, ox, oy, kx, ky);
 	return 0;
 }
 
@@ -1565,6 +1620,7 @@ static const luaL_Reg functions[] =
 
 	{ "newImage", w_newImage },
 	{ "newQuad", w_newQuad },
+	{ "newGeometry", w_newGeometry },
 	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },
 	{ "newSpriteBatch", w_newSpriteBatch },
@@ -1611,7 +1667,8 @@ static const luaL_Reg functions[] =
 	{ "isSupported", w_isSupported },
 
 	{ "draw", w_draw },
-	{ "drawq", w_drawq },
+	{ "drawq", w_drawg }, // legacy
+	{ "drawg", w_drawg },
 
 	{ "print", w_print },
 	{ "printf", w_printf },
@@ -1665,7 +1722,7 @@ static const lua_CFunction types[] =
 {
 	luaopen_font,
 	luaopen_image,
-	luaopen_quad,
+	luaopen_geometry,
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_canvas,

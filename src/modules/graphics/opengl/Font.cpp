@@ -20,7 +20,7 @@
 #include "common/config.h"
 #include "Font.h"
 #include "font/GlyphData.h"
-#include "Quad.h"
+#include "modules/graphics/Geometry.h"
 #include "Image.h"
 
 #include "libraries/utf8/utf8.h"
@@ -212,14 +212,12 @@ Font::Glyph *Font::addGlyph(unsigned int glyph)
 
 		g->texture = t;
 
-		Quad::Viewport v;
-		v.x = (float) textureX;
-		v.y = (float) textureY;
-		v.w = (float) w;
-		v.h = (float) h;
-
-		Quad q = Quad(v, (const float) textureWidth, (const float) textureHeight);
-		const vertex *verts = q.getVertices();
+		const vertex verts[4] = {
+			vertex(0, 0, float(textureX)/float(textureWidth),   float(textureY)/float(textureHeight)),
+			vertex(w, 0, float(textureX+w)/float(textureWidth), float(textureY)/float(textureHeight)),
+			vertex(w, h, float(textureX+w)/float(textureWidth), float(textureY+h)/float(textureHeight)),
+			vertex(0, h, float(textureX)/float(textureWidth),   float(textureY+h)/float(textureHeight)),
+		};
 
 		// copy vertex data to the glyph and set proper bearing
 		for (int i = 0; i < 4; i++)

@@ -27,7 +27,6 @@
 #include "common/Vector.h"
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
-#include "Quad.h"
 #include "Image.h"
 #include <vector>
 
@@ -64,8 +63,6 @@ struct particle
 	float spinEnd;
 
 	Colorf color;
-
-	size_t quadIndex;
 };
 
 /**
@@ -83,7 +80,7 @@ public:
 		DISTRIBUTION_NONE,
 		DISTRIBUTION_UNIFORM,
 		DISTRIBUTION_NORMAL,
-		DISTRIBUTION_MAX_ENUM,
+		DISTRIBUTION_MAX_ENUM
 	};
 
 	/**
@@ -436,22 +433,6 @@ public:
 	std::vector<Color> getColor() const;
 
 	/**
-	 * Sets the quads used when drawing the particles.
-	 * @param newQuads Array of quads.
-	 **/
-	void setQuads(const std::vector<Quad *> &newQuads);
-
-	/**
-	 * Removes all quads from the particle system.
-	 **/
-	void setQuads();
-
-	/**
-	 * Returns the list of quads used when drawing the particles.
-	 **/
-	const std::vector<Quad *> &getQuads() const;
-
-	/**
 	 * Returns the amount of particles that are currently active in the system.
 	 **/
 	int count() const;
@@ -598,8 +579,6 @@ protected:
 
 	// Color.
 	std::vector<Colorf> colors;
-
-	std::vector<Quad *> quads;
 
 	void add();
 	void remove(particle *p);

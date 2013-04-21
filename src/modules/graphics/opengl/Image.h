@@ -82,9 +82,9 @@ public:
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	/**
-	 * @copydoc DrawQable::drawq()
+	 * @copydoc DrawGable::drawg()
 	 **/
-	void drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	/**
 	 * Sets the filter mode.
@@ -137,7 +137,7 @@ public:
 
 private:
 
-	void drawv(const Matrix &t, const vertex *v) const;
+	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS) const;
 
 	friend class Shader;
 	GLuint getTextureName() const

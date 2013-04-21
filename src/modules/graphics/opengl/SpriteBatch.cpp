@@ -25,7 +25,7 @@
 
 // LOVE
 #include "Image.h"
-#include "Quad.h"
+#include "modules/graphics/Geometry.h"
 #include "VertexBuffer.h"
 
 namespace love
@@ -118,24 +118,25 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	return index;
 }
 
-int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
+int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 {
 	// Only do this if there's a free slot.
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
 	// Needed for colors.
-	memcpy(sprite, quad->getVertices(), sizeof(vertex)*4);
+	size_t vcount = geom->getVertexArraySize();
+	memcpy(sprite, geom->getVertexArray(), vcount * sizeof(vertex));
 
 	// Transform.
 	Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-	t.transform(sprite, sprite, 4);
+	t.transform(sprite, sprite, vcount);
 
 	if (color)
 		setColorv(sprite, *color);
 
-	addv(sprite, (index == -1) ? next : index);
+	addv(sprite, (index == -1) ? next : index, vcount);
 
 	// Increment counter.
 	if (index == -1)
@@ -247,12 +248,10 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	glPopMatrix();
 }
 
-void SpriteBatch::addv(const vertex *v, int index)
+void SpriteBatch::addv(const vertex *v, int index, int sprite_size)
 {
-	int sprite_size = sizeof(vertex) * 4;
-
+	sprite_size *= sizeof(vertex); // bytecount
 	VertexBuffer::Bind bind(*array_buf);
-
 	array_buf->fill(index * sprite_size, sprite_size, v);
 }
 

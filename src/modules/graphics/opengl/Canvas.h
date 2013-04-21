@@ -21,8 +21,7 @@
 #ifndef LOVE_GRAPHICS_OPENGL_CANVAS_H
 #define LOVE_GRAPHICS_OPENGL_CANVAS_H
 
-// LOVE
-#include "graphics/DrawQable.h"
+#include "graphics/DrawGable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Image.h"
 #include "graphics/Color.h"
@@ -32,9 +31,6 @@
 #include "common/Matrix.h"
 #include "OpenGL.h"
 
-// STL
-#include <vector>
-
 namespace love
 {
 namespace graphics
@@ -42,7 +38,7 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas : public DrawQable, public Volatile
+class Canvas : public DrawGable, public Volatile
 {
 public:
 	enum TextureType {
@@ -67,9 +63,9 @@ public:
 	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	/**
-	 * @copydoc DrawQable::drawq()
+	 * @copydoc DrawGable::drawg()
 	 **/
-	void drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	love::image::ImageData *getImageData(love::image::Image *image);
 
@@ -77,7 +73,7 @@ public:
 
 	const std::vector<Canvas *> &getAttachedCanvases() const;
 
-	void setFilter(const Image::Filter &f);
+void setFilter(const Image::Filter &f);
 	Image::Filter getFilter() const;
 
 	void setWrap(const Image::Wrap &w);
@@ -137,7 +133,7 @@ private:
 	std::vector<Canvas *> attachedCanvases;
 
 	void setupGrab();
-	void drawv(const Matrix &t, const vertex *v) const;
+	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS) const;
 
 	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
 	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;

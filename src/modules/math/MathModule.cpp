@@ -30,7 +30,6 @@ using love::vertex;
 
 namespace
 {
-
 	// check if an angle is oriented counter clockwise
 	inline bool is_oriented_ccw(const vertex &a, const vertex &b, const vertex &c)
 	{

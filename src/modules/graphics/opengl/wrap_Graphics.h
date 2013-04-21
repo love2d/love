@@ -24,7 +24,7 @@
 // LOVE
 #include "wrap_Font.h"
 #include "wrap_Image.h"
-#include "wrap_Quad.h"
+#include "wrap_Geometry.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
 #include "wrap_Canvas.h"
@@ -59,7 +59,7 @@ int w_setStencil(lua_State *L);
 int w_setAlphaTest(lua_State *L);
 int w_getAlphaTest(lua_State *L);
 int w_newImage(lua_State *L);
-int w_newQuad(lua_State *L);
+int w_newGeometry(lua_State *L);
 int w_newQuad(lua_State *L);
 int w_newFont(lua_State *L);
 int w_newImageFont(lua_State *L);
@@ -100,7 +100,7 @@ int w_setShader(lua_State *L);
 int w_getShader(lua_State *L);
 int w_isSupported(lua_State *L);
 int w_draw(lua_State *L);
-int w_drawq(lua_State *L);
+int w_drawg(lua_State *L);
 int w_print(lua_State *L);
 int w_printf(lua_State *L);
 int w_point(lua_State *L);

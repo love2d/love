@@ -101,13 +101,18 @@ void Image::draw(float x, float y, float angle, float sx, float sy, float ox, fl
 	drawv(t, vertices);
 }
 
-void Image::drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	static Matrix t;
-	const vertex *v = quad->getVertices();
-
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-	drawv(t, v);
+
+	// use colors stored in geometry (horrible, horrible hack)
+	const vertex *v = geom->getVertexArray();
+
+	glEnableClientState(GL_COLOR_ARRAY);
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&v->r);
+	drawv(t, v, geom->getVertexArraySize(), GL_TRIANGLES);
+	glDisableClientState(GL_COLOR_ARRAY);
 }
 
 void Image::uploadCompressedMipmaps()
@@ -491,7 +496,7 @@ bool Image::refresh()
 	return true;
 }
 
-void Image::drawv(const Matrix &t, const vertex *v) const
+void Image::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode) const
 {
 	bind();
 
@@ -501,9 +506,15 @@ void Image::drawv(const Matrix &t, const vertex *v) const
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	// XXX: drawg() enables/disables GL_COLOR_ARRAY in order to use the color
+	//      defined in the geometry to draw itself.
+	//      if the drawing method below is changed to use something other than
+	//      glDrawArrays(), drawg() needs to be updated accordingly!
 	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].s);
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawArrays(mode, 0, count);
+
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 

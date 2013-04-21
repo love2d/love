@@ -39,7 +39,7 @@
 
 #include "Font.h"
 #include "Image.h"
-#include "Quad.h"
+#include "graphics/Geometry.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
@@ -287,9 +287,14 @@ public:
 	Image *newImage(love::image::CompressedData *cdata);
 
 	/**
-	 * Creates a Quad object.
+	 * Creates a Geometry object.
 	 **/
-	Quad *newQuad(float x, float y, float w, float h, float sw, float sh);
+	Geometry *newGeometry(const std::vector<vertex> &vertices);
+
+	/**
+	 * Creates a quadliteral Geometry object.
+	 **/
+	Geometry *newQuad(float x, float y, float w, float h, float sw, float sh);
 
 	/**
 	 * Creates a Font object.
