@@ -133,6 +133,13 @@ void Geometry::setVertex(size_t i, const vertex &v)
 
 void Geometry::flip(bool x, bool y)
 {
+	for (size_t i = 0; i < polygon.size(); ++i)
+	{
+		vertex &v = polygon[i];
+		if (x) v.x = x_max + x_min - v.x;
+		if (y) v.y = y_max + y_min - v.y;
+	}
+
 	for (size_t i = 0; i < vertexCount; ++i)
 	{
 		vertex &v = vertexArray[i];

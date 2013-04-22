@@ -65,7 +65,7 @@ struct FramebufferStrategy
 	/**
 	 * @param[in] canvases List of canvases to attach
 	 **/
-	virtual void setAttachments(const std::vector<Canvas *> &canvases) { (void)canvases; }
+	virtual void setAttachments(const std::vector<Canvas *> &) {}
 
 	/// stop using all additional attached canvases
 	virtual void setAttachments() {}
