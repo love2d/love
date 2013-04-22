@@ -418,7 +418,15 @@ int w_newGeometry(lua_State *L)
 		vertices.push_back(v);
 	}
 
-	Geometry *geom = instance->newGeometry(vertices);
+	Geometry *geom = 0;
+	try
+	{
+		geom = instance->newGeometry(vertices);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 
 	if (geom == 0)
 		return luaL_error(L, "Could not create geometry.");
