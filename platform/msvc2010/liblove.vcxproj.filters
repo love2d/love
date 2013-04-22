@@ -441,25 +441,16 @@
     <ClCompile Include="..\..\src\modules\graphics\Drawable.cpp">
       <Filter>modules\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\DrawQable.cpp">
-      <Filter>modules\graphics</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\Graphics.cpp">
       <Filter>modules\graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\Image.cpp">
       <Filter>modules\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\Quad.cpp">
-      <Filter>modules\graphics</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\Volatile.cpp">
       <Filter>modules\graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\Shader.cpp">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\opengl\Quad.cpp">
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp">
@@ -484,9 +475,6 @@
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Shader.cpp">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Quad.cpp">
       <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.cpp">
@@ -797,6 +785,15 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\math\wrap_RandomGenerator.cpp">
       <Filter>modules\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\DrawGable.cpp">
+      <Filter>modules\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\Geometry.cpp">
+      <Filter>modules\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\graphics\opengl\wrap_Geometry.cpp">
+      <Filter>modules\graphics\opengl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1162,16 +1159,10 @@
     <ClInclude Include="..\..\src\modules\graphics\Drawable.h">
       <Filter>modules\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\DrawQable.h">
-      <Filter>modules\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\Graphics.h">
       <Filter>modules\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\Image.h">
-      <Filter>modules\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\Quad.h">
       <Filter>modules\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\Volatile.h">
@@ -1184,9 +1175,6 @@
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\Shader.h">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\opengl\Quad.h">
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h">
@@ -1211,9 +1199,6 @@
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Shader.h">
-      <Filter>modules\graphics\opengl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Quad.h">
       <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_SpriteBatch.h">
@@ -1536,6 +1521,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\math\wrap_RandomGenerator.h">
       <Filter>modules\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\DrawGable.h">
+      <Filter>modules\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\Geometry.h">
+      <Filter>modules\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\graphics\opengl\wrap_Geometry.h">
+      <Filter>modules\graphics\opengl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
