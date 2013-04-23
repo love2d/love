@@ -122,13 +122,20 @@ void Geometry::setVertex(size_t i, const vertex &v)
 	if (i >= polygon.size())
 		throw Exception("Invalid vertex index");
 
-	polygon[i] = v;
-	x_min = v.x < x_min ? v.x : x_min;
-	x_max = v.x > x_max ? v.x : x_max;
-	y_min = v.y < y_min ? v.y : y_min;
-	y_max = v.y > y_max ? v.y : y_max;
+	float oldx = polygon[i].x;
+	float oldy = polygon[i].y;
 
-	triangulate();
+	polygon[i] = v;
+
+	if (oldx != v.x || oldy != v.y)
+	{
+		x_min = v.x < x_min ? v.x : x_min;
+		x_max = v.x > x_max ? v.x : x_max;
+		y_min = v.y < y_min ? v.y : y_min;
+		y_max = v.y > y_max ? v.y : y_max;
+
+		triangulate();
+	}
 }
 
 void Geometry::flip(bool x, bool y)
