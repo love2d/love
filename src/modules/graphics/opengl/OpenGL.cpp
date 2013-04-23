@@ -52,10 +52,10 @@ void OpenGL::initContext()
 	// Store the current color so we don't have to get it through GL later.
 	GLfloat glcolor[4];
 	glGetFloatv(GL_CURRENT_COLOR, glcolor);
-	state.color.r = glcolor[0];
-	state.color.g = glcolor[1];
-	state.color.b = glcolor[2];
-	state.color.a = glcolor[3];
+	state.color.r = glcolor[0] * 255;
+	state.color.g = glcolor[1] * 255;
+	state.color.b = glcolor[2] * 255;
+	state.color.a = glcolor[3] * 255;
 
 	// Initialize multiple texture unit support for shaders, if available.
 	state.textureUnits.clear();
