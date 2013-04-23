@@ -49,13 +49,14 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	, mSpacing(1)
 	, filter(filter)
 {
-	// try to find the best texture size match for the font size
-	// default to the largest texture size if no rough match is found
+	// Try to find the best texture size match for the font size. default to the
+	// largest texture size if no rough match is found.
 	textureSizeIndex = NUM_TEXTURE_SIZES - 1;
 	for (int i = 0; i < NUM_TEXTURE_SIZES; i++)
 	{
-		// base our chosen texture width/height on a very rough guess of the total size taken up by the font's used glyphs
-		// the estimate is likely larger than the actual total size taken up, which is good since texture changes are expensive
+		// Make a rough estimate of the total used texture size, based on glyph
+		// height. THe estimated size is likely larger than the actual total
+		// size, which is good because texture changes are expensive.
 		if ((height * 0.8) * height * 95 <= TEXTURE_WIDTHS[i] * TEXTURE_HEIGHTS[i])
 		{
 			textureSizeIndex = i;
@@ -338,10 +339,11 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 		glPopMatrix();
 		throw love::Exception("%s", e.what());
 	}
-	
+
 	if (quadindex > 0 && glyphinfolist.size() > 0)
 	{
-		// sort glyph draw info list by texture first, and quad position in memory second (using the struct's < operator)
+		// Sort glyph draw info list by texture first, and quad position in
+		// memory second (using the struct's < operator).
 		std::sort(glyphinfolist.begin(), glyphinfolist.end());
 
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -350,7 +352,8 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphquads[0].vertices[0].x);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphquads[0].vertices[0].s);
 
-		// we need to draw a new vertex array for every section of the string that uses a different texture than the previous section
+		// We need to draw a new vertex array for every section of the string
+		// which uses a different texture than the previous section.
 		std::vector<GlyphArrayDrawInfo>::const_iterator it;
 		for (it = glyphinfolist.begin(); it != glyphinfolist.end(); ++it)
 		{

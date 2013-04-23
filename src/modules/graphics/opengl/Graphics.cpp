@@ -208,10 +208,12 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 	matrixLimit -= 5;
 
-	if (GLEE_ARB_debug_output)
+	// Debug output is temporarily disabled until we either improve it and make
+	// it optional or remove it.
+	if (GLEE_KHR_debug && false)
 	{
 		std::cerr << "debug on" << std::endl;
-		glDebugMessageCallbackARB(myErrorCallback, NULL);
+		glDebugMessageCallback(myErrorCallback, NULL);
 		glEnable(GL_DEBUG_OUTPUT);
 	}
 
