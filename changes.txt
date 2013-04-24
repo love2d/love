@@ -26,6 +26,7 @@ LOVE 0.9.0 []
   * Added resize event.
   * Added love.math module.
   * Added a platform-independent (good) random implementation to love.math.
+  * Added love.math.newRandomGenerator.
   * Added love.math.triangulate.
   * Added blend mode "none".
   * Added SpriteBatch:isEmpty and SpriteBatch:isFull.
@@ -46,6 +47,8 @@ LOVE 0.9.0 []
   * Added Image:refresh.
   * Added love.graphics.setAlphaTest.
   * Added love.graphics.origin.
+  * Added many ParticleSystem getter methods.
+  * Added Geometry objects (replaces Quads), allowing for arbitrary textured polygons.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -63,6 +66,7 @@ LOVE 0.9.0 []
   * Fixed Box2D exception in World:update.
   * Fixed spacing for the last character in an ImageFont.
   * Fixed crash when binding SpriteBatches multiple times.
+  * Fixed SpriteBatches with more than 16,383 sprites.
   * Fixed File:read reading past end of file.
   * Fixed keyrepeat settings being lost after (indirect) setMode.
   * Fixed alpha blend mode.
@@ -71,12 +75,15 @@ LOVE 0.9.0 []
   * Fixed line numbers in shader errors.
   * Fixed line wrapping in love.graphics.printf.
   * Fixed fused release mode in OS X.
+  * Fixed love.graphics.getColor on some Windows systems.
 
   * Moved love's startup to modules/love.
 
   * Renamed love's boot script to 'love.boot', which can be required.
   * Renamed PixelEffect to Shader (but now with vertex shaders).
   * Renamed love.graphics.setDefaultImageFilter to love.graphics.setDefaultFilter.
+  * Renamed ParticleSystem:setSprite to ParticleSystem:setImage.
+  * Renamed ParticleSystem:setGravity to ParticleSystem:setLinearAcceleration.
 
   * Removed love.joystick.open and friends.
   * Removed love.graphics.drawTest.
@@ -84,6 +91,7 @@ LOVE 0.9.0 []
   * Removed old thread messaging api (see Channels).
   * Removed love.graphics.quad/triangle.
   * Removed ColorMode functions.
+  * Removed Quad objects (replaced by Geometry).
 
   * Updated allocation for SoundData, it's more efficient and less wasteful.
   * Updated Source:set* functions to default z to 0.
