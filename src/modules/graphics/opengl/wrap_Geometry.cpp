@@ -90,6 +90,9 @@ int w_Geometry_setVertex(lua_State *L)
 		return luaL_error(L, e.what());
 	}
 
+	if (lua_gettop(L) > 6)
+		geom->setVertexColors(true);
+
 	return 0;
 }
 

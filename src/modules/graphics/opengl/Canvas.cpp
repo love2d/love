@@ -600,10 +600,20 @@ void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle
 	}
 
 	// use colors stored in geometry (horrible, horrible hack)
-	glEnableClientState(GL_COLOR_ARRAY);
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&v->r);
+	if (geom->hasVertexColors())
+	{
+		glEnableClientState(GL_COLOR_ARRAY);
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&v->r);
+	}
+
 	drawv(t, v, vcount, GL_TRIANGLES);
-	glDisableClientState(GL_COLOR_ARRAY);
+
+	if (geom->hasVertexColors())
+	{
+		glDisableClientState(GL_COLOR_ARRAY);
+		gl.setColor(gl.getColor());
+	}
+
 	delete[] v;
 }
 

@@ -42,6 +42,7 @@ Geometry::Geometry(const std::vector<vertex> &p)
 	, x_max(std::numeric_limits<float>::min())
 	, y_min(std::numeric_limits<float>::max())
 	, y_max(std::numeric_limits<float>::min())
+	, vertexColors(false)
 {
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
@@ -61,6 +62,7 @@ Geometry::Geometry(float x, float y, float w, float h, float sw, float sh)
 	, x_max(x+w)
 	, y_min(y)
 	, y_max(y+h)
+	, vertexColors(false)
 {
 	float s0 = x/sw, s1 = (x+w)/sw, t0 = y/sh, t1 = (y+h)/sh;
 	polygon.resize(4);
@@ -79,6 +81,7 @@ Geometry::Geometry(const Geometry &other)
 	, x_max(other.x_max)
 	, y_min(other.y_min)
 	, y_max(other.y_max)
+	, vertexColors(other.vertexColors)
 {
 	vertexArray = new vertex[vertexCount];
 	memcpy(vertexArray, other.vertexArray, vertexCount * sizeof(vertex));
@@ -97,6 +100,8 @@ Geometry &Geometry::operator=(const Geometry &other)
 		x_max       = temp.x_max;
 		y_min       = temp.y_min;
 		y_max       = temp.y_max;
+
+		vertexColors = other.vertexColors;
 	}
 	return *this;
 }
@@ -153,6 +158,11 @@ void Geometry::flip(bool x, bool y)
 		if (x) v.x = x_max + x_min - v.x;
 		if (y) v.y = y_max + y_min - v.y;
 	}
+}
+
+void Geometry::setVertexColors(bool on)
+{
+	vertexColors = on;
 }
 
 void Geometry::triangulate()

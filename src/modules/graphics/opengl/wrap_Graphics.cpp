@@ -375,12 +375,13 @@ int w_newImage(lua_State *L)
 int w_newGeometry(lua_State *L)
 {
 	std::vector<vertex> vertices;
-	if (!lua_istable(L, 1))
-		return luaL_typerror(L, 1, "table");
+	luaL_checktype(L, 1, LUA_TTABLE);
 
 	size_t n = lua_objlen(L, 1);
 	if (n < 3)
 		return luaL_error(L, "Need at least three points to construct a geometry.");
+
+	bool hasvertexcolors = false;
 
 	vertices.reserve(n);
 	for (size_t i = 0; i < n; ++i)
@@ -390,31 +391,25 @@ int w_newGeometry(lua_State *L)
 		if (!lua_istable(L, -1))
 			return luaL_typerror(L, 1, "table of tables");
 
-		lua_rawgeti(L, -1, 1);
-		v.x = luaL_checknumber(L, -1);
+		if (lua_objlen(L, -1) > 4)
+			hasvertexcolors = true;
 
-		lua_rawgeti(L, -2, 2);
-		v.y = luaL_checknumber(L, -1);
+		for (int j = 1; j <= 8; j++)
+			lua_rawgeti(L, -j, j);
 
-		lua_rawgeti(L, -3, 3);
-		v.s = luaL_checknumber(L, -1);
+		v.x = luaL_checknumber(L, -8);
+		v.y = luaL_checknumber(L, -7);
 
-		lua_rawgeti(L, -4, 4);
-		v.t = luaL_checknumber(L, -1);
+		v.s = luaL_checknumber(L, -6);
+		v.t = luaL_checknumber(L, -5);
 
-		lua_rawgeti(L, -5, 5);
-		v.r = luaL_optint(L, -1, 255);
-
-		lua_rawgeti(L, -6, 6);
-		v.g = luaL_optint(L, -1, 255);
-
-		lua_rawgeti(L, -7, 7);
-		v.b = luaL_optint(L, -1, 255);
-
-		lua_rawgeti(L, -8, 8);
+		v.r = luaL_optint(L, -4, 255);
+		v.g = luaL_optint(L, -3, 255);
+		v.b = luaL_optint(L, -2, 255);
 		v.a = luaL_optint(L, -1, 255);
 
 		lua_pop(L, 9);
+
 		vertices.push_back(v);
 	}
 
@@ -430,6 +425,8 @@ int w_newGeometry(lua_State *L)
 
 	if (geom == 0)
 		return luaL_error(L, "Could not create geometry.");
+
+	geom->setVertexColors(hasvertexcolors);
 
 	luax_newtype(L, "Geometry", GRAPHICS_GEOMETRY_T, (void *)geom);
 	return 1;

@@ -101,7 +101,7 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	memcpy(sprite, image->getVertices(), sizeof(vertex)*4);
 
 	// Transform.
-	Matrix t;
+	static Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 
@@ -126,24 +126,17 @@ int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float
 	if (geom->getNumVertices() != 4)
 		throw love::Exception("Can only add quadliteral geometries to SpriteBatch");
 
-	sprite[0] = geom->getVertex(0);
-	sprite[1] = geom->getVertex(1);
-	sprite[2] = geom->getVertex(2);
-	sprite[3] = geom->getVertex(3);
+	for (size_t i = 0; i < 4; i++)
+		sprite[i] = geom->getVertex(i);
 
 	// Transform.
-	Matrix t;
+	static Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 
-	// color modulation
-	for (size_t i = 0; color && (i < 4); ++i)
-	{
-		sprite[i].r = (unsigned char)(double(sprite[i].r) * color->r / 255.);
-		sprite[i].g = (unsigned char)(double(sprite[i].g) * color->g / 255.);
-		sprite[i].b = (unsigned char)(double(sprite[i].b) * color->b / 255.);
-		sprite[i].a = (unsigned char)(double(sprite[i].a) * color->a / 255.);
-	}
+	// Set vertex colors to the constant color, if Geometry has no custom colors.
+	if (color && !geom->hasVertexColors())
+		setColorv(sprite, *color);
 
 	addv(sprite, (index == -1) ? next : index);
 

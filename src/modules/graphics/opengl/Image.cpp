@@ -106,13 +106,22 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	// use colors stored in geometry (horrible, horrible hack)
 	const vertex *v = geom->getVertexArray();
 
-	glEnableClientState(GL_COLOR_ARRAY);
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&v->r);
+	// use colors stored in geometry (horrible, horrible hack)
+	if (geom->hasVertexColors())
+	{
+		glEnableClientState(GL_COLOR_ARRAY);
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *) &v[0].r);
+	}
+
 	drawv(t, v, geom->getVertexArraySize(), GL_TRIANGLES);
-	glDisableClientState(GL_COLOR_ARRAY);
+
+	if (geom->hasVertexColors())
+	{
+		glDisableClientState(GL_COLOR_ARRAY);
+		gl.setColor(gl.getColor());
+	}
 }
 
 void Image::uploadCompressedMipmaps()

@@ -86,6 +86,19 @@ public:
 		return vertexCount;
 	}
 
+	/**
+	 * Sets whether this Geometry will use custom per-vertex colors.
+	 **/
+	void setVertexColors(bool on);
+
+	/**
+	 * Returns whether this Geometry is using custom per-vertex colors.
+	 **/
+	bool hasVertexColors() const
+	{
+		return vertexColors;
+	};
+
 private:
 	void triangulate();
 
@@ -99,6 +112,8 @@ private:
 
 	float y_min;
 	float y_max;
+
+	bool vertexColors;
 };
 
 } // graphics
