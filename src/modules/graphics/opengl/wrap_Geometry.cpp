@@ -37,14 +37,14 @@ Geometry *luax_checkgeometry(lua_State *L, int idx)
 // different name than in Geometry.cpp to make the triangulation transparent
 int w_Geometry_getVertexCount(lua_State *L)
 {
-	Geometry *geom = luax_checktype<Geometry>(L, 1, "Geometry", GRAPHICS_GEOMETRY_T);
+	Geometry *geom = luax_checkgeometry(L, 1);
 	lua_pushinteger(L, geom->getNumVertices());
 	return 1;
 }
 
 int w_Geometry_getVertex(lua_State *L)
 {
-	Geometry *geom = luax_checktype<Geometry>(L, 1, "Geometry", GRAPHICS_GEOMETRY_T);
+	Geometry *geom = luax_checkgeometry(L, 1);
 	size_t i = size_t(luaL_checkint(L, 2));
 	try
 	{
@@ -68,7 +68,7 @@ int w_Geometry_getVertex(lua_State *L)
 
 int w_Geometry_setVertex(lua_State *L)
 {
-	Geometry *geom = luax_checktype<Geometry>(L, 1, "Geometry", GRAPHICS_GEOMETRY_T);
+	Geometry *geom = luax_checkgeometry(L, 1);
 	size_t i = size_t(luaL_checkint(L, 2));
 
 	vertex v;
@@ -90,7 +90,7 @@ int w_Geometry_setVertex(lua_State *L)
 		return luaL_error(L, e.what());
 	}
 
-	if (lua_gettop(L) > 6)
+	if (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255)
 		geom->setVertexColors(true);
 
 	return 0;
@@ -98,9 +98,23 @@ int w_Geometry_setVertex(lua_State *L)
 
 int w_Geometry_flip(lua_State *L)
 {
-	Geometry *geom = luax_checktype<Geometry>(L, 1, "Geometry", GRAPHICS_GEOMETRY_T);
+	Geometry *geom = luax_checkgeometry(L, 1);
 	geom->flip(luax_toboolean(L, 2), luax_toboolean(L, 3));
 	return 0;
+}
+
+int w_Geometry_setVertexColors(lua_State *L)
+{
+	Geometry *geom = luax_checkgeometry(L, 1);
+	geom->setVertexColors(luax_toboolean(L, 2));
+	return 0;
+}
+
+int w_Geometry_hasVertexColors(lua_State *L)
+{
+	Geometry *geom = luax_checkgeometry(L, 1);
+	luax_pushboolean(L, geom->hasVertexColors());
+	return 1;
 }
 
 static const luaL_Reg w_Geometry_functions[] =
@@ -109,6 +123,8 @@ static const luaL_Reg w_Geometry_functions[] =
 	{ "getVertex", w_Geometry_getVertex },
 	{ "setVertex", w_Geometry_setVertex },
 	{ "flip", w_Geometry_flip },
+	{ "setVertexColors", w_Geometry_setVertexColors },
+	{ "hasVertexColors", w_Geometry_hasVertexColors },
 	{ 0, 0 }
 };
 

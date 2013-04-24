@@ -391,9 +391,6 @@ int w_newGeometry(lua_State *L)
 		if (!lua_istable(L, -1))
 			return luaL_typerror(L, 1, "table of tables");
 
-		if (lua_objlen(L, -1) > 4)
-			hasvertexcolors = true;
-
 		for (int j = 1; j <= 8; j++)
 			lua_rawgeti(L, -j, j);
 
@@ -409,6 +406,9 @@ int w_newGeometry(lua_State *L)
 		v.a = luaL_optint(L, -1, 255);
 
 		lua_pop(L, 9);
+
+		if (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255)
+			hasvertexcolors = true;
 
 		vertices.push_back(v);
 	}

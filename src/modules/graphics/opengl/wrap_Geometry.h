@@ -33,10 +33,12 @@ namespace opengl
 {
 
 Geometry *luax_checkgeometry(lua_State *L, int idx);
-int w_Geometry_flip(lua_State *L);
 int w_Geometry_getVertexCount(lua_State *L);
 int w_Geometry_getVertex(lua_State *L);
 int w_Geometry_setVertex(lua_State *L);
+int w_Geometry_flip(lua_State *L);
+int w_Geometry_setVertexColors(lua_State *L);
+int w_Geometry_hasVertexColors(lua_State *L);
 extern "C" int luaopen_geometry(lua_State *L);
 
 } // opengl
