@@ -127,8 +127,33 @@ public:
 
 private:
 
-	GLint getUniformLocation(const std::string &name);
-	void checkSetUniformError();
+	// Represents a single uniform/extern shader variable.
+	struct Uniform
+	{
+		GLint location;
+		GLint count;
+		GLenum type;
+		std::string name;
+	};
+
+	// Types of potential uniform variables used in love's shaders.
+	enum UniformType
+	{
+		UNIFORM_FLOAT,
+		UNIFORM_INT,
+		UNIFORM_BOOL,
+		UNIFORM_SAMPLER,
+		UNIFORM_UNKNOWN
+	};
+
+	// Map active uniform names to their locations.
+	void mapActiveUniforms();
+
+	const Uniform &getUniform(const std::string &name) const;
+
+	int getUniformTypeSize(GLenum type) const;
+	UniformType getUniformBaseType(GLenum type) const;
+	void checkSetUniformError(const Uniform &u, int size, int count, UniformType sendtype) const;
 
 	GLuint compileCode(ShaderType type, const std::string &code);
 	void createProgram(const std::vector<GLuint> &shaderids);
@@ -146,10 +171,11 @@ private:
 	// Shader compiler warning strings for individual shader stages.
 	std::map<ShaderType, std::string> shaderWarnings;
 
-	GLuint program; // volatile
+	// volatile
+	GLuint program;
 
 	// Uniform location buffer map
-	std::map<std::string, GLint> uniforms;
+	std::map<std::string, Uniform> uniforms;
 
 	// Texture unit pool for setting images
 	std::map<std::string, GLint> textureUnitPool; // textureUnitPool[name] = textureunit

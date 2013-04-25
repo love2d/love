@@ -1496,6 +1496,16 @@ void main() {
 		end
 	end
 
+	local function shader_send_protected(self, name, value, ...)
+		local success, err = pcall(shader_dispatch_send, self, name, value, ...)
+		if not success then
+			if err and type(err) == "string" then
+				err = err:gsub("^(.-):(%d+): ", "")
+			end
+			error(err, 2)
+		end
+	end
+
 	local newShader = love.graphics.newShader
 	function love.graphics.newShader(vertexcode, pixelcode)
 		love.graphics.newShader = newShader
@@ -1503,7 +1513,7 @@ void main() {
 		local success, shader = pcall(love.graphics.newShader, vertexcode, pixelcode)
 		if success then
 			local meta = getmetatable(shader)
-			meta.send = shader_dispatch_send
+			meta.send = shader_send_protected
 			meta.sendBoolean = meta.sendFloat
 			return shader
 		else
