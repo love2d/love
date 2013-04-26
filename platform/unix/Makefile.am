@@ -2,6 +2,7 @@ ACLOCAL_AMFLAGS = -I platform/unix/m4
 SUBDIRS = src
 EXTRA_DIST = changes.txt license.txt readme.md \
 	platform/unix/love.desktop.in
+dist_man1_MANS = platform/unix/love.1
 
 applicationsdir=$(datarootdir)/applications
 mimeinfodir=$(datarootdir)/mime/packages
