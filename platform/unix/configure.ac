@@ -10,6 +10,8 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_LIBTOOL
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_SED
+AC_PROG_MKDIR_P
 AC_C_BIGENDIAN
 AC_SEARCH_LIBS([sqrt], [m], [], AC_MSG_ERROR([Can't LÖVE without C math library]))
 AC_SEARCH_LIBS([SDL_Init], [SDL], [], AC_MSG_ERROR([Can't LÖVE without SDL]))
