@@ -50,8 +50,8 @@ int w_FileData_getExtension(lua_State *L)
 
 static const luaL_Reg w_FileData_functions[] =
 {
-
 	// Data
+	{ "getString", w_Data_getString },
 	{ "getSize", w_Data_getSize },
 
 	{ "getFilename", w_FileData_getFilename },

@@ -86,8 +86,8 @@ int w_SoundData_getSample(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-
 	// Data
+	{ "getString", w_Data_getString },
 	{ "getSize", w_Data_getSize },
 
 	{ "getChannels", w_SoundData_getChannels },

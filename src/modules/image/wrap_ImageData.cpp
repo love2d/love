@@ -131,13 +131,6 @@ int w_ImageData_mapPixel(lua_State *L)
 	return 0;
 }
 
-int w_ImageData_getString(lua_State *L)
-{
-	ImageData *t = luax_checkimagedata(L, 1);
-	lua_pushlstring(L, (const char *)t->getData(), t->getSize());
-	return 1;
-}
-
 int w_ImageData_paste(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
@@ -191,6 +184,7 @@ int w_ImageData_encode(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	// Data
+	{ "getString", w_Data_getString },
 	{ "getSize", w_Data_getSize },
 
 	{ "getWidth", w_ImageData_getWidth },
@@ -199,7 +193,6 @@ static const luaL_Reg functions[] =
 	{ "getPixel", w_ImageData_getPixel },
 	{ "setPixel", w_ImageData_setPixel },
 	{ "mapPixel", w_ImageData_mapPixel },
-	{ "getString", w_ImageData_getString },
 	{ "paste", w_ImageData_paste },
 	{ "encode", w_ImageData_encode },
 	{ 0, 0 }

@@ -31,6 +31,62 @@ CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 	return luax_checktype<CompressedData>(L, idx, "CompressedData", IMAGE_COMPRESSED_DATA_T);
 }
 
+int w_CompressedData_getString(lua_State *L)
+{
+	CompressedData *t = luax_checkcompresseddata(L, 1);
+
+	// CompressedData's data isn't contiguous in memory, so we need to copy it
+	// all to a single block before sending the string.
+
+	size_t totalsize = 0;
+
+	for (int i = 0; i < t->getNumMipmaps(); i++)
+		totalsize += t->getSize(i);
+
+	if (totalsize == 0)
+	{
+		lua_pushstring(L, "");
+		return 1;
+	}
+
+	char *datastr = 0;
+	try
+	{
+		datastr = new char[totalsize];
+	}
+	catch (std::exception &)
+	{
+		return luaL_error(L, "Out of memory.");
+	}
+
+	size_t curpos = 0;
+	for (int i = 0; i < t->getNumMipmaps(); i++)
+	{
+		memcpy(&datastr[curpos], t->getData(i), t->getSize(i));
+		curpos += t->getSize(i);
+	}
+
+	lua_pushlstring(L, datastr, totalsize);
+
+	delete[] datastr;
+
+	return 1;
+}
+
+int w_CompressedData_getSize(lua_State *L)
+{
+	CompressedData *t = luax_checkcompresseddata(L, 1);
+
+	size_t totalsize = 0;
+
+	for (int i = 0; i < t->getNumMipmaps(); i++)
+		totalsize += t->getSize(i);
+
+	lua_pushnumber(L, (lua_Number) totalsize);
+	
+	return 1;
+}
+
 int w_CompressedData_getWidth(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
@@ -109,7 +165,9 @@ int w_CompressedData_getType(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	// Data
-	{ "getSize", w_Data_getSize },
+	// CompressedData's data is not in contiguous memory, so it needs custom functions.
+	{ "getString", w_CompressedData_getString },
+	{ "getSize", w_CompressedData_getSize },
 
 	{ "getWidth", w_CompressedData_getWidth },
 	{ "getHeight", w_CompressedData_getHeight },

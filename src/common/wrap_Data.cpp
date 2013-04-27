@@ -28,6 +28,13 @@ Data *luax_checkdata(lua_State *L, int idx)
 	return luax_checktype<Data>(L, idx, "Data", DATA_T);
 }
 
+int w_Data_getString(lua_State *L)
+{
+	Data *t = luax_checkdata(L, 1);
+	lua_pushlstring(L, (const char *) t->getData(), (size_t) t->getSize());
+	return 1;
+}
+
 int w_Data_getSize(lua_State *L)
 {
 	Data *t = luax_checkdata(L, 1);
@@ -37,6 +44,7 @@ int w_Data_getSize(lua_State *L)
 
 const luaL_Reg w_Data_functions[] =
 {
+	{ "getString", w_Data_getString },
 	{ "getSize", w_Data_getSize },
 	{ 0, 0 }
 };
