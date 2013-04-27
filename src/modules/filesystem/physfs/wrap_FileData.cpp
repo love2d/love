@@ -52,7 +52,6 @@ static const luaL_Reg w_FileData_functions[] =
 {
 
 	// Data
-//	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 
 	{ "getFilename", w_FileData_getFilename },

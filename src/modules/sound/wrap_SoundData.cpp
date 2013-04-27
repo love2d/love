@@ -88,7 +88,6 @@ static const luaL_Reg functions[] =
 {
 
 	// Data
-//	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 
 	{ "getChannels", w_SoundData_getChannels },

@@ -32,7 +32,6 @@ GlyphData *luax_checkglyphdata(lua_State *L, int idx)
 
 static const luaL_Reg functions[] =
 {
-//	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 	{ 0, 0 }
 };

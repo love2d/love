@@ -109,7 +109,6 @@ int w_CompressedData_getType(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	// Data
-//	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 
 	{ "getWidth", w_CompressedData_getWidth },

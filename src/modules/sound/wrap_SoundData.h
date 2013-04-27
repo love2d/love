@@ -31,7 +31,6 @@ namespace sound
 {
 
 SoundData *luax_checksounddata(lua_State *L, int idx);
-int w_getPointer(lua_State *L);
 int w_getSize(lua_State *L);
 int w_getChannels(lua_State *L);
 int w_getBits(lua_State *L);

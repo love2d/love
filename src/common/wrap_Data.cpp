@@ -28,13 +28,6 @@ Data *luax_checkdata(lua_State *L, int idx)
 	return luax_checktype<Data>(L, idx, "Data", DATA_T);
 }
 
-int w_Data_getPointer(lua_State *L)
-{
-	Data *t = luax_checkdata(L, 1);
-	lua_pushlightuserdata(L, t->getData());
-	return 1;
-}
-
 int w_Data_getSize(lua_State *L)
 {
 	Data *t = luax_checkdata(L, 1);
@@ -44,7 +37,6 @@ int w_Data_getSize(lua_State *L)
 
 const luaL_Reg w_Data_functions[] =
 {
-//	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 	{ 0, 0 }
 };
