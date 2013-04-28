@@ -59,7 +59,7 @@ public:
 	 * Gets the length of the Vector.
 	 * @return The length of the Vector.
 	 *
-	 * This method requires sqrt() and should be used
+	 * This method requires sqrtf() and should be used
 	 * carefully.
 	 **/
 	float getLength() const;
@@ -178,7 +178,7 @@ public:
 
 inline float Vector::getLength() const
 {
-	return sqrt(x*x + y*y);
+	return sqrtf(x*x + y*y);
 }
 
 inline Vector Vector::getNormal() const

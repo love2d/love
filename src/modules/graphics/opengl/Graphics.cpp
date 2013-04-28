@@ -1102,7 +1102,7 @@ void Graphics::polyline(const float *coords, size_t count)
 		glGetFloatv(GL_MODELVIEW_MATRIX, m);
 		float det  = m[0]*m[5]*m[10] + m[4]*m[9]*m[2] + m[8]*m[1]*m[6];
 		det       -= m[2]*m[5]*m[8]  + m[6]*m[9]*m[0] + m[10]*m[1]*m[4];
-		pixel_size = 1.f / sqrt(det);
+		pixel_size = 1.f / sqrtf(det);
 
 		overdraw_factor = pixel_size / halfwidth;
 		halfwidth = std::max(.0f, halfwidth - .25f*pixel_size);
@@ -1168,8 +1168,8 @@ void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
 	float *coords = new float[2 * (points + 1)];
 	for (int i = 0; i < points; ++i, phi += angle_shift)
 	{
-		coords[2*i]   = x + radius * cos(phi);
-		coords[2*i+1] = y + radius * sin(phi);
+		coords[2*i]   = x + radius * cosf(phi);
+		coords[2*i+1] = y + radius * sinf(phi);
 	}
 
 	coords[2*points]   = coords[0];
@@ -1206,8 +1206,8 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 
 	for (int i = 0; i <= points; ++i, phi += angle_shift)
 	{
-		coords[2 * (i+1)]     = x + radius * cos(phi);
-		coords[2 * (i+1) + 1] = y + radius * sin(phi);
+		coords[2 * (i+1)]     = x + radius * cosf(phi);
+		coords[2 * (i+1) + 1] = y + radius * sinf(phi);
 	}
 
 	// GL_POLYGON can only fill-draw convex polygons, so we need to do stuff manually here
@@ -1257,8 +1257,20 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 
 	int size = row*h;
 
-	GLubyte *pixels = new GLubyte[size];
-	GLubyte *screenshot = new GLubyte[size];
+	GLubyte *pixels = 0;
+	GLubyte *screenshot = 0;
+
+	try
+	{
+		pixels = new GLubyte[size];
+		screenshot = new GLubyte[size];
+	}
+	catch (std::exception &)
+	{
+		delete[] pixels;
+		delete[] screenshot;
+		throw love::Exception("Out of memory.");
+	}
 
 	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -1276,10 +1288,20 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	for (int i = 0; i < h; ++i)
 		memcpy(dst-=row, src+=row, row);
 
-	love::image::ImageData *img = image->newImageData(w, h, (void *) screenshot);
+	delete[] pixels;
 
-	delete [] pixels;
-	delete [] screenshot;
+	love::image::ImageData *img = 0;
+	try
+	{
+		img = image->newImageData(w, h, (void *) screenshot);
+	}
+	catch (love::Exception &)
+	{
+		delete[] screenshot;
+		throw;
+	}
+
+	delete[] screenshot;
 
 	return img;
 }

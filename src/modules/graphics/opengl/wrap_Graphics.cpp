@@ -1066,7 +1066,15 @@ int w_newScreenshot(lua_State *L)
 {
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
 	bool copyAlpha = luax_optboolean(L, 1, false);
-	love::image::ImageData *i = instance->newScreenshot(image, copyAlpha);
+	love::image::ImageData *i = 0;
+	try
+	{
+		i = instance->newScreenshot(image, copyAlpha);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)i);
 	return 1;
 }
@@ -1570,8 +1578,8 @@ int w_pop(lua_State *L)
 
 int w_rotate(lua_State *L)
 {
-	float deg = (float)luaL_checknumber(L, 1);
-	instance->rotate(deg);
+	float angle = (float)luaL_checknumber(L, 1);
+	instance->rotate(angle);
 	return 0;
 }
 
