@@ -33,6 +33,7 @@ namespace opengl
 
 Shader *luax_checkshader(lua_State *L, int idx);
 int w_Shader_getWarnings(lua_State *L);
+int w_Shader_sendInt(lua_State *L);
 int w_Shader_sendFloat(lua_State *L);
 int w_Shader_sendMatrix(lua_State *L);
 int w_Shader_sendImage(lua_State *L);

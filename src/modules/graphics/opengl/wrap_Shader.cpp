@@ -43,78 +43,105 @@ int w_Shader_getWarnings(lua_State *L)
 	return 1;
 }
 
-static int _sendScalars(lua_State *L, Shader *shader, const char *name, int count)
+template <typename T>
+static T *_getScalars(lua_State *L, int count, size_t &dimension)
 {
-	float *values = new float[count];
+	dimension = 1;
+
+	T *values = new T[count];
 	for (int i = 0; i < count; ++i)
 	{
 		if (lua_isnumber(L, 3 + i))
-			values[i] = (float)lua_tonumber(L, 3 + i);
+			values[i] = static_cast<T>(lua_tonumber(L, 3 + i));
 		else if (lua_isboolean(L, 3 + i))
-			values[i] = (float)lua_toboolean(L, 3 + i);
+			values[i] = static_cast<T>(lua_toboolean(L, 3 + i));
 		else
 		{
 			delete[] values;
-			return luaL_typerror(L, 3 + i, "number or boolean");
+			luaL_typerror(L, 3 + i, "number or boolean");
+			return 0;
 		}
-		values[i] = (float)lua_tonumber(L, 3 + i);
 	}
 
-	try
-	{
-		shader->sendFloat(name, 1, values, count);
-	}
-	catch(love::Exception &e)
-	{
-		delete[] values;
-		return luaL_error(L, "%s", e.what());
-	}
-
-	delete[] values;
-	return 0;
+	return values;
 }
 
-static int _sendVectors(lua_State *L, Shader *shader, const char *name, int count)
+template <typename T>
+static T *_getVectors(lua_State *L, int count, size_t &dimension)
 {
-	size_t dimension = lua_objlen(L, 3);
-	float *values = new float[count * dimension];
+	dimension = lua_objlen(L, 3);
+	T *values = new T[count * dimension];
 
 	for (int i = 0; i < count; ++i)
 	{
 		if (!lua_istable(L, 3 + i))
 		{
 			delete[] values;
-			return luaL_typerror(L, 3 + i, "table");
+			luaL_typerror(L, 3 + i, "table");
+			return 0;
 		}
 		if (lua_objlen(L, 3 + i) != dimension)
 		{
 			delete[] values;
-			return luaL_error(L, "Error in argument %d: Expected table size %d, got %d.",
-							  3+i, dimension, lua_objlen(L, 3+i));
+			luaL_error(L, "Error in argument %d: Expected table size %d, got %d.",
+						   3+i, dimension, lua_objlen(L, 3+i));
+			return 0;
 		}
 
 		for (size_t k = 1; k <= dimension; ++k)
 		{
 			lua_rawgeti(L, 3 + i, k);
-			if (lua_isboolean(L, -1))
-				values[i * dimension + k - 1] = (float)lua_toboolean(L, -1);
+			if (lua_isnumber(L, -1))
+				values[i * dimension + k - 1] = static_cast<T>(lua_tonumber(L, -1));
+			else if (lua_isboolean(L, -1))
+				values[i * dimension + k - 1] = static_cast<T>(lua_toboolean(L, -1));
 			else
-				values[i * dimension + k - 1] = (float)lua_tonumber(L, -1);
+			{
+				delete[] values;
+				luaL_typerror(L, -1, "number or boolean");
+				return 0;
+			}
 		}
 		lua_pop(L, int(dimension));
 	}
 
+	return values;
+}
+
+int w_Shader_sendInt(lua_State *L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	int count = lua_gettop(L) - 2;
+
+	if (count < 1)
+		return luaL_error(L, "No variable to send.");
+
+	int *values = 0;
+	size_t dimension = 1;
+
+	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
+		values = _getScalars<int>(L, count, dimension);
+	else if (lua_istable(L, 3))
+		values = _getVectors<int>(L, count, dimension);
+	else
+		return luaL_typerror(L, 3, "number, boolean, or table");
+
+	if (!values)
+		return luaL_error(L, "Error in arguments.");
+
 	try
 	{
-		shader->sendFloat(name, dimension, values, count);
+		shader->sendInt(name, dimension, values, count);
 	}
-	catch(love::Exception &e)
+	catch (love::Exception &e)
 	{
 		delete[] values;
 		return luaL_error(L, "%s", e.what());
 	}
-
+	
 	delete[] values;
+	
 	return 0;
 }
 
@@ -127,12 +154,32 @@ int w_Shader_sendFloat(lua_State *L)
 	if (count < 1)
 		return luaL_error(L, "No variable to send.");
 
-	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
-		return _sendScalars(L, shader, name, count);
-	else if (lua_istable(L, 3))
-		return _sendVectors(L, shader, name, count);
+	float *values = 0;
+	size_t dimension = 1;
 
-	return luaL_typerror(L, 3, "number, boolean, or table");
+	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
+		values = _getScalars<float>(L, count, dimension);
+	else if (lua_istable(L, 3))
+		values = _getVectors<float>(L, count, dimension);
+	else
+		return luaL_typerror(L, 3, "number, boolean, or table");
+
+	if (!values)
+		return luaL_error(L, "Error in arguments.");
+
+	try
+	{
+		shader->sendFloat(name, dimension, values, count);
+	}
+	catch (love::Exception &e)
+	{
+		delete[] values;
+		return luaL_error(L, "%s", e.what());
+	}
+
+	delete[] values;
+
+	return 0;
 }
 
 int w_Shader_sendMatrix(lua_State *L)
@@ -232,6 +279,7 @@ int w_Shader_sendCanvas(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getWarnings", w_Shader_getWarnings },
+	{ "sendInt",     w_Shader_sendInt },
 	{ "sendFloat",   w_Shader_sendFloat },
 	{ "sendMatrix",  w_Shader_sendMatrix },
 	{ "sendImage",   w_Shader_sendImage },

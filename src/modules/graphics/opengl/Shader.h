@@ -88,13 +88,24 @@ public:
 	std::string getWarnings() const;
 
 	/**
+	 * Send at least one integer or int-vector value to this Shader as a uniform.
+	 *
+	 * @param name The name of the uniform variable in the source code.
+	 * @param size Number of elements in each vector to send.
+	 *             A value of 1 indicates a single-component vector (an int).
+	 * @param vec Pointer to the integer or int-vector values.
+	 * @param count Number of integer or int-vector values.
+	 **/
+	void sendInt(const std::string &name, int size, const GLint *vec, int count);
+
+	/**
 	 * Send at least one float or vector value to this Shader as a uniform.
 	 *
 	 * @param name The name of the uniform variable in the source code.
 	 * @param size Number of elements in each vector to send.
 	 *             A value of 1 indicates a single-component vector (a float).
-	 * @param vec Pointer to the float or vector values.
-	 * @param count Number of float or vector values.
+	 * @param vec Pointer to the float or float-vector values.
+	 * @param count Number of float or float-vector values.
 	 **/
 	void sendFloat(const std::string &name, int size, const GLfloat *vec, int count);
 
@@ -127,15 +138,6 @@ public:
 
 private:
 
-	// Represents a single uniform/extern shader variable.
-	struct Uniform
-	{
-		GLint location;
-		GLint count;
-		GLenum type;
-		std::string name;
-	};
-
 	// Types of potential uniform variables used in love's shaders.
 	enum UniformType
 	{
@@ -144,6 +146,16 @@ private:
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
 		UNIFORM_UNKNOWN
+	};
+
+	// Represents a single uniform/extern shader variable.
+	struct Uniform
+	{
+		GLint location;
+		GLint count;
+		GLenum type;
+		UniformType baseType;
+		std::string name;
 	};
 
 	// Map active uniform names to their locations.

@@ -209,6 +209,7 @@ void Shader::mapActiveUniforms()
 
 		u.name = std::string(cname, (size_t) namelength);
 		u.location = glGetUniformLocation(program, u.name.c_str());
+		u.baseType = getUniformBaseType(u.type);
 
 		delete[] cname;
 
@@ -432,13 +433,36 @@ void Shader::checkSetUniformError(const Uniform &u, int size, int count, Uniform
 	if ((u.count == 1 && count > 1) || count < 0)
 		throw love::Exception("Invalid number of values (expected %d, got %d).", u.count, count);
 
-	UniformType basetype = getUniformBaseType(u.type);
-
-	if (basetype == UNIFORM_SAMPLER && sendtype != UNIFORM_SAMPLER)
+	if (u.baseType == UNIFORM_SAMPLER && sendtype != u.baseType)
 		throw love::Exception("Cannot send a value of this type to an Image variable.");
 
-	if (sendtype == UNIFORM_FLOAT && basetype == UNIFORM_INT)
+	if ((sendtype == UNIFORM_FLOAT && u.baseType == UNIFORM_INT) || (sendtype == UNIFORM_INT && u.baseType == UNIFORM_FLOAT))
 		throw love::Exception("Cannot convert between float and int.");
+}
+
+void Shader::sendInt(const std::string &name, int size, const GLint *vec, int count)
+{
+	TemporaryAttacher attacher(this);
+
+	const Uniform &u = getUniform(name);
+	checkSetUniformError(u, size, count, UNIFORM_INT);
+
+	switch (size)
+	{
+	case 4:
+		glUniform4iv(u.location, count, vec);
+		break;
+	case 3:
+		glUniform3iv(u.location, count, vec);
+		break;
+	case 2:
+		glUniform2iv(u.location, count, vec);
+		break;
+	case 1:
+	default:
+		glUniform1iv(u.location, count, vec);
+		break;
+	}
 }
 
 void Shader::sendFloat(const std::string &name, int size, const GLfloat *vec, int count)
