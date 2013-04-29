@@ -268,11 +268,9 @@ void Graphics::setCaption(const char *caption)
 	currentWindow->setWindowTitle(title);
 }
 
-int Graphics::getCaption(lua_State *L) const
+std::string Graphics::getCaption() const
 {
-	std::string title = currentWindow->getWindowTitle();
-	lua_pushstring(L, title.c_str());
-	return 1;
+	return currentWindow->getWindowTitle();
 }
 
 int Graphics::getWidth() const

@@ -139,9 +139,9 @@ int w_Shader_sendInt(lua_State *L)
 		delete[] values;
 		return luaL_error(L, "%s", e.what());
 	}
-	
+
 	delete[] values;
-	
+
 	return 0;
 }
 

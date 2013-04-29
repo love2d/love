@@ -84,10 +84,6 @@ struct DisplayState
 	// Color mask.
 	bool colorMask[4];
 
-	// Window info.
-	std::string caption;
-	bool mouseVisible;
-
 	// Default values.
 	DisplayState()
 	{
@@ -103,8 +99,6 @@ struct DisplayState
 		alphaTest = false;
 		scissor = false;
 		colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
-		caption = "";
-		mouseVisible = true;
 	}
 
 };
@@ -182,7 +176,10 @@ public:
 	 **/
 	void setCaption(const char *caption);
 
-	int getCaption(lua_State *L) const;
+	/**
+	 * Gets the window's caption.
+	 **/
+	std::string getCaption() const;
 
 	/**
 	 * Gets the width of the current display mode.

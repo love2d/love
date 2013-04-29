@@ -178,7 +178,9 @@ int w_setCaption(lua_State *L)
 
 int w_getCaption(lua_State *L)
 {
-	return instance->getCaption(L);
+	std::string caption = instance->getCaption();
+	lua_pushstring(L, caption.c_str());
+	return 1;
 }
 
 int w_getWidth(lua_State *L)
@@ -511,12 +513,8 @@ int w_newFont(lua_State *L)
 
 int w_newImageFont(lua_State *L)
 {
-	// filter for glyphs, defaults to linear/linear
-	Image::Filter img_filter;
-	bool setFilter = false;
-
-	// For the filter modes..
-	int startIndex = 2;
+	// filter for glyphs
+	Image::Filter filter = instance->getDefaultFilter();
 
 	// Convert to ImageData if necessary.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
@@ -524,11 +522,10 @@ int w_newImageFont(lua_State *L)
 	else if (luax_istype(L, 1, GRAPHICS_IMAGE_T))
 	{
 		Image *i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
-		img_filter = i->getFilter();
-		setFilter = true;
+		filter = i->getFilter();
 		love::image::ImageData *id = i->getData();
 		if (!id)
-			return luaL_argerror(L, 1, "image cannot be compressed");
+			return luaL_argerror(L, 1, "Image cannot be compressed.");
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)id, false);
 		lua_replace(L, 1);
 	}
@@ -538,32 +535,12 @@ int w_newImageFont(lua_State *L)
 	{
 		int idxs[] = {1, 2};
 		luax_convobj(L, idxs, 2, "font", "newRasterizer");
-		startIndex = 3; // There's a glyphs args in there, move up
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
-	if (lua_isstring(L, startIndex) && lua_isstring(L, startIndex+1))
-	{
-		Image::FilterMode min;
-		Image::FilterMode mag;
-		const char *minstr = luaL_checkstring(L, startIndex);
-		const char *magstr = luaL_checkstring(L, startIndex+1);
-		if (!Image::getConstant(minstr, min))
-			return luaL_error(L, "Invalid filter mode: %s", minstr);
-		if (!Image::getConstant(magstr, mag))
-			return luaL_error(L, "Invalid filter mode: %s", magstr);
-
-		img_filter.min = min;
-		img_filter.mag = mag;
-		setFilter = true;
-	}
-
-	if (!setFilter)
-		img_filter = instance->getDefaultFilter();
-
 	// Create the font.
-	Font *font = instance->newFont(rasterizer, img_filter);
+	Font *font = instance->newFont(rasterizer, filter);
 
 	if (font == 0)
 		return luaL_error(L, "Could not load font.");

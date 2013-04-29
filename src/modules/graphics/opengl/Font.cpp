@@ -49,6 +49,8 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	, mSpacing(1)
 	, filter(filter)
 {
+	this->filter.mipmap = Image::FILTER_NONE;
+
 	// Try to find the best texture size match for the font size. default to the
 	// largest texture size if no rough match is found.
 	textureSizeIndex = NUM_TEXTURE_SIZES - 1;
