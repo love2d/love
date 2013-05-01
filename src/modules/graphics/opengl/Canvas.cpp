@@ -421,7 +421,7 @@ bool Canvas::isSupported()
 
 bool Canvas::isHDRSupported()
 {
-	return GLEE_VERSION_3_0 || GLEE_ARB_texture_float;
+	return GLEE_VERSION_3_0 || (isSupported() && GLEE_ARB_texture_float);
 }
 
 bool Canvas::isMultiCanvasSupported()

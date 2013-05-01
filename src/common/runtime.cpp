@@ -130,7 +130,7 @@ std::string luax_checkstring(lua_State *L, int idx)
 	return std::string(str, len);
 }
 
-void luax_pushstring(lua_State *L, std::string str)
+void luax_pushstring(lua_State *L, const std::string &str)
 {
 	lua_pushlstring(L, str.data(), str.size());
 }
@@ -466,10 +466,14 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
 	{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
 	{"Canvas", GRAPHICS_CANVAS_ID},
+	{"Shader", GRAPHICS_SHADER_ID},
 
 	// Image
 	{"ImageData", IMAGE_IMAGE_DATA_ID},
 	{"CompressedData", IMAGE_COMPRESSED_DATA_ID},
+
+	// Math
+	{"RandomGenerator", MATH_RANDOM_GENERATOR_ID},
 
 	// Audio
 	{"Source", AUDIO_SOURCE_ID},

@@ -156,7 +156,7 @@ std::string luax_checkstring(lua_State *L, int idx);
  * @param L The Lua state.
  * @param str The string to push.
  **/
-void luax_pushstring(lua_State *L, std::string str);
+void luax_pushstring(lua_State *L, const std::string &str);
 
 /**
  * Require at least 'min' number of items on the stack.
