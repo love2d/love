@@ -32,7 +32,6 @@
 #include "libraries/noise1234/simplexnoise1234.h"
 
 // STL
-#include <limits>
 #include <vector>
 
 namespace love

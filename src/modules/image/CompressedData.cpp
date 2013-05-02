@@ -55,7 +55,7 @@ void *CompressedData::getData() const
 		return 0;
 }
 
-int CompressedData::getNumMipmaps() const
+int CompressedData::getMipmapCount() const
 {
 	return dataImages.size();
 }

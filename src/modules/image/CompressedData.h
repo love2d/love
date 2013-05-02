@@ -77,10 +77,10 @@ public:
 	virtual int getSize() const;
 
 	/**
-	 * Gets the number of mipmaps in this CompressedData.
+	 * Gets the number of mipmaps in this Compressed Image Data.
 	 * Includes the base image level.
 	 **/
-	int getNumMipmaps() const;
+	int getMipmapCount() const;
 
 	/**
 	 * Gets the size in bytes of a sub-image at the specified mipmap level.

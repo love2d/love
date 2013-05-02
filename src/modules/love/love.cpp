@@ -116,12 +116,12 @@ static const luaL_Reg modules[] = {
 	{ "love.image", luaopen_love_image },
 	{ "love.joystick", luaopen_love_joystick },
 	{ "love.keyboard", luaopen_love_keyboard },
+	{ "love.math", luaopen_love_math },
 	{ "love.mouse", luaopen_love_mouse },
 	{ "love.physics", luaopen_love_physics },
 	{ "love.sound", luaopen_love_sound },
 	{ "love.timer", luaopen_love_timer },
 	{ "love.thread", luaopen_love_thread },
-	{ "love.math", luaopen_love_math },
 	{ "love.boot", luaopen_love_boot },
 	{ 0, 0 }
 };
@@ -242,7 +242,8 @@ int w__openConsole(lua_State * L)
 int luaopen_love_boot(lua_State *L)
 {
 	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
-	lua_call(L, 0, 1);
+		lua_call(L, 0, 1);
+
 	return 1;
 }
 

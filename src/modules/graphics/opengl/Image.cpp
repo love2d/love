@@ -131,21 +131,21 @@ void Image::uploadCompressedMipmaps()
 
 	bind();
 
-	int numMipmaps = cdata->getNumMipmaps();
+	int mipmapcount = cdata->getMipmapCount();
 
 	// We have to inform OpenGL if the image doesn't have all mipmap levels.
 	if (GLEE_VERSION_1_2 || GLEE_SGIS_texture_lod)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMipmaps - 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmapcount - 1);
 	}
-	else if (cdata->getWidth(numMipmaps-1) > 1 || cdata->getHeight(numMipmaps-1) > 1)
+	else if (cdata->getWidth(mipmapcount-1) > 1 || cdata->getHeight(mipmapcount-1) > 1)
 	{
 		// Telling OpenGL to ignore certain levels isn't always supported.
 		throw love::Exception("Cannot load mipmaps: "
 		      "compressed image does not have all required levels.");
 	}
 
-	for (int i = 1; i < numMipmaps; i++)
+	for (int i = 1; i < mipmapcount; i++)
 	{
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
 		                          i,

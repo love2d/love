@@ -241,8 +241,7 @@ int w_getScissor(lua_State *L)
 int w_newStencil(lua_State *L)
 {
 	// just return the function
-	if (!lua_isfunction(L, 1))
-		return luaL_typerror(L, 1, "function");
+	luaL_checktype(L, 1, LUA_TFUNCTION);
 	lua_settop(L, 1);
 	return 1;
 }
@@ -256,8 +255,7 @@ static int setStencil(lua_State *L, bool invert)
 		return 0;
 	}
 
-	if (!lua_isfunction(L, 1))
-		return luaL_typerror(L, 1, "mask");
+	luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	instance->defineStencil();
 	lua_call(L, lua_gettop(L) - 1, 0); // call mask(...)

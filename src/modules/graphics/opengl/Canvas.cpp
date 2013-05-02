@@ -645,14 +645,15 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 
 void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 {
-	strategy->bindFBO( fbo );
+	if (current != this)
+		strategy->bindFBO(fbo);
 
 	glReadPixels(x, height - y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_rgba);
 
-	if (current)
-		strategy->bindFBO( current->fbo );
-	else
-		strategy->bindFBO( 0 );
+	if (current && current != this)
+		strategy->bindFBO(current->fbo);
+	else if (!current)
+		strategy->bindFBO(0);
 }
 
 const std::vector<Canvas *> &Canvas::getAttachedCanvases() const
@@ -692,8 +693,7 @@ bool Canvas::loadVolatile()
 
 	setFilter(settings.filter);
 	setWrap(settings.wrap);
-	Color c;
-	c.r = c.g = c.b = c.a = 0;
+	Color c(0, 0, 0, 0);
 	clear(c);
 	return true;
 }

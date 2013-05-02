@@ -44,8 +44,7 @@ int w_Canvas_renderTo(lua_State *L)
 	}
 
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	if (!lua_isfunction(L, 2))
-		return luaL_error(L, "Need a function to render to canvas.");
+	luaL_checktype(L, 2, LUA_TFUNCTION);
 
 	try
 	{
@@ -182,19 +181,19 @@ int w_Canvas_clear(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 2, i);
 
-		c.r = (unsigned char)luaL_checkint(L, -4);
-		c.g = (unsigned char)luaL_checkint(L, -3);
-		c.b = (unsigned char)luaL_checkint(L, -2);
-		c.a = (unsigned char)luaL_optint(L, -1, 255);
+		c.r = (unsigned char)luaL_checkinteger(L, -4);
+		c.g = (unsigned char)luaL_checkinteger(L, -3);
+		c.b = (unsigned char)luaL_checkinteger(L, -2);
+		c.a = (unsigned char)luaL_optinteger(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char)luaL_checkint(L, 2);
-		c.g = (unsigned char)luaL_checkint(L, 3);
-		c.b = (unsigned char)luaL_checkint(L, 4);
-		c.a = (unsigned char)luaL_optint(L, 5, 255);
+		c.r = (unsigned char)luaL_checkinteger(L, 2);
+		c.g = (unsigned char)luaL_checkinteger(L, 3);
+		c.b = (unsigned char)luaL_checkinteger(L, 4);
+		c.a = (unsigned char)luaL_optinteger(L, 5, 255);
 	}
 	canvas->clear(c);
 

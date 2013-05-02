@@ -101,8 +101,7 @@ int w_ImageData_mapPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 
-	if (!lua_isfunction(L, 2))
-		return luaL_error(L, "Function expected");
+	luaL_checktype(L, 2, LUA_TFUNCTION);
 
 	int w = t->getWidth();
 	int h = t->getHeight();

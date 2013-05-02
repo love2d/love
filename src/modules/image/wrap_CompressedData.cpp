@@ -40,7 +40,7 @@ int w_CompressedData_getString(lua_State *L)
 
 	size_t totalsize = 0;
 
-	for (int i = 0; i < t->getNumMipmaps(); i++)
+	for (int i = 0; i < t->getMipmapCount(); i++)
 		totalsize += t->getSize(i);
 
 	if (totalsize == 0)
@@ -60,7 +60,7 @@ int w_CompressedData_getString(lua_State *L)
 	}
 
 	size_t curpos = 0;
-	for (int i = 0; i < t->getNumMipmaps(); i++)
+	for (int i = 0; i < t->getMipmapCount(); i++)
 	{
 		memcpy(&datastr[curpos], t->getData(i), t->getSize(i));
 		curpos += t->getSize(i);
@@ -79,7 +79,7 @@ int w_CompressedData_getSize(lua_State *L)
 
 	size_t totalsize = 0;
 
-	for (int i = 0; i < t->getNumMipmaps(); i++)
+	for (int i = 0; i < t->getMipmapCount(); i++)
 		totalsize += t->getSize(i);
 
 	lua_pushnumber(L, (lua_Number) totalsize);
@@ -140,10 +140,10 @@ int w_CompressedData_getDimensions(lua_State *L)
 	return 2;
 }
 
-int w_CompressedData_getNumMipmaps(lua_State *L)
+int w_CompressedData_getMipmapCount(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
-	lua_pushinteger(L, t->getNumMipmaps());
+	lua_pushinteger(L, t->getMipmapCount());
 	return 1;
 }
 
@@ -172,7 +172,7 @@ static const luaL_Reg functions[] =
 	{ "getWidth", w_CompressedData_getWidth },
 	{ "getHeight", w_CompressedData_getHeight },
 	{ "getDimensions", w_CompressedData_getDimensions },
-	{ "getNumMipmaps", w_CompressedData_getNumMipmaps },
+	{ "getMipmapCount", w_CompressedData_getMipmapCount },
 	{ "getType", w_CompressedData_getType },
 	{ 0, 0 },
 };

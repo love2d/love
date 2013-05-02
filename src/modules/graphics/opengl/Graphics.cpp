@@ -880,7 +880,9 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 	if (currentFont == 0)
 		return;
 
-	using namespace std;
+	using std::string;
+	using std::vector;
+
 	string text(str);
 	vector<string> lines_to_draw = currentFont->getWrap(text, wrap);
 

@@ -18,14 +18,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "MathModule.h"
 #include "common/math.h"
 
+// STL
 #include <cmath>
 #include <list>
 #include <iostream>
 
-using namespace std;
+using std::list;
+using std::vector;
 using love::vertex;
 
 namespace
