@@ -27,7 +27,6 @@
 #include "common/Module.h"
 #include "common/math.h"
 #include "common/int.h"
-#include "common/StringMap.h"
 
 // Noise
 #include "libraries/noise1234/simplexnoise1234.h"
@@ -115,10 +114,10 @@ public:
 	 *
 	 * @return Noise value in the range of [0,1].
 	 **/
-	float simplexNoise1(float x) const;
-	float simplexNoise2(float x, float y) const;
-	float simplexNoise3(float x, float y, float z) const;
-	float simplexNoise4(float x, float y, float z, float w) const;
+	float noise(float x) const;
+	float noise(float x, float y) const;
+	float noise(float x, float y, float z) const;
+	float noise(float x, float y, float z, float w) const;
 
 	static Math instance;
 
@@ -128,22 +127,22 @@ private:
 
 }; // Math
 
-inline float Math::simplexNoise1(float x) const
+inline float Math::noise(float x) const
 {
 	return SimplexNoise1234::noise(x);
 }
 
-inline float Math::simplexNoise2(float x, float y) const
+inline float Math::noise(float x, float y) const
 {
 	return SimplexNoise1234::noise(x, y);
 }
 
-inline float Math::simplexNoise3(float x, float y, float z) const
+inline float Math::noise(float x, float y, float z) const
 {
 	return SimplexNoise1234::noise(x, y, z);
 }
 
-inline float Math::simplexNoise4(float x, float y, float z, float w) const
+inline float Math::noise(float x, float y, float z, float w) const
 {
 	return SimplexNoise1234::noise(x, y, z, w);
 }

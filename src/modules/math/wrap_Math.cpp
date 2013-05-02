@@ -157,18 +157,18 @@ int w_noise(lua_State *L)
 	{
 	case 1:
 		x = luaL_checknumber(L, 1);
-		val = Math::instance.simplexNoise1(x);
+		val = Math::instance.noise(x);
 		break;
 	case 2:
 		x = luaL_checknumber(L, 1);
 		y = luaL_checknumber(L, 2);
-		val = Math::instance.simplexNoise2(x, y);
+		val = Math::instance.noise(x, y);
 		break;
 	case 3:
 		x = luaL_checknumber(L, 1);
 		y = luaL_checknumber(L, 2);
 		z = luaL_checknumber(L, 3);
-		val = Math::instance.simplexNoise3(x, y, z);
+		val = Math::instance.noise(x, y, z);
 		break;
 	case 4:
 	default:
@@ -176,7 +176,7 @@ int w_noise(lua_State *L)
 		y = luaL_checknumber(L, 2);
 		z = luaL_checknumber(L, 3);
 		w = luaL_checknumber(L, 4);
-		val = Math::instance.simplexNoise4(x, y, z, w);
+		val = Math::instance.noise(x, y, z, w);
 		break;
 	}
 
