@@ -414,6 +414,10 @@ function love.run()
 	math.randomseed(os.time())
 	math.random() math.random()
 
+	if love.event then
+		love.event.pump()
+	end
+
 	if love.load then love.load(arg) end
 
 	local dt = 0
