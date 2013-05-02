@@ -148,6 +148,42 @@ int w_triangulate(lua_State *L)
 	return 1;
 }
 
+int w_noise(lua_State *L)
+{
+	float w, x, y, z;
+	float val;
+
+	switch (lua_gettop(L))
+	{
+	case 1:
+		x = luaL_checknumber(L, 1);
+		val = Math::instance.simplexNoise1(x);
+		break;
+	case 2:
+		x = luaL_checknumber(L, 1);
+		y = luaL_checknumber(L, 2);
+		val = Math::instance.simplexNoise2(x, y);
+		break;
+	case 3:
+		x = luaL_checknumber(L, 1);
+		y = luaL_checknumber(L, 2);
+		z = luaL_checknumber(L, 3);
+		val = Math::instance.simplexNoise3(x, y, z);
+		break;
+	case 4:
+	default:
+		x = luaL_checknumber(L, 1);
+		y = luaL_checknumber(L, 2);
+		z = luaL_checknumber(L, 3);
+		w = luaL_checknumber(L, 4);
+		val = Math::instance.simplexNoise4(x, y, z, w);
+		break;
+	}
+
+	lua_pushnumber(L, (lua_Number) val);
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -156,6 +192,7 @@ static const luaL_Reg functions[] =
 	{ "randomnormal", w_randomnormal },
 	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "triangulate", w_triangulate },
+	{ "noise", w_noise },
 	{ 0, 0 }
 };
 

@@ -27,6 +27,10 @@
 #include "common/Module.h"
 #include "common/math.h"
 #include "common/int.h"
+#include "common/StringMap.h"
+
+// Noise
+#include "libraries/noise1234/simplexnoise1234.h"
 
 // STL
 #include <limits>
@@ -106,6 +110,16 @@ public:
 	 **/
 	std::vector<Triangle> triangulate(const std::vector<vertex> &polygon);
 
+	/**
+	 * Calculate Simplex noise for the specified coordinate(s).
+	 *
+	 * @return Noise value in the range of [0,1].
+	 **/
+	float simplexNoise1(float x) const;
+	float simplexNoise2(float x, float y) const;
+	float simplexNoise3(float x, float y, float z) const;
+	float simplexNoise4(float x, float y, float z, float w) const;
+
 	static Math instance;
 
 private:
@@ -113,6 +127,26 @@ private:
 	Math();
 
 }; // Math
+
+inline float Math::simplexNoise1(float x) const
+{
+	return SimplexNoise1234::noise(x);
+}
+
+inline float Math::simplexNoise2(float x, float y) const
+{
+	return SimplexNoise1234::noise(x, y);
+}
+
+inline float Math::simplexNoise3(float x, float y, float z) const
+{
+	return SimplexNoise1234::noise(x, y, z);
+}
+
+inline float Math::simplexNoise4(float x, float y, float z, float w) const
+{
+	return SimplexNoise1234::noise(x, y, z, w);
+}
 
 } // math
 } // love

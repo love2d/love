@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA03546A1731F3A700284828 /* simplexnoise1234.cpp */; };
+		FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA03546B1731F3A700284828 /* simplexnoise1234.h */; };
 		FA08F5B016C752F900F007B5 /* Source.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FB732687B1669402408356D /* Source.cpp */; };
 		FA08F5B116C752F900F007B5 /* wrap_Audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02CA1BE908D91B104EB9590F /* wrap_Audio.cpp */; };
 		FA08F5B216C752F900F007B5 /* wrap_Source.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02662CBC29B954295A634A39 /* wrap_Source.cpp */; };
@@ -688,6 +690,8 @@
 		7F575BE9573C654B5ED44CC1 /* wrap_Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Timer.h; sourceTree = "<group>"; };
 		7F796B7A3362196075C62E61 /* wrap_Fixture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Fixture.cpp; sourceTree = "<group>"; };
 		7F911CF2107B22F44C5B2542 /* b2Collision.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2Collision.h; sourceTree = "<group>"; };
+		FA03546A1731F3A700284828 /* simplexnoise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = simplexnoise1234.cpp; sourceTree = "<group>"; };
+		FA03546B1731F3A700284828 /* simplexnoise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simplexnoise1234.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
 		FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA5454C016F1310000D30303 /* MathModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MathModule.cpp; sourceTree = "<group>"; };
@@ -1243,6 +1247,7 @@
 				63287ED84D0F2EEB65D249A3 /* Box2D */,
 				FAE010D7170DDE99006F29D0 /* ddsparse */,
 				3AED1DE005A53DDB07902760 /* luasocket */,
+				FA0354691731F3A700284828 /* noise1234 */,
 				36C14C81334735EC54E33637 /* utf8 */,
 			);
 			name = libraries;
@@ -1626,6 +1631,15 @@
 			path = Contacts;
 			sourceTree = "<group>";
 		};
+		FA0354691731F3A700284828 /* noise1234 */ = {
+			isa = PBXGroup;
+			children = (
+				FA03546A1731F3A700284828 /* simplexnoise1234.cpp */,
+				FA03546B1731F3A700284828 /* simplexnoise1234.h */,
+			);
+			path = noise1234;
+			sourceTree = "<group>";
+		};
 		FA08F5AC16C751BA00F007B5 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -1720,6 +1734,7 @@
 				FAC86E641724552C00EED715 /* wrap_Geometry.h in Headers */,
 				FAC86E6A1724555D00EED715 /* DrawGable.h in Headers */,
 				FAC86E6C1724555D00EED715 /* Geometry.h in Headers */,
+				FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2002,6 +2017,7 @@
 				FAC86E631724552C00EED715 /* wrap_Geometry.cpp in Sources */,
 				FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */,
 				FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */,
+				FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
