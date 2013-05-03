@@ -238,17 +238,9 @@ int w_getScissor(lua_State *L)
 	return instance->getScissor(L);
 }
 
-int w_newStencil(lua_State *L)
-{
-	// just return the function
-	luaL_checktype(L, 1, LUA_TFUNCTION);
-	lua_settop(L, 1);
-	return 1;
-}
-
 static int setStencil(lua_State *L, bool invert)
 {
-	// no argument -> clear mask
+	// no argument -> clear stencil
 	if (lua_isnoneornil(L, 1))
 	{
 		instance->discardStencil();
@@ -258,7 +250,7 @@ static int setStencil(lua_State *L, bool invert)
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	instance->defineStencil();
-	lua_call(L, lua_gettop(L) - 1, 0); // call mask(...)
+	lua_call(L, lua_gettop(L) - 1, 0); // call stencil(...)
 	instance->useStencil(invert);
 
 	return 0;
@@ -1677,7 +1669,6 @@ static const luaL_Reg functions[] =
 	{ "setScissor", w_setScissor },
 	{ "getScissor", w_getScissor },
 
-	{ "newStencil", w_newStencil },
 	{ "setStencil", w_setStencil },
 	{ "setInvertedStencil", w_setInvertedStencil },
 

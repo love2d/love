@@ -54,7 +54,6 @@ int w_getDimensions(lua_State *L);
 int w_isCreated(lua_State *L);
 int w_setScissor(lua_State *L);
 int w_getScissor(lua_State *L);
-int w_newStencil(lua_State *L);
 int w_setStencil(lua_State *L);
 int w_setAlphaTest(lua_State *L);
 int w_getAlphaTest(lua_State *L);
