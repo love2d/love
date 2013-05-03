@@ -34,7 +34,7 @@ int w_Channel_supply(lua_State *L);
 int w_Channel_pop(lua_State *L);
 int w_Channel_demand(lua_State *L);
 int w_Channel_peek(lua_State *L);
-int w_Channel_count(lua_State *L);
+int w_Channel_getCount(lua_State *L);
 int w_Channel_clear(lua_State *L);
 
 extern "C" int luaopen_channel(lua_State *L);

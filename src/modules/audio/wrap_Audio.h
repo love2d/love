@@ -32,7 +32,7 @@ namespace love
 namespace audio
 {
 
-int w_getNumSources(lua_State *L);
+int w_getSourceCount(lua_State *L);
 int w_newSource1(lua_State *L);
 int w_play(lua_State *L);
 int w_stop(lua_State *L);

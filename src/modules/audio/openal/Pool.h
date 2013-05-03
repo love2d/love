@@ -71,7 +71,7 @@ public:
 
 	void update();
 
-	int getNumSources() const;
+	int getSourceCount() const;
 	int getMaxSources() const;
 
 	bool play(Source *source, ALuint &out);

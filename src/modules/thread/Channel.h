@@ -49,7 +49,7 @@ public:
 	Variant *pop();
 	Variant *demand(); // blocking pop
 	Variant *peek();
-	int count();
+	int getCount();
 	void clear();
 
 	void retain();

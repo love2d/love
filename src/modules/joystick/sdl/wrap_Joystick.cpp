@@ -42,9 +42,9 @@ int w_reload(lua_State *L)
 	return 0;
 }
 
-int w_getNumJoysticks(lua_State *L)
+int w_getJoystickCount(lua_State *L)
 {
-	lua_pushinteger(L, instance->getNumJoysticks());
+	lua_pushinteger(L, instance->getJoystickCount());
 	return 1;
 }
 
@@ -55,31 +55,31 @@ int w_getName(lua_State *L)
 	return 1;
 }
 
-int w_getNumAxes(lua_State *L)
+int w_getAxisCount(lua_State *L)
 {
 	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumAxes(index));
+	lua_pushinteger(L, instance->getAxisCount(index));
 	return 1;
 }
 
-int w_getNumBalls(lua_State *L)
+int w_getBallCount(lua_State *L)
 {
 	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumBalls(index));
+	lua_pushinteger(L, instance->getBallCount(index));
 	return 1;
 }
 
-int w_getNumButtons(lua_State *L)
+int w_getButtonCount(lua_State *L)
 {
 	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumButtons(index));
+	lua_pushinteger(L, instance->getButtonCount(index));
 	return 1;
 }
 
-int w_getNumHats(lua_State *L)
+int w_getHatCount(lua_State *L)
 {
 	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumHats(index));
+	lua_pushinteger(L, instance->getHatCount(index));
 	return 1;
 }
 
@@ -137,12 +137,12 @@ int w_getHat(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "reload", w_reload },
-	{ "getNumJoysticks", w_getNumJoysticks },
+	{ "getJoystickCount", w_getJoystickCount },
 	{ "getName", w_getName },
-	{ "getNumAxes", w_getNumAxes },
-	{ "getNumBalls", w_getNumBalls },
-	{ "getNumButtons", w_getNumButtons },
-	{ "getNumHats", w_getNumHats },
+	{ "getAxisCount", w_getAxisCount },
+	{ "getBallCount", w_getBallCount },
+	{ "getButtonCount", w_getButtonCount },
+	{ "getHatCount", w_getHatCount },
 	{ "getAxis", w_getAxis },
 
 	{ "getAxes", w_getAxes },

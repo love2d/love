@@ -35,9 +35,9 @@ namespace audio
 
 static Audio *instance = 0;
 
-int w_getNumSources(lua_State *L)
+int w_getSourceCount(lua_State *L)
 {
-	lua_pushinteger(L, instance->getNumSources());
+	lua_pushinteger(L, instance->getSourceCount());
 	return 1;
 }
 
@@ -262,7 +262,7 @@ int w_getDistanceModel(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "getNumSources", w_getNumSources },
+	{ "getSourceCount", w_getSourceCount },
 	{ "newSource1", w_newSource1 },
 	{ "play", w_play },
 	{ "stop", w_stop },

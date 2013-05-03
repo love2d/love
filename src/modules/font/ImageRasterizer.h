@@ -45,7 +45,7 @@ public:
 	// Implement Rasterizer
 	virtual int getLineHeight() const;
 	virtual GlyphData *getGlyphData(unsigned int glyph) const;
-	virtual int getNumGlyphs() const;
+	virtual int getGlyphCount() const;
 
 private:
 	// Load all the glyph positions into memory

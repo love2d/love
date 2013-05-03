@@ -48,15 +48,15 @@ public:
 
 	void reload();
 	bool checkIndex(int index);
-	int getNumJoysticks();
+	int getJoystickCount();
 	const char *getName(int index);
 	bool open(int index);
 	bool isOpen(int index);
 	bool verifyJoystick(int index);
-	int getNumAxes(int index);
-	int getNumBalls(int index);
-	int getNumButtons(int index);
-	int getNumHats(int index);
+	int getAxisCount(int index);
+	int getBallCount(int index);
+	int getButtonCount(int index);
+	int getHatCount(int index);
 	float clampval(float x);
 	float getAxis(int index, int axis);
 	int getAxes(lua_State *L);

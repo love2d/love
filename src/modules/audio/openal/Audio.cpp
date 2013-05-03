@@ -143,9 +143,9 @@ love::audio::Source *Audio::newSource(love::sound::SoundData *soundData)
 	return new Source(pool, soundData);
 }
 
-int Audio::getNumSources() const
+int Audio::getSourceCount() const
 {
-	return pool->getNumSources();
+	return pool->getSourceCount();
 }
 
 int Audio::getMaxSources() const

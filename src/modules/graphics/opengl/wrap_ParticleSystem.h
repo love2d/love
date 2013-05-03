@@ -78,7 +78,7 @@ int w_ParticleSystem_setColors(lua_State *L);
 int w_ParticleSystem_getColors(lua_State *L);
 int w_ParticleSystem_setOffset(lua_State *L);
 int w_ParticleSystem_getOffset(lua_State *L);
-int w_ParticleSystem_count(lua_State *L);
+int w_ParticleSystem_getCount(lua_State *L);
 int w_ParticleSystem_start(lua_State *L);
 int w_ParticleSystem_stop(lua_State *L);
 int w_ParticleSystem_pause(lua_State *L);

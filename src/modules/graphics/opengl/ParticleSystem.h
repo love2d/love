@@ -435,7 +435,7 @@ public:
 	/**
 	 * Returns the amount of particles that are currently active in the system.
 	 **/
-	int count() const;
+	int getCount() const;
 
 	/**
 	 * Starts/resumes the particle emitter.

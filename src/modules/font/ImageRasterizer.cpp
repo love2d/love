@@ -146,7 +146,7 @@ void ImageRasterizer::load()
 	}
 }
 
-int ImageRasterizer::getNumGlyphs() const
+int ImageRasterizer::getGlyphCount() const
 {
 	return numglyphs;
 }

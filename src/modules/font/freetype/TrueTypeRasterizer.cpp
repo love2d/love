@@ -106,7 +106,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(unsigned int glyph) const
 	return glyphData;
 }
 
-int TrueTypeRasterizer::getNumGlyphs() const
+int TrueTypeRasterizer::getGlyphCount() const
 {
 	return face->num_glyphs;
 }

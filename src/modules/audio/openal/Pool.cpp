@@ -106,7 +106,7 @@ void Pool::update()
 	}
 }
 
-int Pool::getNumSources() const
+int Pool::getSourceCount() const
 {
 	return playing.size();
 }

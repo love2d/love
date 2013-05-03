@@ -176,7 +176,7 @@ Variant *Channel::peek()
 	return var;
 }
 
-int Channel::count()
+int Channel::getCount()
 {
 	Lock l(mutex);
 	return queue.size();

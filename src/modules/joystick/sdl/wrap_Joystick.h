@@ -33,12 +33,12 @@ namespace sdl
 {
 
 int w_reload(lua_State *L);
-int w_getNumJoysticks(lua_State *L);
+int w_getJoystickCount(lua_State *L);
 int w_getName(lua_State *L);
-int w_getNumAxes(lua_State *L);
-int w_getNumBalls(lua_State *L);
-int w_getNumButtons(lua_State *L);
-int w_getNumHats(lua_State *L);
+int w_getAxisCount(lua_State *L);
+int w_getBallCount(lua_State *L);
+int w_getButtonCount(lua_State *L);
+int w_getHatCount(lua_State *L);
 int w_getAxis(lua_State *L);
 int w_getAxes(lua_State *L);
 int w_getBall(lua_State *L);

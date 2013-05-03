@@ -529,10 +529,10 @@ int w_ParticleSystem_getColors(lua_State *L)
 	return colors.size();
 }
 
-int w_ParticleSystem_count(lua_State *L)
+int w_ParticleSystem_getCount(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->count());
+	lua_pushnumber(L, t->getCount());
 	return 1;
 }
 
@@ -647,7 +647,7 @@ static const luaL_Reg functions[] =
 	{ "getColors", w_ParticleSystem_getColors },
 	{ "setOffset", w_ParticleSystem_setOffset },
 	{ "getOffset", w_ParticleSystem_getOffset },
-	{ "count", w_ParticleSystem_count },
+	{ "getCount", w_ParticleSystem_getCount },
 	{ "start", w_ParticleSystem_start },
 	{ "stop", w_ParticleSystem_stop },
 	{ "pause", w_ParticleSystem_pause },

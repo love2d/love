@@ -102,10 +102,10 @@ int w_Channel_peek(lua_State *L)
 	return 1;
 }
 
-int w_Channel_count(lua_State *L)
+int w_Channel_getCount(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	lua_pushnumber(L, c->count());
+	lua_pushnumber(L, c->getCount());
 	return 1;
 }
 
@@ -122,7 +122,7 @@ static const luaL_Reg type_functions[] = {
 	{ "pop", w_Channel_pop },
 	{ "demand", w_Channel_demand },
 	{ "peek", w_Channel_peek },
-	{ "count", w_Channel_count },
+	{ "getCount", w_Channel_getCount },
 	{ "clear", w_Channel_clear },
 	{ 0, 0 }
 };

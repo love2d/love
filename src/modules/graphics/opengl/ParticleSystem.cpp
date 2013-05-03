@@ -525,7 +525,7 @@ std::vector<Color> ParticleSystem::getColor() const
 	return ncolors;
 }
 
-int ParticleSystem::count() const
+int ParticleSystem::getCount() const
 {
 	return (int)(pLast - pStart);
 }
@@ -587,8 +587,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 {
 	if (image == 0) return;  // just in case of failure
 
-	int numParticles = count();
-	if (numParticles == 0) return; // don't bother if there's nothing to do
+	int num = getCount();
+	if (num == 0) return; // don't bother if there's nothing to do
 
 	Color curcolor = gl.getColor();
 
@@ -602,7 +602,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	const vertex *tVerts;
 
 	// set the vertex data for each particle (transformation, texcoords, color)
-	for (int i = 0; i < numParticles; i++)
+	for (int i = 0; i < num; i++)
 	{
 		particle *p = pStart + i;
 
@@ -638,7 +638,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&particleVerts[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&particleVerts[0].s);
 
-	glDrawArrays(GL_QUADS, 0, numParticles*4);
+	glDrawArrays(GL_QUADS, 0, num*4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);

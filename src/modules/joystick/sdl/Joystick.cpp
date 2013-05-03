@@ -41,7 +41,7 @@ Joystick::Joystick()
 	SDL_JoystickEventState(SDL_ENABLE);
 
 	// Open all connected joysticks.
-	int numjoysticks = this->getNumJoysticks();
+	int numjoysticks = getJoystickCount();
 	if (numjoysticks > 0)
 		this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
 
@@ -52,7 +52,7 @@ Joystick::Joystick()
 Joystick::~Joystick()
 {
 	// Closes any open joysticks.
-	for (int i = 0; i != getNumJoysticks(); i++)
+	for (int i = 0; i != getJoystickCount(); i++)
 	{
 		if (isOpen(i))
 			close(i);
@@ -66,7 +66,7 @@ Joystick::~Joystick()
 void Joystick::reload()
 {
 	// Closes any open joysticks.
-	for (int i = 0; i != getNumJoysticks(); i++)
+	for (int i = 0; i != getJoystickCount(); i++)
 	{
 		if (isOpen(i))
 			close(i);
@@ -79,7 +79,7 @@ void Joystick::reload()
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
 		throw love::Exception("%s", SDL_GetError());
 
-	int numjoysticks = this->getNumJoysticks();
+	int numjoysticks = this->getJoystickCount();
 	if (numjoysticks > 0)
 		this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
 
@@ -94,10 +94,10 @@ const char *Joystick::getName() const
 
 bool Joystick::checkIndex(int index)
 {
-	return index >= 0 && index < getNumJoysticks();
+	return index >= 0 && index < getJoystickCount();
 }
 
-int Joystick::getNumJoysticks()
+int Joystick::getJoystickCount()
 {
 	int num = SDL_NumJoysticks();
 	return num < 0 ? 0 : num;
@@ -141,22 +141,22 @@ bool Joystick::verifyJoystick(int index)
 	return true;
 }
 
-int Joystick::getNumAxes(int index)
+int Joystick::getAxisCount(int index)
 {
 	return verifyJoystick(index) ? SDL_JoystickNumAxes(joysticks[index]) : 0;
 }
 
-int Joystick::getNumBalls(int index)
+int Joystick::getBallCount(int index)
 {
 	return verifyJoystick(index) ? SDL_JoystickNumBalls(joysticks[index]) : 0;
 }
 
-int Joystick::getNumButtons(int index)
+int Joystick::getButtonCount(int index)
 {
 	return verifyJoystick(index) ? SDL_JoystickNumButtons(joysticks[index]) : 0;
 }
 
-int Joystick::getNumHats(int index)
+int Joystick::getHatCount(int index)
 {
 	return verifyJoystick(index) ? SDL_JoystickNumHats(joysticks[index]) : 0;
 }
@@ -174,7 +174,7 @@ float Joystick::getAxis(int index, int axis)
 	if (!verifyJoystick(index))
 		return 0;
 
-	if (axis >= getNumAxes(index))
+	if (axis >= getAxisCount(index))
 		return 0;
 
 	return clampval(((float)SDL_JoystickGetAxis(joysticks[index], axis))/32768.0f);
@@ -188,7 +188,7 @@ int Joystick::getAxes(lua_State *L)
 	if (!verifyJoystick(index))
 		return 0;
 
-	int num = getNumAxes(index);
+	int num = getAxisCount(index);
 
 	for (int i = 0; i<num; i++)
 		lua_pushnumber(L, clampval(((float)SDL_JoystickGetAxis(joysticks[index], i))/32768.0f));
@@ -204,7 +204,7 @@ int Joystick::getBall(lua_State *L)
 	if (!verifyJoystick(index))
 		return 0;
 
-	if (ball >= getNumBalls(index))
+	if (ball >= getBallCount(index))
 		return 0;
 
 	int dx, dy;
@@ -220,7 +220,7 @@ bool Joystick::isDown(int index, int *buttonlist)
 	if (!verifyJoystick(index))
 		return false;
 
-	int num = getNumButtons(index);
+	int num = getButtonCount(index);
 
 	for (int button = *buttonlist; button != -1; button = *(++buttonlist))
 	{
@@ -238,7 +238,7 @@ Joystick::Hat Joystick::getHat(int index, int hat)
 	if (!verifyJoystick(index))
 		return h;
 
-	if (hat >= getNumHats(index))
+	if (hat >= getHatCount(index))
 		return h;
 
 	hats.find(SDL_JoystickGetHat(joysticks[index], hat), h);

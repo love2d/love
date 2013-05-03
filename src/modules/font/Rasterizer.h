@@ -87,7 +87,7 @@ public:
 	/**
 	 * Gets the number of glyphs the rasterizer has data for.
 	 **/
-	virtual int getNumGlyphs() const = 0;
+	virtual int getGlyphCount() const = 0;
 
 
 }; // Rasterizer
