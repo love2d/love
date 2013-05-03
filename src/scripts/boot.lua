@@ -234,6 +234,9 @@ function love.boot()
 		end
 		local full_source =  love.path.getfull(nouri)
 		local leaf = love.path.leaf(full_source)
+		leaf = leaf:gsub("^([%.]+)", "") -- strip leading "."'s
+		leaf = leaf:gsub("%.([^%.]+)$", "") -- strip extension
+		leaf = leaf:gsub("%.", "_") -- replace remaining "."'s with "_"
 		love.filesystem.setIdentity(leaf)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
 	end
