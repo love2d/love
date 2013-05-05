@@ -111,7 +111,7 @@ public:
 	/**
 	 * Calculate Simplex noise for the specified coordinate(s).
 	 *
-	 * @return Noise value in the range of [0,1].
+	 * @return Noise value in the range of [-1,1].
 	 **/
 	float noise(float x) const;
 	float noise(float x, float y) const;

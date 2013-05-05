@@ -234,7 +234,6 @@ bool Graphics::toggleFullscreen()
 	return setMode(width, height, &flags);
 }
 
-
 void Graphics::reset()
 {
 	DisplayState s;
@@ -1304,6 +1303,33 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	delete[] screenshot;
 
 	return img;
+}
+
+std::string Graphics::getRendererInfo(Graphics::RendererInfo infotype) const
+{
+	const char *infostr = 0;
+
+	switch (infotype)
+	{
+	case Graphics::RENDERER_INFO_NAME:
+	default:
+		infostr = "OpenGL";
+		break;
+	case Graphics::RENDERER_INFO_VERSION:
+		infostr = (const char *) glGetString(GL_VERSION);
+		break;
+	case Graphics::RENDERER_INFO_VENDOR:
+		infostr = (const char *) glGetString(GL_VENDOR);
+		break;
+	case Graphics::RENDERER_INFO_DEVICE:
+		infostr = (const char *) glGetString(GL_RENDERER);
+		break;
+	}
+
+	if (!infostr)
+		throw love::Exception("Cannot retrieve renderer information.");
+
+	return std::string(infostr);
 }
 
 void Graphics::push()

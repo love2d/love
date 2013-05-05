@@ -88,10 +88,7 @@ struct DisplayState
 	DisplayState()
 	{
 		color.set(255,255,255,255);
-		backgroundColor.r = 0;
-		backgroundColor.g = 0;
-		backgroundColor.b = 0;
-		backgroundColor.a = 255;
+		backgroundColor.set(0, 0, 0, 255);
 		blendMode = Graphics::BLEND_ALPHA;
 		lineStyle = Graphics::LINE_SMOOTH;
 		pointSize = 1.0f;
@@ -526,6 +523,14 @@ public:
 	 * @param copyAlpha If the alpha channel should be copied or set to full opacity (255).
 	 **/
 	love::image::ImageData *newScreenshot(love::image::Image *image, bool copyAlpha = true);
+
+	/**
+	 * Returns a string containing system-dependent renderer information.
+	 * Returned string can vary greatly between systems! Do not rely on it for
+	 * anything!
+	 * @param infotype The type of information to return.
+	 **/
+	std::string getRendererInfo(Graphics::RendererInfo infotype) const;
 
 	void push();
 	void pop();

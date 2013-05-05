@@ -182,8 +182,7 @@ float Joystick::getAxis(int index, int axis)
 
 int Joystick::getAxes(lua_State *L)
 {
-	love::luax_assert_argc(L, 1, 1);
-	int index = (int)lua_tointeger(L, 1) - 1;
+	int index = luaL_checkint(L, 1) - 1;
 
 	if (!verifyJoystick(index))
 		return 0;
@@ -197,9 +196,8 @@ int Joystick::getAxes(lua_State *L)
 
 int Joystick::getBall(lua_State *L)
 {
-	love::luax_assert_argc(L, 2, 2);
-	int index = (int)lua_tointeger(L, 1) - 1;
-	int ball = (int)lua_tointeger(L, 2) - 1;
+	int index = luaL_checkint(L, 1) - 1;
+	int ball = luaL_checkint(L, 2) - 1;
 
 	if (!verifyJoystick(index))
 		return 0;

@@ -109,6 +109,16 @@ bool Graphics::getConstant(Support in, const char  *&out)
 	return support.find(in, out);
 }
 
+bool Graphics::getConstant(const char *in, RendererInfo &out)
+{
+	return rendererInfo.find(in, out);
+}
+
+bool Graphics::getConstant(RendererInfo in, const char *&out)
+{
+	return rendererInfo.find(in, out);
+}
+
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
 {
 	{ "line", Graphics::DRAW_LINE },
@@ -191,6 +201,16 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 };
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));
+
+StringMap<Graphics::RendererInfo, Graphics::RENDERER_INFO_MAX_ENUM>::Entry Graphics::rendererInfoEntries[] =
+{
+	{ "name", Graphics::RENDERER_INFO_NAME },
+	{ "version", Graphics::RENDERER_INFO_VERSION },
+	{ "vendor", Graphics::RENDERER_INFO_VENDOR },
+	{ "device", Graphics::RENDERER_INFO_DEVICE },
+};
+
+StringMap<Graphics::RendererInfo, Graphics::RENDERER_INFO_MAX_ENUM> Graphics::rendererInfo(Graphics::rendererInfoEntries, sizeof(Graphics::rendererInfoEntries));
 
 } // graphics
 } // love

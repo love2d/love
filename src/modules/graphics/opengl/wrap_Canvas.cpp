@@ -171,10 +171,7 @@ int w_Canvas_clear(lua_State *L)
 	Color c;
 	if (lua_isnoneornil(L, 2))
 	{
-		c.r = 0;
-		c.g = 0;
-		c.b = 0;
-		c.a = 0;
+		c.set(0, 0, 0, 0);
 	}
 	else if (lua_istable(L, 2))
 	{

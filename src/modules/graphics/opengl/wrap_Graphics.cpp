@@ -1241,6 +1241,26 @@ int w_isSupported(lua_State *L)
 	return 1;
 }
 
+int w_getRendererInfo(lua_State *L)
+{
+	const char *str = luaL_checkstring(L, 1);
+	Graphics::RendererInfo infotype;
+
+	if (!Graphics::getConstant(str, infotype))
+		return luaL_error(L, "Invalid renderer info type: %s", str);
+
+	try
+	{
+		luax_pushstring(L, instance->getRendererInfo(infotype));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+	
+	return 1;
+}
+
 /**
  * Draws an Image at the specified coordinates, with rotation and
  * scaling along both axes.
@@ -1645,6 +1665,7 @@ static const luaL_Reg functions[] =
 	{ "getShader", w_getShader },
 
 	{ "isSupported", w_isSupported },
+	{ "getRendererInfo", w_getRendererInfo },
 
 	{ "draw", w_draw },
 	{ "drawq", w_drawg }, // legacy

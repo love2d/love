@@ -109,6 +109,15 @@ public:
 		SUPPORT_MAX_ENUM
 	};
 
+	enum RendererInfo
+	{
+		RENDERER_INFO_NAME = 1,
+		RENDERER_INFO_VERSION,
+		RENDERER_INFO_VENDOR,
+		RENDERER_INFO_DEVICE,
+		RENDERER_INFO_MAX_ENUM
+	};
+
 	virtual ~Graphics();
 
 	static bool getConstant(const char *in, DrawMode &out);
@@ -135,6 +144,9 @@ public:
 	static bool getConstant(const char *in, Support &out);
 	static bool getConstant(Support in, const char  *&out);
 
+	static bool getConstant(const char *in, RendererInfo &out);
+	static bool getConstant(RendererInfo in, const char *&out);
+
 private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -160,6 +172,9 @@ private:
 
 	static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
 	static StringMap<Support, SUPPORT_MAX_ENUM> support;
+
+	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM>::Entry rendererInfoEntries[];
+	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM> rendererInfo;
 
 }; // Graphics
 

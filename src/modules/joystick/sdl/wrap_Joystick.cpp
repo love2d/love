@@ -50,43 +50,43 @@ int w_getJoystickCount(lua_State *L)
 
 int w_getName(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
+	int index = luaL_checkint(L, 1) - 1;
 	lua_pushstring(L, instance->getName(index));
 	return 1;
 }
 
 int w_getAxisCount(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
+	int index = luaL_checkint(L, 1) - 1;
 	lua_pushinteger(L, instance->getAxisCount(index));
 	return 1;
 }
 
 int w_getBallCount(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
+	int index = luaL_checkint(L, 1) - 1;
 	lua_pushinteger(L, instance->getBallCount(index));
 	return 1;
 }
 
 int w_getButtonCount(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
+	int index = luaL_checkint(L, 1) - 1;
 	lua_pushinteger(L, instance->getButtonCount(index));
 	return 1;
 }
 
 int w_getHatCount(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
+	int index = luaL_checkint(L, 1) - 1;
 	lua_pushinteger(L, instance->getHatCount(index));
 	return 1;
 }
 
 int w_getAxis(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	int axis = luaL_checkint(L, 2)-1;
+	int index = luaL_checkint(L, 1) - 1;
+	int axis = luaL_checkint(L, 2) - 1;
 	lua_pushnumber(L, instance->getAxis(index, axis));
 	return 1;
 }
@@ -103,15 +103,15 @@ int w_getBall(lua_State *L)
 
 int w_isDown(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	unsigned int num = lua_gettop(L);
+	int index = luaL_checkint(L, 1) - 1;
+	int num = lua_gettop(L);
+	
 	int *buttonlist = new int[num];
-	unsigned int counter = 0;
+	int counter = 0;
 
-	for (unsigned int i = 1; i < num; i++)
-	{
-		buttonlist[counter++] = (int) luaL_checknumber(L, i+1)-1;
-	}
+	for (int i = 1; i < num; i++)
+		buttonlist[counter++] = luaL_checkint(L, i + 1) - 1;
+
 	buttonlist[counter] = -1;
 
 	luax_pushboolean(L, instance->isDown(index, buttonlist));
