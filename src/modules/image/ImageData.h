@@ -111,7 +111,7 @@ public:
 	 * @param y The location along the y-axis.
 	 * @return The color for the given location.
 	 **/
-	pixel getPixel(int x, int y);
+	pixel getPixel(int x, int y) const;
 
 	/**
 	 * Encodes raw pixel data into a given format.

@@ -56,7 +56,7 @@ void DevilHandler::quit()
 	ilShutDown();
 }
 
-bool DevilHandler::canDecode(love::filesystem::FileData *data)
+bool DevilHandler::canDecode(love::filesystem::FileData * /*data*/)
 {
 	// DevIL can decode a lot of formats...
 	return true;

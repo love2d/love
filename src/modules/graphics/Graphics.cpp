@@ -59,16 +59,6 @@ bool Graphics::getConstant(BlendMode in, const char  *&out)
 	return blendModes.find(in, out);
 }
 
-bool Graphics::getConstant(const char *in, ColorMode &out)
-{
-	return colorModes.find(in, out);
-}
-
-bool Graphics::getConstant(ColorMode in, const char  *&out)
-{
-	return colorModes.find(in, out);
-}
-
 bool Graphics::getConstant(const char *in, LineStyle &out)
 {
 	return lineStyles.find(in, out);
@@ -148,15 +138,6 @@ StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendM
 };
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
-
-StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM>::Entry Graphics::colorModeEntries[] =
-{
-	{ "replace", Graphics::COLOR_REPLACE },
-	{ "modulate", Graphics::COLOR_MODULATE },
-	{ "combine", Graphics::COLOR_COMBINE },
-};
-
-StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM> Graphics::colorModes(Graphics::colorModeEntries, sizeof(Graphics::colorModeEntries));
 
 StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineStyleEntries[] =
 {

@@ -74,7 +74,7 @@ void ImageData::setPixel(int x, int y, pixel c)
 	pixels[y*getWidth()+x] = c;
 }
 
-pixel ImageData::getPixel(int x, int y)
+pixel ImageData::getPixel(int x, int y) const
 {
 	if (!inside(x, y))
 		throw love::Exception("Attempt to get out-of-range pixel!");

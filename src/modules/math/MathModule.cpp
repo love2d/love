@@ -20,7 +20,6 @@
 
 // LOVE
 #include "MathModule.h"
-#include "common/math.h"
 
 // STL
 #include <cmath>

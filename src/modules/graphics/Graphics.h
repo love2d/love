@@ -61,14 +61,6 @@ public:
 		BLEND_MAX_ENUM
 	};
 
-	enum ColorMode
-	{
-		COLOR_MODULATE = 1,
-		COLOR_REPLACE,
-		COLOR_COMBINE,
-		COLOR_MAX_ENUM
-	};
-
 	enum LineStyle
 	{
 		LINE_ROUGH = 1,
@@ -129,9 +121,6 @@ public:
 	static bool getConstant(const char *in, BlendMode &out);
 	static bool getConstant(BlendMode in, const char  *&out);
 
-	static bool getConstant(const char *in, ColorMode &out);
-	static bool getConstant(ColorMode in, const char  *&out);
-
 	static bool getConstant(const char *in, LineStyle &out);
 	static bool getConstant(LineStyle in, const char  *&out);
 
@@ -157,9 +146,6 @@ private:
 
 	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
 	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;
-
-	static StringMap<ColorMode, COLOR_MAX_ENUM>::Entry colorModeEntries[];
-	static StringMap<ColorMode, COLOR_MAX_ENUM> colorModes;
 
 	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
 	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;

@@ -1594,7 +1594,7 @@ int w_shear(lua_State *L)
 	return 0;
 }
 
-int w_origin(lua_State *L)
+int w_origin(lua_State * /*L*/)
 {
 	instance->origin();
 	return 0;

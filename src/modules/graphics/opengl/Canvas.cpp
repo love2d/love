@@ -38,6 +38,8 @@ namespace opengl
 // none, opengl >= 3.0, extensions
 struct FramebufferStrategy
 {
+	virtual ~FramebufferStrategy() {}
+
 	/// create a new framebuffer, depth_stencil and texture
 	/**
 	 * @param[out] framebuffer   Framebuffer name

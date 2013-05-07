@@ -47,8 +47,8 @@ template <typename T>
 static T *_getScalars(lua_State *L, int count, size_t &dimension)
 {
 	dimension = 1;
-
 	T *values = new T[count];
+
 	for (int i = 0; i < count; ++i)
 	{
 		if (lua_isnumber(L, 3 + i))

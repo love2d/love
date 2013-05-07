@@ -460,6 +460,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// Graphics
 	{"Drawable", GRAPHICS_DRAWABLE_ID},
+	{"DrawGable", GRAPHICS_DRAWGABLE_ID},
 	{"Image", GRAPHICS_IMAGE_ID},
 	{"Geometry", GRAPHICS_GEOMETRY_ID},
 	{"Font", GRAPHICS_FONT_ID},
@@ -486,9 +487,12 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{"World", PHYSICS_WORLD_ID},
 	{"Contact", PHYSICS_CONTACT_ID},
 	{"Body", PHYSICS_BODY_ID},
+	{"Fixture", PHYSICS_FIXTURE_ID},
 	{"Shape", PHYSICS_SHAPE_ID},
 	{"CircleShape", PHYSICS_CIRCLE_SHAPE_ID},
 	{"PolygonShape", PHYSICS_POLYGON_SHAPE_ID},
+	{"EdgeShape", PHYSICS_EDGE_SHAPE_ID},
+	{"ChainShape", PHYSICS_CHAIN_SHAPE_ID},
 	{"Joint", PHYSICS_JOINT_ID},
 	{"MouseJoint", PHYSICS_MOUSE_JOINT_ID},
 	{"DistanceJoint", PHYSICS_DISTANCE_JOINT_ID},
@@ -496,6 +500,9 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{"RevoluteJoint", PHYSICS_REVOLUTE_JOINT_ID},
 	{"PulleyJoint", PHYSICS_PULLEY_JOINT_ID},
 	{"GearJoint", PHYSICS_GEAR_JOINT_ID},
+	{"WeldJoint", PHYSICS_WELD_JOINT_ID},
+	{"RopeJoint", PHYSICS_ROPE_JOINT_ID},
+	{"WheelJoint", PHYSICS_WHEEL_JOINT_ID},
 
 	// Thread
 	{"Thread", THREAD_THREAD_ID},

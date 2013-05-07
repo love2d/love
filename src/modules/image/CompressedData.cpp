@@ -95,7 +95,7 @@ CompressedData::TextureType CompressedData::getType() const
 
 void CompressedData::checkMipmapLevelExists(int miplevel) const
 {
-	if (miplevel < 0 || miplevel >= dataImages.size())
+	if (miplevel < 0 || miplevel >= (int) dataImages.size())
 		throw love::Exception("Mipmap level %d does not exist", miplevel);
 }
 

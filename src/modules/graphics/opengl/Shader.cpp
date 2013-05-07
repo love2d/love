@@ -124,9 +124,9 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 	{
 		GLenum err = glGetError();
 
-		if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
+		if (err == GL_INVALID_ENUM)
 			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", typestr, typestr);
-		else // other errors should only happen between glBegin() and glEnd()
+		else
 			throw love::Exception("Cannot create %s shader object.", typestr);
 	}
 
@@ -136,14 +136,14 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 
 	glCompileShader(shaderid);
 
-	// Get any warnings the shader compiler may have produced
+	// Get any warnings the shader compiler may have produced.
 	GLint infologlen;
 	glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
 
 	GLchar *infolog = new GLchar[infologlen + 1];
 	glGetShaderInfoLog(shaderid, infologlen, NULL, infolog);
 
-	// Save any warnings for later querying
+	// Save any warnings for later querying.
 	if (infologlen > 0)
 		shaderWarnings[type] = infolog;
 
@@ -164,7 +164,7 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 void Shader::createProgram(const std::vector<GLuint> &shaderids)
 {
 	program = glCreateProgram();
-	if (program == 0) // should only fail when called between glBegin() and glEnd()
+	if (program == 0)
 		throw love::Exception("Cannot create shader program object.");
 
 	std::vector<GLuint>::const_iterator it;
@@ -173,8 +173,9 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 
 	glLinkProgram(program);
 
+	// flag shaders for auto-deletion when the program object is deleted.
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glDeleteShader(*it); // flag shaders for auto-deletion when program object is deleted
+		glDeleteShader(*it);
 
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
@@ -197,6 +198,9 @@ void Shader::mapActiveUniforms()
 
 	GLsizei bufsize;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, (GLint *) &bufsize);
+
+	if (bufsize <= 0)
+		return;
 
 	for (int i = 0; i < numuniforms; i++)
 	{
@@ -242,11 +246,13 @@ bool Shader::loadVolatile()
 
 	createProgram(shaderids);
 
+	// Retreive all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
 
 	if (current == this)
 	{
-		current = NULL; // make sure glUseProgram gets called
+		// make sure glUseProgram gets called.
+		current = NULL;
 		attach();
 	}
 
@@ -497,7 +503,7 @@ void Shader::sendMatrix(const std::string &name, int size, const GLfloat *m, int
 	if (size < 2 || size > 4)
 	{
 		throw love::Exception("Invalid matrix size: %dx%d "
-							  "(can only set 2x2, 3x3 or 4x4 matrices).", size,size);
+							  "(can only set 2x2, 3x3 or 4x4 matrices.)", size,size);
 	}
 
 	const Uniform &u = getUniform(name);
@@ -584,9 +590,13 @@ int Shader::getTextureUnit(const std::string &name)
 
 std::string Shader::getGLSLVersion()
 {
-	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
-	const char *tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-	if (tmp == NULL)
+	const char *tmp = 0;
+
+	// GL_SHADING_LANGUAGE_VERSION isn't available in OpenGL < 2.0.
+	if (GL_VERSION_2_0)
+		tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+	if (tmp == 0)
 		return "0.0";
 
 	// the version string always begins with a version number of the format

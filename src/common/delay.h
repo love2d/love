@@ -26,6 +26,6 @@ namespace love
 
 void delay(unsigned int ms);
 
-}; // namespace love
+} // namespace love
 
 #endif // DELAY_H_
