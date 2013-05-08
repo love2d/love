@@ -53,18 +53,19 @@ int w_File_getSize(lua_State *L)
 int w_File_open(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
+	const char *str = luaL_checkstring(L, 2);
 	File::Mode mode;
 
-	if (!File::getConstant(luaL_checkstring(L, 2), mode))
-		return luaL_error(L, "Incorrect file open mode: %s", luaL_checkstring(L, 2));
+	if (!File::getConstant(str, mode))
+		return luaL_error(L, "Incorrect file open mode: %s", str);
 
 	try
 	{
 		lua_pushboolean(L, file->open(mode) ? 1 : 0);
 	}
-	catch(Exception e)
+	catch (love::Exception &e)
 	{
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	return 1;
@@ -88,9 +89,9 @@ int w_File_read(lua_State *L)
 	{
 		d = file->read(size);
 	}
-	catch(Exception e)
+	catch (love::Exception &e)
 	{
-		return luaL_error(L, e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 
 	lua_pushlstring(L, (const char *) d->getData(), d->getSize());
@@ -105,15 +106,16 @@ int w_File_write(lua_State *L)
 	bool result;
 	if (file->getMode() == File::CLOSED)
 		return luaL_error(L, "File is not open.");
+
 	if (lua_isstring(L, 2))
 	{
 		try
 		{
 			result = file->write(lua_tostring(L, 2), luaL_optint(L, 3, lua_objlen(L, 2)));
 		}
-		catch(Exception e)
+		catch (love::Exception &e)
 		{
-			return luaL_error(L, e.what());
+			return luaL_error(L, "%s", e.what());
 		}
 
 	}
@@ -124,15 +126,16 @@ int w_File_write(lua_State *L)
 			love::Data *data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
 			result = file->write(data, luaL_optint(L, 3, data->getSize()));
 		}
-		catch(Exception e)
+		catch (love::Exception &e)
 		{
-			return luaL_error(L, e.what());
+			return luaL_error(L, "%s", e.what());
 		}
 	}
 	else
 	{
-		return luaL_error(L, "String or data expected.");
+		return luaL_argerror(L, 2, "string or data expected");
 	}
+
 	lua_pushboolean(L, result);
 	return 1;
 }
@@ -193,7 +196,7 @@ int w_File_lines(lua_State *L)
 			if (!file->open(File::READ))
 				return luaL_error(L, "Could not open file.");
 		}
-		catch(love::Exception &e)
+		catch (love::Exception &e)
 		{
 			return luaL_error(L, "%s", e.what());
 		}

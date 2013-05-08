@@ -90,15 +90,33 @@ int w_setSource(lua_State *L)
 int w_newFile(lua_State *L)
 {
 	const char *filename = luaL_checkstring(L, 1);
-	File *t;
-	try
+
+	const char *str = 0;
+	File::Mode mode = File::CLOSED;
+
+	if (lua_isstring(L, 2))
 	{
-		t = instance->newFile(filename);
+		str = luaL_checkstring(L, 2);
+		if (!File::getConstant(str, mode))
+			return luaL_error(L, "Incorrect file open mode: %s", str);
 	}
-	catch(Exception e)
+
+	File *t = instance->newFile(filename);
+
+	if (mode != File::CLOSED)
 	{
-		return luaL_error(L, e.what());
+		try
+		{
+			if (!t->open(mode))
+				throw love::Exception("Could not open file.");
+		}
+		catch (love::Exception &e)
+		{
+			t->release();
+			return luaL_error(L, "%s", e.what());
+		}
 	}
+
 	luax_newtype(L, "File", FILESYSTEM_FILE_T, (void *)t);
 	return 1;
 }
