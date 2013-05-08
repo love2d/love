@@ -157,7 +157,7 @@ int w_present(lua_State *)
 
 int w_setIcon(lua_State *L)
 {
-	Image *image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+	Image *image = luax_checkimage(L, 1);
 	try
 	{
 		instance->setIcon(image);
@@ -543,7 +543,7 @@ int w_newImageFont(lua_State *L)
 
 int w_newSpriteBatch(lua_State *L)
 {
-	Image *image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+	Image *image = luax_checkimage(L, 1);
 	int size = luaL_optint(L, 2, 1000);
 	SpriteBatch::UsageHint usage = SpriteBatch::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
@@ -566,8 +566,8 @@ int w_newSpriteBatch(lua_State *L)
 
 int w_newParticleSystem(lua_State *L)
 {
-	Image *image = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
-	int size = luaL_checkint(L, 2);
+	Image *image = luax_checkimage(L, 1);
+	int size = luaL_optint(L, 2, 1000);
 	ParticleSystem *t = instance->newParticleSystem(image, size);
 	luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void *)t);
 	return 1;
