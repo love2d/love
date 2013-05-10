@@ -56,7 +56,7 @@ ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSiz
 	settings.mBassRange = 0;
 	settings.mSurroundDepth = 0;
 	settings.mSurroundDelay = 0;
-	settings.mLoopCount = 0;
+	settings.mLoopCount = -1;
 
 	ModPlug_SetSettings(&settings);
 
