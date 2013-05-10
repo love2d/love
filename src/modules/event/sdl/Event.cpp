@@ -180,6 +180,8 @@ Message *Event::convert(SDL_Event &e)
 		arg1 = new Variant(e.active.gain != 0);
 		if (e.active.state & SDL_APPINPUTFOCUS)
 			msg = new Message("focus", arg1);
+		else if (e.active.state & SDL_APPMOUSEFOCUS)
+			msg = new Message("mousefocus", arg1);
 		arg1->release();
 		break;
 	case SDL_QUIT:
