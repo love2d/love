@@ -82,10 +82,27 @@ int w_ImageData_setPixel(lua_State *L)
 	int x = luaL_checkint(L, 2);
 	int y = luaL_checkint(L, 3);
 	pixel c;
-	c.r = luaL_checkint(L, 4);
-	c.g = luaL_checkint(L, 5);
-	c.b = luaL_checkint(L, 6);
-	c.a = luaL_optint(L, 7, 255);
+
+	if (lua_istable(L, 4))
+	{
+		for (int i = 1; i <= 4; i++)
+			lua_rawgeti(L, 4, i);
+
+		c.r = (unsigned char)luaL_checkint(L, -4);
+		c.g = (unsigned char)luaL_checkint(L, -3);
+		c.b = (unsigned char)luaL_checkint(L, -2);
+		c.a = (unsigned char)luaL_optint(L, -1, 255);
+
+		lua_pop(L, 4);
+	}
+	else
+	{
+		c.r = (unsigned char)luaL_checkint(L, 4);
+		c.g = (unsigned char)luaL_checkint(L, 5);
+		c.b = (unsigned char)luaL_checkint(L, 6);
+		c.a = (unsigned char)luaL_optint(L, 7, 255);
+	}
+
 	try
 	{
 		t->setPixel(x, y, c);
