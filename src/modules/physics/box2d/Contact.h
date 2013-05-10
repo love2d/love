@@ -136,6 +136,9 @@ public:
 	 **/
 	void resetRestitution();
 
+
+	void getChildren(int &childA, int &childB);
+
 private:
 
 	// The Box2D contact.

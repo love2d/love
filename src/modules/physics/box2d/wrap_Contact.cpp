@@ -113,6 +113,16 @@ int w_Contact_resetRestitution(lua_State *L)
 	return 0;
 }
 
+int w_Contact_getChildren(lua_State *L)
+{
+	Contact *t = luax_checkcontact(L, 1);
+	int a, b;
+	t->getChildren(a, b);
+	lua_pushnumber(L, a);
+	lua_pushnumber(L, b);
+	return 2;
+}
+
 extern "C" int luaopen_contact(lua_State *L)
 {
 	static const luaL_Reg functions[] =
@@ -128,6 +138,7 @@ extern "C" int luaopen_contact(lua_State *L)
 		{ "setEnabled", w_Contact_setEnabled },
 		{ "resetFriction", w_Contact_resetFriction },
 		{ "resetRestitution", w_Contact_resetRestitution },
+		{ "getChildren", w_Contact_getChildren },
 		{ 0, 0 }
 	};
 

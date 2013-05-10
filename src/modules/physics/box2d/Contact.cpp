@@ -126,6 +126,12 @@ void Contact::resetRestitution()
 	contact->ResetRestitution();
 }
 
+void Contact::getChildren(int &childA, int &childB)
+{
+	childA = contact->GetChildIndexA();
+	childB = contact->GetChildIndexB();
+}
+
 } // box2d
 } // physics
 } // love
