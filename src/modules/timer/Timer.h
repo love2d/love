@@ -63,21 +63,19 @@ public:
 	 * @return The "current" FPS.
 	 **/
 	virtual int getFPS() const = 0;
+
+	/**
+	 * Gets the average delta time (seconds per frame) over the last second.
+	 **/
 	virtual double getAverageDelta() const = 0;
 
 	/**
-	 * Gets the amount of time since the program started. Only useful for timing
-	 * code or measuring intervals.
-	 * @return The time (in seconds) since the program started.
-	 **/
-	virtual double getTime() const = 0;
-
-	/**
-	 * Gets the amount of time passed since an unspecified time. The time is accurate
-	 * to the microsecond, and is limited to 24 hours.
+	 * Gets the amount of time passed since an unspecified time. Useful for
+	 * profiling code or measuring intervals. The time is microsecond-precise,
+	 * and increases monotonically.
 	 * @return The time (in seconds)
 	 **/
-	virtual double getMicroTime() const = 0;
+	virtual double getTime() const = 0;
 
 }; // Timer
 

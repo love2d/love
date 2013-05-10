@@ -21,11 +21,8 @@
 #ifndef LOVE_TIMER_SDL_TIMER_H
 #define LOVE_TIMER_SDL_TIMER_H
 
-// SDL
-#include <SDL.h>
-
 // LOVE
-#include <timer/Timer.h>
+#include "timer/Timer.h"
 
 namespace love
 {
@@ -59,7 +56,6 @@ public:
 	int getFPS() const;
 	double getAverageDelta() const;
 	double getTime() const;
-	double getMicroTime() const;
 
 private:
 
@@ -81,6 +77,12 @@ private:
 	// The current timestep.
 	double dt;
 
+	// The reciprocal of the timer frequency.
+	const double timerFrequency;
+
+	// Returns the timer frequency on some platforms.
+	static double getTimerFrequency();
+	
 }; // Timer
 
 } // sdl

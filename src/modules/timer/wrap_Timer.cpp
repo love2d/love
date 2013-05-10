@@ -68,12 +68,6 @@ int w_getTime(lua_State *L)
 	return 1;
 }
 
-int w_getMicroTime(lua_State *L)
-{
-	lua_pushnumber(L, instance->getMicroTime());
-	return 1;
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -83,7 +77,6 @@ static const luaL_Reg functions[] =
 	{ "getAverageDelta", w_getAverageDelta },
 	{ "sleep", w_sleep },
 	{ "getTime", w_getTime },
-	{ "getMicroTime", w_getMicroTime },
 	{ 0, 0 }
 };
 

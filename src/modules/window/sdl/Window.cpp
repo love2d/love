@@ -18,15 +18,15 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// STL
-#include <iostream>
+// LOVE
+#include "common/config.h"
+#include "Window.h"
 
 // SDL
 #include <SDL.h>
 
-// LOVE
-#include "common/config.h"
-#include "Window.h"
+// STL
+#include <iostream>
 
 namespace love
 {
@@ -49,7 +49,9 @@ Window::~Window()
 }
 
 Window::_currentMode::_currentMode()
-	: width(800), height(600), fullscreen(false), vsync(true), fsaa(0)
+	: width(800)
+	, height(600)
+	, flags()
 {
 }
 
@@ -177,12 +179,12 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	// Set the new display mode as the current display mode.
 	currentMode.width = width;
 	currentMode.height = height;
-	currentMode.fsaa = fsaa;
-	currentMode.fullscreen = fullscreen;
-	currentMode.vsync = (real_vsync != 0);
-	currentMode.resizable = ((surface->flags & SDL_RESIZABLE) != 0);
-	currentMode.borderless = ((surface->flags & SDL_NOFRAME) != 0);
-	currentMode.centered = centered;
+	currentMode.flags.fsaa = fsaa;
+	currentMode.flags.fullscreen = fullscreen;
+	currentMode.flags.vsync = (real_vsync != 0);
+	currentMode.flags.resizable = ((surface->flags & SDL_RESIZABLE) != 0);
+	currentMode.flags.borderless = ((surface->flags & SDL_NOFRAME) != 0);
+	currentMode.flags.centered = centered;
 
 	return true;
 }
@@ -191,12 +193,7 @@ void Window::getWindow(int &width, int &height, WindowFlags &flags) const
 {
 	width = currentMode.width;
 	height = currentMode.height;
-	flags.fullscreen = currentMode.fullscreen;
-	flags.vsync = currentMode.vsync;
-	flags.fsaa = currentMode.fsaa;
-	flags.resizable = currentMode.resizable;
-	flags.borderless = currentMode.borderless;
-	flags.centered = currentMode.centered;
+	flags = currentMode.flags;
 }
 
 bool Window::checkWindowSize(int width, int height, bool fullscreen) const
@@ -232,6 +229,7 @@ WindowSize *Window::getFullscreenSizes(int &n) const
 		WindowSize w = {modes[i]->w, modes[i]->h};
 		sizes[i] = w;
 	}
+
 	return sizes;
 }
 
@@ -286,6 +284,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	SDL_Surface *icon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
 	SDL_WM_SetIcon(icon, NULL);
 	SDL_FreeSurface(icon);
+
 	return true;
 }
 

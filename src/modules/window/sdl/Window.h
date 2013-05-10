@@ -22,7 +22,7 @@
 #define LOVE_WINDOW_SDL_WINDOW_H
 
 // LOVE
-#include <window/Window.h>
+#include "window/Window.h"
 
 namespace love
 {
@@ -34,6 +34,7 @@ namespace sdl
 class Window : public love::window::Window
 {
 public:
+
 	Window();
 	~Window();
 
@@ -62,21 +63,23 @@ public:
 	static love::window::Window *getSingleton();
 
 	const char *getName() const;
+
 private:
+
 	std::string windowTitle;
+
 	struct _currentMode
 	{
 		_currentMode();
+
 		int width;
 		int height;
-		bool fullscreen;
-		bool vsync;
-		int fsaa;
-		bool resizable;
-		bool borderless;
-		bool centered;
+		WindowFlags flags;
+
 	} currentMode;
+
 	bool created;
+
 }; // Window
 
 } // sdl

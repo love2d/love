@@ -52,7 +52,7 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string 
 {
 	size_t strlen = text.size();
 	size_t numglyphs = 0;
-	
+
 	unsigned int *glyphs = new unsigned int[strlen];
 
 	try
