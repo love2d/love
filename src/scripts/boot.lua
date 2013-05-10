@@ -156,37 +156,37 @@ function love.createhandlers()
 	-- Standard callback handlers.
 	love.handlers = setmetatable({
 		keypressed = function (b, u)
-			if love.keypressed then love.keypressed(b, u) end
+			if love.keypressed then return love.keypressed(b, u) end
 		end,
 		keyreleased = function (b)
-			if love.keyreleased then love.keyreleased(b) end
+			if love.keyreleased then return love.keyreleased(b) end
 		end,
 		mousepressed = function (x,y,b)
-			if love.mousepressed then love.mousepressed(x,y,b) end
+			if love.mousepressed then return love.mousepressed(x,y,b) end
 		end,
 		mousereleased = function (x,y,b)
-			if love.mousereleased then love.mousereleased(x,y,b) end
+			if love.mousereleased then return love.mousereleased(x,y,b) end
 		end,
 		joystickpressed = function (j,b)
-			if love.joystickpressed then love.joystickpressed(j,b) end
+			if love.joystickpressed then return love.joystickpressed(j,b) end
 		end,
 		joystickreleased = function (j,b)
-			if love.joystickreleased then love.joystickreleased(j,b) end
+			if love.joystickreleased then return love.joystickreleased(j,b) end
 		end,
 		joystickaxis = function (j,a,v)
-			if love.joystickaxis then love.joystickaxis(j,a,v) end
+			if love.joystickaxis then return love.joystickaxis(j,a,v) end
 		end,
 		joystickball = function (j,b,dx,dy)
-			if love.joystickball then love.joystickball(j,b,dx,dy) end
+			if love.joystickball then return love.joystickball(j,b,dx,dy) end
 		end,
 		joystickhat = function(j,h,v)
-			if love.joystickhat then love.joystickhat(j,h,v) end
+			if love.joystickhat then return love.joystickhat(j,h,v) end
 		end,
 		focus = function (f)
-			if love.focus then love.focus(f) end
+			if love.focus then return love.focus(f) end
 		end,
 		mousefocus = function (f)
-			if love.mousefocus then love.mousefocus(f) end
+			if love.mousefocus then return love.mousefocus(f) end
 		end,
 		quit = function ()
 			return
@@ -195,7 +195,7 @@ function love.createhandlers()
 			local ow, oh, flags = love.graphics.getMode()
 			if flags.resizable then
 				love.graphics.setMode(w, h, flags)
-				if love.resize then love.resize(w, h) end
+				if love.resize then return love.resize(w, h) end
 			end
 		end,
 	}, {
