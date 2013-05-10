@@ -28,12 +28,12 @@ LOVE 0.9.0 []
   * Added a platform-independent (good) random implementation to love.math.
   * Added love.math.newRandomGenerator.
   * Added love.math.triangulate.
+  * Added love.math.noise.
   * Added blend mode "none".
   * Added SpriteBatch:isEmpty and SpriteBatch:isFull.
   * Added support for extern Images in Shaders when drawing graphics primitives.
   * Added love.timer.getAverageDelta.
   * Added love.joystickaxis/ball/hat event callbacks.
-  * Added ParticleSystem:setQuads.
   * Added love.graphics.getDimensions and Image/Canvas/ImageData:getDimensions.
   * Added love.filesystem.append.
   * Added love.filesystem.getSize.
@@ -49,6 +49,8 @@ LOVE 0.9.0 []
   * Added love.graphics.origin.
   * Added many ParticleSystem getter methods.
   * Added Geometry objects (replaces Quads), allowing for arbitrary textured polygons.
+  * Added Data:getString.
+  * Added love.graphics.getRendererInfo.
   * OPTIONAL: Added support for GME.
 
   * Fixed crashes with font drawing on some ATI cards.
@@ -76,6 +78,8 @@ LOVE 0.9.0 []
   * Fixed line wrapping in love.graphics.printf.
   * Fixed fused release mode in OS X.
   * Fixed love.graphics.getColor on some Windows systems.
+  * Fixed printing to the console in Windows before love.load is called.
+  * Fixed love.mouse.setPosition when called in love.load.
 
   * Moved love's startup to modules/love.
 
@@ -84,6 +88,7 @@ LOVE 0.9.0 []
   * Renamed love.graphics.setDefaultImageFilter to love.graphics.setDefaultFilter.
   * Renamed ParticleSystem:setSprite to ParticleSystem:setImage.
   * Renamed ParticleSystem:setGravity to ParticleSystem:setLinearAcceleration.
+  * Renamed ParticleSystem:count and all getNum* functions to get*Count.
 
   * Removed love.joystick.open and friends.
   * Removed love.graphics.drawTest.
@@ -92,6 +97,8 @@ LOVE 0.9.0 []
   * Removed love.graphics.quad/triangle.
   * Removed ColorMode functions.
   * Removed Quad objects (replaced by Geometry).
+  * Removed love.graphics.newStencil.
+  * Removed love.timer.getMicroTime.
 
   * Updated allocation for SoundData, it's more efficient and less wasteful.
   * Updated Source:set* functions to default z to 0.
@@ -107,6 +114,11 @@ LOVE 0.9.0 []
   * Updated love.timer.getFPS to be microsecond-accurate.
   * Updated love.graphics.newScreenshot to create a fully opaque image by default.
   * Updated ImageData:setPixel's alpha parameter to default to 255.
+  * Updated error messages when sending bad values to Shaders.
+  * Updated the default filesystem identity to omit file extension.
+  * Updated love.graphics.newParticleSystem to have a default buffer size of 1000.
+  * Updated love.filesystem.newFile to optionally auto-open the file.
+  * Updated love.timer.getTime to be microsecond-precise and monotonic.
 
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------
