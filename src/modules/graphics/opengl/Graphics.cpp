@@ -202,6 +202,9 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 
 	// Restore the display state.
 	restoreState(tempState);
+	pixel_size_stack.clear();
+	pixel_size_stack.reserve(5);
+	pixel_size_stack.push_back(1);
 
 	// Get the maximum number of matrices
 	// subtract a few to give the engine some room.
@@ -241,6 +244,9 @@ void Graphics::reset()
 	Canvas::bindDefaultCanvas();
 	Shader::detach();
 	restoreState(s);
+	pixel_size_stack.clear();
+	pixel_size_stack.reserve(5);
+	pixel_size_stack.push_back(1);
 }
 
 void Graphics::clear()
@@ -1090,19 +1096,12 @@ void Graphics::polyline(const float *coords, size_t count)
 	bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
 
 	float halfwidth       = lineWidth/2.f;
-	float pixel_size      = 1.f;
+	float pixel_size      = pixel_size_stack.back();
 	float overdraw_factor = .0f;
 
 	if (lineStyle == LINE_SMOOTH)
 	{
 		overdraw = new Vector[2*count+2];
-		// TODO: is there a better way to get the pixel size at the current scale?
-		GLfloat m[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, m);
-		float det  = m[0]*m[5]*m[10] + m[4]*m[9]*m[2] + m[8]*m[1]*m[6];
-		det       -= m[2]*m[5]*m[8]  + m[6]*m[9]*m[0] + m[10]*m[1]*m[4];
-		pixel_size = 1.f / sqrtf(det);
-
 		overdraw_factor = pixel_size / halfwidth;
 		halfwidth = std::max(.0f, halfwidth - .25f*pixel_size);
 	}
@@ -1338,6 +1337,7 @@ void Graphics::push()
 		throw Exception("Maximum stack depth reached. (More pushes than pops?)");
 	glPushMatrix();
 	++userMatrices;
+	pixel_size_stack.push_back(pixel_size_stack.back());
 }
 
 void Graphics::pop()
@@ -1346,6 +1346,7 @@ void Graphics::pop()
 		throw Exception("Minimum stack depth reached. (More pops than pushes?)");
 	glPopMatrix();
 	--userMatrices;
+	pixel_size_stack.pop_back();
 }
 
 void Graphics::rotate(float r)
@@ -1356,6 +1357,7 @@ void Graphics::rotate(float r)
 void Graphics::scale(float x, float y)
 {
 	glScalef(x, y, 1);
+	pixel_size_stack.back() *= 2. / double(x + y);
 }
 
 void Graphics::translate(float x, float y)
@@ -1373,6 +1375,8 @@ void Graphics::shear(float kx, float ky)
 void Graphics::origin()
 {
 	glLoadIdentity();
+	pixel_size_stack.clear();
+	pixel_size_stack.push_back(1);
 }
 
 bool Graphics::hasFocus() const

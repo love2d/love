@@ -23,7 +23,8 @@
 
 // STD
 #include <iostream>
-#include <cmath>
+#include <stack>
+#include <vector>
 
 // OpenGL
 #include "OpenGL.h"
@@ -546,6 +547,7 @@ private:
 	Font *currentFont;
 	love::window::Window *currentWindow;
 
+	std::vector<double> pixel_size_stack; // stores current size of a pixel (needed for line drawing)
 	LineStyle lineStyle;
 	float lineWidth;
 	GLint matrixLimit;
