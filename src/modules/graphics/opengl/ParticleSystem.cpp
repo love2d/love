@@ -237,17 +237,17 @@ int ParticleSystem::getEmissionRate() const
 	return emissionRate;
 }
 
-void ParticleSystem::setLifetime(float life)
+void ParticleSystem::setEmitterLifetime(float life)
 {
 	this->life = lifetime = life;
 }
 
-float ParticleSystem::getLifetime() const
+float ParticleSystem::getEmitterLifetime() const
 {
 	return lifetime;
 }
 
-void ParticleSystem::setParticleLife(float min, float max)
+void ParticleSystem::setParticleLifetime(float min, float max)
 {
 	particleLifeMin = min;
 	if (max == 0)
@@ -256,7 +256,7 @@ void ParticleSystem::setParticleLife(float min, float max)
 		particleLifeMax = max;
 }
 
-void ParticleSystem::getParticleLife(float *min, float *max) const
+void ParticleSystem::getParticleLifetime(float *min, float *max) const
 {
 	if (min)
 		*min = particleLifeMin;

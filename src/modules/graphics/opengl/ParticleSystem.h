@@ -131,26 +131,26 @@ public:
 	 * Sets the lifetime of the particle emitter (-1 means eternal)
 	 * @param life The lifetime (in seconds).
 	 **/
-	void setLifetime(float life);
+	void setEmitterLifetime(float life);
 
 	/**
 	 * Returns the lifetime of the particle emitter.
 	 **/
-	float getLifetime() const;
+	float getEmitterLifetime() const;
 
 	/**
 	 * Sets the life range of the particles.
 	 * @param lifeMin The minimum life.
 	 * @param lifeMax The maximum life (if 0, then becomes the same as minimum life).
 	 **/
-	void setParticleLife(float min, float max = 0);
+	void setParticleLifetime(float min, float max = 0);
 
 	/**
 	 * Gets the lifetime of a particle.
 	 * @param[out] min
 	 * @param[out] max
 	 **/
-	void getParticleLife(float *min, float *max) const;
+	void getParticleLifetime(float *min, float *max) const;
 
 	/**
 	 * Sets the position of the center of the emitter and the direction (if set to relative).

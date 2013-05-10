@@ -83,35 +83,35 @@ int w_ParticleSystem_getEmissionRate(lua_State *L)
 	return 1;
 }
 
-int w_ParticleSystem_setLifetime(lua_State *L)
+int w_ParticleSystem_setEmitterLifetime(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setLifetime(arg1);
+	t->setEmitterLifetime(arg1);
 	return 0;
 }
 
-int w_ParticleSystem_getLifetime(lua_State *L)
+int w_ParticleSystem_getEmitterLifetime(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getLifetime());
+	lua_pushnumber(L, t->getEmitterLifetime());
 	return 1;
 }
 
-int w_ParticleSystem_setParticleLife(lua_State *L)
+int w_ParticleSystem_setParticleLifetime(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_optnumber(L, 3, arg1);
-	t->setParticleLife(arg1, arg2);
+	t->setParticleLifetime(arg1, arg2);
 	return 0;
 }
 
-int w_ParticleSystem_getParticleLife(lua_State *L)
+int w_ParticleSystem_getParticleLifetime(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float min, max;
-	t->getParticleLife(&min, &max);
+	t->getParticleLifetime(&min, &max);
 	lua_pushnumber(L, min);
 	lua_pushnumber(L, max);
 	return 2;
@@ -609,10 +609,10 @@ static const luaL_Reg functions[] =
 	{ "getBufferSize", w_ParticleSystem_getBufferSize },
 	{ "setEmissionRate", w_ParticleSystem_setEmissionRate },
 	{ "getEmissionRate", w_ParticleSystem_getEmissionRate },
-	{ "setLifetime", w_ParticleSystem_setLifetime },
-	{ "getLifetime", w_ParticleSystem_getLifetime },
-	{ "setParticleLife", w_ParticleSystem_setParticleLife },
-	{ "getParticleLife", w_ParticleSystem_getParticleLife },
+	{ "setEmitterLifetime", w_ParticleSystem_setEmitterLifetime },
+	{ "getEmitterLifetime", w_ParticleSystem_getEmitterLifetime },
+	{ "setParticleLifetime", w_ParticleSystem_setParticleLifetime },
+	{ "getParticleLifetime", w_ParticleSystem_getParticleLifetime },
 	{ "setPosition", w_ParticleSystem_setPosition },
 	{ "getPosition", w_ParticleSystem_getPosition },
 	{ "getX", w_ParticleSystem_getX },
