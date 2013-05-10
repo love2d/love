@@ -155,10 +155,8 @@ FileData *File::read(int64 size)
 
 int64 File::read(void *dst, int64 size)
 {
-	bool isOpen = (file != 0);
-
-	if (!isOpen)
-		open(READ);
+	if (!file || mode != READ)
+		throw love::Exception("File is not opened for reading.");
 
 	int64 max = (int64)PHYSFS_fileLength(file);
 	size = (size == ALL) ? max : size;
@@ -168,16 +166,13 @@ int64 File::read(void *dst, int64 size)
 
 	int64 read = (int64)PHYSFS_read(file, dst, 1, (int) size);
 
-	if (!isOpen)
-		close();
-
 	return read;
 }
 
 bool File::write(const void *data, int64 size)
 {
-	if (file == 0)
-		throw love::Exception("Could not write to file. File not open.");
+	if (!file || (mode != WRITE && mode != APPEND))
+		throw love::Exception("File is not opened for writing.");
 
 	// Another clamp, for the time being.
 	size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;

@@ -24,6 +24,18 @@
 #include "common/Exception.h"
 #include "common/int.h"
 
+static int ioError(lua_State *L, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+
+	lua_pushnil(L);
+	lua_pushvfstring(L, fmt, args);
+
+	va_end(args);
+	return 2;
+}
+
 namespace love
 {
 namespace filesystem
@@ -65,7 +77,7 @@ int w_File_open(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return luaL_error(L, "%s", e.what());
+		return ioError(L, "%s", e.what());
 	}
 
 	return 1;
@@ -83,7 +95,7 @@ int w_File_read(lua_State *L)
 	File *file = luax_checkfile(L, 1);
 	Data *d = 0;
 
-	int64 size = (int64)luaL_optnumber(L, 2, (lua_Number) file->getSize());
+	int64 size = (int64)luaL_optnumber(L, 2, File::ALL);
 
 	try
 	{
@@ -91,7 +103,7 @@ int w_File_read(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return luaL_error(L, "%s", e.what());
+		return ioError(L, "%s", e.what());
 	}
 
 	lua_pushlstring(L, (const char *) d->getData(), d->getSize());
@@ -104,8 +116,6 @@ int w_File_write(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
 	bool result;
-	if (file->getMode() == File::CLOSED)
-		return luaL_error(L, "File is not open.");
 
 	if (lua_isstring(L, 2))
 	{
@@ -115,7 +125,7 @@ int w_File_write(lua_State *L)
 		}
 		catch (love::Exception &e)
 		{
-			return luaL_error(L, "%s", e.what());
+			return ioError(L, "%s", e.what());
 		}
 
 	}
@@ -128,7 +138,7 @@ int w_File_write(lua_State *L)
 		}
 		catch (love::Exception &e)
 		{
-			return luaL_error(L, "%s", e.what());
+			return ioError(L, "%s", e.what());
 		}
 	}
 	else

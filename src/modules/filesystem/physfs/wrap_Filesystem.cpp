@@ -21,6 +21,18 @@
 // LOVE
 #include "wrap_Filesystem.h"
 
+static int ioError(lua_State *L, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+
+	lua_pushnil(L);
+	lua_pushvfstring(L, fmt, args);
+
+	va_end(args);
+	return 2;
+}
+
 namespace love
 {
 namespace filesystem
@@ -113,7 +125,7 @@ int w_newFile(lua_State *L)
 		catch (love::Exception &e)
 		{
 			t->release();
-			return luaL_error(L, "%s", e.what());
+			return ioError(L, "%s", e.what());
 		}
 	}
 
@@ -141,7 +153,7 @@ int w_newFileData(lua_State *L)
 			}
 			catch (love::Exception &e)
 			{
-				return luaL_error(L, "%s", e.what());
+				return ioError(L, "%s", e.what());
 			}
 			luax_newtype(L, "FileData", FILESYSTEM_FILE_DATA_T, (void *) data);
 			return 1;
@@ -249,11 +261,11 @@ int w_read(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return luaL_error(L, "%s", e.what());
+		return ioError(L, "%s", e.what());
 	}
 
 	if (data == 0)
-		return luaL_error(L, "File could not be read.");
+		return ioError(L, "File could not be read.");
 
 	// Push the string.
 	lua_pushlstring(L, (const char *) data->getData(), data->getSize());
@@ -297,7 +309,7 @@ static int w_write_or_append(lua_State *L, File::Mode mode)
 	}
 	catch (love::Exception &e)
 	{
-		return luaL_error(L, "%s", e.what());
+		return ioError(L, "%s", e.what());
 	}
 
 	luax_pushboolean(L, true);
@@ -356,7 +368,7 @@ int w_load(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return luaL_error(L, "%s", e.what());
+		return ioError(L, "%s", e.what());
 	}
 
 	int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
@@ -407,12 +419,12 @@ int w_getSize(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return luaL_error(L, "%s", e.what());
+		return ioError(L, "%s", e.what());
 	}
 
 	// Error on failure or if size does not fit into a double precision floating-point number.
 	if (size == -1)
-		return luaL_error(L, "Could not determine file size.");
+		return ioError(L, "Could not determine file size.");
 	else if (size >= 0x20000000000000LL)
 		return luaL_error(L, "Size too large to fit into a Lua number!");
 
