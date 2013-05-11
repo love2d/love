@@ -46,7 +46,7 @@ int w_getDelta(lua_State *L)
 
 int w_getFPS(lua_State *L)
 {
-	lua_pushnumber(L, instance->getFPS());
+	lua_pushinteger(L, instance->getFPS());
 	return 1;
 }
 
@@ -58,7 +58,7 @@ int w_getAverageDelta(lua_State *L)
 
 int w_sleep(lua_State *L)
 {
-	instance->sleep((float) luaL_checknumber(L, 1));
+	instance->sleep(luaL_checknumber(L, 1));
 	return 0;
 }
 
@@ -90,9 +90,9 @@ extern "C" int luaopen_love_timer(lua_State *L)
 			instance = new love::timer::sdl::Timer();
 
 		}
-		catch(Exception &e)
+		catch (Exception &e)
 		{
-			return luaL_error(L, e.what());
+			return luaL_error(L, "%s", e.what());
 		}
 	}
 	else

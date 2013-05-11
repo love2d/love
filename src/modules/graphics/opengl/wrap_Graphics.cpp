@@ -38,105 +38,6 @@ namespace opengl
 
 static Graphics *instance = 0;
 
-bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue)
-{
-	lua_getfield(L, table_index, key);
-
-	bool retval;
-	if (lua_isnoneornil(L, -1))
-		retval = defaultValue;
-	else
-		retval = lua_toboolean(L, -1);
-
-	lua_pop(L, 1);
-	return retval;
-}
-
-int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue)
-{
-	lua_getfield(L, table_index, key);
-
-	int retval;
-	if (!lua_isnumber(L, -1))
-		retval = defaultValue;
-	else
-		retval = lua_tonumber(L, -1);
-
-	lua_pop(L, 1);
-	return retval;
-}
-
-int w_checkMode(lua_State *L)
-{
-	int w = luaL_checkint(L, 1);
-	int h = luaL_checkint(L, 2);
-	bool fs = luax_toboolean(L, 3);
-	luax_pushboolean(L, instance->checkMode(w, h, fs));
-	return 1;
-}
-
-int w_setMode(lua_State *L)
-{
-	int w = luaL_checkint(L, 1);
-	int h = luaL_checkint(L, 2);
-	if (lua_isnoneornil(L, 3))
-	{
-		luax_pushboolean(L, instance->setMode(w, h, 0));
-		return 1;
-	}
-
-	luaL_checktype(L, 3, LUA_TTABLE);
-
-	WindowFlags flags;
-
-	flags.fullscreen = luax_boolflag(L, 3, "fullscreen", false);
-	flags.vsync = luax_boolflag(L, 3, "vsync", true);
-	flags.fsaa = luax_intflag(L, 3, "fsaa", 0);
-	flags.resizable = luax_boolflag(L, 3, "resizable", false);
-	flags.borderless = luax_boolflag(L, 3, "borderless", false);
-	flags.centered = luax_boolflag(L, 3, "centered", true);
-
-	luax_pushboolean(L, instance->setMode(w, h, &flags));
-	return 1;
-}
-
-int w_getMode(lua_State *L)
-{
-	int w, h;
-	WindowFlags flags;
-	instance->getMode(w, h, flags);
-	lua_pushnumber(L, w);
-	lua_pushnumber(L, h);
-
-	lua_newtable(L);
-
-	luax_pushboolean(L, flags.fullscreen);
-	lua_setfield(L, -2, "fullscreen");
-
-	luax_pushboolean(L, flags.vsync);
-	lua_setfield(L, -2, "vsync");
-
-	lua_pushnumber(L, flags.fsaa);
-	lua_setfield(L, -2, "fsaa");
-
-	luax_pushboolean(L, flags.resizable);
-	lua_setfield(L, -2, "resizable");
-
-	luax_pushboolean(L, flags.borderless);
-	lua_setfield(L, -2, "borderless");
-
-	luax_pushboolean(L, flags.centered);
-	lua_setfield(L, -2, "centered");
-
-	return 3;
-}
-
-int w_toggleFullscreen(lua_State *L)
-{
-	luax_pushboolean(L, instance->toggleFullscreen());
-	return 1;
-}
-
 int w_reset(lua_State *)
 {
 	instance->reset();
@@ -155,62 +56,10 @@ int w_present(lua_State *)
 	return 0;
 }
 
-int w_setIcon(lua_State *L)
-{
-	Image *image = luax_checkimage(L, 1);
-	try
-	{
-		instance->setIcon(image);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-	return 0;
-}
-
-int w_setCaption(lua_State *L)
-{
-	const char *str = luaL_checkstring(L, 1);
-	instance->setCaption(str);
-	return 0;
-}
-
-int w_getCaption(lua_State *L)
-{
-	std::string caption = instance->getCaption();
-	lua_pushstring(L, caption.c_str());
-	return 1;
-}
-
-int w_getWidth(lua_State *L)
-{
-	lua_pushnumber(L, instance->getWidth());
-	return 1;
-}
-
-int w_getHeight(lua_State *L)
-{
-	lua_pushnumber(L, instance->getHeight());
-	return 1;
-}
-
-int w_getDimensions(lua_State *L)
-{
-	lua_pushnumber(L, instance->getWidth());
-	lua_pushnumber(L, instance->getHeight());
-	return 2;
-}
-
 int w_isCreated(lua_State *L)
 {
 	luax_pushboolean(L, instance->isCreated());
 	return 1;
-}
-
-int w_getModes(lua_State *L)
-{
-	return instance->getModes(L);
 }
 
 int w_setScissor(lua_State *L)
@@ -1600,20 +1449,10 @@ int w_origin(lua_State * /*L*/)
 	return 0;
 }
 
-int w_hasFocus(lua_State *L)
-{
-	luax_pushboolean(L, instance->hasFocus());
-	return 1;
-}
-
 
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "checkMode", w_checkMode },
-	{ "setMode", w_setMode },
-	{ "getMode", w_getMode },
-	{ "toggleFullscreen", w_toggleFullscreen },
 	{ "reset", w_reset },
 	{ "clear", w_clear },
 	{ "present", w_present },
@@ -1674,18 +1513,7 @@ static const luaL_Reg functions[] =
 	{ "print", w_print },
 	{ "printf", w_printf },
 
-	{ "setCaption", w_setCaption },
-	{ "getCaption", w_getCaption },
-
-	{ "setIcon", w_setIcon },
-
-	{ "getWidth", w_getWidth },
-	{ "getHeight", w_getHeight },
-	{ "getDimensions", w_getDimensions },
-
 	{ "isCreated", w_isCreated },
-
-	{ "getModes", w_getModes },
 
 	{ "setScissor", w_setScissor },
 	{ "getScissor", w_getScissor },
@@ -1711,8 +1539,6 @@ static const luaL_Reg functions[] =
 	{ "translate", w_translate },
 	{ "shear", w_shear },
 	{ "origin", w_origin },
-
-	{ "hasFocus", w_hasFocus },
 
 	{ 0, 0 }
 };
@@ -1749,7 +1575,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "graphics";
-	w.flags = MODULE_T;
+	w.flags = MODULE_GRAPHICS_T;
 	w.functions = functions;
 	w.types = types;
 

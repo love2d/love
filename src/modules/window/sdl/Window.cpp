@@ -55,8 +55,12 @@ Window::_currentMode::_currentMode()
 {
 }
 
-bool Window::setWindow(int width, int height, WindowFlags *flags)
+bool Window::setWindow(int width, int height, graphics::Graphics *graphics, WindowFlags *flags)
 {
+
+	if (graphics)
+		graphics->unSetMode();
+
 	bool fullscreen = false;
 	bool vsync = true;
 	int fsaa = 0;
@@ -185,6 +189,9 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	currentMode.flags.resizable = ((surface->flags & SDL_RESIZABLE) != 0);
 	currentMode.flags.borderless = ((surface->flags & SDL_NOFRAME) != 0);
 	currentMode.flags.centered = centered;
+
+	if (graphics)
+		graphics->setMode(width, height);
 
 	return true;
 }

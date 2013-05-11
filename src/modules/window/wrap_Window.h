@@ -18,16 +18,33 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "delay.h"
+#ifndef LOVE_WINDOW_WRAP_WINDOW_H
+#define LOVE_WINDOW_WRAP_WINDOW_H
 
-#include <SDL_timer.h>
+#include "common/config.h"
+#include "common/runtime.h"
 
 namespace love
 {
-
-void delay(unsigned int ms)
+namespace window
 {
-	SDL_Delay(ms);
-}
 
+int w_checkMode(lua_State *L);
+int w_setMode(lua_State *L);
+int w_getMode(lua_State *L);
+int w_getModes(lua_State *L);
+int w_toggleFullscreen(lua_State *L);
+int w_isCreated(lua_State *L);
+int w_getWidth(lua_State *L);
+int w_getHeight(lua_State *L);
+int w_getDimensions(lua_State *L);
+int w_setIcon(lua_State *L);
+int w_setTitle(lua_State *L);
+int w_getTitle(lua_State *L);
+int w_hasFocus(lua_State *L);
+extern "C" LOVE_EXPORT int luaopen_love_window(lua_State *L);
+
+} // window
 } // love
+
+#endif // LOVE_WINDOW_WRAP_WINDOW_H

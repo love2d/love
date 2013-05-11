@@ -112,6 +112,19 @@ public:
 
 	virtual ~Graphics();
 
+	/**
+	 * Sets the current graphics display viewport and initializes the renderer.
+	 * @param width The viewport width.
+	 * @param height The viewport height.
+	 **/
+	virtual bool setMode(int width, int height) = 0;
+
+	/**
+	 * Un-sets the current graphics display mode (uninitializing objects if
+	 * necessary.)
+	 **/
+	virtual void unSetMode() = 0;
+
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char  *&out);
 

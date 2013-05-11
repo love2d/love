@@ -192,9 +192,9 @@ function love.createhandlers()
 			return
 		end,
 		resize = function(w, h)
-			local ow, oh, flags = love.graphics.getMode()
+			local ow, oh, flags = love.window.getMode()
 			if flags.resizable then
-				love.graphics.setMode(w, h, flags)
+				love.window.setMode(w, h, flags)
 				if love.resize then return love.resize(w, h) end
 			end
 		end,
@@ -287,6 +287,7 @@ function love.init()
 			sound = true,
 			font = true,
 			thread = true,
+			window = true,
 		},
 		console = false, -- Only relevant for windows.
 		identity = false,
@@ -333,6 +334,7 @@ function love.init()
 		"image",
 		"font",
 		"graphics",
+		"window",
 		"math",
 		"physics",
 	} do
@@ -347,9 +349,9 @@ function love.init()
 
 	-- Setup screen here.
 	local has_window = false
-	if c.screen and c.modules.graphics then
-		if love.graphics.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) or (c.screen.width == 0 and c.screen.height == 0) then
-			assert(love.graphics.setMode(c.screen.width, c.screen.height,
+	if c.screen and c.modules.window then
+		if love.window.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) or (c.screen.width == 0 and c.screen.height == 0) then
+			assert(love.window.setMode(c.screen.width, c.screen.height,
 			{
 				fullscreen = c.screen.fullscreen,
 				vsync = c.screen.vsync,
@@ -361,7 +363,7 @@ function love.init()
 		else
 			error("Could not set screen mode")
 		end
-		love.graphics.setCaption(c.title)
+		love.window.setTitle(c.title)
 	end
 
 	-- Console hack
@@ -454,13 +456,15 @@ function love.run()
 
 		-- Call update and draw
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
-		if love.graphics then
+		if love.window and love.graphics then
 			love.graphics.clear()
 			love.graphics.origin()
 			if love.draw then love.draw() end
 		end
 
-		if love.graphics then love.graphics.present() end
+		if love.window and love.graphics then
+			love.graphics.present()
+		end
 		if love.timer then love.timer.sleep(0.001) end
 
 	end
@@ -630,13 +634,13 @@ function love.nogame()
 
 	local hearts = {}
 	local rings = {}
-	
+
 	local cx = 400
 	local cy = 300
-	
+
 	local pig
 	local heart_image
-	
+
 	local function add_heart_ring(radius, number, speed)
 		local step = math.pi*2/number
 		for i = 1,number do
@@ -650,13 +654,13 @@ function love.nogame()
 		end
 		table.insert(rings, radius)
 	end
-	
+
 	local function update_hearts(dt)
 		for i,v in ipairs(hearts) do
 			v.position = v.position + v.speed*dt*0.6
 		end
 	end
-	
+
 	local function draw_hearts()
 		for i,v in ipairs(hearts) do
 			local x = math.cos(v.position) * v.radius + cx
@@ -665,7 +669,7 @@ function love.nogame()
 			love.graphics.draw(heart_image, x, y, v.position+0.4, 1, 1, 32, 32)
 		end
 	end
-	
+
 	local function draw_pig(p)
 		love.graphics.setColor(255, 255, 255, 255)
 		love.graphics.draw(p.img, p.x, p.y, 0, 1, 1, 128, 128)
@@ -734,7 +738,7 @@ function love.errhand(msg)
 
 	error_printer(msg, 2)
 
-	if not love.graphics or not love.event or not love.graphics.isCreated() then
+	if not love.window or not love.graphics or not love.event or not love.window.isCreated() then
 		return
 	end
 
@@ -771,7 +775,7 @@ function love.errhand(msg)
 
 	local function draw()
 		love.graphics.clear()
-		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
+		love.graphics.printf(p, 70, 70, love.window.getWidth() - 70)
 		love.graphics.present()
 	end
 
@@ -822,7 +826,7 @@ function love.releaseerrhand(msg)
 
 	local function draw()
 		love.graphics.clear()
-		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
+		love.graphics.printf(p, 70, 70, love.window.getWidth() - 70)
 		love.graphics.present()
 	end
 

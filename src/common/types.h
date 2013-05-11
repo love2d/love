@@ -96,6 +96,7 @@ enum Type
 
 	// The modules themselves. Only add abstracted modules here.
 	MODULE_FILESYSTEM_ID,
+	MODULE_GRAPHICS_ID,
 	MODULE_IMAGE_ID,
 	MODULE_SOUND_ID,
 
@@ -171,6 +172,7 @@ const bits THREAD_CHANNEL_T = (bits(1) << THREAD_CHANNEL_ID) | OBJECT_T;
 
 // Modules.
 const bits MODULE_FILESYSTEM_T = (bits(1) << MODULE_FILESYSTEM_ID) | MODULE_T;
+const bits MODULE_GRAPHICS_T = (bits(1) << MODULE_GRAPHICS_ID) | MODULE_T;
 const bits MODULE_IMAGE_T = (bits(1) << MODULE_IMAGE_ID) | MODULE_T;
 const bits MODULE_SOUND_T = (bits(1) << MODULE_SOUND_ID) | MODULE_T;
 

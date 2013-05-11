@@ -158,6 +158,32 @@ std::string luax_checkstring(lua_State *L, int idx);
  **/
 void luax_pushstring(lua_State *L, const std::string &str);
 
+
+bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue);
+int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
+
+/**
+ * Convert the value at the specified index to an Lua number, and then
+ * convert to a float.
+ *
+ * @param L The Lua state.
+ * @param idx The index on the stack.
+ */
+inline float luax_tofloat(lua_State *L, int idx)
+{
+	return static_cast<float>(lua_tonumber(L, idx));
+}
+
+/**
+ * Like luax_tofloat, but checks that the value is a number.
+ *
+ * @see luax_tofloat
+ */
+inline float luax_checkfloat(lua_State *L, int idx)
+{
+	return static_cast<float>(luaL_checknumber(L, idx));
+}
+
 /**
  * Require at least 'min' number of items on the stack.
  * @param L The Lua state.
@@ -312,45 +338,6 @@ int luax_insistlove(lua_State *L, const char *k);
  **/
 int luax_getregistry(lua_State *L, Registry r);
 
-Type luax_type(lua_State *L, int idx);
-
-/**
- * Convert the value at the specified index to an Lua number, and then
- * convert to a float.
- *
- * @param L The Lua state.
- * @param idx The index on the stack.
- */
-inline float luax_tofloat(lua_State *L, int idx)
-{
-	return static_cast<float>(lua_tonumber(L, idx));
-}
-
-/**
- * Like luax_tofloat, but checks that the value is a number.
- *
- * @see luax_tofloat
- */
-inline float luax_checkfloat(lua_State *L, int idx)
-{
-	return static_cast<float>(luaL_checknumber(L, idx));
-}
-
-/**
- * Converts the value at idx to the specified type without checking that
- * this conversion is valid. If the type has been previously verified with
- * luax_istype, then this can be safely used. Otherwise, use luax_checktype.
- * @param L The Lua state.
- * @param idx The index on the stack.
- * @param name The name of the type.
- * @param type The type bit.
- **/
-template <typename T>
-T *luax_totype(lua_State *L, int idx, const char *, love::bits)
-{
-	return (T *)(((Proxy *)lua_touserdata(L, idx))->data);
-}
-
 /**
  * Like luax_totype, but causes an error if the value at idx is not Proxy,
  * or is not the specified type.
@@ -380,7 +367,7 @@ T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 	lua_getfield(L, -1, k);
 
 	if (!lua_isuserdata(L, -1))
-		luaL_error(L, "Tried to get nonexisting module %s.", k);
+		luaL_error(L, "Tried to get nonexistant module %s.", k);
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
@@ -391,6 +378,45 @@ T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 
 	return (T *)u->data;
 }
+
+template <typename T>
+T *luax_optmodule(lua_State *L, const char *k, love::bits type)
+{
+	luax_getregistry(L, REGISTRY_MODULES);
+	lua_getfield(L, -1, k);
+
+	if (!lua_isuserdata(L, -1))
+	{
+		lua_pop(L, 2);
+		return 0;
+	}
+
+	Proxy *u = (Proxy *)lua_touserdata(L, -1);
+
+	if ((u->flags & type) != type)
+		luaL_error(L, "Incorrect module %s", k);
+	
+	lua_pop(L, 2);
+	
+	return (T *) u->data;
+}
+
+/**
+ * Converts the value at idx to the specified type without checking that
+ * this conversion is valid. If the type has been previously verified with
+ * luax_istype, then this can be safely used. Otherwise, use luax_checktype.
+ * @param L The Lua state.
+ * @param idx The index on the stack.
+ * @param name The name of the type.
+ * @param type The type bit.
+ **/
+template <typename T>
+T *luax_totype(lua_State *L, int idx, const char *, love::bits)
+{
+	return (T *)(((Proxy *)lua_touserdata(L, idx))->data);
+}
+
+Type luax_type(lua_State *L, int idx);
 
 } // love
 

@@ -38,19 +38,9 @@ namespace graphics
 namespace opengl
 {
 
-int w_checkMode(lua_State *L);
-int w_setMode(lua_State *L);
-int w_getMode(lua_State *L);
-int w_toggleFullscreen(lua_State *L);
 int w_reset(lua_State *L);
 int w_clear(lua_State *L);
 int w_present(lua_State *L);
-int w_setIcon(lua_State *L);
-int w_setCaption(lua_State *L);
-int w_getCaption(lua_State *L);
-int w_getWidth(lua_State *L);
-int w_getHeight(lua_State *L);
-int w_getDimensions(lua_State *L);
 int w_isCreated(lua_State *L);
 int w_setScissor(lua_State *L);
 int w_getScissor(lua_State *L);
@@ -115,7 +105,6 @@ int w_scale(lua_State *L);
 int w_translate(lua_State *L);
 int w_shear(lua_State *L);
 int w_origin(lua_State *L);
-int w_hasFocus(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State *L);
 
 } // opengl

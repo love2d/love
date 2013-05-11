@@ -111,40 +111,12 @@ public:
 	// Implements Module.
 	const char *getName() const;
 
-	/**
-	 * Checks whether a display mode is supported or not. Note
-	 * that fullscreen is assumed, because windowed modes are
-	 * generally supported regardless of size.
-	 * @param width The window width.
-	 * @param height The window height.
-	 **/
-	bool checkMode(int width, int height, bool fullscreen) const;
-
 	DisplayState saveState();
 
 	void restoreState(const DisplayState &s);
 
-	/**
-	 * Sets the current display mode.
-	 * @param width The window width.
-	 * @param height The window height.
-	 * @param flags An optional WindowFlags structure.
-	 **/
-	bool setMode(int width, int height, WindowFlags *flags);
-
-	/**
-	 * Gets the current display mode.
-	 * @param width Pointer to an integer for the window width.
-	 * @param height Pointer to an integer for the window height.
-	 * @param flags A WindowFlags structure.
-	 **/
-	void getMode(int &width, int &height, WindowFlags &flags) const;
-
-	/**
-	 * Toggles fullscreen. Note that this also needs to reload the
-	 * entire OpenGL context.
-	 **/
-	bool toggleFullscreen();
+	virtual bool setMode(int width, int height);
+	virtual void unSetMode();
 
 	/**
 	 * Resets the current color, background color,
@@ -159,55 +131,24 @@ public:
 	void clear();
 
 	/**
-	 * Flips buffers. (Rendered geometry is
-	 * presented on screen).
+	 * Flips buffers. (Rendered geometry is presented on screen).
 	 **/
 	void present();
 
 	/**
-	 * Sets the window's icon.
-	 **/
-	void setIcon(Image *image);
-
-	/**
-	 * Sets the window's caption.
-	 **/
-	void setCaption(const char *caption);
-
-	/**
-	 * Gets the window's caption.
-	 **/
-	std::string getCaption() const;
-
-	/**
-	 * Gets the width of the current display mode.
+	 * Gets the width of the current graphics viewport.
 	 **/
 	int getWidth() const;
 
 	/**
-	 * Gets the height of the current display mode.
+	 * Gets the height of the current graphics viewport.
 	 **/
 	int getHeight() const;
 
 	/**
-	 * True if some display mode is set.
+	 * True if a graphics viewport is set.
 	 **/
 	bool isCreated() const;
-
-	/**
-	 * This native Lua function gets available modes
-	 * from SDL and returns them as a table on the following format:
-	 *
-	 * {
-	 *   { width = 800, height = 600 },
-	 *   { width = 1024, height = 768 },
-	 *   ...
-	 * }
-	 *
-	 * Only fullscreen modes are returned here, as all
-	 * window sizes are supported (normally).
-	 **/
-	int getModes(lua_State *L) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded and not drawn.
@@ -541,8 +482,10 @@ public:
 	void shear(float kx, float ky);
 	void origin();
 
-	bool hasFocus() const;
 private:
+
+	int getRenderWidth() const;
+	int getRenderHeight() const;
 
 	Font *currentFont;
 	love::window::Window *currentWindow;
@@ -554,8 +497,11 @@ private:
 	GLint userMatrices;
 	bool colorMask[4];
 
-	int getRenderWidth() const;
-	int getRenderHeight() const;
+	int width;
+	int height;
+	bool created;
+
+	DisplayState savedState;
 
 }; // Graphics
 

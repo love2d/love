@@ -77,11 +77,11 @@ private:
 	// The current timestep.
 	double dt;
 
-	// The reciprocal of the timer frequency.
-	const double timerFrequency;
+	// The timer period (reciprocal of the frequency.)
+	const double timerPeriod;
 
-	// Returns the timer frequency on some platforms.
-	static double getTimerFrequency();
+	// Returns the timer period on some platforms.
+	static double getTimerPeriod();
 	
 }; // Timer
 

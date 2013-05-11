@@ -46,8 +46,15 @@ Graphics::Graphics()
 	, matrixLimit(0)
 	, userMatrices(0)
 	, colorMask()
+	, width(0)
+	, height(0)
+	, created(false)
+	, savedState()
 {
 	currentWindow = love::window::sdl::Window::getSingleton();
+
+	if (currentWindow->isCreated())
+		setMode(currentWindow->getWidth(), currentWindow->getHeight());
 }
 
 Graphics::~Graphics()
@@ -61,11 +68,6 @@ Graphics::~Graphics()
 const char *Graphics::getName() const
 {
 	return "love.graphics.opengl";
-}
-
-bool Graphics::checkMode(int width, int height, bool fullscreen) const
-{
-	return currentWindow->checkWindowSize(width, height, fullscreen);
 }
 
 DisplayState Graphics::saveState()
@@ -120,31 +122,14 @@ void Graphics::restoreState(const DisplayState &s)
 	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
 }
 
-static void APIENTRY myErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message, void *ud)
+bool Graphics::setMode(int width, int height)
 {
-	(void)ud;
-	std::cerr << "source = " << source << ", type = " << type << ", id = " << id << ", severity = " << severity << ", length = " << length << "\n" << message << std::endl;
-}
-
-bool Graphics::setMode(int width, int height, WindowFlags *flags)
-{
-	// This operation destroys the OpenGL context, so
-	// we must save the state.
 	DisplayState tempState;
 	if (isCreated())
-		tempState = saveState();
+		savedState = saveState();
 
-	// Unload all volatile objects. These must be reloaded after
-	// the display mode change.
-	Volatile::unloadAll();
-
-	gl.deInitContext();
-
-	bool success = currentWindow->setWindow(width, height, flags);
-
-	// Regardless of failure, we'll have to set up OpenGL once again.
-	width = currentWindow->getWidth();
-	height = currentWindow->getHeight();
+	this->width = width;
+	this->height = height;
 
 	// Okay, setup OpenGL.
 	gl.initContext();
@@ -201,7 +186,7 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 		std::cerr << "Could not reload all volatile objects." << std::endl;
 
 	// Restore the display state.
-	restoreState(tempState);
+	restoreState(savedState);
 	pixel_size_stack.clear();
 	pixel_size_stack.reserve(5);
 	pixel_size_stack.push_back(1);
@@ -211,30 +196,22 @@ bool Graphics::setMode(int width, int height, WindowFlags *flags)
 	glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 	matrixLimit -= 5;
 
-	// Debug output is temporarily disabled until we either improve it and make
-	// it optional or remove it.
-	if (GLEE_KHR_debug && false)
-	{
-		std::cerr << "debug on" << std::endl;
-		glDebugMessageCallback(myErrorCallback, NULL);
-		glEnable(GL_DEBUG_OUTPUT);
-	}
+	created = true;
 
-	return success;
+	return true;
 }
 
-void Graphics::getMode(int &width, int &height, WindowFlags &flags) const
+void Graphics::unSetMode()
 {
-	currentWindow->getWindow(width, height, flags);
-}
+	// Window creation may destroy the OpenGL context, so we must save the state.
+	if (isCreated())
+		savedState = saveState();
 
-bool Graphics::toggleFullscreen()
-{
-	int width, height;
-	WindowFlags flags;
-	currentWindow->getWindow(width, height, flags);
-	flags.fullscreen = !flags.fullscreen;
-	return setMode(width, height, &flags);
+	// Unload all volatile objects. These must be reloaded after
+	// the display mode change.
+	Volatile::unloadAll();
+
+	gl.deInitContext();
 }
 
 void Graphics::reset()
@@ -259,39 +236,21 @@ void Graphics::present()
 	currentWindow->swapBuffers();
 }
 
-void Graphics::setIcon(Image *image)
-{
-	if (image->isCompressed())
-		throw love::Exception("Cannot use compressed image data to set an icon.");
-
-	currentWindow->setIcon(image->getData());
-}
-
-void Graphics::setCaption(const char *caption)
-{
-	std::string title(caption);
-	currentWindow->setWindowTitle(title);
-}
-
-std::string Graphics::getCaption() const
-{
-	return currentWindow->getWindowTitle();
-}
-
 int Graphics::getWidth() const
 {
-	return currentWindow->getWidth();
+	return width;
 }
 
 int Graphics::getHeight() const
 {
-	return currentWindow->getHeight();
+	return height;
 }
 
 int Graphics::getRenderWidth() const
 {
 	if (Canvas::current)
 		return Canvas::current->getWidth();
+
 	return getWidth();
 }
 
@@ -299,44 +258,13 @@ int Graphics::getRenderHeight() const
 {
 	if (Canvas::current)
 		return Canvas::current->getHeight();
+
 	return getHeight();
 }
 
 bool Graphics::isCreated() const
 {
-	return currentWindow->isCreated();
-}
-
-int Graphics::getModes(lua_State *L) const
-{
-	int n;
-	love::window::Window::WindowSize *modes = currentWindow->getFullscreenSizes(n);
-
-	if (modes == 0)
-		return 0;
-
-	lua_createtable(L, n, 0);
-
-	for (int i = 0; i < n ; i++)
-	{
-		lua_pushinteger(L, i+1);
-		lua_createtable(L, 0, 2);
-
-		// Inner table attribs.
-
-		lua_pushinteger(L, modes[i].width);
-		lua_setfield(L, -2, "width");
-
-		lua_pushinteger(L, modes[i].height);
-		lua_setfield(L, -2, "height");
-
-		// Inner table attribs end.
-
-		lua_settable(L, -3);
-	}
-
-	delete[] modes;
-	return 1;
+	return created;
 }
 
 void Graphics::setScissor(int x, int y, int width, int height)
@@ -1377,11 +1305,6 @@ void Graphics::origin()
 	glLoadIdentity();
 	pixel_size_stack.clear();
 	pixel_size_stack.push_back(1);
-}
-
-bool Graphics::hasFocus() const
-{
-	return currentWindow->hasFocus();
 }
 
 } // opengl

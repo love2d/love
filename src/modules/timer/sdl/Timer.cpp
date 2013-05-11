@@ -66,7 +66,7 @@ Timer::Timer()
 	, fpsUpdateFrequency(1)
 	, frames(0)
 	, dt(0)
-	, timerFrequency(getTimerFrequency())
+	, timerPeriod(getTimerPeriod())
 {
 	// Init the SDL timer system (needed for SDL_Delay.)
 	if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
@@ -94,7 +94,7 @@ void Timer::step()
 	// "Current" time is previous time by now.
 	prevTime = currTime;
 
-	// Get ticks from system.
+	// Get time from system.
 	currTime = getTime();
 
 	// Convert to number of seconds.
@@ -132,7 +132,7 @@ double Timer::getAverageDelta() const
 	return averageDelta;
 }
 
-double Timer::getTimerFrequency()
+double Timer::getTimerPeriod()
 {
 #if defined(LOVE_MACOSX)
 	mach_timebase_info_data_t info;
@@ -166,11 +166,11 @@ double Timer::getTime() const
 		mt = getTimeOfDay();
 	return mt;
 #elif defined(LOVE_MACOSX)
-	return (double) mach_absolute_time() * timerFrequency;
+	return (double) mach_absolute_time() * timerPeriod;
 #elif defined(LOVE_WINDOWS)
 	LARGE_INTEGER microTime;
 	QueryPerformanceCounter(&microTime);
-	return (double) microTime.QuadPart * timerFrequency;
+	return (double) microTime.QuadPart * timerPeriod;
 #endif
 }
 

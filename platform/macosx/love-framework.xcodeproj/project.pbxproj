@@ -228,6 +228,8 @@
 		FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
+		FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */; };
+		FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9FC0AF173D6E3E005027FF /* wrap_Window.h */; };
 		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
 		FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAC6B01170A373A008A61C5 /* CompressedData.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
@@ -723,6 +725,8 @@
 		FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RandomGenerator.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
+		FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Window.cpp; sourceTree = "<group>"; };
+		FA9FC0AF173D6E3E005027FF /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
 		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
 		FAAC6B01170A373A008A61C5 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
@@ -970,9 +974,11 @@
 		153D76205F7A4ACD12FB4C0E /* window */ = {
 			isa = PBXGroup;
 			children = (
+				63082CBA23A6046C60DA1C6F /* sdl */,
 				351B09E51FDC338622F44624 /* Window.cpp */,
 				7423362764CF57574BB16CDA /* Window.h */,
-				63082CBA23A6046C60DA1C6F /* sdl */,
+				FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */,
+				FA9FC0AF173D6E3E005027FF /* wrap_Window.h */,
 			);
 			path = window;
 			sourceTree = "<group>";
@@ -1475,8 +1481,8 @@
 		6D590DDD41E72A60262E4A4F /* timer */ = {
 			isa = PBXGroup;
 			children = (
-				2D9475890CDA3D3776435622 /* Timer.h */,
 				5CFF12567FFB5C5166631693 /* sdl */,
+				2D9475890CDA3D3776435622 /* Timer.h */,
 				695E4ED13AA0689E64280573 /* wrap_Timer.cpp */,
 				7F575BE9573C654B5ED44CC1 /* wrap_Timer.h */,
 			);
@@ -1735,6 +1741,7 @@
 				FAC86E6A1724555D00EED715 /* DrawGable.h in Headers */,
 				FAC86E6C1724555D00EED715 /* Geometry.h in Headers */,
 				FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */,
+				FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2018,6 +2025,7 @@
 				FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */,
 				FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */,
 				FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */,
+				FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

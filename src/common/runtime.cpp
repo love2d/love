@@ -135,6 +135,34 @@ void luax_pushstring(lua_State *L, const std::string &str)
 	lua_pushlstring(L, str.data(), str.size());
 }
 
+bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue)
+{
+	lua_getfield(L, table_index, key);
+
+	bool retval;
+	if (lua_isnoneornil(L, -1))
+		retval = defaultValue;
+	else
+		retval = lua_toboolean(L, -1);
+
+	lua_pop(L, 1);
+	return retval;
+}
+
+int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue)
+{
+	lua_getfield(L, table_index, key);
+
+	int retval;
+	if (!lua_isnumber(L, -1))
+		retval = defaultValue;
+	else
+		retval = lua_tonumber(L, -1);
+
+	lua_pop(L, 1);
+	return retval;
+}
+
 int luax_assert_argc(lua_State *L, int min)
 {
 	int argc = lua_gettop(L);
