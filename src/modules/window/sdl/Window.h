@@ -57,6 +57,8 @@ public:
 	void swapBuffers();
 
 	bool hasFocus() const;
+	bool hasMouseFocus() const;
+
 	void setMouseVisible(bool visible);
 	bool getMouseVisible() const;
 

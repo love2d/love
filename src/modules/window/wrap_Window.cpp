@@ -208,6 +208,12 @@ int w_hasFocus(lua_State *L)
 	return 1;
 }
 
+int w_hasMouseFocus(lua_State *L)
+{
+	luax_pushboolean(L, instance->hasMouseFocus());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "checkMode", w_checkMode },
@@ -223,6 +229,7 @@ static const luaL_Reg functions[] =
 	{ "setTitle", w_setTitle },
 	{ "getTitle", w_getTitle },
 	{ "hasFocus", w_hasFocus },
+	{ "hasMouseFocus", w_hasMouseFocus },
 	{ 0, 0 }
 };
 
