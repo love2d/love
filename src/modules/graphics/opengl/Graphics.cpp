@@ -124,10 +124,6 @@ void Graphics::restoreState(const DisplayState &s)
 
 bool Graphics::setMode(int width, int height)
 {
-	DisplayState tempState;
-	if (isCreated())
-		savedState = saveState();
-
 	this->width = width;
 	this->height = height;
 
