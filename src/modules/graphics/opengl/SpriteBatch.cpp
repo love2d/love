@@ -123,7 +123,7 @@ int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
-	if (geom->getNumVertices() != 4)
+	if (geom->getVertexCount() != 4)
 		throw love::Exception("Can only add quadliteral geometries to SpriteBatch");
 
 	for (size_t i = 0; i < 4; i++)

@@ -57,14 +57,6 @@ public:
 	Geometry &operator=(const Geometry &other);
 	virtual ~Geometry();
 
-	/**
-	 * Returns number of vertices in the *polygon* defining the geometry.
-	 **/
-	size_t getNumVertices() const
-	{
-		return polygon.size();
-	}
-
 	const vertex &getVertex(size_t i) const;
 	void setVertex(size_t i, const vertex &v);
 
@@ -81,7 +73,7 @@ public:
 	/**
 	 * Returns the size of the vertex array.
 	 **/
-	size_t getVertexArraySize() const
+	size_t getVertexCount() const
 	{
 		return vertexCount;
 	}
@@ -100,10 +92,6 @@ public:
 	};
 
 private:
-	void triangulate();
-
-	std::vector<vertex> polygon;
-
 	vertex *vertexArray;
 	size_t vertexCount;
 

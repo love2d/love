@@ -115,7 +115,7 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *) &v[0].r);
 	}
 
-	drawv(t, v, geom->getVertexArraySize(), GL_TRIANGLES);
+	drawv(t, v, geom->getVertexCount(), GL_TRIANGLE_FAN);
 
 	if (geom->hasVertexColors())
 	{

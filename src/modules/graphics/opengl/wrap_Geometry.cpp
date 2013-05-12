@@ -38,7 +38,7 @@ Geometry *luax_checkgeometry(lua_State *L, int idx)
 int w_Geometry_getVertexCount(lua_State *L)
 {
 	Geometry *geom = luax_checkgeometry(L, 1);
-	lua_pushinteger(L, geom->getNumVertices());
+	lua_pushinteger(L, geom->getVertexCount());
 	return 1;
 }
 

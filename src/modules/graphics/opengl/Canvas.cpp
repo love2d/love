@@ -592,7 +592,7 @@ void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	// flip texture coordinates vertically
-	size_t vcount = geom->getVertexArraySize();
+	size_t vcount = geom->getVertexCount();
 	const vertex *w = geom->getVertexArray();
 	vertex *v = new vertex[vcount];
 	for (size_t i = 0; i < vcount; ++i)
@@ -608,7 +608,7 @@ void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle
 		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&v->r);
 	}
 
-	drawv(t, v, vcount, GL_TRIANGLES);
+	drawv(t, v, vcount, GL_TRIANGLE_FAN);
 
 	if (geom->hasVertexColors())
 	{
