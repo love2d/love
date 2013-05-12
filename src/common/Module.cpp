@@ -34,32 +34,34 @@ namespace
 
 namespace love
 {
-	void Module::registerInstance(Module *instance)
+
+void Module::registerInstance(Module *instance)
+{
+	if (instance == NULL)
+		throw Exception("Module instance is NULL");
+
+	std::string name(instance->getName());
+
+	std::map<std::string, Module*>::iterator it = registry.find(name);
+
+	if (registry.end() != it)
 	{
-		if (instance == NULL)
-			throw Exception("Module instance is NULL");
-
-		std::string name(instance->getName());
-
-		std::map<std::string, Module*>::iterator it = registry.find(name);
-
-		if (registry.end() != it)
-		{
-			if (it->second == instance)
-				return;
-			throw Exception("Module %s already registered!", instance->getName());
-		}
-
-		registry.insert(make_pair(name, instance));
+		if (it->second == instance)
+			return;
+		throw Exception("Module %s already registered!", instance->getName());
 	}
 
-	Module *Module::getInstance(const char *name)
-	{
-		std::map<std::string, Module*>::iterator it = registry.find(std::string(name));
+	registry.insert(make_pair(name, instance));
+}
 
-		if (registry.end() == it)
-			return NULL;
+Module *Module::getInstance(const char *name)
+{
+	std::map<std::string, Module*>::iterator it = registry.find(std::string(name));
 
-		return it->second;
-	}
-} // namespace love
+	if (registry.end() == it)
+		return NULL;
+
+	return it->second;
+}
+
+} // love

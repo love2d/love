@@ -199,12 +199,12 @@ bool Graphics::setMode(int width, int height)
 
 void Graphics::unSetMode()
 {
-	// Window creation may destroy the OpenGL context, so we must save the state.
+	// Window re-creation may destroy the GL context, so we must save the state.
 	if (isCreated())
 		savedState = saveState();
 
-	// Unload all volatile objects. These must be reloaded after
-	// the display mode change.
+	// Unload all volatile objects. These must be reloaded after the display
+	// mode change.
 	Volatile::unloadAll();
 
 	gl.deInitContext();
@@ -266,7 +266,8 @@ bool Graphics::isCreated() const
 void Graphics::setScissor(int x, int y, int width, int height)
 {
 	glEnable(GL_SCISSOR_TEST);
-	glScissor(x, getRenderHeight() - (y + height), width, height); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
+	// Compensates for the fact that our y-coordinate is reverse of OpenGL's.
+	glScissor(x, getRenderHeight() - (y + height), width, height);
 }
 
 void Graphics::setScissor()
@@ -1005,7 +1006,7 @@ static void draw_overdraw(Vector *overdraw, size_t count, float pixel_size, bool
 	glDisableClientState(GL_COLOR_ARRAY);
 	// "if GL_COLOR_ARRAY is enabled, the value of the current color is
 	// undefined after glDrawArrays executes"
-	
+
 	gl.setColor(c);
 
 	delete[] colors;
@@ -1299,8 +1300,7 @@ void Graphics::shear(float kx, float ky)
 void Graphics::origin()
 {
 	glLoadIdentity();
-	pixel_size_stack.clear();
-	pixel_size_stack.push_back(1);
+	pixel_size_stack.back() = 1;
 }
 
 } // opengl

@@ -124,7 +124,7 @@ int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float
 		return -1;
 
 	if (geom->getVertexCount() != 4)
-		throw love::Exception("Can only add quadliteral geometries to SpriteBatch");
+		throw love::Exception("Can only add quadrilateral geometries to SpriteBatch");
 
 	for (size_t i = 0; i < 4; i++)
 		sprite[i] = geom->getVertex(i);
@@ -169,9 +169,9 @@ void SpriteBatch::unlock()
 
 void SpriteBatch::setImage(Image *newimage)
 {
+	newimage->retain();
 	image->release();
 	image = newimage;
-	image->retain();
 }
 
 Image *SpriteBatch::getImage()

@@ -78,7 +78,7 @@ static int w__eq(lua_State *L)
 	return 1;
 }
 
-Reference *luax_refif (lua_State *L, int type)
+Reference *luax_refif(lua_State *L, int type)
 {
 	Reference *r = 0;
 
@@ -538,6 +538,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// The modules themselves. Only add abstracted modules here.
 	{"filesystem", MODULE_FILESYSTEM_ID},
+	{"graphics", MODULE_GRAPHICS_ID},
 	{"image", MODULE_IMAGE_ID},
 	{"sound", MODULE_SOUND_ID},
 };
