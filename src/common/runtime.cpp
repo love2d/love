@@ -503,6 +503,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// Math
 	{"RandomGenerator", MATH_RANDOM_GENERATOR_ID},
+	{"BezierCurve", MATH_BEZIER_CURVE_ID},
 
 	// Audio
 	{"Source", AUDIO_SOURCE_ID},

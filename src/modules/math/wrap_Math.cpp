@@ -20,7 +20,9 @@
 
 #include "wrap_Math.h"
 #include "wrap_RandomGenerator.h"
+#include "wrap_BezierCurve.h"
 #include "MathModule.h"
+#include "BezierCurve.h"
 
 #include <cmath>
 #include <iostream>
@@ -71,6 +73,44 @@ int w_newRandomGenerator(lua_State *L)
 	}
 
 	luax_newtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, (void *) t);
+	return 1;
+}
+
+int w_newBezierCurve(lua_State *L)
+{
+	std::vector<Vector> points;
+	if (lua_istable(L, 1))
+	{
+		size_t top = lua_objlen(L, 1);
+		points.reserve(top / 2);
+		for (size_t i = 1; i <= top; i += 2)
+		{
+			lua_rawgeti(L, 1, i);
+			lua_rawgeti(L, 1, i+1);
+
+			Vector v;
+			v.x = luaL_checknumber(L, -2);
+			v.y = luaL_checknumber(L, -1);
+			points.push_back(v);
+
+			lua_pop(L, 2);
+		}
+	}
+	else
+	{
+		size_t top = lua_gettop(L);
+		points.reserve(top / 2);
+		for (size_t i = 1; i <= top; i += 2)
+		{
+			Vector v;
+			v.x = luaL_checknumber(L, i);
+			v.y = luaL_checknumber(L, i+1);
+			points.push_back(v);
+		}
+	}
+
+	BezierCurve *curve = Math::instance.newBezierCurve(points);
+	luax_newtype(L, "BezierCurve", MATH_BEZIER_CURVE_T, (void *)curve);
 	return 1;
 }
 
@@ -228,6 +268,7 @@ static const luaL_Reg functions[] =
 	{ "random", w_random },
 	{ "randomnormal", w_randomnormal },
 	{ "newRandomGenerator", w_newRandomGenerator },
+	{ "newBezierCurve", w_newBezierCurve },
 	{ "triangulate", w_triangulate },
 	{ "isConvex", w_isConvex },
 	{ "noise", w_noise },
@@ -237,6 +278,7 @@ static const luaL_Reg functions[] =
 static const lua_CFunction types[] =
 {
 	luaopen_randomgenerator,
+	luaopen_beziercurve,
 	0
 };
 

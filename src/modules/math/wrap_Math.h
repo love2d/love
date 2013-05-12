@@ -34,6 +34,7 @@ int w_randomseed(lua_State *L);
 int w_random(lua_State *L);
 int w_randomnormal(lua_State *L);
 int w_newRandomGenerator(lua_State *L);
+int w_newBezierCurve(lua_State *L);
 int w_triangulate(lua_State *L);
 int w_isConvex(lua_State *L);
 int w_noise(lua_State *L);

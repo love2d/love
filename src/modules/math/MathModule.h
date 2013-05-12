@@ -26,6 +26,7 @@
 // LOVE
 #include "common/Module.h"
 #include "common/math.h"
+#include "common/Vector.h"
 #include "common/int.h"
 
 // Noise
@@ -38,6 +39,8 @@ namespace love
 {
 namespace math
 {
+
+class BezierCurve;
 
 class Math : public Module
 {
@@ -94,6 +97,11 @@ public:
 	 * Create a new random number generator.
 	 **/
 	RandomGenerator *newRandomGenerator();
+
+	/**
+	 * Creates a new bezier curve.
+	 **/
+	BezierCurve *newBezierCurve(const std::vector<Vector> &points);
 
 	virtual const char *getName() const
 	{

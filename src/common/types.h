@@ -60,6 +60,7 @@ enum Type
 
 	// Math
 	MATH_RANDOM_GENERATOR_ID,
+	MATH_BEZIER_CURVE_ID,
 
 	// Audio
 	AUDIO_SOURCE_ID,
@@ -136,6 +137,7 @@ const bits IMAGE_COMPRESSED_DATA_T = (bits(1) << IMAGE_COMPRESSED_DATA_ID) | DAT
 
 // Math.
 const bits MATH_RANDOM_GENERATOR_T = (bits(1) << MATH_RANDOM_GENERATOR_ID) | OBJECT_T;
+const bits MATH_BEZIER_CURVE_T = (bits(1) << MATH_BEZIER_CURVE_ID) | OBJECT_T;
 
 // Audio.
 const bits AUDIO_SOURCE_T = (bits(1) << AUDIO_SOURCE_ID) | OBJECT_T;

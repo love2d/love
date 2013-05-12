@@ -21,6 +21,7 @@
 // LOVE
 #include "MathModule.h"
 #include "common/Vector.h"
+#include "BezierCurve.h"
 
 // STL
 #include <cmath>
@@ -93,6 +94,11 @@ Math::Math()
 RandomGenerator *Math::newRandomGenerator()
 {
 	return new RandomGenerator();
+}
+
+BezierCurve *Math::newBezierCurve(const vector<Vector> &points)
+{
+	return new BezierCurve(points);
 }
 
 vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
