@@ -109,6 +109,14 @@ public:
 	std::vector<Triangle> triangulate(const std::vector<vertex> &polygon);
 
 	/**
+	 * Checks whether a polygon is convex.
+	 *
+	 * @param polygon Polygon to test.
+	 * @return True if the polygon is convex, false otherwise.
+	 **/
+	bool isConvex(const std::vector<vertex> &polygon);
+
+	/**
 	 * Calculate Simplex noise for the specified coordinate(s).
 	 *
 	 * @return Noise value in the range of [-1,1].

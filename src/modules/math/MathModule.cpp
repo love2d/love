@@ -20,6 +20,7 @@
 
 // LOVE
 #include "MathModule.h"
+#include "common/Vector.h"
 
 // STL
 #include <cmath>
@@ -157,6 +158,33 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 	triangles.push_back(Triangle(polygon[prev], polygon[current], polygon[next]));
 
 	return triangles;
+}
+
+bool Math::isConvex(const std::vector<vertex> &polygon)
+{
+	if (polygon.size() < 3)
+		return false;
+
+	// a polygon is convex if all corners turn in the same direction
+	// turning direction can be determined using the cross-product of
+	// the forward difference vectors
+	size_t i = polygon.size() - 2, j = polygon.size() - 1, k = 0;
+	Vector p(polygon[j].x - polygon[i].x, polygon[j].y - polygon[i].y);
+	Vector q(polygon[k].x - polygon[j].x, polygon[k].y - polygon[j].y);
+	float winding = p ^ q;
+
+	while (k+1 < polygon.size())
+	{
+		i = j; j = k; k++;
+		p.x = polygon[j].x - polygon[i].x;
+		p.y = polygon[j].y - polygon[i].y;
+		q.x = polygon[k].x - polygon[j].x;
+		q.y = polygon[k].y - polygon[j].y;
+
+		if ((p^q) * winding < 0)
+			return false;
+	}
+	return true;
 }
 
 } // math

@@ -148,6 +148,43 @@ int w_triangulate(lua_State *L)
 	return 1;
 }
 
+int w_isConvex(lua_State *L)
+{
+	std::vector<vertex> vertices;
+	if (lua_istable(L, 1))
+	{
+		size_t top = lua_objlen(L, 1);
+		vertices.reserve(top / 2);
+		for (size_t i = 1; i <= top; i += 2)
+		{
+			lua_rawgeti(L, 1, i);
+			lua_rawgeti(L, 1, i+1);
+
+			vertex v;
+			v.x = luaL_checknumber(L, -2);
+			v.y = luaL_checknumber(L, -1);
+			vertices.push_back(v);
+
+			lua_pop(L, 2);
+		}
+	}
+	else
+	{
+		size_t top = lua_gettop(L);
+		vertices.reserve(top / 2);
+		for (size_t i = 1; i <= top; i += 2)
+		{
+			vertex v;
+			v.x = luaL_checknumber(L, i);
+			v.y = luaL_checknumber(L, i+1);
+			vertices.push_back(v);
+		}
+	}
+
+	lua_pushboolean(L, Math::instance.isConvex(vertices));
+	return 1;
+}
+
 int w_noise(lua_State *L)
 {
 	float w, x, y, z;
@@ -192,6 +229,7 @@ static const luaL_Reg functions[] =
 	{ "randomnormal", w_randomnormal },
 	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "triangulate", w_triangulate },
+	{ "isConvex", w_isConvex },
 	{ "noise", w_noise },
 	{ 0, 0 }
 };

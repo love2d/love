@@ -35,6 +35,7 @@ int w_random(lua_State *L);
 int w_randomnormal(lua_State *L);
 int w_newRandomGenerator(lua_State *L);
 int w_triangulate(lua_State *L);
+int w_isConvex(lua_State *L);
 int w_noise(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_math(lua_State *L);
 
