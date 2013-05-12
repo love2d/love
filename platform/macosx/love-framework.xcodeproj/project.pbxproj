@@ -233,6 +233,10 @@
 		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
 		FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAC6B01170A373A008A61C5 /* CompressedData.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
+		FAC5710017402D1100D147E4 /* BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC570FC17402D1100D147E4 /* BezierCurve.cpp */; };
+		FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC570FD17402D1100D147E4 /* BezierCurve.h */; };
+		FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */; };
+		FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC570FF17402D1100D147E4 /* wrap_BezierCurve.h */; };
 		FAC86E631724552C00EED715 /* wrap_Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E611724552C00EED715 /* wrap_Geometry.cpp */; };
 		FAC86E641724552C00EED715 /* wrap_Geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Geometry.h */; };
 		FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E651724555D00EED715 /* DrawGable.cpp */; };
@@ -730,6 +734,10 @@
 		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
 		FAAC6B01170A373A008A61C5 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAC570FC17402D1100D147E4 /* BezierCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BezierCurve.cpp; sourceTree = "<group>"; };
+		FAC570FD17402D1100D147E4 /* BezierCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierCurve.h; sourceTree = "<group>"; };
+		FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_BezierCurve.cpp; sourceTree = "<group>"; };
+		FAC570FF17402D1100D147E4 /* wrap_BezierCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_BezierCurve.h; sourceTree = "<group>"; };
 		FAC86E611724552C00EED715 /* wrap_Geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Geometry.cpp; sourceTree = "<group>"; };
 		FAC86E621724552C00EED715 /* wrap_Geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Geometry.h; sourceTree = "<group>"; };
 		FAC86E651724555D00EED715 /* DrawGable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawGable.cpp; sourceTree = "<group>"; };
@@ -1677,10 +1685,14 @@
 		FA7C937116DCC6C2006F2BEE /* math */ = {
 			isa = PBXGroup;
 			children = (
+				FAC570FC17402D1100D147E4 /* BezierCurve.cpp */,
+				FAC570FD17402D1100D147E4 /* BezierCurve.h */,
 				FA5454C016F1310000D30303 /* MathModule.cpp */,
 				FA5454C116F1310000D30303 /* MathModule.h */,
 				FA636D88171B70920065623F /* RandomGenerator.cpp */,
 				FA636D89171B70920065623F /* RandomGenerator.h */,
+				FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */,
+				FAC570FF17402D1100D147E4 /* wrap_BezierCurve.h */,
 				FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */,
 				FA7C937616DCC6C2006F2BEE /* wrap_Math.h */,
 				FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */,
@@ -1742,6 +1754,8 @@
 				FAC86E6C1724555D00EED715 /* Geometry.h in Headers */,
 				FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */,
 				FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */,
+				FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */,
+				FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2026,6 +2040,8 @@
 				FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */,
 				FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */,
 				FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */,
+				FAC5710017402D1100D147E4 /* BezierCurve.cpp in Sources */,
+				FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
