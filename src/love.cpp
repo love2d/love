@@ -71,49 +71,6 @@ void get_utf8_arguments(int &argc, char **&argv)
 
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
-#ifdef LOVE_LEGENDARY_LIBSTDCXX_HACK
-
-#include <iostream>
-
-// Workarounds for symbols that are missing from Leopard stdlibc++.dylib.
-// http://stackoverflow.com/questions/3484043/os-x-program-runs-on-dev-machine-crashing-horribly-on-others
-_GLIBCXX_BEGIN_NAMESPACE(std)
-// From ostream_insert.h
-template ostream& __ostream_insert(ostream&, const char*, streamsize);
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-template wostream& __ostream_insert(wostream&, const wchar_t*, streamsize);
-#endif
-
-// From ostream.tcc
-template ostream& ostream::_M_insert(long);
-template ostream& ostream::_M_insert(unsigned long);
-template ostream& ostream::_M_insert(bool);
-#ifdef _GLIBCXX_USE_LONG_LONG
-template ostream& ostream::_M_insert(long long);
-template ostream& ostream::_M_insert(unsigned long long);
-#endif
-template ostream& ostream::_M_insert(double);
-template ostream& ostream::_M_insert(long double);
-template ostream& ostream::_M_insert(const void*);
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-template wostream& wostream::_M_insert(long);
-template wostream& wostream::_M_insert(unsigned long);
-template wostream& wostream::_M_insert(bool);
-#ifdef _GLIBCXX_USE_LONG_LONG
-template wostream& wostream::_M_insert(long long);
-template wostream& wostream::_M_insert(unsigned long long);
-#endif
-template wostream& wostream::_M_insert(double);
-template wostream& wostream::_M_insert(long double);
-template wostream& wostream::_M_insert(const void*);
-#endif
-
-_GLIBCXX_END_NAMESPACE
-
-#endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
-
 static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 {
 	lua_getglobal(L, "package");

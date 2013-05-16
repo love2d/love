@@ -127,7 +127,6 @@ int w_File_write(lua_State *L)
 		{
 			return ioError(L, "%s", e.what());
 		}
-
 	}
 	else if (luax_istype(L, 2, DATA_T))
 	{
