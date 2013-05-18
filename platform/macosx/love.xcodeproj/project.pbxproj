@@ -354,6 +354,12 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
+				"OTHER_LDFLAGS[arch=x86_64]" = (
+					"-pagezero_size",
+					10000,
+					"-image_base",
+					100000000,
+				);
 				PRODUCT_NAME = love;
 				WARNING_CFLAGS = (
 					"-Wall",
@@ -402,6 +408,12 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
+				"OTHER_LDFLAGS[arch=x86_64]" = (
+					"-pagezero_size",
+					10000,
+					"-image_base",
+					100000000,
+				);
 				PRODUCT_NAME = love;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				WARNING_CFLAGS = (
