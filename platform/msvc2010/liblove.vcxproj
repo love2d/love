@@ -370,6 +370,7 @@
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\udp.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp" />
+    <ClCompile Include="..\..\src\libraries\noise1234\simplexnoise1234.cpp" />
     <ClCompile Include="..\..\src\modules\audio\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Source.cpp" />
@@ -438,8 +439,10 @@
     <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\love\love.cpp" />
+    <ClCompile Include="..\..\src\modules\math\BezierCurve.cpp" />
     <ClCompile Include="..\..\src\modules\math\MathModule.cpp" />
     <ClCompile Include="..\..\src\modules\math\RandomGenerator.cpp" />
+    <ClCompile Include="..\..\src\modules\math\wrap_BezierCurve.cpp" />
     <ClCompile Include="..\..\src\modules\math\wrap_Math.cpp" />
     <ClCompile Include="..\..\src\modules\math\wrap_RandomGenerator.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
@@ -514,6 +517,7 @@
     <ClCompile Include="..\..\src\modules\timer\wrap_Timer.cpp" />
     <ClCompile Include="..\..\src\modules\window\sdl\Window.cpp" />
     <ClCompile Include="..\..\src\modules\window\Window.cpp" />
+    <ClCompile Include="..\..\src\modules\window\wrap_Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\scripts\auto.lua" />
@@ -607,6 +611,7 @@
     <ClInclude Include="..\..\src\libraries\luasocket\libluasocket\url.lua.h" />
     <ClInclude Include="..\..\src\libraries\luasocket\libluasocket\wsocket.h" />
     <ClInclude Include="..\..\src\libraries\luasocket\luasocket.h" />
+    <ClInclude Include="..\..\src\libraries\noise1234\simplexnoise1234.h" />
     <ClInclude Include="..\..\src\libraries\utf8\utf8.h" />
     <ClInclude Include="..\..\src\libraries\utf8\utf8\checked.h" />
     <ClInclude Include="..\..\src\libraries\utf8\utf8\core.h" />
@@ -683,8 +688,10 @@
     <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
     <ClInclude Include="..\..\src\modules\love\love.h" />
+    <ClInclude Include="..\..\src\modules\math\BezierCurve.h" />
     <ClInclude Include="..\..\src\modules\math\MathModule.h" />
     <ClInclude Include="..\..\src\modules\math\RandomGenerator.h" />
+    <ClInclude Include="..\..\src\modules\math\wrap_BezierCurve.h" />
     <ClInclude Include="..\..\src\modules\math\wrap_Math.h" />
     <ClInclude Include="..\..\src\modules\math\wrap_RandomGenerator.h" />
     <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
@@ -762,6 +769,7 @@
     <ClInclude Include="..\..\src\modules\timer\wrap_Timer.h" />
     <ClInclude Include="..\..\src\modules\window\sdl\Window.h" />
     <ClInclude Include="..\..\src\modules\window\Window.h" />
+    <ClInclude Include="..\..\src\modules\window\wrap_Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="love.rc" />
