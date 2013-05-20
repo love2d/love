@@ -43,6 +43,7 @@ int w_setTitle(lua_State *L);
 int w_getTitle(lua_State *L);
 int w_hasFocus(lua_State *L);
 int w_hasMouseFocus(lua_State *L);
+int w_isVisible(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_window(lua_State *L);
 
 } // window

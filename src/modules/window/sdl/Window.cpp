@@ -310,6 +310,11 @@ bool Window::hasMouseFocus() const
 	return (SDL_GetAppState() & SDL_APPMOUSEFOCUS) != 0;
 }
 
+bool Window::isVisible() const
+{
+	return (SDL_GetAppState() & SDL_APPACTIVE) != 0;
+}
+
 void Window::setMouseVisible(bool visible)
 {
 	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);

@@ -78,6 +78,8 @@ public:
 	virtual bool hasFocus() const = 0;
 	virtual bool hasMouseFocus() const = 0;
 
+	virtual bool isVisible() const = 0;
+
 	virtual void setMouseVisible(bool visible) = 0;
 	virtual bool getMouseVisible() const = 0;
 

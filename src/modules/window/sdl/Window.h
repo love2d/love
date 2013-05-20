@@ -59,6 +59,8 @@ public:
 	bool hasFocus() const;
 	bool hasMouseFocus() const;
 
+	bool isVisible() const;
+
 	void setMouseVisible(bool visible);
 	bool getMouseVisible() const;
 
