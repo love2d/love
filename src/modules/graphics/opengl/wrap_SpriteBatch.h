@@ -35,7 +35,7 @@ SpriteBatch *luax_checkspritebatch(lua_State *L, int idx);
 int w_SpriteBatch_add(lua_State *L);
 int w_SpriteBatch_addq(lua_State *L);
 int w_SpriteBatch_set(lua_State *L);
-int w_SpriteBatch_setq(lua_State *L);
+int w_SpriteBatch_setg(lua_State *L);
 int w_SpriteBatch_clear(lua_State *L);
 int w_SpriteBatch_bind(lua_State *L);
 int w_SpriteBatch_unbind(lua_State *L);

@@ -84,7 +84,7 @@ int w_SpriteBatch_set(lua_State *L)
 	return 0;
 }
 
-int w_SpriteBatch_setq(lua_State *L)
+int w_SpriteBatch_setg(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	int index = luaL_checkinteger(L, 2);
@@ -202,7 +202,7 @@ static const luaL_Reg functions[] =
 	{ "add", w_SpriteBatch_add },
 	{ "addg", w_SpriteBatch_addg },
 	{ "set", w_SpriteBatch_set },
-	{ "setq", w_SpriteBatch_setq },
+	{ "setg", w_SpriteBatch_setg },
 	{ "clear", w_SpriteBatch_clear },
 	{ "bind", w_SpriteBatch_bind },
 	{ "unbind", w_SpriteBatch_unbind },
