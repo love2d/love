@@ -63,7 +63,14 @@ int w_SpriteBatch_addg(lua_State *L)
 	float oy = (float)luaL_optnumber(L, 9, 0);
 	float kx = (float)luaL_optnumber(L, 10, 0);
 	float ky = (float)luaL_optnumber(L, 11, 0);
-	lua_pushnumber(L, t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky));
+	try
+	{
+		lua_pushnumber(L, t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 1;
 }
 
@@ -99,7 +106,14 @@ int w_SpriteBatch_setg(lua_State *L)
 	float oy = (float)luaL_optnumber(L, 10, 0);
 	float kx = (float)luaL_optnumber(L, 11, 0);
 	float ky = (float)luaL_optnumber(L, 12, 0);
-	t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky, index);
+	try
+	{
+		t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky, index);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 
