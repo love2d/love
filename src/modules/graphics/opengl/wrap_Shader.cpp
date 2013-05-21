@@ -197,7 +197,7 @@ int w_Shader_sendMatrix(lua_State *L)
 
 	if (dimension < 2 || dimension > 4)
 		return luaL_error(L, "Invalid matrix size: %dx%d (only 2x2, 3x3 and 4x4 matrices are supported).",
-						  count, count);
+						  dimension, dimension);
 
 	float *values = new float[dimension * dimension * count];
 	for (int i = 0; i < count; ++i)
@@ -275,15 +275,102 @@ int w_Shader_sendCanvas(lua_State *L)
 	return 0;
 }
 
+// Convert matrices on the stack for use with sendMatrix.
+static void w_convertMatrices(lua_State *L, int idx)
+{
+	int matrixcount = lua_gettop(L) - (idx - 1);
+
+	for (int matrix = idx; matrix < idx + matrixcount; matrix++)
+	{
+		luaL_checktype(L, matrix, LUA_TTABLE);
+		int dimension = lua_objlen(L, matrix);
+
+		int newi = 1;
+		lua_createtable(L, dimension * dimension, 0);
+
+		// Collapse {{a,b,c}, {d,e,f}, ...} to {a,b,c, d,e,f, ...}
+		for (size_t i = 1; i <= lua_objlen(L, matrix); i++)
+		{
+			// Push args[matrix][i] onto the stack.
+			lua_rawgeti(L, matrix, i);
+			luaL_checktype(L, -1, LUA_TTABLE);
+
+			for (size_t j = 1; j <= lua_objlen(L, -1); j++)
+			{
+				// Push args[matrix[i][j] onto the stack.
+				lua_rawgeti(L, -1, j);
+				luaL_checktype(L, -1, LUA_TNUMBER);
+
+				// newtable[newi] = args[matrix][i][j]
+				lua_rawseti(L, -3, newi++);
+			}
+
+			lua_pop(L, 1);
+		}
+
+		// newtable.dimension = #args[matrix]
+		lua_pushinteger(L, dimension);
+		lua_setfield(L, -2, "dimension");
+
+		// Replace args[i] with the new table
+		lua_replace(L, matrix);
+	}
+}
+
+int w_Shader_send(lua_State *L)
+{
+	int ttype = lua_type(L, 3);
+	Proxy *p = 0;
+
+	switch (ttype)
+	{
+	case LUA_TNUMBER:
+	case LUA_TBOOLEAN:
+		// Scalar float/boolean.
+		return w_Shader_sendFloat(L);
+		break;
+	case LUA_TUSERDATA:
+		// Image or Canvas.
+		p = (Proxy *) lua_touserdata(L, 3);
+
+		if (p->flags[GRAPHICS_IMAGE_ID])
+			return w_Shader_sendImage(L);
+		else if (p->flags[GRAPHICS_CANVAS_ID])
+			return w_Shader_sendCanvas(L);
+
+		break;
+	case LUA_TTABLE:
+		// Vector or Matrix.
+		lua_rawgeti(L, 3, 1);
+		ttype = lua_type(L, -1);
+		lua_pop(L, 1);
+
+		if (ttype == LUA_TNUMBER || ttype == LUA_TBOOLEAN)
+			return w_Shader_sendFloat(L);
+		else if (ttype == LUA_TTABLE)
+		{
+			w_convertMatrices(L, 3);
+			return w_Shader_sendMatrix(L);
+		}
+
+		break;
+	default:
+		break;
+	}
+
+	return luaL_argerror(L, 3, "number, boolean, table, image, or canvas expected");
+}
 
 static const luaL_Reg functions[] =
 {
 	{ "getWarnings", w_Shader_getWarnings },
 	{ "sendInt",     w_Shader_sendInt },
+	{ "sendBoolean", w_Shader_sendInt },
 	{ "sendFloat",   w_Shader_sendFloat },
 	{ "sendMatrix",  w_Shader_sendMatrix },
 	{ "sendImage",   w_Shader_sendImage },
 	{ "sendCanvas",  w_Shader_sendCanvas },
+	{ "send",        w_Shader_send },
 	{ 0, 0 }
 };
 
