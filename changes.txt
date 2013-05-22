@@ -18,7 +18,7 @@ LOVE 0.9.0 []
   * Added vertex shader support.
   * Added boolean support to Shader:send.
   * Added Canvas:getPixel.
-  * Added blend mode "none".
+  * Added blend mode "replace".
   * Added SpriteBatch:isEmpty and SpriteBatch:isFull.
   * Added Geometry objects (replaces Quads), allowing for arbitrary textured polygons.
   * Added love.graphics.setCanvases (multiple render targets.)
@@ -47,6 +47,7 @@ LOVE 0.9.0 []
   * Added Data:getString.
   * Added Contact:getChildren.
   * Added love.window module.
+  * Added love.window.isVisible.
   * Added flags to love.window.setMode.
   * Added support for resizable, borderless, and non-centered windows.
   * Added resize event.
@@ -96,7 +97,8 @@ LOVE 0.9.0 []
   * Renamed ParticleSystem:setGravity to ParticleSystem:setLinearAcceleration.
   * Renamed ParticleSystem:setLifetime/setParticleLife to setEmitter/ParticleLifetime.
   * Renamed ParticleSystem:count and all getNum* functions to get*Count.
-  * Renamed love.graphics.setCaption to love.window.setTitle.
+  * Renamed love.graphics.drawq to love.graphics.drawg.
+  * Renamed SpriteBatch:addq/setq to SpriteBatch:addg/setg.
 
   * Removed love.graphics.drawTest.
   * Removed love.graphics.quad/triangle.

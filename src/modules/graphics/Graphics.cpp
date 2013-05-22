@@ -134,7 +134,7 @@ StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendM
 	{ "subtractive", Graphics::BLEND_SUBTRACTIVE },
 	{ "multiplicative", Graphics::BLEND_MULTIPLICATIVE },
 	{ "premultiplied", Graphics::BLEND_PREMULTIPLIED },
-	{ "none", Graphics::BLEND_NONE },
+	{ "replace", Graphics::BLEND_REPLACE },
 };
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));

@@ -621,7 +621,7 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 		src_rgb = src_a = GL_SRC_ALPHA;
 		dst_rgb = dst_a = GL_ONE;
 		break;
-	case BLEND_NONE:
+	case BLEND_REPLACE:
 	default:
 		src_rgb = src_a = GL_ONE;
 		dst_rgb = dst_a = GL_ZERO;
@@ -691,7 +691,7 @@ Graphics::BlendMode Graphics::getBlendMode() const
 		else if (src_rgb == GL_ONE && dst_rgb == GL_ONE_MINUS_SRC_ALPHA)
 			return BLEND_PREMULTIPLIED;
 		else if (src_rgb == GL_ONE && dst_rgb == GL_ZERO)
-			return BLEND_NONE;
+			return BLEND_REPLACE;
 	}
 	else if (src_rgb == GL_SRC_ALPHA && src_a == GL_ONE &&
 		dst_rgb == GL_ONE_MINUS_SRC_ALPHA && dst_a == GL_ONE_MINUS_SRC_ALPHA)
