@@ -193,14 +193,14 @@ void SpriteBatch::setColor()
 	color = 0;
 }
 
-bool SpriteBatch::isEmpty() const
+int SpriteBatch::getCount() const
 {
-	return next == 0;
+	return next;
 }
 
-bool SpriteBatch::isFull() const
+int SpriteBatch::getBufferSize() const
 {
-	return next >= size;
+	return size;
 }
 
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const

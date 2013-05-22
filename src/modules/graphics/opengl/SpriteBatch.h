@@ -87,14 +87,14 @@ public:
 	void setColor();
 
 	/**
-	 * Returns whether the SpriteBatch is empty of sprites or not.
+	 * Get the number of sprites currently in this SpriteBatch.
 	 **/
-	bool isEmpty() const;
+	int getCount() const;
 
 	/**
-	 * Returns whether the amount of sprites has reached the buffer limit or not.
+	 * Get the total number of sprites this SpriteBatch can hold.
 	 **/
-	bool isFull() const;
+	int getBufferSize() const;
 
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
