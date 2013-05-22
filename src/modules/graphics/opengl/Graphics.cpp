@@ -1173,8 +1173,14 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 
 love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool copyAlpha)
 {
-	int w = getRenderWidth();
-	int h = getRenderHeight();
+	// Temporarily unbind the currently active canvas (glReadPixels reads the
+	// active framebuffer, not the main one.)
+	Canvas *curcanvas = Canvas::current;
+	if (curcanvas)
+		Canvas::bindDefaultCanvas();
+
+	int w = getWidth();
+	int h = getHeight();
 
 	int row = 4*w;
 
@@ -1192,6 +1198,8 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	{
 		delete[] pixels;
 		delete[] screenshot;
+		if (curcanvas)
+			curcanvas->startGrab(curcanvas->getAttachedCanvases());
 		throw love::Exception("Out of memory.");
 	}
 
@@ -1221,10 +1229,16 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	catch (love::Exception &)
 	{
 		delete[] screenshot;
+		if (curcanvas)
+			curcanvas->startGrab(curcanvas->getAttachedCanvases());
 		throw;
 	}
 
 	delete[] screenshot;
+
+	// Re-bind the active canvas, if necessary.
+	if (curcanvas)
+		curcanvas->startGrab(curcanvas->getAttachedCanvases());
 
 	return img;
 }
