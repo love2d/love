@@ -189,14 +189,14 @@ int w_setIcon(lua_State *L)
 	return 0;
 }
 
-int w_setTitle(lua_State *L)
+int w_setCaption(lua_State *L)
 {
 	std::string title = luax_checkstring(L, 1);
 	instance->setWindowTitle(title);
 	return 0;
 }
 
-int w_getTitle(lua_State *L)
+int w_getCaption(lua_State *L)
 {
 	luax_pushstring(L, instance->getWindowTitle());
 	return 1;
@@ -232,8 +232,8 @@ static const luaL_Reg functions[] =
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },
 	{ "setIcon", w_setIcon },
-	{ "setTitle", w_setTitle },
-	{ "getTitle", w_getTitle },
+	{ "setCaption", w_setCaption },
+	{ "getCaption", w_getCaption },
 	{ "hasFocus", w_hasFocus },
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },

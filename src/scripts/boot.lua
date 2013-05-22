@@ -363,7 +363,7 @@ function love.init()
 		else
 			error("Could not set screen mode")
 		end
-		love.window.setTitle(c.title)
+		love.window.setCaption(c.title)
 	end
 
 	-- Console hack
