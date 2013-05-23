@@ -20,7 +20,11 @@ freely, subject to the following restrictions:
 
 function love.audio.newSource(a, b)
 	if type(a) == "string" then
-		a = love.filesystem.newFileData(a)
+		local err
+		a, err = love.filesystem.newFileData(a)
+		if not a then
+			error(err, 2)
+		end
 	end
 	if type(a) == "userdata" then
 		if a:typeOf("File") or a:typeOf("FileData") then

@@ -209,6 +209,14 @@ int luax_assert_argc(lua_State *L, int min, int max);
 int luax_assert_function(lua_State *L, int idx);
 
 /**
+ * Require that the value at idx is not nil. If it is, the function throws an
+ * error using an optional error string at idx+1.
+ * @param L The Lua state.
+ * @param idx The index on the stack.
+ **/
+int luax_assert_nilerror(lua_State *L, int idx);
+
+/**
  * Register a module in the love table. The love table will be created if it does not exist.
  * @param L The Lua state.
  **/

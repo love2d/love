@@ -179,10 +179,22 @@ int luax_assert_argc(lua_State *L, int min, int max)
 	return 0;
 }
 
-int luax_assert_function(lua_State *L, int n)
+int luax_assert_function(lua_State *L, int idx)
 {
-	if (!lua_isfunction(L, n))
+	if (!lua_isfunction(L, idx))
 		return luaL_error(L, "Argument must be of type \"function\".");
+	return 0;
+}
+
+int luax_assert_nilerror(lua_State *L, int idx)
+{
+	if (lua_isnoneornil(L, idx))
+	{
+		if (lua_isstring(L, idx + 1))
+			return luaL_error(L, lua_tostring(L, idx + 1));
+		else
+			return luaL_error(L, "assertion failed!");
+	}
 	return 0;
 }
 
@@ -359,7 +371,9 @@ int luax_convobj(lua_State *L, int idx, const char *mod, const char *fn)
 	// Convert string to a file.
 	luax_getfunction(L, mod, fn);
 	lua_pushvalue(L, idx); // The initial argument.
-	lua_call(L, 1, 1); // Call the function, one arg, one return value.
+	lua_call(L, 1, 2); // Call the function, one arg, one return value (plus optional errstring.)
+	luax_assert_nilerror(L, -2); // Make sure the function returned something.
+	lua_pop(L, 1); // Pop the second return value now that we don't need it.
 	lua_replace(L, idx); // Replace the initial argument with the new object.
 	return 0;
 }
@@ -371,7 +385,9 @@ int luax_convobj(lua_State *L, int idxs[], int n, const char *mod, const char *f
 	{
 		lua_pushvalue(L, idxs[i]); // The arguments.
 	}
-	lua_call(L, n, 1); // Call the function, n args, one return value.
+	lua_call(L, n, 2); // Call the function, n args, one return value (plus optional errstring.)
+	luax_assert_nilerror(L, -2); // Make sure the function returned something.
+	lua_pop(L, 1); // Pop the second return value now that we don't need it.
 	lua_replace(L, idxs[0]); // Replace the initial argument with the new object.
 	return 0;
 }
