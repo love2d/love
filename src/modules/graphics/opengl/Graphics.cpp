@@ -293,6 +293,10 @@ int Graphics::getScissor(lua_State *L) const
 
 void Graphics::defineStencil()
 {
+	// Make sure the active canvas has a stencil buffer.
+	if (Canvas::current)
+		Canvas::current->checkCreateStencil();
+
 	// Disable color writes but don't save the mask values.
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -304,7 +308,7 @@ void Graphics::defineStencil()
 
 void Graphics::useStencil(bool invert)
 {
-	glStencilFunc(GL_EQUAL, (int)(!invert), 1); // invert ? 0 : 1
+	glStencilFunc(GL_EQUAL, (GLint)(!invert), 1); // invert ? 0 : 1
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 }

@@ -67,6 +67,11 @@ public:
 	 **/
 	void drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
+	/**
+	 * Create and attach a stencil buffer to this Canvas' framebuffer, if necessary.
+	 **/
+	bool checkCreateStencil();
+
 	love::image::ImageData *getImageData(love::image::Image *image);
 
 	void getPixel(unsigned char* pixel_rgba, int x, int y);
