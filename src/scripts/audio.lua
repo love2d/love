@@ -20,10 +20,10 @@ freely, subject to the following restrictions:
 
 function love.audio.newSource(a, b)
 	if type(a) == "string" then
-		a = love.filesystem.newFile(a)
+		a = love.filesystem.newFileData(a)
 	end
 	if type(a) == "userdata" then
-		if a:typeOf("File") then
+		if a:typeOf("File") or a:typeOf("FileData") then
 			a = love.sound.newDecoder(a)
 		end
 		
@@ -37,5 +37,5 @@ function love.audio.newSource(a, b)
 			return love.audio.newSource1(a)
 		end
 	end
-	error("No matching overload")
+	error("No matching function overload", 2)
 end
