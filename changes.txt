@@ -105,6 +105,7 @@ LOVE 0.9.0 []
   * Removed love.graphics.setColorMode.
   * Removed love.graphics.newStencil.
   * Removed Quad objects (replaced by Geometry).
+  * Removed ParticleSystem:isFull/isEmpty.
   * Removed love.joystick.open and friends.
   * Removed thread names.
   * Removed old thread messaging api (see Channels).
@@ -124,8 +125,10 @@ LOVE 0.9.0 []
   * Updated love.graphics.newScreenshot to create a fully opaque image by default.
   * Updated error messages when sending bad values to Shaders.
   * Updated love.graphics.newParticleSystem to have a default buffer size of 1000.
+  * Updated love.image.newImageData and love.graphics.newImage to accept FileData.
   * Updated ImageData:setPixel to accept a table and default to 255 alpha.
   * Updated love.image memory handling, improves errors and thread-safety.
+  * Updated love.audio.newSource and love.sound.newDecoder/newSoundData to accept FileData.
   * Updated allocation for SoundData, it's more efficient and less wasteful.
   * Updated Source:set* functions to default z to 0.
   * Updated love.timer.getFPS to be microsecond-accurate.

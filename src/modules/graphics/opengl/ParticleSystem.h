@@ -469,6 +469,11 @@ public:
 	bool isActive() const;
 
 	/**
+	 * Returns whether the particle emitter is paused.
+	 **/
+	bool isPaused() const;
+
+	/**
 	 * Returns whether the particle system is empty of particles or not.
 	 **/
 	bool isEmpty() const;

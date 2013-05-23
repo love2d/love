@@ -579,17 +579,10 @@ int w_ParticleSystem_isActive(lua_State *L)
 	return 1;
 }
 
-int w_ParticleSystem_isEmpty(lua_State *L)
+int w_ParticleSystem_isPaused(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	luax_pushboolean(L, t->isEmpty());
-	return 1;
-}
-
-int w_ParticleSystem_isFull(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	luax_pushboolean(L, t->isFull());
+	luax_pushboolean(L, t->isPaused());
 	return 1;
 }
 
@@ -654,8 +647,7 @@ static const luaL_Reg functions[] =
 	{ "reset", w_ParticleSystem_reset },
 	{ "emit", w_ParticleSystem_emit },
 	{ "isActive", w_ParticleSystem_isActive },
-	{ "isEmpty", w_ParticleSystem_isEmpty },
-	{ "isFull", w_ParticleSystem_isFull },
+	{ "isPaused", w_ParticleSystem_isPaused },
 	{ "update", w_ParticleSystem_update },
 	{ 0, 0 }
 };

@@ -85,8 +85,7 @@ int w_ParticleSystem_pause(lua_State *L);
 int w_ParticleSystem_reset(lua_State *L);
 int w_ParticleSystem_emit(lua_State *L);
 int w_ParticleSystem_isActive(lua_State *L);
-int w_ParticleSystem_isEmpty(lua_State *L);
-int w_ParticleSystem_isFull(lua_State *L);
+int w_ParticleSystem_isPaused(lua_State *L);
 int w_ParticleSystem_update(lua_State *L);
 extern "C" int luaopen_particlesystem(lua_State *L);
 
