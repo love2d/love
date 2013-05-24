@@ -347,6 +347,11 @@ function love.init()
 		love.createhandlers()
 	end
 
+	-- Console hack
+	if c.console and love._openConsole then
+		love._openConsole()
+	end
+
 	-- Setup screen here.
 	local has_window = false
 	if c.screen and c.modules.window then
@@ -364,11 +369,6 @@ function love.init()
 			error("Could not set screen mode")
 		end
 		love.window.setCaption(c.title)
-	end
-
-	-- Console hack
-	if c.console and love._openConsole then
-		love._openConsole()
 	end
 
 	-- Our first timestep, because screen creation can take some time
