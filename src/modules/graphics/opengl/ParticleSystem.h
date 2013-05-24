@@ -473,6 +473,8 @@ public:
 	 **/
 	bool isPaused() const;
 
+	bool isStopped() const;
+
 	/**
 	 * Returns whether the particle system is empty of particles or not.
 	 **/

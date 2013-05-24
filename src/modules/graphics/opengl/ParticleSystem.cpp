@@ -578,6 +578,11 @@ bool ParticleSystem::isPaused() const
 	return !active && life < lifetime;
 }
 
+bool ParticleSystem::isStopped() const
+{
+	return !active && life >= lifetime;
+}
+
 bool ParticleSystem::isEmpty() const
 {
 	return pStart == pLast;
