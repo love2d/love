@@ -30,7 +30,7 @@ const int VERSION_MINOR = 9;
 const int VERSION_REV = 0;
 const char *VERSION = "0.9.0";
 const char *VERSION_COMPATIBILITY[] =  { VERSION, 0 };
-const char *VERSION_CODENAME = "";
+const char *VERSION_CODENAME = "Baby Inspector";
 
 } // love
 

@@ -1,4 +1,4 @@
-LOVE 0.9.0 []
+LOVE 0.9.0 [Baby Inspector]
 --------------
 
   * Added --fused command line argument, to simulate fusing.
