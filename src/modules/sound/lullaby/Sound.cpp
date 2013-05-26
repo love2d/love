@@ -23,10 +23,13 @@
 #include "Sound.h"
 
 #include "ModPlugDecoder.h"
-#include "Mpg123Decoder.h"
 #include "VorbisDecoder.h"
 #include "GmeDecoder.h"
 //#include "FLACDecoder.h"
+
+#ifndef LOVE_NOMPG123
+#	include "Mpg123Decoder.h"
+#endif // LOVE_NOMPG123
 
 namespace love
 {
