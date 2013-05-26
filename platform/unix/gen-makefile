@@ -4,7 +4,9 @@ cd src
 inc_current='$(srcdir)'
 inc_modules="$inc_current/modules"
 inc_libraries="$inc_current/libraries"
-echo "AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries \$(LOVE_INCLUDES) \$(FILE_OFFSET)
+
+cat > Makefile.am << EOF
+AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries \$(LOVE_INCLUDES) \$(FILE_OFFSET)
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
 
@@ -19,10 +21,20 @@ endif
 # libLÖVE
 lib_LTLIBRARIES = liblove.la
 liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
-liblove_la_SOURCES = \\" > Makefile.am.tmp
-find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) \) -exec echo '{}' \\ \; >> Makefile.am.tmp
-cat Makefile.am.tmp | grep -v -f"../platform/unix/exclude" | head -c -3 > Makefile.am
-#head -c -3 Makefile.am.tmp > Makefile.am
-rm Makefile.am.tmp
+liblove_la_SOURCES = \\
+EOF
+
+find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) \) -exec echo '{}' \\ \; \
+	| grep -v -f"../platform/unix/exclude" | head -c -3 >> Makefile.am
+
+printf "\n\n" >> Makefile.am
+cat >> Makefile.am << EOF
+if !LOVE_NOMPG123
+liblove_la_SOURCES += \\
+./modules/sound/lullaby/Mpg123Decoder.cpp \\
+./modules/sound/lullaby/Mpg123Decoder.h
+endif
+EOF
+
 cd ..
-echo src/Makefile.am is updated! \^.^
+echo "src/Makefile.am is updated! ^.^"

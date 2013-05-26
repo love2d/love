@@ -66,6 +66,7 @@ AS_VAR_IF([enable_exe], [no], [], #else
 	  AC_DEFINE([LOVE_BUILD_EXE], [], [Don't build launcher]))
 
 AM_CONDITIONAL([LOVE_BUILD_EXE], [test "x$enable_exe" != xno])
+AM_CONDITIONAL([LOVE_NOMPG123], [test "x$enable_mpg123" == xno])
 
 # Set our includes as automake variable
 AC_SUBST([LOVE_INCLUDES], ["$includes"])

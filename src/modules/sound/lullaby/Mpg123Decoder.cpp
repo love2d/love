@@ -18,8 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_NOMPG123
-
 #include "Mpg123Decoder.h"
 
 #include "common/Exception.h"
@@ -234,5 +232,3 @@ int Mpg123Decoder::feed(int bytes)
 } // lullaby
 } // sound
 } // love
-
-#endif // LOVE_NOMPG123

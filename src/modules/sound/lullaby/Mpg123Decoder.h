@@ -18,7 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_NOMPG123
 #ifndef LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
 #define LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
 
@@ -77,4 +76,3 @@ private:
 } // love
 
 #endif // LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
-#endif // LOVE_NOMPG123
