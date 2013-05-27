@@ -801,7 +801,7 @@ end
 function love.releaseerrhand(msg)
 	print("An error has occured, the game has been stopped.")
 
-	if not love.graphics or not love.event or not love.graphics.isCreated() then
+	if not love.window or not love.graphics or not love.event or not love.graphics.isCreated() then
 		return
 	end
 
