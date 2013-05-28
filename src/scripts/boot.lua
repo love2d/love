@@ -775,7 +775,7 @@ function love.errhand(msg)
 
 	local function draw()
 		love.graphics.clear()
-		love.graphics.printf(p, 70, 70, love.window.getWidth() - 70)
+		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
 		love.graphics.present()
 	end
 
@@ -826,7 +826,7 @@ function love.releaseerrhand(msg)
 
 	local function draw()
 		love.graphics.clear()
-		love.graphics.printf(p, 70, 70, love.window.getWidth() - 70)
+		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
 		love.graphics.present()
 	end
 

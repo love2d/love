@@ -62,6 +62,25 @@ int w_isCreated(lua_State *L)
 	return 1;
 }
 
+int w_getWidth(lua_State *L)
+{
+	lua_pushinteger(L, instance->getWidth());
+	return 1;
+}
+
+int w_getHeight(lua_State *L)
+{
+	lua_pushinteger(L, instance->getHeight());
+	return 1;
+}
+
+int w_getDimensions(lua_State *L)
+{
+	lua_pushinteger(L, instance->getWidth());
+	lua_pushinteger(L, instance->getHeight());
+	return 2;
+}
+
 int w_setScissor(lua_State *L)
 {
 	if (lua_gettop(L) == 0)
@@ -1514,6 +1533,9 @@ static const luaL_Reg functions[] =
 	{ "printf", w_printf },
 
 	{ "isCreated", w_isCreated },
+	{ "getWidth", w_getWidth },
+	{ "getHeight", w_getHeight },
+	{ "getDimensions", w_getDimensions },
 
 	{ "setScissor", w_setScissor },
 	{ "getScissor", w_getScissor },

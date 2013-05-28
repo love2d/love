@@ -28,7 +28,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added SpriteBatch:getCount and SpriteBatch:getBufferSize.
   * Added ParticleSystem:emit.
   * Added many ParticleSystem getter methods.
-  * Added DXT-compressed texture support via love.image.newCompressedData.
+  * Added DXT compressed texture support via love.image.newCompressedData.
   * Added love.image.isCompressed and Image:isCompressed.
   * Added Image/Canvas/ImageData:getDimensions.
   * Added anisotropic filtering support for Images, Canvases, and Fonts.
