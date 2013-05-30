@@ -534,21 +534,12 @@ Color Graphics::getColor() const
 
 void Graphics::setBackgroundColor(const Color &c)
 {
-	glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
+	gl.setClearColor(c);
 }
 
 Color Graphics::getBackgroundColor() const
 {
-	float c[4];
-	glGetFloatv(GL_COLOR_CLEAR_VALUE, c);
-
-	Color t;
-	t.r = (unsigned char)(255.0f*c[0]);
-	t.g = (unsigned char)(255.0f*c[1]);
-	t.b = (unsigned char)(255.0f*c[2]);
-	t.a = (unsigned char)(255.0f*c[3]);
-
-	return t;
+	return gl.getClearColor();
 }
 
 void Graphics::setFont(Font *font)

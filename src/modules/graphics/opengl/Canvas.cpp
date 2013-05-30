@@ -553,13 +553,14 @@ void Canvas::clear(const Color &c)
 			previous = current->fbo;
 
 		strategy->bindFBO(fbo);
-		glPushAttrib(GL_COLOR_BUFFER_BIT);
 	}
 
-	// Make sure only this canvas is cleared when multi-canvas rendering is set
+	// Make sure only this canvas is cleared when multi-canvas rendering is set.
 	if (attachedCanvases.size() > 0)
 		strategy->setAttachments();
 
+	// Don't use the state-shadowed gl.setClearColor because we want to save the
+	// previous clear color.
 	glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -567,10 +568,10 @@ void Canvas::clear(const Color &c)
 		strategy->setAttachments(attachedCanvases);
 
 	if (current != this)
-	{
-		glPopAttrib();
 		strategy->bindFBO(previous);
-	}
+
+	// Restore the previous clear color.
+	gl.setClearColor(gl.getClearColor());
 }
 
 void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const

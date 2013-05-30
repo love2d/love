@@ -71,7 +71,17 @@ public:
 	/**
 	 * Gets the current constant color.
 	 **/
-	Color getColor();
+	Color getColor() const;
+
+	/**
+	 * Sets the current clear color for all framebuffer objects.
+	 **/
+	void setClearColor(const Color &c);
+
+	/**
+	 * Gets the current clear color.
+	 **/
+	Color getClearColor() const;
 
 	/**
 	 * Helper for setting the active texture unit.
@@ -134,6 +144,8 @@ private:
 	{
 		// Current constant color.
 		Color color;
+
+		Color clearColor;
 
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> textureUnits;
