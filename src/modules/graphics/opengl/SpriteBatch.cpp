@@ -123,11 +123,14 @@ int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
-	if (geom->getVertexCount() != 4)
-		throw love::Exception("Can only add quadrilateral geometries to SpriteBatch");
+	size_t vertexcount = geom->getVertexCount();
+	if (vertexcount > 4)
+		throw love::Exception("Cannot add Geometries with more than 4 vertices to SpriteBatch");
 
+	// If the Geometry has 3 vertices, then 2 triangles will be rendered in the
+	// SpriteBatch: 0-1-2 and 0-2-0. 0-2-0 will get ignored during rasterization.
 	for (size_t i = 0; i < 4; i++)
-		sprite[i] = geom->getVertex(i);
+		sprite[i] = geom->getVertex(i % vertexcount);
 
 	// Transform.
 	static Matrix t;
@@ -139,6 +142,10 @@ int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float
 		setColorv(sprite, *color);
 
 	addv(sprite, (index == -1) ? next : index);
+
+	// Make sure SpriteBatch colors are enabled if the Geometry has custom colors.
+	if (!color && geom->hasVertexColors())
+		setColor(Color(255, 255, 255, 255));
 
 	// Increment counter.
 	if (index == -1)
