@@ -127,20 +127,8 @@ void Geometry::setVertex(size_t i, const vertex &v)
 	if (i >= vertexCount)
 		throw Exception("Invalid vertex index");
 
-	love::Vector p(vertexArray[i].x, vertexArray[i].y);
-
-	if (p.x != v.x || p.y != v.y)
+	if (vertexArray[i].x != v.x || vertexArray[i].y != v.y)
 	{
-		size_t j = (i+1) % vertexCount, k = (i+2) % vertexCount;
-		Vector q(vertexArray[j].x, vertexArray[j].y);
-		Vector r(vertexArray[k].x, vertexArray[k].y);
-		Vector p_new(v.x, v.y);
-
-		float winding_old = (p-q) ^ (q-r);
-		float winding_new = (p_new-q) ^ (q-r);
-		if (winding_old * winding_new < 0)
-			throw Exception("Invalid vertex position: Makes geometry concave.");
-
 		x_min = v.x < x_min ? v.x : x_min;
 		x_max = v.x > x_max ? v.x : x_max;
 		y_min = v.y < y_min ? v.y : y_min;
