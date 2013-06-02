@@ -57,7 +57,8 @@ VertexBuffer *VertexBuffer::Create(size_t size, GLenum target, GLenum usage)
 }
 
 VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage)
-	: size(size)
+	: is_bound(false)
+	, size(size)
 	, target(target)
 	, usage(usage)
 {
@@ -91,10 +92,12 @@ void VertexArray::unmap()
 
 void VertexArray::bind()
 {
+	is_bound = true;
 }
 
 void VertexArray::unbind()
 {
+	is_bound = false;
 }
 
 void VertexArray::fill(size_t offset, size_t size, const void *data)
@@ -160,10 +163,16 @@ void VBO::unmap()
 	if (!is_mapped)
 		return;
 
+	// VBO::bind is a no-op when the VBO is mapped, so we have to make sure it's
+	// bound here.
+	if (is_bound)
+		glBindBufferARB(getTarget(), vbo);
+
 	// "orphan" current buffer to avoid implicit synchronisation on the gpu:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
 	glBufferDataARB(getTarget(), getSize(), NULL,       getUsage());
 	glBufferDataARB(getTarget(), getSize(), memory_map, getUsage());
+
 	is_mapped = false;
 }
 
@@ -171,12 +180,16 @@ void VBO::bind()
 {
 	if (!is_mapped)
 		glBindBufferARB(getTarget(), vbo);
+
+	is_bound = true;
 }
 
 void VBO::unbind()
 {
 	if (!is_mapped)
 		glBindBufferARB(getTarget(), 0);
+
+	is_bound = false;
 }
 
 void VBO::fill(size_t offset, size_t size, const void *data)

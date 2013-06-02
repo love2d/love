@@ -106,6 +106,11 @@ public:
 		return usage;
 	}
 
+	bool isBound() const
+	{
+		return is_bound;
+	}
+
 	/**
 	 * Map the VertexBuffer to client memory.
 	 *
@@ -221,6 +226,11 @@ public:
 		VertexBuffer &buf;
 		void *elems;
 	};
+
+protected:
+
+	// Whether the buffer is currently bound.
+	bool is_bound;
 
 private:
 
