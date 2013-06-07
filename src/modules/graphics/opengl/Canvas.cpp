@@ -455,7 +455,7 @@ void Canvas::setupGrab()
 	// bind buffer and clear screen
 	glPushAttrib(GL_VIEWPORT_BIT | GL_TRANSFORM_BIT);
 	strategy->bindFBO(fbo);
-	glViewport(0, 0, width, height);
+	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
 
 	// Reset the projection matrix
 	glMatrixMode(GL_PROJECTION);

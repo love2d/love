@@ -96,7 +96,7 @@ DisplayState Graphics::saveState()
 	s.scissor = (glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE);
 	//do we have scissor, if so, store the box
 	if (s.scissor)
-		glGetIntegerv(GL_SCISSOR_BOX, s.scissorBox);
+		s.scissorBox = gl.getScissor();
 
 	for (int i = 0; i < 4; i++)
 		s.colorMask[i] = colorMask[i];
@@ -116,7 +116,7 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setAlphaTest();
 	if (s.scissor)
-		setScissor(s.scissorBox[0], s.scissorBox[1], s.scissorBox[2], s.scissorBox[3]);
+		setScissor(s.scissorBox.x, s.scissorBox.y, s.scissorBox.w, s.scissorBox.h);
 	else
 		setScissor();
 	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
@@ -161,7 +161,7 @@ bool Graphics::setMode(int width, int height)
 	gl.setActiveTextureUnit(0);
 
 	// Set the viewport to top-left corner
-	glViewport(0, 0, width, height);
+	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
 
 	// Reset the projection matrix
 	glMatrixMode(GL_PROJECTION);
@@ -266,8 +266,8 @@ bool Graphics::isCreated() const
 void Graphics::setScissor(int x, int y, int width, int height)
 {
 	glEnable(GL_SCISSOR_TEST);
-	// Compensates for the fact that our y-coordinate is reverse of OpenGL's.
-	glScissor(x, getRenderHeight() - (y + height), width, height);
+	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
+	gl.setScissor(OpenGL::Viewport(x, y, width, height));
 }
 
 void Graphics::setScissor()
@@ -280,13 +280,12 @@ int Graphics::getScissor(lua_State *L) const
 	if (glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
 		return 0;
 
-	GLint scissor[4];
-	glGetIntegerv(GL_SCISSOR_BOX, scissor);
+	OpenGL::Viewport scissor = gl.getScissor();
 
-	lua_pushnumber(L, scissor[0]);
-	lua_pushnumber(L, getRenderHeight() - (scissor[1] + scissor[3])); // Compensates for the fact that our y-coordinate is reverse of OpenGLs.
-	lua_pushnumber(L, scissor[2]);
-	lua_pushnumber(L, scissor[3]);
+	lua_pushinteger(L, scissor.x);
+	lua_pushinteger(L, scissor.y);
+	lua_pushinteger(L, scissor.w);
+	lua_pushinteger(L, scissor.h);
 
 	return 4;
 }

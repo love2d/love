@@ -80,7 +80,7 @@ struct DisplayState
 
 	// Scissor.
 	bool scissor;
-	GLint scissorBox[4];
+	OpenGL::Viewport scissorBox;
 
 	// Color mask.
 	bool colorMask[4];

@@ -64,6 +64,14 @@ void OpenGL::initContext()
 	state.clearColor.b = glcolor[2] * 255;
 	state.clearColor.a = glcolor[3] * 255;
 
+	// Get the current viewport.
+	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport);
+
+	// And the current scissor - but we need to compensate for GL scissors
+	// starting at the bottom left instead of top left.
+	glGetIntegerv(GL_SCISSOR_BOX, (GLint *) &state.scissor);
+	state.scissor.y = state.viewport.h - (state.scissor.y + state.scissor.h);
+
 	// Initialize multiple texture unit support for shaders, if available.
 	state.textureUnits.clear();
 	if (Shader::isSupported())
@@ -185,6 +193,36 @@ void OpenGL::setClearColor(const Color &c)
 Color OpenGL::getClearColor() const
 {
 	return state.clearColor;
+}
+
+void OpenGL::setViewport(const OpenGL::Viewport &v)
+{
+	glViewport(v.x, v.y, v.w, v.h);
+	state.viewport = v;
+
+	// glScissor starts from the lower left, so we compensate when setting the
+	// scissor. When the viewport is changed, we need to manually update the
+	// scissor again.
+	if (v.h != state.viewport.h)
+		setScissor(state.scissor);
+}
+
+OpenGL::Viewport OpenGL::getViewport() const
+{
+	return state.viewport;
+}
+
+void OpenGL::setScissor(const OpenGL::Viewport &v)
+{
+	// We need to compensate for glScissor starting from the lower left of the
+	// viewport instead of the top left.
+	glScissor(v.x,  state.viewport.h - (v.y + v.h), v.w, v.h);
+	state.scissor = v;
+}
+
+OpenGL::Viewport OpenGL::getScissor() const
+{
+	return state.scissor;
 }
 
 void OpenGL::setActiveTextureUnit(int textureunit)

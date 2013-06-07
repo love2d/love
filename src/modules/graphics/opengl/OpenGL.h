@@ -48,6 +48,21 @@ class OpenGL
 {
 public:
 
+	// A rectangle representing an OpenGL viewport or a scissor box.
+	struct Viewport
+	{
+		int x, y;
+		int w, h;
+
+		Viewport()
+			: x(0), y(0), w(0), h(0)
+		{}
+
+		Viewport(int _x, int _y, int _w, int _h)
+			: x(_x), y(_y), w(_w), h(_h)
+		{}
+	};
+
 	OpenGL();
 
 	/**
@@ -82,6 +97,28 @@ public:
 	 * Gets the current clear color.
 	 **/
 	Color getClearColor() const;
+
+	/**
+	 * Sets the OpenGL rendering viewport to the specified rectangle.
+	 * The y-coordinate starts at the top.
+	 **/
+	void setViewport(const Viewport &v);
+
+	/**
+	 * Gets the current OpenGL rendering viewport rectangle.
+	 **/
+	Viewport getViewport() const;
+
+	/**
+	 * Sets the scissor box to the specified rectangle.
+	 * The y-coordinate starts at the top and is flipped internally.
+	 **/
+	void setScissor(const Viewport &v);
+
+	/**
+	 * Gets the current scissor box (regardless of whether scissoring is enabled.)
+	 **/
+	Viewport getScissor() const;
 
 	/**
 	 * Helper for setting the active texture unit.
@@ -152,6 +189,9 @@ private:
 
 		// Currently active texture unit.
 		int curTextureUnit;
+
+		Viewport viewport;
+		Viewport scissor;
 
 	} state;
 
