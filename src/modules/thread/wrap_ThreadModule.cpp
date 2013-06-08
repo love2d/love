@@ -33,37 +33,23 @@ static ThreadModule *instance = 0;
 int w_newThread(lua_State *L)
 {
 	std::string name = "Thread code";
-	love::Data *data;
-	if (lua_isstring(L, 1))
-		luax_convobj(L, 1, "filesystem", "newFile");
-	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+	love::Data *data = 0;
+
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
+
+	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
-		try
-		{
-			love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-			name = std::string("@") + file->getFilename();
-			data = file->read();
-		}
-		catch (love::Exception & e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
-	}
-	else if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
-	{
-		love::filesystem::FileData * fdata = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
+		love::filesystem::FileData *fdata = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
 		name = std::string("@") + fdata->getFilename();
 		data = fdata;
-		data->retain();
 	}
 	else
 	{
 		data = luax_checktype<love::Data>(L, 1, "Data", DATA_T);
-		data->retain();
 	}
+
 	LuaThread *t = instance->newThread(name, data);
-	// do not worry, file->read() returns retained data
-	data->release();
 	luax_newtype(L, "Thread", THREAD_THREAD_T, (void *)t);
 	return 1;
 }

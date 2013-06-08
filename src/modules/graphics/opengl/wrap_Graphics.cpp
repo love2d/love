@@ -309,43 +309,16 @@ int w_newQuad(lua_State *L)
 
 int w_newFont(lua_State *L)
 {
-	Data *font_data = NULL;
-	// Convert to File, if necessary.
-	if (lua_isstring(L, 1))
-		luax_convobj(L, 1, "filesystem", "newFile");
-
-	// Convert to Data, if necessary.
-	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
-	{
-		love::filesystem::File *f = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-		try
-		{
-			font_data = f->read();
-		}
-		catch(love::Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
-		lua_remove(L, 1); // get rid of the file
-		luax_newtype(L, "Data", DATA_T, (void *)font_data);
-		lua_insert(L, 1); // put it at the bottom of the stack
-	}
+	// Convert to FileData, if necessary.
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
 
 	// Convert to Rasterizer, if necessary.
-	if (luax_istype(L, 1, DATA_T))
+	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
 		int idxs[] = {1, 2};
-		int ret = luax_pconvobj(L, idxs, 2, "font", "newRasterizer");
-		if (ret != 0)
-		{
-			if (font_data)
-				font_data->release();
-			return lua_error(L);
-		}
+		luax_convobj(L, idxs, 2, "font", "newRasterizer");
 	}
-
-	if (font_data)
-		font_data->release();
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
