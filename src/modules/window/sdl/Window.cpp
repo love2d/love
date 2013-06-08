@@ -156,12 +156,9 @@ bool Window::setWindow(int width, int height, graphics::Graphics *graphics, Wind
 
 	created = true;
 
-	if (width == 0 || height == 0)
-	{
-		const SDL_VideoInfo *videoinfo = SDL_GetVideoInfo();
-		width = videoinfo->current_w;
-		height = videoinfo->current_h;
-	}
+	const SDL_VideoInfo *videoinfo = SDL_GetVideoInfo();
+	width = videoinfo->current_w;
+	height = videoinfo->current_h;
 
 	int buffers;
 	int samples;
