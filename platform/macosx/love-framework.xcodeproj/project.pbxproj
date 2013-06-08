@@ -215,6 +215,7 @@
 		FA577AC316C7512F00860150 /* Game_Music_Emu.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6B16C719E400860150 /* Game_Music_Emu.framework */; };
 		FA577AC416C7513200860150 /* IL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6916C719DE00860150 /* IL.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
+		FA577AC616C7513800860150 /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6D16C719EA00860150 /* Lua.framework */; };
 		FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6F16C719F000860150 /* mpg123.framework */; };
 		FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* Ogg.framework */; };
 		FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7C16C71A2600860150 /* OpenGL.framework */; };
@@ -232,7 +233,6 @@
 		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
 		FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAC6B01170A373A008A61C5 /* CompressedData.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
-		FABE5DD5175AA0D5000F343D /* LuaJIT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABE5DD4175AA0D5000F343D /* LuaJIT.framework */; };
 		FAC5710017402D1100D147E4 /* BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC570FC17402D1100D147E4 /* BezierCurve.cpp */; };
 		FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC570FD17402D1100D147E4 /* BezierCurve.h */; };
 		FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */; };
@@ -705,6 +705,7 @@
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6916C719DE00860150 /* IL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IL.framework; path = /Library/Frameworks/IL.framework; sourceTree = "<absolute>"; };
 		FA577A6B16C719E400860150 /* Game_Music_Emu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Game_Music_Emu.framework; path = /Library/Frameworks/Game_Music_Emu.framework; sourceTree = "<absolute>"; };
+		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA577A7116C719F400860150 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
 		FA577A7316C719F900860150 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
@@ -733,7 +734,6 @@
 		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
 		FAAC6B01170A373A008A61C5 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
-		FABE5DD4175AA0D5000F343D /* LuaJIT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LuaJIT.framework; path = /Library/Frameworks/LuaJIT.framework; sourceTree = "<absolute>"; };
 		FAC570FC17402D1100D147E4 /* BezierCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BezierCurve.cpp; sourceTree = "<group>"; };
 		FAC570FD17402D1100D147E4 /* BezierCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierCurve.h; sourceTree = "<group>"; };
 		FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_BezierCurve.cpp; sourceTree = "<group>"; };
@@ -778,13 +778,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABE5DD5175AA0D5000F343D /* LuaJIT.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */,
 				FA577AC316C7512F00860150 /* Game_Music_Emu.framework in Frameworks */,
 				FA577AC416C7513200860150 /* IL.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
+				FA577AC616C7513800860150 /* Lua.framework in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
 				FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
@@ -1665,12 +1665,12 @@
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FABE5DD4175AA0D5000F343D /* LuaJIT.framework */,
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FA577A6716C719D900860150 /* FreeType.framework */,
 				FA577A6B16C719E400860150 /* Game_Music_Emu.framework */,
 				FA577A6916C719DE00860150 /* IL.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
+				FA577A6D16C719EA00860150 /* Lua.framework */,
 				FA577A6F16C719F000860150 /* mpg123.framework */,
 				FA577A7116C719F400860150 /* Ogg.framework */,
 				FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */,
@@ -2061,7 +2061,6 @@
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -2069,10 +2068,11 @@
 					"\"$(SRCROOT)/../../src/libraries\"",
 					"\"$(SRCROOT)/../../src/modules\"",
 					/Library/Frameworks/FreeType.framework/Headers,
-					/Library/Frameworks/LuaJIT.framework/Headers,
+					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
 				LIBRARY_SEARCH_PATHS = "";
+				LLVM_LTO = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = NO;
 				WARNING_CFLAGS = "-Wall";
@@ -2092,7 +2092,6 @@
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -2100,7 +2099,7 @@
 					"\"$(SRCROOT)/../../src/libraries\"",
 					"\"$(SRCROOT)/../../src/modules\"",
 					/Library/Frameworks/FreeType.framework/Headers,
-					/Library/Frameworks/LuaJIT.framework/Headers,
+					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
 				LIBRARY_SEARCH_PATHS = "";
