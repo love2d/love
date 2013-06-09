@@ -33,155 +33,50 @@ namespace dds
 using namespace dds::dxinfo;
 
 // Creates a packed uint representation of a FourCC code.
-static inline uint32_t FourCC(char a, char b, char c, char d)
+#define MakeFourCC(a, b, c, d) ((uint32_t) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a)))
+
+// Translate the old DDS format to our own.
+static Format parseDDSFormat(const DDSPixelFormat &fmt)
 {
-	uint32_t fcc = ((uint32_t) a)
-	            | (((uint32_t) b) << 8)
-	            | (((uint32_t) c) << 16)
-	            | (((uint32_t) d) << 24);
+	if ((fmt.flags & DDPF_FOURCC) == 0)
+		return FORMAT_UNKNOWN;
 
-	return fcc;
-}
+	Format f = FORMAT_UNKNOWN;
 
-Parser::Image::Image()
-	: width(0)
-	, height(0)
-	, dataSize(0)
-	, data(0)
-{
-}
-
-bool Parser::isDDS(const void *data, size_t dataSize)
-{
-	const uint8_t *readData = (const uint8_t *) data;
-	ptrdiff_t offset = 0;
-
-	// Is the data large enough to hold the DDS header?
-	if(dataSize < sizeof(uint32_t) + sizeof(DDSHeader))
-		return false;
-
-	// All DDS files start with "DDS ".
-	if((*(uint32_t *) readData) != FourCC('D','D','S',' '))
-		return false;
-
-	offset += sizeof(uint32_t);
-
-	DDSHeader *header = (DDSHeader *) &readData[offset];
-
-
-	// Verify header to validate DDS data.
-	if (header->size != sizeof(DDSHeader) || header->format.size != sizeof(DDSPixelFormat))
-		return false;
-
-	offset += sizeof(DDSHeader);
-
-	// Check for DX10 extension.
-	if ((header->format.flags & DDPF_FOURCC) && (header->format.fourCC == FourCC('D','X','1','0')))
+	switch (fmt.fourCC)
 	{
-		// Data must be big enough for both headers plus the magic value.
-		if (dataSize < (sizeof(uint32_t) + sizeof(DDSHeader) + sizeof(DDSHeader10)))
-			return false;
+	case MakeFourCC('D','X','T','1'):
+		f = FORMAT_DXT1;
+		break;
+	case MakeFourCC('D','X','T','3'):
+		f = FORMAT_DXT3;
+		break;
+	case MakeFourCC('D','X','T','5'):
+		f = FORMAT_DXT5;
+		break;
+	case MakeFourCC('A','T','I','1'):
+	case MakeFourCC('B','C','4','U'):
+		f = FORMAT_BC4;
+		break;
+	case MakeFourCC('B','C','4','S'):
+		f = FORMAT_BC4s;
+		break;
+	case MakeFourCC('A','T','I','2'):
+	case MakeFourCC('B','C','5','U'):
+		f = FORMAT_BC5;
+		break;
+	case MakeFourCC('B','C','5','S'):
+		f = FORMAT_BC5s;
+		break;
+	default:
+		break;
 	}
 
-	return true;
+	return f;
 }
 
-bool Parser::isCompressedDDS(const void *data, size_t dataSize)
-{
-	if (!isDDS(data, dataSize))
-		return false;
-
-	const uint8_t *readData = (const uint8_t *) data;
-	ptrdiff_t offset = sizeof(uint32_t);
-
-	DDSHeader *header = (DDSHeader *) &readData[offset];
-	offset += sizeof(DDSHeader);
-
-	// Check for DX10 extension.
-	if ((header->format.flags & DDPF_FOURCC) && (header->format.fourCC == FourCC('D','X','1','0')))
-	{
-		DDSHeader10 *header10 = (DDSHeader10 *) &readData[offset];
-		return parseDX10Format(header10->dxgiFormat) != FORMAT_UNKNOWN;
-	}
-
-	return parseDDSFormat(header->format) != FORMAT_UNKNOWN;
-}
-
-Parser::Parser(const void *data, size_t dataSize)
-	: format(FORMAT_UNKNOWN)
-{
-	parseData(data, dataSize);
-}
-
-Parser::Parser(const Parser &other)
-	: texData(other.texData)
-	, format(other.format)
-{
-}
-
-Parser::Parser()
-	: format(FORMAT_UNKNOWN)
-{
-}
-
-Parser &Parser::operator = (const Parser &other)
-{
-	texData = other.texData;
-	format = other.format;
-
-	return *this;
-}
-
-Parser::~Parser()
-{
-}
-
-Format Parser::getFormat() const
-{
-	return format;
-}
-
-const Parser::Image *Parser::getImageData(size_t miplevel) const
-{
-	if (miplevel >= texData.size())
-		return 0;
-
-	return &texData[miplevel];
-}
-
-size_t Parser::getNumMipmaps() const
-{
-	return texData.size();
-}
-
-Format Parser::parseDDSFormat(const DDSPixelFormat &fmt)
-{
-	if (fmt.flags & DDPF_FOURCC)
-	{
-		if (fmt.fourCC == FourCC('D','X','T','1'))
-			return FORMAT_DXT1;
-		else if (fmt.fourCC == FourCC('D','X','T','3'))
-			return FORMAT_DXT3;
-		else if (fmt.fourCC == FourCC('D','X','T','5'))
-			return FORMAT_DXT5;
-		else if (fmt.fourCC == FourCC('A','T','I','1'))
-			return FORMAT_BC4;
-		else if (fmt.fourCC == FourCC('A','T','I','2'))
-			return FORMAT_BC5;
-		else if (fmt.fourCC == FourCC('B','C','4','U'))
-			return FORMAT_BC4;
-		else if (fmt.fourCC == FourCC('B','C','4','S'))
-			return FORMAT_BC4s;
-		else if (fmt.fourCC == FourCC('B','C','5','U'))
-			return FORMAT_BC5;
-		else if (fmt.fourCC == FourCC('B','C','5','S'))
-			return FORMAT_BC5s;
-	}
-
-	return FORMAT_UNKNOWN;
-}
-
-Format Parser::parseDX10Format(DXGIFormat fmt)
+// Translate the new DX10 formats to our own.
+static Format parseDX10Format(DXGIFormat fmt)
 {
 	Format f = FORMAT_UNKNOWN;
 
@@ -233,8 +128,111 @@ Format Parser::parseDX10Format(DXGIFormat fmt)
 	default:
 		break;
 	}
-
+	
 	return f;
+}
+
+bool isDDS(const void *data, size_t dataSize)
+{
+	const uint8_t *readData = (const uint8_t *) data;
+	ptrdiff_t offset = 0;
+
+	// Is the data large enough to hold the DDS header?
+	if(dataSize < sizeof(uint32_t) + sizeof(DDSHeader))
+		return false;
+
+	// All DDS files start with "DDS ".
+	if((*(uint32_t *) readData) != MakeFourCC('D','D','S',' '))
+		return false;
+
+	offset += sizeof(uint32_t);
+
+	DDSHeader *header = (DDSHeader *) &readData[offset];
+
+
+	// Verify header to validate DDS data.
+	if (header->size != sizeof(DDSHeader) || header->format.size != sizeof(DDSPixelFormat))
+		return false;
+
+	offset += sizeof(DDSHeader);
+
+	// Check for DX10 extension.
+	if ((header->format.flags & DDPF_FOURCC) && (header->format.fourCC == MakeFourCC('D','X','1','0')))
+	{
+		// Data must be big enough for both headers plus the magic value.
+		if (dataSize < (sizeof(uint32_t) + sizeof(DDSHeader) + sizeof(DDSHeader10)))
+			return false;
+	}
+
+	return true;
+}
+
+bool isCompressedDDS(const void *data, size_t dataSize)
+{
+	if (!isDDS(data, dataSize))
+		return false;
+
+	const uint8_t *readData = (const uint8_t *) data;
+	ptrdiff_t offset = sizeof(uint32_t);
+
+	DDSHeader *header = (DDSHeader *) &readData[offset];
+	offset += sizeof(DDSHeader);
+
+	// Check for DX10 extension.
+	if ((header->format.flags & DDPF_FOURCC) && (header->format.fourCC == MakeFourCC('D','X','1','0')))
+	{
+		DDSHeader10 *header10 = (DDSHeader10 *) &readData[offset];
+		return parseDX10Format(header10->dxgiFormat) != FORMAT_UNKNOWN;
+	}
+
+	return parseDDSFormat(header->format) != FORMAT_UNKNOWN;
+}
+
+Parser::Parser(const void *data, size_t dataSize)
+	: format(FORMAT_UNKNOWN)
+{
+	parseData(data, dataSize);
+}
+
+Parser::Parser(const Parser &other)
+	: texData(other.texData)
+	, format(other.format)
+{
+}
+
+Parser::Parser()
+	: format(FORMAT_UNKNOWN)
+{
+}
+
+Parser &Parser::operator = (const Parser &other)
+{
+	texData = other.texData;
+	format = other.format;
+
+	return *this;
+}
+
+Parser::~Parser()
+{
+}
+
+Format Parser::getFormat() const
+{
+	return format;
+}
+
+const Image *Parser::getImageData(size_t miplevel) const
+{
+	if (miplevel >= texData.size())
+		return 0;
+
+	return &texData[miplevel];
+}
+
+size_t Parser::getMipmapCount() const
+{
+	return texData.size();
 }
 
 size_t Parser::parseImageSize(Format fmt, int width, int height) const
@@ -318,7 +316,7 @@ bool Parser::parseData(const void *data, size_t dataSize)
 
 
 	// Check for DX10 extension.
-	if ((header->format.flags & DDPF_FOURCC) && (header->format.fourCC == FourCC('D','X','1','0')))
+	if ((header->format.flags & DDPF_FOURCC) && (header->format.fourCC == MakeFourCC('D','X','1','0')))
 	{
 		DDSHeader10 *header10 = (DDSHeader10 *) &readData[offset];
 		offset += sizeof(DDSHeader10);

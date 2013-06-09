@@ -36,10 +36,11 @@ namespace love
 namespace image
 {
 
-// CompressedData represents image data which is designed to be uploaded to the
-// GPU and rendered in its compressed form, without being un-compressed.
-// http://renderingpipeline.com/2012/07/texture-compression/
-
+/**
+ * CompressedData represents image data which is designed to be uploaded to the
+ * GPU and rendered in its compressed form, without being un-compressed.
+ * http://renderingpipeline.com/2012/07/texture-compression/
+ **/
 class CompressedData : public Data
 {
 public:
@@ -53,8 +54,6 @@ public:
 		TYPE_DXT5,
 		TYPE_BC5,
 		TYPE_BC5s,
-		TYPE_BC7,
-		TYPE_BC7srgb,
 		TYPE_MAX_ENUM
 	};
 

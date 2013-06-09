@@ -32,12 +32,12 @@ bool ddsHandler::canParse(const filesystem::FileData *data)
 	if (data->getExtension().compare("dds") != 0)
 		return false;
 
-	return dds::Parser::isCompressedDDS(data->getData(), data->getSize());
+	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
 CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images)
 {
-	if (!dds::Parser::isDDS(data->getData(), data->getSize()))
+	if (!dds::isDDS(data->getData(), data->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
 
 	CompressedData::TextureType textype = CompressedData::TYPE_UNKNOWN;
@@ -51,12 +51,12 @@ CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::v
 		if (textype == CompressedData::TYPE_UNKNOWN)
 			throw love::Exception("Could not parse compressed data: Unsupported format.");
 
-		if (parser.getNumMipmaps() == 0)
+		if (parser.getMipmapCount() == 0)
 			throw love::Exception("Could not parse compressed data: No readable texture data.");
 
-		for (size_t i = 0; i < parser.getNumMipmaps(); i++)
+		for (size_t i = 0; i < parser.getMipmapCount(); i++)
 		{
-			const dds::Parser::Image *img = parser.getImageData(i);
+			const dds::Image *img = parser.getImageData(i);
 
 			CompressedData::SubImage mip;
 
@@ -90,10 +90,6 @@ CompressedData::TextureType ddsHandler::convertFormat(dds::Format ddsformat)
 		return CompressedData::TYPE_BC5;
 	case dds::FORMAT_BC5s:
 		return CompressedData::TYPE_BC5s;
-	case dds::FORMAT_BC7:
-		return CompressedData::TYPE_BC7;
-	case dds::FORMAT_BC7srgb:
-		return CompressedData::TYPE_BC7srgb;
 	default:
 		return CompressedData::TYPE_UNKNOWN;
 	}

@@ -117,8 +117,6 @@ StringMap<CompressedData::TextureType, CompressedData::TYPE_MAX_ENUM>::Entry Com
 	{"dxt5", CompressedData::TYPE_DXT5},
 	{"bc5", CompressedData::TYPE_BC5},
 	{"bc5s", CompressedData::TYPE_BC5s},
-	{"bc7", CompressedData::TYPE_BC7},
-	{"bc7srgb", CompressedData::TYPE_BC7srgb},
 };
 
 StringMap<CompressedData::TextureType, CompressedData::TYPE_MAX_ENUM> CompressedData::types(CompressedData::typeEntries, sizeof(CompressedData::typeEntries));

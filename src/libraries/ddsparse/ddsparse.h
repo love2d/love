@@ -25,13 +25,10 @@
 #ifndef DDS_PARSE_H
 #define DDS_PARSE_H
 
-#include "ddsinfo.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
 #include <vector>
-#include <exception>
 
 namespace dds
 {
@@ -54,38 +51,39 @@ enum Format
 	FORMAT_UNKNOWN
 };
 
+// Represents a single mipmap level of a texture.
+struct Image
+{
+	int width;
+	int height;
+	size_t dataSize;
+	const uint8_t *data;
+
+	Image() : width(0), height(0), dataSize(0), data(0)
+	{};
+};
+
+/**
+ * Determines whether the input byte data represents a valid DDS file.
+ * Does not take into account whether the texture format is supported.
+ *
+ * @param data     The byte data to parse.
+ * @param dataSize The size in bytes of the data.
+ **/
+bool isDDS(const void *data, size_t dataSize);
+
+/**
+ * Determines whether the input byte data represents a valid compressed DDS
+ * file. Takes into account texture format, but not type (3D textures, etc.)
+ *
+ * @param data     The byte data to parse.
+ * @param dataSize The size in bytes of the data.
+ **/
+bool isCompressedDDS(const void *data, size_t dataSize);
+
 class Parser
 {
 public:
-
-	// Represents a single mipmap level of a texture.
-	struct Image
-	{
-		int width;
-		int height;
-		size_t dataSize;
-		const uint8_t *data;
-
-		Image();
-	};
-
-	/**
-	 * Determines whether the input byte data represents a valid DDS file.
-	 * Does not take into account whether the texture format is supported.
-	 *
-	 * @param data     The byte data to parse.
-	 * @param dataSize The size in bytes of the data.
-	 **/
-	static bool isDDS(const void *data, size_t dataSize);
-
-	/**
-	 * Determines whether the input byte data represents a valid compressed DDS
-	 * file. Takes into account texture format, but not type (3D textures, etc.)
-	 *
-	 * @param data     The byte data to parse.
-	 * @param dataSize The size in bytes of the data.
-	 **/
-	static bool isCompressedDDS(const void *data, size_t dataSize);
 
 	/**
 	 * Constructor.
@@ -121,17 +119,12 @@ public:
 	 * Gets the number of mipmap levels in this texture.
 	 * Includes the base mip level.
 	 **/
-	size_t getNumMipmaps() const;
+	size_t getMipmapCount() const;
 
 private:
 
-	static Format parseDDSFormat(const dxinfo::DDSPixelFormat &fmt);
-	static Format parseDX10Format(dxinfo::DXGIFormat fmt);
-
 	size_t parseImageSize(Format fmt, int width, int height) const;
-
 	bool parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int w, int h, int mips);
-
 	bool parseData(const void *data, size_t dataSize);
 
 	std::vector<Image> texData;

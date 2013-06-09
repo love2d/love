@@ -22,6 +22,7 @@
 #define LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
 
 // LOVE
+#include "common/EnumMap.h"
 #include "filesystem/FileData.h"
 #include "image/CompressedData.h"
 

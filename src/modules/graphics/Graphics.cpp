@@ -178,7 +178,6 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 	{ "mipmap", Graphics::SUPPORT_MIPMAP },
 	{ "dxt", Graphics::SUPPORT_DXT },
 	{ "bc5", Graphics::SUPPORT_BC5 },
-	{ "bc7", Graphics::SUPPORT_BC7 },
 };
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));

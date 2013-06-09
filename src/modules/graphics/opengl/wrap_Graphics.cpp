@@ -1068,10 +1068,6 @@ int w_isSupported(lua_State *L)
 			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC5))
 				supported = false;
 			break;
-		case Graphics::SUPPORT_BC7:
-			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC7))
-				supported = false;
-			break;
 		default:
 			supported = false;
 		}
