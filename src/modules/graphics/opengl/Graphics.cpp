@@ -468,6 +468,11 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	if (texture_type == Canvas::TYPE_HDR && !Canvas::isHDRSupported())
 		throw Exception("HDR Canvases are not supported by your OpenGL implementation");
 
+	if (width > gl.getMaxTextureSize())
+		throw Exception("Cannot create canvas: width of %d pixels is too large for this system.", width);
+	else if (height > gl.getMaxTextureSize())
+		throw Exception("Cannot create canvas: height of %d pixels is too large for this system.", height);
+
 	while (GL_NO_ERROR != glGetError())
 		/* clear opengl error flag */;
 

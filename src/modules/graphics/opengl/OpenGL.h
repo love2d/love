@@ -168,13 +168,21 @@ public:
 	 **/
 	graphics::Image::Wrap getTextureWrap();
 
+	/**
+	 * Returns the maximum supported width or height of a texture.
+	 **/
+	int getMaxTextureSize() const;
+
 private:
 
 	void initOpenGLFunctions();
+	void initMaxValues();
 	void createDefaultTexture();
 
 	bool contextInitialized;
+
 	float maxAnisotropy;
+	int maxTextureSize;
 
 	// Tracked OpenGL state.
 	struct

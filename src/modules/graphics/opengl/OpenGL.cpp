@@ -38,6 +38,7 @@ namespace opengl
 OpenGL::OpenGL()
 	: contextInitialized(false)
 	, maxAnisotropy(1.0f)
+	, maxTextureSize(0)
 	, state()
 {
 }
@@ -103,12 +104,7 @@ void OpenGL::initContext()
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[0]);
 	}
 
-	// We'll need this value to clamp anisotropy.
-	if (GLEE_EXT_texture_filter_anisotropic)
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-	else
-		maxAnisotropy = 1.0f;
-
+	initMaxValues();
 	createDefaultTexture();
 
 	contextInitialized = true;
@@ -149,6 +145,17 @@ void OpenGL::initOpenGLFunctions()
 		glCompressedTexSubImage2DARB = (GLEEPFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC) glCompressedTexSubImage2D;
 		glGetCompressedTexImageARB = (GLEEPFNGLGETCOMPRESSEDTEXIMAGEARBPROC) glGetCompressedTexImage;
 	}
+}
+
+void OpenGL::initMaxValues()
+{
+	// We'll need this value to clamp anisotropy.
+	if (GLEE_EXT_texture_filter_anisotropic)
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+	else
+		maxAnisotropy = 1.0f;
+
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 }
 
 void OpenGL::createDefaultTexture()
@@ -447,6 +454,11 @@ graphics::Image::Wrap OpenGL::getTextureWrap()
 	}
 
 	return w;
+}
+
+int OpenGL::getMaxTextureSize() const
+{
+	return maxTextureSize;
 }
 
 // OpenGL class instance singleton.

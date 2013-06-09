@@ -704,6 +704,10 @@ Image::Wrap Canvas::getWrap() const
 
 bool Canvas::loadVolatile()
 {
+	// glTexImage2D is guaranteed to error in this case.
+	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
+		return false;
+
 	status = strategy->createFBO(fbo, img, width, height, texture_type);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 		return false;

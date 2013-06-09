@@ -320,6 +320,18 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
+	// glTexImage2D is guaranteed to throw an error in this case.
+	if (width > gl.getMaxTextureSize())
+	{
+		throw love::Exception("Cannot create image: "
+		      "width of %d pixels is too large for this system.", (int) width);
+	}
+	else if (height > gl.getMaxTextureSize())
+	{
+		throw love::Exception("Cannot create image:"
+		      "height of %d pixels is too large for this system.", (int) height);
+	}
+
 	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getType()))
 	{
 		const char *str;
@@ -614,9 +626,10 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::TextureType type)
 	case image::CompressedData::TYPE_BC5s:
 		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc || GLEE_EXT_texture_compression_rgtc);
 	default:
-		return false;
-
+		break;
 	}
+
+	return false;
 }
 
 } // opengl
