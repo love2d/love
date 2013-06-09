@@ -70,6 +70,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed crashes with font drawing on some ATI cards.
   * Fixed artifacts when drawing lines at huge scale.
   * Fixed Fonts and Canvases ignoring default image filter.
+  * Fixed scissor boxes when a canvas is set after love.graphics.setScissor is called.
   * Fixed love.graphics.getLineWidth returning incorrect values.
   * Fixed love.graphics.getColor on some Windows systems.
   * Fixed alpha blend mode.
@@ -79,6 +80,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed Shader:send with Images and Canvases failing sometimes.
   * Fixed crash when binding SpriteBatches multiple times.
   * Fixed SpriteBatches with more than 16,383 sprites.
+  * Fixed the graphics viewport not matching the window size when using an unsupported fullscreen mode.
   * Fixed getMode and friends returning wrong values when using desktop size.
   * Fixed keyrepeat settings being lost after (indirect) setMode.
   * Fixed memory leak in the mp3 decoder.
@@ -128,7 +130,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated love.image.newImageData and love.graphics.newImage to accept FileData.
   * Updated ImageData:setPixel to accept a table and default to 255 alpha.
   * Updated love.image memory handling, improves errors and thread-safety.
-  * Updated love.audio.newSource and love.sound.newDecoder/newSoundData to accept FileData.
+  * Updated all love object constructors to optionally accept FileData if they accept a filename.
   * Updated allocation for SoundData, it's more efficient and less wasteful.
   * Updated Source:set* functions to default z to 0.
   * Updated love.timer.getFPS to be microsecond-accurate.
