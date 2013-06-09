@@ -176,8 +176,9 @@ void SpriteBatch::unlock()
 
 void SpriteBatch::setImage(Image *newimage)
 {
+	Object::AutoRelease imagerelease(image);
+
 	newimage->retain();
-	image->release();
 	image = newimage;
 }
 

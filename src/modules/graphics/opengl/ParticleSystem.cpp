@@ -193,8 +193,7 @@ void ParticleSystem::remove(particle *p)
 
 void ParticleSystem::setImage(Image *image)
 {
-	if (this->image != 0)
-		this->image->release();
+	Object::AutoRelease imagerelease(this->image);
 
 	this->image = image;
 	this->image->retain();

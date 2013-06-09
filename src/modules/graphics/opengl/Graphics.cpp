@@ -543,8 +543,7 @@ Color Graphics::getBackgroundColor() const
 
 void Graphics::setFont(Font *font)
 {
-	if (currentFont != 0)
-		currentFont->release();
+	Object::AutoRelease fontrelease(currentFont);
 
 	currentFont = font;
 
