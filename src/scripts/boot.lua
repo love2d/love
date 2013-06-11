@@ -188,6 +188,9 @@ function love.createhandlers()
 		mousefocus = function (f)
 			if love.mousefocus then return love.mousefocus(f) end
 		end,
+		visible = function (v)
+			if love.visible then return love.visible(v) end
+		end,
 		quit = function ()
 			return
 		end,

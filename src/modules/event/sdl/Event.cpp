@@ -182,6 +182,8 @@ Message *Event::convert(SDL_Event &e)
 			msg = new Message("focus", arg1);
 		else if (e.active.state & SDL_APPMOUSEFOCUS)
 			msg = new Message("mousefocus", arg1);
+		else if (e.active.state & SDL_APPACTIVE)
+			msg = new Message("visible", arg1);
 		arg1->release();
 		break;
 	case SDL_QUIT:
