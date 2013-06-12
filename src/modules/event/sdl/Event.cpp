@@ -89,7 +89,7 @@ Message *Event::convert(SDL_Event &e)
 	love::keyboard::Keyboard::Key key;
 	love::mouse::Mouse::Button button;
 	love::joystick::Joystick::Hat hat;
-	Variant *arg1, *arg2, *arg3, *arg4;
+	Variant *arg1, *arg2, *arg3;
 	const char *txt;
 	switch (e.type)
 	{
@@ -152,17 +152,6 @@ Message *Event::convert(SDL_Event &e)
 			arg2->release();
 			arg3->release();
 		}
-		break;
-	case SDL_JOYBALLMOTION:
-		arg1 = new Variant((double)(e.jball.which+1));
-		arg2 = new Variant((double)(e.jball.ball+1));
-		arg3 = new Variant((double)e.jball.xrel);
-		arg4 = new Variant((double)e.jball.yrel);
-		msg = new Message("joystickball", arg1, arg2, arg3, arg4);
-		arg1->release();
-		arg2->release();
-		arg3->release();
-		arg4->release();
 		break;
 	case SDL_JOYHATMOTION:
 		if (hats.find(e.jhat.value, hat) && love::joystick::Joystick::getConstant(hat, txt))

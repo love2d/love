@@ -176,9 +176,6 @@ function love.createhandlers()
 		joystickaxis = function (j,a,v)
 			if love.joystickaxis then return love.joystickaxis(j,a,v) end
 		end,
-		joystickball = function (j,b,dx,dy)
-			if love.joystickball then return love.joystickball(j,b,dx,dy) end
-		end,
 		joystickhat = function(j,h,v)
 			if love.joystickhat then return love.joystickhat(j,h,v) end
 		end,
