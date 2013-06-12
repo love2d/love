@@ -84,6 +84,8 @@ bool Filesystem::setIdentity(const char *ident)
 	if (!isInited)
 		return false;
 
+	std::string old_save_path = save_path_full;
+
 	// Store the save directory.
 	save_identity = std::string(ident);
 
@@ -104,7 +106,13 @@ bool Filesystem::setIdentity(const char *ident)
 
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
-	PHYSFS_addToSearchPath(save_path_full.c_str(), 0);
+	if (PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
+	{
+		// We don't want old read-only save paths to accumulate when we set a
+		// new identity.
+		if (old_save_path.compare(save_path_full) != 0)
+			PHYSFS_removeFromSearchPath(old_save_path.c_str());
+	}
 
 	return true;
 }
