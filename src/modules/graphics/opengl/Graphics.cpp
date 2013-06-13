@@ -794,16 +794,13 @@ int Graphics::getMaxPointSize() const
 	return (int)max;
 }
 
-void Graphics::print(const char *str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Graphics::print(const std::string &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	if (currentFont != 0)
-	{
-		std::string text(str);
-		currentFont->print(text, x, y, 0.0, angle, sx, sy, ox, oy, kx, ky);
-	}
+		currentFont->print(str, x, y, 0.0, angle, sx, sy, ox, oy, kx, ky);
 }
 
-void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Graphics::printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	if (currentFont == 0)
 		return;
@@ -811,8 +808,7 @@ void Graphics::printf(const char *str, float x, float y, float wrap, AlignMode a
 	using std::string;
 	using std::vector;
 
-	string text(str);
-	vector<string> lines_to_draw = currentFont->getWrap(text, wrap);
+	vector<string> lines_to_draw = currentFont->getWrap(str, wrap);
 
 	glPushMatrix();
 

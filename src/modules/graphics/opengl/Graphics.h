@@ -386,7 +386,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void print(const char *str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void print(const std::string &str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draw formatted text on screen at the specified coordinates.
@@ -404,7 +404,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void printf(const char *str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draws a point at (x,y).

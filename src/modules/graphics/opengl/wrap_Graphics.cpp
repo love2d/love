@@ -1161,7 +1161,7 @@ int w_drawg(lua_State *L)
 
 int w_print(lua_State *L)
 {
-	const char *str = luaL_checkstring(L, 1);
+	std::string str = luax_checkstring(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	float angle = (float)luaL_optnumber(L, 4, 0.0f);
@@ -1184,7 +1184,7 @@ int w_print(lua_State *L)
 
 int w_printf(lua_State *L)
 {
-	const char *str = luaL_checkstring(L, 1);
+	std::string str = luax_checkstring(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	float wrap = (float)luaL_checknumber(L, 4);
