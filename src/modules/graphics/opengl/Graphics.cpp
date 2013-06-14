@@ -109,8 +109,10 @@ void Graphics::restoreState(const DisplayState &s)
 	setColor(s.color);
 	setBackgroundColor(s.backgroundColor);
 	setBlendMode(s.blendMode);
-	setLine(lineWidth, s.lineStyle);
-	setPoint(s.pointSize, s.pointStyle);
+	setLineWidth(lineWidth);
+	setLineStyle(s.lineStyle);
+	setPointSize(s.pointSize);
+	setPointStyle(s.pointStyle);
 	if (s.alphaTest)
 		setAlphaTest(s.alphaTestMode, s.alphaTestRef);
 	else
@@ -730,15 +732,6 @@ void Graphics::setLineStyle(Graphics::LineStyle style)
 	lineStyle = style;
 }
 
-void Graphics::setLine(float width, Graphics::LineStyle style)
-{
-	setLineWidth(width);
-
-	if (style == 0)
-		return;
-	setLineStyle(style);
-}
-
 float Graphics::getLineWidth() const
 {
 	return lineWidth;
@@ -760,16 +753,6 @@ void Graphics::setPointStyle(Graphics::PointStyle style)
 		glEnable(GL_POINT_SMOOTH);
 	else // love::POINT_ROUGH
 		glDisable(GL_POINT_SMOOTH);
-}
-
-void Graphics::setPoint(float size, Graphics::PointStyle style)
-{
-	if (style == POINT_SMOOTH)
-		glEnable(GL_POINT_SMOOTH);
-	else // POINT_ROUGH
-		glDisable(GL_POINT_SMOOTH);
-
-	glPointSize((GLfloat)size);
 }
 
 float Graphics::getPointSize() const

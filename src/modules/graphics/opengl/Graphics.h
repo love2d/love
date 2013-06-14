@@ -326,12 +326,6 @@ public:
 	void setLineStyle(LineStyle style);
 
 	/**
-	 * Sets the type of line used to draw primitives.
-	 * A shorthand for setLineWidth and setLineStyle.
-	 **/
-	void setLine(float width, LineStyle style);
-
-	/**
 	 * Gets the line width.
 	 **/
 	float getLineWidth() const;
@@ -351,11 +345,6 @@ public:
 	 * @param style POINT_SMOOTH or POINT_ROUGH.
 	 **/
 	void setPointStyle(PointStyle style);
-
-	/**
-	 * Shorthand for setPointSize and setPointStyle.
-	 **/
-	void setPoint(float size, PointStyle style);
 
 	/**
 	 * Gets the point size.

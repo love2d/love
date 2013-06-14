@@ -779,23 +779,6 @@ int w_setLineStyle(lua_State *L)
 	return 0;
 }
 
-int w_setLine(lua_State *L)
-{
-	float width = (float)luaL_checknumber(L, 1);
-
-	Graphics::LineStyle style = Graphics::LINE_SMOOTH;
-
-	if (lua_gettop(L) >= 2)
-	{
-		const char *str = luaL_checkstring(L, 2);
-		if (!Graphics::getConstant(str, style))
-			return luaL_error(L, "Invalid line style: %s", str);
-	}
-
-	instance->setLine(width, style);
-	return 0;
-}
-
 int w_getLineWidth(lua_State *L)
 {
 	lua_pushnumber(L, instance->getLineWidth());
@@ -828,23 +811,6 @@ int w_setPointStyle(lua_State *L)
 		return luaL_error(L, "Invalid point style: %s", str);
 
 	instance->setPointStyle(style);
-	return 0;
-}
-
-int w_setPoint(lua_State *L)
-{
-	float size = (float)luaL_checknumber(L, 1);
-
-	Graphics::PointStyle style = Graphics::POINT_SMOOTH;
-
-	if (lua_gettop(L) >= 2)
-	{
-		const char *str = luaL_checkstring(L, 2);
-		if (!Graphics::getConstant(str, style))
-			return luaL_error(L, "Invalid point style: %s", str);
-	}
-
-	instance->setPoint(size, style);
 	return 0;
 }
 
@@ -1473,12 +1439,10 @@ static const luaL_Reg functions[] =
 	{ "getDefaultMipmapFilter", w_getDefaultMipmapFilter },
 	{ "setLineWidth", w_setLineWidth },
 	{ "setLineStyle", w_setLineStyle },
-	{ "setLine", w_setLine },
 	{ "getLineWidth", w_getLineWidth },
 	{ "getLineStyle", w_getLineStyle },
 	{ "setPointSize", w_setPointSize },
 	{ "setPointStyle", w_setPointStyle },
-	{ "setPoint", w_setPoint },
 	{ "getPointSize", w_getPointSize },
 	{ "getPointStyle", w_getPointStyle },
 	{ "getMaxPointSize", w_getMaxPointSize },
