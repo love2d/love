@@ -36,6 +36,9 @@ CompressedData::CompressedData(love::filesystem::FileData *data)
 
 CompressedData::~CompressedData()
 {
+	// We have ownership of the heap memory in dataImages, so we have to free it.
+	for (size_t i = 0; i < dataImages.size(); i++)
+		delete[] dataImages[i].data;
 }
 
 void CompressedData::load(love::filesystem::FileData *data)
@@ -52,6 +55,13 @@ void CompressedData::load(love::filesystem::FileData *data)
 
 	if (parsedimages.size() == 0)
 		throw love::Exception("Could not parse compressed data: No valid data?");
+
+	// Make sure to clean up any previously loaded data.
+	for (size_t i = 0; i < dataImages.size(); i++)
+	{
+		delete[] dataImages[i].data;
+		dataImages[i].data = 0;
+	}
 
 	dataImages = parsedimages;
 	type = textype;

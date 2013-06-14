@@ -54,6 +54,11 @@ void DevilHandler::init()
 void DevilHandler::quit()
 {
 	ilShutDown();
+	if (devilMutex)
+	{
+		delete devilMutex;
+		devilMutex = 0;
+	}
 }
 
 bool DevilHandler::canDecode(love::filesystem::FileData * /*data*/)
@@ -210,9 +215,10 @@ DevilHandler::EncodedImage DevilHandler::encode(const DecodedImage &img, ImageDa
 	}
 	catch (std::exception &e)
 	{
-		// catches love and std exceptions
+		// Catches love and std exceptions.
 		ilDeleteImage(tempimage);
 		delete[] encodedimage.data;
+		encodedimage.data = 0;
 		throw love::Exception("%s", e.what());
 	}
 

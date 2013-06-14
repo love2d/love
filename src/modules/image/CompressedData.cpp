@@ -50,7 +50,7 @@ void *CompressedData::getData() const
 	// Data for different mipmap levels is not stored contiguously in memory, so
 	// getData() won't work properly for CompressedData.
 	if (dataImages.size() > 0 && dataImages[0].size > 0)
-		return (void *) &(dataImages[0].data[0]);
+		return (void *) dataImages[0].data;
 	else
 		return 0;
 }

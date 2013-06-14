@@ -63,7 +63,7 @@ public:
 	{
 		int width, height;
 		size_t size;
-		std::vector<unsigned char> data;
+		char *data;
 	};
 
 	CompressedData();

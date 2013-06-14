@@ -44,6 +44,7 @@ CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::v
 
 	try
 	{
+		// Attempt to parse the dds file.
 		dds::Parser parser(data->getData(), data->getSize());
 
 		textype = convertFormat(parser.getFormat());
@@ -54,8 +55,10 @@ CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::v
 		if (parser.getMipmapCount() == 0)
 			throw love::Exception("Could not parse compressed data: No readable texture data.");
 
+		// Copy the parsed mipmap levels from the FileData to our CompressedData.
 		for (size_t i = 0; i < parser.getMipmapCount(); i++)
 		{
+			// Fetch the data for this mipmap level.
 			const dds::Image *img = parser.getImageData(i);
 
 			CompressedData::SubImage mip;
@@ -63,13 +66,20 @@ CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::v
 			mip.width = img->width;
 			mip.height = img->height;
 			mip.size = img->dataSize;
-			mip.data.insert(mip.data.begin(), &img->data[0], &img->data[mip.size]);
+
+			// Copy the mipmap image from the FileData.
+			mip.data = new char[mip.size];
+			memcpy(mip.data, img->data, mip.size);
 
 			images.push_back(mip);
 		}
 	}
 	catch (std::exception &e)
 	{
+		// Clean up any newly allocated heap memory before throwing.
+		for (size_t i = 0; i < images.size(); i++)
+			delete[] images[i].data;
+
 		throw love::Exception(e.what());
 	}
 
