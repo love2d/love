@@ -87,6 +87,12 @@ public:
 	void setColor();
 
 	/**
+	 * Get the current color for this SpriteBatch. Returns NULL if no color is
+	 * set.
+	 **/
+	const Color *getColor() const;
+
+	/**
 	 * Get the number of sprites currently in this SpriteBatch.
 	 **/
 	int getCount() const;

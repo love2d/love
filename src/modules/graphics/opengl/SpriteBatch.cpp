@@ -201,6 +201,11 @@ void SpriteBatch::setColor()
 	color = 0;
 }
 
+const Color *SpriteBatch::getColor() const
+{
+	return color;
+}
+
 int SpriteBatch::getCount() const
 {
 	return next;

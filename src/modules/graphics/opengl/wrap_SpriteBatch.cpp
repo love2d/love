@@ -197,6 +197,23 @@ int w_SpriteBatch_setColor(lua_State *L)
 	return 0;
 }
 
+int w_SpriteBatch_getColor(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+	const Color *color = t->getColor();
+
+	// getColor returns NULL if no color is set.
+	if (!color)
+		return 0;
+
+	lua_pushinteger(L, (lua_Integer) color->r);
+	lua_pushinteger(L, (lua_Integer) color->g);
+	lua_pushinteger(L, (lua_Integer) color->b);
+	lua_pushinteger(L, (lua_Integer) color->a);
+
+	return 4;
+}
+
 int w_SpriteBatch_getCount(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
@@ -223,6 +240,7 @@ static const luaL_Reg functions[] =
 	{ "setImage", w_SpriteBatch_setImage },
 	{ "getImage", w_SpriteBatch_getImage },
 	{ "setColor", w_SpriteBatch_setColor },
+	{ "getColor", w_SpriteBatch_getColor },
 	{ "getCount", w_SpriteBatch_getCount },
 	{ "getBufferSize", w_SpriteBatch_getBufferSize },
 	{ 0, 0 }

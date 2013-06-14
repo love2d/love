@@ -33,7 +33,7 @@ namespace opengl
 
 SpriteBatch *luax_checkspritebatch(lua_State *L, int idx);
 int w_SpriteBatch_add(lua_State *L);
-int w_SpriteBatch_addq(lua_State *L);
+int w_SpriteBatch_addg(lua_State *L);
 int w_SpriteBatch_set(lua_State *L);
 int w_SpriteBatch_setg(lua_State *L);
 int w_SpriteBatch_clear(lua_State *L);
@@ -42,6 +42,7 @@ int w_SpriteBatch_unbind(lua_State *L);
 int w_SpriteBatch_setImage(lua_State *L);
 int w_SpriteBatch_getImage(lua_State *L);
 int w_SpriteBatch_setColor(lua_State *L);
+int w_SpriteBatch_getColor(lua_State *L);
 int w_SpriteBatch_getCount(lua_State *L);
 int w_SpriteBatch_getBufferSize(lua_State *L);
 
