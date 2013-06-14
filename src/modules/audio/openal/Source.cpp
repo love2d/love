@@ -449,6 +449,7 @@ void Source::playAtomic()
 	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
+	alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 
 	alSourcePlay(source);
 
