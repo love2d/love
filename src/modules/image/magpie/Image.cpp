@@ -57,9 +57,9 @@ love::image::ImageData *Image::newImageData(int width, int height)
 	return new ImageData(width, height);
 }
 
-love::image::ImageData *Image::newImageData(int width, int height, void *data)
+love::image::ImageData *Image::newImageData(int width, int height, void *data, bool own)
 {
-	return new ImageData(width, height, data);
+	return new ImageData(width, height, data, own);
 }
 
 love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)

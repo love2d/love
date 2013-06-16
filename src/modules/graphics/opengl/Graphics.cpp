@@ -1201,7 +1201,9 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	love::image::ImageData *img = 0;
 	try
 	{
-		img = image->newImageData(w, h, (void *) screenshot);
+		// Tell the new ImageData that it owns the screenshot data, so we don't
+		// need to delete it here.
+		img = image->newImageData(w, h, (void *) screenshot, true);
 	}
 	catch (love::Exception &)
 	{
@@ -1210,8 +1212,6 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 			curcanvas->startGrab(curcanvas->getAttachedCanvases());
 		throw;
 	}
-
-	delete[] screenshot;
 
 	// Re-bind the active canvas, if necessary.
 	if (curcanvas)

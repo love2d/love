@@ -69,9 +69,11 @@ public:
 	 * @param The width of the ImageData.
 	 * @param The height of the ImageData.
 	 * @param The data to load into the ImageData.
+	 * @param Whether the new ImageData should take ownership of the data or
+	 *        copy it.
 	 * @return The new ImageData.
 	 **/
-	virtual ImageData *newImageData(int width, int height, void *data) = 0;
+	virtual ImageData *newImageData(int width, int height, void *data, bool own = false) = 0;
 
 	/**
 	 * Creates new CompressedData from FileData.

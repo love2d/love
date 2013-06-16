@@ -45,11 +45,15 @@ ImageData::ImageData(int width, int height)
 	memset(data, 0, width*height*sizeof(pixel));
 }
 
-ImageData::ImageData(int width, int height, void *data)
+ImageData::ImageData(int width, int height, void *data, bool own)
 {
 	this->width = width;
 	this->height = height;
-	create(width, height, data);
+
+	if (own)
+		this->data = (unsigned char *) data;
+	else
+		create(width, height, data);
 }
 
 ImageData::~ImageData()

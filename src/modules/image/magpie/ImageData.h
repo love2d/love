@@ -38,7 +38,7 @@ public:
 
 	ImageData(love::filesystem::FileData *data);
 	ImageData(int width, int height);
-	ImageData(int width, int height, void *data);
+	ImageData(int width, int height, void *data, bool own);
 	virtual ~ImageData();
 
 	// Implements image::ImageData.

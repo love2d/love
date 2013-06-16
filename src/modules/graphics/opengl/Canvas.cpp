@@ -652,10 +652,10 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	for (int i = 0; i < height; ++i, dst -= row, src += row)
 		memcpy(dst, src, row);
 
-	love::image::ImageData *img = image->newImageData(width, height, (void *)flipped);
+	love::image::ImageData *img = image->newImageData(width, height, (void *)flipped, true);
 
+	// The new ImageData now owns the flipped data, so we don't delete it here.
 	delete[] pixels;
-	delete[] flipped;
 
 	return img;
 }
