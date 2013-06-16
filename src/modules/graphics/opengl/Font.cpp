@@ -172,7 +172,7 @@ void Font::createTexture()
 	setFilter(filter);
 }
 
-Font::Glyph *Font::addGlyph(unsigned int glyph)
+Font::Glyph *Font::addGlyph(uint32 glyph)
 {
 	love::font::GlyphData *gd = rasterizer->getGlyphData(glyph);
 	int w = gd->getWidth();
@@ -243,7 +243,7 @@ Font::Glyph *Font::addGlyph(unsigned int glyph)
 	return g;
 }
 
-Font::Glyph *Font::findGlyph(unsigned int glyph)
+Font::Glyph *Font::findGlyph(uint32 glyph)
 {
 	Glyph *g = glyphs[glyph];
 	if (!g)
@@ -283,7 +283,7 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 
 		while (i != end)
 		{
-			unsigned int g = *i++;
+			uint32 g = *i++;
 
 			if (g == '\n')
 			{
@@ -392,7 +392,7 @@ int Font::getWidth(const std::string &str)
 			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
 			while (i != end)
 			{
-				unsigned int c = *i++;
+				uint32 c = *i++;
 				g = findGlyph(c);
 				width += static_cast<int>(g->spacing * mSpacing);
 			}
@@ -409,12 +409,7 @@ int Font::getWidth(const std::string &str)
 	return max_width;
 }
 
-int Font::getWidth(const char *str)
-{
-	return this->getWidth(std::string(str));
-}
-
-int Font::getWidth(unsigned int character)
+int Font::getWidth(char character)
 {
 	Glyph *g = findGlyph(character);
 	return g->spacing;
@@ -526,7 +521,7 @@ bool Font::loadVolatile()
 void Font::unloadVolatile()
 {
 	// nuke everything from orbit
-	std::map<unsigned int, Glyph *>::iterator it = glyphs.begin();
+	std::map<uint32, Glyph *>::iterator it = glyphs.begin();
 	Glyph *g;
 	while (it != glyphs.end())
 	{
@@ -559,7 +554,7 @@ float Font::getBaseline() const
 	return (type == FONT_TRUETYPE) ? floor(getHeight() / 1.25f + 0.5f) : 0.0f;
 }
 
-bool Font::hasGlyph(unsigned int glyph) const
+bool Font::hasGlyph(uint32 glyph) const
 {
 	return rasterizer->hasGlyph(glyph);
 }

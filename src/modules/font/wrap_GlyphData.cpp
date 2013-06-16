@@ -55,7 +55,7 @@ int w_GlyphData_getDimensions(lua_State *L)
 int w_GlyphData_getGlyph(lua_State *L)
 {
 	GlyphData *t = luax_checkglyphdata(L, 1);
-	unsigned int glyph = t->getGlyph();
+	uint32 glyph = t->getGlyph();
 	lua_pushnumber(L, (lua_Number) glyph);
 	return 1;
 }

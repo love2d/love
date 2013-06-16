@@ -34,7 +34,7 @@ inline bool equal(const love::image::pixel &a, const love::image::pixel &b)
 	return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
 }
 
-ImageRasterizer::ImageRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs)
+ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
 	: imageData(data)
 	, glyphs(glyphs)
 	, numglyphs(numglyphs)
@@ -53,13 +53,13 @@ int ImageRasterizer::getLineHeight() const
 	return getHeight();
 }
 
-GlyphData *ImageRasterizer::getGlyphData(unsigned int glyph) const
+GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 {
 	GlyphMetrics gm;
 	memset(&gm, 0, sizeof(GlyphMetrics));
 
 	// Set relevant glyph metrics if the glyph is in this ImageFont
-	std::map<unsigned int, ImageGlyphData>::const_iterator it = imageGlyphs.find(glyph);
+	std::map<uint32, ImageGlyphData>::const_iterator it = imageGlyphs.find(glyph);
 	if (it != imageGlyphs.end())
 	{
 		gm.width = it->second.width;
@@ -95,8 +95,8 @@ void ImageRasterizer::load()
 {
 	love::image::pixel *pixels = (love::image::pixel *) imageData->getData();
 
-	unsigned int imgw = (unsigned int) imageData->getWidth();
-	unsigned int imgh = (unsigned int) imageData->getHeight();
+	int imgw = imageData->getWidth();
+	int imgh = imageData->getHeight();
 
 	// Set the only metric that matters
 	metrics.height = imgh;
@@ -104,10 +104,10 @@ void ImageRasterizer::load()
 	// Reading texture data begins
 	spacer = pixels[0];
 
-	unsigned int start = 0;
-	unsigned int end = 0;
+	int start = 0;
+	int end = 0;
 
-	for (unsigned int i = 0; i < numglyphs; ++i)
+	for (int i = 0; i < numglyphs; ++i)
 	{
 		start = end;
 
@@ -151,7 +151,7 @@ int ImageRasterizer::getGlyphCount() const
 	return numglyphs;
 }
 
-bool ImageRasterizer::hasGlyph(unsigned int glyph) const
+bool ImageRasterizer::hasGlyph(uint32 glyph) const
 {
 	return imageGlyphs.find(glyph) != imageGlyphs.end();
 }

@@ -39,14 +39,14 @@ namespace font
 class ImageRasterizer : public Rasterizer
 {
 public:
-	ImageRasterizer(love::image::ImageData *imageData, unsigned int *glyphs, int numglyphs);
+	ImageRasterizer(love::image::ImageData *imageData, uint32 *glyphs, int numglyphs);
 	virtual ~ImageRasterizer();
 
 	// Implement Rasterizer
 	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(unsigned int glyph) const;
+	virtual GlyphData *getGlyphData(uint32 glyph) const;
 	virtual int getGlyphCount() const;
-	virtual bool hasGlyph(unsigned int glyph) const;
+	virtual bool hasGlyph(uint32 glyph) const;
 
 private:
 	// Load all the glyph positions into memory
@@ -56,20 +56,20 @@ private:
 	love::image::ImageData *imageData;
 
 	// The glyphs in the font
-	unsigned int *glyphs;
+	uint32 *glyphs;
 
 	// Number of glyphs in the font
-	unsigned int numglyphs;
+	int numglyphs;
 
 	// Information about a glyph in the ImageData
 	struct ImageGlyphData
 	{
-		unsigned int x;
-		unsigned int width;
-		unsigned int spacing;
+		int x;
+		int width;
+		int spacing;
 	};
 
-	std::map<unsigned int, ImageGlyphData> imageGlyphs;
+	std::map<uint32, ImageGlyphData> imageGlyphs;
 
 	// Color used to identify glyph separation in the source ImageData
 	love::image::pixel spacer;

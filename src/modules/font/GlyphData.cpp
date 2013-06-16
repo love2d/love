@@ -32,7 +32,7 @@ namespace love
 namespace font
 {
 
-GlyphData::GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
+GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
 	: glyph(glyph)
 	, metrics(glyphMetrics)
 	, data(0)
@@ -88,7 +88,7 @@ int GlyphData::getWidth() const
 	return metrics.width;
 }
 
-unsigned int GlyphData::getGlyph() const
+uint32 GlyphData::getGlyph() const
 {
 	return glyph;
 }

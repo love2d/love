@@ -26,6 +26,7 @@
 #include "common/Data.h"
 #include "common/Exception.h"
 #include "common/StringMap.h"
+#include "common/int.h"
 
 // stdlib
 #include <string>
@@ -62,7 +63,7 @@ public:
 		FORMAT_MAX_ENUM
 	};
 
-	GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, Format f);
+	GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, Format f);
 	virtual ~GlyphData();
 
 	// Implements Data.
@@ -80,9 +81,9 @@ public:
 	virtual int getWidth() const;
 
 	/**
-	 * Gets the glyph itself.
+	 * Gets the glyph codepoint itself.
 	 **/
-	unsigned int getGlyph() const;
+	uint32 getGlyph() const;
 
 	/**
 	 * Gets the glyph as a UTF-8 string (instead of a UTF-8 code point.)
@@ -135,7 +136,7 @@ public:
 private:
 
 	// The glyph codepoint itself.
-	unsigned int glyph;
+	uint32 glyph;
 
 	// Glyph metrics.
 	GlyphMetrics metrics;

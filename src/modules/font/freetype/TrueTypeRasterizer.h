@@ -50,9 +50,9 @@ public:
 
 	// Implement Rasterizer
 	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(unsigned int glyph) const;
+	virtual GlyphData *getGlyphData(uint32 glyph) const;
 	virtual int getGlyphCount() const;
-	virtual bool hasGlyph(unsigned int glyph) const;
+	virtual bool hasGlyph(uint32 glyph) const;
 
 private:
 

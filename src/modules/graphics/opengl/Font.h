@@ -81,14 +81,13 @@ public:
 	 * @param str A string of text.
 	 **/
 	int getWidth(const std::string &str);
-	int getWidth(const char *str);
 
 	/**
 	 * Returns the width of the passed character.
 	 *
 	 * @param character A character.
 	 **/
-	int getWidth(unsigned int character);
+	int getWidth(char character);
 
 	/**
 	 * Returns the maximal width of a wrapped string
@@ -138,7 +137,7 @@ public:
 	int getDescent() const;
 	float getBaseline() const;
 
-	bool hasGlyph(unsigned int glyph) const;
+	bool hasGlyph(uint32 glyph) const;
 	bool hasGlyph(const std::string &text) const;
 
 private:
@@ -194,7 +193,7 @@ private:
 	std::vector<GLuint> textures;
 
 	// maps glyphs to glyph texture information
-	std::map<unsigned int, Glyph *> glyphs;
+	std::map<uint32, Glyph *> glyphs;
 
 	FontType type;
 	Image::Filter filter;
@@ -210,8 +209,8 @@ private:
 
 	bool initializeTexture(GLint format);
 	void createTexture();
-	Glyph *addGlyph(unsigned int glyph);
-	Glyph *findGlyph(unsigned int glyph);
+	Glyph *addGlyph(uint32 glyph);
+	Glyph *findGlyph(uint32 glyph);
 }; // Font
 
 } // opengl

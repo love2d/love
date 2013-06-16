@@ -88,7 +88,7 @@ int w_newGlyphData(lua_State *L)
 	}
 	else
 	{
-		unsigned int g = (unsigned int) luaL_checknumber(L, 2);
+		uint32 g = (uint32) luaL_checknumber(L, 2);
 		t = instance->newGlyphData(r, g);
 	}
 

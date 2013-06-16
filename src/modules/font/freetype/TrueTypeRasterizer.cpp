@@ -63,7 +63,7 @@ int TrueTypeRasterizer::getLineHeight() const
 	return (int)(getHeight() * 1.25);
 }
 
-GlyphData *TrueTypeRasterizer::getGlyphData(unsigned int glyph) const
+GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 {
 	love::font::GlyphMetrics glyphMetrics;
 	FT_Glyph ftglyph;
@@ -111,7 +111,7 @@ int TrueTypeRasterizer::getGlyphCount() const
 	return face->num_glyphs;
 }
 
-bool TrueTypeRasterizer::hasGlyph(unsigned int glyph) const
+bool TrueTypeRasterizer::hasGlyph(uint32 glyph) const
 {
 	return FT_Get_Char_Index(face, glyph) != 0;
 }

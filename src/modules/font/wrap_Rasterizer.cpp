@@ -82,7 +82,7 @@ int w_Rasterizer_getGlyphData(lua_State *L)
 		}
 		else
 		{
-			unsigned int glyph = (unsigned int) luaL_checknumber(L, 2);
+			uint32 glyph = (uint32) luaL_checknumber(L, 2);
 			g = t->getGlyphData(glyph);
 		}
 	}
@@ -113,7 +113,7 @@ int w_Rasterizer_hasGlyph(lua_State *L)
 		if (lua_type(L, 2) == LUA_TSTRING)
 			hasglyph = t->hasGlyph(luax_checkstring(L, 2));
 		else
-			hasglyph = t->hasGlyph((unsigned int) luaL_checknumber(L, 2));
+			hasglyph = t->hasGlyph((uint32) luaL_checknumber(L, 2));
 	}
 	catch (love::Exception &e)
 	{

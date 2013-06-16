@@ -53,7 +53,7 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string 
 	size_t strlen = text.size();
 	size_t numglyphs = 0;
 
-	unsigned int *glyphs = new unsigned int[strlen];
+	uint32 *glyphs = new uint32[strlen];
 
 	try
 	{
@@ -75,14 +75,14 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string 
 	return r;
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs)
+Rasterizer *Font::newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
 {
 	return new ImageRasterizer(data, glyphs, numglyphs);
 }
 
 GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)
 {
-	unsigned int codepoint = 0;
+	uint32 codepoint = 0;
 
 	try
 	{
@@ -96,7 +96,7 @@ GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)
 	return r->getGlyphData(codepoint);
 }
 
-GlyphData *Font::newGlyphData(Rasterizer *r, unsigned int glyph)
+GlyphData *Font::newGlyphData(Rasterizer *r, uint32 glyph)
 {
 	return r->getGlyphData(glyph);
 }

@@ -23,6 +23,7 @@
 
 // LOVE
 #include "common/Object.h"
+#include "common/int.h"
 #include "GlyphData.h"
 
 namespace love
@@ -79,7 +80,7 @@ public:
 	 * Gets a specific glyph.
 	 * @param glyph The (UNICODE) glyph codepoint to get data for.
 	 **/
-	virtual GlyphData *getGlyphData(unsigned int glyph) const = 0;
+	virtual GlyphData *getGlyphData(uint32 glyph) const = 0;
 
 	/**
 	 * Gets a specific glyph.
@@ -96,7 +97,7 @@ public:
 	 * Gets whether this Rasterizer has a specific glyph.
 	 * @param glyph The (UNICODE) glyph codepoint.
 	 **/
-	virtual bool hasGlyph(unsigned int glyph) const = 0;
+	virtual bool hasGlyph(uint32 glyph) const = 0;
 
 	/**
 	 * Gets whether this Rasterizer has a specific glyph.

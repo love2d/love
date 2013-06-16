@@ -55,7 +55,7 @@ int Rasterizer::getDescent() const
 
 GlyphData *Rasterizer::getGlyphData(const std::string &text) const
 {
-	unsigned int codepoint = 0;
+	uint32 codepoint = 0;
 
 	try
 	{
@@ -74,7 +74,7 @@ bool Rasterizer::hasGlyph(const std::string &text) const
 	if (text.size() == 0)
 		return false;
 
-	unsigned int codepoint = 0;
+	uint32 codepoint = 0;
 
 	try
 	{
