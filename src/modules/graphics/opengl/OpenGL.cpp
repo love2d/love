@@ -66,11 +66,11 @@ void OpenGL::initContext()
 	state.clearColor.a = glcolor[3] * 255;
 
 	// Get the current viewport.
-	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport);
+	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
 
 	// And the current scissor - but we need to compensate for GL scissors
 	// starting at the bottom left instead of top left.
-	glGetIntegerv(GL_SCISSOR_BOX, (GLint *) &state.scissor);
+	glGetIntegerv(GL_SCISSOR_BOX, (GLint *) &state.scissor.x);
 	state.scissor.y = state.viewport.h - (state.scissor.y + state.scissor.h);
 
 	// Initialize multiple texture unit support for shaders, if available.
