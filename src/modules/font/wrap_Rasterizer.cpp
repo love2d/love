@@ -32,8 +32,108 @@ Rasterizer *luax_checkrasterizer(lua_State *L, int idx)
 	return luax_checktype<Rasterizer>(L, idx, "Rasterizer", FONT_RASTERIZER_T);
 }
 
+int w_Rasterizer_getHeight(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getHeight());
+	return 1;
+}
+
+int w_Rasterizer_getAdvance(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getAdvance());
+	return 1;
+}
+
+int w_Rasterizer_getAscent(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getAscent());
+	return 1;
+}
+
+int w_Rasterizer_getDescent(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getDescent());
+	return 1;
+}
+
+int w_Rasterizer_getLineHeight(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getLineHeight());
+	return 1;
+}
+
+int w_Rasterizer_getGlyphData(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	GlyphData *g = 0;
+
+	try
+	{
+		// getGlyphData accepts a unicode character or a codepoint number.
+		if (lua_type(L, 2) == LUA_TSTRING)
+		{
+			std::string glyph = luax_checkstring(L, 2);
+			g = t->getGlyphData(glyph);
+		}
+		else
+		{
+			unsigned int glyph = (unsigned int) luaL_checknumber(L, 2);
+			g = t->getGlyphData(glyph);
+		}
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+
+	luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, (void *) g);
+	return 1;
+}
+
+int w_Rasterizer_getGlyphCount(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getGlyphCount());
+	return 1;
+}
+
+int w_Rasterizer_hasGlyph(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+
+	bool hasglyph = false;
+
+	try
+	{
+		if (lua_type(L, 2) == LUA_TSTRING)
+			hasglyph = t->hasGlyph(luax_checkstring(L, 2));
+		else
+			hasglyph = t->hasGlyph((unsigned int) luaL_checknumber(L, 2));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+
+	luax_pushboolean(L, hasglyph);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
+	{ "getHeight", w_Rasterizer_getHeight },
+	{ "getAdvance", w_Rasterizer_getAdvance },
+	{ "getAscent", w_Rasterizer_getAscent },
+	{ "getDescent", w_Rasterizer_getDescent },
+	{ "getLineHeight", w_Rasterizer_getLineHeight },
+	{ "getGlyphData", w_Rasterizer_getGlyphData },
+	{ "getGlyphCount", w_Rasterizer_getGlyphCount },
+	{ "hasGlyph", w_Rasterizer_hasGlyph },
 	{ 0, 0 }
 };
 

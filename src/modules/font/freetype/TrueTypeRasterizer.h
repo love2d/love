@@ -52,6 +52,7 @@ public:
 	virtual int getLineHeight() const;
 	virtual GlyphData *getGlyphData(unsigned int glyph) const;
 	virtual int getGlyphCount() const;
+	virtual bool hasGlyph(unsigned int glyph) const;
 
 private:
 

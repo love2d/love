@@ -42,6 +42,7 @@ public:
 	virtual Rasterizer *newRasterizer(Data *data, int size) = 0;
 	virtual Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &glyphs) = 0;
 	virtual Rasterizer *newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int length) = 0;
+	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph) = 0;
 	virtual GlyphData *newGlyphData(Rasterizer *r, unsigned int glyph) = 0;
 
 	// Implement Module

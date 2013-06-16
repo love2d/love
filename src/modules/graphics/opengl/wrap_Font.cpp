@@ -152,6 +152,27 @@ int w_Font_getBaseline(lua_State *L)
 	return 1;
 }
 
+int w_Font_hasGlyph(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	bool hasglyph = false;
+
+	try
+	{
+		if (lua_type(L, 2) == LUA_TSTRING)
+			hasglyph = t->hasGlyph(luax_checkstring(L, 2));
+		else
+			hasglyph = t->hasGlyph((unsigned int) luaL_checknumber(L, 2));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+
+	luax_pushboolean(L, hasglyph);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getHeight", w_Font_getHeight },
@@ -164,6 +185,7 @@ static const luaL_Reg functions[] =
 	{ "getAscent", w_Font_getAscent },
 	{ "getDescent", w_Font_getDescent },
 	{ "getBaseline", w_Font_getBaseline },
+	{ "hasGlyph", w_Font_hasGlyph },
 	{ 0, 0 }
 };
 

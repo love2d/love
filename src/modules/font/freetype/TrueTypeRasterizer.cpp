@@ -91,8 +91,8 @@ GlyphData *TrueTypeRasterizer::getGlyphData(unsigned int glyph) const
 	int size = bitmap.rows * bitmap.width;
 	unsigned char *dst = (unsigned char *) glyphData->getData();
 
-	// Note that bitmap.buffer contains only luminosity. We copy that single value to
-	// our luminosity-alpha format.
+	// Note that bitmap.buffer contains only luminosity. We copy that single 
+	// value to our luminosity-alpha format.
 	for (int i = 0; i < size; i++)
 	{
 		dst[2*i] = 255;
@@ -109,6 +109,11 @@ GlyphData *TrueTypeRasterizer::getGlyphData(unsigned int glyph) const
 int TrueTypeRasterizer::getGlyphCount() const
 {
 	return face->num_glyphs;
+}
+
+bool TrueTypeRasterizer::hasGlyph(unsigned int glyph) const
+{
+	return FT_Get_Char_Index(face, glyph) != 0;
 }
 
 } // freetype

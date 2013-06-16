@@ -21,6 +21,9 @@
 // LOVE
 #include "Rasterizer.h"
 
+// UTF-8
+#include "libraries/utf8/utf8.h"
+
 namespace love
 {
 namespace font
@@ -48,6 +51,41 @@ int Rasterizer::getAscent() const
 int Rasterizer::getDescent() const
 {
 	return metrics.descent;
+}
+
+GlyphData *Rasterizer::getGlyphData(const std::string &text) const
+{
+	unsigned int codepoint = 0;
+
+	try
+	{
+		codepoint = utf8::peek_next(text.begin(), text.end());
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("Decoding error: %s", e.what());
+	}
+
+	return getGlyphData(codepoint);
+}
+
+bool Rasterizer::hasGlyph(const std::string &text) const
+{
+	if (text.size() == 0)
+		return false;
+
+	unsigned int codepoint = 0;
+
+	try
+	{
+		codepoint = utf8::peek_next(text.begin(), text.end());
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("Decoding error: %s", e.what());
+	}
+
+	return hasGlyph(codepoint);
 }
 
 } // font

@@ -30,11 +30,112 @@ GlyphData *luax_checkglyphdata(lua_State *L, int idx)
 	return luax_checktype<GlyphData>(L, idx, "GlyphData", FONT_GLYPH_DATA_T);
 }
 
+int w_GlyphData_getWidth(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+	lua_pushinteger(L, t->getWidth());
+	return 1;
+}
+
+int w_GlyphData_getHeight(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+	lua_pushinteger(L, t->getHeight());
+	return 1;
+}
+
+int w_GlyphData_getDimensions(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+	lua_pushinteger(L, t->getWidth());
+	lua_pushinteger(L, t->getHeight());
+	return 2;
+}
+
+int w_GlyphData_getGlyph(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+	unsigned int glyph = t->getGlyph();
+	lua_pushnumber(L, (lua_Number) glyph);
+	return 1;
+}
+	
+int w_GlyphData_getGlyphString(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+	try
+	{
+		luax_pushstring(L, t->getGlyphString());
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+	return 1;
+}
+
+int w_GlyphData_getAdvance(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+	lua_pushinteger(L, t->getAdvance());
+	return 1;
+}
+
+int w_GlyphData_getBearing(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+	lua_pushinteger(L, t->getBearingX());
+	lua_pushinteger(L, t->getBearingY());
+	return 2;
+}
+
+int w_GlyphData_getBoundingBox(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+
+	int minX = t->getMinX();
+	int minY = t->getMinY();
+	int maxX = t->getMaxX();
+	int maxY = t->getMaxY();
+
+	int width = maxX - minX;
+	int height = maxY - minY;
+
+	lua_pushinteger(L, minX);
+	lua_pushinteger(L, minY);
+	lua_pushinteger(L, width);
+	lua_pushinteger(L, height);
+
+	return 4;
+}
+
+int w_GlyphData_getFormat(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1);
+
+	const char *str;
+	if (!GlyphData::getConstant(t->getFormat(), str))
+		return luaL_error(L, "unknown GlyphData format.");
+
+	lua_pushstring(L, str);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	// Data
 	{ "getString", w_Data_getString },
 	{ "getSize", w_Data_getSize },
+
+	{ "getWidth", w_GlyphData_getWidth },
+	{ "getHeight", w_GlyphData_getHeight },
+	{ "getDimensions", w_GlyphData_getDimensions },
+	{ "getGlyph", w_GlyphData_getGlyph },
+	{ "getGlyphString", w_GlyphData_getGlyphString },
+	{ "getAdvance", w_GlyphData_getAdvance },
+	{ "getBearing", w_GlyphData_getBearing },
+	{ "getBoundingBox", w_GlyphData_getBoundingBox },
+	{ "getFormat", w_GlyphData_getFormat },
 	{ 0, 0 }
 };
 

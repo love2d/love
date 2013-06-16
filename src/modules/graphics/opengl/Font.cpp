@@ -339,7 +339,7 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 	catch (utf8::exception &e)
 	{
 		glPopMatrix();
-		throw love::Exception("%s", e.what());
+		throw love::Exception("Decoding error: %s", e.what());
 	}
 
 	if (quadindex > 0 && glyphinfolist.size() > 0)
@@ -399,7 +399,7 @@ int Font::getWidth(const std::string &str)
 		}
 		catch(utf8::exception &e)
 		{
-			throw love::Exception("%s", e.what());
+			throw love::Exception("Decoding error: %s", e.what());
 		}
 
 		if (width > max_width)
@@ -557,6 +557,16 @@ float Font::getBaseline() const
 {
 	// 1.25 is magic line height for true type fonts
 	return (type == FONT_TRUETYPE) ? floor(getHeight() / 1.25f + 0.5f) : 0.0f;
+}
+
+bool Font::hasGlyph(unsigned int glyph) const
+{
+	return rasterizer->hasGlyph(glyph);
+}
+
+bool Font::hasGlyph(const std::string &text) const
+{
+	return rasterizer->hasGlyph(text);
 }
 
 } // opengl

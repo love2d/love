@@ -1150,9 +1150,9 @@ int w_print(lua_State *L)
 	{
 		instance->print(str, x, y, angle, sx, sy, ox, oy, kx,ky);
 	}
-	catch(love::Exception e)
+	catch(love::Exception &e)
 	{
-		return luaL_error(L, "Decoding error: %s", e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 	return 0;
 }
@@ -1193,9 +1193,9 @@ int w_printf(lua_State *L)
 	{
 		instance->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);
 	}
-	catch(love::Exception e)
+	catch(love::Exception &e)
 	{
-		return luaL_error(L, "Decoding error: %s", e.what());
+		return luaL_error(L, "%s", e.what());
 	}
 	return 0;
 }

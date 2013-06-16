@@ -33,6 +33,15 @@ namespace font
 {
 
 GlyphData *luax_checkglyphdata(lua_State *L, int idx);
+int w_GlyphData_getWidth(lua_State *L);
+int w_GlyphData_getHeight(lua_State *L);
+int w_GlyphData_getDimensions(lua_State *L);
+int w_GlyphData_getGlyph(lua_State *L);
+int w_GlyphData_getGlyphString(lua_State *L);
+int w_GlyphData_getAdvance(lua_State *L);
+int w_GlyphData_getBearing(lua_State *L);
+int w_GlyphData_getBoundingBox(lua_State *L);
+int w_GlyphData_getFormat(lua_State *L);
 extern "C" int luaopen_glyphdata(lua_State *L);
 
 } // font

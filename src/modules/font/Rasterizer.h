@@ -46,9 +46,6 @@ struct FontMetrics
  **/
 class Rasterizer : public Object
 {
-protected:
-	FontMetrics metrics;
-
 public:
 
 	virtual ~Rasterizer();
@@ -80,15 +77,36 @@ public:
 
 	/**
 	 * Gets a specific glyph.
-	 * @param glyph The (UNICODE) glyph to get data for
+	 * @param glyph The (UNICODE) glyph codepoint to get data for.
 	 **/
 	virtual GlyphData *getGlyphData(unsigned int glyph) const = 0;
+
+	/**
+	 * Gets a specific glyph.
+	 * @param text The (UNICODE) glyph character to get the data for.
+	 **/
+	virtual GlyphData *getGlyphData(const std::string &text) const;
 
 	/**
 	 * Gets the number of glyphs the rasterizer has data for.
 	 **/
 	virtual int getGlyphCount() const = 0;
 
+	/**
+	 * Gets whether this Rasterizer has a specific glyph.
+	 * @param glyph The (UNICODE) glyph codepoint.
+	 **/
+	virtual bool hasGlyph(unsigned int glyph) const = 0;
+
+	/**
+	 * Gets whether this Rasterizer has a specific glyph.
+	 * @param text The (UNICODE) glyph character.
+	 **/
+	virtual bool hasGlyph(const std::string &text) const;
+
+protected:
+
+	FontMetrics metrics;
 
 }; // Rasterizer
 

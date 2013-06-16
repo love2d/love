@@ -151,5 +151,10 @@ int ImageRasterizer::getGlyphCount() const
 	return numglyphs;
 }
 
+bool ImageRasterizer::hasGlyph(unsigned int glyph) const
+{
+	return imageGlyphs.find(glyph) != imageGlyphs.end();
+}
+
 } // font
 } // love

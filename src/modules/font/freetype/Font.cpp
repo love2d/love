@@ -66,18 +66,34 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string 
 	catch (utf8::exception &e)
 	{
 		delete [] glyphs;
-		throw love::Exception("%s", e.what());
+		throw love::Exception("Decoding error: %s", e.what());
 	}
-	
+
 	Rasterizer *r = newRasterizer(data, glyphs, numglyphs);
 	delete [] glyphs;
-	
+
 	return r;
 }
 
 Rasterizer *Font::newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs)
 {
 	return new ImageRasterizer(data, glyphs, numglyphs);
+}
+
+GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)
+{
+	unsigned int codepoint = 0;
+
+	try
+	{
+		codepoint = utf8::peek_next(text.begin(), text.end());
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("Decoding error: %s", e.what());
+	}
+
+	return r->getGlyphData(codepoint);
 }
 
 GlyphData *Font::newGlyphData(Rasterizer *r, unsigned int glyph)

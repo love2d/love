@@ -24,6 +24,11 @@
 // LOVE
 #include "common/config.h"
 #include "common/Data.h"
+#include "common/Exception.h"
+#include "common/StringMap.h"
+
+// stdlib
+#include <string>
 
 namespace love
 {
@@ -48,12 +53,13 @@ struct GlyphMetrics
  **/
 class GlyphData : public Data
 {
-
 public:
+
 	enum Format
 	{
 		FORMAT_LUMINANCE_ALPHA,
-		FORMAT_RGBA
+		FORMAT_RGBA,
+		FORMAT_MAX_ENUM
 	};
 
 	GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, Format f);
@@ -77,6 +83,11 @@ public:
 	 * Gets the glyph itself.
 	 **/
 	unsigned int getGlyph() const;
+
+	/**
+	 * Gets the glyph as a UTF-8 string (instead of a UTF-8 code point.)
+	 **/
+	std::string getGlyphString() const;
 
 	/**
 	 * Gets the advance (the space the glyph takes up) of the glyph.
@@ -118,18 +129,25 @@ public:
 	 **/
 	Format getFormat() const;
 
+	static bool getConstant(const char *in, Format &out);
+	static bool getConstant(Format in, const char *&out);
+
 private:
-	// The glyph itself
+
+	// The glyph codepoint itself.
 	unsigned int glyph;
 
-	// Glyph metrics
+	// Glyph metrics.
 	GlyphMetrics metrics;
 
-	// Glyph texture data
+	// Glyph texture data.
 	unsigned char *data;
 
-	// The format the data's in
+	// The format the data's in.
 	Format format;
+
+	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
+	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
 }; // GlyphData
 

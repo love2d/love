@@ -138,6 +138,9 @@ public:
 	int getDescent() const;
 	float getBaseline() const;
 
+	bool hasGlyph(unsigned int glyph) const;
+	bool hasGlyph(const std::string &text) const;
+
 private:
 
 	enum FontType

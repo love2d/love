@@ -38,6 +38,10 @@ static Font *instance = 0;
 
 int w_newRasterizer(lua_State *L)
 {
+	// Convert to FileData, if necessary.
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
+
 	Rasterizer *t = NULL;
 	try
 	{
@@ -67,9 +71,27 @@ int w_newRasterizer(lua_State *L)
 int w_newGlyphData(lua_State *L)
 {
 	Rasterizer *r = luax_checkrasterizer(L, 1);
-	unsigned int g = (unsigned int)luaL_checknumber(L, 2);
+	GlyphData *t = 0;
 
-	GlyphData *t = instance->newGlyphData(r, g);
+	// newGlyphData accepts a unicode character or a codepoint number.
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		std::string glyph = luax_checkstring(L, 2);
+		try
+		{
+			t = instance->newGlyphData(r, glyph);
+		}
+		catch (love::Exception &e)
+		{
+			return luaL_error(L, "%s", e.what());
+		}
+	}
+	else
+	{
+		unsigned int g = (unsigned int) luaL_checknumber(L, 2);
+		t = instance->newGlyphData(r, g);
+	}
+
 	luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
 	return 1;
 }
