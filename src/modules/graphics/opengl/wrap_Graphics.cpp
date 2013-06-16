@@ -632,8 +632,17 @@ int w_getFont(lua_State *L)
 int w_setColorMask(lua_State *L)
 {
 	bool mask[4];
-	for (int i = 0; i < 4; i++)
-		mask[i] = luax_toboolean(L, i + 1);
+
+	if (lua_gettop(L) == 0)
+	{
+		// Enable all color components if no argument is given.
+		mask[0] = mask[1] = mask[2] = mask[3] = true;
+	}
+	else
+	{
+		for (int i = 0; i < 4; i++)
+			mask[i] = luax_toboolean(L, i + 1);
+	}
 
 	// r, g, b, a
 	instance->setColorMask(mask[0], mask[1], mask[2], mask[3]);
