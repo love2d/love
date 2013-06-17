@@ -354,7 +354,7 @@ int w_newImageFont(lua_State *L)
 	{
 		Image *i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
 		filter = i->getFilter();
-		love::image::ImageData *id = i->getData();
+		love::image::ImageData *id = i->getImageData();
 		if (!id)
 			return luaL_argerror(L, 1, "Image cannot be compressed.");
 		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)id, false);

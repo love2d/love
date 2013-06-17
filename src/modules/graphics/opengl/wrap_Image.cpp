@@ -196,6 +196,36 @@ int w_Image_refresh(lua_State *L)
 	return 0;
 }
 
+int w_Image_getData(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+
+	if (i->isCompressed())
+	{
+		love::image::CompressedData *t = i->getCompressedData();
+		if (t)
+		{
+			t->retain();
+			luax_newtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, (void *) t);
+		}
+		else
+			lua_pushnil(L);
+	}
+	else
+	{
+		love::image::ImageData *t = i->getImageData();
+		if (t)
+		{
+			t->retain();
+			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *) t);
+		}
+		else
+			lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getWidth", w_Image_getWidth },
@@ -209,6 +239,7 @@ static const luaL_Reg functions[] =
 	{ "getMipmapFilter", w_Image_getMipmapFilter },
 	{ "isCompressed", w_Image_isCompressed },
 	{ "refresh", w_Image_refresh },
+	{ "getData", w_Image_getData },
 	{ 0, 0 }
 };
 

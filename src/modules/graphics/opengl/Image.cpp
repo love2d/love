@@ -88,9 +88,14 @@ const vertex *Image::getVertices() const
 	return vertices;
 }
 
-love::image::ImageData *Image::getData() const
+love::image::ImageData *Image::getImageData() const
 {
 	return data;
+}
+
+love::image::CompressedData *Image::getCompressedData() const
+{
+	return cdata;
 }
 
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const

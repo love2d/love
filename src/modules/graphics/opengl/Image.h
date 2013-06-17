@@ -74,7 +74,8 @@ public:
 
 	const vertex *getVertices() const;
 
-	love::image::ImageData *getData() const;
+	love::image::ImageData *getImageData() const;
+	love::image::CompressedData *getCompressedData() const;
 
 	/**
 	 * @copydoc Drawable::draw()
