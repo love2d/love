@@ -9,9 +9,11 @@ LOVE 0.9.0 [Baby Inspector]
   * Added love.filesystem.getIdentity.
   * Added love.filesystem.append.
   * Added love.filesystem.getSize.
+  * Added previously internal Rasterizer and GlyphData object methods.
   * Added support for UTF-8 ImageFonts.
   * Added Font:getAscent/getDescent/getBaseline.
   * Added Font:setFilter/getFilter.
+  * Added Font:hasGlyph.
   * Added angle, scale, and shear parameters to love.graphics.printf.
   * Added HDR canvas support.
   * Added mipmapping support (has isSupported test).
@@ -26,6 +28,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added love.graphics.origin.
   * Added love.graphics.getRendererInfo.
   * Added SpriteBatch:getCount and SpriteBatch:getBufferSize.
+  * Added SpriteBatch:getColor.
   * Added ParticleSystem:emit.
   * Added many ParticleSystem getter methods.
   * Added DXT compressed texture support via love.image.newCompressedData.
@@ -33,6 +36,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added Image/Canvas/ImageData:getDimensions.
   * Added anisotropic filtering support for Images, Canvases, and Fonts.
   * Added Image:refresh.
+  * Added Image:getData.
   * Added SoundData:getDuration and SoundData:getSampleCount.
   * Added Source:isPlaying.
   * Added new Channels api for love.thread.
@@ -50,11 +54,11 @@ LOVE 0.9.0 [Baby Inspector]
   * Added love.window.isVisible.
   * Added flags to love.window.setMode.
   * Added support for resizable, borderless, and non-centered windows.
-  * Added resize event.
+  * Added resize and visible events.
   * Added love.window.getDimensions.
   * Added love.mousefocus and love.window.hasMouseFocus.
   * Added love.mouse.setX/setY.
-  * Added love.joystickaxis/joystickball/joystickhat event callbacks.
+  * Added joystickaxis and joystickhat events.
   * Added love.joystick.reload.
   * OPTIONAL: Added support for Game Music Emu.
 
@@ -64,9 +68,11 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed scaling in several love.physics functions.
   * Fixed Box2D exception in World:update.
   * Fixed File:read reading past end of file.
+  * Fixed love.filesystem.setIdentity not removing read access from old directories.
   * Fixed possible memory leak in utf-8 decoder.
   * Fixed spacing for the last character in an ImageFont.
   * Fixed line wrapping in love.graphics.printf.
+  * Fixed love.graphics.print truncating strings with embedded zeros.
   * Fixed crashes with font drawing on some ATI cards.
   * Fixed artifacts when drawing lines at huge scale.
   * Fixed Fonts and Canvases ignoring default image filter.
@@ -88,6 +94,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed 'random' hangs in audio.
   * Fixed love.sound.newDecoder not accepting FileData.
   * Fixed looping support in tracker music formats.
+  * Fixed skipping/looping issues when playing streaming audio Sources.
 
   * Moved love's startup to modules/love.
   * Moved window-related functions from love.graphics to love.window.
@@ -106,6 +113,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed love.graphics.quad/triangle.
   * Removed love.graphics.setColorMode.
   * Removed love.graphics.newStencil.
+  * Removed love.graphics.setLine/setPoint.
   * Removed Quad objects (replaced by Geometry).
   * Removed ParticleSystem:isFull/isEmpty.
   * Removed love.joystick.open and friends.
@@ -119,11 +127,13 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated the default filesystem identity to omit file extension.
   * Updated love.filesystem.newFile to optionally open the file.
   * Updated most love.filesystem functions to return nil, error on internal failure.
+  * Updated love.keypressed's second argument to be a unicode character string.
   * Updated the setFilter and setWrap methods, the second argument is now optional.
   * Updated Font and ParticleSystem rendering code, now more performant.
   * Updated SpriteBatch code, now more performant when (un)binding.
   * Updated Image creation code to error when creation fails.
   * Updated Canvas code to support more systems.
+  * Updated Canvas:getImageData and love.graphics.newScreenshot to be more efficient.
   * Updated love.graphics.newScreenshot to create a fully opaque image by default.
   * Updated error messages when sending bad values to Shaders.
   * Updated love.graphics.newParticleSystem to have a default buffer size of 1000.
