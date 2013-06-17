@@ -23,6 +23,8 @@
 #include "keyboard/Keyboard.h"
 #include "mouse/Mouse.h"
 
+#include "libraries/utf8/utf8.h"
+
 #include <cmath>
 
 namespace love
@@ -85,11 +87,11 @@ void Event::clear()
 
 Message *Event::convert(SDL_Event &e)
 {
-	Message *msg = NULL;
+	Message *msg = 0;
 	love::keyboard::Keyboard::Key key;
 	love::mouse::Mouse::Button button;
 	love::joystick::Joystick::Hat hat;
-	Variant *arg1, *arg2, *arg3;
+	Variant *arg1 = 0, *arg2 = 0, *arg3 = 0;
 	const char *txt;
 	switch (e.type)
 	{
@@ -99,10 +101,16 @@ Message *Event::convert(SDL_Event &e)
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 		arg1 = new Variant(txt, strlen(txt));
-		arg2 = new Variant((double) e.key.keysym.unicode);
-		msg = new Message("keypressed", arg1, arg2);
+		txt = convertUnicode(e.key.keysym.unicode);
+		if (txt)
+		{
+			arg2 = new Variant(txt, strlen(txt));
+			msg = new Message("keypressed", arg1, arg2);
+			arg2->release();
+		}
+		else
+			msg = new Message("keypressed", arg1);
 		arg1->release();
-		arg2->release();
 		break;
 	case SDL_KEYUP:
 		if (!keys.find(e.key.keysym.sym, key))
@@ -188,6 +196,28 @@ Message *Event::convert(SDL_Event &e)
 	}
 
 	return msg;
+}
+
+const char *Event::convertUnicode(Uint16 codepoint) const
+{
+	// A single unicode character can use up to 4 bytes.
+	static char str[5] = {'\0'};
+	ptrdiff_t length = 0;
+
+	if (codepoint == 0)
+		return 0;
+
+	char *end = utf8::unchecked::append(codepoint, str);
+	length = end - str;
+
+	if (length <= 0 || !utf8::is_valid(str, str + length))
+		return 0;
+
+	// Zero out the rest of the string.
+	for (ptrdiff_t i = length; i < 5; i++)
+		str[i] = '\0';
+
+	return str;
 }
 
 EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry Event::keyEntries[] =

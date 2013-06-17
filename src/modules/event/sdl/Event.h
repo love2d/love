@@ -67,6 +67,7 @@ public:
 private:
 
 	Message *convert(SDL_Event &e);
+	const char *convertUnicode(Uint16 codepoint) const;
 
 	static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
 	static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;
