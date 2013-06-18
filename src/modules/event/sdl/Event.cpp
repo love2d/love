@@ -26,6 +26,7 @@
 #include "libraries/utf8/utf8.h"
 
 #include <cmath>
+#include <cstddef>
 
 namespace love
 {

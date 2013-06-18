@@ -26,6 +26,7 @@
 
 // stdlib
 #include <iostream>
+#include <cstddef>
 
 namespace love
 {
