@@ -818,7 +818,7 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 				currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y), 0.0f);
 				break;
 			case ALIGN_JUSTIFY:
-				if (line_iter->length() > 1 && (line_iter+1) != line_end)
+				if (line_iter->length() > 1)
 					letter_spacing = (wrap - width) / float(line_iter->length() - 1);
 				else
 					letter_spacing = 0.0f;
