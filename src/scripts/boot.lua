@@ -333,8 +333,8 @@ function love.init()
 		"audio",
 		"image",
 		"font",
-		"graphics",
 		"window",
+		"graphics",
 		"math",
 		"physics",
 	} do
