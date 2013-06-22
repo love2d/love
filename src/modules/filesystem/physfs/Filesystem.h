@@ -143,6 +143,8 @@ public:
 	 * @param source Path to a directory or a .love-file.
 	 **/
 	bool setSource(const char *source);
+	bool mount(const char *archive, const char *mountpoint);
+	bool unmount(const char *archive);
 
 	/**
 	 * Creates a new file.

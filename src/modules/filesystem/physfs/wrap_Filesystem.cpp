@@ -99,6 +99,23 @@ int w_setSource(lua_State *L)
 	return 0;
 }
 
+int w_mount(lua_State *L)
+{
+	const char *archive = luaL_checkstring(L, 1);
+	const char *mountpoint = luaL_checkstring(L, 2);
+
+	luax_pushboolean(L, instance->mount(archive, mountpoint));
+	return 1;
+}
+
+int w_unmount(lua_State *L)
+{
+	const char *archive = luaL_checkstring(L, 1);
+
+	luax_pushboolean(L, instance->unmount(archive));
+	return 1;
+}
+
 int w_newFile(lua_State *L)
 {
 	const char *filename = luaL_checkstring(L, 1);
@@ -544,6 +561,8 @@ static const luaL_Reg functions[] =
 	{ "setIdentity",  w_setIdentity },
 	{ "getIdentity", w_getIdentity },
 	{ "setSource",  w_setSource },
+	{ "mount", w_mount },
+	{ "unmount", w_unmount },
 	{ "newFile",  w_newFile },
 	{ "getWorkingDirectory",  w_getWorkingDirectory },
 	{ "getUserDirectory",  w_getUserDirectory },

@@ -42,6 +42,8 @@ int w_setRelease(lua_State *L);
 int w_setIdentity(lua_State *L);
 int w_getIdentity(lua_State *L);
 int w_setSource(lua_State *L);
+int w_mount(lua_State *L);
+int w_unmount(lua_State *L);
 int w_newFile(lua_State *L);
 int w_newFileData(lua_State *L);
 int w_getWorkingDirectory(lua_State *L);
