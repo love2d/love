@@ -184,13 +184,22 @@ bool Filesystem::setupWriteDirectory()
 
 bool Filesystem::mount(const char *archive, const char *mountpoint)
 {
-	if (!isInited)
+	if (!isInited || !archive || !mountpoint)
 		return false;
 
-	if (strstr(archive, "..")) // Not allowed for safety reasons
+	// Not allowed for safety reasons.
+	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
 		return false;
 
-	std::string realPath = PHYSFS_getRealDir(archive);
+	// An empty string or "/" is equivalent to doing PHYSFS_addToSearchPath.
+	if (strlen(mountpoint) == 0 || strcmp(mountpoint, "/") == 0)
+		return false;
+
+	const char *realDir = PHYSFS_getRealDir(archive);
+	if (!realDir)
+		return false;
+
+	std::string realPath(realDir);
 	realPath += LOVE_PATH_SEPARATOR;
 	realPath += archive;
 
@@ -199,17 +208,27 @@ bool Filesystem::mount(const char *archive, const char *mountpoint)
 
 bool Filesystem::unmount(const char *archive)
 {
-	if (!isInited)
+	if (!isInited || !archive)
 		return false;
 
-	if (strstr(archive, "..")) // Not allowed for safety reasons
+	// Not allowed for safety reasons.
+	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
 		return false;
 
-	std::string realPath = PHYSFS_getRealDir(archive);
+	const char *realDir = PHYSFS_getRealDir(archive);
+	if (!realDir)
+		return false;
+
+	std::string realPath(realDir);
 	realPath += LOVE_PATH_SEPARATOR;
 	realPath += archive;
 
-	return PHYSFS_removeFromSearchPath(archive);
+	// Make sure the archive path was previously added with PHYSFS_mount.
+	const char *mountPoint = PHYSFS_getMountPoint(realPath.c_str());
+	if (!mountPoint || strcmp(mountPoint, "/") == 0)
+		return false;
+
+	return PHYSFS_removeFromSearchPath(realPath.c_str());
 }
 
 File *Filesystem::newFile(const char *filename) const
