@@ -184,15 +184,11 @@ bool Filesystem::setupWriteDirectory()
 
 bool Filesystem::mount(const char *archive, const char *mountpoint)
 {
-	if (!isInited || !archive || !mountpoint)
+	if (!isInited || !archive)
 		return false;
 
 	// Not allowed for safety reasons.
 	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
-		return false;
-
-	// An empty string or "/" is equivalent to doing PHYSFS_addToSearchPath.
-	if (strlen(mountpoint) == 0 || strcmp(mountpoint, "/") == 0)
 		return false;
 
 	const char *realDir = PHYSFS_getRealDir(archive);
@@ -223,9 +219,8 @@ bool Filesystem::unmount(const char *archive)
 	realPath += LOVE_PATH_SEPARATOR;
 	realPath += archive;
 
-	// Make sure the archive path was previously added with PHYSFS_mount.
 	const char *mountPoint = PHYSFS_getMountPoint(realPath.c_str());
-	if (!mountPoint || strcmp(mountPoint, "/") == 0)
+	if (!mountPoint)
 		return false;
 
 	return PHYSFS_removeFromSearchPath(realPath.c_str());
