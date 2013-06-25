@@ -268,6 +268,9 @@ std::string Window::getWindowTitle() const
 
 bool Window::setIcon(love::image::ImageData *imgd)
 {
+	if (!imgd)
+		return false;
+
 	Uint32 rmask, gmask, bmask, amask;
 #ifdef LOVE_BIG_ENDIAN
 	rmask = 0xFF000000;
@@ -281,11 +284,21 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	amask = 0xFF000000;
 #endif
 
-	int w = static_cast<int>(imgd->getWidth());
-	int h = static_cast<int>(imgd->getHeight());
-	int pitch = static_cast<int>(imgd->getWidth() * 4);
+	int w = imgd->getWidth();
+	int h = imgd->getHeight();
+	int pitch = imgd->getWidth() * 4;
 
-	SDL_Surface *icon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
+	SDL_Surface *icon = 0;
+
+	{
+		// We don't want another thread modifying the ImageData mid-copy.
+		love::thread::Lock lock(imgd->getMutex());
+		icon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
+	}
+
+	if (!icon)
+		return false;
+
 	SDL_WM_SetIcon(icon, NULL);
 	SDL_FreeSurface(icon);
 

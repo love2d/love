@@ -88,19 +88,19 @@ int w_ImageData_setPixel(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 4, i);
 
-		c.r = (unsigned char)luaL_checkint(L, -4);
-		c.g = (unsigned char)luaL_checkint(L, -3);
-		c.b = (unsigned char)luaL_checkint(L, -2);
-		c.a = (unsigned char)luaL_optint(L, -1, 255);
+		c.r = (unsigned char)luaL_checkinteger(L, -4);
+		c.g = (unsigned char)luaL_checkinteger(L, -3);
+		c.b = (unsigned char)luaL_checkinteger(L, -2);
+		c.a = (unsigned char)luaL_optinteger(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char)luaL_checkint(L, 4);
-		c.g = (unsigned char)luaL_checkint(L, 5);
-		c.b = (unsigned char)luaL_checkint(L, 6);
-		c.a = (unsigned char)luaL_optint(L, 7, 255);
+		c.r = (unsigned char)luaL_checkinteger(L, 4);
+		c.g = (unsigned char)luaL_checkinteger(L, 5);
+		c.b = (unsigned char)luaL_checkinteger(L, 6);
+		c.a = (unsigned char)luaL_optinteger(L, 7, 255);
 	}
 
 	try
@@ -114,36 +114,98 @@ int w_ImageData_setPixel(lua_State *L)
 	return 0;
 }
 
-int w_ImageData_mapPixel(lua_State *L)
+// Gets the result of luaL_where as a string.
+static std::string luax_getwhere(lua_State *L, int lvl)
+{
+	std::string where;
+
+	luaL_where(L, lvl);
+	
+	const char *str = lua_tostring(L, -1);
+	if (str)
+		where = str;
+
+	lua_pop(L, 1);
+
+	return where;
+}
+
+// ImageData:mapPixel. Not thread-safe! See the wrapper function below.
+static int w_ImageData_mapPixelUnsafe(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
 	int w = t->getWidth();
 	int h = t->getHeight();
 
-	for (int i = 0; i < w; i++)
+	// Default pixel component values (r, g, b, a.)
+	const unsigned char pixel_defaults[4] = {0, 0, 0, 255};
+
+	for (int y = 0; y < h; y++)
 	{
-		for (int j = 0; j < h; j++)
+		for (int x = 0; x < w; x++)
 		{
 			lua_pushvalue(L, 2);
-			lua_pushnumber(L, i);
-			lua_pushnumber(L, j);
-			pixel c = t->getPixel(i, j);
+			lua_pushnumber(L, x);
+			lua_pushnumber(L, y);
+			pixel c = t->getPixel(x, y);
 			lua_pushnumber(L, c.r);
 			lua_pushnumber(L, c.g);
 			lua_pushnumber(L, c.b);
 			lua_pushnumber(L, c.a);
 			lua_call(L, 6, 4);
-			c.r = luaL_optint(L, -4, 0);
-			c.g = luaL_optint(L, -3, 0);
-			c.b = luaL_optint(L, -2, 0);
-			c.a = luaL_optint(L, -1, 255);
-			t->setPixel(i, j, c);
+
+			// If we used luaL_checkX / luaL_optX then we would get messy error
+			// messages (e.g. Error: bad argument #-1 to '?'), so while this is
+			// messier code, at least the errors are a bit more descriptive.
+
+			// Treat the pixel as an array for less code duplication. :(
+			unsigned char *parray = (unsigned char *) &c;
+			for (int i = 0; i < 4; i++)
+			{
+				int ttype = lua_type(L, -4 + i);
+				switch (ttype)
+				{
+				case LUA_TNUMBER:
+					parray[i] = lua_tointeger(L, -4 + i);
+					break;
+				case LUA_TNONE:
+				case LUA_TNIL:
+					parray[i] = pixel_defaults[i];
+					break;
+				default:
+					return luaL_error(L, "%sbad return value #%d (number expected, got %s)",
+					                  luax_getwhere(L, 2).c_str(), i+1, lua_typename(L, ttype));
+				}
+			}
+
 			lua_pop(L, 4);
+
+			// We're locking the entire function, instead of each setPixel call.
+			t->setPixelUnsafe(x, y, c);
 		}
 	}
+	return 0;
+}
+
+// Thread-safe wrapper for the above function.
+int w_ImageData_mapPixel(lua_State *L)
+{
+	ImageData *t = luax_checkimagedata(L, 1);
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	lua_pushcfunction(L, w_ImageData_mapPixelUnsafe);
+	lua_pushvalue(L, 1);
+	lua_pushvalue(L, 2);
+
+	// Manually lock this ImageData's mutex during the entire mapPixel.
+	love::thread::Lock lock(t->getMutex());
+	int ret = lua_pcall(L, 2, 0, 0);
+
+	if (ret != 0)
+		return lua_error(L);
+
 	return 0;
 }
 

@@ -165,6 +165,7 @@ void Image::uploadCompressedMipmaps()
 
 void Image::createMipmaps()
 {
+	// Only valid for Images created with ImageData.
 	if (!data)
 		return;
 
@@ -182,6 +183,9 @@ void Image::createMipmaps()
 	}
 
 	bind();
+
+	// Prevent other threads from changing the ImageData while we upload it.
+	love::thread::Lock lock(data->getMutex());
 
 	if (hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
 	{
@@ -376,6 +380,9 @@ bool Image::loadVolatilePOT()
 	vertices[2].s = s;
 	vertices[3].s = s;
 
+	// We want this lock to potentially cover mipmap creation as well.
+	love::thread::EmptyLock lock;
+
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
 	if (isCompressed() && cdata)
@@ -407,6 +414,7 @@ bool Image::loadVolatilePOT()
 		             GL_UNSIGNED_BYTE,
 		             0);
 
+		lock.setLock(data->getMutex());
 		glTexSubImage2D(GL_TEXTURE_2D,
 		                0,
 		                0, 0,
@@ -436,6 +444,9 @@ bool Image::loadVolatileNPOT()
 	filter.anisotropy = gl.setTextureFilter(filter);
 	gl.setTextureWrap(wrap);
 
+	// We want this lock to potentially cover mipmap creation as well.
+	love::thread::EmptyLock lock;
+
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
 	if (isCompressed() && cdata)
@@ -452,6 +463,7 @@ bool Image::loadVolatileNPOT()
 	}
 	else if (data)
 	{
+		lock.setLock(data->getMutex());
 		glTexImage2D(GL_TEXTURE_2D,
 		             0,
 		             GL_RGBA8,
@@ -490,6 +502,9 @@ bool Image::refresh()
 	if (texture == 0)
 		return false;
 
+	// We want this lock to potentially cover mipmap creation as well.
+	love::thread::EmptyLock lock;
+
 	bind();
 
 	if (isCompressed() && cdata)
@@ -497,7 +512,7 @@ bool Image::refresh()
 		GLenum format = getCompressedFormat(cdata->getType());
 		glCompressedTexSubImage2DARB(GL_TEXTURE_2D,
 		                             0,
-								     0, 0,
+		                             0, 0,
 		                             cdata->getWidth(0),
 		                             cdata->getHeight(0),
 		                             format,
@@ -506,6 +521,7 @@ bool Image::refresh()
 	}
 	else if (data)
 	{
+		lock.setLock(data->getMutex());
 		glTexSubImage2D(GL_TEXTURE_2D,
 		                0,
 		                0, 0,

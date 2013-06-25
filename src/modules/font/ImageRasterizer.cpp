@@ -73,13 +73,16 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 	if (gm.width == 0)
 		return g;
 
+	// We don't want another thread modifying our ImageData mid-copy.
+	love::thread::Lock lock(imageData->getMutex());
+
 	love::image::pixel *gdpixels = (love::image::pixel *) g->getData();
 	love::image::pixel *imagepixels = (love::image::pixel *) imageData->getData();
 
 	// copy glyph pixels from imagedata to glyphdata
 	for (int i = 0; i < g->getWidth() * g->getHeight(); i++)
 	{
-		love::image::pixel p = imagepixels[ it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width)) ];
+		love::image::pixel p = imagepixels[it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width))];
 
 		// Use transparency instead of the spacer color
 		if (equal(p, spacer))
@@ -97,6 +100,9 @@ void ImageRasterizer::load()
 
 	int imgw = imageData->getWidth();
 	int imgh = imageData->getHeight();
+
+	// We don't want another thread modifying our ImageData mid-parse.
+	love::thread::Lock lock(imageData->getMutex());
 
 	// Set the only metric that matters
 	metrics.height = imgh;

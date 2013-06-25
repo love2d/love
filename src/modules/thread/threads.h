@@ -59,6 +59,19 @@ private:
 	Mutex *mutex;
 };
 
+class EmptyLock
+{
+public:
+	EmptyLock();
+	~EmptyLock();
+
+	void setLock(Mutex *m);
+	void setLock(Mutex &m);
+
+private:
+	Mutex *mutex;
+};
+
 class Threadable
 {
 public:

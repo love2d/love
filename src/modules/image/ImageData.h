@@ -106,6 +106,12 @@ public:
 	void setPixel(int x, int y, pixel p);
 
 	/**
+	 * Sets the pixel at location (x,y).
+	 * Not thread-safe!
+	 **/
+	void setPixelUnsafe(int x, int y, pixel p);
+
+	/**
 	 * Gets the pixel at location (x,y).
 	 * @param x The location along the x-axis.
 	 * @param y The location along the y-axis.
@@ -119,6 +125,8 @@ public:
 	 * @param format The format of the encoded data.
 	 **/
 	virtual void encode(love::filesystem::File *f, Format format) = 0;
+
+	love::thread::Mutex *getMutex() const;
 
 	// Implements Data.
 	virtual void *getData() const;

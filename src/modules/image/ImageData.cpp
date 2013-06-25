@@ -70,7 +70,16 @@ void ImageData::setPixel(int x, int y, pixel c)
 
 	Lock lock(mutex);
 
-	pixel *pixels = (pixel *)getData();
+	pixel *pixels = (pixel *) getData();
+	pixels[y*getWidth()+x] = c;
+}
+
+void ImageData::setPixelUnsafe(int x, int y, love::image::pixel c)
+{
+	if (!inside(x, y))
+		throw love::Exception("Attempt to set out-of-range pixel!");
+
+	pixel *pixels = (pixel *) getData();
 	pixels[y*getWidth()+x] = c;
 }
 
@@ -79,7 +88,7 @@ pixel ImageData::getPixel(int x, int y) const
 	if (!inside(x, y))
 		throw love::Exception("Attempt to get out-of-range pixel!");
 
-	pixel *pixels = (pixel *)getData();
+	const pixel *pixels = (const pixel *) getData();
 	return pixels[y*getWidth()+x];
 }
 
@@ -149,6 +158,11 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 			memcpy(d + dx + (i + dy) * getWidth(), s + sx + (i + sy) * src->getWidth(), sizeof(pixel) * sw);
 		}
 	}
+}
+
+love::thread::Mutex *ImageData::getMutex() const
+{
+	return mutex;
 }
 
 bool ImageData::getConstant(const char *in, ImageData::Format &out)
