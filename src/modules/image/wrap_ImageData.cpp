@@ -195,13 +195,16 @@ int w_ImageData_mapPixel(lua_State *L)
 	ImageData *t = luax_checkimagedata(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
+	love::thread::Mutex *mutex = t->getMutex();
+
 	lua_pushcfunction(L, w_ImageData_mapPixelUnsafe);
 	lua_pushvalue(L, 1);
 	lua_pushvalue(L, 2);
 
 	// Manually lock this ImageData's mutex during the entire mapPixel.
-	love::thread::Lock lock(t->getMutex());
+	mutex->lock();
 	int ret = lua_pcall(L, 2, 0, 0);
+	mutex->unlock();
 
 	if (ret != 0)
 		return lua_error(L);
