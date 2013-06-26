@@ -102,23 +102,27 @@ void ImageData::decode(love::filesystem::FileData *data)
 
 void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 {
-	thread::Lock lock(mutex);
-
-	FormatHandler::DecodedImage rawimage;
-	rawimage.width = width;
-	rawimage.height = height;
-	rawimage.size = width*height*sizeof(pixel);
-	rawimage.data = data;
-
 	FormatHandler::EncodedImage encodedimage;
 
-	try
 	{
+		// We only need to lock this mutex when actually encoding the ImageData.
+		thread::Lock lock(mutex);
+
+		FormatHandler::DecodedImage rawimage;
+		rawimage.width = width;
+		rawimage.height = height;
+		rawimage.size = width*height*sizeof(pixel);
+		rawimage.data = data;
+
 		if (DevilHandler::canEncode(format))
 			encodedimage = DevilHandler::encode(rawimage, format);
 		else
 			throw love::Exception("Image format has no suitable encoder.");
+	}
 
+	try
+	{
+		
 		f->open(love::filesystem::File::WRITE);
 		f->write(encodedimage.data, encodedimage.size);
 		f->close();

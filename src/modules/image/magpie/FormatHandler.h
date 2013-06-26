@@ -45,7 +45,7 @@ public:
 		int width, height;
 		size_t size;
 		unsigned char *data;
-		DecodedImage() : width(0), height(0), size(0), data(0) {};
+		DecodedImage() : width(0), height(0), size(0), data(0) {}
 	};
 
 	// Pixel data encoded in a particular format.
@@ -53,7 +53,7 @@ public:
 	{
 		size_t size;
 		unsigned char *data;
-		EncodedImage() : size(0), data(0) {};
+		EncodedImage() : size(0), data(0) {}
 	};
 
 	// Lets pretend we have virtual static methods...

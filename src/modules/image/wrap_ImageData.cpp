@@ -202,6 +202,7 @@ int w_ImageData_mapPixel(lua_State *L)
 	lua_pushvalue(L, 2);
 
 	// Manually lock this ImageData's mutex during the entire mapPixel.
+	// Using the lock methods because lua_error won't trigger object destructors.
 	mutex->lock();
 	int ret = lua_pcall(L, 2, 0, 0);
 	mutex->unlock();

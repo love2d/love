@@ -149,14 +149,15 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 
 	// If the dimensions match up, copy the entire memory stream in one go
 	if (sw == getWidth() && getWidth() == src->getWidth()
-			&& sh == getHeight() && getHeight() == src->getHeight())
-		memcpy(d, s, sizeof(pixel) * sw * sh);
-	else if (sw > 0)  // Otherwise, copy each row individually
+		&& sh == getHeight() && getHeight() == src->getHeight())
 	{
+		memcpy(d, s, sizeof(pixel) * sw * sh);
+	}
+	else if (sw > 0)
+	{
+		// Otherwise, copy each row individually.
 		for (int i = 0; i < sh; i++)
-		{
 			memcpy(d + dx + (i + dy) * getWidth(), s + sx + (i + sy) * src->getWidth(), sizeof(pixel) * sw);
-		}
 	}
 }
 

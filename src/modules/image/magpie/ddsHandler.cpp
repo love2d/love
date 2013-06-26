@@ -68,7 +68,7 @@ CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::v
 			mip.size = img->dataSize;
 
 			// Copy the mipmap image from the FileData.
-			mip.data = new char[mip.size];
+			mip.data = new uint8[mip.size];
 			memcpy(mip.data, img->data, mip.size);
 
 			images.push_back(mip);

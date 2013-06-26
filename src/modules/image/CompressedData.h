@@ -24,9 +24,7 @@
 // LOVE
 #include "common/Data.h"
 #include "common/StringMap.h"
-#include "thread/threads.h"
-
-using love::thread::Mutex;
+#include "common/int.h"
 
 // STL
 #include <vector>
@@ -63,7 +61,7 @@ public:
 	{
 		int width, height;
 		size_t size;
-		char *data;
+		uint8 *data;
 	};
 
 	CompressedData();
