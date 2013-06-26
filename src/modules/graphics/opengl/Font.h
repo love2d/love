@@ -148,25 +148,20 @@ private:
 		FONT_IMAGE,
 		FONT_UNKNOWN
 	};
-	
-	// thin wrapper for an array of 4 vertices
-	struct GlyphQuad
-	{
-		vertex vertices[4];
-	};
 
 	struct Glyph
 	{
 		GLuint texture;
 		int spacing;
-		GlyphQuad quad;
+		vertex vertices[4];
 	};
 
 	// used to determine when to change textures in the vertex array generated when printing text
 	struct GlyphArrayDrawInfo
 	{
 		GLuint texture;
-		int startquad, numquads;
+		int startvertex;
+		int vertexcount;
 
 		// used when sorting with std::sort
 		// sorts by texture first (binding textures is expensive) and relative position in memory second
@@ -175,9 +170,14 @@ private:
 			if (texture != other.texture)
 				return texture < other.texture;
 			else
-				return startquad < other.startquad;
+				return startvertex < other.startvertex;
 		};
 	};
+
+	bool initializeTexture(GLint format);
+	void createTexture();
+	Glyph *addGlyph(uint32 glyph);
+	Glyph *findGlyph(uint32 glyph);
 
 	love::font::Rasterizer *rasterizer;
 
@@ -207,10 +207,6 @@ private:
 	int textureX, textureY;
 	int rowHeight;
 
-	bool initializeTexture(GLint format);
-	void createTexture();
-	Glyph *addGlyph(uint32 glyph);
-	Glyph *findGlyph(uint32 glyph);
 }; // Font
 
 } // opengl

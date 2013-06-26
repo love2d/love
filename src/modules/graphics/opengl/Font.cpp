@@ -57,8 +57,8 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	for (int i = 0; i < NUM_TEXTURE_SIZES; i++)
 	{
 		// Make a rough estimate of the total used texture size, based on glyph
-		// height. THe estimated size is likely larger than the actual total
-		// size, which is good because texture changes are expensive.
+		// height. The estimated size is likely larger than the actual total
+		// size, which is good because texture switching is expensive.
 		if ((height * 0.8) * height * 95 <= TEXTURE_WIDTHS[i] * TEXTURE_HEIGHTS[i])
 		{
 			textureSizeIndex = i;
@@ -133,7 +133,7 @@ void Font::createTexture()
 
 	GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
 
-	// try to initialize the texture, attempting smaller sizes if initialization fails
+	// Initialize the texture, attempting smaller sizes if initialization fails.
 	bool initialized = false;
 	while (textureSizeIndex >= 0)
 	{
@@ -150,7 +150,7 @@ void Font::createTexture()
 
 	if (!initialized)
 	{
-		// cleanup before throwing
+		// Clean up before throwing.
 		gl.deleteTexture(t);
 		gl.bindTexture(0);
 		textures.pop_back();
@@ -158,7 +158,7 @@ void Font::createTexture()
 		throw love::Exception("Could not create font texture!");
 	}
 	
-	// Fill the texture with transparent black
+	// Fill the texture with transparent black.
 	std::vector<GLubyte> emptyData(textureWidth * textureHeight * (type == FONT_TRUETYPE ? 2 : 4), 0);
 	glTexSubImage2D(GL_TEXTURE_2D,
 					0,
@@ -196,7 +196,7 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 	g->texture = 0;
 	g->spacing = gd->getAdvance();
 
-	memset(&g->quad, 0, sizeof(GlyphQuad));
+	memset(g->vertices, 0, sizeof(vertex) * 4);
 
 	// don't waste space for empty glyphs. also fixes a division by zero bug with ati drivers
 	if (w > 0 && h > 0)
@@ -225,9 +225,9 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 		// copy vertex data to the glyph and set proper bearing
 		for (int i = 0; i < 4; i++)
 		{
-			g->quad.vertices[i] = verts[i];
-			g->quad.vertices[i].x += gd->getBearingX();
-			g->quad.vertices[i].y -= gd->getBearingY();
+			g->vertices[i] = verts[i];
+			g->vertices[i].x += gd->getBearingX();
+			g->vertices[i].y -= gd->getBearingY();
 		}
 	}
 
@@ -245,11 +245,12 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 
 Font::Glyph *Font::findGlyph(uint32 glyph)
 {
-	Glyph *g = glyphs[glyph];
-	if (!g)
-		g = addGlyph(glyph);
+	std::map<uint32, Glyph *>::const_iterator it = glyphs.find(glyph);
 
-	return g;
+	if (it != glyphs.end())
+		return it->second;
+	else
+		return addGlyph(glyph);
 }
 
 float Font::getHeight() const
@@ -259,22 +260,20 @@ float Font::getHeight() const
 
 void Font::print(const std::string &text, float x, float y, float letter_spacing, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	float dx = 0.0f; // spacing counter for newline handling
+	// Spacing counter and newline handling.
+	float dx = 0.0f;
 	float dy = 0.0f;
 
-	// keeps track of when we need to switch textures in our vertex array
+	float lineheight = getBaseline();
+
+	// Keeps track of when we need to switch textures in our vertex array.
 	std::vector<GlyphArrayDrawInfo> glyphinfolist;
 
-	std::vector<GlyphQuad> glyphquads;
-	glyphquads.reserve(text.size()); // pre-allocate space for the maximum possible number of quads
+	// Pre-allocate space for the maximum possible number of vertices.
+	std::vector<vertex> glyphverts;
+	glyphverts.reserve(text.length() * 4);
 
-	int quadindex = 0;
-
-	glPushMatrix();
-
-	Matrix t;
-	t.setTransformation(ceil(x), ceil(y), angle, sx, sy, ox, oy, kx, ky);
-	glMultMatrixf((const GLfloat *)t.getElements());
+	int vertexcount = 0;
 
 	try
 	{
@@ -287,89 +286,78 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 
 			if (g == '\n')
 			{
-				// wrap newline, but do not print it
-				dy += floor(getHeight() * getLineHeight() + 0.5f);
+				// Wrap newline, but do not print it.
+				dy += floorf(getHeight() * getLineHeight() + 0.5f);
 				dx = 0.0f;
 				continue;
 			}
 
 			Glyph *glyph = findGlyph(g);
 
-			// we only care about the vertices of glyphs which have a texture
 			if (glyph->texture != 0)
 			{
-				// copy glyphquad (4 vertices) from original glyph to our current quad list
-				glyphquads.push_back(glyph->quad);
-
-				float lineheight = getBaseline();
-
-				// set proper relative position
-				for (int i = 0; i < 4; i++)
+				// Copy the vertices and set their proper relative positions.
+				for (int j = 0; j < 4; j++)
 				{
-					glyphquads[quadindex].vertices[i].x += dx;
-					glyphquads[quadindex].vertices[i].y += dy + lineheight;
+					glyphverts.push_back(glyph->vertices[j]);
+					glyphverts.back().x += dx;
+					glyphverts.back().y += dy + lineheight;
 				}
 
-				size_t listsize = glyphinfolist.size();
-
-				// check if current glyph texture has changed since the previous iteration
-				if (listsize == 0 || glyphinfolist[listsize-1].texture != glyph->texture)
+				// Check if glyph texture has changed since the last iteration.
+				if (glyphinfolist.size() == 0 || glyphinfolist.back().texture != glyph->texture)
 				{
 					// keep track of each sub-section of the string whose glyphs use different textures than the previous section
-					GlyphArrayDrawInfo glyphdrawinfo;
-					glyphdrawinfo.startquad = quadindex;
-					glyphdrawinfo.numquads = 0;
-					glyphdrawinfo.texture = glyph->texture;
-					glyphinfolist.push_back(glyphdrawinfo);
+					GlyphArrayDrawInfo gdrawinfo;
+					gdrawinfo.startvertex = vertexcount;
+					gdrawinfo.vertexcount = 0;
+					gdrawinfo.texture = glyph->texture;
+					glyphinfolist.push_back(gdrawinfo);
 				}
 
-				++quadindex;
-				++glyphinfolist[glyphinfolist.size()-1].numquads;
+				vertexcount += 4;
+				glyphinfolist.back().vertexcount += 4;
 			}
 
-			// advance the x position for the next glyph
+			// Advance the x position for the next glyph.
 			dx += glyph->spacing + letter_spacing;
 		}
 	}
-	catch (love::Exception &)
-	{
-		glPopMatrix();
-		throw;
-	}
 	catch (utf8::exception &e)
 	{
-		glPopMatrix();
 		throw love::Exception("Decoding error: %s", e.what());
 	}
 
-	if (quadindex > 0 && glyphinfolist.size() > 0)
+	if (vertexcount <= 0 || glyphinfolist.size() == 0)
+		return;
+
+	// Sort glyph draw info list by texture first, and quad position in memory
+	// second (using the struct's < operator).
+	std::sort(glyphinfolist.begin(), glyphinfolist.end());
+
+	glPushMatrix();
+
+	Matrix t;
+	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	glMultMatrixf((const GLfloat *)t.getElements());
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphverts[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphverts[0].s);
+
+	// We need to draw a new vertex array for every section of the string which
+	// uses a different texture than the previous section.
+	std::vector<GlyphArrayDrawInfo>::const_iterator it;
+	for (it = glyphinfolist.begin(); it != glyphinfolist.end(); ++it)
 	{
-		// Sort glyph draw info list by texture first, and quad position in
-		// memory second (using the struct's < operator).
-		std::sort(glyphinfolist.begin(), glyphinfolist.end());
-
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-		glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphquads[0].vertices[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphquads[0].vertices[0].s);
-
-		// We need to draw a new vertex array for every section of the string
-		// which uses a different texture than the previous section.
-		std::vector<GlyphArrayDrawInfo>::const_iterator it;
-		for (it = glyphinfolist.begin(); it != glyphinfolist.end(); ++it)
-		{
-			gl.bindTexture(it->texture);
-
-			int startvertex = it->startquad * 4;
-			int numvertices = it->numquads * 4;
-
-			glDrawArrays(GL_QUADS, startvertex, numvertices);
-		}
-
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_VERTEX_ARRAY);
+		gl.bindTexture(it->texture);
+		glDrawArrays(GL_QUADS, it->startvertex, it->vertexcount);
 	}
+
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glPopMatrix();
 }

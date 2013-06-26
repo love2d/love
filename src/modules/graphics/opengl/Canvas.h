@@ -41,7 +41,9 @@ namespace opengl
 class Canvas : public DrawGable, public Volatile
 {
 public:
-	enum TextureType {
+
+	enum TextureType
+	{
 		TYPE_NORMAL,
 		TYPE_HDR,
 		TYPE_MAX_ENUM
@@ -103,6 +105,7 @@ void setFilter(const Image::Filter &f);
 	static bool isSupported();
 	static bool isHDRSupported();
 	static bool isMultiCanvasSupported();
+
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
 
@@ -115,6 +118,7 @@ void setFilter(const Image::Filter &f);
 	}
 
 private:
+
 	friend class Shader;
 
 	GLsizei width;
