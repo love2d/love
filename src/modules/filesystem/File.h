@@ -82,6 +82,11 @@ public:
 	virtual bool close() = 0;
 
 	/**
+	 * Gets whether the file is open.
+	 **/
+	virtual bool isOpen() const = 0;
+
+	/**
 	 * Gets the size of the file.
 	 *
 	 * @return The size of the file.
@@ -149,7 +154,7 @@ public:
 	 * Gets the current mode of the File.
 	 * @return The current mode of the File; CLOSED, READ, WRITE or APPEND.
 	 **/
-	virtual Mode getMode() = 0;
+	virtual Mode getMode() const = 0;
 
 	/**
 	 * Gets the filename for this File, or empty string if none.

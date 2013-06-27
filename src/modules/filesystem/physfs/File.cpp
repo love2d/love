@@ -95,6 +95,11 @@ bool File::close()
 	return true;
 }
 
+bool File::isOpen() const
+{
+	return mode != CLOSED && file != 0;
+}
+
 int64 File::getSize()
 {
 	// If the file is closed, open it to
@@ -249,7 +254,7 @@ std::string File::getExtension() const
 		return std::string();
 }
 
-filesystem::File::Mode File::getMode()
+filesystem::File::Mode File::getMode() const
 {
 	return mode;
 }

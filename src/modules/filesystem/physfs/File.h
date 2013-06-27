@@ -68,6 +68,7 @@ public:
 	// Implements love::filesystem::File.
 	bool open(Mode mode);
 	bool close();
+	bool isOpen() const;
 	int64 getSize();
 	FileData *read(int64 size = ALL);
 	int64 read(void *dst, int64 size);
@@ -76,7 +77,7 @@ public:
 	bool eof();
 	int64 tell();
 	bool seek(uint64 pos);
-	Mode getMode();
+	Mode getMode() const;
 	std::string getFilename() const;
 	std::string getExtension() const;
 

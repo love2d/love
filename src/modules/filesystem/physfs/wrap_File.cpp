@@ -86,7 +86,14 @@ int w_File_open(lua_State *L)
 int w_File_close(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
-	lua_pushboolean(L, file->close() ? 1 : 0);
+	luax_pushboolean(L, file->close());
+	return 1;
+}
+
+int w_File_isOpen(lua_State *L)
+{
+	File *file = luax_checkfile(L, 1);
+	luax_pushboolean(L, file->isOpen());
 	return 1;
 }
 
@@ -220,6 +227,7 @@ static const luaL_Reg functions[] =
 	{ "getSize", w_File_getSize },
 	{ "open", w_File_open },
 	{ "close", w_File_close },
+	{ "isOpen", w_File_isOpen },
 	{ "read", w_File_read },
 	{ "write", w_File_write },
 	{ "eof", w_File_eof },
