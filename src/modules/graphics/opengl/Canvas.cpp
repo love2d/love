@@ -179,7 +179,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		std::vector<GLenum> drawbuffers;
 		drawbuffers.push_back(GL_COLOR_ATTACHMENT0);
 
-		// attach the canvas framebuffer textures to the currently bound framebuffer
+		// Attach the canvas textures to the currently bound framebuffer.
 		for (size_t i = 0; i < canvases.size(); i++)
 		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1 + i,
@@ -290,7 +290,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		std::vector<GLenum> drawbuffers;
 		drawbuffers.push_back(GL_COLOR_ATTACHMENT0_EXT);
 
-		// attach the canvas framebuffer textures to the currently bound framebuffer
+		// Attach the canvas textures to the currently bound framebuffer.
 		for (size_t i = 0; i < canvases.size(); i++)
 		{
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1_EXT + i,
@@ -452,7 +452,7 @@ void Canvas::setupGrab()
 	if (current != NULL)
 		current->stopGrab();
 
-	// bind buffer and clear screen
+	// bind the framebuffer object.
 	glPushAttrib(GL_VIEWPORT_BIT | GL_TRANSFORM_BIT);
 	strategy->bindFBO(fbo);
 	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
@@ -474,6 +474,10 @@ void Canvas::setupGrab()
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 {
+	// Whether the new canvas list is different from the old one.
+	// A more thorough check is done below.
+	bool canvaseschanged = canvases.size() != attachedCanvases.size();
+
 	if (canvases.size() > 0)
 	{
 		if (!isMultiCanvasSupported())
@@ -490,22 +494,23 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 
 		if (canvases[i]->getTextureType() != texture_type)
 			throw love::Exception("All canvas arguments must have the same texture type.");
+
+		if (!canvaseschanged && canvases[i] != attachedCanvases[i])
+			canvaseschanged = true;
 	}
 
 	setupGrab();
 
-	// don't attach anything if there's nothing to attach/detach
-	if (canvases.size() == 0 && attachedCanvases.size() == 0)
+	// Don't attach anything if there's nothing to change.
+	if (!canvaseschanged)
 		return;
 
-	// attach the canvas textures to the active FBO and set up multiple render targets
+	// Attach the canvas textures to the active FBO and set up MRTs.
 	strategy->setAttachments(canvases);
 
-	// retain newly attached canvases
 	for (size_t i = 0; i < canvases.size(); i++)
 		canvases[i]->retain();
 
-	// release any old canvases
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
 		attachedCanvases[i]->release();
 
