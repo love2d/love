@@ -122,7 +122,7 @@ int w_File_read(lua_State *L)
 int w_File_write(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
-	bool result;
+	bool result = false;
 
 	if (lua_isstring(L, 2))
 	{
@@ -153,6 +153,22 @@ int w_File_write(lua_State *L)
 	}
 
 	lua_pushboolean(L, result);
+	return 1;
+}
+
+int w_File_flush(lua_State *L)
+{
+	File *file = luax_checkfile(L, 1);
+	bool success = false;
+	try
+	{
+		success = file->flush();
+	}
+	catch (love::Exception &e)
+	{
+		return ioError(L, "%s", e.what());
+	}
+	luax_pushboolean(L, success);
 	return 1;
 }
 
@@ -191,16 +207,10 @@ int w_File_seek(lua_State *L)
 
 int w_File_lines(lua_State *L)
 {
-	File *file;
+	File *file = luax_checkfile(L, 1);
 
-	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
-	{
-		file = luax_checktype<File>(L, 1, "File", FILESYSTEM_FILE_T);
-		lua_pushnumber(L, 0); // File position.
-		luax_pushboolean(L, file->getMode() != File::CLOSED); // Save current file mode.
-	}
-	else
-		return luaL_error(L, "Expected File.");
+	lua_pushnumber(L, 0); // File position.
+	luax_pushboolean(L, file->getMode() != File::CLOSED); // Save current file mode.
 
 	if (file->getMode() != File::READ)
 	{
@@ -222,6 +232,59 @@ int w_File_lines(lua_State *L)
 	return 1;
 }
 
+int w_File_setBuffer(lua_State *L)
+{
+	File *file = luax_checkfile(L, 1);
+	const char *str = luaL_checkstring(L, 2);
+	int64 size = (int64) luaL_optnumber(L, 3, 0.0);
+
+	File::BufferMode bufmode;
+	if (!File::getConstant(str, bufmode))
+		return luaL_error(L, "Incorrect file buffer mode: %s", str);
+
+	bool success = false;
+	try
+	{
+		success = file->setBuffer(bufmode, size);
+	}
+	catch (love::Exception &e)
+	{
+		return ioError(L, "%s", e.what());
+	}
+
+	luax_pushboolean(L, success);
+	return 1;
+}
+
+int w_File_getBuffer(lua_State *L)
+{
+	File *file = luax_checkfile(L, 1);
+	int64 size = 0;
+	File::BufferMode bufmode = file->getBuffer(size);
+	const char *str = 0;
+
+	if (!File::getConstant(bufmode, str))
+		return ioError(L, "Unknown file buffer mode.");
+
+	lua_pushstring(L, str);
+	lua_pushnumber(L, (lua_Number) size);
+	return 2;
+}
+
+int w_File_getMode(lua_State *L)
+{
+	File *file = luax_checkfile(L, 1);
+
+	File::Mode mode = file->getMode();
+	const char *str = 0;
+
+	if (!File::getConstant(mode, str))
+		return ioError(L, "Unknown file mode.");
+
+	lua_pushstring(L, str);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getSize", w_File_getSize },
@@ -230,10 +293,14 @@ static const luaL_Reg functions[] =
 	{ "isOpen", w_File_isOpen },
 	{ "read", w_File_read },
 	{ "write", w_File_write },
+	{ "flush", w_File_flush },
 	{ "eof", w_File_eof },
 	{ "tell", w_File_tell },
 	{ "seek", w_File_seek },
 	{ "lines", w_File_lines },
+	{ "setBuffer", w_File_setBuffer },
+	{ "getBuffer", w_File_getBuffer },
+	{ "getMode", w_File_getMode },
 	{ 0, 0 }
 };
 
