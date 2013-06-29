@@ -246,11 +246,10 @@ void VBO::unload(bool save)
 	{
 		VertexBuffer::Bind bind(*this);
 
-		GLint size;
-		glGetBufferParameterivARB(getTarget(), GL_BUFFER_SIZE, &size);
+		bool mapped = is_mapped;
 
 		map(); // saves buffer content to memory_map.
-		unmap();
+		is_mapped = mapped;
 	}
 
 	glDeleteBuffersARB(1, &vbo);

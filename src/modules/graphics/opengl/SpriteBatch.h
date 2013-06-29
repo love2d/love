@@ -98,6 +98,12 @@ public:
 	int getCount() const;
 
 	/**
+	 * Sets the total number of sprites this SpriteBatch can hold.
+	 * Leaves existing sprite data intact when possible.
+	 **/
+	void setBufferSize(int newsize);
+
+	/**
 	 * Get the total number of sprites this SpriteBatch can hold.
 	 **/
 	int getBufferSize() const;
@@ -121,9 +127,6 @@ private:
 	 */
 	void setColorv(vertex *v, const Color &color);
 
-	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
-	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
-
 	Image *image;
 
 	// Max number of sprites in the batch.
@@ -140,6 +143,9 @@ private:
 
 	VertexBuffer *array_buf;
 	VertexIndex *element_buf;
+
+	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
+	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
 
 }; // SpriteBatch
 

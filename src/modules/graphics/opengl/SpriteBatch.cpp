@@ -18,6 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
 #include "SpriteBatch.h"
 
 // OpenGL
@@ -27,6 +28,9 @@
 #include "Image.h"
 #include "modules/graphics/Geometry.h"
 #include "VertexBuffer.h"
+
+// stdlib
+#include <algorithm>
 
 namespace love
 {
@@ -43,8 +47,10 @@ SpriteBatch::SpriteBatch(Image *image, int size, int usage)
 	, array_buf(0)
 	, element_buf(0)
 {
-	GLenum gl_usage;
+	if (size <= 0)
+		throw love::Exception("Invalid SpriteBatch size.");
 
+	GLenum gl_usage;
 	switch (usage)
 	{
 	default:
@@ -209,6 +215,48 @@ const Color *SpriteBatch::getColor() const
 int SpriteBatch::getCount() const
 {
 	return next;
+}
+
+void SpriteBatch::setBufferSize(int newsize)
+{
+	if (newsize <= 0)
+		throw love::Exception("Invalid SpriteBatch size.");
+
+	if (newsize == size)
+		return;
+
+	size_t vertex_size = sizeof(vertex) * 4 * newsize;
+	VertexBuffer *new_array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, array_buf->getUsage());
+
+	void *new_data = 0;
+	try
+	{
+		// VBO::map can throw an exception. Also we want to scope the bind.
+		VertexBuffer::Bind bind(*new_array_buf);
+		new_data = new_array_buf->map();
+	}
+	catch (love::Exception &)
+	{
+		delete new_array_buf;
+		throw;
+	}
+
+	// Map (lock) the old VertexBuffer to get a pointer to its data.
+	void *old_data = lock();
+
+	// Copy as much of the old data into the new VertexBuffer as can fit.
+	memcpy(new_data, old_data, sizeof(vertex) * 4 * std::min(newsize, size));
+
+	// We don't need to unmap the old VertexBuffer since we're deleting it.
+	delete array_buf;
+
+	array_buf = new_array_buf;
+	size = newsize;
+
+	next = std::min(next, newsize);
+
+	// But we should unmap (unlock) the new one!
+	unlock();
 }
 
 int SpriteBatch::getBufferSize() const
