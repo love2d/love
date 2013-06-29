@@ -175,14 +175,33 @@ Message *Event::convert(SDL_Event &e)
 		}
 		break;
 	case SDL_ACTIVEEVENT:
-		arg1 = new Variant(e.active.gain != 0);
-		if (e.active.state & SDL_APPINPUTFOCUS)
-			msg = new Message("focus", arg1);
-		else if (e.active.state & SDL_APPMOUSEFOCUS)
-			msg = new Message("mousefocus", arg1);
-		else if (e.active.state & SDL_APPACTIVE)
-			msg = new Message("visible", arg1);
-		arg1->release();
+		{
+			// SDL can send multiple ACTIVEEVENTS in a single SDL_event... we
+			// have to work around that by re-sending the ones we miss.
+			SDL_Event e2 = e;
+
+			arg1 = new Variant(e.active.gain != 0);
+			if (e.active.state & SDL_APPINPUTFOCUS)
+			{
+				msg = new Message("focus", arg1);
+				e2.active.state &= ~SDL_APPINPUTFOCUS;
+			}
+			else if (e.active.state & SDL_APPMOUSEFOCUS)
+			{
+				msg = new Message("mousefocus", arg1);
+				e2.active.state &= ~SDL_APPMOUSEFOCUS;
+			}
+			else if (e.active.state & SDL_APPACTIVE)
+			{
+				msg = new Message("visible", arg1);
+				e2.active.state &= ~SDL_APPACTIVE;
+			}
+			arg1->release();
+
+			// Put any missing active events back in SDL's queue.
+			if (e2.active.state != 0)
+				SDL_PushEvent(&e2);
+		}
 		break;
 	case SDL_QUIT:
 		msg = new Message("quit");
