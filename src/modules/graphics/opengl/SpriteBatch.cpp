@@ -225,12 +225,20 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	size_t vertex_size = sizeof(vertex) * 4 * newsize;
-	VertexBuffer *new_array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, array_buf->getUsage());
+	// Map (lock) the old VertexBuffer to get a pointer to its data.
+	void *old_data = lock();
 
+	size_t vertex_size = sizeof(vertex) * 4 * newsize;
+
+	VertexBuffer *new_array_buf = 0;
+	VertexIndex *new_element_buf = 0;
 	void *new_data = 0;
+
 	try
 	{
+		new_array_buf = VertexBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
+		new_element_buf = new VertexIndex(newsize);
+
 		// VBO::map can throw an exception. Also we want to scope the bind.
 		VertexBuffer::Bind bind(*new_array_buf);
 		new_data = new_array_buf->map();
@@ -238,19 +246,20 @@ void SpriteBatch::setBufferSize(int newsize)
 	catch (love::Exception &)
 	{
 		delete new_array_buf;
+		delete new_element_buf;
+		unlock();
 		throw;
 	}
-
-	// Map (lock) the old VertexBuffer to get a pointer to its data.
-	void *old_data = lock();
 
 	// Copy as much of the old data into the new VertexBuffer as can fit.
 	memcpy(new_data, old_data, sizeof(vertex) * 4 * std::min(newsize, size));
 
 	// We don't need to unmap the old VertexBuffer since we're deleting it.
 	delete array_buf;
+	delete element_buf;
 
 	array_buf = new_array_buf;
+	element_buf = new_element_buf;
 	size = newsize;
 
 	next = std::min(next, newsize);
