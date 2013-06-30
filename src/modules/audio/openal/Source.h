@@ -100,7 +100,7 @@ public:
 
 private:
 
-	void reset(ALenum source);
+	void reset();
 
 	void setFloatv(float *dst, const float *src) const;
 

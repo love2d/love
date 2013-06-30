@@ -113,9 +113,6 @@ void Source::play()
 	}
 
 	valid = pool->play(this, source);
-
-	if (valid)
-		reset(source);
 }
 
 void Source::stop()
@@ -440,16 +437,10 @@ void Source::playAtomic()
 			alSourceQueueBuffers(source, usedBuffers, buffers);
 	}
 
-	// Set these properties. These may have changed while we've
-	// been without an AL source.
-	alSourcef(source, AL_PITCH, pitch);
-	alSourcef(source, AL_GAIN, volume);
-	alSourcef(source, AL_MIN_GAIN, minVolume);
-	alSourcef(source, AL_MAX_GAIN, maxVolume);
-	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
-	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
-	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
-	alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
+	// This Source may now be associated with an OpenAL source that still has
+	// the properties of another love Source. Let's reset it to the settings
+	// of the new one.
+	reset();
 
 	alSourcePlay(source);
 
@@ -531,7 +522,7 @@ void Source::rewindAtomic()
 	}
 }
 
-void Source::reset(ALenum source)
+void Source::reset()
 {
 	alSourcefv(source, AL_POSITION, position);
 	alSourcefv(source, AL_VELOCITY, velocity);
@@ -543,6 +534,7 @@ void Source::reset(ALenum source)
 	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
+	alSourcei(source, AL_LOOPING, isStatic() && isLooping() ? AL_TRUE : AL_FALSE);
 }
 
 void Source::setFloatv(float *dst, const float *src) const
