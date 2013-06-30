@@ -20,6 +20,8 @@
 
 #include "common/config.h"
 
+#include <algorithm>
+
 #include "Sound.h"
 
 #include "ModPlugDecoder.h"
@@ -57,6 +59,7 @@ const char *Sound::getName() const
 sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSize)
 {
 	std::string ext = data->getExtension();
+	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
 	sound::Decoder *decoder = 0;
 
