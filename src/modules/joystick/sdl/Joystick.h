@@ -54,13 +54,11 @@ public:
 	bool isOpen(int index);
 	bool verifyJoystick(int index);
 	int getAxisCount(int index);
-	int getBallCount(int index);
 	int getButtonCount(int index);
 	int getHatCount(int index);
 	float clampval(float x);
 	float getAxis(int index, int axis);
 	int getAxes(lua_State *L);
-	int getBall(lua_State *L);
 	bool isDown(int index, int *buttonlist);
 	Hat getHat(int index, int hat);
 	void close(int index);

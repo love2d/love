@@ -62,13 +62,6 @@ int w_getAxisCount(lua_State *L)
 	return 1;
 }
 
-int w_getBallCount(lua_State *L)
-{
-	int index = luaL_checkint(L, 1) - 1;
-	lua_pushinteger(L, instance->getBallCount(index));
-	return 1;
-}
-
 int w_getButtonCount(lua_State *L)
 {
 	int index = luaL_checkint(L, 1) - 1;
@@ -94,11 +87,6 @@ int w_getAxis(lua_State *L)
 int w_getAxes(lua_State *L)
 {
 	return instance->getAxes(L);
-}
-
-int w_getBall(lua_State *L)
-{
-	return instance->getBall(L);
 }
 
 int w_isDown(lua_State *L)
@@ -140,14 +128,10 @@ static const luaL_Reg functions[] =
 	{ "getJoystickCount", w_getJoystickCount },
 	{ "getName", w_getName },
 	{ "getAxisCount", w_getAxisCount },
-	{ "getBallCount", w_getBallCount },
 	{ "getButtonCount", w_getButtonCount },
 	{ "getHatCount", w_getHatCount },
 	{ "getAxis", w_getAxis },
-
 	{ "getAxes", w_getAxes },
-	{ "getBall", w_getBall },
-
 	{ "isDown", w_isDown },
 	{ "getHat", w_getHat },
 	{ 0, 0 }

@@ -146,11 +146,6 @@ int Joystick::getAxisCount(int index)
 	return verifyJoystick(index) ? SDL_JoystickNumAxes(joysticks[index]) : 0;
 }
 
-int Joystick::getBallCount(int index)
-{
-	return verifyJoystick(index) ? SDL_JoystickNumBalls(joysticks[index]) : 0;
-}
-
 int Joystick::getButtonCount(int index)
 {
 	return verifyJoystick(index) ? SDL_JoystickNumButtons(joysticks[index]) : 0;
@@ -192,25 +187,6 @@ int Joystick::getAxes(lua_State *L)
 	for (int i = 0; i<num; i++)
 		lua_pushnumber(L, clampval(((float)SDL_JoystickGetAxis(joysticks[index], i))/32768.0f));
 	return num;
-}
-
-int Joystick::getBall(lua_State *L)
-{
-	int index = luaL_checkint(L, 1) - 1;
-	int ball = luaL_checkint(L, 2) - 1;
-
-	if (!verifyJoystick(index))
-		return 0;
-
-	if (ball >= getBallCount(index))
-		return 0;
-
-	int dx, dy;
-	SDL_JoystickGetBall(joysticks[index], ball, &dx, &dy);
-
-	lua_pushnumber(L, dx);
-	lua_pushnumber(L, dy);
-	return 2;
 }
 
 bool Joystick::isDown(int index, int *buttonlist)
