@@ -778,21 +778,23 @@ function love.errhand(msg)
 		love.graphics.present()
 	end
 
-	draw()
-
-	local e, a, b, c
 	while true do
-		e, a, b, c = love.event.wait()
+		love.event.pump()
 
-		if e == "quit" then
-			return
-		end
-		if e == "keypressed" and a == "escape" then
-			return
+		for e, a, b, c in love.event.poll() do
+			if e == "quit" then
+				return
+			end
+			if e == "keypressed" and a == "escape" then
+				return
+			end
 		end
 
 		draw()
 
+		if love.timer then
+			love.timer.sleep(0.1)
+		end
 	end
 
 end
@@ -829,21 +831,23 @@ function love.releaseerrhand(msg)
 		love.graphics.present()
 	end
 
-	draw()
-
-	local e, a, b, c
 	while true do
-		e, a, b, c = love.event.wait()
+		love.event.pump()
 
-		if e == "quit" then
-			return
-		end
-		if e == "keypressed" and a == "escape" then
-			return
+		for e, a, b, c in love.event.poll() do
+			if e == "quit" then
+				return
+			end
+			if e == "keypressed" and a == "escape" then
+				return
+			end
 		end
 
 		draw()
 
+		if love.timer then
+			love.timer.sleep(0.1)
+		end
 	end
 end
 
