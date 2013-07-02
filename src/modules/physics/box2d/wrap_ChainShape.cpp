@@ -39,7 +39,7 @@ int w_ChainShape_setNextVertex(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
-	c->setNextVertex(x, y);
+	ASSERT_GUARD(c->setNextVertex(x, y);)
 	return 0;
 }
 
@@ -48,7 +48,7 @@ int w_ChainShape_setPrevVertex(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
-	c->setPrevVertex(x, y);
+	ASSERT_GUARD(c->setPrevVertex(x, y);)
 	return 0;
 }
 

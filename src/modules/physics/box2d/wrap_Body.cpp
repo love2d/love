@@ -232,7 +232,7 @@ int w_Body_setX(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setX(arg1);
+	ASSERT_GUARD(t->setX(arg1);)
 	return 0;
 }
 
@@ -240,7 +240,7 @@ int w_Body_setY(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setY(arg1);
+	ASSERT_GUARD(t->setY(arg1);)
 	return 0;
 }
 
@@ -257,7 +257,7 @@ int w_Body_setAngle(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setAngle(arg1);
+	ASSERT_GUARD(t->setAngle(arg1);)
 	return 0;
 }
 
@@ -274,14 +274,14 @@ int w_Body_setPosition(lua_State *L)
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_checknumber(L, 3);
-	t->setPosition(arg1, arg2);
+	ASSERT_GUARD(t->setPosition(arg1, arg2);)
 	return 0;
 }
 
 int w_Body_resetMassData(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	t->resetMassData();
+	ASSERT_GUARD(t->resetMassData();)
 	return 0;
 }
 
@@ -300,7 +300,7 @@ int w_Body_setMass(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float m = (float)luaL_checknumber(L, 2);
-	t->setMass(m);
+	ASSERT_GUARD(t->setMass(m);)
 	return 0;
 }
 
@@ -308,7 +308,7 @@ int w_Body_setInertia(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float i = (float)luaL_checknumber(L, 2);
-	t->setInertia(i);
+	ASSERT_GUARD(t->setInertia(i);)
 	return 0;
 }
 
@@ -342,7 +342,7 @@ int w_Body_setType(lua_State *L)
 	const char *typeStr = luaL_checkstring(L, 2);
 	Body::Type type;
 	Body::getConstant(typeStr, type);
-	t->setType(type);
+	ASSERT_GUARD(t->setType(type);)
 	return 0;
 }
 
@@ -485,7 +485,7 @@ int w_Body_setActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	bool b = luax_toboolean(L, 2);
-	t->setActive(b);
+	ASSERT_GUARD(t->setActive(b);)
 	return 0;
 }
 
@@ -501,7 +501,7 @@ int w_Body_setFixedRotation(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	bool b = luax_toboolean(L, 2);
-	t->setFixedRotation(b);
+	ASSERT_GUARD(t->setFixedRotation(b);)
 	return 0;
 }
 
@@ -517,7 +517,9 @@ int w_Body_getFixtureList(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
-	return t->getFixtureList(L);
+	int n = 0;
+	ASSERT_GUARD(n = t->getFixtureList(L);)
+	return n;
 }
 
 int w_Body_destroy(lua_State *L)

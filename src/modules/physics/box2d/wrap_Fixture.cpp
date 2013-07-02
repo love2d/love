@@ -65,7 +65,7 @@ int w_Fixture_setDensity(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setDensity(arg1);
+	ASSERT_GUARD(t->setDensity(arg1);)
 	return 0;
 }
 
