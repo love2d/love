@@ -165,8 +165,11 @@ void VBO::unmap()
 
 	// VBO::bind is a no-op when the VBO is mapped, so we have to make sure it's
 	// bound here.
-	if (is_bound)
+	if (!is_bound)
+	{
 		glBindBufferARB(getTarget(), vbo);
+		is_bound = true;
+	}
 
 	// "orphan" current buffer to avoid implicit synchronisation on the gpu:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
@@ -179,14 +182,15 @@ void VBO::unmap()
 void VBO::bind()
 {
 	if (!is_mapped)
+	{
 		glBindBufferARB(getTarget(), vbo);
-
-	is_bound = true;
+		is_bound = true;
+	}
 }
 
 void VBO::unbind()
 {
-	if (!is_mapped)
+	if (is_bound)
 		glBindBufferARB(getTarget(), 0);
 
 	is_bound = false;
