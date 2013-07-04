@@ -409,7 +409,15 @@ int w_newParticleSystem(lua_State *L)
 {
 	Image *image = luax_checkimage(L, 1);
 	int size = luaL_optint(L, 2, 1000);
-	ParticleSystem *t = instance->newParticleSystem(image, size);
+	ParticleSystem *t = 0;
+	try
+	{
+		t = instance->newParticleSystem(image, size);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void *)t);
 	return 1;
 }

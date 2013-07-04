@@ -136,6 +136,9 @@ FileData *File::read(int64 size)
 	int64 cur = tell();
 	size = (size == ALL) ? max : size;
 
+	if (size < 0)
+		throw love::Exception("Invalid read size.");
+
 	// Clamping because the file offset may be in a weird position.
 	if (cur < 0)
 		cur = 0;

@@ -86,7 +86,7 @@ public:
 	/**
 	 * Creates a particle system with the specified buffersize and image.
 	 **/
-	ParticleSystem(Image *image, unsigned int buffer);
+	ParticleSystem(Image *image, int buffer);
 
 	/**
 	 * Deletes any allocated memory.
@@ -503,7 +503,7 @@ public:
 protected:
 
 	// The max amount of particles.
-	unsigned int bufferSize;
+	int bufferSize;
 
 	// Pointer to the first particle.
 	particle *pStart;

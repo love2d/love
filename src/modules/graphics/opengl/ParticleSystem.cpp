@@ -63,7 +63,7 @@ StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_M
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));
 
 
-ParticleSystem::ParticleSystem(Image *image, unsigned int buffer)
+ParticleSystem::ParticleSystem(Image *image, int buffer)
 	: pStart(0)
 	, pLast(0)
 	, pEnd(0)
@@ -95,6 +95,9 @@ ParticleSystem::ParticleSystem(Image *image, unsigned int buffer)
 	, offsetX(image->getWidth()*0.5f)
 	, offsetY(image->getHeight()*0.5f)
 {
+	if (buffer <= 0)
+		throw love::Exception("Invalid ParticleSystem size.");
+
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 	setBufferSize(buffer);
