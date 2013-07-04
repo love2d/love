@@ -39,7 +39,7 @@ Message::Message(const std::string &name, Variant *a, Variant *b, Variant *c, Va
 	for (int i = 0; i < 4; i++)
 	{
 		if (!args[i])
-			continue;
+			break;
 		args[i]->retain();
 		nargs++;
 	}
@@ -112,7 +112,8 @@ void Event::clear()
 	Lock lock(mutex);
 	while (!queue.empty())
 	{
-		queue.back()->release();
+		// std::queue::pop will remove the first (front) element.
+		queue.front()->release();
 		queue.pop();
 	}
 }
