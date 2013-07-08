@@ -68,17 +68,6 @@ void Thread::wait()
 	thread = 0;
 }
 
-void Thread::kill()
-{
-	Lock l(mutex);
-	if (!running)
-		return;
-	SDL_KillThread(thread);
-	SDL_WaitThread(thread, 0);
-	running = false;
-	thread = 0;
-}
-
 int Thread::thread_runner(void *data)
 {
 	Thread *self = (Thread *) data; // some compilers don't like 'this'

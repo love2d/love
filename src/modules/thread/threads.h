@@ -82,7 +82,6 @@ public:
 
 	bool start();
 	void wait();
-	void kill();
 
 protected:
 	Thread *owner;

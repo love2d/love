@@ -93,10 +93,5 @@ void Threadable::wait()
 	owner->wait();
 }
 
-void Threadable::kill()
-{
-	owner->kill();
-}
-
 } // thread
 } // love

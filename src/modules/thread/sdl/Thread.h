@@ -47,7 +47,6 @@ public:
 	Thread(Threadable *t);
 	~Thread();
 	bool start();
-	void kill();
 	void wait();
 }; // Thread
 } // sdl

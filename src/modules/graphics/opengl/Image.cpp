@@ -37,7 +37,8 @@ Image::FilterMode Image::defaultMipmapFilter = Image::FILTER_NONE;
 float Image::defaultMipmapSharpness = 0.0f;
 
 Image::Image(love::image::ImageData *data)
-	: cdata(0)
+	: data(data)
+	, cdata(0)
 	, width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
@@ -46,12 +47,12 @@ Image::Image(love::image::ImageData *data)
 	, compressed(false)
 {
 	data->retain();
-	this->data = data;
 	preload();
 }
 
 Image::Image(love::image::CompressedData *cdata)
 	: data(0)
+	, cdata(cdata)
 	, width((float)(cdata->getWidth(0)))
 	, height((float)(cdata->getHeight(0)))
 	, texture(0)
@@ -60,7 +61,6 @@ Image::Image(love::image::CompressedData *cdata)
 	, compressed(true)
 {
 	cdata->retain();
-	this->cdata = cdata;
 	preload();
 }
 
@@ -369,6 +369,7 @@ bool Image::loadVolatilePOT()
 
 	filter.anisotropy = gl.setTextureFilter(filter);
 	gl.setTextureWrap(wrap);
+	setMipmapSharpness(mipmapSharpness);
 
 	float p2width = next_p2(width);
 	float p2height = next_p2(height);
@@ -431,8 +432,6 @@ bool Image::loadVolatilePOT()
 	mipmapsCreated = false;
 	checkMipmapsCreated();
 
-	setMipmapSharpness(mipmapSharpness);
-
 	return true;
 }
 
@@ -443,6 +442,7 @@ bool Image::loadVolatileNPOT()
 
 	filter.anisotropy = gl.setTextureFilter(filter);
 	gl.setTextureWrap(wrap);
+	setMipmapSharpness(mipmapSharpness);
 
 	// We want this lock to potentially cover mipmap creation as well.
 	love::thread::EmptyLock lock;
@@ -480,8 +480,6 @@ bool Image::loadVolatileNPOT()
 
 	mipmapsCreated = false;
 	checkMipmapsCreated();
-
-	setMipmapSharpness(mipmapSharpness);
 
 	return true;
 }
