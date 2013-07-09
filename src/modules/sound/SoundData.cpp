@@ -161,7 +161,7 @@ void SoundData::setSample(int i, float sample)
 {
 	// Check range.
 	if (i < 0 || i >= size/(bits/8))
-		return;
+		throw love::Exception("Attempt to set out-of-range sample!");
 
 	if (bits == 16)
 	{
@@ -180,7 +180,7 @@ float SoundData::getSample(int i) const
 {
 	// Check range.
 	if (i < 0 || i >= size/(bits/8))
-		return 0;
+		throw love::Exception("Attempt to get out-of-range sample!");
 
 	if (bits == 16)
 	{

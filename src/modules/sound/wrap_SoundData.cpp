@@ -72,7 +72,14 @@ int w_SoundData_setSample(lua_State *L)
 	SoundData *sd = luax_checksounddata(L, 1);
 	int i = (int)lua_tointeger(L, 2);
 	float sample = (float)lua_tonumber(L, 3);
-	sd->setSample(i, sample);
+	try
+	{
+		sd->setSample(i, sample);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 
@@ -80,7 +87,14 @@ int w_SoundData_getSample(lua_State *L)
 {
 	SoundData *sd = luax_checksounddata(L, 1);
 	int i = (int)lua_tointeger(L, 2);
-	lua_pushnumber(L, sd->getSample(i));
+	try
+	{
+		lua_pushnumber(L, sd->getSample(i));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 1;
 }
 
