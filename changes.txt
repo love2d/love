@@ -11,6 +11,9 @@ LOVE 0.9.0 [Baby Inspector]
   * Added love.filesystem.getIdentity.
   * Added love.filesystem.append.
   * Added love.filesystem.getSize.
+  * Added love.filesystem.mount and love.filesystem.unmount.
+  * Added File:isOpen and File:getMode.
+  * Added Fie:setBuffer, File:getBuffer, and File:flush.
   * Added previously internal Rasterizer and GlyphData object methods.
   * Added support for UTF-8 ImageFonts.
   * Added Font:getAscent/getDescent/getBaseline.
@@ -32,6 +35,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added SpriteBatch:getCount and SpriteBatch:getBufferSize.
   * Added SpriteBatch:getColor.
   * Added ParticleSystem:emit.
+  * Added ParticleSystem:setInsertMode and ParticleSystem:getInsertMode.
   * Added many ParticleSystem getter methods.
   * Added DXT compressed texture support via love.image.newCompressedData.
   * Added love.image.isCompressed and Image:isCompressed.
@@ -66,9 +70,12 @@ LOVE 0.9.0 [Baby Inspector]
 
   * Fixed fused release mode in OS X.
   * Fixed printing to the console in Windows before love.load is called.
+  * Fixed the error screen not always appearing until the next input event.
+  * Fixed love.event.clear.
   * Fixed love.mouse.setPosition when called in love.load.
   * Fixed scaling in several love.physics functions.
   * Fixed Box2D exception in World:update.
+  * Fixed many uncaught Box2D / love.physics exceptions for Bodies and Joints.
   * Fixed File:read reading past end of file.
   * Fixed love.filesystem.setIdentity not removing read access from old directories.
   * Fixed possible memory leak in utf-8 decoder.
@@ -87,7 +94,8 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed line numbers in shader errors.
   * Fixed Shader:send with Images and Canvases failing sometimes.
   * Fixed crash when binding SpriteBatches multiple times.
-  * Fixed SpriteBatches with more than 16,383 sprites.
+  * Fixed SpriteBatches with more than 16,384 sprites.
+  * Fixed particle draw order for ParticleSystems.
   * Fixed the graphics viewport not matching the window size when using an unsupported fullscreen mode.
   * Fixed getMode and friends returning wrong values when using desktop size.
   * Fixed keyrepeat settings being lost after (indirect) setMode.
@@ -95,6 +103,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed sound issues with some versions of OpenAL soft, by enabling direct channels.
   * Fixed 'random' hangs in audio.
   * Fixed love.sound.newDecoder not accepting FileData.
+  * Fixed case (in)sensitivity of sound file extension parsing.
   * Fixed looping support in tracker music formats.
   * Fixed skipping/looping issues when playing streaming audio Sources.
 
@@ -119,6 +128,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed Quad objects (replaced by Geometry).
   * Removed ParticleSystem:isFull/isEmpty.
   * Removed love.joystick.open and friends.
+  * Removed love.joystick.getBall and love.joystick.getNumBalls.
   * Removed thread names.
   * Removed old thread messaging api (see Channels).
   * Removed love.timer.getMicroTime.
@@ -141,6 +151,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated love.graphics.newParticleSystem to have a default buffer size of 1000.
   * Updated love.image.newImageData and love.graphics.newImage to accept FileData.
   * Updated ImageData:setPixel to accept a table and default to 255 alpha.
+  * Updated ImageData:mapPixel to be more efficient.
   * Updated love.image memory handling, improves errors and thread-safety.
   * Updated all love object constructors to optionally accept FileData if they accept a filename.
   * Updated allocation for SoundData, it's more efficient and less wasteful.
