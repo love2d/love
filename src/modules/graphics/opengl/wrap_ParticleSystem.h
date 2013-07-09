@@ -38,6 +38,8 @@ int w_ParticleSystem_setImage(lua_State *L);
 int w_ParticleSystem_getImage(lua_State *L);
 int w_ParticleSystem_setBufferSize(lua_State *L);
 int w_ParticleSystem_getBufferSize(lua_State *L);
+int w_ParticleSystem_setInsertMode(lua_State *L);
+int w_ParticleSystem_getInsertMode(lua_State *L);
 int w_ParticleSystem_setEmissionRate(lua_State *L);
 int w_ParticleSystem_getEmissionRate(lua_State *L);
 int w_ParticleSystem_setEmitterLifetime(lua_State *L);

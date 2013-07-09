@@ -18,12 +18,15 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+//LOVE
+#include "common/config.h"
 #include "ParticleSystem.h"
 
 #include "common/math.h"
 #include "modules/math/RandomGenerator.h"
-
 #include "OpenGL.h"
+
+// STD
 #include <cmath>
 #include <cstdlib>
 
@@ -48,7 +51,7 @@ float calculate_variation(float inner, float outer, float var)
 {
 	float low = inner - (outer/2.0f)*var;
 	float high = inner + (outer/2.0f)*var;
-	float r = rng.random();
+	float r = (float) rng.random();
 	return low*(1-r)+high*r;
 }
 
@@ -59,17 +62,28 @@ StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_M
 	{ "uniform",  ParticleSystem::DISTRIBUTION_UNIFORM },
 	{ "normal",   ParticleSystem::DISTRIBUTION_NORMAL },
 };
-
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));
 
+StringMap<ParticleSystem::InsertMode, ParticleSystem::INSERT_MODE_MAX_ENUM>::Entry ParticleSystem::insertModesEntries[] =
+{
+	{ "top",    ParticleSystem::INSERT_MODE_TOP },
+	{ "bottom", ParticleSystem::INSERT_MODE_BOTTOM },
+	{ "random", ParticleSystem::INSERT_MODE_RANDOM },
+};
+StringMap<ParticleSystem::InsertMode, ParticleSystem::INSERT_MODE_MAX_ENUM> ParticleSystem::insertModes(ParticleSystem::insertModesEntries, sizeof(ParticleSystem::insertModesEntries));
 
-ParticleSystem::ParticleSystem(Image *image, int buffer)
-	: pStart(0)
-	, pLast(0)
-	, pEnd(0)
-	, particleVerts(0)
+
+ParticleSystem::ParticleSystem(Image *image, uint32 size)
+	: pMem(NULL)
+	, pFree(NULL)
+	, pHead(NULL)
+	, pTail(NULL)
+	, particleVerts(NULL)
 	, image(image)
 	, active(true)
+	, insertMode(INSERT_MODE_TOP)
+	, maxParticles(0)
+	, activeParticles(0)
 	, emissionRate(0)
 	, emitCounter(0)
 	, areaSpreadDistribution(DISTRIBUTION_NONE)
@@ -82,6 +96,8 @@ ParticleSystem::ParticleSystem(Image *image, int buffer)
 	, relative(false)
 	, speedMin(0)
 	, speedMax(0)
+	, linearAccelerationMin(0, 0)
+	, linearAccelerationMax(0, 0)
 	, radialAccelerationMin(0)
 	, radialAccelerationMax(0)
 	, tangentialAccelerationMin(0)
@@ -95,12 +111,12 @@ ParticleSystem::ParticleSystem(Image *image, int buffer)
 	, offsetX(image->getWidth()*0.5f)
 	, offsetY(image->getHeight()*0.5f)
 {
-	if (buffer <= 0)
+	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
 
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-	setBufferSize(buffer);
+	setBufferSize(size);
 	image->retain();
 }
 
@@ -109,39 +125,100 @@ ParticleSystem::~ParticleSystem()
 	if (this->image != 0)
 		this->image->release();
 
-	if (pStart != 0)
-		delete [] pStart;
-
-	if (particleVerts != 0)
-		delete [] particleVerts;
+	deleteBuffers();
 }
 
-void ParticleSystem::add()
+void ParticleSystem::createBuffers(size_t size)
 {
-	if (isFull()) return;
+	try
+	{
+		pFree = pMem = new particle[size];
+		particleVerts = new love::vertex[size * 4];
+		maxParticles = (uint32) size;
+	}
+	catch (std::bad_alloc &)
+	{
+		deleteBuffers();
+		throw love::Exception("Out of memory");
+	}
+}
 
+void ParticleSystem::deleteBuffers()
+{
+	// Clean up for great gracefulness!
+	delete[] pMem;
+	delete[] particleVerts;
+
+	pMem = NULL;
+	particleVerts = NULL;
+	maxParticles = 0;
+	activeParticles = 0;
+}
+
+void ParticleSystem::setBufferSize(uint32 size)
+{
+	if (size == 0 || size > MAX_PARTICLES)
+		throw love::Exception("Invalid buffer size");
+	deleteBuffers();
+	createBuffers(size);
+	reset();
+}
+
+uint32 ParticleSystem::getBufferSize() const
+{
+	return maxParticles;
+}
+
+void ParticleSystem::addParticle()
+{
+	if (isFull())
+		return;
+
+	// Gets a free particle and updates the allocation pointer.
+	particle *p = pFree++;
+	initParticle(p);
+
+	switch (insertMode)
+	{
+	default:
+	case INSERT_MODE_TOP:
+		insertTop(p);
+		break;
+	case INSERT_MODE_BOTTOM:
+		insertBottom(p);
+		break;
+	case INSERT_MODE_RANDOM:
+		insertRandom(p);
+		break;
+	}
+
+	activeParticles++;
+}
+
+void ParticleSystem::initParticle(particle *p)
+{
 	float min,max;
 
 	min = particleLifeMin;
 	max = particleLifeMax;
 	if (min == max)
-		pLast->life = min;
+		p->life = min;
 	else
-		pLast->life = rng.random(min, max);
-	pLast->lifetime = pLast->life;
+		p->life = (float) rng.random(min, max);
+	p->lifetime = p->life;
 
-	pLast->position[0] = position.getX();
-	pLast->position[1] = position.getY();
+	p->position[0] = position.getX();
+	p->position[1] = position.getY();
 
 	switch (areaSpreadDistribution)
 	{
 	case DISTRIBUTION_UNIFORM:
-		pLast->position[0] += rng.random(-areaSpread.getX(), areaSpread.getX());
-		pLast->position[1] += rng.random(-areaSpread.getY(), areaSpread.getY());
+		p->position[0] += (float) rng.random(-areaSpread.getX(), areaSpread.getX());
+		p->position[1] += (float) rng.random(-areaSpread.getY(), areaSpread.getY());
 		break;
 	case DISTRIBUTION_NORMAL:
-		pLast->position[0] += rng.randomnormal(areaSpread.getX());
-		pLast->position[1] += rng.randomnormal(areaSpread.getY());
+		p->position[0] += (float) rng.randomnormal(areaSpread.getX());
+		p->position[1] += (float) rng.randomnormal(areaSpread.getY());
 		break;
 	case DISTRIBUTION_NONE:
 	default:
@@ -150,48 +227,144 @@ void ParticleSystem::add()
 
 	min = direction - spread/2.0f;
 	max = direction + spread/2.0f;
-	pLast->direction = rng.random(min, max);
+	p->direction = (float) rng.random(min, max);
 
-	pLast->origin = position;
+	p->origin = position;
 
 	min = speedMin;
 	max = speedMax;
-	float speed = rng.random(min, max);
-	pLast->speed = love::Vector(cos(pLast->direction), sin(pLast->direction));
-	pLast->speed *= speed;
+	float speed = (float) rng.random(min, max);
+	p->speed = love::Vector(cos(p->direction), sin(p->direction));
+	p->speed *= speed;
 
-	pLast->linearAcceleration.x = rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
-	pLast->linearAcceleration.y = rng.random(linearAccelerationMin.y, linearAccelerationMax.y);
+	p->linearAcceleration.x = (float) rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
+	p->linearAcceleration.y = (float) rng.random(linearAccelerationMin.y, linearAccelerationMax.y);
 
 	min = radialAccelerationMin;
 	max = radialAccelerationMax;
-	pLast->radialAcceleration = rng.random(min, max);
+	p->radialAcceleration = (float) rng.random(min, max);
 
 	min = tangentialAccelerationMin;
 	max = tangentialAccelerationMax;
-	pLast->tangentialAcceleration = rng.random(min, max);
+	p->tangentialAcceleration = (float) rng.random(min, max);
 
-	pLast->sizeOffset       = rng.random(sizeVariation); // time offset for size change
-	pLast->sizeIntervalSize = (1.0f - rng.random(sizeVariation)) - pLast->sizeOffset;
-	pLast->size = sizes[(size_t)(pLast->sizeOffset - .5f) * (sizes.size() - 1)];
+	p->sizeOffset       = (float) rng.random(sizeVariation); // time offset for size change
+	p->sizeIntervalSize = (1.0f - (float) rng.random(sizeVariation)) - p->sizeOffset;
+	p->size = sizes[(size_t)(p->sizeOffset - .5f) * (sizes.size() - 1)];
 
 	min = rotationMin;
 	max = rotationMax;
-	pLast->spinStart = calculate_variation(spinStart, spinEnd, spinVariation);
-	pLast->spinEnd = calculate_variation(spinEnd, spinStart, spinVariation);
-	pLast->rotation = rng.random(min, max);
+	p->spinStart = calculate_variation(spinStart, spinEnd, spinVariation);
+	p->spinEnd = calculate_variation(spinEnd, spinStart, spinVariation);
+	p->rotation = (float) rng.random(min, max);
 
-	pLast->color = colors[0];
-
-	pLast++;
+	p->color = colors[0];
 }
 
-void ParticleSystem::remove(particle *p)
+void ParticleSystem::insertTop(particle *p)
 {
-	if (!isEmpty())
+	if (pHead == NULL)
 	{
-		 *p = *(--pLast);
+		pHead = p;
+		p->prev = NULL;
 	}
+	else
+	{
+		pTail->next = p;
+		p->prev = pTail;
+	}
+	p->next = NULL;
+	pTail = p;
+}
+
+void ParticleSystem::insertBottom(particle *p)
+{
+	if (pTail == NULL)
+	{
+		pTail = p;
+		p->next = NULL;
+	}
+	else
+	{
+		pHead->prev = p;
+		p->next = pHead;
+	}
+	p->prev = NULL;
+	pHead = p;
+}
+
+void ParticleSystem::insertRandom(particle *p)
+{
+	// Nonuniform, but 64-bit is so large nobody will notice. Hopefully.
+	uint64 pos = rng.rand() % ((int64) activeParticles + 1);
+
+	// Special case where the particle gets inserted before the head.
+	if (pos == activeParticles)
+	{
+		particle *pA = pHead;
+		if (pA)
+			pA->prev = p;
+		p->prev = NULL;
+		p->next = pA;
+		pHead = p;
+		return;
+	}
+
+	// Inserts the particle after the randomly selected particle.
+	particle *pA = pMem + pos;
+	particle *pB = pA->next;
+	pA->next = p;
+	if (pB)
+		pB->prev = p;
+	else
+		pTail = p;
+	p->prev = pA;
+	p->next = pB;
+}
+
+ParticleSystem::particle *ParticleSystem::removeParticle(particle *p)
+{
+	// The linked list is updated in this function and old pointers may be
+	// invalidated. The returned pointer will inform the caller of the new
+	// pointer to the next particle.
+	particle *pNext = NULL;
+
+	// Removes the particle from the linked list.
+	if (p->prev)
+		p->prev->next = p->next;
+	else
+		pHead = p->next;
+
+	if (p->next)
+	{
+		p->next->prev = p->prev;
+		pNext = p->next;
+	}
+	else
+		pTail = p->prev;
+
+	// The (in memory) last particle can now be moved into the free slot.
+	// It will skip the moving if it happens to be the removed particle.
+	pFree--;
+	if (p != pFree)
+	{
+		*p = *pFree;
+		if (pNext == pFree)
+			pNext = p;
+
+		if (p->prev)
+			p->prev->next = p;
+		else
+			pHead = p;
+
+		if (p->next)
+			p->next->prev = p;
+		else
+			pTail = p;
+	}
+
+	activeParticles--;
+	return pNext;
 }
 
 void ParticleSystem::setImage(Image *image)
@@ -207,30 +380,20 @@ Image *ParticleSystem::getImage() const
 	return image;
 }
 
-void ParticleSystem::setBufferSize(unsigned int size)
+void ParticleSystem::setInsertMode(InsertMode mode)
 {
-	// delete previous data
-	if (pStart != 0)
-		delete [] pStart;
-
-	pLast = pStart = new particle[size]();
-
-	pEnd = pStart + size;
-
-	if (particleVerts != 0)
-		delete [] particleVerts;
-
-	// each particle has 4 vertices
-	particleVerts = new vertex[size*4];
+	insertMode = mode;
 }
 
-int ParticleSystem::getBufferSize() const
+ParticleSystem::InsertMode ParticleSystem::getInsertMode() const
 {
-	return pEnd - pStart;
+	return insertMode;
 }
 
 void ParticleSystem::setEmissionRate(int rate)
 {
+	if (rate < 0)
+		throw love::Exception("Invalid emission rate");
 	emissionRate = rate;
 }
 
@@ -527,9 +690,9 @@ std::vector<Color> ParticleSystem::getColor() const
 	return ncolors;
 }
 
-int ParticleSystem::getCount() const
+uint32 ParticleSystem::getCount() const
 {
-	return (int)(pLast - pStart);
+	return activeParticles;
 }
 
 void ParticleSystem::start()
@@ -551,23 +714,26 @@ void ParticleSystem::pause()
 
 void ParticleSystem::reset()
 {
-	pLast = pStart;
+	if (pMem == NULL)
+		return;
+
+	pFree = pMem;
+	pHead = NULL;
+	pTail = NULL;
+	activeParticles = 0;
 	life = lifetime;
 	emitCounter = 0;
 }
 
-void ParticleSystem::emit(int num)
+void ParticleSystem::emit(uint32 num)
 {
 	if (!active)
 		return;
 
-	for (int i = 0; i < num; i++)
-	{
-		if (isFull())
-			return;
+	num = std::min(num, maxParticles - activeParticles);
 
-		add();
-	}
+	while(num--)
+		addParticle();
 }
 
 bool ParticleSystem::isActive() const
@@ -587,20 +753,19 @@ bool ParticleSystem::isStopped() const
 
 bool ParticleSystem::isEmpty() const
 {
-	return pStart == pLast;
+	return activeParticles == 0;
 }
 
 bool ParticleSystem::isFull() const
 {
-	return pLast == pEnd;
+	return activeParticles == maxParticles;
 }
 
 void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	if (image == 0) return;  // just in case of failure
-
-	int num = getCount();
-	if (num == 0) return; // don't bother if there's nothing to do
+	uint32 pCount = getCount();
+	if (pCount == 0 || image == NULL || pMem == NULL || particleVerts == NULL)
+		return;
 
 	Color curcolor = gl.getColor();
 
@@ -611,33 +776,31 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glMultMatrixf((const GLfloat *)t.getElements());
 
 	const vertex *imageVerts = image->getVertices();
-	const vertex *tVerts;
+	vertex *pVerts = particleVerts;
+	particle *p = pHead;
 
 	// set the vertex data for each particle (transformation, texcoords, color)
-	for (int i = 0; i < num; i++)
+	while (p)
 	{
-		particle *p = pStart + i;
-
-		tVerts = imageVerts;
-
 		// particle vertices are image vertices transformed by particle information
 		t.setTransformation(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
-		t.transform(&particleVerts[i*4], &tVerts[0], 4);
+		t.transform(pVerts, imageVerts, 4);
 
 		// set the texture coordinate and color data for particle vertices
 		for (int v = 0; v < 4; v++)
 		{
-			int vi = (i * 4) + v; // current vertex index for particle
-
-			particleVerts[vi].s = tVerts[v].s;
-			particleVerts[vi].t = tVerts[v].t;
+			pVerts[v].s = imageVerts[v].s;
+			pVerts[v].t = imageVerts[v].t;
 
 			// particle colors are stored as floats (0-1) but vertex colors are stored as unsigned bytes (0-255)
-			particleVerts[vi].r = p->color.r*255;
-			particleVerts[vi].g = p->color.g*255;
-			particleVerts[vi].b = p->color.b*255;
-			particleVerts[vi].a = p->color.a*255;
+			pVerts[v].r = p->color.r*255;
+			pVerts[v].g = p->color.g*255;
+			pVerts[v].b = p->color.b*255;
+			pVerts[v].a = p->color.a*255;
 		}
+
+		pVerts += 4;
+		p = p->next;
 	}
 
 	image->bind();
@@ -646,11 +809,11 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&particleVerts[0].r);
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&particleVerts[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&particleVerts[0].s);
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *) &particleVerts[0].r);
+	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *) &particleVerts[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *) &particleVerts[0].s);
 
-	glDrawArrays(GL_QUADS, 0, num*4);
+	glDrawArrays(GL_QUADS, 0, pCount * 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -663,8 +826,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 void ParticleSystem::update(float dt)
 {
-	// Traverse all particles and update.
-	particle *p = pStart;
+	if (pMem == NULL || dt == 0.0f)
+		return;
 
 	// Make some more particles.
 	if (active)
@@ -673,7 +836,7 @@ void ParticleSystem::update(float dt)
 		emitCounter += dt;
 		while (emitCounter > rate)
 		{
-			add();
+			addParticle();
 			emitCounter -= rate;
 		}
 		/*int particles = (int)(emissionRate * dt);
@@ -685,14 +848,18 @@ void ParticleSystem::update(float dt)
 			stop();
 	}
 
-	while (p != pLast)
+	// Traverse all particles and update.
+	particle *p = pHead;
+
+	while (p)
 	{
 		// Decrease lifespan.
 		p->life -= dt;
 
-		if (p->life > 0)
+		if (p->life <= 0)
+			p = removeParticle(p);
+		else
 		{
-
 			// Temp variables.
 			love::Vector radial, tangential;
 			love::Vector ppos(p->position[0], p->position[1]);
@@ -752,16 +919,9 @@ void ParticleSystem::update(float dt)
 			p->color = colors[i] * (1.0f - s) + colors[k] * s;
 
 			// Next particle.
-			p++;
+			p = p->next;
 		}
-		else
-		{
-			remove(p);
-
-			if (p >= pLast)
-				return;
-		} // else
-	} // while
+	}
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)
@@ -772,6 +932,16 @@ bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)
 bool ParticleSystem::getConstant(AreaSpreadDistribution in, const char *&out)
 {
 	return distributions.find(in, out);
+}
+
+bool ParticleSystem::getConstant(const char *in, InsertMode &out)
+{
+	return insertModes.find(in, out);
+}
+
+bool ParticleSystem::getConstant(InsertMode in, const char *&out)
+{
+	return insertModes.find(in, out);
 }
 
 } // opengl

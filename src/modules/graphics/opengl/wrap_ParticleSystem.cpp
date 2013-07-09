@@ -56,8 +56,17 @@ int w_ParticleSystem_getImage(lua_State *L)
 int w_ParticleSystem_setBufferSize(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int arg1 = luaL_checkint(L, 2);
-	t->setBufferSize((unsigned int)arg1);
+	lua_Number arg1 = luaL_checknumber(L, 2);
+	if (arg1 < 1.0 || arg1 > ParticleSystem::MAX_PARTICLES)
+		return luaL_error(L, "Invalid buffer size");
+	try
+	{
+		t->setBufferSize((uint32) arg1);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 
@@ -68,11 +77,41 @@ int w_ParticleSystem_getBufferSize(lua_State *L)
 	return 1;
 }
 
+int w_ParticleSystem_setInsertMode(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	ParticleSystem::InsertMode mode;
+	const char *str = luaL_checkstring(L, 2);
+	if (!ParticleSystem::getConstant(str, mode))
+		return luaL_error(L, "Invalid insert mode: '%s'", str);
+	t->setInsertMode(mode);
+	return 0;
+}
+
+int w_ParticleSystem_getInsertMode(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	ParticleSystem::InsertMode mode;
+	mode = t->getInsertMode();
+	const char *str;
+	if (!ParticleSystem::getConstant(mode, str))
+		return luaL_error(L, "Unknown insert mode");
+	lua_pushstring(L, str);
+	return 1;
+}
+
 int w_ParticleSystem_setEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	int arg1 = luaL_checkint(L, 2);
-	t->setEmissionRate((unsigned int)arg1);
+	try
+	{
+		t->setEmissionRate(arg1);
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 
@@ -607,6 +646,8 @@ static const luaL_Reg functions[] =
 	{ "getImage", w_ParticleSystem_getImage },
 	{ "setBufferSize", w_ParticleSystem_setBufferSize },
 	{ "getBufferSize", w_ParticleSystem_getBufferSize },
+	{ "setInsertMode", w_ParticleSystem_setInsertMode },
+	{ "getInsertMode", w_ParticleSystem_getInsertMode },
 	{ "setEmissionRate", w_ParticleSystem_setEmissionRate },
 	{ "getEmissionRate", w_ParticleSystem_getEmissionRate },
 	{ "setEmitterLifetime", w_ParticleSystem_setEmitterLifetime },

@@ -22,12 +22,14 @@
 #define LOVE_GRAPHICS_OPENGL_PARTICLE_SYSTEM_H
 
 // LOVE
-
+#include "common/int.h"
 #include "common/math.h"
 #include "common/Vector.h"
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
 #include "Image.h"
+
+// STL
 #include <vector>
 
 namespace love
@@ -36,34 +38,6 @@ namespace graphics
 {
 namespace opengl
 {
-
-// Represents a single particle.
-struct particle
-{
-	float lifetime;
-	float life;
-
-	float position[2];
-	float direction;
-
-	// Particles gravitate towards this point.
-	love::Vector origin;
-
-	love::Vector speed;
-	love::Vector linearAcceleration;
-	float radialAcceleration;
-	float tangentialAcceleration;
-
-	float size;
-	float sizeOffset;
-	float sizeIntervalSize;
-
-	float rotation;
-	float spinStart;
-	float spinEnd;
-
-	Colorf color;
-};
 
 /**
  * A class for creating, moving and drawing particles.
@@ -84,9 +58,27 @@ public:
 	};
 
 	/**
+	 * Insertion modes of new particles in the list: top, bottom, random.
+	 */
+	enum InsertMode
+	{
+		INSERT_MODE_TOP,
+		INSERT_MODE_BOTTOM,
+		INSERT_MODE_RANDOM,
+		INSERT_MODE_MAX_ENUM,
+	};
+
+	/**
+	 * Maximum numbers of particles in a ParticleSystem.
+	 * This limit comes from the fact that a quad requires four vertices and the
+	 * OpenGL API where GLsizei is a signed int.
+	 **/
+	static const uint32 MAX_PARTICLES = LOVE_INT32_MAX / 4;
+
+	/**
 	 * Creates a particle system with the specified buffersize and image.
 	 **/
-	ParticleSystem(Image *image, int buffer);
+	ParticleSystem(Image *image, uint32 buffer);
 
 	/**
 	 * Deletes any allocated memory.
@@ -108,13 +100,25 @@ public:
 	 * Clears the current buffer and allocates the appropriate amount of space for the buffer.
 	 * @param size The new buffer size.
 	 **/
-	void setBufferSize(unsigned int size);
+	void setBufferSize(uint32 size);
 
 	/**
 	 * Returns the total amount of particles this ParticleSystem can have active
 	 * at any given point in time.
 	 **/
-	int getBufferSize() const;
+	uint32 getBufferSize() const;
+
+	/**
+	 * Sets the insert mode for new particles.
+	 * @param mode The new insert mode.
+	 */
+	void setInsertMode(InsertMode mode);
+
+	/**
+	 * Returns the current insert mode.
+	 * @param mode The current insert mode.
+	 */
+	InsertMode getInsertMode() const;
 
 	/**
 	 * Sets the emission rate.
@@ -435,7 +439,7 @@ public:
 	/**
 	 * Returns the amount of particles that are currently active in the system.
 	 **/
-	int getCount() const;
+	uint32 getCount() const;
 
 	/**
 	 * Starts/resumes the particle emitter.
@@ -461,7 +465,7 @@ public:
 	 * Instantly emits a number of particles.
 	 * @param num The number of particles to emit.
 	 **/
-	void emit(int num);
+	void emit(uint32 num);
 
 	/**
 	 * Returns whether the particle emitter is active.
@@ -500,19 +504,56 @@ public:
 
 	static bool getConstant(const char *in, AreaSpreadDistribution &out);
 	static bool getConstant(AreaSpreadDistribution in, const char *&out);
+
+	static bool getConstant(const char *in, InsertMode &out);
+	static bool getConstant(InsertMode in, const char *&out);
+
 protected:
+	// Represents a single particle.
+	struct particle
+	{
+		particle *prev;
+		particle *next;
+
+		float lifetime;
+		float life;
+
+		float position[2];
+		float direction;
+
+		// Particles gravitate towards this point.
+		love::Vector origin;
+
+		love::Vector speed;
+		love::Vector linearAcceleration;
+		float radialAcceleration;
+		float tangentialAcceleration;
+
+		float size;
+		float sizeOffset;
+		float sizeIntervalSize;
+
+		float rotation;
+		float spinStart;
+		float spinEnd;
+
+		Colorf color;
+	};
 
 	// The max amount of particles.
 	int bufferSize;
 
-	// Pointer to the first particle.
-	particle *pStart;
+	// Pointer to the beginning of the allocated memory.
+	particle *pMem;
 
-	// Pointer to the next available free space.
-	particle *pLast;
+	// Pointer to a free particle.
+	particle *pFree;
 
-	// Pointer to the end of the memory allocation.
-	particle *pEnd;
+	// Pointer to the start of the linked list.
+	particle *pHead;
+
+	// Pointer to the end of the linked list.
+	particle *pTail;
 
 	// array of transformed vertex data for all particles, for drawing
 	vertex * particleVerts;
@@ -522,6 +563,15 @@ protected:
 
 	// Whether the particle emitter is active.
 	bool active;
+
+	// Insert mode of new particles.
+	InsertMode insertMode;
+
+	// The maximum number of particles.
+	uint32 maxParticles;
+
+	// The number of active particles.
+	uint32 activeParticles;
 
 	// The emission rate (particles/sec).
 	int emissionRate;
@@ -587,11 +637,23 @@ protected:
 	// Color.
 	std::vector<Colorf> colors;
 
-	void add();
-	void remove(particle *p);
+	void createBuffers(size_t size);
+	void deleteBuffers();
+
+	void addParticle();
+	particle *removeParticle(particle *p);
+
+	// Called by addParticle.
+	void initParticle(particle *p);
+	void insertTop(particle *p);
+	void insertBottom(particle *p);
+	void insertRandom(particle *p);
 
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM> distributions;
+
+	static StringMap<InsertMode, INSERT_MODE_MAX_ENUM>::Entry insertModesEntries[];
+	static StringMap<InsertMode, INSERT_MODE_MAX_ENUM> insertModes;
 };
 
 } // opengl

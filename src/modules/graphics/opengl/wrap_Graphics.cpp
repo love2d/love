@@ -408,8 +408,10 @@ int w_newSpriteBatch(lua_State *L)
 int w_newParticleSystem(lua_State *L)
 {
 	Image *image = luax_checkimage(L, 1);
-	int size = luaL_optint(L, 2, 1000);
+	lua_Number size = luaL_optnumber(L, 2, 1000);
 	ParticleSystem *t = 0;
+	if (size < 1.0 || size > LOVE_UINT32_MAX)
+		return luaL_error(L, "Invalid ParticleSystem size");	
 	try
 	{
 		t = instance->newParticleSystem(image, size);
@@ -418,7 +420,7 @@ int w_newParticleSystem(lua_State *L)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
-	luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void *)t);
+	luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void *) t);
 	return 1;
 }
 
