@@ -629,13 +629,6 @@ void ParticleSystem::setSpin(float start, float end)
 	spinEnd = end;
 }
 
-void ParticleSystem::setSpin(float start, float end, float variation)
-{
-	spinStart = start;
-	spinEnd = end;
-	spinVariation = variation;
-}
-
 void ParticleSystem::getSpin(float *start, float *end) const
 {
 	if (start)

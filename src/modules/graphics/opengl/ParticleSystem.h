@@ -375,18 +375,10 @@ public:
 
 	/**
 	 * Sets the spin of the sprite upon particle creation and death.
-	 * @param start The spin of the sprite upon creation (in degrees).
-	 * @param end The spin of the sprite upon death (in degrees).
+	 * @param start The spin of the sprite upon creation (in radians / second).
+	 * @param end The spin of the sprite upon death (in radians / second).
 	 **/
 	void setSpin(float start, float end);
-
-	/**
-	 * Sets the spin of the sprite upon particle creation and death and the variation.
-	 * @param start The spin of the sprite upon creation (in degrees).
-	 * @param end The spin of the sprite upon death (in degrees).
-	 * @param variation The variation of the start spin (0 being no variation and 1 beign a random spin between start and end).
-	 **/
-	void setSpin(float start, float end, float variation);
 
 	/**
 	 * Gets the amount of spin of a particle during its lifetime.
@@ -397,7 +389,7 @@ public:
 
 	/**
 	 * Sets the variation of the start spin (0 being no variation and 1 being a random spin between start and end).
-	 * @param variation The variation in degrees.
+	 * @param variation The variation.
 	 **/
 	void setSpinVariation(float variation);
 

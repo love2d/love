@@ -423,8 +423,7 @@ int w_ParticleSystem_setSpin(lua_State *L)
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_optnumber(L, 3, arg1);
-	float arg3 = (float)luaL_optnumber(L, 4, 0);
-	t->setSpin(arg1, arg2, arg3);
+	t->setSpin(arg1, arg2);
 	return 0;
 }
 
