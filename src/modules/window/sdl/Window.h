@@ -53,6 +53,7 @@ public:
 	std::string getWindowTitle() const;
 
 	bool setIcon(love::image::ImageData *imgd);
+	love::image::ImageData *getIcon();
 
 	void swapBuffers();
 
@@ -79,6 +80,7 @@ private:
 		int width;
 		int height;
 		WindowFlags flags;
+		love::image::ImageData *icon;
 
 	} currentMode;
 

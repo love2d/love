@@ -52,6 +52,7 @@ Window::_currentMode::_currentMode()
 	: width(800)
 	, height(600)
 	, flags()
+	, icon(0)
 {
 }
 
@@ -111,6 +112,7 @@ bool Window::setWindow(int width, int height, graphics::Graphics *graphics, Wind
 	// Set caption.
 	setWindowTitle(windowTitle);
 	setMouseVisible(mouseVisible);
+	setIcon(currentMode.icon);
 	SDL_EnableKeyRepeat(keyrepeatDelay, keyrepeatInterval);
 
 	// Set GL attributes
@@ -302,7 +304,20 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	SDL_WM_SetIcon(icon, NULL);
 	SDL_FreeSurface(icon);
 
+	imgd->retain();
+	if (currentMode.icon)
+		currentMode.icon->release();
+	currentMode.icon = imgd;
+
 	return true;
+}
+
+love::image::ImageData *Window::getIcon()
+{
+	if (currentMode.icon)
+		currentMode.icon->retain();
+
+	return currentMode.icon;
 }
 
 void Window::swapBuffers()

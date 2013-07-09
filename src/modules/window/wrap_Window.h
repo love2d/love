@@ -39,6 +39,7 @@ int w_getWidth(lua_State *L);
 int w_getHeight(lua_State *L);
 int w_getDimensions(lua_State *L);
 int w_setIcon(lua_State *L);
+int w_getIcon(lua_State *L);
 int w_setCaption(lua_State *L);
 int w_getCaption(lua_State *L);
 int w_hasFocus(lua_State *L);

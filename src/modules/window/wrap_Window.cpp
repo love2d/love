@@ -189,6 +189,16 @@ int w_setIcon(lua_State *L)
 	return 0;
 }
 
+int w_getIcon(lua_State *L)
+{
+	image::ImageData *i = instance->getIcon();
+	if (i)
+		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*) i);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
 int w_setCaption(lua_State *L)
 {
 	std::string title = luax_checkstring(L, 1);
@@ -232,6 +242,7 @@ static const luaL_Reg functions[] =
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },
 	{ "setIcon", w_setIcon },
+	{ "getIcon", w_getIcon },
 	{ "setCaption", w_setCaption },
 	{ "getCaption", w_getCaption },
 	{ "hasFocus", w_hasFocus },
