@@ -182,6 +182,50 @@ bool Filesystem::setupWriteDirectory()
 	return true;
 }
 
+bool Filesystem::mount(const char *archive, const char *mountpoint)
+{
+	if (!isInited || !archive)
+		return false;
+
+	// Not allowed for safety reasons.
+	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
+		return false;
+
+	const char *realDir = PHYSFS_getRealDir(archive);
+	if (!realDir)
+		return false;
+
+	std::string realPath(realDir);
+	realPath += LOVE_PATH_SEPARATOR;
+	realPath += archive;
+
+	return PHYSFS_mount(realPath.c_str(), mountpoint, 0);
+}
+
+bool Filesystem::unmount(const char *archive)
+{
+	if (!isInited || !archive)
+		return false;
+
+	// Not allowed for safety reasons.
+	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
+		return false;
+
+	const char *realDir = PHYSFS_getRealDir(archive);
+	if (!realDir)
+		return false;
+
+	std::string realPath(realDir);
+	realPath += LOVE_PATH_SEPARATOR;
+	realPath += archive;
+
+	const char *mountPoint = PHYSFS_getMountPoint(realPath.c_str());
+	if (!mountPoint)
+		return false;
+
+	return PHYSFS_removeFromSearchPath(realPath.c_str());
+}
+
 File *Filesystem::newFile(const char *filename) const
 {
 	return new File(filename);
