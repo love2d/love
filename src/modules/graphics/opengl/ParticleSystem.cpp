@@ -578,13 +578,12 @@ void ParticleSystem::setSize(float size)
 	sizes[0] = size;
 }
 
-void ParticleSystem::setSize(const std::vector<float> &newSizes, float variation)
+void ParticleSystem::setSizes(const std::vector<float> &newSizes)
 {
 	sizes = newSizes;
-	sizeVariation = variation;
 }
 
-const std::vector<float> &ParticleSystem::getSize() const
+const std::vector<float> &ParticleSystem::getSizes() const
 {
 	return sizes;
 }

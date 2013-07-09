@@ -326,16 +326,15 @@ public:
 	void setSize(float size);
 
 	/**
-	 * Sets the size of the sprite upon creation and upon death (1.0 being the default size) and any variation.
+	 * Sets the sizes of the sprite upon creation and upon death (1.0 being the default size).
 	 * @param newSizes Array of sizes
-	 * @param variation The amount of variation on the starting size (0 being no variation and 1.0 a random size between start and end).
 	 **/
-	void setSize(const std::vector<float> &newSizes, float variation = 0.0f);
+	void setSizes(const std::vector<float> &newSizes);
 
 	/**
-	 * Returns the size of the particle sprites.
+	 * Returns the sizes of the particle sprites.
 	 **/
-	const std::vector<float> &getSize() const;
+	const std::vector<float> &getSizes() const;
 
 	/**
 	 * Sets the amount of variation to the sprite's beginning size (0 being no variation and 1.0 a random size between start and end).

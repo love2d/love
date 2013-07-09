@@ -365,7 +365,7 @@ int w_ParticleSystem_setSizes(lua_State *L)
 		for (size_t i = 0; i < nSizes; ++i)
 			sizes[i] = luax_checkfloat(L, 1 + i + 1);
 
-		t->setSize(sizes);
+		t->setSizes(sizes);
 	}
 	return 0;
 }
@@ -373,7 +373,7 @@ int w_ParticleSystem_setSizes(lua_State *L)
 int w_ParticleSystem_getSizes(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	const std::vector<float> &sizes = t->getSize();
+	const std::vector<float> &sizes = t->getSizes();
 
 	for (size_t i = 0; i < sizes.size(); i++)
 		lua_pushnumber(L, sizes[i]);
