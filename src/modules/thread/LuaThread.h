@@ -25,8 +25,9 @@
 #include <string>
 
 // LOVE
-#include <common/Object.h>
 #include <common/Data.h>
+#include <common/Object.h>
+#include <common/Variant.h>
 #include <thread/threads.h>
 
 namespace love
@@ -41,10 +42,15 @@ public:
 	void threadFunction();
 	const std::string &getError();
 
+	bool start(Variant **args, int nargs);
+
 private:
 	love::Data *code;
 	std::string name;
 	std::string error;
+
+	Variant **args;
+	int nargs;
 };
 } // thread
 } // love

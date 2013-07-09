@@ -33,7 +33,17 @@ LuaThread *luax_checkthread(lua_State *L, int idx)
 int w_Thread_start(lua_State *L)
 {
 	LuaThread *t = luax_checkthread(L, 1);
-	luax_pushboolean(L, t->start());
+	int nargs = lua_gettop(L) - 1;
+	Variant **args = 0;
+
+	if (nargs > 0)
+	{
+		args = new Variant*[nargs];
+		for (int i = 0; i < nargs; ++i)
+			args[i] = Variant::fromLua(L, i+2);
+	}
+
+	luax_pushboolean(L, t->start(args, nargs));
 	return 1;
 }
 

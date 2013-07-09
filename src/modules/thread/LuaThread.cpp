@@ -33,6 +33,8 @@ namespace thread
 LuaThread::LuaThread(const std::string &name, love::Data *code)
 	: code(code)
 	, name(name)
+	, args(0)
+	, nargs(0)
 {
 	code->retain();
 }
@@ -40,6 +42,11 @@ LuaThread::LuaThread(const std::string &name, love::Data *code)
 LuaThread::~LuaThread()
 {
 	code->release();
+
+	// No args should still exist at this point,
+	// but you never know.
+	for (int i = 0; i < nargs; ++i)
+		args[i]->release();
 }
 
 void LuaThread::threadFunction()
@@ -55,10 +62,35 @@ void LuaThread::threadFunction()
 	if (luaL_loadbuffer(L, (const char *) code->getData(), code->getSize(), name.c_str()) != 0)
 		error = luax_tostring(L, -1);
 	else
-		if (lua_pcall(L, 0, 0, 0) != 0)
+	{
+		int pushedargs = nargs;
+		for (int i = 0; i < nargs; ++i)
+		{
+			args[i]->toLua(L);
+			args[i]->release();
+		}
+		// Set both args and nargs to nil,
+		// prevents the deconstructor from
+		// accessing it again.
+		nargs = 0;
+		args = 0;
+
+		if (lua_pcall(L, pushedargs, 0, 0) != 0)
 			error = luax_tostring(L, -1);
+	}
 	lua_close(L);
 	this->release();
+}
+
+bool LuaThread::start(Variant **args, int nargs)
+{
+	for (int i = 0; i < this->nargs; ++i)
+		this->args[i]->release();
+
+	this->args = args;
+	this->nargs = nargs;
+
+	return Threadable::start();
 }
 
 const std::string &LuaThread::getError()
