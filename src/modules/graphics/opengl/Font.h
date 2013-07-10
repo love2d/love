@@ -59,7 +59,7 @@ public:
 	 * @param text A string.
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
-	 * @param letter_spacing Additional spacing between letters.
+	 * @param extra_spacing Additional spacing added to spaces (" ").
 	 * @param angle The amount of rotation.
 	 * @param sx Scale along the x axis.
 	 * @param sy Scale along the y axis.
@@ -68,7 +68,7 @@ public:
 	 * @param kx Shear along the x axis.
 	 * @param ky Shear along the y axis.
 	 **/
-	void print(const std::string &text, float x, float y, float letter_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+	void print(const std::string &text, float x, float y, float extra_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 	/**
 	 * Returns the height of the font.
@@ -96,9 +96,11 @@ public:
 	 * @param text The input text
 	 * @param wrap The number of pixels to wrap at
 	 * @param max_width Optional output of the maximum width
+	 * @param wrapped_lines Optional output indicating which lines were
+	 *        auto-wrapped. Indices correspond to indices of the returned value.
 	 * Returns a vector with the lines.
 	 **/
-	std::vector<std::string> getWrap(const std::string &text, float wrap, int *max_width = 0);
+	std::vector<std::string> getWrap(const std::string &text, float wrap, int *max_width = 0, std::vector<bool> *wrapped_lines = 0);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,

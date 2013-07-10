@@ -791,7 +791,10 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 	using std::string;
 	using std::vector;
 
-	vector<string> lines_to_draw = currentFont->getWrap(str, wrap);
+	// wrappedlines indicates which lines were automatically wrapped. It's
+	// guaranteed to have the same number of elements as lines_to_draw.
+	vector<bool> wrappedlines;
+	vector<string> lines_to_draw = currentFont->getWrap(str, wrap, 0, &wrappedlines);
 
 	glPushMatrix();
 
@@ -805,7 +808,10 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 	{
 		// now for the actual printing
 		vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
-		float letter_spacing = 0.0f;
+		float extra_spacing = 0.0f;
+		int num_spaces = 0;
+		int i = 0;
+
 		for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter)
 		{
 			float width = static_cast<float>(currentFont->getWidth(*line_iter));
@@ -818,11 +824,12 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 				currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y), 0.0f);
 				break;
 			case ALIGN_JUSTIFY:
-				if (line_iter->length() > 1)
-					letter_spacing = (wrap - width) / float(line_iter->length() - 1);
+				num_spaces = std::count(line_iter->begin(), line_iter->end(), ' ');
+				if (wrappedlines[i] && num_spaces >= 1)
+					extra_spacing = (wrap - width) / float(num_spaces);
 				else
-					letter_spacing = 0.0f;
-				currentFont->print(*line_iter, ceil(x), ceil(y), letter_spacing);
+					extra_spacing = 0.0f;
+				currentFont->print(*line_iter, ceil(x), ceil(y), extra_spacing);
 				break;
 			case ALIGN_LEFT:
 			default:
@@ -830,6 +837,7 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 				break;
 			}
 			y += currentFont->getHeight() * currentFont->getLineHeight();
+			i++;
 		}
 	}
 	catch (love::Exception &)

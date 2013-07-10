@@ -258,7 +258,7 @@ float Font::getHeight() const
 	return static_cast<float>(height);
 }
 
-void Font::print(const std::string &text, float x, float y, float letter_spacing, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Font::print(const std::string &text, float x, float y, float extra_spacing, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	// Spacing counter and newline handling.
 	float dx = 0.0f;
@@ -320,7 +320,11 @@ void Font::print(const std::string &text, float x, float y, float letter_spacing
 			}
 
 			// Advance the x position for the next glyph.
-			dx += glyph->spacing + letter_spacing;
+			dx += glyph->spacing;
+
+			// Account for extra spacing given to space characters.
+			if (g == ' ' && extra_spacing != 0.0f)
+				dx = floorf(dx + extra_spacing);
 		}
 	}
 	catch (utf8::exception &e)
@@ -403,7 +407,7 @@ int Font::getWidth(char character)
 	return g->spacing;
 }
 
-std::vector<std::string> Font::getWrap(const std::string &text, float wrap, int *max_width)
+std::vector<std::string> Font::getWrap(const std::string &text, float wrap, int *max_width, std::vector<bool> *wrappedlines)
 {
 	using namespace std;
 	const float width_space = static_cast<float>(getWidth(' '));
@@ -445,6 +449,10 @@ std::vector<std::string> Font::getWrap(const std::string &text, float wrap, int 
 				realw -= (int) width;
 				if (realw > maxw)
 					maxw = realw;
+
+				// Indicate that this line was automatically wrapped.
+				if (wrappedlines)
+					wrappedlines->push_back(true);
 			}
 			string_builder << word << " ";
 			width += width_space;
@@ -455,6 +463,10 @@ std::vector<std::string> Font::getWrap(const std::string &text, float wrap, int 
 			maxw = (int) width;
 		string tmp = string_builder.str();
 		lines_to_draw.push_back(tmp.substr(0,tmp.size()-1));
+
+		// Indicate that this line was not automatically wrapped.
+		if (wrappedlines)
+			wrappedlines->push_back(false);
 	}
 
 	if (max_width)

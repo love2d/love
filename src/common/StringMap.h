@@ -70,7 +70,7 @@ public:
 
 		for (unsigned i = 0; i < MAX; ++i)
 		{
-			unsigned str_i = (str_hash + i) % MAX; //this isn't used, is this intentional?
+			unsigned str_i = (str_hash + i) % MAX;
 
 			if (!records[str_i].set)
 				return false;
