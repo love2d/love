@@ -222,6 +222,26 @@
 		FA577ACB16C7514400860150 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7316C719F900860150 /* physfs.framework */; };
 		FA577ACC16C7514700860150 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7516C719FF00860150 /* SDL.framework */; };
 		FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* Vorbis.framework */; };
+		FA5FDC791788D548002F0ED2 /* enet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC5F1788D548002F0ED2 /* enet.cpp */; };
+		FA5FDC7A1788D548002F0ED2 /* callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC611788D548002F0ED2 /* callbacks.c */; };
+		FA5FDC7C1788D548002F0ED2 /* compress.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC631788D548002F0ED2 /* compress.c */; };
+		FA5FDC7D1788D548002F0ED2 /* host.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC641788D548002F0ED2 /* host.c */; };
+		FA5FDC7E1788D548002F0ED2 /* callbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC671788D548002F0ED2 /* callbacks.h */; };
+		FA5FDC7F1788D548002F0ED2 /* enet.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC681788D548002F0ED2 /* enet.h */; };
+		FA5FDC801788D548002F0ED2 /* list.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC691788D548002F0ED2 /* list.h */; };
+		FA5FDC811788D548002F0ED2 /* protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC6A1788D548002F0ED2 /* protocol.h */; };
+		FA5FDC821788D548002F0ED2 /* time.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC6B1788D548002F0ED2 /* time.h */; };
+		FA5FDC831788D548002F0ED2 /* types.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC6C1788D548002F0ED2 /* types.h */; };
+		FA5FDC841788D548002F0ED2 /* unix.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC6D1788D548002F0ED2 /* unix.h */; };
+		FA5FDC851788D548002F0ED2 /* utility.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC6E1788D548002F0ED2 /* utility.h */; };
+		FA5FDC861788D548002F0ED2 /* win32.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC6F1788D548002F0ED2 /* win32.h */; };
+		FA5FDC881788D548002F0ED2 /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC711788D548002F0ED2 /* list.c */; };
+		FA5FDC891788D548002F0ED2 /* packet.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC721788D548002F0ED2 /* packet.c */; };
+		FA5FDC8A1788D548002F0ED2 /* peer.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC731788D548002F0ED2 /* peer.c */; };
+		FA5FDC8B1788D548002F0ED2 /* protocol.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC741788D548002F0ED2 /* protocol.c */; };
+		FA5FDC8D1788D548002F0ED2 /* unix.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC761788D548002F0ED2 /* unix.c */; };
+		FA5FDC8E1788D548002F0ED2 /* win32.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC771788D548002F0ED2 /* win32.c */; };
+		FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5FDC781788D548002F0ED2 /* lua-enet.h */; };
 		FA636D8A171B70920065623F /* RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D88171B70920065623F /* RandomGenerator.cpp */; };
 		FA636D8B171B70920065623F /* RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D89171B70920065623F /* RandomGenerator.h */; };
 		FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */; };
@@ -723,6 +743,26 @@
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577A8E16C71D3600860150 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA5FDC5F1788D548002F0ED2 /* enet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = enet.cpp; sourceTree = "<group>"; };
+		FA5FDC611788D548002F0ED2 /* callbacks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = callbacks.c; sourceTree = "<group>"; };
+		FA5FDC631788D548002F0ED2 /* compress.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = compress.c; sourceTree = "<group>"; };
+		FA5FDC641788D548002F0ED2 /* host.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = host.c; sourceTree = "<group>"; };
+		FA5FDC671788D548002F0ED2 /* callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
+		FA5FDC681788D548002F0ED2 /* enet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = enet.h; sourceTree = "<group>"; };
+		FA5FDC691788D548002F0ED2 /* list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = list.h; sourceTree = "<group>"; };
+		FA5FDC6A1788D548002F0ED2 /* protocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = protocol.h; sourceTree = "<group>"; };
+		FA5FDC6B1788D548002F0ED2 /* time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = time.h; sourceTree = "<group>"; };
+		FA5FDC6C1788D548002F0ED2 /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		FA5FDC6D1788D548002F0ED2 /* unix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unix.h; sourceTree = "<group>"; };
+		FA5FDC6E1788D548002F0ED2 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utility.h; sourceTree = "<group>"; };
+		FA5FDC6F1788D548002F0ED2 /* win32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = win32.h; sourceTree = "<group>"; };
+		FA5FDC711788D548002F0ED2 /* list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = list.c; sourceTree = "<group>"; };
+		FA5FDC721788D548002F0ED2 /* packet.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = packet.c; sourceTree = "<group>"; };
+		FA5FDC731788D548002F0ED2 /* peer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = peer.c; sourceTree = "<group>"; };
+		FA5FDC741788D548002F0ED2 /* protocol.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = protocol.c; sourceTree = "<group>"; };
+		FA5FDC761788D548002F0ED2 /* unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unix.c; sourceTree = "<group>"; };
+		FA5FDC771788D548002F0ED2 /* win32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = win32.c; sourceTree = "<group>"; };
+		FA5FDC781788D548002F0ED2 /* lua-enet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "lua-enet.h"; sourceTree = "<group>"; };
 		FA636D88171B70920065623F /* RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RandomGenerator.cpp; sourceTree = "<group>"; };
 		FA636D89171B70920065623F /* RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RandomGenerator.h; sourceTree = "<group>"; };
 		FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RandomGenerator.cpp; sourceTree = "<group>"; };
@@ -1260,6 +1300,7 @@
 			children = (
 				63287ED84D0F2EEB65D249A3 /* Box2D */,
 				FAE010D7170DDE99006F29D0 /* ddsparse */,
+				FA5FDC5E1788D548002F0ED2 /* enet */,
 				3AED1DE005A53DDB07902760 /* luasocket */,
 				FA0354691731F3A700284828 /* noise1234 */,
 				36C14C81334735EC54E33637 /* utf8 */,
@@ -1682,6 +1723,57 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		FA5FDC5E1788D548002F0ED2 /* enet */ = {
+			isa = PBXGroup;
+			children = (
+				FA5FDC5F1788D548002F0ED2 /* enet.cpp */,
+				FA5FDC601788D548002F0ED2 /* libenet */,
+				FA5FDC781788D548002F0ED2 /* lua-enet.h */,
+			);
+			path = enet;
+			sourceTree = "<group>";
+		};
+		FA5FDC601788D548002F0ED2 /* libenet */ = {
+			isa = PBXGroup;
+			children = (
+				FA5FDC611788D548002F0ED2 /* callbacks.c */,
+				FA5FDC631788D548002F0ED2 /* compress.c */,
+				FA5FDC641788D548002F0ED2 /* host.c */,
+				FA5FDC651788D548002F0ED2 /* include */,
+				FA5FDC711788D548002F0ED2 /* list.c */,
+				FA5FDC721788D548002F0ED2 /* packet.c */,
+				FA5FDC731788D548002F0ED2 /* peer.c */,
+				FA5FDC741788D548002F0ED2 /* protocol.c */,
+				FA5FDC761788D548002F0ED2 /* unix.c */,
+				FA5FDC771788D548002F0ED2 /* win32.c */,
+			);
+			path = libenet;
+			sourceTree = "<group>";
+		};
+		FA5FDC651788D548002F0ED2 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				FA5FDC661788D548002F0ED2 /* enet */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		FA5FDC661788D548002F0ED2 /* enet */ = {
+			isa = PBXGroup;
+			children = (
+				FA5FDC671788D548002F0ED2 /* callbacks.h */,
+				FA5FDC681788D548002F0ED2 /* enet.h */,
+				FA5FDC691788D548002F0ED2 /* list.h */,
+				FA5FDC6A1788D548002F0ED2 /* protocol.h */,
+				FA5FDC6B1788D548002F0ED2 /* time.h */,
+				FA5FDC6C1788D548002F0ED2 /* types.h */,
+				FA5FDC6D1788D548002F0ED2 /* unix.h */,
+				FA5FDC6E1788D548002F0ED2 /* utility.h */,
+				FA5FDC6F1788D548002F0ED2 /* win32.h */,
+			);
+			path = enet;
+			sourceTree = "<group>";
+		};
 		FA7C937116DCC6C2006F2BEE /* math */ = {
 			isa = PBXGroup;
 			children = (
@@ -1756,6 +1848,16 @@
 				FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */,
 				FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */,
 				FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */,
+				FA5FDC7E1788D548002F0ED2 /* callbacks.h in Headers */,
+				FA5FDC7F1788D548002F0ED2 /* enet.h in Headers */,
+				FA5FDC801788D548002F0ED2 /* list.h in Headers */,
+				FA5FDC811788D548002F0ED2 /* protocol.h in Headers */,
+				FA5FDC821788D548002F0ED2 /* time.h in Headers */,
+				FA5FDC831788D548002F0ED2 /* types.h in Headers */,
+				FA5FDC841788D548002F0ED2 /* unix.h in Headers */,
+				FA5FDC851788D548002F0ED2 /* utility.h in Headers */,
+				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
+				FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2042,6 +2144,16 @@
 				FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */,
 				FAC5710017402D1100D147E4 /* BezierCurve.cpp in Sources */,
 				FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */,
+				FA5FDC791788D548002F0ED2 /* enet.cpp in Sources */,
+				FA5FDC7A1788D548002F0ED2 /* callbacks.c in Sources */,
+				FA5FDC7C1788D548002F0ED2 /* compress.c in Sources */,
+				FA5FDC7D1788D548002F0ED2 /* host.c in Sources */,
+				FA5FDC881788D548002F0ED2 /* list.c in Sources */,
+				FA5FDC891788D548002F0ED2 /* packet.c in Sources */,
+				FA5FDC8A1788D548002F0ED2 /* peer.c in Sources */,
+				FA5FDC8B1788D548002F0ED2 /* protocol.c in Sources */,
+				FA5FDC8D1788D548002F0ED2 /* unix.c in Sources */,
+				FA5FDC8E1788D548002F0ED2 /* win32.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2067,6 +2179,7 @@
 					"\"$(SRCROOT)/../../src\"",
 					"\"$(SRCROOT)/../../src/libraries\"",
 					"\"$(SRCROOT)/../../src/modules\"",
+					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -2074,6 +2187,7 @@
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = NO;
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Release;
@@ -2097,6 +2211,7 @@
 					"\"$(SRCROOT)/../../src\"",
 					"\"$(SRCROOT)/../../src/libraries\"",
 					"\"$(SRCROOT)/../../src/modules\"",
+					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -2104,6 +2219,7 @@
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
+				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Debug;

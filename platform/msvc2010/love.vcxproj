@@ -135,7 +135,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Debug\MD\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -179,7 +179,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MD\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -220,7 +220,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalDependencies>libcmt.lib;libcpmt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua5.1.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcmt.lib;libcpmt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua5.1.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MT\</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>

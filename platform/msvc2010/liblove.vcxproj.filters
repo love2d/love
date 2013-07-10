@@ -145,6 +145,18 @@
     <Filter Include="libraries\noise1234">
       <UniqueIdentifier>{d5e565d0-da66-4412-9144-dff8c7d82b2e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libraries\enet">
+      <UniqueIdentifier>{4bf8a9b0-db1a-4a6e-a157-a9eab128f5ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\enet\libenet">
+      <UniqueIdentifier>{ab75aa3d-8e32-45e0-b91b-ed3cb31f472e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\enet\libenet\include">
+      <UniqueIdentifier>{86f5346b-8859-4c03-8c1f-3bd8d200b658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\enet\libenet\include\enet">
+      <UniqueIdentifier>{a9a12c5a-ff54-43c1-b0c6-ba1597af7b03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\common\Matrix.cpp">
@@ -809,6 +821,33 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\window\wrap_Window.cpp">
       <Filter>modules\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\callbacks.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\compress.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\host.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\list.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\packet.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\peer.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\protocol.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\libenet\win32.c">
+      <Filter>libraries\enet\libenet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\enet\enet.cpp">
+      <Filter>libraries\enet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1557,6 +1596,36 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\window\wrap_Window.h">
       <Filter>modules\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\lua-enet.h">
+      <Filter>libraries\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\callbacks.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\enet.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\list.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\protocol.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\time.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\types.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\unix.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\utility.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\win32.h">
+      <Filter>libraries\enet\libenet\include\enet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

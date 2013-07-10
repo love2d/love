@@ -144,7 +144,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;..\..\src\libraries\enet\libenet\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -154,7 +154,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Debug\MD\</AdditionalLibraryDirectories>
@@ -192,7 +192,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;..\..\src\libraries\enet\libenet\include;..\..\src\libraries\enet\libenet\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>true</OmitFramePointers>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -246,7 +246,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include\SDL;include\AL;..\..\src;..\..\src\libraries;..\..\src\modules;..\..\src\libraries\enet\libenet\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>true</OmitFramePointers>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -259,7 +259,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MD\</AdditionalLibraryDirectories>
@@ -356,6 +356,15 @@
     <ClCompile Include="..\..\src\libraries\Box2D\Dynamics\Joints\b2WheelJoint.cpp" />
     <ClCompile Include="..\..\src\libraries\Box2D\Rope\b2Rope.cpp" />
     <ClCompile Include="..\..\src\libraries\ddsparse\ddsparse.cpp" />
+    <ClCompile Include="..\..\src\libraries\enet\enet.cpp" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\callbacks.c" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\compress.c" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\host.c" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\list.c" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\packet.c" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\peer.c" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\protocol.c" />
+    <ClCompile Include="..\..\src\libraries\enet\libenet\win32.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\auxiliar.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\buffer.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\except.c" />
@@ -594,6 +603,16 @@
     <ClInclude Include="..\..\src\libraries\Box2D\Rope\b2Rope.h" />
     <ClInclude Include="..\..\src\libraries\ddsparse\ddsinfo.h" />
     <ClInclude Include="..\..\src\libraries\ddsparse\ddsparse.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\callbacks.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\enet.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\list.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\protocol.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\time.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\types.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\unix.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\utility.h" />
+    <ClInclude Include="..\..\src\libraries\enet\libenet\include\enet\win32.h" />
+    <ClInclude Include="..\..\src\libraries\enet\lua-enet.h" />
     <ClInclude Include="..\..\src\libraries\luasocket\libluasocket\auxiliar.h" />
     <ClInclude Include="..\..\src\libraries\luasocket\libluasocket\buffer.h" />
     <ClInclude Include="..\..\src\libraries\luasocket\libluasocket\except.h" />

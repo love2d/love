@@ -6,7 +6,7 @@ inc_modules="$inc_current/modules"
 inc_libraries="$inc_current/libraries"
 
 cat > Makefile.am << EOF
-AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries \$(LOVE_INCLUDES) \$(FILE_OFFSET)
+AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET)
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
 

@@ -58,6 +58,12 @@ AS_VAR_IF([enable_gme], [yes],
 	  AC_DEFINE([LOVE_SUPPORT_GME], [], [Enable gme])
 	  AC_CHECK_HEADER([gme/gme.h], [includes="$includes -I/usr/include/gme"], []))
 
+# libenet check for socklen_t
+AC_CHECK_TYPE([socklen_t], [AC_DEFINE([HAS_SOCKLEN_T], [1], [Define if socklen_t exists.] )], , 
+              #include <sys/types.h>
+              #include <sys/socket.h>
+)
+
 # Optionally build the executable (default on)
 AC_ARG_ENABLE([exe],
 			  AC_HELP_STRING([--disable-exe], [Disable building of executable launcher]), [], [enable_exe=yes])

@@ -81,6 +81,7 @@ _GLIBCXX_END_NAMESPACE
 
 // Libraries.
 #include "libraries/luasocket/luasocket.h"
+#include "libraries/enet/lua-enet.h"
 
 // Scripts
 #include "scripts/boot.lua.h"
@@ -193,6 +194,7 @@ int luaopen_love(lua_State * L)
 	}
 
 	love::luasocket::__open(L);
+	love::luax_preload(L, luaopen_enet, "enet");
 
 	return 1;
 }
