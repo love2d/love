@@ -34,7 +34,6 @@ Geometry *luax_checkgeometry(lua_State *L, int idx)
 	return luax_checktype<Geometry>(L, idx, "Geometry", GRAPHICS_GEOMETRY_T);
 }
 
-// different name than in Geometry.cpp to make the triangulation transparent
 int w_Geometry_getVertexCount(lua_State *L)
 {
 	Geometry *geom = luax_checkgeometry(L, 1);
@@ -69,17 +68,37 @@ int w_Geometry_getVertex(lua_State *L)
 int w_Geometry_setVertex(lua_State *L)
 {
 	Geometry *geom = luax_checkgeometry(L, 1);
-	size_t i = size_t(luaL_checkint(L, 2));
+	size_t i = size_t(luaL_checkinteger(L, 2));
 
 	vertex v;
-	v.x = luaL_checknumber(L, 3);
-	v.y = luaL_checknumber(L, 4);
-	v.s = luaL_checknumber(L, 5);
-	v.t = luaL_checknumber(L, 6);
-	v.r = luaL_optint(L,  7, 255);
-	v.g = luaL_optint(L,  8, 255);
-	v.b = luaL_optint(L,  9, 255);
-	v.a = luaL_optint(L, 10, 255);
+
+	if (lua_istable(L, 3))
+	{
+		for (int i = 1; i <= 8; i++)
+			lua_rawgeti(L, 3, i);
+
+		v.x = luaL_checknumber(L, -8);
+		v.y = luaL_checknumber(L, -7);
+		v.s = luaL_checknumber(L, -6);
+		v.t = luaL_checknumber(L, -5);
+		v.r = luaL_optinteger(L, -4, 255);
+		v.g = luaL_optinteger(L, -3, 255);
+		v.b = luaL_optinteger(L, -2, 255);
+		v.a = luaL_optinteger(L, -1, 255);
+
+		lua_pop(L, 8);
+	}
+	else
+	{
+		v.x = luaL_checknumber(L, 3);
+		v.y = luaL_checknumber(L, 4);
+		v.s = luaL_checknumber(L, 5);
+		v.t = luaL_checknumber(L, 6);
+		v.r = luaL_optinteger(L,  7, 255);
+		v.g = luaL_optinteger(L,  8, 255);
+		v.b = luaL_optinteger(L,  9, 255);
+		v.a = luaL_optinteger(L, 10, 255);
+	}
 
 	try
 	{
@@ -117,6 +136,82 @@ int w_Geometry_hasVertexColors(lua_State *L)
 	return 1;
 }
 
+int w_Geometry_getDrawMode(lua_State *L)
+{
+	Geometry *geom = luax_checkgeometry(L, 1);
+
+	Geometry::DrawMode mode = geom->getDrawMode();
+	const char *str;
+
+	if (!Geometry::getConstant(mode, str))
+		return luaL_error(L, "Unknown Geometry draw mode");
+
+	lua_pushstring(L, str);
+
+	return 1;
+}
+
+int w_Geometry_getVertexMap(lua_State *L)
+{
+	Geometry *g = luax_checkgeometry(L, 1);
+
+	size_t elementcount = g->getElementCount();
+	const uint16 *elements = g->getElementArray();
+
+	if (elementcount == 0 || elements == 0)
+		return 0;
+
+	lua_createtable(L, elementcount, 0);
+	for (size_t i = 0; i < elementcount; i++)
+	{
+		lua_pushinteger(L, elements[i]);
+		lua_rawseti(L, -2, i + 1);
+	}
+
+	return 1;
+}
+
+int w_Geometry_setVertexMap(lua_State *L)
+{
+	Geometry *g = luax_checkgeometry(L, 1);
+
+	for (int i = lua_gettop(L); i >= 2; i--)
+	{
+		if (lua_isnil(L, i))
+			lua_pop(L, 1);
+		else
+			break;
+	}
+
+	bool is_table = lua_istable(L, 2);
+	int nargs = is_table ? lua_objlen(L, 2) : lua_gettop(L) - 1;
+
+	std::vector<uint16> vertexmap;
+	vertexmap.reserve(nargs);
+
+	for (int i = 0; i < nargs; i++)
+	{
+		if (is_table)
+		{
+			lua_rawgeti(L, 2, i + 1);
+			vertexmap.push_back(luaL_checkinteger(L, -1) - 1);
+			lua_pop(L, 1);
+		}
+		else
+			vertexmap.push_back(luaL_checkinteger(L, i + 2) - 1);
+	}
+
+	try
+	{
+		g->setElementArray(&vertexmap[0], vertexmap.size());
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
+	return 0;
+}
+
 static const luaL_Reg w_Geometry_functions[] =
 {
 	{ "getVertexCount", w_Geometry_getVertexCount },
@@ -125,6 +220,9 @@ static const luaL_Reg w_Geometry_functions[] =
 	{ "flip", w_Geometry_flip },
 	{ "setVertexColors", w_Geometry_setVertexColors },
 	{ "hasVertexColors", w_Geometry_hasVertexColors },
+	{ "getDrawMode", w_Geometry_getDrawMode },
+	{ "getVertexMap", w_Geometry_getVertexMap },
+	{ "setVertexMap", w_Geometry_setVertexMap },
 	{ 0, 0 }
 };
 

@@ -120,7 +120,22 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *) &v[0].r);
 	}
 
-	drawv(t, v, geom->getVertexCount(), GL_TRIANGLE_FAN);
+	GLenum glmode;
+	switch (geom->getDrawMode())
+	{
+	case Geometry::DRAW_MODE_FAN:
+	default:
+		glmode = GL_TRIANGLE_FAN;
+		break;
+	case Geometry::DRAW_MODE_STRIP:
+		glmode = GL_TRIANGLE_STRIP;
+		break;
+	case Geometry::DRAW_MODE_TRIANGLES:
+		glmode = GL_TRIANGLES;
+		break;
+	}
+
+	drawv(t, v, geom->getVertexCount(), glmode, geom->getElementArray(), geom->getElementCount());
 
 	if (geom->hasVertexColors())
 	{
@@ -536,7 +551,7 @@ bool Image::refresh()
 	return true;
 }
 
-void Image::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode) const
+void Image::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
 {
 	bind();
 
@@ -553,7 +568,11 @@ void Image::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode) 
 	//      glDrawArrays(), drawg() needs to be updated accordingly!
 	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].s);
-	glDrawArrays(mode, 0, count);
+
+	if (e != 0 && ecount > 0)
+		glDrawElements(mode, ecount, GL_UNSIGNED_SHORT, (GLvoid *) e);
+	else
+		glDrawArrays(mode, 0, count);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);

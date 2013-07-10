@@ -133,17 +133,28 @@ int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float
 	if (vertexcount > 4)
 		throw love::Exception("Cannot add Geometries with more than 4 vertices to SpriteBatch");
 
-	// If the Geometry has 3 vertices, then 2 triangles will be rendered in the
-	// SpriteBatch: 0-1-2 and 0-2-0. 0-2-0 will get ignored during rasterization.
-	for (size_t i = 0; i < 4; i++)
-		sprite[i] = geom->getVertex(i % vertexcount);
+	// Which vertices to add to the SpriteBatch.
+	size_t vertex_indices[4] = {0, 1, 2, 3};
 
-	// Transform.
+	if (geom->getDrawMode() == Geometry::DRAW_MODE_STRIP)
+	{
+		// We have to do some vertex reordering shenanigans to get 4-vertex
+		// triangle strip Geometries to render properly.
+		std::swap(vertex_indices[0], vertex_indices[1]);
+	}
+
+	// If the Geometry has 3 vertices, then 2 triangles will be added to the
+	// SpriteBatch: 0-1-2 and 0-2-0. 0-2-0 will get ignored during rasterization.
+	for (size_t i = geom->getVertexCount(); i < 4; i++)
+		vertex_indices[i] = vertex_indices[0];
+
+	for (size_t i = 0; i < 4; i++)
+		sprite[i] = geom->getVertex(vertex_indices[i]);
+
 	static Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 
-	// Set vertex colors to the constant color, if Geometry has no custom colors.
 	if (color && !geom->hasVertexColors())
 		setColorv(sprite, *color);
 
@@ -278,6 +289,9 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	const int color_offset = 0;
 	const int vertex_offset = sizeof(unsigned char) * 4;
 	const int texel_offset = sizeof(unsigned char) * 4 + sizeof(float) * 2;
+
+	if (next == 0)
+		return;
 
 	static Matrix t;
 

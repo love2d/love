@@ -24,8 +24,10 @@
 // LOVE
 #include "common/Object.h"
 #include "common/math.h"
+#include "common/StringMap.h"
+#include "common/int.h"
 
-// std
+// stdlib
 #include <vector>
 
 namespace love
@@ -36,11 +38,21 @@ namespace graphics
 class Geometry : public Object
 {
 public:
+
+	// How the Geometry's vertices are used when drawing.
+	// http://escience.anu.edu.au/lecture/cg/surfaceModeling/image/surfaceModeling015.png
+	enum DrawMode
+	{
+		DRAW_MODE_FAN,
+		DRAW_MODE_STRIP,
+		DRAW_MODE_TRIANGLES,
+		DRAW_MODE_MAX_ENUM
+	};
+
 	/**
 	 * Creates a new geometry object from a std::vector<vertex>.
-	 * @param v
 	 **/
-	Geometry(const std::vector<vertex> &polygon);
+	Geometry(const std::vector<vertex> &polygon, const std::vector<uint16> &elements, DrawMode mode = DRAW_MODE_FAN);
 
 	/**
 	 * Creates a new geometry from (texture) quad information.
@@ -65,7 +77,7 @@ public:
 	/**
 	 * Returns a pointer to the vertex array.
 	 **/
-	const vertex *getVertexArray() const
+	inline const vertex *getVertexArray() const
 	{
 		return vertexArray;
 	}
@@ -73,10 +85,22 @@ public:
 	/**
 	 * Returns the size of the vertex array.
 	 **/
-	size_t getVertexCount() const
+	inline size_t getVertexCount() const
 	{
 		return vertexCount;
 	}
+
+	inline const uint16 *getElementArray() const
+	{
+		return elementArray;
+	}
+
+	inline size_t getElementCount() const
+	{
+		return elementCount;
+	}
+
+	void setElementArray(const uint16 *elements, size_t count);
 
 	/**
 	 * Sets whether this Geometry will use custom per-vertex colors.
@@ -86,14 +110,29 @@ public:
 	/**
 	 * Returns whether this Geometry is using custom per-vertex colors.
 	 **/
-	bool hasVertexColors() const
+	inline bool hasVertexColors() const
 	{
 		return vertexColors;
 	};
 
+	/**
+	 * Returns the mode used when drawing this Geometry.
+	 **/
+	inline DrawMode getDrawMode() const
+	{
+		return drawMode;
+	}
+
+	static bool getConstant(const char *in, DrawMode &out);
+	static bool getConstant(DrawMode in, const char *&out);
+
 private:
+
 	vertex *vertexArray;
 	size_t vertexCount;
+
+	uint16 *elementArray;
+	size_t elementCount;
 
 	float x_min;
 	float x_max;
@@ -102,6 +141,11 @@ private:
 	float y_max;
 
 	bool vertexColors;
+
+	DrawMode drawMode;
+
+	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM>::Entry drawModeEntries[];
+	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM> drawModes;
 };
 
 } // graphics

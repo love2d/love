@@ -440,9 +440,9 @@ Image *Graphics::newImage(love::image::CompressedData *cdata)
 	return image;
 }
 
-Geometry *Graphics::newGeometry(const std::vector<vertex> &vertices)
+Geometry *Graphics::newGeometry(const std::vector<vertex> &vertices, const std::vector<uint16> &vertexmap, Geometry::DrawMode mode)
 {
-	return new Geometry(vertices);
+	return new Geometry(vertices, vertexmap, mode);
 }
 
 Geometry *Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)

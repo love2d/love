@@ -234,22 +234,99 @@ int w_newImage(lua_State *L)
 
 int w_newGeometry(lua_State *L)
 {
-	std::vector<vertex> vertices;
 	luaL_checktype(L, 1, LUA_TTABLE);
 
-	size_t n = lua_objlen(L, 1);
-	if (n < 3)
-		return luaL_error(L, "Need at least three points to construct a geometry.");
+	// Determine whether a table of vertices is being given. We assume it is if
+	// type(args[1][1]) == "table", otherwise assume the args are the verts.
+	lua_rawgeti(L, 1, 1);
+	bool is_table = lua_istable(L, -1);
+	lua_pop(L, 1);
+
+	// Get rid of any trailing nils in the arg list (it messes with our style.)
+	for (int i = lua_gettop(L); i >= 2; i--)
+	{
+		if (lua_isnil(L, i))
+			lua_pop(L, 1);
+		else
+			break;
+	}
+
+	Geometry::DrawMode mode = Geometry::DRAW_MODE_FAN;
+	std::string txt;
+	bool has_vertexmap = false;
+
+	// The last argument (or second-last) may be an optional draw mode.
+	if (lua_type(L, -1) == LUA_TSTRING)
+	{
+		txt = luaL_checkstring(L, -1);
+		lua_remove(L, -1);
+	}
+	else if (lua_type(L, -2) == LUA_TSTRING && lua_istable(L, -1))
+	{
+		txt = luaL_checkstring(L, -2);
+		lua_remove(L, -2);
+
+		// If the draw mode is the second-last argument, the last argument will
+		// be the vertex map.
+		has_vertexmap = true;
+	}
+
+	if (txt.length() > 0 && !Geometry::getConstant(txt.c_str(), mode))
+		return luaL_error(L, "Invalid Geometry draw mode: %s", txt.c_str());
+
+	std::vector<uint16> vertexmap;
+
+	// Get the vertex map table, if it exists.
+	if (has_vertexmap)
+	{
+		// It will always be the last argument.
+		int tableidx = lua_gettop(L);
+
+		size_t elementcount = lua_objlen(L, -1);
+		vertexmap.reserve(elementcount);
+
+		for (size_t i = 0; i < elementcount; i++)
+		{
+			lua_rawgeti(L, tableidx, i + 1);
+			if (!lua_isnumber(L, -1))
+				return luaL_argerror(L, tableidx + 1, "vertex index expected");
+
+			vertexmap.push_back(lua_tointeger(L, -1) - 1);
+			lua_pop(L, 1);
+		}
+
+		// We don't want to read the vertex map as a vertex table later.
+		lua_remove(L, -1);
+	}
+
+	size_t vertexcount = is_table ? lua_objlen(L, 1) : lua_gettop(L);
+	if (vertexcount < 3)
+		return luaL_error(L, "At least three points are needed to construct a Geometry.");
+
+	if (!lua_checkstack(L, 9))
+		return luaL_error(L, "Too many arguments!");
 
 	bool hasvertexcolors = false;
 
-	vertices.reserve(n);
-	for (size_t i = 0; i < n; ++i)
+	std::vector<vertex> vertices;
+	vertices.reserve(vertexcount);
+
+	for (size_t i = 0; i < vertexcount; ++i)
 	{
 		vertex v;
-		lua_rawgeti(L, 1, i+1);
-		if (!lua_istable(L, -1))
-			return luax_typerror(L, 1, "table of tables");
+
+		if (is_table)
+		{
+			lua_rawgeti(L, 1, i+1);
+			if (!lua_istable(L, -1))
+				return luaL_typerror(L, 1, "table of tables");
+		}
+		else
+		{
+			// Push the vertex table at this arg index to the top of the stack.
+			luaL_checktype(L, i + 1, LUA_TTABLE);
+			lua_pushvalue(L, i + 1);
+		}
 
 		for (int j = 1; j <= 8; j++)
 			lua_rawgeti(L, -j, j);
@@ -260,13 +337,15 @@ int w_newGeometry(lua_State *L)
 		v.s = luaL_checknumber(L, -6);
 		v.t = luaL_checknumber(L, -5);
 
-		v.r = luaL_optint(L, -4, 255);
-		v.g = luaL_optint(L, -3, 255);
-		v.b = luaL_optint(L, -2, 255);
-		v.a = luaL_optint(L, -1, 255);
+		v.r = luaL_optinteger(L, -4, 255);
+		v.g = luaL_optinteger(L, -3, 255);
+		v.b = luaL_optinteger(L, -2, 255);
+		v.a = luaL_optinteger(L, -1, 255);
 
 		lua_pop(L, 9);
 
+		// Custom vertex colors are disabled by default unless a unique color
+		// is used for at least one vertex.
 		if (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255)
 			hasvertexcolors = true;
 
@@ -276,7 +355,7 @@ int w_newGeometry(lua_State *L)
 	Geometry *geom = 0;
 	try
 	{
-		geom = instance->newGeometry(vertices);
+		geom = instance->newGeometry(vertices, vertexmap, mode);
 	}
 	catch (love::Exception &e)
 	{
@@ -288,7 +367,7 @@ int w_newGeometry(lua_State *L)
 
 	geom->setVertexColors(hasvertexcolors);
 
-	luax_newtype(L, "Geometry", GRAPHICS_GEOMETRY_T, (void *)geom);
+	luax_newtype(L, "Geometry", GRAPHICS_GEOMETRY_T, (void *) geom);
 	return 1;
 }
 

@@ -138,7 +138,7 @@ public:
 
 private:
 
-	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS) const;
+	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
 
 	friend class Shader;
 	GLuint getTextureName() const

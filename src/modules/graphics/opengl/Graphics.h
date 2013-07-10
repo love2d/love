@@ -225,7 +225,7 @@ public:
 	/**
 	 * Creates a Geometry object.
 	 **/
-	Geometry *newGeometry(const std::vector<vertex> &vertices);
+	Geometry *newGeometry(const std::vector<vertex> &vertices, const std::vector<uint16> &vertexmap, Geometry::DrawMode mode);
 
 	/**
 	 * Creates a quadliteral Geometry object.

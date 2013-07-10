@@ -39,6 +39,9 @@ int w_Geometry_setVertex(lua_State *L);
 int w_Geometry_flip(lua_State *L);
 int w_Geometry_setVertexColors(lua_State *L);
 int w_Geometry_hasVertexColors(lua_State *L);
+int w_Geometry_getDrawMode(lua_State *L);
+int w_Geometry_getVertexMap(lua_State *L);
+int w_Geometry_setVertexMap(lua_State *L);
 extern "C" int luaopen_geometry(lua_State *L);
 
 } // opengl

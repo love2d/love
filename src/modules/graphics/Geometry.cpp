@@ -35,18 +35,25 @@ namespace love
 namespace graphics
 {
 
-Geometry::Geometry(const std::vector<vertex> &polygon)
+Geometry::Geometry(const std::vector<vertex> &polygon, const std::vector<uint16> &elements, Geometry::DrawMode mode)
 	: vertexArray(NULL)
+	, vertexCount(polygon.size())
+	, elementArray(NULL)
+	, elementCount(elements.size())
 	, x_min(std::numeric_limits<float>::max())
 	, x_max(std::numeric_limits<float>::min())
 	, y_min(std::numeric_limits<float>::max())
 	, y_max(std::numeric_limits<float>::min())
 	, vertexColors(false)
+	, drawMode(mode)
 {
-	if (!Math::instance.isConvex(polygon))
-		throw love::Exception("Geometry must be convex");
+	for (size_t i = 0; i < elementCount; i++)
+	{
+		// All values in the element array need to be a valid vertex index.
+		if (elements[i] >= vertexCount)
+			throw love::Exception("Invalid vertex map value");
+	}
 
-	vertexCount = polygon.size();
 	vertexArray = new vertex[vertexCount];
 	for (size_t i = 0; i < vertexCount; ++i)
 	{
@@ -57,16 +64,25 @@ Geometry::Geometry(const std::vector<vertex> &polygon)
 		y_min = v.y < y_min ? v.y : y_min;
 		y_max = v.y > y_max ? v.y : y_max;
 	}
+
+	if (elementCount > 0)
+	{
+		elementArray = new uint16[elementCount];
+		memcpy(elementArray, &elements[0], elementCount * sizeof(uint16));
+	}
 }
 
 Geometry::Geometry(float x, float y, float w, float h, float sw, float sh)
 	: vertexArray(NULL)
 	, vertexCount(4)
+	, elementArray(NULL)
+	, elementCount(0)
 	, x_min(x)
 	, x_max(x+w)
 	, y_min(y)
 	, y_max(y+h)
 	, vertexColors(false)
+	, drawMode(DRAW_MODE_FAN)
 {
 	vertexArray = new vertex[4];
 	float s0 = x/sw, s1 = (x+w)/sw, t0 = y/sh, t1 = (y+h)/sh;
@@ -78,14 +94,22 @@ Geometry::Geometry(float x, float y, float w, float h, float sw, float sh)
 
 Geometry::Geometry(const Geometry &other)
 	: vertexCount(other.vertexCount)
+	, elementCount(other.elementCount)
 	, x_min(other.x_min)
 	, x_max(other.x_max)
 	, y_min(other.y_min)
 	, y_max(other.y_max)
 	, vertexColors(other.vertexColors)
+	, drawMode(other.drawMode)
 {
 	vertexArray = new vertex[vertexCount];
 	memcpy(vertexArray, other.vertexArray, vertexCount * sizeof(vertex));
+
+	if (elementCount > 0)
+	{
+		elementArray = new uint16[elementCount];
+		memcpy(elementArray, other.elementArray, elementCount * sizeof(uint16));
+	}
 }
 
 Geometry &Geometry::operator=(const Geometry &other)
@@ -94,25 +118,25 @@ Geometry &Geometry::operator=(const Geometry &other)
 	{
 		Geometry temp(other);
 		std::swap(vertexArray, temp.vertexArray);
+		std::swap(elementArray, temp.elementArray);
 
-		vertexCount = temp.vertexCount;
-		x_min       = temp.x_min;
-		x_max       = temp.x_max;
-		y_min       = temp.y_min;
-		y_max       = temp.y_max;
+		vertexCount  = temp.vertexCount;
+		elementCount = temp.elementCount;
+		x_min        = temp.x_min;
+		x_max        = temp.x_max;
+		y_min        = temp.y_min;
+		y_max        = temp.y_max;
 
 		vertexColors = other.vertexColors;
+		drawMode     = other.drawMode;
 	}
 	return *this;
 }
 
 Geometry::~Geometry()
 {
-	if (vertexArray)
-	{
-		delete[] vertexArray;
-		vertexArray = NULL;
-	}
+	delete[] vertexArray;
+	delete[] elementArray;
 }
 
 const vertex &Geometry::getVertex(size_t i) const
@@ -148,10 +172,55 @@ void Geometry::flip(bool x, bool y)
 	}
 }
 
+void Geometry::setElementArray(const uint16 *elements, size_t count)
+{
+	if (count == 0 || elements == NULL)
+	{
+		delete[] elementArray;
+		elementArray = NULL;
+		elementCount = 0;
+		return;
+	}
+
+	for (size_t i = 0; i < count; i++)
+	{
+		if (elements[i] >= vertexCount)
+			throw love::Exception("Invalid vertex map value");
+	}
+
+	if (count > elementCount)
+	{
+		delete[] elementArray;
+		elementArray = new uint16[count];
+	}
+
+	elementCount = count;
+	memcpy(elementArray, elements, elementCount * sizeof(uint16));
+}
+
 void Geometry::setVertexColors(bool on)
 {
 	vertexColors = on;
 }
+
+bool Geometry::getConstant(const char *in, Geometry::DrawMode &out)
+{
+	return drawModes.find(in, out);
+}
+
+bool Geometry::getConstant(Geometry::DrawMode in, const char *&out)
+{
+	return drawModes.find(in, out);
+}
+
+StringMap<Geometry::DrawMode, Geometry::DRAW_MODE_MAX_ENUM>::Entry Geometry::drawModeEntries[] =
+{
+	{"fan", Geometry::DRAW_MODE_FAN},
+	{"strip", Geometry::DRAW_MODE_STRIP},
+	{"triangles", Geometry::DRAW_MODE_TRIANGLES}
+};
+
+StringMap<Geometry::DrawMode, Geometry::DRAW_MODE_MAX_ENUM> Geometry::drawModes(Geometry::drawModeEntries, sizeof(Geometry::drawModeEntries));
 
 } // graphics
 } // love
