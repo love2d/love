@@ -58,7 +58,7 @@ static T *_getScalars(lua_State *L, int count, size_t &dimension)
 		else
 		{
 			delete[] values;
-			luaL_typerror(L, 3 + i, "number or boolean");
+			luax_typerror(L, 3 + i, "number or boolean");
 			return 0;
 		}
 	}
@@ -77,7 +77,7 @@ static T *_getVectors(lua_State *L, int count, size_t &dimension)
 		if (!lua_istable(L, 3 + i))
 		{
 			delete[] values;
-			luaL_typerror(L, 3 + i, "table");
+			luax_typerror(L, 3 + i, "table");
 			return 0;
 		}
 		if (lua_objlen(L, 3 + i) != dimension)
@@ -98,7 +98,7 @@ static T *_getVectors(lua_State *L, int count, size_t &dimension)
 			else
 			{
 				delete[] values;
-				luaL_typerror(L, -1, "number or boolean");
+				luax_typerror(L, -1, "number or boolean");
 				return 0;
 			}
 		}
@@ -125,7 +125,7 @@ int w_Shader_sendInt(lua_State *L)
 	else if (lua_istable(L, 3))
 		values = _getVectors<int>(L, count, dimension);
 	else
-		return luaL_typerror(L, 3, "number, boolean, or table");
+		return luax_typerror(L, 3, "number, boolean, or table");
 
 	if (!values)
 		return luaL_error(L, "Error in arguments.");
@@ -162,7 +162,7 @@ int w_Shader_sendFloat(lua_State *L)
 	else if (lua_istable(L, 3))
 		values = _getVectors<float>(L, count, dimension);
 	else
-		return luaL_typerror(L, 3, "number, boolean, or table");
+		return luax_typerror(L, 3, "number, boolean, or table");
 
 	if (!values)
 		return luaL_error(L, "Error in arguments.");
@@ -189,7 +189,7 @@ int w_Shader_sendMatrix(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 
 	if (!lua_istable(L, 3))
-		return luaL_typerror(L, 3, "matrix table");
+		return luax_typerror(L, 3, "matrix table");
 
 	lua_getfield(L, 3, "dimension");
 	int dimension = lua_tointeger(L, -1);

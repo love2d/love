@@ -486,6 +486,13 @@ int luax_getregistry(lua_State *L, Registry r)
 	}
 }
 
+extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
+{
+	const char *msg = lua_pushfstring(L, "%s expected, got %s",
+	                                  tname, luaL_typename(L, narg));
+	return luaL_argerror(L, narg, msg);
+}
+
 StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 {
 	{"Invalid", INVALID_ID},

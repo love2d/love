@@ -26,6 +26,7 @@
 
 // Lua
 extern "C" {
+	#define LUA_COMPAT_ALL
 	#include <lua.h>
 	#include <lualib.h>
 	#include <lauxlib.h>
@@ -345,6 +346,10 @@ int luax_insistlove(lua_State *L, const char *k);
  * @param r The Registry to get.
  **/
 int luax_getregistry(lua_State *L, Registry r);
+
+extern "C" { // Also called from luasocket
+	int luax_typerror(lua_State *L, int narg, const char *tname);
+}
 
 /**
  * Like luax_totype, but causes an error if the value at idx is not Proxy,

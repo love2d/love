@@ -34,11 +34,14 @@ AC_CHECK_HEADER([freetype2/freetype/config/ftheader.h], [includes="$includes -I/
 # Lua, treated seperately because of --with-lua
 AC_ARG_WITH([lua], [AS_HELP_STRING([--with-lua], [Select the lua implementation])],
 			[], [with_lua=lua])
+AC_ARG_WITH([luaversion], [AS_HELP_STRING([--with-luaversion], [Select the lua version])],
+			[], [with_luaversion=5.1])
 
-AC_SEARCH_LIBS([lua_pcall], ["$with_lua" "${with_lua}5.1"], [],
+AS_VAR_IF([with_luaversion], [5.2], [luatest=lua_version], [luatest=lua_pcall]) # use lua_version for 5.2
+AC_SEARCH_LIBS([$luatest], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
 			   AC_MSG_ERROR([Can't LÖVE without $with_lua]))
+AC_CHECK_HEADER(["${with_lua}${with_luaversion}/lua.h"], [includes="$includes -I/usr/include/${with_lua}${with_luaversion}"], [])
 AC_CHECK_HEADER(["${with_lua}/lua.h"], [includes="$includes -I/usr/include/${with_lua}"], [])
-AC_CHECK_HEADER(["${with_lua}5.1/lua.h"], [includes="$includes -I/usr/include/${with_lua}5.1"], [])
 
 # mpg123, treated seperately because it can be disabled (default on)
 AC_ARG_ENABLE([mpg123], AC_HELP_STRING([--disable-mpg123], [Disable mp3 support, for patent-free builds]), [], [enable_mpg123=yes])

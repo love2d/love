@@ -249,7 +249,7 @@ int w_newGeometry(lua_State *L)
 		vertex v;
 		lua_rawgeti(L, 1, i+1);
 		if (!lua_istable(L, -1))
-			return luaL_typerror(L, 1, "table of tables");
+			return luax_typerror(L, 1, "table of tables");
 
 		for (int j = 1; j <= 8; j++)
 			lua_rawgeti(L, -j, j);
