@@ -33,6 +33,7 @@ class Variant : public love::Object
 {
 public:
 
+	Variant();
 	Variant(bool boolean);
 	Variant(double number);
 	Variant(const char *string, size_t len);
@@ -53,7 +54,8 @@ private:
 		CHARACTER,
 		STRING,
 		LUSERDATA,
-		FUSERDATA
+		FUSERDATA,
+		NIL
 	} type;
 	union
 	{

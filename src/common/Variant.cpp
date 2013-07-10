@@ -42,21 +42,27 @@ love::Type extractudatatype(lua_State *L, int idx)
 	return t;
 }
 
-Variant::Variant(bool boolean)
+Variant::Variant()
+	: type(NIL)
+	, data()
 {
-	type = BOOLEAN;
+}
+
+Variant::Variant(bool boolean)
+	: type(BOOLEAN)
+{
 	data.boolean = boolean;
 }
 
 Variant::Variant(double number)
+	: type(NUMBER)
 {
-	type = NUMBER;
 	data.number = number;
 }
 
 Variant::Variant(const char *string, size_t len)
+	: type(STRING)
 {
-	type = STRING;
 	char *buf = new char[len+1];
 	memset(buf, 0, len+1);
 	memcpy(buf, string, len);
@@ -65,20 +71,20 @@ Variant::Variant(const char *string, size_t len)
 }
 
 Variant::Variant(char c)
+	: type(CHARACTER)
 {
-	type = CHARACTER;
 	data.character = c;
 }
 
 Variant::Variant(void *userdata)
+	: type(LUSERDATA)
 {
-	type = LUSERDATA;
 	data.userdata = userdata;
 }
 
 Variant::Variant(love::Type udatatype, void *userdata)
+	: type(FUSERDATA)
 {
-	type = FUSERDATA;
 	this->udatatype = udatatype;
 	if (udatatype != INVALID_ID)
 	{
@@ -129,6 +135,9 @@ Variant *Variant::fromLua(lua_State *L, int n)
 	case LUA_TUSERDATA:
 		v = new Variant(extractudatatype(L, n), lua_touserdata(L, n));
 		break;
+	case LUA_TNIL:
+		v = new Variant();
+		break;
 	}
 	return v;
 }
@@ -166,6 +175,7 @@ void Variant::toLua(lua_State *L)
 		// sadly, however, it's the most
 		// I can do (at the moment).
 		break;
+	case NIL:
 	default:
 		lua_pushnil(L);
 		break;
