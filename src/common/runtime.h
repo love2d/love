@@ -363,12 +363,12 @@ template <typename T>
 T *luax_checktype(lua_State *L, int idx, const char *name, love::bits type)
 {
 	if (lua_isuserdata(L, idx) == 0)
-		luaL_error(L, "Incorrect parameter type: expected userdata.");
+		luax_typerror(L, idx, name);
 
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
 	if ((u->flags & type) != type)
-		luaL_error(L, "Incorrect parameter type: expected %s", name);
+		luax_typerror(L, idx, name);
 
 	return (T *)u->data;
 }
