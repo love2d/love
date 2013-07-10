@@ -253,22 +253,10 @@ static int host_create(lua_State *l) {
 }
 
 static int linked_version(lua_State *l) {
-	char* enet_version_str = (char*) malloc (sizeof(char) * 32);
-
-	if (enet_version_str == NULL) {
-		luaL_error(l, "Error allocating memory for version string.");
-	}
-
-	snprintf (enet_version_str, sizeof(char) * 32, "%d.%d.%d",
+	lua_pushfstring(l, "%d.%d.%d",
 			ENET_VERSION_GET_MAJOR(enet_linked_version()),
 			ENET_VERSION_GET_MINOR(enet_linked_version()),
-			ENET_VERSION_GET_PATCH(enet_linked_version())
-			);
-
-	lua_pushstring (l, enet_version_str);
-
-	free (enet_version_str);
-
+			ENET_VERSION_GET_PATCH(enet_linked_version()));
 	return 1;
 }
 
@@ -400,22 +388,12 @@ static int host_socket_get_address(lua_State *l) {
 	ENetAddress address;
 	enet_socket_get_address (host->socket, &address);
 
-	char* address_str = (char *) malloc(sizeof(char) * 64);
-	if (address_str == NULL) {
-		luaL_error(l, "Error allocating memory for address string.");
-	}
-
-	snprintf (address_str, sizeof(char) * 64, "%d.%d.%d.%d:%d",
+	lua_pushfstring(l, "%d.%d.%d.%d:%d",
 			((address.host) & 0xFF),
 			((address.host >> 8) & 0xFF),
 			((address.host >> 16) & 0xFF),
 			(address.host >> 24& 0xFF),
 			address.port);
-
-	lua_pushstring(l, address_str);
-
-	free (address_str);
-
 	return 1;
 }
 static int host_total_sent_data(lua_State *l) {
