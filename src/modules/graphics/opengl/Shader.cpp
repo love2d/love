@@ -219,8 +219,12 @@ void Shader::mapActiveUniforms()
 		delete[] cname;
 
 		// glGetActiveUniform appends "[0]" to the end of array uniform names...
-		if (u.name.find("[0]") == u.name.length() - 3)
-			u.name.erase(u.name.length() - 3);
+		if (u.name.length() > 3)
+		{
+			size_t findpos = u.name.find("[0]");
+			if (findpos != std::string::npos && findpos == u.name.length() - 3)
+				u.name.erase(u.name.length() - 3);
+		}
 
 		if (u.location != -1)
 			uniforms[u.name] = u;
