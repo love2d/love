@@ -184,6 +184,7 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 	{
 		std::string warnings = getProgramWarnings();
 		glDeleteProgram(program);
+		program = 0;
 
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
@@ -265,9 +266,10 @@ void Shader::unloadVolatile()
 		glUseProgram(0);
 
 	if (program != 0)
+	{
 		glDeleteProgram(program);
-
-	program = 0;
+		program = 0;
+	}
 
 	// decrement global texture id counters for texture units which had textures bound from this shader
 	for (size_t i = 0; i < activeTextureUnits.size(); ++i)
@@ -324,9 +326,10 @@ std::string Shader::getWarnings() const
 void Shader::attach(bool temporary)
 {
 	if (current != this)
+	{
 		glUseProgram(program);
-
-	current = this;
+		current = this;
+	}
 
 	if (!temporary)
 	{
@@ -337,6 +340,8 @@ void Shader::attach(bool temporary)
 			if (activeTextureUnits[i] > 0)
 				gl.bindTextureToUnit(activeTextureUnits[i], i + 1, false);
 		}
+
+		// We always want to use texture unit 0 for everyhing else.
 		gl.setActiveTextureUnit(0);
 	}
 }

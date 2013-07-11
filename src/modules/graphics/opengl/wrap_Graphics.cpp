@@ -319,7 +319,7 @@ int w_newGeometry(lua_State *L)
 		{
 			lua_rawgeti(L, 1, i+1);
 			if (!lua_istable(L, -1))
-				return luaL_typerror(L, 1, "table of tables");
+				return luax_typerror(L, 1, "table of tables");
 		}
 		else
 		{

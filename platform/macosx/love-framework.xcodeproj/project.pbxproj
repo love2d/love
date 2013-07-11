@@ -246,6 +246,7 @@
 		FA636D8B171B70920065623F /* RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D89171B70920065623F /* RandomGenerator.h */; };
 		FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */; };
 		FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */; };
+		FA7175AA178E8418001FE7FE /* lua.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7175A9178E8418001FE7FE /* lua.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
 		FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */; };
@@ -767,6 +768,7 @@
 		FA636D89171B70920065623F /* RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RandomGenerator.h; sourceTree = "<group>"; };
 		FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RandomGenerator.cpp; sourceTree = "<group>"; };
 		FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RandomGenerator.h; sourceTree = "<group>"; };
+		FA7175A9178E8418001FE7FE /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
 		FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Window.cpp; sourceTree = "<group>"; };
@@ -960,6 +962,7 @@
 		1350109F709C227D4AFD423C /* libluasocket */ = {
 			isa = PBXGroup;
 			children = (
+				FA7175A9178E8418001FE7FE /* lua.h */,
 				1CD02D1975803957282F28AB /* auxiliar.c */,
 				1F6F652A57F8098E5CCA6F9A /* auxiliar.h */,
 				21B25A7E333315172B754D4F /* buffer.c */,
@@ -1858,6 +1861,7 @@
 				FA5FDC851788D548002F0ED2 /* utility.h in Headers */,
 				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
 				FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */,
+				FA7175AA178E8418001FE7FE /* lua.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
