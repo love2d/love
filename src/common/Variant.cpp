@@ -84,8 +84,8 @@ Variant::Variant(void *userdata)
 
 Variant::Variant(love::Type udatatype, void *userdata)
 	: type(FUSERDATA)
+	, udatatype(udatatype)
 {
-	this->udatatype = udatatype;
 	if (udatatype != INVALID_ID)
 	{
 		Proxy *p = (Proxy *) userdata;

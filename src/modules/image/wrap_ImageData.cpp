@@ -115,19 +115,31 @@ int w_ImageData_setPixel(lua_State *L)
 }
 
 // Gets the result of luaL_where as a string.
-static std::string luax_getwhere(lua_State *L, int lvl)
+static std::string luax_getwhere(lua_State *L, int level)
 {
-	std::string where;
+	luaL_where(L, level);
 
-	luaL_where(L, lvl);
-	
 	const char *str = lua_tostring(L, -1);
+	std::string where;
 	if (str)
 		where = str;
 
 	lua_pop(L, 1);
-
 	return where;
+}
+
+// Generates a Lua error with a nice error string when a return value of a
+// called function is not a number.
+static int luax_retnumbererror(lua_State *L, int level, int retnum, int ttype)
+{
+	if (ttype == LUA_TNUMBER)
+		return 0;
+
+	const char *where = luax_getwhere(L, level).c_str();
+	const char *ttypename = lua_typename(L, ttype);
+
+	return luaL_error(L, "%sbad return value #%d (number expected, got %s)",
+	                     where, retnum, ttypename);
 }
 
 // ImageData:mapPixel. Not thread-safe! See the wrapper function below.
@@ -136,15 +148,22 @@ static int w_ImageData_mapPixelUnsafe(lua_State *L)
 	ImageData *t = luax_checkimagedata(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	int w = t->getWidth();
-	int h = t->getHeight();
+	// No optints because we assume they're done in the wrapper function.
+	int sx = (int) lua_tonumber(L, 3);
+	int sy = (int) lua_tonumber(L, 4);
+	int w  = (int) lua_tonumber(L, 5);
+	int h  = (int) lua_tonumber(L, 6);
+
+	if (!(t->inside(sx, sy) && t->inside(sx+w-1, sy+h-1)))
+		return luaL_error(L, "Invalid rectangle dimensions.");
 
 	// Default pixel component values (r, g, b, a.)
 	const unsigned char pixel_defaults[4] = {0, 0, 0, 255};
 
-	for (int y = 0; y < h; y++)
+	// Cache-friendlier loop. :)
+	for (int y = sy; y < sy+h; y++)
 	{
-		for (int x = 0; x < w; x++)
+		for (int x = sx; x < sx+w; x++)
 		{
 			lua_pushvalue(L, 2);
 			lua_pushnumber(L, x);
@@ -168,15 +187,16 @@ static int w_ImageData_mapPixelUnsafe(lua_State *L)
 				switch (ttype)
 				{
 				case LUA_TNUMBER:
-					parray[i] = lua_tointeger(L, -4 + i);
+					parray[i] = (unsigned char) lua_tonumber(L, -4 + i);
 					break;
 				case LUA_TNONE:
 				case LUA_TNIL:
 					parray[i] = pixel_defaults[i];
 					break;
+						
 				default:
-					return luaL_error(L, "%sbad return value #%d (number expected, got %s)",
-					                  luax_getwhere(L, 2).c_str(), i+1, lua_typename(L, ttype));
+					// Level 2 because this is function will be wrapped.
+					return luax_retnumbererror(L, 2, i + 1, ttype);
 				}
 			}
 
@@ -194,18 +214,27 @@ int w_ImageData_mapPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
-
-	love::thread::Mutex *mutex = t->getMutex();
+	int sx = luaL_optint(L, 3, 0);
+	int sy = luaL_optint(L, 4, 0);
+	int w = luaL_optint(L, 5, t->getWidth());
+	int h = luaL_optint(L, 6, t->getHeight());
 
 	lua_pushcfunction(L, w_ImageData_mapPixelUnsafe);
 	lua_pushvalue(L, 1);
 	lua_pushvalue(L, 2);
+	lua_pushinteger(L, sx);
+	lua_pushinteger(L, sy);
+	lua_pushinteger(L, w);
+	lua_pushinteger(L, h);
 
-	// Manually lock this ImageData's mutex during the entire mapPixel.
-	// Using the lock methods because lua_error won't trigger object destructors.
-	mutex->lock();
-	int ret = lua_pcall(L, 2, 0, 0);
-	mutex->unlock();
+	int ret = 0;
+
+	// Lock this ImageData's mutex during the entire mapPixel. We pcall instead
+	// of call because lua_error longjmp's without calling object destructors.
+	{
+		love::thread::Lock lock(t->getMutex());
+		ret = lua_pcall(L, 6, 0, 0);
+	}
 
 	if (ret != 0)
 		return lua_error(L);
