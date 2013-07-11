@@ -52,7 +52,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, toLoop(0)
 {
 	alGenBuffers(1, buffers);
-	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
+	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
 	alBufferData(buffers[0], fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate());
 
 	static float z[3] = {0, 0, 0};

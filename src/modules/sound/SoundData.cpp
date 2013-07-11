@@ -137,7 +137,7 @@ int SoundData::getChannels() const
 	return channels;
 }
 
-int SoundData::getBits() const
+int SoundData::getBitDepth() const
 {
 	return bits;
 }

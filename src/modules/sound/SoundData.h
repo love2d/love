@@ -46,7 +46,7 @@ public:
 	int getSize() const;
 
 	virtual int getChannels() const;
-	virtual int getBits() const;
+	virtual int getBitDepth() const;
 	virtual int getSampleRate() const;
 	virtual int getSampleCount() const;
 
