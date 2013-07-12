@@ -45,6 +45,9 @@ Window::Window()
 
 Window::~Window()
 {
+	if (currentMode.icon)
+		currentMode.icon->release();
+
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
@@ -58,7 +61,6 @@ Window::_currentMode::_currentMode()
 
 bool Window::setWindow(int width, int height, graphics::Graphics *graphics, WindowFlags *flags)
 {
-
 	if (graphics)
 		graphics->unSetMode();
 
@@ -314,9 +316,6 @@ bool Window::setIcon(love::image::ImageData *imgd)
 
 love::image::ImageData *Window::getIcon()
 {
-	if (currentMode.icon)
-		currentMode.icon->retain();
-
 	return currentMode.icon;
 }
 
