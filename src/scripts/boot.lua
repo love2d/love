@@ -1330,6 +1330,7 @@ function love.nogame()
 		local img_h = rain.img_h
 
 		batch:clear()
+		batch:bind()
 
 		for i = 0,17 do
 			for j = 0,17 do
@@ -1340,6 +1341,8 @@ function love.nogame()
 				batch:add(x, y)
 			end
 		end
+
+		batch:unbind()
 	end
 
 	function love.update(dt)
