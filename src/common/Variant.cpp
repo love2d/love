@@ -237,7 +237,7 @@ void Variant::toLua(lua_State *L)
 		break;
 	case TABLE:
 		lua_newtable(L);
-		for (int i = 0; i < data.table->size(); ++i)
+		for (size_t i = 0; i < data.table->size(); ++i)
 		{
 			std::pair<Variant*, Variant*> &kv = data.table->at(i);
 			kv.first->toLua(L);
