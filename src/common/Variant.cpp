@@ -42,6 +42,18 @@ love::Type extractudatatype(lua_State *L, int idx)
 	return t;
 }
 
+static inline void delete_table(std::vector<std::pair<Variant*, Variant*> > *table)
+{
+	while (!table->empty())
+	{
+		std::pair<Variant*, Variant*> &kv = table->back();
+		kv.first->release();
+		kv.second->release();
+		table->pop_back();
+	}
+	delete table;
+}
+
 Variant::Variant()
 	: type(NIL)
 	, data()
@@ -97,6 +109,13 @@ Variant::Variant(love::Type udatatype, void *userdata)
 		data.userdata = userdata;
 }
 
+// Variant gets ownership of the vector.
+Variant::Variant(std::vector<std::pair<Variant*, Variant*> > *table)
+	: type(TABLE)
+{
+	data.table = table;
+}
+
 Variant::~Variant()
 {
 	switch (type)
@@ -107,16 +126,21 @@ Variant::~Variant()
 	case FUSERDATA:
 		((love::Object *) data.userdata)->release();
 		break;
+	case TABLE:
+		delete_table(data.table);
 	default:
 		break;
 	}
 }
 
-Variant *Variant::fromLua(lua_State *L, int n)
+Variant *Variant::fromLua(lua_State *L, int n, bool allowTables)
 {
 	Variant *v = NULL;
 	size_t len;
 	const char *str;
+	if (n < 0) // Fix the stack position, we might modify it later
+		n += lua_gettop(L) + 1;
+
 	switch (lua_type(L, n))
 	{
 	case LUA_TBOOLEAN:
@@ -137,6 +161,42 @@ Variant *Variant::fromLua(lua_State *L, int n)
 		break;
 	case LUA_TNIL:
 		v = new Variant();
+		break;
+	case LUA_TTABLE:
+		if (allowTables)
+		{
+			bool success = true;
+			std::vector<std::pair<Variant*, Variant*> > *table = new std::vector<std::pair<Variant*, Variant*> >();
+			lua_pushnil(L);
+			while (lua_next(L, n))
+			{
+				Variant *key = fromLua(L, -2, false);
+				if (!key)
+				{
+					success = false;
+					lua_pop(L, 2);
+					break;
+				}
+
+				Variant *value = fromLua(L, -1, false);
+				if (!value)
+				{
+					delete key;
+					success = false;
+					lua_pop(L, 2);
+					break;
+				}
+
+				table->push_back(std::make_pair(key, value));
+
+				lua_pop(L, 1);
+			}
+
+			if (success)
+				v = new Variant(table);
+			else
+				delete_table(table);
+		}
 		break;
 	}
 	return v;
@@ -174,6 +234,16 @@ void Variant::toLua(lua_State *L)
 		// I know this is not the same
 		// sadly, however, it's the most
 		// I can do (at the moment).
+		break;
+	case TABLE:
+		lua_newtable(L);
+		for (int i = 0; i < data.table->size(); ++i)
+		{
+			std::pair<Variant*, Variant*> &kv = data.table->at(i);
+			kv.first->toLua(L);
+			kv.second->toLua(L);
+			lua_settable(L, -3);
+		}
 		break;
 	case NIL:
 	default:

@@ -25,6 +25,8 @@
 #include "common/Object.h"
 
 #include <cstring>
+#include <vector>
+#include <utility>
 
 namespace love
 {
@@ -40,9 +42,10 @@ public:
 	Variant(char c);
 	Variant(void *userdata);
 	Variant(love::Type udatatype, void *userdata);
+	Variant(std::vector<std::pair<Variant*, Variant*> > *table);
 	virtual ~Variant();
 
-	static Variant *fromLua(lua_State *L, int n);
+	static Variant *fromLua(lua_State *L, int n, bool allowTables = true);
 	void toLua(lua_State *L);
 
 private:
@@ -55,7 +58,8 @@ private:
 		STRING,
 		LUSERDATA,
 		FUSERDATA,
-		NIL
+		NIL,
+		TABLE
 	} type;
 	union
 	{
@@ -68,6 +72,7 @@ private:
 			size_t len;
 		} string;
 		void *userdata;
+		std::vector<std::pair<Variant*, Variant*> > *table;
 	} data;
 	love::Type udatatype;
 	bits flags;
