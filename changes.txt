@@ -3,6 +3,7 @@ LOVE 0.9.0 [Baby Inspector]
 
 	Released: N/A
 
+  * Added better multiplayer networking support via ENet.
   * Added --fused command line argument, to simulate fusing.
   * Added liblove.
   * Added the ability to have exit values.
@@ -46,7 +47,9 @@ LOVE 0.9.0 [Baby Inspector]
   * Added SoundData:getDuration and SoundData:getSampleCount.
   * Added Source:isPlaying.
   * Added new Channels api for love.thread.
+  * Added limited table support to Channel:push.
   * Added Thread:getError.
+  * Added Thread:isRunning.
   * Added love.math module.
   * Added a platform-independent (good) random implementation to love.math.
   * Added RandomGenerator objects and love.math.newRandomGenerator.
@@ -62,6 +65,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added support for resizable, borderless, and non-centered windows.
   * Added resize and visible events.
   * Added love.window.getDimensions.
+  * Added love.window.getIcon.
   * Added love.mousefocus and love.window.hasMouseFocus.
   * Added love.mouse.setX/setY.
   * Added joystickaxis and joystickhat events.
@@ -96,9 +100,11 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed crash when binding SpriteBatches multiple times.
   * Fixed SpriteBatches with more than 16,384 sprites.
   * Fixed particle draw order for ParticleSystems.
+  * Fixed ParticleSystem:setSizes resetting the size variation.
   * Fixed the graphics viewport not matching the window size when using an unsupported fullscreen mode.
   * Fixed getMode and friends returning wrong values when using desktop size.
   * Fixed keyrepeat settings being lost after (indirect) setMode.
+  * Fixed the icon being reset after setMode.
   * Fixed memory leak in the mp3 decoder.
   * Fixed sound issues with some versions of OpenAL soft, by enabling direct channels.
   * Fixed 'random' hangs in audio.
@@ -119,6 +125,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Renamed ParticleSystem:count and all getNum* functions to get*Count.
   * Renamed love.graphics.drawq to love.graphics.drawg.
   * Renamed SpriteBatch:addq/setq to SpriteBatch:addg/setg.
+  * Renamed SoundData:getBits to SoundData:getBitDepth.
 
   * Removed love.graphics.drawTest.
   * Removed love.graphics.quad/triangle.
@@ -151,11 +158,15 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated love.graphics.newParticleSystem to have a default buffer size of 1000.
   * Updated love.image.newImageData and love.graphics.newImage to accept FileData.
   * Updated ImageData:setPixel to accept a table and default to 255 alpha.
+  * Updated ImageData:mapPixel to accept optional x,y,w,h arguments.
   * Updated ImageData:mapPixel to be more efficient.
   * Updated love.image memory handling, improves errors and thread-safety.
   * Updated all love object constructors to optionally accept FileData if they accept a filename.
   * Updated allocation for SoundData, it's more efficient and less wasteful.
+  * Updated SoundData:set/getSample to error for invalid samples.
   * Updated Source:set* functions to default z to 0.
+  * Updated Source:seek to error for negative offsets.
+  * Updated Thread:start to accept arguments which get passed to the thread.
   * Updated love.timer.getFPS to be microsecond-accurate.
   * Updated love.timer.getTime to be microsecond-accurate and monotonic.
 
