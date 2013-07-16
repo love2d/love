@@ -2188,6 +2188,7 @@
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = NO;
@@ -2220,6 +2221,7 @@
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2242,7 +2244,6 @@
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				PRODUCT_NAME = love;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
@@ -2260,7 +2261,6 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				INFOPLIST_FILE = "Info-Framework.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				PRODUCT_NAME = love;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;

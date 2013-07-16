@@ -60,7 +60,7 @@ public:
 	void startGrab();
 	void stopGrab();
 
-	void clear(const Color &c);
+	void clear(Color c);
 
 	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
@@ -80,7 +80,7 @@ public:
 
 	const std::vector<Canvas *> &getAttachedCanvases() const;
 
-void setFilter(const Image::Filter &f);
+	void setFilter(const Image::Filter &f);
 	Image::Filter getFilter() const;
 
 	void setWrap(const Image::Wrap &w);
@@ -89,12 +89,12 @@ void setFilter(const Image::Filter &f);
 	int getWidth();
 	int getHeight();
 
-	unsigned int getStatus() const
+	inline GLenum getStatus() const
 	{
 		return status;
 	}
 
-	TextureType getTextureType() const
+	inline TextureType getTextureType() const
 	{
 		return texture_type;
 	}

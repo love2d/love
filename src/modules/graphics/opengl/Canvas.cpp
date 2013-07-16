@@ -139,9 +139,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glBindRenderbuffer(GL_RENDERBUFFER, stencil);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
 
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-								  GL_RENDERBUFFER, stencil);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
 								  GL_RENDERBUFFER, stencil);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -153,8 +151,10 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil,  GLuint img)
 	{
 		gl.deleteTexture(img);
-		glDeleteRenderbuffers(1, &depth_stencil);
-		glDeleteFramebuffers(1, &framebuffer);
+		if (depth_stencil != 0)
+			glDeleteRenderbuffers(1, &depth_stencil);
+		if (framebuffer != 0)
+			glDeleteFramebuffers(1, &framebuffer);
 	}
 
 	virtual void bindFBO(GLuint framebuffer)
@@ -192,8 +192,6 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 			glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
 		else if (GLEE_ARB_draw_buffers)
 			glDrawBuffersARB(drawbuffers.size(), &drawbuffers[0]);
-		else if (GLEE_ATI_draw_buffers)
-			glDrawBuffersATI(drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 
@@ -252,8 +250,6 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 								 width, height);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
 									 GL_RENDERBUFFER_EXT, stencil);
-		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-									 GL_RENDERBUFFER_EXT, stencil);
 
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
@@ -264,8 +260,10 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil, GLuint img)
 	{
 		gl.deleteTexture(img);
-		glDeleteRenderbuffersEXT(1, &depth_stencil);
-		glDeleteFramebuffersEXT(1, &framebuffer);
+		if (depth_stencil != 0)
+			glDeleteRenderbuffersEXT(1, &depth_stencil);
+		if (framebuffer != 0)
+			glDeleteFramebuffersEXT(1, &framebuffer);
 	}
 
 	virtual void bindFBO(GLuint framebuffer)
@@ -303,8 +301,6 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 			glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
 		else if (GLEE_ARB_draw_buffers)
 			glDrawBuffersARB(drawbuffers.size(), &drawbuffers[0]);
-		else if (GLEE_ATI_draw_buffers)
-			glDrawBuffersATI(drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 
@@ -369,6 +365,9 @@ static int maxDrawBuffers = 0;
 Canvas::Canvas(int width, int height, TextureType texture_type)
 	: width(width)
 	, height(height)
+	, fbo(0)
+	, depth_stencil(0)
+	, img(0)
 	, texture_type(texture_type)
 {
 	float w = static_cast<float>(width);
@@ -423,7 +422,7 @@ bool Canvas::isHDRSupported()
 
 bool Canvas::isMultiCanvasSupported()
 {
-	if (!(isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers || GLEE_ATI_draw_buffers)))
+	if (!(isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers)))
 		return false;
 
 	if (maxFBOColorAttachments == 0 || maxDrawBuffers == 0)
@@ -548,8 +547,11 @@ void Canvas::stopGrab()
 	current = NULL;
 }
 
-void Canvas::clear(const Color &c)
+void Canvas::clear(Color c)
 {
+	if (strategy == &strategyNone)
+		return;
+
 	GLuint previous = 0;
 
 	if (current != this)
@@ -717,8 +719,9 @@ const std::vector<Canvas *> &Canvas::getAttachedCanvases() const
 
 void Canvas::setFilter(const Image::Filter &f)
 {
+	settings.filter = f;
 	gl.bindTexture(img);
-	gl.setTextureFilter(f);
+	settings.filter.anisotropy = gl.setTextureFilter(f);
 }
 
 Image::Filter Canvas::getFilter() const
@@ -729,21 +732,24 @@ Image::Filter Canvas::getFilter() const
 
 void Canvas::setWrap(const Image::Wrap &w)
 {
+	settings.wrap = w;
 	gl.bindTexture(img);
 	gl.setTextureWrap(w);
 }
 
 Image::Wrap Canvas::getWrap() const
 {
-	gl.bindTexture(img);
-	return gl.getTextureWrap();
+	return settings.wrap;
 }
 
 bool Canvas::loadVolatile()
 {
 	// glTexImage2D is guaranteed to error in this case.
 	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
+	{
+		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
 		return false;
+	}
 
 	status = strategy->createFBO(fbo, img, width, height, texture_type);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -751,15 +757,12 @@ bool Canvas::loadVolatile()
 
 	setFilter(settings.filter);
 	setWrap(settings.wrap);
-	Color c(0, 0, 0, 0);
-	clear(c);
+	clear(Color(0, 0, 0, 0));
 	return true;
 }
 
 void Canvas::unloadVolatile()
 {
-	settings.filter = getFilter();
-	settings.wrap   = getWrap();
 	strategy->deleteFBO(fbo, depth_stencil, img);
 
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
