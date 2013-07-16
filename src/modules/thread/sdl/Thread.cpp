@@ -68,6 +68,12 @@ void Thread::wait()
 	thread = 0;
 }
 
+bool Thread::isRunning()
+{
+	Lock l(mutex);
+	return running;
+}
+
 int Thread::thread_runner(void *data)
 {
 	Thread *self = (Thread *) data; // some compilers don't like 'this'

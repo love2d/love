@@ -33,9 +33,12 @@ namespace thread
 class Thread
 {
 public:
+
 	virtual ~Thread() {}
 	virtual bool start() = 0;
 	virtual void wait() = 0;
+	virtual bool isRunning() = 0;
+
 }; // ThreadObject
 
 } // thread

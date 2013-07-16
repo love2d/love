@@ -93,9 +93,10 @@ bool LuaThread::start(Variant **args, int nargs)
 	return Threadable::start();
 }
 
-const std::string &LuaThread::getError()
+const std::string &LuaThread::getError() const
 {
 	return error;
 }
+
 } // thread
 } // love

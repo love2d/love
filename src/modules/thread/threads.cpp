@@ -93,5 +93,10 @@ void Threadable::wait()
 	owner->wait();
 }
 
+bool Threadable::isRunning() const
+{
+	return owner->isRunning();
+}
+
 } // thread
 } // love

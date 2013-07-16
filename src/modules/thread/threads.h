@@ -82,6 +82,7 @@ public:
 
 	bool start();
 	void wait();
+	bool isRunning() const;
 
 protected:
 	Thread *owner;

@@ -40,7 +40,7 @@ public:
 	LuaThread(const std::string &name, love::Data *code);
 	~LuaThread();
 	void threadFunction();
-	const std::string &getError();
+	const std::string &getError() const;
 
 	bool start(Variant **args, int nargs);
 

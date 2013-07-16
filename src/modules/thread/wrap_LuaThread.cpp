@@ -65,10 +65,18 @@ int w_Thread_getError(lua_State *L)
 	return 1;
 }
 
+int w_Thread_isRunning(lua_State *L)
+{
+	LuaThread *t = luax_checkthread(L, 1);
+	luax_pushboolean(L, t->isRunning());
+	return 1;
+}
+
 static const luaL_Reg type_functions[] = {
 	{ "start", w_Thread_start },
 	{ "wait", w_Thread_wait },
 	{ "getError", w_Thread_getError },
+	{ "isRunning", w_Thread_isRunning },
 	{ 0, 0 }
 };
 
