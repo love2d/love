@@ -92,6 +92,8 @@ int w_ChainShape_getPoints(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	const b2Vec2 *verts = c->getPoints();
 	int count = c->getVertexCount();
+	if (!lua_checkstack(L, count*2))
+		return luaL_error(L, "Too many return values");
 	for (int i = 0; i < count; i++)
 	{
 		b2Vec2 v = Physics::scaleUp(verts[i]);
