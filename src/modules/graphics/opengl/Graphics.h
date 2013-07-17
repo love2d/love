@@ -217,6 +217,12 @@ public:
 	unsigned char getAlphaTestRef();
 
 	/**
+	 * Gets the maximum supported width or height of Images and Canvases on this
+	 * system.
+	 **/
+	int getMaxImageSize() const;
+
+	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
 	Image *newImage(love::image::ImageData *data);

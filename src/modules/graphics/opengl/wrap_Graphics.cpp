@@ -175,6 +175,12 @@ int w_getAlphaTest(lua_State *L)
 	return 2;
 }
 
+int w_getMaxImageSize(lua_State *L)
+{
+	lua_pushinteger(L, instance->getMaxImageSize());
+	return 1;
+}
+
 int w_newImage(lua_State *L)
 {
 	love::image::ImageData *data = 0;
@@ -1544,6 +1550,7 @@ static const luaL_Reg functions[] =
 	{ "getPointSize", w_getPointSize },
 	{ "getPointStyle", w_getPointStyle },
 	{ "getMaxPointSize", w_getMaxPointSize },
+	{ "getMaxImageSize", w_getMaxImageSize },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
 	{ "setCanvases", w_setCanvases },

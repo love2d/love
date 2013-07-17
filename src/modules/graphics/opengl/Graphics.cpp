@@ -394,6 +394,11 @@ unsigned char Graphics::getAlphaTestRef()
 	return ref * 255;
 }
 
+int Graphics::getMaxImageSize() const
+{
+	return gl.getMaxTextureSize();
+}
+
 Image *Graphics::newImage(love::image::ImageData *data)
 {
 	// Create the image.

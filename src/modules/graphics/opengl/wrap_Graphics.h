@@ -50,6 +50,7 @@ int w_getScissor(lua_State *L);
 int w_setStencil(lua_State *L);
 int w_setAlphaTest(lua_State *L);
 int w_getAlphaTest(lua_State *L);
+int w_getMaxImageSize(lua_State *L);
 int w_newImage(lua_State *L);
 int w_newGeometry(lua_State *L);
 int w_newQuad(lua_State *L);
