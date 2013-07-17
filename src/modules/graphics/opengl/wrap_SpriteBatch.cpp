@@ -36,84 +36,78 @@ SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 int w_SpriteBatch_add(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	float x = (float)luaL_optnumber(L, 2, 0.0f);
-	float y = (float)luaL_optnumber(L, 3, 0.0f);
-	float angle = (float)luaL_optnumber(L, 4, 0.0f);
-	float sx = (float)luaL_optnumber(L, 5, 1.0f);
-	float sy = (float)luaL_optnumber(L, 6, sx);
-	float ox = (float)luaL_optnumber(L, 7, 0);
-	float oy = (float)luaL_optnumber(L, 8, 0);
-	float kx = (float)luaL_optnumber(L, 9, 0);
-	float ky = (float)luaL_optnumber(L, 10, 0);
-	lua_pushnumber(L, t->add(x, y, angle, sx, sy, ox, oy, kx, ky));
-	return 1;
-}
+	Geometry *geom = 0;
+	int startidx = 2;
 
-int w_SpriteBatch_addg(lua_State *L)
-{
-	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	Geometry *g = luax_checktype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+	if (luax_istype(L, 2, GRAPHICS_GEOMETRY_T))
+	{
+		geom = luax_totype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+		startidx = 3;
+	}
 
-	float x = (float)luaL_optnumber(L, 3, 0.0f);
-	float y = (float)luaL_optnumber(L, 4, 0.0f);
-	float angle = (float)luaL_optnumber(L, 5, 0.0f);
-	float sx = (float)luaL_optnumber(L, 6, 1.0f);
-	float sy = (float)luaL_optnumber(L, 7, sx);
-	float ox = (float)luaL_optnumber(L, 8, 0);
-	float oy = (float)luaL_optnumber(L, 9, 0);
-	float kx = (float)luaL_optnumber(L, 10, 0);
-	float ky = (float)luaL_optnumber(L, 11, 0);
+	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
+	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
+	float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
+	float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
+	float sy = (float) luaL_optnumber(L, startidx + 4, sx);
+	float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
+	float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
+	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
+	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
+
+	int id = 0;
 	try
 	{
-		lua_pushnumber(L, t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky));
+		if (geom)
+			id = t->addg(geom, x, y, a, sx, sy, ox, oy, kx, ky);
+		else
+			id = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
 	}
 	catch (love::Exception &e)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
+
+	lua_pushinteger(L, id);
 	return 1;
 }
 
 int w_SpriteBatch_set(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int index = luaL_checkinteger(L, 2);
-	float x = (float)luaL_optnumber(L, 3, 0.0f);
-	float y = (float)luaL_optnumber(L, 4, 0.0f);
-	float angle = (float)luaL_optnumber(L, 5, 0.0f);
-	float sx = (float)luaL_optnumber(L, 6, 1.0f);
-	float sy = (float)luaL_optnumber(L, 7, sx);
-	float ox = (float)luaL_optnumber(L, 8, 0);
-	float oy = (float)luaL_optnumber(L, 9, 0);
-	float kx = (float)luaL_optnumber(L, 10, 0);
-	float ky = (float)luaL_optnumber(L, 11, 0);
-	t->add(x, y, angle, sx, sy, ox, oy, kx, ky, index);
-	return 0;
-}
+	int id = luaL_checkinteger(L, 2);
 
-int w_SpriteBatch_setg(lua_State *L)
-{
-	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int index = luaL_checkinteger(L, 2);
-	Geometry *g = luax_checktype<Geometry>(L, 3, "Geometry", GRAPHICS_GEOMETRY_T);
+	Geometry *geom = 0;
+	int startidx = 3;
 
-	float x = (float)luaL_optnumber(L, 4, 0.0f);
-	float y = (float)luaL_optnumber(L, 5, 0.0f);
-	float angle = (float)luaL_optnumber(L, 6, 0.0f);
-	float sx = (float)luaL_optnumber(L, 7, 1.0f);
-	float sy = (float)luaL_optnumber(L, 8, sx);
-	float ox = (float)luaL_optnumber(L, 9, 0);
-	float oy = (float)luaL_optnumber(L, 10, 0);
-	float kx = (float)luaL_optnumber(L, 11, 0);
-	float ky = (float)luaL_optnumber(L, 12, 0);
+	if (luax_istype(L, 2, GRAPHICS_GEOMETRY_T))
+	{
+		geom = luax_totype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+		startidx = 4;
+	}
+
+	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
+	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
+	float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
+	float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
+	float sy = (float) luaL_optnumber(L, startidx + 4, sx);
+	float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
+	float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
+	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
+	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
+
 	try
 	{
-		t->addg(g, x, y, angle, sx, sy, ox, oy, kx, ky, index);
+		if (geom)
+			t->addg(geom, x, y, a, sx, sy, ox, oy, kx, ky, id);
+		else
+			t->add(x, y, a, sx, sy, ox, oy, kx, ky, id);
 	}
 	catch (love::Exception &e)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
+
 	return 0;
 }
 
@@ -246,9 +240,7 @@ int w_SpriteBatch_getBufferSize(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "add", w_SpriteBatch_add },
-	{ "addg", w_SpriteBatch_addg },
 	{ "set", w_SpriteBatch_set },
-	{ "setg", w_SpriteBatch_setg },
 	{ "clear", w_SpriteBatch_clear },
 	{ "bind", w_SpriteBatch_bind },
 	{ "unbind", w_SpriteBatch_unbind },

@@ -1168,64 +1168,40 @@ int w_getRendererInfo(lua_State *L)
 	return 1;
 }
 
-/**
- * Draws an Image at the specified coordinates, with rotation and
- * scaling along both axes.
- * @param x The x-coordinate.
- * @param y The y-coordinate.
- * @param angle The amount of rotation.
- * @param sx The scale factor along the x-axis. (1 = normal).
- * @param sy The scale factor along the y-axis. (1 = normal).
- * @param ox The offset along the x-axis.
- * @param oy The offset along the y-axis.
- * @param kx Shear along the x-axis.
- * @param ky Shear along the y-axis.
- **/
 int w_draw(lua_State *L)
 {
-	Drawable *drawable = luax_checktype<Drawable>(L, 1, "Drawable", GRAPHICS_DRAWABLE_T);
-	float x = (float)luaL_optnumber(L, 2, 0.0f);
-	float y = (float)luaL_optnumber(L, 3, 0.0f);
-	float angle = (float)luaL_optnumber(L, 4, 0.0f);
-	float sx = (float)luaL_optnumber(L, 5, 1.0f);
-	float sy = (float)luaL_optnumber(L, 6, sx);
-	float ox = (float)luaL_optnumber(L, 7, 0);
-	float oy = (float)luaL_optnumber(L, 8, 0);
-	float kx = (float)luaL_optnumber(L, 9, 0);
-	float ky = (float)luaL_optnumber(L, 10, 0);
-	drawable->draw(x, y, angle, sx, sy, ox, oy, kx, ky);
-	return 0;
-}
+	Drawable *drawable = 0;
+	DrawGable *drawgable = 0;
+	Geometry *geom = 0;
+	int startidx = 2;
 
-/**
- * Draws a portion of a DrawGable at the specified coordinates,
- * with rotation and scaling along both axes.
- *
- * @param q The Quad to draw.
- * @param x The x-coordinate.
- * @param y The y-coordinate.
- * @param angle The amount of rotation.
- * @param sx The scale factor along the x-axis. (1 = normal).
- * @param sy The scale factor along the y-axis. (1 = normal).
- * @param ox The offset along the x-axis.
- * @param oy The offset along the y-axis.
- * @param kx Shear along the x-axis.
- * @param ky Shear along the y-axis.
- **/
-int w_drawg(lua_State *L)
-{
-	DrawGable *dq = luax_checktype<DrawGable>(L, 1, "DrawGable", GRAPHICS_DRAWGABLE_T);
-	Geometry *geom = luax_checkgeometry(L, 2);
-	float x = (float)luaL_optnumber(L, 3, 0.0f);
-	float y = (float)luaL_optnumber(L, 4, 0.0f);
-	float angle = (float)luaL_optnumber(L, 5, 0);
-	float sx = (float)luaL_optnumber(L, 6, 1);
-	float sy = (float)luaL_optnumber(L, 7, sx);
-	float ox = (float)luaL_optnumber(L, 8, 0);
-	float oy = (float)luaL_optnumber(L, 9, 0);
-	float kx = (float)luaL_optnumber(L, 10, 0);
-	float ky = (float)luaL_optnumber(L, 11, 0);
-	dq->drawg(geom, x, y, angle, sx, sy, ox, oy, kx, ky);
+	if (luax_istype(L, 2, GRAPHICS_GEOMETRY_T))
+	{
+		drawgable = luax_checktype<DrawGable>(L, 1, "DrawGable", GRAPHICS_DRAWGABLE_T);
+		geom = luax_totype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+		startidx = 3;
+	}
+	else
+	{
+		drawable = luax_checktype<Drawable>(L, 1, "Drawable", GRAPHICS_DRAWABLE_T);
+		startidx = 2;
+	}
+
+	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
+	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
+	float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
+	float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
+	float sy = (float) luaL_optnumber(L, startidx + 4, sx);
+	float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
+	float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
+	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
+	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
+
+	if (drawgable && geom)
+		drawgable->drawg(geom, x, y, a, sx, sy, ox, oy, kx, ky);
+	else if (drawable)
+		drawable->draw(x, y, a, sx, sy, ox, oy, kx, ky);
+
 	return 0;
 }
 
@@ -1564,8 +1540,6 @@ static const luaL_Reg functions[] =
 	{ "getRendererInfo", w_getRendererInfo },
 
 	{ "draw", w_draw },
-	{ "drawq", w_drawg }, // legacy
-	{ "drawg", w_drawg },
 
 	{ "print", w_print },
 	{ "printf", w_printf },
