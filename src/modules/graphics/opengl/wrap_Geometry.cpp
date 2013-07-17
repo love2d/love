@@ -155,14 +155,14 @@ int w_Geometry_getVertexMap(lua_State *L)
 {
 	Geometry *g = luax_checkgeometry(L, 1);
 
-	size_t elementcount = g->getElementCount();
+	size_t elemcount = g->getElementCount();
 	const uint16 *elements = g->getElementArray();
 
-	if (elementcount == 0 || elements == 0)
+	if (elemcount == 0 || elements == 0)
 		return 0;
 
-	lua_createtable(L, elementcount, 0);
-	for (size_t i = 0; i < elementcount; i++)
+	lua_createtable(L, elemcount, 0);
+	for (size_t i = 0; i < elemcount; i++)
 	{
 		lua_pushinteger(L, elements[i]);
 		lua_rawseti(L, -2, i + 1);

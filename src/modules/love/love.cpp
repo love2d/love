@@ -130,7 +130,7 @@ static const luaL_Reg modules[] = {
 };
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
-int w__openConsole(lua_State * L);
+int w__openConsole(lua_State *L);
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
 const char *love_version()
@@ -201,7 +201,7 @@ int luaopen_love(lua_State * L)
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-int w__openConsole(lua_State * L)
+int w__openConsole(lua_State *L)
 {
 	static bool is_open = false;
 	if (is_open)

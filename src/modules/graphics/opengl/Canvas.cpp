@@ -744,6 +744,8 @@ Image::Wrap Canvas::getWrap() const
 
 bool Canvas::loadVolatile()
 {
+	fbo = depth_stencil = img = 0;
+
 	// glTexImage2D is guaranteed to error in this case.
 	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
 	{
@@ -764,6 +766,7 @@ bool Canvas::loadVolatile()
 void Canvas::unloadVolatile()
 {
 	strategy->deleteFBO(fbo, depth_stencil, img);
+	fbo = depth_stencil = img = 0;
 
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
 		attachedCanvases[i]->release();

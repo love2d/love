@@ -198,6 +198,18 @@ int luax_assert_nilerror(lua_State *L, int idx)
 	return 0;
 }
 
+void luax_setfuncs(lua_State *L, const luaL_Reg *l)
+{
+	if (l == 0)
+		return;
+
+	for (; l->name != 0; l++)
+	{
+		lua_pushcfunction(L, l->func);
+		lua_setfield(L, -2, l->name);
+	}
+}
+
 int luax_register_module(lua_State *L, const WrappedModule &m)
 {
 	// Put a reference to the C++ module in Lua.
@@ -225,7 +237,8 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	lua_newtable(L);
 
 	// Register all the functions.
-	luaL_register(L, 0, m.functions);
+	if (m.functions != 0)
+		luax_setfuncs(L, m.functions);
 
 	// Register types.
 	if (m.types != 0)
@@ -283,7 +296,7 @@ int luax_register_type(lua_State *L, const char *tname, const luaL_Reg *f)
 	lua_setfield(L, -2, "typeOf");
 
 	if (f != 0)
-		luaL_register(L, 0, f);
+		luax_setfuncs(L, f);
 
 	lua_pop(L, 1); // Pops metatable.
 	return 0;
@@ -322,6 +335,13 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos)
 		return luaL_error(L, "Can't register searcher: package table does not exist.");
 
 	lua_getfield(L, -1, "loaders");
+
+	// Lua 5.2 renamed package.loaders to package.searchers.
+	if (lua_isnil(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_getfield(L, -1, "searchers");
+	}
 
 	if (lua_isnil(L, -1))
 		return luaL_error(L, "Can't register searcher: package.loaders table does not exist.");

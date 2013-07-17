@@ -218,6 +218,14 @@ int luax_assert_function(lua_State *L, int idx);
 int luax_assert_nilerror(lua_State *L, int idx);
 
 /**
+ * Registers all functions in the array l (see luaL_Reg) into the table at the
+ * top of the stack.
+ * Similar to Lua 5.2's luaL_setfuncs without the upvalues, and to Lua 5.1's
+ * luaL_register without the library name.
+ **/
+void luax_setfuncs(lua_State *L, const luaL_Reg *l);
+
+/**
  * Register a module in the love table. The love table will be created if it does not exist.
  * @param L The Lua state.
  **/
