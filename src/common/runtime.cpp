@@ -27,8 +27,9 @@
 #include "StringMap.h"
 #include <thread/threads.h>
 
-// STD
+// C++
 #include <iostream>
+#include <cstdio>
 
 namespace love
 {
@@ -267,6 +268,11 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name)
 
 int luax_register_type(lua_State *L, const char *tname, const luaL_Reg *f)
 {
+	// Verify that this type name has a matching Type ID and type name mapping.
+	love::Type ltype;
+	if (!love::getType(tname, ltype))
+		printf("Missing type entry for type name: %s\n", tname);
+
 	luaL_newmetatable(L, tname);
 
 	// m.__index = m
@@ -572,6 +578,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{"RevoluteJoint", PHYSICS_REVOLUTE_JOINT_ID},
 	{"PulleyJoint", PHYSICS_PULLEY_JOINT_ID},
 	{"GearJoint", PHYSICS_GEAR_JOINT_ID},
+	{"FrictionJoint", PHYSICS_FRICTION_JOINT_ID},
 	{"WeldJoint", PHYSICS_WELD_JOINT_ID},
 	{"RopeJoint", PHYSICS_ROPE_JOINT_ID},
 	{"WheelJoint", PHYSICS_WHEEL_JOINT_ID},
@@ -588,6 +595,16 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 };
 
 StringMap<Type, TYPE_MAX_ENUM> types(typeEntries, sizeof(typeEntries));
+
+bool getType(const char *in, love::Type &out)
+{
+	return types.find(in, out);
+}
+
+bool getType(love::Type in, const char *&out)
+{
+	return types.find(in, out);
+}
 
 Type luax_type(lua_State *L, int idx)
 {
