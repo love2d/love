@@ -346,7 +346,7 @@ void Shader::attach(bool temporary)
 		}
 
 		// We always want to use texture unit 0 for everyhing else.
-		gl.setActiveTextureUnit(0);
+		gl.setTextureUnit(0);
 	}
 }
 
@@ -548,7 +548,7 @@ void Shader::sendTexture(const std::string &name, GLuint texture)
 	glUniform1i(u.location, textureunit);
 
 	// reset texture unit
-	gl.setActiveTextureUnit(0);
+	gl.setTextureUnit(0);
 
 	// increment global shader texture id counter for this texture unit, if we haven't already
 	if (activeTextureUnits[textureunit-1] == 0)

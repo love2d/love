@@ -160,7 +160,7 @@ bool Graphics::setMode(int width, int height)
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
-	gl.setActiveTextureUnit(0);
+	gl.setTextureUnit(0);
 
 	// Set the viewport to top-left corner
 	gl.setViewport(OpenGL::Viewport(0, 0, width, height));

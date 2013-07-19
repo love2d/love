@@ -125,7 +125,7 @@ public:
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
 	 **/
-	void setActiveTextureUnit(int textureunit);
+	void setTextureUnit(int textureunit);
 
 	/**
 	 * Helper for binding an OpenGL texture.

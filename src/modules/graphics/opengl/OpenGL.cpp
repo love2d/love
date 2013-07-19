@@ -232,7 +232,7 @@ OpenGL::Viewport OpenGL::getScissor() const
 	return state.scissor;
 }
 
-void OpenGL::setActiveTextureUnit(int textureunit)
+void OpenGL::setTextureUnit(int textureunit)
 {
 	if (textureunit < 0 || (size_t) textureunit >= state.textureUnits.size())
 		throw love::Exception("Invalid texture unit index (%d).", textureunit);
@@ -265,13 +265,13 @@ void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev
 	if (texture != state.textureUnits[textureunit])
 	{
 		int oldtextureunit = state.curTextureUnit;
-		setActiveTextureUnit(textureunit);
+		setTextureUnit(textureunit);
 
 		state.textureUnits[textureunit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 		if (restoreprev)
-			setActiveTextureUnit(oldtextureunit);
+			setTextureUnit(oldtextureunit);
 	}
 }
 
