@@ -970,34 +970,6 @@ int w_setCanvas(lua_State *L)
 		return 0;
 	}
 
-	Canvas *canvas = luax_checkcanvas(L, 1);
-
-	try
-	{
-		// this unbinds the previous fbo
-		canvas->startGrab();
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-
-	return 0;
-}
-
-int w_setCanvases(lua_State *L)
-{
-	// discard stencil testing
-	instance->discardStencil();
-
-	// called with none -> reset to default buffer
-	// nil is an error, to help people with typoes
-	if (lua_isnone(L,1))
-	{
-		Canvas::bindDefaultCanvas();
-		return 0;
-	}
-
 	bool is_table = lua_istable(L, 1);
 	std::vector<Canvas *> attachments;
 
@@ -1026,7 +998,10 @@ int w_setCanvases(lua_State *L)
 
 	try
 	{
-		canvas->startGrab(attachments);
+		if (attachments.size() > 0)
+			canvas->startGrab(attachments);
+		else
+			canvas->startGrab();
 	}
 	catch (love::Exception &e)
 	{
@@ -1529,9 +1504,7 @@ static const luaL_Reg functions[] =
 	{ "getMaxImageSize", w_getMaxImageSize },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
-	{ "setCanvases", w_setCanvases },
 	{ "getCanvas", w_getCanvas },
-	{ "getCanvases", w_getCanvas },
 
 	{ "setShader", w_setShader },
 	{ "getShader", w_getShader },

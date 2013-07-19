@@ -85,7 +85,6 @@ int w_getPointStyle(lua_State *L);
 int w_getMaxPointSize(lua_State *L);
 int w_newScreenshot(lua_State *L);
 int w_setCanvas(lua_State *L);
-int w_setCanvases(lua_State *L);
 int w_getCanvas(lua_State *L);
 int w_setShader(lua_State *L);
 int w_getShader(lua_State *L);
