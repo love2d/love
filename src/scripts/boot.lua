@@ -263,7 +263,7 @@ function love.init()
 		title = "Untitled",
 		author = "Unnamed",
 		version = love._version,
-		screen = {
+		window = {
 			width = 800,
 			height = 600,
 			fullscreen = false,
@@ -352,26 +352,26 @@ function love.init()
 		love._openConsole()
 	end
 
-	-- Setup screen here.
+	-- Setup window here.
 	local has_window = false
-	if c.screen and c.modules.window then
-		if love.window.checkMode(c.screen.width, c.screen.height, c.screen.fullscreen) or (c.screen.width == 0 and c.screen.height == 0) then
-			assert(love.window.setMode(c.screen.width, c.screen.height,
+	if c.window and c.modules.window then
+		if love.window.checkMode(c.window.width, c.window.height, c.window.fullscreen) or (c.window.width == 0 and c.window.height == 0) then
+			assert(love.window.setMode(c.window.width, c.window.height,
 			{
-				fullscreen = c.screen.fullscreen,
-				vsync = c.screen.vsync,
-				fsaa = c.screen.fsaa,
-				resizable = c.screen.resizable,
-				borderless = c.screen.borderless,
-				centered = c.screen.centered,
-			}), "Could not set screen mode")
+				fullscreen = c.window.fullscreen,
+				vsync = c.window.vsync,
+				fsaa = c.window.fsaa,
+				resizable = c.window.resizable,
+				borderless = c.window.borderless,
+				centered = c.window.centered,
+			}), "Could not set window mode")
 		else
-			error("Could not set screen mode")
+			error("Could not set window mode")
 		end
 		love.window.setCaption(c.title)
 	end
 
-	-- Our first timestep, because screen creation can take some time
+	-- Our first timestep, because window creation can take some time
 	if love.timer then
 		love.timer.step()
 	end
