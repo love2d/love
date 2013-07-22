@@ -512,7 +512,7 @@ int w_ParticleSystem_setColors(lua_State *L)
 		int cargs = lua_gettop(L) - 1;
 		size_t nColors = (cargs + 3) / 4; // nColors = ceil(color_args / 4)
 
-		if (cargs % 4 != 0 || cargs == 0)
+		if (cargs != 3 && (cargs % 4 != 0 || cargs == 0))
 			return luaL_error(L, "Expected red, green, blue, and alpha. Only got %d of 4 components.", cargs % 4);
 
 		if (nColors > 8)
@@ -523,7 +523,7 @@ int w_ParticleSystem_setColors(lua_State *L)
 			int r = luaL_checkint(L, 2);
 			int g = luaL_checkint(L, 3);
 			int b = luaL_checkint(L, 4);
-			int a = luaL_checkint(L, 5);
+			int a = luaL_optint(L, 5, 255);
 			t->setColor(Color(r,g,b,a));
 		}
 		else
