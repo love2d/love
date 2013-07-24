@@ -103,7 +103,8 @@ Message *Event::convert(SDL_Event &e)
 			txt = "unknown";
 		arg1 = new Variant(txt, strlen(txt));
 		txt = convertUnicode(e.key.keysym.unicode);
-		if (txt)
+		// We don't want to send unprintable unicode text.
+		if (txt && (txt[0] >= ' ' && txt[0] != 127))
 		{
 			arg2 = new Variant(txt, strlen(txt));
 			msg = new Message("keypressed", arg1, arg2);
