@@ -28,11 +28,12 @@ LOVE 0.9.0 [Baby Inspector]
   * Added Canvas:getPixel.
   * Added blend mode "replace".
   * Added Geometry objects (replaces Quads), allowing for arbitrary textured polygons.
-  * Added love.graphics.setCanvases (multiple render targets.)
+  * Added multiple render target support to love.graphics.setCanvas.
   * Added love.graphics.setColorMask.
   * Added love.graphics.setAlphaTest.
   * Added love.graphics.origin.
   * Added love.graphics.getRendererInfo.
+  * Added love.graphics.getMaxImageSize.
   * Added SpriteBatch:getCount and SpriteBatch:getBufferSize.
   * Added SpriteBatch:getColor.
   * Added ParticleSystem:emit.
@@ -80,6 +81,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed scaling in several love.physics functions.
   * Fixed Box2D exception in World:update.
   * Fixed many uncaught Box2D / love.physics exceptions for Bodies and Joints.
+  * Fixed ChainShape:getPoints running out of Lua stack space and crashing.
   * Fixed File:read reading past end of file.
   * Fixed love.filesystem.setIdentity not removing read access from old directories.
   * Fixed possible memory leak in utf-8 decoder.
@@ -117,14 +119,13 @@ LOVE 0.9.0 [Baby Inspector]
   * Moved window-related functions from love.graphics to love.window.
 
   * Renamed love's boot script to 'love.boot', which can be required.
+  * Renamed t.screen to t.window in love.conf.
   * Renamed PixelEffect to Shader (but now with vertex shaders).
   * Renamed love.graphics.setDefaultImageFilter to love.graphics.setDefaultFilter.
   * Renamed ParticleSystem:setSprite to ParticleSystem:setImage.
   * Renamed ParticleSystem:setGravity to ParticleSystem:setLinearAcceleration.
   * Renamed ParticleSystem:setLifetime/setParticleLife to setEmitter/ParticleLifetime.
   * Renamed ParticleSystem:count and all getNum* functions to get*Count.
-  * Renamed love.graphics.drawq to love.graphics.drawg.
-  * Renamed SpriteBatch:addq/setq to SpriteBatch:addg/setg.
   * Renamed SoundData:getBits to SoundData:getBitDepth.
 
   * Removed love.graphics.drawTest.
@@ -133,6 +134,8 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed love.graphics.newStencil.
   * Removed love.graphics.setLine/setPoint.
   * Removed Quad objects (replaced by Geometry).
+  * Removed love.graphics.drawq (functionality is merged into love.graphics.draw).
+  * Removed SpriteBatch:addq/setq (functionality is merged into SpriteBatch:add/set).
   * Removed ParticleSystem:isFull/isEmpty.
   * Removed love.joystick.open and friends.
   * Removed love.joystick.getBall and love.joystick.getNumBalls.
