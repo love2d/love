@@ -10,18 +10,13 @@
 #import <sys/param.h> /* for MAXPATHLEN */
 #import <unistd.h>
 
-/* For some reaon, Apple removed setAppleMenu from the headers in 10.4,
- but the method still is there and works. To avoid warnings, we declare
- it ourselves here. */
-@interface NSApplication(SDL_Missing_Methods)
-- (void)setAppleMenu:(NSMenu *)menu;
-@end
-
 /* Use this flag to determine whether we use SDLMain.nib or not */
 #define		SDL_USE_NIB_FILE	0
 
 /* Use this flag to determine whether we use CPS (docking) or not */
-#define		SDL_USE_CPS		1
+/* We can't submit to the Mac App Store with this enabled: */
+/* http://www.philhassey.com/blog/2011/02/ */
+/*#define		SDL_USE_CPS		1 */
 #ifdef SDL_USE_CPS
 /* Portions of CPS.h */
 typedef struct CPSProcessSerNum
@@ -184,9 +179,6 @@ static void setApplicationMenu(void)
 	[menuItem setSubmenu:appleMenu];
 	[[NSApp mainMenu] addItem:menuItem];
 
-	/* Tell the application object that this is now the application menu */
-	[NSApp setAppleMenu:appleMenu];
-
 	/* Finally give up our references to the objects */
 	[appleMenu release];
 	[menuItem release];
@@ -280,8 +272,9 @@ static void CustomApplicationMain (int argc, char **argv)
 	char *arg;
 	char **newargv;
 
-	if (!gFinderLaunch)  /* MacOS is passing command line args. */
-		return FALSE;
+	// Disabled because the method for detecting this doesn't work in OS 10.9.
+//	if (!gFinderLaunch)  /* MacOS is passing command line args. */
+//		return FALSE;
 
 	if (gCalledAppMainline)  /* app has started, ignore this document. */
 		return FALSE;
@@ -312,8 +305,8 @@ static void CustomApplicationMain (int argc, char **argv)
 {
 	int status;
 
-	/* Set the working directory to the .app's parent directory */
-	[self setupWorkingDirectory:gFinderLaunch];
+	/* Set the working directory to the .app's Resources folder */
+	[self setupWorkingDirectory:YES];
 
 #if SDL_USE_NIB_FILE
 	/* Set the main menu to contain the real app name instead of "SDL App" */

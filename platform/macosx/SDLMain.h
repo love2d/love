@@ -6,7 +6,7 @@
 */
 
 #import <Cocoa/Cocoa.h>
-#import "SDL/SDL.h"
+#include "SDL/SDL.h"
 
 @interface SDLMain : NSObject
 @end
