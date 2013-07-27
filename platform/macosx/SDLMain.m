@@ -306,7 +306,7 @@ static void CustomApplicationMain (int argc, char **argv)
 	int status;
 
 	/* Set the working directory to the .app's Resources folder */
-	[self setupWorkingDirectory:YES];
+	[self setupWorkingDirectory:gCalledAppMainline];
 
 #if SDL_USE_NIB_FILE
 	/* Set the main menu to contain the real app name instead of "SDL App" */
