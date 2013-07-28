@@ -171,7 +171,7 @@ void VBO::unmap()
 		is_bound = true;
 	}
 
-	// "orphan" current buffer to avoid implicit synchronisation on the gpu:
+	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
 	glBufferDataARB(getTarget(), getSize(), NULL,       getUsage());
 	glBufferDataARB(getTarget(), getSize(), memory_map, getUsage());
@@ -204,7 +204,40 @@ void VBO::fill(size_t offset, size_t size, const void *data)
 	}
 	else
 	{
-		glBufferSubDataARB(getTarget(), offset, size, data);
+		// Not all systems have access to some faster paths...
+		if (GLEE_VERSION_3_0 || GLEE_ARB_map_buffer_range)
+		{
+			// Mapping a small range can have less chance of synchronization
+			// than glBufferSubData, so it may be faster.
+			GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT;
+			void *mapdata = glMapBufferRange(getTarget(), offset, size, access);
+
+			if (mapdata)
+				memcpy(mapdata, data, size);
+
+			glUnmapBuffer(getTarget());
+		}
+		else if (GLEE_APPLE_flush_buffer_range)
+		{
+			void *mapdata = glMapBuffer(getTarget(), GL_WRITE_ONLY);
+
+			if (mapdata)
+			{
+				// We specified in VBO::load that we'll do manual flushing.
+				// Now we tell the driver it only needs to deal with the data
+				// we changed.
+				memcpy(static_cast<char *>(mapdata) + offset, data, size);
+				glFlushMappedBufferRangeAPPLE(getTarget(), offset, size);
+			}
+
+			glUnmapBuffer(getTarget());
+		}
+		else
+		{
+			// Fall back to a possibly slower SubData (more chance of syncing.)
+			glBufferSubDataARB(getTarget(), offset, size, data);
+		}
+
 		is_dirty = true;
 	}
 }
@@ -239,6 +272,12 @@ bool VBO::load(bool restore)
 	// Note that if 'src' is '0', no data will be copied.
 	glBufferDataARB(getTarget(), getSize(), src, getUsage());
 	GLenum err = glGetError();
+
+	// We don't want to flush the entire buffer when we just modify a small
+	// portion of it (VBO::fill without VBO::map), so we'll handle the flushing
+	// ourselves when we can.
+	if (GLEE_APPLE_flush_buffer_range)
+		glBufferParameteriAPPLE(getTarget(), GL_BUFFER_FLUSHING_UNMAP_APPLE, GL_FALSE);
 
 	return (GL_NO_ERROR == err);
 }
