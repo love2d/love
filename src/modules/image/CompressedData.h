@@ -50,6 +50,8 @@ public:
 		TYPE_DXT1,
 		TYPE_DXT3,
 		TYPE_DXT5,
+		TYPE_BC4,
+		TYPE_BC4s,
 		TYPE_BC5,
 		TYPE_BC5s,
 		TYPE_MAX_ENUM

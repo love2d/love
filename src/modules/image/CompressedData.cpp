@@ -115,6 +115,8 @@ StringMap<CompressedData::TextureType, CompressedData::TYPE_MAX_ENUM>::Entry Com
 	{"dxt1", CompressedData::TYPE_DXT1},
 	{"dxt3", CompressedData::TYPE_DXT3},
 	{"dxt5", CompressedData::TYPE_DXT5},
+	{"bc4", CompressedData::TYPE_BC4},
+	{"bc4s", CompressedData::TYPE_BC4s},
 	{"bc5", CompressedData::TYPE_BC5},
 	{"bc5s", CompressedData::TYPE_BC5s},
 };

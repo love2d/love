@@ -101,6 +101,10 @@ CompressedData::TextureType ddsHandler::convertFormat(dds::Format ddsformat)
 		return CompressedData::TYPE_DXT3;
 	case dds::FORMAT_DXT5:
 		return CompressedData::TYPE_DXT5;
+	case dds::FORMAT_BC4:
+		return CompressedData::TYPE_BC4;
+	case dds::FORMAT_BC4s:
+		return CompressedData::TYPE_BC4s;
 	case dds::FORMAT_BC5:
 		return CompressedData::TYPE_BC5;
 	case dds::FORMAT_BC5s:

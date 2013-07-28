@@ -219,7 +219,7 @@ void VBO::fill(size_t offset, size_t size, const void *data)
 		}
 		else if (GLEE_APPLE_flush_buffer_range)
 		{
-			void *mapdata = glMapBuffer(getTarget(), GL_WRITE_ONLY);
+			void *mapdata = glMapBufferARB(getTarget(), GL_WRITE_ONLY);
 
 			if (mapdata)
 			{
@@ -230,7 +230,7 @@ void VBO::fill(size_t offset, size_t size, const void *data)
 				glFlushMappedBufferRangeAPPLE(getTarget(), offset, size);
 			}
 
-			glUnmapBuffer(getTarget());
+			glUnmapBufferARB(getTarget());
 		}
 		else
 		{
