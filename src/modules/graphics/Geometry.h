@@ -72,8 +72,6 @@ public:
 	const vertex &getVertex(size_t i) const;
 	void setVertex(size_t i, const vertex &v);
 
-	void flip(bool x, bool y);
-
 	/**
 	 * Returns a pointer to the vertex array.
 	 **/
@@ -133,12 +131,6 @@ private:
 
 	uint16 *elementArray;
 	size_t elementCount;
-
-	float x_min;
-	float x_max;
-
-	float y_min;
-	float y_max;
 
 	bool vertexColors;
 

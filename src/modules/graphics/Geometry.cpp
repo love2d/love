@@ -40,13 +40,12 @@ Geometry::Geometry(const std::vector<vertex> &polygon, const std::vector<uint16>
 	, vertexCount(polygon.size())
 	, elementArray(NULL)
 	, elementCount(elements.size())
-	, x_min(std::numeric_limits<float>::max())
-	, x_max(std::numeric_limits<float>::min())
-	, y_min(std::numeric_limits<float>::max())
-	, y_max(std::numeric_limits<float>::min())
 	, vertexColors(false)
 	, drawMode(mode)
 {
+	if (polygon.size() < 3)
+		throw love::Exception("At least 3 vertices are needed to create a Geometry.");
+
 	for (size_t i = 0; i < elementCount; i++)
 	{
 		// All values in the element array need to be a valid vertex index.
@@ -55,15 +54,7 @@ Geometry::Geometry(const std::vector<vertex> &polygon, const std::vector<uint16>
 	}
 
 	vertexArray = new vertex[vertexCount];
-	for (size_t i = 0; i < vertexCount; ++i)
-	{
-		const vertex &v = polygon[i];
-		vertexArray[i] = v;
-		x_min = v.x < x_min ? v.x : x_min;
-		x_max = v.x > x_max ? v.x : x_max;
-		y_min = v.y < y_min ? v.y : y_min;
-		y_max = v.y > y_max ? v.y : y_max;
-	}
+	memcpy(vertexArray, &polygon[0], vertexCount * sizeof(vertex));
 
 	if (elementCount > 0)
 	{
@@ -77,10 +68,6 @@ Geometry::Geometry(float x, float y, float w, float h, float sw, float sh)
 	, vertexCount(4)
 	, elementArray(NULL)
 	, elementCount(0)
-	, x_min(0)
-	, x_max(w)
-	, y_min(0)
-	, y_max(h)
 	, vertexColors(false)
 	, drawMode(DRAW_MODE_FAN)
 {
@@ -95,10 +82,6 @@ Geometry::Geometry(float x, float y, float w, float h, float sw, float sh)
 Geometry::Geometry(const Geometry &other)
 	: vertexCount(other.vertexCount)
 	, elementCount(other.elementCount)
-	, x_min(other.x_min)
-	, x_max(other.x_max)
-	, y_min(other.y_min)
-	, y_max(other.y_max)
 	, vertexColors(other.vertexColors)
 	, drawMode(other.drawMode)
 {
@@ -122,14 +105,11 @@ Geometry &Geometry::operator=(const Geometry &other)
 
 		vertexCount  = temp.vertexCount;
 		elementCount = temp.elementCount;
-		x_min        = temp.x_min;
-		x_max        = temp.x_max;
-		y_min        = temp.y_min;
-		y_max        = temp.y_max;
 
 		vertexColors = other.vertexColors;
 		drawMode     = other.drawMode;
 	}
+
 	return *this;
 }
 
@@ -143,6 +123,7 @@ const vertex &Geometry::getVertex(size_t i) const
 {
 	if (i >= vertexCount)
 		throw Exception("Invalid vertex index");
+
 	return vertexArray[i];
 }
 
@@ -151,26 +132,9 @@ void Geometry::setVertex(size_t i, const vertex &v)
 	if (i >= vertexCount)
 		throw Exception("Invalid vertex index");
 
-	if (vertexArray[i].x != v.x || vertexArray[i].y != v.y)
-	{
-		x_min = v.x < x_min ? v.x : x_min;
-		x_max = v.x > x_max ? v.x : x_max;
-		y_min = v.y < y_min ? v.y : y_min;
-		y_max = v.y > y_max ? v.y : y_max;
-	}
-
 	vertexArray[i] = v;
 }
 
-void Geometry::flip(bool x, bool y)
-{
-	for (size_t i = 0; i < vertexCount; ++i)
-	{
-		vertex &v = vertexArray[i];
-		if (x) v.x = x_max + x_min - v.x;
-		if (y) v.y = y_max + y_min - v.y;
-	}
-}
 
 void Geometry::setElementArray(const uint16 *elements, size_t count)
 {

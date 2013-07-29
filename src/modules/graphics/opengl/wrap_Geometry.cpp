@@ -115,13 +115,6 @@ int w_Geometry_setVertex(lua_State *L)
 	return 0;
 }
 
-int w_Geometry_flip(lua_State *L)
-{
-	Geometry *geom = luax_checkgeometry(L, 1);
-	geom->flip(luax_toboolean(L, 2), luax_toboolean(L, 3));
-	return 0;
-}
-
 int w_Geometry_setVertexColors(lua_State *L)
 {
 	Geometry *geom = luax_checkgeometry(L, 1);
@@ -217,7 +210,6 @@ static const luaL_Reg w_Geometry_functions[] =
 	{ "getVertexCount", w_Geometry_getVertexCount },
 	{ "getVertex", w_Geometry_getVertex },
 	{ "setVertex", w_Geometry_setVertex },
-	{ "flip", w_Geometry_flip },
 	{ "setVertexColors", w_Geometry_setVertexColors },
 	{ "hasVertexColors", w_Geometry_hasVertexColors },
 	{ "getDrawMode", w_Geometry_getDrawMode },
