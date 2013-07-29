@@ -229,6 +229,15 @@ static void CustomApplicationMain (int argc, char **argv)
 				if (!CPSSetFrontProcess(&PSN))
 					[SDLApplication sharedApplication];
 	}
+#else
+	{
+		ProcessSerialNumber psn;
+
+		if (!GetCurrentProcess(&psn)) {
+			TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+			SetFrontProcess(&psn);
+		}
+	}
 #endif /* SDL_USE_CPS */
 
 	/* Set up the menubar */
