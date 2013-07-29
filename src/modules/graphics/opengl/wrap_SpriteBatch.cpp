@@ -80,9 +80,9 @@ int w_SpriteBatch_set(lua_State *L)
 	Geometry *geom = 0;
 	int startidx = 3;
 
-	if (luax_istype(L, 2, GRAPHICS_GEOMETRY_T))
+	if (luax_istype(L, 3, GRAPHICS_GEOMETRY_T))
 	{
-		geom = luax_totype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+		geom = luax_totype<Geometry>(L, 3, "Geometry", GRAPHICS_GEOMETRY_T);
 		startidx = 4;
 	}
 
