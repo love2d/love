@@ -18,16 +18,27 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#ifndef LOVE_LOVE_H
+#define LOVE_LOVE_H
+
 // LOVE
 #include "common/config.h"
 
 // Forward declare lua_State.
 struct lua_State;
 
+#ifdef __cplusplus
 extern "C"
 {
-	LOVE_EXPORT const char *love_version();
-	LOVE_EXPORT const char *love_codename();
-	LOVE_EXPORT int luaopen_love(lua_State *L);
-	LOVE_EXPORT int luaopen_love_boot(lua_State *L);
+#endif
+
+LOVE_EXPORT const char *love_version();
+LOVE_EXPORT const char *love_codename();
+LOVE_EXPORT int luaopen_love(lua_State *L);
+LOVE_EXPORT int luaopen_love_boot(lua_State *L);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // LOVE_LOVE_H
