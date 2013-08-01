@@ -134,47 +134,6 @@ int w_setInvertedStencil(lua_State *L)
 	return setStencil(L, true);
 }
 
-int w_setAlphaTest(lua_State *L)
-{
-	// disable alpha testing if no arguments are given
-	if (lua_gettop(L) == 0)
-	{
-		instance->setAlphaTest();
-		return 0;
-	}
-
-	const char *modestr = luaL_checkstring(L, 1);
-	unsigned char refalpha = (unsigned char) luaL_checkinteger(L, 2);
-
-	Graphics::AlphaTestMode mode;
-	if (!Graphics::getConstant(modestr, mode))
-		return luaL_error(L, "Invalid alpha test mode: %s", modestr);
-
-	instance->setAlphaTest(mode, refalpha);
-
-	return 0;
-}
-
-int w_getAlphaTest(lua_State *L)
-{
-	// return nil if not enabled
-	if (!instance->isAlphaTestEnabled())
-		return 0;
-	
-	Graphics::AlphaTestMode mode = instance->getAlphaTestMode();
-	
-	const char *modestr;
-	if (!Graphics::getConstant(mode, modestr))
-		return 0; // also return nil if alpha test mode isn't valid
-
-	unsigned char refalpha = instance->getAlphaTestRef();
-
-	lua_pushstring(L, modestr);
-	lua_pushnumber(L, refalpha);
-
-	return 2;
-}
-
 int w_getMaxImageSize(lua_State *L)
 {
 	lua_pushinteger(L, instance->getMaxImageSize());
@@ -1526,9 +1485,6 @@ static const luaL_Reg functions[] =
 
 	{ "setStencil", w_setStencil },
 	{ "setInvertedStencil", w_setInvertedStencil },
-
-	{ "setAlphaTest", w_setAlphaTest },
-	{ "getAlphaTest", w_getAlphaTest },
 
 	{ "point", w_point },
 	{ "line", w_line },

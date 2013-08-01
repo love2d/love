@@ -84,14 +84,6 @@ DisplayState Graphics::saveState()
 	glGetFloatv(GL_POINT_SIZE, &s.pointSize);
 	//get point style
 	s.pointStyle = (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE) ? Graphics::POINT_SMOOTH : Graphics::POINT_ROUGH;
-	// get alpha test status
-	s.alphaTest = isAlphaTestEnabled();
-	if (s.alphaTest)
-	{
-		// if alpha testing is enabled, store mode and reference alpha
-		s.alphaTestMode = getAlphaTestMode();
-		s.alphaTestRef = getAlphaTestRef();
-	}
 	//get scissor status
 	s.scissor = (glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE);
 	//do we have scissor, if so, store the box
@@ -113,10 +105,6 @@ void Graphics::restoreState(const DisplayState &s)
 	setLineStyle(s.lineStyle);
 	setPointSize(s.pointSize);
 	setPointStyle(s.pointStyle);
-	if (s.alphaTest)
-		setAlphaTest(s.alphaTestMode, s.alphaTestRef);
-	else
-		setAlphaTest();
 	if (s.scissor)
 		setScissor(s.scissorBox.x, s.scissorBox.y, s.scissorBox.w, s.scissorBox.h);
 	else
@@ -153,10 +141,6 @@ bool Graphics::setMode(int width, int height)
 	// Auto-generated mipmaps should be the best quality possible
 	if (GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap)
 		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
-
-	// Set default alpha test mode and value
-	glAlphaFunc(GL_GREATER, 0.0f);
-	setAlphaTest();
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -318,80 +302,6 @@ void Graphics::discardStencil()
 {
 	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 	glDisable(GL_STENCIL_TEST);
-}
-
-void Graphics::setAlphaTest(Graphics::AlphaTestMode mode, unsigned char refalpha)
-{
-	GLclampf ref = refalpha / 255.0f;
-
-	glEnable(GL_ALPHA_TEST);
-
-	switch (mode)
-	{
-	case ALPHATEST_LESS:
-		glAlphaFunc(GL_LESS, ref);
-		break;
-	case ALPHATEST_LEQUAL:
-		glAlphaFunc(GL_LEQUAL, ref);
-		break;
-	case ALPHATEST_EQUAL:
-		glAlphaFunc(GL_EQUAL, ref);
-		break;
-	case ALPHATEST_NOTEQUAL:
-		glAlphaFunc(GL_NOTEQUAL, ref);
-		break;
-	case ALPHATEST_GEQUAL:
-		glAlphaFunc(GL_GEQUAL, ref);
-		break;
-	case ALPHATEST_GREATER:
-		glAlphaFunc(GL_GREATER, ref);
-		break;
-	default:
-		glDisable(GL_ALPHA_TEST);
-		break;
-	}
-}
-
-void Graphics::setAlphaTest()
-{
-	glDisable(GL_ALPHA_TEST);
-}
-
-bool Graphics::isAlphaTestEnabled()
-{
-	return glIsEnabled(GL_ALPHA_TEST) == GL_TRUE;
-}
-
-Graphics::AlphaTestMode Graphics::getAlphaTestMode()
-{
-	GLint func;
-	glGetIntegerv(GL_ALPHA_TEST_FUNC, &func);
-
-	switch (func)
-	{
-	case GL_LESS:
-		return ALPHATEST_LESS;
-	case GL_LEQUAL:
-		return ALPHATEST_LEQUAL;
-	case GL_EQUAL:
-		return ALPHATEST_EQUAL;
-	case GL_NOTEQUAL:
-		return ALPHATEST_NOTEQUAL;
-	case GL_GEQUAL:
-		return ALPHATEST_GEQUAL;
-	case GL_GREATER:
-		return ALPHATEST_GREATER;
-	default:
-		return ALPHATEST_MAX_ENUM;
-	}
-}
-
-unsigned char Graphics::getAlphaTestRef()
-{
-	GLfloat ref;
-	glGetFloatv(GL_ALPHA_TEST_REF, &ref);
-
-	return ref * 255;
 }
 
 int Graphics::getMaxImageSize() const

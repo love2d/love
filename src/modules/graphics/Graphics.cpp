@@ -79,16 +79,6 @@ bool Graphics::getConstant(PointStyle in, const char  *&out)
 	return pointStyles.find(in, out);
 }
 
-bool Graphics::getConstant(const char *in, AlphaTestMode &out)
-{
-	return alphaTests.find(in, out);
-}
-
-bool Graphics::getConstant(AlphaTestMode in, const char *&out)
-{
-	return alphaTests.find(in, out);
-}
-
 bool Graphics::getConstant(const char *in, Support &out)
 {
 	return support.find(in, out);
@@ -154,18 +144,6 @@ StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM>::Entry Graphics::point
 };
 
 StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM> Graphics::pointStyles(Graphics::pointStyleEntries, sizeof(Graphics::pointStyleEntries));
-
-StringMap<Graphics::AlphaTestMode, Graphics::ALPHATEST_MAX_ENUM>::Entry Graphics::alphaTestEntries[] =
-{
-	{ "<", Graphics::ALPHATEST_LESS },
-	{ "<=", Graphics::ALPHATEST_LEQUAL },
-	{ "==", Graphics::ALPHATEST_EQUAL },
-	{ "~=", Graphics::ALPHATEST_NOTEQUAL },
-	{ ">=", Graphics::ALPHATEST_GEQUAL },
-	{ ">", Graphics::ALPHATEST_GREATER },
-};
-
-StringMap<Graphics::AlphaTestMode, Graphics::ALPHATEST_MAX_ENUM> Graphics::alphaTests(Graphics::alphaTestEntries, sizeof(Graphics::alphaTestEntries));
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
 {
