@@ -30,9 +30,10 @@ namespace love
 namespace math
 {
 
-int w_randomseed(lua_State *L);
+int w_setRandomState(lua_State *L);
+int w_getRandomState(lua_State *L);
 int w_random(lua_State *L);
-int w_randomnormal(lua_State *L);
+int w_randomNormal(lua_State *L);
 int w_newRandomGenerator(lua_State *L);
 int w_newBezierCurve(lua_State *L);
 int w_triangulate(lua_State *L);

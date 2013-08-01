@@ -53,12 +53,24 @@ public:
 	virtual ~Math()
 	{}
 
-	/**
-	 * @copydoc RandomGenerator::randomseed()
-	 **/
-	inline void randomseed(uint64 seed)
+	inline void setRandomState(RandomGenerator::State state)
 	{
-		rng.randomseed(seed);
+		rng.setState(state);
+	}
+
+	inline void setRandomState(uint32 low, uint32 high)
+	{
+		rng.setState(low, high);
+	}
+
+	inline RandomGenerator::State getRandomState() const
+	{
+		return rng.getState();
+	}
+
+	inline void getRandomState(uint32 &low, uint32 &high) const
+	{
+		rng.getState(low, high);
 	}
 
 	/**
@@ -86,11 +98,11 @@ public:
 	}
 
 	/**
-	 * @copydoc RandomGenerator::randomnormal()
+	 * @copydoc RandomGenerator::randomNormal()
 	 **/
-	inline double randomnormal(double stddev)
+	inline double randomNormal(double stddev)
 	{
-		return rng.randomnormal(stddev);
+		return rng.randomNormal(stddev);
 	}
 
 	/**

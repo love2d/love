@@ -22,6 +22,7 @@
 #define LOVE_MATH_RANDOM_GENERATOR_H
 
 // LOVE
+#include "common/config.h"
 #include "common/math.h"
 #include "common/int.h"
 #include "common/Object.h"
@@ -38,19 +39,56 @@ class RandomGenerator : public Object
 {
 public:
 
-	RandomGenerator();
+	union State
+	{
+		uint64 b64;
+		struct
+		{
+			uint32 a;
+			uint32 b;
+		} b32;
+	};
 
-	virtual ~RandomGenerator() {};
+	RandomGenerator();
+	virtual ~RandomGenerator() {}
 
 	/**
-	 * Set pseudo random seed.
+	 * Set pseudo-random state.
 	 * It's up to the implementation how to use this.
-	 *
-	 * @param seed The random seed.
 	 **/
-	inline void randomseed(uint64 seed)
+	inline void setState(State state)
 	{
-		rng_state = seed;
+		rng_state = state;
+	}
+
+	/**
+	 * Separately set the low and high parts of the pseudo-random state.
+	 **/
+	inline void setState(uint32 low, uint32 high)
+	{
+#ifdef LOVE_BIG_ENDIAN
+		rng_state.b32.a = high;
+		rng_state.b32.b = low;
+#else
+		rng_state.b32.b = high;
+		rng_state.b32.a = low;
+#endif
+	}
+
+	inline State getState() const
+	{
+		return rng_state;
+	}
+
+	inline void getState(uint32 &low, uint32 &high) const
+	{
+#ifdef LOVE_BIG_ENDIAN
+		high = rng_state.b32.a;
+		low = rng_state.b32.b;
+#else
+		high = rng_state.b32.b;
+		low = rng_state.b32.a;
+#endif
 	}
 
 	/**
@@ -96,11 +134,11 @@ public:
 	 * @param stddev Standard deviation of the distribution.
 	 * @return Normally distributed random number with mean 0 and variance (stddev)².
 	 **/
-	double randomnormal(double stddev);
+	double randomNormal(double stddev);
 
 private:
 
-	uint64 rng_state;
+	State rng_state;
 	double last_randomnormal;
 
 }; // RandomGenerator
