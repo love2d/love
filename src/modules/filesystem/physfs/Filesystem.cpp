@@ -196,6 +196,12 @@ bool Filesystem::mount(const char *archive, const char *mountpoint)
 		return false;
 
 	std::string realPath(realDir);
+
+	// Always disallow mounting of files inside the game source, since it won't
+	// work anyway if the game source is a zipped .love file.
+	if (realPath.find(game_source) == 0)
+		return false;
+
 	realPath += LOVE_PATH_SEPARATOR;
 	realPath += archive;
 
