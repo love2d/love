@@ -112,6 +112,11 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	const vertex *v = geom->getVertexArray();
+	size_t vertcount = geom->getVertexCount();
+
+	// Padded NPOT images require texture coordinate scaling with Geometry.
+	if (!hasNpot())
+		v = scaleNPOT(v, vertcount);
 
 	// use colors stored in geometry (horrible, horrible hack)
 	if (geom->hasVertexColors())
@@ -135,13 +140,17 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 		break;
 	}
 
-	drawv(t, v, geom->getVertexCount(), glmode, geom->getElementArray(), geom->getElementCount());
+	drawv(t, v, vertcount, glmode, geom->getElementArray(), geom->getElementCount());
 
 	if (geom->hasVertexColors())
 	{
 		glDisableClientState(GL_COLOR_ARRAY);
 		gl.setColor(gl.getColor());
 	}
+
+	// If we made new verts with scaled texcoords then we should clean them up.
+	if (!hasNpot())
+		delete[] v;
 }
 
 void Image::uploadCompressedMipmaps()
@@ -549,6 +558,27 @@ bool Image::refresh()
 	checkMipmapsCreated();
 
 	return true;
+}
+
+love::Vector Image::getTexCoordScale() const
+{
+	// FIXME: this should be changed if Image::loadVolatilePOT changes.
+	return love::Vector(vertices[2].s, vertices[2].t);
+}
+
+vertex *Image::scaleNPOT(const love::vertex *v, size_t count) const
+{
+	vertex *newverts = new vertex[count];
+	love::Vector scale = getTexCoordScale();
+
+	for (size_t i = 0; i < count; i++)
+	{
+		newverts[i] = v[i];
+		newverts[i].s *= scale.x;
+		newverts[i].t *= scale.y;
+	}
+
+	return newverts;
 }
 
 void Image::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const

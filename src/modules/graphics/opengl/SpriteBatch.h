@@ -116,6 +116,8 @@ public:
 
 private:
 
+	void scaleNPOT(vertex *v, size_t count);
+
 	void addv(const vertex *v, int index);
 
 	/**

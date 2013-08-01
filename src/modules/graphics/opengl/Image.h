@@ -22,9 +22,10 @@
 #define LOVE_GRAPHICS_OPENGL_IMAGE_H
 
 // LOVE
-#include "common/Matrix.h"
-#include "common/math.h"
 #include "common/config.h"
+#include "common/Matrix.h"
+#include "common/Vector.h"
+#include "common/math.h"
 #include "image/ImageData.h"
 #include "image/CompressedData.h"
 #include "graphics/Image.h"
@@ -123,6 +124,12 @@ public:
 	 **/
 	bool refresh();
 
+	/**
+	 * Gets the texture coordinate scale used for drawing auto-padded NPOT
+	 * images correctly.
+	 **/
+	love::Vector getTexCoordScale() const;
+
 	static void setDefaultMipmapSharpness(float sharpness);
 	static float getDefaultMipmapSharpness();
 	static void setDefaultMipmapFilter(FilterMode f);
@@ -138,6 +145,7 @@ public:
 
 private:
 
+	vertex *scaleNPOT(const vertex *v, size_t count) const;
 	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
 
 	friend class Shader;
