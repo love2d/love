@@ -125,13 +125,11 @@ void Channel::supply(Variant *var)
 	if (!var)
 		return;
 
-	mutex->lock();
+	Lock l(mutex);
 	unsigned long id = push(var);
 
 	while (!past(id, received))
 		cond->wait(mutex);
-
-	mutex->unlock();
 }
 
 Variant *Channel::pop()
@@ -157,11 +155,10 @@ Variant *Channel::pop()
 Variant *Channel::demand()
 {
 	Variant *var;
-	mutex->lock();
+	Lock l(mutex);
 	while (!(var = pop()))
 		cond->wait(mutex);
 
-	mutex->unlock();
 	return var;
 }
 
@@ -218,24 +215,20 @@ void Channel::unlockMutex()
 
 void Channel::retain()
 {
+	EmptyLock l;
 	if (named)
-		namedChannelMutex->lock();
+		l.setLock(namedChannelMutex);
 
 	Object::retain();
-
-	if (named)
-		namedChannelMutex->unlock();
 }
 
 void Channel::release()
 {
+	EmptyLock l;
 	if (named)
-		namedChannelMutex->lock();
+		l.setLock(namedChannelMutex);
 
 	Object::release();
-
-	if (named)
-		namedChannelMutex->unlock();
 }
 } // thread
 } // love

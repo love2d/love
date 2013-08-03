@@ -58,10 +58,11 @@ bool Thread::start()
 
 void Thread::wait()
 {
-	mutex.lock();
-	if (!thread)
-		return;
-	mutex.unlock();
+	{
+		Lock l(mutex);
+		if (!thread)
+			return;
+	}
 	SDL_WaitThread(thread, 0);
 	Lock l(mutex);
 	running = false;
