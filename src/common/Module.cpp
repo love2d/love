@@ -54,14 +54,27 @@ void Module::registerInstance(Module *instance)
 	registry.insert(make_pair(name, instance));
 }
 
-Module *Module::getInstance(const char *name)
+Module *Module::getInstance(const std::string &name)
 {
-	std::map<std::string, Module*>::iterator it = registry.find(std::string(name));
+	std::map<std::string, Module*>::const_iterator it = registry.find(name);
 
 	if (registry.end() == it)
 		return NULL;
 
 	return it->second;
+}
+
+Module *Module::findInstance(const std::string &name)
+{
+	std::map<std::string, Module*>::const_iterator it;
+
+	for (it = registry.begin(); it != registry.end(); ++it)
+	{
+		if (it->first.find(name) == 0)
+			return it->second;
+	}
+
+	return NULL;
 }
 
 } // love

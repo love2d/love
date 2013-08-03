@@ -59,9 +59,18 @@ public:
 	 * Retrieve module instance from internal registry. May return NULL
 	 * if module not registered.
 	 * @param name The full name of the module.
-	 * @returns Module instance of NULL if the module is not registered.
+	 * @return Module instance or NULL if the module is not registered.
 	 */
-	static Module *getInstance(const char *name);
+	static Module *getInstance(const std::string &name);
+
+	/**
+	 * Find the first module instance from the internal registry whose name
+	 * starts with the supplied name. May return NULL if module is not
+	 * registered or the supplied name is not part of any module name.
+	 * @param name The partial name of the module.
+	 * @return Module instance or NULL if the module is not registered.
+	 **/
+	static Module *findInstance(const std::string &name);
 
 }; // Module
 

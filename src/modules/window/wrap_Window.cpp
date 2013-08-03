@@ -42,11 +42,9 @@ int w_setMode(lua_State *L)
 	int w = luaL_checkint(L, 1);
 	int h = luaL_checkint(L, 2);
 
-	graphics::Graphics *g = luax_optmodule<graphics::Graphics>(L, "graphics", MODULE_GRAPHICS_T);
-
 	if (lua_isnoneornil(L, 3))
 	{
-		luax_pushboolean(L, instance->setWindow(w, h, g, 0));
+		luax_pushboolean(L, instance->setWindow(w, h, 0));
 		return 1;
 	}
 
@@ -63,7 +61,7 @@ int w_setMode(lua_State *L)
 
 	try
 	{
-		luax_pushboolean(L, instance->setWindow(w, h, g, &flags));
+		luax_pushboolean(L, instance->setWindow(w, h, &flags));
 	}
 	catch (love::Exception &e)
 	{
@@ -138,8 +136,6 @@ int w_getModes(lua_State *L)
 
 int w_toggleFullscreen(lua_State *L)
 {
-	graphics::Graphics *g = luax_optmodule<graphics::Graphics>(L, "graphics", MODULE_GRAPHICS_T);
-
 	int width, height;
 	WindowFlags flags;
 	instance->getWindow(width, height, flags);
@@ -147,7 +143,7 @@ int w_toggleFullscreen(lua_State *L)
 
 	try
 	{
-		luax_pushboolean(L, instance->setWindow(width, height, g, &flags));
+		luax_pushboolean(L, instance->setWindow(width, height, &flags));
 	}
 	catch (love::Exception &e)
 	{

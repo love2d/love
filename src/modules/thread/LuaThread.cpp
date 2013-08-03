@@ -106,8 +106,7 @@ void LuaThread::onError()
 	if (error.empty())
 		return;
 
-	// FIXME: We shouldn't specify any particular Event module implementation.
-	event::Event *event = (event::Event *) Module::getInstance("love.event.sdl");
+	event::Event *event = (event::Event *) Module::findInstance("love.event.");
 	if (!event)
 		return;
 

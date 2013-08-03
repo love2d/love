@@ -27,7 +27,6 @@
 // LOVE
 #include "common/Module.h"
 #include "image/ImageData.h"
-#include "graphics/Graphics.h"
 
 namespace love
 {
@@ -56,7 +55,7 @@ public:
 
 	virtual ~Window();
 
-	virtual bool setWindow(int width = 800, int height = 600, graphics::Graphics *graphics = 0, WindowFlags *flags = 0) = 0;
+	virtual bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0) = 0;
 	virtual void getWindow(int &width, int &height, WindowFlags &flags) const = 0;
 
 	virtual bool checkWindowSize(int width, int height, bool fullscreen) const = 0;

@@ -20,6 +20,7 @@
 
 // LOVE
 #include "common/config.h"
+#include "graphics/Graphics.h"
 #include "Window.h"
 
 // SDL
@@ -59,10 +60,11 @@ Window::_currentMode::_currentMode()
 {
 }
 
-bool Window::setWindow(int width, int height, graphics::Graphics *graphics, WindowFlags *flags)
+bool Window::setWindow(int width, int height, WindowFlags *flags)
 {
-	if (graphics)
-		graphics->unSetMode();
+	graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+	if (gfx)
+		gfx->unSetMode();
 
 	bool fullscreen = false;
 	bool vsync = true;
@@ -191,8 +193,8 @@ bool Window::setWindow(int width, int height, graphics::Graphics *graphics, Wind
 	currentMode.flags.borderless = ((surface->flags & SDL_NOFRAME) != 0);
 	currentMode.flags.centered = centered;
 
-	if (graphics)
-		graphics->setMode(width, height);
+	if (gfx)
+		gfx->setMode(width, height);
 
 	return true;
 }

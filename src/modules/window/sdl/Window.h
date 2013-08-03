@@ -38,7 +38,7 @@ public:
 	Window();
 	~Window();
 
-	bool setWindow(int width = 800, int height = 600, graphics::Graphics *graphics = 0, WindowFlags *flags = 0);
+	bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0);
 	void getWindow(int &width, int &height, WindowFlags &flags) const;
 
 	bool checkWindowSize(int width, int height, bool fullscreen) const;
