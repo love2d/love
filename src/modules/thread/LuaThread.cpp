@@ -52,6 +52,7 @@ LuaThread::~LuaThread()
 void LuaThread::threadFunction()
 {
 	this->retain();
+	error.clear();
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 #ifdef LOVE_BUILD_STANDALONE
