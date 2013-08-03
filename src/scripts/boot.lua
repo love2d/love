@@ -191,6 +191,9 @@ function love.createhandlers()
 		quit = function ()
 			return
 		end,
+		threaderror = function (t, err)
+			if love.threaderror then return love.threaderror(t, err) end
+		end,
 		resize = function(w, h)
 			local ow, oh, flags = love.window.getMode()
 			if flags.resizable then

@@ -37,6 +37,7 @@ namespace thread
 class LuaThread : public love::Object, public Threadable
 {
 public:
+
 	LuaThread(const std::string &name, love::Data *code);
 	~LuaThread();
 	void threadFunction();
@@ -45,6 +46,9 @@ public:
 	bool start(Variant **args, int nargs);
 
 private:
+
+	void onError();
+
 	love::Data *code;
 	std::string name;
 	std::string error;

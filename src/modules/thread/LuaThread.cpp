@@ -19,7 +19,8 @@
  **/
 
 #include "LuaThread.h"
-#include <common/config.h>
+#include "event/Event.h"
+#include "common/config.h"
 
 #ifdef LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love(lua_State * L);
@@ -70,8 +71,7 @@ void LuaThread::threadFunction()
 			args[i]->toLua(L);
 			args[i]->release();
 		}
-		// Set both args and nargs to nil,
-		// prevents the deconstructor from
+		// Set both args and nargs to nil, prevents the deconstructor from
 		// accessing it again.
 		nargs = 0;
 		args = 0;
@@ -80,6 +80,8 @@ void LuaThread::threadFunction()
 			error = luax_tostring(L, -1);
 	}
 	lua_close(L);
+	if (!error.empty())
+		onError();
 	this->release();
 }
 
@@ -97,6 +99,30 @@ bool LuaThread::start(Variant **args, int nargs)
 const std::string &LuaThread::getError() const
 {
 	return error;
+}
+
+void LuaThread::onError()
+{
+	if (error.empty())
+		return;
+
+	// FIXME: We shouldn't specify any particular Event module implementation.
+	event::Event *event = (event::Event *) Module::getInstance("love.event.sdl");
+	if (!event)
+		return;
+
+	Proxy p;
+	p.flags = THREAD_THREAD_T;
+	p.data = this;
+
+	Variant *arg1 = new Variant(THREAD_THREAD_ID, &p);
+	Variant *arg2 = new Variant(error.c_str(), error.length());
+	event::Message *msg = new event::Message("threaderror", arg1, arg2);
+	arg1->release();
+	arg2->release();
+
+	event->push(msg);
+	msg->release();
 }
 
 } // thread
