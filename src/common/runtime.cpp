@@ -514,8 +514,29 @@ int luax_getregistry(lua_State *L, Registry r)
 
 extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 {
-	const char *msg = lua_pushfstring(L, "%s expected, got %s",
-	                                  tname, luaL_typename(L, narg));
+	int argtype = lua_type(L, narg);
+	const char *argtname = 0;
+
+	// We want to use the love type name for userdata, if possible.
+	if (argtype == LUA_TUSERDATA && luaL_getmetafield(L, narg, "__tostring") != 0)
+	{
+		lua_pushvalue(L, narg);
+		if (lua_pcall(L, 1, 1, 0) == 0 && lua_type(L, -1) == LUA_TSTRING)
+		{
+			argtname = lua_tostring(L, -1);
+
+			// Non-love userdata might have a tostring metamethod which doesn't
+			// describe its type, so we only use __tostring for love types.
+			love::Type t;
+			if (!love::getType(argtname, t))
+				argtname = 0;
+		}
+	}
+
+	if (argtname == 0)
+		argtname = lua_typename(L, argtype);
+
+	const char *msg = lua_pushfstring(L, "%s expected, got %s", tname, argtname);
 	return luaL_argerror(L, narg, msg);
 }
 
