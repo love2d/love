@@ -433,8 +433,9 @@ int w_newSpriteBatch(lua_State *L)
 	SpriteBatch::UsageHint usage = SpriteBatch::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
-		if (!SpriteBatch::getConstant(luaL_checkstring(L, 3), usage))
-			usage = SpriteBatch::USAGE_DYNAMIC;
+		const char *usagestr = luaL_checkstring(L, 3);
+		if (!SpriteBatch::getConstant(usagestr, usage))
+			return luaL_error(L, "Invalid SpriteBatch usage: %s", usagestr);
 	}
 	SpriteBatch *t = NULL;
 	try

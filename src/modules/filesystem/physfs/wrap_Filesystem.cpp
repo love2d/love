@@ -186,8 +186,8 @@ int w_newFileData(lua_State *L)
 
 	FileData::Decoder decoder = FileData::FILE;
 
-	if (decstr)
-		FileData::getConstant(decstr, decoder);
+	if (decstr && !FileData::getConstant(decstr, decoder))
+		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
 
 	FileData *t = 0;
 
@@ -200,7 +200,7 @@ int w_newFileData(lua_State *L)
 		t = instance->newFileData(str, filename);
 		break;
 	default:
-		return luaL_error(L, "Unrecognized FileData decoder: %s", decstr);
+		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
 	}
 
 	luax_newtype(L, "FileData", FILESYSTEM_FILE_DATA_T, (void *)t);

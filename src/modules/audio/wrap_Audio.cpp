@@ -24,8 +24,6 @@
 #include "openal/Audio.h"
 #include "null/Audio.h"
 
-#include "scripts/audio.lua.h"
-
 #include "common/runtime.h"
 
 namespace love
@@ -41,8 +39,23 @@ int w_getSourceCount(lua_State *L)
 	return 1;
 }
 
-int w_newSource1(lua_State *L)
+int w_newSource(lua_State *L)
 {
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
+
+	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+		luax_convobj(L, 1, "sound", "newDecoder");
+
+	Source::Type stype = Source::TYPE_STREAM;
+
+	const char *stypestr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	if (stypestr && !Source::getConstant(stypestr, stype))
+		return luaL_error(L, "Invalid source type: %s", stypestr);
+
+	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_T))
+		luax_convobj(L, 1, "sound", "newSoundData");
+
 	Source *t = 0;
 
 	if (luax_istype(L, 1, SOUND_SOUND_DATA_T))
@@ -56,9 +69,7 @@ int w_newSource1(lua_State *L)
 		return 1;
 	}
 	else
-		return luaL_error(L, "No matching overload");
-
-	return 0;
+		return luax_typerror(L, 1, "Decoder or SoundData");
 }
 
 int w_play(lua_State *L)
@@ -263,7 +274,7 @@ int w_getDistanceModel(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getSourceCount", w_getSourceCount },
-	{ "newSource1", w_newSource1 },
+	{ "newSource", w_newSource },
 	{ "play", w_play },
 	{ "stop", w_stop },
 	{ "pause", w_pause },
@@ -332,9 +343,6 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	w.types = types;
 
 	int n = luax_register_module(L, w);
-
-	if (luaL_loadbuffer(L, (const char *)audio_lua, sizeof(audio_lua), "audio.lua") == 0)
-		lua_call(L, 0, 0);
 
 	return n;
 }

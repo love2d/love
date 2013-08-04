@@ -68,11 +68,14 @@ int w_newBody(lua_State *L)
 	World *world = luax_checktype<World>(L, 1, "World", PHYSICS_WORLD_T);
 	float x = (float)luaL_optnumber(L, 2, 0.0);
 	float y = (float)luaL_optnumber(L, 3, 0.0);
-	const char *type = luaL_optstring(L, 4, "static");
-	Body::Type bodyType;
-	Body::getConstant(type, bodyType);
+
+	Body::Type btype = Body::BODY_STATIC;
+	const char *typestr = lua_isnoneornil(L, 4) ? 0 : lua_tostring(L, 4);
+	if (typestr && !Body::getConstant(typestr, btype))
+		return luaL_error(L, "Invalid Body type: %s", typestr);
+
 	Body *body;
-	ASSERT_GUARD(body = instance->newBody(world, x, y, bodyType);)
+	ASSERT_GUARD(body = instance->newBody(world, x, y, btype);)
 	luax_newtype(L, "Body", PHYSICS_BODY_T, (void *)body);
 	return 1;
 }

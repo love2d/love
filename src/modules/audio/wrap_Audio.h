@@ -33,7 +33,7 @@ namespace audio
 {
 
 int w_getSourceCount(lua_State *L);
-int w_newSource1(lua_State *L);
+int w_newSource(lua_State *L);
 int w_play(lua_State *L);
 int w_stop(lua_State *L);
 int w_pause(lua_State *L);

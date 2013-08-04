@@ -579,7 +579,6 @@
 		53C6151E07FB1E3471590CB9 /* ltn12.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ltn12.lua.h; sourceTree = "<group>"; };
 		53EE57FF4DBD52BB22701160 /* ParticleSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		54A13C2209F945671BC27974 /* FileData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileData.h; sourceTree = "<group>"; };
-		54CC34F563B7405046FF1E43 /* audio.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = audio.lua.h; sourceTree = "<group>"; };
 		54E653E84E8873D467C750FC /* mime.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mime.lua.h; sourceTree = "<group>"; };
 		54E85987318206E93DC8189F /* PolygonShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PolygonShape.cpp; sourceTree = "<group>"; };
 		55A759CE711E157339930E58 /* b2BlockAllocator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2BlockAllocator.cpp; sourceTree = "<group>"; };
@@ -739,7 +738,6 @@
 		FA577A8616C71CF000860150 /* Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shader.h; sourceTree = "<group>"; };
 		FA577A8716C71CF000860150 /* wrap_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Shader.cpp; sourceTree = "<group>"; };
 		FA577A8816C71CF000860150 /* wrap_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Shader.h; sourceTree = "<group>"; };
-		FA577A8B16C71D3600860150 /* audio.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = audio.lua; sourceTree = "<group>"; };
 		FA577A8C16C71D3600860150 /* auto.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = auto.lua; sourceTree = "<group>"; };
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577A8E16C71D3600860150 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
@@ -1208,8 +1206,6 @@
 		352E6C5F6F8A681766EB5299 /* scripts */ = {
 			isa = PBXGroup;
 			children = (
-				FA577A8B16C71D3600860150 /* audio.lua */,
-				54CC34F563B7405046FF1E43 /* audio.lua.h */,
 				FA577A8C16C71D3600860150 /* auto.lua */,
 				FA577A8D16C71D3600860150 /* boot.lua */,
 				503971A86B7167A91B670FBA /* boot.lua.h */,
