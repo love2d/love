@@ -1,9 +1,18 @@
 #!/bin/bash
 
+log() {
+	echo "[automagic] " $@
+}
+
 die() {
-	echo "Fatal: "$@
+	log "Fatal: "$@
 	exit 1
 }
+
+if [[ ! -d platform/unix ]]; then
+	log "Can't find the 'plaform/unix' folder, make sure you run this from the root of the repository."
+	exit 1
+fi
 
 AUTOHEADER=$(which autoheader)
 AUTOCONF=$(which autoconf)
@@ -26,21 +35,30 @@ automagic() {
 		exit 1
 	fi
 
+	log "Running autoheader..." >&2
 	${AUTOHEADER} 2>&1 || return 1 # Gimmie config.h.in
+
+	log "Running libtoolize..." >&2
 	${LIBTOOLIZE} --force 2>&1 || return 1
+
+	log "Running aclocal..." >&2
 	${ACLOCAL} 2>&1 || return 1
+
+	log "Running autoconf..." >&2
 	${AUTOCONF} 2>&1 || return 1
+
+	log "Running automake..." >&2
 	${AUTOMAKE} -a 2>&1 || return 1
 }
 
 if [[ $1 == "-d" ]]; then
-	automagic
+	automagic 2>&1
 else
-	automagic > /dev/null
+	(automagic > /dev/null) 2>&1
 fi
-if [ $? -eq 1 ]; then
-	echo "Failed, please contact the developers."
+if [[ $? -eq 1 ]]; then
+	log "Failed, please contact the developers."
 	exit 1
 else
-	echo "Success, carry on configuring."
+	log "Success, carry on configuring."
 fi

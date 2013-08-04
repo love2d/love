@@ -13,7 +13,11 @@ Compilation
 Use the project files for Visual Studio 2010 located in the platform dir.
 
 ###*nix
-Run platform/unix/automagic, then run ./configure and make.
+Run `platform/unix/automagic` from the repository root, then run ./configure and make.
+
+	$ platform/unix/automagic
+	$ ./configure
+	$ make
 
 ###OSX
 Use the XCode project in platform/macosx.
@@ -37,10 +41,9 @@ and there's a ppa for ubuntu, [ppa:bartbes/love-stable][stableppa].
 
 There are also unstable/nightly builds:
 
-- For windows they are located [here][winbuilds].
+- Most can be found [here][builds].
 - For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
 - For arch linux there's [love-hg][aur] in the AUR.
-- For other linuxes and OSX there are currently no official builds.
 
 Dependencies
 ------------
@@ -61,7 +64,7 @@ Dependencies
 [forums]: http://love2d.org/forums
 [irc]: irc://irc.oftc.net/love
 [dependencies]: http://love2d.org/sdk
-[winbuilds]: http://love2d.org/builds
+[builds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
 [aur]: http://aur.archlinux.org/packages.php?ID=35279
