@@ -21,11 +21,25 @@
 #include "wrap_RandomGenerator.h"
 
 #include <cmath>
+#include <algorithm>
 
 namespace love
 {
 namespace math
 {
+
+template <typename T>
+static T checkrandomstate_part(lua_State *L, int idx)
+{
+	double num = luaL_checknumber(L, idx);
+	double inf = std::numeric_limits<double>::infinity();
+
+	// Disallow conversions from infinity and NaN.
+	if (num == inf || num == -inf || num != num)
+		luaL_argerror(L, idx, "invalid random state");
+
+	return (T) num;
+}
 
 RandomGenerator::State luax_checkrandomstate(lua_State *L, int idx)
 {
@@ -33,8 +47,8 @@ RandomGenerator::State luax_checkrandomstate(lua_State *L, int idx)
 
 	if (!lua_isnoneornil(L, idx + 1))
 	{
-		uint32 low = (uint32) luaL_checknumber(L, idx);
-		uint32 high = (uint32) luaL_checknumber(L, idx + 1);
+		uint32 low = checkrandomstate_part<uint32>(L, idx);
+		uint32 high = checkrandomstate_part<uint32>(L, idx + 1);
 
 #ifdef LOVE_BIG_ENDIAN
 		s.b32.a = high;
@@ -45,7 +59,7 @@ RandomGenerator::State luax_checkrandomstate(lua_State *L, int idx)
 #endif
 	}
 	else
-		s.b64 = (uint64) luaL_checknumber(L, idx);
+		s.b64 = checkrandomstate_part<uint64>(L, idx);
 
 	return s;
 }
@@ -84,7 +98,14 @@ RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 int w_RandomGenerator_setState(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-	rng->setState(luax_checkrandomstate(L, 2));
+	try
+	{
+		rng->setState(luax_checkrandomstate(L, 2));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 

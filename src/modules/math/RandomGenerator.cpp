@@ -45,6 +45,15 @@ RandomGenerator::RandomGenerator()
 #endif
 }
 
+void RandomGenerator::setState(RandomGenerator::State state)
+{
+	// 0 xor 0 is still 0, so Xorshift can't generate new numbers.
+	if (state.b64 == 0)
+		throw love::Exception("Invalid random state.");
+
+	rng_state = state;
+}
+
 uint64 RandomGenerator::rand()
 {
 	rng_state.b64 ^= (rng_state.b64 << 13);

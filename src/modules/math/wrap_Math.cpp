@@ -34,7 +34,14 @@ namespace math
 
 int w_setRandomState(lua_State *L)
 {
-	Math::instance.setRandomState(luax_checkrandomstate(L, 1));
+	try
+	{
+		Math::instance.setRandomState(luax_checkrandomstate(L, 1));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
 }
 

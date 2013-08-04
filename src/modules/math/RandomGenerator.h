@@ -23,6 +23,7 @@
 
 // LOVE
 #include "common/config.h"
+#include "common/Exception.h"
 #include "common/math.h"
 #include "common/int.h"
 #include "common/Object.h"
@@ -56,23 +57,24 @@ public:
 	 * Set pseudo-random state.
 	 * It's up to the implementation how to use this.
 	 **/
-	inline void setState(State state)
-	{
-		rng_state = state;
-	}
+	void setState(State state);
 
 	/**
 	 * Separately set the low and high parts of the pseudo-random state.
 	 **/
 	inline void setState(uint32 low, uint32 high)
 	{
+		State newstate;
+
 #ifdef LOVE_BIG_ENDIAN
-		rng_state.b32.a = high;
-		rng_state.b32.b = low;
+		newstate.b32.a = high;
+		newstate.b32.b = low;
 #else
-		rng_state.b32.b = high;
-		rng_state.b32.a = low;
+		newstate.b32.b = high;
+		newstate.b32.a = low;
 #endif
+
+		setState(newstate);
 	}
 
 	inline State getState() const
