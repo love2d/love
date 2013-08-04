@@ -31,6 +31,7 @@
 #include "common/Module.h"
 #include "common/config.h"
 #include "common/int.h"
+#include "common/StringMap.h"
 #include "filesystem/FileData.h"
 #include "File.h"
 
@@ -71,45 +72,18 @@ namespace filesystem
 {
 namespace physfs
 {
+
 class Filesystem : public Module
 {
-private:
-
-	// Counts open files.
-	int open_count;
-
-	// Pointer used for file reads.
-	char *buffer;
-
-	// Contains the current working directory (UTF8).
-	std::string cwd;
-
-	// %APPDATA% on Windows.
-	std::string appdata;
-
-	// This name will be used to create the folder
-	// in the appdata/userdata folder.
-	std::string save_identity;
-
-	// Full and relative paths of the game save folder.
-	// (Relative to the %APPDATA% folder, meaning that the
-	// relative string will look something like: ./LOVE/game)
-	std::string save_path_relative, save_path_full;
-
-	// The full path to the source of the game.
-	std::string game_source;
-
-	// Workaround for machines without PhysFS 2.0
-	bool isInited;
-
-	// Allow saving outside of the LOVE_APPDATA_FOLDER
-	// for release 'builds'
-	bool release;
-	bool releaseSet;
-
-protected:
-
 public:
+
+	// love.filesystem.setIdentity("foo", "last")
+	enum SearchOrder
+	{
+		SEARCH_ORDER_FIRST,
+		SEARCH_ORDER_LAST,
+		SEARCH_ORDER_MAX_ENUM
+	};
 
 	Filesystem();
 
@@ -134,7 +108,7 @@ public:
 	 * @param ident The name of the game. Will be used to
 	 * to create the folder in the LOVE data folder.
 	 **/
-	bool setIdentity(const char *ident);
+	bool setIdentity(const char *ident, SearchOrder searchorder = SEARCH_ORDER_FIRST);
 	const char *getIdentity() const;
 
 	/**
@@ -143,7 +117,8 @@ public:
 	 * @param source Path to a directory or a .love-file.
 	 **/
 	bool setSource(const char *source);
-	bool mount(const char *archive, const char *mountpoint);
+
+	bool mount(const char *archive, const char *mountpoint, SearchOrder searchorder = SEARCH_ORDER_FIRST);
 	bool unmount(const char *archive);
 
 	/**
@@ -299,6 +274,46 @@ public:
 	 * and File:lines.
 	 **/
 	static int lines_i(lua_State *L);
+
+	static bool getConstant(const char *in, SearchOrder &out);
+	static bool getConstant(SearchOrder in, const char *&out);
+
+private:
+
+	// Counts open files.
+	int open_count;
+
+	// Pointer used for file reads.
+	char *buffer;
+
+	// Contains the current working directory (UTF8).
+	std::string cwd;
+
+	// %APPDATA% on Windows.
+	std::string appdata;
+
+	// This name will be used to create the folder
+	// in the appdata/userdata folder.
+	std::string save_identity;
+
+	// Full and relative paths of the game save folder.
+	// (Relative to the %APPDATA% folder, meaning that the
+	// relative string will look something like: ./LOVE/game)
+	std::string save_path_relative, save_path_full;
+
+	// The full path to the source of the game.
+	std::string game_source;
+
+	// Workaround for machines without PhysFS 2.0
+	bool initialized;
+
+	// Allow saving outside of the LOVE_APPDATA_FOLDER
+	// for release 'builds'
+	bool release;
+	bool releaseSet;
+
+	static StringMap<SearchOrder, SEARCH_ORDER_MAX_ENUM>::Entry orderEntries[];
+	static StringMap<SearchOrder, SEARCH_ORDER_MAX_ENUM> orders;
 
 }; // Filesystem
 

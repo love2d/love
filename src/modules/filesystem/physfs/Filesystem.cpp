@@ -37,7 +37,7 @@ namespace physfs
 Filesystem::Filesystem()
 	: open_count(0)
 	, buffer(0)
-	, isInited(false)
+	, initialized(false)
 	, release(false)
 	, releaseSet(false)
 {
@@ -45,11 +45,8 @@ Filesystem::Filesystem()
 
 Filesystem::~Filesystem()
 {
-	if (isInited)
-	{
-		isInited = false;
+	if (initialized)
 		PHYSFS_deinit();
-	}
 }
 
 const char *Filesystem::getName() const
@@ -61,7 +58,7 @@ void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
 		throw Exception(PHYSFS_getLastError());
-	isInited = true;
+	initialized = true;
 }
 
 void Filesystem::setRelease(bool release)
@@ -79,9 +76,9 @@ bool Filesystem::isRelease() const
 	return release;
 }
 
-bool Filesystem::setIdentity(const char *ident)
+bool Filesystem::setIdentity(const char *ident, SearchOrder searchorder)
 {
-	if (!isInited)
+	if (!initialized)
 		return false;
 
 	std::string old_save_path = save_path_full;
@@ -104,15 +101,16 @@ bool Filesystem::setIdentity(const char *ident)
 	// save_path_relative: ./LOVE/game
 	// save_path_full: C:\Documents and Settings\user\Application Data/LOVE/game
 
+	// We don't want old read-only save paths to accumulate when we set a new
+	// identity.
+	if (!old_save_path.empty())
+		PHYSFS_removeFromSearchPath(old_save_path.c_str());
+
+	bool append = (searchorder == SEARCH_ORDER_LAST);
+
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
-	if (PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
-	{
-		// We don't want old read-only save paths to accumulate when we set a
-		// new identity.
-		if (old_save_path.compare(save_path_full) != 0)
-			PHYSFS_removeFromSearchPath(old_save_path.c_str());
-	}
+	PHYSFS_addToSearchPath(save_path_full.c_str(), append);
 
 	return true;
 }
@@ -124,7 +122,7 @@ const char *Filesystem::getIdentity() const
 
 bool Filesystem::setSource(const char *source)
 {
-	if (!isInited)
+	if (!initialized)
 		return false;
 
 	// Check whether directory is already set.
@@ -143,7 +141,7 @@ bool Filesystem::setSource(const char *source)
 
 bool Filesystem::setupWriteDirectory()
 {
-	if (!isInited)
+	if (!initialized)
 		return false;
 
 	// These must all be set.
@@ -182,9 +180,9 @@ bool Filesystem::setupWriteDirectory()
 	return true;
 }
 
-bool Filesystem::mount(const char *archive, const char *mountpoint)
+bool Filesystem::mount(const char *archive, const char *mountpoint, SearchOrder searchorder)
 {
-	if (!isInited || !archive)
+	if (!initialized || !archive)
 		return false;
 
 	// Not allowed for safety reasons.
@@ -205,12 +203,14 @@ bool Filesystem::mount(const char *archive, const char *mountpoint)
 	realPath += LOVE_PATH_SEPARATOR;
 	realPath += archive;
 
-	return PHYSFS_mount(realPath.c_str(), mountpoint, 0);
+	bool append = (searchorder == SEARCH_ORDER_LAST);
+
+	return PHYSFS_mount(realPath.c_str(), mountpoint, append);
 }
 
 bool Filesystem::unmount(const char *archive)
 {
-	if (!isInited || !archive)
+	if (!initialized || !archive)
 		return false;
 
 	// Not allowed for safety reasons.
@@ -534,6 +534,24 @@ int64 Filesystem::getSize(const char *filename) const
 	int64 size = file.getSize();
 	return size;
 }
+
+bool Filesystem::getConstant(const char *in, Filesystem::SearchOrder &out)
+{
+	return orders.find(in, out);
+}
+
+bool Filesystem::getConstant(Filesystem::SearchOrder in, const char *&out)
+{
+	return orders.find(in, out);
+}
+
+StringMap<Filesystem::SearchOrder, Filesystem::SEARCH_ORDER_MAX_ENUM>::Entry Filesystem::orderEntries[] =
+{
+	{"first", Filesystem::SEARCH_ORDER_FIRST},
+	{"last", Filesystem::SEARCH_ORDER_LAST},
+};
+
+StringMap<Filesystem::SearchOrder, Filesystem::SEARCH_ORDER_MAX_ENUM> Filesystem::orders(Filesystem::orderEntries, sizeof(Filesystem::orderEntries));
 
 } // physfs
 } // filesystem
