@@ -71,10 +71,24 @@ int w_randomNormal(lua_State *L)
 
 int w_newRandomGenerator(lua_State *L)
 {
+	RandomGenerator::State s;
+	if (lua_gettop(L) > 0)
+		s = luax_checkrandomstate(L, 1);
+
 	RandomGenerator *t = Math::instance.newRandomGenerator();
 
 	if (lua_gettop(L) > 0)
-		t->setState(luax_checkrandomstate(L, 1));
+	{
+		try
+		{
+			t->setState(s);
+		}
+		catch (love::Exception &e)
+		{
+			t->release();
+			return luaL_error(L, "%s", e.what());
+		}
+	}
 
 	luax_newtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, (void *) t);
 	return 1;
