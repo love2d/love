@@ -32,11 +32,26 @@ namespace love
 namespace math
 {
 
-int w_randomseed(lua_State *L)
+int w_setRandomState(lua_State *L)
 {
-	uint64 seed = luax_checkrandomseed(L, 1);
-	Math::instance.randomseed(seed);
+	try
+	{
+		Math::instance.setRandomState(luax_checkrandomstate(L, 1));
+	}
+	catch (love::Exception &e)
+	{
+		return luaL_error(L, "%s", e.what());
+	}
 	return 0;
+}
+
+int w_getRandomState(lua_State *L)
+{
+	uint32 low = 0, high = 0;
+	Math::instance.getRandomState(low, high);
+	lua_pushnumber(L, (lua_Number) low);
+	lua_pushnumber(L, (lua_Number) high);
+	return 2;
 }
 
 int w_random(lua_State *L)
@@ -44,32 +59,35 @@ int w_random(lua_State *L)
 	return luax_getrandom(L, 1, Math::instance.random());
 }
 
-int w_randomnormal(lua_State *L)
+int w_randomNormal(lua_State *L)
 {
-	double mean = 0.0, stddev = 1.0;
-	if (lua_gettop(L) > 1)
-	{
-		mean = luaL_checknumber(L, 1);
-		stddev = luaL_checknumber(L, 2);
-	}
-	else
-	{
-		stddev = luaL_optnumber(L, 1, 1.);
-	}
+	double stddev = luaL_optnumber(L, 1, 1.0);
+	double mean = luaL_optnumber(L, 2, 0.0);
+	double r = Math::instance.randomNormal(stddev);
 
-	double r = Math::instance.randomnormal(stddev);
 	lua_pushnumber(L, r + mean);
 	return 1;
 }
 
 int w_newRandomGenerator(lua_State *L)
 {
+	RandomGenerator::State s;
+	if (lua_gettop(L) > 0)
+		s = luax_checkrandomstate(L, 1);
+
 	RandomGenerator *t = Math::instance.newRandomGenerator();
 
 	if (lua_gettop(L) > 0)
 	{
-		uint64 seed = luax_checkrandomseed(L, 1);
-		t->randomseed(seed);
+		try
+		{
+			t->setState(s);
+		}
+		catch (love::Exception &e)
+		{
+			t->release();
+			return luaL_error(L, "%s", e.what());
+		}
 	}
 
 	luax_newtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, (void *) t);
@@ -264,9 +282,10 @@ int w_noise(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "randomseed", w_randomseed },
+	{ "setRandomState", w_setRandomState },
+	{ "getRandomState", w_getRandomState },
 	{ "random", w_random },
-	{ "randomnormal", w_randomnormal },
+	{ "randomNormal", w_randomNormal },
 	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "newBezierCurve", w_newBezierCurve },
 	{ "triangulate", w_triangulate },
@@ -285,6 +304,7 @@ static const lua_CFunction types[] =
 extern "C" int luaopen_love_math(lua_State *L)
 {
 	Math::instance.retain();
+
 	WrappedModule w;
 	w.module = &Math::instance;
 	w.name = "math";

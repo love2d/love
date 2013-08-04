@@ -36,37 +36,34 @@ RandomGenerator::RandomGenerator()
 {
 	// because it is too big for some compilers to handle ... if you know what
 	// i mean
-	union
-	{
-		uint64 b64;
-		struct
-		{
-			uint32 a;
-			uint32 b;
-		} b32;
-	} converter;
-
 #ifdef LOVE_BIG_ENDIAN
-	converter.b32.a = 0x0139408D;
-	converter.b32.b = 0xCBBF7A44;
+	rng_state.b32.a = 0x0139408D;
+	rng_state.b32.b = 0xCBBF7A44;
 #else
-	converter.b32.b = 0x0139408D;
-	converter.b32.a = 0xCBBF7A44;
+	rng_state.b32.b = 0x0139408D;
+	rng_state.b32.a = 0xCBBF7A44;
 #endif
+}
 
-	rng_state = converter.b64;
+void RandomGenerator::setState(RandomGenerator::State state)
+{
+	// 0 xor 0 is still 0, so Xorshift can't generate new numbers.
+	if (state.b64 == 0)
+		throw love::Exception("Invalid random state.");
+
+	rng_state = state;
 }
 
 uint64 RandomGenerator::rand()
 {
-	rng_state ^= (rng_state << 13);
-	rng_state ^= (rng_state >> 7);
-	rng_state ^= (rng_state << 17);
-	return rng_state;
+	rng_state.b64 ^= (rng_state.b64 << 13);
+	rng_state.b64 ^= (rng_state.b64 >> 7);
+	rng_state.b64 ^= (rng_state.b64 << 17);
+	return rng_state.b64;
 }
 
 // Box–Muller transform
-double RandomGenerator::randomnormal(double stddev)
+double RandomGenerator::randomNormal(double stddev)
 {
 	// use cached number if possible
 	if (last_randomnormal != std::numeric_limits<double>::infinity())

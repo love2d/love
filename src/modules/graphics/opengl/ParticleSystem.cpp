@@ -217,8 +217,8 @@ void ParticleSystem::initParticle(particle *p)
 		p->position[1] += (float) rng.random(-areaSpread.getY(), areaSpread.getY());
 		break;
 	case DISTRIBUTION_NORMAL:
-		p->position[0] += (float) rng.randomnormal(areaSpread.getX());
-		p->position[1] += (float) rng.randomnormal(areaSpread.getY());
+		p->position[0] += (float) rng.randomNormal(areaSpread.getX());
+		p->position[1] += (float) rng.randomNormal(areaSpread.getY());
 		break;
 	case DISTRIBUTION_NONE:
 	default:
