@@ -1447,8 +1447,14 @@ function love.errhand(msg)
 
 	error_printer(msg, 2)
 
-	if not love.window or not love.graphics or not love.event or not love.window.isCreated() then
+	if not love.window or not love.graphics or not love.event then
 		return
+	end
+
+	if not love.graphics.isCreated() or not love.window.isCreated() then
+		if not pcall(love.window.setMode, 800, 600) then
+			return
+		end
 	end
 
 	-- Load.
@@ -1512,8 +1518,14 @@ end
 function love.releaseerrhand(msg)
 	print("An error has occured, the game has been stopped.")
 
-	if not love.window or not love.graphics or not love.event or not love.graphics.isCreated() then
+	if not love.window or not love.graphics or not love.event then
 		return
+	end
+
+	if not love.graphics.isCreated() or not love.window.isCreated() then
+		if not pcall(love.window.setMode, 800, 600) then
+			return
+		end
 	end
 
 	love.graphics.setCanvas()
