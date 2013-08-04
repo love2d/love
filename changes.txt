@@ -13,6 +13,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added love.filesystem.append.
   * Added love.filesystem.getSize.
   * Added love.filesystem.mount and love.filesystem.unmount.
+  * Added optional file search order parameter to love.filesystem.setIdentity.
   * Added File:isOpen and File:getMode.
   * Added Fie:setBuffer, File:getBuffer, and File:flush.
   * Added previously internal Rasterizer and GlyphData object methods.
@@ -30,7 +31,6 @@ LOVE 0.9.0 [Baby Inspector]
   * Added Geometry objects (replaces Quads), allowing for arbitrary textured polygons.
   * Added multiple render target support to love.graphics.setCanvas.
   * Added love.graphics.setColorMask.
-  * Added love.graphics.setAlphaTest.
   * Added love.graphics.origin.
   * Added love.graphics.getRendererInfo.
   * Added love.graphics.getMaxImageSize.
@@ -51,6 +51,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added limited table support to Channel:push.
   * Added Thread:getError.
   * Added Thread:isRunning.
+  * Added threaderror event.
   * Added love.math module.
   * Added a platform-independent (good) random implementation to love.math.
   * Added RandomGenerator objects and love.math.newRandomGenerator.
@@ -137,6 +138,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed love.graphics.drawq (functionality is merged into love.graphics.draw).
   * Removed SpriteBatch:addq/setq (functionality is merged into SpriteBatch:add/set).
   * Removed ParticleSystem:isFull/isEmpty.
+  * Removed ParticleSystem:getX/getY.
   * Removed love.joystick.open and friends.
   * Removed love.joystick.getBall and love.joystick.getNumBalls.
   * Removed thread names.
@@ -152,7 +154,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated love.keypressed's second argument to be a unicode character string.
   * Updated the setFilter and setWrap methods, the second argument is now optional.
   * Updated Font and ParticleSystem rendering code, now more performant.
-  * Updated SpriteBatch code, now more performant when (un)binding.
+  * Updated SpriteBatch code, now more performant when adding/setting and (un)binding.
   * Updated Image creation code to error when creation fails.
   * Updated Canvas code to support more systems.
   * Updated Canvas:getImageData and love.graphics.newScreenshot to be more efficient.
