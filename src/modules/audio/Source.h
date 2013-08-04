@@ -96,6 +96,8 @@ public:
 	virtual void setMaxDistance(float distance) = 0;
 	virtual float getMaxDistance() const = 0;
 
+	virtual Type getType() const;
+
 	static bool getConstant(const char *in, Type &out);
 	static bool getConstant(Type in, const char  *&out);
 	static bool getConstant(const char *in, Unit &out);
