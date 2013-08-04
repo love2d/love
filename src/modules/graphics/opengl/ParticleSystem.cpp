@@ -439,16 +439,6 @@ const love::Vector &ParticleSystem::getPosition() const
 	return position;
 }
 
-float ParticleSystem::getX() const
-{
-	return position.getX();
-}
-
-float ParticleSystem::getY() const
-{
-	return position.getY();
-}
-
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y)
 {
 	areaSpread = love::Vector(x, y);

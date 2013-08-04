@@ -170,16 +170,6 @@ public:
 	const love::Vector &getPosition() const;
 
 	/**
-	 * Returns the x-coordinate of the emitter's position.
-	 **/
-	float getX() const;
-
-	/**
-	 * Returns the y-coordinate of the emitter's position.
-	 **/
-	float getY() const;
-
-	/**
 	 * Sets the emission area spread parameters and distribution type. The interpretation of
 	 * the parameters depends on the distribution type:
 	 *

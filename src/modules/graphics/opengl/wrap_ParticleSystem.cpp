@@ -174,20 +174,6 @@ int w_ParticleSystem_getPosition(lua_State *L)
 	return 2;
 }
 
-int w_ParticleSystem_getX(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getX());
-	return 1;
-}
-
-int w_ParticleSystem_getY(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getY());
-	return 1;
-}
-
 int w_ParticleSystem_setAreaSpread(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -655,8 +641,6 @@ static const luaL_Reg functions[] =
 	{ "getParticleLifetime", w_ParticleSystem_getParticleLifetime },
 	{ "setPosition", w_ParticleSystem_setPosition },
 	{ "getPosition", w_ParticleSystem_getPosition },
-	{ "getX", w_ParticleSystem_getX },
-	{ "getY", w_ParticleSystem_getY },
 	{ "setAreaSpread", w_ParticleSystem_setAreaSpread },
 	{ "getAreaSpread", w_ParticleSystem_getAreaSpread },
 	{ "setDirection", w_ParticleSystem_setDirection },
