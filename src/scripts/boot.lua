@@ -295,7 +295,6 @@ function love.init()
 		console = false, -- Only relevant for windows.
 		identity = false,
 		identityorder = "first",
-		release = false,
 	}
 
 	-- If config file exists, load it and allow it to update config table.
@@ -311,14 +310,6 @@ function love.init()
 			print(err)
 			-- continue
 		end
-	end
-
-	if c.release then
-		love._release = {
-			title = c.title ~= "Untitled" and c.title or nil,
-			author = c.author ~= "Unnamed" and c.author or nil,
-			url = c.url
-		}
 	end
 
 	if love.arg.options.console.set then
@@ -381,7 +372,7 @@ function love.init()
 	end
 
 	if love.filesystem then
-		love.filesystem.setRelease(c.release and is_fused_game)
+		love.filesystem.setFused(is_fused_game)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.identityorder)
 		if love.filesystem.exists("main.lua") then
 			require("main")
@@ -1515,66 +1506,8 @@ function love.errhand(msg)
 
 end
 
-function love.releaseerrhand(msg)
-	print("An error has occured, the game has been stopped.")
-
-	if not love.window or not love.graphics or not love.event then
-		return
-	end
-
-	if not love.graphics.isCreated() or not love.window.isCreated() then
-		if not pcall(love.window.setMode, 800, 600) then
-			return
-		end
-	end
-
-	love.graphics.setCanvas()
-	love.graphics.setShader()
-
-	-- Load.
-	if love.audio then love.audio.stop() end
-	love.graphics.reset()
-	love.graphics.setBackgroundColor(89, 157, 220)
-	local font = love.graphics.newFont(14)
-	love.graphics.setFont(font)
-
-	love.graphics.setColor(255, 255, 255, 255)
-
-	love.graphics.clear()
-	love.graphics.origin()
-
-	local err = {}
-
-	p = string.format("An error has occured that caused %s to stop.\nYou can notify %s about this%s.", love._release.title or "this game", love._release.author or "the author", love._release.url and " at " .. love._release.url or "")
-
-	local function draw()
-		love.graphics.clear()
-		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
-		love.graphics.present()
-	end
-
-	while true do
-		love.event.pump()
-
-		for e, a, b, c in love.event.poll() do
-			if e == "quit" then
-				return
-			end
-			if e == "keypressed" and a == "escape" then
-				return
-			end
-		end
-
-		draw()
-
-		if love.timer then
-			love.timer.sleep(0.1)
-		end
-	end
-end
-
 local function deferErrhand(...)
-	local handler = ((love._release and love.releaseerrhand) or love.errhand or error_printer)
+	local handler = love.errhand or error_printer
 	return handler(...)
 end
 

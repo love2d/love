@@ -93,8 +93,8 @@ public:
 
 	void init(const char *arg0);
 
-	void setRelease(bool release);
-	bool isRelease() const;
+	void setFused(bool fused);
+	bool isFused() const;
 
 	/**
 	 * This sets up the save directory. If the
@@ -280,12 +280,6 @@ public:
 
 private:
 
-	// Counts open files.
-	int open_count;
-
-	// Pointer used for file reads.
-	char *buffer;
-
 	// Contains the current working directory (UTF8).
 	std::string cwd;
 
@@ -309,8 +303,8 @@ private:
 
 	// Allow saving outside of the LOVE_APPDATA_FOLDER
 	// for release 'builds'
-	bool release;
-	bool releaseSet;
+	bool fused;
+	bool fusedSet;
 
 	static StringMap<SearchOrder, SEARCH_ORDER_MAX_ENUM>::Entry orderEntries[];
 	static StringMap<SearchOrder, SEARCH_ORDER_MAX_ENUM> orders;

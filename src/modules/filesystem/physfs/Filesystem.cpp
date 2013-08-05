@@ -35,11 +35,9 @@ namespace physfs
 {
 
 Filesystem::Filesystem()
-	: open_count(0)
-	, buffer(0)
-	, initialized(false)
-	, release(false)
-	, releaseSet(false)
+	: initialized(false)
+	, fused(false)
+	, fusedSet(false)
 {
 }
 
@@ -61,19 +59,19 @@ void Filesystem::init(const char *arg0)
 	initialized = true;
 }
 
-void Filesystem::setRelease(bool release)
+void Filesystem::setFused(bool fused)
 {
-	if (releaseSet)
+	if (fusedSet)
 		return;
-	this->release = release;
-	releaseSet = true;
+	this->fused = fused;
+	fusedSet = true;
 }
 
-bool Filesystem::isRelease() const
+bool Filesystem::isFused() const
 {
-	if (!releaseSet)
+	if (!fusedSet)
 		return false;
-	return release;
+	return fused;
 }
 
 bool Filesystem::setIdentity(const char *ident, SearchOrder searchorder)
@@ -91,7 +89,7 @@ bool Filesystem::setIdentity(const char *ident, SearchOrder searchorder)
 
 	// Generate the full path to the game save folder.
 	save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR);
-	if (release)
+	if (fused)
 		save_path_full += std::string(LOVE_APPDATA_PREFIX) + save_identity;
 	else
 		save_path_full += save_path_relative;
@@ -155,7 +153,7 @@ bool Filesystem::setupWriteDirectory()
 
 	// Create the save folder. (We're now "at" %APPDATA%).
 	bool success = false;
-	if (release)
+	if (fused)
 		success = mkdir(save_identity.c_str());
 	else
 		success = mkdir(save_path_relative.c_str());

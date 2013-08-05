@@ -38,7 +38,8 @@ namespace physfs
 
 bool hack_setupWriteDirectory();
 int w_init(lua_State *L);
-int w_setRelease(lua_State *L);
+int w_setFused(lua_State *L);
+int w_isFused(lua_State *L);
 int w_setIdentity(lua_State *L);
 int w_getIdentity(lua_State *L);
 int w_setSource(lua_State *L);

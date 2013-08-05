@@ -65,12 +65,18 @@ int w_init(lua_State *L)
 	return 0;
 }
 
-int w_setRelease(lua_State *L)
+int w_setFused(lua_State *L)
 {
 	// no error checking needed, everything, even nothing
 	// can be converted to a boolean
-	instance->setRelease(luax_toboolean(L, 1));
+	instance->setFused(luax_toboolean(L, 1));
 	return 0;
+}
+
+int w_isFused(lua_State *L)
+{
+	luax_pushboolean(L, instance->isFused());
+	return 1;
 }
 
 int w_setIdentity(lua_State *L)
@@ -541,7 +547,7 @@ int extloader(lua_State *L)
 	tokenized_name += library_extension();
 
 	void *handle = SDL_LoadObject((std::string(instance->getAppdataDirectory()) + LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR + tokenized_name).c_str());
-	if (!handle && instance->isRelease())
+	if (!handle && instance->isFused())
 		handle = SDL_LoadObject((std::string(instance->getSaveDirectory()) + LOVE_PATH_SEPARATOR + tokenized_name).c_str());
 
 	if (!handle)
@@ -569,7 +575,8 @@ int extloader(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "init",  w_init },
-	{ "setRelease", w_setRelease },
+	{ "setFused", w_setFused },
+	{ "isFused", w_isFused },
 	{ "setIdentity",  w_setIdentity },
 	{ "getIdentity", w_getIdentity },
 	{ "setSource",  w_setSource },
