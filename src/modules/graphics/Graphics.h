@@ -68,6 +68,14 @@ public:
 		LINE_MAX_ENUM
 	};
 
+	enum LineJoin
+	{
+		LINE_JOIN_NONE = 1,
+		LINE_JOIN_MITER,
+		LINE_JOIN_BEVEL,
+		LINE_JOIN_MAX_ENUM
+	};
+
 	enum PointStyle
 	{
 		POINT_ROUGH = 1,
@@ -125,6 +133,9 @@ public:
 	static bool getConstant(const char *in, LineStyle &out);
 	static bool getConstant(LineStyle in, const char  *&out);
 
+	static bool getConstant(const char *in, LineJoin &out);
+	static bool getConstant(LineJoin in, const char  *&out);
+
 	static bool getConstant(const char *in, PointStyle &out);
 	static bool getConstant(PointStyle in, const char  *&out);
 
@@ -147,6 +158,9 @@ private:
 
 	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
 	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;
+
+	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
+	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
 
 	static StringMap<PointStyle, POINT_MAX_ENUM>::Entry pointStyleEntries[];
 	static StringMap<PointStyle, POINT_MAX_ENUM> pointStyles;

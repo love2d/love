@@ -24,6 +24,7 @@
 
 #include "Graphics.h"
 #include "window/sdl/Window.h"
+#include "Polyline.h"
 
 #include <vector>
 #include <sstream>
@@ -647,6 +648,11 @@ void Graphics::setLineStyle(Graphics::LineStyle style)
 	lineStyle = style;
 }
 
+void Graphics::setLineJoin(Graphics::LineJoin join)
+{
+	lineJoin = join;
+}
+
 float Graphics::getLineWidth() const
 {
 	return lineWidth;
@@ -655,6 +661,11 @@ float Graphics::getLineWidth() const
 Graphics::LineStyle Graphics::getLineStyle() const
 {
 	return lineStyle;
+}
+
+Graphics::LineJoin Graphics::getLineJoin() const
+{
+	return lineJoin;
 }
 
 void Graphics::setPointSize(float size)
@@ -776,203 +787,26 @@ void Graphics::point(float x, float y)
 	glEnd();
 }
 
-// Calculate line boundary points u1 and u2. Sketch:
-//              u1
-// -------------+---...___
-//              |         ```'''--  ---
-// p- - - - - - q- - . _ _           | w/2
-//              |          ` ' ' r   +
-// -------------+---...___           | w/2
-//              u2         ```'''-- ---
-//
-// u1 and u2 depend on four things:
-//   - the half line width w/2
-//   - the previous line vertex p
-//   - the current line vertex q
-//   - the next line vertex r
-//
-// u1/u2 are the intersection points of the parallel lines to p-q and q-r,
-// i.e. the point where
-//
-//    (p + w/2 * n1) + mu * (q - p) = (q + w/2 * n2) + lambda * (r - q)   (u1)
-//    (p - w/2 * n1) + mu * (q - p) = (q - w/2 * n2) + lambda * (r - q)   (u2)
-//
-// with n1,n2 being the normals on the segments p-q and q-r:
-//
-//    n1 = perp(q - p) / |q - p|
-//    n2 = perp(r - q) / |r - q|
-//
-// The intersection points can be calculated using cramers rule.
-static void pushIntersectionPoints(Vector *vertices, Vector *overdraw,
-								   int pos, int count, float hw, float overdraw_factor,
-								   const Vector &p, const Vector &q, const Vector &r)
-{
-	// calculate line directions
-	Vector s = (q - p);
-	Vector t = (r - q);
-
-	// calculate vertex displacement vectors
-	Vector n1 = s.getNormal();
-	Vector n2 = t.getNormal();
-	n1.normalize();
-	n2.normalize();
-	float det_norm = n1 ^ n2; // will be close to zero if the angle between the normals is sharp
-	n1 *= hw;
-	n2 *= hw;
-
-	// lines parallel -> assume intersection at displacement points
-	if (fabs(det_norm) <= .03)
-	{
-		vertices[pos]   = q - n2;
-		vertices[pos+1] = q + n2;
-	}
-	// real intersection -> calculate boundary intersection points with cramers rule
-	else
-	{
-		float det = s ^ t;
-		Vector d = n1 - n2;
-		Vector b = s - d; // s = q - p
-		Vector c = s + d;
-		float lambda = (b ^ t) / det;
-		float mu     = (c ^ t) / det;
-
-		// ordering for GL_TRIANGLE_STRIP
-		vertices[pos]   = p + s*mu - n1;     // u1
-		vertices[pos+1] = p + s*lambda + n1; // u2
-	}
-
-	if (overdraw)
-	{
-		// displacement of the overdraw vertices
-		Vector x = (vertices[pos] - q) * overdraw_factor;
-
-		overdraw[pos]   = vertices[pos];
-		overdraw[pos+1] = vertices[pos] + x;
-
-		overdraw[2*count-pos-2] = vertices[pos+1];
-		overdraw[2*count-pos-1] = vertices[pos+1] - x;
-	}
-}
-
-// precondition:
-// glEnableClientState(GL_VERTEX_ARRAY);
-static void draw_overdraw(Vector *overdraw, size_t count, float pixel_size, bool looping)
-{
-	// if not looping, the outer overdraw vertices need to be displaced
-	// to cover the line endings, i.e.:
-	// +- - - - //- - +         +- - - - - //- - - +
-	// +-------//-----+         : +-------//-----+ :
-	// | core // line |   -->   : | core // line | :
-	// +-----//-------+         : +-----//-------+ :
-	// +- - //- - - - +         +- - - //- - - - - +
-	if (!looping)
-	{
-		Vector s = overdraw[1] - overdraw[3];
-		s.normalize();
-		s *= pixel_size;
-		overdraw[1] += s;
-		overdraw[2*count-1] += s;
-
-		Vector t = overdraw[count-1] - overdraw[count-3];
-		t.normalize();
-		t *= pixel_size;
-		overdraw[count-1] += t;
-		overdraw[count+1] += t;
-
-		// we need to draw two more triangles to close the
-		// overdraw at the line start.
-		overdraw[2*count]   = overdraw[0];
-		overdraw[2*count+1] = overdraw[1];
-	}
-
-	// prepare colors:
-	// even indices in overdraw* point to inner vertices => alpha = current-alpha,
-	// odd indices point to outer vertices => alpha = 0.
-	Color c = gl.getColor();
-
-	Color *colors = new Color[2*count+2];
-	for (size_t i = 0; i < 2*count+2; ++i)
-	{
-		colors[i] = c;
-		// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
-		colors[i].a *= GLubyte(i % 2 == 0);
-	}
-
-	// draw faded out line halos
-	glEnableClientState(GL_COLOR_ARRAY);
-	glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
-	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)overdraw);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*count + 2 * int(!looping));
-	glDisableClientState(GL_COLOR_ARRAY);
-	// "if GL_COLOR_ARRAY is enabled, the value of the current color is
-	// undefined after glDrawArrays executes"
-
-	gl.setColor(c);
-
-	delete[] colors;
-}
-
 void Graphics::polyline(const float *coords, size_t count)
 {
-	Vector *vertices = new Vector[count]; // two vertices for every line end-point
-	Vector *overdraw = NULL;
-
-	Vector p,q,r;
-	bool looping = (coords[0] == coords[count-2]) && (coords[1] == coords[count-1]);
-
-	float halfwidth       = lineWidth/2.f;
-	float pixel_size      = pixel_size_stack.back();
-	float overdraw_factor = .0f;
-
-	if (lineStyle == LINE_SMOOTH)
+	if (lineJoin == LINE_JOIN_NONE)
 	{
-		overdraw = new Vector[2*count+2];
-		overdraw_factor = pixel_size / halfwidth;
-		halfwidth = std::max(.0f, halfwidth - .25f*pixel_size);
+			NoneJoinPolyline line;
+			line.render(coords, count, lineWidth * .5f, pixel_size_stack.back(), lineStyle == LINE_SMOOTH);
+			line.draw();
 	}
-
-	// get line vertex boundaries
-	// if not looping, extend the line at the beginning, else use last point as `p'
-	r = Vector(coords[0], coords[1]);
-	if (!looping)
-		q = r * 2 - Vector(coords[2], coords[3]);
-	else
-		q = Vector(coords[count-4], coords[count-3]);
-
-	for (size_t i = 0; i+3 < count; i += 2)
+	else if (lineJoin == LINE_JOIN_BEVEL)
 	{
-		p = q;
-		q = r;
-		r = Vector(coords[i+2], coords[i+3]);
-		pushIntersectionPoints(vertices, overdraw, i, count, halfwidth, overdraw_factor, p,q,r);
+		BevelJoinPolyline line;
+		line.render(coords, count, lineWidth * .5f, pixel_size_stack.back(), lineStyle == LINE_SMOOTH);
+		line.draw();
 	}
-
-	// if not looping, extend the line at the end, else use first point as `r'
-	p = q;
-	q = r;
-	if (!looping)
-		r += q - p;
-	else
-		r = Vector(coords[2], coords[3]);
-	pushIntersectionPoints(vertices, overdraw, count-2, count, halfwidth, overdraw_factor, p,q,r);
-	// end get line vertex boundaries
-
-	// draw the core line
-	gl.bindTexture(0);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)vertices);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
-
-	// draw the line halo (antialiasing)
-	if (lineStyle == LINE_SMOOTH)
-		draw_overdraw(overdraw, count, pixel_size, looping);
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	// cleanup
-	delete[] vertices;
-	if (lineStyle == LINE_SMOOTH)
-		delete[] overdraw;
+	else // LINE_JOIN_MITER
+	{
+		MiterJoinPolyline line;
+		line.render(coords, count, lineWidth * .5f, pixel_size_stack.back(), lineStyle == LINE_SMOOTH);
+		line.draw();
+	}
 }
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)

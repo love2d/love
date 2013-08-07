@@ -69,6 +69,16 @@ bool Graphics::getConstant(LineStyle in, const char  *&out)
 	return lineStyles.find(in, out);
 }
 
+bool Graphics::getConstant(const char *in, LineJoin &out)
+{
+	return lineJoins.find(in, out);
+}
+
+bool Graphics::getConstant(LineJoin in, const char  *&out)
+{
+	return lineJoins.find(in, out);
+}
+
 bool Graphics::getConstant(const char *in, PointStyle &out)
 {
 	return pointStyles.find(in, out);
@@ -136,6 +146,15 @@ StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineSty
 };
 
 StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM> Graphics::lineStyles(Graphics::lineStyleEntries, sizeof(Graphics::lineStyleEntries));
+
+StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM>::Entry Graphics::lineJoinEntries[] =
+{
+	{ "none",  Graphics::LINE_JOIN_NONE  },
+	{ "miter", Graphics::LINE_JOIN_MITER },
+	{ "bevel", Graphics::LINE_JOIN_BEVEL }
+};
+
+StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM> Graphics::lineJoins(Graphics::lineJoinEntries, sizeof(Graphics::lineJoinEntries));
 
 StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM>::Entry Graphics::pointStyleEntries[] =
 {

@@ -843,6 +843,17 @@ int w_setLineStyle(lua_State *L)
 	return 0;
 }
 
+int w_setLineJoin(lua_State *L)
+{
+	Graphics::LineJoin join;
+	const char *str = luaL_checkstring(L, 1);
+	if (!Graphics::getConstant(str, join))
+		return luaL_error(L, "Invalid line join: %s", str);
+
+	instance->setLineJoin(join);
+	return 0;
+}
+
 int w_getLineWidth(lua_State *L)
 {
 	lua_pushnumber(L, instance->getLineWidth());
@@ -855,6 +866,16 @@ int w_getLineStyle(lua_State *L)
 	const char *str;
 	if (!Graphics::getConstant(style, str))
 		return luaL_error(L, "Unknown line style");
+	lua_pushstring(L, str);
+	return 1;
+}
+
+int w_getLineJoin(lua_State *L)
+{
+	Graphics::LineJoin join = instance->getLineJoin();
+	const char *str;
+	if (!Graphics::getConstant(join, str))
+		return luaL_error(L, "Unknown line join");
 	lua_pushstring(L, str);
 	return 1;
 }
@@ -1453,8 +1474,10 @@ static const luaL_Reg functions[] =
 	{ "getDefaultMipmapFilter", w_getDefaultMipmapFilter },
 	{ "setLineWidth", w_setLineWidth },
 	{ "setLineStyle", w_setLineStyle },
+	{ "setLineJoin", w_setLineJoin },
 	{ "getLineWidth", w_getLineWidth },
 	{ "getLineStyle", w_getLineStyle },
+	{ "getLineJoin", w_getLineJoin },
 	{ "setPointSize", w_setPointSize },
 	{ "setPointStyle", w_setPointStyle },
 	{ "getPointSize", w_getPointSize },

@@ -66,16 +66,25 @@ public:
 
 	/**
 	 * Normalizes the Vector.
+	 * @param length Desired length of the vector.
 	 * @return The old length of the Vector.
 	 **/
-	float normalize();
+	float normalize(float length = 1.0);
 
 	/**
-	 * Gets a normal to the Vector.
+	 * Gets a vector perpendicular to the Vector.
+	 * To get the true (normalized) normal, use v.getNormal(1.0f / v.getLength())
 	 * @return A normal to the Vector.
 	 **/
-
 	Vector getNormal() const;
+
+	/**
+	 * Gets a vector perpendicular to the Vector.
+	 * To get the true (normalized) normal, use v.getNormal(1.0f / v.getLength())
+	 * @param Scale factor to apply.
+	 * @return A normal to the Vector.
+	 **/
+	Vector getNormal(float scale) const;
 
 	/**
 	 * Adds a Vector to this Vector.
@@ -186,15 +195,20 @@ inline Vector Vector::getNormal() const
 	return Vector(-y, x);
 }
 
-inline float Vector::normalize()
+inline Vector Vector::getNormal(float scale) const
+{
+	return Vector(-y * scale, x * scale);
+}
+
+inline float Vector::normalize(float length)
 {
 
-	float len = getLength();
+	float length_current = getLength();
 
-	if (len > 0)
-		(*this) /= len;
+	if (length_current > 0)
+		(*this) *= length / length_current;
 
-	return len;
+	return length_current;
 }
 
 /**

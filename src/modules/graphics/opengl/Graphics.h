@@ -69,6 +69,7 @@ struct DisplayState
 
 	// Line.
 	Graphics::LineStyle lineStyle;
+	Graphics::LineJoin lineJoin;
 
 	// Point.
 	float pointSize;
@@ -88,6 +89,7 @@ struct DisplayState
 		backgroundColor.set(0, 0, 0, 255);
 		blendMode = Graphics::BLEND_ALPHA;
 		lineStyle = Graphics::LINE_SMOOTH;
+		lineJoin  = Graphics::LINE_JOIN_MITER;
 		pointSize = 1.0f;
 		pointStyle = Graphics::POINT_SMOOTH;
 		scissor = false;
@@ -300,6 +302,12 @@ public:
 	void setLineStyle(LineStyle style);
 
 	/**
+	 * Sets the line style.
+	 * @param style LINE_ROUGH or LINE_SMOOTH.
+	 **/
+	void setLineJoin(LineJoin style);
+
+	/**
 	 * Gets the line width.
 	 **/
 	float getLineWidth() const;
@@ -308,6 +316,11 @@ public:
 	 * Gets the line style.
 	 **/
 	LineStyle getLineStyle() const;
+
+	/**
+	 * Gets the line style.
+	 **/
+	LineJoin getLineJoin() const;
 
 	/**
 	 * Sets the size of points.
@@ -455,6 +468,7 @@ private:
 
 	std::vector<double> pixel_size_stack; // stores current size of a pixel (needed for line drawing)
 	LineStyle lineStyle;
+	LineJoin lineJoin;
 	float lineWidth;
 	GLint matrixLimit;
 	GLint userMatrices;
