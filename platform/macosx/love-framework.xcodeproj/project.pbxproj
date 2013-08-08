@@ -208,6 +208,8 @@
 		FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 351B09E51FDC338622F44624 /* Window.cpp */; };
 		FA08F67C16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6CDD4F3320303D222C180CD0 /* Window.cpp */; };
 		FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */; };
+		FA435EA317B36E9C004C3F22 /* Polyline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA435EA117B36E9C004C3F22 /* Polyline.cpp */; };
+		FA435EA417B36E9C004C3F22 /* Polyline.h in Headers */ = {isa = PBXBuildFile; fileRef = FA435EA217B36E9C004C3F22 /* Polyline.h */; };
 		FA5454C216F1310000D30303 /* MathModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA5454C016F1310000D30303 /* MathModule.cpp */; };
 		FA5454C316F1310000D30303 /* MathModule.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5454C116F1310000D30303 /* MathModule.h */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
@@ -720,6 +722,8 @@
 		FA03546B1731F3A700284828 /* simplexnoise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simplexnoise1234.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
 		FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
+		FA435EA117B36E9C004C3F22 /* Polyline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Polyline.cpp; sourceTree = "<group>"; };
+		FA435EA217B36E9C004C3F22 /* Polyline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Polyline.h; sourceTree = "<group>"; };
 		FA5454C016F1310000D30303 /* MathModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MathModule.cpp; sourceTree = "<group>"; };
 		FA5454C116F1310000D30303 /* MathModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MathModule.h; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
@@ -1583,6 +1587,8 @@
 				2C87695707B046B536F347D8 /* OpenGL.h */,
 				48A206C9004150640C432100 /* ParticleSystem.cpp */,
 				53EE57FF4DBD52BB22701160 /* ParticleSystem.h */,
+				FA435EA117B36E9C004C3F22 /* Polyline.cpp */,
+				FA435EA217B36E9C004C3F22 /* Polyline.h */,
 				FA577A8516C71CF000860150 /* Shader.cpp */,
 				FA577A8616C71CF000860150 /* Shader.h */,
 				4D700D182EAA46273D1E2CC4 /* SpriteBatch.cpp */,
@@ -1858,6 +1864,7 @@
 				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
 				FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */,
 				FA7175AA178E8418001FE7FE /* lua.h in Headers */,
+				FA435EA417B36E9C004C3F22 /* Polyline.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2154,6 +2161,7 @@
 				FA5FDC8B1788D548002F0ED2 /* protocol.c in Sources */,
 				FA5FDC8D1788D548002F0ED2 /* unix.c in Sources */,
 				FA5FDC8E1788D548002F0ED2 /* win32.c in Sources */,
+				FA435EA317B36E9C004C3F22 /* Polyline.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
