@@ -419,6 +419,7 @@
     <ClCompile Include="..\..\src\modules\graphics\opengl\Image.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\OpenGL.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\ParticleSystem.cpp" />
+    <ClCompile Include="..\..\src\modules\graphics\opengl\Polyline.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\Shader.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\SpriteBatch.cpp" />
     <ClCompile Include="..\..\src\modules\graphics\opengl\VertexBuffer.cpp" />
@@ -676,6 +677,7 @@
     <ClInclude Include="..\..\src\modules\graphics\opengl\Image.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\OpenGL.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\ParticleSystem.h" />
+    <ClInclude Include="..\..\src\modules\graphics\opengl\Polyline.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\Shader.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\SpriteBatch.h" />
     <ClInclude Include="..\..\src\modules\graphics\opengl\VertexBuffer.h" />
