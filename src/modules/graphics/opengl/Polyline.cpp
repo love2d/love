@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include <iostream>
+#include <algorithm>
 
 // LOVE
 #include "Polyline.h"
@@ -26,8 +26,8 @@
 // OpenGL
 #include "OpenGL.h"
 
-// treat adjacent segments with angles between their normals <7 degree as straight
-static const float LINES_PARALLEL_EPS = 0.15;
+// treat adjacent segments with angles between their directions <5 degree as straight
+static const float LINES_PARALLEL_EPS = 0.05;
 
 namespace love
 {
@@ -123,19 +123,19 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vect
  * u1/u2 are the intersection points of the parallel lines to p-q and q-r,
  * i.e. the point where
  *
- *    (p + w/2 * ns) + lambda * (q - p) = (q + w/2 * nt) + mu * (r - q)   (u1)
- *    (p - w/2 * ns) + lambda * (q - p) = (q - w/2 * nt) + mu * (r - q)   (u2)
+ *    (q + w/2 * ns) + lambda * (q - p) = (q + w/2 * nt) + mu * (r - q)   (u1)
+ *    (q - w/2 * ns) + lambda * (q - p) = (q - w/2 * nt) + mu * (r - q)   (u2)
  *
  * with nt,nt being the normals on the segments s = p-q and t = q-r,
  *
  *    ns = perp(s) / |s|
- *    nt = perp(t) / |s|.
+ *    nt = perp(t) / |t|.
  *
  * Using the linear equation system (similar for u2)
  *
- *         p + w/2 * ns + lambda * s - (q + w/2 * nt + mu * t) = 0                 (u1)
- *    <=> (p-q) + lambda * s - mu * t                          = (nt - ns) * w/2
- *    <=> (lambda - 1) * s   - mu * t                          = (nt - ns) * w/2
+ *         q + w/2 * ns + lambda * s - (q + w/2 * nt + mu * t) = 0                 (u1)
+ *    <=>  q-q + lambda * s - mu * t                          = (nt - ns) * w/2
+ *    <=>  lambda * s   - mu * t                              = (nt - ns) * w/2
  *
  * the intersection points can be efficiently calculated using Cramer's rule.
  */
@@ -151,7 +151,7 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vec
 	anchors.push_back(q);
 
 	float det = s ^ t;
-	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS)
+	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && s * t > 0)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
 		normals.push_back(ns);
@@ -196,7 +196,7 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vec
 	float len_t = t.getLength();
 
 	float det = s ^ t;
-	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS)
+	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && s * t > 0)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
 		Vector n = t.getNormal(hw / len_t);
@@ -338,8 +338,6 @@ void Polyline::draw()
 	if (overdraw)
 	{
 		// prepare colors:
-		// even indices in overdraw* point to inner vertices => alpha = current-alpha,
-		// odd indices point to outer vertices => alpha = 0.
 		Color c = gl.getColor();
 		Color *colors = new Color[overdraw_vertex_count];
 		fill_color_array(colors, c);
@@ -374,8 +372,7 @@ void NoneJoinPolyline::fill_color_array(Color *colors, const Color &c)
 	{
 		colors[i] = c;
 		// if (i % 4 == 1 || i % 4 == 2) colors[i].a = 0
-		size_t k = i % 4;
-		colors[i].a *= GLubyte(k != 1 && k != 2);
+		colors[i].a *= GLubyte((i+1) % 4 < 2);
 	}
 }
 
