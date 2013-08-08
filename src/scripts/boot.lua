@@ -18,15 +18,12 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
--- Make sure love table exists.
-if not love then love = {} end
+-- Make sure love exists.
+local love = require("love")
 
 -- Used for setup:
 love.path = {}
 love.arg = {}
-
--- Unparsed arguments:
-argv = {}
 
 -- Replace any \ with /.
 function love.path.normalslashes(p)
