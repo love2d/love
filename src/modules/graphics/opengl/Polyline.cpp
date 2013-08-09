@@ -283,10 +283,8 @@ void Polyline::render_overdraw(const std::vector<Vector> &normals, float pixel_s
 	}
 }
 
-void NoneJoinPolyline::render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping)
+void NoneJoinPolyline::render_overdraw(const std::vector<Vector> &/*normals*/, float pixel_size, bool /*is_looping*/)
 {
-	(void)is_looping;
-
 	overdraw_vertex_count = 4 * (vertex_count-2); // less than ideal
 	overdraw = new Vector[overdraw_vertex_count];
 	for (size_t i = 2; i + 3 < vertex_count; i += 4)
