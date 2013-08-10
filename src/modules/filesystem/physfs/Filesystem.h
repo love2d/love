@@ -118,6 +118,12 @@ public:
 	 **/
 	bool setSource(const char *source);
 
+	/**
+	 * Gets the path to the game source.
+	 * Returns a 0-length string if the source has not been set.
+	 **/
+	const char *getSource() const;
+
 	bool mount(const char *archive, const char *mountpoint, SearchOrder searchorder = SEARCH_ORDER_FIRST);
 	bool unmount(const char *archive);
 
@@ -161,6 +167,13 @@ public:
 	 * Gets the full path of the save folder.
 	 **/
 	const char *getSaveDirectory();
+
+	/**
+	 * Gets the full path to the directory containing the game source.
+	 * For example if the game source is C:\Games\mygame.love, this will return
+	 * C:\Games.
+	 **/
+	std::string getSourceBaseDirectory() const;
 
 	/**
 	 * Checks whether a file exists in the current search path

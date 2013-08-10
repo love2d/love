@@ -111,6 +111,12 @@ int w_setSource(lua_State *L)
 	return 0;
 }
 
+int w_getSource(lua_State *L)
+{
+	lua_pushstring(L, instance->getSource());
+	return 1;
+}
+
 int w_mount(lua_State *L)
 {
 	const char *archive = luaL_checkstring(L, 1);
@@ -246,6 +252,12 @@ int w_getAppdataDirectory(lua_State *L)
 int w_getSaveDirectory(lua_State *L)
 {
 	lua_pushstring(L, instance->getSaveDirectory());
+	return 1;
+}
+
+int w_getSourceBaseDirectory(lua_State *L)
+{
+	luax_pushstring(L, instance->getSourceBaseDirectory());
 	return 1;
 }
 
@@ -580,6 +592,7 @@ static const luaL_Reg functions[] =
 	{ "setIdentity",  w_setIdentity },
 	{ "getIdentity", w_getIdentity },
 	{ "setSource",  w_setSource },
+	{ "getSource", w_getSource },
 	{ "mount", w_mount },
 	{ "unmount", w_unmount },
 	{ "newFile",  w_newFile },
@@ -587,6 +600,7 @@ static const luaL_Reg functions[] =
 	{ "getUserDirectory",  w_getUserDirectory },
 	{ "getAppdataDirectory",  w_getAppdataDirectory },
 	{ "getSaveDirectory",  w_getSaveDirectory },
+	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
 	{ "exists",  w_exists },
 	{ "isDirectory",  w_isDirectory },
 	{ "isFile",  w_isFile },

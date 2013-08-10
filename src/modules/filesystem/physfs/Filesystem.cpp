@@ -137,6 +137,11 @@ bool Filesystem::setSource(const char *source)
 	return true;
 }
 
+const char *Filesystem::getSource() const
+{
+	return game_source.c_str();
+}
+
 bool Filesystem::setupWriteDirectory()
 {
 	if (!initialized)
@@ -160,7 +165,8 @@ bool Filesystem::setupWriteDirectory()
 
 	if (!success)
 	{
-		PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
+		// Clear the write directory in case of error.
+		PHYSFS_setWriteDir(0);
 		return false;
 	}
 
@@ -183,23 +189,38 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, SearchOrder 
 	if (!initialized || !archive)
 		return false;
 
-	// Not allowed for safety reasons.
-	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
+	std::string realPath;
+	std::string sourceBase = getSourceBaseDirectory();
+
+	if (isFused() && sourceBase.compare(archive) == 0)
+	{
+		// Special case: if the game is fused and the archive is the source's
+		// base directory, mount it even though it's outside of the save dir.
+		realPath = sourceBase;
+	}
+	else
+	{
+		// Not allowed for safety reasons.
+		if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
+			return false;
+
+		const char *realDir = PHYSFS_getRealDir(archive);
+		if (!realDir)
+			return false;
+
+		realPath = realDir;
+
+		// Always disallow mounting of files inside the game source, since it
+		// won't work anyway if the game source is a zipped .love file.
+		if (realPath.find(game_source) == 0)
+			return false;
+
+		realPath += LOVE_PATH_SEPARATOR;
+		realPath += archive;
+	}
+
+	if (realPath.length() == 0)
 		return false;
-
-	const char *realDir = PHYSFS_getRealDir(archive);
-	if (!realDir)
-		return false;
-
-	std::string realPath(realDir);
-
-	// Always disallow mounting of files inside the game source, since it won't
-	// work anyway if the game source is a zipped .love file.
-	if (realPath.find(game_source) == 0)
-		return false;
-
-	realPath += LOVE_PATH_SEPARATOR;
-	realPath += archive;
 
 	bool append = (searchorder == SEARCH_ORDER_LAST);
 
@@ -211,17 +232,29 @@ bool Filesystem::unmount(const char *archive)
 	if (!initialized || !archive)
 		return false;
 
-	// Not allowed for safety reasons.
-	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
-		return false;
+	std::string realPath;
+	std::string sourceBase = getSourceBaseDirectory();
 
-	const char *realDir = PHYSFS_getRealDir(archive);
-	if (!realDir)
-		return false;
+	if (isFused() && sourceBase.compare(archive) == 0)
+	{
+		// Special case: if the game is fused and the archive is the source's
+		// base directory, unmount it even though it's outside of the save dir.
+		realPath = sourceBase;
+	}
+	else
+	{
+		// Not allowed for safety reasons.
+		if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
+			return false;
 
-	std::string realPath(realDir);
-	realPath += LOVE_PATH_SEPARATOR;
-	realPath += archive;
+		const char *realDir = PHYSFS_getRealDir(archive);
+		if (!realDir)
+			return false;
+
+		realPath = realDir;
+		realPath += LOVE_PATH_SEPARATOR;
+		realPath += archive;
+	}
 
 	const char *mountPoint = PHYSFS_getMountPoint(realPath.c_str());
 	if (!mountPoint)
@@ -326,18 +359,40 @@ const char *Filesystem::getSaveDirectory()
 	return save_path_full.c_str();
 }
 
+std::string Filesystem::getSourceBaseDirectory() const
+{
+	size_t source_len = game_source.length();
+
+	if (source_len == 0)
+		return "";
+
+	// FIXME: This doesn't take into account parent and current directory
+	// symbols (i.e. '..' and '.')
+#ifdef LOVE_WINDOWS
+	// In windows, delimiters can be either '/' or '\'.
+	size_t base_end_pos = game_source.find_last_of("/\\", source_len - 2);
+#else
+	size_t base_end_pos = game_source.find_last_of('/', source_len - 2);
+#endif
+
+	if (base_end_pos == std::string::npos)
+		return "";
+
+	// If the source is in the unix root (aka '/'), we want to keep the '/'.
+	if (base_end_pos == 0)
+		base_end_pos = 1;
+
+	return game_source.substr(0, base_end_pos);
+}
+
 bool Filesystem::exists(const char *file) const
 {
-	if (PHYSFS_exists(file))
-		return true;
-	return false;
+	return PHYSFS_exists(file);
 }
 
 bool Filesystem::isDirectory(const char *file) const
 {
-	if (PHYSFS_isDirectory(file))
-		return true;
-	return false;
+	return PHYSFS_isDirectory(file);
 }
 
 bool Filesystem::isFile(const char *file) const
