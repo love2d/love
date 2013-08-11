@@ -137,7 +137,7 @@ int ModPlugDecoder::getChannels() const
 	return 2;
 }
 
-int ModPlugDecoder::getBits() const
+int ModPlugDecoder::getBitDepth() const
 {
 	return 16;
 }

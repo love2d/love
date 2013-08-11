@@ -137,7 +137,7 @@ int GmeDecoder::getChannels() const
 	return 2;
 }
 
-int GmeDecoder::getBits() const
+int GmeDecoder::getBitDepth() const
 {
 	return 16;
 }

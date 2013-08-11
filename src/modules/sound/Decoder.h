@@ -55,7 +55,7 @@ public:
 	/**
 	 * 16 bit audio is the default.
 	 **/
-	static const int DEFAULT_BITS = 16;
+	static const int DEFAULT_BIT_DEPTH = 16;
 
 	/**
 	 * Creates a deep of itself. The sound stream can (and should) be
@@ -126,7 +126,7 @@ public:
 	 * Gets the number of bits per sample. Supported values are 8 or 16.
 	 * @return Either 8, 16, or 0 if unsupported.
 	 **/
-	virtual int getBits() const = 0;
+	virtual int getBitDepth() const = 0;
 
 	/**
 	 * Gets the sample rate for the Decoder, that is, samples per second.

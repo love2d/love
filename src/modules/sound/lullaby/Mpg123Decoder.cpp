@@ -207,7 +207,7 @@ int Mpg123Decoder::getChannels() const
 	return channels;
 }
 
-int Mpg123Decoder::getBits() const
+int Mpg123Decoder::getBitDepth() const
 {
 	return 16;
 }

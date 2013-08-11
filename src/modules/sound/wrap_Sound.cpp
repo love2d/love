@@ -38,12 +38,12 @@ int w_newSoundData(lua_State *L)
 	{
 		int samples = luaL_checkint(L, 1);
 		int sampleRate = luaL_optint(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
-		int bits = luaL_optint(L, 3, Decoder::DEFAULT_BITS);
+		int bitDepth = luaL_optint(L, 3, Decoder::DEFAULT_BIT_DEPTH);
 		int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
 
 		try
 		{
-			t = instance->newSoundData(samples, sampleRate, bits, channels);
+			t = instance->newSoundData(samples, sampleRate, bitDepth, channels);
 		}
 		catch(love::Exception &e)
 		{

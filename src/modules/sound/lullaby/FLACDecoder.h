@@ -50,7 +50,7 @@ public:
 	bool rewind();
 	bool isSeekable();
 	int getChannels() const;
-	int getBits() const;
+	int getBitDepth() const;
 	int getSampleRate() const;
 
 	//needed for FLAC

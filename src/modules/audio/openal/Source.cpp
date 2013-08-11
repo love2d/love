@@ -544,15 +544,15 @@ void Source::setFloatv(float *dst, const float *src) const
 	dst[2] = src[2];
 }
 
-ALenum Source::getFormat(int channels, int bits) const
+ALenum Source::getFormat(int channels, int bitDepth) const
 {
-	if (channels == 1 && bits == 8)
+	if (channels == 1 && bitDepth == 8)
 		return AL_FORMAT_MONO8;
-	else if (channels == 1 && bits == 16)
+	else if (channels == 1 && bitDepth == 16)
 		return AL_FORMAT_MONO16;
-	else if (channels == 2 && bits == 8)
+	else if (channels == 2 && bitDepth == 8)
 		return AL_FORMAT_STEREO8;
-	else if (channels == 2 && bits == 16)
+	else if (channels == 2 && bitDepth == 16)
 		return AL_FORMAT_STEREO16;
 	else
 		return 0;
@@ -563,7 +563,7 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 	// Get more sound data.
 	int decoded = d->decode();
 
-	int fmt = getFormat(d->getChannels(), d->getBits());
+	int fmt = getFormat(d->getChannels(), d->getBitDepth());
 
 	if (fmt != 0)
 		alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());

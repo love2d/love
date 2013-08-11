@@ -60,11 +60,11 @@ public:
 	 * Creates a new SoundData with the specified number of samples and format.
 	 * @param duration In seconds.
 	 * @param sampleRate Number of samples per second.
-	 * @param bits Bits per sample (8 or 16).
+	 * @param bitDepth Bits per sample (8 or 16).
 	 * @param channels Either 1 for mono, or 2 for stereo.
 	 * @return A new SoundData object, or zero in case of errors.
 	 **/
-	SoundData *newSoundData(int samples, int sampleRate, int bits, int channels);
+	SoundData *newSoundData(int samples, int sampleRate, int bitDepth, int channels);
 
 	/**
 	 * Attempts to find a decoder for the encoded sound data in the

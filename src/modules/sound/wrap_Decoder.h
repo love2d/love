@@ -32,7 +32,7 @@ namespace sound
 
 Decoder *luax_checkdecoder(lua_State *L, int idx);
 int w_Decoder_getChannels(lua_State *L);
-int w_Decoder_getBits(lua_State *L);
+int w_Decoder_getBitDepth(lua_State *L);
 int w_Decoder_getSampleRate(lua_State *L);
 extern "C" int luaopen_decoder(lua_State *L);
 

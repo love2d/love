@@ -108,10 +108,10 @@ private:
 	 * Gets the OpenAL format identifier based on number of
 	 * channels and bits.
 	 * @param channels Either 1 (mono) or 2 (stereo).
-	 * @param bits Either 8-bit samples, or 16-bit samples.
+	 * @param bitDepth Either 8-bit samples, or 16-bit samples.
 	 * @return One of AL_FORMAT_*, or 0 if unsupported format.
 	 **/
-	ALenum getFormat(int channels, int bits) const;
+	ALenum getFormat(int channels, int bitDepth) const;
 
 	int streamAtomic(ALuint buffer, love::sound::Decoder *d);
 

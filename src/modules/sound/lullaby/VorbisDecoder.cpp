@@ -188,7 +188,7 @@ int VorbisDecoder::decode()
 
 	while (size < bufferSize)
 	{
-		int result = ov_read(&handle, (char *) buffer + size, bufferSize - size, endian, (getBits() == 16 ? 2 : 1), 1, 0);
+		int result = ov_read(&handle, (char *) buffer + size, bufferSize - size, endian, (getBitDepth() == 16 ? 2 : 1), 1, 0);
 
 		if (result == OV_HOLE)
 			continue;
@@ -243,7 +243,7 @@ int VorbisDecoder::getChannels() const
 	return vorbisInfo->channels;
 }
 
-int VorbisDecoder::getBits() const
+int VorbisDecoder::getBitDepth() const
 {
 	return 16;
 }

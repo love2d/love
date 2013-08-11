@@ -36,8 +36,8 @@ class SoundData : public love::Data
 public:
 
 	SoundData(Decoder *decoder);
-	SoundData(int samples, int sampleRate, int bits, int channels);
-	SoundData(void *d, int samples, int sampleRate, int bits, int channels);
+	SoundData(int samples, int sampleRate, int bitDepth, int channels);
+	SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels);
 
 	virtual ~SoundData();
 
@@ -61,7 +61,7 @@ private:
 	int size;
 
 	int sampleRate;
-	int bits;
+	int bitDepth;
 	int channels;
 }; // SoundData
 
