@@ -63,7 +63,8 @@ int w_ChainShape_getChildEdge(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
 	int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
-	EdgeShape *e = c->getChildEdge(index);
+	EdgeShape *e = 0;
+	ASSERT_GUARD(e = c->getChildEdge(index);)
 	luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, e);
 	return 1;
 }

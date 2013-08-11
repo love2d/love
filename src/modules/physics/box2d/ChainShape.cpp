@@ -70,16 +70,19 @@ void ChainShape::setPrevVertex(float x, float y)
 EdgeShape *ChainShape::getChildEdge(int index) const
 {
 	b2ChainShape *c = (b2ChainShape *)shape;
-	b2EdgeShape e;
-	c->GetChildEdge(&e, index);
-	EdgeShape *edge = (EdgeShape *)Memoizer::find(&e);
-	if (!edge)
-		return new EdgeShape(&e);
-	else
+	b2EdgeShape *e = new b2EdgeShape;
+
+	try
 	{
-		edge->retain();
-		return edge;
+		c->GetChildEdge(e, index);
 	}
+	catch (love::Exception &ex)
+	{
+		delete e;
+		throw;
+	}
+
+	return new EdgeShape(e, true);
 }
 
 int ChainShape::getChildCount() const
