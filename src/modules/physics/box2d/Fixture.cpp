@@ -76,7 +76,7 @@ Fixture::~Fixture()
 
 Shape::Type Fixture::getType() const
 {
-	return Shape(fixture->GetShape()).getType();
+	return Shape(fixture->GetShape(), false).getType();
 }
 
 void Fixture::setFriction(float friction)
