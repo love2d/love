@@ -562,12 +562,13 @@ void Canvas::clear(Color c)
 		strategy->bindFBO(fbo);
 	}
 
+	GLfloat glcolor[] = {c.r/255.f, c.g/255.f, c.b/255.f, c.a/255.f};
+
 	// We don't need to worry about multiple FBO attachments or global clear
 	// color state when OpenGL 3.0+ is supported.
 	if (GLEE_VERSION_3_0)
 	{
-		GLuint glcolor[] = {c.r, c.g, c.b, c.a};
-		glClearBufferuiv(GL_COLOR, 0, glcolor);
+		glClearBufferfv(GL_COLOR, 0, glcolor);
 
 		if (depth_stencil != 0)
 		{
@@ -584,7 +585,7 @@ void Canvas::clear(Color c)
 
 		// Don't use the state-shadowed gl.setClearColor because we want to save
 		// the previous clear color.
-		glClearColor((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
+		glClearColor(glcolor[0], glcolor[1], glcolor[2], glcolor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		if (attachedCanvases.size() > 0)
