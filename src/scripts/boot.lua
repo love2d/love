@@ -1323,11 +1323,19 @@ function love.nogame()
 		local img_w = rain.img_w
 		local img_h = rain.img_h
 
+		local batch_w = 2 * math.ceil(love.graphics.getWidth() / sx) + 2
+		local batch_h = 2 * math.ceil(love.graphics.getHeight() / sy) + 2
+
 		batch:clear()
+
+		if batch:getBufferSize() < batch_w * batch_h then
+			batch:setBufferSize(batch_w * batch_h)
+		end
+
 		batch:bind()
 
-		for i = 0,17 do
-			for j = 0,17 do
+		for i = 0, batch_h - 1 do
+			for j = 0, batch_w - 1 do
 				local is_even = (j % 2) == 0
 				local offset_y = is_even and sy * t or sy / 2 + sy * t
 				local x = ix + ox + j * sx
@@ -1343,6 +1351,8 @@ function love.nogame()
 		g_time = g_time + dt / 2
 		local int, frac = math.modf(g_time)
 		update_rain(frac)
+		inspector.x = love.graphics.getWidth() * 0.45
+		inspector.y = love.graphics.getHeight() * 0.55
 	end
 
 	local function draw_grid()
@@ -1417,6 +1427,7 @@ function love.nogame()
 		t.modules.sound = false
 		t.modules.physics = false
 		t.modules.joystick = false
+		t.window.resizable = true
 	end
 end
 
