@@ -9,6 +9,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added the ability to have exit values.
   * Added exit value of 1 in case of error by default.
   * Added basic support for the file:// uri scheme.
+  * Added love.filesystem.isFused.
   * Added love.filesystem.getIdentity.
   * Added love.filesystem.append.
   * Added love.filesystem.getSize.
@@ -28,6 +29,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added boolean support to Shader:send.
   * Added Canvas:getPixel.
   * Added blend mode "replace".
+  * Added line join modes.
   * Added Geometry objects (replaces Quads), allowing for arbitrary textured polygons.
   * Added multiple render target support to love.graphics.setCanvas.
   * Added love.graphics.setColorMask.
@@ -121,14 +123,16 @@ LOVE 0.9.0 [Baby Inspector]
 
   * Renamed love's boot script to 'love.boot', which can be required.
   * Renamed t.screen to t.window in love.conf.
+  * Renamed love.graphics.setCaption to love.window.setTitle.
   * Renamed PixelEffect to Shader (but now with vertex shaders).
   * Renamed love.graphics.setDefaultImageFilter to love.graphics.setDefaultFilter.
   * Renamed ParticleSystem:setSprite to ParticleSystem:setImage.
   * Renamed ParticleSystem:setGravity to ParticleSystem:setLinearAcceleration.
   * Renamed ParticleSystem:setLifetime/setParticleLife to setEmitter/ParticleLifetime.
   * Renamed ParticleSystem:count and all getNum* functions to get*Count.
-  * Renamed SoundData:getBits to SoundData:getBitDepth.
+  * Renamed SoundData:getBits and Decoder:getBits to SoundData:getBitDepth and Decoder:getBitDepth.
 
+  * Removed release mode.
   * Removed love.graphics.drawTest.
   * Removed love.graphics.quad/triangle.
   * Removed love.graphics.setColorMode.
