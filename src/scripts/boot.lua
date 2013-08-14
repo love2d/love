@@ -360,7 +360,7 @@ function love.init()
 		else
 			error("Could not set window mode")
 		end
-		love.window.setCaption(c.title)
+		love.window.setTitle(c.window.title or c.title)
 	end
 
 	-- Our first timestep, because window creation can take some time
