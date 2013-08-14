@@ -205,19 +205,7 @@ void VBO::fill(size_t offset, size_t size, const void *data)
 	else
 	{
 		// Not all systems have access to some faster paths...
-		if (GLEE_VERSION_3_0 || GLEE_ARB_map_buffer_range)
-		{
-			// Mapping a small range can have less chance of synchronization
-			// than glBufferSubData, so it may be faster.
-			GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT;
-			void *mapdata = glMapBufferRange(getTarget(), offset, size, access);
-
-			if (mapdata)
-				memcpy(mapdata, data, size);
-
-			glUnmapBuffer(getTarget());
-		}
-		else if (GLEE_APPLE_flush_buffer_range)
+		if (GLEE_APPLE_flush_buffer_range)
 		{
 			void *mapdata = glMapBufferARB(getTarget(), GL_WRITE_ONLY);
 
