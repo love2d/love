@@ -1299,9 +1299,9 @@ do
 #define love_Canvases gl_FragData]]
 
 	local GLSL_UNIFORMS = [[
-#define ModelViewMatrix gl_ModelViewMatrix
+#define TransformMatrix gl_ModelViewMatrix
 #define ProjectionMatrix gl_ProjectionMatrix
-#define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
+#define TransformProjectionMatrix gl_ModelViewProjectionMatrix
 #define NormalMatrix gl_NormalMatrix
 uniform sampler2D _tex0_;]]
 
@@ -1320,7 +1320,7 @@ uniform sampler2D _tex0_;]]
 void main() {
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = VertexColor;
-	gl_Position = position(ModelViewProjectionMatrix, VertexPosition);
+	gl_Position = position(TransformProjectionMatrix, VertexPosition);
 }]],
 	}
 
