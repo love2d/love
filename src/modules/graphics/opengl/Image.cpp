@@ -45,6 +45,7 @@ Image::Image(love::image::ImageData *data)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(false)
+	, usingDefaultTexture(false)
 {
 	data->retain();
 	preload();
@@ -59,6 +60,7 @@ Image::Image(love::image::CompressedData *cdata)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(true)
+	, usingDefaultTexture(false)
 {
 	cdata->retain();
 	preload();
@@ -246,7 +248,7 @@ void Image::createMipmaps()
 
 void Image::checkMipmapsCreated()
 {
-	if (mipmapsCreated || filter.mipmap == FILTER_NONE)
+	if (mipmapsCreated || filter.mipmap == FILTER_NONE || usingDefaultTexture)
 		return;
 
 	if (isCompressed() && cdata && hasCompressedTextureSupport(cdata->getType()))
@@ -263,8 +265,15 @@ void Image::setFilter(const Image::Filter &f)
 {
 	filter = f;
 
+	// We don't want filtering or (attempted) mipmaps on the default texture.
+	if (usingDefaultTexture)
+	{
+		filter.mipmap = FILTER_NONE;
+		filter.min = filter.mag = FILTER_NEAREST;
+	}
+
 	bind();
-	filter.anisotropy = gl.setTextureFilter(f);
+	filter.anisotropy = gl.setTextureFilter(filter);
 	checkMipmapsCreated();
 }
 
@@ -353,18 +362,6 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
-	// glTexImage2D is guaranteed to throw an error in this case.
-	if (width > gl.getMaxTextureSize())
-	{
-		throw love::Exception("Cannot create image: "
-		      "width of %d pixels is too large for this system.", (int) width);
-	}
-	else if (height > gl.getMaxTextureSize())
-	{
-		throw love::Exception("Cannot create image:"
-		      "height of %d pixels is too large for this system.", (int) height);
-	}
-
 	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getType()))
 	{
 		const char *str;
@@ -399,6 +396,13 @@ bool Image::loadVolatilePOT()
 	float p2height = next_p2(height);
 	float s = width/p2width;
 	float t = height/p2height;
+
+	// Use a default texture if the size is too big for the system.
+	if (p2width > gl.getMaxTextureSize() || p2height > gl.getMaxTextureSize())
+	{
+		uploadDefaultTexture();
+		return true;
+	}
 
 	vertices[1].t = t;
 	vertices[2].t = t;
@@ -450,9 +454,11 @@ bool Image::loadVolatilePOT()
 		                data->getData());
 	}
 
-	if (glGetError() != GL_NO_ERROR)
-		throw love::Exception("Cannot create image: size may be too large for this system.");
+	GLenum glerr = glGetError();
+	if (glerr != GL_NO_ERROR)
+		throw love::Exception("Cannot create image (error code 0x%x)", glerr);
 
+	usingDefaultTexture = false;
 	mipmapsCreated = false;
 	checkMipmapsCreated();
 
@@ -467,6 +473,13 @@ bool Image::loadVolatileNPOT()
 	filter.anisotropy = gl.setTextureFilter(filter);
 	gl.setTextureWrap(wrap);
 	setMipmapSharpness(mipmapSharpness);
+
+	// Use a default texture if the size is too big for the system.
+	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
+	{
+		uploadDefaultTexture();
+		return true;
+	}
 
 	// We want this lock to potentially cover mipmap creation as well.
 	love::thread::EmptyLock lock;
@@ -499,9 +512,11 @@ bool Image::loadVolatileNPOT()
 		             data->getData());
 	}
 
-	if (glGetError() != GL_NO_ERROR)
-		throw love::Exception("Cannot create image: size may be too large for this system.");
+	GLenum glerr = glGetError();
+	if (glerr != GL_NO_ERROR)
+		throw love::Exception("Cannot create image (error code 0x%x)", glerr);
 
+	usingDefaultTexture = false;
 	mipmapsCreated = false;
 	checkMipmapsCreated();
 
@@ -523,6 +538,10 @@ bool Image::refresh()
 	// No effect if the texture hasn't been created yet.
 	if (texture == 0)
 		return false;
+
+	if (gl.getMaxTextureSize())
+
+	while (glGetError() != GL_NO_ERROR); // clear errors
 
 	// We want this lock to potentially cover mipmap creation as well.
 	love::thread::EmptyLock lock;
@@ -554,10 +573,29 @@ bool Image::refresh()
 		                data->getData());
 	}
 
+	if (glGetError() != GL_NO_ERROR)
+		uploadDefaultTexture();
+	else
+		usingDefaultTexture = false;
+
 	mipmapsCreated = false;
 	checkMipmapsCreated();
 
 	return true;
+}
+
+void Image::uploadDefaultTexture()
+{
+	usingDefaultTexture = true;
+
+	bind();
+	setFilter(filter);
+
+	// A nice friendly checkerboard to signify invalid textures...
+	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0x20,0x20,0x20,0xFF,
+					0x20,0x20,0x20,0xFF, 0xFF,0xFF,0xFF,0xFF};
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
 love::Vector Image::getTexCoordScale() const

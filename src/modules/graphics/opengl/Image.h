@@ -146,6 +146,8 @@ public:
 private:
 
 	vertex *scaleNPOT(const vertex *v, size_t count) const;
+	void uploadDefaultTexture();
+
 	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
 
 	friend class Shader;
@@ -179,6 +181,10 @@ private:
 
 	// Whether this Image is using a compressed texture.
 	bool compressed;
+
+	// True if the image wasn't able to be properly created and it had to fall
+	// back to a default texture.
+	bool usingDefaultTexture;
 
 	// The image's filter mode
 	Image::Filter filter;
