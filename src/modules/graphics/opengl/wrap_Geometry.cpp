@@ -151,13 +151,17 @@ int w_Geometry_getVertexMap(lua_State *L)
 	size_t elemcount = g->getElementCount();
 	const uint16 *elements = g->getElementArray();
 
-	if (elemcount == 0 || elements == 0)
-		return 0;
+	if (elemcount == 0)
+		elemcount = g->getVertexCount();
 
 	lua_createtable(L, elemcount, 0);
 	for (size_t i = 0; i < elemcount; i++)
 	{
-		lua_pushinteger(L, elements[i]);
+		if (elements)
+			lua_pushinteger(L, elements[i] + 1);
+		else
+			lua_pushinteger(L, i + 1);
+
 		lua_rawseti(L, -2, i + 1);
 	}
 

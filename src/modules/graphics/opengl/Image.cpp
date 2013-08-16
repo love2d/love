@@ -539,8 +539,6 @@ bool Image::refresh()
 	if (texture == 0)
 		return false;
 
-	if (gl.getMaxTextureSize())
-
 	while (glGetError() != GL_NO_ERROR); // clear errors
 
 	// We want this lock to potentially cover mipmap creation as well.
@@ -593,7 +591,7 @@ void Image::uploadDefaultTexture()
 
 	// A nice friendly checkerboard to signify invalid textures...
 	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xC0,0xC0,0xC0,0xFF,
-					0xC0,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
+	                0xC0,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
