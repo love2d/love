@@ -1469,11 +1469,14 @@ function love.errhand(msg)
 	end
 
 	-- Load.
+	if love.mouse then
+		love.mouse.setVisible(true)
+		love.mouse.setGrab(false)
+	end
 	if love.audio then love.audio.stop() end
 	love.graphics.reset()
 	love.graphics.setBackgroundColor(89, 157, 220)
-	local font = love.graphics.newFont(14)
-	love.graphics.setFont(font)
+	local font = love.graphics.setNewFont(14)
 
 	love.graphics.setColor(255, 255, 255, 255)
 
