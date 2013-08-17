@@ -1272,7 +1272,13 @@ function love.nogame()
 	local g_time = 0
 
 	function love.load()
-		love.graphics.setBackgroundColor(137, 194, 218)
+		-- Subtractive blending isn't supported on some ancient systems, so
+		-- we should make sure it still looks decent in that case.
+		if love.graphics.isSupported("subtractive") then
+			love.graphics.setBackgroundColor(137, 194, 218)
+		else
+			love.graphics.setBackgroundColor(11, 88, 123)
+		end
 
 		local win_w = love.graphics.getWidth()
 		local win_h = love.graphics.getHeight()
@@ -1308,7 +1314,6 @@ function love.nogame()
 		rain.ox = -rain.img_w / 2
 		rain.oy = -rain.img_h / 2
 		rain.batch = love.graphics.newSpriteBatch(rain.image, 512)
-
 	end
 
 	local function update_rain(t)
@@ -1356,9 +1361,16 @@ function love.nogame()
 	end
 
 	local function draw_grid()
-		love.graphics.setBlendMode("subtractive")
+		local blendmode = "subtractive"
+		if not love.graphics.isSupported("subtractive") then
+			-- We also change the background color in this case, so it looks OK.
+			blendmode = "additive"
+		end
+
+		love.graphics.setBlendMode(blendmode)
 		love.graphics.setColor(255, 255, 255, 128)
 		love.graphics.draw(rain.batch, -rain.spacing_x, -rain.spacing_y, 0, 0.5, 0.5)
+
 		love.graphics.setBlendMode("alpha")
 		love.graphics.setColor(255, 255, 255, 255)
 		love.graphics.draw(rain.batch, -rain.spacing_x, -rain.spacing_y)
