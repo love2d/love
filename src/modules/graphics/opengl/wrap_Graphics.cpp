@@ -1051,10 +1051,8 @@ int w_isSupported(lua_State *L)
 	{
 		const char *str = luaL_checkstring(L, i);
 		if (!Graphics::getConstant(str, support))
-		{
-			supported = false;
-			break;
-		}
+			return luaL_error(L, "Invalid graphics feature: %s", str);
+
 		switch (support)
 		{
 		case Graphics::SUPPORT_CANVAS:
