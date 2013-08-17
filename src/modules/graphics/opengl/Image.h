@@ -141,7 +141,7 @@ public:
 	static bool hasMipmapSharpnessSupport();
 
 	static bool hasCompressedTextureSupport();
-	static bool hasCompressedTextureSupport(image::CompressedData::TextureType type);
+	static bool hasCompressedTextureSupport(image::CompressedData::Format format);
 
 private:
 
@@ -206,7 +206,7 @@ private:
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
 
-	GLenum getCompressedFormat(image::CompressedData::TextureType type) const;
+	GLenum getCompressedFormat(image::CompressedData::Format format) const;
 
 }; // Image
 

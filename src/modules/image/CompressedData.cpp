@@ -26,7 +26,7 @@ namespace image
 {
 
 CompressedData::CompressedData()
-	: type(TYPE_UNKNOWN)
+	: format(FORMAT_UNKNOWN)
 {
 }
 
@@ -88,9 +88,9 @@ int CompressedData::getHeight(int miplevel) const
 	return dataImages[miplevel].height;
 }
 
-CompressedData::TextureType CompressedData::getType() const
+CompressedData::Format CompressedData::getFormat() const
 {
-	return type;
+	return format;
 }
 
 void CompressedData::checkMipmapLevelExists(int miplevel) const
@@ -99,29 +99,29 @@ void CompressedData::checkMipmapLevelExists(int miplevel) const
 		throw love::Exception("Mipmap level %d does not exist", miplevel);
 }
 
-bool CompressedData::getConstant(const char *in, CompressedData::TextureType &out)
+bool CompressedData::getConstant(const char *in, CompressedData::Format &out)
 {
-	return types.find(in, out);
+	return formats.find(in, out);
 }
 
-bool CompressedData::getConstant(CompressedData::TextureType in, const char *&out)
+bool CompressedData::getConstant(CompressedData::Format in, const char *&out)
 {
-	return types.find(in, out);
+	return formats.find(in, out);
 }
 
-StringMap<CompressedData::TextureType, CompressedData::TYPE_MAX_ENUM>::Entry CompressedData::typeEntries[] =
+StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM>::Entry CompressedData::formatEntries[] =
 {
-	{"unknown", CompressedData::TYPE_UNKNOWN},
-	{"dxt1", CompressedData::TYPE_DXT1},
-	{"dxt3", CompressedData::TYPE_DXT3},
-	{"dxt5", CompressedData::TYPE_DXT5},
-	{"bc4", CompressedData::TYPE_BC4},
-	{"bc4s", CompressedData::TYPE_BC4s},
-	{"bc5", CompressedData::TYPE_BC5},
-	{"bc5s", CompressedData::TYPE_BC5s},
+	{"unknown", CompressedData::FORMAT_UNKNOWN},
+	{"dxt1", CompressedData::FORMAT_DXT1},
+	{"dxt3", CompressedData::FORMAT_DXT3},
+	{"dxt5", CompressedData::FORMAT_DXT5},
+	{"bc4", CompressedData::FORMAT_BC4},
+	{"bc4s", CompressedData::FORMAT_BC4s},
+	{"bc5", CompressedData::FORMAT_BC5},
+	{"bc5s", CompressedData::FORMAT_BC5s},
 };
 
-StringMap<CompressedData::TextureType, CompressedData::TYPE_MAX_ENUM> CompressedData::types(CompressedData::typeEntries, sizeof(CompressedData::typeEntries));
+StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM> CompressedData::formats(CompressedData::formatEntries, sizeof(CompressedData::formatEntries));
 
 } // image
 } // love

@@ -147,14 +147,14 @@ int w_CompressedData_getMipmapCount(lua_State *L)
 	return 1;
 }
 
-int w_CompressedData_getType(lua_State *L)
+int w_CompressedData_getFormat(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
 
-	image::CompressedData::TextureType type = t->getType();
+	image::CompressedData::Format format = t->getFormat();
 	const char *str;
 
-	if (image::CompressedData::getConstant(type, str))
+	if (image::CompressedData::getConstant(format, str))
 		lua_pushstring(L, str);
 	else
 		lua_pushstring(L, "unknown");
@@ -173,7 +173,7 @@ static const luaL_Reg functions[] =
 	{ "getHeight", w_CompressedData_getHeight },
 	{ "getDimensions", w_CompressedData_getDimensions },
 	{ "getMipmapCount", w_CompressedData_getMipmapCount },
-	{ "getType", w_CompressedData_getType },
+	{ "getFormat", w_CompressedData_getFormat },
 	{ 0, 0 },
 };
 

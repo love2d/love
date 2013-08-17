@@ -43,18 +43,18 @@ class CompressedData : public Data
 {
 public:
 
-	// Types of compressed image data.
-	enum TextureType
+	// Recognized compressed image data formats.
+	enum Format
 	{
-		TYPE_UNKNOWN,
-		TYPE_DXT1,
-		TYPE_DXT3,
-		TYPE_DXT5,
-		TYPE_BC4,
-		TYPE_BC4s,
-		TYPE_BC5,
-		TYPE_BC5s,
-		TYPE_MAX_ENUM
+		FORMAT_UNKNOWN,
+		FORMAT_DXT1,
+		FORMAT_DXT3,
+		FORMAT_DXT5,
+		FORMAT_BC4,
+		FORMAT_BC4s,
+		FORMAT_BC5,
+		FORMAT_BC5s,
+		FORMAT_MAX_ENUM
 	};
 
 	// Compressed image data can have multiple mipmap levels, each represented
@@ -102,16 +102,16 @@ public:
 	int getHeight(int miplevel) const;
 
 	/**
-	 * Gets the type of the compressed data.
+	 * Gets the format of the compressed data.
 	 **/
-	TextureType getType() const;
+	Format getFormat() const;
 
-	static bool getConstant(const char *in, TextureType &out);
-	static bool getConstant(TextureType in, const char *&out);
+	static bool getConstant(const char *in, Format &out);
+	static bool getConstant(Format in, const char *&out);
 
 protected:
 
-	TextureType type;
+	Format format;
 
 	// Texture info for each mipmap level.
 	std::vector<SubImage> dataImages;
@@ -120,8 +120,8 @@ protected:
 
 private:
 
-	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry typeEntries[];
-	static StringMap<TextureType, TYPE_MAX_ENUM> types;
+	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
+	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
 }; // CompressedData
 

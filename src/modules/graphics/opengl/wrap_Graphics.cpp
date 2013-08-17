@@ -1084,11 +1084,11 @@ int w_isSupported(lua_State *L)
 				supported = false;
 			break;
 		case Graphics::SUPPORT_DXT:
-			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_DXT5))
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_DXT5))
 				supported = false;
 			break;
 		case Graphics::SUPPORT_BC5:
-			if (!Image::hasCompressedTextureSupport(image::CompressedData::TYPE_BC5))
+			if (!Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_BC5))
 				supported = false;
 			break;
 		default:

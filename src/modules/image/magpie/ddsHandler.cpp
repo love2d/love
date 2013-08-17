@@ -40,21 +40,21 @@ bool ddsHandler::canParse(const filesystem::FileData *data)
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images)
+CompressedData::Format ddsHandler::parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images)
 {
 	if (!dds::isDDS(data->getData(), data->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
 
-	CompressedData::TextureType textype = CompressedData::TYPE_UNKNOWN;
+	CompressedData::Format texformat = CompressedData::FORMAT_UNKNOWN;
 
 	try
 	{
 		// Attempt to parse the dds file.
 		dds::Parser parser(data->getData(), data->getSize());
 
-		textype = convertFormat(parser.getFormat());
+		texformat = convertFormat(parser.getFormat());
 
-		if (textype == CompressedData::TYPE_UNKNOWN)
+		if (texformat == CompressedData::FORMAT_UNKNOWN)
 			throw love::Exception("Could not parse compressed data: Unsupported format.");
 
 		if (parser.getMipmapCount() == 0)
@@ -88,32 +88,32 @@ CompressedData::TextureType ddsHandler::parse(filesystem::FileData *data, std::v
 		throw love::Exception(e.what());
 	}
 
-	return textype;
+	return texformat;
 }
 
-CompressedData::TextureType ddsHandler::convertFormat(dds::Format ddsformat)
+CompressedData::Format ddsHandler::convertFormat(dds::Format ddsformat)
 {
 	switch (ddsformat)
 	{
 	case dds::FORMAT_DXT1:
-		return CompressedData::TYPE_DXT1;
+		return CompressedData::FORMAT_DXT1;
 	case dds::FORMAT_DXT3:
-		return CompressedData::TYPE_DXT3;
+		return CompressedData::FORMAT_DXT3;
 	case dds::FORMAT_DXT5:
-		return CompressedData::TYPE_DXT5;
+		return CompressedData::FORMAT_DXT5;
 	case dds::FORMAT_BC4:
-		return CompressedData::TYPE_BC4;
+		return CompressedData::FORMAT_BC4;
 	case dds::FORMAT_BC4s:
-		return CompressedData::TYPE_BC4s;
+		return CompressedData::FORMAT_BC4s;
 	case dds::FORMAT_BC5:
-		return CompressedData::TYPE_BC5;
+		return CompressedData::FORMAT_BC5;
 	case dds::FORMAT_BC5s:
-		return CompressedData::TYPE_BC5s;
+		return CompressedData::FORMAT_BC5s;
 	default:
-		return CompressedData::TYPE_UNKNOWN;
+		return CompressedData::FORMAT_UNKNOWN;
 	}
 
-	return CompressedData::TYPE_UNKNOWN;
+	return CompressedData::FORMAT_UNKNOWN;
 }
 
 } // magpie

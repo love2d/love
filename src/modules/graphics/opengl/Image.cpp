@@ -157,7 +157,7 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 
 void Image::uploadCompressedMipmaps()
 {
-	if (!isCompressed() || !cdata || !hasCompressedTextureSupport(cdata->getType()))
+	if (!isCompressed() || !cdata || !hasCompressedTextureSupport(cdata->getFormat()))
 		return;
 
 	bind();
@@ -180,7 +180,7 @@ void Image::uploadCompressedMipmaps()
 	{
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
 		                          i,
-		                          getCompressedFormat(cdata->getType()),
+		                          getCompressedFormat(cdata->getFormat()),
 		                          cdata->getWidth(i),
 		                          cdata->getHeight(i),
 		                          0,
@@ -251,7 +251,7 @@ void Image::checkMipmapsCreated()
 	if (mipmapsCreated || filter.mipmap == FILTER_NONE || usingDefaultTexture)
 		return;
 
-	if (isCompressed() && cdata && hasCompressedTextureSupport(cdata->getType()))
+	if (isCompressed() && cdata && hasCompressedTextureSupport(cdata->getFormat()))
 		uploadCompressedMipmaps();
 	else if (data)
 		createMipmaps();
@@ -362,10 +362,10 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
-	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getType()))
+	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getFormat()))
 	{
 		const char *str;
-		if (image::CompressedData::getConstant(cdata->getType(), str))
+		if (image::CompressedData::getConstant(cdata->getFormat(), str))
 		{
 			throw love::Exception("Cannot create image: "
 			      "%s compressed images are not supported on this system.", str);
@@ -424,7 +424,7 @@ bool Image::loadVolatilePOT()
 
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
 		                          0,
-		                          getCompressedFormat(cdata->getType()),
+		                          getCompressedFormat(cdata->getFormat()),
 		                          cdata->getWidth(0),
 		                          cdata->getHeight(0),
 		                          0,
@@ -488,7 +488,7 @@ bool Image::loadVolatileNPOT()
 
 	if (isCompressed() && cdata)
 	{
-		GLenum format = getCompressedFormat(cdata->getType());
+		GLenum format = getCompressedFormat(cdata->getFormat());
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
 		                          0,
 		                          format,
@@ -548,7 +548,7 @@ bool Image::refresh()
 
 	if (isCompressed() && cdata)
 	{
-		GLenum format = getCompressedFormat(cdata->getType());
+		GLenum format = getCompressedFormat(cdata->getFormat());
 		glCompressedTexSubImage2DARB(GL_TEXTURE_2D,
 		                             0,
 		                             0, 0,
@@ -671,23 +671,23 @@ bool Image::isCompressed() const
 	return compressed;
 }
 
-GLenum Image::getCompressedFormat(image::CompressedData::TextureType type) const
+GLenum Image::getCompressedFormat(image::CompressedData::Format format) const
 {
-	switch (type)
+	switch (format)
 	{
-	case image::CompressedData::TYPE_DXT1:
+	case image::CompressedData::FORMAT_DXT1:
 		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-	case image::CompressedData::TYPE_DXT3:
+	case image::CompressedData::FORMAT_DXT3:
 		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-	case image::CompressedData::TYPE_DXT5:
+	case image::CompressedData::FORMAT_DXT5:
 		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-	case image::CompressedData::TYPE_BC4:
+	case image::CompressedData::FORMAT_BC4:
 		return GL_COMPRESSED_RED_RGTC1;
-	case image::CompressedData::TYPE_BC4s:
+	case image::CompressedData::FORMAT_BC4s:
 		return GL_COMPRESSED_SIGNED_RED_RGTC1;
-	case image::CompressedData::TYPE_BC5:
+	case image::CompressedData::FORMAT_BC5:
 		return GL_COMPRESSED_RG_RGTC2;
-	case image::CompressedData::TYPE_BC5s:
+	case image::CompressedData::FORMAT_BC5s:
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
 	default:
 		return GL_RGBA8;
@@ -719,21 +719,21 @@ bool Image::hasCompressedTextureSupport()
 	return GLEE_VERSION_1_3 || GLEE_ARB_texture_compression;
 }
 
-bool Image::hasCompressedTextureSupport(image::CompressedData::TextureType type)
+bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 {
 	if (!hasCompressedTextureSupport())
 		return false;
 
-	switch (type)
+	switch (format)
 	{
-	case image::CompressedData::TYPE_DXT1:
-	case image::CompressedData::TYPE_DXT3:
-	case image::CompressedData::TYPE_DXT5:
+	case image::CompressedData::FORMAT_DXT1:
+	case image::CompressedData::FORMAT_DXT3:
+	case image::CompressedData::FORMAT_DXT5:
 		return GLEE_EXT_texture_compression_s3tc;
-	case image::CompressedData::TYPE_BC4:
-	case image::CompressedData::TYPE_BC4s:
-	case image::CompressedData::TYPE_BC5:
-	case image::CompressedData::TYPE_BC5s:
+	case image::CompressedData::FORMAT_BC4:
+	case image::CompressedData::FORMAT_BC4s:
+	case image::CompressedData::FORMAT_BC5:
+	case image::CompressedData::FORMAT_BC5s:
 		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc || GLEE_EXT_texture_compression_rgtc);
 	default:
 		break;

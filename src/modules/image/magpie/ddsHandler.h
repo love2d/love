@@ -58,13 +58,13 @@ public:
 	 * @param[in]  data The data to parse.
 	 * @param[out] images The list of sub-images (including byte data for each)
 	 *             parsed from the file data.
-	 * @return The type of CompressedData.
+	 * @return The format of the CompressedData.
 	 **/
-	static CompressedData::TextureType parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images);
+	static CompressedData::Format parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images);
 
 private:
 
-	static CompressedData::TextureType convertFormat(dds::Format ddsformat);
+	static CompressedData::Format convertFormat(dds::Format ddsformat);
 
 }; // ddsHandler
 

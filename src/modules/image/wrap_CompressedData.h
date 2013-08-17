@@ -37,7 +37,7 @@ int w_CompressedData_getWidth(lua_State *L);
 int w_CompressedData_getHeight(lua_State *L);
 int w_CompressedData_getDimensions(lua_State *L);
 int w_CompressedData_getMipmapCount(lua_State *L);
-int w_CompressedData_getType(lua_State *L);
+int w_CompressedData_getFormat(lua_State *L);
 extern "C" int luaopen_compresseddata(lua_State *L);
 
 } // image
