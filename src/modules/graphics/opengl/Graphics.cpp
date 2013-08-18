@@ -714,6 +714,9 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 	if (currentFont == 0)
 		return;
 
+	if (wrap < 0.0f)
+		throw love::Exception("Horizontal wrap limit cannot be negative.");
+
 	using std::string;
 	using std::vector;
 
