@@ -118,10 +118,10 @@ int Pool::getMaxSources() const
 
 bool Pool::play(Source *source, ALuint &out)
 {
-	bool ok;
-	out = 0;
-
 	thread::Lock lock(mutex);
+
+	bool ok = true;
+	out = 0;
 
 	bool alreadyPlaying = findSource(source, out);
 
