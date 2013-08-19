@@ -139,7 +139,7 @@ public:
 	/**
 	 * Calculate Simplex noise for the specified coordinate(s).
 	 *
-	 * @return Noise value in the range of [-1,1].
+	 * @return Noise value in the range of [0, 1].
 	 **/
 	float noise(float x) const;
 	float noise(float x, float y) const;
@@ -156,22 +156,22 @@ private:
 
 inline float Math::noise(float x) const
 {
-	return SimplexNoise1234::noise(x);
+	return SimplexNoise1234::noise(x) * 0.5f + 0.5f;
 }
 
 inline float Math::noise(float x, float y) const
 {
-	return SimplexNoise1234::noise(x, y);
+	return SimplexNoise1234::noise(x, y) * 0.5f + 0.5f;
 }
 
 inline float Math::noise(float x, float y, float z) const
 {
-	return SimplexNoise1234::noise(x, y, z);
+	return SimplexNoise1234::noise(x, y, z) * 0.5f + 0.5f;
 }
 
 inline float Math::noise(float x, float y, float z, float w) const
 {
-	return SimplexNoise1234::noise(x, y, z, w);
+	return SimplexNoise1234::noise(x, y, z, w) * 0.5f + 0.5f;
 }
 
 } // math
