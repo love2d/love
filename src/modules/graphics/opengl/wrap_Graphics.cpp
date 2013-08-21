@@ -83,7 +83,7 @@ int w_getDimensions(lua_State *L)
 
 int w_setScissor(lua_State *L)
 {
-	if (lua_gettop(L) == 0)
+	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
 		instance->setScissor();
 		return 0;
@@ -688,7 +688,7 @@ int w_setColorMask(lua_State *L)
 {
 	bool mask[4];
 
-	if (lua_gettop(L) == 0)
+	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
 		// Enable all color components if no argument is given.
 		mask[0] = mask[1] = mask[2] = mask[3] = true;
@@ -848,7 +848,7 @@ int w_setLineJoin(lua_State *L)
 	Graphics::LineJoin join;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, join))
-		return luaL_error(L, "Invalid line join: %s", str);
+		return luaL_error(L, "Invalid line join mode: %s", str);
 
 	instance->setLineJoin(join);
 	return 0;
