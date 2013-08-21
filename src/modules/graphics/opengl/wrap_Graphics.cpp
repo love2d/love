@@ -83,7 +83,10 @@ int w_getDimensions(lua_State *L)
 
 int w_setScissor(lua_State *L)
 {
-	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
+	int nargs = lua_gettop(L);
+
+	if (nargs == 0 || (nargs == 4 && lua_isnil(L, 1) && lua_isnil(L, 2)
+		&& lua_isnil(L, 3) && lua_isnil(L, 4)))
 	{
 		instance->setScissor();
 		return 0;
