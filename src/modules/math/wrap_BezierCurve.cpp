@@ -40,6 +40,14 @@ int w_BezierCurve_getDegree(lua_State *L)
 	return 1;
 }
 
+int w_BezierCurve_getDerivative(lua_State *L)
+{
+	BezierCurve *curve = luax_checkbeziercurve(L, 1);
+	BezierCurve *deriv = new BezierCurve(curve->getDerivative());
+	luax_newtype(L, "BezierCurve", MATH_BEZIER_CURVE_T, (void *)deriv);
+	return 1;
+}
+
 int w_BezierCurve_getControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
@@ -106,6 +114,35 @@ int w_BezierCurve_insertControlPoint(lua_State *L)
 	return 0;
 }
 
+int w_BezierCurve_move(lua_State *L)
+{
+	BezierCurve *curve = luax_checkbeziercurve(L, 1);
+	double dx = luaL_checknumber(L, 2);
+	double dy = luaL_checknumber(L, 3);
+	curve->translate(Vector(dx,dy));
+	return 0;
+}
+
+int w_BezierCurve_rotate(lua_State *L)
+{
+	BezierCurve *curve = luax_checkbeziercurve(L, 1);
+	double phi = luaL_checknumber(L, 2);
+	double ox = luaL_optnumber(L, 3, 0);
+	double oy = luaL_optnumber(L, 4, 0);
+	curve->rotate(phi, Vector(ox,oy));
+	return 0;
+}
+
+int w_BezierCurve_scale(lua_State *L)
+{
+	BezierCurve *curve = luax_checkbeziercurve(L, 1);
+	double s = luaL_checknumber(L, 2);
+	double ox = luaL_optnumber(L, 3, 0);
+	double oy = luaL_optnumber(L, 4, 0);
+	curve->scale(s, Vector(ox,oy));
+	return 0;
+}
+
 int w_BezierCurve_eval(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
@@ -148,9 +185,13 @@ int w_BezierCurve_render(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{"getDegree", w_BezierCurve_getDegree},
+	{"getDerivative", w_BezierCurve_getDerivative},
 	{"getControlPoint", w_BezierCurve_getControlPoint},
 	{"setControlPoint", w_BezierCurve_setControlPoint},
 	{"insertControlPoint", w_BezierCurve_insertControlPoint},
+	{"move", w_BezierCurve_move},
+	{"rotate", w_BezierCurve_rotate},
+	{"scale", w_BezierCurve_scale},
 	{"eval", w_BezierCurve_eval},
 	{"render", w_BezierCurve_render},
 	{ 0, 0 }

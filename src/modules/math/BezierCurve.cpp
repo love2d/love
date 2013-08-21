@@ -22,7 +22,7 @@
 #include "BezierCurve.h"
 #include "common/Exception.h"
 
-#include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -87,6 +87,21 @@ BezierCurve::BezierCurve(const vector<Vector> &pts)
 {
 }
 
+
+BezierCurve BezierCurve::getDerivative() const
+{
+	if (getDegree() < 1)
+		throw Exception("Cannot derive a curve of degree < 1.");
+	// actually we can, it just doesn't make any sense.
+
+	vector<Vector> forward_differences(controlPoints.size()-1);
+	float degree = float(getDegree());
+	for (size_t i = 0; i < forward_differences.size(); ++i)
+		forward_differences[i] = (controlPoints[i+1] - controlPoints[i]) * degree;
+
+	return BezierCurve(forward_differences);
+}
+
 const Vector &BezierCurve::getControlPoint(int i) const
 {
 	if (i < 0)
@@ -118,6 +133,29 @@ void BezierCurve::insertControlPoint(const Vector &point, int pos)
 		throw Exception("Invalid control point index");
 
 	controlPoints.insert(controlPoints.begin() + pos, point);
+}
+
+void BezierCurve::translate(const Vector &t)
+{
+	for (size_t i = 0; i < controlPoints.size(); ++i)
+		controlPoints[i] += t;
+}
+
+void BezierCurve::rotate(double phi, const Vector &center)
+{
+	float c = cos(phi), s = sin(phi);
+	for (size_t i = 0; i < controlPoints.size(); ++i)
+	{
+		Vector v = controlPoints[i] - center;
+		controlPoints[i].x = c * v.x - s * v.y + center.x;
+		controlPoints[i].y = s * v.x + c * v.y + center.y;
+	}
+}
+
+void BezierCurve::scale(double s, const Vector &center)
+{
+	for (size_t i = 0; i < controlPoints.size(); ++i)
+		controlPoints[i] = (controlPoints[i] - center) * s + center;
 }
 
 Vector BezierCurve::eval(double t) const

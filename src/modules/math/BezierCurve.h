@@ -49,6 +49,11 @@ public:
 	}
 
 	/**
+	 * @returns First derivative of the curve.
+	 */
+	BezierCurve getDerivative() const;
+
+	/**
 	 * @returns i'th control point.
 	 **/
 	const Vector &getControlPoint(int i) const;
@@ -67,6 +72,26 @@ public:
 	 * @param pos Position to insert.
 	 **/
 	void insertControlPoint(const Vector &point, int pos = -1);
+
+	/**
+	 * Move the curve.
+	 * @param t Translation vector.
+	 */
+	void translate(const Vector &t);
+
+	/**
+	 * Rotate the curve.
+	 * @param phi Rotation angle (radians).
+	 * @param center Rotation center.
+	 */
+	void rotate(double phi, const Vector &center);
+
+	/**
+	 * Scale the curve.
+	 * @param s Scale factor.
+	 * @param center Scale center.
+	 */
+	void scale(double phi, const Vector &center);
 
 	/**
 	 * Evaluates the curve at time t.
