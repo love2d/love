@@ -32,7 +32,18 @@ int w_checkMode(lua_State *L)
 {
 	int w = luaL_checkint(L, 1);
 	int h = luaL_checkint(L, 2);
-	bool fs = luax_toboolean(L, 3);
+
+	bool fs = false;
+
+	if (lua_istable(L, 3))
+	{
+		lua_getfield(L, 3, "fullscreen");
+		fs = luax_toboolean(L, -1);
+		lua_pop(L, 1);
+	}
+	else
+		fs = luax_toboolean(L, 3);
+
 	luax_pushboolean(L, instance->checkWindowSize(w, h, fs));
 	return 1;
 }
