@@ -157,7 +157,7 @@ public:
 	void getParticleLifetime(float *min, float *max) const;
 
 	/**
-	 * Sets the position of the center of the emitter and the direction (if set to relative).
+	 * Sets the position of the center of the emitter.
 	 * Used to move the emitter without changing the position of already existing particles.
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
@@ -213,18 +213,6 @@ public:
 	 * Returns the directional spread of the emitter (in radians).
 	 **/
 	float getSpread() const;
-
-	/**
-	 * Sets whether the direction should be relative to the particle emitter's movement. Used in conjunction with setPosition.
-	 * @param relative Whether to have relative direction.
-	 **/
-	void setRelativeDirection(bool relative);
-
-	/**
-	 * Returns whether the direction is relative to the particle emitter's
-	 * movement.
-	 **/
-	bool isRelativeDirection() const;
 
 	/**
 	 * Sets the speed of the particles.
@@ -578,9 +566,6 @@ protected:
 	// The direction (and spread) the particles will be emitted in. Measured in radians.
 	float direction;
 	float spread;
-
-	// Whether the direction should be relative to the emitter's movement.
-	bool relative;
 
 	// The speed.
 	float speedMin;

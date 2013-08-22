@@ -54,8 +54,6 @@ int w_ParticleSystem_setDirection(lua_State *L);
 int w_ParticleSystem_getDirection(lua_State *L);
 int w_ParticleSystem_setSpread(lua_State *L);
 int w_ParticleSystem_getSpread(lua_State *L);
-int w_ParticleSystem_setRelativeDirection(lua_State *L);
-int w_ParticleSystem_isRelativeDirection(lua_State *L);
 int w_ParticleSystem_setSpeed(lua_State *L);
 int w_ParticleSystem_getSpeed(lua_State *L);
 int w_ParticleSystem_setLinearAcceleration(lua_State *L);

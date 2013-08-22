@@ -237,21 +237,6 @@ int w_ParticleSystem_getSpread(lua_State *L)
 	return 1;
 }
 
-int w_ParticleSystem_setRelativeDirection(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	bool arg1 = (bool)luax_toboolean(L, 2);
-	t->setRelativeDirection(arg1);
-	return 0;
-}
-
-int w_ParticleSystem_isRelativeDirection(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	luax_pushboolean(L, t->isRelativeDirection());
-	return 1;
-}
-
 int w_ParticleSystem_setSpeed(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -647,8 +632,6 @@ static const luaL_Reg functions[] =
 	{ "getDirection", w_ParticleSystem_getDirection },
 	{ "setSpread", w_ParticleSystem_setSpread },
 	{ "getSpread", w_ParticleSystem_getSpread },
-	{ "setRelativeDirection", w_ParticleSystem_setRelativeDirection },
-	{ "isRelativeDirection", w_ParticleSystem_isRelativeDirection },
 	{ "setSpeed", w_ParticleSystem_setSpeed },
 	{ "getSpeed", w_ParticleSystem_getSpeed },
 	{ "setLinearAcceleration", w_ParticleSystem_setLinearAcceleration },

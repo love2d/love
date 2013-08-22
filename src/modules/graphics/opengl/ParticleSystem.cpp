@@ -44,7 +44,7 @@ love::math::RandomGenerator rng;
 
 Colorf colorToFloat(const Color &c)
 {
-	return Colorf((GLfloat)c.r/255.0f, (GLfloat)c.g/255.0f, (GLfloat)c.b/255.0f, (GLfloat)c.a/255.0f);
+	return Colorf((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
 }
 
 float calculate_variation(float inner, float outer, float var)
@@ -93,7 +93,6 @@ ParticleSystem::ParticleSystem(Image *image, uint32 size)
 	, particleLifeMax(0)
 	, direction(0)
 	, spread(0)
-	, relative(false)
 	, speedMin(0)
 	, speedMax(0)
 	, linearAccelerationMin(0, 0)
@@ -473,16 +472,6 @@ void ParticleSystem::setSpread(float spread)
 float ParticleSystem::getSpread() const
 {
 	return spread;
-}
-
-void ParticleSystem::setRelativeDirection(bool relative)
-{
-	this->relative = relative;
-}
-
-bool ParticleSystem::isRelativeDirection() const
-{
-	return relative;
 }
 
 void ParticleSystem::setSpeed(float speed)
