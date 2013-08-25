@@ -18,43 +18,46 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
-
-// LOVE
-#include "keyboard/Keyboard.h"
-#include "common/EnumMap.h"
-
-// SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include "System.h"
 
 namespace love
 {
-namespace keyboard
-{
-namespace sdl
+namespace system
 {
 
-class Keyboard : public love::keyboard::Keyboard
+std::string System::getOS() const
 {
-public:
+#ifdef LOVE_MACOSX
+	return "OS X";
+#elif LOVE_WINDOWS
+	return "Windows";
+#elif LOVE_LINUX
+	return "Linux";
+#else
+	return "Unknown";
+#endif
+}
 
-	// Implements Module.
-	const char *getName() const;
-	bool isDown(Key *keylist) const;
+bool System::getConstant(const char *in, System::PowerState &out)
+{
+	return powerStates.find(in, out);
+}
 
-private:
+bool System::getConstant(System::PowerState in, const char *&out)
+{
+	return powerStates.find(in, out);
+}
 
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
+StringMap<System::PowerState, System::POWER_MAX_ENUM>::Entry System::powerEntries[] =
+{
+	{"unknown", System::POWER_UNKNOWN},
+	{"battery", System::POWER_BATTERY},
+	{"nobattery", System::POWER_NO_BATTERY},
+	{"charging", System::POWER_CHARGING},
+	{"charged", System::POWER_CHARGED},
+};
 
-}; // Keyboard
+StringMap<System::PowerState, System::POWER_MAX_ENUM> System::powerStates(System::powerEntries, sizeof(System::powerEntries));
 
-} // sdl
-} // keyboard
+} // system
 } // love
-
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H

@@ -18,43 +18,22 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
+#ifndef LOVE_MOUSE_WRAP_CURSOR_H
+#define LOVE_MOUSE_WRAP_CURSOR_H
 
 // LOVE
-#include "keyboard/Keyboard.h"
-#include "common/EnumMap.h"
-
-// SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include "common/runtime.h"
 
 namespace love
 {
-namespace keyboard
-{
-namespace sdl
+namespace mouse
 {
 
-class Keyboard : public love::keyboard::Keyboard
-{
-public:
+int w_getType(lua_State *L);
+extern "C" int luaopen_cursor(lua_State *L);
 
-	// Implements Module.
-	const char *getName() const;
-	bool isDown(Key *keylist) const;
-
-private:
-
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
-
-}; // Keyboard
-
-} // sdl
-} // keyboard
+} // mouse
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H
+
+#endif // LOVE_MOUSE_WRAP_CURSOR_H

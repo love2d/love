@@ -34,6 +34,10 @@ extern "C" {
 #include <windows.h>
 #endif // LOVE_WINDOWS
 
+#ifdef LOVE_MACOSX
+#include "osx.h"
+#endif // LOVE_MACOSX
+
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 
 void get_utf8_arguments(int &argc, char **&argv)
@@ -71,6 +75,54 @@ void get_utf8_arguments(int &argc, char **&argv)
 
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
+#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
+
+#include <vector>
+
+static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_argv)
+{
+	std::vector<std::string> temp_argv;
+	for (int i = 0; i < argc; i++)
+	{
+		// Don't copy -psn_xxx argument from argv.
+		if (i == 0 || strncmp(argv[i], "-psn_", 5) != 0)
+			temp_argv.push_back(std::string(argv[i]));
+	}
+
+	// Check for a drop file string.
+	std::string dropfilestr = love::osx::checkDropEvents();
+	if (!dropfilestr.empty())
+	{
+		temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
+	}
+	else
+	{
+		// If it exists, add the love file in love.app/Contents/Resources/ to argv.
+		std::string loveResourcesPath = love::osx::getLoveInResources();
+		if (!loveResourcesPath.empty())
+		{
+			// Run in pseudo-fused mode.
+			std::vector<std::string>::iterator it = temp_argv.begin();
+			it = temp_argv.insert(it + 1, loveResourcesPath);
+			temp_argv.insert(it + 1, std::string("--fused"));
+		}
+	}
+
+	// Copy temp argv vector to new argv array.
+	new_argc = (int) temp_argv.size();
+	new_argv = new char *[new_argc+1];
+
+	for (int i = 0; i < new_argc; i++)
+	{
+		new_argv[i] = new char[temp_argv[i].length() + 1];
+		strcpy(new_argv[i], temp_argv[i].c_str());
+	}
+
+	new_argv[new_argc+1] = NULL;
+}
+
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
+
 static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 {
 	lua_getglobal(L, "package");
@@ -89,6 +141,14 @@ int main(int argc, char **argv)
 	argc = hack_argc;
 	argv = hack_argv;
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
+
+#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
+	int hack_argc = 0;
+	char **hack_argv = 0;
+	get_app_arguments(argc, argv, hack_argc, hack_argv);
+	argc = hack_argc;
+	argv = hack_argv;
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1],"--version") == 0)
@@ -148,14 +208,14 @@ int main(int argc, char **argv)
 
 	lua_close(L);
 
-#ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
+#if defined(LOVE_LEGENDARY_UTF8_ARGV_HACK) || defined(LOVE_LEGENDARY_APP_ARGV_HACK)
 	if (hack_argv)
 	{
 		for (int i = 0; i<hack_argc; ++i)
 			delete [] hack_argv[i];
 		delete [] hack_argv;
 	}
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
+#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK || LOVE_LEGENDARY_APP_ARGV_HACK
 	return retval;
 }
 

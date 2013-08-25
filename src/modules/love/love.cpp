@@ -103,6 +103,7 @@ extern "C"
 	extern int luaopen_love_mouse(lua_State*);
 	extern int luaopen_love_physics(lua_State*);
 	extern int luaopen_love_sound(lua_State*);
+	extern int luaopen_love_system(lua_State*);
 	extern int luaopen_love_timer(lua_State*);
 	extern int luaopen_love_thread(lua_State*);
 	extern int luaopen_love_window(lua_State*);
@@ -122,6 +123,7 @@ static const luaL_Reg modules[] = {
 	{ "love.mouse", luaopen_love_mouse },
 	{ "love.physics", luaopen_love_physics },
 	{ "love.sound", luaopen_love_sound },
+	{ "love.system", luaopen_love_system },
 	{ "love.timer", luaopen_love_timer },
 	{ "love.thread", luaopen_love_thread },
 	{ "love.window", luaopen_love_window },

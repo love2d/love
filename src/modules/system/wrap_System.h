@@ -18,43 +18,26 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
+#ifndef LOVE_WRAP_SYSTEM_H
+#define LOVE_WRAP_SYSTEM_H
 
 // LOVE
-#include "keyboard/Keyboard.h"
-#include "common/EnumMap.h"
-
-// SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include "System.h"
+#include "common/runtime.h"
 
 namespace love
 {
-namespace keyboard
-{
-namespace sdl
+namespace system
 {
 
-class Keyboard : public love::keyboard::Keyboard
-{
-public:
+int w_getOS(lua_State *L);
+int w_getProcessorCount(lua_State *L);
+int w_setClipboardText(lua_State *L);
+int w_getClipboardText(lua_State *L);
+int w_getPowerInfo(lua_State *L);
+extern "C" LOVE_EXPORT int luaopen_love_system(lua_State *L);
 
-	// Implements Module.
-	const char *getName() const;
-	bool isDown(Key *keylist) const;
-
-private:
-
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
-
-}; // Keyboard
-
-} // sdl
-} // keyboard
+} // system
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H
+#endif // LOVE_WRAP_SYSTEM_H

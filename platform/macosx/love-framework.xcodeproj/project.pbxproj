@@ -135,9 +135,8 @@
 		FA08F63016C7542600F007B5 /* DevilHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AA7781A230065F346E2313A /* DevilHandler.cpp */; };
 		FA08F63116C7542600F007B5 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B0728FA73B107B37A956A09 /* wrap_Image.cpp */; };
 		FA08F63216C7542600F007B5 /* wrap_ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 076840774B0B6E721D0C18D0 /* wrap_ImageData.cpp */; };
-		FA08F63316C7542D00F007B5 /* Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 677F545C76EA3B247329358D /* Joystick.cpp */; };
-		FA08F63416C7542D00F007B5 /* Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B425307C0C1C4B3EFC3A5F /* Joystick.cpp */; };
-		FA08F63516C7542D00F007B5 /* wrap_Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 139411436818381E493F00F5 /* wrap_Joystick.cpp */; };
+		FA08F63416C7542D00F007B5 /* JoystickModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B425307C0C1C4B3EFC3A5F /* JoystickModule.cpp */; };
+		FA08F63516C7542D00F007B5 /* wrap_JoystickModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 139411436818381E493F00F5 /* wrap_JoystickModule.cpp */; };
 		FA08F63616C7543400F007B5 /* Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 524741891BB93848039F4174 /* Keyboard.cpp */; };
 		FA08F63716C7543400F007B5 /* Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 43BC2B1C505E5EFF650C31E3 /* Keyboard.cpp */; };
 		FA08F63816C7543400F007B5 /* wrap_Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 19F40DF6507028212FEB1D77 /* wrap_Keyboard.cpp */; };
@@ -208,6 +207,18 @@
 		FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 351B09E51FDC338622F44624 /* Window.cpp */; };
 		FA08F67C16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6CDD4F3320303D222C180CD0 /* Window.cpp */; };
 		FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */; };
+		FA1EF7C41799FEAC00FF380C /* wrap_System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA34E7D4174B55AF00E04D3F /* wrap_System.cpp */; };
+		FA1EF7C51799FEB200FF380C /* wrap_System.h in Headers */ = {isa = PBXBuildFile; fileRef = FA34E7D5174B55AF00E04D3F /* wrap_System.h */; };
+		FA34E7CD174B513F00E04D3F /* System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA34E7CB174B513F00E04D3F /* System.cpp */; };
+		FA34E7CE174B513F00E04D3F /* System.h in Headers */ = {isa = PBXBuildFile; fileRef = FA34E7CC174B513F00E04D3F /* System.h */; };
+		FA34E7D2174B515D00E04D3F /* System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA34E7D0174B515D00E04D3F /* System.cpp */; };
+		FA34E7D3174B515D00E04D3F /* System.h in Headers */ = {isa = PBXBuildFile; fileRef = FA34E7D1174B515D00E04D3F /* System.h */; };
+		FA3D9E0D16E68DE600CA6630 /* Cursor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA3D9E0B16E68DE600CA6630 /* Cursor.cpp */; };
+		FA3D9E0E16E68DE600CA6630 /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = FA3D9E0C16E68DE600CA6630 /* Cursor.h */; };
+		FA3D9E1116E68EAE00CA6630 /* Cursor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA3D9E0F16E68EAE00CA6630 /* Cursor.cpp */; };
+		FA3D9E1216E68EAE00CA6630 /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = FA3D9E1016E68EAE00CA6630 /* Cursor.h */; };
+		FA3D9E1516E6D41100CA6630 /* wrap_Cursor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA3D9E1316E6D41000CA6630 /* wrap_Cursor.cpp */; };
+		FA3D9E1616E6D41100CA6630 /* wrap_Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = FA3D9E1416E6D41000CA6630 /* wrap_Cursor.h */; };
 		FA435EA317B36E9C004C3F22 /* Polyline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA435EA117B36E9C004C3F22 /* Polyline.cpp */; };
 		FA435EA417B36E9C004C3F22 /* Polyline.h in Headers */ = {isa = PBXBuildFile; fileRef = FA435EA217B36E9C004C3F22 /* Polyline.h */; };
 		FA5454C216F1310000D30303 /* MathModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA5454C016F1310000D30303 /* MathModule.cpp */; };
@@ -222,7 +233,6 @@
 		FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* Ogg.framework */; };
 		FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7C16C71A2600860150 /* OpenGL.framework */; };
 		FA577ACB16C7514400860150 /* physfs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7316C719F900860150 /* physfs.framework */; };
-		FA577ACC16C7514700860150 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7516C719FF00860150 /* SDL.framework */; };
 		FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* Vorbis.framework */; };
 		FA5FDC791788D548002F0ED2 /* enet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC5F1788D548002F0ED2 /* enet.cpp */; };
 		FA5FDC7A1788D548002F0ED2 /* callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = FA5FDC611788D548002F0ED2 /* callbacks.c */; };
@@ -251,11 +261,18 @@
 		FA7175AA178E8418001FE7FE /* lua.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7175A9178E8418001FE7FE /* lua.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
+		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */; };
 		FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9FC0AF173D6E3E005027FF /* wrap_Window.h */; };
 		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
 		FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAC6B01170A373A008A61C5 /* CompressedData.h */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
+		FAB0078F1740C12D00A9664D /* Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB0078D1740C12D00A9664D /* Joystick.cpp */; };
+		FAB007901740C12D00A9664D /* Joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB0078E1740C12D00A9664D /* Joystick.h */; };
+		FAB007931740C28900A9664D /* Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB007911740C28900A9664D /* Joystick.cpp */; };
+		FAB007941740C28900A9664D /* Joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB007921740C28900A9664D /* Joystick.h */; };
+		FAB007971740C87D00A9664D /* wrap_Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB007951740C87D00A9664D /* wrap_Joystick.cpp */; };
+		FAB007981740C87D00A9664D /* wrap_Joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB007961740C87D00A9664D /* wrap_Joystick.h */; };
 		FAC5710017402D1100D147E4 /* BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC570FC17402D1100D147E4 /* BezierCurve.cpp */; };
 		FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC570FD17402D1100D147E4 /* BezierCurve.h */; };
 		FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */; };
@@ -373,7 +390,7 @@
 		131F69C3368C4B8A55EE0DAD /* wrap_WeldJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_WeldJoint.h; sourceTree = "<group>"; };
 		135801A6483528800C676492 /* io.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io.c; sourceTree = "<group>"; };
 		138913BE5126483748FA43D0 /* Joint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Joint.h; sourceTree = "<group>"; };
-		139411436818381E493F00F5 /* wrap_Joystick.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Joystick.cpp; sourceTree = "<group>"; };
+		139411436818381E493F00F5 /* wrap_JoystickModule.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_JoystickModule.cpp; sourceTree = "<group>"; };
 		14AE68E14C2C74526A612FA0 /* wrap_Image.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Image.cpp; sourceTree = "<group>"; };
 		15093E1B1A14176374C81299 /* wrap_CircleShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_CircleShape.h; sourceTree = "<group>"; };
 		153957EB332E1269671E7F4A /* b2CircleShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2CircleShape.h; sourceTree = "<group>"; };
@@ -453,7 +470,7 @@
 		2CAE75B079B828FE6892684A /* udp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = udp.h; sourceTree = "<group>"; };
 		2CEC5ED5211174C7583849AD /* Reference.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Reference.h; sourceTree = "<group>"; };
 		2D290E902C451D6849051FEF /* b2WeldJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2WeldJoint.h; sourceTree = "<group>"; };
-		2D7B7DEC4FC87878332E41B3 /* wrap_Joystick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Joystick.h; sourceTree = "<group>"; };
+		2D7B7DEC4FC87878332E41B3 /* wrap_JoystickModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_JoystickModule.h; sourceTree = "<group>"; };
 		2D8E6FAE2A100B5866E96BFF /* runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = runtime.h; sourceTree = "<group>"; };
 		2D9475890CDA3D3776435622 /* Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		2DC90F3C6160198256795C75 /* luasocket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = luasocket.cpp; sourceTree = "<group>"; };
@@ -523,7 +540,7 @@
 		415E1438178736BE0EA908D5 /* select.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = select.c; sourceTree = "<group>"; };
 		426B1C4475DC54505B824B7F /* VertexBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VertexBuffer.cpp; sourceTree = "<group>"; };
 		427B4B2517C0516844370E3D /* b2CollidePolygon.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2CollidePolygon.cpp; sourceTree = "<group>"; };
-		439E46D768A266780E894800 /* Joystick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
+		439E46D768A266780E894800 /* JoystickModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JoystickModule.h; sourceTree = "<group>"; };
 		43A258C229C75C15238E520C /* Decoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
 		43BC2B1C505E5EFF650C31E3 /* Keyboard.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Keyboard.cpp; sourceTree = "<group>"; };
 		448C492C7AEB7840504F1C9D /* b2EdgeShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2EdgeShape.h; sourceTree = "<group>"; };
@@ -554,7 +571,7 @@
 		4B41232F7AF7793540F46C58 /* timeout.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = timeout.c; sourceTree = "<group>"; };
 		4B5F4DF8110020A96B5D3EAB /* b2BroadPhase.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2BroadPhase.cpp; sourceTree = "<group>"; };
 		4B731754147B27AF73AC5358 /* Volatile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Volatile.cpp; sourceTree = "<group>"; };
-		4C606AEC342457600C3F0741 /* Joystick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
+		4C606AEC342457600C3F0741 /* JoystickModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JoystickModule.h; sourceTree = "<group>"; };
 		4D700D182EAA46273D1E2CC4 /* SpriteBatch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteBatch.cpp; sourceTree = "<group>"; };
 		4D81102E7ABD1C282BE42CE3 /* wrap_MouseJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_MouseJoint.cpp; sourceTree = "<group>"; };
 		4DAB28A9235E2CBE75F56848 /* CircleShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CircleShape.cpp; sourceTree = "<group>"; };
@@ -585,7 +602,7 @@
 		54E85987318206E93DC8189F /* PolygonShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PolygonShape.cpp; sourceTree = "<group>"; };
 		55A759CE711E157339930E58 /* b2BlockAllocator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2BlockAllocator.cpp; sourceTree = "<group>"; };
 		55AE226405CC1A55462E1D89 /* threads.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = threads.h; sourceTree = "<group>"; };
-		55B425307C0C1C4B3EFC3A5F /* Joystick.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Joystick.cpp; sourceTree = "<group>"; };
+		55B425307C0C1C4B3EFC3A5F /* JoystickModule.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = JoystickModule.cpp; sourceTree = "<group>"; };
 		561D4A4722E36BAA16D17CC8 /* EdgeShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EdgeShape.h; sourceTree = "<group>"; };
 		567C0A0C58931DE54733011B /* b2StackAllocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2StackAllocator.h; sourceTree = "<group>"; };
 		56D6030A0B8F7397715062B9 /* Image.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
@@ -641,7 +658,6 @@
 		6590063A6E4B3AEF4550443C /* b2GearJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2GearJoint.h; sourceTree = "<group>"; };
 		66EC3C0463A703A97445193B /* b2PulleyJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2PulleyJoint.cpp; sourceTree = "<group>"; };
 		66F8479E6D2D587A592F2024 /* socket.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = socket.lua.h; sourceTree = "<group>"; };
-		677F545C76EA3B247329358D /* Joystick.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Joystick.cpp; sourceTree = "<group>"; };
 		678E42771C9B415628A3234D /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
 		68616BD516DB124312B47EB3 /* Image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		691C5C5828550E2F60754EF2 /* wrap_Event.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
@@ -722,6 +738,18 @@
 		FA03546B1731F3A700284828 /* simplexnoise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simplexnoise1234.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
 		FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
+		FA34E7CB174B513F00E04D3F /* System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = System.cpp; sourceTree = "<group>"; };
+		FA34E7CC174B513F00E04D3F /* System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = System.h; sourceTree = "<group>"; };
+		FA34E7D0174B515D00E04D3F /* System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = System.cpp; sourceTree = "<group>"; };
+		FA34E7D1174B515D00E04D3F /* System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = System.h; sourceTree = "<group>"; };
+		FA34E7D4174B55AF00E04D3F /* wrap_System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_System.cpp; sourceTree = "<group>"; };
+		FA34E7D5174B55AF00E04D3F /* wrap_System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_System.h; sourceTree = "<group>"; };
+		FA3D9E0B16E68DE600CA6630 /* Cursor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cursor.cpp; sourceTree = "<group>"; };
+		FA3D9E0C16E68DE600CA6630 /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
+		FA3D9E0F16E68EAE00CA6630 /* Cursor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cursor.cpp; sourceTree = "<group>"; };
+		FA3D9E1016E68EAE00CA6630 /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
+		FA3D9E1316E6D41000CA6630 /* wrap_Cursor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Cursor.cpp; sourceTree = "<group>"; };
+		FA3D9E1416E6D41000CA6630 /* wrap_Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Cursor.h; sourceTree = "<group>"; };
 		FA435EA117B36E9C004C3F22 /* Polyline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Polyline.cpp; sourceTree = "<group>"; };
 		FA435EA217B36E9C004C3F22 /* Polyline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Polyline.h; sourceTree = "<group>"; };
 		FA5454C016F1310000D30303 /* MathModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MathModule.cpp; sourceTree = "<group>"; };
@@ -733,7 +761,6 @@
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA577A7116C719F400860150 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
 		FA577A7316C719F900860150 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
-		FA577A7516C719FF00860150 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
 		FA577A7716C71A0800860150 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
 		FA577A7916C71A1700860150 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		FA577A7C16C71A2600860150 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
@@ -773,11 +800,18 @@
 		FA7175A9178E8418001FE7FE /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
+		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Window.cpp; sourceTree = "<group>"; };
 		FA9FC0AF173D6E3E005027FF /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
 		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
 		FAAC6B01170A373A008A61C5 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAB0078D1740C12D00A9664D /* Joystick.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Joystick.cpp; sourceTree = "<group>"; };
+		FAB0078E1740C12D00A9664D /* Joystick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
+		FAB007911740C28900A9664D /* Joystick.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Joystick.cpp; sourceTree = "<group>"; };
+		FAB007921740C28900A9664D /* Joystick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Joystick.h; sourceTree = "<group>"; };
+		FAB007951740C87D00A9664D /* wrap_Joystick.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Joystick.cpp; sourceTree = "<group>"; };
+		FAB007961740C87D00A9664D /* wrap_Joystick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Joystick.h; sourceTree = "<group>"; };
 		FAC570FC17402D1100D147E4 /* BezierCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BezierCurve.cpp; sourceTree = "<group>"; };
 		FAC570FD17402D1100D147E4 /* BezierCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierCurve.h; sourceTree = "<group>"; };
 		FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_BezierCurve.cpp; sourceTree = "<group>"; };
@@ -822,6 +856,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */,
@@ -833,7 +868,6 @@
 				FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
 				FA577ACB16C7514400860150 /* physfs.framework in Frameworks */,
-				FA577ACC16C7514700860150 /* SDL.framework in Frameworks */,
 				FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -952,9 +986,13 @@
 		130737AF4BD12D0356A65C87 /* mouse */ = {
 			isa = PBXGroup;
 			children = (
+				FA3D9E0B16E68DE600CA6630 /* Cursor.cpp */,
+				FA3D9E0C16E68DE600CA6630 /* Cursor.h */,
 				31E0110E5797041465FF5F95 /* Mouse.cpp */,
 				63A63DFB339266AC401B545A /* Mouse.h */,
 				1E017A8673D531394B5A3B16 /* sdl */,
+				FA3D9E1316E6D41000CA6630 /* wrap_Cursor.cpp */,
+				FA3D9E1416E6D41000CA6630 /* wrap_Cursor.h */,
 				22EF17981EBD442773FE41B6 /* wrap_Mouse.cpp */,
 				4E972C114A6C25A63B5B6EF2 /* wrap_Mouse.h */,
 			);
@@ -1080,6 +1118,8 @@
 		1E017A8673D531394B5A3B16 /* sdl */ = {
 			isa = PBXGroup;
 			children = (
+				FA3D9E0F16E68EAE00CA6630 /* Cursor.cpp */,
+				FA3D9E1016E68EAE00CA6630 /* Cursor.h */,
 				584E16AE09E12536206C46FE /* Mouse.cpp */,
 				198A44BD71BB61EE517C2A39 /* Mouse.h */,
 			);
@@ -1344,8 +1384,9 @@
 		501126AD67DC2A4B527654EA /* joystick */ = {
 			isa = PBXGroup;
 			children = (
-				677F545C76EA3B247329358D /* Joystick.cpp */,
-				4C606AEC342457600C3F0741 /* Joystick.h */,
+				FAB0078D1740C12D00A9664D /* Joystick.cpp */,
+				FAB0078E1740C12D00A9664D /* Joystick.h */,
+				4C606AEC342457600C3F0741 /* JoystickModule.h */,
 				687216AD6FA406C838284B91 /* sdl */,
 			);
 			path = joystick;
@@ -1381,6 +1422,7 @@
 				130737AF4BD12D0356A65C87 /* mouse */,
 				67F10C1D58A96C1C53563B5C /* physics */,
 				4BAB08EE4A6B4A1A01DA50A4 /* sound */,
+				FA34E7CA174B512200E04D3F /* system */,
 				02E0744773D13AD65E7C49DC /* thread */,
 				6D590DDD41E72A60262E4A4F /* timer */,
 				153D76205F7A4ACD12FB4C0E /* window */,
@@ -1522,10 +1564,14 @@
 		687216AD6FA406C838284B91 /* sdl */ = {
 			isa = PBXGroup;
 			children = (
-				55B425307C0C1C4B3EFC3A5F /* Joystick.cpp */,
-				439E46D768A266780E894800 /* Joystick.h */,
-				139411436818381E493F00F5 /* wrap_Joystick.cpp */,
-				2D7B7DEC4FC87878332E41B3 /* wrap_Joystick.h */,
+				FAB007911740C28900A9664D /* Joystick.cpp */,
+				FAB007921740C28900A9664D /* Joystick.h */,
+				55B425307C0C1C4B3EFC3A5F /* JoystickModule.cpp */,
+				439E46D768A266780E894800 /* JoystickModule.h */,
+				FAB007951740C87D00A9664D /* wrap_Joystick.cpp */,
+				FAB007961740C87D00A9664D /* wrap_Joystick.h */,
+				139411436818381E493F00F5 /* wrap_JoystickModule.cpp */,
+				2D7B7DEC4FC87878332E41B3 /* wrap_JoystickModule.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
@@ -1708,9 +1754,31 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
+		FA34E7CA174B512200E04D3F /* system */ = {
+			isa = PBXGroup;
+			children = (
+				FA34E7CF174B514F00E04D3F /* sdl */,
+				FA34E7CB174B513F00E04D3F /* System.cpp */,
+				FA34E7CC174B513F00E04D3F /* System.h */,
+				FA34E7D4174B55AF00E04D3F /* wrap_System.cpp */,
+				FA34E7D5174B55AF00E04D3F /* wrap_System.h */,
+			);
+			path = system;
+			sourceTree = "<group>";
+		};
+		FA34E7CF174B514F00E04D3F /* sdl */ = {
+			isa = PBXGroup;
+			children = (
+				FA34E7D0174B515D00E04D3F /* System.cpp */,
+				FA34E7D1174B515D00E04D3F /* System.h */,
+			);
+			path = sdl;
+			sourceTree = "<group>";
+		};
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FA9B4A0716E1578300074F42 /* SDL2.framework */,
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FA577A6716C719D900860150 /* FreeType.framework */,
 				FA577A6B16C719E400860150 /* Game_Music_Emu.framework */,
@@ -1722,7 +1790,6 @@
 				FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */,
 				FA577A7C16C71A2600860150 /* OpenGL.framework */,
 				FA577A7316C719F900860150 /* physfs.framework */,
-				FA577A7516C719FF00860150 /* SDL.framework */,
 				FA577A7716C71A0800860150 /* Vorbis.framework */,
 			);
 			name = Frameworks;
@@ -1850,7 +1917,13 @@
 				FAC86E6A1724555D00EED715 /* DrawGable.h in Headers */,
 				FAC86E6C1724555D00EED715 /* Geometry.h in Headers */,
 				FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */,
+				FA3D9E0E16E68DE600CA6630 /* Cursor.h in Headers */,
+				FA3D9E1216E68EAE00CA6630 /* Cursor.h in Headers */,
+				FA3D9E1616E6D41100CA6630 /* wrap_Cursor.h in Headers */,
 				FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */,
+				FAB007901740C12D00A9664D /* Joystick.h in Headers */,
+				FAB007941740C28900A9664D /* Joystick.h in Headers */,
+				FAB007981740C87D00A9664D /* wrap_Joystick.h in Headers */,
 				FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */,
 				FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */,
 				FA5FDC7E1788D548002F0ED2 /* callbacks.h in Headers */,
@@ -1864,6 +1937,9 @@
 				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
 				FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */,
 				FA7175AA178E8418001FE7FE /* lua.h in Headers */,
+				FA34E7CE174B513F00E04D3F /* System.h in Headers */,
+				FA34E7D3174B515D00E04D3F /* System.h in Headers */,
+				FA1EF7C51799FEB200FF380C /* wrap_System.h in Headers */,
 				FA435EA417B36E9C004C3F22 /* Polyline.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2054,9 +2130,8 @@
 				FA08F63016C7542600F007B5 /* DevilHandler.cpp in Sources */,
 				FA08F63116C7542600F007B5 /* wrap_Image.cpp in Sources */,
 				FA08F63216C7542600F007B5 /* wrap_ImageData.cpp in Sources */,
-				FA08F63316C7542D00F007B5 /* Joystick.cpp in Sources */,
-				FA08F63416C7542D00F007B5 /* Joystick.cpp in Sources */,
-				FA08F63516C7542D00F007B5 /* wrap_Joystick.cpp in Sources */,
+				FA08F63416C7542D00F007B5 /* JoystickModule.cpp in Sources */,
+				FA08F63516C7542D00F007B5 /* wrap_JoystickModule.cpp in Sources */,
 				FA08F63616C7543400F007B5 /* Keyboard.cpp in Sources */,
 				FA08F63716C7543400F007B5 /* Keyboard.cpp in Sources */,
 				FA08F63816C7543400F007B5 /* wrap_Keyboard.cpp in Sources */,
@@ -2148,7 +2223,13 @@
 				FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */,
 				FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */,
 				FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */,
+				FA3D9E0D16E68DE600CA6630 /* Cursor.cpp in Sources */,
+				FA3D9E1116E68EAE00CA6630 /* Cursor.cpp in Sources */,
+				FA3D9E1516E6D41100CA6630 /* wrap_Cursor.cpp in Sources */,
 				FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */,
+				FAB0078F1740C12D00A9664D /* Joystick.cpp in Sources */,
+				FAB007931740C28900A9664D /* Joystick.cpp in Sources */,
+				FAB007971740C87D00A9664D /* wrap_Joystick.cpp in Sources */,
 				FAC5710017402D1100D147E4 /* BezierCurve.cpp in Sources */,
 				FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */,
 				FA5FDC791788D548002F0ED2 /* enet.cpp in Sources */,
@@ -2161,6 +2242,9 @@
 				FA5FDC8B1788D548002F0ED2 /* protocol.c in Sources */,
 				FA5FDC8D1788D548002F0ED2 /* unix.c in Sources */,
 				FA5FDC8E1788D548002F0ED2 /* win32.c in Sources */,
+				FA34E7CD174B513F00E04D3F /* System.cpp in Sources */,
+				FA34E7D2174B515D00E04D3F /* System.cpp in Sources */,
+				FA1EF7C41799FEAC00FF380C /* wrap_System.cpp in Sources */,
 				FA435EA317B36E9C004C3F22 /* Polyline.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2190,7 +2274,7 @@
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
+					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
@@ -2223,7 +2307,7 @@
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
+					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";

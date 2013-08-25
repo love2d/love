@@ -28,23 +28,37 @@ namespace window
 
 static Window *instance = 0;
 
+int w_getDisplayCount(lua_State *L)
+{
+	lua_pushinteger(L, instance->getDisplayCount());
+	return 1;
+}
+
 int w_checkMode(lua_State *L)
 {
 	int w = luaL_checkint(L, 1);
 	int h = luaL_checkint(L, 2);
 
 	bool fs = false;
+	int displayindex = 0;
 
 	if (lua_istable(L, 3))
 	{
 		lua_getfield(L, 3, "fullscreen");
 		fs = luax_toboolean(L, -1);
-		lua_pop(L, 1);
+
+		lua_getfield(L, 3, "display");
+		displayindex = luaL_optint(L, -1, 1) - 1;
+
+		lua_pop(L, 2);
 	}
 	else
+	{
 		fs = luax_toboolean(L, 3);
+		displayindex = luaL_optint(L, 4, 1) - 1;
+	}
 
-	luax_pushboolean(L, instance->checkWindowSize(w, h, fs));
+	luax_pushboolean(L, instance->checkWindowSize(w, h, fs, displayindex));
 	return 1;
 }
 
@@ -63,12 +77,33 @@ int w_setMode(lua_State *L)
 
 	WindowFlags flags;
 
+	lua_getfield(L, 3, "fullscreentype");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *typestr = luaL_checkstring(L, -1);
+
+		if (!Window::getConstant(typestr, flags.fstype))
+			return luaL_error(L, "Invalid fullscreen type: %s", typestr);
+	}
+	else
+	{
+		// Default to "normal" fullscreen.
+		flags.fstype = Window::FULLSCREEN_TYPE_NORMAL;
+	}
+	lua_pop(L, 1);
+
 	flags.fullscreen = luax_boolflag(L, 3, "fullscreen", false);
 	flags.vsync = luax_boolflag(L, 3, "vsync", true);
 	flags.fsaa = luax_intflag(L, 3, "fsaa", 0);
 	flags.resizable = luax_boolflag(L, 3, "resizable", false);
+	flags.minwidth = luax_intflag(L, 3, "minwidth", 100);
+	flags.minheight = luax_intflag(L, 3, "minheight", 100);
 	flags.borderless = luax_boolflag(L, 3, "borderless", false);
 	flags.centered = luax_boolflag(L, 3, "centered", true);
+	flags.display = luax_intflag(L, 3, "display", 1);
+
+	// Display index is 1-based in Lua and 0-based internally.
+	flags.display--;
 
 	try
 	{
@@ -92,38 +127,52 @@ int w_getMode(lua_State *L)
 
 	lua_newtable(L);
 
+	const char *fstypestr = "normal";
+	Window::getConstant(flags.fstype, fstypestr);
+
+	lua_pushstring(L, fstypestr);
+	lua_setfield(L, -2, "fullscreentype");
+
 	luax_pushboolean(L, flags.fullscreen);
 	lua_setfield(L, -2, "fullscreen");
 
 	luax_pushboolean(L, flags.vsync);
 	lua_setfield(L, -2, "vsync");
 
-	lua_pushnumber(L, flags.fsaa);
+	lua_pushinteger(L, flags.fsaa);
 	lua_setfield(L, -2, "fsaa");
 
 	luax_pushboolean(L, flags.resizable);
 	lua_setfield(L, -2, "resizable");
+
+	lua_pushinteger(L, flags.minwidth);
+	lua_setfield(L, -2, "minwidth");
+
+	lua_pushinteger(L, flags.minheight);
+	lua_setfield(L, -2, "minheight");
 
 	luax_pushboolean(L, flags.borderless);
 	lua_setfield(L, -2, "borderless");
 
 	luax_pushboolean(L, flags.centered);
 	lua_setfield(L, -2, "centered");
-	
+
+	// Display index is 0-based internally and 1-based in Lua.
+	lua_pushinteger(L, flags.display + 1);
+	lua_setfield(L, -2, "display");
+
 	return 3;
 }
 
 int w_getModes(lua_State *L)
 {
-	int n;
-	Window::WindowSize *modes = instance->getFullscreenSizes(n);
+	int displayindex = luaL_optint(L, 1, 1);
 
-	if (modes == 0)
-		return 0;
+	std::vector<Window::WindowSize> modes = instance->getFullscreenSizes(displayindex - 1);
 
-	lua_createtable(L, n, 0);
+	lua_createtable(L, modes.size(), 0);
 
-	for (int i = 0; i < n ; i++)
+	for (size_t i = 0; i < modes.size(); i++)
 	{
 		lua_pushinteger(L, i+1);
 		lua_createtable(L, 0, 2);
@@ -141,27 +190,41 @@ int w_getModes(lua_State *L)
 		lua_settable(L, -3);
 	}
 
-	delete[] modes;
 	return 1;
 }
 
-int w_toggleFullscreen(lua_State *L)
+int w_setFullscreen(lua_State *L)
 {
-	int width, height;
-	WindowFlags flags;
-	instance->getWindow(width, height, flags);
-	flags.fullscreen = !flags.fullscreen;
+	bool fullscreen = luax_toboolean(L, 1);
+	Window::FullscreenType fstype = Window::FULLSCREEN_TYPE_MAX_ENUM;
 
-	try
-	{
-		luax_pushboolean(L, instance->setWindow(width, height, &flags));
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	const char *typestr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	if (typestr && !Window::getConstant(typestr, fstype))
+		return luaL_error(L, "Invalid fullscreen type: %s", typestr);
 
+	bool success = false;
+	if (fstype == Window::FULLSCREEN_TYPE_MAX_ENUM)
+		success = instance->setFullscreen(fullscreen);
+	else
+		success = instance->setFullscreen(fullscreen, fstype);
+
+	luax_pushboolean(L, success);
 	return 1;
+}
+
+int w_isFullscreen(lua_State *L)
+{
+	int w, h;
+	WindowFlags flags;
+	instance->getWindow(w, h, flags);
+
+	const char *typestr;
+	if (!Window::getConstant(flags.fstype, typestr))
+		luaL_error(L, "Unknown fullscreen type.");
+
+	luax_pushboolean(L, flags.fullscreen);
+	lua_pushstring(L, typestr);
+	return 2;
 }
 
 int w_isCreated(lua_State *L)
@@ -189,11 +252,21 @@ int w_getDimensions(lua_State *L)
 	return 2;
 }
 
+int w_getDesktopDimensions(lua_State *L)
+{
+	int width = 0, height = 0;
+	int displayindex = luaL_optint(L, 1, 1) - 1;
+	instance->getDesktopDimensions(displayindex, width, height);
+	lua_pushinteger(L, width);
+	lua_pushinteger(L, height);
+	return 2;
+}
+
 int w_setIcon(lua_State *L)
 {
 	image::ImageData *i = luax_checktype<image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
-	instance->setIcon(i);
-	return 0;
+	luax_pushboolean(L, instance->setIcon(i));
+	return 1;
 }
 
 int w_getIcon(lua_State *L)
@@ -242,15 +315,18 @@ int w_isVisible(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
+	{ "getDisplayCount", w_getDisplayCount },
 	{ "checkMode", w_checkMode },
 	{ "setMode", w_setMode },
 	{ "getMode", w_getMode },
 	{ "getModes", w_getModes },
-	{ "toggleFullscreen", w_toggleFullscreen },
+	{ "setFullscreen", w_setFullscreen },
+	{ "isFullscreen", w_isFullscreen },
 	{ "isCreated", w_isCreated },
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },
+	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setIcon", w_setIcon },
 	{ "getIcon", w_getIcon },
 	{ "setTitle", w_setTitle },
@@ -265,7 +341,7 @@ extern "C" int luaopen_love_window(lua_State *L)
 {
 	try
 	{
-		instance = sdl::Window::getSingleton();
+		instance = sdl::Window::createSingleton();
 	}
 	catch (love::Exception &e)
 	{

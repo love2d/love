@@ -18,43 +18,30 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
+#ifndef LOVE_OSX_H
+#define LOVE_OSX_H
 
-// LOVE
-#include "keyboard/Keyboard.h"
-#include "common/EnumMap.h"
-
-// SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include <string>
 
 namespace love
 {
-namespace keyboard
-{
-namespace sdl
+namespace osx
 {
 
-class Keyboard : public love::keyboard::Keyboard
-{
-public:
+/**
+ * Returns the filepath of the first detected love file in the Resources folder
+ * in love.app.
+ * Returns an empty string if no love file is found.
+ **/
+std::string getLoveInResources();
 
-	// Implements Module.
-	const char *getName() const;
-	bool isDown(Key *keylist) const;
+/**
+ * Checks for drop-file events. Returns the filepath if an event occurred, or
+ * an empty string otherwise.
+ **/
+std::string checkDropEvents();
 
-private:
-
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
-
-}; // Keyboard
-
-} // sdl
-} // keyboard
+} // osx
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H
+#endif // LOVE_OSX_H

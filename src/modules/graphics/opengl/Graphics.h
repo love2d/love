@@ -112,6 +112,7 @@ public:
 
 	void restoreState(const DisplayState &s);
 
+	virtual void setViewportSize(int width, int height);
 	virtual bool setMode(int width, int height);
 	virtual void unSetMode();
 

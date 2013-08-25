@@ -37,16 +37,16 @@ public:
 	enum Key
 	{
 		KEY_UNKNOWN,
+
+		KEY_RETURN,
+		KEY_ESCAPE,
 		KEY_BACKSPACE,
 		KEY_TAB,
-		KEY_CLEAR,
-		KEY_RETURN,
-		KEY_PAUSE,
-		KEY_ESCAPE,
 		KEY_SPACE,
 		KEY_EXCLAIM,
 		KEY_QUOTEDBL,
 		KEY_HASH,
+		KEY_PERCENT,
 		KEY_DOLLAR,
 		KEY_AMPERSAND,
 		KEY_QUOTE,
@@ -108,35 +108,8 @@ public:
 		KEY_X,
 		KEY_Y,
 		KEY_Z,
-		KEY_DELETE,
 
-		KEY_KP0,
-		KEY_KP1,
-		KEY_KP2,
-		KEY_KP3,
-		KEY_KP4,
-		KEY_KP5,
-		KEY_KP6,
-		KEY_KP7,
-		KEY_KP8,
-		KEY_KP9,
-		KEY_KP_PERIOD,
-		KEY_KP_DIVIDE,
-		KEY_KP_MULTIPLY,
-		KEY_KP_MINUS,
-		KEY_KP_PLUS,
-		KEY_KP_ENTER,
-		KEY_KP_EQUALS,
-
-		KEY_UP,
-		KEY_DOWN,
-		KEY_RIGHT,
-		KEY_LEFT,
-		KEY_INSERT,
-		KEY_HOME,
-		KEY_END,
-		KEY_PAGEUP,
-		KEY_PAGEDOWN,
+		KEY_CAPSLOCK,
 
 		KEY_F1,
 		KEY_F2,
@@ -150,38 +123,115 @@ public:
 		KEY_F10,
 		KEY_F11,
 		KEY_F12,
+
+		KEY_PRINTSCREEN,
+		KEY_SCROLLLOCK,
+		KEY_PAUSE,
+		KEY_INSERT,
+		KEY_HOME,
+		KEY_PAGEUP,
+		KEY_DELETE,
+		KEY_END,
+		KEY_PAGEDOWN,
+		KEY_RIGHT,
+		KEY_LEFT,
+		KEY_DOWN,
+		KEY_UP,
+
+		KEY_NUMLOCKCLEAR,
+		KEY_KP_DIVIDE,
+		KEY_KP_MULTIPLY,
+		KEY_KP_MINUS,
+		KEY_KP_PLUS,
+		KEY_KP_ENTER,
+		KEY_KP_1,
+		KEY_KP_2,
+		KEY_KP_3,
+		KEY_KP_4,
+		KEY_KP_5,
+		KEY_KP_6,
+		KEY_KP_7,
+		KEY_KP_8,
+		KEY_KP_9,
+		KEY_KP_0,
+		KEY_KP_PERIOD,
+		KEY_KP_COMMA,
+		KEY_KP_EQUALS,
+
+		KEY_APPLICATION,
+		KEY_POWER,
 		KEY_F13,
 		KEY_F14,
 		KEY_F15,
-
-		KEY_NUMLOCK,
-		KEY_CAPSLOCK,
-		KEY_SCROLLOCK,
-		KEY_RSHIFT,
-		KEY_LSHIFT,
-		KEY_RCTRL,
-		KEY_LCTRL,
-		KEY_RALT,
-		KEY_LALT,
-		KEY_RMETA,
-		KEY_LMETA,
-		KEY_LSUPER,
-		KEY_RSUPER,
-		KEY_MODE,
-		KEY_COMPOSE,
-
+		KEY_F16,
+		KEY_F17,
+		KEY_F18,
+		KEY_F19,
+		KEY_F20,
+		KEY_F21,
+		KEY_F22,
+		KEY_F23,
+		KEY_F24,
+		KEY_EXECUTE,
 		KEY_HELP,
-		KEY_PRINT,
-		KEY_SYSREQ,
-		KEY_BREAK,
 		KEY_MENU,
-		KEY_POWER,
-		KEY_EURO,
+		KEY_SELECT,
+		KEY_STOP,
+		KEY_AGAIN,
 		KEY_UNDO,
+		KEY_CUT,
+		KEY_COPY,
+		KEY_PASTE,
+		KEY_FIND,
+		KEY_MUTE,
+		KEY_VOLUMEUP,
+		KEY_VOLUMEDOWN,
+
+		KEY_ALTERASE,
+		KEY_SYSREQ,
+		KEY_CANCEL,
+		KEY_CLEAR,
+		KEY_PRIOR,
+		KEY_RETURN2,
+		KEY_SEPARATOR,
+		KEY_OUT,
+		KEY_OPER,
+		KEY_CLEARAGAIN,
+
+		KEY_THOUSANDSSEPARATOR,
+		KEY_DECIMALSEPARATOR,
+		KEY_CURRENCYUNIT,
+		KEY_CURRENCYSUBUNIT,
+
+		KEY_LCTRL,
+		KEY_LSHIFT,
+		KEY_LALT,
+		KEY_LGUI,
+		KEY_RCTRL,
+		KEY_RSHIFT,
+		KEY_RALT,
+		KEY_RGUI,
+
+		KEY_MODE,
+
+		KEY_AUDIONEXT,
+		KEY_AUDIOPREV,
+		KEY_AUDIOSTOP,
+		KEY_AUDIOPLAY,
+		KEY_AUDIOMUTE,
+		KEY_MEDIASELECT,
+
+		KEY_BRIGHTNESSDOWN,
+		KEY_BRIGHTNESSUP,
+		KEY_DISPLAYSWITCH,
+		KEY_KBDILLUMTOGGLE,
+		KEY_KBDILLUMDOWN,
+		KEY_KBDILLUMUP,
+		KEY_EJECT,
+		KEY_SLEEP,
+
 		KEY_MAX_ENUM = 512
 	};
-
-	static const int DEFAULT = -1;
 
 	virtual ~Keyboard() {}
 
@@ -191,25 +241,6 @@ public:
 	 * @return boolean
 	 **/
 	virtual bool isDown(Key *keylist) const = 0;
-
-	/**
-	 * Enables key repeating.
-	 * @param delay The amount of delay before repeating the key (in milliseconds)
-	 * @param interval Specifies the amount of time between repeats (in milliseconds)
-	 **/
-	virtual void setKeyRepeat(int delay, int interval) const = 0;
-
-	/**
-	 * Gets the specified delay for the key repeat.
-	 * @return int
-	 **/
-	virtual int getKeyRepeatDelay() const = 0;
-
-	/**
-	 * Gets the specified interval for the key repeat.
-	 * @return int
-	 **/
-	virtual int getKeyRepeatInterval() const = 0;
 
 	static bool getConstant(const char *in, Key &out);
 	static bool getConstant(Key in, const char  *&out);

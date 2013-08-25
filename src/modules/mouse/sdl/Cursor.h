@@ -18,43 +18,47 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
+#ifndef LOVE_MOUSE_SDL_CURSOR_H
+#define LOVE_MOUSE_SDL_CURSOR_H
 
 // LOVE
-#include "keyboard/Keyboard.h"
+#include "mouse/Cursor.h"
 #include "common/EnumMap.h"
 
 // SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include <SDL_mouse.h>
 
 namespace love
 {
-namespace keyboard
+namespace mouse
 {
 namespace sdl
 {
 
-class Keyboard : public love::keyboard::Keyboard
+class Cursor : public love::mouse::Cursor
 {
 public:
 
-	// Implements Module.
-	const char *getName() const;
-	bool isDown(Key *keylist) const;
+	Cursor(image::ImageData *imageData, int hotx, int hoty);
+	Cursor(SystemCursor cursortype);
+	~Cursor();
+
+	void *getHandle() const;
+	CursorType getType() const;
+	SystemCursor getSystemType() const;
 
 private:
 
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
+	SDL_Cursor *cursor;
+	CursorType type;
+	SystemCursor systemType;
 
-}; // Keyboard
+	static EnumMap<SystemCursor, SDL_SystemCursor, CURSOR_MAX_ENUM>::Entry systemCursorEntries[];
+	static EnumMap<SystemCursor, SDL_SystemCursor, CURSOR_MAX_ENUM> systemCursors;
+};
 
 } // sdl
-} // keyboard
+} // mouse
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H
+#endif // LOVE_MOUSE_SDL_CURSOR_H

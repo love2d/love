@@ -29,6 +29,9 @@
 // SDL
 #include <SDL.h>
 
+// STL
+#include <map>
+
 namespace love
 {
 namespace event
@@ -44,6 +47,7 @@ public:
 	const char *getName() const;
 
 	Event();
+	virtual ~Event();
 
 	/**
 	 * Pumps the event queue. This function gathers all the pending input information
@@ -66,15 +70,15 @@ public:
 
 private:
 
-	Message *convert(SDL_Event &e);
-	const char *convertUnicode(Uint16 codepoint) const;
+	Message *convert(const SDL_Event &e) const;
+	Message *convertJoystickEvent(const SDL_Event &e) const;
+	Message *convertWindowEvent(const SDL_Event &e) const;
 
-	static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
-	static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;
+	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
+	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;
+
 	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
 	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
-	static EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM>::Entry hatEntries[];
-	static EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM> hats;
 
 }; // System
 

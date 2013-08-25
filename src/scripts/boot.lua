@@ -158,6 +158,12 @@ function love.createhandlers()
 		keyreleased = function (b)
 			if love.keyreleased then return love.keyreleased(b) end
 		end,
+		textinput = function (t)
+			if love.textinput then return love.textinput(t) end
+		end,
+		textedit = function (t,s,l)
+			if love.textedit then return love.textedit(t,s,l) end
+		end,
 		mousepressed = function (x,y,b)
 			if love.mousepressed then return love.mousepressed(x,y,b) end
 		end,
@@ -173,8 +179,23 @@ function love.createhandlers()
 		joystickaxis = function (j,a,v)
 			if love.joystickaxis then return love.joystickaxis(j,a,v) end
 		end,
-		joystickhat = function(j,h,v)
+		joystickhat = function (j,h,v)
 			if love.joystickhat then return love.joystickhat(j,h,v) end
+		end,
+		gamepadpressed = function (j,b)
+			if love.gamepadpressed then return love.gamepadpressed(j,b) end
+		end,
+		gamepadreleased = function (j,b)
+			if love.gamepadreleased then return love.gamepadreleased(j,b) end
+		end,
+		gamepadaxis = function (j,a,v)
+			if love.gamepadaxis then return love.gamepadaxis(j,a,v) end
+		end,
+		joystickadded = function (j)
+			if love.joystickadded then return love.joystickadded(j) end
+		end,
+		joystickremoved = function(j)
+			if love.joystickremoved then return love.joystickremoved(j) end
 		end,
 		focus = function (f)
 			if love.focus then return love.focus(f) end
@@ -192,11 +213,7 @@ function love.createhandlers()
 			if love.threaderror then return love.threaderror(t, err) end
 		end,
 		resize = function(w, h)
-			local ow, oh, flags = love.window.getMode()
-			if flags.resizable then
-				love.window.setMode(w, h, flags)
-				if love.resize then return love.resize(w, h) end
-			end
+			if love.resize then return love.resize(w, h) end
 		end,
 	}, {
 		__index = function(self, name)
@@ -266,7 +283,11 @@ function love.init()
 		window = {
 			width = 800,
 			height = 600,
+			minwidth = 100,
+			minheight = 100,
 			fullscreen = false,
+			fullscreentype = "normal",
+			display = 1,
 			vsync = true,
 			fsaa = 0,
 			borderless = false,
@@ -285,6 +306,7 @@ function love.init()
 			math = true,
 			physics = true,
 			sound = true,
+			system = true,
 			font = true,
 			thread = true,
 			window = true,
@@ -322,6 +344,7 @@ function love.init()
 		"joystick",
 		"mouse",
 		"sound",
+		"system",
 		"audio",
 		"image",
 		"font",
@@ -347,15 +370,19 @@ function love.init()
 	-- Setup window here.
 	local has_window = false
 	if c.window and c.modules.window then
-		if love.window.checkMode(c.window.width, c.window.height, c.window.fullscreen) or (c.window.width == 0 and c.window.height == 0) then
+		if love.window.checkMode(c.window.width, c.window.height, c.window.fullscreen, c.window.display) or (c.window.width == 0 and c.window.height == 0) then
 			assert(love.window.setMode(c.window.width, c.window.height,
 			{
 				fullscreen = c.window.fullscreen,
+				fullscreentype = c.window.fullscreentype,
 				vsync = c.window.vsync,
 				fsaa = c.window.fsaa,
 				resizable = c.window.resizable,
+				minwidth = c.window.minwidth,
+				minheight = c.window.minheight,
 				borderless = c.window.borderless,
 				centered = c.window.centered,
+				display = c.window.display,
 			}), "Could not set window mode")
 		else
 			error("Could not set window mode")

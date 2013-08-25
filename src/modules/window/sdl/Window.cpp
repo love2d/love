@@ -23,11 +23,10 @@
 #include "graphics/Graphics.h"
 #include "Window.h"
 
-// SDL
-#include <SDL.h>
-
-// STL
+// C++
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 namespace love
 {
@@ -39,15 +38,30 @@ namespace sdl
 Window::Window()
 	: windowTitle("")
 	, created(false)
+	, mouseGrabbed(false)
+	, window(0)
+	, context(0)
 {
+#ifdef LOVE_MACOSX
+	// SDL 2 minimizes the window at weird times on OSX if this isn't disabled.
+	// TODO: do Linux and/or Windows need this as well (multi-monitor)?
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+#endif
+
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-		throw love::Exception(SDL_GetError());
+		throw love::Exception("%s", SDL_GetError());
 }
 
 Window::~Window()
 {
-	if (currentMode.icon)
-		currentMode.icon->release();
+	if (curMode.icon)
+		curMode.icon->release();
+
+	if (window)
+		SDL_DestroyWindow(window);
+
+	if (context)
+		SDL_GL_DeleteContext(context);
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
@@ -66,109 +80,181 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	if (gfx)
 		gfx->unSetMode();
 
-	bool fullscreen = false;
-	bool vsync = true;
-	int fsaa = 0;
-	bool resizable = false;
-	bool borderless = false;
-	bool centered = true;
+	WindowFlags f;
 
 	if (flags)
+		f = *flags;
+
+	f.minwidth = std::max(f.minwidth, 0);
+	f.minheight = std::max(f.minheight, 0);
+
+	f.display = std::min(std::max(f.display, 0), getDisplayCount());
+
+	// Use the desktop resolution if a width or height of 0 is specified.
+	if (width == 0 || height == 0)
 	{
-		fullscreen = flags->fullscreen;
-		vsync = flags->vsync;
-		fsaa = flags->fsaa;
-		resizable = flags->resizable;
-		borderless = flags->borderless;
-		centered = flags->centered;
+		SDL_DisplayMode mode = {};
+		SDL_GetDesktopDisplayMode(f.display, &mode);
+		width = mode.w;
+		height = mode.h;
 	}
 
-	bool mouseVisible = getMouseVisible();
-	int keyrepeatDelay, keyrepeatInterval;
-	SDL_GetKeyRepeat(&keyrepeatDelay, &keyrepeatInterval);
+	Uint32 sdlflags = SDL_WINDOW_OPENGL;
 
-	// We need to restart the subsystem for two reasons:
-	// 1) Special case for fullscreen -> windowed. Windows XP did not
-	//    work well with "normal" display mode change in this case.
-	//    The application window does leave fullscreen, but the desktop
-	//    resolution does not revert to the correct one. Restarting the
-	//    SDL video subsystem does the trick, though.
-	// 2) Restart the event system (for whatever reason the event system
-	//    started and stopped with SDL_INIT_VIDEO, see:
-	//    http://sdl.beuc.net/sdl.wiki/Introduction_to_Events)
-	//    because the mouse position will not be able to exceed
-	//    the previous' video mode window size (i.e. alway
-	//    love.mouse.getX() < 800 when switching from 800x600 to a
-	//    higher resolution)
-	SDL_QuitSubSystem(SDL_INIT_VIDEO);
-
-	if (centered) // Window should be centered.
-		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED=center"));
-	else
-		SDL_putenv(const_cast<char *>("SDL_VIDEO_CENTERED="));
-
-	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+	if (f.fullscreen)
 	{
-		std::cout << "Could not init SDL_VIDEO: " << SDL_GetError() << std::endl;
+		switch (f.fstype)
+		{
+		case FULLSCREEN_TYPE_NORMAL:
+		default:
+			sdlflags |= SDL_WINDOW_FULLSCREEN;
+			break;
+		case FULLSCREEN_TYPE_DESKTOP:
+			sdlflags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+			break;
+		}
+	}
+
+	if (f.resizable)
+		sdlflags |= SDL_WINDOW_RESIZABLE;
+
+	if (f.borderless)
+		sdlflags |= SDL_WINDOW_BORDERLESS;
+
+	// Destroy and recreate the window if the dimensions or flags have changed.
+	if (window)
+	{
+		int curdisplay = SDL_GetWindowDisplayIndex(window);
+		Uint32 wflags = SDL_GetWindowFlags(window);
+		wflags &= (SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS);
+
+		if (sdlflags != wflags || width != curMode.width || height != curMode.height
+			|| f.display != curdisplay || f.fsaa != curMode.flags.fsaa)
+		{
+			SDL_DestroyWindow(window);
+			window = 0;
+
+			// The old window may have generated pending events which are no
+			// longer relevant. Destroy them all!
+			SDL_FlushEvent(SDL_WINDOWEVENT);
+		}
+	}
+
+	int centeredpos = SDL_WINDOWPOS_CENTERED_DISPLAY(f.display);
+	int uncenteredpos = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.display);
+
+	if (!window)
+	{
+		// In Windows and Linux, some GL attributes are set on window creation.
+		setWindowGLAttributes(f.fsaa);
+
+		const char *title = windowTitle.c_str();
+		int pos = f.centered ? centeredpos : uncenteredpos;
+
+		window = SDL_CreateWindow(title, pos, pos, width, height, sdlflags);
+
+		if (!window && f.fsaa > 0)
+		{
+			// FSAA might have caused the failure, disable it and try again.
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+
+			window = SDL_CreateWindow(title, pos, pos, width, height, sdlflags);
+			f.fsaa = 0;
+		}
+
+		// Make sure the window keeps any previously set icon.
+		if (window && curMode.icon)
+			setIcon(curMode.icon);
+	}
+
+	if (!window)
+	{
+		std::cerr << "Could not set video mode: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
-	// Set caption.
-	setWindowTitle(windowTitle);
-	setMouseVisible(mouseVisible);
-	setIcon(currentMode.icon);
-	SDL_EnableKeyRepeat(keyrepeatDelay, keyrepeatInterval);
+	// Enforce minimum window dimensions.
+	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
 
-	// Set GL attributes
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, (vsync ? 1 : 0));
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+	if (f.centered && !f.fullscreen)
+		SDL_SetWindowPosition(window, centeredpos, centeredpos);
 
-	// FSAA
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
+	SDL_RaiseWindow(window);
 
-	Uint32 sdlflags = SDL_OPENGL;
-	// Flags
-	if (fullscreen)
-		sdlflags |= SDL_FULLSCREEN;
-	if (resizable)
-		sdlflags |= SDL_RESIZABLE;
-	if (borderless)
-		sdlflags |= SDL_NOFRAME;
-
-	// Have SDL set the video mode.
-	SDL_Surface *surface;
-	if ((surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0)
-	{
-		bool failed = true;
-		if (fsaa > 0)
-		{
-			// FSAA might have caused the failure, disable it and try again
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-			failed = (surface = SDL_SetVideoMode(width, height, 32, sdlflags)) == 0;
-		}
-		if (failed)
-		{
-			std::cerr << "Could not set video mode: "  << SDL_GetError() << std::endl;
-			return false;
-		}
-	}
+	if (!setContext(f.fsaa, f.vsync))
+		return false;
 
 	created = true;
 
-	const SDL_VideoInfo *videoinfo = SDL_GetVideoInfo();
-	width = videoinfo->current_w;
-	height = videoinfo->current_h;
+	updateWindowFlags(f);
 
+	if (gfx)
+		gfx->setMode(curMode.width, curMode.height);
+
+	// Make sure the mouse keeps its previous grab setting.
+	setMouseGrab(mouseGrabbed);
+
+	return true;
+}
+
+bool Window::onWindowResize(int width, int height)
+{
+	if (!window)
+		return false;
+
+	curMode.width = width;
+	curMode.height = height;
+
+	return true;
+}
+
+bool Window::setContext(int fsaa, bool vsync)
+{
+	// We need to recreate the context if FSAA changes,
+	// or if the existing context has been invalidated.
+	if (context && (fsaa != curMode.flags.fsaa || SDL_GL_MakeCurrent(window, context) < 0))
+	{
+		SDL_GL_DeleteContext(context);
+		context = 0;
+	}
+
+	// Create a new OpenGL context.
+	if (!context)
+	{
+		setWindowGLAttributes(fsaa);
+
+		context = SDL_GL_CreateContext(window);
+
+		if (!context && fsaa > 0)
+		{
+			// FSAA might have caused the failure, disable it and try again.
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+			context = SDL_GL_CreateContext(window);
+		}
+	}
+
+	if (!context)
+	{
+		std::cerr << "Could not set video mode: " << SDL_GetError() << std::endl;
+		return false;
+	}
+
+	// Set vertical synchronization.
+	if (vsync)
+	{
+		// Prefer EXT_swap_control_tear (late swaps happen immediately),
+		// otherwise fall back to regular vsync.
+		if (SDL_GL_SetSwapInterval(-1) < 0 || SDL_GL_GetSwapInterval() != -1)
+			SDL_GL_SetSwapInterval(1);
+	}
+	else
+		SDL_GL_SetSwapInterval(0);
+
+	// Verify FSAA setting.
 	int buffers;
 	int samples;
-
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
@@ -179,65 +265,173 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 		fsaa = (buffers > 0) ? samples : 0;
 	}
 
-	// Get the actual vsync status
-	int real_vsync;
-	SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &real_vsync);
-
-	// Set the new display mode as the current display mode.
-	currentMode.width = width;
-	currentMode.height = height;
-	currentMode.flags.fsaa = fsaa;
-	currentMode.flags.fullscreen = fullscreen;
-	currentMode.flags.vsync = (real_vsync != 0);
-	currentMode.flags.resizable = ((surface->flags & SDL_RESIZABLE) != 0);
-	currentMode.flags.borderless = ((surface->flags & SDL_NOFRAME) != 0);
-	currentMode.flags.centered = centered;
-
-	if (gfx)
-		gfx->setMode(width, height);
+	curMode.flags.fsaa = fsaa;
+	curMode.flags.vsync = SDL_GL_GetSwapInterval() != 0;
 
 	return true;
 }
 
-void Window::getWindow(int &width, int &height, WindowFlags &flags) const
+void Window::setWindowGLAttributes(int fsaa) const
 {
-	width = currentMode.width;
-	height = currentMode.height;
-	flags = currentMode.flags;
+	// Set GL window attributes.
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+
+	// FSAA.
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
 }
 
-bool Window::checkWindowSize(int width, int height, bool fullscreen) const
+void Window::updateWindowFlags(const WindowFlags &newflags)
 {
-	Uint32 sdlflags = fullscreen ? (SDL_OPENGL | SDL_FULLSCREEN) : SDL_OPENGL;
+	Uint32 wflags = SDL_GetWindowFlags(window);
 
-	// Check if mode is supported
-	int bpp = SDL_VideoModeOK(width, height, 32, sdlflags);
+	// Set the new display mode as the current display mode.
+	SDL_GetWindowSize(window, &curMode.width, &curMode.height);
 
-	return (bpp >= 16);
+	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
+	{
+		curMode.flags.fullscreen = true;
+		curMode.flags.fstype = FULLSCREEN_TYPE_DESKTOP;
+	}
+	else if ((wflags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
+	{
+		curMode.flags.fullscreen = true;
+		curMode.flags.fstype = FULLSCREEN_TYPE_NORMAL;
+	}
+	else
+	{
+		curMode.flags.fullscreen = false;
+		curMode.flags.fstype = newflags.fstype;
+	}
+
+	// The min width/height is set to 0 internally in SDL when in fullscreen.
+	if (curMode.flags.fullscreen)
+	{
+		curMode.flags.minwidth = newflags.minwidth;
+		curMode.flags.minheight = newflags.minheight;
+	}
+	else
+		SDL_GetWindowMinimumSize(window, &curMode.flags.minwidth, &curMode.flags.minheight);
+
+	curMode.flags.resizable = (wflags & SDL_WINDOW_RESIZABLE) != 0;
+	curMode.flags.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
+	curMode.flags.centered = newflags.centered;
+	curMode.flags.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+}
+
+void Window::getWindow(int &width, int &height, WindowFlags &flags)
+{
+	// Window position may be different from creation - update display index.
+	if (window)
+		curMode.flags.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+
+	width = curMode.width;
+	height = curMode.height;
+	flags = curMode.flags;
+}
+
+bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
+{
+	if (!window)
+		return false;
+
+	WindowFlags newflags = curMode.flags;
+	newflags.fullscreen = fullscreen;
+	newflags.fstype = fstype;
+
+	Uint32 sdlflags = 0;
+
+	if (fullscreen)
+	{
+		if (fstype == FULLSCREEN_TYPE_DESKTOP)
+			sdlflags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+		else
+		{
+			sdlflags = SDL_WINDOW_FULLSCREEN;
+
+			SDL_DisplayMode mode = {};
+			mode.w = curMode.width;
+			mode.h = curMode.height;
+
+			SDL_GetClosestDisplayMode(SDL_GetWindowDisplayIndex(window), &mode, &mode);
+			SDL_SetWindowDisplayMode(window, &mode);
+		}
+	}
+
+	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
+	{
+		SDL_GL_MakeCurrent(window, context);
+		updateWindowFlags(newflags);
+		return true;
+	}
+
+	return false;
+}
+
+bool Window::setFullscreen(bool fullscreen)
+{
+	return setFullscreen(fullscreen, curMode.flags.fstype);
+}
+
+int Window::getDisplayCount() const
+{
+	return SDL_GetNumVideoDisplays();
+}
+
+bool Window::checkWindowSize(int width, int height, bool fullscreen, int displayindex) const
+{
+	if (fullscreen)
+	{
+		SDL_DisplayMode mode = {}, closest = {};
+		mode.w = width;
+		mode.h = height;
+		SDL_GetClosestDisplayMode(displayindex, &mode, &closest);
+
+		return (mode.w == closest.w && mode.h == closest.h);
+	}
+	else
+	{
+		SDL_DisplayMode mode = {};
+		SDL_GetDesktopDisplayMode(displayindex, &mode);
+
+		return (width <= mode.w && height <= mode.h);
+	}
 }
 
 typedef Window::WindowSize WindowSize;
 
-WindowSize *Window::getFullscreenSizes(int &n) const
+std::vector<WindowSize> Window::getFullscreenSizes(int displayindex) const
 {
-	SDL_Rect **modes = SDL_ListModes(0, SDL_OPENGL | SDL_FULLSCREEN);
+	std::vector<WindowSize> sizes;
 
-	if (modes == (SDL_Rect **)0 || modes == (SDL_Rect **)-1)
+	SDL_DisplayMode mode = {};
+	std::vector<WindowSize>::const_iterator it;
+	for (int i = 0; i < SDL_GetNumDisplayModes(displayindex); i++)
 	{
-		n = 0;
-		return NULL;
-	}
+		SDL_GetDisplayMode(displayindex, i, &mode);
 
-	n = 0;
-	for (int i = 0; modes[i]; i++)
-		n++;
+		// SDL2's display mode list has multiple entries for modes of the same
+		// size with different bits per pixel, so we need to filter those out.
+		bool alreadyhassize = false;
+		for (it = sizes.begin(); it != sizes.end(); ++it)
+		{
+			if (it->width == mode.w && it->height == mode.h)
+			{
+				alreadyhassize = true;
+				break;
+			}
+		}
 
-	WindowSize *sizes = new WindowSize[n];
-
-	for (int i = 0; i < n; i++)
-	{
-		WindowSize w = {modes[i]->w, modes[i]->h};
-		sizes[i] = w;
+		if (!alreadyhassize)
+		{
+			WindowSize w = {mode.w, mode.h};
+			sizes.push_back(w);
+		}
 	}
 
 	return sizes;
@@ -245,12 +439,28 @@ WindowSize *Window::getFullscreenSizes(int &n) const
 
 int Window::getWidth() const
 {
-	return currentMode.width;
+	return curMode.width;
 }
 
 int Window::getHeight() const
 {
-	return currentMode.height;
+	return curMode.height;
+}
+
+void Window::getDesktopDimensions(int displayindex, int &width, int &height) const
+{
+	if (displayindex >= 0 && displayindex < getDisplayCount())
+	{
+		SDL_DisplayMode mode = {};
+		SDL_GetDesktopDisplayMode(displayindex, &mode);
+		width = mode.w;
+		height = mode.h;
+	}
+	else
+	{
+		width = 0;
+		height = 0;
+	}
 }
 
 bool Window::isCreated() const
@@ -261,20 +471,27 @@ bool Window::isCreated() const
 void Window::setWindowTitle(const std::string &title)
 {
 	windowTitle = title;
-	SDL_WM_SetCaption(windowTitle.c_str(), 0);
+
+	if (window)
+		SDL_SetWindowTitle(window, title.c_str());
 }
 
-std::string Window::getWindowTitle() const
+const std::string &Window::getWindowTitle() const
 {
-	// not a reference
-	// because we want this untouched
-	// const std::string& might be an option
 	return windowTitle;
 }
 
 bool Window::setIcon(love::image::ImageData *imgd)
 {
 	if (!imgd)
+		return false;
+
+	imgd->retain();
+	if (curMode.icon)
+		curMode.icon->release();
+	curMode.icon = imgd;
+
+	if (!window)
 		return false;
 
 	Uint32 rmask, gmask, bmask, amask;
@@ -294,51 +511,46 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	int h = imgd->getHeight();
 	int pitch = imgd->getWidth() * 4;
 
-	SDL_Surface *icon = 0;
+	SDL_Surface *sdlicon = 0;
 
 	{
 		// We don't want another thread modifying the ImageData mid-copy.
 		love::thread::Lock lock(imgd->getMutex());
-		icon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
+		sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
 	}
 
-	if (!icon)
+	if (!sdlicon)
 		return false;
 
-	SDL_WM_SetIcon(icon, NULL);
-	SDL_FreeSurface(icon);
-
-	imgd->retain();
-	if (currentMode.icon)
-		currentMode.icon->release();
-	currentMode.icon = imgd;
+	SDL_SetWindowIcon(window, sdlicon);
+	SDL_FreeSurface(sdlicon);
 
 	return true;
 }
 
 love::image::ImageData *Window::getIcon()
 {
-	return currentMode.icon;
+	return curMode.icon;
 }
 
 void Window::swapBuffers()
 {
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(window);
 }
 
 bool Window::hasFocus() const
 {
-	return (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
+	return (window && SDL_GetKeyboardFocus() == window);
 }
 
 bool Window::hasMouseFocus() const
 {
-	return (SDL_GetAppState() & SDL_APPMOUSEFOCUS) != 0;
+	return (window && SDL_GetMouseFocus() == window);
 }
 
 bool Window::isVisible() const
 {
-	return (SDL_GetAppState() & SDL_APPACTIVE) != 0;
+	return window && (SDL_GetWindowFlags(window) & SDL_WINDOW_SHOWN) != 0;
 }
 
 void Window::setMouseVisible(bool visible)
@@ -348,16 +560,41 @@ void Window::setMouseVisible(bool visible)
 
 bool Window::getMouseVisible() const
 {
-	return (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
+	return (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE);
 }
 
-love::window::Window *Window::getSingleton()
+void Window::setMouseGrab(bool grab)
+{
+	mouseGrabbed = grab;
+	if (window)
+		SDL_SetWindowGrab(window, (SDL_bool) grab);
+}
+
+bool Window::isMouseGrabbed() const
+{
+	if (window)
+		return (bool) SDL_GetWindowGrab(window);
+	else
+		return mouseGrabbed;
+}
+
+const void *Window::getHandle() const
+{
+	return window;
+}
+
+love::window::Window *Window::createSingleton()
 {
 	if (!singleton)
 		singleton = new Window();
 	else
 		singleton->retain();
 
+	return singleton;
+}
+
+love::window::Window *Window::getSingleton()
+{
 	return singleton;
 }
 

@@ -50,34 +50,10 @@ int w_isDown(lua_State *L)
 	return 1;
 }
 
-int w_setKeyRepeat(lua_State *L)
-{
-	if (lua_gettop(L) == 0)
-	{
-		// Disables key repeat.
-		instance->setKeyRepeat(0, 0);
-		return 0;
-	}
-
-	int delay = lua_isnumber(L, 1) ? (int)(lua_tonumber(L, 1) * 1000 + 0.5) : Keyboard::DEFAULT;
-	int interval = lua_isnumber(L, 2) ? (int)(lua_tonumber(L, 2) * 1000 + 0.5) : Keyboard::DEFAULT;
-	instance->setKeyRepeat(delay, interval);
-	return 0;
-}
-
-int w_getKeyRepeat(lua_State *L)
-{
-	lua_pushnumber(L, (lua_Number) instance->getKeyRepeatDelay() * 0.001);
-	lua_pushnumber(L, (lua_Number) instance->getKeyRepeatInterval() * 0.001);
-	return 2;
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
 	{ "isDown", w_isDown },
-	{ "setKeyRepeat", w_setKeyRepeat },
-	{ "getKeyRepeat", w_getKeyRepeat },
 	{ 0, 0 }
 };
 

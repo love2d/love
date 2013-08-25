@@ -23,6 +23,7 @@
 
 // LOVE
 #include "mouse/Mouse.h"
+#include "Cursor.h"
 
 namespace love
 {
@@ -38,6 +39,17 @@ public:
 	// Implements Module.
 	const char *getName() const;
 
+	Mouse();
+	~Mouse();
+
+	love::mouse::Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty);
+	love::mouse::Cursor *newCursor(love::mouse::Cursor::SystemCursor cursortype);
+
+	void setCursor(love::mouse::Cursor *cursor);
+	void setCursor();
+
+	love::mouse::Cursor *getCursor() const;
+
 	int getX() const;
 	int getY() const;
 	void getPosition(int &x, int &y) const;
@@ -49,6 +61,11 @@ public:
 	bool isVisible() const;
 	void setGrab(bool grab);
 	bool isGrabbed() const;
+
+private:
+
+	love::mouse::Cursor *curCursor;
+
 }; // Mouse
 
 } // sdl

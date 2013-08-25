@@ -127,9 +127,9 @@ extern "C" int luaopen_love_event(lua_State *L)
 		{
 			instance = new Event();
 		}
-		catch(Exception &e)
+		catch (love::Exception &e)
 		{
-			return luaL_error(L, e.what());
+			return luaL_error(L, "%s", e.what());
 		}
 	}
 	else

@@ -52,7 +52,7 @@ Graphics::Graphics()
 	, created(false)
 	, savedState()
 {
-	currentWindow = love::window::sdl::Window::getSingleton();
+	currentWindow = love::window::sdl::Window::createSingleton();
 
 	if (currentWindow->isCreated())
 		setMode(currentWindow->getWidth(), currentWindow->getHeight());
@@ -113,6 +113,27 @@ void Graphics::restoreState(const DisplayState &s)
 	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
 }
 
+void Graphics::setViewportSize(int width, int height)
+{
+	this->width = width;
+	this->height = height;
+
+	if (!isCreated())
+		return;
+
+	// Set the viewport to top-left corner
+	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
+
+	// Reset the projection matrix
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// Set up orthographic view (no depth)
+	glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
+
+	glMatrixMode(GL_MODELVIEW);
+}
+
 bool Graphics::setMode(int width, int height)
 {
 	this->width = width;
@@ -120,6 +141,10 @@ bool Graphics::setMode(int width, int height)
 
 	// Okay, setup OpenGL.
 	gl.initContext();
+
+	created = true;
+
+	setViewportSize(width, height);
 
 	// Make sure antialiasing works when set elsewhere
 	if (GLEE_VERSION_1_3 || GLEE_ARB_multisample)
@@ -147,16 +172,6 @@ bool Graphics::setMode(int width, int height)
 	glEnable(GL_TEXTURE_2D);
 	gl.setTextureUnit(0);
 
-	// Set the viewport to top-left corner
-	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
-
-	// Reset the projection matrix
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	// Set up orthographic view (no depth)
-	glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
-
 	// Reset modelview matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -178,8 +193,6 @@ bool Graphics::setMode(int width, int height)
 	// subtract a few to give the engine some room.
 	glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 	matrixLimit -= 5;
-
-	created = true;
 
 	return true;
 }

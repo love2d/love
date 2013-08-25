@@ -18,11 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
+#include "wrap_Mouse.h"
+#include "wrap_Cursor.h"
 #include "common/config.h"
 
 #include "sdl/Mouse.h"
-
-#include "wrap_Mouse.h"
 
 namespace love
 {
@@ -30,6 +31,78 @@ namespace mouse
 {
 
 static Mouse *instance = 0;
+
+int w_newCursor(lua_State *L)
+{
+	Cursor *cursor = 0;
+
+	if (lua_isstring(L, 1))
+	{
+		// System cursor type.
+		const char *str = luaL_checkstring(L, 1);
+		Cursor::SystemCursor systemCursor;
+
+		if (!Cursor::getConstant(str, systemCursor))
+			return luaL_error(L, "Invalid cursor type %s", str);
+
+		try
+		{
+			cursor = instance->newCursor(systemCursor);
+		}
+		catch (love::Exception &e)
+		{
+			return luaL_error(L, "%s", e.what());
+		}
+	}
+	else
+	{
+		// Custom image.
+		love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+		int hotx = luaL_optint(L, 2, 0);
+		int hoty = luaL_optint(L, 3, 0);
+
+		try
+		{
+			cursor = instance->newCursor(data, hotx, hoty);
+		}
+		catch (love::Exception &e)
+		{
+			return luaL_error(L, "%s", e.what());
+		}
+	}
+
+	luax_newtype(L, "Cursor", MOUSE_CURSOR_T, (void *) cursor);
+	return 1;
+}
+
+int w_setCursor(lua_State *L)
+{
+	// Revert to the default system cursor if no argument is given.
+	if (lua_isnoneornil(L, 1))
+	{
+		instance->setCursor();
+		return 0;
+	}
+
+	Cursor *cursor = luax_checktype<Cursor>(L, 1, "Cursor", MOUSE_CURSOR_T);
+	instance->setCursor(cursor);
+	return 0;
+}
+
+int w_getCursor(lua_State *L)
+{
+	Cursor *cursor = instance->getCursor();
+
+	if (cursor)
+	{
+		cursor->retain();
+		luax_newtype(L, "Cursor", MOUSE_CURSOR_T, (void *) cursor);
+	}
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
 
 int w_getX(lua_State *L)
 {
@@ -122,6 +195,9 @@ int w_isGrabbed(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
+	{ "newCursor", w_newCursor },
+	{ "setCursor", w_setCursor },
+	{ "getCursor", w_getCursor },
 	{ "getX", w_getX },
 	{ "getY", w_getY },
 	{ "setX", w_setX },
@@ -134,6 +210,13 @@ static const luaL_Reg functions[] =
 	{ "setGrab", w_setGrab },
 	{ "isGrabbed", w_isGrabbed },
 	{ 0, 0 }
+};
+
+// Types for this module.
+static const lua_CFunction types[] =
+{
+	luaopen_cursor,
+	0,
 };
 
 extern "C" int luaopen_love_mouse(lua_State *L)
@@ -157,7 +240,7 @@ extern "C" int luaopen_love_mouse(lua_State *L)
 	w.name = "mouse";
 	w.flags = MODULE_T;
 	w.functions = functions;
-	w.types = 0;
+	w.types = types;
 
 	return luax_register_module(L, w);
 }

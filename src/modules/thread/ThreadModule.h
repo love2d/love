@@ -25,12 +25,14 @@
 #include <string>
 
 // LOVE
-#include <common/Data.h>
-#include <common/Module.h>
-#include <thread/Thread.h>
-#include <thread/Channel.h>
-#include <thread/LuaThread.h>
-#include <thread/threads.h>
+#include "common/Data.h"
+#include "common/Module.h"
+#include "common/StringMap.h"
+
+#include "Thread.h"
+#include "Channel.h"
+#include "LuaThread.h"
+#include "threads.h"
 
 namespace love
 {
@@ -39,13 +41,17 @@ namespace thread
 class ThreadModule : public love::Module
 {
 public:
-	virtual ~ThreadModule() {}
-	LuaThread *newThread(const std::string &name, love::Data *data);
-	Channel *newChannel();
-	Channel *getChannel(const std::string &name);
 
-	const char *getName() const;
+	virtual ~ThreadModule() {}
+	virtual LuaThread *newThread(const std::string &name, love::Data *data);
+	virtual Channel *newChannel();
+	virtual Channel *getChannel(const std::string &name);
+
+	// Implements Module.
+	virtual const char *getName() const;
+
 }; // ThreadModule
+
 } // thread
 } // love
 

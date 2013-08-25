@@ -40,13 +40,35 @@ void Window::swapBuffers()
 
 WindowFlags::WindowFlags()
 	: fullscreen(false)
+	, fstype(Window::FULLSCREEN_TYPE_NORMAL)
 	, vsync(true)
 	, fsaa(0)
 	, resizable(false)
+	, minwidth(100)
+	, minheight(100)
 	, borderless(false)
 	, centered(true)
+	, display(0)
 {
 }
+
+bool Window::getConstant(const char *in, Window::FullscreenType &out)
+{
+	return fullscreenTypes.find(in, out);
+}
+
+bool Window::getConstant(Window::FullscreenType in, const char *&out)
+{
+	return fullscreenTypes.find(in, out);
+}
+
+StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
+{
+	{"normal", Window::FULLSCREEN_TYPE_NORMAL},
+	{"desktop", Window::FULLSCREEN_TYPE_DESKTOP},
+};
+
+StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
 
 } // window
 } // love

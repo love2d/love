@@ -58,6 +58,9 @@ enum Type
 	IMAGE_IMAGE_DATA_ID,
 	IMAGE_COMPRESSED_DATA_ID,
 
+	// Joystick
+	JOYSTICK_JOYSTICK_ID,
+
 	// Math
 	MATH_RANDOM_GENERATOR_ID,
 	MATH_BEZIER_CURVE_ID,
@@ -68,6 +71,9 @@ enum Type
 	// Sound
 	SOUND_SOUND_DATA_ID,
 	SOUND_DECODER_ID,
+
+	// Mouse
+	MOUSE_CURSOR_ID,
 
 	// Physics
 	PHYSICS_WORLD_ID,
@@ -135,6 +141,9 @@ const bits GRAPHICS_SHADER_T = (bits(1) << GRAPHICS_SHADER_ID) | OBJECT_T;
 const bits IMAGE_IMAGE_DATA_T = (bits(1) << IMAGE_IMAGE_DATA_ID) | DATA_T;
 const bits IMAGE_COMPRESSED_DATA_T = (bits(1) << IMAGE_COMPRESSED_DATA_ID) | DATA_T;
 
+// Joystick.
+const bits JOYSTICK_JOYSTICK_T = (bits(1) << JOYSTICK_JOYSTICK_ID) | OBJECT_T;
+
 // Math.
 const bits MATH_RANDOM_GENERATOR_T = (bits(1) << MATH_RANDOM_GENERATOR_ID) | OBJECT_T;
 const bits MATH_BEZIER_CURVE_T = (bits(1) << MATH_BEZIER_CURVE_ID) | OBJECT_T;
@@ -145,6 +154,9 @@ const bits AUDIO_SOURCE_T = (bits(1) << AUDIO_SOURCE_ID) | OBJECT_T;
 // Sound.
 const bits SOUND_SOUND_DATA_T = (bits(1) << SOUND_SOUND_DATA_ID) | DATA_T;
 const bits SOUND_DECODER_T = bits(1) << SOUND_DECODER_ID;
+
+// Mouse.
+const bits MOUSE_CURSOR_T = (bits(1) << MOUSE_CURSOR_ID) | OBJECT_T;
 
 // Physics.
 const bits PHYSICS_WORLD_T = (bits(1) << PHYSICS_WORLD_ID) | OBJECT_T;

@@ -26,7 +26,8 @@
 #include "common/EnumMap.h"
 
 // SDL
-#include <SDL.h>
+#include <SDL_joystick.h>
+#include <SDL_gamecontroller.h>
 
 namespace love
 {
@@ -37,38 +38,74 @@ namespace sdl
 
 class Joystick : public love::joystick::Joystick
 {
-private:
-	SDL_Joystick **joysticks;
 public:
-	Joystick();
+
+	Joystick(int id);
+	Joystick(int id, int joyindex);
+
 	virtual ~Joystick();
 
-	// Implements Module.
+	bool open(int deviceindex);
+	void close();
+
+	bool isConnected() const;
+
 	const char *getName() const;
 
-	void reload();
-	bool checkIndex(int index);
-	int getJoystickCount();
-	const char *getName(int index);
-	bool open(int index);
-	bool isOpen(int index);
-	bool verifyJoystick(int index);
-	int getAxisCount(int index);
-	int getButtonCount(int index);
-	int getHatCount(int index);
-	float clampval(float x);
-	float getAxis(int index, int axis);
-	int getAxes(lua_State *L);
-	bool isDown(int index, int *buttonlist);
-	Hat getHat(int index, int hat);
-	void close(int index);
+	int getAxisCount() const;
+	int getButtonCount() const;
+	int getHatCount() const;
+
+	float getAxis(int axisindex) const;
+	std::vector<float> getAxes() const;
+	Hat getHat(int hatindex) const;
+
+	bool isDown(const std::vector<int> &buttonlist) const;
+
+	bool openGamepad(int deviceindex);
+	bool isGamepad() const;
+
+	float getGamepadAxis(GamepadAxis axis) const;
+	bool isGamepadDown(const std::vector<GamepadButton> &blist) const;
+
+	void *getHandle() const;
+
+	std::string getGUID() const;
+	int getInstanceID() const;
+	int getID() const;
+
+	static bool getConstant(Hat in, Uint8 &out);
+	static bool getConstant(Uint8 in, Hat &out);
+
+	static bool getConstant(SDL_GameControllerAxis in, GamepadAxis &out);
+	static bool getConstant(GamepadAxis in, SDL_GameControllerAxis &out);
+
+	static bool getConstant(SDL_GameControllerButton in, GamepadButton &out);
+	static bool getConstant(GamepadButton in, SDL_GameControllerButton &out);
 
 private:
+
+	Joystick() {}
+
+	SDL_Joystick *joyhandle;
+	SDL_GameController *controller;
+
+	SDL_JoystickID instanceid;
+	std::string guid;
+	int id;
+
+	std::string name;
 
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry hatEntries[];
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM> hats;
 
-}; // Joystick
+	static EnumMap<GamepadAxis, SDL_GameControllerAxis, GAMEPAD_AXIS_MAX_ENUM>::Entry gpAxisEntries[];
+	static EnumMap<GamepadAxis, SDL_GameControllerAxis, GAMEPAD_AXIS_MAX_ENUM> gpAxes;
+
+	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM>::Entry gpButtonEntries[];
+	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM> gpButtons;
+	
+};
 
 } // sdl
 } // joystick

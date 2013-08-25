@@ -18,16 +18,20 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+// LOVE
 #include "wrap_ThreadModule.h"
 #include "wrap_LuaThread.h"
 #include "wrap_Channel.h"
-#include <filesystem/File.h>
-#include <filesystem/FileData.h>
+#include "ThreadModule.h"
+
+#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 
 namespace love
 {
 namespace thread
 {
+
 static ThreadModule *instance = 0;
 
 int w_newThread(lua_State *L)
@@ -89,7 +93,7 @@ extern "C" int luaopen_love_thread(lua_State *L)
 	{
 		try
 		{
-			instance = new ThreadModule();
+			instance = new love::thread::ThreadModule();
 		}
 		catch (Exception & e)
 		{
@@ -108,5 +112,6 @@ extern "C" int luaopen_love_thread(lua_State *L)
 
 	return luax_register_module(L, w);
 }
-}
-}
+
+} // thread
+} // love

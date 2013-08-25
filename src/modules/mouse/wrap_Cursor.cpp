@@ -18,43 +18,49 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
-
 // LOVE
-#include "keyboard/Keyboard.h"
-#include "common/EnumMap.h"
-
-// SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include "wrap_Cursor.h"
+#include "Cursor.h"
 
 namespace love
 {
-namespace keyboard
-{
-namespace sdl
+namespace mouse
 {
 
-class Keyboard : public love::keyboard::Keyboard
+int w_getType(lua_State *L)
 {
-public:
+	mouse::Cursor *cursor = luax_checktype<mouse::Cursor>(L, 1, "Cursor", MOUSE_CURSOR_T);
 
-	// Implements Module.
-	const char *getName() const;
-	bool isDown(Key *keylist) const;
+	Cursor::CursorType ctype = cursor->getType();
+	const char *ctypestr;
 
-private:
+	if (!mouse::Cursor::getConstant(ctype, ctypestr))
+		return luaL_error(L, "Unknown cursor type.");
 
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
+	lua_pushstring(L, ctypestr);
 
-}; // Keyboard
+	Cursor::SystemCursor systype = cursor->getSystemType();
+	const char *systypestr;
 
-} // sdl
-} // keyboard
+	if (mouse::Cursor::getConstant(systype, systypestr))
+	{
+		lua_pushstring(L, systypestr);
+		return 2;
+	}
+
+	return 1;
+};
+
+static const luaL_Reg functions[] =
+{
+	{ "getType", w_getType },
+	{ 0, 0 },
+};
+
+extern "C" int luaopen_cursor(lua_State *L)
+{
+	return luax_register_type(L, "Cursor", functions);
+}
+
+} // mouse
 } // love
-
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H

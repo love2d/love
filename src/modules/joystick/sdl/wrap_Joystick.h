@@ -24,6 +24,7 @@
 // LOVE
 #include "common/config.h"
 #include "Joystick.h"
+#include "common/runtime.h"
 
 namespace love
 {
@@ -32,17 +33,22 @@ namespace joystick
 namespace sdl
 {
 
-int w_reload(lua_State *L);
-int w_getJoystickCount(lua_State *L);
-int w_getName(lua_State *L);
-int w_getAxisCount(lua_State *L);
-int w_getButtonCount(lua_State *L);
-int w_getHatCount(lua_State *L);
-int w_getAxis(lua_State *L);
-int w_getAxes(lua_State *L);
-int w_isDown(lua_State *L);
-int w_getHat(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State *L);
+Joystick *luax_checkjoystick(lua_State *L, int idx);
+int w_Joystick_isConnected(lua_State *L);
+int w_Joystick_getName(lua_State *L);
+int w_Joystick_getID(lua_State *L);
+int w_Joystick_getGUID(lua_State *L);
+int w_Joystick_getAxisCount(lua_State *L);
+int w_Joystick_getButtonCount(lua_State *L);
+int w_Joystick_getHatCount(lua_State *L);
+int w_Joystick_getAxis(lua_State *L);
+int w_Joystick_getAxes(lua_State *L);
+int w_Joystick_getHat(lua_State *L);
+int w_Joystick_isDown(lua_State *L);
+int w_Joystick_isGamepad(lua_State *L);
+int w_Joystick_getGamepadAxis(lua_State *L);
+int w_Joystick_isGamepadDown(lua_State *L);
+extern "C" int luaopen_joystick(lua_State *L);
 
 } // sdl
 } // joystick

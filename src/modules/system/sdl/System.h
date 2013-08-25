@@ -18,43 +18,49 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
+#ifndef LOVE_SYSTEM_SDL_SYSTEM_H
+#define LOVE_SYSTEM_SDL_SYSTEM_H
 
 // LOVE
-#include "keyboard/Keyboard.h"
+#include "system/System.h"
 #include "common/EnumMap.h"
 
 // SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include <SDL_power.h>
 
 namespace love
 {
-namespace keyboard
+namespace system
 {
 namespace sdl
 {
 
-class Keyboard : public love::keyboard::Keyboard
+class System : public love::system::System
 {
 public:
 
+	System();
+	virtual ~System() {}
+
 	// Implements Module.
 	const char *getName() const;
-	bool isDown(Key *keylist) const;
+
+	int getProcessorCount() const;
+
+	void setClipboardText(const std::string &text) const;
+	std::string getClipboardText() const;
+
+	PowerState getPowerInfo(int &seconds, int &percent) const;
 
 private:
 
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
+	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM>::Entry powerEntries[];
+	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM> powerStates;
 
-}; // Keyboard
+}; // System
 
 } // sdl
-} // keyboard
+} // system
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H
+#endif // LOVE_SYSTEM_SDL_SYSTEM_H

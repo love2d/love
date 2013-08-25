@@ -571,6 +571,9 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{"ImageData", IMAGE_IMAGE_DATA_ID},
 	{"CompressedData", IMAGE_COMPRESSED_DATA_ID},
 
+	// Joystick
+	{"Joystick", JOYSTICK_JOYSTICK_ID},
+
 	// Math
 	{"RandomGenerator", MATH_RANDOM_GENERATOR_ID},
 	{"BezierCurve", MATH_BEZIER_CURVE_ID},
@@ -581,6 +584,9 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	// Sound
 	{"SoundData", SOUND_SOUND_DATA_ID},
 	{"Decoder", SOUND_DECODER_ID},
+
+	// Mouse
+	{"Cursor", MOUSE_CURSOR_ID},
 
 	// Physics
 	{"World", PHYSICS_WORLD_ID},

@@ -24,6 +24,9 @@
 // LOVE
 #include "window/Window.h"
 
+// SDL
+#include <SDL.h>
+
 namespace love
 {
 namespace window
@@ -39,18 +42,27 @@ public:
 	~Window();
 
 	bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0);
-	void getWindow(int &width, int &height, WindowFlags &flags) const;
+	void getWindow(int &width, int &height, WindowFlags &flags);
 
-	bool checkWindowSize(int width, int height, bool fullscreen) const;
-	WindowSize *getFullscreenSizes(int &n) const;
+	bool setFullscreen(bool fullscreen, FullscreenType fstype);
+	bool setFullscreen(bool fullscreen);
+
+	bool onWindowResize(int width, int height);
+
+	int getDisplayCount() const;
+
+	bool checkWindowSize(int width, int height, bool fullscreen, int displayindex) const;
+	std::vector<WindowSize> getFullscreenSizes(int displayindex) const;
 
 	int getWidth() const;
 	int getHeight() const;
 
+	void getDesktopDimensions(int displayindex, int &width, int &height) const;
+
 	bool isCreated() const;
 
 	void setWindowTitle(const std::string &title);
-	std::string getWindowTitle() const;
+	const std::string &getWindowTitle() const;
 
 	bool setIcon(love::image::ImageData *imgd);
 	love::image::ImageData *getIcon();
@@ -65,11 +77,23 @@ public:
 	void setMouseVisible(bool visible);
 	bool getMouseVisible() const;
 
+	void setMouseGrab(bool grab);
+	bool isMouseGrabbed() const;
+
+	const void *getHandle() const;
+
+	static love::window::Window *createSingleton();
 	static love::window::Window *getSingleton();
 
 	const char *getName() const;
 
 private:
+
+	bool setContext(int fsaa, bool vsync);
+	void setWindowGLAttributes(int fsaa) const;
+
+	// Update the window flags based on the window's actual state.
+	void updateWindowFlags(const WindowFlags &newflags);
 
 	std::string windowTitle;
 
@@ -82,9 +106,14 @@ private:
 		WindowFlags flags;
 		love::image::ImageData *icon;
 
-	} currentMode;
+	} curMode;
 
 	bool created;
+
+	bool mouseGrabbed;
+
+	SDL_Window *window;
+	SDL_GLContext context;
 
 }; // Window
 

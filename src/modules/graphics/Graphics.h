@@ -109,6 +109,11 @@ public:
 	virtual ~Graphics();
 
 	/**
+	 * Sets the current graphics display viewport dimensions.
+	 **/
+	virtual void setViewportSize(int width, int height) = 0;
+
+	/**
 	 * Sets the current graphics display viewport and initializes the renderer.
 	 * @param width The viewport width.
 	 * @param height The viewport height.

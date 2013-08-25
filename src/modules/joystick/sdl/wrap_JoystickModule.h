@@ -18,43 +18,30 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_KEYBOARD_SDL_KEYBOARD_H
-#define LOVE_KEYBOARD_SDL_KEYBOARD_H
+#ifndef LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_MODULE_H
+#define LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_MODULE_H
 
 // LOVE
-#include "keyboard/Keyboard.h"
-#include "common/EnumMap.h"
-
-// SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include "common/config.h"
+#include "JoystickModule.h"
 
 namespace love
 {
-namespace keyboard
+namespace joystick
 {
 namespace sdl
 {
 
-class Keyboard : public love::keyboard::Keyboard
-{
-public:
-
-	// Implements Module.
-	const char *getName() const;
-	bool isDown(Key *keylist) const;
-
-private:
-
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
-
-}; // Keyboard
+int w_getJoystick(lua_State *L);
+int w_getIndex(lua_State *L);
+int w_getJoystickCount(lua_State *L);
+int w_isGamepad(lua_State *L);
+int w_setGamepadMapping(lua_State *L);
+int w_getGamepadMapping(lua_State *L);
+extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State *L);
 
 } // sdl
-} // keyboard
+} // joystick
 } // love
 
-#endif // LOVE_KEYBOARD_SDL_KEYBOARD_H
+#endif // LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_MODULE_H

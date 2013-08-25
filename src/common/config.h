@@ -72,6 +72,7 @@
 
 #if defined(LOVE_MACOSX)
 #	define LOVE_LEGENDARY_LIBSTDCXX_HACK
+#	define LOVE_LEGENDARY_APP_ARGV_HACK
 #endif
 
 // Autotools config.h

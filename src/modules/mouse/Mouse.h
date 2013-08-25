@@ -22,8 +22,10 @@
 #define LOVE_MOUSE_MOUSE_H
 
 // LOVE
+#include "Cursor.h"
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "image/ImageData.h"
 
 namespace love
 {
@@ -48,6 +50,14 @@ public:
 	};
 
 	virtual ~Mouse() {};
+
+	virtual Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty) = 0;
+	virtual Cursor *newCursor(Cursor::SystemCursor cursortype) = 0;
+
+	virtual void setCursor(Cursor *cursor) = 0;
+	virtual void setCursor() = 0;
+
+	virtual Cursor *getCursor() const = 0;
 
 	virtual int getX() const = 0;
 	virtual int getY() const = 0;

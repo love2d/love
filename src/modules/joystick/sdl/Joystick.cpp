@@ -20,9 +20,6 @@
 
 #include "Joystick.h"
 
-// STD
-#include <cmath>
-
 namespace love
 {
 namespace joystick
@@ -30,206 +27,260 @@ namespace joystick
 namespace sdl
 {
 
-Joystick::Joystick()
-	: joysticks(0)
+Joystick::Joystick(int id)
+	: joyhandle(0)
+	, controller(0)
+	, instanceid(-1)
+	, id(id)
 {
-	// Init the SDL joystick system.
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
-		throw love::Exception("%s", SDL_GetError());
+}
 
-	// Start joystick event watching.
-	SDL_JoystickEventState(SDL_ENABLE);
-
-	// Open all connected joysticks.
-	int numjoysticks = getJoystickCount();
-	if (numjoysticks > 0)
-		this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
-
-	for (int i = 0; i<numjoysticks; i++)
-		this->open(i);
+Joystick::Joystick(int id, int joyindex)
+	: joyhandle(0)
+	, controller(0)
+	, instanceid(-1)
+	, id(id)
+{
+	open(joyindex);
 }
 
 Joystick::~Joystick()
 {
-	// Closes any open joysticks.
-	for (int i = 0; i != getJoystickCount(); i++)
-	{
-		if (isOpen(i))
-			close(i);
-	}
-
-	free(joysticks);
-
-	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+	close();
 }
 
-void Joystick::reload()
+bool Joystick::open(int deviceindex)
 {
-	// Closes any open joysticks.
-	for (int i = 0; i != getJoystickCount(); i++)
+	close();
+
+	joyhandle = SDL_JoystickOpen(deviceindex);
+
+	if (joyhandle)
 	{
-		if (isOpen(i))
-			close(i);
+		instanceid = SDL_JoystickInstanceID(joyhandle);
+
+		// SDL_JoystickGetGUIDString uses 32 bytes plus the null terminator.
+		char cstr[33];
+
+		SDL_JoystickGUID sdlguid = SDL_JoystickGetGUID(joyhandle);
+		SDL_JoystickGetGUIDString(sdlguid, cstr, (int) sizeof(cstr));
+
+		guid = std::string(cstr);
+
+		// See if SDL thinks this is a Game Controller.
+		openGamepad(deviceindex);
+
+		// Prefer the GameController name.
+		if (controller)
+			name = SDL_GameControllerName(controller);
+		else
+			name = SDL_JoystickName(joyhandle);
 	}
 
-	free(joysticks);
+	return isConnected();
+}
 
-	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+void Joystick::close()
+{
+	if (controller)
+		SDL_GameControllerClose(controller);
 
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
-		throw love::Exception("%s", SDL_GetError());
+	if (joyhandle)
+		SDL_JoystickClose(joyhandle);
 
-	int numjoysticks = this->getJoystickCount();
-	if (numjoysticks > 0)
-		this->joysticks = (SDL_Joystick **)calloc(numjoysticks, sizeof(SDL_Joystick *));
+	joyhandle = 0;
+	controller = 0;
+	instanceid = -1;
+}
 
-	for (int i = 0; i<numjoysticks; i++)
-		this->open(i);
+bool Joystick::isConnected() const
+{
+	return joyhandle != 0 && SDL_JoystickGetAttached(joyhandle);
 }
 
 const char *Joystick::getName() const
 {
-	return "love.joystick.sdl";
+	// Use the saved name if this Joystick isn't connected anymore.
+	if (!isConnected())
+		return name.c_str();
+
+	// Prefer SDL's GameController name, if possible.
+	if (isGamepad())
+		return SDL_GameControllerName(controller);
+
+	return SDL_JoystickName(joyhandle);
 }
 
-bool Joystick::checkIndex(int index)
+int Joystick::getAxisCount() const
 {
-	return index >= 0 && index < getJoystickCount();
+	return isConnected() ? SDL_JoystickNumAxes(joyhandle) : 0;
 }
 
-int Joystick::getJoystickCount()
+int Joystick::getButtonCount() const
 {
-	int num = SDL_NumJoysticks();
-	return num < 0 ? 0 : num;
+	return isConnected() ? SDL_JoystickNumButtons(joyhandle) : 0;
 }
 
-const char *Joystick::getName(int index)
+int Joystick::getHatCount() const
 {
-	return SDL_JoystickName(index);
+	return isConnected() ? SDL_JoystickNumHats(joyhandle) : 0;
 }
 
-bool Joystick::open(int index)
+float Joystick::getAxis(int axisindex) const
 {
-	if (isOpen(index))
-		return true;
-
-	if (!checkIndex(index))
-		return false;
-
-	if (!(joysticks[index] = SDL_JoystickOpen(index)))
-		return false;
-
-	return true;
-}
-
-bool Joystick::isOpen(int index)
-{
-	if (!checkIndex(index))
-		return false;
-
-	return joysticks[index] != 0 ? true : false;
-}
-
-bool Joystick::verifyJoystick(int index)
-{
-	if (!checkIndex(index))
-		return false;
-
-	if (!isOpen(index))
-		return false;
-
-	return true;
-}
-
-int Joystick::getAxisCount(int index)
-{
-	return verifyJoystick(index) ? SDL_JoystickNumAxes(joysticks[index]) : 0;
-}
-
-int Joystick::getButtonCount(int index)
-{
-	return verifyJoystick(index) ? SDL_JoystickNumButtons(joysticks[index]) : 0;
-}
-
-int Joystick::getHatCount(int index)
-{
-	return verifyJoystick(index) ? SDL_JoystickNumHats(joysticks[index]) : 0;
-}
-
-float Joystick::clampval(float x)
-{
-	if (fabs((double)x) < 0.01) return 0.0f;
-	if (x < -0.99f) return -1.0f;
-	if (x > 0.99f) return 1.0f;
-	return x;
-}
-
-float Joystick::getAxis(int index, int axis)
-{
-	if (!verifyJoystick(index))
+	if (!isConnected() || axisindex < 0 || axisindex >= getAxisCount())
 		return 0;
 
-	if (axis >= getAxisCount(index))
-		return 0;
-
-	return clampval(((float)SDL_JoystickGetAxis(joysticks[index], axis))/32768.0f);
+	return clampval(((float) SDL_JoystickGetAxis(joyhandle, axisindex))/32768.0f);
 }
 
-int Joystick::getAxes(lua_State *L)
+std::vector<float> Joystick::getAxes() const
 {
-	int index = luaL_checkint(L, 1) - 1;
+	std::vector<float> axes;
+	int count = getAxisCount();
 
-	if (!verifyJoystick(index))
-		return 0;
+	if (!isConnected() || count <= 0)
+		return axes;
 
-	int num = getAxisCount(index);
+	axes.reserve(count);
 
-	for (int i = 0; i<num; i++)
-		lua_pushnumber(L, clampval(((float)SDL_JoystickGetAxis(joysticks[index], i))/32768.0f));
-	return num;
+	for (int i = 0; i < count; i++)
+		axes.push_back(clampval(((float) SDL_JoystickGetAxis(joyhandle, i))/32768.0f));
+
+	return axes;
 }
 
-bool Joystick::isDown(int index, int *buttonlist)
+Joystick::Hat Joystick::getHat(int hatindex) const
 {
-	if (!verifyJoystick(index))
+	Hat h = HAT_INVALID;
+
+	if (!isConnected() || hatindex < 0 || hatindex >= getHatCount())
+		return h;
+
+	getConstant(SDL_JoystickGetHat(joyhandle, hatindex), h);
+
+	return h;
+}
+
+bool Joystick::isDown(const std::vector<int> &buttonlist) const
+{
+	if (!isConnected())
 		return false;
 
-	int num = getButtonCount(index);
+	int num = getButtonCount();
 
-	for (int button = *buttonlist; button != -1; button = *(++buttonlist))
+	for (size_t i = 0; i < buttonlist.size(); i++)
 	{
-		if (button >= 0 && button < num && SDL_JoystickGetButton(joysticks[index], button) == 1)
+		int button = buttonlist[i];
+		if (button >= 0 && button < num && SDL_JoystickGetButton(joyhandle, button) == 1)
 			return true;
 	}
 
 	return false;
 }
 
-Joystick::Hat Joystick::getHat(int index, int hat)
+bool Joystick::openGamepad(int deviceindex)
 {
-	Hat h = HAT_INVALID;
+	if (!SDL_IsGameController(deviceindex))
+		return false;
 
-	if (!verifyJoystick(index))
-		return h;
+	if (isGamepad())
+	{
+		SDL_GameControllerClose(controller);
+		controller = 0;
+	}
 
-	if (hat >= getHatCount(index))
-		return h;
-
-	hats.find(SDL_JoystickGetHat(joysticks[index], hat), h);
-
-	return h;
+	controller = SDL_GameControllerOpen(deviceindex);
+	return isGamepad();
 }
 
-void Joystick::close(int index)
+bool Joystick::isGamepad() const
 {
-	if (!checkIndex(index))
-		return;
+	return controller != 0;
+}
 
-	if (joysticks[index]!=0)
+float Joystick::getGamepadAxis(love::joystick::Joystick::GamepadAxis axis) const
+{
+	if (!isConnected() || !isGamepad())
+		return 0.f;
+
+	SDL_GameControllerAxis sdlaxis;
+	if (!getConstant(axis, sdlaxis))
+		return 0.f;
+
+	Sint16 value = SDL_GameControllerGetAxis(controller, sdlaxis);
+
+	return clampval((float) value / 32768.0f);
+}
+
+bool Joystick::isGamepadDown(const std::vector<GamepadButton> &blist) const
+{
+	if (!isConnected() || !isGamepad())
+		return false;
+
+	SDL_GameControllerButton sdlbutton;
+
+	for (size_t i = 0; i < blist.size(); i++)
 	{
-		SDL_JoystickClose(joysticks[index]);
-		joysticks[index] = 0;
+		if (!getConstant(blist[i], sdlbutton))
+			continue;
+
+		if (SDL_GameControllerGetButton(controller, sdlbutton) == 1)
+			return true;
 	}
+
+	return false;
+}
+
+void *Joystick::getHandle() const
+{
+	return joyhandle;
+}
+
+std::string Joystick::getGUID() const
+{
+	// SDL2's GUIDs identify *classes* of devices, instead of unique devices.
+	return guid;
+}
+
+int Joystick::getInstanceID() const
+{
+	return instanceid;
+}
+
+int Joystick::getID() const
+{
+	return id;
+}
+
+bool Joystick::getConstant(Uint8 in, Joystick::Hat &out)
+{
+	return hats.find(in, out);
+}
+
+bool Joystick::getConstant(Joystick::Hat in, Uint8 &out)
+{
+	return hats.find(in, out);
+}
+
+bool Joystick::getConstant(SDL_GameControllerAxis in, Joystick::GamepadAxis &out)
+{
+	return gpAxes.find(in, out);
+}
+
+bool Joystick::getConstant(Joystick::GamepadAxis in, SDL_GameControllerAxis &out)
+{
+	return gpAxes.find(in, out);
+}
+
+bool Joystick::getConstant(SDL_GameControllerButton in, Joystick::GamepadButton &out)
+{
+	return gpButtons.find(in, out);
+}
+
+bool Joystick::getConstant(Joystick::GamepadButton in, SDL_GameControllerButton &out)
+{
+	return gpButtons.find(in, out);
 }
 
 EnumMap<Joystick::Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry Joystick::hatEntries[] =
@@ -246,6 +297,39 @@ EnumMap<Joystick::Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry Joystick::hatEntrie
 };
 
 EnumMap<Joystick::Hat, Uint8, Joystick::HAT_MAX_ENUM> Joystick::hats(Joystick::hatEntries, sizeof(Joystick::hatEntries));
+
+EnumMap<Joystick::GamepadAxis, SDL_GameControllerAxis, Joystick::GAMEPAD_AXIS_MAX_ENUM>::Entry Joystick::gpAxisEntries[] =
+{
+	{Joystick::GAMEPAD_AXIS_LEFTX, SDL_CONTROLLER_AXIS_LEFTX},
+	{Joystick::GAMEPAD_AXIS_LEFTY, SDL_CONTROLLER_AXIS_LEFTY},
+	{Joystick::GAMEPAD_AXIS_RIGHTX, SDL_CONTROLLER_AXIS_RIGHTX},
+	{Joystick::GAMEPAD_AXIS_RIGHTY, SDL_CONTROLLER_AXIS_RIGHTY},
+	{Joystick::GAMEPAD_AXIS_TRIGGERLEFT, SDL_CONTROLLER_AXIS_TRIGGERLEFT},
+	{Joystick::GAMEPAD_AXIS_TRIGGERRIGHT, SDL_CONTROLLER_AXIS_TRIGGERRIGHT},
+};
+
+EnumMap<Joystick::GamepadAxis, SDL_GameControllerAxis, Joystick::GAMEPAD_AXIS_MAX_ENUM> Joystick::gpAxes(Joystick::gpAxisEntries, sizeof(Joystick::gpAxisEntries));
+
+EnumMap<Joystick::GamepadButton, SDL_GameControllerButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM>::Entry Joystick::gpButtonEntries[] =
+{
+	{Joystick::GAMEPAD_BUTTON_A, SDL_CONTROLLER_BUTTON_A},
+	{Joystick::GAMEPAD_BUTTON_B, SDL_CONTROLLER_BUTTON_B},
+	{Joystick::GAMEPAD_BUTTON_X, SDL_CONTROLLER_BUTTON_X},
+	{Joystick::GAMEPAD_BUTTON_Y, SDL_CONTROLLER_BUTTON_Y},
+	{Joystick::GAMEPAD_BUTTON_BACK, SDL_CONTROLLER_BUTTON_BACK},
+	{Joystick::GAMEPAD_BUTTON_GUIDE, SDL_CONTROLLER_BUTTON_GUIDE},
+	{Joystick::GAMEPAD_BUTTON_START, SDL_CONTROLLER_BUTTON_START},
+	{Joystick::GAMEPAD_BUTTON_LEFTSTICK, SDL_CONTROLLER_BUTTON_LEFTSTICK},
+	{Joystick::GAMEPAD_BUTTON_RIGHTSTICK, SDL_CONTROLLER_BUTTON_RIGHTSTICK},
+	{Joystick::GAMEPAD_BUTTON_LEFTSHOULDER, SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
+	{Joystick::GAMEPAD_BUTTON_RIGHTSHOULDER, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
+	{Joystick::GAMEPAD_BUTTON_DPAD_UP, SDL_CONTROLLER_BUTTON_DPAD_UP},
+	{Joystick::GAMEPAD_BUTTON_DPAD_DOWN, SDL_CONTROLLER_BUTTON_DPAD_DOWN},
+	{Joystick::GAMEPAD_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_DPAD_LEFT},
+	{Joystick::GAMEPAD_BUTTON_DPAD_RIGHT, SDL_CONTROLLER_BUTTON_DPAD_RIGHT},
+};
+
+EnumMap<Joystick::GamepadButton, SDL_GameControllerButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM> Joystick::gpButtons(Joystick::gpButtonEntries, sizeof(Joystick::gpButtonEntries));
 
 } // sdl
 } // joystick

@@ -22,7 +22,8 @@
 #define LOVE_THREAD_WRAP_THREADMODULE_H
 
 // LOVE
-#include "ThreadModule.h"
+#include "common/config.h"
+#include "common/runtime.h"
 
 namespace love
 {

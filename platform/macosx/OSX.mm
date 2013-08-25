@@ -18,67 +18,55 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Reference.h"
+#import "osx.h"
+#import <Foundation/Foundation.h>
+
+#include <SDL2/SDL.h>
 
 namespace love
 {
-
-const char REFERENCE_TABLE_NAME[] = "love-references";
-
-Reference::Reference()
-	: L(0)
-	, idx(LUA_REFNIL)
+namespace osx
 {
-}
 
-Reference::Reference(lua_State *L)
-	: L(L)
-	, idx(LUA_REFNIL)
+std::string getLoveInResources()
 {
-	ref(L);
-}
+	std::string path;
 
-Reference::~Reference()
-{
-	unref();
-}
-
-void Reference::ref(lua_State *L)
-{
-	unref(); // Just to be safe.
-	this->L = L;
-	luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
-	lua_insert(L, -2); // Move reference table behind value.
-	idx = luaL_ref(L, -2);
-	lua_pop(L, 1);
-}
-
-void Reference::unref()
-{
-	if (idx != LUA_REFNIL)
+	// check to see if there are any .love files in Resources - props to stevejohnson/diordna
+	NSArray *lovePaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"love" inDirectory:nil];
+	if ([lovePaths count] > 0)
 	{
-		luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
-		luaL_unref(L, -1, idx);
-		lua_pop(L, 1);
-		idx = LUA_REFNIL;
+		NSString *firstLovePath = [lovePaths objectAtIndex:0];
+		path = std::string([firstLovePath UTF8String]);
 	}
+
+	return path;
 }
 
-void Reference::push()
+std::string checkDropEvents()
 {
-	if (idx != LUA_REFNIL)
+	std::string dropstr;
+	SDL_Event event;
+
+	bool initvideo = SDL_WasInit(SDL_INIT_VIDEO) != 0;
+	if (!initvideo)
+		SDL_InitSubSystem(SDL_INIT_VIDEO);
+
+	SDL_PumpEvents();
+	if (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_DROPFILE, SDL_DROPFILE) > 0)
 	{
-		luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
-		lua_rawgeti(L, -1, idx);
-		lua_remove(L, -2);
+		if (event.type == SDL_DROPFILE)
+		{
+			dropstr = std::string(event.drop.file);
+			SDL_free(event.drop.file);
+		}
 	}
-	else
-		lua_pushnil(L);
+
+	if (!initvideo)
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+	return dropstr;
 }
 
-lua_State *Reference::getL()
-{
-	return L;
-}
-
+} // osx
 } // love

@@ -21,32 +21,35 @@
 #ifndef LOVE_WINDOW_WINDOW_H
 #define LOVE_WINDOW_WINDOW_H
 
-// STL
-#include <string>
-
 // LOVE
 #include "common/Module.h"
+#include "common/StringMap.h"
 #include "image/ImageData.h"
+
+// C++
+#include <string>
+#include <vector>
 
 namespace love
 {
 namespace window
 {
 
-struct WindowFlags
-{
-	WindowFlags();
-	bool fullscreen; // = false
-	bool vsync; // = true
-	int fsaa; // = 0
-	bool resizable; // = false
-	bool borderless; // = false
-	bool centered; // = true
-}; // WindowFlags
+// Forward-declared so it can be used in the class methods. We can't define the
+// whole thing here because it uses the Window::Type enum.
+struct WindowFlags;
 
 class Window : public Module
 {
 public:
+
+	enum FullscreenType
+	{
+		FULLSCREEN_TYPE_NORMAL,
+		FULLSCREEN_TYPE_DESKTOP,
+		FULLSCREEN_TYPE_MAX_ENUM
+	};
+
 	struct WindowSize
 	{
 		int width;
@@ -56,18 +59,27 @@ public:
 	virtual ~Window();
 
 	virtual bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0) = 0;
-	virtual void getWindow(int &width, int &height, WindowFlags &flags) const = 0;
+	virtual void getWindow(int &width, int &height, WindowFlags &flags) = 0;
 
-	virtual bool checkWindowSize(int width, int height, bool fullscreen) const = 0;
-	virtual WindowSize *getFullscreenSizes(int &n) const = 0;
+	virtual bool setFullscreen(bool fullscreen, FullscreenType fstype) = 0;
+	virtual bool setFullscreen(bool fullscreen) = 0;
+
+	virtual bool onWindowResize(int width, int height) = 0;
+
+	virtual int getDisplayCount() const = 0;
+
+	virtual bool checkWindowSize(int width, int height, bool fullscreen, int displayindex) const = 0;
+	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
 	virtual int getWidth() const = 0;
 	virtual int getHeight() const = 0;
 
+	virtual void getDesktopDimensions(int displayindex, int &width, int &height) const = 0;
+
 	virtual bool isCreated() const = 0;
 
 	virtual void setWindowTitle(const std::string &title) = 0;
-	virtual std::string getWindowTitle() const = 0;
+	virtual const std::string &getWindowTitle() const = 0;
 
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;
 	virtual love::image::ImageData *getIcon() = 0;
@@ -83,13 +95,44 @@ public:
 	virtual void setMouseVisible(bool visible) = 0;
 	virtual bool getMouseVisible() const = 0;
 
+	virtual void setMouseGrab(bool grab) = 0;
+	virtual bool isMouseGrabbed() const = 0;
+
+	virtual const void *getHandle() const = 0;
+
+	//virtual static Window *createSingleton() = 0;
 	//virtual static Window *getSingleton() = 0;
-	// No virtual statics, of course, but you are supposed to implement this static.
+	// No virtual statics, of course, but you are supposed to implement these statics.
+
+	static bool getConstant(const char *in, FullscreenType &out);
+	static bool getConstant(FullscreenType in, const char *&out);
 
 protected:
+
 	static Window *singleton;
 
+private:
+
+	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM>::Entry fullscreenTypeEntries[];
+	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM> fullscreenTypes;
+
 }; // Window
+
+struct WindowFlags
+{
+	WindowFlags();
+	bool fullscreen; // = false
+	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_NORMAL
+	bool vsync; // = true
+	int fsaa; // = 0
+	bool resizable; // = false
+	int minwidth; // = 100
+	int minheight; // = 100
+	bool borderless; // = false
+	bool centered; // = true
+	int display; // = 0
+}; // WindowFlags
+
 } // window
 } // love
 

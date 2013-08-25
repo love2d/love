@@ -18,10 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "Mouse.h"
+#include "window/sdl/Window.h"
 
 // SDL
-#include <SDL.h>
+#include <SDL_mouse.h>
 
 namespace love
 {
@@ -33,6 +35,50 @@ namespace sdl
 const char *Mouse::getName() const
 {
 	return "love.mouse.sdl";
+}
+
+Mouse::Mouse()
+	: curCursor(0)
+{
+}
+
+Mouse::~Mouse()
+{
+	if (curCursor)
+		setCursor();
+}
+
+love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, int hoty)
+{
+	return new Cursor(data, hotx, hoty);
+}
+
+love::mouse::Cursor *Mouse::newCursor(love::mouse::Cursor::SystemCursor cursortype)
+{
+	return new Cursor(cursortype);
+}
+
+void Mouse::setCursor(love::mouse::Cursor *cursor)
+{
+	Object::AutoRelease cursorrelease(curCursor);
+
+	curCursor = cursor;
+	curCursor->retain();
+
+	SDL_SetCursor((SDL_Cursor *) cursor->getHandle());
+}
+
+void Mouse::setCursor()
+{
+	Object::AutoRelease cursorrelease(curCursor);
+	curCursor = NULL;
+
+	SDL_SetCursor(SDL_GetDefaultCursor());
+}
+
+love::mouse::Cursor *Mouse::getCursor() const
+{
+	return curCursor;
 }
 
 int Mouse::getX() const
@@ -56,7 +102,13 @@ void Mouse::getPosition(int &x, int &y) const
 
 void Mouse::setPosition(int x, int y)
 {
-	SDL_WarpMouse(x, y);
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+
+	SDL_Window *handle = NULL;
+	if (window)
+		handle = (SDL_Window *) window->getHandle();
+
+	SDL_WarpMouseInWindow(handle, x, y);
 }
 
 void Mouse::setX(int x)
@@ -91,17 +143,23 @@ bool Mouse::isDown(Button *buttonlist) const
 
 bool Mouse::isVisible() const
 {
-	return (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
+	return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
 }
 
 void Mouse::setGrab(bool grab)
 {
-	SDL_WM_GrabInput(grab ? SDL_GRAB_ON : SDL_GRAB_OFF);
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	if (window)
+		window->setMouseGrab(grab);
 }
 
 bool Mouse::isGrabbed() const
 {
-	return (SDL_WM_GrabInput(SDL_GRAB_QUERY) ==  SDL_GRAB_ON ? true : false);
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	if (window)
+		return window->isMouseGrabbed();
+	else
+		return false;
 }
 
 } // sdl

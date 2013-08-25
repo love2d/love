@@ -22,13 +22,17 @@
 #define LOVE_MOUSE_WRAP_MOUSE_H
 
 // LOVE
-#include "Mouse.h"
+#include "common/runtime.h"
+#include "common/config.h"
 
 namespace love
 {
 namespace mouse
 {
 
+int w_newCursor(lua_State *L);
+int w_setCursor(lua_State *L);
+int w_getCursor(lua_State *L);
 int w_getX(lua_State *L);
 int w_getY(lua_State *L);
 int w_getPosition(lua_State *L);

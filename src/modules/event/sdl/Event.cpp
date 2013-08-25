@@ -22,11 +22,13 @@
 
 #include "keyboard/Keyboard.h"
 #include "mouse/Mouse.h"
-
-#include "libraries/utf8/utf8.h"
+#include "joystick/JoystickModule.h"
+#include "joystick/sdl/Joystick.h"
+#include "graphics/Graphics.h"
+#include "window/Window.h"
+#include "common/Exception.h"
 
 #include <cmath>
-#include <cstddef>
 
 namespace love
 {
@@ -42,7 +44,13 @@ const char *Event::getName() const
 
 Event::Event()
 {
-	SDL_EnableUNICODE(1);
+	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
+		throw love::Exception("%s", SDL_GetError());
+}
+
+Event::~Event()
+{
+	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
 void Event::pump()
@@ -50,7 +58,6 @@ void Event::pump()
 	SDL_PumpEvents();
 
 	static SDL_Event e;
-	SDL_EnableUNICODE(1);
 
 	Message *msg;
 
@@ -86,46 +93,65 @@ void Event::clear()
 	love::event::Event::clear();
 }
 
-Message *Event::convert(SDL_Event &e)
+Message *Event::convert(const SDL_Event &e) const
 {
-	Message *msg = 0;
+	Message *msg = NULL;
+
 	love::keyboard::Keyboard::Key key;
 	love::mouse::Mouse::Button button;
-	love::joystick::Joystick::Hat hat;
-	Variant *arg1 = 0, *arg2 = 0, *arg3 = 0;
+	Variant *arg1, *arg2, *arg3;
 	const char *txt;
+	std::map<SDL_Keycode, love::keyboard::Keyboard::Key>::const_iterator keyit;
+
 	switch (e.type)
 	{
 	case SDL_KEYDOWN:
-		if (!keys.find(e.key.keysym.sym, key))
+		keyit = keys.find(e.key.keysym.sym);
+		if (keyit != keys.end())
+			key = keyit->second;
+		else
 			key = love::keyboard::Keyboard::KEY_UNKNOWN;
+
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 		arg1 = new Variant(txt, strlen(txt));
-		txt = convertUnicode(e.key.keysym.unicode);
-		// We don't want to send unprintable unicode text.
-		if (txt && (txt[0] >= ' ' && txt[0] != 127))
-		{
-			arg2 = new Variant(txt, strlen(txt));
-			msg = new Message("keypressed", arg1, arg2);
-			arg2->release();
-		}
-		else
-			msg = new Message("keypressed", arg1);
+		arg2 = new Variant(e.key.repeat == SDL_TRUE);
+		msg = new Message("keypressed", arg1, arg2);
 		arg1->release();
+		arg2->release();
 		break;
 	case SDL_KEYUP:
-		if (!keys.find(e.key.keysym.sym, key))
+		keyit = keys.find(e.key.keysym.sym);
+		if (keyit != keys.end())
+			key = keyit->second;
+		else
 			key = love::keyboard::Keyboard::KEY_UNKNOWN;
+
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 		arg1 = new Variant(txt, strlen(txt));
 		msg = new Message("keyreleased", arg1);
 		arg1->release();
 		break;
+	case SDL_TEXTINPUT:
+		txt = e.text.text;
+		arg1 = new Variant(txt, strlen(txt));
+		msg = new Message("textinput", arg1);
+		arg1->release();
+		break;
+	case SDL_TEXTEDITING:
+		txt = e.edit.text;
+		arg1 = new Variant(txt, strlen(txt));
+		arg2 = new Variant((double) e.edit.start);
+		arg3 = new Variant((double) e.edit.length);
+		msg = new Message("textedit", arg1, arg2, arg3);
+		arg1->release();
+		arg2->release();
+		arg3->release();
+		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
-		if (buttons.find(e.button.button, button) && love::mouse::Mouse::getConstant(button, txt))
+		if (buttons.find(e.button.button, button) && mouse::Mouse::getConstant(button, txt))
 		{
 			arg1 = new Variant((double) e.button.x);
 			arg2 = new Variant((double) e.button.y);
@@ -138,9 +164,77 @@ Message *Event::convert(SDL_Event &e)
 			arg3->release();
 		}
 		break;
+	case SDL_MOUSEWHEEL:
+		if (e.wheel.y != 0)
+		{
+			button = (e.wheel.y > 0) ? mouse::Mouse::BUTTON_WHEELUP : mouse::Mouse::BUTTON_WHEELDOWN;
+			if (!love::mouse::Mouse::getConstant(button, txt))
+				break;
+
+			int mx, my;
+			SDL_GetMouseState(&mx, &my);
+
+			arg1 = new Variant((double) mx);
+			arg2 = new Variant((double) my);
+			arg3 = new Variant(txt, strlen(txt));
+			msg = new Message("mousepressed", arg1, arg2, arg3);
+			arg1->release();
+			arg2->release();
+			arg3->release();
+		}
+		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		arg1 = new Variant((double)(e.jbutton.which+1));
+	case SDL_JOYAXISMOTION:
+	case SDL_JOYBALLMOTION:
+	case SDL_JOYHATMOTION:
+	case SDL_JOYDEVICEADDED:
+	case SDL_JOYDEVICEREMOVED:
+	case SDL_CONTROLLERBUTTONDOWN:
+	case SDL_CONTROLLERBUTTONUP:
+	case SDL_CONTROLLERAXISMOTION:
+		msg = convertJoystickEvent(e);
+		break;
+	case SDL_WINDOWEVENT:
+		msg = convertWindowEvent(e);
+		break;
+	case SDL_DROPFILE:
+		SDL_free(e.drop.file);
+		break;
+	case SDL_QUIT:
+		msg = new Message("quit");
+		break;
+	default:
+		break;
+	}
+
+	return msg;
+}
+
+Message *Event::convertJoystickEvent(const SDL_Event &e) const
+{
+	joystick::JoystickModule *joymodule = (joystick::JoystickModule *) Module::findInstance("love.joystick.");
+	if (!joymodule)
+		return 0;
+
+	Message *msg = 0;
+	Proxy proxy;
+	love::joystick::Joystick::Hat hat;
+	love::joystick::Joystick::GamepadButton padbutton;
+	love::joystick::Joystick::GamepadAxis padaxis;
+	Variant *arg1, *arg2, *arg3;
+	const char *txt;
+
+	switch (e.type)
+	{
+	case SDL_JOYBUTTONDOWN:
+	case SDL_JOYBUTTONUP:
+		proxy.flags = JOYSTICK_JOYSTICK_T;
+		proxy.data = joymodule->getJoystickFromID(e.jbutton.which);
+		if (!proxy.data)
+			break;
+
+		arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
 		arg2 = new Variant((double)(e.jbutton.button+1));
 		msg = new Message((e.type == SDL_JOYBUTTONDOWN) ?
 						  "joystickpressed" : "joystickreleased",
@@ -150,7 +244,12 @@ Message *Event::convert(SDL_Event &e)
 		break;
 	case SDL_JOYAXISMOTION:
 		{
-			arg1 = new Variant((double)(e.jaxis.which+1));
+			proxy.flags = JOYSTICK_JOYSTICK_T;
+			proxy.data = joymodule->getJoystickFromID(e.jaxis.which);
+			if (!proxy.data)
+				break;
+
+			arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
 			arg2 = new Variant((double)(e.jaxis.axis+1));
 			float value = e.jaxis.value / 32768.0f;
 			if (fabsf(value) < 0.001f) value = 0.0f;
@@ -164,52 +263,144 @@ Message *Event::convert(SDL_Event &e)
 		}
 		break;
 	case SDL_JOYHATMOTION:
-		if (hats.find(e.jhat.value, hat) && love::joystick::Joystick::getConstant(hat, txt))
+		if (!joystick::sdl::Joystick::getConstant(e.jhat.value, hat) || !joystick::Joystick::getConstant(hat, txt))
+			break;
+
+		proxy.flags = JOYSTICK_JOYSTICK_T;
+		proxy.data = joymodule->getJoystickFromID(e.jhat.which);
+		if (!proxy.data)
+			break;
+
+		arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
+		arg2 = new Variant((double)(e.jhat.hat+1));
+		arg3 = new Variant(txt, strlen(txt));
+		msg = new Message("joystickhat", arg1, arg2, arg3);
+		arg1->release();
+		arg2->release();
+		arg3->release();
+		break;
+	case SDL_CONTROLLERBUTTONDOWN:
+	case SDL_CONTROLLERBUTTONUP:
+		if (!joystick::sdl::Joystick::getConstant((SDL_GameControllerButton) e.cbutton.button, padbutton))
+			break;
+
+		if (!joystick::Joystick::getConstant(padbutton, txt))
+			break;
+
+		proxy.flags = JOYSTICK_JOYSTICK_T;
+		proxy.data = joymodule->getJoystickFromID(e.cbutton.which);
+		if (!proxy.data)
+			break;
+
+		arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
+		arg2 = new Variant(txt, strlen(txt));
+		msg = new Message(e.type == SDL_CONTROLLERBUTTONDOWN ?
+						  "gamepadpressed" : "gamepadreleased", arg1, arg2);
+		arg1->release();
+		arg2->release();
+		break;
+	case SDL_CONTROLLERAXISMOTION:
+		if (joystick::sdl::Joystick::getConstant((SDL_GameControllerAxis) e.caxis.axis, padaxis))
 		{
-			arg1 = new Variant((double)(e.jhat.which+1));
-			arg2 = new Variant((double)(e.jhat.hat+1));
-			arg3 = new Variant(txt, strlen(txt));
-			msg = new Message("joystickhat", arg1, arg2, arg3);
+			if (!joystick::Joystick::getConstant(padaxis, txt))
+				break;
+
+			proxy.flags = JOYSTICK_JOYSTICK_T;
+			proxy.data = joymodule->getJoystickFromID(e.caxis.which);
+			if (!proxy.data)
+				break;
+
+			arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
+
+			arg2 = new Variant(txt, strlen(txt));
+			float value = e.jaxis.value / 32768.0f;
+			if (fabsf(value) < 0.001f) value = 0.0f;
+			if (value < -0.99f) value = -1.0f;
+			if (value > 0.99f) value = 1.0f;
+			arg3 = new Variant((double) value);
+			msg = new Message("gamepadaxis", arg1, arg2, arg3);
 			arg1->release();
 			arg2->release();
 			arg3->release();
 		}
 		break;
-	case SDL_ACTIVEEVENT:
+	case SDL_JOYDEVICEADDED:
+		// jdevice.which is the joystick device index.
+		proxy.data = joymodule->addJoystick(e.jdevice.which);
+		proxy.flags = JOYSTICK_JOYSTICK_T;
+		if (proxy.data)
 		{
-			// SDL can send multiple ACTIVEEVENTS in a single SDL_event... we
-			// have to work around that by re-sending the ones we miss.
-			SDL_Event e2 = e;
-
-			arg1 = new Variant(e.active.gain != 0);
-			if (e.active.state & SDL_APPINPUTFOCUS)
-			{
-				msg = new Message("focus", arg1);
-				e2.active.state &= ~SDL_APPINPUTFOCUS;
-			}
-			else if (e.active.state & SDL_APPMOUSEFOCUS)
-			{
-				msg = new Message("mousefocus", arg1);
-				e2.active.state &= ~SDL_APPMOUSEFOCUS;
-			}
-			else if (e.active.state & SDL_APPACTIVE)
-			{
-				msg = new Message("visible", arg1);
-				e2.active.state &= ~SDL_APPACTIVE;
-			}
+			arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
+			msg = new Message("joystickadded", arg1);
 			arg1->release();
-
-			// Put any missing active events back in SDL's queue.
-			if (e2.active.state != 0)
-				SDL_PushEvent(&e2);
 		}
 		break;
-	case SDL_QUIT:
-		msg = new Message("quit");
+	case SDL_JOYDEVICEREMOVED:
+		// jdevice.which is the joystick instance ID now.
+		proxy.data = joymodule->getJoystickFromID(e.jdevice.which);
+		proxy.flags = JOYSTICK_JOYSTICK_T;
+		if (proxy.data)
+		{
+			joymodule->removeJoystick((joystick::Joystick *) proxy.data);
+			arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
+			msg = new Message("joystickremoved", arg1);
+			arg1->release();
+		}
 		break;
-	case SDL_VIDEORESIZE:
-		arg1 = new Variant((double) e.resize.w);
-		arg2 = new Variant((double) e.resize.h);
+	default:
+		break;
+	}
+
+	return msg;
+}
+
+Message *Event::convertWindowEvent(const SDL_Event &e) const
+{
+	Message *msg = 0;
+	Variant *arg1, *arg2;
+	window::Window *win = 0;
+
+	if (e.type != SDL_WINDOWEVENT)
+		return 0;
+
+	switch (e.window.event)
+	{
+	case SDL_WINDOWEVENT_FOCUS_GAINED:
+	case SDL_WINDOWEVENT_FOCUS_LOST:
+		// Users won't expect the screensaver to activate if a game is in
+		// focus. Also, joystick input may not delay the screensaver timer.
+		if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+			SDL_DisableScreenSaver();
+		else
+			SDL_EnableScreenSaver();
+		arg1 = new Variant(e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED);
+		msg = new Message("focus", arg1);
+		arg1->release();
+		break;
+	case SDL_WINDOWEVENT_ENTER:
+	case SDL_WINDOWEVENT_LEAVE:
+		arg1 = new Variant(e.window.event == SDL_WINDOWEVENT_ENTER);
+		msg = new Message("mousefocus", arg1);
+		arg1->release();
+		break;
+	case SDL_WINDOWEVENT_SHOWN:
+	case SDL_WINDOWEVENT_HIDDEN:
+		arg1 = new Variant(e.window.event == SDL_WINDOWEVENT_SHOWN);
+		msg = new Message("visible", arg1);
+		arg1->release();
+		break;
+	case SDL_WINDOWEVENT_RESIZED:
+		win = (window::Window *) Module::findInstance("love.window.");
+		if (win)
+		{
+			win->onWindowResize(e.window.data1, e.window.data2);
+
+			graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+			if (gfx)
+				gfx->setViewportSize(e.window.data1, e.window.data2);
+		}
+		arg1 = new Variant((double) e.window.data1);
+		arg2 = new Variant((double) e.window.data2);
 		msg = new Message("resize", arg1, arg2);
 		arg1->release();
 		arg2->release();
@@ -219,204 +410,220 @@ Message *Event::convert(SDL_Event &e)
 	return msg;
 }
 
-const char *Event::convertUnicode(Uint16 codepoint) const
+std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::createKeyMap()
 {
-	// A single unicode character can use up to 4 bytes.
-	static char str[5] = {'\0'};
-	ptrdiff_t length = 0;
+	using love::keyboard::Keyboard;
 
-	if (codepoint == 0)
-		return 0;
+	std::map<SDL_Keycode, Keyboard::Key> k;
 
-	char *end = utf8::unchecked::append(codepoint, str);
-	length = end - str;
+	k[SDLK_UNKNOWN] = Keyboard::KEY_UNKNOWN;
 
-	if (length <= 0 || !utf8::is_valid(str, str + length))
-		return 0;
+	k[SDLK_RETURN] = Keyboard::KEY_RETURN;
+	k[SDLK_ESCAPE] = Keyboard::KEY_ESCAPE;
+	k[SDLK_BACKSPACE] = Keyboard::KEY_BACKSPACE;
+	k[SDLK_TAB] = Keyboard::KEY_TAB;
+	k[SDLK_SPACE] = Keyboard::KEY_SPACE;
+	k[SDLK_EXCLAIM] = Keyboard::KEY_EXCLAIM;
+	k[SDLK_QUOTEDBL] = Keyboard::KEY_QUOTEDBL;
+	k[SDLK_HASH] = Keyboard::KEY_HASH;
+	k[SDLK_DOLLAR] = Keyboard::KEY_DOLLAR;
+	k[SDLK_AMPERSAND] = Keyboard::KEY_AMPERSAND;
+	k[SDLK_QUOTE] = Keyboard::KEY_QUOTE;
+	k[SDLK_LEFTPAREN] = Keyboard::KEY_LEFTPAREN;
+	k[SDLK_RIGHTPAREN] = Keyboard::KEY_RIGHTPAREN;
+	k[SDLK_ASTERISK] = Keyboard::KEY_ASTERISK;
+	k[SDLK_PLUS] = Keyboard::KEY_PLUS;
+	k[SDLK_COMMA] = Keyboard::KEY_COMMA;
+	k[SDLK_MINUS] = Keyboard::KEY_MINUS;
+	k[SDLK_PERIOD] = Keyboard::KEY_PERIOD;
+	k[SDLK_SLASH] = Keyboard::KEY_SLASH;
+	k[SDLK_0] = Keyboard::KEY_0;
+	k[SDLK_1] = Keyboard::KEY_1;
+	k[SDLK_2] = Keyboard::KEY_2;
+	k[SDLK_3] = Keyboard::KEY_3;
+	k[SDLK_4] = Keyboard::KEY_4;
+	k[SDLK_5] = Keyboard::KEY_5;
+	k[SDLK_6] = Keyboard::KEY_6;
+	k[SDLK_7] = Keyboard::KEY_7;
+	k[SDLK_8] = Keyboard::KEY_8;
+	k[SDLK_9] = Keyboard::KEY_9;
+	k[SDLK_COLON] = Keyboard::KEY_COLON;
+	k[SDLK_SEMICOLON] = Keyboard::KEY_SEMICOLON;
+	k[SDLK_LESS] = Keyboard::KEY_LESS;
+	k[SDLK_EQUALS] = Keyboard::KEY_EQUALS;
+	k[SDLK_GREATER] = Keyboard::KEY_GREATER;
+	k[SDLK_QUESTION] = Keyboard::KEY_QUESTION;
+	k[SDLK_AT] = Keyboard::KEY_AT;
 
-	// Zero out the rest of the string.
-	for (ptrdiff_t i = length; i < 5; i++)
-		str[i] = '\0';
+	k[SDLK_LEFTBRACKET] = Keyboard::KEY_LEFTBRACKET;
+	k[SDLK_BACKSLASH] = Keyboard::KEY_BACKSLASH;
+	k[SDLK_RIGHTBRACKET] = Keyboard::KEY_RIGHTBRACKET;
+	k[SDLK_CARET] = Keyboard::KEY_CARET;
+	k[SDLK_UNDERSCORE] = Keyboard::KEY_UNDERSCORE;
+	k[SDLK_BACKQUOTE] = Keyboard::KEY_BACKQUOTE;
+	k[SDLK_a] = Keyboard::KEY_A;
+	k[SDLK_b] = Keyboard::KEY_B;
+	k[SDLK_c] = Keyboard::KEY_C;
+	k[SDLK_d] = Keyboard::KEY_D;
+	k[SDLK_e] = Keyboard::KEY_E;
+	k[SDLK_f] = Keyboard::KEY_F;
+	k[SDLK_g] = Keyboard::KEY_G;
+	k[SDLK_h] = Keyboard::KEY_H;
+	k[SDLK_i] = Keyboard::KEY_I;
+	k[SDLK_j] = Keyboard::KEY_J;
+	k[SDLK_k] = Keyboard::KEY_K;
+	k[SDLK_l] = Keyboard::KEY_L;
+	k[SDLK_m] = Keyboard::KEY_M;
+	k[SDLK_n] = Keyboard::KEY_N;
+	k[SDLK_o] = Keyboard::KEY_O;
+	k[SDLK_p] = Keyboard::KEY_P;
+	k[SDLK_q] = Keyboard::KEY_Q;
+	k[SDLK_r] = Keyboard::KEY_R;
+	k[SDLK_s] = Keyboard::KEY_S;
+	k[SDLK_t] = Keyboard::KEY_T;
+	k[SDLK_u] = Keyboard::KEY_U;
+	k[SDLK_v] = Keyboard::KEY_V;
+	k[SDLK_w] = Keyboard::KEY_W;
+	k[SDLK_x] = Keyboard::KEY_X;
+	k[SDLK_y] = Keyboard::KEY_Y;
+	k[SDLK_z] = Keyboard::KEY_Z;
 
-	return str;
+	k[SDLK_CAPSLOCK] = Keyboard::KEY_CAPSLOCK;
+
+	k[SDLK_F1] = Keyboard::KEY_F1;
+	k[SDLK_F2] = Keyboard::KEY_F2;
+	k[SDLK_F3] = Keyboard::KEY_F3;
+	k[SDLK_F4] = Keyboard::KEY_F4;
+	k[SDLK_F5] = Keyboard::KEY_F5;
+	k[SDLK_F6] = Keyboard::KEY_F6;
+	k[SDLK_F7] = Keyboard::KEY_F7;
+	k[SDLK_F8] = Keyboard::KEY_F8;
+	k[SDLK_F9] = Keyboard::KEY_F9;
+	k[SDLK_F10] = Keyboard::KEY_F10;
+	k[SDLK_F11] = Keyboard::KEY_F11;
+	k[SDLK_F12] = Keyboard::KEY_F12;
+
+	k[SDLK_PRINTSCREEN] = Keyboard::KEY_PRINTSCREEN;
+	k[SDLK_SCROLLLOCK] = Keyboard::KEY_SCROLLLOCK;
+	k[SDLK_PAUSE] = Keyboard::KEY_PAUSE;
+	k[SDLK_INSERT] = Keyboard::KEY_INSERT;
+	k[SDLK_HOME] = Keyboard::KEY_HOME;
+	k[SDLK_PAGEUP] = Keyboard::KEY_PAGEUP;
+	k[SDLK_DELETE] = Keyboard::KEY_DELETE;
+	k[SDLK_END] = Keyboard::KEY_END;
+	k[SDLK_PAGEDOWN] = Keyboard::KEY_PAGEDOWN;
+	k[SDLK_RIGHT] = Keyboard::KEY_RIGHT;
+	k[SDLK_LEFT] = Keyboard::KEY_LEFT;
+	k[SDLK_DOWN] = Keyboard::KEY_DOWN;
+	k[SDLK_UP] = Keyboard::KEY_UP;
+
+	k[SDLK_NUMLOCKCLEAR] = Keyboard::KEY_NUMLOCKCLEAR;
+	k[SDLK_KP_DIVIDE] = Keyboard::KEY_KP_DIVIDE;
+	k[SDLK_KP_MULTIPLY] = Keyboard::KEY_KP_MULTIPLY;
+	k[SDLK_KP_MINUS] = Keyboard::KEY_KP_MINUS;
+	k[SDLK_KP_PLUS] = Keyboard::KEY_KP_PLUS;
+	k[SDLK_KP_ENTER] = Keyboard::KEY_KP_ENTER;
+	k[SDLK_KP_0] = Keyboard::KEY_KP_0;
+	k[SDLK_KP_1] = Keyboard::KEY_KP_1;
+	k[SDLK_KP_2] = Keyboard::KEY_KP_2;
+	k[SDLK_KP_3] = Keyboard::KEY_KP_3;
+	k[SDLK_KP_4] = Keyboard::KEY_KP_4;
+	k[SDLK_KP_5] = Keyboard::KEY_KP_5;
+	k[SDLK_KP_6] = Keyboard::KEY_KP_6;
+	k[SDLK_KP_7] = Keyboard::KEY_KP_7;
+	k[SDLK_KP_8] = Keyboard::KEY_KP_8;
+	k[SDLK_KP_9] = Keyboard::KEY_KP_9;
+	k[SDLK_KP_PERIOD] = Keyboard::KEY_KP_PERIOD;
+	k[SDLK_KP_COMMA] = Keyboard::KEY_KP_COMMA;
+	k[SDLK_KP_EQUALS] = Keyboard::KEY_KP_EQUALS;
+
+	k[SDLK_APPLICATION] = Keyboard::KEY_APPLICATION;
+	k[SDLK_POWER] = Keyboard::KEY_POWER;
+	k[SDLK_F13] = Keyboard::KEY_F13;
+	k[SDLK_F14] = Keyboard::KEY_F14;
+	k[SDLK_F15] = Keyboard::KEY_F15;
+	k[SDLK_F16] = Keyboard::KEY_F16;
+	k[SDLK_F17] = Keyboard::KEY_F17;
+	k[SDLK_F18] = Keyboard::KEY_F18;
+	k[SDLK_F19] = Keyboard::KEY_F19;
+	k[SDLK_F20] = Keyboard::KEY_F20;
+	k[SDLK_F21] = Keyboard::KEY_F21;
+	k[SDLK_F22] = Keyboard::KEY_F22;
+	k[SDLK_F23] = Keyboard::KEY_F23;
+	k[SDLK_F24] = Keyboard::KEY_F24;
+	k[SDLK_EXECUTE] = Keyboard::KEY_EXECUTE;
+	k[SDLK_HELP] = Keyboard::KEY_HELP;
+	k[SDLK_MENU] = Keyboard::KEY_MENU;
+	k[SDLK_SELECT] = Keyboard::KEY_SELECT;
+	k[SDLK_STOP] = Keyboard::KEY_STOP;
+	k[SDLK_AGAIN] = Keyboard::KEY_AGAIN;
+	k[SDLK_UNDO] = Keyboard::KEY_UNDO;
+	k[SDLK_CUT] = Keyboard::KEY_CUT;
+	k[SDLK_COPY] = Keyboard::KEY_COPY;
+	k[SDLK_PASTE] = Keyboard::KEY_PASTE;
+	k[SDLK_FIND] = Keyboard::KEY_FIND;
+	k[SDLK_MUTE] = Keyboard::KEY_MUTE;
+	k[SDLK_VOLUMEUP] = Keyboard::KEY_VOLUMEUP;
+	k[SDLK_VOLUMEDOWN] = Keyboard::KEY_VOLUMEDOWN;
+
+	k[SDLK_ALTERASE] = Keyboard::KEY_ALTERASE;
+	k[SDLK_SYSREQ] = Keyboard::KEY_SYSREQ;
+	k[SDLK_CANCEL] = Keyboard::KEY_CANCEL;
+	k[SDLK_CLEAR] = Keyboard::KEY_CLEAR;
+	k[SDLK_PRIOR] = Keyboard::KEY_PRIOR;
+	k[SDLK_RETURN2] = Keyboard::KEY_RETURN2;
+	k[SDLK_SEPARATOR] = Keyboard::KEY_SEPARATOR;
+	k[SDLK_OUT] = Keyboard::KEY_OUT;
+	k[SDLK_OPER] = Keyboard::KEY_OPER;
+	k[SDLK_CLEARAGAIN] = Keyboard::KEY_CLEARAGAIN;
+
+	k[SDLK_THOUSANDSSEPARATOR] = Keyboard::KEY_THOUSANDSSEPARATOR;
+	k[SDLK_DECIMALSEPARATOR] = Keyboard::KEY_DECIMALSEPARATOR;
+	k[SDLK_CURRENCYUNIT] = Keyboard::KEY_CURRENCYUNIT;
+	k[SDLK_CURRENCYSUBUNIT] = Keyboard::KEY_CURRENCYSUBUNIT;
+
+	k[SDLK_LCTRL] = Keyboard::KEY_LCTRL;
+	k[SDLK_LSHIFT] = Keyboard::KEY_LSHIFT;
+	k[SDLK_LALT] = Keyboard::KEY_LALT;
+	k[SDLK_LGUI] = Keyboard::KEY_LGUI;
+	k[SDLK_RCTRL] = Keyboard::KEY_RCTRL;
+	k[SDLK_RSHIFT] = Keyboard::KEY_RSHIFT;
+	k[SDLK_RALT] = Keyboard::KEY_RALT;
+	k[SDLK_RGUI] = Keyboard::KEY_RGUI;
+
+	k[SDLK_MODE] = Keyboard::KEY_MODE;
+
+	k[SDLK_AUDIONEXT] = Keyboard::KEY_AUDIONEXT;
+	k[SDLK_AUDIOPREV] = Keyboard::KEY_AUDIOPREV;
+	k[SDLK_AUDIOSTOP] = Keyboard::KEY_AUDIOSTOP;
+	k[SDLK_AUDIOPLAY] = Keyboard::KEY_AUDIOPLAY;
+	k[SDLK_AUDIOMUTE] = Keyboard::KEY_AUDIOMUTE;
+	k[SDLK_MEDIASELECT] = Keyboard::KEY_MEDIASELECT;
+
+	k[SDLK_BRIGHTNESSDOWN] = Keyboard::KEY_BRIGHTNESSDOWN;
+	k[SDLK_BRIGHTNESSUP] = Keyboard::KEY_BRIGHTNESSUP;
+	k[SDLK_DISPLAYSWITCH] = Keyboard::KEY_DISPLAYSWITCH;
+	k[SDLK_KBDILLUMTOGGLE] = Keyboard::KEY_KBDILLUMTOGGLE;
+	k[SDLK_KBDILLUMDOWN] = Keyboard::KEY_KBDILLUMDOWN;
+	k[SDLK_KBDILLUMUP] = Keyboard::KEY_KBDILLUMUP;
+	k[SDLK_EJECT] = Keyboard::KEY_EJECT;
+	k[SDLK_SLEEP] = Keyboard::KEY_SLEEP;
+
+	return k;
 }
 
-EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry Event::keyEntries[] =
-{
-	{ love::keyboard::Keyboard::KEY_BACKSPACE, SDLK_BACKSPACE},
-	{ love::keyboard::Keyboard::KEY_TAB, SDLK_TAB},
-	{ love::keyboard::Keyboard::KEY_CLEAR, SDLK_CLEAR},
-	{ love::keyboard::Keyboard::KEY_RETURN, SDLK_RETURN},
-	{ love::keyboard::Keyboard::KEY_PAUSE, SDLK_PAUSE},
-	{ love::keyboard::Keyboard::KEY_ESCAPE, SDLK_ESCAPE },
-	{ love::keyboard::Keyboard::KEY_SPACE, SDLK_SPACE },
-	{ love::keyboard::Keyboard::KEY_EXCLAIM, SDLK_EXCLAIM },
-	{ love::keyboard::Keyboard::KEY_QUOTEDBL, SDLK_QUOTEDBL },
-	{ love::keyboard::Keyboard::KEY_HASH, SDLK_HASH },
-	{ love::keyboard::Keyboard::KEY_DOLLAR, SDLK_DOLLAR },
-	{ love::keyboard::Keyboard::KEY_AMPERSAND, SDLK_AMPERSAND },
-	{ love::keyboard::Keyboard::KEY_QUOTE, SDLK_QUOTE },
-	{ love::keyboard::Keyboard::KEY_LEFTPAREN, SDLK_LEFTPAREN },
-	{ love::keyboard::Keyboard::KEY_RIGHTPAREN, SDLK_RIGHTPAREN },
-	{ love::keyboard::Keyboard::KEY_ASTERISK, SDLK_ASTERISK },
-	{ love::keyboard::Keyboard::KEY_PLUS, SDLK_PLUS },
-	{ love::keyboard::Keyboard::KEY_COMMA, SDLK_COMMA },
-	{ love::keyboard::Keyboard::KEY_MINUS, SDLK_MINUS },
-	{ love::keyboard::Keyboard::KEY_PERIOD, SDLK_PERIOD },
-	{ love::keyboard::Keyboard::KEY_SLASH, SDLK_SLASH },
-	{ love::keyboard::Keyboard::KEY_0, SDLK_0 },
-	{ love::keyboard::Keyboard::KEY_1, SDLK_1 },
-	{ love::keyboard::Keyboard::KEY_2, SDLK_2 },
-	{ love::keyboard::Keyboard::KEY_3, SDLK_3 },
-	{ love::keyboard::Keyboard::KEY_4, SDLK_4 },
-	{ love::keyboard::Keyboard::KEY_5, SDLK_5 },
-	{ love::keyboard::Keyboard::KEY_6, SDLK_6 },
-	{ love::keyboard::Keyboard::KEY_7, SDLK_7 },
-	{ love::keyboard::Keyboard::KEY_8, SDLK_8 },
-	{ love::keyboard::Keyboard::KEY_9, SDLK_9 },
-	{ love::keyboard::Keyboard::KEY_COLON, SDLK_COLON },
-	{ love::keyboard::Keyboard::KEY_SEMICOLON, SDLK_SEMICOLON },
-	{ love::keyboard::Keyboard::KEY_LESS, SDLK_LESS },
-	{ love::keyboard::Keyboard::KEY_EQUALS, SDLK_EQUALS },
-	{ love::keyboard::Keyboard::KEY_GREATER, SDLK_GREATER },
-	{ love::keyboard::Keyboard::KEY_QUESTION, SDLK_QUESTION },
-	{ love::keyboard::Keyboard::KEY_AT, SDLK_AT },
-
-	{ love::keyboard::Keyboard::KEY_LEFTBRACKET, SDLK_LEFTBRACKET },
-	{ love::keyboard::Keyboard::KEY_BACKSLASH, SDLK_BACKSLASH },
-	{ love::keyboard::Keyboard::KEY_RIGHTBRACKET, SDLK_RIGHTBRACKET },
-	{ love::keyboard::Keyboard::KEY_CARET, SDLK_CARET },
-	{ love::keyboard::Keyboard::KEY_UNDERSCORE, SDLK_UNDERSCORE },
-	{ love::keyboard::Keyboard::KEY_BACKQUOTE, SDLK_BACKQUOTE },
-	{ love::keyboard::Keyboard::KEY_A, SDLK_a },
-	{ love::keyboard::Keyboard::KEY_B, SDLK_b },
-	{ love::keyboard::Keyboard::KEY_C, SDLK_c },
-	{ love::keyboard::Keyboard::KEY_D, SDLK_d },
-	{ love::keyboard::Keyboard::KEY_E, SDLK_e },
-	{ love::keyboard::Keyboard::KEY_F, SDLK_f },
-	{ love::keyboard::Keyboard::KEY_G, SDLK_g },
-	{ love::keyboard::Keyboard::KEY_H, SDLK_h },
-	{ love::keyboard::Keyboard::KEY_I, SDLK_i },
-	{ love::keyboard::Keyboard::KEY_J, SDLK_j },
-	{ love::keyboard::Keyboard::KEY_K, SDLK_k },
-	{ love::keyboard::Keyboard::KEY_L, SDLK_l },
-	{ love::keyboard::Keyboard::KEY_M, SDLK_m },
-	{ love::keyboard::Keyboard::KEY_N, SDLK_n },
-	{ love::keyboard::Keyboard::KEY_O, SDLK_o },
-	{ love::keyboard::Keyboard::KEY_P, SDLK_p },
-	{ love::keyboard::Keyboard::KEY_Q, SDLK_q },
-	{ love::keyboard::Keyboard::KEY_R, SDLK_r },
-	{ love::keyboard::Keyboard::KEY_S, SDLK_s },
-	{ love::keyboard::Keyboard::KEY_T, SDLK_t },
-	{ love::keyboard::Keyboard::KEY_U, SDLK_u },
-	{ love::keyboard::Keyboard::KEY_V, SDLK_v },
-	{ love::keyboard::Keyboard::KEY_W, SDLK_w },
-	{ love::keyboard::Keyboard::KEY_X, SDLK_x },
-	{ love::keyboard::Keyboard::KEY_Y, SDLK_y },
-	{ love::keyboard::Keyboard::KEY_Z, SDLK_z },
-	{ love::keyboard::Keyboard::KEY_DELETE, SDLK_DELETE },
-
-	{ love::keyboard::Keyboard::KEY_KP0, SDLK_KP0 },
-	{ love::keyboard::Keyboard::KEY_KP1, SDLK_KP1 },
-	{ love::keyboard::Keyboard::KEY_KP2, SDLK_KP2 },
-	{ love::keyboard::Keyboard::KEY_KP3, SDLK_KP3 },
-	{ love::keyboard::Keyboard::KEY_KP4, SDLK_KP4 },
-	{ love::keyboard::Keyboard::KEY_KP5, SDLK_KP5 },
-	{ love::keyboard::Keyboard::KEY_KP6, SDLK_KP6 },
-	{ love::keyboard::Keyboard::KEY_KP7, SDLK_KP7 },
-	{ love::keyboard::Keyboard::KEY_KP8, SDLK_KP8 },
-	{ love::keyboard::Keyboard::KEY_KP9, SDLK_KP9 },
-	{ love::keyboard::Keyboard::KEY_KP_PERIOD, SDLK_KP_PERIOD },
-	{ love::keyboard::Keyboard::KEY_KP_DIVIDE, SDLK_KP_DIVIDE },
-	{ love::keyboard::Keyboard::KEY_KP_MULTIPLY, SDLK_KP_MULTIPLY},
-	{ love::keyboard::Keyboard::KEY_KP_MINUS, SDLK_KP_MINUS },
-	{ love::keyboard::Keyboard::KEY_KP_PLUS, SDLK_KP_PLUS },
-	{ love::keyboard::Keyboard::KEY_KP_ENTER, SDLK_KP_ENTER },
-	{ love::keyboard::Keyboard::KEY_KP_EQUALS, SDLK_KP_EQUALS },
-
-	{ love::keyboard::Keyboard::KEY_UP, SDLK_UP },
-	{ love::keyboard::Keyboard::KEY_DOWN, SDLK_DOWN },
-	{ love::keyboard::Keyboard::KEY_RIGHT, SDLK_RIGHT },
-	{ love::keyboard::Keyboard::KEY_LEFT, SDLK_LEFT },
-	{ love::keyboard::Keyboard::KEY_INSERT, SDLK_INSERT },
-	{ love::keyboard::Keyboard::KEY_HOME, SDLK_HOME },
-	{ love::keyboard::Keyboard::KEY_END, SDLK_END },
-	{ love::keyboard::Keyboard::KEY_PAGEUP, SDLK_PAGEUP },
-	{ love::keyboard::Keyboard::KEY_PAGEDOWN, SDLK_PAGEDOWN },
-
-	{ love::keyboard::Keyboard::KEY_F1, SDLK_F1 },
-	{ love::keyboard::Keyboard::KEY_F2, SDLK_F2 },
-	{ love::keyboard::Keyboard::KEY_F3, SDLK_F3 },
-	{ love::keyboard::Keyboard::KEY_F4, SDLK_F4 },
-	{ love::keyboard::Keyboard::KEY_F5, SDLK_F5 },
-	{ love::keyboard::Keyboard::KEY_F6, SDLK_F6 },
-	{ love::keyboard::Keyboard::KEY_F7, SDLK_F7 },
-	{ love::keyboard::Keyboard::KEY_F8, SDLK_F8 },
-	{ love::keyboard::Keyboard::KEY_F9, SDLK_F9 },
-	{ love::keyboard::Keyboard::KEY_F10, SDLK_F10 },
-	{ love::keyboard::Keyboard::KEY_F11, SDLK_F11 },
-	{ love::keyboard::Keyboard::KEY_F12, SDLK_F12 },
-	{ love::keyboard::Keyboard::KEY_F13, SDLK_F13 },
-	{ love::keyboard::Keyboard::KEY_F14, SDLK_F14 },
-	{ love::keyboard::Keyboard::KEY_F15, SDLK_F15 },
-
-	{ love::keyboard::Keyboard::KEY_NUMLOCK, SDLK_NUMLOCK },
-	{ love::keyboard::Keyboard::KEY_CAPSLOCK, SDLK_CAPSLOCK },
-	{ love::keyboard::Keyboard::KEY_SCROLLOCK, SDLK_SCROLLOCK },
-	{ love::keyboard::Keyboard::KEY_RSHIFT, SDLK_RSHIFT },
-	{ love::keyboard::Keyboard::KEY_LSHIFT, SDLK_LSHIFT },
-	{ love::keyboard::Keyboard::KEY_RCTRL, SDLK_RCTRL },
-	{ love::keyboard::Keyboard::KEY_LCTRL, SDLK_LCTRL },
-	{ love::keyboard::Keyboard::KEY_RALT, SDLK_RALT },
-	{ love::keyboard::Keyboard::KEY_LALT, SDLK_LALT },
-	{ love::keyboard::Keyboard::KEY_RMETA, SDLK_RMETA },
-	{ love::keyboard::Keyboard::KEY_LMETA, SDLK_LMETA },
-	{ love::keyboard::Keyboard::KEY_LSUPER, SDLK_LSUPER },
-	{ love::keyboard::Keyboard::KEY_RSUPER, SDLK_RSUPER },
-	{ love::keyboard::Keyboard::KEY_MODE, SDLK_MODE },
-	{ love::keyboard::Keyboard::KEY_COMPOSE, SDLK_COMPOSE },
-
-	{ love::keyboard::Keyboard::KEY_HELP, SDLK_HELP },
-	{ love::keyboard::Keyboard::KEY_PRINT, SDLK_PRINT },
-	{ love::keyboard::Keyboard::KEY_SYSREQ, SDLK_SYSREQ },
-	{ love::keyboard::Keyboard::KEY_BREAK, SDLK_BREAK },
-	{ love::keyboard::Keyboard::KEY_MENU, SDLK_MENU },
-	{ love::keyboard::Keyboard::KEY_POWER, SDLK_POWER },
-	{ love::keyboard::Keyboard::KEY_EURO, SDLK_EURO },
-	{ love::keyboard::Keyboard::KEY_UNDO, SDLK_UNDO },
-
-	{ love::keyboard::Keyboard::KEY_UNKNOWN, SDLK_UNKNOWN },
-};
-
-EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> Event::keys(Event::keyEntries, sizeof(Event::keyEntries));
+std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::keys = Event::createKeyMap();
 
 EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
 {
 	{ love::mouse::Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
 	{ love::mouse::Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},
 	{ love::mouse::Mouse::BUTTON_RIGHT, SDL_BUTTON_RIGHT},
-	{ love::mouse::Mouse::BUTTON_WHEELUP, SDL_BUTTON_WHEELUP},
-	{ love::mouse::Mouse::BUTTON_WHEELDOWN, SDL_BUTTON_WHEELDOWN},
 	{ love::mouse::Mouse::BUTTON_X1, SDL_BUTTON_X1},
 	{ love::mouse::Mouse::BUTTON_X2, SDL_BUTTON_X2},
 };
 
 EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> Event::buttons(Event::buttonEntries, sizeof(Event::buttonEntries));
-
-EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM>::Entry Event::hatEntries[] =
-{
-	{love::joystick::Joystick::HAT_CENTERED, SDL_HAT_CENTERED},
-	{love::joystick::Joystick::HAT_UP, SDL_HAT_UP},
-	{love::joystick::Joystick::HAT_RIGHT, SDL_HAT_RIGHT},
-	{love::joystick::Joystick::HAT_DOWN, SDL_HAT_DOWN},
-	{love::joystick::Joystick::HAT_LEFT, SDL_HAT_LEFT},
-	{love::joystick::Joystick::HAT_RIGHTUP, SDL_HAT_RIGHTUP},
-	{love::joystick::Joystick::HAT_RIGHTDOWN, SDL_HAT_RIGHTDOWN},
-	{love::joystick::Joystick::HAT_LEFTUP, SDL_HAT_LEFTUP},
-	{love::joystick::Joystick::HAT_LEFTDOWN, SDL_HAT_LEFTDOWN},
-};
-
-EnumMap<love::joystick::Joystick::Hat, Uint8, love::joystick::Joystick::HAT_MAX_ENUM> Event::hats(Event::hatEntries, sizeof(Event::hatEntries));
 
 } // sdl
 } // event
