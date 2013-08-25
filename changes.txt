@@ -17,6 +17,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added optional file search order parameter to love.filesystem.setIdentity.
   * Added File:isOpen and File:getMode.
   * Added Fie:setBuffer, File:getBuffer, and File:flush.
+  * Added textinput event for unicode text input.
   * Added previously internal Rasterizer and GlyphData object methods.
   * Added support for UTF-8 ImageFonts.
   * Added Font:getAscent/getDescent/getBaseline.
@@ -49,34 +50,43 @@ LOVE 0.9.0 [Baby Inspector]
   * Added Image:getData.
   * Added SoundData:getDuration and SoundData:getSampleCount.
   * Added Source:isPlaying.
-  * Added new Channels api for love.thread.
+  * Added new Channels API for love.thread.
   * Added limited table support to Channel:push.
   * Added Thread:getError.
   * Added Thread:isRunning.
   * Added threaderror event.
   * Added love.math module.
   * Added a platform-independent (good) random implementation to love.math.
-  * Added RandomGenerator objects and love.math.newRandomGenerator.
-  * Added BezierCurve objects and love.math.newBezierCurve.
+  * Added RandomGenerator objects.
+  * Added BezierCurve objects.
   * Added love.math.triangulate and love.math.isConvex.
   * Added love.math.noise.
   * Added love.timer.getAverageDelta.
   * Added Data:getString.
   * Added Contact:getChildren.
+  * Added love.system module.
+  * Added love.system.getClipboardText and love.system.setClipboardText.
+  * Added love.system.getOS and love.system.getProcessorCount.
   * Added love.window module.
   * Added love.window.isVisible.
   * Added flags to love.window.setMode.
+  * Added monitor choosing support to love.window.setMode.
   * Added support for resizable, borderless, and non-centered windows.
-  * Added resize and visible events.
+  * Added support for "fullscreen-desktop" mode.
+  * Added window resize and visible events.
   * Added love.window.getDimensions.
   * Added love.window.getIcon.
   * Added love.mousefocus and love.window.hasMouseFocus.
+  * Added custom hardware cursors via love.mouse.newCursor. 
   * Added love.mouse.setX/setY.
+  * Added Joystick objects.
+  * Added love.joystick.getJoystick.
+  * Added joystick connect and disconnect events.
   * Added joystickaxis and joystickhat events.
-  * Added love.joystick.reload.
+  * Added unified Gamepad API for joysticks which have a similar layout to the Xbox controller.
   * OPTIONAL: Added support for Game Music Emu.
 
-  * Fixed fused release mode in OS X.
+  * Fixed fused mode in OS X.
   * Fixed printing to the console in Windows before love.load is called.
   * Fixed the error screen not always appearing until the next input event.
   * Fixed love.event.clear.
@@ -90,6 +100,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed possible memory leak in utf-8 decoder.
   * Fixed spacing for the last character in an ImageFont.
   * Fixed line wrapping in love.graphics.printf.
+  * Fixed love.graphics.printf to error if the wrap limit is negative.
   * Fixed love.graphics.print truncating strings with embedded zeros.
   * Fixed crashes with font drawing on some ATI cards.
   * Fixed artifacts when drawing lines at huge scale.
@@ -117,6 +128,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed case (in)sensitivity of sound file extension parsing.
   * Fixed looping support in tracker music formats.
   * Fixed skipping/looping issues when playing streaming audio Sources.
+  * Fixed race condition in Source:play.
 
   * Moved love's startup to modules/love.
   * Moved window-related functions from love.graphics to love.window.
@@ -133,6 +145,8 @@ LOVE 0.9.0 [Baby Inspector]
   * Renamed SoundData:getBits and Decoder:getBits to SoundData:getBitDepth and Decoder:getBitDepth.
 
   * Removed release mode.
+  * Removed love.keyboard.setKeyRepeat and love.keyboard.getKeyRepeat.
+  * Removed the unicode argument from love.keypressed (see love.textinput).
   * Removed love.graphics.drawTest.
   * Removed love.graphics.quad/triangle.
   * Removed love.graphics.setColorMode.
@@ -144,9 +158,10 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed ParticleSystem:isFull/isEmpty.
   * Removed ParticleSystem:getX/getY.
   * Removed love.joystick.open and friends.
-  * Removed love.joystick.getBall and love.joystick.getNumBalls.
+  * Removed love.joystick module functions which operated on individual joysticks (see Joystick objects).
+  * Removed joystick ball support.
   * Removed thread names.
-  * Removed old thread messaging api (see Channels).
+  * Removed old thread messaging API (see Channels).
   * Removed love.timer.getMicroTime.
 
   * Updated the windows console, it now tries to re-use an active one first.
@@ -155,17 +170,16 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated the default filesystem identity to omit file extension.
   * Updated love.filesystem.newFile to optionally open the file.
   * Updated most love.filesystem functions to return nil, error on internal failure.
-  * Updated love.keypressed's second argument to be a unicode character string.
+  * Updated love.keypressed's second argument to be a boolean indicating key repeat.
+  * Updated keyboard key constants for some more modern keyboard keys.
   * Updated the setFilter and setWrap methods, the second argument is now optional.
   * Updated Font and ParticleSystem rendering code, now more performant.
   * Updated SpriteBatch code, now more performant when adding/setting and (un)binding.
-  * Updated Image creation code to error when creation fails.
   * Updated Canvas code to support more systems.
   * Updated Canvas:getImageData and love.graphics.newScreenshot to be more efficient.
   * Updated love.graphics.newScreenshot to create a fully opaque image by default.
   * Updated error messages when sending bad values to Shaders.
   * Updated love.graphics.newParticleSystem to have a default buffer size of 1000.
-  * Updated love.image.newImageData and love.graphics.newImage to accept FileData.
   * Updated ImageData:setPixel to accept a table and default to 255 alpha.
   * Updated ImageData:mapPixel to accept optional x,y,w,h arguments.
   * Updated ImageData:mapPixel to be more efficient.
