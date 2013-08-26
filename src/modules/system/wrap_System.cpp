@@ -57,17 +57,24 @@ int w_getClipboardText(lua_State *L)
 int w_getPowerInfo(lua_State *L)
 {
 	int seconds = -1, percent = -1;
-	const char *statestr;
+	const char *str;
 
 	System::PowerState state = instance->getPowerInfo(seconds, percent);
 
-	if (!System::getConstant(state, statestr))
-		statestr = "unknown";
+	if (!System::getConstant(state, str))
+		str = "unknown";
 
-	lua_pushstring(L, statestr);
+	lua_pushstring(L, str);
 
-	lua_pushinteger(L, percent);
-	lua_pushinteger(L, seconds);
+	if (percent >= 0)
+		lua_pushinteger(L, percent);
+	else
+		lua_pushnil(L);
+
+	if (seconds >= 0)
+		lua_pushinteger(L, seconds);
+	else
+		lua_pushnil(L);
 
 	return 3;
 }
