@@ -71,12 +71,6 @@ public:
 	virtual int getJoystickCount() const = 0;
 
 	/**
-	 * Determines whether the Joystick at the specified index is a recognized
-	 * Gamepad.
-	 **/
-	virtual bool isGamepad(int joyindex) const = 0;
-
-	/**
 	 * Sets the virtual Gamepad mapping for a joystick input value for all
 	 * joystick devices with the specified joystick GUID.
 	 * If any joysticks with the specified GUID are connected, they will be

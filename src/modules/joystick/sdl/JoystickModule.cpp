@@ -93,14 +93,6 @@ int JoystickModule::getJoystickCount() const
 	return (int) activeSticks.size();
 }
 
-bool JoystickModule::isGamepad(int joyindex) const
-{
-	if (joyindex < 0 || (size_t) joyindex >= activeSticks.size())
-		return false;
-
-	return activeSticks[joyindex]->isGamepad();
-}
-
 love::joystick::Joystick *JoystickModule::getJoystickFromID(int instanceid)
 {
 	for (size_t i = 0; i < activeSticks.size(); i++)

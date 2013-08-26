@@ -63,13 +63,6 @@ int w_getJoystickCount(lua_State *L)
 	return 1;
 }
 
-int w_isGamepad(lua_State *L)
-{
-	int index = luaL_checkint(L, 1) - 1;
-	luax_pushboolean(L, instance->isGamepad(index));
-	return 1;
-}
-
 int w_setGamepadMapping(lua_State *L)
 {
 	// Only accept a GUID string. We don't accept a Joystick object because
@@ -200,9 +193,7 @@ int w_getGamepadMapping(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getJoysticks", w_getJoysticks },
-//	{ "getIndex", w_getIndex },
 	{ "getJoystickCount", w_getJoystickCount },
-	{ "isGamepad", w_isGamepad },
 	{ "setGamepadMapping", w_setGamepadMapping },
 	{ "getGamepadMapping", w_getGamepadMapping },
 	{ 0, 0 }

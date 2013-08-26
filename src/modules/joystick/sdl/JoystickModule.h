@@ -52,7 +52,6 @@ public:
 	love::joystick::Joystick *getJoystick(int joyindex);
 	int getIndex(const love::joystick::Joystick *joystick);
 	int getJoystickCount() const;
-	bool isGamepad(int joyindex) const;
 	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput);
 	Joystick::JoystickInput getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput);
 
