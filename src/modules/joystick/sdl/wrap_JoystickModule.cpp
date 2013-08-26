@@ -30,17 +30,19 @@ namespace sdl
 
 static JoystickModule *instance = 0;
 
-int w_getJoystick(lua_State *L)
+int w_getJoysticks(lua_State *L)
 {
-	int index = luaL_checkint(L, 1) - 1;
-	love::joystick::Joystick *stick = instance->getJoystick(index);
+	int stickcount = instance->getJoystickCount();
+	lua_createtable(L, stickcount, 0);
 
-	if (!stick)
-		return luaL_error(L, "Invalid joystick index");
+	for (int i = 0; i < stickcount; i++)
+	{
+		love::joystick::Joystick *stick = instance->getJoystick(i);
+		stick->retain();
+		luax_newtype(L, "Joystick", JOYSTICK_JOYSTICK_T, (void *) stick);
+		lua_rawseti(L, -2, i + 1);
+	}
 
-	stick->retain();
-	luax_newtype(L, "Joystick", JOYSTICK_JOYSTICK_T, (void *) stick);
-	
 	return 1;
 }
 
@@ -197,8 +199,8 @@ int w_getGamepadMapping(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "getJoystick", w_getJoystick },
-	{ "getIndex", w_getIndex },
+	{ "getJoysticks", w_getJoysticks },
+//	{ "getIndex", w_getIndex },
 	{ "getJoystickCount", w_getJoystickCount },
 	{ "isGamepad", w_isGamepad },
 	{ "setGamepadMapping", w_setGamepadMapping },

@@ -32,7 +32,7 @@ namespace joystick
 namespace sdl
 {
 
-int w_getJoystick(lua_State *L);
+int w_getJoysticks(lua_State *L);
 int w_getIndex(lua_State *L);
 int w_getJoystickCount(lua_State *L);
 int w_isGamepad(lua_State *L);

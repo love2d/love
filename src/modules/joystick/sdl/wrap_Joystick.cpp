@@ -196,7 +196,7 @@ static const luaL_Reg functions[] =
 	{ "isGamepadDown", w_Joystick_isGamepadDown },
 
 	// From wrap_JoystickModule.
-	{ "getIndex", w_getIndex },
+	{ "getConnectedIndex", w_getIndex },
 	{ "getGamepadMapping", w_getGamepadMapping },
 	{ 0, 0 },
 };
