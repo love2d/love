@@ -51,7 +51,7 @@ int w_getIndex(lua_State *L)
 	if (index >= 0)
 		lua_pushinteger(L, index + 1);
 	else
-		lua_pushinteger(L, -1);
+		lua_pushnil(L);
 	return 1;
 }
 
