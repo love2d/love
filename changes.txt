@@ -172,6 +172,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated most love.filesystem functions to return nil, error on internal failure.
   * Updated love.keypressed's second argument to be a boolean indicating key repeat.
   * Updated keyboard key constants for some more modern keyboard keys.
+  * Updated window code to use adaptive vsync when available, if vsync is enabled.
   * Updated the setFilter and setWrap methods, the second argument is now optional.
   * Updated Font and ParticleSystem rendering code, now more performant.
   * Updated SpriteBatch code, now more performant when adding/setting and (un)binding.
