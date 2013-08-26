@@ -53,7 +53,7 @@ int w_Joystick_getName(lua_State *L)
 int w_Joystick_getID(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
-	lua_pushinteger(L, j->getID());
+	lua_pushinteger(L, j->getID() + 1); // IDs are 1-based in Lua.
 	return 1;
 }
 
