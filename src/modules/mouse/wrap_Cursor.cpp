@@ -32,22 +32,20 @@ int w_getType(lua_State *L)
 	mouse::Cursor *cursor = luax_checktype<mouse::Cursor>(L, 1, "Cursor", MOUSE_CURSOR_T);
 
 	Cursor::CursorType ctype = cursor->getType();
-	const char *ctypestr;
+	const char *typestr = 0;
 
-	if (!mouse::Cursor::getConstant(ctype, ctypestr))
-		return luaL_error(L, "Unknown cursor type.");
-
-	lua_pushstring(L, ctypestr);
-
-	Cursor::SystemCursor systype = cursor->getSystemType();
-	const char *systypestr;
-
-	if (mouse::Cursor::getConstant(systype, systypestr))
+	if (ctype == Cursor::CURSORTYPE_IMAGE)
+		mouse::Cursor::getConstant(ctype, typestr);
+	else if (ctype == Cursor::CURSORTYPE_SYSTEM)
 	{
-		lua_pushstring(L, systypestr);
-		return 2;
+		Cursor::SystemCursor systype = cursor->getSystemType();
+		mouse::Cursor::getConstant(systype, typestr);
 	}
 
+	if (!typestr)
+		return luaL_error(L, "Unknown cursor type.");
+
+	lua_pushstring(L, typestr);
 	return 1;
 };
 
