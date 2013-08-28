@@ -154,7 +154,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;DevIL.lib;freetype.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;mpg123.lib;physfs.lib;OpenAL.lib;zlib.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Debug\MD\</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)lib$(TargetName).pdb</ProgramDatabaseFile>
@@ -178,7 +178,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrtd.lib;msvcprtd.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;DevIL.lib;freetype.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;mpg123.lib;physfs.lib;OpenAL.lib;zlib.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Debug\MD\</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)lib$(TargetName).pdb</ProgramDatabaseFile>
@@ -273,7 +273,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;DevIL.lib;freetype.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;mpg123.lib;physfs.lib;OpenAL.lib;zlib.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MD\</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)lib$(TargetName).pdb</ProgramDatabaseFile>
@@ -302,7 +302,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;freetype2.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;physfs.lib;SDLmain.lib;zlib.lib;DevIL.lib;mpg123.lib;OpenAL.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msvcrt.lib;msvcprt.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;advapi32.lib;ws2_32.lib;winmm.lib;opengl32.lib;oldnames.lib;DevIL.lib;freetype.lib;libmodplug.lib;libogg.lib;libvorbis.lib;libvorbisfile.lib;lua51.lib;mpg123.lib;physfs.lib;OpenAL.lib;zlib.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>lib\$(PlatformShortName)\Release\MD\</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(TargetDir)lib$(TargetName).pdb</ProgramDatabaseFile>
@@ -460,7 +460,9 @@
     <ClCompile Include="..\..\src\modules\image\wrap_ImageData.cpp" />
     <ClCompile Include="..\..\src\modules\joystick\Joystick.cpp" />
     <ClCompile Include="..\..\src\modules\joystick\sdl\Joystick.cpp" />
+    <ClCompile Include="..\..\src\modules\joystick\sdl\JoystickModule.cpp" />
     <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_Joystick.cpp" />
+    <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_JoystickModule.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\sdl\Keyboard.cpp" />
     <ClCompile Include="..\..\src\modules\keyboard\wrap_Keyboard.cpp" />
@@ -471,8 +473,11 @@
     <ClCompile Include="..\..\src\modules\math\wrap_BezierCurve.cpp" />
     <ClCompile Include="..\..\src\modules\math\wrap_Math.cpp" />
     <ClCompile Include="..\..\src\modules\math\wrap_RandomGenerator.cpp" />
+    <ClCompile Include="..\..\src\modules\mouse\Cursor.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\Mouse.cpp" />
+    <ClCompile Include="..\..\src\modules\mouse\sdl\Cursor.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\sdl\Mouse.cpp" />
+    <ClCompile Include="..\..\src\modules\mouse\wrap_Cursor.cpp" />
     <ClCompile Include="..\..\src\modules\mouse\wrap_Mouse.cpp" />
     <ClCompile Include="..\..\src\modules\physics\Body.cpp" />
     <ClCompile Include="..\..\src\modules\physics\box2d\Body.cpp" />
@@ -530,6 +535,9 @@
     <ClCompile Include="..\..\src\modules\sound\wrap_Decoder.cpp" />
     <ClCompile Include="..\..\src\modules\sound\wrap_Sound.cpp" />
     <ClCompile Include="..\..\src\modules\sound\wrap_SoundData.cpp" />
+    <ClCompile Include="..\..\src\modules\system\sdl\System.cpp" />
+    <ClCompile Include="..\..\src\modules\system\System.cpp" />
+    <ClCompile Include="..\..\src\modules\system\wrap_System.cpp" />
     <ClCompile Include="..\..\src\modules\thread\Channel.cpp" />
     <ClCompile Include="..\..\src\modules\thread\LuaThread.cpp" />
     <ClCompile Include="..\..\src\modules\thread\sdl\Thread.cpp" />
@@ -719,8 +727,11 @@
     <ClInclude Include="..\..\src\modules\image\wrap_Image.h" />
     <ClInclude Include="..\..\src\modules\image\wrap_ImageData.h" />
     <ClInclude Include="..\..\src\modules\joystick\Joystick.h" />
+    <ClInclude Include="..\..\src\modules\joystick\JoystickModule.h" />
     <ClInclude Include="..\..\src\modules\joystick\sdl\Joystick.h" />
+    <ClInclude Include="..\..\src\modules\joystick\sdl\JoystickModule.h" />
     <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_Joystick.h" />
+    <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_JoystickModule.h" />
     <ClInclude Include="..\..\src\modules\keyboard\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\sdl\Keyboard.h" />
     <ClInclude Include="..\..\src\modules\keyboard\wrap_Keyboard.h" />
@@ -731,8 +742,11 @@
     <ClInclude Include="..\..\src\modules\math\wrap_BezierCurve.h" />
     <ClInclude Include="..\..\src\modules\math\wrap_Math.h" />
     <ClInclude Include="..\..\src\modules\math\wrap_RandomGenerator.h" />
+    <ClInclude Include="..\..\src\modules\mouse\Cursor.h" />
     <ClInclude Include="..\..\src\modules\mouse\Mouse.h" />
+    <ClInclude Include="..\..\src\modules\mouse\sdl\Cursor.h" />
     <ClInclude Include="..\..\src\modules\mouse\sdl\Mouse.h" />
+    <ClInclude Include="..\..\src\modules\mouse\wrap_Cursor.h" />
     <ClInclude Include="..\..\src\modules\mouse\wrap_Mouse.h" />
     <ClInclude Include="..\..\src\modules\physics\Body.h" />
     <ClInclude Include="..\..\src\modules\physics\box2d\Body.h" />
@@ -791,6 +805,9 @@
     <ClInclude Include="..\..\src\modules\sound\wrap_Decoder.h" />
     <ClInclude Include="..\..\src\modules\sound\wrap_Sound.h" />
     <ClInclude Include="..\..\src\modules\sound\wrap_SoundData.h" />
+    <ClInclude Include="..\..\src\modules\system\sdl\System.h" />
+    <ClInclude Include="..\..\src\modules\system\System.h" />
+    <ClInclude Include="..\..\src\modules\system\wrap_System.h" />
     <ClInclude Include="..\..\src\modules\thread\Channel.h" />
     <ClInclude Include="..\..\src\modules\thread\LuaThread.h" />
     <ClInclude Include="..\..\src\modules\thread\sdl\Thread.h" />

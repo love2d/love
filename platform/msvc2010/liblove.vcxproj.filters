@@ -157,6 +157,12 @@
     <Filter Include="libraries\enet\libenet\include\enet">
       <UniqueIdentifier>{a9a12c5a-ff54-43c1-b0c6-ba1597af7b03}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\system">
+      <UniqueIdentifier>{731671fa-d695-42c3-9d1c-9e227d9ebab4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\system\sdl">
+      <UniqueIdentifier>{2241f4ca-a51c-4d8d-be82-2b7dfd267b7b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\common\Matrix.cpp">
@@ -851,6 +857,30 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\Polyline.cpp">
       <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\joystick\sdl\JoystickModule.cpp">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\joystick\sdl\wrap_JoystickModule.cpp">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\Cursor.cpp">
+      <Filter>modules\mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\wrap_Cursor.cpp">
+      <Filter>modules\mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\mouse\sdl\Cursor.cpp">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\system\System.cpp">
+      <Filter>modules\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\system\wrap_System.cpp">
+      <Filter>modules\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\system\sdl\System.cpp">
+      <Filter>modules\system\sdl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1632,6 +1662,33 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\Polyline.h">
       <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\joystick\JoystickModule.h">
+      <Filter>modules\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\joystick\sdl\JoystickModule.h">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\joystick\sdl\wrap_JoystickModule.h">
+      <Filter>modules\joystick\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\Cursor.h">
+      <Filter>modules\mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\wrap_Cursor.h">
+      <Filter>modules\mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\mouse\sdl\Cursor.h">
+      <Filter>modules\mouse\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\system\System.h">
+      <Filter>modules\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\system\wrap_System.h">
+      <Filter>modules\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\system\sdl\System.h">
+      <Filter>modules\system\sdl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
