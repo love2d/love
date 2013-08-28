@@ -59,7 +59,7 @@ public:
 	void setVisible(bool visible);
 	bool isDown(Button *buttonlist) const;
 	bool isVisible() const;
-	void setGrab(bool grab);
+	void setGrabbed(bool grab);
 	bool isGrabbed() const;
 
 private:

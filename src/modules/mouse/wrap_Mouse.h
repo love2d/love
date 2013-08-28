@@ -42,7 +42,7 @@ int w_setPosition(lua_State *L);
 int w_isDown(lua_State *L);
 int w_setVisible(lua_State *L);
 int w_isVisible(lua_State *L);
-int w_setGrap(lua_State *L);
+int w_setGrabbed(lua_State *L);
 int w_isGrabbed(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_mouse(lua_State *L);
 

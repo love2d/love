@@ -179,10 +179,10 @@ int w_isVisible(lua_State *L)
 	return 1;
 }
 
-int w_setGrab(lua_State *L)
+int w_setGrabbed(lua_State *L)
 {
 	bool b = luax_toboolean(L, 1);
-	instance->setGrab(b);
+	instance->setGrabbed(b);
 	return 0;
 }
 
@@ -207,7 +207,7 @@ static const luaL_Reg functions[] =
 	{ "setVisible", w_setVisible },
 	{ "isVisible", w_isVisible },
 	{ "getPosition", w_getPosition },
-	{ "setGrab", w_setGrab },
+	{ "setGrabbed", w_setGrabbed },
 	{ "isGrabbed", w_isGrabbed },
 	{ 0, 0 }
 };

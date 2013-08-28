@@ -146,7 +146,7 @@ bool Mouse::isVisible() const
 	return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
 }
 
-void Mouse::setGrab(bool grab)
+void Mouse::setGrabbed(bool grab)
 {
 	love::window::Window *window = love::window::sdl::Window::getSingleton();
 	if (window)

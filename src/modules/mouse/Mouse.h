@@ -68,7 +68,7 @@ public:
 	virtual void setVisible(bool visible) = 0;
 	virtual bool isDown(Button *buttonlist) const = 0;
 	virtual bool isVisible() const = 0;
-	virtual void setGrab(bool grab) = 0;
+	virtual void setGrabbed(bool grab) = 0;
 	virtual bool isGrabbed() const = 0;
 
 	static bool getConstant(const char *in, Button &out);

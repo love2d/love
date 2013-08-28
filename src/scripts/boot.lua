@@ -1498,7 +1498,7 @@ function love.errhand(msg)
 	-- Load.
 	if love.mouse then
 		love.mouse.setVisible(true)
-		love.mouse.setGrab(false)
+		love.mouse.setGrabbed(false)
 	end
 	if love.audio then love.audio.stop() end
 	love.graphics.reset()
