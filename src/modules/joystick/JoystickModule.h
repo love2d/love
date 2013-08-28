@@ -72,18 +72,18 @@ public:
 
 	/**
 	 * Sets the virtual Gamepad mapping for a joystick input value for all
-	 * joystick devices with the specified joystick GUID.
+	 * joystick devices with the specified joystick product GUID.
 	 * If any joysticks with the specified GUID are connected, they will be
 	 * added as Gamepads if they aren't already, otherwise their Gamepad mapping
 	 * will be updated.
 	 **/
-	virtual bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput) = 0;
+	virtual bool setGamepadMapping(const std::string &pguid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput) = 0;
 
 	/**
 	 * Gets the joystick input value the gamepad input value is bound to for the
-	 * specified joystick GUID.
+	 * specified joystick product GUID.
 	 **/
-	virtual Joystick::JoystickInput getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput) = 0;
+	virtual Joystick::JoystickInput getGamepadMapping(const std::string &pguid, Joystick::GamepadInput gpinput) = 0;
 
 }; // JoystickModule
 

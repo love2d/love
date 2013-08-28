@@ -109,14 +109,14 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 	if (deviceindex < 0 || deviceindex >= SDL_NumJoysticks())
 		return 0;
 
-	std::string guidstr = getDeviceGUID(deviceindex);
+	std::string guidstr = getDeviceProductGUID(deviceindex);
 
 	joystick::Joystick *joystick = 0;
 
 	for (size_t i = 0; i < joysticks.size(); i++)
 	{
 		// Try to re-use a disconnected Joystick with the same GUID.
-		if (!joysticks[i]->isConnected() && joysticks[i]->getGUID() == guidstr)
+		if (!joysticks[i]->isConnected() && joysticks[i]->getProductGUID() == guidstr)
 		{
 			joystick = joysticks[i];
 			joystick->open(deviceindex);
@@ -398,13 +398,13 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 		if (!SDL_IsGameController(d_index))
 			continue;
 
-		if (guid.compare(getDeviceGUID(d_index)) != 0)
+		if (guid.compare(getDeviceProductGUID(d_index)) != 0)
 			continue;
 
 		std::vector<love::joystick::Joystick *>::const_iterator it;
 		for (it = activeSticks.begin(); it != activeSticks.end(); ++it)
 		{
-			if ((*it)->isGamepad() || guid.compare((*it)->getGUID()) != 0)
+			if ((*it)->isGamepad() || guid.compare((*it)->getProductGUID()) != 0)
 				continue;
 
 			// Big hack time: open the index as a game controller and compare
@@ -422,7 +422,7 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 	}
 }
 
-std::string JoystickModule::getDeviceGUID(int deviceindex) const
+std::string JoystickModule::getDeviceProductGUID(int deviceindex) const
 {
 	if (deviceindex < 0 || deviceindex >= SDL_NumJoysticks())
 		return std::string("");

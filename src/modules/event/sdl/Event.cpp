@@ -115,7 +115,7 @@ Message *Event::convert(const SDL_Event &e) const
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 		arg1 = new Variant(txt, strlen(txt));
-		arg2 = new Variant(e.key.repeat == SDL_TRUE);
+		arg2 = new Variant(e.key.repeat != 0);
 		msg = new Message("keypressed", arg1, arg2);
 		arg1->release();
 		arg2->release();

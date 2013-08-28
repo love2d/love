@@ -63,7 +63,7 @@ private:
 	void checkGamepads(const std::string &guid) const;
 
 	// SDL2's GUIDs identify *classes* of devices, instead of unique devices.
-	std::string getDeviceGUID(int deviceindex) const;
+	std::string getDeviceProductGUID(int deviceindex) const;
 
 	// Lists of currently connected Joysticks.
 	std::vector<Joystick *> activeSticks;

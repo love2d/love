@@ -65,7 +65,7 @@ bool Joystick::open(int deviceindex)
 		SDL_JoystickGUID sdlguid = SDL_JoystickGetGUID(joyhandle);
 		SDL_JoystickGetGUIDString(sdlguid, cstr, (int) sizeof(cstr));
 
-		guid = std::string(cstr);
+		pguid = std::string(cstr);
 
 		// See if SDL thinks this is a Game Controller.
 		openGamepad(deviceindex);
@@ -237,10 +237,10 @@ void *Joystick::getHandle() const
 	return joyhandle;
 }
 
-std::string Joystick::getGUID() const
+std::string Joystick::getProductGUID() const
 {
 	// SDL2's GUIDs identify *classes* of devices, instead of unique devices.
-	return guid;
+	return pguid;
 }
 
 int Joystick::getInstanceID() const

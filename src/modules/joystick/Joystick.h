@@ -152,7 +152,7 @@ public:
 
 	virtual void *getHandle() const = 0;
 
-	virtual std::string getGUID() const = 0;
+	virtual std::string getProductGUID() const = 0;
 	virtual int getInstanceID() const = 0;
 	virtual int getID() const = 0;
 

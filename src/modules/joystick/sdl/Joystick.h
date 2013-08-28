@@ -70,7 +70,7 @@ public:
 
 	void *getHandle() const;
 
-	std::string getGUID() const;
+	std::string getProductGUID() const;
 	int getInstanceID() const;
 	int getID() const;
 
@@ -91,7 +91,7 @@ private:
 	SDL_GameController *controller;
 
 	SDL_JoystickID instanceid;
-	std::string guid;
+	std::string pguid;
 	int id;
 
 	std::string name;

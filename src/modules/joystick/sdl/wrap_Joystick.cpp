@@ -57,10 +57,10 @@ int w_Joystick_getID(lua_State *L)
 	return 1;
 }
 
-int w_Joystick_getGUID(lua_State *L)
+int w_Joystick_getProductGUID(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
-	luax_pushstring(L, j->getGUID());
+	luax_pushstring(L, j->getProductGUID());
 	return 1;
 }
 
@@ -183,7 +183,7 @@ static const luaL_Reg functions[] =
 	{ "isConnected", w_Joystick_isConnected },
 	{ "getName", w_Joystick_getName },
 	{ "getID", w_Joystick_getID },
-	{ "getGUID", w_Joystick_getGUID },
+	{ "getProductGUID", w_Joystick_getProductGUID },
 	{ "getAxisCount", w_Joystick_getAxisCount },
 	{ "getButtonCount", w_Joystick_getButtonCount },
 	{ "getHatCount", w_Joystick_getHatCount },
