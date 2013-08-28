@@ -35,7 +35,7 @@ int w_setMode(lua_State *L);
 int w_getMode(lua_State *L);
 int w_getModes(lua_State *L);
 int w_setFullscreen(lua_State *L);
-int w_isFullscreen(lua_State *L);
+int w_getFullscreen(lua_State *L);
 int w_isCreated(lua_State *L);
 int w_getWidth(lua_State *L);
 int w_getHeight(lua_State *L);

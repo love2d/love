@@ -212,7 +212,7 @@ int w_setFullscreen(lua_State *L)
 	return 1;
 }
 
-int w_isFullscreen(lua_State *L)
+int w_getFullscreen(lua_State *L)
 {
 	int w, h;
 	WindowFlags flags;
@@ -321,7 +321,7 @@ static const luaL_Reg functions[] =
 	{ "getMode", w_getMode },
 	{ "getModes", w_getModes },
 	{ "setFullscreen", w_setFullscreen },
-	{ "isFullscreen", w_isFullscreen },
+	{ "getFullscreen", w_getFullscreen },
 	{ "isCreated", w_isCreated },
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
