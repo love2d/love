@@ -114,7 +114,7 @@ int w_BezierCurve_insertControlPoint(lua_State *L)
 	return 0;
 }
 
-int w_BezierCurve_move(lua_State *L)
+int w_BezierCurve_translate(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	double dx = luaL_checknumber(L, 2);
@@ -189,7 +189,7 @@ static const luaL_Reg functions[] =
 	{"getControlPoint", w_BezierCurve_getControlPoint},
 	{"setControlPoint", w_BezierCurve_setControlPoint},
 	{"insertControlPoint", w_BezierCurve_insertControlPoint},
-	{"move", w_BezierCurve_move},
+	{"translate", w_BezierCurve_translate},
 	{"rotate", w_BezierCurve_rotate},
 	{"scale", w_BezierCurve_scale},
 	{"eval", w_BezierCurve_eval},
