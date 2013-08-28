@@ -211,28 +211,26 @@ bool Window::onWindowResize(int width, int height)
 
 bool Window::setContext(int fsaa, bool vsync)
 {
-	// We need to recreate the context if FSAA changes,
-	// or if the existing context has been invalidated.
-	if (context && (fsaa != curMode.flags.fsaa || SDL_GL_MakeCurrent(window, context) < 0))
+	// We would normally only need to recreate the context if FSAA changes or
+	// SDL_GL_MakeCurrent is unsuccessful, but in Windows MakeCurrent can
+	// sometimes claim success but the context will actually be trashed.
+	if (context)
 	{
 		SDL_GL_DeleteContext(context);
 		context = 0;
 	}
 
-	// Create a new OpenGL context.
-	if (!context)
+	// Make sure the proper attributes are set.
+	setWindowGLAttributes(fsaa);
+
+	context = SDL_GL_CreateContext(window);
+
+	if (!context && fsaa > 0)
 	{
-		setWindowGLAttributes(fsaa);
-
+		// FSAA might have caused the failure, disable it and try again.
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		context = SDL_GL_CreateContext(window);
-
-		if (!context && fsaa > 0)
-		{
-			// FSAA might have caused the failure, disable it and try again.
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-			context = SDL_GL_CreateContext(window);
-		}
 	}
 
 	if (!context)
