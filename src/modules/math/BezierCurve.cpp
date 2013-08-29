@@ -162,6 +162,8 @@ Vector BezierCurve::eval(double t) const
 {
 	if (t < 0 || t > 1)
 		throw Exception("Invalid evaluation parameter: must be between 0 and 1");
+	if (controlPoints.size() < 2)
+		throw Exception("Invalid Bezier curve: Not enough control points.");
 
 	// de casteljau
 	vector<Vector> points(controlPoints);
@@ -174,6 +176,8 @@ Vector BezierCurve::eval(double t) const
 
 vector<Vector> BezierCurve::render(size_t accuracy) const
 {
+	if (controlPoints.size() < 2)
+		throw Exception("Invalid Bezier curve: Not enough control points.");
 	vector<Vector> vertices(controlPoints);
 	subdivide(vertices, accuracy);
 	return vertices;

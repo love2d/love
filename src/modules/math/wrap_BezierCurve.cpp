@@ -168,7 +168,15 @@ int w_BezierCurve_render(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	int accuracy = luaL_optinteger(L, 2, 5);
 
-	std::vector<Vector> points = curve->render(accuracy);
+	std::vector<Vector> points;
+	try
+	{
+		points = curve->render(accuracy);
+	}
+	catch (Exception &e)
+	{
+		return luaL_error(L, e.what());
+	}
 
 	lua_createtable(L, points.size()*2, 0);
 	for (size_t i = 0; i < points.size(); ++i)
