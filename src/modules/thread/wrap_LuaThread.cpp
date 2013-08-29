@@ -40,7 +40,16 @@ int w_Thread_start(lua_State *L)
 	{
 		args = new Variant*[nargs];
 		for (int i = 0; i < nargs; ++i)
+		{
 			args[i] = Variant::fromLua(L, i+2);
+			if (!args[i])
+			{
+				for (int j = i; j >= 0; j--)
+					delete args[j];
+				delete args;
+				return luaL_argerror(L, i+2, "boolean, number, string, love type, or flat table expected");
+			}
+		}
 	}
 
 	luax_pushboolean(L, t->start(args, nargs));
