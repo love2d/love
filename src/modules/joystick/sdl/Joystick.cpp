@@ -70,11 +70,13 @@ bool Joystick::open(int deviceindex)
 		// See if SDL thinks this is a Game Controller.
 		openGamepad(deviceindex);
 
-		// Prefer the GameController name.
-		if (controller)
-			name = SDL_GameControllerName(controller);
-		else
-			name = SDL_JoystickName(joyhandle);
+		// Prefer the Joystick name for consistency.
+		const char *joyname = SDL_JoystickName(joyhandle);
+		if (!joyname && controller)
+			joyname = SDL_GameControllerName(controller);
+
+		if (joyname)
+			name = joyname;
 	}
 
 	return isConnected();
