@@ -36,14 +36,14 @@ class CompressedData : public love::image::CompressedData
 {
 public:
 
-	CompressedData(love::filesystem::FileData *data);
+	CompressedData(love::filesystem::FileData *filedata);
 	virtual ~CompressedData();
 
-	static bool isCompressed(love::filesystem::FileData *data);
+	static bool isCompressed(love::filesystem::FileData *filedata);
 
 private:
 
-	void load(love::filesystem::FileData *data);
+	void load(love::filesystem::FileData *filedata);
 
 }; // CompressedData
 

@@ -40,17 +40,21 @@ bool ddsHandler::canParse(const filesystem::FileData *data)
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-CompressedData::Format ddsHandler::parse(filesystem::FileData *data, std::vector<CompressedData::SubImage> &images)
+uint8 *ddsHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format)
 {
-	if (!dds::isDDS(data->getData(), data->getSize()))
+	if (!dds::isDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
 
 	CompressedData::Format texformat = CompressedData::FORMAT_UNKNOWN;
 
+	uint8 *data = 0;
+	dataSize = 0;
+	images.clear();
+
 	try
 	{
 		// Attempt to parse the dds file.
-		dds::Parser parser(data->getData(), data->getSize());
+		dds::Parser parser(filedata->getData(), filedata->getSize());
 
 		texformat = convertFormat(parser.getFormat());
 
@@ -59,6 +63,17 @@ CompressedData::Format ddsHandler::parse(filesystem::FileData *data, std::vector
 
 		if (parser.getMipmapCount() == 0)
 			throw love::Exception("Could not parse compressed data: No readable texture data.");
+
+		// Calculate the size of the block of memory we're returning.
+		for (size_t i = 0; i < parser.getMipmapCount(); i++)
+		{
+			const dds::Image *img = parser.getImageData(i);
+			dataSize += img->dataSize;
+		}
+
+		data = new uint8[dataSize];
+
+		size_t dataOffset = 0;
 
 		// Copy the parsed mipmap levels from the FileData to our CompressedData.
 		for (size_t i = 0; i < parser.getMipmapCount(); i++)
@@ -72,23 +87,24 @@ CompressedData::Format ddsHandler::parse(filesystem::FileData *data, std::vector
 			mip.height = img->height;
 			mip.size = img->dataSize;
 
-			// Copy the mipmap image from the FileData.
-			mip.data = new uint8[mip.size];
-			memcpy(mip.data, img->data, mip.size);
+			// Copy the mipmap image from the FileData to our block of memory.
+			memcpy(data + dataOffset, img->data, mip.size);
+			mip.data = data + dataOffset;
+
+			dataOffset += mip.size;
 
 			images.push_back(mip);
 		}
 	}
 	catch (std::exception &e)
 	{
-		// Clean up any newly allocated heap memory before throwing.
-		for (size_t i = 0; i < images.size(); i++)
-			delete[] images[i].data;
-
-		throw love::Exception(e.what());
+		delete[] data;
+		images.clear();
+		throw love::Exception("%s", e.what());
 	}
 
-	return texformat;
+	format = texformat;
+	return data;
 }
 
 CompressedData::Format ddsHandler::convertFormat(dds::Format ddsformat)

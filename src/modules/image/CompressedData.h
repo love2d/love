@@ -63,15 +63,13 @@ public:
 	{
 		int width, height;
 		size_t size;
-		uint8 *data;
+		uint8 *data; // Should not have ownership of the data.
 	};
 
 	CompressedData();
 	virtual ~CompressedData();
 
-	// Implements Data. Note that data for different mipmap levels is not always
-	// stored contiguously in memory, so getData() and getSize() don't make
-	// much sense. Use getData(miplevel) and getSize(mipleveL) instead.
+	// Implements Data.
 	virtual void *getData() const;
 	virtual int getSize() const;
 
@@ -112,6 +110,10 @@ public:
 protected:
 
 	Format format;
+
+	// Single block of memory containing all of the sub-images.
+	uint8 *data;
+	size_t dataSize;
 
 	// Texture info for each mipmap level.
 	std::vector<SubImage> dataImages;

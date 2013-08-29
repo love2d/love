@@ -29,47 +29,56 @@ namespace image
 namespace magpie
 {
 
-CompressedData::CompressedData(love::filesystem::FileData *data)
+CompressedData::CompressedData(love::filesystem::FileData *filedata)
 {
-	load(data);
+	load(filedata);
 }
 
 CompressedData::~CompressedData()
 {
-	// We have ownership of the heap memory in dataImages, so we have to free it.
-	for (size_t i = 0; i < dataImages.size(); i++)
-		delete[] dataImages[i].data;
+	delete[] data;
 }
 
-void CompressedData::load(love::filesystem::FileData *data)
+void CompressedData::load(love::filesystem::FileData *filedata)
 {
 	// SubImage vector will be populated by a parser.
 	std::vector<SubImage> parsedimages;
 	Format texformat = FORMAT_UNKNOWN;
 
-	if (ddsHandler::canParse(data))
-		texformat = ddsHandler::parse(data, parsedimages);
+	uint8 *newdata = 0;
+	size_t newdata_size = 0;
+
+	if (ddsHandler::canParse(filedata))
+		newdata = ddsHandler::parse(filedata, parsedimages, newdata_size, texformat);
+
+	if (newdata == 0)
+		throw love::Exception("Could not parse compressed data.");
 
 	if (texformat == FORMAT_UNKNOWN)
+	{
+		delete[] newdata;
 		throw love::Exception("Could not parse compressed data: Unknown format.");
+	}
 
-	if (parsedimages.size() == 0)
+	if (parsedimages.size() == 0 || newdata_size == 0)
+	{
+		delete[] newdata;
 		throw love::Exception("Could not parse compressed data: No valid data?");
+	}
 
 	// Make sure to clean up any previously loaded data.
-	for (size_t i = 0; i < dataImages.size(); i++)
-	{
-		delete[] dataImages[i].data;
-		dataImages[i].data = 0;
-	}
+	delete[] data;
+
+	data = newdata;
+	dataSize = newdata_size;
 
 	dataImages = parsedimages;
 	format = texformat;
 }
 
-bool CompressedData::isCompressed(love::filesystem::FileData *data)
+bool CompressedData::isCompressed(love::filesystem::FileData *filedata)
 {
-	if (ddsHandler::canParse(data))
+	if (ddsHandler::canParse(filedata))
 		return true;
 
 	return false;

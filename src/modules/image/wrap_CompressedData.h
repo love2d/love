@@ -31,8 +31,6 @@ namespace image
 {
 
 CompressedData *luax_checkcompresseddata(lua_State *L, int idx);
-int w_CompressedData_getString(lua_State *L);
-int w_CompressedData_getSize(lua_State *L);
 int w_CompressedData_getWidth(lua_State *L);
 int w_CompressedData_getHeight(lua_State *L);
 int w_CompressedData_getDimensions(lua_State *L);

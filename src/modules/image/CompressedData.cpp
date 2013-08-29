@@ -27,6 +27,8 @@ namespace image
 
 CompressedData::CompressedData()
 	: format(FORMAT_UNKNOWN)
+	, data(0)
+	, dataSize(0)
 {
 }
 
@@ -36,23 +38,12 @@ CompressedData::~CompressedData()
 
 int CompressedData::getSize() const
 {
-	// Adding up the total size for all mipmap levels would make more sense, but
-	// it's probably better for getSize() to match getData() so no bad memory
-	// accesses happen...
-	if (dataImages.size() > 0)
-		return dataImages[0].size;
-	else
-		return 0;
+	return int(dataSize);
 }
 
 void *CompressedData::getData() const
 {
-	// Data for different mipmap levels is not stored contiguously in memory, so
-	// getData() won't work properly for CompressedData.
-	if (dataImages.size() > 0 && dataImages[0].size > 0)
-		return (void *) dataImages[0].data;
-	else
-		return 0;
+	return data;
 }
 
 int CompressedData::getMipmapCount() const
@@ -64,7 +55,7 @@ int CompressedData::getSize(int miplevel) const
 {
 	checkMipmapLevelExists(miplevel);
 
-	return dataImages[miplevel].size;
+	return int(dataImages[miplevel].size);
 }
 
 void *CompressedData::getData(int miplevel) const
