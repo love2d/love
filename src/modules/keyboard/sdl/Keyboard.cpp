@@ -29,9 +29,24 @@ namespace keyboard
 namespace sdl
 {
 
+Keyboard::Keyboard()
+	: key_repeat(false)
+{
+}
+
 const char *Keyboard::getName() const
 {
 	return "love.keyboard.sdl";
+}
+
+void Keyboard::setKeyRepeat(bool enable)
+{
+	key_repeat = enable;
+}
+
+bool Keyboard::hasKeyRepeat() const
+{
+	return key_repeat;
 }
 
 bool Keyboard::isDown(Key *keylist) const

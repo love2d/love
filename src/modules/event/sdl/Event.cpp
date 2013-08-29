@@ -97,6 +97,8 @@ Message *Event::convert(const SDL_Event &e) const
 {
 	Message *msg = NULL;
 
+	love::keyboard::Keyboard *kb = 0;
+
 	love::keyboard::Keyboard::Key key;
 	love::mouse::Mouse::Button button;
 	Variant *arg1, *arg2, *arg3;
@@ -106,6 +108,13 @@ Message *Event::convert(const SDL_Event &e) const
 	switch (e.type)
 	{
 	case SDL_KEYDOWN:
+		if (e.key.repeat)
+		{
+			kb = (love::keyboard::Keyboard *) Module::findInstance("love.keyboard.");
+			if (kb && !kb->hasKeyRepeat())
+				break;
+		}
+
 		keyit = keys.find(e.key.keysym.sym);
 		if (keyit != keys.end())
 			key = keyit->second;

@@ -29,7 +29,19 @@ namespace love
 namespace keyboard
 {
 
-static Keyboard *instance;
+static Keyboard *instance = 0;
+
+int w_setKeyRepeat(lua_State *L)
+{
+	instance->setKeyRepeat(luax_toboolean(L, 1));
+	return 0;
+}
+
+int w_hasKeyRepeat(lua_State *L)
+{
+	luax_pushboolean(L, instance->hasKeyRepeat());
+	return 1;
+}
 
 int w_isDown(lua_State *L)
 {
@@ -53,6 +65,8 @@ int w_isDown(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
+	{ "setKeyRepeat", w_setKeyRepeat },
+	{ "hasKeyRepeat", w_hasKeyRepeat },
 	{ "isDown", w_isDown },
 	{ 0, 0 }
 };

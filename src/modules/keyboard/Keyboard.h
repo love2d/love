@@ -236,6 +236,18 @@ public:
 	virtual ~Keyboard() {}
 
 	/**
+	 * Sets whether repeat keypress events should be sent if a key is held down.
+	 * Does not affect text input events.
+	 * @param enable Whether to send repeat key press events.
+	 **/
+	virtual void setKeyRepeat(bool enable) = 0;
+
+	/**
+	 * Gets whether repeat keypress events will be sent if a key is held down.
+	 **/
+	virtual bool hasKeyRepeat() const = 0;
+
+	/**
 	 * Checks whether a certain key is down or not.
 	 * @param key A key identifier.
 	 * @return boolean

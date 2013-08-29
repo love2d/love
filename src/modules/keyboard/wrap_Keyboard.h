@@ -29,6 +29,8 @@ namespace love
 namespace keyboard
 {
 
+int w_setKeyRepeat(lua_State *L);
+int w_hasKeyRepeat(lua_State *L);
 int w_isDown(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State *L);
 

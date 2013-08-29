@@ -42,11 +42,18 @@ class Keyboard : public love::keyboard::Keyboard
 {
 public:
 
+	Keyboard();
+
 	// Implements Module.
 	const char *getName() const;
+
+	void setKeyRepeat(bool enable);
+	bool hasKeyRepeat() const;
 	bool isDown(Key *keylist) const;
 
 private:
+
+	bool key_repeat;
 
 	static std::map<Key, SDL_Keycode> createKeyMap();
 	static std::map<Key, SDL_Keycode> keys;
