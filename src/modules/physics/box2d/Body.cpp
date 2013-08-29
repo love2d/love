@@ -428,7 +428,7 @@ int Body::getFixtureList(lua_State *L) const
 		if (!fixture)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		fixture->retain();
-		luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void *)fixture);
+		luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, fixture);
 		lua_rawseti(L, -2, i);
 		i++;
 	}

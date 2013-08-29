@@ -58,7 +58,7 @@ int w_newWorld(lua_State *L)
 
 	World *w;
 	ASSERT_GUARD(w = instance->newWorld(gx, gy, sleep);)
-	luax_newtype(L, "World", PHYSICS_WORLD_T, (void *)w);
+	luax_pushtype(L, "World", PHYSICS_WORLD_T, w);
 
 	return 1;
 }
@@ -76,7 +76,7 @@ int w_newBody(lua_State *L)
 
 	Body *body;
 	ASSERT_GUARD(body = instance->newBody(world, x, y, btype);)
-	luax_newtype(L, "Body", PHYSICS_BODY_T, (void *)body);
+	luax_pushtype(L, "Body", PHYSICS_BODY_T, body);
 	return 1;
 }
 
@@ -87,7 +87,7 @@ int w_newFixture(lua_State *L)
 	float density = (float)luaL_optnumber(L, 3, 1.0f);
 	Fixture *fixture;
 	ASSERT_GUARD(fixture = instance->newFixture(body, shape, density);)
-	luax_newtype(L, "Fixture", PHYSICS_FIXTURE_T, (void *)fixture);
+	luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, fixture);
 	return 1;
 }
 
@@ -100,7 +100,7 @@ int w_newCircleShape(lua_State *L)
 		float radius = (float)luaL_checknumber(L, 1);
 		CircleShape *shape;
 		ASSERT_GUARD(shape = instance->newCircleShape(radius);)
-		luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, shape);
 		return 1;
 	}
 	else if (top == 3)
@@ -110,7 +110,7 @@ int w_newCircleShape(lua_State *L)
 		float radius = (float)luaL_checknumber(L, 3);
 		CircleShape *shape;
 		ASSERT_GUARD(shape = instance->newCircleShape(x, y, radius);)
-		luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, shape);
 		return 1;
 	}
 	else
@@ -127,7 +127,7 @@ int w_newRectangleShape(lua_State *L)
 		float h = (float)luaL_checknumber(L, 2);
 		PolygonShape *shape;
 		ASSERT_GUARD(shape = instance->newRectangleShape(w, h);)
-		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, shape);
 		return 1;
 	}
 	else if (top == 4 || top == 5)
@@ -139,7 +139,7 @@ int w_newRectangleShape(lua_State *L)
 		float angle = (float)luaL_optnumber(L, 5, 0);
 		PolygonShape *shape;
 		ASSERT_GUARD(shape = instance->newRectangleShape(x, y, w, h, angle);)
-		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, shape);
 		return 1;
 	}
 	else
@@ -154,7 +154,7 @@ int w_newEdgeShape(lua_State *L)
 	float y2 = (float)luaL_checknumber(L, 4);
 	EdgeShape *shape;
 	ASSERT_GUARD(shape = instance->newEdgeShape(x1, y1, x2, y2);)
-	luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, (void *)shape);
+	luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, shape);
 	return 1;
 }
 
@@ -179,7 +179,7 @@ int w_newDistanceJoint(lua_State *L)
 	bool collideConnected = luax_optboolean(L, 7, false);
 	DistanceJoint *j;
 	ASSERT_GUARD(j = instance->newDistanceJoint(body1, body2, x1, y1, x2, y2, collideConnected);)
-	luax_newtype(L, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T, (void *)j);
+	luax_pushtype(L, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T, j);
 	return 1;
 }
 
@@ -190,7 +190,7 @@ int w_newMouseJoint(lua_State *L)
 	float y = (float)luaL_checknumber(L, 3);
 	MouseJoint *j;
 	ASSERT_GUARD(j = instance->newMouseJoint(body, x, y);)
-	luax_newtype(L, "MouseJoint", PHYSICS_MOUSE_JOINT_T, (void *)j);
+	luax_pushtype(L, "MouseJoint", PHYSICS_MOUSE_JOINT_T, j);
 	return 1;
 }
 
@@ -203,7 +203,7 @@ int w_newRevoluteJoint(lua_State *L)
 	bool collideConnected = luax_optboolean(L, 5, false);
 	RevoluteJoint *j;
 	ASSERT_GUARD(j = instance->newRevoluteJoint(body1, body2, x, y, collideConnected);)
-	luax_newtype(L, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T, (void *)j);
+	luax_pushtype(L, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T, j);
 	return 1;
 }
 
@@ -233,7 +233,7 @@ int w_newPrismaticJoint(lua_State *L)
 	}
 	PrismaticJoint *j;
 	ASSERT_GUARD(j = instance->newPrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
-	luax_newtype(L, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T, (void *)j);
+	luax_pushtype(L, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T, j);
 	return 1;
 }
 
@@ -254,7 +254,7 @@ int w_newPulleyJoint(lua_State *L)
 
 	PulleyJoint *j;
 	ASSERT_GUARD(j = instance->newPulleyJoint(body1, body2, b2Vec2(gx1,gy1), b2Vec2(gx2,gy2), b2Vec2(x1,y1), b2Vec2(x2,y2), ratio, collideConnected);)
-	luax_newtype(L, "PulleyJoint", PHYSICS_PULLEY_JOINT_T, (void *)j);
+	luax_pushtype(L, "PulleyJoint", PHYSICS_PULLEY_JOINT_T, j);
 	return 1;
 }
 
@@ -267,7 +267,7 @@ int w_newGearJoint(lua_State *L)
 
 	GearJoint *j;
 	ASSERT_GUARD(j = instance->newGearJoint(joint1, joint2, ratio, collideConnected);)
-	luax_newtype(L, "GearJoint", PHYSICS_GEAR_JOINT_T, (void *)j);
+	luax_pushtype(L, "GearJoint", PHYSICS_GEAR_JOINT_T, j);
 	return 1;
 }
 
@@ -293,7 +293,7 @@ int w_newFrictionJoint(lua_State *L)
 	}
 	FrictionJoint *j;
 	ASSERT_GUARD(j = instance->newFrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
-	luax_newtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, (void *)j);
+	luax_pushtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, j);
 	return 1;
 }
 
@@ -319,7 +319,7 @@ int w_newWeldJoint(lua_State *L)
 	}
 	WeldJoint *j;
 	ASSERT_GUARD(j = instance->newWeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
-	luax_newtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, (void *)j);
+	luax_pushtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, j);
 	return 1;
 }
 
@@ -350,7 +350,7 @@ int w_newWheelJoint(lua_State *L)
 
 	WheelJoint *j;
 	ASSERT_GUARD(j = instance->newWheelJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
-	luax_newtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, (void *)j);
+	luax_pushtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, j);
 	return 1;
 }
 
@@ -366,7 +366,7 @@ int w_newRopeJoint(lua_State *L)
 	bool collideConnected = luax_optboolean(L, 8, false);
 	RopeJoint *j;
 	ASSERT_GUARD(j = instance->newRopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);)
-	luax_newtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, (void *)j);
+	luax_pushtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, j);
 	return 1;
 }
 

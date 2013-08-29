@@ -275,7 +275,7 @@ int w_getIcon(lua_State *L)
 	if (i)
 	{
 		i->retain();
-		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void*) i);
+		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
 	}
 	else
 		lua_pushnil(L);

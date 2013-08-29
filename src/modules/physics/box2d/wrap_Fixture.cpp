@@ -112,7 +112,7 @@ int w_Fixture_getBody(lua_State *L)
 	if (body == 0)
 		return 0;
 	body->retain();
-	luax_newtype(L, "Body", PHYSICS_BODY_T, (void *)body);
+	luax_pushtype(L, "Body", PHYSICS_BODY_T, body);
 	return 1;
 }
 
@@ -125,19 +125,19 @@ int w_Fixture_getShape(lua_State *L)
 	switch (shape->getType())
 	{
 	case Shape::SHAPE_EDGE:
-		luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, shape);
 		break;
 	case Shape::SHAPE_CHAIN:
-		luax_newtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, shape);
 		break;
 	case Shape::SHAPE_CIRCLE:
-		luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, shape);
 		break;
 	case Shape::SHAPE_POLYGON:
-		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, shape);
 		break;
 	default:
-		luax_newtype(L, "Shape", PHYSICS_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "Shape", PHYSICS_SHAPE_T, shape);
 		break;
 	}
 	return 1;

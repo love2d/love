@@ -64,7 +64,7 @@ int w_newRasterizer(lua_State *L)
 		return luaL_error(L, "%s", e.what());
 	}
 
-	luax_newtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
+	luax_pushtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 	return 1;
 }
 
@@ -92,7 +92,7 @@ int w_newGlyphData(lua_State *L)
 		t = instance->newGlyphData(r, g);
 	}
 
-	luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
+	luax_pushtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
 	return 1;
 }
 

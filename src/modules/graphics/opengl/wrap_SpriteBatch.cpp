@@ -152,7 +152,7 @@ int w_SpriteBatch_getImage(lua_State *L)
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	Image *image = t->getImage();
 	image->retain();
-	luax_newtype(L, "Image", GRAPHICS_IMAGE_T, (void *)image);
+	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, image);
 	return 1;
 }
 

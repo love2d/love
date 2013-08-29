@@ -18,6 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "config.h"
 #include "runtime.h"
 
 // LOVE
@@ -36,6 +37,7 @@ namespace love
 
 static thread::Mutex *gcmutex = 0;
 void *_gcmutex = 0;
+
 /**
  * Called when an object is collected. The object is released
  * once in this function, possibly deleting it.
@@ -47,13 +49,21 @@ static int w__gc(lua_State *L)
 		gcmutex = thread::newMutex();
 		_gcmutex = (void *) gcmutex;
 	}
+
 	Proxy *p = (Proxy *)lua_touserdata(L, 1);
 	Object *t = (Object *)p->data;
-	if (p->own)
-	{
-		thread::Lock lock(gcmutex);
+
+	thread::Lock lock(gcmutex);
+
+	int numretains = p->retains;
+	if (numretains >= 0)
+		numretains = std::min(numretains, t->getReferenceCount());
+
+	for (int i = numretains; i > 0; i--)
 		t->release();
-	}
+
+	// Signal that this Proxy is dead.
+	p->retains = -1;
 	return 0;
 }
 
@@ -214,10 +224,10 @@ void luax_setfuncs(lua_State *L, const luaL_Reg *l)
 int luax_register_module(lua_State *L, const WrappedModule &m)
 {
 	// Put a reference to the C++ module in Lua.
-	luax_getregistry(L, REGISTRY_MODULES);
+	luax_insistregistry(L, REGISTRY_MODULES);
 
 	Proxy *p = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
-	p->own = true;
+	p->retains = 1;
 	p->data = m.module;
 	p->flags = m.flags;
 
@@ -272,6 +282,31 @@ int luax_register_type(lua_State *L, const char *tname, const luaL_Reg *f)
 	love::Type ltype;
 	if (!love::getType(tname, ltype))
 		printf("Missing type entry for type name: %s\n", tname);
+
+	// Get the place for storing and re-using instantiated love types.
+	luax_getregistry(L, REGISTRY_TYPES);
+
+	// Create registry._lovetypes if it doesn't exist yet.
+	if (!lua_istable(L, -1))
+	{
+		lua_newtable(L);
+		lua_replace(L, -2);
+
+		// Create a metatable.
+		lua_newtable(L);
+
+		// metatable.__mode = "v". Weak userdata values.
+		lua_pushliteral(L, "v");
+		lua_setfield(L, -2, "__mode");
+
+		// setmetatable(newtable, metatable)
+		lua_setmetatable(L, -2);
+
+		// registry._lovetypes = newtable
+		lua_setfield(L, LUA_REGISTRYINDEX, "_lovetypes");
+	}
+	else
+		lua_pop(L, 1);
 
 	luaL_newmetatable(L, tname);
 
@@ -358,16 +393,72 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos)
 	return 0;
 }
 
-void luax_newtype(lua_State *L, const char *name, bits flags, void *data, bool own)
+void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own)
 {
 	Proxy *u = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
 
-	u->data = data;
+	u->data = (void *) data;
 	u->flags = flags;
-	u->own = own;
+	u->retains = own ? 1 : 0;
 
 	luaL_newmetatable(L, name);
 	lua_setmetatable(L, -2);
+}
+
+void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own)
+{
+	// Fetch the registry table of instantiated types.
+	luax_getregistry(L, REGISTRY_TYPES);
+
+	// The table might not exist - it should be insisted in luax_register_type.
+	if (!lua_istable(L, -1))
+	{
+		lua_pop(L, 1);
+		return luax_rawnewtype(L, name, flags, data, own);
+	}
+
+	// Get the value of lovetypes[data] on the stack.
+	lua_pushlightuserdata(L, (void *) data);
+	lua_gettable(L, -2);
+
+	// If the Proxy userdata isn't in the instantiated types table yet, add it.
+	if (lua_type(L, -1) != LUA_TUSERDATA)
+	{
+		lua_pop(L, 1);
+
+		luax_rawnewtype(L, name, flags, data, own);
+
+		lua_pushlightuserdata(L, (void *) data);
+		lua_pushvalue(L, -2);
+
+		// lovetypes[data] = Proxy.
+		lua_settable(L, -4);
+
+		// Remove the lovetypes table from the stack.
+		lua_remove(L, -2);
+
+		// The Proxy userdata remains at the top of the stack.
+		return;
+	}
+
+	// Remove the lovetypes table from the stack.
+	lua_remove(L, -2);
+
+	// If the object should be released on GC and we already have a stored
+	// Proxy, we should tell the Proxy that the object was retained again.
+	if (own)
+	{
+		Proxy *p = (Proxy *) lua_touserdata(L, -1);
+
+		thread::EmptyLock lock;
+		if (gcmutex)
+			lock.setLock(gcmutex);
+
+		if (p->retains >= 0)
+			++(p->retains);
+	}
+
+	// Keep the Proxy userdata on the stack.
 }
 
 bool luax_istype(lua_State *L, int idx, love::bits type)
@@ -499,7 +590,20 @@ int luax_insistlove(lua_State *L, const char *k)
 	return 1;
 }
 
-int luax_getregistry(lua_State *L, Registry r)
+int luax_getlove(lua_State *L, const char *k)
+{
+	lua_getglobal(L, "love");
+
+	if (!lua_isnil(L, -1))
+	{
+		lua_getfield(L, -1, k);
+		lua_replace(L, -2);
+	}
+
+	return 1;
+}
+
+int luax_insistregistry(lua_State *L, Registry r)
 {
 	switch (r)
 	{
@@ -507,6 +611,24 @@ int luax_getregistry(lua_State *L, Registry r)
 		return luax_insistlove(L, "_gc");
 	case REGISTRY_MODULES:
 		return luax_insistlove(L, "_modules");
+	case REGISTRY_TYPES:
+		return luax_insist(L, LUA_REGISTRYINDEX, "_lovetypes");
+	default:
+		return luaL_error(L, "Attempted to use invalid registry.");
+	}
+}
+
+int luax_getregistry(lua_State *L, Registry r)
+{
+	switch (r)
+	{
+	case REGISTRY_GC:
+		return luax_getlove(L, "_gc");
+	case REGISTRY_MODULES:
+		return luax_getlove(L, "_modules");
+	case REGISTRY_TYPES:
+		lua_getfield(L, LUA_REGISTRYINDEX, "_lovetypes");
+		return 1;
 	default:
 		return luaL_error(L, "Attempted to use invalid registry.");
 	}

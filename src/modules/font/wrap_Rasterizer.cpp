@@ -91,7 +91,7 @@ int w_Rasterizer_getGlyphData(lua_State *L)
 		return luaL_error(L, "%s", e.what());
 	}
 
-	luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, (void *) g);
+	luax_pushtype(L, "GlyphData", FONT_GLYPH_DATA_T, g);
 	return 1;
 }
 

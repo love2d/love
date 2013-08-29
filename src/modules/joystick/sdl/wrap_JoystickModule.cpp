@@ -39,7 +39,7 @@ int w_getJoysticks(lua_State *L)
 	{
 		love::joystick::Joystick *stick = instance->getJoystick(i);
 		stick->retain();
-		luax_newtype(L, "Joystick", JOYSTICK_JOYSTICK_T, (void *) stick);
+		luax_pushtype(L, "Joystick", JOYSTICK_JOYSTICK_T, stick);
 		lua_rawseti(L, -2, i + 1);
 	}
 

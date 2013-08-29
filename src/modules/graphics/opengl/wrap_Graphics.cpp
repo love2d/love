@@ -195,7 +195,7 @@ int w_newImage(lua_State *L)
 
 
 	// Push the type.
-	luax_newtype(L, "Image", GRAPHICS_IMAGE_T, (void *)image);
+	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, image);
 
 	return 1;
 }
@@ -335,7 +335,9 @@ int w_newGeometry(lua_State *L)
 
 	geom->setVertexColors(hasvertexcolors);
 
-	luax_newtype(L, "Geometry", GRAPHICS_GEOMETRY_T, (void *) geom);
+	// Note: This should be changed to luax_pushtype if the new Geometry is ever
+	// expected to be pushed to Lua from another C++ function!
+	luax_rawnewtype(L, "Geometry", GRAPHICS_GEOMETRY_T, geom);
 	return 1;
 }
 
@@ -350,7 +352,9 @@ int w_newQuad(lua_State *L)
 
 	Geometry *quad = instance->newQuad(x, y, w, h, sw, sh);
 
-	luax_newtype(L, "Geometry", GRAPHICS_GEOMETRY_T, (void *)quad);
+	// Note: This should be changed to luax_pushtype if the new Geometry is ever
+	// expected to be pushed to Lua from another C++ function!
+	luax_rawnewtype(L, "Geometry", GRAPHICS_GEOMETRY_T, quad);
 	return 1;
 }
 
@@ -384,7 +388,7 @@ int w_newFont(lua_State *L)
 		return luaL_error(L, "Could not load font.");
 
 	// Push the type.
-	luax_newtype(L, "Font", GRAPHICS_FONT_T, (void *)font);
+	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
 
 	return 1;
 }
@@ -404,7 +408,7 @@ int w_newImageFont(lua_State *L)
 		love::image::ImageData *id = i->getImageData();
 		if (!id)
 			return luaL_argerror(L, 1, "Image cannot be compressed.");
-		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)id, false);
+		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, id, false);
 		lua_replace(L, 1);
 	}
 
@@ -424,7 +428,7 @@ int w_newImageFont(lua_State *L)
 		return luaL_error(L, "Could not load font.");
 
 	// Push the type.
-	luax_newtype(L, "Font", GRAPHICS_FONT_T, (void *)font);
+	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
 
 	return 1;
 }
@@ -449,7 +453,7 @@ int w_newSpriteBatch(lua_State *L)
 	{
 		return luaL_error(L, e.what());
 	}
-	luax_newtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, (void *)t);
+	luax_pushtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, t);
 	return 1;
 }
 
@@ -468,7 +472,7 @@ int w_newParticleSystem(lua_State *L)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
-	luax_newtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, (void *) t);
+	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
 	return 1;
 }
 
@@ -496,7 +500,7 @@ int w_newCanvas(lua_State *L)
 	if (NULL == canvas)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
 
-	luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void *)canvas);
+	luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);
 	return 1;
 }
 
@@ -581,7 +585,7 @@ int w_newShader(lua_State *L)
 	try
 	{
 		Shader *shader = instance->newShader(sources);
-		luax_newtype(L, "Shader", GRAPHICS_SHADER_T, (void *)shader);
+		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
 	}
 	catch (const love::Exception &e)
 	{
@@ -683,7 +687,7 @@ int w_getFont(lua_State *L)
 		return 0;
 
 	f->retain();
-	luax_newtype(L, "Font", GRAPHICS_FONT_T, (void *)f);
+	luax_pushtype(L, "Font", GRAPHICS_FONT_T, f);
 	return 1;
 }
 
@@ -937,7 +941,7 @@ int w_newScreenshot(lua_State *L)
 	{
 		return luaL_error(L, "%s", e.what());
 	}
-	luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)i);
+	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
 	return 1;
 }
 
@@ -1002,13 +1006,13 @@ int w_getCanvas(lua_State *L)
 	if (canvas)
 	{
 		canvas->retain();
-		luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void *) canvas);
+		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);
 
 		const std::vector<Canvas *> &attachments = canvas->getAttachedCanvases();
 		for (size_t i = 0; i < attachments.size(); i++)
 		{
 			attachments[i]->retain();
-			luax_newtype(L, "Canvas", GRAPHICS_CANVAS_T, (void *) attachments[i]);
+			luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, attachments[i]);
 			n++;
 		}
 	}
@@ -1037,7 +1041,7 @@ int w_getShader(lua_State *L)
 	if (shader)
 	{
 		shader->retain();
-		luax_newtype(L, "Shader", GRAPHICS_SHADER_T, (void *) shader);
+		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
 	}
 	else
 		lua_pushnil(L);

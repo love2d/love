@@ -49,7 +49,7 @@ int w_ParticleSystem_getImage(lua_State *L)
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	Image *i = t->getImage();
 	i->retain();
-	luax_newtype(L, "Image", GRAPHICS_IMAGE_T, (void *) i);
+	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, i);
 	return 1;
 }
 

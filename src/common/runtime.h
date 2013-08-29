@@ -23,6 +23,7 @@
 
 // LOVE
 #include "types.h"
+#include "Object.h"
 
 // Lua
 extern "C" {
@@ -41,16 +42,16 @@ class Reference;
 
 // Exposed mutex of the GC
 extern void *_gcmutex;
-extern unsigned int _gcthread;
 
 /**
  * Registries represent special tables which can be accessed with
- * luax_getregistry.
+ * luax_insistregistry and luax_getregistry.
  **/
 enum Registry
 {
 	REGISTRY_GC = 1,
-	REGISTRY_MODULES
+	REGISTRY_MODULES,
+	REGISTRY_TYPES
 };
 
 /**
@@ -64,11 +65,11 @@ struct Proxy
 	// Holds type information (see types.h).
 	bits flags;
 
-	// The light userdata.
+	// The light userdata (pointer to the love::Object).
 	void *data;
 
-	// True if Lua should delete on GC.
-	bool own;
+	// The number of times release() should be called on GC.
+	int retains;
 };
 
 /**
@@ -99,7 +100,7 @@ struct WrappedModule
  *
  * In any case, the top stack element is popped, regardless of its type.
  **/
-Reference *luax_refif (lua_State *L, int type);
+Reference *luax_refif(lua_State *L, int type);
 
 /**
  * Prints the current contents of the stack. Only useful for debugging.
@@ -265,14 +266,29 @@ int luax_table_insert(lua_State *L, int tindex, int vindex, int pos = -1);
 int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
 
 /**
- * Creates a new Lua-accessible object of the given type, and put it on the stack.
+ * Pushes a Lua representation of the given object onto the stack, creating and
+ * storing the Lua representation in a weak table if it doesn't exist yet.
  * @param L The Lua state.
- * @param name The name of the type. This must match the used earlier with luax_register_type.
- * @param flags The type information.
+ * @param name The name of the type. This must match the name used with luax_register_type.
+ * @param flags The type information of the object.
  * @param data The pointer to the actual object.
- * @own Set this to true (default) if the object should be released upon garbage collection.
+ * @param own Set this to true (default) if the object should be released upon garbage collection.
  **/
-void luax_newtype(lua_State *L, const char *name, bits flags, void *data, bool own = true);
+void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own = true);
+
+/**
+ * Creates a new Lua representation of the given object *without* checking if it
+ * exists yet, and *without* storing it in a weak table.
+ * This should only be used when performance is an extreme concern and the
+ * object is not ever expected to be pushed to Lua again, as it prevents the
+ * Lua-side objects from working in all cases when used as keys in tables.
+ * @param L The Lua state.
+ * @param name The name of the type. This must match the name used with luax_register_type.
+ * @param flags The type information of the object.
+ * @param data The pointer to the actual object.
+ * @param own Set this to true (default) if the object should be released upon garbage collection.
+ **/
+void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own = true);
 
 /**
  * Checks whether the value at idx is a certain type.
@@ -348,8 +364,23 @@ int luax_insistglobal(lua_State *L, const char *k);
 int luax_insistlove(lua_State *L, const char *k);
 
 /**
- * Gets (creates if needed) the specified Registry, and puts it on top
- * of the stack.
+ * Pushes the table 'k' in the love table onto the stack. Pushes nil if the
+ * table doesn't exist.
+ * @param k The name of the table we want to get.
+ **/
+int luax_getlove(lua_State *L, const char *k);
+
+/**
+ * Gets (creates if needed) the specified Registry, and pushes it into the
+ * stack.
+ * @param L The Lua state.
+ * @param r The Registry to get.
+ **/
+int luax_insistregistry(lua_State *L, Registry r);
+
+/**
+ * Gets the specified Registry, and pushes it onto the stack. Pushes nil if the
+ * registry hasn't been created (see luax_insistregistry.)
  * @param L The Lua state.
  * @param r The Registry to get.
  **/
@@ -384,7 +415,7 @@ T *luax_checktype(lua_State *L, int idx, const char *name, love::bits type)
 template <typename T>
 T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 {
-	luax_getregistry(L, REGISTRY_MODULES);
+	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, k);
 
 	if (!lua_isuserdata(L, -1))
@@ -403,7 +434,7 @@ T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 template <typename T>
 T *luax_optmodule(lua_State *L, const char *k, love::bits type)
 {
-	luax_getregistry(L, REGISTRY_MODULES);
+	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, k);
 
 	if (!lua_isuserdata(L, -1))

@@ -66,7 +66,7 @@ int w_Canvas_getImageData(lua_State *L)
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
 	love::image::ImageData *img = canvas->getImageData(image);
-	luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)img);
+	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, img);
 	return 1;
 }
 

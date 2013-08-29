@@ -71,7 +71,7 @@ int w_newCursor(lua_State *L)
 		}
 	}
 
-	luax_newtype(L, "Cursor", MOUSE_CURSOR_T, (void *) cursor);
+	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
 	return 1;
 }
 
@@ -96,7 +96,7 @@ int w_getCursor(lua_State *L)
 	if (cursor)
 	{
 		cursor->retain();
-		luax_newtype(L, "Cursor", MOUSE_CURSOR_T, (void *) cursor);
+		luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
 	}
 	else
 		lua_pushnil(L);

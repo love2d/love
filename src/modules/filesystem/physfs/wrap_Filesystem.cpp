@@ -170,7 +170,7 @@ int w_newFile(lua_State *L)
 		}
 	}
 
-	luax_newtype(L, "File", FILESYSTEM_FILE_T, (void *)t);
+	luax_pushtype(L, "File", FILESYSTEM_FILE_T, t);
 	return 1;
 }
 
@@ -196,7 +196,7 @@ int w_newFileData(lua_State *L)
 			{
 				return ioError(L, "%s", e.what());
 			}
-			luax_newtype(L, "FileData", FILESYSTEM_FILE_DATA_T, (void *) data);
+			luax_pushtype(L, "FileData", FILESYSTEM_FILE_DATA_T, data);
 			return 1;
 		}
 		else
@@ -227,7 +227,7 @@ int w_newFileData(lua_State *L)
 		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
 	}
 
-	luax_newtype(L, "FileData", FILESYSTEM_FILE_DATA_T, (void *)t);
+	luax_pushtype(L, "FileData", FILESYSTEM_FILE_DATA_T, t);
 	return 1;
 }
 
@@ -395,7 +395,7 @@ int w_lines(lua_State *L)
 		{
 			return luaL_error(L, "%s", e.what());
 		}
-		luax_newtype(L, "File", FILESYSTEM_FILE_T, file);
+		luax_pushtype(L, "File", FILESYSTEM_FILE_T, file);
 	}
 	else
 		return luaL_error(L, "Expected filename.");

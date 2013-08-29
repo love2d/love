@@ -51,7 +51,7 @@ int w_newImageData(lua_State *L)
 		{
 			return luaL_error(L, "%s", e.what());
 		}
-		luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *)t);
+		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 		return 1;
 	}
 
@@ -73,7 +73,7 @@ int w_newImageData(lua_State *L)
 		return luaL_error(L, "%s", e.what());
 	}
 
-	luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *) t);
+	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 
 	return 1;
 }
@@ -96,7 +96,7 @@ int w_newCompressedData(lua_State *L)
 		return luaL_error(L, "%s", e.what());
 	}
 
-	luax_newtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, (void *) t);
+	luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
 
 	return 1;
 }

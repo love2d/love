@@ -206,7 +206,7 @@ int w_Image_getData(lua_State *L)
 		if (t)
 		{
 			t->retain();
-			luax_newtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, (void *) t);
+			luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
 		}
 		else
 			lua_pushnil(L);
@@ -217,7 +217,7 @@ int w_Image_getData(lua_State *L)
 		if (t)
 		{
 			t->retain();
-			luax_newtype(L, "ImageData", IMAGE_IMAGE_DATA_T, (void *) t);
+			luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 		}
 		else
 			lua_pushnil(L);

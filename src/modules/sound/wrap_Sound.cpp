@@ -72,8 +72,7 @@ int w_newSoundData(lua_State *L)
 		}
 	}
 
-	luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void *)t);
-
+	luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, t);
 	return 1;
 }
 
@@ -92,7 +91,7 @@ int w_newDecoder(lua_State *L)
 		Decoder *t = instance->newDecoder(data, bufferSize);
 		if (t == 0)
 			return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
-		luax_newtype(L, "Decoder", SOUND_DECODER_T, (void *)t);
+		luax_pushtype(L, "Decoder", SOUND_DECODER_T, t);
 	}
 	catch(love::Exception &e)
 	{
