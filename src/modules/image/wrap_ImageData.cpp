@@ -296,6 +296,7 @@ static const luaL_Reg functions[] =
 {
 	// Data
 	{ "getString", w_Data_getString },
+	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 
 	{ "getWidth", w_ImageData_getWidth },

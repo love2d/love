@@ -30,6 +30,7 @@ namespace love
 
 Data *luax_checkdata(lua_State *L, int idx);
 int w_Data_getString(lua_State *L);
+int w_Data_getPointer(lua_State *L);
 int w_Data_getSize(lua_State *L);
 int w_Data_open(lua_State *L);
 

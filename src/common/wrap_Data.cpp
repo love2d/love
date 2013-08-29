@@ -35,6 +35,13 @@ int w_Data_getString(lua_State *L)
 	return 1;
 }
 
+int w_Data_getPointer(lua_State *L)
+{
+	Data *t = luax_checkdata(L, 1);
+	lua_pushlightuserdata(L, t->getData());
+	return 1;
+}
+
 int w_Data_getSize(lua_State *L)
 {
 	Data *t = luax_checkdata(L, 1);
@@ -45,6 +52,7 @@ int w_Data_getSize(lua_State *L)
 const luaL_Reg w_Data_functions[] =
 {
 	{ "getString", w_Data_getString },
+	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 	{ 0, 0 }
 };
