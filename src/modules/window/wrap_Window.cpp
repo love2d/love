@@ -164,11 +164,11 @@ int w_getMode(lua_State *L)
 	return 3;
 }
 
-int w_getModes(lua_State *L)
+int w_getFullscreenModes(lua_State *L)
 {
-	int displayindex = luaL_optint(L, 1, 1);
+	int displayindex = luaL_optint(L, 1, 1) - 1;
 
-	std::vector<Window::WindowSize> modes = instance->getFullscreenSizes(displayindex - 1);
+	std::vector<Window::WindowSize> modes = instance->getFullscreenSizes(displayindex);
 
 	lua_createtable(L, modes.size(), 0);
 
@@ -319,7 +319,7 @@ static const luaL_Reg functions[] =
 	{ "checkMode", w_checkMode },
 	{ "setMode", w_setMode },
 	{ "getMode", w_getMode },
-	{ "getModes", w_getModes },
+	{ "getFullscreenModes", w_getFullscreenModes },
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
 	{ "isCreated", w_isCreated },
