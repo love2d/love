@@ -64,7 +64,7 @@ int w_poll(lua_State *L)
 
 int w_wait(lua_State *L)
 {
-	static Message *m;
+	Message *m;
 
 	if ((m = instance->wait()))
 	{
@@ -78,7 +78,7 @@ int w_wait(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	static Message *m;
+	Message *m;
 
 	bool success = (m = Message::fromLua(L, 1)) != NULL;
 	luax_pushboolean(L, success);

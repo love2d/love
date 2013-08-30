@@ -55,22 +55,23 @@ EmptyLock::~EmptyLock()
 
 void EmptyLock::setLock(Mutex *m)
 {
+	if (m)
+		m->lock();
+
 	if (mutex)
 		mutex->unlock();
 
 	mutex = m;
-
-	if (mutex)
-		mutex->lock();
 }
 
 void EmptyLock::setLock(Mutex &m)
 {
+	m.lock();
+
 	if (mutex)
 		mutex->unlock();
 
 	mutex = &m;
-	mutex->lock();
 }
 
 Threadable::Threadable()
