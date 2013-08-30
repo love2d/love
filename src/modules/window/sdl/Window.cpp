@@ -240,15 +240,7 @@ bool Window::setContext(int fsaa, bool vsync)
 	}
 
 	// Set vertical synchronization.
-	if (vsync)
-	{
-		// Prefer EXT_swap_control_tear (late swaps happen immediately),
-		// otherwise fall back to regular vsync.
-		if (SDL_GL_SetSwapInterval(-1) < 0 || SDL_GL_GetSwapInterval() != -1)
-			SDL_GL_SetSwapInterval(1);
-	}
-	else
-		SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 
 	// Verify FSAA setting.
 	int buffers;
