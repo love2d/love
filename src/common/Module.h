@@ -38,7 +38,7 @@ public:
 	/**
 	 * Destructor.
 	 **/
-	virtual ~Module() {};
+	virtual ~Module();
 
 	/**
 	 * Gets the name of the module. This is used in case of errors

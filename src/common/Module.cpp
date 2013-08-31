@@ -35,6 +35,21 @@ namespace
 namespace love
 {
 
+Module::~Module()
+{
+	std::map<std::string, Module*>::iterator it;
+
+	// We can't use the overridden Module::getName() in this destructor.
+	for (it = registry.begin(); it != registry.end(); ++it)
+	{
+		if (it->second == this)
+		{
+			registry.erase(it);
+			break;
+		}
+	}
+}
+
 void Module::registerInstance(Module *instance)
 {
 	if (instance == NULL)
@@ -44,7 +59,7 @@ void Module::registerInstance(Module *instance)
 
 	std::map<std::string, Module*>::iterator it = registry.find(name);
 
-	if (registry.end() != it)
+	if (it != registry.end())
 	{
 		if (it->second == instance)
 			return;
