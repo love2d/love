@@ -239,7 +239,7 @@ void *Joystick::getHandle() const
 	return joyhandle;
 }
 
-std::string Joystick::getProductGUID() const
+std::string Joystick::getGUID() const
 {
 	// SDL2's GUIDs identify *classes* of devices, instead of unique devices.
 	return pguid;

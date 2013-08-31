@@ -130,7 +130,7 @@ int w_getGamepadMapping(lua_State *L)
 	else
 	{
 		love::joystick::Joystick *stick = luax_checkjoystick(L, 1);
-		guid = stick->getProductGUID();
+		guid = stick->getGUID();
 	}
 
 	const char *gpbindstr = luaL_checkstring(L, 2);

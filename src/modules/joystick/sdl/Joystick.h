@@ -70,7 +70,7 @@ public:
 
 	void *getHandle() const;
 
-	std::string getProductGUID() const;
+	std::string getGUID() const;
 	int getInstanceID() const;
 	int getID() const;
 

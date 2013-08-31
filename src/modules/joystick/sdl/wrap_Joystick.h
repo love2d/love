@@ -37,7 +37,7 @@ Joystick *luax_checkjoystick(lua_State *L, int idx);
 int w_Joystick_isConnected(lua_State *L);
 int w_Joystick_getName(lua_State *L);
 int w_Joystick_getID(lua_State *L);
-int w_Joystick_getProductGUID(lua_State *L);
+int w_Joystick_getGUID(lua_State *L);
 int w_Joystick_getAxisCount(lua_State *L);
 int w_Joystick_getButtonCount(lua_State *L);
 int w_Joystick_getHatCount(lua_State *L);
