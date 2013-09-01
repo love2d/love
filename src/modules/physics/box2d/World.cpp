@@ -396,12 +396,12 @@ int World::getGravity(lua_State *L)
 	return 2;
 }
 
-void World::setAllowSleeping(bool allow)
+void World::setSleepingAllowed(bool allow)
 {
 	world->SetAllowSleeping(allow);
 }
 
-bool World::getAllowSleeping() const
+bool World::isSleepingAllowed() const
 {
 	return world->GetAllowSleeping();
 }

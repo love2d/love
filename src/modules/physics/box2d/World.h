@@ -185,13 +185,13 @@ public:
 	 * Sets whether this World allows sleep.
 	 * @param allow True to allow, false to disallow.
 	 **/
-	void setAllowSleeping(bool allow);
+	void setSleepingAllowed(bool allow);
 
 	/**
 	 * Returns whether this World allows sleep.
 	 * @return True if allowed, false if disallowed.
 	 **/
-	bool getAllowSleeping() const;
+	bool isSleepingAllowed() const;
 
 	/**
 	 * Returns whether this World is currently locked.

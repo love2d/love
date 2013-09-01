@@ -87,18 +87,18 @@ int w_World_getGravity(lua_State *L)
 	return t->getGravity(L);
 }
 
-int w_World_setAllowSleeping(lua_State *L)
+int w_World_setSleepingAllowed(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	bool b = luax_toboolean(L, 2);
-	t->setAllowSleeping(b);
+	t->setSleepingAllowed(b);
 	return 0;
 }
 
-int w_World_getAllowSleeping(lua_State *L)
+int w_World_isSleepingAllowed(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-	luax_pushboolean(L, t->getAllowSleeping());
+	luax_pushboolean(L, t->isSleepingAllowed());
 	return 1;
 }
 
@@ -189,8 +189,8 @@ static const luaL_Reg functions[] =
 	{ "getContactFilter", w_World_getContactFilter },
 	{ "setGravity", w_World_setGravity },
 	{ "getGravity", w_World_getGravity },
-	{ "setAllowSleeping", w_World_setAllowSleeping },
-	{ "getAllowSleeping", w_World_getAllowSleeping },
+	{ "setSleepingAllowed", w_World_setSleepingAllowed },
+	{ "isSleepingAllowed", w_World_isSleepingAllowed },
 	{ "isLocked", w_World_isLocked },
 	{ "getBodyCount", w_World_getBodyCount },
 	{ "getJointCount", w_World_getJointCount },
