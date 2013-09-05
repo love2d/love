@@ -64,6 +64,19 @@ bool Keyboard::isDown(Key *keylist) const
 	return false;
 }
 
+void Keyboard::setTextInput(bool enable)
+{
+	if (enable)
+		SDL_StartTextInput();
+	else
+		SDL_StopTextInput();
+}
+
+bool Keyboard::hasTextInput() const
+{
+	return SDL_IsTextInputActive();
+}
+
 std::map<Keyboard::Key, SDL_Keycode> Keyboard::createKeyMap()
 {
 	std::map<Keyboard::Key, SDL_Keycode> k;

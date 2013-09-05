@@ -254,6 +254,17 @@ public:
 	 **/
 	virtual bool isDown(Key *keylist) const = 0;
 
+	/**
+	 * Sets whether text input events should be sent
+	 * @param enable Whether to send text input events.
+	 **/
+	virtual void setTextInput(bool enable) = 0;
+
+	/**
+	 * Gets whether text input events are enabled.
+	 **/
+	virtual bool hasTextInput() const = 0;
+
 	static bool getConstant(const char *in, Key &out);
 	static bool getConstant(Key in, const char  *&out);
 

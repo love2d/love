@@ -51,6 +51,9 @@ public:
 	bool hasKeyRepeat() const;
 	bool isDown(Key *keylist) const;
 
+	void setTextInput(bool enable);
+	bool hasTextInput() const;
+
 private:
 
 	bool key_repeat;

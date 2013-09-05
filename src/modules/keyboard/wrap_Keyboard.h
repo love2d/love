@@ -32,6 +32,8 @@ namespace keyboard
 int w_setKeyRepeat(lua_State *L);
 int w_hasKeyRepeat(lua_State *L);
 int w_isDown(lua_State *L);
+int w_setTextInput(lua_State *L);
+int w_hasTextInput(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State *L);
 
 } // keyboard

@@ -62,11 +62,25 @@ int w_isDown(lua_State *L)
 	return 1;
 }
 
+int w_setTextInput(lua_State *L)
+{
+	instance->setTextInput(luax_toboolean(L, 1));
+	return 0;
+}
+
+int w_hasTextInput(lua_State *L)
+{
+	luax_pushboolean(L, instance->hasTextInput());
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
 	{ "setKeyRepeat", w_setKeyRepeat },
 	{ "hasKeyRepeat", w_hasKeyRepeat },
+	{ "setTextInput", w_setTextInput },
+	{ "hasTextInput", w_hasTextInput },
 	{ "isDown", w_isDown },
 	{ 0, 0 }
 };
