@@ -89,14 +89,7 @@ extern "C" int luaopen_love_keyboard(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new love::keyboard::sdl::Keyboard();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new love::keyboard::sdl::Keyboard();)
 	}
 	else
 		instance->retain();

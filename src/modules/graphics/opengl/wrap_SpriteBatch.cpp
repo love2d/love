@@ -56,17 +56,12 @@ int w_SpriteBatch_add(lua_State *L)
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
 	int id = 0;
-	try
-	{
+	EXCEPT_GUARD(
 		if (geom)
 			id = t->addg(geom, x, y, a, sx, sy, ox, oy, kx, ky);
 		else
 			id = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	)
 
 	lua_pushinteger(L, id);
 	return 1;
@@ -96,17 +91,12 @@ int w_SpriteBatch_set(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	try
-	{
+	EXCEPT_GUARD(
 		if (geom)
 			t->addg(geom, x, y, a, sx, sy, ox, oy, kx, ky, id);
 		else
 			t->add(x, y, a, sx, sy, ox, oy, kx, ky, id);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	)
 
 	return 0;
 }
@@ -121,14 +111,7 @@ int w_SpriteBatch_clear(lua_State *L)
 int w_SpriteBatch_bind(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	try
-	{
-		t->lock();
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->lock();)
 	return 0;
 }
 
@@ -219,14 +202,7 @@ int w_SpriteBatch_setBufferSize(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	int size = luaL_checkint(L, 2);
-	try
-	{
-		t->setBufferSize(size);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->setBufferSize(size);)
 	return 0;
 }
 

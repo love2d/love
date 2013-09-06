@@ -39,7 +39,7 @@ int w_World_update(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	float dt = (float)luaL_checknumber(L, 2);
-	ASSERT_GUARD(t->update(dt);)
+	EXCEPT_GUARD(t->update(dt);)
 	return 0;
 }
 
@@ -162,20 +162,15 @@ int w_World_rayCast(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	ASSERT_GUARD(return t->rayCast(L);)
+	int ret = 0;
+	EXCEPT_GUARD(ret = t->rayCast(L);)
+	return ret;
 }
 
 int w_World_destroy(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-	try
-	{
-		t->destroy();
-	}
-	catch(love::Exception &e)
-	{
-		luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->destroy();)
 	return 0;
 }
 

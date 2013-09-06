@@ -46,14 +46,8 @@ int w_Canvas_renderTo(lua_State *L)
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	try
-	{
-		canvas->startGrab();
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(canvas->startGrab();)
+
 	lua_settop(L, 2); // make sure the function is on top of the stack
 	lua_call(L, 0, 0);
 	canvas->stopGrab();
@@ -76,14 +70,9 @@ int w_Canvas_getPixel(lua_State * L)
 	int x = luaL_checkint(L, 2);
 	int y = luaL_checkint(L, 3);
 	unsigned char c[4];
-	try
-	{
-		canvas->getPixel(c, x, y);
-	}
-	catch (love::Exception & e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+
+	EXCEPT_GUARD(canvas->getPixel(c, x, y);)
+
 	lua_pushnumber(L, c[0]);
 	lua_pushnumber(L, c[1]);
 	lua_pushnumber(L, c[2]);

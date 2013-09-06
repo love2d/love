@@ -130,17 +130,21 @@ int w_Shader_sendInt(lua_State *L)
 	if (!values)
 		return luaL_error(L, "Error in arguments.");
 
+	bool should_error = false;
 	try
 	{
 		shader->sendInt(name, dimension, values, count);
 	}
 	catch (love::Exception &e)
 	{
-		delete[] values;
-		return luaL_error(L, "%s", e.what());
+		should_error = true;
+		lua_pushstring(L, e.what());
 	}
 
 	delete[] values;
+
+	if (should_error)
+		return lua_error(L);
 
 	return 0;
 }
@@ -167,17 +171,21 @@ int w_Shader_sendFloat(lua_State *L)
 	if (!values)
 		return luaL_error(L, "Error in arguments.");
 
+	bool should_error = false;
 	try
 	{
 		shader->sendFloat(name, dimension, values, count);
 	}
 	catch (love::Exception &e)
 	{
-		delete[] values;
-		return luaL_error(L, "%s", e.what());
+		should_error = true;
+		lua_pushstring(L, e.what());
 	}
 
 	delete[] values;
+
+	if (should_error)
+		return lua_error(L);
 
 	return 0;
 }
@@ -225,17 +233,23 @@ int w_Shader_sendMatrix(lua_State *L)
 		lua_pop(L, 1 + dimension);
 	}
 
+	bool should_error = false;
+
 	try
 	{
 		shader->sendMatrix(name, dimension, values, count);
 	}
 	catch(love::Exception &e)
 	{
-		delete[] values;
-		return luaL_error(L, "%s", e.what());
+		should_error = true;
+		lua_pushstring(L, e.what());
 	}
 
 	delete[] values;
+
+	if (should_error)
+		return lua_error(L);
+
 	return 0;
 }
 
@@ -245,15 +259,7 @@ int w_Shader_sendImage(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 	Image *img = luax_checkimage(L, 3);
 
-	try
-	{
-		shader->sendImage(name, *img);
-	}
-	catch(love::Exception &e)
-	{
-		luaL_error(L, "%s", e.what());
-	}
-
+	EXCEPT_GUARD(shader->sendImage(name, *img);)
 	return 0;
 }
 
@@ -263,15 +269,7 @@ int w_Shader_sendCanvas(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 	Canvas *canvas = luax_checkcanvas(L, 3);
 
-	try
-	{
-		shader->sendCanvas(name, *canvas);
-	}
-	catch(love::Exception &e)
-	{
-		luaL_error(L, "%s", e.what());
-	}
-
+	EXCEPT_GUARD(shader->sendCanvas(name, *canvas);)
 	return 0;
 }
 

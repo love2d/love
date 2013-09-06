@@ -59,14 +59,8 @@ int w_ParticleSystem_setBufferSize(lua_State *L)
 	lua_Number arg1 = luaL_checknumber(L, 2);
 	if (arg1 < 1.0 || arg1 > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid buffer size");
-	try
-	{
-		t->setBufferSize((uint32) arg1);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+
+	EXCEPT_GUARD(t->setBufferSize((uint32) arg1);)
 	return 0;
 }
 
@@ -104,14 +98,7 @@ int w_ParticleSystem_setEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	int arg1 = luaL_checkint(L, 2);
-	try
-	{
-		t->setEmissionRate(arg1);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->setEmissionRate(arg1);)
 	return 0;
 }
 

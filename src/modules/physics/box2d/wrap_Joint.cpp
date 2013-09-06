@@ -78,14 +78,7 @@ int w_Joint_getCollideConnected(lua_State *L)
 int w_Joint_destroy(lua_State *L)
 {
 	Joint *t = luax_checkjoint(L, 1);
-	try
-	{
-		t->destroyJoint();
-	}
-	catch(love::Exception &e)
-	{
-		luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->destroyJoint();)
 	return 0;
 }
 

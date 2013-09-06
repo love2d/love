@@ -42,9 +42,9 @@ int w_newRasterizer(lua_State *L)
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
 		luax_convobj(L, 1, "filesystem", "newFileData");
 
-	Rasterizer *t = NULL;
-	try
-	{
+	Rasterizer *t = 0;
+
+	EXCEPT_GUARD(
 		if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
 		{
 			love::image::ImageData *d = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
@@ -58,11 +58,7 @@ int w_newRasterizer(lua_State *L)
 			int size = luaL_checkint(L, 2);
 			t = instance->newRasterizer(d, size);
 		}
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	)
 
 	luax_pushtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 	return 1;
@@ -77,14 +73,8 @@ int w_newGlyphData(lua_State *L)
 	if (lua_type(L, 2) == LUA_TSTRING)
 	{
 		std::string glyph = luax_checkstring(L, 2);
-		try
-		{
-			t = instance->newGlyphData(r, glyph);
-		}
-		catch (love::Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+
+		EXCEPT_GUARD(t = instance->newGlyphData(r, glyph);)
 	}
 	else
 	{
@@ -115,14 +105,7 @@ extern "C" int luaopen_love_font(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new Font();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new Font();)
 	}
 	else
 		instance->retain();

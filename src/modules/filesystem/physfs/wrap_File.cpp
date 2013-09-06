@@ -24,7 +24,14 @@
 #include "common/Exception.h"
 #include "common/int.h"
 
-static int ioError(lua_State *L, const char *fmt, ...)
+namespace love
+{
+namespace filesystem
+{
+namespace physfs
+{
+
+int luax_ioError(lua_State *L, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -35,13 +42,6 @@ static int ioError(lua_State *L, const char *fmt, ...)
 	va_end(args);
 	return 2;
 }
-
-namespace love
-{
-namespace filesystem
-{
-namespace physfs
-{
 
 File *luax_checkfile(lua_State *L, int idx)
 {
@@ -54,11 +54,12 @@ int w_File_getSize(lua_State *L)
 	int64 size = t->getSize();
 
 	// Push nil on failure or if size does not fit into a double precision floating-point number.
-	if (size == -1 || size >= 0x20000000000000LL)
-		lua_pushnil(L);
-	else
-		lua_pushnumber(L, (lua_Number)size);
+	if (size == -1)
+		return luax_ioError(L, "Could not determine file size.");
+	else if (size >= 0x20000000000000LL)
+		return luax_ioError(L, "Size is too large.");
 
+	lua_pushnumber(L, (lua_Number) size);
 	return 1;
 }
 
@@ -77,7 +78,7 @@ int w_File_open(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	return 1;
@@ -110,7 +111,7 @@ int w_File_read(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	lua_pushlstring(L, (const char *) d->getData(), d->getSize());
@@ -128,11 +129,17 @@ int w_File_write(lua_State *L)
 	{
 		try
 		{
-			result = file->write(lua_tostring(L, 2), luaL_optint(L, 3, lua_objlen(L, 2)));
+			size_t datasize = 0;
+			const char *data = lua_tolstring(L, 2, &datasize);
+
+			if (!lua_isnoneornil(L, 3))
+				datasize = luaL_checkinteger(L, 3);
+
+			result = file->write(data, datasize);
 		}
 		catch (love::Exception &e)
 		{
-			return ioError(L, "%s", e.what());
+			return luax_ioError(L, "%s", e.what());
 		}
 	}
 	else if (luax_istype(L, 2, DATA_T))
@@ -140,11 +147,11 @@ int w_File_write(lua_State *L)
 		try
 		{
 			love::Data *data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
-			result = file->write(data, luaL_optint(L, 3, data->getSize()));
+			result = file->write(data, luaL_optinteger(L, 3, data->getSize()));
 		}
 		catch (love::Exception &e)
 		{
-			return ioError(L, "%s", e.what());
+			return luax_ioError(L, "%s", e.what());
 		}
 	}
 	else
@@ -152,7 +159,7 @@ int w_File_write(lua_State *L)
 		return luaL_argerror(L, 2, "string or data expected");
 	}
 
-	lua_pushboolean(L, result);
+	luax_pushboolean(L, result);
 	return 1;
 }
 
@@ -166,7 +173,7 @@ int w_File_flush(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 	luax_pushboolean(L, success);
 	return 1;
@@ -184,8 +191,10 @@ int w_File_tell(lua_State *L)
 	File *file = luax_checkfile(L, 1);
 	int64 pos = file->tell();
 	// Push nil on failure or if pos does not fit into a double precision floating-point number.
-	if (pos == -1 || pos >= 0x20000000000000LL)
-		lua_pushnil(L);
+	if (pos == -1)
+		return luax_ioError(L, "Invalid position.");
+	else if (pos >= 0x20000000000000LL)
+		return luax_ioError(L, "Number is too large.");
 	else
 		lua_pushnumber(L, (lua_Number)pos);
 	return 1;
@@ -217,15 +226,11 @@ int w_File_lines(lua_State *L)
 		if (file->getMode() != File::CLOSED)
 			file->close();
 
-		try
-		{
-			if (!file->open(File::READ))
-				return luaL_error(L, "Could not open file.");
-		}
-		catch (love::Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		bool success = false;
+		EXCEPT_GUARD(success = file->open(File::READ);)
+
+		if (!success)
+			return luaL_error(L, "Could not open file.");
 	}
 
 	lua_pushcclosure(L, Filesystem::lines_i, 3);
@@ -249,7 +254,7 @@ int w_File_setBuffer(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	luax_pushboolean(L, success);
@@ -264,7 +269,7 @@ int w_File_getBuffer(lua_State *L)
 	const char *str = 0;
 
 	if (!File::getConstant(bufmode, str))
-		return ioError(L, "Unknown file buffer mode.");
+		return luax_ioError(L, "Unknown file buffer mode.");
 
 	lua_pushstring(L, str);
 	lua_pushnumber(L, (lua_Number) size);
@@ -279,7 +284,7 @@ int w_File_getMode(lua_State *L)
 	const char *str = 0;
 
 	if (!File::getConstant(mode, str))
-		return ioError(L, "Unknown file mode.");
+		return luax_ioError(L, "Unknown file mode.");
 
 	lua_pushstring(L, str);
 	return 1;

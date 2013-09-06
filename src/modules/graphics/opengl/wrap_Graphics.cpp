@@ -174,29 +174,23 @@ int w_newImage(lua_State *L)
 	else
 		data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 
+	if (!data && !data)
+		return luaL_error(L, "Error creating image.");
+
 	// Create the image.
 	Image *image = 0;
-	try
-	{
+	EXCEPT_GUARD(
 		if (cdata)
 			image = instance->newImage(cdata);
 		else if (data)
 			image = instance->newImage(data);
-		else
-			throw love::Exception("Error creating image.");
-	}
-	catch(love::Exception &e)
-	{
-		luaL_error(L, e.what());
-	}
+	)
 
 	if (image == 0)
 		return luaL_error(L, "Could not load image.");
 
-
 	// Push the type.
 	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, image);
-
 	return 1;
 }
 
@@ -321,14 +315,7 @@ int w_newGeometry(lua_State *L)
 	}
 
 	Geometry *geom = 0;
-	try
-	{
-		geom = instance->newGeometry(vertices, vertexmap, mode);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(geom = instance->newGeometry(vertices, vertexmap, mode);)
 
 	if (geom == 0)
 		return luaL_error(L, "Could not create geometry.");
@@ -337,6 +324,7 @@ int w_newGeometry(lua_State *L)
 
 	// Note: This should be changed to luax_pushtype if the new Geometry is ever
 	// expected to be pushed to Lua from another C++ function!
+	// We're only using rawnewtype instead of pushtype for performance.
 	luax_rawnewtype(L, "Geometry", GRAPHICS_GEOMETRY_T, geom);
 	return 1;
 }
@@ -354,6 +342,7 @@ int w_newQuad(lua_State *L)
 
 	// Note: This should be changed to luax_pushtype if the new Geometry is ever
 	// expected to be pushed to Lua from another C++ function!
+	// We're only using rawnewtype instead of pushtype for performance.
 	luax_rawnewtype(L, "Geometry", GRAPHICS_GEOMETRY_T, quad);
 	return 1;
 }
@@ -373,23 +362,14 @@ int w_newFont(lua_State *L)
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
-	Font *font = NULL;
-	try
-	{
-		// Create the font.
-		font = instance->newFont(rasterizer, instance->getDefaultFilter());
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	Font *font = 0;
+	EXCEPT_GUARD(font = instance->newFont(rasterizer, instance->getDefaultFilter());)
 
 	if (font == 0)
 		return luaL_error(L, "Could not load font.");
 
 	// Push the type.
 	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
-
 	return 1;
 }
 
@@ -444,15 +424,10 @@ int w_newSpriteBatch(lua_State *L)
 		if (!SpriteBatch::getConstant(usagestr, usage))
 			return luaL_error(L, "Invalid SpriteBatch usage hint: %s", usagestr);
 	}
-	SpriteBatch *t = NULL;
-	try
-	{
-		t = instance->newSpriteBatch(image, size, usage);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+
+	SpriteBatch *t = 0;
+	EXCEPT_GUARD(t = instance->newSpriteBatch(image, size, usage);)
+
 	luax_pushtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, t);
 	return 1;
 }
@@ -464,14 +439,9 @@ int w_newParticleSystem(lua_State *L)
 	ParticleSystem *t = 0;
 	if (size < 1.0 || size > LOVE_UINT32_MAX)
 		return luaL_error(L, "Invalid ParticleSystem size");	
-	try
-	{
-		t = instance->newParticleSystem(image, size);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+
+	EXCEPT_GUARD(t = instance->newParticleSystem(image, size);)
+
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
 	return 1;
 }
@@ -487,17 +457,10 @@ int w_newCanvas(lua_State *L)
 	if (!Canvas::getConstant(str, texture_type))
 		return luaL_error(L, "Invalid canvas type: %s", str);
 
-	Canvas *canvas = NULL;
-	try
-	{
-		canvas = instance->newCanvas(width, height, texture_type);
-	}
-	catch(Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	Canvas *canvas = 0;
+	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, texture_type);)
 
-	if (NULL == canvas)
+	if (canvas == 0)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
 
 	luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);
@@ -582,20 +545,24 @@ int w_newShader(lua_State *L)
 		}
 	}
 
+	bool should_error = false;
 	try
 	{
 		Shader *shader = instance->newShader(sources);
 		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
 	}
-	catch (const love::Exception &e)
+	catch (love::Exception &e)
 	{
-		// memory is freed in Graphics::newShader
 		luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
 		lua_pushstring(L, e.what());
+
+		// Function pushes the new error string onto the stack.
 		lua_pcall(L, 1, 1, 0);
-		const char *err = lua_tostring(L, -1);
-		return luaL_error(L, "%s", err);
+		should_error = true;
 	}
+
+	if (should_error)
+		return lua_error(L);
 
 	return 1;
 }
@@ -729,32 +696,22 @@ int w_setBlendMode(lua_State *L)
 	if (!Graphics::getConstant(str, mode))
 		return luaL_error(L, "Invalid blend mode: %s", str);
 
-	try
-	{
-		instance->setBlendMode(mode);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	EXCEPT_GUARD(instance->setBlendMode(mode);)
 	return 0;
 }
 
 int w_getBlendMode(lua_State *L)
 {
-	try
-	{
-		Graphics::BlendMode mode = instance->getBlendMode();
-		const char *str;
-		if (!Graphics::getConstant(mode, str))
-			return luaL_error(L, "Unknown blend mode");
-		lua_pushstring(L, str);
-		return 1;
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	const char *str;
+	Graphics::BlendMode mode;
+
+	EXCEPT_GUARD(mode = instance->getBlendMode();)
+
+	if (!Graphics::getConstant(mode, str))
+		return luaL_error(L, "Unknown blend mode");
+
+	lua_pushstring(L, str);
+	return 1;
 }
 
 int w_setDefaultFilter(lua_State *L)
@@ -933,14 +890,9 @@ int w_newScreenshot(lua_State *L)
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
 	bool copyAlpha = luax_optboolean(L, 1, false);
 	love::image::ImageData *i = 0;
-	try
-	{
-		i = instance->newScreenshot(image, copyAlpha);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+
+	EXCEPT_GUARD(i = instance->newScreenshot(image, copyAlpha);)
+
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
 	return 1;
 }
@@ -983,17 +935,12 @@ int w_setCanvas(lua_State *L)
 			attachments.push_back(luax_checkcanvas(L, i));
 	}
 
-	try
-	{
+	EXCEPT_GUARD(
 		if (attachments.size() > 0)
 			canvas->startGrab(attachments);
 		else
 			canvas->startGrab();
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	)
 
 	return 0;
 }
@@ -1116,15 +1063,7 @@ int w_getRendererInfo(lua_State *L)
 	if (!Graphics::getConstant(str, infotype))
 		return luaL_error(L, "Invalid renderer info type: %s", str);
 
-	try
-	{
-		luax_pushstring(L, instance->getRendererInfo(infotype));
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-	
+	EXCEPT_GUARD(luax_pushstring(L, instance->getRendererInfo(infotype));)
 	return 1;
 }
 
@@ -1177,14 +1116,8 @@ int w_print(lua_State *L)
 	float oy = (float)luaL_optnumber(L, 8, 0.0f);
 	float kx = (float)luaL_optnumber(L, 9, 0.0f);
 	float ky = (float)luaL_optnumber(L, 10, 0.0f);
-	try
-	{
-		instance->print(str, x, y, angle, sx, sy, ox, oy, kx,ky);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+
+	EXCEPT_GUARD(instance->print(str, x, y, angle, sx, sy, ox, oy, kx,ky);)
 	return 0;
 }
 
@@ -1220,14 +1153,7 @@ int w_printf(lua_State *L)
 		ky = (float) luaL_optnumber(L, 12, 0.0f);
 	}
 
-	try
-	{
-		instance->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(instance->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);)
 	return 0;
 }
 
@@ -1382,27 +1308,13 @@ int w_polygon(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	try
-	{
-		instance->push();
-	}
-	catch(love::Exception e)
-	{
-		return luaL_error(L, e.what());
-	}
+	EXCEPT_GUARD(instance->push();)
 	return 0;
 }
 
 int w_pop(lua_State *L)
 {
-	try
-	{
-		instance->pop();
-	}
-	catch(love::Exception e)
-	{
-		return luaL_error(L, e.what());
-	}
+	EXCEPT_GUARD(instance->pop();)
 	return 0;
 }
 
@@ -1551,14 +1463,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new Graphics();
-		}
-		catch (love::Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new Graphics();)
 	}
 	else
 		instance->retain();

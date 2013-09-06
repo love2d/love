@@ -70,15 +70,7 @@ int w_Image_setFilter(lua_State *L)
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 
-	try
-	{
-		t->setFilter(f);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-
+	EXCEPT_GUARD(t->setFilter(f);)
 	return 0;
 }
 
@@ -110,19 +102,11 @@ int w_Image_setMipmapFilter(lua_State *L)
 			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
 	}
 
-	try
-	{
-		t->setFilter(f);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->setFilter(f);)
 
 	float sharpness = luaL_optnumber(L, 3, 0);
-
 	t->setMipmapSharpness(sharpness);
-	
+
 	return 0;
 }
 
@@ -139,7 +123,6 @@ int w_Image_getMipmapFilter(lua_State *L)
 		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
 
 	lua_pushnumber(L, t->getMipmapSharpness());
-
 	return 2;
 }
 
@@ -185,14 +168,7 @@ int w_Image_isCompressed(lua_State *L)
 int w_Image_refresh(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	try
-	{
-		i->refresh();
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(i->refresh();)
 	return 0;
 }
 

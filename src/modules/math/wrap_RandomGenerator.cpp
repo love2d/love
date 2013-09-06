@@ -98,14 +98,7 @@ RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 int w_RandomGenerator_setState(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-	try
-	{
-		rng->setState(luax_checkrandomstate(L, 2));
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(rng->setState(luax_checkrandomstate(L, 2));)
 	return 0;
 }
 

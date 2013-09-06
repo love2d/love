@@ -45,14 +45,7 @@ int w_newCursor(lua_State *L)
 		if (!Cursor::getConstant(str, systemCursor))
 			return luaL_error(L, "Invalid cursor type %s", str);
 
-		try
-		{
-			cursor = instance->newCursor(systemCursor);
-		}
-		catch (love::Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(cursor = instance->newCursor(systemCursor);)
 	}
 	else
 	{
@@ -61,14 +54,7 @@ int w_newCursor(lua_State *L)
 		int hotx = luaL_optint(L, 2, 0);
 		int hoty = luaL_optint(L, 3, 0);
 
-		try
-		{
-			cursor = instance->newCursor(data, hotx, hoty);
-		}
-		catch (love::Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(cursor = instance->newCursor(data, hotx, hoty);)
 	}
 
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
@@ -223,14 +209,7 @@ extern "C" int luaopen_love_mouse(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new love::mouse::sdl::Mouse();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new love::mouse::sdl::Mouse();)
 	}
 	else
 		instance->retain();

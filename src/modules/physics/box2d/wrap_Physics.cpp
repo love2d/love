@@ -57,7 +57,7 @@ int w_newWorld(lua_State *L)
 	bool sleep = luax_optboolean(L, 3, true);
 
 	World *w;
-	ASSERT_GUARD(w = instance->newWorld(gx, gy, sleep);)
+	EXCEPT_GUARD(w = instance->newWorld(gx, gy, sleep);)
 	luax_pushtype(L, "World", PHYSICS_WORLD_T, w);
 
 	return 1;
@@ -75,7 +75,7 @@ int w_newBody(lua_State *L)
 		return luaL_error(L, "Invalid Body type: %s", typestr);
 
 	Body *body;
-	ASSERT_GUARD(body = instance->newBody(world, x, y, btype);)
+	EXCEPT_GUARD(body = instance->newBody(world, x, y, btype);)
 	luax_pushtype(L, "Body", PHYSICS_BODY_T, body);
 	return 1;
 }
@@ -86,7 +86,7 @@ int w_newFixture(lua_State *L)
 	Shape *shape = luax_checkshape(L, 2);
 	float density = (float)luaL_optnumber(L, 3, 1.0f);
 	Fixture *fixture;
-	ASSERT_GUARD(fixture = instance->newFixture(body, shape, density);)
+	EXCEPT_GUARD(fixture = instance->newFixture(body, shape, density);)
 	luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, fixture);
 	return 1;
 }
@@ -99,7 +99,7 @@ int w_newCircleShape(lua_State *L)
 	{
 		float radius = (float)luaL_checknumber(L, 1);
 		CircleShape *shape;
-		ASSERT_GUARD(shape = instance->newCircleShape(radius);)
+		EXCEPT_GUARD(shape = instance->newCircleShape(radius);)
 		luax_pushtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, shape);
 		return 1;
 	}
@@ -109,7 +109,7 @@ int w_newCircleShape(lua_State *L)
 		float y = (float)luaL_checknumber(L, 2);
 		float radius = (float)luaL_checknumber(L, 3);
 		CircleShape *shape;
-		ASSERT_GUARD(shape = instance->newCircleShape(x, y, radius);)
+		EXCEPT_GUARD(shape = instance->newCircleShape(x, y, radius);)
 		luax_pushtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, shape);
 		return 1;
 	}
@@ -126,7 +126,7 @@ int w_newRectangleShape(lua_State *L)
 		float w = (float)luaL_checknumber(L, 1);
 		float h = (float)luaL_checknumber(L, 2);
 		PolygonShape *shape;
-		ASSERT_GUARD(shape = instance->newRectangleShape(w, h);)
+		EXCEPT_GUARD(shape = instance->newRectangleShape(w, h);)
 		luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, shape);
 		return 1;
 	}
@@ -138,7 +138,7 @@ int w_newRectangleShape(lua_State *L)
 		float h = (float)luaL_checknumber(L, 4);
 		float angle = (float)luaL_optnumber(L, 5, 0);
 		PolygonShape *shape;
-		ASSERT_GUARD(shape = instance->newRectangleShape(x, y, w, h, angle);)
+		EXCEPT_GUARD(shape = instance->newRectangleShape(x, y, w, h, angle);)
 		luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, shape);
 		return 1;
 	}
@@ -153,19 +153,23 @@ int w_newEdgeShape(lua_State *L)
 	float x2 = (float)luaL_checknumber(L, 3);
 	float y2 = (float)luaL_checknumber(L, 4);
 	EdgeShape *shape;
-	ASSERT_GUARD(shape = instance->newEdgeShape(x1, y1, x2, y2);)
+	EXCEPT_GUARD(shape = instance->newEdgeShape(x1, y1, x2, y2);)
 	luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, shape);
 	return 1;
 }
 
 int w_newPolygonShape(lua_State *L)
 {
-	ASSERT_GUARD(return instance->newPolygonShape(L);)
+	int ret = 0;
+	EXCEPT_GUARD(ret = instance->newPolygonShape(L);)
+	return ret;
 }
 
 int w_newChainShape(lua_State *L)
 {
-	ASSERT_GUARD(return instance->newChainShape(L);)
+	int ret = 0;
+	EXCEPT_GUARD(ret = instance->newChainShape(L);)
+	return ret;
 }
 
 int w_newDistanceJoint(lua_State *L)
@@ -178,7 +182,7 @@ int w_newDistanceJoint(lua_State *L)
 	float y2 = (float)luaL_checknumber(L, 6);
 	bool collideConnected = luax_optboolean(L, 7, false);
 	DistanceJoint *j;
-	ASSERT_GUARD(j = instance->newDistanceJoint(body1, body2, x1, y1, x2, y2, collideConnected);)
+	EXCEPT_GUARD(j = instance->newDistanceJoint(body1, body2, x1, y1, x2, y2, collideConnected);)
 	luax_pushtype(L, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T, j);
 	return 1;
 }
@@ -189,7 +193,7 @@ int w_newMouseJoint(lua_State *L)
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	MouseJoint *j;
-	ASSERT_GUARD(j = instance->newMouseJoint(body, x, y);)
+	EXCEPT_GUARD(j = instance->newMouseJoint(body, x, y);)
 	luax_pushtype(L, "MouseJoint", PHYSICS_MOUSE_JOINT_T, j);
 	return 1;
 }
@@ -202,7 +206,7 @@ int w_newRevoluteJoint(lua_State *L)
 	float y = (float)luaL_checknumber(L, 4);
 	bool collideConnected = luax_optboolean(L, 5, false);
 	RevoluteJoint *j;
-	ASSERT_GUARD(j = instance->newRevoluteJoint(body1, body2, x, y, collideConnected);)
+	EXCEPT_GUARD(j = instance->newRevoluteJoint(body1, body2, x, y, collideConnected);)
 	luax_pushtype(L, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T, j);
 	return 1;
 }
@@ -232,7 +236,7 @@ int w_newPrismaticJoint(lua_State *L)
 		collideConnected = luax_optboolean(L, 7, false);
 	}
 	PrismaticJoint *j;
-	ASSERT_GUARD(j = instance->newPrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
+	EXCEPT_GUARD(j = instance->newPrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
 	luax_pushtype(L, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T, j);
 	return 1;
 }
@@ -253,7 +257,7 @@ int w_newPulleyJoint(lua_State *L)
 	bool collideConnected = luax_optboolean(L, 12, true); // PulleyJoints default to colliding connected bodies, see b2PulleyJoint.h
 
 	PulleyJoint *j;
-	ASSERT_GUARD(j = instance->newPulleyJoint(body1, body2, b2Vec2(gx1,gy1), b2Vec2(gx2,gy2), b2Vec2(x1,y1), b2Vec2(x2,y2), ratio, collideConnected);)
+	EXCEPT_GUARD(j = instance->newPulleyJoint(body1, body2, b2Vec2(gx1,gy1), b2Vec2(gx2,gy2), b2Vec2(x1,y1), b2Vec2(x2,y2), ratio, collideConnected);)
 	luax_pushtype(L, "PulleyJoint", PHYSICS_PULLEY_JOINT_T, j);
 	return 1;
 }
@@ -266,7 +270,7 @@ int w_newGearJoint(lua_State *L)
 	bool collideConnected = luax_optboolean(L, 4, false);
 
 	GearJoint *j;
-	ASSERT_GUARD(j = instance->newGearJoint(joint1, joint2, ratio, collideConnected);)
+	EXCEPT_GUARD(j = instance->newGearJoint(joint1, joint2, ratio, collideConnected);)
 	luax_pushtype(L, "GearJoint", PHYSICS_GEAR_JOINT_T, j);
 	return 1;
 }
@@ -292,7 +296,7 @@ int w_newFrictionJoint(lua_State *L)
 		collideConnected = luax_optboolean(L, 5, false);
 	}
 	FrictionJoint *j;
-	ASSERT_GUARD(j = instance->newFrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
+	EXCEPT_GUARD(j = instance->newFrictionJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
 	luax_pushtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, j);
 	return 1;
 }
@@ -318,7 +322,7 @@ int w_newWeldJoint(lua_State *L)
 		collideConnected = luax_optboolean(L, 5, false);
 	}
 	WeldJoint *j;
-	ASSERT_GUARD(j = instance->newWeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
+	EXCEPT_GUARD(j = instance->newWeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);)
 	luax_pushtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, j);
 	return 1;
 }
@@ -349,7 +353,7 @@ int w_newWheelJoint(lua_State *L)
 	}
 
 	WheelJoint *j;
-	ASSERT_GUARD(j = instance->newWheelJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
+	EXCEPT_GUARD(j = instance->newWheelJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);)
 	luax_pushtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, j);
 	return 1;
 }
@@ -365,7 +369,7 @@ int w_newRopeJoint(lua_State *L)
 	float maxLength = (float)luaL_checknumber(L, 7);
 	bool collideConnected = luax_optboolean(L, 8, false);
 	RopeJoint *j;
-	ASSERT_GUARD(j = instance->newRopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);)
+	EXCEPT_GUARD(j = instance->newRopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);)
 	luax_pushtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, j);
 	return 1;
 }
@@ -378,14 +382,7 @@ int w_getDistance(lua_State *L)
 int w_setMeter(lua_State *L)
 {
 	int arg1 = luaL_checkint(L, 1);
-	try
-	{
-		Physics::setMeter(arg1);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	EXCEPT_GUARD(Physics::setMeter(arg1);)
 	return 0;
 
 }
@@ -451,14 +448,7 @@ extern "C" int luaopen_love_physics(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new Physics();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new Physics();)
 	}
 	else
 		instance->retain();

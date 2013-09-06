@@ -470,6 +470,25 @@ T *luax_totype(lua_State *L, int idx, const char *, love::bits)
 
 Type luax_type(lua_State *L, int idx);
 
+/**
+ * Macro for converting a LOVE exception into a Lua error.
+ * lua_error (and luaL_error) cannot be called from inside the exception handler
+ * because they use longjmp, which causes undefined behaviour when the
+ * destructor of the exception would have been called.
+ **/
+#define EXCEPT_GUARD(A) \
+{ \
+	bool should_error = false; \
+	try { A } \
+	catch (love::Exception &e) \
+	{ \
+		should_error = true; \
+		lua_pushstring(L, e.what()); \
+	} \
+	if (should_error) \
+		return lua_error(L); \
+}
+
 } // love
 
 #endif // LOVE_RUNTIME_H

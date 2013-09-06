@@ -33,6 +33,9 @@ namespace filesystem
 namespace physfs
 {
 
+// Does not use lua_error, so it's safe to call in exception handling code.
+int luax_ioError(lua_State *L, const char *fmt, ...);
+
 File *luax_checkfile(lua_State *L, int idx);
 int w_File_getSize(lua_State *L);
 int w_File_open(lua_State *L);

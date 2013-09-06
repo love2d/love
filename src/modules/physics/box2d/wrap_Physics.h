@@ -25,8 +25,6 @@
 #include "common/config.h"
 #include "Physics.h"
 
-#define ASSERT_GUARD(A) try { A } catch (love::Exception & e) { return luaL_error(L, "%s", e.what()); }
-
 namespace love
 {
 namespace physics

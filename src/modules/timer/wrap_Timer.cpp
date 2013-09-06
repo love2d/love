@@ -85,15 +85,7 @@ extern "C" int luaopen_love_timer(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new love::timer::sdl::Timer();
-
-		}
-		catch (Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(instance = new love::timer::sdl::Timer();)
 	}
 	else
 		instance->retain();

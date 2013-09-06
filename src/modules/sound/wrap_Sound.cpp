@@ -41,20 +41,11 @@ int w_newSoundData(lua_State *L)
 		int bitDepth = luaL_optint(L, 3, Decoder::DEFAULT_BIT_DEPTH);
 		int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
 
-		try
-		{
-			t = instance->newSoundData(samples, sampleRate, bitDepth, channels);
-		}
-		catch(love::Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
-
+		EXCEPT_GUARD(t = instance->newSoundData(samples, sampleRate, bitDepth, channels);)
 	}
 	// Must be string or decoder.
 	else
 	{
-
 		// Convert to Decoder, if necessary.
 		if (!luax_istype(L, 1, SOUND_DECODER_T))
 		{
@@ -62,14 +53,7 @@ int w_newSoundData(lua_State *L)
 			lua_replace(L, 1);
 		}
 
-		try
-		{
-			t = instance->newSoundData(luax_checkdecoder(L, 1));
-		}
-		catch(love::Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(t = instance->newSoundData(luax_checkdecoder(L, 1));)
 	}
 
 	luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, t);
@@ -86,18 +70,13 @@ int w_newDecoder(lua_State *L)
 
 	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
 
-	try
-	{
-		Decoder *t = instance->newDecoder(data, bufferSize);
-		if (t == 0)
-			return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
-		luax_pushtype(L, "Decoder", SOUND_DECODER_T, t);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	Decoder *t = 0;
+	EXCEPT_GUARD(t = instance->newDecoder(data, bufferSize);)
 
+	if (t == 0)
+		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
+
+	luax_pushtype(L, "Decoder", SOUND_DECODER_T, t);
 	return 1;
 }
 
@@ -120,14 +99,7 @@ extern "C" int luaopen_love_sound(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new lullaby::Sound();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new lullaby::Sound();)
 	}
 	else
 		instance->retain();

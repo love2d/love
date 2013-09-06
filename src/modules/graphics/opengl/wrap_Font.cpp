@@ -44,14 +44,8 @@ int w_Font_getWidth(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
 	const char *str = luaL_checkstring(L, 2);
-	try
-	{
-		lua_pushinteger(L, t->getWidth(str));
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+
+	EXCEPT_GUARD(lua_pushinteger(L, t->getWidth(str));)
 	return 1;
 }
 
@@ -61,15 +55,12 @@ int w_Font_getWrap(lua_State *L)
 	const char *str = luaL_checkstring(L, 2);
 	float wrap = (float) luaL_checknumber(L, 3);
 	int max_width = 0, numlines = 0;
-	try
-	{
+
+	EXCEPT_GUARD(
 		std::vector<std::string> lines = t->getWrap(str, wrap, &max_width);
 		numlines = lines.size();
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	)
+
 	lua_pushinteger(L, max_width);
 	lua_pushinteger(L, numlines);
 	return 2;
@@ -105,15 +96,7 @@ int w_Font_setFilter(lua_State *L)
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 
-	try
-	{
-		t->setFilter(f);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-
+	EXCEPT_GUARD(t->setFilter(f);)
 	return 0;
 }
 
@@ -157,17 +140,12 @@ int w_Font_hasGlyph(lua_State *L)
 	Font *t = luax_checkfont(L, 1);
 	bool hasglyph = false;
 
-	try
-	{
+	EXCEPT_GUARD(
 		if (lua_type(L, 2) == LUA_TSTRING)
 			hasglyph = t->hasGlyph(luax_checkstring(L, 2));
 		else
 			hasglyph = t->hasGlyph((uint32) luaL_checknumber(L, 2));
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	)
 
 	luax_pushboolean(L, hasglyph);
 	return 1;

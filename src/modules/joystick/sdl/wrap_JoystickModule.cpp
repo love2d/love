@@ -68,7 +68,7 @@ int w_setGamepadMapping(lua_State *L)
 	// Only accept a GUID string. We don't accept a Joystick object because
 	// the gamepad mapping applies to all joysticks with the same GUID (e.g. all
 	// Xbox 360 controllers on the system), rather than individual objects.
-	std::string guid = luax_checkstring(L, 1);
+	const char *guid = luaL_checkstring(L, 1);
 
 	const char *gpbindstr = luaL_checkstring(L, 2);
 	Joystick::GamepadInput gpinput;
@@ -107,14 +107,8 @@ int w_setGamepadMapping(lua_State *L)
 	}
 
 	bool success = false;
-	try
-	{
-		success = instance->setGamepadMapping(guid, gpinput, jinput);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(success = instance->setGamepadMapping(guid, gpinput, jinput);)
+
 	luax_pushboolean(L, success);
 	return 1;
 }
@@ -146,14 +140,7 @@ int w_getGamepadMapping(lua_State *L)
 	Joystick::JoystickInput jinput;
 	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
 
-	try
-	{
-		jinput = instance->getGamepadMapping(guid, gpinput);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(jinput = instance->getGamepadMapping(guid, gpinput);)
 
 	if (jinput.type == Joystick::INPUT_TYPE_MAX_ENUM)
 		return 0;
@@ -209,18 +196,10 @@ extern "C" int luaopen_love_joystick(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new JoystickModule();
-		}
-		catch (Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new JoystickModule();)
 	}
 	else
 		instance->retain();
-
 
 	WrappedModule w;
 	w.module = instance;

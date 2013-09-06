@@ -123,14 +123,7 @@ extern "C" int luaopen_love_event(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new Event();
-		}
-		catch (love::Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(instance = new Event();)
 	}
 	else
 		instance->retain();

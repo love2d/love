@@ -43,14 +43,8 @@ int w_newImageData(lua_State *L)
 			return luaL_error(L, "Invalid image size.");
 
 		ImageData *t = 0;
-		try
-		{
-			t = instance->newImageData(w, h);
-		}
-		catch(love::Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(t = instance->newImageData(w, h);)
+
 		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 		return 1;
 	}
@@ -64,17 +58,9 @@ int w_newImageData(lua_State *L)
 	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
 
 	ImageData *t = 0;
-	try
-	{
-		t = instance->newImageData(data);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t = instance->newImageData(data);)
 
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
-
 	return 1;
 }
 
@@ -87,17 +73,9 @@ int w_newCompressedData(lua_State *L)
 	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
 
 	CompressedData *t = 0;
-	try
-	{
-		t = instance->newCompressedData(data);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t = instance->newCompressedData(data);)
 
 	luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
-
 	return 1;
 }
 
@@ -110,14 +88,8 @@ int w_isCompressed(lua_State *L)
 	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
 
 	bool compressed = false;
-	try
-	{
-		compressed = instance->isCompressed(data);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(compressed = instance->isCompressed(data);)
+
 	luax_pushboolean(L, compressed);
 	return 1;
 }
@@ -142,14 +114,7 @@ extern "C" int luaopen_love_image(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new love::image::magpie::Image();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(instance = new love::image::magpie::Image();)
 	}
 	else
 		instance->retain();

@@ -40,7 +40,7 @@ int w_GearJoint_setRatio(lua_State *L)
 {
 	GearJoint *t = luax_checkgearjoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	ASSERT_GUARD(t->setRatio(arg1);)
+	EXCEPT_GUARD(t->setRatio(arg1);)
 	return 0;
 }
 

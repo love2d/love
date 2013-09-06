@@ -529,15 +529,19 @@ int Filesystem::lines_i(lua_State *L)
 		}
 		else
 		{
-			char *str;
+			char *str = 0;
 			try
 			{
 				str = new char[linesize + 1];
 			}
 			catch(std::bad_alloc &)
 			{
-				return luaL_error(L, "Out of memory");
+				// Can't lua_error (longjmp) in exception handlers.
 			}
+
+			if (!str)
+				return luaL_error(L, "Out of memory.");
+
 			file->seek(pos);
 
 			// Read the \n anyway and save us a call to seek.

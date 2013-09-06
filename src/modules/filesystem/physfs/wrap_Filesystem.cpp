@@ -21,17 +21,8 @@
 // LOVE
 #include "wrap_Filesystem.h"
 
-static int ioError(lua_State *L, const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-
-	lua_pushnil(L);
-	lua_pushvfstring(L, fmt, args);
-
-	va_end(args);
-	return 2;
-}
+// SDL
+#include <SDL_loadso.h>
 
 namespace love
 {
@@ -52,16 +43,7 @@ bool hack_setupWriteDirectory()
 int w_init(lua_State *L)
 {
 	const char *arg0 = luaL_checkstring(L, 1);
-
-	try
-	{
-		instance->init(arg0);
-	}
-	catch(Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
-
+	EXCEPT_GUARD(instance->init(arg0);)
 	return 0;
 }
 
@@ -166,7 +148,7 @@ int w_newFile(lua_State *L)
 		catch (love::Exception &e)
 		{
 			t->release();
-			return ioError(L, "%s", e.what());
+			return luax_ioError(L, "%s", e.what());
 		}
 	}
 
@@ -194,7 +176,7 @@ int w_newFileData(lua_State *L)
 			}
 			catch (love::Exception &e)
 			{
-				return ioError(L, "%s", e.what());
+				return luax_ioError(L, "%s", e.what());
 			}
 			luax_pushtype(L, "FileData", FILESYSTEM_FILE_DATA_T, data);
 			return 1;
@@ -308,11 +290,11 @@ int w_read(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	if (data == 0)
-		return ioError(L, "File could not be read.");
+		return luax_ioError(L, "File could not be read.");
 
 	// Push the string.
 	lua_pushlstring(L, (const char *) data->getData(), data->getSize());
@@ -356,11 +338,10 @@ static int w_write_or_append(lua_State *L, File::Mode mode)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	luax_pushboolean(L, true);
-
 	return 1;
 }
 
@@ -386,19 +367,17 @@ int w_lines(lua_State *L)
 	if (lua_isstring(L, 1))
 	{
 		file = instance->newFile(lua_tostring(L, 1));
-		try
-		{
-			if (!file->open(File::READ))
-				return luaL_error(L, "Could not open file.");
-		}
-		catch(love::Exception &e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		bool success = false;
+
+		EXCEPT_GUARD(success = file->open(File::READ);)
+
+		if (!success)
+			return luaL_error(L, "Could not open file.");
+		
 		luax_pushtype(L, "File", FILESYSTEM_FILE_T, file);
 	}
 	else
-		return luaL_error(L, "Expected filename.");
+		return luaL_argerror(L, 1, "expected filename.");
 
 	lua_pushcclosure(L, Filesystem::lines_i, 1);
 	return 1;
@@ -415,7 +394,7 @@ int w_load(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
@@ -445,13 +424,10 @@ int w_getLastModified(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		lua_pushnil(L);
-		lua_pushstring(L, e.what());
-		return 2;
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	lua_pushnumber(L, static_cast<lua_Number>(time));
-
 	return 1;
 }
 
@@ -466,15 +442,14 @@ int w_getSize(lua_State *L)
 	}
 	catch (love::Exception &e)
 	{
-		return ioError(L, "%s", e.what());
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	// Error on failure or if size does not fit into a double precision floating-point number.
 	if (size == -1)
-		return ioError(L, "Could not determine file size.");
+		return luax_ioError(L, "Could not determine file size.");
 	else if (size >= 0x20000000000000LL)
-		return luaL_error(L, "Size too large to fit into a Lua number!");
-
+		return luax_ioError(L, "Size too large to fit into a Lua number!");
 
 	lua_pushnumber(L, (lua_Number) size);
 	return 1;
@@ -629,23 +604,13 @@ extern "C" int luaopen_love_filesystem(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new Filesystem();
-			love::luax_register_searcher(L, loader, 1);
-			love::luax_register_searcher(L, extloader, 2);
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new Filesystem();)
 	}
 	else
-	{
 		instance->retain();
-		love::luax_register_searcher(L, loader, 1);
-		love::luax_register_searcher(L, extloader, 2);
-	}
+
+	love::luax_register_searcher(L, loader, 1);
+	love::luax_register_searcher(L, extloader, 2);
 
 	WrappedModule w;
 	w.module = instance;

@@ -34,14 +34,7 @@ namespace math
 
 int w_setRandomState(lua_State *L)
 {
-	try
-	{
-		Math::instance.setRandomState(luax_checkrandomstate(L, 1));
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(Math::instance.setRandomState(luax_checkrandomstate(L, 1));)
 	return 0;
 }
 
@@ -79,6 +72,8 @@ int w_newRandomGenerator(lua_State *L)
 
 	if (lua_gettop(L) > 0)
 	{
+		bool should_error = false;
+
 		try
 		{
 			t->setState(s);
@@ -86,8 +81,12 @@ int w_newRandomGenerator(lua_State *L)
 		catch (love::Exception &e)
 		{
 			t->release();
-			return luaL_error(L, "%s", e.what());
+			should_error = true;
+			lua_pushstring(L, e.what());
 		}
+
+		if (should_error)
+			return lua_error(L);
 	}
 
 	luax_pushtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, t);
@@ -169,17 +168,13 @@ int w_triangulate(lua_State *L)
 		return luaL_error(L, "Need at least 3 vertices to triangulate");
 
 	std::vector<Triangle> triangles;
-	try
-	{
+
+	EXCEPT_GUARD(
 		if (vertices.size() == 3)
 			triangles.push_back(Triangle(vertices[0], vertices[1], vertices[2]));
 		else
 			triangles = Math::instance.triangulate(vertices);
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	)
 
 	lua_createtable(L, triangles.size(), 0);
 	for (size_t i = 0; i < triangles.size(); ++i)

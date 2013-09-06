@@ -61,14 +61,9 @@ int w_ImageData_getPixel(lua_State *L)
 	int x = luaL_checkint(L, 2);
 	int y = luaL_checkint(L, 3);
 	pixel c;
-	try
-	{
-		c = t->getPixel(x, y);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+
+	EXCEPT_GUARD(c = t->getPixel(x, y);)
+
 	lua_pushnumber(L, c.r);
 	lua_pushnumber(L, c.g);
 	lua_pushnumber(L, c.b);
@@ -103,14 +98,7 @@ int w_ImageData_setPixel(lua_State *L)
 		c.a = (unsigned char)luaL_optinteger(L, 7, 255);
 	}
 
-	try
-	{
-		t->setPixel(x, y, c);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->setPixel(x, y, c);)
 	return 0;
 }
 
@@ -281,14 +269,7 @@ int w_ImageData_encode(lua_State *L)
 			return luaL_error(L, "Invalid image format '%s'.", fmt);
 	}
 
-	try
-	{
-		t->encode(file, format);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	EXCEPT_GUARD(t->encode(file, format);)
 	return 0;
 }
 

@@ -26,9 +26,6 @@
 #include "wrap_File.h"
 #include "wrap_FileData.h"
 
-// SDL
-#include <SDL_loadso.h>
-
 namespace love
 {
 namespace filesystem

@@ -63,14 +63,8 @@ int w_GlyphData_getGlyph(lua_State *L)
 int w_GlyphData_getGlyphString(lua_State *L)
 {
 	GlyphData *t = luax_checkglyphdata(L, 1);
-	try
-	{
-		luax_pushstring(L, t->getGlyphString());
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+
+	EXCEPT_GUARD(luax_pushstring(L, t->getGlyphString());)
 	return 1;
 }
 

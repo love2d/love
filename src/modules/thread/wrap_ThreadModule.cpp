@@ -91,14 +91,7 @@ extern "C" int luaopen_love_thread(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new love::thread::ThreadModule();
-		}
-		catch (Exception & e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(instance = new love::thread::ThreadModule();)
 	}
 	else
 		instance->retain();

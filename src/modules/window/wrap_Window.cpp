@@ -105,15 +105,7 @@ int w_setMode(lua_State *L)
 	// Display index is 1-based in Lua and 0-based internally.
 	flags.display--;
 
-	try
-	{
-		luax_pushboolean(L, instance->setWindow(w, h, &flags));
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-
+	EXCEPT_GUARD(luax_pushboolean(L, instance->setWindow(w, h, &flags));)
 	return 1;
 }
 
@@ -339,14 +331,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_window(lua_State *L)
 {
-	try
-	{
-		instance = sdl::Window::createSingleton();
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(instance = sdl::Window::createSingleton();)
 
 	WrappedModule w;
 	w.module = instance;

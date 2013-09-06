@@ -44,9 +44,9 @@ int w_Geometry_getVertexCount(lua_State *L)
 int w_Geometry_getVertex(lua_State *L)
 {
 	Geometry *geom = luax_checkgeometry(L, 1);
-	size_t i = size_t(luaL_checkint(L, 2));
-	try
-	{
+	size_t i = size_t(luaL_checkinteger(L, 2));
+
+	EXCEPT_GUARD(
 		const vertex &v = geom->getVertex(i-1);
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
@@ -56,11 +56,7 @@ int w_Geometry_getVertex(lua_State *L)
 		lua_pushnumber(L, v.g);
 		lua_pushnumber(L, v.b);
 		lua_pushnumber(L, v.a);
-	}
-	catch (Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	)
 
 	return 8;
 }
@@ -100,14 +96,7 @@ int w_Geometry_setVertex(lua_State *L)
 		v.a = luaL_optinteger(L, 10, 255);
 	}
 
-	try
-	{
-		geom->setVertex(i-1, v);
-	}
-	catch (Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	EXCEPT_GUARD(geom->setVertex(i-1, v);)
 
 	if (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255)
 		geom->setVertexColors(true);
@@ -198,14 +187,7 @@ int w_Geometry_setVertexMap(lua_State *L)
 			vertexmap.push_back(luaL_checkinteger(L, i + 2) - 1);
 	}
 
-	try
-	{
-		g->setElementArray(&vertexmap[0], vertexmap.size());
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(g->setElementArray(&vertexmap[0], vertexmap.size());)
 	return 0;
 }
 
