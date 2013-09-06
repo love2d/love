@@ -174,7 +174,7 @@ int w_newImage(lua_State *L)
 	else
 		data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 
-	if (!data && !data)
+	if (!data && !cdata)
 		return luaL_error(L, "Error creating image.");
 
 	// Create the image.
