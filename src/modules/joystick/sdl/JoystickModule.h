@@ -24,9 +24,10 @@
 // LOVE
 #include "joystick/JoystickModule.h"
 
-// STL
+// C++
 #include <string>
-#include <map>
+#include <vector>
+#include <list>
 
 namespace love
 {
@@ -52,6 +53,7 @@ public:
 	love::joystick::Joystick *getJoystick(int joyindex);
 	int getIndex(const love::joystick::Joystick *joystick);
 	int getJoystickCount() const;
+
 	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput);
 	Joystick::JoystickInput getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput);
 
@@ -60,6 +62,7 @@ private:
 	std::string stringFromGamepadInput(Joystick::GamepadInput gpinput) const;
 	Joystick::JoystickInput JoystickInputFromString(const std::string &str) const;
 	void removeBindFromMapString(std::string &mapstr, const std::string &joybindstr) const;
+
 	void checkGamepads(const std::string &guid) const;
 
 	// SDL2's GUIDs identify *classes* of devices, instead of unique devices.
@@ -69,7 +72,7 @@ private:
 	std::vector<Joystick *> activeSticks;
 
 	// Persistent list of all Joysticks which have been connected at some point.
-	std::vector<Joystick *> joysticks;
+	std::list<Joystick *> joysticks;
 
 }; // JoystickModule
 

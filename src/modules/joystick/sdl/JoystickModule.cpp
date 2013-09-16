@@ -41,9 +41,12 @@ namespace sdl
 
 JoystickModule::JoystickModule()
 {
-	// Init the SDL Joystick and Game Controller systems.
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0)
 		throw love::Exception("%s", SDL_GetError());
+
+	// Initialize any joysticks which are already connected.
+	for (int i = 0; i < SDL_NumJoysticks(); i++)
+		addJoystick(i);
 
 	// Start joystick event watching. Joysticks are automatically added and
 	// removed via love.event.
@@ -54,10 +57,11 @@ JoystickModule::JoystickModule()
 JoystickModule::~JoystickModule()
 {
 	// Close any open Joysticks.
-	for (size_t i = 0; i < joysticks.size(); i++)
+	std::list<joystick::Joystick *>::iterator it;
+	for (it = joysticks.begin(); it != joysticks.end(); ++it)
 	{
-		joysticks[i]->close();
-		joysticks[i]->release();
+		(*it)->close();
+		(*it)->release();
 	}
 
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
@@ -110,32 +114,52 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 		return 0;
 
 	std::string guidstr = getDeviceGUID(deviceindex);
-
 	joystick::Joystick *joystick = 0;
+	bool reused = false;
 
-	for (size_t i = 0; i < joysticks.size(); i++)
+	std::list<joystick::Joystick *>::iterator it;
+	for (it = joysticks.begin(); it != joysticks.end(); ++it)
 	{
 		// Try to re-use a disconnected Joystick with the same GUID.
-		if (!joysticks[i]->isConnected() && joysticks[i]->getGUID() == guidstr)
+		if (!(*it)->isConnected() && (*it)->getGUID() == guidstr)
 		{
-			joystick = joysticks[i];
-			joystick->open(deviceindex);
+			joystick = *it;
+			reused = true;
 			break;
 		}
 	}
 
 	if (!joystick)
 	{
-		// Make a new Joystick and add it to the persistent list, if we can't
-		// re-use one.
-		joystick = new Joystick(joysticks.size(), deviceindex);
+		joystick = new Joystick(joysticks.size());
 		joysticks.push_back(joystick);
 	}
 
-	// Add the Joystick to the connected list, if it's not there already.
-	if (std::find(activeSticks.begin(), activeSticks.end(), joystick) == activeSticks.end())
-		activeSticks.push_back(joystick);
+	// Make sure the Joystick object isn't in the active list already.
+	removeJoystick(joystick);
 
+	if (!joystick->open(deviceindex))
+		return 0;
+
+	// Make sure multiple instances of the same physical joystick aren't added
+	// to the active list.
+	for (size_t i = 0; i < activeSticks.size(); i++)
+	{
+		if (joystick->getHandle() == activeSticks[i]->getHandle())
+		{
+			joystick->close();
+
+			if (!reused)
+			{
+				joysticks.remove(joystick);
+				joystick->release();
+			}
+
+			return activeSticks[i];
+		}
+	}
+
+	activeSticks.push_back(joystick);
 	return joystick;
 }
 
