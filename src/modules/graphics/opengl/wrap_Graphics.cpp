@@ -395,6 +395,7 @@ int w_newImageFont(lua_State *L)
 	// Convert to Rasterizer if necessary.
 	if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
 	{
+		luaL_checkstring(L, 2);
 		int idxs[] = {1, 2};
 		luax_convobj(L, idxs, 2, "font", "newRasterizer");
 	}
