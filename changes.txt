@@ -18,6 +18,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added File:isOpen and File:getMode.
   * Added Fie:setBuffer, File:getBuffer, and File:flush.
   * Added textinput event for unicode text input.
+  * Added love.keyboard.setTextInput and love.keyboard.hasTextInput.
   * Added previously internal Rasterizer and GlyphData object methods.
   * Added support for UTF-8 ImageFonts.
   * Added Font:getAscent/getDescent/getBaseline.
@@ -134,6 +135,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Moved window-related functions from love.graphics to love.window.
 
   * Renamed love's boot script to 'love.boot', which can be required.
+  * Renamed World:setAllowSleeping to World:setSleepingAllowed.
   * Renamed t.screen to t.window in love.conf.
   * Renamed love.graphics.setCaption to love.window.setTitle.
   * Renamed PixelEffect to Shader (but now with vertex shaders).
@@ -143,9 +145,10 @@ LOVE 0.9.0 [Baby Inspector]
   * Renamed ParticleSystem:setLifetime/setParticleLife to setEmitter/ParticleLifetime.
   * Renamed ParticleSystem:count and all getNum* functions to get*Count.
   * Renamed SoundData:getBits and Decoder:getBits to SoundData:getBitDepth and Decoder:getBitDepth.
+  * Renamed love.mouse.setGrab to love.mouse.setGrabbed.
 
   * Removed release mode.
-  * Removed love.keyboard.setKeyRepeat and love.keyboard.getKeyRepeat.
+  * Removed love.keyboard.getKeyRepeat (see love.keyboard.hasKeyRepeat).
   * Removed the unicode argument from love.keypressed (see love.textinput).
   * Removed love.graphics.drawTest.
   * Removed love.graphics.quad/triangle.
@@ -164,12 +167,14 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed old thread messaging API (see Channels).
   * Removed love.timer.getMicroTime.
 
+  * Updated functions which return love objects to re-use the Lua-side object instead of always recreating it.
   * Updated the windows console, it now tries to re-use an active one first.
   * Updated error handling, error handlers now get resolved when the error occurs.
   * Updated order of sleep/present in love.run (now draws, *then* sleeps).
   * Updated the default filesystem identity to omit file extension.
   * Updated love.filesystem.newFile to optionally open the file.
   * Updated most love.filesystem functions to return nil, error on internal failure.
+  * Updated love.keyboard.setKeyRepeat to take a boolean argument instead of numbers.
   * Updated love.keypressed's second argument to be a boolean indicating key repeat.
   * Updated keyboard key constants for some more modern keyboard keys.
   * Updated window code to use adaptive vsync when available, if vsync is enabled.
