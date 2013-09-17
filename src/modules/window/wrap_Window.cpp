@@ -190,7 +190,7 @@ int w_setFullscreen(lua_State *L)
 	bool fullscreen = luax_toboolean(L, 1);
 	Window::FullscreenType fstype = Window::FULLSCREEN_TYPE_MAX_ENUM;
 
-	const char *typestr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	const char *typestr = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (typestr && !Window::getConstant(typestr, fstype))
 		return luaL_error(L, "Invalid fullscreen type: %s", typestr);
 

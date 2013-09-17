@@ -438,7 +438,7 @@ int w_newParticleSystem(lua_State *L)
 	Image *image = luax_checkimage(L, 1);
 	lua_Number size = luaL_optnumber(L, 2, 1000);
 	ParticleSystem *t = 0;
-	if (size < 1.0 || size > LOVE_UINT32_MAX)
+	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid ParticleSystem size");	
 
 	EXCEPT_GUARD(t = instance->newParticleSystem(image, size);)

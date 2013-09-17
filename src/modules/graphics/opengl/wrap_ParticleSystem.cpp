@@ -165,15 +165,20 @@ int w_ParticleSystem_setAreaSpread(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 
-	ParticleSystem::AreaSpreadDistribution distribution;
-	const char *str = luaL_checkstring(L, 2);
-	if (!ParticleSystem::getConstant(str, distribution))
-		return luaL_error(L, "Invalid distribution: '%s'", str);
+	ParticleSystem::AreaSpreadDistribution distribution = ParticleSystem::DISTRIBUTION_NONE;
+	float x = 0.f, y = 0.f;
 
-	float x = (float)luaL_checknumber(L, 3);
-	float y = (float)luaL_checknumber(L, 4);
-	if (x < 0.0f || y < 0.0f)
-		return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
+	const char *str = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
+	if (str && !ParticleSystem::getConstant(str, distribution))
+		return luaL_error(L, "Invalid particle distribution: %s", str);
+
+	if (distribution != ParticleSystem::DISTRIBUTION_NONE)
+	{
+		x = (float) luaL_checknumber(L, 3);
+		y = (float) luaL_checknumber(L, 4);
+		if (x < 0.0f || y < 0.0f)
+			return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
+	}
 
 	t->setAreaSpread(distribution, x, y);
 	return 0;
