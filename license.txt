@@ -21,13 +21,10 @@ distribution.
 
 
 
-
 -------
+
 LÖVE also uses the following LGPL libraries:
 
- - SDL
-     Website: http://libsdl.org
-     Source download: http://www.libsdl.org/release/SDL-1.2.14.tar.gz
  - libmpg123
      Website: http://www.mpg123.de/
      Source download: http://sourceforge.net/projects/mpg123/files/latest/download
