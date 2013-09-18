@@ -65,7 +65,7 @@ int TrueTypeRasterizer::getLineHeight() const
 
 GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 {
-	love::font::GlyphMetrics glyphMetrics;
+	love::font::GlyphMetrics glyphMetrics = {};
 	FT_Glyph ftglyph;
 
 	// Initialize

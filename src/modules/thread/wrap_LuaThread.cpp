@@ -46,7 +46,7 @@ int w_Thread_start(lua_State *L)
 			{
 				for (int j = i; j >= 0; j--)
 					delete args[j];
-				delete args;
+				delete[] args;
 				return luaL_argerror(L, i+2, "boolean, number, string, love type, or flat table expected");
 			}
 		}
