@@ -125,8 +125,8 @@ struct WindowFlags
 	bool vsync; // = true
 	int fsaa; // = 0
 	bool resizable; // = false
-	int minwidth; // = 100
-	int minheight; // = 100
+	int minwidth; // = 0
+	int minheight; // = 0
 	bool borderless; // = false
 	bool centered; // = true
 	int display; // = 0

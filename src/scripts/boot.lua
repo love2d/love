@@ -283,8 +283,8 @@ function love.init()
 		window = {
 			width = 800,
 			height = 600,
-			minwidth = 100,
-			minheight = 100,
+			minwidth = 0,
+			minheight = 0,
 			fullscreen = false,
 			fullscreentype = "normal",
 			display = 1,

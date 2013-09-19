@@ -68,8 +68,8 @@ int w_setMode(lua_State *L)
 	flags.vsync = luax_boolflag(L, 3, "vsync", true);
 	flags.fsaa = luax_intflag(L, 3, "fsaa", 0);
 	flags.resizable = luax_boolflag(L, 3, "resizable", false);
-	flags.minwidth = luax_intflag(L, 3, "minwidth", 100);
-	flags.minheight = luax_intflag(L, 3, "minheight", 100);
+	flags.minwidth = luax_intflag(L, 3, "minwidth", 0);
+	flags.minheight = luax_intflag(L, 3, "minheight", 0);
 	flags.borderless = luax_boolflag(L, 3, "borderless", false);
 	flags.centered = luax_boolflag(L, 3, "centered", true);
 	flags.display = luax_intflag(L, 3, "display", 1);
