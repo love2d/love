@@ -98,9 +98,9 @@ int Physics::newPolygonShape(lua_State *L)
 	// 3 to 8 (b2_maxPolygonVertices) vertices
 	int vcount = argc / 2;
 	if (vcount < 3)
-		luaL_error(L, "Expected a minimum of 3 vertices, got %d.", vcount);
+		return luaL_error(L, "Expected a minimum of 3 vertices, got %d.", vcount);
 	else if (vcount > b2_maxPolygonVertices)
-		luaL_error(L, "Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, vcount);
+		return luaL_error(L, "Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, vcount);
 
 	b2PolygonShape *s = new b2PolygonShape();
 

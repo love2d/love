@@ -103,15 +103,16 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 
 	if (f.fullscreen)
 	{
-		switch (f.fstype)
-		{
-		case FULLSCREEN_TYPE_NORMAL:
-		default:
-			sdlflags |= SDL_WINDOW_FULLSCREEN;
-			break;
-		case FULLSCREEN_TYPE_DESKTOP:
+		if (f.fstype == FULLSCREEN_TYPE_DESKTOP)
 			sdlflags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-			break;
+		else
+		{
+			sdlflags |= SDL_WINDOW_FULLSCREEN;
+
+			// Fullscreen window creation will bug out if no mode can be used.
+			SDL_DisplayMode mode = {0, width, height, 0, 0};
+			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == 0)
+				return false;
 		}
 	}
 
@@ -371,26 +372,6 @@ bool Window::setFullscreen(bool fullscreen)
 int Window::getDisplayCount() const
 {
 	return SDL_GetNumVideoDisplays();
-}
-
-bool Window::checkWindowSize(int width, int height, bool fullscreen, int displayindex) const
-{
-	if (fullscreen)
-	{
-		SDL_DisplayMode mode = {}, closest = {};
-		mode.w = width;
-		mode.h = height;
-		SDL_GetClosestDisplayMode(displayindex, &mode, &closest);
-
-		return (mode.w == closest.w && mode.h == closest.h);
-	}
-	else
-	{
-		SDL_DisplayMode mode = {};
-		SDL_GetDesktopDisplayMode(displayindex, &mode);
-
-		return (width <= mode.w && height <= mode.h);
-	}
 }
 
 typedef Window::WindowSize WindowSize;

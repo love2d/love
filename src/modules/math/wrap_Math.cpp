@@ -179,7 +179,7 @@ int w_triangulate(lua_State *L)
 	lua_createtable(L, triangles.size(), 0);
 	for (size_t i = 0; i < triangles.size(); ++i)
 	{
-		Triangle &tri = triangles[i];
+		const Triangle &tri = triangles[i];
 
 		lua_createtable(L, 6, 0);
 		lua_pushnumber(L, tri.a.x);

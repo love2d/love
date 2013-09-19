@@ -68,7 +68,6 @@ public:
 
 	virtual int getDisplayCount() const = 0;
 
-	virtual bool checkWindowSize(int width, int height, bool fullscreen, int displayindex) const = 0;
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
 	virtual int getWidth() const = 0;

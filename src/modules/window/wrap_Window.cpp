@@ -34,34 +34,6 @@ int w_getDisplayCount(lua_State *L)
 	return 1;
 }
 
-int w_checkMode(lua_State *L)
-{
-	int w = luaL_checkint(L, 1);
-	int h = luaL_checkint(L, 2);
-
-	bool fs = false;
-	int displayindex = 0;
-
-	if (lua_istable(L, 3))
-	{
-		lua_getfield(L, 3, "fullscreen");
-		fs = luax_toboolean(L, -1);
-
-		lua_getfield(L, 3, "display");
-		displayindex = luaL_optint(L, -1, 1) - 1;
-
-		lua_pop(L, 2);
-	}
-	else
-	{
-		fs = luax_toboolean(L, 3);
-		displayindex = luaL_optint(L, 4, 1) - 1;
-	}
-
-	luax_pushboolean(L, instance->checkWindowSize(w, h, fs, displayindex));
-	return 1;
-}
-
 int w_setMode(lua_State *L)
 {
 	int w = luaL_checkint(L, 1);
@@ -308,7 +280,6 @@ int w_isVisible(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
-	{ "checkMode", w_checkMode },
 	{ "setMode", w_setMode },
 	{ "getMode", w_getMode },
 	{ "getFullscreenModes", w_getFullscreenModes },

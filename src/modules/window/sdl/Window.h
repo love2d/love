@@ -51,7 +51,6 @@ public:
 
 	int getDisplayCount() const;
 
-	bool checkWindowSize(int width, int height, bool fullscreen, int displayindex) const;
 	std::vector<WindowSize> getFullscreenSizes(int displayindex) const;
 
 	int getWidth() const;

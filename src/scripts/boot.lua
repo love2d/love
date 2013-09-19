@@ -370,23 +370,19 @@ function love.init()
 	-- Setup window here.
 	local has_window = false
 	if c.window and c.modules.window then
-		if love.window.checkMode(c.window.width, c.window.height, c.window.fullscreen, c.window.display) or (c.window.width == 0 and c.window.height == 0) then
-			assert(love.window.setMode(c.window.width, c.window.height,
-			{
-				fullscreen = c.window.fullscreen,
-				fullscreentype = c.window.fullscreentype,
-				vsync = c.window.vsync,
-				fsaa = c.window.fsaa,
-				resizable = c.window.resizable,
-				minwidth = c.window.minwidth,
-				minheight = c.window.minheight,
-				borderless = c.window.borderless,
-				centered = c.window.centered,
-				display = c.window.display,
-			}), "Could not set window mode")
-		else
-			error("Could not set window mode")
-		end
+		assert(love.window.setMode(c.window.width, c.window.height,
+		{
+			fullscreen = c.window.fullscreen,
+			fullscreentype = c.window.fullscreentype,
+			vsync = c.window.vsync,
+			fsaa = c.window.fsaa,
+			resizable = c.window.resizable,
+			minwidth = c.window.minwidth,
+			minheight = c.window.minheight,
+			borderless = c.window.borderless,
+			centered = c.window.centered,
+			display = c.window.display,
+		}), "Could not set window mode")
 		love.window.setTitle(c.window.title or c.title)
 	end
 

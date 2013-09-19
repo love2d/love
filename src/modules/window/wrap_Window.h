@@ -30,7 +30,6 @@ namespace window
 {
 
 int w_getDisplayCount(lua_State *L);
-int w_checkMode(lua_State *L);
 int w_setMode(lua_State *L);
 int w_getMode(lua_State *L);
 int w_getFullscreenModes(lua_State *L);

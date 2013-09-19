@@ -39,7 +39,7 @@ char *b64_decode(const char *src, int slen, int &size)
 	char *dst = new char[size];
 	char *d = dst;
 
-	char in[4], out[3], v;
+	char in[4] = {0}, out[3], v;
 	int i, len, pos = 0;
 
 	while (pos <= slen)
