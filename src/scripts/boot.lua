@@ -368,7 +368,6 @@ function love.init()
 	end
 
 	-- Setup window here.
-	local has_window = false
 	if c.window and c.modules.window then
 		assert(love.window.setMode(c.window.width, c.window.height,
 		{
@@ -415,19 +414,27 @@ function love.init()
 	if not compat then
 		local major, minor, revision = c.version:match("^(%d+)%.(%d+)%.(%d+)$")
 		if (not major or not minor or not revision) or (major ~= love._version_major and minor ~= love._version_minor) then
-			local msg = "This game was made for a version that is probably incompatible.\n"..
-				"The game might still work, but it is not guaranteed.\n" ..
-				"Furthermore, this means one should not judge this game or the engine if not."
+			local msg = "This game was made for a different version of LÖVE.\n"..
+				"It may not be not be compatible with the running version ("..love._version..")."
+
 			print(msg)
-			if has_window and love.timer and love.event then
-				love.event.pump()
+
+			local can_display = love.window and love.window.isCreated()
+			can_display = can_display and love.graphics and love.graphics.isCreated()
+
+			if can_display and love.timer and love.event then
 				love.graphics.setBackgroundColor(89, 157, 220)
-				love.graphics.clear()
 				love.graphics.origin()
-				love.graphics.print(msg, 70, 70)
-				love.graphics.present()
+
+				local start = love.timer.getTime()
+				while love.timer.getTime() < start + 4 do
+					love.event.pump()
+					love.graphics.clear()
+					love.graphics.print(msg, 70, 70)
+					love.graphics.present()
+					love.timer.sleep(1/20)
+				end
 				love.graphics.setBackgroundColor(0, 0, 0)
-				love.timer.sleep(3)
 			end
 		end
 	end
