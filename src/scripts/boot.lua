@@ -445,6 +445,9 @@ function love.run()
 
 	if love.load then love.load(arg) end
 
+	-- We don't want the first frame's dt to include time taken by love.load.
+	if love.timer then love.timer.step() end
+
 	local dt = 0
 
 	-- Main loop time.
