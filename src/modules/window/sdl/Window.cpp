@@ -85,8 +85,8 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 	if (flags)
 		f = *flags;
 
-	f.minwidth = std::max(f.minwidth, 0);
-	f.minheight = std::max(f.minheight, 0);
+	f.minwidth = std::max(f.minwidth, 1);
+	f.minheight = std::max(f.minheight, 1);
 
 	f.display = std::min(std::max(f.display, 0), getDisplayCount());
 
