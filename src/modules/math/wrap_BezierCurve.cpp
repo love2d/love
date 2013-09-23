@@ -122,13 +122,13 @@ int w_BezierCurve_scale(lua_State *L)
 	return 0;
 }
 
-int w_BezierCurve_eval(lua_State *L)
+int w_BezierCurve_evaluate(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	double t = luaL_checknumber(L, 2);
 
 	EXCEPT_GUARD(
-		Vector v = curve->eval(t);
+		Vector v = curve->evaluate(t);
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 	)
@@ -167,7 +167,7 @@ static const luaL_Reg functions[] =
 	{"translate", w_BezierCurve_translate},
 	{"rotate", w_BezierCurve_rotate},
 	{"scale", w_BezierCurve_scale},
-	{"eval", w_BezierCurve_eval},
+	{"evaluate", w_BezierCurve_evaluate},
 	{"render", w_BezierCurve_render},
 	{ 0, 0 }
 };

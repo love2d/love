@@ -97,7 +97,7 @@ public:
 	 * Evaluates the curve at time t.
 	 * @param t Curve parameter, must satisfy 0 <= t <= 1.
 	 **/
-	Vector eval(double t) const;
+	Vector evaluate(double t) const;
 
 	/**
 	 * Renders the curve by subdivision.

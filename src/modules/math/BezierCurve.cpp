@@ -158,7 +158,7 @@ void BezierCurve::scale(double s, const Vector &center)
 		controlPoints[i] = (controlPoints[i] - center) * s + center;
 }
 
-Vector BezierCurve::eval(double t) const
+Vector BezierCurve::evaluate(double t) const
 {
 	if (t < 0 || t > 1)
 		throw Exception("Invalid evaluation parameter: must be between 0 and 1");
