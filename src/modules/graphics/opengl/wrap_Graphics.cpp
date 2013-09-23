@@ -1058,14 +1058,19 @@ int w_isSupported(lua_State *L)
 
 int w_getRendererInfo(lua_State *L)
 {
-	const char *str = luaL_checkstring(L, 1);
-	Graphics::RendererInfo infotype;
+	std::string name, version, vendor, device;
 
-	if (!Graphics::getConstant(str, infotype))
-		return luaL_error(L, "Invalid renderer info type: %s", str);
+	EXCEPT_GUARD(name = instance->getRendererInfo(Graphics::RENDERER_INFO_NAME);)
+	EXCEPT_GUARD(version = instance->getRendererInfo(Graphics::RENDERER_INFO_VERSION);)
+	EXCEPT_GUARD(vendor = instance->getRendererInfo(Graphics::RENDERER_INFO_VENDOR);)
+	EXCEPT_GUARD(device = instance->getRendererInfo(Graphics::RENDERER_INFO_DEVICE);)
 
-	EXCEPT_GUARD(luax_pushstring(L, instance->getRendererInfo(infotype));)
-	return 1;
+	luax_pushstring(L, name);
+	luax_pushstring(L, version);
+	luax_pushstring(L, vendor);
+	luax_pushstring(L, device);
+
+	return 4;
 }
 
 int w_draw(lua_State *L)
