@@ -251,8 +251,8 @@ int w_ParticleSystem_getSpeed(lua_State *L)
 int w_ParticleSystem_setLinearAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	float xmin = (float) luaL_optnumber(L, 2, 0.0);
-	float ymin = (float) luaL_optnumber(L, 3, 0.0);
+	float xmin = (float) luaL_checknumber(L, 2);
+	float ymin = (float) luaL_checknumber(L, 3);
 	float xmax = (float) luaL_optnumber(L, 4, xmin);
 	float ymax = (float) luaL_optnumber(L, 5, ymin);
 	t->setLinearAcceleration(xmin, ymin, xmax, ymax);
