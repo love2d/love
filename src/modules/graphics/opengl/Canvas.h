@@ -129,7 +129,7 @@ private:
 
 	TextureType texture_type;
 
-	vertex vertices[4];
+	Vertex vertices[4];
 
 	GLenum status;
 
@@ -142,7 +142,7 @@ private:
 	std::vector<Canvas *> attachedCanvases;
 
 	void setupGrab();
-	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
+	void drawv(const Matrix &t, const Vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
 
 	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
 	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;

@@ -116,9 +116,9 @@ public:
 
 private:
 
-	void scaleNPOT(vertex *v, size_t count);
+	void scaleNPOT(Vertex *v, size_t count);
 
-	void addv(const vertex *v, int index);
+	void addv(const Vertex *v, int index);
 
 	/**
 	 * Set the color for vertices.
@@ -127,7 +127,7 @@ private:
 	 *          of size 4.
 	 * @param color The color to assign to each vertex.
 	 */
-	void setColorv(vertex *v, const Color &color);
+	void setColorv(Vertex *v, const Color &color);
 
 	Image *image;
 
@@ -137,7 +137,7 @@ private:
 	// The next free element.
 	int next;
 
-	vertex sprite[4];
+	Vertex sprite[4];
 
 	// Current color. This color, if present, will be applied to the next
 	// added geometry.

@@ -29,8 +29,11 @@
 #include "modules/graphics/Geometry.h"
 #include "VertexBuffer.h"
 
-// stdlib
+// C++
 #include <algorithm>
+
+// C
+#include <stddef.h>
 
 namespace love
 {
@@ -65,7 +68,7 @@ SpriteBatch::SpriteBatch(Image *image, int size, int usage)
 		break;
 	}
 
-	const size_t vertex_size = sizeof(vertex) * 4 * size;
+	const size_t vertex_size = sizeof(Vertex) * 4 * size;
 
 	try
 	{
@@ -104,7 +107,7 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 		return -1;
 
 	// Needed for colors.
-	memcpy(sprite, image->getVertices(), sizeof(vertex)*4);
+	memcpy(sprite, image->getVertices(), sizeof(Vertex)*4);
 
 	// Transform.
 	static Matrix t;
@@ -245,7 +248,7 @@ void SpriteBatch::setBufferSize(int newsize)
 	// Map (lock) the old VertexBuffer to get a pointer to its data.
 	void *old_data = lock();
 
-	size_t vertex_size = sizeof(vertex) * 4 * newsize;
+	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
 
 	VertexBuffer *new_array_buf = 0;
 	VertexIndex *new_element_buf = 0;
@@ -269,7 +272,7 @@ void SpriteBatch::setBufferSize(int newsize)
 	}
 
 	// Copy as much of the old data into the new VertexBuffer as can fit.
-	memcpy(new_data, old_data, sizeof(vertex) * 4 * std::min(newsize, size));
+	memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
 
 	// We don't need to unmap the old VertexBuffer since we're deleting it.
 	delete array_buf;
@@ -292,9 +295,9 @@ int SpriteBatch::getBufferSize() const
 
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	const int color_offset = 0;
-	const int vertex_offset = sizeof(unsigned char) * 4;
-	const int texel_offset = sizeof(unsigned char) * 4 + sizeof(float) * 2;
+	const size_t vertex_offset = offsetof(Vertex, x);
+	const size_t texel_offset = offsetof(Vertex, s);
+	const size_t color_offset = offsetof(Vertex, r);
 
 	if (next == 0)
 		return;
@@ -317,14 +320,14 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	if (color)
 	{
 		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), array_buf->getPointer(color_offset));
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), array_buf->getPointer(color_offset));
 	}
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), array_buf->getPointer(vertex_offset));
+	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(vertex_offset));
 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), array_buf->getPointer(texel_offset));
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(texel_offset));
 
 	glDrawElements(GL_TRIANGLES, element_buf->getIndexCount(next), element_buf->getType(), element_buf->getPointer(0));
 
@@ -340,7 +343,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	glPopMatrix();
 }
 
-void SpriteBatch::scaleNPOT(vertex *v, size_t count)
+void SpriteBatch::scaleNPOT(Vertex *v, size_t count)
 {
 	if (Image::hasNpot())
 		return;
@@ -357,14 +360,14 @@ void SpriteBatch::scaleNPOT(vertex *v, size_t count)
 	}
 }
 
-void SpriteBatch::addv(const vertex *v, int index)
+void SpriteBatch::addv(const Vertex *v, int index)
 {
-	static const int sprite_size = 4 * sizeof(vertex); // bytecount
+	static const int sprite_size = 4 * sizeof(Vertex); // bytecount
 	VertexBuffer::Bind bind(*array_buf);
 	array_buf->fill(index * sprite_size, sprite_size, v);
 }
 
-void SpriteBatch::setColorv(vertex *v, const Color &color)
+void SpriteBatch::setColorv(Vertex *v, const Color &color)
 {
 	for (size_t i = 0; i < 4; ++i)
 	{

@@ -30,19 +30,19 @@
 
 using std::list;
 using std::vector;
-using love::vertex;
+using love::Vertex;
 
 namespace
 {
 	// check if an angle is oriented counter clockwise
-	inline bool is_oriented_ccw(const vertex &a, const vertex &b, const vertex &c)
+	inline bool is_oriented_ccw(const Vertex &a, const Vertex &b, const Vertex &c)
 	{
 		// return det(b-a, c-a) >= 0
 		return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) >= 0;
 	}
 
 	// check if a and b are on the same side of the line c->d
-	bool on_same_side(const vertex &a, const vertex &b, const vertex &c, const vertex &d)
+	bool on_same_side(const Vertex &a, const Vertex &b, const Vertex &c, const Vertex &d)
 	{
 		float px = d.x - c.x, py = d.y - c.y;
 		// return det(p, a-c) * det(p, b-c) >= 0
@@ -52,18 +52,18 @@ namespace
 	}
 
 	// checks is p is contained in the triangle abc
-	inline bool point_in_triangle(const vertex &p, const vertex &a, const vertex &b, const vertex &c)
+	inline bool point_in_triangle(const Vertex &p, const Vertex &a, const Vertex &b, const Vertex &c)
 	{
 		return on_same_side(p,a, b,c) && on_same_side(p,b, a,c) && on_same_side(p,c, a,b);
 	}
 
 	// checks if any vertex in `vertices' is in the triangle abc.
-	bool any_point_in_triangle(const list<const vertex *> &vertices, const vertex &a, const vertex &b, const vertex &c)
+	bool any_point_in_triangle(const list<const Vertex *> &vertices, const Vertex &a, const Vertex &b, const Vertex &c)
 	{
-		list<const vertex *>::const_iterator it, end = vertices.end();
+		list<const Vertex *>::const_iterator it, end = vertices.end();
 		for (it = vertices.begin(); it != end; ++it)
 		{
-			const vertex *p = *it;
+			const Vertex *p = *it;
 			if ((p != &a) && (p != &b) && (p != &c) && point_in_triangle(*p, a,b,c)) // oh god...
 				return true;
 		}
@@ -71,7 +71,7 @@ namespace
 		return false;
 	}
 
-	inline bool is_ear(const vertex &a, const vertex &b, const vertex &c, const list<const vertex *> &vertices)
+	inline bool is_ear(const Vertex &a, const Vertex &b, const Vertex &c, const list<const Vertex *> &vertices)
 	{
 		return is_oriented_ccw(a,b,c) && !any_point_in_triangle(vertices, a,b,c);
 	}
@@ -101,7 +101,7 @@ BezierCurve *Math::newBezierCurve(const vector<Vector> &points)
 	return new BezierCurve(points);
 }
 
-vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
+vector<Triangle> Math::triangulate(const vector<Vertex> &polygon)
 {
 	if (polygon.size() < 3)
 		throw love::Exception("Not a ploygon");
@@ -114,7 +114,7 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 	size_t idx_lm = 0;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
-		const vertex &lm = polygon[idx_lm], &p = polygon[i];
+		const Vertex &lm = polygon[idx_lm], &p = polygon[i];
 		if (p.x < lm.x || (p.x == lm.x && p.y < lm.y))
 			idx_lm = i;
 		next_idx[i] = i+1;
@@ -128,7 +128,7 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 		next_idx.swap(prev_idx);
 
 	// collect list of concave polygons
-	list<const vertex *> concave_vertices;
+	list<const Vertex *> concave_vertices;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
 		if (!is_oriented_ccw(polygon[prev_idx[i]], polygon[i], polygon[next_idx[i]]))
@@ -143,7 +143,7 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 	{
 		next = next_idx[current];
 		prev = prev_idx[current];
-		const vertex &a = polygon[prev], &b = polygon[current], &c = polygon[next];
+		const Vertex &a = polygon[prev], &b = polygon[current], &c = polygon[next];
 		if (is_ear(a,b,c, concave_vertices))
 		{
 			triangles.push_back(Triangle(a,b,c));
@@ -166,7 +166,7 @@ vector<Triangle> Math::triangulate(const vector<vertex> &polygon)
 	return triangles;
 }
 
-bool Math::isConvex(const std::vector<vertex> &polygon)
+bool Math::isConvex(const std::vector<Vertex> &polygon)
 {
 	if (polygon.size() < 3)
 		return false;

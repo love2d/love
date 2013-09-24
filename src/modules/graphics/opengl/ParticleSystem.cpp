@@ -132,7 +132,7 @@ void ParticleSystem::createBuffers(size_t size)
 	try
 	{
 		pFree = pMem = new particle[size];
-		particleVerts = new love::vertex[size * 4];
+		particleVerts = new love::Vertex[size * 4];
 		maxParticles = (uint32) size;
 	}
 	catch (std::bad_alloc &)
@@ -746,8 +746,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	const vertex *imageVerts = image->getVertices();
-	vertex *pVerts = particleVerts;
+	const Vertex *imageVerts = image->getVertices();
+	Vertex *pVerts = particleVerts;
 	particle *p = pHead;
 
 	// set the vertex data for each particle (transformation, texcoords, color)
@@ -780,9 +780,9 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *) &particleVerts[0].r);
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *) &particleVerts[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *) &particleVerts[0].s);
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *) &particleVerts[0].r);
+	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].s);
 
 	glDrawArrays(GL_QUADS, 0, pCount * 4);
 

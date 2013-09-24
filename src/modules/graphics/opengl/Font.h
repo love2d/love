@@ -146,11 +146,17 @@ private:
 		FONT_UNKNOWN
 	};
 
+	struct GlyphVertex
+	{
+		float x, y;
+		float s, t;
+	};
+
 	struct Glyph
 	{
 		GLuint texture;
 		int spacing;
-		vertex vertices[4];
+		GlyphVertex vertices[4];
 	};
 
 	// used to determine when to change textures in the vertex array generated when printing text

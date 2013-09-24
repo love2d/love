@@ -524,7 +524,7 @@ protected:
 	particle *pTail;
 
 	// array of transformed vertex data for all particles, for drawing
-	vertex * particleVerts;
+	Vertex *particleVerts;
 
 	// The image to be drawn.
 	Image *image;

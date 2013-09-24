@@ -35,7 +35,7 @@ namespace love
 namespace graphics
 {
 
-Geometry::Geometry(const std::vector<vertex> &polygon, const std::vector<uint16> &elements, Geometry::DrawMode mode)
+Geometry::Geometry(const std::vector<Vertex> &polygon, const std::vector<uint16> &elements, Geometry::DrawMode mode)
 	: vertexArray(NULL)
 	, vertexCount(polygon.size())
 	, elementArray(NULL)
@@ -53,8 +53,8 @@ Geometry::Geometry(const std::vector<vertex> &polygon, const std::vector<uint16>
 			throw love::Exception("Invalid vertex map value");
 	}
 
-	vertexArray = new vertex[vertexCount];
-	memcpy(vertexArray, &polygon[0], vertexCount * sizeof(vertex));
+	vertexArray = new Vertex[vertexCount];
+	memcpy(vertexArray, &polygon[0], vertexCount * sizeof(Vertex));
 
 	if (elementCount > 0)
 	{
@@ -71,12 +71,19 @@ Geometry::Geometry(float x, float y, float w, float h, float sw, float sh)
 	, vertexColors(false)
 	, drawMode(DRAW_MODE_FAN)
 {
-	vertexArray = new vertex[4];
 	float s0 = x/sw, s1 = (x+w)/sw, t0 = y/sh, t1 = (y+h)/sh;
-	vertexArray[0] = vertex(0,0, s0,t0);
-	vertexArray[1] = vertex(w,0, s1,t0);
-	vertexArray[2] = vertex(w,h, s1,t1);
-	vertexArray[3] = vertex(0,h, s0,t1);
+
+	Vertex verts[4] = {
+		{0,0, s0,t0, 255, 255, 255, 255},
+		{w,0, s1,t0, 255, 255, 255, 255},
+		{w,h, s1,t1, 255, 255, 255, 255},
+		{0,h, s0,t1, 255, 255, 255, 255}
+	};
+
+	vertexArray = new Vertex[4];
+
+	for (int i = 0; i < 4; i++)
+		vertexArray[i] = verts[i];
 }
 
 Geometry::Geometry(const Geometry &other)
@@ -85,8 +92,8 @@ Geometry::Geometry(const Geometry &other)
 	, vertexColors(other.vertexColors)
 	, drawMode(other.drawMode)
 {
-	vertexArray = new vertex[vertexCount];
-	memcpy(vertexArray, other.vertexArray, vertexCount * sizeof(vertex));
+	vertexArray = new Vertex[vertexCount];
+	memcpy(vertexArray, other.vertexArray, vertexCount * sizeof(Vertex));
 
 	if (elementCount > 0)
 	{
@@ -119,7 +126,7 @@ Geometry::~Geometry()
 	delete[] elementArray;
 }
 
-const vertex &Geometry::getVertex(size_t i) const
+const Vertex &Geometry::getVertex(size_t i) const
 {
 	if (i >= vertexCount)
 		throw Exception("Invalid vertex index");
@@ -127,7 +134,7 @@ const vertex &Geometry::getVertex(size_t i) const
 	return vertexArray[i];
 }
 
-void Geometry::setVertex(size_t i, const vertex &v)
+void Geometry::setVertex(size_t i, const Vertex &v)
 {
 	if (i >= vertexCount)
 		throw Exception("Invalid vertex index");

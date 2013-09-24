@@ -30,6 +30,9 @@
 // STL
 #include <vector>
 
+// The last argument to AttribPointer takes a buffer offset casted to a pointer.
+#define BUFFER_OFFSET(i) ((char *) NULL + (i))
+
 namespace love
 {
 namespace graphics

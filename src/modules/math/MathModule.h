@@ -126,7 +126,7 @@ public:
 	 * @param polygon Polygon to triangulate. Must not intersect itself.
 	 * @return List of triangles the polygon is composed of.
 	 **/
-	std::vector<Triangle> triangulate(const std::vector<vertex> &polygon);
+	std::vector<Triangle> triangulate(const std::vector<Vertex> &polygon);
 
 	/**
 	 * Checks whether a polygon is convex.
@@ -134,7 +134,7 @@ public:
 	 * @param polygon Polygon to test.
 	 * @return True if the polygon is convex, false otherwise.
 	 **/
-	bool isConvex(const std::vector<vertex> &polygon);
+	bool isConvex(const std::vector<Vertex> &polygon);
 
 	/**
 	 * Calculate Simplex noise for the specified coordinate(s).

@@ -196,7 +196,7 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 	g->texture = 0;
 	g->spacing = gd->getAdvance();
 
-	memset(g->vertices, 0, sizeof(vertex) * 4);
+	memset(g->vertices, 0, sizeof(GlyphVertex) * 4);
 
 	// don't waste space for empty glyphs. also fixes a division by zero bug with ati drivers
 	if (w > 0 && h > 0)
@@ -215,11 +215,11 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 
 		g->texture = t;
 
-		const vertex verts[4] = {
-			vertex(0, 0, float(textureX)/float(textureWidth),   float(textureY)/float(textureHeight)),
-			vertex(w, 0, float(textureX+w)/float(textureWidth), float(textureY)/float(textureHeight)),
-			vertex(w, h, float(textureX+w)/float(textureWidth), float(textureY+h)/float(textureHeight)),
-			vertex(0, h, float(textureX)/float(textureWidth),   float(textureY+h)/float(textureHeight)),
+		const GlyphVertex verts[4] = {
+			{0, 0, float(textureX)/float(textureWidth),   float(textureY)/float(textureHeight)},
+			{w, 0, float(textureX+w)/float(textureWidth), float(textureY)/float(textureHeight)},
+			{w, h, float(textureX+w)/float(textureWidth), float(textureY+h)/float(textureHeight)},
+			{0, h, float(textureX)/float(textureWidth),   float(textureY+h)/float(textureHeight)},
 		};
 
 		// copy vertex data to the glyph and set proper bearing
@@ -270,7 +270,7 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	std::vector<GlyphArrayDrawInfo> glyphinfolist;
 
 	// Pre-allocate space for the maximum possible number of vertices.
-	std::vector<vertex> glyphverts;
+	std::vector<GlyphVertex> glyphverts;
 	glyphverts.reserve(text.length() * 4);
 
 	int vertexcount = 0;
@@ -348,8 +348,8 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphverts[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&glyphverts[0].s);
+	glVertexPointer(2, GL_FLOAT, sizeof(GlyphVertex), (GLvoid *)&glyphverts[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(GlyphVertex), (GLvoid *)&glyphverts[0].s);
 
 	// We need to draw a new vertex array for every section of the string which
 	// uses a different texture than the previous section.

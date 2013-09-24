@@ -52,7 +52,7 @@ public:
 	/**
 	 * Creates a new geometry object from a std::vector<vertex>.
 	 **/
-	Geometry(const std::vector<vertex> &polygon, const std::vector<uint16> &elements, DrawMode mode = DRAW_MODE_FAN);
+	Geometry(const std::vector<Vertex> &polygon, const std::vector<uint16> &elements, DrawMode mode = DRAW_MODE_FAN);
 
 	/**
 	 * Creates a new geometry from (texture) quad information.
@@ -69,13 +69,13 @@ public:
 	Geometry &operator=(const Geometry &other);
 	virtual ~Geometry();
 
-	const vertex &getVertex(size_t i) const;
-	void setVertex(size_t i, const vertex &v);
+	const Vertex &getVertex(size_t i) const;
+	void setVertex(size_t i, const Vertex &v);
 
 	/**
 	 * Returns a pointer to the vertex array.
 	 **/
-	inline const vertex *getVertexArray() const
+	inline const Vertex *getVertexArray() const
 	{
 		return vertexArray;
 	}
@@ -126,7 +126,7 @@ public:
 
 private:
 
-	vertex *vertexArray;
+	Vertex *vertexArray;
 	size_t vertexCount;
 
 	uint16 *elementArray;

@@ -148,7 +148,7 @@ public:
 	 * @param src The source vertices.
 	 * @param size The number of vertices.
 	 **/
-	void transform(vertex *dst, const vertex *src, int size) const;
+	void transform(Vertex *dst, const Vertex *src, int size) const;
 
 private:
 

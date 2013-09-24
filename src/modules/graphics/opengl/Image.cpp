@@ -85,7 +85,7 @@ float Image::getHeight() const
 	return height;
 }
 
-const vertex *Image::getVertices() const
+const Vertex *Image::getVertices() const
 {
 	return vertices;
 }
@@ -113,7 +113,7 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	const vertex *v = geom->getVertexArray();
+	const Vertex *v = geom->getVertexArray();
 	size_t vertcount = geom->getVertexCount();
 
 	// Padded NPOT images require texture coordinate scaling with Geometry.
@@ -124,7 +124,7 @@ void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle,
 	if (geom->hasVertexColors())
 	{
 		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *) &v[0].r);
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *) &v[0].r);
 	}
 
 	GLenum glmode;
@@ -326,7 +326,7 @@ void Image::bind() const
 
 void Image::preload()
 {
-	memset(vertices, 255, sizeof(vertex)*4);
+	memset(vertices, 255, sizeof(Vertex)*4);
 
 	vertices[0].x = 0;
 	vertices[0].y = 0;
@@ -602,9 +602,9 @@ love::Vector Image::getTexCoordScale() const
 	return love::Vector(vertices[2].s, vertices[2].t);
 }
 
-vertex *Image::scaleNPOT(const love::vertex *v, size_t count) const
+Vertex *Image::scaleNPOT(const love::Vertex *v, size_t count) const
 {
-	vertex *newverts = new vertex[count];
+	Vertex *newverts = new Vertex[count];
 	love::Vector scale = getTexCoordScale();
 
 	for (size_t i = 0; i < count; i++)
@@ -617,7 +617,7 @@ vertex *Image::scaleNPOT(const love::vertex *v, size_t count) const
 	return newverts;
 }
 
-void Image::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
+void Image::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
 {
 	bind();
 
@@ -632,8 +632,8 @@ void Image::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode, 
 	//      defined in the geometry to draw itself.
 	//      if the drawing method below is changed to use something other than
 	//      glDrawArrays(), drawg() needs to be updated accordingly!
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].s);
+	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
 	if (e != 0 && ecount > 0)
 		glDrawElements(mode, ecount, GL_UNSIGNED_SHORT, (GLvoid *) e);

@@ -232,7 +232,7 @@ void VBO::fill(size_t offset, size_t size, const void *data)
 
 const void *VBO::getPointer(size_t offset) const
 {
-	return reinterpret_cast<const void *>(offset);
+	return BUFFER_OFFSET(offset);
 }
 
 bool VBO::loadVolatile()

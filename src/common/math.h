@@ -61,40 +61,19 @@
 namespace love
 {
 
-struct vertex
+struct Vertex
 {
-	vertex()
-		: r(255), g(255), b(255), a(255)
-		, x(0), y(0)
-		, s(0), t(0)
-	{}
-
-	vertex(float x, float y,
-	       float s, float t)
-		: r(255), g(255), b(255), a(255)
-		, x(x), y(y)
-		, s(s), t(t)
-	{}
-
-	vertex(float x, float y,
-	       float s, float t,
-	       unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-		: r(r), g(g), b(b), a(a)
-		, x(x), y(y)
-		, s(s), t(t)
-	{}
-
-	unsigned char r, g, b, a;
 	float x, y;
 	float s, t;
+	unsigned char r, g, b, a;
 };
 
 struct Triangle
 {
-	Triangle(const vertex &x, const vertex &y, const vertex &z)
+	Triangle(const Vertex &x, const Vertex &y, const Vertex &z)
 		: a(x), b(y), c(z)
 	{}
-	vertex a, b, c;
+	Vertex a, b, c;
 };
 
 inline int next_p2(int x)

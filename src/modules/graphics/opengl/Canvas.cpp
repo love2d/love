@@ -614,8 +614,8 @@ void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle
 
 	// flip texture coordinates vertically
 	size_t vcount = geom->getVertexCount();
-	const vertex *w = geom->getVertexArray();
-	vertex *v = new vertex[vcount];
+	const Vertex *w = geom->getVertexArray();
+	Vertex *v = new Vertex[vcount];
 	for (size_t i = 0; i < vcount; ++i)
 	{
 		v[i] = w[i];
@@ -626,7 +626,7 @@ void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle
 	if (geom->hasVertexColors())
 	{
 		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), (GLvoid *)&v->r);
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *)&v->r);
 	}
 
 	GLenum glmode;
@@ -785,7 +785,7 @@ int Canvas::getHeight()
 	return height;
 }
 
-void Canvas::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
+void Canvas::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
 {
 	glPushMatrix();
 
@@ -800,8 +800,8 @@ void Canvas::drawv(const Matrix &t, const vertex *v, GLsizei count, GLenum mode,
 	//      defined in the geometry to draw itself.
 	//      if the drawing method below is changed to use something other than
 	//      glDrawArrays(), drawg() needs to be updated accordingly!
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), (GLvoid *)&v[0].s);
+	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
 	if (e != 0 && ecount > 0)
 		glDrawElements(mode, ecount, GL_UNSIGNED_SHORT, (GLvoid *) e);

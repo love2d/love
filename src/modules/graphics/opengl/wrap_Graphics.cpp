@@ -270,12 +270,12 @@ int w_newGeometry(lua_State *L)
 
 	bool hasvertexcolors = false;
 
-	std::vector<vertex> vertices;
+	std::vector<Vertex> vertices;
 	vertices.reserve(vertexcount);
 
 	for (size_t i = 0; i < vertexcount; ++i)
 	{
-		vertex v;
+		Vertex v;
 
 		if (is_table)
 		{

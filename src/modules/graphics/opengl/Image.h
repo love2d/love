@@ -73,7 +73,7 @@ public:
 	float getWidth() const;
 	float getHeight() const;
 
-	const vertex *getVertices() const;
+	const Vertex *getVertices() const;
 
 	love::image::ImageData *getImageData() const;
 	love::image::CompressedData *getCompressedData() const;
@@ -145,10 +145,10 @@ public:
 
 private:
 
-	vertex *scaleNPOT(const vertex *v, size_t count) const;
+	Vertex *scaleNPOT(const Vertex *v, size_t count) const;
 	void uploadDefaultTexture();
 
-	void drawv(const Matrix &t, const vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
+	void drawv(const Matrix &t, const Vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
 
 	friend class Shader;
 	GLuint getTextureName() const
@@ -171,7 +171,7 @@ private:
 	GLuint texture;
 
 	// The source vertices of the image.
-	vertex vertices[4];
+	Vertex vertices[4];
 
 	// Mipmap texture LOD bias (sharpness) value.
 	float mipmapSharpness;

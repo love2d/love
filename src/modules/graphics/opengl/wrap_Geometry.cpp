@@ -47,7 +47,7 @@ int w_Geometry_getVertex(lua_State *L)
 	size_t i = size_t(luaL_checkinteger(L, 2));
 
 	EXCEPT_GUARD(
-		const vertex &v = geom->getVertex(i-1);
+		const Vertex &v = geom->getVertex(i-1);
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 		lua_pushnumber(L, v.s);
@@ -66,7 +66,7 @@ int w_Geometry_setVertex(lua_State *L)
 	Geometry *geom = luax_checkgeometry(L, 1);
 	size_t i = size_t(luaL_checkinteger(L, 2));
 
-	vertex v;
+	Vertex v;
 
 	if (lua_istable(L, 3))
 	{

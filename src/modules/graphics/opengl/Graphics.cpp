@@ -369,7 +369,7 @@ Image *Graphics::newImage(love::image::CompressedData *cdata)
 	return image;
 }
 
-Geometry *Graphics::newGeometry(const std::vector<vertex> &vertices, const std::vector<uint16> &vertexmap, Geometry::DrawMode mode)
+Geometry *Graphics::newGeometry(const std::vector<Vertex> &vertices, const std::vector<uint16> &vertexmap, Geometry::DrawMode mode)
 {
 	return new Geometry(vertices, vertexmap, mode);
 }

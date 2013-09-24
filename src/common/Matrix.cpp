@@ -181,7 +181,7 @@ void Matrix::shear(float kx, float ky)
 // | e2 e6 e10 e14 |
 // | e3 e7 e11 e15 |
 
-void Matrix::transform(vertex *dst, const vertex *src, int size) const
+void Matrix::transform(Vertex *dst, const Vertex *src, int size) const
 {
 	for (int i = 0; i<size; i++)
 	{
