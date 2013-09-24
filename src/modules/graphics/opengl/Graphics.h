@@ -430,7 +430,7 @@ public:
 
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.
-	 * @param type The type of drawing (line/filled).
+	 * @param mode The type of drawing (line/filled).
 	 * @param coords Vertex components (x1, y1, x2, y2, etc.)
 	 * @param count Coord array size
 	 **/

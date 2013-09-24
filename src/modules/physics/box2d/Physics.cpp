@@ -274,10 +274,10 @@ int Physics::getDistance(lua_State *L)
 	return 5;
 }
 
-void Physics::setMeter(int meter)
+void Physics::setMeter(int scale)
 {
-	if (meter < 1) throw love::Exception("Physics error: invalid meter");
-	Physics::meter = meter;
+	if (scale < 1) throw love::Exception("Physics error: invalid meter");
+	Physics::meter = scale;
 }
 
 int Physics::getMeter()

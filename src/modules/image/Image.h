@@ -58,18 +58,18 @@ public:
 
 	/**
 	 * Creates empty ImageData with the given size.
-	 * @param The width of the ImageData.
-	 * @param The height of the ImageData.
+	 * @param width The width of the ImageData.
+	 * @param height The height of the ImageData.
 	 * @return The new ImageData.
 	 **/
 	virtual ImageData *newImageData(int width, int height) = 0;
 
 	/**
 	 * Creates empty ImageData with the given size.
-	 * @param The width of the ImageData.
-	 * @param The height of the ImageData.
-	 * @param The data to load into the ImageData.
-	 * @param Whether the new ImageData should take ownership of the data or
+	 * @param width The width of the ImageData.
+	 * @param height The height of the ImageData.
+	 * @param data The data to load into the ImageData.
+	 * @param own Whether the new ImageData should take ownership of the data or
 	 *        copy it.
 	 * @return The new ImageData.
 	 **/

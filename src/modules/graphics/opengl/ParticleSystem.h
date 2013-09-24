@@ -116,7 +116,6 @@ public:
 
 	/**
 	 * Returns the current insert mode.
-	 * @param mode The current insert mode.
 	 */
 	InsertMode getInsertMode() const;
 
@@ -144,15 +143,15 @@ public:
 
 	/**
 	 * Sets the life range of the particles.
-	 * @param lifeMin The minimum life.
-	 * @param lifeMax The maximum life (if 0, then becomes the same as minimum life).
+	 * @param min The minimum life.
+	 * @param max The maximum life (if 0, then becomes the same as minimum life).
 	 **/
 	void setParticleLifetime(float min, float max = 0);
 
 	/**
 	 * Gets the lifetime of a particle.
-	 * @param[out] min
-	 * @param[out] max
+	 * @param[out] min The minimum life.
+	 * @param[out] max The maximum life.
 	 **/
 	void getParticleLifetime(float *min, float *max) const;
 
@@ -229,8 +228,8 @@ public:
 
 	/**
 	 * Gets the speed of the particles.
-	 * @param[out] min
-	 * @param[out] max
+	 * @param[out] min The minimum speed.
+	 * @param[out] max The maximum speed.
 	 **/
 	void getSpeed(float *min, float *max) const;
 
@@ -272,8 +271,8 @@ public:
 
 	/**
 	 * Gets the radial acceleration.
-	 * @param[out] min
-	 * @param[out] max
+	 * @param[out] min The minimum amount of radial acceleration.
+	 * @param[out] max The maximum amount of radial acceleration.
 	 **/
 	void getRadialAcceleration(float *min, float *max) const;
 
@@ -292,8 +291,8 @@ public:
 
 	/**
 	 * Gets the tangential acceleration.
-	 * @param[out] min
-	 * @param[out] max
+	 * @param[out] min The minimum tangential acceleration.
+	 * @param[out] max The maximum tangential acceleration.
 	 **/
 	void getTangentialAcceleration(float *min, float *max) const;
 
@@ -339,9 +338,9 @@ public:
 	void setRotation(float min, float max);
 
 	/**
-	 * Gets the initial amount of rotation of a particle.
-	 * @param[out] min
-	 * @param[out] max
+	 * Gets the initial amount of rotation of a particle, in radians.
+	 * @param[out] min The minimum initial rotation.
+	 * @param[out] max The maximum initial rotation.
 	 **/
 	void getRotation(float *min, float *max) const;
 
@@ -360,8 +359,8 @@ public:
 
 	/**
 	 * Gets the amount of spin of a particle during its lifetime.
-	 * @param[out] start
-	 * @param[out] end
+	 * @param[out] start The initial spin, in radians / s.
+	 * @param[out] end The final spin, in radians / s.
 	 **/
 	void getSpin(float *start, float *end) const;
 

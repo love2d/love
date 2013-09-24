@@ -463,7 +463,7 @@ T *luax_optmodule(lua_State *L, const char *k, love::bits type)
  * @param type The type bit.
  **/
 template <typename T>
-T *luax_totype(lua_State *L, int idx, const char *, love::bits)
+T *luax_totype(lua_State *L, int idx, const char * /* name */, love::bits /* type */)
 {
 	return (T *)(((Proxy *)lua_touserdata(L, idx))->data);
 }

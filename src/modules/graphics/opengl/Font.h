@@ -44,11 +44,6 @@ class Font : public Object, public Volatile
 {
 public:
 
-	/**
-	 * Default constructor.
-	 *
-	 * @param data The font data to construct from.
-	 **/
 	Font(love::font::Rasterizer *r, const Image::Filter &filter = Image::getDefaultFilter());
 
 	virtual ~Font();

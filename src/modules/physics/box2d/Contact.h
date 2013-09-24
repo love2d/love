@@ -53,7 +53,7 @@ public:
 	 * Creates a new Contact by copying a Box2D contact
 	 * point. It does not store the pointer, but copy the
 	 * data pointed to.
-	 * @param point Pointer to the Box2D contact.
+	 * @param contact Pointer to the Box2D contact.
 	 **/
 	Contact(b2Contact *contact);
 

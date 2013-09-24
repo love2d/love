@@ -46,9 +46,8 @@ class File : public love::filesystem::File
 public:
 
 	/**
-	 * Constructs an File with the given source and filename.
-	 * @param source The source from which to load the file. (Archive or directory)
-	 * @param filename The relative filepath of the file to load from the source.
+	 * Constructs an File with the given ilename.
+	 * @param filename The relative filepath of the file to load.
 	 **/
 	File(const std::string &filename);
 

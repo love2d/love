@@ -132,10 +132,8 @@ public:
 	virtual void unmap() = 0;
 
 	/**
-	 * Bind the VertexBuffer to the specified target.
-	 * (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER).
-	 *
-	 * @param target GL_ARRAY_BUFFER or GL_ELEMENT_ARRAY_BUFFER.
+	 * Bind the VertexBuffer to its specified target.
+	 * (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, etc).
 	 */
 	virtual void bind() = 0;
 

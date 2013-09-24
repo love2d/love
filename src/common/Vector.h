@@ -81,7 +81,7 @@ public:
 	/**
 	 * Gets a vector perpendicular to the Vector.
 	 * To get the true (normalized) normal, use v.getNormal(1.0f / v.getLength())
-	 * @param Scale factor to apply.
+	 * @param scale factor to apply.
 	 * @return A normal to the Vector.
 	 **/
 	Vector getNormal(float scale) const;
@@ -173,13 +173,13 @@ public:
 
 	/**
 	 * Sets the x value of the Vector.
-	 * @param The x value of the Vector.
+	 * @param x The x value of the Vector.
 	 **/
 	void setX(float x);
 
 	/**
 	 * Sets the x value of the Vector.
-	 * @param The x value of the Vector.
+	 * @param y The x value of the Vector.
 	 **/
 	void setY(float y);
 

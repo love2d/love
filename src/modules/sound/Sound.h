@@ -58,7 +58,7 @@ public:
 
 	/**
 	 * Creates a new SoundData with the specified number of samples and format.
-	 * @param duration In seconds.
+	 * @param samples The number of samples.
 	 * @param sampleRate Number of samples per second.
 	 * @param bitDepth Bits per sample (8 or 16).
 	 * @param channels Either 1 for mono, or 2 for stereo.
@@ -71,7 +71,6 @@ public:
 	 * specified file.
 	 * @param file The file with encoded sound data.
 	 * @param bufferSize The size of each decoded chunk.
-	 * @param sampleRate Samples per second, or quality of the audio. 44100 is a good value.
 	 * @return A Decoder object on success, or zero if no decoder could be found.
 	 **/
 	virtual Decoder *newDecoder(filesystem::FileData *file, int bufferSize) = 0;

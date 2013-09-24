@@ -137,7 +137,7 @@ public:
 	 * Helper for binding a texture to a specific texture unit.
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
-	 * @param resoreprev Restore previously bound texture unit when done.
+	 * @param restoreprev Restore previously bound texture unit when done.
 	 **/
 	void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
 

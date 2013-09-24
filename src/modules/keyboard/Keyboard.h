@@ -248,8 +248,8 @@ public:
 	virtual bool hasKeyRepeat() const = 0;
 
 	/**
-	 * Checks whether a certain key is down or not.
-	 * @param key A key identifier.
+	 * Checks whether certain keys are down or not.
+	 * @param keylist An array of key identifiers, terminated by KEY_MAX_ENUM.
 	 * @return boolean
 	 **/
 	virtual bool isDown(Key *keylist) const = 0;

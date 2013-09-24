@@ -45,10 +45,8 @@ class CircleShape : public Shape
 public:
 
 	/**
-	 * Create a new CircleShape from the parent body and a
-	 * Box2D CircleShape definition.
-	 * @param body The parent body.
-	 * @param def The CircleShape definition.
+	 * Create a new CircleShape from the a Box2D CircleShape definition.
+	 * @param c The CircleShape definition.
 	 **/
 	CircleShape(b2CircleShape *c, bool own = true);
 

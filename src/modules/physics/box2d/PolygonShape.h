@@ -43,10 +43,8 @@ class PolygonShape : public Shape
 public:
 
 	/**
-	 * Create a new PolygonShape from the parent Body and
-	 * a Box2D polygon definition.
-	 * @param body The parent Body.
-	 * @param def The polygon definition.
+	 * Create a new PolygonShape from a Box2D polygon definition.
+	 * @param p The polygon definition.
 	 **/
 	PolygonShape(b2PolygonShape *p, bool own = true);
 

@@ -88,7 +88,7 @@ public:
 
 	/**
 	 * Scale the curve.
-	 * @param s Scale factor.
+	 * @param phi Scale factor.
 	 * @param center Scale center.
 	 */
 	void scale(double phi, const Vector &center);
