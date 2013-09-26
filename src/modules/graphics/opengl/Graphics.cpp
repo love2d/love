@@ -741,7 +741,7 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 	glPushMatrix();
 
 	static Matrix t;
-	t.setTransformation(ceil(x), ceil(y), angle, sx, sy, ox, oy, kx, ky);
+	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
 	x = y = 0.0f;
@@ -760,10 +760,10 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 			switch (align)
 			{
 			case ALIGN_RIGHT:
-				currentFont->print(*line_iter, ceil(x + (wrap - width)), ceil(y), 0.0f);
+				currentFont->print(*line_iter, ceilf(x + (wrap - width)), ceilf(y), 0.0f);
 				break;
 			case ALIGN_CENTER:
-				currentFont->print(*line_iter, ceil(x + (wrap - width) / 2), ceil(y), 0.0f);
+				currentFont->print(*line_iter, ceilf(x + (wrap - width) / 2), ceilf(y), 0.0f);
 				break;
 			case ALIGN_JUSTIFY:
 				num_spaces = std::count(line_iter->begin(), line_iter->end(), ' ');
@@ -771,11 +771,11 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 					extra_spacing = (wrap - width) / float(num_spaces);
 				else
 					extra_spacing = 0.0f;
-				currentFont->print(*line_iter, ceil(x), ceil(y), extra_spacing);
+				currentFont->print(*line_iter, ceilf(x), ceilf(y), extra_spacing);
 				break;
 			case ALIGN_LEFT:
 			default:
-				currentFont->print(*line_iter, ceil(x), ceil(y), 0.0f);
+				currentFont->print(*line_iter, ceilf(x), ceilf(y), 0.0f);
 				break;
 			}
 			y += currentFont->getHeight() * currentFont->getLineHeight();
@@ -808,19 +808,19 @@ void Graphics::polyline(const float *coords, size_t count)
 	if (lineJoin == LINE_JOIN_NONE)
 	{
 			NoneJoinPolyline line;
-			line.render(coords, count, lineWidth * .5f, pixel_size_stack.back(), lineStyle == LINE_SMOOTH);
+			line.render(coords, count, lineWidth * .5f, float(pixel_size_stack.back()), lineStyle == LINE_SMOOTH);
 			line.draw();
 	}
 	else if (lineJoin == LINE_JOIN_BEVEL)
 	{
 		BevelJoinPolyline line;
-		line.render(coords, count, lineWidth * .5f, pixel_size_stack.back(), lineStyle == LINE_SMOOTH);
+		line.render(coords, count, lineWidth * .5f, float(pixel_size_stack.back()), lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 	else // LINE_JOIN_MITER
 	{
 		MiterJoinPolyline line;
-		line.render(coords, count, lineWidth * .5f, pixel_size_stack.back(), lineStyle == LINE_SMOOTH);
+		line.render(coords, count, lineWidth * .5f, float(pixel_size_stack.back()), lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 }

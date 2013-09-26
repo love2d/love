@@ -69,8 +69,8 @@ int w_BezierCurve_setControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	int idx = luaL_checkinteger(L, 2);
-	double vx = luaL_checknumber(L, 3);
-	double vy = luaL_checknumber(L, 4);
+	float vx = (float) luaL_checknumber(L, 3);
+	float vy = (float) luaL_checknumber(L, 4);
 
 	if (idx > 0) // 1-indexing
 		idx--;
@@ -82,8 +82,8 @@ int w_BezierCurve_setControlPoint(lua_State *L)
 int w_BezierCurve_insertControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	double vx = luaL_checknumber(L, 2);
-	double vy = luaL_checknumber(L, 3);
+	float vx = (float) luaL_checknumber(L, 2);
+	float vy = (float) luaL_checknumber(L, 3);
 	int idx = luaL_optinteger(L, 4, -1);
 
 	if (idx > 0) // 1-indexing
@@ -96,8 +96,8 @@ int w_BezierCurve_insertControlPoint(lua_State *L)
 int w_BezierCurve_translate(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	double dx = luaL_checknumber(L, 2);
-	double dy = luaL_checknumber(L, 3);
+	float dx = (float) luaL_checknumber(L, 2);
+	float dy = (float) luaL_checknumber(L, 3);
 	curve->translate(Vector(dx,dy));
 	return 0;
 }
@@ -106,8 +106,8 @@ int w_BezierCurve_rotate(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	double phi = luaL_checknumber(L, 2);
-	double ox = luaL_optnumber(L, 3, 0);
-	double oy = luaL_optnumber(L, 4, 0);
+	float ox = (float) luaL_optnumber(L, 3, 0);
+	float oy = (float) luaL_optnumber(L, 4, 0);
 	curve->rotate(phi, Vector(ox,oy));
 	return 0;
 }
@@ -116,8 +116,8 @@ int w_BezierCurve_scale(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	double s = luaL_checknumber(L, 2);
-	double ox = luaL_optnumber(L, 3, 0);
-	double oy = luaL_optnumber(L, 4, 0);
+	float ox = (float) luaL_optnumber(L, 3, 0);
+	float oy = (float) luaL_optnumber(L, 4, 0);
 	curve->scale(s, Vector(ox,oy));
 	return 0;
 }

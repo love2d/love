@@ -73,27 +73,27 @@ int w_Geometry_setVertex(lua_State *L)
 		for (int i = 1; i <= 8; i++)
 			lua_rawgeti(L, 3, i);
 
-		v.x = luaL_checknumber(L, -8);
-		v.y = luaL_checknumber(L, -7);
-		v.s = luaL_checknumber(L, -6);
-		v.t = luaL_checknumber(L, -5);
-		v.r = luaL_optinteger(L, -4, 255);
-		v.g = luaL_optinteger(L, -3, 255);
-		v.b = luaL_optinteger(L, -2, 255);
-		v.a = luaL_optinteger(L, -1, 255);
+		v.x = (float) luaL_checknumber(L, -8);
+		v.y = (float) luaL_checknumber(L, -7);
+		v.s = (float) luaL_checknumber(L, -6);
+		v.t = (float) luaL_checknumber(L, -5);
+		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
+		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
+		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
+		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
 
 		lua_pop(L, 8);
 	}
 	else
 	{
-		v.x = luaL_checknumber(L, 3);
-		v.y = luaL_checknumber(L, 4);
-		v.s = luaL_checknumber(L, 5);
-		v.t = luaL_checknumber(L, 6);
-		v.r = luaL_optinteger(L,  7, 255);
-		v.g = luaL_optinteger(L,  8, 255);
-		v.b = luaL_optinteger(L,  9, 255);
-		v.a = luaL_optinteger(L, 10, 255);
+		v.x = (float) luaL_checknumber(L, 3);
+		v.y = (float) luaL_checknumber(L, 4);
+		v.s = (float) luaL_checknumber(L, 5);
+		v.t = (float) luaL_checknumber(L, 6);
+		v.r = (unsigned char) luaL_optinteger(L,  7, 255);
+		v.g = (unsigned char) luaL_optinteger(L,  8, 255);
+		v.b = (unsigned char) luaL_optinteger(L,  9, 255);
+		v.a = (unsigned char) luaL_optinteger(L, 10, 255);
 	}
 
 	EXCEPT_GUARD(geom->setVertex(i-1, v);)
@@ -180,11 +180,11 @@ int w_Geometry_setVertexMap(lua_State *L)
 		if (is_table)
 		{
 			lua_rawgeti(L, 2, i + 1);
-			vertexmap.push_back(luaL_checkinteger(L, -1) - 1);
+			vertexmap.push_back(uint16(luaL_checkinteger(L, -1) - 1));
 			lua_pop(L, 1);
 		}
 		else
-			vertexmap.push_back(luaL_checkinteger(L, i + 2) - 1);
+			vertexmap.push_back(uint16(luaL_checkinteger(L, i + 2) - 1));
 	}
 
 	EXCEPT_GUARD(g->setElementArray(&vertexmap[0], vertexmap.size());)

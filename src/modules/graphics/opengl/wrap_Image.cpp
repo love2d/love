@@ -104,7 +104,7 @@ int w_Image_setMipmapFilter(lua_State *L)
 
 	EXCEPT_GUARD(t->setFilter(f);)
 
-	float sharpness = luaL_optnumber(L, 3, 0);
+	float sharpness = (float) luaL_optnumber(L, 3, 0);
 	t->setMipmapSharpness(sharpness);
 
 	return 0;

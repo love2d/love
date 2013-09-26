@@ -27,7 +27,7 @@
 #include "OpenGL.h"
 
 // treat adjacent segments with angles between their directions <5 degree as straight
-static const float LINES_PARALLEL_EPS = 0.05;
+static const float LINES_PARALLEL_EPS = 0.05f;
 
 namespace love
 {

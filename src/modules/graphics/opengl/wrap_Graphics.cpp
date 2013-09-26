@@ -253,7 +253,7 @@ int w_newGeometry(lua_State *L)
 			if (!lua_isnumber(L, -1))
 				return luaL_argerror(L, tableidx + 1, "vertex index expected");
 
-			vertexmap.push_back(lua_tointeger(L, -1) - 1);
+			vertexmap.push_back(uint16(lua_tointeger(L, -1) - 1));
 			lua_pop(L, 1);
 		}
 
@@ -293,16 +293,16 @@ int w_newGeometry(lua_State *L)
 		for (int j = 1; j <= 8; j++)
 			lua_rawgeti(L, -j, j);
 
-		v.x = luaL_checknumber(L, -8);
-		v.y = luaL_checknumber(L, -7);
+		v.x = (float) luaL_checknumber(L, -8);
+		v.y = (float) luaL_checknumber(L, -7);
 
-		v.s = luaL_checknumber(L, -6);
-		v.t = luaL_checknumber(L, -5);
+		v.s = (float) luaL_checknumber(L, -6);
+		v.t = (float) luaL_checknumber(L, -5);
 
-		v.r = luaL_optinteger(L, -4, 255);
-		v.g = luaL_optinteger(L, -3, 255);
-		v.b = luaL_optinteger(L, -2, 255);
-		v.a = luaL_optinteger(L, -1, 255);
+		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
+		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
+		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
+		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
 
 		lua_pop(L, 9);
 
@@ -441,7 +441,7 @@ int w_newParticleSystem(lua_State *L)
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid ParticleSystem size");	
 
-	EXCEPT_GUARD(t = instance->newParticleSystem(image, size);)
+	EXCEPT_GUARD(t = instance->newParticleSystem(image, int(size));)
 
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
 	return 1;
@@ -765,7 +765,7 @@ int w_setDefaultMipmapFilter(lua_State *L)
 			return luaL_error(L, "Invalid filter mode: %s", str);
 	}
 
-	float sharpness = luaL_optnumber(L, 2, 0);
+	float sharpness = (float) luaL_optnumber(L, 2, 0);
 
 	instance->setDefaultMipmapFilter(filter, sharpness);
 

@@ -168,7 +168,7 @@ int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValu
 	if (!lua_isnumber(L, -1))
 		retval = defaultValue;
 	else
-		retval = lua_tonumber(L, -1);
+		retval = (int) lua_tointeger(L, -1);
 
 	lua_pop(L, 1);
 	return retval;

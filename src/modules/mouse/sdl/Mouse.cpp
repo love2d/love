@@ -130,7 +130,7 @@ void Mouse::setVisible(bool visible)
 
 bool Mouse::isDown(Button *buttonlist) const
 {
-	Uint8 buttonstate = SDL_GetMouseState(0, 0);
+	Uint32 buttonstate = SDL_GetMouseState(0, 0);
 
 	for (Button button = *buttonlist; button != BUTTON_MAX_ENUM; button = *(++buttonlist))
 	{

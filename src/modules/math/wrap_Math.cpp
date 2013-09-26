@@ -106,8 +106,8 @@ int w_newBezierCurve(lua_State *L)
 			lua_rawgeti(L, 1, i+1);
 
 			Vector v;
-			v.x = luaL_checknumber(L, -2);
-			v.y = luaL_checknumber(L, -1);
+			v.x = (float) luaL_checknumber(L, -2);
+			v.y = (float) luaL_checknumber(L, -1);
 			points.push_back(v);
 
 			lua_pop(L, 2);
@@ -120,8 +120,8 @@ int w_newBezierCurve(lua_State *L)
 		for (size_t i = 1; i <= top; i += 2)
 		{
 			Vector v;
-			v.x = luaL_checknumber(L, i);
-			v.y = luaL_checknumber(L, i+1);
+			v.x = (float) luaL_checknumber(L, i);
+			v.y = (float) luaL_checknumber(L, i+1);
 			points.push_back(v);
 		}
 	}
@@ -144,8 +144,8 @@ int w_triangulate(lua_State *L)
 			lua_rawgeti(L, 1, i+1);
 
 			Vertex v;
-			v.x = luaL_checknumber(L, -2);
-			v.y = luaL_checknumber(L, -1);
+			v.x = (float) luaL_checknumber(L, -2);
+			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
 
 			lua_pop(L, 2);
@@ -158,8 +158,8 @@ int w_triangulate(lua_State *L)
 		for (size_t i = 1; i <= top; i += 2)
 		{
 			Vertex v;
-			v.x = luaL_checknumber(L, i);
-			v.y = luaL_checknumber(L, i+1);
+			v.x = (float) luaL_checknumber(L, i);
+			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);
 		}
 	}
@@ -214,8 +214,8 @@ int w_isConvex(lua_State *L)
 			lua_rawgeti(L, 1, i+1);
 
 			Vertex v;
-			v.x = luaL_checknumber(L, -2);
-			v.y = luaL_checknumber(L, -1);
+			v.x = (float) luaL_checknumber(L, -2);
+			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
 
 			lua_pop(L, 2);
@@ -228,8 +228,8 @@ int w_isConvex(lua_State *L)
 		for (size_t i = 1; i <= top; i += 2)
 		{
 			Vertex v;
-			v.x = luaL_checknumber(L, i);
-			v.y = luaL_checknumber(L, i+1);
+			v.x = (float) luaL_checknumber(L, i);
+			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);
 		}
 	}
@@ -246,26 +246,26 @@ int w_noise(lua_State *L)
 	switch (lua_gettop(L))
 	{
 	case 1:
-		x = luaL_checknumber(L, 1);
+		x = (float) luaL_checknumber(L, 1);
 		val = Math::instance.noise(x);
 		break;
 	case 2:
-		x = luaL_checknumber(L, 1);
-		y = luaL_checknumber(L, 2);
+		x = (float) luaL_checknumber(L, 1);
+		y = (float) luaL_checknumber(L, 2);
 		val = Math::instance.noise(x, y);
 		break;
 	case 3:
-		x = luaL_checknumber(L, 1);
-		y = luaL_checknumber(L, 2);
-		z = luaL_checknumber(L, 3);
+		x = (float) luaL_checknumber(L, 1);
+		y = (float) luaL_checknumber(L, 2);
+		z = (float) luaL_checknumber(L, 3);
 		val = Math::instance.noise(x, y, z);
 		break;
 	case 4:
 	default:
-		x = luaL_checknumber(L, 1);
-		y = luaL_checknumber(L, 2);
-		z = luaL_checknumber(L, 3);
-		w = luaL_checknumber(L, 4);
+		x = (float) luaL_checknumber(L, 1);
+		y = (float) luaL_checknumber(L, 2);
+		z = (float) luaL_checknumber(L, 3);
+		w = (float) luaL_checknumber(L, 4);
 		val = Math::instance.noise(x, y, z, w);
 		break;
 	}

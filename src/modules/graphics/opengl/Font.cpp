@@ -551,7 +551,7 @@ int Font::getDescent() const
 float Font::getBaseline() const
 {
 	// 1.25 is magic line height for true type fonts
-	return (type == FONT_TRUETYPE) ? floor(getHeight() / 1.25f + 0.5f) : 0.0f;
+	return (type == FONT_TRUETYPE) ? floorf(getHeight() / 1.25f + 0.5f) : 0.0f;
 }
 
 bool Font::hasGlyph(uint32 glyph) const

@@ -619,7 +619,7 @@ void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle
 	for (size_t i = 0; i < vcount; ++i)
 	{
 		v[i] = w[i];
-		v[i].t = 1. - v[i].t;
+		v[i].t = 1.f - v[i].t;
 	}
 
 	// use colors stored in geometry (horrible, horrible hack)
