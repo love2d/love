@@ -242,22 +242,6 @@ int Graphics::getHeight() const
 	return height;
 }
 
-int Graphics::getRenderWidth() const
-{
-	if (Canvas::current)
-		return Canvas::current->getWidth();
-
-	return getWidth();
-}
-
-int Graphics::getRenderHeight() const
-{
-	if (Canvas::current)
-		return Canvas::current->getHeight();
-
-	return getHeight();
-}
-
 bool Graphics::isCreated() const
 {
 	return created;

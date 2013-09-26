@@ -26,7 +26,7 @@ namespace love
 
 extern StringMap<Type, TYPE_MAX_ENUM> types;
 
-love::Type extractudatatype(lua_State *L, int idx)
+static love::Type extractudatatype(lua_State *L, int idx)
 {
 	Type t = INVALID_ID;
 	if (!lua_isuserdata(L, idx))

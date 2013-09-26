@@ -31,14 +31,13 @@ namespace sound
 {
 
 SoundData *luax_checksounddata(lua_State *L, int idx);
-int w_getSize(lua_State *L);
-int w_getChannels(lua_State *L);
-int w_getBitDepth(lua_State *L);
-int w_getSampleRate(lua_State *L);
-int w_getSampleCount(lua_State *L);
-int w_getDuration(lua_State *L);
-int w_setSample(lua_State *L);
-int w_getSample(lua_State *L);
+int w_SoundData_getChannels(lua_State *L);
+int w_SoundData_getBitDepth(lua_State *L);
+int w_SoundData_getSampleRate(lua_State *L);
+int w_SoundData_getSampleCount(lua_State *L);
+int w_SoundData_getDuration(lua_State *L);
+int w_SoundData_setSample(lua_State *L);
+int w_SoundData_getSample(lua_State *L);
 extern "C" int luaopen_sounddata(lua_State *L);
 
 } // sound

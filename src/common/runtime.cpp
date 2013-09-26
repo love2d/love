@@ -533,16 +533,6 @@ int luax_pconvobj(lua_State *L, int idxs[], int n, const char *mod, const char *
 	return ret;
 }
 
-int luax_strtofile(lua_State *L, int idx)
-{
-	return luax_convobj(L, idx, "filesystem", "newFile");
-}
-
-int luax_filetodata(lua_State *L, int idx)
-{
-	return luax_convobj(L, idx, "filesystem", "read");
-}
-
 int luax_insist(lua_State *L, int idx, const char *k)
 {
 	// Convert to absolute index if necessary.
