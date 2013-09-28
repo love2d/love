@@ -29,7 +29,30 @@
 
 namespace
 {
-	std::map<std::string, love::Module*> registry;
+	typedef std::map<std::string, love::Module*> ModuleRegistry;
+
+	// The registry must be dynamically managed, because some modules
+	// (the math module) are static globals that are not guaranteed to
+	// be destroyed before other static globals.
+	ModuleRegistry *registry = nullptr;
+
+	ModuleRegistry &registryInstance()
+	{
+		if (!registry)
+			registry = new ModuleRegistry;
+
+		return *registry;
+	}
+
+	void freeEmptyRegistry()
+	{
+		if (registry && registry->empty())
+		{
+			delete registry;
+			registry = nullptr;
+		}
+	}
+
 } // anonymous namespace
 
 namespace love
@@ -37,10 +60,10 @@ namespace love
 
 Module::~Module()
 {
-	std::map<std::string, Module*>::iterator it;
+	ModuleRegistry &registry = registryInstance();
 
 	// We can't use the overridden Module::getName() in this destructor.
-	for (it = registry.begin(); it != registry.end(); ++it)
+	for (auto it = registry.begin(); it != registry.end(); ++it)
 	{
 		if (it->second == this)
 		{
@@ -48,16 +71,20 @@ Module::~Module()
 			break;
 		}
 	}
+
+	freeEmptyRegistry();
 }
 
 void Module::registerInstance(Module *instance)
 {
-	if (instance == NULL)
+	if (instance == nullptr)
 		throw Exception("Module instance is NULL");
 
 	std::string name(instance->getName());
 
-	std::map<std::string, Module*>::iterator it = registry.find(name);
+	ModuleRegistry &registry = registryInstance();
+
+	auto it = registry.find(name);
 
 	if (it != registry.end())
 	{
@@ -71,25 +98,27 @@ void Module::registerInstance(Module *instance)
 
 Module *Module::getInstance(const std::string &name)
 {
-	std::map<std::string, Module*>::const_iterator it = registry.find(name);
+	ModuleRegistry &registry = registryInstance();
+
+	auto it = registry.find(name);
 
 	if (registry.end() == it)
-		return NULL;
+		return nullptr;
 
 	return it->second;
 }
 
 Module *Module::findInstance(const std::string &name)
 {
-	std::map<std::string, Module*>::const_iterator it;
+	ModuleRegistry &registry = registryInstance();
 
-	for (it = registry.begin(); it != registry.end(); ++it)
+	for (auto it = registry.begin(); it != registry.end(); ++it)
 	{
 		if (it->first.find(name) == 0)
 			return it->second;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 } // love
