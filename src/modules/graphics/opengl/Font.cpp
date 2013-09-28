@@ -20,7 +20,6 @@
 #include "common/config.h"
 #include "Font.h"
 #include "font/GlyphData.h"
-#include "modules/graphics/Geometry.h"
 #include "Image.h"
 
 #include "libraries/utf8/utf8.h"

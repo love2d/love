@@ -18,12 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_GEOMETRY_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_GEOMETRY_H
+#ifndef LOVE_GRAPHICS_OPENGL_WRAP_MESH_H
+#define LOVE_GRAPHICS_OPENGL_WRAP_MESH_H
 
 // LOVE
 #include "common/runtime.h"
-#include "graphics/Geometry.h"
+#include "Mesh.h"
 
 namespace love
 {
@@ -32,19 +32,23 @@ namespace graphics
 namespace opengl
 {
 
-Geometry *luax_checkgeometry(lua_State *L, int idx);
-int w_Geometry_getVertexCount(lua_State *L);
-int w_Geometry_getVertex(lua_State *L);
-int w_Geometry_setVertex(lua_State *L);
-int w_Geometry_setVertexColors(lua_State *L);
-int w_Geometry_hasVertexColors(lua_State *L);
-int w_Geometry_getDrawMode(lua_State *L);
-int w_Geometry_getVertexMap(lua_State *L);
-int w_Geometry_setVertexMap(lua_State *L);
-extern "C" int luaopen_geometry(lua_State *L);
+Mesh *luax_checkmesh(lua_State *L, int idx);
+
+int w_Mesh_setVertex(lua_State *L);
+int w_Mesh_getVertex(lua_State *L);
+int w_Mesh_getVertices(lua_State *L);
+int w_Mesh_getVertexCount(lua_State *L);
+int w_Mesh_setVertexMap(lua_State *L);
+int w_Mesh_getVertexMap(lua_State *L);
+int w_Mesh_setImage(lua_State *L);
+int w_Mesh_getImage(lua_State *L);
+int w_Mesh_setDrawMode(lua_State *L);
+int w_Mesh_getDrawMode(lua_State *L);
+
+extern "C" int luaopen_mesh(lua_State *L);
 
 } // opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_GEOMETRY_H
+#endif // LOVE_GRAPHICS_OPENGL_WRAP_MESH_H

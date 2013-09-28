@@ -259,6 +259,8 @@
 		FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */; };
 		FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */; };
 		FA7175AA178E8418001FE7FE /* lua.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7175A9178E8418001FE7FE /* lua.h */; };
+		FA7AA59217F6AC1F00704BE2 /* wrap_Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7AA59017F6AC1F00704BE2 /* wrap_Mesh.cpp */; };
+		FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
@@ -277,12 +279,11 @@
 		FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC570FD17402D1100D147E4 /* BezierCurve.h */; };
 		FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */; };
 		FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC570FF17402D1100D147E4 /* wrap_BezierCurve.h */; };
-		FAC86E631724552C00EED715 /* wrap_Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E611724552C00EED715 /* wrap_Geometry.cpp */; };
-		FAC86E641724552C00EED715 /* wrap_Geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Geometry.h */; };
-		FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E651724555D00EED715 /* DrawGable.cpp */; };
-		FAC86E6A1724555D00EED715 /* DrawGable.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E661724555D00EED715 /* DrawGable.h */; };
-		FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Geometry.cpp */; };
-		FAC86E6C1724555D00EED715 /* Geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Geometry.h */; };
+		FAC86E631724552C00EED715 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E611724552C00EED715 /* wrap_Quad.cpp */; };
+		FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Quad.h */; };
+		FAC86E6A1724555D00EED715 /* DrawQable.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E661724555D00EED715 /* DrawQable.h */; };
+		FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Quad.cpp */; };
+		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
 		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
 		FAE010DC170DDE99006F29D0 /* ddsparse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010D9170DDE99006F29D0 /* ddsparse.cpp */; };
 		FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010DA170DDE99006F29D0 /* ddsparse.h */; };
@@ -310,6 +311,8 @@
 		FAF272B616E3D46400CC193A /* Thread.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF272B216E3D46400CC193A /* Thread.h */; };
 		FAF272B716E3D46400CC193A /* threads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF272B316E3D46400CC193A /* threads.cpp */; };
 		FAF272B816E3D46400CC193A /* threads.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF272B416E3D46400CC193A /* threads.h */; };
+		FAF4376F17F4AC530074F9E2 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF4376D17F4AC530074F9E2 /* Mesh.cpp */; };
+		FAF4377017F4AC530074F9E2 /* Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF4376E17F4AC530074F9E2 /* Mesh.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -798,6 +801,8 @@
 		FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RandomGenerator.cpp; sourceTree = "<group>"; };
 		FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RandomGenerator.h; sourceTree = "<group>"; };
 		FA7175A9178E8418001FE7FE /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
+		FA7AA59017F6AC1F00704BE2 /* wrap_Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Mesh.cpp; sourceTree = "<group>"; };
+		FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mesh.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
@@ -816,12 +821,11 @@
 		FAC570FD17402D1100D147E4 /* BezierCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierCurve.h; sourceTree = "<group>"; };
 		FAC570FE17402D1100D147E4 /* wrap_BezierCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_BezierCurve.cpp; sourceTree = "<group>"; };
 		FAC570FF17402D1100D147E4 /* wrap_BezierCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_BezierCurve.h; sourceTree = "<group>"; };
-		FAC86E611724552C00EED715 /* wrap_Geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Geometry.cpp; sourceTree = "<group>"; };
-		FAC86E621724552C00EED715 /* wrap_Geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Geometry.h; sourceTree = "<group>"; };
-		FAC86E651724555D00EED715 /* DrawGable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawGable.cpp; sourceTree = "<group>"; };
-		FAC86E661724555D00EED715 /* DrawGable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawGable.h; sourceTree = "<group>"; };
-		FAC86E671724555D00EED715 /* Geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Geometry.cpp; sourceTree = "<group>"; };
-		FAC86E681724555D00EED715 /* Geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Geometry.h; sourceTree = "<group>"; };
+		FAC86E611724552C00EED715 /* wrap_Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Quad.cpp; sourceTree = "<group>"; };
+		FAC86E621724552C00EED715 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
+		FAC86E661724555D00EED715 /* DrawQable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawQable.h; sourceTree = "<group>"; };
+		FAC86E671724555D00EED715 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
+		FAC86E681724555D00EED715 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
 		FAE010D9170DDE99006F29D0 /* ddsparse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ddsparse.cpp; sourceTree = "<group>"; };
 		FAE010DA170DDE99006F29D0 /* ddsparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsparse.h; sourceTree = "<group>"; };
@@ -849,6 +853,8 @@
 		FAF272B216E3D46400CC193A /* Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
 		FAF272B316E3D46400CC193A /* threads.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = threads.cpp; sourceTree = "<group>"; };
 		FAF272B416E3D46400CC193A /* threads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threads.h; sourceTree = "<group>"; };
+		FAF4376D17F4AC530074F9E2 /* Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mesh.cpp; sourceTree = "<group>"; };
+		FAF4376E17F4AC530074F9E2 /* Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1437,15 +1443,14 @@
 				4941079838020ECA049B5C21 /* Color.h */,
 				58BA2BB460AF3C591B22690E /* Drawable.cpp */,
 				5D93601669875EE06721689E /* Drawable.h */,
-				FAC86E651724555D00EED715 /* DrawGable.cpp */,
-				FAC86E661724555D00EED715 /* DrawGable.h */,
-				FAC86E671724555D00EED715 /* Geometry.cpp */,
-				FAC86E681724555D00EED715 /* Geometry.h */,
+				FAC86E661724555D00EED715 /* DrawQable.h */,
 				03F17FF546D637744E263961 /* Graphics.cpp */,
 				777352284E262F48543E6E7F /* Graphics.h */,
 				58CC50E70A375FDF53EF01B6 /* Image.cpp */,
 				1DA41DFF0869489411A71AFC /* Image.h */,
 				75093EE94918576801F50993 /* opengl */,
+				FAC86E671724555D00EED715 /* Quad.cpp */,
+				FAC86E681724555D00EED715 /* Quad.h */,
 				4B731754147B27AF73AC5358 /* Volatile.cpp */,
 				0CFF64090F0F4F481BB80CF0 /* Volatile.h */,
 			);
@@ -1629,6 +1634,8 @@
 				389E3CEC356050A27784290E /* Graphics.h */,
 				56D6030A0B8F7397715062B9 /* Image.cpp */,
 				3CFE5C4A12D5675E7C9C7BF9 /* Image.h */,
+				FAF4376D17F4AC530074F9E2 /* Mesh.cpp */,
+				FAF4376E17F4AC530074F9E2 /* Mesh.h */,
 				2E406F8328543EC63EB922C6 /* OpenGL.cpp */,
 				2C87695707B046B536F347D8 /* OpenGL.h */,
 				48A206C9004150640C432100 /* ParticleSystem.cpp */,
@@ -1645,12 +1652,14 @@
 				3AFB3A18384A2D22352262B1 /* wrap_Canvas.h */,
 				7A3B52AF1FBE73FC36AD50C8 /* wrap_Font.cpp */,
 				3CDA3E9B364F17A902384AAC /* wrap_Font.h */,
-				FAC86E611724552C00EED715 /* wrap_Geometry.cpp */,
-				FAC86E621724552C00EED715 /* wrap_Geometry.h */,
+				FAC86E611724552C00EED715 /* wrap_Quad.cpp */,
+				FAC86E621724552C00EED715 /* wrap_Quad.h */,
 				1A9810F758AC1D1E4B6431FD /* wrap_Graphics.cpp */,
 				05DF237B657042515F3B4E52 /* wrap_Graphics.h */,
 				14AE68E14C2C74526A612FA0 /* wrap_Image.cpp */,
 				78A2127828793F7A778D7932 /* wrap_Image.h */,
+				FA7AA59017F6AC1F00704BE2 /* wrap_Mesh.cpp */,
+				FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */,
 				5F42052D7C8271A1105541DE /* wrap_ParticleSystem.cpp */,
 				678E42771C9B415628A3234D /* wrap_ParticleSystem.h */,
 				FA577A8716C71CF000860150 /* wrap_Shader.cpp */,
@@ -1896,6 +1905,7 @@
 				FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */,
 				FAF272A516E3D44400CC193A /* Channel.h in Headers */,
 				FAF272A716E3D44400CC193A /* LuaThread.h in Headers */,
+				FAF4377017F4AC530074F9E2 /* Mesh.h in Headers */,
 				FAF272A916E3D44400CC193A /* ThreadModule.h in Headers */,
 				FAF272AB16E3D44400CC193A /* wrap_Channel.h in Headers */,
 				FAF272AD16E3D44400CC193A /* wrap_LuaThread.h in Headers */,
@@ -1909,13 +1919,14 @@
 				FAE010E1170DE25E006F29D0 /* ddsHandler.h in Headers */,
 				FAE010E5170DF75C006F29D0 /* wrap_CompressedData.h in Headers */,
 				FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */,
+				FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */,
 				FAEC808B1710FEA60057279A /* ImageData.h in Headers */,
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
 				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
-				FAC86E641724552C00EED715 /* wrap_Geometry.h in Headers */,
-				FAC86E6A1724555D00EED715 /* DrawGable.h in Headers */,
-				FAC86E6C1724555D00EED715 /* Geometry.h in Headers */,
+				FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */,
+				FAC86E6A1724555D00EED715 /* DrawQable.h in Headers */,
+				FAC86E6C1724555D00EED715 /* Quad.h in Headers */,
 				FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */,
 				FA3D9E0E16E68DE600CA6630 /* Cursor.h in Headers */,
 				FA3D9E1216E68EAE00CA6630 /* Cursor.h in Headers */,
@@ -2112,6 +2123,7 @@
 				FA08F61C16C7541400F007B5 /* Font.cpp in Sources */,
 				FA08F61D16C7541400F007B5 /* GLee.c in Sources */,
 				FA08F61E16C7541400F007B5 /* Graphics.cpp in Sources */,
+				FAF4376F17F4AC530074F9E2 /* Mesh.cpp in Sources */,
 				FA08F61F16C7541400F007B5 /* Image.cpp in Sources */,
 				FA08F62016C7541400F007B5 /* OpenGL.cpp in Sources */,
 				FA08F62116C7541400F007B5 /* ParticleSystem.cpp in Sources */,
@@ -2131,6 +2143,7 @@
 				FA08F63116C7542600F007B5 /* wrap_Image.cpp in Sources */,
 				FA08F63216C7542600F007B5 /* wrap_ImageData.cpp in Sources */,
 				FA08F63416C7542D00F007B5 /* JoystickModule.cpp in Sources */,
+				FA7AA59217F6AC1F00704BE2 /* wrap_Mesh.cpp in Sources */,
 				FA08F63516C7542D00F007B5 /* wrap_JoystickModule.cpp in Sources */,
 				FA08F63616C7543400F007B5 /* Keyboard.cpp in Sources */,
 				FA08F63716C7543400F007B5 /* Keyboard.cpp in Sources */,
@@ -2219,9 +2232,8 @@
 				FAEC808E1711E76C0057279A /* CompressedData.cpp in Sources */,
 				FA636D8A171B70920065623F /* RandomGenerator.cpp in Sources */,
 				FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */,
-				FAC86E631724552C00EED715 /* wrap_Geometry.cpp in Sources */,
-				FAC86E691724555D00EED715 /* DrawGable.cpp in Sources */,
-				FAC86E6B1724555D00EED715 /* Geometry.cpp in Sources */,
+				FAC86E631724552C00EED715 /* wrap_Quad.cpp in Sources */,
+				FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */,
 				FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */,
 				FA3D9E0D16E68DE600CA6630 /* Cursor.cpp in Sources */,
 				FA3D9E1116E68EAE00CA6630 /* Cursor.cpp in Sources */,

@@ -36,12 +36,12 @@ SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 int w_SpriteBatch_add(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	Geometry *geom = 0;
+	Quad *quad = 0;
 	int startidx = 2;
 
-	if (luax_istype(L, 2, GRAPHICS_GEOMETRY_T))
+	if (luax_istype(L, 2, GRAPHICS_QUAD_T))
 	{
-		geom = luax_totype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
 		startidx = 3;
 	}
 
@@ -57,8 +57,8 @@ int w_SpriteBatch_add(lua_State *L)
 
 	int id = 0;
 	EXCEPT_GUARD(
-		if (geom)
-			id = t->addg(geom, x, y, a, sx, sy, ox, oy, kx, ky);
+		if (quad)
+			id = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
 		else
 			id = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
 	)
@@ -72,12 +72,12 @@ int w_SpriteBatch_set(lua_State *L)
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	int id = luaL_checkinteger(L, 2);
 
-	Geometry *geom = 0;
+	Quad *quad = 0;
 	int startidx = 3;
 
-	if (luax_istype(L, 3, GRAPHICS_GEOMETRY_T))
+	if (luax_istype(L, 3, GRAPHICS_QUAD_T))
 	{
-		geom = luax_totype<Geometry>(L, 3, "Geometry", GRAPHICS_GEOMETRY_T);
+		quad = luax_totype<Quad>(L, 3, "Quad", GRAPHICS_QUAD_T);
 		startidx = 4;
 	}
 
@@ -92,8 +92,8 @@ int w_SpriteBatch_set(lua_State *L)
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
 	EXCEPT_GUARD(
-		if (geom)
-			t->addg(geom, x, y, a, sx, sy, ox, oy, kx, ky, id);
+		if (quad)
+			t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, id);
 		else
 			t->add(x, y, a, sx, sy, ox, oy, kx, ky, id);
 	)

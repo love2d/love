@@ -32,7 +32,7 @@
 #include "graphics/Drawable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
-#include "graphics/Geometry.h"
+#include "graphics/Quad.h"
 
 namespace love
 {
@@ -62,7 +62,7 @@ public:
 	virtual ~SpriteBatch();
 
 	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
-	int addg(Geometry *geom, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
+	int addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
 	void clear();
 
 	void *lock();
@@ -72,16 +72,16 @@ public:
 	Image *getImage();
 
 	/**
-	 * Set the current color for this SpriteBatch. The geometry added
+	 * Set the current color for this SpriteBatch. The sprites added
 	 * after this call will use this color. Note that global color
 	 * will not longer apply to the SpriteBatch if this is used.
 	 *
-	 * @param color The color to use for the following geometry.
+	 * @param color The color to use for the following sprites.
 	 */
 	void setColor(const Color &color);
 
 	/**
-	 * Disable per-geometry colors for this SpriteBatch. The next call to
+	 * Disable per-sprite colors for this SpriteBatch. The next call to
 	 * draw will use the global color for all sprites.
 	 */
 	void setColor();
@@ -140,7 +140,7 @@ private:
 	Vertex sprite[4];
 
 	// Current color. This color, if present, will be applied to the next
-	// added geometry.
+	// added sprite.
 	Color *color;
 
 	VertexBuffer *array_buf;

@@ -108,51 +108,32 @@ void Image::draw(float x, float y, float angle, float sx, float sy, float ox, fl
 	drawv(t, vertices);
 }
 
-void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	const Vertex *v = geom->getVertexArray();
-	size_t vertcount = geom->getVertexCount();
+	const Vertex *v = quad->getVertices();
 
-	// Padded NPOT images require texture coordinate scaling with Geometry.
+	// Padded NPOT images require texture coordinate scaling with Quads.
 	if (!hasNpot())
-		v = scaleNPOT(v, vertcount);
-
-	// use colors stored in geometry (horrible, horrible hack)
-	if (geom->hasVertexColors())
 	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *) &v[0].r);
-	}
+		Vertex w[4];
+		love::Vector scale = getTexCoordScale();
 
-	GLenum glmode;
-	switch (geom->getDrawMode())
+		for (int i = 0; i < 4; i++)
+		{
+			w[i] = v[i];
+			w[i].s *= scale.x;
+			w[i].t *= scale.y;
+		}
+
+		drawv(t, w);
+	}
+	else
 	{
-	case Geometry::DRAW_MODE_FAN:
-	default:
-		glmode = GL_TRIANGLE_FAN;
-		break;
-	case Geometry::DRAW_MODE_STRIP:
-		glmode = GL_TRIANGLE_STRIP;
-		break;
-	case Geometry::DRAW_MODE_TRIANGLES:
-		glmode = GL_TRIANGLES;
-		break;
+		drawv(t, v);
 	}
-
-	drawv(t, v, vertcount, glmode, geom->getElementArray(), geom->getElementCount());
-
-	if (geom->hasVertexColors())
-	{
-		glDisableClientState(GL_COLOR_ARRAY);
-		gl.setColor(gl.getColor());
-	}
-
-	// If we made new verts with scaled texcoords then we should clean them up.
-	if (!hasNpot())
-		delete[] v;
 }
 
 void Image::uploadCompressedMipmaps()
@@ -602,22 +583,7 @@ love::Vector Image::getTexCoordScale() const
 	return love::Vector(vertices[2].s, vertices[2].t);
 }
 
-Vertex *Image::scaleNPOT(const love::Vertex *v, size_t count) const
-{
-	Vertex *newverts = new Vertex[count];
-	love::Vector scale = getTexCoordScale();
-
-	for (size_t i = 0; i < count; i++)
-	{
-		newverts[i] = v[i];
-		newverts[i].s *= scale.x;
-		newverts[i].t *= scale.y;
-	}
-
-	return newverts;
-}
-
-void Image::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
+void Image::drawv(const Matrix &t, const Vertex *v) const
 {
 	bind();
 
@@ -628,17 +594,10 @@ void Image::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode, 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	// XXX: drawg() enables/disables GL_COLOR_ARRAY in order to use the color
-	//      defined in the geometry to draw itself.
-	//      if the drawing method below is changed to use something other than
-	//      glDrawArrays(), drawg() needs to be updated accordingly!
 	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
-	if (e != 0 && ecount > 0)
-		glDrawElements(mode, ecount, GL_UNSIGNED_SHORT, (GLvoid *) e);
-	else
-		glDrawArrays(mode, 0, count);
+	glDrawArrays(GL_QUADS, 0, 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);

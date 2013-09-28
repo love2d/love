@@ -40,11 +40,12 @@
 
 #include "Font.h"
 #include "Image.h"
-#include "graphics/Geometry.h"
+#include "graphics/Quad.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
 #include "Shader.h"
+#include "Mesh.h"
 
 using love::window::WindowFlags;
 
@@ -199,15 +200,7 @@ public:
 	Image *newImage(love::image::ImageData *data);
 	Image *newImage(love::image::CompressedData *cdata);
 
-	/**
-	 * Creates a Geometry object.
-	 **/
-	Geometry *newGeometry(const std::vector<Vertex> &vertices, const std::vector<uint16> &vertexmap, Geometry::DrawMode mode);
-
-	/**
-	 * Creates a quadliteral Geometry object.
-	 **/
-	Geometry *newQuad(float x, float y, float w, float h, float sw, float sh);
+	Quad *newQuad(Quad::Viewport v, float sw, float sh);
 
 	/**
 	 * Creates a Font object.
@@ -221,6 +214,8 @@ public:
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
 	Shader *newShader(const Shader::ShaderSources &sources);
+
+	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
 
 	/**
 	 * Sets the foreground color.

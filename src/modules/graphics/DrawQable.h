@@ -18,12 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_DRAWGABLE_H
-#define LOVE_GRAPHICS_DRAWGABLE_H
+#ifndef LOVE_GRAPHICS_DRAWQABLE_H
+#define LOVE_GRAPHICS_DRAWQABLE_H
 
 // LOVE
 #include "Drawable.h"
-#include "Geometry.h"
+#include "Quad.h"
 
 namespace love
 {
@@ -31,21 +31,21 @@ namespace graphics
 {
 
 /**
- * A DrawGable is anything that be drawn in part with a Geometry object.
+ * A DrawQable is anything that be drawn in part with a Quad object.
  **/
-class DrawGable : public Drawable
+class DrawQable : public Drawable
 {
 public:
 
 	/**
 	 * Destructor.
 	 **/
-	virtual ~DrawGable();
+	virtual ~DrawQable() {}
 
 	/**
 	 * Draws the object with the specified transformation.
 	 *
-	 * @param geom The Geometry object to use to draw the object.
+	 * @param quad The Quad object to use to draw the object.
 	 * @param x The position of the object along the x-axis.
 	 * @param y The position of the object along the y-axis.
 	 * @param angle The angle of the object (in radians).
@@ -56,10 +56,10 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	virtual void drawg(Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const = 0;
+	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const = 0;
 };
 
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_DRAWGABLE_H
+#endif // LOVE_GRAPHICS_DRAWQABLE_H
