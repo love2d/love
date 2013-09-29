@@ -14,6 +14,9 @@
 * 2. Altered source versions must be plainly marked as such, and must not be
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
+*
+*
+* THIS FILE HAS BEEN MODIFIED BY THE LÖVE DEVELOPMENT TEAM
 */
 
 #ifndef B2_CHAIN_SHAPE_H
@@ -95,8 +98,8 @@ inline b2ChainShape::b2ChainShape()
 	m_radius = b2_polygonRadius;
 	m_vertices = NULL;
 	m_count = 0;
-	m_hasPrevVertex = NULL;
-	m_hasNextVertex = NULL;
+	m_hasPrevVertex = false;
+	m_hasNextVertex = false;
 }
 
 #endif
