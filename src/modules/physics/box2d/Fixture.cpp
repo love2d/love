@@ -140,18 +140,18 @@ bool Fixture::isValid() const
 void Fixture::setFilterData(int *v)
 {
 	b2Filter f;
-	f.categoryBits = (unsigned short)v[0];
-	f.maskBits = (unsigned short)v[1];
-	f.groupIndex = v[2];
+	f.categoryBits = (uint16) v[0];
+	f.maskBits = (uint16) v[1];
+	f.groupIndex = (int16) v[2];
 	fixture->SetFilterData(f);
 }
 
 void Fixture::getFilterData(int *v)
 {
 	b2Filter f = fixture->GetFilterData();
-	v[0] = (int)f.categoryBits;
-	v[1] = (int)f.maskBits;
-	v[2] = f.groupIndex;
+	v[0] = (int) f.categoryBits;
+	v[1] = (int) f.maskBits;
+	v[2] = (int) f.groupIndex;
 }
 
 int Fixture::setCategory(lua_State *L)

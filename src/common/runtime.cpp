@@ -168,7 +168,7 @@ int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValu
 	if (!lua_isnumber(L, -1))
 		retval = defaultValue;
 	else
-		retval = lua_tonumber(L, -1);
+		retval = (int) lua_tointeger(L, -1);
 
 	lua_pop(L, 1);
 	return retval;
@@ -531,16 +531,6 @@ int luax_pconvobj(lua_State *L, int idxs[], int n, const char *mod, const char *
 	if (ret == 0)
 		lua_replace(L, idxs[0]); // Replace the initial argument with the new object.
 	return ret;
-}
-
-int luax_strtofile(lua_State *L, int idx)
-{
-	return luax_convobj(L, idx, "filesystem", "newFile");
-}
-
-int luax_filetodata(lua_State *L, int idx)
-{
-	return luax_convobj(L, idx, "filesystem", "read");
 }
 
 int luax_insist(lua_State *L, int idx, const char *k)

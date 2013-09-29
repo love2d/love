@@ -304,7 +304,7 @@ int w_newParticleSystem(lua_State *L)
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid ParticleSystem size");	
 
-	EXCEPT_GUARD(t = instance->newParticleSystem(image, size);)
+	EXCEPT_GUARD(t = instance->newParticleSystem(image, int(size));)
 
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
 	return 1;
@@ -688,7 +688,7 @@ int w_setDefaultMipmapFilter(lua_State *L)
 			return luaL_error(L, "Invalid filter mode: %s", str);
 	}
 
-	float sharpness = luaL_optnumber(L, 2, 0);
+	float sharpness = (float) luaL_optnumber(L, 2, 0);
 
 	instance->setDefaultMipmapFilter(filter, sharpness);
 

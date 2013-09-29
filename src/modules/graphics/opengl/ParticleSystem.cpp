@@ -233,7 +233,7 @@ void ParticleSystem::initParticle(particle *p)
 	min = speedMin;
 	max = speedMax;
 	float speed = (float) rng.random(min, max);
-	p->speed = love::Vector(cos(p->direction), sin(p->direction));
+	p->speed = love::Vector(cosf(p->direction), sinf(p->direction));
 	p->speed *= speed;
 
 	p->linearAcceleration.x = (float) rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
@@ -652,11 +652,16 @@ void ParticleSystem::setColor(const std::vector<Color> &newColors)
 
 std::vector<Color> ParticleSystem::getColor() const
 {
-	// We store colors as floats...
+	// The particle system stores colors as floats...
 	std::vector<Color> ncolors(colors.size());
 
 	for (size_t i = 0; i < colors.size(); ++i)
-		ncolors[i] = Color(colors[i].r, colors[i].g, colors[i].b, colors[i].a);
+	{
+		ncolors[i].r = (unsigned char) (colors[i].r * 255);
+		ncolors[i].g = (unsigned char) (colors[i].g * 255);
+		ncolors[i].b = (unsigned char) (colors[i].b * 255);
+		ncolors[i].a = (unsigned char) (colors[i].a * 255);
+	}
 
 	return ncolors;
 }
@@ -764,10 +769,10 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 			pVerts[v].t = imageVerts[v].t;
 
 			// particle colors are stored as floats (0-1) but vertex colors are stored as unsigned bytes (0-255)
-			pVerts[v].r = p->color.r*255;
-			pVerts[v].g = p->color.g*255;
-			pVerts[v].b = p->color.b*255;
-			pVerts[v].a = p->color.a*255;
+			pVerts[v].r = (unsigned char) (p->color.r*255);
+			pVerts[v].g = (unsigned char) (p->color.g*255);
+			pVerts[v].b = (unsigned char) (p->color.b*255);
+			pVerts[v].a = (unsigned char) (p->color.a*255);
 		}
 
 		pVerts += 4;

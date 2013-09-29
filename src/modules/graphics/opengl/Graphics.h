@@ -456,9 +456,6 @@ public:
 
 private:
 
-	int getRenderWidth() const;
-	int getRenderHeight() const;
-
 	Font *currentFont;
 	love::window::Window *currentWindow;
 

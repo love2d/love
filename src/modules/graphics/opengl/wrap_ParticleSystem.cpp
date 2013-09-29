@@ -457,10 +457,10 @@ int w_ParticleSystem_setColors(lua_State *L)
 				// push args[i+2][j+1] onto the stack
 				lua_rawgeti(L, i + 2, j + 1);
 
-			int r = luaL_checkint(L, -4);
-			int g = luaL_checkint(L, -3);
-			int b = luaL_checkint(L, -2);
-			int a = luaL_optint(L, -1, 255);
+			unsigned char r = (unsigned char) luaL_checkinteger(L, -4);
+			unsigned char g = (unsigned char) luaL_checkinteger(L, -3);
+			unsigned char b = (unsigned char) luaL_checkinteger(L, -2);
+			unsigned char a = (unsigned char) luaL_optinteger(L, -1, 255);
 
 			// pop the color components from the stack
 			lua_pop(L, 4);
@@ -483,10 +483,10 @@ int w_ParticleSystem_setColors(lua_State *L)
 
 		if (nColors == 1)
 		{
-			int r = luaL_checkint(L, 2);
-			int g = luaL_checkint(L, 3);
-			int b = luaL_checkint(L, 4);
-			int a = luaL_optint(L, 5, 255);
+			unsigned char r = (unsigned char) luaL_checkinteger(L, 2);
+			unsigned char g = (unsigned char) luaL_checkinteger(L, 3);
+			unsigned char b = (unsigned char) luaL_checkinteger(L, 4);
+			unsigned char a = (unsigned char) luaL_optinteger(L, 5, 255);
 			t->setColor(Color(r,g,b,a));
 		}
 		else
@@ -494,10 +494,10 @@ int w_ParticleSystem_setColors(lua_State *L)
 			std::vector<Color> colors(nColors);
 			for (size_t i = 0; i < nColors; ++i)
 			{
-				int r = luaL_checkint(L, 1 + i*4 + 1);
-				int g = luaL_checkint(L, 1 + i*4 + 2);
-				int b = luaL_checkint(L, 1 + i*4 + 3);
-				int a = luaL_checkint(L, 1 + i*4 + 4);
+				unsigned char r = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 1);
+				unsigned char g = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 2);
+				unsigned char b = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 3);
+				unsigned char a = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 4);
 				colors[i] = Color(r,g,b,a);
 			}
 			t->setColor(colors);
