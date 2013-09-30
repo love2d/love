@@ -93,48 +93,6 @@ int w_Mesh_getVertex(lua_State *L)
 	return 8;
 }
 
-int w_Mesh_getVertices(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	const std::vector<Vertex> &vertices = t->getVertices();
-
-	lua_createtable(L, vertices.size(), 0);
-
-	for (size_t i = 0; i < vertices.size(); i++)
-	{
-		lua_createtable(L, 8, 0);
-		const Vertex &v = vertices[i];
-
-		lua_pushnumber(L, v.x);
-		lua_rawseti(L, -2, 1);
-
-		lua_pushnumber(L, v.y);
-		lua_rawseti(L, -2, 2);
-
-		lua_pushnumber(L, v.s);
-		lua_rawseti(L, -2, 3);
-
-		lua_pushnumber(L, v.t);
-		lua_rawseti(L, -2, 4);
-
-		lua_pushnumber(L, v.r);
-		lua_rawseti(L, -2, 5);
-
-		lua_pushnumber(L, v.g);
-		lua_rawseti(L, -2, 6);
-
-		lua_pushnumber(L, v.b);
-		lua_rawseti(L, -2, 7);
-
-		lua_pushnumber(L, v.a);
-		lua_rawseti(L, -2, 8);
-
-		lua_rawseti(L, -2, i + 1);
-	}
-
-	return 1;
-}
-
 int w_Mesh_getVertexCount(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
@@ -172,12 +130,14 @@ int w_Mesh_getVertexMap(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 
-	const std::vector<uint16> &map = t->getVertexMap();
-	lua_createtable(L, map.size(), 0);
+	const uint16 *vertex_map = t->getVertexMap();
+	size_t elements = t->getVertexMapCount();
 
-	for (size_t i = 0; i < map.size(); i++)
+	lua_createtable(L, elements, 0);
+
+	for (size_t i = 0; i < elements; i++)
 	{
-		lua_pushinteger(L, map[i] + 1);
+		lua_pushinteger(L, lua_Integer(vertex_map[i]) + 1);
 		lua_rawseti(L, -2, i + 1);
 	}
 
@@ -238,11 +198,24 @@ int w_Mesh_getDrawMode(lua_State *L)
 	return 1;
 }
 
+int w_Mesh_setVertexColors(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	t->setVertexColors(luax_toboolean(L, 2));
+	return 0;
+}
+
+int w_Mesh_hasVertexColors(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	luax_pushboolean(L, t->hasVertexColors());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "setVertex", w_Mesh_setVertex },
 	{ "getVertex", w_Mesh_getVertex },
-	{ "getVertices", w_Mesh_getVertices },
 	{ "getVertexCount", w_Mesh_getVertexCount },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
@@ -250,6 +223,8 @@ static const luaL_Reg functions[] =
 	{ "getImage", w_Mesh_getImage },
 	{ "setDrawMode", w_Mesh_setDrawMode },
 	{ "getDrawMode", w_Mesh_getDrawMode },
+	{ "setVertexColors", w_Mesh_setVertexColors },
+	{ "hasVertexColors", w_Mesh_hasVertexColors },
 	{ 0, 0 }
 };
 

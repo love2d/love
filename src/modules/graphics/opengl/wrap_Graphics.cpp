@@ -453,6 +453,8 @@ int w_newMesh(lua_State *L)
 	std::vector<Vertex> vertices;
 	vertices.reserve(vertex_count);
 
+	bool use_colors = false;
+
 	// Get the vertices from the table.
 	for (size_t i = 1; i <= vertex_count; i++)
 	{
@@ -477,6 +479,10 @@ int w_newMesh(lua_State *L)
 		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
 		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
 
+		// Enable per-vertex coloring if any color is not the default.
+		if (!use_colors && (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255))
+			use_colors = true;
+
 		lua_pop(L, 9);
 		vertices.push_back(v);
 	}
@@ -486,6 +492,8 @@ int w_newMesh(lua_State *L)
 
 	if (img)
 		t->setImage(img);
+
+	t->setVertexColors(use_colors);
 
 	luax_pushtype(L, "Mesh", GRAPHICS_MESH_T, t);
 	return 1;

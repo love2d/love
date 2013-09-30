@@ -25,9 +25,9 @@
 #include "common/int.h"
 #include "common/math.h"
 #include "common/StringMap.h"
-#include "graphics/Volatile.h"
 #include "graphics/Drawable.h"
-#include "graphics/opengl/Image.h"
+#include "Image.h"
+#include "VertexBuffer.h"
 
 // C++
 #include <vector>
@@ -41,7 +41,7 @@ namespace opengl
 
 /**
  * Holds and draws arbitrary vertex geometry.
- * Each vertex in a Mesh has a position, texture coordinate, and color.
+ * Each vertex in the Mesh has a position, texture coordinate, and color.
  **/
 class Mesh : public Drawable
 {
@@ -72,17 +72,12 @@ public:
 	void setVertices(const std::vector<Vertex> &verts);
 
 	/**
-	 * Gets a reference to the vertices used in the Mesh.
-	 **/
-	const std::vector<Vertex> &getVertices() const;
-
-	/**
 	 * Sets an individual vertex in the Mesh.
-	 * @param i The index into the list of vertices to use.
+	 * @param index The index into the list of vertices to use.
 	 * @param v The new vertex.
 	 **/
-	void setVertex(size_t i, Vertex v);
-	Vertex getVertex(size_t i) const;
+	void setVertex(size_t index, const Vertex &v);
+	Vertex getVertex(size_t index) const;
 
 	/**
 	 * Gets the total number of vertices in the Mesh.
@@ -96,7 +91,18 @@ public:
 	 * {0, 1, 2, 3, 4, ...}
 	 **/
 	void setVertexMap(const std::vector<uint16> &map);
-	const std::vector<uint16> &getVertexMap() const;
+
+	/**
+	 * Gets a pointer to the vertex map array. The pointer is only valid until
+	 * the next function call in the graphics module.
+	 * May return null if the vertex map is empty.
+	 **/
+	const uint16 *getVertexMap() const;
+
+	/**
+	 * Gets the total number of elements in the vertex map array.
+	 **/
+	size_t getVertexMapCount() const;
 
 	/**
 	 * Sets the Image used when drawing the Mesh.
@@ -120,6 +126,13 @@ public:
 	void setDrawMode(DrawMode mode);
 	DrawMode getDrawMode() const;
 
+	/**
+	 * Sets whether per-vertex colors are enabled. If this is disabled, the
+	 * global color (love.graphics.setColor) will be used for the entire Mesh.
+	 **/
+	void setVertexColors(bool enable);
+	bool hasVertexColors() const;
+
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
@@ -130,12 +143,20 @@ private:
 
 	GLenum getGLDrawMode(DrawMode mode) const;
 
-	std::vector<Vertex> vertices;
-	std::vector<uint16> vertex_map;
+	// Vertex buffer.
+	VertexBuffer *vbo;
+	size_t vertex_count;
+
+	// Element (vertex index) buffer, for the vertex map.
+	VertexBuffer *ibo;
+	size_t element_count;
 
 	DrawMode draw_mode;
 
 	Image *image;
+
+	// Whether the per-vertex colors are used when drawing.
+	bool colors_enabled;
 
 	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM> drawModes;
