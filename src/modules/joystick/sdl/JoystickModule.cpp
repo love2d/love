@@ -57,8 +57,7 @@ JoystickModule::JoystickModule()
 JoystickModule::~JoystickModule()
 {
 	// Close any open Joysticks.
-	std::list<joystick::Joystick *>::iterator it;
-	for (it = joysticks.begin(); it != joysticks.end(); ++it)
+	for (auto it = joysticks.begin(); it != joysticks.end(); ++it)
 	{
 		(*it)->close();
 		(*it)->release();
@@ -117,8 +116,7 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 	joystick::Joystick *joystick = 0;
 	bool reused = false;
 
-	std::list<joystick::Joystick *>::iterator it;
-	for (it = joysticks.begin(); it != joysticks.end(); ++it)
+	for (auto it = joysticks.begin(); it != joysticks.end(); ++it)
 	{
 		// Try to re-use a disconnected Joystick with the same GUID.
 		if (!(*it)->isConnected() && (*it)->getGUID() == guidstr)
@@ -143,19 +141,20 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 
 	// Make sure multiple instances of the same physical joystick aren't added
 	// to the active list.
-	for (size_t i = 0; i < activeSticks.size(); i++)
+	for (auto it = activeSticks.begin(); it != activeSticks.end(); ++it)
 	{
-		if (joystick->getHandle() == activeSticks[i]->getHandle())
+		if (joystick->getHandle() == (*it)->getHandle())
 		{
 			joystick->close();
 
+			// If we just created the stick, remove it since it's a duplicate.
 			if (!reused)
 			{
 				joysticks.remove(joystick);
 				joystick->release();
 			}
 
-			return activeSticks[i];
+			return *it;
 		}
 	}
 
@@ -169,7 +168,7 @@ void JoystickModule::removeJoystick(love::joystick::Joystick *joystick)
 		return;
 
 	// Close the Joystick and remove it from the active joystick list.
-	std::vector<joystick::Joystick *>::iterator it = std::find(activeSticks.begin(), activeSticks.end(), joystick);
+	auto it = std::find(activeSticks.begin(), activeSticks.end(), joystick);
 	if (it != activeSticks.end())
 	{
 		(*it)->close();
@@ -425,8 +424,7 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 		if (guid.compare(getDeviceGUID(d_index)) != 0)
 			continue;
 
-		std::vector<love::joystick::Joystick *>::const_iterator it;
-		for (it = activeSticks.begin(); it != activeSticks.end(); ++it)
+		for (auto it = activeSticks.begin(); it != activeSticks.end(); ++it)
 		{
 			if ((*it)->isGamepad() || guid.compare((*it)->getGUID()) != 0)
 				continue;

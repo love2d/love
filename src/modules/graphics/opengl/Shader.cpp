@@ -554,7 +554,7 @@ void Shader::sendTexture(const std::string &name, GLuint texture)
 	if (activeTextureUnits[textureunit-1] == 0)
 		++textureCounters[textureunit-1];
 
-	// store texture id so it can be re-bound to the proper texture unit when necessary
+	// store texture id so it can be re-bound to the proper texture unit later
 	activeTextureUnits[textureunit-1] = texture;
 }
 
@@ -570,7 +570,7 @@ void Shader::sendCanvas(const std::string &name, const Canvas &canvas)
 
 int Shader::getTextureUnit(const std::string &name)
 {
-	std::map<std::string, GLint>::const_iterator it = textureUnitPool.find(name);
+	auto it = textureUnitPool.find(name);
 
 	if (it != textureUnitPool.end())
 		return it->second;
@@ -578,19 +578,23 @@ int Shader::getTextureUnit(const std::string &name)
 	int textureunit = 1;
 
 	// prefer texture units which are unused by all other shaders
-	std::vector<int>::iterator nextfreeunit = std::find(textureCounters.begin(), textureCounters.end(), 0);
+	auto freeunit_it = std::find(textureCounters.begin(), textureCounters.end(), 0);
 
-	if (nextfreeunit != textureCounters.end())
-		textureunit = std::distance(textureCounters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
+	if (freeunit_it != textureCounters.end())
+	{
+		// we don't want to use unit 0
+		textureunit = std::distance(textureCounters.begin(), freeunit_it) + 1;
+	}
 	else
 	{
 		// no completely unused texture units exist, try to use next free slot in our own list
-		std::vector<GLuint>::iterator nexttexunit = std::find(activeTextureUnits.begin(), activeTextureUnits.end(), 0);
+		auto nextunit_it = std::find(activeTextureUnits.begin(), activeTextureUnits.end(), 0);
 
-		if (nexttexunit == activeTextureUnits.end())
+		if (nextunit_it == activeTextureUnits.end())
 			throw love::Exception("No more texture units available for shader.");
 
-		textureunit = std::distance(activeTextureUnits.begin(), nexttexunit) + 1; // we don't want to use unit 0
+		// we don't want to use unit 0
+		textureunit = std::distance(activeTextureUnits.begin(), nextunit_it) + 1;
 	}
 
 	textureUnitPool[name] = textureunit;

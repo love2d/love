@@ -13,8 +13,24 @@ AC_PROG_CXX
 AC_PROG_SED
 AC_PROG_MKDIR_P
 AC_C_BIGENDIAN
+AC_LANG([C++])
 
 includes=
+
+AC_DEFUN([ACLOVE_CXX_FLAG_TEST], # WARNING: NOT REENTRANT
+		 [aclove_cxx_flag_test_save_cflags="$CXXFLAGS"
+		  CXXFLAGS="$1"
+		  AC_MSG_CHECKING([whether $CXX supports flag $1])
+		  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+			  [AC_MSG_RESULT([yes])]; $2,
+			  [AC_MSG_RESULT([no]); $3])
+		  CXXFLAGS="$aclove_cxx_flag_test_save_cflags"])
+
+# C++11 support
+cxx11name="no"
+ACLOVE_CXX_FLAG_TEST([-std=c++0x], cxx11name="c++0x", [])
+ACLOVE_CXX_FLAG_TEST([-std=c++11], cxx11name="c++11", [])
+AS_VAR_IF([cxx11name], [no], AC_MSG_ERROR([Can't LÖVE without C++11]), CXXFLAGS="$CXXFLAGS -std=$cxx11name")
 
 # Libraries
 AC_SEARCH_LIBS([sqrt], [m], [], AC_MSG_ERROR([Can't LÖVE without C math library]))

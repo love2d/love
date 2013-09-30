@@ -244,7 +244,7 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 
 Font::Glyph *Font::findGlyph(uint32 glyph)
 {
-	std::map<uint32, Glyph *>::const_iterator it = glyphs.find(glyph);
+	auto it = glyphs.find(glyph);
 
 	if (it != glyphs.end())
 		return it->second;
@@ -498,8 +498,7 @@ void Font::setFilter(const Image::Filter &f)
 {
 	filter = f;
 
-	std::vector<GLuint>::const_iterator it;
-	for (it = textures.begin(); it != textures.end(); ++it)
+	for (auto it = textures.begin(); it != textures.end(); ++it)
 	{
 		gl.bindTexture(*it);
 		filter.anisotropy = gl.setTextureFilter(f);
