@@ -461,7 +461,7 @@ int w_newMesh(lua_State *L)
 		lua_rawgeti(L, 1, i);
 
 		if (lua_type(L, -1) != LUA_TTABLE)
-			return luax_typerror(L, 2, "table of tables");
+			return luax_typerror(L, 1, "table of tables");
 
 		for (int j = 1; j <= 8; j++)
 			lua_rawgeti(L, -j, j);

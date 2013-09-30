@@ -93,6 +93,46 @@ int w_Mesh_getVertex(lua_State *L)
 	return 8;
 }
 
+int w_Mesh_setVertices(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+
+	size_t vertex_count = lua_objlen(L, 2);
+	std::vector<Vertex> vertices;
+	vertices.reserve(vertex_count);
+
+	// Get the vertices from the table.
+	for (size_t i = 1; i <= vertex_count; i++)
+	{
+		lua_rawgeti(L, 2, i);
+
+		if (lua_type(L, -1) != LUA_TTABLE)
+			return luax_typerror(L, 2, "table of tables");
+
+		for (int j = 1; j <= 8; j++)
+			lua_rawgeti(L, -j, j);
+
+		Vertex v;
+
+		v.x = (float) luaL_checknumber(L, -8);
+		v.y = (float) luaL_checknumber(L, -7);
+
+		v.s = (float) luaL_checknumber(L, -6);
+		v.t = (float) luaL_checknumber(L, -5);
+
+		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
+		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
+		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
+		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+		lua_pop(L, 9);
+		vertices.push_back(v);
+	}
+
+	EXCEPT_GUARD(t->setVertices(vertices);)
+	return 0;
+}
+
 int w_Mesh_getVertexCount(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
@@ -107,7 +147,7 @@ int w_Mesh_setVertexMap(lua_State *L)
 	bool is_table = lua_istable(L, 2);
 	int nargs = is_table ? lua_objlen(L, 2) : lua_gettop(L) - 1;
 
-	std::vector<uint16> vertexmap;
+	std::vector<uint32> vertexmap;
 	vertexmap.reserve(nargs);
 
 	for (int i = 0; i < nargs; i++)
@@ -115,11 +155,11 @@ int w_Mesh_setVertexMap(lua_State *L)
 		if (is_table)
 		{
 			lua_rawgeti(L, 2, i + 1);
-			vertexmap.push_back(uint16(luaL_checkinteger(L, -1) - 1));
+			vertexmap.push_back(uint32(luaL_checkinteger(L, -1) - 1));
 			lua_pop(L, 1);
 		}
 		else
-			vertexmap.push_back(uint16(luaL_checkinteger(L, i + 2) - 1));
+			vertexmap.push_back(uint32(luaL_checkinteger(L, i + 2) - 1));
 	}
 
 	EXCEPT_GUARD(t->setVertexMap(vertexmap);)
@@ -130,7 +170,7 @@ int w_Mesh_getVertexMap(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 
-	const uint16 *vertex_map = t->getVertexMap();
+	const uint32 *vertex_map = t->getVertexMap();
 	size_t elements = t->getVertexMapCount();
 
 	lua_createtable(L, elements, 0);
@@ -216,6 +256,7 @@ static const luaL_Reg functions[] =
 {
 	{ "setVertex", w_Mesh_setVertex },
 	{ "getVertex", w_Mesh_getVertex },
+	{ "setVertices", w_Mesh_setVertices },
 	{ "getVertexCount", w_Mesh_getVertexCount },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },

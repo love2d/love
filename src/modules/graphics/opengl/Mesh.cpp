@@ -31,12 +31,12 @@ namespace opengl
 {
 
 Mesh::Mesh(const std::vector<Vertex> &verts, Mesh::DrawMode mode)
-	: vbo(0)
+	: vbo(nullptr)
 	, vertex_count(0)
-	, ibo(0)
+	, ibo(nullptr)
 	, element_count(0)
 	, draw_mode(mode)
-	, image(0)
+	, image(nullptr)
 	, colors_enabled(false)
 {
 	setVertices(verts);
@@ -58,7 +58,7 @@ void Mesh::setVertices(const std::vector<Vertex> &verts)
 	if (vbo && size > vbo->getSize())
 	{
 		delete vbo;
-		vbo = 0;
+		vbo = nullptr;
 	}
 
 	if (!vbo)
@@ -84,7 +84,7 @@ void Mesh::setVertex(size_t index, const Vertex &v)
 	VertexBuffer::Bind vbo_bind(*vbo);
 
 	// We unmap the vertex buffer in Mesh::draw. This lets us coalesce the
-	// buffer transfer calls.
+	// buffer transfer calls into just one.
 	Vertex *vertices = (Vertex *) vbo->map();
 	vertices[index] = v;
 }
@@ -106,7 +106,7 @@ size_t Mesh::getVertexCount() const
 	return vertex_count;
 }
 
-void Mesh::setVertexMap(const std::vector<uint16> &map)
+void Mesh::setVertexMap(const std::vector<uint32> &map)
 {
 	for (size_t i = 0; i < map.size(); i++)
 	{
@@ -114,12 +114,12 @@ void Mesh::setVertexMap(const std::vector<uint16> &map)
 			throw love::Exception("Invalid vertex map value: %d", map[i]);
 	}
 
-	size_t size = sizeof(uint16) * map.size();
+	size_t size = sizeof(uint32) * map.size();
 
 	if (ibo && size > ibo->getSize())
 	{
 		delete ibo;
-		ibo = 0;
+		ibo = nullptr;
 	}
 
 	if (!ibo)
@@ -140,14 +140,14 @@ void Mesh::setVertexMap(const std::vector<uint16> &map)
 	}
 }
 
-const uint16 *Mesh::getVertexMap() const
+const uint32 *Mesh::getVertexMap() const
 {
 	if (ibo && element_count > 0)
 	{
 		VertexBuffer::Bind ibo_bind(*ibo);
 
 		// We unmap the buffer in Mesh::draw and Mesh::setVertexMap.
-		return (uint16 *) ibo->map();
+		return (uint32 *) ibo->map();
 	}
 
 	return 0;
@@ -173,7 +173,7 @@ void Mesh::setImage()
 	if (image)
 		image->release();
 
-	image = 0;
+	image = nullptr;
 }
 
 Image *Mesh::getImage() const
@@ -249,7 +249,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		ibo->unmap();
 
 		// Use the custom vertex map to draw the vertices.
-		glDrawElements(mode, element_count, GL_UNSIGNED_SHORT, ibo->getPointer(0));
+		glDrawElements(mode, element_count, GL_UNSIGNED_INT, ibo->getPointer(0));
 	}
 	else
 	{

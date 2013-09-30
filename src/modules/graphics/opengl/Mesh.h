@@ -90,14 +90,14 @@ public:
 	 * A 0-element vector is equivalent to the default vertex map:
 	 * {0, 1, 2, 3, 4, ...}
 	 **/
-	void setVertexMap(const std::vector<uint16> &map);
+	void setVertexMap(const std::vector<uint32> &map);
 
 	/**
 	 * Gets a pointer to the vertex map array. The pointer is only valid until
 	 * the next function call in the graphics module.
 	 * May return null if the vertex map is empty.
 	 **/
-	const uint16 *getVertexMap() const;
+	const uint32 *getVertexMap() const;
 
 	/**
 	 * Gets the total number of elements in the vertex map array.
