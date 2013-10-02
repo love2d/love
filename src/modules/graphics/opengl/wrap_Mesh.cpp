@@ -169,8 +169,9 @@ int w_Mesh_setVertexMap(lua_State *L)
 int w_Mesh_getVertexMap(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
+	const uint32 *vertex_map = 0;
 
-	const uint32 *vertex_map = t->getVertexMap();
+	EXCEPT_GUARD(vertex_map = t->getVertexMap();)
 	size_t elements = t->getVertexMapCount();
 
 	lua_createtable(L, elements, 0);
