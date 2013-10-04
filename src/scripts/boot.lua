@@ -383,6 +383,10 @@ function love.init()
 			display = c.window.display,
 		}), "Could not set window mode")
 		love.window.setTitle(c.window.title or c.title)
+		if c.window.icon then
+			assert(love.image, "If an icon is set in love.conf, love.image has to be loaded!")
+			love.window.setIcon(love.image.newImageData(c.window.icon))
+		end
 	end
 
 	-- Our first timestep, because window creation can take some time
