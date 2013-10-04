@@ -18,6 +18,13 @@ love_LDADD = liblove.la
 love_SOURCES = love.cpp
 endif
 
+# Compile scripts
+#scripts/%.lua.h: scripts/%.lua
+#	cd scripts; \
+#	lua auto.lua \$*
+#TODO: Figure out how to only do this on gnu make, and detect which lua
+#      executable to run
+
 # libLÖVE
 lib_LTLIBRARIES = liblove.la
 liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
