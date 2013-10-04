@@ -443,8 +443,9 @@ end
 
 function love.run()
 
-	math.randomseed(os.time())
-	math.random() math.random()
+	if love.math then
+		love.math.setRandomState(os.time())
+	end
 
 	if love.event then
 		love.event.pump()
