@@ -27,6 +27,18 @@
 
 #include "Filesystem.h"
 
+namespace
+{
+	std::string getDriveRoot(const std::string &input)
+	{
+		for (int i = 0; i < input.size(); ++i)
+			if (input[i] == '/' || input[i] == '\\')
+				return input.substr(0, i+1);
+		// Something's horribly wrong
+		return "";
+	}
+}
+
 namespace love
 {
 namespace filesystem
@@ -153,15 +165,15 @@ bool Filesystem::setupWriteDirectory()
 
 	// Set the appdata folder as writable directory.
 	// (We must create the save folder before mounting it).
-	if (!PHYSFS_setWriteDir(getAppdataDirectory()))
+	if (!PHYSFS_setWriteDir(getDriveRoot(getAppdataDirectory()).c_str()))
 		return false;
 
 	// Create the save folder. (We're now "at" %APPDATA%).
 	bool success = false;
 	if (fused)
-		success = mkdir(save_identity.c_str());
+		success = mkdir(save_path_full.c_str());
 	else
-		success = mkdir(save_path_relative.c_str());
+		success = mkdir(save_path_full.c_str());
 
 	if (!success)
 	{
