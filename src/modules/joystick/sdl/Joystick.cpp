@@ -124,11 +124,13 @@ const char *Joystick::getName() const
 	if (!isConnected())
 		return name.c_str();
 
-	// Prefer SDL's GameController name, if possible.
-	if (isGamepad())
-		return SDL_GameControllerName(controller);
+	// Prefer the Joystick name for consistency.
+	const char *joyname = SDL_JoystickName(joyhandle);
 
-	return SDL_JoystickName(joyhandle);
+	if (!joyname && isGamepad())
+		joyname = SDL_GameControllerName(controller);
+
+	return joyname;
 }
 
 int Joystick::getAxisCount() const
