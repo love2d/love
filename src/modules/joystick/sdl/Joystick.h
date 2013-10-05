@@ -26,8 +26,7 @@
 #include "common/EnumMap.h"
 
 // SDL
-#include <SDL_joystick.h>
-#include <SDL_gamecontroller.h>
+#include <SDL.h>
 
 namespace love
 {
@@ -74,6 +73,11 @@ public:
 	int getInstanceID() const;
 	int getID() const;
 
+	bool isVibrationSupported();
+	bool setVibration(float left, float right);
+	bool setVibration();
+	void getVibration(float &left, float &right) const;
+
 	static bool getConstant(Hat in, Uint8 &out);
 	static bool getConstant(Uint8 in, Hat &out);
 
@@ -87,14 +91,31 @@ private:
 
 	Joystick() {}
 
+	bool checkCreateHaptic();
+	bool runVibrationEffect();
+
 	SDL_Joystick *joyhandle;
 	SDL_GameController *controller;
+	SDL_Haptic *haptic;
 
 	SDL_JoystickID instanceid;
 	std::string pguid;
 	int id;
 
 	std::string name;
+
+	struct Vibration
+	{
+		float left, right;
+		SDL_HapticEffect effect;
+		Uint16 data[4];
+		int id;
+
+		Vibration()
+			: left(0.0f), right(0.0f), effect(), data(), id(-1)
+		{}
+
+	} vibration;
 
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry hatEntries[];
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM> hats;

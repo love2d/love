@@ -63,6 +63,9 @@ JoystickModule::~JoystickModule()
 		(*it)->release();
 	}
 
+	if (SDL_WasInit(SDL_INIT_HAPTIC) != 0)
+		SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 }
 

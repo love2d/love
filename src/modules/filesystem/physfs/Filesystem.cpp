@@ -31,7 +31,7 @@ namespace
 {
 	std::string getDriveRoot(const std::string &input)
 	{
-		for (int i = 0; i < input.size(); ++i)
+		for (size_t i = 0; i < input.size(); ++i)
 			if (input[i] == '/' || input[i] == '\\')
 				return input.substr(0, i+1);
 		// Something's horribly wrong

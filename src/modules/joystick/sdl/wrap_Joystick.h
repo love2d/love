@@ -48,6 +48,9 @@ int w_Joystick_isDown(lua_State *L);
 int w_Joystick_isGamepad(lua_State *L);
 int w_Joystick_getGamepadAxis(lua_State *L);
 int w_Joystick_isGamepadDown(lua_State *L);
+int w_Joystick_isVibrationSupported(lua_State *L);
+int w_Joystick_setVibration(lua_State *L);
+int w_Joystick_getVibration(lua_State *L);
 extern "C" int luaopen_joystick(lua_State *L);
 
 } // sdl

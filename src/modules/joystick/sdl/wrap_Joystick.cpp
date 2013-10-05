@@ -186,6 +186,44 @@ int w_Joystick_isGamepadDown(lua_State *L)
 	return 1;
 }
 
+int w_Joystick_isVibrationSupported(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	luax_pushboolean(L, j->isVibrationSupported());
+	return 1;
+}
+
+int w_Joystick_setVibration(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	bool success = false;
+
+	if (lua_isnoneornil(L, 2))
+	{
+		// Disable joystick vibration if no argument is given.
+		success = j->setVibration();
+	}
+	else
+	{
+		float left = (float) luaL_checknumber(L, 2);
+		float right = (float) luaL_optnumber(L, 3, left);
+		success = j->setVibration(left, right);
+	}
+
+	luax_pushboolean(L, success);
+	return 1;
+}
+
+int w_Joystick_getVibration(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	float left, right;
+	j->getVibration(left, right);
+	lua_pushnumber(L, left);
+	lua_pushnumber(L, right);
+	return 2;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -200,9 +238,14 @@ static const luaL_Reg functions[] =
 	{ "getAxes", w_Joystick_getAxes },
 	{ "getHat", w_Joystick_getHat },
 	{ "isDown", w_Joystick_isDown },
+
 	{ "isGamepad", w_Joystick_isGamepad },
 	{ "getGamepadAxis", w_Joystick_getGamepadAxis },
 	{ "isGamepadDown", w_Joystick_isGamepadDown },
+
+	{ "isVibrationSupported", w_Joystick_isVibrationSupported },
+	{ "setVibration", w_Joystick_setVibration },
+	{ "getVibration", w_Joystick_getVibration },
 
 	// From wrap_JoystickModule.
 	{ "getConnectedIndex", w_getIndex },
