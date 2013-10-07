@@ -70,8 +70,8 @@ int w_SoundData_getDuration(lua_State *L)
 int w_SoundData_setSample(lua_State *L)
 {
 	SoundData *sd = luax_checksounddata(L, 1);
-	int i = (int)lua_tointeger(L, 2);
-	float sample = (float)lua_tonumber(L, 3);
+	int i = (int) luaL_checkinteger(L, 2);
+	float sample = (float) luaL_checknumber(L, 3);
 
 	EXCEPT_GUARD(sd->setSample(i, sample);)
 	return 0;
@@ -80,7 +80,7 @@ int w_SoundData_setSample(lua_State *L)
 int w_SoundData_getSample(lua_State *L)
 {
 	SoundData *sd = luax_checksounddata(L, 1);
-	int i = (int)lua_tointeger(L, 2);
+	int i = (int) luaL_checkinteger(L, 2);
 
 	EXCEPT_GUARD(lua_pushnumber(L, sd->getSample(i));)
 	return 1;

@@ -41,7 +41,7 @@ SoundData::SoundData(Decoder *decoder)
 	, bitDepth(0)
 	, channels(0)
 {
-	size_t bufferSize = 524288;
+	size_t bufferSize = 524288; // 0x80000
 	int decoded = decoder->decode();
 
 	while (decoded > 0)
@@ -90,6 +90,18 @@ SoundData::SoundData(int samples, int sampleRate, int bitDepth, int channels)
 	, bitDepth(bitDepth)
 	, channels(channels)
 {
+	if (samples <= 0)
+		throw love::Exception("Invalid sample count: %d", samples);
+
+	if (sampleRate <= 0)
+		throw love::Exception("Invalid sample rate: %d", sampleRate);
+
+	if (bitDepth <= 0)
+		throw love::Exception("Invalid bit depth: %d", bitDepth);
+
+	if (channels <= 0)
+		throw love::Exception("Invalid channel count: %d", channels);
+
 	double realsize = samples;
 	realsize *= (bitDepth/8)*channels;
 	if (realsize > INT_MAX)
@@ -100,19 +112,8 @@ SoundData::SoundData(int samples, int sampleRate, int bitDepth, int channels)
 }
 
 SoundData::SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels)
-	: data(0)
-	, size(samples*(bitDepth/8)*channels)
-	, sampleRate(sampleRate)
-	, bitDepth(bitDepth)
-	, channels(channels)
+	: SoundData(samples, sampleRate, bitDepth, channels)
 {
-	double realsize = samples;
-	realsize *= (bitDepth/8)*channels;
-	if (realsize > INT_MAX)
-		throw love::Exception("Data is too big!");
-	data = (char *)malloc(size);
-	if (!data)
-		throw love::Exception("Not enough memory.");
 	memcpy(data, d, size);
 }
 
