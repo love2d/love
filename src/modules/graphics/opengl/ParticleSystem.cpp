@@ -779,7 +779,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		p = p->next;
 	}
 
-	image->bind();
+	image->predraw();
 
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -794,6 +794,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
+
+	image->postdraw();
 
 	glPopMatrix();
 

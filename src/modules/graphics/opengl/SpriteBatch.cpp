@@ -116,9 +116,6 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if (color)
 		setColorv(sprite, *color);
 
-	// Auto-padded NPOT images require texcoord scaling for their vertices.
-	scaleNPOT(sprite, 4);
-
 	addv(sprite, (index == -1) ? next : index);
 
 	// Increment counter.
@@ -143,9 +140,6 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 
 	if (color)
 		setColorv(sprite, *color);
-
-	// Auto-padded NPOT images require texcoord scaling for their vertices.
-	scaleNPOT(sprite, 4);
 
 	addv(sprite, (index == -1) ? next : index);
 
@@ -285,7 +279,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	image->bind();
+	image->predraw();
 
 	VertexBuffer::Bind array_bind(*array_buf);
 	VertexBuffer::Bind element_bind(*element_buf->getVertexBuffer());
@@ -316,24 +310,9 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 		gl.setColor(curcolor);
 	}
 
+	image->postdraw();
+
 	glPopMatrix();
-}
-
-void SpriteBatch::scaleNPOT(Vertex *v, size_t count)
-{
-	if (Image::hasNpot())
-		return;
-
-	love::Vector scale = image->getTexCoordScale();
-
-	if (scale.x == 1.0f && scale.y == 1.0f)
-		return;
-
-	for (size_t i = 0; i < count; i++)
-	{
-		v[i].s *= scale.x;
-		v[i].t *= scale.y;
-	}
 }
 
 void SpriteBatch::addv(const Vertex *v, int index)

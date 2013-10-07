@@ -42,6 +42,7 @@ Image::Image(love::image::ImageData *data)
 	, width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
+	, texCoordScale(1.0, 1.0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(false)
@@ -114,25 +115,30 @@ void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy,
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	const Vertex *v = quad->getVertices();
+	drawv(t, v);
+}
 
-	// Padded NPOT images require texture coordinate scaling with Quads.
-	if (!hasNpot())
+void Image::predraw() const
+{
+	bind();
+
+	if (texCoordScale.x < 1.0f || texCoordScale.y < 1.0f)
 	{
-		Vertex w[4];
-		love::Vector scale = getTexCoordScale();
-
-		for (int i = 0; i < 4; i++)
-		{
-			w[i] = v[i];
-			w[i].s *= scale.x;
-			w[i].t *= scale.y;
-		}
-
-		drawv(t, w);
+		// NPOT image but no NPOT support, so the texcoords should be scaled.
+		glMatrixMode(GL_TEXTURE);
+		glPushMatrix();
+		glScalef(texCoordScale.x, texCoordScale.y, 0.0f);
+		glMatrixMode(GL_MODELVIEW);
 	}
-	else
+}
+
+void Image::postdraw() const
+{
+	if (texCoordScale.x < 1.0f || texCoordScale.y < 1.0f)
 	{
-		drawv(t, v);
+		glMatrixMode(GL_TEXTURE);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
 	}
 }
 
@@ -385,10 +391,8 @@ bool Image::loadVolatilePOT()
 		return true;
 	}
 
-	vertices[1].t = t;
-	vertices[2].t = t;
-	vertices[2].s = s;
-	vertices[3].s = s;
+	texCoordScale.x = s;
+	texCoordScale.y = t;
 
 	// We want this lock to potentially cover mipmap creation as well.
 	love::thread::EmptyLock lock;
@@ -577,15 +581,9 @@ void Image::uploadDefaultTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
-love::Vector Image::getTexCoordScale() const
-{
-	// FIXME: this should be changed if Image::loadVolatilePOT changes.
-	return love::Vector(vertices[2].s, vertices[2].t);
-}
-
 void Image::drawv(const Matrix &t, const Vertex *v) const
 {
-	bind();
+	predraw();
 
 	glPushMatrix();
 
@@ -603,6 +601,8 @@ void Image::drawv(const Matrix &t, const Vertex *v) const
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glPopMatrix();
+
+	postdraw();
 }
 
 void Image::setDefaultMipmapSharpness(float sharpness)

@@ -211,7 +211,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		return;
 
 	if (image)
-		image->bind();
+		image->predraw();
 	else
 		gl.bindTexture(0);
 
@@ -268,6 +268,9 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	}
 
 	glPopMatrix();
+
+	if (image)
+		image->postdraw();
 }
 
 GLenum Mesh::getGLDrawMode(Mesh::DrawMode mode) const

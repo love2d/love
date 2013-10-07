@@ -198,12 +198,12 @@ int w_newQuad(lua_State *L)
 {
 	Quad::Viewport v;
 	v.x = (float) luaL_checknumber(L, 1);
-	v.y = (float) luaL_checknumber(L, 1);
-	v.w = (float) luaL_checknumber(L, 1);
-	v.h = (float) luaL_checknumber(L, 1);
+	v.y = (float) luaL_checknumber(L, 2);
+	v.w = (float) luaL_checknumber(L, 3);
+	v.h = (float) luaL_checknumber(L, 4);
 
-	float sw = (float) luaL_checknumber(L, 1);
-	float sh = (float) luaL_checknumber(L, 1);
+	float sw = (float) luaL_checknumber(L, 5);
+	float sh = (float) luaL_checknumber(L, 6);
 
 	Quad *quad = instance->newQuad(v, sw, sh);
 	luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quad);

@@ -89,6 +89,14 @@ public:
 	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	/**
+	 * Call before using this Image's texture to draw. Binds the texture,
+	 * globally scales texture coordinates if the Image has NPOT dimensions and
+	 * NPOT isn't supported, etc.
+	 **/
+	void predraw() const;
+	void postdraw() const;
+
+	/**
 	 * Sets the filter mode.
 	 * @param f The filter mode.
 	 **/
@@ -123,12 +131,6 @@ public:
 	 * creation from the ImageData, and apply the changes with Image:refresh().
 	 **/
 	bool refresh();
-
-	/**
-	 * Gets the texture coordinate scale used for drawing auto-padded NPOT
-	 * images correctly.
-	 **/
-	love::Vector getTexCoordScale() const;
 
 	static void setDefaultMipmapSharpness(float sharpness);
 	static float getDefaultMipmapSharpness();
@@ -171,6 +173,9 @@ private:
 
 	// The source vertices of the image.
 	Vertex vertices[4];
+
+	// The scale applied to texcoords for NPOT images without NPOT support.
+	love::Vector texCoordScale;
 
 	// Mipmap texture LOD bias (sharpness) value.
 	float mipmapSharpness;
