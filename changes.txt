@@ -32,7 +32,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added Canvas:getPixel.
   * Added blend mode "replace".
   * Added line join modes.
-  * Added Geometry objects (replaces Quads), allowing for arbitrary textured polygons.
+  * Added Mesh objects, allowing for arbitrary textured polygons.
   * Added multiple render target support to love.graphics.setCanvas.
   * Added love.graphics.setColorMask.
   * Added love.graphics.origin.
@@ -85,10 +85,12 @@ LOVE 0.9.0 [Baby Inspector]
   * Added joystick connect and disconnect events.
   * Added joystickaxis and joystickhat events.
   * Added unified Gamepad API for joysticks which have a similar layout to the Xbox controller.
+  * Added joystick vibration support, works with most common gamepads.
   * OPTIONAL: Added support for Game Music Emu.
 
   * Fixed fused mode in OS X.
   * Fixed printing to the console in Windows before love.load is called.
+  * Fixed the default love.run to not include the time taken by love.load in the first frame's dt.
   * Fixed the error screen not always appearing until the next input event.
   * Fixed love.event.clear.
   * Fixed love.mouse.setPosition when called in love.load.
@@ -155,11 +157,11 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed love.graphics.setColorMode.
   * Removed love.graphics.newStencil.
   * Removed love.graphics.setLine/setPoint.
-  * Removed Quad objects (replaced by Geometry).
   * Removed love.graphics.drawq (functionality is merged into love.graphics.draw).
   * Removed SpriteBatch:addq/setq (functionality is merged into SpriteBatch:add/set).
   * Removed ParticleSystem:isFull/isEmpty.
   * Removed ParticleSystem:getX/getY.
+  * Removed love.graphics.checkMode.
   * Removed love.joystick.open and friends.
   * Removed love.joystick module functions which operated on individual joysticks (see Joystick objects).
   * Removed joystick ball support.
@@ -171,6 +173,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated the windows console, it now tries to re-use an active one first.
   * Updated error handling, error handlers now get resolved when the error occurs.
   * Updated order of sleep/present in love.run (now draws, *then* sleeps).
+  * Updated love.filesystem to try to create the appdata directory if it doesn't exist yet.
   * Updated the default filesystem identity to omit file extension.
   * Updated love.filesystem.newFile to optionally open the file.
   * Updated most love.filesystem functions to return nil, error on internal failure.
