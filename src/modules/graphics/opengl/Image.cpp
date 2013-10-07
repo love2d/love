@@ -42,6 +42,7 @@ Image::Image(love::image::ImageData *data)
 	, width((float)(data->getWidth()))
 	, height((float)(data->getHeight()))
 	, texture(0)
+	, texCoordScale(1.0, 1.0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(false)
@@ -108,51 +109,37 @@ void Image::draw(float x, float y, float angle, float sx, float sy, float ox, fl
 	drawv(t, vertices);
 }
 
-void Image::drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	const Vertex *v = geom->getVertexArray();
-	size_t vertcount = geom->getVertexCount();
+	const Vertex *v = quad->getVertices();
+	drawv(t, v);
+}
 
-	// Padded NPOT images require texture coordinate scaling with Geometry.
-	if (!hasNpot())
-		v = scaleNPOT(v, vertcount);
+void Image::predraw() const
+{
+	bind();
 
-	// use colors stored in geometry (horrible, horrible hack)
-	if (geom->hasVertexColors())
+	if (texCoordScale.x < 1.0f || texCoordScale.y < 1.0f)
 	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *) &v[0].r);
+		// NPOT image but no NPOT support, so the texcoords should be scaled.
+		glMatrixMode(GL_TEXTURE);
+		glPushMatrix();
+		glScalef(texCoordScale.x, texCoordScale.y, 0.0f);
+		glMatrixMode(GL_MODELVIEW);
 	}
+}
 
-	GLenum glmode;
-	switch (geom->getDrawMode())
+void Image::postdraw() const
+{
+	if (texCoordScale.x < 1.0f || texCoordScale.y < 1.0f)
 	{
-	case Geometry::DRAW_MODE_FAN:
-	default:
-		glmode = GL_TRIANGLE_FAN;
-		break;
-	case Geometry::DRAW_MODE_STRIP:
-		glmode = GL_TRIANGLE_STRIP;
-		break;
-	case Geometry::DRAW_MODE_TRIANGLES:
-		glmode = GL_TRIANGLES;
-		break;
+		glMatrixMode(GL_TEXTURE);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
 	}
-
-	drawv(t, v, vertcount, glmode, geom->getElementArray(), geom->getElementCount());
-
-	if (geom->hasVertexColors())
-	{
-		glDisableClientState(GL_COLOR_ARRAY);
-		gl.setColor(gl.getColor());
-	}
-
-	// If we made new verts with scaled texcoords then we should clean them up.
-	if (!hasNpot())
-		delete[] v;
 }
 
 void Image::uploadCompressedMipmaps()
@@ -404,10 +391,8 @@ bool Image::loadVolatilePOT()
 		return true;
 	}
 
-	vertices[1].t = t;
-	vertices[2].t = t;
-	vertices[2].s = s;
-	vertices[3].s = s;
+	texCoordScale.x = s;
+	texCoordScale.y = t;
 
 	// We want this lock to potentially cover mipmap creation as well.
 	love::thread::EmptyLock lock;
@@ -596,30 +581,9 @@ void Image::uploadDefaultTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
-love::Vector Image::getTexCoordScale() const
+void Image::drawv(const Matrix &t, const Vertex *v) const
 {
-	// FIXME: this should be changed if Image::loadVolatilePOT changes.
-	return love::Vector(vertices[2].s, vertices[2].t);
-}
-
-Vertex *Image::scaleNPOT(const love::Vertex *v, size_t count) const
-{
-	Vertex *newverts = new Vertex[count];
-	love::Vector scale = getTexCoordScale();
-
-	for (size_t i = 0; i < count; i++)
-	{
-		newverts[i] = v[i];
-		newverts[i].s *= scale.x;
-		newverts[i].t *= scale.y;
-	}
-
-	return newverts;
-}
-
-void Image::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
-{
-	bind();
+	predraw();
 
 	glPushMatrix();
 
@@ -628,22 +592,17 @@ void Image::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode, 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	// XXX: drawg() enables/disables GL_COLOR_ARRAY in order to use the color
-	//      defined in the geometry to draw itself.
-	//      if the drawing method below is changed to use something other than
-	//      glDrawArrays(), drawg() needs to be updated accordingly!
 	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
-	if (e != 0 && ecount > 0)
-		glDrawElements(mode, ecount, GL_UNSIGNED_SHORT, (GLvoid *) e);
-	else
-		glDrawArrays(mode, 0, count);
+	glDrawArrays(GL_QUADS, 0, 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glPopMatrix();
+
+	postdraw();
 }
 
 void Image::setDefaultMipmapSharpness(float sharpness)

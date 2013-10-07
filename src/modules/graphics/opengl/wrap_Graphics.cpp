@@ -20,7 +20,7 @@
 
 #include "wrap_Graphics.h"
 #include "OpenGL.h"
-#include "graphics/DrawGable.h"
+#include "graphics/DrawQable.h"
 #include "image/ImageData.h"
 #include "font/Rasterizer.h"
 
@@ -194,156 +194,19 @@ int w_newImage(lua_State *L)
 	return 1;
 }
 
-int w_newGeometry(lua_State *L)
-{
-	luaL_checktype(L, 1, LUA_TTABLE);
-
-	// Determine whether a table of vertices is being given. We assume it is if
-	// type(args[1][1]) == "table", otherwise assume the args are the verts.
-	lua_rawgeti(L, 1, 1);
-	bool is_table = lua_istable(L, -1);
-	lua_pop(L, 1);
-
-	// Get rid of any trailing nils in the arg list (it messes with our style.)
-	for (int i = lua_gettop(L); i >= 2; i--)
-	{
-		if (lua_isnil(L, i))
-			lua_pop(L, 1);
-		else
-			break;
-	}
-
-	Geometry::DrawMode mode = Geometry::DRAW_MODE_FAN;
-	std::string txt;
-	bool has_vertexmap = false;
-
-	// The last argument (or second-last) may be an optional draw mode.
-	if (lua_type(L, -1) == LUA_TSTRING)
-	{
-		txt = luaL_checkstring(L, -1);
-		lua_remove(L, -1);
-	}
-	else if (lua_type(L, -2) == LUA_TSTRING && lua_istable(L, -1))
-	{
-		txt = luaL_checkstring(L, -2);
-		lua_remove(L, -2);
-
-		// If the draw mode is the second-last argument, the last argument will
-		// be the vertex map.
-		has_vertexmap = true;
-	}
-
-	if (txt.length() > 0 && !Geometry::getConstant(txt.c_str(), mode))
-		return luaL_error(L, "Invalid Geometry draw mode: %s", txt.c_str());
-
-	std::vector<uint16> vertexmap;
-
-	// Get the vertex map table, if it exists.
-	if (has_vertexmap)
-	{
-		// It will always be the last argument.
-		int tableidx = lua_gettop(L);
-
-		size_t elementcount = lua_objlen(L, -1);
-		vertexmap.reserve(elementcount);
-
-		for (size_t i = 0; i < elementcount; i++)
-		{
-			lua_rawgeti(L, tableidx, i + 1);
-			if (!lua_isnumber(L, -1))
-				return luaL_argerror(L, tableidx + 1, "vertex index expected");
-
-			vertexmap.push_back(uint16(lua_tointeger(L, -1) - 1));
-			lua_pop(L, 1);
-		}
-
-		// We don't want to read the vertex map as a vertex table later.
-		lua_remove(L, -1);
-	}
-
-	size_t vertexcount = is_table ? lua_objlen(L, 1) : lua_gettop(L);
-	if (vertexcount < 3)
-		return luaL_error(L, "At least three points are needed to construct a Geometry.");
-
-	if (!lua_checkstack(L, 9))
-		return luaL_error(L, "Too many arguments!");
-
-	bool hasvertexcolors = false;
-
-	std::vector<Vertex> vertices;
-	vertices.reserve(vertexcount);
-
-	for (size_t i = 0; i < vertexcount; ++i)
-	{
-		Vertex v;
-
-		if (is_table)
-		{
-			lua_rawgeti(L, 1, i+1);
-			if (!lua_istable(L, -1))
-				return luax_typerror(L, 1, "table of tables");
-		}
-		else
-		{
-			// Push the vertex table at this arg index to the top of the stack.
-			luaL_checktype(L, i + 1, LUA_TTABLE);
-			lua_pushvalue(L, i + 1);
-		}
-
-		for (int j = 1; j <= 8; j++)
-			lua_rawgeti(L, -j, j);
-
-		v.x = (float) luaL_checknumber(L, -8);
-		v.y = (float) luaL_checknumber(L, -7);
-
-		v.s = (float) luaL_checknumber(L, -6);
-		v.t = (float) luaL_checknumber(L, -5);
-
-		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
-		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
-		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
-		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
-
-		lua_pop(L, 9);
-
-		// Custom vertex colors are disabled by default unless a unique color
-		// is used for at least one vertex.
-		if (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255)
-			hasvertexcolors = true;
-
-		vertices.push_back(v);
-	}
-
-	Geometry *geom = 0;
-	EXCEPT_GUARD(geom = instance->newGeometry(vertices, vertexmap, mode);)
-
-	if (geom == 0)
-		return luaL_error(L, "Could not create geometry.");
-
-	geom->setVertexColors(hasvertexcolors);
-
-	// Note: This should be changed to luax_pushtype if the new Geometry is ever
-	// expected to be pushed to Lua from another C++ function!
-	// We're only using rawnewtype instead of pushtype for performance.
-	luax_rawnewtype(L, "Geometry", GRAPHICS_GEOMETRY_T, geom);
-	return 1;
-}
-
 int w_newQuad(lua_State *L)
 {
-	float x = (float) luaL_checknumber(L, 1);
-	float y = (float) luaL_checknumber(L, 2);
-	float w = (float) luaL_checknumber(L, 3);
-	float h = (float) luaL_checknumber(L, 4);
+	Quad::Viewport v;
+	v.x = (float) luaL_checknumber(L, 1);
+	v.y = (float) luaL_checknumber(L, 2);
+	v.w = (float) luaL_checknumber(L, 3);
+	v.h = (float) luaL_checknumber(L, 4);
+
 	float sw = (float) luaL_checknumber(L, 5);
 	float sh = (float) luaL_checknumber(L, 6);
 
-	Geometry *quad = instance->newQuad(x, y, w, h, sw, sh);
-
-	// Note: This should be changed to luax_pushtype if the new Geometry is ever
-	// expected to be pushed to Lua from another C++ function!
-	// We're only using rawnewtype instead of pushtype for performance.
-	luax_rawnewtype(L, "Geometry", GRAPHICS_GEOMETRY_T, quad);
+	Quad *quad = instance->newQuad(v, sw, sh);
+	luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quad);
 	return 1;
 }
 
@@ -565,6 +428,74 @@ int w_newShader(lua_State *L)
 	if (should_error)
 		return lua_error(L);
 
+	return 1;
+}
+
+int w_newMesh(lua_State *L)
+{
+	// Check first argument: mandatory table of vertices.
+	luaL_checktype(L, 1, LUA_TTABLE);
+
+	// Second argument: optional image.
+	Image *img = 0;
+	if (!lua_isnoneornil(L, 2))
+		img = luax_checkimage(L, 2);
+
+	// Third argument: optional draw mode.
+	const char *str = 0;
+	Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN;
+	str = lua_isnoneornil(L, 3) ? 0 : luaL_checkstring(L, 3);
+
+	if (str && !Mesh::getConstant(str, mode))
+		return luaL_error(L, "Invalid mesh draw mode: %s", str);
+
+	size_t vertex_count = lua_objlen(L, 1);
+	std::vector<Vertex> vertices;
+	vertices.reserve(vertex_count);
+
+	bool use_colors = false;
+
+	// Get the vertices from the table.
+	for (size_t i = 1; i <= vertex_count; i++)
+	{
+		lua_rawgeti(L, 1, i);
+
+		if (lua_type(L, -1) != LUA_TTABLE)
+			return luax_typerror(L, 1, "table of tables");
+
+		for (int j = 1; j <= 8; j++)
+			lua_rawgeti(L, -j, j);
+
+		Vertex v;
+
+		v.x = (float) luaL_checknumber(L, -8);
+		v.y = (float) luaL_checknumber(L, -7);
+
+		v.s = (float) luaL_checknumber(L, -6);
+		v.t = (float) luaL_checknumber(L, -5);
+
+		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
+		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
+		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
+		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+		// Enable per-vertex coloring if any color is not the default.
+		if (!use_colors && (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255))
+			use_colors = true;
+
+		lua_pop(L, 9);
+		vertices.push_back(v);
+	}
+
+	Mesh *t = 0;
+	EXCEPT_GUARD(t = instance->newMesh(vertices, mode);)
+
+	if (img)
+		t->setImage(img);
+
+	t->setVertexColors(use_colors);
+
+	luax_pushtype(L, "Mesh", GRAPHICS_MESH_T, t);
 	return 1;
 }
 
@@ -1076,14 +1007,14 @@ int w_getRendererInfo(lua_State *L)
 int w_draw(lua_State *L)
 {
 	Drawable *drawable = 0;
-	DrawGable *drawgable = 0;
-	Geometry *geom = 0;
+	DrawQable *drawqable = 0;
+	Quad *quad = 0;
 	int startidx = 2;
 
-	if (luax_istype(L, 2, GRAPHICS_GEOMETRY_T))
+	if (luax_istype(L, 2, GRAPHICS_QUAD_T))
 	{
-		drawgable = luax_checktype<DrawGable>(L, 1, "DrawGable", GRAPHICS_DRAWGABLE_T);
-		geom = luax_totype<Geometry>(L, 2, "Geometry", GRAPHICS_GEOMETRY_T);
+		drawqable = luax_checktype<DrawQable>(L, 1, "DrawQable", GRAPHICS_DRAWQABLE_T);
+		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
 		startidx = 3;
 	}
 	else
@@ -1102,8 +1033,8 @@ int w_draw(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	if (drawgable && geom)
-		drawgable->drawg(geom, x, y, a, sx, sy, ox, oy, kx, ky);
+	if (drawqable && quad)
+		drawqable->drawq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
 	else if (drawable)
 		drawable->draw(x, y, a, sx, sy, ox, oy, kx, ky);
 
@@ -1371,13 +1302,13 @@ static const luaL_Reg functions[] =
 
 	{ "newImage", w_newImage },
 	{ "newQuad", w_newQuad },
-	{ "newGeometry", w_newGeometry },
 	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newCanvas", w_newCanvas },
 	{ "newShader", w_newShader },
+	{ "newMesh", w_newMesh },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -1457,11 +1388,12 @@ static const lua_CFunction types[] =
 {
 	luaopen_font,
 	luaopen_image,
-	luaopen_geometry,
+	luaopen_quad,
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_canvas,
 	luaopen_shader,
+	luaopen_mesh,
 	0
 };
 

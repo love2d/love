@@ -353,14 +353,9 @@ Image *Graphics::newImage(love::image::CompressedData *cdata)
 	return image;
 }
 
-Geometry *Graphics::newGeometry(const std::vector<Vertex> &vertices, const std::vector<uint16> &vertexmap, Geometry::DrawMode mode)
+Quad *Graphics::newQuad(Quad::Viewport v, float sw, float sh)
 {
-	return new Geometry(vertices, vertexmap, mode);
-}
-
-Geometry *Graphics::newQuad(float x, float y, float w, float h, float sw, float sh)
-{
-	return new Geometry(x, y, w, h, sw, sh);
+	return new Quad(v, sw, sh);
 }
 
 Font *Graphics::newFont(love::font::Rasterizer *r, const Image::Filter &filter)
@@ -439,6 +434,11 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 Shader *Graphics::newShader(const Shader::ShaderSources &sources)
 {
 	return new Shader(sources);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode)
+{
+	return new Mesh(vertices, mode);
 }
 
 void Graphics::setColor(const Color &c)

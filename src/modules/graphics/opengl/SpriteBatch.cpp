@@ -26,7 +26,6 @@
 
 // LOVE
 #include "Image.h"
-#include "modules/graphics/Geometry.h"
 #include "VertexBuffer.h"
 
 // C++
@@ -117,9 +116,6 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if (color)
 		setColorv(sprite, *color);
 
-	// Auto-padded NPOT images require texcoord scaling for their vertices.
-	scaleNPOT(sprite, 4);
-
 	addv(sprite, (index == -1) ? next : index);
 
 	// Increment counter.
@@ -129,49 +125,23 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	return index;
 }
 
-int SpriteBatch::addg(Geometry *geom, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
+int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 {
 	// Only do this if there's a free slot.
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
-	size_t vertexcount = geom->getVertexCount();
-	if (vertexcount > 4)
-		throw love::Exception("Cannot add Geometries with more than 4 vertices to SpriteBatch");
-
-	// Which vertices to add to the SpriteBatch.
-	size_t vertex_indices[4] = {0, 1, 2, 3};
-
-	if (geom->getDrawMode() == Geometry::DRAW_MODE_STRIP)
-	{
-		// We have to do some vertex reordering shenanigans to get 4-vertex
-		// triangle strip Geometries to render properly.
-		std::swap(vertex_indices[0], vertex_indices[1]);
-	}
-
-	// If the Geometry has 3 vertices, then 2 triangles will be added to the
-	// SpriteBatch: 0-1-2 and 0-2-0. 0-2-0 will get ignored during rasterization.
-	for (size_t i = geom->getVertexCount(); i < 4; i++)
-		vertex_indices[i] = vertex_indices[0];
-
-	for (size_t i = 0; i < 4; i++)
-		sprite[i] = geom->getVertex(vertex_indices[i]);
+	// Needed for colors.
+	memcpy(sprite, quad->getVertices(), sizeof(Vertex) * 4);
 
 	static Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 
-	if (color && !geom->hasVertexColors())
+	if (color)
 		setColorv(sprite, *color);
 
-	// Auto-padded NPOT images require texcoord scaling for their vertices.
-	scaleNPOT(sprite, 4);
-
 	addv(sprite, (index == -1) ? next : index);
-
-	// Make sure SpriteBatch colors are enabled if the Geometry has custom colors.
-	if (!color && geom->hasVertexColors())
-		setColor(Color(255, 255, 255, 255));
 
 	// Increment counter.
 	if (index == -1)
@@ -309,7 +279,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	image->bind();
+	image->predraw();
 
 	VertexBuffer::Bind array_bind(*array_buf);
 	VertexBuffer::Bind element_bind(*element_buf->getVertexBuffer());
@@ -340,24 +310,9 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 		gl.setColor(curcolor);
 	}
 
+	image->postdraw();
+
 	glPopMatrix();
-}
-
-void SpriteBatch::scaleNPOT(Vertex *v, size_t count)
-{
-	if (Image::hasNpot())
-		return;
-
-	love::Vector scale = image->getTexCoordScale();
-
-	if (scale.x == 1.0f && scale.y == 1.0f)
-		return;
-
-	for (size_t i = 0; i < count; i++)
-	{
-		v[i].s *= scale.x;
-		v[i].t *= scale.y;
-	}
 }
 
 void SpriteBatch::addv(const Vertex *v, int index)

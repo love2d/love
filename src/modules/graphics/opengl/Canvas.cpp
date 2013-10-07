@@ -607,52 +607,20 @@ void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, f
 	drawv(t, vertices);
 }
 
-void Canvas::drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	// flip texture coordinates vertically
-	size_t vcount = geom->getVertexCount();
-	const Vertex *w = geom->getVertexArray();
-	Vertex *v = new Vertex[vcount];
-	for (size_t i = 0; i < vcount; ++i)
-	{
-		v[i] = w[i];
-		v[i].t = 1.f - v[i].t;
-	}
+	const Vertex *v = quad->getVertices();
 
-	// use colors stored in geometry (horrible, horrible hack)
-	if (geom->hasVertexColors())
-	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *)&v->r);
-	}
+	// flip texture coordinates vertically.
+	Vertex w[4];
+	memcpy(w, v, sizeof(Vertex) * 4);
+	for (size_t i = 0; i < 4; i++)
+		w[i].t = 1.0f - w[i].t;
 
-	GLenum glmode;
-	switch (geom->getDrawMode())
-	{
-	case Geometry::DRAW_MODE_FAN:
-	default:
-		glmode = GL_TRIANGLE_FAN;
-		break;
-	case Geometry::DRAW_MODE_STRIP:
-		glmode = GL_TRIANGLE_STRIP;
-		break;
-	case Geometry::DRAW_MODE_TRIANGLES:
-		glmode = GL_TRIANGLES;
-		break;
-	}
-
-	drawv(t, v, vcount, glmode, geom->getElementArray(), geom->getElementCount());
-
-	if (geom->hasVertexColors())
-	{
-		glDisableClientState(GL_COLOR_ARRAY);
-		gl.setColor(gl.getColor());
-	}
-
-	delete[] v;
+	drawv(t, w);
 }
 
 bool Canvas::checkCreateStencil()
@@ -785,7 +753,7 @@ int Canvas::getHeight()
 	return height;
 }
 
-void Canvas::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode, const uint16 *e, GLsizei ecount) const
+void Canvas::drawv(const Matrix &t, const Vertex *v) const
 {
 	glPushMatrix();
 
@@ -796,17 +764,10 @@ void Canvas::drawv(const Matrix &t, const Vertex *v, GLsizei count, GLenum mode,
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	// XXX: drawg() enables/disables GL_COLOR_ARRAY in order to use the color
-	//      defined in the geometry to draw itself.
-	//      if the drawing method below is changed to use something other than
-	//      glDrawArrays(), drawg() needs to be updated accordingly!
 	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
-	if (e != 0 && ecount > 0)
-		glDrawElements(mode, ecount, GL_UNSIGNED_SHORT, (GLvoid *) e);
-	else
-		glDrawArrays(mode, 0, count);
+	glDrawArrays(GL_QUADS, 0, 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);

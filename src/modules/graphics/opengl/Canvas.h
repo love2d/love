@@ -21,7 +21,7 @@
 #ifndef LOVE_GRAPHICS_OPENGL_CANVAS_H
 #define LOVE_GRAPHICS_OPENGL_CANVAS_H
 
-#include "graphics/DrawGable.h"
+#include "graphics/DrawQable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Image.h"
 #include "graphics/Color.h"
@@ -38,7 +38,7 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas : public DrawGable, public Volatile
+class Canvas : public DrawQable, public Volatile
 {
 public:
 
@@ -65,9 +65,9 @@ public:
 	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	/**
-	 * @copydoc DrawGable::drawg()
+	 * @copydoc DrawQable::drawq()
 	 **/
-	void drawg(love::graphics::Geometry *geom, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	/**
 	 * Create and attach a stencil buffer to this Canvas' framebuffer, if necessary.
@@ -142,7 +142,7 @@ private:
 	std::vector<Canvas *> attachedCanvases;
 
 	void setupGrab();
-	void drawv(const Matrix &t, const Vertex *v, GLsizei count = 4, GLenum mode = GL_QUADS, const uint16 *e = 0, GLsizei ecount = 0) const;
+	void drawv(const Matrix &t, const Vertex *v) const;
 
 	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
 	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;

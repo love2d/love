@@ -670,14 +670,14 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// Graphics
 	{"Drawable", GRAPHICS_DRAWABLE_ID},
-	{"DrawGable", GRAPHICS_DRAWGABLE_ID},
 	{"Image", GRAPHICS_IMAGE_ID},
-	{"Geometry", GRAPHICS_GEOMETRY_ID},
+	{"Quad", GRAPHICS_QUAD_ID},
 	{"Font", GRAPHICS_FONT_ID},
 	{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
 	{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
 	{"Canvas", GRAPHICS_CANVAS_ID},
 	{"Shader", GRAPHICS_SHADER_ID},
+	{"Mesh", GRAPHICS_MESH_ID},
 
 	// Image
 	{"ImageData", IMAGE_IMAGE_DATA_ID},

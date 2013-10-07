@@ -18,33 +18,52 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_GEOMETRY_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_GEOMETRY_H
+#ifndef LOVE_GRAPHICS_QUAD_H
+#define LOVE_GRAPHICS_QUAD_H
 
 // LOVE
-#include "common/runtime.h"
-#include "graphics/Geometry.h"
+#include "common/Object.h"
+#include "common/math.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+
+class Quad : public Object
 {
+public:
 
-Geometry *luax_checkgeometry(lua_State *L, int idx);
-int w_Geometry_getVertexCount(lua_State *L);
-int w_Geometry_getVertex(lua_State *L);
-int w_Geometry_setVertex(lua_State *L);
-int w_Geometry_setVertexColors(lua_State *L);
-int w_Geometry_hasVertexColors(lua_State *L);
-int w_Geometry_getDrawMode(lua_State *L);
-int w_Geometry_getVertexMap(lua_State *L);
-int w_Geometry_setVertexMap(lua_State *L);
-extern "C" int luaopen_geometry(lua_State *L);
+	struct Viewport
+	{
+		float x, y;
+		float w, h;
+	};
 
-} // opengl
+	static const size_t NUM_VERTICES = 4;
+
+	Quad(const Viewport &v, float sw, float sh);
+	virtual ~Quad();
+
+	void refresh(const Viewport &v, float sw, float sh);
+	void setViewport(const Viewport &v);
+	Viewport getViewport() const;
+
+	void flip(bool x, bool y);
+
+	const Vertex *getVertices() const;
+
+private:
+
+	Vertex vertices[NUM_VERTICES];
+
+	Viewport viewport;
+	float sw;
+	float sh;
+
+}; // Quad
+
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_GEOMETRY_H
+#endif // LOVE_GRAPHICS_QUAD_H

@@ -24,11 +24,12 @@
 // LOVE
 #include "wrap_Font.h"
 #include "wrap_Image.h"
-#include "wrap_Geometry.h"
+#include "wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
 #include "wrap_Canvas.h"
 #include "wrap_Shader.h"
+#include "wrap_Mesh.h"
 #include "Graphics.h"
 
 namespace love
@@ -51,7 +52,6 @@ int w_setStencil(lua_State *L);
 int w_setInvertedStencil(lua_State *L);
 int w_getMaxImageSize(lua_State *L);
 int w_newImage(lua_State *L);
-int w_newGeometry(lua_State *L);
 int w_newQuad(lua_State *L);
 int w_newFont(lua_State *L);
 int w_newImageFont(lua_State *L);
@@ -59,6 +59,7 @@ int w_newSpriteBatch(lua_State *L);
 int w_newParticleSystem(lua_State *L);
 int w_newCanvas(lua_State *L);  // comments in function
 int w_newShader(lua_State *L);
+int w_newMesh(lua_State *L);
 int w_setColor(lua_State *L);
 int w_getColor(lua_State *L);
 int w_setBackgroundColor(lua_State *L);
@@ -92,7 +93,6 @@ int w_getShader(lua_State *L);
 int w_isSupported(lua_State *L);
 int w_getRendererInfo(lua_State *L);
 int w_draw(lua_State *L);
-int w_drawg(lua_State *L);
 int w_print(lua_State *L);
 int w_printf(lua_State *L);
 int w_point(lua_State *L);
