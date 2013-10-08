@@ -1044,8 +1044,8 @@ int w_draw(lua_State *L)
 int w_print(lua_State *L)
 {
 	std::string str = luax_checkstring(L, 1);
-	float x = (float)luaL_checknumber(L, 2);
-	float y = (float)luaL_checknumber(L, 3);
+	float x = (float)luaL_optnumber(L, 2, 0.0);
+	float y = (float)luaL_optnumber(L, 3, 0.0);
 	float angle = (float)luaL_optnumber(L, 4, 0.0f);
 	float sx = (float)luaL_optnumber(L, 5, 1.0f);
 	float sy = (float)luaL_optnumber(L, 6, sx);
