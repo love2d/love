@@ -61,7 +61,7 @@ public:
 	 * @param x The x-coordinate of the vertex.
 	 * @param y The y-coordinate of the vertex.
 	 **/
-	void setPrevVertex(float x, float y);
+	void setPreviousVertex(float x, float y);
 
 	/**
 	 * Gets the number of children shapes.

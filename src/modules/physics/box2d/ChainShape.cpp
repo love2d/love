@@ -55,11 +55,11 @@ void ChainShape::setNextVertex(float x, float y)
 	c->SetNextVertex(Physics::scaleDown(v));
 }
 
-void ChainShape::setPrevVertex(float x, float y)
+void ChainShape::setPreviousVertex(float x, float y)
 {
 	if (loop)
 	{
-		throw love::Exception("Physics error: Can't call setPrevVertex on a loop ChainShape");
+		throw love::Exception("Physics error: Can't call setPreviousVertex on a loop ChainShape");
 		return;
 	}
 	b2Vec2 v(x, y);

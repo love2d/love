@@ -43,12 +43,12 @@ int w_ChainShape_setNextVertex(lua_State *L)
 	return 0;
 }
 
-int w_ChainShape_setPrevVertex(lua_State *L)
+int w_ChainShape_setPreviousVertex(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
-	EXCEPT_GUARD(c->setPrevVertex(x, y);)
+	EXCEPT_GUARD(c->setPreviousVertex(x, y);)
 	return 0;
 }
 
@@ -107,7 +107,7 @@ int w_ChainShape_getPoints(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "setNextVertex", w_ChainShape_setNextVertex },
-	{ "setPrevVertex", w_ChainShape_setPrevVertex },
+	{ "setPreviousVertex", w_ChainShape_setPreviousVertex },
 	{ "getChildCount", w_ChainShape_getChildCount },
 	{ "getChildEdge", w_ChainShape_getChildEdge },
 	{ "getVertexCount", w_ChainShape_getVertexCount },
