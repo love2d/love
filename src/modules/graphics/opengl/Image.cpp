@@ -103,15 +103,15 @@ love::image::CompressedData *Image::getCompressedData() const
 
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	static Matrix t;
-
+	Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+
 	drawv(t, vertices);
 }
 
 void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	static Matrix t;
+	Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	const Vertex *v = quad->getVertices();
@@ -124,7 +124,7 @@ void Image::predraw() const
 
 	if (texCoordScale.x < 1.0f || texCoordScale.y < 1.0f)
 	{
-		// NPOT image but no NPOT support, so the texcoords should be scaled.
+		// NPOT image padded to POT size, so the texcoords should be scaled.
 		glMatrixMode(GL_TEXTURE);
 		glPushMatrix();
 		glScalef(texCoordScale.x, texCoordScale.y, 0.0f);
@@ -179,7 +179,7 @@ void Image::uploadCompressedMipmaps()
 void Image::createMipmaps()
 {
 	// Only valid for Images created with ImageData.
-	if (!data)
+	if (!data || isCompressed())
 		return;
 
 	if (!hasMipmapSupport())
@@ -204,15 +204,7 @@ void Image::createMipmaps()
 	{
 		// AMD/ATI drivers have several bugs when generating mipmaps,
 		// re-uploading the entire base image seems to be required.
-		glTexImage2D(GL_TEXTURE_2D,
-		             0,
-		             GL_RGBA8,
-		             (GLsizei)width,
-		             (GLsizei)height,
-		             0,
-		             GL_RGBA,
-		             GL_UNSIGNED_BYTE,
-		             data->getData());
+		uploadTexture();
 
 		// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
 		glEnable(GL_TEXTURE_2D);
@@ -364,57 +356,63 @@ bool Image::loadVolatile()
 	if (hasMipmapSharpnessSupport() && maxMipmapSharpness == 0.0f)
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
-	if (hasNpot())
-		return loadVolatileNPOT();
-	else
-		return loadVolatilePOT();
-}
-
-bool Image::loadVolatilePOT()
-{
-	glGenTextures(1,(GLuint *)&texture);
+	glGenTextures(1, &texture);
 	gl.bindTexture(texture);
 
 	filter.anisotropy = gl.setTextureFilter(filter);
 	gl.setTextureWrap(wrap);
 	setMipmapSharpness(mipmapSharpness);
 
-	float p2width = next_p2(width);
-	float p2height = next_p2(height);
-	float s = width/p2width;
-	float t = height/p2height;
+	float texwidth = width;
+	float texheight = height;
+
+	if (!hasNpot())
+	{
+		// NPOT textures will be padded to POT dimensions if necessary.
+		texwidth = next_p2(width);
+		texheight = next_p2(height);
+	}
 
 	// Use a default texture if the size is too big for the system.
-	if (p2width > gl.getMaxTextureSize() || p2height > gl.getMaxTextureSize())
+	if (texwidth > gl.getMaxTextureSize() || texheight > gl.getMaxTextureSize())
 	{
 		uploadDefaultTexture();
 		return true;
 	}
 
-	texCoordScale.x = s;
-	texCoordScale.y = t;
+	texCoordScale.x = width / texwidth;
+	texCoordScale.y = height / texheight;
 
-	// We want this lock to potentially cover mipmap creation as well.
+	// Mutex lock will potentially cover texture loading and mipmap creation.
 	love::thread::EmptyLock lock;
+	if (data)
+		lock.setLock(data->getMutex());
 
-	while (glGetError() != GL_NO_ERROR); // clear errors
+	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
+	if (hasNpot() || (texwidth == width && texheight == height))
+		uploadTexture();
+	else
+		uploadTexturePadded(texwidth, texheight);
+
+	GLenum glerr = glGetError();
+	if (glerr != GL_NO_ERROR)
+		throw love::Exception("Cannot create image (error code 0x%x)", glerr);
+
+	usingDefaultTexture = false;
+	mipmapsCreated = false;
+	checkMipmapsCreated();
+
+	return true;
+}
+
+void Image::uploadTexturePadded(float p2width, float p2height)
+{
 	if (isCompressed() && cdata)
 	{
-		if (s < 1.0f || t < 1.0f)
-		{
-			throw love::Exception("Cannot create image: "
-				  "compressed NPOT images are not supported on this system.");
-		}
-
-		glCompressedTexImage2DARB(GL_TEXTURE_2D,
-		                          0,
-		                          getCompressedFormat(cdata->getFormat()),
-		                          cdata->getWidth(0),
-		                          cdata->getHeight(0),
-		                          0,
-		                          GLsizei(cdata->getSize(0)),
-		                          cdata->getData(0));
+		// Padded textures don't really work if they're compressed...
+		throw love::Exception("Cannot create image: "
+		                      "compressed NPOT images are not supported on this system.");
 	}
 	else if (data)
 	{
@@ -428,7 +426,6 @@ bool Image::loadVolatilePOT()
 		             GL_UNSIGNED_BYTE,
 		             0);
 
-		lock.setLock(data->getMutex());
 		glTexSubImage2D(GL_TEXTURE_2D,
 		                0,
 		                0, 0,
@@ -438,39 +435,10 @@ bool Image::loadVolatilePOT()
 		                GL_UNSIGNED_BYTE,
 		                data->getData());
 	}
-
-	GLenum glerr = glGetError();
-	if (glerr != GL_NO_ERROR)
-		throw love::Exception("Cannot create image (error code 0x%x)", glerr);
-
-	usingDefaultTexture = false;
-	mipmapsCreated = false;
-	checkMipmapsCreated();
-
-	return true;
 }
 
-bool Image::loadVolatileNPOT()
+void Image::uploadTexture()
 {
-	glGenTextures(1,(GLuint *)&texture);
-	gl.bindTexture(texture);
-
-	filter.anisotropy = gl.setTextureFilter(filter);
-	gl.setTextureWrap(wrap);
-	setMipmapSharpness(mipmapSharpness);
-
-	// Use a default texture if the size is too big for the system.
-	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
-	{
-		uploadDefaultTexture();
-		return true;
-	}
-
-	// We want this lock to potentially cover mipmap creation as well.
-	love::thread::EmptyLock lock;
-
-	while (glGetError() != GL_NO_ERROR); // clear errors
-
 	if (isCompressed() && cdata)
 	{
 		GLenum format = getCompressedFormat(cdata->getFormat());
@@ -485,7 +453,6 @@ bool Image::loadVolatileNPOT()
 	}
 	else if (data)
 	{
-		lock.setLock(data->getMutex());
 		glTexImage2D(GL_TEXTURE_2D,
 		             0,
 		             GL_RGBA8,
@@ -496,16 +463,6 @@ bool Image::loadVolatileNPOT()
 		             GL_UNSIGNED_BYTE,
 		             data->getData());
 	}
-
-	GLenum glerr = glGetError();
-	if (glerr != GL_NO_ERROR)
-		throw love::Exception("Cannot create image (error code 0x%x)", glerr);
-
-	usingDefaultTexture = false;
-	mipmapsCreated = false;
-	checkMipmapsCreated();
-
-	return true;
 }
 
 void Image::unloadVolatile()

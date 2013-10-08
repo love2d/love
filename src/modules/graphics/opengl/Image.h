@@ -198,8 +198,8 @@ private:
 
 	void preload();
 
-	bool loadVolatilePOT();
-	bool loadVolatileNPOT();
+	void uploadTexturePadded(float p2width, float p2height);
+	void uploadTexture();
 
 	void uploadCompressedMipmaps();
 	void createMipmaps();
