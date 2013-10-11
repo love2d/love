@@ -252,7 +252,7 @@ int w_Source_getVolumeLimits(lua_State *L)
 	return 2;
 }
 
-int w_Source_setDistance(lua_State *L)
+int w_Source_setAttenuationDistances(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 	float dref = (float)luaL_checknumber(L, 2);
@@ -264,7 +264,7 @@ int w_Source_setDistance(lua_State *L)
 	return 0;
 }
 
-int w_Source_getDistance(lua_State *L)
+int w_Source_getAttenuationDistances(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 	lua_pushnumber(L, t->getReferenceDistance());
@@ -332,8 +332,8 @@ static const luaL_Reg functions[] =
 
 	{ "setVolumeLimits", w_Source_setVolumeLimits },
 	{ "getVolumeLimits", w_Source_getVolumeLimits },
-	{ "setDistance", w_Source_setDistance },
-	{ "getDistance", w_Source_getDistance },
+	{ "setAttenuationDistances", w_Source_setAttenuationDistances },
+	{ "getAttenuationDistances", w_Source_getAttenuationDistances },
 	{ "setRolloff", w_Source_setRolloff},
 	{ "getRolloff", w_Source_getRolloff},
 

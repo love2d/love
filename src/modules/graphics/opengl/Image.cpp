@@ -58,6 +58,7 @@ Image::Image(love::image::CompressedData *cdata)
 	, width((float)(cdata->getWidth(0)))
 	, height((float)(cdata->getHeight(0)))
 	, texture(0)
+	, texCoordScale(1.0, 1.0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(true)
@@ -114,8 +115,7 @@ void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy,
 	Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	const Vertex *v = quad->getVertices();
-	drawv(t, v);
+	drawv(t, quad->getVertices());
 }
 
 void Image::predraw() const
@@ -149,21 +149,21 @@ void Image::uploadCompressedMipmaps()
 
 	bind();
 
-	int mipmapcount = cdata->getMipmapCount();
+	int count = cdata->getMipmapCount();
 
 	// We have to inform OpenGL if the image doesn't have all mipmap levels.
 	if (GLEE_VERSION_1_2 || GLEE_SGIS_texture_lod)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmapcount - 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
 	}
-	else if (cdata->getWidth(mipmapcount-1) > 1 || cdata->getHeight(mipmapcount-1) > 1)
+	else if (cdata->getWidth(count-1) > 1 || cdata->getHeight(count-1) > 1)
 	{
 		// Telling OpenGL to ignore certain levels isn't always supported.
 		throw love::Exception("Cannot load mipmaps: "
 		      "compressed image does not have all required levels.");
 	}
 
-	for (int i = 1; i < mipmapcount; i++)
+	for (int i = 1; i < count; i++)
 	{
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
 		                          i,
@@ -627,7 +627,7 @@ bool Image::hasMipmapSupport()
 
 bool Image::hasMipmapSharpnessSupport()
 {
-	return GLEE_VERSION_1_4 || GLEE_EXT_texture_lod_bias;
+	return GLEE_VERSION_1_4;
 }
 
 bool Image::hasCompressedTextureSupport()

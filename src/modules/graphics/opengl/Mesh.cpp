@@ -122,7 +122,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 		ibo = nullptr;
 	}
 
-	if (!ibo)
+	if (!ibo && size > 0)
 	{
 		// Full memory backing because we might access the data at any time.
 		ibo = VertexBuffer::Create(size, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, VertexBuffer::BACKING_FULL);
@@ -130,7 +130,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 
 	element_count = map.size();
 
-	if (element_count > 0)
+	if (ibo && element_count > 0)
 	{
 		VertexBuffer::Bind ibo_bind(*ibo);
 		VertexBuffer::Mapper ibo_map(*ibo);
@@ -241,7 +241,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 
 	GLenum mode = getGLDrawMode(draw_mode);
 
-	if (element_count > 0)
+	if (ibo && element_count > 0)
 	{
 		VertexBuffer::Bind ibo_bind(*ibo);
 
