@@ -78,6 +78,8 @@ public:
 	virtual void getVelocity(float *v) const;
 	virtual void setDirection(float *v);
 	virtual void getDirection(float *v) const;
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume);
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const;
 	virtual void setRelativePosition(bool relative);
 	virtual bool hasRelativePosition() const;
 	void setLooping(bool looping);
@@ -136,6 +138,19 @@ private:
 	float referenceDistance;
 	float rolloffFactor;
 	float maxDistance;
+
+	struct Cone
+	{
+		int innerAngle; // degrees
+		int outerAngle; // degrees
+		float outerVolume;
+
+		Cone()
+			: innerAngle(360)
+			, outerAngle(360)
+			, outerVolume(0.0f)
+		{}
+	} cone;
 
 	float offsetSamples;
 	float offsetSeconds;

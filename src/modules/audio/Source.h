@@ -80,6 +80,9 @@ public:
 	virtual void setDirection(float *v) = 0;
 	virtual void getDirection(float *v) const = 0;
 
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume) = 0;
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const = 0;
+
 	virtual void setRelativePosition(bool relative) = 0;
 	virtual bool hasRelativePosition() const = 0;
 

@@ -190,6 +190,27 @@ int w_Source_getDirection(lua_State *L)
 	return 3;
 }
 
+int w_Source_setCone(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	float innerAngle = (float) luaL_checknumber(L, 2);
+	float outerAngle = (float) luaL_checknumber(L, 3);
+	float outerVolume = (float) luaL_optnumber(L, 4, 0.0);
+	t->setCone(innerAngle, outerAngle, outerVolume);
+	return 0;
+}
+
+int w_Source_getCone(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	float innerAngle, outerAngle, outerVolume;
+	t->getCone(innerAngle, outerAngle, outerVolume);
+	lua_pushnumber(L, innerAngle);
+	lua_pushnumber(L, outerAngle);
+	lua_pushnumber(L, outerVolume);
+	return 3;
+}
+
 int w_Source_setRelativePosition(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -336,6 +357,8 @@ static const luaL_Reg functions[] =
 	{ "getVelocity", w_Source_getVelocity },
 	{ "setDirection", w_Source_setDirection },
 	{ "getDirection", w_Source_getDirection },
+	{ "setCone", w_Source_setCone },
+	{ "getCone", w_Source_getCone },
 
 	{ "setRelativePosition", w_Source_setRelativePosition },
 	{ "hasRelativePosition", w_Source_hasRelativePosition },

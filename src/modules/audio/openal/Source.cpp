@@ -19,8 +19,8 @@
  **/
 
 #include "Source.h"
-
 #include "Pool.h"
+#include "common/math.h"
 
 // STD
 #include <iostream>
@@ -47,6 +47,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
 	, maxDistance(FLT_MAX)
+	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
 	, decoder(0)
@@ -77,6 +78,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
 	, maxDistance(FLT_MAX)
+	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
 	, decoder(decoder)
@@ -404,6 +406,27 @@ void Source::getDirection(float *v) const
 		setFloatv(v, direction);
 }
 
+void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
+{
+	cone.innerAngle = LOVE_TODEG(innerAngle);
+	cone.outerAngle = LOVE_TODEG(outerAngle);
+	cone.outerVolume = outerVolume;
+
+	if (valid)
+	{
+		alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
+		alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
+		alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
+	}
+}
+
+void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
+{
+	innerAngle = LOVE_TORAD(cone.innerAngle);
+	outerAngle = LOVE_TORAD(cone.outerAngle);
+	outerVolume = cone.outerVolume;
+}
+
 void Source::setRelativePosition(bool relative)
 {
 	if (valid)
@@ -551,6 +574,9 @@ void Source::reset()
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
 	alSourcei(source, AL_LOOPING, isStatic() && isLooping() ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_SOURCE_RELATIVE, relativePosition ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
+	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
+	alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
 }
 
 void Source::setFloatv(float *dst, const float *src) const

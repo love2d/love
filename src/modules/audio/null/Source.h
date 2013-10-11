@@ -60,6 +60,8 @@ public:
 	virtual void getVelocity(float *v) const;
 	virtual void setDirection(float *v);
 	virtual void getDirection(float *v) const;
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume);
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const;
 	virtual void setRelativePosition(bool relative);
 	virtual bool hasRelativePosition() const;
 	void setLooping(bool looping);
@@ -80,6 +82,9 @@ private:
 
 	float pitch;
 	float volume;
+	float coneInnerAngle;
+	float coneOuterAngle;
+	float coneOuterVolume;
 	bool relativePosition;
 	bool looping;
 	float minVolume;

@@ -135,6 +135,20 @@ void Source::getDirection(float *) const
 {
 }
 
+void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
+{
+	coneInnerAngle = innerAngle;
+	coneOuterAngle = outerAngle;
+	coneOuterVolume = outerVolume;
+}
+
+void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
+{
+	innerAngle = coneInnerAngle;
+	outerAngle = coneOuterAngle;
+	outerVolume = coneOuterVolume;
+}
+
 void Source::setRelativePosition(bool relative)
 {
 	relativePosition = relative;
