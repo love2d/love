@@ -232,14 +232,13 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Color.h
 	src/modules/graphics/Drawable.cpp
 	src/modules/graphics/Drawable.h
-	src/modules/graphics/DrawGable.cpp
-	src/modules/graphics/DrawGable.h
-	src/modules/graphics/Geometry.cpp
-	src/modules/graphics/Geometry.h
+	src/modules/graphics/DrawQable.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
 	src/modules/graphics/Image.cpp
 	src/modules/graphics/Image.h
+	src/modules/graphics/Quad.cpp
+	src/modules/graphics/Quad.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
 )
@@ -255,6 +254,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp
 	src/modules/graphics/opengl/Image.h
+	src/modules/graphics/opengl/Mesh.cpp
+	src/modules/graphics/opengl/Mesh.h
 	src/modules/graphics/opengl/OpenGL.cpp
 	src/modules/graphics/opengl/OpenGL.h
 	src/modules/graphics/opengl/ParticleSystem.cpp
@@ -271,14 +272,16 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_Canvas.h
 	src/modules/graphics/opengl/wrap_Font.cpp
 	src/modules/graphics/opengl/wrap_Font.h
-	src/modules/graphics/opengl/wrap_Geometry.cpp
-	src/modules/graphics/opengl/wrap_Geometry.h
 	src/modules/graphics/opengl/wrap_Graphics.cpp
 	src/modules/graphics/opengl/wrap_Graphics.h
 	src/modules/graphics/opengl/wrap_Image.cpp
 	src/modules/graphics/opengl/wrap_Image.h
+	src/modules/graphics/opengl/wrap_Mesh.cpp
+	src/modules/graphics/opengl/wrap_Mesh.h
 	src/modules/graphics/opengl/wrap_ParticleSystem.cpp
 	src/modules/graphics/opengl/wrap_ParticleSystem.h
+	src/modules/graphics/opengl/wrap_Quad.cpp
+	src/modules/graphics/opengl/wrap_Quad.h
 	src/modules/graphics/opengl/wrap_Shader.cpp
 	src/modules/graphics/opengl/wrap_Shader.h
 	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
