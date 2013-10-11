@@ -190,6 +190,20 @@ int w_Source_getDirection(lua_State *L)
 	return 3;
 }
 
+int w_Source_setRelativePosition(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	t->setRelativePosition(luax_toboolean(L, 2));
+	return 0;
+}
+
+int w_Source_hasRelativePosition(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	luax_pushboolean(L, t->hasRelativePosition());
+	return 1;
+}
+
 int w_Source_setLooping(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -322,6 +336,9 @@ static const luaL_Reg functions[] =
 	{ "getVelocity", w_Source_getVelocity },
 	{ "setDirection", w_Source_setDirection },
 	{ "getDirection", w_Source_getDirection },
+
+	{ "setRelativePosition", w_Source_setRelativePosition },
+	{ "hasRelativePosition", w_Source_hasRelativePosition },
 
 	{ "setLooping", w_Source_setLooping },
 	{ "isLooping", w_Source_isLooping },

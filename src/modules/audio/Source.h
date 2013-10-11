@@ -80,6 +80,9 @@ public:
 	virtual void setDirection(float *v) = 0;
 	virtual void getDirection(float *v) const = 0;
 
+	virtual void setRelativePosition(bool relative) = 0;
+	virtual bool hasRelativePosition() const = 0;
+
 	virtual void setLooping(bool looping) = 0;
 	virtual bool isLooping() const = 0;
 	virtual bool isStatic() const = 0;

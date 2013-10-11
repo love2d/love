@@ -39,6 +39,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, valid(false)
 	, pitch(1.0f)
 	, volume(1.0f)
+	, relativePosition(false)
 	, looping(false)
 	, paused(false)
 	, minVolume(0.0f)
@@ -68,6 +69,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, valid(false)
 	, pitch(1.0f)
 	, volume(1.0f)
+	, relativePosition(false)
 	, looping(false)
 	, paused(false)
 	, minVolume(0.0f)
@@ -402,6 +404,19 @@ void Source::getDirection(float *v) const
 		setFloatv(v, direction);
 }
 
+void Source::setRelativePosition(bool relative)
+{
+	if (valid)
+		alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
+
+	relativePosition = relative;
+}
+
+bool Source::hasRelativePosition() const
+{
+	return relativePosition;
+}
+
 void Source::setLooping(bool looping)
 {
 	if (valid && type == TYPE_STATIC)
@@ -535,6 +550,7 @@ void Source::reset()
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
 	alSourcei(source, AL_LOOPING, isStatic() && isLooping() ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_SOURCE_RELATIVE, relativePosition ? AL_TRUE : AL_FALSE);
 }
 
 void Source::setFloatv(float *dst, const float *src) const

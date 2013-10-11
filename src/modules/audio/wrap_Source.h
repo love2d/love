@@ -47,6 +47,8 @@ int w_Source_setVelocity(lua_State *L);
 int w_Source_getVelocity(lua_State *L);
 int w_Source_setDirection(lua_State *L);
 int w_Source_getDirection(lua_State *L);
+int w_Source_setRelativePosition(lua_State *L);
+int w_Source_hasRelativePosition(lua_State *L);
 int w_Source_setLooping(lua_State *L);
 int w_Source_isLooping(lua_State *L);
 int w_Source_isStopped(lua_State *L);

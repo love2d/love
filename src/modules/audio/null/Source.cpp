@@ -135,6 +135,16 @@ void Source::getDirection(float *) const
 {
 }
 
+void Source::setRelativePosition(bool relative)
+{
+	relativePosition = relative;
+}
+
+bool Source::hasRelativePosition() const
+{
+	return relativePosition;
+}
+
 void Source::setLooping(bool looping)
 {
 	this->looping = looping;

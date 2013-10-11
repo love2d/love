@@ -78,6 +78,8 @@ public:
 	virtual void getVelocity(float *v) const;
 	virtual void setDirection(float *v);
 	virtual void getDirection(float *v) const;
+	virtual void setRelativePosition(bool relative);
+	virtual bool hasRelativePosition() const;
 	void setLooping(bool looping);
 	bool isLooping() const;
 	bool isStatic() const;
@@ -126,6 +128,7 @@ private:
 	float position[3];
 	float velocity[3];
 	float direction[3];
+	bool relativePosition;
 	bool looping;
 	bool paused;
 	float minVolume;
