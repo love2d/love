@@ -74,6 +74,14 @@ public:
 	void insertControlPoint(const Vector &point, int pos = -1);
 
 	/**
+	 * @returns Number of control points.
+	 **/
+	size_t getControlPointCount() const
+	{
+		return controlPoints.size();
+	}
+
+	/**
 	 * Move the curve.
 	 * @param t Translation vector.
 	 */
