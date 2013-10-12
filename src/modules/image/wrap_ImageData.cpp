@@ -145,9 +145,6 @@ static int w_ImageData_mapPixelUnsafe(lua_State *L)
 	if (!(t->inside(sx, sy) && t->inside(sx+w-1, sy+h-1)))
 		return luaL_error(L, "Invalid rectangle dimensions.");
 
-	// Default pixel component values (r, g, b, a.)
-	const unsigned char pixel_defaults[4] = {0, 0, 0, 255};
-
 	// Cache-friendlier loop. :)
 	for (int y = sy; y < sy+h; y++)
 	{
@@ -172,22 +169,17 @@ static int w_ImageData_mapPixelUnsafe(lua_State *L)
 			for (int i = 0; i < 4; i++)
 			{
 				int ttype = lua_type(L, -4 + i);
-				switch (ttype)
-				{
-				case LUA_TNUMBER:
+
+				if (ttype == LUA_TNUMBER)
 					parray[i] = (unsigned char) lua_tonumber(L, -4 + i);
-					break;
-				case LUA_TNONE:
-				case LUA_TNIL:
-					parray[i] = pixel_defaults[i];
-					break;
-						
-				default:
-					// Level 2 because this is function will be wrapped.
+				else if (i == 3 && (ttype == LUA_TNONE || ttype == LUA_TNIL))
+					parray[i] = 255; // Alpha component defaults to 255.
+				else
+					// Error (level 2 because this is function will be wrapped.)
 					return luax_retnumbererror(L, 2, i + 1, ttype);
-				}
 			}
 
+			// Pop return values.
 			lua_pop(L, 4);
 
 			// We're locking the entire function, instead of each setPixel call.
