@@ -70,8 +70,8 @@ public:
 	 **/
 	virtual ~Image();
 
-	float getWidth() const;
-	float getHeight() const;
+	int getWidth() const;
+	int getHeight() const;
 
 	const Vertex *getVertices() const;
 
@@ -166,16 +166,16 @@ private:
 	love::image::CompressedData *cdata;
 
 	// Width and height of the hardware texture.
-	float width, height;
+	int width, height;
+
+	// Real dimensions of the texture, if it was auto-padded to POT size.
+	int paddedWidth, paddedHeight;
 
 	// OpenGL texture identifier.
 	GLuint texture;
 
 	// The source vertices of the image.
 	Vertex vertices[4];
-
-	// The scale applied to texcoords for NPOT images without NPOT support.
-	love::Vector texCoordScale;
 
 	// Mipmap texture LOD bias (sharpness) value.
 	float mipmapSharpness;
@@ -198,7 +198,7 @@ private:
 
 	void preload();
 
-	void uploadTexturePadded(float p2width, float p2height);
+	void uploadTexturePadded();
 	void uploadTexture();
 
 	void uploadCompressedMipmaps();

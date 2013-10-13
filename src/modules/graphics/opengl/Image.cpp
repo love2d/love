@@ -39,10 +39,11 @@ float Image::defaultMipmapSharpness = 0.0f;
 Image::Image(love::image::ImageData *data)
 	: data(data)
 	, cdata(0)
-	, width((float)(data->getWidth()))
-	, height((float)(data->getHeight()))
+	, width(data->getWidth())
+	, height(data->getHeight())
+	, paddedWidth(width)
+	, paddedHeight(height)
 	, texture(0)
-	, texCoordScale(1.0, 1.0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(false)
@@ -55,10 +56,11 @@ Image::Image(love::image::ImageData *data)
 Image::Image(love::image::CompressedData *cdata)
 	: data(0)
 	, cdata(cdata)
-	, width((float)(cdata->getWidth(0)))
-	, height((float)(cdata->getHeight(0)))
+	, width(cdata->getWidth(0))
+	, height(cdata->getHeight(0))
+	, paddedWidth(width)
+	, paddedHeight(height)
 	, texture(0)
-	, texCoordScale(1.0, 1.0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(true)
@@ -77,12 +79,12 @@ Image::~Image()
 	unload();
 }
 
-float Image::getWidth() const
+int Image::getWidth() const
 {
 	return width;
 }
 
-float Image::getHeight() const
+int Image::getHeight() const
 {
 	return height;
 }
@@ -122,19 +124,19 @@ void Image::predraw() const
 {
 	bind();
 
-	if (texCoordScale.x < 1.0f || texCoordScale.y < 1.0f)
+	if (width != paddedWidth || height != paddedHeight)
 	{
 		// NPOT image padded to POT size, so the texcoords should be scaled.
 		glMatrixMode(GL_TEXTURE);
 		glPushMatrix();
-		glScalef(texCoordScale.x, texCoordScale.y, 0.0f);
+		glScalef(float(width) / float(paddedWidth), float(height) / float(paddedHeight), 0.0f);
 		glMatrixMode(GL_MODELVIEW);
 	}
 }
 
 void Image::postdraw() const
 {
-	if (texCoordScale.x < 1.0f || texCoordScale.y < 1.0f)
+	if (width != paddedWidth || height != paddedHeight)
 	{
 		glMatrixMode(GL_TEXTURE);
 		glPopMatrix();
@@ -310,10 +312,10 @@ void Image::preload()
 	vertices[0].x = 0;
 	vertices[0].y = 0;
 	vertices[1].x = 0;
-	vertices[1].y = height;
-	vertices[2].x = width;
-	vertices[2].y = height;
-	vertices[3].x = width;
+	vertices[1].y = (float) height;
+	vertices[2].x = (float) width;
+	vertices[2].y = (float) height;
+	vertices[3].x = (float) width;
 	vertices[3].y = 0;
 
 	vertices[0].s = 0;
@@ -363,25 +365,22 @@ bool Image::loadVolatile()
 	gl.setTextureWrap(wrap);
 	setMipmapSharpness(mipmapSharpness);
 
-	float texwidth = width;
-	float texheight = height;
+	paddedWidth = width;
+	paddedHeight = height;
 
 	if (!hasNpot())
 	{
 		// NPOT textures will be padded to POT dimensions if necessary.
-		texwidth = next_p2(width);
-		texheight = next_p2(height);
+		paddedWidth = next_p2(width);
+		paddedHeight = next_p2(height);
 	}
 
 	// Use a default texture if the size is too big for the system.
-	if (texwidth > gl.getMaxTextureSize() || texheight > gl.getMaxTextureSize())
+	if (paddedWidth > gl.getMaxTextureSize() || paddedHeight > gl.getMaxTextureSize())
 	{
 		uploadDefaultTexture();
 		return true;
 	}
-
-	texCoordScale.x = width / texwidth;
-	texCoordScale.y = height / texheight;
 
 	// Mutex lock will potentially cover texture loading and mipmap creation.
 	love::thread::EmptyLock lock;
@@ -390,10 +389,10 @@ bool Image::loadVolatile()
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
-	if (hasNpot() || (texwidth == width && texheight == height))
+	if (hasNpot() || (width == paddedWidth && height == paddedHeight))
 		uploadTexture();
 	else
-		uploadTexturePadded(texwidth, texheight);
+		uploadTexturePadded();
 
 	GLenum glerr = glGetError();
 	if (glerr != GL_NO_ERROR)
@@ -406,7 +405,7 @@ bool Image::loadVolatile()
 	return true;
 }
 
-void Image::uploadTexturePadded(float p2width, float p2height)
+void Image::uploadTexturePadded()
 {
 	if (isCompressed() && cdata)
 	{
@@ -419,8 +418,8 @@ void Image::uploadTexturePadded(float p2width, float p2height)
 		glTexImage2D(GL_TEXTURE_2D,
 		             0,
 		             GL_RGBA8,
-		             (GLsizei)p2width,
-		             (GLsizei)p2height,
+		             (GLsizei)paddedWidth,
+		             (GLsizei)paddedHeight,
 		             0,
 		             GL_RGBA,
 		             GL_UNSIGNED_BYTE,
@@ -481,37 +480,26 @@ bool Image::refresh()
 	if (texture == 0)
 		return false;
 
-	while (glGetError() != GL_NO_ERROR); // clear errors
+	if (usingDefaultTexture)
+	{
+		uploadDefaultTexture();
+		return true;
+	}
 
 	// We want this lock to potentially cover mipmap creation as well.
 	love::thread::EmptyLock lock;
 
 	bind();
 
-	if (isCompressed() && cdata)
-	{
-		GLenum format = getCompressedFormat(cdata->getFormat());
-		glCompressedTexSubImage2DARB(GL_TEXTURE_2D,
-		                             0,
-		                             0, 0,
-		                             cdata->getWidth(0),
-		                             cdata->getHeight(0),
-		                             format,
-		                             GLsizei(cdata->getSize(0)),
-		                             cdata->getData(0));
-	}
-	else if (data)
-	{
+	if (data && !isCompressed())
 		lock.setLock(data->getMutex());
-		glTexSubImage2D(GL_TEXTURE_2D,
-		                0,
-		                0, 0,
-		                (GLsizei)width,
-		                (GLsizei)height,
-		                GL_RGBA,
-		                GL_UNSIGNED_BYTE,
-		                data->getData());
-	}
+
+	while (glGetError() != GL_NO_ERROR); // Clear errors.
+
+	if (hasNpot() || (width == paddedWidth && height == paddedHeight))
+		uploadTexture();
+	else
+		uploadTexturePadded();
 
 	if (glGetError() != GL_NO_ERROR)
 		uploadDefaultTexture();

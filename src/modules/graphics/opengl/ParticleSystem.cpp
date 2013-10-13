@@ -107,8 +107,8 @@ ParticleSystem::ParticleSystem(Image *image, uint32 size)
 	, spinStart(0)
 	, spinEnd(0)
 	, spinVariation(0)
-	, offsetX(image->getWidth()*0.5f)
-	, offsetY(image->getHeight()*0.5f)
+	, offsetX(float(image->getWidth())*0.5f)
+	, offsetY(float(image->getHeight())*0.5f)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
