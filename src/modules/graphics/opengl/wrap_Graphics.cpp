@@ -1017,6 +1017,10 @@ int w_draw(lua_State *L)
 		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
 		startidx = 3;
 	}
+	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
+	{
+		return luax_typerror(L, 2, "Quad");
+	}
 	else
 	{
 		drawable = luax_checktype<Drawable>(L, 1, "Drawable", GRAPHICS_DRAWABLE_T);

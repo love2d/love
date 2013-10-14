@@ -44,6 +44,8 @@ int w_SpriteBatch_add(lua_State *L)
 		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
 		startidx = 3;
 	}
+	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
+		return luax_typerror(L, 2, "Quad");
 
 	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
 	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
@@ -80,6 +82,8 @@ int w_SpriteBatch_set(lua_State *L)
 		quad = luax_totype<Quad>(L, 3, "Quad", GRAPHICS_QUAD_T);
 		startidx = 4;
 	}
+	else if (lua_isnil(L, 3) && !lua_isnoneornil(L, 4))
+		return luax_typerror(L, 3, "Quad");
 
 	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
 	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
