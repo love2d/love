@@ -29,13 +29,23 @@
 
 namespace
 {
-	std::string getDriveRoot(const std::string &input)
+	size_t getDriveDelim(const std::string &input)
 	{
 		for (size_t i = 0; i < input.size(); ++i)
 			if (input[i] == '/' || input[i] == '\\')
-				return input.substr(0, i+1);
+				return i;
 		// Something's horribly wrong
-		return "";
+		return 0;
+	}
+
+	std::string getDriveRoot(const std::string &input)
+	{
+		return input.substr(0, getDriveDelim(input)+1);
+	}
+
+	std::string skipDriveRoot(const std::string &input)
+	{
+		return input.substr(getDriveDelim(input)+1);
 	}
 }
 
@@ -165,17 +175,11 @@ bool Filesystem::setupWriteDirectory()
 
 	// Set the appdata folder as writable directory.
 	// (We must create the save folder before mounting it).
-	if (!PHYSFS_setWriteDir(getDriveRoot(getAppdataDirectory()).c_str()))
+	if (!PHYSFS_setWriteDir(getDriveRoot(save_path_full).c_str()))
 		return false;
 
 	// Create the save folder. (We're now "at" %APPDATA%).
-	bool success = false;
-	if (fused)
-		success = mkdir(save_path_full.c_str());
-	else
-		success = mkdir(save_path_full.c_str());
-
-	if (!success)
+	if (!mkdir(skipDriveRoot(save_path_full).c_str()))
 	{
 		// Clear the write directory in case of error.
 		PHYSFS_setWriteDir(0);
