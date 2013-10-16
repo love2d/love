@@ -102,6 +102,7 @@ public:
 	virtual void setMaxDistance(float distance) = 0;
 	virtual float getMaxDistance() const = 0;
 
+	virtual int getChannels() const = 0;
 	virtual Type getType() const;
 
 	static bool getConstant(const char *in, Type &out);

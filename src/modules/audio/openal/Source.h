@@ -95,6 +95,7 @@ public:
 	virtual float getRolloffFactor() const;
 	virtual void setMaxDistance(float distance);
 	virtual float getMaxDistance() const;
+	virtual int getChannels() const;
 
 	void playAtomic();
 	void stopAtomic();
@@ -154,6 +155,8 @@ private:
 
 	float offsetSamples;
 	float offsetSeconds;
+
+	int channels;
 
 	love::sound::Decoder *decoder;
 

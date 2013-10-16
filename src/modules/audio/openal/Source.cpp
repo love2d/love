@@ -50,6 +50,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
+	, channels(soundData->getChannels())
 	, decoder(0)
 	, toLoop(0)
 {
@@ -81,6 +82,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
+	, channels(decoder->getChannels())
 	, decoder(decoder)
 	, toLoop(0)
 {
@@ -752,6 +754,11 @@ float Source::getMaxDistance() const
 
 	// In case the Source isn't playing.
 	return this->maxDistance;
+}
+
+int Source::getChannels() const
+{
+	return channels;
 }
 
 } // openal

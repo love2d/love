@@ -224,6 +224,11 @@ float Source::getMaxDistance() const
 	return this->maxDistance;
 }
 
+int Source::getChannels() const
+{
+	return 2;
+}
+
 } // null
 } // audio
 } // love

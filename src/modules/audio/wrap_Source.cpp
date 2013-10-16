@@ -324,6 +324,13 @@ int w_Source_getRolloff(lua_State *L)
 	return 1;
 }
 
+int w_Source_getChannels(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	lua_pushinteger(L, t->getChannels());
+	return 1;
+}
+
 int w_Source_getType(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -377,6 +384,7 @@ static const luaL_Reg functions[] =
 	{ "setRolloff", w_Source_setRolloff},
 	{ "getRolloff", w_Source_getRolloff},
 
+	{ "getChannels", w_Source_getChannels },
 	{ "getType", w_Source_getType },
 
 	{ 0, 0 }

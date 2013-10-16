@@ -77,6 +77,7 @@ public:
 	virtual float getRolloffFactor() const;
 	virtual void setMaxDistance(float distance);
 	virtual float getMaxDistance() const;
+	virtual int getChannels() const;
 
 private:
 
