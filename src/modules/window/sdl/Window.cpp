@@ -69,21 +69,21 @@ Window::~Window()
 Window::_currentMode::_currentMode()
 	: width(800)
 	, height(600)
-	, flags()
+	, attribs()
 	, icon(0)
 {
 }
 
-bool Window::setWindow(int width, int height, WindowFlags *flags)
+bool Window::setWindow(int width, int height, WindowAttributes *attribs)
 {
 	graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
 	if (gfx)
 		gfx->unSetMode();
 
-	WindowFlags f;
+	WindowAttributes f;
 
-	if (flags)
-		f = *flags;
+	if (attribs)
+		f = *attribs;
 
 	f.minwidth = std::max(f.minwidth, 1);
 	f.minheight = std::max(f.minheight, 1);
@@ -130,7 +130,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 		wflags &= (SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS);
 
 		if (sdlflags != wflags || width != curMode.width || height != curMode.height
-			|| f.display != curdisplay || f.fsaa != curMode.flags.fsaa)
+			|| f.display != curdisplay || f.fsaa != curMode.attribs.fsaa)
 		{
 			SDL_DestroyWindow(window);
 			window = 0;
@@ -188,7 +188,7 @@ bool Window::setWindow(int width, int height, WindowFlags *flags)
 
 	created = true;
 
-	updateWindowFlags(f);
+	updateAttributes(f);
 
 	if (gfx)
 		gfx->setMode(curMode.width, curMode.height);
@@ -256,8 +256,8 @@ bool Window::setContext(int fsaa, bool vsync)
 		fsaa = (buffers > 0) ? samples : 0;
 	}
 
-	curMode.flags.fsaa = fsaa;
-	curMode.flags.vsync = SDL_GL_GetSwapInterval() != 0;
+	curMode.attribs.fsaa = fsaa;
+	curMode.attribs.vsync = SDL_GL_GetSwapInterval() != 0;
 
 	return true;
 }
@@ -277,7 +277,7 @@ void Window::setWindowGLAttributes(int fsaa) const
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
 }
 
-void Window::updateWindowFlags(const WindowFlags &newflags)
+void Window::updateAttributes(const WindowAttributes &newattribs)
 {
 	Uint32 wflags = SDL_GetWindowFlags(window);
 
@@ -286,44 +286,44 @@ void Window::updateWindowFlags(const WindowFlags &newflags)
 
 	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
 	{
-		curMode.flags.fullscreen = true;
-		curMode.flags.fstype = FULLSCREEN_TYPE_DESKTOP;
+		curMode.attribs.fullscreen = true;
+		curMode.attribs.fstype = FULLSCREEN_TYPE_DESKTOP;
 	}
 	else if ((wflags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
 	{
-		curMode.flags.fullscreen = true;
-		curMode.flags.fstype = FULLSCREEN_TYPE_NORMAL;
+		curMode.attribs.fullscreen = true;
+		curMode.attribs.fstype = FULLSCREEN_TYPE_NORMAL;
 	}
 	else
 	{
-		curMode.flags.fullscreen = false;
-		curMode.flags.fstype = newflags.fstype;
+		curMode.attribs.fullscreen = false;
+		curMode.attribs.fstype = newattribs.fstype;
 	}
 
 	// The min width/height is set to 0 internally in SDL when in fullscreen.
-	if (curMode.flags.fullscreen)
+	if (curMode.attribs.fullscreen)
 	{
-		curMode.flags.minwidth = newflags.minwidth;
-		curMode.flags.minheight = newflags.minheight;
+		curMode.attribs.minwidth = newattribs.minwidth;
+		curMode.attribs.minheight = newattribs.minheight;
 	}
 	else
-		SDL_GetWindowMinimumSize(window, &curMode.flags.minwidth, &curMode.flags.minheight);
+		SDL_GetWindowMinimumSize(window, &curMode.attribs.minwidth, &curMode.attribs.minheight);
 
-	curMode.flags.resizable = (wflags & SDL_WINDOW_RESIZABLE) != 0;
-	curMode.flags.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
-	curMode.flags.centered = newflags.centered;
-	curMode.flags.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+	curMode.attribs.resizable = (wflags & SDL_WINDOW_RESIZABLE) != 0;
+	curMode.attribs.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
+	curMode.attribs.centered = newattribs.centered;
+	curMode.attribs.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
 }
 
-void Window::getWindow(int &width, int &height, WindowFlags &flags)
+void Window::getWindow(int &width, int &height, WindowAttributes &attribs)
 {
 	// Window position may be different from creation - update display index.
 	if (window)
-		curMode.flags.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+		curMode.attribs.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
 
 	width = curMode.width;
 	height = curMode.height;
-	flags = curMode.flags;
+	attribs = curMode.attribs;
 }
 
 bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
@@ -331,9 +331,9 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (!window)
 		return false;
 
-	WindowFlags newflags = curMode.flags;
-	newflags.fullscreen = fullscreen;
-	newflags.fstype = fstype;
+	WindowAttributes newattribs = curMode.attribs;
+	newattribs.fullscreen = fullscreen;
+	newattribs.fstype = fstype;
 
 	Uint32 sdlflags = 0;
 
@@ -357,7 +357,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
 	{
 		SDL_GL_MakeCurrent(window, context);
-		updateWindowFlags(newflags);
+		updateAttributes(newattribs);
 		return true;
 	}
 
@@ -366,7 +366,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 
 bool Window::setFullscreen(bool fullscreen)
 {
-	return setFullscreen(fullscreen, curMode.flags.fstype);
+	return setFullscreen(fullscreen, curMode.attribs.fstype);
 }
 
 int Window::getDisplayCount() const

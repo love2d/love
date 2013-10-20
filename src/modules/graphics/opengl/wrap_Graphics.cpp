@@ -27,8 +27,6 @@
 #include "scripts/graphics.lua.h"
 #include <cassert>
 
-using love::window::WindowFlags;
-
 namespace love
 {
 namespace graphics

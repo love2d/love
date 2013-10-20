@@ -38,7 +38,7 @@ void Window::swapBuffers()
 {
 }
 
-WindowFlags::WindowFlags()
+WindowAttributes::WindowAttributes()
 	: fullscreen(false)
 	, fstype(Window::FULLSCREEN_TYPE_NORMAL)
 	, vsync(true)
@@ -61,6 +61,32 @@ bool Window::getConstant(Window::FullscreenType in, const char *&out)
 {
 	return fullscreenTypes.find(in, out);
 }
+
+bool Window::getConstant(const char *in, Window::Attribute &out)
+{
+	return attributes.find(in, out);
+}
+
+bool Window::getConstant(Window::Attribute in, const char *&out)
+{
+	return attributes.find(in, out);
+}
+
+StringMap<Window::Attribute, Window::ATTRIB_MAX_ENUM>::Entry Window::attributeEntries[] =
+{
+	{"fullscreen", ATTRIB_FULLSCREEN},
+	{"fullscreentype", ATTRIB_FULLSCREEN_TYPE},
+	{"vsync", ATTRIB_VSYNC},
+	{"fsaa", ATTRIB_FSAA},
+	{"resizable", ATTRIB_RESIZABLE},
+	{"minwidth", ATTRIB_MIN_WIDTH},
+	{"minheight", ATTRIB_MIN_HEIGHT},
+	{"borderless", ATTRIB_BORDERLESS},
+	{"centered", ATTRIB_CENTERED},
+	{"display", ATTRIB_DISPLAY}
+};
+
+StringMap<Window::Attribute, Window::ATTRIB_MAX_ENUM> Window::attributes(Window::attributeEntries, sizeof(Window::attributeEntries));
 
 StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
 {

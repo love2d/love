@@ -31,8 +31,6 @@
 #include <algorithm>
 #include <iterator>
 
-using love::window::WindowFlags;
-
 namespace love
 {
 namespace graphics

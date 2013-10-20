@@ -34,6 +34,13 @@ int w_getDisplayCount(lua_State *L)
 	return 1;
 }
 
+static const char *attribName(Window::Attribute attrib)
+{
+	const char *name = nullptr;
+	Window::getConstant(attrib, name);
+	return name;
+}
+
 int w_setMode(lua_State *L)
 {
 	int w = luaL_checkint(L, 1);
@@ -47,83 +54,99 @@ int w_setMode(lua_State *L)
 
 	luaL_checktype(L, 3, LUA_TTABLE);
 
-	WindowFlags flags;
+	// We want to error for invalid / misspelled window attributes.
+	lua_pushnil(L);
+	while (lua_next(L, 3))
+	{
+		if (lua_type(L, -2) != LUA_TSTRING)
+			return luax_typerror(L, -2, "string");
 
-	lua_getfield(L, 3, "fullscreentype");
+		const char *key = luaL_checkstring(L, -2);
+		Window::Attribute attrib;
+
+		if (!Window::getConstant(key, attrib))
+			return luaL_error(L, "Invalid window attribute: %s", key);
+
+		lua_pop(L, 1);
+	}
+
+	WindowAttributes attribs;
+
+	lua_getfield(L, 3, attribName(Window::ATTRIB_FULLSCREEN_TYPE));
 	if (!lua_isnoneornil(L, -1))
 	{
 		const char *typestr = luaL_checkstring(L, -1);
 
-		if (!Window::getConstant(typestr, flags.fstype))
+		if (!Window::getConstant(typestr, attribs.fstype))
 			return luaL_error(L, "Invalid fullscreen type: %s", typestr);
 	}
 	else
 	{
 		// Default to "normal" fullscreen.
-		flags.fstype = Window::FULLSCREEN_TYPE_NORMAL;
+		attribs.fstype = Window::FULLSCREEN_TYPE_NORMAL;
 	}
 	lua_pop(L, 1);
 
-	flags.fullscreen = luax_boolflag(L, 3, "fullscreen", false);
-	flags.vsync = luax_boolflag(L, 3, "vsync", true);
-	flags.fsaa = luax_intflag(L, 3, "fsaa", 0);
-	flags.resizable = luax_boolflag(L, 3, "resizable", false);
-	flags.minwidth = luax_intflag(L, 3, "minwidth", 1);
-	flags.minheight = luax_intflag(L, 3, "minheight", 1);
-	flags.borderless = luax_boolflag(L, 3, "borderless", false);
-	flags.centered = luax_boolflag(L, 3, "centered", true);
-	flags.display = luax_intflag(L, 3, "display", 1);
+	attribs.fullscreen = luax_boolflag(L, 3, attribName(Window::ATTRIB_FULLSCREEN), false);
+	attribs.vsync = luax_boolflag(L, 3, attribName(Window::ATTRIB_VSYNC), true);
+	attribs.fsaa = luax_intflag(L, 3, attribName(Window::ATTRIB_FSAA), 0);
+	attribs.resizable = luax_boolflag(L, 3, attribName(Window::ATTRIB_RESIZABLE), false);
+	attribs.minwidth = luax_intflag(L, 3, attribName(Window::ATTRIB_MIN_WIDTH), 1);
+	attribs.minheight = luax_intflag(L, 3, attribName(Window::ATTRIB_MIN_HEIGHT), 1);
+	attribs.borderless = luax_boolflag(L, 3, attribName(Window::ATTRIB_BORDERLESS), false);
+	attribs.centered = luax_boolflag(L, 3, attribName(Window::ATTRIB_CENTERED), true);
+	attribs.display = luax_intflag(L, 3, attribName(Window::ATTRIB_DISPLAY), 1);
 
 	// Display index is 1-based in Lua and 0-based internally.
-	flags.display--;
+	attribs.display--;
 
-	EXCEPT_GUARD(luax_pushboolean(L, instance->setWindow(w, h, &flags));)
+	EXCEPT_GUARD(luax_pushboolean(L, instance->setWindow(w, h, &attribs));)
 	return 1;
 }
 
 int w_getMode(lua_State *L)
 {
 	int w, h;
-	WindowFlags flags;
-	instance->getWindow(w, h, flags);
+	WindowAttributes attribs;
+	instance->getWindow(w, h, attribs);
 	lua_pushnumber(L, w);
 	lua_pushnumber(L, h);
 
 	lua_newtable(L);
 
 	const char *fstypestr = "normal";
-	Window::getConstant(flags.fstype, fstypestr);
+	Window::getConstant(attribs.fstype, fstypestr);
 
 	lua_pushstring(L, fstypestr);
-	lua_setfield(L, -2, "fullscreentype");
+	lua_setfield(L, -2, attribName(Window::ATTRIB_FULLSCREEN_TYPE));
 
-	luax_pushboolean(L, flags.fullscreen);
-	lua_setfield(L, -2, "fullscreen");
+	luax_pushboolean(L, attribs.fullscreen);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_FULLSCREEN));
 
-	luax_pushboolean(L, flags.vsync);
-	lua_setfield(L, -2, "vsync");
+	luax_pushboolean(L, attribs.vsync);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_VSYNC));
 
-	lua_pushinteger(L, flags.fsaa);
-	lua_setfield(L, -2, "fsaa");
+	lua_pushinteger(L, attribs.fsaa);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_FSAA));
 
-	luax_pushboolean(L, flags.resizable);
-	lua_setfield(L, -2, "resizable");
+	luax_pushboolean(L, attribs.resizable);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_RESIZABLE));
 
-	lua_pushinteger(L, flags.minwidth);
-	lua_setfield(L, -2, "minwidth");
+	lua_pushinteger(L, attribs.minwidth);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_MIN_WIDTH));
 
-	lua_pushinteger(L, flags.minheight);
-	lua_setfield(L, -2, "minheight");
+	lua_pushinteger(L, attribs.minheight);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_MIN_HEIGHT));
 
-	luax_pushboolean(L, flags.borderless);
-	lua_setfield(L, -2, "borderless");
+	luax_pushboolean(L, attribs.borderless);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_BORDERLESS));
 
-	luax_pushboolean(L, flags.centered);
-	lua_setfield(L, -2, "centered");
+	luax_pushboolean(L, attribs.centered);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_CENTERED));
 
 	// Display index is 0-based internally and 1-based in Lua.
-	lua_pushinteger(L, flags.display + 1);
-	lua_setfield(L, -2, "display");
+	lua_pushinteger(L, attribs.display + 1);
+	lua_setfield(L, -2, attribName(Window::ATTRIB_DISPLAY));
 
 	return 3;
 }
@@ -179,14 +202,14 @@ int w_setFullscreen(lua_State *L)
 int w_getFullscreen(lua_State *L)
 {
 	int w, h;
-	WindowFlags flags;
-	instance->getWindow(w, h, flags);
+	WindowAttributes attribs;
+	instance->getWindow(w, h, attribs);
 
 	const char *typestr;
-	if (!Window::getConstant(flags.fstype, typestr))
+	if (!Window::getConstant(attribs.fstype, typestr))
 		luaL_error(L, "Unknown fullscreen type.");
 
-	luax_pushboolean(L, flags.fullscreen);
+	luax_pushboolean(L, attribs.fullscreen);
 	lua_pushstring(L, typestr);
 	return 2;
 }

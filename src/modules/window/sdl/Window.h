@@ -41,8 +41,8 @@ public:
 	Window();
 	~Window();
 
-	bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0);
-	void getWindow(int &width, int &height, WindowFlags &flags);
+	bool setWindow(int width = 800, int height = 600, WindowAttributes *attribs = 0);
+	void getWindow(int &width, int &height, WindowAttributes &attribs);
 
 	bool setFullscreen(bool fullscreen, FullscreenType fstype);
 	bool setFullscreen(bool fullscreen);
@@ -91,8 +91,8 @@ private:
 	bool setContext(int fsaa, bool vsync);
 	void setWindowGLAttributes(int fsaa) const;
 
-	// Update the window flags based on the window's actual state.
-	void updateWindowFlags(const WindowFlags &newflags);
+	// Update the saved window attribs based on the window's actual state.
+	void updateAttributes(const WindowAttributes &newattribs);
 
 	std::string windowTitle;
 
@@ -102,7 +102,7 @@ private:
 
 		int width;
 		int height;
-		WindowFlags flags;
+		WindowAttributes attribs;
 		love::image::ImageData *icon;
 
 	} curMode;

@@ -47,8 +47,6 @@
 #include "Shader.h"
 #include "Mesh.h"
 
-using love::window::WindowFlags;
-
 namespace love
 {
 namespace graphics
