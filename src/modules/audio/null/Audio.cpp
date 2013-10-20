@@ -27,7 +27,8 @@ namespace audio
 namespace null
 {
 
-Audio::Audio() : distanceModel(DISTANCE_NONE)
+Audio::Audio()
+	: distanceModel(DISTANCE_NONE)
 {
 }
 

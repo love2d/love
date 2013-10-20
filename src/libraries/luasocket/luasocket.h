@@ -28,19 +28,20 @@ namespace love
 {
 namespace luasocket
 {
-	int __open(lua_State * L);
 
-	// Loaders for all lua files. We want to be able
-	// to load these dynamically. (Identical in the LuaSocket 
-	// documentation. These functions wrap the parsing of code, etc).
-	int __open_luasocket_socket(lua_State * L);
-	int __open_luasocket_ftp(lua_State * L);
-	int __open_luasocket_http(lua_State * L);
-	int __open_luasocket_ltn12(lua_State * L);
-	int __open_luasocket_mime(lua_State * L);
-	int __open_luasocket_smtp(lua_State * L);
-	int __open_luasocket_tp(lua_State * L);
-	int __open_luasocket_url(lua_State * L);
+int __open(lua_State * L);
+
+// Loaders for all lua files. We want to be able
+// to load these dynamically. (Identical in the LuaSocket 
+// documentation. These functions wrap the parsing of code, etc).
+int __open_luasocket_socket(lua_State * L);
+int __open_luasocket_ftp(lua_State * L);
+int __open_luasocket_http(lua_State * L);
+int __open_luasocket_ltn12(lua_State * L);
+int __open_luasocket_mime(lua_State * L);
+int __open_luasocket_smtp(lua_State * L);
+int __open_luasocket_tp(lua_State * L);
+int __open_luasocket_url(lua_State * L);
 
 } // luasocket
 } // love

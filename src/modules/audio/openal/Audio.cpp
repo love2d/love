@@ -68,7 +68,8 @@ void Audio::PoolThread::setFinish()
 	finish = true;
 }
 
-Audio::Audio() : distanceModel(DISTANCE_INVERSE_CLAMPED)
+Audio::Audio()
+	: distanceModel(DISTANCE_INVERSE_CLAMPED)
 {
 	// Passing zero for default device.
 	device = alcOpenDevice(0);
