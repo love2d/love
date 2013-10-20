@@ -197,9 +197,9 @@ public:
 
 	/**
 	 * Creates a directory. Write dir must be set.
-	 * @param file The directory to create.
+	 * @param dir The directory to create.
 	 **/
-	bool mkdir(const char *file);
+	bool createDirectory(const char *dir);
 
 	/**
 	 * Removes a file (or directory).
@@ -266,7 +266,7 @@ public:
 	 * This "native" method returns a table of all
 	 * files in a given directory.
 	 **/
-	int enumerate(lua_State *L);
+	int getDirectoryItems(lua_State *L);
 
 	/**
 	 * Gets the last modification time of a file, in seconds

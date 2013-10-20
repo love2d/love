@@ -179,7 +179,7 @@ bool Filesystem::setupWriteDirectory()
 		return false;
 
 	// Create the save folder. (We're now "at" %APPDATA%).
-	if (!mkdir(skipDriveRoot(save_path_full).c_str()))
+	if (!createDirectory(skipDriveRoot(save_path_full).c_str()))
 	{
 		// Clear the write directory in case of error.
 		PHYSFS_setWriteDir(0);
@@ -416,12 +416,12 @@ bool Filesystem::isFile(const char *file) const
 	return exists(file) && !isDirectory(file);
 }
 
-bool Filesystem::mkdir(const char *file)
+bool Filesystem::createDirectory(const char *dir)
 {
 	if (PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
 		return false;
 
-	if (!PHYSFS_mkdir(file))
+	if (!PHYSFS_mkdir(dir))
 		return false;
 	return true;
 }
@@ -468,7 +468,7 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 		throw love::Exception("Data could not be written.");
 }
 
-int Filesystem::enumerate(lua_State *L)
+int Filesystem::getDirectoryItems(lua_State *L)
 {
 	const char *dir = luaL_checkstring(L, 1);
 

@@ -246,35 +246,35 @@ int w_getSourceBaseDirectory(lua_State *L)
 int w_exists(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
-	lua_pushboolean(L, instance->exists(arg) ? 1 : 0);
+	luax_pushboolean(L, instance->exists(arg));
 	return 1;
 }
 
 int w_isDirectory(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
-	lua_pushboolean(L, instance->isDirectory(arg) ? 1 : 0);
+	luax_pushboolean(L, instance->isDirectory(arg));
 	return 1;
 }
 
 int w_isFile(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
-	lua_pushboolean(L, instance->isFile(arg) ? 1 : 0);
+	luax_pushboolean(L, instance->isFile(arg));
 	return 1;
 }
 
-int w_mkdir(lua_State *L)
+int w_createDirectory(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
-	lua_pushboolean(L, instance->mkdir(arg) ? 1 : 0);
+	luax_pushboolean(L, instance->createDirectory(arg));
 	return 1;
 }
 
 int w_remove(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
-	lua_pushboolean(L, instance->remove(arg) ? 1 : 0);
+	luax_pushboolean(L, instance->remove(arg));
 	return 1;
 }
 
@@ -355,9 +355,9 @@ int w_append(lua_State *L)
 	return w_write_or_append(L, File::APPEND);
 }
 
-int w_enumerate(lua_State *L)
+int w_getDirectoryItems(lua_State *L)
 {
-	return instance->enumerate(L);
+	return instance->getDirectoryItems(L);
 }
 
 int w_lines(lua_State *L)
@@ -579,12 +579,12 @@ static const luaL_Reg functions[] =
 	{ "exists",  w_exists },
 	{ "isDirectory",  w_isDirectory },
 	{ "isFile",  w_isFile },
-	{ "mkdir",  w_mkdir },
+	{ "createDirectory",  w_createDirectory },
 	{ "remove",  w_remove },
 	{ "read",  w_read },
 	{ "write",  w_write },
 	{ "append", w_append },
-	{ "enumerate",  w_enumerate },
+	{ "getDirectoryItems",  w_getDirectoryItems },
 	{ "lines",  w_lines },
 	{ "load",  w_load },
 	{ "getLastModified", w_getLastModified },
