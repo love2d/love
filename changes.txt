@@ -51,6 +51,9 @@ LOVE 0.9.0 [Baby Inspector]
   * Added Image:getData.
   * Added SoundData:getDuration and SoundData:getSampleCount.
   * Added Source:isPlaying.
+  * Added Source:setRelativePosition and Source:hasRelativePosition.
+  * Added Source:setCone and Source:getCone.
+  * Added Source:getChannels.
   * Added new Channels API for love.thread.
   * Added limited table support to Channel:push.
   * Added Thread:getError.
@@ -77,6 +80,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added window resize and visible events.
   * Added love.window.getDimensions.
   * Added love.window.getIcon.
+  * Added t.window.icon to love.conf.
   * Added love.mousefocus and love.window.hasMouseFocus.
   * Added custom hardware cursors via love.mouse.newCursor. 
   * Added love.mouse.setX/setY.
@@ -137,7 +141,10 @@ LOVE 0.9.0 [Baby Inspector]
   * Moved window-related functions from love.graphics to love.window.
 
   * Renamed love's boot script to 'love.boot', which can be required.
+  * Renamed love.filesystem.mkdir to love.filesystem.createDirectory.
+  * Renamed love.filesystem.enumerate to love.filesystem.getDirectoryItems.
   * Renamed World:setAllowSleeping to World:setSleepingAllowed.
+  * Renamed ChainShape:setPrevVertex to ChainShape:setPreviousVertex.
   * Renamed t.screen to t.window in love.conf.
   * Renamed love.graphics.setCaption to love.window.setTitle.
   * Renamed PixelEffect to Shader (but now with vertex shaders).
@@ -146,6 +153,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Renamed ParticleSystem:setGravity to ParticleSystem:setLinearAcceleration.
   * Renamed ParticleSystem:setLifetime/setParticleLife to setEmitter/ParticleLifetime.
   * Renamed ParticleSystem:count and all getNum* functions to get*Count.
+  * Renamed Source:setDistance to Source:setAttenuationDistances.
   * Renamed SoundData:getBits and Decoder:getBits to SoundData:getBitDepth and Decoder:getBitDepth.
   * Renamed love.mouse.setGrab to love.mouse.setGrabbed.
 
@@ -181,6 +189,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated love.keypressed's second argument to be a boolean indicating key repeat.
   * Updated keyboard key constants for some more modern keyboard keys.
   * Updated window code to use adaptive vsync when available, if vsync is enabled.
+  * updated love.graphics.print's x and y arguments to default to 0.
   * Updated the setFilter and setWrap methods, the second argument is now optional.
   * Updated Font and ParticleSystem rendering code, now more performant.
   * Updated SpriteBatch code, now more performant when adding/setting and (un)binding.
@@ -190,8 +199,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated error messages when sending bad values to Shaders.
   * Updated love.graphics.newParticleSystem to have a default buffer size of 1000.
   * Updated ImageData:setPixel to accept a table and default to 255 alpha.
-  * Updated ImageData:mapPixel to accept optional x,y,w,h arguments.
-  * Updated ImageData:mapPixel to be more efficient.
+  * Updated ImageData:mapPixel, is now more efficient and accepts optional x,y,w,h arguments.
   * Updated love.image memory handling, improves errors and thread-safety.
   * Updated all love object constructors to optionally accept FileData if they accept a filename.
   * Updated allocation for SoundData, it's more efficient and less wasteful.
