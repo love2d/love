@@ -29,6 +29,7 @@
 #include <thread/threads.h>
 
 // C++
+#include <algorithm>
 #include <iostream>
 #include <cstdio>
 

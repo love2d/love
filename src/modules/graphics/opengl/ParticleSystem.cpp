@@ -27,6 +27,7 @@
 #include "OpenGL.h"
 
 // STD
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 
