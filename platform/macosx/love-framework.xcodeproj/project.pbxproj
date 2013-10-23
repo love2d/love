@@ -313,6 +313,16 @@
 		FAF272B816E3D46400CC193A /* threads.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF272B416E3D46400CC193A /* threads.h */; };
 		FAF4376F17F4AC530074F9E2 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF4376D17F4AC530074F9E2 /* Mesh.cpp */; };
 		FAF4377017F4AC530074F9E2 /* Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF4376E17F4AC530074F9E2 /* Mesh.h */; };
+		FAF6704C18184FF800DBDEEA /* wuff.c in Sources */ = {isa = PBXBuildFile; fileRef = FAF6704418184FF800DBDEEA /* wuff.c */; };
+		FAF6704D18184FF800DBDEEA /* wuff.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6704518184FF800DBDEEA /* wuff.h */; };
+		FAF6704E18184FF800DBDEEA /* wuff_config.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6704618184FF800DBDEEA /* wuff_config.h */; };
+		FAF6704F18184FF800DBDEEA /* wuff_convert.c in Sources */ = {isa = PBXBuildFile; fileRef = FAF6704718184FF800DBDEEA /* wuff_convert.c */; };
+		FAF6705018184FF800DBDEEA /* wuff_convert.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6704818184FF800DBDEEA /* wuff_convert.h */; };
+		FAF6705118184FF800DBDEEA /* wuff_internal.c in Sources */ = {isa = PBXBuildFile; fileRef = FAF6704918184FF800DBDEEA /* wuff_internal.c */; };
+		FAF6705218184FF800DBDEEA /* wuff_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6704A18184FF800DBDEEA /* wuff_internal.h */; };
+		FAF6705318184FF800DBDEEA /* wuff_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = FAF6704B18184FF800DBDEEA /* wuff_memory.c */; };
+		FAF670561818501300DBDEEA /* WaveDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF670541818501300DBDEEA /* WaveDecoder.cpp */; };
+		FAF670571818501300DBDEEA /* WaveDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF670551818501300DBDEEA /* WaveDecoder.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -855,6 +865,16 @@
 		FAF272B416E3D46400CC193A /* threads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threads.h; sourceTree = "<group>"; };
 		FAF4376D17F4AC530074F9E2 /* Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mesh.cpp; sourceTree = "<group>"; };
 		FAF4376E17F4AC530074F9E2 /* Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
+		FAF6704418184FF800DBDEEA /* wuff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = wuff.c; sourceTree = "<group>"; };
+		FAF6704518184FF800DBDEEA /* wuff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wuff.h; sourceTree = "<group>"; };
+		FAF6704618184FF800DBDEEA /* wuff_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wuff_config.h; sourceTree = "<group>"; };
+		FAF6704718184FF800DBDEEA /* wuff_convert.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = wuff_convert.c; sourceTree = "<group>"; };
+		FAF6704818184FF800DBDEEA /* wuff_convert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wuff_convert.h; sourceTree = "<group>"; };
+		FAF6704918184FF800DBDEEA /* wuff_internal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = wuff_internal.c; sourceTree = "<group>"; };
+		FAF6704A18184FF800DBDEEA /* wuff_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wuff_internal.h; sourceTree = "<group>"; };
+		FAF6704B18184FF800DBDEEA /* wuff_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = wuff_memory.c; sourceTree = "<group>"; };
+		FAF670541818501300DBDEEA /* WaveDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WaveDecoder.cpp; sourceTree = "<group>"; };
+		FAF670551818501300DBDEEA /* WaveDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveDecoder.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1340,6 +1360,8 @@
 				77234CEE2EFE633537975850 /* Sound.h */,
 				727648E06CD863A2582F798F /* VorbisDecoder.cpp */,
 				4A80315175C5625804AA4A56 /* VorbisDecoder.h */,
+				FAF670541818501300DBDEEA /* WaveDecoder.cpp */,
+				FAF670551818501300DBDEEA /* WaveDecoder.h */,
 			);
 			path = lullaby;
 			sourceTree = "<group>";
@@ -1353,6 +1375,7 @@
 				3AED1DE005A53DDB07902760 /* luasocket */,
 				FA0354691731F3A700284828 /* noise1234 */,
 				36C14C81334735EC54E33637 /* utf8 */,
+				FAF6704318184FF800DBDEEA /* Wuff */,
 			);
 			name = libraries;
 			path = ../../src/libraries;
@@ -1362,11 +1385,11 @@
 			isa = PBXGroup;
 			children = (
 				43A258C229C75C15238E520C /* Decoder.h */,
+				47217E6729AC72E74FF651E3 /* lullaby */,
 				30ED4BB03C5F11254AF12E98 /* Sound.cpp */,
 				23985AB32E7B463A2CB87E2C /* Sound.h */,
 				0C5C6C6E47851D1308411DE6 /* SoundData.cpp */,
 				785D31764A1D6CDE21BC6404 /* SoundData.h */,
-				47217E6729AC72E74FF651E3 /* lullaby */,
 				5CF629B94C7802D446D61C45 /* wrap_Decoder.cpp */,
 				782A153A1E6314CB583250E0 /* wrap_Decoder.h */,
 				385902BD584E7D73154E4EBB /* wrap_Sound.cpp */,
@@ -1896,6 +1919,21 @@
 			path = sdl;
 			sourceTree = "<group>";
 		};
+		FAF6704318184FF800DBDEEA /* Wuff */ = {
+			isa = PBXGroup;
+			children = (
+				FAF6704418184FF800DBDEEA /* wuff.c */,
+				FAF6704518184FF800DBDEEA /* wuff.h */,
+				FAF6704618184FF800DBDEEA /* wuff_config.h */,
+				FAF6704718184FF800DBDEEA /* wuff_convert.c */,
+				FAF6704818184FF800DBDEEA /* wuff_convert.h */,
+				FAF6704918184FF800DBDEEA /* wuff_internal.c */,
+				FAF6704A18184FF800DBDEEA /* wuff_internal.h */,
+				FAF6704B18184FF800DBDEEA /* wuff_memory.c */,
+			);
+			path = Wuff;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1908,6 +1946,7 @@
 				FAF272A716E3D44400CC193A /* LuaThread.h in Headers */,
 				FAF4377017F4AC530074F9E2 /* Mesh.h in Headers */,
 				FAF272A916E3D44400CC193A /* ThreadModule.h in Headers */,
+				FAF6705018184FF800DBDEEA /* wuff_convert.h in Headers */,
 				FAF272AB16E3D44400CC193A /* wrap_Channel.h in Headers */,
 				FAF272AD16E3D44400CC193A /* wrap_LuaThread.h in Headers */,
 				FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */,
@@ -1919,6 +1958,7 @@
 				FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */,
 				FAE010E1170DE25E006F29D0 /* ddsHandler.h in Headers */,
 				FAE010E5170DF75C006F29D0 /* wrap_CompressedData.h in Headers */,
+				FAF6704E18184FF800DBDEEA /* wuff_config.h in Headers */,
 				FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */,
 				FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */,
 				FAEC808B1710FEA60057279A /* ImageData.h in Headers */,
@@ -1934,6 +1974,7 @@
 				FA3D9E1616E6D41100CA6630 /* wrap_Cursor.h in Headers */,
 				FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */,
 				FAB007901740C12D00A9664D /* Joystick.h in Headers */,
+				FAF6705218184FF800DBDEEA /* wuff_internal.h in Headers */,
 				FAB007941740C28900A9664D /* Joystick.h in Headers */,
 				FAB007981740C87D00A9664D /* wrap_Joystick.h in Headers */,
 				FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */,
@@ -1946,11 +1987,13 @@
 				FA5FDC831788D548002F0ED2 /* types.h in Headers */,
 				FA5FDC841788D548002F0ED2 /* unix.h in Headers */,
 				FA5FDC851788D548002F0ED2 /* utility.h in Headers */,
+				FAF6704D18184FF800DBDEEA /* wuff.h in Headers */,
 				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
 				FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */,
 				FA7175AA178E8418001FE7FE /* lua.h in Headers */,
 				FA34E7CE174B513F00E04D3F /* System.h in Headers */,
 				FA34E7D3174B515D00E04D3F /* System.h in Headers */,
+				FAF670571818501300DBDEEA /* WaveDecoder.h in Headers */,
 				FA1EF7C51799FEB200FF380C /* wrap_System.h in Headers */,
 				FA435EA417B36E9C004C3F22 /* Polyline.h in Headers */,
 			);
@@ -2022,6 +2065,7 @@
 				FA08F5B316C752FC00F007B5 /* Audio.cpp in Sources */,
 				FA08F5B416C7530100F007B5 /* Audio.cpp in Sources */,
 				FA08F5B516C7530100F007B5 /* Source.cpp in Sources */,
+				FAF6705118184FF800DBDEEA /* wuff_internal.c in Sources */,
 				FA08F5B616C7530A00F007B5 /* Audio.cpp in Sources */,
 				FA08F5B716C7530A00F007B5 /* Pool.cpp in Sources */,
 				FA08F5B816C7530A00F007B5 /* Source.cpp in Sources */,
@@ -2032,6 +2076,7 @@
 				FA08F5BE16C7532A00F007B5 /* Memoizer.cpp in Sources */,
 				FA08F5BF16C7532A00F007B5 /* Module.cpp in Sources */,
 				FA08F5C016C7532A00F007B5 /* Object.cpp in Sources */,
+				FAF670561818501300DBDEEA /* WaveDecoder.cpp in Sources */,
 				FA08F5C116C7532A00F007B5 /* Reference.cpp in Sources */,
 				FA08F5C216C7532A00F007B5 /* runtime.cpp in Sources */,
 				FA08F5C316C7532A00F007B5 /* utf8.cpp in Sources */,
@@ -2077,6 +2122,7 @@
 				FA08F5EB16C7538F00F007B5 /* b2Joint.cpp in Sources */,
 				FA08F5EC16C7538F00F007B5 /* b2MouseJoint.cpp in Sources */,
 				FA08F5ED16C7538F00F007B5 /* b2PrismaticJoint.cpp in Sources */,
+				FAF6705318184FF800DBDEEA /* wuff_memory.c in Sources */,
 				FA08F5EE16C7538F00F007B5 /* b2PulleyJoint.cpp in Sources */,
 				FA08F5EF16C7538F00F007B5 /* b2RevoluteJoint.cpp in Sources */,
 				FA08F5F016C7538F00F007B5 /* b2RopeJoint.cpp in Sources */,
@@ -2086,6 +2132,7 @@
 				FA08F5F416C753A400F007B5 /* luasocket.cpp in Sources */,
 				FA08F5F516C753B800F007B5 /* auxiliar.c in Sources */,
 				FA08F5F616C753B800F007B5 /* buffer.c in Sources */,
+				FAF6704F18184FF800DBDEEA /* wuff_convert.c in Sources */,
 				FA08F5F716C753B800F007B5 /* except.c in Sources */,
 				FA08F5F816C753B800F007B5 /* inet.c in Sources */,
 				FA08F5F916C753B800F007B5 /* io.c in Sources */,
@@ -2175,6 +2222,7 @@
 				FA08F65016C7546400F007B5 /* RopeJoint.cpp in Sources */,
 				FA08F65116C7546400F007B5 /* Shape.cpp in Sources */,
 				FA08F65216C7547300F007B5 /* WeldJoint.cpp in Sources */,
+				FAF6704C18184FF800DBDEEA /* wuff.c in Sources */,
 				FA08F65316C7547300F007B5 /* WheelJoint.cpp in Sources */,
 				FA08F65416C7547300F007B5 /* World.cpp in Sources */,
 				FA08F65516C7547300F007B5 /* wrap_Body.cpp in Sources */,

@@ -83,8 +83,8 @@ bool ModPlugDecoder::accepts(const std::string &ext)
 		"699", "abc", "amf", "ams", "dbm", "dmf",
 		"dsm", "far", "it", "j2b", "mdl", "med",
 		"mid", "mod", "mt2", "mtm", "okt", "pat",
-		"psm", "s3m", "stm", "ult", "umx", "wav",
-		"xm", ""
+		"psm", "s3m", "stm", "ult", "umx",  "xm",
+		""
 	};
 
 	for (int i = 0; !(supported[i].empty()); i++)

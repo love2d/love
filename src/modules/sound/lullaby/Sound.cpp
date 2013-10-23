@@ -27,6 +27,7 @@
 #include "ModPlugDecoder.h"
 #include "VorbisDecoder.h"
 #include "GmeDecoder.h"
+#include "WaveDecoder.h"
 //#include "FLACDecoder.h"
 
 #ifndef LOVE_NOMPG123
@@ -76,6 +77,8 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	else if (GmeDecoder::accepts(ext))
 		decoder = new GmeDecoder(data, ext, bufferSize);
 #endif // LOVE_SUPPORT_GME
+	else if (WaveDecoder::accepts(ext))
+		decoder = new WaveDecoder(data, ext, bufferSize);
 	/*else if (FLACDecoder::accepts(ext))
 		decoder = new FLACDecoder(data, ext, bufferSize);*/
 
