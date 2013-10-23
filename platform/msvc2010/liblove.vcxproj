@@ -396,6 +396,10 @@
     <ClCompile Include="..\..\src\libraries\luasocket\libluasocket\wsocket.c" />
     <ClCompile Include="..\..\src\libraries\luasocket\luasocket.cpp" />
     <ClCompile Include="..\..\src\libraries\noise1234\simplexnoise1234.cpp" />
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff.c" />
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff_convert.c" />
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff_internal.c" />
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff_memory.c" />
     <ClCompile Include="..\..\src\modules\audio\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Audio.cpp" />
     <ClCompile Include="..\..\src\modules\audio\null\Source.cpp" />
@@ -531,6 +535,7 @@
     <ClCompile Include="..\..\src\modules\sound\lullaby\Mpg123Decoder.cpp" />
     <ClCompile Include="..\..\src\modules\sound\lullaby\Sound.cpp" />
     <ClCompile Include="..\..\src\modules\sound\lullaby\VorbisDecoder.cpp" />
+    <ClCompile Include="..\..\src\modules\sound\lullaby\WaveDecoder.cpp" />
     <ClCompile Include="..\..\src\modules\sound\Sound.cpp" />
     <ClCompile Include="..\..\src\modules\sound\SoundData.cpp" />
     <ClCompile Include="..\..\src\modules\sound\wrap_Decoder.cpp" />
@@ -661,6 +666,10 @@
     <ClInclude Include="..\..\src\libraries\utf8\utf8\checked.h" />
     <ClInclude Include="..\..\src\libraries\utf8\utf8\core.h" />
     <ClInclude Include="..\..\src\libraries\utf8\utf8\unchecked.h" />
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff.h" />
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff_config.h" />
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff_convert.h" />
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff_internal.h" />
     <ClInclude Include="..\..\src\modules\audio\Audio.h" />
     <ClInclude Include="..\..\src\modules\audio\null\Audio.h" />
     <ClInclude Include="..\..\src\modules\audio\null\Source.h" />
@@ -803,6 +812,7 @@
     <ClInclude Include="..\..\src\modules\sound\lullaby\Mpg123Decoder.h" />
     <ClInclude Include="..\..\src\modules\sound\lullaby\Sound.h" />
     <ClInclude Include="..\..\src\modules\sound\lullaby\VorbisDecoder.h" />
+    <ClInclude Include="..\..\src\modules\sound\lullaby\WaveDecoder.h" />
     <ClInclude Include="..\..\src\modules\sound\Sound.h" />
     <ClInclude Include="..\..\src\modules\sound\SoundData.h" />
     <ClInclude Include="..\..\src\modules\sound\wrap_Decoder.h" />

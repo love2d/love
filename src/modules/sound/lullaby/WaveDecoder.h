@@ -25,7 +25,6 @@
 #include "common/Data.h"
 #include "Decoder.h"
 
-// vorbis
 #include "libraries/Wuff/wuff.h"
 
 namespace love

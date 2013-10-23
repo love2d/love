@@ -169,6 +169,9 @@
     <Filter Include="modules\system\sdl">
       <UniqueIdentifier>{2241f4ca-a51c-4d8d-be82-2b7dfd267b7b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libraries\Wuff">
+      <UniqueIdentifier>{4127f9be-b9c3-45bf-968f-888df9d5bc35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\common\Matrix.cpp">
@@ -914,6 +917,21 @@
     </ClCompile>
     <ClCompile Include="..\..\src\modules\graphics\opengl\Mesh.cpp">
       <Filter>modules\graphics\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff_convert.c">
+      <Filter>libraries\Wuff</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff_internal.c">
+      <Filter>libraries\Wuff</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff_memory.c">
+      <Filter>libraries\Wuff</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libraries\Wuff\wuff.c">
+      <Filter>libraries\Wuff</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\modules\sound\lullaby\WaveDecoder.cpp">
+      <Filter>modules\sound\lullaby</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1755,6 +1773,21 @@
     </ClInclude>
     <ClInclude Include="..\..\src\modules\graphics\opengl\Mesh.h">
       <Filter>modules\graphics\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff.h">
+      <Filter>libraries\Wuff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff_config.h">
+      <Filter>libraries\Wuff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff_convert.h">
+      <Filter>libraries\Wuff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libraries\Wuff\wuff_internal.h">
+      <Filter>libraries\Wuff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\modules\sound\lullaby\WaveDecoder.h">
+      <Filter>modules\sound\lullaby</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
