@@ -79,7 +79,7 @@ void Mesh::setVertices(const std::vector<Vertex> &verts)
 void Mesh::setVertex(size_t index, const Vertex &v)
 {
 	if (index >= vertex_count)
-		throw love::Exception("Invalid vertex index: %ld", index);
+		throw love::Exception("Invalid vertex index: %ld", index + 1);
 
 	VertexBuffer::Bind vbo_bind(*vbo);
 
@@ -92,7 +92,7 @@ void Mesh::setVertex(size_t index, const Vertex &v)
 Vertex Mesh::getVertex(size_t index) const
 {
 	if (index >= vertex_count)
-		throw love::Exception("Invalid vertex index: %ld", index);
+		throw love::Exception("Invalid vertex index: %ld", index + 1);
 
 	VertexBuffer::Bind vbo_bind(*vbo);
 
@@ -111,7 +111,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	for (size_t i = 0; i < map.size(); i++)
 	{
 		if (map[i] >= vertex_count)
-			throw love::Exception("Invalid vertex map value: %d", map[i]);
+			throw love::Exception("Invalid vertex map value: %d", map[i] + 1);
 	}
 
 	size_t size = sizeof(uint32) * map.size();
