@@ -1061,7 +1061,11 @@ GLEE_EXTERN GLboolean _GLEE_SGIX_igloo_interface;
 #endif
 
 #ifndef GL_ARB_shader_objects
+#if defined(__APPLE__)
+    typedef void *GLhandleARB;
+#else
 	typedef int GLhandleARB;
+#endif
 	typedef char GLcharARB;
 #endif
 

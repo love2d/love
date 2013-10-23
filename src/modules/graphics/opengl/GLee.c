@@ -43,7 +43,7 @@
 #include "GLee.h"
 
 #if defined(__APPLE__) || defined(__APPLE_CC__)
-	#include <CoreFoundation/CoreFoundation.h>
+	#include <CoreFoundation/CFBundle.h>
 #endif
 
 typedef GLuint(*GLEE_LINK_FUNCTION)(void);
@@ -72,7 +72,13 @@ GLEE_FUNC __GLeeGetProcAddress(const char *extname)
     GLEE_FUNC function;
 
     bundle = CFBundleCreate(kCFAllocatorDefault, bundleURL);
-    assert(bundle != NULL);
+
+    if (bundle == NULL)
+    {
+        CFRelease(bundleURL);
+        CFRelease(functionName);
+        return NULL;
+    }
 
     function = CFBundleGetFunctionPointerForName(bundle, functionName);
 
