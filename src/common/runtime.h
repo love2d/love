@@ -486,7 +486,7 @@ Type luax_type(lua_State *L, int idx);
 		lua_pushstring(L, e.what()); \
 	} \
 	if (should_error) \
-		return lua_error(L); \
+		return luaL_error(L, "%s", lua_tostring(L, -1)); \
 }
 
 } // love
