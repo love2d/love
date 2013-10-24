@@ -76,6 +76,17 @@ void Mesh::setVertices(const std::vector<Vertex> &verts)
 	memcpy(vbo_mapper.get(), &verts[0], size);
 }
 
+const Vertex *Mesh::getVertices() const
+{
+	if (vbo)
+	{
+		VertexBuffer::Bind vbo_bind(*vbo);
+		return (Vertex *) vbo->map();
+	}
+
+	return nullptr;
+}
+
 void Mesh::setVertex(size_t index, const Vertex &v)
 {
 	if (index >= vertex_count)

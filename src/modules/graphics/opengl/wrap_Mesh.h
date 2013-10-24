@@ -37,6 +37,7 @@ Mesh *luax_checkmesh(lua_State *L, int idx);
 int w_Mesh_setVertex(lua_State *L);
 int w_Mesh_getVertex(lua_State *L);
 int w_Mesh_setVertices(lua_State *L);
+int w_Mesh_getVertices(lua_State *L);
 int w_Mesh_getVertexCount(lua_State *L);
 int w_Mesh_setVertexMap(lua_State *L);
 int w_Mesh_getVertexMap(lua_State *L);

@@ -72,6 +72,11 @@ public:
 	void setVertices(const std::vector<Vertex> &verts);
 
 	/**
+	 * Gets all of the vertices in the Mesh as an array.
+	 **/
+	const Vertex *getVertices() const;
+
+	/**
 	 * Sets an individual vertex in the Mesh.
 	 * @param index The index into the list of vertices to use.
 	 * @param v The new vertex.

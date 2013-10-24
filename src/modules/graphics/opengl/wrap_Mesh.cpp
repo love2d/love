@@ -133,6 +133,52 @@ int w_Mesh_setVertices(lua_State *L)
 	return 0;
 }
 
+int w_Mesh_getVertices(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+
+	const Vertex *vertices = t->getVertices();
+
+	size_t count = t->getVertexCount();
+	lua_createtable(L, count, 0);
+
+	for (size_t i = 0; i < count; i++)
+	{
+		// Create vertex table.
+		lua_createtable(L, 8, 0);
+
+		lua_pushnumber(L, vertices[i].x);
+		lua_rawseti(L, -2, 1);
+
+		lua_pushnumber(L, vertices[i].y);
+		lua_rawseti(L, -2, 2);
+
+		lua_pushnumber(L, vertices[i].s);
+		lua_rawseti(L, -2, 3);
+
+		lua_pushnumber(L, vertices[i].t);
+		lua_rawseti(L, -2, 4);
+
+		lua_pushnumber(L, vertices[i].r);
+		lua_rawseti(L, -2, 5);
+
+		lua_pushnumber(L, vertices[i].g);
+		lua_rawseti(L, -2, 6);
+
+		lua_pushnumber(L, vertices[i].b);
+		lua_rawseti(L, -2, 7);
+
+		lua_pushnumber(L, vertices[i].a);
+		lua_rawseti(L, -2, 8);
+
+		// Insert vertex table into vertices table.
+		lua_rawseti(L, -2, i + 1);
+	}
+
+	// Return vertices table.
+	return 1;
+}
+
 int w_Mesh_getVertexCount(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
@@ -258,6 +304,7 @@ static const luaL_Reg functions[] =
 	{ "setVertex", w_Mesh_setVertex },
 	{ "getVertex", w_Mesh_getVertex },
 	{ "setVertices", w_Mesh_setVertices },
+	{ "getVertices", w_Mesh_getVertices },
 	{ "getVertexCount", w_Mesh_getVertexCount },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
