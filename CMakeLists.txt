@@ -591,6 +591,8 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/Sound.h
 	src/modules/sound/lullaby/VorbisDecoder.cpp
 	src/modules/sound/lullaby/VorbisDecoder.h
+	src/modules/sound/lullaby/WaveDecoder.cpp
+	src/modules/sound/lullaby/WaveDecoder.h
 )
 
 set(LOVE_SRC_MODULE_SOUND
@@ -992,6 +994,22 @@ set(LOVE_SRC_3P_UTF8
 # This library is all headers ... so there is no need to
 # add_library() here.
 
+#
+# Wuff
+#
+
+set(LOVE_SRC_3P_WUFF
+	src/libraries/Wuff/wuff.c
+	src/libraries/Wuff/wuff.h
+	src/libraries/Wuff/wuff_config.h
+	src/libraries/Wuff/wuff_convert.c
+	src/libraries/Wuff/wuff_convert.h
+	src/libraries/Wuff/wuff_internal.c
+	src/libraries/Wuff/wuff_internal.h
+	src/libraries/Wuff/wuff_memory.c
+)
+
+add_library(love_3p_wuff ${LOVE_SRC_3P_WUFF})
 
 set(LOVE_3P
 	love_3p_box2d
@@ -999,6 +1017,7 @@ set(LOVE_3P
 	love_3p_enet
 	love_3p_luasocket
 	love_3p_noise1234
+	love_3p_wuff
 )
 
 disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket)
