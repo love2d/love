@@ -36,15 +36,15 @@ namespace box2d
 RevoluteJoint *luax_checkrevolutejoint(lua_State *L, int idx);
 int w_RevoluteJoint_getJointAngle(lua_State *L);
 int w_RevoluteJoint_getJointSpeed(lua_State *L);
-int w_RevoluteJoint_enableMotor(lua_State *L);
+int w_RevoluteJoint_setMotorEnabled(lua_State *L);
 int w_RevoluteJoint_isMotorEnabled(lua_State *L);
 int w_RevoluteJoint_setMaxMotorTorque(lua_State *L);
 int w_RevoluteJoint_setMotorSpeed(lua_State *L);
 int w_RevoluteJoint_getMotorSpeed(lua_State *L);
 int w_RevoluteJoint_getMotorTorque(lua_State *L);
 int w_RevoluteJoint_getMaxMotorTorque(lua_State *L);
-int w_RevoluteJoint_enableLimit(lua_State *L);
-int w_RevoluteJoint_isLimitEnabled(lua_State *L);
+int w_RevoluteJoint_setLimitsEnabled(lua_State *L);
+int w_RevoluteJoint_hasLimitsEnabled(lua_State *L);
 int w_RevoluteJoint_setUpperLimit(lua_State *L);
 int w_RevoluteJoint_setLowerLimit(lua_State *L);
 int w_RevoluteJoint_setLimits(lua_State *L);

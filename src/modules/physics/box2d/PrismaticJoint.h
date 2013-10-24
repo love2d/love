@@ -59,7 +59,7 @@ public:
 	/**
 	 * Enable/disable the joint motor.
 	 **/
-	void enableMotor(bool motor);
+	void setMotorEnabled(bool enable);
 
 	/**
 	 * Checks whether the motor is enabled.
@@ -93,14 +93,14 @@ public:
 	float getMaxMotorForce() const;
 
 	/**
-	 * Enable/disable the joint limit.
+	 * Enable/disable the joint limits.
 	 **/
-	void enableLimit(bool limit);
+	void setLimitsEnabled(bool enable);
 
 	/**
 	 * Checks whether limits are enabled.
 	 **/
-	bool isLimitEnabled() const;
+	bool hasLimitsEnabled() const;
 
 	/**
 	 * Sets the upper limit, usually in meters.

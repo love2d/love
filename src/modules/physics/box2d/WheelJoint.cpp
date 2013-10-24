@@ -58,9 +58,9 @@ float WheelJoint::getJointSpeed() const
 	return Physics::scaleUp(joint->GetJointSpeed());
 }
 
-void WheelJoint::enableMotor(bool motor)
+void WheelJoint::setMotorEnabled(bool enable)
 {
-	return joint->EnableMotor(motor);
+	return joint->EnableMotor(enable);
 }
 
 bool WheelJoint::isMotorEnabled() const

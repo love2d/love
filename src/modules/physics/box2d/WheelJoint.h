@@ -60,7 +60,7 @@ public:
 	/**
 	 * Enable/disable the joint motor.
 	 **/
-	void enableMotor(bool motor);
+	void setMotorEnabled(bool enable);
 
 	/**
 	 * Checks whether the motor is enabled.

@@ -50,11 +50,11 @@ int w_PrismaticJoint_getJointSpeed(lua_State *L)
 	return 1;
 }
 
-int w_PrismaticJoint_enableMotor(lua_State *L)
+int w_PrismaticJoint_setMotorEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
 	bool arg1 = luax_toboolean(L, 2);
-	t->enableMotor(arg1);
+	t->setMotorEnabled(arg1);
 	return 0;
 }
 
@@ -103,18 +103,18 @@ int w_PrismaticJoint_getMaxMotorForce(lua_State *L)
 	return 1;
 }
 
-int w_PrismaticJoint_enableLimit(lua_State *L)
+int w_PrismaticJoint_setLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
 	bool arg1 = luax_toboolean(L, 2);
-	t->enableLimit(arg1);
+	t->setLimitsEnabled(arg1);
 	return 0;
 }
 
-int w_PrismaticJoint_isLimitEnabled(lua_State *L)
+int w_PrismaticJoint_hasLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	luax_pushboolean(L, t->isLimitEnabled());
+	luax_pushboolean(L, t->hasLimitsEnabled());
 	return 1;
 }
 
@@ -168,15 +168,15 @@ static const luaL_Reg functions[] =
 {
 	{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
 	{ "getJointSpeed", w_PrismaticJoint_getJointSpeed },
-	{ "enableMotor", w_PrismaticJoint_enableMotor },
+	{ "setMotorEnabled", w_PrismaticJoint_setMotorEnabled },
 	{ "isMotorEnabled", w_PrismaticJoint_isMotorEnabled },
 	{ "setMaxMotorForce", w_PrismaticJoint_setMaxMotorForce },
 	{ "setMotorSpeed", w_PrismaticJoint_setMotorSpeed },
 	{ "getMotorSpeed", w_PrismaticJoint_getMotorSpeed },
 	{ "getMotorForce", w_PrismaticJoint_getMotorForce },
 	{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
-	{ "enableLimit", w_PrismaticJoint_enableLimit },
-	{ "isLimitEnabled", w_PrismaticJoint_isLimitEnabled },
+	{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
+	{ "hasLimitsEnabled", w_PrismaticJoint_hasLimitsEnabled },
 	{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
 	{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
 	{ "setLimits", w_PrismaticJoint_setLimits },

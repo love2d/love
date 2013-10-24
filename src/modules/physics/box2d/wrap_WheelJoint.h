@@ -36,7 +36,7 @@ namespace box2d
 WheelJoint *luax_checkwheeljoint(lua_State *L, int idx);
 int w_WheelJoint_getJointTranslation(lua_State *L);
 int w_WheelJoint_getJointSpeed(lua_State *L);
-int w_WheelJoint_enableMotor(lua_State *L);
+int w_WheelJoint_setMotorEnabled(lua_State *L);
 int w_WheelJoint_isMotorEnabled(lua_State *L);
 int w_WheelJoint_setMotorSpeed(lua_State *L);
 int w_WheelJoint_getMotorSpeed(lua_State *L);
