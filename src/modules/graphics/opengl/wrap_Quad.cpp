@@ -33,13 +33,6 @@ Quad *luax_checkquad(lua_State *L, int idx)
 	return luax_checktype<Quad>(L, idx, "Quad", GRAPHICS_QUAD_T);
 }
 
-int w_Quad_flip(lua_State *L)
-{
-	Quad *quad = luax_checkquad(L, 1);
-	quad->flip(luax_toboolean(L, 2), luax_toboolean(L, 3));
-	return 0;
-}
-
 int w_Quad_setViewport(lua_State *L)
 {
 	Quad *quad = luax_checkquad(L, 1);
@@ -75,7 +68,6 @@ int w_Quad_getViewport(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "flip", w_Quad_flip },
 	{ "setViewport", w_Quad_setViewport },
 	{ "getViewport", w_Quad_getViewport },
 	{ 0, 0 }

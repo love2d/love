@@ -49,8 +49,6 @@ public:
 	void setViewport(const Viewport &v);
 	Viewport getViewport() const;
 
-	void flip(bool x, bool y);
-
 	const Vertex *getVertices() const;
 
 private:

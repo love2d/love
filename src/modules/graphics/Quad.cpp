@@ -74,37 +74,6 @@ Quad::Viewport Quad::getViewport() const
 	return viewport;
 }
 
-void Quad::flip(bool x, bool y)
-{
-	Vertex temp[NUM_VERTICES];
-
-	if (x)
-	{
-		memcpy(temp, vertices, sizeof(Vertex) * NUM_VERTICES);
-		vertices[0].s = temp[3].s;
-		vertices[0].t = temp[3].t;
-		vertices[1].s = temp[2].s;
-		vertices[1].t = temp[2].t;
-		vertices[2].s = temp[1].s;
-		vertices[2].t = temp[1].t;
-		vertices[3].s = temp[0].s;
-		vertices[3].t = temp[0].t;
-	}
-
-	if (y)
-	{
-		memcpy(temp, vertices, sizeof(Vertex) * NUM_VERTICES);
-		vertices[0].s = temp[1].s;
-		vertices[0].t = temp[1].t;
-		vertices[1].s = temp[0].s;
-		vertices[1].t = temp[0].t;
-		vertices[2].s = temp[3].s;
-		vertices[2].t = temp[3].t;
-		vertices[3].s = temp[2].s;
-		vertices[3].t = temp[2].t;
-	}
-}
-
 const Vertex *Quad::getVertices() const
 {
 	return vertices;
