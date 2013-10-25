@@ -83,8 +83,8 @@ public:
 	virtual void setCone(float innerAngle, float outerAngle, float outerVolume) = 0;
 	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const = 0;
 
-	virtual void setRelativePosition(bool relative) = 0;
-	virtual bool hasRelativePosition() const = 0;
+	virtual void setRelative(bool enable) = 0;
+	virtual bool isRelative() const = 0;
 
 	virtual void setLooping(bool looping) = 0;
 	virtual bool isLooping() const = 0;

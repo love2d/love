@@ -149,14 +149,14 @@ void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) c
 	outerVolume = coneOuterVolume;
 }
 
-void Source::setRelativePosition(bool relative)
+void Source::setRelative(bool enable)
 {
-	relativePosition = relative;
+	relative = enable;
 }
 
-bool Source::hasRelativePosition() const
+bool Source::isRelative() const
 {
-	return relativePosition;
+	return relative;
 }
 
 void Source::setLooping(bool looping)

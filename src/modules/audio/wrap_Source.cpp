@@ -211,17 +211,17 @@ int w_Source_getCone(lua_State *L)
 	return 3;
 }
 
-int w_Source_setRelativePosition(lua_State *L)
+int w_Source_setRelative(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	t->setRelativePosition(luax_toboolean(L, 2));
+	t->setRelative(luax_toboolean(L, 2));
 	return 0;
 }
 
-int w_Source_hasRelativePosition(lua_State *L)
+int w_Source_isRelative(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	luax_pushboolean(L, t->hasRelativePosition());
+	luax_pushboolean(L, t->isRelative());
 	return 1;
 }
 
@@ -367,8 +367,8 @@ static const luaL_Reg functions[] =
 	{ "setCone", w_Source_setCone },
 	{ "getCone", w_Source_getCone },
 
-	{ "setRelativePosition", w_Source_setRelativePosition },
-	{ "hasRelativePosition", w_Source_hasRelativePosition },
+	{ "setRelative", w_Source_setRelative },
+	{ "isRelative", w_Source_isRelative },
 
 	{ "setLooping", w_Source_setLooping },
 	{ "isLooping", w_Source_isLooping },

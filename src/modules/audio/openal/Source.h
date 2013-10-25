@@ -80,8 +80,8 @@ public:
 	virtual void getDirection(float *v) const;
 	virtual void setCone(float innerAngle, float outerAngle, float outerVolume);
 	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const;
-	virtual void setRelativePosition(bool relative);
-	virtual bool hasRelativePosition() const;
+	virtual void setRelative(bool enable);
+	virtual bool isRelative() const;
 	void setLooping(bool looping);
 	bool isLooping() const;
 	bool isStatic() const;
@@ -131,7 +131,7 @@ private:
 	float position[3];
 	float velocity[3];
 	float direction[3];
-	bool relativePosition;
+	bool relative;
 	bool looping;
 	bool paused;
 	float minVolume;

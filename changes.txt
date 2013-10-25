@@ -51,7 +51,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added Image:getData.
   * Added SoundData:getDuration and SoundData:getSampleCount.
   * Added Source:isPlaying.
-  * Added Source:setRelativePosition and Source:hasRelativePosition.
+  * Added Source:setRelative and Source:isRelative.
   * Added Source:setCone and Source:getCone.
   * Added Source:getChannels.
   * Added new Channels API for love.thread.
@@ -136,6 +136,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed looping support in tracker music formats.
   * Fixed skipping/looping issues when playing streaming audio Sources.
   * Fixed race condition in Source:play.
+  * Fixed WAVE sound playback.
 
   * Moved love's startup to modules/love.
   * Moved window-related functions from love.graphics to love.window.
@@ -145,6 +146,8 @@ LOVE 0.9.0 [Baby Inspector]
   * Renamed love.filesystem.enumerate to love.filesystem.getDirectoryItems.
   * Renamed World:setAllowSleeping to World:setSleepingAllowed.
   * Renamed ChainShape:setPrevVertex to ChainShape:setPreviousVertex.
+  * Renamed Joint:enableMotor to Joint:setMotorEnabled.
+  * Renamed Joint:enableLimit and Joint:isLimitEnabled to Joint:setLimitsEnabled and Joint:hasLimitsEnabled.
   * Renamed t.screen to t.window in love.conf.
   * Renamed love.graphics.setCaption to love.window.setTitle.
   * Renamed PixelEffect to Shader (but now with vertex shaders).
@@ -167,6 +170,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Removed love.graphics.setLine/setPoint.
   * Removed love.graphics.drawq (functionality is merged into love.graphics.draw).
   * Removed SpriteBatch:addq/setq (functionality is merged into SpriteBatch:add/set).
+  * Removed Quad:flip.
   * Removed ParticleSystem:isFull/isEmpty.
   * Removed ParticleSystem:getX/getY.
   * Removed love.graphics.checkMode.

@@ -39,7 +39,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, valid(false)
 	, pitch(1.0f)
 	, volume(1.0f)
-	, relativePosition(false)
+	, relative(false)
 	, looping(false)
 	, paused(false)
 	, minVolume(0.0f)
@@ -71,7 +71,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, valid(false)
 	, pitch(1.0f)
 	, volume(1.0f)
-	, relativePosition(false)
+	, relative(false)
 	, looping(false)
 	, paused(false)
 	, minVolume(0.0f)
@@ -429,17 +429,17 @@ void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) c
 	outerVolume = cone.outerVolume;
 }
 
-void Source::setRelativePosition(bool relative)
+void Source::setRelative(bool enable)
 {
 	if (valid)
 		alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
 
-	relativePosition = relative;
+	relative = enable;
 }
 
-bool Source::hasRelativePosition() const
+bool Source::isRelative() const
 {
-	return relativePosition;
+	return relative;
 }
 
 void Source::setLooping(bool looping)
@@ -575,7 +575,7 @@ void Source::reset()
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
 	alSourcei(source, AL_LOOPING, isStatic() && isLooping() ? AL_TRUE : AL_FALSE);
-	alSourcei(source, AL_SOURCE_RELATIVE, relativePosition ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
 	alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
