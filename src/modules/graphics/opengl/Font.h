@@ -135,7 +135,7 @@ public:
 	float getBaseline() const;
 
 	bool hasGlyph(uint32 glyph) const;
-	bool hasGlyph(const std::string &text) const;
+	bool hasGlyphs(const std::string &text) const;
 
 private:
 

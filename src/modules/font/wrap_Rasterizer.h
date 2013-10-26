@@ -38,7 +38,7 @@ int w_Rasterizer_getDescent(lua_State *L);
 int w_Rasterizer_getLineHeight(lua_State *L);
 int w_Rasterizer_getGlyphData(lua_State *L);
 int w_Rasterizer_getGlyphCount(lua_State *L);
-int w_Rasterizer_hasGlyph(lua_State *L);
+int w_Rasterizer_hasGlyphs(lua_State *L);
 extern "C" int luaopen_rasterizer(lua_State *L);
 
 } // font

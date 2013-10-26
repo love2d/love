@@ -100,10 +100,10 @@ public:
 	virtual bool hasGlyph(uint32 glyph) const = 0;
 
 	/**
-	 * Gets whether this Rasterizer has a specific glyph.
-	 * @param text The (UNICODE) glyph character.
+	 * Gets whether this Rasterizer has all the glyphs in a string.
+	 * @param text The (UTF-8) string.
 	 **/
-	virtual bool hasGlyph(const std::string &text) const;
+	virtual bool hasGlyphs(const std::string &text) const;
 
 protected:
 

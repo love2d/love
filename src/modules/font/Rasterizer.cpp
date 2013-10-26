@@ -69,23 +69,30 @@ GlyphData *Rasterizer::getGlyphData(const std::string &text) const
 	return getGlyphData(codepoint);
 }
 
-bool Rasterizer::hasGlyph(const std::string &text) const
+bool Rasterizer::hasGlyphs(const std::string &text) const
 {
 	if (text.size() == 0)
 		return false;
 
-	uint32 codepoint = 0;
-
 	try
 	{
-		codepoint = utf8::peek_next(text.begin(), text.end());
+		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
+		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
+
+		while (i != end)
+		{
+			uint32 codepoint = *i++;
+
+			if (!hasGlyph(codepoint))
+				return false;
+		}
 	}
 	catch (utf8::exception &e)
 	{
 		throw love::Exception("Decoding error: %s", e.what());
 	}
 
-	return hasGlyph(codepoint);
+	return true;
 }
 
 } // font

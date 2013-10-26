@@ -557,9 +557,9 @@ bool Font::hasGlyph(uint32 glyph) const
 	return rasterizer->hasGlyph(glyph);
 }
 
-bool Font::hasGlyph(const std::string &text) const
+bool Font::hasGlyphs(const std::string &text) const
 {
-	return rasterizer->hasGlyph(text);
+	return rasterizer->hasGlyphs(text);
 }
 
 } // opengl
