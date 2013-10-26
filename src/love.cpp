@@ -118,7 +118,7 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 		strcpy(new_argv[i], temp_argv[i].c_str());
 	}
 
-	new_argv[new_argc+1] = NULL;
+	new_argv[new_argc] = NULL;
 }
 
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
