@@ -1151,6 +1151,12 @@ set(CPACK_NSIS_PACKAGE_NAME "LOVE")
 set(CPACK_NSIS_DISPLAY_NAME "LOVE ${LOVE_VERSION_STR}")
 set(CPACK_NSIS_MODIFY_PATH ON)
 
+if(LOVE_X64)
+	set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+else()
+	set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+endif()
+
 set(CPACK_NSIS_MENU_LINKS "http://love2d.org/wiki" "Documentation")
 
 # Some bug somewhere in NSIS requires "\\\\" somewhere in the path,
