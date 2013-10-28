@@ -23,13 +23,15 @@
 
 // LOVE
 #include "common/runtime.h"
+#include "Cursor.h"
 
 namespace love
 {
 namespace mouse
 {
 
-int w_getType(lua_State *L);
+Cursor *luax_checkcursor(lua_State *L, int idx);
+int w_Cursor_getType(lua_State *L);
 extern "C" int luaopen_cursor(lua_State *L);
 
 } // mouse

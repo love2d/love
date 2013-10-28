@@ -25,6 +25,9 @@
 #include "mouse/Mouse.h"
 #include "Cursor.h"
 
+// C++
+#include <map>
+
 namespace love
 {
 namespace mouse
@@ -43,7 +46,7 @@ public:
 	~Mouse();
 
 	love::mouse::Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty);
-	love::mouse::Cursor *newCursor(love::mouse::Cursor::SystemCursor cursortype);
+	love::mouse::Cursor *getSystemCursor(Cursor::SystemCursor cursortype);
 
 	void setCursor(love::mouse::Cursor *cursor);
 	void setCursor();
@@ -65,6 +68,8 @@ public:
 private:
 
 	love::mouse::Cursor *curCursor;
+
+	std::map<Cursor::SystemCursor, Cursor *> systemCursors;
 
 }; // Mouse
 

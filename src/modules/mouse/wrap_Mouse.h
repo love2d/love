@@ -31,6 +31,7 @@ namespace mouse
 {
 
 int w_newCursor(lua_State *L);
+int w_getSystemCursor(lua_State *L);
 int w_setCursor(lua_State *L);
 int w_getCursor(lua_State *L);
 int w_getX(lua_State *L);

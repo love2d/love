@@ -36,27 +36,31 @@ int w_newCursor(lua_State *L)
 {
 	Cursor *cursor = 0;
 
-	if (lua_isstring(L, 1))
-	{
-		// System cursor type.
-		const char *str = luaL_checkstring(L, 1);
-		Cursor::SystemCursor systemCursor;
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+		luax_convobj(L, 1, "image", "newImageData");
 
-		if (!Cursor::getConstant(str, systemCursor))
-			return luaL_error(L, "Invalid cursor type %s", str);
+	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+	int hotx = luaL_optint(L, 2, 0);
+	int hoty = luaL_optint(L, 3, 0);
 
-		EXCEPT_GUARD(cursor = instance->newCursor(systemCursor);)
-	}
-	else
-	{
-		// Custom image.
-		love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
-		int hotx = luaL_optint(L, 2, 0);
-		int hoty = luaL_optint(L, 3, 0);
+	EXCEPT_GUARD(cursor = instance->newCursor(data, hotx, hoty);)
 
-		EXCEPT_GUARD(cursor = instance->newCursor(data, hotx, hoty);)
-	}
+	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
+	return 1;
+}
 
+int w_getSystemCursor(lua_State *L)
+{
+	const char *str = luaL_checkstring(L, 1);
+	Cursor::SystemCursor systemCursor;
+
+	if (!Cursor::getConstant(str, systemCursor))
+		return luaL_error(L, "Invalid system cursor type: %s", str);
+
+	Cursor *cursor = 0;
+	EXCEPT_GUARD(cursor = instance->getSystemCursor(systemCursor);)
+
+	cursor->retain();
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
 	return 1;
 }
@@ -70,7 +74,7 @@ int w_setCursor(lua_State *L)
 		return 0;
 	}
 
-	Cursor *cursor = luax_checktype<Cursor>(L, 1, "Cursor", MOUSE_CURSOR_T);
+	Cursor *cursor = luax_checkcursor(L, 1);
 	instance->setCursor(cursor);
 	return 0;
 }
@@ -182,6 +186,7 @@ int w_isGrabbed(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "newCursor", w_newCursor },
+	{ "getSystemCursor", w_getSystemCursor },
 	{ "setCursor", w_setCursor },
 	{ "getCursor", w_getCursor },
 	{ "getX", w_getX },

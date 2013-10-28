@@ -52,7 +52,7 @@ public:
 	virtual ~Mouse() {};
 
 	virtual Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty) = 0;
-	virtual Cursor *newCursor(Cursor::SystemCursor cursortype) = 0;
+	virtual Cursor *getSystemCursor(Cursor::SystemCursor cursortype) = 0;
 
 	virtual void setCursor(Cursor *cursor) = 0;
 	virtual void setCursor() = 0;

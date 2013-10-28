@@ -20,16 +20,20 @@
 
 // LOVE
 #include "wrap_Cursor.h"
-#include "Cursor.h"
 
 namespace love
 {
 namespace mouse
 {
 
-int w_getType(lua_State *L)
+Cursor *luax_checkcursor(lua_State *L, int idx)
 {
-	mouse::Cursor *cursor = luax_checktype<mouse::Cursor>(L, 1, "Cursor", MOUSE_CURSOR_T);
+	return luax_checktype<Cursor>(L, idx, "Cursor", MOUSE_CURSOR_T);
+}
+
+int w_Cursor_getType(lua_State *L)
+{
+	Cursor *cursor = luax_checkcursor(L, 1);
 
 	Cursor::CursorType ctype = cursor->getType();
 	const char *typestr = 0;
@@ -51,7 +55,7 @@ int w_getType(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "getType", w_getType },
+	{ "getType", w_Cursor_getType },
 	{ 0, 0 },
 };
 

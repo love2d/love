@@ -46,6 +46,9 @@ Mouse::~Mouse()
 {
 	if (curCursor)
 		setCursor();
+
+	for (auto it = systemCursors.begin(); it != systemCursors.end(); ++it)
+		it->second->release();
 }
 
 love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, int hoty)
@@ -53,9 +56,20 @@ love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, in
 	return new Cursor(data, hotx, hoty);
 }
 
-love::mouse::Cursor *Mouse::newCursor(love::mouse::Cursor::SystemCursor cursortype)
+love::mouse::Cursor *Mouse::getSystemCursor(Cursor::SystemCursor cursortype)
 {
-	return new Cursor(cursortype);
+	Cursor *cursor = NULL;
+	auto it = systemCursors.find(cursortype);
+
+	if (it != systemCursors.end())
+		cursor = it->second;
+	else
+	{
+		cursor = new Cursor(cursortype);
+		systemCursors[cursortype] = cursor;
+	}
+
+	return cursor;
 }
 
 void Mouse::setCursor(love::mouse::Cursor *cursor)
