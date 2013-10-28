@@ -331,19 +331,6 @@ int w_Source_getChannels(lua_State *L)
 	return 1;
 }
 
-int w_Source_getType(lua_State *L)
-{
-	Source *t = luax_checksource(L, 1);
-	Source::Type stype = t->getType();
-	const char *typestr;
-
-	if (!Source::getConstant(stype, typestr))
-		return luaL_error(L, "Unknown Source type.");
-
-	lua_pushstring(L, typestr);
-	return 1;
-}
-
 static const luaL_Reg functions[] =
 {
 	{ "play", w_Source_play },
@@ -385,7 +372,6 @@ static const luaL_Reg functions[] =
 	{ "getRolloff", w_Source_getRolloff},
 
 	{ "getChannels", w_Source_getChannels },
-	{ "getType", w_Source_getType },
 
 	{ 0, 0 }
 };

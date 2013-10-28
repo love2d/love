@@ -103,7 +103,6 @@ public:
 	virtual float getMaxDistance() const = 0;
 
 	virtual int getChannels() const = 0;
-	virtual Type getType() const;
 
 	static bool getConstant(const char *in, Type &out);
 	static bool getConstant(Type in, const char  *&out);

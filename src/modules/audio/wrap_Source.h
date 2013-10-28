@@ -64,7 +64,6 @@ int w_Source_getAttenuationDistances(lua_State *L);
 int w_Source_setRolloff(lua_State *L);
 int w_Source_getRolloff(lua_State *L);
 int w_Source_getChannels(lua_State *L);
-int w_Source_getType(lua_State *L);
 extern "C" int luaopen_source(lua_State *L);
 
 } // audio
