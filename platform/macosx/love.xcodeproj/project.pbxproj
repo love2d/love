@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		A911D3C915DFF25D005B7EB8 /* Game_Music_Emu.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */; };
 		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
 		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* Vorbis.framework */; };
@@ -58,7 +57,6 @@
 				A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */,
 				A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */,
 				A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */,
-				A911D3C915DFF25D005B7EB8 /* Game_Music_Emu.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -68,7 +66,6 @@
 /* Begin PBXFileReference section */
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		8D1107320486CEB800E47090 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Game_Music_Emu.framework; path = /Library/Frameworks/Game_Music_Emu.framework; sourceTree = "<absolute>"; };
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
 		A9255F421043240F00BA1496 /* IL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IL.framework; path = /Library/Frameworks/IL.framework; sourceTree = "<absolute>"; };
 		A9255F51104324D700BA1496 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
@@ -112,7 +109,6 @@
 				FA9B4A0916E1579F00074F42 /* SDL2.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				A93E6E4810420B4A007D418B /* FreeType.framework */,
-				A911D3C715DFF24D005B7EB8 /* Game_Music_Emu.framework */,
 				A9255F421043240F00BA1496 /* IL.framework */,
 				A9F16926109E7BAD00FC83D1 /* libmodplug.framework */,
 				FA08F69116C765A200F007B5 /* love.framework */,
