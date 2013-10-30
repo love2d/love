@@ -31,7 +31,6 @@
 #include "common/Module.h"
 #include "common/config.h"
 #include "common/int.h"
-#include "common/StringMap.h"
 #include "filesystem/FileData.h"
 #include "File.h"
 
@@ -77,17 +76,8 @@ class Filesystem : public Module
 {
 public:
 
-	// love.filesystem.setIdentity("foo", "last")
-	enum SearchOrder
-	{
-		SEARCH_ORDER_FIRST,
-		SEARCH_ORDER_LAST,
-		SEARCH_ORDER_MAX_ENUM
-	};
-
 	Filesystem();
-
-	~Filesystem();
+	virtual ~Filesystem();
 
 	const char *getName() const;
 
@@ -108,7 +98,7 @@ public:
 	 * @param ident The name of the game. Will be used to
 	 * to create the folder in the LOVE data folder.
 	 **/
-	bool setIdentity(const char *ident, SearchOrder searchorder = SEARCH_ORDER_FIRST);
+	bool setIdentity(const char *ident, bool appendToPath = false);
 	const char *getIdentity() const;
 
 	/**
@@ -124,7 +114,7 @@ public:
 	 **/
 	const char *getSource() const;
 
-	bool mount(const char *archive, const char *mountpoint, SearchOrder searchorder = SEARCH_ORDER_FIRST);
+	bool mount(const char *archive, const char *mountpoint, bool appendToPath = false);
 	bool unmount(const char *archive);
 
 	/**
@@ -288,9 +278,6 @@ public:
 	 **/
 	static int lines_i(lua_State *L);
 
-	static bool getConstant(const char *in, SearchOrder &out);
-	static bool getConstant(SearchOrder in, const char *&out);
-
 private:
 
 	// Contains the current working directory (UTF8).
@@ -318,9 +305,6 @@ private:
 	// for release 'builds'
 	bool fused;
 	bool fusedSet;
-
-	static StringMap<SearchOrder, SEARCH_ORDER_MAX_ENUM>::Entry orderEntries[];
-	static StringMap<SearchOrder, SEARCH_ORDER_MAX_ENUM> orders;
 
 }; // Filesystem
 

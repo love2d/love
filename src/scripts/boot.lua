@@ -312,7 +312,7 @@ function love.init()
 		},
 		console = false, -- Only relevant for windows.
 		identity = false,
-		identityorder = "first",
+		appendidentity = false,
 	}
 
 	-- If config file exists, load it and allow it to update config table.
@@ -395,7 +395,7 @@ function love.init()
 
 	if love.filesystem then
 		love.filesystem.setFused(is_fused_game)
-		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.identityorder)
+		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
 		if love.filesystem.exists("main.lua") then
 			require("main")
 		end

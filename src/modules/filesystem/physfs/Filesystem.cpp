@@ -96,7 +96,7 @@ bool Filesystem::isFused() const
 	return fused;
 }
 
-bool Filesystem::setIdentity(const char *ident, SearchOrder searchorder)
+bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 {
 	if (!initialized)
 		return false;
@@ -126,11 +126,9 @@ bool Filesystem::setIdentity(const char *ident, SearchOrder searchorder)
 	if (!old_save_path.empty())
 		PHYSFS_removeFromSearchPath(old_save_path.c_str());
 
-	bool append = (searchorder == SEARCH_ORDER_LAST);
-
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
-	PHYSFS_addToSearchPath(save_path_full.c_str(), append);
+	PHYSFS_addToSearchPath(save_path_full.c_str(), appendToPath);
 
 	return true;
 }
@@ -200,7 +198,7 @@ bool Filesystem::setupWriteDirectory()
 	return true;
 }
 
-bool Filesystem::mount(const char *archive, const char *mountpoint, SearchOrder searchorder)
+bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendToPath)
 {
 	if (!initialized || !archive)
 		return false;
@@ -238,9 +236,7 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, SearchOrder 
 	if (realPath.length() == 0)
 		return false;
 
-	bool append = (searchorder == SEARCH_ORDER_LAST);
-
-	return PHYSFS_mount(realPath.c_str(), mountpoint, append);
+	return PHYSFS_mount(realPath.c_str(), mountpoint, appendToPath);
 }
 
 bool Filesystem::unmount(const char *archive)
@@ -607,24 +603,6 @@ int64 Filesystem::getSize(const char *filename) const
 	int64 size = file.getSize();
 	return size;
 }
-
-bool Filesystem::getConstant(const char *in, Filesystem::SearchOrder &out)
-{
-	return orders.find(in, out);
-}
-
-bool Filesystem::getConstant(Filesystem::SearchOrder in, const char *&out)
-{
-	return orders.find(in, out);
-}
-
-StringMap<Filesystem::SearchOrder, Filesystem::SEARCH_ORDER_MAX_ENUM>::Entry Filesystem::orderEntries[] =
-{
-	{"first", Filesystem::SEARCH_ORDER_FIRST},
-	{"last", Filesystem::SEARCH_ORDER_LAST},
-};
-
-StringMap<Filesystem::SearchOrder, Filesystem::SEARCH_ORDER_MAX_ENUM> Filesystem::orders(Filesystem::orderEntries, sizeof(Filesystem::orderEntries));
 
 } // physfs
 } // filesystem

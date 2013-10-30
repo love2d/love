@@ -64,14 +64,9 @@ int w_isFused(lua_State *L)
 int w_setIdentity(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
+	bool append = luax_optboolean(L, 2, false);
 
-	Filesystem::SearchOrder order = Filesystem::SEARCH_ORDER_FIRST;
-	const char *ostr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
-
-	if (ostr && !Filesystem::getConstant(ostr, order))
-		return luaL_error(L, "Invalid filesystem search order: %s", ostr);
-
-	if (!instance->setIdentity(arg, order))
+	if (!instance->setIdentity(arg, append))
 		return luaL_error(L, "Could not set write directory.");
 
 	return 0;
@@ -103,14 +98,9 @@ int w_mount(lua_State *L)
 {
 	const char *archive = luaL_checkstring(L, 1);
 	const char *mountpoint = luaL_checkstring(L, 2);
+	bool append = luax_optboolean(L, 3, false);
 
-	Filesystem::SearchOrder order = Filesystem::SEARCH_ORDER_FIRST;
-	const char *ostr = lua_isnoneornil(L, 3) ? 0 : lua_tostring(L, 3);
-
-	if (ostr && !Filesystem::getConstant(ostr, order))
-		return luaL_error(L, "Invalid filesystem search order: %s", ostr);
-
-	luax_pushboolean(L, instance->mount(archive, mountpoint, order));
+	luax_pushboolean(L, instance->mount(archive, mountpoint, append));
 	return 1;
 }
 
