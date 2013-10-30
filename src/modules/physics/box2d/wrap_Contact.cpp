@@ -118,8 +118,8 @@ int w_Contact_getChildren(lua_State *L)
 	Contact *t = luax_checkcontact(L, 1);
 	int a, b;
 	t->getChildren(a, b);
-	lua_pushnumber(L, a);
-	lua_pushnumber(L, b);
+	lua_pushnumber(L, a + 1);
+	lua_pushnumber(L, b + 1);
 	return 2;
 }
 
