@@ -358,6 +358,12 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	{
 		SDL_GL_MakeCurrent(window, context);
 		updateAttributes(newattribs);
+
+		// Update the viewport size now instead of waiting for event polling.
+		graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+		if (gfx)
+			gfx->setViewportSize(curMode.width, curMode.height);
+
 		return true;
 	}
 

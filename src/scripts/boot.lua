@@ -278,7 +278,6 @@ function love.init()
 	-- will NOT make it load, see below.
 	local c = {
 		title = "Untitled",
-		author = "Unnamed",
 		version = love._version,
 		window = {
 			width = 800,
