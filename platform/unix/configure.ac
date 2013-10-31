@@ -34,7 +34,6 @@ AS_VAR_IF([cxx11name], [no], AC_MSG_ERROR([Can't LÖVE without C++11]), CXXFLAGS
 
 # Libraries
 AC_SEARCH_LIBS([sqrt], [m], [], AC_MSG_ERROR([Can't LÖVE without C math library]))
-AC_SEARCH_LIBS([SDL_Init], [SDL2], [], AC_MSG_ERROR([Can't LÖVE without SDL 2]))
 AC_SEARCH_LIBS([glLoadIdentity], [GL], [], AC_MSG_ERROR([Can't LÖVE without OpenGL]))
 AC_SEARCH_LIBS([alSourcePlay], [openal], [], AC_MSG_ERROR([Can't LÖVE without OpenAL]))
 AC_SEARCH_LIBS([ilInit], [IL], [], AC_MSG_ERROR([Can't LÖVE without DevIL]))
@@ -44,8 +43,10 @@ AC_SEARCH_LIBS([ModPlug_Load], [modplug], [], AC_MSG_ERROR([Can't LÖVE without 
 AC_SEARCH_LIBS([ov_open], [vorbisfile], [], AC_MSG_ERROR([Can't LÖVE without VorbisFile]))
 
 # Includes
-AC_CHECK_HEADER([SDL2/SDL.h], [includes="$includes -I/usr/include/SDL2"])
 AC_CHECK_HEADER([freetype2/freetype/config/ftheader.h], [includes="$includes -I/usr/include/freetype2"])
+
+# SDL 2, treated seperately because it combines setting SDL2_LIBS and SDL2_CFLAGS into one step
+AM_PATH_SDL2([], [], AC_MSG_ERROR([Can't LÖVE without SDL 2]))
 
 # Lua, treated seperately because of --with-lua
 AC_ARG_WITH([lua], [AS_HELP_STRING([--with-lua], [Select the lua implementation])],

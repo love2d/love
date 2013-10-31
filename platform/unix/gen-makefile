@@ -7,6 +7,7 @@ inc_libraries="$inc_current/libraries"
 
 cat > Makefile.am << EOF
 AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET)
+AM_CXXFLAGS = \$(SDL_CFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
 
@@ -27,7 +28,7 @@ endif
 
 # libLÖVE
 lib_LTLIBRARIES = liblove.la
-liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
+liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) \$(SDL_LIBS)
 liblove_la_SOURCES = \\
 EOF
 
