@@ -41,6 +41,12 @@ enet_deinitialize (void)
 }
 
 enet_uint32
+enet_host_random_seed (void)
+{
+    return (enet_uint32) timeGetTime ();
+}
+
+enet_uint32
 enet_time_get (void)
 {
     return (enet_uint32) timeGetTime () - timeBase;
@@ -187,6 +193,27 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
 
         case ENET_SOCKOPT_SNDTIMEO:
             result = setsockopt (socket, SOL_SOCKET, SO_SNDTIMEO, (char *) & value, sizeof (int));
+            break;
+
+        case ENET_SOCKOPT_NODELAY:
+            result = setsockopt (socket, IPPROTO_TCP, TCP_NODELAY, (char *) & value, sizeof (int));
+            break;
+
+        default:
+            break;
+    }
+    return result == SOCKET_ERROR ? -1 : 0;
+}
+
+int
+enet_socket_get_option (ENetSocket socket, ENetSocketOption option, int * value)
+{
+    int result = SOCKET_ERROR, len;
+    switch (option)
+    {
+        case ENET_SOCKOPT_ERROR:
+            len = sizeof(int);
+            result = getsockopt (socket, SOL_SOCKET, SO_ERROR, (char *) value, & len);
             break;
 
         default:

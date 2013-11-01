@@ -4,7 +4,6 @@
 */
 #define ENET_BUILDING_LIB 1
 #include <string.h>
-#include <time.h>
 #include "enet/enet.h"
 
 /** @defgroup host ENet host functions
@@ -76,11 +75,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
       channelLimit = ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT;
 
     host -> randomSeed = (enet_uint32) (size_t) host;
-#ifdef WIN32
-    host -> randomSeed += (enet_uint32) timeGetTime();
-#else
-    host -> randomSeed += (enet_uint32) time(NULL);
-#endif
+    host -> randomSeed += enet_host_random_seed ();
     host -> randomSeed = (host -> randomSeed << 16) | (host -> randomSeed >> 16);
     host -> channelLimit = channelLimit;
     host -> incomingBandwidth = incomingBandwidth;
@@ -104,6 +99,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
 
     host -> connectedPeers = 0;
     host -> bandwidthLimitedPeers = 0;
+    host -> duplicatePeers = ENET_PROTOCOL_MAXIMUM_PEER_ID;
 
     host -> compressor.context = NULL;
     host -> compressor.compress = NULL;
