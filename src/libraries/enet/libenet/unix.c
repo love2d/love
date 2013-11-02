@@ -48,6 +48,7 @@
 #include <sys/poll.h>
 #endif
 
+#include "common/config.h"
 #ifndef HAS_SOCKLEN_T
 typedef int socklen_t;
 #endif
