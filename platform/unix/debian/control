@@ -1,0 +1,58 @@
+Source: love
+Section: games
+Priority: extra
+Maintainer: Bart van Strien <bart.bes@gmail.com>
+Build-Depends: debhelper (>= 9),
+               autotools-dev,
+               libdevil-dev,
+               libfreetype6-dev,
+               libluajit-5.1-dev,
+               libphysfs-dev,
+               libsdl2-dev (>= 2.0.1),
+               libopenal-dev,
+               libogg-dev,
+               libvorbis-dev,
+               libflac-dev,
+               libflac++-dev,
+               libmodplug-dev,
+               libmpg123-dev,
+               libmng-dev
+Standards-Version: 3.9.3
+Homepage: http://love2d.org
+
+Package: liblove
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         libdevil1c2,
+         libmng1,
+         libfreetype6,
+         libgl1-mesa-glx,
+         libluajit-5.1-2,
+         libphysfs-1.0-0,
+         libsdl2 (>= 2.0.1),
+         libopenal1,
+         libogg0,
+         libvorbis0a,
+         libvorbisfile3,
+         libmodplug1,
+         libmpg123-0
+Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
+
+Package: love
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends},
+         liblove (= ${binary:Version})
+Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
+
+Package: love-dbg
+Priority: extra
+Section: debug
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends},
+         love (= ${binary:Version}),
+Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
