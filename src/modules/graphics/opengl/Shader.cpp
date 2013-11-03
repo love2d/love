@@ -91,6 +91,12 @@ Shader::~Shader()
 	if (current == this)
 		detach();
 
+	for (auto it = boundRetainables.begin(); it != boundRetainables.end(); ++it)
+	{
+		it->second->release();
+		boundRetainables.erase(it);
+	}
+
 	unloadVolatile();
 }
 
@@ -331,8 +337,13 @@ void Shader::attach(bool temporary)
 {
 	if (current != this)
 	{
+		if (current != NULL)
+			current->release();
+
 		glUseProgram(program);
 		current = this;
+
+		current->retain();
 	}
 
 	if (!temporary)
@@ -558,14 +569,26 @@ void Shader::sendTexture(const std::string &name, GLuint texture)
 	activeTextureUnits[textureunit-1] = texture;
 }
 
-void Shader::sendImage(const std::string &name, const Image &image)
+void Shader::retainTexture(const std::string &name, Object *texture)
 {
-	sendTexture(name, image.getTextureName());
+	auto it = boundRetainables.find(name);
+	if (it != boundRetainables.end())
+		it->second->release();
+
+	texture->retain();
+	boundRetainables[name] = texture;
 }
 
-void Shader::sendCanvas(const std::string &name, const Canvas &canvas)
+void Shader::sendImage(const std::string &name, Image &image)
+{
+	sendTexture(name, image.getTextureName());
+	retainTexture(name, &image);
+}
+
+void Shader::sendCanvas(const std::string &name, Canvas &canvas)
 {
 	sendTexture(name, canvas.getTextureName());
+	retainTexture(name, &canvas);
 }
 
 int Shader::getTextureUnit(const std::string &name)

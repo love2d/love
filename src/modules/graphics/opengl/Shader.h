@@ -124,14 +124,14 @@ public:
 	 *
 	 * @param name The name of the uniform variable in the source code.
 	 **/
-	void sendImage(const std::string &name, const Image &image);
+	void sendImage(const std::string &name, Image &image);
 
 	/**
 	 * Send a canvas to this Shader as a uniform.
 	 *
 	 * @param name The name of the uniform variable in the source code.
 	 **/
-	void sendCanvas(const std::string &name, const Canvas &canvas);
+	void sendCanvas(const std::string &name, Canvas &canvas);
 
 	static std::string getGLSLVersion();
 	static bool isSupported();
@@ -173,6 +173,7 @@ private:
 	int getTextureUnit(const std::string &name);
 
 	void sendTexture(const std::string &name, GLuint texture);
+	void retainTexture(const std::string &name, Object *texture);
 
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
@@ -192,6 +193,9 @@ private:
 	// Texture unit pool for setting images
 	std::map<std::string, GLint> textureUnitPool; // textureUnitPool[name] = textureunit
 	std::vector<GLuint> activeTextureUnits; // activeTextureUnits[textureunit-1] = textureid
+
+	// Uniform name to retainable objects
+	std::map<std::string, Object*> boundRetainables;
 
 	// Max GPU texture units available for sent images
 	static GLint maxTextureUnits;
