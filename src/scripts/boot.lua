@@ -226,6 +226,12 @@ end
 local is_fused_game = false
 local no_game_code = false
 
+local function uridecode(s)
+	return s:gsub("%%%x%x", function(str)
+		return string.char(tonumber(str:sub(2), 16))
+	end)
+end
+
 -- This can't be overriden.
 function love.boot()
 
@@ -250,7 +256,7 @@ function love.boot()
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local nouri = o.game.arg[1]
 		if nouri:sub(1, 7) == "file://" then
-			nouri = nouri:sub(8)
+			nouri = uridecode(nouri:sub(8))
 		end
 		local full_source =  love.path.getfull(nouri)
 		local leaf = love.path.leaf(full_source)
