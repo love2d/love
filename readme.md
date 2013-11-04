@@ -48,7 +48,7 @@ There are also unstable/nightly builds:
 Dependencies
 ------------
 
-- SDL
+- SDL2
 - OpenGL
 - OpenAL
 - Lua / LuaJIT / LLVM-lua
