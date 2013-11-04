@@ -86,7 +86,7 @@ int w_newRandomGenerator(lua_State *L)
 		}
 
 		if (should_error)
-			return lua_error(L);
+			return luaL_error(L, "%s", lua_tostring(L, -1));
 	}
 
 	luax_pushtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, t);

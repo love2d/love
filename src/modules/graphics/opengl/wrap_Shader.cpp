@@ -144,7 +144,7 @@ int w_Shader_sendInt(lua_State *L)
 	delete[] values;
 
 	if (should_error)
-		return lua_error(L);
+		return luaL_error(L, "%s", lua_tostring(L, -1));
 
 	return 0;
 }
@@ -185,7 +185,7 @@ int w_Shader_sendFloat(lua_State *L)
 	delete[] values;
 
 	if (should_error)
-		return lua_error(L);
+		return luaL_error(L, "%s", lua_tostring(L, -1));
 
 	return 0;
 }
@@ -248,7 +248,7 @@ int w_Shader_sendMatrix(lua_State *L)
 	delete[] values;
 
 	if (should_error)
-		return lua_error(L);
+		return luaL_error(L, "%s", lua_tostring(L, -1));
 
 	return 0;
 }
