@@ -104,7 +104,7 @@ BezierCurve *Math::newBezierCurve(const vector<Vector> &points)
 vector<Triangle> Math::triangulate(const vector<Vertex> &polygon)
 {
 	if (polygon.size() < 3)
-		throw love::Exception("Not a ploygon");
+		throw love::Exception("Not a polygon");
 	else if (polygon.size() == 3)
 		return vector<Triangle>(1, Triangle(polygon[0], polygon[1], polygon[2]));
 
