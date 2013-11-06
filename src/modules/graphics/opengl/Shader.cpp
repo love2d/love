@@ -629,7 +629,7 @@ std::string Shader::getGLSLVersion()
 	const char *tmp = 0;
 
 	// GL_SHADING_LANGUAGE_VERSION isn't available in OpenGL < 2.0.
-	if (GL_VERSION_2_0 || GLEE_ARB_shading_language_100)
+	if (GLEE_VERSION_2_0 || GLEE_ARB_shading_language_100)
 		tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 
 	if (tmp == 0)
