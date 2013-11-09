@@ -26,7 +26,7 @@
 		FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
 		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
 		FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */; };
-		FAC8E8D416F3C468004DADF3 /* osx.mm in Sources */ = {isa = PBXBuildFile; fileRef = FAC8E8D316F3C468004DADF3 /* osx.mm */; };
+		FAC8E8D416F3C468004DADF3 /* OSX.mm in Sources */ = {isa = PBXBuildFile; fileRef = FAC8E8D316F3C468004DADF3 /* OSX.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,8 +83,8 @@
 		FA577A9316C7217800860150 /* love-framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "love-framework.xcodeproj"; sourceTree = "<group>"; };
 		FA9B4A0916E1579F00074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
-		FAC8E8D316F3C468004DADF3 /* osx.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = osx.mm; sourceTree = "<group>"; };
-		FAC8E8D616F3C46E004DADF3 /* osx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = osx.h; sourceTree = "<group>"; };
+		FAC8E8D316F3C468004DADF3 /* OSX.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OSX.mm; sourceTree = "<group>"; };
+		FAC8E8D616F3C46E004DADF3 /* OSX.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSX.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,8 +166,8 @@
 			isa = PBXGroup;
 			children = (
 				A93E6A3410420AC0007D418B /* love.cpp */,
-				FAC8E8D616F3C46E004DADF3 /* osx.h */,
-				FAC8E8D316F3C468004DADF3 /* osx.mm */,
+				FAC8E8D616F3C46E004DADF3 /* OSX.h */,
+				FAC8E8D316F3C468004DADF3 /* OSX.mm */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -255,7 +255,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A93E6EED10420BA8007D418B /* love.cpp in Sources */,
-				FAC8E8D416F3C468004DADF3 /* osx.mm in Sources */,
+				FAC8E8D416F3C468004DADF3 /* OSX.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
