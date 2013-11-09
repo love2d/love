@@ -92,7 +92,7 @@ int w_World_translateOrigin(lua_State *L)
 	World *t = luax_checkworld(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_checknumber(L, 3);
-	t->translateOrigin(arg1, arg2);
+	EXCEPT_GUARD(t->translateOrigin(arg1, arg2);)
 	return 0;
 }
 
