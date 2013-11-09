@@ -169,15 +169,19 @@ int w_Body_applyLinearImpulse(lua_State *L)
 	float jx = (float)luaL_checknumber(L, 2);
 	float jy = (float)luaL_checknumber(L, 3);
 
-	if (lua_gettop(L) == 3)
+	int nargs = lua_gettop(L);
+
+	if (nargs <= 3 || (nargs == 4 && lua_type(L, 4) == LUA_TBOOLEAN))
 	{
-		t->applyLinearImpulse(jx, jy);
+		bool awake = luax_optboolean(L, 4, true);
+		t->applyLinearImpulse(jx, jy, awake);
 	}
-	else if (lua_gettop(L) == 5)
+	else if (nargs >= 5)
 	{
 		float rx = (float)luaL_checknumber(L, 4);
 		float ry = (float)luaL_checknumber(L, 5);
-		t->applyLinearImpulse(jx, jy, rx, ry);
+		bool awake = luax_optboolean(L, 6, true);
+		t->applyLinearImpulse(jx, jy, rx, ry, awake);
 	}
 	else
 	{
@@ -191,7 +195,8 @@ int w_Body_applyAngularImpulse(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float i = (float)luaL_checknumber(L, 2);
-	t->applyAngularImpulse(i);
+	bool awake = luax_optboolean(L, 3, true);
+	t->applyAngularImpulse(i, awake);
 	return 0;
 }
 
@@ -199,7 +204,8 @@ int w_Body_applyTorque(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float arg = (float)luaL_checknumber(L, 2);
-	t->applyTorque(arg);
+	bool awake = luax_optboolean(L, 3, true);
+	t->applyTorque(arg, awake);
 	return 0;
 }
 
@@ -209,16 +215,19 @@ int w_Body_applyForce(lua_State *L)
 	float fx = (float)luaL_checknumber(L, 2);
 	float fy = (float)luaL_checknumber(L, 3);
 
+	int nargs = lua_gettop(L);
 
-	if (lua_gettop(L) == 3)
+	if (nargs <= 3 || (nargs == 4 && lua_type(L, 4) == LUA_TBOOLEAN))
 	{
-		t->applyForce(fx, fy);
+		bool awake = luax_optboolean(L, 4, true);
+		t->applyForce(fx, fy, awake);
 	}
-	else if (lua_gettop(L) == 5)
+	else if (lua_gettop(L) >= 5)
 	{
 		float rx = (float)luaL_checknumber(L, 4);
 		float ry = (float)luaL_checknumber(L, 5);
-		t->applyForce(fx, fy, rx, ry);
+		bool awake = luax_optboolean(L, 6, true);
+		t->applyForce(fx, fy, rx, ry, awake);
 	}
 	else
 	{

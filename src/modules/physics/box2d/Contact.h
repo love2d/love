@@ -136,6 +136,15 @@ public:
 	 **/
 	void resetRestitution();
 
+	/**
+	 * Set the desired tangent speed.
+	 **/
+	void setTangentSpeed(float speed);
+
+	/**
+	 * Get the desired tangent speed.
+	 **/
+	float getTangentSpeed() const;
 
 	void getChildren(int &childA, int &childB);
 

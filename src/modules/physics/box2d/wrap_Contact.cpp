@@ -113,6 +113,21 @@ int w_Contact_resetRestitution(lua_State *L)
 	return 0;
 }
 
+int w_Contact_setTangentSpeed(lua_State *L)
+{
+	Contact *t = luax_checkcontact(L, 1);
+	float speed = (float) luaL_checknumber(L, 2);
+	t->setTangentSpeed(speed);
+	return 0;
+}
+
+int w_Contact_getTangentSpeed(lua_State *L)
+{
+	Contact *t = luax_checkcontact(L, 1);
+	lua_pushnumber(L, t->getTangentSpeed());
+	return 1;
+}
+
 int w_Contact_getChildren(lua_State *L)
 {
 	Contact *t = luax_checkcontact(L, 1);
@@ -138,6 +153,8 @@ extern "C" int luaopen_contact(lua_State *L)
 		{ "setEnabled", w_Contact_setEnabled },
 		{ "resetFriction", w_Contact_resetFriction },
 		{ "resetRestitution", w_Contact_resetRestitution },
+		{ "setTangentSpeed", w_Contact_setTangentSpeed },
+		{ "getTangentSpeed", w_Contact_getTangentSpeed },
 		{ "getChildren", w_Contact_getChildren },
 		{ 0, 0 }
 	};

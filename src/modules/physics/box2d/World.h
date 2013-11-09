@@ -182,6 +182,13 @@ public:
 	int getGravity(lua_State *L);
 
 	/**
+	 * Translate the world origin.
+	 * @param x The new world origin's x-coordinate relative to the old origin.
+	 * @param y The new world origin's y-coordinate relative to the old origin.
+	 **/
+	void translateOrigin(float x, float y);
+
+	/**
 	 * Sets whether this World allows sleep.
 	 * @param allow True to allow, false to disallow.
 	 **/

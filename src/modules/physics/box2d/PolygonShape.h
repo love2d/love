@@ -57,6 +57,11 @@ public:
 	 * The result can be directly passed into love.graphics.polygon().
 	 **/
 	int getPoints(lua_State *L);
+
+	/**
+	 * Validate convexity.
+	 **/
+	bool validate() const;
 };
 
 } // box2d

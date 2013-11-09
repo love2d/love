@@ -57,6 +57,12 @@ int PolygonShape::getPoints(lua_State *L)
 	return count*2;
 }
 
+bool PolygonShape::validate() const
+{
+	b2PolygonShape *p = (b2PolygonShape *)shape;
+	return p->Validate();
+}
+
 } // box2d
 } // physics
 } // love

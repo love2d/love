@@ -42,6 +42,7 @@ int w_World_setContactFilter(lua_State *L);
 int w_World_getContactFilter(lua_State *L);
 int w_World_setGravity(lua_State *L);
 int w_World_getGravity(lua_State *L);
+int w_World_translateOrigin(lua_State *L);
 int w_World_setSleepingAllowed(lua_State *L);
 int w_World_isSleepingAllowed(lua_State *L);
 int w_World_isLocked(lua_State *L);

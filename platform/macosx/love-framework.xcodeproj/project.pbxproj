@@ -206,6 +206,12 @@
 		FA08F67A16C754B100F007B5 /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 695E4ED13AA0689E64280573 /* wrap_Timer.cpp */; };
 		FA08F67B16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 351B09E51FDC338622F44624 /* Window.cpp */; };
 		FA08F67C16C754BA00F007B5 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6CDD4F3320303D222C180CD0 /* Window.cpp */; };
+		FA0A4BF0182E0C2800E1E4D2 /* b2MotorJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A4BEE182E0C2800E1E4D2 /* b2MotorJoint.cpp */; };
+		FA0A4BF1182E0C2800E1E4D2 /* b2MotorJoint.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A4BEF182E0C2800E1E4D2 /* b2MotorJoint.h */; };
+		FA0A4BF4182E1AD600E1E4D2 /* MotorJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A4BF2182E1AD600E1E4D2 /* MotorJoint.cpp */; };
+		FA0A4BF5182E1AD600E1E4D2 /* MotorJoint.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A4BF3182E1AD600E1E4D2 /* MotorJoint.h */; };
+		FA0A4BF9182E260200E1E4D2 /* wrap_MotorJoint.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A4BF7182E260200E1E4D2 /* wrap_MotorJoint.h */; };
+		FA0A4BFA182E26F500E1E4D2 /* wrap_MotorJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A4BF6182E260200E1E4D2 /* wrap_MotorJoint.cpp */; };
 		FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */; };
 		FA1EF7C41799FEAC00FF380C /* wrap_System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA34E7D4174B55AF00E04D3F /* wrap_System.cpp */; };
 		FA1EF7C51799FEB200FF380C /* wrap_System.h in Headers */ = {isa = PBXBuildFile; fileRef = FA34E7D5174B55AF00E04D3F /* wrap_System.h */; };
@@ -749,6 +755,12 @@
 		FA03546A1731F3A700284828 /* simplexnoise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = simplexnoise1234.cpp; sourceTree = "<group>"; };
 		FA03546B1731F3A700284828 /* simplexnoise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simplexnoise1234.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
+		FA0A4BEE182E0C2800E1E4D2 /* b2MotorJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2MotorJoint.cpp; sourceTree = "<group>"; };
+		FA0A4BEF182E0C2800E1E4D2 /* b2MotorJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2MotorJoint.h; sourceTree = "<group>"; };
+		FA0A4BF2182E1AD600E1E4D2 /* MotorJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MotorJoint.cpp; sourceTree = "<group>"; };
+		FA0A4BF3182E1AD600E1E4D2 /* MotorJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MotorJoint.h; sourceTree = "<group>"; };
+		FA0A4BF6182E260200E1E4D2 /* wrap_MotorJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_MotorJoint.cpp; sourceTree = "<group>"; };
+		FA0A4BF7182E260200E1E4D2 /* wrap_MotorJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_MotorJoint.h; sourceTree = "<group>"; };
 		FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA34E7CB174B513F00E04D3F /* System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = System.cpp; sourceTree = "<group>"; };
 		FA34E7CC174B513F00E04D3F /* System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = System.h; sourceTree = "<group>"; };
@@ -1202,6 +1214,8 @@
 				25CE236F66F70EB3444A7CC8 /* GearJoint.h */,
 				3EA80A4E0CE0014052076037 /* Joint.cpp */,
 				138913BE5126483748FA43D0 /* Joint.h */,
+				FA0A4BF2182E1AD600E1E4D2 /* MotorJoint.cpp */,
+				FA0A4BF3182E1AD600E1E4D2 /* MotorJoint.h */,
 				3C0B06AF6B5326C840477B18 /* MouseJoint.cpp */,
 				208275724C9421035EA145A4 /* MouseJoint.h */,
 				370D76DC224F2EB300CB4E2F /* Physics.cpp */,
@@ -1244,6 +1258,8 @@
 				7BAB25936D207169591A666A /* wrap_GearJoint.h */,
 				71810207414B52F8340D7797 /* wrap_Joint.cpp */,
 				047815B73C1C5373551442A6 /* wrap_Joint.h */,
+				FA0A4BF6182E260200E1E4D2 /* wrap_MotorJoint.cpp */,
+				FA0A4BF7182E260200E1E4D2 /* wrap_MotorJoint.h */,
 				4D81102E7ABD1C282BE42CE3 /* wrap_MouseJoint.cpp */,
 				64BA1CE328FF17144B475111 /* wrap_MouseJoint.h */,
 				6CEB48E969FC42C53F9432B1 /* wrap_Physics.cpp */,
@@ -1569,6 +1585,8 @@
 				6590063A6E4B3AEF4550443C /* b2GearJoint.h */,
 				6F1B61350B6B36AF216C57D7 /* b2Joint.cpp */,
 				10F83B5848B77A937C250FEB /* b2Joint.h */,
+				FA0A4BEE182E0C2800E1E4D2 /* b2MotorJoint.cpp */,
+				FA0A4BEF182E0C2800E1E4D2 /* b2MotorJoint.h */,
 				4A47384208BE218F688C4EFA /* b2MouseJoint.cpp */,
 				0AA1539E66B2641B66130709 /* b2MouseJoint.h */,
 				1E27263847302FCA1F843B47 /* b2PrismaticJoint.cpp */,
@@ -1944,6 +1962,7 @@
 				FAF272A916E3D44400CC193A /* ThreadModule.h in Headers */,
 				FAF6705018184FF800DBDEEA /* wuff_convert.h in Headers */,
 				FAF272AB16E3D44400CC193A /* wrap_Channel.h in Headers */,
+				FA0A4BF9182E260200E1E4D2 /* wrap_MotorJoint.h in Headers */,
 				FAF272AD16E3D44400CC193A /* wrap_LuaThread.h in Headers */,
 				FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */,
 				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
@@ -1981,7 +2000,9 @@
 				FA5FDC811788D548002F0ED2 /* protocol.h in Headers */,
 				FA5FDC821788D548002F0ED2 /* time.h in Headers */,
 				FA5FDC831788D548002F0ED2 /* types.h in Headers */,
+				FA0A4BF5182E1AD600E1E4D2 /* MotorJoint.h in Headers */,
 				FA5FDC841788D548002F0ED2 /* unix.h in Headers */,
+				FA0A4BF1182E0C2800E1E4D2 /* b2MotorJoint.h in Headers */,
 				FA5FDC851788D548002F0ED2 /* utility.h in Headers */,
 				FAF6704D18184FF800DBDEEA /* wuff.h in Headers */,
 				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
@@ -2093,6 +2114,7 @@
 				FA08F5D216C7534400F007B5 /* b2PolygonShape.cpp in Sources */,
 				FA08F5D316C7535000F007B5 /* b2BlockAllocator.cpp in Sources */,
 				FA08F5D416C7535000F007B5 /* b2Draw.cpp in Sources */,
+				FA0A4BF4182E1AD600E1E4D2 /* MotorJoint.cpp in Sources */,
 				FA08F5D516C7535000F007B5 /* b2Math.cpp in Sources */,
 				FA08F5D616C7535000F007B5 /* b2Settings.cpp in Sources */,
 				FA08F5D716C7535000F007B5 /* b2StackAllocator.cpp in Sources */,
@@ -2180,6 +2202,7 @@
 				FA08F62916C7541400F007B5 /* wrap_Image.cpp in Sources */,
 				FA08F62A16C7541400F007B5 /* wrap_ParticleSystem.cpp in Sources */,
 				FA08F62C16C7541400F007B5 /* wrap_Shader.cpp in Sources */,
+				FA0A4BFA182E26F500E1E4D2 /* wrap_MotorJoint.cpp in Sources */,
 				FA08F62D16C7541400F007B5 /* wrap_SpriteBatch.cpp in Sources */,
 				FA08F62E16C7542600F007B5 /* ImageData.cpp in Sources */,
 				FA08F62F16C7542600F007B5 /* Image.cpp in Sources */,
@@ -2262,6 +2285,7 @@
 				FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */,
 				FAF272A416E3D44400CC193A /* Channel.cpp in Sources */,
 				FAF272A616E3D44400CC193A /* LuaThread.cpp in Sources */,
+				FA0A4BF0182E0C2800E1E4D2 /* b2MotorJoint.cpp in Sources */,
 				FAF272A816E3D44400CC193A /* ThreadModule.cpp in Sources */,
 				FAF272AA16E3D44400CC193A /* wrap_Channel.cpp in Sources */,
 				FAF272AC16E3D44400CC193A /* wrap_LuaThread.cpp in Sources */,

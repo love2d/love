@@ -47,6 +47,7 @@ public:
 		JOINT_WELD,
 		JOINT_WHEEL,
 		JOINT_ROPE,
+		JOINT_MOTOR,
 		JOINT_MAX_ENUM
 	};
 

@@ -104,53 +104,25 @@ int Physics::newPolygonShape(lua_State *L)
 
 	b2PolygonShape *s = new b2PolygonShape();
 
-	bool reverse = false;
-	b2Vec2 edge1;
 	b2Vec2 vecs[b2_maxPolygonVertices];
 
 	for (int i = 0; i < vcount; i++)
 	{
-		float x = (float)luaL_checknumber(L, -2);
-		float y = (float)luaL_checknumber(L, -1);
+		float x = (float)luaL_checknumber(L, 1 + i * 2);
+		float y = (float)luaL_checknumber(L, 2 + i * 2);
 		vecs[i] = Physics::scaleDown(b2Vec2(x, y));
-		lua_pop(L, 2);
-
-		if (!reverse)
-		{
-			// Detect clockwise winding.
-			if (i == 1)
-			{
-				edge1 = vecs[1] - vecs[0];
-			}
-			else if (i == vcount - 1)
-			{
-				b2Vec2 edge2 = vecs[i] - vecs[i-1];
-				// Also check the edge from the last and first point.
-				b2Vec2 edge3 = vecs[0] - vecs[i];
-				if (b2Cross(edge1, edge2) < 0.0f || b2Cross(edge2, edge3) < 0.0f)
-					reverse = true;
-			}
-			else if (i > 1)
-			{
-				b2Vec2 edge2 = vecs[i] - vecs[i-1];
-				if (b2Cross(edge1, edge2) < 0.0f)
-					reverse = true;
-				edge1 = edge2;
-			}
-		}
 	}
 
-	if (reverse)
+	try
 	{
-		for (int i = 0, j = vcount-1; i < j; ++i, --j)
-		{
-			b2Vec2 swap = vecs[i];
-			vecs[i] = vecs[j];
-			vecs[j] = swap;
-		}
+		s->Set(vecs, vcount);
+	}
+	catch (love::Exception &)
+	{
+		delete s;
+		throw;
 	}
 
-	s->Set(vecs, vcount);
 	PolygonShape *p = new PolygonShape(s);
 
 	luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, p);
@@ -239,6 +211,17 @@ RopeJoint *Physics::newRopeJoint(Body *body1, Body *body2, float x1, float y1, f
 {
 	return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
 }
+
+MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2)
+{
+	return new MotorJoint(body1, body2);
+}
+
+MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2, float correctionFactor)
+{
+	return new MotorJoint(body1, body2, correctionFactor);
+}
+
 
 Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 {
