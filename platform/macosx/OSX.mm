@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#import "osx.h"
+#import "OSX.h"
 #import <Foundation/Foundation.h>
 
 #include <SDL2/SDL.h>
