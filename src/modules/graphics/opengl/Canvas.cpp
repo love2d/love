@@ -376,22 +376,22 @@ Canvas::Canvas(int width, int height, TextureType texture_type)
 	// world coordinates
 	vertices[0].x = 0;
 	vertices[0].y = h;
-	vertices[1].x = 0;
-	vertices[1].y = 0;
+	vertices[1].x = w;
+	vertices[1].y = h;
 	vertices[2].x = w;
 	vertices[2].y = 0;
-	vertices[3].x = w;
-	vertices[3].y = h;
+	vertices[3].x = 0;
+	vertices[3].y = 0;
 
 	// texture coordinates
 	vertices[0].s = 0;
 	vertices[0].t = 0;
-	vertices[1].s = 0;
-	vertices[1].t = 1;
+	vertices[1].s = 1;
+	vertices[1].t = 0;
 	vertices[2].s = 1;
 	vertices[2].t = 1;
-	vertices[3].s = 1;
-	vertices[3].t = 0;
+	vertices[3].s = 0;
+	vertices[3].t = 1;
 
 	settings.filter = Image::getDefaultFilter();
 
