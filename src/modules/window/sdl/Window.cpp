@@ -42,12 +42,6 @@ Window::Window()
 	, window(0)
 	, context(0)
 {
-#ifdef LOVE_MACOSX
-	// SDL 2 minimizes the window at weird times on OSX if this isn't disabled.
-	// TODO: do Linux and/or Windows need this as well (multi-monitor)?
-	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-#endif
-
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("%s", SDL_GetError());
 }
@@ -313,6 +307,16 @@ void Window::updateAttributes(const WindowAttributes &newattribs)
 	curMode.attribs.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
 	curMode.attribs.centered = newattribs.centered;
 	curMode.attribs.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+
+	// Only minimize on focus loss if the window is in exclusive-fullscreen
+	// mode (mimics behaviour of SDL 2.0.2+).
+	// In OS X we always disable this to prevent dock minimization weirdness.
+#ifndef LOVE_MACOSX
+	if (curMode.attribs.fullscreen && curMode.attribs.fstype == FULLSCREEN_TYPE_NORMAL)
+		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
+	else
+#endif
+		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 }
 
 void Window::getWindow(int &width, int &height, WindowAttributes &attribs)
