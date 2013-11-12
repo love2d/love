@@ -168,36 +168,36 @@ Body::Type Body::getType() const
 	}
 }
 
-void Body::applyLinearImpulse(float jx, float jy)
+void Body::applyLinearImpulse(float jx, float jy, bool wake)
 {
-	body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), body->GetWorldCenter());
+	body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), body->GetWorldCenter(), wake);
 }
 
-void Body::applyLinearImpulse(float jx, float jy, float rx, float ry)
+void Body::applyLinearImpulse(float jx, float jy, float rx, float ry, bool wake)
 {
-	body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), Physics::scaleDown(b2Vec2(rx, ry)));
+	body->ApplyLinearImpulse(Physics::scaleDown(b2Vec2(jx, jy)), Physics::scaleDown(b2Vec2(rx, ry)), wake);
 }
 
-void Body::applyAngularImpulse(float impulse)
+void Body::applyAngularImpulse(float impulse, bool wake)
 {
 	// Angular impulse is in kg*m^2/s, meaning it needs to be scaled twice
-	body->ApplyAngularImpulse(Physics::scaleDown(Physics::scaleDown(impulse)));
+	body->ApplyAngularImpulse(Physics::scaleDown(Physics::scaleDown(impulse)), wake);
 }
 
-void Body::applyTorque(float t)
+void Body::applyTorque(float t, bool wake)
 {
 	// Torque is in N*m, or kg*m^2/s^2, meaning it also needs to be scaled twice
-	body->ApplyTorque(Physics::scaleDown(Physics::scaleDown(t)));
+	body->ApplyTorque(Physics::scaleDown(Physics::scaleDown(t)), wake);
 }
 
-void Body::applyForce(float fx, float fy, float rx, float ry)
+void Body::applyForce(float fx, float fy, float rx, float ry, bool wake)
 {
-	body->ApplyForce(Physics::scaleDown(b2Vec2(fx, fy)), Physics::scaleDown(b2Vec2(rx, ry)));
+	body->ApplyForce(Physics::scaleDown(b2Vec2(fx, fy)), Physics::scaleDown(b2Vec2(rx, ry)), wake);
 }
 
-void Body::applyForce(float fx, float fy)
+void Body::applyForce(float fx, float fy, bool wake)
 {
-	body->ApplyForceToCenter(Physics::scaleDown(b2Vec2(fx, fy)));
+	body->ApplyForceToCenter(Physics::scaleDown(b2Vec2(fx, fy)), wake);
 }
 
 void Body::setX(float x)

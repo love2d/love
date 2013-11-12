@@ -162,32 +162,32 @@ public:
 	/**
 	 * Apply an impulse (jx, jy) with offset (0, 0).
 	 **/
-	void applyLinearImpulse(float jx, float jy);
+	void applyLinearImpulse(float jx, float jy, bool wake);
 
 	/**
 	 * Apply an impulse (jx, jy) with offset (rx, ry).
 	 **/
-	void applyLinearImpulse(float jx, float jy, float rx, float ry);
+	void applyLinearImpulse(float jx, float jy, float rx, float ry, bool wake);
 
 	/**
 	 * Apply an angular impulse to the body.
 	 **/
-	void applyAngularImpulse(float impulse);
+	void applyAngularImpulse(float impulse, bool wake);
 
 	/**
 	 * Apply torque (t).
 	 **/
-	void applyTorque(float t);
+	void applyTorque(float t, bool wake);
 
 	/**
 	 * Apply force (fx, fy) with offset (0, 0).
 	 **/
-	void applyForce(float fx, float fy);
+	void applyForce(float fx, float fy, bool wake);
 
 	/**
 	 * Apply force (fx, fy) with offset (rx, ry).
 	 **/
-	void applyForce(float fx, float fy, float rx, float ry);
+	void applyForce(float fx, float fy, float rx, float ry, bool wake);
 
 	/**
 	 * Sets the x-position of the Body.

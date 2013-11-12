@@ -18,12 +18,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_PHYSICS_BOX2D_WRAP_CONTACT_H
-#define LOVE_PHYSICS_BOX2D_WRAP_CONTACT_H
+#ifndef LOVE_PHYSICS_BOX2D_WRAP_MOTOR_JOINT_H
+#define LOVE_PHYSICS_BOX2D_WRAP_MOTOR_JOINT_H
 
 // LOVE
 #include "common/runtime.h"
-#include "Contact.h"
+#include "wrap_Joint.h"
+#include "MotorJoint.h"
 
 namespace love
 {
@@ -32,25 +33,21 @@ namespace physics
 namespace box2d
 {
 
-Contact *luax_checkcontact(lua_State *L, int idx);
-int w_Contact_getPositions(lua_State *L);
-int w_Contact_getNormal(lua_State *L);
-int w_Contact_getFriction(lua_State *L);
-int w_Contact_getRestitution(lua_State *L);
-int w_Contact_isEnabled(lua_State *L);
-int w_Contact_isTouching(lua_State *L);
-int w_Contact_setFriction(lua_State *L);
-int w_Contact_setRestitution(lua_State *L);
-int w_Contact_setEnabled(lua_State *L);
-int w_Contact_resetFriction(lua_State *L);
-int w_Contact_resetRestitution(lua_State *L);
-int w_Contact_setTangentSpeed(lua_State *L);
-int w_Contact_getTangentSpeed(lua_State *L);
-int w_Contact_getChildren(lua_State *L);
-extern "C" int luaopen_contact(lua_State *L);
+MotorJoint *luax_checkmotorjoint(lua_State *L, int idx);
+int w_MotorJoint_setLinearOffset(lua_State *L);
+int w_MotorJoint_getLinearOffset(lua_State *L);
+int w_MotorJoint_setAngularOffset(lua_State *L);
+int w_MotorJoint_getAngularOffset(lua_State *L);
+int w_MotorJoint_setMaxForce(lua_State *L);
+int w_MotorJoint_getMaxForce(lua_State *L);
+int w_MotorJoint_setMaxTorque(lua_State *L);
+int w_MotorJoint_getMaxTorque(lua_State *L);
+int w_MotorJoint_setCorrectionFactor(lua_State *L);
+int w_MotorJoint_getCorrectionFactor(lua_State *L);
+extern "C" int luaopen_motorjoint(lua_State *L);
 
 } // box2d
 } // physics
 } // love
 
-#endif // LOVE_PHYSICS_BOX2D_WRAP_CONTACT_H
+#endif // LOVE_PHYSICS_BOX2D_WRAP_MOTOR_JOINT_H

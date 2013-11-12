@@ -17,13 +17,13 @@
 */
 
 #include <Box2D/Common/b2Settings.h>
-#include <cstdlib>
-#include <cstdio>
-#include <cstdarg>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
 #include "common/Exception.h"
 
-b2Version b2_version = {2, 2, 1};
+b2Version b2_version = {2, 3, 0};
 
 // Memory allocators. Modify these to use your own allocator.
 void* b2Alloc(int32 size)
@@ -48,5 +48,5 @@ void b2Log(const char* string, ...)
 void loveAssert(bool test, const char *teststr)
 {
 	if (!test)
-		throw love::Exception("Box2D error: %s", teststr);
+		throw love::Exception("Box2D assertion failed: %s", teststr);
 }

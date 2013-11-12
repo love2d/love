@@ -21,7 +21,6 @@
 #include <Box2D/Dynamics/b2Fixture.h>
 
 #include <new>
-using namespace std;
 
 b2Contact* b2EdgeAndPolygonContact::Create(b2Fixture* fixtureA, int32, b2Fixture* fixtureB, int32, b2BlockAllocator* allocator)
 {

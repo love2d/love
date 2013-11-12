@@ -18,7 +18,6 @@
 
 #include <Box2D/Collision/Shapes/b2EdgeShape.h>
 #include <new>
-using namespace std;
 
 void b2EdgeShape::Set(const b2Vec2& v1, const b2Vec2& v2)
 {
@@ -105,11 +104,11 @@ bool b2EdgeShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
 	output->fraction = t;
 	if (numerator > 0.0f)
 	{
-		output->normal = -normal;
+		output->normal = -b2Mul(xf.q, normal);
 	}
 	else
 	{
-		output->normal = normal;
+		output->normal = b2Mul(xf.q, normal);
 	}
 	return true;
 }

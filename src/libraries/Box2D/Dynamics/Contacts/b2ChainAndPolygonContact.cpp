@@ -23,7 +23,6 @@
 #include <Box2D/Collision/Shapes/b2EdgeShape.h>
 
 #include <new>
-using namespace std;
 
 b2Contact* b2ChainAndPolygonContact::Create(b2Fixture* fixtureA, int32 indexA, b2Fixture* fixtureB, int32 indexB, b2BlockAllocator* allocator)
 {

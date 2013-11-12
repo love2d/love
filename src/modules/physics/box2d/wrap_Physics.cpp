@@ -40,6 +40,7 @@
 #include "wrap_WeldJoint.h"
 #include "wrap_WheelJoint.h"
 #include "wrap_RopeJoint.h"
+#include "wrap_MotorJoint.h"
 
 namespace love
 {
@@ -374,6 +375,24 @@ int w_newRopeJoint(lua_State *L)
 	return 1;
 }
 
+int w_newMotorJoint(lua_State *L)
+{
+	Body *body1 = luax_checktype<Body>(L, 1, "Body", PHYSICS_BODY_T);
+	Body *body2 = luax_checktype<Body>(L, 2, "Body", PHYSICS_BODY_T);
+	MotorJoint *j = 0;
+	if (!lua_isnoneornil(L, 3))
+	{
+		float correctionFactor = (float)luaL_checknumber(L, 3);
+		EXCEPT_GUARD(j = instance->newMotorJoint(body1, body2, correctionFactor);)
+	}
+	else
+	{
+		EXCEPT_GUARD(j = instance->newMotorJoint(body1, body2);)
+	}
+	luax_pushtype(L, "MotorJoint", PHYSICS_MOTOR_JOINT_T, j);
+	return 1;
+}
+
 int w_getDistance(lua_State *L)
 {
 	return instance->getDistance(L);
@@ -413,6 +432,7 @@ static const luaL_Reg functions[] =
 	{ "newWeldJoint", w_newWeldJoint },
 	{ "newWheelJoint", w_newWheelJoint },
 	{ "newRopeJoint", w_newRopeJoint },
+	{ "newMotorJoint", w_newMotorJoint },
 	{ "getDistance", w_getDistance },
 	{ "getMeter", w_getMeter },
 	{ "setMeter", w_setMeter },
@@ -441,6 +461,7 @@ static const lua_CFunction types[] =
 	luaopen_weldjoint,
 	luaopen_wheeljoint,
 	luaopen_ropejoint,
+	luaopen_motorjoint,
 	0
 };
 

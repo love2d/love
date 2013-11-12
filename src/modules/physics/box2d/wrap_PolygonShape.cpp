@@ -39,9 +39,17 @@ int w_PolygonShape_getPoints(lua_State *L)
 	return t->getPoints(L);
 }
 
+int w_PolygonShape_validate(lua_State *L)
+{
+	PolygonShape *t = luax_checkpolygonshape(L, 1);
+	luax_pushboolean(L, t->validate());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getPoints", w_PolygonShape_getPoints },
+	{ "validate", w_PolygonShape_validate },
 	// From Shape.
 	{ "getType", w_Shape_getType },
 	{ "getRadius", w_Shape_getRadius },

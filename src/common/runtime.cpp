@@ -722,6 +722,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{"WeldJoint", PHYSICS_WELD_JOINT_ID},
 	{"RopeJoint", PHYSICS_ROPE_JOINT_ID},
 	{"WheelJoint", PHYSICS_WHEEL_JOINT_ID},
+	{"MotorJoint", PHYSICS_MOTOR_JOINT_ID},
 
 	// Thread
 	{"Thread", THREAD_THREAD_ID},

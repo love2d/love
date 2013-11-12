@@ -20,7 +20,7 @@
 #define B2_COLLISION_H
 
 #include <Box2D/Common/b2Math.h>
-#include <climits>
+#include <limits.h>
 
 /// @file
 /// Structures and functions used for computing contact points, distance
@@ -117,8 +117,9 @@ struct b2WorldManifold
 					const b2Transform& xfA, float32 radiusA,
 					const b2Transform& xfB, float32 radiusB);
 
-	b2Vec2 normal;							///< world vector pointing from A to B
-	b2Vec2 points[b2_maxManifoldPoints];	///< world contact point (point of intersection)
+	b2Vec2 normal;								///< world vector pointing from A to B
+	b2Vec2 points[b2_maxManifoldPoints];		///< world contact point (point of intersection)
+	float32 separations[b2_maxManifoldPoints];	///< a negative value indicates overlap, in meters
 };
 
 /// This is used for determining the state of contact points.

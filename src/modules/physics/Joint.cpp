@@ -51,6 +51,7 @@ StringMap<Joint::Type, Joint::JOINT_MAX_ENUM>::Entry Joint::typeEntries[] =
 	{"weld", Joint::JOINT_WELD},
 	{"wheel", Joint::JOINT_WHEEL},
 	{"rope", Joint::JOINT_ROPE},
+	{"motor", Joint::JOINT_MOTOR},
 };
 
 StringMap<Joint::Type, Joint::JOINT_MAX_ENUM> Joint::types(Joint::typeEntries, sizeof(Joint::typeEntries));

@@ -126,6 +126,16 @@ void Contact::resetRestitution()
 	contact->ResetRestitution();
 }
 
+void Contact::setTangentSpeed(float speed)
+{
+	contact->SetTangentSpeed(speed);
+}
+
+float Contact::getTangentSpeed() const
+{
+	return contact->GetTangentSpeed();
+}
+
 void Contact::getChildren(int &childA, int &childB)
 {
 	childA = contact->GetChildIndexA();

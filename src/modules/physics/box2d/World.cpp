@@ -396,6 +396,11 @@ int World::getGravity(lua_State *L)
 	return 2;
 }
 
+void World::translateOrigin(float x, float y)
+{
+	world->ShiftOrigin(Physics::scaleDown(b2Vec2(x, y)));
+}
+
 void World::setSleepingAllowed(bool allow)
 {
 	world->SetAllowSleeping(allow);

@@ -87,6 +87,15 @@ int w_World_getGravity(lua_State *L)
 	return t->getGravity(L);
 }
 
+int w_World_translateOrigin(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	float arg2 = (float)luaL_checknumber(L, 3);
+	EXCEPT_GUARD(t->translateOrigin(arg1, arg2);)
+	return 0;
+}
+
 int w_World_setSleepingAllowed(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
@@ -184,6 +193,7 @@ static const luaL_Reg functions[] =
 	{ "getContactFilter", w_World_getContactFilter },
 	{ "setGravity", w_World_setGravity },
 	{ "getGravity", w_World_getGravity },
+	{ "translateOrigin", w_World_translateOrigin },
 	{ "setSleepingAllowed", w_World_setSleepingAllowed },
 	{ "isSleepingAllowed", w_World_isSleepingAllowed },
 	{ "isLocked", w_World_isLocked },

@@ -19,8 +19,9 @@
 #ifndef B2_SETTINGS_H
 #define B2_SETTINGS_H
 
-#include <cassert>
-#include <cmath>
+#include <stddef.h>
+#include <assert.h>
+#include <float.h>
 
 void loveAssert(bool test, const char *teststr);
 
