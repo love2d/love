@@ -23,7 +23,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added support for UTF-8 ImageFonts.
   * Added Font:getAscent/getDescent/getBaseline.
   * Added Font:setFilter/getFilter.
-  * Added Font:hasGlyph.
+  * Added Font:hasGlyphs.
   * Added angle, scale, and shear parameters to love.graphics.printf.
   * Added HDR canvas support.
   * Added mipmapping support (has isSupported test).
@@ -120,6 +120,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Fixed love.graphics.getPointStyle.
   * Fixed line numbers in shader errors.
   * Fixed Shader:send with Images and Canvases failing sometimes.
+  * Fixed Shader:send to keep a reference to sent Images and Canvases.
   * Fixed crash when binding SpriteBatches multiple times.
   * Fixed SpriteBatches with more than 16,384 sprites.
   * Fixed particle draw order for ParticleSystems.
@@ -213,6 +214,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Updated Thread:start to accept arguments which get passed to the thread.
   * Updated love.timer.getFPS to be microsecond-accurate.
   * Updated love.timer.getTime to be microsecond-accurate and monotonic.
+  * Updated Box2D to version 2.3.0.
 
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------
