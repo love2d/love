@@ -1313,6 +1313,8 @@ function love.nogame()
 	local text = {}
 	local rain = {}
 	local g_time = 0
+	
+	local create_rain
 
 	function love.load()
 		-- Subtractive blending isn't supported on some ancient systems, so
@@ -1357,19 +1359,18 @@ function love.nogame()
 		rain.ox = -rain.img_w / 2
 		rain.oy = -rain.img_h / 2
 		rain.batch = love.graphics.newSpriteBatch(rain.image, 512)
+		rain.t = 0
+
+		create_rain()
 	end
-
-	local function update_rain(t)
-
+	
+	function create_rain()
 		local batch = rain.batch
-		local ix = 0
-		local iy = 0
+
 		local sx = rain.spacing_x
 		local sy = rain.spacing_y
 		local ox = rain.ox
 		local oy = rain.oy
-		local img_w = rain.img_w
-		local img_h = rain.img_h
 
 		local batch_w = 2 * math.ceil(love.graphics.getWidth() / sx) + 2
 		local batch_h = 2 * math.ceil(love.graphics.getHeight() / sy) + 2
@@ -1385,14 +1386,22 @@ function love.nogame()
 		for i = 0, batch_h - 1 do
 			for j = 0, batch_w - 1 do
 				local is_even = (j % 2) == 0
-				local offset_y = is_even and sy * t or sy / 2 + sy * t
-				local x = ix + ox + j * sx
-				local y = iy + oy + i * sy + offset_y
+				local offset_y = is_even and 0 or sy / 2
+				local x = ox + j * sx
+				local y = oy + i * sy + offset_y
 				batch:add(x, y)
 			end
 		end
 
 		batch:unbind()
+	end
+
+	local function update_rain(t)		
+		rain.t = t
+	end
+
+	function love.resize(w, h)
+		create_rain()
 	end
 
 	function love.update(dt)
@@ -1410,13 +1419,18 @@ function love.nogame()
 			blendmode = "additive"
 		end
 
+		local y = rain.spacing_y * rain.t
+
+		local small_y = -rain.spacing_y + y / 2
+		local big_y = -rain.spacing_y + y
+
 		love.graphics.setBlendMode(blendmode)
 		love.graphics.setColor(255, 255, 255, 128)
-		love.graphics.draw(rain.batch, -rain.spacing_x, -rain.spacing_y, 0, 0.5, 0.5)
+		love.graphics.draw(rain.batch, -rain.spacing_x, small_y, 0, 0.5, 0.5)
 
 		love.graphics.setBlendMode("alpha")
 		love.graphics.setColor(255, 255, 255, 255)
-		love.graphics.draw(rain.batch, -rain.spacing_x, -rain.spacing_y)
+		love.graphics.draw(rain.batch, -rain.spacing_x, big_y)
 	end
 
 	local function draw_text(x, y)
