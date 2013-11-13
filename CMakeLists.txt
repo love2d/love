@@ -484,6 +484,8 @@ set(LOVE_SRC_MODULE_PHYSICS_BOX2D
 	src/modules/physics/box2d/GearJoint.h
 	src/modules/physics/box2d/Joint.cpp
 	src/modules/physics/box2d/Joint.h
+	src/modules/physics/box2d/MotorJoint.cpp
+	src/modules/physics/box2d/MotorJoint.h
 	src/modules/physics/box2d/MouseJoint.cpp
 	src/modules/physics/box2d/MouseJoint.h
 	src/modules/physics/box2d/Physics.cpp
@@ -526,6 +528,8 @@ set(LOVE_SRC_MODULE_PHYSICS_BOX2D
 	src/modules/physics/box2d/wrap_GearJoint.h
 	src/modules/physics/box2d/wrap_Joint.cpp
 	src/modules/physics/box2d/wrap_Joint.h
+	src/modules/physics/box2d/wrap_MotorJoint.cpp
+	src/modules/physics/box2d/wrap_MotorJoint.h
 	src/modules/physics/box2d/wrap_MouseJoint.cpp
 	src/modules/physics/box2d/wrap_MouseJoint.h
 	src/modules/physics/box2d/wrap_Physics.cpp
@@ -813,6 +817,8 @@ set(LOVE_SRC_3P_BOX2D_DYNAMICS_JOINTS
 	src/libraries/Box2D/Dynamics/Joints/b2GearJoint.h
 	src/libraries/Box2D/Dynamics/Joints/b2Joint.cpp
 	src/libraries/Box2D/Dynamics/Joints/b2Joint.h
+	src/libraries/Box2D/Dynamics/Joints/b2MotorJoint.cpp
+	src/libraries/Box2D/Dynamics/Joints/b2MotorJoint.h
 	src/libraries/Box2D/Dynamics/Joints/b2MouseJoint.cpp
 	src/libraries/Box2D/Dynamics/Joints/b2MouseJoint.h
 	src/libraries/Box2D/Dynamics/Joints/b2PrismaticJoint.cpp
