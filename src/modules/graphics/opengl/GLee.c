@@ -43,7 +43,12 @@
 #include "GLee.h"
 
 #if defined(__APPLE__) || defined(__APPLE_CC__)
+#define GLEE_USE_SDL
+#ifdef GLEE_USE_SDL
+	#include <SDL2/SDL_video.h>
+#else
 	#include <CoreFoundation/CFBundle.h>
+#endif
 #endif
 
 typedef GLuint(*GLEE_LINK_FUNCTION)(void);
@@ -64,6 +69,9 @@ GLEE_FUNC __GLeeGetProcAddress(const char *extname)
 #ifdef _WIN32
     return (GLEE_FUNC)wglGetProcAddress(extname);
 #elif defined(__APPLE__) || defined(__APPLE_CC__)
+#if defined(GLEE_USE_SDL)
+	return SDL_GL_GetProcAddress(extname);
+#else
     CFBundleRef bundle;
     CFURLRef bundleURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, CFSTR("/System/Library/Frameworks/OpenGL.framework"), kCFURLPOSIXPathStyle, true);
 
@@ -87,6 +95,7 @@ GLEE_FUNC __GLeeGetProcAddress(const char *extname)
     CFRelease(bundle);
 
     return function;
+#endif
 #else
     return (GLEE_FUNC)glXGetProcAddressARB((const GLubyte *)extname);
 #endif
