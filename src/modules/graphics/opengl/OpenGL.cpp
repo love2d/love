@@ -25,8 +25,11 @@
 #include "Shader.h"
 #include "common/Exception.h"
 
-// STL
+// C++
 #include <algorithm>
+
+// C
+#include <cstring>
 
 namespace love
 {
@@ -39,6 +42,7 @@ OpenGL::OpenGL()
 	: contextInitialized(false)
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
+	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
 }
@@ -116,6 +120,29 @@ void OpenGL::deInitContext()
 		return;
 
 	contextInitialized = false;
+}
+
+void OpenGL::initVendor()
+{
+	const char *vstr = (const char *) glGetString(GL_VENDOR);
+	if (!vstr)
+		return;
+
+	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
+	if (strstr(vstr, "ATI Technologies"))
+		vendor = VENDOR_ATI_AMD;
+	else if (strstr(vstr, "NVIDIA"))
+		vendor = VENDOR_NVIDIA;
+	else if (strstr(vstr, "Intel"))
+		vendor = VENDOR_INTEL;
+	else if (strstr(vstr, "Mesa"))
+		vendor = VENDOR_MESA_SOFT;
+	else if (strstr(vstr, "Apple Computer"))
+		vendor = VENDOR_APPLE;
+	else if (strstr(vstr, "Microsoft"))
+		vendor = VENDOR_MICROSOFT;
+	else
+		vendor = VENDOR_UNKNOWN;
 }
 
 void OpenGL::initOpenGLFunctions()
@@ -459,6 +486,11 @@ graphics::Image::Wrap OpenGL::getTextureWrap()
 int OpenGL::getMaxTextureSize() const
 {
 	return maxTextureSize;
+}
+
+OpenGL::Vendor OpenGL::getVendor() const
+{
+	return vendor;
 }
 
 // OpenGL class instance singleton.

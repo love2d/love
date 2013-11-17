@@ -51,6 +51,18 @@ class OpenGL
 {
 public:
 
+	// OpenGL GPU vendors.
+	enum Vendor
+	{
+		VENDOR_ATI_AMD,
+		VENDOR_NVIDIA,
+		VENDOR_INTEL,
+		VENDOR_MESA_SOFT, // Software renderer.
+		VENDOR_APPLE,     // Software renderer.
+		VENDOR_MICROSOFT, // Software renderer.
+		VENDOR_UNKNOWN
+	};
+
 	// A rectangle representing an OpenGL viewport or a scissor box.
 	struct Viewport
 	{
@@ -176,8 +188,14 @@ public:
 	 **/
 	int getMaxTextureSize() const;
 
+	/**
+	 * Get the GPU vendor of this OpenGL context.
+	 **/
+	Vendor getVendor() const;
+
 private:
 
+	void initVendor();
 	void initOpenGLFunctions();
 	void initMaxValues();
 	void createDefaultTexture();
@@ -186,6 +204,8 @@ private:
 
 	float maxAnisotropy;
 	int maxTextureSize;
+
+	Vendor vendor;
 
 	// Tracked OpenGL state.
 	struct

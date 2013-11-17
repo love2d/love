@@ -204,12 +204,16 @@ void Image::createMipmaps()
 
 	if (hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
 	{
-		// AMD/ATI drivers have several bugs when generating mipmaps,
-		// re-uploading the entire base image seems to be required.
-		uploadTexture();
+		if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
+		{
+			// AMD/ATI drivers have several bugs when generating mipmaps,
+			// re-uploading the entire base image seems to be required.
+			uploadTexture();
 
-		// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
-		glEnable(GL_TEXTURE_2D);
+			// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
+			glEnable(GL_TEXTURE_2D);
+		}
+
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
