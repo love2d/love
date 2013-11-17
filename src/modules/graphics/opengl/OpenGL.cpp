@@ -53,6 +53,7 @@ void OpenGL::initContext()
 		return;
 
 	initOpenGLFunctions();
+	initVendor();
 
 	// Store the current color so we don't have to get it through GL later.
 	GLfloat glcolor[4];
@@ -126,7 +127,10 @@ void OpenGL::initVendor()
 {
 	const char *vstr = (const char *) glGetString(GL_VENDOR);
 	if (!vstr)
+	{
+		vendor = VENDOR_UNKNOWN;
 		return;
+	}
 
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
 	if (strstr(vstr, "ATI Technologies"))
