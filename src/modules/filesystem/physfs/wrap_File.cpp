@@ -51,7 +51,16 @@ File *luax_checkfile(lua_State *L, int idx)
 int w_File_getSize(lua_State *L)
 {
 	File *t = luax_checkfile(L, 1);
-	int64 size = t->getSize();
+
+	int64 size = -1;
+	try
+	{
+		size = t->getSize();
+	}
+	catch (love::Exception &e)
+	{
+		return luax_ioError(L, "%s", e.what());
+	}
 
 	// Push nil on failure or if size does not fit into a double precision floating-point number.
 	if (size == -1)
@@ -74,7 +83,7 @@ int w_File_open(lua_State *L)
 
 	try
 	{
-		lua_pushboolean(L, file->open(mode) ? 1 : 0);
+		luax_pushboolean(L, file->open(mode));
 	}
 	catch (love::Exception &e)
 	{
