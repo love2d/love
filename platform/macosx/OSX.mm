@@ -32,12 +32,15 @@ std::string getLoveInResources()
 {
 	std::string path;
 
-	// check to see if there are any .love files in Resources - props to stevejohnson/diordna
-	NSArray *lovePaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"love" inDirectory:nil];
-	if ([lovePaths count] > 0)
+	@autoreleasepool
 	{
-		NSString *firstLovePath = [lovePaths objectAtIndex:0];
-		path = std::string([firstLovePath UTF8String]);
+		// check to see if there are any .love files in Resources - props to stevejohnson/diordna
+		NSArray *lovePaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"love" inDirectory:nil];
+		if ([lovePaths count] > 0)
+		{
+			NSString *firstLovePath = [lovePaths objectAtIndex:0];
+			path = std::string([firstLovePath UTF8String]);
+		}
 	}
 
 	return path;
