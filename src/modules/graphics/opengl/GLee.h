@@ -1056,8 +1056,14 @@ GLEE_EXTERN GLboolean _GLEE_SGIX_igloo_interface;
 #endif
 
 #ifndef GL_ARB_vertex_buffer_object
+	/* awful hack to work around issue with GLee and Mac OS 10.9's gltypes.h */
+#if defined(__APPLE__)
+	typedef long GLintptrARB;
+	typedef long GLsizeiptrARB;
+#else
 	typedef ptrdiff_t GLintptrARB;
 	typedef ptrdiff_t GLsizeiptrARB;
+#endif
 #endif
 
 #ifndef GL_ARB_shader_objects
