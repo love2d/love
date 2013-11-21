@@ -233,7 +233,6 @@
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
 		FA577AC416C7513200860150 /* IL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6916C719DE00860150 /* IL.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
-		FA577AC616C7513800860150 /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6D16C719EA00860150 /* Lua.framework */; };
 		FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6F16C719F000860150 /* mpg123.framework */; };
 		FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* Ogg.framework */; };
 		FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7C16C71A2600860150 /* OpenGL.framework */; };
@@ -898,7 +897,6 @@
 				FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */,
 				FA577AC416C7513200860150 /* IL.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
-				FA577AC616C7513800860150 /* Lua.framework in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
 				FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
@@ -2421,6 +2419,10 @@
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
 				PRODUCT_NAME = love;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
@@ -2440,6 +2442,10 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				INFOPLIST_FILE = "Info-Framework.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
 				PRODUCT_NAME = love;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
