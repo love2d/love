@@ -1082,14 +1082,19 @@ if(MSVC)
 	)
 endif()
 
-add_library(${LOVE_LIB_NAME} ${LOVE_LIB_SRC} ${LOVE_RC})
-target_link_libraries(liblove ${LOVE_LINK_LIBRARIES})
+add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
+target_link_libraries(liblove ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
+
+if(MSVC)
+	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love")	
+	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love")	
+endif()
 
 #
 # love (executable)
 #
 add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
-target_link_libraries(love liblove ${LOVE_3P})
+target_link_libraries(love liblove)
 
 # Add post build steps to move the DLLs next to the binary. Otherwise
 # running/debugging the binary will not work from inside VS.
@@ -1124,7 +1129,7 @@ message(STATUS "Version: ${LOVE_VERSION_STR}")
 ###################################
 # CPack
 ###################################
-install(TARGETS love RUNTIME DESTINATION .)
+install(TARGETS love ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
 
 # Dynamic runtime libs.
 if(MEGA_MSVC_DLLS)
