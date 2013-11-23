@@ -49,10 +49,10 @@
 	<string>0.9.0</string>
 	<key>CFBundleSignature</key>
 	<string>LoVe</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.games</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2006-2013 LÖVE Development Team</string>
-	<key>NSMainNibFile</key>
-	<string>SDLMain</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>UTExportedTypeDeclarations</key>

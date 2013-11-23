@@ -203,8 +203,8 @@ int main(int argc, char **argv)
 	lua_call(L, 0, 1);
 
 	int retval = 0;
-	if (lua_isnumber(L, 1))
-		retval = (int) lua_tonumber(L, 1);
+	if (lua_isnumber(L, -1))
+		retval = (int) lua_tonumber(L, -1);
 
 	lua_close(L);
 
