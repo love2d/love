@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
 	// Oh, you just want the version? Okay!
-	if (argc > 1 && strcmp(argv[1],"--version") == 0)
+	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
 		printf("LOVE %s (%s)\n", love_version(), love_codename());
 		return 0;
@@ -161,9 +161,8 @@ int main(int argc, char **argv)
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 
+	// Add love to package.preload for easy requiring.
 	love_preload(L, luaopen_love, "love");
-
-	luaopen_love(L);
 
 	// Add command line arguments to global arg (like stand-alone Lua).
 	{
@@ -178,7 +177,7 @@ int main(int argc, char **argv)
 		lua_pushstring(L, "embedded boot.lua");
 		lua_rawseti(L, -2, -1);
 
-		for (int i = 1; i<argc; i++)
+		for (int i = 1; i < argc; i++)
 		{
 			lua_pushstring(L, argv[i]);
 			lua_rawseti(L, -2, i);
@@ -187,19 +186,28 @@ int main(int argc, char **argv)
 		lua_setglobal(L, "arg");
 	}
 
+	// require "love"
+	lua_getglobal(L, "require");
+	lua_pushstring(L, "love");
+	lua_call(L, 1, 1); // leave the returned table on the stack.
+
 	// Add love.__exe = true.
-	// This indicates that we're running the
-	// standalone version of love, and not the
-	// DLL version.
+	// This indicates that we're running the standalone version of love, and not
+	// the library version.
 	{
-		lua_getglobal(L, "love");
 		lua_pushboolean(L, 1);
 		lua_setfield(L, -2, "_exe");
-		lua_pop(L, 1);
 	}
 
-	// Boot
-	luaopen_love_boot(L);
+	// Pop the love table returned by require "love".
+	lua_pop(L, 1);
+
+	// require "love.boot" (preloaded when love was required.)
+	lua_getglobal(L, "require");
+	lua_pushstring(L, "love.boot");
+	lua_call(L, 1, 1);
+
+	// Call the returned boot function.
 	lua_call(L, 0, 1);
 
 	int retval = 0;
