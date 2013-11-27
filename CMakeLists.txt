@@ -1140,9 +1140,23 @@ if(MEGA_MSVC_DLLS)
 	install(FILES ${MEGA_MSVC_DLLS} DESTINATION .)
 endif()
 
+# Copy a text file from CMAKE_CURRENT_SOURCE_DIR to CMAKE_CURRENT_BINARY_DIR.
+# On Windows, this function will convert line endings to CR,LF.
+function(copy_text_file ARG_FILE_IN ARG_FILE_OUT)
+	file(READ ${CMAKE_CURRENT_SOURCE_DIR}/${ARG_FILE_IN} TMP_TXT_CONTENTS)
+	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${ARG_FILE_OUT} ${TMP_TXT_CONTENTS})
+endfunction()
+
 # Text files.
-configure_file(readme.md readme.txt COPYONLY)
-install(FILES changes.txt license.txt ${CMAKE_CURRENT_BINARY_DIR}/readme.txt DESTINATION .)
+copy_text_file(readme.md readme.txt)
+copy_text_file(license.txt license.txt)
+copy_text_file(changes.txt changes.txt)
+
+install(FILES
+		${CMAKE_CURRENT_BINARY_DIR}/changes.txt
+		${CMAKE_CURRENT_BINARY_DIR}/license.txt
+		${CMAKE_CURRENT_BINARY_DIR}/readme.txt
+		DESTINATION .)
 
 set(CPACK_GENERATOR ZIP NSIS)
 set(CPACK_PACKAGE_NAME "love")
