@@ -72,9 +72,6 @@
 #endif
 
 #if defined(LOVE_MACOSX)
-#	if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
-#		define LOVE_LEGENDARY_LIBSTDCXX_HACK
-#	endif
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
 #endif
 
