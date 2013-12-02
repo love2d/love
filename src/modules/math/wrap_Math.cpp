@@ -32,16 +32,16 @@ namespace love
 namespace math
 {
 
-int w_setRandomState(lua_State *L)
+int w_setRandomSeed(lua_State *L)
 {
-	EXCEPT_GUARD(Math::instance.setRandomState(luax_checkrandomstate(L, 1));)
+	EXCEPT_GUARD(Math::instance.setRandomSeed(luax_checkrandomseed(L, 1));)
 	return 0;
 }
 
-int w_getRandomState(lua_State *L)
+int w_getRandomSeed(lua_State *L)
 {
 	uint32 low = 0, high = 0;
-	Math::instance.getRandomState(low, high);
+	Math::instance.getRandomSeed(low, high);
 	lua_pushnumber(L, (lua_Number) low);
 	lua_pushnumber(L, (lua_Number) high);
 	return 2;
@@ -64,9 +64,9 @@ int w_randomNormal(lua_State *L)
 
 int w_newRandomGenerator(lua_State *L)
 {
-	RandomGenerator::State s;
+	RandomGenerator::Seed s;
 	if (lua_gettop(L) > 0)
-		s = luax_checkrandomstate(L, 1);
+		s = luax_checkrandomseed(L, 1);
 
 	RandomGenerator *t = Math::instance.newRandomGenerator();
 
@@ -76,7 +76,7 @@ int w_newRandomGenerator(lua_State *L)
 
 		try
 		{
-			t->setState(s);
+			t->setSeed(s);
 		}
 		catch (love::Exception &e)
 		{
@@ -277,8 +277,8 @@ int w_noise(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "setRandomState", w_setRandomState },
-	{ "getRandomState", w_getRandomState },
+	{ "setRandomSeed", w_setRandomSeed },
+	{ "getRandomSeed", w_getRandomSeed },
 	{ "random", w_random },
 	{ "randomNormal", w_randomNormal },
 	{ "newRandomGenerator", w_newRandomGenerator },

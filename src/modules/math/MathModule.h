@@ -53,24 +53,24 @@ public:
 	virtual ~Math()
 	{}
 
-	inline void setRandomState(RandomGenerator::State state)
+	inline void setRandomSeed(RandomGenerator::Seed seed)
 	{
-		rng.setState(state);
+		rng.setSeed(seed);
 	}
 
-	inline void setRandomState(uint32 low, uint32 high)
+	inline void setRandomSeed(uint32 low, uint32 high)
 	{
-		rng.setState(low, high);
+		rng.setSeed(low, high);
 	}
 
-	inline RandomGenerator::State getRandomState() const
+	inline RandomGenerator::Seed getRandomSeed() const
 	{
-		return rng.getState();
+		return rng.getSeed();
 	}
 
-	inline void getRandomState(uint32 &low, uint32 &high) const
+	inline void getRandomSeed(uint32 &low, uint32 &high) const
 	{
-		rng.getState(low, high);
+		rng.getSeed(low, high);
 	}
 
 	/**

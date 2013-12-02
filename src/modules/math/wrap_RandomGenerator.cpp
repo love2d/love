@@ -29,26 +29,26 @@ namespace math
 {
 
 template <typename T>
-static T checkrandomstate_part(lua_State *L, int idx)
+static T checkrandomseed_part(lua_State *L, int idx)
 {
 	double num = luaL_checknumber(L, idx);
 	double inf = std::numeric_limits<double>::infinity();
 
 	// Disallow conversions from infinity and NaN.
 	if (num == inf || num == -inf || num != num)
-		luaL_argerror(L, idx, "invalid random state");
+		luaL_argerror(L, idx, "invalid random seed");
 
 	return (T) num;
 }
 
-RandomGenerator::State luax_checkrandomstate(lua_State *L, int idx)
+RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx)
 {
-	RandomGenerator::State s;
+	RandomGenerator::Seed s;
 
 	if (!lua_isnoneornil(L, idx + 1))
 	{
-		uint32 low = checkrandomstate_part<uint32>(L, idx);
-		uint32 high = checkrandomstate_part<uint32>(L, idx + 1);
+		uint32 low = checkrandomseed_part<uint32>(L, idx);
+		uint32 high = checkrandomseed_part<uint32>(L, idx + 1);
 
 #ifdef LOVE_BIG_ENDIAN
 		s.b32.a = high;
@@ -59,7 +59,7 @@ RandomGenerator::State luax_checkrandomstate(lua_State *L, int idx)
 #endif
 	}
 	else
-		s.b64 = checkrandomstate_part<uint64>(L, idx);
+		s.b64 = checkrandomseed_part<uint64>(L, idx);
 
 	return s;
 }
@@ -95,19 +95,19 @@ RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 	return luax_checktype<RandomGenerator>(L, idx, "RandomGenerator", MATH_RANDOM_GENERATOR_T);
 }
 
-int w_RandomGenerator_setState(lua_State *L)
+int w_RandomGenerator_setSeed(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-	EXCEPT_GUARD(rng->setState(luax_checkrandomstate(L, 2));)
+	EXCEPT_GUARD(rng->setSeed(luax_checkrandomseed(L, 2));)
 	return 0;
 }
 
-int w_RandomGenerator_getState(lua_State *L)
+int w_RandomGenerator_getSeed(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
 
 	uint32 low = 0, high = 0;
-	rng->getState(low, high);
+	rng->getSeed(low, high);
 
 	lua_pushnumber(L, (lua_Number) low);
 	lua_pushnumber(L, (lua_Number) high);
@@ -134,8 +134,8 @@ int w_RandomGenerator_randomNormal(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "setState", w_RandomGenerator_setState },
-	{ "getState", w_RandomGenerator_getState },
+	{ "setSeed", w_RandomGenerator_setSeed },
+	{ "getSeed", w_RandomGenerator_getSeed },
 	{ "random", w_RandomGenerator_random },
 	{ "randomNormal", w_RandomGenerator_randomNormal },
 	{ 0, 0 }

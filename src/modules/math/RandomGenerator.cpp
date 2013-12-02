@@ -37,21 +37,24 @@ RandomGenerator::RandomGenerator()
 	// because it is too big for some compilers to handle ... if you know what
 	// i mean
 #ifdef LOVE_BIG_ENDIAN
-	rng_state.b32.a = 0x0139408D;
-	rng_state.b32.b = 0xCBBF7A44;
+	seed.b32.a = 0x0139408D;
+	seed.b32.b = 0xCBBF7A44;
 #else
-	rng_state.b32.b = 0x0139408D;
-	rng_state.b32.a = 0xCBBF7A44;
+	seed.b32.b = 0x0139408D;
+	seed.b32.a = 0xCBBF7A44;
 #endif
+
+	rng_state = seed;
 }
 
-void RandomGenerator::setState(RandomGenerator::State state)
+void RandomGenerator::setSeed(RandomGenerator::Seed newseed)
 {
 	// 0 xor 0 is still 0, so Xorshift can't generate new numbers.
-	if (state.b64 == 0)
-		throw love::Exception("Invalid random state.");
+	if (newseed.b64 == 0)
+		throw love::Exception("Invalid random seed.");
 
-	rng_state = state;
+	seed = newseed;
+	rng_state = seed;
 }
 
 uint64 RandomGenerator::rand()

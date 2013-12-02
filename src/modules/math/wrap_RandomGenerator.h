@@ -32,12 +32,12 @@ namespace math
 {
 
 // Helper functions.
-RandomGenerator::State luax_checkrandomstate(lua_State *L, int idx);
+RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx);
 int luax_getrandom(lua_State *L, int startidx, double r);
 
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx);
-int w_RandomGenerator_setState(lua_State *L);
-int w_RandomGenerator_getState(lua_State *L);
+int w_RandomGenerator_setSeed(lua_State *L);
+int w_RandomGenerator_getSeed(lua_State *L);
 int w_RandomGenerator_random(lua_State *L);
 int w_RandomGenerator_randomNormal(lua_State *L);
 extern "C" int luaopen_randomgenerator(lua_State *L);

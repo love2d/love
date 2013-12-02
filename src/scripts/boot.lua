@@ -453,7 +453,7 @@ end
 function love.run()
 
 	if love.math then
-		love.math.setRandomState(os.time())
+		love.math.setRandomSeed(os.time())
 	end
 
 	if love.event then

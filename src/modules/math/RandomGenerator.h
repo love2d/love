@@ -40,7 +40,7 @@ class RandomGenerator : public Object
 {
 public:
 
-	union State
+	union Seed
 	{
 		uint64 b64;
 		struct
@@ -54,42 +54,42 @@ public:
 	virtual ~RandomGenerator() {}
 
 	/**
-	 * Set pseudo-random state.
+	 * Set pseudo-random seed.
 	 * It's up to the implementation how to use this.
 	 **/
-	void setState(State state);
+	void setSeed(Seed seed);
 
 	/**
-	 * Separately set the low and high parts of the pseudo-random state.
+	 * Separately set the low and high bits of the pseudo-random seed.
 	 **/
-	inline void setState(uint32 low, uint32 high)
+	inline void setSeed(uint32 low, uint32 high)
 	{
-		State newstate;
+		Seed newseed;
 
 #ifdef LOVE_BIG_ENDIAN
-		newstate.b32.a = high;
-		newstate.b32.b = low;
+		newseed.b32.a = high;
+		newseed.b32.b = low;
 #else
-		newstate.b32.b = high;
-		newstate.b32.a = low;
+		newseed.b32.b = high;
+		newseed.b32.a = low;
 #endif
 
-		setState(newstate);
+		setSeed(newseed);
 	}
 
-	inline State getState() const
+	inline Seed getSeed() const
 	{
-		return rng_state;
+		return seed;
 	}
 
-	inline void getState(uint32 &low, uint32 &high) const
+	inline void getSeed(uint32 &low, uint32 &high) const
 	{
 #ifdef LOVE_BIG_ENDIAN
-		high = rng_state.b32.a;
-		low = rng_state.b32.b;
+		high = seed.b32.a;
+		low = seed.b32.b;
 #else
-		high = rng_state.b32.b;
-		low = rng_state.b32.a;
+		high = seed.b32.b;
+		low = seed.b32.a;
 #endif
 	}
 
@@ -140,7 +140,8 @@ public:
 
 private:
 
-	State rng_state;
+	Seed seed;
+	Seed rng_state;
 	double last_randomnormal;
 
 }; // RandomGenerator
