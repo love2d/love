@@ -271,6 +271,8 @@ function love.boot()
 		no_game_code = true
 	end
 
+	love.filesystem.setFused(is_fused_game)
+
 	if not can_has_game then
 		love.nogame()
 	end
@@ -400,7 +402,6 @@ function love.init()
 	end
 
 	if love.filesystem then
-		love.filesystem.setFused(is_fused_game)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
 		if love.filesystem.exists("main.lua") then
 			require("main")
