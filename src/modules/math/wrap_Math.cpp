@@ -223,9 +223,9 @@ int w_isConvex(lua_State *L)
 	}
 	else
 	{
-		size_t top = lua_gettop(L);
+		int top = lua_gettop(L);
 		vertices.reserve(top / 2);
-		for (size_t i = 1; i <= top; i += 2)
+		for (int i = 1; i <= top; i += 2)
 		{
 			Vertex v;
 			v.x = (float) luaL_checknumber(L, i);

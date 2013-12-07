@@ -90,7 +90,7 @@ void OpenGL::initContext()
 		GLenum curgltextureunit;
 		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
 
-		state.curTextureUnit = curgltextureunit - GL_TEXTURE0;
+		state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
 
 		// Retrieve currently bound textures for each texture unit.
 		for (size_t i = 0; i < state.textureUnits.size(); i++)

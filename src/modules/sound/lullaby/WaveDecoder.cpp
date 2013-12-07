@@ -32,7 +32,7 @@ namespace lullaby
 {
 
 // Callbacks
-wuff_sint32 read_callback(void *userdata, wuff_uint8 *buffer, size_t *size)
+static wuff_sint32 read_callback(void *userdata, wuff_uint8 *buffer, size_t *size)
 {
 	WaveFile *input = (WaveFile *) userdata;
 	size_t bytes_left = input->size - input->offset;
@@ -43,14 +43,14 @@ wuff_sint32 read_callback(void *userdata, wuff_uint8 *buffer, size_t *size)
 	return WUFF_SUCCESS;
 }
 
-wuff_sint32 seek_callback(void *userdata, wuff_uint64 offset)
+static wuff_sint32 seek_callback(void *userdata, wuff_uint64 offset)
 {
 	WaveFile *input = (WaveFile *)userdata;
 	input->offset = (size_t) (offset < input->size ? offset : input->size);
 	return WUFF_SUCCESS;
 }
 
-wuff_sint32 tell_callback(void *userdata, wuff_uint64 *offset)
+static wuff_sint32 tell_callback(void *userdata, wuff_uint64 *offset)
 {
 	WaveFile *input = (WaveFile *)userdata;
 	*offset = input->offset;

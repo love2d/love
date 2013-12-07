@@ -177,7 +177,7 @@ private:
 		};
 	};
 
-	bool initializeTexture(GLint format);
+	bool initializeTexture(GLenum format);
 	void createTexture();
 	Glyph *addGlyph(uint32 glyph);
 	Glyph *findGlyph(uint32 glyph);

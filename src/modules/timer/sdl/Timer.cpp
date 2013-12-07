@@ -114,7 +114,7 @@ void Timer::step()
 void Timer::sleep(double seconds) const
 {
 	if (seconds > 0)
-		delay((int)(seconds*1000));
+		delay((unsigned int)(seconds*1000));
 }
 
 double Timer::getDelta() const

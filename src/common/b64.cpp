@@ -25,7 +25,7 @@ namespace love
 
 static const char cd64[]="|$$$}rstuvwxyz{$$$$$$$>?@ABCDEFGHIJKLMNOPQRSTUVW$$$$$$XYZ[\\]^_`abcdefghijklmnopq";
 
-void b64_decode_block(char in[4], char out[3])
+static void b64_decode_block(char in[4], char out[3])
 {
 	out[0] = (char)(in[0] << 2 | in[1] >> 4);
 	out[1] = (char)(in[1] << 4 | in[2] >> 2);

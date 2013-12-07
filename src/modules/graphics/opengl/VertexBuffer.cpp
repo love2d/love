@@ -160,7 +160,7 @@ void *VBO::map()
 
 	if (is_dirty)
 	{
-		glGetBufferSubDataARB(getTarget(), 0, getSize(), memory_map);
+		glGetBufferSubDataARB(getTarget(), 0, (GLsizeiptr) getSize(), memory_map);
 		is_dirty = false;
 	}
 
@@ -184,8 +184,8 @@ void VBO::unmap()
 
 	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-	glBufferDataARB(getTarget(), getSize(), NULL,       getUsage());
-	glBufferDataARB(getTarget(), getSize(), memory_map, getUsage());
+	glBufferDataARB(getTarget(), (GLsizeiptr) getSize(), NULL,       getUsage());
+	glBufferDataARB(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
 
 	is_mapped = false;
 }
@@ -225,7 +225,7 @@ void VBO::fill(size_t offset, size_t size, const void *data)
 				// Now we tell the driver it only needs to deal with the data
 				// we changed.
 				memcpy(static_cast<char *>(mapdata) + offset, data, size);
-				glFlushMappedBufferRangeAPPLE(getTarget(), offset, size);
+				glFlushMappedBufferRangeAPPLE(getTarget(), (GLintptr) offset, (GLsizei) size);
 			}
 
 			glUnmapBufferARB(getTarget());
@@ -233,7 +233,7 @@ void VBO::fill(size_t offset, size_t size, const void *data)
 		else
 		{
 			// Fall back to a possibly slower SubData (more chance of syncing.)
-			glBufferSubDataARB(getTarget(), offset, size, data);
+			glBufferSubDataARB(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
 		}
 
 		if (getMemoryBacking() != BACKING_FULL)
@@ -275,7 +275,7 @@ bool VBO::load(bool restore)
 		glBufferParameteriAPPLE(getTarget(), GL_BUFFER_FLUSHING_UNMAP_APPLE, GL_FALSE);
 
 	// Note that if 'src' is '0', no data will be copied.
-	glBufferDataARB(getTarget(), getSize(), src, getUsage());
+	glBufferDataARB(getTarget(), (GLsizeiptr) getSize(), src, getUsage());
 	GLenum err = glGetError();
 
 	return (GL_NO_ERROR == err);

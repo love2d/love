@@ -94,7 +94,7 @@ Font::~Font()
 	unloadVolatile();
 }
 
-bool Font::initializeTexture(GLint format)
+bool Font::initializeTexture(GLenum format)
 {
 	GLint internalformat = (format == GL_LUMINANCE_ALPHA) ? GL_LUMINANCE8_ALPHA8 : GL_RGBA8;
 
@@ -130,7 +130,7 @@ void Font::createTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	GLint format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
+	GLenum format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
 
 	// Initialize the texture, attempting smaller sizes if initialization fails.
 	bool initialized = false;
