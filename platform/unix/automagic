@@ -27,10 +27,12 @@ AUTOMAKE=$(which automake)
 [[ -x ${AUTOMAKE} ]]   || die "Could not find automake."
 
 automagic() {
+	log "Copying files..." >&2
 	cp platform/unix/configure.ac .
 	cp platform/unix/Makefile.am .
 
-	if ! sh platform/unix/gen-makefile; then
+	log "Running genmodules..." >&2
+	if ! bash platform/unix/genmodules "$1"; then
 		echo "You should be doing this from the root directory of the project."
 		exit 1
 	fi
@@ -52,12 +54,15 @@ automagic() {
 }
 
 if [[ $1 == "-d" ]]; then
-	automagic 2>&1
+	shift 1
+	automagic "$@" 2>&1
 else
-	(automagic > /dev/null) 2>&1
+	(automagic "$@" > /dev/null) 2>&1
 fi
 if [[ $? -eq 1 ]]; then
-	log "Failed, please contact the developers."
+	log "Failed, sadface."
+	log "You can make this script more verbose running it in debug mode (-d)"
+	log "This is generally a configuration error (I'm looking at you aclocal)"
 	exit 1
 else
 	log "Success, carry on configuring."

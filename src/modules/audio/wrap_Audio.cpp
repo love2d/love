@@ -304,6 +304,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_audio(lua_State *L)
 {
+#ifdef LOVE_ENABLE_AUDIO_OPENAL
 	if (instance == 0)
 	{
 		// Try OpenAL first.
@@ -318,7 +319,9 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	}
 	else
 		instance->retain();
+#endif
 
+#ifdef LOVE_ENABLE_AUDIO_NULL
 	if (instance == 0)
 	{
 		// Fall back to nullaudio.
@@ -331,6 +334,7 @@ extern "C" int luaopen_love_audio(lua_State *L)
 			std::cout << e.what() << std::endl;
 		}
 	}
+#endif
 
 	if (instance == 0)
 		return luaL_error(L, "Could not open any audio module.");

@@ -1,11 +1,10 @@
 #!/bin/bash
 echo Generating src/Makefile.am ...
-cd src
 inc_current='$(srcdir)'
 inc_modules="$inc_current/modules"
 inc_libraries="$inc_current/libraries"
 
-cat > Makefile.am << EOF
+cat > src/Makefile.am << EOF
 AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET)
 AM_CXXFLAGS = \$(SDL_CFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
@@ -29,20 +28,11 @@ endif
 # libLÖVE
 lib_LTLIBRARIES = liblove.la
 liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) \$(SDL_LIBS)
-liblove_la_SOURCES = \\
 EOF
 
-find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) \) -exec echo '{}' \\ \; \
-	| grep -v -f"../platform/unix/exclude" | head -c -3 >> Makefile.am
+platform/unix/genmodules >> src/Makefile.am
 
-printf "\n\n" >> Makefile.am
-cat >> Makefile.am << EOF
-if !LOVE_NOMPG123
-liblove_la_SOURCES += \\
-./modules/sound/lullaby/Mpg123Decoder.cpp \\
-./modules/sound/lullaby/Mpg123Decoder.h
-endif
-EOF
+printf "\n" >> src/Makefile.am
 
 cd ..
 echo "src/Makefile.am is updated! ^.^"

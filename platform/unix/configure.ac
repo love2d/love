@@ -12,6 +12,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_SED
 AC_PROG_MKDIR_P
+AC_PROG_OBJCXX
 AC_C_BIGENDIAN
 AC_LANG([C++])
 
@@ -32,33 +33,55 @@ ACLOVE_CXX_FLAG_TEST([-std=c++0x], cxx11name="c++0x", [])
 ACLOVE_CXX_FLAG_TEST([-std=c++11], cxx11name="c++11", [])
 AS_VAR_IF([cxx11name], [no], AC_MSG_ERROR([Can't LÖVE without C++11]), CXXFLAGS="$CXXFLAGS -std=$cxx11name")
 
+# Allow people on OSX to use autotools, they need their platform files
+AC_ARG_ENABLE([osx],
+			  AC_HELP_STRING([--enable-osx], [Compile platform-specific files for OSX]), [], [enable_osx=no])
+AS_VAR_IF([enable_osx], [no], [], #else
+		  ac_cv_search_glLoadIdentity="-framework OpenGL"
+		  AC_SUBST([LDFLAGS], ["${LDFLAGS} -framework CoreFoundation -framework Cocoa"])
+		  AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -I../platform/macosx"]))
+
+# --with-lua and --with-luaversion
+AC_ARG_WITH([lua], [AS_HELP_STRING([--with-lua], [Select the lua implementation])],
+			[], [with_lua=lua])
+AC_ARG_WITH([luaversion], [AS_HELP_STRING([--with-luaversion], [Select the lua version])],
+			[], [with_luaversion=5.1])
+
+# pkg-config
+PKG_CHECK_MODULES([lua], [${with_lua}${with_luaversion}], [lua_found=yes],
+				  [PKG_CHECK_MODULES([lua], [${with_lua}], [lua_found=yes], [lua_found=no])])
+PKG_CHECK_MODULES([freetype2], [freetype2], [], AC_MSG_ERROR([Can't LÖVE without FreeType2]))
+AM_PATH_SDL2([], [], AC_MSG_ERROR([Can't LÖVE without SDL 2]))
+
 # Libraries
 AC_SEARCH_LIBS([sqrt], [m], [], AC_MSG_ERROR([Can't LÖVE without C math library]))
-AC_SEARCH_LIBS([glLoadIdentity], [GL], [], AC_MSG_ERROR([Can't LÖVE without OpenGL]))
 AC_SEARCH_LIBS([alSourcePlay], [openal], [], AC_MSG_ERROR([Can't LÖVE without OpenAL]))
 AC_SEARCH_LIBS([ilInit], [IL], [], AC_MSG_ERROR([Can't LÖVE without DevIL]))
 AC_SEARCH_LIBS([FT_Load_Glyph], [freetype], [], AC_MSG_ERROR([Can't LÖVE without FreeType]))
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], AC_MSG_ERROR([Can't LÖVE without PhysicsFS]))
 AC_SEARCH_LIBS([ModPlug_Load], [modplug], [], AC_MSG_ERROR([Can't LÖVE without ModPlug]))
 AC_SEARCH_LIBS([ov_open], [vorbisfile], [], AC_MSG_ERROR([Can't LÖVE without VorbisFile]))
-
-# Includes
-AC_CHECK_HEADER([freetype2/freetype/config/ftheader.h], [includes="$includes -I/usr/include/freetype2"])
-
-# SDL 2, treated seperately because it combines setting SDL2_LIBS and SDL2_CFLAGS into one step
-AM_PATH_SDL2([], [], AC_MSG_ERROR([Can't LÖVE without SDL 2]))
+AC_SEARCH_LIBS([glLoadIdentity], [GL], [], AC_MSG_ERROR([Can't LÖVE without OpenGL]))
 
 # Lua, treated seperately because of --with-lua
-AC_ARG_WITH([lua], [AS_HELP_STRING([--with-lua], [Select the lua implementation])],
-			[], [with_lua=lua])
-AC_ARG_WITH([luaversion], [AS_HELP_STRING([--with-luaversion], [Select the lua version])],
-			[], [with_luaversion=5.1])
-
 AS_VAR_IF([with_luaversion], [5.2], [luatest=lua_version], [luatest=lua_pcall]) # use lua_version for 5.2
-AC_SEARCH_LIBS([$luatest], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
-			   AC_MSG_ERROR([Can't LÖVE without $with_lua]))
-AC_CHECK_HEADER(["${with_lua}${with_luaversion}/lua.h"], [includes="$includes -I/usr/include/${with_lua}${with_luaversion}"], [])
-AC_CHECK_HEADER(["${with_lua}/lua.h"], [includes="$includes -I/usr/include/${with_lua}"], [])
+AS_VAR_IF([lua_found], [yes],
+		  #if
+		  [
+		   luaheaders_found=yes
+		   AC_MSG_CHECKING([for library containing ${luatest}])
+		   AC_MSG_RESULT([${lua_LIBS}])],
+		  #else
+		  [
+		   AC_MSG_WARN([Could not find pkg-config definition for ${with_lua}${with_luaversion} or ${with_lua}, falling back to manual detection])
+		   AC_SEARCH_LIBS([$luatest], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
+						  AC_MSG_ERROR([Can't LÖVE without $with_lua]))
+		   luaheaders_found=no
+		   AC_CHECK_HEADER(["${with_lua}${with_luaversion}/lua.h"], [luaheaders_found=yes includes="$includes -I/usr/include/${with_lua}${with_luaversion}"], [])
+		   AC_CHECK_HEADER(["${with_lua}/lua.h"], [luaheaders_found=yes includes="$includes -I/usr/include/${with_lua}"], [])])
+AS_VAR_IF([luaheaders_found], [yes], [], #else
+		  [
+		   AC_MSG_WARN([Could not locate lua headers for ${with_lua}${with_luaversion} or ${with_lua}, you probably need to specify them with CPPFLAGS])])
 
 # mpg123, treated seperately because it can be disabled (default on)
 AC_ARG_ENABLE([mpg123], AC_HELP_STRING([--disable-mpg123], [Disable mp3 support, for patent-free builds]), [], [enable_mpg123=yes])
@@ -93,9 +116,12 @@ AS_VAR_IF([enable_exe], [no], [], #else
 
 AM_CONDITIONAL([LOVE_BUILD_EXE], [test "x$enable_exe" != xno])
 AM_CONDITIONAL([LOVE_NOMPG123], [test "x$enable_mpg123" == xno])
+AM_CONDITIONAL([LOVE_TARGET_OSX], [test "x$enable_osx" != xno])
 
 # Set our includes as automake variable
 AC_SUBST([LOVE_INCLUDES], ["$includes"])
+
+m4_include([configure-modules.ac])
 
 AC_CONFIG_FILES([
 	Makefile

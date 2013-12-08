@@ -1,0 +1,158 @@
+#!/bin/bash
+
+love_suffix="$1"
+
+flags=""
+upper()
+{
+	echo "$@" | tr '[:lower:]' '[:upper:]'
+}
+
+implfind()
+{
+	find "$1" -maxdepth 1 -type d -exec basename '{}' \; | grep -v "^\." | tail -n +2
+}
+
+sourcefind()
+{
+	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
+}
+
+handlemodule()
+{
+	module="$1"
+	DEFINENAME="LOVE_MODULE_$(upper "$module")"
+	printf "$DEFINENAME"
+}
+
+handleimpl()
+{
+	module="$1"
+	implementation="$2"
+	name="$3"
+
+	printf "if $name\n"
+	FILES="$(sourcefind "$module/$implementation" | sed "s/^/    /")"
+	if [[ "x$FILES" != "x" ]]; then
+		printf "liblove${love_suffix}_la_SOURCES += \\\\\n"
+		printf "${FILES:0:${#FILES}-2}\n"
+	fi
+	printf "endif\n\n"
+}
+
+genmodules()
+{
+	LOVEROOT="$(pwd)"
+	cd src
+
+	printf "liblove${love_suffix}_la_SOURCES = \\\\\n"
+	sourcefind "common" | sed "s/^/    /"
+	FILES="$(sourcefind "scripts" | sed "s/^/    /")"
+	printf "${FILES:0:${#FILES}-2}\n\n"
+
+	cd modules
+	prefix="modules/"
+	for module in *; do
+		NAME=$(handlemodule "$module")
+		flags="$flags module-$module"
+
+		printf "if $NAME\n"
+
+		for implementation in $(implfind "$module"); do
+			flags="$flags implementation-$module-$implementation"
+			handleimpl "$module" "$implementation" "LOVE_IMPLEMENTATION_$(upper "$module")_$(upper "$implementation")"
+		done
+
+		FILES="$(sourcefind "$module" "-maxdepth 1" | sed "s/^/    /")"
+		if [[ "x$FILES" != "x" ]]; then
+			printf "liblove${love_suffix}_la_SOURCES += \\\\\n"
+			printf "${FILES:0:${#FILES}-2}\n"
+		fi
+
+		printf "endif\n\n"
+	done
+
+	cd ../libraries
+	prefix="libraries/"
+	for library in *; do
+		NAME="LOVE_LIBRARY_$(upper "$library")"
+		flags="$flags library-$library"
+
+		printf "if $NAME\n"
+		printf "liblove${love_suffix}_la_SOURCES += \\\\\n"
+		FILES="$(sourcefind "$library" | sed "s/^/    /")"
+		printf "${FILES:0:${#FILES}-2}\nendif\n\n"
+	done
+	cd ../..
+}
+
+genflags()
+{
+	for flag in $flags; do
+		prettyflag="$(echo "$flag" | sed 's/-/ love./' | sed 's/-/./g')"
+		varflag="enable_$(echo "$flag" | sed 's/^[^-]*-//' | sed 's/[^a-zA-Z0-9]/_/')"
+		defineflag="LOVE_ENABLE_$(upper $(echo $flag | sed 's/^[^-]*-//' | sed 's/-/_/g'))"
+		amflag="$(upper $(echo love-$flag | sed 's/-/_/g'))"
+		printf "AC_ARG_ENABLE([$flag], [  --disable-$flag    Turn off $prettyflag], [], [$varflag=true])\n"
+		printf "AH_TEMPLATE([$defineflag], [])\n"
+		printf "if test x\"\$$varflag\" == xtrue; then\n"
+		printf "    AC_DEFINE([$defineflag], [])\n"
+		printf "fi\n"
+		printf "AM_CONDITIONAL([$amflag], [test x\$$varflag == xtrue])\n\n"
+	done
+}
+
+echo Generating src/Makefile.am ...
+inc_current='$(srcdir)'
+inc_modules="$inc_current/modules"
+inc_libraries="$inc_current/libraries"
+
+cat > src/Makefile.am << EOF
+AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET) \$(SDL_CFLAGS) \$(freetype2_CFLAGS) \$(lua_CFLAGS)
+AUTOMAKE_OPTIONS = subdir-objects
+SUBDIRS =
+
+if LOVE_BUILD_EXE
+# LÖVE executable
+bin_PROGRAMS = love${love_suffix}
+#love_LDFLAGS =
+love${love_suffix}_LDADD = liblove${love_suffix}.la \$(lua_LIBS)
+love${love_suffix}_SOURCES = love.cpp
+
+if LOVE_TARGET_OSX
+love${love_suffix}_LIBTOOLFLAGS = --tag=OBJCXX
+love${love_suffix}_SOURCES += \\
+    ../platform/macosx/OSX.h \\
+    ../platform/macosx/OSX.mm
+else
+love${love_suffix}_LIBTOOLFLAGS = --tag=CXX
+endif
+endif
+
+# Compile scripts
+#scripts/%.lua.h: scripts/%.lua
+#	cd scripts; \
+#	lua auto.lua \$*
+#TODO: Figure out how to only do this on gnu make, and detect which lua
+#      executable to run
+
+# libLÖVE
+lib_LTLIBRARIES = liblove${love_suffix}.la
+liblove${love_suffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) \$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)
+EOF
+
+genmodules >> src/Makefile.am
+
+cat >> src/Makefile.am << EOF
+if !LOVE_NOMPG123
+liblove${love_suffix}_la_SOURCES += \\
+    ./modules/sound/lullaby/Mpg123Decoder.cpp \\
+    ./modules/sound/lullaby/Mpg123Decoder.h
+endif
+EOF
+
+echo "src/Makefile.am is updated! ^.^"
+
+echo "Generating configure-modules.ac"
+genflags > configure-modules.ac
+echo "configure-modules.ac is updated! ^.^"
