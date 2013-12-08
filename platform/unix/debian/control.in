@@ -1,9 +1,10 @@
-Source: love
+Source: love@LOVE_SUFFIX@
 Section: games
 Priority: extra
 Maintainer: Bart van Strien <bart.bes@gmail.com>
 Build-Depends: debhelper (>= 9),
                autotools-dev,
+               pkg-config,
                libdevil-dev,
                libfreetype6-dev,
                libluajit-5.1-dev,
@@ -20,7 +21,7 @@ Build-Depends: debhelper (>= 9),
 Standards-Version: 3.9.3
 Homepage: http://love2d.org
 
-Package: liblove
+Package: liblove@LOVE_SUFFIX@
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -41,18 +42,18 @@ Depends: ${misc:Depends},
          libmpg123-0
 Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
 
-Package: love
+Package: love@LOVE_SUFFIX@
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         liblove (= ${binary:Version})
+         liblove@LOVE_SUFFIX@ (= ${binary:Version})
 Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
 
-Package: love-dbg
+Package: love@LOVE_SUFFIX@-dbg
 Priority: extra
 Section: debug
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         love (= ${binary:Version}),
+         love@LOVE_SUFFIX@ (= ${binary:Version}),
 Description: LOVE is a free 2D game engine which enables easy game creation in Lua.

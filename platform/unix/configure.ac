@@ -126,5 +126,10 @@ m4_include([configure-modules.ac])
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
+	platform/unix/debian/control
+	platform/unix/debian/changelog
+	platform/unix/debian/rules
 ])
 AC_OUTPUT
+
+chmod 755 platform/unix/debian/rules

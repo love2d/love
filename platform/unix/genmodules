@@ -1,6 +1,7 @@
 #!/bin/bash
 
 love_suffix="$1"
+love_amsuffix="$(echo "$love_suffix" | sed 's/\-/_/g' | sed 's/\./_/g')"
 
 flags=""
 upper()
@@ -34,7 +35,7 @@ handleimpl()
 	printf "if $name\n"
 	FILES="$(sourcefind "$module/$implementation" | sed "s/^/    /")"
 	if [[ "x$FILES" != "x" ]]; then
-		printf "liblove${love_suffix}_la_SOURCES += \\\\\n"
+		printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
 		printf "${FILES:0:${#FILES}-2}\n"
 	fi
 	printf "endif\n\n"
@@ -45,7 +46,7 @@ genmodules()
 	LOVEROOT="$(pwd)"
 	cd src
 
-	printf "liblove${love_suffix}_la_SOURCES = \\\\\n"
+	printf "liblove${love_amsuffix}_la_SOURCES = \\\\\n"
 	sourcefind "common" | sed "s/^/    /"
 	FILES="$(sourcefind "scripts" | sed "s/^/    /")"
 	printf "${FILES:0:${#FILES}-2}\n\n"
@@ -65,7 +66,7 @@ genmodules()
 
 		FILES="$(sourcefind "$module" "-maxdepth 1" | sed "s/^/    /")"
 		if [[ "x$FILES" != "x" ]]; then
-			printf "liblove${love_suffix}_la_SOURCES += \\\\\n"
+			printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
 			printf "${FILES:0:${#FILES}-2}\n"
 		fi
 
@@ -79,7 +80,7 @@ genmodules()
 		flags="$flags library-$library"
 
 		printf "if $NAME\n"
-		printf "liblove${love_suffix}_la_SOURCES += \\\\\n"
+		printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
 		FILES="$(sourcefind "$library" | sed "s/^/    /")"
 		printf "${FILES:0:${#FILES}-2}\nendif\n\n"
 	done
@@ -116,16 +117,16 @@ if LOVE_BUILD_EXE
 # LÖVE executable
 bin_PROGRAMS = love${love_suffix}
 #love_LDFLAGS =
-love${love_suffix}_LDADD = liblove${love_suffix}.la \$(lua_LIBS)
-love${love_suffix}_SOURCES = love.cpp
+love${love_amsuffix}_LDADD = liblove${love_suffix}.la \$(lua_LIBS)
+love${love_amsuffix}_SOURCES = love.cpp
 
 if LOVE_TARGET_OSX
-love${love_suffix}_LIBTOOLFLAGS = --tag=OBJCXX
-love${love_suffix}_SOURCES += \\
+love${love_amsuffix}_LIBTOOLFLAGS = --tag=OBJCXX
+love${love_amsuffix}_SOURCES += \\
     ../platform/macosx/OSX.h \\
     ../platform/macosx/OSX.mm
 else
-love${love_suffix}_LIBTOOLFLAGS = --tag=CXX
+love${love_amsuffix}_LIBTOOLFLAGS = --tag=CXX
 endif
 endif
 
@@ -138,14 +139,14 @@ endif
 
 # libLÖVE
 lib_LTLIBRARIES = liblove${love_suffix}.la
-liblove${love_suffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) \$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)
+liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) \$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)
 EOF
 
 genmodules >> src/Makefile.am
 
 cat >> src/Makefile.am << EOF
 if !LOVE_NOMPG123
-liblove${love_suffix}_la_SOURCES += \\
+liblove${love_amsuffix}_la_SOURCES += \\
     ./modules/sound/lullaby/Mpg123Decoder.cpp \\
     ./modules/sound/lullaby/Mpg123Decoder.h
 endif
@@ -155,4 +156,7 @@ echo "src/Makefile.am is updated! ^.^"
 
 echo "Generating configure-modules.ac"
 genflags > configure-modules.ac
+cat >> configure-modules.ac << EOF
+AC_SUBST([LOVE_SUFFIX], [${love_suffix}])
+EOF
 echo "configure-modules.ac is updated! ^.^"
