@@ -149,16 +149,24 @@ int Physics::newChainShape(lua_State *L)
 		lua_pop(L, 2);
 	}
 
-	if (loop)
-		s->CreateLoop(vecs, vcount);
-	else
-		s->CreateChain(vecs, vcount);
+	try
+	{
+		if (loop)
+			s->CreateLoop(vecs, vcount);
+		else
+			s->CreateChain(vecs, vcount);
+	}
+	catch (love::Exception &)
+	{
+		delete[] vecs;
+		throw;
+	}
 
-	ChainShape *c = new ChainShape(s);
 	delete[] vecs;
 
-	luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, c);
+	ChainShape *c = new ChainShape(s);
 
+	luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, c);
 	return 1;
 }
 
