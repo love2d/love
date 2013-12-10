@@ -45,9 +45,28 @@ else()
 	set(LOVE_TARGET_PLATFORM x86)
 endif()
 
+option(LOVE_JIT "Use LuaJIT" TRUE)
+
+if(LOVE_JIT)
+	message(STATUS "LuaJIT: Enabled")
+else()
+	message(STATUS "LuaJIT: Disabled")
+endif()
+
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 
 find_package(OpenGL)
+
+if(${LOVE_JIT})
+	set(MEGA_LUA ${MEGA_LUAJIT_LIB})
+	set(MEGA_EXTRA_INCLUDE ${MEGA_LUAJIT_INCLUDE})
+	set(MEGA_EXTRA_DLLS ${MEGA_LUAJIT_DLL})
+	set(MEGA_EXTRA_DEPENDECIES luajit)
+else()
+	set(MEGA_LUA ${MEGA_LUA51})
+	# MEGA_LUA51 is a CMake target, so includes are handled
+	# automatically.
+endif()
 
 #
 # common
@@ -904,7 +923,7 @@ set(LOVE_SRC_3P_ENET
 )
 
 add_library(love_3p_enet ${LOVE_SRC_3P_ENET})
-target_link_libraries(love_3p_enet ${MEGA_LUA51})
+target_link_libraries(love_3p_enet ${MEGA_LUA})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 
 #
@@ -967,7 +986,7 @@ set(LOVE_SRC_3P_LUASOCKET
 )
 
 add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
-target_link_libraries(love_3p_luasocket ${MEGA_LUA51})
+target_link_libraries(love_3p_luasocket ${MEGA_LUA})
 
 #
 # noise1234
@@ -1057,15 +1076,36 @@ include_directories(
 	src
 	src/libraries
 	src/modules
+	${MEGA_EXTRA_INCLUDE}
 )
 
 # SDL2 links with some DirectX libraries, and we apparently also
 # pull those libraries in for linkage because we link with SDL2.
 link_directories(${SDL_LINK_DIR})
 
+set(LOVE_MEGA_3P
+	${MEGA_DEVIL}
+	${MEGA_FREETYPE}
+	${MEGA_JASPER}
+	${MEGA_JPEG}
+	${MEGA_LIBOGG}
+	${MEGA_LIBPNG}
+	${MEGA_LIBVORBISFILE}
+	${MEGA_LIBVORBIS}
+	${MEGA_LUA}
+	${MEGA_MODPLUG}
+	${MEGA_MPEG123}
+	${MEGA_OPENAL}
+	${MEGA_PHYSFS}
+	${MEGA_SDL2MAIN}
+	${MEGA_SDL2}
+	${MEGA_TIFF}
+	${MEGA_ZLIB}
+)
+
 set(LOVE_LINK_LIBRARIES
 	${OPENGL_gl_LIBRARY}
-	${MEGA_3P}
+	${LOVE_MEGA_3P}
 )
 
 set(LOVE_RC)
@@ -1085,6 +1125,10 @@ endif()
 add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
 target_link_libraries(liblove ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
 
+if(MEGA_EXTRA_DEPENDECIES)
+	add_dependencies(${LOVE_LIB_NAME} ${MEGA_EXTRA_DEPENDECIES})
+endif()
+
 if(MSVC)
 	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love")	
 	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love")	
@@ -1102,7 +1146,12 @@ add_move_dll(love ${MEGA_MPEG123})
 add_move_dll(love ${MEGA_SDL2})
 add_move_dll(love ${MEGA_OPENAL})
 add_move_dll(love ${MEGA_DEVIL})
-add_move_dll(love ${MEGA_LUA51})
+
+if(LOVE_JIT)
+	add_move_file(love ${MEGA_LUAJIT_DLL})
+else()
+	add_move_dll(love ${MEGA_LUA51})
+endif()
 
 ###################################
 # Version
@@ -1130,6 +1179,15 @@ message(STATUS "Version: ${LOVE_VERSION_STR}")
 # CPack
 ###################################
 install(TARGETS love ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
+
+# Extra DLLs.
+if(MEGA_EXTRA_DLLS)
+	foreach(DLL ${MEGA_EXTRA_DLLS})
+		get_filename_component(DLL_NAME ${DLL} NAME)
+		message(STATUS "Extra DLL: ${DLL_NAME}")
+	endforeach()
+	install(FILES ${MEGA_EXTRA_DLLS} DESTINATION .)
+endif()
 
 # Dynamic runtime libs.
 if(MEGA_MSVC_DLLS)
