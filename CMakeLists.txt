@@ -1130,8 +1130,8 @@ if(MEGA_EXTRA_DEPENDECIES)
 endif()
 
 if(MSVC)
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love")	
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love")	
+	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove")
+	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love" PDB_NAME "liblove")
 endif()
 
 #
