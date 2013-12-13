@@ -109,7 +109,10 @@ inc_modules="$inc_current/modules"
 inc_libraries="$inc_current/libraries"
 
 cat > src/Makefile.am << EOF
-AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET) \$(SDL_CFLAGS) \$(freetype2_CFLAGS) \$(lua_CFLAGS)
+AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET)\
+	\$(SDL_CFLAGS) \$(lua_CFLAGS) \$(freetype2_CFLAGS)\
+	\$(openal_CFLAGS) \$(devil_CFLAGS) \$(libmodplug_CFLAGS)\
+	\$(vorbisfile_CFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
 
@@ -139,7 +142,11 @@ endif
 
 # libLÖVE
 lib_LTLIBRARIES = liblove${love_suffix}.la
-liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) \$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)
+liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
+liblove${love_amsuffix}_la_LIBADD = \
+	\$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)\
+	\$(openal_LIBS) \$(devil_LIBS) \$(libmodplug_LIBS)\
+	\$(vorbisfile_LIBS)
 EOF
 
 genmodules >> src/Makefile.am
