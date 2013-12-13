@@ -33,7 +33,7 @@
 #include "thread/threads.h"
 
 // OpenAL
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
 #else

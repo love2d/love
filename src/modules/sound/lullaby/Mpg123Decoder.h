@@ -26,7 +26,7 @@
 #include "Decoder.h"
 
 // libmpg123
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <mpg123/mpg123.h>
 #else
 #include <mpg123.h>

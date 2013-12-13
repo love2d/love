@@ -25,7 +25,7 @@
 #include "font/Font.h"
 
 // FreeType2
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <freetype/ft2build.h>
 #else
 #include <ft2build.h>

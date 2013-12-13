@@ -25,7 +25,7 @@
 #include "filesystem/File.h"
 
 // PhysFS
-#ifdef LOVE_MACOSX // wacky Mac behavior means different #include syntax!
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <physfs/physfs.h>
 #else
 #include <physfs.h>
