@@ -121,6 +121,11 @@ AM_CONDITIONAL([LOVE_BUILD_EXE], [test "x$enable_exe" != xno])
 AM_CONDITIONAL([LOVE_NOMPG123], [test "x$enable_mpg123" == xno])
 AM_CONDITIONAL([LOVE_TARGET_OSX], [test "x$enable_osx" != xno])
 
+# Automatic script file rebuilding
+AC_CHECK_PROGS([LUA_EXECUTABLE], ["${with_lua}${with_luaversion}" "${with_lua}" "lua"], [:])
+AS_VAR_IF([LUA_EXECUTABLE], [:],
+		  [AC_MSG_WARN([Did not find a lua executable, you may need to update the scripts manually if you change them])], [])
+
 # Set our includes as automake variable
 AC_SUBST([LOVE_INCLUDES], ["$includes"])
 

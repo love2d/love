@@ -115,6 +115,7 @@ AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/en
 	\$(vorbisfile_CFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
+SUFFIXES = .lua .lua.h
 
 if LOVE_BUILD_EXE
 # LÖVE executable
@@ -134,11 +135,9 @@ endif
 endif
 
 # Compile scripts
-#scripts/%.lua.h: scripts/%.lua
-#	cd scripts; \
-#	lua auto.lua \$*
-#TODO: Figure out how to only do this on gnu make, and detect which lua
-#      executable to run
+.lua.lua.h:
+	cd scripts; \
+	\$(LUA_EXECUTABLE) auto.lua \$<
 
 # libLÖVE
 lib_LTLIBRARIES = liblove${love_suffix}.la

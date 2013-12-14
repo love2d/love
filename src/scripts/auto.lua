@@ -107,7 +107,8 @@ end
 for i, v in ipairs(arg) do
 	--run the auto function for every argument
 	--but do it with pcall, to catch errors
-	local ok, err = pcall(auto, v:gsub("%.lua$",""))
+	v = v:gsub("%.lua$", ""):gsub("^(.+)/", "") -- normalize input
+	local ok, err = pcall(auto, v)
 	if not ok then
 		--inform people we've failed
 		print(v .. ": " .. err)
