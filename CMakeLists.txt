@@ -1216,6 +1216,12 @@ install(FILES
 		${CMAKE_CURRENT_BINARY_DIR}/readme.txt
 		DESTINATION .)
 
+# Icons
+install(FILES
+		${CMAKE_CURRENT_SOURCE_DIR}/extra/nsis/love.ico
+		${CMAKE_CURRENT_SOURCE_DIR}/extra/nsis/game.ico
+		DESTINATION .)
+
 set(CPACK_GENERATOR ZIP NSIS)
 set(CPACK_PACKAGE_NAME "love")
 set(CPACK_PACKAGE_VENDOR "love2d.org")
@@ -1256,6 +1262,22 @@ set(CPACK_NSIS_INSTALLER_MUI_ICON_CODE "
 	!define MUI_HEADERIMAGE_BITMAP \\\"${NSIS_TOP_BMP}\\\"
 	!define MUI_ICON \\\"${NSIS_MUI_ICON}\\\"
 	!define MUI_UNICON \\\"${NSIS_MUI_UNICON}\\\"
+")
+
+set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+	WriteRegStr HKCR \\\".love\\\" \\\"\\\" \\\"LOVE\\\"
+	WriteRegStr HKCR \\\"LOVE\\\" \\\"\\\" \\\"LOVE Game File\\\"
+	WriteRegStr HKCR \\\"LOVE\\\\DefaultIcon\\\" \\\"\\\" \\\"$INSTDIR\\\\game.ico\\\"
+	WriteRegStr HKCR \\\"LOVE\\\\shell\\\" \\\"\\\" \\\"open\\\"
+	WriteRegStr HKCR \\\"LOVE\\\\shell\\\\open\\\" \\\"\\\" \\\"Open in LOVE\\\"
+	WriteRegStr HKCR \\\"LOVE\\\\shell\\\\open\\\\command\\\" \\\"\\\" \\\"$INSTDIR\\\\love.exe $\\\\\\\"%1$\\\\\\\"\\\"
+	System::Call 'shell32.dll::SHChangeNotify(i, i, i, i) v  (0x08000000, 0, 0, 0)'
+")
+
+set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+	DeleteRegKey HKCR \\\"LOVE\\\"
+	DeleteRegKey HKCR \\\".love\\\"
+	System::Call 'shell32.dll::SHChangeNotify(i, i, i, i) v  (0x08000000, 0, 0, 0)'
 ")
 
 include(CPack)
