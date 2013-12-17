@@ -364,10 +364,7 @@ bool Joystick::setVibration(float left, float right)
 		memset(&vibration.effect, 0, sizeof(SDL_HapticEffect));
 		vibration.effect.type = SDL_HAPTIC_LEFTRIGHT;
 
-		// SDL's Xinput code has an int. overflow bug with SDL_HAPTIC_INFINITY.
-		const Uint32 long_time = 1000 * 60 * 60 * 2;
-
-		vibration.effect.leftright.length = long_time;
+		vibration.effect.leftright.length = SDL_HAPTIC_INFINITY;
 		vibration.effect.leftright.large_magnitude = Uint16(left * LOVE_UINT16_MAX);
 		vibration.effect.leftright.small_magnitude = Uint16(right * LOVE_UINT16_MAX);
 
