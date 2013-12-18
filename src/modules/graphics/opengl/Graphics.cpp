@@ -18,6 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "common/config.h"
 #include "common/math.h"
 #include "common/Vector.h"
@@ -26,10 +27,14 @@
 #include "window/sdl/Window.h"
 #include "Polyline.h"
 
+// C++
 #include <vector>
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+
+// C
+#include <cmath>
 
 namespace love
 {
@@ -1028,7 +1033,7 @@ void Graphics::rotate(float r)
 void Graphics::scale(float x, float y)
 {
 	glScalef(x, y, 1);
-	pixel_size_stack.back() *= 2. / double(x + y);
+	pixel_size_stack.back() *= 2. / (fabs(x) + fabs(y));
 }
 
 void Graphics::translate(float x, float y)
