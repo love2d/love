@@ -1,7 +1,7 @@
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------
 
-	Released: N/A
+	Released: 2013-12-13
 
   * Added better multiplayer networking support via ENet.
   * Added --fused command line argument, to simulate fusing.
