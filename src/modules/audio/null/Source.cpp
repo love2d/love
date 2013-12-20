@@ -36,7 +36,7 @@ Source::~Source()
 {
 }
 
-love::audio::Source *Source::copy()
+love::audio::Source *Source::clone()
 {
 	this->retain();
 	return this;

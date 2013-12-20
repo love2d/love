@@ -51,7 +51,7 @@ public:
 	Source(Type type);
 	virtual ~Source();
 
-	virtual Source *copy() = 0;
+	virtual Source *clone() = 0;
 
 	virtual void play() = 0;
 	virtual void stop() = 0;

@@ -30,6 +30,15 @@ Source *luax_checksource(lua_State *L, int idx)
 	return luax_checktype<Source>(L, idx, "Source", AUDIO_SOURCE_T);
 }
 
+int w_Source_clone(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	Source *clone = nullptr;
+	EXCEPT_GUARD(clone = t->clone();)
+	luax_pushtype(L, "Source", AUDIO_SOURCE_T, clone);
+	return 1;
+}
+
 int w_Source_play(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -333,6 +342,8 @@ int w_Source_getChannels(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
+	{ "clone", w_Source_clone },
+
 	{ "play", w_Source_play },
 	{ "stop", w_Source_stop },
 	{ "pause", w_Source_pause },

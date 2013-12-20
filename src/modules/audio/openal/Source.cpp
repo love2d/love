@@ -33,10 +33,22 @@ namespace audio
 namespace openal
 {
 
+StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
+{
+	alGenBuffers(1, &buffer);
+	alBufferData(buffer, format, data, size, freq);
+}
+
+StaticDataBuffer::~StaticDataBuffer()
+{
+	alDeleteBuffers(1, &buffer);
+}
+
 Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	: love::audio::Source(Source::TYPE_STATIC)
 	, pool(pool)
 	, valid(false)
+	, staticBuffer(nullptr)
 	, pitch(1.0f)
 	, volume(1.0f)
 	, relative(false)
@@ -51,14 +63,13 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, offsetSamples(0)
 	, offsetSeconds(0)
 	, channels(soundData->getChannels())
-	, decoder(0)
+	, decoder(nullptr)
 	, toLoop(0)
 {
-	alGenBuffers(1, buffers);
 	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
-	alBufferData(buffers[0], fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate());
+	staticBuffer = new StaticDataBuffer(fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate());
 
-	static float z[3] = {0, 0, 0};
+	float z[3] = {0, 0, 0};
 
 	setFloatv(position, z);
 	setFloatv(velocity, z);
@@ -69,6 +80,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	: love::audio::Source(Source::TYPE_STREAM)
 	, pool(pool)
 	, valid(false)
+	, staticBuffer(nullptr)
 	, pitch(1.0f)
 	, volume(1.0f)
 	, relative(false)
@@ -87,27 +99,70 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, toLoop(0)
 {
 	decoder->retain();
-	alGenBuffers(MAX_BUFFERS, buffers);
+	alGenBuffers(MAX_BUFFERS, streamBuffers);
 
-	static float z[3] = {0, 0, 0};
+	float z[3] = {0, 0, 0};
 
 	setFloatv(position, z);
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
 }
 
+Source::Source(Source *s)
+	: love::audio::Source(s->type)
+	, pool(s->pool)
+	, valid(false)
+	, staticBuffer(s->staticBuffer)
+	, pitch(s->pitch)
+	, volume(s->volume)
+	, relative(s->relative)
+	, looping(s->looping)
+	, paused(false)
+	, minVolume(s->minVolume)
+	, maxVolume(s->maxVolume)
+	, referenceDistance(s->referenceDistance)
+	, rolloffFactor(s->rolloffFactor)
+	, maxDistance(s->maxDistance)
+	, cone(s->cone)
+	, offsetSamples(0)
+	, offsetSeconds(0)
+	, channels(s->channels)
+	, decoder(nullptr)
+	, toLoop(0)
+{
+	if (type == TYPE_STREAM)
+	{
+		if (s->decoder)
+			decoder = s->decoder->clone();
+
+		alGenBuffers(MAX_BUFFERS, streamBuffers);
+	}
+	else
+		staticBuffer->retain();
+
+	setFloatv(position, s->position);
+	setFloatv(velocity, s->velocity);
+	setFloatv(direction, s->direction);
+}
+
 Source::~Source()
 {
 	if (valid)
 		pool->stop(this);
-	alDeleteBuffers((type == TYPE_STATIC) ? 1 : MAX_BUFFERS, buffers);
+
+	if (type == TYPE_STREAM)
+		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
+
+	if (staticBuffer)
+		staticBuffer->release();
+
 	if (decoder)
 		decoder->release();
 }
 
-love::audio::Source *Source::copy()
+love::audio::Source *Source::clone()
 {
-	return 0;
+	return new Source(this);
 }
 
 void Source::play()
@@ -341,13 +396,15 @@ float Source::tellAtomic(void *unit) const
 			break;
 		case Source::UNIT_SECONDS:
 		default:
-			alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
-			ALint buffer;
-			alGetSourcei(source, AL_BUFFER, &buffer);
-			int freq;
-			alGetBufferi(buffer, AL_FREQUENCY, &freq);
-			offset /= freq;
-			if (type == TYPE_STREAM) offset += offsetSeconds;
+			{
+				alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
+				ALint buffer;
+				alGetSourcei(source, AL_BUFFER, &buffer);
+				int freq;
+				alGetBufferi(buffer, AL_FREQUENCY, &freq);
+				offset /= freq;
+				if (type == TYPE_STREAM) offset += offsetSeconds;
+			}
 			break;
 		}
 		return offset;
@@ -459,7 +516,7 @@ void Source::playAtomic()
 {
 	if (type == TYPE_STATIC)
 	{
-		alSourcei(source, AL_BUFFER, buffers[0]);
+		alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
 	}
 	else if (type == TYPE_STREAM)
 	{
@@ -467,14 +524,14 @@ void Source::playAtomic()
 
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 		{
-			streamAtomic(buffers[i], decoder);
+			streamAtomic(streamBuffers[i], decoder);
 			++usedBuffers;
 			if (decoder->isFinished())
 				break;
 		}
 
 		if (usedBuffers > 0)
-			alSourceQueueBuffers(source, usedBuffers, buffers);
+			alSourceQueueBuffers(source, usedBuffers, streamBuffers);
 	}
 
 	// This Source may now be associated with an OpenAL source that still has

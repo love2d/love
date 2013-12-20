@@ -47,14 +47,35 @@ namespace openal
 class Audio;
 class Pool;
 
+// Basically just a reference-counted non-streaming OpenAL buffer object.
+class StaticDataBuffer : public love::Object
+{
+public:
+
+	StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq);
+	virtual ~StaticDataBuffer();
+
+	inline ALuint getBuffer() const
+	{
+		return buffer;
+	}
+
+private:
+
+	ALuint buffer;
+
+}; // StaticDataBuffer
+
 class Source : public love::audio::Source
 {
 public:
+
 	Source(Pool *pool, love::sound::SoundData *soundData);
 	Source(Pool *pool, love::sound::Decoder *decoder);
+	Source(Source *s);
 	virtual ~Source();
 
-	virtual love::audio::Source *copy();
+	virtual love::audio::Source *clone();
 	virtual void play();
 	virtual void stop();
 	virtual void pause();
@@ -123,8 +144,11 @@ private:
 	Pool *pool;
 	ALuint source;
 	bool valid;
+
 	static const unsigned int MAX_BUFFERS = 32;
-	ALuint buffers[MAX_BUFFERS];
+	ALuint streamBuffers[MAX_BUFFERS];
+
+	StaticDataBuffer *staticBuffer;
 
 	float pitch;
 	float volume;

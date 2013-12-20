@@ -30,6 +30,7 @@ namespace audio
 {
 
 Source *luax_checksource(lua_State *L, int idx);
+int w_Source_clone(lua_State *L);
 int w_Source_play(lua_State *L);
 int w_Source_stop(lua_State *L);
 int w_Source_pause(lua_State *L);

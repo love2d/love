@@ -41,6 +41,15 @@ int w_getSourceCount(lua_State *L)
 
 int w_newSource(lua_State *L)
 {
+	if (luax_istype(L, 1, AUDIO_SOURCE_T))
+	{
+		Source *t = luax_checksource(L, 1);
+		Source *clone = 0;
+		EXCEPT_GUARD(clone = t->clone();)
+		luax_pushtype(L, "Source", AUDIO_SOURCE_T, clone);
+		return 1;
+	}
+
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
 		luax_convobj(L, 1, "filesystem", "newFileData");
 
