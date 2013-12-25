@@ -108,41 +108,41 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	setFloatv(direction, z);
 }
 
-Source::Source(Source *s)
-	: love::audio::Source(s->type)
-	, pool(s->pool)
+Source::Source(const Source &s)
+	: love::audio::Source(s.type)
+	, pool(s.pool)
 	, valid(false)
-	, staticBuffer(s->staticBuffer)
-	, pitch(s->pitch)
-	, volume(s->volume)
-	, relative(s->relative)
-	, looping(s->looping)
+	, staticBuffer(s.staticBuffer)
+	, pitch(s.pitch)
+	, volume(s.volume)
+	, relative(s.relative)
+	, looping(s.looping)
 	, paused(false)
-	, minVolume(s->minVolume)
-	, maxVolume(s->maxVolume)
-	, referenceDistance(s->referenceDistance)
-	, rolloffFactor(s->rolloffFactor)
-	, maxDistance(s->maxDistance)
-	, cone(s->cone)
+	, minVolume(s.minVolume)
+	, maxVolume(s.maxVolume)
+	, referenceDistance(s.referenceDistance)
+	, rolloffFactor(s.rolloffFactor)
+	, maxDistance(s.maxDistance)
+	, cone(s.cone)
 	, offsetSamples(0)
 	, offsetSeconds(0)
-	, channels(s->channels)
+	, channels(s.channels)
 	, decoder(nullptr)
 	, toLoop(0)
 {
 	if (type == TYPE_STREAM)
 	{
-		if (s->decoder)
-			decoder = s->decoder->clone();
+		if (s.decoder)
+			decoder = s.decoder->clone();
 
 		alGenBuffers(MAX_BUFFERS, streamBuffers);
 	}
 	else
 		staticBuffer->retain();
 
-	setFloatv(position, s->position);
-	setFloatv(velocity, s->velocity);
-	setFloatv(direction, s->direction);
+	setFloatv(position, s.position);
+	setFloatv(velocity, s.velocity);
+	setFloatv(direction, s.direction);
 }
 
 Source::~Source()
@@ -162,7 +162,7 @@ Source::~Source()
 
 love::audio::Source *Source::clone()
 {
-	return new Source(this);
+	return new Source(*this);
 }
 
 void Source::play()

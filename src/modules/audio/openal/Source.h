@@ -72,7 +72,7 @@ public:
 
 	Source(Pool *pool, love::sound::SoundData *soundData);
 	Source(Pool *pool, love::sound::Decoder *decoder);
-	Source(Source *s);
+	Source(const Source &s);
 	virtual ~Source();
 
 	virtual love::audio::Source *clone();
