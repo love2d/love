@@ -79,11 +79,19 @@ public:
 	 * Creates a particle system with the specified buffersize and image.
 	 **/
 	ParticleSystem(Image *image, uint32 buffer);
+	ParticleSystem(const ParticleSystem &p);
 
 	/**
 	 * Deletes any allocated memory.
 	 **/
 	virtual ~ParticleSystem();
+
+	/**
+	 * Creates an identical copy of this ParticleSystem. The clone does not
+	 * duplicate any existing particles from this ParticleSystem, just the
+	 * settable parameters.
+	 **/
+	ParticleSystem *clone();
 
 	/**
 	 * Sets the image used in the particle system.

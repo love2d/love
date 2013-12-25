@@ -34,6 +34,7 @@ namespace opengl
 {
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx);
+int w_ParticleSystem_clone(lua_State *L);
 int w_ParticleSystem_setImage(lua_State *L);
 int w_ParticleSystem_getImage(lua_State *L);
 int w_ParticleSystem_setBufferSize(lua_State *L);

@@ -36,6 +36,17 @@ ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx)
 	return luax_checktype<ParticleSystem>(L, idx, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T);
 }
 
+int w_ParticleSystem_clone(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+
+	ParticleSystem *clone = nullptr;
+	EXCEPT_GUARD(clone = t->clone();)
+
+	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, clone);
+	return 1;
+}
+
 int w_ParticleSystem_setImage(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -604,6 +615,7 @@ int w_ParticleSystem_update(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
+	{ "clone", w_ParticleSystem_clone },
 	{ "setImage", w_ParticleSystem_setImage },
 	{ "getImage", w_ParticleSystem_getImage },
 	{ "setBufferSize", w_ParticleSystem_setBufferSize },

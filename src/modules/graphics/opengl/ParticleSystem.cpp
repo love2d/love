@@ -58,28 +58,12 @@ float calculate_variation(float inner, float outer, float var)
 
 } // anonymous namespace
 
-StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM>::Entry ParticleSystem::distributionsEntries[] = {
-	{ "none",     ParticleSystem::DISTRIBUTION_NONE },
-	{ "uniform",  ParticleSystem::DISTRIBUTION_UNIFORM },
-	{ "normal",   ParticleSystem::DISTRIBUTION_NORMAL },
-};
-StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));
-
-StringMap<ParticleSystem::InsertMode, ParticleSystem::INSERT_MODE_MAX_ENUM>::Entry ParticleSystem::insertModesEntries[] =
-{
-	{ "top",    ParticleSystem::INSERT_MODE_TOP },
-	{ "bottom", ParticleSystem::INSERT_MODE_BOTTOM },
-	{ "random", ParticleSystem::INSERT_MODE_RANDOM },
-};
-StringMap<ParticleSystem::InsertMode, ParticleSystem::INSERT_MODE_MAX_ENUM> ParticleSystem::insertModes(ParticleSystem::insertModesEntries, sizeof(ParticleSystem::insertModesEntries));
-
-
 ParticleSystem::ParticleSystem(Image *image, uint32 size)
-	: pMem(NULL)
-	, pFree(NULL)
-	, pHead(NULL)
-	, pTail(NULL)
-	, particleVerts(NULL)
+	: pMem(nullptr)
+	, pFree(nullptr)
+	, pHead(nullptr)
+	, pTail(nullptr)
+	, particleVerts(nullptr)
 	, image(image)
 	, active(true)
 	, insertMode(INSERT_MODE_TOP)
@@ -120,12 +104,62 @@ ParticleSystem::ParticleSystem(Image *image, uint32 size)
 	image->retain();
 }
 
+ParticleSystem::ParticleSystem(const ParticleSystem &p)
+	: pMem(nullptr)
+	, pFree(nullptr)
+	, pHead(nullptr)
+	, pTail(nullptr)
+	, particleVerts(nullptr)
+	, image(p.image)
+	, active(p.active)
+	, insertMode(p.insertMode)
+	, maxParticles(p.maxParticles)
+	, activeParticles(0)
+	, emissionRate(p.emissionRate)
+	, emitCounter(0.0f)
+	, areaSpreadDistribution(p.areaSpreadDistribution)
+	, lifetime(p.lifetime)
+	, life(p.lifetime) // Initialize with the maximum life time.
+	, particleLifeMin(p.particleLifeMin)
+	, particleLifeMax(p.particleLifeMax)
+	, direction(p.direction)
+	, spread(p.spread)
+	, speedMin(p.speedMin)
+	, speedMax(p.speedMax)
+	, linearAccelerationMin(p.linearAccelerationMin)
+	, linearAccelerationMax(p.linearAccelerationMax)
+	, radialAccelerationMin(p.radialAccelerationMin)
+	, radialAccelerationMax(p.radialAccelerationMax)
+	, tangentialAccelerationMin(p.tangentialAccelerationMin)
+	, tangentialAccelerationMax(p.tangentialAccelerationMax)
+	, sizes(p.sizes)
+	, sizeVariation(p.sizeVariation)
+	, rotationMin(p.rotationMin)
+	, rotationMax(p.rotationMax)
+	, spinStart(p.spinStart)
+	, spinEnd(p.spinEnd)
+	, spinVariation(p.spinVariation)
+	, offsetX(p.offsetX)
+	, offsetY(p.offsetY)
+	, colors(p.colors)
+{
+	setBufferSize(maxParticles);
+
+	if (image != nullptr)
+		image->retain();
+}
+
 ParticleSystem::~ParticleSystem()
 {
-	if (this->image != 0)
-		this->image->release();
+	if (image != nullptr)
+		image->release();
 
 	deleteBuffers();
+}
+
+ParticleSystem *ParticleSystem::clone()
+{
+	return new ParticleSystem(*this);
 }
 
 void ParticleSystem::createBuffers(size_t size)
@@ -149,8 +183,8 @@ void ParticleSystem::deleteBuffers()
 	delete[] pMem;
 	delete[] particleVerts;
 
-	pMem = NULL;
-	particleVerts = NULL;
+	pMem = nullptr;
+	particleVerts = nullptr;
 	maxParticles = 0;
 	activeParticles = 0;
 }
@@ -263,33 +297,33 @@ void ParticleSystem::initParticle(particle *p)
 
 void ParticleSystem::insertTop(particle *p)
 {
-	if (pHead == NULL)
+	if (pHead == nullptr)
 	{
 		pHead = p;
-		p->prev = NULL;
+		p->prev = nullptr;
 	}
 	else
 	{
 		pTail->next = p;
 		p->prev = pTail;
 	}
-	p->next = NULL;
+	p->next = nullptr;
 	pTail = p;
 }
 
 void ParticleSystem::insertBottom(particle *p)
 {
-	if (pTail == NULL)
+	if (pTail == nullptr)
 	{
 		pTail = p;
-		p->next = NULL;
+		p->next = nullptr;
 	}
 	else
 	{
 		pHead->prev = p;
 		p->next = pHead;
 	}
-	p->prev = NULL;
+	p->prev = nullptr;
 	pHead = p;
 }
 
@@ -304,7 +338,7 @@ void ParticleSystem::insertRandom(particle *p)
 		particle *pA = pHead;
 		if (pA)
 			pA->prev = p;
-		p->prev = NULL;
+		p->prev = nullptr;
 		p->next = pA;
 		pHead = p;
 		return;
@@ -327,7 +361,7 @@ ParticleSystem::particle *ParticleSystem::removeParticle(particle *p)
 	// The linked list is updated in this function and old pointers may be
 	// invalidated. The returned pointer will inform the caller of the new
 	// pointer to the next particle.
-	particle *pNext = NULL;
+	particle *pNext = nullptr;
 
 	// Removes the particle from the linked list.
 	if (p->prev)
@@ -691,12 +725,12 @@ void ParticleSystem::pause()
 
 void ParticleSystem::reset()
 {
-	if (pMem == NULL)
+	if (pMem == nullptr)
 		return;
 
 	pFree = pMem;
-	pHead = NULL;
-	pTail = NULL;
+	pHead = nullptr;
+	pTail = nullptr;
 	activeParticles = 0;
 	life = lifetime;
 	emitCounter = 0;
@@ -741,7 +775,7 @@ bool ParticleSystem::isFull() const
 void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	uint32 pCount = getCount();
-	if (pCount == 0 || image == NULL || pMem == NULL || particleVerts == NULL)
+	if (pCount == 0 || image == nullptr || pMem == nullptr || particleVerts == nullptr)
 		return;
 
 	Color curcolor = gl.getColor();
@@ -805,7 +839,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 void ParticleSystem::update(float dt)
 {
-	if (pMem == NULL || dt == 0.0f)
+	if (pMem == nullptr || dt == 0.0f)
 		return;
 
 	// Make some more particles.
@@ -922,6 +956,24 @@ bool ParticleSystem::getConstant(InsertMode in, const char *&out)
 {
 	return insertModes.find(in, out);
 }
+
+StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM>::Entry ParticleSystem::distributionsEntries[] =
+{
+	{ "none",    ParticleSystem::DISTRIBUTION_NONE },
+	{ "uniform", ParticleSystem::DISTRIBUTION_UNIFORM },
+	{ "normal",  ParticleSystem::DISTRIBUTION_NORMAL },
+};
+
+StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));
+
+StringMap<ParticleSystem::InsertMode, ParticleSystem::INSERT_MODE_MAX_ENUM>::Entry ParticleSystem::insertModesEntries[] =
+{
+	{ "top",    ParticleSystem::INSERT_MODE_TOP },
+	{ "bottom", ParticleSystem::INSERT_MODE_BOTTOM },
+	{ "random", ParticleSystem::INSERT_MODE_RANDOM },
+};
+
+StringMap<ParticleSystem::InsertMode, ParticleSystem::INSERT_MODE_MAX_ENUM> ParticleSystem::insertModes(ParticleSystem::insertModesEntries, sizeof(ParticleSystem::insertModesEntries));
 
 } // opengl
 } // graphics
