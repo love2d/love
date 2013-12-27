@@ -14,11 +14,11 @@ if [[ ! -d platform/unix ]]; then
 	exit 1
 fi
 
-AUTOHEADER=$(which autoheader)
-AUTOCONF=$(which autoconf)
-LIBTOOLIZE=$(which libtoolize)
-ACLOCAL=$(which aclocal)
-AUTOMAKE=$(which automake)
+AUTOHEADER=${AUTOHEADER:-$(which autoheader)}
+AUTOCONF=${AUTOCONF:-$(which autoconf)}
+LIBTOOLIZE=${LIBTOOLIZE:-$(which libtoolize)}
+ACLOCAL=${ACLOCAL:-$(which aclocal)}
+AUTOMAKE=${AUTOMAKE:-$(which automake)}
 
 [[ -x ${AUTOHEADER} ]] || die "Could not find autoheader. Install autoconf."
 [[ -x ${AUTOCONF} ]]   || die "Could not find autoconf."
