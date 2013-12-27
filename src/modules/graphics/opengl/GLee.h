@@ -65,6 +65,8 @@
 	#define GLX_GLXEXT_PROTOTYPES
 	#include <GL/gl.h>
 	#include <GL/glx.h>
+
+	typedef XID GLEE_GLXContextID;
 #endif
 
 #ifndef APIENTRY
@@ -23683,13 +23685,13 @@ GLEE_EXTERN GLboolean _GLEE_GLX_NV_video_output;
 #endif
 #ifndef GLEE_H_DEFINED_glXGetContextIDEXT
 #define GLEE_H_DEFINED_glXGetContextIDEXT
-  typedef GLXContextID (APIENTRYP GLEEPFNGLXGETCONTEXTIDEXTPROC) (const GLXContext  context);
+  typedef GLEE_GLXContextID (APIENTRYP GLEEPFNGLXGETCONTEXTIDEXTPROC) (const GLXContext  context);
   GLEE_EXTERN GLEEPFNGLXGETCONTEXTIDEXTPROC GLeeFuncPtr_glXGetContextIDEXT;
   #define glXGetContextIDEXT GLeeFuncPtr_glXGetContextIDEXT
 #endif
 #ifndef GLEE_H_DEFINED_glXImportContextEXT
 #define GLEE_H_DEFINED_glXImportContextEXT
-  typedef GLXContext (APIENTRYP GLEEPFNGLXIMPORTCONTEXTEXTPROC) (Display * dpy, GLXContextID  contextID);
+  typedef GLXContext (APIENTRYP GLEEPFNGLXIMPORTCONTEXTEXTPROC) (Display * dpy, GLEE_GLXContextID  contextID);
   GLEE_EXTERN GLEEPFNGLXIMPORTCONTEXTEXTPROC GLeeFuncPtr_glXImportContextEXT;
   #define glXImportContextEXT GLeeFuncPtr_glXImportContextEXT
 #endif

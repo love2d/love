@@ -15423,12 +15423,12 @@ int __GLeeGLXNumExtensions=53;
 #endif
 #ifndef GLEE_C_DEFINED_glXGetContextIDEXT
 #define GLEE_C_DEFINED_glXGetContextIDEXT
-  GLXContextID __stdcall GLee_Lazy_glXGetContextIDEXT(const GLXContext  context)  {if (GLeeInit()) return glXGetContextIDEXT(context); return (GLXContextID)0;}
+  GLEE_GLXContextID __stdcall GLee_Lazy_glXGetContextIDEXT(const GLXContext  context)  {if (GLeeInit()) return glXGetContextIDEXT(context); return (GLEE_GLXContextID)0;}
   GLEEPFNGLXGETCONTEXTIDEXTPROC GLeeFuncPtr_glXGetContextIDEXT=GLee_Lazy_glXGetContextIDEXT;
 #endif
 #ifndef GLEE_C_DEFINED_glXImportContextEXT
 #define GLEE_C_DEFINED_glXImportContextEXT
-  GLXContext __stdcall GLee_Lazy_glXImportContextEXT(Display * dpy, GLXContextID  contextID)  {if (GLeeInit()) return glXImportContextEXT(dpy, contextID); return (GLXContext)0;}
+  GLXContext __stdcall GLee_Lazy_glXImportContextEXT(Display * dpy, GLEE_GLXContextID  contextID)  {if (GLeeInit()) return glXImportContextEXT(dpy, contextID); return (GLXContext)0;}
   GLEEPFNGLXIMPORTCONTEXTEXTPROC GLeeFuncPtr_glXImportContextEXT=GLee_Lazy_glXImportContextEXT;
 #endif
 #ifndef GLEE_C_DEFINED_glXFreeContextEXT
