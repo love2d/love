@@ -516,9 +516,6 @@ protected:
 		Colorf color;
 	};
 
-	// The max amount of particles.
-	int bufferSize;
-
 	// Pointer to the beginning of the allocated memory.
 	particle *pMem;
 
