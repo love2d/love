@@ -138,6 +138,15 @@ public:
 	void setVertexColors(bool enable);
 	bool hasVertexColors() const;
 
+	/**
+	 * Sets whether the Mesh will be drawn as wireframe lines instead of filled
+	 * triangles (has no effect for DRAW_MODE_POINTS.)
+	 * This should only be used as a debugging tool. The wireframe lines do not
+	 * behave the same as regular love.graphics lines.
+	 **/
+	void setWireframe(bool enable);
+	bool isWireframe() const;
+
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
@@ -162,6 +171,8 @@ private:
 
 	// Whether the per-vertex colors are used when drawing.
 	bool colors_enabled;
+
+	bool wireframe;
 
 	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM> drawModes;

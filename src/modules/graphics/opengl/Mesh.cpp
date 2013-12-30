@@ -38,6 +38,7 @@ Mesh::Mesh(const std::vector<Vertex> &verts, Mesh::DrawMode mode)
 	, draw_mode(mode)
 	, image(nullptr)
 	, colors_enabled(false)
+	, wireframe(false)
 {
 	setVertices(verts);
 }
@@ -212,6 +213,16 @@ bool Mesh::hasVertexColors() const
 	return colors_enabled;
 }
 
+void Mesh::setWireframe(bool enable)
+{
+	wireframe = enable;
+}
+
+bool Mesh::isWireframe() const
+{
+	return wireframe;
+}
+
 void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	const size_t pos_offset   = offsetof(Vertex, x);
@@ -250,6 +261,9 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), vbo->getPointer(color_offset));
 	}
 
+	if (wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	GLenum mode = getGLDrawMode(draw_mode);
 
 	if (ibo && element_count > 0)
@@ -267,6 +281,9 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		// Normal non-indexed drawing (no custom vertex map.)
 		glDrawArrays(mode, 0, vertex_count);
 	}
+
+	if (wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
