@@ -112,6 +112,9 @@ public:
 	static Canvas *current;
 	static void bindDefaultCanvas();
 
+	// The viewport dimensions of the system (default) framebuffer.
+	static OpenGL::Viewport systemViewport;
+
 	GLuint getTextureName() const
 	{
 		return img;

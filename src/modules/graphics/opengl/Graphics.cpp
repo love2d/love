@@ -124,8 +124,17 @@ void Graphics::setViewportSize(int width, int height)
 	if (!isCreated())
 		return;
 
-	// Set the viewport to top-left corner
+	// We want to affect the main screen, not any Canvas that's currently active
+	// (not that any *should* be active when this is called.)
+	Canvas *c = Canvas::current;
+	Canvas::bindDefaultCanvas();
+
+	// Set the viewport to top-left corner.
 	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
+
+	// If a canvas was bound before this function was called, it needs to be
+	// made aware of the new system viewport size.
+	Canvas::systemViewport = gl.getViewport();
 
 	// Reset the projection matrix
 	glMatrixMode(GL_PROJECTION);
@@ -135,6 +144,10 @@ void Graphics::setViewportSize(int width, int height)
 	glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
 
 	glMatrixMode(GL_MODELVIEW);
+
+	// Restore the previously active Canvas.
+	if (c != nullptr)
+		c->startGrab(c->getAttachedCanvases());
 }
 
 bool Graphics::setMode(int width, int height)

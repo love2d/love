@@ -343,6 +343,7 @@ FramebufferStrategyPackedEXT strategyPackedEXT;
 FramebufferStrategyEXT strategyEXT;
 
 Canvas *Canvas::current = NULL;
+OpenGL::Viewport Canvas::systemViewport = OpenGL::Viewport();
 
 static void getStrategy()
 {
@@ -452,7 +453,7 @@ void Canvas::setupGrab()
 		current->stopGrab();
 
 	// bind the framebuffer object.
-	glPushAttrib(GL_VIEWPORT_BIT | GL_TRANSFORM_BIT);
+	systemViewport = gl.getViewport();
 	strategy->bindFBO(fbo);
 	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
 
@@ -543,7 +544,8 @@ void Canvas::stopGrab()
 	strategy->bindFBO(0);
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
-	glPopAttrib();
+	glMatrixMode(GL_MODELVIEW);
+	gl.setViewport(systemViewport);
 	current = NULL;
 }
 
