@@ -493,7 +493,10 @@ int loader(lua_State *L)
 		}
 	}
 
-	lua_pushfstring(L, "\n\tno file \"%s\" in LOVE game directories.\n", (tmp + ".lua").c_str());
+	std::string errstr = "\n\tno file '%s' in LOVE game directories.";
+	errstr += errstr;
+
+	lua_pushfstring(L, errstr.c_str(), (tmp + ".lua").c_str(), (tmp + "/init.lua").c_str());
 	return 1;
 }
 
@@ -529,7 +532,7 @@ int extloader(lua_State *L)
 
 	if (!handle)
 	{
-		lua_pushfstring(L, "\n\tno extension \"%s\" in LOVE paths.\n", filename);
+		lua_pushfstring(L, "\n\tno file '%s' in LOVE paths.", tokenized_name.c_str());
 		return 1;
 	}
 
@@ -540,7 +543,7 @@ int extloader(lua_State *L)
 	if (!func)
 	{
 		SDL_UnloadObject(handle);
-		lua_pushfstring(L, "\n\textension \"%s\" is incompatible.\n", filename);
+		lua_pushfstring(L, "\n\tC library '%s' is incompatible.", tokenized_name.c_str());
 		return 1;
 	}
 
