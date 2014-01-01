@@ -86,7 +86,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.width = bitmap.width;
 	glyphMetrics.advance = face->glyph->metrics.horiAdvance >> 6;
 
-	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_ALPHA);
+	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 
 	const uint8 *pixels = bitmap.buffer;
 	uint8 *dest = (uint8 *) glyphData->getData();
@@ -100,7 +100,8 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 			{
 				// Extract the 1-bit value and convert it to uint8.
 				uint8 v = ((pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 255 : 0;
-				dest[y * bitmap.width + x] = v;
+				dest[2 * (y * bitmap.width + x) + 0] = 255;
+				dest[2 * (y * bitmap.width + x) + 1] = v;
 			}
 
 			pixels += bitmap.pitch;
@@ -111,7 +112,10 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 		for (int y = 0; y < bitmap.rows; y++)
 		{
 			for (int x = 0; x < bitmap.width; x++)
-				dest[y * bitmap.width + x] = pixels[x];
+			{
+				dest[2 * (y * bitmap.width + x) + 0] = 255;
+				dest[2 * (y * bitmap.width + x) + 1] = pixels[x];
+			}
 
 			pixels += bitmap.pitch;
 		}
