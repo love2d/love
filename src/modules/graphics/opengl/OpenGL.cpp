@@ -235,13 +235,15 @@ Color OpenGL::getClearColor() const
 
 void OpenGL::setViewport(const OpenGL::Viewport &v)
 {
+	Viewport oldViewport = state.viewport;
+
 	glViewport(v.x, v.y, v.w, v.h);
 	state.viewport = v;
 
 	// glScissor starts from the lower left, so we compensate when setting the
 	// scissor. When the viewport is changed, we need to manually update the
 	// scissor again.
-	if (v.h != state.viewport.h)
+	if (v.h != oldViewport.h)
 		setScissor(state.scissor);
 }
 
