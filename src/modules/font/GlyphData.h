@@ -58,7 +58,7 @@ public:
 
 	enum Format
 	{
-		FORMAT_LUMINANCE_ALPHA,
+		FORMAT_ALPHA,
 		FORMAT_RGBA,
 		FORMAT_MAX_ENUM
 	};

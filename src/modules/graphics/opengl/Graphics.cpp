@@ -193,7 +193,7 @@ bool Graphics::setMode(int width, int height)
 	glLoadIdentity();
 
 	// Set pixel row alignment
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())

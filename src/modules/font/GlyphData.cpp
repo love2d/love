@@ -43,8 +43,8 @@ GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, GlyphData::Format 
 	{
 		switch (f)
 		{
-		case GlyphData::FORMAT_LUMINANCE_ALPHA:
-			data = new unsigned char[metrics.width * metrics.height * 2];
+		case GlyphData::FORMAT_ALPHA:
+			data = new unsigned char[metrics.width * metrics.height];
 			break;
 		case GlyphData::FORMAT_RGBA:
 		default:
@@ -68,8 +68,8 @@ int GlyphData::getSize() const
 {
 	switch (format)
 	{
-	case GlyphData::FORMAT_LUMINANCE_ALPHA:
-		return getWidth() * getHeight() * 2;
+	case GlyphData::FORMAT_ALPHA:
+		return getWidth() * getHeight();
 		break;
 	case GlyphData::FORMAT_RGBA:
 	default:
@@ -168,7 +168,7 @@ bool GlyphData::getConstant(GlyphData::Format in, const char *&out)
 
 StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM>::Entry GlyphData::formatEntries[] =
 {
-	{"luminance alpha", GlyphData::FORMAT_LUMINANCE_ALPHA},
+	{"alpha", GlyphData::FORMAT_ALPHA},
 	{"rgba", GlyphData::FORMAT_RGBA},
 };
 

@@ -73,7 +73,7 @@ Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
 	try
 	{
 		gd = r->getGlyphData(32);
-		type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
+		type = (gd->getFormat() == love::font::GlyphData::FORMAT_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
 
 		loadVolatile();
 	}
@@ -96,7 +96,7 @@ Font::~Font()
 
 bool Font::initializeTexture(GLenum format)
 {
-	GLint internalformat = (format == GL_LUMINANCE_ALPHA) ? GL_LUMINANCE8_ALPHA8 : GL_RGBA8;
+	GLint internalformat = (format == GL_ALPHA) ? GL_ALPHA8 : GL_RGBA8;
 
 	// clear errors before initializing
 	while (glGetError() != GL_NO_ERROR);
@@ -130,7 +130,7 @@ void Font::createTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	GLenum format = (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA);
+	GLenum format = (type == FONT_TRUETYPE ? GL_ALPHA : GL_RGBA);
 
 	// Initialize the texture, attempting smaller sizes if initialization fails.
 	bool initialized = false;
@@ -158,7 +158,7 @@ void Font::createTexture()
 	}
 	
 	// Fill the texture with transparent black.
-	std::vector<GLubyte> emptyData(textureWidth * textureHeight * (type == FONT_TRUETYPE ? 2 : 4), 0);
+	std::vector<GLubyte> emptyData(textureWidth * textureHeight * (type == FONT_TRUETYPE ? 1 : 4), 0);
 	glTexSubImage2D(GL_TEXTURE_2D,
 					0,
 					0, 0,
@@ -208,7 +208,7 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 						textureX,
 						textureY,
 						w, h,
-						(type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA),
+						(type == FONT_TRUETYPE ? GL_ALPHA : GL_RGBA),
 						GL_UNSIGNED_BYTE,
 						gd->getData());
 

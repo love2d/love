@@ -86,18 +86,12 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.width = bitmap.width;
 	glyphMetrics.advance = face->glyph->metrics.horiAdvance >> 6;
 
-	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
+	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_ALPHA);
 
 	int size = bitmap.rows * bitmap.width;
-	unsigned char *dst = (unsigned char *) glyphData->getData();
 
-	// Note that bitmap.buffer contains only luminosity. We copy that single 
-	// value to our luminosity-alpha format.
-	for (int i = 0; i < size; i++)
-	{
-		dst[2*i] = 255;
-		dst[2*i+1] = bitmap.buffer[i];
-	}
+	// We treat the luminance of the FreeType bitmap as alpha in the GlyphData.
+	memcpy(glyphData->getData(), bitmap.buffer, size);
 
 	// Having copied the data over, we can destroy the glyph
 	FT_Done_Glyph(ftglyph);
