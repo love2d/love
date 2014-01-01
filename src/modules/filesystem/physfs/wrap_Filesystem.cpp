@@ -602,8 +602,9 @@ extern "C" int luaopen_love_filesystem(lua_State *L)
 	else
 		instance->retain();
 
-	love::luax_register_searcher(L, loader, 1);
-	love::luax_register_searcher(L, extloader, 2);
+	// The love loaders should be tried after package.preload.
+	love::luax_register_searcher(L, loader, 2);
+	love::luax_register_searcher(L, extloader, 3);
 
 	WrappedModule w;
 	w.module = instance;
