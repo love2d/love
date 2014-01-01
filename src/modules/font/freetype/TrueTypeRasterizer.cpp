@@ -70,10 +70,10 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 
 	// Initialize
 	if (FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT))
-		throw love::Exception("TrueTypeFont Loading vm->error: FT_Load_Glyph failed\n");
+		throw love::Exception("TrueTypeFont Loading error: FT_Load_Glyph failed");
 
 	if (FT_Get_Glyph(face->glyph, &ftglyph))
-		throw love::Exception("TrueTypeFont Loading vm->error: FT_Get_Glyph failed\n");
+		throw love::Exception("TrueTypeFont Loading error: FT_Get_Glyph failed");
 
 	FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
@@ -88,15 +88,44 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 
 	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_ALPHA);
 
-	int size = bitmap.rows * bitmap.width;
+	const uint8 *pixels = bitmap.buffer;
+	uint8 *dest = (uint8 *) glyphData->getData();
 
 	// We treat the luminance of the FreeType bitmap as alpha in the GlyphData.
-	memcpy(glyphData->getData(), bitmap.buffer, size);
+	if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+	{
+		for (int y = 0; y < bitmap.rows; y++)
+		{
+			for (int x = 0; x < bitmap.width; x++)
+			{
+				// Extract the 1-bit value and convert it to uint8.
+				uint8 v = ((pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 255 : 0;
+				dest[y * bitmap.width + x] = v;
+			}
 
-	// Having copied the data over, we can destroy the glyph
+			pixels += bitmap.pitch;
+		}
+	}
+	else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
+	{
+		for (int y = 0; y < bitmap.rows; y++)
+		{
+			for (int x = 0; x < bitmap.width; x++)
+				dest[y * bitmap.width + x] = pixels[x];
+
+			pixels += bitmap.pitch;
+		}
+	}
+	else
+	{
+		delete glyphData;
+		FT_Done_Glyph(ftglyph);
+		throw love::Exception("Unknown TrueType glyph pixel mode.");
+	}
+
+	// Having copied the data over, we can destroy the glyph.
 	FT_Done_Glyph(ftglyph);
 
-	// Return data
 	return glyphData;
 }
 

@@ -36,7 +36,7 @@ namespace font
 GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
 	: glyph(glyph)
 	, metrics(glyphMetrics)
-	, data(0)
+	, data(nullptr)
 	, format(f)
 {
 	if (metrics.width > 0 && metrics.height > 0)
