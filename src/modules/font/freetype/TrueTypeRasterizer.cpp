@@ -34,11 +34,11 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	: data(data)
 {
 	if (FT_New_Memory_Face(library,
-						  (const FT_Byte *)data->getData(),	/* first byte in memory */
-						  data->getSize(),					/* size in bytes        */
-						  0,									/* face_index           */
-						  &face))
-		throw love::Exception("TrueTypeFont Loading error: FT_New_Face failed (there is probably a problem with your font file)\n");
+	                      (const FT_Byte *)data->getData(), /* first byte in memory */
+	                      data->getSize(),                  /* size in bytes        */
+	                      0,                                /* face_index           */
+	                      &face))
+		throw love::Exception("TrueTypeFont Loading error: FT_New_Face failed (there is probably a problem with your font file)");
 
 	FT_Set_Pixel_Sizes(face, size, size);
 
@@ -76,15 +76,16 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 		throw love::Exception("TrueTypeFont Loading error: FT_Get_Glyph failed");
 
 	FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
+
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
 	FT_Bitmap &bitmap = bitmap_glyph->bitmap; //just to make things easier
 
 	// Get metrics
-	glyphMetrics.bearingX = face->glyph->metrics.horiBearingX >> 6;
-	glyphMetrics.bearingY = face->glyph->metrics.horiBearingY >> 6;
+	glyphMetrics.bearingX = bitmap_glyph->left;
+	glyphMetrics.bearingY = bitmap_glyph->top;
 	glyphMetrics.height = bitmap.rows;
 	glyphMetrics.width = bitmap.width;
-	glyphMetrics.advance = face->glyph->metrics.horiAdvance >> 6;
+	glyphMetrics.advance = ftglyph->advance.x >> 16;
 
 	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 

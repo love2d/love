@@ -198,20 +198,6 @@ public:
 	bool remove(const char *file);
 
 	/**
-	 * Opens a file for reading or writing. (Depends
-	 * on the mode chosen at the time of creation).
-	 * @param file The file to open.
-	 * @param mode The mode to open the file in.
-	 **/
-	bool open(File *file, File::Mode mode);
-
-	/**
-	 * Closes a file.
-	 * @param file The file to close.
-	 **/
-	bool close(File *file);
-
-	/**
 	 * Reads data from a file.
 	 * @param filename The name of the file to read from.
 	 * @param size The size in bytes of the data to read.
@@ -233,24 +219,6 @@ public:
 	 * @param size The size in bytes of the data to append.
 	 **/
 	void append(const char *filename, const void *data, int64 size) const;
-
-	/**
-	 * Check if end-of-file is reached.
-	 * @return True if EOF, false otherwise.
-	 **/
-	bool eof(File *file);
-
-	/**
-	 * Gets the current position in a file.
-	 * @param file An open File.
-	 **/
-	int tell(File *file);
-
-	/**
-	 * Seek to a position within a file.
-	 * @param pos The position to seek to.
-	 **/
-	bool seek(File *file, uint64 pos);
 
 	/**
 	 * This "native" method returns a table of all
