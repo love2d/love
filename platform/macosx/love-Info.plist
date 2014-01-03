@@ -52,7 +52,7 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.games</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2006-2013 LÖVE Development Team</string>
+	<string>© 2006-2014 LÖVE Development Team</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>UTExportedTypeDeclarations</key>
