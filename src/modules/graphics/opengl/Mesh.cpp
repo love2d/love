@@ -36,7 +36,7 @@ Mesh::Mesh(const std::vector<Vertex> &verts, Mesh::DrawMode mode)
 	, ibo(nullptr)
 	, element_count(0)
 	, draw_mode(mode)
-	, image(nullptr)
+	, texture(nullptr)
 	, colors_enabled(false)
 	, wireframe(false)
 {
@@ -170,27 +170,27 @@ size_t Mesh::getVertexMapCount() const
 	return element_count;
 }
 
-void Mesh::setImage(Image *img)
+void Mesh::setTexture(Texture *tex)
 {
-	img->retain();
+	tex->retain();
 
-	if (image)
-		image->release();
+	if (texture)
+		texture->release();
 
-	image = img;
+	texture = tex;
 }
 
-void Mesh::setImage()
+void Mesh::setTexture()
 {
-	if (image)
-		image->release();
+	if (texture)
+		texture->release();
 
-	image = nullptr;
+	texture = nullptr;
 }
 
-Image *Mesh::getImage() const
+Texture *Mesh::getTexture() const
 {
-	return image;
+	return texture;
 }
 
 void Mesh::setDrawMode(Mesh::DrawMode mode)
@@ -232,8 +232,8 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (vertex_count == 0)
 		return;
 
-	if (image)
-		image->predraw();
+	if (texture)
+		texture->predraw();
 	else
 		gl.bindTexture(0);
 
@@ -266,6 +266,8 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 
 	GLenum mode = getGLDrawMode(draw_mode);
 
+	gl.prepareDraw();
+
 	if (ibo && element_count > 0)
 	{
 		VertexBuffer::Bind ibo_bind(*ibo);
@@ -297,8 +299,8 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 
 	glPopMatrix();
 
-	if (image)
-		image->postdraw();
+	if (texture)
+		texture->postdraw();
 }
 
 GLenum Mesh::getGLDrawMode(Mesh::DrawMode mode) const

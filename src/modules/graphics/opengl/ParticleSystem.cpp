@@ -58,13 +58,13 @@ float calculate_variation(float inner, float outer, float var)
 
 } // anonymous namespace
 
-ParticleSystem::ParticleSystem(Image *image, uint32 size)
+ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	: pMem(nullptr)
 	, pFree(nullptr)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
-	, image(image)
+	, texture(texture)
 	, active(true)
 	, insertMode(INSERT_MODE_TOP)
 	, maxParticles(0)
@@ -92,8 +92,8 @@ ParticleSystem::ParticleSystem(Image *image, uint32 size)
 	, spinStart(0)
 	, spinEnd(0)
 	, spinVariation(0)
-	, offsetX(float(image->getWidth())*0.5f)
-	, offsetY(float(image->getHeight())*0.5f)
+	, offsetX(float(texture->getWidth())*0.5f)
+	, offsetY(float(texture->getHeight())*0.5f)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
@@ -101,7 +101,7 @@ ParticleSystem::ParticleSystem(Image *image, uint32 size)
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 	setBufferSize(size);
-	image->retain();
+	texture->retain();
 }
 
 ParticleSystem::ParticleSystem(const ParticleSystem &p)
@@ -110,7 +110,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
-	, image(p.image)
+	, texture(p.texture)
 	, active(p.active)
 	, insertMode(p.insertMode)
 	, maxParticles(p.maxParticles)
@@ -147,14 +147,14 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 {
 	setBufferSize(maxParticles);
 
-	if (image != nullptr)
-		image->retain();
+	if (texture != nullptr)
+		texture->retain();
 }
 
 ParticleSystem::~ParticleSystem()
 {
-	if (image != nullptr)
-		image->release();
+	if (texture != nullptr)
+		texture->release();
 
 	deleteBuffers();
 }
@@ -403,17 +403,19 @@ ParticleSystem::particle *ParticleSystem::removeParticle(particle *p)
 	return pNext;
 }
 
-void ParticleSystem::setImage(Image *image)
+void ParticleSystem::setTexture(Texture *texture)
 {
-	Object::AutoRelease imagerelease(this->image);
+	Object::AutoRelease imagerelease(this->texture);
 
-	this->image = image;
-	this->image->retain();
+	this->texture = texture;
+
+	if (texture)
+		texture->retain();
 }
 
-Image *ParticleSystem::getImage() const
+Texture *ParticleSystem::getTexture() const
 {
-	return image;
+	return texture;
 }
 
 void ParticleSystem::setInsertMode(InsertMode mode)
@@ -777,7 +779,7 @@ bool ParticleSystem::isFull() const
 void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
 	uint32 pCount = getCount();
-	if (pCount == 0 || image == nullptr || pMem == nullptr || particleVerts == nullptr)
+	if (pCount == 0 || texture == nullptr || pMem == nullptr || particleVerts == nullptr)
 		return;
 
 	Color curcolor = gl.getColor();
@@ -788,7 +790,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	const Vertex *imageVerts = image->getVertices();
+	const Vertex *textureVerts = texture->getVertices();
 	Vertex *pVerts = particleVerts;
 	particle *p = pHead;
 
@@ -797,13 +799,13 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	{
 		// particle vertices are image vertices transformed by particle information
 		t.setTransformation(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
-		t.transform(pVerts, imageVerts, 4);
+		t.transform(pVerts, textureVerts, 4);
 
 		// set the texture coordinate and color data for particle vertices
 		for (int v = 0; v < 4; v++)
 		{
-			pVerts[v].s = imageVerts[v].s;
-			pVerts[v].t = imageVerts[v].t;
+			pVerts[v].s = textureVerts[v].s;
+			pVerts[v].t = textureVerts[v].t;
 
 			// particle colors are stored as floats (0-1) but vertex colors are stored as unsigned bytes (0-255)
 			pVerts[v].r = (unsigned char) (p->color.r*255);
@@ -816,7 +818,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		p = p->next;
 	}
 
-	image->predraw();
+	texture->predraw();
 
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -826,13 +828,14 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].s);
 
+	gl.prepareDraw();
 	glDrawArrays(GL_QUADS, 0, pCount * 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 
-	image->postdraw();
+	texture->postdraw();
 
 	glPopMatrix();
 

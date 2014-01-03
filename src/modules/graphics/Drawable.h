@@ -40,7 +40,7 @@ public:
 	/**
 	 * Destructor.
 	 **/
-	virtual ~Drawable();
+	virtual ~Drawable() {}
 
 	/**
 	 * Draws the object with the specified transformation.

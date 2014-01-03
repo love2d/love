@@ -327,6 +327,8 @@ Polyline::~Polyline()
 
 void Polyline::draw()
 {
+	gl.prepareDraw();
+
 	// draw the core line
 	gl.bindTexture(0);
 	glEnableClientState(GL_VERTEX_ARRAY);

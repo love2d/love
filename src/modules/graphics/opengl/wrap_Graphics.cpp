@@ -20,7 +20,7 @@
 
 #include "wrap_Graphics.h"
 #include "OpenGL.h"
-#include "graphics/DrawQable.h"
+#include "graphics/Texture.h"
 #include "image/ImageData.h"
 #include "font/Rasterizer.h"
 
@@ -34,7 +34,7 @@ namespace graphics
 namespace opengl
 {
 
-static Graphics *instance = 0;
+static Graphics *instance = nullptr;
 
 int w_reset(lua_State *)
 {
@@ -237,7 +237,7 @@ int w_newFont(lua_State *L)
 int w_newImageFont(lua_State *L)
 {
 	// filter for glyphs
-	Image::Filter filter = instance->getDefaultFilter();
+	Texture::Filter filter = instance->getDefaultFilter();
 
 	// Convert to ImageData if necessary.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
@@ -277,7 +277,7 @@ int w_newImageFont(lua_State *L)
 
 int w_newSpriteBatch(lua_State *L)
 {
-	Image *image = luax_checkimage(L, 1);
+	Texture *texture = luax_checktype<Texture>(L, 1, "Texture", GRAPHICS_TEXTURE_T);
 	int size = luaL_optint(L, 2, 1000);
 	SpriteBatch::UsageHint usage = SpriteBatch::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
@@ -287,8 +287,8 @@ int w_newSpriteBatch(lua_State *L)
 			return luaL_error(L, "Invalid SpriteBatch usage hint: %s", usagestr);
 	}
 
-	SpriteBatch *t = 0;
-	EXCEPT_GUARD(t = instance->newSpriteBatch(image, size, usage);)
+	SpriteBatch *t = nullptr;
+	EXCEPT_GUARD(t = instance->newSpriteBatch(texture, size, usage);)
 
 	luax_pushtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, t);
 	return 1;
@@ -296,13 +296,13 @@ int w_newSpriteBatch(lua_State *L)
 
 int w_newParticleSystem(lua_State *L)
 {
-	Image *image = luax_checkimage(L, 1);
+	Texture *texture = luax_checktype<Texture>(L, 1, "Texture", GRAPHICS_TEXTURE_T);
 	lua_Number size = luaL_optnumber(L, 2, 1000);
 	ParticleSystem *t = 0;
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid ParticleSystem size");	
 
-	EXCEPT_GUARD(t = instance->newParticleSystem(image, int(size));)
+	EXCEPT_GUARD(t = instance->newParticleSystem(texture, int(size));)
 
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
 	return 1;
@@ -434,10 +434,10 @@ int w_newMesh(lua_State *L)
 	// Check first argument: mandatory table of vertices.
 	luaL_checktype(L, 1, LUA_TTABLE);
 
-	// Second argument: optional image.
-	Image *img = 0;
+	// Second argument: optional texture.
+	Texture *tex = nullptr;
 	if (!lua_isnoneornil(L, 2))
-		img = luax_checkimage(L, 2);
+		tex = luax_checktype<Texture>(L, 2, "Texture", GRAPHICS_TEXTURE_T);
 
 	// Third argument: optional draw mode.
 	const char *str = 0;
@@ -485,11 +485,11 @@ int w_newMesh(lua_State *L)
 		vertices.push_back(v);
 	}
 
-	Mesh *t = 0;
+	Mesh *t = nullptr;
 	EXCEPT_GUARD(t = instance->newMesh(vertices, mode);)
 
-	if (img)
-		t->setImage(img);
+	if (tex)
+		t->setTexture(tex);
 
 	t->setVertexColors(use_colors);
 
@@ -646,20 +646,20 @@ int w_getBlendMode(lua_State *L)
 
 int w_setDefaultFilter(lua_State *L)
 {
-	Image::FilterMode min;
-	Image::FilterMode mag;
+	Texture::FilterMode min;
+	Texture::FilterMode mag;
 
 	const char *minstr = luaL_checkstring(L, 1);
 	const char *magstr = luaL_optstring(L, 2, minstr);
 
-	if (!Image::getConstant(minstr, min))
+	if (!Texture::getConstant(minstr, min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, mag))
+	if (!Texture::getConstant(magstr, mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
 	float anisotropy = (float) luaL_optnumber(L, 3, 1.0);
 
-	Image::Filter f;
+	Texture::Filter f;
 	f.min = min;
 	f.mag = mag;
 	f.anisotropy = anisotropy;
@@ -671,12 +671,12 @@ int w_setDefaultFilter(lua_State *L)
 
 int w_getDefaultFilter(lua_State *L)
 {
-	const Image::Filter &f = instance->getDefaultFilter();
+	const Texture::Filter &f = instance->getDefaultFilter();
 	const char *minstr;
 	const char *magstr;
-	if (!Image::getConstant(f.min, minstr))
+	if (!Texture::getConstant(f.min, minstr))
 		return luaL_error(L, "Unknown minification filter mode");
-	if (!Image::getConstant(f.mag, magstr))
+	if (!Texture::getConstant(f.mag, magstr))
 		return luaL_error(L, "Unknown magnification filter mode");
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
@@ -686,11 +686,11 @@ int w_getDefaultFilter(lua_State *L)
 
 int w_setDefaultMipmapFilter(lua_State *L)
 {
-	Image::FilterMode filter = Image::FILTER_NONE;
+	Texture::FilterMode filter = Texture::FILTER_NONE;
 	if (!lua_isnoneornil(L, 1))
 	{
 		const char *str = luaL_checkstring(L, 1);
-		if (!Image::getConstant(str, filter))
+		if (!Texture::getConstant(str, filter))
 			return luaL_error(L, "Invalid filter mode: %s", str);
 	}
 
@@ -703,13 +703,13 @@ int w_setDefaultMipmapFilter(lua_State *L)
 
 int w_getDefaultMipmapFilter(lua_State *L)
 {
-	Image::FilterMode filter;
+	Texture::FilterMode filter;
 	float sharpness;
 
 	instance->getDefaultMipmapFilter(&filter, &sharpness);
 
 	const char *str;
-	if (Image::getConstant(filter, str))
+	if (Texture::getConstant(filter, str))
 		lua_pushstring(L, str);
 	else
 		lua_pushnil(L);
@@ -1004,14 +1004,14 @@ int w_getRendererInfo(lua_State *L)
 
 int w_draw(lua_State *L)
 {
-	Drawable *drawable = 0;
-	DrawQable *drawqable = 0;
-	Quad *quad = 0;
+	Drawable *drawable = nullptr;
+	Texture *texture = nullptr;
+	Quad *quad = nullptr;
 	int startidx = 2;
 
 	if (luax_istype(L, 2, GRAPHICS_QUAD_T))
 	{
-		drawqable = luax_checktype<DrawQable>(L, 1, "DrawQable", GRAPHICS_DRAWQABLE_T);
+		texture = luax_checktype<Texture>(L, 1, "Texture", GRAPHICS_TEXTURE_T);
 		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
 		startidx = 3;
 	}
@@ -1035,8 +1035,8 @@ int w_draw(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	if (drawqable && quad)
-		drawqable->drawq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
+	if (texture && quad)
+		texture->drawq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
 	else if (drawable)
 		drawable->draw(x, y, a, sx, sy, ox, oy, kx, ky);
 

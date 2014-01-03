@@ -18,7 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Graphics.h"
 #include "wrap_Canvas.h"
 
 namespace love
@@ -84,14 +83,14 @@ int w_Canvas_setFilter(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 
-	Image::Filter f;
+	Texture::Filter f;
 
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
 
-	if (!Image::getConstant(minstr, f.min))
+	if (!Texture::getConstant(minstr, f.min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, f.mag))
+	if (!Texture::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
@@ -105,12 +104,12 @@ int w_Canvas_setFilter(lua_State *L)
 int w_Canvas_getFilter(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	const Image::Filter f = canvas->getFilter();
+	const Texture::Filter f = canvas->getFilter();
 
 	const char *minstr;
 	const char *magstr;
-	Image::getConstant(f.min, minstr);
-	Image::getConstant(f.mag, magstr);
+	Texture::getConstant(f.min, minstr);
+	Texture::getConstant(f.mag, magstr);
 
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
@@ -123,14 +122,14 @@ int w_Canvas_setWrap(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 
-	Image::Wrap w;
+	Texture::Wrap w;
 
 	const char *sstr = luaL_checkstring(L, 2);
 	const char *tstr = luaL_optstring(L, 3, sstr);
 
-	if (!Image::getConstant(sstr, w.s))
+	if (!Texture::getConstant(sstr, w.s))
 		return luaL_error(L, "Invalid wrap mode: %s", sstr);
-	if (!Image::getConstant(tstr, w.t))
+	if (!Texture::getConstant(tstr, w.t))
 		return luaL_error(L, "Invalid wrap mode, %s", tstr);
 
 	canvas->setWrap(w);
@@ -141,12 +140,12 @@ int w_Canvas_setWrap(lua_State *L)
 int w_Canvas_getWrap(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	const Image::Wrap w = canvas->getWrap();
+	const Texture::Wrap w = canvas->getWrap();
 
 	const char *wrap_s;
 	const char *wrap_t;
-	Image::getConstant(w.s, wrap_s);
-	Image::getConstant(w.t, wrap_t);
+	Texture::getConstant(w.s, wrap_s);
+	Texture::getConstant(w.t, wrap_t);
 
 	lua_pushstring(L, wrap_s);
 	lua_pushstring(L, wrap_t);

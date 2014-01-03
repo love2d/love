@@ -26,7 +26,7 @@
 #include "common/math.h"
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
-#include "Image.h"
+#include "Texture.h"
 #include "VertexBuffer.h"
 
 // C++
@@ -110,20 +110,20 @@ public:
 	size_t getVertexMapCount() const;
 
 	/**
-	 * Sets the Image used when drawing the Mesh.
+	 * Sets the texture used when drawing the Mesh.
 	 **/
-	void setImage(Image *img);
+	void setTexture(Texture *texture);
 
 	/**
-	 * Disables any Image from being used when drawing the Mesh.
+	 * Disables any texture from being used when drawing the Mesh.
 	 **/
-	void setImage();
+	void setTexture();
 
 	/**
-	 * Gets the Image used when drawing the Mesh. May return null if no Image is
-	 * set.
+	 * Gets the texture used when drawing the Mesh. May return null if no
+	 * texture is set.
 	 **/
-	Image *getImage() const;
+	Texture *getTexture() const;
 
 	/**
 	 * Sets the draw mode used when drawing the Mesh.
@@ -167,7 +167,7 @@ private:
 
 	DrawMode draw_mode;
 
-	Image *image;
+	Texture *texture;
 
 	// Whether the per-vertex colors are used when drawing.
 	bool colors_enabled;

@@ -42,7 +42,7 @@ namespace opengl
 {
 
 // Forward declarations.
-class Image;
+class Texture;
 class VertexBuffer;
 class VertexIndex;
 
@@ -58,7 +58,7 @@ public:
 		USAGE_MAX_ENUM
 	};
 
-	SpriteBatch(Image *image, int size, int usage);
+	SpriteBatch(Texture *texture, int size, int usage);
 	virtual ~SpriteBatch();
 
 	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
@@ -68,8 +68,8 @@ public:
 	void *lock();
 	void unlock();
 
-	void setImage(Image *newimage);
-	Image *getImage();
+	void setTexture(Texture *newtexture);
+	Texture *getTexture();
 
 	/**
 	 * Set the current color for this SpriteBatch. The sprites added
@@ -127,7 +127,7 @@ private:
 	 */
 	void setColorv(Vertex *v, const Color &color);
 
-	Image *image;
+	Texture *texture;
 
 	// Max number of sprites in the batch.
 	int size;

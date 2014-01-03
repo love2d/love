@@ -203,11 +203,11 @@ public:
 	/**
 	 * Creates a Font object.
 	 **/
-	Font *newFont(love::font::Rasterizer *data, const Image::Filter &filter = Image::Filter());
+	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::getDefaultFilter());
 
-	SpriteBatch *newSpriteBatch(Image *image, int size, int usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, int usage);
 
-	ParticleSystem *newParticleSystem(Image *image, int size);
+	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
@@ -270,18 +270,18 @@ public:
 	/**
 	 * Sets the default filter for images, canvases, and fonts.
 	 **/
-	void setDefaultFilter(const Image::Filter &f);
+	void setDefaultFilter(const Texture::Filter &f);
 
 	/**
 	 * Gets the default filter for images, canvases, and fonts.
 	 **/
-	const Image::Filter &getDefaultFilter() const;
+	const Texture::Filter &getDefaultFilter() const;
 
 	/**
 	 * Default Image mipmap filter mode and sharpness values.
 	 **/
-	void setDefaultMipmapFilter(Image::FilterMode filter, float sharpness);
-	void getDefaultMipmapFilter(Image::FilterMode *filter, float *sharpness) const;
+	void setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness);
+	void getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const;
 
 	/**
 	 * Sets the line width.

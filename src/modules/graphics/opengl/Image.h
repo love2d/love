@@ -28,7 +28,7 @@
 #include "common/math.h"
 #include "image/ImageData.h"
 #include "image/CompressedData.h"
-#include "graphics/Image.h"
+#include "Texture.h"
 
 // OpenGL
 #include "OpenGL.h"
@@ -46,7 +46,7 @@ namespace opengl
  *
  * @author Anders Ruud
  **/
-class Image : public love::graphics::Image
+class Image : public Texture
 {
 public:
 
@@ -70,11 +70,6 @@ public:
 	 **/
 	virtual ~Image();
 
-	int getWidth() const;
-	int getHeight() const;
-
-	const Vertex *getVertices() const;
-
 	love::image::ImageData *getImageData() const;
 	love::image::CompressedData *getCompressedData() const;
 
@@ -84,7 +79,7 @@ public:
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
 	/**
-	 * @copydoc DrawQable::drawq()
+	 * @copydoc Texture::drawq()
 	 **/
 	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
 
@@ -93,20 +88,13 @@ public:
 	 * globally scales texture coordinates if the Image has NPOT dimensions and
 	 * NPOT isn't supported, etc.
 	 **/
-	void predraw() const;
-	void postdraw() const;
+	virtual void predraw() const;
+	virtual void postdraw() const;
 
-	/**
-	 * Sets the filter mode.
-	 * @param f The filter mode.
-	 **/
-	void setFilter(const Image::Filter &f);
+	virtual GLuint getGLTexture() const;
 
-	const Image::Filter &getFilter() const;
-
-	void setWrap(const Image::Wrap &w);
-
-	const Image::Wrap &getWrap() const;
+	virtual void setFilter(const Texture::Filter &f);
+	virtual void setWrap(const Texture::Wrap &w);
 
 	void setMipmapSharpness(float sharpness);
 	float getMipmapSharpness() const;
@@ -151,12 +139,6 @@ private:
 
 	void drawv(const Matrix &t, const Vertex *v) const;
 
-	friend class Shader;
-	GLuint getTextureName() const
-	{
-		return texture;
-	}
-
 	// The ImageData from which the texture is created. May be null if
 	// Compressed image data was used to create the texture.
 	love::image::ImageData *data;
@@ -165,17 +147,11 @@ private:
 	// null if raw ImageData was used to create the texture.
 	love::image::CompressedData *cdata;
 
-	// Width and height of the hardware texture.
-	int width, height;
-
 	// Real dimensions of the texture, if it was auto-padded to POT size.
 	int paddedWidth, paddedHeight;
 
 	// OpenGL texture identifier.
 	GLuint texture;
-
-	// The source vertices of the image.
-	Vertex vertices[4];
 
 	// Mipmap texture LOD bias (sharpness) value.
 	float mipmapSharpness;
@@ -189,12 +165,6 @@ private:
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
 	bool usingDefaultTexture;
-
-	// The image's filter mode
-	Image::Filter filter;
-
-	// The image's wrap mode
-	Image::Wrap wrap;
 
 	void preload();
 

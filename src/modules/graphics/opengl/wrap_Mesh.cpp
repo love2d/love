@@ -20,7 +20,11 @@
 
 // LOVE
 #include "wrap_Mesh.h"
-#include "wrap_Image.h"
+#include "Image.h"
+#include "Canvas.h"
+
+// C++
+#include <typeinfo>
 
 namespace love
 {
@@ -231,31 +235,42 @@ int w_Mesh_getVertexMap(lua_State *L)
 	return 1;
 }
 
-int w_Mesh_setImage(lua_State *L)
+int w_Mesh_setTexture(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 
 	if (lua_isnoneornil(L, 2))
-		t->setImage();
+		t->setTexture();
 	else
 	{
-		Image *img = luax_checkimage(L, 2);
-		t->setImage(img);
+		Texture *tex = luax_checktype<Texture>(L, 2, "Texture", GRAPHICS_TEXTURE_T);
+		t->setTexture(tex);
 	}
 
 	return 0;
 }
 
-int w_Mesh_getImage(lua_State *L)
+int w_Mesh_getTexture(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	Image *img = t->getImage();
+	Texture *tex = t->getTexture();
 
-	if (img == NULL)
+	if (tex == nullptr)
 		return 0;
 
-	img->retain();
-	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, img);
+	tex->retain();
+
+	// FIXME: big hack right here.
+	if (typeid(*tex) == typeid(Image))
+		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+	else if (typeid(*tex) == typeid(Canvas))
+		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+	else
+	{
+		tex->release();
+		return luaL_error(L, "Unable to determine texture type.");
+	}
+
 	return 1;
 }
 
@@ -322,14 +337,19 @@ static const luaL_Reg functions[] =
 	{ "getVertexCount", w_Mesh_getVertexCount },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
-	{ "setImage", w_Mesh_setImage },
-	{ "getImage", w_Mesh_getImage },
+	{ "setTexture", w_Mesh_setTexture },
+	{ "getTexture", w_Mesh_getTexture },
 	{ "setDrawMode", w_Mesh_setDrawMode },
 	{ "getDrawMode", w_Mesh_getDrawMode },
 	{ "setVertexColors", w_Mesh_setVertexColors },
 	{ "hasVertexColors", w_Mesh_hasVertexColors },
 	{ "setWireframe", w_Mesh_setWireframe },
 	{ "isWireframe", w_Mesh_isWireframe },
+
+	// Deprecated since 0.9.1.
+	{ "setImage", w_Mesh_setTexture },
+	{ "getImage", w_Mesh_getTexture },
+
 	{ 0, 0 }
 };
 

@@ -58,14 +58,14 @@ int w_Image_getDimensions(lua_State *L)
 int w_Image_setFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	Image::Filter f = t->getFilter();
+	Texture::Filter f = t->getFilter();
 
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
 
-	if (!Image::getConstant(minstr, f.min))
+	if (!Texture::getConstant(minstr, f.min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, f.mag))
+	if (!Texture::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
@@ -77,11 +77,11 @@ int w_Image_setFilter(lua_State *L)
 int w_Image_getFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	const Image::Filter f = t->getFilter();
+	const Texture::Filter f = t->getFilter();
 	const char *minstr;
 	const char *magstr;
-	Image::getConstant(f.min, minstr);
-	Image::getConstant(f.mag, magstr);
+	Texture::getConstant(f.min, minstr);
+	Texture::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
 	lua_pushnumber(L, f.anisotropy);
@@ -91,14 +91,14 @@ int w_Image_getFilter(lua_State *L)
 int w_Image_setMipmapFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	Image::Filter f = t->getFilter();
+	Texture::Filter f = t->getFilter();
 
 	if (lua_isnoneornil(L, 2))
-		f.mipmap = Image::FILTER_NONE; // mipmapping is disabled if no argument is given
+		f.mipmap = Texture::FILTER_NONE; // mipmapping is disabled if no argument is given
 	else
 	{
 		const char *mipmapstr = luaL_checkstring(L, 2);
-		if (!Image::getConstant(mipmapstr, f.mipmap))
+		if (!Texture::getConstant(mipmapstr, f.mipmap))
 			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
 	}
 
@@ -114,10 +114,10 @@ int w_Image_getMipmapFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
 
-	const Image::Filter &f = t->getFilter();
+	const Texture::Filter &f = t->getFilter();
 
 	const char *mipmapstr;
-	if (Image::getConstant(f.mipmap, mipmapstr))
+	if (Texture::getConstant(f.mipmap, mipmapstr))
 		lua_pushstring(L, mipmapstr);
 	else
 		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
@@ -130,29 +130,28 @@ int w_Image_setWrap(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
 
-	Image::Wrap w;
+	Texture::Wrap w;
 
 	const char *sstr = luaL_checkstring(L, 2);
 	const char *tstr = luaL_optstring(L, 3, sstr);
 
-	if (!Image::getConstant(sstr, w.s))
+	if (!Texture::getConstant(sstr, w.s))
 		return luaL_error(L, "Invalid wrap mode: %s", sstr);
-	if (!Image::getConstant(tstr, w.t))
+	if (!Texture::getConstant(tstr, w.t))
 		return luaL_error(L, "Invalid wrap mode, %s", tstr);
 
 	i->setWrap(w);
-
 	return 0;
 }
 
 int w_Image_getWrap(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	const Image::Wrap w = i->getWrap();
+	const Texture::Wrap w = i->getWrap();
 	const char *sstr;
 	const char *tstr;
-	Image::getConstant(w.s, sstr);
-	Image::getConstant(w.t, tstr);
+	Texture::getConstant(w.s, sstr);
+	Texture::getConstant(w.t, tstr);
 	lua_pushstring(L, sstr);
 	lua_pushstring(L, tstr);
 	return 2;

@@ -20,7 +20,6 @@
 #include "common/config.h"
 #include "Font.h"
 #include "font/GlyphData.h"
-#include "Image.h"
 
 #include "libraries/utf8/utf8.h"
 
@@ -41,14 +40,14 @@ namespace opengl
 const int Font::TEXTURE_WIDTHS[]  = {128, 256, 256, 512, 512, 1024, 1024};
 const int Font::TEXTURE_HEIGHTS[] = {128, 128, 256, 256, 512, 512,  1024};
 
-Font::Font(love::font::Rasterizer *r, const Image::Filter &filter)
+Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	: rasterizer(r)
 	, height(r->getHeight())
 	, lineHeight(1)
 	, mSpacing(1)
 	, filter(filter)
 {
-	this->filter.mipmap = Image::FILTER_NONE;
+	this->filter.mipmap = Texture::FILTER_NONE;
 
 	// Try to find the best texture size match for the font size. default to the
 	// largest texture size if no rough match is found.
@@ -350,6 +349,8 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	glVertexPointer(2, GL_FLOAT, sizeof(GlyphVertex), (GLvoid *)&glyphverts[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(GlyphVertex), (GLvoid *)&glyphverts[0].s);
 
+	gl.prepareDraw();
+
 	// We need to draw a new vertex array for every section of the string which
 	// uses a different texture than the previous section.
 	std::vector<GlyphArrayDrawInfo>::const_iterator it;
@@ -494,18 +495,18 @@ float Font::getSpacing() const
 	return mSpacing;
 }
 
-void Font::setFilter(const Image::Filter &f)
+void Font::setFilter(const Texture::Filter &f)
 {
 	filter = f;
 
 	for (auto it = textures.begin(); it != textures.end(); ++it)
 	{
 		gl.bindTexture(*it);
-		filter.anisotropy = gl.setTextureFilter(f);
+		gl.setTextureFilter(filter);
 	}
 }
 
-const Image::Filter &Font::getFilter()
+const Texture::Filter &Font::getFilter()
 {
 	return filter;
 }

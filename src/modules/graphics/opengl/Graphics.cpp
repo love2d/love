@@ -327,7 +327,11 @@ Image *Graphics::newImage(love::image::ImageData *data)
 {
 	// Create the image.
 	Image *image = new Image(data);
-	bool success;
+
+	if (!isCreated())
+		return image;
+
+	bool success = false;
 	try
 	{
 		success = image->load();
@@ -350,7 +354,11 @@ Image *Graphics::newImage(love::image::CompressedData *cdata)
 {
 	// Create the image.
 	Image *image = new Image(cdata);
-	bool success;
+
+	if (!isCreated())
+		return image;
+
+	bool success = false;
 	try
 	{
 		success = image->load();
@@ -374,19 +382,19 @@ Quad *Graphics::newQuad(Quad::Viewport v, float sw, float sh)
 	return new Quad(v, sw, sh);
 }
 
-Font *Graphics::newFont(love::font::Rasterizer *r, const Image::Filter &filter)
+Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filter &filter)
 {
 	return new Font(r, filter);
 }
 
-SpriteBatch *Graphics::newSpriteBatch(Image *image, int size, int usage)
+SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, int usage)
 {
-	return new SpriteBatch(image, size, usage);
+	return new SpriteBatch(texture, size, usage);
 }
 
-ParticleSystem *Graphics::newParticleSystem(Image *image, int size)
+ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 {
-	return new ParticleSystem(image, size);
+	return new ParticleSystem(texture, size);
 }
 
 Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_type)
@@ -629,23 +637,23 @@ Graphics::BlendMode Graphics::getBlendMode() const
 	throw Exception("Unknown blend mode");
 }
 
-void Graphics::setDefaultFilter(const Image::Filter &f)
+void Graphics::setDefaultFilter(const Texture::Filter &f)
 {
-	Image::setDefaultFilter(f);
+	Texture::setDefaultFilter(f);
 }
 
-const Image::Filter &Graphics::getDefaultFilter() const
+const Texture::Filter &Graphics::getDefaultFilter() const
 {
-	return Image::getDefaultFilter();
+	return Texture::getDefaultFilter();
 }
 
-void Graphics::setDefaultMipmapFilter(Image::FilterMode filter, float sharpness)
+void Graphics::setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness)
 {
 	Image::setDefaultMipmapFilter(filter);
 	Image::setDefaultMipmapSharpness(sharpness);
 }
 
-void Graphics::getDefaultMipmapFilter(Image::FilterMode *filter, float *sharpness) const
+void Graphics::getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const
 {
 	*filter = Image::getDefaultMipmapFilter();
 	*sharpness = Image::getDefaultMipmapSharpness();
@@ -718,13 +726,13 @@ int Graphics::getMaxPointSize() const
 
 void Graphics::print(const std::string &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	if (currentFont != 0)
+	if (currentFont != nullptr)
 		currentFont->print(str, x, y, 0.0, angle, sx, sy, ox, oy, kx, ky);
 }
 
 void Graphics::printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	if (currentFont == 0)
+	if (currentFont == nullptr)
 		return;
 
 	if (wrap < 0.0f)
@@ -797,6 +805,7 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 
 void Graphics::point(float x, float y)
 {
+	gl.prepareDraw();
 	gl.bindTexture(0);
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
@@ -890,6 +899,7 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	}
 	else
 	{
+		gl.prepareDraw();
 		gl.bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
@@ -913,6 +923,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
+		gl.prepareDraw();
 		gl.bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)coords);

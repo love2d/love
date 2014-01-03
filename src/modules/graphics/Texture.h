@@ -18,35 +18,40 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_IMAGE_H
-#define LOVE_GRAPHICS_IMAGE_H
+#ifndef LOVE_GRAPHICS_TEXTURE_H
+#define LOVE_GRAPHICS_TEXTURE_H
 
 // LOVE
-#include "graphics/Volatile.h"
-#include "graphics/DrawQable.h"
 #include "common/StringMap.h"
+#include "common/math.h"
+#include "Drawable.h"
+#include "Quad.h"
 
 namespace love
 {
 namespace graphics
 {
 
-class Image : public DrawQable, public Volatile
+/**
+ * Base class for 2D textures. All textures can be drawn with Quads, have a
+ * width and height, and have filter and wrap modes.
+ **/
+class Texture : public Drawable
 {
 public:
 
 	enum WrapMode
 	{
-		WRAP_CLAMP = 1,
+		WRAP_CLAMP,
 		WRAP_REPEAT,
 		WRAP_MAX_ENUM
 	};
 
 	enum FilterMode
 	{
-		FILTER_LINEAR = 1,
-		FILTER_NEAREST,
 		FILTER_NONE,
+		FILTER_LINEAR,
+		FILTER_NEAREST,
 		FILTER_MAX_ENUM
 	};
 
@@ -66,16 +71,55 @@ public:
 		WrapMode t;
 	};
 
-	virtual ~Image();
-	
+	Texture();
+	virtual ~Texture();
+
+	/**
+	 * Draws the texture using the specified transformation with a Quad applied.
+	 *
+	 * @param quad The Quad object to use to draw the object.
+	 * @param x The position of the object along the x-axis.
+	 * @param y The position of the object along the y-axis.
+	 * @param angle The angle of the object (in radians).
+	 * @param sx The scale factor along the x-axis.
+	 * @param sy The scale factor along the y-axis.
+	 * @param ox The origin offset along the x-axis.
+	 * @param oy The origin offset along the y-axis.
+	 * @param kx Shear along the x-axis.
+	 * @param ky Shear along the y-axis.
+	 **/
+	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const = 0;
+
+	virtual int getWidth() const;
+	virtual int getHeight() const;
+
+	virtual void setFilter(const Filter &f) = 0;
+	virtual const Filter &getFilter() const;
+
+	virtual void setWrap(const Wrap &w) = 0;
+	virtual const Wrap &getWrap() const;
+
+	virtual const Vertex *getVertices() const;
+
 	// The default filter.
 	static void setDefaultFilter(const Filter &f);
 	static const Filter &getDefaultFilter();
 
 	static bool getConstant(const char *in, FilterMode &out);
 	static bool getConstant(FilterMode in, const char  *&out);
+
 	static bool getConstant(const char *in, WrapMode &out);
 	static bool getConstant(WrapMode in, const char  *&out);
+
+protected:
+
+	int width;
+	int height;
+
+	Filter filter;
+	Wrap wrap;
+
+	Vertex vertices[4];
 
 private:
 
@@ -84,12 +128,13 @@ private:
 
 	static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
 	static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;
+
 	static StringMap<WrapMode, WRAP_MAX_ENUM>::Entry wrapModeEntries[];
 	static StringMap<WrapMode, WRAP_MAX_ENUM> wrapModes;
 
-}; // Image
+}; // Texture
 
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_IMAGE_H
+#endif // LOVE_GRAPHICS_TEXTURE_H

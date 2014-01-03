@@ -29,7 +29,8 @@
 // LOVE
 #include "common/Object.h"
 #include "font/Rasterizer.h"
-#include "graphics/Image.h"
+#include "graphics/Texture.h"
+#include "graphics/Volatile.h"
 
 #include "OpenGL.h"
 
@@ -44,7 +45,7 @@ class Font : public Object, public Volatile
 {
 public:
 
-	Font(love::font::Rasterizer *r, const Image::Filter &filter = Image::getDefaultFilter());
+	Font(love::font::Rasterizer *r, const Texture::Filter &filter = Texture::getDefaultFilter());
 
 	virtual ~Font();
 
@@ -122,8 +123,8 @@ public:
 	 **/
 	float getSpacing() const;
 
-	void setFilter(const Image::Filter &f);
-	const Image::Filter &getFilter();
+	void setFilter(const Texture::Filter &f);
+	const Texture::Filter &getFilter();
 
 	// Implements Volatile.
 	bool loadVolatile();
@@ -199,7 +200,7 @@ private:
 	std::map<uint32, Glyph *> glyphs;
 
 	FontType type;
-	Image::Filter filter;
+	Texture::Filter filter;
 
 	static const int NUM_TEXTURE_SIZES = 7;
 	static const int TEXTURE_WIDTHS[NUM_TEXTURE_SIZES];

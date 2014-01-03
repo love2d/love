@@ -25,8 +25,7 @@
 #include "common/Object.h"
 #include "common/StringMap.h"
 #include "OpenGL.h"
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 
 // STL
 #include <string>
@@ -39,6 +38,9 @@ namespace graphics
 {
 namespace opengl
 {
+
+class Canvas;
+
 // A GLSL shader
 class Shader : public Object, public Volatile
 {
@@ -52,6 +54,13 @@ public:
 		TYPE_VERTEX,
 		TYPE_PIXEL,
 		TYPE_MAX_ENUM
+	};
+
+	// Built-in extern (uniform) variables.
+	enum BuiltinExtern
+	{
+		BUILTIN_SCREEN_PARAMS,
+		BUILTIN_MAX_ENUM
 	};
 
 	// Type for a list of shader source codes in the form of sources[shadertype] = code
@@ -120,18 +129,18 @@ public:
 	void sendMatrix(const std::string &name, int size, const GLfloat *m, int count);
 
 	/**
-	 * Send an image to this Shader as a uniform.
+	 * Send a texture to this Shader as a uniform.
 	 *
 	 * @param name The name of the uniform variable in the source code.
 	 **/
-	void sendImage(const std::string &name, Image &image);
+	void sendTexture(const std::string &name, Texture *texture);
 
 	/**
-	 * Send a canvas to this Shader as a uniform.
-	 *
-	 * @param name The name of the uniform variable in the source code.
+	 * Internal use only.
 	 **/
-	void sendCanvas(const std::string &name, Canvas &canvas);
+	bool hasBuiltinExtern(BuiltinExtern builtin) const;
+	bool sendBuiltinFloat(BuiltinExtern builtin, int size, const GLfloat *m, int count);
+	void checkSetScreenParams();
 
 	static std::string getGLSLVersion();
 	static bool isSupported();
@@ -172,8 +181,7 @@ private:
 
 	int getTextureUnit(const std::string &name);
 
-	void sendTexture(const std::string &name, GLuint texture);
-	void retainTexture(const std::string &name, Object *texture);
+	void retainObject(const std::string &name, Object *object);
 
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
@@ -187,24 +195,34 @@ private:
 	// volatile
 	GLuint program;
 
+	// Location values for any built-in uniform variables.
+	GLint builtinUniforms[BUILTIN_MAX_ENUM];
+
 	// Uniform location buffer map
 	std::map<std::string, Uniform> uniforms;
 
 	// Texture unit pool for setting images
-	std::map<std::string, GLint> textureUnitPool; // textureUnitPool[name] = textureunit
-	std::vector<GLuint> activeTextureUnits; // activeTextureUnits[textureunit-1] = textureid
+	std::map<std::string, GLint> texUnitPool; // texUnitPool[name] = textureunit
+	std::vector<GLuint> activeTexUnits; // activeTexUnits[textureunit-1] = textureid
 
 	// Uniform name to retainable objects
 	std::map<std::string, Object*> boundRetainables;
 
+	// Pointer to the active Canvas when the screen params were last checked.
+	Canvas *lastCanvas;
+
 	// Max GPU texture units available for sent images
-	static GLint maxTextureUnits;
+	static GLint maxTexUnits;
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
 
 	static StringMap<ShaderType, TYPE_MAX_ENUM>::Entry typeNameEntries[];
 	static StringMap<ShaderType, TYPE_MAX_ENUM> typeNames;
+
+	// Names for the built-in uniform variables.
+	static StringMap<BuiltinExtern, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];
+	static StringMap<BuiltinExtern, BUILTIN_MAX_ENUM> builtinNames;
 };
 
 } // opengl

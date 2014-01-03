@@ -249,15 +249,13 @@ source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
 
 set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Color.h
-	src/modules/graphics/Drawable.cpp
 	src/modules/graphics/Drawable.h
-	src/modules/graphics/DrawQable.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
-	src/modules/graphics/Image.cpp
-	src/modules/graphics/Image.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
+	src/modules/graphics/Texture.cpp
+	src/modules/graphics/Texture.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
 )
@@ -285,6 +283,7 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Shader.h
 	src/modules/graphics/opengl/SpriteBatch.cpp
 	src/modules/graphics/opengl/SpriteBatch.h
+	src/modules/graphics/opengl/Texture.h
 	src/modules/graphics/opengl/VertexBuffer.cpp
 	src/modules/graphics/opengl/VertexBuffer.h
 	src/modules/graphics/opengl/wrap_Canvas.cpp

@@ -25,9 +25,9 @@
 
 // LOVE
 #include "graphics/Color.h"
-#include "graphics/Image.h"
+#include "graphics/Texture.h"
 
-// STL
+// C++
 #include <vector>
 
 // The last argument to AttribPointer takes a buffer offset casted to a pointer.
@@ -92,6 +92,12 @@ public:
 	 * an OpenGL context!
 	 **/
 	void deInitContext();
+
+	/**
+	 * Set up necessary state (LOVE-provided shader uniforms, etc.) for drawing.
+	 * This *MUST* be called directly before OpenGL drawing functions.
+	 **/
+	void prepareDraw();
 
 	/**
 	 * Sets the current constant color.
@@ -163,25 +169,25 @@ public:
 	void deleteTexture(GLuint texture);
 
 	/**
-	 * Sets the image filter mode for the currently bound texture.
+	 * Sets the texture filter mode for the currently bound texture.
 	 * Returns the actual amount of anisotropic filtering set.
 	 **/
-	float setTextureFilter(const graphics::Image::Filter &f);
+	float setTextureFilter(graphics::Texture::Filter &f);
 
 	/**
-	 * Returns the image filter mode for the currently bound texture.
+	 * Returns the texture filter mode for the currently bound texture.
 	 **/
-	graphics::Image::Filter getTextureFilter();
+	graphics::Texture::Filter getTextureFilter();
 
 	/**
-	 * Sets the image wrap mode for the currently bound texture.
+	 * Sets the texture wrap mode for the currently bound texture.
 	 **/
-	void setTextureWrap(const graphics::Image::Wrap &w);
+	void setTextureWrap(const graphics::Texture::Wrap &w);
 
 	/**
-	 * Returns the image wrap mode for the currently bound texture.
+	 * Returns the texture wrap mode for the currently bound texture.
 	 **/
-	graphics::Image::Wrap getTextureWrap();
+	graphics::Texture::Wrap getTextureWrap();
 
 	/**
 	 * Returns the maximum supported width or height of a texture.

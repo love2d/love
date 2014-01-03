@@ -33,14 +33,12 @@ namespace opengl
 
 float Image::maxMipmapSharpness = 0.0f;
 
-Image::FilterMode Image::defaultMipmapFilter = Image::FILTER_NONE;
+Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NONE;
 float Image::defaultMipmapSharpness = 0.0f;
 
 Image::Image(love::image::ImageData *data)
 	: data(data)
-	, cdata(0)
-	, width(data->getWidth())
-	, height(data->getHeight())
+	, cdata(nullptr)
 	, paddedWidth(width)
 	, paddedHeight(height)
 	, texture(0)
@@ -49,15 +47,16 @@ Image::Image(love::image::ImageData *data)
 	, compressed(false)
 	, usingDefaultTexture(false)
 {
+	width = data->getWidth();
+	height = data->getHeight();
+
 	data->retain();
 	preload();
 }
 
 Image::Image(love::image::CompressedData *cdata)
-	: data(0)
+	: data(nullptr)
 	, cdata(cdata)
-	, width(cdata->getWidth(0))
-	, height(cdata->getHeight(0))
 	, paddedWidth(width)
 	, paddedHeight(height)
 	, texture(0)
@@ -66,32 +65,20 @@ Image::Image(love::image::CompressedData *cdata)
 	, compressed(true)
 	, usingDefaultTexture(false)
 {
+	width = cdata->getWidth(0);
+	height = cdata->getHeight(0);
+
 	cdata->retain();
 	preload();
 }
 
 Image::~Image()
 {
-	if (data != 0)
+	if (data != nullptr)
 		data->release();
-	if (cdata != 0)
+	if (cdata != nullptr)
 		cdata->release();
 	unload();
-}
-
-int Image::getWidth() const
-{
-	return width;
-}
-
-int Image::getHeight() const
-{
-	return height;
-}
-
-const Vertex *Image::getVertices() const
-{
-	return vertices;
 }
 
 love::image::ImageData *Image::getImageData() const
@@ -142,6 +129,11 @@ void Image::postdraw() const
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
 	}
+}
+
+GLuint Image::getGLTexture() const
+{
+	return texture;
 }
 
 void Image::uploadCompressedMipmaps()
@@ -246,7 +238,7 @@ void Image::checkMipmapsCreated()
 	mipmapsCreated = true;
 }
 
-void Image::setFilter(const Image::Filter &f)
+void Image::setFilter(const Texture::Filter &f)
 {
 	filter = f;
 
@@ -258,26 +250,16 @@ void Image::setFilter(const Image::Filter &f)
 	}
 
 	bind();
-	filter.anisotropy = gl.setTextureFilter(filter);
+	gl.setTextureFilter(filter);
 	checkMipmapsCreated();
 }
 
-const Image::Filter &Image::getFilter() const
-{
-	return filter;
-}
-
-void Image::setWrap(const Image::Wrap &w)
+void Image::setWrap(const Texture::Wrap &w)
 {
 	wrap = w;
 
 	bind();
 	gl.setTextureWrap(w);
-}
-
-const Image::Wrap &Image::getWrap() const
-{
-	return wrap;
 }
 
 void Image::setMipmapSharpness(float sharpness)
@@ -331,7 +313,6 @@ void Image::preload()
 	vertices[3].s = 1;
 	vertices[3].t = 0;
 
-	filter = getDefaultFilter();
 	filter.mipmap = defaultMipmapFilter;
 }
 
@@ -544,6 +525,7 @@ void Image::drawv(const Matrix &t, const Vertex *v) const
 	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].x);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
+	gl.prepareDraw();
 	glDrawArrays(GL_QUADS, 0, 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -564,12 +546,12 @@ float Image::getDefaultMipmapSharpness()
 	return defaultMipmapSharpness;
 }
 
-void Image::setDefaultMipmapFilter(Image::FilterMode f)
+void Image::setDefaultMipmapFilter(Texture::FilterMode f)
 {
 	defaultMipmapFilter = f;
 }
 
-Image::FilterMode Image::getDefaultMipmapFilter()
+Texture::FilterMode Image::getDefaultMipmapFilter()
 {
 	return defaultMipmapFilter;
 }

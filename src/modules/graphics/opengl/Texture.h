@@ -18,48 +18,48 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_DRAWQABLE_H
-#define LOVE_GRAPHICS_DRAWQABLE_H
+#ifndef LOVE_GRAPHICS_OPENGL_TEXTURE_H
+#define LOVE_GRAPHICS_OPENGL_TEXTURE_H
 
 // LOVE
-#include "Drawable.h"
-#include "Quad.h"
+#include "graphics/Texture.h"
+#include "graphics/Volatile.h"
+#include "OpenGL.h"
 
 namespace love
 {
 namespace graphics
 {
+namespace opengl
+{
 
-/**
- * A DrawQable is anything that be drawn in part with a Quad object.
- **/
-class DrawQable : public Drawable
+class Texture : public love::graphics::Texture, public Volatile
 {
 public:
 
-	/**
-	 * Destructor.
-	 **/
-	virtual ~DrawQable() {}
+	virtual ~Texture() {}
 
 	/**
-	 * Draws the object with the specified transformation.
-	 *
-	 * @param quad The Quad object to use to draw the object.
-	 * @param x The position of the object along the x-axis.
-	 * @param y The position of the object along the y-axis.
-	 * @param angle The angle of the object (in radians).
-	 * @param sx The scale factor along the x-axis.
-	 * @param sy The scale factor along the y-axis.
-	 * @param ox The origin offset along the x-axis.
-	 * @param oy The origin offset along the y-axis.
-	 * @param kx Shear along the x-axis.
-	 * @param ky Shear along the y-axis.
+	 * Gets the OpenGL id for this texture.
 	 **/
-	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const = 0;
-};
+	virtual GLuint getGLTexture() const = 0;
 
+	/**
+	 * Any setup the texture might need to do before drawing, e.g. binding
+	 * the OpenGL texture for use.
+	 **/
+	virtual void predraw() const {}
+
+	/**
+	 * Any cleanup the texture might need to do directly after drawing.
+	 **/
+	virtual void postdraw() const {}
+
+
+}; // Texture
+
+} // opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_DRAWQABLE_H
+#endif // LOVE_GRAPHICS_OPENGL_TEXTURE_H

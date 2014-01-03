@@ -18,11 +18,18 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "wrap_ParticleSystem.h"
-
 #include "common/Vector.h"
 
+#include "Image.h"
+#include "Canvas.h"
+
+// C
 #include <cstring>
+
+// C++
+#include <typeinfo>
 
 namespace love
 {
@@ -47,20 +54,31 @@ int w_ParticleSystem_clone(lua_State *L)
 	return 1;
 }
 
-int w_ParticleSystem_setImage(lua_State *L)
+int w_ParticleSystem_setTexture(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	Image *i = luax_checkimage(L, 2);
-	t->setImage(i);
+	Texture *tex = luax_checktype<Texture>(L, 2, "Texture", GRAPHICS_TEXTURE_T);
+	t->setTexture(tex);
 	return 0;
 }
 
-int w_ParticleSystem_getImage(lua_State *L)
+int w_ParticleSystem_getTexture(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	Image *i = t->getImage();
-	i->retain();
-	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, i);
+	Texture *tex = t->getTexture();
+	tex->retain();
+
+	// FIXME: big hack right here.
+	if (typeid(*tex) == typeid(Image))
+		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+	else if (typeid(*tex) == typeid(Canvas))
+		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+	else
+	{
+		tex->release();
+		return luaL_error(L, "Unable to determine texture type.");
+	}
+
 	return 1;
 }
 
@@ -616,8 +634,8 @@ int w_ParticleSystem_update(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "clone", w_ParticleSystem_clone },
-	{ "setImage", w_ParticleSystem_setImage },
-	{ "getImage", w_ParticleSystem_getImage },
+	{ "setTexture", w_ParticleSystem_setTexture },
+	{ "getTexture", w_ParticleSystem_getTexture },
 	{ "setBufferSize", w_ParticleSystem_setBufferSize },
 	{ "getBufferSize", w_ParticleSystem_getBufferSize },
 	{ "setInsertMode", w_ParticleSystem_setInsertMode },
@@ -668,6 +686,11 @@ static const luaL_Reg functions[] =
 	{ "isPaused", w_ParticleSystem_isPaused },
 	{ "isStopped", w_ParticleSystem_isStopped },
 	{ "update", w_ParticleSystem_update },
+
+	// Deprecated since 0.9.1.
+	{ "setImage", w_ParticleSystem_setTexture },
+	{ "getImage", w_ParticleSystem_getTexture },
+
 	{ 0, 0 }
 };
 

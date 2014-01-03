@@ -23,7 +23,6 @@
 
 // LOVE
 #include "common/runtime.h"
-#include "wrap_Image.h"
 #include "ParticleSystem.h"
 
 namespace love
@@ -35,8 +34,8 @@ namespace opengl
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx);
 int w_ParticleSystem_clone(lua_State *L);
-int w_ParticleSystem_setImage(lua_State *L);
-int w_ParticleSystem_getImage(lua_State *L);
+int w_ParticleSystem_setTexture(lua_State *L);
+int w_ParticleSystem_getTexture(lua_State *L);
 int w_ParticleSystem_setBufferSize(lua_State *L);
 int w_ParticleSystem_getBufferSize(lua_State *L);
 int w_ParticleSystem_setInsertMode(lua_State *L);

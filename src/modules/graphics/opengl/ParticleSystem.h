@@ -27,7 +27,7 @@
 #include "common/Vector.h"
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
-#include "Image.h"
+#include "Texture.h"
 
 // STL
 #include <vector>
@@ -76,9 +76,9 @@ public:
 	static const uint32 MAX_PARTICLES = LOVE_INT32_MAX / 4;
 
 	/**
-	 * Creates a particle system with the specified buffersize and image.
+	 * Creates a particle system with the specified buffer size and texture.
 	 **/
-	ParticleSystem(Image *image, uint32 buffer);
+	ParticleSystem(Texture *texture, uint32 buffer);
 	ParticleSystem(const ParticleSystem &p);
 
 	/**
@@ -94,15 +94,15 @@ public:
 	ParticleSystem *clone();
 
 	/**
-	 * Sets the image used in the particle system.
-	 * @param image The new image.
+	 * Sets the texture used in the particle system.
+	 * @param texture The new texture.
 	 **/
-	void setImage(Image *image);
+	void setTexture(Texture *texture);
 
 	/**
-	 * Returns the image used when drawing the particle system.
+	 * Returns the texture used when drawing the particle system.
 	 **/
-	Image *getImage() const;
+	Texture *getTexture() const;
 
 	/**
 	 * Clears the current buffer and allocates the appropriate amount of space for the buffer.
@@ -531,8 +531,8 @@ protected:
 	// array of transformed vertex data for all particles, for drawing
 	Vertex *particleVerts;
 
-	// The image to be drawn.
-	Image *image;
+	// The texture to be drawn.
+	Texture *texture;
 
 	// Whether the particle emitter is active.
 	bool active;

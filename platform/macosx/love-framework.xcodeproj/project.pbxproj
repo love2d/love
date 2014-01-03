@@ -109,9 +109,8 @@
 		FA08F61216C753E700F007B5 /* Rasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1C4E4D288A1D2F29E57B1B /* Rasterizer.cpp */; };
 		FA08F61316C753E700F007B5 /* wrap_GlyphData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B4E22F1388E2B2E76E3377B /* wrap_GlyphData.cpp */; };
 		FA08F61416C753E700F007B5 /* wrap_Rasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11745DE315E859F71E881D76 /* wrap_Rasterizer.cpp */; };
-		FA08F61516C753F600F007B5 /* Drawable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58BA2BB460AF3C591B22690E /* Drawable.cpp */; };
 		FA08F61716C753F600F007B5 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03F17FF546D637744E263961 /* Graphics.cpp */; };
-		FA08F61816C753F600F007B5 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58CC50E70A375FDF53EF01B6 /* Image.cpp */; };
+		FA08F61816C753F600F007B5 /* Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58CC50E70A375FDF53EF01B6 /* Texture.cpp */; };
 		FA08F61A16C753F600F007B5 /* Volatile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4B731754147B27AF73AC5358 /* Volatile.cpp */; };
 		FA08F61B16C7541400F007B5 /* Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4AD52074367950B735707CE1 /* Canvas.cpp */; };
 		FA08F61C16C7541400F007B5 /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 583037E9238A6EF00DD20B1A /* Font.cpp */; };
@@ -267,6 +266,7 @@
 		FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
+		FA9B492A1875EFB900201DA9 /* Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9B49281875EFB900201DA9 /* Texture.h */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */; };
 		FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9FC0AF173D6E3E005027FF /* wrap_Window.h */; };
@@ -285,7 +285,6 @@
 		FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC570FF17402D1100D147E4 /* wrap_BezierCurve.h */; };
 		FAC86E631724552C00EED715 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E611724552C00EED715 /* wrap_Quad.cpp */; };
 		FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Quad.h */; };
-		FAC86E6A1724555D00EED715 /* DrawQable.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E661724555D00EED715 /* DrawQable.h */; };
 		FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Quad.cpp */; };
 		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
 		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
@@ -438,7 +437,7 @@
 		1CAA69E00D0808BA2108238B /* wrap_ChainShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ChainShape.cpp; sourceTree = "<group>"; };
 		1CD02D1975803957282F28AB /* auxiliar.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = auxiliar.c; sourceTree = "<group>"; };
 		1CE84F1F19BC2AA412C638B1 /* timeout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = timeout.h; sourceTree = "<group>"; };
-		1DA41DFF0869489411A71AFC /* Image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
+		1DA41DFF0869489411A71AFC /* Texture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
 		1E22646A710E5EFC27FE3932 /* FrictionJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FrictionJoint.cpp; sourceTree = "<group>"; };
 		1E27263847302FCA1F843B47 /* b2PrismaticJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2PrismaticJoint.cpp; sourceTree = "<group>"; };
 		1E827AE8548C52493ED95629 /* wrap_Filesystem.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Filesystem.cpp; sourceTree = "<group>"; };
@@ -629,8 +628,7 @@
 		583037E9238A6EF00DD20B1A /* Font.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Font.cpp; sourceTree = "<group>"; };
 		584E16AE09E12536206C46FE /* Mouse.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Mouse.cpp; sourceTree = "<group>"; };
 		58792BC1126C2917432D706B /* b2CircleContact.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2CircleContact.cpp; sourceTree = "<group>"; };
-		58BA2BB460AF3C591B22690E /* Drawable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Drawable.cpp; sourceTree = "<group>"; };
-		58CC50E70A375FDF53EF01B6 /* Image.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
+		58CC50E70A375FDF53EF01B6 /* Texture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Texture.cpp; sourceTree = "<group>"; };
 		58CD093F254501E37CA47CA8 /* types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		597478A255B82B56488B4717 /* wrap_FileData.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_FileData.cpp; sourceTree = "<group>"; };
 		59BE634A2ACE722F14B86F89 /* b2Island.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2Island.cpp; sourceTree = "<group>"; };
@@ -824,6 +822,7 @@
 		FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mesh.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
+		FA9B49281875EFB900201DA9 /* Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Window.cpp; sourceTree = "<group>"; };
 		FA9FC0AF173D6E3E005027FF /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
@@ -842,7 +841,6 @@
 		FAC570FF17402D1100D147E4 /* wrap_BezierCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_BezierCurve.h; sourceTree = "<group>"; };
 		FAC86E611724552C00EED715 /* wrap_Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Quad.cpp; sourceTree = "<group>"; };
 		FAC86E621724552C00EED715 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
-		FAC86E661724555D00EED715 /* DrawQable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawQable.h; sourceTree = "<group>"; };
 		FAC86E671724555D00EED715 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		FAC86E681724555D00EED715 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
@@ -1476,16 +1474,14 @@
 			isa = PBXGroup;
 			children = (
 				4941079838020ECA049B5C21 /* Color.h */,
-				58BA2BB460AF3C591B22690E /* Drawable.cpp */,
 				5D93601669875EE06721689E /* Drawable.h */,
-				FAC86E661724555D00EED715 /* DrawQable.h */,
 				03F17FF546D637744E263961 /* Graphics.cpp */,
 				777352284E262F48543E6E7F /* Graphics.h */,
-				58CC50E70A375FDF53EF01B6 /* Image.cpp */,
-				1DA41DFF0869489411A71AFC /* Image.h */,
 				75093EE94918576801F50993 /* opengl */,
 				FAC86E671724555D00EED715 /* Quad.cpp */,
 				FAC86E681724555D00EED715 /* Quad.h */,
+				58CC50E70A375FDF53EF01B6 /* Texture.cpp */,
+				1DA41DFF0869489411A71AFC /* Texture.h */,
 				4B731754147B27AF73AC5358 /* Volatile.cpp */,
 				0CFF64090F0F4F481BB80CF0 /* Volatile.h */,
 			);
@@ -1683,6 +1679,7 @@
 				FA577A8616C71CF000860150 /* Shader.h */,
 				4D700D182EAA46273D1E2CC4 /* SpriteBatch.cpp */,
 				727D23FA1CC755B902471A45 /* SpriteBatch.h */,
+				FA9B49281875EFB900201DA9 /* Texture.h */,
 				426B1C4475DC54505B824B7F /* VertexBuffer.cpp */,
 				577B66502A5360AE60733B10 /* VertexBuffer.h */,
 				4E3251027026699A1D4D310D /* wrap_Canvas.cpp */,
@@ -1979,7 +1976,6 @@
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
 				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
 				FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */,
-				FAC86E6A1724555D00EED715 /* DrawQable.h in Headers */,
 				FAC86E6C1724555D00EED715 /* Quad.h in Headers */,
 				FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */,
 				FA3D9E0E16E68DE600CA6630 /* Cursor.h in Headers */,
@@ -1990,6 +1986,7 @@
 				FAF6705218184FF800DBDEEA /* wuff_internal.h in Headers */,
 				FAB007941740C28900A9664D /* Joystick.h in Headers */,
 				FAB007981740C87D00A9664D /* wrap_Joystick.h in Headers */,
+				FA9B492A1875EFB900201DA9 /* Texture.h in Headers */,
 				FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */,
 				FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */,
 				FA5FDC7E1788D548002F0ED2 /* callbacks.h in Headers */,
@@ -2179,9 +2176,8 @@
 				FA08F61216C753E700F007B5 /* Rasterizer.cpp in Sources */,
 				FA08F61316C753E700F007B5 /* wrap_GlyphData.cpp in Sources */,
 				FA08F61416C753E700F007B5 /* wrap_Rasterizer.cpp in Sources */,
-				FA08F61516C753F600F007B5 /* Drawable.cpp in Sources */,
 				FA08F61716C753F600F007B5 /* Graphics.cpp in Sources */,
-				FA08F61816C753F600F007B5 /* Image.cpp in Sources */,
+				FA08F61816C753F600F007B5 /* Texture.cpp in Sources */,
 				FA08F61A16C753F600F007B5 /* Volatile.cpp in Sources */,
 				FA08F61B16C7541400F007B5 /* Canvas.cpp in Sources */,
 				FA08F61C16C7541400F007B5 /* Font.cpp in Sources */,
