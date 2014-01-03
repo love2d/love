@@ -10,7 +10,7 @@ Compilation
 -----------
 
 ###Windows
-Use the project files for Visual Studio 2010 located in the platform dir.
+Follow the instructions at the [megasource][megasource] repository page.
 
 ###*nix
 Run `platform/unix/automagic` from the repository root, then run ./configure and make.
@@ -19,10 +19,10 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 	$ ./configure
 	$ make
 
-###OSX
-Use the XCode project in platform/macosx.
+###Mac OS X
+Download the required frameworks from [here][dependencies] and place them in `/Library/Frameworks/`.
 
-For both Windows and OSX there are dependencies available [here][dependencies].
+Then use the Xcode project found at `platform/macosx/love.xcodeproj`.
 
 Repository information
 ----------------------
@@ -64,6 +64,7 @@ Dependencies
 [forums]: http://love2d.org/forums
 [irc]: irc://irc.oftc.net/love
 [dependencies]: http://love2d.org/sdk
+[megasource]: https://bitbucket.org/rude/megasource
 [builds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
