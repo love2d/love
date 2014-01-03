@@ -47,10 +47,29 @@ int w_CircleShape_setRadius(lua_State *L)
 	return 0;
 }
 
+int w_CircleShape_getPoint(lua_State *L)
+{
+	CircleShape *c = luax_checkcircleshape(L, 1);
+	float x, y;
+	c->getPoint(x, y);
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
+	return 2;
+}
+
+int w_CircleShape_setPoint(lua_State *L)
+{
+	CircleShape *c = luax_checkcircleshape(L, 1);
+	c->setPoint((float) luaL_checknumber(L, 2), (float) luaL_checknumber(L, 3));
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getRadius", w_CircleShape_getRadius },
 	{ "setRadius", w_CircleShape_setRadius },
+	{ "getPoint", w_CircleShape_getPoint },
+	{ "setPoint", w_CircleShape_setPoint },
 	// From Shape.
 	{ "getType", w_Shape_getType },
 	{ "getRadius", w_Shape_getRadius },

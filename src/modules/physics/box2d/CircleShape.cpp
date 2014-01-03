@@ -53,6 +53,19 @@ void CircleShape::setRadius(float r)
 	shape->m_radius = Physics::scaleDown(r);
 }
 
+void CircleShape::getPoint(float &x_o, float &y_o) const
+{
+	b2CircleShape *c = (b2CircleShape *) shape;
+	x_o = Physics::scaleUp(c->m_p.x);
+	y_o = Physics::scaleUp(c->m_p.y);
+}
+
+void CircleShape::setPoint(float x, float y)
+{
+	b2CircleShape *c = (b2CircleShape *) shape;
+	c->m_p = Physics::scaleDown(b2Vec2(x, y));
+}
+
 } // box2d
 } // physics
 } // love
