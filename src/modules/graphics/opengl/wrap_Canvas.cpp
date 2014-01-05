@@ -79,80 +79,6 @@ int w_Canvas_getPixel(lua_State * L)
 	return 4;
 }
 
-int w_Canvas_setFilter(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-
-	Texture::Filter f;
-
-	const char *minstr = luaL_checkstring(L, 2);
-	const char *magstr = luaL_optstring(L, 3, minstr);
-
-	if (!Texture::getConstant(minstr, f.min))
-		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Texture::getConstant(magstr, f.mag))
-		return luaL_error(L, "Invalid filter mode: %s", magstr);
-
-	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
-
-	canvas->setFilter(f);
-
-	return 0;
-
-}
-
-int w_Canvas_getFilter(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	const Texture::Filter f = canvas->getFilter();
-
-	const char *minstr;
-	const char *magstr;
-	Texture::getConstant(f.min, minstr);
-	Texture::getConstant(f.mag, magstr);
-
-	lua_pushstring(L, minstr);
-	lua_pushstring(L, magstr);
-	lua_pushnumber(L, f.anisotropy);
-
-	return 3;
-}
-
-int w_Canvas_setWrap(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-
-	Texture::Wrap w;
-
-	const char *sstr = luaL_checkstring(L, 2);
-	const char *tstr = luaL_optstring(L, 3, sstr);
-
-	if (!Texture::getConstant(sstr, w.s))
-		return luaL_error(L, "Invalid wrap mode: %s", sstr);
-	if (!Texture::getConstant(tstr, w.t))
-		return luaL_error(L, "Invalid wrap mode, %s", tstr);
-
-	canvas->setWrap(w);
-
-	return 0;
-}
-
-int w_Canvas_getWrap(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	const Texture::Wrap w = canvas->getWrap();
-
-	const char *wrap_s;
-	const char *wrap_t;
-	Texture::getConstant(w.s, wrap_s);
-	Texture::getConstant(w.t, wrap_t);
-
-	lua_pushstring(L, wrap_s);
-	lua_pushstring(L, wrap_t);
-
-	return 2;
-}
-
 int w_Canvas_clear(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
@@ -185,28 +111,6 @@ int w_Canvas_clear(lua_State *L)
 	return 0;
 }
 
-int w_Canvas_getWidth(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	lua_pushnumber(L, canvas->getWidth());
-	return 1;
-}
-
-int w_Canvas_getHeight(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	lua_pushnumber(L, canvas->getHeight());
-	return 1;
-}
-
-int w_Canvas_getDimensions(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	lua_pushnumber(L, canvas->getWidth());
-	lua_pushnumber(L, canvas->getHeight());
-	return 2;
-}
-
 int w_Canvas_getType(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
@@ -219,17 +123,19 @@ int w_Canvas_getType(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
+	// From wrap_Texture.
+	{ "getWidth", w_Texture_getWidth },
+	{ "getHeight", w_Texture_getHeight },
+	{ "getDimensions", w_Texture_getDimensions },
+	{ "setFilter", w_Texture_setFilter },
+	{ "getFilter", w_Texture_getFilter },
+	{ "setWrap", w_Texture_setWrap },
+	{ "getWrap", w_Texture_getWrap },
+
 	{ "renderTo", w_Canvas_renderTo },
 	{ "getImageData", w_Canvas_getImageData },
 	{ "getPixel", w_Canvas_getPixel },
-	{ "setFilter", w_Canvas_setFilter },
-	{ "getFilter", w_Canvas_getFilter },
-	{ "setWrap", w_Canvas_setWrap },
-	{ "getWrap", w_Canvas_getWrap },
 	{ "clear", w_Canvas_clear },
-	{ "getWidth", w_Canvas_getWidth },
-	{ "getHeight", w_Canvas_getHeight },
-	{ "getDimensions", w_Canvas_getDimensions },
 	{ "getType", w_Canvas_getType },
 	{ 0, 0 }
 };

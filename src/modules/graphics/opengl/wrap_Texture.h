@@ -18,13 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_IMAGE_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_IMAGE_H
+#ifndef LOVE_GRAPHICS_OPENGL_WRAP_TEXTURE_H
+#define LOVE_GRAPHICS_OPENGL_WRAP_TEXTURE_H
 
-// LOVE
+#include "Texture.h"
 #include "common/runtime.h"
-#include "Image.h"
-#include "wrap_Texture.h"
 
 namespace love
 {
@@ -33,16 +31,17 @@ namespace graphics
 namespace opengl
 {
 
-Image *luax_checkimage(lua_State *L, int idx);
-int w_Image_setMipmapFilter(lua_State *L);
-int w_Image_getMipmapFilter(lua_State *L);
-int w_Image_isCompressed(lua_State *L);
-int w_Image_refresh(lua_State *L);
-int w_Image_getData(lua_State *L);
-extern "C" int luaopen_image(lua_State *L);
+Texture *luax_checktexture(lua_State *L, int idx);
+int w_Texture_getWidth(lua_State *L);
+int w_Texture_getHeight(lua_State *L);
+int w_Texture_getDimensions(lua_State *L);
+int w_Texture_setFilter(lua_State *L);
+int w_Texture_getFilter(lua_State *L);
+int w_Texture_setWrap(lua_State *L);
+int w_Texture_getWrap(lua_State *L);
 
 } // opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_IMAGE_H
+#endif // LOVE_GRAPHICS_OPENGL_WRAP_TEXTURE_H

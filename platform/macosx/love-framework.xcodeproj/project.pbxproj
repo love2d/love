@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FA01BE1E1878E35B00640047 /* wrap_Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA01BE1C1878E35B00640047 /* wrap_Texture.cpp */; };
+		FA01BE1F1878E35B00640047 /* wrap_Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA01BE1D1878E35B00640047 /* wrap_Texture.h */; };
 		FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA03546A1731F3A700284828 /* simplexnoise1234.cpp */; };
 		FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA03546B1731F3A700284828 /* simplexnoise1234.h */; };
 		FA08F5B016C752F900F007B5 /* Source.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FB732687B1669402408356D /* Source.cpp */; };
@@ -749,6 +751,8 @@
 		7F575BE9573C654B5ED44CC1 /* wrap_Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Timer.h; sourceTree = "<group>"; };
 		7F796B7A3362196075C62E61 /* wrap_Fixture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Fixture.cpp; sourceTree = "<group>"; };
 		7F911CF2107B22F44C5B2542 /* b2Collision.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2Collision.h; sourceTree = "<group>"; };
+		FA01BE1C1878E35B00640047 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
+		FA01BE1D1878E35B00640047 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
 		FA03546A1731F3A700284828 /* simplexnoise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = simplexnoise1234.cpp; sourceTree = "<group>"; };
 		FA03546B1731F3A700284828 /* simplexnoise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simplexnoise1234.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
@@ -1700,6 +1704,8 @@
 				FA577A8816C71CF000860150 /* wrap_Shader.h */,
 				02C16FDB537A702F4D42534E /* wrap_SpriteBatch.cpp */,
 				2BE75A693BE206B22DAE1B2E /* wrap_SpriteBatch.h */,
+				FA01BE1C1878E35B00640047 /* wrap_Texture.cpp */,
+				FA01BE1D1878E35B00640047 /* wrap_Texture.h */,
 			);
 			path = opengl;
 			sourceTree = "<group>";
@@ -1971,6 +1977,7 @@
 				FAF6704E18184FF800DBDEEA /* wuff_config.h in Headers */,
 				FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */,
 				FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */,
+				FA01BE1F1878E35B00640047 /* wrap_Texture.h in Headers */,
 				FAEC808B1710FEA60057279A /* ImageData.h in Headers */,
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
@@ -2281,6 +2288,7 @@
 				FAF272A616E3D44400CC193A /* LuaThread.cpp in Sources */,
 				FA0A4BF0182E0C2800E1E4D2 /* b2MotorJoint.cpp in Sources */,
 				FAF272A816E3D44400CC193A /* ThreadModule.cpp in Sources */,
+				FA01BE1E1878E35B00640047 /* wrap_Texture.cpp in Sources */,
 				FAF272AA16E3D44400CC193A /* wrap_Channel.cpp in Sources */,
 				FAF272AC16E3D44400CC193A /* wrap_LuaThread.cpp in Sources */,
 				FAF272AE16E3D44400CC193A /* wrap_ThreadModule.cpp in Sources */,

@@ -24,6 +24,7 @@
 
 #include "Image.h"
 #include "Canvas.h"
+#include "wrap_Texture.h"
 
 // C
 #include <cstring>
@@ -57,7 +58,7 @@ int w_ParticleSystem_clone(lua_State *L)
 int w_ParticleSystem_setTexture(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	Texture *tex = luax_checktype<Texture>(L, 2, "Texture", GRAPHICS_TEXTURE_T);
+	Texture *tex = luax_checktexture(L, 2);
 	t->setTexture(tex);
 	return 0;
 }

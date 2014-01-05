@@ -277,7 +277,7 @@ int w_newImageFont(lua_State *L)
 
 int w_newSpriteBatch(lua_State *L)
 {
-	Texture *texture = luax_checktype<Texture>(L, 1, "Texture", GRAPHICS_TEXTURE_T);
+	Texture *texture = luax_checktexture(L, 1);
 	int size = luaL_optint(L, 2, 1000);
 	SpriteBatch::UsageHint usage = SpriteBatch::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
@@ -296,7 +296,7 @@ int w_newSpriteBatch(lua_State *L)
 
 int w_newParticleSystem(lua_State *L)
 {
-	Texture *texture = luax_checktype<Texture>(L, 1, "Texture", GRAPHICS_TEXTURE_T);
+	Texture *texture = luax_checktexture(L, 1);
 	lua_Number size = luaL_optnumber(L, 2, 1000);
 	ParticleSystem *t = 0;
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
@@ -437,7 +437,7 @@ int w_newMesh(lua_State *L)
 	// Second argument: optional texture.
 	Texture *tex = nullptr;
 	if (!lua_isnoneornil(L, 2))
-		tex = luax_checktype<Texture>(L, 2, "Texture", GRAPHICS_TEXTURE_T);
+		tex = luax_checktexture(L, 2);
 
 	// Third argument: optional draw mode.
 	const char *str = 0;
@@ -1011,7 +1011,7 @@ int w_draw(lua_State *L)
 
 	if (luax_istype(L, 2, GRAPHICS_QUAD_T))
 	{
-		texture = luax_checktype<Texture>(L, 1, "Texture", GRAPHICS_TEXTURE_T);
+		texture = luax_checktexture(L, 1);
 		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
 		startidx = 3;
 	}

@@ -22,6 +22,7 @@
 #include "wrap_SpriteBatch.h"
 #include "Image.h"
 #include "Canvas.h"
+#include "wrap_Texture.h"
 
 // C++
 #include <typeinfo>
@@ -134,7 +135,7 @@ int w_SpriteBatch_unbind(lua_State *L)
 int w_SpriteBatch_setTexture(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	Texture *tex = luax_checktype<Texture>(L, 2, "Texture", GRAPHICS_TEXTURE_T);
+	Texture *tex = luax_checktexture(L, 2);
 	t->setTexture(tex);
 	return 0;
 }

@@ -19,8 +19,7 @@
  **/
 
 #include "wrap_Shader.h"
-#include "wrap_Image.h"
-#include "wrap_Canvas.h"
+#include "wrap_Texture.h"
 #include <string>
 #include <iostream>
 
@@ -257,7 +256,7 @@ int w_Shader_sendTexture(lua_State *L)
 {
 	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	Texture *texture = luax_checktype<Texture>(L, 3, "Texture", GRAPHICS_TEXTURE_T);
+	Texture *texture = luax_checktexture(L, 3);
 
 	EXCEPT_GUARD(shader->sendTexture(name, texture);)
 	return 0;

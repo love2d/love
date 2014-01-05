@@ -304,6 +304,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_Shader.h
 	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
 	src/modules/graphics/opengl/wrap_SpriteBatch.h
+	src/modules/graphics/opengl/wrap_Texture.cpp
+	src/modules/graphics/opengl/wrap_Texture.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
