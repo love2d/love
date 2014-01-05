@@ -232,10 +232,8 @@ void Graphics::reset()
 	discardStencil();
 	Canvas::bindDefaultCanvas();
 	Shader::detach();
+	origin();
 	restoreState(s);
-	pixel_size_stack.clear();
-	pixel_size_stack.reserve(5);
-	pixel_size_stack.push_back(1);
 }
 
 void Graphics::clear()
