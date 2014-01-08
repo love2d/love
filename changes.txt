@@ -6,14 +6,22 @@ LOVE 0.9.1 [Baby Inspector]
   * Added Source:clone.
   * Added ParticleSystem:clone.
   * Added Mesh:setWireframe and Mesh:isWireframe for debugging.
+  * Added CircleShape:getPoint and CircleShape:setPoint.
+  * Added Mesh/SpriteBatch/ParticleSystem:setTexture, accepts Canvases and Images.
+
+  * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage.
 
   * Fixed love.graphics.scale with negative values causing incorrect line widths.
   * Fixed Joystick:isDown using 0-based button index arguments.
   * Fixed Source:setPitch to error when infinity or NaN is given.
   * Fixed love.graphics.setCanvas() to restore the proper viewport and scissor rectangles.
   * Fixed TrueType font glyphs which request a monochrome bitmap pixel mode.
+  * Fixed love.graphics.reset causing crashes when called in between love.graphics.push/pop.
 
-  * Updated the error text for LÖVE’s module searchers when require fails.
+  * Updated the error text for love.filesystem’s module searchers when require fails.
+  * Updated the love.filesystem module searchers to be tried after package.preload instead of before.
+  * Updated love.graphics.newParticleSystem, newSpriteBatch, and newMesh to accept Canvases.
+  * Updated Canvas drawing code, texture coordinates are no longer flipped vertically.
 
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------
