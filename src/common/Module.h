@@ -22,7 +22,6 @@
 #define LOVE_MODULE_H
 
 // LOVE
-#include "runtime.h"
 #include "Exception.h"
 #include "Object.h"
 

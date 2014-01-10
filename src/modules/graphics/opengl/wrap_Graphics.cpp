@@ -104,7 +104,16 @@ int w_setScissor(lua_State *L)
 
 int w_getScissor(lua_State *L)
 {
-	return instance->getScissor(L);
+	int x, y, w, h;
+	if (!instance->getScissor(x, y, w, h))
+		return 0;
+
+	lua_pushinteger(L, x);
+	lua_pushinteger(L, y);
+	lua_pushinteger(L, w);
+	lua_pushinteger(L, h);
+
+	return 4;
 }
 
 static int setStencil(lua_State *L, bool invert)

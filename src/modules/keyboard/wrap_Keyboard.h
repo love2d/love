@@ -22,6 +22,7 @@
 #define LOVE_KEYBOARD_WRAP_KEYBOARD_H
 
 // LOVE
+#include "common/runtime.h"
 #include "Keyboard.h"
 
 namespace love

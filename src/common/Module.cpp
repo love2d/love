@@ -78,7 +78,7 @@ Module::~Module()
 void Module::registerInstance(Module *instance)
 {
 	if (instance == nullptr)
-		throw Exception("Module instance is NULL");
+		throw Exception("Module instance is null");
 
 	std::string name(instance->getName());
 

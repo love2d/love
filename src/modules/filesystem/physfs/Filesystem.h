@@ -31,6 +31,7 @@
 #include "common/Module.h"
 #include "common/config.h"
 #include "common/int.h"
+#include "common/runtime.h"
 #include "filesystem/FileData.h"
 #include "File.h"
 

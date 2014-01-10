@@ -23,6 +23,7 @@
 
 // LOVE
 #include "common/config.h"
+#include "common/runtime.h"
 #include "JoystickModule.h"
 
 namespace love

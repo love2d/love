@@ -22,6 +22,7 @@
 #define LOVE_TIMER_WRAP_TIMER_H
 
 // LOVE
+#include "common/runtime.h"
 #include "Timer.h"
 
 namespace love

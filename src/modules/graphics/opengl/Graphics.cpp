@@ -273,19 +273,16 @@ void Graphics::setScissor()
 	glDisable(GL_SCISSOR_TEST);
 }
 
-int Graphics::getScissor(lua_State *L) const
+bool Graphics::getScissor(int &x, int &y, int &width, int &height) const
 {
-	if (glIsEnabled(GL_SCISSOR_TEST) == GL_FALSE)
-		return 0;
-
 	OpenGL::Viewport scissor = gl.getScissor();
 
-	lua_pushinteger(L, scissor.x);
-	lua_pushinteger(L, scissor.y);
-	lua_pushinteger(L, scissor.w);
-	lua_pushinteger(L, scissor.h);
+	x = scissor.x;
+	y = scissor.y;
+	width = scissor.w;
+	height = scissor.h;
 
-	return 4;
+	return glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE;
 }
 
 void Graphics::defineStencil()
