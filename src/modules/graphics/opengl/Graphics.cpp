@@ -316,7 +316,7 @@ void Graphics::discardStencil()
 	glDisable(GL_STENCIL_TEST);
 }
 
-int Graphics::getMaxImageSize() const
+int Graphics::getMaxTextureSize() const
 {
 	return gl.getMaxTextureSize();
 }

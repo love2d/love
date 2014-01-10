@@ -135,9 +135,9 @@ int w_setInvertedStencil(lua_State *L)
 	return setStencil(L, true);
 }
 
-int w_getMaxImageSize(lua_State *L)
+int w_getMaxTextureSize(lua_State *L)
 {
-	lua_pushinteger(L, instance->getMaxImageSize());
+	lua_pushinteger(L, instance->getMaxTextureSize());
 	return 1;
 }
 
@@ -1339,7 +1339,7 @@ static const luaL_Reg functions[] =
 	{ "getPointSize", w_getPointSize },
 	{ "getPointStyle", w_getPointStyle },
 	{ "getMaxPointSize", w_getMaxPointSize },
-	{ "getMaxImageSize", w_getMaxImageSize },
+	{ "getMaxTextureSize", w_getMaxTextureSize },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
@@ -1381,6 +1381,9 @@ static const luaL_Reg functions[] =
 	{ "translate", w_translate },
 	{ "shear", w_shear },
 	{ "origin", w_origin },
+
+	// Deprecated since 0.9.1.
+	{ "getMaxImageSize", w_getMaxTextureSize },
 
 	{ 0, 0 }
 };

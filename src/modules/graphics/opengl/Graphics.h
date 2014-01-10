@@ -187,10 +187,9 @@ public:
 	void discardStencil();
 
 	/**
-	 * Gets the maximum supported width or height of Images and Canvases on this
-	 * system.
+	 * Gets the maximum supported width or height of Textures on this system.
 	 **/
-	int getMaxImageSize() const;
+	int getMaxTextureSize() const;
 
 	/**
 	 * Creates an Image object with padding and/or optimization.
