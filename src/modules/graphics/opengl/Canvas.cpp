@@ -42,14 +42,11 @@ struct FramebufferStrategy
 
 	/// create a new framebuffer and texture
 	/**
-	 * @param[out] framebuffer   Framebuffer name
-	 * @param[out] img           Texture name
-	 * @param[in]  width         Width of framebuffer
-	 * @param[in]  height        Height of framebuffer
-	 * @param[in]  texture_type  Type of the canvas texture.
+	 * @param[out] framebuffer Framebuffer name
+	 * @param[in]  texture     Texture name
 	 * @return Creation status
 	 */
-	virtual GLenum createFBO(GLuint &, GLuint &, int, int, Canvas::TextureType)
+	virtual GLenum createFBO(GLuint &, GLuint)
 	{
 		return GL_FRAMEBUFFER_UNSUPPORTED;
 	}
@@ -70,9 +67,8 @@ struct FramebufferStrategy
 	/**
 	 * @param[in] framebuffer   Framebuffer name
 	 * @param[in] depth_stencil Name for packed depth and stencil buffer
-	 * @param[in] img           Texture name
 	 */
-	virtual void deleteFBO(GLuint, GLuint, GLuint) {}
+	virtual void deleteFBO(GLuint, GLuint) {}
 	virtual void bindFBO(GLuint) {}
 
 	/// attach additional canvases to the active framebuffer for rendering
@@ -87,7 +83,7 @@ struct FramebufferStrategy
 
 struct FramebufferStrategyGL3 : public FramebufferStrategy
 {
-	virtual GLenum createFBO(GLuint &framebuffer, GLuint &img, int width, int height, Canvas::TextureType texture_type)
+	virtual GLenum createFBO(GLuint &framebuffer, GLuint texture)
 	{
 		// get currently bound fbo to reset to it later
 		GLint current_fbo;
@@ -97,32 +93,8 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glGenFramebuffers(1, &framebuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-		// generate texture save target
-		GLint internalFormat;
-		GLenum format;
-		switch (texture_type)
-		{
-		case Canvas::TYPE_HDR:
-			internalFormat = GL_RGBA16F;
-			format = GL_FLOAT;
-			break;
-		case Canvas::TYPE_NORMAL:
-		default:
-			internalFormat = GL_RGBA8;
-			format = GL_UNSIGNED_BYTE;
-		}
-
-		glGenTextures(1, &img);
-		gl.bindTexture(img);
-
-		Texture::Filter filter = Texture::getDefaultFilter();
-		gl.setTextureFilter(filter);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
-			0, GL_RGBA, format, NULL);
-		gl.bindTexture(0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			GL_TEXTURE_2D, img, 0);
+			GL_TEXTURE_2D, texture, 0);
 
 		// check status
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -149,9 +121,8 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	}
 
-	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil,  GLuint img)
+	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil)
 	{
-		gl.deleteTexture(img);
 		if (depth_stencil != 0)
 			glDeleteRenderbuffers(1, &depth_stencil);
 		if (framebuffer != 0)
@@ -198,7 +169,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 
 struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 {
-	virtual GLenum createFBO(GLuint &framebuffer, GLuint &img, int width, int height, Canvas::TextureType texture_type)
+	virtual GLenum createFBO(GLuint &framebuffer, GLuint texture)
 	{
 		GLint current_fbo;
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &current_fbo);
@@ -207,32 +178,8 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		glGenFramebuffersEXT(1, &framebuffer);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
 
-		// generate texture save target
-		GLint internalFormat;
-		GLenum format;
-		switch (texture_type)
-		{
-		case Canvas::TYPE_HDR:
-			internalFormat = GL_RGBA16F;
-			format = GL_FLOAT;
-			break;
-		case Canvas::TYPE_NORMAL:
-		default:
-			internalFormat = GL_RGBA8;
-			format = GL_UNSIGNED_BYTE;
-		}
-
-		glGenTextures(1, &img);
-		gl.bindTexture(img);
-
-		Texture::Filter filter = Texture::getDefaultFilter();
-		gl.setTextureFilter(filter);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height,
-			0, GL_RGBA, format, NULL);
-		gl.bindTexture(0);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-			GL_TEXTURE_2D, img, 0);
+			GL_TEXTURE_2D, texture, 0);
 
 		// check status
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -259,9 +206,8 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT;
 	}
 
-	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil, GLuint img)
+	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil)
 	{
-		gl.deleteTexture(img);
 		if (depth_stencil != 0)
 			glDeleteRenderbuffersEXT(1, &depth_stencil);
 		if (framebuffer != 0)
@@ -327,9 +273,9 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 
 	bool isSupported()
 	{
-		GLuint fb = 0, stencil = 0, img = 0;
-		GLenum status = createFBO(fb, img, 2, 2, Canvas::TYPE_NORMAL);
-		deleteFBO(fb, stencil, img);
+		GLuint fb = 0, stencil = 0;
+		GLenum status = createFBO(fb, 0);
+		deleteFBO(fb, stencil);
 		return status == GL_FRAMEBUFFER_COMPLETE;
 	}
 };
@@ -367,8 +313,8 @@ static int maxDrawBuffers = 0;
 
 Canvas::Canvas(int width, int height, TextureType texture_type)
 	: fbo(0)
+	, texture(0)
 	, depth_stencil(0)
-	, img(0)
 	, texture_type(texture_type)
 {
 	this->width = width;
@@ -413,7 +359,7 @@ Canvas::~Canvas()
 
 bool Canvas::loadVolatile()
 {
-	fbo = depth_stencil = img = 0;
+	fbo = depth_stencil = texture = 0;
 
 	// glTexImage2D is guaranteed to error in this case.
 	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
@@ -422,20 +368,59 @@ bool Canvas::loadVolatile()
 		return false;
 	}
 
-	status = strategy->createFBO(fbo, img, width, height, texture_type);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-		return false;
+	glGenTextures(1, &texture);
+	gl.bindTexture(texture);
 
 	setFilter(filter);
 	setWrap(wrap);
+
+	GLint internalformat;
+	GLenum textype;
+	switch (texture_type)
+	{
+	case TYPE_HDR:
+		internalformat = GL_RGBA16F;
+		textype = GL_FLOAT;
+		break;
+	case TYPE_NORMAL:
+	default:
+		internalformat = GL_RGBA8;
+		textype = GL_UNSIGNED_BYTE;
+	}
+
+	while (glGetError() != GL_NO_ERROR)
+		/* Clear the error buffer. */;
+
+	glTexImage2D(GL_TEXTURE_2D,
+	             0,
+	             internalformat,
+	             width, height,
+	             0,
+	             GL_RGBA,
+	             textype,
+	             nullptr);
+
+	if (glGetError() != GL_NO_ERROR)
+	{
+		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+		return false;
+	}
+
+	status = strategy->createFBO(fbo, texture);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+		return false;
+
 	clear(Color(0, 0, 0, 0));
 	return true;
 }
 
 void Canvas::unloadVolatile()
 {
-	strategy->deleteFBO(fbo, depth_stencil, img);
-	fbo = depth_stencil = img = 0;
+	strategy->deleteFBO(fbo, depth_stencil);
+
+	gl.deleteTexture(texture);
+
+	fbo = depth_stencil = texture = 0;
 
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
 		attachedCanvases[i]->release();
@@ -449,7 +434,7 @@ void Canvas::drawv(const Matrix &t, const Vertex *v) const
 
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	gl.bindTexture(img);
+	gl.bindTexture(texture);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -486,25 +471,25 @@ void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy
 void Canvas::setFilter(const Texture::Filter &f)
 {
 	filter = f;
-	gl.bindTexture(img);
+	gl.bindTexture(texture);
 	gl.setTextureFilter(filter);
 }
 
 void Canvas::setWrap(const Texture::Wrap &w)
 {
 	wrap = w;
-	gl.bindTexture(img);
+	gl.bindTexture(texture);
 	gl.setTextureWrap(wrap);
 }
 
 GLuint Canvas::getGLTexture() const
 {
-	return img;
+	return texture;
 }
 
 void Canvas::predraw() const
 {
-	gl.bindTexture(img);
+	gl.bindTexture(texture);
 }
 
 void Canvas::setupGrab()

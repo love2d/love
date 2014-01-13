@@ -113,8 +113,8 @@ public:
 private:
 
 	GLuint fbo;
+	GLuint texture;
 	GLuint depth_stencil;
-	GLuint img;
 
 	TextureType texture_type;
 
