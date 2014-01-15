@@ -34,22 +34,21 @@ Canvas *luax_checkcanvas(lua_State *L, int idx)
 
 int w_Canvas_renderTo(lua_State *L)
 {
-	// As startGrab() clears the framebuffer, better not allow
-	// grabbing inside another grabbing
-	if (Canvas::current != NULL)
-	{
-		Canvas::bindDefaultCanvas();
-		return luaL_error(L, "Current render target not the default canvas!");
-	}
-
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	// Save the current Canvas so we can restore it when we're done.
+	Canvas *oldcanvas = Canvas::current;
 
 	EXCEPT_GUARD(canvas->startGrab();)
 
 	lua_settop(L, 2); // make sure the function is on top of the stack
 	lua_call(L, 0, 0);
-	canvas->stopGrab();
+
+	if (oldcanvas != nullptr)
+		oldcanvas->startGrab(oldcanvas->getAttachedCanvases());
+	else
+		Canvas::bindDefaultCanvas();
 
 	return 0;
 }
