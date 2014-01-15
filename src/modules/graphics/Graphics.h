@@ -76,13 +76,6 @@ public:
 		LINE_JOIN_MAX_ENUM
 	};
 
-	enum PointStyle
-	{
-		POINT_ROUGH = 1,
-		POINT_SMOOTH,
-		POINT_MAX_ENUM
-	};
-
 	enum Support
 	{
 		SUPPORT_CANVAS = 1,
@@ -141,9 +134,6 @@ public:
 	static bool getConstant(const char *in, LineJoin &out);
 	static bool getConstant(LineJoin in, const char  *&out);
 
-	static bool getConstant(const char *in, PointStyle &out);
-	static bool getConstant(PointStyle in, const char  *&out);
-
 	static bool getConstant(const char *in, Support &out);
 	static bool getConstant(Support in, const char  *&out);
 
@@ -166,9 +156,6 @@ private:
 
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
-
-	static StringMap<PointStyle, POINT_MAX_ENUM>::Entry pointStyleEntries[];
-	static StringMap<PointStyle, POINT_MAX_ENUM> pointStyles;
 
 	static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
 	static StringMap<Support, SUPPORT_MAX_ENUM> support;

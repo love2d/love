@@ -86,8 +86,6 @@ DisplayState Graphics::saveState()
 	s.lineStyle = lineStyle;
 	//get the point size
 	glGetFloatv(GL_POINT_SIZE, &s.pointSize);
-	//get point style
-	s.pointStyle = (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE) ? Graphics::POINT_SMOOTH : Graphics::POINT_ROUGH;
 	//get scissor status
 	s.scissor = (glIsEnabled(GL_SCISSOR_TEST) == GL_TRUE);
 	//do we have scissor, if so, store the box
@@ -108,7 +106,6 @@ void Graphics::restoreState(const DisplayState &s)
 	setLineWidth(lineWidth);
 	setLineStyle(s.lineStyle);
 	setPointSize(s.pointSize);
-	setPointStyle(s.pointStyle);
 	if (s.scissor)
 		setScissor(s.scissorBox.x, s.scissorBox.y, s.scissorBox.w, s.scissorBox.h);
 	else
@@ -689,27 +686,11 @@ void Graphics::setPointSize(float size)
 	glPointSize((GLfloat)size);
 }
 
-void Graphics::setPointStyle(Graphics::PointStyle style)
-{
-	if (style == POINT_SMOOTH)
-		glEnable(GL_POINT_SMOOTH);
-	else // love::POINT_ROUGH
-		glDisable(GL_POINT_SMOOTH);
-}
-
 float Graphics::getPointSize() const
 {
 	GLfloat size;
 	glGetFloatv(GL_POINT_SIZE, &size);
 	return (float)size;
-}
-
-Graphics::PointStyle Graphics::getPointStyle() const
-{
-	if (glIsEnabled(GL_POINT_SMOOTH) == GL_TRUE)
-		return POINT_SMOOTH;
-	else
-		return POINT_ROUGH;
 }
 
 int Graphics::getMaxPointSize() const

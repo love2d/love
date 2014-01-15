@@ -790,31 +790,9 @@ int w_setPointSize(lua_State *L)
 	return 0;
 }
 
-int w_setPointStyle(lua_State *L)
-{
-	Graphics::PointStyle style;
-
-	const char *str = luaL_checkstring(L, 1);
-	if (!Graphics::getConstant(str, style))
-		return luaL_error(L, "Invalid point style: %s", str);
-
-	instance->setPointStyle(style);
-	return 0;
-}
-
 int w_getPointSize(lua_State *L)
 {
 	lua_pushnumber(L, instance->getPointSize());
-	return 1;
-}
-
-int w_getPointStyle(lua_State *L)
-{
-	Graphics::PointStyle style = instance->getPointStyle();
-	const char *str;
-	if (!Graphics::getConstant(style, str))
-		return luaL_error(L, "Unknown point style");
-	lua_pushstring(L, str);
 	return 1;
 }
 
@@ -1344,9 +1322,7 @@ static const luaL_Reg functions[] =
 	{ "getLineStyle", w_getLineStyle },
 	{ "getLineJoin", w_getLineJoin },
 	{ "setPointSize", w_setPointSize },
-	{ "setPointStyle", w_setPointStyle },
 	{ "getPointSize", w_getPointSize },
-	{ "getPointStyle", w_getPointStyle },
 	{ "getMaxPointSize", w_getMaxPointSize },
 	{ "getMaxTextureSize", w_getMaxTextureSize },
 	{ "newScreenshot", w_newScreenshot },
