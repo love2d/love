@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,8 +42,9 @@ int w_World_setContactFilter(lua_State *L);
 int w_World_getContactFilter(lua_State *L);
 int w_World_setGravity(lua_State *L);
 int w_World_getGravity(lua_State *L);
-int w_World_setAllowSleeping(lua_State *L);
-int w_World_getAllowSleeping(lua_State *L);
+int w_World_translateOrigin(lua_State *L);
+int w_World_setSleepingAllowed(lua_State *L);
+int w_World_isSleepingAllowed(lua_State *L);
 int w_World_isLocked(lua_State *L);
 int w_World_getBodyCount(lua_State *L);
 int w_World_getJointCount(lua_State *L);

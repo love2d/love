@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+DEB_HOST_ARCH_CPU ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU)
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+override_dh_auto_configure:
+	dh_auto_configure -- --with-lua=luajit
+
+override_dh_link:
+	dh_link -plove@LOVE_SUFFIX@-dev usr/lib/$(DEB_HOST_MULTIARCH)/liblove@LOVE_SUFFIX@.so.0.0.0 usr/lib/$(DEB_HOST_MULTIARCH)/liblove@LOVE_SUFFIX@.so
+
+override_dh_strip:
+	dh_strip --dbg-package=love@LOVE_SUFFIX@-dbg
+
+%:
+	dh  $@ --parallel

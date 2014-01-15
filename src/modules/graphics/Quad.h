@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,25 +36,31 @@ public:
 
 	struct Viewport
 	{
-		float x, y, w, h;
+		float x, y;
+		float w, h;
 	};
 
-	Quad();
+	static const size_t NUM_VERTICES = 4;
 
+	Quad(const Viewport &v, float sw, float sh);
 	virtual ~Quad();
 
-	virtual void refresh(const Viewport &v, float sw, float sh) = 0;
+	void refresh(const Viewport &v, float sw, float sh);
+	void setViewport(const Viewport &v);
+	Viewport getViewport() const;
 
-	virtual void setViewport(const Viewport &v) = 0;
-	virtual Viewport getViewport() const = 0;
+	const Vertex *getVertices() const;
 
-	virtual void flip(bool x, bool y) = 0;
+private:
 
-	/**
-	 * Gets a pointer to the vertices.
-	 **/
-	virtual const vertex *getVertices() const = 0;
-};
+	Vertex vertices[NUM_VERTICES];
+
+	Viewport viewport;
+	float sw;
+	float sh;
+
+}; // Quad
+
 } // graphics
 } // love
 

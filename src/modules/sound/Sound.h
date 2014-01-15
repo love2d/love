@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -58,20 +58,19 @@ public:
 
 	/**
 	 * Creates a new SoundData with the specified number of samples and format.
-	 * @param duration In seconds.
+	 * @param samples The number of samples.
 	 * @param sampleRate Number of samples per second.
-	 * @param bits Bits per sample (8 or 16).
+	 * @param bitDepth Bits per sample (8 or 16).
 	 * @param channels Either 1 for mono, or 2 for stereo.
 	 * @return A new SoundData object, or zero in case of errors.
 	 **/
-	SoundData *newSoundData(int samples, int sampleRate, int bits, int channels);
+	SoundData *newSoundData(int samples, int sampleRate, int bitDepth, int channels);
 
 	/**
 	 * Attempts to find a decoder for the encoded sound data in the
 	 * specified file.
 	 * @param file The file with encoded sound data.
 	 * @param bufferSize The size of each decoded chunk.
-	 * @param sampleRate Samples per second, or quality of the audio. 44100 is a good value.
 	 * @return A Decoder object on success, or zero if no decoder could be found.
 	 **/
 	virtual Decoder *newDecoder(filesystem::FileData *file, int bufferSize) = 0;

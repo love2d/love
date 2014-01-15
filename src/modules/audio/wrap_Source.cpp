@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,6 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include <limits>
+
 #include "wrap_Source.h"
 
 namespace love
@@ -28,6 +30,15 @@ namespace audio
 Source *luax_checksource(lua_State *L, int idx)
 {
 	return luax_checktype<Source>(L, idx, "Source", AUDIO_SOURCE_T);
+}
+
+int w_Source_clone(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	Source *clone = nullptr;
+	EXCEPT_GUARD(clone = t->clone();)
+	luax_pushtype(L, "Source", AUDIO_SOURCE_T, clone);
+	return 1;
 }
 
 int w_Source_play(lua_State *L)
@@ -69,6 +80,10 @@ int w_Source_setPitch(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 	float p = (float)luaL_checknumber(L, 2);
+	if (p > std::numeric_limits<lua_Number>::max() ||
+			p < std::numeric_limits<lua_Number>::min() ||
+			p != p)
+		return luaL_error(L, "Pitch has to be finite and not NaN.");
 	t->setPitch(p);
 	return 0;
 }
@@ -99,9 +114,14 @@ int w_Source_seek(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 	float offset = (float)luaL_checknumber(L, 2);
-	const char *unit = luaL_optstring(L, 3, "seconds");
-	Source::Unit u;
-	t->getConstant(unit, u);
+	if (offset < 0)
+		return luaL_argerror(L, 2, "can't seek to a negative position");
+
+	Source::Unit u = Source::UNIT_SECONDS;
+	const char *unit = lua_isnoneornil(L, 3) ? 0 : lua_tostring(L, 3);
+	if (unit && !t->getConstant(unit, u))
+		return luaL_error(L, "Invalid Source time unit: %s", unit);
+
 	t->seek(offset, u);
 	return 0;
 }
@@ -109,9 +129,12 @@ int w_Source_seek(lua_State *L)
 int w_Source_tell(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	const char *unit = luaL_optstring(L, 2, "seconds");
-	Source::Unit u;
-	t->getConstant(unit, u);
+
+	Source::Unit u = Source::UNIT_SECONDS;
+	const char *unit = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	if (unit && !t->getConstant(unit, u))
+		return luaL_error(L, "Invalid Source time unit: %s", unit);
+
 	lua_pushnumber(L, t->tell(u));
 	return 1;
 }
@@ -182,6 +205,41 @@ int w_Source_getDirection(lua_State *L)
 	return 3;
 }
 
+int w_Source_setCone(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	float innerAngle = (float) luaL_checknumber(L, 2);
+	float outerAngle = (float) luaL_checknumber(L, 3);
+	float outerVolume = (float) luaL_optnumber(L, 4, 0.0);
+	t->setCone(innerAngle, outerAngle, outerVolume);
+	return 0;
+}
+
+int w_Source_getCone(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	float innerAngle, outerAngle, outerVolume;
+	t->getCone(innerAngle, outerAngle, outerVolume);
+	lua_pushnumber(L, innerAngle);
+	lua_pushnumber(L, outerAngle);
+	lua_pushnumber(L, outerVolume);
+	return 3;
+}
+
+int w_Source_setRelative(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	t->setRelative(luax_toboolean(L, 2));
+	return 0;
+}
+
+int w_Source_isRelative(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	luax_pushboolean(L, t->isRelative());
+	return 1;
+}
+
 int w_Source_setLooping(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -244,7 +302,7 @@ int w_Source_getVolumeLimits(lua_State *L)
 	return 2;
 }
 
-int w_Source_setDistance(lua_State *L)
+int w_Source_setAttenuationDistances(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 	float dref = (float)luaL_checknumber(L, 2);
@@ -256,7 +314,7 @@ int w_Source_setDistance(lua_State *L)
 	return 0;
 }
 
-int w_Source_getDistance(lua_State *L)
+int w_Source_getAttenuationDistances(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 	lua_pushnumber(L, t->getReferenceDistance());
@@ -281,8 +339,17 @@ int w_Source_getRolloff(lua_State *L)
 	return 1;
 }
 
+int w_Source_getChannels(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	lua_pushinteger(L, t->getChannels());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
+	{ "clone", w_Source_clone },
+
 	{ "play", w_Source_play },
 	{ "stop", w_Source_stop },
 	{ "pause", w_Source_pause },
@@ -301,6 +368,11 @@ static const luaL_Reg functions[] =
 	{ "getVelocity", w_Source_getVelocity },
 	{ "setDirection", w_Source_setDirection },
 	{ "getDirection", w_Source_getDirection },
+	{ "setCone", w_Source_setCone },
+	{ "getCone", w_Source_getCone },
+
+	{ "setRelative", w_Source_setRelative },
+	{ "isRelative", w_Source_isRelative },
 
 	{ "setLooping", w_Source_setLooping },
 	{ "isLooping", w_Source_isLooping },
@@ -311,10 +383,12 @@ static const luaL_Reg functions[] =
 
 	{ "setVolumeLimits", w_Source_setVolumeLimits },
 	{ "getVolumeLimits", w_Source_getVolumeLimits },
-	{ "setDistance", w_Source_setDistance },
-	{ "getDistance", w_Source_getDistance },
+	{ "setAttenuationDistances", w_Source_setAttenuationDistances },
+	{ "getAttenuationDistances", w_Source_getAttenuationDistances },
 	{ "setRolloff", w_Source_setRolloff},
 	{ "getRolloff", w_Source_getRolloff},
+
+	{ "getChannels", w_Source_getChannels },
 
 	{ 0, 0 }
 };

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,11 +21,8 @@
 #ifndef LOVE_TIMER_SDL_TIMER_H
 #define LOVE_TIMER_SDL_TIMER_H
 
-// SDL
-#include <SDL.h>
-
 // LOVE
-#include <timer/Timer.h>
+#include "timer/Timer.h"
 
 namespace love
 {
@@ -54,21 +51,22 @@ public:
 
 	const char *getName() const;
 	void step();
-	void sleep(double seconds);
+	void sleep(double seconds) const;
 	double getDelta() const;
 	int getFPS() const;
+	double getAverageDelta() const;
 	double getTime() const;
-	double getMicroTime() const;
 
 private:
 
 	// Frame delta vars.
-	Uint32 currTime;
-	Uint32 prevTime;
-	Uint32 prevFpsUpdate;
+	double currTime;
+	double prevTime;
+	double prevFpsUpdate;
 
 	// Updated with a certain frequency.
 	int fps;
+	double averageDelta;
 
 	// The frequency by which to update the FPS.
 	double fpsUpdateFrequency;
@@ -79,6 +77,12 @@ private:
 	// The current timestep.
 	double dt;
 
+	// The timer period (reciprocal of the frequency.)
+	const double timerPeriod;
+
+	// Returns the timer period on some platforms.
+	static double getTimerPeriod();
+	
 }; // Timer
 
 } // sdl

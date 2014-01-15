@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,13 +34,13 @@ namespace lullaby
 /**
  * CALLBACK FUNCTIONS
  **/
-int vorbisClose(void *	/* ptr to the data that the vorbis files need*/)
+static int vorbisClose(void *	/* ptr to the data that the vorbis files need*/)
 {
 	// Does nothing (handled elsewhere)
 	return 1;
 }
 
-size_t vorbisRead(void *ptr		/* ptr to the data that the vorbis files need*/,
+static size_t vorbisRead(void *ptr	/* ptr to the data that the vorbis files need*/,
 				  size_t byteSize	/* how big a byte is*/,
 				  size_t sizeToRead	/* How much we can read*/,
 				  void *datasource	/* this is a pointer to the data we passed into ov_open_callbacks (our SOggFile struct*/)
@@ -72,7 +72,7 @@ size_t vorbisRead(void *ptr		/* ptr to the data that the vorbis files need*/,
 	return actualSizeToRead;
 }
 
-int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files need*/,
+static int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files need*/,
 			   ogg_int64_t offset	/*offset from the point we wish to seek to*/,
 			   int whence			/*where we want to seek to*/)
 {
@@ -116,7 +116,7 @@ int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files need*/,
 	return 0;
 }
 
-long vorbisTell(void *datasource	/* ptr to the data that the vorbis files need*/)
+static long vorbisTell(void *datasource	/* ptr to the data that the vorbis files need*/)
 {
 	SOggFile *vorbisData;
 	vorbisData = (SOggFile *) datasource;
@@ -188,7 +188,7 @@ int VorbisDecoder::decode()
 
 	while (size < bufferSize)
 	{
-		int result = ov_read(&handle, (char *) buffer + size, bufferSize - size, endian, (getBits() == 16 ? 2 : 1), 1, 0);
+		int result = ov_read(&handle, (char *) buffer + size, bufferSize - size, endian, (getBitDepth() == 16 ? 2 : 1), 1, 0);
 
 		if (result == OV_HOLE)
 			continue;
@@ -243,7 +243,7 @@ int VorbisDecoder::getChannels() const
 	return vorbisInfo->channels;
 }
 
-int VorbisDecoder::getBits() const
+int VorbisDecoder::getBitDepth() const
 {
 	return 16;
 }

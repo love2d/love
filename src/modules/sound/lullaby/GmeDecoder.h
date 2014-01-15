@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 #include "common/Data.h"
 #include "Decoder.h"
 
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <Game_Music_Emu/gme.h>
 #else
 #include <gme.h>
@@ -55,7 +55,7 @@ public:
 	bool rewind();
 	bool isSeekable();
 	int getChannels() const;
-	int getBits() const;
+	int getBitDepth() const;
 
 private:
 	Music_Emu *emu;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,29 +45,12 @@ struct pixel
  **/
 class ImageData : public Data
 {
-protected:
-
-	// The width of the image data.
-	int width;
-
-	// The height of the image data.
-	int height;
-
-	// The actual data.
-	unsigned char *data;
-
-	// We need to be thread-safe
-	// so we lock when we're accessing our
-	// data
-	Mutex *mutex;
-
 public:
 
 	enum Format
 	{
 		FORMAT_TGA = 1,
 		FORMAT_BMP,
-		FORMAT_GIF,
 		FORMAT_JPG,
 		FORMAT_PNG,
 		FORMAT_MAX_ENUM
@@ -123,12 +106,18 @@ public:
 	void setPixel(int x, int y, pixel p);
 
 	/**
+	 * Sets the pixel at location (x,y).
+	 * Not thread-safe!
+	 **/
+	void setPixelUnsafe(int x, int y, pixel p);
+
+	/**
 	 * Gets the pixel at location (x,y).
 	 * @param x The location along the x-axis.
 	 * @param y The location along the y-axis.
 	 * @return The color for the given location.
 	 **/
-	pixel getPixel(int x, int y);
+	pixel getPixel(int x, int y) const;
 
 	/**
 	 * Encodes raw pixel data into a given format.
@@ -137,11 +126,30 @@ public:
 	 **/
 	virtual void encode(love::filesystem::File *f, Format format) = 0;
 
+	love::thread::Mutex *getMutex() const;
+
 	// Implements Data.
-	void *getData() const;
-	int getSize() const;
+	virtual void *getData() const;
+	virtual int getSize() const;
+
+protected:
+
+	// The width of the image data.
+	int width;
+
+	// The height of the image data.
+	int height;
+
+	// The actual data.
+	unsigned char *data;
+
+	// We need to be thread-safe
+	// so we lock when we're accessing our
+	// data
+	Mutex *mutex;
 
 private:
+
 	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
 	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 

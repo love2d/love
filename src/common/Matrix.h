@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -148,7 +148,7 @@ public:
 	 * @param src The source vertices.
 	 * @param size The number of vertices.
 	 **/
-	void transform(vertex *dst, const vertex *src, int size) const;
+	void transform(Vertex *dst, const Vertex *src, int size) const;
 
 private:
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,19 @@ namespace love
 namespace keyboard
 {
 
-static Keyboard *instance;
+static Keyboard *instance = 0;
+
+int w_setKeyRepeat(lua_State *L)
+{
+	instance->setKeyRepeat(luax_toboolean(L, 1));
+	return 0;
+}
+
+int w_hasKeyRepeat(lua_State *L)
+{
+	luax_pushboolean(L, instance->hasKeyRepeat());
+	return 1;
+}
 
 int w_isDown(lua_State *L)
 {
@@ -50,34 +62,26 @@ int w_isDown(lua_State *L)
 	return 1;
 }
 
-int w_setKeyRepeat(lua_State *L)
+int w_setTextInput(lua_State *L)
 {
-	if (lua_gettop(L) == 0)
-	{
-		// Disables key repeat.
-		instance->setKeyRepeat(0, 0);
-		return 0;
-	}
-
-	int delay = lua_isnumber(L, 1) ? (int)(lua_tonumber(L, 1) * 1000 + 0.5) : Keyboard::DEFAULT;
-	int interval = lua_isnumber(L, 2) ? (int)(lua_tonumber(L, 2) * 1000 + 0.5) : Keyboard::DEFAULT;
-	instance->setKeyRepeat(delay, interval);
+	instance->setTextInput(luax_toboolean(L, 1));
 	return 0;
 }
 
-int w_getKeyRepeat(lua_State *L)
+int w_hasTextInput(lua_State *L)
 {
-	lua_pushnumber(L, (lua_Number) instance->getKeyRepeatDelay() * 0.001);
-	lua_pushnumber(L, (lua_Number) instance->getKeyRepeatInterval() * 0.001);
-	return 2;
+	luax_pushboolean(L, instance->hasTextInput());
+	return 1;
 }
 
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "isDown", w_isDown },
 	{ "setKeyRepeat", w_setKeyRepeat },
-	{ "getKeyRepeat", w_getKeyRepeat },
+	{ "hasKeyRepeat", w_hasKeyRepeat },
+	{ "setTextInput", w_setTextInput },
+	{ "hasTextInput", w_hasTextInput },
+	{ "isDown", w_isDown },
 	{ 0, 0 }
 };
 
@@ -85,14 +89,7 @@ extern "C" int luaopen_love_keyboard(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new love::keyboard::sdl::Keyboard();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new love::keyboard::sdl::Keyboard();)
 	}
 	else
 		instance->retain();

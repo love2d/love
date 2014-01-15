@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -55,11 +55,11 @@ void ChainShape::setNextVertex(float x, float y)
 	c->SetNextVertex(Physics::scaleDown(v));
 }
 
-void ChainShape::setPrevVertex(float x, float y)
+void ChainShape::setPreviousVertex(float x, float y)
 {
 	if (loop)
 	{
-		throw love::Exception("Physics error: Can't call setPrevVertex on a loop ChainShape");
+		throw love::Exception("Physics error: Can't call setPreviousVertex on a loop ChainShape");
 		return;
 	}
 	b2Vec2 v(x, y);
@@ -70,16 +70,19 @@ void ChainShape::setPrevVertex(float x, float y)
 EdgeShape *ChainShape::getChildEdge(int index) const
 {
 	b2ChainShape *c = (b2ChainShape *)shape;
-	b2EdgeShape e;
-	c->GetChildEdge(&e, index);
-	EdgeShape *edge = (EdgeShape *)Memoizer::find(&e);
-	if (!edge)
-		return new EdgeShape(&e);
-	else
+	b2EdgeShape *e = new b2EdgeShape;
+
+	try
 	{
-		edge->retain();
-		return edge;
+		c->GetChildEdge(e, index);
 	}
+	catch (love::Exception &ex)
+	{
+		delete e;
+		throw;
+	}
+
+	return new EdgeShape(e, true);
 }
 
 int ChainShape::getChildCount() const

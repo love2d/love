@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -75,7 +75,9 @@ int w_Shape_rayCast(lua_State *L)
 {
 	Shape *t = luax_checkshape(L, 1);
 	lua_remove(L, 1);
-	ASSERT_GUARD(return t->rayCast(L);)
+	int ret = 0;
+	EXCEPT_GUARD(ret = t->rayCast(L);)
+	return ret;
 }
 
 int w_Shape_computeAABB(lua_State *L)

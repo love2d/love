@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,6 +59,19 @@ private:
 	Mutex *mutex;
 };
 
+class EmptyLock
+{
+public:
+	EmptyLock();
+	~EmptyLock();
+
+	void setLock(Mutex *m);
+	void setLock(Mutex &m);
+
+private:
+	Mutex *mutex;
+};
+
 class Threadable
 {
 public:
@@ -69,7 +82,7 @@ public:
 
 	bool start();
 	void wait();
-	void kill();
+	bool isRunning() const;
 
 protected:
 	Thread *owner;

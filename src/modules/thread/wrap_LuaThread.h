@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2012 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,7 @@ LuaThread *luax_checkthread(lua_State *L, int idx);
 int w_Thread_start(lua_State *L);
 int w_Thread_wait(lua_State *L);
 int w_Thread_getError(lua_State *L);
+int w_Thread_isRunning(lua_State *L);
 
 extern "C" int luaopen_thread(lua_State *L);
 

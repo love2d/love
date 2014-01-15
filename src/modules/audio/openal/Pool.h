@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@
 #include "thread/threads.h"
 
 // OpenAL
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
 #else
@@ -71,7 +71,7 @@ public:
 
 	void update();
 
-	int getNumSources() const;
+	int getSourceCount() const;
 	int getMaxSources() const;
 
 	bool play(Source *source, ALuint &out);

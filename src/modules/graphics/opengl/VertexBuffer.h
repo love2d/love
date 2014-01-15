@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -48,6 +48,18 @@ class VertexBuffer
 {
 public:
 
+	// Different guarantees for VertexBuffer data storage.
+	enum MemoryBacking
+	{
+		// The VertexBuffer is will have a valid copy of its data in main memory
+		// at all times.
+		BACKING_FULL,
+
+		// The VertexBuffer will have a valid copy of its data in main memory
+		// when it needs to be reloaded and when it's mapped.
+		BACKING_PARTIAL
+	};
+
 	/**
 	 * Create a new VertexBuffer (either a plain vertex array, or a VBO),
 	 * based on what's supported on the system.
@@ -58,9 +70,10 @@ public:
 	 * @param size The size of the VertexBuffer (in bytes).
 	 * @param target GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER.
 	 * @param usage GL_DYNAMIC_DRAW, etc.
+	 * @param backing Determines what guarantees are placed on the data.
 	 * @return A new VertexBuffer.
 	 */
-	static VertexBuffer *Create(size_t size, GLenum target, GLenum usage);
+	static VertexBuffer *Create(size_t size, GLenum target, GLenum usage, MemoryBacking backing = BACKING_PARTIAL);
 
 	/**
 	 * Constructor.
@@ -68,8 +81,9 @@ public:
 	 * @param size The size of the VertexBuffer in bytes.
 	 * @param target The target VertexBuffer object, e.g. GL_ARRAY_BUFFER.
 	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
+	 * @param backing Determines what guarantees are placed on the data.
 	 */
-	VertexBuffer(size_t size, GLenum target, GLenum usage);
+	VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacking backing = BACKING_PARTIAL);
 
 	/**
 	 * Destructor. Does nothing, but must be declared virtual.
@@ -106,6 +120,21 @@ public:
 		return usage;
 	}
 
+	bool isBound() const
+	{
+		return is_bound;
+	}
+
+	bool isMapped() const
+	{
+		return is_mapped;
+	}
+
+	MemoryBacking getMemoryBacking() const
+	{
+		return backing;
+	}
+
 	/**
 	 * Map the VertexBuffer to client memory.
 	 *
@@ -127,10 +156,8 @@ public:
 	virtual void unmap() = 0;
 
 	/**
-	 * Bind the VertexBuffer to the specified target.
-	 * (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER).
-	 *
-	 * @param target GL_ARRAY_BUFFER or GL_ELEMENT_ARRAY_BUFFER.
+	 * Bind the VertexBuffer to its specified target.
+	 * (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, etc).
 	 */
 	virtual void bind() = 0;
 
@@ -222,6 +249,14 @@ public:
 		void *elems;
 	};
 
+protected:
+
+	// Whether the buffer is currently bound.
+	bool is_bound;
+
+	// Whether the buffer is currently mapped to main memory.
+	bool is_mapped;
+
 private:
 
 	// The size of the buffer, in bytes.
@@ -232,6 +267,9 @@ private:
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	GLenum usage;
+
+	//
+	MemoryBacking backing;
 };
 
 /**
@@ -245,9 +283,9 @@ class VertexArray : public VertexBuffer
 public:
 
 	/**
-	 * @copydoc VertexBuffer(int, GLenum, GLenum)
+	 * @copydoc VertexBuffer(int, GLenum, GLenum, Backing)
 	 */
-	VertexArray(size_t size, GLenum target, GLenum usage);
+	VertexArray(size_t size, GLenum target, GLenum usage, MemoryBacking backing);
 
 	/**
 	 * Frees the data we've allocated.
@@ -273,19 +311,19 @@ private:
  * This will be used on all systems that support it. It's in general
  * faster than vertex arrays, but especially in use-cases where there
  * is no need to update the data every frame.
- */
+ **/
 class VBO : public VertexBuffer, public Volatile
 {
 public:
 
 	/**
-	 * @copydoc VertexBuffer(size_t, GLenum, GLenum)
-	 */
-	VBO(size_t size, GLenum target, GLenum usage);
+	 * @copydoc VertexBuffer(size_t, GLenum, GLenum, Backing)
+	 **/
+	VBO(size_t size, GLenum target, GLenum usage, MemoryBacking backing);
 
 	/**
 	 * Deletes the VBOs from OpenGL.
-	 */
+	 **/
 	virtual ~VBO();
 
 	// Implements VertexBuffer.
@@ -323,10 +361,6 @@ private:
 	// A pointer to mapped memory. Will be inialized on the first
 	// call to map().
 	void *memory_map;
-
-	// Set if the vbo currently operates on main instead of gpu
-	// memory.
-	bool is_mapped;
 
 	// Set if the buffer was modified while operating on gpu memory
 	// and needs to be synchronized.

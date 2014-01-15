@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,10 +33,12 @@ namespace thread
 class Thread
 {
 public:
+
 	virtual ~Thread() {}
 	virtual bool start() = 0;
 	virtual void wait() = 0;
-	virtual void kill() = 0;
+	virtual bool isRunning() = 0;
+
 }; // ThreadObject
 
 } // thread

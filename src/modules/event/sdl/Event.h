@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,9 @@
 // SDL
 #include <SDL.h>
 
+// STL
+#include <map>
+
 namespace love
 {
 namespace event
@@ -44,6 +47,7 @@ public:
 	const char *getName() const;
 
 	Event();
+	virtual ~Event();
 
 	/**
 	 * Pumps the event queue. This function gathers all the pending input information
@@ -66,10 +70,13 @@ public:
 
 private:
 
-	Message *convert(SDL_Event &e);
+	Message *convert(const SDL_Event &e) const;
+	Message *convertJoystickEvent(const SDL_Event &e) const;
+	Message *convertWindowEvent(const SDL_Event &e) const;
 
-	static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
-	static EnumMap<love::keyboard::Keyboard::Key, SDLKey, love::keyboard::Keyboard::KEY_MAX_ENUM> keys;
+	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
+	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;
+
 	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
 	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
 

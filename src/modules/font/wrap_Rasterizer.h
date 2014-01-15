@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,14 @@ namespace font
 {
 
 Rasterizer *luax_checkrasterizer(lua_State *L, int idx);
+int w_Rasterizer_getHeight(lua_State *L);
+int w_Rasterizer_getAdvance(lua_State *L);
+int w_Rasterizer_getAscent(lua_State *L);
+int w_Rasterizer_getDescent(lua_State *L);
+int w_Rasterizer_getLineHeight(lua_State *L);
+int w_Rasterizer_getGlyphData(lua_State *L);
+int w_Rasterizer_getGlyphCount(lua_State *L);
+int w_Rasterizer_hasGlyphs(lua_State *L);
 extern "C" int luaopen_rasterizer(lua_State *L);
 
 } // font

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,15 +25,13 @@
 #include "font/Font.h"
 
 // FreeType2
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <freetype/ft2build.h>
 #else
 #include <ft2build.h>
 #endif
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
-#include <freetype/ftoutln.h>
-#include <freetype/fttrigon.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
 
 namespace love
 {
@@ -56,8 +54,9 @@ public:
 	// Implements Font
 	Rasterizer *newRasterizer(Data *data, int size);
 	Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &text);
-	Rasterizer *newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs);
-	GlyphData *newGlyphData(Rasterizer *r, unsigned int glyph);
+	Rasterizer *newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs);
+	GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
+	GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
 
 	// Implement Module
 	const char *getName() const;

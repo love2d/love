@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,8 @@
 // LOVE
 #include "common/Object.h"
 #include "font/Rasterizer.h"
-#include "graphics/Image.h"
+#include "graphics/Texture.h"
+#include "graphics/Volatile.h"
 
 #include "OpenGL.h"
 
@@ -44,12 +45,7 @@ class Font : public Object, public Volatile
 {
 public:
 
-	/**
-	 * Default constructor.
-	 *
-	 * @param data The font data to construct from.
-	 **/
-	Font(love::font::Rasterizer *r, const Image::Filter &filter = Image::getDefaultFilter());
+	Font(love::font::Rasterizer *r, const Texture::Filter &filter = Texture::getDefaultFilter());
 
 	virtual ~Font();
 
@@ -59,7 +55,7 @@ public:
 	 * @param text A string.
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
-	 * @param letter_spacing Additional spacing between letters.
+	 * @param extra_spacing Additional spacing added to spaces (" ").
 	 * @param angle The amount of rotation.
 	 * @param sx Scale along the x axis.
 	 * @param sy Scale along the y axis.
@@ -68,7 +64,7 @@ public:
 	 * @param kx Shear along the x axis.
 	 * @param ky Shear along the y axis.
 	 **/
-	void print(const std::string &text, float x, float y, float letter_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+	void print(const std::string &text, float x, float y, float extra_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 	/**
 	 * Returns the height of the font.
@@ -81,14 +77,13 @@ public:
 	 * @param str A string of text.
 	 **/
 	int getWidth(const std::string &str);
-	int getWidth(const char *str);
 
 	/**
 	 * Returns the width of the passed character.
 	 *
 	 * @param character A character.
 	 **/
-	int getWidth(unsigned int character);
+	int getWidth(char character);
 
 	/**
 	 * Returns the maximal width of a wrapped string
@@ -97,9 +92,11 @@ public:
 	 * @param text The input text
 	 * @param wrap The number of pixels to wrap at
 	 * @param max_width Optional output of the maximum width
+	 * @param wrapped_lines Optional output indicating which lines were
+	 *        auto-wrapped. Indices correspond to indices of the returned value.
 	 * Returns a vector with the lines.
 	 **/
-	std::vector<std::string> getWrap(const std::string &text, float wrap, int *max_width = 0);
+	std::vector<std::string> getWrap(const std::string &text, float wrap, int *max_width = 0, std::vector<bool> *wrapped_lines = 0);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
@@ -126,8 +123,8 @@ public:
 	 **/
 	float getSpacing() const;
 
-	void setFilter(const Image::Filter &f);
-	const Image::Filter &getFilter();
+	void setFilter(const Texture::Filter &f);
+	const Texture::Filter &getFilter();
 
 	// Implements Volatile.
 	bool loadVolatile();
@@ -138,6 +135,9 @@ public:
 	int getDescent() const;
 	float getBaseline() const;
 
+	bool hasGlyph(uint32 glyph) const;
+	bool hasGlyphs(const std::string &text) const;
+
 private:
 
 	enum FontType
@@ -146,25 +146,26 @@ private:
 		FONT_IMAGE,
 		FONT_UNKNOWN
 	};
-	
-	// thin wrapper for an array of 4 vertices
-	struct GlyphQuad
+
+	struct GlyphVertex
 	{
-		vertex vertices[4];
+		float x, y;
+		float s, t;
 	};
 
 	struct Glyph
 	{
 		GLuint texture;
 		int spacing;
-		GlyphQuad quad;
+		GlyphVertex vertices[4];
 	};
 
 	// used to determine when to change textures in the vertex array generated when printing text
 	struct GlyphArrayDrawInfo
 	{
 		GLuint texture;
-		int startquad, numquads;
+		int startvertex;
+		int vertexcount;
 
 		// used when sorting with std::sort
 		// sorts by texture first (binding textures is expensive) and relative position in memory second
@@ -173,9 +174,14 @@ private:
 			if (texture != other.texture)
 				return texture < other.texture;
 			else
-				return startquad < other.startquad;
+				return startvertex < other.startvertex;
 		};
 	};
+
+	bool initializeTexture(GLenum format);
+	void createTexture();
+	Glyph *addGlyph(uint32 glyph);
+	Glyph *findGlyph(uint32 glyph);
 
 	love::font::Rasterizer *rasterizer;
 
@@ -183,14 +189,18 @@ private:
 	float lineHeight;
 	float mSpacing; // modifies the spacing by multiplying it with this value
 
-	int texture_size_index;
-	int texture_width;
-	int texture_height;
+	int textureSizeIndex;
+	int textureWidth;
+	int textureHeight;
 
-	std::vector<GLuint> textures; // vector of packed textures
-	std::map<unsigned int, Glyph *> glyphs; // maps glyphs to quad information
+	// vector of packed textures
+	std::vector<GLuint> textures;
+
+	// maps glyphs to glyph texture information
+	std::map<uint32, Glyph *> glyphs;
+
 	FontType type;
-	Image::Filter filter;
+	Texture::Filter filter;
 
 	static const int NUM_TEXTURE_SIZES = 7;
 	static const int TEXTURE_WIDTHS[NUM_TEXTURE_SIZES];
@@ -198,13 +208,9 @@ private:
 
 	static const int TEXTURE_PADDING = 1;
 
-	int texture_x, texture_y;
+	int textureX, textureY;
 	int rowHeight;
 
-	bool initializeTexture(GLint format);
-	void createTexture();
-	Glyph *addGlyph(unsigned int glyph);
-	Glyph *findGlyph(unsigned int glyph);
 }; // Font
 
 } // opengl

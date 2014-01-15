@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,10 +38,10 @@ SoundData::SoundData(Decoder *decoder)
 	: data(0)
 	, size(0)
 	, sampleRate(Decoder::DEFAULT_SAMPLE_RATE)
-	, bits(0)
+	, bitDepth(0)
 	, channels(0)
 {
-	size_t bufferSize = 524288;
+	size_t bufferSize = 524288; // 0x80000
 	int decoded = decoder->decode();
 
 	while (decoded > 0)
@@ -79,47 +79,72 @@ SoundData::SoundData(Decoder *decoder)
 		data = (char *) realloc(data, size);
 
 	channels = decoder->getChannels();
-	bits = decoder->getBits();
+	bitDepth = decoder->getBitDepth();
 	sampleRate = decoder->getSampleRate();
 }
 
-SoundData::SoundData(int samples, int sampleRate, int bits, int channels)
+SoundData::SoundData(int samples, int sampleRate, int bitDepth, int channels)
 	: data(0)
-	, size(samples*(bits/8)*channels)
-	, sampleRate(sampleRate)
-	, bits(bits)
-	, channels(channels)
+	, size(0)
+	, sampleRate(0)
+	, bitDepth(0)
+	, channels(0)
 {
-	double realsize = samples;
-	realsize *= (bits/8)*channels;
-	if (realsize > INT_MAX)
-		throw love::Exception("Data is too big!");
-	data = (char *)malloc(size);
-	if (!data)
-		throw love::Exception("Not enough memory.");
+	load(samples, sampleRate, bitDepth, channels);
 }
 
-SoundData::SoundData(void *d, int samples, int sampleRate, int bits, int channels)
+SoundData::SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels)
 	: data(0)
-	, size(samples*(bits/8)*channels)
-	, sampleRate(sampleRate)
-	, bits(bits)
-	, channels(channels)
+	, size(0)
+	, sampleRate(0)
+	, bitDepth(0)
+	, channels(0)
 {
-	double realsize = samples;
-	realsize *= (bits/8)*channels;
-	if (realsize > INT_MAX)
-		throw love::Exception("Data is too big!");
-	data = (char *)malloc(size);
-	if (!data)
-		throw love::Exception("Not enough memory.");
-	memcpy(data, d, size);
+	load(samples, sampleRate, bitDepth, channels, d);
 }
 
 SoundData::~SoundData()
 {
 	if (data != 0)
 		free(data);
+}
+
+void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, void *newData)
+{
+	if (samples <= 0)
+		throw love::Exception("Invalid sample count: %d", samples);
+
+	if (sampleRate <= 0)
+		throw love::Exception("Invalid sample rate: %d", sampleRate);
+
+	if (bitDepth <= 0)
+		throw love::Exception("Invalid bit depth: %d", bitDepth);
+
+	if (channels <= 0)
+		throw love::Exception("Invalid channel count: %d", channels);
+
+	if (data != 0)
+	{
+		free(data);
+		data = 0;
+	}
+
+	size = samples * (bitDepth / 8) * channels;
+	this->sampleRate = sampleRate;
+	this->bitDepth = bitDepth;
+	this->channels = channels;
+
+	double realsize = samples;
+	realsize *= (bitDepth / 8) * channels;
+	if (realsize > INT_MAX)
+		throw love::Exception("Data is too big!");
+
+	data = (char *)malloc(size);
+	if (!data)
+		throw love::Exception("Not enough memory.");
+
+	if (newData)
+		memcpy(data, newData, size);
 }
 
 void *SoundData::getData() const
@@ -137,9 +162,9 @@ int SoundData::getChannels() const
 	return channels;
 }
 
-int SoundData::getBits() const
+int SoundData::getBitDepth() const
 {
-	return bits;
+	return bitDepth;
 }
 
 int SoundData::getSampleRate() const
@@ -147,18 +172,23 @@ int SoundData::getSampleRate() const
 	return sampleRate;
 }
 
-int SoundData::getDuration() const
+int SoundData::getSampleCount() const
 {
-	return size/(channels*sampleRate*bits/8);
+	return (size/channels)/(bitDepth/8);
+}
+
+float SoundData::getDuration() const
+{
+	return float(size) / (channels*sampleRate*bitDepth/8);
 }
 
 void SoundData::setSample(int i, float sample)
 {
 	// Check range.
-	if (i < 0 || i >= size/(bits/8))
-		return;
+	if (i < 0 || i >= size/(bitDepth/8))
+		throw love::Exception("Attempt to set out-of-range sample!");
 
-	if (bits == 16)
+	if (bitDepth == 16)
 	{
 		short *s = (short *)data;
 		s[i] = (short)(sample*(float)SHRT_MAX);
@@ -174,10 +204,10 @@ void SoundData::setSample(int i, float sample)
 float SoundData::getSample(int i) const
 {
 	// Check range.
-	if (i < 0 || i >= size/(bits/8))
-		return 0;
+	if (i < 0 || i >= size/(bitDepth/8))
+		throw love::Exception("Attempt to get out-of-range sample!");
 
-	if (bits == 16)
+	if (bitDepth == 16)
 	{
 		short *s = (short *)data;
 		return (float)s[i]/(float)SHRT_MAX;

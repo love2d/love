@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,13 @@ Data *luax_checkdata(lua_State *L, int idx)
 	return luax_checktype<Data>(L, idx, "Data", DATA_T);
 }
 
+int w_Data_getString(lua_State *L)
+{
+	Data *t = luax_checkdata(L, 1);
+	lua_pushlstring(L, (const char *) t->getData(), (size_t) t->getSize());
+	return 1;
+}
+
 int w_Data_getPointer(lua_State *L)
 {
 	Data *t = luax_checkdata(L, 1);
@@ -44,7 +51,8 @@ int w_Data_getSize(lua_State *L)
 
 const luaL_Reg w_Data_functions[] =
 {
-//	{ "getPointer", w_Data_getPointer },
+	{ "getString", w_Data_getString },
+	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 	{ 0, 0 }
 };

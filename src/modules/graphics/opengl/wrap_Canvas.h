@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // LOVE
 #include "common/runtime.h"
 #include "Canvas.h"
+#include "wrap_Texture.h"
 
 namespace love
 {
@@ -37,13 +38,7 @@ Canvas *luax_checkcanvas(lua_State *L, int idx);
 int w_Canvas_renderTo(lua_State *L);
 int w_Canvas_getImageData(lua_State *L);
 int w_Canvas_getPixel(lua_State * L);
-int w_Canvas_setFilter(lua_State *L);
-int w_Canvas_getFilter(lua_State *L);
-int w_Canvas_setWrap(lua_State *L);
-int w_Canvas_getWrap(lua_State *L);
 int w_Canvas_clear(lua_State *L);
-int w_Canvas_getWidth(lua_State *L);
-int w_Canvas_getHeight(lua_State *L);
 int w_Canvas_getType(lua_State *L);
 extern "C" int luaopen_canvas(lua_State *L);
 

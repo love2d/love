@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -58,9 +58,9 @@ float RevoluteJoint::getJointSpeed() const
 	return joint->GetJointSpeed();
 }
 
-void RevoluteJoint::enableMotor(bool motor)
+void RevoluteJoint::setMotorEnabled(bool enable)
 {
-	return joint->EnableMotor(motor);
+	return joint->EnableMotor(enable);
 }
 
 bool RevoluteJoint::isMotorEnabled() const
@@ -93,12 +93,12 @@ float RevoluteJoint::getMaxMotorTorque() const
 	return Physics::scaleUp(Physics::scaleUp(joint->GetMaxMotorTorque()));
 }
 
-void RevoluteJoint::enableLimit(bool limit)
+void RevoluteJoint::setLimitsEnabled(bool enable)
 {
-	joint->EnableLimit(limit);
+	joint->EnableLimit(enable);
 }
 
-bool RevoluteJoint::isLimitEnabled() const
+bool RevoluteJoint::hasLimitsEnabled() const
 {
 	return joint->IsLimitEnabled();
 }

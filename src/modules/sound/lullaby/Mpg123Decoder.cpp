@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -17,8 +17,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  **/
-
-#ifndef LOVE_NOMPG123
 
 #include "Mpg123Decoder.h"
 
@@ -209,7 +207,7 @@ int Mpg123Decoder::getChannels() const
 	return channels;
 }
 
-int Mpg123Decoder::getBits() const
+int Mpg123Decoder::getBitDepth() const
 {
 	return 16;
 }
@@ -234,5 +232,3 @@ int Mpg123Decoder::feed(int bytes)
 } // lullaby
 } // sound
 } // love
-
-#endif // LOVE_NOMPG123

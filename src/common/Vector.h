@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,23 +59,32 @@ public:
 	 * Gets the length of the Vector.
 	 * @return The length of the Vector.
 	 *
-	 * This method requires sqrt() and should be used
+	 * This method requires sqrtf() and should be used
 	 * carefully.
 	 **/
 	float getLength() const;
 
 	/**
 	 * Normalizes the Vector.
+	 * @param length Desired length of the vector.
 	 * @return The old length of the Vector.
 	 **/
-	float normalize();
+	float normalize(float length = 1.0);
 
 	/**
-	 * Gets a normal to the Vector.
+	 * Gets a vector perpendicular to the Vector.
+	 * To get the true (normalized) normal, use v.getNormal(1.0f / v.getLength())
 	 * @return A normal to the Vector.
 	 **/
-
 	Vector getNormal() const;
+
+	/**
+	 * Gets a vector perpendicular to the Vector.
+	 * To get the true (normalized) normal, use v.getNormal(1.0f / v.getLength())
+	 * @param scale factor to apply.
+	 * @return A normal to the Vector.
+	 **/
+	Vector getNormal(float scale) const;
 
 	/**
 	 * Adds a Vector to this Vector.
@@ -164,13 +173,13 @@ public:
 
 	/**
 	 * Sets the x value of the Vector.
-	 * @param The x value of the Vector.
+	 * @param x The x value of the Vector.
 	 **/
 	void setX(float x);
 
 	/**
 	 * Sets the x value of the Vector.
-	 * @param The x value of the Vector.
+	 * @param y The x value of the Vector.
 	 **/
 	void setY(float y);
 
@@ -178,7 +187,7 @@ public:
 
 inline float Vector::getLength() const
 {
-	return sqrt(x*x + y*y);
+	return sqrtf(x*x + y*y);
 }
 
 inline Vector Vector::getNormal() const
@@ -186,15 +195,20 @@ inline Vector Vector::getNormal() const
 	return Vector(-y, x);
 }
 
-inline float Vector::normalize()
+inline Vector Vector::getNormal(float scale) const
+{
+	return Vector(-y * scale, x * scale);
+}
+
+inline float Vector::normalize(float length)
 {
 
-	float len = getLength();
+	float length_current = getLength();
 
-	if (len > 0)
-		(*this) /= len;
+	if (length_current > 0)
+		(*this) *= length / length_current;
 
-	return len;
+	return length_current;
 }
 
 /**

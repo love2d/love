@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,8 @@
 
 // STD
 #include <iostream>
-#include <cmath>
+#include <stack>
+#include <vector>
 
 // OpenGL
 #include "OpenGL.h"
@@ -39,13 +40,12 @@
 
 #include "Font.h"
 #include "Image.h"
-#include "Quad.h"
+#include "graphics/Quad.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
 #include "Shader.h"
-
-using love::window::WindowFlags;
+#include "Mesh.h"
 
 namespace love
 {
@@ -63,12 +63,12 @@ struct DisplayState
 	Color color;
 	Color backgroundColor;
 
-	// Blend and color modes.
+	// Blend mode.
 	Graphics::BlendMode blendMode;
-	Graphics::ColorMode colorMode;
 
 	// Line.
 	Graphics::LineStyle lineStyle;
+	Graphics::LineJoin lineJoin;
 
 	// Point.
 	float pointSize;
@@ -76,28 +76,23 @@ struct DisplayState
 
 	// Scissor.
 	bool scissor;
-	GLint scissorBox[4];
+	OpenGL::Viewport scissorBox;
 
-	// Window info.
-	std::string caption;
-	bool mouseVisible;
+	// Color mask.
+	bool colorMask[4];
 
 	// Default values.
 	DisplayState()
 	{
 		color.set(255,255,255,255);
-		backgroundColor.r = 0;
-		backgroundColor.g = 0;
-		backgroundColor.b = 0;
-		backgroundColor.a = 255;
+		backgroundColor.set(0, 0, 0, 255);
 		blendMode = Graphics::BLEND_ALPHA;
-		colorMode = Graphics::COLOR_MODULATE;
 		lineStyle = Graphics::LINE_SMOOTH;
+		lineJoin  = Graphics::LINE_JOIN_MITER;
 		pointSize = 1.0f;
 		pointStyle = Graphics::POINT_SMOOTH;
 		scissor = false;
-		caption = "";
-		mouseVisible = true;
+		colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
 	}
 
 };
@@ -112,40 +107,13 @@ public:
 	// Implements Module.
 	const char *getName() const;
 
-	/**
-	 * Checks whether a display mode is supported or not. Note
-	 * that fullscreen is assumed, because windowed modes are
-	 * generally supported regardless of size.
-	 * @param width The window width.
-	 * @param height The window height.
-	 **/
-	bool checkMode(int width, int height, bool fullscreen) const;
-
 	DisplayState saveState();
 
 	void restoreState(const DisplayState &s);
 
-	/**
-	 * Sets the current display mode.
-	 * @param width The window width.
-	 * @param height The window height.
-	 * @param flags An optional WindowFlags structure.
-	 **/
-	bool setMode(int width, int height, WindowFlags *flags);
-
-	/**
-	 * Gets the current display mode.
-	 * @param width Pointer to an integer for the window width.
-	 * @param height Pointer to an integer for the window height.
-	 * @param flags A WindowFlags structure.
-	 **/
-	void getMode(int &width, int &height, WindowFlags &flags) const;
-
-	/**
-	 * Toggles fullscreen. Note that this also needs to reload the
-	 * entire OpenGL context.
-	 **/
-	bool toggleFullscreen();
+	virtual void setViewportSize(int width, int height);
+	virtual bool setMode(int width, int height);
+	virtual void unSetMode();
 
 	/**
 	 * Resets the current color, background color,
@@ -160,52 +128,24 @@ public:
 	void clear();
 
 	/**
-	 * Flips buffers. (Rendered geometry is
-	 * presented on screen).
+	 * Flips buffers. (Rendered geometry is presented on screen).
 	 **/
 	void present();
 
 	/**
-	 * Sets the window's icon.
-	 **/
-	void setIcon(Image *image);
-
-	/**
-	 * Sets the window's caption.
-	 **/
-	void setCaption(const char *caption);
-
-	int getCaption(lua_State *L) const;
-
-	/**
-	 * Gets the width of the current display mode.
+	 * Gets the width of the current graphics viewport.
 	 **/
 	int getWidth() const;
 
 	/**
-	 * Gets the height of the current display mode.
+	 * Gets the height of the current graphics viewport.
 	 **/
 	int getHeight() const;
 
 	/**
-	 * True if some display mode is set.
+	 * True if a graphics viewport is set.
 	 **/
 	bool isCreated() const;
-
-	/**
-	 * This native Lua function gets available modes
-	 * from SDL and returns them as a table on the following format:
-	 *
-	 * {
-	 *   { width = 800, height = 600 },
-	 *   { width = 1024, height = 768 },
-	 *   ...
-	 * }
-	 *
-	 * Only fullscreen modes are returned here, as all
-	 * window sizes are supported (normally).
-	 **/
-	int getModes(lua_State *L) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded and not drawn.
@@ -223,10 +163,10 @@ public:
 	void setScissor();
 
 	/**
-	 * This native Lua function gets the current scissor box in the order of:
-	 * x, y, width, height
-	 **/
-	int getScissor(lua_State *L) const;
+	 * Gets the current scissor box.
+	 * @return Whether the scissor is enabled.
+	 */
+	bool getScissor(int &x, int &y, int &width, int &height) const;
 
 	/**
 	 * Enables the stencil buffer and set stencil function to fill it
@@ -247,28 +187,32 @@ public:
 	void discardStencil();
 
 	/**
-	 * Creates an Image object with padding and/or optimization.
+	 * Gets the maximum supported width or height of Textures on this system.
 	 **/
-	Image *newImage(love::filesystem::File *file);
-	Image *newImage(love::image::ImageData *data);
+	int getMaxTextureSize() const;
 
 	/**
-	 * Creates a Quad object.
+	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Quad *newQuad(float x, float y, float w, float h, float sw, float sh);
+	Image *newImage(love::image::ImageData *data);
+	Image *newImage(love::image::CompressedData *cdata);
+
+	Quad *newQuad(Quad::Viewport v, float sw, float sh);
 
 	/**
 	 * Creates a Font object.
 	 **/
-	Font *newFont(love::font::Rasterizer *data, const Image::Filter &filter = Image::Filter());
+	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::getDefaultFilter());
 
-	SpriteBatch *newSpriteBatch(Image *image, int size, int usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, int usage);
 
-	ParticleSystem *newParticleSystem(Image *image, int size);
+	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
 
 	Shader *newShader(const Shader::ShaderSources &sources);
+
+	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
 
 	/**
 	 * Sets the foreground color.
@@ -302,19 +246,20 @@ public:
 	Font *getFont() const;
 
 	/**
+	 * Sets the enabled color components when rendering.
+	 **/
+	void setColorMask(bool r, bool g, bool b, bool a);
+
+	/**
+	 * Gets the current color mask.
+	 * Returns an array of 4 booleans representing the mask.
+	 **/
+	const bool *getColorMask() const;
+
+	/**
 	 * Sets the current blend mode.
 	 **/
 	void setBlendMode(BlendMode mode);
-
-	/**
-	 * Sets the current color mode.
-	 **/
-	void setColorMode(ColorMode mode);
-
-	/**
-	 * Sets the current image filter.
-	 **/
-	void setDefaultImageFilter(const Image::Filter &f);
 
 	/**
 	 * Gets the current blend mode.
@@ -322,14 +267,20 @@ public:
 	BlendMode getBlendMode() const;
 
 	/**
-	 * Gets the current color mode.
+	 * Sets the default filter for images, canvases, and fonts.
 	 **/
-	ColorMode getColorMode() const;
+	void setDefaultFilter(const Texture::Filter &f);
 
 	/**
-	 * Gets the current image filter.
+	 * Gets the default filter for images, canvases, and fonts.
 	 **/
-	const Image::Filter &getDefaultImageFilter() const;
+	const Texture::Filter &getDefaultFilter() const;
+
+	/**
+	 * Default Image mipmap filter mode and sharpness values.
+	 **/
+	void setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness);
+	void getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const;
 
 	/**
 	 * Sets the line width.
@@ -344,10 +295,10 @@ public:
 	void setLineStyle(LineStyle style);
 
 	/**
-	 * Sets the type of line used to draw primitives.
-	 * A shorthand for setLineWidth and setLineStyle.
+	 * Sets the line style.
+	 * @param style LINE_ROUGH or LINE_SMOOTH.
 	 **/
-	void setLine(float width, LineStyle style);
+	void setLineJoin(LineJoin style);
 
 	/**
 	 * Gets the line width.
@@ -360,6 +311,11 @@ public:
 	LineStyle getLineStyle() const;
 
 	/**
+	 * Gets the line style.
+	 **/
+	LineJoin getLineJoin() const;
+
+	/**
 	 * Sets the size of points.
 	 **/
 	void setPointSize(float size);
@@ -369,11 +325,6 @@ public:
 	 * @param style POINT_SMOOTH or POINT_ROUGH.
 	 **/
 	void setPointStyle(PointStyle style);
-
-	/**
-	 * Shorthand for setPointSize and setPointStyle.
-	 **/
-	void setPoint(float size, PointStyle style);
 
 	/**
 	 * Gets the point size.
@@ -404,7 +355,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void print(const char *str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void print(const std::string &str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draw formatted text on screen at the specified coordinates.
@@ -414,8 +365,15 @@ public:
 	 * @param y The y-coordinate.
 	 * @param wrap The maximum width of the text area.
 	 * @param align Where to align the text.
+	 * @param angle The amount of rotation.
+	 * @param sx The scale factor along the x-axis. (1 = normal).
+	 * @param sy The scale factor along the y-axis. (1 = normal).
+	 * @param ox The origin offset along the x-axis.
+	 * @param oy The origin offset along the y-axis.
+	 * @param kx Shear along the x-axis.
+	 * @param ky Shear along the y-axis.
 	 **/
-	void printf(const char *str, float x, float y, float wrap, AlignMode align);
+	void printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draws a point at (x,y).
@@ -432,18 +390,6 @@ public:
 	void polyline(const float *coords, size_t count);
 
 	/**
-	 * Draws a triangle using the three coordinates passed.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x1 First x-coordinate.
-	 * @param y1 First y-coordinate.
-	 * @param x2 Second x-coordinate.
-	 * @param y2 Second y-coordinate.
-	 * @param x3 Third x-coordinate.
-	 * @param y3 Third y-coordinate.
-	 **/
-	void triangle(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3);
-
-	/**
 	 * Draws a rectangle.
 	 * @param x Position along x-axis for top-left corner.
 	 * @param y Position along y-axis for top-left corner.
@@ -451,20 +397,6 @@ public:
 	 * @param h The height of the rectangle.
 	 **/
 	void rectangle(DrawMode mode, float x, float y, float w, float h);
-
-	/**
-	 * Draws a quadrilateral using the four coordinates passed.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x1 First x-coordinate.
-	 * @param y1 First y-coordinate.
-	 * @param x2 Second x-coordinate.
-	 * @param y2 Second y-coordinate.
-	 * @param x3 Third x-coordinate.
-	 * @param y3 Third y-coordinate.
-	 * @param x4 Fourth x-coordinate.
-	 * @param y4 Fourth y-coordinate.
-	 **/
-	void quad(DrawMode mode, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 
 	/**
 	 * Draws a circle using the specified arguments.
@@ -490,7 +422,7 @@ public:
 
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.
-	 * @param type The type of drawing (line/filled).
+	 * @param mode The type of drawing (line/filled).
 	 * @param coords Vertex components (x1, y1, x2, y2, etc.)
 	 * @param count Coord array size
 	 **/
@@ -499,8 +431,17 @@ public:
 	/**
 	 * Creates a screenshot of the view and saves it to the default folder.
 	 * @param image The love.image module.
+	 * @param copyAlpha If the alpha channel should be copied or set to full opacity (255).
 	 **/
-	love::image::ImageData *newScreenshot(love::image::Image *image);
+	love::image::ImageData *newScreenshot(love::image::Image *image, bool copyAlpha = true);
+
+	/**
+	 * Returns a string containing system-dependent renderer information.
+	 * Returned string can vary greatly between systems! Do not rely on it for
+	 * anything!
+	 * @param infotype The type of information to return.
+	 **/
+	std::string getRendererInfo(Graphics::RendererInfo infotype) const;
 
 	void push();
 	void pop();
@@ -508,19 +449,27 @@ public:
 	void scale(float x, float y = 1.0f);
 	void translate(float x, float y);
 	void shear(float kx, float ky);
+	void origin();
 
-	bool hasFocus() const;
 private:
 
 	Font *currentFont;
 	love::window::Window *currentWindow;
 
+	std::vector<double> pixel_size_stack; // stores current size of a pixel (needed for line drawing)
 	LineStyle lineStyle;
+	LineJoin lineJoin;
 	float lineWidth;
 	GLint matrixLimit;
 	GLint userMatrices;
+	bool colorMask[4];
 
-	int getRenderHeight() const;
+	int width;
+	int height;
+	bool created;
+
+	DisplayState savedState;
+
 }; // Graphics
 
 } // opengl

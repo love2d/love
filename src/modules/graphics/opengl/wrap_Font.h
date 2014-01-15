@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,6 +43,7 @@ int w_Font_getFilter(lua_State *L);
 int w_Font_getAscent(lua_State *L);
 int w_Font_getDescent(lua_State *L);
 int w_Font_getBaseline(lua_State *L);
+int w_Font_hasGlyphs(lua_State *L);
 extern "C" int luaopen_font(lua_State *L);
 
 } // opengl

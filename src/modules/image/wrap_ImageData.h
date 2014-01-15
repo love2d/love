@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,10 +33,10 @@ namespace image
 ImageData *luax_checkimagedata(lua_State *L, int idx);
 int w_ImageData_getWidth(lua_State *L);
 int w_ImageData_getHeight(lua_State *L);
+int w_ImageData_getDimensions(lua_State *L);
 int w_ImageData_getPixel(lua_State *L);
 int w_ImageData_setPixel(lua_State *L);
 int w_ImageData_mapPixel(lua_State *L);
-int w_ImageData_getString(lua_State *L);
 int w_ImageData_paste(lua_State *L);
 int w_ImageData_encode(lua_State *L);
 extern "C" int luaopen_imagedata(lua_State *L);

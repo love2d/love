@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,23 +38,14 @@ int w_newSoundData(lua_State *L)
 	{
 		int samples = luaL_checkint(L, 1);
 		int sampleRate = luaL_optint(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
-		int bits = luaL_optint(L, 3, Decoder::DEFAULT_BITS);
+		int bitDepth = luaL_optint(L, 3, Decoder::DEFAULT_BIT_DEPTH);
 		int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
 
-		try
-		{
-			t = instance->newSoundData(samples, sampleRate, bits, channels);
-		}
-		catch(love::Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
-
+		EXCEPT_GUARD(t = instance->newSoundData(samples, sampleRate, bitDepth, channels);)
 	}
 	// Must be string or decoder.
 	else
 	{
-
 		// Convert to Decoder, if necessary.
 		if (!luax_istype(L, 1, SOUND_DECODER_T))
 		{
@@ -62,55 +53,30 @@ int w_newSoundData(lua_State *L)
 			lua_replace(L, 1);
 		}
 
-		try
-		{
-			t = instance->newSoundData(luax_checkdecoder(L, 1));
-		}
-		catch(love::Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(t = instance->newSoundData(luax_checkdecoder(L, 1));)
 	}
 
-	luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void *)t);
-
+	luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, t);
 	return 1;
 }
 
 int w_newDecoder(lua_State *L)
 {
-	// Convert to File, if necessary.
-	if (lua_isstring(L, 1))
-		luax_convobj(L, 1, "filesystem", "newFile");
+	// Convert to FileData, if necessary.
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
 
-	love::filesystem::FileData *data;
-	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
-	{
-		love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-		data = file->read();
-	}
-	else
-	{
-		data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
-		data->retain();
-	}
+	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
 
 	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
 
-	try
-	{
-		Decoder *t = instance->newDecoder(data, bufferSize);
-		data->release();
-		if (t == 0)
-			return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
-		luax_newtype(L, "Decoder", SOUND_DECODER_T, (void *)t);
-	}
-	catch(love::Exception &e)
-	{
-		data->release();
-		return luaL_error(L, e.what());
-	}
+	Decoder *t = 0;
+	EXCEPT_GUARD(t = instance->newDecoder(data, bufferSize);)
 
+	if (t == 0)
+		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
+
+	luax_pushtype(L, "Decoder", SOUND_DECODER_T, t);
 	return 1;
 }
 
@@ -133,14 +99,7 @@ extern "C" int luaopen_love_sound(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new lullaby::Sound();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new lullaby::Sound();)
 	}
 	else
 		instance->retain();

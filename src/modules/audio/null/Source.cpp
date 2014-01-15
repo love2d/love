@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@ Source::~Source()
 {
 }
 
-love::audio::Source *Source::copy()
+love::audio::Source *Source::clone()
 {
 	this->retain();
 	return this;
@@ -135,6 +135,30 @@ void Source::getDirection(float *) const
 {
 }
 
+void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
+{
+	coneInnerAngle = innerAngle;
+	coneOuterAngle = outerAngle;
+	coneOuterVolume = outerVolume;
+}
+
+void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
+{
+	innerAngle = coneInnerAngle;
+	outerAngle = coneOuterAngle;
+	outerVolume = coneOuterVolume;
+}
+
+void Source::setRelative(bool enable)
+{
+	relative = enable;
+}
+
+bool Source::isRelative() const
+{
+	return relative;
+}
+
 void Source::setLooping(bool looping)
 {
 	this->looping = looping;
@@ -198,6 +222,11 @@ void Source::setMaxDistance(float distance)
 float Source::getMaxDistance() const
 {
 	return this->maxDistance;
+}
+
+int Source::getChannels() const
+{
+	return 2;
 }
 
 } // null

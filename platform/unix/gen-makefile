@@ -1,10 +1,12 @@
 #!/bin/bash
 echo Generating src/Makefile.am ...
-cd src
-inc_current=.
+inc_current='$(srcdir)'
 inc_modules="$inc_current/modules"
 inc_libraries="$inc_current/libraries"
-echo "AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I/usr/include/AL -I/usr/include/freetype2  \$(INCLUDE_LUA) -I/usr/include/SDL \$(FILE_OFFSET) -I/usr/include/gme
+
+cat > src/Makefile.am << EOF
+AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET)
+AM_CXXFLAGS = \$(SDL_CFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
 
@@ -16,13 +18,21 @@ love_LDADD = liblove.la
 love_SOURCES = love.cpp
 endif
 
+# Compile scripts
+#scripts/%.lua.h: scripts/%.lua
+#	cd scripts; \
+#	lua auto.lua \$*
+#TODO: Figure out how to only do this on gnu make, and detect which lua
+#      executable to run
+
 # libLÖVE
 lib_LTLIBRARIES = liblove.la
-liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
-liblove_la_SOURCES = \\" > Makefile.am.tmp
-find . \( \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) \) -exec echo '{}' \\ \; >> Makefile.am.tmp
-cat Makefile.am.tmp | grep -v -f"../platform/unix/exclude" | head -c -3 > Makefile.am
-#head -c -3 Makefile.am.tmp > Makefile.am
-rm Makefile.am.tmp
+liblove_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) \$(SDL_LIBS)
+EOF
+
+platform/unix/genmodules >> src/Makefile.am
+
+printf "\n" >> src/Makefile.am
+
 cd ..
-echo src/Makefile.am is updated! \^.^
+echo "src/Makefile.am is updated! ^.^"

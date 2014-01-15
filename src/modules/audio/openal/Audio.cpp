@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -68,7 +68,8 @@ void Audio::PoolThread::setFinish()
 	finish = true;
 }
 
-Audio::Audio() : distanceModel(DISTANCE_INVERSE_CLAMPED)
+Audio::Audio()
+	: distanceModel(DISTANCE_INVERSE_CLAMPED)
 {
 	// Passing zero for default device.
 	device = alcOpenDevice(0);
@@ -143,9 +144,9 @@ love::audio::Source *Audio::newSource(love::sound::SoundData *soundData)
 	return new Source(pool, soundData);
 }
 
-int Audio::getNumSources() const
+int Audio::getSourceCount() const
 {
-	return pool->getNumSources();
+	return pool->getSourceCount();
 }
 
 int Audio::getMaxSources() const

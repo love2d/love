@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,12 +26,14 @@ namespace love
 const char REFERENCE_TABLE_NAME[] = "love-references";
 
 Reference::Reference()
-	: L(0), idx(LUA_REFNIL)
+	: L(0)
+	, idx(LUA_REFNIL)
 {
 }
 
 Reference::Reference(lua_State *L)
-	: L(0), idx(LUA_REFNIL)
+	: L(L)
+	, idx(LUA_REFNIL)
 {
 	ref(L);
 }

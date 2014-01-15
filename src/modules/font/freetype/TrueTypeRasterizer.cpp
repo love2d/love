@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,11 +34,11 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	: data(data)
 {
 	if (FT_New_Memory_Face(library,
-						  (const FT_Byte *)data->getData(),	/* first byte in memory */
-						  data->getSize(),					/* size in bytes        */
-						  0,									/* face_index           */
-						  &face))
-		throw love::Exception("TrueTypeFont Loading error: FT_New_Face failed (there is probably a problem with your font file)\n");
+	                      (const FT_Byte *)data->getData(), /* first byte in memory */
+	                      data->getSize(),                  /* size in bytes        */
+	                      0,                                /* face_index           */
+	                      &face))
+		throw love::Exception("TrueTypeFont Loading error: FT_New_Face failed (there is probably a problem with your font file)");
 
 	FT_Set_Pixel_Sizes(face, size, size);
 
@@ -63,52 +63,85 @@ int TrueTypeRasterizer::getLineHeight() const
 	return (int)(getHeight() * 1.25);
 }
 
-GlyphData *TrueTypeRasterizer::getGlyphData(unsigned int glyph) const
+GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 {
-	love::font::GlyphMetrics glyphMetrics;
+	love::font::GlyphMetrics glyphMetrics = {};
 	FT_Glyph ftglyph;
 
 	// Initialize
 	if (FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT))
-		throw love::Exception("TrueTypeFont Loading vm->error: FT_Load_Glyph failed\n");
+		throw love::Exception("TrueTypeFont Loading error: FT_Load_Glyph failed");
 
 	if (FT_Get_Glyph(face->glyph, &ftglyph))
-		throw love::Exception("TrueTypeFont Loading vm->error: FT_Get_Glyph failed\n");
+		throw love::Exception("TrueTypeFont Loading error: FT_Get_Glyph failed");
 
 	FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
+
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
 	FT_Bitmap &bitmap = bitmap_glyph->bitmap; //just to make things easier
 
 	// Get metrics
-	glyphMetrics.bearingX = face->glyph->metrics.horiBearingX >> 6;
-	glyphMetrics.bearingY = face->glyph->metrics.horiBearingY >> 6;
+	glyphMetrics.bearingX = bitmap_glyph->left;
+	glyphMetrics.bearingY = bitmap_glyph->top;
 	glyphMetrics.height = bitmap.rows;
 	glyphMetrics.width = bitmap.width;
-	glyphMetrics.advance = face->glyph->metrics.horiAdvance >> 6;
+	glyphMetrics.advance = ftglyph->advance.x >> 16;
 
 	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 
-	int size = bitmap.rows * bitmap.width;
-	unsigned char *dst = (unsigned char *) glyphData->getData();
+	const uint8 *pixels = bitmap.buffer;
+	uint8 *dest = (uint8 *) glyphData->getData();
 
-	// Note that bitmap.buffer contains only luminosity. We copy that single value to
-	// our luminosity-alpha format.
-	for (int i = 0; i < size; i++)
+	// We treat the luminance of the FreeType bitmap as alpha in the GlyphData.
+	if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
 	{
-		dst[2*i] = 255;
-		dst[2*i+1] = bitmap.buffer[i];
+		for (int y = 0; y < bitmap.rows; y++)
+		{
+			for (int x = 0; x < bitmap.width; x++)
+			{
+				// Extract the 1-bit value and convert it to uint8.
+				uint8 v = ((pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 255 : 0;
+				dest[2 * (y * bitmap.width + x) + 0] = 255;
+				dest[2 * (y * bitmap.width + x) + 1] = v;
+			}
+
+			pixels += bitmap.pitch;
+		}
+	}
+	else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
+	{
+		for (int y = 0; y < bitmap.rows; y++)
+		{
+			for (int x = 0; x < bitmap.width; x++)
+			{
+				dest[2 * (y * bitmap.width + x) + 0] = 255;
+				dest[2 * (y * bitmap.width + x) + 1] = pixels[x];
+			}
+
+			pixels += bitmap.pitch;
+		}
+	}
+	else
+	{
+		delete glyphData;
+		FT_Done_Glyph(ftglyph);
+		throw love::Exception("Unknown TrueType glyph pixel mode.");
 	}
 
-	// Having copied the data over, we can destroy the glyph
+	// Having copied the data over, we can destroy the glyph.
 	FT_Done_Glyph(ftglyph);
 
-	// Return data
 	return glyphData;
 }
 
-int TrueTypeRasterizer::getNumGlyphs() const
+int TrueTypeRasterizer::getGlyphCount() const
 {
 	return face->num_glyphs;
+}
+
+bool TrueTypeRasterizer::hasGlyph(uint32 glyph) const
+{
+	return FT_Get_Char_Index(face, glyph) != 0;
 }
 
 } // freetype

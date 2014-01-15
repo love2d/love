@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -56,6 +56,14 @@ public:
 		MODE_MAX_ENUM
 	};
 
+	enum BufferMode
+	{
+		BUFFER_NONE,
+		BUFFER_LINE,
+		BUFFER_FULL,
+		BUFFER_MAX_ENUM
+	};
+
 	/**
 	 * Used to indicate ALL data in a file.
 	 **/
@@ -80,6 +88,11 @@ public:
 	 * @return True if successful, false otherwise.
 	 **/
 	virtual bool close() = 0;
+
+	/**
+	 * Gets whether the file is open.
+	 **/
+	virtual bool isOpen() const = 0;
 
 	/**
 	 * Gets the size of the file.
@@ -124,6 +137,12 @@ public:
 	virtual bool write(const Data *data, int64 size = ALL) = 0;
 
 	/**
+	 * Flushes the currently buffered file data to disk. Only applicable in
+	 * write mode.
+	 **/
+	virtual bool flush() = 0;
+
+	/**
 	 * Checks whether we are currently at end-of-file.
 	 *
 	 * @return True if EOF, false otherwise.
@@ -146,10 +165,28 @@ public:
 	virtual bool seek(uint64 pos) = 0;
 
 	/**
+	 * Sets the buffering mode for the file. When buffering is enabled, the file
+	 * will not write to disk (or will pre-load data if in read mode) until the
+	 * buffer's capacity is reached.
+	 * In the BUFFER_LINE mode, the file will also write to disk if a newline is
+	 * written.
+	 *
+	 * @param bufmode The buffer mode.
+	 * @param size The size in bytes of the buffer.
+	 **/
+	virtual bool setBuffer(BufferMode bufmode, int64 size) = 0;
+
+	/**
+	 * @param[out] size The size in bytes of the buffer.
+	 * @return The current buffer mode.
+	 **/
+	virtual BufferMode getBuffer(int64 &size) const = 0;
+
+	/**
 	 * Gets the current mode of the File.
 	 * @return The current mode of the File; CLOSED, READ, WRITE or APPEND.
 	 **/
-	virtual Mode getMode() = 0;
+	virtual Mode getMode() const = 0;
 
 	/**
 	 * Gets the filename for this File, or empty string if none.
@@ -164,12 +201,18 @@ public:
 	virtual std::string getExtension() const = 0;
 
 	static bool getConstant(const char *in, Mode &out);
-	static bool getConstant(Mode in, const char  *&out);
+	static bool getConstant(Mode in, const char *&out);
+
+	static bool getConstant(const char *in, BufferMode &out);
+	static bool getConstant(BufferMode in, const char *&out);
 
 private:
 
 	static StringMap<Mode, MODE_MAX_ENUM>::Entry modeEntries[];
 	static StringMap<Mode, MODE_MAX_ENUM> modes;
+
+	static StringMap<BufferMode, BUFFER_MAX_ENUM>::Entry bufferModeEntries[];
+	static StringMap<BufferMode, BUFFER_MAX_ENUM> bufferModes;
 
 }; // File
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,8 +22,10 @@
 #define LOVE_MOUSE_MOUSE_H
 
 // LOVE
+#include "Cursor.h"
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "image/ImageData.h"
 
 namespace love
 {
@@ -40,14 +42,22 @@ public:
 		BUTTON_LEFT,
 		BUTTON_MIDDLE,
 		BUTTON_RIGHT,
-		BUTTON_WHEELUP,
-		BUTTON_WHEELDOWN,
 		BUTTON_X1,
 		BUTTON_X2,
+		BUTTON_WHEELUP,
+		BUTTON_WHEELDOWN,
 		BUTTON_MAX_ENUM
 	};
 
 	virtual ~Mouse() {};
+
+	virtual Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty) = 0;
+	virtual Cursor *getSystemCursor(Cursor::SystemCursor cursortype) = 0;
+
+	virtual void setCursor(Cursor *cursor) = 0;
+	virtual void setCursor() = 0;
+
+	virtual Cursor *getCursor() const = 0;
 
 	virtual int getX() const = 0;
 	virtual int getY() const = 0;
@@ -58,7 +68,7 @@ public:
 	virtual void setVisible(bool visible) = 0;
 	virtual bool isDown(Button *buttonlist) const = 0;
 	virtual bool isVisible() const = 0;
-	virtual void setGrab(bool grab) = 0;
+	virtual void setGrabbed(bool grab) = 0;
 	virtual bool isGrabbed() const = 0;
 
 	static bool getConstant(const char *in, Button &out);

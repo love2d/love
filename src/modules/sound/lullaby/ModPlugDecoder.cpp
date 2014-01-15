@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -56,7 +56,7 @@ ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSiz
 	settings.mBassRange = 0;
 	settings.mSurroundDepth = 0;
 	settings.mSurroundDelay = 0;
-	settings.mLoopCount = 0;
+	settings.mLoopCount = -1;
 
 	ModPlug_SetSettings(&settings);
 
@@ -83,8 +83,8 @@ bool ModPlugDecoder::accepts(const std::string &ext)
 		"699", "abc", "amf", "ams", "dbm", "dmf",
 		"dsm", "far", "it", "j2b", "mdl", "med",
 		"mid", "mod", "mt2", "mtm", "okt", "pat",
-		"psm", "s3m", "stm", "ult", "umx", "wav",
-		"xm", ""
+		"psm", "s3m", "stm", "ult", "umx",  "xm",
+		""
 	};
 
 	for (int i = 0; !(supported[i].empty()); i++)
@@ -137,7 +137,7 @@ int ModPlugDecoder::getChannels() const
 	return 2;
 }
 
-int ModPlugDecoder::getBits() const
+int ModPlugDecoder::getBitDepth() const
 {
 	return 16;
 }

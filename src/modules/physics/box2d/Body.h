@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -91,29 +91,31 @@ public:
 
 	/**
 	 * Gets the current position of the Body.
-	 * @returns The current position.
+	 * @param[out] x_o The x-component of the position.
+	 * @param[out] y_o The y-component of the position.
 	 **/
 	void getPosition(float &x_o, float &y_o);
 
 	/**
 	 * Gets the velocity in the current center of mass.
-	 * @returns The velocity in the current center of mass.
+	 * @param[out] x_o The x-component of the velocity.
+	 * @param[out] y_o The y-component of the velocity.
 	 **/
 	void getLinearVelocity(float &x_o, float &y_o);
 
 	/**
 	 * The current center of mass for the Body in world
 	 * coordinates.
-	 * @returns The x-component of the point.
-	 * @returns The y-component of the point.
+	 * @param[out] x_o The x-component of the center of mass.
+	 * @param[out] y_o The y-component of the center of mass.
 	 **/
 	void getWorldCenter(float &x_o, float &y_o);
 
 	/**
 	 * The current center of mass for the Body in local
 	 * coordinates.
-	 * @returns The x-component of the point.
-	 * @returns The y-component of the point.
+	 * @param[out] x_o The x-component of the center of mass.
+	 * @param[out] y_o The y-component of the center of mass.
 	 **/
 	void getLocalCenter(float &x_o, float &y_o);
 
@@ -160,32 +162,32 @@ public:
 	/**
 	 * Apply an impulse (jx, jy) with offset (0, 0).
 	 **/
-	void applyLinearImpulse(float jx, float jy);
+	void applyLinearImpulse(float jx, float jy, bool wake);
 
 	/**
 	 * Apply an impulse (jx, jy) with offset (rx, ry).
 	 **/
-	void applyLinearImpulse(float jx, float jy, float rx, float ry);
+	void applyLinearImpulse(float jx, float jy, float rx, float ry, bool wake);
 
 	/**
 	 * Apply an angular impulse to the body.
 	 **/
-	void applyAngularImpulse(float impulse);
+	void applyAngularImpulse(float impulse, bool wake);
 
 	/**
 	 * Apply torque (t).
 	 **/
-	void applyTorque(float t);
+	void applyTorque(float t, bool wake);
 
 	/**
 	 * Apply force (fx, fy) with offset (0, 0).
 	 **/
-	void applyForce(float fx, float fy);
+	void applyForce(float fx, float fy, bool wake);
 
 	/**
 	 * Apply force (fx, fy) with offset (rx, ry).
 	 **/
-	void applyForce(float fx, float fy, float rx, float ry);
+	void applyForce(float fx, float fy, float rx, float ry, bool wake);
 
 	/**
 	 * Sets the x-position of the Body.
@@ -269,8 +271,8 @@ public:
 	 * to world coordinates.
 	 * @param x The x-coordinate of the local point.
 	 * @param y The y-coordinate of the local point.
-	 * @returns The x-coordinate of the point in world coordinates.
-	 * @returns The y-coordinate of the point in world coordinates.
+	 * @param[out] x_o The x-coordinate of the point in world coordinates.
+	 * @param[out] y_o The y-coordinate of the point in world coordinates.
 	 **/
 	void getWorldPoint(float x, float y, float &x_o, float &y_o);
 
@@ -279,8 +281,8 @@ public:
 	 * to world coordinates.
 	 * @param x The x-coordinate of the local vector.
 	 * @param y The y-coordinate of the local vector.
-	 * @returns The x-coordinate of the vector in world coordinates.
-	 * @returns The y-coordinate of the vector in world coordinates.
+	 * @param[out] x_o The x-coordinate of the vector in world coordinates.
+	 * @param[out] y_o The y-coordinate of the vector in world coordinates.
 	 **/
 	void getWorldVector(float x, float y, float &x_o, float &y_o);
 
@@ -295,8 +297,8 @@ public:
 	 * to local coordinates.
 	 * @param x The x-coordinate of the world point.
 	 * @param y The y-coordinate of the world point.
-	 * @returns The x-coordinate of the point in local coordinates.
-	 * @returns The y-coordinate of the point in local coordinates.
+	 * @param[out] x_o The x-coordinate of the point in local coordinates.
+	 * @param[out] y_o The y-coordinate of the point in local coordinates.
 	 **/
 	void getLocalPoint(float x, float y, float &x_o, float &y_o);
 
@@ -305,8 +307,8 @@ public:
 	 * to local coordinates.
 	 * @param x The x-coordinate of the world vector.
 	 * @param y The y-coordinate of the world vector.
-	 * @returns The x-coordinate of the vector in local coordinates.
-	 * @returns The y-coordinate of the vector in local coordinates.
+	 * @param[out] x_o The x-coordinate of the vector in local coordinates.
+	 * @param[out] y_o The y-coordinate of the vector in local coordinates.
 	 **/
 	void getLocalVector(float x, float y, float &x_o, float &y_o);
 
@@ -314,8 +316,8 @@ public:
 	 * Gets the velocity on the Body for the given world point.
 	 * @param x The x-coordinate of the world point.
 	 * @param y The y-coordinate of the world point.
-	 * @returns The x-component of the velocity vector.
-	 * @returns The y-component of the velocity vector.
+	 * @param[out] x_o The x-component of the velocity vector.
+	 * @param[out] y_o The y-component of the velocity vector.
 	 **/
 	void getLinearVelocityFromWorldPoint(float x, float y, float &x_o, float &y_o);
 
@@ -323,8 +325,8 @@ public:
 	 * Gets the velocity on the Body for the given local point.
 	 * @param x The x-coordinate of the local point.
 	 * @param y The y-coordinate of the local point.
-	 * @returns The x-component of the velocity vector.
-	 * @returns The y-component of the velocity vector.
+	 * @param[out] x_o The x-component of the velocity vector.
+	 * @param[out] y_o The y-component of the velocity vector.
 	 **/
 	void getLinearVelocityFromLocalPoint(float x, float y, float &x_o, float &y_o);
 

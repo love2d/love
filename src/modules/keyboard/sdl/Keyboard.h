@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,9 @@
 // SDL
 #include <SDL.h>
 
+// STL
+#include <map>
+
 namespace love
 {
 namespace keyboard
@@ -39,17 +42,24 @@ class Keyboard : public love::keyboard::Keyboard
 {
 public:
 
+	Keyboard();
+
 	// Implements Module.
 	const char *getName() const;
+
+	void setKeyRepeat(bool enable);
+	bool hasKeyRepeat() const;
 	bool isDown(Key *keylist) const;
-	void setKeyRepeat(int delay, int interval) const;
-	int getKeyRepeatDelay() const;
-	int getKeyRepeatInterval() const;
+
+	void setTextInput(bool enable);
+	bool hasTextInput() const;
 
 private:
 
-	static EnumMap<Key, SDLKey, Keyboard::KEY_MAX_ENUM>::Entry keyEntries[];
-	static EnumMap<Key, SDLKey, Keyboard::KEY_MAX_ENUM> keys;
+	bool key_repeat;
+
+	static std::map<Key, SDL_Keycode> createKeyMap();
+	static std::map<Key, SDL_Keycode> keys;
 
 }; // Keyboard
 

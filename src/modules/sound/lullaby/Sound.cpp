@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,13 +20,19 @@
 
 #include "common/config.h"
 
+#include <algorithm>
+
 #include "Sound.h"
 
 #include "ModPlugDecoder.h"
-#include "Mpg123Decoder.h"
 #include "VorbisDecoder.h"
 #include "GmeDecoder.h"
+#include "WaveDecoder.h"
 //#include "FLACDecoder.h"
+
+#ifndef LOVE_NOMPG123
+#	include "Mpg123Decoder.h"
+#endif // LOVE_NOMPG123
 
 namespace love
 {
@@ -54,6 +60,7 @@ const char *Sound::getName() const
 sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSize)
 {
 	std::string ext = data->getExtension();
+	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
 	sound::Decoder *decoder = 0;
 
@@ -70,6 +77,8 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	else if (GmeDecoder::accepts(ext))
 		decoder = new GmeDecoder(data, ext, bufferSize);
 #endif // LOVE_SUPPORT_GME
+	else if (WaveDecoder::accepts(ext))
+		decoder = new WaveDecoder(data, ext, bufferSize);
 	/*else if (FLACDecoder::accepts(ext))
 		decoder = new FLACDecoder(data, ext, bufferSize);*/
 

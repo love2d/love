@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -51,6 +51,7 @@ StringMap<Joint::Type, Joint::JOINT_MAX_ENUM>::Entry Joint::typeEntries[] =
 	{"weld", Joint::JOINT_WELD},
 	{"wheel", Joint::JOINT_WHEEL},
 	{"rope", Joint::JOINT_ROPE},
+	{"motor", Joint::JOINT_MOTOR},
 };
 
 StringMap<Joint::Type, Joint::JOINT_MAX_ENUM> Joint::types(Joint::typeEntries, sizeof(Joint::typeEntries));

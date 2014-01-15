@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,51 +36,13 @@
 #include <fstream>
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-#ifdef LOVE_LEGENDARY_LIBSTDCXX_HACK
-
-#include <iostream>
-
-// Workarounds for symbols that are missing from Leopard stdlibc++.dylib.
-// http://stackoverflow.com/questions/3484043/os-x-program-runs-on-dev-machine-crashing-horribly-on-others
-_GLIBCXX_BEGIN_NAMESPACE(std)
-// From ostream_insert.h
-template ostream& __ostream_insert(ostream&, const char*, streamsize);
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-template wostream& __ostream_insert(wostream&, const wchar_t*, streamsize);
-#endif
-
-// From ostream.tcc
-template ostream& ostream::_M_insert(long);
-template ostream& ostream::_M_insert(unsigned long);
-template ostream& ostream::_M_insert(bool);
-#ifdef _GLIBCXX_USE_LONG_LONG
-template ostream& ostream::_M_insert(long long);
-template ostream& ostream::_M_insert(unsigned long long);
-#endif
-template ostream& ostream::_M_insert(double);
-template ostream& ostream::_M_insert(long double);
-template ostream& ostream::_M_insert(const void*);
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-template wostream& wostream::_M_insert(long);
-template wostream& wostream::_M_insert(unsigned long);
-template wostream& wostream::_M_insert(bool);
-#ifdef _GLIBCXX_USE_LONG_LONG
-template wostream& wostream::_M_insert(long long);
-template wostream& wostream::_M_insert(unsigned long long);
-#endif
-template wostream& wostream::_M_insert(double);
-template wostream& wostream::_M_insert(long double);
-template wostream& wostream::_M_insert(const void*);
-#endif
-
-_GLIBCXX_END_NAMESPACE
-
-#endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
-
 // Libraries.
-#include "libraries/luasocket/luasocket.h"
+#ifdef LOVE_ENABLE_LUASOCKET
+#	include "libraries/luasocket/luasocket.h"
+#endif
+#ifdef LOVE_ENABLE_ENET
+#	include "libraries/enet/lua-enet.h"
+#endif
 
 // Scripts
 #include "scripts/boot.lua.h"
@@ -90,44 +52,112 @@ _GLIBCXX_END_NAMESPACE
 // of addressing implementations directly.
 extern "C"
 {
+#if defined(LOVE_ENABLE_AUDIO)
 	extern int luaopen_love_audio(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_EVENT)
 	extern int luaopen_love_event(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_FILESYSTEM)
 	extern int luaopen_love_filesystem(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_FONT)
 	extern int luaopen_love_font(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_GRAPHICS)
 	extern int luaopen_love_graphics(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_IMAGE)
 	extern int luaopen_love_image(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_JOYSTICK)
 	extern int luaopen_love_joystick(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_KEYBOARD)
 	extern int luaopen_love_keyboard(lua_State*);
-	extern int luaopen_love_mouse(lua_State*);
-	extern int luaopen_love_physics(lua_State*);
-	extern int luaopen_love_sound(lua_State*);
-	extern int luaopen_love_timer(lua_State*);
-	extern int luaopen_love_thread(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_MATH)
 	extern int luaopen_love_math(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_MOUSE)
+	extern int luaopen_love_mouse(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_PHYSICS)
+	extern int luaopen_love_physics(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_SOUND)
+	extern int luaopen_love_sound(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_SYSTEM)
+	extern int luaopen_love_system(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_TIMER)
+	extern int luaopen_love_timer(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_THREAD)
+	extern int luaopen_love_thread(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_WINDOW)
+	extern int luaopen_love_window(lua_State*);
+#endif
 	extern int luaopen_love_boot(lua_State*);
 }
 
 static const luaL_Reg modules[] = {
+#if defined(LOVE_ENABLE_AUDIO)
 	{ "love.audio", luaopen_love_audio },
+#endif
+#if defined(LOVE_ENABLE_EVENT)
 	{ "love.event", luaopen_love_event },
+#endif
+#if defined(LOVE_ENABLE_FILESYSTEM)
 	{ "love.filesystem", luaopen_love_filesystem },
+#endif
+#if defined(LOVE_ENABLE_FONT)
 	{ "love.font", luaopen_love_font },
+#endif
+#if defined(LOVE_ENABLE_GRAPHICS)
 	{ "love.graphics", luaopen_love_graphics },
+#endif
+#if defined(LOVE_ENABLE_IMAGE)
 	{ "love.image", luaopen_love_image },
+#endif
+#if defined(LOVE_ENABLE_JOYSTICK)
 	{ "love.joystick", luaopen_love_joystick },
+#endif
+#if defined(LOVE_ENABLE_KEYBOARD)
 	{ "love.keyboard", luaopen_love_keyboard },
-	{ "love.mouse", luaopen_love_mouse },
-	{ "love.physics", luaopen_love_physics },
-	{ "love.sound", luaopen_love_sound },
-	{ "love.timer", luaopen_love_timer },
-	{ "love.thread", luaopen_love_thread },
+#endif
+#if defined(LOVE_ENABLE_MATH)
 	{ "love.math", luaopen_love_math },
+#endif
+#if defined(LOVE_ENABLE_MOUSE)
+	{ "love.mouse", luaopen_love_mouse },
+#endif
+#if defined(LOVE_ENABLE_PHYSICS)
+	{ "love.physics", luaopen_love_physics },
+#endif
+#if defined(LOVE_ENABLE_SOUND)
+	{ "love.sound", luaopen_love_sound },
+#endif
+#if defined(LOVE_ENABLE_SYSTEM)
+	{ "love.system", luaopen_love_system },
+#endif
+#if defined(LOVE_ENABLE_TIMER)
+	{ "love.timer", luaopen_love_timer },
+#endif
+#if defined(LOVE_ENABLE_THREAD)
+	{ "love.thread", luaopen_love_thread },
+#endif
+#if defined(LOVE_ENABLE_WINDOW)
+	{ "love.window", luaopen_love_window },
+#endif
 	{ "love.boot", luaopen_love_boot },
 	{ 0, 0 }
 };
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
-int w__openConsole(lua_State * L);
+int w__openConsole(lua_State *L);
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
 const char *love_version()
@@ -190,14 +220,19 @@ int luaopen_love(lua_State * L)
 		love::luax_preload(L, modules[i].func, modules[i].name);
 	}
 
+#ifdef LOVE_ENABLE_LUASOCKET
 	love::luasocket::__open(L);
+#endif
+#ifdef LOVE_ENABLE_ENET
+	love::luax_preload(L, luaopen_enet, "enet");
+#endif
 
 	return 1;
 }
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-int w__openConsole(lua_State * L)
+int w__openConsole(lua_State *L)
 {
 	static bool is_open = false;
 	if (is_open)
@@ -242,7 +277,8 @@ int w__openConsole(lua_State * L)
 int luaopen_love_boot(lua_State *L)
 {
 	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
-	lua_call(L, 0, 1);
+		lua_call(L, 0, 1);
+
 	return 1;
 }
 

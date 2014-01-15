@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_GearJoint.h"
+#include "wrap_Physics.h"
 
 namespace love
 {
@@ -39,7 +40,7 @@ int w_GearJoint_setRatio(lua_State *L)
 {
 	GearJoint *t = luax_checkgearjoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setRatio(arg1);
+	EXCEPT_GUARD(t->setRatio(arg1);)
 	return 0;
 }
 

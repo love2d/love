@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,10 +37,10 @@ int w_Decoder_getChannels(lua_State *L)
 	return 1;
 }
 
-int w_Decoder_getBits(lua_State *L)
+int w_Decoder_getBitDepth(lua_State *L)
 {
 	Decoder *t = luax_checkdecoder(L, 1);
-	lua_pushinteger(L, t->getBits());
+	lua_pushinteger(L, t->getBitDepth());
 	return 1;
 }
 
@@ -54,7 +54,7 @@ int w_Decoder_getSampleRate(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getChannels", w_Decoder_getChannels },
-	{ "getBits", w_Decoder_getBits },
+	{ "getBitDepth", w_Decoder_getBitDepth },
 	{ "getSampleRate", w_Decoder_getSampleRate },
 	{ 0, 0 }
 };

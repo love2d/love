@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,13 +46,19 @@ int w_getDelta(lua_State *L)
 
 int w_getFPS(lua_State *L)
 {
-	lua_pushnumber(L, instance->getFPS());
+	lua_pushinteger(L, instance->getFPS());
+	return 1;
+}
+
+int w_getAverageDelta(lua_State *L)
+{
+	lua_pushnumber(L, instance->getAverageDelta());
 	return 1;
 }
 
 int w_sleep(lua_State *L)
 {
-	instance->sleep((float) luaL_checknumber(L, 1));
+	instance->sleep(luaL_checknumber(L, 1));
 	return 0;
 }
 
@@ -62,21 +68,15 @@ int w_getTime(lua_State *L)
 	return 1;
 }
 
-int w_getMicroTime(lua_State *L)
-{
-	lua_pushnumber(L, instance->getMicroTime());
-	return 1;
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
 	{ "step", w_step },
 	{ "getDelta", w_getDelta },
 	{ "getFPS", w_getFPS },
+	{ "getAverageDelta", w_getAverageDelta },
 	{ "sleep", w_sleep },
 	{ "getTime", w_getTime },
-	{ "getMicroTime", w_getMicroTime },
 	{ 0, 0 }
 };
 
@@ -85,15 +85,7 @@ extern "C" int luaopen_love_timer(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new love::timer::sdl::Timer();
-
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new love::timer::sdl::Timer();)
 	}
 	else
 		instance->retain();

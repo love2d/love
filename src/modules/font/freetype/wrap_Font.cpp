@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,9 +38,13 @@ static Font *instance = 0;
 
 int w_newRasterizer(lua_State *L)
 {
-	Rasterizer *t = NULL;
-	try
-	{
+	// Convert to FileData, if necessary.
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
+
+	Rasterizer *t = 0;
+
+	EXCEPT_GUARD(
 		if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
 		{
 			love::image::ImageData *d = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
@@ -54,23 +58,31 @@ int w_newRasterizer(lua_State *L)
 			int size = luaL_checkint(L, 2);
 			t = instance->newRasterizer(d, size);
 		}
-	}
-	catch (love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	)
 
-	luax_newtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
+	luax_pushtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 	return 1;
 }
 
 int w_newGlyphData(lua_State *L)
 {
 	Rasterizer *r = luax_checkrasterizer(L, 1);
-	unsigned int g = (unsigned int)luaL_checknumber(L, 2);
+	GlyphData *t = 0;
 
-	GlyphData *t = instance->newGlyphData(r, g);
-	luax_newtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
+	// newGlyphData accepts a unicode character or a codepoint number.
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		std::string glyph = luax_checkstring(L, 2);
+
+		EXCEPT_GUARD(t = instance->newGlyphData(r, glyph);)
+	}
+	else
+	{
+		uint32 g = (uint32) luaL_checknumber(L, 2);
+		t = instance->newGlyphData(r, g);
+	}
+
+	luax_pushtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
 	return 1;
 }
 
@@ -93,14 +105,7 @@ extern "C" int luaopen_love_font(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new Font();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new Font();)
 	}
 	else
 		instance->retain();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,9 +23,11 @@
 
 // LOVE
 #include "types.h"
+#include "Object.h"
 
 // Lua
 extern "C" {
+	#define LUA_COMPAT_ALL
 	#include <lua.h>
 	#include <lualib.h>
 	#include <lauxlib.h>
@@ -40,16 +42,16 @@ class Reference;
 
 // Exposed mutex of the GC
 extern void *_gcmutex;
-extern unsigned int _gcthread;
 
 /**
  * Registries represent special tables which can be accessed with
- * luax_getregistry.
+ * luax_insistregistry and luax_getregistry.
  **/
 enum Registry
 {
 	REGISTRY_GC = 1,
 	REGISTRY_MODULES,
+	REGISTRY_TYPES
 };
 
 /**
@@ -63,11 +65,11 @@ struct Proxy
 	// Holds type information (see types.h).
 	bits flags;
 
-	// The light userdata.
+	// The light userdata (pointer to the love::Object).
 	void *data;
 
-	// True if Lua should delete on GC.
-	bool own;
+	// The number of times release() should be called on GC.
+	int retains;
 };
 
 /**
@@ -98,7 +100,7 @@ struct WrappedModule
  *
  * In any case, the top stack element is popped, regardless of its type.
  **/
-Reference *luax_refif (lua_State *L, int type);
+Reference *luax_refif(lua_State *L, int type);
 
 /**
  * Prints the current contents of the stack. Only useful for debugging.
@@ -156,7 +158,33 @@ std::string luax_checkstring(lua_State *L, int idx);
  * @param L The Lua state.
  * @param str The string to push.
  **/
-void luax_pushstring(lua_State *L, std::string str);
+void luax_pushstring(lua_State *L, const std::string &str);
+
+
+bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue);
+int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
+
+/**
+ * Convert the value at the specified index to an Lua number, and then
+ * convert to a float.
+ *
+ * @param L The Lua state.
+ * @param idx The index on the stack.
+ */
+inline float luax_tofloat(lua_State *L, int idx)
+{
+	return static_cast<float>(lua_tonumber(L, idx));
+}
+
+/**
+ * Like luax_tofloat, but checks that the value is a number.
+ *
+ * @see luax_tofloat
+ */
+inline float luax_checkfloat(lua_State *L, int idx)
+{
+	return static_cast<float>(luaL_checknumber(L, idx));
+}
 
 /**
  * Require at least 'min' number of items on the stack.
@@ -181,6 +209,22 @@ int luax_assert_argc(lua_State *L, int min, int max);
  *@param idx The index on the stack.
  **/
 int luax_assert_function(lua_State *L, int idx);
+
+/**
+ * Require that the value at idx is not nil. If it is, the function throws an
+ * error using an optional error string at idx+1.
+ * @param L The Lua state.
+ * @param idx The index on the stack.
+ **/
+int luax_assert_nilerror(lua_State *L, int idx);
+
+/**
+ * Registers all functions in the array l (see luaL_Reg) into the table at the
+ * top of the stack.
+ * Similar to Lua 5.2's luaL_setfuncs without the upvalues, and to Lua 5.1's
+ * luaL_register without the library name.
+ **/
+void luax_setfuncs(lua_State *L, const luaL_Reg *l);
 
 /**
  * Register a module in the love table. The love table will be created if it does not exist.
@@ -222,14 +266,29 @@ int luax_table_insert(lua_State *L, int tindex, int vindex, int pos = -1);
 int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
 
 /**
- * Creates a new Lua-accessible object of the given type, and put it on the stack.
+ * Pushes a Lua representation of the given object onto the stack, creating and
+ * storing the Lua representation in a weak table if it doesn't exist yet.
  * @param L The Lua state.
- * @param name The name of the type. This must match the used earlier with luax_register_type.
- * @param flags The type information.
+ * @param name The name of the type. This must match the name used with luax_register_type.
+ * @param flags The type information of the object.
  * @param data The pointer to the actual object.
- * @own Set this to true (default) if the object should be released upon garbage collection.
+ * @param own Set this to true (default) if the object should be released upon garbage collection.
  **/
-void luax_newtype(lua_State *L, const char *name, bits flags, void *data, bool own = true);
+void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own = true);
+
+/**
+ * Creates a new Lua representation of the given object *without* checking if it
+ * exists yet, and *without* storing it in a weak table.
+ * This should only be used when performance is an extreme concern and the
+ * object is not ever expected to be pushed to Lua again, as it prevents the
+ * Lua-side objects from working in all cases when used as keys in tables.
+ * @param L The Lua state.
+ * @param name The name of the type. This must match the name used with luax_register_type.
+ * @param flags The type information of the object.
+ * @param data The pointer to the actual object.
+ * @param own Set this to true (default) if the object should be released upon garbage collection.
+ **/
+void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own = true);
 
 /**
  * Checks whether the value at idx is a certain type.
@@ -305,50 +364,30 @@ int luax_insistglobal(lua_State *L, const char *k);
 int luax_insistlove(lua_State *L, const char *k);
 
 /**
- * Gets (creates if needed) the specified Registry, and puts it on top
- * of the stack.
+ * Pushes the table 'k' in the love table onto the stack. Pushes nil if the
+ * table doesn't exist.
+ * @param k The name of the table we want to get.
+ **/
+int luax_getlove(lua_State *L, const char *k);
+
+/**
+ * Gets (creates if needed) the specified Registry, and pushes it into the
+ * stack.
+ * @param L The Lua state.
+ * @param r The Registry to get.
+ **/
+int luax_insistregistry(lua_State *L, Registry r);
+
+/**
+ * Gets the specified Registry, and pushes it onto the stack. Pushes nil if the
+ * registry hasn't been created (see luax_insistregistry.)
  * @param L The Lua state.
  * @param r The Registry to get.
  **/
 int luax_getregistry(lua_State *L, Registry r);
 
-Type luax_type(lua_State *L, int idx);
-
-/**
- * Convert the value at the specified index to an Lua number, and then
- * convert to a float.
- *
- * @param L The Lua state.
- * @param idx The index on the stack.
- */
-inline float luax_tofloat(lua_State *L, int idx)
-{
-	return static_cast<float>(lua_tonumber(L, idx));
-}
-
-/**
- * Like luax_tofloat, but checks that the value is a number.
- *
- * @see luax_tofloat
- */
-inline float luax_checkfloat(lua_State *L, int idx)
-{
-	return static_cast<float>(luaL_checknumber(L, idx));
-}
-
-/**
- * Converts the value at idx to the specified type without checking that
- * this conversion is valid. If the type has been previously verified with
- * luax_istype, then this can be safely used. Otherwise, use luax_checktype.
- * @param L The Lua state.
- * @param idx The index on the stack.
- * @param name The name of the type.
- * @param type The type bit.
- **/
-template <typename T>
-T *luax_totype(lua_State *L, int idx, const char *, love::bits)
-{
-	return (T *)(((Proxy *)lua_touserdata(L, idx))->data);
+extern "C" { // Also called from luasocket
+	int luax_typerror(lua_State *L, int narg, const char *tname);
 }
 
 /**
@@ -363,12 +402,12 @@ template <typename T>
 T *luax_checktype(lua_State *L, int idx, const char *name, love::bits type)
 {
 	if (lua_isuserdata(L, idx) == 0)
-		luaL_error(L, "Incorrect parameter type: expected userdata.");
+		luax_typerror(L, idx, name);
 
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
 	if ((u->flags & type) != type)
-		luaL_error(L, "Incorrect parameter type: expected %s", name);
+		luax_typerror(L, idx, name);
 
 	return (T *)u->data;
 }
@@ -376,11 +415,11 @@ T *luax_checktype(lua_State *L, int idx, const char *name, love::bits type)
 template <typename T>
 T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 {
-	luax_getregistry(L, REGISTRY_MODULES);
+	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, k);
 
 	if (!lua_isuserdata(L, -1))
-		luaL_error(L, "Tried to get nonexisting module %s.", k);
+		luaL_error(L, "Tried to get nonexistant module %s.", k);
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
@@ -390,6 +429,64 @@ T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 	lua_pop(L, 2);
 
 	return (T *)u->data;
+}
+
+template <typename T>
+T *luax_optmodule(lua_State *L, const char *k, love::bits type)
+{
+	luax_insistregistry(L, REGISTRY_MODULES);
+	lua_getfield(L, -1, k);
+
+	if (!lua_isuserdata(L, -1))
+	{
+		lua_pop(L, 2);
+		return 0;
+	}
+
+	Proxy *u = (Proxy *)lua_touserdata(L, -1);
+
+	if ((u->flags & type) != type)
+		luaL_error(L, "Incorrect module %s", k);
+	
+	lua_pop(L, 2);
+	
+	return (T *) u->data;
+}
+
+/**
+ * Converts the value at idx to the specified type without checking that
+ * this conversion is valid. If the type has been previously verified with
+ * luax_istype, then this can be safely used. Otherwise, use luax_checktype.
+ * @param L The Lua state.
+ * @param idx The index on the stack.
+ * @param name The name of the type.
+ * @param type The type bit.
+ **/
+template <typename T>
+T *luax_totype(lua_State *L, int idx, const char * /* name */, love::bits /* type */)
+{
+	return (T *)(((Proxy *)lua_touserdata(L, idx))->data);
+}
+
+Type luax_type(lua_State *L, int idx);
+
+/**
+ * Macro for converting a LOVE exception into a Lua error.
+ * lua_error (and luaL_error) cannot be called from inside the exception handler
+ * because they use longjmp, which causes undefined behaviour when the
+ * destructor of the exception would have been called.
+ **/
+#define EXCEPT_GUARD(A) \
+{ \
+	bool should_error = false; \
+	try { A } \
+	catch (love::Exception &e) \
+	{ \
+		should_error = true; \
+		lua_pushstring(L, e.what()); \
+	} \
+	if (should_error) \
+		return luaL_error(L, "%s", lua_tostring(L, -1)); \
 }
 
 } // love

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@ public:
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
-	int getNumSources() const;
+	int getSourceCount() const;
 	int getMaxSources() const;
 	void play(love::audio::Source *source);
 	void play();

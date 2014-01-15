@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,7 @@
 #include "Rasterizer.h"
 #include "image/ImageData.h"
 #include "common/Module.h"
+#include "common/int.h"
 
 // STD
 #include <string>
@@ -41,8 +42,9 @@ public:
 
 	virtual Rasterizer *newRasterizer(Data *data, int size) = 0;
 	virtual Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &glyphs) = 0;
-	virtual Rasterizer *newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int length) = 0;
-	virtual GlyphData *newGlyphData(Rasterizer *r, unsigned int glyph) = 0;
+	virtual Rasterizer *newRasterizer(love::image::ImageData *data, uint32 *glyphs, int length) = 0;
+	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph) = 0;
+	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph) = 0;
 
 	// Implement Module
 	virtual const char *getName() const = 0;

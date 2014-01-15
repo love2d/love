@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -98,62 +98,34 @@ int Physics::newPolygonShape(lua_State *L)
 	// 3 to 8 (b2_maxPolygonVertices) vertices
 	int vcount = argc / 2;
 	if (vcount < 3)
-		luaL_error(L, "Expected a minimum of 3 vertices, got %d.", vcount);
+		return luaL_error(L, "Expected a minimum of 3 vertices, got %d.", vcount);
 	else if (vcount > b2_maxPolygonVertices)
-		luaL_error(L, "Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, vcount);
+		return luaL_error(L, "Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, vcount);
 
 	b2PolygonShape *s = new b2PolygonShape();
 
-	bool reverse = false;
-	b2Vec2 edge1;
 	b2Vec2 vecs[b2_maxPolygonVertices];
 
 	for (int i = 0; i < vcount; i++)
 	{
-		float x = (float)luaL_checknumber(L, -2);
-		float y = (float)luaL_checknumber(L, -1);
+		float x = (float)luaL_checknumber(L, 1 + i * 2);
+		float y = (float)luaL_checknumber(L, 2 + i * 2);
 		vecs[i] = Physics::scaleDown(b2Vec2(x, y));
-		lua_pop(L, 2);
-
-		if (!reverse)
-		{
-			// Detect clockwise winding.
-			if (i == 1)
-			{
-				edge1 = vecs[1] - vecs[0];
-			}
-			else if (i == vcount - 1)
-			{
-				b2Vec2 edge2 = vecs[i] - vecs[i-1];
-				// Also check the edge from the last and first point.
-				b2Vec2 edge3 = vecs[0] - vecs[i];
-				if (b2Cross(edge1, edge2) < 0.0f || b2Cross(edge2, edge3) < 0.0f)
-					reverse = true;
-			}
-			else if (i > 1)
-			{
-				b2Vec2 edge2 = vecs[i] - vecs[i-1];
-				if (b2Cross(edge1, edge2) < 0.0f)
-					reverse = true;
-				edge1 = edge2;
-			}
-		}
 	}
 
-	if (reverse)
+	try
 	{
-		for (int i = 0, j = vcount-1; i < j; ++i, --j)
-		{
-			b2Vec2 swap = vecs[i];
-			vecs[i] = vecs[j];
-			vecs[j] = swap;
-		}
+		s->Set(vecs, vcount);
+	}
+	catch (love::Exception &)
+	{
+		delete s;
+		throw;
 	}
 
-	s->Set(vecs, vcount);
 	PolygonShape *p = new PolygonShape(s);
 
-	luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void *)p);
+	luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, p);
 	return 1;
 }
 
@@ -177,16 +149,24 @@ int Physics::newChainShape(lua_State *L)
 		lua_pop(L, 2);
 	}
 
-	if (loop)
-		s->CreateLoop(vecs, vcount);
-	else
-		s->CreateChain(vecs, vcount);
+	try
+	{
+		if (loop)
+			s->CreateLoop(vecs, vcount);
+		else
+			s->CreateChain(vecs, vcount);
+	}
+	catch (love::Exception &)
+	{
+		delete[] vecs;
+		throw;
+	}
 
-	ChainShape *c = new ChainShape(s);
 	delete[] vecs;
 
-	luax_newtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, (void *)c);
+	ChainShape *c = new ChainShape(s);
 
+	luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, c);
 	return 1;
 }
 
@@ -240,6 +220,17 @@ RopeJoint *Physics::newRopeJoint(Body *body1, Body *body2, float x1, float y1, f
 	return new RopeJoint(body1, body2, x1, y1, x2, y2, maxLength, collideConnected);
 }
 
+MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2)
+{
+	return new MotorJoint(body1, body2);
+}
+
+MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2, float correctionFactor)
+{
+	return new MotorJoint(body1, body2, correctionFactor);
+}
+
+
 Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 {
 	return new Fixture(body, shape, density);
@@ -254,8 +245,8 @@ int Physics::getDistance(lua_State *L)
 	b2DistanceOutput o;
 	b2SimplexCache c;
 	c.count = 0;
-	try
-	{
+
+	EXCEPT_GUARD(
 		pA.Set(fixtureA->fixture->GetShape(), 0);
 		pB.Set(fixtureB->fixture->GetShape(), 0);
 		i.proxyA = pA;
@@ -264,11 +255,8 @@ int Physics::getDistance(lua_State *L)
 		i.transformB = fixtureB->fixture->GetBody()->GetTransform();
 		i.useRadii = true;
 		b2Distance(&o, &c, &i);
-	}
-	catch (love::Exception &e)
-	{
-		luaL_error(L, "%s", e.what());
-	}
+	)
+
 	lua_pushnumber(L, Physics::scaleUp(o.distance));
 	lua_pushnumber(L, Physics::scaleUp(o.pointA.x));
 	lua_pushnumber(L, Physics::scaleUp(o.pointA.y));
@@ -277,10 +265,10 @@ int Physics::getDistance(lua_State *L)
 	return 5;
 }
 
-void Physics::setMeter(int meter)
+void Physics::setMeter(int scale)
 {
-	if (meter < 1) throw love::Exception("Physics error: invalid meter");
-	Physics::meter = meter;
+	if (scale < 1) throw love::Exception("Physics error: invalid meter");
+	Physics::meter = scale;
 }
 
 int Physics::getMeter()

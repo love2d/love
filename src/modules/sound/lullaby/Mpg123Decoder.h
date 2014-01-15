@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,7 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_NOMPG123
 #ifndef LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
 #define LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
 
@@ -27,7 +26,7 @@
 #include "Decoder.h"
 
 // libmpg123
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <mpg123/mpg123.h>
 #else
 #include <mpg123.h>
@@ -56,7 +55,7 @@ public:
 	bool rewind();
 	bool isSeekable();
 	int getChannels() const;
-	int getBits() const;
+	int getBitDepth() const;
 
 private:
 
@@ -77,4 +76,3 @@ private:
 } // love
 
 #endif // LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
-#endif // LOVE_NOMPG123

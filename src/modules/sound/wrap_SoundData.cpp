@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,10 +39,10 @@ int w_SoundData_getChannels(lua_State *L)
 	return 1;
 }
 
-int w_SoundData_getBits(lua_State *L)
+int w_SoundData_getBitDepth(lua_State *L)
 {
 	SoundData *t = luax_checksounddata(L, 1);
-	lua_pushinteger(L, t->getBits());
+	lua_pushinteger(L, t->getBitDepth());
 	return 1;
 }
 
@@ -53,40 +53,50 @@ int w_SoundData_getSampleRate(lua_State *L)
 	return 1;
 }
 
+int w_SoundData_getSampleCount(lua_State *L)
+{
+	SoundData *t = luax_checksounddata(L, 1);
+	lua_pushinteger(L, t->getSampleCount());
+	return 1;
+}
+
 int w_SoundData_getDuration(lua_State *L)
 {
 	SoundData *t = luax_checksounddata(L, 1);
-	lua_pushinteger(L, t->getDuration());
+	lua_pushnumber(L, t->getDuration());
 	return 1;
 }
 
 int w_SoundData_setSample(lua_State *L)
 {
 	SoundData *sd = luax_checksounddata(L, 1);
-	int i = (int)lua_tointeger(L, 2);
-	float sample = (float)lua_tonumber(L, 3);
-	sd->setSample(i, sample);
+	int i = (int) luaL_checkinteger(L, 2);
+	float sample = (float) luaL_checknumber(L, 3);
+
+	EXCEPT_GUARD(sd->setSample(i, sample);)
 	return 0;
 }
 
 int w_SoundData_getSample(lua_State *L)
 {
 	SoundData *sd = luax_checksounddata(L, 1);
-	int i = (int)lua_tointeger(L, 2);
-	lua_pushnumber(L, sd->getSample(i));
+	int i = (int) luaL_checkinteger(L, 2);
+
+	EXCEPT_GUARD(lua_pushnumber(L, sd->getSample(i));)
 	return 1;
 }
 
 static const luaL_Reg functions[] =
 {
-
 	// Data
+	{ "getString", w_Data_getString },
 	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 
 	{ "getChannels", w_SoundData_getChannels },
-	{ "getBits", w_SoundData_getBits },
+	{ "getBitDepth", w_SoundData_getBitDepth },
 	{ "getSampleRate", w_SoundData_getSampleRate },
+	{ "getSampleCount", w_SoundData_getSampleCount },
 	{ "getDuration", w_SoundData_getDuration },
 	{ "setSample", w_SoundData_setSample },
 	{ "getSample", w_SoundData_getSample },

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@
 #include "sound/Decoder.h"
 
 // OpenAL
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
 #else
@@ -47,14 +47,35 @@ namespace openal
 class Audio;
 class Pool;
 
+// Basically just a reference-counted non-streaming OpenAL buffer object.
+class StaticDataBuffer : public love::Object
+{
+public:
+
+	StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq);
+	virtual ~StaticDataBuffer();
+
+	inline ALuint getBuffer() const
+	{
+		return buffer;
+	}
+
+private:
+
+	ALuint buffer;
+
+}; // StaticDataBuffer
+
 class Source : public love::audio::Source
 {
 public:
+
 	Source(Pool *pool, love::sound::SoundData *soundData);
 	Source(Pool *pool, love::sound::Decoder *decoder);
+	Source(const Source &s);
 	virtual ~Source();
 
-	virtual love::audio::Source *copy();
+	virtual love::audio::Source *clone();
 	virtual void play();
 	virtual void stop();
 	virtual void pause();
@@ -78,6 +99,10 @@ public:
 	virtual void getVelocity(float *v) const;
 	virtual void setDirection(float *v);
 	virtual void getDirection(float *v) const;
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume);
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const;
+	virtual void setRelative(bool enable);
+	virtual bool isRelative() const;
 	void setLooping(bool looping);
 	bool isLooping() const;
 	bool isStatic() const;
@@ -91,6 +116,7 @@ public:
 	virtual float getRolloffFactor() const;
 	virtual void setMaxDistance(float distance);
 	virtual float getMaxDistance() const;
+	virtual int getChannels() const;
 
 	void playAtomic();
 	void stopAtomic();
@@ -100,7 +126,7 @@ public:
 
 private:
 
-	void reset(ALenum source);
+	void reset();
 
 	void setFloatv(float *dst, const float *src) const;
 
@@ -108,24 +134,28 @@ private:
 	 * Gets the OpenAL format identifier based on number of
 	 * channels and bits.
 	 * @param channels Either 1 (mono) or 2 (stereo).
-	 * @param bits Either 8-bit samples, or 16-bit samples.
+	 * @param bitDepth Either 8-bit samples, or 16-bit samples.
 	 * @return One of AL_FORMAT_*, or 0 if unsupported format.
 	 **/
-	ALenum getFormat(int channels, int bits) const;
+	ALenum getFormat(int channels, int bitDepth) const;
 
 	int streamAtomic(ALuint buffer, love::sound::Decoder *d);
 
 	Pool *pool;
 	ALuint source;
 	bool valid;
+
 	static const unsigned int MAX_BUFFERS = 32;
-	ALuint buffers[MAX_BUFFERS];
+	ALuint streamBuffers[MAX_BUFFERS];
+
+	StaticDataBuffer *staticBuffer;
 
 	float pitch;
 	float volume;
 	float position[3];
 	float velocity[3];
 	float direction[3];
+	bool relative;
 	bool looping;
 	bool paused;
 	float minVolume;
@@ -134,8 +164,23 @@ private:
 	float rolloffFactor;
 	float maxDistance;
 
+	struct Cone
+	{
+		int innerAngle; // degrees
+		int outerAngle; // degrees
+		float outerVolume;
+
+		Cone()
+			: innerAngle(360)
+			, outerAngle(360)
+			, outerVolume(0.0f)
+		{}
+	} cone;
+
 	float offsetSamples;
 	float offsetSeconds;
+
+	int channels;
 
 	love::sound::Decoder *decoder;
 

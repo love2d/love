@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,11 +26,11 @@ namespace love
 
 // Version stuff.
 const int VERSION_MAJOR = 0;
-const int VERSION_MINOR = 8;
+const int VERSION_MINOR = 9;
 const int VERSION_REV = 0;
-const char *VERSION = "0.8.0";
+const char *VERSION = "0.9.0";
 const char *VERSION_COMPATIBILITY[] =  { VERSION, 0 };
-const char *VERSION_CODENAME = "Rubber Piggy";
+const char *VERSION_CODENAME = "Baby Inspector";
 
 } // love
 

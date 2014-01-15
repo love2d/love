@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,9 +33,11 @@ namespace opengl
 
 Shader *luax_checkshader(lua_State *L, int idx);
 int w_Shader_getWarnings(lua_State *L);
+int w_Shader_sendInt(lua_State *L);
 int w_Shader_sendFloat(lua_State *L);
 int w_Shader_sendMatrix(lua_State *L);
-int w_Shader_sendImage(lua_State *L);
+int w_Shader_sendTexture(lua_State *L);
+int w_Shader_send(lua_State *L);
 extern "C" int luaopen_shader(lua_State *L);
 
 } // opengl

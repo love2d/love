@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -50,8 +50,8 @@ int w_FileData_getExtension(lua_State *L)
 
 static const luaL_Reg w_FileData_functions[] =
 {
-
 	// Data
+	{ "getString", w_Data_getString },
 	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 

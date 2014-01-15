@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,17 +18,38 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "common/config.h"
-#include "common/delay.h"
+#include "Timer.h"
 
-#ifdef LOVE_WINDOWS
-#	include <windows.h>
-#	include <time.h>
-#else
-#	include <sys/time.h>
+#include "common/delay.h"
+#include "common/int.h"
+
+// SDL
+#include <SDL.h>
+
+#if defined(LOVE_WINDOWS)
+#include <windows.h>
+#elif defined(LOVE_MACOSX)
+#include <mach/mach_time.h>
+#include <sys/time.h>
+#elif defined(LOVE_LINUX)
+#include <unistd.h>
+#include <time.h>
+#include <sys/time.h>
 #endif
 
-#include "Timer.h"
+namespace
+{
+#if defined(LOVE_LINUX)
+inline double getTimeOfDay()
+{
+	timeval t;
+	gettimeofday(&t, NULL);
+	return (double) t.tv_sec + (double) t.tv_usec / 1000000.0;
+}
+#endif
+}
 
 namespace love
 {
@@ -41,13 +62,17 @@ Timer::Timer()
 	: currTime(0)
 	, prevFpsUpdate(0)
 	, fps(0)
+	, averageDelta(0)
 	, fpsUpdateFrequency(1)
 	, frames(0)
 	, dt(0)
+	, timerPeriod(getTimerPeriod())
 {
-	// Init the SDL timer system.
+	// Init the SDL timer system (needed for SDL_Delay.)
 	if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
-		throw Exception(SDL_GetError());
+		throw love::Exception("%s", SDL_GetError());
+
+	prevFpsUpdate = currTime = getTime();
 }
 
 Timer::~Timer()
@@ -69,26 +94,27 @@ void Timer::step()
 	// "Current" time is previous time by now.
 	prevTime = currTime;
 
-	// Get ticks from SDL
-	currTime = SDL_GetTicks();
+	// Get time from system.
+	currTime = getTime();
 
-	// Convert to number of seconds
-	dt = (currTime - prevTime)/1000.0;
+	// Convert to number of seconds.
+	dt = currTime - prevTime;
 
-	double timeSinceLast = (currTime - prevFpsUpdate)/1000.0;
+	double timeSinceLast = currTime - prevFpsUpdate;
 	// Update FPS?
 	if (timeSinceLast > fpsUpdateFrequency)
 	{
 		fps = int((frames/timeSinceLast) + 0.5);
+		averageDelta = timeSinceLast/frames;
 		prevFpsUpdate = currTime;
 		frames = 0;
 	}
 }
 
-void Timer::sleep(double seconds)
+void Timer::sleep(double seconds) const
 {
 	if (seconds > 0)
-		delay((int)(seconds*1000));
+		delay((unsigned int)(seconds*1000));
 }
 
 double Timer::getDelta() const
@@ -101,35 +127,50 @@ int Timer::getFPS() const
 	return fps;
 }
 
-double Timer::getTime() const
+double Timer::getAverageDelta() const
 {
-	return SDL_GetTicks()/1000.0;
+	return averageDelta;
 }
 
-double Timer::getMicroTime() const
+double Timer::getTimerPeriod()
 {
-#ifdef LOVE_WINDOWS
-	static __int64 freq = 0;
+#if defined(LOVE_MACOSX)
+	mach_timebase_info_data_t info;
+	mach_timebase_info(&info);
+	return (double) info.numer / (double) info.denom / 1000000000.0;
+#elif defined(LOVE_WINDOWS)
+	LARGE_INTEGER temp;
+	if (QueryPerformanceFrequency(&temp) != 0 && temp.QuadPart != 0)
+		return 1.0 / (double) temp.QuadPart;
+#endif
+	return 0;
+}
 
-	if (!freq)
-	{
-		LARGE_INTEGER temp;
-		QueryPerformanceFrequency(&temp);
-
-		freq = (__int64) temp.QuadPart;
-	}
-
+double Timer::getTime() const
+{
+#if defined(LOVE_LINUX)
+	double mt;
+	// Check for POSIX timers and monotonic clocks. If not supported, use the gettimeofday fallback.
+#if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK) \
+&& (defined(CLOCK_MONOTONIC_RAW) || defined(CLOCK_MONOTONIC))
+	timespec t;
+#ifdef CLOCK_MONOTONIC_RAW
+	clockid_t clk_id = CLOCK_MONOTONIC_RAW;
+#else
+	clockid_t clk_id = CLOCK_MONOTONIC;
+#endif
+	if (clock_gettime(clk_id, &t) == 0)
+		mt = (double) t.tv_sec + (double) t.tv_nsec / 1000000000.0;
+	else
+#endif
+		mt = getTimeOfDay();
+	return mt;
+#elif defined(LOVE_MACOSX)
+	return (double) mach_absolute_time() * timerPeriod;
+#elif defined(LOVE_WINDOWS)
 	LARGE_INTEGER microTime;
 	QueryPerformanceCounter(&microTime);
-
-	// The 64 to 32 bit integer conversion, assuming the fraction part down
-	// to microseconds takes 20 bits, should not be a problem unless the
-	// system has an uptime of a few decades.
-	return (double) microTime.QuadPart / (double) freq;
-#else
-	timeval t;
-	gettimeofday(&t, NULL);
-	return t.tv_sec + t.tv_usec/1000000.0;
+	return (double) microTime.QuadPart * timerPeriod;
 #endif
 }
 

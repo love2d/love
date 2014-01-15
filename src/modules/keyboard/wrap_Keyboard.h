@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,7 @@
 #define LOVE_KEYBOARD_WRAP_KEYBOARD_H
 
 // LOVE
+#include "common/runtime.h"
 #include "Keyboard.h"
 
 namespace love
@@ -29,9 +30,11 @@ namespace love
 namespace keyboard
 {
 
-int w_isDown(lua_State *L);
 int w_setKeyRepeat(lua_State *L);
-int w_getKeyRepeat(lua_State *L);
+int w_hasKeyRepeat(lua_State *L);
+int w_isDown(lua_State *L);
+int w_setTextInput(lua_State *L);
+int w_hasTextInput(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State *L);
 
 } // keyboard

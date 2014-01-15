@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ public:
 	 * Creates a new Contact by copying a Box2D contact
 	 * point. It does not store the pointer, but copy the
 	 * data pointed to.
-	 * @param point Pointer to the Box2D contact.
+	 * @param contact Pointer to the Box2D contact.
 	 **/
 	Contact(b2Contact *contact);
 
@@ -135,6 +135,18 @@ public:
 	 * value.
 	 **/
 	void resetRestitution();
+
+	/**
+	 * Set the desired tangent speed.
+	 **/
+	void setTangentSpeed(float speed);
+
+	/**
+	 * Get the desired tangent speed.
+	 **/
+	float getTangentSpeed() const;
+
+	void getChildren(int &childA, int &childB);
 
 private:
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,10 @@ extern "C" {
 #ifdef LOVE_WINDOWS
 #include <windows.h>
 #endif // LOVE_WINDOWS
+
+#ifdef LOVE_MACOSX
+#include "OSX.h"
+#endif // LOVE_MACOSX
 
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 
@@ -71,48 +75,53 @@ void get_utf8_arguments(int &argc, char **&argv)
 
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
-#ifdef LOVE_LEGENDARY_LIBSTDCXX_HACK
+#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 
-#include <iostream>
+#include <vector>
 
-// Workarounds for symbols that are missing from Leopard stdlibc++.dylib.
-// http://stackoverflow.com/questions/3484043/os-x-program-runs-on-dev-machine-crashing-horribly-on-others
-_GLIBCXX_BEGIN_NAMESPACE(std)
-// From ostream_insert.h
-template ostream& __ostream_insert(ostream&, const char*, streamsize);
+static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_argv)
+{
+	std::vector<std::string> temp_argv;
+	for (int i = 0; i < argc; i++)
+	{
+		// Don't copy -psn_xxx argument from argv.
+		if (i == 0 || strncmp(argv[i], "-psn_", 5) != 0)
+			temp_argv.push_back(std::string(argv[i]));
+	}
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-template wostream& __ostream_insert(wostream&, const wchar_t*, streamsize);
-#endif
+	// Check for a drop file string.
+	std::string dropfilestr = love::osx::checkDropEvents();
+	if (!dropfilestr.empty())
+	{
+		temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
+	}
+	else
+	{
+		// If it exists, add the love file in love.app/Contents/Resources/ to argv.
+		std::string loveResourcesPath = love::osx::getLoveInResources();
+		if (!loveResourcesPath.empty())
+		{
+			// Run in pseudo-fused mode.
+			std::vector<std::string>::iterator it = temp_argv.begin();
+			it = temp_argv.insert(it + 1, loveResourcesPath);
+			temp_argv.insert(it + 1, std::string("--fused"));
+		}
+	}
 
-// From ostream.tcc
-template ostream& ostream::_M_insert(long);
-template ostream& ostream::_M_insert(unsigned long);
-template ostream& ostream::_M_insert(bool);
-#ifdef _GLIBCXX_USE_LONG_LONG
-template ostream& ostream::_M_insert(long long);
-template ostream& ostream::_M_insert(unsigned long long);
-#endif
-template ostream& ostream::_M_insert(double);
-template ostream& ostream::_M_insert(long double);
-template ostream& ostream::_M_insert(const void*);
+	// Copy temp argv vector to new argv array.
+	new_argc = (int) temp_argv.size();
+	new_argv = new char *[new_argc+1];
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-template wostream& wostream::_M_insert(long);
-template wostream& wostream::_M_insert(unsigned long);
-template wostream& wostream::_M_insert(bool);
-#ifdef _GLIBCXX_USE_LONG_LONG
-template wostream& wostream::_M_insert(long long);
-template wostream& wostream::_M_insert(unsigned long long);
-#endif
-template wostream& wostream::_M_insert(double);
-template wostream& wostream::_M_insert(long double);
-template wostream& wostream::_M_insert(const void*);
-#endif
+	for (int i = 0; i < new_argc; i++)
+	{
+		new_argv[i] = new char[temp_argv[i].length() + 1];
+		strcpy(new_argv[i], temp_argv[i].c_str());
+	}
 
-_GLIBCXX_END_NAMESPACE
+	new_argv[new_argc] = NULL;
+}
 
-#endif // LOVE_LEGENDARY_LIBSTDCXX_HACK
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
 static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 {
@@ -133,8 +142,16 @@ int main(int argc, char **argv)
 	argv = hack_argv;
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
+#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
+	int hack_argc = 0;
+	char **hack_argv = 0;
+	get_app_arguments(argc, argv, hack_argc, hack_argv);
+	argc = hack_argc;
+	argv = hack_argv;
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
+
 	// Oh, you just want the version? Okay!
-	if (argc > 1 && strcmp(argv[1],"--version") == 0)
+	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
 		printf("LOVE %s (%s)\n", love_version(), love_codename());
 		return 0;
@@ -144,9 +161,8 @@ int main(int argc, char **argv)
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 
+	// Add love to package.preload for easy requiring.
 	love_preload(L, luaopen_love, "love");
-
-	luaopen_love(L);
 
 	// Add command line arguments to global arg (like stand-alone Lua).
 	{
@@ -161,7 +177,7 @@ int main(int argc, char **argv)
 		lua_pushstring(L, "embedded boot.lua");
 		lua_rawseti(L, -2, -1);
 
-		for (int i = 1; i<argc; i++)
+		for (int i = 1; i < argc; i++)
 		{
 			lua_pushstring(L, argv[i]);
 			lua_rawseti(L, -2, i);
@@ -170,35 +186,44 @@ int main(int argc, char **argv)
 		lua_setglobal(L, "arg");
 	}
 
+	// require "love"
+	lua_getglobal(L, "require");
+	lua_pushstring(L, "love");
+	lua_call(L, 1, 1); // leave the returned table on the stack.
+
 	// Add love.__exe = true.
-	// This indicates that we're running the
-	// standalone version of love, and not the
-	// DLL version.
+	// This indicates that we're running the standalone version of love, and not
+	// the library version.
 	{
-		lua_getglobal(L, "love");
 		lua_pushboolean(L, 1);
 		lua_setfield(L, -2, "_exe");
-		lua_pop(L, 1);
 	}
 
-	// Boot
-	luaopen_love_boot(L);
+	// Pop the love table returned by require "love".
+	lua_pop(L, 1);
+
+	// require "love.boot" (preloaded when love was required.)
+	lua_getglobal(L, "require");
+	lua_pushstring(L, "love.boot");
+	lua_call(L, 1, 1);
+
+	// Call the returned boot function.
 	lua_call(L, 0, 1);
 
 	int retval = 0;
-	if (lua_isnumber(L, 1))
-		retval = (int) lua_tonumber(L, 1);
+	if (lua_isnumber(L, -1))
+		retval = (int) lua_tonumber(L, -1);
 
 	lua_close(L);
 
-#ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
+#if defined(LOVE_LEGENDARY_UTF8_ARGV_HACK) || defined(LOVE_LEGENDARY_APP_ARGV_HACK)
 	if (hack_argv)
 	{
 		for (int i = 0; i<hack_argc; ++i)
 			delete [] hack_argv[i];
 		delete [] hack_argv;
 	}
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
+#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK || LOVE_LEGENDARY_APP_ARGV_HACK
 	return retval;
 }
 

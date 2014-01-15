@@ -23,6 +23,7 @@ glob:*.ncb
 glob:*.exe
 glob:*.bat
 glob:platform/macosx/build
+glob:platform/macosx/Build
 glob:platform/macosx/DerivedData
 glob:platform/macosx/*.xcodeproj/bill*
 glob:platform/macosx/*.xcodeproj/xcuserdata

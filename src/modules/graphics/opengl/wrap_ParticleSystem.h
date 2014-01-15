@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 
 // LOVE
 #include "common/runtime.h"
-#include "wrap_Image.h"
 #include "ParticleSystem.h"
 
 namespace love
@@ -34,41 +33,58 @@ namespace opengl
 {
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx);
-int w_ParticleSystem_setSprite(lua_State *L);
+int w_ParticleSystem_clone(lua_State *L);
+int w_ParticleSystem_setTexture(lua_State *L);
+int w_ParticleSystem_getTexture(lua_State *L);
 int w_ParticleSystem_setBufferSize(lua_State *L);
+int w_ParticleSystem_getBufferSize(lua_State *L);
+int w_ParticleSystem_setInsertMode(lua_State *L);
+int w_ParticleSystem_getInsertMode(lua_State *L);
 int w_ParticleSystem_setEmissionRate(lua_State *L);
-int w_ParticleSystem_setLifetime(lua_State *L);
-int w_ParticleSystem_setParticleLife(lua_State *L);
+int w_ParticleSystem_getEmissionRate(lua_State *L);
+int w_ParticleSystem_setEmitterLifetime(lua_State *L);
+int w_ParticleSystem_getEmitterLifetime(lua_State *L);
+int w_ParticleSystem_setParticleLifetime(lua_State *L);
+int w_ParticleSystem_getParticleLifetime(lua_State *L);
 int w_ParticleSystem_setPosition(lua_State *L);
-int w_ParticleSystem_setDirection(lua_State *L);
-int w_ParticleSystem_setSpread(lua_State *L);
-int w_ParticleSystem_setRelativeDirection(lua_State *L);
-int w_ParticleSystem_setSpeed(lua_State *L);
-int w_ParticleSystem_setGravity(lua_State *L);
-int w_ParticleSystem_setRadialAcceleration(lua_State *L);
-int w_ParticleSystem_setTangentialAcceleration(lua_State *L);
-int w_ParticleSystem_setSizes(lua_State *L);
-int w_ParticleSystem_setSizeVariation(lua_State *L);
-int w_ParticleSystem_setRotation(lua_State *L);
-int w_ParticleSystem_setSpin(lua_State *L);
-int w_ParticleSystem_setSpinVariation(lua_State *L);
-int w_ParticleSystem_setColors(lua_State *L);
-int w_ParticleSystem_setOffset(lua_State *L);
-int w_ParticleSystem_getX(lua_State *L);
-int w_ParticleSystem_getY(lua_State *L);
 int w_ParticleSystem_getPosition(lua_State *L);
+int w_ParticleSystem_setAreaSpread(lua_State *L);
+int w_ParticleSystem_getAreaSpread(lua_State *L);
+int w_ParticleSystem_setDirection(lua_State *L);
 int w_ParticleSystem_getDirection(lua_State *L);
+int w_ParticleSystem_setSpread(lua_State *L);
 int w_ParticleSystem_getSpread(lua_State *L);
-int w_ParticleSystem_getOffsetX(lua_State *L);
-int w_ParticleSystem_getOffsetY(lua_State *L);
-int w_ParticleSystem_count(lua_State *L);
+int w_ParticleSystem_setSpeed(lua_State *L);
+int w_ParticleSystem_getSpeed(lua_State *L);
+int w_ParticleSystem_setLinearAcceleration(lua_State *L);
+int w_ParticleSystem_getLinearAcceleration(lua_State *L);
+int w_ParticleSystem_setRadialAcceleration(lua_State *L);
+int w_ParticleSystem_getRadialAcceleration(lua_State *L);
+int w_ParticleSystem_setTangentialAcceleration(lua_State *L);
+int w_ParticleSystem_getTangentialAcceleration(lua_State *L);
+int w_ParticleSystem_setSizes(lua_State *L);
+int w_ParticleSystem_getSizes(lua_State *L);
+int w_ParticleSystem_setSizeVariation(lua_State *L);
+int w_ParticleSystem_getSizeVariation(lua_State *L);
+int w_ParticleSystem_setRotation(lua_State *L);
+int w_ParticleSystem_getRotation(lua_State *L);
+int w_ParticleSystem_setSpin(lua_State *L);
+int w_ParticleSystem_getSpin(lua_State *L);
+int w_ParticleSystem_setSpinVariation(lua_State *L);
+int w_ParticleSystem_getSpinVariation(lua_State *L);
+int w_ParticleSystem_setColors(lua_State *L);
+int w_ParticleSystem_getColors(lua_State *L);
+int w_ParticleSystem_setOffset(lua_State *L);
+int w_ParticleSystem_getOffset(lua_State *L);
+int w_ParticleSystem_getCount(lua_State *L);
 int w_ParticleSystem_start(lua_State *L);
 int w_ParticleSystem_stop(lua_State *L);
 int w_ParticleSystem_pause(lua_State *L);
 int w_ParticleSystem_reset(lua_State *L);
+int w_ParticleSystem_emit(lua_State *L);
 int w_ParticleSystem_isActive(lua_State *L);
-int w_ParticleSystem_isEmpty(lua_State *L);
-int w_ParticleSystem_isFull(lua_State *L);
+int w_ParticleSystem_isPaused(lua_State *L);
+int w_ParticleSystem_isStopped(lua_State *L);
 int w_ParticleSystem_update(lua_State *L);
 extern "C" int luaopen_particlesystem(lua_State *L);
 

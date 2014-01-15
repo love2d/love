@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,8 +19,8 @@
  **/
 
 #include "Source.h"
-
 #include "Pool.h"
+#include "common/math.h"
 
 // STD
 #include <iostream>
@@ -33,12 +33,25 @@ namespace audio
 namespace openal
 {
 
+StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
+{
+	alGenBuffers(1, &buffer);
+	alBufferData(buffer, format, data, size, freq);
+}
+
+StaticDataBuffer::~StaticDataBuffer()
+{
+	alDeleteBuffers(1, &buffer);
+}
+
 Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	: love::audio::Source(Source::TYPE_STATIC)
 	, pool(pool)
 	, valid(false)
+	, staticBuffer(nullptr)
 	, pitch(1.0f)
 	, volume(1.0f)
+	, relative(false)
 	, looping(false)
 	, paused(false)
 	, minVolume(0.0f)
@@ -46,16 +59,17 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
 	, maxDistance(FLT_MAX)
+	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
-	, decoder(0)
+	, channels(soundData->getChannels())
+	, decoder(nullptr)
 	, toLoop(0)
 {
-	alGenBuffers(1, buffers);
-	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBits());
-	alBufferData(buffers[0], fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate());
+	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
+	staticBuffer = new StaticDataBuffer(fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate());
 
-	static float z[3] = {0, 0, 0};
+	float z[3] = {0, 0, 0};
 
 	setFloatv(position, z);
 	setFloatv(velocity, z);
@@ -66,8 +80,10 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	: love::audio::Source(Source::TYPE_STREAM)
 	, pool(pool)
 	, valid(false)
+	, staticBuffer(nullptr)
 	, pitch(1.0f)
 	, volume(1.0f)
+	, relative(false)
 	, looping(false)
 	, paused(false)
 	, minVolume(0.0f)
@@ -75,33 +91,78 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
 	, maxDistance(FLT_MAX)
+	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
+	, channels(decoder->getChannels())
 	, decoder(decoder)
 	, toLoop(0)
 {
 	decoder->retain();
-	alGenBuffers(MAX_BUFFERS, buffers);
+	alGenBuffers(MAX_BUFFERS, streamBuffers);
 
-	static float z[3] = {0, 0, 0};
+	float z[3] = {0, 0, 0};
 
 	setFloatv(position, z);
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
 }
 
+Source::Source(const Source &s)
+	: love::audio::Source(s.type)
+	, pool(s.pool)
+	, valid(false)
+	, staticBuffer(s.staticBuffer)
+	, pitch(s.pitch)
+	, volume(s.volume)
+	, relative(s.relative)
+	, looping(s.looping)
+	, paused(false)
+	, minVolume(s.minVolume)
+	, maxVolume(s.maxVolume)
+	, referenceDistance(s.referenceDistance)
+	, rolloffFactor(s.rolloffFactor)
+	, maxDistance(s.maxDistance)
+	, cone(s.cone)
+	, offsetSamples(0)
+	, offsetSeconds(0)
+	, channels(s.channels)
+	, decoder(nullptr)
+	, toLoop(0)
+{
+	if (type == TYPE_STREAM)
+	{
+		if (s.decoder)
+			decoder = s.decoder->clone();
+
+		alGenBuffers(MAX_BUFFERS, streamBuffers);
+	}
+	else
+		staticBuffer->retain();
+
+	setFloatv(position, s.position);
+	setFloatv(velocity, s.velocity);
+	setFloatv(direction, s.direction);
+}
+
 Source::~Source()
 {
 	if (valid)
 		pool->stop(this);
-	alDeleteBuffers((type == TYPE_STATIC) ? 1 : MAX_BUFFERS, buffers);
+
+	if (type == TYPE_STREAM)
+		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
+
+	if (staticBuffer)
+		staticBuffer->release();
+
 	if (decoder)
 		decoder->release();
 }
 
-love::audio::Source *Source::copy()
+love::audio::Source *Source::clone()
 {
-	return 0;
+	return new Source(*this);
 }
 
 void Source::play()
@@ -113,9 +174,6 @@ void Source::play()
 	}
 
 	valid = pool->play(this, source);
-
-	if (valid)
-		reset(source);
 }
 
 void Source::stop()
@@ -338,13 +396,15 @@ float Source::tellAtomic(void *unit) const
 			break;
 		case Source::UNIT_SECONDS:
 		default:
-			alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
-			ALint buffer;
-			alGetSourcei(source, AL_BUFFER, &buffer);
-			int freq;
-			alGetBufferi(buffer, AL_FREQUENCY, &freq);
-			offset /= freq;
-			if (type == TYPE_STREAM) offset += offsetSeconds;
+			{
+				alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
+				ALint buffer;
+				alGetSourcei(source, AL_BUFFER, &buffer);
+				int freq;
+				alGetBufferi(buffer, AL_FREQUENCY, &freq);
+				offset /= freq;
+				if (type == TYPE_STREAM) offset += offsetSeconds;
+			}
 			break;
 		}
 		return offset;
@@ -405,6 +465,40 @@ void Source::getDirection(float *v) const
 		setFloatv(v, direction);
 }
 
+void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
+{
+	cone.innerAngle = LOVE_TODEG(innerAngle);
+	cone.outerAngle = LOVE_TODEG(outerAngle);
+	cone.outerVolume = outerVolume;
+
+	if (valid)
+	{
+		alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
+		alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
+		alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
+	}
+}
+
+void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
+{
+	innerAngle = LOVE_TORAD(cone.innerAngle);
+	outerAngle = LOVE_TORAD(cone.outerAngle);
+	outerVolume = cone.outerVolume;
+}
+
+void Source::setRelative(bool enable)
+{
+	if (valid)
+		alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
+
+	relative = enable;
+}
+
+bool Source::isRelative() const
+{
+	return relative;
+}
+
 void Source::setLooping(bool looping)
 {
 	if (valid && type == TYPE_STATIC)
@@ -422,7 +516,7 @@ void Source::playAtomic()
 {
 	if (type == TYPE_STATIC)
 	{
-		alSourcei(source, AL_BUFFER, buffers[0]);
+		alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
 	}
 	else if (type == TYPE_STREAM)
 	{
@@ -430,25 +524,20 @@ void Source::playAtomic()
 
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 		{
-			streamAtomic(buffers[i], decoder);
+			streamAtomic(streamBuffers[i], decoder);
 			++usedBuffers;
 			if (decoder->isFinished())
 				break;
 		}
 
 		if (usedBuffers > 0)
-			alSourceQueueBuffers(source, usedBuffers, buffers);
+			alSourceQueueBuffers(source, usedBuffers, streamBuffers);
 	}
 
-	// Set these properties. These may have changed while we've
-	// been without an AL source.
-	alSourcef(source, AL_PITCH, pitch);
-	alSourcef(source, AL_GAIN, volume);
-	alSourcef(source, AL_MIN_GAIN, minVolume);
-	alSourcef(source, AL_MAX_GAIN, maxVolume);
-	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
-	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
-	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
+	// This Source may now be associated with an OpenAL source that still has
+	// the properties of another love Source. Let's reset it to the settings
+	// of the new one.
+	reset();
 
 	alSourcePlay(source);
 
@@ -530,7 +619,7 @@ void Source::rewindAtomic()
 	}
 }
 
-void Source::reset(ALenum source)
+void Source::reset()
 {
 	alSourcefv(source, AL_POSITION, position);
 	alSourcefv(source, AL_VELOCITY, velocity);
@@ -542,6 +631,11 @@ void Source::reset(ALenum source)
 	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
+	alSourcei(source, AL_LOOPING, isStatic() && isLooping() ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
+	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
+	alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
 }
 
 void Source::setFloatv(float *dst, const float *src) const
@@ -551,15 +645,15 @@ void Source::setFloatv(float *dst, const float *src) const
 	dst[2] = src[2];
 }
 
-ALenum Source::getFormat(int channels, int bits) const
+ALenum Source::getFormat(int channels, int bitDepth) const
 {
-	if (channels == 1 && bits == 8)
+	if (channels == 1 && bitDepth == 8)
 		return AL_FORMAT_MONO8;
-	else if (channels == 1 && bits == 16)
+	else if (channels == 1 && bitDepth == 16)
 		return AL_FORMAT_MONO16;
-	else if (channels == 2 && bits == 8)
+	else if (channels == 2 && bitDepth == 8)
 		return AL_FORMAT_STEREO8;
-	else if (channels == 2 && bits == 16)
+	else if (channels == 2 && bitDepth == 16)
 		return AL_FORMAT_STEREO16;
 	else
 		return 0;
@@ -570,7 +664,7 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 	// Get more sound data.
 	int decoded = d->decode();
 
-	int fmt = getFormat(d->getChannels(), d->getBits());
+	int fmt = getFormat(d->getChannels(), d->getBitDepth());
 
 	if (fmt != 0)
 		alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
@@ -717,6 +811,11 @@ float Source::getMaxDistance() const
 
 	// In case the Source isn't playing.
 	return this->maxDistance;
+}
+
+int Source::getChannels() const
+{
+	return channels;
 }
 
 } // openal

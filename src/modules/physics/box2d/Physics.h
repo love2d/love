@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,6 +43,7 @@
 #include "WeldJoint.h"
 #include "WheelJoint.h"
 #include "RopeJoint.h"
+#include "MotorJoint.h"
 
 namespace love
 {
@@ -75,7 +76,7 @@ public:
 	 * Creates a new Body at the specified position.
 	 * @param world The world to create the Body in.
 	 * @param x The position along the x-axis.
-	 * @param x The position along the y-axis.
+	 * @param y The position along the y-axis.
 	 * @param type The type of body to create.
 	 **/
 	Body *newBody(World *world, float x, float y, Body::Type type);
@@ -141,14 +142,12 @@ public:
 	EdgeShape *newEdgeShape(float x1, float y1, float x2, float y2);
 
 	/**
-	 * Creates a new PolygonShape.
-	 * @param ... A variable number of vertices.
+	 * Creates a new PolygonShape from a variable number of vertices.
 	 **/
 	int newPolygonShape(lua_State *L);
 
 	/**
-	 * Creates a new ChainShape.
-	 * @param ... A variable number of vertices.
+	 * Creates a new ChainShape from a variable number of vertices.
 	 **/
 	int newChainShape(lua_State *L);
 
@@ -253,6 +252,13 @@ public:
 	RopeJoint *newRopeJoint(Body *body1, Body *body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected);
 
 	/**
+	 * Creates a new MotorJoint controlling the relative motion between body1
+	 * and body2.
+	 **/
+	MotorJoint *newMotorJoint(Body *body1, Body *body2);
+	MotorJoint *newMotorJoint(Body *body1, Body *body2, float correctionFactor);
+
+	/**
 	 * Creates a new Fixture attaching shape to body.
 	 * @param body The body to attach the Fixture to.
 	 * @param shape The shape to attach to the Fixture,
@@ -272,13 +278,13 @@ public:
 
 	/**
 	 * Sets the number of pixels in one meter.
-	 * @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+	 * @param scale The number of pixels in one meter. (1m ~= 3.3ft).
 	 **/
-	static void setMeter(int meter);
+	static void setMeter(int scale);
 
 	/**
 	 * Gets the number of pixels in one meter.
-	 * @param pixels The number of pixels in one meter. (1m ~= 3.3ft).
+	 * @return The number of pixels in one meter. (1m ~= 3.3ft).
 	 **/
 	static int getMeter();
 
@@ -326,14 +332,14 @@ public:
 
 	/**
 	 * Scales a b2AABB down according to the current meter in pixels.
-	 * @param v The unscaled input AABB.
+	 * @param aabb The unscaled input AABB.
 	 * @return The scaled AABB.
 	 **/
 	static b2AABB scaleDown(const b2AABB &aabb);
 
 	/**
 	 * Scales a b2AABB up according to the current meter in pixels.
-	 * @param v The unscaled input AABB.
+	 * @param aabb The unscaled input AABB.
 	 * @return The scaled AABB.
 	 **/
 	static b2AABB scaleUp(const b2AABB &aabb);

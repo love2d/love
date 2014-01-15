@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,7 @@ FLACDecoder::FLACDecoder(Data *data, const std::string &ext, int nbufferSize)
 	process_until_end_of_metadata();
 	process_single();
 	seek(0);
-	bufferSize = 256 * getBits() * getChannels() * 2;
+	bufferSize = 256 * getBitDepth() * getChannels() * 2;
 	delete[](char *) buffer;
 	buffer = new char[bufferSize];
 }
@@ -98,7 +98,7 @@ int FLACDecoder::getChannels() const
 	return get_channels();
 }
 
-int FLACDecoder::getBits() const
+int FLACDecoder::getBitDepth() const
 {
 	return get_bits_per_sample();
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,9 +34,9 @@ SoundData *Sound::newSoundData(Decoder *decoder)
 	return new SoundData(decoder);
 }
 
-SoundData *Sound::newSoundData(int samples, int sampleRate, int bits, int channels)
+SoundData *Sound::newSoundData(int samples, int sampleRate, int bitDepth, int channels)
 {
-	return new SoundData(samples, sampleRate, bits, channels);
+	return new SoundData(samples, sampleRate, bitDepth, channels);
 }
 
 

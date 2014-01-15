@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -52,8 +52,8 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string 
 {
 	size_t strlen = text.size();
 	size_t numglyphs = 0;
-	
-	unsigned int *glyphs = new unsigned int[strlen];
+
+	uint32 *glyphs = new uint32[strlen];
 
 	try
 	{
@@ -66,21 +66,37 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string 
 	catch (utf8::exception &e)
 	{
 		delete [] glyphs;
-		throw love::Exception("%s", e.what());
+		throw love::Exception("Decoding error: %s", e.what());
 	}
-	
+
 	Rasterizer *r = newRasterizer(data, glyphs, numglyphs);
 	delete [] glyphs;
-	
+
 	return r;
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, unsigned int *glyphs, int numglyphs)
+Rasterizer *Font::newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
 {
 	return new ImageRasterizer(data, glyphs, numglyphs);
 }
 
-GlyphData *Font::newGlyphData(Rasterizer *r, unsigned int glyph)
+GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)
+{
+	uint32 codepoint = 0;
+
+	try
+	{
+		codepoint = utf8::peek_next(text.begin(), text.end());
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("Decoding error: %s", e.what());
+	}
+
+	return r->getGlyphData(codepoint);
+}
+
+GlyphData *Font::newGlyphData(Rasterizer *r, uint32 glyph)
 {
 	return r->getGlyphData(glyph);
 }

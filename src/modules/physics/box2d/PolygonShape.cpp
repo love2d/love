@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -55,6 +55,12 @@ int PolygonShape::getPoints(lua_State *L)
 		lua_pushnumber(L, v.y);
 	}
 	return count*2;
+}
+
+bool PolygonShape::validate() const
+{
+	b2PolygonShape *p = (b2PolygonShape *)shape;
+	return p->Validate();
 }
 
 } // box2d

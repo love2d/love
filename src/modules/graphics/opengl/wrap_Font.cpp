@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,14 +44,8 @@ int w_Font_getWidth(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
 	const char *str = luaL_checkstring(L, 2);
-	try
-	{
-		lua_pushinteger(L, t->getWidth(str));
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+
+	EXCEPT_GUARD(lua_pushinteger(L, t->getWidth(str));)
 	return 1;
 }
 
@@ -61,15 +55,12 @@ int w_Font_getWrap(lua_State *L)
 	const char *str = luaL_checkstring(L, 2);
 	float wrap = (float) luaL_checknumber(L, 3);
 	int max_width = 0, numlines = 0;
-	try
-	{
+
+	EXCEPT_GUARD(
 		std::vector<std::string> lines = t->getWrap(str, wrap, &max_width);
 		numlines = lines.size();
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, e.what());
-	}
+	)
+
 	lua_pushinteger(L, max_width);
 	lua_pushinteger(L, numlines);
 	return 2;
@@ -93,39 +84,34 @@ int w_Font_getLineHeight(lua_State *L)
 int w_Font_setFilter(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
-	Image::Filter f = t->getFilter();
+	Texture::Filter f = t->getFilter();
 
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
 
-	if (!Image::getConstant(minstr, f.min))
+	if (!Texture::getConstant(minstr, f.min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, f.mag))
+	if (!Texture::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
-	try
-	{
-		t->setFilter(f);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
+	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 
+	EXCEPT_GUARD(t->setFilter(f);)
 	return 0;
 }
 
 int w_Font_getFilter(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
-	const Image::Filter f = t->getFilter();
+	const Texture::Filter f = t->getFilter();
 	const char *minstr;
 	const char *magstr;
-	Image::getConstant(f.min, minstr);
-	Image::getConstant(f.mag, magstr);
+	Texture::getConstant(f.min, minstr);
+	Texture::getConstant(f.mag, magstr);
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	return 2;
+	lua_pushnumber(L, f.anisotropy);
+	return 3;
 }
 
 int w_Font_getAscent(lua_State *L)
@@ -149,6 +135,31 @@ int w_Font_getBaseline(lua_State *L)
 	return 1;
 }
 
+int w_Font_hasGlyphs(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	bool hasglyph = false;
+
+	int count = lua_gettop(L) - 1;
+	count = count < 1 ? 1 : count;
+
+	EXCEPT_GUARD(
+		 for (int i = 2; i < count + 2; i++)
+		 {
+			 if (lua_type(L, i) == LUA_TSTRING)
+				 hasglyph = t->hasGlyphs(luax_checkstring(L, i));
+			 else
+				 hasglyph = t->hasGlyph((uint32) luaL_checknumber(L, i));
+
+			 if (!hasglyph)
+				 break;
+		 }
+	 )
+
+	luax_pushboolean(L, hasglyph);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getHeight", w_Font_getHeight },
@@ -161,6 +172,7 @@ static const luaL_Reg functions[] =
 	{ "getAscent", w_Font_getAscent },
 	{ "getDescent", w_Font_getDescent },
 	{ "getBaseline", w_Font_getBaseline },
+	{ "hasGlyphs", w_Font_hasGlyphs },
 	{ 0, 0 }
 };
 

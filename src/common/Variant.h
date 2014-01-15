@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,8 @@
 #include "common/Object.h"
 
 #include <cstring>
+#include <vector>
+#include <utility>
 
 namespace love
 {
@@ -33,15 +35,17 @@ class Variant : public love::Object
 {
 public:
 
+	Variant();
 	Variant(bool boolean);
 	Variant(double number);
 	Variant(const char *string, size_t len);
 	Variant(char c);
 	Variant(void *userdata);
 	Variant(love::Type udatatype, void *userdata);
+	Variant(std::vector<std::pair<Variant*, Variant*> > *table);
 	virtual ~Variant();
 
-	static Variant *fromLua(lua_State *L, int n);
+	static Variant *fromLua(lua_State *L, int n, bool allowTables = true);
 	void toLua(lua_State *L);
 
 private:
@@ -53,7 +57,9 @@ private:
 		CHARACTER,
 		STRING,
 		LUSERDATA,
-		FUSERDATA
+		FUSERDATA,
+		NIL,
+		TABLE
 	} type;
 	union
 	{
@@ -66,6 +72,7 @@ private:
 			size_t len;
 		} string;
 		void *userdata;
+		std::vector<std::pair<Variant*, Variant*> > *table;
 	} data;
 	love::Type udatatype;
 	bits flags;

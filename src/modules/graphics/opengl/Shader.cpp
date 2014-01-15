@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,11 +18,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "common/config.h"
 
 #include "Shader.h"
-#include "Graphics.h"
+#include "Canvas.h"
 
+// C++
 #include <algorithm>
 
 namespace love
@@ -47,10 +49,10 @@ namespace
 
 		~TemporaryAttacher()
 		{
-			if (prevShader != NULL)
+			if (prevShader != nullptr)
 				prevShader->attach();
 			else
-				Shader::detach();
+				curShader->detach();
 		}
 
 		Shader *curShader;
@@ -59,25 +61,30 @@ namespace
 } // anonymous namespace
 
 
-Shader *Shader::current = NULL;
+Shader *Shader::current = nullptr;
 
-GLint Shader::maxTextureUnits = 0;
+GLint Shader::maxTexUnits = 0;
 std::vector<int> Shader::textureCounters;
 
 Shader::Shader(const ShaderSources &sources)
 	: shaderSources(sources)
 	, program(0)
+	, builtinUniforms()
+	, lastCanvas((Canvas *) -1)
 {
 	if (shaderSources.empty())
 		throw love::Exception("Cannot create shader: no source code!");
 
-	GLint maxtexunits;
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
-	maxTextureUnits = std::max(maxtexunits - 1, 0);
+	if (maxTexUnits <= 0)
+	{
+		GLint maxtexunits;
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
+		maxTexUnits = std::max(maxtexunits - 1, 0);
+	}
 
 	// initialize global texture id counters if needed
-	if (textureCounters.size() < (size_t) maxTextureUnits)
-		textureCounters.resize(maxTextureUnits, 0);
+	if (textureCounters.size() < (size_t) maxTexUnits)
+		textureCounters.resize(maxTexUnits, 0);
 
 	// load shader source and create program object
 	loadVolatile();
@@ -88,23 +95,30 @@ Shader::~Shader()
 	if (current == this)
 		detach();
 
+	for (auto it = boundRetainables.begin(); it != boundRetainables.end(); ++it)
+	{
+		it->second->release();
+		boundRetainables.erase(it);
+	}
+
 	unloadVolatile();
 }
 
 GLuint Shader::compileCode(ShaderType type, const std::string &code)
 {
 	GLenum glshadertype;
-	const char *shadertypename = NULL;
+	const char *typestr;
+
+	if (!typeNames.find(type, typestr))
+		typestr = "";
 
 	switch (type)
 	{
 	case TYPE_VERTEX:
 		glshadertype = GL_VERTEX_SHADER;
-		shadertypename = "vertex";
 		break;
-	case TYPE_FRAGMENT:
+	case TYPE_PIXEL:
 		glshadertype = GL_FRAGMENT_SHADER;
-		shadertypename = "fragment";
 		break;
 	default:
 		throw love::Exception("Cannot create shader object: unknown shader type.");
@@ -120,10 +134,10 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 	{
 		GLenum err = glGetError();
 
-		if (err == GL_INVALID_ENUM) // invalid or unsupported shader type
-			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", shadertypename, shadertypename);
-		else // other errors should only happen between glBegin() and glEnd()
-			throw love::Exception("Cannot create %s shader object.", shadertypename);
+		if (err == GL_INVALID_ENUM)
+			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", typestr, typestr);
+		else
+			throw love::Exception("Cannot create %s shader object.", typestr);
 	}
 
 	const char *src = code.c_str();
@@ -132,23 +146,26 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 
 	glCompileShader(shaderid);
 
+	// Get any warnings the shader compiler may have produced.
+	GLint infologlen;
+	glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
+
+	GLchar *infolog = new GLchar[infologlen + 1];
+	glGetShaderInfoLog(shaderid, infologlen, nullptr, infolog);
+
+	// Save any warnings for later querying.
+	if (infologlen > 0)
+		shaderWarnings[type] = infolog;
+
+	delete[] infolog;
+
 	GLint status;
 	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &status);
 
 	if (status == GL_FALSE)
 	{
-		GLint infologlen;
-		glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
-
-		GLchar *errorlog = new GLchar[infologlen + 1];
-		glGetShaderInfoLog(shaderid, infologlen, NULL, errorlog);
-
-		std::string tmp(errorlog);
-
-		delete[] errorlog;
-		glDeleteShader(shaderid);
-
-		throw love::Exception("Cannot compile %s shader code:\n%s", shadertypename, tmp.c_str());
+		throw love::Exception("Cannot compile %s shader code:\n%s",
+		                      typestr, shaderWarnings[type].c_str());
 	}
 
 	return shaderid;
@@ -157,7 +174,7 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 void Shader::createProgram(const std::vector<GLuint> &shaderids)
 {
 	program = glCreateProgram();
-	if (program == 0) // should only fail when called between glBegin() and glEnd()
+	if (program == 0)
 		throw love::Exception("Cannot create shader program object.");
 
 	std::vector<GLuint>::const_iterator it;
@@ -166,26 +183,78 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 
 	glLinkProgram(program);
 
+	// flag shaders for auto-deletion when the program object is deleted.
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glDeleteShader(*it); // flag shaders for auto-deletion when program object is deleted
+		glDeleteShader(*it);
 
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
 
 	if (status == GL_FALSE)
 	{
-		const std::string warnings = getWarnings();
+		std::string warnings = getProgramWarnings();
 		glDeleteProgram(program);
+		program = 0;
 
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
+	}
+}
+
+void Shader::mapActiveUniforms()
+{
+	uniforms.clear();
+
+	GLint numuniforms;
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numuniforms);
+
+	GLsizei bufsize;
+	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, (GLint *) &bufsize);
+
+	if (bufsize <= 0)
+		return;
+
+	for (int i = 0; i < numuniforms; i++)
+	{
+		GLchar *cname = new GLchar[bufsize];
+		GLsizei namelength;
+
+		Uniform u;
+
+		glGetActiveUniform(program, (GLuint) i, bufsize, &namelength, &u.count, &u.type, cname);
+
+		u.name = std::string(cname, (size_t) namelength);
+		u.location = glGetUniformLocation(program, u.name.c_str());
+		u.baseType = getUniformBaseType(u.type);
+
+		delete[] cname;
+
+		// glGetActiveUniform appends "[0]" to the end of array uniform names...
+		if (u.name.length() > 3)
+		{
+			size_t findpos = u.name.find("[0]");
+			if (findpos != std::string::npos && findpos == u.name.length() - 3)
+				u.name.erase(u.name.length() - 3);
+		}
+
+		// If this is a built-in (LOVE-created) uniform, store the location.
+		BuiltinExtern builtin;
+		if (builtinNames.find(u.name.c_str(), builtin))
+			builtinUniforms[int(builtin)] = u.location;
+
+		if (u.location != -1)
+			uniforms[u.name] = u;
 	}
 }
 
 bool Shader::loadVolatile()
 {
 	// zero out active texture list
-	activeTextureUnits.clear();
-	activeTextureUnits.insert(activeTextureUnits.begin(), maxTextureUnits, 0);
+	activeTexUnits.clear();
+	activeTexUnits.insert(activeTexUnits.begin(), maxTexUnits, 0);
+
+	// Built-in uniform locations default to -1 (nonexistant.)
+	for (int i = 0; i < int(BUILTIN_MAX_ENUM); i++)
+		builtinUniforms[i] = -1;
 
 	std::vector<GLuint> shaderids;
 
@@ -201,9 +270,13 @@ bool Shader::loadVolatile()
 
 	createProgram(shaderids);
 
+	// Retreive all active uniform variables in this shader from OpenGL.
+	mapActiveUniforms();
+
 	if (current == this)
 	{
-		current = NULL; // make sure glUseProgram gets called
+		// make sure glUseProgram gets called.
+		current = nullptr;
 		attach();
 	}
 
@@ -216,29 +289,37 @@ void Shader::unloadVolatile()
 		glUseProgram(0);
 
 	if (program != 0)
+	{
 		glDeleteProgram(program);
-
-	program = 0;
+		program = 0;
+	}
 
 	// decrement global texture id counters for texture units which had textures bound from this shader
-	for (size_t i = 0; i < activeTextureUnits.size(); ++i)
+	for (size_t i = 0; i < activeTexUnits.size(); ++i)
 	{
-		if (activeTextureUnits[i] > 0)
+		if (activeTexUnits[i] > 0)
 			textureCounters[i] = std::max(textureCounters[i] - 1, 0);
 	}
 
 	// active texture list is probably invalid, clear it
-	activeTextureUnits.clear();
-	activeTextureUnits.insert(activeTextureUnits.begin(), maxTextureUnits, 0);
+	activeTexUnits.clear();
+	activeTexUnits.insert(activeTexUnits.begin(), maxTexUnits, 0);
 
 	// same with uniform location list
 	uniforms.clear();
+
+	// And the locations of any built-in uniform variables.
+	for (int i = 0; i < int(BUILTIN_MAX_ENUM); i++)
+		builtinUniforms[i] = -1;
+
+	shaderWarnings.clear();
 }
 
-std::string Shader::getWarnings() const
+std::string Shader::getProgramWarnings() const
 {
 	GLint strlen, nullpos;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &strlen);
+
 	char *tempstr = new char[strlen+1];
 	// be extra sure that the error string will be 0-terminated
 	memset(tempstr, '\0', strlen+1);
@@ -247,194 +328,383 @@ std::string Shader::getWarnings() const
 
 	std::string warnings(tempstr);
 	delete[] tempstr;
+
+	return warnings;
+}
+
+std::string Shader::getWarnings() const
+{
+	std::string warnings;
+	const char *typestr;
+
+	// Get the individual shader stage warnings
+	std::map<ShaderType, std::string>::const_iterator it;
+	for (it = shaderWarnings.begin(); it != shaderWarnings.end(); ++it)
+	{
+		if (typeNames.find(it->first, typestr))
+			warnings += std::string(typestr) + std::string(" shader:\n") + it->second;
+	}
+
+	warnings += getProgramWarnings();
+
 	return warnings;
 }
 
 void Shader::attach(bool temporary)
 {
 	if (current != this)
-		glUseProgram(program);
+	{
+		if (current != nullptr)
+			current->release();
 
-	current = this;
+		glUseProgram(program);
+		current = this;
+
+		current->retain();
+	}
 
 	if (!temporary)
 	{
 		// make sure all sent textures are properly bound to their respective texture units
 		// note: list potentially contains texture ids of deleted/invalid textures!
-		for (size_t i = 0; i < activeTextureUnits.size(); ++i)
+		for (size_t i = 0; i < activeTexUnits.size(); ++i)
 		{
-			if (activeTextureUnits[i] > 0)
-				bindTextureToUnit(activeTextureUnits[i], i + 1, false);
+			if (activeTexUnits[i] > 0)
+				gl.bindTextureToUnit(activeTexUnits[i], i + 1, false);
 		}
-		setActiveTextureUnit(0);
+
+		// We always want to use texture unit 0 for everyhing else.
+		gl.setTextureUnit(0);
 	}
 }
 
 void Shader::detach()
 {
-	if (current != NULL)
+	if (current != nullptr)
 		glUseProgram(0);
 
-	current = NULL;
+	current = nullptr;
+}
+
+const Shader::Uniform &Shader::getUniform(const std::string &name) const
+{
+	std::map<std::string, Uniform>::const_iterator it = uniforms.find(name);
+
+	if (it == uniforms.end())
+		throw love::Exception("Variable '%s' does not exist.\n"
+		                      "A common error is to define but not use the variable.", name.c_str());
+
+	return it->second;
+}
+
+int Shader::getUniformTypeSize(GLenum type) const
+{
+	switch (type)
+	{
+	case GL_INT:
+	case GL_FLOAT:
+	case GL_BOOL:
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_2D:
+	case GL_SAMPLER_3D:
+		return 1;
+	case GL_INT_VEC2:
+	case GL_FLOAT_VEC2:
+	case GL_FLOAT_MAT2:
+	case GL_BOOL_VEC2:
+		return 2;
+	case GL_INT_VEC3:
+	case GL_FLOAT_VEC3:
+	case GL_FLOAT_MAT3:
+	case GL_BOOL_VEC3:
+		return 3;
+	case GL_INT_VEC4:
+	case GL_FLOAT_VEC4:
+	case GL_FLOAT_MAT4:
+	case GL_BOOL_VEC4:
+		return 4;
+	default:
+		break;
+	}
+
+	return 1;
+}
+
+Shader::UniformType Shader::getUniformBaseType(GLenum type) const
+{
+	switch (type)
+	{
+	case GL_INT:
+	case GL_INT_VEC2:
+	case GL_INT_VEC3:
+	case GL_INT_VEC4:
+		return UNIFORM_INT;
+	case GL_FLOAT:
+	case GL_FLOAT_VEC2:
+	case GL_FLOAT_VEC3:
+	case GL_FLOAT_VEC4:
+	case GL_FLOAT_MAT2:
+	case GL_FLOAT_MAT3:
+	case GL_FLOAT_MAT4:
+		return UNIFORM_FLOAT;
+	case GL_BOOL:
+	case GL_BOOL_VEC2:
+	case GL_BOOL_VEC3:
+	case GL_BOOL_VEC4:
+		return UNIFORM_BOOL;
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_2D:
+	case GL_SAMPLER_3D:
+		return UNIFORM_SAMPLER;
+	default:
+		break;
+	}
+
+	return UNIFORM_UNKNOWN;
+}
+
+void Shader::checkSetUniformError(const Uniform &u, int size, int count, UniformType sendtype) const
+{
+	if (!program)
+		throw love::Exception("No active shader program.");
+
+	int realsize = getUniformTypeSize(u.type);
+
+	if (size != realsize)
+		throw love::Exception("Value size of %d does not match variable size of %d.", size, realsize);
+
+	if ((u.count == 1 && count > 1) || count < 0)
+		throw love::Exception("Invalid number of values (expected %d, got %d).", u.count, count);
+
+	if (u.baseType == UNIFORM_SAMPLER && sendtype != u.baseType)
+		throw love::Exception("Cannot send a value of this type to an Image variable.");
+
+	if ((sendtype == UNIFORM_FLOAT && u.baseType == UNIFORM_INT) || (sendtype == UNIFORM_INT && u.baseType == UNIFORM_FLOAT))
+		throw love::Exception("Cannot convert between float and int.");
+}
+
+void Shader::sendInt(const std::string &name, int size, const GLint *vec, int count)
+{
+	TemporaryAttacher attacher(this);
+
+	const Uniform &u = getUniform(name);
+	checkSetUniformError(u, size, count, UNIFORM_INT);
+
+	switch (size)
+	{
+	case 4:
+		glUniform4iv(u.location, count, vec);
+		break;
+	case 3:
+		glUniform3iv(u.location, count, vec);
+		break;
+	case 2:
+		glUniform2iv(u.location, count, vec);
+		break;
+	case 1:
+	default:
+		glUniform1iv(u.location, count, vec);
+		break;
+	}
 }
 
 void Shader::sendFloat(const std::string &name, int size, const GLfloat *vec, int count)
 {
 	TemporaryAttacher attacher(this);
-	GLint location = getUniformLocation(name);
 
-	if (size < 1 || size > 4)
-		throw love::Exception("Invalid variable size: %d (expected 1-4).", size);
+	const Uniform &u = getUniform(name);
+	checkSetUniformError(u, size, count, UNIFORM_FLOAT);
 
 	switch (size)
 	{
 	case 4:
-		glUniform4fv(location, count, vec);
+		glUniform4fv(u.location, count, vec);
 		break;
 	case 3:
-		glUniform3fv(location, count, vec);
+		glUniform3fv(u.location, count, vec);
 		break;
 	case 2:
-		glUniform2fv(location, count, vec);
+		glUniform2fv(u.location, count, vec);
 		break;
 	case 1:
 	default:
-		glUniform1fv(location, count, vec);
+		glUniform1fv(u.location, count, vec);
 		break;
 	}
-
-	// throw error if needed
-	checkSetUniformError();
 }
 
 void Shader::sendMatrix(const std::string &name, int size, const GLfloat *m, int count)
 {
 	TemporaryAttacher attacher(this);
-	GLint location = getUniformLocation(name);
 
 	if (size < 2 || size > 4)
 	{
 		throw love::Exception("Invalid matrix size: %dx%d "
-							  "(can only set 2x2, 3x3 or 4x4 matrices).", size,size);
+							  "(can only set 2x2, 3x3 or 4x4 matrices.)", size,size);
 	}
+
+	const Uniform &u = getUniform(name);
+	checkSetUniformError(u, size, count, UNIFORM_FLOAT);
 
 	switch (size)
 	{
 	case 4:
-		glUniformMatrix4fv(location, count, GL_FALSE, m);
+		glUniformMatrix4fv(u.location, count, GL_FALSE, m);
 		break;
 	case 3:
-		glUniformMatrix3fv(location, count, GL_FALSE, m);
+		glUniformMatrix3fv(u.location, count, GL_FALSE, m);
 		break;
 	case 2:
 	default:
-		glUniformMatrix2fv(location, count, GL_FALSE, m);
+		glUniformMatrix2fv(u.location, count, GL_FALSE, m);
 		break;
 	}
-
-	// throw error if needed
-	checkSetUniformError();
 }
 
-void Shader::sendTexture(const std::string &name, GLuint texture)
+void Shader::sendTexture(const std::string &name, Texture *texture)
 {
+	GLuint gltex = texture->getGLTexture();
+
 	TemporaryAttacher attacher(this);
-	GLint location = getUniformLocation(name);
-	int textureunit = getTextureUnit(name);
+
+	int texunit = getTextureUnit(name);
+
+	const Uniform &u = getUniform(name);
+	checkSetUniformError(u, 1, 1, UNIFORM_SAMPLER);
 
 	// bind texture to assigned texture unit and send uniform to shader program
-	bindTextureToUnit(texture, textureunit, false);
-	glUniform1i(location, textureunit);
+	gl.bindTextureToUnit(gltex, texunit, false);
+
+	glUniform1i(u.location, texunit);
 
 	// reset texture unit
-	setActiveTextureUnit(0);
-
-	// throw error if needed
-	checkSetUniformError();
+	gl.setTextureUnit(0);
 
 	// increment global shader texture id counter for this texture unit, if we haven't already
-	if (activeTextureUnits[textureunit-1] == 0)
-		++textureCounters[textureunit-1];
+	if (activeTexUnits[texunit-1] == 0)
+		++textureCounters[texunit-1];
 
-	// store texture id so it can be re-bound to the proper texture unit when necessary
-	activeTextureUnits[textureunit-1] = texture;
+	// store texture id so it can be re-bound to the proper texture unit later
+	activeTexUnits[texunit-1] = gltex;
+
+	retainObject(name, texture);
 }
 
-void Shader::sendImage(const std::string &name, const Image &image)
+void Shader::retainObject(const std::string &name, Object *object)
 {
-	sendTexture(name, image.getTextureName());
-}
+	auto it = boundRetainables.find(name);
+	if (it != boundRetainables.end())
+		it->second->release();
 
-void Shader::sendCanvas(const std::string &name, const Canvas &canvas)
-{
-	sendTexture(name, canvas.getTextureName());
-}
-
-GLint Shader::getUniformLocation(const std::string &name)
-{
-	std::map<std::string, GLint>::const_iterator it = uniforms.find(name);
-	if (it != uniforms.end())
-		return it->second;
-
-	GLint location = glGetUniformLocation(program, name.c_str());
-	if (location == -1)
-	{
-		throw love::Exception(
-			"Cannot get location of shader variable `%s'.\n"
-			"A common error is to define but not use the variable.", name.c_str());
-	}
-
-	uniforms[name] = location;
-	return location;
+	object->retain();
+	boundRetainables[name] = object;
 }
 
 int Shader::getTextureUnit(const std::string &name)
 {
-	std::map<std::string, GLint>::const_iterator it = textureUnitPool.find(name);
+	auto it = texUnitPool.find(name);
 
-	if (it != textureUnitPool.end())
+	if (it != texUnitPool.end())
 		return it->second;
 
-	int textureunit = 1;
+	int texunit = 1;
 
 	// prefer texture units which are unused by all other shaders
-	std::vector<int>::iterator nextfreeunit = std::find(textureCounters.begin(), textureCounters.end(), 0);
+	auto freeunit_it = std::find(textureCounters.begin(), textureCounters.end(), 0);
 
-	if (nextfreeunit != textureCounters.end())
-		textureunit = std::distance(textureCounters.begin(), nextfreeunit) + 1; // we don't want to use unit 0
+	if (freeunit_it != textureCounters.end())
+	{
+		// we don't want to use unit 0
+		texunit = std::distance(textureCounters.begin(), freeunit_it) + 1;
+	}
 	else
 	{
 		// no completely unused texture units exist, try to use next free slot in our own list
-		std::vector<GLuint>::iterator nexttexunit = std::find(activeTextureUnits.begin(), activeTextureUnits.end(), 0);
+		auto nextunit_it = std::find(activeTexUnits.begin(), activeTexUnits.end(), 0);
 
-		if (nexttexunit == activeTextureUnits.end())
+		if (nextunit_it == activeTexUnits.end())
 			throw love::Exception("No more texture units available for shader.");
 
-		textureunit = std::distance(activeTextureUnits.begin(), nexttexunit) + 1; // we don't want to use unit 0
+		// we don't want to use unit 0
+		texunit = std::distance(activeTexUnits.begin(), nextunit_it) + 1;
 	}
 
-	textureUnitPool[name] = textureunit;
-	return textureunit;
+	texUnitPool[name] = texunit;
+	return texunit;
 }
 
-void Shader::checkSetUniformError()
+bool Shader::hasBuiltinExtern(BuiltinExtern builtin) const
 {
-	GLenum error_code = glGetError();
-	if (GL_INVALID_OPERATION == error_code)
+	return builtinUniforms[int(builtin)] != -1;
+}
+
+bool Shader::sendBuiltinFloat(BuiltinExtern builtin, int size, const GLfloat *vec, int count)
+{
+	if (!hasBuiltinExtern(builtin))
+		return false;
+
+	GLint location = builtinUniforms[int(builtin)];
+
+	TemporaryAttacher attacher(this);
+
+	switch (size)
 	{
-		throw love::Exception(
-			"Invalid operation:\n"
-			"- Trying to send the wrong value type to shader variable, or\n"
-			"- Trying to send array values with wrong dimension, or\n"
-			"- Invalid variable name.");
+	case 1:
+		glUniform1fv(location, count, vec);
+		break;
+	case 2:
+		glUniform2fv(location, count, vec);
+		break;
+	case 3:
+		glUniform3fv(location, count, vec);
+		break;
+	case 4:
+		glUniform4fv(location, count, vec);
+		break;
+	default:
+		return false;
 	}
+	
+	return true;
+}
+
+void Shader::checkSetScreenParams()
+{
+	if (lastCanvas == Canvas::current)
+		return;
+
+	// In the shader, we do pixcoord.y = gl_FragCoord.y * params[0] + params[1].
+	// This lets us flip pixcoord.y when needed, to be consistent (Canvases
+	// have flipped y-values for pixel coordinates.)
+	GLfloat params[] = {0.0f, 0.0f};
+
+	if (Canvas::current != nullptr)
+	{
+		// gl_FragCoord.y is flipped in Canvases, so we un-flip:
+		// pixcoord.y = gl_FragCoord.y * -1.0 + height.
+		params[0] = -1.0f;
+		params[1] = (float) Canvas::current->getHeight();
+	}
+	else
+	{
+		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
+		params[0] = 1.0f;
+		params[1] = 0.0f;
+	}
+
+	sendBuiltinFloat(BUILTIN_SCREEN_PARAMS, 2, params, 1);
+	lastCanvas = Canvas::current;
 }
 
 std::string Shader::getGLSLVersion()
 {
-	// GL_SHADING_LANGUAGE_VERSION may not be available in OpenGL < 2.0.
-	const char *tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-	if (tmp == NULL)
+	const char *tmp = nullptr;
+
+	// GL_SHADING_LANGUAGE_VERSION isn't available in OpenGL < 2.0.
+	if (GLEE_VERSION_2_0 || GLEE_ARB_shading_language_100)
+		tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+	if (tmp == nullptr)
 		return "0.0";
 
 	// the version string always begins with a version number of the format
@@ -451,6 +721,21 @@ bool Shader::isSupported()
 {
 	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
+
+StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntries[] =
+{
+	{"vertex", Shader::TYPE_VERTEX},
+	{"pixel", Shader::TYPE_PIXEL},
+};
+
+StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM> Shader::typeNames(Shader::typeNameEntries, sizeof(Shader::typeNameEntries));
+
+StringMap<Shader::BuiltinExtern, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
+{
+	{"love_ScreenParams", Shader::BUILTIN_SCREEN_PARAMS},
+};
+
+StringMap<Shader::BuiltinExtern, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));
 
 } // opengl
 } // graphics

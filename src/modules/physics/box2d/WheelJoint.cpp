@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -58,9 +58,9 @@ float WheelJoint::getJointSpeed() const
 	return Physics::scaleUp(joint->GetJointSpeed());
 }
 
-void WheelJoint::enableMotor(bool motor)
+void WheelJoint::setMotorEnabled(bool enable)
 {
-	return joint->EnableMotor(motor);
+	return joint->EnableMotor(enable);
 }
 
 bool WheelJoint::isMotorEnabled() const

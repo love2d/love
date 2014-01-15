@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,10 +43,8 @@ class PolygonShape : public Shape
 public:
 
 	/**
-	 * Create a new PolygonShape from the parent Body and
-	 * a Box2D polygon definition.
-	 * @param body The parent Body.
-	 * @param def The polygon definition.
+	 * Create a new PolygonShape from a Box2D polygon definition.
+	 * @param p The polygon definition.
 	 **/
 	PolygonShape(b2PolygonShape *p, bool own = true);
 
@@ -59,6 +57,11 @@ public:
 	 * The result can be directly passed into love.graphics.polygon().
 	 **/
 	int getPoints(lua_State *L);
+
+	/**
+	 * Validate convexity.
+	 **/
+	bool validate() const;
 };
 
 } // box2d

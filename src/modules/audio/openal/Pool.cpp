@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -76,7 +76,7 @@ bool Pool::isPlaying(Source *s)
 	bool p = false;
 	{
 		thread::Lock lock(mutex);
-		for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+		for (auto i = playing.begin(); i != playing.end(); i++)
 		{
 			if (i->first == s)
 				p = true;
@@ -106,7 +106,7 @@ void Pool::update()
 	}
 }
 
-int Pool::getNumSources() const
+int Pool::getSourceCount() const
 {
 	return playing.size();
 }
@@ -118,10 +118,10 @@ int Pool::getMaxSources() const
 
 bool Pool::play(Source *source, ALuint &out)
 {
-	bool ok;
-	out = 0;
-
 	thread::Lock lock(mutex);
+
+	bool ok = true;
+	out = 0;
 
 	bool alreadyPlaying = findSource(source, out);
 
@@ -161,7 +161,7 @@ bool Pool::play(Source *source, ALuint &out)
 void Pool::stop()
 {
 	thread::Lock lock(mutex);
-	for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+	for (auto i = playing.begin(); i != playing.end(); i++)
 	{
 		i->first->stopAtomic();
 		i->first->release();
@@ -180,7 +180,7 @@ void Pool::stop(Source *source)
 void Pool::pause()
 {
 	thread::Lock lock(mutex);
-	for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+	for (auto i = playing.begin(); i != playing.end(); i++)
 		i->first->pauseAtomic();
 }
 
@@ -195,7 +195,7 @@ void Pool::pause(Source *source)
 void Pool::resume()
 {
 	thread::Lock lock(mutex);
-	for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+	for (auto i = playing.begin(); i != playing.end(); i++)
 		i->first->resumeAtomic();
 }
 
@@ -210,7 +210,7 @@ void Pool::resume(Source *source)
 void Pool::rewind()
 {
 	thread::Lock lock(mutex);
-	for (std::map<Source *, ALuint>::iterator i = playing.begin(); i != playing.end(); i++)
+	for (auto i = playing.begin(); i != playing.end(); i++)
 		i->first->rewindAtomic();
 }
 

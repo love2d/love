@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -65,7 +65,7 @@ int w_Fixture_setDensity(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setDensity(arg1);
+	EXCEPT_GUARD(t->setDensity(arg1);)
 	return 0;
 }
 
@@ -112,7 +112,7 @@ int w_Fixture_getBody(lua_State *L)
 	if (body == 0)
 		return 0;
 	body->retain();
-	luax_newtype(L, "Body", PHYSICS_BODY_T, (void *)body);
+	luax_pushtype(L, "Body", PHYSICS_BODY_T, body);
 	return 1;
 }
 
@@ -125,19 +125,19 @@ int w_Fixture_getShape(lua_State *L)
 	switch (shape->getType())
 	{
 	case Shape::SHAPE_EDGE:
-		luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, shape);
 		break;
 	case Shape::SHAPE_CHAIN:
-		luax_newtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, shape);
 		break;
 	case Shape::SHAPE_CIRCLE:
-		luax_newtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, shape);
 		break;
 	case Shape::SHAPE_POLYGON:
-		luax_newtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, shape);
 		break;
 	default:
-		luax_newtype(L, "Shape", PHYSICS_SHAPE_T, (void *)shape);
+		luax_pushtype(L, "Shape", PHYSICS_SHAPE_T, shape);
 		break;
 	}
 	return 1;
@@ -156,7 +156,9 @@ int w_Fixture_rayCast(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
 	lua_remove(L, 1);
-	ASSERT_GUARD(return t->rayCast(L);)
+	int ret = 0;
+	EXCEPT_GUARD(ret = t->rayCast(L);)
+	return ret;
 }
 
 int w_Fixture_setFilterData(lua_State *L)
@@ -256,14 +258,7 @@ int w_Fixture_setGroupIndex(lua_State *L)
 int w_Fixture_destroy(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
-	try
-	{
-		t->destroy();
-	}
-	catch(love::Exception &e)
-	{
-		luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->destroy();)
 	return 0;
 }
 

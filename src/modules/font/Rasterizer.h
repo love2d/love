@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 
 // LOVE
 #include "common/Object.h"
+#include "common/int.h"
 #include "GlyphData.h"
 
 namespace love
@@ -46,9 +47,6 @@ struct FontMetrics
  **/
 class Rasterizer : public Object
 {
-protected:
-	FontMetrics metrics;
-
 public:
 
 	virtual ~Rasterizer();
@@ -80,15 +78,36 @@ public:
 
 	/**
 	 * Gets a specific glyph.
-	 * @param glyph The (UNICODE) glyph to get data for
+	 * @param glyph The (UNICODE) glyph codepoint to get data for.
 	 **/
-	virtual GlyphData *getGlyphData(unsigned int glyph) const = 0;
+	virtual GlyphData *getGlyphData(uint32 glyph) const = 0;
+
+	/**
+	 * Gets a specific glyph.
+	 * @param text The (UNICODE) glyph character to get the data for.
+	 **/
+	virtual GlyphData *getGlyphData(const std::string &text) const;
 
 	/**
 	 * Gets the number of glyphs the rasterizer has data for.
 	 **/
-	virtual int getNumGlyphs() const = 0;
+	virtual int getGlyphCount() const = 0;
 
+	/**
+	 * Gets whether this Rasterizer has a specific glyph.
+	 * @param glyph The (UNICODE) glyph codepoint.
+	 **/
+	virtual bool hasGlyph(uint32 glyph) const = 0;
+
+	/**
+	 * Gets whether this Rasterizer has all the glyphs in a string.
+	 * @param text The (UTF-8) string.
+	 **/
+	virtual bool hasGlyphs(const std::string &text) const;
+
+protected:
+
+	FontMetrics metrics;
 
 }; // Rasterizer
 

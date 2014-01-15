@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,16 +59,6 @@ bool Graphics::getConstant(BlendMode in, const char  *&out)
 	return blendModes.find(in, out);
 }
 
-bool Graphics::getConstant(const char *in, ColorMode &out)
-{
-	return colorModes.find(in, out);
-}
-
-bool Graphics::getConstant(ColorMode in, const char  *&out)
-{
-	return colorModes.find(in, out);
-}
-
 bool Graphics::getConstant(const char *in, LineStyle &out)
 {
 	return lineStyles.find(in, out);
@@ -77,6 +67,16 @@ bool Graphics::getConstant(const char *in, LineStyle &out)
 bool Graphics::getConstant(LineStyle in, const char  *&out)
 {
 	return lineStyles.find(in, out);
+}
+
+bool Graphics::getConstant(const char *in, LineJoin &out)
+{
+	return lineJoins.find(in, out);
+}
+
+bool Graphics::getConstant(LineJoin in, const char  *&out)
+{
+	return lineJoins.find(in, out);
 }
 
 bool Graphics::getConstant(const char *in, PointStyle &out)
@@ -97,6 +97,16 @@ bool Graphics::getConstant(const char *in, Support &out)
 bool Graphics::getConstant(Support in, const char  *&out)
 {
 	return support.find(in, out);
+}
+
+bool Graphics::getConstant(const char *in, RendererInfo &out)
+{
+	return rendererInfo.find(in, out);
+}
+
+bool Graphics::getConstant(RendererInfo in, const char *&out)
+{
+	return rendererInfo.find(in, out);
 }
 
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
@@ -124,19 +134,10 @@ StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendM
 	{ "subtractive", Graphics::BLEND_SUBTRACTIVE },
 	{ "multiplicative", Graphics::BLEND_MULTIPLICATIVE },
 	{ "premultiplied", Graphics::BLEND_PREMULTIPLIED },
-	{ "none", Graphics::BLEND_NONE },
+	{ "replace", Graphics::BLEND_REPLACE },
 };
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
-
-StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM>::Entry Graphics::colorModeEntries[] =
-{
-	{ "replace", Graphics::COLOR_REPLACE },
-	{ "modulate", Graphics::COLOR_MODULATE },
-	{ "combine", Graphics::COLOR_COMBINE },
-};
-
-StringMap<Graphics::ColorMode, Graphics::COLOR_MAX_ENUM> Graphics::colorModes(Graphics::colorModeEntries, sizeof(Graphics::colorModeEntries));
 
 StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineStyleEntries[] =
 {
@@ -145,6 +146,15 @@ StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineSty
 };
 
 StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM> Graphics::lineStyles(Graphics::lineStyleEntries, sizeof(Graphics::lineStyleEntries));
+
+StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM>::Entry Graphics::lineJoinEntries[] =
+{
+	{ "none",  Graphics::LINE_JOIN_NONE  },
+	{ "miter", Graphics::LINE_JOIN_MITER },
+	{ "bevel", Graphics::LINE_JOIN_BEVEL }
+};
+
+StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM> Graphics::lineJoins(Graphics::lineJoinEntries, sizeof(Graphics::lineJoinEntries));
 
 StringMap<Graphics::PointStyle, Graphics::POINT_MAX_ENUM>::Entry Graphics::pointStyleEntries[] =
 {
@@ -158,14 +168,26 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 {
 	{ "canvas", Graphics::SUPPORT_CANVAS },
 	{ "hdrcanvas", Graphics::SUPPORT_HDR_CANVAS },
+	{ "multicanvas", Graphics::SUPPORT_MULTI_CANVAS },
 	{ "shader", Graphics::SUPPORT_SHADER },
-	{ "pixeleffect", Graphics::SUPPORT_SHADER }, // for compatibility
 	{ "npot", Graphics::SUPPORT_NPOT },
 	{ "subtractive", Graphics::SUPPORT_SUBTRACTIVE },
 	{ "mipmap", Graphics::SUPPORT_MIPMAP },
+	{ "dxt", Graphics::SUPPORT_DXT },
+	{ "bc5", Graphics::SUPPORT_BC5 },
 };
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));
+
+StringMap<Graphics::RendererInfo, Graphics::RENDERER_INFO_MAX_ENUM>::Entry Graphics::rendererInfoEntries[] =
+{
+	{ "name", Graphics::RENDERER_INFO_NAME },
+	{ "version", Graphics::RENDERER_INFO_VERSION },
+	{ "vendor", Graphics::RENDERER_INFO_VENDOR },
+	{ "device", Graphics::RENDERER_INFO_DEVICE },
+};
+
+StringMap<Graphics::RendererInfo, Graphics::RENDERER_INFO_MAX_ENUM> Graphics::rendererInfo(Graphics::rendererInfoEntries, sizeof(Graphics::rendererInfoEntries));
 
 } // graphics
 } // love

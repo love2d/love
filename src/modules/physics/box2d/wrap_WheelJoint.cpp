@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -49,11 +49,11 @@ int w_WheelJoint_getJointSpeed(lua_State *L)
 	return 1;
 }
 
-int w_WheelJoint_enableMotor(lua_State *L)
+int w_WheelJoint_setMotorEnabled(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
 	bool arg1 = luax_toboolean(L, 2);
-	t->enableMotor(arg1);
+	t->setMotorEnabled(arg1);
 	return 0;
 }
 
@@ -136,7 +136,7 @@ static const luaL_Reg functions[] =
 {
 	{ "getJointTranslation", w_WheelJoint_getJointTranslation },
 	{ "getJointSpeed", w_WheelJoint_getJointSpeed },
-	{ "enableMotor", w_WheelJoint_enableMotor },
+	{ "setMotorEnabled", w_WheelJoint_setMotorEnabled },
 	{ "isMotorEnabled", w_WheelJoint_isMotorEnabled },
 	{ "setMotorSpeed", w_WheelJoint_setMotorSpeed },
 	{ "getMotorSpeed", w_WheelJoint_getMotorSpeed },

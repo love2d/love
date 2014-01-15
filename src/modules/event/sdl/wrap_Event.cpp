@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -64,7 +64,7 @@ int w_poll(lua_State *L)
 
 int w_wait(lua_State *L)
 {
-	static Message *m;
+	Message *m;
 
 	if ((m = instance->wait()))
 	{
@@ -78,7 +78,7 @@ int w_wait(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	static Message *m;
+	Message *m;
 
 	bool success = (m = Message::fromLua(L, 1)) != NULL;
 	luax_pushboolean(L, success);
@@ -123,14 +123,7 @@ extern "C" int luaopen_love_event(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new Event();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
+		EXCEPT_GUARD(instance = new Event();)
 	}
 	else
 		instance->retain();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,7 +38,7 @@ public:
 	Source();
 	virtual ~Source();
 
-	virtual love::audio::Source *copy();
+	virtual love::audio::Source *clone();
 	virtual void play();
 	virtual void stop();
 	virtual void pause();
@@ -60,6 +60,10 @@ public:
 	virtual void getVelocity(float *v) const;
 	virtual void setDirection(float *v);
 	virtual void getDirection(float *v) const;
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume);
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const;
+	virtual void setRelative(bool enable);
+	virtual bool isRelative() const;
 	void setLooping(bool looping);
 	bool isLooping() const;
 	bool isStatic() const;
@@ -73,11 +77,16 @@ public:
 	virtual float getRolloffFactor() const;
 	virtual void setMaxDistance(float distance);
 	virtual float getMaxDistance() const;
+	virtual int getChannels() const;
 
 private:
 
 	float pitch;
 	float volume;
+	float coneInnerAngle;
+	float coneOuterAngle;
+	float coneOuterVolume;
+	bool relative;
 	bool looping;
 	float minVolume;
 	float maxVolume;

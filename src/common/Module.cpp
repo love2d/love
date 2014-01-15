@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,37 +29,96 @@
 
 namespace
 {
-	std::map<std::string, love::Module*> registry;
+	typedef std::map<std::string, love::Module*> ModuleRegistry;
+
+	// The registry must be dynamically managed, because some modules
+	// (the math module) are static globals that are not guaranteed to
+	// be destroyed before other static globals.
+	ModuleRegistry *registry = nullptr;
+
+	ModuleRegistry &registryInstance()
+	{
+		if (!registry)
+			registry = new ModuleRegistry;
+
+		return *registry;
+	}
+
+	void freeEmptyRegistry()
+	{
+		if (registry && registry->empty())
+		{
+			delete registry;
+			registry = nullptr;
+		}
+	}
+
 } // anonymous namespace
 
 namespace love
 {
-	void Module::registerInstance(Module *instance)
+
+Module::~Module()
+{
+	ModuleRegistry &registry = registryInstance();
+
+	// We can't use the overridden Module::getName() in this destructor.
+	for (auto it = registry.begin(); it != registry.end(); ++it)
 	{
-		if (instance == NULL)
-			throw Exception("Module instance is NULL");
-
-		std::string name(instance->getName());
-
-		std::map<std::string, Module*>::iterator it = registry.find(name);
-
-		if (registry.end() != it)
+		if (it->second == this)
 		{
-			if (it->second == instance)
-				return;
-			throw Exception("Module %s already registered!", instance->getName());
+			registry.erase(it);
+			break;
 		}
-
-		registry.insert(make_pair(name, instance));
 	}
 
-	Module *Module::getInstance(const char *name)
+	freeEmptyRegistry();
+}
+
+void Module::registerInstance(Module *instance)
+{
+	if (instance == nullptr)
+		throw Exception("Module instance is null");
+
+	std::string name(instance->getName());
+
+	ModuleRegistry &registry = registryInstance();
+
+	auto it = registry.find(name);
+
+	if (it != registry.end())
 	{
-		std::map<std::string, Module*>::iterator it = registry.find(std::string(name));
-
-		if (registry.end() == it)
-			return NULL;
-
-		return it->second;
+		if (it->second == instance)
+			return;
+		throw Exception("Module %s already registered!", instance->getName());
 	}
-} // namespace love
+
+	registry.insert(make_pair(name, instance));
+}
+
+Module *Module::getInstance(const std::string &name)
+{
+	ModuleRegistry &registry = registryInstance();
+
+	auto it = registry.find(name);
+
+	if (registry.end() == it)
+		return nullptr;
+
+	return it->second;
+}
+
+Module *Module::findInstance(const std::string &name)
+{
+	ModuleRegistry &registry = registryInstance();
+
+	for (auto it = registry.begin(); it != registry.end(); ++it)
+	{
+		if (it->first.find(name) == 0)
+			return it->second;
+	}
+
+	return nullptr;
+}
+
+} // love

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,17 +33,19 @@ namespace opengl
 
 SpriteBatch *luax_checkspritebatch(lua_State *L, int idx);
 int w_SpriteBatch_add(lua_State *L);
-int w_SpriteBatch_addq(lua_State *L);
+int w_SpriteBatch_addg(lua_State *L);
 int w_SpriteBatch_set(lua_State *L);
-int w_SpriteBatch_setq(lua_State *L);
+int w_SpriteBatch_setg(lua_State *L);
 int w_SpriteBatch_clear(lua_State *L);
 int w_SpriteBatch_bind(lua_State *L);
 int w_SpriteBatch_unbind(lua_State *L);
-int w_SpriteBatch_setImage(lua_State *L);
-int w_SpriteBatch_getImage(lua_State *L);
+int w_SpriteBatch_setTexture(lua_State *L);
+int w_SpriteBatch_getTexture(lua_State *L);
 int w_SpriteBatch_setColor(lua_State *L);
-int w_SpriteBatch_isEmpty(lua_State *L);
-int w_SpriteBatch_isFull(lua_State *L);
+int w_SpriteBatch_getColor(lua_State *L);
+int w_SpriteBatch_getCount(lua_State *L);
+int w_SpriteBatch_setBufferSize(lua_State *L);
+int w_SpriteBatch_getBufferSize(lua_State *L);
 
 extern "C" int luaopen_spritebatch(lua_State *L);
 

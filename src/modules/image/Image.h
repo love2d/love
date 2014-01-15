@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,7 @@
 #include "common/Module.h"
 #include "filesystem/File.h"
 #include "ImageData.h"
+#include "CompressedData.h"
 
 namespace love
 {
@@ -34,8 +35,10 @@ namespace image
 
 /**
  * This module is responsible for decoding files such as PNG, GIF, JPEG
- * into raw pixel data. This module does not know how to draw images on
- * screen; only love.graphics knows that.
+ * into raw pixel data, as well as parsing compressed formats which are designed
+ * to be uploaded to the GPU and rendered without being un-compressed.
+ * This module does not know how to draw images on screen; only love.graphics
+ * knows that.
  **/
 class Image : public Module
 {
@@ -47,35 +50,43 @@ public:
 	virtual ~Image() {};
 
 	/**
-	 * Creates new ImageData from a file.
-	 * @param file The file containing the encoded image data.
+	 * Creates new ImageData from FileData.
+	 * @param data The FileData containing the encoded image data.
 	 * @return The new ImageData.
 	 **/
-	virtual ImageData *newImageData(love::filesystem::File *file) = 0;
-
-	/**
-	 * Creates new ImageData from a raw Data.
-	 * @param data The object containing encoded pixel data.
-	 * @return The new ImageData.
-	 **/
-	virtual ImageData *newImageData(Data *data) = 0;
+	virtual ImageData *newImageData(love::filesystem::FileData *data) = 0;
 
 	/**
 	 * Creates empty ImageData with the given size.
-	 * @param The width of the ImageData.
-	 * @param The height of the ImageData.
+	 * @param width The width of the ImageData.
+	 * @param height The height of the ImageData.
 	 * @return The new ImageData.
 	 **/
 	virtual ImageData *newImageData(int width, int height) = 0;
 
 	/**
 	 * Creates empty ImageData with the given size.
-	 * @param The width of the ImageData.
-	 * @param The height of the ImageData.
-	 * @param The data to load into the ImageData.
+	 * @param width The width of the ImageData.
+	 * @param height The height of the ImageData.
+	 * @param data The data to load into the ImageData.
+	 * @param own Whether the new ImageData should take ownership of the data or
+	 *        copy it.
 	 * @return The new ImageData.
 	 **/
-	virtual ImageData *newImageData(int width, int height, void *data) = 0;
+	virtual ImageData *newImageData(int width, int height, void *data, bool own = false) = 0;
+
+	/**
+	 * Creates new CompressedData from FileData.
+	 * @param data The FileData containing the compressed image data.
+	 * @return The new CompressedData.
+	 **/
+	virtual CompressedData *newCompressedData(love::filesystem::FileData *data) = 0;
+
+	/**
+	 * Determines whether a FileData is Compressed image data or not.
+	 * @param data The FileData to test.
+	 **/
+	virtual bool isCompressed(love::filesystem::FileData *data) = 0;
 
 }; // Image
 

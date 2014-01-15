@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,14 +21,11 @@
 #ifndef LOVE_GRAPHICS_OPENGL_CANVAS_H
 #define LOVE_GRAPHICS_OPENGL_CANVAS_H
 
-#include "graphics/DrawQable.h"
-#include "graphics/Volatile.h"
-#include "graphics/Image.h"
 #include "graphics/Color.h"
 #include "image/Image.h"
 #include "image/ImageData.h"
-#include "common/math.h"
 #include "common/Matrix.h"
+#include "Texture.h"
 #include "OpenGL.h"
 
 namespace love
@@ -38,10 +35,12 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas : public DrawQable, public Volatile
+class Canvas : public Texture
 {
 public:
-	enum TextureType {
+
+	enum TextureType
+	{
 		TYPE_NORMAL,
 		TYPE_HDR,
 		TYPE_MAX_ENUM
@@ -50,78 +49,81 @@ public:
 	Canvas(int width, int height, TextureType texture_type = TYPE_NORMAL);
 	virtual ~Canvas();
 
+	// Implements Volatile.
+	virtual bool loadVolatile();
+	virtual void unloadVolatile();
+
+	// Implements Drawable.
+	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+
+	// Implements Texture.
+	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	virtual void setFilter(const Texture::Filter &f);
+	virtual void setWrap(const Texture::Wrap &w);
+	virtual GLuint getGLTexture() const;
+	virtual void predraw() const;
+
+	/**
+	 * @param canvases A list of other canvases to temporarily attach to this one,
+	 * to allow drawing to multiple canvases at once.
+	 **/
+	void startGrab(const std::vector<Canvas *> &canvases);
 	void startGrab();
 	void stopGrab();
 
-	void clear(const Color &c);
-
-	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void clear(Color c);
 
 	/**
-	 * @copydoc DrawQable::drawq()
+	 * Create and attach a stencil buffer to this Canvas' framebuffer, if necessary.
 	 **/
-	void drawq(love::graphics::Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	bool checkCreateStencil();
 
 	love::image::ImageData *getImageData(love::image::Image *image);
 
 	void getPixel(unsigned char* pixel_rgba, int x, int y);
 
-	void setFilter(const Image::Filter &f);
-	Image::Filter getFilter() const;
+	inline const std::vector<Canvas *> &getAttachedCanvases() const
+	{
+		return attachedCanvases;
+	}
 
-	void setWrap(const Image::Wrap &w);
-	Image::Wrap getWrap() const;
-
-	int getWidth();
-	int getHeight();
-
-	unsigned int getStatus() const
+	inline GLenum getStatus() const
 	{
 		return status;
 	}
 
-	TextureType getTextureType() const
+	inline TextureType getTextureType() const
 	{
 		return texture_type;
 	}
 
-	bool loadVolatile();
-	void unloadVolatile();
-
 	static bool isSupported();
-	static bool isHdrSupported();
+	static bool isHDRSupported();
+	static bool isMultiCanvasSupported();
+
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
 
 	static Canvas *current;
 	static void bindDefaultCanvas();
 
-private:
-	friend class Shader;
-	GLuint getTextureName() const
-	{
-		return img;
-	}
+	// The viewport dimensions of the system (default) framebuffer.
+	static OpenGL::Viewport systemViewport;
 
-	GLsizei width;
-	GLsizei height;
+private:
+
 	GLuint fbo;
+	GLuint texture;
 	GLuint depth_stencil;
-	GLuint img;
 
 	TextureType texture_type;
 
-	vertex vertices[4];
-
 	GLenum status;
 
-	struct
-	{
-		Image::Filter filter;
-		Image::Wrap   wrap;
-	} settings;
+	std::vector<Canvas *> attachedCanvases;
 
-	void drawv(const Matrix &t, const vertex *v) const;
+	void setupGrab();
+	void drawv(const Matrix &t, const Vertex *v) const;
 
 	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
 	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;

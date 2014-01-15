@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@ namespace sound
 
 Decoder *luax_checkdecoder(lua_State *L, int idx);
 int w_Decoder_getChannels(lua_State *L);
-int w_Decoder_getBits(lua_State *L);
+int w_Decoder_getBitDepth(lua_State *L);
 int w_Decoder_getSampleRate(lua_State *L);
 extern "C" int luaopen_decoder(lua_State *L);
 

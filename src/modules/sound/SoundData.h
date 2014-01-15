@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,8 +36,8 @@ class SoundData : public love::Data
 public:
 
 	SoundData(Decoder *decoder);
-	SoundData(int samples, int sampleRate, int bits, int channels);
-	SoundData(void *d, int samples, int sampleRate, int bits, int channels);
+	SoundData(int samples, int sampleRate, int bitDepth, int channels);
+	SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels);
 
 	virtual ~SoundData();
 
@@ -46,21 +46,24 @@ public:
 	int getSize() const;
 
 	virtual int getChannels() const;
-	virtual int getBits() const;
+	virtual int getBitDepth() const;
 	virtual int getSampleRate() const;
+	virtual int getSampleCount() const;
 
-	virtual int getDuration() const;
+	virtual float getDuration() const;
 
 	void setSample(int i, float sample);
 	float getSample(int i) const;
 
 private:
 
+	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);
+
 	char *data;
 	int size;
 
 	int sampleRate;
-	int bits;
+	int bitDepth;
 	int channels;
 }; // SoundData
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -70,7 +70,7 @@ public:
 
 		for (unsigned i = 0; i < MAX; ++i)
 		{
-			unsigned str_i = (str_hash + i) % MAX; //this isn't used, is this intentional?
+			unsigned str_i = (str_hash + i) % MAX;
 
 			if (!records[str_i].set)
 				return false;

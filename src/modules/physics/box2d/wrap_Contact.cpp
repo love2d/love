@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -113,6 +113,31 @@ int w_Contact_resetRestitution(lua_State *L)
 	return 0;
 }
 
+int w_Contact_setTangentSpeed(lua_State *L)
+{
+	Contact *t = luax_checkcontact(L, 1);
+	float speed = (float) luaL_checknumber(L, 2);
+	t->setTangentSpeed(speed);
+	return 0;
+}
+
+int w_Contact_getTangentSpeed(lua_State *L)
+{
+	Contact *t = luax_checkcontact(L, 1);
+	lua_pushnumber(L, t->getTangentSpeed());
+	return 1;
+}
+
+int w_Contact_getChildren(lua_State *L)
+{
+	Contact *t = luax_checkcontact(L, 1);
+	int a, b;
+	t->getChildren(a, b);
+	lua_pushnumber(L, a + 1);
+	lua_pushnumber(L, b + 1);
+	return 2;
+}
+
 extern "C" int luaopen_contact(lua_State *L)
 {
 	static const luaL_Reg functions[] =
@@ -128,6 +153,9 @@ extern "C" int luaopen_contact(lua_State *L)
 		{ "setEnabled", w_Contact_setEnabled },
 		{ "resetFriction", w_Contact_resetFriction },
 		{ "resetRestitution", w_Contact_resetRestitution },
+		{ "setTangentSpeed", w_Contact_setTangentSpeed },
+		{ "getTangentSpeed", w_Contact_getTangentSpeed },
+		{ "getChildren", w_Contact_getChildren },
 		{ 0, 0 }
 	};
 

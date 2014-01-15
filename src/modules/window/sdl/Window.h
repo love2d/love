@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,10 @@
 #define LOVE_WINDOW_SDL_WINDOW_H
 
 // LOVE
-#include <window/Window.h>
+#include "window/Window.h"
+
+// SDL
+#include <SDL.h>
 
 namespace love
 {
@@ -34,48 +37,83 @@ namespace sdl
 class Window : public love::window::Window
 {
 public:
+
 	Window();
 	~Window();
 
-	bool setWindow(int width = 800, int height = 600, WindowFlags *flags = 0);
-	void getWindow(int &width, int &height, WindowFlags &flags) const;
+	bool setWindow(int width = 800, int height = 600, WindowAttributes *attribs = 0);
+	void getWindow(int &width, int &height, WindowAttributes &attribs);
 
-	bool checkWindowSize(int width, int height, bool fullscreen) const;
-	WindowSize **getFullscreenSizes(int &n) const;
+	bool setFullscreen(bool fullscreen, FullscreenType fstype);
+	bool setFullscreen(bool fullscreen);
+
+	bool onWindowResize(int width, int height);
+
+	int getDisplayCount() const;
+
+	std::vector<WindowSize> getFullscreenSizes(int displayindex) const;
 
 	int getWidth() const;
 	int getHeight() const;
 
+	void getDesktopDimensions(int displayindex, int &width, int &height) const;
+
 	bool isCreated() const;
 
-	void setWindowTitle(std::string &title);
-	std::string getWindowTitle() const;
+	void setWindowTitle(const std::string &title);
+	const std::string &getWindowTitle() const;
 
 	bool setIcon(love::image::ImageData *imgd);
+	love::image::ImageData *getIcon();
 
 	void swapBuffers();
 
 	bool hasFocus() const;
+	bool hasMouseFocus() const;
+
+	bool isVisible() const;
+
 	void setMouseVisible(bool visible);
 	bool getMouseVisible() const;
 
+	void setMouseGrab(bool grab);
+	bool isMouseGrabbed() const;
+
+	const void *getHandle() const;
+
+	static love::window::Window *createSingleton();
 	static love::window::Window *getSingleton();
 
 	const char *getName() const;
+
 private:
+
+	bool setContext(int fsaa, bool vsync);
+	void setWindowGLAttributes(int fsaa) const;
+
+	// Update the saved window attribs based on the window's actual state.
+	void updateAttributes(const WindowAttributes &newattribs);
+
 	std::string windowTitle;
+
 	struct _currentMode
 	{
 		_currentMode();
+
 		int width;
 		int height;
-		bool fullscreen;
-		bool vsync;
-		int fsaa;
-		bool resizable;
-		bool borderless;
-	} currentMode;
+		WindowAttributes attribs;
+		love::image::ImageData *icon;
+
+	} curMode;
+
 	bool created;
+
+	bool mouseGrabbed;
+
+	SDL_Window *window;
+	SDL_GLContext context;
+
 }; // Window
 
 } // sdl

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,10 +27,8 @@
 
 // TrueType2
 #include <ft2build.h>
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
-#include <freetype/ftoutln.h>
-#include <freetype/fttrigon.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
 
 namespace love
 {
@@ -50,8 +48,9 @@ public:
 
 	// Implement Rasterizer
 	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(unsigned int glyph) const;
-	virtual int getNumGlyphs() const;
+	virtual GlyphData *getGlyphData(uint32 glyph) const;
+	virtual int getGlyphCount() const;
+	virtual bool hasGlyph(uint32 glyph) const;
 
 private:
 

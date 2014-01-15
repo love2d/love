@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -104,7 +104,7 @@ void Matrix::setTranslation(float x, float y)
 void Matrix::setRotation(float rad)
 {
 	setIdentity();
-	float c = cos(rad), s = sin(rad);
+	float c = cosf(rad), s = sinf(rad);
 	e[0] = c;
 	e[4] = -s;
 	e[1] = s;
@@ -128,7 +128,7 @@ void Matrix::setShear(float kx, float ky)
 void Matrix::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	memset(e, 0, sizeof(float)*16); // zero out matrix
-	float c = cos(angle), s = sin(angle);
+	float c = cosf(angle), s = sinf(angle);
 	// matrix multiplication carried out on paper:
 	// |1     x| |c -s    | |sx       | | 1 ky    | |1     -ox|
 	// |  1   y| |s  c    | |   sy    | |kx  1    | |  1   -oy|
@@ -181,7 +181,7 @@ void Matrix::shear(float kx, float ky)
 // | e2 e6 e10 e14 |
 // | e3 e7 e11 e15 |
 
-void Matrix::transform(vertex *dst, const vertex *src, int size) const
+void Matrix::transform(Vertex *dst, const Vertex *src, int size) const
 {
 	for (int i = 0; i<size; i++)
 	{

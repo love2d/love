@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 #include "filesystem/File.h"
 
 // PhysFS
-#ifdef LOVE_MACOSX // wacky Mac behavior means different #include syntax!
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <physfs/physfs.h>
 #else
 #include <physfs.h>
@@ -43,42 +43,48 @@ namespace physfs
 
 class File : public love::filesystem::File
 {
-private:
-
-	// filename
-	std::string filename;
-
-	// PHYSFS File handle.
-	PHYSFS_file *file;
-
-	// The current mode of the file.
-	Mode mode;
-
 public:
 
 	/**
-	 * Constructs an File with the given source and filename.
-	 * @param source The source from which to load the file. (Archive or directory)
-	 * @param filename The relative filepath of the file to load from the source.
+	 * Constructs an File with the given ilename.
+	 * @param filename The relative filepath of the file to load.
 	 **/
-	File(std::string filename);
+	File(const std::string &filename);
 
 	virtual ~File();
 
 	// Implements love::filesystem::File.
 	bool open(Mode mode);
 	bool close();
+	bool isOpen() const;
 	int64 getSize();
 	FileData *read(int64 size = ALL);
 	int64 read(void *dst, int64 size);
 	bool write(const void *data, int64 size);
 	bool write(const Data *data, int64 size = ALL);
+	bool flush();
 	bool eof();
 	int64 tell();
 	bool seek(uint64 pos);
-	Mode getMode();
+	bool setBuffer(BufferMode bufmode, int64 size);
+	BufferMode getBuffer(int64 &size) const;
+	Mode getMode() const;
 	std::string getFilename() const;
 	std::string getExtension() const;
+
+private:
+
+	// filename
+	std::string filename;
+
+	// PHYSFS File handle.
+	PHYSFS_File *file;
+
+	// The current mode of the file.
+	Mode mode;
+
+	BufferMode bufferMode;
+	int64 bufferSize;
 
 }; // File
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,11 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "wrap_ParticleSystem.h"
-
 #include "common/Vector.h"
 
+#include "Image.h"
+#include "Canvas.h"
+#include "wrap_Texture.h"
+
+// C
 #include <cstring>
+
+// C++
+#include <typeinfo>
 
 namespace love
 {
@@ -36,45 +44,133 @@ ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx)
 	return luax_checktype<ParticleSystem>(L, idx, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T);
 }
 
-int w_ParticleSystem_setSprite(lua_State *L)
+int w_ParticleSystem_clone(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	Image *i = luax_checkimage(L, 2);
-	t->setSprite(i);
+
+	ParticleSystem *clone = nullptr;
+	EXCEPT_GUARD(clone = t->clone();)
+
+	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, clone);
+	return 1;
+}
+
+int w_ParticleSystem_setTexture(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	Texture *tex = luax_checktexture(L, 2);
+	t->setTexture(tex);
 	return 0;
+}
+
+int w_ParticleSystem_getTexture(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	Texture *tex = t->getTexture();
+	tex->retain();
+
+	// FIXME: big hack right here.
+	if (typeid(*tex) == typeid(Image))
+		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+	else if (typeid(*tex) == typeid(Canvas))
+		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+	else
+	{
+		tex->release();
+		return luaL_error(L, "Unable to determine texture type.");
+	}
+
+	return 1;
 }
 
 int w_ParticleSystem_setBufferSize(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int arg1 = luaL_checkint(L, 2);
-	t->setBufferSize((unsigned int)arg1);
+	lua_Number arg1 = luaL_checknumber(L, 2);
+	if (arg1 < 1.0 || arg1 > ParticleSystem::MAX_PARTICLES)
+		return luaL_error(L, "Invalid buffer size");
+
+	EXCEPT_GUARD(t->setBufferSize((uint32) arg1);)
 	return 0;
+}
+
+int w_ParticleSystem_getBufferSize(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	lua_pushinteger(L, t->getBufferSize());
+	return 1;
+}
+
+int w_ParticleSystem_setInsertMode(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	ParticleSystem::InsertMode mode;
+	const char *str = luaL_checkstring(L, 2);
+	if (!ParticleSystem::getConstant(str, mode))
+		return luaL_error(L, "Invalid insert mode: '%s'", str);
+	t->setInsertMode(mode);
+	return 0;
+}
+
+int w_ParticleSystem_getInsertMode(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	ParticleSystem::InsertMode mode;
+	mode = t->getInsertMode();
+	const char *str;
+	if (!ParticleSystem::getConstant(mode, str))
+		return luaL_error(L, "Unknown insert mode");
+	lua_pushstring(L, str);
+	return 1;
 }
 
 int w_ParticleSystem_setEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	int arg1 = luaL_checkint(L, 2);
-	t->setEmissionRate((unsigned int)arg1);
+	EXCEPT_GUARD(t->setEmissionRate(arg1);)
 	return 0;
 }
 
-int w_ParticleSystem_setLifetime(lua_State *L)
+int w_ParticleSystem_getEmissionRate(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	lua_pushinteger(L, t->getEmissionRate());
+	return 1;
+}
+
+int w_ParticleSystem_setEmitterLifetime(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setLifetime(arg1);
+	t->setEmitterLifetime(arg1);
 	return 0;
 }
 
-int w_ParticleSystem_setParticleLife(lua_State *L)
+int w_ParticleSystem_getEmitterLifetime(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	lua_pushnumber(L, t->getEmitterLifetime());
+	return 1;
+}
+
+int w_ParticleSystem_setParticleLifetime(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_optnumber(L, 3, arg1);
-	t->setParticleLife(arg1, arg2);
+	t->setParticleLifetime(arg1, arg2);
 	return 0;
+}
+
+int w_ParticleSystem_getParticleLifetime(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float min, max;
+	t->getParticleLifetime(&min, &max);
+	lua_pushnumber(L, min);
+	lua_pushnumber(L, max);
+	return 2;
 }
 
 int w_ParticleSystem_setPosition(lua_State *L)
@@ -86,22 +182,51 @@ int w_ParticleSystem_setPosition(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_getPosition(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	love::Vector pos = t->getPosition();
+	lua_pushnumber(L, pos.getX());
+	lua_pushnumber(L, pos.getY());
+	return 2;
+}
+
 int w_ParticleSystem_setAreaSpread(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 
-	ParticleSystem::AreaSpreadDistribution distribution;
-	const char *str = luaL_checkstring(L, 2);
-	if (!ParticleSystem::getConstant(str, distribution))
-		return luaL_error(L, "Invalid distribution: '%s'", str);
+	ParticleSystem::AreaSpreadDistribution distribution = ParticleSystem::DISTRIBUTION_NONE;
+	float x = 0.f, y = 0.f;
 
-	float x = (float)luaL_checknumber(L, 3);
-	float y = (float)luaL_checknumber(L, 4);
-	if (x < 0.0f || y < 0.0f)
-		return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
+	const char *str = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
+	if (str && !ParticleSystem::getConstant(str, distribution))
+		return luaL_error(L, "Invalid particle distribution: %s", str);
+
+	if (distribution != ParticleSystem::DISTRIBUTION_NONE)
+	{
+		x = (float) luaL_checknumber(L, 3);
+		y = (float) luaL_checknumber(L, 4);
+		if (x < 0.0f || y < 0.0f)
+			return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
+	}
 
 	t->setAreaSpread(distribution, x, y);
 	return 0;
+}
+
+int w_ParticleSystem_getAreaSpread(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	ParticleSystem::AreaSpreadDistribution distribution = t-> getAreaSpreadDistribution();
+	const char *str;
+	ParticleSystem::getConstant(distribution, str);
+	const love::Vector &p = t->getAreaSpreadParameters();
+
+	lua_pushstring(L, str);
+	lua_pushnumber(L, p.x);
+	lua_pushnumber(L, p.y);
+
+	return 3;
 }
 
 int w_ParticleSystem_setDirection(lua_State *L)
@@ -112,6 +237,13 @@ int w_ParticleSystem_setDirection(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_getDirection(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	lua_pushnumber(L, t->getDirection());
+	return 1;
+}
+
 int w_ParticleSystem_setSpread(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -120,12 +252,11 @@ int w_ParticleSystem_setSpread(lua_State *L)
 	return 0;
 }
 
-int w_ParticleSystem_setRelativeDirection(lua_State *L)
+int w_ParticleSystem_getSpread(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	bool arg1 = (bool)luax_toboolean(L, 2);
-	t->setRelativeDirection(arg1);
-	return 0;
+	lua_pushnumber(L, t->getSpread());
+	return 1;
 }
 
 int w_ParticleSystem_setSpeed(lua_State *L)
@@ -137,13 +268,37 @@ int w_ParticleSystem_setSpeed(lua_State *L)
 	return 0;
 }
 
-int w_ParticleSystem_setGravity(lua_State *L)
+int w_ParticleSystem_getSpeed(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	float arg1 = (float)luaL_checknumber(L, 2);
-	float arg2 = (float)luaL_optnumber(L, 3, arg1);
-	t->setGravity(arg1, arg2);
+	float min, max;
+	t->getSpeed(&min, &max);
+	lua_pushnumber(L, min);
+	lua_pushnumber(L, max);
+	return 2;
+}
+
+int w_ParticleSystem_setLinearAcceleration(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float xmin = (float) luaL_checknumber(L, 2);
+	float ymin = (float) luaL_checknumber(L, 3);
+	float xmax = (float) luaL_optnumber(L, 4, xmin);
+	float ymax = (float) luaL_optnumber(L, 5, ymin);
+	t->setLinearAcceleration(xmin, ymin, xmax, ymax);
 	return 0;
+}
+
+int w_ParticleSystem_getLinearAcceleration(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	love::Vector min, max;
+	t->getLinearAcceleration(&min, &max);
+	lua_pushnumber(L, min.x);
+	lua_pushnumber(L, min.y);
+	lua_pushnumber(L, max.x);
+	lua_pushnumber(L, max.y);
+	return 4;
 }
 
 int w_ParticleSystem_setRadialAcceleration(lua_State *L)
@@ -155,6 +310,16 @@ int w_ParticleSystem_setRadialAcceleration(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_getRadialAcceleration(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float min, max;
+	t->getRadialAcceleration(&min, &max);
+	lua_pushnumber(L, min);
+	lua_pushnumber(L, max);
+	return 2;
+}
+
 int w_ParticleSystem_setTangentialAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -162,6 +327,16 @@ int w_ParticleSystem_setTangentialAcceleration(lua_State *L)
 	float arg2 = (float)luaL_optnumber(L, 3, arg1);
 	t->setTangentialAcceleration(arg1, arg2);
 	return 0;
+}
+
+int w_ParticleSystem_getTangentialAcceleration(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float min, max;
+	t->getTangentialAcceleration(&min, &max);
+	lua_pushnumber(L, min);
+	lua_pushnumber(L, max);
+	return 2;
 }
 
 int w_ParticleSystem_setSizes(lua_State *L)
@@ -183,9 +358,20 @@ int w_ParticleSystem_setSizes(lua_State *L)
 		for (size_t i = 0; i < nSizes; ++i)
 			sizes[i] = luax_checkfloat(L, 1 + i + 1);
 
-		t->setSize(sizes);
+		t->setSizes(sizes);
 	}
 	return 0;
+}
+
+int w_ParticleSystem_getSizes(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	const std::vector<float> &sizes = t->getSizes();
+
+	for (size_t i = 0; i < sizes.size(); i++)
+		lua_pushnumber(L, sizes[i]);
+
+	return sizes.size();
 }
 
 int w_ParticleSystem_setSizeVariation(lua_State *L)
@@ -199,6 +385,13 @@ int w_ParticleSystem_setSizeVariation(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_getSizeVariation(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	lua_pushnumber(L, t->getSizeVariation());
+	return 1;
+}
+
 int w_ParticleSystem_setRotation(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -208,14 +401,33 @@ int w_ParticleSystem_setRotation(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_getRotation(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float min, max;
+	t->getRotation(&min, &max);
+	lua_pushnumber(L, min);
+	lua_pushnumber(L, max);
+	return 2;
+}
+
 int w_ParticleSystem_setSpin(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_optnumber(L, 3, arg1);
-	float arg3 = (float)luaL_optnumber(L, 4, 0);
-	t->setSpin(arg1, arg2, arg3);
+	t->setSpin(arg1, arg2);
 	return 0;
+}
+
+int w_ParticleSystem_getSpin(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float start, end;
+	t->getSpin(&start, &end);
+	lua_pushnumber(L, start);
+	lua_pushnumber(L, end);
+	return 2;
 }
 
 int w_ParticleSystem_setSpinVariation(lua_State *L)
@@ -226,40 +438,11 @@ int w_ParticleSystem_setSpinVariation(lua_State *L)
 	return 0;
 }
 
-int w_ParticleSystem_setColors(lua_State *L)
+int w_ParticleSystem_getSpinVariation(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int cargs = lua_gettop(L) - 1;
-	size_t nColors = (cargs + 3) / 4; // nColors = ceil(color_args / 4)
-	if (cargs % 4 != 0 || cargs == 0)
-		return luaL_error(L, "Expected red, green, blue, and alpha. Only got %d of 4 components.", cargs % 4);
-
-	if (nColors > 8)
-		return luaL_error(L, "At most eight (8) colors may be used.");
-
-	if (nColors == 1)
-	{
-		int r = luaL_checkint(L, 2);
-		int g = luaL_checkint(L, 3);
-		int b = luaL_checkint(L, 4);
-		int a = luaL_checkint(L, 5);
-		t->setColor(Color(r,g,b,a));
-	}
-	else
-	{
-		std::vector<Color> colors(nColors);
-		for (size_t i = 0; i < nColors; ++i)
-		{
-			int r = luaL_checkint(L, 1 + i*4 + 1);
-			int g = luaL_checkint(L, 1 + i*4 + 2);
-			int b = luaL_checkint(L, 1 + i*4 + 3);
-			int a = luaL_checkint(L, 1 + i*4 + 4);
-			colors[i] = Color(r,g,b,a);
-		}
-		t->setColor(colors);
-	}
-
-	return 0;
+	lua_pushnumber(L, t->getSpinVariation());
+	return 1;
 }
 
 int w_ParticleSystem_setOffset(lua_State *L)
@@ -271,76 +454,116 @@ int w_ParticleSystem_setOffset(lua_State *L)
 	return 0;
 }
 
-int w_ParticleSystem_getX(lua_State *L)
+int w_ParticleSystem_getOffset(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getX());
-	return 1;
-}
-
-int w_ParticleSystem_getY(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getY());
-	return 1;
-}
-
-int w_ParticleSystem_getPosition(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	const love::Vector &p = t->getPosition();
-	lua_pushnumber(L, p.x);
-	lua_pushnumber(L, p.y);
+	love::Vector offset = t->getOffset();
+	lua_pushnumber(L, offset.getX());
+	lua_pushnumber(L, offset.getY());
 	return 2;
 }
 
-int w_ParticleSystem_getAreaSpread(lua_State *L)
+int w_ParticleSystem_setColors(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	ParticleSystem::AreaSpreadDistribution distribution = t-> getAreaSpreadDistribution();
-	const char *str;
-	ParticleSystem::getConstant(distribution, str);
-	const love::Vector &p = t->getAreaSpreadParameters();
 
-	lua_pushstring(L, str);
-	lua_pushnumber(L, p.x);
-	lua_pushnumber(L, p.y);
+	if (lua_istable(L, 2)) // setColors({r,g,b,a}, {r,g,b,a}, ...)
+	{
+		size_t nColors = lua_gettop(L) - 1;
 
-	return 3;
+		if (nColors > 8)
+			return luaL_error(L, "At most eight (8) colors may be used.");
+
+		std::vector<Color> colors(nColors);
+
+		for (size_t i = 0; i < nColors; i++)
+		{
+			luaL_checktype(L, i + 2, LUA_TTABLE);
+
+			if (lua_objlen(L, i + 2) < 3)
+				return luaL_argerror(L, i + 2, "expected 4 color components");
+
+			for (int j = 0; j < 4; j++)
+				// push args[i+2][j+1] onto the stack
+				lua_rawgeti(L, i + 2, j + 1);
+
+			unsigned char r = (unsigned char) luaL_checkinteger(L, -4);
+			unsigned char g = (unsigned char) luaL_checkinteger(L, -3);
+			unsigned char b = (unsigned char) luaL_checkinteger(L, -2);
+			unsigned char a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+			// pop the color components from the stack
+			lua_pop(L, 4);
+
+			colors[i] = Color(r, g, b, a);
+		}
+
+		t->setColor(colors);
+	}
+	else // setColors(r,g,b,a, r,g,b,a, ...)
+	{
+		int cargs = lua_gettop(L) - 1;
+		size_t nColors = (cargs + 3) / 4; // nColors = ceil(color_args / 4)
+
+		if (cargs != 3 && (cargs % 4 != 0 || cargs == 0))
+			return luaL_error(L, "Expected red, green, blue, and alpha. Only got %d of 4 components.", cargs % 4);
+
+		if (nColors > 8)
+			return luaL_error(L, "At most eight (8) colors may be used.");
+
+		if (nColors == 1)
+		{
+			unsigned char r = (unsigned char) luaL_checkinteger(L, 2);
+			unsigned char g = (unsigned char) luaL_checkinteger(L, 3);
+			unsigned char b = (unsigned char) luaL_checkinteger(L, 4);
+			unsigned char a = (unsigned char) luaL_optinteger(L, 5, 255);
+			t->setColor(Color(r,g,b,a));
+		}
+		else
+		{
+			std::vector<Color> colors(nColors);
+			for (size_t i = 0; i < nColors; ++i)
+			{
+				unsigned char r = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 1);
+				unsigned char g = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 2);
+				unsigned char b = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 3);
+				unsigned char a = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 4);
+				colors[i] = Color(r,g,b,a);
+			}
+			t->setColor(colors);
+		}
+	}
+
+	return 0;
 }
 
-int w_ParticleSystem_getDirection(lua_State *L)
+int w_ParticleSystem_getColors(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getDirection());
-	return 1;
+
+	const std::vector<Color> &colors =t->getColor();
+
+	for (size_t i = 0; i < colors.size(); i++)
+	{
+		lua_createtable(L, 4, 0);
+
+		lua_pushinteger(L, colors[i].r);
+		lua_rawseti(L, -2, 1);
+		lua_pushinteger(L, colors[i].g);
+		lua_rawseti(L, -2, 2);
+		lua_pushinteger(L, colors[i].b);
+		lua_rawseti(L, -2, 3);
+		lua_pushinteger(L, colors[i].a);
+		lua_rawseti(L, -2, 4);
+	}
+
+	return colors.size();
 }
 
-int w_ParticleSystem_getSpread(lua_State *L)
+int w_ParticleSystem_getCount(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getSpread());
-	return 1;
-}
-
-int w_ParticleSystem_getOffsetX(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getOffsetX());
-	return 1;
-}
-
-int w_ParticleSystem_getOffsetY(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getOffsetY());
-	return 1;
-}
-
-int w_ParticleSystem_count(lua_State *L)
-{
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->count());
+	lua_pushnumber(L, t->getCount());
 	return 1;
 }
 
@@ -372,6 +595,14 @@ int w_ParticleSystem_reset(lua_State *L)
 	return 0;
 }
 
+int w_ParticleSystem_emit(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	int num = luaL_checkint(L, 2);
+	t->emit(num);
+	return 0;
+}
+
 int w_ParticleSystem_isActive(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -379,17 +610,17 @@ int w_ParticleSystem_isActive(lua_State *L)
 	return 1;
 }
 
-int w_ParticleSystem_isEmpty(lua_State *L)
+int w_ParticleSystem_isPaused(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	luax_pushboolean(L, t->isEmpty());
+	luax_pushboolean(L, t->isPaused());
 	return 1;
 }
 
-int w_ParticleSystem_isFull(lua_State *L)
+int w_ParticleSystem_isStopped(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	luax_pushboolean(L, t->isFull());
+	luax_pushboolean(L, t->isStopped());
 	return 1;
 }
 
@@ -403,44 +634,64 @@ int w_ParticleSystem_update(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "setSprite", w_ParticleSystem_setSprite },
+	{ "clone", w_ParticleSystem_clone },
+	{ "setTexture", w_ParticleSystem_setTexture },
+	{ "getTexture", w_ParticleSystem_getTexture },
 	{ "setBufferSize", w_ParticleSystem_setBufferSize },
+	{ "getBufferSize", w_ParticleSystem_getBufferSize },
+	{ "setInsertMode", w_ParticleSystem_setInsertMode },
+	{ "getInsertMode", w_ParticleSystem_getInsertMode },
 	{ "setEmissionRate", w_ParticleSystem_setEmissionRate },
-	{ "setLifetime", w_ParticleSystem_setLifetime },
-	{ "setParticleLife", w_ParticleSystem_setParticleLife },
+	{ "getEmissionRate", w_ParticleSystem_getEmissionRate },
+	{ "setEmitterLifetime", w_ParticleSystem_setEmitterLifetime },
+	{ "getEmitterLifetime", w_ParticleSystem_getEmitterLifetime },
+	{ "setParticleLifetime", w_ParticleSystem_setParticleLifetime },
+	{ "getParticleLifetime", w_ParticleSystem_getParticleLifetime },
 	{ "setPosition", w_ParticleSystem_setPosition },
-	{ "setAreaSpread", w_ParticleSystem_setAreaSpread },
-	{ "setDirection", w_ParticleSystem_setDirection },
-	{ "setSpread", w_ParticleSystem_setSpread },
-	{ "setRelativeDirection", w_ParticleSystem_setRelativeDirection },
-	{ "setSpeed", w_ParticleSystem_setSpeed },
-	{ "setGravity", w_ParticleSystem_setGravity },
-	{ "setRadialAcceleration", w_ParticleSystem_setRadialAcceleration },
-	{ "setTangentialAcceleration", w_ParticleSystem_setTangentialAcceleration },
-	{ "setSizes", w_ParticleSystem_setSizes },
-	{ "setSizeVariation", w_ParticleSystem_setSizeVariation },
-	{ "setRotation", w_ParticleSystem_setRotation },
-	{ "setSpin", w_ParticleSystem_setSpin },
-	{ "setSpinVariation", w_ParticleSystem_setSpinVariation },
-	{ "setColors", w_ParticleSystem_setColors },
-	{ "setOffset", w_ParticleSystem_setOffset },
-	{ "getX", w_ParticleSystem_getX },
-	{ "getY", w_ParticleSystem_getY },
 	{ "getPosition", w_ParticleSystem_getPosition },
+	{ "setAreaSpread", w_ParticleSystem_setAreaSpread },
 	{ "getAreaSpread", w_ParticleSystem_getAreaSpread },
+	{ "setDirection", w_ParticleSystem_setDirection },
 	{ "getDirection", w_ParticleSystem_getDirection },
+	{ "setSpread", w_ParticleSystem_setSpread },
 	{ "getSpread", w_ParticleSystem_getSpread },
-	{ "getOffsetX", w_ParticleSystem_getOffsetX },
-	{ "getOffsetY", w_ParticleSystem_getOffsetY },
-	{ "count", w_ParticleSystem_count },
+	{ "setSpeed", w_ParticleSystem_setSpeed },
+	{ "getSpeed", w_ParticleSystem_getSpeed },
+	{ "setLinearAcceleration", w_ParticleSystem_setLinearAcceleration },
+	{ "getLinearAcceleration", w_ParticleSystem_getLinearAcceleration },
+	{ "setRadialAcceleration", w_ParticleSystem_setRadialAcceleration },
+	{ "getRadialAcceleration", w_ParticleSystem_getRadialAcceleration },
+	{ "setTangentialAcceleration", w_ParticleSystem_setTangentialAcceleration },
+	{ "getTangentialAcceleration", w_ParticleSystem_getTangentialAcceleration },
+	{ "setSizes", w_ParticleSystem_setSizes },
+	{ "getSizes", w_ParticleSystem_getSizes },
+	{ "setSizeVariation", w_ParticleSystem_setSizeVariation },
+	{ "getSizeVariation", w_ParticleSystem_getSizeVariation },
+	{ "setRotation", w_ParticleSystem_setRotation },
+	{ "getRotation", w_ParticleSystem_getRotation },
+	{ "setSpin", w_ParticleSystem_setSpin },
+	{ "getSpin", w_ParticleSystem_getSpin },
+	{ "setSpinVariation", w_ParticleSystem_setSpinVariation },
+	{ "getSpinVariation", w_ParticleSystem_getSpinVariation },
+	{ "setColors", w_ParticleSystem_setColors },
+	{ "getColors", w_ParticleSystem_getColors },
+	{ "setOffset", w_ParticleSystem_setOffset },
+	{ "getOffset", w_ParticleSystem_getOffset },
+	{ "getCount", w_ParticleSystem_getCount },
 	{ "start", w_ParticleSystem_start },
 	{ "stop", w_ParticleSystem_stop },
 	{ "pause", w_ParticleSystem_pause },
 	{ "reset", w_ParticleSystem_reset },
+	{ "emit", w_ParticleSystem_emit },
 	{ "isActive", w_ParticleSystem_isActive },
-	{ "isEmpty", w_ParticleSystem_isEmpty },
-	{ "isFull", w_ParticleSystem_isFull },
+	{ "isPaused", w_ParticleSystem_isPaused },
+	{ "isStopped", w_ParticleSystem_isStopped },
 	{ "update", w_ParticleSystem_update },
+
+	// Deprecated since 0.9.1.
+	{ "setImage", w_ParticleSystem_setTexture },
+	{ "getImage", w_ParticleSystem_getTexture },
+
 	{ 0, 0 }
 };
 

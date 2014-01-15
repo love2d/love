@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,8 @@ namespace audio
 namespace null
 {
 
-Audio::Audio() : distanceModel(DISTANCE_NONE)
+Audio::Audio()
+	: distanceModel(DISTANCE_NONE)
 {
 }
 
@@ -50,7 +51,7 @@ love::audio::Source *Audio::newSource(love::sound::SoundData *)
 	return new Source();
 }
 
-int Audio::getNumSources() const
+int Audio::getSourceCount() const
 {
 	return 0;
 }

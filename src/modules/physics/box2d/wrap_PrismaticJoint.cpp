@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_PrismaticJoint.h"
+#include "wrap_Physics.h"
 
 namespace love
 {
@@ -49,11 +50,11 @@ int w_PrismaticJoint_getJointSpeed(lua_State *L)
 	return 1;
 }
 
-int w_PrismaticJoint_enableMotor(lua_State *L)
+int w_PrismaticJoint_setMotorEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
 	bool arg1 = luax_toboolean(L, 2);
-	t->enableMotor(arg1);
+	t->setMotorEnabled(arg1);
 	return 0;
 }
 
@@ -102,18 +103,18 @@ int w_PrismaticJoint_getMaxMotorForce(lua_State *L)
 	return 1;
 }
 
-int w_PrismaticJoint_enableLimit(lua_State *L)
+int w_PrismaticJoint_setLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
 	bool arg1 = luax_toboolean(L, 2);
-	t->enableLimit(arg1);
+	t->setLimitsEnabled(arg1);
 	return 0;
 }
 
-int w_PrismaticJoint_isLimitEnabled(lua_State *L)
+int w_PrismaticJoint_hasLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	luax_pushboolean(L, t->isLimitEnabled());
+	luax_pushboolean(L, t->hasLimitsEnabled());
 	return 1;
 }
 
@@ -121,7 +122,7 @@ int w_PrismaticJoint_setUpperLimit(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setUpperLimit(arg1);
+	EXCEPT_GUARD(t->setUpperLimit(arg1);)
 	return 0;
 }
 
@@ -129,7 +130,7 @@ int w_PrismaticJoint_setLowerLimit(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setLowerLimit(arg1);
+	EXCEPT_GUARD(t->setLowerLimit(arg1);)
 	return 0;
 }
 
@@ -138,7 +139,7 @@ int w_PrismaticJoint_setLimits(lua_State *L)
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_checknumber(L, 3);
-	t->setLimits(arg1, arg2);
+	EXCEPT_GUARD(t->setLimits(arg1, arg2);)
 	return 0;
 }
 
@@ -167,15 +168,15 @@ static const luaL_Reg functions[] =
 {
 	{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
 	{ "getJointSpeed", w_PrismaticJoint_getJointSpeed },
-	{ "enableMotor", w_PrismaticJoint_enableMotor },
+	{ "setMotorEnabled", w_PrismaticJoint_setMotorEnabled },
 	{ "isMotorEnabled", w_PrismaticJoint_isMotorEnabled },
 	{ "setMaxMotorForce", w_PrismaticJoint_setMaxMotorForce },
 	{ "setMotorSpeed", w_PrismaticJoint_setMotorSpeed },
 	{ "getMotorSpeed", w_PrismaticJoint_getMotorSpeed },
 	{ "getMotorForce", w_PrismaticJoint_getMotorForce },
 	{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
-	{ "enableLimit", w_PrismaticJoint_enableLimit },
-	{ "isLimitEnabled", w_PrismaticJoint_isLimitEnabled },
+	{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
+	{ "hasLimitsEnabled", w_PrismaticJoint_hasLimitsEnabled },
 	{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
 	{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
 	{ "setLimits", w_PrismaticJoint_setLimits },

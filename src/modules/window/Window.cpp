@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,6 +37,64 @@ Window::~Window()
 void Window::swapBuffers()
 {
 }
+
+WindowAttributes::WindowAttributes()
+	: fullscreen(false)
+	, fstype(Window::FULLSCREEN_TYPE_NORMAL)
+	, vsync(true)
+	, fsaa(0)
+	, resizable(false)
+	, minwidth(1)
+	, minheight(1)
+	, borderless(false)
+	, centered(true)
+	, display(0)
+{
+}
+
+bool Window::getConstant(const char *in, Window::FullscreenType &out)
+{
+	return fullscreenTypes.find(in, out);
+}
+
+bool Window::getConstant(Window::FullscreenType in, const char *&out)
+{
+	return fullscreenTypes.find(in, out);
+}
+
+bool Window::getConstant(const char *in, Window::Attribute &out)
+{
+	return attributes.find(in, out);
+}
+
+bool Window::getConstant(Window::Attribute in, const char *&out)
+{
+	return attributes.find(in, out);
+}
+
+StringMap<Window::Attribute, Window::ATTRIB_MAX_ENUM>::Entry Window::attributeEntries[] =
+{
+	{"fullscreen", ATTRIB_FULLSCREEN},
+	{"fullscreentype", ATTRIB_FULLSCREEN_TYPE},
+	{"vsync", ATTRIB_VSYNC},
+	{"fsaa", ATTRIB_FSAA},
+	{"resizable", ATTRIB_RESIZABLE},
+	{"minwidth", ATTRIB_MIN_WIDTH},
+	{"minheight", ATTRIB_MIN_HEIGHT},
+	{"borderless", ATTRIB_BORDERLESS},
+	{"centered", ATTRIB_CENTERED},
+	{"display", ATTRIB_DISPLAY}
+};
+
+StringMap<Window::Attribute, Window::ATTRIB_MAX_ENUM> Window::attributes(Window::attributeEntries, sizeof(Window::attributeEntries));
+
+StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
+{
+	{"normal", Window::FULLSCREEN_TYPE_NORMAL},
+	{"desktop", Window::FULLSCREEN_TYPE_DESKTOP},
+};
+
+StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
 
 } // window
 } // love

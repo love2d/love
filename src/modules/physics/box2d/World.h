@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -182,16 +182,23 @@ public:
 	int getGravity(lua_State *L);
 
 	/**
+	 * Translate the world origin.
+	 * @param x The new world origin's x-coordinate relative to the old origin.
+	 * @param y The new world origin's y-coordinate relative to the old origin.
+	 **/
+	void translateOrigin(float x, float y);
+
+	/**
 	 * Sets whether this World allows sleep.
 	 * @param allow True to allow, false to disallow.
 	 **/
-	void setAllowSleeping(bool allow);
+	void setSleepingAllowed(bool allow);
 
 	/**
 	 * Returns whether this World allows sleep.
 	 * @return True if allowed, false if disallowed.
 	 **/
-	bool getAllowSleeping() const;
+	bool isSleepingAllowed() const;
 
 	/**
 	 * Returns whether this World is currently locked.

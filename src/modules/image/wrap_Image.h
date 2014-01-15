@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,14 +24,16 @@
 // LOVE
 #include "Image.h"
 #include "wrap_ImageData.h"
+#include "wrap_CompressedData.h"
 
 namespace love
 {
 namespace image
 {
 
-int w_getFormats(lua_State *L);
 int w_newImageData(lua_State *L);
+int w_newCompressedData(lua_State *L);
+int w_isCompressed(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_image(lua_State *L);
 
 } // image

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,16 +39,16 @@ int w_ChainShape_setNextVertex(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
-	c->setNextVertex(x, y);
+	EXCEPT_GUARD(c->setNextVertex(x, y);)
 	return 0;
 }
 
-int w_ChainShape_setPrevVertex(lua_State *L)
+int w_ChainShape_setPreviousVertex(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
-	c->setPrevVertex(x, y);
+	EXCEPT_GUARD(c->setPreviousVertex(x, y);)
 	return 0;
 }
 
@@ -63,8 +63,9 @@ int w_ChainShape_getChildEdge(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
 	int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
-	EdgeShape *e = c->getChildEdge(index);
-	luax_newtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, e);
+	EdgeShape *e = 0;
+	EXCEPT_GUARD(e = c->getChildEdge(index);)
+	luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, e);
 	return 1;
 }
 
@@ -81,7 +82,7 @@ int w_ChainShape_getPoint(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
 	b2Vec2 v;
-	ASSERT_GUARD(v = c->getPoint(index);)
+	EXCEPT_GUARD(v = c->getPoint(index);)
 	lua_pushnumber(L, v.x);
 	lua_pushnumber(L, v.y);
 	return 2;
@@ -92,6 +93,8 @@ int w_ChainShape_getPoints(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	const b2Vec2 *verts = c->getPoints();
 	int count = c->getVertexCount();
+	if (!lua_checkstack(L, count*2))
+		return luaL_error(L, "Too many return values");
 	for (int i = 0; i < count; i++)
 	{
 		b2Vec2 v = Physics::scaleUp(verts[i]);
@@ -104,7 +107,7 @@ int w_ChainShape_getPoints(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "setNextVertex", w_ChainShape_setNextVertex },
-	{ "setPrevVertex", w_ChainShape_setPrevVertex },
+	{ "setPreviousVertex", w_ChainShape_setPreviousVertex },
 	{ "getChildCount", w_ChainShape_getChildCount },
 	{ "getChildEdge", w_ChainShape_getChildEdge },
 	{ "getVertexCount", w_ChainShape_getVertexCount },

@@ -46,7 +46,9 @@ Channel *luax_checkchannel(lua_State *L, int idx)
 int w_Channel_push(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	Variant *var = Variant::fromLua(L, 2);
+	Variant *var = lua_isnoneornil(L, 2) ? 0 : Variant::fromLua(L, 2);
+	if (!var)
+		return luaL_argerror(L, 2, "boolean, number, string, love type, or flat table expected");
 	c->push(var);
 	releaseVariant(c, var);
 	return 0;
@@ -55,7 +57,9 @@ int w_Channel_push(lua_State *L)
 int w_Channel_supply(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	Variant *var = Variant::fromLua(L, 2);
+	Variant *var = lua_isnoneornil(L, 2) ? 0 : Variant::fromLua(L, 2);
+	if (!var)
+		return luaL_argerror(L, 2, "boolean, number, string, love type, or flat table expected");
 	c->supply(var);
 	releaseVariant(c, var);
 	return 0;
@@ -98,10 +102,10 @@ int w_Channel_peek(lua_State *L)
 	return 1;
 }
 
-int w_Channel_count(lua_State *L)
+int w_Channel_getCount(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	lua_pushnumber(L, c->count());
+	lua_pushnumber(L, c->getCount());
 	return 1;
 }
 
@@ -118,7 +122,7 @@ static const luaL_Reg type_functions[] = {
 	{ "pop", w_Channel_pop },
 	{ "demand", w_Channel_demand },
 	{ "peek", w_Channel_peek },
-	{ "count", w_Channel_count },
+	{ "getCount", w_Channel_getCount },
 	{ "clear", w_Channel_clear },
 	{ 0, 0 }
 };

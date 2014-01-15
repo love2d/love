@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,6 @@
 
 #include "ImageData.h"
 
-#include <stdio.h>
-
 using love::thread::Lock;
 
 namespace love
@@ -30,6 +28,7 @@ namespace image
 {
 
 ImageData::ImageData()
+	: data(0)
 {
 	mutex = thread::newMutex();
 }
@@ -39,14 +38,19 @@ ImageData::~ImageData()
 	delete mutex;
 }
 
+int ImageData::getSize() const
+{
+	return getWidth()*getHeight()*sizeof(pixel);
+}
+
 void *ImageData::getData() const
 {
 	return data;
 }
 
-int ImageData::getSize() const
+bool ImageData::inside(int x, int y) const
 {
-	return getWidth()*getHeight()*sizeof(pixel);
+	return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
 }
 
 int ImageData::getWidth() const
@@ -59,11 +63,6 @@ int ImageData::getHeight() const
 	return height;
 }
 
-bool ImageData::inside(int x, int y) const
-{
-	return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
-}
-
 void ImageData::setPixel(int x, int y, pixel c)
 {
 	if (!inside(x, y))
@@ -71,18 +70,25 @@ void ImageData::setPixel(int x, int y, pixel c)
 
 	Lock lock(mutex);
 
-	pixel *pixels = (pixel *)getData();
+	pixel *pixels = (pixel *) getData();
 	pixels[y*getWidth()+x] = c;
 }
 
-pixel ImageData::getPixel(int x, int y)
+void ImageData::setPixelUnsafe(int x, int y, love::image::pixel c)
+{
+	if (!inside(x, y))
+		throw love::Exception("Attempt to set out-of-range pixel!");
+
+	pixel *pixels = (pixel *) getData();
+	pixels[y*getWidth()+x] = c;
+}
+
+pixel ImageData::getPixel(int x, int y) const
 {
 	if (!inside(x, y))
 		throw love::Exception("Attempt to get out-of-range pixel!");
 
-	Lock lock(mutex);
-
-	pixel *pixels = (pixel *)getData();
+	const pixel *pixels = (const pixel *) getData();
 	return pixels[y*getWidth()+x];
 }
 
@@ -143,15 +149,21 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 
 	// If the dimensions match up, copy the entire memory stream in one go
 	if (sw == getWidth() && getWidth() == src->getWidth()
-			&& sh == getHeight() && getHeight() == src->getHeight())
-		memcpy(d, s, sizeof(pixel) * sw * sh);
-	else if (sw > 0)  // Otherwise, copy each row individually
+		&& sh == getHeight() && getHeight() == src->getHeight())
 	{
-		for (int i = 0; i < sh; i++)
-		{
-			memcpy(d + dx + (i + dy) * getWidth(), s + sx + (i + sy) * src->getWidth(), sizeof(pixel) * sw);
-		}
+		memcpy(d, s, sizeof(pixel) * sw * sh);
 	}
+	else if (sw > 0)
+	{
+		// Otherwise, copy each row individually.
+		for (int i = 0; i < sh; i++)
+			memcpy(d + dx + (i + dy) * getWidth(), s + sx + (i + sy) * src->getWidth(), sizeof(pixel) * sw);
+	}
+}
+
+love::thread::Mutex *ImageData::getMutex() const
+{
+	return mutex;
 }
 
 bool ImageData::getConstant(const char *in, ImageData::Format &out)
@@ -168,7 +180,6 @@ StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::forma
 {
 	{"tga", ImageData::FORMAT_TGA},
 	{"bmp", ImageData::FORMAT_BMP},
-	{"gif", ImageData::FORMAT_GIF},
 	{"jpg", ImageData::FORMAT_JPG},
 	{"png", ImageData::FORMAT_PNG},
 };

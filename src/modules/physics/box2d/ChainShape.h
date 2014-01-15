@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,7 @@ public:
 	 * @param x The x-coordinate of the vertex.
 	 * @param y The y-coordinate of the vertex.
 	 **/
-	void setPrevVertex(float x, float y);
+	void setPreviousVertex(float x, float y);
 
 	/**
 	 * Gets the number of children shapes.

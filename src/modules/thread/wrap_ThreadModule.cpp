@@ -18,60 +18,50 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
+// LOVE
 #include "wrap_ThreadModule.h"
 #include "wrap_LuaThread.h"
 #include "wrap_Channel.h"
-#include <filesystem/File.h>
-#include <filesystem/FileData.h>
+#include "ThreadModule.h"
+
+#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 
 namespace love
 {
 namespace thread
 {
+
 static ThreadModule *instance = 0;
 
 int w_newThread(lua_State *L)
 {
 	std::string name = "Thread code";
-	love::Data *data;
-	if (lua_isstring(L, 1))
-		luax_convobj(L, 1, "filesystem", "newFile");
-	if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+	love::Data *data = 0;
+
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
+
+	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
-		try
-		{
-			love::filesystem::File * file = luax_checktype<love::filesystem::File>(L, 1, "File", FILESYSTEM_FILE_T);
-			name = std::string("@") + file->getFilename();
-			data = file->read();
-		}
-		catch (love::Exception & e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
-	}
-	else if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
-	{
-		love::filesystem::FileData * fdata = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
+		love::filesystem::FileData *fdata = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
 		name = std::string("@") + fdata->getFilename();
 		data = fdata;
-		data->retain();
 	}
 	else
 	{
 		data = luax_checktype<love::Data>(L, 1, "Data", DATA_T);
-		data->retain();
 	}
+
 	LuaThread *t = instance->newThread(name, data);
-	// do not worry, file->read() returns retained data
-	data->release();
-	luax_newtype(L, "Thread", THREAD_THREAD_T, (void *)t);
+	luax_pushtype(L, "Thread", THREAD_THREAD_T, t);
 	return 1;
 }
 
 int w_newChannel(lua_State *L)
 {
 	Channel *c = instance->newChannel();
-	luax_newtype(L, "Channel", THREAD_CHANNEL_T, (void *)c);
+	luax_pushtype(L, "Channel", THREAD_CHANNEL_T, c);
 	return 1;
 }
 
@@ -79,7 +69,7 @@ int w_getChannel(lua_State *L)
 {
 	std::string name = luax_checkstring(L, 1);
 	Channel *c = instance->getChannel(name);
-	luax_newtype(L, "Channel", THREAD_CHANNEL_T, (void *)c);
+	luax_pushtype(L, "Channel", THREAD_CHANNEL_T, c);
 	return 1;
 }
 
@@ -101,14 +91,7 @@ extern "C" int luaopen_love_thread(lua_State *L)
 {
 	if (instance == 0)
 	{
-		try
-		{
-			instance = new ThreadModule();
-		}
-		catch (Exception & e)
-		{
-			return luaL_error(L, "%s", e.what());
-		}
+		EXCEPT_GUARD(instance = new love::thread::ThreadModule();)
 	}
 	else
 		instance->retain();
@@ -122,5 +105,6 @@ extern "C" int luaopen_love_thread(lua_State *L)
 
 	return luax_register_module(L, w);
 }
-}
-}
+
+} // thread
+} // love

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,8 +32,107 @@ Rasterizer *luax_checkrasterizer(lua_State *L, int idx)
 	return luax_checktype<Rasterizer>(L, idx, "Rasterizer", FONT_RASTERIZER_T);
 }
 
+int w_Rasterizer_getHeight(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getHeight());
+	return 1;
+}
+
+int w_Rasterizer_getAdvance(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getAdvance());
+	return 1;
+}
+
+int w_Rasterizer_getAscent(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getAscent());
+	return 1;
+}
+
+int w_Rasterizer_getDescent(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getDescent());
+	return 1;
+}
+
+int w_Rasterizer_getLineHeight(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getLineHeight());
+	return 1;
+}
+
+int w_Rasterizer_getGlyphData(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	GlyphData *g = 0;
+
+	EXCEPT_GUARD(
+		// getGlyphData accepts a unicode character or a codepoint number.
+		if (lua_type(L, 2) == LUA_TSTRING)
+		{
+			std::string glyph = luax_checkstring(L, 2);
+			g = t->getGlyphData(glyph);
+		}
+		else
+		{
+			uint32 glyph = (uint32) luaL_checknumber(L, 2);
+			g = t->getGlyphData(glyph);
+		}
+	)
+
+	luax_pushtype(L, "GlyphData", FONT_GLYPH_DATA_T, g);
+	return 1;
+}
+
+int w_Rasterizer_getGlyphCount(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+	lua_pushinteger(L, t->getGlyphCount());
+	return 1;
+}
+
+int w_Rasterizer_hasGlyphs(lua_State *L)
+{
+	Rasterizer *t = luax_checkrasterizer(L, 1);
+
+	bool hasglyph = false;
+
+	int count = lua_gettop(L) - 1;
+	count = count < 1 ? 1 : count;
+
+	EXCEPT_GUARD(
+		for (int i = 2; i < count + 2; i++)
+		{
+			if (lua_type(L, i) == LUA_TSTRING)
+				hasglyph = t->hasGlyphs(luax_checkstring(L, i));
+			else
+				hasglyph = t->hasGlyph((uint32) luaL_checknumber(L, i));
+
+			if (!hasglyph)
+				break;
+		}
+	)
+
+	luax_pushboolean(L, hasglyph);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
+	{ "getHeight", w_Rasterizer_getHeight },
+	{ "getAdvance", w_Rasterizer_getAdvance },
+	{ "getAscent", w_Rasterizer_getAscent },
+	{ "getDescent", w_Rasterizer_getDescent },
+	{ "getLineHeight", w_Rasterizer_getLineHeight },
+	{ "getGlyphData", w_Rasterizer_getGlyphData },
+	{ "getGlyphCount", w_Rasterizer_getGlyphCount },
+	{ "hasGlyphs", w_Rasterizer_hasGlyphs },
 	{ 0, 0 }
 };
 

@@ -1,7 +1,0 @@
-#!/bin/sh
-# Get required packages.
-sudo apt-get -y install subversion build-essential automake autoconf libtool \
-liblua5.1-dev libopenal-dev libsdl1.2-dev libfreetype6-dev \
-libphysfs-dev libdevil-dev libtiff4-dev libmng-dev \
-liblcms1-dev ftp-upload libmpg123-dev libmodplug-dev libpng12-dev \
-libvorbis-dev

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -49,7 +49,7 @@ public:
 	 * usually 1ms.
 	 * @param seconds The number of seconds to sleep for.
 	 **/
-	virtual void sleep(double seconds) = 0;
+	virtual void sleep(double seconds) const = 0;
 
 	/**
 	 * Gets the time between the last two frames, assuming step is called
@@ -65,18 +65,17 @@ public:
 	virtual int getFPS() const = 0;
 
 	/**
-	 * Gets the amount of time since the program started. Only useful for timing
-	 * code or measuring intervals.
-	 * @return The time (in seconds) since the program started.
+	 * Gets the average delta time (seconds per frame) over the last second.
 	 **/
-	virtual double getTime() const = 0;
+	virtual double getAverageDelta() const = 0;
 
 	/**
-	 * Gets the amount of time passed since an unspecified time. The time is accurate
-	 * to the microsecond, and is limited to 24 hours.
+	 * Gets the amount of time passed since an unspecified time. Useful for
+	 * profiling code or measuring intervals. The time is microsecond-precise,
+	 * and increases monotonically.
 	 * @return The time (in seconds)
 	 **/
-	virtual double getMicroTime() const = 0;
+	virtual double getTime() const = 0;
 
 }; // Timer
 

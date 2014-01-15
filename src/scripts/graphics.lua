@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2006-2013 LOVE Development Team
+Copyright (c) 2006-2014 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -1295,16 +1295,18 @@ do
 #define number float
 #define Image sampler2D
 #define extern uniform
-#define Texel texture2D]]
+#define Texel texture2D
+#define love_Canvases gl_FragData]]
 
 	local GLSL_UNIFORMS = [[
-#define ModelViewMatrix gl_ModelViewMatrix
+#define TransformMatrix gl_ModelViewMatrix
 #define ProjectionMatrix gl_ProjectionMatrix
-#define ModelViewProjectionMatrix gl_ModelViewProjectionMatrix
+#define TransformProjectionMatrix gl_ModelViewProjectionMatrix
 #define NormalMatrix gl_NormalMatrix
-uniform sampler2D _tex0_;]]
+uniform sampler2D _tex0_;
+uniform vec2 love_ScreenParams;]]
 
-	local GLSL_VERT = {
+	local GLSL_VERTEX = {
 		HEADER = [[
 #define VERTEX
 
@@ -1319,11 +1321,11 @@ uniform sampler2D _tex0_;]]
 void main() {
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = VertexColor;
-	gl_Position = position(ModelViewProjectionMatrix, VertexPosition);
+	gl_Position = position(TransformProjectionMatrix, VertexPosition);
 }]],
 	}
 
-	local GLSL_FRAG = {
+	local GLSL_PIXEL = {
 		HEADER = [[
 #define PIXEL
 
@@ -1332,64 +1334,105 @@ void main() {
 
 		FOOTER = [[
 void main() {
-	// fix weird crashing issue in OSX when _tex0_ is unused within effect()
+	// fix crashing issue in OSX when _tex0_ is unused within effect()
 	float dummy = texture2D(_tex0_, vec2(.5)).r;
-	gl_FragColor = effect(VaryingColor, _tex0_, VaryingTexCoord.st, gl_FragCoord.xy);
+
+	// See Shader::checkSetScreenParams in Shader.cpp.
+	vec2 pixelcoord = vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenParams[0]) + love_ScreenParams[1]);
+
+	gl_FragColor = effect(VaryingColor, _tex0_, VaryingTexCoord.st, pixelcoord);
+}]],
+
+		FOOTER_MULTI_CANVAS = [[
+void main() {
+	// fix crashing issue in OSX when _tex0_ is unused within effect()
+	float dummy = texture2D(_tex0_, vec2(.5)).r;
+
+	// See Shader::checkSetScreenParams in Shader.cpp.
+	vec2 pixelcoord = vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenParams[0]) + love_ScreenParams[1]);
+
+	effects(VaryingColor, _tex0_, VaryingTexCoord.st, pixelcoord);
 }]],
 	}
 
-	local function createVertCode(vertcode)
-		local vertcodes = {
+	local function createVertexCode(vertexcode)
+		local vertexcodes = {
 			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_VERT.HEADER, GLSL_UNIFORMS,
+			GLSL_SYNTAX, GLSL_VERTEX.HEADER, GLSL_UNIFORMS,
 			"#line 0",
-			vertcode,
-			GLSL_VERT.FOOTER,
+			vertexcode,
+			GLSL_VERTEX.FOOTER,
 		}
-		return table_concat(vertcodes, "\n")
+		return table_concat(vertexcodes, "\n")
 	end
 
-	local function createFragCode(fragcode)
-		local fragcodes = {
+	local function createPixelCode(pixelcode, is_multicanvas)
+		local pixelcodes = {
 			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_FRAG.HEADER, GLSL_UNIFORMS,
+			GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
 			"#line 0",
-			fragcode,
-			GLSL_FRAG.FOOTER
+			pixelcode,
+			is_multicanvas and GLSL_PIXEL.FOOTER_MULTI_CANVAS or GLSL_PIXEL.FOOTER,
 		}
-		return table_concat(fragcodes, "\n")
+		return table_concat(pixelcodes, "\n")
 	end
 
-	function love.graphics._shaderCodeToGLSL(vertcode, fragcode)
-		if vertcode then
-			local s = vertcode:gsub("\r\n\t", " ")
-			s = s:gsub("%w+(%s+)%(", "")
-			if s:match("vec4%s*effect%(") then
-				fragcode = vertcode -- first argument contains frag shader code
+	local function isVertexCode(code)
+		return code:match("vec4%s*position%(") ~= nil
+	end
+
+	local function isPixelCode(code)
+		if code:match("vec4%s*effect%(") then
+			return true
+		elseif code:match("void%s*effects%(") then -- render to multiple canvases simultaniously
+			return true, true
+		else
+			return false
+		end
+	end
+
+	function love.graphics._shaderCodeToGLSL(arg1, arg2)
+		local vertexcode, pixelcode
+		local is_multicanvas = false -- whether pixel code has "effects" function instead of "effect"
+		
+		if arg1 then
+			local s = arg1:gsub("\r\n\t", " ") -- convert whitespace to spaces for parsing
+			s = s:gsub("(%w+)(%s+)%(", "%1(") -- convert "func ()" to "func()"
+
+			if isVertexCode(s) then
+				vertexcode = arg1 -- first arg contains vertex shader code
 			end
-			if not s:match("vec4%s*position%(") then
-				vertcode = nil -- first argument doesn't contain vert shader code
+
+			local ispixel, isMultiCanvas = isPixelCode(s)
+			if ispixel then
+				pixelcode = arg1 -- first arg contains pixel shader code
+				is_multicanvas = isMultiCanvas
 			end
 		end
-		if fragcode then
-			local s = fragcode:gsub("\r\n\t", " ")
-			s = s:gsub("%w+(%s+)%(", "")
-			if s:match("vec4%s*position%(") then
-				vertcode = fragcode -- second argument contains vert shader code
+		
+		if arg2 then
+			local s = arg2:gsub("\r\n\t", " ") -- convert whitespace to spaces for parsing
+			s = s:gsub("(%w+)(%s+)%(", "%1(") -- convert "func ()" to "func()"
+
+			if isVertexCode(s) then
+				vertexcode = arg2 -- second arg contains vertex shader code
 			end
-			if not s:match("vec4%s*effect%(") then
-				fragcode = nil -- second argument doesn't contain frag shader code
+
+			local ispixel, isMultiCanvas = isPixelCode(s)
+			if ispixel then
+				pixelcode = arg2 -- second arg contains pixel shader code
+				is_multicanvas = isMultiCanvas
 			end
 		end
 
-		if vertcode then
-			vertcode = createVertCode(vertcode)
+		if vertexcode then
+			vertexcode = createVertexCode(vertexcode)
 		end
-		if fragcode then
-			fragcode = createFragCode(fragcode)
+		if pixelcode then
+			pixelcode = createPixelCode(pixelcode, is_multicanvas)
 		end
 
-		return vertcode, fragcode
+		return vertexcode, pixelcode
 	end
 
 	function love.graphics._transformGLSLErrorMessages(message)
@@ -1418,80 +1461,4 @@ void main() {
 		if #lines == 1 then return message end
 		return table_concat(lines, "\n")
 	end
-
-	-- helper to transform a matrix from {{a,b,c}, {d,e,f}, ...} to
-	-- {a, b, c, d, e, f, ...}
-	local function flattenMatrices(mat, ...)
-		if not mat then return end
-
-		local tonumber = tonumber
-
-		local ret,l = {}, 1
-		ret.dimension = #mat
-
-		for i = 1,#mat do
-			for k = 1,#mat[i] do
-				ret[l], l = tonumber(mat[i][k]), l+1
-			end
-		end
-
-		return ret, flattenMatrices(...)
-	end
-
-	-- automagic uniform setter
-	local function shader_dispatch_send(self, name, value, ...)
-		local valuetype = type(value)
-		if valuetype == "number" or valuetype == "boolean" then -- scalar
-			self:sendFloat(name, value, ...)
-		elseif valuetype == "userdata" and value:typeOf("Image") then
-			self:sendImage(name, value)
-		elseif valuetype == "userdata" and value:typeOf("Canvas") then
-			self:sendCanvas(name, value)
-		elseif valuetype == "table" then      -- vector or matrix
-			valuetype = type(value[1])
-			if valuetype == "number" or valuetype == "boolean" then
-				self:sendFloat(name, value, ...)
-			elseif valuetype == "table" then
-				self:sendMatrix(name, flattenMatrices(value, ...))
-			else
-				error("Cannot send value (unsupported type: {"..valuetype.."}).")
-			end
-		else
-			if valuetype == "userdata" and value.type then valuetype = value.type end
-			error("Cannot send value (unsupported type: "..valuetype..").")
-		end
-	end
-
-	local newShader = love.graphics.newShader
-	function love.graphics.newShader(vertcode, fragcode)
-		love.graphics.newShader = function(vertcode, fragcode)
-			if love.filesystem then
-				if vertcode and love.filesystem.exists(vertcode) then
-					vertcode = love.filesystem.read(vertcode)
-				end
-				if fragcode and love.filesystem.exists(fragcode) then
-					fragcode = love.filesystem.read(fragcode)
-				end
-			end
-			return newShader(vertcode, fragcode)
-		end
-
-		local shader = love.graphics.newShader(vertcode, fragcode)
-		local meta = getmetatable(shader)
-		meta.send = shader_dispatch_send
-		meta.sendBoolean = meta.sendFloat
-		return shader
-	end
-
-
-	-- PixelEffect compatibility functions
-
-	function love.graphics.newPixelEffect(fragcode)
-		return love.graphics.newShader(nil, fragcode)
-	end
-
-	love.graphics.setPixelEffect = love.graphics.setShader
-	love.graphics.getPixelEffect = love.graphics.getShader
-	
-	love.graphics._effectCodeToGLSL = love.graphics._shaderCodeToGLSL
 end

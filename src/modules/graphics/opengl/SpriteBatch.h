@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@
 #include "graphics/Drawable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
+#include "graphics/Quad.h"
 
 namespace love
 {
@@ -41,8 +42,7 @@ namespace opengl
 {
 
 // Forward declarations.
-class Image;
-class Quad;
+class Texture;
 class VertexBuffer;
 class VertexIndex;
 
@@ -58,7 +58,7 @@ public:
 		USAGE_MAX_ENUM
 	};
 
-	SpriteBatch(Image *image, int size, int usage);
+	SpriteBatch(Texture *texture, int size, int usage);
 	virtual ~SpriteBatch();
 
 	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
@@ -68,33 +68,45 @@ public:
 	void *lock();
 	void unlock();
 
-	void setImage(Image *newimage);
-	Image *getImage();
+	void setTexture(Texture *newtexture);
+	Texture *getTexture();
 
 	/**
-	 * Set the current color for this SpriteBatch. The geometry added
+	 * Set the current color for this SpriteBatch. The sprites added
 	 * after this call will use this color. Note that global color
 	 * will not longer apply to the SpriteBatch if this is used.
 	 *
-	 * @param color The color to use for the following geometry.
+	 * @param color The color to use for the following sprites.
 	 */
 	void setColor(const Color &color);
 
 	/**
-	 * Disable per-quad colors for this SpriteBatch. The next call to
+	 * Disable per-sprite colors for this SpriteBatch. The next call to
 	 * draw will use the global color for all sprites.
 	 */
 	void setColor();
 
 	/**
-	 * Returns whether the SpriteBatch is empty of sprites or not.
+	 * Get the current color for this SpriteBatch. Returns NULL if no color is
+	 * set.
 	 **/
-	bool isEmpty() const;
+	const Color *getColor() const;
 
 	/**
-	 * Returns whether the amount of sprites has reached the buffer limit or not.
+	 * Get the number of sprites currently in this SpriteBatch.
 	 **/
-	bool isFull() const;
+	int getCount() const;
+
+	/**
+	 * Sets the total number of sprites this SpriteBatch can hold.
+	 * Leaves existing sprite data intact when possible.
+	 **/
+	void setBufferSize(int newsize);
+
+	/**
+	 * Get the total number of sprites this SpriteBatch can hold.
+	 **/
+	int getBufferSize() const;
 
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
@@ -104,7 +116,7 @@ public:
 
 private:
 
-	void addv(const vertex *v, int index);
+	void addv(const Vertex *v, int index);
 
 	/**
 	 * Set the color for vertices.
@@ -113,12 +125,9 @@ private:
 	 *          of size 4.
 	 * @param color The color to assign to each vertex.
 	 */
-	void setColorv(vertex *v, const Color &color);
+	void setColorv(Vertex *v, const Color &color);
 
-	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
-	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
-
-	Image *image;
+	Texture *texture;
 
 	// Max number of sprites in the batch.
 	int size;
@@ -126,14 +135,17 @@ private:
 	// The next free element.
 	int next;
 
-	vertex sprite[4];
+	Vertex sprite[4];
 
 	// Current color. This color, if present, will be applied to the next
-	// added quad.
+	// added sprite.
 	Color *color;
 
 	VertexBuffer *array_buf;
 	VertexIndex *element_buf;
+
+	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
+	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
 
 }; // SpriteBatch
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,6 @@
 #include "openal/Audio.h"
 #include "null/Audio.h"
 
-#include "scripts/audio.lua.h"
-
 #include "common/runtime.h"
 
 namespace love
@@ -35,14 +33,29 @@ namespace audio
 
 static Audio *instance = 0;
 
-int w_getNumSources(lua_State *L)
+int w_getSourceCount(lua_State *L)
 {
-	lua_pushinteger(L, instance->getNumSources());
+	lua_pushinteger(L, instance->getSourceCount());
 	return 1;
 }
 
-int w_newSource1(lua_State *L)
+int w_newSource(lua_State *L)
 {
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
+
+	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+		luax_convobj(L, 1, "sound", "newDecoder");
+
+	Source::Type stype = Source::TYPE_STREAM;
+
+	const char *stypestr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	if (stypestr && !Source::getConstant(stypestr, stype))
+		return luaL_error(L, "Invalid source type: %s", stypestr);
+
+	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_T))
+		luax_convobj(L, 1, "sound", "newSoundData");
+
 	Source *t = 0;
 
 	if (luax_istype(L, 1, SOUND_SOUND_DATA_T))
@@ -52,13 +65,11 @@ int w_newSource1(lua_State *L)
 
 	if (t)
 	{
-		luax_newtype(L, "Source", AUDIO_SOURCE_T, (void *)t);
+		luax_pushtype(L, "Source", AUDIO_SOURCE_T, t);
 		return 1;
 	}
 	else
-		return luaL_error(L, "No matching overload");
-
-	return 0;
+		return luax_typerror(L, 1, "Decoder or SoundData");
 }
 
 int w_play(lua_State *L)
@@ -216,7 +227,7 @@ int w_getRecordedData(lua_State *L)
 	if (!sd)
 		lua_pushnil(L);
 	else
-		luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void *)sd);
+		luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
 	return 1;
 }
 
@@ -226,7 +237,7 @@ int w_stopRecording(lua_State *L)
 	{
 		love::sound::SoundData *sd = instance->stopRecording(true);
 		if (!sd) lua_pushnil(L);
-		else luax_newtype(L, "SoundData", SOUND_SOUND_DATA_T, (void *)sd);
+		else luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
 		return 1;
 	}
 	instance->stopRecording(false);
@@ -262,8 +273,8 @@ int w_getDistanceModel(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "getNumSources", w_getNumSources },
-	{ "newSource1", w_newSource1 },
+	{ "getSourceCount", w_getSourceCount },
+	{ "newSource", w_newSource },
 	{ "play", w_play },
 	{ "stop", w_stop },
 	{ "pause", w_pause },
@@ -293,6 +304,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_audio(lua_State *L)
 {
+#ifdef LOVE_ENABLE_AUDIO_OPENAL
 	if (instance == 0)
 	{
 		// Try OpenAL first.
@@ -307,7 +319,9 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	}
 	else
 		instance->retain();
+#endif
 
+#ifdef LOVE_ENABLE_AUDIO_NULL
 	if (instance == 0)
 	{
 		// Fall back to nullaudio.
@@ -320,6 +334,7 @@ extern "C" int luaopen_love_audio(lua_State *L)
 			std::cout << e.what() << std::endl;
 		}
 	}
+#endif
 
 	if (instance == 0)
 		return luaL_error(L, "Could not open any audio module.");
@@ -332,9 +347,6 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	w.types = types;
 
 	int n = luax_register_module(L, w);
-
-	if (luaL_loadbuffer(L, (const char *)audio_lua, sizeof(audio_lua), "audio.lua") == 0)
-		lua_call(L, 0, 0);
 
 	return n;
 }

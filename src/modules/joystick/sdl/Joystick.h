@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,40 +37,96 @@ namespace sdl
 
 class Joystick : public love::joystick::Joystick
 {
-private:
-	SDL_Joystick **joysticks;
 public:
-	Joystick();
+
+	Joystick(int id);
+	Joystick(int id, int joyindex);
+
 	virtual ~Joystick();
 
-	// Implements Module.
+	bool open(int deviceindex);
+	void close();
+
+	bool isConnected() const;
+
 	const char *getName() const;
 
-	void reload();
-	bool checkIndex(int index);
-	int getNumJoysticks();
-	const char *getName(int index);
-	bool open(int index);
-	bool isOpen(int index);
-	bool verifyJoystick(int index);
-	int getNumAxes(int index);
-	int getNumBalls(int index);
-	int getNumButtons(int index);
-	int getNumHats(int index);
-	float clampval(float x);
-	float getAxis(int index, int axis);
-	int getAxes(lua_State *L);
-	int getBall(lua_State *L);
-	bool isDown(int index, int *buttonlist);
-	Hat getHat(int index, int hat);
-	void close(int index);
+	int getAxisCount() const;
+	int getButtonCount() const;
+	int getHatCount() const;
+
+	float getAxis(int axisindex) const;
+	std::vector<float> getAxes() const;
+	Hat getHat(int hatindex) const;
+
+	bool isDown(const std::vector<int> &buttonlist) const;
+
+	bool openGamepad(int deviceindex);
+	bool isGamepad() const;
+
+	float getGamepadAxis(GamepadAxis axis) const;
+	bool isGamepadDown(const std::vector<GamepadButton> &blist) const;
+
+	void *getHandle() const;
+
+	std::string getGUID() const;
+	int getInstanceID() const;
+	int getID() const;
+
+	bool isVibrationSupported();
+	bool setVibration(float left, float right);
+	bool setVibration();
+	void getVibration(float &left, float &right) const;
+
+	static bool getConstant(Hat in, Uint8 &out);
+	static bool getConstant(Uint8 in, Hat &out);
+
+	static bool getConstant(SDL_GameControllerAxis in, GamepadAxis &out);
+	static bool getConstant(GamepadAxis in, SDL_GameControllerAxis &out);
+
+	static bool getConstant(SDL_GameControllerButton in, GamepadButton &out);
+	static bool getConstant(GamepadButton in, SDL_GameControllerButton &out);
 
 private:
+
+	Joystick() {}
+
+	bool checkCreateHaptic();
+	bool runVibrationEffect();
+
+	SDL_Joystick *joyhandle;
+	SDL_GameController *controller;
+	SDL_Haptic *haptic;
+
+	SDL_JoystickID instanceid;
+	std::string pguid;
+	int id;
+
+	std::string name;
+
+	struct Vibration
+	{
+		float left, right;
+		SDL_HapticEffect effect;
+		Uint16 data[4];
+		int id;
+
+		Vibration()
+			: left(0.0f), right(0.0f), effect(), data(), id(-1)
+		{}
+
+	} vibration;
 
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry hatEntries[];
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM> hats;
 
-}; // Joystick
+	static EnumMap<GamepadAxis, SDL_GameControllerAxis, GAMEPAD_AXIS_MAX_ENUM>::Entry gpAxisEntries[];
+	static EnumMap<GamepadAxis, SDL_GameControllerAxis, GAMEPAD_AXIS_MAX_ENUM> gpAxes;
+
+	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM>::Entry gpButtonEntries[];
+	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM> gpButtons;
+	
+};
 
 } // sdl
 } // joystick

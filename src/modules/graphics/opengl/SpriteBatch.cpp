@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,15 +18,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
 #include "SpriteBatch.h"
 
 // OpenGL
 #include "OpenGL.h"
 
 // LOVE
-#include "Image.h"
-#include "Quad.h"
 #include "VertexBuffer.h"
+#include "Texture.h"
+
+// C++
+#include <algorithm>
+
+// C
+#include <stddef.h>
 
 namespace love
 {
@@ -35,16 +41,18 @@ namespace graphics
 namespace opengl
 {
 
-SpriteBatch::SpriteBatch(Image *image, int size, int usage)
-	: image(image)
+SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
+	: texture(texture)
 	, size(size)
 	, next(0)
 	, color(0)
 	, array_buf(0)
 	, element_buf(0)
 {
-	GLenum gl_usage;
+	if (size <= 0)
+		throw love::Exception("Invalid SpriteBatch size.");
 
+	GLenum gl_usage;
 	switch (usage)
 	{
 	default:
@@ -59,7 +67,7 @@ SpriteBatch::SpriteBatch(Image *image, int size, int usage)
 		break;
 	}
 
-	const size_t vertex_size = sizeof(vertex) * 4 * size;
+	const size_t vertex_size = sizeof(Vertex) * 4 * size;
 
 	try
 	{
@@ -79,12 +87,12 @@ SpriteBatch::SpriteBatch(Image *image, int size, int usage)
 		throw love::Exception("Out of memory.");
 	}
 
-	image->retain();
+	texture->retain();
 }
 
 SpriteBatch::~SpriteBatch()
 {
-	image->release();
+	texture->release();
 
 	delete color;
 	delete array_buf;
@@ -98,16 +106,15 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 		return -1;
 
 	// Needed for colors.
-	memcpy(sprite, image->getVertices(), sizeof(vertex)*4);
+	memcpy(sprite, texture->getVertices(), sizeof(Vertex) * 4);
 
 	// Transform.
-	Matrix t;
+	static Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 
 	if (color)
 		setColorv(sprite, *color);
-	
 
 	addv(sprite, (index == -1) ? next : index);
 
@@ -125,10 +132,9 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 		return -1;
 
 	// Needed for colors.
-	memcpy(sprite, quad->getVertices(), sizeof(vertex)*4);
+	memcpy(sprite, quad->getVertices(), sizeof(Vertex) * 4);
 
-	// Transform.
-	Matrix t;
+	static Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 
@@ -164,16 +170,17 @@ void SpriteBatch::unlock()
 	array_buf->unmap();
 }
 
-void SpriteBatch::setImage(Image *newimage)
+void SpriteBatch::setTexture(Texture *newtexture)
 {
-	image->release();
-	image = newimage;
-	image->retain();
+	Object::AutoRelease imagerelease(texture);
+
+	newtexture->retain();
+	texture = newtexture;
 }
 
-Image *SpriteBatch::getImage()
+Texture *SpriteBatch::getTexture()
 {
-	return image;
+	return texture;
 }
 
 void SpriteBatch::setColor(const Color &color)
@@ -190,21 +197,80 @@ void SpriteBatch::setColor()
 	color = 0;
 }
 
-bool SpriteBatch::isEmpty() const
+const Color *SpriteBatch::getColor() const
 {
-	return next == 0;
+	return color;
 }
 
-bool SpriteBatch::isFull() const
+int SpriteBatch::getCount() const
 {
-	return next >= size;
+	return next;
+}
+
+void SpriteBatch::setBufferSize(int newsize)
+{
+	if (newsize <= 0)
+		throw love::Exception("Invalid SpriteBatch size.");
+
+	if (newsize == size)
+		return;
+
+	// Map (lock) the old VertexBuffer to get a pointer to its data.
+	void *old_data = lock();
+
+	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
+
+	VertexBuffer *new_array_buf = 0;
+	VertexIndex *new_element_buf = 0;
+	void *new_data = 0;
+
+	try
+	{
+		new_array_buf = VertexBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
+		new_element_buf = new VertexIndex(newsize);
+
+		// VBO::map can throw an exception. Also we want to scope the bind.
+		VertexBuffer::Bind bind(*new_array_buf);
+		new_data = new_array_buf->map();
+	}
+	catch (love::Exception &)
+	{
+		delete new_array_buf;
+		delete new_element_buf;
+		unlock();
+		throw;
+	}
+
+	// Copy as much of the old data into the new VertexBuffer as can fit.
+	memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
+
+	// We don't need to unmap the old VertexBuffer since we're deleting it.
+	delete array_buf;
+	delete element_buf;
+
+	array_buf = new_array_buf;
+	element_buf = new_element_buf;
+	size = newsize;
+
+	next = std::min(next, newsize);
+
+	// But we should unmap (unlock) the new one!
+	unlock();
+}
+
+int SpriteBatch::getBufferSize() const
+{
+	return size;
 }
 
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
 {
-	const int color_offset = 0;
-	const int vertex_offset = sizeof(unsigned char) * 4;
-	const int texel_offset = sizeof(unsigned char) * 4 + sizeof(float) * 2;
+	const size_t vertex_offset = offsetof(Vertex, x);
+	const size_t texel_offset = offsetof(Vertex, s);
+	const size_t color_offset = offsetof(Vertex, r);
+
+	if (next == 0)
+		return;
 
 	static Matrix t;
 
@@ -213,62 +279,59 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	image->bind();
+	texture->predraw();
 
 	VertexBuffer::Bind array_bind(*array_buf);
 	VertexBuffer::Bind element_bind(*element_buf->getVertexBuffer());
+
+	Color curcolor = gl.getColor();
 
 	// Apply per-sprite color, if a color is set.
 	if (color)
 	{
 		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), array_buf->getPointer(color_offset));
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), array_buf->getPointer(color_offset));
 	}
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(vertex), array_buf->getPointer(vertex_offset));
+	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(vertex_offset));
 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), array_buf->getPointer(texel_offset));
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(texel_offset));
 
+	gl.prepareDraw();
 	glDrawElements(GL_TRIANGLES, element_buf->getIndexCount(next), element_buf->getType(), element_buf->getPointer(0));
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	if (color)
+	{
 		glDisableClientState(GL_COLOR_ARRAY);
+		gl.setColor(curcolor);
+	}
+
+	texture->postdraw();
 
 	glPopMatrix();
 }
 
-void SpriteBatch::addv(const vertex *v, int index)
+void SpriteBatch::addv(const Vertex *v, int index)
 {
-	int sprite_size = sizeof(vertex) * 4;
-
+	static const int sprite_size = 4 * sizeof(Vertex); // bytecount
 	VertexBuffer::Bind bind(*array_buf);
-
 	array_buf->fill(index * sprite_size, sprite_size, v);
 }
 
-void SpriteBatch::setColorv(vertex *v, const Color &color)
+void SpriteBatch::setColorv(Vertex *v, const Color &color)
 {
-	v[0].r = color.r;
-	v[0].g = color.g;
-	v[0].b = color.b;
-	v[0].a = color.a;
-	v[1].r = color.r;
-	v[1].g = color.g;
-	v[1].b = color.b;
-	v[1].a = color.a;
-	v[2].r = color.r;
-	v[2].g = color.g;
-	v[2].b = color.b;
-	v[2].a = color.a;
-	v[3].r = color.r;
-	v[3].g = color.g;
-	v[3].b = color.b;
-	v[3].a = color.a;
+	for (size_t i = 0; i < 4; ++i)
+	{
+		v[i].r = color.r;
+		v[i].g = color.g;
+		v[i].b = color.b;
+		v[i].a = color.a;
+	}
 }
 
 bool SpriteBatch::getConstant(const char *in, UsageHint &out)

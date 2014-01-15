@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,6 +42,38 @@ Lock::~Lock()
 	mutex->unlock();
 }
 
+EmptyLock::EmptyLock()
+	: mutex(0)
+{
+}
+
+EmptyLock::~EmptyLock()
+{
+	if (mutex)
+		mutex->unlock();
+}
+
+void EmptyLock::setLock(Mutex *m)
+{
+	if (m)
+		m->lock();
+
+	if (mutex)
+		mutex->unlock();
+
+	mutex = m;
+}
+
+void EmptyLock::setLock(Mutex &m)
+{
+	m.lock();
+
+	if (mutex)
+		mutex->unlock();
+
+	mutex = &m;
+}
+
 Threadable::Threadable()
 {
 	owner = newThread(this);
@@ -62,9 +94,9 @@ void Threadable::wait()
 	owner->wait();
 }
 
-void Threadable::kill()
+bool Threadable::isRunning() const
 {
-	owner->kill();
+	return owner->isRunning();
 }
 
 } // thread

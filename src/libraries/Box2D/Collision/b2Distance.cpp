@@ -31,7 +31,7 @@ void b2DistanceProxy::Set(const b2Shape* shape, int32 index)
 	{
 	case b2Shape::e_circle:
 		{
-			const b2CircleShape* circle = (b2CircleShape*)shape;
+			const b2CircleShape* circle = static_cast<const b2CircleShape*>(shape);
 			m_vertices = &circle->m_p;
 			m_count = 1;
 			m_radius = circle->m_radius;
@@ -40,16 +40,16 @@ void b2DistanceProxy::Set(const b2Shape* shape, int32 index)
 
 	case b2Shape::e_polygon:
 		{
-			const b2PolygonShape* polygon = (b2PolygonShape*)shape;
+			const b2PolygonShape* polygon = static_cast<const b2PolygonShape*>(shape);
 			m_vertices = polygon->m_vertices;
-			m_count = polygon->m_vertexCount;
+			m_count = polygon->m_count;
 			m_radius = polygon->m_radius;
 		}
 		break;
 
 	case b2Shape::e_chain:
 		{
-			const b2ChainShape* chain = (b2ChainShape*)shape;
+			const b2ChainShape* chain = static_cast<const b2ChainShape*>(shape);
 			b2Assert(0 <= index && index < chain->m_count);
 
 			m_buffer[0] = chain->m_vertices[index];
@@ -70,7 +70,7 @@ void b2DistanceProxy::Set(const b2Shape* shape, int32 index)
 
 	case b2Shape::e_edge:
 		{
-			const b2EdgeShape* edge = (b2EdgeShape*)shape;
+			const b2EdgeShape* edge = static_cast<const b2EdgeShape*>(shape);
 			m_vertices = &edge->m_vertex1;
 			m_count = 2;
 			m_radius = edge->m_radius;
@@ -141,6 +141,7 @@ struct b2Simplex
 			v->wA = b2Mul(transformA, wALocal);
 			v->wB = b2Mul(transformB, wBLocal);
 			v->w = v->wB - v->wA;
+			v->a = 1.0f;
 			m_count = 1;
 		}
 	}
@@ -244,7 +245,7 @@ struct b2Simplex
 		{
 		case 0:
 			b2Assert(false);
-			return 0.0;
+			return 0.0f;
 
 		case 1:
 			return 0.0f;
@@ -465,8 +466,7 @@ void b2Distance(b2DistanceOutput* output,
 	int32 saveA[3], saveB[3];
 	int32 saveCount = 0;
 
-	b2Vec2 closestPoint = simplex.GetClosestPoint();
-	float32 distanceSqr1 = closestPoint.LengthSquared();
+	float32 distanceSqr1 = b2_maxFloat;
 	float32 distanceSqr2 = distanceSqr1;
 
 	// Main iteration loop.

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,7 +39,7 @@ int w_World_update(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	float dt = (float)luaL_checknumber(L, 2);
-	ASSERT_GUARD(t->update(dt);)
+	EXCEPT_GUARD(t->update(dt);)
 	return 0;
 }
 
@@ -87,18 +87,27 @@ int w_World_getGravity(lua_State *L)
 	return t->getGravity(L);
 }
 
-int w_World_setAllowSleeping(lua_State *L)
+int w_World_translateOrigin(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-	bool b = luax_toboolean(L, 2);
-	t->setAllowSleeping(b);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	float arg2 = (float)luaL_checknumber(L, 3);
+	EXCEPT_GUARD(t->translateOrigin(arg1, arg2);)
 	return 0;
 }
 
-int w_World_getAllowSleeping(lua_State *L)
+int w_World_setSleepingAllowed(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-	luax_pushboolean(L, t->getAllowSleeping());
+	bool b = luax_toboolean(L, 2);
+	t->setSleepingAllowed(b);
+	return 0;
+}
+
+int w_World_isSleepingAllowed(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	luax_pushboolean(L, t->isSleepingAllowed());
 	return 1;
 }
 
@@ -162,20 +171,15 @@ int w_World_rayCast(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	ASSERT_GUARD(return t->rayCast(L);)
+	int ret = 0;
+	EXCEPT_GUARD(ret = t->rayCast(L);)
+	return ret;
 }
 
 int w_World_destroy(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-	try
-	{
-		t->destroy();
-	}
-	catch(love::Exception &e)
-	{
-		luaL_error(L, "%s", e.what());
-	}
+	EXCEPT_GUARD(t->destroy();)
 	return 0;
 }
 
@@ -189,8 +193,9 @@ static const luaL_Reg functions[] =
 	{ "getContactFilter", w_World_getContactFilter },
 	{ "setGravity", w_World_setGravity },
 	{ "getGravity", w_World_getGravity },
-	{ "setAllowSleeping", w_World_setAllowSleeping },
-	{ "getAllowSleeping", w_World_getAllowSleeping },
+	{ "translateOrigin", w_World_translateOrigin },
+	{ "setSleepingAllowed", w_World_setSleepingAllowed },
+	{ "isSleepingAllowed", w_World_isSleepingAllowed },
 	{ "isLocked", w_World_isLocked },
 	{ "getBodyCount", w_World_getBodyCount },
 	{ "getJointCount", w_World_getJointCount },

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,159 +33,104 @@ Image *luax_checkimage(lua_State *L, int idx)
 	return luax_checktype<Image>(L, idx, "Image", GRAPHICS_IMAGE_T);
 }
 
-int w_Image_getWidth(lua_State *L)
-{
-	Image *t = luax_checkimage(L, 1);
-	lua_pushnumber(L, t->getWidth());
-	return 1;
-}
-
-int w_Image_getHeight(lua_State *L)
-{
-	Image *t = luax_checkimage(L, 1);
-	lua_pushnumber(L, t->getHeight());
-	return 1;
-}
-
-int w_Image_setFilter(lua_State *L)
-{
-	Image *t = luax_checkimage(L, 1);
-	Image::Filter f = t->getFilter();
-
-	const char *minstr = luaL_checkstring(L, 2);
-	const char *magstr = luaL_optstring(L, 3, minstr);
-
-	if (!Image::getConstant(minstr, f.min))
-		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Image::getConstant(magstr, f.mag))
-		return luaL_error(L, "Invalid filter mode: %s", magstr);
-
-	try
-	{
-		t->setFilter(f);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-
-	return 0;
-}
-
-int w_Image_getFilter(lua_State *L)
-{
-	Image *t = luax_checkimage(L, 1);
-	const Image::Filter f = t->getFilter();
-	const char *minstr;
-	const char *magstr;
-	Image::getConstant(f.min, minstr);
-	Image::getConstant(f.mag, magstr);
-	lua_pushstring(L, minstr);
-	lua_pushstring(L, magstr);
-	return 2;
-}
-
 int w_Image_setMipmapFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	Image::Filter f = t->getFilter();
+	Texture::Filter f = t->getFilter();
 
 	if (lua_isnoneornil(L, 2))
-		f.mipmap = Image::FILTER_NONE; // mipmapping is disabled if no argument is given
+		f.mipmap = Texture::FILTER_NONE; // mipmapping is disabled if no argument is given
 	else
 	{
 		const char *mipmapstr = luaL_checkstring(L, 2);
-		if (!Image::getConstant(mipmapstr, f.mipmap))
+		if (!Texture::getConstant(mipmapstr, f.mipmap))
 			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
 	}
 
-	try
-	{
-		t->setFilter(f);
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-	
+	EXCEPT_GUARD(t->setFilter(f);)
+
+	float sharpness = (float) luaL_optnumber(L, 3, 0);
+	t->setMipmapSharpness(sharpness);
+
 	return 0;
 }
 
 int w_Image_getMipmapFilter(lua_State *L)
 {
 	Image *t = luax_checkimage(L, 1);
-	const Image::Filter f = t->getFilter();
+
+	const Texture::Filter &f = t->getFilter();
 
 	const char *mipmapstr;
-	if (!Image::getConstant(f.mipmap, mipmapstr))
-		return 0; // only return a mipmap filter if mipmapping is enabled
+	if (Texture::getConstant(f.mipmap, mipmapstr))
+		lua_pushstring(L, mipmapstr);
+	else
+		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
 
-	lua_pushstring(L, mipmapstr);
-
-	return 1;
-}
-
-int w_Image_setWrap(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-
-	Image::Wrap w;
-
-	const char *sstr = luaL_checkstring(L, 2);
-	const char *tstr = luaL_optstring(L, 3, sstr);
-
-	if (!Image::getConstant(sstr, w.s))
-		return luaL_error(L, "Invalid wrap mode: %s", sstr);
-	if (!Image::getConstant(tstr, w.t))
-		return luaL_error(L, "Invalid wrap mode, %s", tstr);
-
-	i->setWrap(w);
-
-	return 0;
-}
-
-int w_Image_getWrap(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-	const Image::Wrap w = i->getWrap();
-	const char *sstr;
-	const char *tstr;
-	Image::getConstant(w.s, sstr);
-	Image::getConstant(w.t, tstr);
-	lua_pushstring(L, sstr);
-	lua_pushstring(L, tstr);
+	lua_pushnumber(L, t->getMipmapSharpness());
 	return 2;
 }
 
-int w_Image_setMipmapSharpness(lua_State *L)
+int w_Image_isCompressed(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
+	luax_pushboolean(L, i->isCompressed());
+	return 1;
+}
 
-	float sharpness = (float) luaL_checknumber(L, 2);
-	i->setMipmapSharpness(sharpness);
-
+int w_Image_refresh(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+	EXCEPT_GUARD(i->refresh();)
 	return 0;
 }
 
-int w_Image_getMipmapSharpness(lua_State *L)
+int w_Image_getData(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	lua_pushnumber(L, i->getMipmapSharpness());
+
+	if (i->isCompressed())
+	{
+		love::image::CompressedData *t = i->getCompressedData();
+		if (t)
+		{
+			t->retain();
+			luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
+		}
+		else
+			lua_pushnil(L);
+	}
+	else
+	{
+		love::image::ImageData *t = i->getImageData();
+		if (t)
+		{
+			t->retain();
+			luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
+		}
+		else
+			lua_pushnil(L);
+	}
+
 	return 1;
 }
 
 static const luaL_Reg functions[] =
 {
-	{ "getWidth", w_Image_getWidth },
-	{ "getHeight", w_Image_getHeight },
-	{ "setFilter", w_Image_setFilter },
-	{ "getFilter", w_Image_getFilter },
-	{ "setWrap", w_Image_setWrap },
-	{ "getWrap", w_Image_getWrap },
+	// From wrap_Texture.
+	{ "getWidth", w_Texture_getWidth },
+	{ "getHeight", w_Texture_getHeight },
+	{ "getDimensions", w_Texture_getDimensions },
+	{ "setFilter", w_Texture_setFilter },
+	{ "getFilter", w_Texture_getFilter },
+	{ "setWrap", w_Texture_setWrap },
+	{ "getWrap", w_Texture_getWrap },
+
 	{ "setMipmapFilter", w_Image_setMipmapFilter },
 	{ "getMipmapFilter", w_Image_getMipmapFilter },
-	{ "setMipmapSharpness", w_Image_setMipmapSharpness },
-	{ "getMipmapSharpness", w_Image_getMipmapSharpness },
+	{ "isCompressed", w_Image_isCompressed },
+	{ "refresh", w_Image_refresh },
+	{ "getData", w_Image_getData },
 	{ 0, 0 }
 };
 

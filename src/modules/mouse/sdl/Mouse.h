@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,10 @@
 
 // LOVE
 #include "mouse/Mouse.h"
+#include "Cursor.h"
+
+// C++
+#include <map>
 
 namespace love
 {
@@ -38,6 +42,17 @@ public:
 	// Implements Module.
 	const char *getName() const;
 
+	Mouse();
+	~Mouse();
+
+	love::mouse::Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty);
+	love::mouse::Cursor *getSystemCursor(Cursor::SystemCursor cursortype);
+
+	void setCursor(love::mouse::Cursor *cursor);
+	void setCursor();
+
+	love::mouse::Cursor *getCursor() const;
+
 	int getX() const;
 	int getY() const;
 	void getPosition(int &x, int &y) const;
@@ -47,8 +62,15 @@ public:
 	void setVisible(bool visible);
 	bool isDown(Button *buttonlist) const;
 	bool isVisible() const;
-	void setGrab(bool grab);
+	void setGrabbed(bool grab);
 	bool isGrabbed() const;
+
+private:
+
+	love::mouse::Cursor *curCursor;
+
+	std::map<Cursor::SystemCursor, Cursor *> systemCursors;
+
 }; // Mouse
 
 } // sdl

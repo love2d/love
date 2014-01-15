@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,22 +18,28 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "GlyphData.h"
 
+// UTF-8
+#include "libraries/utf8/utf8.h"
+
+// stdlib
 #include <iostream>
+#include <cstddef>
 
 namespace love
 {
 namespace font
 {
 
-GlyphData::GlyphData(unsigned int glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
+GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
 	: glyph(glyph)
 	, metrics(glyphMetrics)
-	, data(0)
+	, data(nullptr)
 	, format(f)
 {
-	if (metrics.width && metrics.height)
+	if (metrics.width > 0 && metrics.height > 0)
 	{
 		switch (f)
 		{
@@ -83,9 +89,31 @@ int GlyphData::getWidth() const
 	return metrics.width;
 }
 
-unsigned int GlyphData::getGlyph() const
+uint32 GlyphData::getGlyph() const
 {
 	return glyph;
+}
+
+std::string GlyphData::getGlyphString() const
+{
+	char u[5] = {0, 0, 0, 0, 0};
+	ptrdiff_t length = 0;
+
+	try
+	{
+		char *end = utf8::append(glyph, u);
+		length = end - u;
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("Decoding error: %s", e.what());
+	}
+
+	// Just in case...
+	if (length < 0)
+		return "";
+
+	return std::string(u, length);
 }
 
 int GlyphData::getAdvance() const
@@ -127,6 +155,24 @@ GlyphData::Format GlyphData::getFormat() const
 {
 	return format;
 }
+
+bool GlyphData::getConstant(const char *in, GlyphData::Format &out)
+{
+	return formats.find(in, out);
+}
+
+bool GlyphData::getConstant(GlyphData::Format in, const char *&out)
+{
+	return formats.find(in, out);
+}
+
+StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM>::Entry GlyphData::formatEntries[] =
+{
+	{"luminance alpha", GlyphData::FORMAT_LUMINANCE_ALPHA},
+	{"rgba", GlyphData::FORMAT_RGBA},
+};
+
+StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM> GlyphData::formats(GlyphData::formatEntries, sizeof(GlyphData::formatEntries));
 
 } // font
 } // love

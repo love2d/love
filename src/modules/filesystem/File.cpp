@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,9 +34,19 @@ bool File::getConstant(const char *in, Mode &out)
 	return modes.find(in, out);
 }
 
-bool File::getConstant(Mode in, const char  *&out)
+bool File::getConstant(Mode in, const char *&out)
 {
 	return modes.find(in, out);
+}
+
+bool File::getConstant(const char *in, BufferMode &out)
+{
+	return bufferModes.find(in, out);
+}
+
+bool File::getConstant(BufferMode in, const char *&out)
+{
+	return bufferModes.find(in, out);
 }
 
 StringMap<File::Mode, File::MODE_MAX_ENUM>::Entry File::modeEntries[] =
@@ -48,6 +58,15 @@ StringMap<File::Mode, File::MODE_MAX_ENUM>::Entry File::modeEntries[] =
 };
 
 StringMap<File::Mode, File::MODE_MAX_ENUM> File::modes(File::modeEntries, sizeof(File::modeEntries));
+
+StringMap<File::BufferMode, File::BUFFER_MAX_ENUM>::Entry File::bufferModeEntries[] =
+{
+	{"none", File::BUFFER_NONE},
+	{"line", File::BUFFER_LINE},
+	{"full", File::BUFFER_FULL},
+};
+
+StringMap<File::BufferMode, File::BUFFER_MAX_ENUM> File::bufferModes(File::bufferModeEntries, sizeof(File::bufferModeEntries));
 
 } // filesystem
 } // love

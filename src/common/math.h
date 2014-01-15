@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,11 +61,19 @@
 namespace love
 {
 
-struct vertex
+struct Vertex
 {
-	unsigned char r, g, b, a;
 	float x, y;
 	float s, t;
+	unsigned char r, g, b, a;
+};
+
+struct Triangle
+{
+	Triangle(const Vertex &x, const Vertex &y, const Vertex &z)
+		: a(x), b(y), c(z)
+	{}
+	Vertex a, b, c;
 };
 
 inline int next_p2(int x)
@@ -80,42 +88,6 @@ inline float next_p2(float x)
 {
 	return static_cast<float>(next_p2(static_cast<int>(x)));
 }
-
-/**
- * Draws a random number from a uniform distribution.
- * @returns Uniformly distributed random number in [0:1).
- */
-inline float random()
-{
-	// to satisfy picky compilers...
-	return float(double(rand() % RAND_MAX) / double(RAND_MAX));
-}
-
-/**
- * Draws a random number from a uniform distribution.
- * @return Uniformly distributed random number in [0:max).
- */
-inline float random(float max)
-{
-	return random() * max;
-}
-
-/**
- * Draws a random number from a uniform distribution.
- * @return Uniformly distributed random number in [min:max).
- */
-inline float random(float min, float max)
-{
-	return random(max - min) + min;
-}
-
-/**
- * Draws a random number from a normal/gaussian distribution.
- * @param o Standard deviation of the distribution.
- * @returns Normal distributed random number with mean 0 and variance o^2.
- */
-float random_normal(float o = 1.);
-#define random_gaussian random_normal
 
 } // love
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,33 +28,36 @@ namespace graphics
 namespace opengl
 {
 
-Quad *luax_checkframe(lua_State *L, int idx)
+Quad *luax_checkquad(lua_State *L, int idx)
 {
 	return luax_checktype<Quad>(L, idx, "Quad", GRAPHICS_QUAD_T);
 }
 
-int w_Quad_flip(lua_State *L)
-{
-	Quad *quad = luax_checktype<Quad>(L, 1, "Quad", GRAPHICS_QUAD_T);
-	quad->flip(luax_toboolean(L, 2), luax_toboolean(L, 3));
-	return 0;
-}
-
 int w_Quad_setViewport(lua_State *L)
 {
-	Quad *quad = luax_checktype<Quad>(L, 1, "Quad", GRAPHICS_QUAD_T);
+	Quad *quad = luax_checkquad(L, 1);
+
 	Quad::Viewport v;
 	v.x = (float) luaL_checknumber(L, 2);
 	v.y = (float) luaL_checknumber(L, 3);
 	v.w = (float) luaL_checknumber(L, 4);
 	v.h = (float) luaL_checknumber(L, 5);
-	quad->setViewport(v);
+
+	if (lua_isnoneornil(L, 6))
+		quad->setViewport(v);
+	else
+	{
+		float sw = (float) luaL_checknumber(L, 6);
+		float sh = (float) luaL_checknumber(L, 7);
+		quad->refresh(v, sw, sh);
+	}
+
 	return 0;
 }
 
 int w_Quad_getViewport(lua_State *L)
 {
-	Quad *quad = luax_checktype<Quad>(L, 1, "Quad", GRAPHICS_QUAD_T);
+	Quad *quad = luax_checkquad(L, 1);
 	Quad::Viewport v = quad->getViewport();
 	lua_pushnumber(L, v.x);
 	lua_pushnumber(L, v.y);
@@ -63,17 +66,16 @@ int w_Quad_getViewport(lua_State *L)
 	return 4;
 }
 
-static const luaL_Reg w_Quad_functions[] =
+static const luaL_Reg functions[] =
 {
-	{ "flip", w_Quad_flip },
 	{ "setViewport", w_Quad_setViewport },
 	{ "getViewport", w_Quad_getViewport },
 	{ 0, 0 }
 };
 
-extern "C" int luaopen_frame(lua_State *L)
+extern "C" int luaopen_quad(lua_State *L)
 {
-	return luax_register_type(L, "Quad", w_Quad_functions);
+	return luax_register_type(L, "Quad", functions);
 }
 
 } // opengl

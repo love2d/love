@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,10 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "Mouse.h"
+#include "window/sdl/Window.h"
 
 // SDL
-#include <SDL.h>
+#include <SDL_mouse.h>
 
 namespace love
 {
@@ -33,6 +35,64 @@ namespace sdl
 const char *Mouse::getName() const
 {
 	return "love.mouse.sdl";
+}
+
+Mouse::Mouse()
+	: curCursor(0)
+{
+}
+
+Mouse::~Mouse()
+{
+	if (curCursor)
+		setCursor();
+
+	for (auto it = systemCursors.begin(); it != systemCursors.end(); ++it)
+		it->second->release();
+}
+
+love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, int hoty)
+{
+	return new Cursor(data, hotx, hoty);
+}
+
+love::mouse::Cursor *Mouse::getSystemCursor(Cursor::SystemCursor cursortype)
+{
+	Cursor *cursor = NULL;
+	auto it = systemCursors.find(cursortype);
+
+	if (it != systemCursors.end())
+		cursor = it->second;
+	else
+	{
+		cursor = new Cursor(cursortype);
+		systemCursors[cursortype] = cursor;
+	}
+
+	return cursor;
+}
+
+void Mouse::setCursor(love::mouse::Cursor *cursor)
+{
+	Object::AutoRelease cursorrelease(curCursor);
+
+	curCursor = cursor;
+	curCursor->retain();
+
+	SDL_SetCursor((SDL_Cursor *) cursor->getHandle());
+}
+
+void Mouse::setCursor()
+{
+	Object::AutoRelease cursorrelease(curCursor);
+	curCursor = NULL;
+
+	SDL_SetCursor(SDL_GetDefaultCursor());
+}
+
+love::mouse::Cursor *Mouse::getCursor() const
+{
+	return curCursor;
 }
 
 int Mouse::getX() const
@@ -56,7 +116,13 @@ void Mouse::getPosition(int &x, int &y) const
 
 void Mouse::setPosition(int x, int y)
 {
-	SDL_WarpMouse(x, y);
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+
+	SDL_Window *handle = NULL;
+	if (window)
+		handle = (SDL_Window *) window->getHandle();
+
+	SDL_WarpMouseInWindow(handle, x, y);
 }
 
 void Mouse::setX(int x)
@@ -78,7 +144,7 @@ void Mouse::setVisible(bool visible)
 
 bool Mouse::isDown(Button *buttonlist) const
 {
-	Uint8 buttonstate = SDL_GetMouseState(0, 0);
+	Uint32 buttonstate = SDL_GetMouseState(0, 0);
 
 	for (Button button = *buttonlist; button != BUTTON_MAX_ENUM; button = *(++buttonlist))
 	{
@@ -91,17 +157,23 @@ bool Mouse::isDown(Button *buttonlist) const
 
 bool Mouse::isVisible() const
 {
-	return (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) ? true : false;
+	return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
 }
 
-void Mouse::setGrab(bool grab)
+void Mouse::setGrabbed(bool grab)
 {
-	SDL_WM_GrabInput(grab ? SDL_GRAB_ON : SDL_GRAB_OFF);
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	if (window)
+		window->setMouseGrab(grab);
 }
 
 bool Mouse::isGrabbed() const
 {
-	return (SDL_WM_GrabInput(SDL_GRAB_QUERY) ==  SDL_GRAB_ON ? true : false);
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	if (window)
+		return window->isMouseGrabbed();
+	else
+		return false;
 }
 
 } // sdl

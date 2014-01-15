@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -124,6 +124,22 @@ void Contact::resetFriction()
 void Contact::resetRestitution()
 {
 	contact->ResetRestitution();
+}
+
+void Contact::setTangentSpeed(float speed)
+{
+	contact->SetTangentSpeed(speed);
+}
+
+float Contact::getTangentSpeed() const
+{
+	return contact->GetTangentSpeed();
+}
+
+void Contact::getChildren(int &childA, int &childB)
+{
+	childA = contact->GetChildIndexA();
+	childB = contact->GetChildIndexB();
 }
 
 } // box2d

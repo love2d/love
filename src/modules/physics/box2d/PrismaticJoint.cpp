@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,9 +61,9 @@ float PrismaticJoint::getJointSpeed() const
 	return Physics::scaleUp(joint->GetJointSpeed());
 }
 
-void PrismaticJoint::enableMotor(bool motor)
+void PrismaticJoint::setMotorEnabled(bool enable)
 {
-	return joint->EnableMotor(motor);
+	return joint->EnableMotor(enable);
 }
 
 bool PrismaticJoint::isMotorEnabled() const
@@ -96,12 +96,12 @@ float PrismaticJoint::getMaxMotorForce() const
 	return Physics::scaleUp(joint->GetMaxMotorForce());
 }
 
-void PrismaticJoint::enableLimit(bool limit)
+void PrismaticJoint::setLimitsEnabled(bool enable)
 {
-	joint->EnableLimit(limit);
+	joint->EnableLimit(enable);
 }
 
-bool PrismaticJoint::isLimitEnabled() const
+bool PrismaticJoint::hasLimitsEnabled() const
 {
 	return joint->IsLimitEnabled();
 }

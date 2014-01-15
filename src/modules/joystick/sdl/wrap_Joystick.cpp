@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,7 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "wrap_Joystick.h"
+#include "wrap_JoystickModule.h"
+
+#include <vector>
 
 namespace love
 {
@@ -27,157 +31,231 @@ namespace joystick
 namespace sdl
 {
 
-static Joystick *instance = 0;
-
-int w_reload(lua_State *L)
+Joystick *luax_checkjoystick(lua_State *L, int idx)
 {
-	try
-	{
-		instance->reload();
-	}
-	catch(love::Exception &e)
-	{
-		return luaL_error(L, "%s", e.what());
-	}
-	return 0;
+	return luax_checktype<Joystick>(L, idx, "Joystick", JOYSTICK_JOYSTICK_T);
 }
 
-int w_getNumJoysticks(lua_State *L)
+int w_Joystick_isConnected(lua_State *L)
 {
-	lua_pushinteger(L, instance->getNumJoysticks());
+	Joystick *j = luax_checkjoystick(L, 1);
+	luax_pushboolean(L, j->isConnected());
 	return 1;
 }
 
-int w_getName(lua_State *L)
+int w_Joystick_getName(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	lua_pushstring(L, instance->getName(index));
+	Joystick *j = luax_checkjoystick(L, 1);
+	lua_pushstring(L, j->getName());
 	return 1;
 }
 
-int w_getNumAxes(lua_State *L)
+int w_Joystick_getID(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumAxes(index));
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	// IDs are 1-based in Lua.
+	lua_pushinteger(L, j->getID() + 1);
+
+	int instanceid = j->getInstanceID();
+	if (instanceid >= 0)
+		lua_pushinteger(L, instanceid + 1);
+	else
+		lua_pushnil(L);
+
+	return 2;
+}
+
+int w_Joystick_getGUID(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	luax_pushstring(L, j->getGUID());
 	return 1;
 }
 
-int w_getNumBalls(lua_State *L)
+int w_Joystick_getAxisCount(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumBalls(index));
+	Joystick *j = luax_checkjoystick(L, 1);
+	lua_pushinteger(L, j->getAxisCount());
 	return 1;
 }
 
-int w_getNumButtons(lua_State *L)
+int w_Joystick_getButtonCount(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumButtons(index));
+	Joystick *j = luax_checkjoystick(L, 1);
+	lua_pushinteger(L, j->getButtonCount());
 	return 1;
 }
 
-int w_getNumHats(lua_State *L)
+int w_Joystick_getHatCount(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	lua_pushinteger(L, instance->getNumHats(index));
+	Joystick *j = luax_checkjoystick(L, 1);
+	lua_pushinteger(L, j->getHatCount());
 	return 1;
 }
 
-int w_getAxis(lua_State *L)
+int w_Joystick_getAxis(lua_State *L)
 {
-	int index = luaL_checkint(L, 1)-1;
-	int axis = luaL_checkint(L, 2)-1;
-	lua_pushnumber(L, instance->getAxis(index, axis));
+	Joystick *j = luax_checkjoystick(L, 1);
+	int axisindex = luaL_checkint(L, 2) - 1;
+	lua_pushnumber(L, j->getAxis(axisindex));
 	return 1;
 }
 
-int w_getAxes(lua_State *L)
+int w_Joystick_getAxes(lua_State *L)
 {
-	return instance->getAxes(L);
+	Joystick *j = luax_checkjoystick(L, 1);
+	std::vector<float> axes = j->getAxes();
+
+	for (size_t i = 0; i < axes.size(); i++)
+		lua_pushnumber(L, axes[i]);
+
+	return (int) axes.size();
 }
 
-int w_getBall(lua_State *L)
+int w_Joystick_getHat(lua_State *L)
 {
-	return instance->getBall(L);
-}
+	Joystick *j = luax_checkjoystick(L, 1);
+	int hatindex = luaL_checkint(L, 2) - 1;
 
-int w_isDown(lua_State *L)
-{
-	int index = luaL_checkint(L, 1)-1;
-	unsigned int num = lua_gettop(L);
-	int *buttonlist = new int[num];
-	unsigned int counter = 0;
-
-	for (unsigned int i = 1; i < num; i++)
-	{
-		buttonlist[counter++] = (int) luaL_checknumber(L, i+1)-1;
-	}
-	buttonlist[counter] = -1;
-
-	luax_pushboolean(L, instance->isDown(index, buttonlist));
-	delete[] buttonlist;
-	return 1;
-}
-
-int w_getHat(lua_State *L)
-{
-	int index = luaL_checkint(L, 1)-1;
-	int hat = luaL_checkint(L, 2)-1;
-
-	Joystick::Hat h = instance->getHat(index, hat);
+	Joystick::Hat h = j->getHat(hatindex);
 
 	const char *direction = "";
-	Joystick::getConstant(h, direction);
-	lua_pushstring(L, direction);
+	love::joystick::Joystick::getConstant(h, direction);
 
+	lua_pushstring(L, direction);
 	return 1;
+}
+
+int w_Joystick_isDown(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	luaL_checkinteger(L, 2);
+
+	std::vector<int> buttons;
+	for (int i = 2; i <= lua_gettop(L); i++)
+		buttons.push_back(luaL_checkint(L, i) - 1);
+
+	luax_pushboolean(L, j->isDown(buttons));
+	return 1;
+}
+
+int w_Joystick_isGamepad(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	luax_pushboolean(L, j->isGamepad());
+	return 1;
+}
+
+int w_Joystick_getGamepadAxis(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	const char *str = luaL_checkstring(L, 2);
+	Joystick::GamepadAxis axis;
+
+	if (!joystick::Joystick::getConstant(str, axis))
+		return luaL_error(L, "Invalid gamepad axis: %s", str);
+
+	lua_pushnumber(L, j->getGamepadAxis(axis));
+	return 1;
+}
+
+int w_Joystick_isGamepadDown(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	std::vector<Joystick::GamepadButton> buttons;
+	buttons.reserve(lua_gettop(L) - 1);
+
+	luaL_checkstring(L, 2);
+
+	for (int i = 2; i <= lua_gettop(L); i++)
+	{
+		const char *str = luaL_checkstring(L, i);
+		Joystick::GamepadButton button;
+
+		if (!joystick::Joystick::getConstant(str, button))
+			return luaL_error(L, "Invalid gamepad button: %s", str);
+
+		buttons.push_back(button);
+	}
+
+	luax_pushboolean(L, j->isGamepadDown(buttons));
+	return 1;
+}
+
+int w_Joystick_isVibrationSupported(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	luax_pushboolean(L, j->isVibrationSupported());
+	return 1;
+}
+
+int w_Joystick_setVibration(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	bool success = false;
+
+	if (lua_isnoneornil(L, 2))
+	{
+		// Disable joystick vibration if no argument is given.
+		success = j->setVibration();
+	}
+	else
+	{
+		float left = (float) luaL_checknumber(L, 2);
+		float right = (float) luaL_optnumber(L, 3, left);
+		success = j->setVibration(left, right);
+	}
+
+	luax_pushboolean(L, success);
+	return 1;
+}
+
+int w_Joystick_getVibration(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	float left, right;
+	j->getVibration(left, right);
+	lua_pushnumber(L, left);
+	lua_pushnumber(L, right);
+	return 2;
 }
 
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "reload", w_reload },
-	{ "getNumJoysticks", w_getNumJoysticks },
-	{ "getName", w_getName },
-	{ "getNumAxes", w_getNumAxes },
-	{ "getNumBalls", w_getNumBalls },
-	{ "getNumButtons", w_getNumButtons },
-	{ "getNumHats", w_getNumHats },
-	{ "getAxis", w_getAxis },
+	{ "isConnected", w_Joystick_isConnected },
+	{ "getName", w_Joystick_getName },
+	{ "getID", w_Joystick_getID },
+	{ "getGUID", w_Joystick_getGUID },
+	{ "getAxisCount", w_Joystick_getAxisCount },
+	{ "getButtonCount", w_Joystick_getButtonCount },
+	{ "getHatCount", w_Joystick_getHatCount },
+	{ "getAxis", w_Joystick_getAxis },
+	{ "getAxes", w_Joystick_getAxes },
+	{ "getHat", w_Joystick_getHat },
+	{ "isDown", w_Joystick_isDown },
 
-	{ "getAxes", w_getAxes },
-	{ "getBall", w_getBall },
+	{ "isGamepad", w_Joystick_isGamepad },
+	{ "getGamepadAxis", w_Joystick_getGamepadAxis },
+	{ "isGamepadDown", w_Joystick_isGamepadDown },
 
-	{ "isDown", w_isDown },
-	{ "getHat", w_getHat },
-	{ 0, 0 }
+	{ "isVibrationSupported", w_Joystick_isVibrationSupported },
+	{ "setVibration", w_Joystick_setVibration },
+	{ "getVibration", w_Joystick_getVibration },
+
+	// From wrap_JoystickModule.
+	{ "getConnectedIndex", w_getIndex },
+	{ "getGamepadMapping", w_getGamepadMapping },
+	{ 0, 0 },
 };
 
-extern "C" int luaopen_love_joystick(lua_State *L)
+extern "C" int luaopen_joystick(lua_State *L)
 {
-	if (instance == 0)
-	{
-		try
-		{
-			instance = new Joystick();
-		}
-		catch(Exception &e)
-		{
-			return luaL_error(L, e.what());
-		}
-	}
-	else
-		instance->retain();
-
-
-	WrappedModule w;
-	w.module = instance;
-	w.name = "joystick";
-	w.flags = MODULE_T;
-	w.functions = functions;
-	w.types = 0;
-
-	return luax_register_module(L, w);
+	return luax_register_type(L, "Joystick", functions);
 }
 
 } // sdl

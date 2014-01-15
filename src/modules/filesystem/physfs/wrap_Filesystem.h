@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2013 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,9 +26,6 @@
 #include "wrap_File.h"
 #include "wrap_FileData.h"
 
-// SDL
-#include <SDL_loadso.h>
-
 namespace love
 {
 namespace filesystem
@@ -38,32 +35,36 @@ namespace physfs
 
 bool hack_setupWriteDirectory();
 int w_init(lua_State *L);
-int w_setRelease(lua_State *L);
+int w_setFused(lua_State *L);
+int w_isFused(lua_State *L);
 int w_setIdentity(lua_State *L);
 int w_getIdentity(lua_State *L);
 int w_setSource(lua_State *L);
+int w_getSource(lua_State *L);
+int w_mount(lua_State *L);
+int w_unmount(lua_State *L);
 int w_newFile(lua_State *L);
 int w_newFileData(lua_State *L);
 int w_getWorkingDirectory(lua_State *L);
 int w_getUserDirectory(lua_State *L);
 int w_getAppdataDirectory(lua_State *L);
 int w_getSaveDirectory(lua_State *L);
+int w_getSourceBaseDirectory(lua_State *L);
 int w_exists(lua_State *L);
 int w_isDirectory(lua_State *L);
 int w_isFile(lua_State *L);
-int w_mkdir(lua_State *L);
+int w_createDirectory(lua_State *L);
 int w_remove(lua_State *L);
 int w_open(lua_State *L);
 int w_close(lua_State *L);
 int w_read(lua_State *L);
 int w_write(lua_State *L);
-int w_eof(lua_State *L);
-int w_tell(lua_State *L);
-int w_seek(lua_State *L);
-int w_enumerate(lua_State *L);
+int w_append(lua_State *L);
+int w_getDirectoryItems(lua_State *L);
 int w_lines(lua_State *L);
 int w_load(lua_State *L);
 int w_getLastModified(lua_State *L);
+int w_getSize(lua_State *L);
 int loader(lua_State *L);
 int extloader(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State *L);
