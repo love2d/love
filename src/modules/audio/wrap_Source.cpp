@@ -275,13 +275,6 @@ int w_Source_isPlaying(lua_State *L)
 	return 1;
 }
 
-int w_Source_isStatic(lua_State *L)
-{
-	Source *t = luax_checksource(L, 1);
-	luax_pushboolean(L, t->isStatic());
-	return 1;
-}
-
 int w_Source_setVolumeLimits(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -346,6 +339,19 @@ int w_Source_getChannels(lua_State *L)
 	return 1;
 }
 
+int w_Source_getType(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	Source::Type type = t->getType();
+	const char *str = nullptr;
+
+	if (!Source::getConstant(type, str))
+		return luaL_error(L, "Unknown Source type.");
+
+	lua_pushstring(L, str);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "clone", w_Source_clone },
@@ -379,7 +385,6 @@ static const luaL_Reg functions[] =
 	{ "isStopped", w_Source_isStopped },
 	{ "isPaused", w_Source_isPaused },
 	{ "isPlaying", w_Source_isPlaying },
-	{ "isStatic", w_Source_isStatic },
 
 	{ "setVolumeLimits", w_Source_setVolumeLimits },
 	{ "getVolumeLimits", w_Source_getVolumeLimits },
@@ -389,6 +394,7 @@ static const luaL_Reg functions[] =
 	{ "getRolloff", w_Source_getRolloff},
 
 	{ "getChannels", w_Source_getChannels },
+	{ "getType", w_Source_getType },
 
 	{ 0, 0 }
 };

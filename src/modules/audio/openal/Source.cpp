@@ -631,7 +631,7 @@ void Source::reset()
 	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
-	alSourcei(source, AL_LOOPING, isStatic() && isLooping() ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_LOOPING, (type == TYPE_STATIC) && isLooping() ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
@@ -691,11 +691,6 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 	}
 
 	return decoded;
-}
-
-bool Source::isStatic() const
-{
-	return (type == TYPE_STATIC);
 }
 
 void Source::setMinVolume(float volume)

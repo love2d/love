@@ -105,7 +105,6 @@ public:
 	virtual bool isRelative() const;
 	void setLooping(bool looping);
 	bool isLooping() const;
-	bool isStatic() const;
 	virtual void setMinVolume(float volume);
 	virtual float getMinVolume() const;
 	virtual void setMaxVolume(float volume);

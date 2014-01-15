@@ -169,11 +169,6 @@ bool Source::isLooping() const
 	return looping;
 }
 
-bool Source::isStatic() const
-{
-	return (type == TYPE_STATIC);
-}
-
 void Source::setMinVolume(float volume)
 {
 	this->minVolume = volume;
