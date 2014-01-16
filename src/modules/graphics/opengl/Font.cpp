@@ -186,7 +186,15 @@ Font::Glyph *Font::addGlyph(uint32 glyph)
 	if (textureY + h + TEXTURE_PADDING > textureHeight)
 	{
 		// totally out of space - new texture!
-		createTexture();
+		try
+		{
+			createTexture();
+		}
+		catch (love::Exception &)
+		{
+			gd->release();
+			throw;
+		}
 	}
 
 	Glyph *g = new Glyph;
