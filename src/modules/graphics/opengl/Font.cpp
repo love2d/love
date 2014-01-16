@@ -46,6 +46,7 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	, lineHeight(1)
 	, mSpacing(1)
 	, filter(filter)
+	, useSpacesAsTab(false)
 {
 	this->filter.mipmap = Texture::FILTER_NONE;
 
@@ -67,12 +68,15 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	textureWidth = TEXTURE_WIDTHS[textureSizeIndex];
 	textureHeight = TEXTURE_HEIGHTS[textureSizeIndex];
 
-	love::font::GlyphData *gd = 0;
+	love::font::GlyphData *gd = nullptr;
 
 	try
 	{
-		gd = r->getGlyphData(32);
+		gd = r->getGlyphData(32); // Space character.
 		type = (gd->getFormat() == love::font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
+
+		if (!r->hasGlyph(9)) // No tab character in the Rasterizer.
+			useSpacesAsTab = true;
 
 		loadVolatile();
 	}
@@ -172,7 +176,26 @@ void Font::createTexture()
 
 Font::Glyph *Font::addGlyph(uint32 glyph)
 {
-	love::font::GlyphData *gd = rasterizer->getGlyphData(glyph);
+	love::font::GlyphData *gd = nullptr;
+
+	// Use spaces for the tab 'glyph'.
+	if (glyph == 9 && useSpacesAsTab)
+	{
+		love::font::GlyphData *spacegd = rasterizer->getGlyphData(32);
+
+		love::font::GlyphMetrics gm = {};
+		gm.advance = spacegd->getAdvance() * SPACES_PER_TAB;
+		gm.bearingX = spacegd->getBearingX();
+		gm.bearingY = spacegd->getBearingY();
+		love::font::GlyphData::Format f = spacegd->getFormat();
+
+		spacegd->release();
+
+		gd = new love::font::GlyphData(glyph, gm, f);
+	}
+	else
+		gd = rasterizer->getGlyphData(glyph);
+
 	int w = gd->getWidth();
 	int h = gd->getHeight();
 

@@ -202,14 +202,19 @@ private:
 	FontType type;
 	Texture::Filter filter;
 
+	int textureX, textureY;
+	int rowHeight;
+
+	bool useSpacesAsTab;
+
 	static const int NUM_TEXTURE_SIZES = 7;
 	static const int TEXTURE_WIDTHS[NUM_TEXTURE_SIZES];
 	static const int TEXTURE_HEIGHTS[NUM_TEXTURE_SIZES];
 
 	static const int TEXTURE_PADDING = 1;
 
-	int textureX, textureY;
-	int rowHeight;
+	// This will be used if the Rasterizer doesn't have a tab character itself.
+	static const int SPACES_PER_TAB = 4;
 
 }; // Font
 
