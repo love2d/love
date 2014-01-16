@@ -554,6 +554,7 @@ protected:
 
 	// The relative position of the particle emitter.
 	love::Vector position;
+	love::Vector prevPosition;
 
 	// Emission area spread.
 	AreaSpreadDistribution areaSpreadDistribution;
@@ -610,11 +611,11 @@ protected:
 	void createBuffers(size_t size);
 	void deleteBuffers();
 
-	void addParticle();
+	void addParticle(float t);
 	particle *removeParticle(particle *p);
 
 	// Called by addParticle.
-	void initParticle(particle *p);
+	void initParticle(particle *p, float t);
 	void insertTop(particle *p);
 	void insertBottom(particle *p);
 	void insertRandom(particle *p);

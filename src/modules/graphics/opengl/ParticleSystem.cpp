@@ -118,6 +118,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, emissionRate(p.emissionRate)
 	, emitCounter(0.0f)
 	, position(p.position)
+	, prevPosition(p.prevPosition)
 	, areaSpreadDistribution(p.areaSpreadDistribution)
 	, areaSpread(p.areaSpread)
 	, lifetime(p.lifetime)
@@ -205,14 +206,14 @@ uint32 ParticleSystem::getBufferSize() const
 	return maxParticles;
 }
 
-void ParticleSystem::addParticle()
+void ParticleSystem::addParticle(float t)
 {
 	if (isFull())
 		return;
 
 	// Gets a free particle and updates the allocation pointer.
 	particle *p = pFree++;
-	initParticle(p);
+	initParticle(p, t);
 
 	switch (insertMode)
 	{
@@ -231,9 +232,12 @@ void ParticleSystem::addParticle()
 	activeParticles++;
 }
 
-void ParticleSystem::initParticle(particle *p)
+void ParticleSystem::initParticle(particle *p, float t)
 {
 	float min,max;
+
+	// Linearly interpolate between the previous and current emitter position.
+	love::Vector pos = prevPosition + (position - prevPosition) * t;
 
 	min = particleLifeMin;
 	max = particleLifeMax;
@@ -243,8 +247,8 @@ void ParticleSystem::initParticle(particle *p)
 		p->life = (float) rng.random(min, max);
 	p->lifetime = p->life;
 
-	p->position[0] = position.getX();
-	p->position[1] = position.getY();
+	p->position[0] = pos.x;
+	p->position[1] = pos.y;
 
 	switch (areaSpreadDistribution)
 	{
@@ -265,7 +269,7 @@ void ParticleSystem::initParticle(particle *p)
 	max = direction + spread/2.0f;
 	p->direction = (float) rng.random(min, max);
 
-	p->origin = position;
+	p->origin = pos;
 
 	min = speedMin;
 	max = speedMax;
@@ -748,7 +752,7 @@ void ParticleSystem::emit(uint32 num)
 	num = std::min(num, maxParticles - activeParticles);
 
 	while(num--)
-		addParticle();
+		addParticle(1.0f);
 }
 
 bool ParticleSystem::isActive() const
@@ -847,25 +851,6 @@ void ParticleSystem::update(float dt)
 	if (pMem == nullptr || dt == 0.0f)
 		return;
 
-	// Make some more particles.
-	if (active)
-	{
-		float rate = 1.0f / emissionRate; // the amount of time between each particle emit
-		emitCounter += dt;
-		while (emitCounter > rate)
-		{
-			addParticle();
-			emitCounter -= rate;
-		}
-		/*int particles = (int)(emissionRate * dt);
-		for (int i = 0; i != particles; i++)
-			add();*/
-
-		life -= dt;
-		if (lifetime != -1 && life < 0)
-			stop();
-	}
-
 	// Traverse all particles and update.
 	particle *p = pHead;
 
@@ -940,6 +925,28 @@ void ParticleSystem::update(float dt)
 			p = p->next;
 		}
 	}
+
+	// Make some more particles.
+	if (active)
+	{
+		float rate = 1.0f / emissionRate; // the amount of time between each particle emit
+		emitCounter += dt;
+		float total = emitCounter - rate;
+		while (emitCounter > rate)
+		{
+			addParticle(1.0f - (emitCounter - rate) / total);
+			emitCounter -= rate;
+		}
+		/*int particles = (int)(emissionRate * dt);
+		 for (int i = 0; i != particles; i++)
+		 add();*/
+
+		life -= dt;
+		if (lifetime != -1 && life < 0)
+			stop();
+	}
+
+	prevPosition = position;
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)
