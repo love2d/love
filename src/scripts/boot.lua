@@ -389,6 +389,7 @@ function love.init()
 			borderless = c.window.borderless,
 			centered = c.window.centered,
 			display = c.window.display,
+			highdpi = c.window.highdpi,
 		}), "Could not set window mode")
 		love.window.setTitle(c.window.title or c.title)
 		if c.window.icon then
@@ -1374,8 +1375,9 @@ function love.nogame()
 		local ox = rain.ox
 		local oy = rain.oy
 
-		local batch_w = 2 * math.ceil(love.graphics.getWidth() / sx) + 2
-		local batch_h = 2 * math.ceil(love.graphics.getHeight() / sy) + 2
+		local m = 1 / love.window.getPixelScale()
+		local batch_w = 2 * math.ceil(m * love.graphics.getWidth() / sx) + 2
+		local batch_h = 2 * math.ceil(m * love.graphics.getHeight() / sy) + 2
 
 		batch:clear()
 
@@ -1410,8 +1412,9 @@ function love.nogame()
 		g_time = g_time + dt / 2
 		local int, frac = math.modf(g_time)
 		update_rain(frac)
-		inspector.x = love.graphics.getWidth() * 0.45
-		inspector.y = love.graphics.getHeight() * 0.55
+		local scale = love.window.getPixelScale()
+		inspector.x = love.graphics.getWidth() * 0.45 / scale
+		inspector.y = love.graphics.getHeight() * 0.55 / scale
 	end
 
 	local function draw_grid()
@@ -1482,8 +1485,13 @@ function love.nogame()
 	function love.draw()
 		love.graphics.setColor(255, 255, 255)
 
+		love.graphics.push()
+		love.graphics.scale(love.window.getPixelScale())
+
 		draw_grid()
 		draw_inspector()
+
+		love.graphics.pop()
 	end
 	
 	function love.keyreleased(key)
@@ -1499,6 +1507,7 @@ function love.nogame()
 		t.modules.physics = false
 		t.modules.joystick = false
 		t.window.resizable = true
+		t.window.highdpi = true
 	end
 end
 
