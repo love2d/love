@@ -62,7 +62,7 @@ static void pixelToWindowCoords(int *x, int *y)
 		*x = int(double(*x) / scale);
 
 	if (y != nullptr)
-		*y = int(double(*x) / scale);
+		*y = int(double(*y) / scale);
 }
 
 const char *Mouse::getName() const
