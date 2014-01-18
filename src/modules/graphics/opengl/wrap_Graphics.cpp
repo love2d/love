@@ -1122,8 +1122,9 @@ int w_line(lua_State *L)
 		args = lua_objlen(L, 1);
 		is_table = true;
 	}
+
 	if (args % 2 != 0)
-		return luaL_error(L, "Number of vertices must be a multiple of two");
+		return luaL_error(L, "Number of vertex components must be a multiple of two");
 	else if (args < 4)
 		return luaL_error(L, "Need at least two vertices to draw a line");
 
@@ -1224,7 +1225,7 @@ int w_polygon(lua_State *L)
 	}
 
 	if (args % 2 != 0)
-		return luaL_error(L, "Number of vertices must be a multiple of two");
+		return luaL_error(L, "Number of vertex components must be a multiple of two");
 	else if (args < 6)
 		return luaL_error(L, "Need at least three vertices to draw a polygon");
 
