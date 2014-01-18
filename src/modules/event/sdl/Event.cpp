@@ -51,7 +51,7 @@ static void windowToPixelCoords(int *x, int *y)
 		*x = int(double(*x) * scale);
 
 	if (y != nullptr)
-		*y = int(double(*x) * scale);
+		*y = int(double(*y) * scale);
 }
 
 
