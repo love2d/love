@@ -37,26 +37,27 @@ namespace window
 
 // Forward-declared so it can be used in the class methods. We can't define the
 // whole thing here because it uses the Window::Type enum.
-struct WindowAttributes;
+struct WindowSettings;
 
 class Window : public Module
 {
 public:
 
-	// Types of window attributes.
-	enum Attribute
+	// Different window settings.
+	enum Setting
 	{
-		ATTRIB_FULLSCREEN,
-		ATTRIB_FULLSCREEN_TYPE,
-		ATTRIB_VSYNC,
-		ATTRIB_FSAA,
-		ATTRIB_RESIZABLE,
-		ATTRIB_MIN_WIDTH,
-		ATTRIB_MIN_HEIGHT,
-		ATTRIB_BORDERLESS,
-		ATTRIB_CENTERED,
-		ATTRIB_DISPLAY,
-		ATTRIB_MAX_ENUM
+		SETTING_FULLSCREEN,
+		SETTING_FULLSCREEN_TYPE,
+		SETTING_VSYNC,
+		SETTING_FSAA,
+		SETTING_RESIZABLE,
+		SETTING_MIN_WIDTH,
+		SETTING_MIN_HEIGHT,
+		SETTING_BORDERLESS,
+		SETTING_CENTERED,
+		SETTING_DISPLAY,
+		SETTING_HIGHDPI,
+		SETTING_MAX_ENUM
 	};
 
 	enum FullscreenType
@@ -74,8 +75,8 @@ public:
 
 	virtual ~Window();
 
-	virtual bool setWindow(int width = 800, int height = 600, WindowAttributes *attribs = 0) = 0;
-	virtual void getWindow(int &width, int &height, WindowAttributes &attribs) = 0;
+	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
+	virtual void getWindow(int &width, int &height, WindowSettings &settings) = 0;
 
 	virtual bool setFullscreen(bool fullscreen, FullscreenType fstype) = 0;
 	virtual bool setFullscreen(bool fullscreen) = 0;
@@ -113,14 +114,16 @@ public:
 	virtual void setMouseGrab(bool grab) = 0;
 	virtual bool isMouseGrabbed() const = 0;
 
+	virtual double getPixelScale() const = 0;
+
 	virtual const void *getHandle() const = 0;
 
 	//virtual static Window *createSingleton() = 0;
 	//virtual static Window *getSingleton() = 0;
 	// No virtual statics, of course, but you are supposed to implement these statics.
 
-	static bool getConstant(const char *in, Attribute &out);
-	static bool getConstant(Attribute in, const char *&out);
+	static bool getConstant(const char *in, Setting &out);
+	static bool getConstant(Setting in, const char *&out);
 
 	static bool getConstant(const char *in, FullscreenType &out);
 	static bool getConstant(FullscreenType in, const char *&out);
@@ -131,17 +134,18 @@ protected:
 
 private:
 
-	static StringMap<Attribute, ATTRIB_MAX_ENUM>::Entry attributeEntries[];
-	static StringMap<Attribute, ATTRIB_MAX_ENUM> attributes;
+	static StringMap<Setting, SETTING_MAX_ENUM>::Entry settingEntries[];
+	static StringMap<Setting, SETTING_MAX_ENUM> settings;
 
 	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM>::Entry fullscreenTypeEntries[];
 	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM> fullscreenTypes;
 
 }; // Window
 
-struct WindowAttributes
+struct WindowSettings
 {
-	WindowAttributes();
+	WindowSettings();
+
 	bool fullscreen; // = false
 	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_NORMAL
 	bool vsync; // = true
@@ -152,7 +156,9 @@ struct WindowAttributes
 	bool borderless; // = false
 	bool centered; // = true
 	int display; // = 0
-}; // WindowFlags
+	bool highdpi; // false
+
+}; // WindowSettings
 
 } // window
 } // love

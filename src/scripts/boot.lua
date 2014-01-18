@@ -300,6 +300,7 @@ function love.init()
 			borderless = false,
 			resizable = false,
 			centered = true,
+			highdpi = false,
 		},
 		modules = {
 			event = true,

@@ -26,19 +26,19 @@ namespace love
 namespace window
 {
 
-Window *Window::singleton = NULL;
+Window *Window::singleton = nullptr;
 
 Window::~Window()
 {
 	if (singleton == this)
-		singleton = NULL;
+		singleton = nullptr;
 }
 
 void Window::swapBuffers()
 {
 }
 
-WindowAttributes::WindowAttributes()
+WindowSettings::WindowSettings()
 	: fullscreen(false)
 	, fstype(Window::FULLSCREEN_TYPE_NORMAL)
 	, vsync(true)
@@ -49,6 +49,7 @@ WindowAttributes::WindowAttributes()
 	, borderless(false)
 	, centered(true)
 	, display(0)
+	, highdpi(false)
 {
 }
 
@@ -62,31 +63,32 @@ bool Window::getConstant(Window::FullscreenType in, const char *&out)
 	return fullscreenTypes.find(in, out);
 }
 
-bool Window::getConstant(const char *in, Window::Attribute &out)
+bool Window::getConstant(const char *in, Window::Setting &out)
 {
-	return attributes.find(in, out);
+	return settings.find(in, out);
 }
 
-bool Window::getConstant(Window::Attribute in, const char *&out)
+bool Window::getConstant(Window::Setting in, const char *&out)
 {
-	return attributes.find(in, out);
+	return settings.find(in, out);
 }
 
-StringMap<Window::Attribute, Window::ATTRIB_MAX_ENUM>::Entry Window::attributeEntries[] =
+StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntries[] =
 {
-	{"fullscreen", ATTRIB_FULLSCREEN},
-	{"fullscreentype", ATTRIB_FULLSCREEN_TYPE},
-	{"vsync", ATTRIB_VSYNC},
-	{"fsaa", ATTRIB_FSAA},
-	{"resizable", ATTRIB_RESIZABLE},
-	{"minwidth", ATTRIB_MIN_WIDTH},
-	{"minheight", ATTRIB_MIN_HEIGHT},
-	{"borderless", ATTRIB_BORDERLESS},
-	{"centered", ATTRIB_CENTERED},
-	{"display", ATTRIB_DISPLAY}
+	{"fullscreen", SETTING_FULLSCREEN},
+	{"fullscreentype", SETTING_FULLSCREEN_TYPE},
+	{"vsync", SETTING_VSYNC},
+	{"fsaa", SETTING_FSAA},
+	{"resizable", SETTING_RESIZABLE},
+	{"minwidth", SETTING_MIN_WIDTH},
+	{"minheight", SETTING_MIN_HEIGHT},
+	{"borderless", SETTING_BORDERLESS},
+	{"centered", SETTING_CENTERED},
+	{"display", SETTING_DISPLAY},
+	{"highdpi", SETTING_HIGHDPI},
 };
 
-StringMap<Window::Attribute, Window::ATTRIB_MAX_ENUM> Window::attributes(Window::attributeEntries, sizeof(Window::attributeEntries));
+StringMap<Window::Setting, Window::SETTING_MAX_ENUM> Window::settings(Window::settingEntries, sizeof(Window::settingEntries));
 
 StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
 {

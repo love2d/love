@@ -37,6 +37,24 @@ namespace event
 namespace sdl
 {
 
+// SDL reports mouse coordinates in the window coordinate system in OS X, but
+// we want them in pixel coordinates (may be different with high-DPI enabled.)
+static void windowToPixelCoords(int *x, int *y)
+{
+	double scale = 1.0;
+
+	window::Window *window = (window::Window *) Module::findInstance("love.window.");
+	if (window != nullptr)
+		scale = window->getPixelScale();
+
+	if (x != nullptr)
+		*x = int(double(*x) * scale);
+
+	if (y != nullptr)
+		*y = int(double(*x) * scale);
+}
+
+
 const char *Event::getName() const
 {
 	return "love.event.sdl";
@@ -162,8 +180,11 @@ Message *Event::convert(const SDL_Event &e) const
 	case SDL_MOUSEBUTTONUP:
 		if (buttons.find(e.button.button, button) && mouse::Mouse::getConstant(button, txt))
 		{
-			arg1 = new Variant((double) e.button.x);
-			arg2 = new Variant((double) e.button.y);
+			int x = e.button.x;
+			int y = e.button.y;
+			windowToPixelCoords(&x, &y);
+			arg1 = new Variant((double) x);
+			arg2 = new Variant((double) y);
 			arg3 = new Variant(txt, strlen(txt));
 			msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
 							  "mousepressed" : "mousereleased",
@@ -182,6 +203,7 @@ Message *Event::convert(const SDL_Event &e) const
 
 			int mx, my;
 			SDL_GetMouseState(&mx, &my);
+			windowToPixelCoords(&mx, &my);
 
 			arg1 = new Variant((double) mx);
 			arg2 = new Variant((double) my);
@@ -366,7 +388,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 Message *Event::convertWindowEvent(const SDL_Event &e) const
 {
 	Message *msg = 0;
-	Variant *arg1, *arg2;
+	Variant *arg1, *arg2, *arg3, *arg4;
 	window::Window *win = 0;
 
 	if (e.type != SDL_WINDOWEVENT)
@@ -402,17 +424,31 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 		win = (window::Window *) Module::findInstance("love.window.");
 		if (win)
 		{
+			int px_w = e.window.data1;
+			int px_h = e.window.data2;
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+			SDL_Window *sdlwin = SDL_GetWindowFromID(e.window.windowID);
+			if (sdlwin)
+				SDL_GL_GetDrawableSize(sdlwin, &px_w, &px_h);
+#endif
+
 			win->onWindowResize(e.window.data1, e.window.data2);
 
 			graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
 			if (gfx)
-				gfx->setViewportSize(e.window.data1, e.window.data2);
+				gfx->setViewportSize(px_w, px_h);
+
+			arg1 = new Variant((double) px_w);
+			arg2 = new Variant((double) px_h);
+			arg3 = new Variant((double) e.window.data1);
+			arg4 = new Variant((double) e.window.data2);
+			msg = new Message("resize", arg1, arg2, arg3, arg4);
+			arg1->release();
+			arg2->release();
+			arg3->release();
+			arg4->release();
 		}
-		arg1 = new Variant((double) e.window.data1);
-		arg2 = new Variant((double) e.window.data2);
-		msg = new Message("resize", arg1, arg2);
-		arg1->release();
-		arg2->release();
 		break;
 	}
 

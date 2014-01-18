@@ -32,6 +32,39 @@ namespace mouse
 namespace sdl
 {
 
+// SDL reports mouse coordinates in the window coordinate system in OS X, but
+// we want them in pixel coordinates (may be different with high-DPI enabled.)
+static void windowToPixelCoords(int *x, int *y)
+{
+	double scale = 1.0;
+
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	if (window != nullptr)
+		scale = window->getPixelScale();
+
+	if (x != nullptr)
+		*x = int(double(*x) * scale);
+
+	if (y != nullptr)
+		*y = int(double(*x) * scale);
+}
+
+// And vice versa for setting mouse coordinates.
+static void pixelToWindowCoords(int *x, int *y)
+{
+	double scale = 1.0;
+
+	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	if (window != nullptr)
+		scale = window->getPixelScale();
+
+	if (x != nullptr)
+		*x = int(double(*x) / scale);
+
+	if (y != nullptr)
+		*y = int(double(*x) / scale);
+}
+
 const char *Mouse::getName() const
 {
 	return "love.mouse.sdl";
@@ -98,30 +131,40 @@ love::mouse::Cursor *Mouse::getCursor() const
 int Mouse::getX() const
 {
 	int x;
-	SDL_GetMouseState(&x, 0);
+	SDL_GetMouseState(&x, nullptr);
+	windowToPixelCoords(&x, nullptr);
+
 	return x;
 }
 
 int Mouse::getY() const
 {
 	int y;
-	SDL_GetMouseState(0, &y);
+	SDL_GetMouseState(nullptr, &y);
+	windowToPixelCoords(nullptr, &y);
+
 	return y;
 }
 
 void Mouse::getPosition(int &x, int &y) const
 {
-	SDL_GetMouseState(&x, &y);
+	int mx, my;
+	SDL_GetMouseState(&mx, &my);
+	windowToPixelCoords(&mx, &my);
+
+	x = mx;
+	y = my;
 }
 
 void Mouse::setPosition(int x, int y)
 {
 	love::window::Window *window = love::window::sdl::Window::getSingleton();
 
-	SDL_Window *handle = NULL;
+	SDL_Window *handle = nullptr;
 	if (window)
 		handle = (SDL_Window *) window->getHandle();
 
+	pixelToWindowCoords(&x, &y);
 	SDL_WarpMouseInWindow(handle, x, y);
 }
 
