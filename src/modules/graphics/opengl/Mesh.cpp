@@ -35,6 +35,7 @@ Mesh::Mesh(const std::vector<Vertex> &verts, Mesh::DrawMode mode)
 	, vertex_count(0)
 	, ibo(nullptr)
 	, element_count(0)
+	, instance_count(1)
 	, draw_mode(mode)
 	, texture(nullptr)
 	, colors_enabled(false)
@@ -51,8 +52,8 @@ Mesh::~Mesh()
 
 void Mesh::setVertices(const std::vector<Vertex> &verts)
 {
-	if (verts.size() < 3)
-		throw love::Exception("At least 3 vertices are required.");
+	if (verts.size() == 0)
+		throw love::Exception("At least one vertex is required.");
 
 	size_t size = sizeof(Vertex) * verts.size();
 
@@ -170,6 +171,19 @@ size_t Mesh::getVertexMapCount() const
 	return element_count;
 }
 
+void Mesh::setInstanceCount(int count)
+{
+	if (count < 1)
+		count = 1;
+
+	instance_count = count;
+}
+
+int Mesh::getInstanceCount() const
+{
+	return instance_count;
+}
+
 void Mesh::setTexture(Texture *tex)
 {
 	tex->retain();
@@ -270,18 +284,27 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 
 	if (ibo && element_count > 0)
 	{
+		// Use the custom vertex map (index buffer) to draw the vertices.
 		VertexBuffer::Bind ibo_bind(*ibo);
 
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
 
-		// Use the custom vertex map to draw the vertices.
-		glDrawElements(mode, element_count, GL_UNSIGNED_INT, ibo->getPointer(0));
+		const void *indices = ibo->getPointer(0);
+		const GLenum type = GL_UNSIGNED_INT;
+
+		if (instance_count > 1)
+			gl.drawElementsInstanced(mode, element_count, type, indices, instance_count);
+		else
+			glDrawElements(mode, element_count, type, indices);
 	}
 	else
 	{
 		// Normal non-indexed drawing (no custom vertex map.)
-		glDrawArrays(mode, 0, vertex_count);
+		if (instance_count > 1)
+			gl.drawArraysInstanced(mode, 0, vertex_count, instance_count);
+		else
+			glDrawArrays(mode, 0, vertex_count);
 	}
 
 	if (wireframe)

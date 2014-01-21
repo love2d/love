@@ -113,6 +113,8 @@ void OpenGL::initContext()
 	initMaxValues();
 	createDefaultTexture();
 
+	state.lastPseudoInstanceID = -1;
+
 	contextInitialized = true;
 }
 
@@ -214,10 +216,69 @@ void OpenGL::createDefaultTexture()
 
 void OpenGL::prepareDraw()
 {
-	// Make sure the active shader has the correct values for the built-in
-	// screen params uniform.
-	if (Shader::current)
-		Shader::current->checkSetScreenParams();
+	Shader *shader = Shader::current;
+	if (shader != nullptr)
+	{
+		// Make sure the active shader has the correct values for its
+		// love-provided uniforms.
+		shader->checkSetScreenParams();
+
+		// Make sure the Instance ID variable is up-to-date when
+		// pseudo-instancing is used.
+		if (state.lastPseudoInstanceID != 0 && shader->hasVertexAttrib(ATTRIB_PSEUDO_INSTANCE_ID))
+		{
+			glVertexAttrib1f((GLuint) ATTRIB_PSEUDO_INSTANCE_ID, 0.0f);
+			state.lastPseudoInstanceID = 0;
+		}
+	}
+}
+
+void OpenGL::drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
+{
+	Shader *shader = Shader::current;
+
+	if (GLEE_ARB_draw_instanced)
+		glDrawArraysInstancedARB(mode, first, count, primcount);
+	else
+	{
+		bool shaderHasID = shader && shader->hasVertexAttrib(ATTRIB_PSEUDO_INSTANCE_ID);
+
+		// Pseudo-instancing fallback.
+		for (int i = 0; i < primcount; i++)
+		{
+			if (shaderHasID)
+				glVertexAttrib1f((GLuint) ATTRIB_PSEUDO_INSTANCE_ID, (GLfloat) i);
+
+			glDrawArrays(mode, first, count);
+		}
+
+		if (shaderHasID)
+			state.lastPseudoInstanceID = primcount - 1;
+	}
+}
+
+void OpenGL::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount)
+{
+	Shader *shader = Shader::current;
+
+	if (GLEE_ARB_draw_instanced)
+		glDrawElementsInstancedARB(mode, count, type, indices, primcount);
+	else
+	{
+		bool shaderHasID = shader && shader->hasVertexAttrib(ATTRIB_PSEUDO_INSTANCE_ID);
+
+		// Pseudo-instancing fallback.
+		for (int i = 0; i < primcount; i++)
+		{
+			if (shaderHasID)
+				glVertexAttrib1f((GLuint) ATTRIB_PSEUDO_INSTANCE_ID, (GLfloat) i);
+
+			glDrawElements(mode, count, type, indices);
+		}
+
+		if (shaderHasID)
+			state.lastPseudoInstanceID = primcount - 1;
+	}
 }
 
 void OpenGL::setColor(const Color &c)

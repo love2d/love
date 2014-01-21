@@ -110,6 +110,15 @@ public:
 	size_t getVertexMapCount() const;
 
 	/**
+	 * Sets the number of instances of this Mesh to draw (uses hardware
+	 * instancing when possible.)
+	 * A custom vertex shader is necessary in order to introduce differences
+	 * in each instance.
+	 **/
+	void setInstanceCount(int count);
+	int getInstanceCount() const;
+
+	/**
 	 * Sets the texture used when drawing the Mesh.
 	 **/
 	void setTexture(Texture *texture);
@@ -164,6 +173,8 @@ private:
 	// Element (vertex index) buffer, for the vertex map.
 	VertexBuffer *ibo;
 	size_t element_count;
+
+	int instance_count;
 
 	DrawMode draw_mode;
 

@@ -63,6 +63,17 @@ public:
 		VENDOR_UNKNOWN
 	};
 
+	// Vertex attributes used in shaders by LOVE. The values map to OpenGL
+	// generic vertex attribute indices, when applicable.
+	// LOVE uses the old hard-coded attribute APIs for positions, colors, etc.
+	// (for now.)
+	enum VertexAttrib
+	{
+		// Instance ID when pseudo-instancing is used.
+		ATTRIB_PSEUDO_INSTANCE_ID = 1,
+		ATTRIB_MAX_ENUM
+	};
+
 	// A rectangle representing an OpenGL viewport or a scissor box.
 	struct Viewport
 	{
@@ -98,6 +109,16 @@ public:
 	 * This *MUST* be called directly before OpenGL drawing functions.
 	 **/
 	void prepareDraw();
+
+	/**
+	 * glDrawArraysInstanced with a pseudo-instancing fallback.
+	 **/
+	void drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
+
+	/**
+	 * glDrawElementsInstanced with a pseudo-instancing fallback.
+	 **/
+	void drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount);
 
 	/**
 	 * Sets the current constant color.
@@ -229,6 +250,9 @@ private:
 
 		Viewport viewport;
 		Viewport scissor;
+
+		// The last ID value used for pseudo-instancing.
+		int lastPseudoInstanceID;
 
 	} state;
 

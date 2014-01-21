@@ -984,6 +984,10 @@ int w_isSupported(lua_State *L)
 			if (!Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_BC5))
 				supported = false;
 			break;
+		case Graphics::SUPPORT_INSTANCING:
+			if (!GLEE_ARB_draw_instanced)
+				supported = false;
+			break;
 		default:
 			supported = false;
 		}

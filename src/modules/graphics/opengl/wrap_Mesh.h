@@ -41,6 +41,8 @@ int w_Mesh_getVertices(lua_State *L);
 int w_Mesh_getVertexCount(lua_State *L);
 int w_Mesh_setVertexMap(lua_State *L);
 int w_Mesh_getVertexMap(lua_State *L);
+int w_Mesh_setInstanceCount(lua_State *L);
+int w_Mesh_getInstanceCount(lua_State *L);
 int w_Mesh_setTexture(lua_State *L);
 int w_Mesh_getTexture(lua_State *L);
 int w_Mesh_setDrawMode(lua_State *L);
