@@ -440,8 +440,10 @@ int w_newShader(lua_State *L)
 
 int w_newMesh(lua_State *L)
 {
-	// Check first argument: mandatory table of vertices.
-	luaL_checktype(L, 1, LUA_TTABLE);
+	// Check first argument: table of vertices or number of vertices.
+	int ttype = lua_type(L, 1);
+	if (ttype != LUA_TTABLE && ttype != LUA_TNUMBER)
+		luaL_argerror(L, 1, "table or number expected");
 
 	// Second argument: optional texture.
 	Texture *tex = nullptr;
@@ -456,51 +458,59 @@ int w_newMesh(lua_State *L)
 	if (str && !Mesh::getConstant(str, mode))
 		return luaL_error(L, "Invalid mesh draw mode: %s", str);
 
-	size_t vertex_count = lua_objlen(L, 1);
-	std::vector<Vertex> vertices;
-	vertices.reserve(vertex_count);
-
-	bool use_colors = false;
-
-	// Get the vertices from the table.
-	for (size_t i = 1; i <= vertex_count; i++)
-	{
-		lua_rawgeti(L, 1, i);
-
-		if (lua_type(L, -1) != LUA_TTABLE)
-			return luax_typerror(L, 1, "table of tables");
-
-		for (int j = 1; j <= 8; j++)
-			lua_rawgeti(L, -j, j);
-
-		Vertex v;
-
-		v.x = (float) luaL_checknumber(L, -8);
-		v.y = (float) luaL_checknumber(L, -7);
-
-		v.s = (float) luaL_checknumber(L, -6);
-		v.t = (float) luaL_checknumber(L, -5);
-
-		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
-		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
-		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
-		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
-
-		// Enable per-vertex coloring if any color is not the default.
-		if (!use_colors && (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255))
-			use_colors = true;
-
-		lua_pop(L, 9);
-		vertices.push_back(v);
-	}
-
 	Mesh *t = nullptr;
-	EXCEPT_GUARD(t = instance->newMesh(vertices, mode);)
+
+	if (ttype == LUA_TTABLE)
+	{
+		size_t vertex_count = lua_objlen(L, 1);
+		std::vector<Vertex> vertices;
+		vertices.reserve(vertex_count);
+
+		bool use_colors = false;
+
+		// Get the vertices from the table.
+		for (size_t i = 1; i <= vertex_count; i++)
+		{
+			lua_rawgeti(L, 1, i);
+
+			if (lua_type(L, -1) != LUA_TTABLE)
+				return luax_typerror(L, 1, "table of tables");
+
+			for (int j = 1; j <= 8; j++)
+				lua_rawgeti(L, -j, j);
+
+			Vertex v;
+
+			v.x = (float) luaL_checknumber(L, -8);
+			v.y = (float) luaL_checknumber(L, -7);
+
+			v.s = (float) luaL_checknumber(L, -6);
+			v.t = (float) luaL_checknumber(L, -5);
+
+			v.r = (unsigned char) luaL_optinteger(L, -4, 255);
+			v.g = (unsigned char) luaL_optinteger(L, -3, 255);
+			v.b = (unsigned char) luaL_optinteger(L, -2, 255);
+			v.a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+			// Enable per-vertex coloring if any color is not the default.
+			if (!use_colors && (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255))
+				use_colors = true;
+
+			lua_pop(L, 9);
+			vertices.push_back(v);
+		}
+
+		EXCEPT_GUARD(t = instance->newMesh(vertices, mode);)
+		t->setVertexColors(use_colors);
+	}
+	else
+	{
+		int count = luaL_checkint(L, 1);
+		EXCEPT_GUARD(t = instance->newMesh(count, mode);)
+	}
 
 	if (tex)
 		t->setTexture(tex);
-
-	t->setVertexColors(use_colors);
 
 	luax_pushtype(L, "Mesh", GRAPHICS_MESH_T, t);
 	return 1;

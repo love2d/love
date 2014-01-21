@@ -460,6 +460,11 @@ Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode
 	return new Mesh(vertices, mode);
 }
 
+Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode mode)
+{
+	return new Mesh(vertexcount, mode);
+}
+
 void Graphics::setColor(const Color &c)
 {
 	gl.setColor(c);

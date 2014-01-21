@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_MESH_H
 
 // LOVE
+#include "common/config.h"
 #include "common/int.h"
 #include "common/math.h"
 #include "common/StringMap.h"
@@ -64,6 +65,16 @@ public:
 	 * @param mode The draw mode to use when drawing the Mesh.
 	 **/
 	Mesh(const std::vector<Vertex> &verts, DrawMode mode = DRAW_MODE_FAN);
+
+	/**
+	 * Constructor.
+	 * Creates a Mesh with a certain number of default-initialized (hidden)
+	 * vertices.
+	 * @param vertexcount The number of vertices to use in the Mesh.
+	 * @param mode The draw mode to use when drawing the Mesh.
+	 **/
+	Mesh(int vertexcount, DrawMode mode = DRAW_MODE_FAN);
+
 	virtual ~Mesh();
 
 	/**
@@ -140,6 +151,10 @@ public:
 	void setDrawMode(DrawMode mode);
 	DrawMode getDrawMode() const;
 
+	void setDrawRange(int min, int max);
+	void setDrawRange();
+	void getDrawRange(int &min, int &max) const;
+
 	/**
 	 * Sets whether per-vertex colors are enabled. If this is disabled, the
 	 * global color (love.graphics.setColor) will be used for the entire Mesh.
@@ -177,6 +192,9 @@ private:
 	int instance_count;
 
 	DrawMode draw_mode;
+
+	int range_min;
+	int range_max;
 
 	Texture *texture;
 

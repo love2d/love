@@ -213,6 +213,7 @@ public:
 	Shader *newShader(const Shader::ShaderSources &sources);
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
+	Mesh *newMesh(int vertexcount, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
 
 	/**
 	 * Sets the foreground color.
