@@ -939,17 +939,8 @@ bool Canvas::isHDRSupported()
 
 bool Canvas::isMultiCanvasSupported()
 {
-	if (!(isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers)))
-		return false;
-
-	if (maxFBOColorAttachments == 0 || maxDrawBuffers == 0)
-	{
-		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxFBOColorAttachments);
-		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
-	}
-
-	// system must support at least 4 simultanious active canvases
-	return maxFBOColorAttachments >= 4 && maxDrawBuffers >= 4;
+	// system must support at least 4 simultanious active canvases.
+	return gl.getMaxRenderTargets() >= 4;
 }
 
 void Canvas::bindDefaultCanvas()

@@ -109,6 +109,16 @@ bool Graphics::getConstant(RendererInfo in, const char *&out)
 	return rendererInfo.find(in, out);
 }
 
+bool Graphics::getConstant(const char *in, SystemLimit &out)
+{
+	return systemLimits.find(in, out);
+}
+
+bool Graphics::getConstant(SystemLimit in, const char *&out)
+{
+	return systemLimits.find(in, out);
+}
+
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
 {
 	{ "line", Graphics::DRAW_LINE },
@@ -189,6 +199,16 @@ StringMap<Graphics::RendererInfo, Graphics::RENDERER_INFO_MAX_ENUM>::Entry Graph
 };
 
 StringMap<Graphics::RendererInfo, Graphics::RENDERER_INFO_MAX_ENUM> Graphics::rendererInfo(Graphics::rendererInfoEntries, sizeof(Graphics::rendererInfoEntries));
+
+StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::systemLimitEntries[] =
+{
+	{"pointsize", Graphics::LIMIT_POINT_SIZE},
+	{"texturesize", Graphics::LIMIT_TEXTURE_SIZE},
+	{"multicanvas", Graphics::LIMIT_MULTI_CANVAS},
+	{"canvasfsaa", Graphics::LIMIT_CANVAS_FSAA},
+};
+
+StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimits(Graphics::systemLimitEntries, sizeof(Graphics::systemLimitEntries));
 
 } // graphics
 } // love

@@ -92,6 +92,7 @@ int w_setShader(lua_State *L);
 int w_getShader(lua_State *L);
 int w_isSupported(lua_State *L);
 int w_getRendererInfo(lua_State *L);
+int w_getSystemLimit(lua_State *L);
 int w_draw(lua_State *L);
 int w_print(lua_State *L);
 int w_printf(lua_State *L);

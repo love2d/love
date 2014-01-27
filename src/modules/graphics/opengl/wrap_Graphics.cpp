@@ -146,7 +146,7 @@ int w_setInvertedStencil(lua_State *L)
 
 int w_getMaxTextureSize(lua_State *L)
 {
-	lua_pushinteger(L, instance->getMaxTextureSize());
+	lua_pushinteger(L, instance->getSystemLimit(Graphics::LIMIT_TEXTURE_SIZE));
 	return 1;
 }
 
@@ -831,7 +831,7 @@ int w_getPointStyle(lua_State *L)
 
 int w_getMaxPointSize(lua_State *L)
 {
-	lua_pushnumber(L, instance->getMaxPointSize());
+	lua_pushnumber(L, instance->getSystemLimit(Graphics::LIMIT_POINT_SIZE));
 	return 1;
 }
 
@@ -1024,6 +1024,18 @@ int w_getRendererInfo(lua_State *L)
 	luax_pushstring(L, device);
 
 	return 4;
+}
+
+int w_getSystemLimit(lua_State *L)
+{
+	const char *limitstr = luaL_checkstring(L, 1);
+	Graphics::SystemLimit limittype;
+
+	if (!Graphics::getConstant(limitstr, limittype))
+		return luaL_error(L, "Invalid system limit type: %s", limitstr);
+
+	lua_pushnumber(L, instance->getSystemLimit(limittype));
+	return 1;
 }
 
 int w_draw(lua_State *L)
@@ -1363,8 +1375,6 @@ static const luaL_Reg functions[] =
 	{ "setPointStyle", w_setPointStyle },
 	{ "getPointSize", w_getPointSize },
 	{ "getPointStyle", w_getPointStyle },
-	{ "getMaxPointSize", w_getMaxPointSize },
-	{ "getMaxTextureSize", w_getMaxTextureSize },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
@@ -1374,6 +1384,7 @@ static const luaL_Reg functions[] =
 
 	{ "isSupported", w_isSupported },
 	{ "getRendererInfo", w_getRendererInfo },
+	{ "getSystemLimit", w_getSystemLimit },
 
 	{ "draw", w_draw },
 
@@ -1409,6 +1420,7 @@ static const luaL_Reg functions[] =
 
 	// Deprecated since 0.9.1.
 	{ "getMaxImageSize", w_getMaxTextureSize },
+	{ "getMaxPointSize", w_getMaxPointSize },
 
 	{ 0, 0 }
 };

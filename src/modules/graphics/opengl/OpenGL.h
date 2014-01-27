@@ -216,6 +216,11 @@ public:
 	int getMaxTextureSize() const;
 
 	/**
+	 * Returns the maximum supported number of simultaneous render targets.
+	 **/
+	int getMaxRenderTargets() const;
+
+	/**
 	 * Get the GPU vendor of this OpenGL context.
 	 **/
 	Vendor getVendor() const;
@@ -231,6 +236,7 @@ private:
 
 	float maxAnisotropy;
 	int maxTextureSize;
+	int maxRenderTargets;
 
 	Vendor vendor;
 

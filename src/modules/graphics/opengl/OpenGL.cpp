@@ -43,6 +43,7 @@ OpenGL::OpenGL()
 	: contextInitialized(false)
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
+	, maxRenderTargets(0)
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
@@ -190,6 +191,19 @@ void OpenGL::initMaxValues()
 		maxAnisotropy = 1.0f;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+
+	if (Canvas::isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers))
+	{
+		int maxattachments = 0;
+		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxattachments);
+
+		int maxdrawbuffers = 0;
+		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbuffers);
+
+		maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
+	}
+	else
+		maxRenderTargets = 0;
 }
 
 void OpenGL::createDefaultTexture()
@@ -575,6 +589,11 @@ graphics::Texture::Wrap OpenGL::getTextureWrap()
 int OpenGL::getMaxTextureSize() const
 {
 	return maxTextureSize;
+}
+
+int OpenGL::getMaxRenderTargets() const
+{
+	return maxRenderTargets;
 }
 
 OpenGL::Vendor OpenGL::getVendor() const

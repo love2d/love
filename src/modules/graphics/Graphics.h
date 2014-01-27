@@ -107,6 +107,15 @@ public:
 		RENDERER_INFO_MAX_ENUM
 	};
 
+	enum SystemLimit
+	{
+		LIMIT_POINT_SIZE,
+		LIMIT_TEXTURE_SIZE,
+		LIMIT_MULTI_CANVAS,
+		LIMIT_CANVAS_FSAA,
+		LIMIT_MAX_ENUM
+	};
+
 	virtual ~Graphics();
 
 	/**
@@ -151,6 +160,9 @@ public:
 	static bool getConstant(const char *in, RendererInfo &out);
 	static bool getConstant(RendererInfo in, const char *&out);
 
+	static bool getConstant(const char *in, SystemLimit &out);
+	static bool getConstant(SystemLimit in, const char *&out);
+
 private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -176,6 +188,9 @@ private:
 
 	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM>::Entry rendererInfoEntries[];
 	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM> rendererInfo;
+
+	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
+	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;
 
 }; // Graphics
 

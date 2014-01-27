@@ -313,11 +313,6 @@ void Graphics::discardStencil()
 	glDisable(GL_STENCIL_TEST);
 }
 
-int Graphics::getMaxTextureSize() const
-{
-	return gl.getMaxTextureSize();
-}
-
 Image *Graphics::newImage(love::image::ImageData *data)
 {
 	// Create the image.
@@ -717,13 +712,6 @@ Graphics::PointStyle Graphics::getPointStyle() const
 		return POINT_ROUGH;
 }
 
-int Graphics::getMaxPointSize() const
-{
-	GLint max;
-	glGetIntegerv(GL_POINT_SIZE_MAX, &max);
-	return (int)max;
-}
-
 void Graphics::print(const std::string &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	if (currentFont != nullptr)
@@ -1029,6 +1017,41 @@ std::string Graphics::getRendererInfo(Graphics::RendererInfo infotype) const
 		throw love::Exception("Cannot retrieve renderer information.");
 
 	return std::string(infostr);
+}
+
+double Graphics::getSystemLimit(SystemLimit limittype) const
+{
+	double limit = 0.0;
+
+	switch (limittype)
+	{
+	case Graphics::LIMIT_POINT_SIZE:
+		{
+			GLfloat limits[2];
+			glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
+			limit = limits[1];
+		}
+		break;
+	case Graphics::LIMIT_TEXTURE_SIZE:
+		limit = (double) gl.getMaxTextureSize();
+		break;
+	case Graphics::LIMIT_MULTI_CANVAS:
+		limit = (double) gl.getMaxRenderTargets();
+		break;
+	case Graphics::LIMIT_CANVAS_FSAA:
+		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object
+			|| GLEE_EXT_framebuffer_multisample)
+		{
+			GLint intlimit = 0;
+			glGetIntegerv(GL_MAX_SAMPLES, &intlimit);
+			limit = (double) intlimit;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return limit;
 }
 
 void Graphics::push()
