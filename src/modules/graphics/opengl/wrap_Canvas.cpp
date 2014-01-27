@@ -120,6 +120,13 @@ int w_Canvas_getType(lua_State *L)
 	return 1;
 }
 
+int w_Canvas_getFSAA(lua_State *L)
+{
+	Canvas *canvas = luax_checkcanvas(L, 1);
+	lua_pushinteger(L, canvas->getFSAA());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	// From wrap_Texture.
@@ -136,6 +143,7 @@ static const luaL_Reg functions[] =
 	{ "getPixel", w_Canvas_getPixel },
 	{ "clear", w_Canvas_clear },
 	{ "getType", w_Canvas_getType },
+	{ "getFSAA", w_Canvas_getFSAA },
 	{ 0, 0 }
 };
 

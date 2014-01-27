@@ -143,6 +143,8 @@ public:
 	bool sendBuiltinFloat(BuiltinExtern builtin, int size, const GLfloat *m, int count);
 	void checkSetScreenParams();
 
+	const std::map<std::string, Object *> &getBoundRetainables() const;
+
 	static std::string getGLSLVersion();
 	static bool isSupported();
 

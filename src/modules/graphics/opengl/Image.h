@@ -76,20 +76,20 @@ public:
 	/**
 	 * @copydoc Drawable::draw()
 	 **/
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * @copydoc Texture::drawq()
 	 **/
-	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Call before using this Image's texture to draw. Binds the texture,
 	 * globally scales texture coordinates if the Image has NPOT dimensions and
 	 * NPOT isn't supported, etc.
 	 **/
-	virtual void predraw() const;
-	virtual void postdraw() const;
+	virtual void predraw();
+	virtual void postdraw();
 
 	virtual GLuint getGLTexture() const;
 
@@ -137,7 +137,7 @@ private:
 
 	void uploadDefaultTexture();
 
-	void drawv(const Matrix &t, const Vertex *v) const;
+	void drawv(const Matrix &t, const Vertex *v);
 
 	// The ImageData from which the texture is created. May be null if
 	// Compressed image data was used to create the texture.

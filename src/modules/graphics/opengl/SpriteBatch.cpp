@@ -263,7 +263,7 @@ int SpriteBatch::getBufferSize() const
 	return size;
 }
 
-void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	const size_t vertex_offset = offsetof(Vertex, x);
 	const size_t texel_offset = offsetof(Vertex, s);

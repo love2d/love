@@ -63,12 +63,26 @@ struct FramebufferStrategy
 		return false;
 	}
 
+	/// Create a MSAA renderbuffer and attach it to the active FBO.
+	/**
+	 * @param[in]    width Width of the MSAA buffer
+	 * @param[in]    height Height of the MSAA buffer
+	 * @param[inout] samples Number of samples to use
+	 * @param[in]    internalformat The internal format to use for the buffer
+	 * @param[out]   buffer Name for the MSAA buffer
+	 * @return Whether the MSAA buffer was successfully created and attached
+	 **/
+	virtual bool createMSAABuffer(int, int, int &, GLenum, GLuint &)
+	{
+		return false;
+	}
+
 	/// remove objects
 	/**
 	 * @param[in] framebuffer   Framebuffer name
 	 * @param[in] depth_stencil Name for packed depth and stencil buffer
 	 */
-	virtual void deleteFBO(GLuint, GLuint) {}
+	virtual void deleteFBO(GLuint, GLuint, GLuint) {}
 	virtual void bindFBO(GLuint) {}
 
 	/// attach additional canvases to the active framebuffer for rendering
@@ -93,8 +107,11 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glGenFramebuffers(1, &framebuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			GL_TEXTURE_2D, texture, 0);
+		if (texture != 0)
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			                       GL_TEXTURE_2D, texture, 0);
+		}
 
 		// check status
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -118,13 +135,44 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		// check status
-		return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			glDeleteRenderbuffers(1, &stencil);
+			stencil = 0;
+			return false;
+		}
+
+		return true;
 	}
 
-	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil)
+	virtual bool createMSAABuffer(int width, int height, int &samples, GLenum internalformat, GLuint &buffer)
+	{
+		glGenRenderbuffers(1, &buffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, buffer);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalformat,
+		                                 width, height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		                          GL_RENDERBUFFER, buffer);
+		glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
+
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			glDeleteRenderbuffers(1, &buffer);
+			buffer = 0;
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil, GLuint msaa_buffer)
 	{
 		if (depth_stencil != 0)
 			glDeleteRenderbuffers(1, &depth_stencil);
+		if (msaa_buffer != 0)
+			glDeleteRenderbuffers(1, &msaa_buffer);
 		if (framebuffer != 0)
 			glDeleteFramebuffers(1, &framebuffer);
 	}
@@ -192,7 +240,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 	virtual bool createStencil(int width, int height, GLuint &stencil)
 	{
 		// create combined depth/stencil buffer
-		glDeleteRenderbuffers(1, &stencil);
+		glDeleteRenderbuffersEXT(1, &stencil);
 		glGenRenderbuffersEXT(1, &stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
@@ -203,13 +251,47 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
 		// check status
-		return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT;
+		if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			glDeleteRenderbuffersEXT(1, &stencil);
+			stencil = 0;
+			return false;
+		}
+
+		return true;
 	}
 
-	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil)
+	virtual bool createMSAABuffer(int width, int height, int &samples, GLenum internalformat, GLuint &buffer)
+	{
+		if (!GLEE_EXT_framebuffer_multisample)
+			return false;
+
+		glGenRenderbuffersEXT(1, &buffer);
+		glBindRenderbufferEXT(GL_RENDERBUFFER, buffer);
+		glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
+		                                    internalformat, width, height);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		                             GL_RENDERBUFFER, buffer);
+		glGetRenderbufferParameterivEXT(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
+
+		glBindRenderbufferEXT(GL_RENDERBUFFER, 0);
+
+		if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			glDeleteRenderbuffersEXT(1, &buffer);
+			buffer = 0;
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual void deleteFBO(GLuint framebuffer, GLuint depth_stencil, GLuint msaa_buffer)
 	{
 		if (depth_stencil != 0)
 			glDeleteRenderbuffersEXT(1, &depth_stencil);
+		if (msaa_buffer != 0)
+			glDeleteRenderbuffersEXT(1, &msaa_buffer);
 		if (framebuffer != 0)
 			glDeleteFramebuffersEXT(1, &framebuffer);
 	}
@@ -257,7 +339,7 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 	virtual bool createStencil(int width, int height, GLuint &stencil)
 	{
 		// create stencil buffer
-		glDeleteRenderbuffers(1, &stencil);
+		glDeleteRenderbuffersEXT(1, &stencil);
 		glGenRenderbuffersEXT(1, &stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX,
@@ -268,14 +350,21 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
 		// check status
-		return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT;
+		if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			glDeleteRenderbuffersEXT(1, &stencil);
+			stencil = 0;
+			return false;
+		}
+
+		return true;
 	}
 
 	bool isSupported()
 	{
 		GLuint fb = 0, stencil = 0;
 		GLenum status = createFBO(fb, 0);
-		deleteFBO(fb, stencil);
+		deleteFBO(fb, stencil, 0);
 		return status == GL_FRAMEBUFFER_COMPLETE;
 	}
 };
@@ -311,11 +400,15 @@ static void getStrategy()
 static int maxFBOColorAttachments = 0;
 static int maxDrawBuffers = 0;
 
-Canvas::Canvas(int width, int height, TextureType texture_type)
+Canvas::Canvas(int width, int height, TextureType texture_type, int fsaa)
 	: fbo(0)
+    , resolve_fbo(0)
 	, texture(0)
+    , fsaa_buffer(0)
 	, depth_stencil(0)
 	, texture_type(texture_type)
+    , fsaa_samples(fsaa)
+	, fsaa_dirty(false)
 {
 	this->width = width;
 	this->height = height;
@@ -357,9 +450,50 @@ Canvas::~Canvas()
 	unloadVolatile();
 }
 
+bool Canvas::createFSAAFBO(GLenum internalformat)
+{
+	// Create our FBO without a texture.
+	status = strategy->createFBO(fbo, 0);
+
+	GLuint previous = 0;
+	if (current != this)
+	{
+		if (current != nullptr)
+			previous = current->fbo;
+
+		strategy->bindFBO(fbo);
+	}
+
+	// Create and attach the MSAA buffer for our FBO.
+	if (strategy->createMSAABuffer(width, height, fsaa_samples, internalformat, fsaa_buffer))
+		status = GL_FRAMEBUFFER_COMPLETE;
+	else
+		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+
+	// Create the FBO used for the MSAA resolve, and attach the texture.
+	if (status == GL_FRAMEBUFFER_COMPLETE)
+		status = strategy->createFBO(resolve_fbo, texture);
+
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+	{
+		// Clean up.
+		strategy->deleteFBO(fbo, 0, fsaa_buffer);
+		strategy->deleteFBO(resolve_fbo, 0, 0);
+		fbo = fsaa_buffer = resolve_fbo = 0;
+		fsaa_samples = 0;
+	}
+
+	if (current != this)
+		strategy->bindFBO(previous);
+
+	return status == GL_FRAMEBUFFER_COMPLETE;
+}
+
 bool Canvas::loadVolatile()
 {
 	fbo = depth_stencil = texture = 0;
+	resolve_fbo = fsaa_buffer = 0;
+	status = GL_FRAMEBUFFER_COMPLETE;
 
 	// glTexImage2D is guaranteed to error in this case.
 	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
@@ -406,7 +540,25 @@ bool Canvas::loadVolatile()
 		return false;
 	}
 
-	status = strategy->createFBO(fbo, texture);
+	int max_samples = 0;
+	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object
+		|| GLEE_EXT_framebuffer_multisample)
+	{
+		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+	}
+
+	if (fsaa_samples > max_samples)
+		fsaa_samples = max_samples;
+
+	// Try to create a FSAA FBO if requested.
+	bool fsaasuccess = false;
+	if (fsaa_samples > 1)
+		fsaasuccess = createFSAAFBO(internalformat);
+
+	// On failure (or no requested FSAA), fall back to a regular FBO.
+	if (!fsaasuccess)
+		status = strategy->createFBO(fbo, texture);
+
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 		return false;
 
@@ -416,11 +568,13 @@ bool Canvas::loadVolatile()
 
 void Canvas::unloadVolatile()
 {
-	strategy->deleteFBO(fbo, depth_stencil);
+	strategy->deleteFBO(fbo, depth_stencil, fsaa_buffer);
+	strategy->deleteFBO(resolve_fbo, 0, 0);
 
 	gl.deleteTexture(texture);
 
 	fbo = depth_stencil = texture = 0;
+	resolve_fbo = fsaa_buffer = 0;
 
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
 		attachedCanvases[i]->release();
@@ -428,13 +582,12 @@ void Canvas::unloadVolatile()
 	attachedCanvases.clear();
 }
 
-void Canvas::drawv(const Matrix &t, const Vertex *v) const
+void Canvas::drawv(const Matrix &t, const Vertex *v)
 {
 	glPushMatrix();
-
 	glMultMatrixf((const GLfloat *)t.getElements());
 
-	gl.bindTexture(texture);
+	predraw();
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -447,11 +600,13 @@ void Canvas::drawv(const Matrix &t, const Vertex *v) const
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+
+	postdraw();
 	
 	glPopMatrix();
 }
 
-void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -459,7 +614,7 @@ void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, f
 	drawv(t, vertices);
 }
 
-void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -487,8 +642,12 @@ GLuint Canvas::getGLTexture() const
 	return texture;
 }
 
-void Canvas::predraw() const
+void Canvas::predraw()
 {
+	// We need to make sure the texture is up-to-date by resolving the MSAA
+	// buffer (which we render to when the canvas is active) to it.
+	resolveMSAA();
+
 	gl.bindTexture(texture);
 }
 
@@ -520,6 +679,9 @@ void Canvas::setupGrab()
 
 	// indicate we are using this fbo
 	current = this;
+
+	if (fsaa_buffer != 0)
+		fsaa_dirty = true;
 }
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)
@@ -535,6 +697,9 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 
 		if (canvases.size()+1 > size_t(maxDrawBuffers) || canvases.size()+1 > size_t(maxFBOColorAttachments))
 			throw love::Exception("This system can't simultaniously render to %d canvases.", canvases.size()+1);
+
+		if (fsaa_samples != 0)
+			throw love::Exception("Multi-canvas rendering is not supported with FSAA.");
 	}
 
 	for (size_t i = 0; i < canvases.size(); i++)
@@ -544,6 +709,9 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 
 		if (canvases[i]->getTextureType() != texture_type)
 			throw love::Exception("All canvas arguments must have the same texture type.");
+
+		if (canvases[i]->getFSAA() != 0)
+			throw love::Exception("Multi-canvas rendering is not supported with FSAA.");
 
 		if (!canvaseschanged && canvases[i] != attachedCanvases[i])
 			canvaseschanged = true;
@@ -674,12 +842,22 @@ bool Canvas::checkCreateStencil()
 
 love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 {
+	resolveMSAA();
+
 	int row = 4 * width;
 	int size = row * height;
 	GLubyte *pixels  = new GLubyte[size];
 
-	strategy->bindFBO(fbo);
+	// Our texture is attached to 'resolve_fbo' when we use MSAA.
+	if (fsaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
+	else if (fsaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, resolve_fbo);
+	else
+		strategy->bindFBO(fbo);
+
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
 	if (current)
 		strategy->bindFBO(current->fbo);
 	else
@@ -692,15 +870,60 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 
 void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 {
-	if (current != this)
+	resolveMSAA();
+
+	// Our texture is attached to 'resolve_fbo' when we use MSAA.
+	if (fsaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
+	else if (fsaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, resolve_fbo);
+	else if (current != this)
 		strategy->bindFBO(fbo);
 
-	glReadPixels(x, height - y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_rgba);
+	glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_rgba);
 
 	if (current && current != this)
 		strategy->bindFBO(current->fbo);
 	else if (!current)
 		strategy->bindFBO(0);
+}
+
+bool Canvas::resolveMSAA()
+{
+	if (resolve_fbo == 0 || fsaa_buffer == 0)
+		return false;
+
+	if (!fsaa_dirty)
+		return true;
+
+	GLuint previous = 0;
+	if (current != nullptr)
+		previous = current->fbo;
+
+	// Do the MSAA resolve by blitting the MSAA renderbuffer to the texture.
+	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolve_fbo);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+						  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	}
+	else if (GLEE_EXT_framebuffer_multisample && GLEE_EXT_framebuffer_blit)
+	{
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, fbo);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, resolve_fbo);
+		glBlitFramebufferEXT(0, 0, width, height, 0, 0, width, height,
+							 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	}
+	else
+		return false;
+
+	strategy->bindFBO(previous);
+
+	if (current != this)
+		fsaa_dirty = false;
+
+	return true;
 }
 
 bool Canvas::isSupported()

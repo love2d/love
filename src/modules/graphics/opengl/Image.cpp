@@ -91,7 +91,7 @@ love::image::CompressedData *Image::getCompressedData() const
 	return cdata;
 }
 
-void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -99,7 +99,7 @@ void Image::draw(float x, float y, float angle, float sx, float sy, float ox, fl
 	drawv(t, vertices);
 }
 
-void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -107,7 +107,7 @@ void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy,
 	drawv(t, quad->getVertices());
 }
 
-void Image::predraw() const
+void Image::predraw()
 {
 	bind();
 
@@ -121,7 +121,7 @@ void Image::predraw() const
 	}
 }
 
-void Image::postdraw() const
+void Image::postdraw()
 {
 	if (width != paddedWidth || height != paddedHeight)
 	{
@@ -511,7 +511,7 @@ void Image::uploadDefaultTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
-void Image::drawv(const Matrix &t, const Vertex *v) const
+void Image::drawv(const Matrix &t, const Vertex *v)
 {
 	predraw();
 

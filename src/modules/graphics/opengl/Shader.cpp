@@ -719,6 +719,11 @@ void Shader::checkSetScreenParams()
 	lastCanvas = Canvas::current;
 }
 
+const std::map<std::string, Object *> &Shader::getBoundRetainables() const
+{
+	return boundRetainables;
+}
+
 std::string Shader::getGLSLVersion()
 {
 	const char *tmp = nullptr;

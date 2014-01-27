@@ -172,7 +172,7 @@ public:
 	bool isWireframe() const;
 
 	// Implements Drawable.
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);

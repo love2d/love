@@ -46,7 +46,7 @@ public:
 		TYPE_MAX_ENUM
 	};
 
-	Canvas(int width, int height, TextureType texture_type = TYPE_NORMAL);
+	Canvas(int width, int height, TextureType texture_type = TYPE_NORMAL, int fsaa = 0);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -54,14 +54,14 @@ public:
 	virtual void unloadVolatile();
 
 	// Implements Drawable.
-	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	// Implements Texture.
-	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 	virtual void setFilter(const Texture::Filter &f);
 	virtual void setWrap(const Texture::Wrap &w);
 	virtual GLuint getGLTexture() const;
-	virtual void predraw() const;
+	virtual void predraw();
 
 	/**
 	 * @param canvases A list of other canvases to temporarily attach to this one,
@@ -97,6 +97,13 @@ public:
 		return texture_type;
 	}
 
+	inline int getFSAA() const
+	{
+		return fsaa_samples;
+	}
+
+	bool resolveMSAA();
+
 	static bool isSupported();
 	static bool isHDRSupported();
 	static bool isMultiCanvasSupported();
@@ -112,8 +119,13 @@ public:
 
 private:
 
+	bool createFSAAFBO(GLenum internalformat);
+
 	GLuint fbo;
+	GLuint resolve_fbo;
+
 	GLuint texture;
+	GLuint fsaa_buffer;
 	GLuint depth_stencil;
 
 	TextureType texture_type;
@@ -122,8 +134,11 @@ private:
 
 	std::vector<Canvas *> attachedCanvases;
 
+	int fsaa_samples;
+	bool fsaa_dirty;
+
 	void setupGrab();
-	void drawv(const Matrix &t, const Vertex *v) const;
+	void drawv(const Matrix &t, const Vertex *v);
 
 	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
 	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;

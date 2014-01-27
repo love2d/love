@@ -323,15 +323,16 @@ int w_newCanvas(lua_State *L)
 	int width       = luaL_optint(L, 1, instance->getWidth());
 	int height      = luaL_optint(L, 2, instance->getHeight());
 	const char *str = luaL_optstring(L, 3, "normal");
+	int fsaa        = luaL_optint(L, 4, 0);
 
 	Canvas::TextureType texture_type;
 	if (!Canvas::getConstant(str, texture_type))
 		return luaL_error(L, "Invalid canvas type: %s", str);
 
-	Canvas *canvas = 0;
-	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, texture_type);)
+	Canvas *canvas = nullptr;
+	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, texture_type, fsaa);)
 
-	if (canvas == 0)
+	if (canvas == nullptr)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
 
 	luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);

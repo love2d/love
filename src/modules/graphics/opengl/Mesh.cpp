@@ -288,7 +288,7 @@ bool Mesh::isWireframe() const
 	return wireframe;
 }
 
-void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	const size_t pos_offset   = offsetof(Vertex, x);
 	const size_t tex_offset   = offsetof(Vertex, s);

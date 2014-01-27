@@ -780,7 +780,7 @@ bool ParticleSystem::isFull() const
 	return activeParticles == maxParticles;
 }
 
-void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	uint32 pCount = getCount();
 	if (pCount == 0 || texture == nullptr || pMem == nullptr || particleVerts == nullptr)

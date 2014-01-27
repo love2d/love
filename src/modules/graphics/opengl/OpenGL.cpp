@@ -230,6 +230,18 @@ void OpenGL::prepareDraw()
 			glVertexAttrib1f((GLuint) ATTRIB_PSEUDO_INSTANCE_ID, 0.0f);
 			state.lastPseudoInstanceID = 0;
 		}
+
+		// We need to make sure antialiased Canvases are properly resolved
+		// before sampling from their textures in a shader.
+		// This is kind of a big hack. :(
+		const std::map<std::string, Object *> &r = shader->getBoundRetainables();
+		for (auto it = r.begin(); it != r.end(); ++it)
+		{
+			// Even bigger hack! D:
+			Canvas *canvas = dynamic_cast<Canvas *>(it->second);
+			if (canvas != nullptr)
+				canvas->resolveMSAA();
+		}
 	}
 }
 

@@ -392,7 +392,7 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 	return new ParticleSystem(texture, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_type)
+Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_type, int fsaa)
 {
 	if (texture_type == Canvas::TYPE_HDR && !Canvas::isHDRSupported())
 		throw Exception("HDR Canvases are not supported by your OpenGL implementation");
@@ -405,7 +405,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	while (GL_NO_ERROR != glGetError())
 		/* clear opengl error flag */;
 
-	Canvas *canvas = new Canvas(width, height, texture_type);
+	Canvas *canvas = new Canvas(width, height, texture_type, fsaa);
 	GLenum err = canvas->getStatus();
 
 	// everything ok, return canvas (early out)

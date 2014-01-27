@@ -470,7 +470,7 @@ public:
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
 	 **/
-	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Updates the particle system.
