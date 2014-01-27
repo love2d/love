@@ -2364,7 +2364,6 @@
 				);
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
-				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = NO;
 				USE_HEADERMAP = NO;
@@ -2407,6 +2406,66 @@
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Debug;
+		};
+		FA5326C4189719C700F7BBF4 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_ENABLE_MODULES = YES;
+				DEAD_CODE_STRIPPING = YES;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = LOVE_MACOSX_USE_FRAMEWORKS;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../../src\"",
+					"\"$(SRCROOT)/../../src/libraries\"",
+					"\"$(SRCROOT)/../../src/modules\"",
+					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
+					/Library/Frameworks/FreeType.framework/Headers,
+					/Library/Frameworks/Lua.framework/Headers,
+					/Library/Frameworks/SDL2.framework/Headers,
+				);
+				LD_RUNPATH_SEARCH_PATHS = "@rpath";
+				LIBRARY_SEARCH_PATHS = "";
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = NO;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wall";
+			};
+			name = Distribution;
+		};
+		FA5326C5189719C700F7BBF4 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 9.0;
+				DYLIB_CURRENT_VERSION = 9.0;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				INFOPLIST_FILE = "Info-Framework.plist";
+				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
+				PRODUCT_NAME = love;
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Distribution;
 		};
 		FA577AC016C7507900860150 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2465,6 +2524,7 @@
 			buildConfigurations = (
 				64274E785071353E1A1D0D4B /* Debug */,
 				10D5479E63C26BB35EB5482E /* Release */,
+				FA5326C4189719C700F7BBF4 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2474,6 +2534,7 @@
 			buildConfigurations = (
 				FA577AC016C7507900860150 /* Debug */,
 				FA577AC116C7507900860150 /* Release */,
+				FA5326C5189719C700F7BBF4 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
