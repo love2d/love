@@ -59,7 +59,7 @@ public:
 	// Built-in extern (uniform) variables.
 	enum BuiltinExtern
 	{
-		BUILTIN_SCREEN_PARAMS,
+		BUILTIN_SCREEN_SIZE,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -216,6 +216,7 @@ private:
 
 	// Pointer to the active Canvas when the screen params were last checked.
 	Canvas *lastCanvas;
+	OpenGL::Viewport lastViewport;
 
 	// Max GPU texture units available for sent images
 	static GLint maxTexUnits;

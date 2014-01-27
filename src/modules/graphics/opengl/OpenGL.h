@@ -87,6 +87,11 @@ public:
 		Viewport(int _x, int _y, int _w, int _h)
 			: x(_x), y(_y), w(_w), h(_h)
 		{}
+
+		bool operator == (const Viewport &rhs) const
+		{
+			return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
+		}
 	};
 
 	OpenGL();
