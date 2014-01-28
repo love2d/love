@@ -131,12 +131,12 @@ public:
 	 * Sets the emission rate.
 	 * @param rate The amount of particles per second.
 	 **/
-	void setEmissionRate(int rate);
+	void setEmissionRate(float rate);
 
 	/**
 	 * Returns the number of particles created per second.
 	 **/
-	int getEmissionRate() const;
+	float getEmissionRate() const;
 
 	/**
 	 * Sets the lifetime of the particle emitter (-1 means eternal)
@@ -547,7 +547,7 @@ protected:
 	uint32 activeParticles;
 
 	// The emission rate (particles/sec).
-	int emissionRate;
+	float emissionRate;
 
 	// Used to determine when a particle should be emitted.
 	float emitCounter;

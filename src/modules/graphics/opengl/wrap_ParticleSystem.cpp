@@ -127,7 +127,7 @@ int w_ParticleSystem_getInsertMode(lua_State *L)
 int w_ParticleSystem_setEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int arg1 = luaL_checkint(L, 2);
+	float arg1 = (float) luaL_checknumber(L, 2);
 	EXCEPT_GUARD(t->setEmissionRate(arg1);)
 	return 0;
 }
@@ -135,7 +135,7 @@ int w_ParticleSystem_setEmissionRate(lua_State *L)
 int w_ParticleSystem_getEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushinteger(L, t->getEmissionRate());
+	lua_pushnumber(L, t->getEmissionRate());
 	return 1;
 }
 

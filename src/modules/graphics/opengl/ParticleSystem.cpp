@@ -432,14 +432,14 @@ ParticleSystem::InsertMode ParticleSystem::getInsertMode() const
 	return insertMode;
 }
 
-void ParticleSystem::setEmissionRate(int rate)
+void ParticleSystem::setEmissionRate(float rate)
 {
-	if (rate < 0)
+	if (rate < 0.0f)
 		throw love::Exception("Invalid emission rate");
 	emissionRate = rate;
 }
 
-int ParticleSystem::getEmissionRate() const
+float ParticleSystem::getEmissionRate() const
 {
 	return emissionRate;
 }
