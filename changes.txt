@@ -6,12 +6,21 @@ LOVE 0.9.1 [Baby Inspector]
   * Added Source:clone.
   * Added ParticleSystem:clone.
   * Added Mesh:setWireframe and Mesh:isWireframe for debugging.
+  * Added Mesh:setDrawRange and Mesh:getDrawRange.
+  * Added instancing support to Meshes with Mesh:setInstanceCount.
   * Added CircleShape:getPoint and CircleShape:setPoint.
   * Added Mesh/SpriteBatch/ParticleSystem:setTexture, accepts Canvases and Images.
   * Added high-dpi window support for Retina displays in OS X, via the 'highdpi' window flag.
   * Added love.window.getPixelScale.
+  * Added love.graphics.getSystemLimit.
+  * Added ParticleSystem:moveTo, has smoother emitter movement compared to setPosition.
+  * Added antialiasing support to Canvases.
+  * Added Canvas:getFSAA.
+  * Added 'love_ScreenSize' built-in variable in shaders.
+  * Added love.getVersion.
 
-  * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage and love.graphics.getMaxImageSize.
+  * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage.
+  * Deprecated love.graphics.getMaxImageSize and love.graphics.getMaxPointSize.
 
   * Fixed love.graphics.scale with negative values causing incorrect line widths.
   * Fixed Joystick:isDown using 0-based button index arguments.
@@ -28,7 +37,7 @@ LOVE 0.9.1 [Baby Inspector]
   * Updated love.graphics.newParticleSystem, newSpriteBatch, and newMesh to accept Canvases.
   * Updated Canvas drawing code, texture coordinates are no longer flipped vertically.
   * Updated Canvas:renderTo to work properly if a Canvas is currently active.
-  * Updated particle spawning behaviour in ParticleSystems to be smoother when moving the emitter.
+  * Updated ParticleSystem:setEmissionRate to accept non-integer numbers.
 
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------
