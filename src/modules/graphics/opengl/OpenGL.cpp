@@ -601,6 +601,67 @@ OpenGL::Vendor OpenGL::getVendor() const
 	return vendor;
 }
 
+const char *OpenGL::debugSeverityString(GLenum severity)
+{
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		return "high";
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		return "medium";
+	case GL_DEBUG_SEVERITY_LOW:
+		return "low";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
+const char *OpenGL::debugSourceString(GLenum source)
+{
+	switch (source)
+	{
+	case GL_DEBUG_SOURCE_API:
+		return "API";
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		return "window";
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		return "shader";
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		return "external";
+	case GL_DEBUG_SOURCE_APPLICATION:
+		return "LOVE";
+	case GL_DEBUG_SOURCE_OTHER:
+		return "other";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
+const char *OpenGL::debugTypeString(GLenum type)
+{
+	switch (type)
+	{
+	case GL_DEBUG_TYPE_ERROR:
+		return "error";
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		return "deprecated behavior";
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		return "undefined behavior";
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		return "performance";
+	case GL_DEBUG_TYPE_PORTABILITY:
+		return "portability";
+	case GL_DEBUG_TYPE_OTHER:
+		return "other";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
+
 // OpenGL class instance singleton.
 OpenGL gl;
 

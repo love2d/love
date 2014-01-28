@@ -252,6 +252,18 @@ bool Window::setContext(int fsaa, bool vsync)
 
 	if (!context)
 	{
+		int flags = 0;
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &flags);
+		if (flags & SDL_GL_CONTEXT_DEBUG_FLAG)
+		{
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+			context = SDL_GL_CreateContext(window);
+		}
+	}
+
+	if (!context)
+	{
 		std::cerr << "Could not set video mode: " << SDL_GetError() << std::endl;
 		return false;
 	}
@@ -291,6 +303,19 @@ void Window::setWindowGLAttributes(int fsaa) const
 	// FSAA.
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
+
+	// Do we want a debug context?
+	const char *debugenv = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
+	if (debugenv && *debugenv == '1')
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	}
+	else
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+	}
 }
 
 void Window::updateSettings(const WindowSettings &newsettings)

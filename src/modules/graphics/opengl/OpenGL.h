@@ -230,6 +230,11 @@ public:
 	 **/
 	Vendor getVendor() const;
 
+	// Get human-readable strings for debug info.
+	static const char *debugSeverityString(GLenum severity);
+	static const char *debugSourceString(GLenum source);
+	static const char *debugTypeString(GLenum type);
+
 private:
 
 	void initVendor();

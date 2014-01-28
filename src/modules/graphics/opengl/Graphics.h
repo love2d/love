@@ -115,6 +115,8 @@ public:
 	virtual bool setMode(int width, int height);
 	virtual void unSetMode();
 
+	void setDebug(bool enable);
+
 	/**
 	 * Resets the current color, background color,
 	 * line style, and so forth. (This will be called

@@ -210,6 +210,18 @@ bool Graphics::setMode(int width, int height)
 	glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 	matrixLimit -= 5;
 
+	bool enabledebug = false;
+
+	if (GLEE_VERSION_3_0)
+	{
+		// Enable OpenGL's debug output if a debug context has been created.
+		GLint flags = 0;
+		glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+		enabledebug = (flags & GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
+	}
+
+	setDebug(enabledebug);
+
 	return true;
 }
 
@@ -224,6 +236,58 @@ void Graphics::unSetMode()
 	Volatile::unloadAll();
 
 	gl.deInitContext();
+}
+
+static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, GLvoid* /*usr*/)
+{
+	// Human-readable strings for the debug info.
+	const char *sourceStr = OpenGL::debugSourceString(source);
+	const char *typeStr = OpenGL::debugTypeString(type);
+	const char *severityStr = OpenGL::debugSeverityString(severity);
+
+	const char *fmt = "OpenGL: %s [source=%s, type=%s, severity=%s, id=%d]\n";
+	printf(fmt, msg, sourceStr, typeStr, severityStr, id);
+}
+
+void Graphics::setDebug(bool enable)
+{
+	// Make sure debug output is supported. The AMD ext. is a bit different
+	// so we don't make use of it, since AMD drivers now support KHR_debug.
+	if (!(GLEE_VERSION_4_3 || GLEE_KHR_debug || GLEE_ARB_debug_output))
+		return;
+
+	// Ugly hack to reduce code duplication.
+	if (GLEE_ARB_debug_output && !(GLEE_VERSION_4_3 || GLEE_KHR_debug))
+	{
+		glDebugMessageCallback = (GLEEPFNGLDEBUGMESSAGECALLBACKPROC) glDebugMessageCallbackARB;
+		glDebugMessageControl = (GLEEPFNGLDEBUGMESSAGECONTROLPROC) glDebugMessageControlARB;
+	}
+
+	if (!enable)
+	{
+		// Disable the debug callback function.
+		glDebugMessageCallback(nullptr, nullptr);
+
+		// We can disable debug output entirely with KHR_debug.
+		if (GLEE_VERSION_4_3 || GLEE_KHR_debug)
+			glDisable(GL_DEBUG_OUTPUT);
+
+		return;
+	}
+
+	// We don't want asynchronous debug output.
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+	glDebugMessageCallback(debugCB, nullptr);
+
+	// Initially, enable everything.
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+
+	// Disable messages about deprecated OpenGL functionality.
+	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
+	glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
+
+	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)");
 }
 
 void Graphics::reset()
