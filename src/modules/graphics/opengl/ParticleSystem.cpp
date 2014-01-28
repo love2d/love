@@ -474,11 +474,17 @@ void ParticleSystem::getParticleLifetime(float *min, float *max) const
 void ParticleSystem::setPosition(float x, float y)
 {
 	position = love::Vector(x, y);
+	prevPosition = position;
 }
 
 const love::Vector &ParticleSystem::getPosition() const
 {
 	return position;
+}
+
+void ParticleSystem::moveTo(float x, float y)
+{
+	position = love::Vector(x, y);
 }
 
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y)

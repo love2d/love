@@ -177,6 +177,15 @@ public:
 	const love::Vector &getPosition() const;
 
 	/**
+	 * Moves the position of the center of the emitter.
+	 * When update is called, newly spawned particles will appear in a line
+	 * between the old emitter position and where the emitter was moved to,
+	 * resulting in a smoother-feeling particle system if moveTo is called
+	 * repeatedly.
+	 **/
+	void moveTo(float x, float y);
+
+	/**
 	 * Sets the emission area spread parameters and distribution type. The interpretation of
 	 * the parameters depends on the distribution type:
 	 *

@@ -48,6 +48,7 @@ int w_ParticleSystem_setParticleLifetime(lua_State *L);
 int w_ParticleSystem_getParticleLifetime(lua_State *L);
 int w_ParticleSystem_setPosition(lua_State *L);
 int w_ParticleSystem_getPosition(lua_State *L);
+int w_ParticleSystem_moveTo(lua_State *L);
 int w_ParticleSystem_setAreaSpread(lua_State *L);
 int w_ParticleSystem_getAreaSpread(lua_State *L);
 int w_ParticleSystem_setDirection(lua_State *L);
