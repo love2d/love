@@ -343,6 +343,11 @@ function love.init()
 		c.console = true
 	end
 
+	-- Console hack
+	if c.console and love._openConsole then
+		love._openConsole()
+	end
+
 	-- Gets desired modules.
 	for k,v in ipairs{
 		"thread",
@@ -368,11 +373,6 @@ function love.init()
 
 	if love.event then
 		love.createhandlers()
-	end
-
-	-- Console hack
-	if c.console and love._openConsole then
-		love._openConsole()
 	end
 
 	-- Setup window here.
