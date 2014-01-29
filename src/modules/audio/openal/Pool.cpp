@@ -30,23 +30,43 @@ namespace openal
 {
 
 Pool::Pool()
+	: sources()
+	, totalSources(0)
+	, mutex(nullptr)
 {
+	// Clear errors.
+	alGetError();
+
 	// Generate sources.
-	alGenSources(NUM_SOURCES, sources);
+	for (int i = 0; i < MAX_SOURCES; i++)
+	{
+		alGenSources(1, &sources[i]);
+
+		// We might hit an implementation-dependent limit on the total number
+		// of sources before reaching MAX_SOURCES.
+		if (alGetError() != AL_NO_ERROR)
+			break;
+
+		totalSources++;
+	}
+
+	if (totalSources < 4)
+		throw love::Exception("Could not generate sources.");
 
 	// Create the mutex.
 	mutex = thread::newMutex();
 
-	if (alGetError() != AL_NO_ERROR)
-		throw love::Exception("Could not generate sources.");
+	ALboolean hasext = alIsExtensionPresent("AL_SOFT_direct_channels");
 
 	// Make all sources available initially.
-	for (int i = 0; i < NUM_SOURCES; i++)
+	for (int i = 0; i < totalSources; i++)
 	{
-#ifdef AL_DIRECT_CHANNELS_SOFT
-		// Bypassing virtualization of speakers for multi-channel sources in OpenAL Soft.
-		alSourcei(sources[i], AL_DIRECT_CHANNELS_SOFT, AL_TRUE);
-#endif
+		if (hasext)
+		{
+			// Bypass virtualization of speakers for multi-channel sources in OpenAL Soft.
+			alSourcei(sources[i], AL_DIRECT_CHANNELS_SOFT, AL_TRUE);
+		}
+
 		available.push(sources[i]);
 	}
 }
@@ -58,7 +78,7 @@ Pool::~Pool()
 	delete mutex;
 
 	// Free all sources.
-	alDeleteSources(NUM_SOURCES, sources);
+	alDeleteSources(totalSources, sources);
 }
 
 bool Pool::isAvailable() const
@@ -113,7 +133,7 @@ int Pool::getSourceCount() const
 
 int Pool::getMaxSources() const
 {
-	return NUM_SOURCES;
+	return totalSources;
 }
 
 bool Pool::play(Source *source, ALuint &out)

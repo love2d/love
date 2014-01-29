@@ -165,15 +165,16 @@ love::audio::Source *Source::clone()
 	return new Source(*this);
 }
 
-void Source::play()
+bool Source::play()
 {
 	if (valid && paused)
 	{
 		pool->resume(this);
-		return;
+		return true;
 	}
 
 	valid = pool->play(this, source);
+	return valid;
 }
 
 void Source::stop()

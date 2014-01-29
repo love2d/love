@@ -69,22 +69,25 @@ void Audio::PoolThread::setFinish()
 }
 
 Audio::Audio()
-	: distanceModel(DISTANCE_INVERSE_CLAMPED)
+	: device(nullptr)
+	, capture(nullptr)
+	, context(nullptr)
+	, pool(nullptr)
+	, poolThread(nullptr)
+	, distanceModel(DISTANCE_INVERSE_CLAMPED)
 {
-	// Passing zero for default device.
-	device = alcOpenDevice(0);
+	// Passing null for default device.
+	device = alcOpenDevice(nullptr);
 
-	if (device == 0)
+	if (device == nullptr)
 		throw love::Exception("Could not open device.");
 
-	context = alcCreateContext(device, 0);
+	context = alcCreateContext(device, nullptr);
 
-	if (context == 0)
+	if (context == nullptr)
 		throw love::Exception("Could not create context.");
 
-	alcMakeContextCurrent(context);
-
-	if (alcGetError(device) != ALC_NO_ERROR)
+	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
 		throw love::Exception("Could not make context current.");
 
 	/*std::string captureName(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
@@ -108,7 +111,18 @@ Audio::Audio()
 	}*/
 
 	// pool must be allocated after AL context.
-	pool = new Pool();
+	try
+	{
+		pool = new Pool();
+	}
+	catch (love::Exception &)
+	{
+		alcMakeContextCurrent(nullptr);
+		alcDestroyContext(context);
+		//if (capture) alcCaptureCloseDevice(capture);
+		alcCloseDevice(device);
+		throw;
+	}
 
 	poolThread = new PoolThread(pool);
 	poolThread->start();
@@ -122,7 +136,7 @@ Audio::~Audio()
 	delete poolThread;
 	delete pool;
 
-	alcMakeContextCurrent(0);
+	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	//if (capture) alcCaptureCloseDevice(capture);
 	alcCloseDevice(device);
@@ -154,9 +168,9 @@ int Audio::getMaxSources() const
 	return pool->getMaxSources();
 }
 
-void Audio::play(love::audio::Source *source)
+bool Audio::play(love::audio::Source *source)
 {
-	source->play();
+	return source->play();
 }
 
 void Audio::stop(love::audio::Source *source)
@@ -281,7 +295,7 @@ bool Audio::canRecord()
 
 Audio::DistanceModel Audio::getDistanceModel() const
 {
-	return this->distanceModel;
+	return distanceModel;
 }
 
 void Audio::setDistanceModel(DistanceModel distanceModel)

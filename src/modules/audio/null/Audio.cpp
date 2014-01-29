@@ -61,12 +61,9 @@ int Audio::getMaxSources() const
 	return 0;
 }
 
-void Audio::play(love::audio::Source *)
+bool Audio::play(love::audio::Source *)
 {
-}
-
-void Audio::play()
-{
+	return false;
 }
 
 void Audio::stop(love::audio::Source *)

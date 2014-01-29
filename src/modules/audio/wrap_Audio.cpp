@@ -75,8 +75,8 @@ int w_newSource(lua_State *L)
 int w_play(lua_State *L)
 {
 	Source *s = luax_checksource(L, 1);
-	instance->play(s);
-	return 0;
+	luax_pushboolean(L, instance->play(s));
+	return 1;
 }
 
 int w_stop(lua_State *L)

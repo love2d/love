@@ -39,7 +39,7 @@ public:
 	virtual ~Source();
 
 	virtual love::audio::Source *clone();
-	virtual void play();
+	virtual bool play();
 	virtual void stop();
 	virtual void pause();
 	virtual void resume();
