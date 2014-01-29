@@ -161,9 +161,7 @@ bool Pool::play(Source *source, ALuint &out)
 
 			source->retain();
 
-			source->playAtomic();
-
-			ok = true;
+			ok = source->playAtomic();
 		}
 		else
 		{

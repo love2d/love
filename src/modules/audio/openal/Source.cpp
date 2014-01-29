@@ -513,7 +513,7 @@ bool Source::isLooping() const
 	return looping;
 }
 
-void Source::playAtomic()
+bool Source::playAtomic()
 {
 	if (type == TYPE_STATIC)
 	{
@@ -540,10 +540,19 @@ void Source::playAtomic()
 	// of the new one.
 	reset();
 
+	// Clear errors.
+	alGetError();
+
 	alSourcePlay(source);
+
+	// alSourcePlay may fail if the system has reached its limit of simultaneous
+	// playing sources.
+	bool success = alGetError() == AL_NO_ERROR;
 
 	valid = true; //if it fails it will be set to false again
 	//but this prevents a horrible, horrible bug
+
+	return success;
 }
 
 void Source::stopAtomic()

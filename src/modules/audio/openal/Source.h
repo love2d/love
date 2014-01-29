@@ -118,7 +118,7 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
-	void playAtomic();
+	bool playAtomic();
 	void stopAtomic();
 	void pauseAtomic();
 	void resumeAtomic();
