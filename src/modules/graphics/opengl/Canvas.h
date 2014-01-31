@@ -69,7 +69,7 @@ public:
 	 **/
 	void startGrab(const std::vector<Canvas *> &canvases);
 	void startGrab();
-	void stopGrab();
+	void stopGrab(bool switchingToOtherCanvas = false);
 
 	void clear(Color c);
 

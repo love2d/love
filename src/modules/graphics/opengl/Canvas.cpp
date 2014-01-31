@@ -397,9 +397,6 @@ static void getStrategy()
 	}
 }
 
-static int maxFBOColorAttachments = 0;
-static int maxDrawBuffers = 0;
-
 Canvas::Canvas(int width, int height, TextureType texture_type, int fsaa)
 	: fbo(0)
     , resolve_fbo(0)
@@ -657,12 +654,19 @@ void Canvas::setupGrab()
 	if (current == this)
 		return;
 
-	// cleanup after previous fbo
-	if (current != NULL)
-		current->stopGrab();
+	// cleanup after previous Canvas
+	if (current != nullptr)
+	{
+		systemViewport = current->systemViewport;
+		current->stopGrab(true);
+	}
+	else
+		systemViewport = gl.getViewport();
+
+	// indicate we are using this Canvas.
+	current = this;
 
 	// bind the framebuffer object.
-	systemViewport = gl.getViewport();
 	strategy->bindFBO(fbo);
 	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
 
@@ -676,9 +680,6 @@ void Canvas::setupGrab()
 
 	// Switch back to modelview matrix
 	glMatrixMode(GL_MODELVIEW);
-
-	// indicate we are using this fbo
-	current = this;
 
 	if (fsaa_buffer != 0)
 		fsaa_dirty = true;
@@ -695,7 +696,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if (!isMultiCanvasSupported())
 			throw love::Exception("Multi-canvas rendering is not supported on this system.");
 
-		if (canvases.size()+1 > size_t(maxDrawBuffers) || canvases.size()+1 > size_t(maxFBOColorAttachments))
+		if ((int) canvases.size() + 1 > gl.getMaxRenderTargets())
 			throw love::Exception("This system can't simultaniously render to %d canvases.", canvases.size()+1);
 
 		if (fsaa_samples != 0)
@@ -752,21 +753,23 @@ void Canvas::startGrab()
 	attachedCanvases.clear();
 }
 
-void Canvas::stopGrab()
+void Canvas::stopGrab(bool switchingToOtherCanvas)
 {
 	// i am not grabbing. leave me alone
 	if (current != this)
 		return;
 
-	// bind default
-	strategy->bindFBO(0);
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 
-	current = nullptr;
-
-	gl.setViewport(systemViewport);
+	// bind default
+	if (!switchingToOtherCanvas)
+	{
+		strategy->bindFBO(0);
+		current = nullptr;
+		gl.setViewport(systemViewport);
+	}
 }
 
 void Canvas::clear(Color c)

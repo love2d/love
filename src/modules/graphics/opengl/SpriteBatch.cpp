@@ -105,6 +105,8 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if ((index == -1 && next >= size) || index < -1 || index >= size)
 		return -1;
 
+	Vertex sprite[4];
+
 	// Needed for colors.
 	memcpy(sprite, texture->getVertices(), sizeof(Vertex) * 4);
 
@@ -130,6 +132,8 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	// Only do this if there's a free slot.
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
+
+	Vertex sprite[4];
 
 	// Needed for colors.
 	memcpy(sprite, quad->getVertices(), sizeof(Vertex) * 4);

@@ -135,8 +135,6 @@ private:
 	// The next free element.
 	int next;
 
-	Vertex sprite[4];
-
 	// Current color. This color, if present, will be applied to the next
 	// added sprite.
 	Color *color;
