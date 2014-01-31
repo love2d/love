@@ -94,6 +94,13 @@ public:
 		}
 	};
 
+	struct BlendState
+	{
+		GLenum srcRGB, srcA;
+		GLenum dstRGB, dstA;
+		GLenum func;
+	};
+
 	OpenGL();
 
 	/**
@@ -166,6 +173,17 @@ public:
 	 * Gets the current scissor box (regardless of whether scissoring is enabled.)
 	 **/
 	Viewport getScissor() const;
+
+	/**
+	 * Sets blending functionality.
+	 * Note: This does not globally enable or disable blending.
+	 **/
+	void setBlendState(const BlendState &blend);
+
+	/**
+	 * Gets the currently set blending functionality.
+	 **/
+	BlendState getBlendState() const;
 
 	/**
 	 * Helper for setting the active texture unit.
@@ -266,6 +284,8 @@ private:
 
 		Viewport viewport;
 		Viewport scissor;
+
+		BlendState blend;
 
 		// The last ID value used for pseudo-instancing.
 		int lastPseudoInstanceID;
