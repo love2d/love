@@ -90,8 +90,8 @@ public:
 
 private:
 
-	bool setContext(int fsaa, bool vsync);
-	void setWindowGLAttributes(int fsaa) const;
+	bool setContext(int fsaa, bool vsync, bool sRGB);
+	void setWindowGLAttributes(int fsaa, bool sRGB) const;
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings);

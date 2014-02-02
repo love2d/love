@@ -57,8 +57,13 @@ Graphics::Graphics()
 {
 	currentWindow = love::window::sdl::Window::createSingleton();
 
+	int w, h;
+	love::window::WindowSettings wsettings;
+
+	currentWindow->getWindow(w, h, wsettings);
+
 	if (currentWindow->isCreated())
-		setMode(currentWindow->getWidth(), currentWindow->getHeight());
+		setMode(w, h, wsettings.sRGB);
 }
 
 Graphics::~Graphics()
@@ -150,7 +155,7 @@ void Graphics::setViewportSize(int width, int height)
 		c->startGrab(c->getAttachedCanvases());
 }
 
-bool Graphics::setMode(int width, int height)
+bool Graphics::setMode(int width, int height, bool &sRGB)
 {
 	this->width = width;
 	this->height = height;
@@ -206,6 +211,19 @@ bool Graphics::setMode(int width, int height)
 	// subtract a few to give the engine some room.
 	glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 	matrixLimit -= 5;
+
+	// Set whether drawing converts input from linear -> sRGB colorspace.
+	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
+	{
+		if (sRGB)
+			glEnable(GL_FRAMEBUFFER_SRGB);
+		else
+			glDisable(GL_FRAMEBUFFER_SRGB);
+	}
+	else
+		sRGB = false;
+
+	Canvas::screenHasSRGB = sRGB;
 
 	bool enabledebug = false;
 
@@ -283,6 +301,9 @@ void Graphics::setDebug(bool enable)
 	// Disable messages about deprecated OpenGL functionality.
 	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
 	glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
+
+	if (GLEE_VERSION_4_3 || GLEE_KHR_debug)
+		glEnable(GL_DEBUG_OUTPUT);
 
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
@@ -374,10 +395,10 @@ void Graphics::discardStencil()
 	glDisable(GL_STENCIL_TEST);
 }
 
-Image *Graphics::newImage(love::image::ImageData *data)
+Image *Graphics::newImage(love::image::ImageData *data, Texture::Format format)
 {
 	// Create the image.
-	Image *image = new Image(data);
+	Image *image = new Image(data, format);
 
 	if (!isCreated())
 		return image;
@@ -401,10 +422,10 @@ Image *Graphics::newImage(love::image::ImageData *data)
 	return image;
 }
 
-Image *Graphics::newImage(love::image::CompressedData *cdata)
+Image *Graphics::newImage(love::image::CompressedData *cdata, Texture::Format format)
 {
 	// Create the image.
-	Image *image = new Image(cdata);
+	Image *image = new Image(cdata, format);
 
 	if (!isCreated())
 		return image;
@@ -448,10 +469,13 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 	return new ParticleSystem(texture, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_type, int fsaa)
+Canvas *Graphics::newCanvas(int width, int height, Texture::Format format, int fsaa)
 {
-	if (texture_type == Canvas::TYPE_HDR && !Canvas::isHDRSupported())
+	if (format == Texture::FORMAT_HDR && !Canvas::isHDRSupported())
 		throw Exception("HDR Canvases are not supported by your OpenGL implementation");
+
+	if (format == Texture::FORMAT_SRGB && !Canvas::isSRGBSupported())
+		throw Exception("sRGB Canvases are not supported by your OpenGL implementation");
 
 	if (width > gl.getMaxTextureSize())
 		throw Exception("Cannot create canvas: width of %d pixels is too large for this system.", width);
@@ -461,7 +485,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	while (GL_NO_ERROR != glGetError())
 		/* clear opengl error flag */;
 
-	Canvas *canvas = new Canvas(width, height, texture_type, fsaa);
+	Canvas *canvas = new Canvas(width, height, format, fsaa);
 	GLenum err = canvas->getStatus();
 
 	// everything ok, return canvas (early out)

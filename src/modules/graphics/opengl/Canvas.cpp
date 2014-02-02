@@ -369,7 +369,7 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 	}
 };
 
-FramebufferStrategy *strategy = NULL;
+FramebufferStrategy *strategy = nullptr;
 
 FramebufferStrategy strategyNone;
 
@@ -379,8 +379,9 @@ FramebufferStrategyPackedEXT strategyPackedEXT;
 
 FramebufferStrategyEXT strategyEXT;
 
-Canvas *Canvas::current = NULL;
+Canvas *Canvas::current = nullptr;
 OpenGL::Viewport Canvas::systemViewport = OpenGL::Viewport();
+bool Canvas::screenHasSRGB = false;
 
 static void getStrategy()
 {
@@ -397,13 +398,13 @@ static void getStrategy()
 	}
 }
 
-Canvas::Canvas(int width, int height, TextureType texture_type, int fsaa)
+Canvas::Canvas(int width, int height, Texture::Format format, int fsaa)
 	: fbo(0)
     , resolve_fbo(0)
 	, texture(0)
     , fsaa_buffer(0)
 	, depth_stencil(0)
-	, texture_type(texture_type)
+	, format(format)
     , fsaa_samples(fsaa)
 	, fsaa_dirty(false)
 {
@@ -507,13 +508,17 @@ bool Canvas::loadVolatile()
 
 	GLint internalformat;
 	GLenum textype;
-	switch (texture_type)
+	switch (format)
 	{
-	case TYPE_HDR:
+	case Texture::FORMAT_HDR:
 		internalformat = GL_RGBA16F;
 		textype = GL_FLOAT;
 		break;
-	case TYPE_NORMAL:
+	case Texture::FORMAT_SRGB:
+		internalformat = GL_SRGB8_ALPHA8;
+		textype = GL_UNSIGNED_BYTE;
+		break;
+	case Texture::FORMAT_NORMAL:
 	default:
 		internalformat = GL_RGBA8;
 		textype = GL_UNSIGNED_BYTE;
@@ -681,6 +686,12 @@ void Canvas::setupGrab()
 	// Switch back to modelview matrix
 	glMatrixMode(GL_MODELVIEW);
 
+	// Make sure the correct sRGB setting is used when drawing to the canvas.
+	if (format == FORMAT_SRGB)
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	else if (screenHasSRGB)
+		glDisable(GL_FRAMEBUFFER_SRGB);
+
 	if (fsaa_buffer != 0)
 		fsaa_dirty = true;
 }
@@ -708,8 +719,8 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if (canvases[i]->getWidth() != width || canvases[i]->getHeight() != height)
 			throw love::Exception("All canvas arguments must have the same dimensions.");
 
-		if (canvases[i]->getTextureType() != texture_type)
-			throw love::Exception("All canvas arguments must have the same texture type.");
+		if (canvases[i]->getTextureFormat() != format)
+			throw love::Exception("All canvas arguments must have the same texture format.");
 
 		if (canvases[i]->getFSAA() != 0)
 			throw love::Exception("Multi-canvas rendering is not supported with FSAA.");
@@ -763,12 +774,22 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 
-	// bind default
-	if (!switchingToOtherCanvas)
+	if (switchingToOtherCanvas)
 	{
+		if (format == FORMAT_SRGB)
+			glDisable(GL_FRAMEBUFFER_SRGB);
+	}
+	else
+	{
+		// bind system framebuffer.
 		strategy->bindFBO(0);
 		current = nullptr;
 		gl.setViewport(systemViewport);
+
+		if (format == FORMAT_SRGB && !screenHasSRGB)
+			glDisable(GL_FRAMEBUFFER_SRGB);
+		else if (format != FORMAT_SRGB && screenHasSRGB)
+			glEnable(GL_FRAMEBUFFER_SRGB);
 	}
 }
 
@@ -940,6 +961,18 @@ bool Canvas::isHDRSupported()
 	return GLEE_VERSION_3_0 || (isSupported() && GLEE_ARB_texture_float);
 }
 
+bool Canvas::isSRGBSupported()
+{
+	if (GLEE_VERSION_3_0)
+		return true;
+
+	if (!isSupported())
+		return false;
+
+	return (GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
+		&& GLEE_EXT_texture_sRGB;
+}
+
 bool Canvas::isMultiCanvasSupported()
 {
 	// system must support at least 4 simultanious active canvases.
@@ -951,23 +984,6 @@ void Canvas::bindDefaultCanvas()
 	if (current != nullptr)
 		current->stopGrab();
 }
-
-bool Canvas::getConstant(const char *in, Canvas::TextureType &out)
-{
-	return textureTypes.find(in, out);
-}
-
-bool Canvas::getConstant(Canvas::TextureType in, const char *&out)
-{
-	return textureTypes.find(in, out);
-}
-
-StringMap<Canvas::TextureType, Canvas::TYPE_MAX_ENUM>::Entry Canvas::textureTypeEntries[] =
-{
-	{"normal", Canvas::TYPE_NORMAL},
-	{"hdr",    Canvas::TYPE_HDR},
-};
-StringMap<Canvas::TextureType, Canvas::TYPE_MAX_ENUM> Canvas::textureTypes(Canvas::textureTypeEntries, sizeof(Canvas::textureTypeEntries));
 
 } // opengl
 } // graphics

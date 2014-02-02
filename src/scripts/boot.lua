@@ -301,6 +301,7 @@ function love.init()
 			resizable = false,
 			centered = true,
 			highdpi = false,
+			srgb = false,
 		},
 		modules = {
 			event = true,
@@ -390,6 +391,7 @@ function love.init()
 			centered = c.window.centered,
 			display = c.window.display,
 			highdpi = c.window.highdpi,
+			srgb = c.window.srgb,
 		}), "Could not set window mode")
 		love.window.setTitle(c.window.title or c.title)
 		if c.window.icon then

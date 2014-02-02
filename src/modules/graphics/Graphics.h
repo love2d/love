@@ -95,6 +95,7 @@ public:
 		SUPPORT_DXT,
 		SUPPORT_BC5,
 		SUPPORT_INSTANCING,
+		SUPPORT_SRGB,
 		SUPPORT_MAX_ENUM
 	};
 
@@ -128,7 +129,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height) = 0;
+	virtual bool setMode(int width, int height, bool &sRGB) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if

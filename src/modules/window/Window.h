@@ -57,6 +57,7 @@ public:
 		SETTING_CENTERED,
 		SETTING_DISPLAY,
 		SETTING_HIGHDPI,
+		SETTING_SRGB,
 		SETTING_MAX_ENUM
 	};
 
@@ -157,6 +158,7 @@ struct WindowSettings
 	bool centered; // = true
 	int display; // = 0
 	bool highdpi; // false
+	bool sRGB; // false
 
 }; // WindowSettings
 

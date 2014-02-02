@@ -36,7 +36,7 @@ float Image::maxMipmapSharpness = 0.0f;
 Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NONE;
 float Image::defaultMipmapSharpness = 0.0f;
 
-Image::Image(love::image::ImageData *data)
+Image::Image(love::image::ImageData *data, Texture::Format format)
 	: data(data)
 	, cdata(nullptr)
 	, paddedWidth(width)
@@ -45,6 +45,7 @@ Image::Image(love::image::ImageData *data)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(false)
+	, format(format)
 	, usingDefaultTexture(false)
 {
 	width = data->getWidth();
@@ -54,7 +55,7 @@ Image::Image(love::image::ImageData *data)
 	preload();
 }
 
-Image::Image(love::image::CompressedData *cdata)
+Image::Image(love::image::CompressedData *cdata, Texture::Format format)
 	: data(nullptr)
 	, cdata(cdata)
 	, paddedWidth(width)
@@ -63,6 +64,7 @@ Image::Image(love::image::CompressedData *cdata)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
 	, compressed(true)
+	, format(format)
 	, usingDefaultTexture(false)
 {
 	width = cdata->getWidth(0);
@@ -328,6 +330,9 @@ void Image::unload()
 
 bool Image::loadVolatile()
 {
+	if (format == FORMAT_SRGB && !hasSRGBSupport())
+		throw love::Exception("sRGB images are not supported on this system.");
+
 	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getFormat()))
 	{
 		const char *str;
@@ -400,9 +405,10 @@ void Image::uploadTexturePadded()
 	}
 	else if (data)
 	{
+		GLenum iformat = (format == FORMAT_SRGB) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 		glTexImage2D(GL_TEXTURE_2D,
 		             0,
-		             GL_RGBA8,
+		             iformat,
 		             (GLsizei)paddedWidth,
 		             (GLsizei)paddedHeight,
 		             0,
@@ -437,9 +443,10 @@ void Image::uploadTexture()
 	}
 	else if (data)
 	{
+		GLenum iformat = (format == FORMAT_SRGB) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 		glTexImage2D(GL_TEXTURE_2D,
 		             0,
-		             GL_RGBA8,
+		             iformat,
 		             (GLsizei)width,
 		             (GLsizei)height,
 		             0,
@@ -495,6 +502,11 @@ bool Image::refresh()
 	checkMipmapsCreated();
 
 	return true;
+}
+
+Texture::Format Image::getFormat() const
+{
+	return format;
 }
 
 void Image::uploadDefaultTexture()
@@ -561,16 +573,27 @@ bool Image::isCompressed() const
 	return compressed;
 }
 
-GLenum Image::getCompressedFormat(image::CompressedData::Format format) const
+GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
 {
-	switch (format)
+	bool srgb = format == FORMAT_SRGB;
+
+	switch (cformat)
 	{
 	case image::CompressedData::FORMAT_DXT1:
-		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		if (srgb)
+			return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+		else
+			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 	case image::CompressedData::FORMAT_DXT3:
-		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		if (srgb)
+			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
+		else
+			return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	case image::CompressedData::FORMAT_DXT5:
-		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		if (srgb)
+			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+		else
+			return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 	case image::CompressedData::FORMAT_BC4:
 		return GL_COMPRESSED_RED_RGTC1;
 	case image::CompressedData::FORMAT_BC4s:
@@ -580,7 +603,10 @@ GLenum Image::getCompressedFormat(image::CompressedData::Format format) const
 	case image::CompressedData::FORMAT_BC5s:
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
 	default:
-		return GL_RGBA8;
+		if (srgb)
+			return GL_SRGB8_ALPHA8;
+		else
+			return GL_RGBA8;
 	}
 }
 
@@ -630,6 +656,11 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 	}
 
 	return false;
+}
+
+bool Image::hasSRGBSupport()
+{
+	return GLEE_VERSION_2_1 || GLEE_EXT_texture_sRGB;
 }
 
 } // opengl

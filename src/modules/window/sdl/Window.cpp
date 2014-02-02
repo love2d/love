@@ -154,7 +154,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (!window)
 	{
 		// In Windows and Linux, some GL attributes are set on window creation.
-		setWindowGLAttributes(f.fsaa);
+		setWindowGLAttributes(f.fsaa, f.sRGB);
 
 		const char *title = windowTitle.c_str();
 		int pos = f.centered ? centeredpos : uncenteredpos;
@@ -190,7 +190,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_RaiseWindow(window);
 
-	if (!setContext(f.fsaa, f.vsync))
+	if (!setContext(f.fsaa, f.vsync, f.sRGB))
 		return false;
 
 	created = true;
@@ -206,7 +206,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		SDL_GL_GetDrawableSize(window, &width, &height);
 #endif
 
-		gfx->setMode(width, height);
+		gfx->setMode(width, height, curMode.settings.sRGB);
 	}
 
 	// Make sure the mouse keeps its previous grab setting.
@@ -226,7 +226,7 @@ bool Window::onWindowResize(int width, int height)
 	return true;
 }
 
-bool Window::setContext(int fsaa, bool vsync)
+bool Window::setContext(int fsaa, bool vsync, bool sRGB)
 {
 	// We would normally only need to recreate the context if FSAA changes or
 	// SDL_GL_MakeCurrent is unsuccessful, but in Windows MakeCurrent can
@@ -238,7 +238,7 @@ bool Window::setContext(int fsaa, bool vsync)
 	}
 
 	// Make sure the proper attributes are set.
-	setWindowGLAttributes(fsaa);
+	setWindowGLAttributes(fsaa, sRGB);
 
 	context = SDL_GL_CreateContext(window);
 
@@ -290,7 +290,7 @@ bool Window::setContext(int fsaa, bool vsync)
 	return true;
 }
 
-void Window::setWindowGLAttributes(int fsaa) const
+void Window::setWindowGLAttributes(int fsaa, bool sRGB) const
 {
 	// Set GL window attributes.
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -303,6 +303,10 @@ void Window::setWindowGLAttributes(int fsaa) const
 	// FSAA.
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
+#endif
 
 	// Do we want a debug context?
 	const char *debugenv = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
@@ -370,6 +374,8 @@ void Window::updateSettings(const WindowSettings &newsettings)
 	else
 #endif
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+
+	curMode.settings.sRGB = newsettings.sRGB;
 }
 
 void Window::getWindow(int &width, int &height, WindowSettings &settings)

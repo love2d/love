@@ -152,8 +152,17 @@ int w_getMaxTextureSize(lua_State *L)
 
 int w_newImage(lua_State *L)
 {
-	love::image::ImageData *data = 0;
-	love::image::CompressedData *cdata = 0;
+	love::image::ImageData *data = nullptr;
+	love::image::CompressedData *cdata = nullptr;
+
+	Texture::Format format = Texture::FORMAT_NORMAL;
+	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
+
+	if (fstr != nullptr && !Texture::getConstant(fstr, format))
+		return luaL_error(L, "Invalid texture format: %s", fstr);
+
+	if (format == Texture::FORMAT_HDR) // For now...
+		return luaL_error(L, "HDR images are not supported.");
 
 	// Convert to FileData, if necessary.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
@@ -185,15 +194,15 @@ int w_newImage(lua_State *L)
 		return luaL_error(L, "Error creating image.");
 
 	// Create the image.
-	Image *image = 0;
+	Image *image = nullptr;
 	EXCEPT_GUARD(
 		if (cdata)
-			image = instance->newImage(cdata);
+			image = instance->newImage(cdata, format);
 		else if (data)
-			image = instance->newImage(data);
+			image = instance->newImage(data, format);
 	)
 
-	if (image == 0)
+	if (image == nullptr)
 		return luaL_error(L, "Could not load image.");
 
 	// Push the type.
@@ -325,12 +334,12 @@ int w_newCanvas(lua_State *L)
 	const char *str = luaL_optstring(L, 3, "normal");
 	int fsaa        = luaL_optint(L, 4, 0);
 
-	Canvas::TextureType texture_type;
-	if (!Canvas::getConstant(str, texture_type))
-		return luaL_error(L, "Invalid canvas type: %s", str);
+	Texture::Format format;
+	if (!Texture::getConstant(str, format))
+		return luaL_error(L, "Invalid texture format: %s", str);
 
 	Canvas *canvas = nullptr;
-	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, texture_type, fsaa);)
+	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, format, fsaa);)
 
 	if (canvas == nullptr)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
@@ -997,6 +1006,10 @@ int w_isSupported(lua_State *L)
 			break;
 		case Graphics::SUPPORT_INSTANCING:
 			if (!GLEE_ARB_draw_instanced)
+				supported = false;
+			break;
+		case Graphics::SUPPORT_SRGB:
+			if (!Canvas::isSRGBSupported())
 				supported = false;
 			break;
 		default:

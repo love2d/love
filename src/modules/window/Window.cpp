@@ -50,6 +50,7 @@ WindowSettings::WindowSettings()
 	, centered(true)
 	, display(0)
 	, highdpi(false)
+	, sRGB(false)
 {
 }
 
@@ -86,6 +87,7 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"centered", SETTING_CENTERED},
 	{"display", SETTING_DISPLAY},
 	{"highdpi", SETTING_HIGHDPI},
+	{"srgb", SETTING_SRGB},
 };
 
 StringMap<Window::Setting, Window::SETTING_MAX_ENUM> Window::settings(Window::settingEntries, sizeof(Window::settingEntries));

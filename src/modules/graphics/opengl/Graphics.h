@@ -112,7 +112,7 @@ public:
 	void restoreState(const DisplayState &s);
 
 	virtual void setViewportSize(int width, int height);
-	virtual bool setMode(int width, int height);
+	virtual bool setMode(int width, int height, bool &sRGB);
 	virtual void unSetMode();
 
 	void setDebug(bool enable);
@@ -191,8 +191,8 @@ public:
 	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(love::image::ImageData *data);
-	Image *newImage(love::image::CompressedData *cdata);
+	Image *newImage(love::image::ImageData *data, Texture::Format format = Texture::FORMAT_NORMAL);
+	Image *newImage(love::image::CompressedData *cdata, Texture::Format format = Texture::FORMAT_NORMAL);
 
 	Quad *newQuad(Quad::Viewport v, float sw, float sh);
 
@@ -205,7 +205,7 @@ public:
 
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL, int fsaa = 0);
+	Canvas *newCanvas(int width, int height, Texture::Format format = Texture::FORMAT_NORMAL, int fsaa = 0);
 
 	Shader *newShader(const Shader::ShaderSources &sources);
 

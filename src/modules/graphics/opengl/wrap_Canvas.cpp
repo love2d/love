@@ -110,12 +110,14 @@ int w_Canvas_clear(lua_State *L)
 	return 0;
 }
 
-int w_Canvas_getType(lua_State *L)
+int w_Canvas_getFormat(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	Canvas::TextureType type = canvas->getTextureType();
+	Texture::Format format = canvas->getTextureFormat();
 	const char *str;
-	Canvas::getConstant(type, str);
+	if (!Texture::getConstant(format, str))
+		return luaL_error(L, "Unknown texture format.");
+
 	lua_pushstring(L, str);
 	return 1;
 }
@@ -142,8 +144,11 @@ static const luaL_Reg functions[] =
 	{ "getImageData", w_Canvas_getImageData },
 	{ "getPixel", w_Canvas_getPixel },
 	{ "clear", w_Canvas_clear },
-	{ "getType", w_Canvas_getType },
+	{ "getFormat", w_Canvas_getFormat },
 	{ "getFSAA", w_Canvas_getFSAA },
+
+	// Deprecated since 0.9.1.
+	{ "getType", w_Canvas_getFormat },
 	{ 0, 0 }
 };
 

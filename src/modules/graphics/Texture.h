@@ -55,6 +55,14 @@ public:
 		FILTER_MAX_ENUM
 	};
 
+	enum Format
+	{
+		FORMAT_NORMAL,
+		FORMAT_HDR,
+		FORMAT_SRGB,
+		FORMAT_MAX_ENUM
+	};
+
 	struct Filter
 	{
 		Filter();
@@ -111,6 +119,9 @@ public:
 	static bool getConstant(const char *in, WrapMode &out);
 	static bool getConstant(WrapMode in, const char  *&out);
 
+	static bool getConstant(const char *in, Format &out);
+	static bool getConstant(Format in, const char *&out);
+
 protected:
 
 	int width;
@@ -131,6 +142,9 @@ private:
 
 	static StringMap<WrapMode, WRAP_MAX_ENUM>::Entry wrapModeEntries[];
 	static StringMap<WrapMode, WRAP_MAX_ENUM> wrapModes;
+
+	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
+	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
 }; // Texture
 

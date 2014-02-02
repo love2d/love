@@ -39,14 +39,7 @@ class Canvas : public Texture
 {
 public:
 
-	enum TextureType
-	{
-		TYPE_NORMAL,
-		TYPE_HDR,
-		TYPE_MAX_ENUM
-	};
-
-	Canvas(int width, int height, TextureType texture_type = TYPE_NORMAL, int fsaa = 0);
+	Canvas(int width, int height, Texture::Format format = Texture::FORMAT_NORMAL, int fsaa = 0);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -92,9 +85,9 @@ public:
 		return status;
 	}
 
-	inline TextureType getTextureType() const
+	inline Texture::Format getTextureFormat() const
 	{
-		return texture_type;
+		return format;
 	}
 
 	inline int getFSAA() const
@@ -106,16 +99,17 @@ public:
 
 	static bool isSupported();
 	static bool isHDRSupported();
+	static bool isSRGBSupported();
 	static bool isMultiCanvasSupported();
-
-	static bool getConstant(const char *in, TextureType &out);
-	static bool getConstant(TextureType in, const char *&out);
 
 	static Canvas *current;
 	static void bindDefaultCanvas();
 
 	// The viewport dimensions of the system (default) framebuffer.
 	static OpenGL::Viewport systemViewport;
+
+	// Whether the main screen should have linear -> sRGB conversions enabled.
+	static bool screenHasSRGB;
 
 private:
 
@@ -128,7 +122,7 @@ private:
 	GLuint fsaa_buffer;
 	GLuint depth_stencil;
 
-	TextureType texture_type;
+	Format format;
 
 	GLenum status;
 
@@ -140,9 +134,7 @@ private:
 	void setupGrab();
 	void drawv(const Matrix &t, const Vertex *v);
 
-	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
-	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;
-};
+}; // Canvas
 
 } // opengl
 } // graphics

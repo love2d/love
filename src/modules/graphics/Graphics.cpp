@@ -186,6 +186,7 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 	{ "dxt", Graphics::SUPPORT_DXT },
 	{ "bc5", Graphics::SUPPORT_BC5 },
 	{ "instancing", Graphics::SUPPORT_INSTANCING },
+	{ "srgb", Graphics::SUPPORT_SRGB },
 };
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));
