@@ -51,8 +51,6 @@ int w_Mesh_setDrawRange(lua_State *L);
 int w_Mesh_getDrawRange(lua_State *L);
 int w_Mesh_setVertexColors(lua_State *L);
 int w_Mesh_hasVertexColors(lua_State *L);
-int w_Mesh_setWireframe(lua_State *L);
-int w_Mesh_isWireframe(lua_State *L);
 
 extern "C" int luaopen_mesh(lua_State *L);
 

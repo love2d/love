@@ -361,20 +361,6 @@ int w_Mesh_hasVertexColors(lua_State *L)
 	return 1;
 }
 
-int w_Mesh_setWireframe(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	t->setWireframe(luax_toboolean(L, 2));
-	return 0;
-}
-
-int w_Mesh_isWireframe(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	luax_pushboolean(L, t->isWireframe());
-	return 1;
-}
-
 static const luaL_Reg functions[] =
 {
 	{ "setVertex", w_Mesh_setVertex },
@@ -394,8 +380,6 @@ static const luaL_Reg functions[] =
 	{ "getDrawRange", w_Mesh_getDrawRange },
 	{ "setVertexColors", w_Mesh_setVertexColors },
 	{ "hasVertexColors", w_Mesh_hasVertexColors },
-	{ "setWireframe", w_Mesh_setWireframe },
-	{ "isWireframe", w_Mesh_isWireframe },
 
 	// Deprecated since 0.9.1.
 	{ "setImage", w_Mesh_setTexture },

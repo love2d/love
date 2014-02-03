@@ -844,6 +844,18 @@ int w_getMaxPointSize(lua_State *L)
 	return 1;
 }
 
+int w_setWireframe(lua_State *L)
+{
+	instance->setWireframe(luax_toboolean(L, 1));
+	return 0;
+}
+
+int w_isWireframe(lua_State *L)
+{
+	luax_pushboolean(L, instance->isWireframe());
+	return 1;
+}
+
 int w_newScreenshot(lua_State *L)
 {
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
@@ -1388,6 +1400,8 @@ static const luaL_Reg functions[] =
 	{ "setPointStyle", w_setPointStyle },
 	{ "getPointSize", w_getPointSize },
 	{ "getPointStyle", w_getPointStyle },
+	{ "setWireframe", w_setWireframe },
+	{ "isWireframe", w_isWireframe },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },

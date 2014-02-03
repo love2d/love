@@ -102,6 +102,8 @@ DisplayState Graphics::saveState()
 	for (int i = 0; i < 4; i++)
 		s.colorMask[i] = colorMask[i];
 
+	wireframe = isWireframe();
+
 	return s;
 }
 
@@ -119,6 +121,7 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
+	setWireframe(s.wireframe);
 }
 
 void Graphics::setViewportSize(int width, int height)
@@ -747,6 +750,17 @@ Graphics::PointStyle Graphics::getPointStyle() const
 		return POINT_SMOOTH;
 	else
 		return POINT_ROUGH;
+}
+
+void Graphics::setWireframe(bool enable)
+{
+	wireframe = enable;
+	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
+}
+
+bool Graphics::isWireframe() const
+{
+	return wireframe;
 }
 
 void Graphics::print(const std::string &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)

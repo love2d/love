@@ -81,6 +81,8 @@ struct DisplayState
 	// Color mask.
 	bool colorMask[4];
 
+	bool wireframe;
+
 	// Default values.
 	DisplayState()
 	{
@@ -93,6 +95,7 @@ struct DisplayState
 		pointStyle = Graphics::POINT_SMOOTH;
 		scissor = false;
 		colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
+		wireframe = false;
 	}
 
 };
@@ -335,6 +338,19 @@ public:
 	PointStyle getPointStyle() const;
 
 	/**
+	 * Sets whether graphics will be drawn as wireframe lines instead of filled
+	 * triangles (has no effect for drawn points.)
+	 * This should only be used as a debugging tool. The wireframe lines do not
+	 * behave the same as regular love.graphics lines.
+	 **/
+	void setWireframe(bool enable);
+
+	/**
+	 * Gets whether wireframe drawing mode is enabled.
+	 **/
+	bool isWireframe() const;
+
+	/**
 	 * Draws text at the specified coordinates, with rotation and
 	 * scaling along both axes.
 	 * @param x The x-coordinate.
@@ -460,6 +476,7 @@ private:
 	GLint matrixLimit;
 	GLint userMatrices;
 	bool colorMask[4];
+	bool wireframe;
 
 	int width;
 	int height;
