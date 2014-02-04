@@ -82,7 +82,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	f.minwidth = std::max(f.minwidth, 1);
 	f.minheight = std::max(f.minheight, 1);
 
-	f.display = std::min(std::max(f.display, 0), getDisplayCount());
+	f.display = std::min(std::max(f.display, 0), getDisplayCount() - 1);
 
 	// Use the desktop resolution if a width or height of 0 is specified.
 	if (width == 0 || height == 0)
@@ -290,7 +290,7 @@ bool Window::setContext(int fsaa, bool vsync, bool sRGB)
 	return true;
 }
 
-void Window::setWindowGLAttributes(int fsaa, bool sRGB) const
+void Window::setWindowGLAttributes(int fsaa, bool /* sRGB */) const
 {
 	// Set GL window attributes.
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -304,9 +304,14 @@ void Window::setWindowGLAttributes(int fsaa, bool sRGB) const
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
 
+	/* FIXME: Enable this code but make sure to try to re-create the window and
+	 * context with this disabled, if creation fails with it enabled.
+	 * We can leave this out for now because in practice the framebuffer will
+	 * already be sRGB-capable (on desktops at least.)
 #if SDL_VERSION_ATLEAST(2,0,1)
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
 #endif
+	 */
 
 	// Do we want a debug context?
 	const char *debugenv = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
