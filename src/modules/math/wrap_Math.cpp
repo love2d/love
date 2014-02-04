@@ -238,6 +238,70 @@ int w_isConvex(lua_State *L)
 	return 1;
 }
 
+static int getGammaArgs(lua_State *L, float color[4])
+{
+	int numcomponents = 0;
+
+	if (lua_istable(L, 1))
+	{
+		int n = lua_objlen(L, 1);
+		for (int i = 1; i <= n && i <= 4; i++)
+		{
+			lua_rawgeti(L, 1, i);
+			color[i - 1] = (float) luaL_checknumber(L, -1) / 255.0;
+			numcomponents++;
+		}
+
+		lua_pop(L, numcomponents);
+	}
+	else
+	{
+		int n = lua_gettop(L);
+		for (int i = 1; i <= n && i <= 4; i++)
+		{
+			color[i - 1] = (float) luaL_checknumber(L, i) / 255.0;
+			numcomponents++;
+		}
+	}
+
+	if (numcomponents == 0)
+		luaL_checknumber(L, 1);
+	
+	return numcomponents;
+}
+
+int w_gammaToLinear(lua_State *L)
+{
+	float color[4];
+	int numcomponents = getGammaArgs(L, color);
+
+	for (int i = 0; i < numcomponents; i++)
+	{
+		// Alpha should always be linear.
+		if (i < 3)
+			color[i] = Math::instance.gammaToLinear(color[i]);
+		lua_pushnumber(L, color[i] * 255);
+	}
+
+	return numcomponents;
+}
+
+int w_linearToGamma(lua_State *L)
+{
+	float color[4];
+	int numcomponents = getGammaArgs(L, color);
+
+	for (int i = 0; i < numcomponents; i++)
+	{
+		// Alpha should always be linear.
+		if (i < 3)
+			color[i] = Math::instance.linearToGamma(color[i]);
+		lua_pushnumber(L, color[i] * 255);
+	}
+
+	return numcomponents;
+}
+
 int w_noise(lua_State *L)
 {
 	float w, x, y, z;
@@ -285,6 +349,8 @@ static const luaL_Reg functions[] =
 	{ "newBezierCurve", w_newBezierCurve },
 	{ "triangulate", w_triangulate },
 	{ "isConvex", w_isConvex },
+	{ "gammaToLinear", w_gammaToLinear },
+	{ "linearToGamma", w_linearToGamma },
 	{ "noise", w_noise },
 	{ 0, 0 }
 };

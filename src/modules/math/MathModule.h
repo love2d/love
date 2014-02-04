@@ -137,6 +137,16 @@ public:
 	bool isConvex(const std::vector<Vertex> &polygon);
 
 	/**
+	 * Converts a value from the sRGB (gamma) colorspace to linear RGB.
+	 **/
+	float gammaToLinear(float c) const;
+
+	/**
+	 * Converts a value from linear RGB to the sRGB (gamma) colorspace.
+	 **/
+	float linearToGamma(float c) const;
+
+	/**
 	 * Calculate Simplex noise for the specified coordinate(s).
 	 *
 	 * @return Noise value in the range of [0, 1].
