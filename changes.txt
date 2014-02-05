@@ -5,7 +5,7 @@ LOVE 0.9.1 [Baby Inspector]
 
   * Added Source:clone.
   * Added ParticleSystem:clone.
-  * Added Mesh:setWireframe and Mesh:isWireframe for debugging.
+  * Added love.graphics.setWireframe for debugging.
   * Added Mesh:setDrawRange and Mesh:getDrawRange.
   * Added instancing support to Meshes with Mesh:setInstanceCount.
   * Added CircleShape:getPoint and CircleShape:setPoint.
@@ -18,6 +18,9 @@ LOVE 0.9.1 [Baby Inspector]
   * Added Canvas:getFSAA.
   * Added 'love_ScreenSize' built-in variable in shaders.
   * Added love.getVersion.
+  * Added support for gamma-correct rendering.
+  * Added love.graphics.isSupported("srgb").
+  * Added love.math.gammaToLinear and love.math.linearToGamma.
 
   * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage.
   * Deprecated love.graphics.getMaxImageSize and love.graphics.getMaxPointSize.
@@ -38,6 +41,8 @@ LOVE 0.9.1 [Baby Inspector]
   * Updated Canvas drawing code, texture coordinates are no longer flipped vertically.
   * Updated Canvas:renderTo to work properly if a Canvas is currently active.
   * Updated ParticleSystem:setEmissionRate to accept non-integer numbers.
+  * Updated Source:play to return a boolean indicating success.
+  * Updated t.console in conf.lua to create the console before modules are loaded in Windows.
 
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------
