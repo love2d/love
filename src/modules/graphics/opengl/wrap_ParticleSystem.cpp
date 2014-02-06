@@ -569,6 +569,20 @@ int w_ParticleSystem_getColors(lua_State *L)
 	return colors.size();
 }
 
+int w_ParticleSystem_setRelativeRotation(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	t->setRelativeRotation(luax_toboolean(L, 2));
+	return 0;
+}
+
+int w_ParticleSystem_hasRelativeRotation(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	luax_pushboolean(L, t->hasRelativeRotation());
+	return 1;
+}
+
 int w_ParticleSystem_getCount(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -687,6 +701,8 @@ static const luaL_Reg functions[] =
 	{ "getColors", w_ParticleSystem_getColors },
 	{ "setOffset", w_ParticleSystem_setOffset },
 	{ "getOffset", w_ParticleSystem_getOffset },
+	{ "setRelativeRotation", w_ParticleSystem_setRelativeRotation },
+	{ "hasRelativeRotation", w_ParticleSystem_hasRelativeRotation },
 	{ "getCount", w_ParticleSystem_getCount },
 	{ "start", w_ParticleSystem_start },
 	{ "stop", w_ParticleSystem_stop },

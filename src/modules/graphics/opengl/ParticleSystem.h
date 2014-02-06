@@ -422,6 +422,12 @@ public:
 	std::vector<Color> getColor() const;
 
 	/**
+	 * sets whether particle angles & rotations are relative to their velocities.
+	 **/
+	void setRelativeRotation(bool enable);
+	bool hasRelativeRotation() const;
+
+	/**
 	 * Returns the amount of particles that are currently active in the system.
 	 **/
 	uint32 getCount() const;
@@ -494,11 +500,12 @@ public:
 	static bool getConstant(InsertMode in, const char *&out);
 
 protected:
+
 	// Represents a single particle.
-	struct particle
+	struct Particle
 	{
-		particle *prev;
-		particle *next;
+		Particle *prev;
+		Particle *next;
 
 		float lifetime;
 		float life;
@@ -518,7 +525,8 @@ protected:
 		float sizeOffset;
 		float sizeIntervalSize;
 
-		float rotation;
+		float rotation; // Amount of rotation applied to the final angle.
+		float angle;
 		float spinStart;
 		float spinEnd;
 
@@ -526,16 +534,16 @@ protected:
 	};
 
 	// Pointer to the beginning of the allocated memory.
-	particle *pMem;
+	Particle *pMem;
 
 	// Pointer to a free particle.
-	particle *pFree;
+	Particle *pFree;
 
 	// Pointer to the start of the linked list.
-	particle *pHead;
+	Particle *pHead;
 
 	// Pointer to the end of the linked list.
-	particle *pTail;
+	Particle *pTail;
 
 	// array of transformed vertex data for all particles, for drawing
 	Vertex *particleVerts;
@@ -617,17 +625,19 @@ protected:
 	// Color.
 	std::vector<Colorf> colors;
 
+	bool relativeRotation;
+
 	void createBuffers(size_t size);
 	void deleteBuffers();
 
 	void addParticle(float t);
-	particle *removeParticle(particle *p);
+	Particle *removeParticle(Particle *p);
 
 	// Called by addParticle.
-	void initParticle(particle *p, float t);
-	void insertTop(particle *p);
-	void insertBottom(particle *p);
-	void insertRandom(particle *p);
+	void initParticle(Particle *p, float t);
+	void insertTop(Particle *p);
+	void insertBottom(Particle *p);
+	void insertRandom(Particle *p);
 
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM> distributions;
