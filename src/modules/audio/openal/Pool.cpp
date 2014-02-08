@@ -61,11 +61,13 @@ Pool::Pool()
 	// Make all sources available initially.
 	for (int i = 0; i < totalSources; i++)
 	{
+#ifdef AL_SOFT_direct_channels
 		if (hasext)
 		{
 			// Bypass virtualization of speakers for multi-channel sources in OpenAL Soft.
 			alSourcei(sources[i], AL_DIRECT_CHANNELS_SOFT, AL_TRUE);
 		}
+#endif
 
 		available.push(sources[i]);
 	}
