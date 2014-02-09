@@ -20,8 +20,13 @@
 
 #include "RandomGenerator.h"
 
-// STL
+// C++
 #include <cmath>
+#include <sstream>
+#include <iomanip>
+
+// C
+#include <cstdlib>
 
 namespace love
 {
@@ -36,25 +41,10 @@ RandomGenerator::RandomGenerator()
 {
 	// because it is too big for some compilers to handle ... if you know what
 	// i mean
-#ifdef LOVE_BIG_ENDIAN
-	seed.b32.a = 0x0139408D;
-	seed.b32.b = 0xCBBF7A44;
-#else
-	seed.b32.b = 0x0139408D;
-	seed.b32.a = 0xCBBF7A44;
-#endif
-
-	rng_state = seed;
-}
-
-void RandomGenerator::setSeed(RandomGenerator::Seed newseed)
-{
-	// 0 xor 0 is still 0, so Xorshift can't generate new numbers.
-	if (newseed.b64 == 0)
-		throw love::Exception("Invalid random seed.");
-
-	seed = newseed;
-	rng_state = seed;
+	Seed newseed;
+	newseed.b32.low = 0xCBBF7A44;
+	newseed.b32.high = 0x0139408D;
+	setSeed(newseed);
 }
 
 uint64 RandomGenerator::rand()
@@ -81,6 +71,72 @@ double RandomGenerator::randomNormal(double stddev)
 
 	last_randomnormal = r * cos(phi);
 	return r * sin(phi) * stddev;
+}
+
+void RandomGenerator::setSeed(RandomGenerator::Seed newseed)
+{
+	// 0 xor 0 is still 0, so Xorshift can't generate new numbers.
+	if (newseed.b64 == 0)
+		throw love::Exception("Invalid random seed.");
+
+	seed = newseed;
+	rng_state = seed;
+}
+
+RandomGenerator::Seed RandomGenerator::getSeed() const
+{
+	return seed;
+}
+
+void RandomGenerator::setState(const std::string &statestr)
+{
+	// For this implementation we'll accept a hex string representing the
+	// 64-bit state integer xorshift uses.
+
+	Seed state = {};
+
+	// Hex string must start with 0x.
+	if (statestr.find("0x") != 0 || statestr.size() < 3)
+		throw love::Exception("Invalid random state.");
+
+	// standardized strtoull (or 64 bit integer support for stringstream)
+	// requires C++11's standard library, which we can't use yet.
+	// I use strtol like this not because it's the best solution, but because
+	// it's "good enough".
+
+	// Convert the hex string to the state integer character-by-character.
+	for (size_t i = 2; i < statestr.size(); i++)
+	{
+		char hex[2] = {statestr[i], 0};
+		char *end = nullptr;
+
+		// Convert the current hex character to a number.
+		int nibble = strtol(hex, &end, 16);
+
+		// Check if strtol failed to convert it.
+		if (end != nullptr && *end != 0)
+			throw love::Exception("Invalid random state.");
+
+		state.b64 = (state.b64 << 4) + nibble;
+	}
+
+	rng_state = state;
+}
+
+std::string RandomGenerator::getState() const
+{
+	// For this implementation we'll return a hex string representing the 64-bit
+	// state integer xorshift uses.
+
+	std::stringstream ss;
+
+	ss << "0x";
+
+	// Again with the stringstream not dealing with 64 bit integers...
+	ss << std::setfill('0') << std::setw(8) << std::hex << rng_state.b32.high;
+	ss << std::setfill('0') << std::setw(8) << std::hex << rng_state.b32.low;
+
+	return ss.str();
 }
 
 } // math

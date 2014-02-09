@@ -28,8 +28,9 @@
 #include "common/int.h"
 #include "common/Object.h"
 
-// STL
+// C++
 #include <limits>
+#include <string>
 
 namespace love
 {
@@ -45,53 +46,18 @@ public:
 		uint64 b64;
 		struct
 		{
-			uint32 a;
-			uint32 b;
+#ifdef LOVE_BIG_ENDIAN
+			uint32 high;
+			uint32 low;
+#else
+			uint32 low;
+			uint32 high;
+#endif
 		} b32;
 	};
 
 	RandomGenerator();
 	virtual ~RandomGenerator() {}
-
-	/**
-	 * Set pseudo-random seed.
-	 * It's up to the implementation how to use this.
-	 **/
-	void setSeed(Seed seed);
-
-	/**
-	 * Separately set the low and high bits of the pseudo-random seed.
-	 **/
-	inline void setSeed(uint32 low, uint32 high)
-	{
-		Seed newseed;
-
-#ifdef LOVE_BIG_ENDIAN
-		newseed.b32.a = high;
-		newseed.b32.b = low;
-#else
-		newseed.b32.b = high;
-		newseed.b32.a = low;
-#endif
-
-		setSeed(newseed);
-	}
-
-	inline Seed getSeed() const
-	{
-		return seed;
-	}
-
-	inline void getSeed(uint32 &low, uint32 &high) const
-	{
-#ifdef LOVE_BIG_ENDIAN
-		high = seed.b32.a;
-		low = seed.b32.b;
-#else
-		high = seed.b32.b;
-		low = seed.b32.a;
-#endif
-	}
 
 	/**
 	 * Return uniformly distributed pseudo random integer.
@@ -137,6 +103,28 @@ public:
 	 * @return Normally distributed random number with mean 0 and variance (stddev)².
 	 **/
 	double randomNormal(double stddev);
+
+	/**
+	 * Set pseudo-random seed.
+	 * It's up to the implementation how to use this.
+	 **/
+	void setSeed(Seed seed);
+
+	/**
+	 * Get the previously set pseudo-random seed.
+	 **/
+	Seed getSeed() const;
+
+	/**
+	 * Set the internal implementation-dependent state value based on a string.
+	 **/
+	void setState(const std::string &statestr);
+
+	/**
+	 * Get a string representation of the implementation-dependent internal
+	 * state value.
+	 **/
+	std::string getState() const;
 
 private:
 
