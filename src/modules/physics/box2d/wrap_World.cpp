@@ -143,21 +143,27 @@ int w_World_getBodyList(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	return t->getBodyList(L);
+	int ret = 0;
+	EXCEPT_GUARD(ret = t->getBodyList(L);)
+	return ret;
 }
 
 int w_World_getJointList(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	return t->getJointList(L);
+	int ret = 0;
+	EXCEPT_GUARD(ret = t->getJointList(L);)
+	return ret;
 }
 
 int w_World_getContactList(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	return t->getContactList(L);
+	int ret = 0;
+	EXCEPT_GUARD(ret = t->getContactList(L);)
+	return ret;
 }
 
 int w_World_queryBoundingBox(lua_State *L)
