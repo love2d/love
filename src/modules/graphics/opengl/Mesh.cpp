@@ -38,6 +38,7 @@ Mesh::Mesh(const std::vector<Vertex> &verts, Mesh::DrawMode mode)
 	, vertex_count(0)
 	, ibo(nullptr)
 	, element_count(0)
+	, element_data_type(getGLDataTypeFromMax(verts.size()))
 	, instance_count(1)
 	, draw_mode(mode)
 	, range_min(-1)
@@ -53,6 +54,7 @@ Mesh::Mesh(int vertexcount, Mesh::DrawMode mode)
 	, vertex_count(0)
 	, ibo(nullptr)
 	, element_count(0)
+	, element_data_type(getGLDataTypeFromMax(vertexcount))
 	, draw_mode(mode)
 	, range_min(-1)
 	, range_max(-1)
@@ -151,15 +153,42 @@ size_t Mesh::getVertexCount() const
 	return vertex_count;
 }
 
+/**
+ * Copies index data from a vector to a mapped index buffer.
+ **/
+template <typename T>
+static void copyToIndexBuffer(const std::vector<uint32> &indices, VertexBuffer::Mapper &buffermap, size_t maxval)
+{
+	T *elems = (T *) buffermap.get();
+
+	for (size_t i = 0; i < indices.size(); i++)
+	{
+		if (indices[i] >= maxval)
+			throw love::Exception("Invalid vertex map value: %d", indices[i] + 1);
+
+		elems[i] = (T) indices[i];
+	}
+}
+
 void Mesh::setVertexMap(const std::vector<uint32> &map)
 {
-	for (size_t i = 0; i < map.size(); i++)
-	{
-		if (map[i] >= vertex_count)
-			throw love::Exception("Invalid vertex map value: %d", map[i] + 1);
-	}
+	GLenum datatype = getGLDataTypeFromMax(vertex_count);
 
-	size_t size = sizeof(uint32) * map.size();
+	// Calculate the size in bytes of the index buffer data.
+	size_t size = map.size();
+	switch (datatype)
+	{
+	case GL_UNSIGNED_BYTE:
+		size *= sizeof(uint8);
+		break;
+	case GL_UNSIGNED_SHORT:
+		size *= sizeof(uint16);
+		break;
+	case GL_UNSIGNED_INT:
+	default:
+		size *= sizeof(uint32);
+		break;
+	}
 
 	if (ibo && size > ibo->getSize())
 	{
@@ -175,27 +204,68 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 
 	element_count = map.size();
 
-	if (ibo && element_count > 0)
-	{
-		VertexBuffer::Bind ibo_bind(*ibo);
-		VertexBuffer::Mapper ibo_map(*ibo);
+	if (!ibo || element_count == 0)
+		return;
 
-		// Fill the buffer.
-		memcpy(ibo_map.get(), &map[0], size);
+	VertexBuffer::Bind ibo_bind(*ibo);
+	VertexBuffer::Mapper ibo_map(*ibo);
+
+	// Fill the buffer with the index values from the vector.
+	switch (datatype)
+	{
+	case GL_UNSIGNED_BYTE:
+		copyToIndexBuffer<uint8>(map, ibo_map, vertex_count);
+		break;
+	case GL_UNSIGNED_SHORT:
+		copyToIndexBuffer<uint16>(map, ibo_map, vertex_count);
+		break;
+	case GL_UNSIGNED_INT:
+	default:
+		copyToIndexBuffer<uint32>(map, ibo_map, vertex_count);
+		break;
 	}
+
+	element_data_type = datatype;
 }
 
-const uint32 *Mesh::getVertexMap() const
+/**
+ * Copies index data from a mapped buffer to a vector.
+ **/
+template <typename T>
+static void copyFromIndexBuffer(void *buffer, std::vector<uint32> &indices, size_t maxval)
 {
-	if (ibo && element_count > 0)
+	T *elems = (T *) buffer;
+	for (size_t i = 0; i < maxval; i++)
+		indices.push_back((uint32) elems[i]);
+}
+
+void Mesh::getVertexMap(std::vector<uint32> &map) const
+{
+	if (!ibo || element_count == 0)
+		return;
+
+	map.clear();
+	map.reserve(element_count);
+
+	VertexBuffer::Bind ibo_bind(*ibo);
+
+	// We unmap the buffer in Mesh::draw and Mesh::setVertexMap.
+	void *buffer = ibo->map();
+
+	// Fill the vector from the buffer.
+	switch (element_data_type)
 	{
-		VertexBuffer::Bind ibo_bind(*ibo);
-
-		// We unmap the buffer in Mesh::draw and Mesh::setVertexMap.
-		return (uint32 *) ibo->map();
+	case GL_UNSIGNED_BYTE:
+		copyFromIndexBuffer<uint8>(buffer, map, vertex_count);
+		break;
+	case GL_UNSIGNED_SHORT:
+		copyFromIndexBuffer<uint16>(buffer, map, vertex_count);
+		break;
+	case GL_UNSIGNED_INT:
+	default:
+		copyFromIndexBuffer<uint32>(buffer, map, vertex_count);
+		break;
 	}
-
-	return nullptr;
 }
 
 size_t Mesh::getVertexMapCount() const
@@ -335,7 +405,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 			min = std::min(std::max(range_min, 0), max);
 
 		const void *indices = ibo->getPointer(min * sizeof(uint32));
-		GLenum type = GL_UNSIGNED_INT;
+		GLenum type = element_data_type;
 
 		if (instance_count > 1)
 			gl.drawElementsInstanced(mode, max - min + 1, type, indices, instance_count);
@@ -375,7 +445,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		texture->postdraw();
 }
 
-GLenum Mesh::getGLDrawMode(Mesh::DrawMode mode) const
+GLenum Mesh::getGLDrawMode(DrawMode mode) const
 {
 	switch (mode)
 	{
@@ -392,6 +462,16 @@ GLenum Mesh::getGLDrawMode(Mesh::DrawMode mode) const
 	}
 
 	return GL_TRIANGLES;
+}
+
+GLenum Mesh::getGLDataTypeFromMax(size_t maxvalue) const
+{
+	if (maxvalue > LOVE_UINT16_MAX)
+		return GL_UNSIGNED_INT;
+	else if (maxvalue > LOVE_UINT8_MAX)
+		return GL_UNSIGNED_SHORT;
+	else
+		return GL_UNSIGNED_BYTE;
 }
 
 bool Mesh::getConstant(const char *in, Mesh::DrawMode &out)

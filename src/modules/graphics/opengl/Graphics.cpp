@@ -53,6 +53,7 @@ Graphics::Graphics()
 	, width(0)
 	, height(0)
 	, created(false)
+	, activeStencil(false)
 	, savedState()
 {
 	currentWindow = love::window::sdl::Window::createSingleton();
@@ -383,6 +384,8 @@ void Graphics::defineStencil()
 	glEnable(GL_STENCIL_TEST);
 	glStencilFunc(GL_ALWAYS, 1, 1);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+	activeStencil = true;
 }
 
 void Graphics::useStencil(bool invert)
@@ -394,8 +397,12 @@ void Graphics::useStencil(bool invert)
 
 void Graphics::discardStencil()
 {
+	if (!activeStencil)
+		return;
+
 	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 	glDisable(GL_STENCIL_TEST);
+	activeStencil = false;
 }
 
 Image *Graphics::newImage(love::image::ImageData *data, Texture::Format format)

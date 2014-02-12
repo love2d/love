@@ -109,11 +109,10 @@ public:
 	void setVertexMap(const std::vector<uint32> &map);
 
 	/**
-	 * Gets a pointer to the vertex map array. The pointer is only valid until
-	 * the next function call in the graphics module.
-	 * May return null if the vertex map is empty.
+	 * Fills the uint32 vector passed into the method with the previously set
+	 * vertex map (index buffer) values.
 	 **/
-	const uint32 *getVertexMap() const;
+	void getVertexMap(std::vector<uint32> &map) const;
 
 	/**
 	 * Gets the total number of elements in the vertex map array.
@@ -171,6 +170,7 @@ public:
 private:
 
 	GLenum getGLDrawMode(DrawMode mode) const;
+	GLenum getGLDataTypeFromMax(size_t maxvalue) const;
 
 	// Vertex buffer.
 	VertexBuffer *vbo;
@@ -179,6 +179,7 @@ private:
 	// Element (vertex index) buffer, for the vertex map.
 	VertexBuffer *ibo;
 	size_t element_count;
+	GLenum element_data_type;
 
 	int instance_count;
 

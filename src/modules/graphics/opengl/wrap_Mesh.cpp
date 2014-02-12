@@ -220,14 +220,15 @@ int w_Mesh_setVertexMap(lua_State *L)
 int w_Mesh_getVertexMap(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	const uint32 *vertex_map = 0;
 
-	EXCEPT_GUARD(vertex_map = t->getVertexMap();)
-	size_t elements = t->getVertexMapCount();
+	std::vector<uint32> vertex_map;
+	EXCEPT_GUARD(t->getVertexMap(vertex_map);)
 
-	lua_createtable(L, elements, 0);
+	size_t element_count = vertex_map.size();
 
-	for (size_t i = 0; i < elements; i++)
+	lua_createtable(L, element_count, 0);
+
+	for (size_t i = 0; i < element_count; i++)
 	{
 		lua_pushinteger(L, lua_Integer(vertex_map[i]) + 1);
 		lua_rawseti(L, -2, i + 1);
