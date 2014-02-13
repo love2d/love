@@ -5,6 +5,8 @@ LOVE 0.9.1 [Baby Inspector]
 
   * Added Source:clone.
   * Added ParticleSystem:clone.
+  * Added ParticleSystem:moveTo, has smoother emitter movement compared to setPosition.
+  * Added ParticleSystem:setRelativeRotation.
   * Added love.graphics.setWireframe for debugging.
   * Added Mesh:setDrawRange and Mesh:getDrawRange.
   * Added instancing support to Meshes with Mesh:setInstanceCount.
@@ -13,7 +15,6 @@ LOVE 0.9.1 [Baby Inspector]
   * Added high-dpi window support for Retina displays in OS X, via the 'highdpi' window flag.
   * Added love.window.getPixelScale.
   * Added love.graphics.getSystemLimit.
-  * Added ParticleSystem:moveTo, has smoother emitter movement compared to setPosition.
   * Added antialiasing support to Canvases.
   * Added Canvas:getFSAA.
   * Added 'love_ScreenSize' built-in variable in shaders.
@@ -21,6 +22,7 @@ LOVE 0.9.1 [Baby Inspector]
   * Added support for gamma-correct rendering.
   * Added love.graphics.isSupported("srgb").
   * Added love.math.gammaToLinear and love.math.linearToGamma.
+  * Added RandomGenerator:getState and RandomGenerator:setState.
 
   * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage.
   * Deprecated love.graphics.getMaxImageSize and love.graphics.getMaxPointSize.
@@ -32,6 +34,7 @@ LOVE 0.9.1 [Baby Inspector]
   * Fixed TrueType font glyphs which request a monochrome bitmap pixel mode.
   * Fixed love.graphics.reset causing crashes when called in between love.graphics.push/pop.
   * Fixed tab characters ("\t") to display properly with love.graphics.print.
+  * Fixed World:getBodyList and World:getJointList causing hard crashes.
 
   * Renamed love.graphics.getMaxImageSize to love.graphics.getMaxTextureSize (old function still exists.)
 
@@ -43,6 +46,7 @@ LOVE 0.9.1 [Baby Inspector]
   * Updated ParticleSystem:setEmissionRate to accept non-integer numbers.
   * Updated Source:play to return a boolean indicating success.
   * Updated t.console in conf.lua to create the console before modules are loaded in Windows.
+  * Updated Mesh vertex maps (index buffers) to use less space in VRAM.
 
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------
