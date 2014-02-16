@@ -64,21 +64,31 @@ void Reference::unref()
 	}
 }
 
-void Reference::push()
+void Reference::push(lua_State *newL)
 {
 	if (idx != LUA_REFNIL)
 	{
-		luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
-		lua_rawgeti(L, -1, idx);
-		lua_remove(L, -2);
+		luax_insist(newL, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
+		lua_rawgeti(newL, -1, idx);
+		lua_remove(newL, -2);
 	}
 	else
-		lua_pushnil(L);
+		lua_pushnil(newL);
 }
 
-lua_State *Reference::getL()
+void Reference::push()
+{
+	push(L);
+}
+
+lua_State *Reference::getL() const
 {
 	return L;
+}
+
+void Reference::setL(lua_State *newL)
+{
+	L = newL;
 }
 
 } // love
