@@ -55,10 +55,11 @@ struct FramebufferStrategy
 	/**
 	 * @param[in]  width   Width of the stencil buffer
 	 * @param[in]  height  Height of the stencil buffer
+	 * @param[in]  samples Number of samples to use
 	 * @param[out] stencil Name for stencil buffer
 	 * @return Whether the stencil buffer was successfully created
 	 **/
-	virtual bool createStencil(int, int, GLuint &)
+	virtual bool createStencil(int, int, int, GLuint &)
 	{
 		return false;
 	}
@@ -121,16 +122,20 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		return status;
 	}
 
-	virtual bool createStencil(int width, int height, GLuint &stencil)
+	virtual bool createStencil(int width, int height, int samples, GLuint &stencil)
 	{
 		// create combined depth/stencil buffer
 		glDeleteRenderbuffers(1, &stencil);
 		glGenRenderbuffers(1, &stencil);
 		glBindRenderbuffer(GL_RENDERBUFFER, stencil);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
+
+		if (samples > 0)
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_STENCIL, width, height);
+		else
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-								  GL_RENDERBUFFER, stencil);
+		                          GL_RENDERBUFFER, stencil);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
@@ -237,14 +242,24 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		return status;
 	}
 
-	virtual bool createStencil(int width, int height, GLuint &stencil)
+	virtual bool createStencil(int width, int height, int samples, GLuint &stencil)
 	{
 		// create combined depth/stencil buffer
 		glDeleteRenderbuffersEXT(1, &stencil);
 		glGenRenderbuffersEXT(1, &stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
-								 width, height);
+
+		if (samples > 0)
+		{
+			glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
+			                                    GL_DEPTH_STENCIL, width, height);
+		}
+		else
+		{
+			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
+			                         width, height);
+		}
+
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
 									 GL_RENDERBUFFER_EXT, stencil);
 
@@ -336,14 +351,24 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 
 struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 {
-	virtual bool createStencil(int width, int height, GLuint &stencil)
+	virtual bool createStencil(int width, int height, int samples, GLuint &stencil)
 	{
 		// create stencil buffer
 		glDeleteRenderbuffersEXT(1, &stencil);
 		glGenRenderbuffersEXT(1, &stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX,
-								 width, height);
+
+		if (samples > 0)
+		{
+			glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
+			                                    GL_STENCIL_INDEX, width, height);
+		}
+		else
+		{
+			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX,
+			                         width, height);
+		}
+
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
 									 GL_RENDERBUFFER_EXT, stencil);
 
@@ -854,7 +879,7 @@ bool Canvas::checkCreateStencil()
 	if (current != this)
 		strategy->bindFBO(fbo);
 
-	bool success = strategy->createStencil(width, height, depth_stencil);
+	bool success = strategy->createStencil(width, height, fsaa_samples, depth_stencil);
 
 	if (current && current != this)
 		strategy->bindFBO(current->fbo);
