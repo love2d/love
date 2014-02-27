@@ -494,8 +494,8 @@ int w_newMesh(lua_State *L)
 			v.x = (float) luaL_checknumber(L, -8);
 			v.y = (float) luaL_checknumber(L, -7);
 
-			v.s = (float) luaL_checknumber(L, -6);
-			v.t = (float) luaL_checknumber(L, -5);
+			v.s = (float) luaL_optnumber(L, -6, 0.0);
+			v.t = (float) luaL_optnumber(L, -5, 0.0);
 
 			v.r = (unsigned char) luaL_optinteger(L, -4, 255);
 			v.g = (unsigned char) luaL_optinteger(L, -3, 255);

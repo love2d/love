@@ -53,8 +53,8 @@ int w_Mesh_setVertex(lua_State *L)
 
 		v.x = luaL_checknumber(L, -8);
 		v.y = luaL_checknumber(L, -7);
-		v.s = luaL_checknumber(L, -6);
-		v.t = luaL_checknumber(L, -5);
+		v.s = luaL_optnumber(L, -6, 0.0);
+		v.t = luaL_optnumber(L, -5, 0.0);
 		v.r = luaL_optinteger(L, -4, 255);
 		v.g = luaL_optinteger(L, -3, 255);
 		v.b = luaL_optinteger(L, -2, 255);
@@ -66,8 +66,8 @@ int w_Mesh_setVertex(lua_State *L)
 	{
 		v.x = luaL_checknumber(L, 3);
 		v.y = luaL_checknumber(L, 4);
-		v.s = luaL_checknumber(L, 5);
-		v.t = luaL_checknumber(L, 6);
+		v.s = luaL_optnumber(L, 5, 0.0);
+		v.t = luaL_optnumber(L, 6, 0.0);
 		v.r = luaL_optinteger(L,  7, 255);
 		v.g = luaL_optinteger(L,  8, 255);
 		v.b = luaL_optinteger(L,  9, 255);
@@ -122,8 +122,8 @@ int w_Mesh_setVertices(lua_State *L)
 		v.x = (float) luaL_checknumber(L, -8);
 		v.y = (float) luaL_checknumber(L, -7);
 
-		v.s = (float) luaL_checknumber(L, -6);
-		v.t = (float) luaL_checknumber(L, -5);
+		v.s = (float) luaL_optnumber(L, -6, 0.0);
+		v.t = (float) luaL_optnumber(L, -5, 0.0);
 
 		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
 		v.g = (unsigned char) luaL_optinteger(L, -3, 255);

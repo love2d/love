@@ -38,8 +38,12 @@ void Memoizer::remove(void *key)
 
 void *Memoizer::find(void *key)
 {
-	if (objectMap.count(key)) return objectMap[key];
-	return NULL;
+	auto it = objectMap.find(key);
+
+	if (it != objectMap.end())
+		return it->second;
+	else
+		return nullptr;
 }
 
 } // love
