@@ -26,7 +26,7 @@ namespace love
 const char REFERENCE_TABLE_NAME[] = "love-references";
 
 Reference::Reference()
-	: L(0)
+	: L(nullptr)
 	, idx(LUA_REFNIL)
 {
 }

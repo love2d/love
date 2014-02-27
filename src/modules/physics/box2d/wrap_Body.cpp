@@ -538,6 +538,20 @@ int w_Body_destroy(lua_State *L)
 	return 0;
 }
 
+int w_Body_setUserData(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	lua_remove(L, 1);
+	return t->setUserData(L);
+}
+
+int w_Body_getUserData(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	lua_remove(L, 1);
+	return t->getUserData(L);
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getX", w_Body_getX },
@@ -592,6 +606,8 @@ static const luaL_Reg functions[] =
 	{ "isFixedRotation", w_Body_isFixedRotation },
 	{ "getFixtureList", w_Body_getFixtureList },
 	{ "destroy", w_Body_destroy },
+	{ "setUserData", w_Body_setUserData },
+	{ "getUserData", w_Body_getUserData },
 	{ 0, 0 }
 };
 

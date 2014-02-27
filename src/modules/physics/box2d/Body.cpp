@@ -37,10 +37,14 @@ namespace box2d
 
 Body::Body(World *world, b2Vec2 p, Body::Type type)
 	: world(world)
+	, udata(nullptr)
 {
+	udata = new bodyudata();
+	udata->ref = nullptr;
 	world->retain();
 	b2BodyDef def;
 	def.position = Physics::scaleDown(p);
+	def.userData = (void *) udata;
 	body = world->world->CreateBody(&def);
 	// Box2D body holds a reference to the love Body.
 	this->retain();
@@ -50,7 +54,9 @@ Body::Body(World *world, b2Vec2 p, Body::Type type)
 
 Body::Body(b2Body *b)
 	: body(b)
+	, udata(nullptr)
 {
+	udata = (bodyudata *) b->GetUserData();
 	world = (World *)Memoizer::find(b->GetWorld());
 	world->retain();
 	// Box2D body holds a reference to the love Body.
@@ -60,8 +66,10 @@ Body::Body(b2Body *b)
 
 Body::~Body()
 {
+	if (udata != nullptr)
+		delete udata->ref;
+	delete udata;
 	world->release();
-	body = 0;
 }
 
 float Body::getX()
@@ -467,6 +475,40 @@ void Body::destroy()
 
 	// Box2D body destroyed. Release its reference to the love Body.
 	this->release();
+}
+
+int Body::setUserData(lua_State *L)
+{
+	love::luax_assert_argc(L, 1, 1);
+
+	if (udata == nullptr)
+	{
+		udata = new bodyudata();
+		body->SetUserData((void *) udata);
+	}
+
+	if (udata->ref != nullptr)
+	{
+		// We set the Reference's lua_State to this one before deleting it, so
+		// it unrefs using the current lua_State's stack. This is necessary
+		// if setUserData is called in a coroutine.
+		udata->ref->setL(L);
+		delete udata->ref;
+	}
+
+	udata->ref = new Reference(L);
+
+	return 0;
+}
+
+int Body::getUserData(lua_State *L)
+{
+	if (udata != nullptr && udata->ref != nullptr)
+		udata->ref->push(L);
+	else
+		lua_pushnil(L);
+
+	return 1;
 }
 
 } // box2d

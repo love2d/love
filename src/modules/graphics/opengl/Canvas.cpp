@@ -129,7 +129,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		glGenRenderbuffers(1, &stencil);
 		glBindRenderbuffer(GL_RENDERBUFFER, stencil);
 
-		if (samples > 0)
+		if (samples > 1)
 			glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_STENCIL, width, height);
 		else
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
@@ -249,7 +249,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		glGenRenderbuffersEXT(1, &stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
 
-		if (samples > 0)
+		if (samples > 1)
 		{
 			glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
 			                                    GL_DEPTH_STENCIL, width, height);
@@ -358,7 +358,7 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 		glGenRenderbuffersEXT(1, &stencil);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, stencil);
 
-		if (samples > 0)
+		if (samples > 1)
 		{
 			glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
 			                                    GL_STENCIL_INDEX, width, height);
