@@ -51,7 +51,7 @@ int w_Cursor_getType(lua_State *L)
 
 	lua_pushstring(L, typestr);
 	return 1;
-};
+}
 
 static const luaL_Reg functions[] =
 {

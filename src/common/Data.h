@@ -38,7 +38,7 @@ public:
 	/**
 	 * Destructor.
 	 **/
-	virtual ~Data() {};
+	virtual ~Data() {}
 
 	/**
 	 * Gets a pointer to the data. This pointer will obviously not

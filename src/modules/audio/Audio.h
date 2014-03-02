@@ -67,7 +67,7 @@ public:
 	/**
 	 * Destructor.
 	 **/
-	virtual ~Audio() {};
+	virtual ~Audio() {}
 
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;
 	virtual Source *newSource(love::sound::SoundData *soundData) = 0;

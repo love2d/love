@@ -175,7 +175,7 @@ private:
 				return texture < other.texture;
 			else
 				return startvertex < other.startvertex;
-		};
+		}
 	};
 
 	bool initializeTexture(GLenum format);
