@@ -223,14 +223,13 @@ function love.createhandlers()
 
 end
 
-local is_fused_game = false
-local no_game_code = false
-
 local function uridecode(s)
 	return s:gsub("%%%x%x", function(str)
 		return string.char(tonumber(str:sub(2), 16))
 	end)
 end
+
+local no_game_code = false
 
 -- This can't be overriden.
 function love.boot()
@@ -248,35 +247,45 @@ function love.boot()
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, arg0)
-	is_fused_game = can_has_game
+	local is_fused_game = can_has_game
 	if love.arg.options.fused.set then
 		is_fused_game = true
 	end
 
+	love.filesystem.setFused(is_fused_game)
+
+	local identity = ""
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local nouri = o.game.arg[1]
 		if nouri:sub(1, 7) == "file://" then
 			nouri = uridecode(nouri:sub(8))
 		end
 		local full_source =  love.path.getfull(nouri)
-		local leaf = love.path.leaf(full_source)
-		leaf = leaf:gsub("^([%.]+)", "") -- strip leading "."'s
-		leaf = leaf:gsub("%.([^%.]+)$", "") -- strip extension
-		leaf = leaf:gsub("%.", "_") -- replace remaining "."'s with "_"
-		love.filesystem.setIdentity(leaf)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
+		
+		-- Use the name of the source .love as the identity for now.
+		identity = love.path.leaf(full_source)
+	else
+		-- Use the name of the exe as the identity for now.
+		identity = love.path.leaf(arg0)
 	end
+
+	identity = identity:gsub("^([%.]+)", "") -- strip leading "."'s
+	identity = identity:gsub("%.([^%.]+)$", "") -- strip extension
+	identity = identity:gsub("%.", "_") -- replace remaining "."'s with "_"
+	identity = #identity > 0 and identity or "lovegame"
+
+	-- When conf.lua is initially loaded, the main source should be checked
+	-- before the save directory (the identity should be appended.)
+	pcall(love.filesystem.setIdentity, identity, true)
 
 	if can_has_game and not (love.filesystem.exists("main.lua") or love.filesystem.exists("conf.lua")) then
 		no_game_code = true
 	end
 
-	love.filesystem.setFused(is_fused_game)
-
 	if not can_has_game then
 		love.nogame()
 	end
-
 end
 
 function love.init()

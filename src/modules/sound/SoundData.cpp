@@ -52,7 +52,7 @@ SoundData::SoundData(Decoder *decoder)
 		{
 			while (bufferSize < (size_t) size + decoded)
 				bufferSize <<= 1;
-			data = (char *)realloc(data, bufferSize);
+			data = (int8 *) realloc(data, bufferSize);
 		}
 
 		if (!data)
@@ -76,7 +76,7 @@ SoundData::SoundData(Decoder *decoder)
 
 	// Shrink buffer if necessary.
 	if (data && bufferSize > (size_t) size)
-		data = (char *) realloc(data, size);
+		data = (int8 *) realloc(data, size);
 
 	channels = decoder->getChannels();
 	bitDepth = decoder->getBitDepth();
@@ -139,7 +139,7 @@ void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, vo
 	if (realsize > INT_MAX)
 		throw love::Exception("Data is too big!");
 
-	data = (char *)malloc(size);
+	data = (int8 *) malloc(size);
 	if (!data)
 		throw love::Exception("Not enough memory.");
 
@@ -190,14 +190,12 @@ void SoundData::setSample(int i, float sample)
 
 	if (bitDepth == 16)
 	{
-		short *s = (short *)data;
-		s[i] = (short)(sample*(float)SHRT_MAX);
-		return;
+		int16 *s = (int16 *) data;
+		s[i] = (int16) (sample * (float) LOVE_INT16_MAX);
 	}
 	else
 	{
-		data[i] = (char)(sample*(float)CHAR_MAX);
-		return;
+		data[i] = (int8) (sample * (float) LOVE_INT8_MAX);
 	}
 }
 
@@ -209,12 +207,12 @@ float SoundData::getSample(int i) const
 
 	if (bitDepth == 16)
 	{
-		short *s = (short *)data;
-		return (float)s[i]/(float)SHRT_MAX;
+		int16 *s = (int16 *) data;
+		return (float) s[i] / (float) LOVE_INT16_MAX;
 	}
 	else
 	{
-		return (float)data[i]/(float)CHAR_MAX;
+		return (float) data[i] / (float) LOVE_INT8_MAX;
 	}
 }
 
