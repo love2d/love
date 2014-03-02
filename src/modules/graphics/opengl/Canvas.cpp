@@ -590,6 +590,9 @@ bool Canvas::loadVolatile()
 		return false;
 
 	clear(Color(0, 0, 0, 0));
+
+	fsaa_dirty = (fsaa_buffer != 0);
+
 	return true;
 }
 
@@ -868,6 +871,9 @@ void Canvas::clear(Color c)
 
 	if (current != this)
 		strategy->bindFBO(previous);
+
+	if (fsaa_buffer != 0)
+		fsaa_dirty = true;
 }
 
 bool Canvas::checkCreateStencil()
