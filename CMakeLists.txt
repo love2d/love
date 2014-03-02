@@ -341,6 +341,7 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/ddsHandler.h
 	src/modules/image/magpie/DevilHandler.cpp
 	src/modules/image/magpie/DevilHandler.h
+	src/modules/image/magpie/FormatHandler.cpp
 	src/modules/image/magpie/FormatHandler.h
 	src/modules/image/magpie/Image.cpp
 	src/modules/image/magpie/Image.h

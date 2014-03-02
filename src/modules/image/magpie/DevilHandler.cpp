@@ -23,14 +23,9 @@
 // LOVE
 #include "common/Exception.h"
 #include "common/math.h"
-#include "thread/threads.h"
 
 // DevIL
 #include <IL/il.h>
-
-using love::thread::Lock;
-
-static Mutex *devilMutex = 0;
 
 namespace love
 {
@@ -44,21 +39,22 @@ static inline void ilxClearErrors()
 	while (ilGetError() != IL_NO_ERROR);
 }
 
-void DevilHandler::init()
+DevilHandler::DevilHandler()
+	: mutex(nullptr)
 {
+	// There should only ever be one DevilHandler object (owned by the Image
+	// module), so we can use the global initialization function here.
 	ilInit();
 	ilEnable(IL_ORIGIN_SET);
 	ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
 }
 
-void DevilHandler::quit()
+DevilHandler::~DevilHandler()
 {
 	ilShutDown();
-	if (devilMutex)
-	{
-		delete devilMutex;
-		devilMutex = 0;
-	}
+
+	if (mutex)
+		delete mutex;
 }
 
 bool DevilHandler::canDecode(love::filesystem::FileData * /*data*/)
@@ -85,10 +81,10 @@ bool DevilHandler::canEncode(ImageData::Format format)
 
 DevilHandler::DecodedImage DevilHandler::decode(love::filesystem::FileData *data)
 {
-	if (!devilMutex)
-		devilMutex = thread::newMutex();
+	if (!mutex)
+		mutex = love::thread::newMutex();
 
-	Lock lock(devilMutex);
+	love::thread::Lock lock(mutex);
 
 	ILuint image = ilGenImage();
 	ilBindImage(image);
@@ -140,10 +136,10 @@ DevilHandler::DecodedImage DevilHandler::decode(love::filesystem::FileData *data
 
 DevilHandler::EncodedImage DevilHandler::encode(const DecodedImage &img, ImageData::Format format)
 {
-	if (!devilMutex)
-		devilMutex = thread::newMutex();
+	if (!mutex)
+		mutex = love::thread::newMutex();
 
-	Lock lock(devilMutex);
+	love::thread::Lock lock(mutex);
 
 	ILuint tempimage = ilGenImage();
 	ilBindImage(tempimage);

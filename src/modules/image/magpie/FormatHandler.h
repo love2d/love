@@ -24,6 +24,7 @@
 // LOVE
 #include "image/ImageData.h"
 #include "filesystem/FileData.h"
+#include "common/Object.h"
 
 namespace love
 {
@@ -34,8 +35,9 @@ namespace magpie
 
 /**
  * Base class for all ImageData encoder/decoder library interfaces.
+ * We inherit from love::Object to take advantage of reference counting...
  **/
-class FormatHandler
+class FormatHandler : public love::Object
 {
 public:
 
@@ -56,26 +58,32 @@ public:
 		EncodedImage() : size(0), data(0) {}
 	};
 
-	// Lets pretend we have virtual static methods...
+	/**
+	 * The default constructor is called when the Image module is initialized.
+	 **/
+	FormatHandler();
 
 	/**
-	 * Determines whether a particular FileData can be decoded by this handler.
-	 * @param data The data to decode.
+	 * The destructor is called when the Image module is uninitialized.
 	 **/
-	// virtual static bool canDecode(love::filesystem::FileData *data) = 0;
+	virtual ~FormatHandler();
 
 	/**
-	 * Determines whether this handler can encode to a particular format.
-	 * @param format The format to encode to.
+	 * Whether this format handler can decode a particular FileData.
 	 **/
-	// virtual static bool canEncode(ImageData::Format format) = 0;
+	virtual bool canDecode(love::filesystem::FileData *data);
+
+	/**
+	 * Whether this format handler can encode to a particular format.
+	 **/
+	virtual bool canEncode(ImageData::Format format);
 
 	/**
 	 * Decodes an image from its encoded form into raw pixel data.
 	 * @param data The encoded data to decode.
 	 * @return The decoded pixel data.
 	 **/
-	// virtual static DecodedImage decode(love::filesystem::FileData *data) = 0;
+	virtual DecodedImage decode(love::filesystem::FileData *data);
 
 	/**
 	 * Encodes an image from raw pixel data into a particular format.
@@ -83,7 +91,7 @@ public:
 	 * @param format The format to encode to.
 	 * @return The encoded image data.
 	 **/
-	// virtual static EncodedImage encode(const DecodedImage &img, ImageData::Format format) = 0;
+	virtual EncodedImage encode(const DecodedImage &img, ImageData::Format format);
 
 }; // FormatHandler
 

@@ -18,10 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "ImageData.h"
-
-#include "FormatHandler.h"
-#include "DevilHandler.h"
 
 namespace love
 {
@@ -30,23 +28,36 @@ namespace image
 namespace magpie
 {
 
-ImageData::ImageData(love::filesystem::FileData *data)
+ImageData::ImageData(std::list<FormatHandler *> formats, love::filesystem::FileData *data)
+	: formatHandlers(formats)
 {
+	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		(*it)->retain();
+
 	decode(data);
 }
 
-ImageData::ImageData(int width, int height)
+ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height)
+	: formatHandlers(formats)
 {
+	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		(*it)->retain();
+
 	this->width = width;
 	this->height = height;
+
 	create(width, height);
 
 	// Set to black/transparency.
 	memset(data, 0, width*height*sizeof(pixel));
 }
 
-ImageData::ImageData(int width, int height, void *data, bool own)
+ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height, void *data, bool own)
+	: formatHandlers(formats)
 {
+	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		(*it)->retain();
+
 	this->width = width;
 	this->height = height;
 
@@ -59,6 +70,9 @@ ImageData::ImageData(int width, int height, void *data, bool own)
 ImageData::~ImageData()
 {
 	delete[] data;
+
+	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		(*it)->release();
 }
 
 void ImageData::create(int width, int height, void *data)
@@ -80,16 +94,23 @@ void ImageData::decode(love::filesystem::FileData *data)
 {
 	FormatHandler::DecodedImage decodedimage;
 
-	if (DevilHandler::canDecode(data))
-		decodedimage = DevilHandler::decode(data);
-	else
+	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+	{
+		if ((*it)->canDecode(data))
+		{
+			decodedimage = (*it)->decode(data);
+			break;
+		}
+	}
+
+	if (decodedimage.data == nullptr)
 		throw love::Exception("Could not decode image: unrecognized format.");
 
 	// The decoder *must* output a 32 bits-per-pixel image.
 	if (decodedimage.size != decodedimage.width*decodedimage.height*sizeof(pixel))
 	{
 		delete[] decodedimage.data;
-		throw love::Exception("Coult not convert image!");
+		throw love::Exception("Could not convert image!");
 	}
 
 	if (this->data)
@@ -114,15 +135,21 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 		rawimage.size = width*height*sizeof(pixel);
 		rawimage.data = data;
 
-		if (DevilHandler::canEncode(format))
-			encodedimage = DevilHandler::encode(rawimage, format);
-		else
+		for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		{
+			if ((*it)->canEncode(format))
+			{
+				encodedimage = (*it)->encode(rawimage, format);
+				break;
+			}
+		}
+
+		if (encodedimage.data == nullptr)
 			throw love::Exception("Image format has no suitable encoder.");
 	}
 
 	try
 	{
-		
 		f->open(love::filesystem::File::WRITE);
 		f->write(encodedimage.data, encodedimage.size);
 		f->close();
