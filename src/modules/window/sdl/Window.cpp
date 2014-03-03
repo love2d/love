@@ -371,13 +371,10 @@ void Window::updateSettings(const WindowSettings &newsettings)
 #endif
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen
-	// mode (mimics behaviour of SDL 2.0.2+).
-	// In OS X we always disable this to prevent dock minimization weirdness.
-#ifndef LOVE_MACOSX
+	// mode.
 	if (curMode.settings.fullscreen && curMode.settings.fstype == FULLSCREEN_TYPE_NORMAL)
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
 	else
-#endif
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
 	curMode.settings.sRGB = newsettings.sRGB;
@@ -385,9 +382,9 @@ void Window::updateSettings(const WindowSettings &newsettings)
 
 void Window::getWindow(int &width, int &height, WindowSettings &settings)
 {
-	// Window position may be different from creation - update display index.
+	// The window might have been modified (moved, resized, etc.) by the user.
 	if (window)
-		curMode.settings.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+		updateSettings(curMode.settings);
 
 	width = curMode.width;
 	height = curMode.height;
