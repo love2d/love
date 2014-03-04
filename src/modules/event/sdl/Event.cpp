@@ -652,6 +652,7 @@ std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::createKeyMap()
 	k[SDLK_AC_HOME] = Keyboard::KEY_APP_HOME;
 	k[SDLK_AC_BACK] = Keyboard::KEY_APP_BACK;
 	k[SDLK_AC_FORWARD] = Keyboard::KEY_APP_FORWARD;
+	k[SDLK_AC_STOP] = Keyboard::KEY_APP_STOP;
 	k[SDLK_AC_REFRESH] = Keyboard::KEY_APP_REFRESH;
 	k[SDLK_AC_BOOKMARKS] = Keyboard::KEY_APP_BOOKMARKS;
 

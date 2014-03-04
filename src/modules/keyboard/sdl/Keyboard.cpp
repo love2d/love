@@ -272,6 +272,7 @@ std::map<Keyboard::Key, SDL_Keycode> Keyboard::createKeyMap()
 	k[Keyboard::KEY_APP_HOME] = SDLK_AC_HOME;
 	k[Keyboard::KEY_APP_BACK] = SDLK_AC_BACK;
 	k[Keyboard::KEY_APP_FORWARD] = SDLK_AC_FORWARD;
+	k[Keyboard::KEY_APP_STOP] = SDLK_AC_STOP;
 	k[Keyboard::KEY_APP_REFRESH] = SDLK_AC_REFRESH;
 	k[Keyboard::KEY_APP_BOOKMARKS] = SDLK_AC_BOOKMARKS;
 

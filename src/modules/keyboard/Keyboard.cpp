@@ -228,6 +228,7 @@ StringMap<Keyboard::Key, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] =
 	{"apphome", Keyboard::KEY_APP_HOME},
 	{"appback", Keyboard::KEY_APP_BACK},
 	{"appforward", Keyboard::KEY_APP_FORWARD},
+	{"appstop", Keyboard::KEY_APP_STOP},
 	{"apprefresh", Keyboard::KEY_APP_REFRESH},
 	{"appbookmarks", Keyboard::KEY_APP_BOOKMARKS},
 
