@@ -644,6 +644,16 @@ std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::createKeyMap()
 	k[SDLK_AUDIOPLAY] = Keyboard::KEY_AUDIOPLAY;
 	k[SDLK_AUDIOMUTE] = Keyboard::KEY_AUDIOMUTE;
 	k[SDLK_MEDIASELECT] = Keyboard::KEY_MEDIASELECT;
+	k[SDLK_WWW] = Keyboard::KEY_WWW;
+	k[SDLK_MAIL] = Keyboard::KEY_MAIL;
+	k[SDLK_CALCULATOR] = Keyboard::KEY_CALCULATOR;
+	k[SDLK_COMPUTER] = Keyboard::KEY_COMPUTER;
+	k[SDLK_AC_SEARCH] = Keyboard::KEY_APP_SEARCH;
+	k[SDLK_AC_HOME] = Keyboard::KEY_APP_HOME;
+	k[SDLK_AC_BACK] = Keyboard::KEY_APP_BACK;
+	k[SDLK_AC_FORWARD] = Keyboard::KEY_APP_FORWARD;
+	k[SDLK_AC_REFRESH] = Keyboard::KEY_APP_REFRESH;
+	k[SDLK_AC_BOOKMARKS] = Keyboard::KEY_APP_BOOKMARKS;
 
 	k[SDLK_BRIGHTNESSDOWN] = Keyboard::KEY_BRIGHTNESSDOWN;
 	k[SDLK_BRIGHTNESSUP] = Keyboard::KEY_BRIGHTNESSUP;
