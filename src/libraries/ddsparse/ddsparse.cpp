@@ -237,36 +237,37 @@ size_t Parser::getMipmapCount() const
 
 size_t Parser::parseImageSize(Format fmt, int width, int height) const
 {
-	size_t size = 0;
+	size_t numBlocksWide = 0;
+	size_t numBlocksHigh = 0;
+	size_t numBytesPerBlock = 0;
 
 	switch (fmt)
 	{
 	case FORMAT_DXT1:
+	case FORMAT_BC4:
+	case FORMAT_BC4s:
+		numBytesPerBlock = 8;
+		break;
 	case FORMAT_DXT3:
 	case FORMAT_DXT5:
 	case FORMAT_BC5s:
 	case FORMAT_BC5:
+	case FORMAT_BC6H:
 	case FORMAT_BC7:
 	case FORMAT_BC7srgb:
-		{
-			int numBlocksWide = 0;
-			if (width > 0)
-				numBlocksWide = std::max(1, (width + 3) / 4);
-
-			int numBlocksHigh = 0;
-			if (height > 0)
-				numBlocksHigh = std::max(1, (height + 3) / 4);
-
-			int numBytesPerBlock = (fmt == FORMAT_DXT1 ? 8 : 16);
-
-			size = numBlocksWide * numBytesPerBlock * numBlocksHigh;
-		}
+		numBytesPerBlock = 16;
 		break;
 	default:
 		break;
 	}
 
-	return size;
+	if (width > 0)
+		numBlocksWide = std::max(1, (width + 3) / 4);
+
+	if (height > 0)
+		numBlocksHigh = std::max(1, (height + 3) / 4);
+
+	return numBlocksWide * numBytesPerBlock * numBlocksHigh;
 }
 
 bool Parser::parseTexData(const uint8_t *data, size_t dataSize, Format fmt, int w, int h, int mips)

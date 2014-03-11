@@ -716,10 +716,6 @@ static const struct luaL_Reg enet_peer_funcs [] = {
 	{NULL, NULL}
 };
 
-static const struct luaL_Reg enet_event_funcs [] = {
-	{NULL, NULL}
-};
-
 int luaopen_enet(lua_State *l) {
 	enet_initialize();
 	atexit(enet_deinitialize);
