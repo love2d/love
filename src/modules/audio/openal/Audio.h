@@ -67,8 +67,7 @@ public:
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
 	int getSourceCount() const;
 	int getMaxSources() const;
-	void play(love::audio::Source *source);
-	void play();
+	bool play(love::audio::Source *source);
 	void stop(love::audio::Source *source);
 	void stop();
 	void pause(love::audio::Source *source);

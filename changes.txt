@@ -5,11 +5,27 @@ LOVE 0.9.1 [Baby Inspector]
 
   * Added Source:clone.
   * Added ParticleSystem:clone.
-  * Added Mesh:setWireframe and Mesh:isWireframe for debugging.
+  * Added ParticleSystem:moveTo, has smoother emitter movement compared to setPosition.
+  * Added ParticleSystem:setRelativeRotation.
+  * Added love.graphics.setWireframe for debugging.
+  * Added Mesh:setDrawRange and Mesh:getDrawRange.
+  * Added instancing support to Meshes with Mesh:setInstanceCount.
   * Added CircleShape:getPoint and CircleShape:setPoint.
   * Added Mesh/SpriteBatch/ParticleSystem:setTexture, accepts Canvases and Images.
+  * Added high-dpi window support for Retina displays in OS X, via the 'highdpi' window flag.
+  * Added love.window.getPixelScale.
+  * Added love.graphics.getSystemLimit.
+  * Added antialiasing support to Canvases.
+  * Added Canvas:getFSAA.
+  * Added 'love_ScreenSize' built-in variable in shaders.
+  * Added love.getVersion.
+  * Added support for gamma-correct rendering.
+  * Added love.graphics.isSupported("srgb").
+  * Added love.math.gammaToLinear and love.math.linearToGamma.
+  * Added RandomGenerator:getState and RandomGenerator:setState.
 
   * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage.
+  * Deprecated love.graphics.getMaxImageSize and love.graphics.getMaxPointSize.
 
   * Fixed love.graphics.scale with negative values causing incorrect line widths.
   * Fixed Joystick:isDown using 0-based button index arguments.
@@ -17,11 +33,20 @@ LOVE 0.9.1 [Baby Inspector]
   * Fixed love.graphics.setCanvas() to restore the proper viewport and scissor rectangles.
   * Fixed TrueType font glyphs which request a monochrome bitmap pixel mode.
   * Fixed love.graphics.reset causing crashes when called in between love.graphics.push/pop.
+  * Fixed tab characters ("\t") to display properly with love.graphics.print.
+  * Fixed World:getBodyList and World:getJointList causing hard crashes.
+
+  * Renamed love.graphics.getMaxImageSize to love.graphics.getMaxTextureSize (old function still exists.)
 
   * Updated the error text for love.filesystem’s module searchers when require fails.
   * Updated the love.filesystem module searchers to be tried after package.preload instead of before.
   * Updated love.graphics.newParticleSystem, newSpriteBatch, and newMesh to accept Canvases.
   * Updated Canvas drawing code, texture coordinates are no longer flipped vertically.
+  * Updated Canvas:renderTo to work properly if a Canvas is currently active.
+  * Updated ParticleSystem:setEmissionRate to accept non-integer numbers.
+  * Updated Source:play to return a boolean indicating success.
+  * Updated t.console in conf.lua to create the console before modules are loaded in Windows.
+  * Updated Mesh vertex maps (index buffers) to use less space in VRAM.
 
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------

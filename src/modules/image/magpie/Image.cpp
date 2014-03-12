@@ -34,12 +34,15 @@ namespace magpie
 
 Image::Image()
 {
-	DevilHandler::init();
+	formatHandlers.push_back(new DevilHandler);
 }
 
 Image::~Image()
 {
-	DevilHandler::quit();
+	// ImageData objects reference the FormatHandlers in our list, so we should
+	// release them instead of deleting them completely here.
+	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		(*it)->release();
 }
 
 const char *Image::getName() const
@@ -49,17 +52,17 @@ const char *Image::getName() const
 
 love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
 {
-	return new ImageData(data);
+	return new ImageData(formatHandlers, data);
 }
 
 love::image::ImageData *Image::newImageData(int width, int height)
 {
-	return new ImageData(width, height);
+	return new ImageData(formatHandlers, width, height);
 }
 
 love::image::ImageData *Image::newImageData(int width, int height, void *data, bool own)
 {
-	return new ImageData(width, height, data, own);
+	return new ImageData(formatHandlers, width, height, data, own);
 }
 
 love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)

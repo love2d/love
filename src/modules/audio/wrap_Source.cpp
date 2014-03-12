@@ -44,8 +44,8 @@ int w_Source_clone(lua_State *L)
 int w_Source_play(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	t->play();
-	return 0;
+	luax_pushboolean(L, t->play());
+	return 1;
 }
 
 int w_Source_stop(lua_State *L)

@@ -93,8 +93,9 @@ EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2)
 int Physics::newPolygonShape(lua_State *L)
 {
 	int argc = lua_gettop(L);
-	if (argc%2 != 0)
-		return luaL_error(L, "Number of vertices must be a multiple of two.");
+	if (argc % 2 != 0)
+		return luaL_error(L, "Number of vertex components must be a multiple of two.");
+
 	// 3 to 8 (b2_maxPolygonVertices) vertices
 	int vcount = argc / 2;
 	if (vcount < 3)

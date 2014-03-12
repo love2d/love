@@ -39,10 +39,10 @@ namespace box2d
 
 Fixture::Fixture(Body *body, Shape *shape, float density)
 	: body(body)
-	, fixture(NULL)
+	, fixture(nullptr)
 {
 	data = new fixtureudata();
-	data->ref = 0;
+	data->ref = nullptr;
 	b2FixtureDef def;
 	def.shape = shape->shape;
 	def.userData = (void *)data;
@@ -65,13 +65,10 @@ Fixture::Fixture(b2Fixture *f)
 
 Fixture::~Fixture()
 {
-	if (data->ref != 0)
+	if (data != nullptr)
 		delete data->ref;
 
 	delete data;
-	data = NULL;
-
-	fixture = NULL;
 }
 
 Shape::Type Fixture::getType() const
@@ -127,14 +124,14 @@ Body *Fixture::getBody() const
 Shape *Fixture::getShape() const
 {
 	if (!fixture->GetShape())
-		return NULL;
+		return nullptr;
 
 	return new Shape(fixture->GetShape(), false);
 }
 
 bool Fixture::isValid() const
 {
-	return fixture != 0;
+	return fixture != nullptr;
 }
 
 void Fixture::setFilterData(int *v)
@@ -230,21 +227,24 @@ int Fixture::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	if (data->ref != 0)
+	if (data->ref != nullptr)
 	{
+		// We set the Reference's lua_State to this one before deleting it, so
+		// it unrefs using the current lua_State's stack. This is necessary
+		// if setUserData is called in a coroutine.
+		data->ref->setL(L);
 		delete data->ref;
-		data->ref = 0;
 	}
 
 	data->ref = new Reference(L);
+
 	return 0;
 }
 
 int Fixture::getUserData(lua_State *L)
 {
-	love::luax_assert_argc(L, 0, 0);
-	if (data->ref != 0)
-		data->ref->push();
+	if (data->ref != nullptr)
+		data->ref->push(L);
 	else
 		lua_pushnil(L);
 
@@ -311,10 +311,10 @@ void Fixture::destroy(bool implicit)
 		return;
 	}
 
-	if (!implicit && fixture != 0)
+	if (!implicit && fixture != nullptr)
 		body->body->DestroyFixture(fixture);
 	Memoizer::remove(fixture);
-	fixture = NULL;
+	fixture = nullptr;
 
 	// Box2D fixture destroyed. Release its reference to the love Fixture.
 	this->release();

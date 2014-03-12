@@ -146,14 +146,23 @@ int w_setInvertedStencil(lua_State *L)
 
 int w_getMaxTextureSize(lua_State *L)
 {
-	lua_pushinteger(L, instance->getMaxTextureSize());
+	lua_pushinteger(L, instance->getSystemLimit(Graphics::LIMIT_TEXTURE_SIZE));
 	return 1;
 }
 
 int w_newImage(lua_State *L)
 {
-	love::image::ImageData *data = 0;
-	love::image::CompressedData *cdata = 0;
+	love::image::ImageData *data = nullptr;
+	love::image::CompressedData *cdata = nullptr;
+
+	Texture::Format format = Texture::FORMAT_NORMAL;
+	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
+
+	if (fstr != nullptr && !Texture::getConstant(fstr, format))
+		return luaL_error(L, "Invalid texture format: %s", fstr);
+
+	if (format == Texture::FORMAT_HDR) // For now...
+		return luaL_error(L, "HDR images are not supported.");
 
 	// Convert to FileData, if necessary.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
@@ -185,15 +194,15 @@ int w_newImage(lua_State *L)
 		return luaL_error(L, "Error creating image.");
 
 	// Create the image.
-	Image *image = 0;
+	Image *image = nullptr;
 	EXCEPT_GUARD(
 		if (cdata)
-			image = instance->newImage(cdata);
+			image = instance->newImage(cdata, format);
 		else if (data)
-			image = instance->newImage(data);
+			image = instance->newImage(data, format);
 	)
 
-	if (image == 0)
+	if (image == nullptr)
 		return luaL_error(L, "Could not load image.");
 
 	// Push the type.
@@ -323,15 +332,16 @@ int w_newCanvas(lua_State *L)
 	int width       = luaL_optint(L, 1, instance->getWidth());
 	int height      = luaL_optint(L, 2, instance->getHeight());
 	const char *str = luaL_optstring(L, 3, "normal");
+	int fsaa        = luaL_optint(L, 4, 0);
 
-	Canvas::TextureType texture_type;
-	if (!Canvas::getConstant(str, texture_type))
-		return luaL_error(L, "Invalid canvas type: %s", str);
+	Texture::Format format;
+	if (!Texture::getConstant(str, format))
+		return luaL_error(L, "Invalid texture format: %s", str);
 
-	Canvas *canvas = 0;
-	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, texture_type);)
+	Canvas *canvas = nullptr;
+	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, format, fsaa);)
 
-	if (canvas == 0)
+	if (canvas == nullptr)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
 
 	luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);
@@ -440,8 +450,10 @@ int w_newShader(lua_State *L)
 
 int w_newMesh(lua_State *L)
 {
-	// Check first argument: mandatory table of vertices.
-	luaL_checktype(L, 1, LUA_TTABLE);
+	// Check first argument: table of vertices or number of vertices.
+	int ttype = lua_type(L, 1);
+	if (ttype != LUA_TTABLE && ttype != LUA_TNUMBER)
+		luaL_argerror(L, 1, "table or number expected");
 
 	// Second argument: optional texture.
 	Texture *tex = nullptr;
@@ -456,51 +468,59 @@ int w_newMesh(lua_State *L)
 	if (str && !Mesh::getConstant(str, mode))
 		return luaL_error(L, "Invalid mesh draw mode: %s", str);
 
-	size_t vertex_count = lua_objlen(L, 1);
-	std::vector<Vertex> vertices;
-	vertices.reserve(vertex_count);
-
-	bool use_colors = false;
-
-	// Get the vertices from the table.
-	for (size_t i = 1; i <= vertex_count; i++)
-	{
-		lua_rawgeti(L, 1, i);
-
-		if (lua_type(L, -1) != LUA_TTABLE)
-			return luax_typerror(L, 1, "table of tables");
-
-		for (int j = 1; j <= 8; j++)
-			lua_rawgeti(L, -j, j);
-
-		Vertex v;
-
-		v.x = (float) luaL_checknumber(L, -8);
-		v.y = (float) luaL_checknumber(L, -7);
-
-		v.s = (float) luaL_checknumber(L, -6);
-		v.t = (float) luaL_checknumber(L, -5);
-
-		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
-		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
-		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
-		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
-
-		// Enable per-vertex coloring if any color is not the default.
-		if (!use_colors && (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255))
-			use_colors = true;
-
-		lua_pop(L, 9);
-		vertices.push_back(v);
-	}
-
 	Mesh *t = nullptr;
-	EXCEPT_GUARD(t = instance->newMesh(vertices, mode);)
+
+	if (ttype == LUA_TTABLE)
+	{
+		size_t vertex_count = lua_objlen(L, 1);
+		std::vector<Vertex> vertices;
+		vertices.reserve(vertex_count);
+
+		bool use_colors = false;
+
+		// Get the vertices from the table.
+		for (size_t i = 1; i <= vertex_count; i++)
+		{
+			lua_rawgeti(L, 1, i);
+
+			if (lua_type(L, -1) != LUA_TTABLE)
+				return luax_typerror(L, 1, "table of tables");
+
+			for (int j = 1; j <= 8; j++)
+				lua_rawgeti(L, -j, j);
+
+			Vertex v;
+
+			v.x = (float) luaL_checknumber(L, -8);
+			v.y = (float) luaL_checknumber(L, -7);
+
+			v.s = (float) luaL_optnumber(L, -6, 0.0);
+			v.t = (float) luaL_optnumber(L, -5, 0.0);
+
+			v.r = (unsigned char) luaL_optinteger(L, -4, 255);
+			v.g = (unsigned char) luaL_optinteger(L, -3, 255);
+			v.b = (unsigned char) luaL_optinteger(L, -2, 255);
+			v.a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+			// Enable per-vertex coloring if any color is not the default.
+			if (!use_colors && (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255))
+				use_colors = true;
+
+			lua_pop(L, 9);
+			vertices.push_back(v);
+		}
+
+		EXCEPT_GUARD(t = instance->newMesh(vertices, mode);)
+		t->setVertexColors(use_colors);
+	}
+	else
+	{
+		int count = luaL_checkint(L, 1);
+		EXCEPT_GUARD(t = instance->newMesh(count, mode);)
+	}
 
 	if (tex)
 		t->setTexture(tex);
-
-	t->setVertexColors(use_colors);
 
 	luax_pushtype(L, "Mesh", GRAPHICS_MESH_T, t);
 	return 1;
@@ -798,7 +818,19 @@ int w_getPointSize(lua_State *L)
 
 int w_getMaxPointSize(lua_State *L)
 {
-	lua_pushnumber(L, instance->getMaxPointSize());
+	lua_pushnumber(L, instance->getSystemLimit(Graphics::LIMIT_POINT_SIZE));
+	return 1;
+}
+
+int w_setWireframe(lua_State *L)
+{
+	instance->setWireframe(luax_toboolean(L, 1));
+	return 0;
+}
+
+int w_isWireframe(lua_State *L)
+{
+	luax_pushboolean(L, instance->isWireframe());
 	return 1;
 }
 
@@ -962,6 +994,14 @@ int w_isSupported(lua_State *L)
 			if (!Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_BC5))
 				supported = false;
 			break;
+		case Graphics::SUPPORT_INSTANCING:
+			if (!GLEE_ARB_draw_instanced)
+				supported = false;
+			break;
+		case Graphics::SUPPORT_SRGB:
+			if (!Canvas::isSRGBSupported())
+				supported = false;
+			break;
 		default:
 			supported = false;
 		}
@@ -987,6 +1027,18 @@ int w_getRendererInfo(lua_State *L)
 	luax_pushstring(L, device);
 
 	return 4;
+}
+
+int w_getSystemLimit(lua_State *L)
+{
+	const char *limitstr = luaL_checkstring(L, 1);
+	Graphics::SystemLimit limittype;
+
+	if (!Graphics::getConstant(limitstr, limittype))
+		return luaL_error(L, "Invalid system limit type: %s", limitstr);
+
+	lua_pushnumber(L, instance->getSystemLimit(limittype));
+	return 1;
 }
 
 int w_draw(lua_State *L)
@@ -1100,8 +1152,9 @@ int w_line(lua_State *L)
 		args = lua_objlen(L, 1);
 		is_table = true;
 	}
+
 	if (args % 2 != 0)
-		return luaL_error(L, "Number of vertices must be a multiple of two");
+		return luaL_error(L, "Number of vertex components must be a multiple of two");
 	else if (args < 4)
 		return luaL_error(L, "Need at least two vertices to draw a line");
 
@@ -1202,7 +1255,7 @@ int w_polygon(lua_State *L)
 	}
 
 	if (args % 2 != 0)
-		return luaL_error(L, "Number of vertices must be a multiple of two");
+		return luaL_error(L, "Number of vertex components must be a multiple of two");
 	else if (args < 6)
 		return luaL_error(L, "Need at least three vertices to draw a polygon");
 
@@ -1325,6 +1378,8 @@ static const luaL_Reg functions[] =
 	{ "getPointSize", w_getPointSize },
 	{ "getMaxPointSize", w_getMaxPointSize },
 	{ "getMaxTextureSize", w_getMaxTextureSize },
+	{ "setWireframe", w_setWireframe },
+	{ "isWireframe", w_isWireframe },
 	{ "newScreenshot", w_newScreenshot },
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
@@ -1334,6 +1389,7 @@ static const luaL_Reg functions[] =
 
 	{ "isSupported", w_isSupported },
 	{ "getRendererInfo", w_getRendererInfo },
+	{ "getSystemLimit", w_getSystemLimit },
 
 	{ "draw", w_draw },
 
@@ -1369,6 +1425,7 @@ static const luaL_Reg functions[] =
 
 	// Deprecated since 0.9.1.
 	{ "getMaxImageSize", w_getMaxTextureSize },
+	{ "getMaxPointSize", w_getMaxPointSize },
 
 	{ 0, 0 }
 };

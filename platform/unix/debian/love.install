@@ -1,1 +1,6 @@
 usr/bin/love
+usr/share/man/man1/love.1
+usr/share/pixmaps/love.svg
+usr/share/mime/packages/love.xml
+usr/share/icons/hicolor/scalable/mimetypes/application-x-love-game.svg
+usr/share/applications/love.desktop

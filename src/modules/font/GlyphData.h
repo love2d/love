@@ -46,7 +46,6 @@ struct GlyphMetrics
 	int advance;
 	int bearingX;
 	int bearingY;
-	int spacing;
 };
 
 /**

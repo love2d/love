@@ -105,6 +105,8 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if ((index == -1 && next >= size) || index < -1 || index >= size)
 		return -1;
 
+	Vertex sprite[4];
+
 	// Needed for colors.
 	memcpy(sprite, texture->getVertices(), sizeof(Vertex) * 4);
 
@@ -130,6 +132,8 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	// Only do this if there's a free slot.
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
+
+	Vertex sprite[4];
 
 	// Needed for colors.
 	memcpy(sprite, quad->getVertices(), sizeof(Vertex) * 4);
@@ -263,7 +267,7 @@ int SpriteBatch::getBufferSize() const
 	return size;
 }
 
-void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	const size_t vertex_offset = offsetof(Vertex, x);
 	const size_t texel_offset = offsetof(Vertex, s);

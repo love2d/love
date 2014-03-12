@@ -87,6 +87,8 @@ public:
 		SUPPORT_MIPMAP,
 		SUPPORT_DXT,
 		SUPPORT_BC5,
+		SUPPORT_INSTANCING,
+		SUPPORT_SRGB,
 		SUPPORT_MAX_ENUM
 	};
 
@@ -97,6 +99,15 @@ public:
 		RENDERER_INFO_VENDOR,
 		RENDERER_INFO_DEVICE,
 		RENDERER_INFO_MAX_ENUM
+	};
+
+	enum SystemLimit
+	{
+		LIMIT_POINT_SIZE,
+		LIMIT_TEXTURE_SIZE,
+		LIMIT_MULTI_CANVAS,
+		LIMIT_CANVAS_FSAA,
+		LIMIT_MAX_ENUM
 	};
 
 	virtual ~Graphics();
@@ -111,7 +122,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height) = 0;
+	virtual bool setMode(int width, int height, bool &sRGB) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -140,6 +151,9 @@ public:
 	static bool getConstant(const char *in, RendererInfo &out);
 	static bool getConstant(RendererInfo in, const char *&out);
 
+	static bool getConstant(const char *in, SystemLimit &out);
+	static bool getConstant(SystemLimit in, const char *&out);
+
 private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -162,6 +176,9 @@ private:
 
 	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM>::Entry rendererInfoEntries[];
 	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM> rendererInfo;
+
+	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
+	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;
 
 }; // Graphics
 

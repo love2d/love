@@ -109,7 +109,7 @@ public:
 	int getBufferSize() const;
 
 	// Implements Drawable.
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	static bool getConstant(const char *in, UsageHint &out);
 	static bool getConstant(UsageHint in, const char *&out);
@@ -134,8 +134,6 @@ private:
 
 	// The next free element.
 	int next;
-
-	Vertex sprite[4];
 
 	// Current color. This color, if present, will be applied to the next
 	// added sprite.

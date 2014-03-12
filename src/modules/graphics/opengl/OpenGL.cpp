@@ -43,6 +43,7 @@ OpenGL::OpenGL()
 	: contextInitialized(false)
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
+	, maxRenderTargets(0)
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
@@ -110,8 +111,13 @@ void OpenGL::initContext()
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[0]);
 	}
 
+	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
+	setBlendState(blend);
+
 	initMaxValues();
 	createDefaultTexture();
+
+	state.lastPseudoInstanceID = -1;
 
 	contextInitialized = true;
 }
@@ -188,6 +194,19 @@ void OpenGL::initMaxValues()
 		maxAnisotropy = 1.0f;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+
+	if (Canvas::isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers))
+	{
+		int maxattachments = 0;
+		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxattachments);
+
+		int maxdrawbuffers = 0;
+		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbuffers);
+
+		maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
+	}
+	else
+		maxRenderTargets = 0;
 }
 
 void OpenGL::createDefaultTexture()
@@ -214,10 +233,81 @@ void OpenGL::createDefaultTexture()
 
 void OpenGL::prepareDraw()
 {
-	// Make sure the active shader has the correct values for the built-in
-	// screen params uniform.
-	if (Shader::current)
-		Shader::current->checkSetScreenParams();
+	Shader *shader = Shader::current;
+	if (shader != nullptr)
+	{
+		// Make sure the active shader has the correct values for its
+		// love-provided uniforms.
+		shader->checkSetScreenParams();
+
+		// Make sure the Instance ID variable is up-to-date when
+		// pseudo-instancing is used.
+		if (state.lastPseudoInstanceID != 0 && shader->hasVertexAttrib(ATTRIB_PSEUDO_INSTANCE_ID))
+		{
+			glVertexAttrib1f((GLuint) ATTRIB_PSEUDO_INSTANCE_ID, 0.0f);
+			state.lastPseudoInstanceID = 0;
+		}
+
+		// We need to make sure antialiased Canvases are properly resolved
+		// before sampling from their textures in a shader.
+		// This is kind of a big hack. :(
+		const std::map<std::string, Object *> &r = shader->getBoundRetainables();
+		for (auto it = r.begin(); it != r.end(); ++it)
+		{
+			// Even bigger hack! D:
+			Canvas *canvas = dynamic_cast<Canvas *>(it->second);
+			if (canvas != nullptr)
+				canvas->resolveMSAA();
+		}
+	}
+}
+
+void OpenGL::drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
+{
+	Shader *shader = Shader::current;
+
+	if (GLEE_ARB_draw_instanced)
+		glDrawArraysInstancedARB(mode, first, count, primcount);
+	else
+	{
+		bool shaderHasID = shader && shader->hasVertexAttrib(ATTRIB_PSEUDO_INSTANCE_ID);
+
+		// Pseudo-instancing fallback.
+		for (int i = 0; i < primcount; i++)
+		{
+			if (shaderHasID)
+				glVertexAttrib1f((GLuint) ATTRIB_PSEUDO_INSTANCE_ID, (GLfloat) i);
+
+			glDrawArrays(mode, first, count);
+		}
+
+		if (shaderHasID)
+			state.lastPseudoInstanceID = primcount - 1;
+	}
+}
+
+void OpenGL::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount)
+{
+	Shader *shader = Shader::current;
+
+	if (GLEE_ARB_draw_instanced)
+		glDrawElementsInstancedARB(mode, count, type, indices, primcount);
+	else
+	{
+		bool shaderHasID = shader && shader->hasVertexAttrib(ATTRIB_PSEUDO_INSTANCE_ID);
+
+		// Pseudo-instancing fallback.
+		for (int i = 0; i < primcount; i++)
+		{
+			if (shaderHasID)
+				glVertexAttrib1f((GLuint) ATTRIB_PSEUDO_INSTANCE_ID, (GLfloat) i);
+
+			glDrawElements(mode, count, type, indices);
+		}
+
+		if (shaderHasID)
+			state.lastPseudoInstanceID = primcount - 1;
+	}
 }
 
 void OpenGL::setColor(const Color &c)
@@ -275,6 +365,39 @@ void OpenGL::setScissor(const OpenGL::Viewport &v)
 OpenGL::Viewport OpenGL::getScissor() const
 {
 	return state.scissor;
+}
+
+void OpenGL::setBlendState(const BlendState &blend)
+{
+	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging)
+		glBlendEquation(blend.func);
+	else if (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)
+		glBlendEquationEXT(blend.func);
+	else
+	{
+		if (blend.func == GL_FUNC_REVERSE_SUBTRACT)
+			throw love::Exception("This graphics card does not support the subtractive blend mode!");
+		// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
+	}
+
+	if (blend.srcRGB == blend.srcA && blend.dstRGB == blend.dstA)
+		glBlendFunc(blend.srcRGB, blend.dstRGB);
+	else
+	{
+		if (GLEE_VERSION_1_4)
+			glBlendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
+		else if (GLEE_EXT_blend_func_separate)
+			glBlendFuncSeparateEXT(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
+		else
+			throw love::Exception("This graphics card does not support separated rgb and alpha blend functions!");
+	}
+
+	state.blend = blend;
+}
+
+OpenGL::BlendState OpenGL::getBlendState() const
+{
+	return state.blend;
 }
 
 void OpenGL::setTextureUnit(int textureunit)
@@ -504,10 +627,76 @@ int OpenGL::getMaxTextureSize() const
 	return maxTextureSize;
 }
 
+int OpenGL::getMaxRenderTargets() const
+{
+	return maxRenderTargets;
+}
+
 OpenGL::Vendor OpenGL::getVendor() const
 {
 	return vendor;
 }
+
+const char *OpenGL::debugSeverityString(GLenum severity)
+{
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		return "high";
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		return "medium";
+	case GL_DEBUG_SEVERITY_LOW:
+		return "low";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
+const char *OpenGL::debugSourceString(GLenum source)
+{
+	switch (source)
+	{
+	case GL_DEBUG_SOURCE_API:
+		return "API";
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		return "window";
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		return "shader";
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		return "external";
+	case GL_DEBUG_SOURCE_APPLICATION:
+		return "LOVE";
+	case GL_DEBUG_SOURCE_OTHER:
+		return "other";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
+const char *OpenGL::debugTypeString(GLenum type)
+{
+	switch (type)
+	{
+	case GL_DEBUG_TYPE_ERROR:
+		return "error";
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		return "deprecated behavior";
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		return "undefined behavior";
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		return "performance";
+	case GL_DEBUG_TYPE_PORTABILITY:
+		return "portability";
+	case GL_DEBUG_TYPE_OTHER:
+		return "other";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
 
 // OpenGL class instance singleton.
 OpenGL gl;

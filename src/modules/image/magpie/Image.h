@@ -23,6 +23,10 @@
 
 // LOVE
 #include "image/Image.h"
+#include "FormatHandler.h"
+
+// C++
+#include <list>
 
 namespace love
 {
@@ -53,6 +57,11 @@ public:
 	love::image::CompressedData *newCompressedData(love::filesystem::FileData *data);
 
 	bool isCompressed(love::filesystem::FileData *data);
+
+private:
+
+	// Image format handlers we can use for decoding and encoding ImageData.
+	std::list<FormatHandler *> formatHandlers;
 
 }; // Image
 

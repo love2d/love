@@ -76,7 +76,7 @@ public:
 	virtual ~Source();
 
 	virtual love::audio::Source *clone();
-	virtual void play();
+	virtual bool play();
 	virtual void stop();
 	virtual void pause();
 	virtual void resume();
@@ -117,7 +117,7 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
-	void playAtomic();
+	bool playAtomic();
 	void stopAtomic();
 	void pauseAtomic();
 	void resumeAtomic();

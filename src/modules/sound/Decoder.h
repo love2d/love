@@ -67,7 +67,7 @@ public:
 	/**
 	 * Destructor. Should free internal buffer.
 	 **/
-	virtual ~Decoder() {};
+	virtual ~Decoder() {}
 
 	/**
 	 * Decodes the next chunk of the music stream, this will usually be

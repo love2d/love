@@ -41,14 +41,16 @@ int w_Mesh_getVertices(lua_State *L);
 int w_Mesh_getVertexCount(lua_State *L);
 int w_Mesh_setVertexMap(lua_State *L);
 int w_Mesh_getVertexMap(lua_State *L);
+int w_Mesh_setInstanceCount(lua_State *L);
+int w_Mesh_getInstanceCount(lua_State *L);
 int w_Mesh_setTexture(lua_State *L);
 int w_Mesh_getTexture(lua_State *L);
 int w_Mesh_setDrawMode(lua_State *L);
 int w_Mesh_getDrawMode(lua_State *L);
+int w_Mesh_setDrawRange(lua_State *L);
+int w_Mesh_getDrawRange(lua_State *L);
 int w_Mesh_setVertexColors(lua_State *L);
 int w_Mesh_hasVertexColors(lua_State *L);
-int w_Mesh_setWireframe(lua_State *L);
-int w_Mesh_isWireframe(lua_State *L);
 
 extern "C" int luaopen_mesh(lua_State *L);
 

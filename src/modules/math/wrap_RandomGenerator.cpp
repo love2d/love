@@ -47,16 +47,8 @@ RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx)
 
 	if (!lua_isnoneornil(L, idx + 1))
 	{
-		uint32 low = checkrandomseed_part<uint32>(L, idx);
-		uint32 high = checkrandomseed_part<uint32>(L, idx + 1);
-
-#ifdef LOVE_BIG_ENDIAN
-		s.b32.a = high;
-		s.b32.b = low;
-#else
-		s.b32.b = high;
-		s.b32.a = low;
-#endif
+		s.b32.low = checkrandomseed_part<uint32>(L, idx);
+		s.b32.high = checkrandomseed_part<uint32>(L, idx + 1);
 	}
 	else
 		s.b64 = checkrandomseed_part<uint64>(L, idx);
@@ -95,25 +87,6 @@ RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 	return luax_checktype<RandomGenerator>(L, idx, "RandomGenerator", MATH_RANDOM_GENERATOR_T);
 }
 
-int w_RandomGenerator_setSeed(lua_State *L)
-{
-	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-	EXCEPT_GUARD(rng->setSeed(luax_checkrandomseed(L, 2));)
-	return 0;
-}
-
-int w_RandomGenerator_getSeed(lua_State *L)
-{
-	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-
-	uint32 low = 0, high = 0;
-	rng->getSeed(low, high);
-
-	lua_pushnumber(L, (lua_Number) low);
-	lua_pushnumber(L, (lua_Number) high);
-	return 2;
-}
-
 int w_RandomGenerator_random(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
@@ -132,12 +105,44 @@ int w_RandomGenerator_randomNormal(lua_State *L)
 	return 1;
 }
 
+int w_RandomGenerator_setSeed(lua_State *L)
+{
+	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
+	EXCEPT_GUARD(rng->setSeed(luax_checkrandomseed(L, 2));)
+	return 0;
+}
+
+int w_RandomGenerator_getSeed(lua_State *L)
+{
+	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
+	RandomGenerator::Seed s = rng->getSeed();
+	lua_pushnumber(L, (lua_Number) s.b32.low);
+	lua_pushnumber(L, (lua_Number) s.b32.high);
+	return 2;
+}
+
+int w_RandomGenerator_setState(lua_State *L)
+{
+	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
+	EXCEPT_GUARD(rng->setState(luax_checkstring(L, 2));)
+	return 0;
+}
+
+int w_RandomGenerator_getState(lua_State *L)
+{
+	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
+	luax_pushstring(L, rng->getState());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
-	{ "setSeed", w_RandomGenerator_setSeed },
-	{ "getSeed", w_RandomGenerator_getSeed },
 	{ "random", w_RandomGenerator_random },
 	{ "randomNormal", w_RandomGenerator_randomNormal },
+	{ "setSeed", w_RandomGenerator_setSeed },
+	{ "getSeed", w_RandomGenerator_getSeed },
+	{ "setState", w_RandomGenerator_setState },
+	{ "getState", w_RandomGenerator_getState },
 	{ 0, 0 }
 };
 

@@ -56,14 +56,14 @@ public:
 	 *
 	 * @param data The data from which to load the image.
 	 **/
-	Image(love::image::ImageData *data);
+	Image(love::image::ImageData *data, Texture::Format format = Texture::FORMAT_NORMAL);
 
 	/**
 	 * Creates a new Image with compressed image data.
 	 *
 	 * @param cdata The compressed data from which to load the image.
 	 **/
-	Image(love::image::CompressedData *cdata);
+	Image(love::image::CompressedData *cdata, Texture::Format format = Texture::FORMAT_NORMAL);
 
 	/**
 	 * Destructor. Deletes the hardware texture and other resources.
@@ -76,20 +76,20 @@ public:
 	/**
 	 * @copydoc Drawable::draw()
 	 **/
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * @copydoc Texture::drawq()
 	 **/
-	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Call before using this Image's texture to draw. Binds the texture,
 	 * globally scales texture coordinates if the Image has NPOT dimensions and
 	 * NPOT isn't supported, etc.
 	 **/
-	virtual void predraw() const;
-	virtual void postdraw() const;
+	virtual void predraw();
+	virtual void postdraw();
 
 	virtual GLuint getGLTexture() const;
 
@@ -120,6 +120,8 @@ public:
 	 **/
 	bool refresh();
 
+	Texture::Format getFormat() const;
+
 	static void setDefaultMipmapSharpness(float sharpness);
 	static float getDefaultMipmapSharpness();
 	static void setDefaultMipmapFilter(FilterMode f);
@@ -133,11 +135,13 @@ public:
 	static bool hasCompressedTextureSupport();
 	static bool hasCompressedTextureSupport(image::CompressedData::Format format);
 
+	static bool hasSRGBSupport();
+
 private:
 
 	void uploadDefaultTexture();
 
-	void drawv(const Matrix &t, const Vertex *v) const;
+	void drawv(const Matrix &t, const Vertex *v);
 
 	// The ImageData from which the texture is created. May be null if
 	// Compressed image data was used to create the texture.
@@ -162,6 +166,9 @@ private:
 	// Whether this Image is using a compressed texture.
 	bool compressed;
 
+	// The format to interpret the texture's data as.
+	Texture::Format format;
+
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
 	bool usingDefaultTexture;
@@ -180,7 +187,7 @@ private:
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
 
-	GLenum getCompressedFormat(image::CompressedData::Format format) const;
+	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
 
 }; // Image
 

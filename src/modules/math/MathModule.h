@@ -53,26 +53,6 @@ public:
 	virtual ~Math()
 	{}
 
-	inline void setRandomSeed(RandomGenerator::Seed seed)
-	{
-		rng.setSeed(seed);
-	}
-
-	inline void setRandomSeed(uint32 low, uint32 high)
-	{
-		rng.setSeed(low, high);
-	}
-
-	inline RandomGenerator::Seed getRandomSeed() const
-	{
-		return rng.getSeed();
-	}
-
-	inline void getRandomSeed(uint32 &low, uint32 &high) const
-	{
-		rng.getSeed(low, high);
-	}
-
 	/**
 	 * @copydoc RandomGenerator::random()
 	 **/
@@ -105,6 +85,26 @@ public:
 		return rng.randomNormal(stddev);
 	}
 
+	inline void setRandomSeed(RandomGenerator::Seed seed)
+	{
+		rng.setSeed(seed);
+	}
+
+	inline RandomGenerator::Seed getRandomSeed() const
+	{
+		return rng.getSeed();
+	}
+
+	inline void setRandomState(const std::string &statestr)
+	{
+		rng.setState(statestr);
+	}
+
+	inline std::string getRandomState() const
+	{
+		return rng.getState();
+	}
+
 	/**
 	 * Create a new random number generator.
 	 **/
@@ -135,6 +135,16 @@ public:
 	 * @return True if the polygon is convex, false otherwise.
 	 **/
 	bool isConvex(const std::vector<Vertex> &polygon);
+
+	/**
+	 * Converts a value from the sRGB (gamma) colorspace to linear RGB.
+	 **/
+	float gammaToLinear(float c) const;
+
+	/**
+	 * Converts a value from linear RGB to the sRGB (gamma) colorspace.
+	 **/
+	float linearToGamma(float c) const;
 
 	/**
 	 * Calculate Simplex noise for the specified coordinate(s).

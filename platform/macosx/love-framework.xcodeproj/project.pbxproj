@@ -289,6 +289,7 @@
 		FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Quad.h */; };
 		FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Quad.cpp */; };
 		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
+		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
 		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
 		FAE010DC170DDE99006F29D0 /* ddsparse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010D9170DDE99006F29D0 /* ddsparse.cpp */; };
 		FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010DA170DDE99006F29D0 /* ddsparse.h */; };
@@ -847,6 +848,7 @@
 		FAC86E621724552C00EED715 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
 		FAC86E671724555D00EED715 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		FAC86E681724555D00EED715 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
+		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
 		FAE010D9170DDE99006F29D0 /* ddsparse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ddsparse.cpp; sourceTree = "<group>"; };
 		FAE010DA170DDE99006F29D0 /* ddsparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsparse.h; sourceTree = "<group>"; };
@@ -1088,6 +1090,7 @@
 				FAE010DF170DE25E006F29D0 /* ddsHandler.h */,
 				1AA7781A230065F346E2313A /* DevilHandler.cpp */,
 				283342E174613897621A43F1 /* DevilHandler.h */,
+				FADD58DC18C30367005FC3BF /* FormatHandler.cpp */,
 				FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */,
 				505F23A73BFE250833D650E4 /* Image.cpp */,
 				68616BD516DB124312B47EB3 /* Image.h */,
@@ -2045,7 +2048,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "love-framework" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2267,6 +2270,7 @@
 				FA08F66816C7548200F007B5 /* wrap_WheelJoint.cpp in Sources */,
 				FA08F66916C7548200F007B5 /* wrap_World.cpp in Sources */,
 				FA08F66A16C7549200F007B5 /* Sound.cpp in Sources */,
+				FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */,
 				FA08F66B16C7549200F007B5 /* SoundData.cpp in Sources */,
 				FA08F66C16C7549200F007B5 /* wrap_Decoder.cpp in Sources */,
 				FA08F66D16C7549200F007B5 /* wrap_Sound.cpp in Sources */,
@@ -2407,6 +2411,66 @@
 			};
 			name = Debug;
 		};
+		FA5326C4189719C700F7BBF4 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_ENABLE_MODULES = YES;
+				DEAD_CODE_STRIPPING = YES;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = LOVE_MACOSX_USE_FRAMEWORKS;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../../src\"",
+					"\"$(SRCROOT)/../../src/libraries\"",
+					"\"$(SRCROOT)/../../src/modules\"",
+					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
+					/Library/Frameworks/FreeType.framework/Headers,
+					/Library/Frameworks/Lua.framework/Headers,
+					/Library/Frameworks/SDL2.framework/Headers,
+				);
+				LD_RUNPATH_SEARCH_PATHS = "@rpath";
+				LIBRARY_SEARCH_PATHS = "";
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = NO;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wall";
+			};
+			name = Distribution;
+		};
+		FA5326C5189719C700F7BBF4 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 9.0;
+				DYLIB_CURRENT_VERSION = 9.0;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				INFOPLIST_FILE = "Info-Framework.plist";
+				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
+				PRODUCT_NAME = love;
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Distribution;
+		};
 		FA577AC016C7507900860150 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2464,6 +2528,7 @@
 			buildConfigurations = (
 				64274E785071353E1A1D0D4B /* Debug */,
 				10D5479E63C26BB35EB5482E /* Release */,
+				FA5326C4189719C700F7BBF4 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2473,6 +2538,7 @@
 			buildConfigurations = (
 				FA577AC016C7507900860150 /* Debug */,
 				FA577AC116C7507900860150 /* Release */,
+				FA5326C5189719C700F7BBF4 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

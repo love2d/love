@@ -23,7 +23,7 @@
 
 // LOVE
 #include "filesystem/File.h"
-
+#include "common/int.h"
 #include "Decoder.h"
 
 namespace love
@@ -59,12 +59,13 @@ private:
 
 	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);
 
-	char *data;
+	int8 *data;
 	int size;
 
 	int sampleRate;
 	int bitDepth;
 	int channels;
+
 }; // SoundData
 
 } // sound

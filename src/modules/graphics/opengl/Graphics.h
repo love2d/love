@@ -80,6 +80,8 @@ struct DisplayState
 	// Color mask.
 	bool colorMask[4];
 
+	bool wireframe;
+
 	// Default values.
 	DisplayState()
 	{
@@ -91,6 +93,7 @@ struct DisplayState
 		pointSize = 1.0f;
 		scissor = false;
 		colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
+		wireframe = false;
 	}
 
 };
@@ -110,8 +113,10 @@ public:
 	void restoreState(const DisplayState &s);
 
 	virtual void setViewportSize(int width, int height);
-	virtual bool setMode(int width, int height);
+	virtual bool setMode(int width, int height, bool &sRGB);
 	virtual void unSetMode();
+
+	void setDebug(bool enable);
 
 	/**
 	 * Resets the current color, background color,
@@ -185,15 +190,10 @@ public:
 	void discardStencil();
 
 	/**
-	 * Gets the maximum supported width or height of Textures on this system.
-	 **/
-	int getMaxTextureSize() const;
-
-	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(love::image::ImageData *data);
-	Image *newImage(love::image::CompressedData *cdata);
+	Image *newImage(love::image::ImageData *data, Texture::Format format = Texture::FORMAT_NORMAL);
+	Image *newImage(love::image::CompressedData *cdata, Texture::Format format = Texture::FORMAT_NORMAL);
 
 	Quad *newQuad(Quad::Viewport v, float sw, float sh);
 
@@ -206,11 +206,12 @@ public:
 
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	Canvas *newCanvas(int width, int height, Canvas::TextureType texture_type = Canvas::TYPE_NORMAL);
+	Canvas *newCanvas(int width, int height, Texture::Format format = Texture::FORMAT_NORMAL, int fsaa = 0);
 
 	Shader *newShader(const Shader::ShaderSources &sources);
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
+	Mesh *newMesh(int vertexcount, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
 
 	/**
 	 * Sets the foreground color.
@@ -324,10 +325,17 @@ public:
 	float getPointSize() const;
 
 	/**
-	 * Gets the maximum point size supported.
-	 * This may vary from computer to computer.
+	 * Sets whether graphics will be drawn as wireframe lines instead of filled
+	 * triangles (has no effect for drawn points.)
+	 * This should only be used as a debugging tool. The wireframe lines do not
+	 * behave the same as regular love.graphics lines.
 	 **/
-	int getMaxPointSize() const;
+	void setWireframe(bool enable);
+
+	/**
+	 * Gets whether wireframe drawing mode is enabled.
+	 **/
+	bool isWireframe() const;
 
 	/**
 	 * Draws text at the specified coordinates, with rotation and
@@ -430,6 +438,11 @@ public:
 	 **/
 	std::string getRendererInfo(Graphics::RendererInfo infotype) const;
 
+	/**
+	 * Gets the system-dependent numeric limit for the specified parameter.
+	 **/
+	double getSystemLimit(SystemLimit limittype) const;
+
 	void push();
 	void pop();
 	void rotate(float r);
@@ -450,10 +463,13 @@ private:
 	GLint matrixLimit;
 	GLint userMatrices;
 	bool colorMask[4];
+	bool wireframe;
 
 	int width;
 	int height;
 	bool created;
+
+	bool activeStencil;
 
 	DisplayState savedState;
 

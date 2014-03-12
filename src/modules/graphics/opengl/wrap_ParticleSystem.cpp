@@ -127,7 +127,7 @@ int w_ParticleSystem_getInsertMode(lua_State *L)
 int w_ParticleSystem_setEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int arg1 = luaL_checkint(L, 2);
+	float arg1 = (float) luaL_checknumber(L, 2);
 	EXCEPT_GUARD(t->setEmissionRate(arg1);)
 	return 0;
 }
@@ -135,7 +135,7 @@ int w_ParticleSystem_setEmissionRate(lua_State *L)
 int w_ParticleSystem_getEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushinteger(L, t->getEmissionRate());
+	lua_pushnumber(L, t->getEmissionRate());
 	return 1;
 }
 
@@ -189,6 +189,15 @@ int w_ParticleSystem_getPosition(lua_State *L)
 	lua_pushnumber(L, pos.getX());
 	lua_pushnumber(L, pos.getY());
 	return 2;
+}
+
+int w_ParticleSystem_moveTo(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	float arg2 = (float)luaL_checknumber(L, 3);
+	t->moveTo(arg1, arg2);
+	return 0;
 }
 
 int w_ParticleSystem_setAreaSpread(lua_State *L)
@@ -560,6 +569,20 @@ int w_ParticleSystem_getColors(lua_State *L)
 	return colors.size();
 }
 
+int w_ParticleSystem_setRelativeRotation(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	t->setRelativeRotation(luax_toboolean(L, 2));
+	return 0;
+}
+
+int w_ParticleSystem_hasRelativeRotation(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	luax_pushboolean(L, t->hasRelativeRotation());
+	return 1;
+}
+
 int w_ParticleSystem_getCount(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -649,6 +672,7 @@ static const luaL_Reg functions[] =
 	{ "getParticleLifetime", w_ParticleSystem_getParticleLifetime },
 	{ "setPosition", w_ParticleSystem_setPosition },
 	{ "getPosition", w_ParticleSystem_getPosition },
+	{ "moveTo", w_ParticleSystem_moveTo },
 	{ "setAreaSpread", w_ParticleSystem_setAreaSpread },
 	{ "getAreaSpread", w_ParticleSystem_getAreaSpread },
 	{ "setDirection", w_ParticleSystem_setDirection },
@@ -677,6 +701,8 @@ static const luaL_Reg functions[] =
 	{ "getColors", w_ParticleSystem_getColors },
 	{ "setOffset", w_ParticleSystem_setOffset },
 	{ "getOffset", w_ParticleSystem_getOffset },
+	{ "setRelativeRotation", w_ParticleSystem_setRelativeRotation },
+	{ "hasRelativeRotation", w_ParticleSystem_hasRelativeRotation },
 	{ "getCount", w_ParticleSystem_getCount },
 	{ "start", w_ParticleSystem_start },
 	{ "stop", w_ParticleSystem_stop },

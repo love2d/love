@@ -34,22 +34,21 @@ Canvas *luax_checkcanvas(lua_State *L, int idx)
 
 int w_Canvas_renderTo(lua_State *L)
 {
-	// As startGrab() clears the framebuffer, better not allow
-	// grabbing inside another grabbing
-	if (Canvas::current != NULL)
-	{
-		Canvas::bindDefaultCanvas();
-		return luaL_error(L, "Current render target not the default canvas!");
-	}
-
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	// Save the current Canvas so we can restore it when we're done.
+	Canvas *oldcanvas = Canvas::current;
 
 	EXCEPT_GUARD(canvas->startGrab();)
 
 	lua_settop(L, 2); // make sure the function is on top of the stack
 	lua_call(L, 0, 0);
-	canvas->stopGrab();
+
+	if (oldcanvas != nullptr)
+		oldcanvas->startGrab(oldcanvas->getAttachedCanvases());
+	else
+		Canvas::bindDefaultCanvas();
 
 	return 0;
 }
@@ -111,13 +110,22 @@ int w_Canvas_clear(lua_State *L)
 	return 0;
 }
 
-int w_Canvas_getType(lua_State *L)
+int w_Canvas_getFormat(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	Canvas::TextureType type = canvas->getTextureType();
+	Texture::Format format = canvas->getTextureFormat();
 	const char *str;
-	Canvas::getConstant(type, str);
+	if (!Texture::getConstant(format, str))
+		return luaL_error(L, "Unknown texture format.");
+
 	lua_pushstring(L, str);
+	return 1;
+}
+
+int w_Canvas_getFSAA(lua_State *L)
+{
+	Canvas *canvas = luax_checkcanvas(L, 1);
+	lua_pushinteger(L, canvas->getFSAA());
 	return 1;
 }
 
@@ -136,7 +144,11 @@ static const luaL_Reg functions[] =
 	{ "getImageData", w_Canvas_getImageData },
 	{ "getPixel", w_Canvas_getPixel },
 	{ "clear", w_Canvas_clear },
-	{ "getType", w_Canvas_getType },
+	{ "getFormat", w_Canvas_getFormat },
+	{ "getFSAA", w_Canvas_getFSAA },
+
+	// Deprecated since 0.9.1.
+	{ "getType", w_Canvas_getFormat },
 	{ 0, 0 }
 };
 

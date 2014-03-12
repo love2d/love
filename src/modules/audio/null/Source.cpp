@@ -42,8 +42,9 @@ love::audio::Source *Source::clone()
 	return this;
 }
 
-void Source::play()
+bool Source::play()
 {
+	return false;
 }
 
 void Source::stop()

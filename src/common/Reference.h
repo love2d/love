@@ -64,6 +64,14 @@ public:
 	void unref();
 
 	/**
+	 * Pushes the referred value onto the stack of a different coroutine
+	 * in the same main Lua state.
+	 * THIS SHOULD NOT BE USED FOR DIFFERENT LUA STATES (created with
+	 * luaL_newstate)! Only with different coroutines!
+	 **/
+	void push(lua_State *newL);
+
+	/**
 	 * Pushes the referred value onto the stack.
 	 **/
 	void push();
@@ -72,7 +80,15 @@ public:
 	 * Gets the Lua state associated with this
 	 * reference.
 	 **/
-	lua_State *getL();
+	lua_State *getL() const;
+
+	/**
+	 * Associates a new Lua state with this reference.
+	 * THIS IS DANGEROUS! It is only designed to be
+	 * used with different coroutines from the same
+	 * main Lua state!
+	 **/
+	void setL(lua_State *newL);
 
 private:
 

@@ -24,6 +24,7 @@
 // LOVE
 #include "filesystem/FileData.h"
 #include "FormatHandler.h"
+#include "thread/threads.h"
 
 namespace love
 {
@@ -39,16 +40,20 @@ class DevilHandler : public FormatHandler
 {
 public:
 
-	static void init();
-	static void quit();
-
 	// Implements FormatHandler.
 
-	static bool canDecode(love::filesystem::FileData *data);
-	static bool canEncode(ImageData::Format format);
+	DevilHandler();
+	virtual ~DevilHandler();
 
-	static DecodedImage decode(love::filesystem::FileData *data);
-	static EncodedImage encode(const DecodedImage &img, ImageData::Format format);
+	virtual bool canDecode(love::filesystem::FileData *data);
+	virtual bool canEncode(ImageData::Format format);
+
+	virtual DecodedImage decode(love::filesystem::FileData *data);
+	virtual EncodedImage encode(const DecodedImage &img, ImageData::Format format);
+
+private:
+
+	Mutex *mutex;
 
 }; // DevilHandler
 

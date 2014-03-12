@@ -63,6 +63,17 @@ public:
 		VENDOR_UNKNOWN
 	};
 
+	// Vertex attributes used in shaders by LOVE. The values map to OpenGL
+	// generic vertex attribute indices, when applicable.
+	// LOVE uses the old hard-coded attribute APIs for positions, colors, etc.
+	// (for now.)
+	enum VertexAttrib
+	{
+		// Instance ID when pseudo-instancing is used.
+		ATTRIB_PSEUDO_INSTANCE_ID = 1,
+		ATTRIB_MAX_ENUM
+	};
+
 	// A rectangle representing an OpenGL viewport or a scissor box.
 	struct Viewport
 	{
@@ -76,6 +87,18 @@ public:
 		Viewport(int _x, int _y, int _w, int _h)
 			: x(_x), y(_y), w(_w), h(_h)
 		{}
+
+		bool operator == (const Viewport &rhs) const
+		{
+			return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
+		}
+	};
+
+	struct BlendState
+	{
+		GLenum srcRGB, srcA;
+		GLenum dstRGB, dstA;
+		GLenum func;
 	};
 
 	OpenGL();
@@ -98,6 +121,16 @@ public:
 	 * This *MUST* be called directly before OpenGL drawing functions.
 	 **/
 	void prepareDraw();
+
+	/**
+	 * glDrawArraysInstanced with a pseudo-instancing fallback.
+	 **/
+	void drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
+
+	/**
+	 * glDrawElementsInstanced with a pseudo-instancing fallback.
+	 **/
+	void drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount);
 
 	/**
 	 * Sets the current constant color.
@@ -140,6 +173,17 @@ public:
 	 * Gets the current scissor box (regardless of whether scissoring is enabled.)
 	 **/
 	Viewport getScissor() const;
+
+	/**
+	 * Sets blending functionality.
+	 * Note: This does not globally enable or disable blending.
+	 **/
+	void setBlendState(const BlendState &blend);
+
+	/**
+	 * Gets the currently set blending functionality.
+	 **/
+	BlendState getBlendState() const;
 
 	/**
 	 * Helper for setting the active texture unit.
@@ -195,9 +239,19 @@ public:
 	int getMaxTextureSize() const;
 
 	/**
+	 * Returns the maximum supported number of simultaneous render targets.
+	 **/
+	int getMaxRenderTargets() const;
+
+	/**
 	 * Get the GPU vendor of this OpenGL context.
 	 **/
 	Vendor getVendor() const;
+
+	// Get human-readable strings for debug info.
+	static const char *debugSeverityString(GLenum severity);
+	static const char *debugSourceString(GLenum source);
+	static const char *debugTypeString(GLenum type);
 
 private:
 
@@ -210,6 +264,7 @@ private:
 
 	float maxAnisotropy;
 	int maxTextureSize;
+	int maxRenderTargets;
 
 	Vendor vendor;
 
@@ -229,6 +284,11 @@ private:
 
 		Viewport viewport;
 		Viewport scissor;
+
+		BlendState blend;
+
+		// The last ID value used for pseudo-instancing.
+		int lastPseudoInstanceID;
 
 	} state;
 

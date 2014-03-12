@@ -53,12 +53,18 @@ Graphics::Graphics()
 	, width(0)
 	, height(0)
 	, created(false)
+	, activeStencil(false)
 	, savedState()
 {
 	currentWindow = love::window::sdl::Window::createSingleton();
 
+	int w, h;
+	love::window::WindowSettings wsettings;
+
+	currentWindow->getWindow(w, h, wsettings);
+
 	if (currentWindow->isCreated())
-		setMode(currentWindow->getWidth(), currentWindow->getHeight());
+		setMode(w, h, wsettings.sRGB);
 }
 
 Graphics::~Graphics()
@@ -95,6 +101,8 @@ DisplayState Graphics::saveState()
 	for (int i = 0; i < 4; i++)
 		s.colorMask[i] = colorMask[i];
 
+	wireframe = isWireframe();
+
 	return s;
 }
 
@@ -111,6 +119,7 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 	setColorMask(s.colorMask[0], s.colorMask[1], s.colorMask[2], s.colorMask[3]);
+	setWireframe(s.wireframe);
 }
 
 void Graphics::setViewportSize(int width, int height)
@@ -147,7 +156,7 @@ void Graphics::setViewportSize(int width, int height)
 		c->startGrab(c->getAttachedCanvases());
 }
 
-bool Graphics::setMode(int width, int height)
+bool Graphics::setMode(int width, int height, bool &sRGB)
 {
 	this->width = width;
 	this->height = height;
@@ -165,9 +174,6 @@ bool Graphics::setMode(int width, int height)
 
 	// Enable blending
 	glEnable(GL_BLEND);
-
-	// "Normal" blending
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Enable all color component writes.
 	setColorMask(true, true, true, true);
@@ -207,6 +213,31 @@ bool Graphics::setMode(int width, int height)
 	glGetIntegerv(GL_MAX_MODELVIEW_STACK_DEPTH, &matrixLimit);
 	matrixLimit -= 5;
 
+	// Set whether drawing converts input from linear -> sRGB colorspace.
+	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
+	{
+		if (sRGB)
+			glEnable(GL_FRAMEBUFFER_SRGB);
+		else
+			glDisable(GL_FRAMEBUFFER_SRGB);
+	}
+	else
+		sRGB = false;
+
+	Canvas::screenHasSRGB = sRGB;
+
+	bool enabledebug = false;
+
+	if (GLEE_VERSION_3_0)
+	{
+		// Enable OpenGL's debug output if a debug context has been created.
+		GLint flags = 0;
+		glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+		enabledebug = (flags & GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
+	}
+
+	setDebug(enabledebug);
+
 	return true;
 }
 
@@ -221,6 +252,61 @@ void Graphics::unSetMode()
 	Volatile::unloadAll();
 
 	gl.deInitContext();
+}
+
+static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, GLvoid* /*usr*/)
+{
+	// Human-readable strings for the debug info.
+	const char *sourceStr = OpenGL::debugSourceString(source);
+	const char *typeStr = OpenGL::debugTypeString(type);
+	const char *severityStr = OpenGL::debugSeverityString(severity);
+
+	const char *fmt = "OpenGL: %s [source=%s, type=%s, severity=%s, id=%d]\n";
+	printf(fmt, msg, sourceStr, typeStr, severityStr, id);
+}
+
+void Graphics::setDebug(bool enable)
+{
+	// Make sure debug output is supported. The AMD ext. is a bit different
+	// so we don't make use of it, since AMD drivers now support KHR_debug.
+	if (!(GLEE_VERSION_4_3 || GLEE_KHR_debug || GLEE_ARB_debug_output))
+		return;
+
+	// Ugly hack to reduce code duplication.
+	if (GLEE_ARB_debug_output && !(GLEE_VERSION_4_3 || GLEE_KHR_debug))
+	{
+		glDebugMessageCallback = (GLEEPFNGLDEBUGMESSAGECALLBACKPROC) glDebugMessageCallbackARB;
+		glDebugMessageControl = (GLEEPFNGLDEBUGMESSAGECONTROLPROC) glDebugMessageControlARB;
+	}
+
+	if (!enable)
+	{
+		// Disable the debug callback function.
+		glDebugMessageCallback(nullptr, nullptr);
+
+		// We can disable debug output entirely with KHR_debug.
+		if (GLEE_VERSION_4_3 || GLEE_KHR_debug)
+			glDisable(GL_DEBUG_OUTPUT);
+
+		return;
+	}
+
+	// We don't want asynchronous debug output.
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+	glDebugMessageCallback(debugCB, nullptr);
+
+	// Initially, enable everything.
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+
+	// Disable messages about deprecated OpenGL functionality.
+	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
+	glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
+
+	if (GLEE_VERSION_4_3 || GLEE_KHR_debug)
+		glEnable(GL_DEBUG_OUTPUT);
+
+	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
 void Graphics::reset()
@@ -295,6 +381,8 @@ void Graphics::defineStencil()
 	glEnable(GL_STENCIL_TEST);
 	glStencilFunc(GL_ALWAYS, 1, 1);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+	activeStencil = true;
 }
 
 void Graphics::useStencil(bool invert)
@@ -306,19 +394,18 @@ void Graphics::useStencil(bool invert)
 
 void Graphics::discardStencil()
 {
+	if (!activeStencil)
+		return;
+
 	setColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
 	glDisable(GL_STENCIL_TEST);
+	activeStencil = false;
 }
 
-int Graphics::getMaxTextureSize() const
-{
-	return gl.getMaxTextureSize();
-}
-
-Image *Graphics::newImage(love::image::ImageData *data)
+Image *Graphics::newImage(love::image::ImageData *data, Texture::Format format)
 {
 	// Create the image.
-	Image *image = new Image(data);
+	Image *image = new Image(data, format);
 
 	if (!isCreated())
 		return image;
@@ -342,10 +429,10 @@ Image *Graphics::newImage(love::image::ImageData *data)
 	return image;
 }
 
-Image *Graphics::newImage(love::image::CompressedData *cdata)
+Image *Graphics::newImage(love::image::CompressedData *cdata, Texture::Format format)
 {
 	// Create the image.
-	Image *image = new Image(cdata);
+	Image *image = new Image(cdata, format);
 
 	if (!isCreated())
 		return image;
@@ -389,10 +476,13 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 	return new ParticleSystem(texture, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_type)
+Canvas *Graphics::newCanvas(int width, int height, Texture::Format format, int fsaa)
 {
-	if (texture_type == Canvas::TYPE_HDR && !Canvas::isHDRSupported())
+	if (format == Texture::FORMAT_HDR && !Canvas::isHDRSupported())
 		throw Exception("HDR Canvases are not supported by your OpenGL implementation");
+
+	if (format == Texture::FORMAT_SRGB && !Canvas::isSRGBSupported())
+		throw Exception("sRGB Canvases are not supported by your OpenGL implementation");
 
 	if (width > gl.getMaxTextureSize())
 		throw Exception("Cannot create canvas: width of %d pixels is too large for this system.", width);
@@ -402,7 +492,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::TextureType texture_t
 	while (GL_NO_ERROR != glGetError())
 		/* clear opengl error flag */;
 
-	Canvas *canvas = new Canvas(width, height, texture_type);
+	Canvas *canvas = new Canvas(width, height, format, fsaa);
 	GLenum err = canvas->getStatus();
 
 	// everything ok, return canvas (early out)
@@ -457,6 +547,11 @@ Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode
 	return new Mesh(vertices, mode);
 }
 
+Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode mode)
+{
+	return new Mesh(vertexcount, mode);
+}
+
 void Graphics::setColor(const Color &c)
 {
 	gl.setColor(c);
@@ -509,22 +604,16 @@ const bool *Graphics::getColorMask() const
 
 void Graphics::setBlendMode(Graphics::BlendMode mode)
 {
-	const int gl_1_4 = GLEE_VERSION_1_4;
-
-	GLenum func = GL_FUNC_ADD;
-	GLenum src_rgb = GL_ONE;
-	GLenum src_a = GL_ONE;
-	GLenum dst_rgb = GL_ZERO;
-	GLenum dst_a = GL_ZERO;
+	OpenGL::BlendState state = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
 
 	switch (mode)
 	{
 	case BLEND_ALPHA:
-		if (gl_1_4 || GLEE_EXT_blend_func_separate)
+		if (GLEE_VERSION_1_4 || GLEE_EXT_blend_func_separate)
 		{
-			src_rgb = GL_SRC_ALPHA;
-			src_a = GL_ONE;
-			dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+			state.srcRGB = GL_SRC_ALPHA;
+			state.srcA = GL_ONE;
+			state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
 		}
 		else
 		{
@@ -532,98 +621,56 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 			// This will most likely only be used for the Microsoft software renderer and
 			// since it's still stuck with OpenGL 1.1, the only expected difference is a
 			// different alpha value when reading back the default framebuffer (newScreenshot).
-			src_rgb = src_a = GL_SRC_ALPHA;
-			dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+			state.srcRGB = state.srcA = GL_SRC_ALPHA;
+			state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
 		}
 		break;
 	case BLEND_MULTIPLICATIVE:
-		src_rgb = src_a = GL_DST_COLOR;
-		dst_rgb = dst_a = GL_ZERO;
+		state.srcRGB = state.srcA = GL_DST_COLOR;
+		state.dstRGB = state.dstA = GL_ZERO;
 		break;
 	case BLEND_PREMULTIPLIED:
-		src_rgb = src_a = GL_ONE;
-		dst_rgb = dst_a = GL_ONE_MINUS_SRC_ALPHA;
+		state.srcRGB = state.srcA = GL_ONE;
+		state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
 		break;
 	case BLEND_SUBTRACTIVE:
-		func = GL_FUNC_REVERSE_SUBTRACT;
+		state.func = GL_FUNC_REVERSE_SUBTRACT;
 	case BLEND_ADDITIVE:
-		src_rgb = src_a = GL_SRC_ALPHA;
-		dst_rgb = dst_a = GL_ONE;
+		state.srcRGB = state.srcA = GL_SRC_ALPHA;
+		state.dstRGB = state.dstA = GL_ONE;
 		break;
 	case BLEND_REPLACE:
 	default:
-		src_rgb = src_a = GL_ONE;
-		dst_rgb = dst_a = GL_ZERO;
+		state.srcRGB = state.srcA = GL_ONE;
+		state.dstRGB = state.dstA = GL_ZERO;
 		break;
 	}
 
-	if (gl_1_4 || GLEE_ARB_imaging)
-		glBlendEquation(func);
-	else if (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)
-		glBlendEquationEXT(func);
-	else
-	{
-		if (func == GL_FUNC_REVERSE_SUBTRACT)
-			throw Exception("This graphics card does not support the subtractive blend mode!");
-		// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
-	}
-
-	if (src_rgb == src_a && dst_rgb == dst_a)
-		glBlendFunc(src_rgb, dst_rgb);
-	else
-	{
-		if (gl_1_4)
-			glBlendFuncSeparate(src_rgb, dst_rgb, src_a, dst_a);
-		else if (GLEE_EXT_blend_func_separate)
-			glBlendFuncSeparateEXT(src_rgb, dst_rgb, src_a, dst_a);
-		else
-			throw Exception("This graphics card does not support separated rgb and alpha blend functions!");
-	}
+	gl.setBlendState(state);
 }
 
 Graphics::BlendMode Graphics::getBlendMode() const
 {
-	const int gl_1_4 = GLEE_VERSION_1_4;
+	OpenGL::BlendState state = gl.getBlendState();
 
-	GLint src_rgb, src_a, dst_rgb, dst_a;
-	GLint equation = GL_FUNC_ADD;
-
-	if (gl_1_4 || GLEE_EXT_blend_func_separate)
-	{
-		glGetIntegerv(GL_BLEND_SRC_RGB, &src_rgb);
-		glGetIntegerv(GL_BLEND_SRC_ALPHA, &src_a);
-		glGetIntegerv(GL_BLEND_DST_RGB, &dst_rgb);
-		glGetIntegerv(GL_BLEND_DST_ALPHA, &dst_a);
-	}
-	else
-	{
-		glGetIntegerv(GL_BLEND_SRC, &src_rgb);
-		glGetIntegerv(GL_BLEND_DST, &dst_rgb);
-		src_a = src_rgb;
-		dst_a = dst_rgb;
-	}
-
-	if (gl_1_4 || GLEE_ARB_imaging || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract))
-		glGetIntegerv(GL_BLEND_EQUATION, &equation);
-
-	if (equation == GL_FUNC_REVERSE_SUBTRACT)  // && src == GL_SRC_ALPHA && dst == GL_ONE
+	if (state.func == GL_FUNC_REVERSE_SUBTRACT)  // && src == GL_SRC_ALPHA && dst == GL_ONE
 		return BLEND_SUBTRACTIVE;
 	// Everything else has equation == GL_FUNC_ADD.
-	else if (src_rgb == src_a && dst_rgb == dst_a)
+	else if (state.srcRGB == state.srcA && state.dstRGB == state.dstA)
 	{
-		if (src_rgb == GL_SRC_ALPHA && dst_rgb == GL_ONE)
+		if (state.srcRGB == GL_SRC_ALPHA && state.dstRGB == GL_ONE)
 			return BLEND_ADDITIVE;
-		else if (src_rgb == GL_SRC_ALPHA && dst_rgb == GL_ONE_MINUS_SRC_ALPHA)
+		else if (state.srcRGB == GL_SRC_ALPHA && state.dstRGB == GL_ONE_MINUS_SRC_ALPHA)
 			return BLEND_ALPHA; // alpha blend mode fallback for very old OpenGL versions.
-		else if (src_rgb == GL_DST_COLOR && dst_rgb == GL_ZERO)
+		else if (state.srcRGB == GL_DST_COLOR && state.dstRGB == GL_ZERO)
 			return BLEND_MULTIPLICATIVE;
-		else if (src_rgb == GL_ONE && dst_rgb == GL_ONE_MINUS_SRC_ALPHA)
+		else if (state.srcRGB == GL_ONE && state.dstRGB == GL_ONE_MINUS_SRC_ALPHA)
 			return BLEND_PREMULTIPLIED;
-		else if (src_rgb == GL_ONE && dst_rgb == GL_ZERO)
+		else if (state.srcRGB == GL_ONE && state.dstRGB == GL_ZERO)
 			return BLEND_REPLACE;
 	}
-	else if (src_rgb == GL_SRC_ALPHA && src_a == GL_ONE &&
-		dst_rgb == GL_ONE_MINUS_SRC_ALPHA && dst_a == GL_ONE_MINUS_SRC_ALPHA)
+	else if (state.srcRGB == GL_SRC_ALPHA && state.srcA == GL_ONE &&
+		state.dstRGB == GL_ONE_MINUS_SRC_ALPHA && state.dstA == GL_ONE_MINUS_SRC_ALPHA)
 		return BLEND_ALPHA;
 
 	throw Exception("Unknown blend mode");
@@ -693,11 +740,15 @@ float Graphics::getPointSize() const
 	return (float)size;
 }
 
-int Graphics::getMaxPointSize() const
+void Graphics::setWireframe(bool enable)
 {
-	GLint max;
-	glGetIntegerv(GL_POINT_SIZE_MAX, &max);
-	return (int)max;
+	wireframe = enable;
+	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
+}
+
+bool Graphics::isWireframe() const
+{
+	return wireframe;
 }
 
 void Graphics::print(const std::string &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -1005,6 +1056,41 @@ std::string Graphics::getRendererInfo(Graphics::RendererInfo infotype) const
 		throw love::Exception("Cannot retrieve renderer information.");
 
 	return std::string(infostr);
+}
+
+double Graphics::getSystemLimit(SystemLimit limittype) const
+{
+	double limit = 0.0;
+
+	switch (limittype)
+	{
+	case Graphics::LIMIT_POINT_SIZE:
+		{
+			GLfloat limits[2];
+			glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
+			limit = limits[1];
+		}
+		break;
+	case Graphics::LIMIT_TEXTURE_SIZE:
+		limit = (double) gl.getMaxTextureSize();
+		break;
+	case Graphics::LIMIT_MULTI_CANVAS:
+		limit = (double) gl.getMaxRenderTargets();
+		break;
+	case Graphics::LIMIT_CANVAS_FSAA:
+		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object
+			|| GLEE_EXT_framebuffer_multisample)
+		{
+			GLint intlimit = 0;
+			glGetIntegerv(GL_MAX_SAMPLES, &intlimit);
+			limit = (double) intlimit;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return limit;
 }
 
 void Graphics::push()

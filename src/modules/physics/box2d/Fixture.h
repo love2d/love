@@ -123,9 +123,6 @@ public:
 	/**
 	 * This function stores an in-C reference to
 	 * arbitrary Lua data in the Box2D Fixture object.
-	 *
-	 * The data set here will be passed to the collision
-	 * handler when collisions occur.
 	 **/
 	int setUserData(lua_State *L);
 

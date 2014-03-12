@@ -60,7 +60,7 @@ struct Image
 	const uint8_t *data;
 
 	Image() : width(0), height(0), dataSize(0), data(0)
-	{};
+	{}
 };
 
 /**

@@ -464,7 +464,7 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *dat
 
 bool luax_istype(lua_State *L, int idx, love::bits type)
 {
-	if (lua_isuserdata(L, idx) == 0)
+	if (lua_type(L, idx) != LUA_TUSERDATA)
 		return false;
 
 	return ((((Proxy *)lua_touserdata(L, idx))->flags & type) == type);

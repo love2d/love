@@ -39,14 +39,7 @@ class Canvas : public Texture
 {
 public:
 
-	enum TextureType
-	{
-		TYPE_NORMAL,
-		TYPE_HDR,
-		TYPE_MAX_ENUM
-	};
-
-	Canvas(int width, int height, TextureType texture_type = TYPE_NORMAL);
+	Canvas(int width, int height, Texture::Format format = Texture::FORMAT_NORMAL, int fsaa = 0);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -54,14 +47,14 @@ public:
 	virtual void unloadVolatile();
 
 	// Implements Drawable.
-	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	// Implements Texture.
-	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 	virtual void setFilter(const Texture::Filter &f);
 	virtual void setWrap(const Texture::Wrap &w);
 	virtual GLuint getGLTexture() const;
-	virtual void predraw() const;
+	virtual void predraw();
 
 	/**
 	 * @param canvases A list of other canvases to temporarily attach to this one,
@@ -69,7 +62,7 @@ public:
 	 **/
 	void startGrab(const std::vector<Canvas *> &canvases);
 	void startGrab();
-	void stopGrab();
+	void stopGrab(bool switchingToOtherCanvas = false);
 
 	void clear(Color c);
 
@@ -92,17 +85,22 @@ public:
 		return status;
 	}
 
-	inline TextureType getTextureType() const
+	inline Texture::Format getTextureFormat() const
 	{
-		return texture_type;
+		return format;
 	}
+
+	inline int getFSAA() const
+	{
+		return fsaa_samples;
+	}
+
+	bool resolveMSAA();
 
 	static bool isSupported();
 	static bool isHDRSupported();
+	static bool isSRGBSupported();
 	static bool isMultiCanvasSupported();
-
-	static bool getConstant(const char *in, TextureType &out);
-	static bool getConstant(TextureType in, const char *&out);
 
 	static Canvas *current;
 	static void bindDefaultCanvas();
@@ -110,24 +108,33 @@ public:
 	// The viewport dimensions of the system (default) framebuffer.
 	static OpenGL::Viewport systemViewport;
 
+	// Whether the main screen should have linear -> sRGB conversions enabled.
+	static bool screenHasSRGB;
+
 private:
 
+	bool createFSAAFBO(GLenum internalformat);
+
 	GLuint fbo;
+	GLuint resolve_fbo;
+
 	GLuint texture;
+	GLuint fsaa_buffer;
 	GLuint depth_stencil;
 
-	TextureType texture_type;
+	Format format;
 
 	GLenum status;
 
 	std::vector<Canvas *> attachedCanvases;
 
-	void setupGrab();
-	void drawv(const Matrix &t, const Vertex *v) const;
+	int fsaa_samples;
+	bool fsaa_dirty;
 
-	static StringMap<TextureType, TYPE_MAX_ENUM>::Entry textureTypeEntries[];
-	static StringMap<TextureType, TYPE_MAX_ENUM> textureTypes;
-};
+	void setupGrab();
+	void drawv(const Matrix &t, const Vertex *v);
+
+}; // Canvas
 
 } // opengl
 } // graphics

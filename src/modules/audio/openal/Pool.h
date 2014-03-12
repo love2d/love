@@ -36,6 +36,7 @@
 #ifdef LOVE_MACOSX_USE_FRAMEWORKS
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
+#include <OpenAL-Soft/alext.h>
 #else
 #include <AL/alc.h>
 #include <AL/al.h>
@@ -99,11 +100,15 @@ private:
 
 	bool findSource(Source *source, ALuint &out);
 	bool removeSource(Source *source);
-	// Number of OpenAL sources.
-	static const int NUM_SOURCES = 64;
+
+	// Maximum possible number of OpenAL sources the pool attempts to generate.
+	static const int MAX_SOURCES = 64;
 
 	// OpenAL sources
-	ALuint sources[NUM_SOURCES];
+	ALuint sources[MAX_SOURCES];
+
+	// Total number of created sources in the pool.
+	int totalSources;
 
 	// A queue of available sources.
 	std::queue<ALuint> available;

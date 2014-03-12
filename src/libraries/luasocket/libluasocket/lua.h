@@ -1,3 +1,6 @@
+#ifndef LUA_WRAP_H
+#define LUA_WRAP_H
+
 #define LUA_COMPAT_ALL
 #include <lua.h>
 #include <lualib.h>
@@ -10,3 +13,5 @@
 
 extern int luax_typerror(lua_State *L, int narg, const char *type);
 #endif
+
+#endif // LUA_WRAP_H

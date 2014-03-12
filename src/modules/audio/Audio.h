@@ -67,7 +67,7 @@ public:
 	/**
 	 * Destructor.
 	 **/
-	virtual ~Audio() {};
+	virtual ~Audio() {}
 
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;
 	virtual Source *newSource(love::sound::SoundData *soundData) = 0;
@@ -88,7 +88,7 @@ public:
 	 * Play the specified Source.
 	 * @param source The Source to play.
 	 **/
-	virtual void play(Source *source) = 0;
+	virtual bool play(Source *source) = 0;
 
 	/**
 	 * Stops playback on the specified source.

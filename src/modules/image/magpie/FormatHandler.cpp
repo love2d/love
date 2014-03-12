@@ -18,16 +18,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_IMAGE_DATA_H
-#define LOVE_IMAGE_MAGPIE_IMAGE_DATA_H
-
 // LOVE
 #include "FormatHandler.h"
-#include "filesystem/File.h"
-#include "image/ImageData.h"
-
-// C++
-#include <list>
+#include "common/Exception.h"
 
 namespace love
 {
@@ -36,33 +29,34 @@ namespace image
 namespace magpie
 {
 
-class ImageData : public love::image::ImageData
+FormatHandler::FormatHandler()
 {
-public:
+}
 
-	ImageData(std::list<FormatHandler *> formats, love::filesystem::FileData *data);
-	ImageData(std::list<FormatHandler *> formats, int width, int height);
-	ImageData(std::list<FormatHandler *> formats, int width, int height, void *data, bool own);
-	virtual ~ImageData();
+FormatHandler::~FormatHandler()
+{
+}
 
-	// Implements image::ImageData.
-	virtual void encode(love::filesystem::File *f, ImageData::Format format);
+bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
+{
+	return false;
+}
 
-private:
+bool FormatHandler::canEncode(ImageData::Format /*format*/)
+{
+	return false;
+}
 
-	// Create imagedata. Initialize with data if not null.
-	void create(int width, int height, void *data = 0);
+FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*data*/)
+{
+	throw love::Exception("Image decoding is not implemented for this format backend.");
+}
 
-	// Decode and load an encoded format.
-	void decode(love::filesystem::FileData *data);
-
-	// Image format handlers we can use for decoding and encoding.
-	std::list<FormatHandler *> formatHandlers;
-
-}; // ImageData
+FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::Format /*format*/)
+{
+	throw love::Exception("Image encoding is not implemented for this format backend.");
+}
 
 } // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_IMAGE_DATA_H

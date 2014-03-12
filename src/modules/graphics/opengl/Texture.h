@@ -48,12 +48,12 @@ public:
 	 * Any setup the texture might need to do before drawing, e.g. binding
 	 * the OpenGL texture for use.
 	 **/
-	virtual void predraw() const {}
+	virtual void predraw() {}
 
 	/**
 	 * Any cleanup the texture might need to do directly after drawing.
 	 **/
-	virtual void postdraw() const {}
+	virtual void postdraw() {}
 
 
 }; // Texture

@@ -63,26 +63,26 @@ Window::~Window()
 Window::_currentMode::_currentMode()
 	: width(800)
 	, height(600)
-	, attribs()
+	, settings()
 	, icon(0)
 {
 }
 
-bool Window::setWindow(int width, int height, WindowAttributes *attribs)
+bool Window::setWindow(int width, int height, WindowSettings *settings)
 {
 	graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
-	if (gfx)
+	if (gfx != nullptr)
 		gfx->unSetMode();
 
-	WindowAttributes f;
+	WindowSettings f;
 
-	if (attribs)
-		f = *attribs;
+	if (settings)
+		f = *settings;
 
 	f.minwidth = std::max(f.minwidth, 1);
 	f.minheight = std::max(f.minheight, 1);
 
-	f.display = std::min(std::max(f.display, 0), getDisplayCount());
+	f.display = std::min(std::max(f.display, 0), getDisplayCount() - 1);
 
 	// Use the desktop resolution if a width or height of 0 is specified.
 	if (width == 0 || height == 0)
@@ -116,15 +116,28 @@ bool Window::setWindow(int width, int height, WindowAttributes *attribs)
 	if (f.borderless)
 		sdlflags |= SDL_WINDOW_BORDERLESS;
 
+#if SDL_VERSION_ATLEAST(2,0,1)
+	if (f.highdpi)
+		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
+#endif
+
 	// Destroy and recreate the window if the dimensions or flags have changed.
 	if (window)
 	{
 		int curdisplay = SDL_GetWindowDisplayIndex(window);
 		Uint32 wflags = SDL_GetWindowFlags(window);
-		wflags &= (SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS);
+
+		Uint32 testflags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP
+			| SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+		testflags |= SDL_WINDOW_ALLOW_HIGHDPI;
+#endif
+
+		wflags &= testflags;
 
 		if (sdlflags != wflags || width != curMode.width || height != curMode.height
-			|| f.display != curdisplay || f.fsaa != curMode.attribs.fsaa)
+			|| f.display != curdisplay || f.fsaa != curMode.settings.fsaa)
 		{
 			SDL_DestroyWindow(window);
 			window = 0;
@@ -141,7 +154,7 @@ bool Window::setWindow(int width, int height, WindowAttributes *attribs)
 	if (!window)
 	{
 		// In Windows and Linux, some GL attributes are set on window creation.
-		setWindowGLAttributes(f.fsaa);
+		setWindowGLAttributes(f.fsaa, f.sRGB);
 
 		const char *title = windowTitle.c_str();
 		int pos = f.centered ? centeredpos : uncenteredpos;
@@ -177,15 +190,24 @@ bool Window::setWindow(int width, int height, WindowAttributes *attribs)
 
 	SDL_RaiseWindow(window);
 
-	if (!setContext(f.fsaa, f.vsync))
+	if (!setContext(f.fsaa, f.vsync, f.sRGB))
 		return false;
 
 	created = true;
 
-	updateAttributes(f);
+	updateSettings(f);
 
-	if (gfx)
-		gfx->setMode(curMode.width, curMode.height);
+	if (gfx != nullptr)
+	{
+		int width = curMode.width;
+		int height = curMode.height;
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+		SDL_GL_GetDrawableSize(window, &width, &height);
+#endif
+
+		gfx->setMode(width, height, curMode.settings.sRGB);
+	}
 
 	// Make sure the mouse keeps its previous grab setting.
 	setMouseGrab(mouseGrabbed);
@@ -204,7 +226,7 @@ bool Window::onWindowResize(int width, int height)
 	return true;
 }
 
-bool Window::setContext(int fsaa, bool vsync)
+bool Window::setContext(int fsaa, bool vsync, bool sRGB)
 {
 	// We would normally only need to recreate the context if FSAA changes or
 	// SDL_GL_MakeCurrent is unsuccessful, but in Windows MakeCurrent can
@@ -216,7 +238,7 @@ bool Window::setContext(int fsaa, bool vsync)
 	}
 
 	// Make sure the proper attributes are set.
-	setWindowGLAttributes(fsaa);
+	setWindowGLAttributes(fsaa, sRGB);
 
 	context = SDL_GL_CreateContext(window);
 
@@ -226,6 +248,18 @@ bool Window::setContext(int fsaa, bool vsync)
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		context = SDL_GL_CreateContext(window);
+	}
+
+	if (!context)
+	{
+		int flags = 0;
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &flags);
+		if (flags & SDL_GL_CONTEXT_DEBUG_FLAG)
+		{
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+			context = SDL_GL_CreateContext(window);
+		}
 	}
 
 	if (!context)
@@ -250,13 +284,13 @@ bool Window::setContext(int fsaa, bool vsync)
 		fsaa = (buffers > 0) ? samples : 0;
 	}
 
-	curMode.attribs.fsaa = fsaa;
-	curMode.attribs.vsync = SDL_GL_GetSwapInterval() != 0;
+	curMode.settings.fsaa = fsaa;
+	curMode.settings.vsync = SDL_GL_GetSwapInterval() != 0;
 
 	return true;
 }
 
-void Window::setWindowGLAttributes(int fsaa) const
+void Window::setWindowGLAttributes(int fsaa, bool /* sRGB */) const
 {
 	// Set GL window attributes.
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -269,9 +303,31 @@ void Window::setWindowGLAttributes(int fsaa) const
 	// FSAA.
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
+
+	/* FIXME: Enable this code but make sure to try to re-create the window and
+	 * context with this disabled, if creation fails with it enabled.
+	 * We can leave this out for now because in practice the framebuffer will
+	 * already be sRGB-capable (on desktops at least.)
+#if SDL_VERSION_ATLEAST(2,0,1)
+	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
+#endif
+	 */
+
+	// Do we want a debug context?
+	const char *debugenv = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
+	if (debugenv && *debugenv == '1')
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	}
+	else
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+	}
 }
 
-void Window::updateAttributes(const WindowAttributes &newattribs)
+void Window::updateSettings(const WindowSettings &newsettings)
 {
 	Uint32 wflags = SDL_GetWindowFlags(window);
 
@@ -280,54 +336,59 @@ void Window::updateAttributes(const WindowAttributes &newattribs)
 
 	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
 	{
-		curMode.attribs.fullscreen = true;
-		curMode.attribs.fstype = FULLSCREEN_TYPE_DESKTOP;
+		curMode.settings.fullscreen = true;
+		curMode.settings.fstype = FULLSCREEN_TYPE_DESKTOP;
 	}
 	else if ((wflags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
 	{
-		curMode.attribs.fullscreen = true;
-		curMode.attribs.fstype = FULLSCREEN_TYPE_NORMAL;
+		curMode.settings.fullscreen = true;
+		curMode.settings.fstype = FULLSCREEN_TYPE_NORMAL;
 	}
 	else
 	{
-		curMode.attribs.fullscreen = false;
-		curMode.attribs.fstype = newattribs.fstype;
+		curMode.settings.fullscreen = false;
+		curMode.settings.fstype = newsettings.fstype;
 	}
 
 	// The min width/height is set to 0 internally in SDL when in fullscreen.
-	if (curMode.attribs.fullscreen)
+	if (curMode.settings.fullscreen)
 	{
-		curMode.attribs.minwidth = newattribs.minwidth;
-		curMode.attribs.minheight = newattribs.minheight;
+		curMode.settings.minwidth = newsettings.minwidth;
+		curMode.settings.minheight = newsettings.minheight;
 	}
 	else
-		SDL_GetWindowMinimumSize(window, &curMode.attribs.minwidth, &curMode.attribs.minheight);
+		SDL_GetWindowMinimumSize(window, &curMode.settings.minwidth, &curMode.settings.minheight);
 
-	curMode.attribs.resizable = (wflags & SDL_WINDOW_RESIZABLE) != 0;
-	curMode.attribs.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
-	curMode.attribs.centered = newattribs.centered;
-	curMode.attribs.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+	curMode.settings.resizable = (wflags & SDL_WINDOW_RESIZABLE) != 0;
+	curMode.settings.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
+	curMode.settings.centered = newsettings.centered;
+	curMode.settings.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+	curMode.settings.highdpi = (wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+#else
+	curMode.settings.highdpi = false;
+#endif
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen
-	// mode (mimics behaviour of SDL 2.0.2+).
-	// In OS X we always disable this to prevent dock minimization weirdness.
-#ifndef LOVE_MACOSX
-	if (curMode.attribs.fullscreen && curMode.attribs.fstype == FULLSCREEN_TYPE_NORMAL)
+	// mode.
+	if (curMode.settings.fullscreen && curMode.settings.fstype == FULLSCREEN_TYPE_NORMAL)
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
 	else
-#endif
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+
+	curMode.settings.sRGB = newsettings.sRGB;
 }
 
-void Window::getWindow(int &width, int &height, WindowAttributes &attribs)
+void Window::getWindow(int &width, int &height, WindowSettings &settings)
 {
-	// Window position may be different from creation - update display index.
+	// The window might have been modified (moved, resized, etc.) by the user.
 	if (window)
-		curMode.attribs.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+		updateSettings(curMode.settings);
 
 	width = curMode.width;
 	height = curMode.height;
-	attribs = curMode.attribs;
+	settings = curMode.settings;
 }
 
 bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
@@ -335,9 +396,9 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (!window)
 		return false;
 
-	WindowAttributes newattribs = curMode.attribs;
-	newattribs.fullscreen = fullscreen;
-	newattribs.fstype = fstype;
+	WindowSettings newsettings = curMode.settings;
+	newsettings.fullscreen = fullscreen;
+	newsettings.fstype = fstype;
 
 	Uint32 sdlflags = 0;
 
@@ -361,12 +422,21 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
 	{
 		SDL_GL_MakeCurrent(window, context);
-		updateAttributes(newattribs);
+		updateSettings(newsettings);
 
 		// Update the viewport size now instead of waiting for event polling.
 		graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
-		if (gfx)
-			gfx->setViewportSize(curMode.width, curMode.height);
+		if (gfx != nullptr)
+		{
+			int width = curMode.width;
+			int height = curMode.height;
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+			SDL_GL_GetDrawableSize(window, &width, &height);
+#endif
+
+			gfx->setViewportSize(width, height);
+		}
 
 		return true;
 	}
@@ -376,7 +446,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 
 bool Window::setFullscreen(bool fullscreen)
 {
-	return setFullscreen(fullscreen, curMode.attribs.fstype);
+	return setFullscreen(fullscreen, curMode.settings.fstype);
 }
 
 int Window::getDisplayCount() const
@@ -557,6 +627,26 @@ bool Window::isMouseGrabbed() const
 		return (bool) SDL_GetWindowGrab(window);
 	else
 		return mouseGrabbed;
+}
+
+double Window::getPixelScale() const
+{
+	double scale = 1.0;
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+	if (window)
+	{
+		int wheight;
+		SDL_GetWindowSize(window, nullptr, &wheight);
+
+		int dheight = wheight;
+		SDL_GL_GetDrawableSize(window, nullptr, &dheight);
+
+		scale = (double) dheight / wheight;
+	}
+#endif
+
+	return scale;
 }
 
 const void *Window::getHandle() const

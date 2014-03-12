@@ -401,7 +401,7 @@ extern "C" { // Also called from luasocket
 template <typename T>
 T *luax_checktype(lua_State *L, int idx, const char *name, love::bits type)
 {
-	if (lua_isuserdata(L, idx) == 0)
+	if (lua_type(L, idx) != LUA_TUSERDATA)
 		luax_typerror(L, idx, name);
 
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);

@@ -42,6 +42,16 @@ class Shape;
 class Fixture;
 
 /**
+ * This struct is stored in a void pointer in the Box2D Body class. For now, all
+ * we need is a Lua reference to arbitrary data, but we might need more later.
+ **/
+struct bodyudata
+{
+	// Reference to arbitrary data.
+	Reference *ref;
+};
+
+/**
  * A Body is an entity which has position and orientation
  * in world space. A Body does have collision geometry
  * by itself, but depend on an arbitrary number of child Shape objects
@@ -388,6 +398,18 @@ public:
 	 **/
 	void destroy();
 
+	/**
+	 * This function stores an in-C reference to
+	 * arbitrary Lua data in the Box2D Body object.
+	 **/
+	int setUserData(lua_State *L);
+
+	/**
+	 * Gets the data set with setData. If no
+	 * data is set, nil is returned.
+	 **/
+	int getUserData(lua_State *L);
+
 private:
 
 	/**
@@ -408,7 +430,10 @@ private:
 	// This ensures that a World only can be destroyed
 	// once all bodies have been destroyed too.
 	World *world;
-};
+
+	bodyudata *udata;
+
+}; // Body
 
 } // box2d
 } // physics

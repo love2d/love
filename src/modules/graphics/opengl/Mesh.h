@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_MESH_H
 
 // LOVE
+#include "common/config.h"
 #include "common/int.h"
 #include "common/math.h"
 #include "common/StringMap.h"
@@ -64,6 +65,16 @@ public:
 	 * @param mode The draw mode to use when drawing the Mesh.
 	 **/
 	Mesh(const std::vector<Vertex> &verts, DrawMode mode = DRAW_MODE_FAN);
+
+	/**
+	 * Constructor.
+	 * Creates a Mesh with a certain number of default-initialized (hidden)
+	 * vertices.
+	 * @param vertexcount The number of vertices to use in the Mesh.
+	 * @param mode The draw mode to use when drawing the Mesh.
+	 **/
+	Mesh(int vertexcount, DrawMode mode = DRAW_MODE_FAN);
+
 	virtual ~Mesh();
 
 	/**
@@ -98,16 +109,24 @@ public:
 	void setVertexMap(const std::vector<uint32> &map);
 
 	/**
-	 * Gets a pointer to the vertex map array. The pointer is only valid until
-	 * the next function call in the graphics module.
-	 * May return null if the vertex map is empty.
+	 * Fills the uint32 vector passed into the method with the previously set
+	 * vertex map (index buffer) values.
 	 **/
-	const uint32 *getVertexMap() const;
+	void getVertexMap(std::vector<uint32> &map) const;
 
 	/**
 	 * Gets the total number of elements in the vertex map array.
 	 **/
 	size_t getVertexMapCount() const;
+
+	/**
+	 * Sets the number of instances of this Mesh to draw (uses hardware
+	 * instancing when possible.)
+	 * A custom vertex shader is necessary in order to introduce differences
+	 * in each instance.
+	 **/
+	void setInstanceCount(int count);
+	int getInstanceCount() const;
 
 	/**
 	 * Sets the texture used when drawing the Mesh.
@@ -131,6 +150,10 @@ public:
 	void setDrawMode(DrawMode mode);
 	DrawMode getDrawMode() const;
 
+	void setDrawRange(int min, int max);
+	void setDrawRange();
+	void getDrawRange(int &min, int &max) const;
+
 	/**
 	 * Sets whether per-vertex colors are enabled. If this is disabled, the
 	 * global color (love.graphics.setColor) will be used for the entire Mesh.
@@ -138,17 +161,8 @@ public:
 	void setVertexColors(bool enable);
 	bool hasVertexColors() const;
 
-	/**
-	 * Sets whether the Mesh will be drawn as wireframe lines instead of filled
-	 * triangles (has no effect for DRAW_MODE_POINTS.)
-	 * This should only be used as a debugging tool. The wireframe lines do not
-	 * behave the same as regular love.graphics lines.
-	 **/
-	void setWireframe(bool enable);
-	bool isWireframe() const;
-
 	// Implements Drawable.
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
@@ -156,6 +170,7 @@ public:
 private:
 
 	GLenum getGLDrawMode(DrawMode mode) const;
+	GLenum getGLDataTypeFromMax(size_t maxvalue) const;
 
 	// Vertex buffer.
 	VertexBuffer *vbo;
@@ -164,15 +179,19 @@ private:
 	// Element (vertex index) buffer, for the vertex map.
 	VertexBuffer *ibo;
 	size_t element_count;
+	GLenum element_data_type;
+
+	int instance_count;
 
 	DrawMode draw_mode;
+
+	int range_min;
+	int range_max;
 
 	Texture *texture;
 
 	// Whether the per-vertex colors are used when drawing.
 	bool colors_enabled;
-
-	bool wireframe;
 
 	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM> drawModes;

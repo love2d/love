@@ -65,7 +65,7 @@ public:
 		INSERT_MODE_TOP,
 		INSERT_MODE_BOTTOM,
 		INSERT_MODE_RANDOM,
-		INSERT_MODE_MAX_ENUM,
+		INSERT_MODE_MAX_ENUM
 	};
 
 	/**
@@ -131,12 +131,12 @@ public:
 	 * Sets the emission rate.
 	 * @param rate The amount of particles per second.
 	 **/
-	void setEmissionRate(int rate);
+	void setEmissionRate(float rate);
 
 	/**
 	 * Returns the number of particles created per second.
 	 **/
-	int getEmissionRate() const;
+	float getEmissionRate() const;
 
 	/**
 	 * Sets the lifetime of the particle emitter (-1 means eternal)
@@ -175,6 +175,15 @@ public:
 	 * Returns the position of the emitter.
 	 **/
 	const love::Vector &getPosition() const;
+
+	/**
+	 * Moves the position of the center of the emitter.
+	 * When update is called, newly spawned particles will appear in a line
+	 * between the old emitter position and where the emitter was moved to,
+	 * resulting in a smoother-feeling particle system if moveTo is called
+	 * repeatedly.
+	 **/
+	void moveTo(float x, float y);
 
 	/**
 	 * Sets the emission area spread parameters and distribution type. The interpretation of
@@ -413,6 +422,12 @@ public:
 	std::vector<Color> getColor() const;
 
 	/**
+	 * sets whether particle angles & rotations are relative to their velocities.
+	 **/
+	void setRelativeRotation(bool enable);
+	bool hasRelativeRotation() const;
+
+	/**
 	 * Returns the amount of particles that are currently active in the system.
 	 **/
 	uint32 getCount() const;
@@ -470,7 +485,7 @@ public:
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
 	 **/
-	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const;
+	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Updates the particle system.
@@ -485,11 +500,12 @@ public:
 	static bool getConstant(InsertMode in, const char *&out);
 
 protected:
+
 	// Represents a single particle.
-	struct particle
+	struct Particle
 	{
-		particle *prev;
-		particle *next;
+		Particle *prev;
+		Particle *next;
 
 		float lifetime;
 		float life;
@@ -509,7 +525,8 @@ protected:
 		float sizeOffset;
 		float sizeIntervalSize;
 
-		float rotation;
+		float rotation; // Amount of rotation applied to the final angle.
+		float angle;
 		float spinStart;
 		float spinEnd;
 
@@ -517,16 +534,16 @@ protected:
 	};
 
 	// Pointer to the beginning of the allocated memory.
-	particle *pMem;
+	Particle *pMem;
 
 	// Pointer to a free particle.
-	particle *pFree;
+	Particle *pFree;
 
 	// Pointer to the start of the linked list.
-	particle *pHead;
+	Particle *pHead;
 
 	// Pointer to the end of the linked list.
-	particle *pTail;
+	Particle *pTail;
 
 	// array of transformed vertex data for all particles, for drawing
 	Vertex *particleVerts;
@@ -547,13 +564,14 @@ protected:
 	uint32 activeParticles;
 
 	// The emission rate (particles/sec).
-	int emissionRate;
+	float emissionRate;
 
 	// Used to determine when a particle should be emitted.
 	float emitCounter;
 
 	// The relative position of the particle emitter.
 	love::Vector position;
+	love::Vector prevPosition;
 
 	// Emission area spread.
 	AreaSpreadDistribution areaSpreadDistribution;
@@ -607,17 +625,19 @@ protected:
 	// Color.
 	std::vector<Colorf> colors;
 
+	bool relativeRotation;
+
 	void createBuffers(size_t size);
 	void deleteBuffers();
 
-	void addParticle();
-	particle *removeParticle(particle *p);
+	void addParticle(float t);
+	Particle *removeParticle(Particle *p);
 
 	// Called by addParticle.
-	void initParticle(particle *p);
-	void insertTop(particle *p);
-	void insertBottom(particle *p);
-	void insertRandom(particle *p);
+	void initParticle(Particle *p, float t);
+	void insertTop(Particle *p);
+	void insertBottom(Particle *p);
+	void insertRandom(Particle *p);
 
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM> distributions;

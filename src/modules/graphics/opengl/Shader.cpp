@@ -70,7 +70,9 @@ Shader::Shader(const ShaderSources &sources)
 	: shaderSources(sources)
 	, program(0)
 	, builtinUniforms()
+	, vertexAttributes()
 	, lastCanvas((Canvas *) -1)
+	, lastViewport()
 {
 	if (shaderSources.empty())
 		throw love::Exception("Cannot create shader: no source code!");
@@ -181,6 +183,14 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 	for (it = shaderids.begin(); it != shaderids.end(); ++it)
 		glAttachShader(program, *it);
 
+	// Bind generic vertex attribute indices to names in the shader.
+	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
+	{
+		const char *name = nullptr;
+		if (attribNames.find((OpenGL::VertexAttrib) i, name))
+			glBindAttribLocation(program, i, (const GLchar *) name);
+	}
+
 	glLinkProgram(program);
 
 	// flag shaders for auto-deletion when the program object is deleted.
@@ -272,6 +282,15 @@ bool Shader::loadVolatile()
 
 	// Retreive all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
+
+	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
+	{
+		const char *name = nullptr;
+		if (attribNames.find(OpenGL::VertexAttrib(i), name))
+			vertexAttributes[i] = glGetAttribLocation(program, name);
+		else
+			vertexAttributes[i] = -1;
+	}
 
 	if (current == this)
 	{
@@ -633,6 +652,11 @@ int Shader::getTextureUnit(const std::string &name)
 	return texunit;
 }
 
+bool Shader::hasVertexAttrib(OpenGL::VertexAttrib attrib) const
+{
+	return vertexAttributes[int(attrib)] != -1;
+}
+
 bool Shader::hasBuiltinExtern(BuiltinExtern builtin) const
 {
 	return builtinUniforms[int(builtin)] != -1;
@@ -670,30 +694,42 @@ bool Shader::sendBuiltinFloat(BuiltinExtern builtin, int size, const GLfloat *ve
 
 void Shader::checkSetScreenParams()
 {
-	if (lastCanvas == Canvas::current)
+	OpenGL::Viewport view = gl.getViewport();
+
+	if (view == lastViewport && lastCanvas == Canvas::current)
 		return;
 
-	// In the shader, we do pixcoord.y = gl_FragCoord.y * params[0] + params[1].
+	// In the shader, we do pixcoord.y = gl_FragCoord.y * params.z + params.w.
 	// This lets us flip pixcoord.y when needed, to be consistent (Canvases
 	// have flipped y-values for pixel coordinates.)
-	GLfloat params[] = {0.0f, 0.0f};
+	GLfloat params[] = {
+		(GLfloat) view.w, (GLfloat) view.h,
+		0.0f, 0.0f,
+	};
 
 	if (Canvas::current != nullptr)
 	{
 		// gl_FragCoord.y is flipped in Canvases, so we un-flip:
 		// pixcoord.y = gl_FragCoord.y * -1.0 + height.
-		params[0] = -1.0f;
-		params[1] = (float) Canvas::current->getHeight();
+		params[2] = -1.0f;
+		params[3] = (GLfloat) view.h;
 	}
 	else
 	{
 		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
-		params[0] = 1.0f;
-		params[1] = 0.0f;
+		params[2] = 1.0f;
+		params[3] = 0.0f;
 	}
 
-	sendBuiltinFloat(BUILTIN_SCREEN_PARAMS, 2, params, 1);
+	sendBuiltinFloat(BUILTIN_SCREEN_SIZE, 4, params, 1);
+
 	lastCanvas = Canvas::current;
+	lastViewport = view;
+}
+
+const std::map<std::string, Object *> &Shader::getBoundRetainables() const
+{
+	return boundRetainables;
 }
 
 std::string Shader::getGLSLVersion()
@@ -730,9 +766,16 @@ StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntr
 
 StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM> Shader::typeNames(Shader::typeNameEntries, sizeof(Shader::typeNameEntries));
 
+StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
+{
+	{"love_PseudoInstanceID", OpenGL::ATTRIB_PSEUDO_INSTANCE_ID},
+};
+
+StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
+
 StringMap<Shader::BuiltinExtern, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
 {
-	{"love_ScreenParams", Shader::BUILTIN_SCREEN_PARAMS},
+	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
 };
 
 StringMap<Shader::BuiltinExtern, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));

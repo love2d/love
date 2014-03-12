@@ -47,7 +47,7 @@ public:
 	/**
 	 * Destructor.
 	 **/
-	virtual ~Image() {};
+	virtual ~Image() {}
 
 	/**
 	 * Creates new ImageData from FileData.

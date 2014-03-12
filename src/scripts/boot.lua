@@ -223,14 +223,13 @@ function love.createhandlers()
 
 end
 
-local is_fused_game = false
-local no_game_code = false
-
 local function uridecode(s)
 	return s:gsub("%%%x%x", function(str)
 		return string.char(tonumber(str:sub(2), 16))
 	end)
 end
+
+local no_game_code = false
 
 -- This can't be overriden.
 function love.boot()
@@ -248,35 +247,45 @@ function love.boot()
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, arg0)
-	is_fused_game = can_has_game
+	local is_fused_game = can_has_game
 	if love.arg.options.fused.set then
 		is_fused_game = true
 	end
 
+	love.filesystem.setFused(is_fused_game)
+
+	local identity = ""
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local nouri = o.game.arg[1]
 		if nouri:sub(1, 7) == "file://" then
 			nouri = uridecode(nouri:sub(8))
 		end
 		local full_source =  love.path.getfull(nouri)
-		local leaf = love.path.leaf(full_source)
-		leaf = leaf:gsub("^([%.]+)", "") -- strip leading "."'s
-		leaf = leaf:gsub("%.([^%.]+)$", "") -- strip extension
-		leaf = leaf:gsub("%.", "_") -- replace remaining "."'s with "_"
-		love.filesystem.setIdentity(leaf)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
+		
+		-- Use the name of the source .love as the identity for now.
+		identity = love.path.leaf(full_source)
+	else
+		-- Use the name of the exe as the identity for now.
+		identity = love.path.leaf(arg0)
 	end
+
+	identity = identity:gsub("^([%.]+)", "") -- strip leading "."'s
+	identity = identity:gsub("%.([^%.]+)$", "") -- strip extension
+	identity = identity:gsub("%.", "_") -- replace remaining "."'s with "_"
+	identity = #identity > 0 and identity or "lovegame"
+
+	-- When conf.lua is initially loaded, the main source should be checked
+	-- before the save directory (the identity should be appended.)
+	pcall(love.filesystem.setIdentity, identity, true)
 
 	if can_has_game and not (love.filesystem.exists("main.lua") or love.filesystem.exists("conf.lua")) then
 		no_game_code = true
 	end
 
-	love.filesystem.setFused(is_fused_game)
-
 	if not can_has_game then
 		love.nogame()
 	end
-
 end
 
 function love.init()
@@ -300,6 +309,8 @@ function love.init()
 			borderless = false,
 			resizable = false,
 			centered = true,
+			highdpi = false,
+			srgb = false,
 		},
 		modules = {
 			event = true,
@@ -342,6 +353,11 @@ function love.init()
 		c.console = true
 	end
 
+	-- Console hack
+	if c.console and love._openConsole then
+		love._openConsole()
+	end
+
 	-- Gets desired modules.
 	for k,v in ipairs{
 		"thread",
@@ -369,11 +385,6 @@ function love.init()
 		love.createhandlers()
 	end
 
-	-- Console hack
-	if c.console and love._openConsole then
-		love._openConsole()
-	end
-
 	-- Setup window here.
 	if c.window and c.modules.window then
 		assert(love.window.setMode(c.window.width, c.window.height,
@@ -388,6 +399,8 @@ function love.init()
 			borderless = c.window.borderless,
 			centered = c.window.centered,
 			display = c.window.display,
+			highdpi = c.window.highdpi,
+			srgb = c.window.srgb,
 		}), "Could not set window mode")
 		love.window.setTitle(c.window.title or c.title)
 		if c.window.icon then
@@ -1373,8 +1386,9 @@ function love.nogame()
 		local ox = rain.ox
 		local oy = rain.oy
 
-		local batch_w = 2 * math.ceil(love.graphics.getWidth() / sx) + 2
-		local batch_h = 2 * math.ceil(love.graphics.getHeight() / sy) + 2
+		local m = 1 / love.window.getPixelScale()
+		local batch_w = 2 * math.ceil(m * love.graphics.getWidth() / sx) + 2
+		local batch_h = 2 * math.ceil(m * love.graphics.getHeight() / sy) + 2
 
 		batch:clear()
 
@@ -1409,8 +1423,9 @@ function love.nogame()
 		g_time = g_time + dt / 2
 		local int, frac = math.modf(g_time)
 		update_rain(frac)
-		inspector.x = love.graphics.getWidth() * 0.45
-		inspector.y = love.graphics.getHeight() * 0.55
+		local scale = love.window.getPixelScale()
+		inspector.x = love.graphics.getWidth() * 0.45 / scale
+		inspector.y = love.graphics.getHeight() * 0.55 / scale
 	end
 
 	local function draw_grid()
@@ -1481,8 +1496,13 @@ function love.nogame()
 	function love.draw()
 		love.graphics.setColor(255, 255, 255)
 
+		love.graphics.push()
+		love.graphics.scale(love.window.getPixelScale())
+
 		draw_grid()
 		draw_inspector()
+
+		love.graphics.pop()
 	end
 	
 	function love.keyreleased(key)
@@ -1498,6 +1518,7 @@ function love.nogame()
 		t.modules.physics = false
 		t.modules.joystick = false
 		t.window.resizable = true
+		t.window.highdpi = true
 	end
 end
 

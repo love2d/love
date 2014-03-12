@@ -94,6 +94,7 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, spinVariation(0)
 	, offsetX(float(texture->getWidth())*0.5f)
 	, offsetY(float(texture->getHeight())*0.5f)
+	, relativeRotation(false)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
@@ -118,6 +119,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, emissionRate(p.emissionRate)
 	, emitCounter(0.0f)
 	, position(p.position)
+	, prevPosition(p.prevPosition)
 	, areaSpreadDistribution(p.areaSpreadDistribution)
 	, areaSpread(p.areaSpread)
 	, lifetime(p.lifetime)
@@ -144,6 +146,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, offsetX(p.offsetX)
 	, offsetY(p.offsetY)
 	, colors(p.colors)
+	, relativeRotation(p.relativeRotation)
 {
 	setBufferSize(maxParticles);
 
@@ -168,7 +171,7 @@ void ParticleSystem::createBuffers(size_t size)
 {
 	try
 	{
-		pFree = pMem = new particle[size];
+		pFree = pMem = new Particle[size];
 		particleVerts = new love::Vertex[size * 4];
 		maxParticles = (uint32) size;
 	}
@@ -205,14 +208,14 @@ uint32 ParticleSystem::getBufferSize() const
 	return maxParticles;
 }
 
-void ParticleSystem::addParticle()
+void ParticleSystem::addParticle(float t)
 {
 	if (isFull())
 		return;
 
 	// Gets a free particle and updates the allocation pointer.
-	particle *p = pFree++;
-	initParticle(p);
+	Particle *p = pFree++;
+	initParticle(p, t);
 
 	switch (insertMode)
 	{
@@ -231,9 +234,12 @@ void ParticleSystem::addParticle()
 	activeParticles++;
 }
 
-void ParticleSystem::initParticle(particle *p)
+void ParticleSystem::initParticle(Particle *p, float t)
 {
 	float min,max;
+
+	// Linearly interpolate between the previous and current emitter position.
+	love::Vector pos = prevPosition + (position - prevPosition) * t;
 
 	min = particleLifeMin;
 	max = particleLifeMax;
@@ -243,8 +249,8 @@ void ParticleSystem::initParticle(particle *p)
 		p->life = (float) rng.random(min, max);
 	p->lifetime = p->life;
 
-	p->position[0] = position.getX();
-	p->position[1] = position.getY();
+	p->position[0] = pos.x;
+	p->position[1] = pos.y;
 
 	switch (areaSpreadDistribution)
 	{
@@ -265,7 +271,7 @@ void ParticleSystem::initParticle(particle *p)
 	max = direction + spread/2.0f;
 	p->direction = (float) rng.random(min, max);
 
-	p->origin = position;
+	p->origin = pos;
 
 	min = speedMin;
 	max = speedMax;
@@ -294,10 +300,14 @@ void ParticleSystem::initParticle(particle *p)
 	p->spinEnd = calculate_variation(spinEnd, spinStart, spinVariation);
 	p->rotation = (float) rng.random(min, max);
 
+	p->angle = p->rotation;
+	if (relativeRotation)
+		p->angle += atan2f(p->speed.y, p->speed.x);
+
 	p->color = colors[0];
 }
 
-void ParticleSystem::insertTop(particle *p)
+void ParticleSystem::insertTop(Particle *p)
 {
 	if (pHead == nullptr)
 	{
@@ -313,7 +323,7 @@ void ParticleSystem::insertTop(particle *p)
 	pTail = p;
 }
 
-void ParticleSystem::insertBottom(particle *p)
+void ParticleSystem::insertBottom(Particle *p)
 {
 	if (pTail == nullptr)
 	{
@@ -329,7 +339,7 @@ void ParticleSystem::insertBottom(particle *p)
 	pHead = p;
 }
 
-void ParticleSystem::insertRandom(particle *p)
+void ParticleSystem::insertRandom(Particle *p)
 {
 	// Nonuniform, but 64-bit is so large nobody will notice. Hopefully.
 	uint64 pos = rng.rand() % ((int64) activeParticles + 1);
@@ -337,7 +347,7 @@ void ParticleSystem::insertRandom(particle *p)
 	// Special case where the particle gets inserted before the head.
 	if (pos == activeParticles)
 	{
-		particle *pA = pHead;
+		Particle *pA = pHead;
 		if (pA)
 			pA->prev = p;
 		p->prev = nullptr;
@@ -347,8 +357,8 @@ void ParticleSystem::insertRandom(particle *p)
 	}
 
 	// Inserts the particle after the randomly selected particle.
-	particle *pA = pMem + pos;
-	particle *pB = pA->next;
+	Particle *pA = pMem + pos;
+	Particle *pB = pA->next;
 	pA->next = p;
 	if (pB)
 		pB->prev = p;
@@ -358,12 +368,12 @@ void ParticleSystem::insertRandom(particle *p)
 	p->next = pB;
 }
 
-ParticleSystem::particle *ParticleSystem::removeParticle(particle *p)
+ParticleSystem::Particle *ParticleSystem::removeParticle(Particle *p)
 {
 	// The linked list is updated in this function and old pointers may be
 	// invalidated. The returned pointer will inform the caller of the new
 	// pointer to the next particle.
-	particle *pNext = nullptr;
+	Particle *pNext = nullptr;
 
 	// Removes the particle from the linked list.
 	if (p->prev)
@@ -428,14 +438,14 @@ ParticleSystem::InsertMode ParticleSystem::getInsertMode() const
 	return insertMode;
 }
 
-void ParticleSystem::setEmissionRate(int rate)
+void ParticleSystem::setEmissionRate(float rate)
 {
-	if (rate < 0)
+	if (rate < 0.0f)
 		throw love::Exception("Invalid emission rate");
 	emissionRate = rate;
 }
 
-int ParticleSystem::getEmissionRate() const
+float ParticleSystem::getEmissionRate() const
 {
 	return emissionRate;
 }
@@ -470,11 +480,17 @@ void ParticleSystem::getParticleLifetime(float *min, float *max) const
 void ParticleSystem::setPosition(float x, float y)
 {
 	position = love::Vector(x, y);
+	prevPosition = position;
 }
 
 const love::Vector &ParticleSystem::getPosition() const
 {
 	return position;
+}
+
+void ParticleSystem::moveTo(float x, float y)
+{
+	position = love::Vector(x, y);
 }
 
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y)
@@ -705,6 +721,16 @@ std::vector<Color> ParticleSystem::getColor() const
 	return ncolors;
 }
 
+void ParticleSystem::setRelativeRotation(bool enable)
+{
+	relativeRotation = enable;
+}
+
+bool ParticleSystem::hasRelativeRotation() const
+{
+	return relativeRotation;
+}
+
 uint32 ParticleSystem::getCount() const
 {
 	return activeParticles;
@@ -748,7 +774,7 @@ void ParticleSystem::emit(uint32 num)
 	num = std::min(num, maxParticles - activeParticles);
 
 	while(num--)
-		addParticle();
+		addParticle(1.0f);
 }
 
 bool ParticleSystem::isActive() const
@@ -776,7 +802,7 @@ bool ParticleSystem::isFull() const
 	return activeParticles == maxParticles;
 }
 
-void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) const
+void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	uint32 pCount = getCount();
 	if (pCount == 0 || texture == nullptr || pMem == nullptr || particleVerts == nullptr)
@@ -792,13 +818,13 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	const Vertex *textureVerts = texture->getVertices();
 	Vertex *pVerts = particleVerts;
-	particle *p = pHead;
+	Particle *p = pHead;
 
 	// set the vertex data for each particle (transformation, texcoords, color)
 	while (p)
 	{
 		// particle vertices are image vertices transformed by particle information
-		t.setTransformation(p->position[0], p->position[1], p->rotation, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
+		t.setTransformation(p->position[0], p->position[1], p->angle, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
 		t.transform(pVerts, textureVerts, 4);
 
 		// set the texture coordinate and color data for particle vertices
@@ -847,27 +873,8 @@ void ParticleSystem::update(float dt)
 	if (pMem == nullptr || dt == 0.0f)
 		return;
 
-	// Make some more particles.
-	if (active)
-	{
-		float rate = 1.0f / emissionRate; // the amount of time between each particle emit
-		emitCounter += dt;
-		while (emitCounter > rate)
-		{
-			addParticle();
-			emitCounter -= rate;
-		}
-		/*int particles = (int)(emissionRate * dt);
-		for (int i = 0; i != particles; i++)
-			add();*/
-
-		life -= dt;
-		if (lifetime != -1 && life < 0)
-			stop();
-	}
-
 	// Traverse all particles and update.
-	particle *p = pHead;
+	Particle *p = pHead;
 
 	while (p)
 	{
@@ -912,7 +919,12 @@ void ParticleSystem::update(float dt)
 			const float t = 1.0f - p->life / p->lifetime;
 
 			// Rotate.
-			p->rotation += (p->spinStart * (1.0f - t) + p->spinEnd * t)*dt;
+			p->rotation += (p->spinStart * (1.0f - t) + p->spinEnd * t) * dt;
+
+			p->angle = p->rotation;
+
+			if (relativeRotation)
+				p->angle += atan2f(p->speed.y, p->speed.x);
 
 			// Change size according to given intervals:
 			// i = 0       1       2      3          n-1
@@ -940,6 +952,28 @@ void ParticleSystem::update(float dt)
 			p = p->next;
 		}
 	}
+
+	// Make some more particles.
+	if (active)
+	{
+		float rate = 1.0f / emissionRate; // the amount of time between each particle emit
+		emitCounter += dt;
+		float total = emitCounter - rate;
+		while (emitCounter > rate)
+		{
+			addParticle(1.0f - (emitCounter - rate) / total);
+			emitCounter -= rate;
+		}
+		/*int particles = (int)(emissionRate * dt);
+		 for (int i = 0; i != particles; i++)
+		 add();*/
+
+		life -= dt;
+		if (lifetime != -1 && life < 0)
+			stop();
+	}
+
+	prevPosition = position;
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)
