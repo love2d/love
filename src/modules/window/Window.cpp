@@ -74,6 +74,16 @@ bool Window::getConstant(Window::Setting in, const char *&out)
 	return settings.find(in, out);
 }
 
+bool Window::getConstant(const char *in, MessageBoxType &out)
+{
+	return messageBoxTypes.find(in, out);
+}
+
+bool Window::getConstant(MessageBoxType in, const char *&out)
+{
+	return messageBoxTypes.find(in, out);
+}
+
 StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntries[] =
 {
 	{"fullscreen", SETTING_FULLSCREEN},
@@ -99,6 +109,15 @@ StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Windo
 };
 
 StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
+
+StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry Window::messageBoxTypeEntries[] =
+{
+	{"error", MESSAGEBOX_ERROR},
+	{"warning", MESSAGEBOX_WARNING},
+	{"info", MESSAGEBOX_INFO},
+};
+
+StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> Window::messageBoxTypes(Window::messageBoxTypeEntries, sizeof(Window::messageBoxTypeEntries));
 
 } // window
 } // love

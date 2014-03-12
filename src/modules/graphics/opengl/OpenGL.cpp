@@ -57,6 +57,14 @@ void OpenGL::initContext()
 	initOpenGLFunctions();
 	initVendor();
 
+	contextInitialized = true;
+}
+
+void OpenGL::setupContext()
+{
+	if (!contextInitialized)
+		return;
+
 	// Store the current color so we don't have to get it through GL later.
 	GLfloat glcolor[4];
 	glGetFloatv(GL_CURRENT_COLOR, glcolor);
@@ -80,36 +88,27 @@ void OpenGL::initContext()
 	glGetIntegerv(GL_SCISSOR_BOX, (GLint *) &state.scissor.x);
 	state.scissor.y = state.viewport.h - (state.scissor.y + state.scissor.h);
 
-	// Initialize multiple texture unit support for shaders, if available.
+	// Initialize multiple texture unit support for shaders.
 	state.textureUnits.clear();
-	if (Shader::isSupported())
+
+	GLint maxtextureunits;
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
+
+	state.textureUnits.resize(maxtextureunits, 0);
+
+	GLenum curgltextureunit;
+	glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
+
+	state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
+
+	// Retrieve currently bound textures for each texture unit.
+	for (size_t i = 0; i < state.textureUnits.size(); i++)
 	{
-		GLint maxtextureunits;
-		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
-
-		state.textureUnits.resize(maxtextureunits, 0);
-
-		GLenum curgltextureunit;
-		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
-
-		state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
-
-		// Retrieve currently bound textures for each texture unit.
-		for (size_t i = 0; i < state.textureUnits.size(); i++)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[i]);
-		}
-
-		glActiveTexture(curgltextureunit);
+		glActiveTexture(GL_TEXTURE0 + i);
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[i]);
 	}
-	else
-	{
-		// Multitexturing not supported, so we only have 1 texture unit.
-		state.textureUnits.resize(1, 0);
-		state.curTextureUnit = 0;
-		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[0]);
-	}
+
+	glActiveTexture(curgltextureunit);
 
 	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
 	setBlendState(blend);
@@ -118,8 +117,6 @@ void OpenGL::initContext()
 	createDefaultTexture();
 
 	state.lastPseudoInstanceID = -1;
-
-	contextInitialized = true;
 }
 
 void OpenGL::deInitContext()
@@ -158,31 +155,6 @@ void OpenGL::initVendor()
 
 void OpenGL::initOpenGLFunctions()
 {
-	// The functionality of the core and ARB VBOs are identical, so we can
-	// assign the pointers of the core functions to the names of the ARB
-	// functions, if the latter isn't supported but the former is.
-	if (GLEE_VERSION_1_5 && !GLEE_ARB_vertex_buffer_object)
-	{
-		glBindBufferARB = (GLEEPFNGLBINDBUFFERARBPROC) glBindBuffer;
-		glBufferDataARB = (GLEEPFNGLBUFFERDATAARBPROC) glBufferData;
-		glBufferSubDataARB = (GLEEPFNGLBUFFERSUBDATAARBPROC) glBufferSubData;
-		glDeleteBuffersARB = (GLEEPFNGLDELETEBUFFERSARBPROC) glDeleteBuffers;
-		glGenBuffersARB = (GLEEPFNGLGENBUFFERSARBPROC) glGenBuffers;
-		glGetBufferParameterivARB = (GLEEPFNGLGETBUFFERPARAMETERIVARBPROC) glGetBufferParameteriv;
-		glGetBufferPointervARB = (GLEEPFNGLGETBUFFERPOINTERVARBPROC) glGetBufferPointerv;
-		glGetBufferSubDataARB = (GLEEPFNGLGETBUFFERSUBDATAARBPROC) glGetBufferSubData;
-		glIsBufferARB = (GLEEPFNGLISBUFFERARBPROC) glIsBuffer;
-		glMapBufferARB = (GLEEPFNGLMAPBUFFERARBPROC) glMapBuffer;
-		glUnmapBufferARB = (GLEEPFNGLUNMAPBUFFERARBPROC) glUnmapBuffer;
-	}
-
-	// Same deal for compressed textures.
-	if (GLEE_VERSION_1_3 && !GLEE_ARB_texture_compression)
-	{
-		glCompressedTexImage2DARB = (GLEEPFNGLCOMPRESSEDTEXIMAGE2DARBPROC) glCompressedTexImage2D;
-		glCompressedTexSubImage2DARB = (GLEEPFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC) glCompressedTexSubImage2D;
-		glGetCompressedTexImageARB = (GLEEPFNGLGETCOMPRESSEDTEXIMAGEARBPROC) glGetCompressedTexImage;
-	}
 }
 
 void OpenGL::initMaxValues()
@@ -195,18 +167,13 @@ void OpenGL::initMaxValues()
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-	if (Canvas::isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers))
-	{
-		int maxattachments = 0;
-		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxattachments);
+	int maxattachments = 0;
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxattachments);
 
-		int maxdrawbuffers = 0;
-		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbuffers);
+	int maxdrawbuffers = 0;
+	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbuffers);
 
-		maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
-	}
-	else
-		maxRenderTargets = 0;
+	maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
 }
 
 void OpenGL::createDefaultTexture()
@@ -369,28 +336,8 @@ OpenGL::Viewport OpenGL::getScissor() const
 
 void OpenGL::setBlendState(const BlendState &blend)
 {
-	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging)
-		glBlendEquation(blend.func);
-	else if (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)
-		glBlendEquationEXT(blend.func);
-	else
-	{
-		if (blend.func == GL_FUNC_REVERSE_SUBTRACT)
-			throw love::Exception("This graphics card does not support the subtractive blend mode!");
-		// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
-	}
-
-	if (blend.srcRGB == blend.srcA && blend.dstRGB == blend.dstA)
-		glBlendFunc(blend.srcRGB, blend.dstRGB);
-	else
-	{
-		if (GLEE_VERSION_1_4)
-			glBlendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
-		else if (GLEE_EXT_blend_func_separate)
-			glBlendFuncSeparateEXT(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
-		else
-			throw love::Exception("This graphics card does not support separated rgb and alpha blend functions!");
-	}
+	glBlendEquation(blend.func);
+	glBlendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
 
 	state.blend = blend;
 }
@@ -406,12 +353,7 @@ void OpenGL::setTextureUnit(int textureunit)
 		throw love::Exception("Invalid texture unit index (%d).", textureunit);
 
 	if (textureunit != state.curTextureUnit)
-	{
-		if (state.textureUnits.size() > 1)
-			glActiveTexture(GL_TEXTURE0 + textureunit);
-		else
-			throw love::Exception("Multitexturing is not supported.");
-	}
+		glActiveTexture(GL_TEXTURE0 + textureunit);
 
 	state.curTextureUnit = textureunit;
 }
@@ -457,7 +399,7 @@ void OpenGL::deleteTexture(GLuint texture)
 	glDeleteTextures(1, &texture);
 }
 
-float OpenGL::setTextureFilter(graphics::Texture::Filter &f)
+void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 {
 	GLint gmin, gmag;
 
@@ -502,8 +444,8 @@ float OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 		f.anisotropy = std::min(std::max(f.anisotropy, 1.0f), maxAnisotropy);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, f.anisotropy);
 	}
-
-	return f.anisotropy;
+	else
+		f.anisotropy = 1.0f;
 }
 
 graphics::Texture::Filter OpenGL::getTextureFilter()

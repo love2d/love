@@ -734,11 +734,7 @@ const std::map<std::string, Object *> &Shader::getBoundRetainables() const
 
 std::string Shader::getGLSLVersion()
 {
-	const char *tmp = nullptr;
-
-	// GL_SHADING_LANGUAGE_VERSION isn't available in OpenGL < 2.0.
-	if (GLEE_VERSION_2_0 || GLEE_ARB_shading_language_100)
-		tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
+	const char *tmp = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 
 	if (tmp == nullptr)
 		return "0.0";
@@ -755,7 +751,7 @@ std::string Shader::getGLSLVersion()
 
 bool Shader::isSupported()
 {
-	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
+	return getGLSLVersion() >= "1.2";
 }
 
 StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntries[] =

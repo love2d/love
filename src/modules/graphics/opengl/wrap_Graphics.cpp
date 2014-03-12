@@ -344,9 +344,6 @@ int w_newCanvas(lua_State *L)
 
 int w_newShader(lua_State *L)
 {
-	if (!Shader::isSupported())
-		return luaL_error(L, "Sorry, your graphics card does not support shaders.");
-
 	// clamp stack to 2 elements
 	lua_settop(L, 2);
 
@@ -946,32 +943,12 @@ int w_isSupported(lua_State *L)
 
 		switch (support)
 		{
-		case Graphics::SUPPORT_CANVAS:
-			if (!Canvas::isSupported())
-				supported = false;
-			break;
 		case Graphics::SUPPORT_HDR_CANVAS:
 			if (!Canvas::isHDRSupported())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_MULTI_CANVAS:
 			if (!Canvas::isMultiCanvasSupported())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_SHADER:
-			if (!Shader::isSupported())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_NPOT:
-			if (!Image::hasNpot())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_SUBTRACTIVE:
-			if (!((GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)))
-				supported = false;
-			break;
-		case Graphics::SUPPORT_MIPMAP:
-			if (!Image::hasMipmapSupport())
 				supported = false;
 			break;
 		case Graphics::SUPPORT_DXT:

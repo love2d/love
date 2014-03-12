@@ -213,10 +213,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 		}
 
 		// set up multiple render targets
-		if (GLEE_VERSION_2_0)
-			glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
-		else if (GLEE_ARB_draw_buffers)
-			glDrawBuffersARB(drawbuffers.size(), &drawbuffers[0]);
+		glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 
@@ -342,10 +339,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		}
 
 		// set up multiple render targets
-		if (GLEE_VERSION_2_0)
-			glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
-		else if (GLEE_ARB_draw_buffers)
-			glDrawBuffersARB(drawbuffers.size(), &drawbuffers[0]);
+		glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 

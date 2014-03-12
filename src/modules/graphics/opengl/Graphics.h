@@ -473,6 +473,8 @@ private:
 
 	DisplayState savedState;
 
+	bool displayedMinReqWarning;
+
 }; // Graphics
 
 } // opengl

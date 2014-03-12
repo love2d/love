@@ -39,6 +39,14 @@ namespace window
 // whole thing here because it uses the Window::Type enum.
 struct WindowSettings;
 
+enum MessageBoxType
+{
+	MESSAGEBOX_ERROR,
+	MESSAGEBOX_WARNING,
+	MESSAGEBOX_INFO,
+	MESSAGEBOX_MAX_ENUM
+};
+
 class Window : public Module
 {
 public:
@@ -119,6 +127,8 @@ public:
 
 	virtual const void *getHandle() const = 0;
 
+	virtual void showMessageBox(MessageBoxType type, const char *title, const char *message) = 0;
+
 	//virtual static Window *createSingleton() = 0;
 	//virtual static Window *getSingleton() = 0;
 	// No virtual statics, of course, but you are supposed to implement these statics.
@@ -128,6 +138,9 @@ public:
 
 	static bool getConstant(const char *in, FullscreenType &out);
 	static bool getConstant(FullscreenType in, const char *&out);
+
+	static bool getConstant(const char *in, MessageBoxType &out);
+	static bool getConstant(MessageBoxType in, const char *&out);
 
 protected:
 
@@ -140,6 +153,9 @@ private:
 
 	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM>::Entry fullscreenTypeEntries[];
 	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM> fullscreenTypes;
+
+	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry messageBoxTypeEntries[];
+	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> messageBoxTypes;
 
 }; // Window
 

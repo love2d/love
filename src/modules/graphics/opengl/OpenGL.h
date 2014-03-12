@@ -104,10 +104,15 @@ public:
 	OpenGL();
 
 	/**
-	 * Initializes some required context state based on current and default
-	 * OpenGL state. Call this directly after creating an OpenGL context!
+	 * Initializes the active OpenGL context.
 	 **/
 	void initContext();
+
+	/**
+	 * Sets up some required context state based on current and default OpenGL
+	 * state. Call this directly after initializing an OpenGL context!
+	 **/
+	void setupContext();
 
 	/**
 	 * Marks current context state as invalid and deletes OpenGL objects owned
@@ -214,9 +219,10 @@ public:
 
 	/**
 	 * Sets the texture filter mode for the currently bound texture.
-	 * Returns the actual amount of anisotropic filtering set.
+	 * The anisotropy parameter of the argument is set to the actual amount of
+	 * anisotropy that was used.
 	 **/
-	float setTextureFilter(graphics::Texture::Filter &f);
+	void setTextureFilter(graphics::Texture::Filter &f);
 
 	/**
 	 * Returns the texture filter mode for the currently bound texture.

@@ -39,8 +39,6 @@ float Image::defaultMipmapSharpness = 0.0f;
 Image::Image(love::image::ImageData *data, Texture::Format format)
 	: data(data)
 	, cdata(nullptr)
-	, paddedWidth(width)
-	, paddedHeight(height)
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
@@ -58,8 +56,6 @@ Image::Image(love::image::ImageData *data, Texture::Format format)
 Image::Image(love::image::CompressedData *cdata, Texture::Format format)
 	: data(nullptr)
 	, cdata(cdata)
-	, paddedWidth(width)
-	, paddedHeight(height)
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, mipmapsCreated(false)
@@ -112,25 +108,10 @@ void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy,
 void Image::predraw()
 {
 	bind();
-
-	if (width != paddedWidth || height != paddedHeight)
-	{
-		// NPOT image padded to POT size, so the texcoords should be scaled.
-		glMatrixMode(GL_TEXTURE);
-		glPushMatrix();
-		glScalef(float(width) / float(paddedWidth), float(height) / float(paddedHeight), 0.0f);
-		glMatrixMode(GL_MODELVIEW);
-	}
 }
 
 void Image::postdraw()
 {
-	if (width != paddedWidth || height != paddedHeight)
-	{
-		glMatrixMode(GL_TEXTURE);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-	}
 }
 
 GLuint Image::getGLTexture() const
@@ -148,27 +129,18 @@ void Image::uploadCompressedMipmaps()
 	int count = cdata->getMipmapCount();
 
 	// We have to inform OpenGL if the image doesn't have all mipmap levels.
-	if (GLEE_VERSION_1_2 || GLEE_SGIS_texture_lod)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
-	}
-	else if (cdata->getWidth(count-1) > 1 || cdata->getHeight(count-1) > 1)
-	{
-		// Telling OpenGL to ignore certain levels isn't always supported.
-		throw love::Exception("Cannot load mipmaps: "
-		      "compressed image does not have all required levels.");
-	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
 
 	for (int i = 1; i < count; i++)
 	{
-		glCompressedTexImage2DARB(GL_TEXTURE_2D,
-		                          i,
-		                          getCompressedFormat(cdata->getFormat()),
-		                          cdata->getWidth(i),
-		                          cdata->getHeight(i),
-		                          0,
-		                          GLsizei(cdata->getSize(i)),
-		                          cdata->getData(i));
+		glCompressedTexImage2D(GL_TEXTURE_2D,
+		                       i,
+		                       getCompressedFormat(cdata->getFormat()),
+		                       cdata->getWidth(i),
+		                       cdata->getHeight(i),
+		                       0,
+		                       GLsizei(cdata->getSize(i)),
+		                       cdata->getData(i));
 	}
 }
 
@@ -177,9 +149,6 @@ void Image::createMipmaps()
 	// Only valid for Images created with ImageData.
 	if (!data || isCompressed())
 		return;
-
-	if (!hasMipmapSupport())
-		throw love::Exception("Mipmap filtering is not supported on this system.");
 
 	// Some old drivers claim support for NPOT textures, but fail when creating
 	// mipmaps. We can't detect which systems will do this, so we fail gracefully
@@ -196,7 +165,7 @@ void Image::createMipmaps()
 	// Prevent other threads from changing the ImageData while we upload it.
 	love::thread::Lock lock(data->getMutex());
 
-	if (hasNpot() && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
 	{
 		if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
 		{
@@ -266,18 +235,13 @@ void Image::setWrap(const Texture::Wrap &w)
 
 void Image::setMipmapSharpness(float sharpness)
 {
-	if (hasMipmapSharpnessSupport())
-	{
-		// LOD bias has the range (-maxbias, maxbias)
-		mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
+	// LOD bias has the range (-maxbias, maxbias)
+	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
-		bind();
+	bind();
 
-		// negative bias is sharper
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
-	}
-	else
-		mipmapSharpness = 0.0f;
+	// negative bias is sharper
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
 }
 
 float Image::getMipmapSharpness() const
@@ -345,28 +309,18 @@ bool Image::loadVolatile()
 			throw love::Exception("cannot create image: format is not supported on this system.");
 	}
 
-	if (hasMipmapSharpnessSupport() && maxMipmapSharpness == 0.0f)
+	if (maxMipmapSharpness == 0.0f)
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
 	glGenTextures(1, &texture);
 	gl.bindTexture(texture);
 
-	filter.anisotropy = gl.setTextureFilter(filter);
+	gl.setTextureFilter(filter);
 	gl.setTextureWrap(wrap);
 	setMipmapSharpness(mipmapSharpness);
 
-	paddedWidth = width;
-	paddedHeight = height;
-
-	if (!hasNpot())
-	{
-		// NPOT textures will be padded to POT dimensions if necessary.
-		paddedWidth = next_p2(width);
-		paddedHeight = next_p2(height);
-	}
-
 	// Use a default texture if the size is too big for the system.
-	if (paddedWidth > gl.getMaxTextureSize() || paddedHeight > gl.getMaxTextureSize())
+	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
 	{
 		uploadDefaultTexture();
 		return true;
@@ -379,10 +333,7 @@ bool Image::loadVolatile()
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
-	if (hasNpot() || (width == paddedWidth && height == paddedHeight))
-		uploadTexture();
-	else
-		uploadTexturePadded();
+	uploadTexture();
 
 	GLenum glerr = glGetError();
 	if (glerr != GL_NO_ERROR)
@@ -395,51 +346,19 @@ bool Image::loadVolatile()
 	return true;
 }
 
-void Image::uploadTexturePadded()
-{
-	if (isCompressed() && cdata)
-	{
-		// Padded textures don't really work if they're compressed...
-		throw love::Exception("Cannot create image: "
-		                      "compressed NPOT images are not supported on this system.");
-	}
-	else if (data)
-	{
-		GLenum iformat = (format == FORMAT_SRGB) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-		glTexImage2D(GL_TEXTURE_2D,
-		             0,
-		             iformat,
-		             (GLsizei)paddedWidth,
-		             (GLsizei)paddedHeight,
-		             0,
-		             GL_RGBA,
-		             GL_UNSIGNED_BYTE,
-		             0);
-
-		glTexSubImage2D(GL_TEXTURE_2D,
-		                0,
-		                0, 0,
-		                (GLsizei)width,
-		                (GLsizei)height,
-		                GL_RGBA,
-		                GL_UNSIGNED_BYTE,
-		                data->getData());
-	}
-}
-
 void Image::uploadTexture()
 {
 	if (isCompressed() && cdata)
 	{
 		GLenum format = getCompressedFormat(cdata->getFormat());
-		glCompressedTexImage2DARB(GL_TEXTURE_2D,
-		                          0,
-		                          format,
-		                          cdata->getWidth(0),
-		                          cdata->getHeight(0),
-		                          0,
-		                          GLsizei(cdata->getSize(0)),
-		                          cdata->getData(0));
+		glCompressedTexImage2D(GL_TEXTURE_2D,
+		                       0,
+		                       format,
+		                       cdata->getWidth(0),
+		                       cdata->getHeight(0),
+		                       0,
+		                       GLsizei(cdata->getSize(0)),
+		                       cdata->getData(0));
 	}
 	else if (data)
 	{
@@ -488,10 +407,7 @@ bool Image::refresh()
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
-	if (hasNpot() || (width == paddedWidth && height == paddedHeight))
-		uploadTexture();
-	else
-		uploadTexturePadded();
+	uploadTexture();
 
 	if (glGetError() != GL_NO_ERROR)
 		uploadDefaultTexture();
@@ -610,36 +526,13 @@ GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
 	}
 }
 
-bool Image::hasNpot()
-{
-	return GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two;
-}
-
 bool Image::hasAnisotropicFilteringSupport()
 {
 	return GLEE_EXT_texture_filter_anisotropic;
 }
 
-bool Image::hasMipmapSupport()
-{
-	return GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap;
-}
-
-bool Image::hasMipmapSharpnessSupport()
-{
-	return GLEE_VERSION_1_4;
-}
-
-bool Image::hasCompressedTextureSupport()
-{
-	return GLEE_VERSION_1_3 || GLEE_ARB_texture_compression;
-}
-
 bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 {
-	if (!hasCompressedTextureSupport())
-		return false;
-
 	switch (format)
 	{
 	case image::CompressedData::FORMAT_DXT1:

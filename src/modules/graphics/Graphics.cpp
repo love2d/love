@@ -158,13 +158,8 @@ StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM> Graphics::lineJoins(
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
 {
-	{ "canvas", Graphics::SUPPORT_CANVAS },
 	{ "hdrcanvas", Graphics::SUPPORT_HDR_CANVAS },
 	{ "multicanvas", Graphics::SUPPORT_MULTI_CANVAS },
-	{ "shader", Graphics::SUPPORT_SHADER },
-	{ "npot", Graphics::SUPPORT_NPOT },
-	{ "subtractive", Graphics::SUPPORT_SUBTRACTIVE },
-	{ "mipmap", Graphics::SUPPORT_MIPMAP },
 	{ "dxt", Graphics::SUPPORT_DXT },
 	{ "bc5", Graphics::SUPPORT_BC5 },
 	{ "instancing", Graphics::SUPPORT_INSTANCING },

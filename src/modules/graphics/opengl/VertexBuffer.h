@@ -36,15 +36,12 @@ namespace opengl
 {
 
 /**
- * VertexBuffer is an abstraction over VBOs (Vertex Buffer Objects), which
- * falls back to regular vertex arrays if VBOs are not supported.
- *
- * This allows code to take advantage of VBOs where available, but still
- * work on older systems where it's *not* available. Everyone's happy.
+ * VertexBuffer is a thin abstraction over VBOs (Vertex Buffer Objects) and
+ * other OpenGL Buffer Objects.
  *
  * The class is (for now) meant for internal use.
  */
-class VertexBuffer
+class VertexBuffer : public Volatile
 {
 public:
 
@@ -61,11 +58,7 @@ public:
 	};
 
 	/**
-	 * Create a new VertexBuffer (either a plain vertex array, or a VBO),
-	 * based on what's supported on the system.
-	 *
-	 * If VBOs are not supported, a plain vertex array will automatically
-	 * be created and returned instead.
+	 * Create a new VertexBuffer.
 	 *
 	 * @param size The size of the VertexBuffer (in bytes).
 	 * @param target GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER.
@@ -86,7 +79,7 @@ public:
 	VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacking backing = BACKING_PARTIAL);
 
 	/**
-	 * Destructor. Does nothing, but must be declared virtual.
+	 * Destructor.
 	 */
 	virtual ~VertexBuffer();
 
@@ -145,7 +138,7 @@ public:
 	 *
 	 * @return A pointer to memory which represents the buffer.
 	 */
-	virtual void *map() = 0;
+	virtual void *map();
 
 	/**
 	 * Unmap a previously mapped VertexBuffer. The buffer must be unmapped
@@ -153,18 +146,18 @@ public:
 	 *
 	 * The VertexBuffer must be bound to use this function.
 	 */
-	virtual void unmap() = 0;
+	virtual void unmap();
 
 	/**
 	 * Bind the VertexBuffer to its specified target.
 	 * (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, etc).
 	 */
-	virtual void bind() = 0;
+	virtual void bind();
 
 	/**
 	 * Unbind a prevously bound VertexBuffer.
 	 */
-	virtual void unbind() = 0;
+	virtual void unbind();
 
 	/**
 	 * Fill a portion of the buffer with data.
@@ -175,7 +168,7 @@ public:
 	 * @param size The size of the incoming data.
 	 * @param data Pointer to memory to copy data from.
 	 */
-	virtual void fill(size_t offset, size_t size, const void *data) = 0;
+	virtual void fill(size_t offset, size_t size, const void *data);
 
 	/**
 	 * Get a pointer which represents the specified byte offset.
@@ -183,7 +176,11 @@ public:
 	 * @param offset The byte offset. (0 is first byte).
 	 * @return A pointer which represents the offset.
 	 */
-	virtual const void *getPointer(size_t offset) const = 0;
+	virtual const void *getPointer(size_t offset) const;
+
+	// Implements Volatile.
+	virtual bool loadVolatile();
+	virtual void unloadVolatile();
 
 	/**
 	 * This helper class can bind a VertexArray temporarily, and
@@ -214,11 +211,13 @@ public:
 
 		// VertexBuffer to work on.
 		VertexBuffer &buf;
-	};
+
+	}; // Bind
 
 	class Mapper
 	{
 	public:
+
 		/**
 		 * Memory-maps a VertexBuffer.
 		 */
@@ -245,98 +244,11 @@ public:
 		}
 
 	private:
+
 		VertexBuffer &buf;
 		void *elems;
-	};
 
-protected:
-
-	// Whether the buffer is currently bound.
-	bool is_bound;
-
-	// Whether the buffer is currently mapped to main memory.
-	bool is_mapped;
-
-private:
-
-	// The size of the buffer, in bytes.
-	size_t size;
-
-	// The target buffer object. (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER).
-	GLenum target;
-
-	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
-	GLenum usage;
-
-	//
-	MemoryBacking backing;
-};
-
-/**
- * Implementation of VertexBuffer which uses plain arrays to store the data.
- *
- * This implementation should be supported everywhere, and acts as a fallback
- * on systems which do not support VBOs.
- */
-class VertexArray : public VertexBuffer
-{
-public:
-
-	/**
-	 * @copydoc VertexBuffer(int, GLenum, GLenum, Backing)
-	 */
-	VertexArray(size_t size, GLenum target, GLenum usage, MemoryBacking backing);
-
-	/**
-	 * Frees the data we've allocated.
-	 */
-	virtual ~VertexArray();
-
-	// Implements VertexBuffer.
-	virtual void *map();
-	virtual void unmap();
-	virtual void bind();
-	virtual void unbind();
-	virtual void fill(size_t offset, size_t size, const void *data);
-	virtual const void *getPointer(size_t offset) const ;
-
-private:
-	// Holds the data.
-	char *buf;
-};
-
-/**
- * Vertex Buffer Object (VBO) implementation of VertexBuffer.
- *
- * This will be used on all systems that support it. It's in general
- * faster than vertex arrays, but especially in use-cases where there
- * is no need to update the data every frame.
- **/
-class VBO : public VertexBuffer, public Volatile
-{
-public:
-
-	/**
-	 * @copydoc VertexBuffer(size_t, GLenum, GLenum, Backing)
-	 **/
-	VBO(size_t size, GLenum target, GLenum usage, MemoryBacking backing);
-
-	/**
-	 * Deletes the VBOs from OpenGL.
-	 **/
-	virtual ~VBO();
-
-	// Implements VertexBuffer.
-	virtual void *map();
-	virtual void unmap();
-	virtual void bind();
-	virtual void unbind();
-	virtual void fill(size_t offset, size_t size, const void *data);
-	virtual const void *getPointer(size_t offset) const ;
-
-	// Implements Volatile.
-	bool loadVolatile();
-	void unloadVolatile();
+	}; // Mapper
 
 private:
 
@@ -355,6 +267,25 @@ private:
 	 */
 	void unload(bool save);
 
+
+	// Whether the buffer is currently bound.
+	bool is_bound;
+
+	// Whether the buffer is currently mapped to main memory.
+	bool is_mapped;
+
+	// The size of the buffer, in bytes.
+	size_t size;
+
+	// The target buffer object. (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER).
+	GLenum target;
+
+	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
+	GLenum usage;
+
+	//
+	MemoryBacking backing;
+
 	// The VBO identifier. Assigned by OpenGL.
 	GLuint vbo;
 
@@ -365,7 +296,9 @@ private:
 	// Set if the buffer was modified while operating on gpu memory
 	// and needs to be synchronized.
 	bool is_dirty;
-};
+
+}; // VertexBuffer
+
 
 /**
  * VertexIndex manages one shared VertexBuffer that stores the indices for an

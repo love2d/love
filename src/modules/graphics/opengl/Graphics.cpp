@@ -55,6 +55,7 @@ Graphics::Graphics()
 	, created(false)
 	, activeStencil(false)
 	, savedState()
+	, displayedMinReqWarning(false)
 {
 	currentWindow = love::window::sdl::Window::createSingleton();
 
@@ -161,16 +162,38 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	this->width = width;
 	this->height = height;
 
-	// Okay, setup OpenGL.
 	gl.initContext();
+
+	// Does the system meet LOVE's minimum requirements for graphics?
+	if (!(GLEE_VERSION_2_0 && Shader::isSupported() && Canvas::isSupported())
+		&& !displayedMinReqWarning)
+	{
+		love::window::MessageBoxType type = love::window::MESSAGEBOX_ERROR;
+
+		const char *title = "Minimum system requirements not met!";
+
+		std::string message;
+		message += "Detected OpenGL version: ";
+		message += (const char *) glGetString(GL_VERSION);
+		message += "\nRequired OpenGL version: 2.1."; // -ish
+		message += "\nThe program may crash or have graphical issues.";
+
+		::printf("%s\n%s\n", title, message.c_str());
+		currentWindow->showMessageBox(type, title, message.c_str());
+
+		// We should only show the message once, instead of after every setMode.
+		displayedMinReqWarning = true;
+	}
+
+	// Okay, setup OpenGL.
+	gl.setupContext();
 
 	created = true;
 
 	setViewportSize(width, height);
 
 	// Make sure antialiasing works when set elsewhere
-	if (GLEE_VERSION_1_3 || GLEE_ARB_multisample)
-		glEnable(GL_MULTISAMPLE);
+	glEnable(GL_MULTISAMPLE);
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -184,8 +207,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 	// Auto-generated mipmaps should be the best quality possible
-	if (GLEE_VERSION_1_4 || GLEE_SGIS_generate_mipmap)
-		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -609,21 +631,9 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 	switch (mode)
 	{
 	case BLEND_ALPHA:
-		if (GLEE_VERSION_1_4 || GLEE_EXT_blend_func_separate)
-		{
-			state.srcRGB = GL_SRC_ALPHA;
-			state.srcA = GL_ONE;
-			state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
-		}
-		else
-		{
-			// Fallback for OpenGL implementations without support for separate blend functions.
-			// This will most likely only be used for the Microsoft software renderer and
-			// since it's still stuck with OpenGL 1.1, the only expected difference is a
-			// different alpha value when reading back the default framebuffer (newScreenshot).
-			state.srcRGB = state.srcA = GL_SRC_ALPHA;
-			state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
-		}
+		state.srcRGB = GL_SRC_ALPHA;
+		state.srcA = GL_ONE;
+		state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
 		break;
 	case BLEND_MULTIPLICATIVE:
 		state.srcRGB = state.srcA = GL_DST_COLOR;
@@ -986,8 +996,10 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	{
 		delete[] pixels;
 		delete[] screenshot;
+
 		if (curcanvas)
 			curcanvas->startGrab(curcanvas->getAttachedCanvases());
+
 		throw love::Exception("Out of memory.");
 	}
 
@@ -1019,8 +1031,10 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	catch (love::Exception &)
 	{
 		delete[] screenshot;
+
 		if (curcanvas)
 			curcanvas->startGrab(curcanvas->getAttachedCanvases());
+
 		throw;
 	}
 

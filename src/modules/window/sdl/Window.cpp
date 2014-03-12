@@ -654,6 +654,27 @@ const void *Window::getHandle() const
 	return window;
 }
 
+void Window::showMessageBox(MessageBoxType type, const char *title, const char *message)
+{
+	SDL_MessageBoxFlags sdlflags;
+
+	switch (type)
+	{
+	case MESSAGEBOX_ERROR:
+		sdlflags = SDL_MESSAGEBOX_ERROR;
+		break;
+	case MESSAGEBOX_WARNING:
+		sdlflags = SDL_MESSAGEBOX_WARNING;
+		break;
+	case MESSAGEBOX_INFO:
+	default:
+		sdlflags = SDL_MESSAGEBOX_INFORMATION;
+		break;
+	}
+
+	SDL_ShowSimpleMessageBox(sdlflags, title, message, window);
+}
+
 love::window::Window *Window::createSingleton()
 {
 	if (!singleton)

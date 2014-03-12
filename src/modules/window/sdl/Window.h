@@ -83,6 +83,8 @@ public:
 
 	const void *getHandle() const;
 
+	void showMessageBox(MessageBoxType type, const char *title, const char *message);
+
 	static love::window::Window *createSingleton();
 	static love::window::Window *getSingleton();
 
