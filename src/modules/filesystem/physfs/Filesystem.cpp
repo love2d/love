@@ -397,6 +397,16 @@ std::string Filesystem::getSourceBaseDirectory() const
 	return game_source.substr(0, base_end_pos);
 }
 
+std::string Filesystem::getRealDirectory(const char *filename) const
+{
+	const char *dir = PHYSFS_getRealDir(filename);
+
+	if (dir == nullptr)
+		throw love::Exception("File does not exist.");
+
+	return std::string(dir);
+}
+
 bool Filesystem::exists(const char *file) const
 {
 	return PHYSFS_exists(file);
