@@ -468,8 +468,8 @@ void Source::getDirection(float *v) const
 
 void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 {
-	cone.innerAngle = LOVE_TODEG(innerAngle);
-	cone.outerAngle = LOVE_TODEG(outerAngle);
+	cone.innerAngle = (int) LOVE_TODEG(innerAngle);
+	cone.outerAngle = (int) LOVE_TODEG(outerAngle);
 	cone.outerVolume = outerVolume;
 
 	if (valid)

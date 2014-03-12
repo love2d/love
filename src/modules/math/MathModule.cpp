@@ -198,14 +198,14 @@ bool Math::isConvex(const std::vector<Vertex> &polygon)
  **/
 float Math::gammaToLinear(float c) const
 {
-	if (c > 1.0)
-		return 1.0;
-	else if (c < 0.0)
-		return 0.0;
+	if (c > 1.0f)
+		return 1.0f;
+	else if (c < 0.0f)
+		return 0.0f;
 	else if (c <= 0.04045)
-		return c / 12.92;
+		return c / 12.92f;
 	else
-		return powf((c + 0.055) / 1.055, 2.4);
+		return powf((c + 0.055f) / 1.055f, 2.4f);
 }
 
 /**
@@ -213,14 +213,14 @@ float Math::gammaToLinear(float c) const
  **/
 float Math::linearToGamma(float c) const
 {
-	if (c > 1.0)
-		return 1.0;
-	else if (c < 0.0)
-		return 0.0;
-	else if (c < 0.0031308)
-		return c * 12.92;
+	if (c > 1.0f)
+		return 1.0f;
+	else if (c < 0.0f)
+		return 0.0f;
+	else if (c < 0.0031308f)
+		return c * 12.92f;
 	else
-		return 1.055 * powf(c, 0.41666) - 0.055;
+		return 1.055f * powf(c, 0.41666f) - 0.055f;
 }
 
 } // math

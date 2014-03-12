@@ -202,7 +202,7 @@ uint16 Fixture::getBits(lua_State *L)
 	{
 		size_t bpos = (size_t)(lua_tointeger(L, i)-1);
 		if (bpos >= 16)
-			return luaL_error(L, "Values must be in range 1-16.");
+			luaL_error(L, "Values must be in range 1-16.");
 		b.set(bpos, true);
 	}
 
