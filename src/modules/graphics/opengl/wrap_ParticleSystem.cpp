@@ -713,11 +713,6 @@ static const luaL_Reg functions[] =
 	{ "isPaused", w_ParticleSystem_isPaused },
 	{ "isStopped", w_ParticleSystem_isStopped },
 	{ "update", w_ParticleSystem_update },
-
-	// Deprecated since 0.9.1.
-	{ "setImage", w_ParticleSystem_setTexture },
-	{ "getImage", w_ParticleSystem_getTexture },
-
 	{ 0, 0 }
 };
 

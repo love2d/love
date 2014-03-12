@@ -355,11 +355,6 @@ static const luaL_Reg functions[] =
 	{ "sendMatrix",  w_Shader_sendMatrix },
 	{ "sendTexture", w_Shader_sendTexture },
 	{ "send",        w_Shader_send },
-
-	// Deprecated since 0.9.1.
-	{ "sendImage",   w_Shader_sendTexture },
-	{ "sendCanvas",  w_Shader_sendTexture },
-
 	{ 0, 0 }
 };
 

@@ -144,12 +144,6 @@ int w_setInvertedStencil(lua_State *L)
 	return setStencil(L, true);
 }
 
-int w_getMaxTextureSize(lua_State *L)
-{
-	lua_pushinteger(L, instance->getSystemLimit(Graphics::LIMIT_TEXTURE_SIZE));
-	return 1;
-}
-
 int w_newImage(lua_State *L)
 {
 	love::image::ImageData *data = nullptr;
@@ -816,12 +810,6 @@ int w_getPointSize(lua_State *L)
 	return 1;
 }
 
-int w_getMaxPointSize(lua_State *L)
-{
-	lua_pushnumber(L, instance->getSystemLimit(Graphics::LIMIT_POINT_SIZE));
-	return 1;
-}
-
 int w_setWireframe(lua_State *L)
 {
 	instance->setWireframe(luax_toboolean(L, 1));
@@ -1376,8 +1364,6 @@ static const luaL_Reg functions[] =
 	{ "getLineJoin", w_getLineJoin },
 	{ "setPointSize", w_setPointSize },
 	{ "getPointSize", w_getPointSize },
-	{ "getMaxPointSize", w_getMaxPointSize },
-	{ "getMaxTextureSize", w_getMaxTextureSize },
 	{ "setWireframe", w_setWireframe },
 	{ "isWireframe", w_isWireframe },
 	{ "newScreenshot", w_newScreenshot },
@@ -1422,10 +1408,6 @@ static const luaL_Reg functions[] =
 	{ "translate", w_translate },
 	{ "shear", w_shear },
 	{ "origin", w_origin },
-
-	// Deprecated since 0.9.1.
-	{ "getMaxImageSize", w_getMaxTextureSize },
-	{ "getMaxPointSize", w_getMaxPointSize },
 
 	{ 0, 0 }
 };

@@ -248,10 +248,6 @@ static const luaL_Reg functions[] =
 	{ "getCount", w_SpriteBatch_getCount },
 	{ "setBufferSize", w_SpriteBatch_setBufferSize },
 	{ "getBufferSize", w_SpriteBatch_getBufferSize },
-
-	// Deprecated since 0.9.1.
-	{ "setImage", w_SpriteBatch_setTexture },
-	{ "getImage", w_SpriteBatch_getTexture },
 	{ 0, 0 }
 };
 

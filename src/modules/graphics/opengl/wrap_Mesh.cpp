@@ -381,11 +381,6 @@ static const luaL_Reg functions[] =
 	{ "getDrawRange", w_Mesh_getDrawRange },
 	{ "setVertexColors", w_Mesh_setVertexColors },
 	{ "hasVertexColors", w_Mesh_hasVertexColors },
-
-	// Deprecated since 0.9.1.
-	{ "setImage", w_Mesh_setTexture },
-	{ "getImage", w_Mesh_getTexture },
-
 	{ 0, 0 }
 };
 
