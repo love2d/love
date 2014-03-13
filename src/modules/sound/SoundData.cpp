@@ -145,6 +145,8 @@ void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, vo
 
 	if (newData)
 		memcpy(data, newData, size);
+	else
+		memset(data, 0, size);
 }
 
 void *SoundData::getData() const
