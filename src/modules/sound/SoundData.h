@@ -59,7 +59,7 @@ private:
 
 	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);
 
-	int8 *data;
+	uint8 *data;
 	int size;
 
 	int sampleRate;

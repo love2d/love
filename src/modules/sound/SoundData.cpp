@@ -52,7 +52,7 @@ SoundData::SoundData(Decoder *decoder)
 		{
 			while (bufferSize < (size_t) size + decoded)
 				bufferSize <<= 1;
-			data = (int8 *) realloc(data, bufferSize);
+			data = (uint8 *) realloc(data, bufferSize);
 		}
 
 		if (!data)
@@ -76,7 +76,7 @@ SoundData::SoundData(Decoder *decoder)
 
 	// Shrink buffer if necessary.
 	if (data && bufferSize > (size_t) size)
-		data = (int8 *) realloc(data, size);
+		data = (uint8 *) realloc(data, size);
 
 	channels = decoder->getChannels();
 	bitDepth = decoder->getBitDepth();
@@ -139,14 +139,14 @@ void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, vo
 	if (realsize > INT_MAX)
 		throw love::Exception("Data is too big!");
 
-	data = (int8 *) malloc(size);
+	data = (uint8 *) malloc(size);
 	if (!data)
 		throw love::Exception("Not enough memory.");
 
 	if (newData)
 		memcpy(data, newData, size);
 	else
-		memset(data, 0, size);
+		memset(data, bitDepth == 8 ? 128 : 0, size);
 }
 
 void *SoundData::getData() const
@@ -192,12 +192,14 @@ void SoundData::setSample(int i, float sample)
 
 	if (bitDepth == 16)
 	{
+		// 16-bit sample values are signed.
 		int16 *s = (int16 *) data;
 		s[i] = (int16) (sample * (float) LOVE_INT16_MAX);
 	}
 	else
 	{
-		data[i] = (int8) (sample * (float) LOVE_INT8_MAX);
+		// 8-bit sample values are unsigned internally.
+		data[i] = (uint8) ((sample * 127.0f) + 128.0f);
 	}
 }
 
@@ -209,12 +211,14 @@ float SoundData::getSample(int i) const
 
 	if (bitDepth == 16)
 	{
+		// 16-bit sample values are signed.
 		int16 *s = (int16 *) data;
 		return (float) s[i] / (float) LOVE_INT16_MAX;
 	}
 	else
 	{
-		return (float) data[i] / (float) LOVE_INT8_MAX;
+		// 8-bit sample values are unsigned internally.
+		return ((float) data[i] - 128.0f) / 127.0f;
 	}
 }
 
