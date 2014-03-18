@@ -21,11 +21,11 @@
 #include "SoundData.h"
 
 // C
-#include <climits>
 #include <cstdlib>
 #include <cstring>
 
-// STL
+// C++
+#include <limits>
 #include <iostream>
 #include <vector>
 
@@ -48,9 +48,9 @@ SoundData::SoundData(Decoder *decoder)
 	{
 		// Expand or allocate buffer. Note that realloc may move
 		// memory to other locations.
-		if (!data || bufferSize < (size_t) size + decoded)
+		if (!data || bufferSize < size + decoded)
 		{
-			while (bufferSize < (size_t) size + decoded)
+			while (bufferSize < size + decoded)
 				bufferSize <<= 1;
 			data = (uint8 *) realloc(data, bufferSize);
 		}
@@ -61,21 +61,21 @@ SoundData::SoundData(Decoder *decoder)
 		// Copy memory into new part of memory.
 		memcpy(data + size, decoder->getBuffer(), decoded);
 
-		// Keep this up to date.
-		size += decoded;
-
 		// Overflow check.
-		if (size < 0)
+		if (size > std::numeric_limits<size_t>::max() - decoded)
 		{
 			free(data);
 			throw love::Exception("Not enough memory.");
 		}
 
+		// Keep this up to date.
+		size += decoded;
+
 		decoded = decoder->decode();
 	}
 
 	// Shrink buffer if necessary.
-	if (data && bufferSize > (size_t) size)
+	if (data && bufferSize > size)
 		data = (uint8 *) realloc(data, size);
 
 	channels = decoder->getChannels();
@@ -136,7 +136,7 @@ void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, vo
 
 	double realsize = samples;
 	realsize *= (bitDepth / 8) * channels;
-	if (realsize > INT_MAX)
+	if (realsize > std::numeric_limits<size_t>::max())
 		throw love::Exception("Data is too big!");
 
 	data = (uint8 *) malloc(size);
@@ -154,9 +154,9 @@ void *SoundData::getData() const
 	return (void *)data;
 }
 
-int SoundData::getSize() const
+size_t SoundData::getSize() const
 {
-	return (int)size;
+	return size;
 }
 
 int SoundData::getChannels() const
@@ -187,7 +187,7 @@ float SoundData::getDuration() const
 void SoundData::setSample(int i, float sample)
 {
 	// Check range.
-	if (i < 0 || i >= size/(bitDepth/8))
+	if (i < 0 || (size_t) i >= size/(bitDepth/8))
 		throw love::Exception("Attempt to set out-of-range sample!");
 
 	if (bitDepth == 16)
@@ -206,7 +206,7 @@ void SoundData::setSample(int i, float sample)
 float SoundData::getSample(int i) const
 {
 	// Check range.
-	if (i < 0 || i >= size/(bitDepth/8))
+	if (i < 0 || (size_t) i >= size/(bitDepth/8))
 		throw love::Exception("Attempt to get out-of-range sample!");
 
 	if (bitDepth == 16)

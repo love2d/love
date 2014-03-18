@@ -130,7 +130,7 @@ public:
 
 	// Implements Data.
 	virtual void *getData() const;
-	virtual int getSize() const;
+	virtual size_t getSize() const;
 
 protected:
 

@@ -38,9 +38,9 @@ ImageData::~ImageData()
 	delete mutex;
 }
 
-int ImageData::getSize() const
+size_t ImageData::getSize() const
 {
-	return getWidth()*getHeight()*sizeof(pixel);
+	return size_t(getWidth()*getHeight())*sizeof(pixel);
 }
 
 void *ImageData::getData() const

@@ -43,7 +43,7 @@ public:
 
 	// Implements Data.
 	void *getData() const;
-	int getSize() const;
+	size_t getSize() const;
 
 	virtual int getChannels() const;
 	virtual int getBitDepth() const;
@@ -60,7 +60,7 @@ private:
 	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);
 
 	uint8 *data;
-	int size;
+	size_t size;
 
 	int sampleRate;
 	int bitDepth;

@@ -49,9 +49,7 @@ public:
 
 	// Implements Data.
 	void *getData() const;
-	//TODO: Enable this
-	//uint64 getSize() const;
-	int getSize() const;
+	size_t getSize() const;
 
 	const std::string &getFilename() const;
 	const std::string &getExtension() const;
