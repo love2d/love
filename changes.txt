@@ -23,6 +23,9 @@ LOVE 0.9.1 [Baby Inspector]
   * Added love.graphics.isSupported("srgb").
   * Added love.math.gammaToLinear and love.math.linearToGamma.
   * Added RandomGenerator:getState and RandomGenerator:setState.
+  * Added Body:setUserData and Body:getUserData.
+  * Added some missing obscure key constants.
+  * Added optional callback function argument to love.filesystem.getDirectoryItems.
 
   * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage.
   * Deprecated love.graphics.getMaxImageSize and love.graphics.getMaxPointSize.
@@ -35,6 +38,9 @@ LOVE 0.9.1 [Baby Inspector]
   * Fixed love.graphics.reset causing crashes when called in between love.graphics.push/pop.
   * Fixed tab characters ("\t") to display properly with love.graphics.print.
   * Fixed World:getBodyList and World:getJointList causing hard crashes.
+  * Fixed loading BC4 compressed textures.
+  * Fixed SoundData objects being initialized with garbage values.
+  * Fixed 8-bit SoundData samples when used in love.audio Sources.
 
   * Renamed love.graphics.getMaxImageSize to love.graphics.getMaxTextureSize (old function still exists.)
 
@@ -47,6 +53,11 @@ LOVE 0.9.1 [Baby Inspector]
   * Updated Source:play to return a boolean indicating success.
   * Updated t.console in conf.lua to create the console before modules are loaded in Windows.
   * Updated Mesh vertex maps (index buffers) to use less space in VRAM.
+  * Updated love.graphics.newMesh and Mesh:setVertices to default the UV parameters to 0,0.
+  * Updated Fixture:set/getUserData to work in Coroutines.
+  * Updated fullscreen-desktop and resizable window modes in OS X to use Mac OS 10.7's fullscreen Spaces.
+  * Updated love.filesystem's C library loader to look in paths added via love.filesystem.mount, in Fused mode.
+  * Updated the default love.run code to make initial love.math.random calls more random.
 
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------
