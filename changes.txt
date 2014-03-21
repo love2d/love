@@ -42,8 +42,6 @@ LOVE 0.9.1 [Baby Inspector]
   * Fixed SoundData objects being initialized with garbage values.
   * Fixed 8-bit SoundData samples when used in love.audio Sources.
 
-  * Renamed love.graphics.getMaxImageSize to love.graphics.getMaxTextureSize (old function still exists.)
-
   * Updated the error text for love.filesystem’s module searchers when require fails.
   * Updated the love.filesystem module searchers to be tried after package.preload instead of before.
   * Updated love.graphics.newParticleSystem, newSpriteBatch, and newMesh to accept Canvases.
