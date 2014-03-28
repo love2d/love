@@ -642,6 +642,10 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 		state.srcRGB = state.srcA = GL_SRC_ALPHA;
 		state.dstRGB = state.dstA = GL_ONE;
 		break;
+	case BLEND_SCREEN:
+		state.srcRGB = state.srcA = GL_ONE;
+		state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_COLOR;
+		break;
 	case BLEND_REPLACE:
 	default:
 		state.srcRGB = state.srcA = GL_ONE;
@@ -669,6 +673,8 @@ Graphics::BlendMode Graphics::getBlendMode() const
 			return BLEND_MULTIPLICATIVE;
 		else if (state.srcRGB == GL_ONE && state.dstRGB == GL_ONE_MINUS_SRC_ALPHA)
 			return BLEND_PREMULTIPLIED;
+		else if (state.srcRGB == GL_ONE && state.dstRGB == GL_ONE_MINUS_SRC_COLOR)
+			return BLEND_SCREEN;
 		else if (state.srcRGB == GL_ONE && state.dstRGB == GL_ZERO)
 			return BLEND_REPLACE;
 	}
