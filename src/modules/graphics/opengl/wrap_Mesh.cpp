@@ -371,8 +371,12 @@ static const luaL_Reg functions[] =
 	{ "getVertexCount", w_Mesh_getVertexCount },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
-	{ "setInstanceCount", w_Mesh_setInstanceCount },
-	{ "getInstanceCount", w_Mesh_getInstanceCount },
+
+	// Disabled for now, since implementation is incomplete and might change
+	// if/when VertexBuffers / custom vertex attributes are added.
+	// { "setInstanceCount", w_Mesh_setInstanceCount },
+	// { "getInstanceCount", w_Mesh_getInstanceCount },
+
 	{ "setTexture", w_Mesh_setTexture },
 	{ "getTexture", w_Mesh_getTexture },
 	{ "setDrawMode", w_Mesh_setDrawMode },

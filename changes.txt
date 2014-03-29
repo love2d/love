@@ -9,7 +9,6 @@ LOVE 0.9.1 [Baby Inspector]
   * Added ParticleSystem:setRelativeRotation.
   * Added love.graphics.setWireframe for debugging.
   * Added Mesh:setDrawRange and Mesh:getDrawRange.
-  * Added instancing support to Meshes with Mesh:setInstanceCount.
   * Added CircleShape:getPoint and CircleShape:setPoint.
   * Added Mesh/SpriteBatch/ParticleSystem:setTexture, accepts Canvases and Images.
   * Added high-dpi window support for Retina displays in OS X, via the 'highdpi' window flag.
