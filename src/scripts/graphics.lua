@@ -1317,13 +1317,14 @@ uniform vec4 love_ScreenSize;]]
 #define VaryingTexCoord gl_TexCoord[0]
 #define VaryingColor gl_FrontColor
 
-#if defined(GL_ARB_draw_instanced)
-	#extension GL_ARB_draw_instanced : enable
-	#define love_InstanceID gl_InstanceIDARB
-#else
-	attribute float love_PseudoInstanceID;
-	int love_InstanceID = int(love_PseudoInstanceID);
-#endif]],
+// #if defined(GL_ARB_draw_instanced)
+//	#extension GL_ARB_draw_instanced : enable
+//	#define love_InstanceID gl_InstanceIDARB
+// #else
+//	attribute float love_PseudoInstanceID;
+//	int love_InstanceID = int(love_PseudoInstanceID);
+// #endif
+]],
 
 		FOOTER = [[
 void main() {
