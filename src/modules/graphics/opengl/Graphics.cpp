@@ -246,15 +246,19 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 
 void Graphics::unSetMode()
 {
+	if (!isCreated())
+		return;
+
 	// Window re-creation may destroy the GL context, so we must save the state.
-	if (isCreated())
-		savedState = saveState();
+	savedState = saveState();
 
 	// Unload all volatile objects. These must be reloaded after the display
 	// mode change.
 	Volatile::unloadAll();
 
 	gl.deInitContext();
+
+	created = false;
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, GLvoid* /*usr*/)
