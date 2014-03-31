@@ -70,10 +70,6 @@ Window::_currentMode::_currentMode()
 
 bool Window::setWindow(int width, int height, WindowSettings *settings)
 {
-	graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
-	if (gfx != nullptr)
-		gfx->unSetMode();
-
 	WindowSettings f;
 
 	if (settings)
@@ -122,6 +118,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
 
+	graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+	if (gfx != nullptr)
+		gfx->unSetMode();
+
 	// Destroy and recreate the window if the dimensions or flags have changed.
 	if (window)
 	{
@@ -155,6 +155,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	if (!window)
 	{
+		created = false;
+
 		// In Windows and Linux, some GL attributes are set on window creation.
 		setWindowGLAttributes(f.fsaa, f.sRGB);
 
