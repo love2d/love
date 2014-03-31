@@ -27,6 +27,7 @@
 #include "graphics/Graphics.h"
 #include "window/Window.h"
 #include "common/Exception.h"
+#include "common/config.h"
 
 #include <cmath>
 
@@ -427,7 +428,8 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 			int px_w = e.window.data1;
 			int px_h = e.window.data2;
 
-#if SDL_VERSION_ATLEAST(2,0,1)
+			// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
+#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 			SDL_Window *sdlwin = SDL_GetWindowFromID(e.window.windowID);
 			if (sdlwin)
 				SDL_GL_GetDrawableSize(sdlwin, &px_w, &px_h);

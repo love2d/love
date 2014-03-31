@@ -116,7 +116,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (f.borderless)
 		sdlflags |= SDL_WINDOW_BORDERLESS;
 
-#if SDL_VERSION_ATLEAST(2,0,1)
+	// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
+#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 	if (f.highdpi)
 		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
@@ -130,7 +131,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		Uint32 testflags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP
 			| SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
 
-#if SDL_VERSION_ATLEAST(2,0,1)
+		// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
+#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 		testflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
 
@@ -202,7 +204,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		int width = curMode.width;
 		int height = curMode.height;
 
-#if SDL_VERSION_ATLEAST(2,0,1)
+		// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
+#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 		SDL_GL_GetDrawableSize(window, &width, &height);
 #endif
 
@@ -431,7 +434,8 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 			int width = curMode.width;
 			int height = curMode.height;
 
-#if SDL_VERSION_ATLEAST(2,0,1)
+			// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
+#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 			SDL_GL_GetDrawableSize(window, &width, &height);
 #endif
 
@@ -633,7 +637,8 @@ double Window::getPixelScale() const
 {
 	double scale = 1.0;
 
-#if SDL_VERSION_ATLEAST(2,0,1)
+	// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
+#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 	if (window)
 	{
 		int wheight;
