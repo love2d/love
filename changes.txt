@@ -4,6 +4,7 @@ LOVE 0.9.1 [Baby Inspector]
   Released: 2014-04-01
 
   * Added Source:clone.
+  * Added blend mode "screen".
   * Added ParticleSystem:clone.
   * Added ParticleSystem:moveTo, has smoother emitter movement compared to setPosition.
   * Added ParticleSystem:setRelativeRotation.
@@ -25,6 +26,7 @@ LOVE 0.9.1 [Baby Inspector]
   * Added Body:setUserData and Body:getUserData.
   * Added some missing obscure key constants.
   * Added optional callback function argument to love.filesystem.getDirectoryItems.
+  * Added love.system.openURL.
 
   * Deprecated Mesh/SpriteBatch/ParticleSystem:setImage.
   * Deprecated love.graphics.getMaxImageSize and love.graphics.getMaxPointSize.
@@ -36,6 +38,8 @@ LOVE 0.9.1 [Baby Inspector]
   * Fixed TrueType font glyphs which request a monochrome bitmap pixel mode.
   * Fixed love.graphics.reset causing crashes when called in between love.graphics.push/pop.
   * Fixed tab characters ("\t") to display properly with love.graphics.print.
+  * Fixed love.graphics.isCreated to return false when love.window.setMode fails completely.
+  * Fixed love.window.setMode to not destroy OpenGL resources before checking whether a fullsceren size is supported.
   * Fixed World:getBodyList and World:getJointList causing hard crashes.
   * Fixed loading BC4 compressed textures.
   * Fixed SoundData objects being initialized with garbage values.
