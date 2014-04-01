@@ -1429,7 +1429,7 @@ function love.nogame()
 		local small_y = -rain.spacing_y + y / 2
 		local big_y = -rain.spacing_y + y
 
-		love.graphics.setBlendMode("subtractive")
+		love.graphics.setBlendMode("subtract")
 		love.graphics.setColor(255, 255, 255, 128)
 		love.graphics.draw(rain.batch, -rain.spacing_x, small_y, 0, 0.5, 0.5)
 
@@ -1458,7 +1458,7 @@ function love.nogame()
 		love.graphics.draw(background.image, bx, by, 0, 0.7, 0.7, 256, 256)
 		love.graphics.setColor(255, 255, 255, 32 + 16*intensity)
 		love.graphics.draw(background.image, bx, by, 0, 0.65, 0.65, 256, 256)
-		love.graphics.setBlendMode("additive")
+		love.graphics.setBlendMode("add")
 		love.graphics.setColor(255, 255, 255, 16 + 16*intensity)
 		love.graphics.draw(background.image, bx, by, 0, 0.6, 0.6, 256, 256)
 	end

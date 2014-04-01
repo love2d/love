@@ -130,9 +130,9 @@ StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM> Graphics::alignModes(Gr
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendModeEntries[] =
 {
 	{ "alpha", Graphics::BLEND_ALPHA },
-	{ "additive", Graphics::BLEND_ADDITIVE },
-	{ "subtractive", Graphics::BLEND_SUBTRACTIVE },
-	{ "multiplicative", Graphics::BLEND_MULTIPLICATIVE },
+	{ "add", Graphics::BLEND_ADD },
+	{ "subtract", Graphics::BLEND_SUBTRACT },
+	{ "multiply", Graphics::BLEND_MULTIPLY },
 	{ "premultiplied", Graphics::BLEND_PREMULTIPLIED },
 	{ "screen", Graphics::BLEND_SCREEN },
 	{ "replace", Graphics::BLEND_REPLACE },

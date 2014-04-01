@@ -639,7 +639,7 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 		state.srcA = GL_ONE;
 		state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
 		break;
-	case BLEND_MULTIPLICATIVE:
+	case BLEND_MULTIPLY:
 		state.srcRGB = state.srcA = GL_DST_COLOR;
 		state.dstRGB = state.dstA = GL_ZERO;
 		break;
@@ -647,9 +647,9 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 		state.srcRGB = state.srcA = GL_ONE;
 		state.dstRGB = state.dstA = GL_ONE_MINUS_SRC_ALPHA;
 		break;
-	case BLEND_SUBTRACTIVE:
+	case BLEND_SUBTRACT:
 		state.func = GL_FUNC_REVERSE_SUBTRACT;
-	case BLEND_ADDITIVE:
+	case BLEND_ADD:
 		state.srcRGB = state.srcA = GL_SRC_ALPHA;
 		state.dstRGB = state.dstA = GL_ONE;
 		break;
@@ -672,16 +672,16 @@ Graphics::BlendMode Graphics::getBlendMode() const
 	OpenGL::BlendState state = gl.getBlendState();
 
 	if (state.func == GL_FUNC_REVERSE_SUBTRACT)  // && src == GL_SRC_ALPHA && dst == GL_ONE
-		return BLEND_SUBTRACTIVE;
+		return BLEND_SUBTRACT;
 	// Everything else has equation == GL_FUNC_ADD.
 	else if (state.srcRGB == state.srcA && state.dstRGB == state.dstA)
 	{
 		if (state.srcRGB == GL_SRC_ALPHA && state.dstRGB == GL_ONE)
-			return BLEND_ADDITIVE;
+			return BLEND_ADD;
 		else if (state.srcRGB == GL_SRC_ALPHA && state.dstRGB == GL_ONE_MINUS_SRC_ALPHA)
 			return BLEND_ALPHA; // alpha blend mode fallback for very old OpenGL versions.
 		else if (state.srcRGB == GL_DST_COLOR && state.dstRGB == GL_ZERO)
-			return BLEND_MULTIPLICATIVE;
+			return BLEND_MULTIPLY;
 		else if (state.srcRGB == GL_ONE && state.dstRGB == GL_ONE_MINUS_SRC_ALPHA)
 			return BLEND_PREMULTIPLIED;
 		else if (state.srcRGB == GL_ONE && state.dstRGB == GL_ONE_MINUS_SRC_COLOR)
