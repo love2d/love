@@ -118,7 +118,7 @@ AS_VAR_IF([enable_exe], [no], [], #else
 	  AC_DEFINE([LOVE_BUILD_EXE], [], [Skip building launcher]))
 
 AM_CONDITIONAL([LOVE_BUILD_EXE], [test "x$enable_exe" != xno])
-AM_CONDITIONAL([LOVE_NOMPG123], [test "x$enable_mpg123" == xno])
+AM_CONDITIONAL([LOVE_NOMPG123], [test "x$enable_mpg123" = xno])
 AM_CONDITIONAL([LOVE_TARGET_OSX], [test "x$enable_osx" != xno])
 
 # Automatic script file rebuilding

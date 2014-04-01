@@ -96,10 +96,10 @@ genflags()
 		amflag="$(upper $(echo love-$flag | sed 's/-/_/g'))"
 		printf "AC_ARG_ENABLE([$flag], [  --disable-$flag    Turn off $prettyflag], [], [$varflag=true])\n"
 		printf "AH_TEMPLATE([$defineflag], [])\n"
-		printf "if test x\"\$$varflag\" == xtrue; then\n"
+		printf "if test x\"\$$varflag\" = xtrue; then\n"
 		printf "    AC_DEFINE([$defineflag], [])\n"
 		printf "fi\n"
-		printf "AM_CONDITIONAL([$amflag], [test x\$$varflag == xtrue])\n\n"
+		printf "AM_CONDITIONAL([$amflag], [test x\$$varflag = xtrue])\n\n"
 	done
 }
 
