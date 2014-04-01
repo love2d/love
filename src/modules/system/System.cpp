@@ -27,6 +27,7 @@
 #elif defined(LOVE_LINUX)
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #elif defined(LOVE_WINDOWS)
 #include "common/utf8.h"
 #include <shlobj.h>
