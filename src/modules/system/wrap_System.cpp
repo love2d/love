@@ -79,6 +79,13 @@ int w_getPowerInfo(lua_State *L)
 	return 3;
 }
 
+int w_openURL(lua_State *L)
+{
+	std::string url = luax_checkstring(L, 1);
+	luax_pushboolean(L, instance->openURL(url));
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
@@ -86,6 +93,7 @@ static const luaL_Reg functions[] =
 	{ "setClipboardText", w_setClipboardText },
 	{ "getClipboardText", w_getClipboardText },
 	{ "getPowerInfo", w_getPowerInfo },
+	{ "openURL", w_openURL },
 	{ 0, 0 }
 };
 

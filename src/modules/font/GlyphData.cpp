@@ -64,16 +64,16 @@ void *GlyphData::getData() const
 	return (void *) data;
 }
 
-int GlyphData::getSize() const
+size_t GlyphData::getSize() const
 {
 	switch (format)
 	{
 	case GlyphData::FORMAT_LUMINANCE_ALPHA:
-		return getWidth() * getHeight() * 2;
+		return size_t(getWidth() * getHeight() * 2);
 		break;
 	case GlyphData::FORMAT_RGBA:
 	default:
-		return getWidth() * getHeight() * 4;
+		return size_t(getWidth() * getHeight() * 4);
 		break;
 	}
 

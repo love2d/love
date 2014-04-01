@@ -67,7 +67,7 @@ public:
 
 	// Implements Data.
 	void *getData() const;
-	int getSize() const;
+	size_t getSize() const;
 
 	/**
 	 * Gets the height of the glyph.

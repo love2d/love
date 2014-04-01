@@ -25,6 +25,9 @@
 #include "config.h"
 #include "Object.h"
 
+// C
+#include <stddef.h>
+
 namespace love
 {
 
@@ -49,7 +52,7 @@ public:
 	/**
 	 * Gets the size of the Data in bytes.
 	 **/
-	virtual int getSize() const = 0;
+	virtual size_t getSize() const = 0;
 
 }; // Data
 

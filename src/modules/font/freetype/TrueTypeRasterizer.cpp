@@ -33,12 +33,15 @@ namespace freetype
 TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	: data(data)
 {
-	if (FT_New_Memory_Face(library,
-	                      (const FT_Byte *)data->getData(), /* first byte in memory */
-	                      data->getSize(),                  /* size in bytes        */
-	                      0,                                /* face_index           */
-	                      &face))
-		throw love::Exception("TrueTypeFont Loading error: FT_New_Face failed (there is probably a problem with your font file)");
+	FT_Error err = FT_Err_Ok;
+	err = FT_New_Memory_Face(library,
+	                         (const FT_Byte *)data->getData(), /* first byte in memory */
+	                         data->getSize(),                  /* size in bytes        */
+	                         0,                                /* face_index           */
+	                         &face);
+
+	if (err != FT_Err_Ok)
+		throw love::Exception("TrueType Font Loading error: FT_New_Face failed: 0x%x (problem with font file?)", err);
 
 	FT_Set_Pixel_Sizes(face, size, size);
 
@@ -68,12 +71,18 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	love::font::GlyphMetrics glyphMetrics = {};
 	FT_Glyph ftglyph;
 
-	// Initialize
-	if (FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT))
-		throw love::Exception("TrueTypeFont Loading error: FT_Load_Glyph failed");
+	FT_Error err = FT_Err_Ok;
 
-	if (FT_Get_Glyph(face->glyph, &ftglyph))
-		throw love::Exception("TrueTypeFont Loading error: FT_Get_Glyph failed");
+	// Initialize
+	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT);
+
+	if (err != FT_Err_Ok)
+		throw love::Exception("TrueType Font Loading error: FT_Load_Glyph failed (0x%x)", err);
+
+	err = FT_Get_Glyph(face->glyph, &ftglyph);
+
+	if (err != FT_Err_Ok)
+		throw love::Exception("TrueType Font Loading error: FT_Get_Glyph failed (0x%x)", err);
 
 	FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
 

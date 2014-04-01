@@ -20,9 +20,9 @@
 
 #include "FileData.h"
 
-// STD
+// C++
 #include <iostream>
-#include <climits>
+#include <limits>
 
 namespace love
 {
@@ -31,7 +31,7 @@ namespace filesystem
 
 FileData::FileData(uint64 size, const std::string &filename)
 	: data(new char[(size_t) size])
-	, size(size)
+	, size((size_t) size)
 	, filename(filename)
 {
 	if (filename.rfind('.') != std::string::npos)
@@ -48,15 +48,10 @@ void *FileData::getData() const
 	return (void *)data;
 }
 
-// TODO: Enable this
-/*uint64 FileData::getSize() const
+size_t FileData::getSize() const
 {
-	return size;
-}*/
-
-int FileData::getSize() const
-{
-	return size > INT_MAX ? INT_MAX : (int) size;
+	size_t sizemax = std::numeric_limits<size_t>::max();
+	return size > sizemax ? sizemax : (size_t) size;
 }
 
 const std::string &FileData::getFilename() const

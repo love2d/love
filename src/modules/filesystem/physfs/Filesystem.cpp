@@ -397,6 +397,16 @@ std::string Filesystem::getSourceBaseDirectory() const
 	return game_source.substr(0, base_end_pos);
 }
 
+std::string Filesystem::getRealDirectory(const char *filename) const
+{
+	const char *dir = PHYSFS_getRealDir(filename);
+
+	if (dir == nullptr)
+		throw love::Exception("File does not exist.");
+
+	return std::string(dir);
+}
+
 bool Filesystem::exists(const char *file) const
 {
 	return PHYSFS_exists(file);
@@ -467,6 +477,10 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 int Filesystem::getDirectoryItems(lua_State *L)
 {
 	const char *dir = luaL_checkstring(L, 1);
+	bool hascallback = !lua_isnoneornil(L, 2);
+
+	if (hascallback)
+		luaL_checktype(L, 2, LUA_TFUNCTION);
 
 	char **rc = PHYSFS_enumerateFiles(dir);
 	int index = 1;
@@ -475,6 +489,13 @@ int Filesystem::getDirectoryItems(lua_State *L)
 
 	for (char **i = rc; *i != 0; i++)
 	{
+		if (hascallback)
+		{
+			lua_pushvalue(L, 2);
+			lua_pushstring(L, *i);
+			lua_call(L, 1, 0);
+		}
+
 		lua_pushstring(L, *i);
 		lua_rawseti(L, -2, index);
 		index++;

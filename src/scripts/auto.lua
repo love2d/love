@@ -34,7 +34,8 @@ const unsigned char %s[] =
 {
 %s
 }; // [%s]
-} // love]]
+} // love
+]]
 --formatting parameters:
 -- - input file name
 -- - c variable name

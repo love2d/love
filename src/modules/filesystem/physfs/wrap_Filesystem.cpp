@@ -526,9 +526,31 @@ int extloader(lua_State *L)
 
 	tokenized_name += library_extension();
 
-	void *handle = SDL_LoadObject((std::string(instance->getAppdataDirectory()) + LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR + tokenized_name).c_str());
-	if (!handle && instance->isFused())
-		handle = SDL_LoadObject((std::string(instance->getSaveDirectory()) + LOVE_PATH_SEPARATOR + tokenized_name).c_str());
+	void *handle = nullptr;
+
+	// If the game is fused, try looking for the DLL in the game's read paths.
+	if (instance->isFused())
+	{
+		try
+		{
+			std::string dir = instance->getRealDirectory(tokenized_name.c_str());
+
+			// We don't want to look in the game's source, because it can be a
+			// zip sometimes and a folder other times.
+			if (dir.find(instance->getSource()) == std::string::npos)
+				handle = SDL_LoadObject((dir + LOVE_PATH_SEPARATOR + tokenized_name).c_str());
+		}
+		catch (love::Exception &)
+		{
+			// Nothing...
+		}
+	}
+
+	if (!handle)
+	{
+		std::string path = std::string(instance->getAppdataDirectory()) + LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR + tokenized_name;
+		handle = SDL_LoadObject(path.c_str());
+	}
 
 	if (!handle)
 	{

@@ -85,6 +85,16 @@ public:
 	 **/
 	virtual PowerState getPowerInfo(int &seconds, int &percent) const = 0;
 
+	/**
+	 * Opens the specified URL with the user's default program to handle that
+	 * particular URL type.
+	 *
+	 * @param url The URL to open.
+	 *
+	 * @return Whether the URL was opened successfully.
+	 **/
+	virtual bool openURL(const std::string &url) const;
+
 	static bool getConstant(const char *in, PowerState &out);
 	static bool getConstant(PowerState in, const char *&out);
 

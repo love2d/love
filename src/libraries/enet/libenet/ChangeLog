@@ -1,3 +1,9 @@
+ENet 1.3.11 (December 26, 2013):
+
+* allow an ENetHost to connect to itself
+* fixed possible bug with disconnect notifications during connect attempts
+* fixed some preprocessor definition bugs
+
 ENet 1.3.10 (October 23, 2013);
 
 * doubled maximum reliable window size

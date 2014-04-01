@@ -36,6 +36,13 @@ namespace love
 std::string to_utf8(LPCWSTR wstr);
 
 /**
+ * Convert a UTF-8 encoded string to a wide string.
+ * @param str The UTF-8 string.
+ * @return A wide string.
+**/
+std::wstring to_widestr(const std::string &str);
+
+/**
  * Replace all occurences of 'find' with 'replace' in a string.
  * @param str The string to modify.
  * @param find The character to match.

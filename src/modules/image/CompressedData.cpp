@@ -36,9 +36,9 @@ CompressedData::~CompressedData()
 {
 }
 
-int CompressedData::getSize() const
+size_t CompressedData::getSize() const
 {
-	return int(dataSize);
+	return dataSize;
 }
 
 void *CompressedData::getData() const
@@ -51,11 +51,11 @@ int CompressedData::getMipmapCount() const
 	return dataImages.size();
 }
 
-int CompressedData::getSize(int miplevel) const
+size_t CompressedData::getSize(int miplevel) const
 {
 	checkMipmapLevelExists(miplevel);
 
-	return int(dataImages[miplevel].size);
+	return dataImages[miplevel].size;
 }
 
 void *CompressedData::getData(int miplevel) const

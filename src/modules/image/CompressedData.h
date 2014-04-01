@@ -71,7 +71,7 @@ public:
 
 	// Implements Data.
 	virtual void *getData() const;
-	virtual int getSize() const;
+	virtual size_t getSize() const;
 
 	/**
 	 * Gets the number of mipmaps in this Compressed Image Data.
@@ -82,7 +82,7 @@ public:
 	/**
 	 * Gets the size in bytes of a sub-image at the specified mipmap level.
 	 **/
-	int getSize(int miplevel) const;
+	size_t getSize(int miplevel) const;
 
 	/**
 	 * Gets the byte data of a sub-image at the specified mipmap level.

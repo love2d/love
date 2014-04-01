@@ -167,6 +167,11 @@ public:
 	std::string getSourceBaseDirectory() const;
 
 	/**
+	 * Gets the real directory path containing the file.
+	 **/
+	std::string getRealDirectory(const char *filename) const;
+
+	/**
 	 * Checks whether a file exists in the current search path
 	 * or not.
 	 * @param file The filename to check.
