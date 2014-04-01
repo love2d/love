@@ -1,7 +1,7 @@
 LOVE 0.9.1 [Baby Inspector]
 ---------------------------
 
-  Released: N/A
+  Released: 2014-04-01
 
   * Added Source:clone.
   * Added ParticleSystem:clone.
@@ -59,7 +59,7 @@ LOVE 0.9.1 [Baby Inspector]
 LOVE 0.9.0 [Baby Inspector]
 ---------------------------
 
-	Released: 2013-12-13
+  Released: 2013-12-13
 
   * Added better multiplayer networking support via ENet.
   * Added --fused command line argument, to simulate fusing.
@@ -277,7 +277,7 @@ LOVE 0.9.0 [Baby Inspector]
 LOVE 0.8.0 [Rubber Piggy]
 -------------------------
 
-	Released: 2012-04-02
+  Released: 2012-04-02
 
   * Added release error screen.
   * Added alpha to love.graphics.setBackgroundColor.
@@ -368,7 +368,7 @@ LOVE 0.8.0 [Rubber Piggy]
 LOVE 0.7.2 [Game Slave]
 -----------------------
 
-	Released: 2011-05-04
+  Released: 2011-05-04
 
   * Added Framebuffer:get/setWrap.
   * Added love.event.clear.
@@ -394,7 +394,7 @@ LOVE 0.7.2 [Game Slave]
 LOVE 0.7.1 [Game Slave]
 -----------------------
 
-	Released: 2011-02-14
+  Released: 2011-02-14
 
   * Added source:isPaused()
   * Added error when initial window can't be created.
@@ -430,7 +430,7 @@ LOVE 0.7.1 [Game Slave]
 LOVE 0.7.0 [Game Slave]
 -----------------------
 
-	Released: 2010-12-05
+  Released: 2010-12-05
 
   * Added love.thread.
   * Added love.font.
@@ -486,7 +486,7 @@ LOVE 0.7.0 [Game Slave]
 LOVE 0.6.2 [Jiggly Juice]
 -------------------------
 
-	Released: 2010-03-06
+  Released: 2010-03-06
 
   * Fixed a bug causing ImageFonts to cut off some pixels.
   * Fixed a bug where filled rectangles were too small.
@@ -500,7 +500,7 @@ LOVE 0.6.2 [Jiggly Juice]
 LOVE 0.6.1 [Jiggly Juice]
 -------------------------
 
-	Released: 2010-02-07
+  Released: 2010-02-07
 
   * Added Shape:setGroupIndex and getGroupIndex.
   * Added Body:setFixedRotation and Body:getFixedRotation.
@@ -525,7 +525,7 @@ LOVE 0.6.1 [Jiggly Juice]
 LOVE 0.6.0 [Jiggly Juice]
 -------------------------
 
-	Released: 2009-12-24
+  Released: 2009-12-24
 
   * Lost track of 0.6.0 changes a long while ago. Don't trust the list below.
 
@@ -562,7 +562,7 @@ LOVE 0.6.0 [Jiggly Juice]
 LOVE 0.5.0 [Salted Nuts]
 ------------------------
 
-	Released: 2009-01-02
+  Released: 2009-01-02
 
   * Added love.joystick.
   * Added network support via LuaSocket.
@@ -599,7 +599,7 @@ LOVE 0.5.0 [Salted Nuts]
 LOVE 0.4.0 [Taco Beam]
 ----------------------
 
-	Released: 2008-08-29
+  Released: 2008-08-29
 
   * Added love.physics. (YES!)
   * Added love.audio.setMode().
@@ -613,7 +613,7 @@ LOVE 0.4.0 [Taco Beam]
 LOVE 0.3.2 [Lemony Fresh]
 -------------------------
 
-	Released: 2008-07-04
+  Released: 2008-07-04
 
   * Added love.graphics.rectangle()
   * Added love.graphics.setLineWidth()
@@ -632,7 +632,7 @@ LOVE 0.3.2 [Lemony Fresh]
 LOVE 0.3.1 [Space Meat]
 -----------------------
 
-	Released: 2008-06-21
+  Released: 2008-06-21
 
   * Fixed segfault related to graphics.
   * Fixed wait-forever bug related to audio.
@@ -643,7 +643,7 @@ LOVE 0.3.1 [Space Meat]
 LOVE 0.3.0 [Mutant Vermin]
 --------------------------
 
-	Released: 2008-06-17
+  Released: 2008-06-17
 
   * Added ParticleSystem.
   * Added visual error reporting.
@@ -663,7 +663,7 @@ LOVE 0.3.0 [Mutant Vermin]
 LOVE 0.2.1 [Impending Doom]
 ---------------------------
 
-	Released: 2008-03-29
+  Released: 2008-03-29
 
   * Added many functions in love.filesystem.
   * Added a dedicated save-folder for each game.
@@ -699,7 +699,7 @@ LOVE 0.2.1 [Impending Doom]
 LOVE 0.2.0 [Mini-Moose]
 -----------------------
 
-	Released: 2008-02-06
+  Released: 2008-02-06
 
   * Added ImageFont
   * Added Animation
@@ -720,7 +720,7 @@ LOVE 0.1.1 [Santa-Power]
 ------------------------
 
 	Initial release!
-	Released: 2008-01-13
+  Released: 2008-01-13
 
  * Image loading and rendering.
  * Sound loading and playing.
