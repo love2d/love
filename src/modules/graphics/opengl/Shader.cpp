@@ -700,8 +700,8 @@ void Shader::checkSetScreenParams()
 		return;
 
 	// In the shader, we do pixcoord.y = gl_FragCoord.y * params.z + params.w.
-	// This lets us flip pixcoord.y when needed, to be consistent (Canvases
-	// have flipped y-values for pixel coordinates.)
+	// This lets us flip pixcoord.y when needed, to be consistent (drawing with
+	// no Canvas active makes the y-values for pixel coordinates flipped.)
 	GLfloat params[] = {
 		(GLfloat) view.w, (GLfloat) view.h,
 		0.0f, 0.0f,
@@ -709,16 +709,16 @@ void Shader::checkSetScreenParams()
 
 	if (Canvas::current != nullptr)
 	{
-		// gl_FragCoord.y is flipped in Canvases, so we un-flip:
-		// pixcoord.y = gl_FragCoord.y * -1.0 + height.
-		params[2] = -1.0f;
-		params[3] = (GLfloat) view.h;
-	}
-	else
-	{
 		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
 		params[2] = 1.0f;
 		params[3] = 0.0f;
+	}
+	else
+	{
+		// gl_FragCoord.y is flipped when drawing to the screen, so we un-flip:
+		// pixcoord.y = gl_FragCoord.y * -1.0 + height.
+		params[2] = -1.0f;
+		params[3] = (GLfloat) view.h;
 	}
 
 	sendBuiltinFloat(BUILTIN_SCREEN_SIZE, 4, params, 1);
