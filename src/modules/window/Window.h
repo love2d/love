@@ -96,9 +96,6 @@ public:
 
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
-	virtual int getWidth() const = 0;
-	virtual int getHeight() const = 0;
-
 	virtual void getDesktopDimensions(int displayindex, int &width, int &height) const = 0;
 
 	virtual bool isCreated() const = 0;

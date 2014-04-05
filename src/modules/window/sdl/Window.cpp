@@ -494,16 +494,6 @@ std::vector<WindowSize> Window::getFullscreenSizes(int displayindex) const
 	return sizes;
 }
 
-int Window::getWidth() const
-{
-	return curMode.width;
-}
-
-int Window::getHeight() const
-{
-	return curMode.height;
-}
-
 void Window::getDesktopDimensions(int displayindex, int &width, int &height) const
 {
 	if (displayindex >= 0 && displayindex < getDisplayCount())

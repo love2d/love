@@ -227,25 +227,6 @@ int w_isCreated(lua_State *L)
 	return 1;
 }
 
-int w_getWidth(lua_State *L)
-{
-	lua_pushinteger(L, instance->getWidth());
-	return 1;
-}
-
-int w_getHeight(lua_State *L)
-{
-	lua_pushinteger(L, instance->getHeight());
-	return 1;
-}
-
-int w_getDimensions(lua_State *L)
-{
-	lua_pushinteger(L, instance->getWidth());
-	lua_pushinteger(L, instance->getHeight());
-	return 2;
-}
-
 int w_getDesktopDimensions(lua_State *L)
 {
 	int width = 0, height = 0;
@@ -322,9 +303,6 @@ static const luaL_Reg functions[] =
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
 	{ "isCreated", w_isCreated },
-	{ "getWidth", w_getWidth },
-	{ "getHeight", w_getHeight },
-	{ "getDimensions", w_getDimensions },
 	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setIcon", w_setIcon },
 	{ "getIcon", w_getIcon },
