@@ -147,6 +147,9 @@ int w_Mesh_getVertices(lua_State *L)
 	size_t count = t->getVertexCount();
 	lua_createtable(L, count, 0);
 
+	if (count == 0 || vertices == nullptr)
+		return 1;
+
 	for (size_t i = 0; i < count; i++)
 	{
 		// Create vertex table.
