@@ -1119,8 +1119,8 @@ if(MSVC)
 	)
 
 	set(LOVE_RC
-		platform/msvc2010/love.rc
-		platform/msvc2010/love.ico
+		extra/windows/love.rc
+		extra/windows/love.ico
 	)
 endif()
 
