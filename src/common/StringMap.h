@@ -126,7 +126,7 @@ public:
 
 		if (index >= SIZE)
 		{
-			printf("\nConstant %s out of bounds with %i!\n", key, index);
+			printf("Constant %s out of bounds with %u!\n", key, index);
 			return false;
 		}
 
