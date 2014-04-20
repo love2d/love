@@ -196,24 +196,11 @@ Message *Event::convert(const SDL_Event &e) const
 		}
 		break;
 	case SDL_MOUSEWHEEL:
-		if (e.wheel.y != 0)
-		{
-			button = (e.wheel.y > 0) ? mouse::Mouse::BUTTON_WHEELUP : mouse::Mouse::BUTTON_WHEELDOWN;
-			if (!love::mouse::Mouse::getConstant(button, txt))
-				break;
-
-			int mx, my;
-			SDL_GetMouseState(&mx, &my);
-			windowToPixelCoords(&mx, &my);
-
-			arg1 = new Variant((double) mx);
-			arg2 = new Variant((double) my);
-			arg3 = new Variant(txt, strlen(txt));
-			msg = new Message("mousepressed", arg1, arg2, arg3);
-			arg1->release();
-			arg2->release();
-			arg3->release();
-		}
+		arg1 = new Variant((double) e.wheel.x);
+		arg2 = new Variant((double) e.wheel.y);
+		msg = new Message("wheelmoved", arg1, arg2);
+		arg1->release();
+		arg2->release();
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:

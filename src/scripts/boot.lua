@@ -170,6 +170,9 @@ function love.createhandlers()
 		mousereleased = function (x,y,b)
 			if love.mousereleased then return love.mousereleased(x,y,b) end
 		end,
+		wheelmoved = function (x,y)
+			if love.wheelmoved then return love.wheelmoved(x,y) end
+		end,
 		joystickpressed = function (j,b)
 			if love.joystickpressed then return love.joystickpressed(j,b) end
 		end,
