@@ -30,6 +30,7 @@ namespace magpie
 
 ImageData::ImageData(std::list<FormatHandler *> formats, love::filesystem::FileData *data)
 	: formatHandlers(formats)
+	, decodeHandler(nullptr)
 {
 	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
 		(*it)->retain();
@@ -39,6 +40,7 @@ ImageData::ImageData(std::list<FormatHandler *> formats, love::filesystem::FileD
 
 ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height)
 	: formatHandlers(formats)
+	, decodeHandler(nullptr)
 {
 	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
 		(*it)->retain();
@@ -54,6 +56,7 @@ ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height)
 
 ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height, void *data, bool own)
 	: formatHandlers(formats)
+	, decodeHandler(nullptr)
 {
 	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
 		(*it)->retain();
@@ -69,7 +72,10 @@ ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height, 
 
 ImageData::~ImageData()
 {
-	delete[] data;
+	if (decodeHandler)
+		decodeHandler->free(data);
+	else
+		delete[] data;
 
 	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
 		(*it)->release();
@@ -88,23 +94,32 @@ void ImageData::create(int width, int height, void *data)
 
 	if (data)
 		memcpy(this->data, data, width*height*sizeof(pixel));
+
+	decodeHandler = nullptr;
 }
 
 void ImageData::decode(love::filesystem::FileData *data)
 {
+	FormatHandler *handler = nullptr;
 	FormatHandler::DecodedImage decodedimage;
 
 	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
 	{
 		if ((*it)->canDecode(data))
 		{
-			decodedimage = (*it)->decode(data);
+			handler = *it;
 			break;
 		}
 	}
 
+	if (handler)
+		decodedimage = handler->decode(data);
+
 	if (decodedimage.data == nullptr)
-		throw love::Exception("Could not decode image: unrecognized format.");
+	{
+		const char *ext = data->getExtension().c_str();
+		throw love::Exception("Could not decode to ImageData: unrecognized format (%s)", ext);
+	}
 
 	// The decoder *must* output a 32 bits-per-pixel image.
 	if (decodedimage.size != decodedimage.width*decodedimage.height*sizeof(pixel))
@@ -113,16 +128,22 @@ void ImageData::decode(love::filesystem::FileData *data)
 		throw love::Exception("Could not convert image!");
 	}
 
-	if (this->data)
+	// Clean up any old data.
+	if (decodeHandler)
+		decodeHandler->free(this->data);
+	else
 		delete[] this->data;
 
 	this->width = decodedimage.width;
 	this->height = decodedimage.height;
 	this->data = decodedimage.data;
+
+	decodeHandler = handler;
 }
 
 void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 {
+	FormatHandler *handler = nullptr;
 	FormatHandler::EncodedImage encodedimage;
 
 	{
@@ -139,10 +160,13 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 		{
 			if ((*it)->canEncode(format))
 			{
-				encodedimage = (*it)->encode(rawimage, format);
+				handler = *it;
 				break;
 			}
 		}
+
+		if (handler)
+			handler->encode(rawimage, format);
 
 		if (encodedimage.data == nullptr)
 			throw love::Exception("Image format has no suitable encoder.");
@@ -156,11 +180,18 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 	}
 	catch (love::Exception &)
 	{
-		delete[] encodedimage.data;
+		if (handler)
+			handler->free(encodedimage.data);
+		else
+			delete[] encodedimage.data;
+
 		throw;
 	}
 
-	delete[] encodedimage.data;
+	if (handler)
+		handler->free(encodedimage.data);
+	else
+		delete[] encodedimage.data;
 }
 
 } // magpie

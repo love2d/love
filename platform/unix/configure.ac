@@ -56,14 +56,15 @@ PKG_CHECK_MODULES([lua], [${with_lua}${with_luaversion}], [lua_found=yes],
 				  [PKG_CHECK_MODULES([lua], [${with_lua}], [lua_found=yes], [lua_found=no])])
 PKG_CHECK_MODULES([freetype2], [freetype2], [], [LOVE_MSG_ERROR([FreeType2])])
 PKG_CHECK_MODULES([openal], [openal], [], [LOVE_MSG_ERROR([OpenAL])])
-PKG_CHECK_MODULES([devil], [IL], [], [LOVE_MSG_ERROR([DevIL])])
 PKG_CHECK_MODULES([libmodplug], [libmodplug], [], [LOVE_MSG_ERROR([libmodplug])])
 PKG_CHECK_MODULES([vorbisfile], [vorbisfile], [], [LOVE_MSG_ERROR([libvorbis and libvorbisfile])])
+PKG_CHECK_MODULES([zlib], [zlib], [], [LOVE_MSG_ERROR([zlib])])
 
 # Other libraries
 AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], [LOVE_MSG_ERROR([PhysicsFS])])
 AC_SEARCH_LIBS([glLoadIdentity], [GL], [], [LOVE_MSG_ERROR([OpenGL])])
+AC_SEARCH_LIBS([tjInitCompress], [turbojpeg], [], [LOVE_MSG_ERROR([TurboJPEG])])
 
 # Lua, treated seperately because of --with-lua
 AS_VAR_IF([with_luaversion], [5.2], [luatest=lua_version], [luatest=lua_pcall]) # use lua_version for 5.2

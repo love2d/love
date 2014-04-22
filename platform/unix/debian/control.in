@@ -5,7 +5,6 @@ Maintainer: Bart van Strien <bart.bes@gmail.com>
 Build-Depends: debhelper (>= 9),
                autotools-dev,
                pkg-config,
-               libdevil-dev,
                libfreetype6-dev,
                libluajit-5.1-dev,
                libphysfs-dev,
@@ -13,11 +12,10 @@ Build-Depends: debhelper (>= 9),
                libopenal-dev,
                libogg-dev,
                libvorbis-dev,
-               libflac-dev,
-               libflac++-dev,
                libmodplug-dev,
                libmpg123-dev,
-               libmng-dev
+               zlib1g-dev,
+               libjpeg-turbo8-dev
 Standards-Version: 3.9.3
 Homepage: http://love2d.org
 
@@ -27,8 +25,6 @@ Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         libdevil1c2,
-         libmng1,
          libfreetype6,
          libgl1-mesa-glx,
          libluajit-5.1-2,
@@ -39,7 +35,9 @@ Depends: ${misc:Depends},
          libvorbis0a,
          libvorbisfile3,
          libmodplug1,
-         libmpg123-0
+         libmpg123-0,
+         zlib1g,
+         libjpeg-turbo8
 Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
 
 Package: love@LOVE_SUFFIX@

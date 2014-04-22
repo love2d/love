@@ -23,7 +23,8 @@
 #include "ImageData.h"
 #include "CompressedData.h"
 
-#include "DevilHandler.h"
+#include "JPEGHandler.h"
+#include "PNGHandler.h"
 
 namespace love
 {
@@ -34,7 +35,8 @@ namespace magpie
 
 Image::Image()
 {
-	formatHandlers.push_back(new DevilHandler);
+	formatHandlers.push_back(new PNGHandler);
+	formatHandlers.push_back(new JPEGHandler);
 }
 
 Image::~Image()

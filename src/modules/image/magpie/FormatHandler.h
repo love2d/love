@@ -93,6 +93,11 @@ public:
 	 **/
 	virtual EncodedImage encode(const DecodedImage &img, ImageData::Format format);
 
+	/**
+	 * Frees memory allocated by the format handler.
+	 **/
+	virtual void free(unsigned char *mem);
+
 }; // FormatHandler
 
 } // magpie

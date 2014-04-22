@@ -339,14 +339,16 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/CompressedData.h
 	src/modules/image/magpie/ddsHandler.cpp
 	src/modules/image/magpie/ddsHandler.h
-	src/modules/image/magpie/DevilHandler.cpp
-	src/modules/image/magpie/DevilHandler.h
 	src/modules/image/magpie/FormatHandler.cpp
 	src/modules/image/magpie/FormatHandler.h
 	src/modules/image/magpie/Image.cpp
 	src/modules/image/magpie/Image.h
 	src/modules/image/magpie/ImageData.cpp
 	src/modules/image/magpie/ImageData.h
+	src/modules/image/magpie/JPEGHandler.cpp
+	src/modules/image/magpie/JPEGHandler.h
+	src/modules/image/magpie/PNGHandler.cpp
+	src/modules/image/magpie/PNGHandler.h
 )
 
 set(LOVE_SRC_MODULE_IMAGE
@@ -929,6 +931,17 @@ target_link_libraries(love_3p_enet ${MEGA_LUA})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 
 #
+# LodePNG
+#
+
+set(LOVE_SRC_3P_LODEPNG
+	src/libraries/lodepng/lodepng.cpp
+	src/libraries/lodepng/lodepng.h
+)
+
+add_library(love_3p_lodepng ${LOVE_SRC_3P_LODEPNG})
+
+#
 # luasocket
 #
 
@@ -1042,6 +1055,7 @@ set(LOVE_3P
 	love_3p_box2d
 	love_3p_ddsparse
 	love_3p_enet
+	love_3p_lodepng
 	love_3p_luasocket
 	love_3p_noise1234
 	love_3p_wuff
@@ -1086,12 +1100,9 @@ include_directories(
 link_directories(${SDL_LINK_DIR})
 
 set(LOVE_MEGA_3P
-	${MEGA_DEVIL}
 	${MEGA_FREETYPE}
-	${MEGA_JASPER}
-	${MEGA_JPEG}
+	${MEGA_JPEG_TURBO}
 	${MEGA_LIBOGG}
-	${MEGA_LIBPNG}
 	${MEGA_LIBVORBISFILE}
 	${MEGA_LIBVORBIS}
 	${MEGA_LUA}
@@ -1101,7 +1112,6 @@ set(LOVE_MEGA_3P
 	${MEGA_PHYSFS}
 	${MEGA_SDL2MAIN}
 	${MEGA_SDL2}
-	${MEGA_TIFF}
 	${MEGA_ZLIB}
 )
 
@@ -1147,7 +1157,6 @@ target_link_libraries(love liblove)
 add_move_dll(love ${MEGA_MPEG123})
 add_move_dll(love ${MEGA_SDL2})
 add_move_dll(love ${MEGA_OPENAL})
-add_move_dll(love ${MEGA_DEVIL})
 
 if(LOVE_JIT)
 	add_move_file(love ${MEGA_LUAJIT_DLL})

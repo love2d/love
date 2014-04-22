@@ -133,7 +133,6 @@
 		FA08F62D16C7541400F007B5 /* wrap_SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C16FDB537A702F4D42534E /* wrap_SpriteBatch.cpp */; };
 		FA08F62E16C7542600F007B5 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 78115E763B723C0C40AD47CF /* ImageData.cpp */; };
 		FA08F62F16C7542600F007B5 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505F23A73BFE250833D650E4 /* Image.cpp */; };
-		FA08F63016C7542600F007B5 /* DevilHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AA7781A230065F346E2313A /* DevilHandler.cpp */; };
 		FA08F63116C7542600F007B5 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B0728FA73B107B37A956A09 /* wrap_Image.cpp */; };
 		FA08F63216C7542600F007B5 /* wrap_ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 076840774B0B6E721D0C18D0 /* wrap_ImageData.cpp */; };
 		FA08F63416C7542D00F007B5 /* JoystickModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B425307C0C1C4B3EFC3A5F /* JoystickModule.cpp */; };
@@ -216,6 +215,7 @@
 		FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */; };
 		FA1EF7C41799FEAC00FF380C /* wrap_System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA34E7D4174B55AF00E04D3F /* wrap_System.cpp */; };
 		FA1EF7C51799FEB200FF380C /* wrap_System.h in Headers */ = {isa = PBXBuildFile; fileRef = FA34E7D5174B55AF00E04D3F /* wrap_System.h */; };
+		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
 		FA34E7CD174B513F00E04D3F /* System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA34E7CB174B513F00E04D3F /* System.cpp */; };
 		FA34E7CE174B513F00E04D3F /* System.h in Headers */ = {isa = PBXBuildFile; fileRef = FA34E7CC174B513F00E04D3F /* System.h */; };
 		FA34E7D2174B515D00E04D3F /* System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA34E7D0174B515D00E04D3F /* System.cpp */; };
@@ -228,11 +228,17 @@
 		FA3D9E1616E6D41100CA6630 /* wrap_Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = FA3D9E1416E6D41000CA6630 /* wrap_Cursor.h */; };
 		FA435EA317B36E9C004C3F22 /* Polyline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA435EA117B36E9C004C3F22 /* Polyline.cpp */; };
 		FA435EA417B36E9C004C3F22 /* Polyline.h in Headers */ = {isa = PBXBuildFile; fileRef = FA435EA217B36E9C004C3F22 /* Polyline.h */; };
+		FA48E43618F10D00007CF0BD /* JPEGHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */; };
+		FA48E43718F10D00007CF0BD /* JPEGHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA48E43518F10D00007CF0BD /* JPEGHandler.h */; };
+		FA48E43918F10D6C007CF0BD /* jpeg-turbo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */; };
+		FA4BBCDE18A5DC5D0027707D /* lodepng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4BBCDC18A5DC5D0027707D /* lodepng.cpp */; };
+		FA4BBCDF18A5DC5D0027707D /* lodepng.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4BBCDD18A5DC5D0027707D /* lodepng.h */; };
+		FA4BBCE218A5DD7E0027707D /* PNGHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4BBCE018A5DD7E0027707D /* PNGHandler.cpp */; };
+		FA4BBCE318A5DD7E0027707D /* PNGHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4BBCE118A5DD7E0027707D /* PNGHandler.h */; };
 		FA5454C216F1310000D30303 /* MathModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA5454C016F1310000D30303 /* MathModule.cpp */; };
 		FA5454C316F1310000D30303 /* MathModule.h in Headers */ = {isa = PBXBuildFile; fileRef = FA5454C116F1310000D30303 /* MathModule.h */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
-		FA577AC416C7513200860150 /* IL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6916C719DE00860150 /* IL.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
 		FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6F16C719F000860150 /* mpg123.framework */; };
 		FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* Ogg.framework */; };
@@ -432,7 +438,6 @@
 		1A95437F513E662113AC154A /* b2Rope.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2Rope.h; sourceTree = "<group>"; };
 		1A9810F758AC1D1E4B6431FD /* wrap_Graphics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Graphics.cpp; sourceTree = "<group>"; };
 		1AA213FC158815FA77C40330 /* ChainShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChainShape.h; sourceTree = "<group>"; };
-		1AA7781A230065F346E2313A /* DevilHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DevilHandler.cpp; sourceTree = "<group>"; };
 		1B036C7C5A8832AE53BB1C06 /* b2CollideEdge.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2CollideEdge.cpp; sourceTree = "<group>"; };
 		1B1C4E4D288A1D2F29E57B1B /* Rasterizer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Rasterizer.cpp; sourceTree = "<group>"; };
 		1B4E22F1388E2B2E76E3377B /* wrap_GlyphData.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_GlyphData.cpp; sourceTree = "<group>"; };
@@ -476,7 +481,6 @@
 		27F777AB188D674F30BC1829 /* wrap_World.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_World.h; sourceTree = "<group>"; };
 		28016C9B51FE1A893DC35B66 /* Variant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Variant.h; sourceTree = "<group>"; };
 		28024635525B077E08A73D9B /* Source.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Source.cpp; sourceTree = "<group>"; };
-		283342E174613897621A43F1 /* DevilHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DevilHandler.h; sourceTree = "<group>"; };
 		286660042F9654F61AB90D7A /* Body.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Body.h; sourceTree = "<group>"; };
 		2912092853050AF9785F39BE /* wrap_RevoluteJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_RevoluteJoint.h; sourceTree = "<group>"; };
 		295C665B1E0B6B2D03CC4937 /* wrap_Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
@@ -765,6 +769,7 @@
 		FA0A4BF6182E260200E1E4D2 /* wrap_MotorJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_MotorJoint.cpp; sourceTree = "<group>"; };
 		FA0A4BF7182E260200E1E4D2 /* wrap_MotorJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_MotorJoint.h; sourceTree = "<group>"; };
 		FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
+		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		FA34E7CB174B513F00E04D3F /* System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = System.cpp; sourceTree = "<group>"; };
 		FA34E7CC174B513F00E04D3F /* System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = System.h; sourceTree = "<group>"; };
 		FA34E7D0174B515D00E04D3F /* System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = System.cpp; sourceTree = "<group>"; };
@@ -779,10 +784,16 @@
 		FA3D9E1416E6D41000CA6630 /* wrap_Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Cursor.h; sourceTree = "<group>"; };
 		FA435EA117B36E9C004C3F22 /* Polyline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Polyline.cpp; sourceTree = "<group>"; };
 		FA435EA217B36E9C004C3F22 /* Polyline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Polyline.h; sourceTree = "<group>"; };
+		FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGHandler.cpp; sourceTree = "<group>"; };
+		FA48E43518F10D00007CF0BD /* JPEGHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JPEGHandler.h; sourceTree = "<group>"; };
+		FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
+		FA4BBCDC18A5DC5D0027707D /* lodepng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lodepng.cpp; sourceTree = "<group>"; };
+		FA4BBCDD18A5DC5D0027707D /* lodepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lodepng.h; sourceTree = "<group>"; };
+		FA4BBCE018A5DD7E0027707D /* PNGHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PNGHandler.cpp; sourceTree = "<group>"; };
+		FA4BBCE118A5DD7E0027707D /* PNGHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PNGHandler.h; sourceTree = "<group>"; };
 		FA5454C016F1310000D30303 /* MathModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MathModule.cpp; sourceTree = "<group>"; };
 		FA5454C116F1310000D30303 /* MathModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MathModule.h; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
-		FA577A6916C719DE00860150 /* IL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IL.framework; path = /Library/Frameworks/IL.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA577A7116C719F400860150 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
@@ -897,12 +908,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
+				FA48E43918F10D6C007CF0BD /* jpeg-turbo.framework in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */,
-				FA577AC416C7513200860150 /* IL.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
 				FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */,
@@ -1091,14 +1103,16 @@
 				FAEC808D1711E76C0057279A /* CompressedData.h */,
 				FAE010DE170DE25E006F29D0 /* ddsHandler.cpp */,
 				FAE010DF170DE25E006F29D0 /* ddsHandler.h */,
-				1AA7781A230065F346E2313A /* DevilHandler.cpp */,
-				283342E174613897621A43F1 /* DevilHandler.h */,
 				FADD58DC18C30367005FC3BF /* FormatHandler.cpp */,
 				FA0CDE3B1710F9A50056E8D7 /* FormatHandler.h */,
 				505F23A73BFE250833D650E4 /* Image.cpp */,
 				68616BD516DB124312B47EB3 /* Image.h */,
 				FAEC80881710FEA60057279A /* ImageData.cpp */,
 				FAEC80891710FEA60057279A /* ImageData.h */,
+				FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */,
+				FA48E43518F10D00007CF0BD /* JPEGHandler.h */,
+				FA4BBCE018A5DD7E0027707D /* PNGHandler.cpp */,
+				FA4BBCE118A5DD7E0027707D /* PNGHandler.h */,
 			);
 			path = magpie;
 			sourceTree = "<group>";
@@ -1391,6 +1405,7 @@
 				63287ED84D0F2EEB65D249A3 /* Box2D */,
 				FAE010D7170DDE99006F29D0 /* ddsparse */,
 				FA5FDC5E1788D548002F0ED2 /* enet */,
+				FA4BBCDB18A5DC5D0027707D /* lodepng */,
 				3AED1DE005A53DDB07902760 /* luasocket */,
 				FA0354691731F3A700284828 /* noise1234 */,
 				36C14C81334735EC54E33637 /* utf8 */,
@@ -1830,13 +1845,23 @@
 			path = sdl;
 			sourceTree = "<group>";
 		};
+		FA4BBCDB18A5DC5D0027707D /* lodepng */ = {
+			isa = PBXGroup;
+			children = (
+				FA4BBCDC18A5DC5D0027707D /* lodepng.cpp */,
+				FA4BBCDD18A5DC5D0027707D /* lodepng.h */,
+			);
+			path = lodepng;
+			sourceTree = "<group>";
+		};
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FA317EB918F28B6D00B0BCD7 /* libz.dylib */,
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
 				FA577A6716C719D900860150 /* FreeType.framework */,
-				FA577A6916C719DE00860150 /* IL.framework */,
+				FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
 				FA577A6F16C719F000860150 /* mpg123.framework */,
@@ -1967,7 +1992,9 @@
 				FAF272A516E3D44400CC193A /* Channel.h in Headers */,
 				FAF272A716E3D44400CC193A /* LuaThread.h in Headers */,
 				FAF4377017F4AC530074F9E2 /* Mesh.h in Headers */,
+				FA4BBCDF18A5DC5D0027707D /* lodepng.h in Headers */,
 				FAF272A916E3D44400CC193A /* ThreadModule.h in Headers */,
+				FA4BBCE318A5DD7E0027707D /* PNGHandler.h in Headers */,
 				FAF6705018184FF800DBDEEA /* wuff_convert.h in Headers */,
 				FAF272AB16E3D44400CC193A /* wrap_Channel.h in Headers */,
 				FA0A4BF9182E260200E1E4D2 /* wrap_MotorJoint.h in Headers */,
@@ -2014,6 +2041,7 @@
 				FA0A4BF1182E0C2800E1E4D2 /* b2MotorJoint.h in Headers */,
 				FA5FDC851788D548002F0ED2 /* utility.h in Headers */,
 				FAF6704D18184FF800DBDEEA /* wuff.h in Headers */,
+				FA48E43718F10D00007CF0BD /* JPEGHandler.h in Headers */,
 				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
 				FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */,
 				FA7175AA178E8418001FE7FE /* lua.h in Headers */,
@@ -2096,6 +2124,7 @@
 				FA08F5B716C7530A00F007B5 /* Pool.cpp in Sources */,
 				FA08F5B816C7530A00F007B5 /* Source.cpp in Sources */,
 				FA08F5B916C7532A00F007B5 /* b64.cpp in Sources */,
+				FA4BBCE218A5DD7E0027707D /* PNGHandler.cpp in Sources */,
 				FA08F5BA16C7532A00F007B5 /* delay.cpp in Sources */,
 				FA08F5BB16C7532A00F007B5 /* Exception.cpp in Sources */,
 				FA08F5BD16C7532A00F007B5 /* Matrix.cpp in Sources */,
@@ -2154,6 +2183,7 @@
 				FA08F5EF16C7538F00F007B5 /* b2RevoluteJoint.cpp in Sources */,
 				FA08F5F016C7538F00F007B5 /* b2RopeJoint.cpp in Sources */,
 				FA08F5F116C7538F00F007B5 /* b2WeldJoint.cpp in Sources */,
+				FA4BBCDE18A5DC5D0027707D /* lodepng.cpp in Sources */,
 				FA08F5F216C7538F00F007B5 /* b2WheelJoint.cpp in Sources */,
 				FA08F5F316C7539B00F007B5 /* b2Rope.cpp in Sources */,
 				FA08F5F416C753A400F007B5 /* luasocket.cpp in Sources */,
@@ -2214,7 +2244,6 @@
 				FA08F62D16C7541400F007B5 /* wrap_SpriteBatch.cpp in Sources */,
 				FA08F62E16C7542600F007B5 /* ImageData.cpp in Sources */,
 				FA08F62F16C7542600F007B5 /* Image.cpp in Sources */,
-				FA08F63016C7542600F007B5 /* DevilHandler.cpp in Sources */,
 				FA08F63116C7542600F007B5 /* wrap_Image.cpp in Sources */,
 				FA08F63216C7542600F007B5 /* wrap_ImageData.cpp in Sources */,
 				FA08F63416C7542D00F007B5 /* JoystickModule.cpp in Sources */,
@@ -2258,6 +2287,7 @@
 				FA08F65816C7547300F007B5 /* wrap_Contact.cpp in Sources */,
 				FA08F65916C7547300F007B5 /* wrap_DistanceJoint.cpp in Sources */,
 				FA08F65A16C7547300F007B5 /* wrap_EdgeShape.cpp in Sources */,
+				FA48E43618F10D00007CF0BD /* JPEGHandler.cpp in Sources */,
 				FA08F65B16C7547300F007B5 /* wrap_Fixture.cpp in Sources */,
 				FA08F65C16C7547300F007B5 /* wrap_FrictionJoint.cpp in Sources */,
 				FA08F65D16C7548200F007B5 /* wrap_GearJoint.cpp in Sources */,
@@ -2476,6 +2506,10 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 9.0;
 				DYLIB_CURRENT_VERSION = 9.0;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				INFOPLIST_FILE = "Info-Framework.plist";
@@ -2498,6 +2532,10 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 9.0;
 				DYLIB_CURRENT_VERSION = 9.0;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2525,6 +2563,10 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 9.0;
 				DYLIB_CURRENT_VERSION = 9.0;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				INFOPLIST_FILE = "Info-Framework.plist";

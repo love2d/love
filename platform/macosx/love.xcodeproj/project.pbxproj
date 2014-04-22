@@ -11,7 +11,6 @@
 		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
 		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* Vorbis.framework */; };
-		A9255F431043240F00BA1496 /* IL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F421043240F00BA1496 /* IL.framework */; };
 		A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; };
 		A93E6E5510420B57007D418B /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
@@ -22,6 +21,7 @@
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
 		FA08F69616C766E000F007B5 /* love.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
 		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
+		FA77A36518F1172600D23AE9 /* jpeg-turbo.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */; };
 		FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
 		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
 		FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */; };
@@ -45,6 +45,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				FA77A36518F1172600D23AE9 /* jpeg-turbo.framework in Copy Frameworks */,
 				FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */,
 				FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */,
 				FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */,
@@ -52,7 +53,6 @@
 				A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */,
 				A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */,
 				A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */,
-				A9255F431043240F00BA1496 /* IL.framework in Copy Frameworks */,
 				A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */,
 				A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */,
 				A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */,
@@ -66,7 +66,6 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		8D1107320486CEB800E47090 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9255E021043195A00BA1496 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
-		A9255F421043240F00BA1496 /* IL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IL.framework; path = /Library/Frameworks/IL.framework; sourceTree = "<absolute>"; };
 		A9255F51104324D700BA1496 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
 		A93E6A3410420AC0007D418B /* love.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = love.cpp; path = ../../src/love.cpp; sourceTree = "<group>"; };
 		A93E6E4710420B4A007D418B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
@@ -80,6 +79,7 @@
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA08F69116C765A200F007B5 /* love.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA577A9316C7217800860150 /* love-framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "love-framework.xcodeproj"; sourceTree = "<group>"; };
+		FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
 		FA9B4A0916E1579F00074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
 		FAC8E8D316F3C468004DADF3 /* OSX.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OSX.mm; sourceTree = "<group>"; };
@@ -107,7 +107,7 @@
 				FA9B4A0916E1579F00074F42 /* SDL2.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				A93E6E4810420B4A007D418B /* FreeType.framework */,
-				A9255F421043240F00BA1496 /* IL.framework */,
+				FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */,
 				A9F16926109E7BAD00FC83D1 /* libmodplug.framework */,
 				FA08F69116C765A200F007B5 /* love.framework */,
 				A93E6E5310420B57007D418B /* Lua.framework */,

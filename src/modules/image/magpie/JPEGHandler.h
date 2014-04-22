@@ -18,9 +18,20 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#ifndef LOVE_IMAGE_MAGPIE_JPEG_HANDLER_H
+#define LOVE_IMAGE_MAGPIE_JPEG_HANDLER_H
+
 // LOVE
+#include "filesystem/FileData.h"
 #include "FormatHandler.h"
-#include "common/Exception.h"
+#include "thread/threads.h"
+
+// libjpeg-turbo
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#include <jpeg-turbo/turbojpeg.h>
+#else
+#include <turbojpeg.h>
+#endif
 
 namespace love
 {
@@ -29,39 +40,37 @@ namespace image
 namespace magpie
 {
 
-FormatHandler::FormatHandler()
+/**
+ * Interface between ImageData and TurboJPEG.
+ **/
+class JPEGHandler : public FormatHandler
 {
-}
+public:
 
-FormatHandler::~FormatHandler()
-{
-}
+	// Implements FormatHandler.
 
-bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
-{
-	return false;
-}
+	JPEGHandler();
+	virtual ~JPEGHandler();
 
-bool FormatHandler::canEncode(ImageData::Format /*format*/)
-{
-	return false;
-}
+	virtual bool canDecode(love::filesystem::FileData *data);
+	virtual bool canEncode(ImageData::Format format);
 
-FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*data*/)
-{
-	throw love::Exception("Image decoding is not implemented for this format backend.");
-}
+	virtual DecodedImage decode(love::filesystem::FileData *data);
+	virtual EncodedImage encode(const DecodedImage &img, ImageData::Format format);
 
-FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::Format /*format*/)
-{
-	throw love::Exception("Image encoding is not implemented for this format backend.");
-}
+private:
 
-void FormatHandler::free(unsigned char *mem)
-{
-	delete[] mem;
-}
+	Mutex *mutex;
+
+	tjhandle decompressor;
+	tjhandle compressor;
+
+	static const int COMPRESS_QUALITY = 90;
+
+}; // JPEGHandler
 
 } // magpie
 } // image
 } // love
+
+#endif // LOVE_IMAGE_MAGPIE_JPEG_HANDLER_H
