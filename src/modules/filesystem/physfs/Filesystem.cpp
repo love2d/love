@@ -407,19 +407,14 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	return std::string(dir);
 }
 
-bool Filesystem::exists(const char *file) const
+bool Filesystem::isDirectory(const char *dir) const
 {
-	return PHYSFS_exists(file);
-}
-
-bool Filesystem::isDirectory(const char *file) const
-{
-	return PHYSFS_isDirectory(file);
+	return PHYSFS_isDirectory(dir);
 }
 
 bool Filesystem::isFile(const char *file) const
 {
-	return exists(file) && !isDirectory(file);
+	return PHYSFS_exists(file) && !PHYSFS_isDirectory(file);
 }
 
 bool Filesystem::createDirectory(const char *dir)

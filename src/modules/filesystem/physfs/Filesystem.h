@@ -172,21 +172,13 @@ public:
 	std::string getRealDirectory(const char *filename) const;
 
 	/**
-	 * Checks whether a file exists in the current search path
-	 * or not.
-	 * @param file The filename to check.
+	 * Checks if a path is a directory.
+	 * @param dir The directory name to check.
 	 **/
-	bool exists(const char *file) const;
+	bool isDirectory(const char *dir) const;
 
 	/**
-	 * Checks if an existing file really is a directory.
-	 * @param file The filename to check.
-	 **/
-	bool isDirectory(const char *file) const;
-
-	/**
-	 * Checks if an existing file really is a file,
-	 * and not a directory.
+	 * Checks if a filename exists.
 	 * @param file The filename to check.
 	 **/
 	bool isFile(const char *file) const;
