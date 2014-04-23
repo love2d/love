@@ -33,6 +33,11 @@ namespace audio
 namespace openal
 {
 
+// Exception message when spatial audio functions are called on stereo sources,
+// as this is not supported by OpenAL.
+static const char* NOT_SUPPORTED_IN_STEREO_MSG = "This spatial audio functionality is only available on monaural sources. \
+													Ensure your source is not stereo before calling this function.";
+
 StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
 {
 	alGenBuffers(1, &buffer);
@@ -420,6 +425,9 @@ float Source::tell(Source::Unit unit)
 
 void Source::setPosition(float *v)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 		alSourcefv(source, AL_POSITION, v);
 
@@ -428,6 +436,9 @@ void Source::setPosition(float *v)
 
 void Source::getPosition(float *v) const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 		alGetSourcefv(source, AL_POSITION, v);
 	else
@@ -436,6 +447,9 @@ void Source::getPosition(float *v) const
 
 void Source::setVelocity(float *v)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 		alSourcefv(source, AL_VELOCITY, v);
 
@@ -444,6 +458,9 @@ void Source::setVelocity(float *v)
 
 void Source::getVelocity(float *v) const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 		alGetSourcefv(source, AL_VELOCITY, v);
 	else
@@ -452,6 +469,9 @@ void Source::getVelocity(float *v) const
 
 void Source::setDirection(float *v)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 		alSourcefv(source, AL_DIRECTION, v);
 	else
@@ -460,6 +480,8 @@ void Source::setDirection(float *v)
 
 void Source::getDirection(float *v) const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
 	if (valid)
 		alGetSourcefv(source, AL_DIRECTION, v);
 	else
@@ -468,6 +490,9 @@ void Source::getDirection(float *v) const
 
 void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	cone.innerAngle = (int) LOVE_TODEG(innerAngle);
 	cone.outerAngle = (int) LOVE_TODEG(outerAngle);
 	cone.outerVolume = outerVolume;
@@ -482,6 +507,9 @@ void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 
 void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	innerAngle = LOVE_TORAD(cone.innerAngle);
 	outerAngle = LOVE_TORAD(cone.outerAngle);
 	outerVolume = cone.outerVolume;
@@ -489,6 +517,9 @@ void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) c
 
 void Source::setRelative(bool enable)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 		alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
 
@@ -497,6 +528,9 @@ void Source::setRelative(bool enable)
 
 bool Source::isRelative() const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	return relative;
 }
 
@@ -751,6 +785,9 @@ float Source::getMaxVolume() const
 
 void Source::setReferenceDistance(float distance)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 	{
 		alSourcef(source, AL_REFERENCE_DISTANCE, distance);
@@ -761,6 +798,9 @@ void Source::setReferenceDistance(float distance)
 
 float Source::getReferenceDistance() const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 	{
 		ALfloat f;
@@ -774,6 +814,9 @@ float Source::getReferenceDistance() const
 
 void Source::setRolloffFactor(float factor)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 	{
 		alSourcef(source, AL_ROLLOFF_FACTOR, factor);
@@ -784,6 +827,9 @@ void Source::setRolloffFactor(float factor)
 
 float Source::getRolloffFactor() const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 	{
 		ALfloat f;
@@ -797,6 +843,9 @@ float Source::getRolloffFactor() const
 
 void Source::setMaxDistance(float distance)
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 	{
 		alSourcef(source, AL_MAX_DISTANCE, distance);
@@ -807,6 +856,9 @@ void Source::setMaxDistance(float distance)
 
 float Source::getMaxDistance() const
 {
+	if (channels > 1)
+		throw love::Exception(NOT_SUPPORTED_IN_STEREO_MSG);
+
 	if (valid)
 	{
 		ALfloat f;
