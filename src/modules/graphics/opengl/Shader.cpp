@@ -186,8 +186,16 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 	// Bind generic vertex attribute indices to names in the shader.
 	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
 	{
+		OpenGL::VertexAttrib attrib = (OpenGL::VertexAttrib) i;
+
+		// FIXME: We skip this both because pseudo-instancing is temporarily
+		// disabled (see graphics.lua), and because binding a non-existant
+		// attribute name to a location causes a shader linker warning.
+		if (attrib == OpenGL::ATTRIB_PSEUDO_INSTANCE_ID)
+			continue;
+
 		const char *name = nullptr;
-		if (attribNames.find((OpenGL::VertexAttrib) i, name))
+		if (attribNames.find(attrib, name))
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
@@ -768,7 +776,7 @@ StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM> Shader::typeNames(Shader::t
 
 StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
 {
-//	{"love_PseudoInstanceID", OpenGL::ATTRIB_PSEUDO_INSTANCE_ID},
+	{"love_PseudoInstanceID", OpenGL::ATTRIB_PSEUDO_INSTANCE_ID},
 };
 
 StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
