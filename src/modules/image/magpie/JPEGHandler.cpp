@@ -136,11 +136,13 @@ FormatHandler::EncodedImage JPEGHandler::encode(const DecodedImage &img, ImageDa
 		throw love::Exception("Out of memory.");
 	}
 
+	unsigned long jpegSize = tjsize;
+
 	int status = tjCompress2(compressor,
 	                         img.data,
 	                         img.width, 0, img.height,
 	                         TJPF_RGBA,
-	                         &encodedimage.data, &encodedimage.size,
+	                         &encodedimage.data, &jpegSize,
 	                         TJSAMP_444, COMPRESS_QUALITY, TJFLAG_NOREALLOC);
 
 	if (status < 0)
@@ -148,6 +150,8 @@ FormatHandler::EncodedImage JPEGHandler::encode(const DecodedImage &img, ImageDa
 		delete[] encodedimage.data;
 		throw love::Exception("Could not encode jpeg image: %s", tjGetErrorStr());
 	}
+
+	encodedimage.size = jpegSize;
 
 	return encodedimage;
 }

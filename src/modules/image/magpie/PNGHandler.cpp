@@ -46,7 +46,7 @@ static unsigned zlibDecompress(unsigned char **out, size_t *outsize, const unsig
 {
 	int status = Z_OK;
 
-	size_t outdataSize = insize;
+	uLongf outdataSize = insize;
 	size_t sizeMultiplier = 0;
 	unsigned char *outdata = nullptr;
 
