@@ -78,11 +78,13 @@ genmodules()
 	for library in *; do
 		NAME="LOVE_LIBRARY_$(upper "$library")"
 		flags="$flags library-$library"
-
-		printf "if $NAME\n"
-		printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
 		FILES="$(sourcefind "$library" | sed "s/^/    /")"
-		printf "${FILES:0:${#FILES}-2}\nendif\n\n"
+
+		if [[ ${#FILES} -gt 2 ]]; then
+			printf "if $NAME\n"
+			printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
+			printf "${FILES:0:${#FILES}-2}\nendif\n\n"
+		fi
 	done
 	cd ../..
 }
