@@ -255,7 +255,7 @@ void Shader::mapActiveUniforms()
 		}
 
 		// If this is a built-in (LOVE-created) uniform, store the location.
-		BuiltinExtern builtin;
+		BuiltinUniform builtin;
 		if (builtinNames.find(u.name.c_str(), builtin))
 			builtinUniforms[int(builtin)] = u.location;
 
@@ -660,19 +660,36 @@ int Shader::getTextureUnit(const std::string &name)
 	return texunit;
 }
 
+Shader::UniformType Shader::getExternVariable(const std::string &name, int &components, int &count)
+{
+	auto it = uniforms.find(name);
+
+	if (it == uniforms.end())
+	{
+		components = 0;
+		count = 0;
+		return UNIFORM_UNKNOWN;
+	}
+
+	components = getUniformTypeSize(it->second.type);
+	count = (int) it->second.count;
+
+	return it->second.baseType;
+}
+
 bool Shader::hasVertexAttrib(OpenGL::VertexAttrib attrib) const
 {
 	return vertexAttributes[int(attrib)] != -1;
 }
 
-bool Shader::hasBuiltinExtern(BuiltinExtern builtin) const
+bool Shader::hasBuiltinUniform(BuiltinUniform builtin) const
 {
 	return builtinUniforms[int(builtin)] != -1;
 }
 
-bool Shader::sendBuiltinFloat(BuiltinExtern builtin, int size, const GLfloat *vec, int count)
+bool Shader::sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *vec, int count)
 {
-	if (!hasBuiltinExtern(builtin))
+	if (!hasBuiltinUniform(builtin))
 		return false;
 
 	GLint location = builtinUniforms[int(builtin)];
@@ -766,6 +783,16 @@ bool Shader::isSupported()
 	return GLEE_VERSION_2_0 && getGLSLVersion() >= "1.2";
 }
 
+bool Shader::getConstant(const char *in, UniformType &out)
+{
+	return uniformTypes.find(in, out);
+}
+
+bool Shader::getConstant(UniformType in, const char *&out)
+{
+	return uniformTypes.find(in, out);
+}
+
 StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntries[] =
 {
 	{"vertex", Shader::TYPE_VERTEX},
@@ -774,6 +801,17 @@ StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntr
 
 StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM> Shader::typeNames(Shader::typeNameEntries, sizeof(Shader::typeNameEntries));
 
+StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM>::Entry Shader::uniformTypeEntries[] =
+{
+	{"float", Shader::UNIFORM_FLOAT},
+	{"int", Shader::UNIFORM_INT},
+	{"bool", Shader::UNIFORM_BOOL},
+	{"image", Shader::UNIFORM_SAMPLER},
+	{"unknown", Shader::UNIFORM_UNKNOWN},
+};
+
+StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM> Shader::uniformTypes(Shader::uniformTypeEntries, sizeof(Shader::uniformTypeEntries));
+
 StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
 {
 	{"love_PseudoInstanceID", OpenGL::ATTRIB_PSEUDO_INSTANCE_ID},
@@ -781,12 +819,12 @@ StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM>::Entry Shader::attribNa
 
 StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
 
-StringMap<Shader::BuiltinExtern, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
+StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
 {
 	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
 };
 
-StringMap<Shader::BuiltinExtern, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));
+StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));
 
 } // opengl
 } // graphics

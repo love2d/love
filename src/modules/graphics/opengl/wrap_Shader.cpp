@@ -346,6 +346,38 @@ int w_Shader_send(lua_State *L)
 	return luaL_argerror(L, 3, "number, boolean, table, image, or canvas expected");
 }
 
+int w_Shader_getExternVariable(lua_State *L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+
+	int components = 0;
+	int arrayelements = 0;
+	Shader::UniformType type = Shader::UNIFORM_UNKNOWN;
+
+	type = shader->getExternVariable(name, components, arrayelements);
+
+	// Check if the variable exists (function will set components to 0 if not.)
+	if (components > 0)
+	{
+		const char *tname = nullptr;
+		if (!Shader::getConstant(type, tname))
+			return luaL_error(L, "Unknown extern variable type name.");
+
+		lua_pushstring(L, tname);
+		lua_pushinteger(L, components);
+		lua_pushinteger(L, arrayelements);
+	}
+	else
+	{
+		lua_pushnil(L);
+		lua_pushnil(L);
+		lua_pushnil(L);
+	}
+
+	return 3;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getWarnings", w_Shader_getWarnings },
@@ -355,6 +387,7 @@ static const luaL_Reg functions[] =
 	{ "sendMatrix",  w_Shader_sendMatrix },
 	{ "sendTexture", w_Shader_sendTexture },
 	{ "send",        w_Shader_send },
+	{ "getExternVariable", w_Shader_getExternVariable },
 
 	// Deprecated since 0.9.1.
 	{ "sendImage",   w_Shader_sendTexture },

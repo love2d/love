@@ -56,11 +56,22 @@ public:
 		TYPE_MAX_ENUM
 	};
 
-	// Built-in extern (uniform) variables.
-	enum BuiltinExtern
+	// Built-in uniform (extern) variables.
+	enum BuiltinUniform
 	{
 		BUILTIN_SCREEN_SIZE,
 		BUILTIN_MAX_ENUM
+	};
+
+	// Types of potential uniform (extern) variables used in love's shaders.
+	enum UniformType
+	{
+		UNIFORM_FLOAT,
+		UNIFORM_INT,
+		UNIFORM_BOOL,
+		UNIFORM_SAMPLER,
+		UNIFORM_UNKNOWN,
+		UNIFORM_MAX_ENUM
 	};
 
 	// Type for a list of shader source codes in the form of sources[shadertype] = code
@@ -136,11 +147,24 @@ public:
 	void sendTexture(const std::string &name, Texture *texture);
 
 	/**
+	 * Gets the type, number of components, and number of array elements of
+	 * an active 'extern' (uniform) variable in the shader. If a uniform
+	 * variable with the specified name doesn't exist, returns UNIFORM_UNKNOWN
+	 * and sets the 'components' and 'count' values to 0.
+	 *
+	 * @param name The name of the uniform variable in the source code.
+	 * @param[out] components Number of components of the variable (2 for vec2.)
+	 * @param[out] count Number of array elements, if the variable is an array.
+	 * @return The base type of the uniform variable.
+	 **/
+	UniformType getExternVariable(const std::string &name, int &components, int &count);
+
+	/**
 	 * Internal use only.
 	 **/
 	bool hasVertexAttrib(OpenGL::VertexAttrib attrib) const;
-	bool hasBuiltinExtern(BuiltinExtern builtin) const;
-	bool sendBuiltinFloat(BuiltinExtern builtin, int size, const GLfloat *m, int count);
+	bool hasBuiltinUniform(BuiltinUniform builtin) const;
+	bool sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *m, int count);
 	void checkSetScreenParams();
 
 	const std::map<std::string, Object *> &getBoundRetainables() const;
@@ -148,17 +172,10 @@ public:
 	static std::string getGLSLVersion();
 	static bool isSupported();
 
-private:
+	static bool getConstant(const char *in, UniformType &out);
+	static bool getConstant(UniformType in, const char *&out);
 
-	// Types of potential uniform variables used in love's shaders.
-	enum UniformType
-	{
-		UNIFORM_FLOAT,
-		UNIFORM_INT,
-		UNIFORM_BOOL,
-		UNIFORM_SAMPLER,
-		UNIFORM_UNKNOWN
-	};
+private:
 
 	// Represents a single uniform/extern shader variable.
 	struct Uniform
@@ -227,13 +244,16 @@ private:
 	static StringMap<ShaderType, TYPE_MAX_ENUM>::Entry typeNameEntries[];
 	static StringMap<ShaderType, TYPE_MAX_ENUM> typeNames;
 
+	static StringMap<UniformType, UNIFORM_MAX_ENUM>::Entry uniformTypeEntries[];
+	static StringMap<UniformType, UNIFORM_MAX_ENUM> uniformTypes;
+
 	// Names for the generic vertex attributes used by love.
 	static StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM>::Entry attribNameEntries[];
 	static StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM> attribNames;
 
 	// Names for the built-in uniform variables.
-	static StringMap<BuiltinExtern, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];
-	static StringMap<BuiltinExtern, BUILTIN_MAX_ENUM> builtinNames;
+	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];
+	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM> builtinNames;
 };
 
 } // opengl
