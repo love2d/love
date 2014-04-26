@@ -133,12 +133,12 @@ int Physics::newPolygonShape(lua_State *L)
 int Physics::newChainShape(lua_State *L)
 {
 	int argc = lua_gettop(L)-1; // first argument is looping
+	if (argc % 2 != 0)
+		return luaL_error(L, "Number of vertex components must be a multiple of two.");
+
 	int vcount = (int)argc/2;
-
 	b2ChainShape *s = new b2ChainShape();
-
 	bool loop = luax_toboolean(L, 1);
-
 	b2Vec2 *vecs = new b2Vec2[vcount];
 
 	for (int i = 0; i<vcount; i++)
@@ -166,7 +166,6 @@ int Physics::newChainShape(lua_State *L)
 	delete[] vecs;
 
 	ChainShape *c = new ChainShape(s);
-
 	luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, c);
 	return 1;
 }
