@@ -51,12 +51,11 @@ bool Keyboard::hasKeyRepeat() const
 
 bool Keyboard::isDown(Key *keylist) const
 {
-	const Uint8 *keystate = SDL_GetKeyboardState(0);
-	std::map<Key, SDL_Keycode>::const_iterator it;
+	const Uint8 *keystate = SDL_GetKeyboardState(nullptr);
 
 	for (Key key = *keylist; key != KEY_MAX_ENUM; key = *(++keylist))
 	{
-		it = keys.find(key);
+		auto it = keys.find(key);
 		if (it != keys.end() && keystate[SDL_GetScancodeFromKey(it->second)])
 			return true;
 	}

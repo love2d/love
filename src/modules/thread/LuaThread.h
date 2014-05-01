@@ -25,15 +25,16 @@
 #include <string>
 
 // LOVE
-#include <common/Data.h>
-#include <common/Object.h>
-#include <common/Variant.h>
-#include <thread/threads.h>
+#include "common/Data.h"
+#include "common/Object.h"
+#include "common/Variant.h"
+#include "threads.h"
 
 namespace love
 {
 namespace thread
 {
+
 class LuaThread : public love::Object, public Threadable
 {
 public:
@@ -55,7 +56,9 @@ private:
 
 	Variant **args;
 	int nargs;
-};
+
+}; // LuaThread
+
 } // thread
 } // love
 

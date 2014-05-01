@@ -71,7 +71,7 @@ const char *Mouse::getName() const
 }
 
 Mouse::Mouse()
-	: curCursor(0)
+	: curCursor(nullptr)
 {
 }
 
@@ -187,7 +187,7 @@ void Mouse::setVisible(bool visible)
 
 bool Mouse::isDown(Button *buttonlist) const
 {
-	Uint32 buttonstate = SDL_GetMouseState(0, 0);
+	Uint32 buttonstate = SDL_GetMouseState(nullptr, nullptr);
 
 	for (Button button = *buttonlist; button != BUTTON_MAX_ENUM; button = *(++buttonlist))
 	{

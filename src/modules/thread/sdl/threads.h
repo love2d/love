@@ -21,8 +21,8 @@
 #ifndef LOVE_THREAD_SDL_THREADS_H
 #define LOVE_THREAD_SDL_THREADS_H
 
-#include <common/config.h>
-#include <thread/threads.h>
+#include "common/config.h"
+#include "thread/threads.h"
 
 #include <SDL_thread.h>
 
@@ -32,11 +32,13 @@ namespace thread
 {
 namespace sdl
 {
+
 class Conditional;
 
 class Mutex : public thread::Mutex
 {
 public:
+
 	Mutex();
 	~Mutex();
 
@@ -44,15 +46,18 @@ public:
 	void unlock();
 
 private:
+
 	SDL_mutex *mutex;
 	Mutex(const Mutex&/* mutex*/) {}
 
 	friend class Conditional;
-};
+
+}; // Mutex
 
 class Conditional : public thread::Conditional
 {
 public:
+
 	Conditional();
 	~Conditional();
 
@@ -61,8 +66,10 @@ public:
 	bool wait(thread::Mutex *mutex, int timeout=-1);
 
 private:
+
 	SDL_cond *cond;
-};
+
+}; // Conditional
 
 } // sdl
 } // thread

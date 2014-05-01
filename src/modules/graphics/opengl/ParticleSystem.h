@@ -516,7 +516,7 @@ protected:
 		// Particles gravitate towards this point.
 		love::Vector origin;
 
-		love::Vector speed;
+		love::Vector velocity;
 		love::Vector linearAcceleration;
 		float radialAcceleration;
 		float tangentialAcceleration;

@@ -276,8 +276,8 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	min = speedMin;
 	max = speedMax;
 	float speed = (float) rng.random(min, max);
-	p->speed = love::Vector(cosf(p->direction), sinf(p->direction));
-	p->speed *= speed;
+	p->velocity = love::Vector(cosf(p->direction), sinf(p->direction));
+	p->velocity *= speed;
 
 	p->linearAcceleration.x = (float) rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
 	p->linearAcceleration.y = (float) rng.random(linearAccelerationMin.y, linearAccelerationMax.y);
@@ -302,7 +302,7 @@ void ParticleSystem::initParticle(Particle *p, float t)
 
 	p->angle = p->rotation;
 	if (relativeRotation)
-		p->angle += atan2f(p->speed.y, p->speed.x);
+		p->angle += atan2f(p->velocity.y, p->velocity.x);
 
 	p->color = colors[0];
 }
@@ -907,11 +907,11 @@ void ParticleSystem::update(float dt)
 			// Resize tangential.
 			tangential *= p->tangentialAcceleration;
 
-			// Update position.
-			p->speed += (radial+tangential+p->linearAcceleration)*dt;
+			// Update velocity.
+			p->velocity += (radial + tangential + p->linearAcceleration) * dt;
 
 			// Modify position.
-			ppos += p->speed * dt;
+			ppos += p->velocity * dt;
 
 			p->position[0] = ppos.getX();
 			p->position[1] = ppos.getY();
@@ -924,7 +924,7 @@ void ParticleSystem::update(float dt)
 			p->angle = p->rotation;
 
 			if (relativeRotation)
-				p->angle += atan2f(p->speed.y, p->speed.x);
+				p->angle += atan2f(p->velocity.y, p->velocity.x);
 
 			// Change size according to given intervals:
 			// i = 0       1       2      3          n-1

@@ -283,10 +283,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 
 			arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
 			arg2 = new Variant((double)(e.jaxis.axis+1));
-			float value = e.jaxis.value / 32768.0f;
-			if (fabsf(value) < 0.001f) value = 0.0f;
-			if (value < -0.99f) value = -1.0f;
-			if (value > 0.99f) value = 1.0f;
+			float value = joystick::Joystick::clampval(e.jaxis.value / 32768.0f);
 			arg3 = new Variant((double) value);
 			msg = new Message("joystickaxis", arg1, arg2, arg3);
 			arg1->release();
@@ -345,10 +342,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			arg1 = new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy);
 
 			arg2 = new Variant(txt, strlen(txt));
-			float value = e.jaxis.value / 32768.0f;
-			if (fabsf(value) < 0.001f) value = 0.0f;
-			if (value < -0.99f) value = -1.0f;
-			if (value > 0.99f) value = 1.0f;
+			float value = joystick::Joystick::clampval(e.caxis.value / 32768.0f);
 			arg3 = new Variant((double) value);
 			msg = new Message("gamepadaxis", arg1, arg2, arg3);
 			arg1->release();

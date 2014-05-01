@@ -27,7 +27,7 @@ namespace love
 namespace system
 {
 
-static System *instance = 0;
+static System *instance = nullptr;
 
 int w_getOS(lua_State *L)
 {
@@ -99,7 +99,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_system(lua_State *L)
 {
-	if (instance == 0)
+	if (instance == nullptr)
 	{
 		instance = new love::system::sdl::System();
 	}
@@ -111,7 +111,7 @@ extern "C" int luaopen_love_system(lua_State *L)
 	w.name = "system";
 	w.flags = MODULE_T;
 	w.functions = functions;
-	w.types = 0;
+	w.types = nullptr;
 
 	return luax_register_module(L, w);
 }

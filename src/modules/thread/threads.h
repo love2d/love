@@ -21,7 +21,7 @@
 #ifndef LOVE_THREAD_THREADS_H
 #define LOVE_THREAD_THREADS_H
 
-#include <common/config.h>
+#include "common/config.h"
 #include "Thread.h"
 
 namespace love

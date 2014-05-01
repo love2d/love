@@ -111,7 +111,7 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	memcpy(sprite, texture->getVertices(), sizeof(Vertex) * 4);
 
 	// Transform.
-	static Matrix t;
+	Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 
@@ -138,7 +138,7 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	// Needed for colors.
 	memcpy(sprite, quad->getVertices(), sizeof(Vertex) * 4);
 
-	static Matrix t;
+	Matrix t;
 	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
 	t.transform(sprite, sprite, 4);
 

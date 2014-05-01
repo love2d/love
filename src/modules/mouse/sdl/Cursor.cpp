@@ -30,7 +30,7 @@ namespace sdl
 {
 
 Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
-	: cursor(0)
+	: cursor(nullptr)
 	, type(CURSORTYPE_IMAGE)
 	, systemType(CURSOR_MAX_ENUM)
 {
@@ -63,7 +63,7 @@ Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
 }
 
 Cursor::Cursor(mouse::Cursor::SystemCursor cursortype)
-	: cursor(0)
+	: cursor(nullptr)
 	, type(CURSORTYPE_SYSTEM)
 	, systemType(cursortype)
 {

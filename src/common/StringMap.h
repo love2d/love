@@ -26,7 +26,7 @@
 namespace love
 {
 
-template<typename T, unsigned SIZE>
+template<typename T, unsigned int SIZE>
 class StringMap
 {
 public:
@@ -37,18 +37,16 @@ public:
 		T value;
 	};
 
-	StringMap(Entry *entries, unsigned num)
+	StringMap(const Entry *entries, unsigned int num)
 	{
 
-		for (unsigned i = 0; i < SIZE; ++i)
-			reverse[i] = 0;
+		for (unsigned int i = 0; i < SIZE; ++i)
+			reverse[i] = nullptr;
 
-		unsigned n = num/sizeof(Entry);
+		unsigned int n = num / sizeof(Entry);
 
-		for (unsigned i = 0; i < n; ++i)
-		{
+		for (unsigned int i = 0; i < n; ++i)
 			add(entries[i].key, entries[i].value);
-		}
 	}
 
 	bool streq(const char *a, const char *b)
@@ -57,6 +55,7 @@ public:
 		{
 			if (*a != *b)
 				return false;
+
 			++a;
 			++b;
 		}
@@ -66,11 +65,11 @@ public:
 
 	bool find(const char *key, T &t)
 	{
-		unsigned str_hash = djb2(key);
+		unsigned int str_hash = djb2(key);
 
-		for (unsigned i = 0; i < MAX; ++i)
+		for (unsigned int i = 0; i < MAX; ++i)
 		{
-			unsigned str_i = (str_hash + i) % MAX;
+			unsigned int str_i = (str_hash + i) % MAX;
 
 			if (!records[str_i].set)
 				return false;
@@ -85,14 +84,14 @@ public:
 		return false;
 	}
 
-	bool find(T key, const char  *&str)
+	bool find(T key, const char *&str)
 	{
-		unsigned index = (unsigned)key;
+		unsigned int index = (unsigned int) key;
 
 		if (index >= SIZE)
 			return false;
 
-		if (reverse[index] != 0)
+		if (reverse[index] != nullptr)
 		{
 			str = reverse[index];
 			return true;
@@ -105,12 +104,12 @@ public:
 
 	bool add(const char *key, T value)
 	{
-		unsigned str_hash = djb2(key);
+		unsigned int str_hash = djb2(key);
 		bool inserted = false;
 
-		for (unsigned i = 0; i < MAX; ++i)
+		for (unsigned int i = 0; i < MAX; ++i)
 		{
-			unsigned str_i = (str_hash + i) % MAX;
+			unsigned int str_i = (str_hash + i) % MAX;
 
 			if (!records[str_i].set)
 			{
@@ -122,7 +121,7 @@ public:
 			}
 		}
 
-		unsigned index = (unsigned)value;
+		unsigned int index = (unsigned int) value;
 
 		if (index >= SIZE)
 		{
@@ -135,9 +134,9 @@ public:
 		return inserted;
 	}
 
-	unsigned djb2(const char *key)
+	unsigned int djb2(const char *key)
 	{
-		unsigned hash = 5381;
+		unsigned int hash = 5381;
 		int c;
 
 		while ((c = *key++))
@@ -156,7 +155,7 @@ private:
 		Record() : set(false) {}
 	};
 
-	const static unsigned MAX = SIZE*2;
+	static const unsigned int MAX = SIZE * 2;
 
 	Record records[MAX];
 	const char *reverse[SIZE];

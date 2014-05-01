@@ -22,7 +22,7 @@
 #define LOVE_THREAD_SDL_THREAD_H
 
 // LOVE
-#include <thread/Thread.h>
+#include "thread/Thread.h"
 #include "threads.h"
 
 // SDL
@@ -34,6 +34,7 @@ namespace thread
 {
 namespace sdl
 {
+
 class Thread : public thread::Thread
 {
 public:

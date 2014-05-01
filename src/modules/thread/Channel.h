@@ -26,13 +26,14 @@
 #include <string>
 
 // LOVE
-#include <common/Variant.h>
-#include <thread/threads.h>
+#include "common/Variant.h"
+#include "threads.h"
 
 namespace love
 {
 namespace thread
 {
+
 class Channel : public love::Object
 {
 // FOR WRAPPER USE ONLY
@@ -40,8 +41,10 @@ friend void retainVariant(Channel *, Variant *);
 friend void releaseVariant(Channel *, Variant *);
 
 public:
+
 	Channel();
 	~Channel();
+
 	static Channel *getChannel(const std::string &name);
 
 	unsigned long push(Variant *var);
@@ -56,6 +59,7 @@ public:
 	void release();
 
 private:
+
 	Channel(const std::string &name);
 	void lockMutex();
 	void unlockMutex();
@@ -68,7 +72,9 @@ private:
 
 	unsigned long sent;
 	unsigned long received;
+
 }; // Channel
+
 } // thread
 } // love
 

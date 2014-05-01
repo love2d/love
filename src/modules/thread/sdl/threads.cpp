@@ -27,6 +27,7 @@ namespace thread
 {
 namespace sdl
 {
+
 Mutex::Mutex()
 {
 	mutex = SDL_CreateMutex();
@@ -80,6 +81,11 @@ bool Conditional::wait(thread::Mutex *_mutex, int timeout)
 }
 
 } // sdl
+
+
+/**
+ * Implementations of the functions declared in src/modules/threads.h.
+ **/
 
 thread::Mutex *newMutex()
 {
