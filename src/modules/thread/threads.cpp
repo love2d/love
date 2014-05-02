@@ -99,5 +99,10 @@ bool Threadable::isRunning() const
 	return owner->isRunning();
 }
 
+const char *Threadable::getThreadName() const
+{
+	return threadName.empty() ? nullptr : threadName.c_str();
+}
+
 } // thread
 } // love

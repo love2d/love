@@ -21,8 +21,12 @@
 #ifndef LOVE_THREAD_THREADS_H
 #define LOVE_THREAD_THREADS_H
 
+// LOVE
 #include "common/config.h"
 #include "Thread.h"
+
+// C++
+#include <string>
 
 namespace love
 {
@@ -83,9 +87,13 @@ public:
 	bool start();
 	void wait();
 	bool isRunning() const;
+	const char *getThreadName() const;
 
 protected:
+
 	Thread *owner;
+	std::string threadName;
+
 };
 
 Mutex *newMutex();

@@ -51,7 +51,7 @@ bool Thread::start()
 		return false;
 	if (thread) // Clean old handle up
 		SDL_WaitThread(thread, 0);
-	thread = SDL_CreateThread(thread_runner, NULL, this);
+	thread = SDL_CreateThread(thread_runner, t->getThreadName(), this);
 	running = (thread != 0);
 	return running;
 }

@@ -37,6 +37,7 @@ Audio::PoolThread::PoolThread(Pool *pool)
 	, finish(false)
 {
 	mutex = thread::newMutex();
+	threadName = "AudioPool";
 }
 
 Audio::PoolThread::~PoolThread()
