@@ -1368,7 +1368,7 @@ void main() {
 		local vertexcodes = {
 			GLSL_VERSION,
 			GLSL_SYNTAX, GLSL_VERTEX.HEADER, GLSL_UNIFORMS,
-			"#line 0",
+			"#line 1",
 			vertexcode,
 			GLSL_VERTEX.FOOTER,
 		}
@@ -1379,7 +1379,7 @@ void main() {
 		local pixelcodes = {
 			GLSL_VERSION,
 			GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
-			"#line 0",
+			"#line 1",
 			pixelcode,
 			is_multicanvas and GLSL_PIXEL.FOOTER_MULTI_CANVAS or GLSL_PIXEL.FOOTER,
 		}
