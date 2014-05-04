@@ -56,6 +56,8 @@ public:
 
 private:
 
+	// Whether holding down a key triggers repeated key press events.
+	// The real implementation is in love::event::sdl::Event::Convert.
 	bool key_repeat;
 
 	static std::map<Key, SDL_Keycode> createKeyMap();

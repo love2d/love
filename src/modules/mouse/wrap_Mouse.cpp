@@ -30,11 +30,11 @@ namespace love
 namespace mouse
 {
 
-static Mouse *instance = 0;
+static Mouse *instance = nullptr;
 
 int w_newCursor(lua_State *L)
 {
-	Cursor *cursor = 0;
+	Cursor *cursor = nullptr;
 
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 		luax_convobj(L, 1, "image", "newImageData");
@@ -212,7 +212,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_mouse(lua_State *L)
 {
-	if (instance == 0)
+	if (instance == nullptr)
 	{
 		EXCEPT_GUARD(instance = new love::mouse::sdl::Mouse();)
 	}

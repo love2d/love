@@ -36,7 +36,7 @@ int w_Cursor_getType(lua_State *L)
 	Cursor *cursor = luax_checkcursor(L, 1);
 
 	Cursor::CursorType ctype = cursor->getType();
-	const char *typestr = 0;
+	const char *typestr = nullptr;
 
 	if (ctype == Cursor::CURSORTYPE_IMAGE)
 		mouse::Cursor::getConstant(ctype, typestr);

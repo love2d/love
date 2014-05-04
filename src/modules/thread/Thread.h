@@ -22,8 +22,8 @@
 #define LOVE_THREAD_THREAD_H
 
 // LOVE
-#include <common/runtime.h>
-#include <common/Object.h>
+#include "common/runtime.h"
+#include "common/Object.h"
 
 namespace love
 {

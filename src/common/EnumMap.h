@@ -26,7 +26,7 @@
 namespace love
 {
 
-template<typename T, typename U, unsigned PEAK>
+template<typename T, typename U, unsigned int PEAK>
 class EnumMap
 {
 public:
@@ -37,14 +37,14 @@ public:
 		U u;
 	};
 
-	EnumMap(Entry *entries, unsigned size)
+	EnumMap(const Entry *entries, unsigned int size)
 	{
-		unsigned n = size/sizeof(Entry);
+		unsigned int n = size / sizeof(Entry);
 
-		for (unsigned i = 0; i<n; ++i)
+		for (unsigned int i = 0; i < n; ++i)
 		{
-			unsigned e_t = (unsigned)entries[i].t;
-			unsigned e_u = (unsigned)entries[i].u;
+			unsigned int e_t = (unsigned int) entries[i].t;
+			unsigned int e_u = (unsigned int) entries[i].u;
 
 			if (e_t < PEAK)
 			{
@@ -61,9 +61,9 @@ public:
 
 	bool find(T t, U &u)
 	{
-		if ((unsigned)t < PEAK && values_u[(unsigned)t].set)
+		if ((unsigned int) t < PEAK && values_u[(unsigned int) t].set)
 		{
-			u = (U)values_u[(unsigned)t].v;
+			u = (U) values_u[(unsigned int) t].v;
 			return true;
 		}
 
@@ -72,9 +72,9 @@ public:
 
 	bool find(U u, T &t)
 	{
-		if ((unsigned)u < PEAK && values_t[(unsigned)u].set)
+		if ((unsigned int) u < PEAK && values_t[(unsigned int) u].set)
 		{
-			t = (T)values_t[(unsigned)u].v;
+			t = (T) values_t[(unsigned int) u].v;
 			return true;
 		}
 

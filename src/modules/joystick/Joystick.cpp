@@ -29,7 +29,7 @@ namespace love
 namespace joystick
 {
 
-float Joystick::clampval(float x) const
+float Joystick::clampval(float x)
 {
 	if (fabsf(x) < 0.01)
 		return 0.0f;

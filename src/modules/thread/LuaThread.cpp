@@ -38,6 +38,7 @@ LuaThread::LuaThread(const std::string &name, love::Data *code)
 	, nargs(0)
 {
 	code->retain();
+	threadName = name;
 }
 
 LuaThread::~LuaThread()

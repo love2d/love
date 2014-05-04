@@ -29,7 +29,7 @@ namespace love
 namespace keyboard
 {
 
-static Keyboard *instance = 0;
+static Keyboard *instance = nullptr;
 
 int w_setKeyRepeat(lua_State *L)
 {
@@ -87,7 +87,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_keyboard(lua_State *L)
 {
-	if (instance == 0)
+	if (instance == nullptr)
 	{
 		EXCEPT_GUARD(instance = new love::keyboard::sdl::Keyboard();)
 	}

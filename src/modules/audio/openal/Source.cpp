@@ -259,10 +259,7 @@ bool Source::update()
 
 			alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
 
-			ALint b;
-			alGetSourcei(source, AL_BUFFER, &b);
-			int freq;
-			alGetBufferi(b, AL_FREQUENCY, &freq);
+			int freq = decoder->getSampleRate();
 			curOffsetSecs = curOffsetSamples / freq;
 
 			// Get a free buffer.
@@ -338,11 +335,7 @@ void Source::seekAtomic(float offset, void *unit)
 			if (type == TYPE_STREAM)
 			{
 				offsetSamples = offset;
-				ALint buffer;
-				alGetSourcei(source, AL_BUFFER, &buffer);
-				int freq;
-				alGetBufferi(buffer, AL_FREQUENCY, &freq);
-				offset /= freq;
+				offset /= decoder->getSampleRate();
 				offsetSeconds = offset;
 				decoder->seek(offset);
 			}
@@ -357,11 +350,7 @@ void Source::seekAtomic(float offset, void *unit)
 			{
 				offsetSeconds = offset;
 				decoder->seek(offset);
-				ALint buffer;
-				alGetSourcei(source, AL_BUFFER, &buffer);
-				int freq;
-				alGetBufferi(buffer, AL_FREQUENCY, &freq);
-				offsetSamples = offset*freq;
+				offsetSamples = offset * decoder->getSampleRate();
 			}
 			else
 			{
@@ -403,11 +392,7 @@ float Source::tellAtomic(void *unit) const
 		default:
 			{
 				alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
-				ALint buffer;
-				alGetSourcei(source, AL_BUFFER, &buffer);
-				int freq;
-				alGetBufferi(buffer, AL_FREQUENCY, &freq);
-				offset /= freq;
+				offset /= decoder->getSampleRate();
 				if (type == TYPE_STREAM) offset += offsetSeconds;
 			}
 			break;

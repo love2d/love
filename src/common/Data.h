@@ -47,7 +47,7 @@ public:
 	 * Gets a pointer to the data. This pointer will obviously not
 	 * be valid if the Data object is destroyed.
 	 **/
-	virtual void *getData() const = 0 ;
+	virtual void *getData() const = 0;
 
 	/**
 	 * Gets the size of the Data in bytes.

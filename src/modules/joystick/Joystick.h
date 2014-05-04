@@ -173,9 +173,7 @@ public:
 	static bool getConstant(const char *in, InputType &out);
 	static bool getConstant(InputType in, const char *&out);
 
-protected:
-
-	float clampval(float x) const;
+	static float clampval(float x);
 
 private:
 

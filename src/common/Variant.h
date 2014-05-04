@@ -48,7 +48,6 @@ public:
 	static Variant *fromLua(lua_State *L, int n, bool allowTables = true);
 	void toLua(lua_State *L);
 
-private:
 	enum Type
 	{
 		UNKNOWN = 0,
@@ -74,6 +73,8 @@ private:
 		void *userdata;
 		std::vector<std::pair<Variant*, Variant*> > *table;
 	} data;
+
+private:
 	love::Type udatatype;
 	bits flags;
 
