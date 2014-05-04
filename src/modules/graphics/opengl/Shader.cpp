@@ -66,25 +66,21 @@ Shader *Shader::current = nullptr;
 GLint Shader::maxTexUnits = 0;
 std::vector<int> Shader::textureCounters;
 
-Shader::Shader(const std::vector<std::string> &vertcode, const std::vector<std::string> &pixelcode)
-	: program(0)
+Shader::Shader(const ShaderSources &sources)
+	: shaderSources(sources)
+	, program(0)
 	, builtinUniforms()
 	, vertexAttributes()
 	, lastCanvas((Canvas *) -1)
 	, lastViewport()
 {
-	if (vertcode.empty() && pixelcode.empty())
+	if (shaderSources.empty())
 		throw love::Exception("Cannot create shader: no source code!");
-
-	shaderSources[TYPE_VERTEX] = vertcode;
-	shaderSources[TYPE_PIXEL] = pixelcode;
 
 	if (maxTexUnits <= 0)
 	{
 		GLint maxtexunits;
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
-
-		// TU 0 is never used for stored Shader images.
 		maxTexUnits = std::max(maxtexunits - 1, 0);
 	}
 
@@ -110,7 +106,7 @@ Shader::~Shader()
 	unloadVolatile();
 }
 
-GLuint Shader::compileCode(ShaderType type, const std::vector<std::string> &code)
+GLuint Shader::compileCode(ShaderType type, const std::string &code)
 {
 	GLenum glshadertype;
 	const char *typestr;
@@ -146,18 +142,9 @@ GLuint Shader::compileCode(ShaderType type, const std::vector<std::string> &code
 			throw love::Exception("Cannot create %s shader object.", typestr);
 	}
 
-	std::vector<const GLchar *> codelist;
-	std::vector<GLint> lengthlist;
-
-	for (size_t i = 0; i < code.size(); i++)
-	{
-		codelist.push_back((const GLchar *) code[i].c_str());
-		lengthlist.push_back((GLint) code[i].length());
-	}
-
-	// The code parameter is a list of source code "files." We can hand them
-	// all to OpenGL at once using glShaderSource.
-	glShaderSource(shaderid, codelist.size(), &codelist[0], &lengthlist[0]);
+	const char *src = code.c_str();
+	size_t srclen = code.length();
+	glShaderSource(shaderid, 1, (const GLchar **)&src, (GLint *)&srclen);
 
 	glCompileShader(shaderid);
 
@@ -289,12 +276,10 @@ bool Shader::loadVolatile()
 
 	std::vector<GLuint> shaderids;
 
-	for (int i = 0; i < (int) TYPE_MAX_ENUM; i++)
+	ShaderSources::const_iterator source;
+	for (source = shaderSources.begin(); source != shaderSources.end(); ++source)
 	{
-		if (shaderSources[i].empty())
-			continue;
-
-		GLuint shaderid = compileCode((ShaderType) i, shaderSources[i]);
+		GLuint shaderid = compileCode(source->first, source->second);
 		shaderids.push_back(shaderid);
 	}
 
@@ -303,7 +288,7 @@ bool Shader::loadVolatile()
 
 	createProgram(shaderids);
 
-	// Get all active uniform variables in this shader from OpenGL.
+	// Retreive all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
 
 	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)

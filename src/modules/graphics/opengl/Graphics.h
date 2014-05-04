@@ -210,7 +210,7 @@ public:
 
 	Canvas *newCanvas(int width, int height, Texture::Format format = Texture::FORMAT_NORMAL, int fsaa = 0);
 
-	Shader *newShader(const std::vector<std::string> &vertcode, const std::vector<std::string> &pixelcode);
+	Shader *newShader(const Shader::ShaderSources &sources);
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
 	Mesh *newMesh(int vertexcount, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
