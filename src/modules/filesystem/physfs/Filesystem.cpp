@@ -130,6 +130,11 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	// (No error on fail, it means that the path doesn't exist).
 	PHYSFS_addToSearchPath(save_path_full.c_str(), appendToPath);
 
+	// HACK: This forces setupWriteDirectory to be called the next time a file
+	// is opened for writing - otherwise it won't be called at all if it was
+	// already called at least once before.
+	PHYSFS_setWriteDir(nullptr);
+
 	return true;
 }
 
