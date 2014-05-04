@@ -74,14 +74,11 @@ public:
 		UNIFORM_MAX_ENUM
 	};
 
-	// Type for a list of shader source codes in the form of sources[shadertype] = code
-	typedef std::map<ShaderType, std::string> ShaderSources;
-
 	/**
 	 * Creates a new Shader using a list of source codes.
-	 * Sources must contain either vertex or pixel shader code, or both.
+	 * The sources must contain either vertex or pixel shader code, or both.
 	 **/
-	Shader(const ShaderSources &sources);
+	Shader(const std::vector<std::string> &vertcode, const std::vector<std::string> &pixelcode);
 
 	virtual ~Shader();
 
@@ -196,7 +193,7 @@ private:
 	UniformType getUniformBaseType(GLenum type) const;
 	void checkSetUniformError(const Uniform &u, int size, int count, UniformType sendtype) const;
 
-	GLuint compileCode(ShaderType type, const std::string &code);
+	GLuint compileCode(ShaderType type, const std::vector<std::string> &code);
 	void createProgram(const std::vector<GLuint> &shaderids);
 
 	int getTextureUnit(const std::string &name);
@@ -206,8 +203,9 @@ private:
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
 
-	// List of all shader code attached to this Shader
-	ShaderSources shaderSources;
+	// List of all shader code attached to this Shader. Each shader type has its
+	// own list, which represents separate "files".
+	std::vector<std::string> shaderSources[TYPE_MAX_ENUM];
 
 	// Shader compiler warning strings for individual shader stages.
 	std::map<ShaderType, std::string> shaderWarnings;

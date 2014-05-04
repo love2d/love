@@ -1365,25 +1365,35 @@ void main() {
 	}
 
 	local function createVertexCode(vertexcode)
+		-- If we return an array, each string in the array is considered separate to GLSL,
+		-- and the line numbers in GLSL errors/warnings maintain this.
 		local vertexcodes = {
-			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_VERTEX.HEADER, GLSL_UNIFORMS,
-			"#line 1",
-			vertexcode,
-			GLSL_VERTEX.FOOTER,
+			table_concat({
+				GLSL_VERSION,
+				GLSL_SYNTAX, GLSL_VERTEX.HEADER, GLSL_UNIFORMS,
+			}, "\n") .. "\n",
+			table_concat({
+				vertexcode,
+				GLSL_VERTEX.FOOTER
+			}, "\n"),
 		}
-		return table_concat(vertexcodes, "\n")
+		return vertexcodes
 	end
 
 	local function createPixelCode(pixelcode, is_multicanvas)
+		-- If we return an array, each string in the array is considered separate to GLSL,
+		-- and the line numbers in GLSL errors/warnings maintain this.
 		local pixelcodes = {
-			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
-			"#line 1",
-			pixelcode,
-			is_multicanvas and GLSL_PIXEL.FOOTER_MULTI_CANVAS or GLSL_PIXEL.FOOTER,
+			table_concat({
+				GLSL_VERSION,
+				GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
+			}, "\n") .. "\n",
+			table_concat({
+				pixelcode,
+				is_multicanvas and GLSL_PIXEL.FOOTER_MULTI_CANVAS or GLSL_PIXEL.FOOTER,
+			}, "\n"),
 		}
-		return table_concat(pixelcodes, "\n")
+		return pixelcodes
 	end
 
 	local function isVertexCode(code)

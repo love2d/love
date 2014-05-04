@@ -353,16 +353,16 @@ int w_newShader(lua_State *L)
 	if (!Shader::isSupported())
 		return luaL_error(L, "Sorry, your graphics card does not support shaders.");
 
-	// clamp stack to 2 elements
+	// Clamp stack to 2 elements.
 	lua_settop(L, 2);
 
-	// read any filepath arguments
+	// Read any filepath arguments.
 	for (int i = 1; i <= 2; i++)
 	{
 		if (!lua_isstring(L, i))
 			continue;
 
-		// call love.filesystem.isFile(arg_i)
+		// Call love.filesystem.isFile(arg_i)
 		luax_getfunction(L, "filesystem", "isFile");
 		lua_pushvalue(L, i);
 		lua_call(L, 1, 1);
@@ -382,43 +382,76 @@ int w_newShader(lua_State *L)
 	bool has_arg1 = lua_isstring(L, 1);
 	bool has_arg2 = lua_isstring(L, 2);
 
-	// require at least one string argument
+	// Require at least one string argument.
 	if (!(has_arg1 || has_arg2))
 		luaL_checkstring(L, 1);
 
 	luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
 
-	// push vertexcode and pixelcode strings to the top of the stack
+	// Push vertexcode and pixelcode strings to the top of the stack.
 	lua_pushvalue(L, 1);
 	lua_pushvalue(L, 2);
 
-	// call effectCodeToGLSL, returned values will be at the top of the stack
+	// Call shaderCodeToGLSL, returned values will be at the top of the stack.
 	if (lua_pcall(L, 2, 2, 0) != 0)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
 
-	Shader::ShaderSources sources;
+	// Each shader type might contain several source code strings.
+	std::vector<std::string> sources[Shader::TYPE_MAX_ENUM];
 
-	// vertex shader code
-	if (lua_isstring(L, -2))
+	// Vertex shader code.
+	if (!lua_isnoneornil(L, -2))
 	{
-		std::string vertexcode(luaL_checkstring(L, -2));
-		sources[Shader::TYPE_VERTEX] = vertexcode;
+		std::vector<std::string> &source = sources[Shader::TYPE_VERTEX];
+
+		// The argument might be a Lua array containing strings for the code.
+		if (lua_istable(L, -2))
+		{
+			// Convert table index to absolute.
+			int idx = lua_gettop(L) + 1 - 2;
+
+			// Get all the shader code strings from the Lua array.
+			for (size_t i = 1; i <= lua_objlen(L, idx); i++)
+			{
+				lua_rawgeti(L, idx, i);
+				source.push_back(luax_checkstring(L, -1));
+				lua_pop(L, 1);
+			}
+		}
+		else
+			source.push_back(luax_checkstring(L, -2));
 	}
 	else if (has_arg1 && has_arg2)
 		return luaL_error(L, "Could not parse vertex shader code (missing 'position' function?)");
 
-	// pixel shader code
-	if (lua_isstring(L, -1))
+	// Pixel shader code.
+	if (!lua_isnoneornil(L, -1))
 	{
-		std::string pixelcode(luaL_checkstring(L, -1));
-		sources[Shader::TYPE_PIXEL] = pixelcode;
+		std::vector<std::string> &source = sources[Shader::TYPE_PIXEL];
+
+		// The argument might be a Lua array containing strings for the code.
+		if (lua_istable(L, -1))
+		{
+			// Convert table index to absolute.
+			int idx = lua_gettop(L) + 1 - 1;
+
+			// Get all the shader code strings from the Lua array.
+			for (size_t i = 1; i <= lua_objlen(L, idx); i++)
+			{
+				lua_rawgeti(L, idx, i);
+				source.push_back(luax_checkstring(L, -1));
+				lua_pop(L, 1);
+			}
+		}
+		else
+			source.push_back(luax_checkstring(L, -1));
 	}
 	else if (has_arg1 && has_arg2)
 		return luaL_error(L, "Could not parse pixel shader code (missing 'effect' function?)");
 
-	if (sources.empty())
+	if (sources[Shader::TYPE_VERTEX].empty() && sources[Shader::TYPE_PIXEL].empty())
 	{
-		// Original args had source code, but effectCodeToGLSL couldn't translate it
+		// Original args had source code, but shaderCodeToGLSL couldn't translate it
 		for (int i = 1; i <= 2; i++)
 		{
 			if (lua_isstring(L, i))
@@ -429,7 +462,7 @@ int w_newShader(lua_State *L)
 	bool should_error = false;
 	try
 	{
-		Shader *shader = instance->newShader(sources);
+		Shader *shader = instance->newShader(sources[Shader::TYPE_VERTEX], sources[Shader::TYPE_PIXEL]);
 		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
 	}
 	catch (love::Exception &e)
