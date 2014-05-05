@@ -176,16 +176,36 @@ bool Filesystem::setupWriteDirectory()
 	if (save_identity.empty() || save_path_full.empty() || save_path_relative.empty())
 		return false;
 
-	// Set the appdata folder as writable directory.
+	// We need to make sure the write directory is created. To do that, we also
+	// need to make sure all its parent directories are also created.
+	std::string temp_writedir = getDriveRoot(save_path_full);
+	std::string temp_createdir = skipDriveRoot(save_path_full);
+
+	// On some sandboxed platforms, physfs will break when its write directory
+	// is the root of the drive and it tries to create a folder (even if the
+	// folder's path is in a writable location.) If the user's home folder is
+	// in the save path, we'll try starting from there instead.
+	if (save_path_full.find(getUserDirectory()) == 0)
+	{
+		temp_writedir = getUserDirectory();
+		temp_createdir = save_path_full.substr(getUserDirectory().length());
+
+		// Strip leading '/' characters from the path we want to create.
+		size_t startpos = temp_createdir.find_first_not_of('/');
+		if (startpos != std::string::npos)
+			temp_createdir = temp_createdir.substr(startpos);
+	}
+
+	// Set either '/' or the user's home as a writable directory.
 	// (We must create the save folder before mounting it).
-	if (!PHYSFS_setWriteDir(getDriveRoot(save_path_full).c_str()))
+	if (!PHYSFS_setWriteDir(temp_writedir.c_str()))
 		return false;
 
-	// Create the save folder. (We're now "at" %APPDATA%).
-	if (!createDirectory(skipDriveRoot(save_path_full).c_str()))
+	// Create the save folder. (We're now "at" either '/' or the user's home).
+	if (!createDirectory(temp_createdir.c_str()))
 	{
 		// Clear the write directory in case of error.
-		PHYSFS_setWriteDir(0);
+		PHYSFS_setWriteDir(nullptr);
 		return false;
 	}
 
@@ -196,7 +216,7 @@ bool Filesystem::setupWriteDirectory()
 	// Add the directory. (Will not be readded if already present).
 	if (!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
 	{
-		PHYSFS_setWriteDir(0); // Clear the write directory in case of error.
+		PHYSFS_setWriteDir(nullptr); // Clear the write directory in case of error.
 		return false;
 	}
 
@@ -332,12 +352,12 @@ const char *Filesystem::getWorkingDirectory()
 	return cwd.c_str();
 }
 
-const char *Filesystem::getUserDirectory()
+std::string Filesystem::getUserDirectory()
 {
-	return PHYSFS_getUserDir();
+	return std::string(PHYSFS_getUserDir());
 }
 
-const char *Filesystem::getAppdataDirectory()
+std::string Filesystem::getAppdataDirectory()
 {
 #ifdef LOVE_WINDOWS
 	if (appdata.empty())
@@ -346,7 +366,7 @@ const char *Filesystem::getAppdataDirectory()
 		appdata = to_utf8(w_appdata);
 		replace_char(appdata, '\\', '/');
 	}
-	return appdata.c_str();
+	return appdata;
 #elif defined(LOVE_MACOSX)
 	if (appdata.empty())
 	{
@@ -354,7 +374,7 @@ const char *Filesystem::getAppdataDirectory()
 		udir.append("/Library/Application Support");
 		appdata = udir;
 	}
-	return appdata.c_str();
+	return appdata;
 #elif defined(LOVE_LINUX)
 	if (appdata.empty())
 	{
@@ -364,7 +384,7 @@ const char *Filesystem::getAppdataDirectory()
 		else
 			appdata = xdgdatahome;
 	}
-	return appdata.c_str();
+	return appdata;
 #else
 	return getUserDirectory();
 #endif

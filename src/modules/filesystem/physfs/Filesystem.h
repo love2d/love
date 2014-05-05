@@ -145,14 +145,14 @@ public:
 	/**
 	 * Gets the user home directory.
 	 **/
-	const char *getUserDirectory();
+	std::string getUserDirectory();
 
 	/**
 	 * Gets the APPDATA directory. On Windows, this is the folder
 	 * in the %APPDATA% enviroment variable. On Linux, this is the
 	 * user home folder.
 	 **/
-	const char *getAppdataDirectory();
+	std::string getAppdataDirectory();
 
 	/**
 	 * Gets the full path of the save folder.
