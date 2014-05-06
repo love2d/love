@@ -117,7 +117,7 @@ int Mpg123Decoder::decode()
 			size += numbytes;
 			long rate = 0;
 			int encoding = 0;
-			int ret = mpg123_getformat(handle, &rate, &channels, &encoding);
+			mpg123_getformat(handle, &rate, &channels, &encoding);
 			if (rate == 0)
 				rate = sampleRate;
 			else
@@ -126,7 +126,7 @@ int Mpg123Decoder::decode()
 				channels = MPG123_STEREO;
 			if (encoding == 0)
 				encoding = MPG123_ENC_SIGNED_16;
-			ret = mpg123_format(handle, rate, channels, encoding);
+			int ret = mpg123_format(handle, rate, channels, encoding);
 			if (ret != MPG123_OK)
 				throw love::Exception("Could not set output format.");
 		}
