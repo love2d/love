@@ -25,6 +25,11 @@
 
 // C++
 #include <algorithm>
+#include <limits>
+
+#ifndef SDL_TICKS_PASSED
+#define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
+#endif
 
 namespace love
 {
@@ -34,9 +39,9 @@ namespace sdl
 {
 
 Joystick::Joystick(int id)
-	: joyhandle(0)
-	, controller(0)
-	, haptic(0)
+	: joyhandle(nullptr)
+	, controller(nullptr)
+	, haptic(nullptr)
 	, instanceid(-1)
 	, id(id)
 	, vibration()
@@ -44,9 +49,9 @@ Joystick::Joystick(int id)
 }
 
 Joystick::Joystick(int id, int joyindex)
-	: joyhandle(0)
-	, controller(0)
-	, haptic(0)
+	: joyhandle(nullptr)
+	, controller(nullptr)
+	, haptic(nullptr)
 	, instanceid(-1)
 	, id(id)
 	, vibration()
@@ -95,10 +100,7 @@ bool Joystick::open(int deviceindex)
 void Joystick::close()
 {
 	if (haptic)
-	{
-		SDL_HapticRumbleStop(haptic);
 		SDL_HapticClose(haptic);
-	}
 
 	if (controller)
 		SDL_GameControllerClose(controller);
@@ -106,16 +108,16 @@ void Joystick::close()
 	if (joyhandle)
 		SDL_JoystickClose(joyhandle);
 
-	joyhandle = 0;
-	controller = 0;
-	haptic = 0;
+	joyhandle = nullptr;
+	controller = nullptr;
+	haptic = nullptr;
 	instanceid = -1;
 	vibration = Vibration();
 }
 
 bool Joystick::isConnected() const
 {
-	return joyhandle != 0 && SDL_JoystickGetAttached(joyhandle);
+	return joyhandle != nullptr && SDL_JoystickGetAttached(joyhandle);
 }
 
 const char *Joystick::getName() const
@@ -209,7 +211,7 @@ bool Joystick::openGamepad(int deviceindex)
 	if (isGamepad())
 	{
 		SDL_GameControllerClose(controller);
-		controller = 0;
+		controller = nullptr;
 	}
 
 	controller = SDL_GameControllerOpen(deviceindex);
@@ -218,7 +220,7 @@ bool Joystick::openGamepad(int deviceindex)
 
 bool Joystick::isGamepad() const
 {
-	return controller != 0;
+	return controller != nullptr;
 }
 
 float Joystick::getGamepadAxis(love::joystick::Joystick::GamepadAxis axis) const
@@ -289,13 +291,13 @@ bool Joystick::checkCreateHaptic()
 	if (haptic)
 	{
 		SDL_HapticClose(haptic);
-		haptic = 0;
+		haptic = nullptr;
 	}
 
 	haptic = SDL_HapticOpenFromJoystick(joyhandle);
 	vibration = Vibration();
 
-	return haptic != 0;
+	return haptic != nullptr;
 }
 
 bool Joystick::isVibrationSupported()
@@ -312,8 +314,8 @@ bool Joystick::isVibrationSupported()
 	if (isGamepad() && (features & SDL_HAPTIC_CUSTOM) != 0)
 		return true;
 
-	// Check SDL's simple rumble as a last resort.
-	if (SDL_HapticRumbleSupported(haptic) == 1)
+	// Test for simple sine wave support as a last resort.
+	if ((features & SDL_HAPTIC_SINE) != 0)
 		return true;
 
 	return false;
@@ -325,7 +327,7 @@ bool Joystick::runVibrationEffect()
 	{
 		if (SDL_HapticUpdateEffect(haptic, vibration.id, &vibration.effect) == 0)
 		{
-			if (SDL_HapticRunEffect(haptic, vibration.id, 1) != -1)
+			if (SDL_HapticRunEffect(haptic, vibration.id, 1) == 0)
 				return true;
 		}
 
@@ -336,17 +338,14 @@ bool Joystick::runVibrationEffect()
 
 	vibration.id = SDL_HapticNewEffect(haptic, &vibration.effect);
 
-	if (vibration.id != -1 && SDL_HapticRunEffect(haptic, vibration.id, 1) != -1)
+	if (vibration.id != -1 && SDL_HapticRunEffect(haptic, vibration.id, 1) == 0)
 		return true;
 	
 	return false;
 }
 
-bool Joystick::setVibration(float left, float right)
+bool Joystick::setVibration(float left, float right, float duration)
 {
-	// TODO: support non-infinite durations? The working Tattiebogle Xbox
-	// controller driver in OS X seems to ignore durations under 1 second.
-
 	left = std::min(std::max(left, 0.0f), 1.0f);
 	right = std::min(std::max(right, 0.0f), 1.0f);
 
@@ -356,24 +355,32 @@ bool Joystick::setVibration(float left, float right)
 	if (!checkCreateHaptic())
 		return false;
 
+	Uint32 length = SDL_HAPTIC_INFINITY;
+	if (duration >= 0.0f)
+	{
+		float maxduration = std::numeric_limits<Uint32>::max() / 1000.0f;
+		length = Uint32(std::min(duration, maxduration) * 1000);
+	}
+
 	bool success = false;
 	unsigned int features = SDL_HapticQuery(haptic);
+	int axes = SDL_HapticNumAxes(haptic);
 
 	if ((features & SDL_HAPTIC_LEFTRIGHT) != 0)
 	{
 		memset(&vibration.effect, 0, sizeof(SDL_HapticEffect));
 		vibration.effect.type = SDL_HAPTIC_LEFTRIGHT;
 
-		vibration.effect.leftright.length = SDL_HAPTIC_INFINITY;
+		vibration.effect.leftright.length = length;
 		vibration.effect.leftright.large_magnitude = Uint16(left * LOVE_UINT16_MAX);
 		vibration.effect.leftright.small_magnitude = Uint16(right * LOVE_UINT16_MAX);
 
 		success = runVibrationEffect();
 	}
 
-	// Some gamepad drivers only give support for controlling the motors via
-	// a custom FF effect.
-	if (!success && isGamepad() && (features & SDL_HAPTIC_CUSTOM) != 0)
+	// Some gamepad drivers only give support for controlling individual motors
+	// through a custom FF effect.
+	if (!success && isGamepad() && (features & SDL_HAPTIC_CUSTOM) && axes == 2)
 	{
 		// NOTE: this may cause issues with drivers which support custom effects
 		// but aren't similar to https://github.com/d235j/360Controller .
@@ -385,7 +392,7 @@ bool Joystick::setVibration(float left, float right)
 		memset(&vibration.effect, 0, sizeof(SDL_HapticEffect));
 		vibration.effect.type = SDL_HAPTIC_CUSTOM;
 
-		vibration.effect.custom.length = SDL_HAPTIC_INFINITY;
+		vibration.effect.custom.length = length;
 		vibration.effect.custom.channels = 2;
 		vibration.effect.custom.period = 10;
 		vibration.effect.custom.samples = 2;
@@ -394,19 +401,36 @@ bool Joystick::setVibration(float left, float right)
 		success = runVibrationEffect();
 	}
 
-	// Fall back to a simple rumble if all else fails. SDL's simple rumble API
-	// only supports a single strength value.
-	if (!success && SDL_HapticRumbleInit(haptic) == 0)
+	// Fall back to a simple sine wave if all else fails. This only supports a
+	// single strength value.
+	if (!success && (features & SDL_HAPTIC_SINE) != 0)
 	{
+		memset(&vibration.effect, 0, sizeof(SDL_HapticEffect));
+		vibration.effect.type = SDL_HAPTIC_SINE;
+
+		vibration.effect.periodic.length = length;
+		vibration.effect.periodic.period = 10;
+
 		float strength = std::max(left, right);
-		int played = SDL_HapticRumblePlay(haptic, strength, SDL_HAPTIC_INFINITY);
-		success = (played == 0);
+		vibration.effect.periodic.magnitude = Sint16(strength * 0x7FFF);
+
+		success = runVibrationEffect();
 	}
 
 	if (success)
 	{
 		vibration.left = left;
 		vibration.right = right;
+
+		if (length == SDL_HAPTIC_INFINITY)
+			vibration.endtime = SDL_HAPTIC_INFINITY;
+		else
+			vibration.endtime = SDL_GetTicks() + length;
+	}
+	else
+	{
+		vibration.left = vibration.right = 0.0f;
+		vibration.endtime = SDL_HAPTIC_INFINITY;
 	}
 
 	return success;
@@ -417,12 +441,7 @@ bool Joystick::setVibration()
 	bool success = true;
 
 	if (SDL_WasInit(SDL_INIT_HAPTIC) && haptic && SDL_HapticIndex(haptic) != -1)
-	{
-		// Stop all playing effects on the haptic device.
-		// FIXME: We should only stop the vibration effect, in case we use the
-		// Haptic API for other things in the future.
-		success = (SDL_HapticStopAll(haptic) == 0);
-	}
+		success = (SDL_HapticStopEffect(haptic, vibration.id) == 0);
 
 	if (success)
 		vibration.left = vibration.right = 0.0f;
@@ -430,8 +449,25 @@ bool Joystick::setVibration()
 	return success;
 }
 
-void Joystick::getVibration(float &left, float &right) const
+void Joystick::getVibration(float &left, float &right)
 {
+	if (vibration.endtime != SDL_HAPTIC_INFINITY)
+	{
+		// With some drivers, the effect physically stops at the right time, but
+		// SDL_HapticGetEffectStatus still thinks it's playing. So we explicitly
+		// stop it once it's done, just to be sure.
+		if (SDL_TICKS_PASSED(SDL_GetTicks(), vibration.endtime))
+		{
+			setVibration();
+			vibration.endtime = SDL_HAPTIC_INFINITY;
+		}
+	}
+
+	// Check if the haptic effect has stopped playing.
+	int id = vibration.id;
+	if (!haptic || id == -1 || SDL_HapticGetEffectStatus(haptic, id) != 1)
+		vibration.left = vibration.right = 0.0f;
+
 	left = vibration.left;
 	right = vibration.right;
 }

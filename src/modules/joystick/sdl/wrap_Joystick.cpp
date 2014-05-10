@@ -207,7 +207,8 @@ int w_Joystick_setVibration(lua_State *L)
 	{
 		float left = (float) luaL_checknumber(L, 2);
 		float right = (float) luaL_optnumber(L, 3, left);
-		success = j->setVibration(left, right);
+		float duration = (float) luaL_optnumber(L, 4, -1.0); // -1 is infinite.
+		success = j->setVibration(left, right, duration);
 	}
 
 	luax_pushboolean(L, success);

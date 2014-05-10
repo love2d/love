@@ -28,7 +28,7 @@ namespace joystick
 namespace sdl
 {
 
-static JoystickModule *instance = 0;
+static JoystickModule *instance = nullptr;
 
 int w_getJoysticks(lua_State *L)
 {
@@ -194,7 +194,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_joystick(lua_State *L)
 {
-	if (instance == 0)
+	if (instance == nullptr)
 	{
 		EXCEPT_GUARD(instance = new JoystickModule();)
 	}

@@ -74,9 +74,9 @@ public:
 	int getID() const;
 
 	bool isVibrationSupported();
-	bool setVibration(float left, float right);
+	bool setVibration(float left, float right, float duration = -1.0f);
 	bool setVibration();
-	void getVibration(float &left, float &right) const;
+	void getVibration(float &left, float &right);
 
 	static bool getConstant(Hat in, Uint8 &out);
 	static bool getConstant(Uint8 in, Hat &out);
@@ -111,8 +111,12 @@ private:
 		Uint16 data[4];
 		int id;
 
+		Uint32 endtime;
+
 		Vibration()
-			: left(0.0f), right(0.0f), effect(), data(), id(-1)
+			: left(0.0f), right(0.0f)
+			, effect(), data(), id(-1)
+			, endtime(SDL_HAPTIC_INFINITY)
 		{}
 
 	} vibration;
