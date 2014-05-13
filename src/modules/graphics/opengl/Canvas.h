@@ -25,6 +25,7 @@
 #include "image/Image.h"
 #include "image/ImageData.h"
 #include "common/Matrix.h"
+#include "common/StringMap.h"
 #include "Texture.h"
 #include "OpenGL.h"
 
@@ -39,7 +40,25 @@ class Canvas : public Texture
 {
 public:
 
-	Canvas(int width, int height, Texture::Format format = Texture::FORMAT_NORMAL, int fsaa = 0);
+	// Different Canvas render target formats.
+	enum Format
+	{
+		FORMAT_NORMAL,
+		FORMAT_HDR,
+		FORMAT_RGBA8,
+		FORMAT_RGBA4,
+		FORMAT_RGB5A1,
+		FORMAT_RGB565,
+		FORMAT_RGB10A2,
+		FORMAT_RGB9E5,
+		FORMAT_RG11B10F,
+		FORMAT_RGBA16F,
+		FORMAT_RGBA32F,
+		FORMAT_SRGB,
+		FORMAT_MAX_ENUM
+	};
+
+	Canvas(int width, int height, Format format = FORMAT_NORMAL, int fsaa = 0);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -85,7 +104,7 @@ public:
 		return status;
 	}
 
-	inline Texture::Format getTextureFormat() const
+	inline Format getTextureFormat() const
 	{
 		return format;
 	}
@@ -98,9 +117,8 @@ public:
 	bool resolveMSAA();
 
 	static bool isSupported();
-	static bool isHDRSupported();
-	static bool isSRGBSupported();
 	static bool isMultiCanvasSupported();
+	static bool isFormatSupported(Format format);
 
 	static Canvas *current;
 	static void bindDefaultCanvas();
@@ -111,9 +129,15 @@ public:
 	// Whether the main screen should have linear -> sRGB conversions enabled.
 	static bool screenHasSRGB;
 
+	static bool getConstant(const char *in, Format &out);
+	static bool getConstant(Format in, const char *&out);
+
 private:
 
 	bool createFSAAFBO(GLenum internalformat);
+
+	static Format getSizedFormat(Format format);
+	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);
 
 	GLuint fbo;
 	GLuint resolve_fbo;
@@ -133,6 +157,9 @@ private:
 
 	void setupGrab();
 	void drawv(const Matrix &t, const Vertex *v);
+
+	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
+	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
 }; // Canvas
 

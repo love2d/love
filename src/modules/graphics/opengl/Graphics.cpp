@@ -409,7 +409,7 @@ void Graphics::discardStencil()
 	activeStencil = false;
 }
 
-Image *Graphics::newImage(love::image::ImageData *data, Texture::Format format)
+Image *Graphics::newImage(love::image::ImageData *data, Image::Format format)
 {
 	// Create the image.
 	Image *image = new Image(data, format);
@@ -436,7 +436,7 @@ Image *Graphics::newImage(love::image::ImageData *data, Texture::Format format)
 	return image;
 }
 
-Image *Graphics::newImage(love::image::CompressedData *cdata, Texture::Format format)
+Image *Graphics::newImage(love::image::CompressedData *cdata, Image::Format format)
 {
 	// Create the image.
 	Image *image = new Image(cdata, format);
@@ -483,13 +483,14 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 	return new ParticleSystem(texture, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height, Texture::Format format, int fsaa)
+Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int fsaa)
 {
-	if (format == Texture::FORMAT_HDR && !Canvas::isHDRSupported())
-		throw Exception("HDR Canvases are not supported by your OpenGL implementation");
-
-	if (format == Texture::FORMAT_SRGB && !Canvas::isSRGBSupported())
-		throw Exception("sRGB Canvases are not supported by your OpenGL implementation");
+	if (!Canvas::isFormatSupported(format))
+	{
+		const char *fstr = "rgba8";
+		Canvas::getConstant(format, fstr);
+		throw love::Exception("The %s canvas format is not supported by your OpenGL implementation.", fstr);
+	}
 
 	if (width > gl.getMaxTextureSize())
 		throw Exception("Cannot create canvas: width of %d pixels is too large for this system.", width);
@@ -540,8 +541,8 @@ Canvas *Graphics::newCanvas(int width, int height, Texture::Format format, int f
 	}
 
 	canvas->release();
-	throw Exception(error_string.str().c_str());
-	return NULL; // never reached
+	throw Exception("%s", error_string.str().c_str());
+	return nullptr; // never reached
 }
 
 Shader *Graphics::newShader(const Shader::ShaderSources &sources)

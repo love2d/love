@@ -113,10 +113,10 @@ int w_Canvas_clear(lua_State *L)
 int w_Canvas_getFormat(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	Texture::Format format = canvas->getTextureFormat();
+	Canvas::Format format = canvas->getTextureFormat();
 	const char *str;
-	if (!Texture::getConstant(format, str))
-		return luaL_error(L, "Unknown texture format.");
+	if (!Canvas::getConstant(format, str))
+		return luaL_error(L, "Unknown Canvas format.");
 
 	lua_pushstring(L, str);
 	return 1;
