@@ -1044,6 +1044,7 @@ bool Canvas::isMultiCanvasSupported()
 }
 
 bool Canvas::supportedFormats[] = {false};
+bool Canvas::checkedFormats[] = {false};
 
 bool Canvas::isFormatSupported(Canvas::Format format)
 {
@@ -1065,12 +1066,11 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 		supported = GLEE_VERSION_4_2 || GLEE_ARB_ES2_compatibility;
 		break;
 	case FORMAT_RG11B10F:
-		supported = GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_ARB_color_buffer_float
-			&& GLEE_EXT_packed_float);
+		supported = GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_EXT_packed_float);
 		break;
 	case FORMAT_RGBA16F:
 	case FORMAT_RGBA32F:
-		supported = GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_ARB_color_buffer_float);
+		supported = GLEE_VERSION_3_0 || GLEE_ARB_texture_float;
 		break;
 	case FORMAT_SRGB:
 		supported = GLEE_VERSION_3_0 || ((GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
@@ -1084,8 +1084,8 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	if (!supported)
 		return false;
 
-	if (supportedFormats[format])
-		return true;
+	if (checkedFormats[format])
+		return supportedFormats[format];
 
 	// Even though we might have the necessary OpenGL version or extension,
 	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
@@ -1111,16 +1111,16 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalformat, 2, 2, 0, externalformat, textype, nullptr);
 
 	GLuint fbo = 0;
-	GLenum status = strategy->createFBO(fbo, texture);
+	supported = (strategy->createFBO(fbo, texture) == GL_FRAMEBUFFER_COMPLETE);
 	strategy->deleteFBO(fbo, 0, 0);
 
 	gl.deleteTexture(texture);
 
 	// Cache the result so we don't do this for every isFormatSupported call.
-	if (status == GL_FRAMEBUFFER_COMPLETE)
-		supportedFormats[format] = true;
+	checkedFormats[format] = true;
+	supportedFormats[format] = supported;
 
-	return status == GL_FRAMEBUFFER_COMPLETE;
+	return supported;
 }
 
 void Canvas::bindDefaultCanvas()

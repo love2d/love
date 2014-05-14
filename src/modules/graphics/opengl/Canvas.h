@@ -43,17 +43,17 @@ public:
 	// Different Canvas render target formats.
 	enum Format
 	{
-		FORMAT_NORMAL,
-		FORMAT_HDR,
-		FORMAT_RGBA8,
-		FORMAT_RGBA4,
-		FORMAT_RGB5A1,
-		FORMAT_RGB565,
-		FORMAT_RGB10A2,
-		FORMAT_RG11B10F,
-		FORMAT_RGBA16F,
-		FORMAT_RGBA32F,
-		FORMAT_SRGB,
+		FORMAT_NORMAL,   // Usually RGBA8 or a similar fallback. Always supported.
+		FORMAT_HDR,      // Usually RGBA16F. Not always supported.
+		FORMAT_RGBA8,    // RGBA with 8 bits per component.
+		FORMAT_RGBA4,    // RGBA with 4 bits per component.
+		FORMAT_RGB5A1,   // RGB with 5 bits per component, and A with 1 bit.
+		FORMAT_RGB565,   // RGB with 5, 6, and 5 bits each, respectively.
+		FORMAT_RGB10A2,  // RGB with 10 bits each, and A with 2 bits.
+		FORMAT_RG11B10F, // Floating point [0, +inf]. RG with 11 FP bits each, and B with 10 FP bits.
+		FORMAT_RGBA16F,  // Floating point [-inf, +inf]. RGBA with 16 FP bits per component.
+		FORMAT_RGBA32F,  // Floating point [-inf, +inf]. RGBA with 32 FP bits per component.
+		FORMAT_SRGB,     // sRGB with 8 bits per component, plus 8 bit linear A.
 		FORMAT_MAX_ENUM
 	};
 
@@ -158,6 +158,7 @@ private:
 	void drawv(const Matrix &t, const Vertex *v);
 
 	static bool supportedFormats[FORMAT_MAX_ENUM];
+	static bool checkedFormats[FORMAT_MAX_ENUM];
 
 	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
 	static StringMap<Format, FORMAT_MAX_ENUM> formats;
