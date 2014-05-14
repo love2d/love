@@ -1020,7 +1020,7 @@ void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum
 	case FORMAT_RGB9E5:
 		internalformat = GL_RGB9_E5;
 		externalformat = GL_RGB;
-		type = GL_RGB9_E5;
+		type = GL_UNSIGNED_INT_5_9_9_9_REV;
 	case FORMAT_RG11B10F:
 		internalformat = GL_R11F_G11F_B10F;
 		externalformat = GL_RGB;
