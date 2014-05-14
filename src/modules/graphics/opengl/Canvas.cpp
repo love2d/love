@@ -1066,7 +1066,7 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 		supported = GLEE_VERSION_4_2 || GLEE_ARB_ES2_compatibility;
 		break;
 	case FORMAT_RG11B10F:
-		supported = GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_EXT_packed_float);
+		supported = GLEE_VERSION_3_0 || GLEE_EXT_packed_float;
 		break;
 	case FORMAT_RGBA16F:
 	case FORMAT_RGBA32F:
