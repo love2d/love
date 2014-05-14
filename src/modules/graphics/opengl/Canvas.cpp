@@ -423,7 +423,7 @@ static void getStrategy()
 	}
 }
 
-Canvas::Canvas(int width, int height, Texture::Format format, int fsaa)
+Canvas::Canvas(int width, int height, Format format, int fsaa)
 	: fbo(0)
     , resolve_fbo(0)
 	, texture(0)
@@ -531,33 +531,21 @@ bool Canvas::loadVolatile()
 	setFilter(filter);
 	setWrap(wrap);
 
-	GLint internalformat;
-	GLenum textype;
-	switch (format)
-	{
-	case Texture::FORMAT_HDR:
-		internalformat = GL_RGBA16F;
-		textype = GL_FLOAT;
-		break;
-	case Texture::FORMAT_SRGB:
-		internalformat = GL_SRGB8_ALPHA8;
-		textype = GL_UNSIGNED_BYTE;
-		break;
-	case Texture::FORMAT_NORMAL:
-	default:
-		internalformat = GL_RGBA8;
-		textype = GL_UNSIGNED_BYTE;
-	}
+	GLenum internalformat = GL_RGBA;
+	GLenum externalformat = GL_RGBA;
+	GLenum textype = GL_UNSIGNED_BYTE;
+
+	convertFormat(format, internalformat, externalformat, textype);
 
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
 
 	glTexImage2D(GL_TEXTURE_2D,
 	             0,
-	             internalformat,
+	             (GLint) internalformat,
 	             width, height,
 	             0,
-	             GL_RGBA,
+	             externalformat,
 	             textype,
 	             nullptr);
 
@@ -981,27 +969,72 @@ bool Canvas::resolveMSAA()
 	return true;
 }
 
+Canvas::Format Canvas::getSizedFormat(Canvas::Format format)
+{
+	switch (format)
+	{
+	case FORMAT_NORMAL:
+		return FORMAT_RGBA8;
+	case FORMAT_HDR:
+		return FORMAT_RGBA16F;
+	default:
+		return format;
+	}
+}
+
+void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type)
+{
+	format = getSizedFormat(format);
+	externalformat = GL_RGBA;
+
+	switch (format)
+	{
+	case FORMAT_RGBA8:
+	default:
+		internalformat = GL_RGBA8;
+		type = GL_UNSIGNED_BYTE;
+		break;
+	case FORMAT_RGBA4:
+		internalformat = GL_RGBA4;
+		type = GL_UNSIGNED_SHORT_4_4_4_4;
+		break;
+	case FORMAT_RGB5A1:
+		internalformat = GL_RGB5_A1;
+		type = GL_UNSIGNED_SHORT_5_5_5_1;
+		break;
+	case FORMAT_RGB565:
+		internalformat = GL_RGB565;
+		externalformat = GL_RGB;
+		type = GL_UNSIGNED_SHORT_5_6_5;
+		break;
+	case FORMAT_RGB10A2:
+		internalformat = GL_RGB10_A2;
+		type = GL_UNSIGNED_INT_10_10_10_2;
+		break;
+	case FORMAT_RG11B10F:
+		internalformat = GL_R11F_G11F_B10F;
+		externalformat = GL_RGB;
+		type = GL_UNSIGNED_INT_10F_11F_11F_REV;
+		break;
+	case FORMAT_RGBA16F:
+		internalformat = GL_RGBA16F;
+		type = GL_FLOAT;
+		break;
+	case FORMAT_RGBA32F:
+		internalformat = GL_RGBA32F;
+		type = GL_FLOAT;
+		break;
+	case FORMAT_SRGB:
+		internalformat = GL_SRGB8_ALPHA8;
+		type = GL_UNSIGNED_BYTE;
+		break;
+	}
+}
+
 bool Canvas::isSupported()
 {
 	getStrategy();
 	return (strategy != &strategyNone);
-}
-
-bool Canvas::isHDRSupported()
-{
-	return GLEE_VERSION_3_0 || (isSupported() && GLEE_ARB_texture_float);
-}
-
-bool Canvas::isSRGBSupported()
-{
-	if (GLEE_VERSION_3_0)
-		return true;
-
-	if (!isSupported())
-		return false;
-
-	return (GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
-		&& GLEE_EXT_texture_sRGB;
 }
 
 bool Canvas::isMultiCanvasSupported()
@@ -1010,11 +1043,118 @@ bool Canvas::isMultiCanvasSupported()
 	return gl.getMaxRenderTargets() >= 4;
 }
 
+bool Canvas::supportedFormats[] = {false};
+bool Canvas::checkedFormats[] = {false};
+
+bool Canvas::isFormatSupported(Canvas::Format format)
+{
+	if (!isSupported())
+		return false;
+
+	bool supported = true;
+	format = getSizedFormat(format);
+
+	switch (format)
+	{
+	case FORMAT_RGBA8:
+	case FORMAT_RGBA4:
+	case FORMAT_RGB5A1:
+	case FORMAT_RGB10A2:
+		supported = true;
+		break;
+	case FORMAT_RGB565:
+		supported = GLEE_VERSION_4_2 || GLEE_ARB_ES2_compatibility;
+		break;
+	case FORMAT_RG11B10F:
+		supported = GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_EXT_packed_float);
+		break;
+	case FORMAT_RGBA16F:
+	case FORMAT_RGBA32F:
+		supported = GLEE_VERSION_3_0 || GLEE_ARB_texture_float;
+		break;
+	case FORMAT_SRGB:
+		supported = GLEE_VERSION_3_0 || ((GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
+			&& (GLEE_VERSION_2_1 || GLEE_EXT_texture_sRGB));
+		break;
+	default:
+		supported = false;
+		break;
+	}
+
+	if (!supported)
+		return false;
+
+	if (checkedFormats[format])
+		return supportedFormats[format];
+
+	// Even though we might have the necessary OpenGL version or extension,
+	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
+	// a texture to a FBO whose format the driver doesn't like. So we should
+	// test with an actual FBO.
+
+	GLenum internalformat = GL_RGBA;
+	GLenum externalformat = GL_RGBA;
+	GLenum textype = GL_UNSIGNED_BYTE;
+	convertFormat(format, internalformat, externalformat, textype);
+
+	GLuint texture = 0;
+	glGenTextures(1, &texture);
+	gl.bindTexture(texture);
+
+	Texture::Filter f;
+	f.min = f.mag = Texture::FILTER_NEAREST;
+	gl.setTextureFilter(f);
+
+	Texture::Wrap w;
+	gl.setTextureWrap(w);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, internalformat, 2, 2, 0, externalformat, textype, nullptr);
+
+	GLuint fbo = 0;
+	supported = (strategy->createFBO(fbo, texture) == GL_FRAMEBUFFER_COMPLETE);
+	strategy->deleteFBO(fbo, 0, 0);
+
+	gl.deleteTexture(texture);
+
+	// Cache the result so we don't do this for every isFormatSupported call.
+	checkedFormats[format] = true;
+	supportedFormats[format] = supported;
+
+	return supported;
+}
+
 void Canvas::bindDefaultCanvas()
 {
 	if (current != nullptr)
 		current->stopGrab();
 }
+
+bool Canvas::getConstant(const char *in, Format &out)
+{
+	return formats.find(in, out);
+}
+
+bool Canvas::getConstant(Format in, const char *&out)
+{
+	return formats.find(in, out);
+}
+
+StringMap<Canvas::Format, Canvas::FORMAT_MAX_ENUM>::Entry Canvas::formatEntries[] =
+{
+	{"normal", Canvas::FORMAT_NORMAL},
+	{"hdr", Canvas::FORMAT_HDR},
+	{"rgba8", Canvas::FORMAT_RGBA8},
+	{"rgba4", Canvas::FORMAT_RGBA4},
+	{"rgb5a1", Canvas::FORMAT_RGB5A1},
+	{"rgb565", Canvas::FORMAT_RGB565},
+	{"rgb10a2", Canvas::FORMAT_RGB10A2},
+	{"rg11b10f", Canvas::FORMAT_RG11B10F},
+	{"rgba16f", Canvas::FORMAT_RGBA16F},
+	{"rgba32f", Canvas::FORMAT_RGBA32F},
+	{"srgb", Canvas::FORMAT_SRGB},
+};
+
+StringMap<Canvas::Format, Canvas::FORMAT_MAX_ENUM> Canvas::formats(Canvas::formatEntries, sizeof(Canvas::formatEntries));
 
 } // opengl
 } // graphics

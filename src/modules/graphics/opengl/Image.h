@@ -25,6 +25,7 @@
 #include "common/config.h"
 #include "common/Matrix.h"
 #include "common/Vector.h"
+#include "common/StringMap.h"
 #include "common/math.h"
 #include "image/ImageData.h"
 #include "image/CompressedData.h"
@@ -50,20 +51,27 @@ class Image : public Texture
 {
 public:
 
+	enum Format
+	{
+		FORMAT_NORMAL,
+		FORMAT_SRGB,
+		FORMAT_MAX_ENUM
+	};
+
 	/**
 	 * Creates a new Image. Not that anything is ready to use
 	 * before load is called.
 	 *
 	 * @param data The data from which to load the image.
 	 **/
-	Image(love::image::ImageData *data, Texture::Format format = Texture::FORMAT_NORMAL);
+	Image(love::image::ImageData *data, Format format = FORMAT_NORMAL);
 
 	/**
 	 * Creates a new Image with compressed image data.
 	 *
 	 * @param cdata The compressed data from which to load the image.
 	 **/
-	Image(love::image::CompressedData *cdata, Texture::Format format = Texture::FORMAT_NORMAL);
+	Image(love::image::CompressedData *cdata, Format format = FORMAT_NORMAL);
 
 	/**
 	 * Destructor. Deletes the hardware texture and other resources.
@@ -120,7 +128,7 @@ public:
 	 **/
 	bool refresh();
 
-	Texture::Format getFormat() const;
+	Format getFormat() const;
 
 	static void setDefaultMipmapSharpness(float sharpness);
 	static float getDefaultMipmapSharpness();
@@ -136,6 +144,9 @@ public:
 	static bool hasCompressedTextureSupport(image::CompressedData::Format format);
 
 	static bool hasSRGBSupport();
+
+	static bool getConstant(const char *in, Format &out);
+	static bool getConstant(Format in, const char *&out);
 
 private:
 
@@ -166,8 +177,8 @@ private:
 	// Whether this Image is using a compressed texture.
 	bool compressed;
 
-	// The format to interpret the texture's data as.
-	Texture::Format format;
+	// The format to interpret the image's data as.
+	Format format;
 
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
@@ -188,6 +199,9 @@ private:
 	static float defaultMipmapSharpness;
 
 	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
+
+	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
+	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
 }; // Image
 

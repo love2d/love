@@ -194,8 +194,8 @@ public:
 	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(love::image::ImageData *data, Texture::Format format = Texture::FORMAT_NORMAL);
-	Image *newImage(love::image::CompressedData *cdata, Texture::Format format = Texture::FORMAT_NORMAL);
+	Image *newImage(love::image::ImageData *data, Image::Format format = Image::FORMAT_NORMAL);
+	Image *newImage(love::image::CompressedData *cdata, Image::Format format = Image::FORMAT_NORMAL);
 
 	Quad *newQuad(Quad::Viewport v, float sw, float sh);
 
@@ -208,7 +208,7 @@ public:
 
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	Canvas *newCanvas(int width, int height, Texture::Format format = Texture::FORMAT_NORMAL, int fsaa = 0);
+	Canvas *newCanvas(int width, int height, Canvas::Format format = Canvas::FORMAT_NORMAL, int fsaa = 0);
 
 	Shader *newShader(const Shader::ShaderSources &sources);
 
