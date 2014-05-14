@@ -525,12 +525,6 @@ bool Canvas::loadVolatile()
 		return false;
 	}
 
-	if (!isFormatSupported(format))
-	{
-		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-		return false;
-	}
-
 	glGenTextures(1, &texture);
 	gl.bindTexture(texture);
 
@@ -1017,14 +1011,11 @@ void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum
 		internalformat = GL_RGB10_A2;
 		type = GL_UNSIGNED_INT_10_10_10_2;
 		break;
-	case FORMAT_RGB9E5:
-		internalformat = GL_RGB9_E5;
-		externalformat = GL_RGB;
-		type = GL_UNSIGNED_INT_5_9_9_9_REV;
 	case FORMAT_RG11B10F:
 		internalformat = GL_R11F_G11F_B10F;
 		externalformat = GL_RGB;
 		type = GL_UNSIGNED_INT_10F_11F_11F_REV;
+		break;
 	case FORMAT_RGBA16F:
 		internalformat = GL_RGBA16F;
 		type = GL_FLOAT;
@@ -1052,11 +1043,14 @@ bool Canvas::isMultiCanvasSupported()
 	return gl.getMaxRenderTargets() >= 4;
 }
 
+bool Canvas::supportedFormats[] = {false};
+
 bool Canvas::isFormatSupported(Canvas::Format format)
 {
 	if (!isSupported())
 		return false;
 
+	bool supported = true;
 	format = getSizedFormat(format);
 
 	switch (format)
@@ -1065,23 +1059,68 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	case FORMAT_RGBA4:
 	case FORMAT_RGB5A1:
 	case FORMAT_RGB10A2:
-		return true;
+		supported = true;
+		break;
 	case FORMAT_RGB565:
-		return GLEE_VERSION_4_2 || GLEE_ARB_ES2_compatibility;
-	case FORMAT_RGB9E5:
-		return GLEE_VERSION_3_0 || GLEE_EXT_texture_shared_exponent;
+		supported = GLEE_VERSION_4_2 || GLEE_ARB_ES2_compatibility;
+		break;
 	case FORMAT_RG11B10F:
-		return GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_ARB_color_buffer_float
+		supported = GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_ARB_color_buffer_float
 			&& GLEE_EXT_packed_float);
+		break;
 	case FORMAT_RGBA16F:
 	case FORMAT_RGBA32F:
-		return GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_ARB_color_buffer_float);
+		supported = GLEE_VERSION_3_0 || (GLEE_ARB_texture_float && GLEE_ARB_color_buffer_float);
+		break;
 	case FORMAT_SRGB:
-		return GLEE_VERSION_3_0 || ((GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
+		supported = GLEE_VERSION_3_0 || ((GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
 			&& (GLEE_VERSION_2_1 || GLEE_EXT_texture_sRGB));
+		break;
 	default:
-		return false;
+		supported = false;
+		break;
 	}
+
+	if (!supported)
+		return false;
+
+	if (supportedFormats[format])
+		return true;
+
+	// Even though we might have the necessary OpenGL version or extension,
+	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
+	// a texture to a FBO whose format the driver doesn't like. So we should
+	// test with an actual FBO.
+
+	GLenum internalformat = GL_RGBA;
+	GLenum externalformat = GL_RGBA;
+	GLenum textype = GL_UNSIGNED_BYTE;
+	convertFormat(format, internalformat, externalformat, textype);
+
+	GLuint texture = 0;
+	glGenTextures(1, &texture);
+	gl.bindTexture(texture);
+
+	Texture::Filter f;
+	f.min = f.mag = Texture::FILTER_NEAREST;
+	gl.setTextureFilter(f);
+
+	Texture::Wrap w;
+	gl.setTextureWrap(w);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, internalformat, 2, 2, 0, externalformat, textype, nullptr);
+
+	GLuint fbo = 0;
+	GLenum status = strategy->createFBO(fbo, texture);
+	strategy->deleteFBO(fbo, 0, 0);
+
+	gl.deleteTexture(texture);
+
+	// Cache the result so we don't do this for every isFormatSupported call.
+	if (status == GL_FRAMEBUFFER_COMPLETE)
+		supportedFormats[format] = true;
+
+	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
 void Canvas::bindDefaultCanvas()
@@ -1109,7 +1148,6 @@ StringMap<Canvas::Format, Canvas::FORMAT_MAX_ENUM>::Entry Canvas::formatEntries[
 	{"rgb5a1", Canvas::FORMAT_RGB5A1},
 	{"rgb565", Canvas::FORMAT_RGB565},
 	{"rgb10a2", Canvas::FORMAT_RGB10A2},
-	{"rgb9e5", Canvas::FORMAT_RGB9E5},
 	{"rg11b10f", Canvas::FORMAT_RG11B10F},
 	{"rgba16f", Canvas::FORMAT_RGBA16F},
 	{"rgba32f", Canvas::FORMAT_RGBA32F},

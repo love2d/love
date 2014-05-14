@@ -50,7 +50,6 @@ public:
 		FORMAT_RGB5A1,
 		FORMAT_RGB565,
 		FORMAT_RGB10A2,
-		FORMAT_RGB9E5,
 		FORMAT_RG11B10F,
 		FORMAT_RGBA16F,
 		FORMAT_RGBA32F,
@@ -157,6 +156,8 @@ private:
 
 	void setupGrab();
 	void drawv(const Matrix &t, const Vertex *v);
+
+	static bool supportedFormats[FORMAT_MAX_ENUM];
 
 	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
 	static StringMap<Format, FORMAT_MAX_ENUM> formats;
