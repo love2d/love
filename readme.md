@@ -29,9 +29,11 @@ Repository information
 
 We use the 'default' branch for development, and therefore it should not be considered stable.
 Also used is the 'minor' branch, which is used for features in the next minor version and it is
-not our development target (which would be the next revision). (Version numbers formatted major.minor.revision.)
+not our development target (which would be the next revision - version numbers are formatted major.minor.revision.)
 
 We tag all our releases (since we started using mercurial), and have binary downloads available for them.
+
+Experimental changes are developed in the separate [love-experiments][love-experiments] repository.
 
 Builds
 ------
@@ -69,3 +71,4 @@ Dependencies
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
 [aur]: http://aur.archlinux.org/packages.php?ID=35279
+[love-experiments]: https://bitbucket.org/bartbes/love-experiments
