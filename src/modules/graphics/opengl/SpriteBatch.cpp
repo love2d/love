@@ -160,17 +160,9 @@ void SpriteBatch::clear()
 	next = 0;
 }
 
-void *SpriteBatch::lock()
+void SpriteBatch::flush()
 {
 	VertexBuffer::Bind bind(*array_buf);
-
-	return array_buf->map();
-}
-
-void SpriteBatch::unlock()
-{
-	VertexBuffer::Bind bind(*array_buf);
-
 	array_buf->unmap();
 }
 
@@ -219,14 +211,18 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	// Map (lock) the old VertexBuffer to get a pointer to its data.
-	void *old_data = lock();
+	// Map the old VertexBuffer to get a pointer to its data.
+	void *old_data = nullptr;
+	{
+		VertexBuffer::Bind bind(*array_buf);
+		old_data = array_buf->map();
+	}
 
 	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
 
-	VertexBuffer *new_array_buf = 0;
-	VertexIndex *new_element_buf = 0;
-	void *new_data = 0;
+	VertexBuffer *new_array_buf = nullptr;
+	VertexIndex *new_element_buf = nullptr;
+	void *new_data = nullptr;
 
 	try
 	{
@@ -241,7 +237,12 @@ void SpriteBatch::setBufferSize(int newsize)
 	{
 		delete new_array_buf;
 		delete new_element_buf;
-		unlock();
+
+		{
+			VertexBuffer::Bind bind(*array_buf);
+			array_buf->unmap();
+		}
+
 		throw;
 	}
 
@@ -258,8 +259,11 @@ void SpriteBatch::setBufferSize(int newsize)
 
 	next = std::min(next, newsize);
 
-	// But we should unmap (unlock) the new one!
-	unlock();
+	// But we should unmap the new one!
+	{
+		VertexBuffer::Bind bind(*new_array_buf);
+		new_array_buf->unmap();
+	}
 }
 
 int SpriteBatch::getBufferSize() const
@@ -269,7 +273,7 @@ int SpriteBatch::getBufferSize() const
 
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	const size_t vertex_offset = offsetof(Vertex, x);
+	const size_t pos_offset   = offsetof(Vertex, x);
 	const size_t texel_offset = offsetof(Vertex, s);
 	const size_t color_offset = offsetof(Vertex, r);
 
@@ -288,6 +292,9 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	VertexBuffer::Bind array_bind(*array_buf);
 	VertexBuffer::Bind element_bind(*element_buf->getVertexBuffer());
 
+	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
+	array_buf->unmap();
+
 	Color curcolor = gl.getColor();
 
 	// Apply per-sprite color, if a color is set.
@@ -298,7 +305,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	}
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(vertex_offset));
+	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(pos_offset));
 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(texel_offset));
@@ -323,7 +330,13 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 void SpriteBatch::addv(const Vertex *v, int index)
 {
 	static const int sprite_size = 4 * sizeof(Vertex); // bytecount
+
 	VertexBuffer::Bind bind(*array_buf);
+
+	// Always keep the VBO mapped when adding data for now (it'll be unmapped
+	// on draw.)
+	array_buf->map();
+
 	array_buf->fill(index * sprite_size, sprite_size, v);
 }
 

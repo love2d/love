@@ -65,8 +65,7 @@ public:
 	int addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
 	void clear();
 
-	void *lock();
-	void unlock();
+	void flush();
 
 	void setTexture(Texture *newtexture);
 	Texture *getTexture();
