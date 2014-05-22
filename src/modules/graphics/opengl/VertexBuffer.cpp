@@ -155,27 +155,7 @@ void VertexBuffer::fill(size_t offset, size_t size, const void *data)
 
 	if (!is_mapped)
 	{
-		// Not all systems have access to some faster paths...
-		if (GLEE_APPLE_flush_buffer_range)
-		{
-			void *mapdata = glMapBuffer(getTarget(), GL_WRITE_ONLY);
-
-			if (mapdata)
-			{
-				// We specified in VBO::load that we'll do manual flushing.
-				// Now we tell the driver it only needs to deal with the data
-				// we changed.
-				memcpy(static_cast<char *>(mapdata) + offset, data, size);
-				glFlushMappedBufferRangeAPPLE(getTarget(), (GLintptr) offset, (GLsizei) size);
-			}
-
-			glUnmapBuffer(getTarget());
-		}
-		else
-		{
-			// Fall back to a possibly slower SubData (more chance of syncing.)
-			glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
-		}
+		glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
 
 		if (getMemoryBacking() != BACKING_FULL)
 			is_dirty = true;
@@ -208,12 +188,6 @@ bool VertexBuffer::load(bool restore)
 
 	while (GL_NO_ERROR != glGetError())
 		/* clear error messages */;
-
-	// We don't want to flush the entire buffer when we just modify a small
-	// portion of it (VBO::fill without VBO::map), so we'll handle the flushing
-	// ourselves when we can.
-	if (GLEE_APPLE_flush_buffer_range)
-		glBufferParameteriAPPLE(getTarget(), GL_BUFFER_FLUSHING_UNMAP_APPLE, GL_FALSE);
 
 	// Note that if 'src' is '0', no data will be copied.
 	glBufferData(getTarget(), (GLsizeiptr) getSize(), src, getUsage());
