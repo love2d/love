@@ -211,13 +211,13 @@ int w_getWorkingDirectory(lua_State *L)
 
 int w_getUserDirectory(lua_State *L)
 {
-	lua_pushstring(L, instance->getUserDirectory());
+	luax_pushstring(L, instance->getUserDirectory());
 	return 1;
 }
 
 int w_getAppdataDirectory(lua_State *L)
 {
-	lua_pushstring(L, instance->getAppdataDirectory());
+	luax_pushstring(L, instance->getAppdataDirectory());
 	return 1;
 }
 

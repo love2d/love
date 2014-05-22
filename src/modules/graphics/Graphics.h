@@ -36,14 +36,14 @@ public:
 
 	enum DrawMode
 	{
-		DRAW_LINE = 1,
+		DRAW_LINE,
 		DRAW_FILL,
 		DRAW_MAX_ENUM
 	};
 
 	enum AlignMode
 	{
-		ALIGN_LEFT = 1,
+		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT,
 		ALIGN_JUSTIFY,
@@ -52,7 +52,7 @@ public:
 
 	enum BlendMode
 	{
-		BLEND_ALPHA = 1,
+		BLEND_ALPHA,
 		BLEND_ADD,
 		BLEND_SUBTRACT,
 		BLEND_MULTIPLY,
@@ -64,14 +64,14 @@ public:
 
 	enum LineStyle
 	{
-		LINE_ROUGH = 1,
+		LINE_ROUGH,
 		LINE_SMOOTH,
 		LINE_MAX_ENUM
 	};
 
 	enum LineJoin
 	{
-		LINE_JOIN_NONE = 1,
+		LINE_JOIN_NONE,
 		LINE_JOIN_MITER,
 		LINE_JOIN_BEVEL,
 		LINE_JOIN_MAX_ENUM
@@ -79,7 +79,7 @@ public:
 
 	enum Support
 	{
-		SUPPORT_HDR_CANVAS = 1,
+		SUPPORT_HDR_CANVAS,
 		SUPPORT_MULTI_CANVAS,
 		SUPPORT_DXT,
 		SUPPORT_BC5,
@@ -90,7 +90,7 @@ public:
 
 	enum RendererInfo
 	{
-		RENDERER_INFO_NAME = 1,
+		RENDERER_INFO_NAME,
 		RENDERER_INFO_VERSION,
 		RENDERER_INFO_VENDOR,
 		RENDERER_INFO_DEVICE,

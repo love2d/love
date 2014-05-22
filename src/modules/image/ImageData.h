@@ -49,7 +49,7 @@ public:
 
 	enum Format
 	{
-		FORMAT_TGA = 1,
+		FORMAT_TGA,
 		FORMAT_BMP,
 		FORMAT_JPG,
 		FORMAT_PNG,

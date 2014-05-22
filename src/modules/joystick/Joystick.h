@@ -157,9 +157,9 @@ public:
 	virtual int getID() const = 0;
 
 	virtual bool isVibrationSupported() = 0;
-	virtual bool setVibration(float left, float right) = 0;
+	virtual bool setVibration(float left, float right, float duration = -1.0f) = 0;
 	virtual bool setVibration() = 0;
-	virtual void getVibration(float &left, float &right) const = 0;
+	virtual void getVibration(float &left, float &right) = 0;
 
 	static bool getConstant(const char *in, Hat &out);
 	static bool getConstant(Hat in, const char *&out);

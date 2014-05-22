@@ -36,7 +36,7 @@ float Image::maxMipmapSharpness = 0.0f;
 Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NONE;
 float Image::defaultMipmapSharpness = 0.0f;
 
-Image::Image(love::image::ImageData *data, Texture::Format format)
+Image::Image(love::image::ImageData *data, Format format)
 	: data(data)
 	, cdata(nullptr)
 	, texture(0)
@@ -53,7 +53,7 @@ Image::Image(love::image::ImageData *data, Texture::Format format)
 	preload();
 }
 
-Image::Image(love::image::CompressedData *cdata, Texture::Format format)
+Image::Image(love::image::CompressedData *cdata, Format format)
 	: data(nullptr)
 	, cdata(cdata)
 	, texture(0)
@@ -420,7 +420,7 @@ bool Image::refresh()
 	return true;
 }
 
-Texture::Format Image::getFormat() const
+Image::Format Image::getFormat() const
 {
 	return format;
 }
@@ -555,6 +555,24 @@ bool Image::hasSRGBSupport()
 {
 	return GLEE_VERSION_2_1 || GLEE_EXT_texture_sRGB;
 }
+
+bool Image::getConstant(const char *in, Format &out)
+{
+	return formats.find(in, out);
+}
+
+bool Image::getConstant(Format in, const char *&out)
+{
+	return formats.find(in, out);
+}
+
+StringMap<Image::Format, Image::FORMAT_MAX_ENUM>::Entry Image::formatEntries[] =
+{
+	{"normal", Image::FORMAT_NORMAL},
+	{"srgb", Image::FORMAT_SRGB},
+};
+
+StringMap<Image::Format, Image::FORMAT_MAX_ENUM> Image::formats(Image::formatEntries, sizeof(Image::formatEntries));
 
 } // opengl
 } // graphics

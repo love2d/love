@@ -142,7 +142,7 @@ private:
 
 	enum FontType
 	{
-		FONT_TRUETYPE = 1,
+		FONT_TRUETYPE,
 		FONT_IMAGE,
 		FONT_UNKNOWN
 	};

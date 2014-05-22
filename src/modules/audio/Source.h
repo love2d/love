@@ -36,14 +36,14 @@ public:
 
 	enum Type
 	{
-		TYPE_STATIC = 1,
+		TYPE_STATIC,
 		TYPE_STREAM,
 		TYPE_MAX_ENUM
 	}; // Type
 
 	enum Unit
 	{
-		UNIT_SECONDS = 1,
+		UNIT_SECONDS,
 		UNIT_SAMPLES,
 		UNIT_MAX_ENUM
 	};

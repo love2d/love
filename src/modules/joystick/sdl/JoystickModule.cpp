@@ -77,7 +77,7 @@ const char *JoystickModule::getName() const
 love::joystick::Joystick *JoystickModule::getJoystick(int joyindex)
 {
 	if (joyindex < 0 || (size_t) joyindex >= activeSticks.size())
-		return 0;
+		return nullptr;
 
 	return activeSticks[joyindex];
 }
@@ -107,13 +107,13 @@ love::joystick::Joystick *JoystickModule::getJoystickFromID(int instanceid)
 			return activeSticks[i];
 	}
 
-	return 0;
+	return nullptr;
 }
 
 love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 {
 	if (deviceindex < 0 || deviceindex >= SDL_NumJoysticks())
-		return 0;
+		return nullptr;
 
 	std::string guidstr = getDeviceGUID(deviceindex);
 	joystick::Joystick *joystick = 0;
@@ -140,7 +140,7 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 	removeJoystick(joystick);
 
 	if (!joystick->open(deviceindex))
-		return 0;
+		return nullptr;
 
 	// Make sure multiple instances of the same physical joystick aren't added
 	// to the active list.
@@ -262,7 +262,7 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 	if (status == 1)
 		checkGamepads(guid);
 
-	return  status >= 0;
+	return status >= 0;
 }
 
 Joystick::JoystickInput JoystickModule::getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput)
@@ -318,7 +318,7 @@ std::string JoystickModule::stringFromGamepadInput(Joystick::GamepadInput gpinpu
 	SDL_GameControllerAxis sdlaxis;
 	SDL_GameControllerButton sdlbutton;
 
-	const char *gpinputname = 0;
+	const char *gpinputname = nullptr;
 
 	switch (gpinput.type)
 	{
@@ -435,7 +435,7 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 			// Big hack time: open the index as a game controller and compare
 			// the underlying joystick handle to the active stick's.
 			SDL_GameController *ctrl = SDL_GameControllerOpen(d_index);
-			if (ctrl == NULL)
+			if (ctrl == nullptr)
 				continue;
 
 			SDL_Joystick *stick = SDL_GameControllerGetJoystick(ctrl);

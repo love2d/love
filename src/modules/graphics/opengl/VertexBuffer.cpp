@@ -115,10 +115,18 @@ void VertexBuffer::unmap()
 		is_bound = true;
 	}
 
-	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
-	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-	glBufferData(getTarget(), (GLsizeiptr) getSize(), NULL,       getUsage());
-	glBufferData(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
+	if (getUsage() == GL_STATIC_DRAW)
+	{
+		// Upload the mapped data to the buffer.
+		glBufferSubData(getTarget(), 0, (GLsizeiptr) getSize(), memory_map);
+	}
+	else
+	{
+		// "orphan" current buffer to avoid implicit synchronisation on the GPU:
+		// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
+		glBufferData(getTarget(), (GLsizeiptr) getSize(), NULL,       getUsage());
+		glBufferData(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
+	}
 
 	is_mapped = false;
 }

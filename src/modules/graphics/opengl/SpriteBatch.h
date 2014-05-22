@@ -52,7 +52,7 @@ public:
 
 	enum UsageHint
 	{
-		USAGE_DYNAMIC = 1,
+		USAGE_DYNAMIC,
 		USAGE_STATIC,
 		USAGE_STREAM,
 		USAGE_MAX_ENUM

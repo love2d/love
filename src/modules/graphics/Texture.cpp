@@ -109,16 +109,6 @@ bool Texture::getConstant(WrapMode in, const char  *&out)
 	return wrapModes.find(in, out);
 }
 
-bool Texture::getConstant(const char *in, Format &out)
-{
-	return formats.find(in, out);
-}
-
-bool Texture::getConstant(Format in, const char *&out)
-{
-	return formats.find(in, out);
-}
-
 StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM>::Entry Texture::filterModeEntries[] =
 {
 	{ "linear", Texture::FILTER_LINEAR },
@@ -134,16 +124,6 @@ StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM>::Entry Texture::wrapModeEnt
 };
 
 StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM> Texture::wrapModes(Texture::wrapModeEntries, sizeof(Texture::wrapModeEntries));
-
-StringMap<Texture::Format, Texture::FORMAT_MAX_ENUM>::Entry Texture::formatEntries[] =
-{
-	{"normal", Texture::FORMAT_NORMAL},
-	{"hdr", Texture::FORMAT_HDR},
-	{"srgb", Texture::FORMAT_SRGB},
-};
-
-StringMap<Texture::Format, Texture::FORMAT_MAX_ENUM> Texture::formats(Texture::formatEntries, sizeof(Texture::formatEntries));
-
 
 } // graphics
 } // love

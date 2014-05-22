@@ -98,10 +98,9 @@ Shader::~Shader()
 		detach();
 
 	for (auto it = boundRetainables.begin(); it != boundRetainables.end(); ++it)
-	{
 		it->second->release();
-		boundRetainables.erase(it);
-	}
+
+	boundRetainables.clear();
 
 	unloadVolatile();
 }
