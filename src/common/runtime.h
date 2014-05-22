@@ -49,7 +49,7 @@ extern void *_gcmutex;
  **/
 enum Registry
 {
-	REGISTRY_GC = 1,
+	REGISTRY_GC,
 	REGISTRY_MODULES,
 	REGISTRY_TYPES
 };

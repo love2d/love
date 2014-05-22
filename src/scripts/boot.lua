@@ -235,7 +235,6 @@ local no_game_code = false
 function love.boot()
 
 	-- This is absolutely needed.
-	require("love")
 	require("love.filesystem")
 
 	love.arg.parse_options()
