@@ -55,6 +55,7 @@ Mesh::Mesh(int vertexcount, Mesh::DrawMode mode)
 	, ibo(nullptr)
 	, element_count(0)
 	, element_data_type(getGLDataTypeFromMax(vertexcount))
+	, instance_count(1)
 	, draw_mode(mode)
 	, range_min(-1)
 	, range_max(-1)
@@ -232,10 +233,10 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
  * Copies index data from a mapped buffer to a vector.
  **/
 template <typename T>
-static void copyFromIndexBuffer(void *buffer, std::vector<uint32> &indices, size_t maxval)
+static void copyFromIndexBuffer(void *buffer, size_t count, std::vector<uint32> &indices)
 {
 	T *elems = (T *) buffer;
-	for (size_t i = 0; i < maxval; i++)
+	for (size_t i = 0; i < count; i++)
 		indices.push_back((uint32) elems[i]);
 }
 
@@ -256,14 +257,14 @@ void Mesh::getVertexMap(std::vector<uint32> &map) const
 	switch (element_data_type)
 	{
 	case GL_UNSIGNED_BYTE:
-		copyFromIndexBuffer<uint8>(buffer, map, vertex_count);
+		copyFromIndexBuffer<uint8>(buffer, element_count, map);
 		break;
 	case GL_UNSIGNED_SHORT:
-		copyFromIndexBuffer<uint16>(buffer, map, vertex_count);
+		copyFromIndexBuffer<uint16>(buffer, element_count, map);
 		break;
 	case GL_UNSIGNED_INT:
 	default:
-		copyFromIndexBuffer<uint32>(buffer, map, vertex_count);
+		copyFromIndexBuffer<uint32>(buffer, element_count, map);
 		break;
 	}
 }
