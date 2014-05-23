@@ -201,11 +201,6 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	// Enable all color component writes.
 	setColorMask(true, true, true, true);
 
-	// Enable line/point smoothing.
-	setLineStyle(LINE_SMOOTH);
-	glEnable(GL_POINT_SMOOTH);
-	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-
 	// Auto-generated mipmaps should be the best quality possible
 	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
