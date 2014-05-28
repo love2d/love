@@ -222,6 +222,7 @@ void Image::createMipmaps()
 		                GL_RGBA,
 		                GL_UNSIGNED_BYTE,
 		                data->getData());
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
 	}
 }
 
