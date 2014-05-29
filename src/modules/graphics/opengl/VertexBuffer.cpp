@@ -59,7 +59,7 @@ VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacki
 	, is_dirty(true)
 {
 	if (getMemoryBacking() == BACKING_FULL)
-		memory_map = malloc(getSize());
+		memory_map = (char *) malloc(getSize());
 
 	bool ok = load(false);
 
@@ -86,7 +86,7 @@ void *VertexBuffer::map()
 
 	if (!memory_map)
 	{
-		memory_map = malloc(getSize());
+		memory_map = (char *) malloc(getSize());
 		if (!memory_map)
 			throw love::Exception("Out of memory (oh the humanity!)");
 	}
@@ -102,10 +102,27 @@ void *VertexBuffer::map()
 	return memory_map;
 }
 
-void VertexBuffer::unmap()
+void VertexBuffer::unmapStatic(size_t offset, size_t size)
+{
+	// Upload the mapped data to the buffer.
+	glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, memory_map + offset);
+}
+
+void VertexBuffer::unmapStream()
+{
+	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
+	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
+	glBufferData(getTarget(), (GLsizeiptr) getSize(), nullptr,    getUsage());
+	glBufferData(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
+}
+
+void VertexBuffer::unmap(size_t usedOffset, size_t usedSize)
 {
 	if (!is_mapped)
 		return;
+
+	usedOffset = std::min(usedOffset, getSize());
+	usedSize = std::min(usedSize, getSize() - usedOffset);
 
 	// VBO::bind is a no-op when the VBO is mapped, so we have to make sure it's
 	// bound here.
@@ -115,17 +132,23 @@ void VertexBuffer::unmap()
 		is_bound = true;
 	}
 
-	if (getUsage() == GL_STATIC_DRAW)
+	switch (getUsage())
 	{
-		// Upload the mapped data to the buffer.
-		glBufferSubData(getTarget(), 0, (GLsizeiptr) getSize(), memory_map);
-	}
-	else
-	{
-		// "orphan" current buffer to avoid implicit synchronisation on the GPU:
-		// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-		glBufferData(getTarget(), (GLsizeiptr) getSize(), NULL,       getUsage());
-		glBufferData(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
+	case GL_STATIC_DRAW:
+		unmapStatic(usedOffset, usedSize);
+		break;
+	case GL_STREAM_DRAW:
+		unmapStream();
+		break;
+	case GL_DYNAMIC_DRAW:
+	default:
+		// It's probably more efficient to treat it like a streaming buffer if
+		// more than a third of its contents have been modified during the map().
+		if (usedSize >= getSize() / 3)
+			unmapStream();
+		else
+			unmapStatic(usedOffset, usedSize);
+		break;
 	}
 
 	is_mapped = false;
@@ -151,7 +174,7 @@ void VertexBuffer::unbind()
 void VertexBuffer::fill(size_t offset, size_t size, const void *data)
 {
 	if (is_mapped || getMemoryBacking() == BACKING_FULL)
-		memcpy(static_cast<char *>(memory_map) + offset, data, size);
+		memcpy(memory_map + offset, data, size);
 
 	if (!is_mapped)
 	{

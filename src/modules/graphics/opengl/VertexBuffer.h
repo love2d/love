@@ -28,6 +28,9 @@
 // OpenGL
 #include "OpenGL.h"
 
+// C
+#include <stddef.h>
+
 namespace love
 {
 namespace graphics
@@ -145,8 +148,12 @@ public:
 	 * when used to draw elements.
 	 *
 	 * The VertexBuffer must be bound to use this function.
+	 *
+	 * @param usedOffset The offset into the mapped buffer indicating the
+	 *                   sub-range of data modified. Optional.
+	 * @param usedSize   The size of the sub-range of modified data. Optional.
 	 */
-	virtual void unmap();
+	virtual void unmap(size_t usedOffset = 0, size_t usedSize = -1);
 
 	/**
 	 * Bind the VertexBuffer to its specified target.
@@ -267,6 +274,8 @@ private:
 	 */
 	void unload(bool save);
 
+	void unmapStatic(size_t offset, size_t size);
+	void unmapStream();
 
 	// Whether the buffer is currently bound.
 	bool is_bound;
@@ -291,7 +300,7 @@ private:
 
 	// A pointer to mapped memory. Will be inialized on the first
 	// call to map().
-	void *memory_map;
+	char *memory_map;
 
 	// Set if the buffer was modified while operating on gpu memory
 	// and needs to be synchronized.

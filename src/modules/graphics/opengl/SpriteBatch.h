@@ -141,6 +141,10 @@ private:
 	VertexBuffer *array_buf;
 	VertexIndex *element_buf;
 
+	// The portion of the vertex buffer that's been modified while mapped.
+	size_t buffer_used_offset;
+	size_t buffer_used_size;
+
 	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
 	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
 
