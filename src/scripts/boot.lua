@@ -1392,8 +1392,6 @@ function love.nogame()
 			batch:setBufferSize(batch_w * batch_h)
 		end
 
-		batch:bind()
-
 		for i = 0, batch_h - 1 do
 			for j = 0, batch_w - 1 do
 				local is_even = (j % 2) == 0
@@ -1404,7 +1402,7 @@ function love.nogame()
 			end
 		end
 
-		batch:unbind()
+		batch:flush()
 	end
 
 	local function update_rain(t)		
