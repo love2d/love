@@ -22,7 +22,6 @@
 #define LOVE_IMAGE_MAGPIE_PNG_HANDLER_H
 
 // LOVE
-#include "filesystem/FileData.h"
 #include "FormatHandler.h"
 
 namespace love

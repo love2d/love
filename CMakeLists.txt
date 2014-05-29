@@ -349,6 +349,8 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/JPEGHandler.h
 	src/modules/image/magpie/PNGHandler.cpp
 	src/modules/image/magpie/PNGHandler.h
+	src/modules/image/magpie/STBHandler.cpp
+	src/modules/image/magpie/STBHandler.h
 )
 
 set(LOVE_SRC_MODULE_IMAGE
@@ -1015,6 +1017,17 @@ set(LOVE_SRC_3P_NOISE1234
 add_library(love_3p_noise1234 ${LOVE_SRC_3P_NOISE1234})
 
 #
+# stb_image
+#
+
+set(LOVE_SRC_3P_STB
+	src/libraries/stb/stb_image.c
+	src/libraries/stb/stb_image.h
+)
+
+add_library(love_3p_stb ${LOVE_SRC_3P_STB})
+
+#
 # utf8
 #
 
@@ -1058,6 +1071,7 @@ set(LOVE_3P
 	love_3p_lodepng
 	love_3p_luasocket
 	love_3p_noise1234
+	love_3p_stb
 	love_3p_wuff
 )
 

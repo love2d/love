@@ -231,6 +231,8 @@
 		FA48E43618F10D00007CF0BD /* JPEGHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */; };
 		FA48E43718F10D00007CF0BD /* JPEGHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA48E43518F10D00007CF0BD /* JPEGHandler.h */; };
 		FA48E43918F10D6C007CF0BD /* jpeg-turbo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */; };
+		FA4B5B7519369009006C6D93 /* stb_image.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4B5B7319369009006C6D93 /* stb_image.c */; };
+		FA4B5B7A1936B688006C6D93 /* stb_image.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4B5B781936B688006C6D93 /* stb_image.h */; };
 		FA4BBCDE18A5DC5D0027707D /* lodepng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4BBCDC18A5DC5D0027707D /* lodepng.cpp */; };
 		FA4BBCDF18A5DC5D0027707D /* lodepng.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4BBCDD18A5DC5D0027707D /* lodepng.h */; };
 		FA4BBCE218A5DD7E0027707D /* PNGHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4BBCE018A5DD7E0027707D /* PNGHandler.cpp */; };
@@ -297,6 +299,8 @@
 		FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Quad.cpp */; };
 		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
 		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
+		FADE620919368D5C00C25B97 /* STBHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADE620719368D5C00C25B97 /* STBHandler.cpp */; };
+		FADE620A19368D5C00C25B97 /* STBHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FADE620819368D5C00C25B97 /* STBHandler.h */; };
 		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
 		FAE010DC170DDE99006F29D0 /* ddsparse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010D9170DDE99006F29D0 /* ddsparse.cpp */; };
 		FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010DA170DDE99006F29D0 /* ddsparse.h */; };
@@ -787,6 +791,8 @@
 		FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGHandler.cpp; sourceTree = "<group>"; };
 		FA48E43518F10D00007CF0BD /* JPEGHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JPEGHandler.h; sourceTree = "<group>"; };
 		FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
+		FA4B5B7319369009006C6D93 /* stb_image.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stb_image.c; sourceTree = "<group>"; };
+		FA4B5B781936B688006C6D93 /* stb_image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_image.h; sourceTree = "<group>"; };
 		FA4BBCDC18A5DC5D0027707D /* lodepng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lodepng.cpp; sourceTree = "<group>"; };
 		FA4BBCDD18A5DC5D0027707D /* lodepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lodepng.h; sourceTree = "<group>"; };
 		FA4BBCE018A5DD7E0027707D /* PNGHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PNGHandler.cpp; sourceTree = "<group>"; };
@@ -862,6 +868,8 @@
 		FAC86E671724555D00EED715 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		FAC86E681724555D00EED715 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
+		FADE620719368D5C00C25B97 /* STBHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STBHandler.cpp; sourceTree = "<group>"; };
+		FADE620819368D5C00C25B97 /* STBHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STBHandler.h; sourceTree = "<group>"; };
 		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
 		FAE010D9170DDE99006F29D0 /* ddsparse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ddsparse.cpp; sourceTree = "<group>"; };
 		FAE010DA170DDE99006F29D0 /* ddsparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsparse.h; sourceTree = "<group>"; };
@@ -1113,6 +1121,8 @@
 				FA48E43518F10D00007CF0BD /* JPEGHandler.h */,
 				FA4BBCE018A5DD7E0027707D /* PNGHandler.cpp */,
 				FA4BBCE118A5DD7E0027707D /* PNGHandler.h */,
+				FADE620719368D5C00C25B97 /* STBHandler.cpp */,
+				FADE620819368D5C00C25B97 /* STBHandler.h */,
 			);
 			path = magpie;
 			sourceTree = "<group>";
@@ -1408,6 +1418,7 @@
 				FA4BBCDB18A5DC5D0027707D /* lodepng */,
 				3AED1DE005A53DDB07902760 /* luasocket */,
 				FA0354691731F3A700284828 /* noise1234 */,
+				FA4B5B7219369009006C6D93 /* stb */,
 				36C14C81334735EC54E33637 /* utf8 */,
 				FAF6704318184FF800DBDEEA /* Wuff */,
 			);
@@ -1845,6 +1856,15 @@
 			path = sdl;
 			sourceTree = "<group>";
 		};
+		FA4B5B7219369009006C6D93 /* stb */ = {
+			isa = PBXGroup;
+			children = (
+				FA4B5B7319369009006C6D93 /* stb_image.c */,
+				FA4B5B781936B688006C6D93 /* stb_image.h */,
+			);
+			path = stb;
+			sourceTree = "<group>";
+		};
 		FA4BBCDB18A5DC5D0027707D /* lodepng */ = {
 			isa = PBXGroup;
 			children = (
@@ -1993,6 +2013,7 @@
 				FAF272A716E3D44400CC193A /* LuaThread.h in Headers */,
 				FAF4377017F4AC530074F9E2 /* Mesh.h in Headers */,
 				FA4BBCDF18A5DC5D0027707D /* lodepng.h in Headers */,
+				FADE620A19368D5C00C25B97 /* STBHandler.h in Headers */,
 				FAF272A916E3D44400CC193A /* ThreadModule.h in Headers */,
 				FA4BBCE318A5DD7E0027707D /* PNGHandler.h in Headers */,
 				FAF6705018184FF800DBDEEA /* wuff_convert.h in Headers */,
@@ -2013,6 +2034,7 @@
 				FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */,
 				FA01BE1F1878E35B00640047 /* wrap_Texture.h in Headers */,
 				FAEC808B1710FEA60057279A /* ImageData.h in Headers */,
+				FA4B5B7A1936B688006C6D93 /* stb_image.h in Headers */,
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
 				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
@@ -2131,6 +2153,7 @@
 				FA08F5BE16C7532A00F007B5 /* Memoizer.cpp in Sources */,
 				FA08F5BF16C7532A00F007B5 /* Module.cpp in Sources */,
 				FA08F5C016C7532A00F007B5 /* Object.cpp in Sources */,
+				FADE620919368D5C00C25B97 /* STBHandler.cpp in Sources */,
 				FAF670561818501300DBDEEA /* WaveDecoder.cpp in Sources */,
 				FA08F5C116C7532A00F007B5 /* Reference.cpp in Sources */,
 				FA08F5C216C7532A00F007B5 /* runtime.cpp in Sources */,
@@ -2183,6 +2206,7 @@
 				FA08F5EF16C7538F00F007B5 /* b2RevoluteJoint.cpp in Sources */,
 				FA08F5F016C7538F00F007B5 /* b2RopeJoint.cpp in Sources */,
 				FA08F5F116C7538F00F007B5 /* b2WeldJoint.cpp in Sources */,
+				FA4B5B7519369009006C6D93 /* stb_image.c in Sources */,
 				FA4BBCDE18A5DC5D0027707D /* lodepng.cpp in Sources */,
 				FA08F5F216C7538F00F007B5 /* b2WheelJoint.cpp in Sources */,
 				FA08F5F316C7539B00F007B5 /* b2Rope.cpp in Sources */,

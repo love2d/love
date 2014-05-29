@@ -25,6 +25,7 @@
 
 #include "JPEGHandler.h"
 #include "PNGHandler.h"
+#include "STBHandler.h"
 
 namespace love
 {
@@ -37,6 +38,7 @@ Image::Image()
 {
 	formatHandlers.push_back(new PNGHandler);
 	formatHandlers.push_back(new JPEGHandler);
+	formatHandlers.push_back(new STBHandler);
 }
 
 Image::~Image()
