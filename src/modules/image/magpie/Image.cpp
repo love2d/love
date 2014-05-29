@@ -43,8 +43,8 @@ Image::~Image()
 {
 	// ImageData objects reference the FormatHandlers in our list, so we should
 	// release them instead of deleting them completely here.
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->release();
+	for (FormatHandler *handler : formatHandlers)
+		handler->release();
 }
 
 const char *Image::getName() const

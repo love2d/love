@@ -32,8 +32,8 @@ ImageData::ImageData(std::list<FormatHandler *> formats, love::filesystem::FileD
 	: formatHandlers(formats)
 	, decodeHandler(nullptr)
 {
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->retain();
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 
 	decode(data);
 }
@@ -42,8 +42,8 @@ ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height)
 	: formatHandlers(formats)
 	, decodeHandler(nullptr)
 {
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->retain();
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 
 	this->width = width;
 	this->height = height;
@@ -58,8 +58,8 @@ ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height, 
 	: formatHandlers(formats)
 	, decodeHandler(nullptr)
 {
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->retain();
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 
 	this->width = width;
 	this->height = height;
@@ -77,8 +77,8 @@ ImageData::~ImageData()
 	else
 		delete[] data;
 
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->release();
+	for (FormatHandler *handler : formatHandlers)
+		handler->release();
 }
 
 void ImageData::create(int width, int height, void *data)
@@ -100,20 +100,20 @@ void ImageData::create(int width, int height, void *data)
 
 void ImageData::decode(love::filesystem::FileData *data)
 {
-	FormatHandler *handler = nullptr;
+	FormatHandler *decoder = nullptr;
 	FormatHandler::DecodedImage decodedimage;
 
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+	for (FormatHandler *handler : formatHandlers)
 	{
-		if ((*it)->canDecode(data))
+		if (handler->canDecode(data))
 		{
-			handler = *it;
+			decoder = handler;
 			break;
 		}
 	}
 
-	if (handler)
-		decodedimage = handler->decode(data);
+	if (decoder)
+		decodedimage = decoder->decode(data);
 
 	if (decodedimage.data == nullptr)
 	{
@@ -138,38 +138,40 @@ void ImageData::decode(love::filesystem::FileData *data)
 	this->height = decodedimage.height;
 	this->data = decodedimage.data;
 
-	decodeHandler = handler;
+	decodeHandler = decoder;
 }
 
 void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 {
-	FormatHandler *handler = nullptr;
+	FormatHandler *encoder = nullptr;
 	FormatHandler::EncodedImage encodedimage;
+	FormatHandler::DecodedImage rawimage;
 
+	rawimage.width = width;
+	rawimage.height = height;
+	rawimage.size = width*height*sizeof(pixel);
+	rawimage.data = data;
+
+	for (FormatHandler *handler : formatHandlers)
 	{
-		// We only need to lock this mutex when actually encoding the ImageData.
-		thread::Lock lock(mutex);
-
-		FormatHandler::DecodedImage rawimage;
-		rawimage.width = width;
-		rawimage.height = height;
-		rawimage.size = width*height*sizeof(pixel);
-		rawimage.data = data;
-
-		for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		if (handler->canEncode(format))
 		{
-			if ((*it)->canEncode(format))
-			{
-				handler = *it;
-				break;
-			}
+			encoder = handler;
+			break;
 		}
+	}
 
-		if (handler)
-			handler->encode(rawimage, format);
+	if (encoder != nullptr)
+	{
+		thread::Lock lock(mutex);
+		encodedimage = encoder->encode(rawimage, format);
+	}
 
-		if (encodedimage.data == nullptr)
-			throw love::Exception("Image format has no suitable encoder.");
+	if (encoder == nullptr || encodedimage.data == nullptr)
+	{
+		const char *fname = "unknown";
+		getConstant(format, fname);
+		throw love::Exception("no suitable image encoder for %s format.", fname);
 	}
 
 	try
@@ -180,18 +182,11 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 	}
 	catch (love::Exception &)
 	{
-		if (handler)
-			handler->free(encodedimage.data);
-		else
-			delete[] encodedimage.data;
-
+		encoder->free(encodedimage.data);
 		throw;
 	}
 
-	if (handler)
-		handler->free(encodedimage.data);
-	else
-		delete[] encodedimage.data;
+	encoder->free(encodedimage.data);
 }
 
 } // magpie
