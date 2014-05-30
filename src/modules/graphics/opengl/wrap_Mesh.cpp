@@ -240,20 +240,6 @@ int w_Mesh_getVertexMap(lua_State *L)
 	return 1;
 }
 
-int w_Mesh_setInstanceCount(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	t->setInstanceCount(luaL_checkint(L, 2));
-	return 0;
-}
-
-int w_Mesh_getInstanceCount(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	lua_pushinteger(L, t->getInstanceCount());
-	return 1;
-}
-
 int w_Mesh_setTexture(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
@@ -374,12 +360,6 @@ static const luaL_Reg functions[] =
 	{ "getVertexCount", w_Mesh_getVertexCount },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
-
-	// Disabled for now, since implementation is incomplete and might change
-	// if/when VertexBuffers / custom vertex attributes are added.
-	// { "setInstanceCount", w_Mesh_setInstanceCount },
-	// { "getInstanceCount", w_Mesh_getInstanceCount },
-
 	{ "setTexture", w_Mesh_setTexture },
 	{ "getTexture", w_Mesh_getTexture },
 	{ "setDrawMode", w_Mesh_setDrawMode },

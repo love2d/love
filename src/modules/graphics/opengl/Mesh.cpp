@@ -39,7 +39,6 @@ Mesh::Mesh(const std::vector<Vertex> &verts, Mesh::DrawMode mode)
 	, ibo(nullptr)
 	, element_count(0)
 	, element_data_type(getGLDataTypeFromMax(verts.size()))
-	, instance_count(1)
 	, draw_mode(mode)
 	, range_min(-1)
 	, range_max(-1)
@@ -55,7 +54,6 @@ Mesh::Mesh(int vertexcount, Mesh::DrawMode mode)
 	, ibo(nullptr)
 	, element_count(0)
 	, element_data_type(getGLDataTypeFromMax(vertexcount))
-	, instance_count(1)
 	, draw_mode(mode)
 	, range_min(-1)
 	, range_max(-1)
@@ -176,20 +174,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	GLenum datatype = getGLDataTypeFromMax(vertex_count);
 
 	// Calculate the size in bytes of the index buffer data.
-	size_t size = map.size();
-	switch (datatype)
-	{
-	case GL_UNSIGNED_BYTE:
-		size *= sizeof(uint8);
-		break;
-	case GL_UNSIGNED_SHORT:
-		size *= sizeof(uint16);
-		break;
-	case GL_UNSIGNED_INT:
-	default:
-		size *= sizeof(uint32);
-		break;
-	}
+	size_t size = map.size() * getGLDataTypeSize(datatype);
 
 	if (ibo && size > ibo->getSize())
 	{
@@ -272,16 +257,6 @@ void Mesh::getVertexMap(std::vector<uint32> &map) const
 size_t Mesh::getVertexMapCount() const
 {
 	return element_count;
-}
-
-void Mesh::setInstanceCount(int count)
-{
-	instance_count = std::max(count, 1);
-}
-
-int Mesh::getInstanceCount() const
-{
-	return instance_count;
 }
 
 void Mesh::setTexture(Texture *tex)
@@ -399,35 +374,29 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 
 		int max = element_count - 1;
 		if (range_max >= 0)
-			max = std::min(std::max(range_max, 0), (int) element_count - 1);
+			max = std::min(range_max, max);
 
 		int min = 0;
 		if (range_min >= 0)
-			min = std::min(std::max(range_min, 0), max);
+			min = std::min(range_min, max);
 
-		const void *indices = ibo->getPointer(min * sizeof(uint32));
 		GLenum type = element_data_type;
+		const void *indices = ibo->getPointer(min * getGLDataTypeSize(type));
 
-		if (instance_count > 1)
-			gl.drawElementsInstanced(mode, max - min + 1, type, indices, instance_count);
-		else
-			glDrawElements(mode, max - min + 1, type, indices);
+		glDrawElements(mode, max - min + 1, type, indices);
 	}
 	else
 	{
 		int max = vertex_count - 1;
 		if (range_max >= 0)
-			max = std::min(std::max(range_max, 0), (int) vertex_count - 1);
+			max = std::min(range_max, max);
 
 		int min = 0;
 		if (range_min >= 0)
-			min = std::min(std::max(range_min, 0), max);
+			min = std::min(range_min, max);
 
 		// Normal non-indexed drawing (no custom vertex map.)
-		if (instance_count > 1)
-			gl.drawArraysInstanced(mode, min, max - min + 1, instance_count);
-		else
-			glDrawArrays(mode, min, max - min + 1);
+		glDrawArrays(mode, min, max - min + 1);
 	}
 
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -455,24 +424,34 @@ GLenum Mesh::getGLDrawMode(DrawMode mode) const
 	case DRAW_MODE_STRIP:
 		return GL_TRIANGLE_STRIP;
 	case DRAW_MODE_TRIANGLES:
+	default:
 		return GL_TRIANGLES;
 	case DRAW_MODE_POINTS:
 		return GL_POINTS;
-	default:
-		break;
 	}
-
-	return GL_TRIANGLES;
 }
 
 GLenum Mesh::getGLDataTypeFromMax(size_t maxvalue) const
 {
 	if (maxvalue > LOVE_UINT16_MAX)
 		return GL_UNSIGNED_INT;
-	else if (maxvalue > LOVE_UINT8_MAX)
-		return GL_UNSIGNED_SHORT;
 	else
-		return GL_UNSIGNED_BYTE;
+		return GL_UNSIGNED_SHORT;
+}
+
+size_t Mesh::getGLDataTypeSize(GLenum datatype) const
+{
+	switch (datatype)
+	{
+	case GL_UNSIGNED_BYTE:
+		return sizeof(uint8);
+	case GL_UNSIGNED_SHORT:
+		return sizeof(uint16);
+	case GL_UNSIGNED_INT:
+		return sizeof(uint32);
+	default:
+		return 0;
+	}
 }
 
 bool Mesh::getConstant(const char *in, Mesh::DrawMode &out)
