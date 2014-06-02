@@ -25,12 +25,14 @@
 
 #include "magpie/Image.h"
 
+#include "filesystem/wrap_Filesystem.h"
+
 namespace love
 {
 namespace image
 {
 
-static Image *instance = 0;
+static Image *instance = nullptr;
 
 int w_newImageData(lua_State *L)
 {
@@ -42,7 +44,7 @@ int w_newImageData(lua_State *L)
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
 
-		ImageData *t = 0;
+		ImageData *t = nullptr;
 		EXCEPT_GUARD(t = instance->newImageData(w, h);)
 
 		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
@@ -50,15 +52,10 @@ int w_newImageData(lua_State *L)
 	}
 
 	// Case 2: File(Data).
+	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
 
-	// Convert to FileData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
-
-	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
-
-	ImageData *t = 0;
-	EXCEPT_GUARD(t = instance->newImageData(data);)
+	ImageData *t = nullptr;
+	EXCEPT_GUARD_FINALLY(t = instance->newImageData(data);, data->release();)
 
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 	return 1;
@@ -66,14 +63,10 @@ int w_newImageData(lua_State *L)
 
 int w_newCompressedData(lua_State *L)
 {
-	// Convert to FileData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
+	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
 
-	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
-
-	CompressedData *t = 0;
-	EXCEPT_GUARD(t = instance->newCompressedData(data);)
+	CompressedData *t = nullptr;
+	EXCEPT_GUARD_FINALLY(t = instance->newCompressedData(data);, data->release();)
 
 	luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
 	return 1;
@@ -81,14 +74,9 @@ int w_newCompressedData(lua_State *L)
 
 int w_isCompressed(lua_State *L)
 {
-	// Convert to FileData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
-
-	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
-
-	bool compressed = false;
-	EXCEPT_GUARD(compressed = instance->isCompressed(data);)
+	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
+	bool compressed = instance->isCompressed(data);
+	data->release();
 
 	luax_pushboolean(L, compressed);
 	return 1;
@@ -112,7 +100,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_image(lua_State *L)
 {
-	if (instance == 0)
+	if (instance == nullptr)
 	{
 		EXCEPT_GUARD(instance = new love::image::magpie::Image();)
 	}

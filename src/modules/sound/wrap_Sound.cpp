@@ -20,6 +20,8 @@
 
 #include "wrap_Sound.h"
 
+#include "filesystem/wrap_Filesystem.h"
+
 // Implementations.
 #include "lullaby/Sound.h"
 
@@ -62,18 +64,13 @@ int w_newSoundData(lua_State *L)
 
 int w_newDecoder(lua_State *L)
 {
-	// Convert to FileData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
-
-	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
-
+	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
 	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
 
-	Decoder *t = 0;
-	EXCEPT_GUARD(t = instance->newDecoder(data, bufferSize);)
+	Decoder *t = nullptr;
+	EXCEPT_GUARD_FINALLY(t = instance->newDecoder(data, bufferSize);, data->release();)
 
-	if (t == 0)
+	if (t == nullptr)
 		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
 
 	luax_pushtype(L, "Decoder", SOUND_DECODER_T, t);

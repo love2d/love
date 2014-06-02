@@ -489,6 +489,20 @@ Type luax_type(lua_State *L, int idx);
 		return luaL_error(L, "%s", lua_tostring(L, -1)); \
 }
 
+#define EXCEPT_GUARD_FINALLY(A, B) \
+{ \
+	bool should_error = false; \
+	try { A } \
+	catch (love::Exception &e) \
+	{ \
+		should_error = true; \
+		lua_pushstring(L, e.what()); \
+	} \
+	{ B } \
+	if (should_error) \
+		return luaL_error(L, "%s", lua_tostring(L, -1)); \
+}
+
 } // love
 
 #endif // LOVE_RUNTIME_H

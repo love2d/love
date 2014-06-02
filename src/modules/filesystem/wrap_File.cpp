@@ -20,6 +20,8 @@
 
 #include "wrap_File.h"
 
+#include "physfs/Filesystem.h"
+
 #include "common/Data.h"
 #include "common/Exception.h"
 #include "common/int.h"
@@ -27,8 +29,6 @@
 namespace love
 {
 namespace filesystem
-{
-namespace physfs
 {
 
 int luax_ioError(lua_State *L, const char *fmt, ...)
@@ -242,7 +242,7 @@ int w_File_lines(lua_State *L)
 			return luaL_error(L, "Could not open file.");
 	}
 
-	lua_pushcclosure(L, Filesystem::lines_i, 3);
+	lua_pushcclosure(L, physfs::Filesystem::lines_i, 3);
 	return 1;
 }
 
@@ -323,6 +323,5 @@ extern "C" int luaopen_file(lua_State *L)
 	return luax_register_type(L, "File", functions);
 }
 
-} // physfs
 } // filesystem
 } // love

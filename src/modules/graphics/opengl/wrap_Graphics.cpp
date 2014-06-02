@@ -22,7 +22,9 @@
 #include "OpenGL.h"
 #include "graphics/Texture.h"
 #include "image/ImageData.h"
+#include "image/Image.h"
 #include "font/Rasterizer.h"
+#include "filesystem/wrap_Filesystem.h"
 
 #include "scripts/graphics.lua.h"
 #include <cassert>
@@ -161,42 +163,52 @@ int w_newImage(lua_State *L)
 	if (fstr != nullptr && !Image::getConstant(fstr, format))
 		return luaL_error(L, "Invalid Image format: %s", fstr);
 
-	// Convert to FileData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
+	bool releasedata = false;
 
-	// Convert to ImageData/CompressedData, if necessary.
-	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	// Convert to ImageData / CompressedData, if necessary.
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
-		// Determine whether to convert to ImageData or CompressedData.
-		luax_getfunction(L, "image", "isCompressed");
-		lua_pushvalue(L, 1);
-		lua_call(L, 1, 1);
+		love::image::Image *image = (love::image::Image *) Module::findInstance("love.image.");
+		if (image == nullptr)
+			return luaL_error(L, "Cannot load images without the love.image module.");
 
-		bool compressed = luax_toboolean(L, -1);
-		lua_pop(L, 1);
+		love::filesystem::FileData *fdata = love::filesystem::luax_getFileData(L, 1);
 
-		if (compressed)
-			luax_convobj(L, 1, "image", "newCompressedData");
+		if (image->isCompressed(fdata))
+		{
+			EXCEPT_GUARD_FINALLY(cdata = image->newCompressedData(fdata);, fdata->release();)
+		}
 		else
-			luax_convobj(L, 1, "image", "newImageData");
-	}
+		{
+			EXCEPT_GUARD_FINALLY(data = image->newImageData(fdata);, fdata->release();)
+		}
 
-	if (luax_istype(L, 1, IMAGE_COMPRESSED_DATA_T))
+		// Lua's GC won't release the image data, so we should do it ourselves.
+		releasedata = true;
+	}
+	else if (luax_istype(L, 1, IMAGE_COMPRESSED_DATA_T))
 		cdata = luax_checktype<love::image::CompressedData>(L, 1, "CompressedData", IMAGE_COMPRESSED_DATA_T);
 	else
 		data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
 
 	if (!data && !cdata)
-		return luaL_error(L, "Error creating image.");
+		return luaL_error(L, "Error creating image (could not load data.)");
 
 	// Create the image.
 	Image *image = nullptr;
-	EXCEPT_GUARD(
-		if (cdata)
-			image = instance->newImage(cdata, format);
-		else if (data)
-			image = instance->newImage(data, format);
+	EXCEPT_GUARD_FINALLY(
+		{
+			if (cdata)
+				image = instance->newImage(cdata, format);
+			else if (data)
+				image = instance->newImage(data, format);
+		},
+		{
+			if (releasedata && data)
+				data->release();
+			else if (releasedata && cdata)
+				cdata->release();
+		}
 	)
 
 	if (image == nullptr)
@@ -225,12 +237,8 @@ int w_newQuad(lua_State *L)
 
 int w_newFont(lua_State *L)
 {
-	// Convert to FileData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
-
 	// Convert to Rasterizer, if necessary.
-	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
 		int idxs[] = {1, 2};
 		luax_convobj(L, idxs, 2, "font", "newRasterizer");

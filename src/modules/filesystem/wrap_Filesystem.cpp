@@ -20,6 +20,10 @@
 
 // LOVE
 #include "wrap_Filesystem.h"
+#include "wrap_File.h"
+#include "wrap_FileData.h"
+
+#include "physfs/Filesystem.h"
 
 // SDL
 #include <SDL_loadso.h>
@@ -28,10 +32,8 @@ namespace love
 {
 namespace filesystem
 {
-namespace physfs
-{
 
-static Filesystem *instance = 0;
+static physfs::Filesystem *instance = 0;
 
 bool hack_setupWriteDirectory()
 {
@@ -146,18 +148,73 @@ int w_newFile(lua_State *L)
 	return 1;
 }
 
+FileData *luax_getFileData(lua_State *L, int idx)
+{
+	FileData *data = nullptr;
+	File *file = nullptr;
+
+	if (lua_isstring(L, idx))
+	{
+		const char *filename = luaL_checkstring(L, idx);
+		file = instance->newFile(filename);
+	}
+	else if (luax_istype(L, idx, FILESYSTEM_FILE_T))
+	{
+		file = luax_checkfile(L, idx);
+		file->retain();
+	}
+	else if (luax_istype(L, idx, FILESYSTEM_FILE_DATA_T))
+	{
+		data = luax_checkfiledata(L, idx);
+		data->retain();
+	}
+
+	if (!data && !file)
+	{
+		luaL_argerror(L, idx, "filename, File, or FileData expected");
+		return nullptr; // Never reached.
+	}
+
+	if (file)
+	{
+		bool should_error = false;
+
+		// We don't use EXCEPT_GUARD_FINALLY because it returns int.
+		try
+		{
+			data = file->read();
+		}
+		catch (love::Exception &e)
+		{
+			should_error = true;
+			lua_pushstring(L, e.what());
+		}
+
+		file->release();
+
+		if (should_error)
+		{
+			luaL_error(L, "%s", lua_tostring(L, -1));
+			return nullptr; // Never reached.
+		}
+	}
+
+	return data;
+}
+
 int w_newFileData(lua_State *L)
 {
 	// Single argument: treat as filepath or File.
 	if (lua_gettop(L) == 1)
 	{
+		// We don't use luax_getFileData because we want to use an ioError.
 		if (lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		// Get FileData from the File.
 		if (luax_istype(L, 1, FILESYSTEM_FILE_T))
 		{
-			File *file = luax_checktype<File>(L, 1, "File", FILESYSTEM_FILE_T);
+			File *file = luax_checkfile(L, 1);
 
 			FileData *data = 0;
 			try
@@ -172,7 +229,7 @@ int w_newFileData(lua_State *L)
 			return 1;
 		}
 		else
-			return luaL_argerror(L, 1, "string or File expected");
+			return luaL_argerror(L, 1, "filename or File expected");
 	}
 
 	size_t length = 0;
@@ -369,7 +426,7 @@ int w_lines(lua_State *L)
 	else
 		return luaL_argerror(L, 1, "expected filename.");
 
-	lua_pushcclosure(L, Filesystem::lines_i, 1);
+	lua_pushcclosure(L, physfs::Filesystem::lines_i, 1);
 	return 1;
 }
 
@@ -576,32 +633,32 @@ int extloader(lua_State *L)
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "init",  w_init },
+	{ "init", w_init },
 	{ "setFused", w_setFused },
 	{ "isFused", w_isFused },
-	{ "setIdentity",  w_setIdentity },
+	{ "setIdentity", w_setIdentity },
 	{ "getIdentity", w_getIdentity },
-	{ "setSource",  w_setSource },
+	{ "setSource", w_setSource },
 	{ "getSource", w_getSource },
 	{ "mount", w_mount },
 	{ "unmount", w_unmount },
-	{ "newFile",  w_newFile },
-	{ "getWorkingDirectory",  w_getWorkingDirectory },
-	{ "getUserDirectory",  w_getUserDirectory },
-	{ "getAppdataDirectory",  w_getAppdataDirectory },
-	{ "getSaveDirectory",  w_getSaveDirectory },
+	{ "newFile", w_newFile },
+	{ "getWorkingDirectory", w_getWorkingDirectory },
+	{ "getUserDirectory", w_getUserDirectory },
+	{ "getAppdataDirectory", w_getAppdataDirectory },
+	{ "getSaveDirectory", w_getSaveDirectory },
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
-	{ "exists",  w_exists },
-	{ "isDirectory",  w_isDirectory },
-	{ "isFile",  w_isFile },
-	{ "createDirectory",  w_createDirectory },
-	{ "remove",  w_remove },
-	{ "read",  w_read },
-	{ "write",  w_write },
+	{ "exists", w_exists },
+	{ "isDirectory", w_isDirectory },
+	{ "isFile", w_isFile },
+	{ "createDirectory", w_createDirectory },
+	{ "remove", w_remove },
+	{ "read", w_read },
+	{ "write", w_write },
 	{ "append", w_append },
-	{ "getDirectoryItems",  w_getDirectoryItems },
-	{ "lines",  w_lines },
-	{ "load",  w_load },
+	{ "getDirectoryItems", w_getDirectoryItems },
+	{ "lines", w_lines },
+	{ "load", w_load },
 	{ "getLastModified", w_getLastModified },
 	{ "getSize", w_getSize },
 	{ "newFileData", w_newFileData },
@@ -619,7 +676,7 @@ extern "C" int luaopen_love_filesystem(lua_State *L)
 {
 	if (instance == 0)
 	{
-		EXCEPT_GUARD(instance = new Filesystem();)
+		EXCEPT_GUARD(instance = new physfs::Filesystem();)
 	}
 	else
 		instance->retain();
@@ -638,6 +695,5 @@ extern "C" int luaopen_love_filesystem(lua_State *L)
 	return luax_register_module(L, w);
 }
 
-} // physfs
 } // filesystem
 } // love

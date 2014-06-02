@@ -185,6 +185,12 @@ set(LOVE_SRC_MODULE_FILESYSTEM_ROOT
 	src/modules/filesystem/File.h
 	src/modules/filesystem/FileData.cpp
 	src/modules/filesystem/FileData.h
+	src/modules/filesystem/wrap_File.cpp
+	src/modules/filesystem/wrap_File.h
+	src/modules/filesystem/wrap_FileData.cpp
+	src/modules/filesystem/wrap_FileData.h
+	src/modules/filesystem/wrap_Filesystem.cpp
+	src/modules/filesystem/wrap_Filesystem.h
 )
 
 set(LOVE_SRC_MODULE_FILESYSTEM_PHYSFS
@@ -192,12 +198,6 @@ set(LOVE_SRC_MODULE_FILESYSTEM_PHYSFS
 	src/modules/filesystem/physfs/File.h
 	src/modules/filesystem/physfs/Filesystem.cpp
 	src/modules/filesystem/physfs/Filesystem.h
-	src/modules/filesystem/physfs/wrap_File.cpp
-	src/modules/filesystem/physfs/wrap_File.h
-	src/modules/filesystem/physfs/wrap_FileData.cpp
-	src/modules/filesystem/physfs/wrap_FileData.h
-	src/modules/filesystem/physfs/wrap_Filesystem.cpp
-	src/modules/filesystem/physfs/wrap_Filesystem.h
 )
 
 set(LOVE_SRC_MODULE_FILESYSTEM

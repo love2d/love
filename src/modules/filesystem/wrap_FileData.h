@@ -18,19 +18,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_PHYSFS_WRAP_FILE_DATA_H
-#define LOVE_FILESYSTEM_PHYSFS_WRAP_FILE_DATA_H
+#ifndef LOVE_FILESYSTEM_WRAP_FILE_DATA_H
+#define LOVE_FILESYSTEM_WRAP_FILE_DATA_H
 
 // LOVE
 #include "common/runtime.h"
-
-#include "filesystem/FileData.h"
+#include "FileData.h"
 
 namespace love
 {
 namespace filesystem
-{
-namespace physfs
 {
 
 FileData *luax_checkfiledata(lua_State *L, int idx);
@@ -38,8 +35,7 @@ int w_FileData_getFilename(lua_State *L);
 int w_FileData_getExtension(lua_State *L);
 extern "C" int luaopen_filedata(lua_State *L);
 
-} // physfs
 } // filesystem
 } // love
 
-#endif // LOVE_FILESYSTEM_PHYSFS_WRAP_FILE_DATA_H
+#endif // LOVE_FILESYSTEM_WRAP_FILE_DATA_H

@@ -658,6 +658,7 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 {
 	// Get more sound data.
 	int decoded = d->decode();
+	decoded = decoded >= 0 ? decoded : 0;
 
 	int fmt = getFormat(d->getChannels(), d->getBitDepth());
 

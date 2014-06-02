@@ -232,22 +232,10 @@ int w_Shader_sendMatrix(lua_State *L)
 		lua_pop(L, 1 + dimension);
 	}
 
-	bool should_error = false;
-
-	try
-	{
-		shader->sendMatrix(name, dimension, values, count);
-	}
-	catch(love::Exception &e)
-	{
-		should_error = true;
-		lua_pushstring(L, e.what());
-	}
-
-	delete[] values;
-
-	if (should_error)
-		return luaL_error(L, "%s", lua_tostring(L, -1));
+	EXCEPT_GUARD_FINALLY(
+		{ shader->sendMatrix(name, dimension, values, count); },
+		{ delete[] values; }
+	)
 
 	return 0;
 }

@@ -31,10 +31,11 @@ namespace love
 {
 namespace filesystem
 {
-namespace physfs
-{
 
 extern bool hack_setupWriteDirectory();
+
+namespace physfs
+{
 
 File::File(const std::string &filename)
 	: filename(filename)
