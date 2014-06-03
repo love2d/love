@@ -64,7 +64,7 @@ int w_GlyphData_getGlyphString(lua_State *L)
 {
 	GlyphData *t = luax_checkglyphdata(L, 1);
 
-	EXCEPT_GUARD(luax_pushstring(L, t->getGlyphString());)
+	luax_catchexcept(L, [&](){ luax_pushstring(L, t->getGlyphString()); });
 	return 1;
 }
 

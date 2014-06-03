@@ -122,7 +122,7 @@ int w_RevoluteJoint_setUpperLimit(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setUpperLimit(arg1);)
+	luax_catchexcept(L, [&](){ t->setUpperLimit(arg1); });
 	return 0;
 }
 
@@ -130,7 +130,7 @@ int w_RevoluteJoint_setLowerLimit(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setLowerLimit(arg1);)
+	luax_catchexcept(L, [&](){ t->setLowerLimit(arg1); });
 	return 0;
 }
 
@@ -139,7 +139,7 @@ int w_RevoluteJoint_setLimits(lua_State *L)
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_checknumber(L, 3);
-	EXCEPT_GUARD(t->setLimits(arg1, arg2);)
+	luax_catchexcept(L, [&](){ t->setLimits(arg1, arg2); });
 	return 0;
 }
 

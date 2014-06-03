@@ -64,12 +64,12 @@ int w_SpriteBatch_add(lua_State *L)
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
 	int id = 0;
-	EXCEPT_GUARD(
+	luax_catchexcept(L, [&]() {
 		if (quad)
 			id = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
 		else
 			id = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
-	)
+	});
 
 	lua_pushinteger(L, id);
 	return 1;
@@ -101,12 +101,12 @@ int w_SpriteBatch_set(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	EXCEPT_GUARD(
+	luax_catchexcept(L, [&]() {
 		if (quad)
 			t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, id);
 		else
 			t->add(x, y, a, sx, sy, ox, oy, kx, ky, id);
-	)
+	});
 
 	return 0;
 }
@@ -121,7 +121,7 @@ int w_SpriteBatch_clear(lua_State *L)
 int w_SpriteBatch_bind(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	EXCEPT_GUARD(t->lock();)
+	luax_catchexcept(L, [&](){ t->lock(); });
 	return 0;
 }
 
@@ -223,7 +223,7 @@ int w_SpriteBatch_setBufferSize(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	int size = luaL_checkint(L, 2);
-	EXCEPT_GUARD(t->setBufferSize(size);)
+	luax_catchexcept(L, [&]() {t->setBufferSize(size); });
 	return 0;
 }
 

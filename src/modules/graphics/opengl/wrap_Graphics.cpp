@@ -176,11 +176,17 @@ int w_newImage(lua_State *L)
 
 		if (image->isCompressed(fdata))
 		{
-			EXCEPT_GUARD_FINALLY(cdata = image->newCompressedData(fdata);, fdata->release();)
+			luax_catchexcept(L,
+				[&]() { cdata = image->newCompressedData(fdata); },
+				[&]() { fdata->release(); }
+			);
 		}
 		else
 		{
-			EXCEPT_GUARD_FINALLY(data = image->newImageData(fdata);, fdata->release();)
+			luax_catchexcept(L,
+				[&]() { data = image->newImageData(fdata); },
+				[&]() { fdata->release(); }
+			);
 		}
 
 		// Lua's GC won't release the image data, so we should do it ourselves.
@@ -196,20 +202,20 @@ int w_newImage(lua_State *L)
 
 	// Create the image.
 	Image *image = nullptr;
-	EXCEPT_GUARD_FINALLY(
-		{
+	luax_catchexcept(L,
+		[&]() {
 			if (cdata)
 				image = instance->newImage(cdata, format);
 			else if (data)
 				image = instance->newImage(data, format);
 		},
-		{
+		[&]() {
 			if (releasedata && data)
 				data->release();
 			else if (releasedata && cdata)
 				cdata->release();
 		}
-	)
+	);
 
 	if (image == nullptr)
 		return luaL_error(L, "Could not load image.");
@@ -247,7 +253,9 @@ int w_newFont(lua_State *L)
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
 	Font *font = 0;
-	EXCEPT_GUARD(font = instance->newFont(rasterizer, instance->getDefaultFilter());)
+	luax_catchexcept(L, [&]() {
+		font = instance->newFont(rasterizer, instance->getDefaultFilter()); }
+	);
 
 	if (font == 0)
 		return luaL_error(L, "Could not load font.");
@@ -311,7 +319,9 @@ int w_newSpriteBatch(lua_State *L)
 	}
 
 	SpriteBatch *t = nullptr;
-	EXCEPT_GUARD(t = instance->newSpriteBatch(texture, size, usage);)
+	luax_catchexcept(L,
+		[&](){ t = instance->newSpriteBatch(texture, size, usage); }
+	);
 
 	luax_pushtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, t);
 	return 1;
@@ -325,7 +335,9 @@ int w_newParticleSystem(lua_State *L)
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid ParticleSystem size");	
 
-	EXCEPT_GUARD(t = instance->newParticleSystem(texture, int(size));)
+	luax_catchexcept(L,
+		[&](){ t = instance->newParticleSystem(texture, int(size)); }
+	);
 
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
 	return 1;
@@ -344,7 +356,9 @@ int w_newCanvas(lua_State *L)
 		return luaL_error(L, "Invalid Canvas format: %s", str);
 
 	Canvas *canvas = nullptr;
-	EXCEPT_GUARD(canvas = instance->newCanvas(width, height, format, fsaa);)
+	luax_catchexcept(L,
+		[&](){ canvas = instance->newCanvas(width, height, format, fsaa); }
+	);
 
 	if (canvas == nullptr)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
@@ -515,13 +529,13 @@ int w_newMesh(lua_State *L)
 			vertices.push_back(v);
 		}
 
-		EXCEPT_GUARD(t = instance->newMesh(vertices, mode);)
+		luax_catchexcept(L, [&](){ t = instance->newMesh(vertices, mode); });
 		t->setVertexColors(use_colors);
 	}
 	else
 	{
 		int count = luaL_checkint(L, 1);
-		EXCEPT_GUARD(t = instance->newMesh(count, mode);)
+		luax_catchexcept(L, [&](){ t = instance->newMesh(count, mode); });
 	}
 
 	if (tex)
@@ -660,7 +674,7 @@ int w_setBlendMode(lua_State *L)
 	if (!Graphics::getConstant(str, mode))
 		return luaL_error(L, "Invalid blend mode: %s", str);
 
-	EXCEPT_GUARD(instance->setBlendMode(mode);)
+	luax_catchexcept(L, [&](){ instance->setBlendMode(mode); });
 	return 0;
 }
 
@@ -669,7 +683,7 @@ int w_getBlendMode(lua_State *L)
 	const char *str;
 	Graphics::BlendMode mode;
 
-	EXCEPT_GUARD(mode = instance->getBlendMode();)
+	luax_catchexcept(L, [&](){ mode = instance->getBlendMode(); });
 
 	if (!Graphics::getConstant(mode, str))
 		return luaL_error(L, "Unknown blend mode");
@@ -867,7 +881,7 @@ int w_newScreenshot(lua_State *L)
 	bool copyAlpha = luax_optboolean(L, 1, false);
 	love::image::ImageData *i = 0;
 
-	EXCEPT_GUARD(i = instance->newScreenshot(image, copyAlpha);)
+	luax_catchexcept(L, [&](){ i = instance->newScreenshot(image, copyAlpha); });
 
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
 	return 1;
@@ -911,12 +925,12 @@ int w_setCanvas(lua_State *L)
 			attachments.push_back(luax_checkcanvas(L, i));
 	}
 
-	EXCEPT_GUARD(
+	luax_catchexcept(L, [&]() {
 		if (attachments.size() > 0)
 			canvas->startGrab(attachments);
 		else
 			canvas->startGrab();
-	)
+	});
 
 	return 0;
 }
@@ -1055,10 +1069,12 @@ int w_getRendererInfo(lua_State *L)
 {
 	std::string name, version, vendor, device;
 
-	EXCEPT_GUARD(name = instance->getRendererInfo(Graphics::RENDERER_INFO_NAME);)
-	EXCEPT_GUARD(version = instance->getRendererInfo(Graphics::RENDERER_INFO_VERSION);)
-	EXCEPT_GUARD(vendor = instance->getRendererInfo(Graphics::RENDERER_INFO_VENDOR);)
-	EXCEPT_GUARD(device = instance->getRendererInfo(Graphics::RENDERER_INFO_DEVICE);)
+	luax_catchexcept(L, [&]() {
+		name = instance->getRendererInfo(Graphics::RENDERER_INFO_NAME);
+		version = instance->getRendererInfo(Graphics::RENDERER_INFO_VERSION);
+		vendor = instance->getRendererInfo(Graphics::RENDERER_INFO_VENDOR);
+		device = instance->getRendererInfo(Graphics::RENDERER_INFO_DEVICE);
+	});
 
 	luax_pushstring(L, name);
 	luax_pushstring(L, version);
@@ -1134,7 +1150,9 @@ int w_print(lua_State *L)
 	float kx = (float)luaL_optnumber(L, 9, 0.0f);
 	float ky = (float)luaL_optnumber(L, 10, 0.0f);
 
-	EXCEPT_GUARD(instance->print(str, x, y, angle, sx, sy, ox, oy, kx,ky);)
+	luax_catchexcept(L,
+		[&](){ instance->print(str, x, y, angle, sx, sy, ox, oy, kx,ky); }
+	);
 	return 0;
 }
 
@@ -1170,7 +1188,9 @@ int w_printf(lua_State *L)
 		ky = (float) luaL_optnumber(L, 12, 0.0f);
 	}
 
-	EXCEPT_GUARD(instance->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);)
+	luax_catchexcept(L,
+		[&](){ instance->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky); }
+	);
 	return 0;
 }
 
@@ -1326,13 +1346,13 @@ int w_polygon(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	EXCEPT_GUARD(instance->push();)
+	luax_catchexcept(L, [&](){ instance->push(); });
 	return 0;
 }
 
 int w_pop(lua_State *L)
 {
-	EXCEPT_GUARD(instance->pop();)
+	luax_catchexcept(L, [&](){ instance->pop(); });
 	return 0;
 }
 
@@ -1488,7 +1508,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 {
 	if (instance == 0)
 	{
-		EXCEPT_GUARD(instance = new Graphics();)
+		luax_catchexcept(L, [&](){ instance = new Graphics(); });
 	}
 	else
 		instance->retain();

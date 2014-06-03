@@ -45,7 +45,7 @@ int w_newImageData(lua_State *L)
 			return luaL_error(L, "Invalid image size.");
 
 		ImageData *t = nullptr;
-		EXCEPT_GUARD(t = instance->newImageData(w, h);)
+		luax_catchexcept(L, [&](){ t = instance->newImageData(w, h); });
 
 		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 		return 1;
@@ -55,7 +55,10 @@ int w_newImageData(lua_State *L)
 	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
 
 	ImageData *t = nullptr;
-	EXCEPT_GUARD_FINALLY(t = instance->newImageData(data);, data->release();)
+	luax_catchexcept(L,
+		[&]() { t = instance->newImageData(data); },
+		[&]() { data->release(); }
+	);
 
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 	return 1;
@@ -66,7 +69,10 @@ int w_newCompressedData(lua_State *L)
 	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
 
 	CompressedData *t = nullptr;
-	EXCEPT_GUARD_FINALLY(t = instance->newCompressedData(data);, data->release();)
+	luax_catchexcept(L,
+		[&]() { t = instance->newCompressedData(data); },
+		[&]() { data->release(); }
+	);
 
 	luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
 	return 1;
@@ -102,7 +108,7 @@ extern "C" int luaopen_love_image(lua_State *L)
 {
 	if (instance == nullptr)
 	{
-		EXCEPT_GUARD(instance = new love::image::magpie::Image();)
+		luax_catchexcept(L, [&](){ instance = new love::image::magpie::Image(); });
 	}
 	else
 		instance->retain();

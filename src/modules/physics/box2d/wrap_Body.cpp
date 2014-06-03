@@ -241,7 +241,7 @@ int w_Body_setX(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setX(arg1);)
+	luax_catchexcept(L, [&](){ t->setX(arg1); });
 	return 0;
 }
 
@@ -249,7 +249,7 @@ int w_Body_setY(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setY(arg1);)
+	luax_catchexcept(L, [&](){ t->setY(arg1); });
 	return 0;
 }
 
@@ -266,7 +266,7 @@ int w_Body_setAngle(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setAngle(arg1);)
+	luax_catchexcept(L, [&](){ t->setAngle(arg1); });
 	return 0;
 }
 
@@ -283,14 +283,14 @@ int w_Body_setPosition(lua_State *L)
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_checknumber(L, 3);
-	EXCEPT_GUARD(t->setPosition(arg1, arg2);)
+	luax_catchexcept(L, [&](){ t->setPosition(arg1, arg2); });
 	return 0;
 }
 
 int w_Body_resetMassData(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	EXCEPT_GUARD(t->resetMassData();)
+	luax_catchexcept(L, [&](){ t->resetMassData(); });
 	return 0;
 }
 
@@ -301,7 +301,7 @@ int w_Body_setMassData(lua_State *L)
 	float y = (float)luaL_checknumber(L, 3);
 	float m = (float)luaL_checknumber(L, 4);
 	float i = (float)luaL_checknumber(L, 5);
-	EXCEPT_GUARD(t->setMassData(x, y, m, i);)
+	luax_catchexcept(L, [&](){ t->setMassData(x, y, m, i); });
 	return 0;
 }
 
@@ -309,7 +309,7 @@ int w_Body_setMass(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float m = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setMass(m);)
+	luax_catchexcept(L, [&](){ t->setMass(m); });
 	return 0;
 }
 
@@ -317,7 +317,7 @@ int w_Body_setInertia(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float i = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setInertia(i);)
+	luax_catchexcept(L, [&](){ t->setInertia(i); });
 	return 0;
 }
 
@@ -351,7 +351,7 @@ int w_Body_setType(lua_State *L)
 	const char *typeStr = luaL_checkstring(L, 2);
 	Body::Type type;
 	Body::getConstant(typeStr, type);
-	EXCEPT_GUARD(t->setType(type);)
+	luax_catchexcept(L, [&](){ t->setType(type); });
 	return 0;
 }
 
@@ -494,7 +494,7 @@ int w_Body_setActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	bool b = luax_toboolean(L, 2);
-	EXCEPT_GUARD(t->setActive(b);)
+	luax_catchexcept(L, [&](){ t->setActive(b); });
 	return 0;
 }
 
@@ -510,7 +510,7 @@ int w_Body_setFixedRotation(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	bool b = luax_toboolean(L, 2);
-	EXCEPT_GUARD(t->setFixedRotation(b);)
+	luax_catchexcept(L, [&](){ t->setFixedRotation(b); });
 	return 0;
 }
 
@@ -527,14 +527,14 @@ int w_Body_getFixtureList(lua_State *L)
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
 	int n = 0;
-	EXCEPT_GUARD(n = t->getFixtureList(L);)
+	luax_catchexcept(L, [&](){ n = t->getFixtureList(L); });
 	return n;
 }
 
 int w_Body_destroy(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	EXCEPT_GUARD(t->destroy();)
+	luax_catchexcept(L, [&](){ t->destroy(); });
 	return 0;
 }
 

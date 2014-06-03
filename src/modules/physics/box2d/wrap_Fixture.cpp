@@ -65,7 +65,7 @@ int w_Fixture_setDensity(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setDensity(arg1);)
+	luax_catchexcept(L, [&](){ t->setDensity(arg1); });
 	return 0;
 }
 
@@ -157,7 +157,7 @@ int w_Fixture_rayCast(lua_State *L)
 	Fixture *t = luax_checkfixture(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	EXCEPT_GUARD(ret = t->rayCast(L);)
+	luax_catchexcept(L, [&](){ ret = t->rayCast(L); });
 	return ret;
 }
 
@@ -258,7 +258,7 @@ int w_Fixture_setGroupIndex(lua_State *L)
 int w_Fixture_destroy(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
-	EXCEPT_GUARD(t->destroy();)
+	luax_catchexcept(L, [&](){ t->destroy(); });
 	return 0;
 }
 

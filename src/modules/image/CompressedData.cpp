@@ -87,7 +87,7 @@ CompressedData::Format CompressedData::getFormat() const
 void CompressedData::checkMipmapLevelExists(int miplevel) const
 {
 	if (miplevel < 0 || miplevel >= (int) dataImages.size())
-		throw love::Exception("Mipmap level %d does not exist", miplevel);
+		throw love::Exception("Mipmap level %d does not exist", miplevel + 1);
 }
 
 bool CompressedData::getConstant(const char *in, CompressedData::Format &out)

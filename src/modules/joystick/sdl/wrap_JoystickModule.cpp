@@ -107,7 +107,7 @@ int w_setGamepadMapping(lua_State *L)
 	}
 
 	bool success = false;
-	EXCEPT_GUARD(success = instance->setGamepadMapping(guid, gpinput, jinput);)
+	luax_catchexcept(L, [&](){ success = instance->setGamepadMapping(guid, gpinput, jinput); });
 
 	luax_pushboolean(L, success);
 	return 1;
@@ -140,7 +140,7 @@ int w_getGamepadMapping(lua_State *L)
 	Joystick::JoystickInput jinput;
 	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
 
-	EXCEPT_GUARD(jinput = instance->getGamepadMapping(guid, gpinput);)
+	luax_catchexcept(L, [&](){ jinput = instance->getGamepadMapping(guid, gpinput); });
 
 	if (jinput.type == Joystick::INPUT_TYPE_MAX_ENUM)
 		return 0;
@@ -196,7 +196,7 @@ extern "C" int luaopen_love_joystick(lua_State *L)
 {
 	if (instance == nullptr)
 	{
-		EXCEPT_GUARD(instance = new JoystickModule();)
+		luax_catchexcept(L, [&](){ instance = new JoystickModule(); });
 	}
 	else
 		instance->retain();

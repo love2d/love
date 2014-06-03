@@ -232,10 +232,10 @@ int w_Shader_sendMatrix(lua_State *L)
 		lua_pop(L, 1 + dimension);
 	}
 
-	EXCEPT_GUARD_FINALLY(
-		{ shader->sendMatrix(name, dimension, values, count); },
-		{ delete[] values; }
-	)
+	luax_catchexcept(L,
+		[&]() { shader->sendMatrix(name, dimension, values, count); },
+		[&]() { delete[] values; }
+	);
 
 	return 0;
 }
@@ -246,7 +246,7 @@ int w_Shader_sendTexture(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 	Texture *texture = luax_checktexture(L, 3);
 
-	EXCEPT_GUARD(shader->sendTexture(name, texture);)
+	luax_catchexcept(L, [&](){ shader->sendTexture(name, texture); });
 	return 0;
 }
 

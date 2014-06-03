@@ -33,6 +33,9 @@ extern "C" {
 	#include <lauxlib.h>
 }
 
+// C++
+#include <exception>
+
 namespace love
 {
 
@@ -471,36 +474,55 @@ T *luax_totype(lua_State *L, int idx, const char * /* name */, love::bits /* typ
 Type luax_type(lua_State *L, int idx);
 
 /**
- * Macro for converting a LOVE exception into a Lua error.
+ * Converts any exceptions thrown by the passed lambda function into a Lua error.
  * lua_error (and luaL_error) cannot be called from inside the exception handler
  * because they use longjmp, which causes undefined behaviour when the
  * destructor of the exception would have been called.
  **/
-#define EXCEPT_GUARD(A) \
-{ \
-	bool should_error = false; \
-	try { A } \
-	catch (love::Exception &e) \
-	{ \
-		should_error = true; \
-		lua_pushstring(L, e.what()); \
-	} \
-	if (should_error) \
-		return luaL_error(L, "%s", lua_tostring(L, -1)); \
+template <typename T>
+int luax_catchexcept(lua_State *L, const T& func)
+{
+	bool should_error = false;
+
+	try
+	{
+		func();
+	}
+	catch (const std::exception &e)
+	{
+		should_error = true;
+		lua_pushstring(L, e.what());
+	}
+
+	if (should_error)
+		return luaL_error(L, "%s", lua_tostring(L, -1));
+
+	return 0;
+
 }
 
-#define EXCEPT_GUARD_FINALLY(A, B) \
-{ \
-	bool should_error = false; \
-	try { A } \
-	catch (love::Exception &e) \
-	{ \
-		should_error = true; \
-		lua_pushstring(L, e.what()); \
-	} \
-	{ B } \
-	if (should_error) \
-		return luaL_error(L, "%s", lua_tostring(L, -1)); \
+template <typename T, typename F>
+int luax_catchexcept(lua_State *L, const T& func, const F& finallyfunc)
+{
+	bool should_error = false;
+
+	try
+	{
+		func();
+	}
+	catch (const std::exception &e)
+	{
+		should_error = true;
+		lua_pushstring(L, e.what());
+	}
+
+	finallyfunc();
+
+	if (should_error)
+		return luaL_error(L, "%s", lua_tostring(L, -1));
+	
+	return 0;
+	
 }
 
 } // love

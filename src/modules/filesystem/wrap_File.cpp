@@ -236,7 +236,7 @@ int w_File_lines(lua_State *L)
 			file->close();
 
 		bool success = false;
-		EXCEPT_GUARD(success = file->open(File::READ);)
+		luax_catchexcept(L, [&](){ success = file->open(File::READ); });
 
 		if (!success)
 			return luaL_error(L, "Could not open file.");

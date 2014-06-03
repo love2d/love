@@ -69,7 +69,7 @@ int w_MotorJoint_setMaxForce(lua_State *L)
 {
 	MotorJoint *t = luax_checkmotorjoint(L, 1);
 	float arg1 = (float) luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setMaxForce(arg1);)
+	luax_catchexcept(L, [&](){ t->setMaxForce(arg1); });
 	return 0;
 }
 
@@ -84,7 +84,7 @@ int w_MotorJoint_setMaxTorque(lua_State *L)
 {
 	MotorJoint *t = luax_checkmotorjoint(L, 1);
 	float arg1 = (float) luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setMaxTorque(arg1);)
+	luax_catchexcept(L, [&](){ t->setMaxTorque(arg1); });
 	return 0;
 }
 
@@ -99,7 +99,7 @@ int w_MotorJoint_setCorrectionFactor(lua_State *L)
 {
 	MotorJoint *t = luax_checkmotorjoint(L, 1);
 	float arg1 = (float) luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setCorrectionFactor(arg1);)
+	luax_catchexcept(L, [&](){ t->setCorrectionFactor(arg1); });
 	return 0;
 }
 

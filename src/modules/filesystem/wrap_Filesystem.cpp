@@ -45,7 +45,7 @@ bool hack_setupWriteDirectory()
 int w_init(lua_State *L)
 {
 	const char *arg0 = luaL_checkstring(L, 1);
-	EXCEPT_GUARD(instance->init(arg0);)
+	luax_catchexcept(L, [&](){ instance->init(arg0); });
 	return 0;
 }
 
@@ -177,26 +177,10 @@ FileData *luax_getFileData(lua_State *L, int idx)
 
 	if (file)
 	{
-		bool should_error = false;
-
-		// We don't use EXCEPT_GUARD_FINALLY because it returns int.
-		try
-		{
-			data = file->read();
-		}
-		catch (love::Exception &e)
-		{
-			should_error = true;
-			lua_pushstring(L, e.what());
-		}
-
-		file->release();
-
-		if (should_error)
-		{
-			luaL_error(L, "%s", lua_tostring(L, -1));
-			return nullptr; // Never reached.
-		}
+		luax_catchexcept(L,
+			[&]() { data = file->read(); },
+			[&]() { file->release(); }
+		);
 	}
 
 	return data;
@@ -416,7 +400,7 @@ int w_lines(lua_State *L)
 		file = instance->newFile(lua_tostring(L, 1));
 		bool success = false;
 
-		EXCEPT_GUARD(success = file->open(File::READ);)
+		luax_catchexcept(L, [&](){ success = file->open(File::READ); });
 
 		if (!success)
 			return luaL_error(L, "Could not open file.");
@@ -676,7 +660,7 @@ extern "C" int luaopen_love_filesystem(lua_State *L)
 {
 	if (instance == 0)
 	{
-		EXCEPT_GUARD(instance = new physfs::Filesystem();)
+		luax_catchexcept(L, [&](){ instance = new physfs::Filesystem(); });
 	}
 	else
 		instance->retain();

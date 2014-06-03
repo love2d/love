@@ -39,7 +39,7 @@ int w_World_update(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	float dt = (float)luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->update(dt);)
+	luax_catchexcept(L, [&](){ t->update(dt); });
 	return 0;
 }
 
@@ -92,7 +92,7 @@ int w_World_translateOrigin(lua_State *L)
 	World *t = luax_checkworld(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_checknumber(L, 3);
-	EXCEPT_GUARD(t->translateOrigin(arg1, arg2);)
+	luax_catchexcept(L, [&](){ t->translateOrigin(arg1, arg2); });
 	return 0;
 }
 
@@ -144,7 +144,7 @@ int w_World_getBodyList(lua_State *L)
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	EXCEPT_GUARD(ret = t->getBodyList(L);)
+	luax_catchexcept(L, [&](){ ret = t->getBodyList(L); });
 	return ret;
 }
 
@@ -153,7 +153,7 @@ int w_World_getJointList(lua_State *L)
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	EXCEPT_GUARD(ret = t->getJointList(L);)
+	luax_catchexcept(L, [&](){ ret = t->getJointList(L); });
 	return ret;
 }
 
@@ -162,7 +162,7 @@ int w_World_getContactList(lua_State *L)
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	EXCEPT_GUARD(ret = t->getContactList(L);)
+	luax_catchexcept(L, [&](){ ret = t->getContactList(L); });
 	return ret;
 }
 
@@ -178,14 +178,14 @@ int w_World_rayCast(lua_State *L)
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	EXCEPT_GUARD(ret = t->rayCast(L);)
+	luax_catchexcept(L, [&](){ ret = t->rayCast(L); });
 	return ret;
 }
 
 int w_World_destroy(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-	EXCEPT_GUARD(t->destroy();)
+	luax_catchexcept(L, [&](){ t->destroy(); });
 	return 0;
 }
 
