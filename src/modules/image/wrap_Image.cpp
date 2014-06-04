@@ -52,7 +52,7 @@ int w_newImageData(lua_State *L)
 	}
 
 	// Case 2: File(Data).
-	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
+	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
 
 	ImageData *t = nullptr;
 	luax_catchexcept(L,
@@ -66,7 +66,7 @@ int w_newImageData(lua_State *L)
 
 int w_newCompressedData(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
+	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
 
 	CompressedData *t = nullptr;
 	luax_catchexcept(L,
@@ -80,7 +80,7 @@ int w_newCompressedData(lua_State *L)
 
 int w_isCompressed(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
+	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
 	bool compressed = instance->isCompressed(data);
 	data->release();
 

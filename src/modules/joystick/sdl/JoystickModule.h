@@ -56,6 +56,8 @@ public:
 
 	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput);
 	Joystick::JoystickInput getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput);
+	void loadGamepadMappings(const std::string &mappings);
+	std::string saveGamepadMapping(const std::string &pguid);
 
 private:
 

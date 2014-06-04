@@ -251,6 +251,8 @@ static const luaL_Reg functions[] =
 	// From wrap_JoystickModule.
 	{ "getConnectedIndex", w_getIndex },
 	{ "getGamepadMapping", w_getGamepadMapping },
+	{ "saveGamepadMapping", w_saveGamepadMapping },
+
 	{ 0, 0 },
 };
 

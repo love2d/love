@@ -85,6 +85,16 @@ public:
 	 **/
 	virtual Joystick::JoystickInput getGamepadMapping(const std::string &pguid, Joystick::GamepadInput gpinput) = 0;
 
+	/**
+	 *
+	 **/
+	virtual void loadGamepadMappings(const std::string &mappings) = 0;
+
+	/**
+	 *
+	 **/
+	virtual std::string saveGamepadMapping(const std::string &pguid) = 0;
+
 }; // JoystickModule
 
 } // joystick

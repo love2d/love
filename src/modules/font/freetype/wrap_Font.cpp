@@ -51,7 +51,7 @@ int w_newRasterizer(lua_State *L)
 	}
 	else if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
-		love::filesystem::FileData *d = love::filesystem::luax_getFileData(L, 1);
+		love::filesystem::FileData *d = love::filesystem::luax_getfiledata(L, 1);
 		int size = luaL_checkint(L, 2);
 		luax_catchexcept(L,
 			[&]() { t = instance->newRasterizer(d, size); },

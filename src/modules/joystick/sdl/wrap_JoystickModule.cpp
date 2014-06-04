@@ -21,6 +21,8 @@
 #include "wrap_JoystickModule.h"
 #include "wrap_Joystick.h"
 
+#include "filesystem/wrap_Filesystem.h"
+
 namespace love
 {
 namespace joystick
@@ -176,6 +178,49 @@ int w_getGamepadMapping(lua_State *L)
 	return 1;
 }
 
+int w_loadGamepadMappings(lua_State *L)
+{
+	lua_pushvalue(L, 1);
+	luax_convobj(L, -1, "filesystem", "isFile");
+	bool isfile = luax_toboolean(L, -1);
+	lua_pop(L, 1);
+
+	std::string mappings;
+
+	if (isfile)
+	{
+		love::filesystem::FileData *fd = love::filesystem::luax_getfiledata(L, 1);
+		mappings = std::string((const char *) fd->getData(), fd->getSize());
+		fd->release();
+
+	}
+	else
+		mappings = luax_checkstring(L, 1);
+
+	luax_catchexcept(L, [&](){ instance->loadGamepadMappings(mappings); });
+	return 0;
+}
+
+int w_saveGamepadMapping(lua_State *L)
+{
+	std::string guid, mapping;
+
+	// Accept either a GUID string or a Joystick object. This way we can re-use
+	// the function for Joystick:getGamepadMapping.
+	if (lua_type(L, 1) == LUA_TSTRING)
+		guid = luax_checkstring(L, 1);
+	else
+	{
+		love::joystick::Joystick *stick = luax_checkjoystick(L, 1);
+		guid = stick->getGUID();
+	}
+
+	luax_catchexcept(L, [&](){ mapping = instance->saveGamepadMapping(guid); });
+
+	luax_pushstring(L, mapping);
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -183,6 +228,8 @@ static const luaL_Reg functions[] =
 	{ "getJoystickCount", w_getJoystickCount },
 	{ "setGamepadMapping", w_setGamepadMapping },
 	{ "getGamepadMapping", w_getGamepadMapping },
+	{ "loadGamepadMappings", w_loadGamepadMappings },
+	{ "saveGamepadMapping", w_saveGamepadMapping },
 	{ 0, 0 }
 };
 

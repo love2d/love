@@ -486,6 +486,10 @@ int luax_getfunction(lua_State *L, const char *mod, const char *fn)
 
 int luax_convobj(lua_State *L, int idx, const char *mod, const char *fn)
 {
+	// Convert to absolute index if necessary.
+	if (idx < 0 && idx > LUA_REGISTRYINDEX)
+		idx += lua_gettop(L) + 1;
+
 	// Convert string to a file.
 	luax_getfunction(L, mod, fn);
 	lua_pushvalue(L, idx); // The initial argument.

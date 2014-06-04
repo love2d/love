@@ -64,7 +64,7 @@ int w_newSoundData(lua_State *L)
 
 int w_newDecoder(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getFileData(L, 1);
+	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
 	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
 
 	Decoder *t = nullptr;

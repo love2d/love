@@ -57,10 +57,10 @@ JoystickModule::JoystickModule()
 JoystickModule::~JoystickModule()
 {
 	// Close any open Joysticks.
-	for (auto it = joysticks.begin(); it != joysticks.end(); ++it)
+	for (auto stick : joysticks)
 	{
-		(*it)->close();
-		(*it)->release();
+		stick->close();
+		stick->release();
 	}
 
 	if (SDL_WasInit(SDL_INIT_HAPTIC) != 0)
@@ -101,10 +101,10 @@ int JoystickModule::getJoystickCount() const
 
 love::joystick::Joystick *JoystickModule::getJoystickFromID(int instanceid)
 {
-	for (size_t i = 0; i < activeSticks.size(); i++)
+	for (auto stick : activeSticks)
 	{
-		if (instanceid == activeSticks[i]->getInstanceID())
-			return activeSticks[i];
+		if (stick->getInstanceID() == instanceid)
+			return stick;
 	}
 
 	return nullptr;
@@ -119,12 +119,12 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 	joystick::Joystick *joystick = 0;
 	bool reused = false;
 
-	for (auto it = joysticks.begin(); it != joysticks.end(); ++it)
+	for (auto stick : joysticks)
 	{
 		// Try to re-use a disconnected Joystick with the same GUID.
-		if (!(*it)->isConnected() && (*it)->getGUID() == guidstr)
+		if (!stick->isConnected() && stick->getGUID() == guidstr)
 		{
-			joystick = *it;
+			joystick = stick;
 			reused = true;
 			break;
 		}
@@ -144,9 +144,9 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 
 	// Make sure multiple instances of the same physical joystick aren't added
 	// to the active list.
-	for (auto it = activeSticks.begin(); it != activeSticks.end(); ++it)
+	for (auto activestick : activeSticks)
 	{
-		if (joystick->getHandle() == (*it)->getHandle())
+		if (joystick->getHandle() == activestick->getHandle())
 		{
 			joystick->close();
 
@@ -157,7 +157,7 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 				joystick->release();
 			}
 
-			return *it;
+			return activestick;
 		}
 	}
 
@@ -427,22 +427,23 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 		if (guid.compare(getDeviceGUID(d_index)) != 0)
 			continue;
 
-		for (auto it = activeSticks.begin(); it != activeSticks.end(); ++it)
+		for (auto stick : activeSticks)
 		{
-			if ((*it)->isGamepad() || guid.compare((*it)->getGUID()) != 0)
+			if (stick->isGamepad() || guid.compare(stick->getGUID()) != 0)
 				continue;
 
 			// Big hack time: open the index as a game controller and compare
 			// the underlying joystick handle to the active stick's.
-			SDL_GameController *ctrl = SDL_GameControllerOpen(d_index);
-			if (ctrl == nullptr)
+			SDL_GameController *controller = SDL_GameControllerOpen(d_index);
+			if (controller == nullptr)
 				continue;
 
-			SDL_Joystick *stick = SDL_GameControllerGetJoystick(ctrl);
-			if (stick == (SDL_Joystick *) (*it)->getHandle())
-				(*it)->openGamepad(d_index);
+			SDL_Joystick *sdlstick = SDL_GameControllerGetJoystick(controller);
+			if (sdlstick == (SDL_Joystick *) stick->getHandle())
+				stick->openGamepad(d_index);
 
-			SDL_GameControllerClose(ctrl);
+			// GameController objects are reference-counted in SDL.
+			SDL_GameControllerClose(controller);
 		}
 	}
 }
@@ -460,6 +461,67 @@ std::string JoystickModule::getDeviceGUID(int deviceindex) const
 	SDL_JoystickGetGUIDString(guid, guidstr, sizeof(guidstr));
 
 	return std::string(guidstr);
+}
+
+void JoystickModule::loadGamepadMappings(const std::string &mappings)
+{
+	// TODO: We should use SDL_GameControllerAddMappingsFromRW. We're
+	// duplicating its functionality for now because it was added after
+	// SDL 2.0.0's release, and we want runtime compat with 2.0.0 on Linux...
+
+	std::stringstream ss(mappings);
+	std::string mapping;
+	bool success = false;
+
+	// The mappings string contains newline-separated mappings.
+	while (std::getline(ss, mapping))
+	{
+		if (mapping.empty())
+			continue;
+
+		// Strip out and compare any "platform:XYZ," in the mapping.
+		size_t pstartpos = mapping.find("platform:");
+		if (pstartpos != std::string::npos)
+		{
+			pstartpos += strlen("platform:");
+
+			size_t pendpos = mapping.find_first_of(',', pstartpos);
+			std::string platform = mapping.substr(pstartpos, pendpos - pstartpos);
+
+			if (platform.compare(SDL_GetPlatform()) != 0)
+				continue;
+
+			pstartpos -= strlen("platform:");
+			mapping.erase(pstartpos, pendpos - pstartpos + 1);
+		}
+
+		success = success || (SDL_GameControllerAddMapping(mapping.c_str()) != -1);
+	}
+
+	if (!success)
+		throw love::Exception("Invalid gamepad mappings.");
+}
+
+std::string JoystickModule::saveGamepadMapping(const std::string &pguid)
+{
+	SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(pguid.c_str());
+
+	std::string mapping;
+	char *sdlmapping = SDL_GameControllerMappingForGUID(sdlguid);
+
+	if (sdlmapping == nullptr)
+		throw love::Exception("The specified Joystick GUID string has no gamepad mapping.");
+
+	mapping = sdlmapping;
+	SDL_free(sdlmapping);
+
+	if (mapping.find_last_of(',') != mapping.size() - 1)
+		mapping += ",";
+
+	// Matches SDL_GameControllerAddMappingsFromRW.
+	mapping += "platform:" + std::string(SDL_GetPlatform()) + ",";
+
+	return mapping;
 }
 
 } // sdl

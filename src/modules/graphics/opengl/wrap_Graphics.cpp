@@ -172,7 +172,7 @@ int w_newImage(lua_State *L)
 		if (image == nullptr)
 			return luaL_error(L, "Cannot load images without the love.image module.");
 
-		love::filesystem::FileData *fdata = love::filesystem::luax_getFileData(L, 1);
+		love::filesystem::FileData *fdata = love::filesystem::luax_getfiledata(L, 1);
 
 		if (image->isCompressed(fdata))
 		{

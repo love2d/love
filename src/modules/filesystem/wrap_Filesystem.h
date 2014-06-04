@@ -37,7 +37,7 @@ namespace filesystem
  * so a matching release() is required!
  * May trigger a Lua error.
  **/
-FileData *luax_getFileData(lua_State *L, int idx);
+FileData *luax_getfiledata(lua_State *L, int idx);
 
 bool hack_setupWriteDirectory();
 int w_init(lua_State *L);

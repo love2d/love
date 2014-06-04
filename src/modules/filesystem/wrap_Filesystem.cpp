@@ -148,7 +148,7 @@ int w_newFile(lua_State *L)
 	return 1;
 }
 
-FileData *luax_getFileData(lua_State *L, int idx)
+FileData *luax_getfiledata(lua_State *L, int idx)
 {
 	FileData *data = nullptr;
 	File *file = nullptr;
@@ -191,7 +191,7 @@ int w_newFileData(lua_State *L)
 	// Single argument: treat as filepath or File.
 	if (lua_gettop(L) == 1)
 	{
-		// We don't use luax_getFileData because we want to use an ioError.
+		// We don't use luax_getfiledata because we want to use an ioError.
 		if (lua_isstring(L, 1))
 			luax_convobj(L, 1, "filesystem", "newFile");
 
