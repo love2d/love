@@ -365,6 +365,10 @@ set(LOVE_SRC_MODULE_JOYSTICK_ROOT
 	src/modules/joystick/Joystick.cpp
 	src/modules/joystick/Joystick.h
 	src/modules/joystick/JoystickModule.h
+	src/modules/joystick/wrap_Joystick.cpp
+	src/modules/joystick/wrap_Joystick.h
+	src/modules/joystick/wrap_JoystickModule.cpp
+	src/modules/joystick/wrap_JoystickModule.h
 )
 
 set(LOVE_SRC_MODULE_JOYSTICK_SDL
@@ -372,10 +376,6 @@ set(LOVE_SRC_MODULE_JOYSTICK_SDL
 	src/modules/joystick/sdl/Joystick.h
 	src/modules/joystick/sdl/JoystickModule.cpp
 	src/modules/joystick/sdl/JoystickModule.h
-	src/modules/joystick/sdl/wrap_Joystick.cpp
-	src/modules/joystick/sdl/wrap_Joystick.h
-	src/modules/joystick/sdl/wrap_JoystickModule.cpp
-	src/modules/joystick/sdl/wrap_JoystickModule.h
 )
 
 set(LOVE_SRC_MODULE_JOYSTICK

@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H
-#define LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H
+#ifndef LOVE_JOYSTICK_WRAP_JOYSTICK_H
+#define LOVE_JOYSTICK_WRAP_JOYSTICK_H
 
 // LOVE
 #include "common/config.h"
@@ -29,8 +29,6 @@
 namespace love
 {
 namespace joystick
-{
-namespace sdl
 {
 
 Joystick *luax_checkjoystick(lua_State *L, int idx);
@@ -53,7 +51,6 @@ int w_Joystick_setVibration(lua_State *L);
 int w_Joystick_getVibration(lua_State *L);
 extern "C" int luaopen_joystick(lua_State *L);
 
-} // sdl
 } // joystick
 } // love
 

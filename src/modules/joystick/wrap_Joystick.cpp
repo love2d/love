@@ -28,8 +28,6 @@ namespace love
 {
 namespace joystick
 {
-namespace sdl
-{
 
 Joystick *luax_checkjoystick(lua_State *L, int idx)
 {
@@ -261,6 +259,5 @@ extern "C" int luaopen_joystick(lua_State *L)
 	return luax_register_type(L, "Joystick", functions);
 }
 
-} // sdl
 } // joystick
 } // love

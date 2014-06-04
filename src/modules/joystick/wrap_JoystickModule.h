@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_MODULE_H
-#define LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_MODULE_H
+#ifndef LOVE_JOYSTICK_WRAP_JOYSTICK_MODULE_H
+#define LOVE_JOYSTICK_WRAP_JOYSTICK_MODULE_H
 
 // LOVE
 #include "common/config.h"
@@ -29,8 +29,6 @@
 namespace love
 {
 namespace joystick
-{
-namespace sdl
 {
 
 int w_getJoysticks(lua_State *L);
@@ -42,8 +40,7 @@ int w_loadGamepadMappings(lua_State *L);
 int w_saveGamepadMapping(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State *L);
 
-} // sdl
 } // joystick
 } // love
 
-#endif // LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_MODULE_H
+#endif // LOVE_JOYSTICK_WRAP_JOYSTICK_MODULE_H

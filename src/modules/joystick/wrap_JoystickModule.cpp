@@ -23,11 +23,11 @@
 
 #include "filesystem/wrap_Filesystem.h"
 
+#include "sdl/JoystickModule.h"
+
 namespace love
 {
 namespace joystick
-{
-namespace sdl
 {
 
 static JoystickModule *instance = nullptr;
@@ -243,7 +243,7 @@ extern "C" int luaopen_love_joystick(lua_State *L)
 {
 	if (instance == nullptr)
 	{
-		luax_catchexcept(L, [&](){ instance = new JoystickModule(); });
+		luax_catchexcept(L, [&](){ instance = new sdl::JoystickModule(); });
 	}
 	else
 		instance->retain();
@@ -258,6 +258,5 @@ extern "C" int luaopen_love_joystick(lua_State *L)
 	return luax_register_module(L, w);
 }
 
-} // sdl
 } // joystick
 } // love

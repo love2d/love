@@ -1436,6 +1436,10 @@
 				FAB0078E1740C12D00A9664D /* Joystick.h */,
 				4C606AEC342457600C3F0741 /* JoystickModule.h */,
 				687216AD6FA406C838284B91 /* sdl */,
+				FAB007951740C87D00A9664D /* wrap_Joystick.cpp */,
+				FAB007961740C87D00A9664D /* wrap_Joystick.h */,
+				139411436818381E493F00F5 /* wrap_JoystickModule.cpp */,
+				2D7B7DEC4FC87878332E41B3 /* wrap_JoystickModule.h */,
 			);
 			path = joystick;
 			sourceTree = "<group>";
@@ -1610,10 +1614,6 @@
 				FAB007921740C28900A9664D /* Joystick.h */,
 				55B425307C0C1C4B3EFC3A5F /* JoystickModule.cpp */,
 				439E46D768A266780E894800 /* JoystickModule.h */,
-				FAB007951740C87D00A9664D /* wrap_Joystick.cpp */,
-				FAB007961740C87D00A9664D /* wrap_Joystick.h */,
-				139411436818381E493F00F5 /* wrap_JoystickModule.cpp */,
-				2D7B7DEC4FC87878332E41B3 /* wrap_JoystickModule.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
