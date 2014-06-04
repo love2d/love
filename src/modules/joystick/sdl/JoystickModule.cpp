@@ -496,6 +496,14 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 		}
 
 		success = success || (SDL_GameControllerAddMapping(mapping.c_str()) != -1);
+
+		if (success)
+		{
+			// FIXME: massive hack until missing APIs are added to SDL 2:
+			// https://bugzilla.libsdl.org/show_bug.cgi?id=1975
+			std::string guid = mapping.substr(0, mapping.find_first_of(','));
+			checkGamepads(guid);
+		}
 	}
 
 	if (!success)

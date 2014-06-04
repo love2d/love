@@ -86,12 +86,15 @@ public:
 	virtual Joystick::JoystickInput getGamepadMapping(const std::string &pguid, Joystick::GamepadInput gpinput) = 0;
 
 	/**
-	 *
+	 * Loads a newline-separated list of virtual Gamepad mapping strings for
+	 * multiple joysticks at a time. The mapping strings must have been
+	 * generated with saveGamepadMapping, via Steam, or some other tool which
+	 * generates SDL GameController mappings.
 	 **/
 	virtual void loadGamepadMappings(const std::string &mappings) = 0;
 
 	/**
-	 *
+	 * Gets the virtual Gamepad mapping string for the specified joystick GUID.
 	 **/
 	virtual std::string saveGamepadMapping(const std::string &pguid) = 0;
 
