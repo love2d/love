@@ -40,6 +40,16 @@ class Body;
 class World;
 
 /**
+ * This struct is stored in a void pointer in the Box2D Joint class. For now, all
+ * we need is a Lua reference to arbitrary data, but we might need more later.
+ **/
+struct jointudata
+{
+    // Reference to arbitrary data.
+    Reference *ref;
+};
+
+/**
  * A Joint acts as positioning constraints on Bodies.
  * A Joint can be used to prevent Bodies from going to
  * far apart, or coming too close together.
@@ -96,6 +106,17 @@ public:
 	bool getCollideConnected() const;
 
 	/**
+	 * This function stores an in-C reference to arbitrary Lua data in the Box2D
+	 * Joint object.
+	 **/
+	int setUserData(lua_State *L);
+
+	/**
+	 * Gets the data set with setUserData. If no data is set, nil is returned.
+	 **/
+	int getUserData(lua_State *L);
+
+	/**
 	 * Joints require pointers to a Box2D joint objects at
 	 * different polymorphic levels, which is why these function
 	 * were created.
@@ -116,6 +137,8 @@ protected:
 	b2Joint *createJoint(b2JointDef *def);
 
 	World *world;
+
+    jointudata *udata;
 
 private:
 

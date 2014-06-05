@@ -41,20 +41,29 @@ namespace box2d
 
 Joint::Joint(Body *body1)
 	: world(body1->world)
+	, udata(nullptr)
 	, body1(body1)
-	, body2(0)
+	, body2(nullptr)
 {
+	udata = new jointudata();
+	udata->ref = nullptr;
 }
 
 Joint::Joint(Body *body1, Body *body2)
 	: world(body1->world)
+	, udata(nullptr)
 	, body1(body1)
 	, body2(body2)
 {
+	udata = new jointudata();
+	udata->ref = nullptr;
 }
 
 Joint::~Joint()
 {
+	if (udata != nullptr)
+		delete udata->ref;
+	delete udata;
 }
 
 Joint::Type Joint::getType() const
@@ -116,6 +125,7 @@ float Joint::getReactionTorque(float dt)
 
 b2Joint *Joint::createJoint(b2JointDef *def)
 {
+	def->userData = udata;
 	joint = world->world->CreateJoint(def);
 	Memoizer::add(joint, this);
 	// Box2D joint has a reference to this love Joint.
@@ -149,6 +159,34 @@ bool Joint::isActive() const
 bool Joint::getCollideConnected() const
 {
 	return joint->GetCollideConnected();
+}
+
+int Joint::setUserData(lua_State *L)
+{
+	love::luax_assert_argc(L, 1, 1);
+
+	if (udata->ref != nullptr)
+	{
+		// We set the Reference's lua_State to this one before deleting it, so
+		// it unrefs using the current lua_State's stack. This is necessary
+		// if setUserData is called in a coroutine.
+		udata->ref->setL(L);
+		delete udata->ref;
+	}
+
+	udata->ref = new Reference(L);
+
+	return 0;
+}
+
+int Joint::getUserData(lua_State *L)
+{
+	if (udata != nullptr && udata->ref != nullptr)
+		udata->ref->push(L);
+	else
+		lua_pushnil(L);
+	
+	return 1;
 }
 
 } // box2d
