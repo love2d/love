@@ -1,3 +1,8 @@
+R"luastring"--(
+-- DO NOT REMOVE THE ABOVE LINE. It is used to load this file as a raw string
+-- literal in C++. There is a matching delimiter at the bottom of this file.
+-- It is designed to avoid problems with Lua linters picking up invalid syntax.
+
 --[[
 Copyright (c) 2006-2014 LOVE Development Team
 
@@ -1634,3 +1639,7 @@ return function()
 
 	return tonumber(retval) or 0
 end
+
+-- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a raw string
+-- literal in C++.
+--)luastring"--"

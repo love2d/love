@@ -26,7 +26,6 @@
 #include "font/Rasterizer.h"
 #include "filesystem/wrap_Filesystem.h"
 
-#include "scripts/graphics.lua.h"
 #include <cassert>
 
 namespace love
@@ -1504,6 +1503,11 @@ static const lua_CFunction types[] =
 	0
 };
 
+// Scripts.
+static const char graphics_lua[] =
+#include "scripts/graphics.lua"
+;
+
 extern "C" int luaopen_love_graphics(lua_State *L)
 {
 	if (instance == 0)
@@ -1522,7 +1526,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 
 	int n = luax_register_module(L, w);
 
-	if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "graphics.lua") == 0)
+	if (luaL_loadbuffer(L, graphics_lua, sizeof(graphics_lua), "graphics.lua") == 0)
 		lua_call(L, 0, 0);
 
 	return n;

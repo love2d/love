@@ -1,3 +1,7 @@
+R"luastring"--(
+-- DO NOT REMOVE THE ABOVE LINE. It is used to load this file as a raw string
+-- literal in C++. There is a matching delimiter at the bottom of this file.
+
 --[[
 Copyright (c) 2006-2014 LOVE Development Team
 
@@ -1466,3 +1470,7 @@ void main() {
 		return table_concat(lines, "\n")
 	end
 end
+
+-- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a raw string
+-- literal in C++.
+--)luastring"--"
