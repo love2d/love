@@ -45,7 +45,7 @@ int w_Font_getWidth(lua_State *L)
 	Font *t = luax_checkfont(L, 1);
 	const char *str = luaL_checkstring(L, 2);
 
-	EXCEPT_GUARD(lua_pushinteger(L, t->getWidth(str));)
+	luax_catchexcept(L, [&](){ lua_pushinteger(L, t->getWidth(str)); });
 	return 1;
 }
 
@@ -56,10 +56,10 @@ int w_Font_getWrap(lua_State *L)
 	float wrap = (float) luaL_checknumber(L, 3);
 	int max_width = 0, numlines = 0;
 
-	EXCEPT_GUARD(
+	luax_catchexcept(L, [&]() {
 		std::vector<std::string> lines = t->getWrap(str, wrap, &max_width);
 		numlines = lines.size();
-	)
+	});
 
 	lua_pushinteger(L, max_width);
 	lua_pushinteger(L, numlines);
@@ -96,7 +96,7 @@ int w_Font_setFilter(lua_State *L)
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 
-	EXCEPT_GUARD(t->setFilter(f);)
+	luax_catchexcept(L, [&](){ t->setFilter(f); });
 	return 0;
 }
 
@@ -143,7 +143,7 @@ int w_Font_hasGlyphs(lua_State *L)
 	int count = lua_gettop(L) - 1;
 	count = count < 1 ? 1 : count;
 
-	EXCEPT_GUARD(
+	luax_catchexcept(L, [&]() {
 		 for (int i = 2; i < count + 2; i++)
 		 {
 			 if (lua_type(L, i) == LUA_TSTRING)
@@ -154,7 +154,7 @@ int w_Font_hasGlyphs(lua_State *L)
 			 if (!hasglyph)
 				 break;
 		 }
-	 )
+	});
 
 	luax_pushboolean(L, hasglyph);
 	return 1;

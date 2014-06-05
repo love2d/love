@@ -28,8 +28,6 @@ namespace love
 {
 namespace joystick
 {
-namespace sdl
-{
 
 Joystick *luax_checkjoystick(lua_State *L, int idx)
 {
@@ -121,7 +119,7 @@ int w_Joystick_getHat(lua_State *L)
 	Joystick::Hat h = j->getHat(hatindex);
 
 	const char *direction = "";
-	love::joystick::Joystick::getConstant(h, direction);
+	Joystick::getConstant(h, direction);
 
 	lua_pushstring(L, direction);
 	return 1;
@@ -251,6 +249,7 @@ static const luaL_Reg functions[] =
 	// From wrap_JoystickModule.
 	{ "getConnectedIndex", w_getIndex },
 	{ "getGamepadMapping", w_getGamepadMapping },
+
 	{ 0, 0 },
 };
 
@@ -259,6 +258,5 @@ extern "C" int luaopen_joystick(lua_State *L)
 	return luax_register_type(L, "Joystick", functions);
 }
 
-} // sdl
 } // joystick
 } // love

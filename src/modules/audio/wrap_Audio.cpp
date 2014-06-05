@@ -41,10 +41,7 @@ int w_getSourceCount(lua_State *L)
 
 int w_newSource(lua_State *L)
 {
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
-
-	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 		luax_convobj(L, 1, "sound", "newDecoder");
 
 	Source::Type stype = Source::TYPE_STREAM;

@@ -18,43 +18,51 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_PHYSFS_WRAP_FILE_H
-#define LOVE_FILESYSTEM_PHYSFS_WRAP_FILE_H
+#include "wrap_FileData.h"
 
-// LOVE
-#include "common/runtime.h"
-#include "Filesystem.h"
-#include "File.h"
+#include "common/wrap_Data.h"
 
 namespace love
 {
 namespace filesystem
 {
-namespace physfs
+
+FileData *luax_checkfiledata(lua_State *L, int idx)
 {
+	return luax_checktype<FileData>(L, idx, "FileData", FILESYSTEM_FILE_DATA_T);
+}
 
-// Does not use lua_error, so it's safe to call in exception handling code.
-int luax_ioError(lua_State *L, const char *fmt, ...);
+int w_FileData_getFilename(lua_State *L)
+{
+	FileData *t = luax_checkfiledata(L, 1);
+	lua_pushstring(L, t->getFilename().c_str());
+	return 1;
+}
 
-File *luax_checkfile(lua_State *L, int idx);
-int w_File_getSize(lua_State *L);
-int w_File_open(lua_State *L);
-int w_File_close(lua_State *L);
-int w_File_isOpen(lua_State *L);
-int w_File_read(lua_State *L);
-int w_File_write(lua_State *L);
-int w_File_flush(lua_State *L);
-int w_File_eof(lua_State *L);
-int w_File_tell(lua_State *L);
-int w_File_seek(lua_State *L);
-int w_File_lines(lua_State *L);
-int w_File_setBuffer(lua_State *L);
-int w_File_getBuffer(lua_State *L);
-int w_File_getMode(lua_State *L);
-extern "C" int luaopen_file(lua_State *L);
+int w_FileData_getExtension(lua_State *L)
+{
+	FileData *t = luax_checkfiledata(L, 1);
+	lua_pushstring(L, t->getExtension().c_str());
+	return 1;
+}
 
-} // physfs
+static const luaL_Reg w_FileData_functions[] =
+{
+	// Data
+	{ "getString", w_Data_getString },
+	{ "getPointer", w_Data_getPointer },
+	{ "getSize", w_Data_getSize },
+
+	{ "getFilename", w_FileData_getFilename },
+	{ "getExtension", w_FileData_getExtension },
+
+	{ 0, 0 }
+};
+
+extern "C" int luaopen_filedata(lua_State *L)
+{
+	return luax_register_type(L, "FileData", w_FileData_functions);
+}
+
 } // filesystem
 } // love
-
-#endif // LOVE_FILESYSTEM_PHYSFS_WRAP_FILE_H

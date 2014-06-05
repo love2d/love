@@ -191,12 +191,14 @@ bool Joystick::isDown(const std::vector<int> &buttonlist) const
 	if (!isConnected())
 		return false;
 
-	int num = getButtonCount();
+	int numbuttons = getButtonCount();
 
-	for (size_t i = 0; i < buttonlist.size(); i++)
+	for (int button : buttonlist)
 	{
-		int button = buttonlist[i];
-		if (button >= 0 && button < num && SDL_JoystickGetButton(joyhandle, button) == 1)
+		if (button < 0 || button >= numbuttons)
+			continue;
+
+		if (SDL_JoystickGetButton(joyhandle, button) == 1)
 			return true;
 	}
 
@@ -244,9 +246,9 @@ bool Joystick::isGamepadDown(const std::vector<GamepadButton> &blist) const
 
 	SDL_GameControllerButton sdlbutton;
 
-	for (size_t i = 0; i < blist.size(); i++)
+	for (GamepadButton button : blist)
 	{
-		if (!getConstant(blist[i], sdlbutton))
+		if (!getConstant(button, sdlbutton))
 			continue;
 
 		if (SDL_GameControllerGetButton(controller, sdlbutton) == 1)

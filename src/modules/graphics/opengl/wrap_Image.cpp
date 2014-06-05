@@ -47,7 +47,7 @@ int w_Image_setMipmapFilter(lua_State *L)
 			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
 	}
 
-	EXCEPT_GUARD(t->setFilter(f);)
+	luax_catchexcept(L, [&](){ t->setFilter(f); });
 
 	float sharpness = (float) luaL_optnumber(L, 3, 0);
 	t->setMipmapSharpness(sharpness);
@@ -81,7 +81,7 @@ int w_Image_isCompressed(lua_State *L)
 int w_Image_refresh(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	EXCEPT_GUARD(i->refresh();)
+	luax_catchexcept(L, [&](){ i->refresh(); });
 	return 0;
 }
 

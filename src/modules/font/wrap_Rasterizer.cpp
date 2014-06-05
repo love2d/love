@@ -72,7 +72,7 @@ int w_Rasterizer_getGlyphData(lua_State *L)
 	Rasterizer *t = luax_checkrasterizer(L, 1);
 	GlyphData *g = 0;
 
-	EXCEPT_GUARD(
+	luax_catchexcept(L, [&]() {
 		// getGlyphData accepts a unicode character or a codepoint number.
 		if (lua_type(L, 2) == LUA_TSTRING)
 		{
@@ -84,7 +84,7 @@ int w_Rasterizer_getGlyphData(lua_State *L)
 			uint32 glyph = (uint32) luaL_checknumber(L, 2);
 			g = t->getGlyphData(glyph);
 		}
-	)
+	});
 
 	luax_pushtype(L, "GlyphData", FONT_GLYPH_DATA_T, g);
 	return 1;
@@ -106,7 +106,7 @@ int w_Rasterizer_hasGlyphs(lua_State *L)
 	int count = lua_gettop(L) - 1;
 	count = count < 1 ? 1 : count;
 
-	EXCEPT_GUARD(
+	luax_catchexcept(L, [&]() {
 		for (int i = 2; i < count + 2; i++)
 		{
 			if (lua_type(L, i) == LUA_TSTRING)
@@ -117,7 +117,7 @@ int w_Rasterizer_hasGlyphs(lua_State *L)
 			if (!hasglyph)
 				break;
 		}
-	)
+	});
 
 	luax_pushboolean(L, hasglyph);
 	return 1;

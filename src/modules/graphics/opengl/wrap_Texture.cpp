@@ -69,7 +69,7 @@ int w_Texture_setFilter(lua_State *L)
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 
-	EXCEPT_GUARD(t->setFilter(f);)
+	luax_catchexcept(L, [&](){ t->setFilter(f); });
 	return 0;
 }
 

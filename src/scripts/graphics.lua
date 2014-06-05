@@ -1387,13 +1387,14 @@ void main() {
 	end
 
 	local function isVertexCode(code)
-		return code:match("vec4%s*position%(") ~= nil
+		return code:match("vec4%s+position%s*%(") ~= nil
 	end
 
 	local function isPixelCode(code)
-		if code:match("vec4%s*effect%(") then
+		if code:match("vec4%s+effect%s*%(") then
 			return true
-		elseif code:match("void%s*effects%(") then -- render to multiple canvases simultaniously
+		elseif code:match("void%s+effects%s*%(") then
+			-- function for rendering to multiple canvases simultaneously
 			return true, true
 		else
 			return false
@@ -1405,14 +1406,11 @@ void main() {
 		local is_multicanvas = false -- whether pixel code has "effects" function instead of "effect"
 		
 		if arg1 then
-			local s = arg1:gsub("\r\n\t", " ") -- convert whitespace to spaces for parsing
-			s = s:gsub("(%w+)(%s+)%(", "%1(") -- convert "func ()" to "func()"
-
-			if isVertexCode(s) then
+			if isVertexCode(arg1) then
 				vertexcode = arg1 -- first arg contains vertex shader code
 			end
 
-			local ispixel, isMultiCanvas = isPixelCode(s)
+			local ispixel, isMultiCanvas = isPixelCode(arg1)
 			if ispixel then
 				pixelcode = arg1 -- first arg contains pixel shader code
 				is_multicanvas = isMultiCanvas
@@ -1420,14 +1418,11 @@ void main() {
 		end
 		
 		if arg2 then
-			local s = arg2:gsub("\r\n\t", " ") -- convert whitespace to spaces for parsing
-			s = s:gsub("(%w+)(%s+)%(", "%1(") -- convert "func ()" to "func()"
-
-			if isVertexCode(s) then
+			if isVertexCode(arg2) then
 				vertexcode = arg2 -- second arg contains vertex shader code
 			end
 
-			local ispixel, isMultiCanvas = isPixelCode(s)
+			local ispixel, isMultiCanvas = isPixelCode(arg2)
 			if ispixel then
 				pixelcode = arg2 -- second arg contains pixel shader code
 				is_multicanvas = isMultiCanvas

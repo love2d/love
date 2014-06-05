@@ -20,6 +20,8 @@
 
 #include "wrap_Sound.h"
 
+#include "filesystem/wrap_Filesystem.h"
+
 // Implementations.
 #include "lullaby/Sound.h"
 
@@ -41,7 +43,7 @@ int w_newSoundData(lua_State *L)
 		int bitDepth = luaL_optint(L, 3, Decoder::DEFAULT_BIT_DEPTH);
 		int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
 
-		EXCEPT_GUARD(t = instance->newSoundData(samples, sampleRate, bitDepth, channels);)
+		luax_catchexcept(L, [&](){ t = instance->newSoundData(samples, sampleRate, bitDepth, channels); });
 	}
 	// Must be string or decoder.
 	else
@@ -53,7 +55,7 @@ int w_newSoundData(lua_State *L)
 			lua_replace(L, 1);
 		}
 
-		EXCEPT_GUARD(t = instance->newSoundData(luax_checkdecoder(L, 1));)
+		luax_catchexcept(L, [&](){ t = instance->newSoundData(luax_checkdecoder(L, 1)); });
 	}
 
 	luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, t);
@@ -62,18 +64,16 @@ int w_newSoundData(lua_State *L)
 
 int w_newDecoder(lua_State *L)
 {
-	// Convert to FileData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
-
-	love::filesystem::FileData *data = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
-
+	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
 	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
 
-	Decoder *t = 0;
-	EXCEPT_GUARD(t = instance->newDecoder(data, bufferSize);)
+	Decoder *t = nullptr;
+	luax_catchexcept(L,
+		[&]() { t = instance->newDecoder(data, bufferSize); },
+		[&]() { data->release(); }
+	);
 
-	if (t == 0)
+	if (t == nullptr)
 		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
 
 	luax_pushtype(L, "Decoder", SOUND_DECODER_T, t);
@@ -99,7 +99,7 @@ extern "C" int luaopen_love_sound(lua_State *L)
 {
 	if (instance == 0)
 	{
-		EXCEPT_GUARD(instance = new lullaby::Sound();)
+		luax_catchexcept(L, [&](){ instance = new lullaby::Sound(); });
 	}
 	else
 		instance->retain();

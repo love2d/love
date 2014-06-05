@@ -43,7 +43,7 @@ int w_newCursor(lua_State *L)
 	int hotx = luaL_optint(L, 2, 0);
 	int hoty = luaL_optint(L, 3, 0);
 
-	EXCEPT_GUARD(cursor = instance->newCursor(data, hotx, hoty);)
+	luax_catchexcept(L, [&](){ cursor = instance->newCursor(data, hotx, hoty); });
 
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
 	return 1;
@@ -58,7 +58,7 @@ int w_getSystemCursor(lua_State *L)
 		return luaL_error(L, "Invalid system cursor type: %s", str);
 
 	Cursor *cursor = 0;
-	EXCEPT_GUARD(cursor = instance->getSystemCursor(systemCursor);)
+	luax_catchexcept(L, [&](){ cursor = instance->getSystemCursor(systemCursor); });
 
 	cursor->retain();
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
@@ -214,7 +214,7 @@ extern "C" int luaopen_love_mouse(lua_State *L)
 {
 	if (instance == nullptr)
 	{
-		EXCEPT_GUARD(instance = new love::mouse::sdl::Mouse();)
+		luax_catchexcept(L, [&](){ instance = new love::mouse::sdl::Mouse(); });
 	}
 	else
 		instance->retain();

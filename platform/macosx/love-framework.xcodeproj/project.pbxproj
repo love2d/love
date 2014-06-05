@@ -1462,6 +1462,10 @@
 				FAB0078E1740C12D00A9664D /* Joystick.h */,
 				4C606AEC342457600C3F0741 /* JoystickModule.h */,
 				687216AD6FA406C838284B91 /* sdl */,
+				FAB007951740C87D00A9664D /* wrap_Joystick.cpp */,
+				FAB007961740C87D00A9664D /* wrap_Joystick.h */,
+				139411436818381E493F00F5 /* wrap_JoystickModule.cpp */,
+				2D7B7DEC4FC87878332E41B3 /* wrap_JoystickModule.h */,
 			);
 			path = joystick;
 			sourceTree = "<group>";
@@ -1580,12 +1584,6 @@
 				47D46915001F342A3CD23E86 /* File.h */,
 				6DE3129F3A0B2D9C178118F3 /* Filesystem.cpp */,
 				219636CF6780074F7871463D /* Filesystem.h */,
-				6C367AE309C453C412D91363 /* wrap_File.cpp */,
-				52E15B702C40593D3BF431DF /* wrap_File.h */,
-				597478A255B82B56488B4717 /* wrap_FileData.cpp */,
-				3512460642B046876D687B22 /* wrap_FileData.h */,
-				1E827AE8548C52493ED95629 /* wrap_Filesystem.cpp */,
-				5DC271240F0119AE16FA1B8E /* wrap_Filesystem.h */,
 			);
 			path = physfs;
 			sourceTree = "<group>";
@@ -1642,10 +1640,6 @@
 				FAB007921740C28900A9664D /* Joystick.h */,
 				55B425307C0C1C4B3EFC3A5F /* JoystickModule.cpp */,
 				439E46D768A266780E894800 /* JoystickModule.h */,
-				FAB007951740C87D00A9664D /* wrap_Joystick.cpp */,
-				FAB007961740C87D00A9664D /* wrap_Joystick.h */,
-				139411436818381E493F00F5 /* wrap_JoystickModule.cpp */,
-				2D7B7DEC4FC87878332E41B3 /* wrap_JoystickModule.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
@@ -1762,6 +1756,12 @@
 				62370A494F9D6E2D570065EB /* FileData.cpp */,
 				54A13C2209F945671BC27974 /* FileData.h */,
 				64DD03B45BF6265723662DAF /* physfs */,
+				6C367AE309C453C412D91363 /* wrap_File.cpp */,
+				52E15B702C40593D3BF431DF /* wrap_File.h */,
+				597478A255B82B56488B4717 /* wrap_FileData.cpp */,
+				3512460642B046876D687B22 /* wrap_FileData.h */,
+				1E827AE8548C52493ED95629 /* wrap_Filesystem.cpp */,
+				5DC271240F0119AE16FA1B8E /* wrap_Filesystem.h */,
 			);
 			path = filesystem;
 			sourceTree = "<group>";

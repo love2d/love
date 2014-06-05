@@ -108,7 +108,7 @@ int w_RandomGenerator_randomNormal(lua_State *L)
 int w_RandomGenerator_setSeed(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-	EXCEPT_GUARD(rng->setSeed(luax_checkrandomseed(L, 2));)
+	luax_catchexcept(L, [&](){ rng->setSeed(luax_checkrandomseed(L, 2)); });
 	return 0;
 }
 
@@ -124,7 +124,7 @@ int w_RandomGenerator_getSeed(lua_State *L)
 int w_RandomGenerator_setState(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-	EXCEPT_GUARD(rng->setState(luax_checkstring(L, 2));)
+	luax_catchexcept(L, [&](){ rng->setState(luax_checkstring(L, 2)); });
 	return 0;
 }
 

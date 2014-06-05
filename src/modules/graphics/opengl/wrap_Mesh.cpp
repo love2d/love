@@ -74,7 +74,7 @@ int w_Mesh_setVertex(lua_State *L)
 		v.a = luaL_optinteger(L, 10, 255);
 	}
 
-	EXCEPT_GUARD(t->setVertex(i, v);)
+	luax_catchexcept(L, [&](){ t->setVertex(i, v); });
 	return 0;
 }
 
@@ -84,7 +84,7 @@ int w_Mesh_getVertex(lua_State *L)
 	size_t i = (size_t) (luaL_checkinteger(L, 2) - 1);
 
 	Vertex v;
-	EXCEPT_GUARD(v = t->getVertex(i);)
+	luax_catchexcept(L, [&](){ v = t->getVertex(i); });
 
 	lua_pushnumber(L, v.x);
 	lua_pushnumber(L, v.y);
@@ -134,7 +134,7 @@ int w_Mesh_setVertices(lua_State *L)
 		vertices.push_back(v);
 	}
 
-	EXCEPT_GUARD(t->setVertices(vertices);)
+	luax_catchexcept(L, [&](){ t->setVertices(vertices); });
 	return 0;
 }
 
@@ -216,7 +216,7 @@ int w_Mesh_setVertexMap(lua_State *L)
 			vertexmap.push_back(uint32(luaL_checkinteger(L, i + 2) - 1));
 	}
 
-	EXCEPT_GUARD(t->setVertexMap(vertexmap);)
+	luax_catchexcept(L, [&](){ t->setVertexMap(vertexmap); });
 	return 0;
 }
 
@@ -225,7 +225,7 @@ int w_Mesh_getVertexMap(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 
 	std::vector<uint32> vertex_map;
-	EXCEPT_GUARD(t->getVertexMap(vertex_map);)
+	luax_catchexcept(L, [&](){ t->getVertexMap(vertex_map); });
 
 	size_t element_count = vertex_map.size();
 
@@ -237,20 +237,6 @@ int w_Mesh_getVertexMap(lua_State *L)
 		lua_rawseti(L, -2, i + 1);
 	}
 
-	return 1;
-}
-
-int w_Mesh_setInstanceCount(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	t->setInstanceCount(luaL_checkint(L, 2));
-	return 0;
-}
-
-int w_Mesh_getInstanceCount(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	lua_pushinteger(L, t->getInstanceCount());
 	return 1;
 }
 
@@ -329,7 +315,7 @@ int w_Mesh_setDrawRange(lua_State *L)
 	{
 		int rangemin = luaL_checkint(L, 2) - 1;
 		int rangemax = luaL_checkint(L, 3) - 1;
-		EXCEPT_GUARD(t->setDrawRange(rangemin, rangemax);)
+		luax_catchexcept(L, [&](){ t->setDrawRange(rangemin, rangemax); });
 	}
 
 	return 0;
@@ -374,12 +360,6 @@ static const luaL_Reg functions[] =
 	{ "getVertexCount", w_Mesh_getVertexCount },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
-
-	// Disabled for now, since implementation is incomplete and might change
-	// if/when VertexBuffers / custom vertex attributes are added.
-	// { "setInstanceCount", w_Mesh_setInstanceCount },
-	// { "getInstanceCount", w_Mesh_getInstanceCount },
-
 	{ "setTexture", w_Mesh_setTexture },
 	{ "getTexture", w_Mesh_getTexture },
 	{ "setDrawMode", w_Mesh_setDrawMode },

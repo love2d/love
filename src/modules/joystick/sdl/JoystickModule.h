@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <map>
 
 namespace love
 {
@@ -56,6 +57,8 @@ public:
 
 	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput);
 	Joystick::JoystickInput getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput);
+	void loadGamepadMappings(const std::string &mappings);
+	std::string saveGamepadMappings();
 
 private:
 
@@ -73,6 +76,10 @@ private:
 
 	// Persistent list of all Joysticks which have been connected at some point.
 	std::list<Joystick *> joysticks;
+
+	// Persistent map indicating GUIDs for Gamepads which have been connected or
+	// modified at some point.
+	std::map<std::string, bool> recentGamepadGUIDs;
 
 }; // JoystickModule
 

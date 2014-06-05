@@ -18,43 +18,29 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H
-#define LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H
+#ifndef LOVE_JOYSTICK_WRAP_JOYSTICK_MODULE_H
+#define LOVE_JOYSTICK_WRAP_JOYSTICK_MODULE_H
 
 // LOVE
 #include "common/config.h"
-#include "Joystick.h"
 #include "common/runtime.h"
+#include "JoystickModule.h"
 
 namespace love
 {
 namespace joystick
 {
-namespace sdl
-{
 
-Joystick *luax_checkjoystick(lua_State *L, int idx);
-int w_Joystick_isConnected(lua_State *L);
-int w_Joystick_getName(lua_State *L);
-int w_Joystick_getID(lua_State *L);
-int w_Joystick_getGUID(lua_State *L);
-int w_Joystick_getAxisCount(lua_State *L);
-int w_Joystick_getButtonCount(lua_State *L);
-int w_Joystick_getHatCount(lua_State *L);
-int w_Joystick_getAxis(lua_State *L);
-int w_Joystick_getAxes(lua_State *L);
-int w_Joystick_getHat(lua_State *L);
-int w_Joystick_isDown(lua_State *L);
-int w_Joystick_isGamepad(lua_State *L);
-int w_Joystick_getGamepadAxis(lua_State *L);
-int w_Joystick_isGamepadDown(lua_State *L);
-int w_Joystick_isVibrationSupported(lua_State *L);
-int w_Joystick_setVibration(lua_State *L);
-int w_Joystick_getVibration(lua_State *L);
-extern "C" int luaopen_joystick(lua_State *L);
+int w_getJoysticks(lua_State *L);
+int w_getIndex(lua_State *L);
+int w_getJoystickCount(lua_State *L);
+int w_setGamepadMapping(lua_State *L);
+int w_getGamepadMapping(lua_State *L);
+int w_loadGamepadMappings(lua_State *L);
+int w_saveGamepadMappings(lua_State *L);
+extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State *L);
 
-} // sdl
 } // joystick
 } // love
 
-#endif // LOVE_JOYSTICK_SDL_WRAP_JOYSTICK_H
+#endif // LOVE_JOYSTICK_WRAP_JOYSTICK_MODULE_H

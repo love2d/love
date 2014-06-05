@@ -123,7 +123,7 @@ extern "C" int luaopen_love_event(lua_State *L)
 {
 	if (instance == 0)
 	{
-		EXCEPT_GUARD(instance = new Event();)
+		luax_catchexcept(L, [&](){ instance = new Event(); });
 	}
 	else
 		instance->retain();

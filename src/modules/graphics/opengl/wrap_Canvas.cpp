@@ -40,7 +40,7 @@ int w_Canvas_renderTo(lua_State *L)
 	// Save the current Canvas so we can restore it when we're done.
 	Canvas *oldcanvas = Canvas::current;
 
-	EXCEPT_GUARD(canvas->startGrab();)
+	luax_catchexcept(L, [&](){ canvas->startGrab(); });
 
 	lua_settop(L, 2); // make sure the function is on top of the stack
 	lua_call(L, 0, 0);
@@ -69,7 +69,7 @@ int w_Canvas_getPixel(lua_State * L)
 	int y = luaL_checkint(L, 3);
 	unsigned char c[4];
 
-	EXCEPT_GUARD(canvas->getPixel(c, x, y);)
+	luax_catchexcept(L, [&](){ canvas->getPixel(c, x, y); });
 
 	lua_pushnumber(L, c[0]);
 	lua_pushnumber(L, c[1]);

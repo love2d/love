@@ -85,7 +85,7 @@ extern "C" int luaopen_love_timer(lua_State *L)
 {
 	if (instance == 0)
 	{
-		EXCEPT_GUARD(instance = new love::timer::sdl::Timer();)
+		luax_catchexcept(L, [&](){ instance = new love::timer::sdl::Timer(); });
 	}
 	else
 		instance->retain();

@@ -49,7 +49,7 @@ int w_ParticleSystem_clone(lua_State *L)
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 
 	ParticleSystem *clone = nullptr;
-	EXCEPT_GUARD(clone = t->clone();)
+	luax_catchexcept(L, [&](){ clone = t->clone(); });
 
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, clone);
 	return 1;
@@ -90,7 +90,7 @@ int w_ParticleSystem_setBufferSize(lua_State *L)
 	if (arg1 < 1.0 || arg1 > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid buffer size");
 
-	EXCEPT_GUARD(t->setBufferSize((uint32) arg1);)
+	luax_catchexcept(L, [&](){ t->setBufferSize((uint32) arg1); });
 	return 0;
 }
 
@@ -128,7 +128,7 @@ int w_ParticleSystem_setEmissionRate(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float) luaL_checknumber(L, 2);
-	EXCEPT_GUARD(t->setEmissionRate(arg1);)
+	luax_catchexcept(L, [&](){ t->setEmissionRate(arg1); });
 	return 0;
 }
 

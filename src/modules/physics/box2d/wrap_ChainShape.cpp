@@ -39,7 +39,7 @@ int w_ChainShape_setNextVertex(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
-	EXCEPT_GUARD(c->setNextVertex(x, y);)
+	luax_catchexcept(L, [&](){ c->setNextVertex(x, y); });
 	return 0;
 }
 
@@ -48,7 +48,7 @@ int w_ChainShape_setPreviousVertex(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
-	EXCEPT_GUARD(c->setPreviousVertex(x, y);)
+	luax_catchexcept(L, [&](){ c->setPreviousVertex(x, y); });
 	return 0;
 }
 
@@ -64,7 +64,7 @@ int w_ChainShape_getChildEdge(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
 	EdgeShape *e = 0;
-	EXCEPT_GUARD(e = c->getChildEdge(index);)
+	luax_catchexcept(L, [&](){ e = c->getChildEdge(index); });
 	luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, e);
 	return 1;
 }
@@ -82,7 +82,7 @@ int w_ChainShape_getPoint(lua_State *L)
 	ChainShape *c = luax_checkchainshape(L, 1);
 	int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
 	b2Vec2 v;
-	EXCEPT_GUARD(v = c->getPoint(index);)
+	luax_catchexcept(L, [&](){ v = c->getPoint(index); });
 	lua_pushnumber(L, v.x);
 	lua_pushnumber(L, v.y);
 	return 2;
