@@ -37,7 +37,7 @@ int w_getJoystickCount(lua_State *L);
 int w_setGamepadMapping(lua_State *L);
 int w_getGamepadMapping(lua_State *L);
 int w_loadGamepadMappings(lua_State *L);
-int w_saveGamepadMapping(lua_State *L);
+int w_saveGamepadMappings(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State *L);
 
 } // joystick

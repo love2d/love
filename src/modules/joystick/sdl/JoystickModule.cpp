@@ -161,6 +161,9 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 		}
 	}
 
+	if (joystick->isGamepad())
+		recentGamepadGUIDs[joystick->getGUID()] = true;
+
 	activeSticks.push_back(joystick);
 	return joystick;
 }
@@ -256,6 +259,9 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 
 	// 1 == added, 0 == updated, -1 == error.
 	int status = SDL_GameControllerAddMapping(mapstr.c_str());
+
+	if (status != -1)
+		recentGamepadGUIDs[guid] = true;
 
 	// FIXME: massive hack until missing APIs are added to SDL 2:
 	// https://bugzilla.libsdl.org/show_bug.cgi?id=1975
@@ -498,10 +504,11 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 		if (SDL_GameControllerAddMapping(mapping.c_str()) != -1)
 		{
 			success = true;
+			std::string guid = mapping.substr(0, mapping.find_first_of(','));
+			recentGamepadGUIDs[guid] = true;
 
 			// FIXME: massive hack until missing APIs are added to SDL 2:
 			// https://bugzilla.libsdl.org/show_bug.cgi?id=1975
-			std::string guid = mapping.substr(0, mapping.find_first_of(','));
 			checkGamepads(guid);
 		}
 	}
@@ -510,26 +517,30 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 		throw love::Exception("Invalid gamepad mappings.");
 }
 
-std::string JoystickModule::saveGamepadMapping(const std::string &pguid)
+std::string JoystickModule::saveGamepadMappings()
 {
-	SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(pguid.c_str());
+	std::string mappings;
 
-	std::string mapping;
-	char *sdlmapping = SDL_GameControllerMappingForGUID(sdlguid);
+	for (const auto &g : recentGamepadGUIDs)
+	{
+		SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(g.first.c_str());
 
-	if (sdlmapping == nullptr)
-		throw love::Exception("The specified Joystick GUID string has no gamepad mapping.");
+		char *sdlmapping = SDL_GameControllerMappingForGUID(sdlguid);
+		if (sdlmapping == nullptr)
+			continue;
 
-	mapping = sdlmapping;
-	SDL_free(sdlmapping);
+		std::string mapping = sdlmapping;
+		SDL_free(sdlmapping);
 
-	if (mapping.find_last_of(',') != mapping.size() - 1)
-		mapping += ",";
+		if (mapping.find_last_of(',') != mapping.length() - 1)
+			mapping += ",";
 
-	// Matches SDL_GameControllerAddMappingsFromRW.
-	mapping += "platform:" + std::string(SDL_GetPlatform()) + ",";
+		// Matches SDL_GameControllerAddMappingsFromRW.
+		mapping += "platform:" + std::string(SDL_GetPlatform()) + ",\n";
+		mappings += mapping;
+	}
 
-	return mapping;
+	return mappings;
 }
 
 } // sdl

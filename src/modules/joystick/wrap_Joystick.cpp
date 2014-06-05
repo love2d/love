@@ -119,7 +119,7 @@ int w_Joystick_getHat(lua_State *L)
 	Joystick::Hat h = j->getHat(hatindex);
 
 	const char *direction = "";
-	love::joystick::Joystick::getConstant(h, direction);
+	Joystick::getConstant(h, direction);
 
 	lua_pushstring(L, direction);
 	return 1;
@@ -249,7 +249,6 @@ static const luaL_Reg functions[] =
 	// From wrap_JoystickModule.
 	{ "getConnectedIndex", w_getIndex },
 	{ "getGamepadMapping", w_getGamepadMapping },
-	{ "saveGamepadMapping", w_saveGamepadMapping },
 
 	{ 0, 0 },
 };

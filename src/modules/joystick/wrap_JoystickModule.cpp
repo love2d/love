@@ -39,7 +39,7 @@ int w_getJoysticks(lua_State *L)
 
 	for (int i = 0; i < stickcount; i++)
 	{
-		love::joystick::Joystick *stick = instance->getJoystick(i);
+		Joystick *stick = instance->getJoystick(i);
 		stick->retain();
 		luax_pushtype(L, "Joystick", JOYSTICK_JOYSTICK_T, stick);
 		lua_rawseti(L, -2, i + 1);
@@ -50,7 +50,7 @@ int w_getJoysticks(lua_State *L)
 
 int w_getIndex(lua_State *L)
 {
-	love::joystick::Joystick *j = luax_checkjoystick(L, 1);
+	Joystick *j = luax_checkjoystick(L, 1);
 	int index = instance->getIndex(j);
 	if (index >= 0)
 		lua_pushinteger(L, index + 1);
@@ -75,9 +75,9 @@ int w_setGamepadMapping(lua_State *L)
 	const char *gpbindstr = luaL_checkstring(L, 2);
 	Joystick::GamepadInput gpinput;
 
-	if (love::joystick::Joystick::getConstant(gpbindstr, gpinput.axis))
+	if (Joystick::getConstant(gpbindstr, gpinput.axis))
 		gpinput.type = Joystick::INPUT_TYPE_AXIS;
-	else if (love::joystick::Joystick::getConstant(gpbindstr, gpinput.button))
+	else if (Joystick::getConstant(gpbindstr, gpinput.button))
 		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
 	else
 		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
@@ -85,7 +85,7 @@ int w_setGamepadMapping(lua_State *L)
 	const char *jinputtypestr = luaL_checkstring(L, 3);
 	Joystick::JoystickInput jinput;
 
-	if (!love::joystick::Joystick::getConstant(jinputtypestr, jinput.type))
+	if (!Joystick::getConstant(jinputtypestr, jinput.type))
 		return luaL_error(L, "Invalid joystick input type: %s", jinputtypestr);
 
 	const char *hatstr;
@@ -101,7 +101,7 @@ int w_setGamepadMapping(lua_State *L)
 		// Hats need both a hat index and a hat value.
 		jinput.hat.index = luaL_checkint(L, 4) - 1;
 		hatstr = luaL_checkstring(L, 5);
-		if (!love::joystick::Joystick::getConstant(hatstr, jinput.hat.value))
+		if (!Joystick::getConstant(hatstr, jinput.hat.value))
 			return luaL_error(L, "Invalid joystick hat: %s", hatstr);
 		break;
 	default:
@@ -125,16 +125,16 @@ int w_getGamepadMapping(lua_State *L)
 		guid = luax_checkstring(L, 1);
 	else
 	{
-		love::joystick::Joystick *stick = luax_checkjoystick(L, 1);
+		Joystick *stick = luax_checkjoystick(L, 1);
 		guid = stick->getGUID();
 	}
 
 	const char *gpbindstr = luaL_checkstring(L, 2);
 	Joystick::GamepadInput gpinput;
 
-	if (love::joystick::Joystick::getConstant(gpbindstr, gpinput.axis))
+	if (Joystick::getConstant(gpbindstr, gpinput.axis))
 		gpinput.type = Joystick::INPUT_TYPE_AXIS;
-	else if (love::joystick::Joystick::getConstant(gpbindstr, gpinput.button))
+	else if (Joystick::getConstant(gpbindstr, gpinput.button))
 		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
 	else
 		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
@@ -148,7 +148,7 @@ int w_getGamepadMapping(lua_State *L)
 		return 0;
 
 	const char *inputtypestr;
-	if (!love::joystick::Joystick::getConstant(jinput.type, inputtypestr))
+	if (!Joystick::getConstant(jinput.type, inputtypestr))
 		return luaL_error(L, "Unknown joystick input type.");
 
 	lua_pushstring(L, inputtypestr);
@@ -164,7 +164,7 @@ int w_getGamepadMapping(lua_State *L)
 		return 2;
 	case Joystick::INPUT_TYPE_HAT:
 		lua_pushinteger(L, jinput.hat.index + 1);
-		if (love::joystick::Joystick::getConstant(jinput.hat.value, hatstr))
+		if (Joystick::getConstant(jinput.hat.value, hatstr))
 		{
 			lua_pushstring(L, hatstr);
 			return 3;
@@ -201,23 +201,22 @@ int w_loadGamepadMappings(lua_State *L)
 	return 0;
 }
 
-int w_saveGamepadMapping(lua_State *L)
+int w_saveGamepadMappings(lua_State *L)
 {
-	std::string guid, mapping;
+	lua_settop(L, 1);
+	std::string mappings = instance->saveGamepadMappings();
 
-	// Accept either a GUID string or a Joystick object. This way we can re-use
-	// the function for Joystick:getGamepadMapping.
-	if (lua_type(L, 1) == LUA_TSTRING)
-		guid = luax_checkstring(L, 1);
-	else
+	// Optionally write the mappings string to a file.
+	if (!lua_isnoneornil(L, 1))
 	{
-		love::joystick::Joystick *stick = luax_checkjoystick(L, 1);
-		guid = stick->getGUID();
+		luax_pushstring(L, mappings);
+		int idxs[] = {1, 2};
+		luax_convobj(L, idxs, 2, "filesystem", "write");
+		lua_pop(L, 1); // Pop the return value.
 	}
 
-	luax_catchexcept(L, [&](){ mapping = instance->saveGamepadMapping(guid); });
-
-	luax_pushstring(L, mapping);
+	// Return the actual string even if we also wrote it to a file.
+	luax_pushstring(L, mappings);
 	return 1;
 }
 
@@ -229,7 +228,7 @@ static const luaL_Reg functions[] =
 	{ "setGamepadMapping", w_setGamepadMapping },
 	{ "getGamepadMapping", w_getGamepadMapping },
 	{ "loadGamepadMappings", w_loadGamepadMappings },
-	{ "saveGamepadMapping", w_saveGamepadMapping },
+	{ "saveGamepadMappings", w_saveGamepadMappings },
 	{ 0, 0 }
 };
 
