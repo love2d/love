@@ -146,16 +146,24 @@ int w_setInvertedStencil(lua_State *L)
 	return setStencil(L, true);
 }
 
+static const char *imageFlagName(Image::FlagType flagtype)
+{
+	const char *name = nullptr;
+	Image::getConstant(flagtype, name);
+	return name;
+}
+
 int w_newImage(lua_State *L)
 {
 	love::image::ImageData *data = nullptr;
 	love::image::CompressedData *cdata = nullptr;
 
-	Image::Format format = Image::FORMAT_NORMAL;
-	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
-
-	if (fstr != nullptr && !Image::getConstant(fstr, format))
-		return luaL_error(L, "Invalid Image format: %s", fstr);
+	Image::Flags flags;
+	if (!lua_isnoneornil(L, 2))
+	{
+		flags.mipmaps = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_MIPMAPS), flags.mipmaps);
+		flags.sRGB = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_SRGB), flags.sRGB);
+	}
 
 	bool releasedata = false;
 
@@ -199,9 +207,9 @@ int w_newImage(lua_State *L)
 	luax_catchexcept(L,
 		[&]() {
 			if (cdata)
-				image = instance->newImage(cdata, format);
+				image = instance->newImage(cdata, flags);
 			else if (data)
-				image = instance->newImage(data, format);
+				image = instance->newImage(data, flags);
 		},
 		[&]() {
 			if (releasedata && data)

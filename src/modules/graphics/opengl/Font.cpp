@@ -528,6 +528,9 @@ float Font::getSpacing() const
 
 void Font::setFilter(const Texture::Filter &f)
 {
+	if (!Texture::validateFilter(f, false))
+		throw love::Exception("Invalid texture filter.");
+
 	filter = f;
 
 	for (auto it = textures.begin(); it != textures.end(); ++it)

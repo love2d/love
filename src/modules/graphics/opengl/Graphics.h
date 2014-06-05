@@ -192,8 +192,8 @@ public:
 	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(love::image::ImageData *data, Image::Format format = Image::FORMAT_NORMAL);
-	Image *newImage(love::image::CompressedData *cdata, Image::Format format = Image::FORMAT_NORMAL);
+	Image *newImage(love::image::ImageData *data, const Image::Flags &flags);
+	Image *newImage(love::image::CompressedData *cdata, const Image::Flags &flags);
 
 	Quad *newQuad(Quad::Viewport v, float sw, float sh);
 

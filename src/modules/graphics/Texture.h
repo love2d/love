@@ -105,6 +105,8 @@ public:
 	static void setDefaultFilter(const Filter &f);
 	static const Filter &getDefaultFilter();
 
+	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
+
 	static bool getConstant(const char *in, FilterMode &out);
 	static bool getConstant(FilterMode in, const char  *&out);
 

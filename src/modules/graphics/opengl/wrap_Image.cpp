@@ -48,9 +48,7 @@ int w_Image_setMipmapFilter(lua_State *L)
 	}
 
 	luax_catchexcept(L, [&](){ t->setFilter(f); });
-
-	float sharpness = (float) luaL_optnumber(L, 3, 0);
-	t->setMipmapSharpness(sharpness);
+	t->setMipmapSharpness((float) luaL_optnumber(L, 3, 0.0));
 
 	return 0;
 }

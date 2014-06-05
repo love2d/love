@@ -423,10 +423,10 @@ void Graphics::discardStencil()
 	activeStencil = false;
 }
 
-Image *Graphics::newImage(love::image::ImageData *data, Image::Format format)
+Image *Graphics::newImage(love::image::ImageData *data, const Image::Flags &flags)
 {
 	// Create the image.
-	Image *image = new Image(data, format);
+	Image *image = new Image(data, flags);
 
 	if (!isCreated())
 		return image;
@@ -444,16 +444,16 @@ Image *Graphics::newImage(love::image::ImageData *data, Image::Format format)
 	if (!success)
 	{
 		image->release();
-		return 0;
+		return nullptr;
 	}
 
 	return image;
 }
 
-Image *Graphics::newImage(love::image::CompressedData *cdata, Image::Format format)
+Image *Graphics::newImage(love::image::CompressedData *cdata, const Image::Flags &flags)
 {
 	// Create the image.
-	Image *image = new Image(cdata, format);
+	Image *image = new Image(cdata, flags);
 
 	if (!isCreated())
 		return image;
@@ -471,7 +471,7 @@ Image *Graphics::newImage(love::image::CompressedData *cdata, Image::Format form
 	if (!success)
 	{
 		image->release();
-		return 0;
+		return nullptr;
 	}
 
 	return image;

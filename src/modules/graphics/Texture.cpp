@@ -89,6 +89,23 @@ const Texture::Filter &Texture::getDefaultFilter()
 	return defaultFilter;
 }
 
+bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)
+{
+	if (!mipmapsAllowed && f.mipmap != FILTER_NONE)
+		return false;
+
+	if (f.mag != FILTER_LINEAR && f.mag != FILTER_NEAREST)
+		return false;
+
+	if (f.min != FILTER_LINEAR && f.min != FILTER_NEAREST)
+		return false;
+
+	if (f.mipmap != FILTER_LINEAR && f.mipmap != FILTER_NEAREST && f.mipmap != FILTER_NONE)
+		return false;
+
+	return true;
+}
+
 bool Texture::getConstant(const char *in, FilterMode &out)
 {
 	return filterModes.find(in, out);
@@ -113,6 +130,7 @@ StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM>::Entry Texture::filterM
 {
 	{ "linear", Texture::FILTER_LINEAR },
 	{ "nearest", Texture::FILTER_NEAREST },
+	{ "none", Texture::FILTER_NONE },
 };
 
 StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM> Texture::filterModes(Texture::filterModeEntries, sizeof(Texture::filterModeEntries));

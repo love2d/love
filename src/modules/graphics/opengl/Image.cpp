@@ -33,17 +33,16 @@ namespace opengl
 
 float Image::maxMipmapSharpness = 0.0f;
 
-Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NONE;
+Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NEAREST;
 float Image::defaultMipmapSharpness = 0.0f;
 
-Image::Image(love::image::ImageData *data, Format format)
+Image::Image(love::image::ImageData *data, const Flags &flags)
 	: data(data)
 	, cdata(nullptr)
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
-	, mipmapsCreated(false)
 	, compressed(false)
-	, format(format)
+	, flags(flags)
 	, usingDefaultTexture(false)
 {
 	width = data->getWidth();
@@ -53,14 +52,13 @@ Image::Image(love::image::ImageData *data, Format format)
 	preload();
 }
 
-Image::Image(love::image::CompressedData *cdata, Format format)
+Image::Image(love::image::CompressedData *cdata, const Flags &flags)
 	: data(nullptr)
 	, cdata(cdata)
 	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
-	, mipmapsCreated(false)
 	, compressed(true)
-	, format(format)
+	, flags(flags)
 	, usingDefaultTexture(false)
 {
 	width = cdata->getWidth(0);
@@ -119,99 +117,16 @@ GLuint Image::getGLTexture() const
 	return texture;
 }
 
-void Image::uploadCompressedMipmaps()
-{
-	if (!isCompressed() || !cdata || !hasCompressedTextureSupport(cdata->getFormat()))
-		return;
-
-	bind();
-
-	int count = cdata->getMipmapCount();
-
-	// We have to inform OpenGL if the image doesn't have all mipmap levels.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
-
-	for (int i = 1; i < count; i++)
-	{
-		glCompressedTexImage2D(GL_TEXTURE_2D,
-		                       i,
-		                       getCompressedFormat(cdata->getFormat()),
-		                       cdata->getWidth(i),
-		                       cdata->getHeight(i),
-		                       0,
-		                       GLsizei(cdata->getSize(i)),
-		                       cdata->getData(i));
-	}
-}
-
-void Image::createMipmaps()
-{
-	// Only valid for Images created with ImageData.
-	if (!data || isCompressed())
-		return;
-
-	// Some old drivers claim support for NPOT textures, but fail when creating
-	// mipmaps. We can't detect which systems will do this, so we fail gracefully
-	// for all NPOT images.
-	int w = int(width), h = int(height);
-	if (w != next_p2(w) || h != next_p2(h))
-	{
-		throw love::Exception("Cannot create mipmaps: "
-		      "image does not have power of two dimensions.");
-	}
-
-	bind();
-
-	// Prevent other threads from changing the ImageData while we upload it.
-	love::thread::Lock lock(data->getMutex());
-
-	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
-	{
-		if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
-		{
-			// AMD/ATI drivers have several bugs when generating mipmaps,
-			// re-uploading the entire base image seems to be required.
-			uploadTexture();
-
-			// More bugs: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
-			glEnable(GL_TEXTURE_2D);
-		}
-
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-		glTexSubImage2D(GL_TEXTURE_2D,
-		                0,
-		                0,
-		                0,
-		                (GLsizei)width,
-		                (GLsizei)height,
-		                GL_RGBA,
-		                GL_UNSIGNED_BYTE,
-		                data->getData());
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
-	}
-}
-
-void Image::checkMipmapsCreated()
-{
-	if (mipmapsCreated || filter.mipmap == FILTER_NONE || usingDefaultTexture)
-		return;
-
-	if (isCompressed() && cdata && hasCompressedTextureSupport(cdata->getFormat()))
-		uploadCompressedMipmaps();
-	else if (data)
-		createMipmaps();
-	else
-		return;
-
-	mipmapsCreated = true;
-}
-
 void Image::setFilter(const Texture::Filter &f)
 {
+	if (!validateFilter(f, flags.mipmaps))
+	{
+		if (f.mipmap != FILTER_NONE && !flags.mipmaps)
+			throw love::Exception("Non-mipmapped image cannot have mipmap filtering.");
+		else
+			throw love::Exception("Invalid texture filter.");
+	}
+
 	filter = f;
 
 	// We don't want filtering or (attempted) mipmaps on the default texture.
@@ -223,7 +138,6 @@ void Image::setFilter(const Texture::Filter &f)
 
 	bind();
 	gl.setTextureFilter(filter);
-	checkMipmapsCreated();
 }
 
 void Image::setWrap(const Texture::Wrap &w)
@@ -260,6 +174,7 @@ void Image::bind() const
 
 void Image::preload()
 {
+	// For colors.
 	memset(vertices, 255, sizeof(Vertex)*4);
 
 	vertices[0].x = 0;
@@ -280,7 +195,8 @@ void Image::preload()
 	vertices[3].s = 1;
 	vertices[3].t = 0;
 
-	filter.mipmap = defaultMipmapFilter;
+	if (flags.mipmaps)
+		filter.mipmap = defaultMipmapFilter;
 }
 
 bool Image::load()
@@ -293,9 +209,85 @@ void Image::unload()
 	return unloadVolatile();
 }
 
+void Image::uploadCompressedData()
+{
+	GLenum format = getCompressedFormat(cdata->getFormat());
+	int count = flags.mipmaps ? cdata->getMipmapCount() : 1;
+
+	// We have to inform OpenGL if the image doesn't have all mipmap levels.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+
+	for (int i = 0; i < count; i++)
+	{
+		glCompressedTexImage2D(GL_TEXTURE_2D,
+		                       i,
+		                       format,
+		                       cdata->getWidth(i),
+		                       cdata->getHeight(i),
+		                       0,
+		                       GLsizei(cdata->getSize(i)),
+		                       cdata->getData(i));
+	}
+}
+
+void Image::uploadImageData()
+{
+	if (flags.mipmaps)
+	{
+		// NPOT mipmap generation isn't always supported on old GPUs/drivers...
+		if (width != next_p2(width) || height != next_p2(height))
+		{
+			throw love::Exception("Cannot create mipmaps: "
+			                      "image does not have power-of-two dimensions.");
+		}
+
+		if (!GLEE_VERSION_3_0 && !GLEE_ARB_framebuffer_object)
+			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+	}
+
+	GLenum iformat = flags.sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+
+	{
+		love::thread::Lock lock(data->getMutex());
+		glTexImage2D(GL_TEXTURE_2D,
+		             0,
+		             iformat,
+		             (GLsizei)width,
+		             (GLsizei)height,
+		             0,
+		             GL_RGBA,
+		             GL_UNSIGNED_BYTE,
+		             data->getData());
+	}
+
+	if (flags.mipmaps)
+	{
+		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+		{
+			// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
+			if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
+				glEnable(GL_TEXTURE_2D);
+
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
+	}
+}
+
+void Image::uploadTexture()
+{
+	bind();
+
+	if (isCompressed() && cdata)
+		uploadCompressedData();
+	else if (data)
+		uploadImageData();
+}
+
 bool Image::loadVolatile()
 {
-	if (format == FORMAT_SRGB && !hasSRGBSupport())
+	if (flags.sRGB && !hasSRGBSupport())
 		throw love::Exception("sRGB images are not supported on this system.");
 
 	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getFormat()))
@@ -320,6 +312,9 @@ bool Image::loadVolatile()
 	gl.setTextureWrap(wrap);
 	setMipmapSharpness(mipmapSharpness);
 
+	if (!flags.mipmaps)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
 	// Use a default texture if the size is too big for the system.
 	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
 	{
@@ -327,53 +322,25 @@ bool Image::loadVolatile()
 		return true;
 	}
 
-	// Mutex lock will potentially cover texture loading and mipmap creation.
-	love::thread::EmptyLock lock;
-	if (data)
-		lock.setLock(data->getMutex());
-
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
-	uploadTexture();
+	try
+	{
+		uploadTexture();
 
-	GLenum glerr = glGetError();
-	if (glerr != GL_NO_ERROR)
-		throw love::Exception("Cannot create image (error code 0x%x)", glerr);
+		GLenum glerr = glGetError();
+		if (glerr != GL_NO_ERROR)
+			throw love::Exception("Cannot create image (error code 0x%x)", glerr);
+	}
+	catch (love::Exception &)
+	{
+		gl.deleteTexture(texture);
+		texture = 0;
+		throw;
+	}
 
 	usingDefaultTexture = false;
-	mipmapsCreated = false;
-	checkMipmapsCreated();
-
 	return true;
-}
-
-void Image::uploadTexture()
-{
-	if (isCompressed() && cdata)
-	{
-		GLenum format = getCompressedFormat(cdata->getFormat());
-		glCompressedTexImage2D(GL_TEXTURE_2D,
-		                       0,
-		                       format,
-		                       cdata->getWidth(0),
-		                       cdata->getHeight(0),
-		                       0,
-		                       GLsizei(cdata->getSize(0)),
-		                       cdata->getData(0));
-	}
-	else if (data)
-	{
-		GLenum iformat = (format == FORMAT_SRGB) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-		glTexImage2D(GL_TEXTURE_2D,
-		             0,
-		             iformat,
-		             (GLsizei)width,
-		             (GLsizei)height,
-		             0,
-		             GL_RGBA,
-		             GL_UNSIGNED_BYTE,
-		             data->getData());
-	}
 }
 
 void Image::unloadVolatile()
@@ -398,32 +365,20 @@ bool Image::refresh()
 		return true;
 	}
 
-	// We want this lock to potentially cover mipmap creation as well.
-	love::thread::EmptyLock lock;
-
-	bind();
-
-	if (data && !isCompressed())
-		lock.setLock(data->getMutex());
-
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
 	uploadTexture();
 
-	if (glGetError() != GL_NO_ERROR)
-		uploadDefaultTexture();
-	else
-		usingDefaultTexture = false;
-
-	mipmapsCreated = false;
-	checkMipmapsCreated();
+	GLenum glerr = glGetError();
+	if (glerr != GL_NO_ERROR)
+		throw love::Exception("Cannot refresh image (error code 0x%x)", glerr);
 
 	return true;
 }
 
-Image::Format Image::getFormat() const
+const Image::Flags &Image::getFlags() const
 {
-	return format;
+	return flags;
 }
 
 void Image::uploadDefaultTexture()
@@ -492,22 +447,20 @@ bool Image::isCompressed() const
 
 GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
 {
-	bool srgb = format == FORMAT_SRGB;
-
 	switch (cformat)
 	{
 	case image::CompressedData::FORMAT_DXT1:
-		if (srgb)
+		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
 		else
 			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 	case image::CompressedData::FORMAT_DXT3:
-		if (srgb)
+		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
 		else
 			return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	case image::CompressedData::FORMAT_DXT5:
-		if (srgb)
+		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
 		else
 			return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -520,7 +473,7 @@ GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
 	case image::CompressedData::FORMAT_BC5s:
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
 	default:
-		if (srgb)
+		if (flags.sRGB)
 			return GL_SRGB8_ALPHA8;
 		else
 			return GL_RGBA8;
@@ -557,23 +510,23 @@ bool Image::hasSRGBSupport()
 	return GLEE_VERSION_2_1 || GLEE_EXT_texture_sRGB;
 }
 
-bool Image::getConstant(const char *in, Format &out)
+bool Image::getConstant(const char *in, FlagType &out)
 {
-	return formats.find(in, out);
+	return flagNames.find(in, out);
 }
 
-bool Image::getConstant(Format in, const char *&out)
+bool Image::getConstant(FlagType in, const char *&out)
 {
-	return formats.find(in, out);
+	return flagNames.find(in, out);
 }
 
-StringMap<Image::Format, Image::FORMAT_MAX_ENUM>::Entry Image::formatEntries[] =
+StringMap<Image::FlagType, Image::FLAG_TYPE_MAX_ENUM>::Entry Image::flagNameEntries[] =
 {
-	{"normal", Image::FORMAT_NORMAL},
-	{"srgb", Image::FORMAT_SRGB},
+	{"mipmaps", Image::FLAG_TYPE_MIPMAPS},
+	{"srgb", Image::FLAG_TYPE_SRGB},
 };
 
-StringMap<Image::Format, Image::FORMAT_MAX_ENUM> Image::formats(Image::formatEntries, sizeof(Image::formatEntries));
+StringMap<Image::FlagType, Image::FLAG_TYPE_MAX_ENUM> Image::flagNames(Image::flagNameEntries, sizeof(Image::flagNameEntries));
 
 } // opengl
 } // graphics

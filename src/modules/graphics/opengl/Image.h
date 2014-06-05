@@ -51,11 +51,19 @@ class Image : public Texture
 {
 public:
 
-	enum Format
+	enum FlagType
 	{
-		FORMAT_NORMAL,
-		FORMAT_SRGB,
-		FORMAT_MAX_ENUM
+		FLAG_TYPE_MIPMAPS,
+		FLAG_TYPE_SRGB,
+		FLAG_TYPE_MAX_ENUM
+	};
+
+	struct Flags
+	{
+		bool mipmaps;
+		bool sRGB;
+
+		Flags() : mipmaps(false), sRGB(false) {}
 	};
 
 	/**
@@ -64,14 +72,14 @@ public:
 	 *
 	 * @param data The data from which to load the image.
 	 **/
-	Image(love::image::ImageData *data, Format format = FORMAT_NORMAL);
+	Image(love::image::ImageData *data, const Flags &flags);
 
 	/**
 	 * Creates a new Image with compressed image data.
 	 *
 	 * @param cdata The compressed data from which to load the image.
 	 **/
-	Image(love::image::CompressedData *cdata, Format format = FORMAT_NORMAL);
+	Image(love::image::CompressedData *cdata, const Flags &flags);
 
 	/**
 	 * Destructor. Deletes the hardware texture and other resources.
@@ -123,12 +131,11 @@ public:
 
 	/**
 	 * Re-uploads the ImageData or CompressedData associated with this Image to
-	 * the GPU, allowing situations where lovers modify an ImageData after image
-	 * creation from the ImageData, and apply the changes with Image:refresh().
+	 * the GPU.
 	 **/
 	bool refresh();
 
-	Format getFormat() const;
+	const Flags &getFlags() const;
 
 	static void setDefaultMipmapSharpness(float sharpness);
 	static float getDefaultMipmapSharpness();
@@ -139,8 +146,8 @@ public:
 	static bool hasCompressedTextureSupport(image::CompressedData::Format format);
 	static bool hasSRGBSupport();
 
-	static bool getConstant(const char *in, Format &out);
-	static bool getConstant(Format in, const char *&out);
+	static bool getConstant(const char *in, FlagType &out);
+	static bool getConstant(FlagType in, const char *&out);
 
 private:
 
@@ -162,14 +169,11 @@ private:
 	// Mipmap texture LOD bias (sharpness) value.
 	float mipmapSharpness;
 
-	// True if mipmaps have been created for this Image.
-	bool mipmapsCreated;
-
 	// Whether this Image is using a compressed texture.
 	bool compressed;
 
-	// The format to interpret the image's data as.
-	Format format;
+	// The flags used to initialize this Image.
+	Flags flags;
 
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
@@ -177,11 +181,9 @@ private:
 
 	void preload();
 
+	void uploadCompressedData();
+	void uploadImageData();
 	void uploadTexture();
-
-	void uploadCompressedMipmaps();
-	void createMipmaps();
-	void checkMipmapsCreated();
 
 	static float maxMipmapSharpness;
 
@@ -190,8 +192,8 @@ private:
 
 	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
 
-	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
-	static StringMap<Format, FORMAT_MAX_ENUM> formats;
+	static StringMap<FlagType, FLAG_TYPE_MAX_ENUM>::Entry flagNameEntries[];
+	static StringMap<FlagType, FLAG_TYPE_MAX_ENUM> flagNames;
 
 }; // Image
 

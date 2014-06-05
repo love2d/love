@@ -637,6 +637,9 @@ void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy
 
 void Canvas::setFilter(const Texture::Filter &f)
 {
+	if (!validateFilter(f, false))
+		throw love::Exception("Invalid texture filter.");
+
 	filter = f;
 	gl.bindTexture(texture);
 	gl.setTextureFilter(filter);
