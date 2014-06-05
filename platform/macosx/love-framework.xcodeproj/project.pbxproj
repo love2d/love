@@ -390,6 +390,7 @@
 		0EB870A1180261FD424A41B3 /* Shape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Shape.h; sourceTree = "<group>"; };
 		0F0E666B7C790BB870477994 /* b2BlockAllocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2BlockAllocator.h; sourceTree = "<group>"; };
 		0F8D03F1544476B57CA97B01 /* b2WorldCallbacks.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = b2WorldCallbacks.cpp; sourceTree = "<group>"; };
+		104144AB73A974BC04A03131 /* graphics.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = graphics.lua.h; sourceTree = "<group>"; };
 		104D5534669B772556942891 /* PrismaticJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrismaticJoint.h; sourceTree = "<group>"; };
 		104D567660003ADE696D341A /* Source.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Source.h; sourceTree = "<group>"; };
 		10A608C96F067F972C962EFB /* love.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = love.h; sourceTree = "<group>"; };
@@ -603,6 +604,7 @@
 		4F1862D324C9429157A27A2E /* Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
 		4F34010A575C02E66D400CE2 /* RopeJoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RopeJoint.h; sourceTree = "<group>"; };
 		4F3E12BD4A646D0366792FC9 /* b2WorldCallbacks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2WorldCallbacks.h; sourceTree = "<group>"; };
+		503971A86B7167A91B670FBA /* boot.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = boot.lua.h; sourceTree = "<group>"; };
 		505F23A73BFE250833D650E4 /* Image.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		50B67F2D0CC511706810302E /* wrap_GearJoint.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_GearJoint.cpp; sourceTree = "<group>"; };
 		50EC67CE3ED71F5D13304FD4 /* b2Contact.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = b2Contact.h; sourceTree = "<group>"; };
@@ -793,6 +795,7 @@
 		FA577A8616C71CF000860150 /* Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shader.h; sourceTree = "<group>"; };
 		FA577A8716C71CF000860150 /* wrap_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Shader.cpp; sourceTree = "<group>"; };
 		FA577A8816C71CF000860150 /* wrap_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Shader.h; sourceTree = "<group>"; };
+		FA577A8C16C71D3600860150 /* auto.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = auto.lua; sourceTree = "<group>"; };
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577A8E16C71D3600860150 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1292,8 +1295,11 @@
 		352E6C5F6F8A681766EB5299 /* scripts */ = {
 			isa = PBXGroup;
 			children = (
+				FA577A8C16C71D3600860150 /* auto.lua */,
 				FA577A8D16C71D3600860150 /* boot.lua */,
+				503971A86B7167A91B670FBA /* boot.lua.h */,
 				FA577A8E16C71D3600860150 /* graphics.lua */,
+				104144AB73A974BC04A03131 /* graphics.lua.h */,
 			);
 			name = scripts;
 			path = ../../src/scripts;

@@ -44,6 +44,9 @@
 #	include "libraries/enet/lua-enet.h"
 #endif
 
+// Scripts
+#include "scripts/boot.lua.h"
+
 // All modules define a c-accessible luaopen
 // so let's make use of those, instead
 // of addressing implementations directly.
@@ -283,14 +286,9 @@ int w__openConsole(lua_State *L)
 
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-// Scripts.
-static const char boot_lua[] =
-#include "scripts/boot.lua"
-;
-
 int luaopen_love_boot(lua_State *L)
 {
-	if (luaL_loadbuffer(L, boot_lua, sizeof(boot_lua), "boot.lua") == 0)
+	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
