@@ -91,11 +91,6 @@ static int throwExcept(lua_State *L, const T& func)
 
 int w_hasTextInput(lua_State *L)
 {
-	bool asdf = true;
-	throwExcept(L, [&](){ instance->setTextInput(asdf); });
-
-//	throwExcept(L, L);
-
 	luax_pushboolean(L, instance->hasTextInput());
 	return 1;
 }
