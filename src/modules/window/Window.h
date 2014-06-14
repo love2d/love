@@ -49,7 +49,8 @@ public:
 		SETTING_FULLSCREEN,
 		SETTING_FULLSCREEN_TYPE,
 		SETTING_VSYNC,
-		SETTING_FSAA,
+		SETTING_FSAA, // For backward-compatibility. TODO: remove!
+		SETTING_MSAA,
 		SETTING_RESIZABLE,
 		SETTING_MIN_WIDTH,
 		SETTING_MIN_HEIGHT,
@@ -150,7 +151,7 @@ struct WindowSettings
 	bool fullscreen; // = false
 	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_NORMAL
 	bool vsync; // = true
-	int fsaa; // = 0
+	int msaa; // = 0
 	bool resizable; // = false
 	int minwidth; // = 1
 	int minheight; // = 1

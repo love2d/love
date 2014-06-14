@@ -57,7 +57,7 @@ public:
 		FORMAT_MAX_ENUM
 	};
 
-	Canvas(int width, int height, Format format = FORMAT_NORMAL, int fsaa = 0);
+	Canvas(int width, int height, Format format = FORMAT_NORMAL, int msaa = 0);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -108,9 +108,9 @@ public:
 		return format;
 	}
 
-	inline int getFSAA() const
+	inline int getMSAA() const
 	{
-		return fsaa_samples;
+		return msaa_samples;
 	}
 
 	bool resolveMSAA();
@@ -133,7 +133,7 @@ public:
 
 private:
 
-	bool createFSAAFBO(GLenum internalformat);
+	bool createMSAAFBO(GLenum internalformat);
 
 	static Format getSizedFormat(Format format);
 	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);
@@ -142,7 +142,7 @@ private:
 	GLuint resolve_fbo;
 
 	GLuint texture;
-	GLuint fsaa_buffer;
+	GLuint msaa_buffer;
 	GLuint depth_stencil;
 
 	Format format;
@@ -151,8 +151,8 @@ private:
 
 	std::vector<Canvas *> attachedCanvases;
 
-	int fsaa_samples;
-	bool fsaa_dirty;
+	int msaa_samples;
+	bool msaa_dirty;
 
 	void setupGrab();
 	void drawv(const Matrix &t, const Vertex *v);

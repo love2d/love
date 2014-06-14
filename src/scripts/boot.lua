@@ -304,7 +304,8 @@ function love.init()
 			fullscreentype = "normal",
 			display = 1,
 			vsync = true,
-			fsaa = 0,
+			msaa = 0,
+			fsaa = 0, -- For backward-compatibility. TODO: remove!
 			borderless = false,
 			resizable = false,
 			centered = true,
@@ -391,7 +392,8 @@ function love.init()
 			fullscreen = c.window.fullscreen,
 			fullscreentype = c.window.fullscreentype,
 			vsync = c.window.vsync,
-			fsaa = c.window.fsaa,
+			fsaa = c.window.fsaa, -- For backward-compatibility. TODO: remove!
+			msaa = c.window.msaa,
 			resizable = c.window.resizable,
 			minwidth = c.window.minwidth,
 			minheight = c.window.minheight,

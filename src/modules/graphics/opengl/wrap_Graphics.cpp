@@ -349,7 +349,7 @@ int w_newCanvas(lua_State *L)
 	int width       = luaL_optint(L, 1, instance->getWidth());
 	int height      = luaL_optint(L, 2, instance->getHeight());
 	const char *str = luaL_optstring(L, 3, "normal");
-	int fsaa        = luaL_optint(L, 4, 0);
+	int msaa        = luaL_optint(L, 4, 0);
 
 	Canvas::Format format;
 	if (!Canvas::getConstant(str, format))
@@ -357,7 +357,7 @@ int w_newCanvas(lua_State *L)
 
 	Canvas *canvas = nullptr;
 	luax_catchexcept(L,
-		[&](){ canvas = instance->newCanvas(width, height, format, fsaa); }
+		[&](){ canvas = instance->newCanvas(width, height, format, msaa); }
 	);
 
 	if (canvas == nullptr)

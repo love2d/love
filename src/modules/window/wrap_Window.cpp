@@ -88,7 +88,7 @@ int w_setMode(lua_State *L)
 
 	settings.fullscreen = luax_boolflag(L, 3, settingName(Window::SETTING_FULLSCREEN), false);
 	settings.vsync = luax_boolflag(L, 3, settingName(Window::SETTING_VSYNC), true);
-	settings.fsaa = luax_intflag(L, 3, settingName(Window::SETTING_FSAA), 0);
+	settings.msaa = luax_intflag(L, 3, settingName(Window::SETTING_MSAA), 0);
 	settings.resizable = luax_boolflag(L, 3, settingName(Window::SETTING_RESIZABLE), false);
 	settings.minwidth = luax_intflag(L, 3, settingName(Window::SETTING_MIN_WIDTH), 1);
 	settings.minheight = luax_intflag(L, 3, settingName(Window::SETTING_MIN_HEIGHT), 1);
@@ -97,6 +97,10 @@ int w_setMode(lua_State *L)
 	settings.display = luax_intflag(L, 3, settingName(Window::SETTING_DISPLAY), 1);
 	settings.highdpi = luax_boolflag(L, 3, settingName(Window::SETTING_HIGHDPI), false);
 	settings.sRGB = luax_boolflag(L, 3, settingName(Window::SETTING_SRGB), false);
+
+	// For backward-compatibility. TODO: remove!
+	int fsaa = luax_intflag(L, 3, settingName(Window::SETTING_FSAA), 0);
+	if (fsaa > settings.msaa) settings.msaa = fsaa;
 
 	// Display index is 1-based in Lua and 0-based internally.
 	settings.display--;
@@ -130,8 +134,11 @@ int w_getMode(lua_State *L)
 	luax_pushboolean(L, settings.vsync);
 	lua_setfield(L, -2, settingName(Window::SETTING_VSYNC));
 
-	lua_pushinteger(L, settings.fsaa);
-	lua_setfield(L, -2, settingName(Window::SETTING_FSAA));
+	lua_pushinteger(L, settings.msaa);
+	lua_setfield(L, -2, settingName(Window::SETTING_MSAA));
+
+	lua_pushinteger(L, settings.msaa);
+	lua_setfield(L, -2, settingName(Window::SETTING_FSAA)); // For backward-compatibility. TODO: remove!
 
 	luax_pushboolean(L, settings.resizable);
 	lua_setfield(L, -2, settingName(Window::SETTING_RESIZABLE));

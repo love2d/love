@@ -139,7 +139,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		wflags &= testflags;
 
 		if (sdlflags != wflags || width != curMode.width || height != curMode.height
-			|| f.display != curdisplay || f.fsaa != curMode.settings.fsaa)
+			|| f.display != curdisplay || f.msaa != curMode.settings.msaa)
 		{
 			SDL_DestroyWindow(window);
 			window = 0;
@@ -158,21 +158,21 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		created = false;
 
 		// In Windows and Linux, some GL attributes are set on window creation.
-		setWindowGLAttributes(f.fsaa, f.sRGB);
+		setWindowGLAttributes(f.msaa, f.sRGB);
 
 		const char *title = windowTitle.c_str();
 		int pos = f.centered ? centeredpos : uncenteredpos;
 
 		window = SDL_CreateWindow(title, pos, pos, width, height, sdlflags);
 
-		if (!window && f.fsaa > 0)
+		if (!window && f.msaa > 0)
 		{
-			// FSAA might have caused the failure, disable it and try again.
+			// MSAA might have caused the failure, disable it and try again.
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 
 			window = SDL_CreateWindow(title, pos, pos, width, height, sdlflags);
-			f.fsaa = 0;
+			f.msaa = 0;
 		}
 
 		// Make sure the window keeps any previously set icon.
@@ -194,7 +194,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_RaiseWindow(window);
 
-	if (!setContext(f.fsaa, f.vsync, f.sRGB))
+	if (!setContext(f.msaa, f.vsync, f.sRGB))
 		return false;
 
 	created = true;
@@ -231,9 +231,9 @@ bool Window::onWindowResize(int width, int height)
 	return true;
 }
 
-bool Window::setContext(int fsaa, bool vsync, bool sRGB)
+bool Window::setContext(int msaa, bool vsync, bool sRGB)
 {
-	// We would normally only need to recreate the context if FSAA changes or
+	// We would normally only need to recreate the context if MSAA changes or
 	// SDL_GL_MakeCurrent is unsuccessful, but in Windows MakeCurrent can
 	// sometimes claim success but the context will actually be trashed.
 	if (context)
@@ -243,13 +243,13 @@ bool Window::setContext(int fsaa, bool vsync, bool sRGB)
 	}
 
 	// Make sure the proper attributes are set.
-	setWindowGLAttributes(fsaa, sRGB);
+	setWindowGLAttributes(msaa, sRGB);
 
 	context = SDL_GL_CreateContext(window);
 
-	if (!context && fsaa > 0)
+	if (!context && msaa > 0)
 	{
-		// FSAA might have caused the failure, disable it and try again.
+		// MSAA might have caused the failure, disable it and try again.
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		context = SDL_GL_CreateContext(window);
@@ -276,26 +276,26 @@ bool Window::setContext(int fsaa, bool vsync, bool sRGB)
 	// Set vertical synchronization.
 	SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 
-	// Verify FSAA setting.
+	// Verify MSAA setting.
 	int buffers;
 	int samples;
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
 	// Don't fail because of this, but issue a warning.
-	if ((!buffers && fsaa) || (samples != fsaa))
+	if ((!buffers && msaa) || (samples != msaa))
 	{
-		std::cerr << "Warning, FSAA setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
-		fsaa = (buffers > 0) ? samples : 0;
+		std::cerr << "Warning, MSAA setting failed! (Result: buffers: " << buffers << ", samples: " << samples << ")" << std::endl;
+		msaa = (buffers > 0) ? samples : 0;
 	}
 
-	curMode.settings.fsaa = fsaa;
+	curMode.settings.msaa = msaa;
 	curMode.settings.vsync = SDL_GL_GetSwapInterval() != 0;
 
 	return true;
 }
 
-void Window::setWindowGLAttributes(int fsaa, bool /* sRGB */) const
+void Window::setWindowGLAttributes(int msaa, bool /* sRGB */) const
 {
 	// Set GL window attributes.
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -306,9 +306,9 @@ void Window::setWindowGLAttributes(int fsaa, bool /* sRGB */) const
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
-	// FSAA.
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (fsaa > 0) ? 1 : 0);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (fsaa > 0) ? fsaa : 0);
+	// MSAA.
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (msaa > 0) ? msaa : 0);
 
 	/* FIXME: Enable this code but make sure to try to re-create the window and
 	 * context with this disabled, if creation fails with it enabled.

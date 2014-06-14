@@ -40,7 +40,7 @@ int w_Canvas_getImageData(lua_State *L);
 int w_Canvas_getPixel(lua_State * L);
 int w_Canvas_clear(lua_State *L);
 int w_Canvas_getFormat(lua_State *L);
-int w_Canvas_getFSAA(lua_State *L);
+int w_Canvas_getMSAA(lua_State *L);
 extern "C" int luaopen_canvas(lua_State *L);
 
 } // opengl

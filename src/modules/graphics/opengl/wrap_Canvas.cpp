@@ -122,10 +122,10 @@ int w_Canvas_getFormat(lua_State *L)
 	return 1;
 }
 
-int w_Canvas_getFSAA(lua_State *L)
+int w_Canvas_getMSAA(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	lua_pushinteger(L, canvas->getFSAA());
+	lua_pushinteger(L, canvas->getMSAA());
 	return 1;
 }
 
@@ -145,7 +145,8 @@ static const luaL_Reg functions[] =
 	{ "getPixel", w_Canvas_getPixel },
 	{ "clear", w_Canvas_clear },
 	{ "getFormat", w_Canvas_getFormat },
-	{ "getFSAA", w_Canvas_getFSAA },
+	{ "getMSAA", w_Canvas_getMSAA },
+	{ "getFSAA", w_Canvas_getMSAA }, // For backward-compatibility. TODO: remove!
 
 	// Deprecated since 0.9.1.
 	{ "getType", w_Canvas_getFormat },

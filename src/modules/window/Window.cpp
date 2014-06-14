@@ -42,7 +42,7 @@ WindowSettings::WindowSettings()
 	: fullscreen(false)
 	, fstype(Window::FULLSCREEN_TYPE_NORMAL)
 	, vsync(true)
-	, fsaa(0)
+	, msaa(0)
 	, resizable(false)
 	, minwidth(1)
 	, minheight(1)
@@ -80,6 +80,7 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"fullscreentype", SETTING_FULLSCREEN_TYPE},
 	{"vsync", SETTING_VSYNC},
 	{"fsaa", SETTING_FSAA},
+	{"msaa", SETTING_MSAA},
 	{"resizable", SETTING_RESIZABLE},
 	{"minwidth", SETTING_MIN_WIDTH},
 	{"minheight", SETTING_MIN_HEIGHT},

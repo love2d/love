@@ -423,15 +423,15 @@ static void getStrategy()
 	}
 }
 
-Canvas::Canvas(int width, int height, Format format, int fsaa)
+Canvas::Canvas(int width, int height, Format format, int msaa)
 	: fbo(0)
     , resolve_fbo(0)
 	, texture(0)
-    , fsaa_buffer(0)
+    , msaa_buffer(0)
 	, depth_stencil(0)
 	, format(format)
-    , fsaa_samples(fsaa)
-	, fsaa_dirty(false)
+    , msaa_samples(msaa)
+	, msaa_dirty(false)
 {
 	this->width = width;
 	this->height = height;
@@ -473,7 +473,7 @@ Canvas::~Canvas()
 	unloadVolatile();
 }
 
-bool Canvas::createFSAAFBO(GLenum internalformat)
+bool Canvas::createMSAAFBO(GLenum internalformat)
 {
 	// Create our FBO without a texture.
 	status = strategy->createFBO(fbo, 0);
@@ -488,7 +488,7 @@ bool Canvas::createFSAAFBO(GLenum internalformat)
 	}
 
 	// Create and attach the MSAA buffer for our FBO.
-	if (strategy->createMSAABuffer(width, height, fsaa_samples, internalformat, fsaa_buffer))
+	if (strategy->createMSAABuffer(width, height, msaa_samples, internalformat, msaa_buffer))
 		status = GL_FRAMEBUFFER_COMPLETE;
 	else
 		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
@@ -500,10 +500,10 @@ bool Canvas::createFSAAFBO(GLenum internalformat)
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
 		// Clean up.
-		strategy->deleteFBO(fbo, 0, fsaa_buffer);
+		strategy->deleteFBO(fbo, 0, msaa_buffer);
 		strategy->deleteFBO(resolve_fbo, 0, 0);
-		fbo = fsaa_buffer = resolve_fbo = 0;
-		fsaa_samples = 0;
+		fbo = msaa_buffer = resolve_fbo = 0;
+		msaa_samples = 0;
 	}
 
 	if (current != this)
@@ -515,7 +515,7 @@ bool Canvas::createFSAAFBO(GLenum internalformat)
 bool Canvas::loadVolatile()
 {
 	fbo = depth_stencil = texture = 0;
-	resolve_fbo = fsaa_buffer = 0;
+	resolve_fbo = msaa_buffer = 0;
 	status = GL_FRAMEBUFFER_COMPLETE;
 
 	// glTexImage2D is guaranteed to error in this case.
@@ -562,16 +562,16 @@ bool Canvas::loadVolatile()
 		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
 	}
 
-	if (fsaa_samples > max_samples)
-		fsaa_samples = max_samples;
+	if (msaa_samples > max_samples)
+		msaa_samples = max_samples;
 
-	// Try to create a FSAA FBO if requested.
-	bool fsaasuccess = false;
-	if (fsaa_samples > 1)
-		fsaasuccess = createFSAAFBO(internalformat);
+	// Try to create a MSAA FBO if requested.
+	bool msaasuccess = false;
+	if (msaa_samples > 1)
+		msaasuccess = createMSAAFBO(internalformat);
 
-	// On failure (or no requested FSAA), fall back to a regular FBO.
-	if (!fsaasuccess)
+	// On failure (or no requested MSAA), fall back to a regular FBO.
+	if (!msaasuccess)
 		status = strategy->createFBO(fbo, texture);
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -579,20 +579,20 @@ bool Canvas::loadVolatile()
 
 	clear(Color(0, 0, 0, 0));
 
-	fsaa_dirty = (fsaa_buffer != 0);
+	msaa_dirty = (msaa_buffer != 0);
 
 	return true;
 }
 
 void Canvas::unloadVolatile()
 {
-	strategy->deleteFBO(fbo, depth_stencil, fsaa_buffer);
+	strategy->deleteFBO(fbo, depth_stencil, msaa_buffer);
 	strategy->deleteFBO(resolve_fbo, 0, 0);
 
 	gl.deleteTexture(texture);
 
 	fbo = depth_stencil = texture = 0;
-	resolve_fbo = fsaa_buffer = 0;
+	resolve_fbo = msaa_buffer = 0;
 
 	for (size_t i = 0; i < attachedCanvases.size(); i++)
 		attachedCanvases[i]->release();
@@ -708,8 +708,8 @@ void Canvas::setupGrab()
 	else if (screenHasSRGB)
 		glDisable(GL_FRAMEBUFFER_SRGB);
 
-	if (fsaa_buffer != 0)
-		fsaa_dirty = true;
+	if (msaa_buffer != 0)
+		msaa_dirty = true;
 }
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)
@@ -726,8 +726,8 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if ((int) canvases.size() + 1 > gl.getMaxRenderTargets())
 			throw love::Exception("This system can't simultaniously render to %d canvases.", canvases.size()+1);
 
-		if (fsaa_samples != 0)
-			throw love::Exception("Multi-canvas rendering is not supported with FSAA.");
+		if (msaa_samples != 0)
+			throw love::Exception("Multi-canvas rendering is not supported with MSAA.");
 	}
 
 	for (size_t i = 0; i < canvases.size(); i++)
@@ -738,8 +738,8 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if (canvases[i]->getTextureFormat() != format)
 			throw love::Exception("All canvas arguments must have the same texture format.");
 
-		if (canvases[i]->getFSAA() != 0)
-			throw love::Exception("Multi-canvas rendering is not supported with FSAA.");
+		if (canvases[i]->getMSAA() != 0)
+			throw love::Exception("Multi-canvas rendering is not supported with MSAA.");
 
 		if (!canvaseschanged && canvases[i] != attachedCanvases[i])
 			canvaseschanged = true;
@@ -860,8 +860,8 @@ void Canvas::clear(Color c)
 	if (current != this)
 		strategy->bindFBO(previous);
 
-	if (fsaa_buffer != 0)
-		fsaa_dirty = true;
+	if (msaa_buffer != 0)
+		msaa_dirty = true;
 }
 
 bool Canvas::checkCreateStencil()
@@ -873,7 +873,7 @@ bool Canvas::checkCreateStencil()
 	if (current != this)
 		strategy->bindFBO(fbo);
 
-	bool success = strategy->createStencil(width, height, fsaa_samples, depth_stencil);
+	bool success = strategy->createStencil(width, height, msaa_samples, depth_stencil);
 
 	if (current && current != this)
 		strategy->bindFBO(current->fbo);
@@ -892,9 +892,9 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	GLubyte *pixels  = new GLubyte[size];
 
 	// Our texture is attached to 'resolve_fbo' when we use MSAA.
-	if (fsaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	if (msaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
-	else if (fsaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
+	else if (msaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, resolve_fbo);
 	else
 		strategy->bindFBO(fbo);
@@ -916,9 +916,9 @@ void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 	resolveMSAA();
 
 	// Our texture is attached to 'resolve_fbo' when we use MSAA.
-	if (fsaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	if (msaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
-	else if (fsaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
+	else if (msaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, resolve_fbo);
 	else if (current != this)
 		strategy->bindFBO(fbo);
@@ -933,10 +933,10 @@ void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 
 bool Canvas::resolveMSAA()
 {
-	if (resolve_fbo == 0 || fsaa_buffer == 0)
+	if (resolve_fbo == 0 || msaa_buffer == 0)
 		return false;
 
-	if (!fsaa_dirty)
+	if (!msaa_dirty)
 		return true;
 
 	GLuint previous = 0;
@@ -964,7 +964,7 @@ bool Canvas::resolveMSAA()
 	strategy->bindFBO(previous);
 
 	if (current != this)
-		fsaa_dirty = false;
+		msaa_dirty = false;
 
 	return true;
 }
