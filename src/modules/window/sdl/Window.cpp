@@ -44,8 +44,6 @@ Window::Window()
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("%s", SDL_GetError());
-
-	printf("DISPLAY: %s\n", SDL_GetDisplayName(0));
 }
 
 Window::~Window()
