@@ -51,6 +51,8 @@ public:
 
 	int getDisplayCount() const;
 
+	const char *getDisplayName(int displayindex) const;
+
 	std::vector<WindowSize> getFullscreenSizes(int displayindex) const;
 
 	int getWidth() const;

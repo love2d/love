@@ -87,6 +87,8 @@ public:
 
 	virtual int getDisplayCount() const = 0;
 
+	virtual const char *getDisplayName(int displayindex) const = 0;
+
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
 	virtual int getWidth() const = 0;

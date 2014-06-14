@@ -34,6 +34,17 @@ int w_getDisplayCount(lua_State *L)
 	return 1;
 }
 
+int w_getDisplayName(lua_State *L)
+{
+	int index = luaL_checkint(L, 1) - 1;
+
+	const char *name = nullptr;
+	luax_catchexcept(L, [&](){ name = instance->getDisplayName(index); });
+
+	lua_pushstring(L, name);
+	return 1;
+}
+
 static const char *settingName(Window::Setting setting)
 {
 	const char *name = nullptr;
@@ -326,6 +337,7 @@ int w_getPixelScale(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
+	{ "getDisplayName", w_getDisplayName },
 	{ "setMode", w_setMode },
 	{ "getMode", w_getMode },
 	{ "getFullscreenModes", w_getFullscreenModes },

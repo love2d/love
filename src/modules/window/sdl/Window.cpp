@@ -44,6 +44,8 @@ Window::Window()
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("%s", SDL_GetError());
+
+	printf("DISPLAY: %s\n", SDL_GetDisplayName(0));
 }
 
 Window::~Window()
@@ -459,6 +461,16 @@ bool Window::setFullscreen(bool fullscreen)
 int Window::getDisplayCount() const
 {
 	return SDL_GetNumVideoDisplays();
+}
+
+const char *Window::getDisplayName(int displayindex) const
+{
+	const char *name = SDL_GetDisplayName(displayindex);
+
+	if (name == nullptr)
+		throw love::Exception("Invalid display index: %d", displayindex + 1);
+
+	return name;
 }
 
 typedef Window::WindowSize WindowSize;
