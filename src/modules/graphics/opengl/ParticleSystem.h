@@ -27,6 +27,7 @@
 #include "common/Vector.h"
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
+#include "graphics/Quad.h"
 #include "Texture.h"
 
 // STL
@@ -422,6 +423,17 @@ public:
 	std::vector<Color> getColor() const;
 
 	/**
+	 * Sets a list of Quads to use for particles over their lifetime.
+	 **/
+	void setQuads(const std::vector<Quad *> &newQuads);
+	void setQuads();
+
+	/**
+	 * Gets the Quads used when drawing the particles.
+	 **/
+	const std::vector<Quad *> &getQuads() const;
+
+	/**
 	 * sets whether particle angles & rotations are relative to their velocities.
 	 **/
 	void setRelativeRotation(bool enable);
@@ -531,6 +543,8 @@ protected:
 		float spinEnd;
 
 		Colorf color;
+
+		int quadIndex;
 	};
 
 	// Pointer to the beginning of the allocated memory.
@@ -624,6 +638,9 @@ protected:
 
 	// Color.
 	std::vector<Colorf> colors;
+
+	// Quads.
+	std::vector<Quad *> quads;
 
 	bool relativeRotation;
 
