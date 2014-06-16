@@ -184,7 +184,7 @@ StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::syst
 	{"pointsize", Graphics::LIMIT_POINT_SIZE},
 	{"texturesize", Graphics::LIMIT_TEXTURE_SIZE},
 	{"multicanvas", Graphics::LIMIT_MULTI_CANVAS},
-	{"canvasfsaa", Graphics::LIMIT_CANVAS_FSAA},
+	{"canvasmsaa", Graphics::LIMIT_CANVAS_MSAA},
 };
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimits(Graphics::systemLimitEntries, sizeof(Graphics::systemLimitEntries));

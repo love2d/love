@@ -569,6 +569,53 @@ int w_ParticleSystem_getColors(lua_State *L)
 	return colors.size();
 }
 
+int w_ParticleSystem_setQuads(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	std::vector<Quad *> quads;
+
+	if (lua_istable(L, 2))
+	{
+		for (size_t i = 1; i <= lua_objlen(L, 2); i++)
+		{
+			lua_rawgeti(L, 2, i);
+
+			Quad *q = luax_checktype<Quad>(L, -1, "Quad", GRAPHICS_QUAD_T);
+			quads.push_back(q);
+
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		for (int i = 2; i <= lua_gettop(L); i++)
+		{
+			Quad *q = luax_checktype<Quad>(L, i, "Quad", GRAPHICS_QUAD_T);
+			quads.push_back(q);
+		}
+	}
+
+	t->setQuads(quads);
+	return 0;
+}
+
+int w_ParticleSystem_getQuads(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	const std::vector<Quad *> quads = t->getQuads();
+
+	lua_createtable(L, (int) quads.size(), 0);
+
+	for (size_t i = 0; i < quads.size(); i++)
+	{
+		quads[i]->retain();
+		luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quads[i]);
+		lua_rawseti(L, -2, i + 1);
+	}
+
+	return 1;
+}
+
 int w_ParticleSystem_setRelativeRotation(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
@@ -699,6 +746,8 @@ static const luaL_Reg functions[] =
 	{ "getSpinVariation", w_ParticleSystem_getSpinVariation },
 	{ "setColors", w_ParticleSystem_setColors },
 	{ "getColors", w_ParticleSystem_getColors },
+	{ "setQuads", w_ParticleSystem_setQuads },
+	{ "getQuads", w_ParticleSystem_getQuads },
 	{ "setOffset", w_ParticleSystem_setOffset },
 	{ "getOffset", w_ParticleSystem_getOffset },
 	{ "setRelativeRotation", w_ParticleSystem_setRelativeRotation },

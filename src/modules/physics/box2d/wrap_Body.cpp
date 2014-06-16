@@ -522,6 +522,15 @@ int w_Body_isFixedRotation(lua_State *L)
 	return 1;
 }
 
+int w_Body_getWorld(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	World *world = t->getWorld();
+	world->retain();
+	luax_pushtype(L, "World", PHYSICS_WORLD_T, world);
+	return 1;
+}
+
 int w_Body_getFixtureList(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -604,6 +613,7 @@ static const luaL_Reg functions[] =
 	{ "setAwake", w_Body_setAwake },
 	{ "setFixedRotation", w_Body_setFixedRotation },
 	{ "isFixedRotation", w_Body_isFixedRotation },
+	{ "getWorld", w_Body_getWorld },
 	{ "getFixtureList", w_Body_getFixtureList },
 	{ "destroy", w_Body_destroy },
 	{ "setUserData", w_Body_setUserData },

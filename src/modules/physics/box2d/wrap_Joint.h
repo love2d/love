@@ -38,6 +38,8 @@ int w_Joint_getAnchors(lua_State *L);
 int w_Joint_getReactionForce(lua_State *L);
 int w_Joint_getReactionTorque(lua_State *L);
 int w_Joint_getCollideConnected(lua_State *L);
+int w_Joint_setUserData(lua_State *L);
+int w_Joint_getUserData(lua_State *L);
 int w_Joint_destroy(lua_State *L);
 extern "C" int luaopen_joint(lua_State *L);
 

@@ -497,7 +497,7 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 	return new ParticleSystem(texture, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int fsaa)
+Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int msaa)
 {
 	if (!Canvas::isFormatSupported(format))
 	{
@@ -514,7 +514,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int fs
 	while (GL_NO_ERROR != glGetError())
 		/* clear opengl error flag */;
 
-	Canvas *canvas = new Canvas(width, height, format, fsaa);
+	Canvas *canvas = new Canvas(width, height, format, msaa);
 	GLenum err = canvas->getStatus();
 
 	// everything ok, return canvas (early out)
@@ -1097,7 +1097,7 @@ double Graphics::getSystemLimit(SystemLimit limittype) const
 	case Graphics::LIMIT_MULTI_CANVAS:
 		limit = (double) gl.getMaxRenderTargets();
 		break;
-	case Graphics::LIMIT_CANVAS_FSAA:
+	case Graphics::LIMIT_CANVAS_MSAA:
 		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object
 			|| GLEE_EXT_framebuffer_multisample)
 		{

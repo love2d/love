@@ -75,6 +75,8 @@ int w_ParticleSystem_setSpinVariation(lua_State *L);
 int w_ParticleSystem_getSpinVariation(lua_State *L);
 int w_ParticleSystem_setColors(lua_State *L);
 int w_ParticleSystem_getColors(lua_State *L);
+int w_ParticleSystem_setQuads(lua_State *L);
+int w_ParticleSystem_getQuads(lua_State *L);
 int w_ParticleSystem_setOffset(lua_State *L);
 int w_ParticleSystem_getOffset(lua_State *L);
 int w_ParticleSystem_setRelativeRotation(lua_State *L);

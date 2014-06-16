@@ -57,7 +57,7 @@ public:
 		SETTING_FULLSCREEN,
 		SETTING_FULLSCREEN_TYPE,
 		SETTING_VSYNC,
-		SETTING_FSAA,
+		SETTING_MSAA,
 		SETTING_RESIZABLE,
 		SETTING_MIN_WIDTH,
 		SETTING_MIN_HEIGHT,
@@ -93,6 +93,8 @@ public:
 	virtual bool onWindowResize(int width, int height) = 0;
 
 	virtual int getDisplayCount() const = 0;
+
+	virtual const char *getDisplayName(int displayindex) const = 0;
 
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
@@ -163,7 +165,7 @@ struct WindowSettings
 	bool fullscreen; // = false
 	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_NORMAL
 	bool vsync; // = true
-	int fsaa; // = 0
+	int msaa; // = 0
 	bool resizable; // = false
 	int minwidth; // = 1
 	int minheight; // = 1

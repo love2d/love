@@ -68,34 +68,8 @@ int w_setTextInput(lua_State *L)
 	return 0;
 }
 
-template <typename T>
-static int throwExcept(lua_State *L, const T& func)
-{
-	bool should_error = false;
-
-	try
-	{
-		func();
-	}
-	catch (love::Exception &e)
-	{
-		should_error = true;
-		lua_pushstring(L, e.what());
-	}
-
-	if (should_error)
-		return luaL_error(L, lua_tostring(L, -1));
-
-	return 0;
-}
-
 int w_hasTextInput(lua_State *L)
 {
-	bool asdf = true;
-	throwExcept(L, [&](){ instance->setTextInput(asdf); });
-
-//	throwExcept(L, L);
-
 	luax_pushboolean(L, instance->hasTextInput());
 	return 1;
 }

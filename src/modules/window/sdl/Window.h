@@ -51,6 +51,8 @@ public:
 
 	int getDisplayCount() const;
 
+	const char *getDisplayName(int displayindex) const;
+
 	std::vector<WindowSize> getFullscreenSizes(int displayindex) const;
 
 	void getDesktopDimensions(int displayindex, int &width, int &height) const;
@@ -89,8 +91,8 @@ public:
 
 private:
 
-	bool setContext(int fsaa, bool vsync, bool sRGB);
-	void setWindowGLAttributes(int fsaa, bool sRGB) const;
+	bool setContext(int msaa, bool vsync, bool sRGB);
+	void setWindowGLAttributes(int msaa, bool sRGB) const;
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings);

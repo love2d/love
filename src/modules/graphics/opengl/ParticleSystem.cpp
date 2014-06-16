@@ -146,18 +146,25 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, offsetX(p.offsetX)
 	, offsetY(p.offsetY)
 	, colors(p.colors)
+	, quads(p.quads)
 	, relativeRotation(p.relativeRotation)
 {
 	setBufferSize(maxParticles);
 
 	if (texture != nullptr)
 		texture->retain();
+
+	for (Quad *quad : quads)
+		quad->retain();
 }
 
 ParticleSystem::~ParticleSystem()
 {
 	if (texture != nullptr)
 		texture->release();
+
+	for (Quad *quad : quads)
+		quad->release();
 
 	deleteBuffers();
 }
@@ -305,6 +312,8 @@ void ParticleSystem::initParticle(Particle *p, float t)
 		p->angle += atan2f(p->velocity.y, p->velocity.x);
 
 	p->color = colors[0];
+
+	p->quadIndex = 0;
 }
 
 void ParticleSystem::insertTop(Particle *p)
@@ -721,6 +730,30 @@ std::vector<Color> ParticleSystem::getColor() const
 	return ncolors;
 }
 
+void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
+{
+	for (Quad *quad : newQuads)
+		quad->retain();
+
+	for (Quad *quad : quads)
+		quad->release();
+
+	quads = newQuads;
+}
+
+void ParticleSystem::setQuads()
+{
+	for (Quad *quad : quads)
+		quad->release();
+
+	quads.clear();
+}
+
+const std::vector<Quad *> &ParticleSystem::getQuads() const
+{
+	return quads;
+}
+
 void ParticleSystem::setRelativeRotation(bool enable)
 {
 	relativeRotation = enable;
@@ -820,9 +853,14 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	Vertex *pVerts = particleVerts;
 	Particle *p = pHead;
 
+	bool useQuads = !quads.empty();
+
 	// set the vertex data for each particle (transformation, texcoords, color)
 	while (p)
 	{
+		if (useQuads)
+			textureVerts = quads[p->quadIndex]->getVertices();
+
 		// particle vertices are image vertices transformed by particle information
 		t.setTransformation(p->position[0], p->position[1], p->angle, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
 		t.transform(pVerts, textureVerts, 4);
@@ -947,6 +985,15 @@ void ParticleSystem::update(float dt)
 			k = (i == colors.size() - 1) ? i : i + 1;
 			s -= (float)i;                            // 0 <= s <= 1
 			p->color = colors[i] * (1.0f - s) + colors[k] * s;
+
+			// Update the quad index.
+			k = quads.size();
+			if (k > 0)
+			{
+				s = t * (float) k; // [0:numquads-1] (clamped below)
+				i = (s > 0.0f) ? (size_t) s : 0;
+				p->quadIndex = (i < k) ? i : k - 1;
+			}
 
 			// Next particle.
 			p = p->next;

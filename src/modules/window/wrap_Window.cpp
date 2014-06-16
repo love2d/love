@@ -34,6 +34,17 @@ int w_getDisplayCount(lua_State *L)
 	return 1;
 }
 
+int w_getDisplayName(lua_State *L)
+{
+	int index = luaL_checkint(L, 1) - 1;
+
+	const char *name = nullptr;
+	luax_catchexcept(L, [&](){ name = instance->getDisplayName(index); });
+
+	lua_pushstring(L, name);
+	return 1;
+}
+
 static const char *settingName(Window::Setting setting)
 {
 	const char *name = nullptr;
@@ -88,7 +99,7 @@ int w_setMode(lua_State *L)
 
 	settings.fullscreen = luax_boolflag(L, 3, settingName(Window::SETTING_FULLSCREEN), false);
 	settings.vsync = luax_boolflag(L, 3, settingName(Window::SETTING_VSYNC), true);
-	settings.fsaa = luax_intflag(L, 3, settingName(Window::SETTING_FSAA), 0);
+	settings.msaa = luax_intflag(L, 3, settingName(Window::SETTING_MSAA), 0);
 	settings.resizable = luax_boolflag(L, 3, settingName(Window::SETTING_RESIZABLE), false);
 	settings.minwidth = luax_intflag(L, 3, settingName(Window::SETTING_MIN_WIDTH), 1);
 	settings.minheight = luax_intflag(L, 3, settingName(Window::SETTING_MIN_HEIGHT), 1);
@@ -130,8 +141,8 @@ int w_getMode(lua_State *L)
 	luax_pushboolean(L, settings.vsync);
 	lua_setfield(L, -2, settingName(Window::SETTING_VSYNC));
 
-	lua_pushinteger(L, settings.fsaa);
-	lua_setfield(L, -2, settingName(Window::SETTING_FSAA));
+	lua_pushinteger(L, settings.msaa);
+	lua_setfield(L, -2, settingName(Window::SETTING_MSAA));
 
 	luax_pushboolean(L, settings.resizable);
 	lua_setfield(L, -2, settingName(Window::SETTING_RESIZABLE));
@@ -300,6 +311,7 @@ int w_getPixelScale(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
+	{ "getDisplayName", w_getDisplayName },
 	{ "setMode", w_setMode },
 	{ "getMode", w_getMode },
 	{ "getFullscreenModes", w_getFullscreenModes },
