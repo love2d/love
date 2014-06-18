@@ -65,8 +65,7 @@ public:
 	int addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
 	void clear();
 
-	void *lock();
-	void unlock();
+	void flush();
 
 	void setTexture(Texture *newtexture);
 	Texture *getTexture();
@@ -141,6 +140,10 @@ private:
 
 	VertexBuffer *array_buf;
 	VertexIndex *element_buf;
+
+	// The portion of the vertex buffer that's been modified while mapped.
+	size_t buffer_used_offset;
+	size_t buffer_used_size;
 
 	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
 	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
