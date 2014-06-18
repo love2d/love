@@ -131,6 +131,8 @@ bool World::ContactFilter::process(Fixture *a, Fixture *b)
 
 	if (ref != 0)
 	{
+		a->retain();
+		b->retain();
 		lua_State *L = ref->getL();
 		ref->push();
 		luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, a);
@@ -318,11 +320,9 @@ bool World::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB)
 	Fixture *a = (Fixture *)Memoizer::find(fixtureA);
 	if (!a)
 		throw love::Exception("A fixture has escaped Memoizer!");
-	a->retain();
 	Fixture *b = (Fixture *)Memoizer::find(fixtureB);
 	if (!b)
 		throw love::Exception("A fixture has escaped Memoizer!");
-	b->retain();
 	return filter.process(a, b);
 }
 
