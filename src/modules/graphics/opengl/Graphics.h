@@ -444,12 +444,11 @@ public:
 	love::image::ImageData *newScreenshot(love::image::Image *image, bool copyAlpha = true);
 
 	/**
-	 * Returns a string containing system-dependent renderer information.
-	 * Returned string can vary greatly between systems! Do not rely on it for
+	 * Returns system-dependent renderer information.
+	 * Returned string s can vary greatly between systems! Do not rely on it for
 	 * anything!
-	 * @param infotype The type of information to return.
 	 **/
-	std::string getRendererInfo(Graphics::RendererInfo infotype) const;
+	RendererInfo getRendererInfo() const;
 
 	/**
 	 * Gets the system-dependent numeric limit for the specified parameter.

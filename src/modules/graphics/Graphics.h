@@ -25,6 +25,9 @@
 #include "common/Module.h"
 #include "common/StringMap.h"
 
+// C++
+#include <string>
+
 namespace love
 {
 namespace graphics
@@ -100,15 +103,6 @@ public:
 		SUPPORT_MAX_ENUM
 	};
 
-	enum RendererInfo
-	{
-		RENDERER_INFO_NAME,
-		RENDERER_INFO_VERSION,
-		RENDERER_INFO_VENDOR,
-		RENDERER_INFO_DEVICE,
-		RENDERER_INFO_MAX_ENUM
-	};
-
 	enum SystemLimit
 	{
 		LIMIT_POINT_SIZE,
@@ -117,6 +111,14 @@ public:
 		LIMIT_CANVAS_FSAA, // For backward-compatibility. TODO: remove!
 		LIMIT_CANVAS_MSAA,
 		LIMIT_MAX_ENUM
+	};
+
+	struct RendererInfo
+	{
+		std::string name;
+		std::string version;
+		std::string vendor;
+		std::string device;
 	};
 
 	virtual ~Graphics();
@@ -160,9 +162,6 @@ public:
 	static bool getConstant(const char *in, Support &out);
 	static bool getConstant(Support in, const char  *&out);
 
-	static bool getConstant(const char *in, RendererInfo &out);
-	static bool getConstant(RendererInfo in, const char *&out);
-
 	static bool getConstant(const char *in, SystemLimit &out);
 	static bool getConstant(SystemLimit in, const char *&out);
 
@@ -188,9 +187,6 @@ private:
 
 	static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
 	static StringMap<Support, SUPPORT_MAX_ENUM> support;
-
-	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM>::Entry rendererInfoEntries[];
-	static StringMap<RendererInfo, RENDERER_INFO_MAX_ENUM> rendererInfo;
 
 	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
 	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;

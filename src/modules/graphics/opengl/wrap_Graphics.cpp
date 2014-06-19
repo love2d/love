@@ -1067,20 +1067,13 @@ int w_hasCanvasFormat(lua_State *L)
 
 int w_getRendererInfo(lua_State *L)
 {
-	std::string name, version, vendor, device;
+	Graphics::RendererInfo info;
+	luax_catchexcept(L, [&](){ info = instance->getRendererInfo(); });
 
-	luax_catchexcept(L, [&]() {
-		name = instance->getRendererInfo(Graphics::RENDERER_INFO_NAME);
-		version = instance->getRendererInfo(Graphics::RENDERER_INFO_VERSION);
-		vendor = instance->getRendererInfo(Graphics::RENDERER_INFO_VENDOR);
-		device = instance->getRendererInfo(Graphics::RENDERER_INFO_DEVICE);
-	});
-
-	luax_pushstring(L, name);
-	luax_pushstring(L, version);
-	luax_pushstring(L, vendor);
-	luax_pushstring(L, device);
-
+	luax_pushstring(L, info.name);
+	luax_pushstring(L, info.version);
+	luax_pushstring(L, info.vendor);
+	luax_pushstring(L, info.device);
 	return 4;
 }
 

@@ -146,10 +146,13 @@ static const luaL_Reg functions[] =
 	{ "clear", w_Canvas_clear },
 	{ "getFormat", w_Canvas_getFormat },
 	{ "getMSAA", w_Canvas_getMSAA },
-	{ "getFSAA", w_Canvas_getMSAA }, // For backward-compatibility. TODO: remove!
 
 	// Deprecated since 0.9.1.
 	{ "getType", w_Canvas_getFormat },
+
+	// Deprecated since 0.9.2.
+	{ "getFSAA", w_Canvas_getMSAA },
+
 	{ 0, 0 }
 };
 
