@@ -23,6 +23,7 @@
 #define LOVE_GRAPHICS_OPENGL_VERTEX_BUFFER_H
 
 // LOVE
+#include "common/config.h"
 #include "graphics/Volatile.h"
 
 // OpenGL

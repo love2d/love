@@ -79,6 +79,9 @@ Mesh::Mesh(int vertexcount, Mesh::DrawMode mode)
 
 Mesh::~Mesh()
 {
+	if (texture)
+		texture->release();
+
 	delete vbo;
 	delete ibo;
 }

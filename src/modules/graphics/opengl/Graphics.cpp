@@ -1051,31 +1051,30 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	return img;
 }
 
-std::string Graphics::getRendererInfo(Graphics::RendererInfo infotype) const
+Graphics::RendererInfo Graphics::getRendererInfo() const
 {
-	const char *infostr = 0;
+	RendererInfo info;
+	info.name = "OpenGL";
 
-	switch (infotype)
-	{
-	case Graphics::RENDERER_INFO_NAME:
-	default:
-		infostr = "OpenGL";
-		break;
-	case Graphics::RENDERER_INFO_VERSION:
-		infostr = (const char *) glGetString(GL_VERSION);
-		break;
-	case Graphics::RENDERER_INFO_VENDOR:
-		infostr = (const char *) glGetString(GL_VENDOR);
-		break;
-	case Graphics::RENDERER_INFO_DEVICE:
-		infostr = (const char *) glGetString(GL_RENDERER);
-		break;
-	}
+	const char *str = (const char *) glGetString(GL_VERSION);
+	if (str)
+		info.version = str;
+	else
+		throw love::Exception("Cannot retrieve renderer version information.");
 
-	if (!infostr)
-		throw love::Exception("Cannot retrieve renderer information.");
+	str = (const char *) glGetString(GL_VENDOR);
+	if (str)
+		info.vendor = str;
+	else
+		throw love::Exception("Cannot retrieve renderer vendor information.");
 
-	return std::string(infostr);
+	str = (const char *) glGetString(GL_RENDERER);
+	if (str)
+		info.device = str;
+	else
+		throw love::Exception("Cannot retrieve renderer device information.");
+
+	return info;
 }
 
 double Graphics::getSystemLimit(SystemLimit limittype) const

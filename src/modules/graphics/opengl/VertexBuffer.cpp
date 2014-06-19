@@ -21,17 +21,11 @@
 #include "VertexBuffer.h"
 
 #include "common/Exception.h"
-#include "common/config.h"
 
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
 #include <limits>
-
-// Conflicts with std::numeric_limits<GLushort>::max() (Windows).
-#ifdef max
-# undef max
-#endif
 
 namespace love
 {
@@ -55,7 +49,7 @@ VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacki
 	, usage(usage)
 	, backing(backing)
 	, vbo(0)
-	, memory_map(0)
+	, memory_map(nullptr)
 	, is_dirty(true)
 {
 	if (getMemoryBacking() == BACKING_FULL)
@@ -207,7 +201,7 @@ bool VertexBuffer::load(bool restore)
 	VertexBuffer::Bind bind(*this);
 
 	// Copy the old buffer only if 'restore' was requested.
-	const GLvoid *src = restore ? memory_map : 0;
+	const GLvoid *src = restore ? memory_map : nullptr;
 
 	while (GL_NO_ERROR != glGetError())
 		/* clear error messages */;
