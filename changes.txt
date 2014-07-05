@@ -16,7 +16,9 @@ LOVE 0.9.2 [Baby Inspector]
   * Added love.window.getDisplayName.
 
   * Deprecated SpriteBatch:bind and SpriteBatch:unbind.
-  * Deprecated all uses of the name 'FSAA'.
+  * Deprecated all uses of the name 'FSAA' in favor of 'MSAA'.
+  * Deprecated the 'hdrcanvas' graphics feature enum in favor of getCanvasFormats.
+  * Deprecated the 'dxt' and 'bc5' graphics feature enums in favor of getCompressedImageFormats.
 
   * Fixed shader:getWarnings returning unnecessary information.
   * Fixed love.filesystem.setIdentity breaking in some situations when called multiple times.
