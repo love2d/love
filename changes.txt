@@ -5,12 +5,18 @@ LOVE 0.9.2 [Baby Inspector]
 
   * Added Shader:getExternVariable.
   * Added several new canvas texture formats.
-  * Added love.graphics.hasCanvasFormat.
-  * Added an optional duration argument to Joystick:setVibration.
+  * Added love.graphics.getCanvasFormats.
+  * Added love.graphics.getCompressedImageFormats.
+  * Added ParticleSystem:setQuads.
+  * Added SpriteBatch:flush.
+  * Added optional duration argument to Joystick:setVibration.
   * Added love.joystick.loadGamepadMappings and love.joystick.saveGamepadMappings.
   * Added Joint:setUserData and Joint:getUserData.
   * Added Body:getWorld.
   * Added love.window.getDisplayName.
+
+  * Deprecated SpriteBatch:bind and SpriteBatch:unbind.
+  * Deprecated all uses of the name 'FSAA'.
 
   * Fixed shader:getWarnings returning unnecessary information.
   * Fixed love.filesystem.setIdentity breaking in some situations when called multiple times.
@@ -20,6 +26,7 @@ LOVE 0.9.2 [Baby Inspector]
   * Fixed Image:refresh generating mipmaps multiple times if mipmap filtering is enabled.
   * Fixed Mesh:setDrawRange when the Mesh has a vertex map set.
   * Fixed internal detection of the 'position' and 'effect' shader functions.
+  * Fixed Texture memory leak when Meshes are garbage collected.
 
   * Renamed all cases of FSAA to MSAA. The FSAA names still exist for backward-compatibility.
 

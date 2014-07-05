@@ -455,6 +455,11 @@ public:
 	 **/
 	double getSystemLimit(SystemLimit limittype) const;
 
+	/**
+	 * Gets whether a graphics feature is supported on this system.
+	 **/
+	bool isSupported(Support feature) const;
+
 	void push();
 	void pop();
 	void rotate(float r);

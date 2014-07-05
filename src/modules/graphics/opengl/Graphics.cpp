@@ -1123,6 +1123,37 @@ double Graphics::getSystemLimit(SystemLimit limittype) const
 	return limit;
 }
 
+bool Graphics::isSupported(Support feature) const
+{
+	switch (feature)
+	{
+	case SUPPORT_CANVAS:
+		return Canvas::isSupported();
+	case SUPPORT_HDR_CANVAS:
+		return Canvas::isFormatSupported(Canvas::FORMAT_HDR);
+	case SUPPORT_MULTI_CANVAS:
+		return Canvas::isMultiCanvasSupported();
+	case SUPPORT_SHADER:
+		return Shader::isSupported();
+	case SUPPORT_NPOT:
+		return Image::hasNpot();
+	case SUPPORT_SUBTRACTIVE:
+		return (GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract);
+	case SUPPORT_MIPMAP:
+		return Image::hasMipmapSupport();
+	case SUPPORT_DXT:
+		return Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_DXT5);
+	case SUPPORT_BC5:
+		return Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_BC5);
+	case SUPPORT_SRGB:
+		// sRGB support for the screen is guaranteed if it's supported as a
+		// Canvas format.
+		return Canvas::isFormatSupported(Canvas::FORMAT_SRGB);
+	default:
+		return false;
+	}
+}
+
 void Graphics::push()
 {
 	if (userMatrices == matrixLimit)

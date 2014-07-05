@@ -989,79 +989,63 @@ int w_getShader(lua_State *L)
 int w_isSupported(lua_State *L)
 {
 	bool supported = true;
-	size_t len = lua_gettop(L);
-	Graphics::Support support;
-	for (unsigned int i = 1; i <= len; i++)
+
+	for (int i = 1; i <= lua_gettop(L); i++)
 	{
 		const char *str = luaL_checkstring(L, i);
-		if (!Graphics::getConstant(str, support))
+		Graphics::Support feature;
+		if (!Graphics::getConstant(str, feature))
 			return luaL_error(L, "Invalid graphics feature: %s", str);
 
-		switch (support)
+		if (!instance->isSupported(feature))
 		{
-		case Graphics::SUPPORT_CANVAS:
-			if (!Canvas::isSupported())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_HDR_CANVAS:
-			if (!Canvas::isFormatSupported(Canvas::FORMAT_HDR))
-				supported = false;
-			break;
-		case Graphics::SUPPORT_MULTI_CANVAS:
-			if (!Canvas::isMultiCanvasSupported())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_SHADER:
-			if (!Shader::isSupported())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_NPOT:
-			if (!Image::hasNpot())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_SUBTRACTIVE:
-			if (!((GLEE_VERSION_1_4 || GLEE_ARB_imaging) || (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)))
-				supported = false;
-			break;
-		case Graphics::SUPPORT_MIPMAP:
-			if (!Image::hasMipmapSupport())
-				supported = false;
-			break;
-		case Graphics::SUPPORT_DXT:
-			if (!Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_DXT5))
-				supported = false;
-			break;
-		case Graphics::SUPPORT_BC5:
-			if (!Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_BC5))
-				supported = false;
-			break;
-		case Graphics::SUPPORT_INSTANCING:
-			if (!GLEE_ARB_draw_instanced)
-				supported = false;
-			break;
-		case Graphics::SUPPORT_SRGB:
-			if (!Canvas::isFormatSupported(Canvas::FORMAT_SRGB))
-				supported = false;
-			break;
-		default:
 			supported = false;
-		}
-		if (!supported)
 			break;
+		}
 	}
-	lua_pushboolean(L, supported);
+
+	luax_pushboolean(L, supported);
 	return 1;
 }
 
-int w_hasCanvasFormat(lua_State *L)
+int w_getCanvasFormats(lua_State *L)
 {
-	const char *str = luaL_checkstring(L, 1);
-	Canvas::Format format;
+	lua_createtable(L, 0, (int) Canvas::FORMAT_MAX_ENUM);
 
-	if (!Canvas::getConstant(str, format))
-		return luaL_error(L, "Invalid canvas format: %s", str);
+	for (int i = 0; i < (int) Canvas::FORMAT_MAX_ENUM; i++)
+	{
+		Canvas::Format format = (Canvas::Format) i;
+		const char *name = nullptr;
 
-	luax_pushboolean(L, Canvas::isFormatSupported(format));
+		if (!Canvas::getConstant(format, name))
+			continue;
+
+		luax_pushboolean(L, Canvas::isFormatSupported(format));
+		lua_setfield(L, -2, name);
+	}
+
+	return 1;
+}
+
+int w_getCompressedImageFormats(lua_State *L)
+{
+	lua_createtable(L, 0, (int) image::CompressedData::FORMAT_MAX_ENUM);
+
+	for (int i = 0; i < (int) image::CompressedData::FORMAT_MAX_ENUM; i++)
+	{
+		image::CompressedData::Format format = (image::CompressedData::Format) i;
+		const char *name = nullptr;
+
+		if (format == image::CompressedData::FORMAT_UNKNOWN)
+			continue;
+
+		if (!image::CompressedData::getConstant(format, name))
+			continue;
+
+		luax_pushboolean(L, Image::hasCompressedTextureSupport(format));
+		lua_setfield(L, -2, name);
+	}
+
 	return 1;
 }
 
@@ -1440,7 +1424,8 @@ static const luaL_Reg functions[] =
 	{ "getShader", w_getShader },
 
 	{ "isSupported", w_isSupported },
-	{ "hasCanvasFormat", w_hasCanvasFormat },
+	{ "getCanvasFormats", w_getCanvasFormats },
+	{ "getCompressedImageFormats", w_getCompressedImageFormats },
 	{ "getRendererInfo", w_getRendererInfo },
 	{ "getSystemLimit", w_getSystemLimit },
 
