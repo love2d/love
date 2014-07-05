@@ -334,6 +334,12 @@ int w_getPixelScale(lua_State *L)
 	return 1;
 }
 
+int w_minimize(lua_State* /*L*/)
+{
+	instance->minimize();
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
@@ -356,6 +362,7 @@ static const luaL_Reg functions[] =
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
 	{ "getPixelScale", w_getPixelScale },
+	{ "minimize", w_minimize },
 	{ 0, 0 }
 };
 

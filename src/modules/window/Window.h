@@ -104,6 +104,8 @@ public:
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;
 	virtual love::image::ImageData *getIcon() = 0;
 
+	virtual void minimize() = 0;
+
 	// default no-op implementation
 	virtual void swapBuffers();
 

@@ -601,6 +601,12 @@ love::image::ImageData *Window::getIcon()
 	return curMode.icon;
 }
 
+void Window::minimize()
+{
+	if (window != nullptr)
+		SDL_MinimizeWindow(window);
+}
+
 void Window::swapBuffers()
 {
 	SDL_GL_SwapWindow(window);
