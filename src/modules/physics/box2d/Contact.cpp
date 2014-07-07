@@ -142,6 +142,15 @@ void Contact::getChildren(int &childA, int &childB)
 	childB = contact->GetChildIndexB();
 }
 
+void Contact::getFixtures(Fixture *&fixtureA, Fixture *&fixtureB)
+{
+	fixtureA = (Fixture *) Memoizer::find(contact->GetFixtureA());
+	fixtureB = (Fixture *) Memoizer::find(contact->GetFixtureB());
+
+	if (!fixtureA || !fixtureB)
+		throw love::Exception("A fixture has escaped Memoizer!");
+}
+
 } // box2d
 } // physics
 } // love

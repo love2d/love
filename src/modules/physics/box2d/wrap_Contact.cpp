@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_Contact.h"
+#include "Fixture.h"
 
 namespace love
 {
@@ -138,6 +139,20 @@ int w_Contact_getChildren(lua_State *L)
 	return 2;
 }
 
+int w_Contact_getFixtures(lua_State *L)
+{
+	Contact *t = luax_checkcontact(L, 1);
+	Fixture *a = nullptr;
+	Fixture *b = nullptr;
+	luax_catchexcept(L, [&](){ t->getFixtures(a, b); });
+
+	a->retain();
+	luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, a);
+	b->retain();
+	luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, b);
+	return 2;
+}
+
 extern "C" int luaopen_contact(lua_State *L)
 {
 	static const luaL_Reg functions[] =
@@ -156,6 +171,7 @@ extern "C" int luaopen_contact(lua_State *L)
 		{ "setTangentSpeed", w_Contact_setTangentSpeed },
 		{ "getTangentSpeed", w_Contact_getTangentSpeed },
 		{ "getChildren", w_Contact_getChildren },
+		{ "getFixtures", w_Contact_getFixtures },
 		{ 0, 0 }
 	};
 

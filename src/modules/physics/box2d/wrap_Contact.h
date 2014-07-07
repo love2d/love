@@ -47,6 +47,7 @@ int w_Contact_resetRestitution(lua_State *L);
 int w_Contact_setTangentSpeed(lua_State *L);
 int w_Contact_getTangentSpeed(lua_State *L);
 int w_Contact_getChildren(lua_State *L);
+int w_Contact_getFixtures(lua_State *L);
 extern "C" int luaopen_contact(lua_State *L);
 
 } // box2d

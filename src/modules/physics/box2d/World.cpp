@@ -318,10 +318,8 @@ bool World::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB)
 {
 	// Fixtures should be memoized, if we created them
 	Fixture *a = (Fixture *)Memoizer::find(fixtureA);
-	if (!a)
-		throw love::Exception("A fixture has escaped Memoizer!");
 	Fixture *b = (Fixture *)Memoizer::find(fixtureB);
-	if (!b)
+	if (!a || !b)
 		throw love::Exception("A fixture has escaped Memoizer!");
 	return filter.process(a, b);
 }
