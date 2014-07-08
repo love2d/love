@@ -1116,14 +1116,8 @@ bool Graphics::isSupported(Support feature) const
 {
 	switch (feature)
 	{
-	case SUPPORT_HDR_CANVAS:
-		return Canvas::isFormatSupported(Canvas::FORMAT_HDR);
 	case SUPPORT_MULTI_CANVAS:
 		return Canvas::isMultiCanvasSupported();
-	case SUPPORT_DXT:
-		return Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_DXT5);
-	case SUPPORT_BC5:
-		return Image::hasCompressedTextureSupport(image::CompressedData::FORMAT_BC5);
 	case SUPPORT_SRGB:
 		// sRGB support for the screen is guaranteed if it's supported as a
 		// Canvas format.

@@ -957,25 +957,22 @@ int w_getShader(lua_State *L)
 	return 1;
 }
 
-int w_isSupported(lua_State *L)
+int w_getSupported(lua_State *L)
 {
-	bool supported = true;
+	lua_createtable(L, 0, (int) Graphics::SUPPORT_MAX_ENUM);
 
-	for (int i = 1; i <= lua_gettop(L); i++)
+	for (int i = 0; i < (int) Graphics::SUPPORT_MAX_ENUM; i++)
 	{
-		const char *str = luaL_checkstring(L, i);
-		Graphics::Support feature;
-		if (!Graphics::getConstant(str, feature))
-			return luaL_error(L, "Invalid graphics feature: %s", str);
+		Graphics::Support feature = (Graphics::Support) i;
+		const char *name = nullptr;
 
-		if (!instance->isSupported(feature))
-		{
-			supported = false;
-			break;
-		}
+		if (!Graphics::getConstant(feature, name))
+			continue;
+
+		luax_pushboolean(L, instance->isSupported(feature));
+		lua_setfield(L, -2, name);
 	}
 
-	luax_pushboolean(L, supported);
 	return 1;
 }
 
@@ -1032,15 +1029,22 @@ int w_getRendererInfo(lua_State *L)
 	return 4;
 }
 
-int w_getSystemLimit(lua_State *L)
+int w_getSystemLimits(lua_State *L)
 {
-	const char *limitstr = luaL_checkstring(L, 1);
-	Graphics::SystemLimit limittype;
+	lua_createtable(L, 0, (int) Graphics::LIMIT_MAX_ENUM);
 
-	if (!Graphics::getConstant(limitstr, limittype))
-		return luaL_error(L, "Invalid system limit type: %s", limitstr);
+	for (int i = 0; i < (int) Graphics::LIMIT_MAX_ENUM; i++)
+	{
+		Graphics::SystemLimit limittype = (Graphics::SystemLimit) i;
+		const char *name = nullptr;
 
-	lua_pushnumber(L, instance->getSystemLimit(limittype));
+		if (!Graphics::getConstant(limittype, name))
+			continue;
+
+		lua_pushnumber(L, instance->getSystemLimit(limittype));
+		lua_setfield(L, -2, name);
+	}
+
 	return 1;
 }
 
@@ -1392,11 +1396,11 @@ static const luaL_Reg functions[] =
 	{ "setShader", w_setShader },
 	{ "getShader", w_getShader },
 
-	{ "isSupported", w_isSupported },
+	{ "getSupported", w_getSupported },
 	{ "getCanvasFormats", w_getCanvasFormats },
 	{ "getCompressedImageFormats", w_getCompressedImageFormats },
 	{ "getRendererInfo", w_getRendererInfo },
-	{ "getSystemLimit", w_getSystemLimit },
+	{ "getSystemLimits", w_getSystemLimits },
 
 	{ "draw", w_draw },
 
