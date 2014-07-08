@@ -153,7 +153,6 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 	{ "multicanvas", Graphics::SUPPORT_MULTI_CANVAS },
 	{ "dxt", Graphics::SUPPORT_DXT },
 	{ "bc5", Graphics::SUPPORT_BC5 },
-	{ "instancing", Graphics::SUPPORT_INSTANCING },
 	{ "srgb", Graphics::SUPPORT_SRGB },
 };
 

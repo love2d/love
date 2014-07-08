@@ -394,6 +394,13 @@ public:
 	int getFixtureList(lua_State *L) const;
 
 	/**
+	 * Get an array of all active Contacts attached to this Body.
+	 * This list changes during World:update and you may miss some collisions
+	 * if you don't use the collision callbacks.
+	 **/
+	int getContactList(lua_State *L) const;
+
+	/**
 	 * Destroy this body.
 	 **/
 	void destroy();

@@ -65,6 +65,8 @@ public:
 	bool setIcon(love::image::ImageData *imgd);
 	love::image::ImageData *getIcon();
 
+	void minimize();
+
 	void swapBuffers();
 
 	bool hasFocus() const;

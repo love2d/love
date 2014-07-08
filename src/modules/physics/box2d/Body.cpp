@@ -444,6 +444,30 @@ int Body::getFixtureList(lua_State *L) const
 	return 1;
 }
 
+int Body::getContactList(lua_State *L) const
+{
+	lua_newtable(L);
+	const b2ContactEdge *ce = body->GetContactList();
+	int i = 1;
+	do
+	{
+		if (!ce)
+			break;
+
+		Contact *contact = (Contact *) Memoizer::find(ce->contact);
+		if (!contact)
+			contact = new Contact(ce->contact);
+		else
+			contact->retain();
+		
+		luax_pushtype(L, "Contact", PHYSICS_CONTACT_T, contact);
+		lua_rawseti(L, -2, i);
+		i++;
+	}
+	while ((ce = ce->next));
+	return 1;
+}
+
 b2Vec2 Body::getVector(lua_State *L)
 {
 	love::luax_assert_argc(L, 2, 2);

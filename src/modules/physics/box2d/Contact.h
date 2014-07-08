@@ -148,6 +148,11 @@ public:
 
 	void getChildren(int &childA, int &childB);
 
+	/**
+	 * Gets the Fixtures associated with this Contact.
+	 **/
+	void getFixtures(Fixture *&fixtureA, Fixture *&fixtureB);
+
 private:
 
 	// The Box2D contact.
