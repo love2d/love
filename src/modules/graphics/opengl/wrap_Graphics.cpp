@@ -161,6 +161,7 @@ int w_newImage(lua_State *L)
 	Image::Flags flags;
 	if (!lua_isnoneornil(L, 2))
 	{
+		luaL_checktype(L, 2, LUA_TTABLE);
 		flags.mipmaps = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_MIPMAPS), flags.mipmaps);
 		flags.sRGB = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_SRGB), flags.sRGB);
 	}
