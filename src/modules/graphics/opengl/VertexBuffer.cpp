@@ -219,12 +219,10 @@ void VertexBuffer::unload(bool save)
 	if (save && getMemoryBacking() == BACKING_PARTIAL)
 	{
 		VertexBuffer::Bind bind(*this);
-
-		bool mapped = is_mapped;
-
 		map(); // saves buffer content to memory_map.
-		is_mapped = mapped;
 	}
+
+	is_mapped = false;
 
 	glDeleteBuffers(1, &vbo);
 	vbo = 0;
