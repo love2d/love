@@ -46,6 +46,7 @@ namespace opengl
 Graphics::Graphics()
 	: currentFont(0)
 	, lineStyle(LINE_SMOOTH)
+	, lineJoin(LINE_JOIN_MITER)
 	, lineWidth(1)
 	, matrixLimit(0)
 	, userMatrices(0)
@@ -89,7 +90,8 @@ DisplayState Graphics::saveState()
 
 	s.blendMode = getBlendMode();
 	//get line style
-	s.lineStyle = lineStyle;
+	s.lineStyle = getLineStyle();
+	s.lineJoin = getLineJoin();
 	//get the point size
 	glGetFloatv(GL_POINT_SIZE, &s.pointSize);
 	//get point style
@@ -115,6 +117,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setBlendMode(s.blendMode);
 	setLineWidth(lineWidth);
 	setLineStyle(s.lineStyle);
+	setLineJoin(s.lineJoin);
 	setPointSize(s.pointSize);
 	setPointStyle(s.pointStyle);
 	if (s.scissor)
