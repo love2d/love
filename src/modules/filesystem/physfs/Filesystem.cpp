@@ -21,6 +21,7 @@
 #include "common/config.h"
 
 #include <iostream>
+#include <sstream>
 
 #include "common/utf8.h"
 #include "common/b64.h"
@@ -46,6 +47,21 @@ namespace
 	std::string skipDriveRoot(const std::string &input)
 	{
 		return input.substr(getDriveDelim(input)+1);
+	}
+
+	std::string normalize(const std::string &input)
+	{
+		std::stringstream out;
+		bool seenSep = false, isSep = false;
+		for (size_t i = 0; i < input.size(); ++i)
+		{
+			isSep = (input[i] == LOVE_PATH_SEPARATOR[0]);
+			if (!isSep || !seenSep)
+				out << input[i];
+			seenSep = isSep;
+		}
+
+		return out.str();
 	}
 }
 
@@ -115,6 +131,8 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 		save_path_full += std::string(LOVE_APPDATA_PREFIX) + save_identity;
 	else
 		save_path_full += save_path_relative;
+
+	save_path_full = normalize(save_path_full);
 
 	// We now have something like:
 	// save_identity: game
@@ -354,40 +372,33 @@ const char *Filesystem::getWorkingDirectory()
 
 std::string Filesystem::getUserDirectory()
 {
-	return std::string(PHYSFS_getUserDir());
+	static std::string userDir = normalize(PHYSFS_getUserDir());
+	return userDir;
 }
 
 std::string Filesystem::getAppdataDirectory()
 {
-#ifdef LOVE_WINDOWS
 	if (appdata.empty())
 	{
+#ifdef LOVE_WINDOWS
 		wchar_t *w_appdata = _wgetenv(L"APPDATA");
 		appdata = to_utf8(w_appdata);
 		replace_char(appdata, '\\', '/');
-	}
-	return appdata;
 #elif defined(LOVE_MACOSX)
-	if (appdata.empty())
-	{
 		std::string udir = getUserDirectory();
 		udir.append("/Library/Application Support");
-		appdata = udir;
-	}
-	return appdata;
+		appdata = normalize(udir);
 #elif defined(LOVE_LINUX)
-	if (appdata.empty())
-	{
 		char *xdgdatahome = getenv("XDG_DATA_HOME");
 		if (!xdgdatahome)
-			appdata = std::string(getUserDirectory()) + "/.local/share/";
+			appdata = normalize(std::string(getUserDirectory()) + "/.local/share/");
 		else
 			appdata = xdgdatahome;
+#else
+		appdata = getUserDirectory();
+#endif
 	}
 	return appdata;
-#else
-	return getUserDirectory();
-#endif
 }
 
 
