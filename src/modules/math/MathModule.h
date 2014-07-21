@@ -115,6 +115,12 @@ public:
 	 **/
 	BezierCurve *newBezierCurve(const std::vector<Vector> &points);
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const
+	{
+		return M_MATH;
+	}
+
 	virtual const char *getName() const
 	{
 		return "love.math";

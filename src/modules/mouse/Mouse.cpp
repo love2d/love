@@ -25,11 +25,6 @@ namespace love
 namespace mouse
 {
 
-Mouse::Mouse()
-{
-	moduleType = M_MOUSE;
-}
-
 bool Mouse::getConstant(const char *in, Button &out)
 {
 	return buttons.find(in, out);

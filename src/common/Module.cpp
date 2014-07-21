@@ -60,11 +60,6 @@ namespace love
 
 Module *Module::instances[] = {};
 
-Module::Module()
-	: moduleType(M_INVALID)
-{
-}
-
 Module::~Module()
 {
 	ModuleRegistry &registry = registryInstance();
@@ -79,15 +74,14 @@ Module::~Module()
 		}
 	}
 
+	// Same deal with Module::getModuleType().
+	for (int i = 0; i < (int) M_MAX_ENUM; i++)
+	{
+		if (instances[i] == this)
+			instances[i] = nullptr;
+	}
+
 	freeEmptyRegistry();
-
-	if (instances[moduleType] == this)
-		instances[moduleType] = nullptr;
-}
-
-Module::ModuleType Module::getModuleType() const
-{
-	return moduleType;
 }
 
 void Module::registerInstance(Module *instance)
@@ -108,11 +102,9 @@ void Module::registerInstance(Module *instance)
 		throw Exception("Module %s already registered!", instance->getName());
 	}
 
-	ModuleType moduletype = instance->getModuleType();
-	if (moduletype == M_INVALID)
-		throw love::Exception("Module %s has an invalid base module type.", instance->getName());
-
 	registry.insert(make_pair(name, instance));
+
+	ModuleType moduletype = instance->getModuleType();
 
 	if (instances[moduletype] != nullptr)
 	{

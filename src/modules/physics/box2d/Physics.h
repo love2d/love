@@ -61,10 +61,9 @@ public:
 	 **/
 	static const int DEFAULT_METER = 30;
 
-	Physics();
-
 	// Implements Module.
 	const char *getName() const;
+	virtual ModuleType getModuleType() const { return M_PHYSICS; }
 
 	/**
 	 * Creates a new World.

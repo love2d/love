@@ -33,11 +33,6 @@ namespace box2d
 
 int Physics::meter = Physics::DEFAULT_METER;
 
-Physics::Physics()
-{
-	moduleType = M_PHYSICS;
-}
-
 const char *Physics::getName() const
 {
 	return "love.physics.box2d";

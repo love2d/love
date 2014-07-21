@@ -25,11 +25,6 @@ namespace love
 namespace thread
 {
 
-ThreadModule::ThreadModule()
-{
-	moduleType = M_THREAD;
-}
-
 LuaThread *ThreadModule::newThread(const std::string &name, love::Data *data)
 {
 	LuaThread *lt = new LuaThread(name, data);

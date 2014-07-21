@@ -244,8 +244,10 @@ public:
 		KEY_MAX_ENUM = 512
 	};
 
-	Keyboard();
 	virtual ~Keyboard() {}
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_KEYBOARD; }
 
 	/**
 	 * Sets whether repeat keypress events should be sent if a key is held down.

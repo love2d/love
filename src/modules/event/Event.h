@@ -58,6 +58,9 @@ public:
 	Event();
 	virtual ~Event();
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_EVENT; }
+
 	void push(Message *msg);
 	bool poll(Message *&msg);
 	virtual void clear();

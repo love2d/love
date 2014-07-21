@@ -75,8 +75,10 @@ public:
 		int height;
 	};
 
-	Window();
 	virtual ~Window();
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_WINDOW; }
 
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
 	virtual void getWindow(int &width, int &height, WindowSettings &settings) = 0;

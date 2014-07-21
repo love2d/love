@@ -64,8 +64,10 @@ public:
 	static bool getConstant(const char *in, DistanceModel &out);
 	static bool getConstant(DistanceModel in, const char  *&out);
 
-	Audio();
 	virtual ~Audio() {}
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_AUDIO; }
 
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;
 	virtual Source *newSource(love::sound::SoundData *soundData) = 0;

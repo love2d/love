@@ -44,8 +44,10 @@ class Image : public Module
 {
 public:
 
-	Image() { moduleType = M_IMAGE; }
 	virtual ~Image() {}
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_IMAGE; }
 
 	/**
 	 * Creates new ImageData from FileData.

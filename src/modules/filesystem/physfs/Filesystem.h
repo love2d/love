@@ -80,6 +80,8 @@ public:
 	Filesystem();
 	virtual ~Filesystem();
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_FILESYSTEM; }
 	const char *getName() const;
 
 	void init(const char *arg0);

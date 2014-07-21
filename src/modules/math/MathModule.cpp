@@ -87,8 +87,6 @@ Math Math::instance;
 Math::Math()
 	: rng()
 {
-	moduleType = M_MATH;
-
 	// prevent the runtime from free()-ing this
 	retain();
 }

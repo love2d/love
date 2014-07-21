@@ -33,8 +33,10 @@ class Timer : public Module
 {
 public:
 
-	Timer() { moduleType = M_TIMER; }
 	virtual ~Timer() {}
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_TIMER; }
 
 	/**
 	 * Measures the time between this call and the previous call,

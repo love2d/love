@@ -82,7 +82,6 @@ Message *Message::fromLua(lua_State *L, int n)
 
 Event::Event()
 {
-	moduleType = M_EVENT;
 	mutex = thread::newMutex();
 }
 

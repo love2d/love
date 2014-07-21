@@ -36,7 +36,6 @@ public:
 
 	enum ModuleType
 	{
-		M_INVALID = 0,
 		M_AUDIO,
 		M_EVENT,
 		M_FILESYSTEM,
@@ -56,10 +55,12 @@ public:
 		M_MAX_ENUM
 	};
 
-	Module();
 	virtual ~Module();
 
-	ModuleType getModuleType() const;
+    /**
+     * Gets the base type of the module.
+     **/
+	virtual ModuleType getModuleType() const = 0;
 
 	/**
 	 * Gets the name of the module. This is used in case of errors
@@ -94,10 +95,6 @@ public:
 	{
 		return (T *) instances[type];
 	}
-
-protected:
-
-	ModuleType moduleType;
 
 private:
 

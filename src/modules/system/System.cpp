@@ -41,11 +41,6 @@ namespace love
 namespace system
 {
 
-System::System()
-{
-	moduleType = M_SYSTEM;
-}
-
 std::string System::getOS() const
 {
 #if defined(LOVE_MACOSX)
