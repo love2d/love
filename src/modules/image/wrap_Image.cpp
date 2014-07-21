@@ -32,7 +32,7 @@ namespace love
 namespace image
 {
 
-static Image *instance = nullptr;
+#define instance() (Module::getInstance<Image>(Module::M_IMAGE))
 
 int w_newImageData(lua_State *L)
 {
@@ -45,7 +45,7 @@ int w_newImageData(lua_State *L)
 			return luaL_error(L, "Invalid image size.");
 
 		ImageData *t = nullptr;
-		luax_catchexcept(L, [&](){ t = instance->newImageData(w, h); });
+		luax_catchexcept(L, [&](){ t = instance()->newImageData(w, h); });
 
 		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
 		return 1;
@@ -56,7 +56,7 @@ int w_newImageData(lua_State *L)
 
 	ImageData *t = nullptr;
 	luax_catchexcept(L,
-		[&]() { t = instance->newImageData(data); },
+		[&]() { t = instance()->newImageData(data); },
 		[&]() { data->release(); }
 	);
 
@@ -70,7 +70,7 @@ int w_newCompressedData(lua_State *L)
 
 	CompressedData *t = nullptr;
 	luax_catchexcept(L,
-		[&]() { t = instance->newCompressedData(data); },
+		[&]() { t = instance()->newCompressedData(data); },
 		[&]() { data->release(); }
 	);
 
@@ -81,7 +81,7 @@ int w_newCompressedData(lua_State *L)
 int w_isCompressed(lua_State *L)
 {
 	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
-	bool compressed = instance->isCompressed(data);
+	bool compressed = instance()->isCompressed(data);
 	data->release();
 
 	luax_pushboolean(L, compressed);
@@ -106,6 +106,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_image(lua_State *L)
 {
+	Image *instance = instance();
 	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new love::image::magpie::Image(); });

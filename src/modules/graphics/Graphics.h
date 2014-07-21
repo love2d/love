@@ -120,6 +120,7 @@ public:
 		std::string device;
 	};
 
+	Graphics();
 	virtual ~Graphics();
 
 	/**

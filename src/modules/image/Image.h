@@ -44,9 +44,7 @@ class Image : public Module
 {
 public:
 
-	/**
-	 * Destructor.
-	 **/
+	Image() { moduleType = M_IMAGE; }
 	virtual ~Image() {}
 
 	/**

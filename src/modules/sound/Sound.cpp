@@ -25,6 +25,11 @@ namespace love
 namespace sound
 {
 
+Sound::Sound()
+{
+	moduleType = M_SOUND;
+}
+
 Sound::~Sound()
 {
 }

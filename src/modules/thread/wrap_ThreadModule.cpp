@@ -32,7 +32,7 @@ namespace love
 namespace thread
 {
 
-static ThreadModule *instance = 0;
+#define instance() (Module::getInstance<ThreadModule>(Module::M_THREAD))
 
 int w_newThread(lua_State *L)
 {
@@ -53,14 +53,14 @@ int w_newThread(lua_State *L)
 		data = luax_checktype<love::Data>(L, 1, "Data", DATA_T);
 	}
 
-	LuaThread *t = instance->newThread(name, data);
+	LuaThread *t = instance()->newThread(name, data);
 	luax_pushtype(L, "Thread", THREAD_THREAD_T, t);
 	return 1;
 }
 
 int w_newChannel(lua_State *L)
 {
-	Channel *c = instance->newChannel();
+	Channel *c = instance()->newChannel();
 	luax_pushtype(L, "Channel", THREAD_CHANNEL_T, c);
 	return 1;
 }
@@ -68,7 +68,7 @@ int w_newChannel(lua_State *L)
 int w_getChannel(lua_State *L)
 {
 	std::string name = luax_checkstring(L, 1);
-	Channel *c = instance->getChannel(name);
+	Channel *c = instance()->getChannel(name);
 	luax_pushtype(L, "Channel", THREAD_CHANNEL_T, c);
 	return 1;
 }
@@ -89,7 +89,8 @@ static const lua_CFunction types[] = {
 
 extern "C" int luaopen_love_thread(lua_State *L)
 {
-	if (instance == 0)
+	ThreadModule *instance = instance();
+	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new love::thread::ThreadModule(); });
 	}

@@ -34,10 +34,32 @@ class Module : public Object
 {
 public:
 
-	/**
-	 * Destructor.
-	 **/
+	enum ModuleType
+	{
+		M_INVALID = 0,
+		M_AUDIO,
+		M_EVENT,
+		M_FILESYSTEM,
+		M_FONT,
+		M_GRAPHICS,
+		M_IMAGE,
+		M_JOYSTICK,
+		M_KEYBOARD,
+		M_MATH,
+		M_MOUSE,
+		M_PHYSICS,
+		M_SOUND,
+		M_SYSTEM,
+		M_THREAD,
+		M_TIMER,
+		M_WINDOW,
+		M_MAX_ENUM
+	};
+
+	Module();
 	virtual ~Module();
+
+	ModuleType getModuleType() const;
 
 	/**
 	 * Gets the name of the module. This is used in case of errors
@@ -63,13 +85,23 @@ public:
 	static Module *getInstance(const std::string &name);
 
 	/**
-	 * Find the first module instance from the internal registry whose name
-	 * starts with the supplied name. May return NULL if module is not
-	 * registered or the supplied name is not part of any module name.
-	 * @param name The partial name of the module.
-	 * @return Module instance or NULL if the module is not registered.
+	 * Retrieve module instance from the internal registry using the base
+	 * module type. May return null if the module is not registered.
+	 * @param type The base type of the module.
 	 **/
-	static Module *findInstance(const std::string &name);
+	template <typename T>
+	static T *getInstance(ModuleType type)
+	{
+		return (T *) instances[type];
+	}
+
+protected:
+
+	ModuleType moduleType;
+
+private:
+
+	static Module *instances[M_MAX_ENUM];
 
 }; // Module
 

@@ -40,6 +40,9 @@ class Font : public Module
 
 public:
 
+	Font() { moduleType = M_FONT; }
+	virtual ~Font() {}
+
 	virtual Rasterizer *newRasterizer(Data *data, int size) = 0;
 	virtual Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &glyphs) = 0;
 	virtual Rasterizer *newRasterizer(love::image::ImageData *data, uint32 *glyphs, int length) = 0;

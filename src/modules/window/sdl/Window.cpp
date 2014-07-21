@@ -118,7 +118,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
 
-	graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
 		gfx->unSetMode();
 
@@ -431,7 +431,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 		updateSettings(newsettings);
 
 		// Update the viewport size now instead of waiting for event polling.
-		graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+		graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		if (gfx != nullptr)
 		{
 			int width = curMode.width;

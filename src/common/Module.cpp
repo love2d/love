@@ -58,6 +58,13 @@ namespace
 namespace love
 {
 
+Module *Module::instances[] = {};
+
+Module::Module()
+	: moduleType(M_INVALID)
+{
+}
+
 Module::~Module()
 {
 	ModuleRegistry &registry = registryInstance();
@@ -73,6 +80,14 @@ Module::~Module()
 	}
 
 	freeEmptyRegistry();
+
+	if (instances[moduleType] == this)
+		instances[moduleType] = nullptr;
+}
+
+Module::ModuleType Module::getModuleType() const
+{
+	return moduleType;
 }
 
 void Module::registerInstance(Module *instance)
@@ -93,7 +108,19 @@ void Module::registerInstance(Module *instance)
 		throw Exception("Module %s already registered!", instance->getName());
 	}
 
+	ModuleType moduletype = instance->getModuleType();
+	if (moduletype == M_INVALID)
+		throw love::Exception("Module %s has an invalid base module type.", instance->getName());
+
 	registry.insert(make_pair(name, instance));
+
+	if (instances[moduletype] != nullptr)
+	{
+		printf("Warning: overwriting module instance %s with new instance %s\n",
+			   instances[moduletype]->getName(), instance->getName());
+	}
+
+	instances[moduletype] = instance;
 }
 
 Module *Module::getInstance(const std::string &name)
@@ -106,19 +133,6 @@ Module *Module::getInstance(const std::string &name)
 		return nullptr;
 
 	return it->second;
-}
-
-Module *Module::findInstance(const std::string &name)
-{
-	ModuleRegistry &registry = registryInstance();
-
-	for (auto it = registry.begin(); it != registry.end(); ++it)
-	{
-		if (it->first.find(name) == 0)
-			return it->second;
-	}
-
-	return nullptr;
 }
 
 } // love

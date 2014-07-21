@@ -75,6 +75,7 @@ public:
 		int height;
 	};
 
+	Window();
 	virtual ~Window();
 
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;

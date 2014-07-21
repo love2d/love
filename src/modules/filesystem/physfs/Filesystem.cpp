@@ -77,6 +77,7 @@ Filesystem::Filesystem()
 	, fused(false)
 	, fusedSet(false)
 {
+	moduleType = M_FILESYSTEM;
 }
 
 Filesystem::~Filesystem()

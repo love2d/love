@@ -42,6 +42,7 @@ class ThreadModule : public love::Module
 {
 public:
 
+	ThreadModule();
 	virtual ~ThreadModule() {}
 	virtual LuaThread *newThread(const std::string &name, love::Data *data);
 	virtual Channel *newChannel();

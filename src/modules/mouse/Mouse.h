@@ -49,6 +49,7 @@ public:
 		BUTTON_MAX_ENUM
 	};
 
+	Mouse();
 	virtual ~Mouse() {}
 
 	virtual Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty) = 0;

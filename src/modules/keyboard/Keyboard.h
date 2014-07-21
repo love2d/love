@@ -244,6 +244,7 @@ public:
 		KEY_MAX_ENUM = 512
 	};
 
+	Keyboard();
 	virtual ~Keyboard() {}
 
 	/**

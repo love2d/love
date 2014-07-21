@@ -28,6 +28,11 @@ namespace window
 
 Window *Window::singleton = nullptr;
 
+Window::Window()
+{
+	moduleType = M_WINDOW;
+}
+
 Window::~Window()
 {
 	if (singleton == this)

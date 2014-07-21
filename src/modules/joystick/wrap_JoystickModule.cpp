@@ -30,16 +30,16 @@ namespace love
 namespace joystick
 {
 
-static JoystickModule *instance = nullptr;
+#define instance() (Module::getInstance<JoystickModule>(Module::M_JOYSTICK))
 
 int w_getJoysticks(lua_State *L)
 {
-	int stickcount = instance->getJoystickCount();
+	int stickcount = instance()->getJoystickCount();
 	lua_createtable(L, stickcount, 0);
 
 	for (int i = 0; i < stickcount; i++)
 	{
-		Joystick *stick = instance->getJoystick(i);
+		Joystick *stick = instance()->getJoystick(i);
 		stick->retain();
 		luax_pushtype(L, "Joystick", JOYSTICK_JOYSTICK_T, stick);
 		lua_rawseti(L, -2, i + 1);
@@ -51,7 +51,7 @@ int w_getJoysticks(lua_State *L)
 int w_getIndex(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
-	int index = instance->getIndex(j);
+	int index = instance()->getIndex(j);
 	if (index >= 0)
 		lua_pushinteger(L, index + 1);
 	else
@@ -61,7 +61,7 @@ int w_getIndex(lua_State *L)
 
 int w_getJoystickCount(lua_State *L)
 {
-	lua_pushinteger(L, instance->getJoystickCount());
+	lua_pushinteger(L, instance()->getJoystickCount());
 	return 1;
 }
 
@@ -109,7 +109,7 @@ int w_setGamepadMapping(lua_State *L)
 	}
 
 	bool success = false;
-	luax_catchexcept(L, [&](){ success = instance->setGamepadMapping(guid, gpinput, jinput); });
+	luax_catchexcept(L, [&](){ success = instance()->setGamepadMapping(guid, gpinput, jinput); });
 
 	luax_pushboolean(L, success);
 	return 1;
@@ -142,7 +142,7 @@ int w_getGamepadMapping(lua_State *L)
 	Joystick::JoystickInput jinput;
 	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
 
-	luax_catchexcept(L, [&](){ jinput = instance->getGamepadMapping(guid, gpinput); });
+	luax_catchexcept(L, [&](){ jinput = instance()->getGamepadMapping(guid, gpinput); });
 
 	if (jinput.type == Joystick::INPUT_TYPE_MAX_ENUM)
 		return 0;
@@ -197,14 +197,14 @@ int w_loadGamepadMappings(lua_State *L)
 	else
 		mappings = luax_checkstring(L, 1);
 
-	luax_catchexcept(L, [&](){ instance->loadGamepadMappings(mappings); });
+	luax_catchexcept(L, [&](){ instance()->loadGamepadMappings(mappings); });
 	return 0;
 }
 
 int w_saveGamepadMappings(lua_State *L)
 {
 	lua_settop(L, 1);
-	std::string mappings = instance->saveGamepadMappings();
+	std::string mappings = instance()->saveGamepadMappings();
 
 	// Optionally write the mappings string to a file.
 	if (!lua_isnoneornil(L, 1))
@@ -240,6 +240,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_joystick(lua_State *L)
 {
+	JoystickModule *instance = instance();
 	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new sdl::JoystickModule(); });

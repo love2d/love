@@ -25,6 +25,11 @@ namespace love
 namespace audio
 {
 
+Audio::Audio()
+{
+	moduleType = M_AUDIO;
+}
+
 StringMap<Audio::DistanceModel, Audio::DISTANCE_MAX_ENUM>::Entry Audio::distanceModelEntries[] =
 {
 	{"none", Audio::DISTANCE_NONE},

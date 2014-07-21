@@ -31,11 +31,11 @@ namespace love
 namespace audio
 {
 
-static Audio *instance = 0;
+#define instance() (Module::getInstance<Audio>(Module::M_AUDIO))
 
 int w_getSourceCount(lua_State *L)
 {
-	lua_pushinteger(L, instance->getSourceCount());
+	lua_pushinteger(L, instance()->getSourceCount());
 	return 1;
 }
 
@@ -56,9 +56,9 @@ int w_newSource(lua_State *L)
 	Source *t = 0;
 
 	if (luax_istype(L, 1, SOUND_SOUND_DATA_T))
-		t = instance->newSource(luax_totype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T));
+		t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T));
 	else if (luax_istype(L, 1, SOUND_DECODER_T))
-		t = instance->newSource(luax_totype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T));
+		t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T));
 
 	if (t)
 	{
@@ -72,7 +72,7 @@ int w_newSource(lua_State *L)
 int w_play(lua_State *L)
 {
 	Source *s = luax_checksource(L, 1);
-	luax_pushboolean(L, instance->play(s));
+	luax_pushboolean(L, instance()->play(s));
 	return 1;
 }
 
@@ -80,7 +80,7 @@ int w_stop(lua_State *L)
 {
 	if (lua_gettop(L) == 0)
 	{
-		instance->stop();
+		instance()->stop();
 	}
 	else
 	{
@@ -94,7 +94,7 @@ int w_pause(lua_State *L)
 {
 	if (lua_gettop(L) == 0)
 	{
-		instance->pause();
+		instance()->pause();
 	}
 	else
 	{
@@ -109,7 +109,7 @@ int w_resume(lua_State *L)
 {
 	if (lua_gettop(L) == 0)
 	{
-		instance->resume();
+		instance()->resume();
 	}
 	else
 	{
@@ -123,7 +123,7 @@ int w_rewind(lua_State *L)
 {
 	if (lua_gettop(L) == 0)
 	{
-		instance->rewind();
+		instance()->rewind();
 	}
 	else
 	{
@@ -136,13 +136,13 @@ int w_rewind(lua_State *L)
 int w_setVolume(lua_State *L)
 {
 	float v = (float)luaL_checknumber(L, 1);
-	instance->setVolume(v);
+	instance()->setVolume(v);
 	return 0;
 }
 
 int w_getVolume(lua_State *L)
 {
-	lua_pushnumber(L, instance->getVolume());
+	lua_pushnumber(L, instance()->getVolume());
 	return 1;
 }
 
@@ -152,14 +152,14 @@ int w_setPosition(lua_State *L)
 	v[0] = (float)luaL_checknumber(L, 1);
 	v[1] = (float)luaL_checknumber(L, 2);
 	v[2] = (float)luaL_optnumber(L, 3, 0);
-	instance->setPosition(v);
+	instance()->setPosition(v);
 	return 0;
 }
 
 int w_getPosition(lua_State *L)
 {
 	float v[3];
-	instance->getPosition(v);
+	instance()->getPosition(v);
 	lua_pushnumber(L, v[0]);
 	lua_pushnumber(L, v[1]);
 	lua_pushnumber(L, v[2]);
@@ -175,14 +175,14 @@ int w_setOrientation(lua_State *L)
 	v[3] = (float)luaL_checknumber(L, 4);
 	v[4] = (float)luaL_checknumber(L, 5);
 	v[5] = (float)luaL_checknumber(L, 6);
-	instance->setOrientation(v);
+	instance()->setOrientation(v);
 	return 0;
 }
 
 int w_getOrientation(lua_State *L)
 {
 	float v[6];
-	instance->getOrientation(v);
+	instance()->getOrientation(v);
 	lua_pushnumber(L, v[0]);
 	lua_pushnumber(L, v[1]);
 	lua_pushnumber(L, v[2]);
@@ -198,14 +198,14 @@ int w_setVelocity(lua_State *L)
 	v[0] = (float)luaL_checknumber(L, 1);
 	v[1] = (float)luaL_checknumber(L, 2);
 	v[2] = (float)luaL_optnumber(L, 3, 0);
-	instance->setVelocity(v);
+	instance()->setVelocity(v);
 	return 0;
 }
 
 int w_getVelocity(lua_State *L)
 {
 	float v[3];
-	instance->getVelocity(v);
+	instance()->getVelocity(v);
 	lua_pushnumber(L, v[0]);
 	lua_pushnumber(L, v[1]);
 	lua_pushnumber(L, v[2]);
@@ -214,13 +214,13 @@ int w_getVelocity(lua_State *L)
 
 int w_record(lua_State *)
 {
-	instance->record();
+	instance()->record();
 	return 0;
 }
 
 int w_getRecordedData(lua_State *L)
 {
-	love::sound::SoundData *sd = instance->getRecordedData();
+	love::sound::SoundData *sd = instance()->getRecordedData();
 	if (!sd)
 		lua_pushnil(L);
 	else
@@ -232,18 +232,18 @@ int w_stopRecording(lua_State *L)
 {
 	if (luax_optboolean(L, 1, true))
 	{
-		love::sound::SoundData *sd = instance->stopRecording(true);
+		love::sound::SoundData *sd = instance()->stopRecording(true);
 		if (!sd) lua_pushnil(L);
 		else luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
 		return 1;
 	}
-	instance->stopRecording(false);
+	instance()->stopRecording(false);
 	return 0;
 }
 
 int w_canRecord(lua_State *L)
 {
-	luax_pushboolean(L, instance->canRecord());
+	luax_pushboolean(L, instance()->canRecord());
 	return 1;
 }
 
@@ -253,13 +253,13 @@ int w_setDistanceModel(lua_State *L)
 	Audio::DistanceModel distanceModel;
 	if (!Audio::getConstant(modelStr, distanceModel))
 		return luaL_error(L, "Invalid distance model: %s", modelStr);
-	instance->setDistanceModel(distanceModel);
+	instance()->setDistanceModel(distanceModel);
 	return 0;
 }
 
 int w_getDistanceModel(lua_State *L)
 {
-	Audio::DistanceModel distanceModel = instance->getDistanceModel();
+	Audio::DistanceModel distanceModel = instance()->getDistanceModel();
 	const char *modelStr;
 	if (!Audio::getConstant(distanceModel, modelStr))
 		return 0;
@@ -301,8 +301,10 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_audio(lua_State *L)
 {
+	Audio *instance = instance();
+
 #ifdef LOVE_ENABLE_AUDIO_OPENAL
-	if (instance == 0)
+	if (instance == nullptr)
 	{
 		// Try OpenAL first.
 		try
@@ -319,7 +321,7 @@ extern "C" int luaopen_love_audio(lua_State *L)
 #endif
 
 #ifdef LOVE_ENABLE_AUDIO_NULL
-	if (instance == 0)
+	if (instance == nullptr)
 	{
 		// Fall back to nullaudio.
 		try
@@ -333,7 +335,7 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	}
 #endif
 
-	if (instance == 0)
+	if (instance == nullptr)
 		return luaL_error(L, "Could not open any audio module.");
 
 	WrappedModule w;

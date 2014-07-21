@@ -30,7 +30,7 @@ namespace love
 namespace sound
 {
 
-static Sound *instance = 0;
+#define instance() (Module::getInstance<Sound>(Module::M_SOUND))
 
 int w_newSoundData(lua_State *L)
 {
@@ -43,7 +43,7 @@ int w_newSoundData(lua_State *L)
 		int bitDepth = luaL_optint(L, 3, Decoder::DEFAULT_BIT_DEPTH);
 		int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
 
-		luax_catchexcept(L, [&](){ t = instance->newSoundData(samples, sampleRate, bitDepth, channels); });
+		luax_catchexcept(L, [&](){ t = instance()->newSoundData(samples, sampleRate, bitDepth, channels); });
 	}
 	// Must be string or decoder.
 	else
@@ -55,7 +55,7 @@ int w_newSoundData(lua_State *L)
 			lua_replace(L, 1);
 		}
 
-		luax_catchexcept(L, [&](){ t = instance->newSoundData(luax_checkdecoder(L, 1)); });
+		luax_catchexcept(L, [&](){ t = instance()->newSoundData(luax_checkdecoder(L, 1)); });
 	}
 
 	luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, t);
@@ -69,7 +69,7 @@ int w_newDecoder(lua_State *L)
 
 	Decoder *t = nullptr;
 	luax_catchexcept(L,
-		[&]() { t = instance->newDecoder(data, bufferSize); },
+		[&]() { t = instance()->newDecoder(data, bufferSize); },
 		[&]() { data->release(); }
 	);
 
@@ -97,7 +97,8 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_sound(lua_State *L)
 {
-	if (instance == 0)
+	Sound *instance = instance();
+	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new lullaby::Sound(); });
 	}

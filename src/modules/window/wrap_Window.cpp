@@ -26,11 +26,11 @@ namespace love
 namespace window
 {
 
-static Window *instance = nullptr;
+#define instance() (Module::getInstance<Window>(Module::M_WINDOW))
 
 int w_getDisplayCount(lua_State *L)
 {
-	lua_pushinteger(L, instance->getDisplayCount());
+	lua_pushinteger(L, instance()->getDisplayCount());
 	return 1;
 }
 
@@ -39,7 +39,7 @@ int w_getDisplayName(lua_State *L)
 	int index = luaL_checkint(L, 1) - 1;
 
 	const char *name = nullptr;
-	luax_catchexcept(L, [&](){ name = instance->getDisplayName(index); });
+	luax_catchexcept(L, [&](){ name = instance()->getDisplayName(index); });
 
 	lua_pushstring(L, name);
 	return 1;
@@ -59,7 +59,7 @@ int w_setMode(lua_State *L)
 
 	if (lua_isnoneornil(L, 3))
 	{
-		luax_pushboolean(L, instance->setWindow(w, h, 0));
+		luax_pushboolean(L, instance()->setWindow(w, h, 0));
 		return 1;
 	}
 
@@ -117,7 +117,7 @@ int w_setMode(lua_State *L)
 	settings.display--;
 
 	luax_catchexcept(L,
-		[&](){ luax_pushboolean(L, instance->setWindow(w, h, &settings)); }
+		[&](){ luax_pushboolean(L, instance()->setWindow(w, h, &settings)); }
 	);
 
 	return 1;
@@ -127,7 +127,7 @@ int w_getMode(lua_State *L)
 {
 	int w, h;
 	WindowSettings settings;
-	instance->getWindow(w, h, settings);
+	instance()->getWindow(w, h, settings);
 	lua_pushnumber(L, w);
 	lua_pushnumber(L, h);
 
@@ -183,7 +183,7 @@ int w_getFullscreenModes(lua_State *L)
 {
 	int displayindex = luaL_optint(L, 1, 1) - 1;
 
-	std::vector<Window::WindowSize> modes = instance->getFullscreenSizes(displayindex);
+	std::vector<Window::WindowSize> modes = instance()->getFullscreenSizes(displayindex);
 
 	lua_createtable(L, modes.size(), 0);
 
@@ -219,9 +219,9 @@ int w_setFullscreen(lua_State *L)
 
 	bool success = false;
 	if (fstype == Window::FULLSCREEN_TYPE_MAX_ENUM)
-		success = instance->setFullscreen(fullscreen);
+		success = instance()->setFullscreen(fullscreen);
 	else
-		success = instance->setFullscreen(fullscreen, fstype);
+		success = instance()->setFullscreen(fullscreen, fstype);
 
 	luax_pushboolean(L, success);
 	return 1;
@@ -231,7 +231,7 @@ int w_getFullscreen(lua_State *L)
 {
 	int w, h;
 	WindowSettings settings;
-	instance->getWindow(w, h, settings);
+	instance()->getWindow(w, h, settings);
 
 	const char *typestr;
 	if (!Window::getConstant(settings.fstype, typestr))
@@ -244,26 +244,26 @@ int w_getFullscreen(lua_State *L)
 
 int w_isCreated(lua_State *L)
 {
-	luax_pushboolean(L, instance->isCreated());
+	luax_pushboolean(L, instance()->isCreated());
 	return 1;
 }
 
 int w_getWidth(lua_State *L)
 {
-	lua_pushinteger(L, instance->getWidth());
+	lua_pushinteger(L, instance()->getWidth());
 	return 1;
 }
 
 int w_getHeight(lua_State *L)
 {
-	lua_pushinteger(L, instance->getHeight());
+	lua_pushinteger(L, instance()->getHeight());
 	return 1;
 }
 
 int w_getDimensions(lua_State *L)
 {
-	lua_pushinteger(L, instance->getWidth());
-	lua_pushinteger(L, instance->getHeight());
+	lua_pushinteger(L, instance()->getWidth());
+	lua_pushinteger(L, instance()->getHeight());
 	return 2;
 }
 
@@ -271,7 +271,7 @@ int w_getDesktopDimensions(lua_State *L)
 {
 	int width = 0, height = 0;
 	int displayindex = luaL_optint(L, 1, 1) - 1;
-	instance->getDesktopDimensions(displayindex, width, height);
+	instance()->getDesktopDimensions(displayindex, width, height);
 	lua_pushinteger(L, width);
 	lua_pushinteger(L, height);
 	return 2;
@@ -280,13 +280,13 @@ int w_getDesktopDimensions(lua_State *L)
 int w_setIcon(lua_State *L)
 {
 	image::ImageData *i = luax_checktype<image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
-	luax_pushboolean(L, instance->setIcon(i));
+	luax_pushboolean(L, instance()->setIcon(i));
 	return 1;
 }
 
 int w_getIcon(lua_State *L)
 {
-	image::ImageData *i = instance->getIcon();
+	image::ImageData *i = instance()->getIcon();
 	if (i)
 	{
 		i->retain();
@@ -300,43 +300,43 @@ int w_getIcon(lua_State *L)
 int w_setTitle(lua_State *L)
 {
 	std::string title = luax_checkstring(L, 1);
-	instance->setWindowTitle(title);
+	instance()->setWindowTitle(title);
 	return 0;
 }
 
 int w_getTitle(lua_State *L)
 {
-	luax_pushstring(L, instance->getWindowTitle());
+	luax_pushstring(L, instance()->getWindowTitle());
 	return 1;
 }
 
 int w_hasFocus(lua_State *L)
 {
-	luax_pushboolean(L, instance->hasFocus());
+	luax_pushboolean(L, instance()->hasFocus());
 	return 1;
 }
 
 int w_hasMouseFocus(lua_State *L)
 {
-	luax_pushboolean(L, instance->hasMouseFocus());
+	luax_pushboolean(L, instance()->hasMouseFocus());
 	return 1;
 }
 
 int w_isVisible(lua_State *L)
 {
-	luax_pushboolean(L, instance->isVisible());
+	luax_pushboolean(L, instance()->isVisible());
 	return 1;
 }
 
 int w_getPixelScale(lua_State *L)
 {
-	lua_pushnumber(L, instance->getPixelScale());
+	lua_pushnumber(L, instance()->getPixelScale());
 	return 1;
 }
 
 int w_minimize(lua_State* /*L*/)
 {
-	instance->minimize();
+	instance()->minimize();
 	return 0;
 }
 
@@ -368,6 +368,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_window(lua_State *L)
 {
+	Window *instance = nullptr;
 	luax_catchexcept(L, [&](){ instance = sdl::Window::createSingleton(); });
 
 	WrappedModule w;

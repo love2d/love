@@ -33,13 +33,13 @@ namespace event
 namespace sdl
 {
 
-static Event *instance = 0;
+#define instance() (Module::getInstance<Event>(Module::M_EVENT))
 
 static int poll_i(lua_State *L)
 {
 	Message *m;
 
-	while (instance->poll(m))
+	while (instance()->poll(m))
 	{
 		int args = m->toLua(L);
 		m->release();
@@ -52,7 +52,7 @@ static int poll_i(lua_State *L)
 
 int w_pump(lua_State *)
 {
-	instance->pump();
+	instance()->pump();
 	return 0;
 }
 
@@ -66,7 +66,7 @@ int w_wait(lua_State *L)
 {
 	Message *m;
 
-	if ((m = instance->wait()))
+	if ((m = instance()->wait()))
 	{
 		int args = m->toLua(L);
 		m->release();
@@ -86,7 +86,7 @@ int w_push(lua_State *L)
 	if (!success)
 		return 1;
 
-	instance->push(m);
+	instance()->push(m);
 	m->release();
 
 	return 1;
@@ -94,14 +94,14 @@ int w_push(lua_State *L)
 
 int w_clear(lua_State *)
 {
-	instance->clear();
+	instance()->clear();
 	return 0;
 }
 
 int w_quit(lua_State *L)
 {
 	Message *m = new Message("quit");
-	instance->push(m);
+	instance()->push(m);
 	m->release();
 	luax_pushboolean(L, true);
 	return 1;
@@ -121,7 +121,8 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_event(lua_State *L)
 {
-	if (instance == 0)
+	Event *instance = instance();
+	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new Event(); });
 	}

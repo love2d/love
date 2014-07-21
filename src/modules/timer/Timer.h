@@ -33,9 +33,7 @@ class Timer : public Module
 {
 public:
 
-	/**
-	 * Destructor.
-	 **/
+	Timer() { moduleType = M_TIMER; }
 	virtual ~Timer() {}
 
 	/**

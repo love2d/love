@@ -64,9 +64,7 @@ public:
 	static bool getConstant(const char *in, DistanceModel &out);
 	static bool getConstant(DistanceModel in, const char  *&out);
 
-	/**
-	 * Destructor.
-	 **/
+	Audio();
 	virtual ~Audio() {}
 
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;

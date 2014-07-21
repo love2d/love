@@ -42,9 +42,7 @@ class Sound : public Module
 
 public:
 
-	/**
-	 * Destructor.
-	 **/
+	Sound();
 	virtual ~Sound();
 
 	/**

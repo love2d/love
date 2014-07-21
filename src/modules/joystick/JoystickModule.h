@@ -34,6 +34,7 @@ class JoystickModule : public Module
 {
 public:
 
+	JoystickModule() { moduleType = M_JOYSTICK; }
 	virtual ~JoystickModule() {}
 
 	/**

@@ -25,6 +25,11 @@ namespace love
 namespace graphics
 {
 
+Graphics::Graphics()
+{
+	moduleType = M_GRAPHICS;
+}
+
 Graphics::~Graphics()
 {
 }
