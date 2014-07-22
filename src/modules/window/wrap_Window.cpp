@@ -340,6 +340,66 @@ int w_minimize(lua_State* /*L*/)
 	return 0;
 }
 
+int w_showMessageBox(lua_State *L)
+{
+	Window::MessageBoxData data = {};
+
+	const char *typestr = luaL_checkstring(L, 1);
+	if (!Window::getConstant(typestr, data.type))
+		return luaL_error(L, "Invalid messagebox type: %s", typestr);
+
+	data.title = luaL_checkstring(L, 2);
+	data.message = luaL_checkstring(L, 3);
+
+	// If we have a table argument, we assume a list of button names, which
+	// means we should use the more complex message box API.
+	if (lua_istable(L, 4))
+	{
+		size_t numbuttons = lua_objlen(L, 4);
+		if (numbuttons == 0)
+			return luaL_error(L, "Must have at least one messagebox button.");
+
+		// Array of button names.
+		for (size_t i = 0; i < numbuttons; i++)
+		{
+			lua_rawgeti(L, 4, i + 1);
+			data.buttons.push_back(luax_checkstring(L, -1));
+			lua_pop(L, 1);
+		}
+
+		// Optional table entry specifying the button to use when enter is pressed.
+		lua_getfield(L, 4, "enterbutton");
+		if (!lua_isnoneornil(L, -1))
+			data.enterButtonIndex = luaL_checkint(L, -1) - 1;
+		else
+			data.enterButtonIndex = 0;
+		lua_pop(L, 1);
+
+		// Optional table entry specifying the button to use when esc is pressed.
+		lua_getfield(L, 4, "escapebutton");
+		if (!lua_isnoneornil(L, -1))
+			data.escapeButtonIndex = luaL_checkint(L, -1) - 1;
+		else
+			data.escapeButtonIndex = (int) data.buttons.size() - 1;
+		lua_pop(L, 1);
+
+		data.attachToWindow = luax_optboolean(L, 5, true);
+
+		int pressedbutton = instance()->showMessageBox(data);
+		lua_pushinteger(L, pressedbutton + 1);
+	}
+	else
+	{
+		data.attachToWindow = luax_optboolean(L, 4, true);
+
+		// Display a simple message box.
+		bool success = instance()->showMessageBox(data.type, data.title, data.message, data.attachToWindow);
+		luax_pushboolean(L, success);
+	}
+
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
@@ -363,6 +423,7 @@ static const luaL_Reg functions[] =
 	{ "isVisible", w_isVisible },
 	{ "getPixelScale", w_getPixelScale },
 	{ "minimize", w_minimize },
+	{ "showMessageBox", w_showMessageBox },
 	{ 0, 0 }
 };
 

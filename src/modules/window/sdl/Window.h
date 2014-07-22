@@ -87,6 +87,9 @@ public:
 
 	const void *getHandle() const;
 
+	bool showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow);
+	int showMessageBox(const MessageBoxData &data);
+
 	static love::window::Window *createSingleton();
 	static love::window::Window *getSingleton();
 
@@ -99,6 +102,8 @@ private:
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings);
+
+	SDL_MessageBoxFlags convertMessageBoxType(MessageBoxType type) const;
 
 	std::string windowTitle;
 

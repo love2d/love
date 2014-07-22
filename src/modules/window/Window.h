@@ -69,10 +69,32 @@ public:
 		FULLSCREEN_TYPE_MAX_ENUM
 	};
 
+	enum MessageBoxType
+	{
+		MESSAGEBOX_ERROR,
+		MESSAGEBOX_WARNING,
+		MESSAGEBOX_INFO,
+		MESSAGEBOX_MAX_ENUM
+	};
+
 	struct WindowSize
 	{
 		int width;
 		int height;
+	};
+
+	struct MessageBoxData
+	{
+		MessageBoxType type;
+
+		std::string title;
+		std::string message;
+
+		std::vector<std::string> buttons;
+		int enterButtonIndex;
+		int escapeButtonIndex;
+
+		bool attachToWindow;
 	};
 
 	virtual ~Window();
@@ -127,6 +149,9 @@ public:
 
 	virtual const void *getHandle() const = 0;
 
+	virtual bool showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow) = 0;
+	virtual int showMessageBox(const MessageBoxData &data) = 0;
+
 	//virtual static Window *createSingleton() = 0;
 	//virtual static Window *getSingleton() = 0;
 	// No virtual statics, of course, but you are supposed to implement these statics.
@@ -136,6 +161,9 @@ public:
 
 	static bool getConstant(const char *in, FullscreenType &out);
 	static bool getConstant(FullscreenType in, const char *&out);
+
+	static bool getConstant(const char *in, MessageBoxType &out);
+	static bool getConstant(MessageBoxType in, const char *&out);
 
 protected:
 
@@ -148,6 +176,9 @@ private:
 
 	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM>::Entry fullscreenTypeEntries[];
 	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM> fullscreenTypes;
+
+	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry messageBoxTypeEntries[];
+	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> messageBoxTypes;
 
 }; // Window
 

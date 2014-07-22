@@ -678,6 +678,65 @@ const void *Window::getHandle() const
 	return window;
 }
 
+SDL_MessageBoxFlags Window::convertMessageBoxType(MessageBoxType type) const
+{
+	switch (type)
+	{
+	case MESSAGEBOX_ERROR:
+		return SDL_MESSAGEBOX_ERROR;
+	case MESSAGEBOX_WARNING:
+		return SDL_MESSAGEBOX_WARNING;
+	case MESSAGEBOX_INFO:
+	default:
+		return SDL_MESSAGEBOX_INFORMATION;
+	}
+}
+
+bool Window::showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow)
+{
+	SDL_MessageBoxFlags flags = convertMessageBoxType(type);
+	SDL_Window *sdlwindow = attachtowindow ? window : nullptr;
+
+	return SDL_ShowSimpleMessageBox(flags, title.c_str(), message.c_str(), sdlwindow) >= 0;
+}
+
+int Window::showMessageBox(const MessageBoxData &data)
+{
+	SDL_MessageBoxData sdldata = {};
+
+	sdldata.flags = convertMessageBoxType(data.type);
+	sdldata.title = data.title.c_str();
+	sdldata.message = data.message.c_str();
+	sdldata.window = data.attachToWindow ? window : nullptr;
+
+	sdldata.numbuttons = (int) data.buttons.size();
+
+	std::vector<SDL_MessageBoxButtonData> sdlbuttons;
+
+	for (size_t i = 0; i < data.buttons.size(); i++)
+	{
+		SDL_MessageBoxButtonData sdlbutton = {};
+
+		sdlbutton.buttonid = (int) i;
+		sdlbutton.text = data.buttons[i].c_str();
+
+		if ((int) i == data.enterButtonIndex)
+			sdlbutton.flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+
+		if ((int) i == data.escapeButtonIndex)
+			sdlbutton.flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+
+		sdlbuttons.push_back(sdlbutton);
+	}
+
+	sdldata.buttons = &sdlbuttons[0];
+
+	int pressedbutton = -2;
+	SDL_ShowMessageBox(&sdldata, &pressedbutton);
+
+	return pressedbutton;
+}
+
 love::window::Window *Window::createSingleton()
 {
 	if (!singleton)

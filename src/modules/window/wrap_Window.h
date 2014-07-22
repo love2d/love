@@ -50,6 +50,7 @@ int w_hasMouseFocus(lua_State *L);
 int w_isVisible(lua_State *L);
 int w_getPixelScale(lua_State *L);
 int w_minimize(lua_State *L);
+int w_showMessageBox(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_window(lua_State *L);
 
 } // window
