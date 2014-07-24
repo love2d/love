@@ -661,6 +661,21 @@ int64 Filesystem::getSize(const char *filename) const
 	return size;
 }
 
+void Filesystem::setSymlinksEnabled(bool enable)
+{
+	PHYSFS_permitSymbolicLinks(enable ? 1 : 0);
+}
+
+bool Filesystem::areSymlinksEnabled() const
+{
+	return PHYSFS_symbolicLinksPermitted() != 0;
+}
+
+bool Filesystem::isSymlink(const char *filename) const
+{
+	return PHYSFS_isSymbolicLink(filename) != 0;
+}
+
 } // physfs
 } // filesystem
 } // love

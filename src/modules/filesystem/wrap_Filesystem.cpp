@@ -486,6 +486,25 @@ int w_getSize(lua_State *L)
 	return 1;
 }
 
+int w_setSymlinksEnabled(lua_State *L)
+{
+	instance()->setSymlinksEnabled(luax_toboolean(L, 1));
+	return 0;
+}
+
+int w_areSymlinksEnabled(lua_State *L)
+{
+	luax_pushboolean(L, instance()->areSymlinksEnabled());
+	return 1;
+}
+
+int w_isSymlink(lua_State *L)
+{
+	const char *filename = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->isSymlink(filename));
+	return 1;
+}
+
 int loader(lua_State *L)
 {
 	const char *filename = lua_tostring(L, -1);
@@ -645,6 +664,9 @@ static const luaL_Reg functions[] =
 	{ "load", w_load },
 	{ "getLastModified", w_getLastModified },
 	{ "getSize", w_getSize },
+	{ "setSymlinksEnabled", w_setSymlinksEnabled },
+	{ "areSymlinksEnabled", w_areSymlinksEnabled },
+	{ "isSymlink", w_isSymlink },
 	{ "newFileData", w_newFileData },
 	{ 0, 0 }
 };

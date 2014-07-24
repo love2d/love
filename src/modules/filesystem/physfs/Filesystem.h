@@ -248,6 +248,22 @@ public:
 	int64 getSize(const char *filename) const;
 
 	/**
+	 * Enable or disable symbolic link support in love.filesystem.
+	 **/
+	void setSymlinksEnabled(bool enable);
+
+	/**
+	 * Gets whether symbolic link support is enabled.
+	 **/
+	bool areSymlinksEnabled() const;
+
+	/**
+	 * Gets whether a filepath is actually a symlink.
+	 * Always returns false if symlinks are not enabled.
+	 **/
+	bool isSymlink(const char *filename) const;
+
+	/**
 	 * Text file line-reading iterator function used and
 	 * pushed on the Lua stack by love.filesystem.lines
 	 * and File:lines.
