@@ -49,7 +49,6 @@ namespace physics
 namespace box2d
 {
 
-static Physics *instance = 0;
 #define instance() (Module::getInstance<Physics>(Module::M_PHYSICS))
 
 int w_newWorld(lua_State *L)
