@@ -63,7 +63,7 @@ public:
 
 	enum FullscreenType
 	{
-		FULLSCREEN_TYPE_NORMAL,
+		FULLSCREEN_TYPE_EXCLUSIVE,
 		FULLSCREEN_TYPE_DESKTOP,
 		FULLSCREEN_TYPE_MAX_ENUM
 	};
@@ -183,7 +183,7 @@ struct WindowSettings
 	WindowSettings();
 
 	bool fullscreen; // = false
-	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_NORMAL
+	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_EXCLUSIVE
 	bool vsync; // = true
 	int msaa; // = 0
 	bool resizable; // = false

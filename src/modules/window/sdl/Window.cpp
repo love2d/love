@@ -357,7 +357,7 @@ void Window::updateSettings(const WindowSettings &newsettings)
 	else if ((wflags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
 	{
 		curMode.settings.fullscreen = true;
-		curMode.settings.fstype = FULLSCREEN_TYPE_NORMAL;
+		curMode.settings.fstype = FULLSCREEN_TYPE_EXCLUSIVE;
 	}
 	else
 	{
@@ -387,7 +387,7 @@ void Window::updateSettings(const WindowSettings &newsettings)
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen
 	// mode.
-	if (curMode.settings.fullscreen && curMode.settings.fstype == FULLSCREEN_TYPE_NORMAL)
+	if (curMode.settings.fullscreen && curMode.settings.fstype == FULLSCREEN_TYPE_EXCLUSIVE)
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
 	else
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");

@@ -92,8 +92,8 @@ int w_setMode(lua_State *L)
 	}
 	else
 	{
-		// Default to "normal" fullscreen.
-		settings.fstype = Window::FULLSCREEN_TYPE_NORMAL;
+		// Default to exclusive fullscreen mode.
+		settings.fstype = Window::FULLSCREEN_TYPE_EXCLUSIVE;
 	}
 	lua_pop(L, 1);
 
@@ -129,7 +129,7 @@ int w_getMode(lua_State *L)
 
 	lua_newtable(L);
 
-	const char *fstypestr = "normal";
+	const char *fstypestr = "exclusive";
 	Window::getConstant(settings.fstype, fstypestr);
 
 	lua_pushstring(L, fstypestr);

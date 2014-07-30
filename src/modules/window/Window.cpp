@@ -40,7 +40,7 @@ void Window::swapBuffers()
 
 WindowSettings::WindowSettings()
 	: fullscreen(false)
-	, fstype(Window::FULLSCREEN_TYPE_NORMAL)
+	, fstype(Window::FULLSCREEN_TYPE_EXCLUSIVE)
 	, vsync(true)
 	, msaa(0)
 	, resizable(false)
@@ -104,7 +104,7 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM> Window::settings(Window::se
 
 StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
 {
-	{"normal", Window::FULLSCREEN_TYPE_NORMAL},
+	{"exclusive", Window::FULLSCREEN_TYPE_EXCLUSIVE},
 	{"desktop", Window::FULLSCREEN_TYPE_DESKTOP},
 };
 
