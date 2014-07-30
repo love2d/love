@@ -50,6 +50,9 @@ public:
 
 	virtual ~System() {}
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_SYSTEM; }
+
 	/**
 	 * Gets the current operating system.
 	 **/

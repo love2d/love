@@ -27,30 +27,30 @@ namespace love
 namespace system
 {
 
-static System *instance = nullptr;
+#define instance() (Module::getInstance<System>(Module::M_SYSTEM))
 
 int w_getOS(lua_State *L)
 {
-	luax_pushstring(L, instance->getOS());
+	luax_pushstring(L, instance()->getOS());
 	return 1;
 }
 
 int w_getProcessorCount(lua_State *L)
 {
-	lua_pushinteger(L, instance->getProcessorCount());
+	lua_pushinteger(L, instance()->getProcessorCount());
 	return 1;
 }
 
 int w_setClipboardText(lua_State *L)
 {
 	const char *text = luaL_checkstring(L, 1);
-	instance->setClipboardText(text);
+	instance()->setClipboardText(text);
 	return 0;
 }
 
 int w_getClipboardText(lua_State *L)
 {
-	luax_pushstring(L, instance->getClipboardText());
+	luax_pushstring(L, instance()->getClipboardText());
 	return 1;
 }
 
@@ -59,7 +59,7 @@ int w_getPowerInfo(lua_State *L)
 	int seconds = -1, percent = -1;
 	const char *str;
 
-	System::PowerState state = instance->getPowerInfo(seconds, percent);
+	System::PowerState state = instance()->getPowerInfo(seconds, percent);
 
 	if (!System::getConstant(state, str))
 		str = "unknown";
@@ -82,7 +82,7 @@ int w_getPowerInfo(lua_State *L)
 int w_openURL(lua_State *L)
 {
 	std::string url = luax_checkstring(L, 1);
-	luax_pushboolean(L, instance->openURL(url));
+	luax_pushboolean(L, instance()->openURL(url));
 	return 1;
 }
 
@@ -99,6 +99,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_system(lua_State *L)
 {
+	System *instance = instance();
 	if (instance == nullptr)
 	{
 		instance = new love::system::sdl::System();

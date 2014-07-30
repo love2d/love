@@ -49,6 +49,7 @@ public:
 
 	// Implements Module.
 	virtual const char *getName() const;
+	virtual ModuleType getModuleType() const { return M_THREAD; }
 
 }; // ThreadModule
 

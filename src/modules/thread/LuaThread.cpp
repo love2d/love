@@ -107,7 +107,7 @@ void LuaThread::onError()
 	if (error.empty())
 		return;
 
-	event::Event *event = (event::Event *) Module::findInstance("love.event.");
+	event::Event *event = Module::getInstance<event::Event>(Module::M_EVENT);
 	if (!event)
 		return;
 

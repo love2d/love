@@ -30,7 +30,7 @@ namespace love
 namespace mouse
 {
 
-static Mouse *instance = nullptr;
+#define instance() (Module::getInstance<Mouse>(Module::M_MOUSE))
 
 int w_newCursor(lua_State *L)
 {
@@ -43,7 +43,7 @@ int w_newCursor(lua_State *L)
 	int hotx = luaL_optint(L, 2, 0);
 	int hoty = luaL_optint(L, 3, 0);
 
-	luax_catchexcept(L, [&](){ cursor = instance->newCursor(data, hotx, hoty); });
+	luax_catchexcept(L, [&](){ cursor = instance()->newCursor(data, hotx, hoty); });
 
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
 	return 1;
@@ -58,7 +58,7 @@ int w_getSystemCursor(lua_State *L)
 		return luaL_error(L, "Invalid system cursor type: %s", str);
 
 	Cursor *cursor = 0;
-	luax_catchexcept(L, [&](){ cursor = instance->getSystemCursor(systemCursor); });
+	luax_catchexcept(L, [&](){ cursor = instance()->getSystemCursor(systemCursor); });
 
 	cursor->retain();
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
@@ -70,18 +70,18 @@ int w_setCursor(lua_State *L)
 	// Revert to the default system cursor if no argument is given.
 	if (lua_isnoneornil(L, 1))
 	{
-		instance->setCursor();
+		instance()->setCursor();
 		return 0;
 	}
 
 	Cursor *cursor = luax_checkcursor(L, 1);
-	instance->setCursor(cursor);
+	instance()->setCursor(cursor);
 	return 0;
 }
 
 int w_getCursor(lua_State *L)
 {
-	Cursor *cursor = instance->getCursor();
+	Cursor *cursor = instance()->getCursor();
 
 	if (cursor)
 	{
@@ -96,20 +96,20 @@ int w_getCursor(lua_State *L)
 
 int w_getX(lua_State *L)
 {
-	lua_pushnumber(L, instance->getX());
+	lua_pushnumber(L, instance()->getX());
 	return 1;
 }
 
 int w_getY(lua_State *L)
 {
-	lua_pushnumber(L, instance->getY());
+	lua_pushnumber(L, instance()->getY());
 	return 1;
 }
 
 int w_getPosition(lua_State *L)
 {
 	int x, y;
-	instance->getPosition(x, y);
+	instance()->getPosition(x, y);
 	lua_pushinteger(L, x);
 	lua_pushinteger(L, y);
 	return 2;
@@ -118,14 +118,14 @@ int w_getPosition(lua_State *L)
 int w_setX(lua_State *L)
 {
 	int x = luaL_checkint(L, 1);
-	instance->setX(x);
+	instance()->setX(x);
 	return 0;
 }
 
 int w_setY(lua_State *L)
 {
 	int y = luaL_checkint(L, 1);
-	instance->setY(y);
+	instance()->setY(y);
 	return 0;
 }
 
@@ -133,7 +133,7 @@ int w_setPosition(lua_State *L)
 {
 	int x = luaL_checkint(L, 1);
 	int y = luaL_checkint(L, 2);
-	instance->setPosition(x, y);
+	instance()->setPosition(x, y);
 	return 0;
 }
 
@@ -151,7 +151,7 @@ int w_isDown(lua_State *L)
 	}
 	buttonlist[counter] = Mouse::BUTTON_MAX_ENUM;
 
-	luax_pushboolean(L, instance->isDown(buttonlist));
+	luax_pushboolean(L, instance()->isDown(buttonlist));
 	delete[] buttonlist;
 	return 1;
 }
@@ -159,26 +159,26 @@ int w_isDown(lua_State *L)
 int w_setVisible(lua_State *L)
 {
 	bool b = luax_toboolean(L, 1);
-	instance->setVisible(b);
+	instance()->setVisible(b);
 	return 0;
 }
 
 int w_isVisible(lua_State *L)
 {
-	luax_pushboolean(L, instance->isVisible());
+	luax_pushboolean(L, instance()->isVisible());
 	return 1;
 }
 
 int w_setGrabbed(lua_State *L)
 {
 	bool b = luax_toboolean(L, 1);
-	instance->setGrabbed(b);
+	instance()->setGrabbed(b);
 	return 0;
 }
 
 int w_isGrabbed(lua_State *L)
 {
-	luax_pushboolean(L, instance->isGrabbed());
+	luax_pushboolean(L, instance()->isGrabbed());
 	return 1;
 }
 
@@ -212,6 +212,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_mouse(lua_State *L)
 {
+	Mouse *instance = instance();
 	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new love::mouse::sdl::Mouse(); });

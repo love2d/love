@@ -58,6 +58,8 @@ namespace
 namespace love
 {
 
+Module *Module::instances[] = {};
+
 Module::~Module()
 {
 	ModuleRegistry &registry = registryInstance();
@@ -70,6 +72,13 @@ Module::~Module()
 			registry.erase(it);
 			break;
 		}
+	}
+
+	// Same deal with Module::getModuleType().
+	for (int i = 0; i < (int) M_MAX_ENUM; i++)
+	{
+		if (instances[i] == this)
+			instances[i] = nullptr;
 	}
 
 	freeEmptyRegistry();
@@ -94,6 +103,16 @@ void Module::registerInstance(Module *instance)
 	}
 
 	registry.insert(make_pair(name, instance));
+
+	ModuleType moduletype = instance->getModuleType();
+
+	if (instances[moduletype] != nullptr)
+	{
+		printf("Warning: overwriting module instance %s with new instance %s\n",
+			   instances[moduletype]->getName(), instance->getName());
+	}
+
+	instances[moduletype] = instance;
 }
 
 Module *Module::getInstance(const std::string &name)
@@ -106,19 +125,6 @@ Module *Module::getInstance(const std::string &name)
 		return nullptr;
 
 	return it->second;
-}
-
-Module *Module::findInstance(const std::string &name)
-{
-	ModuleRegistry &registry = registryInstance();
-
-	for (auto it = registry.begin(); it != registry.end(); ++it)
-	{
-		if (it->first.find(name) == 0)
-			return it->second;
-	}
-
-	return nullptr;
 }
 
 } // love

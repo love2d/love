@@ -42,10 +42,10 @@ class Sound : public Module
 
 public:
 
-	/**
-	 * Destructor.
-	 **/
 	virtual ~Sound();
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_SOUND; }
 
 	/**
 	 * Creates new SoundData from a decoder. Fully expands the

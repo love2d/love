@@ -29,17 +29,17 @@ namespace love
 namespace keyboard
 {
 
-static Keyboard *instance = nullptr;
+#define instance() (Module::getInstance<Keyboard>(Module::M_KEYBOARD))
 
 int w_setKeyRepeat(lua_State *L)
 {
-	instance->setKeyRepeat(luax_toboolean(L, 1));
+	instance()->setKeyRepeat(luax_toboolean(L, 1));
 	return 0;
 }
 
 int w_hasKeyRepeat(lua_State *L)
 {
-	luax_pushboolean(L, instance->hasKeyRepeat());
+	luax_pushboolean(L, instance()->hasKeyRepeat());
 	return 1;
 }
 
@@ -57,20 +57,20 @@ int w_isDown(lua_State *L)
 	}
 	keylist[counter] = Keyboard::KEY_MAX_ENUM;
 
-	luax_pushboolean(L, instance->isDown(keylist));
+	luax_pushboolean(L, instance()->isDown(keylist));
 	delete[] keylist;
 	return 1;
 }
 
 int w_setTextInput(lua_State *L)
 {
-	instance->setTextInput(luax_toboolean(L, 1));
+	instance()->setTextInput(luax_toboolean(L, 1));
 	return 0;
 }
 
 int w_hasTextInput(lua_State *L)
 {
-	luax_pushboolean(L, instance->hasTextInput());
+	luax_pushboolean(L, instance()->hasTextInput());
 	return 1;
 }
 
@@ -87,6 +87,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_keyboard(lua_State *L)
 {
+	Keyboard *instance = instance();
 	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new love::keyboard::sdl::Keyboard(); });

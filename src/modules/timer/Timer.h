@@ -33,10 +33,10 @@ class Timer : public Module
 {
 public:
 
-	/**
-	 * Destructor.
-	 **/
 	virtual ~Timer() {}
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_TIMER; }
 
 	/**
 	 * Measures the time between this call and the previous call,

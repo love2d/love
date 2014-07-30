@@ -98,11 +98,20 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		else
 		{
 			sdlflags |= SDL_WINDOW_FULLSCREEN;
+			SDL_DisplayMode mode = {0, width, height, 0, 0};
 
 			// Fullscreen window creation will bug out if no mode can be used.
-			SDL_DisplayMode mode = {0, width, height, 0, 0};
-			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == 0)
-				return false;
+			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == nullptr)
+			{
+				// GetClosestDisplayMode will fail if we request a size larger
+				// than the largest available display mode, so we'll try to use
+				// the largest (first) mode in that case.
+				if (SDL_GetDisplayMode(f.display, 0, &mode) < 0)
+					return false;
+			}
+
+			width = mode.w;
+			height = mode.h;
 		}
 	}
 
@@ -118,7 +127,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
 
-	graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
 		gfx->unSetMode();
 
@@ -431,7 +440,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 		updateSettings(newsettings);
 
 		// Update the viewport size now instead of waiting for event polling.
-		graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+		graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		if (gfx != nullptr)
 		{
 			int width = curMode.width;
@@ -668,25 +677,63 @@ const void *Window::getHandle() const
 	return window;
 }
 
-void Window::showMessageBox(MessageBoxType type, const char *title, const char *message)
+SDL_MessageBoxFlags Window::convertMessageBoxType(MessageBoxType type) const
 {
-	SDL_MessageBoxFlags sdlflags;
-
 	switch (type)
 	{
 	case MESSAGEBOX_ERROR:
-		sdlflags = SDL_MESSAGEBOX_ERROR;
-		break;
+		return SDL_MESSAGEBOX_ERROR;
 	case MESSAGEBOX_WARNING:
-		sdlflags = SDL_MESSAGEBOX_WARNING;
-		break;
+		return SDL_MESSAGEBOX_WARNING;
 	case MESSAGEBOX_INFO:
 	default:
-		sdlflags = SDL_MESSAGEBOX_INFORMATION;
-		break;
+		return SDL_MESSAGEBOX_INFORMATION;
+	}
+}
+
+bool Window::showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow)
+{
+	SDL_MessageBoxFlags flags = convertMessageBoxType(type);
+	SDL_Window *sdlwindow = attachtowindow ? window : nullptr;
+
+	return SDL_ShowSimpleMessageBox(flags, title.c_str(), message.c_str(), sdlwindow) >= 0;
+}
+
+int Window::showMessageBox(const MessageBoxData &data)
+{
+	SDL_MessageBoxData sdldata = {};
+
+	sdldata.flags = convertMessageBoxType(data.type);
+	sdldata.title = data.title.c_str();
+	sdldata.message = data.message.c_str();
+	sdldata.window = data.attachToWindow ? window : nullptr;
+
+	sdldata.numbuttons = (int) data.buttons.size();
+
+	std::vector<SDL_MessageBoxButtonData> sdlbuttons;
+
+	for (size_t i = 0; i < data.buttons.size(); i++)
+	{
+		SDL_MessageBoxButtonData sdlbutton = {};
+
+		sdlbutton.buttonid = (int) i;
+		sdlbutton.text = data.buttons[i].c_str();
+
+		if ((int) i == data.enterButtonIndex)
+			sdlbutton.flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+
+		if ((int) i == data.escapeButtonIndex)
+			sdlbutton.flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+
+		sdlbuttons.push_back(sdlbutton);
 	}
 
-	SDL_ShowSimpleMessageBox(sdlflags, title, message, window);
+	sdldata.buttons = &sdlbuttons[0];
+
+	int pressedbutton = -2;
+	SDL_ShowMessageBox(&sdldata, &pressedbutton);
+
+	return pressedbutton;
 }
 
 love::window::Window *Window::createSingleton()

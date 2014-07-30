@@ -246,6 +246,9 @@ public:
 
 	virtual ~Keyboard() {}
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_KEYBOARD; }
+
 	/**
 	 * Sets whether repeat keypress events should be sent if a key is held down.
 	 * Does not affect text input events.

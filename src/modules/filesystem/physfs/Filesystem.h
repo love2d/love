@@ -80,6 +80,8 @@ public:
 	Filesystem();
 	virtual ~Filesystem();
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_FILESYSTEM; }
 	const char *getName() const;
 
 	void init(const char *arg0);
@@ -236,6 +238,22 @@ public:
 	 * @param filename The name of the file.
 	 **/
 	int64 getSize(const char *filename) const;
+
+	/**
+	 * Enable or disable symbolic link support in love.filesystem.
+	 **/
+	void setSymlinksEnabled(bool enable);
+
+	/**
+	 * Gets whether symbolic link support is enabled.
+	 **/
+	bool areSymlinksEnabled() const;
+
+	/**
+	 * Gets whether a filepath is actually a symlink.
+	 * Always returns false if symlinks are not enabled.
+	 **/
+	bool isSymlink(const char *filename) const;
 
 	/**
 	 * Text file line-reading iterator function used and

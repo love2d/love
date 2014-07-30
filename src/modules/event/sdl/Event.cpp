@@ -44,7 +44,7 @@ static void windowToPixelCoords(int *x, int *y)
 {
 	double scale = 1.0;
 
-	window::Window *window = (window::Window *) Module::findInstance("love.window.");
+	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window != nullptr)
 		scale = window->getPixelScale();
 
@@ -129,7 +129,7 @@ Message *Event::convert(const SDL_Event &e) const
 	case SDL_KEYDOWN:
 		if (e.key.repeat)
 		{
-			kb = (love::keyboard::Keyboard *) Module::findInstance("love.keyboard.");
+			kb = Module::getInstance<love::keyboard::Keyboard>(Module::M_KEYBOARD);
 			if (kb && !kb->hasKeyRepeat())
 				break;
 		}
@@ -232,7 +232,7 @@ Message *Event::convert(const SDL_Event &e) const
 
 Message *Event::convertJoystickEvent(const SDL_Event &e) const
 {
-	joystick::JoystickModule *joymodule = (joystick::JoystickModule *) Module::findInstance("love.joystick.");
+	joystick::JoystickModule *joymodule = Module::getInstance<joystick::JoystickModule>(Module::M_JOYSTICK);
 	if (!joymodule)
 		return 0;
 
@@ -403,7 +403,7 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 		arg1->release();
 		break;
 	case SDL_WINDOWEVENT_RESIZED:
-		win = (window::Window *) Module::findInstance("love.window.");
+		win = Module::getInstance<window::Window>(Module::M_WINDOW);
 		if (win)
 		{
 			int px_w = e.window.data1;
@@ -418,7 +418,7 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 
 			win->onWindowResize(e.window.data1, e.window.data2);
 
-			graphics::Graphics *gfx = (graphics::Graphics *) Module::findInstance("love.graphics.");
+			graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 			if (gfx)
 				gfx->setViewportSize(px_w, px_h);
 

@@ -46,6 +46,7 @@ namespace opengl
 Graphics::Graphics()
 	: currentFont(0)
 	, lineStyle(LINE_SMOOTH)
+	, lineJoin(LINE_JOIN_MITER)
 	, lineWidth(1)
 	, matrixLimit(0)
 	, userMatrices(0)
@@ -90,7 +91,8 @@ DisplayState Graphics::saveState()
 
 	s.blendMode = getBlendMode();
 	//get line style
-	s.lineStyle = lineStyle;
+	s.lineStyle = getLineStyle();
+	s.lineJoin = getLineJoin();
 	//get the point size
 	glGetFloatv(GL_POINT_SIZE, &s.pointSize);
 	//get scissor status
@@ -114,6 +116,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setBlendMode(s.blendMode);
 	setLineWidth(lineWidth);
 	setLineStyle(s.lineStyle);
+	setLineJoin(s.lineJoin);
 	setPointSize(s.pointSize);
 	if (s.scissor)
 		setScissor(s.scissorBox.x, s.scissorBox.y, s.scissorBox.w, s.scissorBox.h);
@@ -168,9 +171,9 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	if (!(GLEE_VERSION_2_0 && Shader::isSupported() && Canvas::isSupported())
 		&& !displayedMinReqWarning)
 	{
-		love::window::MessageBoxType type = love::window::MESSAGEBOX_ERROR;
+		love::window::Window::MessageBoxType type = love::window::Window::MESSAGEBOX_ERROR;
 
-		const char *title = "Minimum system requirements not met!";
+		std::string title = "Minimum system requirements not met!";
 
 		std::string message;
 		message += "Detected OpenGL version: ";
@@ -178,8 +181,8 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 		message += "\nRequired OpenGL version: 2.1."; // -ish
 		message += "\nThe program may crash or have graphical issues.";
 
-		::printf("%s\n%s\n", title, message.c_str());
-		currentWindow->showMessageBox(type, title, message.c_str());
+		::printf("%s\n%s\n", title.c_str(), message.c_str());
+		currentWindow->showMessageBox(type, title, message, true);
 
 		// We should only show the message once, instead of after every setMode.
 		displayedMinReqWarning = true;

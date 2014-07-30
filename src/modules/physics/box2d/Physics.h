@@ -63,6 +63,7 @@ public:
 
 	// Implements Module.
 	const char *getName() const;
+	virtual ModuleType getModuleType() const { return M_PHYSICS; }
 
 	/**
 	 * Creates a new World.

@@ -106,6 +106,9 @@ public:
 
 	virtual ~Graphics();
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
+
 	/**
 	 * Sets the current graphics display viewport dimensions.
 	 **/

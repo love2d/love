@@ -39,14 +39,6 @@ namespace window
 // whole thing here because it uses the Window::Type enum.
 struct WindowSettings;
 
-enum MessageBoxType
-{
-	MESSAGEBOX_ERROR,
-	MESSAGEBOX_WARNING,
-	MESSAGEBOX_INFO,
-	MESSAGEBOX_MAX_ENUM
-};
-
 class Window : public Module
 {
 public:
@@ -76,13 +68,38 @@ public:
 		FULLSCREEN_TYPE_MAX_ENUM
 	};
 
+	enum MessageBoxType
+	{
+		MESSAGEBOX_ERROR,
+		MESSAGEBOX_WARNING,
+		MESSAGEBOX_INFO,
+		MESSAGEBOX_MAX_ENUM
+	};
+
 	struct WindowSize
 	{
 		int width;
 		int height;
 	};
 
+	struct MessageBoxData
+	{
+		MessageBoxType type;
+
+		std::string title;
+		std::string message;
+
+		std::vector<std::string> buttons;
+		int enterButtonIndex;
+		int escapeButtonIndex;
+
+		bool attachToWindow;
+	};
+
 	virtual ~Window();
+
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_WINDOW; }
 
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
 	virtual void getWindow(int &width, int &height, WindowSettings &settings) = 0;
@@ -128,7 +145,8 @@ public:
 
 	virtual const void *getHandle() const = 0;
 
-	virtual void showMessageBox(MessageBoxType type, const char *title, const char *message) = 0;
+	virtual bool showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow) = 0;
+	virtual int showMessageBox(const MessageBoxData &data) = 0;
 
 	//virtual static Window *createSingleton() = 0;
 	//virtual static Window *getSingleton() = 0;

@@ -36,6 +36,9 @@ public:
 
 	virtual ~JoystickModule() {}
 
+	// Implements Module.
+	virtual ModuleType getModuleType() const { return M_JOYSTICK; }
+
 	/**
 	 * Adds a connected Joystick device and opens it for use.
 	 * Returns NULL if the Joystick could not be added.

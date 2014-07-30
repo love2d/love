@@ -30,41 +30,41 @@ namespace love
 namespace timer
 {
 
-static Timer *instance = 0;
+#define instance() (Module::getInstance<Timer>(Module::M_TIMER))
 
 int w_step(lua_State *)
 {
-	instance->step();
+	instance()->step();
 	return 0;
 }
 
 int w_getDelta(lua_State *L)
 {
-	lua_pushnumber(L, instance->getDelta());
+	lua_pushnumber(L, instance()->getDelta());
 	return 1;
 }
 
 int w_getFPS(lua_State *L)
 {
-	lua_pushinteger(L, instance->getFPS());
+	lua_pushinteger(L, instance()->getFPS());
 	return 1;
 }
 
 int w_getAverageDelta(lua_State *L)
 {
-	lua_pushnumber(L, instance->getAverageDelta());
+	lua_pushnumber(L, instance()->getAverageDelta());
 	return 1;
 }
 
 int w_sleep(lua_State *L)
 {
-	instance->sleep(luaL_checknumber(L, 1));
+	instance()->sleep(luaL_checknumber(L, 1));
 	return 0;
 }
 
 int w_getTime(lua_State *L)
 {
-	lua_pushnumber(L, instance->getTime());
+	lua_pushnumber(L, instance()->getTime());
 	return 1;
 }
 
@@ -83,7 +83,8 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_timer(lua_State *L)
 {
-	if (instance == 0)
+	Timer *instance = instance();
+	if (instance == nullptr)
 	{
 		luax_catchexcept(L, [&](){ instance = new love::timer::sdl::Timer(); });
 	}
