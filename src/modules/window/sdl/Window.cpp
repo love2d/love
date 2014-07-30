@@ -98,11 +98,20 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		else
 		{
 			sdlflags |= SDL_WINDOW_FULLSCREEN;
+			SDL_DisplayMode mode = {0, width, height, 0, 0};
 
 			// Fullscreen window creation will bug out if no mode can be used.
-			SDL_DisplayMode mode = {0, width, height, 0, 0};
-			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == 0)
-				return false;
+			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == nullptr)
+			{
+				// GetClosestDisplayMode will fail if we request a size larger
+				// than the largest available display mode, so we'll try to use
+				// the largest (first) mode in that case.
+				if (SDL_GetDisplayMode(f.display, 0, &mode) < 0)
+					return false;
+			}
+
+			width = mode.w;
+			height = mode.h;
 		}
 	}
 
