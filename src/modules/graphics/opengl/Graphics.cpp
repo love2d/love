@@ -105,7 +105,7 @@ DisplayState Graphics::saveState()
 	for (int i = 0; i < 4; i++)
 		s.colorMask[i] = colorMask[i];
 
-	wireframe = isWireframe();
+	s.wireframe = isWireframe();
 
 	return s;
 }
