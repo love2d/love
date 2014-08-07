@@ -194,5 +194,19 @@ void Matrix::transform(Vertex *dst, const Vertex *src, int size) const
 	}
 }
 
+Matrix Matrix::ortho(float left, float right, float bottom, float top)
+{
+	Matrix m;
+
+	m.e[0] = 2.0f / (right - left);
+	m.e[5] = 2.0f / (top - bottom);
+	m.e[10] = -1.0;
+
+	m.e[12] = -(right + left) / (right - left);
+	m.e[13] = -(top + bottom) / (top - bottom);
+
+	return m;
+}
+
 
 } // love

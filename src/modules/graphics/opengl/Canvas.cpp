@@ -594,16 +594,13 @@ void Canvas::unloadVolatile()
 	fbo = depth_stencil = texture = 0;
 	resolve_fbo = msaa_buffer = 0;
 
-	for (size_t i = 0; i < attachedCanvases.size(); i++)
-		attachedCanvases[i]->release();
-
 	attachedCanvases.clear();
 }
 
 void Canvas::drawv(const Matrix &t, const Vertex *v)
 {
-	glPushMatrix();
-	glMultMatrixf((const GLfloat *)t.getElements());
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
 
 	predraw();
 
@@ -620,8 +617,6 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	postdraw();
-	
-	glPopMatrix();
 }
 
 void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -691,16 +686,8 @@ void Canvas::setupGrab()
 	strategy->bindFBO(fbo);
 	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
 
-	// Reset the projection matrix
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	// Set up orthographic view (no depth)
-	glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
-
-	// Switch back to modelview matrix
-	glMatrixMode(GL_MODELVIEW);
+	// Set up the projection matrix
+	gl.matrices.projection.push_back(Matrix::ortho(0.0, width, 0.0, height));
 
 	// Make sure the correct sRGB setting is used when drawing to the canvas.
 	if (format == FORMAT_SRGB)
@@ -754,11 +741,8 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	// Attach the canvas textures to the active FBO and set up MRTs.
 	strategy->setAttachments(canvases);
 
-	for (size_t i = 0; i < canvases.size(); i++)
-		canvases[i]->retain();
-
-	for (size_t i = 0; i < attachedCanvases.size(); i++)
-		attachedCanvases[i]->release();
+	// We want to avoid reference cycles, so we don't retain the attached
+	// Canvases here. The code in Graphics::setCanvas retains them.
 
 	attachedCanvases = canvases;
 }
@@ -773,10 +757,6 @@ void Canvas::startGrab()
 	// make sure the FBO is only using a single canvas
 	strategy->setAttachments();
 
-	// release any previously attached canvases
-	for (size_t i = 0; i < attachedCanvases.size(); i++)
-		attachedCanvases[i]->release();
-
 	attachedCanvases.clear();
 }
 
@@ -786,9 +766,7 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	if (current != this)
 		return;
 
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	gl.matrices.projection.pop_back();
 
 	if (switchingToOtherCanvas)
 	{
@@ -1121,12 +1099,6 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	supportedFormats[format] = supported;
 
 	return supported;
-}
-
-void Canvas::bindDefaultCanvas()
-{
-	if (current != nullptr)
-		current->stopGrab();
 }
 
 bool Canvas::getConstant(const char *in, Format &out)

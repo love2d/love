@@ -271,11 +271,10 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 		return;
 
 	static Matrix t;
-
-	glPushMatrix();
-
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-	glMultMatrixf((const GLfloat *)t.getElements());
+
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
 
 	texture->predraw();
 
@@ -314,8 +313,6 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	}
 
 	texture->postdraw();
-
-	glPopMatrix();
 }
 
 void SpriteBatch::addv(const Vertex *v, int index)

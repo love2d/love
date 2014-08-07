@@ -526,11 +526,10 @@ void Image::uploadDefaultTexture()
 
 void Image::drawv(const Matrix &t, const Vertex *v)
 {
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
+
 	predraw();
-
-	glPushMatrix();
-
-	glMultMatrixf((const GLfloat *)t.getElements());
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -543,8 +542,6 @@ void Image::drawv(const Matrix &t, const Vertex *v)
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glPopMatrix();
 
 	postdraw();
 }

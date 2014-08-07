@@ -651,8 +651,7 @@ int w_setColorMask(lua_State *L)
 			mask[i] = luax_toboolean(L, i + 1);
 	}
 
-	// r, g, b, a
-	instance()->setColorMask(mask[0], mask[1], mask[2], mask[3]);
+	instance()->setColorMask(mask);
 
 	return 0;
 }
@@ -893,43 +892,35 @@ int w_setCanvas(lua_State *L)
 	instance()->discardStencil();
 
 	// called with none -> reset to default buffer
-	if (lua_isnoneornil(L,1))
+	if (lua_isnoneornil(L, 1))
 	{
-		Canvas::bindDefaultCanvas();
+		instance()->setCanvas();
 		return 0;
 	}
 
 	bool is_table = lua_istable(L, 1);
-	std::vector<Canvas *> attachments;
-
-	Canvas *canvas = 0;
+	std::vector<Canvas *> canvases;
 
 	if (is_table)
 	{
-		// grab the first canvas in the array and attach the rest
-		lua_rawgeti(L, 1, 1);
-		canvas = luax_checkcanvas(L, -1);
-		lua_pop(L, 1);
-
-		for (size_t i = 2; i <= lua_objlen(L, 1); i++)
+		for (size_t i = 1; i <= lua_objlen(L, 1); i++)
 		{
 			lua_rawgeti(L, 1, i);
-			attachments.push_back(luax_checkcanvas(L, -1));
+			canvases.push_back(luax_checkcanvas(L, -1));
 			lua_pop(L, 1);
 		}
 	}
 	else
 	{
-		canvas = luax_checkcanvas(L, 1);
-		for (int i = 2; i <= lua_gettop(L); i++)
-			attachments.push_back(luax_checkcanvas(L, i));
+		for (int i = 1; i <= lua_gettop(L); i++)
+			canvases.push_back(luax_checkcanvas(L, i));
 	}
 
 	luax_catchexcept(L, [&]() {
-		if (attachments.size() > 0)
-			canvas->startGrab(attachments);
+		if (canvases.size() > 0)
+			instance()->setCanvas(canvases);
 		else
-			canvas->startGrab();
+			instance()->setCanvas();
 	});
 
 	return 0;
@@ -937,24 +928,23 @@ int w_setCanvas(lua_State *L)
 
 int w_getCanvas(lua_State *L)
 {
-	Canvas *canvas = Canvas::current;
-	int n = 1;
+	const std::vector<Canvas *> canvases = instance()->getCanvas();
+	int n = 0;
 
-	if (canvas)
+	if (!canvases.empty())
 	{
-		canvas->retain();
-		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);
-
-		const std::vector<Canvas *> &attachments = canvas->getAttachedCanvases();
-		for (size_t i = 0; i < attachments.size(); i++)
+		for (Canvas *c : canvases)
 		{
-			attachments[i]->retain();
-			luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, attachments[i]);
+			c->retain();
+			luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, c);
 			n++;
 		}
 	}
 	else
+	{
 		lua_pushnil(L);
+		n = 1;
+	}
 
 	return n;
 }
@@ -963,18 +953,18 @@ int w_setShader(lua_State *L)
 {
 	if (lua_isnoneornil(L,1))
 	{
-		Shader::detach();
+		instance()->setShader();
 		return 0;
 	}
 
 	Shader *shader = luax_checkshader(L, 1);
-	shader->attach();
+	instance()->setShader(shader);
 	return 0;
 }
 
 int w_getShader(lua_State *L)
 {
-	Shader *shader = Shader::current;
+	Shader *shader = instance()->getShader();
 	if (shader)
 	{
 		shader->retain();
@@ -1323,7 +1313,12 @@ int w_polygon(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	luax_catchexcept(L, [&](){ instance()->push(); });
+	Graphics::StackType stype = Graphics::STACK_TRANSFORM;
+	const char *sname = lua_isnoneornil(L, 1) ? nullptr : luaL_checkstring(L, 1);
+	if (sname && !Graphics::getConstant(sname, stype))
+		return luaL_error(L, "Invalid graphics stack type: %s", sname);
+
+	luax_catchexcept(L, [&](){ instance()->push(stype); });
 	return 0;
 }
 

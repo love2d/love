@@ -843,11 +843,11 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	Color curcolor = gl.getColor();
 
-	glPushMatrix();
-
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-	glMultMatrixf((const GLfloat *)t.getElements());
+
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
 
 	const Vertex *textureVerts = texture->getVertices();
 	Vertex *pVerts = particleVerts;
@@ -900,8 +900,6 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glDisableClientState(GL_COLOR_ARRAY);
 
 	texture->postdraw();
-
-	glPopMatrix();
 
 	gl.setColor(curcolor);
 }

@@ -342,8 +342,8 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	Matrix m;
 	m.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	glPushMatrix();
-	glMultMatrixf(m.getElements());
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= m;
 
 	VertexBuffer::Bind vbo_bind(*vbo);
 
@@ -411,8 +411,6 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		// Using the color array leaves the GL constant color undefined.
 		gl.setColor(gl.getColor());
 	}
-
-	glPopMatrix();
 
 	if (texture)
 		texture->postdraw();

@@ -368,11 +368,11 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	// second (using the struct's < operator).
 	std::sort(glyphinfolist.begin(), glyphinfolist.end());
 
-	glPushMatrix();
-
 	Matrix t;
 	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
-	glMultMatrixf((const GLfloat *)t.getElements());
+
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -393,8 +393,6 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glPopMatrix();
 }
 
 int Font::getWidth(const std::string &str)

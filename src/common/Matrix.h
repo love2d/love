@@ -150,6 +150,12 @@ public:
 	 **/
 	void transform(Vertex *dst, const Vertex *src, int size) const;
 
+	/**
+	 * Creates a new orthographic projection matrix with depth in the range of
+	 * [-1, 1].
+	 **/
+	static Matrix ortho(float left, float right, float bottom, float top);
+
 private:
 
 	/**

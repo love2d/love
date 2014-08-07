@@ -26,9 +26,11 @@
 // LOVE
 #include "graphics/Color.h"
 #include "graphics/Texture.h"
+#include "common/Matrix.h"
 
 // C++
 #include <vector>
+#include <stack>
 
 // The last argument to AttribPointer takes a buffer offset casted to a pointer.
 #define BUFFER_OFFSET(i) ((char *) NULL + (i))
@@ -101,6 +103,36 @@ public:
 		GLenum func;
 	};
 
+	struct
+	{
+		std::vector<Matrix> transform;
+		std::vector<Matrix> projection;
+	} matrices;
+
+	class TempTransform
+	{
+	public:
+
+		TempTransform(OpenGL &gl)
+			: gl(gl)
+		{
+			gl.pushTransform();
+		}
+
+		~TempTransform()
+		{
+			gl.popTransform();
+		}
+
+		Matrix &get()
+		{
+			return gl.getTransform();
+		}
+
+	private:
+		OpenGL &gl;
+	};
+
 	OpenGL();
 
 	/**
@@ -115,6 +147,10 @@ public:
 	 * an OpenGL context!
 	 **/
 	void deInitContext();
+
+	void pushTransform();
+	void popTransform();
+	Matrix &getTransform();
 
 	/**
 	 * Set up necessary state (LOVE-provided shader uniforms, etc.) for drawing.
@@ -258,6 +294,7 @@ private:
 	void initVendor();
 	void initOpenGLFunctions();
 	void initMaxValues();
+	void initMatrices();
 	void createDefaultTexture();
 
 	bool contextInitialized;
@@ -289,6 +326,9 @@ private:
 
 		// The last ID value used for pseudo-instancing.
 		int lastPseudoInstanceID;
+
+		Matrix lastProjectionMatrix;
+		Matrix lastTransformMatrix;
 
 	} state;
 
