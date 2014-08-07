@@ -21,6 +21,8 @@
 // LOVE
 #include "Object.h"
 
+#include <stdio.h>
+
 namespace love
 {
 

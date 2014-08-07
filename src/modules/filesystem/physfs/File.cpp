@@ -69,22 +69,35 @@ bool File::open(Mode mode)
 	if (file != 0)
 		return false;
 
-	this->mode = mode;
+	PHYSFS_getLastError(); // Clear the error buffer.
+	PHYSFS_File *handle = nullptr;
 
 	switch (mode)
 	{
 	case READ:
-		file = PHYSFS_openRead(filename.c_str());
+		handle = PHYSFS_openRead(filename.c_str());
 		break;
 	case APPEND:
-		file = PHYSFS_openAppend(filename.c_str());
+		handle = PHYSFS_openAppend(filename.c_str());
 		break;
 	case WRITE:
-		file = PHYSFS_openWrite(filename.c_str());
+		handle = PHYSFS_openWrite(filename.c_str());
 		break;
 	default:
 		break;
 	}
+
+	if (handle == nullptr)
+	{
+		const char *err = PHYSFS_getLastError();
+		if (err == nullptr)
+			err = "unknown error";
+		throw love::Exception("Could not open file %s (%s)", filename.c_str(), err);
+	}
+
+	file = handle;
+
+	this->mode = mode;
 
 	if (file != 0 && !setBuffer(bufferMode, bufferSize))
 	{

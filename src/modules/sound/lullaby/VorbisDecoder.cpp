@@ -179,7 +179,7 @@ bool VorbisDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *VorbisDecoder::clone()
 {
-	return new VorbisDecoder(data, ext, bufferSize);
+	return new VorbisDecoder(data.get(), ext, bufferSize);
 }
 
 int VorbisDecoder::decode()

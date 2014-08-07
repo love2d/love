@@ -96,6 +96,13 @@ public:
 		LIMIT_MAX_ENUM
 	};
 
+	enum StackType
+	{
+		STACK_ALL,
+		STACK_TRANSFORM,
+		STACK_MAX_ENUM
+	};
+
 	struct RendererInfo
 	{
 		std::string name;
@@ -148,6 +155,9 @@ public:
 	static bool getConstant(const char *in, SystemLimit &out);
 	static bool getConstant(SystemLimit in, const char *&out);
 
+	static bool getConstant(const char *in, StackType &out);
+	static bool getConstant(StackType in, const char *&out);
+
 private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -170,6 +180,9 @@ private:
 
 	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
 	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;
+
+	static StringMap<StackType, STACK_MAX_ENUM>::Entry stackTypeEntries[];
+	static StringMap<StackType, STACK_MAX_ENUM> stackTypes;
 
 }; // Graphics
 

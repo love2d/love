@@ -48,9 +48,6 @@ Window::Window()
 
 Window::~Window()
 {
-	if (curMode.icon)
-		curMode.icon->release();
-
 	if (window)
 		SDL_DestroyWindow(window);
 
@@ -185,8 +182,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		}
 
 		// Make sure the window keeps any previously set icon.
-		if (window && curMode.icon)
-			setIcon(curMode.icon);
+		if (window && curMode.icon.get())
+			setIcon(curMode.icon.get());
 	}
 
 	if (!window)
@@ -553,10 +550,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	if (!imgd)
 		return false;
 
-	imgd->retain();
-	if (curMode.icon)
-		curMode.icon->release();
-	curMode.icon = imgd;
+	curMode.icon.set(imgd);
 
 	if (!window)
 		return false;
@@ -597,7 +591,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 
 love::image::ImageData *Window::getIcon()
 {
-	return curMode.icon;
+	return curMode.icon.get();
 }
 
 void Window::minimize()

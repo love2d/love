@@ -28,6 +28,7 @@
 
 // C++
 #include <algorithm>
+#include <limits>
 
 // C
 #include <cstring>
@@ -47,6 +48,8 @@ OpenGL::OpenGL()
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
+	matrices.transform.reserve(10);
+	matrices.projection.reserve(2);
 }
 
 void OpenGL::initContext()
@@ -56,6 +59,7 @@ void OpenGL::initContext()
 
 	initOpenGLFunctions();
 	initVendor();
+	initMatrices();
 
 	contextInitialized = true;
 }
@@ -117,6 +121,15 @@ void OpenGL::setupContext()
 	createDefaultTexture();
 
 	state.lastPseudoInstanceID = -1;
+
+	// Invalidate the cached matrices by setting some elements to NaN.
+	float nan = std::numeric_limits<float>::quiet_NaN();
+	state.lastProjectionMatrix.setTranslation(nan, nan);
+	state.lastTransformMatrix.setTranslation(nan, nan);
+
+	glMatrixMode(GL_MODELVIEW);
+
+	contextInitialized = true;
 }
 
 void OpenGL::deInitContext()
@@ -176,6 +189,15 @@ void OpenGL::initMaxValues()
 	maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
 }
 
+void OpenGL::initMatrices()
+{
+	matrices.transform.clear();
+	matrices.projection.clear();
+
+	matrices.transform.push_back(Matrix());
+	matrices.projection.push_back(Matrix());
+}
+
 void OpenGL::createDefaultTexture()
 {
 	// Set the 'default' texture (id 0) as a repeating white pixel. Otherwise,
@@ -198,6 +220,21 @@ void OpenGL::createDefaultTexture()
 	bindTexture(curtexture);
 }
 
+void OpenGL::pushTransform()
+{
+	matrices.transform.push_back(matrices.transform.back());
+}
+
+void OpenGL::popTransform()
+{
+	matrices.transform.pop_back();
+}
+
+Matrix &OpenGL::getTransform()
+{
+	return matrices.transform.back();
+}
+
 void OpenGL::prepareDraw()
 {
 	Shader *shader = Shader::current;
@@ -218,14 +255,36 @@ void OpenGL::prepareDraw()
 		// We need to make sure antialiased Canvases are properly resolved
 		// before sampling from their textures in a shader.
 		// This is kind of a big hack. :(
-		const std::map<std::string, Object *> &r = shader->getBoundRetainables();
-		for (auto it = r.begin(); it != r.end(); ++it)
+		for (auto &r : shader->getBoundRetainables())
 		{
 			// Even bigger hack! D:
-			Canvas *canvas = dynamic_cast<Canvas *>(it->second);
+			Canvas *canvas = dynamic_cast<Canvas *>(r.second);
 			if (canvas != nullptr)
 				canvas->resolveMSAA();
 		}
+	}
+
+	const float *curproj = matrices.projection.back().getElements();
+	const float *lastproj = state.lastProjectionMatrix.getElements();
+
+	// We only need to re-upload the projection matrix if it's changed.
+	if (memcmp(curproj, lastproj, sizeof(float) * 16) != 0)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glLoadMatrixf(curproj);
+		glMatrixMode(GL_MODELVIEW);
+
+		state.lastProjectionMatrix = matrices.projection.back();
+	}
+
+	const float *curxform = matrices.transform.back().getElements();
+	const float *lastxform = state.lastTransformMatrix.getElements();
+
+	// Same with the transform matrix.
+	if (memcmp(curxform, lastxform, sizeof(float) * 16) != 0)
+	{
+		glLoadMatrixf(curxform);
+		state.lastTransformMatrix = matrices.transform.back();
 	}
 }
 

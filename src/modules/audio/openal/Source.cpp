@@ -102,7 +102,6 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, decoder(decoder)
 	, toLoop(0)
 {
-	decoder->retain();
 	alGenBuffers(MAX_BUFFERS, streamBuffers);
 
 	float z[3] = {0, 0, 0};
@@ -136,13 +135,15 @@ Source::Source(const Source &s)
 {
 	if (type == TYPE_STREAM)
 	{
-		if (s.decoder)
-			decoder = s.decoder->clone();
+		if (s.decoder.get())
+		{
+			love::sound::Decoder *dec = s.decoder->clone();
+			decoder.set(dec);
+			dec->release();
+		}
 
 		alGenBuffers(MAX_BUFFERS, streamBuffers);
 	}
-	else
-		staticBuffer->retain();
 
 	setFloatv(position, s.position);
 	setFloatv(velocity, s.velocity);
@@ -156,12 +157,6 @@ Source::~Source()
 
 	if (type == TYPE_STREAM)
 		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
-
-	if (staticBuffer)
-		staticBuffer->release();
-
-	if (decoder)
-		decoder->release();
 }
 
 love::audio::Source *Source::clone()
@@ -273,7 +268,7 @@ bool Source::update()
 			offsetSamples += (curOffsetSamples - newOffsetSamples);
 			offsetSeconds += (curOffsetSecs - newOffsetSecs);
 
-			streamAtomic(buffer, decoder);
+			streamAtomic(buffer, decoder.get());
 			alSourceQueueBuffers(source, 1, &buffer);
 		}
 		return true;
@@ -544,7 +539,7 @@ bool Source::playAtomic()
 
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 		{
-			streamAtomic(streamBuffers[i], decoder);
+			streamAtomic(streamBuffers[i], decoder.get());
 			++usedBuffers;
 			if (decoder->isFinished())
 				break;

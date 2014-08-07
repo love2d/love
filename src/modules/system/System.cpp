@@ -28,6 +28,7 @@
 #include <spawn.h>
 //#include <stdlib.h>
 //#include <unistd.h>
+#include <signal.h>
 #include <sys/wait.h>
 #elif defined(LOVE_WINDOWS)
 #include "common/utf8.h"
@@ -40,6 +41,20 @@ namespace love
 {
 namespace system
 {
+
+System::System()
+{
+#if defined(LOVE_LINUX)
+	// Enable automatic cleanup of zombie processes
+	struct sigaction act = {0};
+	sigemptyset(&act.sa_mask);
+	act.sa_handler = SIG_DFL;
+	act.sa_flags = SA_NOCLDWAIT;
+
+	// Requires linux 2.6 or higher, so anything remotely modern
+	sigaction(SIGCHLD, &act, nullptr);
+#endif
+}
 
 std::string System::getOS() const
 {
@@ -86,12 +101,14 @@ bool System::openURL(const std::string &url) const
 	if (posix_spawnp(&pid, "xdg-open", nullptr, nullptr, const_cast<char **>(argv), environ) != 0)
 		return false;
 
-	// Wait for xdg-open to complete (or fail.)
+	// Check if xdg-open already completed (or failed.)
 	int status = 0;
-	if (waitpid(pid, &status, 0) == pid)
+	if (waitpid(pid, &status, WNOHANG) > 0)
 		return (status == 0);
 	else
-		return false;
+		// We can't tell what actually happens without waiting for
+		// the process to finish, which could take forever (literally).
+		return true;
 
 #elif defined(LOVE_WINDOWS)
 

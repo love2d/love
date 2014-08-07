@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_Canvas.h"
+#include "Graphics.h"
 
 namespace love
 {
@@ -37,18 +38,26 @@ int w_Canvas_renderTo(lua_State *L)
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	// Save the current Canvas so we can restore it when we're done.
-	Canvas *oldcanvas = Canvas::current;
+	Graphics *graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
-	luax_catchexcept(L, [&](){ canvas->startGrab(); });
+	if (graphics)
+	{
+		// Save the current Canvas so we can restore it when we're done.
+		std::vector<Canvas *> oldcanvases = graphics->getCanvas();
 
-	lua_settop(L, 2); // make sure the function is on top of the stack
-	lua_call(L, 0, 0);
+		for (Canvas *c : oldcanvases)
+			c->retain();
 
-	if (oldcanvas != nullptr)
-		oldcanvas->startGrab(oldcanvas->getAttachedCanvases());
-	else
-		Canvas::bindDefaultCanvas();
+		luax_catchexcept(L, [&](){ graphics->setCanvas(canvas); });
+
+		lua_settop(L, 2); // make sure the function is on top of the stack
+		lua_call(L, 0, 0);
+
+		graphics->setCanvas(oldcanvases);
+
+		for (Canvas *c : oldcanvases)
+			c->release();
+	}
 
 	return 0;
 }

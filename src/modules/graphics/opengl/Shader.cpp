@@ -97,8 +97,8 @@ Shader::~Shader()
 	if (current == this)
 		detach();
 
-	for (auto it = boundRetainables.begin(); it != boundRetainables.end(); ++it)
-		it->second->release();
+	for (const auto &retainable : boundRetainables)
+		retainable.second->release();
 
 	boundRetainables.clear();
 
@@ -178,9 +178,8 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 	if (program == 0)
 		throw love::Exception("Cannot create shader program object.");
 
-	std::vector<GLuint>::const_iterator it;
-	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glAttachShader(program, *it);
+	for (GLuint id : shaderids)
+		glAttachShader(program, id);
 
 	// Bind generic vertex attribute indices to names in the shader.
 	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
@@ -201,8 +200,8 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 	glLinkProgram(program);
 
 	// flag shaders for auto-deletion when the program object is deleted.
-	for (it = shaderids.begin(); it != shaderids.end(); ++it)
-		glDeleteShader(*it);
+	for (GLuint id : shaderids)
+		glDeleteShader(id);
 
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
@@ -275,10 +274,9 @@ bool Shader::loadVolatile()
 
 	std::vector<GLuint> shaderids;
 
-	ShaderSources::const_iterator source;
-	for (source = shaderSources.begin(); source != shaderSources.end(); ++source)
+	for (const auto &source : shaderSources)
 	{
-		GLuint shaderid = compileCode(source->first, source->second);
+		GLuint shaderid = compileCode(source.first, source.second);
 		shaderids.push_back(shaderid);
 	}
 
@@ -364,11 +362,10 @@ std::string Shader::getWarnings() const
 	const char *typestr;
 
 	// Get the individual shader stage warnings
-	std::map<ShaderType, std::string>::const_iterator it;
-	for (it = shaderWarnings.begin(); it != shaderWarnings.end(); ++it)
+	for (const auto &warning : shaderWarnings)
 	{
-		if (typeNames.find(it->first, typestr))
-			warnings += std::string(typestr) + std::string(" shader:\n") + it->second;
+		if (typeNames.find(warning.first, typestr))
+			warnings += std::string(typestr) + std::string(" shader:\n") + warning.second;
 	}
 
 	warnings += getProgramWarnings();
@@ -380,13 +377,9 @@ void Shader::attach(bool temporary)
 {
 	if (current != this)
 	{
-		if (current != nullptr)
-			current->release();
-
 		glUseProgram(program);
 		current = this;
-
-		current->retain();
+		// retain/release happens in Graphics::setShader.
 	}
 
 	if (!temporary)

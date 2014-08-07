@@ -77,11 +77,11 @@ Mouse::Mouse()
 
 Mouse::~Mouse()
 {
-	if (curCursor)
+	if (curCursor.get())
 		setCursor();
 
-	for (auto it = systemCursors.begin(); it != systemCursors.end(); ++it)
-		it->second->release();
+	for (auto &c : systemCursors)
+		c.second->release();
 }
 
 love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, int hoty)
@@ -91,7 +91,7 @@ love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, in
 
 love::mouse::Cursor *Mouse::getSystemCursor(Cursor::SystemCursor cursortype)
 {
-	Cursor *cursor = NULL;
+	Cursor *cursor = nullptr;
 	auto it = systemCursors.find(cursortype);
 
 	if (it != systemCursors.end())
@@ -107,25 +107,19 @@ love::mouse::Cursor *Mouse::getSystemCursor(Cursor::SystemCursor cursortype)
 
 void Mouse::setCursor(love::mouse::Cursor *cursor)
 {
-	Object::AutoRelease cursorrelease(curCursor);
-
-	curCursor = cursor;
-	curCursor->retain();
-
+	curCursor.set(cursor);
 	SDL_SetCursor((SDL_Cursor *) cursor->getHandle());
 }
 
 void Mouse::setCursor()
 {
-	Object::AutoRelease cursorrelease(curCursor);
-	curCursor = NULL;
-
+	curCursor.set(nullptr);
 	SDL_SetCursor(SDL_GetDefaultCursor());
 }
 
 love::mouse::Cursor *Mouse::getCursor() const
 {
-	return curCursor;
+	return curCursor.get();
 }
 
 int Mouse::getX() const

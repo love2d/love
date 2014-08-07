@@ -120,7 +120,6 @@ public:
 	static bool isFormatSupported(Format format);
 
 	static Canvas *current;
-	static void bindDefaultCanvas();
 
 	// The viewport dimensions of the system (default) framebuffer.
 	static OpenGL::Viewport systemViewport;

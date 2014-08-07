@@ -111,7 +111,7 @@ private:
 		int width;
 		int height;
 		WindowSettings settings;
-		love::image::ImageData *icon;
+		Object::StrongRef<love::image::ImageData> icon;
 
 	} curMode;
 

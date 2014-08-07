@@ -48,6 +48,7 @@ public:
 		POWER_MAX_ENUM
 	};
 
+	System();
 	virtual ~System() {}
 
 	// Implements Module.

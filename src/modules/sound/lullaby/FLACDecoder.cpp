@@ -69,7 +69,7 @@ bool FLACDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *FLACDecoder::clone()
 {
-	return new FLACDecoder(data, ext, bufferSize, sampleRate);
+	return new FLACDecoder(data.get(), ext, bufferSize, sampleRate);
 }
 
 int FLACDecoder::decode()

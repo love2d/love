@@ -102,7 +102,6 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 	setBufferSize(size);
-	texture->retain();
 }
 
 ParticleSystem::ParticleSystem(const ParticleSystem &p)
@@ -150,22 +149,10 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, relativeRotation(p.relativeRotation)
 {
 	setBufferSize(maxParticles);
-
-	if (texture != nullptr)
-		texture->retain();
-
-	for (Quad *quad : quads)
-		quad->retain();
 }
 
 ParticleSystem::~ParticleSystem()
 {
-	if (texture != nullptr)
-		texture->release();
-
-	for (Quad *quad : quads)
-		quad->release();
-
 	deleteBuffers();
 }
 
@@ -422,19 +409,14 @@ ParticleSystem::Particle *ParticleSystem::removeParticle(Particle *p)
 	return pNext;
 }
 
-void ParticleSystem::setTexture(Texture *texture)
+void ParticleSystem::setTexture(Texture *tex)
 {
-	Object::AutoRelease imagerelease(this->texture);
-
-	this->texture = texture;
-
-	if (texture)
-		texture->retain();
+	texture.set(tex);
 }
 
 Texture *ParticleSystem::getTexture() const
 {
-	return texture;
+	return texture.get();
 }
 
 void ParticleSystem::setInsertMode(InsertMode mode)
@@ -732,26 +714,29 @@ std::vector<Color> ParticleSystem::getColor() const
 
 void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
 {
-	for (Quad *quad : newQuads)
-		quad->retain();
+	std::vector<StrongRef<Quad>> quadlist;
+	quadlist.reserve(newQuads.size());
 
-	for (Quad *quad : quads)
-		quad->release();
+	for (Quad *q : newQuads)
+		quadlist.push_back(q);
 
-	quads = newQuads;
+	quads = quadlist;
 }
 
 void ParticleSystem::setQuads()
 {
-	for (Quad *quad : quads)
-		quad->release();
-
 	quads.clear();
 }
 
-const std::vector<Quad *> &ParticleSystem::getQuads() const
+std::vector<Quad *> ParticleSystem::getQuads() const
 {
-	return quads;
+	std::vector<Quad *> quadlist;
+	quadlist.reserve(quads.size());
+
+	for (const Object::StrongRef<Quad> &q : quads)
+		quadlist.push_back(q.get());
+
+	return quadlist;
 }
 
 void ParticleSystem::setRelativeRotation(bool enable)
@@ -838,16 +823,16 @@ bool ParticleSystem::isFull() const
 void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	uint32 pCount = getCount();
-	if (pCount == 0 || texture == nullptr || pMem == nullptr || particleVerts == nullptr)
+	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || particleVerts == nullptr)
 		return;
 
 	Color curcolor = gl.getColor();
 
-	glPushMatrix();
-
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-	glMultMatrixf((const GLfloat *)t.getElements());
+
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
 
 	const Vertex *textureVerts = texture->getVertices();
 	Vertex *pVerts = particleVerts;
@@ -900,8 +885,6 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glDisableClientState(GL_COLOR_ARRAY);
 
 	texture->postdraw();
-
-	glPopMatrix();
 
 	gl.setColor(curcolor);
 }

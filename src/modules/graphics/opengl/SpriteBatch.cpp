@@ -88,14 +88,10 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 		delete element_buf;
 		throw love::Exception("Out of memory.");
 	}
-
-	texture->retain();
 }
 
 SpriteBatch::~SpriteBatch()
 {
-	texture->release();
-
 	delete color;
 	delete array_buf;
 	delete element_buf;
@@ -172,15 +168,12 @@ void SpriteBatch::flush()
 
 void SpriteBatch::setTexture(Texture *newtexture)
 {
-	Object::AutoRelease imagerelease(texture);
-
-	newtexture->retain();
-	texture = newtexture;
+	texture.set(newtexture);
 }
 
 Texture *SpriteBatch::getTexture()
 {
-	return texture;
+	return texture.get();
 }
 
 void SpriteBatch::setColor(const Color &color)
@@ -271,11 +264,10 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 		return;
 
 	static Matrix t;
-
-	glPushMatrix();
-
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-	glMultMatrixf((const GLfloat *)t.getElements());
+
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
 
 	texture->predraw();
 
@@ -314,8 +306,6 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	}
 
 	texture->postdraw();
-
-	glPopMatrix();
 }
 
 void SpriteBatch::addv(const Vertex *v, int index)

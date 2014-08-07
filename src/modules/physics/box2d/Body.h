@@ -436,7 +436,7 @@ private:
 	//
 	// This ensures that a World only can be destroyed
 	// once all bodies have been destroyed too.
-	World *world;
+	Object::StrongRef<World> world;
 
 	bodyudata *udata;
 

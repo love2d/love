@@ -259,23 +259,20 @@ void World::update(float dt)
 	world->Step(dt, 8, 6);
 
 	// Destroy all objects marked during the time step.
-	for (auto i = destructBodies.begin(); i < destructBodies.end(); i++)
+	for (Body *b : destructBodies)
 	{
-		Body *b = *i;
 		if (b->body != 0) b->destroy();
 		// Release for reference in vector.
 		b->release();
 	}
-	for (auto i = destructFixtures.begin(); i < destructFixtures.end(); i++)
+	for (Fixture *f : destructFixtures)
 	{
-		Fixture *f = *i;
 		if (f->isValid()) f->destroy();
 		// Release for reference in vector.
 		f->release();
 	}
-	for (auto i = destructJoints.begin(); i < destructJoints.end(); i++)
+	for (Joint *j : destructJoints)
 	{
-		Joint *j = *i;
 		if (j->isValid()) j->destroyJoint();
 		// Release for reference in vector.
 		j->release();

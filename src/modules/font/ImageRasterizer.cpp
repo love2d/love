@@ -39,13 +39,11 @@ ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, i
 	, glyphs(glyphs)
 	, numglyphs(numglyphs)
 {
-	imageData->retain();
 	load();
 }
 
 ImageRasterizer::~ImageRasterizer()
 {
-	imageData->release();
 }
 
 int ImageRasterizer::getLineHeight() const

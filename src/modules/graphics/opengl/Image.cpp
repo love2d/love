@@ -47,8 +47,6 @@ Image::Image(love::image::ImageData *data, const Flags &flags)
 {
 	width = data->getWidth();
 	height = data->getHeight();
-
-	data->retain();
 	preload();
 }
 
@@ -63,28 +61,22 @@ Image::Image(love::image::CompressedData *cdata, const Flags &flags)
 {
 	width = cdata->getWidth(0);
 	height = cdata->getHeight(0);
-
-	cdata->retain();
 	preload();
 }
 
 Image::~Image()
 {
-	if (data != nullptr)
-		data->release();
-	if (cdata != nullptr)
-		cdata->release();
 	unload();
 }
 
 love::image::ImageData *Image::getImageData() const
 {
-	return data;
+	return data.get();
 }
 
 love::image::CompressedData *Image::getCompressedData() const
 {
-	return cdata;
+	return cdata.get();
 }
 
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -279,9 +271,9 @@ void Image::uploadTexture()
 {
 	bind();
 
-	if (isCompressed() && cdata)
+	if (isCompressed() && cdata.get())
 		uploadCompressedData();
-	else if (data)
+	else if (data.get())
 		uploadImageData();
 }
 
@@ -290,7 +282,7 @@ bool Image::loadVolatile()
 	if (flags.sRGB && !hasSRGBSupport())
 		throw love::Exception("sRGB images are not supported on this system.");
 
-	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getFormat()))
+	if (isCompressed() && cdata.get() && !hasCompressedTextureSupport(cdata->getFormat()))
 	{
 		const char *str;
 		if (image::CompressedData::getConstant(cdata->getFormat(), str))
@@ -397,11 +389,10 @@ void Image::uploadDefaultTexture()
 
 void Image::drawv(const Matrix &t, const Vertex *v)
 {
+	OpenGL::TempTransform transform(gl);
+	transform.get() *= t;
+
 	predraw();
-
-	glPushMatrix();
-
-	glMultMatrixf((const GLfloat *)t.getElements());
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -414,8 +405,6 @@ void Image::drawv(const Matrix &t, const Vertex *v)
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glPopMatrix();
 
 	postdraw();
 }

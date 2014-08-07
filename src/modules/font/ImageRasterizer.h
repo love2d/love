@@ -53,7 +53,7 @@ private:
 	void load();
 
 	// The image data
-	love::image::ImageData *imageData;
+	Object::StrongRef<love::image::ImageData> imageData;
 
 	// The glyphs in the font
 	uint32 *glyphs;
