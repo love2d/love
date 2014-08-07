@@ -1322,9 +1322,11 @@ Graphics::DisplayState::DisplayState()
 	, scissorBox()
 	, font(nullptr)
 	, shader(nullptr)
-	, colorMask{true, true, true, true}
 	, wireframe(false)
 {
+	// We should just directly initialize the array in the initializer list, but
+	// that feature of C++11 is broken in Visual Studio 2013...
+	colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
 }
 
 Graphics::DisplayState::DisplayState(const DisplayState &other)
