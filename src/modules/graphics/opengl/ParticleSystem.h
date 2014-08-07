@@ -431,7 +431,7 @@ public:
 	/**
 	 * Gets the Quads used when drawing the particles.
 	 **/
-	const std::vector<Quad *> &getQuads() const;
+	std::vector<Quad *> getQuads() const;
 
 	/**
 	 * sets whether particle angles & rotations are relative to their velocities.
@@ -563,7 +563,7 @@ protected:
 	Vertex *particleVerts;
 
 	// The texture to be drawn.
-	Texture *texture;
+	Object::StrongRef<Texture> texture;
 
 	// Whether the particle emitter is active.
 	bool active;
@@ -640,7 +640,7 @@ protected:
 	std::vector<Colorf> colors;
 
 	// Quads.
-	std::vector<Quad *> quads;
+	std::vector<Object::StrongRef<Quad>> quads;
 
 	bool relativeRotation;
 

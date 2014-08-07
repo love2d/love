@@ -41,7 +41,6 @@ Body::Body(World *world, b2Vec2 p, Body::Type type)
 {
 	udata = new bodyudata();
 	udata->ref = nullptr;
-	world->retain();
 	b2BodyDef def;
 	def.position = Physics::scaleDown(p);
 	def.userData = (void *) udata;
@@ -57,8 +56,7 @@ Body::Body(b2Body *b)
 	, udata(nullptr)
 {
 	udata = (bodyudata *) b->GetUserData();
-	world = (World *)Memoizer::find(b->GetWorld());
-	world->retain();
+	world.set((World *) Memoizer::find(b->GetWorld()));
 	// Box2D body holds a reference to the love Body.
 	this->retain();
 	Memoizer::add(body, this);
@@ -69,7 +67,6 @@ Body::~Body()
 	if (udata != nullptr)
 		delete udata->ref;
 	delete udata;
-	world->release();
 }
 
 float Body::getX()
@@ -420,7 +417,7 @@ bool Body::isFixedRotation() const
 
 World *Body::getWorld() const
 {
-	return world;
+	return world.get();
 }
 
 int Body::getFixtureList(lua_State *L) const

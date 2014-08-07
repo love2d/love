@@ -96,7 +96,7 @@ void Mpg123Decoder::quit()
 
 love::sound::Decoder *Mpg123Decoder::clone()
 {
-	return new Mpg123Decoder(data, ext, bufferSize);
+	return new Mpg123Decoder(data.get(), ext, bufferSize);
 }
 
 int Mpg123Decoder::decode()

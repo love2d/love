@@ -50,8 +50,6 @@ Image::Image(love::image::ImageData *data, Format format)
 {
 	width = data->getWidth();
 	height = data->getHeight();
-
-	data->retain();
 	preload();
 }
 
@@ -69,28 +67,22 @@ Image::Image(love::image::CompressedData *cdata, Format format)
 {
 	width = cdata->getWidth(0);
 	height = cdata->getHeight(0);
-
-	cdata->retain();
 	preload();
 }
 
 Image::~Image()
 {
-	if (data != nullptr)
-		data->release();
-	if (cdata != nullptr)
-		cdata->release();
 	unload();
 }
 
 love::image::ImageData *Image::getImageData() const
 {
-	return data;
+	return data.get();
 }
 
 love::image::CompressedData *Image::getCompressedData() const
 {
-	return cdata;
+	return cdata.get();
 }
 
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -140,7 +132,7 @@ GLuint Image::getGLTexture() const
 
 void Image::uploadCompressedMipmaps()
 {
-	if (!isCompressed() || !cdata || !hasCompressedTextureSupport(cdata->getFormat()))
+	if (!isCompressed() || !cdata.get() || !hasCompressedTextureSupport(cdata->getFormat()))
 		return;
 
 	bind();
@@ -175,7 +167,7 @@ void Image::uploadCompressedMipmaps()
 void Image::createMipmaps()
 {
 	// Only valid for Images created with ImageData.
-	if (!data || isCompressed())
+	if (!data.get() || isCompressed())
 		return;
 
 	if (!hasMipmapSupport())
@@ -231,9 +223,9 @@ void Image::checkMipmapsCreated()
 	if (mipmapsCreated || filter.mipmap == FILTER_NONE || usingDefaultTexture)
 		return;
 
-	if (isCompressed() && cdata && hasCompressedTextureSupport(cdata->getFormat()))
+	if (isCompressed() && cdata.get() && hasCompressedTextureSupport(cdata->getFormat()))
 		uploadCompressedMipmaps();
-	else if (data)
+	else if (data.get())
 		createMipmaps();
 	else
 		return;
@@ -334,7 +326,7 @@ bool Image::loadVolatile()
 	if (format == FORMAT_SRGB && !hasSRGBSupport())
 		throw love::Exception("sRGB images are not supported on this system.");
 
-	if (isCompressed() && cdata && !hasCompressedTextureSupport(cdata->getFormat()))
+	if (isCompressed() && cdata.get() && !hasCompressedTextureSupport(cdata->getFormat()))
 	{
 		const char *str;
 		if (image::CompressedData::getConstant(cdata->getFormat(), str))
@@ -375,7 +367,7 @@ bool Image::loadVolatile()
 
 	// Mutex lock will potentially cover texture loading and mipmap creation.
 	love::thread::EmptyLock lock;
-	if (data)
+	if (data.get())
 		lock.setLock(data->getMutex());
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
@@ -398,13 +390,13 @@ bool Image::loadVolatile()
 
 void Image::uploadTexturePadded()
 {
-	if (isCompressed() && cdata)
+	if (isCompressed() && cdata.get())
 	{
 		// Padded textures don't really work if they're compressed...
 		throw love::Exception("Cannot create image: "
 		                      "compressed NPOT images are not supported on this system.");
 	}
-	else if (data)
+	else if (data.get())
 	{
 		GLenum iformat = (format == FORMAT_SRGB) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 		glTexImage2D(GL_TEXTURE_2D,
@@ -430,7 +422,7 @@ void Image::uploadTexturePadded()
 
 void Image::uploadTexture()
 {
-	if (isCompressed() && cdata)
+	if (isCompressed() && cdata.get())
 	{
 		GLenum format = getCompressedFormat(cdata->getFormat());
 		glCompressedTexImage2DARB(GL_TEXTURE_2D,
@@ -442,7 +434,7 @@ void Image::uploadTexture()
 		                          GLsizei(cdata->getSize(0)),
 		                          cdata->getData(0));
 	}
-	else if (data)
+	else if (data.get())
 	{
 		GLenum iformat = (format == FORMAT_SRGB) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 		glTexImage2D(GL_TEXTURE_2D,
@@ -484,7 +476,7 @@ bool Image::refresh()
 
 	bind();
 
-	if (data && !isCompressed())
+	if (data.get() && !isCompressed())
 		lock.setLock(data->getMutex());
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.

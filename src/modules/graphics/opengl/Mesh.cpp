@@ -79,9 +79,6 @@ Mesh::Mesh(int vertexcount, Mesh::DrawMode mode)
 
 Mesh::~Mesh()
 {
-	if (texture)
-		texture->release();
-
 	delete vbo;
 	delete ibo;
 }
@@ -264,25 +261,17 @@ size_t Mesh::getVertexMapCount() const
 
 void Mesh::setTexture(Texture *tex)
 {
-	tex->retain();
-
-	if (texture)
-		texture->release();
-
-	texture = tex;
+	texture.set(tex);
 }
 
 void Mesh::setTexture()
 {
-	if (texture)
-		texture->release();
-
-	texture = nullptr;
+	texture.set(nullptr);
 }
 
 Texture *Mesh::getTexture() const
 {
-	return texture;
+	return texture.get();
 }
 
 void Mesh::setDrawMode(Mesh::DrawMode mode)
@@ -334,7 +323,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (vertex_count == 0)
 		return;
 
-	if (texture)
+	if (texture.get())
 		texture->predraw();
 	else
 		gl.bindTexture(0);
@@ -412,7 +401,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		gl.setColor(gl.getColor());
 	}
 
-	if (texture)
+	if (texture.get())
 		texture->postdraw();
 }
 

@@ -87,13 +87,10 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	}
 
 	delete gd;
-
-	rasterizer->retain();
 }
 
 Font::~Font()
 {
-	rasterizer->release();
 	unloadVolatile();
 }
 

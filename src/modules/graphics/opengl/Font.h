@@ -183,7 +183,7 @@ private:
 	Glyph *addGlyph(uint32 glyph);
 	Glyph *findGlyph(uint32 glyph);
 
-	love::font::Rasterizer *rasterizer;
+	Object::StrongRef<love::font::Rasterizer> rasterizer;
 
 	int height;
 	float lineHeight;

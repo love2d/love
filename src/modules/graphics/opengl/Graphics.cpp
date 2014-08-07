@@ -95,8 +95,8 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 
-	setFont(s.font);
-	setShader(s.shader);
+	setFont(s.font.get());
+	setShader(s.shader.get());
 	setCanvas(s.canvases);
 
 	setColorMask(s.colorMask);
@@ -135,12 +135,12 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 			setScissor();
 	}
 
-	setFont(s.font);
-	setShader(s.shader);
+	setFont(s.font.get());
+	setShader(s.shader.get());
 
 	for (size_t i = 0; i < s.canvases.size() && i < cur.canvases.size(); i++)
 	{
-		if (s.canvases[i] != cur.canvases[i])
+		if (s.canvases[i].get() != cur.canvases[i].get())
 		{
 			setCanvas(s.canvases);
 			break;
@@ -606,19 +606,12 @@ Color Graphics::getBackgroundColor() const
 void Graphics::setFont(Font *font)
 {
 	DisplayState &state = states.back();
-
-	if (font != nullptr)
-		font->retain();
-
-	if (state.font != nullptr)
-		state.font->release();
-
-	state.font = font;
+	state.font.set(font);
 }
 
 Font *Graphics::getFont() const
 {
-	return states.back().font;
+	return states.back().font.get();
 }
 
 void Graphics::setShader(Shader *shader)
@@ -630,13 +623,7 @@ void Graphics::setShader(Shader *shader)
 
 	shader->attach();
 
-	if (shader)
-		shader->retain();
-
-	if (state.shader)
-		state.shader->release();
-
-	state.shader = shader;
+	state.shader.set(shader);
 }
 
 void Graphics::setShader()
@@ -645,15 +632,12 @@ void Graphics::setShader()
 
 	Shader::detach();
 
-	if (state.shader)
-		state.shader->release();
-
-	state.shader = nullptr;
+	state.shader.set(nullptr);
 }
 
 Shader *Graphics::getShader() const
 {
-	return states.back().shader;
+	return states.back().shader.get();
 }
 
 void Graphics::setCanvas(Canvas *canvas)
@@ -665,13 +649,10 @@ void Graphics::setCanvas(Canvas *canvas)
 
 	canvas->startGrab();
 
-	canvas->retain();
+	std::vector<Object::StrongRef<Canvas>> canvasref;
+	canvasref.push_back(canvas);
 
-	for (Canvas *c : state.canvases)
-		c->release();
-
-	state.canvases.clear();
-	state.canvases.push_back(canvas);
+	std::swap(state.canvases, canvasref);
 }
 
 void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
@@ -686,13 +667,24 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 	auto attachments = std::vector<Canvas *>(canvases.begin() + 1, canvases.end());
 	canvases[0]->startGrab(attachments);
 
+	std::vector<Object::StrongRef<Canvas>> canvasrefs;
+	canvasrefs.reserve(canvases.size());
+
 	for (Canvas *c : canvases)
-		c->retain();
+		canvasrefs.push_back(c);
 
-	for (Canvas *c : state.canvases)
-		c->release();
+	std::swap(state.canvases, canvasrefs);
+}
 
-	state.canvases = canvases;
+void Graphics::setCanvas(const std::vector<Object::StrongRef<Canvas>> &canvases)
+{
+	std::vector<Canvas *> canvaslist;
+	canvaslist.reserve(canvases.size());
+
+	for (const Object::StrongRef<Canvas> &c : canvases)
+		canvaslist.push_back(c.get());
+
+	return setCanvas(canvaslist);
 }
 
 void Graphics::setCanvas()
@@ -702,15 +694,18 @@ void Graphics::setCanvas()
 	if (Canvas::current != nullptr)
 		Canvas::current->stopGrab();
 
-	for (Canvas *c : state.canvases)
-		c->release();
-
 	state.canvases.clear();
 }
 
 std::vector<Canvas *> Graphics::getCanvas() const
 {
-	return states.back().canvases;
+	std::vector<Canvas *> canvases;
+	canvases.reserve(states.back().canvases.size());
+
+	for (const Object::StrongRef<Canvas> &c : states.back().canvases)
+		canvases.push_back(c.get());
+
+	return canvases;
 }
 
 void Graphics::setColorMask(const bool mask[4])
@@ -876,7 +871,7 @@ void Graphics::print(const std::string &str, float x, float y , float angle, flo
 {
 	DisplayState &state = states.back();
 
-	if (state.font != nullptr)
+	if (state.font.get() != nullptr)
 		state.font->print(str, x, y, 0.0, angle, sx, sy, ox, oy, kx, ky);
 }
 
@@ -884,7 +879,7 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 {
 	DisplayState &state = states.back();
 
-	if (state.font == nullptr)
+	if (state.font.get() == nullptr)
 		return;
 
 	if (wrap < 0.0f)
@@ -1266,12 +1261,8 @@ void Graphics::pop()
 
 		// Hack: the Lua-facing love.graphics.print function will set the current
 		// font if needed, but only on its first call... we always want a font.
-		if (newstate.font == nullptr)
-		{
-			newstate.font = states.back().font;
-			if (newstate.font != nullptr)
-				newstate.font->retain();
-		}
+		if (newstate.font.get() == nullptr)
+			newstate.font.set(states.back().font.get());
 
 		restoreStateChecked(newstate);
 
@@ -1347,27 +1338,10 @@ Graphics::DisplayState::DisplayState(const DisplayState &other)
 {
 	for (int i = 0; i < 4; i++)
 		colorMask[i] = other.colorMask[i];
-
-	if (font)
-		font->retain();
-
-	if (shader)
-		shader->retain();
-
-	for (Canvas *c : canvases)
-		c->retain();
 }
 
 Graphics::DisplayState::~DisplayState()
 {
-	for (Canvas *c : canvases)
-		c->release();
-
-	if (shader)
-		shader->release();
-
-	if (font)
-		font->release();
 }
 
 Graphics::DisplayState &Graphics::DisplayState::operator = (const DisplayState &other)
@@ -1383,23 +1357,8 @@ Graphics::DisplayState &Graphics::DisplayState::operator = (const DisplayState &
 	scissor = other.scissor;
 	scissorBox = other.scissorBox;
 
-	Object::AutoRelease fontrelease(font);
-
 	font = other.font;
-	if (font)
-		font->retain();
-
-	Object::AutoRelease shaderrelease(shader);
-
 	shader = other.shader;
-	if (shader)
-		shader->retain();
-
-	for (Canvas *c : other.canvases)
-		c->retain();
-	for (Canvas *c : canvases)
-		c->release();
-
 	canvases = other.canvases;
 
 	for (int i = 0; i < 4; i++)

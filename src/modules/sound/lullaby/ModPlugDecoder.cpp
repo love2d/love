@@ -98,7 +98,7 @@ bool ModPlugDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *ModPlugDecoder::clone()
 {
-	return new ModPlugDecoder(data, ext, bufferSize);
+	return new ModPlugDecoder(data.get(), ext, bufferSize);
 }
 
 int ModPlugDecoder::decode()

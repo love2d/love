@@ -178,7 +178,7 @@ private:
 	int range_min;
 	int range_max;
 
-	Texture *texture;
+	Object::StrongRef<Texture> texture;
 
 	// Whether the per-vertex colors are used when drawing.
 	bool colors_enabled;

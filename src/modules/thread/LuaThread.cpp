@@ -37,14 +37,11 @@ LuaThread::LuaThread(const std::string &name, love::Data *code)
 	, args(0)
 	, nargs(0)
 {
-	code->retain();
 	threadName = name;
 }
 
 LuaThread::~LuaThread()
 {
-	code->release();
-
 	// No args should still exist at this point,
 	// but you never know.
 	for (int i = 0; i < nargs; ++i)

@@ -37,7 +37,6 @@ Decoder::Decoder(Data *data, const std::string &ext, int bufferSize)
 	, buffer(0)
 	, eof(false)
 {
-	data->retain();
 	buffer = new char[bufferSize];
 }
 
@@ -45,8 +44,6 @@ Decoder::~Decoder()
 {
 	if (buffer != 0)
 		delete [](char *) buffer;
-	if (data != 0)
-		data->release();
 }
 
 void *Decoder::getBuffer() const

@@ -88,14 +88,10 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 		delete element_buf;
 		throw love::Exception("Out of memory.");
 	}
-
-	texture->retain();
 }
 
 SpriteBatch::~SpriteBatch()
 {
-	texture->release();
-
 	delete color;
 	delete array_buf;
 	delete element_buf;
@@ -172,15 +168,12 @@ void SpriteBatch::flush()
 
 void SpriteBatch::setTexture(Texture *newtexture)
 {
-	Object::AutoRelease imagerelease(texture);
-
-	newtexture->retain();
-	texture = newtexture;
+	texture.set(newtexture);
 }
 
 Texture *SpriteBatch::getTexture()
 {
-	return texture;
+	return texture.get();
 }
 
 void SpriteBatch::setColor(const Color &color)

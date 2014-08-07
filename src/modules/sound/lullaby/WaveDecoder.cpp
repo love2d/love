@@ -117,7 +117,7 @@ bool WaveDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *WaveDecoder::clone()
 {
-	return new WaveDecoder(data, ext, bufferSize);
+	return new WaveDecoder(data.get(), ext, bufferSize);
 }
 
 int WaveDecoder::decode()

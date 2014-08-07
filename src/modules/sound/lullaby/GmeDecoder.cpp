@@ -86,7 +86,7 @@ bool GmeDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *GmeDecoder::clone()
 {
-	return new GmeDecoder(data, ext, bufferSize);
+	return new GmeDecoder(data.get(), ext, bufferSize);
 }
 
 int GmeDecoder::decode()

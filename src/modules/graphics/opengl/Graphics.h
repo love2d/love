@@ -208,6 +208,7 @@ public:
 
 	void setCanvas(Canvas *canvas);
 	void setCanvas(const std::vector<Canvas *> &canvases);
+	void setCanvas(const std::vector<Object::StrongRef<Canvas>> &canvases);
 	void setCanvas();
 
 	std::vector<Canvas *> getCanvas() const;
@@ -459,9 +460,10 @@ private:
 		bool scissor;
 		OpenGL::Viewport scissorBox;
 
-		Font *font;
-		Shader *shader;
-		std::vector<Canvas *> canvases;
+		Object::StrongRef<Font> font;
+		Object::StrongRef<Shader> shader;
+
+		std::vector<Object::StrongRef<Canvas>> canvases;
 
 		// Color mask.
 		bool colorMask[4];

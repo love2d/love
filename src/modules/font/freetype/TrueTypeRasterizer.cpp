@@ -51,14 +51,11 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	metrics.ascent = s.ascender >> 6;
 	metrics.descent = s.descender >> 6;
 	metrics.height = s.height >> 6;
-
-	data->retain();
 }
 
 TrueTypeRasterizer::~TrueTypeRasterizer()
 {
 	FT_Done_Face(face);
-	data->release();
 }
 
 int TrueTypeRasterizer::getLineHeight() const
