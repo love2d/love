@@ -80,7 +80,7 @@ public:
 	/**
 	 * Clears the screen.
 	 **/
-	void clear();
+	void clear(ClearType type = CLEAR_ALL);
 
 	/**
 	 * Flips buffers. (Rendered geometry is presented on screen).
@@ -124,22 +124,16 @@ public:
 	bool getScissor(int &x, int &y, int &width, int &height) const;
 
 	/**
-	 * Enables the stencil buffer and set stencil function to fill it
-	 */
-	void defineStencil();
+	 * Enables or disables drawing to the stencil buffer. When enabled, the
+	 * color buffer is disabled.
+	 **/
+	void drawToStencilBuffer(bool enable);
 
 	/**
-	 * Set stencil function to mask the following drawing calls using
-	 * the current stencil buffer
-	 * @param invert Invert the mask, i.e. draw everywhere expect where
-	 *               the mask is defined.
-	 */
-	void useStencil(bool invert = false);
-
-	/**
-	 * Disables the stencil buffer
-	 */
-	void discardStencil();
+	 * Sets whether stencil testing is enabled.
+	 **/
+	void setStencilTest(bool enable, bool invert);
+	void getStencilTest(bool &enable, bool &invert);
 
 	/**
 	 * Creates an Image object with padding and/or optimization.
@@ -443,6 +437,10 @@ private:
 		bool scissor;
 		OpenGL::Viewport scissorBox;
 
+		// Stencil.
+		bool stencilTest;
+		bool stencilInvert;
+
 		Object::StrongRef<Font> font;
 		Object::StrongRef<Shader> shader;
 
@@ -471,7 +469,7 @@ private:
 	int height;
 	bool created;
 
-	bool activeStencil;
+	bool writingToStencil;
 
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypes; // Keeps track of the pushed stack types.
