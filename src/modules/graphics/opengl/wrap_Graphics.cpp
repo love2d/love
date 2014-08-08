@@ -124,7 +124,7 @@ int w_getScissor(lua_State *L)
 	return 4;
 }
 
-int w_drawStencil(lua_State *L)
+int w_stencil(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
@@ -1420,7 +1420,7 @@ static const luaL_Reg functions[] =
 	{ "setScissor", w_setScissor },
 	{ "getScissor", w_getScissor },
 
-	{ "drawStencil", w_drawStencil },
+	{ "stencil", w_stencil },
 	{ "setStencilTest", w_setStencilTest },
 	{ "getStencilTest", w_getStencilTest },
 
