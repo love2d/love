@@ -27,6 +27,9 @@
 // C++
 #include <algorithm>
 
+// C
+#include <cstdlib>
+
 namespace love
 {
 namespace image
