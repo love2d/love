@@ -52,8 +52,7 @@ static int w__gc(lua_State *L)
 
 	thread::Lock lock(gcmutex);
 
-	if (p->own)
-		object->release();
+	object->release();
 
 	return 0;
 }
@@ -218,7 +217,6 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	luax_insistregistry(L, REGISTRY_MODULES);
 
 	Proxy *p = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
-	p->own = true;
 	p->data = m.module;
 	p->flags = m.flags;
 
@@ -384,22 +382,20 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos)
 	return 0;
 }
 
-void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *object, bool own)
+void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *object)
 {
 	Proxy *u = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
 
-	if (own)
-		object->retain();
+	object->retain();
 
 	u->data = (void *) object;
 	u->flags = flags;
-	u->own = own;
 
 	luaL_newmetatable(L, name);
 	lua_setmetatable(L, -2);
 }
 
-void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object, bool own)
+void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object)
 {
 	if (object == nullptr)
 		lua_pushnil(L);
@@ -411,7 +407,7 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
 	if (!lua_istable(L, -1))
 	{
 		lua_pop(L, 1);
-		return luax_rawnewtype(L, name, flags, object, own);
+		return luax_rawnewtype(L, name, flags, object);
 	}
 
 	// Get the value of lovetypes[data] on the stack.
@@ -423,7 +419,7 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
 	{
 		lua_pop(L, 1);
 
-		luax_rawnewtype(L, name, flags, object, own);
+		luax_rawnewtype(L, name, flags, object);
 
 		lua_pushlightuserdata(L, (void *) object);
 		lua_pushvalue(L, -2);

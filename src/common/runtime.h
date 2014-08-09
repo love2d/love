@@ -67,9 +67,6 @@ struct Proxy
 
 	// The light userdata (pointer to the love::Object).
 	void *data;
-
-	// Whether release() should be called on GC.
-	bool own;
 };
 
 /**
@@ -228,6 +225,9 @@ void luax_setfuncs(lua_State *L, const luaL_Reg *l);
 
 /**
  * Register a module in the love table. The love table will be created if it does not exist.
+ * NOTE: The module-object is expected to have a +1 reference count before calling
+ * this function, as it doesn't retain the object itself but Lua will release it
+ * upon garbage collection.
  * @param L The Lua state.
  **/
 int luax_register_module(lua_State *L, const WrappedModule &m);
@@ -268,15 +268,13 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
 /**
  * Pushes a Lua representation of the given object onto the stack, creating and
  * storing the Lua representation in a weak table if it doesn't exist yet.
- * NOTE: If own is true, the object will be retained by Lua.
+ * NOTE: The object will be retained by Lua and released upon garbage collection.
  * @param L The Lua state.
  * @param name The name of the type. This must match the name used with luax_register_type.
  * @param flags The type information of the object.
  * @param object The pointer to the actual object.
- * @param own Set this to true (default) if the object should be retained by
- *            Lua and released upon garbage collection.
  **/
-void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object, bool own = true);
+void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object);
 
 /**
  * Creates a new Lua representation of the given object *without* checking if it
@@ -284,15 +282,13 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
  * This should only be used when performance is an extreme concern and the
  * object is not ever expected to be pushed to Lua again, as it prevents the
  * Lua-side objects from working in some cases when used as keys in tables.
- * NOTE: if own is true, the object will be retained by Lua.
+ * NOTE: The object will be retained by Lua and released upon garbage collection.
  * @param L The Lua state.
  * @param name The name of the type. This must match the name used with luax_register_type.
  * @param flags The type information of the object.
  * @param object The pointer to the actual object.
- * @param own Set this to true (default) if the object should be retained by
- *            Lua and released upon garbage collection.
  **/
-void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *object, bool own = true);
+void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *object);
 
 /**
  * Checks whether the value at idx is a certain type.

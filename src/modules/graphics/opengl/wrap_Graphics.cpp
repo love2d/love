@@ -282,8 +282,8 @@ int w_newImageFont(lua_State *L)
 		filter = i->getFilter();
 		love::image::ImageData *id = i->getImageData();
 		if (!id)
-			return luaL_argerror(L, 1, "Image cannot be compressed.");
-		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, id, false);
+			return luaL_argerror(L, 1, "Image must not be compressed.");
+		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, id);
 		lua_replace(L, 1);
 	}
 
