@@ -66,6 +66,7 @@ int w_ChainShape_getChildEdge(lua_State *L)
 	EdgeShape *e = 0;
 	luax_catchexcept(L, [&](){ e = c->getChildEdge(index); });
 	luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, e);
+	e->release();
 	return 1;
 }
 

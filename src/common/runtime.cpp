@@ -36,8 +36,7 @@
 namespace love
 {
 
-static thread::Mutex *gcmutex = 0;
-void *_gcmutex = 0;
+static thread::Mutex *gcmutex = nullptr;
 
 /**
  * Called when an object is collected. The object is released
@@ -46,25 +45,16 @@ void *_gcmutex = 0;
 static int w__gc(lua_State *L)
 {
 	if (!gcmutex)
-	{
 		gcmutex = thread::newMutex();
-		_gcmutex = (void *) gcmutex;
-	}
 
-	Proxy *p = (Proxy *)lua_touserdata(L, 1);
-	Object *t = (Object *)p->data;
+	Proxy *p = (Proxy *) lua_touserdata(L, 1);
+	Object *object = (Object *) p->data;
 
 	thread::Lock lock(gcmutex);
 
-	int numretains = p->retains;
-	if (numretains >= 0)
-		numretains = std::min(numretains, t->getReferenceCount());
+	if (p->own)
+		object->release();
 
-	for (int i = numretains; i > 0; i--)
-		t->release();
-
-	// Signal that this Proxy is dead.
-	p->retains = -1;
 	return 0;
 }
 
@@ -228,7 +218,7 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	luax_insistregistry(L, REGISTRY_MODULES);
 
 	Proxy *p = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
-	p->retains = 1;
+	p->own = true;
 	p->data = m.module;
 	p->flags = m.flags;
 
@@ -394,20 +384,26 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos)
 	return 0;
 }
 
-void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own)
+void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *object, bool own)
 {
 	Proxy *u = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
 
-	u->data = (void *) data;
+	if (own)
+		object->retain();
+
+	u->data = (void *) object;
 	u->flags = flags;
-	u->retains = own ? 1 : 0;
+	u->own = own;
 
 	luaL_newmetatable(L, name);
 	lua_setmetatable(L, -2);
 }
 
-void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *data, bool own)
+void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object, bool own)
 {
+	if (object == nullptr)
+		lua_pushnil(L);
+
 	// Fetch the registry table of instantiated types.
 	luax_getregistry(L, REGISTRY_TYPES);
 
@@ -415,11 +411,11 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *dat
 	if (!lua_istable(L, -1))
 	{
 		lua_pop(L, 1);
-		return luax_rawnewtype(L, name, flags, data, own);
+		return luax_rawnewtype(L, name, flags, object, own);
 	}
 
 	// Get the value of lovetypes[data] on the stack.
-	lua_pushlightuserdata(L, (void *) data);
+	lua_pushlightuserdata(L, (void *) object);
 	lua_gettable(L, -2);
 
 	// If the Proxy userdata isn't in the instantiated types table yet, add it.
@@ -427,37 +423,17 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *dat
 	{
 		lua_pop(L, 1);
 
-		luax_rawnewtype(L, name, flags, data, own);
+		luax_rawnewtype(L, name, flags, object, own);
 
-		lua_pushlightuserdata(L, (void *) data);
+		lua_pushlightuserdata(L, (void *) object);
 		lua_pushvalue(L, -2);
 
 		// lovetypes[data] = Proxy.
 		lua_settable(L, -4);
-
-		// Remove the lovetypes table from the stack.
-		lua_remove(L, -2);
-
-		// The Proxy userdata remains at the top of the stack.
-		return;
 	}
 
 	// Remove the lovetypes table from the stack.
 	lua_remove(L, -2);
-
-	// If the object should be released on GC and we already have a stored
-	// Proxy, we should tell the Proxy that the object was retained again.
-	if (own)
-	{
-		Proxy *p = (Proxy *) lua_touserdata(L, -1);
-
-		thread::EmptyLock lock;
-		if (gcmutex)
-			lock.setLock(gcmutex);
-
-		if (p->retains >= 0)
-			++(p->retains);
-	}
 
 	// Keep the Proxy userdata on the stack.
 }

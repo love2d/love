@@ -143,7 +143,6 @@ int w_SpriteBatch_getTexture(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	Texture *tex = t->getTexture();
-	tex->retain();
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
@@ -151,10 +150,7 @@ int w_SpriteBatch_getTexture(lua_State *L)
 	else if (typeid(*tex) == typeid(Canvas))
 		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
 	else
-	{
-		tex->release();
 		return luaL_error(L, "Unable to determine texture type.");
-	}
 
 	return 1;
 }

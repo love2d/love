@@ -45,6 +45,7 @@ int w_BezierCurve_getDerivative(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	BezierCurve *deriv = new BezierCurve(curve->getDerivative());
 	luax_pushtype(L, "BezierCurve", MATH_BEZIER_CURVE_T, deriv);
+	deriv->release();
 	return 1;
 }
 

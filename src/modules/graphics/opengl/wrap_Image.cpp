@@ -93,10 +93,7 @@ int w_Image_getData(lua_State *L)
 	{
 		love::image::CompressedData *t = i->getCompressedData();
 		if (t)
-		{
-			t->retain();
 			luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
-		}
 		else
 			lua_pushnil(L);
 	}
@@ -104,10 +101,7 @@ int w_Image_getData(lua_State *L)
 	{
 		love::image::ImageData *t = i->getImageData();
 		if (t)
-		{
-			t->retain();
 			luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
-		}
 		else
 			lua_pushnil(L);
 	}
