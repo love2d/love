@@ -44,9 +44,15 @@ int w_reset(lua_State *)
 	return 0;
 }
 
-int w_clear(lua_State *)
+int w_clear(lua_State *L)
 {
-	instance()->clear();
+	Graphics::ClearType type = Graphics::CLEAR_ALL;
+
+	const char *tname = lua_isnoneornil(L, 1) ? nullptr : luaL_checkstring(L, 1);
+	if (tname && !Graphics::getConstant(tname, type))
+		return luaL_error(L, "Invalid graphics clear type: %s", tname);
+
+	instance()->clear(type);
 	return 0;
 }
 
@@ -118,32 +124,35 @@ int w_getScissor(lua_State *L)
 	return 4;
 }
 
-static int setStencil(lua_State *L, bool invert)
+int w_stencil(lua_State *L)
 {
-	// no argument -> clear stencil
-	if (lua_isnoneornil(L, 1))
-	{
-		instance()->discardStencil();
-		return 0;
-	}
-
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
-	instance()->defineStencil();
-	lua_call(L, lua_gettop(L) - 1, 0); // call stencil(...)
-	instance()->useStencil(invert);
+	instance()->drawToStencilBuffer(true);
+
+	// Call stencilfunc(...)
+	lua_call(L, lua_gettop(L) - 1, 0);
+
+	instance()->drawToStencilBuffer(false);
 
 	return 0;
 }
 
-int w_setStencil(lua_State *L)
+int w_setStencilTest(lua_State *L)
 {
-	return setStencil(L, false);
+	bool enable = luax_toboolean(L, 1);
+	bool invert = luax_toboolean(L, 2);
+	instance()->setStencilTest(enable, invert);
+	return 0;
 }
 
-int w_setInvertedStencil(lua_State *L)
+int w_getStencilTest(lua_State *L)
 {
-	return setStencil(L, true);
+	bool enabled, inverted;
+	instance()->getStencilTest(enabled, inverted);
+	luax_pushboolean(L, enabled);
+	luax_pushboolean(L, inverted);
+	return 2;
 }
 
 static const char *imageFlagName(Image::FlagType flagtype)
@@ -869,8 +878,8 @@ int w_newScreenshot(lua_State *L)
 
 int w_setCanvas(lua_State *L)
 {
-	// discard stencil testing
-	instance()->discardStencil();
+	// Disable stencil writes.
+	instance()->drawToStencilBuffer(false);
 
 	// called with none -> reset to default buffer
 	if (lua_isnoneornil(L, 1))
@@ -1414,8 +1423,9 @@ static const luaL_Reg functions[] =
 	{ "setScissor", w_setScissor },
 	{ "getScissor", w_getScissor },
 
-	{ "setStencil", w_setStencil },
-	{ "setInvertedStencil", w_setInvertedStencil },
+	{ "stencil", w_stencil },
+	{ "setStencilTest", w_setStencilTest },
+	{ "getStencilTest", w_getStencilTest },
 
 	{ "point", w_point },
 	{ "line", w_line },

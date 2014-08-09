@@ -47,7 +47,7 @@ Graphics::Graphics()
 	: width(0)
 	, height(0)
 	, created(false)
-	, activeStencil(false)
+	, writingToStencil(false)
 	, displayedMinReqWarning(false)
 {
 	states.reserve(10);
@@ -95,6 +95,8 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 
+	setStencilTest(s.stencilTest, s.stencilInvert);
+
 	setFont(s.font.get());
 	setShader(s.shader.get());
 	setCanvas(s.canvases);
@@ -131,6 +133,9 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		else
 			setScissor();
 	}
+
+	if (s.stencilTest != cur.stencilTest || s.stencilInvert != cur.stencilInvert)
+		setStencilTest(s.stencilTest, s.stencilInvert);
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
@@ -350,14 +355,27 @@ void Graphics::setDebug(bool enable)
 void Graphics::reset()
 {
 	DisplayState s;
-	discardStencil();
-	origin();
+	drawToStencilBuffer(false);
 	restoreState(s);
+	origin();
 }
 
-void Graphics::clear()
+void Graphics::clear(ClearType type)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	GLbitfield mask = 0;
+
+	switch (type)
+	{
+	case CLEAR_ALL:
+	default:
+		mask = GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+		break;
+	case CLEAR_STENCIL:
+		mask = GL_STENCIL_BUFFER_BIT;
+		break;
+	}
+
+	glClear(mask);
 }
 
 void Graphics::present()
@@ -409,38 +427,68 @@ bool Graphics::getScissor(int &x, int &y, int &width, int &height) const
 	return states.back().scissor;
 }
 
-void Graphics::defineStencil()
+void Graphics::drawToStencilBuffer(bool enable)
 {
+	if (writingToStencil == enable)
+		return;
+
+	writingToStencil = enable;
+
+	if (!enable)
+	{
+		const DisplayState &state = states.back();
+
+		// Revert the color write mask.
+		setColorMask(state.colorMask);
+
+		// Use the user-set stencil test state when writes are disabled.
+		setStencilTest(state.stencilTest, state.stencilInvert);
+		return;
+	}
+
 	// Make sure the active canvas has a stencil buffer.
 	if (Canvas::current)
 		Canvas::current->checkCreateStencil();
 
-	// Disable color writes but don't save the mask values.
+	// Disable color writes but don't save the state for it.
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-	glClear(GL_STENCIL_BUFFER_BIT);
+	// The stencil test must be enabled in order to write to the stencil buffer.
 	glEnable(GL_STENCIL_TEST);
+
 	glStencilFunc(GL_ALWAYS, 1, 1);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-	activeStencil = true;
 }
 
-void Graphics::useStencil(bool invert)
+void Graphics::setStencilTest(bool enable, bool invert)
 {
-	glStencilFunc(GL_EQUAL, (GLint)(!invert), 1); // invert ? 0 : 1
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	setColorMask(states.back().colorMask);
-}
+	DisplayState &state = states.back();
+	state.stencilTest = enable;
+	state.stencilInvert = invert;
 
-void Graphics::discardStencil()
-{
-	if (!activeStencil)
+	if (writingToStencil)
 		return;
 
-	setColorMask(states.back().colorMask);
-	glDisable(GL_STENCIL_TEST);
-	activeStencil = false;
+	if (!enable)
+	{
+		glDisable(GL_STENCIL_TEST);
+		return;
+	}
+
+	// Make sure the active canvas has a stencil buffer.
+	if (Canvas::current)
+		Canvas::current->checkCreateStencil();
+
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_EQUAL, invert ? 0 : 1, 1);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+}
+
+void Graphics::getStencilTest(bool &enable, bool &invert)
+{
+	const DisplayState &state = states.back();
+	enable = state.stencilTest;
+	invert = state.stencilInvert;
 }
 
 Image *Graphics::newImage(love::image::ImageData *data, const Image::Flags &flags)
@@ -1279,6 +1327,8 @@ Graphics::DisplayState::DisplayState()
 	, pointSize(1.0f)
 	, scissor(false)
 	, scissorBox()
+	, stencilTest(false)
+	, stencilInvert(false)
 	, font(nullptr)
 	, shader(nullptr)
 	, wireframe(false)
@@ -1298,6 +1348,8 @@ Graphics::DisplayState::DisplayState(const DisplayState &other)
 	, pointSize(other.pointSize)
 	, scissor(other.scissor)
 	, scissorBox(other.scissorBox)
+	, stencilTest(other.stencilTest)
+	, stencilInvert(other.stencilInvert)
 	, font(other.font)
 	, shader(other.shader)
 	, canvases(other.canvases)
@@ -1322,6 +1374,8 @@ Graphics::DisplayState &Graphics::DisplayState::operator = (const DisplayState &
 	pointSize = other.pointSize;
 	scissor = other.scissor;
 	scissorBox = other.scissorBox;
+	stencilTest = other.stencilTest;
+	stencilInvert = other.stencilInvert;
 
 	font = other.font;
 	shader = other.shader;
