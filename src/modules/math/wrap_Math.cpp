@@ -101,6 +101,7 @@ int w_newRandomGenerator(lua_State *L)
 	}
 
 	luax_pushtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, t);
+	t->release();
 	return 1;
 }
 
@@ -139,6 +140,7 @@ int w_newBezierCurve(lua_State *L)
 
 	BezierCurve *curve = Math::instance.newBezierCurve(points);
 	luax_pushtype(L, "BezierCurve", MATH_BEZIER_CURVE_T, curve);
+	curve->release();
 	return 1;
 }
 

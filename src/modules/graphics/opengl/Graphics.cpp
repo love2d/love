@@ -167,7 +167,7 @@ void Graphics::setViewportSize(int width, int height)
 
 	// We want to affect the main screen, not any Canvas that's currently active
 	// (not that any *should* be active when this is called.)
-	std::vector<Canvas *> canvases = getCanvas();
+	std::vector<Object::StrongRef<Canvas>> canvases = states.back().canvases;
 	setCanvas();
 
 	// Set the viewport to top-left corner.
@@ -1061,7 +1061,7 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 {
 	// Temporarily unbind the currently active canvas (glReadPixels reads the
 	// active framebuffer, not the main one.)
-	std::vector<Canvas *> canvases = getCanvas();
+	std::vector<Object::StrongRef<Canvas>> canvases = states.back().canvases;
 	setCanvas();
 
 	int w = getWidth();

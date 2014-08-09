@@ -262,10 +262,7 @@ int w_getIcon(lua_State *L)
 {
 	image::ImageData *i = instance()->getIcon();
 	if (i)
-	{
-		i->retain();
 		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
-	}
 	else
 		lua_pushnil(L);
 	return 1;

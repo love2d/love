@@ -46,6 +46,7 @@ int w_newCursor(lua_State *L)
 	luax_catchexcept(L, [&](){ cursor = instance()->newCursor(data, hotx, hoty); });
 
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
+	cursor->release();
 	return 1;
 }
 
@@ -60,7 +61,6 @@ int w_getSystemCursor(lua_State *L)
 	Cursor *cursor = 0;
 	luax_catchexcept(L, [&](){ cursor = instance()->getSystemCursor(systemCursor); });
 
-	cursor->retain();
 	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
 	return 1;
 }
@@ -84,10 +84,7 @@ int w_getCursor(lua_State *L)
 	Cursor *cursor = instance()->getCursor();
 
 	if (cursor)
-	{
-		cursor->retain();
 		luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
-	}
 	else
 		lua_pushnil(L);
 

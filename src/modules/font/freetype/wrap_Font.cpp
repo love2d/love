@@ -58,8 +58,11 @@ int w_newRasterizer(lua_State *L)
 			[&]() { d->release(); }
 		);
 	}
+	else
+		return luaL_argerror(L, 1, "expected ImageData, filename, or FileData");
 
 	luax_pushtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
+	t->release();
 	return 1;
 }
 
@@ -81,6 +84,7 @@ int w_newGlyphData(lua_State *L)
 	}
 
 	luax_pushtype(L, "GlyphData", FONT_GLYPH_DATA_T, t);
+	t->release();
 	return 1;
 }
 

@@ -263,18 +263,13 @@ int w_Mesh_getTexture(lua_State *L)
 	if (tex == nullptr)
 		return 0;
 
-	tex->retain();
-
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
 		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
 	else if (typeid(*tex) == typeid(Canvas))
 		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
 	else
-	{
-		tex->release();
 		return luaL_error(L, "Unable to determine texture type.");
-	}
 
 	return 1;
 }

@@ -111,7 +111,6 @@ int w_Fixture_getBody(lua_State *L)
 	Body *body = t->getBody();
 	if (body == 0)
 		return 0;
-	body->retain();
 	luax_pushtype(L, "Body", PHYSICS_BODY_T, body);
 	return 1;
 }
@@ -140,6 +139,7 @@ int w_Fixture_getShape(lua_State *L)
 		luax_pushtype(L, "Shape", PHYSICS_SHAPE_T, shape);
 		break;
 	}
+	shape->release();
 	return 1;
 }
 

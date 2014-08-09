@@ -226,7 +226,6 @@ void Variant::toLua(lua_State *L)
 		{
 			const char *name = NULL;
 			love::types.find(udatatype, name);
-			((love::Object *) data.userdata)->retain();
 			luax_pushtype(L, name, flags, (love::Object *) data.userdata);
 		}
 		else

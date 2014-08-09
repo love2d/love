@@ -526,7 +526,6 @@ int w_Body_getWorld(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	World *world = t->getWorld();
-	world->retain();
 	luax_pushtype(L, "World", PHYSICS_WORLD_T, world);
 	return 1;
 }

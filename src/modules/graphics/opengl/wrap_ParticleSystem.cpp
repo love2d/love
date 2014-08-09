@@ -52,6 +52,7 @@ int w_ParticleSystem_clone(lua_State *L)
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
 
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, clone);
+	clone->release();
 	return 1;
 }
 
@@ -67,7 +68,6 @@ int w_ParticleSystem_getTexture(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	Texture *tex = t->getTexture();
-	tex->retain();
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
@@ -75,10 +75,7 @@ int w_ParticleSystem_getTexture(lua_State *L)
 	else if (typeid(*tex) == typeid(Canvas))
 		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
 	else
-	{
-		tex->release();
 		return luaL_error(L, "Unable to determine texture type.");
-	}
 
 	return 1;
 }
@@ -608,7 +605,6 @@ int w_ParticleSystem_getQuads(lua_State *L)
 
 	for (size_t i = 0; i < quads.size(); i++)
 	{
-		quads[i]->retain();
 		luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quads[i]);
 		lua_rawseti(L, -2, i + 1);
 	}

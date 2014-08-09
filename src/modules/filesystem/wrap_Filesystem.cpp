@@ -145,6 +145,7 @@ int w_newFile(lua_State *L)
 	}
 
 	luax_pushtype(L, "File", FILESYSTEM_FILE_T, t);
+	t->release();
 	return 1;
 }
 
@@ -210,6 +211,7 @@ int w_newFileData(lua_State *L)
 				return luax_ioError(L, "%s", e.what());
 			}
 			luax_pushtype(L, "FileData", FILESYSTEM_FILE_DATA_T, data);
+			data->release();
 			return 1;
 		}
 		else
@@ -241,6 +243,7 @@ int w_newFileData(lua_State *L)
 	}
 
 	luax_pushtype(L, "FileData", FILESYSTEM_FILE_DATA_T, t);
+	t->release();
 	return 1;
 }
 
@@ -396,9 +399,13 @@ int w_lines(lua_State *L)
 		luax_catchexcept(L, [&](){ success = file->open(File::READ); });
 
 		if (!success)
+		{
+			file->release();
 			return luaL_error(L, "Could not open file.");
-		
+		}
+
 		luax_pushtype(L, "File", FILESYSTEM_FILE_T, file);
+		file->release();
 	}
 	else
 		return luaL_argerror(L, 1, "expected filename.");

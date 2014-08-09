@@ -63,6 +63,7 @@ int w_newSource(lua_State *L)
 	if (t)
 	{
 		luax_pushtype(L, "Source", AUDIO_SOURCE_T, t);
+		t->release();
 		return 1;
 	}
 	else
@@ -224,7 +225,10 @@ int w_getRecordedData(lua_State *L)
 	if (!sd)
 		lua_pushnil(L);
 	else
+	{
 		luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
+		sd->release();
+	}
 	return 1;
 }
 
@@ -233,8 +237,13 @@ int w_stopRecording(lua_State *L)
 	if (luax_optboolean(L, 1, true))
 	{
 		love::sound::SoundData *sd = instance()->stopRecording(true);
-		if (!sd) lua_pushnil(L);
-		else luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
+		if (!sd)
+			lua_pushnil(L);
+		else
+		{
+			luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
+			sd->release();
+		}
 		return 1;
 	}
 	instance()->stopRecording(false);

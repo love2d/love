@@ -225,6 +225,7 @@ int w_newImage(lua_State *L)
 
 	// Push the type.
 	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, image);
+	image->release();
 	return 1;
 }
 
@@ -241,6 +242,7 @@ int w_newQuad(lua_State *L)
 
 	Quad *quad = instance()->newQuad(v, sw, sh);
 	luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quad);
+	quad->release();
 	return 1;
 }
 
@@ -265,6 +267,7 @@ int w_newFont(lua_State *L)
 
 	// Push the type.
 	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
+	font->release();
 	return 1;
 }
 
@@ -282,8 +285,8 @@ int w_newImageFont(lua_State *L)
 		filter = i->getFilter();
 		love::image::ImageData *id = i->getImageData();
 		if (!id)
-			return luaL_argerror(L, 1, "Image cannot be compressed.");
-		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, id, false);
+			return luaL_argerror(L, 1, "Image must not be compressed.");
+		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, id);
 		lua_replace(L, 1);
 	}
 
@@ -305,6 +308,7 @@ int w_newImageFont(lua_State *L)
 
 	// Push the type.
 	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
+	font->release();
 
 	return 1;
 }
@@ -327,6 +331,7 @@ int w_newSpriteBatch(lua_State *L)
 	);
 
 	luax_pushtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, t);
+	t->release();
 	return 1;
 }
 
@@ -343,6 +348,7 @@ int w_newParticleSystem(lua_State *L)
 	);
 
 	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
+	t->release();
 	return 1;
 }
 
@@ -367,6 +373,7 @@ int w_newCanvas(lua_State *L)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
 
 	luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);
+	canvas->release();
 	return 1;
 }
 
@@ -450,6 +457,7 @@ int w_newShader(lua_State *L)
 	{
 		Shader *shader = instance()->newShader(sources);
 		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
+		shader->release();
 	}
 	catch (love::Exception &e)
 	{
@@ -542,6 +550,7 @@ int w_newMesh(lua_State *L)
 		t->setTexture(tex);
 
 	luax_pushtype(L, "Mesh", GRAPHICS_MESH_T, t);
+	t->release();
 	return 1;
 }
 
@@ -631,7 +640,6 @@ int w_getFont(lua_State *L)
 	if (f == 0)
 		return 0;
 
-	f->retain();
 	luax_pushtype(L, "Font", GRAPHICS_FONT_T, f);
 	return 1;
 }
@@ -855,6 +863,7 @@ int w_newScreenshot(lua_State *L)
 	luax_catchexcept(L, [&](){ i = instance()->newScreenshot(image, copyAlpha); });
 
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
+	i->release();
 	return 1;
 }
 
@@ -903,16 +912,13 @@ int w_getCanvas(lua_State *L)
 	const std::vector<Canvas *> canvases = instance()->getCanvas();
 	int n = 0;
 
-	if (!canvases.empty())
+	for (Canvas *c : canvases)
 	{
-		for (Canvas *c : canvases)
-		{
-			c->retain();
-			luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, c);
-			n++;
-		}
+		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, c);
+		n++;
 	}
-	else
+
+	if (n == 0)
 	{
 		lua_pushnil(L);
 		n = 1;
@@ -938,10 +944,7 @@ int w_getShader(lua_State *L)
 {
 	Shader *shader = instance()->getShader();
 	if (shader)
-	{
-		shader->retain();
 		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
-	}
 	else
 		lua_pushnil(L);
 

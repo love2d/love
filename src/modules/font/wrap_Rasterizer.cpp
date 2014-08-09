@@ -87,6 +87,7 @@ int w_Rasterizer_getGlyphData(lua_State *L)
 	});
 
 	luax_pushtype(L, "GlyphData", FONT_GLYPH_DATA_T, g);
+	g->release();
 	return 1;
 }
 
