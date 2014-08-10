@@ -410,7 +410,7 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
 		return luax_rawnewtype(L, name, flags, object);
 	}
 
-	// Get the value of lovetypes[data] on the stack.
+	// Get the value of lovetypes[object] on the stack.
 	lua_pushlightuserdata(L, (void *) object);
 	lua_gettable(L, -2);
 
@@ -424,7 +424,7 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
 		lua_pushlightuserdata(L, (void *) object);
 		lua_pushvalue(L, -2);
 
-		// lovetypes[data] = Proxy.
+		// lovetypes[object] = Proxy.
 		lua_settable(L, -4);
 	}
 

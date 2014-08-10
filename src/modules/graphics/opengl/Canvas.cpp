@@ -891,6 +891,9 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 
 void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 {
+	if (x < 0 || x >= width || y < 0 || y >= width)
+		throw love::Exception("Attempt to get out-of-range pixel (%d,%d)!", x, y);
+
 	resolveMSAA();
 
 	// Our texture is attached to 'resolve_fbo' when we use MSAA.
