@@ -12,17 +12,21 @@ LOVE 0.9.2 [Baby Inspector]
   * Added optional duration argument to Joystick:setVibration.
   * Added love.joystick.loadGamepadMappings and love.joystick.saveGamepadMappings.
   * Added Joint:setUserData and Joint:getUserData.
+  * Added Contact:getFixtures and Body:getContactList.
   * Added Body:getWorld.
   * Added love.window.getDisplayName.
   * Added love.window.minimize.
+  * Added love.window.showMessageBox.
+  * Added love.filesystem.isSymlink, love.filesystem.setSymlinksEnabled, and love.filesystem.areSymlinksEnabled.
 
   * Deprecated SpriteBatch:bind and SpriteBatch:unbind.
   * Deprecated all uses of the name 'FSAA' in favor of 'MSAA'.
   * Deprecated the 'hdrcanvas' graphics feature enum in favor of getCanvasFormats.
   * Deprecated the 'dxt' and 'bc5' graphics feature enums in favor of getCompressedImageFormats.
 
-  * Fixed shader:getWarnings returning unnecessary information.
   * Fixed love.filesystem.setIdentity breaking in some situations when called multiple times.
+  * Fixed love.system.openURL sometimes blocking indefinitely on Linux.
+  * Fixed shader:getWarnings returning unnecessary information.
   * Fixed a potential crash when Shader objects are garbage collected.
   * Fixed love.graphics.newMesh(vertexcount, ...) causing the Mesh to do instanced rendering.
   * Fixed Mesh:getVertexMap.
@@ -30,14 +34,23 @@ LOVE 0.9.2 [Baby Inspector]
   * Fixed Mesh:setDrawRange when the Mesh has a vertex map set.
   * Fixed internal detection of the 'position' and 'effect' shader functions.
   * Fixed Texture memory leak when Meshes are garbage collected.
+  * Fixed the default line join mode to be 'miter' instead of an undefined value.
+  * Fixed the default error handler text size when highdpi mode is enabled on a Retina monitor.
+  * Fixed love.window.setMode to fall back to the largest available mode if a width or height greater than the largest supported is specified and fullscreen=true.
+  * Fixed the state of wireframe mode when love.window.setMode is called.
 
   * Renamed all cases of FSAA to MSAA. The FSAA names still exist for backward-compatibility.
 
-  * Updated error message when love.math.setRandomseed(0) is attempted.
+  * Updated the Lua wrapper code for modules to avoid crashes when the module's instance is created, deleted, and recreated.
+  * Updated internal code for handling garbage collection of love objects to be more efficient.
+  * Updated the paths returned by love.filesystem.getSaveDirectory and friends to strip double-slashes from the string.
+  * Updated the error message when love.filesystem.write or File:open fails because the directory doesn't exist.
+  * Updated the error message when love.math.setRandomseed(0) is attempted.
   * Updated love.physics.newChainShape to error if the number of arguments is invalid.
   * Updated love-created threads to use names visible in external debuggers.
   * Updated SpriteBatch:unbind to use less VRAM if the SpriteBatch has the static usage hint.
   * Updated love.graphics.newImage, love.image.newImageData, etc. to leave less Lua-owned memory around.
+  * Updated love.graphics.push to accept different stack types to push. Current types are "transform" and "all".
 
 LOVE 0.9.1 [Baby Inspector]
 ---------------------------
