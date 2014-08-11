@@ -128,10 +128,14 @@ static unsigned zlibCompress(unsigned char **out, size_t *outsize, const unsigne
 
 bool PNGHandler::canDecode(love::filesystem::FileData *data)
 {
-	std::string ext = data->getExtension();
-	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+	unsigned int width = 0, height = 0;
+	unsigned char *indata = (unsigned char *) data->getData();
+	size_t insize = data->getSize();
 
-	return ext.compare("png") == 0;
+	lodepng::State state;
+	unsigned status = lodepng_inspect(&width, &height, &state, indata, insize);
+
+	return status == 0 && width > 0 && height > 0;
 }
 
 bool PNGHandler::canEncode(ImageData::Format format)
@@ -147,8 +151,7 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 
 	DecodedImage img;
 
-	LodePNGState state;
-	lodepng_state_init(&state);
+	lodepng::State state;
 
 	state.info_raw.colortype = LCT_RGBA;
 	state.info_raw.bitdepth = 8;
@@ -157,8 +160,6 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 
 	unsigned status = lodepng_decode(&img.data, &width, &height,
 	                                 &state, indata, insize);
-
-	lodepng_state_cleanup(&state);
 
 	if (status != 0)
 	{
@@ -180,8 +181,7 @@ PNGHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, ImageData::
 
 	EncodedImage encimg;
 
-	LodePNGState state;
-	lodepng_state_init(&state);
+	lodepng::State state;
 
 	state.info_raw.colortype = LCT_RGBA;
 	state.info_raw.bitdepth = 8;
@@ -194,8 +194,6 @@ PNGHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, ImageData::
 
 	unsigned status = lodepng_encode(&encimg.data, &encimg.size,
 	                                 img.data, img.width, img.height, &state);
-
-	lodepng_state_cleanup(&state);
 
 	if (status != 0)
 	{
