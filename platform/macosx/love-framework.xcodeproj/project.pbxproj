@@ -231,7 +231,6 @@
 		FA48E43618F10D00007CF0BD /* JPEGHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */; };
 		FA48E43718F10D00007CF0BD /* JPEGHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA48E43518F10D00007CF0BD /* JPEGHandler.h */; };
 		FA48E43918F10D6C007CF0BD /* jpeg-turbo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */; };
-		FA4B5B7519369009006C6D93 /* stb_image.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4B5B7319369009006C6D93 /* stb_image.c */; };
 		FA4B5B7A1936B688006C6D93 /* stb_image.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4B5B781936B688006C6D93 /* stb_image.h */; };
 		FA4BBCDE18A5DC5D0027707D /* lodepng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4BBCDC18A5DC5D0027707D /* lodepng.cpp */; };
 		FA4BBCDF18A5DC5D0027707D /* lodepng.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4BBCDD18A5DC5D0027707D /* lodepng.h */; };
@@ -791,7 +790,6 @@
 		FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGHandler.cpp; sourceTree = "<group>"; };
 		FA48E43518F10D00007CF0BD /* JPEGHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JPEGHandler.h; sourceTree = "<group>"; };
 		FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
-		FA4B5B7319369009006C6D93 /* stb_image.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stb_image.c; sourceTree = "<group>"; };
 		FA4B5B781936B688006C6D93 /* stb_image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_image.h; sourceTree = "<group>"; };
 		FA4BBCDC18A5DC5D0027707D /* lodepng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lodepng.cpp; sourceTree = "<group>"; };
 		FA4BBCDD18A5DC5D0027707D /* lodepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lodepng.h; sourceTree = "<group>"; };
@@ -1859,7 +1857,6 @@
 		FA4B5B7219369009006C6D93 /* stb */ = {
 			isa = PBXGroup;
 			children = (
-				FA4B5B7319369009006C6D93 /* stb_image.c */,
 				FA4B5B781936B688006C6D93 /* stb_image.h */,
 			);
 			path = stb;
@@ -2206,7 +2203,6 @@
 				FA08F5EF16C7538F00F007B5 /* b2RevoluteJoint.cpp in Sources */,
 				FA08F5F016C7538F00F007B5 /* b2RopeJoint.cpp in Sources */,
 				FA08F5F116C7538F00F007B5 /* b2WeldJoint.cpp in Sources */,
-				FA4B5B7519369009006C6D93 /* stb_image.c in Sources */,
 				FA4BBCDE18A5DC5D0027707D /* lodepng.cpp in Sources */,
 				FA08F5F216C7538F00F007B5 /* b2WheelJoint.cpp in Sources */,
 				FA08F5F316C7539B00F007B5 /* b2Rope.cpp in Sources */,

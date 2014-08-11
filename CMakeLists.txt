@@ -1021,7 +1021,6 @@ add_library(love_3p_noise1234 ${LOVE_SRC_3P_NOISE1234})
 #
 
 set(LOVE_SRC_3P_STB
-	src/libraries/stb/stb_image.c
 	src/libraries/stb/stb_image.h
 )
 

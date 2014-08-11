@@ -21,11 +21,18 @@
 // LOVE
 #include "STBHandler.h"
 
-// stb_image
-#include "libraries/stb/stb_image.h"
+static void loveSTBAssert(bool test, const char *teststr)
+{
+	if (!test)
+		throw love::Exception("Could not decode image (stb_image assertion '%s' failed)", teststr);
+}
 
-// C++
-#include <algorithm>
+// stb_image
+#define STBI_NO_HDR
+#define STBI_NO_STDIO
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ASSERT(A) loveSTBAssert((A), #A)
+#include "libraries/stb/stb_image.h"
 
 // C
 #include <cstdlib>
@@ -39,10 +46,11 @@ namespace magpie
 
 bool STBHandler::canDecode(love::filesystem::FileData *data)
 {
-	std::string ext = data->getExtension();
-	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+	stbi__context s = {};
+	stbi__start_mem(&s, (const stbi_uc *) data->getData(), (int) data->getSize());
 
-	return (ext.compare("tga") == 0) || (ext.compare("bmp") == 0);
+	// These are internal stb_image functions, but we can still use them!
+	return stbi__bmp_test(&s) || stbi__tga_test(&s);
 }
 
 bool STBHandler::canEncode(ImageData::Format format)
