@@ -21,6 +21,8 @@
 #ifndef LOVE_OBJECT_H
 #define LOVE_OBJECT_H
 
+#include <atomic>
+
 namespace love
 {
 
@@ -40,6 +42,7 @@ public:
 	 * Constructor. Sets reference count to one.
 	 **/
 	Object();
+	Object(const Object &other);
 
 	/**
 	 * Destructor.
@@ -155,7 +158,7 @@ public:
 private:
 
 	// The reference count.
-	int count;
+	std::atomic<int> count;
 
 }; // Object
 

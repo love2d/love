@@ -21,12 +21,16 @@
 // LOVE
 #include "Object.h"
 
-#include <stdio.h>
-
 namespace love
 {
 
 Object::Object()
+	: count(1)
+{
+}
+
+Object::Object(const Object & /*other*/)
+	// New objects should always have a reference count of 1.
 	: count(1)
 {
 }
@@ -42,13 +46,17 @@ int Object::getReferenceCount() const
 
 void Object::retain()
 {
-	++count;
+	std::atomic_fetch_add_explicit(&count, 1, std::memory_order_relaxed);
 }
 
 void Object::release()
 {
-	if (--count <= 0)
+	// http://www.boost.org/doc/libs/1_56_0/doc/html/atomic/usage_examples.html
+	if (std::atomic_fetch_sub_explicit(&count, 1, std::memory_order_release) == 1)
+	{
+		std::atomic_thread_fence(std::memory_order_acquire);
 		delete this;
+	}
 }
 
 } // love

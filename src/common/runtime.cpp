@@ -26,7 +26,6 @@
 #include "Object.h"
 #include "Reference.h"
 #include "StringMap.h"
-#include <thread/threads.h>
 
 // C++
 #include <algorithm>
@@ -36,21 +35,14 @@
 namespace love
 {
 
-static thread::Mutex *gcmutex = nullptr;
-
 /**
  * Called when an object is collected. The object is released
  * once in this function, possibly deleting it.
  **/
 static int w__gc(lua_State *L)
 {
-	if (!gcmutex)
-		gcmutex = thread::newMutex();
-
 	Proxy *p = (Proxy *) lua_touserdata(L, 1);
 	Object *object = (Object *) p->data;
-
-	thread::Lock lock(gcmutex);
 
 	object->release();
 
