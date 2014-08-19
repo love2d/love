@@ -265,8 +265,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Canvas.h
 	src/modules/graphics/opengl/Font.cpp
 	src/modules/graphics/opengl/Font.h
-	src/modules/graphics/opengl/GLee.c
-	src/modules/graphics/opengl/GLee.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp
@@ -933,6 +931,18 @@ target_link_libraries(love_3p_enet ${MEGA_LUA})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 
 #
+# GLAD
+#
+
+set(LOVE_SRC_3P_GLAD
+	src/libraries/glad/glad.cpp
+	src/libraries/glad/glad.hpp
+	src/libraries/glad/gladfuncs.hpp
+)
+
+add_library(love_3p_glad ${LOVE_SRC_3P_GLAD})
+
+#
 # LodePNG
 #
 
@@ -1067,6 +1077,7 @@ set(LOVE_3P
 	love_3p_box2d
 	love_3p_ddsparse
 	love_3p_enet
+	love_3p_glad
 	love_3p_lodepng
 	love_3p_luasocket
 	love_3p_noise1234

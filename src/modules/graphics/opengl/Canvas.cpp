@@ -275,7 +275,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 
 	virtual bool createMSAABuffer(int width, int height, int &samples, GLenum internalformat, GLuint &buffer)
 	{
-		if (!GLEE_EXT_framebuffer_multisample)
+		if (!GLAD_EXT_framebuffer_multisample)
 			return false;
 
 		glGenRenderbuffersEXT(1, &buffer);
@@ -406,11 +406,11 @@ static void getStrategy()
 {
 	if (!strategy)
 	{
-		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+		if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
 			strategy = &strategyGL3;
-		else if (GLEE_EXT_framebuffer_object && GLEE_EXT_packed_depth_stencil)
+		else if (GLAD_EXT_framebuffer_object && GLAD_EXT_packed_depth_stencil)
 			strategy = &strategyPackedEXT;
-		else if (GLEE_EXT_framebuffer_object && strategyEXT.isSupported())
+		else if (GLAD_EXT_framebuffer_object && strategyEXT.isSupported())
 			strategy = &strategyEXT;
 		else
 			strategy = &strategyNone;
@@ -550,8 +550,8 @@ bool Canvas::loadVolatile()
 	}
 
 	int max_samples = 0;
-	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object
-		|| GLEE_EXT_framebuffer_multisample)
+	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
+		|| GLAD_EXT_framebuffer_multisample)
 	{
 		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
 	}
@@ -803,7 +803,7 @@ void Canvas::clear(Color c)
 
 	// We don't need to worry about multiple FBO attachments or global clear
 	// color state when OpenGL 3.0+ is supported.
-	if (GLEE_VERSION_3_0)
+	if (GLAD_VERSION_3_0)
 	{
 		glClearBufferfv(GL_COLOR, 0, glcolor);
 
@@ -873,9 +873,9 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	GLubyte *pixels  = new GLubyte[size];
 
 	// Our texture is attached to 'resolve_fbo' when we use MSAA.
-	if (msaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	if (msaa_samples > 1 && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
-	else if (msaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
+	else if (msaa_samples > 1 && GLAD_EXT_framebuffer_multisample)
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, resolve_fbo);
 	else
 		strategy->bindFBO(fbo);
@@ -900,9 +900,9 @@ void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 	resolveMSAA();
 
 	// Our texture is attached to 'resolve_fbo' when we use MSAA.
-	if (msaa_samples > 1 && (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object))
+	if (msaa_samples > 1 && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
-	else if (msaa_samples > 1 && GLEE_EXT_framebuffer_multisample)
+	else if (msaa_samples > 1 && GLAD_EXT_framebuffer_multisample)
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, resolve_fbo);
 	else if (current != this)
 		strategy->bindFBO(fbo);
@@ -928,14 +928,14 @@ bool Canvas::resolveMSAA()
 		previous = current->fbo;
 
 	// Do the MSAA resolve by blitting the MSAA renderbuffer to the texture.
-	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolve_fbo);
 		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
 						  GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	}
-	else if (GLEE_EXT_framebuffer_multisample && GLEE_EXT_framebuffer_blit)
+	else if (GLAD_EXT_framebuffer_multisample && GLAD_EXT_framebuffer_blit)
 	{
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, fbo);
 		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, resolve_fbo);
@@ -1047,18 +1047,18 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 		supported = true;
 		break;
 	case FORMAT_RGB565:
-		supported = GLEE_VERSION_4_2 || GLEE_ARB_ES2_compatibility;
+		supported = GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility;
 		break;
 	case FORMAT_RG11B10F:
-		supported = GLEE_VERSION_3_0 || GLEE_EXT_packed_float;
+		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float;
 		break;
 	case FORMAT_RGBA16F:
 	case FORMAT_RGBA32F:
-		supported = GLEE_VERSION_3_0 || GLEE_ARB_texture_float;
+		supported = GLAD_VERSION_3_0 || GLAD_ARB_texture_float;
 		break;
 	case FORMAT_SRGB:
-		supported = GLEE_VERSION_3_0 || ((GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
-			&& (GLEE_VERSION_2_1 || GLEE_EXT_texture_sRGB));
+		supported = GLAD_VERSION_3_0 || ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB)
+			&& (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB));
 		break;
 	default:
 		supported = false;

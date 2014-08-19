@@ -197,7 +197,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	gl.initContext();
 
 	// Does the system meet LOVE's minimum requirements for graphics?
-	if (!(GLEE_VERSION_2_0 && Shader::isSupported() && Canvas::isSupported())
+	if (!(GLAD_VERSION_2_0 && Shader::isSupported() && Canvas::isSupported())
 		&& !displayedMinReqWarning)
 	{
 		love::window::Window::MessageBoxType type = love::window::Window::MESSAGEBOX_ERROR;
@@ -245,7 +245,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	// Set whether drawing converts input from linear -> sRGB colorspace.
-	if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_sRGB || GLEE_EXT_framebuffer_sRGB)
+	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB)
 	{
 		if (sRGB)
 			glEnable(GL_FRAMEBUFFER_SRGB);
@@ -259,7 +259,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 
 	bool enabledebug = false;
 
-	if (GLEE_VERSION_3_0)
+	if (GLAD_VERSION_3_0)
 	{
 		// Enable OpenGL's debug output if a debug context has been created.
 		GLint flags = 0;
@@ -297,7 +297,7 @@ void Graphics::unSetMode()
 	created = false;
 }
 
-static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, GLvoid* /*usr*/)
+static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
 {
 	// Human-readable strings for the debug info.
 	const char *sourceStr = OpenGL::debugSourceString(source);
@@ -312,14 +312,14 @@ void Graphics::setDebug(bool enable)
 {
 	// Make sure debug output is supported. The AMD ext. is a bit different
 	// so we don't make use of it, since AMD drivers now support KHR_debug.
-	if (!(GLEE_VERSION_4_3 || GLEE_KHR_debug || GLEE_ARB_debug_output))
+	if (!(GLAD_VERSION_4_3 || GLAD_KHR_debug || GLAD_ARB_debug_output))
 		return;
 
 	// Ugly hack to reduce code duplication.
-	if (GLEE_ARB_debug_output && !(GLEE_VERSION_4_3 || GLEE_KHR_debug))
+	if (GLAD_ARB_debug_output && !(GLAD_VERSION_4_3 || GLAD_KHR_debug))
 	{
-		glDebugMessageCallback = (GLEEPFNGLDEBUGMESSAGECALLBACKPROC) glDebugMessageCallbackARB;
-		glDebugMessageControl = (GLEEPFNGLDEBUGMESSAGECONTROLPROC) glDebugMessageControlARB;
+		fp_glDebugMessageCallback = (pfn_glDebugMessageCallback) fp_glDebugMessageCallbackARB;
+		fp_glDebugMessageControl = (pfn_glDebugMessageControl) fp_glDebugMessageControlARB;
 	}
 
 	if (!enable)
@@ -328,7 +328,7 @@ void Graphics::setDebug(bool enable)
 		glDebugMessageCallback(nullptr, nullptr);
 
 		// We can disable debug output entirely with KHR_debug.
-		if (GLEE_VERSION_4_3 || GLEE_KHR_debug)
+		if (GLAD_VERSION_4_3 || GLAD_KHR_debug)
 			glDisable(GL_DEBUG_OUTPUT);
 
 		return;
@@ -346,7 +346,7 @@ void Graphics::setDebug(bool enable)
 	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
 	glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
 
-	if (GLEE_VERSION_4_3 || GLEE_KHR_debug)
+	if (GLAD_VERSION_4_3 || GLAD_KHR_debug)
 		glEnable(GL_DEBUG_OUTPUT);
 
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
@@ -1219,8 +1219,8 @@ double Graphics::getSystemLimit(SystemLimit limittype) const
 		limit = (double) gl.getMaxRenderTargets();
 		break;
 	case Graphics::LIMIT_CANVAS_MSAA:
-		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object
-			|| GLEE_EXT_framebuffer_multisample)
+		if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
+			|| GLAD_EXT_framebuffer_multisample)
 		{
 			GLint intlimit = 0;
 			glGetIntegerv(GL_MAX_SAMPLES, &intlimit);

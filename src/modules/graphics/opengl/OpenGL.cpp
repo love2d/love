@@ -52,16 +52,21 @@ OpenGL::OpenGL()
 	matrices.projection.reserve(2);
 }
 
-void OpenGL::initContext()
+bool OpenGL::initContext()
 {
 	if (contextInitialized)
-		return;
+		return true;
+
+	if (!gladLoadGL())
+		return false;
 
 	initOpenGLFunctions();
 	initVendor();
 	initMatrices();
 
 	contextInitialized = true;
+
+	return true;
 }
 
 void OpenGL::setupContext()
@@ -173,7 +178,7 @@ void OpenGL::initOpenGLFunctions()
 void OpenGL::initMaxValues()
 {
 	// We'll need this value to clamp anisotropy.
-	if (GLEE_EXT_texture_filter_anisotropic)
+	if (GLAD_EXT_texture_filter_anisotropic)
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
 	else
 		maxAnisotropy = 1.0f;
@@ -292,7 +297,7 @@ void OpenGL::drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsize
 {
 	Shader *shader = Shader::current;
 
-	if (GLEE_ARB_draw_instanced)
+	if (GLAD_ARB_draw_instanced)
 		glDrawArraysInstancedARB(mode, first, count, primcount);
 	else
 	{
@@ -316,7 +321,7 @@ void OpenGL::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, cons
 {
 	Shader *shader = Shader::current;
 
-	if (GLEE_ARB_draw_instanced)
+	if (GLAD_ARB_draw_instanced)
 		glDrawElementsInstancedARB(mode, count, type, indices, primcount);
 	else
 	{
@@ -498,7 +503,7 @@ void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
 
-	if (GLEE_EXT_texture_filter_anisotropic)
+	if (GLAD_EXT_texture_filter_anisotropic)
 	{
 		f.anisotropy = std::min(std::max(f.anisotropy, 1.0f), maxAnisotropy);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, f.anisotropy);
@@ -553,7 +558,7 @@ graphics::Texture::Filter OpenGL::getTextureFilter()
 		break;
 	}
 
-	if (GLEE_EXT_texture_filter_anisotropic)
+	if (GLAD_EXT_texture_filter_anisotropic)
 		glGetTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, &f.anisotropy);
 
 	return f;

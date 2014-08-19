@@ -233,7 +233,7 @@ void Image::uploadImageData()
 			                      "image does not have power-of-two dimensions.");
 		}
 
-		if (!GLEE_VERSION_3_0 && !GLEE_ARB_framebuffer_object)
+		if (!GLAD_VERSION_3_0 && !GLAD_ARB_framebuffer_object)
 			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	}
 
@@ -254,7 +254,7 @@ void Image::uploadImageData()
 
 	if (flags.mipmaps)
 	{
-		if (GLEE_VERSION_3_0 || GLEE_ARB_framebuffer_object)
+		if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
 		{
 			// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
 			if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
@@ -471,7 +471,7 @@ GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
 
 bool Image::hasAnisotropicFilteringSupport()
 {
-	return GLEE_EXT_texture_filter_anisotropic;
+	return GLAD_EXT_texture_filter_anisotropic;
 }
 
 bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
@@ -481,12 +481,12 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 	case image::CompressedData::FORMAT_DXT1:
 	case image::CompressedData::FORMAT_DXT3:
 	case image::CompressedData::FORMAT_DXT5:
-		return GLEE_EXT_texture_compression_s3tc;
+		return GLAD_EXT_texture_compression_s3tc;
 	case image::CompressedData::FORMAT_BC4:
 	case image::CompressedData::FORMAT_BC4s:
 	case image::CompressedData::FORMAT_BC5:
 	case image::CompressedData::FORMAT_BC5s:
-		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc || GLEE_EXT_texture_compression_rgtc);
+		return (GLAD_VERSION_3_0 || GLAD_ARB_texture_compression_rgtc || GLAD_EXT_texture_compression_rgtc);
 	default:
 		break;
 	}
@@ -496,7 +496,7 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 
 bool Image::hasSRGBSupport()
 {
-	return GLEE_VERSION_2_1 || GLEE_EXT_texture_sRGB;
+	return GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
 }
 
 bool Image::getConstant(const char *in, FlagType &out)
