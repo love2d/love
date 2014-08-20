@@ -390,6 +390,12 @@ void Window::updateSettings(const WindowSettings &newsettings)
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
 	curMode.settings.sRGB = newsettings.sRGB;
+
+	SDL_DisplayMode dmode = {};
+	SDL_GetCurrentDisplayMode(curMode.settings.display, &dmode);
+
+	// May be 0 if the refresh rate can't be determined.
+	curMode.settings.refreshrate = (double) dmode.refresh_rate;
 }
 
 void Window::getWindow(int &width, int &height, WindowSettings &settings)

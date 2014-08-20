@@ -105,16 +105,15 @@ int w_setMode(lua_State *L)
 	settings.minheight = luax_intflag(L, 3, settingName(Window::SETTING_MIN_HEIGHT), 1);
 	settings.borderless = luax_boolflag(L, 3, settingName(Window::SETTING_BORDERLESS), false);
 	settings.centered = luax_boolflag(L, 3, settingName(Window::SETTING_CENTERED), true);
-	settings.display = luax_intflag(L, 3, settingName(Window::SETTING_DISPLAY), 1);
+	settings.display = luax_intflag(L, 3, settingName(Window::SETTING_DISPLAY), 1) - 1;
 	settings.highdpi = luax_boolflag(L, 3, settingName(Window::SETTING_HIGHDPI), false);
 	settings.sRGB = luax_boolflag(L, 3, settingName(Window::SETTING_SRGB), false);
+
+	// We don't explicitly set the refresh rate, it's "read-only".
 
 	// For backward-compatibility. TODO: remove!
 	int fsaa = luax_intflag(L, 3, settingName(Window::SETTING_FSAA), 0);
 	if (fsaa > settings.msaa) settings.msaa = fsaa;
-
-	// Display index is 1-based in Lua and 0-based internally.
-	settings.display--;
 
 	luax_catchexcept(L,
 		[&](){ luax_pushboolean(L, instance()->setWindow(w, h, &settings)); }
@@ -175,6 +174,9 @@ int w_getMode(lua_State *L)
 
 	luax_pushboolean(L, settings.sRGB);
 	lua_setfield(L, -2, settingName(Window::SETTING_SRGB));
+
+	lua_pushnumber(L, settings.refreshrate);
+	lua_setfield(L, -2, settingName(Window::SETTING_REFRESHRATE));
 
 	return 3;
 }
