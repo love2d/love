@@ -350,6 +350,10 @@ void Graphics::clear()
 void Graphics::present()
 {
 	currentWindow->swapBuffers();
+
+	// Reset the per-frame stat counts.
+	gl.stats.drawCalls = 0;
+	Canvas::switchCount = 0;
 }
 
 int Graphics::getWidth() const
@@ -947,6 +951,8 @@ void Graphics::point(float x, float y)
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
 	glEnd();
+
+	++gl.stats.drawCalls;
 }
 
 void Graphics::polyline(const float *coords, size_t count)
@@ -1042,7 +1048,7 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 		gl.bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, points + 2);
+		gl.drawArrays(GL_TRIANGLE_FAN, 0, points + 2);
 		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 
@@ -1066,7 +1072,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 		gl.bindTexture(0);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)coords);
-		glDrawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
+		gl.drawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
 		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 }
@@ -1163,6 +1169,20 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 		throw love::Exception("Cannot retrieve renderer device information.");
 
 	return info;
+}
+
+Graphics::Stats Graphics::getStats() const
+{
+	Stats stats;
+
+	stats.drawCalls = gl.stats.drawCalls;
+	stats.canvasSwitches = Canvas::switchCount;
+	stats.canvases = Canvas::canvasCount;
+	stats.images = Image::imageCount;
+	stats.fonts = Font::fontCount;
+	stats.textureMemory = gl.stats.textureMemory;
+
+	return stats;
 }
 
 double Graphics::getSystemLimit(SystemLimit limittype) const

@@ -37,6 +37,8 @@ namespace graphics
 namespace opengl
 {
 
+int Font::fontCount = 0;
+
 const int Font::TEXTURE_WIDTHS[]  = {128, 256, 256, 512, 512, 1024, 1024};
 const int Font::TEXTURE_HEIGHTS[] = {128, 128, 256, 256, 512, 512,  1024};
 
@@ -47,6 +49,7 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	, mSpacing(1)
 	, filter(filter)
 	, useSpacesAsTab(false)
+	, textureMemorySize(0)
 {
 	this->filter.mipmap = Texture::FILTER_NONE;
 
@@ -87,11 +90,15 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	}
 
 	delete gd;
+
+	++fontCount;
 }
 
 Font::~Font()
 {
 	unloadVolatile();
+
+	--fontCount;
 }
 
 bool Font::initializeTexture(GLenum format)
@@ -169,6 +176,11 @@ void Font::createTexture()
 					&emptyData[0]);
 
 	setFilter(filter);
+
+	size_t prevmemsize = textureMemorySize;
+
+	textureMemorySize += emptyData.size();
+	gl.updateTextureMemorySize(prevmemsize, textureMemorySize);
 }
 
 Font::Glyph *Font::addGlyph(uint32 glyph)
@@ -385,7 +397,7 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	for (it = glyphinfolist.begin(); it != glyphinfolist.end(); ++it)
 	{
 		gl.bindTexture(it->texture);
-		glDrawArrays(GL_QUADS, it->startvertex, it->vertexcount);
+		gl.drawArrays(GL_QUADS, it->startvertex, it->vertexcount);
 	}
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -561,6 +573,9 @@ void Font::unloadVolatile()
 		iter++;
 	}
 	textures.clear();
+
+	gl.updateTextureMemorySize(textureMemorySize, 0);
+	textureMemorySize = 0;
 }
 
 int Font::getAscent() const

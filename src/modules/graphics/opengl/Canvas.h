@@ -26,6 +26,7 @@
 #include "image/ImageData.h"
 #include "common/Matrix.h"
 #include "common/StringMap.h"
+#include "common/int.h"
 #include "Texture.h"
 #include "OpenGL.h"
 
@@ -127,6 +128,9 @@ public:
 	// Whether the main screen should have linear -> sRGB conversions enabled.
 	static bool screenHasSRGB;
 
+	static int switchCount;
+	static int canvasCount;
+
 	static bool getConstant(const char *in, Format &out);
 	static bool getConstant(Format in, const char *&out);
 
@@ -136,6 +140,7 @@ private:
 
 	static Format getSizedFormat(Format format);
 	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);
+	static size_t getFormatBitsPerPixel(Format format);
 
 	GLuint fbo;
 	GLuint resolve_fbo;
@@ -152,6 +157,8 @@ private:
 
 	int msaa_samples;
 	bool msaa_dirty;
+
+	size_t texture_memory;
 
 	void setupGrab();
 	void drawv(const Matrix &t, const Vertex *v);
