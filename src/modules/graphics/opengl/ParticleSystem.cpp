@@ -878,7 +878,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].s);
 
 	gl.prepareDraw();
-	glDrawArrays(GL_QUADS, 0, pCount * 4);
+	gl.drawArrays(GL_QUADS, 0, pCount * 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);

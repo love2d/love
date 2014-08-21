@@ -138,6 +138,8 @@ public:
 	bool hasGlyph(uint32 glyph) const;
 	bool hasGlyphs(const std::string &text) const;
 
+	static int fontCount;
+
 private:
 
 	enum FontType
@@ -206,6 +208,8 @@ private:
 	int rowHeight;
 
 	bool useSpacesAsTab;
+
+	size_t textureMemorySize;
 
 	static const int NUM_TEXTURE_SIZES = 7;
 	static const int TEXTURE_WIDTHS[NUM_TEXTURE_SIZES];

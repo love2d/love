@@ -333,7 +333,7 @@ void Polyline::draw()
 	gl.bindTexture(0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)vertices);
-	glDrawArrays(draw_mode, 0, vertex_count);
+	gl.drawArrays(draw_mode, 0, vertex_count);
 
 	if (overdraw)
 	{
@@ -345,7 +345,7 @@ void Polyline::draw()
 		glEnableClientState(GL_COLOR_ARRAY);
 		glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
 		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)overdraw);
-		glDrawArrays(draw_mode, 0, overdraw_vertex_count);
+		gl.drawArrays(draw_mode, 0, overdraw_vertex_count);
 		glDisableClientState(GL_COLOR_ARRAY);
 
 		delete[] colors;

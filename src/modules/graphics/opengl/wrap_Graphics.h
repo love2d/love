@@ -94,6 +94,7 @@ int w_getCanvasFormats(lua_State *L);
 int w_getCompressedImageFormats(lua_State *L);
 int w_getRendererInfo(lua_State *L);
 int w_getSystemLimits(lua_State *L);
+int w_getStats(lua_State *L);
 int w_draw(lua_State *L);
 int w_print(lua_State *L);
 int w_printf(lua_State *L);

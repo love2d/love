@@ -1051,6 +1051,41 @@ int w_getSystemLimits(lua_State *L)
 	return 1;
 }
 
+int w_getStats(lua_State *L)
+{
+	Graphics::Stats stats = instance()->getStats();
+
+	lua_createtable(L, 0, (int) Graphics::STAT_MAX_ENUM);
+
+	const char *sname = nullptr;
+
+	Graphics::getConstant(Graphics::STAT_DRAW_CALLS, sname);
+	lua_pushinteger(L, stats.drawCalls);
+	lua_setfield(L, -2, sname);
+
+	Graphics::getConstant(Graphics::STAT_CANVAS_SWITCHES, sname);
+	lua_pushinteger(L, stats.canvasSwitches);
+	lua_setfield(L, -2, sname);
+
+	Graphics::getConstant(Graphics::STAT_CANVASES, sname);
+	lua_pushinteger(L, stats.canvases);
+	lua_setfield(L, -2, sname);
+
+	Graphics::getConstant(Graphics::STAT_IMAGES, sname);
+	lua_pushinteger(L, stats.images);
+	lua_setfield(L, -2, sname);
+
+	Graphics::getConstant(Graphics::STAT_FONTS, sname);
+	lua_pushinteger(L, stats.fonts);
+	lua_setfield(L, -2, sname);
+
+	Graphics::getConstant(Graphics::STAT_TEXTURE_MEMORY, sname);
+	lua_pushnumber(L, (lua_Number) stats.textureMemory);
+	lua_setfield(L, -2, sname);
+	
+	return 1;
+}
+
 int w_draw(lua_State *L)
 {
 	Drawable *drawable = nullptr;
@@ -1409,6 +1444,7 @@ static const luaL_Reg functions[] =
 	{ "getCompressedImageFormats", w_getCompressedImageFormats },
 	{ "getRendererInfo", w_getRendererInfo },
 	{ "getSystemLimits", w_getSystemLimits },
+	{ "getStats", w_getStats },
 
 	{ "draw", w_draw },
 

@@ -390,10 +390,15 @@ public:
 
 	/**
 	 * Returns system-dependent renderer information.
-	 * Returned string s can vary greatly between systems! Do not rely on it for
+	 * Returned strings can vary greatly between systems! Do not rely on it for
 	 * anything!
 	 **/
 	RendererInfo getRendererInfo() const;
+
+	/**
+	 * Returns performance-related statistics.
+	 **/
+	Stats getStats() const;
 
 	/**
 	 * Gets the system-dependent numeric limit for the specified parameter.

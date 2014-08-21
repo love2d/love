@@ -149,6 +149,8 @@ public:
 	static bool getConstant(const char *in, FlagType &out);
 	static bool getConstant(FlagType in, const char *&out);
 
+	static int imageCount;
+
 private:
 
 	void uploadDefaultTexture();
@@ -178,6 +180,8 @@ private:
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
 	bool usingDefaultTexture;
+
+	size_t textureMemorySize;
 
 	void preload();
 

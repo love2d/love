@@ -110,12 +110,33 @@ public:
 		CLEAR_MAX_ENUM
 	};
 
+	enum StatType
+	{
+		STAT_DRAW_CALLS,
+		STAT_CANVAS_SWITCHES,
+		STAT_CANVASES,
+		STAT_IMAGES,
+		STAT_FONTS,
+		STAT_TEXTURE_MEMORY,
+		STAT_MAX_ENUM
+	};
+
 	struct RendererInfo
 	{
 		std::string name;
 		std::string version;
 		std::string vendor;
 		std::string device;
+	};
+
+	struct Stats
+	{
+		int drawCalls;
+		int canvasSwitches;
+		int canvases;
+		int images;
+		int fonts;
+		size_t textureMemory;
 	};
 
 	virtual ~Graphics();
@@ -168,6 +189,9 @@ public:
 	static bool getConstant(const char *in, ClearType &out);
 	static bool getConstant(ClearType in, const char *&out);
 
+	static bool getConstant(const char *in, StatType &out);
+	static bool getConstant(StatType in, const char *&out);
+
 private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -196,6 +220,9 @@ private:
 
 	static StringMap<ClearType, CLEAR_MAX_ENUM>::Entry clearTypeEntries[];
 	static StringMap<ClearType, CLEAR_MAX_ENUM> clearTypes;
+
+	static StringMap<StatType, STAT_MAX_ENUM>::Entry statTypeEntries[];
+	static StringMap<StatType, STAT_MAX_ENUM> statTypes;
 
 }; // Graphics
 

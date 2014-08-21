@@ -58,6 +58,7 @@ public:
 		SETTING_DISPLAY,
 		SETTING_HIGHDPI,
 		SETTING_SRGB,
+		SETTING_REFRESHRATE,
 		SETTING_MAX_ENUM
 	};
 
@@ -194,6 +195,7 @@ struct WindowSettings
 	int display; // = 0
 	bool highdpi; // false
 	bool sRGB; // false
+	double refreshrate; // 0.0
 
 }; // WindowSettings
 

@@ -375,7 +375,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		GLenum type = element_data_type;
 		const void *indices = ibo->getPointer(min * getGLDataTypeSize(type));
 
-		glDrawElements(mode, max - min + 1, type, indices);
+		gl.drawElements(mode, max - min + 1, type, indices);
 	}
 	else
 	{
@@ -388,7 +388,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 			min = std::min(range_min, max);
 
 		// Normal non-indexed drawing (no custom vertex map.)
-		glDrawArrays(mode, min, max - min + 1);
+		gl.drawArrays(mode, min, max - min + 1);
 	}
 
 	glDisableClientState(GL_VERTEX_ARRAY);

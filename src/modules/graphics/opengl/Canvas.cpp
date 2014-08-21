@@ -185,6 +185,7 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 	virtual void bindFBO(GLuint framebuffer)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		++Canvas::switchCount;
 	}
 
 	virtual void setAttachments()
@@ -311,6 +312,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 	virtual void bindFBO(GLuint framebuffer)
 	{
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+		++Canvas::switchCount;
 	}
 
 	virtual void setAttachments()
@@ -401,6 +403,8 @@ FramebufferStrategyEXT strategyEXT;
 Canvas *Canvas::current = nullptr;
 OpenGL::Viewport Canvas::systemViewport = OpenGL::Viewport();
 bool Canvas::screenHasSRGB = false;
+int Canvas::switchCount = 0;
+int Canvas::canvasCount = 0;
 
 static void getStrategy()
 {
@@ -426,6 +430,7 @@ Canvas::Canvas(int width, int height, Format format, int msaa)
 	, format(format)
     , msaa_samples(msaa)
 	, msaa_dirty(false)
+	, texture_memory(0)
 {
 	this->width = width;
 	this->height = height;
@@ -456,10 +461,14 @@ Canvas::Canvas(int width, int height, Format format, int msaa)
 	getStrategy();
 
 	loadVolatile();
+
+	++canvasCount;
 }
 
 Canvas::~Canvas()
 {
+	--canvasCount;
+
 	// reset framebuffer if still using this one
 	if (current == this)
 		stopGrab();
@@ -575,6 +584,14 @@ bool Canvas::loadVolatile()
 
 	msaa_dirty = (msaa_buffer != 0);
 
+	size_t prevmemsize = texture_memory;
+
+	texture_memory = (getFormatBitsPerPixel(format) * width * height) / 8;
+	if (msaa_buffer != 0)
+		texture_memory += (texture_memory * msaa_samples);
+
+	gl.updateTextureMemorySize(prevmemsize, texture_memory);
+
 	return true;
 }
 
@@ -589,6 +606,9 @@ void Canvas::unloadVolatile()
 	resolve_fbo = msaa_buffer = 0;
 
 	attachedCanvases.clear();
+
+	gl.updateTextureMemorySize(texture_memory, 0);
+	texture_memory = 0;
 }
 
 void Canvas::drawv(const Matrix &t, const Vertex *v)
@@ -605,7 +625,7 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
 	gl.prepareDraw();
-	glDrawArrays(GL_QUADS, 0, 4);
+	gl.drawArrays(GL_QUADS, 0, 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -1012,6 +1032,27 @@ void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum
 		internalformat = GL_SRGB8_ALPHA8;
 		type = GL_UNSIGNED_BYTE;
 		break;
+	}
+}
+
+size_t Canvas::getFormatBitsPerPixel(Format format)
+{
+	switch (getSizedFormat(format))
+	{
+	case FORMAT_RGBA8:
+	case FORMAT_RGB10A2:
+	case FORMAT_RG11B10F:
+	case FORMAT_SRGB:
+	default:
+		return 32;
+	case FORMAT_RGBA4:
+	case FORMAT_RGB5A1:
+	case FORMAT_RGB565:
+		return 16;
+	case FORMAT_RGBA16F:
+		return 64;
+	case FORMAT_RGBA32F:
+		return 128;
 	}
 }
 

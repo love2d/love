@@ -119,6 +119,16 @@ bool Graphics::getConstant(ClearType in, const char *&out)
 	return clearTypes.find(in, out);
 }
 
+bool Graphics::getConstant(const char *in, StatType &out)
+{
+	return statTypes.find(in, out);
+}
+
+bool Graphics::getConstant(StatType in, const char *&out)
+{
+	return statTypes.find(in, out);
+}
+
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
 {
 	{ "line", Graphics::DRAW_LINE },
@@ -200,6 +210,18 @@ StringMap<Graphics::ClearType, Graphics::CLEAR_MAX_ENUM>::Entry Graphics::clearT
 };
 
 StringMap<Graphics::ClearType, Graphics::CLEAR_MAX_ENUM> Graphics::clearTypes(Graphics::clearTypeEntries, sizeof(Graphics::clearTypeEntries));
+
+StringMap<Graphics::StatType, Graphics::STAT_MAX_ENUM>::Entry Graphics::statTypeEntries[] =
+{
+	{"drawcalls", Graphics::STAT_DRAW_CALLS},
+	{"canvasswitches", Graphics::STAT_CANVAS_SWITCHES},
+	{"canvases", Graphics::STAT_CANVASES},
+	{"images", Graphics::STAT_IMAGES},
+	{"fonts", Graphics::STAT_FONTS},
+	{"texturememory", Graphics::STAT_TEXTURE_MEMORY},
+};
+
+StringMap<Graphics::StatType, Graphics::STAT_MAX_ENUM> Graphics::statTypes(Graphics::statTypeEntries, sizeof(Graphics::statTypeEntries));
 
 } // graphics
 } // love

@@ -41,7 +41,8 @@ namespace opengl
 {
 
 OpenGL::OpenGL()
-	: contextInitialized(false)
+	: stats()
+	, contextInitialized(false)
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
 	, maxRenderTargets(0)
@@ -293,6 +294,18 @@ void OpenGL::prepareDraw()
 	}
 }
 
+void OpenGL::drawArrays(GLenum mode, GLint first, GLsizei count)
+{
+	glDrawArrays(mode, first, count);
+	++stats.drawCalls;
+}
+
+void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices)
+{
+	glDrawElements(mode, count, type, indices);
+	++stats.drawCalls;
+}
+
 void OpenGL::drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
 {
 	Shader *shader = Shader::current;
@@ -315,6 +328,8 @@ void OpenGL::drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsize
 		if (shaderHasID)
 			state.lastPseudoInstanceID = primcount - 1;
 	}
+
+	++stats.drawCalls;
 }
 
 void OpenGL::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount)
@@ -339,6 +354,8 @@ void OpenGL::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, cons
 		if (shaderHasID)
 			state.lastPseudoInstanceID = primcount - 1;
 	}
+
+	++stats.drawCalls;
 }
 
 void OpenGL::setColor(const Color &c)
@@ -636,6 +653,12 @@ int OpenGL::getMaxTextureSize() const
 int OpenGL::getMaxRenderTargets() const
 {
 	return maxRenderTargets;
+}
+
+void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
+{
+	int64 memsize = (int64) stats.textureMemory + ((int64 )newsize -  (int64) oldsize);
+	stats.textureMemory = (size_t) std::max(memsize, (int64) 0);
 }
 
 OpenGL::Vendor OpenGL::getVendor() const

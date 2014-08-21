@@ -31,6 +31,8 @@ namespace graphics
 namespace opengl
 {
 
+int Image::imageCount = 0;
+
 float Image::maxMipmapSharpness = 0.0f;
 
 Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NEAREST;
@@ -44,10 +46,13 @@ Image::Image(love::image::ImageData *data, const Flags &flags)
 	, compressed(false)
 	, flags(flags)
 	, usingDefaultTexture(false)
+	, textureMemorySize(0)
 {
 	width = data->getWidth();
 	height = data->getHeight();
 	preload();
+
+	++imageCount;
 }
 
 Image::Image(love::image::CompressedData *cdata, const Flags &flags)
@@ -58,15 +63,20 @@ Image::Image(love::image::CompressedData *cdata, const Flags &flags)
 	, compressed(true)
 	, flags(flags)
 	, usingDefaultTexture(false)
+	, textureMemorySize(0)
 {
 	width = cdata->getWidth(0);
 	height = cdata->getHeight(0);
 	preload();
+
+	++imageCount;
 }
 
 Image::~Image()
 {
 	unload();
+
+	--imageCount;
 }
 
 love::image::ImageData *Image::getImageData() const
@@ -331,6 +341,23 @@ bool Image::loadVolatile()
 		throw;
 	}
 
+	size_t prevmemsize = textureMemorySize;
+
+	if (isCompressed())
+	{
+		textureMemorySize = 0;
+		for (int i = 0; i < flags.mipmaps ? cdata->getMipmapCount() : 1; i++)
+			textureMemorySize += cdata->getSize(i);
+	}
+	else
+	{
+		textureMemorySize = width * height * 4;
+		if (flags.mipmaps)
+			textureMemorySize *= 1.333;
+	}
+
+	gl.updateTextureMemorySize(prevmemsize, textureMemorySize);
+
 	usingDefaultTexture = false;
 	return true;
 }
@@ -342,6 +369,9 @@ void Image::unloadVolatile()
 	{
 		gl.deleteTexture(texture);
 		texture = 0;
+
+		gl.updateTextureMemorySize(textureMemorySize, 0);
+		textureMemorySize = 0;
 	}
 }
 
@@ -401,7 +431,7 @@ void Image::drawv(const Matrix &t, const Vertex *v)
 	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *)&v[0].s);
 
 	gl.prepareDraw();
-	glDrawArrays(GL_QUADS, 0, 4);
+	gl.drawArrays(GL_QUADS, 0, 4);
 
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
