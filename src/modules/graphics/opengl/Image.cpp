@@ -55,7 +55,6 @@ Image::Image(love::image::ImageData *data, Format format)
 	height = data->getHeight();
 	preload();
 
-	textureMemorySize = data->getSize();
 	++imageCount;
 }
 
@@ -76,7 +75,6 @@ Image::Image(love::image::CompressedData *cdata, Format format)
 	height = cdata->getHeight(0);
 	preload();
 
-	textureMemorySize = cdata->getSize(0);
 	++imageCount;
 }
 
