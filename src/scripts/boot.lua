@@ -1562,8 +1562,14 @@ function love.errhand(msg)
 	end
 	if love.audio then love.audio.stop() end
 	love.graphics.reset()
-	love.graphics.setBackgroundColor(89, 157, 220)
 	local font = love.graphics.setNewFont(math.floor(14 * love.window.getPixelScale()))
+
+	local sRGB = select(3, love.window.getMode()).srgb
+	if sRGB then
+		love.graphics.setBackgroundColor(love.math.gammaToLinear(89, 157, 220))
+	else
+		love.graphics.setBackgroundColor(89, 157, 220)
+	end
 
 	love.graphics.setColor(255, 255, 255, 255)
 
