@@ -62,6 +62,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
+	, sampleRate(soundData->getSampleRate())
 	, channels(soundData->getChannels())
 	, decoder(nullptr)
 	, toLoop(0)
@@ -94,6 +95,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
+	, sampleRate(decoder->getSampleRate())
 	, channels(decoder->getChannels())
 	, decoder(decoder)
 	, toLoop(0)
@@ -125,6 +127,7 @@ Source::Source(const Source &s)
 	, cone(s.cone)
 	, offsetSamples(0)
 	, offsetSeconds(0)
+	, sampleRate(s.sampleRate)
 	, channels(s.channels)
 	, decoder(nullptr)
 	, toLoop(0)
@@ -383,7 +386,7 @@ float Source::tellAtomic(void *unit) const
 		default:
 			{
 				alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
-				offset /= decoder->getSampleRate();
+				offset /= sampleRate;
 				if (type == TYPE_STREAM) offset += offsetSeconds;
 			}
 			break;
