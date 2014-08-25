@@ -179,6 +179,7 @@ private:
 	float offsetSamples;
 	float offsetSeconds;
 
+	int sampleRate;
 	int channels;
 
 	Object::StrongRef<love::sound::Decoder> decoder;
