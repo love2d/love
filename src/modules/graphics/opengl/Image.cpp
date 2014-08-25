@@ -67,6 +67,15 @@ Image::Image(love::image::CompressedData *cdata, const Flags &flags)
 {
 	width = cdata->getWidth(0);
 	height = cdata->getHeight(0);
+
+	if (flags.mipmaps)
+	{
+		// The mipmap texture data comes from the CompressedData in this case,
+		// so we should make sure it has all necessary mipmap levels.
+		if (cdata->getMipmapCount() < (int) log2(std::max(width, height)) + 1)
+			throw love::Exception("Image cannot have mipmaps: compressed image data does not have all required mipmap levels.");
+	}
+
 	preload();
 
 	++imageCount;
@@ -168,10 +177,8 @@ float Image::getMipmapSharpness() const
 
 void Image::bind() const
 {
-	if (texture == 0)
-		return;
-
-	gl.bindTexture(texture);
+	if (texture != 0)
+		gl.bindTexture(texture);
 }
 
 void Image::preload()
@@ -213,7 +220,7 @@ void Image::unload()
 
 void Image::uploadCompressedData()
 {
-	GLenum format = getCompressedFormat(cdata->getFormat());
+	GLenum iformat = getCompressedFormat(cdata->getFormat());
 	int count = flags.mipmaps ? cdata->getMipmapCount() : 1;
 
 	// We have to inform OpenGL if the image doesn't have all mipmap levels.
@@ -223,39 +230,29 @@ void Image::uploadCompressedData()
 	{
 		glCompressedTexImage2D(GL_TEXTURE_2D,
 		                       i,
-		                       format,
+		                       iformat,
 		                       cdata->getWidth(i),
 		                       cdata->getHeight(i),
 		                       0,
-		                       GLsizei(cdata->getSize(i)),
+		                       (GLsizei) cdata->getSize(i),
 		                       cdata->getData(i));
 	}
 }
 
 void Image::uploadImageData()
 {
-	if (flags.mipmaps)
-	{
-		// NPOT mipmap generation isn't always supported on old GPUs/drivers...
-		if (width != next_p2(width) || height != next_p2(height))
-		{
-			throw love::Exception("Cannot create mipmaps: "
-			                      "image does not have power-of-two dimensions.");
-		}
-
-		if (!GLAD_VERSION_3_0 && !GLAD_ARB_framebuffer_object)
-			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-	}
-
 	GLenum iformat = flags.sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+
+	if (flags.mipmaps && !(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 
 	{
 		love::thread::Lock lock(data->getMutex());
 		glTexImage2D(GL_TEXTURE_2D,
 		             0,
 		             iformat,
-		             (GLsizei)width,
-		             (GLsizei)height,
+		             width,
+		             height,
 		             0,
 		             GL_RGBA,
 		             GL_UNSIGNED_BYTE,
@@ -267,8 +264,10 @@ void Image::uploadImageData()
 		if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
 		{
 			// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
+#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
 			if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
 				glEnable(GL_TEXTURE_2D);
+#endif
 
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
@@ -378,23 +377,10 @@ void Image::unloadVolatile()
 bool Image::refresh()
 {
 	// No effect if the texture hasn't been created yet.
-	if (texture == 0)
+	if (texture == 0 || usingDefaultTexture)
 		return false;
 
-	if (usingDefaultTexture)
-	{
-		uploadDefaultTexture();
-		return true;
-	}
-
-	while (glGetError() != GL_NO_ERROR); // Clear errors.
-
 	uploadTexture();
-
-	GLenum glerr = glGetError();
-	if (glerr != GL_NO_ERROR)
-		throw love::Exception("Cannot refresh image (error code 0x%x)", glerr);
-
 	return true;
 }
 
@@ -509,9 +495,11 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 	switch (format)
 	{
 	case image::CompressedData::FORMAT_DXT1:
+		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;
 	case image::CompressedData::FORMAT_DXT3:
+		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt3;
 	case image::CompressedData::FORMAT_DXT5:
-		return GLAD_EXT_texture_compression_s3tc;
+		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt5;
 	case image::CompressedData::FORMAT_BC4:
 	case image::CompressedData::FORMAT_BC4s:
 	case image::CompressedData::FORMAT_BC5:
