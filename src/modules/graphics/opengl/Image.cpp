@@ -20,6 +20,8 @@
 
 #include "Image.h"
 
+#include "common/int.h"
+
 // STD
 #include <cstring> // For memcpy
 #include <algorithm> // for min/max
@@ -218,7 +220,24 @@ void Image::unload()
 	return unloadVolatile();
 }
 
-void Image::uploadCompressedData()
+void Image::generateMipmaps()
+{
+	// The GL_GENERATE_MIPMAP texparameter is set in loadVolatile if we don't
+	// have support for glGenerateMipmap.
+	if (flags.mipmaps && !isCompressed() &&
+		(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
+	{
+		// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
+#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
+		if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
+			glEnable(GL_TEXTURE_2D);
+#endif
+
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+}
+
+void Image::loadTextureFromCompressedData()
 {
 	GLenum iformat = getCompressedFormat(cdata->getFormat());
 	int count = flags.mipmaps ? cdata->getMipmapCount() : 1;
@@ -228,62 +247,23 @@ void Image::uploadCompressedData()
 
 	for (int i = 0; i < count; i++)
 	{
-		glCompressedTexImage2D(GL_TEXTURE_2D,
-		                       i,
-		                       iformat,
-		                       cdata->getWidth(i),
-		                       cdata->getHeight(i),
-		                       0,
-		                       (GLsizei) cdata->getSize(i),
-		                       cdata->getData(i));
+		glCompressedTexImage2D(GL_TEXTURE_2D, i, iformat,
+		                       cdata->getWidth(i), cdata->getHeight(i), 0,
+		                       (GLsizei) cdata->getSize(i), cdata->getData(i));
 	}
 }
 
-void Image::uploadImageData()
+void Image::loadTextureFromImageData()
 {
 	GLenum iformat = flags.sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 
-	if (flags.mipmaps && !(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-
 	{
 		love::thread::Lock lock(data->getMutex());
-		glTexImage2D(GL_TEXTURE_2D,
-		             0,
-		             iformat,
-		             width,
-		             height,
-		             0,
-		             GL_RGBA,
-		             GL_UNSIGNED_BYTE,
-		             data->getData());
+		glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0, GL_RGBA,
+		             GL_UNSIGNED_BYTE, data->getData());
 	}
 
-	if (flags.mipmaps)
-	{
-		if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
-		{
-			// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
-#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
-			if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
-				glEnable(GL_TEXTURE_2D);
-#endif
-
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}
-		else
-			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
-	}
-}
-
-void Image::uploadTexture()
-{
-	bind();
-
-	if (isCompressed() && cdata.get())
-		uploadCompressedData();
-	else if (data.get())
-		uploadImageData();
+	generateMipmaps();
 }
 
 bool Image::loadVolatile()
@@ -313,21 +293,32 @@ bool Image::loadVolatile()
 	gl.setTextureWrap(wrap);
 	setMipmapSharpness(mipmapSharpness);
 
-	if (!flags.mipmaps)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
 	// Use a default texture if the size is too big for the system.
 	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
 	{
-		uploadDefaultTexture();
+		loadDefaultTexture();
 		return true;
+	}
+
+	if (!flags.mipmaps)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+	if (flags.mipmaps && !isCompressed() &&
+		!(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
+	{
+		// Auto-generate mipmaps every time the texture is modified, if
+		// glGenerateMipmap isn't supported.
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	}
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
 	try
 	{
-		uploadTexture();
+		if (isCompressed())
+			loadTextureFromCompressedData();
+		else
+			loadTextureFromImageData();
 
 		GLenum glerr = glGetError();
 		if (glerr != GL_NO_ERROR)
@@ -374,13 +365,39 @@ void Image::unloadVolatile()
 	}
 }
 
-bool Image::refresh()
+void Image::uploadImageData(int xoffset, int yoffset, int w, int h)
+{
+	const image::pixel *pdata = (const image::pixel *) data->getData();
+	pdata += yoffset * data->getWidth() + xoffset;
+
+	{
+		thread::Lock lock(data->getMutex());
+		glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, w, h, GL_RGBA,
+		                GL_UNSIGNED_BYTE, pdata);
+	}
+
+	generateMipmaps();
+}
+
+bool Image::refresh(int xoffset, int yoffset, int w, int h)
 {
 	// No effect if the texture hasn't been created yet.
 	if (texture == 0 || usingDefaultTexture)
 		return false;
 
-	uploadTexture();
+	if (xoffset < 0 || yoffset < 0 || w <= 0 || h <= 0 ||
+		(xoffset + w) > width || (yoffset + h) > height)
+	{
+		throw love::Exception("Invalid rectangle dimensions.");
+	}
+
+	bind();
+
+	if (isCompressed())
+		loadTextureFromCompressedData();
+	else
+		uploadImageData(xoffset, yoffset, w, h);
+
 	return true;
 }
 
@@ -389,7 +406,7 @@ const Image::Flags &Image::getFlags() const
 	return flags;
 }
 
-void Image::uploadDefaultTexture()
+void Image::loadDefaultTexture()
 {
 	usingDefaultTexture = true;
 

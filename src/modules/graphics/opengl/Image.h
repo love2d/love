@@ -133,7 +133,7 @@ public:
 	 * Re-uploads the ImageData or CompressedData associated with this Image to
 	 * the GPU.
 	 **/
-	bool refresh();
+	bool refresh(int xoffset, int yoffset, int w, int h);
 
 	const Flags &getFlags() const;
 
@@ -153,9 +153,17 @@ public:
 
 private:
 
-	void uploadDefaultTexture();
-
 	void drawv(const Matrix &t, const Vertex *v);
+
+	void preload();
+
+	void generateMipmaps();
+	void loadDefaultTexture();
+	void loadTextureFromCompressedData();
+	void loadTextureFromImageData();
+	void uploadImageData(int xoffset, int yoffset, int w, int h);
+
+	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
 
 	// The ImageData from which the texture is created. May be null if
 	// Compressed image data was used to create the texture.
@@ -183,18 +191,10 @@ private:
 
 	size_t textureMemorySize;
 
-	void preload();
-
-	void uploadCompressedData();
-	void uploadImageData();
-	void uploadTexture();
-
 	static float maxMipmapSharpness;
 
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
-
-	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
 
 	static StringMap<FlagType, FLAG_TYPE_MAX_ENUM>::Entry flagNameEntries[];
 	static StringMap<FlagType, FLAG_TYPE_MAX_ENUM> flagNames;
