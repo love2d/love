@@ -429,6 +429,14 @@ void Shader::attach(bool temporary)
 
 void Shader::detach()
 {
+	if (defaultShader)
+	{
+		if (current != defaultShader)
+			defaultShader->attach();
+
+		return;
+	}
+
 	if (current != nullptr)
 		glUseProgram(0);
 
