@@ -386,8 +386,8 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	glEnableVertexAttribArray(ATTRIB_POS);
 	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
 
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &glyphverts[0].x);
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &glyphverts[0].s);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), &glyphverts[0].x);
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), &glyphverts[0].s);
 
 	gl.prepareDraw();
 
