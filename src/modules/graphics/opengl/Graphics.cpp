@@ -69,6 +69,12 @@ Graphics::~Graphics()
 	// We do this manually so the love objects get released before the window.
 	states.clear();
 
+	if (Shader::defaultShader)
+	{
+		Shader::defaultShader->release();
+		Shader::defaultShader = nullptr;
+	}
+
 	currentWindow->release();
 }
 
@@ -279,6 +285,13 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	pixel_size_stack.clear();
 	pixel_size_stack.reserve(5);
 	pixel_size_stack.push_back(1);
+
+	// We always need a default shader.
+	if (!Shader::defaultShader)
+		Shader::defaultShader = newShader(Shader::defaultCode[0]);
+
+	if (!getShader())
+		setShader(Shader::defaultShader);
 
 	return true;
 }
@@ -1080,10 +1093,10 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	{
 		gl.prepareDraw();
 		gl.bindTexture(0);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *) coords);
+		glEnableVertexAttribArray(ATTRIB_POS);
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
 		gl.drawArrays(GL_TRIANGLE_FAN, 0, points + 2);
-		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableVertexAttribArray(ATTRIB_POS);
 	}
 
 	delete[] coords;
@@ -1104,10 +1117,10 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	{
 		gl.prepareDraw();
 		gl.bindTexture(0);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)coords);
+		glEnableVertexAttribArray(ATTRIB_POS);
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
 		gl.drawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
-		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableVertexAttribArray(ATTRIB_POS);
 	}
 }
 

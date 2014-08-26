@@ -339,17 +339,17 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	vbo->unmap();
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
 
-	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), vbo->getPointer(pos_offset));
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), vbo->getPointer(tex_offset));
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), vbo->getPointer(pos_offset));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), vbo->getPointer(tex_offset));
 
 	if (hasVertexColors())
 	{
 		// Per-vertex colors.
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), vbo->getPointer(color_offset));
+		glEnableVertexAttribArray(ATTRIB_COLOR);
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), vbo->getPointer(color_offset));
 	}
 
 	GLenum mode = getGLDrawMode(draw_mode);
@@ -391,12 +391,12 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		gl.drawArrays(mode, min, max - min + 1);
 	}
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
+	glDisableVertexAttribArray(ATTRIB_POS);
 
 	if (hasVertexColors())
 	{
-		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableVertexAttribArray(ATTRIB_COLOR);
 		// Using the color array leaves the GL constant color undefined.
 		gl.setColor(gl.getColor());
 	}

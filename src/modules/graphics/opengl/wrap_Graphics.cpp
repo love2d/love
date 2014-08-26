@@ -960,6 +960,26 @@ int w_getShader(lua_State *L)
 	return 1;
 }
 
+int w_setDefaultShaderCode(lua_State *L)
+{
+	luaL_checktype(L, 1, LUA_TTABLE);
+
+	lua_getfield(L, 1, "opengl");
+	lua_rawgeti(L, -1, 1);
+	lua_rawgeti(L, -2, 2);
+
+	Shader::ShaderSources openglcode;
+	openglcode[Shader::TYPE_VERTEX] = luax_checkstring(L, -2);
+	openglcode[Shader::TYPE_PIXEL] = luax_checkstring(L, -1);
+
+	lua_pop(L, 3);
+
+	Shader::defaultCode[0] = openglcode;
+
+	return 0;
+}
+
+
 int w_getSupported(lua_State *L)
 {
 	lua_createtable(L, 0, (int) Graphics::SUPPORT_MAX_ENUM);
@@ -1438,6 +1458,7 @@ static const luaL_Reg functions[] =
 
 	{ "setShader", w_setShader },
 	{ "getShader", w_getShader },
+	{ "_setDefaultShaderCode", w_setDefaultShaderCode },
 
 	{ "getSupported", w_getSupported },
 	{ "getCanvasFormats", w_getCanvasFormats },

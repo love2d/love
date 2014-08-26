@@ -869,20 +869,20 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	texture->predraw();
 
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableVertexAttribArray(ATTRIB_COLOR);
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
 
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *) &particleVerts[0].r);
-	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].s);
+	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), &particleVerts[0].r);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].x);
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
 
 	gl.prepareDraw();
 	gl.drawArrays(GL_QUADS, 0, pCount * 4);
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
+	glDisableVertexAttribArray(ATTRIB_POS);
+	glDisableVertexAttribArray(ATTRIB_COLOR);
 
 	texture->postdraw();
 

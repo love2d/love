@@ -1310,12 +1310,12 @@ uniform vec4 love_ScreenSize;]]
 		HEADER = [[
 #define VERTEX
 
-#define VertexPosition gl_Vertex
-#define VertexTexCoord gl_MultiTexCoord0
-#define VertexColor gl_Color
+attribute vec4 VertexPosition;
+attribute vec4 VertexTexCoord;
+attribute vec4 VertexColor;
 
-#define VaryingTexCoord gl_TexCoord[0]
-#define VaryingColor gl_FrontColor
+varying vec4 VaryingTexCoord;
+varying vec4 VaryingColor;
 
 // #if defined(GL_ARB_draw_instanced)
 //	#extension GL_ARB_draw_instanced : enable
@@ -1338,8 +1338,8 @@ void main() {
 		HEADER = [[
 #define PIXEL
 
-#define VaryingTexCoord gl_TexCoord[0]
-#define VaryingColor gl_Color]],
+varying vec4 VaryingTexCoord;
+varying vec4 VaryingColor;]],
 
 		FOOTER = [[
 void main() {
@@ -1465,4 +1465,24 @@ void main() {
 		if #lines == 1 then return message end
 		return table_concat(lines, "\n")
 	end
+
+	local defaultcode = {
+		vertex = [[
+vec4 position(mat4 transform_proj, vec4 vertpos) {
+	return transform_proj * vertpos;
+}]],
+		pixel = [[
+vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
+	return Texel(tex, texcoord) * vcolor;
+}]]
+	}
+
+	local defaults = {
+		opengl = {
+			createVertexCode(defaultcode.vertex),
+			createPixelCode(defaultcode.pixel, false),
+		},
+	}
+
+	love.graphics._setDefaultShaderCode(defaults)
 end

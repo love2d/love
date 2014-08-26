@@ -331,8 +331,8 @@ void Polyline::draw()
 
 	// draw the core line
 	gl.bindTexture(0);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)vertices);
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices);
 	gl.drawArrays(draw_mode, 0, vertex_count);
 
 	if (overdraw)
@@ -342,18 +342,18 @@ void Polyline::draw()
 		Color *colors = new Color[overdraw_vertex_count];
 		fill_color_array(colors, c);
 
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
-		glVertexPointer(2, GL_FLOAT, 0, (const GLvoid *)overdraw);
+		glEnableVertexAttribArray(ATTRIB_COLOR);
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, overdraw);
 		gl.drawArrays(draw_mode, 0, overdraw_vertex_count);
-		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableVertexAttribArray(ATTRIB_COLOR);
 
 		delete[] colors;
 
 		gl.setColor(c);
 	}
 
-	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
 void Polyline::fill_color_array(Color *colors, const Color &c)

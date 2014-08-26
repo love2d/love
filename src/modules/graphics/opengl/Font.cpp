@@ -383,11 +383,11 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
 
-	glVertexPointer(2, GL_FLOAT, sizeof(GlyphVertex), (GLvoid *)&glyphverts[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(GlyphVertex), (GLvoid *)&glyphverts[0].s);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &glyphverts[0].x);
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &glyphverts[0].s);
 
 	gl.prepareDraw();
 
@@ -400,8 +400,8 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 		gl.drawArrays(GL_QUADS, it->startvertex, it->vertexcount);
 	}
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
+	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
 int Font::getWidth(const std::string &str)

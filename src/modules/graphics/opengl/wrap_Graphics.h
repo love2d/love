@@ -89,6 +89,7 @@ int w_setCanvas(lua_State *L);
 int w_getCanvas(lua_State *L);
 int w_setShader(lua_State *L);
 int w_getShader(lua_State *L);
+int w_setDefaultShaderCode(lua_State *L);
 int w_getSupported(lua_State *L);
 int w_getCanvasFormats(lua_State *L);
 int w_getCompressedImageFormats(lua_State *L);

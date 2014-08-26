@@ -62,6 +62,9 @@ namespace
 
 
 Shader *Shader::current = nullptr;
+Shader *Shader::defaultShader = nullptr;
+
+Shader::ShaderSources Shader::defaultCode[1]; // TODO: RENDERER_MAX_ENUM
 
 GLint Shader::maxTexUnits = 0;
 std::vector<int> Shader::textureCounters;
@@ -178,18 +181,26 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 	if (program == 0)
 		throw love::Exception("Cannot create shader program object.");
 
-	for (GLuint id : shaderids)
-		glAttachShader(program, id);
-
-	// Bind generic vertex attribute indices to names in the shader.
-	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
+	try
 	{
-		OpenGL::VertexAttrib attrib = (OpenGL::VertexAttrib) i;
+		for (GLuint id : shaderids)
+			glAttachShader(program, id);
+	}
+	catch (love::Exception &)
+	{
+		glDeleteProgram(program);
+		throw;
+	}
+
+	// Bind love's vertex attribute indices to names in the shader.
+	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
+	{
+		VertexAttribID attrib = (VertexAttribID) i;
 
 		// FIXME: We skip this both because pseudo-instancing is temporarily
 		// disabled (see graphics.lua), and because binding a non-existant
-		// attribute name to a location causes a shader linker warning.
-		if (attrib == OpenGL::ATTRIB_PSEUDO_INSTANCE_ID)
+		// attribute name to a location can cause a shader linker warning.
+		if (attrib == ATTRIB_PSEUDO_INSTANCE_ID)
 			continue;
 
 		const char *name = nullptr;
@@ -199,10 +210,6 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 
 	glLinkProgram(program);
 
-	// flag shaders for auto-deletion when the program object is deleted.
-	for (GLuint id : shaderids)
-		glDeleteShader(id);
-
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
 
@@ -211,9 +218,12 @@ void Shader::createProgram(const std::vector<GLuint> &shaderids)
 		std::string warnings = getProgramWarnings();
 		glDeleteProgram(program);
 		program = 0;
-
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
+
+	// flag shaders for auto-deletion when the program object is deleted.
+	for (GLuint id : shaderids)
+		glDeleteShader(id);
 }
 
 void Shader::mapActiveUniforms()
@@ -280,18 +290,38 @@ bool Shader::loadVolatile()
 		shaderids.push_back(shaderid);
 	}
 
+	// The shader program must have both vertex and pixel shader stages.
+	ShaderSources &defaults = defaultCode[0];
+
+	ShaderSources::const_iterator source = shaderSources.find(TYPE_VERTEX);
+	if (source == shaderSources.end())
+		shaderids.push_back(compileCode(TYPE_VERTEX, defaults[TYPE_VERTEX]));
+
+	source = shaderSources.find(TYPE_PIXEL);
+	if (source == shaderSources.end())
+		shaderids.push_back(compileCode(TYPE_PIXEL, defaults[TYPE_PIXEL]));
+
 	if (shaderids.empty())
 		throw love::Exception("Cannot create shader: no valid source code!");
 
-	createProgram(shaderids);
+	try
+	{
+		createProgram(shaderids);
+	}
+	catch (love::Exception &)
+	{
+		for (GLuint id : shaderids)
+			glDeleteShader(id);
+		throw;
+	}
 
 	// Retreive all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
 
-	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
+	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (attribNames.find(OpenGL::VertexAttrib(i), name))
+		if (attribNames.find(VertexAttribID(i), name))
 			vertexAttributes[i] = glGetAttribLocation(program, name);
 		else
 			vertexAttributes[i] = -1;
@@ -327,7 +357,7 @@ void Shader::unloadVolatile()
 
 	// active texture list is probably invalid, clear it
 	activeTexUnits.clear();
-	activeTexUnits.insert(activeTexUnits.begin(), maxTexUnits, 0);
+	activeTexUnits.resize(maxTexUnits, 0);
 
 	// same with uniform location list
 	uniforms.clear();
@@ -414,72 +444,6 @@ const Shader::Uniform &Shader::getUniform(const std::string &name) const
 		                      "A common error is to define but not use the variable.", name.c_str());
 
 	return it->second;
-}
-
-int Shader::getUniformTypeSize(GLenum type) const
-{
-	switch (type)
-	{
-	case GL_INT:
-	case GL_FLOAT:
-	case GL_BOOL:
-	case GL_SAMPLER_1D:
-	case GL_SAMPLER_2D:
-	case GL_SAMPLER_3D:
-		return 1;
-	case GL_INT_VEC2:
-	case GL_FLOAT_VEC2:
-	case GL_FLOAT_MAT2:
-	case GL_BOOL_VEC2:
-		return 2;
-	case GL_INT_VEC3:
-	case GL_FLOAT_VEC3:
-	case GL_FLOAT_MAT3:
-	case GL_BOOL_VEC3:
-		return 3;
-	case GL_INT_VEC4:
-	case GL_FLOAT_VEC4:
-	case GL_FLOAT_MAT4:
-	case GL_BOOL_VEC4:
-		return 4;
-	default:
-		break;
-	}
-
-	return 1;
-}
-
-Shader::UniformType Shader::getUniformBaseType(GLenum type) const
-{
-	switch (type)
-	{
-	case GL_INT:
-	case GL_INT_VEC2:
-	case GL_INT_VEC3:
-	case GL_INT_VEC4:
-		return UNIFORM_INT;
-	case GL_FLOAT:
-	case GL_FLOAT_VEC2:
-	case GL_FLOAT_VEC3:
-	case GL_FLOAT_VEC4:
-	case GL_FLOAT_MAT2:
-	case GL_FLOAT_MAT3:
-	case GL_FLOAT_MAT4:
-		return UNIFORM_FLOAT;
-	case GL_BOOL:
-	case GL_BOOL_VEC2:
-	case GL_BOOL_VEC3:
-	case GL_BOOL_VEC4:
-		return UNIFORM_BOOL;
-	case GL_SAMPLER_1D:
-	case GL_SAMPLER_2D:
-	case GL_SAMPLER_3D:
-		return UNIFORM_SAMPLER;
-	default:
-		break;
-	}
-
-	return UNIFORM_UNKNOWN;
 }
 
 void Shader::checkSetUniformError(const Uniform &u, int size, int count, UniformType sendtype) const
@@ -611,11 +575,12 @@ void Shader::sendTexture(const std::string &name, Texture *texture)
 
 void Shader::retainObject(const std::string &name, Object *object)
 {
+	object->retain();
+
 	auto it = boundRetainables.find(name);
 	if (it != boundRetainables.end())
 		it->second->release();
 
-	object->retain();
 	boundRetainables[name] = object;
 }
 
@@ -669,7 +634,7 @@ Shader::UniformType Shader::getExternVariable(const std::string &name, int &comp
 	return it->second.baseType;
 }
 
-bool Shader::hasVertexAttrib(OpenGL::VertexAttrib attrib) const
+bool Shader::hasVertexAttrib(VertexAttribID attrib) const
 {
 	return vertexAttributes[int(attrib)] != -1;
 }
@@ -771,6 +736,68 @@ bool Shader::isSupported()
 	return getGLSLVersion() >= "1.2";
 }
 
+int Shader::getUniformTypeSize(GLenum type) const
+{
+	switch (type)
+	{
+	case GL_INT:
+	case GL_FLOAT:
+	case GL_BOOL:
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_2D:
+	case GL_SAMPLER_3D:
+		return 1;
+	case GL_INT_VEC2:
+	case GL_FLOAT_VEC2:
+	case GL_FLOAT_MAT2:
+	case GL_BOOL_VEC2:
+		return 2;
+	case GL_INT_VEC3:
+	case GL_FLOAT_VEC3:
+	case GL_FLOAT_MAT3:
+	case GL_BOOL_VEC3:
+		return 3;
+	case GL_INT_VEC4:
+	case GL_FLOAT_VEC4:
+	case GL_FLOAT_MAT4:
+	case GL_BOOL_VEC4:
+		return 4;
+	default:
+		return 1;
+	}
+}
+
+Shader::UniformType Shader::getUniformBaseType(GLenum type) const
+{
+	switch (type)
+	{
+	case GL_INT:
+	case GL_INT_VEC2:
+	case GL_INT_VEC3:
+	case GL_INT_VEC4:
+		return UNIFORM_INT;
+	case GL_FLOAT:
+	case GL_FLOAT_VEC2:
+	case GL_FLOAT_VEC3:
+	case GL_FLOAT_VEC4:
+	case GL_FLOAT_MAT2:
+	case GL_FLOAT_MAT3:
+	case GL_FLOAT_MAT4:
+		return UNIFORM_FLOAT;
+	case GL_BOOL:
+	case GL_BOOL_VEC2:
+	case GL_BOOL_VEC3:
+	case GL_BOOL_VEC4:
+		return UNIFORM_BOOL;
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_2D:
+	case GL_SAMPLER_3D:
+		return UNIFORM_SAMPLER;
+	default:
+		return UNIFORM_UNKNOWN;
+	}
+}
+
 bool Shader::getConstant(const char *in, UniformType &out)
 {
 	return uniformTypes.find(in, out);
@@ -800,12 +827,15 @@ StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM>::Entry Shader::uniformT
 
 StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM> Shader::uniformTypes(Shader::uniformTypeEntries, sizeof(Shader::uniformTypeEntries));
 
-StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
+StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
 {
-	{"love_PseudoInstanceID", OpenGL::ATTRIB_PSEUDO_INSTANCE_ID},
+	{"VertexPosition", ATTRIB_POS},
+	{"VertexTexCoord", ATTRIB_TEXCOORD},
+	{"VertexColor", ATTRIB_COLOR},
+	{"love_PseudoInstanceID", ATTRIB_PSEUDO_INSTANCE_ID},
 };
 
-StringMap<OpenGL::VertexAttrib, OpenGL::ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
+StringMap<VertexAttribID, ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
 {

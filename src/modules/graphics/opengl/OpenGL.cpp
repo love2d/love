@@ -75,15 +75,11 @@ void OpenGL::setupContext()
 	if (!contextInitialized)
 		return;
 
-	// Store the current color so we don't have to get it through GL later.
-	GLfloat glcolor[4];
-	glGetFloatv(GL_CURRENT_COLOR, glcolor);
-	state.color.r = glcolor[0] * 255;
-	state.color.g = glcolor[1] * 255;
-	state.color.b = glcolor[2] * 255;
-	state.color.a = glcolor[3] * 255;
+	state.color = Color(255, 255, 255, 255);
+	GLfloat glcolor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
 
-	// Same with the current clear color.
+	// Get the current clear color so we don't have to get it through GL later.
 	glGetFloatv(GL_COLOR_CLEAR_VALUE, glcolor);
 	state.clearColor.r = glcolor[0] * 255;
 	state.clearColor.g = glcolor[1] * 255;
@@ -360,7 +356,9 @@ void OpenGL::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, cons
 
 void OpenGL::setColor(const Color &c)
 {
-	glColor4ubv(&c.r);
+	GLfloat glc[] = {c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f};
+	glVertexAttrib4fv(ATTRIB_COLOR, glc);
+
 	state.color = c;
 }
 

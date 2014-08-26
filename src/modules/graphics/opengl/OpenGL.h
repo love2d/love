@@ -48,6 +48,17 @@ namespace opengl
 // no clashes with other GL libraries when linking, etc.
 using namespace glad;
 
+// Vertex attribute indices used in shaders by LOVE. The values map to OpenGL
+// generic vertex attribute indices.
+enum VertexAttribID
+{
+	ATTRIB_POS = 0,
+	ATTRIB_TEXCOORD,
+	ATTRIB_COLOR,
+	ATTRIB_PSEUDO_INSTANCE_ID, // Instance ID used with pseudo-instancing.
+	ATTRIB_MAX_ENUM
+};
+
 /**
  * Thin layer between OpenGL and the rest of the program.
  * Internally shadows some OpenGL context state for improved efficiency and
@@ -69,17 +80,6 @@ public:
 		VENDOR_APPLE,     // Software renderer.
 		VENDOR_MICROSOFT, // Software renderer.
 		VENDOR_UNKNOWN
-	};
-
-	// Vertex attributes used in shaders by LOVE. The values map to OpenGL
-	// generic vertex attribute indices, when applicable.
-	// LOVE uses the old hard-coded attribute APIs for positions, colors, etc.
-	// (for now.)
-	enum VertexAttrib
-	{
-		// Instance ID when pseudo-instancing is used.
-		ATTRIB_PSEUDO_INSTANCE_ID = 1,
-		ATTRIB_MAX_ENUM
 	};
 
 	// A rectangle representing an OpenGL viewport or a scissor box.
