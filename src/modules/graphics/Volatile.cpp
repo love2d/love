@@ -43,26 +43,17 @@ Volatile::~Volatile()
 bool Volatile::loadAll()
 {
 	bool success = true;
-	std::list<Volatile *>::iterator i = all.begin();
 
-	while (i != all.end())
-	{
-		success = success && (*i)->loadVolatile();
-		i++;
-	}
+	for (Volatile *v : all)
+		success = success && v->loadVolatile();
 
 	return success;
 }
 
 void Volatile::unloadAll()
 {
-	std::list<Volatile *>::iterator i = all.begin();
-
-	while (i != all.end())
-	{
-		(*i)->unloadVolatile();
-		i++;
-	}
+	for (Volatile *v : all)
+		v->unloadVolatile();
 }
 
 } // graphics

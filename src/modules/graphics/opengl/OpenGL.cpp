@@ -521,11 +521,10 @@ void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture
 	// was bound to before deletion.
-	std::vector<GLuint>::iterator it;
-	for (it = state.textureUnits.begin(); it != state.textureUnits.end(); ++it)
+	for (GLuint &texid : state.textureUnits)
 	{
-		if (*it == texture)
-			*it = 0;
+		if (texid == texture)
+			texid = 0;
 	}
 
 	glDeleteTextures(1, &texture);
