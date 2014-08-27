@@ -405,13 +405,13 @@ void JoystickModule::removeBindFromMapString(std::string &mapstr, const std::str
 	if (joybindpos == std::string::npos)
 		return;
 
-    // Find the start of the entire bind by looking for the separator between
-    // the end of one section of the map string and the start of this section.
+	// Find the start of the entire bind by looking for the separator between
+	// the end of one section of the map string and the start of this section.
 	size_t bindstart = mapstr.rfind(',', joybindpos);
 	if (bindstart != std::string::npos && bindstart < mapstr.length() - 1)
 	{
-        // The start of the bind is directly after the separator.
-        bindstart++;
+		// The start of the bind is directly after the separator.
+		bindstart++;
 
 		size_t bindend = mapstr.find(',', bindstart + 1);
 		if (bindend == std::string::npos)
