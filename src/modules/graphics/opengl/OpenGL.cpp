@@ -33,6 +33,9 @@
 // C
 #include <cstring>
 
+// For SDL_GL_GetProcAddress.
+#include <SDL_video.h>
+
 namespace love
 {
 namespace graphics
@@ -58,7 +61,7 @@ bool OpenGL::initContext()
 	if (contextInitialized)
 		return true;
 
-	if (!gladLoadGL())
+	if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
 		return false;
 
 	initOpenGLFunctions();

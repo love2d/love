@@ -1034,7 +1034,7 @@ set(LOVE_SRC_3P_STB
 	src/libraries/stb/stb_image.h
 )
 
-add_library(love_3p_stb ${LOVE_SRC_3P_STB})
+# stb_image has no implementation files of its own.
 
 #
 # utf8
@@ -1081,7 +1081,6 @@ set(LOVE_3P
 	love_3p_lodepng
 	love_3p_luasocket
 	love_3p_noise1234
-	love_3p_stb
 	love_3p_wuff
 )
 

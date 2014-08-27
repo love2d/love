@@ -1,8 +1,6 @@
 #include <string.h>
 #include "glad.hpp"
 
-#define GLAD_USE_SDL
-
 namespace glad {
 
 
