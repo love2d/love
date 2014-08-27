@@ -468,11 +468,10 @@ void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture
 	// was bound to before deletion.
-	std::vector<GLuint>::iterator it;
-	for (it = state.textureUnits.begin(); it != state.textureUnits.end(); ++it)
+	for (GLuint &texid : state.textureUnits)
 	{
-		if (*it == texture)
-			*it = 0;
+		if (texid == texture)
+			texid = 0;
 	}
 
 	glDeleteTextures(1, &texture);
@@ -607,40 +606,6 @@ void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gs);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gt);
-}
-
-graphics::Texture::Wrap OpenGL::getTextureWrap()
-{
-	GLint gs, gt;
-
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &gs);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &gt);
-
-	Texture::Wrap w;
-
-	switch (gs)
-	{
-	case GL_CLAMP_TO_EDGE:
-		w.s = Texture::WRAP_CLAMP;
-		break;
-	case GL_REPEAT:
-	default:
-		w.s = Texture::WRAP_REPEAT;
-		break;
-	}
-
-	switch (gt)
-	{
-	case GL_CLAMP_TO_EDGE:
-		w.t = Texture::WRAP_CLAMP;
-		break;
-	case GL_REPEAT:
-	default:
-		w.t = Texture::WRAP_REPEAT;
-		break;
-	}
-
-	return w;
 }
 
 int OpenGL::getMaxTextureSize() const

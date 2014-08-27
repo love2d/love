@@ -287,11 +287,6 @@ public:
 	void setTextureWrap(const graphics::Texture::Wrap &w);
 
 	/**
-	 * Returns the texture wrap mode for the currently bound texture.
-	 **/
-	graphics::Texture::Wrap getTextureWrap();
-
-	/**
 	 * Returns the maximum supported width or height of a texture.
 	 **/
 	int getMaxTextureSize() const;

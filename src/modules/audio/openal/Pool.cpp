@@ -98,11 +98,7 @@ bool Pool::isPlaying(Source *s)
 	bool p = false;
 	{
 		thread::Lock lock(mutex);
-		for (auto i = playing.begin(); i != playing.end(); i++)
-		{
-			if (i->first == s)
-				p = true;
-		}
+		p = (playing.find(s) != playing.end());
 	}
 	return p;
 }
@@ -181,11 +177,11 @@ bool Pool::play(Source *source, ALuint &out)
 void Pool::stop()
 {
 	thread::Lock lock(mutex);
-	for (auto i = playing.begin(); i != playing.end(); i++)
+	for (const auto &i : playing)
 	{
-		i->first->stopAtomic();
-		i->first->release();
-		available.push(i->second);
+		i.first->stopAtomic();
+		i.first->release();
+		available.push(i.second);
 	}
 
 	playing.clear();
@@ -200,8 +196,8 @@ void Pool::stop(Source *source)
 void Pool::pause()
 {
 	thread::Lock lock(mutex);
-	for (auto i = playing.begin(); i != playing.end(); i++)
-		i->first->pauseAtomic();
+	for (const auto &i : playing)
+		i.first->pauseAtomic();
 }
 
 void Pool::pause(Source *source)
@@ -215,8 +211,8 @@ void Pool::pause(Source *source)
 void Pool::resume()
 {
 	thread::Lock lock(mutex);
-	for (auto i = playing.begin(); i != playing.end(); i++)
-		i->first->resumeAtomic();
+	for (const auto &i : playing)
+		i.first->resumeAtomic();
 }
 
 void Pool::resume(Source *source)
@@ -230,8 +226,8 @@ void Pool::resume(Source *source)
 void Pool::rewind()
 {
 	thread::Lock lock(mutex);
-	for (auto i = playing.begin(); i != playing.end(); i++)
-		i->first->rewindAtomic();
+	for (const auto &i : playing)
+		i.first->rewindAtomic();
 }
 
 // For those times we don't need it backed.
