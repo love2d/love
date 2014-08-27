@@ -661,40 +661,6 @@ void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gt);
 }
 
-graphics::Texture::Wrap OpenGL::getTextureWrap()
-{
-	GLint gs, gt;
-
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &gs);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &gt);
-
-	Texture::Wrap w;
-
-	switch (gs)
-	{
-	case GL_CLAMP_TO_EDGE:
-		w.s = Texture::WRAP_CLAMP;
-		break;
-	case GL_REPEAT:
-	default:
-		w.s = Texture::WRAP_REPEAT;
-		break;
-	}
-
-	switch (gt)
-	{
-	case GL_CLAMP_TO_EDGE:
-		w.t = Texture::WRAP_CLAMP;
-		break;
-	case GL_REPEAT:
-	default:
-		w.t = Texture::WRAP_REPEAT;
-		break;
-	}
-
-	return w;
-}
-
 int OpenGL::getMaxTextureSize() const
 {
 	return maxTextureSize;
