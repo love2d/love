@@ -265,11 +265,6 @@ public:
 	float setTextureFilter(graphics::Texture::Filter &f);
 
 	/**
-	 * Returns the texture filter mode for the currently bound texture.
-	 **/
-	graphics::Texture::Filter getTextureFilter();
-
-	/**
 	 * Sets the texture wrap mode for the currently bound texture.
 	 **/
 	void setTextureWrap(const graphics::Texture::Wrap &w);

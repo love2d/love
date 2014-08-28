@@ -579,58 +579,6 @@ float OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 	return f.anisotropy;
 }
 
-graphics::Texture::Filter OpenGL::getTextureFilter()
-{
-	GLint gmin, gmag;
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &gmin);
-	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &gmag);
-
-	Texture::Filter f;
-
-	switch (gmin)
-	{
-	case GL_NEAREST:
-		f.min = Texture::FILTER_NEAREST;
-		f.mipmap = Texture::FILTER_NONE;
-		break;
-	case GL_NEAREST_MIPMAP_NEAREST:
-		f.min = f.mipmap = Texture::FILTER_NEAREST;
-		break;
-	case GL_NEAREST_MIPMAP_LINEAR:
-		f.min = Texture::FILTER_NEAREST;
-		f.mipmap = Texture::FILTER_LINEAR;
-		break;
-	case GL_LINEAR_MIPMAP_NEAREST:
-		f.min = Texture::FILTER_LINEAR;
-		f.mipmap = Texture::FILTER_NEAREST;
-		break;
-	case GL_LINEAR_MIPMAP_LINEAR:
-		f.min = f.mipmap = Texture::FILTER_LINEAR;
-		break;
-	case GL_LINEAR:
-	default:
-		f.min = Texture::FILTER_LINEAR;
-		f.mipmap = Texture::FILTER_NONE;
-		break;
-	}
-
-	switch (gmag)
-	{
-	case GL_NEAREST:
-		f.mag = Texture::FILTER_NEAREST;
-		break;
-	case GL_LINEAR:
-	default:
-		f.mag = Texture::FILTER_LINEAR;
-		break;
-	}
-
-	if (GLEE_EXT_texture_filter_anisotropic)
-		glGetTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, &f.anisotropy);
-
-	return f;
-}
-
 void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
 {
 	GLint gs, gt;
