@@ -65,8 +65,8 @@ FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 	int comp = 0;
 	img.data = stbi_load_from_memory((const stbi_uc *) data->getData(),
 	                                 (int) data->getSize(),
-									 &img.width, &img.height,
-									 &comp, 4);
+	                                 &img.width, &img.height,
+	                                 &comp, 4);
 
 	if (img.data == nullptr || img.width <= 0 || img.height <= 0)
 		throw love::Exception("Could not decode TGA or BMP image.");

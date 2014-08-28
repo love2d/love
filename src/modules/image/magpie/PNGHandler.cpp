@@ -33,6 +33,9 @@
 // C++
 #include <algorithm>
 
+// C
+#include <cstdlib>
+
 namespace love
 {
 namespace image
@@ -46,39 +49,36 @@ static unsigned zlibDecompress(unsigned char **out, size_t *outsize, const unsig
 {
 	int status = Z_OK;
 
-	uLongf outdataSize = insize;
-	size_t sizeMultiplier = 0;
+	uLongf outdatasize = insize;
+	size_t sizemultiplier = 0;
 	unsigned char *outdata = nullptr;
 
 	while (true)
 	{
 		// Enough size to hold the decompressed data, hopefully.
-		outdataSize = insize << (++sizeMultiplier);
+		outdatasize = insize << (++sizemultiplier);
 
-		try
-		{
-			outdata = new unsigned char[outdataSize];
-		}
-		catch (std::bad_alloc &)
-		{
+		// LodePNG uses malloc, realloc, and free.
+		outdata = (unsigned char *) malloc(outdatasize);
+
+		if (!outdata)
 			return 83; // "Memory allocation failed" error code for LodePNG.
-		}
 
 		// Use zlib to decompress the PNG data.
-		status = uncompress(outdata, &outdataSize, in, insize);
+		status = uncompress(outdata, &outdatasize, in, insize);
 
 		// If the out buffer was big enough, break out of the loop.
 		if (status != Z_BUF_ERROR)
 			break;
 
 		// Otherwise delete the out buffer and try again with a larger size...
-		delete[] outdata;
+		free(outdata);
 		outdata = nullptr;
 	}
 
 	if (status != Z_OK)
 	{
-		delete[] outdata;
+		free(outdata);
 		return 10000; // "Unknown error code" for LodePNG.
 	}
 
@@ -86,34 +86,30 @@ static unsigned zlibDecompress(unsigned char **out, size_t *outsize, const unsig
 		*out = outdata;
 
 	if (outsize != nullptr)
-		*outsize = outdataSize;
+		*outsize = outdatasize;
 
 	return 0; // Success.
 }
 
 // Custom PNG compression function for LodePNG, using zlib.
 static unsigned zlibCompress(unsigned char **out, size_t *outsize, const unsigned char *in,
-							 size_t insize, const LodePNGCompressSettings* /*settings*/)
+                             size_t insize, const LodePNGCompressSettings* /*settings*/)
 {
 	// Get the maximum compressed size of the data.
-	uLongf outdataSize = compressBound(insize);
-	unsigned char *outdata = nullptr;
+	uLongf outdatasize = compressBound(insize);
 
-	try
-	{
-		outdata = new unsigned char[outdataSize];
-	}
-	catch (std::bad_alloc &)
-	{
+	// LodePNG uses malloc, realloc, and free.
+	unsigned char *outdata = (unsigned char *) malloc(outdatasize);
+
+	if (!outdata)
 		return 83; // "Memory allocation failed" error code for LodePNG.
-	}
 
 	// Use zlib to compress the PNG data.
-	int status = compress(outdata, &outdataSize, in, insize);
+	int status = compress(outdata, &outdatasize, in, insize);
 
 	if (status != Z_OK)
 	{
-		delete[] outdata;
+		free(outdata);
 		return 10000; // "Unknown error code" for LodePNG.
 	}
 
@@ -121,7 +117,7 @@ static unsigned zlibCompress(unsigned char **out, size_t *outsize, const unsigne
 		*out = outdata;
 
 	if (outsize != nullptr)
-		*outsize = (size_t) outdataSize;
+		*outsize = (size_t) outdatasize;
 
 	return 0; // Success.
 }

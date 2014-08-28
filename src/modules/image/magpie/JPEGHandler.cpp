@@ -54,6 +54,8 @@ bool JPEGHandler::canDecode(love::filesystem::FileData *data)
 	if (!decompressor)
 		return false;
 
+	love::thread::Lock lock(mutex);
+
 	int w, h, subsamp;
 	int status = tjDecompressHeader2(decompressor,
 	                                 (unsigned char *) data->getData(),
