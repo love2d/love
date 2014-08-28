@@ -341,12 +341,11 @@ function love.init()
 
 	-- Yes, conf.lua might not exist, but there are other ways of making
 	-- love.conf appear, so we should check for it anyway.
+	local confok, conferr
 	if love.conf then
-		local ok, err = pcall(love.conf, c)
-		if not ok then
-			print(err)
-			-- continue
-		end
+		confok, conferr = pcall(love.conf, c)
+		-- If love.conf errors, we'll trigger the error after loading modules so
+		-- the error message can be displayed in the window.
 	end
 
 	if love.arg.options.console.set then
@@ -383,6 +382,10 @@ function love.init()
 
 	if love.event then
 		love.createhandlers()
+	end
+
+	if not confok and conferr then
+		error(conferr)
 	end
 
 	-- Setup window here.
@@ -1565,7 +1568,7 @@ function love.errhand(msg)
 	local font = love.graphics.setNewFont(math.floor(14 * love.window.getPixelScale()))
 
 	local sRGB = select(3, love.window.getMode()).srgb
-	if sRGB then
+	if sRGB and love.math then
 		love.graphics.setBackgroundColor(love.math.gammaToLinear(89, 157, 220))
 	else
 		love.graphics.setBackgroundColor(89, 157, 220)
