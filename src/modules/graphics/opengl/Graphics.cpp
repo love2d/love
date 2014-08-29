@@ -101,6 +101,9 @@ void Graphics::restoreState(const DisplayState &s)
 
 	setColorMask(s.colorMask);
 	setWireframe(s.wireframe);
+
+	setDefaultFilter(s.defaultFilter);
+	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
 }
 
 void Graphics::restoreStateChecked(const DisplayState &s)
@@ -158,6 +161,9 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 
 	if (s.wireframe != cur.wireframe)
 		setWireframe(s.wireframe);
+
+	setDefaultFilter(s.defaultFilter);
+	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
 }
 
 void Graphics::setViewportSize(int width, int height)
@@ -785,6 +791,7 @@ Graphics::BlendMode Graphics::getBlendMode() const
 void Graphics::setDefaultFilter(const Texture::Filter &f)
 {
 	Texture::setDefaultFilter(f);
+	states.back().defaultFilter = f;
 }
 
 const Texture::Filter &Graphics::getDefaultFilter() const
@@ -796,6 +803,9 @@ void Graphics::setDefaultMipmapFilter(Texture::FilterMode filter, float sharpnes
 {
 	Image::setDefaultMipmapFilter(filter);
 	Image::setDefaultMipmapSharpness(sharpness);
+
+	states.back().defaultMipmapFilter = filter;
+	states.back().defaultMipmapSharpness = sharpness;
 }
 
 void Graphics::getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const
@@ -1334,6 +1344,9 @@ Graphics::DisplayState::DisplayState()
 	, font(nullptr)
 	, shader(nullptr)
 	, wireframe(false)
+	, defaultFilter()
+	, defaultMipmapFilter(Texture::FILTER_NONE)
+	, defaultMipmapSharpness(0.0f)
 {
 	// We should just directly initialize the array in the initializer list, but
 	// that feature of C++11 is broken in Visual Studio 2013...
@@ -1355,6 +1368,9 @@ Graphics::DisplayState::DisplayState(const DisplayState &other)
 	, shader(other.shader)
 	, canvases(other.canvases)
 	, wireframe(other.wireframe)
+	, defaultFilter(other.defaultFilter)
+	, defaultMipmapFilter(other.defaultMipmapFilter)
+	, defaultMipmapSharpness(other.defaultMipmapSharpness)
 {
 	for (int i = 0; i < 4; i++)
 		colorMask[i] = other.colorMask[i];
@@ -1385,6 +1401,10 @@ Graphics::DisplayState &Graphics::DisplayState::operator = (const DisplayState &
 		colorMask[i] = other.colorMask[i];
 
 	wireframe = other.wireframe;
+
+	defaultFilter = other.defaultFilter;
+	defaultMipmapFilter = other.defaultMipmapFilter;
+	defaultMipmapSharpness = other.defaultMipmapSharpness;
 
 	return *this;
 }
