@@ -233,7 +233,10 @@ void SpriteBatch::setBufferSize(int newsize)
 	}
 
 	// Copy as much of the old data into the new VertexBuffer as can fit.
-	new_array_buf->fill(0, sizeof(Vertex) * 4 * std::min(newsize, size), old_data);
+	{
+		VertexBuffer::Bind bind(*new_array_buf);
+		new_array_buf->fill(0, sizeof(Vertex) * 4 * std::min(newsize, size), old_data);
+	}
 
 	// We don't need to unmap the old VertexBuffer since we're deleting it.
 	delete array_buf;
