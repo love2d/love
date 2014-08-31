@@ -456,6 +456,13 @@ private:
 
 		bool wireframe;
 
+		// Default filter.
+		Texture::Filter defaultFilter;
+
+		// Default mipmap filter and sharpness.
+		Texture::FilterMode defaultMipmapFilter;
+		float defaultMipmapSharpness;
+
 		DisplayState();
 		DisplayState(const DisplayState &other);
 		~DisplayState();

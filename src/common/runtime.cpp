@@ -390,7 +390,10 @@ void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *o
 void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object)
 {
 	if (object == nullptr)
+	{
 		lua_pushnil(L);
+		return;
+	}
 
 	// Fetch the registry table of instantiated types.
 	luax_getregistry(L, REGISTRY_TYPES);

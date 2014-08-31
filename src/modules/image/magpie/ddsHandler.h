@@ -58,7 +58,7 @@ public:
 	 * a single block of memory containing all the images.
 	 *
 	 * @param[in] filedata The data to parse.
-	 * @param[out] image The list of sub-images generated. Byte data is a pointer
+	 * @param[out] images The list of sub-images generated. Byte data is a pointer
 	 *             to the returned data.
 	 * @param[out] dataSize The total size in bytes of the returned data.
 	 * @param[out] format The format of the Compressed Data.

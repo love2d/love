@@ -218,8 +218,8 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 			joyinputstream << "b" << joyinput.button;
 		break;
 	case Joystick::INPUT_TYPE_HAT:
-		if (joyinput.hat.value >= 0 && Joystick::getConstant(joyinput.hat.value, sdlhat))
-			joyinputstream << "h" << joyinput.hat.value << "." << int(sdlhat);
+		if (joyinput.hat.index >= 0 && Joystick::getConstant(joyinput.hat.value, sdlhat))
+			joyinputstream << "h" << joyinput.hat.index << "." << int(sdlhat);
 		break;
 	default:
 		break;
@@ -297,7 +297,7 @@ Joystick::JoystickInput JoystickModule::getGamepadMapping(const std::string &gui
 	if (findpos == std::string::npos)
 		return jinput;
 
-	size_t endpos = mapstr.find_first_of(',', findpos);
+	size_t endpos = mapstr.find_first_of(',', findpos + 1);
 	if (endpos == std::string::npos)
 	{
 		// Assume end-of-string if we can't find the next comma.
@@ -364,19 +364,19 @@ Joystick::JoystickInput JoystickModule::JoystickInputFromString(const std::strin
 	{
 	case 'a':
 		jinput.type = Joystick::INPUT_TYPE_AXIS;
-		jinput.axis = atoi(bindvalues.c_str());
+		jinput.axis = (int) strtol(bindvalues.c_str(), nullptr, 10);
 		break;
 	case 'b':
 		jinput.type = Joystick::INPUT_TYPE_BUTTON;
-		jinput.button = atoi(bindvalues.c_str());
+		jinput.button = (int) strtol(bindvalues.c_str(), nullptr, 10);
 		break;
 	case 'h':
 		// Hat string syntax is "index.value".
 		if (bindvalues.length() < 3)
 			break;
 		jinput.type = Joystick::INPUT_TYPE_HAT;
-		jinput.hat.index = atoi(bindvalues.substr(0, 1).c_str());
-		sdlhat = (Uint8) atoi(bindvalues.substr(2, 1).c_str());
+		jinput.hat.index = (int) strtol(bindvalues.substr(0, 1).c_str(), nullptr, 10);
+		sdlhat = (Uint8) strtol(bindvalues.substr(2).c_str(), nullptr, 10);
 		if (!Joystick::getConstant(sdlhat, jinput.hat.value))
 		{
 			// Return an invalid value if we can't find the hat constant.
@@ -405,10 +405,14 @@ void JoystickModule::removeBindFromMapString(std::string &mapstr, const std::str
 	if (joybindpos == std::string::npos)
 		return;
 
-	// Find the start of the entire bind.
+	// Find the start of the entire bind by looking for the separator between
+	// the end of one section of the map string and the start of this section.
 	size_t bindstart = mapstr.rfind(',', joybindpos);
 	if (bindstart != std::string::npos && bindstart < mapstr.length() - 1)
 	{
+		// The start of the bind is directly after the separator.
+		bindstart++;
+
 		size_t bindend = mapstr.find(',', bindstart + 1);
 		if (bindend == std::string::npos)
 			bindend = mapstr.length() - 1;
