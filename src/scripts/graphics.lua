@@ -1295,7 +1295,8 @@ do
 #define number float
 #define Image sampler2D
 #define extern uniform
-#define Texel texture2D]]
+#define Texel texture2D
+#pragma optionNV(strict on)]]
 
 	local GLSL_UNIFORMS = [[
 #define TransformMatrix gl_ModelViewMatrix
