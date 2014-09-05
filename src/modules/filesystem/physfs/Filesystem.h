@@ -26,6 +26,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
 
 // LOVE
 #include "common/Module.h"
@@ -262,6 +263,10 @@ public:
 	 **/
 	static int lines_i(lua_State *L);
 
+	// Require path accessors
+	// Not const because it's R/W
+	std::vector<std::string> &getRequirePath();
+
 private:
 
 	// Contains the current working directory (UTF8).
@@ -289,6 +294,9 @@ private:
 	// for release 'builds'
 	bool fused;
 	bool fusedSet;
+
+	// Search path for require
+	std::vector<std::string> requirePath;
 
 }; // Filesystem
 

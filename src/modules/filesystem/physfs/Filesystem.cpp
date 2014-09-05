@@ -77,6 +77,7 @@ Filesystem::Filesystem()
 	, fused(false)
 	, fusedSet(false)
 {
+	requirePath = {"?.lua", "?/init.lua"};
 }
 
 Filesystem::~Filesystem()
@@ -669,6 +670,11 @@ bool Filesystem::areSymlinksEnabled() const
 bool Filesystem::isSymlink(const char *filename) const
 {
 	return PHYSFS_isSymbolicLink(filename) != 0;
+}
+
+std::vector<std::string> &Filesystem::getRequirePath()
+{
+	return requirePath;
 }
 
 } // physfs

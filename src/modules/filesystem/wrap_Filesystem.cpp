@@ -510,13 +510,11 @@ int w_isSymlink(lua_State *L)
 	return 1;
 }
 
-static std::vector<std::string> requirePath = {"?.lua", "?/init.lua"};
-
 int w_getRequirePath(lua_State *L)
 {
 	std::stringstream path;
 	bool seperator = false;
-	for (auto &element : requirePath)
+	for (auto &element : instance()->getRequirePath())
 	{
 		if (seperator)
 			path << ";";
@@ -533,6 +531,7 @@ int w_getRequirePath(lua_State *L)
 int w_setRequirePath(lua_State *L)
 {
 	std::string element = luax_checkstring(L, 1);
+	auto &requirePath = instance()->getRequirePath();
 
 	requirePath.clear();
 	std::stringstream path;
@@ -555,7 +554,7 @@ int loader(lua_State *L)
 	}
 
 	auto *inst = instance();
-	for (std::string element : requirePath)
+	for (std::string element : inst->getRequirePath())
 	{
 		size_t pos = element.find('?');
 		if (pos == std::string::npos)
