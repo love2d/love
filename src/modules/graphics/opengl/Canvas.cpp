@@ -625,7 +625,7 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
 
 	gl.prepareDraw();
-	gl.drawArrays(GL_QUADS, 0, 4);
+	gl.drawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);
