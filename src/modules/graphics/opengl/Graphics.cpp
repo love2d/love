@@ -615,6 +615,12 @@ Color Graphics::getBackgroundColor() const
 
 void Graphics::setFont(Font *font)
 {
+	// Hack: the Lua-facing love.graphics.print function will set the current
+	// font if needed, but only on its first call... we want to make sure a nil
+	// font is never accidentally set (e.g. via love.graphics.reset.)
+	if (font == nullptr)
+		return;
+
 	DisplayState &state = states.back();
 	state.font.set(font);
 }
@@ -1288,11 +1294,6 @@ void Graphics::pop()
 	if (stackTypes.back() == STACK_ALL)
 	{
 		DisplayState &newstate = states[states.size() - 2];
-
-		// Hack: the Lua-facing love.graphics.print function will set the current
-		// font if needed, but only on its first call... we always want a font.
-		if (newstate.font.get() == nullptr)
-			newstate.font.set(states.back().font.get());
 
 		restoreStateChecked(newstate);
 
