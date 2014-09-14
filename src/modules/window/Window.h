@@ -148,6 +148,11 @@ public:
 
 	virtual double getPixelScale() const = 0;
 
+	virtual double toPixels(double x) const = 0;
+	virtual void toPixels(double wx, double wy, double &px, double &py) const = 0;
+	virtual double fromPixels(double x) const = 0;
+	virtual void fromPixels(double px, double py, double &wx, double &wy) const = 0;
+
 	virtual const void *getHandle() const = 0;
 
 	virtual bool showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow) = 0;

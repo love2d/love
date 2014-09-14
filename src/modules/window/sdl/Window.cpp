@@ -682,6 +682,30 @@ double Window::getPixelScale() const
 	return scale;
 }
 
+double Window::toPixels(double x) const
+{
+	return x * getPixelScale();
+}
+
+void Window::toPixels(double wx, double wy, double &px, double &py) const
+{
+	double scale = getPixelScale();
+	px = wx * scale;
+	py = wy * scale;
+}
+
+double Window::fromPixels(double x) const
+{
+	return x / getPixelScale();
+}
+
+void Window::fromPixels(double px, double py, double &wx, double &wy) const
+{
+	double scale = getPixelScale();
+	wx = px / scale;
+	wy = py / scale;
+}
+
 const void *Window::getHandle() const
 {
 	return window;

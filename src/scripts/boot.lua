@@ -1427,9 +1427,8 @@ function love.nogame()
 		g_time = g_time + dt / 2
 		local int, frac = math.modf(g_time)
 		update_rain(frac)
-		local scale = love.window.getPixelScale()
-		inspector.x = love.graphics.getWidth() * 0.45 / scale
-		inspector.y = love.graphics.getHeight() * 0.55 / scale
+		inspector.x = love.window.fromPixels(love.graphics.getWidth() * 0.45)
+		inspector.y = love.window.fromPixels(love.graphics.getHeight() * 0.55)
 	end
 
 	local function draw_grid()
@@ -1565,7 +1564,7 @@ function love.errhand(msg)
 	end
 	if love.audio then love.audio.stop() end
 	love.graphics.reset()
-	local font = love.graphics.setNewFont(math.floor(14 * love.window.getPixelScale()))
+	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
 
 	local sRGB = select(3, love.window.getMode()).srgb
 	if sRGB and love.math then
@@ -1599,7 +1598,7 @@ function love.errhand(msg)
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
 
 	local function draw()
-		local pos = 70 * love.window.getPixelScale()
+		local pos = love.window.toPixels(70)
 		love.graphics.clear()
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
 		love.graphics.present()

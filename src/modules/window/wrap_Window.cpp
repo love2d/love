@@ -333,6 +333,48 @@ int w_getPixelScale(lua_State *L)
 	return 1;
 }
 
+int w_toPixels(lua_State *L)
+{
+	double wx = luaL_checknumber(L, 1);
+
+	if (lua_isnoneornil(L, 2))
+	{
+		lua_pushnumber(L, instance()->toPixels(wx));
+		return 1;
+	}
+
+	double wy = luaL_checknumber(L, 2);
+	double px = 0.0, py = 0.0;
+
+	instance()->toPixels(wx, wy, px, py);
+
+	lua_pushnumber(L, px);
+	lua_pushnumber(L, py);
+
+	return 2;
+}
+
+int w_fromPixels(lua_State *L)
+{
+	double px = luaL_checknumber(L, 1);
+
+	if (lua_isnoneornil(L, 2))
+	{
+		lua_pushnumber(L, instance()->fromPixels(px));
+		return 1;
+	}
+
+	double py = luaL_checknumber(L, 2);
+	double wx = 0.0, wy = 0.0;
+
+	instance()->fromPixels(px, py, wx, wy);
+
+	lua_pushnumber(L, wx);
+	lua_pushnumber(L, wy);
+
+	return 2;
+}
+
 int w_minimize(lua_State* /*L*/)
 {
 	instance()->minimize();
@@ -421,6 +463,8 @@ static const luaL_Reg functions[] =
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
 	{ "getPixelScale", w_getPixelScale },
+	{ "toPixels", w_toPixels },
+	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },
 	{ "showMessageBox", w_showMessageBox },
 	{ 0, 0 }

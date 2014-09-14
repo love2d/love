@@ -85,6 +85,11 @@ public:
 
 	double getPixelScale() const;
 
+	double toPixels(double x) const;
+	void toPixels(double wx, double wy, double &px, double &py) const;
+	double fromPixels(double x) const;
+	void fromPixels(double px, double py, double &wx, double &wy) const;
+
 	const void *getHandle() const;
 
 	bool showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow);
