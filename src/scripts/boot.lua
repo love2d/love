@@ -81,6 +81,8 @@ end
 
 -- Returns the leaf of a full path.
 function love.path.leaf(p)
+	p = love.path.normalslashes(p)
+
 	local a = 1
 	local last = p
 
