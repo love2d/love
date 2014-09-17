@@ -1292,6 +1292,9 @@ do
 	local GLSL_VERSION = "#version 120"
 	
 	local GLSL_SYNTAX = [[
+#define lowp
+#define mediump
+#define highp
 #define number float
 #define Image sampler2D
 #define extern uniform
