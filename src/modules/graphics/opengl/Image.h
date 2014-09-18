@@ -60,10 +60,8 @@ public:
 
 	struct Flags
 	{
-		bool mipmaps;
-		bool sRGB;
-
-		Flags() : mipmaps(false), sRGB(false) {}
+		bool mipmaps = false;
+		bool sRGB = false;;
 	};
 
 	/**

@@ -165,15 +165,9 @@ private:
 
 	struct Cone
 	{
-		int innerAngle; // degrees
-		int outerAngle; // degrees
-		float outerVolume;
-
-		Cone()
-			: innerAngle(360)
-			, outerAngle(360)
-			, outerVolume(0.0f)
-		{}
+		int innerAngle = 360; // degrees
+		int outerAngle = 360; // degrees
+		float outerVolume = 0.0f;
 	} cone;
 
 	float offsetSamples;

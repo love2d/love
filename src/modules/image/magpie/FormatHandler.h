@@ -44,18 +44,17 @@ public:
 	// Raw RGBA pixel data.
 	struct DecodedImage
 	{
-		int width, height;
-		size_t size;
-		unsigned char *data;
-		DecodedImage() : width(0), height(0), size(0), data(0) {}
+		int width   = 0;
+		int height  = 0;
+		size_t size = 0;
+		unsigned char *data = nullptr;
 	};
 
 	// Pixel data encoded in a particular format.
 	struct EncodedImage
 	{
-		size_t size;
-		unsigned char *data;
-		EncodedImage() : size(0), data(0) {}
+		size_t size = 0;
+		unsigned char *data = nullptr;
 	};
 
 	/**

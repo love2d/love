@@ -27,29 +27,6 @@ namespace graphics
 
 Texture::Filter Texture::defaultFilter;
 
-Texture::Filter::Filter()
-	: min(FILTER_LINEAR)
-	, mag(FILTER_LINEAR)
-	, mipmap(FILTER_NONE)
-	, anisotropy(1.0f)
-{
-}
-
-Texture::Wrap::Wrap()
-	: s(WRAP_CLAMP)
-	, t(WRAP_CLAMP)
-{
-}
-
-Texture::Texture()
-	: width(0)
-	, height(0)
-	, filter(getDefaultFilter())
-	, wrap()
-	, vertices()
-{
-}
-
 Texture::~Texture()
 {
 }

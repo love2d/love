@@ -186,23 +186,20 @@ private:
 
 struct WindowSettings
 {
-	WindowSettings();
-
-	bool fullscreen; // = false
-	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_EXCLUSIVE
-	bool vsync; // = true
-	int msaa; // = 0
-	bool resizable; // = false
-	int minwidth; // = 1
-	int minheight; // = 1
-	bool borderless; // = false
-	bool centered; // = true
-	int display; // = 0
-	bool highdpi; // false
-	bool sRGB; // false
-	double refreshrate; // 0.0
-
-}; // WindowSettings
+	bool fullscreen = false;
+	Window::FullscreenType fstype = Window::FULLSCREEN_TYPE_EXCLUSIVE;
+	bool vsync = true;
+	int msaa = 0;
+	bool resizable = false;
+	int minwidth = 1;
+	int minheight = 1;
+	bool borderless = false;
+	bool centered = true;
+	int display = 0;
+	bool highdpi = false;
+	bool sRGB = false;
+	double refreshrate = 0.0;
+};
 
 } // window
 } // love

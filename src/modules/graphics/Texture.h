@@ -57,18 +57,16 @@ public:
 
 	struct Filter
 	{
-		Filter();
-		FilterMode min;
-		FilterMode mag;
-		FilterMode mipmap;
-		float anisotropy;
+		FilterMode min    = FILTER_LINEAR;
+		FilterMode mag    = FILTER_LINEAR;
+		FilterMode mipmap = FILTER_NONE;
+		float anisotropy  = 1.0f;
 	};
 
 	struct Wrap
 	{
-		Wrap();
-		WrapMode s;
-		WrapMode t;
+		WrapMode s = WRAP_CLAMP;
+		WrapMode t = WRAP_CLAMP;
 	};
 
 	Texture();

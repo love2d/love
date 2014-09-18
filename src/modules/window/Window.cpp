@@ -38,23 +38,6 @@ void Window::swapBuffers()
 {
 }
 
-WindowSettings::WindowSettings()
-	: fullscreen(false)
-	, fstype(Window::FULLSCREEN_TYPE_EXCLUSIVE)
-	, vsync(true)
-	, msaa(0)
-	, resizable(false)
-	, minwidth(1)
-	, minheight(1)
-	, borderless(false)
-	, centered(true)
-	, display(0)
-	, highdpi(false)
-	, sRGB(false)
-	, refreshrate(0.0)
-{
-}
-
 bool Window::getConstant(const char *in, Window::FullscreenType &out)
 {
 	return fullscreenTypes.find(in, out);

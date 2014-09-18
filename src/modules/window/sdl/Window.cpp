@@ -57,14 +57,6 @@ Window::~Window()
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-Window::_currentMode::_currentMode()
-	: width(800)
-	, height(600)
-	, settings()
-	, icon(0)
-{
-}
-
 bool Window::setWindow(int width, int height, WindowSettings *settings)
 {
 	WindowSettings f;
