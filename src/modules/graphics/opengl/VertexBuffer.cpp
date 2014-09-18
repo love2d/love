@@ -119,7 +119,7 @@ VBO::VBO(size_t size, GLenum target, GLenum usage, MemoryBacking backing)
 	: VertexBuffer(size, target, usage, backing)
 	, vbo(0)
 	, memory_map(nullptr)
-	, is_dirty(true)
+	, is_dirty(false)
 {
 	if (!(GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5))
 		throw love::Exception("Not supported");
@@ -319,6 +319,20 @@ VertexIndex::VertexIndex(size_t size)
 		throw love::Exception("Invalid size.");
 
 	addSize(size);
+}
+
+VertexIndex::VertexIndex(const VertexIndex &other)
+	: size(other.size)
+{
+	addSize(size);
+}
+
+VertexIndex &VertexIndex::operator = (const VertexIndex &other)
+{
+	addSize(other.size);
+	removeSize(size);
+	size = other.size;
+	return *this;
 }
 
 VertexIndex::~VertexIndex()

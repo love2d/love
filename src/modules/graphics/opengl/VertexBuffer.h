@@ -412,6 +412,9 @@ public:
 	 */
 	VertexIndex(size_t size);
 
+	VertexIndex(const VertexIndex &other);
+	VertexIndex &operator = (const VertexIndex &other);
+
 	/**
 	 * Removes an entry from the list of sizes and resizes the VertexBuffer
 	 * if needed.
