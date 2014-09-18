@@ -37,6 +37,11 @@ Matrix::Matrix()
 	setIdentity();
 }
 
+Matrix::Matrix(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+{
+	setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+}
+
 Matrix::~Matrix()
 {
 }

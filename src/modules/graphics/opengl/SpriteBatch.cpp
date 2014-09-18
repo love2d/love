@@ -99,20 +99,9 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if ((index == -1 && next >= size) || index < -1 || index >= size)
 		return -1;
 
-	Vertex sprite[4];
+	Matrix t(x, y, a, sx, sy, ox, oy, kx, ky);
 
-	// Needed for colors.
-	memcpy(sprite, texture->getVertices(), sizeof(Vertex) * 4);
-
-	// Transform.
-	Matrix t;
-	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-	t.transform(sprite, sprite, 4);
-
-	if (color)
-		setColorv(sprite, *color);
-
-	addv(sprite, (index == -1) ? next : index);
+	addv(texture->getVertices(), t, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
@@ -127,19 +116,9 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
-	Vertex sprite[4];
+	Matrix t(x, y, a, sx, sy, ox, oy, kx, ky);
 
-	// Needed for colors.
-	memcpy(sprite, quad->getVertices(), sizeof(Vertex) * 4);
-
-	Matrix t;
-	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-	t.transform(sprite, sprite, 4);
-
-	if (color)
-		setColorv(sprite, *color);
-
-	addv(sprite, (index == -1) ? next : index);
+	addv(quad->getVertices(), t, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
@@ -254,8 +233,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	if (next == 0)
 		return;
 
-	static Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
@@ -299,9 +277,16 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	texture->postdraw();
 }
 
-void SpriteBatch::addv(const Vertex *v, int index)
+void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)
 {
-	static const size_t sprite_size = 4 * sizeof(Vertex); // bytecount
+	// Needed for colors.
+	Vertex sprite[4] = {v[0], v[1], v[2], v[3]};
+	const size_t sprite_size = 4 * sizeof(Vertex); // bytecount
+
+	m.transform(sprite, sprite, 4);
+
+	if (color)
+		setColorv(sprite, *color);
 
 	VertexBuffer::Bind bind(*array_buf);
 
@@ -309,7 +294,7 @@ void SpriteBatch::addv(const Vertex *v, int index)
 	// on draw.)
 	array_buf->map();
 
-	array_buf->fill(index * sprite_size, sprite_size, v);
+	array_buf->fill(index * sprite_size, sprite_size, sprite);
 
 	buffer_used_offset = std::min(buffer_used_offset, index * sprite_size);
 	buffer_used_size = std::max(buffer_used_size, (index + 1) * sprite_size - buffer_used_offset);
