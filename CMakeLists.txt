@@ -46,11 +46,16 @@ else()
 endif()
 
 option(LOVE_JIT "Use LuaJIT" TRUE)
+option(LOVE_MPG123 "Use mpg123" TRUE)
 
 if(LOVE_JIT)
 	message(STATUS "LuaJIT: Enabled")
 else()
 	message(STATUS "LuaJIT: Disabled")
+endif()
+
+if(NOT LOVE_MPG123)
+	add_definitions(-DLOVE_NOMPG123)
 endif()
 
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
@@ -612,8 +617,6 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/GmeDecoder.h
 	src/modules/sound/lullaby/ModPlugDecoder.cpp
 	src/modules/sound/lullaby/ModPlugDecoder.h
-	src/modules/sound/lullaby/Mpg123Decoder.cpp
-	src/modules/sound/lullaby/Mpg123Decoder.h
 	src/modules/sound/lullaby/Sound.cpp
 	src/modules/sound/lullaby/Sound.h
 	src/modules/sound/lullaby/VorbisDecoder.cpp
@@ -621,6 +624,14 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/WaveDecoder.cpp
 	src/modules/sound/lullaby/WaveDecoder.h
 )
+
+if(LOVE_MPG123)
+	set(LOVE_SRC_MODULE_SOUND_LULLABY
+		${LOVE_SRC_MODULE_SOUND_LULLABY}
+		src/modules/sound/lullaby/Mpg123Decoder.cpp
+		src/modules/sound/lullaby/Mpg123Decoder.h
+	)
+endif()
 
 set(LOVE_SRC_MODULE_SOUND
 	${LOVE_SRC_MODULE_SOUND_ROOT}
@@ -1130,13 +1141,20 @@ set(LOVE_MEGA_3P
 	${MEGA_LIBVORBIS}
 	${MEGA_LUA}
 	${MEGA_MODPLUG}
-	${MEGA_MPEG123}
 	${MEGA_OPENAL}
 	${MEGA_PHYSFS}
 	${MEGA_SDL2MAIN}
 	${MEGA_SDL2}
 	${MEGA_ZLIB}
 )
+
+if(LOVE_MPG123)
+	set(LOVE_MEGA_3P
+		${LOVE_MEGA_3P}
+		${MEGA_MPEG123}
+	)
+endif()
+
 
 set(LOVE_LINK_LIBRARIES
 	${OPENGL_gl_LIBRARY}
@@ -1177,7 +1195,10 @@ target_link_libraries(love liblove)
 
 # Add post build steps to move the DLLs next to the binary. Otherwise
 # running/debugging the binary will not work from inside VS.
-add_move_dll(love ${MEGA_MPEG123})
+if(LOVE_MPG123)
+	add_move_dll(love ${MEGA_MPEG123})
+endif()
+
 add_move_dll(love ${MEGA_SDL2})
 add_move_dll(love ${MEGA_OPENAL})
 
