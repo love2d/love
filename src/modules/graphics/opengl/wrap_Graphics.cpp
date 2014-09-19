@@ -28,6 +28,7 @@
 
 #include "scripts/graphics.lua.h"
 #include <cassert>
+#include <cstring>
 
 namespace love
 {
@@ -402,6 +403,19 @@ int w_newShader(lua_State *L)
 			lua_pushvalue(L, i);
 			lua_call(L, 1, 1);
 			lua_replace(L, i);
+		}
+		else
+		{
+			// Check if the argument looks like a filepath - we want a nicer
+			// error for misspelled filepath arguments.
+			size_t slen = 0;
+			const char *str = lua_tolstring(L, i, &slen);
+			if (slen > 0 && slen < 256 && !strchr(str, '\n'))
+			{
+				const char *ext = strchr(str, '.');
+				if (ext != nullptr && !strchr(ext, ';') && !strchr(ext, ' '))
+					return luaL_error(L, "Could not open file %s. Does not exist.", str);
+			}
 		}
 	}
 
