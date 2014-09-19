@@ -300,6 +300,8 @@ function love.init()
 		window = {
 			width = 800,
 			height = 600,
+			x = nil,
+			y = nil,
 			minwidth = 1,
 			minheight = 1,
 			fullscreen = false,
@@ -407,6 +409,8 @@ function love.init()
 			display = c.window.display,
 			highdpi = c.window.highdpi,
 			srgb = c.window.srgb,
+			x = c.window.x,
+			y = c.window.y,
 		}), "Could not set window mode")
 		love.window.setTitle(c.window.title or c.title)
 		if c.window.icon then

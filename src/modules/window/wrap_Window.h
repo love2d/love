@@ -41,6 +41,8 @@ int w_getWidth(lua_State *L);
 int w_getHeight(lua_State *L);
 int w_getDimensions(lua_State *L);
 int w_getDesktopDimensions(lua_State *L);
+int w_setPosition(lua_State *L);
+int w_getPosition(lua_State *L);
 int w_setIcon(lua_State *L);
 int w_getIcon(lua_State *L);
 int w_setTitle(lua_State *L);

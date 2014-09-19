@@ -60,6 +60,9 @@ public:
 
 	void getDesktopDimensions(int displayindex, int &width, int &height) const;
 
+	void setPosition(int x, int y, int displayindex);
+	void getPosition(int &x, int &y, int &displayindex);
+
 	bool isCreated() const;
 
 	void setWindowTitle(const std::string &title);

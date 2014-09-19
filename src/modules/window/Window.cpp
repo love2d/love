@@ -52,6 +52,9 @@ WindowSettings::WindowSettings()
 	, highdpi(false)
 	, sRGB(false)
 	, refreshrate(0.0)
+	, useposition(false)
+	, x(0)
+	, y(0)
 {
 }
 
@@ -101,6 +104,8 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"highdpi", SETTING_HIGHDPI},
 	{"srgb", SETTING_SRGB},
 	{"refreshrate", SETTING_REFRESHRATE},
+	{"x", SETTING_X},
+	{"y", SETTING_Y},
 };
 
 StringMap<Window::Setting, Window::SETTING_MAX_ENUM> Window::settings(Window::settingEntries, sizeof(Window::settingEntries));
