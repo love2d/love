@@ -127,7 +127,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	int x = f.x;
 	int y = f.y;
 
-	if (f.useposition)
+	if (f.useposition && !f.fullscreen)
 	{
 		// The position needs to be in the global coordinate space.
 		SDL_Rect displaybounds = {};
@@ -591,12 +591,16 @@ void Window::getPosition(int &x, int &y, int &displayindex)
 
 	SDL_GetWindowPosition(window, &x, &y);
 
-	SDL_Rect displaybounds = {};
-	SDL_GetDisplayBounds(displayindex, &displaybounds);
+	// SDL always reports 0, 0 for fullscreen windows.
+	if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN))
+	{
+		SDL_Rect displaybounds = {};
+		SDL_GetDisplayBounds(displayindex, &displaybounds);
 
-	// The position needs to be in the monitor's coordinate space.
-	x -= displaybounds.x;
-	y -= displaybounds.y;
+		// The position needs to be in the monitor's coordinate space.
+		x -= displaybounds.x;
+		y -= displaybounds.y;
+	}
 }
 
 bool Window::isCreated() const
