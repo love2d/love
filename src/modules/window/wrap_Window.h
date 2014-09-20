@@ -38,6 +38,8 @@ int w_setFullscreen(lua_State *L);
 int w_getFullscreen(lua_State *L);
 int w_isCreated(lua_State *L);
 int w_getDesktopDimensions(lua_State *L);
+int w_setPosition(lua_State *L);
+int w_getPosition(lua_State *L);
 int w_setIcon(lua_State *L);
 int w_getIcon(lua_State *L);
 int w_setTitle(lua_State *L);

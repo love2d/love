@@ -47,7 +47,7 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 	, next(0)
 	, color(0)
 	, array_buf(nullptr)
-	, element_buf(nullptr)
+	, element_buf(size)
 	, buffer_used_offset(0)
 	, buffer_used_size(0)
 {
@@ -74,18 +74,15 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 	try
 	{
 		array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
-		element_buf = new VertexIndex(size);
 	}
 	catch (love::Exception &)
 	{
 		delete array_buf;
-		delete element_buf;
 		throw;
 	}
 	catch (std::bad_alloc &)
 	{
 		delete array_buf;
-		delete element_buf;
 		throw love::Exception("Out of memory.");
 	}
 }
@@ -94,7 +91,6 @@ SpriteBatch::~SpriteBatch()
 {
 	delete color;
 	delete array_buf;
-	delete element_buf;
 }
 
 int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
@@ -103,20 +99,9 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if ((index == -1 && next >= size) || index < -1 || index >= size)
 		return -1;
 
-	Vertex sprite[4];
+	Matrix t(x, y, a, sx, sy, ox, oy, kx, ky);
 
-	// Needed for colors.
-	memcpy(sprite, texture->getVertices(), sizeof(Vertex) * 4);
-
-	// Transform.
-	Matrix t;
-	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-	t.transform(sprite, sprite, 4);
-
-	if (color)
-		setColorv(sprite, *color);
-
-	addv(sprite, (index == -1) ? next : index);
+	addv(texture->getVertices(), t, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
@@ -131,19 +116,9 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
-	Vertex sprite[4];
+	Matrix t(x, y, a, sx, sy, ox, oy, kx, ky);
 
-	// Needed for colors.
-	memcpy(sprite, quad->getVertices(), sizeof(Vertex) * 4);
-
-	Matrix t;
-	t.setTransformation(x, y, a, sx, sy, ox, oy, kx, ky);
-	t.transform(sprite, sprite, 4);
-
-	if (color)
-		setColorv(sprite, *color);
-
-	addv(sprite, (index == -1) ? next : index);
+	addv(quad->getVertices(), t, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
@@ -171,7 +146,7 @@ void SpriteBatch::setTexture(Texture *newtexture)
 	texture.set(newtexture);
 }
 
-Texture *SpriteBatch::getTexture()
+Texture *SpriteBatch::getTexture() const
 {
 	return texture.get();
 }
@@ -216,40 +191,32 @@ void SpriteBatch::setBufferSize(int newsize)
 	}
 
 	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
-
 	VertexBuffer *new_array_buf = nullptr;
-	VertexIndex *new_element_buf = nullptr;
 
 	try
 	{
 		new_array_buf = VertexBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
-		new_element_buf = new VertexIndex(newsize);
+
+		// Copy as much of the old data into the new VertexBuffer as can fit.
+		VertexBuffer::Bind bind(*new_array_buf);
+		void *new_data = new_array_buf->map();
+		memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
+
+		element_buf = VertexIndex(newsize);
 	}
 	catch (love::Exception &)
 	{
 		delete new_array_buf;
-		delete new_element_buf;
 		throw;
-	}
-
-	// Copy as much of the old data into the new VertexBuffer as can fit.
-	{
-		VertexBuffer::Bind bind(*new_array_buf);
-		new_array_buf->fill(0, sizeof(Vertex) * 4 * std::min(newsize, size), old_data);
 	}
 
 	// We don't need to unmap the old VertexBuffer since we're deleting it.
 	delete array_buf;
-	delete element_buf;
 
 	array_buf = new_array_buf;
-	element_buf = new_element_buf;
 	size = newsize;
 
 	next = std::min(next, newsize);
-
-	// The new VertexBuffer isn't mapped, so we should reset these variables.
-	buffer_used_offset = buffer_used_size = 0;
 }
 
 int SpriteBatch::getBufferSize() const
@@ -266,8 +233,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	if (next == 0)
 		return;
 
-	static Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
@@ -275,7 +241,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	texture->predraw();
 
 	VertexBuffer::Bind array_bind(*array_buf);
-	VertexBuffer::Bind element_bind(*element_buf->getVertexBuffer());
+	VertexBuffer::Bind element_bind(*element_buf.getVertexBuffer());
 
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
@@ -297,7 +263,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
 
 	gl.prepareDraw();
-	gl.drawElements(GL_TRIANGLES, element_buf->getIndexCount(next), element_buf->getType(), element_buf->getPointer(0));
+	gl.drawElements(GL_TRIANGLES, element_buf.getIndexCount(next), element_buf.getType(), element_buf.getPointer(0));
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);
@@ -311,9 +277,16 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	texture->postdraw();
 }
 
-void SpriteBatch::addv(const Vertex *v, int index)
+void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)
 {
-	static const size_t sprite_size = 4 * sizeof(Vertex); // bytecount
+	// Needed for colors.
+	Vertex sprite[4] = {v[0], v[1], v[2], v[3]};
+	const size_t sprite_size = 4 * sizeof(Vertex); // bytecount
+
+	m.transform(sprite, sprite, 4);
+
+	if (color)
+		setColorv(sprite, *color);
 
 	VertexBuffer::Bind bind(*array_buf);
 
@@ -321,7 +294,7 @@ void SpriteBatch::addv(const Vertex *v, int index)
 	// on draw.)
 	array_buf->map();
 
-	array_buf->fill(index * sprite_size, sprite_size, v);
+	array_buf->fill(index * sprite_size, sprite_size, sprite);
 
 	buffer_used_offset = std::min(buffer_used_offset, index * sprite_size);
 	buffer_used_size = std::max(buffer_used_size, (index + 1) * sprite_size - buffer_used_offset);

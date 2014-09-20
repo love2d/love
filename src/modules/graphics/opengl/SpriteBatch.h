@@ -26,13 +26,13 @@
 
 // LOVE
 #include "common/math.h"
-#include "common/Object.h"
 #include "common/Matrix.h"
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
+#include "VertexBuffer.h"
 
 namespace love
 {
@@ -43,8 +43,6 @@ namespace opengl
 
 // Forward declarations.
 class Texture;
-class VertexBuffer;
-class VertexIndex;
 
 class SpriteBatch : public Drawable
 {
@@ -68,7 +66,7 @@ public:
 	void flush();
 
 	void setTexture(Texture *newtexture);
-	Texture *getTexture();
+	Texture *getTexture() const;
 
 	/**
 	 * Set the current color for this SpriteBatch. The sprites added
@@ -115,7 +113,7 @@ public:
 
 private:
 
-	void addv(const Vertex *v, int index);
+	void addv(const Vertex *v, const Matrix &m, int index);
 
 	/**
 	 * Set the color for vertices.
@@ -139,7 +137,7 @@ private:
 	Color *color;
 
 	VertexBuffer *array_buf;
-	VertexIndex *element_buf;
+	VertexIndex element_buf;
 
 	// The portion of the vertex buffer that's been modified while mapped.
 	size_t buffer_used_offset;

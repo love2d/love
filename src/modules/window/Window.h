@@ -59,6 +59,8 @@ public:
 		SETTING_HIGHDPI,
 		SETTING_SRGB,
 		SETTING_REFRESHRATE,
+		SETTING_X,
+		SETTING_Y,
 		SETTING_MAX_ENUM
 	};
 
@@ -117,6 +119,9 @@ public:
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
 	virtual void getDesktopDimensions(int displayindex, int &width, int &height) const = 0;
+
+	virtual void setPosition(int x, int y, int displayindex) = 0;
+	virtual void getPosition(int &x, int &y, int &displayindex) = 0;
 
 	virtual bool isCreated() const = 0;
 
@@ -199,6 +204,9 @@ struct WindowSettings
 	bool highdpi = false;
 	bool sRGB = false;
 	double refreshrate = 0.0;
+	bool useposition = false;
+	int x = 0;
+	int y = 0;
 };
 
 } // window

@@ -42,6 +42,11 @@ public:
 	Matrix();
 
 	/**
+	 * Creates a new matrix set to a transformation.
+	 **/
+	Matrix(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+
+	/**
 	 * Destructor.
 	 **/
 	~Matrix();

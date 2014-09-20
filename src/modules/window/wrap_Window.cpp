@@ -109,6 +109,16 @@ int w_setMode(lua_State *L)
 	settings.highdpi = luax_boolflag(L, 3, settingName(Window::SETTING_HIGHDPI), false);
 	settings.sRGB = luax_boolflag(L, 3, settingName(Window::SETTING_SRGB), false);
 
+	lua_getfield(L, 3, settingName(Window::SETTING_X));
+	lua_getfield(L, 3, settingName(Window::SETTING_Y));
+	settings.useposition = !(lua_isnoneornil(L, -2) && lua_isnoneornil(L, -1));
+	if (settings.useposition)
+	{
+		settings.x = luaL_optint(L, -2, 0);
+		settings.y = luaL_optint(L, -1, 0);
+	}
+	lua_pop(L, 2);
+
 	// We don't explicitly set the refresh rate, it's "read-only".
 
 	luax_catchexcept(L,
@@ -170,6 +180,12 @@ int w_getMode(lua_State *L)
 
 	lua_pushnumber(L, settings.refreshrate);
 	lua_setfield(L, -2, settingName(Window::SETTING_REFRESHRATE));
+
+	lua_pushinteger(L, settings.x);
+	lua_setfield(L, -2, settingName(Window::SETTING_X));
+
+	lua_pushinteger(L, settings.y);
+	lua_setfield(L, -2, settingName(Window::SETTING_Y));
 
 	return 3;
 }
@@ -251,6 +267,27 @@ int w_getDesktopDimensions(lua_State *L)
 	lua_pushinteger(L, width);
 	lua_pushinteger(L, height);
 	return 2;
+}
+
+int w_setPosition(lua_State *L)
+{
+	int x = luaL_checkint(L, 1);
+	int y = luaL_checkint(L, 2);
+	int displayindex = luaL_optint(L, 3, 1) - 1;
+	instance()->setPosition(x, y, displayindex);
+	return 0;
+}
+
+int w_getPosition(lua_State *L)
+{
+	int x = 0;
+	int y = 0;
+	int displayindex = 0;
+	instance()->getPosition(x, y, displayindex);
+	lua_pushinteger(L, x);
+	lua_pushinteger(L, y);
+	lua_pushinteger(L, displayindex + 1);
+	return 3;
 }
 
 int w_setIcon(lua_State *L)
@@ -426,6 +463,8 @@ static const luaL_Reg functions[] =
 	{ "getFullscreen", w_getFullscreen },
 	{ "isCreated", w_isCreated },
 	{ "getDesktopDimensions", w_getDesktopDimensions },
+	{ "setPosition", w_setPosition },
+	{ "getPosition", w_getPosition },
 	{ "setIcon", w_setIcon },
 	{ "getIcon", w_getIcon },
 	{ "setTitle", w_setTitle },

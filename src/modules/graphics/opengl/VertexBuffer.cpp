@@ -50,7 +50,7 @@ VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacki
 	, backing(backing)
 	, vbo(0)
 	, memory_map(nullptr)
-	, is_dirty(true)
+	, is_dirty(false)
 {
 	if (getMemoryBacking() == BACKING_FULL)
 		memory_map = (char *) malloc(getSize());
@@ -247,6 +247,20 @@ VertexIndex::VertexIndex(size_t size)
 		throw love::Exception("Invalid size.");
 
 	addSize(size);
+}
+
+VertexIndex::VertexIndex(const VertexIndex &other)
+	: size(other.size)
+{
+	addSize(size);
+}
+
+VertexIndex &VertexIndex::operator = (const VertexIndex &other)
+{
+	addSize(other.size);
+	removeSize(size);
+	size = other.size;
+	return *this;
 }
 
 VertexIndex::~VertexIndex()

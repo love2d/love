@@ -162,7 +162,7 @@ public:
 	 * @param[out] min The minimum life.
 	 * @param[out] max The maximum life.
 	 **/
-	void getParticleLifetime(float *min, float *max) const;
+	void getParticleLifetime(float &min, float &max) const;
 
 	/**
 	 * Sets the position of the center of the emitter.
@@ -249,7 +249,7 @@ public:
 	 * @param[out] min The minimum speed.
 	 * @param[out] max The maximum speed.
 	 **/
-	void getSpeed(float *min, float *max) const;
+	void getSpeed(float &min, float &max) const;
 
 	/**
 	 * Sets the linear acceleration (the acceleration along the x and y axes).
@@ -272,7 +272,7 @@ public:
 	 * @param[out] min The minimum acceleration.
 	 * @param[out] max The maximum acceleration.
 	 **/
-	void getLinearAcceleration(love::Vector *min, love::Vector *max) const;
+	void getLinearAcceleration(love::Vector &min, love::Vector &max) const;
 
 	/**
 	 * Sets the radial acceleration (the acceleration towards the particle emitter).
@@ -292,7 +292,7 @@ public:
 	 * @param[out] min The minimum amount of radial acceleration.
 	 * @param[out] max The maximum amount of radial acceleration.
 	 **/
-	void getRadialAcceleration(float *min, float *max) const;
+	void getRadialAcceleration(float &min, float &max) const;
 
 	/**
 	 * Sets the tangential acceleration (the acceleration perpendicular to the particle's direction).
@@ -312,7 +312,18 @@ public:
 	 * @param[out] min The minimum tangential acceleration.
 	 * @param[out] max The maximum tangential acceleration.
 	 **/
-	void getTangentialAcceleration(float *min, float *max) const;
+	void getTangentialAcceleration(float &min, float &max) const;
+
+	/**
+	 * Sets the amount of linear damping. Damping reduces the velocity of
+	 * particles over time. A value of 0 corresponds to no damping.
+	 **/
+	void setLinearDamping(float min, float max);
+
+	/**
+	 * Gets the current amount of linear damping.
+	 **/
+	void getLinearDamping(float &min, float &max) const;
 
 	/**
 	 * Sets the size of the sprite (1.0 being the default size).
@@ -360,7 +371,7 @@ public:
 	 * @param[out] min The minimum initial rotation.
 	 * @param[out] max The maximum initial rotation.
 	 **/
-	void getRotation(float *min, float *max) const;
+	void getRotation(float &min, float &max) const;
 
 	/**
 	 * Sets the spin of the sprite.
@@ -380,7 +391,7 @@ public:
 	 * @param[out] start The initial spin, in radians / s.
 	 * @param[out] end The final spin, in radians / s.
 	 **/
-	void getSpin(float *start, float *end) const;
+	void getSpin(float &start, float &end) const;
 
 	/**
 	 * Sets the variation of the start spin (0 being no variation and 1 being a random spin between start and end).
@@ -533,6 +544,8 @@ protected:
 		float radialAcceleration;
 		float tangentialAcceleration;
 
+		float linearDamping;
+
 		float size;
 		float sizeOffset;
 		float sizeIntervalSize;
@@ -618,6 +631,9 @@ protected:
 	// Acceleration perpendicular to the particle's direction.
 	float tangentialAccelerationMin;
 	float tangentialAccelerationMax;
+
+	float linearDampingMin;
+	float linearDampingMax;
 
 	// Size.
 	std::vector<float> sizes;

@@ -116,6 +116,25 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
 
+	int x = f.x;
+	int y = f.y;
+
+	if (f.useposition && !f.fullscreen)
+	{
+		// The position needs to be in the global coordinate space.
+		SDL_Rect displaybounds = {};
+		SDL_GetDisplayBounds(f.display, &displaybounds);
+		x += displaybounds.x;
+		y += displaybounds.y;
+	}
+	else
+	{
+		if (f.centered)
+			x = y = SDL_WINDOWPOS_CENTERED_DISPLAY(f.display);
+		else
+			x = y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.display);
+	}
+
 	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
 		gfx->unSetMode();
@@ -148,9 +167,6 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		}
 	}
 
-	int centeredpos = SDL_WINDOWPOS_CENTERED_DISPLAY(f.display);
-	int uncenteredpos = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.display);
-
 	if (!window)
 	{
 		created = false;
@@ -159,9 +175,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		setWindowGLAttributes(f.msaa, f.sRGB);
 
 		const char *title = windowTitle.c_str();
-		int pos = f.centered ? centeredpos : uncenteredpos;
 
-		window = SDL_CreateWindow(title, pos, pos, width, height, sdlflags);
+		window = SDL_CreateWindow(title, x, y, width, height, sdlflags);
 
 		if (!window && f.msaa > 0)
 		{
@@ -169,7 +184,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 
-			window = SDL_CreateWindow(title, pos, pos, width, height, sdlflags);
+			window = SDL_CreateWindow(title, x, y, width, height, sdlflags);
 			f.msaa = 0;
 		}
 
@@ -187,8 +202,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	// Enforce minimum window dimensions.
 	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
 
-	if (f.centered && !f.fullscreen)
-		SDL_SetWindowPosition(window, centeredpos, centeredpos);
+	if ((f.useposition || f.centered) && !f.fullscreen)
+		SDL_SetWindowPosition(window, x, y);
 
 	SDL_RaiseWindow(window);
 
@@ -366,7 +381,8 @@ void Window::updateSettings(const WindowSettings &newsettings)
 	curMode.settings.resizable = (wflags & SDL_WINDOW_RESIZABLE) != 0;
 	curMode.settings.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
 	curMode.settings.centered = newsettings.centered;
-	curMode.settings.display = std::max(SDL_GetWindowDisplayIndex(window), 0);
+
+	getPosition(curMode.settings.x, curMode.settings.y, curMode.settings.display);
 
 #if SDL_VERSION_ATLEAST(2,0,1)
 	curMode.settings.highdpi = (wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
@@ -522,6 +538,50 @@ void Window::getDesktopDimensions(int displayindex, int &width, int &height) con
 	{
 		width = 0;
 		height = 0;
+	}
+}
+
+void Window::setPosition(int x, int y, int displayindex)
+{
+	if (!window)
+		return;
+
+	displayindex = std::min(std::max(displayindex, 0), getDisplayCount() - 1);
+
+	SDL_Rect displaybounds = {};
+	SDL_GetDisplayBounds(displayindex, &displaybounds);
+
+	// The position needs to be in the global coordinate space.
+	x += displaybounds.x;
+	y += displaybounds.y;
+
+	SDL_SetWindowPosition(window, x, y);
+
+	curMode.settings.useposition = true;
+}
+
+void Window::getPosition(int &x, int &y, int &displayindex)
+{
+	if (!window)
+	{
+		x = y =  0;
+		displayindex = 0;
+		return;
+	}
+
+	displayindex = std::max(SDL_GetWindowDisplayIndex(window), 0);
+
+	SDL_GetWindowPosition(window, &x, &y);
+
+	// SDL always reports 0, 0 for fullscreen windows.
+	if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN))
+	{
+		SDL_Rect displaybounds = {};
+		SDL_GetDisplayBounds(displayindex, &displaybounds);
+
+		// The position needs to be in the monitor's coordinate space.
+		x -= displaybounds.x;
+		y -= displaybounds.y;
 	}
 }
 
