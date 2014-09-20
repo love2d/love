@@ -86,6 +86,8 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, radialAccelerationMax(0)
 	, tangentialAccelerationMin(0)
 	, tangentialAccelerationMax(0)
+	, linearDampingMin(0.0f)
+	, linearDampingMax(0.0f)
 	, sizeVariation(0)
 	, rotationMin(0)
 	, rotationMax(0)
@@ -135,6 +137,8 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, radialAccelerationMax(p.radialAccelerationMax)
 	, tangentialAccelerationMin(p.tangentialAccelerationMin)
 	, tangentialAccelerationMax(p.tangentialAccelerationMax)
+	, linearDampingMin(p.linearDampingMin)
+	, linearDampingMax(p.linearDampingMax)
 	, sizes(p.sizes)
 	, sizeVariation(p.sizeVariation)
 	, rotationMin(p.rotationMin)
@@ -283,6 +287,10 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	min = tangentialAccelerationMin;
 	max = tangentialAccelerationMax;
 	p->tangentialAcceleration = (float) rng.random(min, max);
+
+	min = linearDampingMin;
+	max = linearDampingMax;
+	p->linearDamping = (float) rng.random(min, max);
 
 	p->sizeOffset       = (float) rng.random(sizeVariation); // time offset for size change
 	p->sizeIntervalSize = (1.0f - (float) rng.random(sizeVariation)) - p->sizeOffset;
@@ -460,12 +468,10 @@ void ParticleSystem::setParticleLifetime(float min, float max)
 		particleLifeMax = max;
 }
 
-void ParticleSystem::getParticleLifetime(float *min, float *max) const
+void ParticleSystem::getParticleLifetime(float &min, float &max) const
 {
-	if (min)
-		*min = particleLifeMin;
-	if (max)
-		*max = particleLifeMax;
+	min = particleLifeMin;
+	max = particleLifeMax;
 }
 
 void ParticleSystem::setPosition(float x, float y)
@@ -531,12 +537,10 @@ void ParticleSystem::setSpeed(float min, float max)
 	speedMax = max;
 }
 
-void ParticleSystem::getSpeed(float *min, float *max) const
+void ParticleSystem::getSpeed(float &min, float &max) const
 {
-	if (min)
-		*min = speedMin;
-	if (max)
-		*max = speedMax;
+	min = speedMin;
+	max = speedMax;
 }
 
 void ParticleSystem::setLinearAcceleration(float x, float y)
@@ -551,12 +555,10 @@ void ParticleSystem::setLinearAcceleration(float xmin, float ymin, float xmax, f
 	linearAccelerationMax = love::Vector(xmax, ymax);
 }
 
-void ParticleSystem::getLinearAcceleration(love::Vector *min, love::Vector *max) const
+void ParticleSystem::getLinearAcceleration(love::Vector &min, love::Vector &max) const
 {
-	if (min)
-		*min = linearAccelerationMin;
-	if (max)
-		*max = linearAccelerationMax;
+	min = linearAccelerationMin;
+	max = linearAccelerationMax;
 }
 
 void ParticleSystem::setRadialAcceleration(float acceleration)
@@ -570,12 +572,10 @@ void ParticleSystem::setRadialAcceleration(float min, float max)
 	radialAccelerationMax = max;
 }
 
-void ParticleSystem::getRadialAcceleration(float *min, float *max) const
+void ParticleSystem::getRadialAcceleration(float &min, float &max) const
 {
-	if (min)
-		*min = radialAccelerationMin;
-	if (max)
-		*max = radialAccelerationMax;
+	min = radialAccelerationMin;
+	max = radialAccelerationMax;
 }
 
 void ParticleSystem::setTangentialAcceleration(float acceleration)
@@ -589,12 +589,22 @@ void ParticleSystem::setTangentialAcceleration(float min, float max)
 	tangentialAccelerationMax = max;
 }
 
-void ParticleSystem::getTangentialAcceleration(float *min, float *max) const
+void ParticleSystem::getTangentialAcceleration(float &min, float &max) const
 {
-	if (min)
-		*min = tangentialAccelerationMin;
-	if (max)
-		*max = tangentialAccelerationMax;
+	min = tangentialAccelerationMin;
+	max = tangentialAccelerationMax;
+}
+
+void ParticleSystem::setLinearDamping(float min, float max)
+{
+	linearDampingMin = min;
+	linearDampingMax = max;
+}
+
+void ParticleSystem::getLinearDamping(float &min, float &max) const
+{
+	min = linearDampingMin;
+	max = linearDampingMax;
 }
 
 void ParticleSystem::setSize(float size)
@@ -634,12 +644,10 @@ void ParticleSystem::setRotation(float min, float max)
 	rotationMax = max;
 }
 
-void ParticleSystem::getRotation(float *min, float *max) const
+void ParticleSystem::getRotation(float &min, float &max) const
 {
-	if (min)
-		*min = rotationMin;
-	if (max)
-		*max = rotationMax;
+	min = rotationMin;
+	max = rotationMax;
 }
 
 void ParticleSystem::setSpin(float spin)
@@ -654,12 +662,10 @@ void ParticleSystem::setSpin(float start, float end)
 	spinEnd = end;
 }
 
-void ParticleSystem::getSpin(float *start, float *end) const
+void ParticleSystem::getSpin(float &start, float &end) const
 {
-	if (start)
-		*start = spinStart;
-	if (end)
-		*end = spinEnd;
+	start = spinStart;
+	end = spinEnd;
 }
 
 void ParticleSystem::setSpinVariation(float variation)
@@ -930,6 +936,9 @@ void ParticleSystem::update(float dt)
 
 			// Update velocity.
 			p->velocity += (radial + tangential + p->linearAcceleration) * dt;
+
+			// Apply damping.
+			p->velocity *= 1.0f / (1.0f + p->linearDamping * dt);
 
 			// Modify position.
 			ppos += p->velocity * dt;

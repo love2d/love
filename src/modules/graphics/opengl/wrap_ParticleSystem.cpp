@@ -164,7 +164,7 @@ int w_ParticleSystem_getParticleLifetime(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float min, max;
-	t->getParticleLifetime(&min, &max);
+	t->getParticleLifetime(min, max);
 	lua_pushnumber(L, min);
 	lua_pushnumber(L, max);
 	return 2;
@@ -278,7 +278,7 @@ int w_ParticleSystem_getSpeed(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float min, max;
-	t->getSpeed(&min, &max);
+	t->getSpeed(min, max);
 	lua_pushnumber(L, min);
 	lua_pushnumber(L, max);
 	return 2;
@@ -299,7 +299,7 @@ int w_ParticleSystem_getLinearAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	love::Vector min, max;
-	t->getLinearAcceleration(&min, &max);
+	t->getLinearAcceleration(min, max);
 	lua_pushnumber(L, min.x);
 	lua_pushnumber(L, min.y);
 	lua_pushnumber(L, max.x);
@@ -320,7 +320,7 @@ int w_ParticleSystem_getRadialAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float min, max;
-	t->getRadialAcceleration(&min, &max);
+	t->getRadialAcceleration(min, max);
 	lua_pushnumber(L, min);
 	lua_pushnumber(L, max);
 	return 2;
@@ -339,7 +339,26 @@ int w_ParticleSystem_getTangentialAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float min, max;
-	t->getTangentialAcceleration(&min, &max);
+	t->getTangentialAcceleration(min, max);
+	lua_pushnumber(L, min);
+	lua_pushnumber(L, max);
+	return 2;
+}
+
+int w_ParticleSystem_setLinearDamping(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	float arg2 = (float)luaL_optnumber(L, 3, arg1);
+	t->setLinearDamping(arg1, arg2);
+	return 0;
+}
+
+int w_ParticleSystem_getLinearDamping(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float min, max;
+	t->getLinearDamping(min, max);
 	lua_pushnumber(L, min);
 	lua_pushnumber(L, max);
 	return 2;
@@ -411,7 +430,7 @@ int w_ParticleSystem_getRotation(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float min, max;
-	t->getRotation(&min, &max);
+	t->getRotation(min, max);
 	lua_pushnumber(L, min);
 	lua_pushnumber(L, max);
 	return 2;
@@ -430,7 +449,7 @@ int w_ParticleSystem_getSpin(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float start, end;
-	t->getSpin(&start, &end);
+	t->getSpin(start, end);
 	lua_pushnumber(L, start);
 	lua_pushnumber(L, end);
 	return 2;
@@ -730,6 +749,8 @@ static const luaL_Reg functions[] =
 	{ "getRadialAcceleration", w_ParticleSystem_getRadialAcceleration },
 	{ "setTangentialAcceleration", w_ParticleSystem_setTangentialAcceleration },
 	{ "getTangentialAcceleration", w_ParticleSystem_getTangentialAcceleration },
+	{ "setLinearDamping", w_ParticleSystem_setLinearDamping },
+	{ "getLinearDamping", w_ParticleSystem_getLinearDamping },
 	{ "setSizes", w_ParticleSystem_setSizes },
 	{ "getSizes", w_ParticleSystem_getSizes },
 	{ "setSizeVariation", w_ParticleSystem_setSizeVariation },
