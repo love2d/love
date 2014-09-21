@@ -34,13 +34,11 @@ std::string getLoveInResources()
 
 	@autoreleasepool
 	{
-		// check to see if there are any .love files in Resources - props to stevejohnson/diordna
-		NSArray *lovePaths = [[NSBundle mainBundle] pathsForResourcesOfType:@"love" inDirectory:nil];
-		if ([lovePaths count] > 0)
-		{
-			NSString *firstLovePath = [lovePaths objectAtIndex:0];
-			path = std::string([firstLovePath UTF8String]);
-		}
+		// Check to see if there are any .love files in Resources.
+		NSString *lovepath = [[NSBundle mainBundle] pathForResource:nil ofType:@"love"];
+
+		if (lovepath != nil)
+			path = [lovepath UTF8String];
 	}
 
 	return path;

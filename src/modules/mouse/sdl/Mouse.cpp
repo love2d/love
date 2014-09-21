@@ -36,33 +36,23 @@ namespace sdl
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
 static void windowToPixelCoords(int *x, int *y)
 {
-	double scale = 1.0;
+	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
 
-	love::window::Window *window = love::window::sdl::Window::getSingleton();
-	if (window != nullptr)
-		scale = window->getPixelScale();
-
-	if (x != nullptr)
-		*x = int(double(*x) * scale);
-
-	if (y != nullptr)
-		*y = int(double(*y) * scale);
+	if (window && x)
+		*x = (int) window->toPixels(*x);
+	if (window && y)
+		*y = (int) window->toPixels(*y);
 }
 
 // And vice versa for setting mouse coordinates.
 static void pixelToWindowCoords(int *x, int *y)
 {
-	double scale = 1.0;
+	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
 
-	love::window::Window *window = love::window::sdl::Window::getSingleton();
-	if (window != nullptr)
-		scale = window->getPixelScale();
-
-	if (x != nullptr)
-		*x = int(double(*x) / scale);
-
-	if (y != nullptr)
-		*y = int(double(*y) / scale);
+	if (window && x)
+		*x = (int) window->fromPixels(*x);
+	if (window && y)
+		*y = (int) window->fromPixels(*y);
 }
 
 const char *Mouse::getName() const

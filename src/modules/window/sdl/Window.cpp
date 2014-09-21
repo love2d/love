@@ -505,29 +505,17 @@ std::vector<WindowSize> Window::getFullscreenSizes(int displayindex) const
 {
 	std::vector<WindowSize> sizes;
 
-	SDL_DisplayMode mode = {};
-	std::vector<WindowSize>::const_iterator it;
 	for (int i = 0; i < SDL_GetNumDisplayModes(displayindex); i++)
 	{
+		SDL_DisplayMode mode = {};
 		SDL_GetDisplayMode(displayindex, i, &mode);
+
+		WindowSize w = {mode.w, mode.h};
 
 		// SDL2's display mode list has multiple entries for modes of the same
 		// size with different bits per pixel, so we need to filter those out.
-		bool alreadyhassize = false;
-		for (it = sizes.begin(); it != sizes.end(); ++it)
-		{
-			if (it->width == mode.w && it->height == mode.h)
-			{
-				alreadyhassize = true;
-				break;
-			}
-		}
-
-		if (!alreadyhassize)
-		{
-			WindowSize w = {mode.w, mode.h};
+		if (std::find(sizes.begin(), sizes.end(), w) == sizes.end())
 			sizes.push_back(w);
-		}
 	}
 
 	return sizes;

@@ -84,6 +84,11 @@ public:
 	{
 		int width;
 		int height;
+
+		bool operator == (const WindowSize &w) const
+		{
+			return w.width == width && w.height == height;
+		}
 	};
 
 	struct MessageBoxData
