@@ -66,15 +66,15 @@ Shader *Shader::current = nullptr;
 GLint Shader::maxTexUnits = 0;
 std::vector<int> Shader::textureCounters;
 
-Shader::Shader(const ShaderSources &sources)
-	: shaderSources(sources)
+Shader::Shader(const ShaderSource &source)
+	: shaderSource(source)
 	, program(0)
 	, builtinUniforms()
-	, vertexAttributes()
+	, builtinAttributes()
 	, lastCanvas((Canvas *) -1)
 	, lastViewport()
 {
-	if (shaderSources.empty())
+	if (source.vertex.empty() && source.pixel.empty())
 		throw love::Exception("Cannot create shader: no source code!");
 
 	if (maxTexUnits <= 0)
@@ -105,21 +105,21 @@ Shader::~Shader()
 	unloadVolatile();
 }
 
-GLuint Shader::compileCode(ShaderType type, const std::string &code)
+GLuint Shader::compileCode(ShaderStage stage, const std::string &code)
 {
-	GLenum glshadertype;
+	GLenum glstage;
 	const char *typestr;
 
-	if (!typeNames.find(type, typestr))
+	if (!stageNames.find(stage, typestr))
 		typestr = "";
 
-	switch (type)
+	switch (stage)
 	{
-	case TYPE_VERTEX:
-		glshadertype = GL_VERTEX_SHADER;
+	case STAGE_VERTEX:
+		glstage = GL_VERTEX_SHADER;
 		break;
-	case TYPE_PIXEL:
-		glshadertype = GL_FRAGMENT_SHADER;
+	case STAGE_PIXEL:
+		glstage = GL_FRAGMENT_SHADER;
 		break;
 	default:
 		throw love::Exception("Cannot create shader object: unknown shader type.");
@@ -129,120 +129,74 @@ GLuint Shader::compileCode(ShaderType type, const std::string &code)
 	// clear existing errors
 	while (glGetError() != GL_NO_ERROR);
 
-	GLuint shaderid = glCreateShader(glshadertype);
+	GLuint shaderid = glCreateShader(glstage);
 
-	if (shaderid == 0) // oh no!
+	if (shaderid == 0)
 	{
-		GLenum err = glGetError();
-
-		if (err == GL_INVALID_ENUM)
+		if (glGetError() == GL_INVALID_ENUM)
 			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", typestr, typestr);
 		else
 			throw love::Exception("Cannot create %s shader object.", typestr);
 	}
 
 	const char *src = code.c_str();
-	size_t srclen = code.length();
-	glShaderSource(shaderid, 1, (const GLchar **)&src, (GLint *)&srclen);
+	GLint srclen = (GLint) code.length();
+	glShaderSource(shaderid, 1, (const GLchar **)&src, &srclen);
 
 	glCompileShader(shaderid);
 
-	// Get any warnings the shader compiler may have produced.
 	GLint infologlen;
 	glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
 
-	GLchar *infolog = new GLchar[infologlen + 1];
-	glGetShaderInfoLog(shaderid, infologlen, nullptr, infolog);
-
-	// Save any warnings for later querying.
+	// Get any warnings the shader compiler may have produced.
 	if (infologlen > 0)
-		shaderWarnings[type] = infolog;
+	{
+		GLchar *infolog = new GLchar[infologlen];
+		glGetShaderInfoLog(shaderid, infologlen, nullptr, infolog);
 
-	delete[] infolog;
+		// Save any warnings for later querying.
+		shaderWarnings[stage] = infolog;
+
+		delete[] infolog;
+	}
 
 	GLint status;
 	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &status);
 
 	if (status == GL_FALSE)
 	{
+		glDeleteShader(shaderid);
 		throw love::Exception("Cannot compile %s shader code:\n%s",
-		                      typestr, shaderWarnings[type].c_str());
+		                      typestr, shaderWarnings[stage].c_str());
 	}
 
 	return shaderid;
 }
 
-void Shader::createProgram(const std::vector<GLuint> &shaderids)
-{
-	program = glCreateProgram();
-	if (program == 0)
-		throw love::Exception("Cannot create shader program object.");
-
-	for (GLuint id : shaderids)
-		glAttachShader(program, id);
-
-	// Bind generic vertex attribute indices to names in the shader.
-	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
-	{
-		OpenGL::VertexAttrib attrib = (OpenGL::VertexAttrib) i;
-
-		// FIXME: We skip this both because pseudo-instancing is temporarily
-		// disabled (see graphics.lua), and because binding a non-existant
-		// attribute name to a location causes a shader linker warning.
-		if (attrib == OpenGL::ATTRIB_PSEUDO_INSTANCE_ID)
-			continue;
-
-		const char *name = nullptr;
-		if (attribNames.find(attrib, name))
-			glBindAttribLocation(program, i, (const GLchar *) name);
-	}
-
-	glLinkProgram(program);
-
-	// flag shaders for auto-deletion when the program object is deleted.
-	for (GLuint id : shaderids)
-		glDeleteShader(id);
-
-	GLint status;
-	glGetProgramiv(program, GL_LINK_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		std::string warnings = getProgramWarnings();
-		glDeleteProgram(program);
-		program = 0;
-
-		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
-	}
-}
-
 void Shader::mapActiveUniforms()
 {
+	// Built-in uniform locations default to -1 (nonexistant.)
+	for (int i = 0; i < int(BUILTIN_MAX_ENUM); i++)
+		builtinUniforms[i] = -1;
+
 	uniforms.clear();
 
 	GLint numuniforms;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numuniforms);
 
-	GLsizei bufsize;
-	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, (GLint *) &bufsize);
-
-	if (bufsize <= 0)
-		return;
+	GLchar cname[256];
+	const GLint bufsize = (GLint) (sizeof(cname) / sizeof(GLchar));
 
 	for (int i = 0; i < numuniforms; i++)
 	{
-		GLchar *cname = new GLchar[bufsize];
-		GLsizei namelength;
+		GLsizei namelen = 0;
+		Uniform u = {};
 
-		Uniform u;
+		glGetActiveUniform(program, (GLuint) i, bufsize, &namelen, &u.count, &u.type, cname);
 
-		glGetActiveUniform(program, (GLuint) i, bufsize, &namelength, &u.count, &u.type, cname);
-
-		u.name = std::string(cname, (size_t) namelength);
+		u.name = std::string(cname, (size_t) namelen);
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(u.type);
-
-		delete[] cname;
 
 		// glGetActiveUniform appends "[0]" to the end of array uniform names...
 		if (u.name.length() > 3)
@@ -268,22 +222,70 @@ bool Shader::loadVolatile()
 	activeTexUnits.clear();
 	activeTexUnits.insert(activeTexUnits.begin(), maxTexUnits, 0);
 
-	// Built-in uniform locations default to -1 (nonexistant.)
-	for (int i = 0; i < int(BUILTIN_MAX_ENUM); i++)
-		builtinUniforms[i] = -1;
-
 	std::vector<GLuint> shaderids;
 
-	for (const auto &source : shaderSources)
+	try
 	{
-		GLuint shaderid = compileCode(source.first, source.second);
-		shaderids.push_back(shaderid);
+		if (!shaderSource.vertex.empty())
+			shaderids.push_back(compileCode(STAGE_VERTEX, shaderSource.vertex));
+
+		if (!shaderSource.pixel.empty())
+			shaderids.push_back(compileCode(STAGE_PIXEL, shaderSource.pixel));
+	}
+	catch (love::Exception &)
+	{
+		for (GLuint id : shaderids)
+			glDeleteShader(id);
+		throw;
 	}
 
 	if (shaderids.empty())
 		throw love::Exception("Cannot create shader: no valid source code!");
 
-	createProgram(shaderids);
+	program = glCreateProgram();
+
+	if (program == 0)
+	{
+		for (GLuint id : shaderids)
+			glDeleteShader(id);
+		throw love::Exception("Cannot create shader program object.");
+	}
+
+	for (GLuint id : shaderids)
+		glAttachShader(program, id);
+
+	// Bind generic vertex attribute indices to names in the shader.
+	for (int i = 0; i < int(OpenGL::ATTRIB_MAX_ENUM); i++)
+	{
+		OpenGL::VertexAttrib attrib = (OpenGL::VertexAttrib) i;
+
+		// FIXME: We skip this both because pseudo-instancing is temporarily
+		// disabled (see graphics.lua), and because binding a non-existant
+		// attribute name to a location causes a shader linker warning.
+		if (attrib == OpenGL::ATTRIB_PSEUDO_INSTANCE_ID)
+			continue;
+
+		const char *name = nullptr;
+		if (attribNames.find(attrib, name))
+			glBindAttribLocation(program, i, (const GLchar *) name);
+	}
+
+	glLinkProgram(program);
+
+	// Flag shaders for auto-deletion when the program object is deleted.
+	for (GLuint id : shaderids)
+		glDeleteShader(id);
+
+	GLint status;
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+
+	if (status == GL_FALSE)
+	{
+		std::string warnings = getProgramWarnings();
+		glDeleteProgram(program);
+		program = 0;
+		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
+	}
 
 	// Retreive all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
@@ -292,9 +294,9 @@ bool Shader::loadVolatile()
 	{
 		const char *name = nullptr;
 		if (attribNames.find(OpenGL::VertexAttrib(i), name))
-			vertexAttributes[i] = glGetAttribLocation(program, name);
+			builtinAttributes[i] = glGetAttribLocation(program, name);
 		else
-			vertexAttributes[i] = -1;
+			builtinAttributes[i] = -1;
 	}
 
 	if (current == this)
@@ -341,13 +343,16 @@ void Shader::unloadVolatile()
 
 std::string Shader::getProgramWarnings() const
 {
-	GLint strlen, nullpos;
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &strlen);
+	GLint strsize, nullpos;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &strsize);
 
-	char *tempstr = new char[strlen+1];
+	if (strsize == 0)
+		return "";
+
+	char *tempstr = new char[strsize];
 	// be extra sure that the error string will be 0-terminated
-	memset(tempstr, '\0', strlen+1);
-	glGetProgramInfoLog(program, strlen, &nullpos, tempstr);
+	memset(tempstr, '\0', strsize);
+	glGetProgramInfoLog(program, strsize, &nullpos, tempstr);
 	tempstr[nullpos] = '\0';
 
 	std::string warnings(tempstr);
@@ -359,13 +364,13 @@ std::string Shader::getProgramWarnings() const
 std::string Shader::getWarnings() const
 {
 	std::string warnings;
-	const char *typestr;
+	const char *stagestr;
 
 	// Get the individual shader stage warnings
 	for (const auto &warning : shaderWarnings)
 	{
-		if (typeNames.find(warning.first, typestr))
-			warnings += std::string(typestr) + std::string(" shader:\n") + warning.second;
+		if (stageNames.find(warning.first, stagestr))
+			warnings += std::string(stagestr) + std::string(" shader:\n") + warning.second;
 	}
 
 	warnings += getProgramWarnings();
@@ -671,7 +676,7 @@ Shader::UniformType Shader::getExternVariable(const std::string &name, int &comp
 
 bool Shader::hasVertexAttrib(OpenGL::VertexAttrib attrib) const
 {
-	return vertexAttributes[int(attrib)] != -1;
+	return builtinAttributes[int(attrib)] != -1;
 }
 
 bool Shader::hasBuiltinUniform(BuiltinUniform builtin) const
@@ -785,13 +790,13 @@ bool Shader::getConstant(UniformType in, const char *&out)
 	return uniformTypes.find(in, out);
 }
 
-StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM>::Entry Shader::typeNameEntries[] =
+StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM>::Entry Shader::stageNameEntries[] =
 {
-	{"vertex", Shader::TYPE_VERTEX},
-	{"pixel", Shader::TYPE_PIXEL},
+	{"vertex", Shader::STAGE_VERTEX},
+	{"pixel", Shader::STAGE_PIXEL},
 };
 
-StringMap<Shader::ShaderType, Shader::TYPE_MAX_ENUM> Shader::typeNames(Shader::typeNameEntries, sizeof(Shader::typeNameEntries));
+StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM> Shader::stageNames(Shader::stageNameEntries, sizeof(Shader::stageNameEntries));
 
 StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM>::Entry Shader::uniformTypeEntries[] =
 {

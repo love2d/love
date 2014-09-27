@@ -436,27 +436,21 @@ int w_newShader(lua_State *L)
 	if (lua_pcall(L, 2, 2, 0) != 0)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
 
-	Shader::ShaderSources sources;
+	Shader::ShaderSource source;
 
 	// vertex shader code
 	if (lua_isstring(L, -2))
-	{
-		std::string vertexcode(luaL_checkstring(L, -2));
-		sources[Shader::TYPE_VERTEX] = vertexcode;
-	}
+		source.vertex = luax_checkstring(L, -2);
 	else if (has_arg1 && has_arg2)
 		return luaL_error(L, "Could not parse vertex shader code (missing 'position' function?)");
 
 	// pixel shader code
 	if (lua_isstring(L, -1))
-	{
-		std::string pixelcode(luaL_checkstring(L, -1));
-		sources[Shader::TYPE_PIXEL] = pixelcode;
-	}
+		source.pixel = luax_checkstring(L, -1);
 	else if (has_arg1 && has_arg2)
 		return luaL_error(L, "Could not parse pixel shader code (missing 'effect' function?)");
 
-	if (sources.empty())
+	if (source.vertex.empty() && source.pixel.empty())
 	{
 		// Original args had source code, but effectCodeToGLSL couldn't translate it
 		for (int i = 1; i <= 2; i++)
@@ -469,7 +463,7 @@ int w_newShader(lua_State *L)
 	bool should_error = false;
 	try
 	{
-		Shader *shader = instance()->newShader(sources);
+		Shader *shader = instance()->newShader(source);
 		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
 		shader->release();
 	}

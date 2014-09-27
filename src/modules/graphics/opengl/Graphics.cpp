@@ -576,9 +576,9 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int ms
 	return nullptr; // never reached
 }
 
-Shader *Graphics::newShader(const Shader::ShaderSources &sources)
+Shader *Graphics::newShader(const Shader::ShaderSource &source)
 {
-	return new Shader(sources);
+	return new Shader(source);
 }
 
 Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode)
