@@ -30,7 +30,7 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::filesystem::FileData *data, int size)
 	: data(data)
 {
 	FT_Error err = FT_Err_Ok;
@@ -148,6 +148,15 @@ int TrueTypeRasterizer::getGlyphCount() const
 bool TrueTypeRasterizer::hasGlyph(uint32 glyph) const
 {
 	return FT_Get_Char_Index(face, glyph) != 0;
+}
+
+bool TrueTypeRasterizer::accepts(FT_Library library, love::filesystem::FileData *data)
+{
+	const FT_Byte *fbase = (const FT_Byte *) data->getData();
+	FT_Long fsize = (FT_Long) data->getSize();
+
+	// Pasing in -1 for the face index lets us test if the data is valid.
+	return FT_New_Memory_Face(library, fbase, fsize, -1, nullptr) == 0;
 }
 
 } // freetype

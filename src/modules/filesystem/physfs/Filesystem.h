@@ -202,7 +202,7 @@ public:
 	 * @param filename The name of the file to read from.
 	 * @param size The size in bytes of the data to read.
 	 **/
-	Data *read(const char *filename, int64 size = File::ALL) const;
+	FileData *read(const char *filename, int64 size = File::ALL) const;
 
 	/**
 	 * Write data to a file.

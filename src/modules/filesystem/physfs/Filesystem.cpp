@@ -474,7 +474,7 @@ bool Filesystem::remove(const char *file)
 	return true;
 }
 
-Data *Filesystem::read(const char *filename, int64 size) const
+FileData *Filesystem::read(const char *filename, int64 size) const
 {
 	File file(filename);
 

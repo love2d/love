@@ -1248,12 +1248,12 @@ do
 	local type = type
 
 	local _newFont = love.graphics.newFont
-	love.graphics.newFont = function(font, size)
+	love.graphics.newFont = function(font, size, ...)
 		if type(font) == "number" or not font then
 			size = font
 			font = vera_ttf
 		end
-		return _newFont(font, size or 12)
+		return _newFont(font, size, ...)
 	end
 
 	love.graphics.setNewFont = function(...)

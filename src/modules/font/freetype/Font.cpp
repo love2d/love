@@ -22,6 +22,7 @@
 
 #include "TrueTypeRasterizer.h"
 #include "font/ImageRasterizer.h"
+#include "font/BMFontRasterizer.h"
 
 #include "libraries/utf8/utf8.h"
 
@@ -35,7 +36,7 @@ namespace freetype
 Font::Font()
 {
 	if (FT_Init_FreeType(&library))
-		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed\n");
+		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed");
 }
 
 Font::~Font()
@@ -43,17 +44,30 @@ Font::~Font()
 	FT_Done_FreeType(library);
 }
 
-Rasterizer *Font::newRasterizer(Data *data, int size)
+Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
+{
+	if (TrueTypeRasterizer::accepts(library, data))
+		return newTrueTypeRasterizer(data, 12);
+	else if (BMFontRasterizer::accepts(data))
+		return newBMFontRasterizer(data, std::vector<image::ImageData *>());
+
+	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
+}
+
+Rasterizer *Font::newTrueTypeRasterizer(love::filesystem::FileData *data, int size)
 {
 	return new TrueTypeRasterizer(library, data, size);
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string &text)
+Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images)
 {
-	size_t strlen = text.size();
-	size_t numglyphs = 0;
+	return new BMFontRasterizer(fontdef, images);
+}
 
-	uint32 *glyphs = new uint32[strlen];
+Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::string &text)
+{
+	std::vector<uint32> glyphs;
+	glyphs.reserve(text.size());
 
 	try
 	{
@@ -61,21 +75,17 @@ Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string 
 		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
 
 		while (i != end)
-			glyphs[numglyphs++] = *i++;
+			glyphs.push_back(*i++);
 	}
 	catch (utf8::exception &e)
 	{
-		delete [] glyphs;
 		throw love::Exception("Decoding error: %s", e.what());
 	}
 
-	Rasterizer *r = newRasterizer(data, glyphs, numglyphs);
-	delete [] glyphs;
-
-	return r;
+	return newImageRasterizer(data, &glyphs[0], glyphs.size());
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
+Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
 {
 	return new ImageRasterizer(data, glyphs, numglyphs);
 }

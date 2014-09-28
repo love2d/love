@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FONT_FREETYPE_WRAP_FONT_H
-#define LOVE_FONT_FREETYPE_WRAP_FONT_H
+#ifndef LOVE_FONT_WRAP_FONT_H
+#define LOVE_FONT_WRAP_FONT_H
 
 // LOVE
 #include "common/config.h"
@@ -29,15 +29,15 @@ namespace love
 {
 namespace font
 {
-namespace freetype
-{
 
 int w_newRasterizer(lua_State *L);
+int w_newTrueTypeRasterizer(lua_State *L);
+int w_newBMFontRasterizer(lua_State *L);
+int w_newImageRasterizer(lua_State *L);
 int w_newGlyphData(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_font(lua_State *L);
 
-} // freetype
 } // font
 } // love
 
-#endif // LOVE_FONT_FREETYPE_WRAP_FONT_H
+#endif // LOVE_FONT_WRAP_FONT_H

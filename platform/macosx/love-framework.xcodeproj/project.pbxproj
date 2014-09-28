@@ -277,6 +277,8 @@
 		FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
 		FA7C937B16DCC6C2006F2BEE /* wrap_Math.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7C937616DCC6C2006F2BEE /* wrap_Math.h */; };
+		FA9556CB19D3741A00F29A4C /* BMFontRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9556C919D3741A00F29A4C /* BMFontRasterizer.cpp */; };
+		FA9556CC19D3741A00F29A4C /* BMFontRasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9556CA19D3741A00F29A4C /* BMFontRasterizer.h */; };
 		FA9B492A1875EFB900201DA9 /* Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9B49281875EFB900201DA9 /* Texture.h */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */; };
@@ -846,6 +848,8 @@
 		FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mesh.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
 		FA7C937616DCC6C2006F2BEE /* wrap_Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Math.h; sourceTree = "<group>"; };
+		FA9556C919D3741A00F29A4C /* BMFontRasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BMFontRasterizer.cpp; sourceTree = "<group>"; };
+		FA9556CA19D3741A00F29A4C /* BMFontRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BMFontRasterizer.h; sourceTree = "<group>"; };
 		FA9B49281875EFB900201DA9 /* Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Window.cpp; sourceTree = "<group>"; };
@@ -1038,8 +1042,6 @@
 				615E0F450F2B7BA25EE679A6 /* Font.h */,
 				0C30420F7FD3038C721223A5 /* TrueTypeRasterizer.cpp */,
 				0B727D416262392743091BC3 /* TrueTypeRasterizer.h */,
-				232D67C67BEE54B776420682 /* wrap_Font.cpp */,
-				202650DE4F267CD3082A1B30 /* wrap_Font.h */,
 			);
 			path = freetype;
 			sourceTree = "<group>";
@@ -1165,6 +1167,8 @@
 		196B6B2E1BC81F47771E6467 /* font */ = {
 			isa = PBXGroup;
 			children = (
+				FA9556C919D3741A00F29A4C /* BMFontRasterizer.cpp */,
+				FA9556CA19D3741A00F29A4C /* BMFontRasterizer.h */,
 				2E9B5D9926034F9172215D5E /* Font.h */,
 				12BB56F127170B3709670896 /* freetype */,
 				74003CB27FA762A021183AD5 /* GlyphData.cpp */,
@@ -1173,6 +1177,8 @@
 				36465ABA28FB06F4333C3F07 /* ImageRasterizer.h */,
 				1B1C4E4D288A1D2F29E57B1B /* Rasterizer.cpp */,
 				08D24B70441A2496160C0849 /* Rasterizer.h */,
+				232D67C67BEE54B776420682 /* wrap_Font.cpp */,
+				202650DE4F267CD3082A1B30 /* wrap_Font.h */,
 				1B4E22F1388E2B2E76E3377B /* wrap_GlyphData.cpp */,
 				3547706F2E7D43212CB40D04 /* wrap_GlyphData.h */,
 				11745DE315E859F71E881D76 /* wrap_Rasterizer.cpp */,
@@ -2071,6 +2077,7 @@
 				FA0A4BF5182E1AD600E1E4D2 /* MotorJoint.h in Headers */,
 				FA5FDC841788D548002F0ED2 /* unix.h in Headers */,
 				FA0A4BF1182E0C2800E1E4D2 /* b2MotorJoint.h in Headers */,
+				FA9556CC19D3741A00F29A4C /* BMFontRasterizer.h in Headers */,
 				FA5FDC851788D548002F0ED2 /* utility.h in Headers */,
 				FAF6704D18184FF800DBDEEA /* wuff.h in Headers */,
 				FA0F0D5C19A2CFEB0010A75B /* gladfuncs.hpp in Headers */,
@@ -2113,7 +2120,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "love-framework" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2360,6 +2367,7 @@
 				FAF272A616E3D44400CC193A /* LuaThread.cpp in Sources */,
 				FA0A4BF0182E0C2800E1E4D2 /* b2MotorJoint.cpp in Sources */,
 				FAF272A816E3D44400CC193A /* ThreadModule.cpp in Sources */,
+				FA9556CB19D3741A00F29A4C /* BMFontRasterizer.cpp in Sources */,
 				FA01BE1E1878E35B00640047 /* wrap_Texture.cpp in Sources */,
 				FAF272AA16E3D44400CC193A /* wrap_Channel.cpp in Sources */,
 				FAF272AC16E3D44400CC193A /* wrap_LuaThread.cpp in Sources */,

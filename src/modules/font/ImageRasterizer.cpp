@@ -53,8 +53,7 @@ int ImageRasterizer::getLineHeight() const
 
 GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 {
-	GlyphMetrics gm;
-	memset(&gm, 0, sizeof(GlyphMetrics));
+	GlyphMetrics gm = {};
 
 	// Set relevant glyph metrics if the glyph is in this ImageFont
 	std::map<uint32, ImageGlyphData>::const_iterator it = imageGlyphs.find(glyph);

@@ -218,6 +218,8 @@ source_group("modules\\filesystem\\physfs" FILES ${LOVE_SRC_MODULE_FILESYSTEM_PH
 #
 
 set(LOVE_SRC_MODULE_FONT_ROOT
+	src/modules/font/BMFontRasterizer.cpp
+	src/modules/font/BMFontRasterizer.h
 	src/modules/font/Font.h
 	src/modules/font/GlyphData.cpp
 	src/modules/font/GlyphData.h
@@ -225,6 +227,8 @@ set(LOVE_SRC_MODULE_FONT_ROOT
 	src/modules/font/ImageRasterizer.h
 	src/modules/font/Rasterizer.cpp
 	src/modules/font/Rasterizer.h
+	src/modules/font/wrap_Font.cpp
+	src/modules/font/wrap_Font.h
 	src/modules/font/wrap_GlyphData.cpp
 	src/modules/font/wrap_GlyphData.h
 	src/modules/font/wrap_Rasterizer.cpp
@@ -236,8 +240,6 @@ set(LOVE_SRC_MODULE_FONT_FREETYPE
 	src/modules/font/freetype/Font.h
 	src/modules/font/freetype/TrueTypeRasterizer.cpp
 	src/modules/font/freetype/TrueTypeRasterizer.h
-	src/modules/font/freetype/wrap_Font.cpp
-	src/modules/font/freetype/wrap_Font.h
 )
 
 set(LOVE_SRC_MODULE_FONT

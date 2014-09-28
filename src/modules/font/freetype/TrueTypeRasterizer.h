@@ -25,7 +25,7 @@
 #include "filesystem/File.h"
 #include "font/Rasterizer.h"
 
-// TrueType2
+// FreeType2
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
@@ -43,7 +43,8 @@ namespace freetype
 class TrueTypeRasterizer : public Rasterizer
 {
 public:
-	TrueTypeRasterizer(FT_Library library, Data *data, int size);
+
+	TrueTypeRasterizer(FT_Library library, love::filesystem::FileData *data, int size);
 	virtual ~TrueTypeRasterizer();
 
 	// Implement Rasterizer
@@ -52,14 +53,17 @@ public:
 	virtual int getGlyphCount() const;
 	virtual bool hasGlyph(uint32 glyph) const;
 
+	static bool accepts(FT_Library library, love::filesystem::FileData *data);
+
 private:
 
 	// TrueType face
 	FT_Face face;
 
 	// File data
-	Object::StrongRef<Data> data;
-}; // FreetypeRasterizer
+	StrongRef<love::filesystem::FileData> data;
+
+}; // TrueTypeRasterizer
 
 } // freetype
 } // font

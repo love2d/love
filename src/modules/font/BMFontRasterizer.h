@@ -18,18 +18,15 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FONT_FONT_H
-#define LOVE_FONT_FONT_H
+#ifndef LOVE_FONT_BMFONT_RASTERIZER_H
+#define LOVE_FONT_BMFONT_RASTERIZER_H
 
 // LOVE
 #include "Rasterizer.h"
 #include "image/ImageData.h"
-#include "filesystem/FileData.h"
-#include "common/Module.h"
-#include "common/int.h"
 
 // C++
-#include <string>
+#include <map>
 #include <vector>
 
 namespace love
@@ -37,32 +34,52 @@ namespace love
 namespace font
 {
 
-class Font : public Module
+/**
+ * Rasterizer for BMFont bitmap fonts.
+ **/
+class BMFontRasterizer : public Rasterizer
 {
-
 public:
 
-	virtual ~Font() {}
+	BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist);
+	virtual ~BMFontRasterizer();
 
-	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
+	// Implements Rasterizer.
+	int getLineHeight() const override;
+	GlyphData *getGlyphData(uint32 glyph) const override;
+	int getGlyphCount() const override;
+	bool hasGlyph(uint32 glyph) const override;
 
-	virtual Rasterizer *newTrueTypeRasterizer(love::filesystem::FileData *data, int size) = 0;
+	static bool accepts(love::filesystem::FileData *fontdef);
 
-	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images) = 0;
+private:
 
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs) = 0;
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length) = 0;
+	struct BMFontCharacter
+	{
+		int x;
+		int y;
+		int page;
+		GlyphMetrics metrics;
+	};
 
-	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph) = 0;
-	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph) = 0;
+	void parseConfig(const std::string &config);
 
-	// Implement Module.
-	virtual ModuleType getModuleType() const { return M_FONT; }
-	virtual const char *getName() const = 0;
+	std::string fontFolder;
 
-}; // Font
+	// Image pages, indexed by their page id.
+	std::map<int, StrongRef<image::ImageData>> images;
+
+	// Glyph characters, indexed by their glyph id.
+	std::map<uint32, BMFontCharacter> characters;
+
+	int fontSize;
+	bool unicode;
+
+	int lineHeight;
+
+}; // BMFontRasterizer
 
 } // font
 } // love
 
-#endif // LOVE_FONT_FONT_H
+#endif // LOVE_FONT_BMFONT_RASTERIZER_H

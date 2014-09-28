@@ -258,22 +258,23 @@ int w_newQuad(lua_State *L)
 
 int w_newFont(lua_State *L)
 {
+	Font *font = nullptr;
+
 	// Convert to Rasterizer, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	if (!luax_istype(L, 1, FONT_RASTERIZER_T))
 	{
-		int idxs[] = {1, 2};
-		luax_convobj(L, idxs, 2, "font", "newRasterizer");
+		std::vector<int> idxs;
+		for (int i = 0; i < lua_gettop(L); i++)
+			idxs.push_back(i + 1);
+
+		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newRasterizer");
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
 
-	Font *font = 0;
 	luax_catchexcept(L, [&]() {
 		font = instance()->newFont(rasterizer, instance()->getDefaultFilter()); }
 	);
-
-	if (font == 0)
-		return luaL_error(L, "Could not load font.");
 
 	// Push the type.
 	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
@@ -287,9 +288,7 @@ int w_newImageFont(lua_State *L)
 	Texture::Filter filter = instance()->getDefaultFilter();
 
 	// Convert to ImageData if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
-		luax_convobj(L, 1, "image", "newImageData");
-	else if (luax_istype(L, 1, GRAPHICS_IMAGE_T))
+	if (luax_istype(L, 1, GRAPHICS_IMAGE_T))
 	{
 		Image *i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
 		filter = i->getFilter();
@@ -301,11 +300,11 @@ int w_newImageFont(lua_State *L)
 	}
 
 	// Convert to Rasterizer if necessary.
-	if (luax_istype(L, 1, IMAGE_IMAGE_DATA_T))
+	if (!luax_istype(L, 1, FONT_RASTERIZER_T))
 	{
 		luaL_checkstring(L, 2);
 		int idxs[] = {1, 2};
-		luax_convobj(L, idxs, 2, "font", "newRasterizer");
+		luax_convobj(L, idxs, 2, "font", "newImageRasterizer");
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
@@ -313,13 +312,9 @@ int w_newImageFont(lua_State *L)
 	// Create the font.
 	Font *font = instance()->newFont(rasterizer, filter);
 
-	if (font == 0)
-		return luaL_error(L, "Could not load font.");
-
 	// Push the type.
 	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
 	font->release();
-
 	return 1;
 }
 
