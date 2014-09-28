@@ -35,6 +35,7 @@
 
 // C
 #include <cmath>
+#include <cstdio>
 
 namespace love
 {
@@ -223,7 +224,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 		message += "\nThe program may crash or have graphical issues.";
 
 		::printf("%s\n%s\n", title.c_str(), message.c_str());
-		currentWindow->showMessageBox(type, title, message, true);
+		currentWindow->showMessageBox(title, message, type, true);
 
 		// We should only show the message once, instead of after every setMode.
 		displayedMinReqWarning = true;
@@ -283,7 +284,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
-		std::cerr << "Could not reload all volatile objects." << std::endl;
+		::printf("Could not reload all volatile objects.\n");
 
 	// Restore the graphics state.
 	restoreState(states.back());
@@ -650,9 +651,9 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int ms
 	return nullptr; // never reached
 }
 
-Shader *Graphics::newShader(const Shader::ShaderSources &sources)
+Shader *Graphics::newShader(const Shader::ShaderSource &source)
 {
-	return new Shader(sources);
+	return new Shader(source);
 }
 
 Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode)

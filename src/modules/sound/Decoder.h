@@ -40,7 +40,7 @@ public:
 	 * Indicates how many bytes of raw data should be generated at each
 	 * call to Decode.
 	 **/
-	static const int DEFAULT_BUFFER_SIZE = 2048;
+	static const int DEFAULT_BUFFER_SIZE = 16384;
 
 	/**
 	 * Indicates the quality of the sound.

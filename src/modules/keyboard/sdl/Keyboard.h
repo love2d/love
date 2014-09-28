@@ -26,10 +26,7 @@
 #include "common/EnumMap.h"
 
 // SDL
-#include <SDL.h>
-
-// STL
-#include <map>
+#include <SDL_keyboard.h>
 
 namespace love
 {
@@ -60,8 +57,8 @@ private:
 	// The real implementation is in love::event::sdl::Event::Convert.
 	bool key_repeat;
 
-	static std::map<Key, SDL_Keycode> createKeyMap();
-	static std::map<Key, SDL_Keycode> keys;
+	static const SDL_Keycode *createKeyMap();
+	static const SDL_Keycode *keymap;
 
 }; // Keyboard
 

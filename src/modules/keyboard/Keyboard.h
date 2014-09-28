@@ -241,7 +241,7 @@ public:
 		KEY_EJECT,
 		KEY_SLEEP,
 
-		KEY_MAX_ENUM = 512
+		KEY_MAX_ENUM
 	};
 
 	virtual ~Keyboard() {}

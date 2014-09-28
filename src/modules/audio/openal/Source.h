@@ -144,7 +144,7 @@ private:
 	ALuint source;
 	bool valid;
 
-	static const unsigned int MAX_BUFFERS = 32;
+	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
 
 	Object::StrongRef<StaticDataBuffer> staticBuffer;

@@ -42,17 +42,12 @@ namespace sdl
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
 static void windowToPixelCoords(int *x, int *y)
 {
-	double scale = 1.0;
-
 	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
-	if (window != nullptr)
-		scale = window->getPixelScale();
 
-	if (x != nullptr)
-		*x = int(double(*x) * scale);
-
-	if (y != nullptr)
-		*y = int(double(*y) * scale);
+	if (window && x)
+		*x = (int) window->toPixels(*x);
+	if (window && y)
+		*y = (int) window->toPixels(*y);
 }
 
 
@@ -74,15 +69,11 @@ Event::~Event()
 
 void Event::pump()
 {
-	SDL_PumpEvents();
-
-	static SDL_Event e;
-
-	Message *msg;
+	SDL_Event e;
 
 	while (SDL_PollEvent(&e))
 	{
-		msg = convert(e);
+		Message *msg = convert(e);
 		if (msg)
 		{
 			push(msg);
@@ -93,16 +84,17 @@ void Event::pump()
 
 Message *Event::wait()
 {
-	static SDL_Event e;
-	bool ok = (SDL_WaitEvent(&e) == 1);
-	if (!ok)
-		return NULL;
+	SDL_Event e;
+
+	if (SDL_WaitEvent(&e) != 1)
+		return nullptr;
+
 	return convert(e);
 }
 
 void Event::clear()
 {
-	static SDL_Event e;
+	SDL_Event e;
 
 	while (SDL_PollEvent(&e))
 	{

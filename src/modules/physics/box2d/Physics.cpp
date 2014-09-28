@@ -93,6 +93,12 @@ EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2)
 int Physics::newPolygonShape(lua_State *L)
 {
 	int argc = lua_gettop(L);
+
+	bool istable = lua_istable(L, 1);
+
+	if (istable)
+		argc = lua_objlen(L, 1);
+
 	if (argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
@@ -103,16 +109,31 @@ int Physics::newPolygonShape(lua_State *L)
 	else if (vcount > b2_maxPolygonVertices)
 		return luaL_error(L, "Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, vcount);
 
-	b2PolygonShape *s = new b2PolygonShape();
-
 	b2Vec2 vecs[b2_maxPolygonVertices];
 
-	for (int i = 0; i < vcount; i++)
+	if (istable)
 	{
-		float x = (float)luaL_checknumber(L, 1 + i * 2);
-		float y = (float)luaL_checknumber(L, 2 + i * 2);
-		vecs[i] = Physics::scaleDown(b2Vec2(x, y));
+		for (int i = 0; i < vcount; i++)
+		{
+			lua_rawgeti(L, 1, 1 + i * 2);
+			lua_rawgeti(L, 1, 2 + i * 2);
+			float x = (float)luaL_checknumber(L, -2);
+			float y = (float)luaL_checknumber(L, -1);
+			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
+			lua_pop(L, 2);
+		}
 	}
+	else
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			float x = (float)luaL_checknumber(L, 1 + i * 2);
+			float y = (float)luaL_checknumber(L, 2 + i * 2);
+			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
+		}
+	}
+
+	b2PolygonShape *s = new b2PolygonShape();
 
 	try
 	{
@@ -133,22 +154,42 @@ int Physics::newPolygonShape(lua_State *L)
 int Physics::newChainShape(lua_State *L)
 {
 	int argc = lua_gettop(L)-1; // first argument is looping
+
+	bool istable = lua_istable(L, 2);
+
+	if (istable)
+		argc = lua_objlen(L, 2);
+
 	if (argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
 	int vcount = (int)argc/2;
-	b2ChainShape *s = new b2ChainShape();
 	bool loop = luax_toboolean(L, 1);
 	b2Vec2 *vecs = new b2Vec2[vcount];
 
-	for (int i = 0; i<vcount; i++)
+	if (istable)
 	{
-		float x = (float)lua_tonumber(L, -2);
-		float y = (float)lua_tonumber(L, -1);
-		vecs[i].Set(x, y);
-		vecs[i] = Physics::scaleDown(vecs[i]);
-		lua_pop(L, 2);
+		for (int i = 0; i < vcount; i++)
+		{
+			lua_rawgeti(L, 2, 1 + i * 2);
+			lua_rawgeti(L, 2, 2 + i * 2);
+			float x = (float)lua_tonumber(L, -2);
+			float y = (float)lua_tonumber(L, -1);
+			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
+			lua_pop(L, 2);
+		}
 	}
+	else
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			float x = (float)luaL_checknumber(L, 2 + i * 2);
+			float y = (float)luaL_checknumber(L, 3 + i * 2);
+			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
+		}
+	}
+
+	b2ChainShape *s = new b2ChainShape();
 
 	try
 	{
@@ -160,6 +201,7 @@ int Physics::newChainShape(lua_State *L)
 	catch (love::Exception &)
 	{
 		delete[] vecs;
+		delete s;
 		throw;
 	}
 

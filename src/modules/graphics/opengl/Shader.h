@@ -46,11 +46,11 @@ class Shader : public Object, public Volatile
 {
 public:
 
-	enum ShaderType
+	enum ShaderStage
 	{
-		TYPE_VERTEX,
-		TYPE_PIXEL,
-		TYPE_MAX_ENUM
+		STAGE_VERTEX,
+		STAGE_PIXEL,
+		STAGE_MAX_ENUM
 	};
 
 	// Built-in uniform (extern) variables.
@@ -71,8 +71,11 @@ public:
 		UNIFORM_MAX_ENUM
 	};
 
-	// Type for a list of shader source codes in the form of sources[shadertype] = code
-	typedef std::map<ShaderType, std::string> ShaderSources;
+	struct ShaderSource
+	{
+		std::string vertex;
+		std::string pixel;
+	};
 
 	// Pointer to currently active Shader.
 	static Shader *current;
@@ -81,13 +84,13 @@ public:
 	static Shader *defaultShader;
 
 	// Default shader code (a shader is always required internally.)
-	static ShaderSources defaultCode[1]; // TODO: RENDERER_MAX_ENUM
+	static ShaderSource defaultCode[1]; // TODO: RENDERER_MAX_ENUM
 
 	/**
 	 * Creates a new Shader using a list of source codes.
-	 * Sources must contain either vertex or pixel shader code, or both.
+	 * Source must contain either vertex or pixel shader code, or both.
 	 **/
-	Shader(const ShaderSources &sources);
+	Shader(const ShaderSource &source);
 
 	virtual ~Shader();
 
@@ -202,8 +205,7 @@ private:
 	UniformType getUniformBaseType(GLenum type) const;
 	void checkSetUniformError(const Uniform &u, int size, int count, UniformType sendtype) const;
 
-	GLuint compileCode(ShaderType type, const std::string &code);
-	void createProgram(const std::vector<GLuint> &shaderids);
+	GLuint compileCode(ShaderStage stage, const std::string &code);
 
 	int getTextureUnit(const std::string &name);
 
@@ -212,11 +214,11 @@ private:
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
 
-	// List of all shader code attached to this Shader
-	ShaderSources shaderSources;
+	// Source code used for this Shader.
+	ShaderSource shaderSource;
 
 	// Shader compiler warning strings for individual shader stages.
-	std::map<ShaderType, std::string> shaderWarnings;
+	std::map<ShaderStage, std::string> shaderWarnings;
 
 	// volatile
 	GLuint program;
@@ -225,7 +227,7 @@ private:
 	GLint builtinUniforms[BUILTIN_MAX_ENUM];
 
 	// Location values for any generic vertex attribute variables.
-	GLint vertexAttributes[ATTRIB_MAX_ENUM];
+	GLint builtinAttributes[ATTRIB_MAX_ENUM];
 
 	// Uniform location buffer map
 	std::map<std::string, Uniform> uniforms;
@@ -247,8 +249,8 @@ private:
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
 
-	static StringMap<ShaderType, TYPE_MAX_ENUM>::Entry typeNameEntries[];
-	static StringMap<ShaderType, TYPE_MAX_ENUM> typeNames;
+	static StringMap<ShaderStage, STAGE_MAX_ENUM>::Entry stageNameEntries[];
+	static StringMap<ShaderStage, STAGE_MAX_ENUM> stageNames;
 
 	static StringMap<UniformType, UNIFORM_MAX_ENUM>::Entry uniformTypeEntries[];
 	static StringMap<UniformType, UNIFORM_MAX_ENUM> uniformTypes;

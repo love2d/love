@@ -18,8 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "common/config.h"
-
 #include "Keyboard.h"
 
 namespace love
@@ -55,8 +53,8 @@ bool Keyboard::isDown(Key *keylist) const
 
 	for (Key key = *keylist; key != KEY_MAX_ENUM; key = *(++keylist))
 	{
-		auto it = keys.find(key);
-		if (it != keys.end() && keystate[SDL_GetScancodeFromKey(it->second)])
+		SDL_Scancode scancode = SDL_GetScancodeFromKey(keymap[key]);
+		if (keystate[scancode])
 			return true;
 	}
 
@@ -76,9 +74,10 @@ bool Keyboard::hasTextInput() const
 	return SDL_IsTextInputActive();
 }
 
-std::map<Keyboard::Key, SDL_Keycode> Keyboard::createKeyMap()
+const SDL_Keycode *Keyboard::createKeyMap()
 {
-	std::map<Keyboard::Key, SDL_Keycode> k;
+	// Array must be static so its lifetime continues once the function returns.
+	static SDL_Keycode k[Keyboard::KEY_MAX_ENUM] = {SDLK_UNKNOWN};
 
 	k[Keyboard::KEY_UNKNOWN] = SDLK_UNKNOWN;
 
@@ -287,7 +286,7 @@ std::map<Keyboard::Key, SDL_Keycode> Keyboard::createKeyMap()
 	return k;
 }
 
-std::map<Keyboard::Key, SDL_Keycode> Keyboard::keys = Keyboard::createKeyMap();
+const SDL_Keycode *Keyboard::keymap = Keyboard::createKeyMap();
 
 } // sdl
 } // keyboard
