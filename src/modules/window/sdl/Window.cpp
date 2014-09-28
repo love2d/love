@@ -773,7 +773,7 @@ SDL_MessageBoxFlags Window::convertMessageBoxType(MessageBoxType type) const
 	}
 }
 
-bool Window::showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow)
+bool Window::showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow)
 {
 	SDL_MessageBoxFlags flags = convertMessageBoxType(type);
 	SDL_Window *sdlwindow = attachtowindow ? window : nullptr;

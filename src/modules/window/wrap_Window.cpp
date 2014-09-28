@@ -421,32 +421,29 @@ int w_minimize(lua_State* /*L*/)
 int w_showMessageBox(lua_State *L)
 {
 	Window::MessageBoxData data = {};
+	data.type = Window::MESSAGEBOX_INFO;
 
-	const char *typestr = luaL_checkstring(L, 1);
-	if (!Window::getConstant(typestr, data.type))
-		return luaL_error(L, "Invalid messagebox type: %s", typestr);
-
-	data.title = luaL_checkstring(L, 2);
-	data.message = luaL_checkstring(L, 3);
+	data.title = luaL_checkstring(L, 1);
+	data.message = luaL_checkstring(L, 2);
 
 	// If we have a table argument, we assume a list of button names, which
 	// means we should use the more complex message box API.
-	if (lua_istable(L, 4))
+	if (lua_istable(L, 3))
 	{
-		size_t numbuttons = lua_objlen(L, 4);
+		size_t numbuttons = lua_objlen(L, 3);
 		if (numbuttons == 0)
 			return luaL_error(L, "Must have at least one messagebox button.");
 
 		// Array of button names.
 		for (size_t i = 0; i < numbuttons; i++)
 		{
-			lua_rawgeti(L, 4, i + 1);
+			lua_rawgeti(L, 3, i + 1);
 			data.buttons.push_back(luax_checkstring(L, -1));
 			lua_pop(L, 1);
 		}
 
 		// Optional table entry specifying the button to use when enter is pressed.
-		lua_getfield(L, 4, "enterbutton");
+		lua_getfield(L, 3, "enterbutton");
 		if (!lua_isnoneornil(L, -1))
 			data.enterButtonIndex = luaL_checkint(L, -1) - 1;
 		else
@@ -454,12 +451,16 @@ int w_showMessageBox(lua_State *L)
 		lua_pop(L, 1);
 
 		// Optional table entry specifying the button to use when esc is pressed.
-		lua_getfield(L, 4, "escapebutton");
+		lua_getfield(L, 3, "escapebutton");
 		if (!lua_isnoneornil(L, -1))
 			data.escapeButtonIndex = luaL_checkint(L, -1) - 1;
 		else
 			data.escapeButtonIndex = (int) data.buttons.size() - 1;
 		lua_pop(L, 1);
+
+		const char *typestr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
+		if (typestr && !Window::getConstant(typestr, data.type))
+			return luaL_error(L, "Invalid messagebox type: %s", typestr);
 
 		data.attachToWindow = luax_optboolean(L, 5, true);
 
@@ -468,10 +469,14 @@ int w_showMessageBox(lua_State *L)
 	}
 	else
 	{
+		const char *typestr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
+		if (typestr && !Window::getConstant(typestr, data.type))
+			return luaL_error(L, "Invalid messagebox type: %s", typestr);
+
 		data.attachToWindow = luax_optboolean(L, 4, true);
 
 		// Display a simple message box.
-		bool success = instance()->showMessageBox(data.type, data.title, data.message, data.attachToWindow);
+		bool success = instance()->showMessageBox(data.title, data.message, data.type, data.attachToWindow);
 		luax_pushboolean(L, success);
 	}
 

@@ -165,7 +165,7 @@ public:
 
 	virtual const void *getHandle() const = 0;
 
-	virtual bool showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow) = 0;
+	virtual bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) = 0;
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
 
 	//virtual static Window *createSingleton() = 0;

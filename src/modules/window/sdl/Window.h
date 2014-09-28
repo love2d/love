@@ -95,7 +95,7 @@ public:
 
 	const void *getHandle() const;
 
-	bool showMessageBox(MessageBoxType type, const std::string &title, const std::string &message, bool attachtowindow);
+	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow);
 	int showMessageBox(const MessageBoxData &data);
 
 	static love::window::Window *createSingleton();
