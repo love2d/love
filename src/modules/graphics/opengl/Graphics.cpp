@@ -35,6 +35,7 @@
 
 // C
 #include <cmath>
+#include <cstdio>
 
 namespace love
 {
@@ -259,7 +260,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
-		std::cerr << "Could not reload all volatile objects." << std::endl;
+		::printf("Could not reload all volatile objects.\n");
 
 	// Restore the graphics state.
 	restoreState(states.back());

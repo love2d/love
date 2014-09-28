@@ -22,7 +22,6 @@
 #define LOVE_GRAPHICS_OPENGL_GRAPHICS_H
 
 // STD
-#include <iostream>
 #include <stack>
 #include <vector>
 

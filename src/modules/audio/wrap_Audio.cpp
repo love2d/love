@@ -26,6 +26,9 @@
 
 #include "common/runtime.h"
 
+// C++
+#include <iostream>
+
 namespace love
 {
 namespace audio

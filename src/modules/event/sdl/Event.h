@@ -27,7 +27,7 @@
 #include "common/EnumMap.h"
 
 // SDL
-#include <SDL.h>
+#include <SDL_events.h>
 
 // STL
 #include <map>
