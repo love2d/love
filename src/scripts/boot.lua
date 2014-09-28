@@ -479,7 +479,6 @@ function love.run()
 
 	if love.math then
 		love.math.setRandomSeed(os.time())
-		for i=1,3 do love.math.random() end
 	end
 
 	if love.event then
