@@ -81,11 +81,6 @@ void RandomGenerator::setSeed(RandomGenerator::Seed newseed)
 
 	seed = newseed;
 	rng_state = seed;
-
-	// Xorshift's first couple results after seeding will be similar to results
-	// from very similar seeds, so we immediately discard them here.
-	for (int i = 0; i < 2; i++)
-		rand();
 }
 
 RandomGenerator::Seed RandomGenerator::getSeed() const
