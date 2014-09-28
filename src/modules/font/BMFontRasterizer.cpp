@@ -26,6 +26,7 @@
 // C++
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 // C
 #include <cstdlib>
@@ -174,7 +175,6 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 		{
 			lineHeight = cline.getAttributeInt("lineHeight");
 			metrics.ascent = cline.getAttributeInt("base");
-			metrics.height = lineHeight;
 		}
 		else if (tag == "page")
 		{
@@ -230,11 +230,11 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 		}
 	}
 
-	if (lineHeight == 0)
-		throw love::Exception("Invalid BMFont file (missing line height attribute?)");
-
 	if (characters.size() == 0)
 		throw love::Exception("Invalid BMFont file (no character definitions?)");
+
+	// Try to guess the line height if the lineheight attribute isn't found.
+	bool guessheight = lineHeight == 0;
 
 	// Verify the glyph character attributes.
 	for (const auto &cpair : characters)
@@ -251,7 +251,12 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 
 		if (!id->inside(c.x, c.y) || !id->inside(c.x + c.metrics.width, c.y + c.metrics.height))
 			throw love::Exception("Invalid BMFont character coordinates.");
+
+		if (guessheight)
+			lineHeight = std::max(lineHeight, c.metrics.height);
 	}
+
+	metrics.height = lineHeight;
 }
 
 int BMFontRasterizer::getLineHeight() const

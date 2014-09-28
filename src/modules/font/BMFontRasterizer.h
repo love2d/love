@@ -22,6 +22,7 @@
 #define LOVE_FONT_BMFONT_RASTERIZER_H
 
 // LOVE
+#include "common/config.h"
 #include "Rasterizer.h"
 #include "image/ImageData.h"
 
