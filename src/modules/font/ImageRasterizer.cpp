@@ -60,7 +60,7 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 	if (it != imageGlyphs.end())
 	{
 		gm.width = it->second.width;
-		gm.advance = it->second.width + it->second.spacing;
+		gm.advance = it->second.width;
 	}
 
 	gm.height = metrics.height;
@@ -118,10 +118,6 @@ void ImageRasterizer::load()
 		while (start < imgw && equal(pixels[start], spacer))
 			++start;
 
-		// set previous glyph's spacing
-		if (i > 0 && imageGlyphs.size() > 0)
-			imageGlyphs[glyphs[i - 1]].spacing = (start > end) ? (start - end) : 0;
-
 		end = start;
 
 		// Find where glyph ends.
@@ -136,16 +132,6 @@ void ImageRasterizer::load()
 		imageGlyph.width = end - start;
 
 		imageGlyphs[glyphs[i]] = imageGlyph;
-	}
-
-	// Find spacing of last glyph
-	if (numglyphs > 0)
-	{
-		start = end;
-		while (start < imgw && equal(pixels[start], spacer))
-			++start;
-
-		imageGlyphs[glyphs[numglyphs - 1]].spacing = (start > end) ? (start - end) : 0;
 	}
 }
 
