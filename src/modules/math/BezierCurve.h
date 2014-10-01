@@ -113,6 +113,15 @@ public:
 	 * @returns A polygon chain that approximates the bezier curve.
 	 **/
 	std::vector<Vector> render(size_t accuracy = 4) const;
+	
+	/**
+	 * Renders a segment of the curve by subdivision.
+	 * @param start The starting point (between 0 and 1) on the curve.
+	 * @param end The ending point on the curve.
+	 * @param accuracy The 'fineness' of the curve.
+	 * @returns A polygon chain that approximates the segment along the curve
+	 **/
+	std::vector<Vector> renderSegment(double start, double end, size_t accuracy = 4) const;
 
 private:
 	std::vector<Vector> controlPoints;
