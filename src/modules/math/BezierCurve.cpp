@@ -189,31 +189,34 @@ vector<Vector> BezierCurve::renderSegment(double start, double end, size_t accur
 		throw Exception("Invalid Bezier curve: Not enough control points.");
 	vector<Vector> vertices(controlPoints);
 	subdivide(vertices, accuracy);
-	if (start > 0)
+	if (start == end)
 	{
-		Vector startPoint = evaluate(start);
-		for (size_t i = 0; i < vertices.size(); ++i)
-		{
-			if ((double)i / vertices.size() > start)
-			{
-				vertices.erase(vertices.begin(), vertices.begin() + i - 1);
-				break;
-			}
-		}
-		vertices.insert(vertices.begin(), startPoint);
+		vertices.clear();
 	}
-	if (end < 1)
+	else if (start < end)
 	{
-		Vector endPoint = evaluate(end);
-		for (size_t i = vertices.size(); i > 0; --i)
+		if (start > 0 && start < 1)
 		{
-			if ((double)(i - 1) / vertices.size() < end)
+			for (size_t i = 0; i < vertices.size(); ++i)
 			{
-				vertices.erase(vertices.begin() + i, vertices.end());
-				break;
+				if ((double)i / vertices.size() > start)
+				{
+					vertices.erase(vertices.begin(), vertices.begin() + i - 1);
+					break;
+				}
 			}
 		}
-		vertices.insert(vertices.end(), endPoint);
+		if (end < 1 && end > 0)
+		{
+			for (size_t i = vertices.size(); i > 0; --i)
+			{
+				if ((double)(i - 1) / vertices.size() < end)
+				{
+					vertices.erase(vertices.begin() + i, vertices.end());
+					break;
+				}
+			}
+		}
 	}
 	return vertices;
 }

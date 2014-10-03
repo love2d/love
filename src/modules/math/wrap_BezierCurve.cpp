@@ -179,7 +179,7 @@ int w_BezierCurve_renderSegment(lua_State *L)
 	for (size_t i = 0; i < points.size(); ++i)
 	{
 		lua_pushnumber(L, points[i].x);
-		lua_rawseti(L, -2, 2*i+2);
+		lua_rawseti(L, -2, 2*i+1);
 		lua_pushnumber(L, points[i].y);
 		lua_rawseti(L, -2, 2*i+2);
 	}
