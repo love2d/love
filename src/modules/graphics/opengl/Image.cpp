@@ -336,7 +336,7 @@ bool Image::loadVolatile()
 	if (isCompressed())
 	{
 		textureMemorySize = 0;
-		for (int i = 0; i < flags.mipmaps ? cdata->getMipmapCount() : 1; i++)
+		for (int i = 0; i < (flags.mipmaps ? cdata->getMipmapCount() : 1); i++)
 			textureMemorySize += cdata->getSize(i);
 	}
 	else
