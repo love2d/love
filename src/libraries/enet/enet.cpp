@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (C) 2011 by Leaf Corcoran
+ * Copyright (C) 2014 by Leaf Corcoran
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,9 @@ extern "C" {
 
 /**
  * Parse address string, eg:
- * 	*:5959
- * 	127.0.0.1:*
- * 	website.com:8080
+ *	*:5959
+ *	127.0.0.1:*
+ *	website.com:8080
  */
 static void parse_address(lua_State *l, const char *addr_str, ENetAddress *address) {
 	int host_i = 0, port_i = 0;
@@ -204,11 +204,11 @@ static ENetPacket *read_packet(lua_State *l, int idx, enet_uint8 *channel_id) {
 /**
  * Create a new host
  * Args:
- * 	address (nil for client)
- * 	[peer_count = 64]
- * 	[channel_count = 1]
- * 	[in_bandwidth = 0]
- * 	[out_bandwidth = 0]
+ *	address (nil for client)
+ *	[peer_count = 64]
+ *	[channel_count = 1]
+ *	[in_bandwidth = 0]
+ *	[out_bandwidth = 0]
  */
 static int host_create(lua_State *l) {
 	ENetHost *host;
@@ -236,7 +236,7 @@ static int host_create(lua_State *l) {
 	}
 
 	// printf("host create, peers=%d, channels=%d, in=%d, out=%d\n",
-	// 		peer_count, channel_count, in_bandwidth, out_bandwidth);
+	//		peer_count, channel_count, in_bandwidth, out_bandwidth);
 	host = enet_host_create(have_address ? &address : NULL, peer_count,
 			channel_count, in_bandwidth, out_bandwidth);
 
@@ -264,14 +264,17 @@ static int linked_version(lua_State *l) {
 /**
  * Serice a host
  * Args:
- * 	timeout
+ *	timeout
  *
  * Return
- * 	nil on no event
- * 	an event table on event
+ *	nil on no event
+ *	an event table on event
  */
 static int host_service(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 	ENetEvent event;
 	int timeout = 0, out;
 
@@ -291,6 +294,9 @@ static int host_service(lua_State *l) {
  */
 static int host_check_events(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 	ENetEvent event;
 	int out = enet_host_check_events(host, &event);
 	if (out == 0) return 0;
@@ -306,6 +312,9 @@ static int host_check_events(lua_State *l) {
  */
 static int host_compress_with_range_coder(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 
 	int result = enet_host_compress_with_range_coder (host);
 	if (result == 0) {
@@ -320,12 +329,15 @@ static int host_compress_with_range_coder(lua_State *l) {
 /**
  * Connect a host to an address
  * Args:
- * 	the address
- * 	[channel_count = 1]
- * 	[data = 0]
+ *	the address
+ *	[channel_count = 1]
+ *	[data = 0]
  */
 static int host_connect(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 	ENetAddress address;
 	ENetPeer *peer;
 
@@ -355,12 +367,18 @@ static int host_connect(lua_State *l) {
 
 static int host_flush(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 	enet_host_flush(host);
 	return 0;
 }
 
 static int host_broadcast(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 
 	enet_uint8 channel_id;
 	ENetPacket *packet = read_packet(l, 2, &channel_id);
@@ -371,6 +389,9 @@ static int host_broadcast(lua_State *l) {
 // Args: limit:number
 static int host_channel_limit(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 	int limit = luaL_checkint(l, 2);
 	enet_host_channel_limit(host, limit);
 	return 0;
@@ -378,14 +399,20 @@ static int host_channel_limit(lua_State *l) {
 
 static int host_bandwidth_limit(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 	enet_uint32 in_bandwidth = luaL_checkint(l, 2);
 	enet_uint32 out_bandwidth = luaL_checkint(l, 2);
 	enet_host_bandwidth_limit(host, in_bandwidth, out_bandwidth);
 	return 0;
 }
 
-static int host_socket_get_address(lua_State *l) {
+static int host_get_socket_address(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 	ENetAddress address;
 	enet_socket_get_address (host->socket, &address);
 
@@ -399,6 +426,9 @@ static int host_socket_get_address(lua_State *l) {
 }
 static int host_total_sent_data(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 
 	lua_pushinteger (l, host->totalSentData);
 
@@ -407,6 +437,9 @@ static int host_total_sent_data(lua_State *l) {
 
 static int host_total_received_data(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 
 	lua_pushinteger (l, host->totalReceivedData);
 
@@ -414,6 +447,9 @@ static int host_total_received_data(lua_State *l) {
 }
 static int host_service_time(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 
 	lua_pushinteger (l, host->serviceTime);
 
@@ -422,6 +458,9 @@ static int host_service_time(lua_State *l) {
 
 static int host_peer_count(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 
 	lua_pushinteger (l, host->peerCount);
 
@@ -430,6 +469,9 @@ static int host_peer_count(lua_State *l) {
 
 static int host_get_peer(lua_State *l) {
 	ENetHost *host = check_host(l, 1);
+	if (!host) {
+		return luaL_error(l, "Tried to index a nil host!");
+	}
 
 	int peer_index = luaL_checkint(l, 2) - 1;
 
@@ -444,8 +486,13 @@ static int host_get_peer(lua_State *l) {
 }
 
 static int host_gc(lua_State *l) {
-	ENetHost *host = check_host(l, 1);
-	enet_host_destroy(host);
+	// We have to manually grab the userdata so that we can set it to NULL.
+	ENetHost** host = luaL_checkudata(l, 1, "enet_host");
+	// We don't want to crash by destroying a non-existant host.
+	if (*host) {
+		enet_host_destroy(*host);
+	}
+	*host = NULL;
 	return 0;
 }
 
@@ -653,9 +700,9 @@ static int peer_receive(lua_State *l) {
 /**
  * Send a lua string to a peer
  * Args:
- * 	packet data, string
- * 	channel id
- * 	flags ["reliable", nil]
+ *	packet data, string
+ *	channel id
+ *	flags ["reliable", nil]
  *
  */
 static int peer_send(lua_State *l) {
@@ -684,7 +731,14 @@ static const struct luaL_Reg enet_host_funcs [] = {
 	{"broadcast", host_broadcast},
 	{"channel_limit", host_channel_limit},
 	{"bandwidth_limit", host_bandwidth_limit},
-	{"socket_get_address", host_socket_get_address},
+	// Since ENetSocket isn't part of enet-lua, we should try to keep
+	// naming conventions the same as the rest of the lib.
+	{"get_socket_address", host_get_socket_address},
+	// TODO: Remove the line below in future versions, it's for backward
+	// compatibility only.
+	{"socket_get_address", host_get_socket_address},
+	// We need this function to free up our ports when needed!
+	{"destroy", host_gc},
 
 	// additional convenience functions (mostly accessors)
 	{"total_sent_data", host_total_sent_data},
