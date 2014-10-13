@@ -487,7 +487,7 @@ static int host_get_peer(lua_State *l) {
 
 static int host_gc(lua_State *l) {
 	// We have to manually grab the userdata so that we can set it to NULL.
-	ENetHost** host = luaL_checkudata(l, 1, "enet_host");
+	ENetHost** host = (ENetHost**)luaL_checkudata(l, 1, "enet_host");
 	// We don't want to crash by destroying a non-existant host.
 	if (*host) {
 		enet_host_destroy(*host);
