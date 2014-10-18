@@ -176,7 +176,7 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 
 	try
 	{
-		f->open(love::filesystem::File::WRITE);
+		f->open(love::filesystem::File::MODE_WRITE);
 		f->write(encodedimage.data, encodedimage.size);
 		f->close();
 	}

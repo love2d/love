@@ -37,6 +37,7 @@ enum Type
 
 	// Filesystem.
 	FILESYSTEM_FILE_ID,
+	FILESYSTEM_DROPPED_FILE_ID,
 	FILESYSTEM_FILE_DATA_ID,
 
 	// Font
@@ -123,6 +124,7 @@ const bits MODULE_T = (bits(1) << MODULE_ID) | OBJECT_T;
 
 // Filesystem.
 const bits FILESYSTEM_FILE_T = (bits(1) << FILESYSTEM_FILE_ID) | OBJECT_T;
+const bits FILESYSTEM_DROPPED_FILE_T = (bits(1) << FILESYSTEM_DROPPED_FILE_ID) | FILESYSTEM_FILE_T;
 const bits FILESYSTEM_FILE_DATA_T = (bits(1) << FILESYSTEM_FILE_DATA_ID) | DATA_T;
 
 const bits FONT_GLYPH_DATA_T = (bits(1) << FONT_GLYPH_DATA_ID) | DATA_T;

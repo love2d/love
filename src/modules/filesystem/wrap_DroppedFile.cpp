@@ -18,42 +18,45 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_WRAP_FILE_H
-#define LOVE_FILESYSTEM_WRAP_FILE_H
-
-// LOVE
-#include "common/runtime.h"
-#include "File.h"
+#include "wrap_DroppedFile.h"
+#include "wrap_File.h"
 
 namespace love
 {
 namespace filesystem
 {
 
-// Does not use lua_error, so it's safe to call in exception handling code.
-int luax_ioError(lua_State *L, const char *fmt, ...);
+DroppedFile *luax_checkdroppedfile(lua_State *L, int idx)
+{
+	return luax_checktype<DroppedFile>(L, idx, "DroppedFile", FILESYSTEM_DROPPED_FILE_T);
+}
 
-File *luax_checkfile(lua_State *L, int idx);
-int w_File_getSize(lua_State *L);
-int w_File_open(lua_State *L);
-int w_File_close(lua_State *L);
-int w_File_isOpen(lua_State *L);
-int w_File_read(lua_State *L);
-int w_File_write(lua_State *L);
-int w_File_flush(lua_State *L);
-int w_File_eof(lua_State *L);
-int w_File_tell(lua_State *L);
-int w_File_seek(lua_State *L);
-int w_File_lines_i(lua_State *L);
-int w_File_lines(lua_State *L);
-int w_File_setBuffer(lua_State *L);
-int w_File_getBuffer(lua_State *L);
-int w_File_getMode(lua_State *L);
-int w_File_getFilename(lua_State *L);
-int w_File_getExtension(lua_State *L);
-extern "C" int luaopen_file(lua_State *L);
+static const luaL_Reg functions[] =
+{
+	// Inherits from File.
+	{ "getSize", w_File_getSize },
+	{ "open", w_File_open },
+	{ "close", w_File_close },
+	{ "isOpen", w_File_isOpen },
+	{ "read", w_File_read },
+	{ "write", w_File_write },
+	{ "flush", w_File_flush },
+	{ "eof", w_File_eof },
+	{ "tell", w_File_tell },
+	{ "seek", w_File_seek },
+	{ "lines", w_File_lines },
+	{ "setBuffer", w_File_setBuffer },
+	{ "getBuffer", w_File_getBuffer },
+	{ "getMode", w_File_getMode },
+	{ "getFilename", w_File_getFilename },
+	{ "getExtension", w_File_getExtension },
+	{ 0, 0 }
+};
+
+extern "C" int luaopen_droppedfile(lua_State *L)
+{
+	return luax_register_type(L, "DroppedFile", functions);
+}
 
 } // filesystem
 } // love
-
-#endif // LOVE_FILESYSTEM_WRAP_FILE_H

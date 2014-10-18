@@ -18,49 +18,40 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_PHYSFS_FILE_H
-#define LOVE_FILESYSTEM_PHYSFS_FILE_H
+#ifndef LOVE_FILESYSTEM_DROPPED_FILE_H
+#define LOVE_FILESYSTEM_DROPPED_FILE_H
 
 // LOVE
-#include "filesystem/File.h"
+#include "common/config.h"
+#include "File.h"
 
-// PhysFS
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
-#include <physfs/physfs.h>
-#else
-#include <physfs.h>
-#endif
-
-// STD
-#include <string>
+// C
+#include <cstdio>
 
 namespace love
 {
 namespace filesystem
 {
-namespace physfs
-{
 
-class File : public love::filesystem::File
+/**
+ * File which is created when a user drags and drops an actual file onto the
+ * LOVE game. Uses C's stdio. Filenames are system-dependent full paths.
+ **/
+class DroppedFile : public File
 {
 public:
 
-	/**
-	 * Constructs an File with the given ilename.
-	 * @param filename The relative filepath of the file to load.
-	 **/
-	File(const std::string &filename);
+	DroppedFile(const std::string &filename);
+	virtual ~DroppedFile();
 
-	virtual ~File();
-
-	// Implements love::filesystem::File.
-	using love::filesystem::File::read;
-	using love::filesystem::File::write;
+	// Implements File.
+	using File::read;
+	using File::write;
 	bool open(Mode mode);
 	bool close();
 	bool isOpen() const;
 	int64 getSize();
-	virtual int64 read(void *dst, int64 size);
+	int64 read(void *dst, int64 size);
 	bool write(const void *data, int64 size);
 	bool flush();
 	bool eof();
@@ -73,22 +64,20 @@ public:
 
 private:
 
-	// filename
+	static const char *getModeString(Mode mode);
+
 	std::string filename;
 
-	// PHYSFS File handle.
-	PHYSFS_File *file;
+	FILE *file;
 
-	// The current mode of the file.
 	Mode mode;
 
 	BufferMode bufferMode;
 	int64 bufferSize;
 
-}; // File
+}; // DroppedFile
 
-} // physfs
 } // filesystem
 } // love
 
-#endif // LOVE_FILESYSTEM_PHYSFS_FILE_H
+#endif // LOVE_FILESYSTEM_DROPPED_FILE_H

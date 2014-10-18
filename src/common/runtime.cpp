@@ -634,6 +634,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// Filesystem
 	{"File", FILESYSTEM_FILE_ID},
+	{"DroppedFile", FILESYSTEM_DROPPED_FILE_ID},
 	{"FileData", FILESYSTEM_FILE_DATA_ID},
 
 	// Font

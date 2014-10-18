@@ -20,8 +20,6 @@
 
 #include "wrap_File.h"
 
-#include "physfs/Filesystem.h"
-
 #include "common/Data.h"
 #include "common/Exception.h"
 #include "common/int.h"
@@ -223,26 +221,128 @@ int w_File_seek(lua_State *L)
 	return 1;
 }
 
+int w_File_lines_i(lua_State *L)
+{
+	const int bufsize = 1024;
+	char buf[bufsize];
+	int linesize = 0;
+	bool newline = false;
+
+	File *file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
+
+	// Only accept read mode at this point.
+	if (file->getMode() != File::MODE_READ)
+		return luaL_error(L, "File needs to stay in read mode.");
+
+	int64 pos = file->tell();
+	int64 userpos = -1;
+
+	if (lua_isnoneornil(L, lua_upvalueindex(2)) == 0)
+	{
+		// User may have changed the file position.
+		userpos = pos;
+		pos = (int64) lua_tonumber(L, lua_upvalueindex(2));
+		if (userpos != pos)
+			file->seek(pos);
+	}
+
+	while (!newline && !file->eof())
+	{
+		// This 64-bit to 32-bit integer cast should be safe as it never exceeds bufsize.
+		int read = (int) file->read(buf, bufsize);
+		if (read < 0)
+			return luaL_error(L, "Could not read from file.");
+
+		linesize += read;
+
+		for (int i = 0; i < read; i++)
+		{
+			if (buf[i] == '\n')
+			{
+				linesize -= read - i;
+				newline = true;
+				break;
+			}
+		}
+	}
+
+	if (newline || (file->eof() && linesize > 0))
+	{
+		if (linesize < bufsize)
+		{
+			// We have the line in the buffer on the stack. No 'new' and 'read' needed.
+			lua_pushlstring(L, buf, linesize > 0 && buf[linesize - 1] == '\r' ? linesize - 1 : linesize);
+			if (userpos < 0)
+				file->seek(pos + linesize + 1);
+		}
+		else
+		{
+			char *str = 0;
+			try
+			{
+				str = new char[linesize + 1];
+			}
+			catch(std::bad_alloc &)
+			{
+				// Can't lua_error (longjmp) in exception handlers.
+			}
+
+			if (!str)
+				return luaL_error(L, "Out of memory.");
+
+			file->seek(pos);
+
+			// Read the \n anyway and save us a call to seek.
+			if (file->read(str, linesize + 1) == -1)
+			{
+				delete [] str;
+				return luaL_error(L, "Could not read from file.");
+			}
+
+			lua_pushlstring(L, str, str[linesize - 1] == '\r' ? linesize - 1 : linesize);
+			delete [] str;
+		}
+
+		if (userpos >= 0)
+		{
+			// Save new position in upvalue.
+			lua_pushnumber(L, (lua_Number)(pos + linesize + 1));
+			lua_replace(L, lua_upvalueindex(2));
+			file->seek(userpos);
+		}
+
+		return 1;
+	}
+
+	// EOF reached.
+	if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(3)))
+		file->seek(userpos);
+	else
+		file->close();
+	
+	return 0;
+}
+
 int w_File_lines(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
 
 	lua_pushnumber(L, 0); // File position.
-	luax_pushboolean(L, file->getMode() != File::CLOSED); // Save current file mode.
+	luax_pushboolean(L, file->getMode() != File::MODE_CLOSED); // Save current file mode.
 
-	if (file->getMode() != File::READ)
+	if (file->getMode() != File::MODE_READ)
 	{
-		if (file->getMode() != File::CLOSED)
+		if (file->getMode() != File::MODE_CLOSED)
 			file->close();
 
 		bool success = false;
-		luax_catchexcept(L, [&](){ success = file->open(File::READ); });
+		luax_catchexcept(L, [&](){ success = file->open(File::MODE_READ); });
 
 		if (!success)
 			return luaL_error(L, "Could not open file.");
 	}
 
-	lua_pushcclosure(L, physfs::Filesystem::lines_i, 3);
+	lua_pushcclosure(L, w_File_lines_i, 3);
 	return 1;
 }
 
@@ -299,6 +399,20 @@ int w_File_getMode(lua_State *L)
 	return 1;
 }
 
+int w_File_getFilename(lua_State *L)
+{
+	File *file = luax_checkfile(L, 1);
+	luax_pushstring(L, file->getFilename());
+	return 1;
+}
+
+int w_File_getExtension(lua_State *L)
+{
+	File *file = luax_checkfile(L, 1);
+	luax_pushstring(L, file->getExtension());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getSize", w_File_getSize },
@@ -315,6 +429,8 @@ static const luaL_Reg functions[] =
 	{ "setBuffer", w_File_setBuffer },
 	{ "getBuffer", w_File_getBuffer },
 	{ "getMode", w_File_getMode },
+	{ "getFilename", w_File_getFilename },
+	{ "getExtension", w_File_getExtension },
 	{ 0, 0 }
 };
 

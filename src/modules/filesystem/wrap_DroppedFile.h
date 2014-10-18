@@ -18,42 +18,22 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_WRAP_FILE_H
-#define LOVE_FILESYSTEM_WRAP_FILE_H
+#ifndef LOVE_FILESYSTEM_WRAP_DROPPED_FILE_H
+#define LOVE_FILESYSTEM_WRAP_DROPPED_FILE_H
 
 // LOVE
 #include "common/runtime.h"
-#include "File.h"
+#include "DroppedFile.h"
 
 namespace love
 {
 namespace filesystem
 {
 
-// Does not use lua_error, so it's safe to call in exception handling code.
-int luax_ioError(lua_State *L, const char *fmt, ...);
-
-File *luax_checkfile(lua_State *L, int idx);
-int w_File_getSize(lua_State *L);
-int w_File_open(lua_State *L);
-int w_File_close(lua_State *L);
-int w_File_isOpen(lua_State *L);
-int w_File_read(lua_State *L);
-int w_File_write(lua_State *L);
-int w_File_flush(lua_State *L);
-int w_File_eof(lua_State *L);
-int w_File_tell(lua_State *L);
-int w_File_seek(lua_State *L);
-int w_File_lines_i(lua_State *L);
-int w_File_lines(lua_State *L);
-int w_File_setBuffer(lua_State *L);
-int w_File_getBuffer(lua_State *L);
-int w_File_getMode(lua_State *L);
-int w_File_getFilename(lua_State *L);
-int w_File_getExtension(lua_State *L);
-extern "C" int luaopen_file(lua_State *L);
+DroppedFile *luax_checkdroppedfile(lua_State *L, int idx);
+extern "C" int luaopen_droppedfile(lua_State *L);
 
 } // filesystem
 } // love
 
-#endif // LOVE_FILESYSTEM_WRAP_FILE_H
+#endif // LOVE_FILESYSTEM_WRAP_DROPPED_FILE_H

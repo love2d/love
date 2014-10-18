@@ -20,7 +20,7 @@
 
 // LOVE
 #include "BMFontRasterizer.h"
-#include "filesystem/physfs/Filesystem.h"
+#include "filesystem/Filesystem.h"
 #include "image/Image.h"
 
 // C++
@@ -188,7 +188,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 			// Load the page file from disk into an ImageData, if necessary.
 			if (images[pageindex].get() == nullptr)
 			{
-				using namespace love::filesystem::physfs;
+				using namespace love::filesystem;
 
 				Filesystem *filesystem = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
 				image::Image *imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);

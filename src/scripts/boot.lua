@@ -220,6 +220,12 @@ function love.createhandlers()
 		resize = function(w, h)
 			if love.resize then return love.resize(w, h) end
 		end,
+		filedropped = function (f)
+			if love.filedropped then return love.filedropped(f) end
+		end,
+		directorydropped = function (dir)
+			if love.directorydropped then return love.directorydropped(dir) end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)

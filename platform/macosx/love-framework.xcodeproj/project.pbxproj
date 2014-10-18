@@ -272,7 +272,13 @@
 		FA636D8B171B70920065623F /* RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D89171B70920065623F /* RandomGenerator.h */; };
 		FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */; };
 		FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */; };
+		FA70573C194A3FC600670B30 /* DroppedFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA70573A194A3FC600670B30 /* DroppedFile.cpp */; };
+		FA70573D194A3FC600670B30 /* DroppedFile.h in Headers */ = {isa = PBXBuildFile; fileRef = FA70573B194A3FC600670B30 /* DroppedFile.h */; };
+		FA705740194A55CB00670B30 /* wrap_DroppedFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA70573E194A55CB00670B30 /* wrap_DroppedFile.cpp */; };
+		FA705741194A55CB00670B30 /* wrap_DroppedFile.h in Headers */ = {isa = PBXBuildFile; fileRef = FA70573F194A55CB00670B30 /* wrap_DroppedFile.h */; };
 		FA7175AA178E8418001FE7FE /* lua.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7175A9178E8418001FE7FE /* lua.h */; };
+		FA782D0119F2F945006A3E93 /* Filesystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA782CFF19F2F945006A3E93 /* Filesystem.cpp */; };
+		FA782D0219F2F945006A3E93 /* Filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FA782D0019F2F945006A3E93 /* Filesystem.h */; };
 		FA7AA59217F6AC1F00704BE2 /* wrap_Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7AA59017F6AC1F00704BE2 /* wrap_Mesh.cpp */; };
 		FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */; };
 		FA7C937A16DCC6C2006F2BEE /* wrap_Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */; };
@@ -843,7 +849,13 @@
 		FA636D89171B70920065623F /* RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RandomGenerator.h; sourceTree = "<group>"; };
 		FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RandomGenerator.cpp; sourceTree = "<group>"; };
 		FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RandomGenerator.h; sourceTree = "<group>"; };
+		FA70573A194A3FC600670B30 /* DroppedFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DroppedFile.cpp; sourceTree = "<group>"; };
+		FA70573B194A3FC600670B30 /* DroppedFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DroppedFile.h; sourceTree = "<group>"; };
+		FA70573E194A55CB00670B30 /* wrap_DroppedFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_DroppedFile.cpp; sourceTree = "<group>"; };
+		FA70573F194A55CB00670B30 /* wrap_DroppedFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_DroppedFile.h; sourceTree = "<group>"; };
 		FA7175A9178E8418001FE7FE /* lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua.h; sourceTree = "<group>"; };
+		FA782CFF19F2F945006A3E93 /* Filesystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Filesystem.cpp; sourceTree = "<group>"; };
+		FA782D0019F2F945006A3E93 /* Filesystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Filesystem.h; sourceTree = "<group>"; };
 		FA7AA59017F6AC1F00704BE2 /* wrap_Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Mesh.cpp; sourceTree = "<group>"; };
 		FA7AA59117F6AC1F00704BE2 /* wrap_Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mesh.h; sourceTree = "<group>"; };
 		FA7C937516DCC6C2006F2BEE /* wrap_Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Math.cpp; sourceTree = "<group>"; };
@@ -1757,11 +1769,17 @@
 		7B0734182055607468261A5E /* filesystem */ = {
 			isa = PBXGroup;
 			children = (
+				FA70573A194A3FC600670B30 /* DroppedFile.cpp */,
+				FA70573B194A3FC600670B30 /* DroppedFile.h */,
 				11D141087979064B441B787D /* File.cpp */,
 				31A444CF0B4E6DA450120730 /* File.h */,
 				62370A494F9D6E2D570065EB /* FileData.cpp */,
 				54A13C2209F945671BC27974 /* FileData.h */,
+				FA782CFF19F2F945006A3E93 /* Filesystem.cpp */,
+				FA782D0019F2F945006A3E93 /* Filesystem.h */,
 				64DD03B45BF6265723662DAF /* physfs */,
+				FA70573E194A55CB00670B30 /* wrap_DroppedFile.cpp */,
+				FA70573F194A55CB00670B30 /* wrap_DroppedFile.h */,
 				6C367AE309C453C412D91363 /* wrap_File.cpp */,
 				52E15B702C40593D3BF431DF /* wrap_File.h */,
 				597478A255B82B56488B4717 /* wrap_FileData.cpp */,
@@ -2044,6 +2062,7 @@
 				FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */,
 				FAE010E1170DE25E006F29D0 /* ddsHandler.h in Headers */,
 				FAE010E5170DF75C006F29D0 /* wrap_CompressedData.h in Headers */,
+				FA705741194A55CB00670B30 /* wrap_DroppedFile.h in Headers */,
 				FAF6704E18184FF800DBDEEA /* wuff_config.h in Headers */,
 				FA0CDE3D1710F9A50056E8D7 /* FormatHandler.h in Headers */,
 				FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */,
@@ -2088,8 +2107,10 @@
 				FA34E7CE174B513F00E04D3F /* System.h in Headers */,
 				FA34E7D3174B515D00E04D3F /* System.h in Headers */,
 				FAF670571818501300DBDEEA /* WaveDecoder.h in Headers */,
+				FA70573D194A3FC600670B30 /* DroppedFile.h in Headers */,
 				FA1EF7C51799FEB200FF380C /* wrap_System.h in Headers */,
 				FA435EA417B36E9C004C3F22 /* Polyline.h in Headers */,
+				FA782D0219F2F945006A3E93 /* Filesystem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2283,6 +2304,7 @@
 				FA08F62C16C7541400F007B5 /* wrap_Shader.cpp in Sources */,
 				FA0A4BFA182E26F500E1E4D2 /* wrap_MotorJoint.cpp in Sources */,
 				FA08F62D16C7541400F007B5 /* wrap_SpriteBatch.cpp in Sources */,
+				FA782D0119F2F945006A3E93 /* Filesystem.cpp in Sources */,
 				FA08F62E16C7542600F007B5 /* ImageData.cpp in Sources */,
 				FA08F62F16C7542600F007B5 /* Image.cpp in Sources */,
 				FA08F63116C7542600F007B5 /* wrap_Image.cpp in Sources */,
@@ -2351,10 +2373,12 @@
 				FA08F66D16C7549200F007B5 /* wrap_Sound.cpp in Sources */,
 				FA08F66E16C7549200F007B5 /* wrap_SoundData.cpp in Sources */,
 				FA08F66F16C754A100F007B5 /* Decoder.cpp in Sources */,
+				FA70573C194A3FC600670B30 /* DroppedFile.cpp in Sources */,
 				FA08F67016C754A100F007B5 /* FLACDecoder.cpp in Sources */,
 				FA08F67116C754A100F007B5 /* GmeDecoder.cpp in Sources */,
 				FA08F67216C754A100F007B5 /* ModPlugDecoder.cpp in Sources */,
 				FA08F67316C754A100F007B5 /* Mpg123Decoder.cpp in Sources */,
+				FA705740194A55CB00670B30 /* wrap_DroppedFile.cpp in Sources */,
 				FA08F67416C754A100F007B5 /* Sound.cpp in Sources */,
 				FA08F67516C754A100F007B5 /* VorbisDecoder.cpp in Sources */,
 				FA08F67716C754A900F007B5 /* threads.cpp in Sources */,

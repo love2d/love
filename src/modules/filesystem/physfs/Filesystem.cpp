@@ -18,8 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "common/config.h"
-
 #include <iostream>
 #include <sstream>
 
@@ -27,6 +25,25 @@
 #include "common/b64.h"
 
 #include "Filesystem.h"
+#include "File.h"
+
+// PhysFS
+#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#include <physfs/physfs.h>
+#else
+#include <physfs.h>
+#endif
+
+// For great CWD. (Current Working Directory)
+// Using this instead of boost::filesystem which totally
+// cramped our style.
+#ifdef LOVE_WINDOWS
+#	include <windows.h>
+#	include <direct.h>
+#else
+#	include <sys/param.h>
+#	include <unistd.h>
+#endif
 
 namespace
 {
@@ -73,8 +90,7 @@ namespace physfs
 {
 
 Filesystem::Filesystem()
-	: initialized(false)
-	, fused(false)
+	: fused(false)
 	, fusedSet(false)
 {
 	requirePath = {"?.lua", "?/init.lua"};
@@ -82,7 +98,7 @@ Filesystem::Filesystem()
 
 Filesystem::~Filesystem()
 {
-	if (initialized)
+	if (PHYSFS_isInit())
 		PHYSFS_deinit();
 }
 
@@ -95,7 +111,6 @@ void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
 		throw Exception(PHYSFS_getLastError());
-	initialized = true;
 }
 
 void Filesystem::setFused(bool fused)
@@ -115,7 +130,7 @@ bool Filesystem::isFused() const
 
 bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 {
-	if (!initialized)
+	if (!PHYSFS_isInit())
 		return false;
 
 	std::string old_save_path = save_path_full;
@@ -164,7 +179,7 @@ const char *Filesystem::getIdentity() const
 
 bool Filesystem::setSource(const char *source)
 {
-	if (!initialized)
+	if (!PHYSFS_isInit())
 		return false;
 
 	// Check whether directory is already set.
@@ -188,7 +203,7 @@ const char *Filesystem::getSource() const
 
 bool Filesystem::setupWriteDirectory()
 {
-	if (!initialized)
+	if (!PHYSFS_isInit())
 		return false;
 
 	// These must all be set.
@@ -244,13 +259,20 @@ bool Filesystem::setupWriteDirectory()
 
 bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendToPath)
 {
-	if (!initialized || !archive)
+	if (!PHYSFS_isInit() || !archive)
 		return false;
 
 	std::string realPath;
 	std::string sourceBase = getSourceBaseDirectory();
 
-	if (isFused() && sourceBase.compare(archive) == 0)
+	// Check whether the given archive path is in the list of allowed full paths.
+	auto it = std::find(allowedMountPaths.begin(), allowedMountPaths.end(), archive);
+
+	if (it != allowedMountPaths.end())
+	{
+		realPath = *it;
+	}
+	else if (isFused() && sourceBase.compare(archive) == 0)
 	{
 		// Special case: if the game is fused and the archive is the source's
 		// base directory, mount it even though it's outside of the save dir.
@@ -285,7 +307,7 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendT
 
 bool Filesystem::unmount(const char *archive)
 {
-	if (!initialized || !archive)
+	if (!PHYSFS_isInit() || !archive)
 		return false;
 
 	std::string realPath;
@@ -319,7 +341,7 @@ bool Filesystem::unmount(const char *archive)
 	return PHYSFS_removeFromSearchPath(realPath.c_str());
 }
 
-File *Filesystem::newFile(const char *filename) const
+love::filesystem::File *Filesystem::newFile(const char *filename) const
 {
 	return new File(filename);
 }
@@ -478,7 +500,7 @@ FileData *Filesystem::read(const char *filename, int64 size) const
 {
 	File file(filename);
 
-	file.open(File::READ);
+	file.open(File::MODE_READ);
 
 	// close() is called in the File destructor.
 	return file.read(size);
@@ -488,7 +510,7 @@ void Filesystem::write(const char *filename, const void *data, int64 size) const
 {
 	File file(filename);
 
-	file.open(File::WRITE);
+	file.open(File::MODE_WRITE);
 
 	// close() is called in the File destructor.
 	if (!file.write(data, size))
@@ -499,7 +521,7 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 {
 	File file(filename);
 
-	file.open(File::APPEND);
+	file.open(File::MODE_APPEND);
 
 	// close() is called in the File destructor.
 	if (!file.write(data, size))
@@ -538,108 +560,6 @@ int Filesystem::getDirectoryItems(lua_State *L)
 	return 1;
 }
 
-int Filesystem::lines_i(lua_State *L)
-{
-	const int bufsize = 1024;
-	char buf[bufsize];
-	int linesize = 0;
-	bool newline = false;
-
-	File *file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
-
-	// Only accept read mode at this point.
-	if (file->getMode() != File::READ)
-		return luaL_error(L, "File needs to stay in read mode.");
-
-	int64 pos = file->tell();
-	int64 userpos = -1;
-
-	if (lua_isnoneornil(L, lua_upvalueindex(2)) == 0)
-	{
-		// User may have changed the file position.
-		userpos = pos;
-		pos = (int64) lua_tonumber(L, lua_upvalueindex(2));
-		if (userpos != pos)
-			file->seek(pos);
-	}
-
-	while (!newline && !file->eof())
-	{
-		// This 64-bit to 32-bit integer cast should be safe as it never exceeds bufsize.
-		int read = (int) file->read(buf, bufsize);
-		if (read < 0)
-			return luaL_error(L, "Could not read from file.");
-
-		linesize += read;
-
-		for (int i = 0; i < read; i++)
-		{
-			if (buf[i] == '\n')
-			{
-				linesize -= read - i;
-				newline = true;
-				break;
-			}
-		}
-	}
-
-	if (newline || (file->eof() && linesize > 0))
-	{
-		if (linesize < bufsize)
-		{
-			// We have the line in the buffer on the stack. No 'new' and 'read' needed.
-			lua_pushlstring(L, buf, linesize > 0 && buf[linesize - 1] == '\r' ? linesize - 1 : linesize);
-			if (userpos < 0)
-				file->seek(pos + linesize + 1);
-		}
-		else
-		{
-			char *str = 0;
-			try
-			{
-				str = new char[linesize + 1];
-			}
-			catch(std::bad_alloc &)
-			{
-				// Can't lua_error (longjmp) in exception handlers.
-			}
-
-			if (!str)
-				return luaL_error(L, "Out of memory.");
-
-			file->seek(pos);
-
-			// Read the \n anyway and save us a call to seek.
-			if (file->read(str, linesize + 1) == -1)
-			{
-				delete [] str;
-				return luaL_error(L, "Could not read from file.");
-			}
-
-			lua_pushlstring(L, str, str[linesize - 1] == '\r' ? linesize - 1 : linesize);
-			delete [] str;
-		}
-
-		if (userpos >= 0)
-		{
-			// Save new position in upvalue.
-			lua_pushnumber(L, (lua_Number)(pos + linesize + 1));
-			lua_replace(L, lua_upvalueindex(2));
-			file->seek(userpos);
-		}
-
-		return 1;
-	}
-
-	// EOF reached.
-	if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(3)))
-		file->seek(userpos);
-	else
-		file->close();
-
-	return 0;
-}
-
 int64 Filesystem::getLastModified(const char *filename) const
 {
 	PHYSFS_sint64 time = PHYSFS_getLastModTime(filename);
@@ -675,6 +595,12 @@ bool Filesystem::isSymlink(const char *filename) const
 std::vector<std::string> &Filesystem::getRequirePath()
 {
 	return requirePath;
+}
+
+void Filesystem::allowMountingForPath(const std::string &path)
+{
+	if (std::find(allowedMountPaths.begin(), allowedMountPaths.end(), path) == allowedMountPaths.end())
+		allowedMountPaths.push_back(path);
 }
 
 } // physfs
