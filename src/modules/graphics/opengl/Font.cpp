@@ -367,7 +367,7 @@ void Font::print(const std::string &text, float x, float y, float extra_spacing,
 	}
 	catch (utf8::exception &e)
 	{
-		throw love::Exception("Decoding error: %s", e.what());
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
 	if (vertexcount <= 0 || glyphinfolist.size() == 0)
@@ -429,7 +429,7 @@ int Font::getWidth(const std::string &str)
 		}
 		catch(utf8::exception &e)
 		{
-			throw love::Exception("Decoding error: %s", e.what());
+			throw love::Exception("UTF-8 decoding error: %s", e.what());
 		}
 
 		if (width > max_width)

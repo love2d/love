@@ -79,7 +79,7 @@ Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::st
 	}
 	catch (utf8::exception &e)
 	{
-		throw love::Exception("Decoding error: %s", e.what());
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
 	return newImageRasterizer(data, &glyphs[0], glyphs.size());
@@ -100,7 +100,7 @@ GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)
 	}
 	catch (utf8::exception &e)
 	{
-		throw love::Exception("Decoding error: %s", e.what());
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
 	return r->getGlyphData(codepoint);
