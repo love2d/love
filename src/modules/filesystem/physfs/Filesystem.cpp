@@ -269,9 +269,7 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendT
 	auto it = std::find(allowedMountPaths.begin(), allowedMountPaths.end(), archive);
 
 	if (it != allowedMountPaths.end())
-	{
 		realPath = *it;
-	}
 	else if (isFused() && sourceBase.compare(archive) == 0)
 	{
 		// Special case: if the game is fused and the archive is the source's
@@ -313,7 +311,12 @@ bool Filesystem::unmount(const char *archive)
 	std::string realPath;
 	std::string sourceBase = getSourceBaseDirectory();
 
-	if (isFused() && sourceBase.compare(archive) == 0)
+	// Check whether the given archive path is in the list of allowed full paths.
+	auto it = std::find(allowedMountPaths.begin(), allowedMountPaths.end(), archive);
+
+	if (it != allowedMountPaths.end())
+		realPath = *it;
+	else if (isFused() && sourceBase.compare(archive) == 0)
 	{
 		// Special case: if the game is fused and the archive is the source's
 		// base directory, unmount it even though it's outside of the save dir.
