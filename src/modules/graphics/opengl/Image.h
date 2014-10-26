@@ -159,7 +159,6 @@ private:
 	void loadDefaultTexture();
 	void loadTextureFromCompressedData();
 	void loadTextureFromImageData();
-	void uploadImageData(int xoffset, int yoffset, int w, int h);
 
 	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
 

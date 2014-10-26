@@ -36,30 +36,34 @@ namespace opengl
 
 // VertexBuffer
 
-VertexBuffer *VertexBuffer::Create(size_t size, GLenum target, GLenum usage, MemoryBacking backing)
+VertexBuffer *VertexBuffer::Create(size_t size, GLenum target, GLenum usage)
 {
-	return new VertexBuffer(size, target, usage, backing);
+	return new VertexBuffer(size, target, usage);
 }
 
-VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacking backing)
+VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage)
 	: is_bound(false)
 	, is_mapped(false)
 	, size(size)
 	, target(target)
 	, usage(usage)
-	, backing(backing)
 	, vbo(0)
 	, memory_map(nullptr)
-	, is_dirty(false)
 {
-	if (getMemoryBacking() == BACKING_FULL)
-		memory_map = (char *) malloc(getSize());
+	try
+	{
+		memory_map = new char[size];
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
 
 	bool ok = load(false);
 
 	if (!ok)
 	{
-		free(memory_map);
+		delete[] memory_map;
 		throw love::Exception("Could not load VBO.");
 	}
 }
@@ -67,29 +71,15 @@ VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacki
 VertexBuffer::~VertexBuffer()
 {
 	if (vbo != 0)
-		unload(false);
+		unload();
 
-	if (memory_map)
-		free(memory_map);
+	delete[] memory_map;
 }
 
 void *VertexBuffer::map()
 {
 	if (is_mapped)
 		return memory_map;
-
-	if (!memory_map)
-	{
-		memory_map = (char *) malloc(getSize());
-		if (!memory_map)
-			throw love::Exception("Out of memory (oh the humanity!)");
-	}
-
-	if (is_dirty)
-	{
-		glGetBufferSubData(getTarget(), 0, (GLsizeiptr) getSize(), memory_map);
-		is_dirty = false;
-	}
 
 	is_mapped = true;
 
@@ -167,16 +157,10 @@ void VertexBuffer::unbind()
 
 void VertexBuffer::fill(size_t offset, size_t size, const void *data)
 {
-	if (is_mapped || getMemoryBacking() == BACKING_FULL)
-		memcpy(memory_map + offset, data, size);
+	memcpy(memory_map + offset, data, size);
 
 	if (!is_mapped)
-	{
 		glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
-
-		if (getMemoryBacking() != BACKING_FULL)
-			is_dirty = true;
-	}
 }
 
 const void *VertexBuffer::getPointer(size_t offset) const
@@ -191,7 +175,7 @@ bool VertexBuffer::loadVolatile()
 
 void VertexBuffer::unloadVolatile()
 {
-	unload(true);
+	unload();
 }
 
 bool VertexBuffer::load(bool restore)
@@ -213,15 +197,8 @@ bool VertexBuffer::load(bool restore)
 	return (GL_NO_ERROR == err);
 }
 
-void VertexBuffer::unload(bool save)
+void VertexBuffer::unload()
 {
-	// Save data before unloading, if we need to.
-	if (save && getMemoryBacking() == BACKING_PARTIAL)
-	{
-		VertexBuffer::Bind bind(*this);
-		map(); // saves buffer content to memory_map.
-	}
-
 	is_mapped = false;
 
 	glDeleteBuffers(1, &vbo);

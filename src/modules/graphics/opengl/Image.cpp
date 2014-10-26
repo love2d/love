@@ -365,20 +365,6 @@ void Image::unloadVolatile()
 	}
 }
 
-void Image::uploadImageData(int xoffset, int yoffset, int w, int h)
-{
-	const image::pixel *pdata = (const image::pixel *) data->getData();
-	pdata += yoffset * data->getWidth() + xoffset;
-
-	{
-		thread::Lock lock(data->getMutex());
-		glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, w, h, GL_RGBA,
-		                GL_UNSIGNED_BYTE, pdata);
-	}
-
-	generateMipmaps();
-}
-
 bool Image::refresh(int xoffset, int yoffset, int w, int h)
 {
 	// No effect if the texture hasn't been created yet.
@@ -396,7 +382,18 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 	if (isCompressed())
 		loadTextureFromCompressedData();
 	else
-		uploadImageData(xoffset, yoffset, w, h);
+	{
+		const image::pixel *pdata = (const image::pixel *) data->getData();
+		pdata += yoffset * data->getWidth() + xoffset;
+
+		{
+			thread::Lock lock(data->getMutex());
+			glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, w, h, GL_RGBA,
+							GL_UNSIGNED_BYTE, pdata);
+		}
+
+		generateMipmaps();
+	}
 
 	return true;
 }

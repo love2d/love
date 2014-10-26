@@ -243,10 +243,6 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	// Enable blending
 	glEnable(GL_BLEND);
 
-	// Enable all color component writes.
-	bool colormask[] = {true, true, true, true};
-	setColorMask(colormask);
-
 	// Auto-generated mipmaps should be the best quality possible
 	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
@@ -1151,12 +1147,11 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	int w = getWidth();
 	int h = getHeight();
 
-	int row = 4*w;
+	int row = 4 * w;
+	int size = row * h;
 
-	int size = row*h;
-
-	GLubyte *pixels = 0;
-	GLubyte *screenshot = 0;
+	GLubyte *pixels = nullptr;
+	GLubyte *screenshot = nullptr;
 
 	try
 	{
@@ -1181,15 +1176,15 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	}
 
 	// OpenGL sucks and reads pixels from the lower-left. Let's fix that.
-
-	GLubyte *src = pixels - row, *dst = screenshot + size;
+	GLubyte *src = pixels - row;
+	GLubyte *dst = screenshot + size;
 
 	for (int i = 0; i < h; ++i)
 		memcpy(dst-=row, src+=row, row);
 
 	delete[] pixels;
 
-	love::image::ImageData *img = 0;
+	love::image::ImageData *img = nullptr;
 	try
 	{
 		// Tell the new ImageData that it owns the screenshot data, so we don't

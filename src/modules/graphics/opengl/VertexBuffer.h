@@ -49,18 +49,6 @@ class VertexBuffer : public Volatile
 {
 public:
 
-	// Different guarantees for VertexBuffer data storage.
-	enum MemoryBacking
-	{
-		// The VertexBuffer is will have a valid copy of its data in main memory
-		// at all times.
-		BACKING_FULL,
-
-		// The VertexBuffer will have a valid copy of its data in main memory
-		// when it needs to be reloaded and when it's mapped.
-		BACKING_PARTIAL
-	};
-
 	/**
 	 * Create a new VertexBuffer.
 	 *
@@ -70,7 +58,7 @@ public:
 	 * @param backing Determines what guarantees are placed on the data.
 	 * @return A new VertexBuffer.
 	 */
-	static VertexBuffer *Create(size_t size, GLenum target, GLenum usage, MemoryBacking backing = BACKING_PARTIAL);
+	static VertexBuffer *Create(size_t size, GLenum target, GLenum usage);
 
 	/**
 	 * Constructor.
@@ -80,7 +68,7 @@ public:
 	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
 	 * @param backing Determines what guarantees are placed on the data.
 	 */
-	VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacking backing = BACKING_PARTIAL);
+	VertexBuffer(size_t size, GLenum target, GLenum usage);
 
 	/**
 	 * Destructor.
@@ -125,11 +113,6 @@ public:
 	bool isMapped() const
 	{
 		return is_mapped;
-	}
-
-	MemoryBacking getMemoryBacking() const
-	{
-		return backing;
 	}
 
 	/**
@@ -267,13 +250,7 @@ private:
 	 * @return True on success, false otherwise.
 	 */
 	bool load(bool restore);
-
-	/**
-	 * Optionally save the data in the VBO, then delete it.
-	 *
-	 * @param save True to save the data before deleting.
-	 */
-	void unload(bool save);
+	void unload();
 
 	void unmapStatic(size_t offset, size_t size);
 	void unmapStream();
@@ -293,19 +270,11 @@ private:
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	GLenum usage;
 
-	//
-	MemoryBacking backing;
-
 	// The VBO identifier. Assigned by OpenGL.
 	GLuint vbo;
 
-	// A pointer to mapped memory. Will be inialized on the first
-	// call to map().
+	// A pointer to mapped memory.
 	char *memory_map;
-
-	// Set if the buffer was modified while operating on gpu memory
-	// and needs to be synchronized.
-	bool is_dirty;
 
 }; // VertexBuffer
 

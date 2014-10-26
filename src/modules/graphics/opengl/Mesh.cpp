@@ -97,10 +97,7 @@ void Mesh::setVertices(const std::vector<Vertex> &verts)
 	}
 
 	if (!vbo)
-	{
-		// Full memory backing because we might access the data at any time.
-		vbo = VertexBuffer::Create(size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, VertexBuffer::BACKING_FULL);
-	}
+		vbo = VertexBuffer::Create(size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 	vertex_count = verts.size();
 
@@ -183,10 +180,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	}
 
 	if (!ibo && size > 0)
-	{
-		// Full memory backing because we might access the data at any time.
-		ibo = VertexBuffer::Create(size, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, VertexBuffer::BACKING_FULL);
-	}
+		ibo = VertexBuffer::Create(size, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 	element_count = map.size();
 
