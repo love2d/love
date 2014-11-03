@@ -489,6 +489,10 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 		if (mapping.empty())
 			continue;
 
+		// Lines starting with "#" are comments.
+		if (mapping[0] == '#')
+			continue;
+
 		// Strip out and compare any "platform:XYZ," in the mapping.
 		size_t pstartpos = mapping.find("platform:");
 		if (pstartpos != std::string::npos)
