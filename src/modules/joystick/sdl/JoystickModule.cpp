@@ -499,7 +499,11 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 			std::string platform = mapping.substr(pstartpos, pendpos - pstartpos);
 
 			if (platform.compare(SDL_GetPlatform()) != 0)
+			{
+				// Ignore the mapping but still acknowledge that it is one.
+				success = true;
 				continue;
+			}
 
 			pstartpos -= strlen("platform:");
 			mapping.erase(pstartpos, pendpos - pstartpos + 1);
