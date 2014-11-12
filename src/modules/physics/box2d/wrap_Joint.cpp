@@ -21,6 +21,7 @@
 // LOVE
 #include "wrap_Joint.h"
 #include "common/StringMap.h"
+#include "Body.h"
 
 namespace love
 {
@@ -44,6 +45,22 @@ int w_Joint_getType(lua_State *L)
 	Joint::getConstant(t->getType(), type);
 	lua_pushstring(L, type);
 	return 1;
+}
+
+int w_Joint_getBodies(lua_State *L)
+{
+	Joint *t = luax_checkjoint(L, 1);
+	Body *b1 = nullptr;
+	Body *b2 = nullptr;
+
+	luax_catchexcept(L, [&]() {
+		b1 = t->getBodyA();
+		b2 = t->getBodyB();
+	});
+
+	luax_pushtype(L, "Body", PHYSICS_BODY_T, b1);
+	luax_pushtype(L, "Body", PHYSICS_BODY_T, b2);
+	return 2;
 }
 
 int w_Joint_getAnchors(lua_State *L)
@@ -99,6 +116,7 @@ int w_Joint_destroy(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "getType", w_Joint_getType },
+	{ "getBodies", w_Joint_getBodies },
 	{ "getAnchors", w_Joint_getAnchors },
 	{ "getReactionForce", w_Joint_getReactionForce },
 	{ "getReactionTorque", w_Joint_getReactionTorque },

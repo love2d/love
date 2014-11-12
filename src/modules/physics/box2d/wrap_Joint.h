@@ -34,6 +34,7 @@ namespace box2d
 
 Joint *luax_checkjoint(lua_State *L, int idx);
 int w_Joint_getType(lua_State *L);
+int w_Joint_getBodies(lua_State *L);
 int w_Joint_getAnchors(lua_State *L);
 int w_Joint_getReactionForce(lua_State *L);
 int w_Joint_getReactionTorque(lua_State *L);
