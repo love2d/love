@@ -62,42 +62,8 @@ int w_GearJoint_getJoints(lua_State *L)
 		j2 = t->getJointB();
 	});
 
-	auto pushjoint = [](lua_State *L, Joint *j) -> void
-	{
-		if (j == nullptr)
-			return lua_pushnil(L);
-
-		switch (j->getType())
-		{
-		case Joint::JOINT_DISTANCE:
-			return luax_pushtype(L, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T, j);
-		case Joint::JOINT_REVOLUTE:
-			return luax_pushtype(L, "RevoluteJoint", PHYSICS_REVOLUTE_JOINT_T, j);
-		case Joint::JOINT_PRISMATIC:
-			return luax_pushtype(L, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T, j);
-		case Joint::JOINT_MOUSE:
-			return luax_pushtype(L, "MouseJoint", PHYSICS_MOUSE_JOINT_T, j);
-		case Joint::JOINT_PULLEY:
-			return luax_pushtype(L, "PulleyJoint", PHYSICS_PULLEY_JOINT_T, j);
-		case Joint::JOINT_GEAR:
-			return luax_pushtype(L, "GearJoint", PHYSICS_GEAR_JOINT_T, j);
-		case Joint::JOINT_FRICTION:
-			return luax_pushtype(L, "FrictionJoint", PHYSICS_FRICTION_JOINT_T, j);
-		case Joint::JOINT_WELD:
-			return luax_pushtype(L, "WeldJoint", PHYSICS_WELD_JOINT_T, j);
-		case Joint::JOINT_WHEEL:
-			return luax_pushtype(L, "WheelJoint", PHYSICS_WHEEL_JOINT_T, j);
-		case Joint::JOINT_ROPE:
-			return luax_pushtype(L, "RopeJoint", PHYSICS_ROPE_JOINT_T, j);
-		case Joint::JOINT_MOTOR:
-			return luax_pushtype(L, "MotorJoint", PHYSICS_MOTOR_JOINT_T, j);
-		default:
-			return lua_pushnil(L);
-		}
-	};
-
-	pushjoint(L, j1);
-	pushjoint(L, j2);
+	luax_pushjoint(L, j1);
+	luax_pushjoint(L, j2);
 	return 2;
 }
 

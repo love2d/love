@@ -32,6 +32,7 @@ namespace physics
 namespace box2d
 {
 
+void luax_pushjoint(lua_State *L, Joint *j);
 Joint *luax_checkjoint(lua_State *L, int idx);
 int w_Joint_getType(lua_State *L);
 int w_Joint_getBodies(lua_State *L);

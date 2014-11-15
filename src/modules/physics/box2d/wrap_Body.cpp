@@ -539,6 +539,15 @@ int w_Body_getFixtureList(lua_State *L)
 	return n;
 }
 
+int w_Body_getJointList(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	lua_remove(L, 1);
+	int n = 0;
+	luax_catchexcept(L, [&](){ n = t->getJointList(L); });
+	return n;
+}
+
 int w_Body_getContactList(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -623,6 +632,7 @@ static const luaL_Reg functions[] =
 	{ "isFixedRotation", w_Body_isFixedRotation },
 	{ "getWorld", w_Body_getWorld },
 	{ "getFixtureList", w_Body_getFixtureList },
+	{ "getJointList", w_Body_getJointList },
 	{ "getContactList", w_Body_getContactList },
 	{ "destroy", w_Body_destroy },
 	{ "setUserData", w_Body_setUserData },
