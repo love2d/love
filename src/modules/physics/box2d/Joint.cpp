@@ -90,9 +90,37 @@ Joint::Type Joint::getType() const
 		return JOINT_WHEEL;
 	case e_ropeJoint:
 		return JOINT_ROPE;
+	case e_motorJoint:
+		return JOINT_MOTOR;
 	default:
 		return JOINT_INVALID;
 	}
+}
+
+Body *Joint::getBodyA() const
+{
+	b2Body *b2body = joint->GetBodyA();
+	if (b2body == nullptr)
+		return nullptr;
+
+	Body *body = (Body *) Memoizer::find(b2body);
+	if (body == nullptr)
+		throw love::Exception("A body has escaped Memoizer!");
+
+	return body;
+}
+
+Body *Joint::getBodyB() const
+{
+	b2Body *b2body = joint->GetBodyB();
+	if (b2body == nullptr)
+		return nullptr;
+
+	Body *body = (Body *) Memoizer::find(b2body);
+	if (body == nullptr)
+		throw love::Exception("A body has escaped Memoizer!");
+
+	return body;
 }
 
 bool Joint::isValid() const

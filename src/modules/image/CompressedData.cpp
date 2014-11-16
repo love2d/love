@@ -110,6 +110,10 @@ StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM>::Entry Compre
 	{"bc4s", CompressedData::FORMAT_BC4s},
 	{"bc5", CompressedData::FORMAT_BC5},
 	{"bc5s", CompressedData::FORMAT_BC5s},
+	{"bc6h", CompressedData::FORMAT_BC6H},
+	{"bc6hs", CompressedData::FORMAT_BC6Hs},
+	{"bc7", CompressedData::FORMAT_BC7},
+	{"bc7srgb", CompressedData::FORMAT_BC7SRGB},
 };
 
 StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM> CompressedData::formats(CompressedData::formatEntries, sizeof(CompressedData::formatEntries));

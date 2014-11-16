@@ -51,12 +51,30 @@ int w_GearJoint_getRatio(lua_State *L)
 	return 1;
 }
 
+int w_GearJoint_getJoints(lua_State *L)
+{
+	GearJoint *t = luax_checkgearjoint(L, 1);
+	Joint *j1 = nullptr;
+	Joint *j2 = nullptr;
+
+	luax_catchexcept(L, [&]() {
+		j1 = t->getJointA();
+		j2 = t->getJointB();
+	});
+
+	luax_pushjoint(L, j1);
+	luax_pushjoint(L, j2);
+	return 2;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "setRatio", w_GearJoint_setRatio },
 	{ "getRatio", w_GearJoint_getRatio },
+	{ "getJoints", w_GearJoint_getJoints },
 	// From Joint.
 	{ "getType", w_Joint_getType },
+	{ "getBodies", w_Joint_getBodies },
 	{ "getAnchors", w_Joint_getAnchors },
 	{ "getReactionForce", w_Joint_getReactionForce },
 	{ "getReactionTorque", w_Joint_getReactionTorque },

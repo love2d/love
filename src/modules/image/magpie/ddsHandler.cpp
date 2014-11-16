@@ -117,11 +117,17 @@ CompressedData::Format ddsHandler::convertFormat(dds::Format ddsformat)
 		return CompressedData::FORMAT_BC5;
 	case dds::FORMAT_BC5s:
 		return CompressedData::FORMAT_BC5s;
+	case dds::FORMAT_BC6H:
+		return CompressedData::FORMAT_BC6H;
+	case dds::FORMAT_BC6Hs:
+		return CompressedData::FORMAT_BC6Hs;
+	case dds::FORMAT_BC7:
+		return CompressedData::FORMAT_BC7;
+	case dds::FORMAT_BC7srgb:
+		return CompressedData::FORMAT_BC7SRGB;
 	default:
 		return CompressedData::FORMAT_UNKNOWN;
 	}
-
-	return CompressedData::FORMAT_UNKNOWN;
 }
 
 } // magpie
