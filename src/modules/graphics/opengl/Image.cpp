@@ -623,6 +623,17 @@ GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
 		return GL_COMPRESSED_RG_RGTC2;
 	case image::CompressedData::FORMAT_BC5s:
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
+	case image::CompressedData::FORMAT_BC6H:
+		return GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB;
+	case image::CompressedData::FORMAT_BC6Hs:
+		return GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;
+	case image::CompressedData::FORMAT_BC7:
+		if (srgb)
+			return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
+		else
+			return GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+	case image::CompressedData::FORMAT_BC7SRGB:
+		return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
 	default:
 		if (srgb)
 			return GL_SRGB8_ALPHA8;
@@ -672,11 +683,14 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 	case image::CompressedData::FORMAT_BC5:
 	case image::CompressedData::FORMAT_BC5s:
 		return (GLEE_VERSION_3_0 || GLEE_ARB_texture_compression_rgtc || GLEE_EXT_texture_compression_rgtc);
+	case image::CompressedData::FORMAT_BC6H:
+	case image::CompressedData::FORMAT_BC6Hs:
+	case image::CompressedData::FORMAT_BC7:
+	case image::CompressedData::FORMAT_BC7SRGB:
+		return GLEE_VERSION_4_2 || GLEE_ARB_texture_compression_bptc;
 	default:
-		break;
+		return false;
 	}
-
-	return false;
 }
 
 bool Image::hasSRGBSupport()

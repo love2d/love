@@ -124,6 +124,7 @@ static const luaL_Reg functions[] =
 	{ "getCorrectionFactor", w_MotorJoint_getCorrectionFactor },
 	// From Joint.
 	{ "getType", w_Joint_getType },
+	{ "getBodies", w_Joint_getBodies },
 	{ "getAnchors", w_Joint_getAnchors },
 	{ "getReactionForce", w_Joint_getReactionForce },
 	{ "getReactionTorque", w_Joint_getReactionTorque },

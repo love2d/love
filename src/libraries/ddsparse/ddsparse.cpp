@@ -116,7 +116,7 @@ static Format parseDX10Format(DXGIFormat fmt)
 		f = FORMAT_BC6H;
 		break;
 	case DXGI_FORMAT_BC6H_SF16:
-		f = FORAMT_BC6Hs;
+		f = FORMAT_BC6Hs;
 		break;
 	case DXGI_FORMAT_BC7_TYPELESS:
 	case DXGI_FORMAT_BC7_UNORM:

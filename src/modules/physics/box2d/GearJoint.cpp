@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "common/Memoizer.h"
 
 namespace love
 {
@@ -58,6 +59,32 @@ void GearJoint::setRatio(float ratio)
 float GearJoint::getRatio() const
 {
 	return joint->GetRatio();
+}
+
+Joint *GearJoint::getJointA() const
+{
+	b2Joint *b2joint = joint->GetJoint1();
+	if (b2joint == nullptr)
+		return nullptr;
+
+	Joint *j = (Joint *) Memoizer::find(b2joint);
+	if (j == nullptr)
+		throw love::Exception("A joint has escaped Memoizer!");
+
+	return j;
+}
+
+Joint *GearJoint::getJointB() const
+{
+	b2Joint *b2joint = joint->GetJoint2();
+	if (b2joint == nullptr)
+		return nullptr;
+
+	Joint *j = (Joint *) Memoizer::find(b2joint);
+	if (j == nullptr)
+		throw love::Exception("A joint has escaped Memoizer!");
+
+	return j;
 }
 
 } // box2d

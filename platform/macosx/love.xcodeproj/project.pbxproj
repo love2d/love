@@ -8,23 +8,23 @@
 
 /* Begin PBXBuildFile section */
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; };
-		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
-		A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* Vorbis.framework */; };
-		A9255F431043240F00BA1496 /* IL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F421043240F00BA1496 /* IL.framework */; };
-		A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; };
+		A9255DD11043183600BA1496 /* FreeType.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E4810420B4A007D418B /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		A9255E031043195A00BA1496 /* Vorbis.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* Vorbis.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		A9255F431043240F00BA1496 /* IL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F421043240F00BA1496 /* IL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		A9255F58104324E100BA1496 /* Ogg.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* Ogg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A93E6E5510420B57007D418B /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
-		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; };
+		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
 		A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1C01046EFA70049C70C /* LoveDocument.icns */; };
-		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; };
-		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; };
+		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FA08F69616C766E000F007B5 /* love.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
-		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
+		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
-		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
-		FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */; };
+		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FAC1A449196F5DC600125284 /* license.txt in Resources */ = {isa = PBXBuildFile; fileRef = FAC1A448196F5DC600125284 /* license.txt */; };
 		FAC8E8D416F3C468004DADF3 /* OSX.mm in Sources */ = {isa = PBXBuildFile; fileRef = FAC8E8D316F3C468004DADF3 /* OSX.mm */; };
 /* End PBXBuildFile section */
@@ -201,7 +201,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "love" */;
 			compatibilityVersion = "Xcode 3.2";

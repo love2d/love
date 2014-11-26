@@ -63,7 +63,7 @@ GlyphData *Rasterizer::getGlyphData(const std::string &text) const
 	}
 	catch (utf8::exception &e)
 	{
-		throw love::Exception("Decoding error: %s", e.what());
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
 	return getGlyphData(codepoint);
@@ -89,7 +89,7 @@ bool Rasterizer::hasGlyphs(const std::string &text) const
 	}
 	catch (utf8::exception &e)
 	{
-		throw love::Exception("Decoding error: %s", e.what());
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
 	return true;

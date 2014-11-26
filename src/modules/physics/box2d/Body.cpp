@@ -28,6 +28,9 @@
 #include "World.h"
 #include "Physics.h"
 
+// Needed for luax_pushjoint.
+#include "wrap_Joint.h"
+
 namespace love
 {
 namespace physics
@@ -437,6 +440,30 @@ int Body::getFixtureList(lua_State *L) const
 		i++;
 	}
 	while ((f = f->GetNext()));
+	return 1;
+}
+
+int Body::getJointList(lua_State *L) const
+{
+	lua_newtable(L);
+	const b2JointEdge *je = body->GetJointList();
+	int i = 1;
+
+	do
+	{
+		if (!je)
+			break;
+
+		Joint *joint = (Joint *) Memoizer::find(je->joint);
+		if (!joint)
+			throw love::Exception("A joint has escaped Memoizer!");
+
+		luax_pushjoint(L, joint);
+		lua_rawseti(L, -2, i);
+		i++;
+	}
+	while ((je = je->next));
+
 	return 1;
 }
 

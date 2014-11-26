@@ -64,6 +64,9 @@ public:
 	 **/
 	float getRatio() const;
 
+	Joint *getJointA() const;
+	Joint *getJointB() const;
+
 private:
 	// The Box2D GearJoint object.
 	b2GearJoint *joint;

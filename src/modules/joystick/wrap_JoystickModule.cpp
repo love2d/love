@@ -179,12 +179,16 @@ int w_getGamepadMapping(lua_State *L)
 
 int w_loadGamepadMappings(lua_State *L)
 {
-	lua_pushvalue(L, 1);
-	luax_convobj(L, -1, "filesystem", "isFile");
-	bool isfile = luax_toboolean(L, -1);
-	lua_pop(L, 1);
-
+	bool isfile = true;
 	std::string mappings;
+
+	if (lua_isstring(L, 1))
+	{
+		lua_pushvalue(L, 1);
+		luax_convobj(L, -1, "filesystem", "isFile");
+		isfile = luax_toboolean(L, -1);
+		lua_pop(L, 1);
+	}
 
 	if (isfile)
 	{
