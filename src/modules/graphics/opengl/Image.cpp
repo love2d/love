@@ -256,6 +256,7 @@ void Image::checkMipmapsCreated()
 
 void Image::setFilter(const Texture::Filter &f)
 {
+	const Filter oldfilter = filter;
 	filter = f;
 
 	// We don't want filtering or (attempted) mipmaps on the default texture.
@@ -267,7 +268,18 @@ void Image::setFilter(const Texture::Filter &f)
 
 	bind();
 	gl.setTextureFilter(filter);
-	checkMipmapsCreated();
+
+	try
+	{
+		checkMipmapsCreated();
+	}
+	catch (love::Exception &)
+	{
+		// Don't keep the new mipmap filter if we can't create mipmaps.
+		filter = oldfilter;
+		gl.setTextureFilter(filter);
+		throw;
+	}
 }
 
 void Image::setWrap(const Texture::Wrap &w)
