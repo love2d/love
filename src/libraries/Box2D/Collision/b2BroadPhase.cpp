@@ -17,7 +17,7 @@
 */
 
 #include <Box2D/Collision/b2BroadPhase.h>
-#include <memory.h>
+#include <string.h>
 
 b2BroadPhase::b2BroadPhase()
 {
