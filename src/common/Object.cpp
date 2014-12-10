@@ -30,8 +30,7 @@ Object::Object()
 }
 
 Object::Object(const Object & /*other*/)
-	// New objects should always have a reference count of 1.
-	: count(1)
+	: count(1) // Always start with a reference count of 1.
 {
 }
 
@@ -46,13 +45,13 @@ int Object::getReferenceCount() const
 
 void Object::retain()
 {
-	std::atomic_fetch_add_explicit(&count, 1, std::memory_order_relaxed);
+	count.fetch_add(1, std::memory_order_relaxed);
 }
 
 void Object::release()
 {
 	// http://www.boost.org/doc/libs/1_56_0/doc/html/atomic/usage_examples.html
-	if (std::atomic_fetch_sub_explicit(&count, 1, std::memory_order_release) == 1)
+	if (count.fetch_sub(1, std::memory_order_release) == 1)
 	{
 		std::atomic_thread_fence(std::memory_order_acquire);
 		delete this;
