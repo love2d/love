@@ -27,6 +27,9 @@
 #include "filesystem/File.h"
 #include "filesystem/FileData.h"
 
+// C
+#include <cstring>
+
 namespace love
 {
 namespace thread
@@ -37,7 +40,29 @@ namespace thread
 int w_newThread(lua_State *L)
 {
 	std::string name = "Thread code";
-	love::Data *data = 0;
+	love::Data *data = nullptr;
+
+	if (lua_isstring(L, 1))
+	{
+		size_t slen = 0;
+		const char *str = lua_tolstring(L, 1, &slen);
+
+		// Treat the string as Lua code if it's long or has a newline.
+		if (slen >= 1024 || memchr(str, '\n', slen))
+		{
+			// Construct a FileData from the string.
+			lua_pushvalue(L, 1);
+			lua_pushstring(L, "string");
+			int idxs[] = {lua_gettop(L) - 1, lua_gettop(L)};
+			luax_convobj(L, idxs, 2, "filesystem", "newFileData");
+			lua_pop(L, 1);
+			lua_replace(L, 1);
+		}
+		else
+			luax_convobj(L, 1, "filesystem", "newFileData");
+	}
+	else if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+		luax_convobj(L, 1, "filesystem", "newFileData");
 
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
 		luax_convobj(L, 1, "filesystem", "newFileData");
