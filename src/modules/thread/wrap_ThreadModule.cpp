@@ -64,9 +64,6 @@ int w_newThread(lua_State *L)
 	else if (luax_istype(L, 1, FILESYSTEM_FILE_T))
 		luax_convobj(L, 1, "filesystem", "newFileData");
 
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T))
-		luax_convobj(L, 1, "filesystem", "newFileData");
-
 	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
 		love::filesystem::FileData *fdata = luax_checktype<love::filesystem::FileData>(L, 1, "FileData", FILESYSTEM_FILE_DATA_T);
