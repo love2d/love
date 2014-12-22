@@ -25,6 +25,8 @@
 #include "common/Object.h"
 #include "common/Vector.h"
 #include <vector>
+#include <map>
+#include <memory>
 
 namespace love
 {

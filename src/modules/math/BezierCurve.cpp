@@ -195,28 +195,15 @@ vector<Vector> BezierCurve::renderSegment(double start, double end, size_t accur
 	}
 	else if (start < end)
 	{
-		if (start > 0 && start < 1)
-		{
-			for (size_t i = 0; i < vertices.size(); ++i)
-			{
-				if ((double)i / vertices.size() > start)
-				{
-					vertices.erase(vertices.begin(), vertices.begin() + i - 1);
-					break;
-				}
-			}
-		}
-		if (end < 1 && end > 0)
-		{
-			for (size_t i = vertices.size(); i > 0; --i)
-			{
-				if ((double)(i - 1) / vertices.size() < end)
-				{
-					vertices.erase(vertices.begin() + i, vertices.end());
-					break;
-				}
-			}
-		}
+		size_t start_idx = size_t(start * vertices.size());
+		size_t end_idx = size_t(end * vertices.size() + 0.5);
+		return std::vector<Vector>(vertices.begin() + start_idx, vertices.begin() + end_idx);
+	}
+	else if (end > start)
+	{
+		size_t start_idx = size_t(end * vertices.size() + 0.5);
+		size_t end_idx = size_t(start * vertices.size());
+		return std::vector<Vector>(vertices.begin() + start_idx, vertices.begin() + end_idx);
 	}
 	return vertices;
 }
