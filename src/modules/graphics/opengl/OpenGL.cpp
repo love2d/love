@@ -581,32 +581,22 @@ float OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 
 void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
 {
-	GLint gs, gt;
-
-	switch (w.s)
+	auto glWrapMode = [](Texture::WrapMode wmode) -> GLint
 	{
-	case Texture::WRAP_CLAMP:
-		gs = GL_CLAMP_TO_EDGE;
-		break;
-	case Texture::WRAP_REPEAT:
-	default:
-		gs = GL_REPEAT;
-		break;
-	}
+		switch (wmode)
+		{
+		case Texture::WRAP_CLAMP:
+		default:
+			return GL_CLAMP_TO_EDGE;
+		case Texture::WRAP_REPEAT:
+			return GL_REPEAT;
+		case Texture::WRAP_MIRRORED_REPEAT:
+			return GL_MIRRORED_REPEAT;
+		}
+	};
 
-	switch (w.t)
-	{
-	case Texture::WRAP_CLAMP:
-		gt = GL_CLAMP_TO_EDGE;
-		break;
-	case Texture::WRAP_REPEAT:
-	default:
-		gt = GL_REPEAT;
-		break;
-	}
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gs);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gt);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode(w.s));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode(w.t));
 }
 
 int OpenGL::getMaxTextureSize() const

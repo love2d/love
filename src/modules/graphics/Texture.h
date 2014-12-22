@@ -44,6 +44,7 @@ public:
 	{
 		WRAP_CLAMP,
 		WRAP_REPEAT,
+		WRAP_MIRRORED_REPEAT,
 		WRAP_MAX_ENUM
 	};
 

@@ -121,6 +121,7 @@ StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM>::Entry Texture::wrapModeEnt
 {
 	{ "clamp", Texture::WRAP_CLAMP },
 	{ "repeat", Texture::WRAP_REPEAT },
+	{ "mirroredrepeat", Texture::WRAP_MIRRORED_REPEAT },
 };
 
 StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM> Texture::wrapModes(Texture::wrapModeEntries, sizeof(Texture::wrapModeEntries));
