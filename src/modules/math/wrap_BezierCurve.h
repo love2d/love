@@ -36,6 +36,7 @@ int w_BezierCurve_getDerivative(lua_State *L);
 int w_BezierCurve_getControlPoint(lua_State *L);
 int w_BezierCurve_setControlPoint(lua_State *L);
 int w_BezierCurve_insertControlPoint(lua_State *L);
+int w_BezierCurve_removeControlPoint(lua_State *L);
 int w_BezierCurve_getControlPointCount(lua_State *L);
 int w_BezierCurve_translate(lua_State *L);
 int w_BezierCurve_rotate(lua_State *L);

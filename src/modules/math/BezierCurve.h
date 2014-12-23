@@ -25,8 +25,6 @@
 #include "common/Object.h"
 #include "common/Vector.h"
 #include <vector>
-#include <map>
-#include <memory>
 
 namespace love
 {
@@ -75,6 +73,12 @@ public:
 	 **/
 	void insertControlPoint(const Vector &point, int pos = -1);
 
+	/**
+	 * Remove the i'th control point from the curve.
+	 * @param i Control point to remove
+	 **/
+	void removeControlPoint(int i);
+	
 	/**
 	 * @returns Number of control points.
 	 **/

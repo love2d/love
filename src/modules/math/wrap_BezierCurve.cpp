@@ -54,8 +54,7 @@ int w_BezierCurve_getControlPoint(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	int idx = luaL_checkinteger(L, 2);
 
-	if (idx > 0) // 1-indexing
-		idx--;
+	idx--; // 1-indexing
 
 	luax_catchexcept(L, [&]() {
 		Vector v = curve->getControlPoint(idx);
@@ -73,8 +72,7 @@ int w_BezierCurve_setControlPoint(lua_State *L)
 	float vx = (float) luaL_checknumber(L, 3);
 	float vy = (float) luaL_checknumber(L, 4);
 
-	if (idx > 0) // 1-indexing
-		idx--;
+	idx--; // 1-indexing
 
 	luax_catchexcept(L, [&](){ curve->setControlPoint(idx, Vector(vx,vy)); });
 	return 0;
@@ -94,6 +92,17 @@ int w_BezierCurve_insertControlPoint(lua_State *L)
 	return 0;
 }
 
+int w_BezierCurve_removeControlPoint(lua_State *L)
+{
+	BezierCurve *curve = luax_checkbeziercurve(L, 1);
+	int idx = luaL_checkint(L, 2);
+	
+	idx--; // 1-indexing
+	
+	luax_catchexcept(L, [&](){ curve->removeControlPoint(idx); });
+	return 0;
+}
+	
 int w_BezierCurve_getControlPointCount(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
@@ -194,6 +203,7 @@ static const luaL_Reg functions[] =
 	{"getControlPoint", w_BezierCurve_getControlPoint},
 	{"setControlPoint", w_BezierCurve_setControlPoint},
 	{"insertControlPoint", w_BezierCurve_insertControlPoint},
+	{"removeControlPoint", w_BezierCurve_removeControlPoint},
 	{"getControlPointCount", w_BezierCurve_getControlPointCount},
 	{"translate", w_BezierCurve_translate},
 	{"rotate", w_BezierCurve_rotate},
