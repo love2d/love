@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 	lua_pushstring(L, "love");
 	lua_call(L, 1, 1); // leave the returned table on the stack.
 
-	// Add love.__exe = true.
+	// Add love._exe = true.
 	// This indicates that we're running the standalone version of love, and not
 	// the library version.
 	{
