@@ -249,7 +249,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 
 		const image::ImageData *id = images[c.page].get();
 
-		if (!id->inside(c.x, c.y) || !id->inside(c.x + c.metrics.width, c.y + c.metrics.height))
+		if (!id->inside(c.x, c.y) || !id->inside(c.x + c.metrics.width - 1, c.y + c.metrics.height - 1))
 			throw love::Exception("Invalid BMFont character coordinates.");
 
 		if (guessheight)
