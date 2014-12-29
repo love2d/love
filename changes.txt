@@ -11,11 +11,15 @@ LOVE 0.9.2 [Baby Inspector]
   * Added ParticleSystem:setLinearDamping.
   * Added SpriteBatch:flush.
   * Added love.graphics.getStats.
+  * Added "mirroredrepeat" wrap mode.
   * Added optional duration argument to Joystick:setVibration.
   * Added love.joystick.loadGamepadMappings and love.joystick.saveGamepadMappings.
   * Added Joint:setUserData and Joint:getUserData.
+  * Added Joint:getBodies.
+  * Added GearJoint:getJoints.
   * Added Contact:getFixtures and Body:getContactList.
   * Added Body:getWorld.
+  * Added Body:getJointList.
   * Added love.window.getDisplayName.
   * Added love.window.minimize.
   * Added love.window.showMessageBox.
@@ -33,19 +37,22 @@ LOVE 0.9.2 [Baby Inspector]
   * Fixed the default love.filesystem identity when in Fused mode in Windows.
   * Fixed love.system.openURL sometimes blocking indefinitely on Linux.
   * Fixed love.joystick.setGamepadMapping.
+  * Fixed the order of vertices in ChainShapes.
   * Fixed shader:getWarnings returning unnecessary information.
   * Fixed some cases of noncompliant shader code not properly erroring on some nvidia drivers.
   * Fixed a potential crash when Shader objects are garbage collected.
+  * Fixed a potential small memory leak triggered when love.graphics.newShader errors.
   * Fixed love.graphics.newMesh(vertexcount, ...) causing the Mesh to do instanced rendering.
   * Fixed Mesh:getVertexMap.
   * Fixed Image:refresh generating mipmaps multiple times if mipmap filtering is enabled.
+  * Fixed Image:setMipmapFilter to not keep bad state around if it errors.
   * Fixed Mesh:setDrawRange when the Mesh has a vertex map set.
   * Fixed internal detection of the 'position' and 'effect' shader functions.
   * Fixed Texture memory leak when Meshes are garbage collected.
   * Fixed the default line join mode to be 'miter' instead of an undefined value.
   * Fixed the default error handler text size when highdpi mode is enabled on a Retina monitor.
   * Fixed the default error handler background color when sRGB mode is enabled for the window.
-  * Fixed love.window.setMode to fall back to the largest available mode if a width or height greater than the largest supported is specified and fullscreen=true.
+  * Fixed love.window.setMode to fall back to the largest available mode if a width or height greater than the largest supported is specified and fullscreen is used.
   * Fixed the state of wireframe mode when love.window.setMode is called.
   * Fixed Canvas:getPixel to error if the coordinates are not within the Canvas' size.
   * Fixed detection of compressed textures to work regardless of the file's extension.
@@ -58,13 +65,17 @@ LOVE 0.9.2 [Baby Inspector]
   * Updated the paths returned by love.filesystem.getSaveDirectory and friends to strip double-slashes from the string.
   * Updated the error message when love.filesystem.write or File:open fails because the directory doesn't exist.
   * Updated the error message when love.math.setRandomseed(0) is attempted.
+  * Updated the error message when invalid UTF-8 strings are used in love functions that expect UTF-8.
+  * Updated love.physics.newPolygonShape and love.physics.newChainShape to accept a table of vertices.
   * Updated love.physics.newChainShape to error if the number of arguments is invalid.
+  * Updated love.thread.newThread to accept a literal string of code directly.
   * Updated love-created threads to use names visible in external debuggers.
   * Updated SpriteBatch:unbind to use less VRAM if the SpriteBatch has the static usage hint.
   * Updated love.graphics.newImage, love.image.newImageData, etc. to leave less Lua-owned memory around.
   * Updated love.graphics.push to accept different stack types to push. Current types are "transform" and "all".
   * Updated love shaders to accept GLSL ES precision qualifiers on variables, although they do nothing.
   * Updated the error message for love.graphics.newShader to be less cryptic if an invalid filename is given.
+  * Updated compressed texture loading code to allow BC6 and BC7 compressed textures (if the graphics driver supports them.)
 
 LOVE 0.9.1 [Baby Inspector]
 ---------------------------
