@@ -124,15 +124,15 @@ void BezierCurve::setControlPoint(int i, const Vector &point)
 	controlPoints[i] = point;
 }
 
-void BezierCurve::insertControlPoint(const Vector &point, int pos)
+void BezierCurve::insertControlPoint(const Vector &point, int i)
 {
-	if (pos < 0)
-		pos += controlPoints.size() + 1;
+	while (i < 0)
+		i += controlPoints.size() + 1;
 
-	if (pos < 0 || (size_t)  pos > controlPoints.size())
+	while ((size_t)  i > controlPoints.size())
 		throw Exception("Invalid control point index");
 
-	controlPoints.insert(controlPoints.begin() + pos, point);
+	controlPoints.insert(controlPoints.begin() + i, point);
 }
 
 void BezierCurve::removeControlPoint(int i)

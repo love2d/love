@@ -54,7 +54,8 @@ int w_BezierCurve_getControlPoint(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	int idx = luaL_checkinteger(L, 2);
 
-	idx--; // 1-indexing
+	if (idx > 0) // 1-indexing
+		idx--;
 
 	luax_catchexcept(L, [&]() {
 		Vector v = curve->getControlPoint(idx);
@@ -72,7 +73,8 @@ int w_BezierCurve_setControlPoint(lua_State *L)
 	float vx = (float) luaL_checknumber(L, 3);
 	float vy = (float) luaL_checknumber(L, 4);
 
-	idx--; // 1-indexing
+	if (idx > 0) // 1-indexing
+		idx--;
 
 	luax_catchexcept(L, [&](){ curve->setControlPoint(idx, Vector(vx,vy)); });
 	return 0;
@@ -97,7 +99,8 @@ int w_BezierCurve_removeControlPoint(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	int idx = luaL_checkint(L, 2);
 	
-	idx--; // 1-indexing
+	if (idx > 0) // 1-indexing
+		idx--;
 	
 	luax_catchexcept(L, [&](){ curve->removeControlPoint(idx); });
 	return 0;
