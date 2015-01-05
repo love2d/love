@@ -418,6 +418,12 @@ int w_minimize(lua_State* /*L*/)
 	return 0;
 }
 
+int w_maximize(lua_State *)
+{
+	instance()->maximize();
+	return 0;
+}
+
 int w_showMessageBox(lua_State *L)
 {
 	Window::MessageBoxData data = {};

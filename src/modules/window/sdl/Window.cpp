@@ -664,6 +664,12 @@ void Window::minimize()
 		SDL_MinimizeWindow(window);
 }
 
+void Window::maximize()
+{
+	if (window != nullptr)
+		SDL_MaximizeWindow(window);
+}
+
 void Window::swapBuffers()
 {
 	SDL_GL_SwapWindow(window);

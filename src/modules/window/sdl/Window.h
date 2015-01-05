@@ -72,6 +72,7 @@ public:
 	love::image::ImageData *getIcon();
 
 	void minimize();
+	void maximize();
 
 	void swapBuffers();
 

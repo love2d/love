@@ -141,6 +141,7 @@ public:
 	virtual love::image::ImageData *getIcon() = 0;
 
 	virtual void minimize() = 0;
+	virtual void maximize() = 0;
 
 	// default no-op implementation
 	virtual void swapBuffers();
