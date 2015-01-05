@@ -147,6 +147,13 @@ int w_Joint_destroy(lua_State *L)
 	return 0;
 }
 
+int w_Joint_isDestroyed(lua_State *L)
+{
+	Joint *t = luax_checktype<Joint>(L, 1, "Joint", PHYSICS_JOINT_T);
+	luax_pushboolean(L, !t->isValid());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getType", w_Joint_getType },
@@ -158,6 +165,7 @@ static const luaL_Reg functions[] =
 	{ "setUserData", w_Joint_setUserData },
 	{ "getUserData", w_Joint_getUserData },
 	{ "destroy", w_Joint_destroy },
+	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 

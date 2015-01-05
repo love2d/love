@@ -55,6 +55,7 @@ int w_World_getContactList(lua_State *L);
 int w_World_queryBoundingBox(lua_State *L);
 int w_World_rayCast(lua_State *L);
 int w_World_destroy(lua_State *L);
+int w_World_isDestroyed(lua_State *L);
 extern "C" int luaopen_world(lua_State *L);
 
 } // box2d

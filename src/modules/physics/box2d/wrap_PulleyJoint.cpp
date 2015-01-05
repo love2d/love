@@ -79,6 +79,7 @@ static const luaL_Reg functions[] =
 	{ "setUserData", w_Joint_setUserData },
 	{ "getUserData", w_Joint_getUserData },
 	{ "destroy", w_Joint_destroy },
+	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 

@@ -60,6 +60,7 @@ int w_Fixture_getMassData(lua_State *L);
 int w_Fixture_getGroupIndex(lua_State *L);
 int w_Fixture_setGroupIndex(lua_State *L);
 int w_Fixture_destroy(lua_State *L);
+int w_Fixture_isDestroyed(lua_State *L);
 extern "C" int luaopen_fixture(lua_State *L);
 
 } // box2d
