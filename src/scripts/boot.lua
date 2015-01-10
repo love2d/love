@@ -481,10 +481,6 @@ function love.run()
 		for i=1,3 do love.math.random() end
 	end
 
-	if love.event then
-		love.event.pump()
-	end
-
 	if love.load then love.load(arg) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
