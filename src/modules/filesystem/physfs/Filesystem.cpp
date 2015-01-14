@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include "common/utf8.h"
 #include "common/b64.h"
