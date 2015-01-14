@@ -21,33 +21,31 @@
 // LOVE
 #include "Object.h"
 
-#include <stdio.h>
-
 namespace love
 {
 
 Object::Object()
-	: count(1)
 {
+	count.value = 1;
 }
 
 Object::~Object()
 {
 }
 
-int Object::getReferenceCount() const
+int Object::getReferenceCount()
 {
-	return count;
+	return SDL_AtomicGet(&count);
 }
 
 void Object::retain()
 {
-	++count;
+	SDL_AtomicIncRef(&count);
 }
 
 void Object::release()
 {
-	if (--count <= 0)
+	if (SDL_AtomicDecRef(&count))
 		delete this;
 }
 

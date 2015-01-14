@@ -247,7 +247,7 @@ int w_isConvex(lua_State *L)
 		}
 	}
 
-	lua_pushboolean(L, Math::instance.isConvex(vertices));
+	luax_pushboolean(L, Math::instance.isConvex(vertices));
 	return 1;
 }
 
