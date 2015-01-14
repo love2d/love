@@ -23,7 +23,6 @@
 
 // LOVE
 #include "types.h"
-#include "Object.h"
 
 // Lua
 extern "C" {
@@ -40,6 +39,7 @@ namespace love
 {
 
 // Forward declarations.
+class Object;
 class Module;
 class Reference;
 
