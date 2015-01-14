@@ -558,10 +558,9 @@ int loader(lua_State *L)
 	for (std::string element : inst->getRequirePath())
 	{
 		size_t pos = element.find('?');
-		if (pos == std::string::npos)
-			continue;
+		if (pos != std::string::npos)
+			element.replace(pos, 1, modulename);
 
-		element.replace(pos, 1, modulename);
 		if (inst->isFile(element.c_str()))
 		{
 			lua_pop(L, 1);
