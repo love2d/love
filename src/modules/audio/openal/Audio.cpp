@@ -131,8 +131,6 @@ Audio::Audio()
 
 Audio::~Audio()
 {
-	stop();
-
 	poolThread->setFinish();
 	poolThread->wait();
 
