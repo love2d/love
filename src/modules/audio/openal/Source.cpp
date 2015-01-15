@@ -651,6 +651,14 @@ ALenum Source::getFormat(int channels, int bitDepth) const
 		return AL_FORMAT_STEREO8;
 	else if (channels == 2 && bitDepth == 16)
 		return AL_FORMAT_STEREO16;
+	else if (channels == 6 && bitDepth == 8)
+		return AL_FORMAT_51CHN8;
+	else if (channels == 6 && bitDepth == 16)
+		return AL_FORMAT_51CHN16;
+	else if (channels == 8 && bitDepth == 8)
+		return AL_FORMAT_71CHN8;
+	else if (channels == 8 && bitDepth == 16)
+		return AL_FORMAT_71CHN16;
 	else
 		return 0;
 }
