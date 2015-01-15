@@ -338,6 +338,13 @@ function love.init()
 		appendidentity = false,
 	}
 
+	-- Console hack, part 1.
+	local openedconsole = false
+	if love.arg.options.console.set and love._openConsole then
+		love._openConsole()
+		openedconsole = true
+	end
+
 	-- If config file exists, load it and allow it to update config table.
 	if not love.conf and love.filesystem and love.filesystem.isFile("conf.lua") then
 		require("conf")
@@ -352,12 +359,8 @@ function love.init()
 		-- the error message can be displayed in the window.
 	end
 
-	if love.arg.options.console.set then
-		c.console = true
-	end
-
-	-- Console hack
-	if c.console and love._openConsole then
+	-- Console hack, part 2.
+	if c.console and love._openConsole and not openedconsole then
 		love._openConsole()
 	end
 
