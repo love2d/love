@@ -496,9 +496,6 @@ function love.run()
 			for e,a,b,c,d in love.event.poll() do
 				if e == "quit" then
 					if not love.quit or not love.quit() then
-						if love.audio then
-							love.audio.stop()
-						end
 						return
 					end
 				end
