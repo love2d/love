@@ -33,6 +33,17 @@ namespace audio
 namespace openal
 {
 
+class InvalidFormatException : public love::Exception
+{
+public:
+
+	InvalidFormatException(int channels, int bitdepth)
+		: Exception("%d-channel Sources with %d bits per sample are not supported.", channels, bitdepth)
+	{
+	}
+
+};
+
 StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
 {
 	alGenBuffers(1, &buffer);
@@ -68,6 +79,9 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, toLoop(0)
 {
 	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
+	if (fmt == 0)
+		throw InvalidFormatException(soundData->getChannels(), soundData->getBitDepth());
+
 	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate()));
 
 	// The buffer has a +2 retain count right now, but we want it to have +1.
@@ -103,6 +117,9 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, decoder(decoder)
 	, toLoop(0)
 {
+	if (getFormat(decoder->getChannels(), decoder->getBitDepth()) == 0)
+		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
+
 	alGenBuffers(MAX_BUFFERS, streamBuffers);
 
 	float z[3] = {0, 0, 0};
@@ -651,16 +668,22 @@ ALenum Source::getFormat(int channels, int bitDepth) const
 		return AL_FORMAT_STEREO8;
 	else if (channels == 2 && bitDepth == 16)
 		return AL_FORMAT_STEREO16;
-	else if (channels == 6 && bitDepth == 8)
-		return AL_FORMAT_51CHN8;
-	else if (channels == 6 && bitDepth == 16)
-		return AL_FORMAT_51CHN16;
-	else if (channels == 8 && bitDepth == 8)
-		return AL_FORMAT_71CHN8;
-	else if (channels == 8 && bitDepth == 16)
-		return AL_FORMAT_71CHN16;
-	else
-		return 0;
+
+#ifdef AL_EXT_MCFORMATS
+	if (alIsExtensionPresent("AL_EXT_MCFORMATS"))
+	{
+		if (channels == 6 && bitDepth == 8)
+			return AL_FORMAT_51CHN8;
+		else if (channels == 6 && bitDepth == 16)
+			return AL_FORMAT_51CHN16;
+		else if (channels == 8 && bitDepth == 8)
+			return AL_FORMAT_71CHN8;
+		else if (channels == 8 && bitDepth == 16)
+			return AL_FORMAT_71CHN16;
+	}
+#endif
+
+	return 0;
 }
 
 int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
