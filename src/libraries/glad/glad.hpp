@@ -2,7 +2,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2013 David Herberth, modified by Alex Szpakowski
+ * Copyright (c) 2013 David Herberth, modified by Alex Szpakowski and Bart van Strien
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -59,6 +59,10 @@
 #define GLAPI extern
 #endif
 
+// Change by Bart van Strien
+// Move stddef.h outside of the namespace to prevent importing all types into
+// that namespace, breaking compilation further on.
+#include <stddef.h>
 namespace glad {
 
 bool gladLoadGL(void);
@@ -67,7 +71,6 @@ typedef void* (* LOADER)(const char *name);
 bool gladLoadGLLoader(LOADER);
 
 
-#include <stddef.h>
 #ifndef GLEXT_64_TYPES_DEFINED
 /* This code block is duplicated in glxext.h, so must be protected */
 #define GLEXT_64_TYPES_DEFINED
