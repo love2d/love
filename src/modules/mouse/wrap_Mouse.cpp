@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -179,6 +179,19 @@ int w_isGrabbed(lua_State *L)
 	return 1;
 }
 
+int w_setRelative(lua_State *L)
+{
+	bool relative = luax_toboolean(L, 1);
+	luax_pushboolean(L, instance()->setRelative(relative));
+	return 1;
+}
+
+int w_isRelative(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isRelative());
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -197,6 +210,8 @@ static const luaL_Reg functions[] =
 	{ "getPosition", w_getPosition },
 	{ "setGrabbed", w_setGrabbed },
 	{ "isGrabbed", w_isGrabbed },
+	{ "setRelative", w_setRelative },
+	{ "isRelative", w_isRelative },
 	{ 0, 0 }
 };
 

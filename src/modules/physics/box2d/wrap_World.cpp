@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -189,6 +189,13 @@ int w_World_destroy(lua_State *L)
 	return 0;
 }
 
+int w_World_isDestroyed(lua_State *L)
+{
+	World *w = luax_checktype<World>(L, 1, "World", PHYSICS_WORLD_T);
+	luax_pushboolean(L, !w->isValid());
+	return 1;
+}
+
 
 static const luaL_Reg functions[] =
 {
@@ -212,6 +219,7 @@ static const luaL_Reg functions[] =
 	{ "queryBoundingBox", w_World_queryBoundingBox },
 	{ "rayCast", w_World_rayCast },
 	{ "destroy", w_World_destroy },
+	{ "isDestroyed", w_World_isDestroyed },
 	{ 0, 0 }
 };
 

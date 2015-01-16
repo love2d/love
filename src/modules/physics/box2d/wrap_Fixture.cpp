@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -262,6 +262,13 @@ int w_Fixture_destroy(lua_State *L)
 	return 0;
 }
 
+int w_Fixture_isDestroyed(lua_State *L)
+{
+	Fixture *f = luax_checktype<Fixture>(L, 1, "Fixture", PHYSICS_FIXTURE_T);
+	luax_pushboolean(L, !f->isValid());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getType", w_Fixture_getType },
@@ -290,6 +297,7 @@ static const luaL_Reg functions[] =
 	{ "getGroupIndex", w_Fixture_getGroupIndex },
 	{ "setGroupIndex", w_Fixture_setGroupIndex },
 	{ "destroy", w_Fixture_destroy },
+	{ "isDestroyed", w_Fixture_isDestroyed },
 	{ 0, 0 }
 };
 

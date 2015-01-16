@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -151,6 +151,13 @@ int w_Contact_getFixtures(lua_State *L)
 	return 2;
 }
 
+int w_Contact_isDestroyed(lua_State *L)
+{
+	Contact *c = luax_checktype<Contact>(L, 1, "Contact", PHYSICS_CONTACT_T);
+	luax_pushboolean(L, !c->isValid());
+	return 1;
+}
+
 extern "C" int luaopen_contact(lua_State *L)
 {
 	static const luaL_Reg functions[] =
@@ -170,6 +177,7 @@ extern "C" int luaopen_contact(lua_State *L)
 		{ "getTangentSpeed", w_Contact_getTangentSpeed },
 		{ "getChildren", w_Contact_getChildren },
 		{ "getFixtures", w_Contact_getFixtures },
+		{ "isDestroyed", w_Contact_isDestroyed },
 		{ 0, 0 }
 	};
 

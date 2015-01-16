@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -137,6 +137,7 @@ public:
 	virtual love::image::ImageData *getIcon() = 0;
 
 	virtual void minimize() = 0;
+	virtual void maximize() = 0;
 
 	// default no-op implementation
 	virtual void swapBuffers();

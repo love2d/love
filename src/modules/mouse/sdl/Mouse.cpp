@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -112,10 +112,18 @@ love::mouse::Cursor *Mouse::getCursor() const
 	return curCursor.get();
 }
 
+static Uint32 GetSDLMouseState(int *x, int *y)
+{
+	// SDL's Linux and Windows video backends don't update the internal mouse
+	// state until the next PumpEvents, if SDL_WarpMouse was called previously.
+	SDL_PumpEvents();
+	return SDL_GetMouseState(x, y);
+}
+
 int Mouse::getX() const
 {
 	int x;
-	SDL_GetMouseState(&x, nullptr);
+	GetSDLMouseState(&x, nullptr);
 	windowToPixelCoords(&x, nullptr);
 
 	return x;
@@ -124,7 +132,7 @@ int Mouse::getX() const
 int Mouse::getY() const
 {
 	int y;
-	SDL_GetMouseState(nullptr, &y);
+	GetSDLMouseState(nullptr, &y);
 	windowToPixelCoords(nullptr, &y);
 
 	return y;
@@ -133,7 +141,7 @@ int Mouse::getY() const
 void Mouse::getPosition(int &x, int &y) const
 {
 	int mx, my;
-	SDL_GetMouseState(&mx, &my);
+	GetSDLMouseState(&mx, &my);
 	windowToPixelCoords(&mx, &my);
 
 	x = mx;
@@ -201,6 +209,16 @@ bool Mouse::isGrabbed() const
 		return window->isMouseGrabbed();
 	else
 		return false;
+}
+
+bool Mouse::setRelative(bool relative)
+{
+	return SDL_SetRelativeMouseMode(relative ? SDL_TRUE : SDL_FALSE) == 0;
+}
+
+bool Mouse::isRelative() const
+{
+	return SDL_GetRelativeMouseMode() != SDL_FALSE;
 }
 
 } // sdl

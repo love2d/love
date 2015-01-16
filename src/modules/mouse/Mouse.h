@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -71,6 +71,8 @@ public:
 	virtual bool isVisible() const = 0;
 	virtual void setGrabbed(bool grab) = 0;
 	virtual bool isGrabbed() const = 0;
+	virtual bool setRelative(bool relative) = 0;
+	virtual bool isRelative() const = 0;
 
 	static bool getConstant(const char *in, Button &out);
 	static bool getConstant(Button in, const char  *&out);

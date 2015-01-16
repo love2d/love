@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,6 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/version.h"
 #include "modules/love/love.h"
 #include <SDL.h>
 
@@ -150,6 +151,13 @@ int main(int argc, char **argv)
 	argv = hack_argv;
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
+	if (strcmp(love::VERSION, love_version()) != 0)
+	{
+		printf("Version mismatch detected!\nLOVE binary is version %s\n"
+				"LOVE library is version %s\n", love::VERSION, love_version());
+		return 1;
+	}
+
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
@@ -191,7 +199,7 @@ int main(int argc, char **argv)
 	lua_pushstring(L, "love");
 	lua_call(L, 1, 1); // leave the returned table on the stack.
 
-	// Add love.__exe = true.
+	// Add love._exe = true.
 	// This indicates that we're running the standalone version of love, and not
 	// the library version.
 	{

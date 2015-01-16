@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,6 +45,8 @@ int w_setVisible(lua_State *L);
 int w_isVisible(lua_State *L);
 int w_setGrabbed(lua_State *L);
 int w_isGrabbed(lua_State *L);
+int w_setRelative(lua_State *L);
+int w_isRelative(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_mouse(lua_State *L);
 
 } // mouse

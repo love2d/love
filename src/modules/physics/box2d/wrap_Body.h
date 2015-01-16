@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -88,6 +88,7 @@ int w_Body_getFixtureList(lua_State *L);
 int w_Body_getJointList(lua_State *L);
 int w_Body_getContactList(lua_State *L);
 int w_Body_destroy(lua_State *L);
+int w_Body_isDestroyed(lua_State *L);
 int w_Body_setUserData(lua_State *L);
 int w_Body_getUserData(lua_State *L);
 extern "C" int luaopen_body(lua_State *L);

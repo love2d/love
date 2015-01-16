@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -58,10 +58,12 @@ int w_newSource(lua_State *L)
 
 	Source *t = 0;
 
-	if (luax_istype(L, 1, SOUND_SOUND_DATA_T))
-		t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T));
-	else if (luax_istype(L, 1, SOUND_DECODER_T))
-		t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T));
+	luax_catchexcept(L, [&]() {
+		if (luax_istype(L, 1, SOUND_SOUND_DATA_T))
+			t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T));
+		else if (luax_istype(L, 1, SOUND_DECODER_T))
+			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T));
+	});
 
 	if (t)
 	{

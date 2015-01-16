@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -536,10 +536,12 @@ void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
 		switch (wmode)
 		{
 		case Texture::WRAP_CLAMP:
+		default:
 			return GL_CLAMP_TO_EDGE;
 		case Texture::WRAP_REPEAT:
-		default:
 			return GL_REPEAT;
+		case Texture::WRAP_MIRRORED_REPEAT:
+			return GL_MIRRORED_REPEAT;
 		}
 	};
 
