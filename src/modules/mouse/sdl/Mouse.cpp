@@ -211,6 +211,16 @@ bool Mouse::isGrabbed() const
 		return false;
 }
 
+bool Mouse::setRelative(bool relative)
+{
+	return SDL_SetRelativeMouseMode(relative ? SDL_TRUE : SDL_FALSE) == 0;
+}
+
+bool Mouse::isRelative() const
+{
+	return SDL_GetRelativeMouseMode() != SDL_FALSE;
+}
+
 } // sdl
 } // mouse
 } // love

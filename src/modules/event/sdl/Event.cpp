@@ -40,14 +40,14 @@ namespace sdl
 
 // SDL reports mouse coordinates in the window coordinate system in OS X, but
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
-static void windowToPixelCoords(int *x, int *y)
+static void windowToPixelCoords(double *x, double *y)
 {
 	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
 
 	if (window && x)
-		*x = (int) window->toPixels(*x);
+		*x = window->toPixels(*x);
 	if (window && y)
-		*y = (int) window->toPixels(*y);
+		*y = window->toPixels(*y);
 }
 
 
@@ -112,7 +112,7 @@ Message *Event::convert(const SDL_Event &e) const
 
 	love::keyboard::Keyboard::Key key;
 	love::mouse::Mouse::Button button;
-	Variant *arg1, *arg2, *arg3;
+	Variant *arg1, *arg2, *arg3, *arg4;
 	const char *txt;
 	std::map<SDL_Keycode, love::keyboard::Keyboard::Key>::const_iterator keyit;
 
@@ -169,15 +169,34 @@ Message *Event::convert(const SDL_Event &e) const
 		arg2->release();
 		arg3->release();
 		break;
+	case SDL_MOUSEMOTION:
+		{
+			double x = (double) e.motion.x;
+			double y = (double) e.motion.y;
+			double xrel = (double) e.motion.xrel;
+			double yrel = (double) e.motion.yrel;
+			windowToPixelCoords(&x, &y);
+			windowToPixelCoords(&xrel, &yrel);
+			arg1 = new Variant(x);
+			arg2 = new Variant(y);
+			arg3 = new Variant(xrel);
+			arg4 = new Variant(yrel);
+			msg = new Message("mousemoved", arg1, arg2, arg3, arg4);
+			arg1->release();
+			arg2->release();
+			arg3->release();
+			arg4->release();
+		}
+		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
 		if (buttons.find(e.button.button, button) && mouse::Mouse::getConstant(button, txt))
 		{
-			int x = e.button.x;
-			int y = e.button.y;
+			double x = (double) e.button.x;
+			double y = (double) e.button.y;
 			windowToPixelCoords(&x, &y);
-			arg1 = new Variant((double) x);
-			arg2 = new Variant((double) y);
+			arg1 = new Variant(x);
+			arg2 = new Variant(y);
 			arg3 = new Variant(txt, strlen(txt));
 			msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
 							  "mousepressed" : "mousereleased",
@@ -195,11 +214,14 @@ Message *Event::convert(const SDL_Event &e) const
 				break;
 
 			int mx, my;
+			double dmx, dmy;
 			SDL_GetMouseState(&mx, &my);
-			windowToPixelCoords(&mx, &my);
+			dmx = (double) mx;
+			dmy = (double) my;
+			windowToPixelCoords(&dmx, &dmy);
 
-			arg1 = new Variant((double) mx);
-			arg2 = new Variant((double) my);
+			arg1 = new Variant(dmx);
+			arg2 = new Variant(dmy);
 			arg3 = new Variant(txt, strlen(txt));
 			msg = new Message("mousepressed", arg1, arg2, arg3);
 			arg1->release();

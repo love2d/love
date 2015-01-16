@@ -73,6 +73,8 @@ public:
 	virtual bool isVisible() const = 0;
 	virtual void setGrabbed(bool grab) = 0;
 	virtual bool isGrabbed() const = 0;
+	virtual bool setRelative(bool relative) = 0;
+	virtual bool isRelative() const = 0;
 
 	static bool getConstant(const char *in, Button &out);
 	static bool getConstant(Button in, const char  *&out);
