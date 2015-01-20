@@ -55,6 +55,14 @@ public:
 	 **/
 	virtual void postdraw() {}
 
+	/**
+	 * Unextended OpenGL ES 2 doesn't support non-clamp wrap modes or mipmapping
+	 * with non-power-of-two textures.
+	 **/
+	static bool hasLimitedNpot()
+	{
+		return GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot);
+	}
 
 }; // Texture
 

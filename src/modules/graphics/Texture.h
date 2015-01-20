@@ -95,7 +95,7 @@ public:
 	virtual void setFilter(const Filter &f) = 0;
 	virtual const Filter &getFilter() const;
 
-	virtual void setWrap(const Wrap &w) = 0;
+	virtual bool setWrap(const Wrap &w) = 0;
 	virtual const Wrap &getWrap() const;
 
 	virtual const Vertex *getVertices() const;

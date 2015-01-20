@@ -105,8 +105,8 @@ int w_Texture_setWrap(lua_State *L)
 	if (!Texture::getConstant(tstr, w.t))
 		return luaL_error(L, "Invalid wrap mode, %s", tstr);
 
-	t->setWrap(w);
-	return 0;
+	luax_pushboolean(L, t->setWrap(w));
+	return 1;
 }
 
 int w_Texture_getWrap(lua_State *L)

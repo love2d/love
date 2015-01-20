@@ -254,12 +254,16 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	// Set whether drawing converts input from linear -> sRGB colorspace.
-	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB)
+	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
+		|| GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB)
 	{
-		if (sRGB)
-			glEnable(GL_FRAMEBUFFER_SRGB);
-		else
-			glDisable(GL_FRAMEBUFFER_SRGB);
+		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
+		{
+			if (sRGB)
+				glEnable(GL_FRAMEBUFFER_SRGB);
+			else
+				glDisable(GL_FRAMEBUFFER_SRGB);
+		}
 	}
 	else
 		sRGB = false;

@@ -108,7 +108,7 @@ public:
 	virtual GLuint getGLTexture() const;
 
 	virtual void setFilter(const Texture::Filter &f);
-	virtual void setWrap(const Texture::Wrap &w);
+	virtual bool setWrap(const Texture::Wrap &w);
 
 	void setMipmapSharpness(float sharpness);
 	float getMipmapSharpness() const;

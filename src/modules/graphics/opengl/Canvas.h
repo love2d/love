@@ -71,7 +71,7 @@ public:
 	// Implements Texture.
 	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 	virtual void setFilter(const Texture::Filter &f);
-	virtual void setWrap(const Texture::Wrap &w);
+	virtual bool setWrap(const Texture::Wrap &w);
 	virtual GLuint getGLTexture() const;
 	virtual void predraw();
 

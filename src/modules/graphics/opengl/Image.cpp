@@ -155,12 +155,24 @@ void Image::setFilter(const Texture::Filter &f)
 	gl.setTextureFilter(filter);
 }
 
-void Image::setWrap(const Texture::Wrap &w)
+bool Image::setWrap(const Texture::Wrap &w)
 {
+	bool success = true;
 	wrap = w;
+
+	if (hasLimitedNpot() && (width != next_p2(width) || height != next_p2(height)))
+	{
+		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
+			success = false;
+
+		// If we only have limited NPOT support then the wrap mode must be CLAMP.
+		wrap.s = wrap.t = WRAP_CLAMP;
+	}
 
 	bind();
 	gl.setTextureWrap(w);
+
+	return success;
 }
 
 void Image::setMipmapSharpness(float sharpness)
@@ -263,10 +275,18 @@ void Image::loadTextureFromCompressedData()
 void Image::loadTextureFromImageData()
 {
 	GLenum iformat = flags.sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+	GLenum format  = GL_RGBA;
+
+	// in GLES2, the internalformat and format params of TexImage have to match.
+	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
+	{
+		format  = flags.sRGB ? GL_SRGB_ALPHA : GL_RGBA;
+		iformat = format;
+	}
 
 	{
 		love::thread::Lock lock(data->getMutex());
-		glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0, GL_RGBA,
+		glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0, format,
 		             GL_UNSIGNED_BYTE, data->getData());
 	}
 
@@ -292,14 +312,21 @@ bool Image::loadVolatile()
 			throw love::Exception("sRGB images are not supported on this system.");
 	}
 
+	// NPOT textures don't support mipmapping without full NPOT support.
+	if (hasLimitedNpot() && (width != next_p2(width) || height != next_p2(height)))
+	{
+		flags.mipmaps = false;
+		filter.mipmap = FILTER_NONE;
+	}
+
 	if (maxMipmapSharpness == 0.0f && GLAD_VERSION_1_4)
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
 	glGenTextures(1, &texture);
 	gl.bindTexture(texture);
 
-	gl.setTextureFilter(filter);
-	gl.setTextureWrap(wrap);
+	setFilter(filter);
+	setWrap(wrap);
 	setMipmapSharpness(mipmapSharpness);
 
 	// Use a default texture if the size is too big for the system.
@@ -616,7 +643,7 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::Format format, bo
 
 bool Image::hasSRGBSupport()
 {
-	return GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
+	return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
 }
 
 bool Image::getConstant(const char *in, FlagType &out)

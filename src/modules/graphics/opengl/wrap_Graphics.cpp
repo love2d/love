@@ -713,26 +713,20 @@ int w_getBlendMode(lua_State *L)
 
 int w_setDefaultFilter(lua_State *L)
 {
-	Texture::FilterMode min;
-	Texture::FilterMode mag;
+	Texture::Filter f;
 
 	const char *minstr = luaL_checkstring(L, 1);
 	const char *magstr = luaL_optstring(L, 2, minstr);
 
-	if (!Texture::getConstant(minstr, min))
+	if (!Texture::getConstant(minstr, f.min))
 		return luaL_error(L, "Invalid filter mode: %s", minstr);
-	if (!Texture::getConstant(magstr, mag))
+	if (!Texture::getConstant(magstr, f.mag))
 		return luaL_error(L, "Invalid filter mode: %s", magstr);
 
-	float anisotropy = (float) luaL_optnumber(L, 3, 1.0);
-
-	Texture::Filter f;
-	f.min = min;
-	f.mag = mag;
-	f.anisotropy = anisotropy;
+	f.anisotropy = (float) luaL_optnumber(L, 3, 1.0);
 
 	instance()->setDefaultFilter(f);
-	
+
 	return 0;
 }
 
