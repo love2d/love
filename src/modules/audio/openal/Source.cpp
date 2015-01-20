@@ -32,10 +32,6 @@ namespace audio
 {
 namespace openal
 {
-	// Message to be used by any exception thrown here for attempting to call spatial functions on stereo sources, as this
-	// is not supported by openAL.
-	static const char* NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE = "This spatial audio functionality is only available on monaural sources. \
-																		Ensure your source is not stereo before calling this function.";
 
 class InvalidFormatException : public love::Exception
 {
@@ -43,6 +39,18 @@ public:
 
 	InvalidFormatException(int channels, int bitdepth)
 		: Exception("%d-channel Sources with %d bits per sample are not supported.", channels, bitdepth)
+	{
+	}
+
+};
+
+class SpatialSupportException : public love::Exception
+{
+public:
+
+	SpatialSupportException()
+		: Exception("This spatial audio functionality is only available for mono Sources. \
+Ensure the Source is not multi-channel before calling this function.")
 	{
 	}
 
@@ -428,7 +436,7 @@ float Source::tell(Source::Unit unit)
 void Source::setPosition(float *v)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 		alSourcefv(source, AL_POSITION, v);
@@ -439,7 +447,7 @@ void Source::setPosition(float *v)
 void Source::getPosition(float *v) const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 		alGetSourcefv(source, AL_POSITION, v);
@@ -450,7 +458,7 @@ void Source::getPosition(float *v) const
 void Source::setVelocity(float *v)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 		alSourcefv(source, AL_VELOCITY, v);
@@ -461,7 +469,7 @@ void Source::setVelocity(float *v)
 void Source::getVelocity(float *v) const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 		alGetSourcefv(source, AL_VELOCITY, v);
@@ -472,7 +480,7 @@ void Source::getVelocity(float *v) const
 void Source::setDirection(float *v)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 		alSourcefv(source, AL_DIRECTION, v);
@@ -483,7 +491,7 @@ void Source::setDirection(float *v)
 void Source::getDirection(float *v) const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 		alGetSourcefv(source, AL_DIRECTION, v);
@@ -494,7 +502,7 @@ void Source::getDirection(float *v) const
 void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	cone.innerAngle = (int) LOVE_TODEG(innerAngle);
 	cone.outerAngle = (int) LOVE_TODEG(outerAngle);
@@ -511,7 +519,7 @@ void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	innerAngle = LOVE_TORAD(cone.innerAngle);
 	outerAngle = LOVE_TORAD(cone.outerAngle);
@@ -521,7 +529,7 @@ void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) c
 void Source::setRelative(bool enable)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 		alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
@@ -532,7 +540,7 @@ void Source::setRelative(bool enable)
 bool Source::isRelative() const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	return relative;
 }
@@ -804,7 +812,7 @@ float Source::getMaxVolume() const
 void Source::setReferenceDistance(float distance)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 	{
@@ -817,7 +825,7 @@ void Source::setReferenceDistance(float distance)
 float Source::getReferenceDistance() const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 	{
@@ -833,7 +841,7 @@ float Source::getReferenceDistance() const
 void Source::setRolloffFactor(float factor)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 	{
@@ -846,7 +854,7 @@ void Source::setRolloffFactor(float factor)
 float Source::getRolloffFactor() const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 	{
@@ -862,7 +870,7 @@ float Source::getRolloffFactor() const
 void Source::setMaxDistance(float distance)
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 	{
@@ -875,7 +883,7 @@ void Source::setMaxDistance(float distance)
 float Source::getMaxDistance() const
 {
 	if (channels > 1)
-		throw love::Exception(NO_SPATIAL_SUPPORT_FOR_STEREO_ERROR_MESSAGE);
+		throw SpatialSupportException();
 
 	if (valid)
 	{
