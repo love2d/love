@@ -1,3 +1,52 @@
+LOVE 0.10.0 []
+--------------
+
+Released: N/A
+
+  * Added love.filesystem.setRequirePath and love.filesystem.getRequirePath.
+  * Added love.filedropped and love.directorydropped event callback functions.
+  * Added love.wheelmoved event callback function (replaces "wu" and "wd" constants for love.mousepressed.)
+  * Added Source:getType (replaces Source:isStatic.)
+  * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
+  * Added love.graphics.getSystemLimits (replaces love.graphics.getSystemLimit.)
+  * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
+  * Added optional ClearType argument to love.graphics.clear. Current enums are "all" (the default) and "stencil".
+  * Added optional x/y/width/height arguments to Image:refresh.
+  * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
+
+  * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
+  * Removed the "wu" and "wd" constants for love.mousepressed (replaced by love.wheelmoved.)
+  * Removed Source:isStatic (replaced by Source:getType.)
+  * Removed image loading support for all (non-compressed texture) file formats except for PNG, JPEG, TGA, and BMP.
+  * Removed love.graphics.setPointStyle and love.graphics.getPointStyle.
+  * Removed love.graphics.isSupported (replaced by love.graphics.getSupported.)
+  * Removed love.graphics.getSystemLimit (replaced by love.graphics.getSystemLimits.)
+  * Removed love.graphics.setStencil (replaced by love.graphics.stencil and love.graphics.setStencilTest.)
+  * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature enums.
+  * Removed functions deprecated in LOVE 0.9.x:
+    * Removed Canvas:getType (replaced by Canvas:getFormat.)
+    * Removed love.graphics.getMaxTextureSize/getMaxImageSize (replaced by love.graphics.getSystemLimits.)
+    * Removed love.graphics.getMaxPointSize (replaced by love.graphics.getSystemLimits.)
+    * Removed Mesh:set/getImage, SpriteBatch:set/getImage, and ParticleSystem:set/getImage (replaced by set/getTexture.)
+    * Removed SpriteBatch:bind/unbind.
+    * Removed Canvas:getFSAA and the "fsaa" flag in love.conf and love.window.setMode (replaced by Canvas:getMSAA and "msaa".)
+    * Removed the "dxt" and "bc5" Graphics Feature enums (replaced by love.graphics.getCompressedImageFormats.)
+    * Removed the "hdrcanvas" Graphics Feature enum (replaced by love.graphics.getCanvasFormats.)
+    * Removed love.window.getWidth/getHeight (use love.graphics.getWidth/getHeight or love.window.getMode instead.)
+
+  * Renamed the fullscreen type "normal" to "exclusive".
+  * Renamed the Distance Model enums "inverse clamped", "linear clamped", and "exponent clamped" to "inverseclamped", "linearclamped", and "exponentclamped".
+  * Renamed blend modes "additive", "subtractive", and "multiplicative" to "add", "subtract", and "multiply".
+
+  * Updated love.math.setRandomSeed and RandomGenerator:setSeed to produce better results for the first few random() calls.
+  * Updated Source methods that deal with spatial audio to error rather than failing silently if the Source isn't mono.
+  * Updated ImageFonts to no longer treat separator pixels as spacing.
+  * Updated the minimum runtime system requirements of LOVE to require OpenGL 2.1 support.
+  * Updated the pixel shader effect function so screen_coords.y is 0 at the top of the screen instead of the bottom.
+  * Updated love.graphics.newImage's optional second argument to be a table of flags (flags are "mipmaps" and "srgb".)
+  * Updated Images to require setting the mipmaps flag to true on creation in order to use mipmaps.
+  * Updated Images to allow mipmaps for non-power-of-two sizes.
+
 LOVE 0.9.2 [Baby Inspector]
 ---------------------------
 
