@@ -119,6 +119,8 @@ void OpenGL::setupContext()
 
 	glActiveTexture(curgltextureunit);
 
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *) &state.defaultFBO);
+
 	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
 	setBlendState(blend);
 
@@ -142,6 +144,9 @@ void OpenGL::deInitContext()
 	if (!contextInitialized)
 		return;
 
+	glDeleteTextures(1, &state.defaultTexture);
+	state.defaultTexture = 0;
+
 	contextInitialized = false;
 }
 
@@ -155,6 +160,7 @@ void OpenGL::initVendor()
 	}
 
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
+	// http://stackoverflow.com/questions/2093594/opengl-extensions-available-on-different-android-devices
 	if (strstr(vstr, "ATI Technologies"))
 		vendor = VENDOR_ATI_AMD;
 	else if (strstr(vstr, "NVIDIA"))
@@ -167,6 +173,16 @@ void OpenGL::initVendor()
 		vendor = VENDOR_APPLE;
 	else if (strstr(vstr, "Microsoft"))
 		vendor = VENDOR_MICROSOFT;
+	else if (strstr(vstr, "Imagination"))
+		vendor = VENDOR_IMGTEC;
+	else if (strstr(vstr, "ARM"))
+		vendor = VENDOR_ARM;
+	else if (strstr(vstr, "Qualcomm"))
+		vendor = VENDOR_QUALCOMM;
+	else if (strstr(vstr, "Broadcom"))
+		vendor = VENDOR_BROADCOM;
+	else if (strstr(vstr, "Vivante"))
+		vendor = VENDOR_VIVANTE;
 	else
 		vendor = VENDOR_UNKNOWN;
 }
@@ -185,11 +201,14 @@ void OpenGL::initMaxValues()
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-	int maxattachments = 0;
-	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxattachments);
+	int maxattachments = 1;
+	int maxdrawbuffers = 1;
 
-	int maxdrawbuffers = 0;
-	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbuffers);
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_2_0)
+	{
+		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxattachments);
+		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbuffers);
+	}
 
 	maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
 }
@@ -211,7 +230,9 @@ void OpenGL::createDefaultTexture()
 	// shaders for untextured primitives vs images.
 
 	GLuint curtexture = state.textureUnits[state.curTextureUnit];
-	bindTexture(0);
+
+	glGenTextures(1, &state.defaultTexture);
+	bindTexture(state.defaultTexture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -220,7 +241,7 @@ void OpenGL::createDefaultTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	GLubyte pix = 255;
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pix);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pix);
 
 	bindTexture(curtexture);
 }
@@ -427,6 +448,16 @@ void OpenGL::setBlendState(const BlendState &blend)
 OpenGL::BlendState OpenGL::getBlendState() const
 {
 	return state.blend;
+}
+
+GLuint OpenGL::getDefaultFBO() const
+{
+	return state.defaultFBO;
+}
+
+GLuint OpenGL::getDefaultTexture() const
+{
+	return state.defaultTexture;
 }
 
 void OpenGL::setTextureUnit(int textureunit)

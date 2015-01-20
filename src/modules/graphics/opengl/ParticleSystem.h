@@ -29,6 +29,7 @@
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
 #include "Texture.h"
+#include "VertexBuffer.h"
 
 // STL
 #include <vector>
@@ -574,6 +575,9 @@ protected:
 
 	// array of transformed vertex data for all particles, for drawing
 	Vertex *particleVerts;
+
+	// Vertex index buffer.
+	VertexIndex ibo;
 
 	// The texture to be drawn.
 	Object::StrongRef<Texture> texture;

@@ -129,9 +129,6 @@ GLuint Shader::compileCode(ShaderStage stage, const std::string &code)
 		break;
 	}
 
-	// clear existing errors
-	while (glGetError() != GL_NO_ERROR);
-
 	GLuint shaderid = glCreateShader(glstage);
 
 	if (shaderid == 0)
@@ -719,7 +716,7 @@ std::string Shader::getGLSLVersion()
 
 bool Shader::isSupported()
 {
-	return getGLSLVersion() >= "1.2";
+	return GLAD_ES_VERSION_2_0 || (getGLSLVersion() >= "1.2");
 }
 
 int Shader::getUniformTypeSize(GLenum type) const

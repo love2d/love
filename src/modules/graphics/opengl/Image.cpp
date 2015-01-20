@@ -163,6 +163,10 @@ void Image::setWrap(const Texture::Wrap &w)
 
 void Image::setMipmapSharpness(float sharpness)
 {
+	// OpenGL ES doesn't support LOD bias via glTexParameter.
+	if (!GLAD_VERSION_1_4)
+		return;
+
 	// LOD bias has the range (-maxbias, maxbias)
 	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
@@ -225,7 +229,7 @@ void Image::generateMipmaps()
 	// The GL_GENERATE_MIPMAP texparameter is set in loadVolatile if we don't
 	// have support for glGenerateMipmap.
 	if (flags.mipmaps && !isCompressed() &&
-		(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
+		(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 	{
 		// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
 #if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
@@ -243,7 +247,8 @@ void Image::loadTextureFromCompressedData()
 	int count = flags.mipmaps ? cdata->getMipmapCount() : 1;
 
 	// We have to inform OpenGL if the image doesn't have all mipmap levels.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
 
 	for (int i = 0; i < count; i++)
 	{
@@ -283,7 +288,7 @@ bool Image::loadVolatile()
 			throw love::Exception("cannot create image: format is not supported on this system.");
 	}
 
-	if (maxMipmapSharpness == 0.0f)
+	if (maxMipmapSharpness == 0.0f && GLAD_VERSION_1_4)
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
 	glGenTextures(1, &texture);
@@ -300,11 +305,11 @@ bool Image::loadVolatile()
 		return true;
 	}
 
-	if (!flags.mipmaps)
+	if (!flags.mipmaps && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0))
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
 	if (flags.mipmaps && !isCompressed() &&
-		!(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
+		!(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 	{
 		// Auto-generate mipmaps every time the texture is modified, if
 		// glGenerateMipmap isn't supported.
@@ -414,7 +419,7 @@ void Image::loadDefaultTexture()
 	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xC0,0xC0,0xC0,0xFF,
 	                0xC0,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
 void Image::drawv(const Matrix &t, const Vertex *v)

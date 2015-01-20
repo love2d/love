@@ -96,7 +96,7 @@ struct FramebufferStrategy
 	virtual void setAttachments() {}
 };
 
-struct FramebufferStrategyGL3 : public FramebufferStrategy
+struct FramebufferStrategyCorePacked : public FramebufferStrategy
 {
 	virtual GLenum createFBO(GLuint &framebuffer, GLuint texture)
 	{
@@ -215,6 +215,37 @@ struct FramebufferStrategyGL3 : public FramebufferStrategy
 
 		// set up multiple render targets
 		glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
+	}
+};
+
+struct FramebufferStrategyCore : public FramebufferStrategyCorePacked
+{
+	virtual bool createStencil(int width, int height, int samples, GLuint &stencil)
+	{
+		// create stencil buffer
+		glDeleteRenderbuffers(1, &stencil);
+		glGenRenderbuffers(1, &stencil);
+		glBindRenderbuffer(GL_RENDERBUFFER, stencil);
+
+		if (samples > 1)
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_STENCIL_INDEX8, width, height);
+		else
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+								  GL_RENDERBUFFER, stencil);
+
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+		// check status
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			glDeleteRenderbuffers(1, &stencil);
+			stencil = 0;
+			return false;
+		}
+
+		return true;
 	}
 };
 
@@ -393,11 +424,9 @@ struct FramebufferStrategyEXT : public FramebufferStrategyPackedEXT
 FramebufferStrategy *strategy = nullptr;
 
 FramebufferStrategy strategyNone;
-
-FramebufferStrategyGL3 strategyGL3;
-
+FramebufferStrategyCorePacked strategyCorePacked;
+FramebufferStrategyCore strategyCore;
 FramebufferStrategyPackedEXT strategyPackedEXT;
-
 FramebufferStrategyEXT strategyEXT;
 
 Canvas *Canvas::current = nullptr;
@@ -411,7 +440,9 @@ static void getStrategy()
 	if (!strategy)
 	{
 		if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
-			strategy = &strategyGL3;
+			strategy = &strategyCorePacked;
+		else if (GLAD_ES_VERSION_2_0)
+			strategy = &strategyCore;
 		else if (GLAD_EXT_framebuffer_object && GLAD_EXT_packed_depth_stencil)
 			strategy = &strategyPackedEXT;
 		else if (GLAD_EXT_framebuffer_object && strategyEXT.isSupported())
@@ -783,6 +814,17 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	if (current != this)
 		return;
 
+	if (depth_stencil != 0)
+	{
+		GLenum attachments[] = {GL_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT};
+
+		// Hint for the driver that it doesn't need to save these buffers.
+		if (GLAD_ES_VERSION_3_0)
+			glInvalidateFramebuffer(GL_FRAMEBUFFER, 2, attachments);
+		else if (GLAD_EXT_discard_framebuffer)
+			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachments);
+	}
+
 	gl.matrices.projection.pop_back();
 
 	if (switchingToOtherCanvas)
@@ -793,7 +835,7 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	else
 	{
 		// bind system framebuffer.
-		strategy->bindFBO(0);
+		strategy->bindFBO(gl.getDefaultFBO());
 		current = nullptr;
 		gl.setViewport(systemViewport);
 
@@ -879,7 +921,7 @@ bool Canvas::checkCreateStencil()
 	if (current && current != this)
 		strategy->bindFBO(current->fbo);
 	else if (!current)
-		strategy->bindFBO(0);
+		strategy->bindFBO(gl.getDefaultFBO());
 
 	return success;
 }
@@ -905,7 +947,7 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	if (current)
 		strategy->bindFBO(current->fbo);
 	else
-		strategy->bindFBO(0);
+		strategy->bindFBO(gl.getDefaultFBO());
 
 	// The new ImageData now owns the pixel data, so we don't delete it here.
 	love::image::ImageData *img = image->newImageData(width, height, (void *)pixels, true);
@@ -932,7 +974,7 @@ void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
 	if (current && current != this)
 		strategy->bindFBO(current->fbo);
 	else if (!current)
-		strategy->bindFBO(0);
+		strategy->bindFBO(gl.getDefaultFBO());
 }
 
 bool Canvas::resolveMSAA()
@@ -1088,7 +1130,7 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 		supported = true;
 		break;
 	case FORMAT_RGB565:
-		supported = GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility;
+		supported = GLAD_ES_VERSION_2_0 || GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility;
 		break;
 	case FORMAT_RG11B10F:
 		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float;

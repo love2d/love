@@ -64,6 +64,7 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
+	, ibo(1)
 	, texture(texture)
 	, active(true)
 	, insertMode(INSERT_MODE_TOP)
@@ -112,6 +113,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
+	, ibo(p.ibo)
 	, texture(p.texture)
 	, active(p.active)
 	, insertMode(p.insertMode)
@@ -196,6 +198,7 @@ void ParticleSystem::setBufferSize(uint32 size)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid buffer size");
+	ibo = VertexIndex(size);
 	deleteBuffers();
 	createBuffers(size);
 	reset();
@@ -874,6 +877,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	}
 
 	texture->predraw();
+	gl.prepareDraw();
 
 	glEnableVertexAttribArray(ATTRIB_COLOR);
 	glEnableVertexAttribArray(ATTRIB_POS);
@@ -883,8 +887,10 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
 
-	gl.prepareDraw();
-	gl.drawArrays(GL_QUADS, 0, pCount * 4);
+	{
+		VertexBuffer::Bind ibo_bind(*ibo.getVertexBuffer());
+		gl.drawElements(GL_TRIANGLES, ibo.getIndexCount(pCount), ibo.getType(), ibo.getPointer(0));
+	}
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);

@@ -187,14 +187,10 @@ bool VertexBuffer::load(bool restore)
 	// Copy the old buffer only if 'restore' was requested.
 	const GLvoid *src = restore ? memory_map : nullptr;
 
-	while (GL_NO_ERROR != glGetError())
-		/* clear error messages */;
-
 	// Note that if 'src' is '0', no data will be copied.
 	glBufferData(getTarget(), (GLsizeiptr) getSize(), src, getUsage());
-	GLenum err = glGetError();
 
-	return (GL_NO_ERROR == err);
+	return true;
 }
 
 void VertexBuffer::unload()

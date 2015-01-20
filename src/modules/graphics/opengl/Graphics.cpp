@@ -210,7 +210,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	gl.initContext();
 
 	// Does the system meet LOVE's minimum requirements for graphics?
-	if (!(GLAD_VERSION_2_0 && Shader::isSupported() && Canvas::isSupported())
+	if (!(GLAD_ES_VERSION_2_0 || (GLAD_VERSION_2_0 && Shader::isSupported() && Canvas::isSupported()))
 		&& !displayedMinReqWarning)
 	{
 		love::window::Window::MessageBoxType type = love::window::Window::MESSAGEBOX_ERROR;
@@ -331,6 +331,10 @@ void Graphics::setDebug(bool enable)
 	if (!(GLAD_VERSION_4_3 || GLAD_KHR_debug || GLAD_ARB_debug_output))
 		return;
 
+	// TODO: We don't support GL_KHR_debug in GLES yet.
+	if (GLAD_ES_VERSION_2_0)
+		return;
+
 	// Ugly hack to reduce code duplication.
 	if (GLAD_ARB_debug_output && !(GLAD_VERSION_4_3 || GLAD_KHR_debug))
 	{
@@ -396,7 +400,32 @@ void Graphics::clear(ClearType type)
 
 void Graphics::present()
 {
+	// Make sure we don't have a canvas active.
+	std::vector<Object::StrongRef<Canvas>> canvases = states.back().canvases;
+	setCanvas();
+
+	if (GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer)
+	{
+		GLenum attachments[] = {GL_STENCIL, GL_DEPTH};
+
+		if (gl.getDefaultFBO() != 0)
+		{
+			// A non-zero FBO needs different attachment enums.
+			attachments[0] = GL_STENCIL_ATTACHMENT;
+			attachments[1] = GL_DEPTH_ATTACHMENT;
+		}
+
+		// Hint for the driver that it doesn't need to save these buffers.
+		if (GLAD_ES_VERSION_3_0)
+			glInvalidateFramebuffer(GL_FRAMEBUFFER, 2, attachments);
+		else if (GLAD_EXT_discard_framebuffer)
+			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachments);
+	}
+
 	currentWindow->swapBuffers();
+
+	// Restore the currently active canvas, if there is one.
+	setCanvas(canvases);
 
 	// Reset the per-frame stat counts.
 	gl.stats.drawCalls = 0;
@@ -922,6 +951,10 @@ float Graphics::getPointSize() const
 
 void Graphics::setWireframe(bool enable)
 {
+	// Not supported in OpenGL ES.
+	if (GLAD_ES_VERSION_2_0)
+		return;
+
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
 	states.back().wireframe = enable;
 }
@@ -1007,7 +1040,7 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 void Graphics::point(float x, float y)
 {
 	gl.prepareDraw();
-	gl.bindTexture(0);
+	gl.bindTexture(gl.getDefaultTexture());
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
 	glEnd();
@@ -1105,7 +1138,7 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	else
 	{
 		gl.prepareDraw();
-		gl.bindTexture(0);
+		gl.bindTexture(gl.getDefaultTexture());
 		glEnableVertexAttribArray(ATTRIB_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
 		gl.drawArrays(GL_TRIANGLE_FAN, 0, points + 2);
@@ -1129,7 +1162,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	else
 	{
 		gl.prepareDraw();
-		gl.bindTexture(0);
+		gl.bindTexture(gl.getDefaultTexture());
 		glEnableVertexAttribArray(ATTRIB_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
 		gl.drawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
@@ -1207,7 +1240,11 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 Graphics::RendererInfo Graphics::getRendererInfo() const
 {
 	RendererInfo info;
-	info.name = "OpenGL";
+
+	if (GLAD_ES_VERSION_2_0)
+		info.name = "OpenGL ES";
+	else
+		info.name = "OpenGL";
 
 	const char *str = (const char *) glGetString(GL_VERSION);
 	if (str)

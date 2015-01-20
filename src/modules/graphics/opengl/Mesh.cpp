@@ -320,7 +320,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (texture.get())
 		texture->predraw();
 	else
-		gl.bindTexture(0);
+		gl.bindTexture(gl.getDefaultTexture());
 
 	Matrix m;
 	m.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);

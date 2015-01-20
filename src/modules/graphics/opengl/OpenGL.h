@@ -27,7 +27,8 @@
 #include "common/Matrix.h"
 
 // GLAD
-#include "libraries/glad/gladfuncs.hpp"
+//#include "libraries/glad/gladfuncs.hpp"
+#include <gladf/gladfuncs.hpp>
 
 // C++
 #include <vector>
@@ -79,6 +80,11 @@ public:
 		VENDOR_MESA_SOFT, // Software renderer.
 		VENDOR_APPLE,     // Software renderer.
 		VENDOR_MICROSOFT, // Software renderer.
+		VENDOR_IMGTEC,
+		VENDOR_ARM,
+		VENDOR_QUALCOMM,
+		VENDOR_BROADCOM,
+		VENDOR_VIVANTE,
 		VENDOR_UNKNOWN
 	};
 
@@ -243,6 +249,17 @@ public:
 	BlendState getBlendState() const;
 
 	/**
+	 * This will usually be 0 (system drawable), but some platforms require a
+	 * non-zero FBO for rendering.
+	 **/
+	GLuint getDefaultFBO() const;
+
+	/**
+	 * Gets the ID for love's default texture (used for "untextured" primitives.)
+	 **/
+	GLuint getDefaultTexture() const;
+
+	/**
 	 * Helper for setting the active texture unit.
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
@@ -335,6 +352,9 @@ private:
 
 		Viewport viewport;
 		Viewport scissor;
+
+		GLuint defaultFBO;
+		GLuint defaultTexture;
 
 		BlendState blend;
 

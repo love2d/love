@@ -158,7 +158,7 @@ void Font::createTexture()
 	{
 		// Clean up before throwing.
 		gl.deleteTexture(t);
-		gl.bindTexture(0);
+		gl.bindTexture(gl.getDefaultTexture());
 		textures.pop_back();
 
 		throw love::Exception("Could not create font texture!");
