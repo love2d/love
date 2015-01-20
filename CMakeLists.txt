@@ -348,6 +348,7 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/CompressedData.cpp
 	src/modules/image/magpie/CompressedData.h
+	src/modules/image/magpie/CompressedFormatHandler.h
 	src/modules/image/magpie/ddsHandler.cpp
 	src/modules/image/magpie/ddsHandler.h
 	src/modules/image/magpie/FormatHandler.cpp
@@ -358,8 +359,14 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/ImageData.h
 	src/modules/image/magpie/JPEGHandler.cpp
 	src/modules/image/magpie/JPEGHandler.h
+	src/modules/image/magpie/KTXHandler.cpp
+	src/modules/image/magpie/KTXHandler.h
+	src/modules/image/magpie/PKMHandler.cpp
+	src/modules/image/magpie/PKMHandler.h
 	src/modules/image/magpie/PNGHandler.cpp
 	src/modules/image/magpie/PNGHandler.h
+	src/modules/image/magpie/PVRHandler.cpp
+	src/modules/image/magpie/PVRHandler.h
 	src/modules/image/magpie/STBHandler.cpp
 	src/modules/image/magpie/STBHandler.h
 )

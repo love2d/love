@@ -507,6 +507,20 @@ GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
 			return GL_COMPRESSED_RGBA_BPTC_UNORM;
 	case image::CompressedData::FORMAT_BC7SRGB:
 		return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
+	case image::CompressedData::FORMAT_ETC1:
+		// The ETC2 format can load ETC1 textures.
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
+			return GL_COMPRESSED_RGB8_ETC2;
+		else
+			return GL_ETC1_RGB8_OES;
+	case image::CompressedData::FORMAT_PVR1_RGB2:
+		return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+	case image::CompressedData::FORMAT_PVR1_RGB4:
+		return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+	case image::CompressedData::FORMAT_PVR1_RGBA2:
+		return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+	case image::CompressedData::FORMAT_PVR1_RGBA4:
+		return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 	default:
 		if (flags.sRGB)
 			return GL_SRGB8_ALPHA8;
@@ -540,6 +554,14 @@ bool Image::hasCompressedTextureSupport(image::CompressedData::Format format)
 	case image::CompressedData::FORMAT_BC7:
 	case image::CompressedData::FORMAT_BC7SRGB:
 		return GLAD_VERSION_4_2 || GLAD_ARB_texture_compression_bptc;
+	case image::CompressedData::FORMAT_ETC1:
+		// ETC2 support guarantees ETC1 support as well.
+		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_OES_compressed_ETC1_RGB8_texture;
+	case image::CompressedData::FORMAT_PVR1_RGB2:
+	case image::CompressedData::FORMAT_PVR1_RGB4:
+	case image::CompressedData::FORMAT_PVR1_RGBA2:
+	case image::CompressedData::FORMAT_PVR1_RGBA4:
+		return GLAD_IMG_texture_compression_pvrtc;
 	default:
 		return false;
 	}

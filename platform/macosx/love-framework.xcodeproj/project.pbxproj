@@ -272,6 +272,13 @@
 		FA636D8B171B70920065623F /* RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D89171B70920065623F /* RandomGenerator.h */; };
 		FA636D8E171B72A70065623F /* wrap_RandomGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */; };
 		FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */; };
+		FA6F55761A6E261800062204 /* KTXHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6F55701A6E261800062204 /* KTXHandler.cpp */; };
+		FA6F55771A6E261800062204 /* KTXHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6F55711A6E261800062204 /* KTXHandler.h */; };
+		FA6F55781A6E261800062204 /* PKMHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6F55721A6E261800062204 /* PKMHandler.cpp */; };
+		FA6F55791A6E261800062204 /* PKMHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6F55731A6E261800062204 /* PKMHandler.h */; };
+		FA6F557A1A6E261800062204 /* PVRHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6F55741A6E261800062204 /* PVRHandler.cpp */; };
+		FA6F557B1A6E261800062204 /* PVRHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6F55751A6E261800062204 /* PVRHandler.h */; };
+		FA6F557D1A6E28A200062204 /* CompressedFormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6F557C1A6E28A200062204 /* CompressedFormatHandler.h */; };
 		FA70573C194A3FC600670B30 /* DroppedFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA70573A194A3FC600670B30 /* DroppedFile.cpp */; };
 		FA70573D194A3FC600670B30 /* DroppedFile.h in Headers */ = {isa = PBXBuildFile; fileRef = FA70573B194A3FC600670B30 /* DroppedFile.h */; };
 		FA705740194A55CB00670B30 /* wrap_DroppedFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA70573E194A55CB00670B30 /* wrap_DroppedFile.cpp */; };
@@ -849,6 +856,13 @@
 		FA636D89171B70920065623F /* RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RandomGenerator.h; sourceTree = "<group>"; };
 		FA636D8C171B72A70065623F /* wrap_RandomGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_RandomGenerator.cpp; sourceTree = "<group>"; };
 		FA636D8D171B72A70065623F /* wrap_RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RandomGenerator.h; sourceTree = "<group>"; };
+		FA6F55701A6E261800062204 /* KTXHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KTXHandler.cpp; sourceTree = "<group>"; };
+		FA6F55711A6E261800062204 /* KTXHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KTXHandler.h; sourceTree = "<group>"; };
+		FA6F55721A6E261800062204 /* PKMHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PKMHandler.cpp; sourceTree = "<group>"; };
+		FA6F55731A6E261800062204 /* PKMHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PKMHandler.h; sourceTree = "<group>"; };
+		FA6F55741A6E261800062204 /* PVRHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRHandler.cpp; sourceTree = "<group>"; };
+		FA6F55751A6E261800062204 /* PVRHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRHandler.h; sourceTree = "<group>"; };
+		FA6F557C1A6E28A200062204 /* CompressedFormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedFormatHandler.h; sourceTree = "<group>"; };
 		FA70573A194A3FC600670B30 /* DroppedFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DroppedFile.cpp; sourceTree = "<group>"; };
 		FA70573B194A3FC600670B30 /* DroppedFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DroppedFile.h; sourceTree = "<group>"; };
 		FA70573E194A55CB00670B30 /* wrap_DroppedFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_DroppedFile.cpp; sourceTree = "<group>"; };
@@ -1124,6 +1138,7 @@
 			children = (
 				FAEC808C1711E76C0057279A /* CompressedData.cpp */,
 				FAEC808D1711E76C0057279A /* CompressedData.h */,
+				FA6F557C1A6E28A200062204 /* CompressedFormatHandler.h */,
 				FAE010DE170DE25E006F29D0 /* ddsHandler.cpp */,
 				FAE010DF170DE25E006F29D0 /* ddsHandler.h */,
 				FADD58DC18C30367005FC3BF /* FormatHandler.cpp */,
@@ -1134,8 +1149,14 @@
 				FAEC80891710FEA60057279A /* ImageData.h */,
 				FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */,
 				FA48E43518F10D00007CF0BD /* JPEGHandler.h */,
+				FA6F55701A6E261800062204 /* KTXHandler.cpp */,
+				FA6F55711A6E261800062204 /* KTXHandler.h */,
+				FA6F55721A6E261800062204 /* PKMHandler.cpp */,
+				FA6F55731A6E261800062204 /* PKMHandler.h */,
 				FA4BBCE018A5DD7E0027707D /* PNGHandler.cpp */,
 				FA4BBCE118A5DD7E0027707D /* PNGHandler.h */,
+				FA6F55741A6E261800062204 /* PVRHandler.cpp */,
+				FA6F55751A6E261800062204 /* PVRHandler.h */,
 				FADE620719368D5C00C25B97 /* STBHandler.cpp */,
 				FADE620819368D5C00C25B97 /* STBHandler.h */,
 			);
@@ -2052,6 +2073,7 @@
 				FAF6705018184FF800DBDEEA /* wuff_convert.h in Headers */,
 				FAF272AB16E3D44400CC193A /* wrap_Channel.h in Headers */,
 				FA0A4BF9182E260200E1E4D2 /* wrap_MotorJoint.h in Headers */,
+				FA6F557D1A6E28A200062204 /* CompressedFormatHandler.h in Headers */,
 				FAF272AD16E3D44400CC193A /* wrap_LuaThread.h in Headers */,
 				FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */,
 				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
@@ -2072,11 +2094,13 @@
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA0F0D5B19A2CFEB0010A75B /* glad.hpp in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
+				FA6F557B1A6E261800062204 /* PVRHandler.h in Headers */,
 				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
 				FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */,
 				FAC86E6C1724555D00EED715 /* Quad.h in Headers */,
 				FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */,
 				FA3D9E0E16E68DE600CA6630 /* Cursor.h in Headers */,
+				FA6F55771A6E261800062204 /* KTXHandler.h in Headers */,
 				FA3D9E1216E68EAE00CA6630 /* Cursor.h in Headers */,
 				FA3D9E1616E6D41100CA6630 /* wrap_Cursor.h in Headers */,
 				FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */,
@@ -2104,6 +2128,7 @@
 				FA5FDC861788D548002F0ED2 /* win32.h in Headers */,
 				FA5FDC8F1788D548002F0ED2 /* lua-enet.h in Headers */,
 				FA7175AA178E8418001FE7FE /* lua.h in Headers */,
+				FA6F55791A6E261800062204 /* PKMHandler.h in Headers */,
 				FA34E7CE174B513F00E04D3F /* System.h in Headers */,
 				FA34E7D3174B515D00E04D3F /* System.h in Headers */,
 				FAF670571818501300DBDEEA /* WaveDecoder.h in Headers */,
@@ -2182,6 +2207,7 @@
 				FA08F5B516C7530100F007B5 /* Source.cpp in Sources */,
 				FAF6705118184FF800DBDEEA /* wuff_internal.c in Sources */,
 				FA08F5B616C7530A00F007B5 /* Audio.cpp in Sources */,
+				FA6F55761A6E261800062204 /* KTXHandler.cpp in Sources */,
 				FA08F5B716C7530A00F007B5 /* Pool.cpp in Sources */,
 				FA08F5B816C7530A00F007B5 /* Source.cpp in Sources */,
 				FA08F5B916C7532A00F007B5 /* b64.cpp in Sources */,
@@ -2198,6 +2224,7 @@
 				FA08F5C216C7532A00F007B5 /* runtime.cpp in Sources */,
 				FA08F5C316C7532A00F007B5 /* utf8.cpp in Sources */,
 				FA0F0D5A19A2CFEB0010A75B /* glad.cpp in Sources */,
+				FA6F557A1A6E261800062204 /* PVRHandler.cpp in Sources */,
 				FA08F5C416C7532A00F007B5 /* Variant.cpp in Sources */,
 				FA08F5C516C7532A00F007B5 /* Vector.cpp in Sources */,
 				FA08F5C616C7532A00F007B5 /* wrap_Data.cpp in Sources */,
@@ -2340,6 +2367,7 @@
 				FA08F64F16C7546400F007B5 /* RevoluteJoint.cpp in Sources */,
 				FA08F65016C7546400F007B5 /* RopeJoint.cpp in Sources */,
 				FA08F65116C7546400F007B5 /* Shape.cpp in Sources */,
+				FA6F55781A6E261800062204 /* PKMHandler.cpp in Sources */,
 				FA08F65216C7547300F007B5 /* WeldJoint.cpp in Sources */,
 				FAF6704C18184FF800DBDEEA /* wuff.c in Sources */,
 				FA08F65316C7547300F007B5 /* WheelJoint.cpp in Sources */,

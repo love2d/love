@@ -27,6 +27,11 @@
 #include "PNGHandler.h"
 #include "STBHandler.h"
 
+#include "ddsHandler.h"
+#include "PVRHandler.h"
+#include "KTXHandler.h"
+#include "PKMHandler.h"
+
 namespace love
 {
 namespace image
@@ -39,6 +44,11 @@ Image::Image()
 	formatHandlers.push_back(new PNGHandler);
 	formatHandlers.push_back(new JPEGHandler);
 	formatHandlers.push_back(new STBHandler);
+
+	compressedFormatHandlers.push_back(new DDSHandler);
+	compressedFormatHandlers.push_back(new PVRHandler);
+	compressedFormatHandlers.push_back(new KTXHandler);
+	compressedFormatHandlers.push_back(new PKMHandler);
 }
 
 Image::~Image()
@@ -46,6 +56,9 @@ Image::~Image()
 	// ImageData objects reference the FormatHandlers in our list, so we should
 	// release them instead of deleting them completely here.
 	for (FormatHandler *handler : formatHandlers)
+		handler->release();
+
+	for (CompressedFormatHandler *handler : compressedFormatHandlers)
 		handler->release();
 }
 
@@ -71,12 +84,18 @@ love::image::ImageData *Image::newImageData(int width, int height, void *data, b
 
 love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)
 {
-	return new CompressedData(data);
+	return new CompressedData(compressedFormatHandlers, data);
 }
 
 bool Image::isCompressed(love::filesystem::FileData *data)
 {
-	return CompressedData::isCompressed(data);
+	for (CompressedFormatHandler *handler : compressedFormatHandlers)
+	{
+		if (handler->canParse(data))
+			return true;
+	}
+
+	return false;
 }
 
 } // magpie

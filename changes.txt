@@ -10,7 +10,7 @@ Released: N/A
   * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
   * Added love.graphics.getSystemLimits (replaces love.graphics.getSystemLimit.)
   * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
-  * Added optional ClearType argument to love.graphics.clear. Current enums are "all" (the default) and "stencil".
+  * Added optional type argument to love.graphics.clear. Current type enums are "all" (the default) and "stencil".
   * Added optional x/y/width/height arguments to Image:refresh.
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
 

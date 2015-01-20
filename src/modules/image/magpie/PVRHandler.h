@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,17 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
+#ifndef LOVE_IMAGE_MAGPIE_PVR_HANDLER_H
+#define LOVE_IMAGE_MAGPIE_PVR_HANDLER_H
 
 // LOVE
+#include "common/config.h"
 #include "CompressedFormatHandler.h"
-
-// dds parser
-#include "ddsparse/ddsparse.h"
-
-// STL
-#include <string>
 
 namespace love
 {
@@ -37,27 +32,20 @@ namespace image
 namespace magpie
 {
 
-/**
- * Interface between CompressedData and the ddsparse library.
- **/
-class DDSHandler : public CompressedFormatHandler
+class PVRHandler : public CompressedFormatHandler
 {
 public:
 
-	virtual ~DDSHandler() {}
+	virtual ~PVRHandler() {}
 
 	// Implements CompressedFormatHandler.
 	virtual bool canParse(const filesystem::FileData *data);
 	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format);
 
-private:
-
-	static CompressedData::Format convertFormat(dds::Format ddsformat);
-
-}; // DDSHandler
+}; // PVRHandler
 
 } // magpie
 } // image
 } // love
 
-#endif // LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
+#endif // LOVE_IMAGE_MAGPIE_PVR_HANDLER_H

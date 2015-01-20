@@ -20,8 +20,6 @@
 
 #include "CompressedData.h"
 
-#include "ddsHandler.h"
-
 namespace love
 {
 namespace image
@@ -29,59 +27,44 @@ namespace image
 namespace magpie
 {
 
-CompressedData::CompressedData(love::filesystem::FileData *filedata)
+CompressedData::CompressedData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata)
 {
-	load(filedata);
+	CompressedFormatHandler *parser = nullptr;
+
+	for (CompressedFormatHandler *handler : formats)
+	{
+		if (handler->canParse(filedata))
+		{
+			parser = handler;
+			break;
+		}
+	}
+
+	if (parser == nullptr)
+		throw love::Exception("Could not parse compressed data: Unknown format.");
+
+	// DataImages SubImage vector will be populated by a parser.
+	data = parser->parse(filedata, dataImages, dataSize, format);
+
+	if (data == nullptr)
+		throw love::Exception("Could not parse compressed data.");
+
+	if (format == FORMAT_UNKNOWN)
+	{
+		delete[] data;
+		throw love::Exception("Could not parse compressed data: Unknown format.");
+	}
+
+	if (dataImages.size() == 0 || dataSize == 0)
+	{
+		delete[] data;
+		throw love::Exception("Could not parse compressed data: No valid data?");
+	}
 }
 
 CompressedData::~CompressedData()
 {
 	delete[] data;
-}
-
-void CompressedData::load(love::filesystem::FileData *filedata)
-{
-	// SubImage vector will be populated by a parser.
-	std::vector<SubImage> parsedimages;
-	Format texformat = FORMAT_UNKNOWN;
-
-	uint8 *newdata = 0;
-	size_t newdata_size = 0;
-
-	if (ddsHandler::canParse(filedata))
-		newdata = ddsHandler::parse(filedata, parsedimages, newdata_size, texformat);
-
-	if (newdata == 0)
-		throw love::Exception("Could not parse compressed data.");
-
-	if (texformat == FORMAT_UNKNOWN)
-	{
-		delete[] newdata;
-		throw love::Exception("Could not parse compressed data: Unknown format.");
-	}
-
-	if (parsedimages.size() == 0 || newdata_size == 0)
-	{
-		delete[] newdata;
-		throw love::Exception("Could not parse compressed data: No valid data?");
-	}
-
-	// Make sure to clean up any previously loaded data.
-	delete[] data;
-
-	data = newdata;
-	dataSize = newdata_size;
-
-	dataImages = parsedimages;
-	format = texformat;
-}
-
-bool CompressedData::isCompressed(love::filesystem::FileData *filedata)
-{
-	if (ddsHandler::canParse(filedata))
-		return true;
-
-	return false;
 }
 
 } // magpie

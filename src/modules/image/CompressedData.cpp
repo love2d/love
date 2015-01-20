@@ -27,7 +27,7 @@ namespace image
 
 CompressedData::CompressedData()
 	: format(FORMAT_UNKNOWN)
-	, data(0)
+	, data(nullptr)
 	, dataSize(0)
 {
 }
@@ -114,6 +114,11 @@ StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM>::Entry Compre
 	{"bc6hs", CompressedData::FORMAT_BC6Hs},
 	{"bc7", CompressedData::FORMAT_BC7},
 	{"bc7srgb", CompressedData::FORMAT_BC7SRGB},
+	{"etc1", CompressedData::FORMAT_ETC1},
+	{"pvr1rgb2", CompressedData::FORMAT_PVR1_RGB2},
+	{"pvr1rgb4", CompressedData::FORMAT_PVR1_RGB4},
+	{"pvr1rgba2", CompressedData::FORMAT_PVR1_RGBA2},
+	{"pvr1rgba4", CompressedData::FORMAT_PVR1_RGBA4},
 };
 
 StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM> CompressedData::formats(CompressedData::formatEntries, sizeof(CompressedData::formatEntries));

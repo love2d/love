@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2014 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,13 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_DEVIL_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_DEVIL_HANDLER_H
+#ifndef LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
+#define LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
 
-// LOVE
-#include "filesystem/FileData.h"
-#include "FormatHandler.h"
-#include "thread/threads.h"
+#include "common/config.h"
+#include "CompressedFormatHandler.h"
 
 namespace love
 {
@@ -34,31 +32,22 @@ namespace magpie
 {
 
 /**
- * Interface between ImageData and DevIL.
+ * Handles PKM files with compressed ETC data inside.
  **/
-class DevilHandler : public FormatHandler
+class PKMHandler : public CompressedFormatHandler
 {
 public:
 
-	// Implements FormatHandler.
+	virtual ~PKMHandler() {}
 
-	DevilHandler();
-	virtual ~DevilHandler();
+	// Implements CompressedFormatHandler.
+	virtual bool canParse(const filesystem::FileData *data);
+	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format);
 
-	virtual bool canDecode(love::filesystem::FileData *data);
-	virtual bool canEncode(ImageData::Format format);
-
-	virtual DecodedImage decode(love::filesystem::FileData *data);
-	virtual EncodedImage encode(const DecodedImage &img, ImageData::Format format);
-
-private:
-
-	Mutex *mutex;
-
-}; // DevilHandler
+}; // PKMHandler
 
 } // magpie
 } // image
 } // love
 
-#endif // LOVE_IMAGE_MAGPIE_DEVIL_HANDLER_H
+#endif // LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
