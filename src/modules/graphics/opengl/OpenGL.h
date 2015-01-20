@@ -27,8 +27,7 @@
 #include "common/Matrix.h"
 
 // GLAD
-//#include "libraries/glad/gladfuncs.hpp"
-#include <gladf/gladfuncs.hpp>
+#include "libraries/glad/gladfuncs.hpp"
 
 // C++
 #include <vector>
