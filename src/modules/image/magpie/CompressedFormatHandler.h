@@ -60,10 +60,12 @@ public:
 	 *             to the returned data.
 	 * @param[out] dataSize The total size in bytes of the returned data.
 	 * @param[out] format The format of the Compressed Data.
+	 * @param[out] sRGB Whether the texture is sRGB-encoded.
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format) = 0;
+	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images,
+	                     size_t &dataSize, CompressedData::Format &format, bool &sRGB) = 0;
 
 }; // CompressedFormatHandler
 

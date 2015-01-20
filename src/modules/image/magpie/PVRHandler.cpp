@@ -294,7 +294,7 @@ bool PVRHandler::canParse(const filesystem::FileData *data)
 	return false;
 }
 
-uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format)
+uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
@@ -376,6 +376,7 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 
 	dataSize = totalsize;
 	format = cformat;
+	sRGB = (header3.colorSpace == 1);
 
 	return data;
 }

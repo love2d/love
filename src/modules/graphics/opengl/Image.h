@@ -141,7 +141,7 @@ public:
 	static FilterMode getDefaultMipmapFilter();
 
 	static bool hasAnisotropicFilteringSupport();
-	static bool hasCompressedTextureSupport(image::CompressedData::Format format);
+	static bool hasCompressedTextureSupport(image::CompressedData::Format format, bool sRGB);
 	static bool hasSRGBSupport();
 
 	static bool getConstant(const char *in, FlagType &out);

@@ -1036,7 +1036,7 @@ int w_getCompressedImageFormats(lua_State *L)
 		if (!image::CompressedData::getConstant(format, name))
 			continue;
 
-		luax_pushboolean(L, Image::hasCompressedTextureSupport(format));
+		luax_pushboolean(L, Image::hasCompressedTextureSupport(format, false));
 		lua_setfield(L, -2, name);
 	}
 

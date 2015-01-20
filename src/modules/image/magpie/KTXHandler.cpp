@@ -67,7 +67,6 @@ enum KTXGLInternalFormat
 {
 	KTX_GL_ETC1_RGB8_OES = 0x8D64,
 
-	// LOVE doesn't support EAC or ETC2 yet, but it won't be hard to add.
 	KTX_GL_COMPRESSED_R11_EAC                        = 0x9270,
 	KTX_GL_COMPRESSED_SIGNED_R11_EAC                 = 0x9271,
 	KTX_GL_COMPRESSED_RG11_EAC                       = 0x9272,
@@ -91,12 +90,37 @@ enum KTXGLInternalFormat
 	KTX_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3
 };
 
-CompressedData::Format convertFormat(uint32 glformat)
+CompressedData::Format convertFormat(uint32 glformat, bool &sRGB)
 {
+	sRGB = false;
+
 	switch (glformat)
 	{
 	case KTX_GL_ETC1_RGB8_OES:
 		return CompressedData::FORMAT_ETC1;
+	case KTX_GL_COMPRESSED_R11_EAC:
+		return CompressedData::FORMAT_EAC_R;
+	case KTX_GL_COMPRESSED_SIGNED_R11_EAC:
+		return CompressedData::FORMAT_EAC_Rs;
+	case KTX_GL_COMPRESSED_RG11_EAC:
+		return CompressedData::FORMAT_EAC_RG;
+	case KTX_GL_COMPRESSED_SIGNED_RG11_EAC:
+		return CompressedData::FORMAT_EAC_RGs;
+	case KTX_GL_COMPRESSED_RGB8_ETC2:
+		return CompressedData::FORMAT_ETC2_RGB;
+	case KTX_GL_COMPRESSED_SRGB8_ETC2:
+		sRGB = true;
+		return CompressedData::FORMAT_ETC2_RGB;
+	case KTX_GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+		return CompressedData::FORMAT_ETC2_RGBA1;
+	case KTX_GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+		sRGB = true;
+		return CompressedData::FORMAT_ETC2_RGBA1;
+	case KTX_GL_COMPRESSED_RGBA8_ETC2_EAC:
+		return CompressedData::FORMAT_ETC2_RGBA;
+	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+		sRGB = true;
+		return CompressedData::FORMAT_ETC2_RGBA;
 	case KTX_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
 		return CompressedData::FORMAT_PVR1_RGB4;
 	case KTX_GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
@@ -135,7 +159,7 @@ bool KTXHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format)
+uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");
@@ -151,7 +175,8 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 
 	header.numberOfMipmapLevels = std::max(header.numberOfMipmapLevels, 1u);
 
-	CompressedData::Format cformat = convertFormat(header.glInternalFormat);
+	bool isSRGB = false;
+	CompressedData::Format cformat = convertFormat(header.glInternalFormat, isSRGB);
 
 	if (cformat == CompressedData::FORMAT_UNKNOWN)
 		throw love::Exception("Unsupported image format in KTX file.");
@@ -232,6 +257,7 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 
 	dataSize = totalsize;
 	format = cformat;
+	sRGB = isSRGB;
 
 	return data;
 }

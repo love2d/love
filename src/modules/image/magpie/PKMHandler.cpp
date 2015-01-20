@@ -74,6 +74,21 @@ CompressedData::Format convertFormat(uint16 texformat)
 	{
 	case ETC1_RGB_NO_MIPMAPS:
 		return CompressedData::FORMAT_ETC1;
+	case ETC2PACKAGE_RGB_NO_MIPMAPS:
+		return CompressedData::FORMAT_ETC2_RGB;
+	case ETC2PACKAGE_RGBA_NO_MIPMAPS_OLD:
+	case ETC2PACKAGE_RGBA_NO_MIPMAPS:
+		return CompressedData::FORMAT_ETC2_RGBA;
+	case ETC2PACKAGE_RGBA1_NO_MIPMAPS:
+		return CompressedData::FORMAT_ETC2_RGBA1;
+	case ETC2PACKAGE_R_NO_MIPMAPS:
+		return CompressedData::FORMAT_EAC_R;
+	case ETC2PACKAGE_RG_NO_MIPMAPS:
+		return CompressedData::FORMAT_EAC_RG;
+	case ETC2PACKAGE_R_SIGNED_NO_MIPMAPS:
+		return CompressedData::FORMAT_EAC_Rs;
+	case ETC2PACKAGE_RG_SIGNED_NO_MIPMAPS:
+		return CompressedData::FORMAT_EAC_RGs;
 	default:
 		return CompressedData::FORMAT_UNKNOWN;
 	}
@@ -98,7 +113,7 @@ bool PKMHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format)
+uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -146,6 +161,7 @@ uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 
 	dataSize = totalsize;
 	format = cformat;
+	sRGB = false;
 
 	return data;
 }

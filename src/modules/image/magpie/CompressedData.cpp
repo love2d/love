@@ -43,8 +43,7 @@ CompressedData::CompressedData(std::list<CompressedFormatHandler *> formats, lov
 	if (parser == nullptr)
 		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-	// DataImages SubImage vector will be populated by a parser.
-	data = parser->parse(filedata, dataImages, dataSize, format);
+	data = parser->parse(filedata, dataImages, dataSize, format, sRGB);
 
 	if (data == nullptr)
 		throw love::Exception("Could not parse compressed data.");

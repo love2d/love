@@ -27,6 +27,7 @@ namespace image
 
 CompressedData::CompressedData()
 	: format(FORMAT_UNKNOWN)
+	, sRGB(false)
 	, data(nullptr)
 	, dataSize(0)
 {
@@ -62,7 +63,7 @@ void *CompressedData::getData(int miplevel) const
 {
 	checkMipmapLevelExists(miplevel);
 
-	return (void *) &dataImages[miplevel].data[0];
+	return &dataImages[miplevel].data[0];
 }
 
 int CompressedData::getWidth(int miplevel) const
@@ -84,6 +85,11 @@ CompressedData::Format CompressedData::getFormat() const
 	return format;
 }
 
+bool CompressedData::isSRGB() const
+{
+	return sRGB;
+}
+
 void CompressedData::checkMipmapLevelExists(int miplevel) const
 {
 	if (miplevel < 0 || miplevel >= (int) dataImages.size())
@@ -103,22 +109,28 @@ bool CompressedData::getConstant(CompressedData::Format in, const char *&out)
 StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM>::Entry CompressedData::formatEntries[] =
 {
 	{"unknown", CompressedData::FORMAT_UNKNOWN},
-	{"dxt1", CompressedData::FORMAT_DXT1},
-	{"dxt3", CompressedData::FORMAT_DXT3},
-	{"dxt5", CompressedData::FORMAT_DXT5},
-	{"bc4", CompressedData::FORMAT_BC4},
-	{"bc4s", CompressedData::FORMAT_BC4s},
-	{"bc5", CompressedData::FORMAT_BC5},
-	{"bc5s", CompressedData::FORMAT_BC5s},
-	{"bc6h", CompressedData::FORMAT_BC6H},
-	{"bc6hs", CompressedData::FORMAT_BC6Hs},
-	{"bc7", CompressedData::FORMAT_BC7},
-	{"bc7srgb", CompressedData::FORMAT_BC7SRGB},
-	{"etc1", CompressedData::FORMAT_ETC1},
-	{"pvr1rgb2", CompressedData::FORMAT_PVR1_RGB2},
-	{"pvr1rgb4", CompressedData::FORMAT_PVR1_RGB4},
-	{"pvr1rgba2", CompressedData::FORMAT_PVR1_RGBA2},
-	{"pvr1rgba4", CompressedData::FORMAT_PVR1_RGBA4},
+	{"DXT1", CompressedData::FORMAT_DXT1},
+	{"DXT3", CompressedData::FORMAT_DXT3},
+	{"DXT5", CompressedData::FORMAT_DXT5},
+	{"BC4", CompressedData::FORMAT_BC4},
+	{"BC4s", CompressedData::FORMAT_BC4s},
+	{"BC5", CompressedData::FORMAT_BC5},
+	{"BC5s", CompressedData::FORMAT_BC5s},
+	{"BC6h", CompressedData::FORMAT_BC6H},
+	{"BC6hs", CompressedData::FORMAT_BC6Hs},
+	{"BC7", CompressedData::FORMAT_BC7},
+	{"ETC1", CompressedData::FORMAT_ETC1},
+	{"ETC2rgb", CompressedData::FORMAT_ETC2_RGB},
+	{"ETC2rgba", CompressedData::FORMAT_ETC2_RGBA},
+	{"ETC2rgba1", CompressedData::FORMAT_ETC2_RGBA1},
+	{"EACr", CompressedData::FORMAT_EAC_R},
+	{"EACrs", CompressedData::FORMAT_EAC_Rs},
+	{"EACrg", CompressedData::FORMAT_EAC_RG},
+	{"EACrgs", CompressedData::FORMAT_EAC_RGs},
+	{"PVR1rgb2", CompressedData::FORMAT_PVR1_RGB2},
+	{"PVR1rgb4", CompressedData::FORMAT_PVR1_RGB4},
+	{"PVR1rgba2", CompressedData::FORMAT_PVR1_RGBA2},
+	{"PVR1rgba4", CompressedData::FORMAT_PVR1_RGBA4},
 };
 
 StringMap<CompressedData::Format, CompressedData::FORMAT_MAX_ENUM> CompressedData::formats(CompressedData::formatEntries, sizeof(CompressedData::formatEntries));
