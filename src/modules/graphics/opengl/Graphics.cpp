@@ -50,6 +50,8 @@ Graphics::Graphics()
 	, created(false)
 	, activeStencil(false)
 {
+	gl = OpenGL();
+
 	states.reserve(10);
 	states.push_back(DisplayState());
 
