@@ -248,6 +248,16 @@ public:
 	BlendState getBlendState() const;
 
 	/**
+	 * Sets the global point size.
+	 **/
+	void setPointSize(float size);
+
+	/**
+	 * Gets the global point size.
+	 **/
+	float getPointSize() const;
+
+	/**
 	 * This will usually be 0 (system drawable), but some platforms require a
 	 * non-zero FBO for rendering.
 	 **/
@@ -351,6 +361,8 @@ private:
 
 		Viewport viewport;
 		Viewport scissor;
+
+		float pointSize;
 
 		GLuint defaultFBO;
 		GLuint defaultTexture;

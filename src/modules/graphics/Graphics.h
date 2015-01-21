@@ -87,6 +87,13 @@ public:
 		SUPPORT_MAX_ENUM
 	};
 
+	enum Renderer
+	{
+		RENDERER_OPENGL = 0,
+		RENDERER_OPENGLES,
+		RENDERER_MAX_ENUM
+	};
+
 	enum SystemLimit
 	{
 		LIMIT_POINT_SIZE,

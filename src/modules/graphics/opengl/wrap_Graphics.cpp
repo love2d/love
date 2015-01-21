@@ -971,7 +971,18 @@ int w_setDefaultShaderCode(lua_State *L)
 
 	lua_pop(L, 3);
 
-	Shader::defaultCode[0] = openglcode;
+	lua_getfield(L, 1, "opengles");
+	lua_rawgeti(L, -1, 1);
+	lua_rawgeti(L, -2, 2);
+
+	Shader::ShaderSource openglescode;
+	openglescode.vertex = luax_checkstring(L, -2);
+	openglescode.pixel = luax_checkstring(L, -1);
+
+	lua_pop(L, 3);
+
+	Shader::defaultCode[Graphics::RENDERER_OPENGL]   = openglcode;
+	Shader::defaultCode[Graphics::RENDERER_OPENGLES] = openglescode;
 
 	return 0;
 }

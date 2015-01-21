@@ -64,7 +64,7 @@ namespace
 Shader *Shader::current = nullptr;
 Shader *Shader::defaultShader = nullptr;
 
-Shader::ShaderSource Shader::defaultCode[1]; // TODO: RENDERER_MAX_ENUM
+Shader::ShaderSource Shader::defaultCode[Graphics::RENDERER_MAX_ENUM];
 
 GLint Shader::maxTexUnits = 0;
 std::vector<int> Shader::textureCounters;
@@ -224,11 +224,13 @@ bool Shader::loadVolatile()
 
 	std::vector<GLuint> shaderids;
 
-	// The shader program must have both vertex and pixel shader stages.
-	const ShaderSource &defaults = defaultCode[0];
+	const ShaderSource *defaults = &defaultCode[Graphics::RENDERER_OPENGL];
+	if (GLAD_ES_VERSION_2_0)
+		defaults = &defaultCode[Graphics::RENDERER_OPENGLES];
 
-	const std::string &vertexcode = shaderSource.vertex.empty() ? defaults.vertex : shaderSource.vertex;
-	const std::string &pixelcode = shaderSource.pixel.empty() ? defaults.pixel : shaderSource.pixel;
+	// The shader program must have both vertex and pixel shader stages.
+	const std::string &vertexcode = shaderSource.vertex.empty() ? defaults->vertex : shaderSource.vertex;
+	const std::string &pixelcode = shaderSource.pixel.empty() ? defaults->pixel : shaderSource.pixel;
 
 	try
 	{
@@ -627,6 +629,33 @@ bool Shader::hasBuiltinUniform(BuiltinUniform builtin) const
 	return builtinUniforms[int(builtin)] != -1;
 }
 
+bool Shader::sendBuiltinMatrix(BuiltinUniform builtin, int size, const GLfloat *m, int count)
+{
+	if (!hasBuiltinUniform(builtin))
+		return false;
+
+	GLint location = builtinUniforms[GLint(builtin)];
+
+	TemporaryAttacher attacher(this);
+
+	switch (size)
+	{
+	case 2:
+		glUniformMatrix2fv(location, count, GL_FALSE, m);
+		break;
+	case 3:
+		glUniformMatrix3fv(location, count, GL_FALSE, m);
+		break;
+	case 4:
+		glUniformMatrix4fv(location, count, GL_FALSE, m);
+		break;
+	default:
+		return false;
+	}
+	
+	return true;
+}
+
 bool Shader::sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *vec, int count)
 {
 	if (!hasBuiltinUniform(builtin))
@@ -822,6 +851,10 @@ StringMap<VertexAttribID, ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNam
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
 {
+	{"TransformMatrix", Shader::BUILTIN_TRANSFORM_MATRIX},
+	{"ProjectionMatrix", Shader::BUILTIN_PROJECTION_MATRIX},
+	{"TransformProjectionMatrix", Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX},
+	{"love_PointSize", Shader::BUILTIN_POINT_SIZE},
 	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
 };
 

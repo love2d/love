@@ -1289,27 +1289,39 @@ do
 
 	-- SHADERS
 
-	local GLSL_VERSION = "#version 120"
-	
-	local GLSL_SYNTAX = [[
+	local GLSL = {}
+
+	GLSL.VERSION = "#version 120"
+	GLSL.VERSION_ES = "#version 100"
+
+	GLSL.SYNTAX = [[
+#ifndef GL_ES
 #define lowp
 #define mediump
 #define highp
+#endif
 #define number float
 #define Image sampler2D
 #define extern uniform
 #define Texel texture2D
 #pragma optionNV(strict on)]]
 
-	local GLSL_UNIFORMS = [[
+	GLSL.UNIFORMS = [[
+#ifdef GL_ES
+uniform mat4 TransformMatrix;
+uniform mat4 ProjectionMatrix;
+uniform mat4 TransformProjectionMatrix;
+// uniform mat4 NormalMatrix;
+uniform mediump float love_PointSize;
+#else
 #define TransformMatrix gl_ModelViewMatrix
 #define ProjectionMatrix gl_ProjectionMatrix
 #define TransformProjectionMatrix gl_ModelViewProjectionMatrix
-#define NormalMatrix gl_NormalMatrix
+#endif
 uniform sampler2D _tex0_;
-uniform vec4 love_ScreenSize;]]
+uniform mediump vec4 love_ScreenSize;]]
 
-	local GLSL_VERTEX = {
+	GLSL.VERTEX = {
 		HEADER = [[
 #define VERTEX
 
@@ -1318,31 +1330,29 @@ attribute vec4 VertexTexCoord;
 attribute vec4 VertexColor;
 
 varying vec4 VaryingTexCoord;
-varying vec4 VaryingColor;
-
-// #if defined(GL_ARB_draw_instanced)
-//	#extension GL_ARB_draw_instanced : enable
-//	#define love_InstanceID gl_InstanceIDARB
-// #else
-//	attribute float love_PseudoInstanceID;
-//	int love_InstanceID = int(love_PseudoInstanceID);
-// #endif
-]],
+varying vec4 VaryingColor;]],
 
 		FOOTER = [[
 void main() {
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = VertexColor;
+#ifdef GL_ES
+	gl_PointSize = love_PointSize;
+#endif
 	gl_Position = position(TransformProjectionMatrix, VertexPosition);
 }]],
 	}
 
-	local GLSL_PIXEL = {
+	GLSL.PIXEL = {
 		HEADER = [[
 #define PIXEL
 
-varying vec4 VaryingTexCoord;
-varying vec4 VaryingColor;
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+varying mediump vec4 VaryingTexCoord;
+varying lowp vec4 VaryingColor;
 
 #define love_Canvases gl_FragData]],
 
@@ -1369,24 +1379,24 @@ void main() {
 }]],
 	}
 
-	local function createVertexCode(vertexcode)
+	local function createVertexCode(vertexcode, lang)
 		local vertexcodes = {
-			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_VERTEX.HEADER, GLSL_UNIFORMS,
-			"#line 0",
+			lang == "glsles" and GLSL.VERSION_ES or GLSL.VERSION,
+			GLSL.SYNTAX, GLSL.VERTEX.HEADER, GLSL.UNIFORMS,
+			lang == "glsles" and "#line 1" or "#line 0",
 			vertexcode,
-			GLSL_VERTEX.FOOTER,
+			GLSL.VERTEX.FOOTER,
 		}
 		return table_concat(vertexcodes, "\n")
 	end
 
-	local function createPixelCode(pixelcode, is_multicanvas)
+	local function createPixelCode(pixelcode, is_multicanvas, lang)
 		local pixelcodes = {
-			GLSL_VERSION,
-			GLSL_SYNTAX, GLSL_PIXEL.HEADER, GLSL_UNIFORMS,
-			"#line 0",
+			lang == "glsles" and GLSL.VERSION_ES or GLSL.VERSION,
+			GLSL.SYNTAX, GLSL.PIXEL.HEADER, GLSL.UNIFORMS,
+			lang == "glsles" and "#line 1" or "#line 0",
 			pixelcode,
-			is_multicanvas and GLSL_PIXEL.FOOTER_MULTI_CANVAS or GLSL_PIXEL.FOOTER,
+			is_multicanvas and GLSL.PIXEL.FOOTER_MULTI_CANVAS or GLSL.PIXEL.FOOTER,
 		}
 		return table_concat(pixelcodes, "\n")
 	end
@@ -1409,7 +1419,12 @@ void main() {
 	function love.graphics._shaderCodeToGLSL(arg1, arg2)
 		local vertexcode, pixelcode
 		local is_multicanvas = false -- whether pixel code has "effects" function instead of "effect"
-		
+
+		local lang = "glsl"
+		if (love.graphics.getRendererInfo()) == "OpenGL ES" then
+			lang = "glsles"
+		end
+
 		if arg1 then
 			if isVertexCode(arg1) then
 				vertexcode = arg1 -- first arg contains vertex shader code
@@ -1435,10 +1450,10 @@ void main() {
 		end
 
 		if vertexcode then
-			vertexcode = createVertexCode(vertexcode)
+			vertexcode = createVertexCode(vertexcode, lang)
 		end
 		if pixelcode then
-			pixelcode = createPixelCode(pixelcode, is_multicanvas)
+			pixelcode = createPixelCode(pixelcode, is_multicanvas, lang)
 		end
 
 		return vertexcode, pixelcode
@@ -1477,15 +1492,19 @@ vec4 position(mat4 transform_proj, vec4 vertpos) {
 	return transform_proj * vertpos;
 }]],
 		pixel = [[
-vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
+vec4 effect(lowp vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 	return Texel(tex, texcoord) * vcolor;
 }]]
 	}
 
 	local defaults = {
 		opengl = {
-			createVertexCode(defaultcode.vertex),
-			createPixelCode(defaultcode.pixel, false),
+			createVertexCode(defaultcode.vertex, "glsl"),
+			createPixelCode(defaultcode.pixel, false, "glsl"),
+		},
+		opengles = {
+			createVertexCode(defaultcode.vertex, "glsles"),
+			createPixelCode(defaultcode.pixel, false, "glsles"),
 		},
 	}
 

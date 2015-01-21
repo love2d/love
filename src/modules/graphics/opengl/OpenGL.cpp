@@ -97,6 +97,11 @@ void OpenGL::setupContext()
 	glGetIntegerv(GL_SCISSOR_BOX, (GLint *) &state.scissor.x);
 	state.scissor.y = state.viewport.h - (state.scissor.y + state.scissor.h);
 
+	if (GLAD_VERSION_1_0)
+		glGetFloatv(GL_POINT_SIZE, &state.pointSize);
+	else
+		state.pointSize = 1.0f;
+
 	// Initialize multiple texture unit support for shaders.
 	state.textureUnits.clear();
 
@@ -290,27 +295,41 @@ void OpenGL::prepareDraw()
 		}
 	}
 
-	const float *curproj = matrices.projection.back().getElements();
-	const float *lastproj = state.lastProjectionMatrix.getElements();
+	const Matrix &curproj = matrices.projection.back();
+	const Matrix &curxform = matrices.transform.back();
 
-	// We only need to re-upload the projection matrix if it's changed.
-	if (memcmp(curproj, lastproj, sizeof(float) * 16) != 0)
+	if (GLAD_ES_VERSION_2_0 && shader)
 	{
-		glMatrixMode(GL_PROJECTION);
-		glLoadMatrixf(curproj);
-		glMatrixMode(GL_MODELVIEW);
+		// Send built-in uniforms to the current shader.
+		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_MATRIX, 4, curxform.getElements(), 1);
+		shader->sendBuiltinMatrix(Shader::BUILTIN_PROJECTION_MATRIX, 4, curproj.getElements(), 1);
 
-		state.lastProjectionMatrix = matrices.projection.back();
+		Matrix tp_matrix(curproj * curxform);
+		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX, 4, tp_matrix.getElements(), 1);
+
+		shader->sendBuiltinFloat(Shader::BUILTIN_POINT_SIZE, 1, &state.pointSize, 1);
 	}
-
-	const float *curxform = matrices.transform.back().getElements();
-	const float *lastxform = state.lastTransformMatrix.getElements();
-
-	// Same with the transform matrix.
-	if (memcmp(curxform, lastxform, sizeof(float) * 16) != 0)
+	else if (GLAD_VERSION_1_0)
 	{
-		glLoadMatrixf(curxform);
-		state.lastTransformMatrix = matrices.transform.back();
+		const Matrix &lastproj = state.lastProjectionMatrix;
+		const Matrix &lastxform = state.lastTransformMatrix;
+
+		// We only need to re-upload the projection matrix if it's changed.
+		if (memcmp(curproj.getElements(), lastproj.getElements(), sizeof(float) * 16) != 0)
+		{
+			glMatrixMode(GL_PROJECTION);
+			glLoadMatrixf(curproj.getElements());
+			glMatrixMode(GL_MODELVIEW);
+
+			state.lastProjectionMatrix = matrices.projection.back();
+		}
+
+		// Same with the transform matrix.
+		if (memcmp(curxform.getElements(), lastxform.getElements(), sizeof(float) * 16) != 0)
+		{
+			glLoadMatrixf(curxform.getElements());
+			state.lastTransformMatrix = matrices.transform.back();
+		}
 	}
 }
 
@@ -448,6 +467,19 @@ void OpenGL::setBlendState(const BlendState &blend)
 OpenGL::BlendState OpenGL::getBlendState() const
 {
 	return state.blend;
+}
+
+void OpenGL::setPointSize(float size)
+{
+	if (GLAD_VERSION_1_0)
+		glPointSize(size);
+
+	state.pointSize = size;
+}
+
+float OpenGL::getPointSize() const
+{
+	return state.pointSize;
 }
 
 GLuint OpenGL::getDefaultFBO() const

@@ -295,7 +295,10 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 
 	// We always need a default shader.
 	if (!Shader::defaultShader)
-		Shader::defaultShader = newShader(Shader::defaultCode[0]);
+	{
+		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
+		Shader::defaultShader = newShader(Shader::defaultCode[renderer]);
+	}
 
 	if (!getShader())
 		setShader(Shader::defaultShader);
@@ -944,7 +947,7 @@ Graphics::LineJoin Graphics::getLineJoin() const
 
 void Graphics::setPointSize(float size)
 {
-	glPointSize(size);
+	gl.setPointSize(size);
 	states.back().pointSize = size;
 }
 

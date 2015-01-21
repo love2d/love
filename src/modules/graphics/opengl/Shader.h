@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "common/StringMap.h"
+#include "graphics/Graphics.h"
 #include "OpenGL.h"
 #include "Texture.h"
 
@@ -56,6 +57,10 @@ public:
 	// Built-in uniform (extern) variables.
 	enum BuiltinUniform
 	{
+		BUILTIN_TRANSFORM_MATRIX = 0,
+		BUILTIN_PROJECTION_MATRIX,
+		BUILTIN_TRANSFORM_PROJECTION_MATRIX,
+		BUILTIN_POINT_SIZE,
 		BUILTIN_SCREEN_SIZE,
 		BUILTIN_MAX_ENUM
 	};
@@ -84,7 +89,7 @@ public:
 	static Shader *defaultShader;
 
 	// Default shader code (a shader is always required internally.)
-	static ShaderSource defaultCode[1]; // TODO: RENDERER_MAX_ENUM
+	static ShaderSource defaultCode[Graphics::RENDERER_MAX_ENUM];
 
 	/**
 	 * Creates a new Shader using a list of source codes.
@@ -173,6 +178,7 @@ public:
 	 **/
 	bool hasVertexAttrib(VertexAttribID attrib) const;
 	bool hasBuiltinUniform(BuiltinUniform builtin) const;
+	bool sendBuiltinMatrix(BuiltinUniform builtin, int size, const GLfloat *m, int count);
 	bool sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *m, int count);
 	void checkSetScreenParams();
 
