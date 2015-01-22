@@ -562,6 +562,9 @@ bool Canvas::loadVolatile()
 	glGenTextures(1, &texture);
 	gl.bindTexture(texture);
 
+	if (GLAD_ANGLE_texture_usage)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+
 	setFilter(filter);
 	setWrap(wrap);
 
