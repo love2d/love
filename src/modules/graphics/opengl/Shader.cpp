@@ -218,6 +218,10 @@ void Shader::mapActiveUniforms()
 
 bool Shader::loadVolatile()
 {
+    // Recreating the shader program will invalidate uniforms that rely on these.
+    lastCanvas = (Canvas *) -1;
+    lastViewport = OpenGL::Viewport();
+
 	// zero out active texture list
 	activeTexUnits.clear();
 	activeTexUnits.insert(activeTexUnits.begin(), maxTexUnits, 0);
@@ -304,6 +308,7 @@ bool Shader::loadVolatile()
 		// make sure glUseProgram gets called.
 		current = nullptr;
 		attach();
+        checkSetScreenParams();
 	}
 
 	return true;
