@@ -560,7 +560,9 @@ bool Canvas::loadVolatile()
 
 	if (glGetError() != GL_NO_ERROR)
 	{
-		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+        gl.deleteTexture(texture);
+        texture = 0;
+        status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
 		return false;
 	}
 
@@ -584,7 +586,14 @@ bool Canvas::loadVolatile()
 		status = strategy->createFBO(fbo, texture);
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        if (fbo != 0)
+        {
+            strategy->deleteFBO(fbo, 0, 0);
+            fbo = 0;
+        }
 		return false;
+    }
 
 	clear(Color(0, 0, 0, 0));
 
