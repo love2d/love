@@ -487,8 +487,6 @@ private:
 
 	static const size_t MAX_USER_STACK_DEPTH = 64;
 
-	bool displayedMinReqWarning;
-
 }; // Graphics
 
 } // opengl

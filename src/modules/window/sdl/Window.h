@@ -103,8 +103,18 @@ public:
 
 private:
 
+	struct ContextAttribs
+	{
+		int versionMajor;
+		int versionMinor;
+		bool gles;
+		bool debug;
+	};
+
+	void setGLFramebufferAttributes(int msaa, bool sRGB);
+	void setGLContextAttributes(const ContextAttribs &attribs);
+	bool checkGLVersion(int versionmajor, int versionminor);
 	bool setContext(int msaa, bool vsync, bool sRGB);
-	void setWindowGLAttributes(int msaa, bool sRGB) const;
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings);
@@ -128,6 +138,8 @@ private:
 
 	SDL_Window *window;
 	SDL_GLContext context;
+
+	bool displayedContextError;
 
 }; // Window
 

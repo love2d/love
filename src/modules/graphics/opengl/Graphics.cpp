@@ -49,7 +49,6 @@ Graphics::Graphics()
 	, height(0)
 	, created(false)
 	, writingToStencil(false)
-	, displayedMinReqWarning(false)
 {
 	states.reserve(10);
 	states.push_back(DisplayState());
@@ -207,30 +206,8 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	this->width = width;
 	this->height = height;
 
-	gl.initContext();
-
-	// Does the system meet LOVE's minimum requirements for graphics?
-	if (!(GLAD_ES_VERSION_2_0 || (GLAD_VERSION_2_0 && Shader::isSupported() && Canvas::isSupported()))
-		&& !displayedMinReqWarning)
-	{
-		love::window::Window::MessageBoxType type = love::window::Window::MESSAGEBOX_ERROR;
-
-		std::string title = "Minimum system requirements not met!";
-
-		std::string message;
-		message += "Detected OpenGL version: ";
-		message += (const char *) glGetString(GL_VERSION);
-		message += "\nRequired OpenGL version: 2.1."; // -ish
-		message += "\nThe program may crash or have graphical issues.";
-
-		::printf("%s\n%s\n", title.c_str(), message.c_str());
-		currentWindow->showMessageBox(title, message, type, true);
-
-		// We should only show the message once, instead of after every setMode.
-		displayedMinReqWarning = true;
-	}
-
 	// Okay, setup OpenGL.
+	gl.initContext();
 	gl.setupContext();
 
 	created = true;
