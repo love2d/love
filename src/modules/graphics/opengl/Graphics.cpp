@@ -1025,13 +1025,14 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Alig
 
 void Graphics::point(float x, float y)
 {
+	GLfloat coord[] = {x, y};
+
 	gl.prepareDraw();
 	gl.bindTexture(gl.getDefaultTexture());
-	glBegin(GL_POINTS);
-	glVertex2f(x, y);
-	glEnd();
-
-	++gl.stats.drawCalls;
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coord);
+	gl.drawArrays(GL_POINTS, 0, 1);
+	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
 void Graphics::polyline(const float *coords, size_t count)
@@ -1151,7 +1152,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 		gl.bindTexture(gl.getDefaultTexture());
 		glEnableVertexAttribArray(ATTRIB_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
-		gl.drawArrays(GL_POLYGON, 0, count/2-1); // opengl will close the polygon for us
+		gl.drawArrays(GL_TRIANGLE_FAN, 0, count/2-1); // opengl will close the polygon for us
 		glDisableVertexAttribArray(ATTRIB_POS);
 	}
 }

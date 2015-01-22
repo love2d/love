@@ -431,6 +431,8 @@ bool Window::setContext(int msaa, bool vsync, bool sRGB)
 		std::string title = "Unable to initialize OpenGL";
 		std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
 
+		std::cerr << title << std::endl << message << std::endl;
+
 		// Display a message box with the error, but only once.
 		if (!displayedContextError)
 		{
@@ -438,7 +440,6 @@ bool Window::setContext(int msaa, bool vsync, bool sRGB)
 			displayedContextError = true;
 		}
 
-		std::cerr << title << std::endl << message << std::endl;
 		return false;
 	}
 
