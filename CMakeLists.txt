@@ -1042,6 +1042,18 @@ add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
 target_link_libraries(love_3p_luasocket ${MEGA_LUA})
 
 #
+# Lua 5.3's UTF-8 library
+#
+set(LOVE_SRC_3P_LUAUTF8
+	src/libraries/luautf8/lprefix.h
+	src/libraries/luautf8/lutf8lib.c
+	src/libraries/luautf8/lutf8lib.h
+)
+
+add_library(love_3p_luautf8 ${LOVE_SRC_3P_LUAUTF8})
+target_link_libraries(love_3p_luautf8 ${MEGA_LUA})
+
+#
 # noise1234
 #
 
@@ -1106,6 +1118,7 @@ set(LOVE_3P
 	love_3p_glad
 	love_3p_lodepng
 	love_3p_luasocket
+	love_3p_luautf8
 	love_3p_noise1234
 	love_3p_wuff
 )

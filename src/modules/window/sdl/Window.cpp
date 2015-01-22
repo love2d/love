@@ -52,11 +52,17 @@ Window::Window()
 
 Window::~Window()
 {
+	if (context)
+	{
+		graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		if (gfx != nullptr)
+			gfx->unSetMode();
+
+		SDL_GL_DeleteContext(context);
+	}
+
 	if (window)
 		SDL_DestroyWindow(window);
-
-	if (context)
-		SDL_GL_DeleteContext(context);
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }

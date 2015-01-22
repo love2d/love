@@ -43,6 +43,9 @@
 #ifdef LOVE_ENABLE_ENET
 #	include "libraries/enet/lua-enet.h"
 #endif
+#ifdef LOVE_ENABLE_LUAUTF8
+#	include "libraries/luautf8/lutf8lib.h"
+#endif
 
 // Scripts
 #include "scripts/boot.lua.h"
@@ -228,15 +231,16 @@ int luaopen_love(lua_State * L)
 
 	// Preload module loaders.
 	for (int i = 0; modules[i].name != 0; i++)
-	{
 		love::luax_preload(L, modules[i].func, modules[i].name);
-	}
 
 #ifdef LOVE_ENABLE_LUASOCKET
 	love::luasocket::__open(L);
 #endif
 #ifdef LOVE_ENABLE_ENET
 	love::luax_preload(L, luaopen_enet, "enet");
+#endif
+#ifdef LOVE_ENABLE_LUAUTF8
+	love::luax_preload(L, luaopen_luautf8, "utf8");
 #endif
 
 	return 1;

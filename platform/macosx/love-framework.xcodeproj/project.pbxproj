@@ -296,6 +296,9 @@
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */; };
 		FA9FC0B1173D6E3E005027FF /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9FC0AF173D6E3E005027FF /* wrap_Window.h */; };
+		FAA0A45E1A704016009487CB /* lprefix.h in Headers */ = {isa = PBXBuildFile; fileRef = FAA0A45C1A704016009487CB /* lprefix.h */; };
+		FAA0A45F1A704016009487CB /* lutf8lib.c in Sources */ = {isa = PBXBuildFile; fileRef = FAA0A45D1A704016009487CB /* lutf8lib.c */; };
+		FAA0A4611A70431A009487CB /* lutf8lib.h in Headers */ = {isa = PBXBuildFile; fileRef = FAA0A4601A70431A009487CB /* lutf8lib.h */; };
 		FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAA627CD18E7E1560080752D /* CoreServices.framework */; };
 		FAAC6B02170A373B008A61C5 /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAAC6B00170A373A008A61C5 /* CompressedData.cpp */; };
 		FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAC6B01170A373A008A61C5 /* CompressedData.h */; };
@@ -880,6 +883,9 @@
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FA9FC0AE173D6E3E005027FF /* wrap_Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Window.cpp; sourceTree = "<group>"; };
 		FA9FC0AF173D6E3E005027FF /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
+		FAA0A45C1A704016009487CB /* lprefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lprefix.h; sourceTree = "<group>"; };
+		FAA0A45D1A704016009487CB /* lutf8lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lutf8lib.c; sourceTree = "<group>"; };
+		FAA0A4601A70431A009487CB /* lutf8lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lutf8lib.h; sourceTree = "<group>"; };
 		FAA627CD18E7E1560080752D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		FAAC6B00170A373A008A61C5 /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
 		FAAC6B01170A373A008A61C5 /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
@@ -1458,6 +1464,7 @@
 				FA0F0D5619A2CFEB0010A75B /* glad */,
 				FA4BBCDB18A5DC5D0027707D /* lodepng */,
 				3AED1DE005A53DDB07902760 /* luasocket */,
+				FAA0A45B1A704016009487CB /* luautf8 */,
 				FA0354691731F3A700284828 /* noise1234 */,
 				FA4B5B7219369009006C6D93 /* stb */,
 				36C14C81334735EC54E33637 /* utf8 */,
@@ -2019,6 +2026,16 @@
 			path = math;
 			sourceTree = "<group>";
 		};
+		FAA0A45B1A704016009487CB /* luautf8 */ = {
+			isa = PBXGroup;
+			children = (
+				FAA0A45C1A704016009487CB /* lprefix.h */,
+				FAA0A45D1A704016009487CB /* lutf8lib.c */,
+				FAA0A4601A70431A009487CB /* lutf8lib.h */,
+			);
+			path = luautf8;
+			sourceTree = "<group>";
+		};
 		FAE010D7170DDE99006F29D0 /* ddsparse */ = {
 			isa = PBXGroup;
 			children = (
@@ -2079,6 +2096,7 @@
 				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
 				FAF272B816E3D46400CC193A /* threads.h in Headers */,
 				FA5454C316F1310000D30303 /* MathModule.h in Headers */,
+				FAA0A45E1A704016009487CB /* lprefix.h in Headers */,
 				FAAC6B03170A373B008A61C5 /* CompressedData.h in Headers */,
 				FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */,
 				FAE010DD170DDE99006F29D0 /* ddsparse.h in Headers */,
@@ -2119,6 +2137,7 @@
 				FA5FDC831788D548002F0ED2 /* types.h in Headers */,
 				FA0A4BF5182E1AD600E1E4D2 /* MotorJoint.h in Headers */,
 				FA5FDC841788D548002F0ED2 /* unix.h in Headers */,
+				FAA0A4611A70431A009487CB /* lutf8lib.h in Headers */,
 				FA0A4BF1182E0C2800E1E4D2 /* b2MotorJoint.h in Headers */,
 				FA9556CC19D3741A00F29A4C /* BMFontRasterizer.h in Headers */,
 				FA5FDC851788D548002F0ED2 /* utility.h in Headers */,
@@ -2444,6 +2463,7 @@
 				FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */,
 				FAB0078F1740C12D00A9664D /* Joystick.cpp in Sources */,
 				FAB007931740C28900A9664D /* Joystick.cpp in Sources */,
+				FAA0A45F1A704016009487CB /* lutf8lib.c in Sources */,
 				FAB007971740C87D00A9664D /* wrap_Joystick.cpp in Sources */,
 				FAC5710017402D1100D147E4 /* BezierCurve.cpp in Sources */,
 				FAC5710217402D1100D147E4 /* wrap_BezierCurve.cpp in Sources */,
