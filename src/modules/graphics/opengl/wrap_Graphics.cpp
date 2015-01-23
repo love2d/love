@@ -566,6 +566,23 @@ int w_newMesh(lua_State *L)
 	return 1;
 }
 
+int w_newText(lua_State *L)
+{
+	Font *font = luax_checkfont(L, 1);
+	Text *t = nullptr;
+
+	if (lua_isnoneornil(L, 2))
+		luax_catchexcept(L, [&](){ t = instance()->newText(font); });
+	else
+	{
+		std::string text = luax_checkstring(L, 2);
+		luax_catchexcept(L, [&](){ t = instance()->newText(font, text); });
+	}
+
+	luax_pushtype(L, "Text", GRAPHICS_TEXT_T, t);
+	return 1;
+}
+
 int w_setColor(lua_State *L)
 {
 	Color c;
@@ -1186,14 +1203,14 @@ int w_printf(lua_State *L)
 	float ox = 0.0f, oy = 0.0f;
 	float kx = 0.0f, ky = 0.0f;
 
-	Graphics::AlignMode align = Graphics::ALIGN_LEFT;
+	Font::AlignMode align = Font::ALIGN_LEFT;
 
 	if (lua_gettop(L) >= 5)
 	{
 		if (!lua_isnil(L, 5))
 		{
 			const char *str = luaL_checkstring(L, 5);
-			if (!Graphics::getConstant(str, align))
+			if (!Font::getConstant(str, align))
 				return luaL_error(L, "Incorrect alignment: %s", str);
 		}
 
@@ -1433,6 +1450,7 @@ static const luaL_Reg functions[] =
 	{ "newCanvas", w_newCanvas },
 	{ "newShader", w_newShader },
 	{ "newMesh", w_newMesh },
+	{ "newText", w_newText },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -1522,6 +1540,7 @@ static const lua_CFunction types[] =
 	luaopen_canvas,
 	luaopen_shader,
 	luaopen_mesh,
+	luaopen_text,
 	0
 };
 

@@ -317,6 +317,8 @@
 		FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Quad.h */; };
 		FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Quad.cpp */; };
 		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
+		FAD400A6196C5EBC004208B9 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD400A5196C5EBC004208B9 /* Text.cpp */; };
+		FAD5970C196E174000E8EA36 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD5970B196E174000E8EA36 /* wrap_Text.cpp */; };
 		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
 		FADE620919368D5C00C25B97 /* STBHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADE620719368D5C00C25B97 /* STBHandler.cpp */; };
 		FADE620A19368D5C00C25B97 /* STBHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FADE620819368D5C00C25B97 /* STBHandler.h */; };
@@ -904,6 +906,10 @@
 		FAC86E621724552C00EED715 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
 		FAC86E671724555D00EED715 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		FAC86E681724555D00EED715 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
+		FAD400A5196C5EBC004208B9 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
+		FAD400A7196C5ECC004208B9 /* Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Text.h; sourceTree = "<group>"; };
+		FAD5970B196E174000E8EA36 /* wrap_Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Text.cpp; sourceTree = "<group>"; };
+		FAD5970D196E17C100E8EA36 /* wrap_Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Text.h; sourceTree = "<group>"; };
 		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FADE620719368D5C00C25B97 /* STBHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STBHandler.cpp; sourceTree = "<group>"; };
 		FADE620819368D5C00C25B97 /* STBHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STBHandler.h; sourceTree = "<group>"; };
@@ -1755,6 +1761,8 @@
 				FA577A8616C71CF000860150 /* Shader.h */,
 				4D700D182EAA46273D1E2CC4 /* SpriteBatch.cpp */,
 				727D23FA1CC755B902471A45 /* SpriteBatch.h */,
+				FAD400A5196C5EBC004208B9 /* Text.cpp */,
+				FAD400A7196C5ECC004208B9 /* Text.h */,
 				FA9B49281875EFB900201DA9 /* Texture.h */,
 				426B1C4475DC54505B824B7F /* VertexBuffer.cpp */,
 				577B66502A5360AE60733B10 /* VertexBuffer.h */,
@@ -1776,6 +1784,8 @@
 				FA577A8816C71CF000860150 /* wrap_Shader.h */,
 				02C16FDB537A702F4D42534E /* wrap_SpriteBatch.cpp */,
 				2BE75A693BE206B22DAE1B2E /* wrap_SpriteBatch.h */,
+				FAD5970B196E174000E8EA36 /* wrap_Text.cpp */,
+				FAD5970D196E17C100E8EA36 /* wrap_Text.h */,
 				FA01BE1C1878E35B00640047 /* wrap_Texture.cpp */,
 				FA01BE1D1878E35B00640047 /* wrap_Texture.h */,
 			);
@@ -2481,6 +2491,8 @@
 				FA34E7D2174B515D00E04D3F /* System.cpp in Sources */,
 				FA1EF7C41799FEAC00FF380C /* wrap_System.cpp in Sources */,
 				FA435EA317B36E9C004C3F22 /* Polyline.cpp in Sources */,
+				FAD5970C196E174000E8EA36 /* wrap_Text.cpp in Sources */,
+				FAD400A6196C5EBC004208B9 /* Text.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

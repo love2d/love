@@ -39,16 +39,6 @@ bool Graphics::getConstant(DrawMode in, const char  *&out)
 	return drawModes.find(in, out);
 }
 
-bool Graphics::getConstant(const char *in, AlignMode &out)
-{
-	return alignModes.find(in, out);
-}
-
-bool Graphics::getConstant(AlignMode in, const char  *&out)
-{
-	return alignModes.find(in, out);
-}
-
 bool Graphics::getConstant(const char *in, BlendMode &out)
 {
 	return blendModes.find(in, out);
@@ -136,16 +126,6 @@ StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawMode
 };
 
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM> Graphics::drawModes(Graphics::drawModeEntries, sizeof(Graphics::drawModeEntries));
-
-StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM>::Entry Graphics::alignModeEntries[] =
-{
-	{ "left", Graphics::ALIGN_LEFT },
-	{ "right", Graphics::ALIGN_RIGHT },
-	{ "center", Graphics::ALIGN_CENTER },
-	{ "justify", Graphics::ALIGN_JUSTIFY },
-};
-
-StringMap<Graphics::AlignMode, Graphics::ALIGN_MAX_ENUM> Graphics::alignModes(Graphics::alignModeEntries, sizeof(Graphics::alignModeEntries));
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendModeEntries[] =
 {

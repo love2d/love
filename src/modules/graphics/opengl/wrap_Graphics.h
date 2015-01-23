@@ -30,6 +30,7 @@
 #include "wrap_Canvas.h"
 #include "wrap_Shader.h"
 #include "wrap_Mesh.h"
+#include "wrap_Text.h"
 #include "Graphics.h"
 
 namespace love
@@ -60,6 +61,7 @@ int w_newParticleSystem(lua_State *L);
 int w_newCanvas(lua_State *L);  // comments in function
 int w_newShader(lua_State *L);
 int w_newMesh(lua_State *L);
+int w_newText(lua_State *L);
 int w_setColor(lua_State *L);
 int w_getColor(lua_State *L);
 int w_setBackgroundColor(lua_State *L);

@@ -677,6 +677,11 @@ Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode mode)
 	return new Mesh(vertexcount, mode);
 }
 
+Text *Graphics::newText(Font *font, const std::string &text)
+{
+	return new Text(font, text);
+}
+
 void Graphics::setColor(const Color &c)
 {
 	gl.setColor(c);
@@ -955,68 +960,15 @@ void Graphics::print(const std::string &str, float x, float y , float angle, flo
 	DisplayState &state = states.back();
 
 	if (state.font.get() != nullptr)
-		state.font->print(str, x, y, 0.0, angle, sx, sy, ox, oy, kx, ky);
+		state.font->print(str, x, y, angle, sx, sy, ox, oy, kx, ky);
 }
 
-void Graphics::printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Graphics::printf(const std::string &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	DisplayState &state = states.back();
 
-	if (state.font.get() == nullptr)
-		return;
-
-	if (wrap < 0.0f)
-		throw love::Exception("Horizontal wrap limit cannot be negative.");
-
-	using std::string;
-	using std::vector;
-
-	// wrappedlines indicates which lines were automatically wrapped. It's
-	// guaranteed to have the same number of elements as lines_to_draw.
-	vector<bool> wrappedlines;
-	vector<string> lines_to_draw = state.font->getWrap(str, wrap, 0, &wrappedlines);
-
-	static Matrix t;
-	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
-
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= t;
-
-	x = y = 0.0f;
-
-	// now for the actual printing
-	vector<string>::const_iterator line_iter, line_end = lines_to_draw.end();
-	float extra_spacing = 0.0f;
-	int num_spaces = 0;
-	int i = 0;
-
-	for (line_iter = lines_to_draw.begin(); line_iter != line_end; ++line_iter)
-	{
-		float width = static_cast<float>(state.font->getWidth(*line_iter));
-		switch (align)
-		{
-		case ALIGN_RIGHT:
-			state.font->print(*line_iter, ceilf(x + (wrap - width)), ceilf(y), 0.0f);
-			break;
-		case ALIGN_CENTER:
-			state.font->print(*line_iter, ceilf(x + (wrap - width) / 2), ceilf(y), 0.0f);
-			break;
-		case ALIGN_JUSTIFY:
-			num_spaces = std::count(line_iter->begin(), line_iter->end(), ' ');
-			if (wrappedlines[i] && num_spaces >= 1)
-				extra_spacing = (wrap - width) / float(num_spaces);
-			else
-				extra_spacing = 0.0f;
-			state.font->print(*line_iter, ceilf(x), ceilf(y), extra_spacing);
-			break;
-		case ALIGN_LEFT:
-		default:
-			state.font->print(*line_iter, ceilf(x), ceilf(y), 0.0f);
-			break;
-		}
-		y += state.font->getHeight() * state.font->getLineHeight();
-		i++;
-	}
+	if (state.font.get() != nullptr)
+		state.font->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);
 }
 
 /**

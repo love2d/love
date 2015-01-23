@@ -44,15 +44,6 @@ public:
 		DRAW_MAX_ENUM
 	};
 
-	enum AlignMode
-	{
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_JUSTIFY,
-		ALIGN_MAX_ENUM
-	};
-
 	enum BlendMode
 	{
 		BLEND_ALPHA,
@@ -172,9 +163,6 @@ public:
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char  *&out);
 
-	static bool getConstant(const char *in, AlignMode &out);
-	static bool getConstant(AlignMode in, const char  *&out);
-
 	static bool getConstant(const char *in, BlendMode &out);
 	static bool getConstant(BlendMode in, const char  *&out);
 
@@ -203,9 +191,6 @@ private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
-
-	static StringMap<AlignMode, ALIGN_MAX_ENUM>::Entry alignModeEntries[];
-	static StringMap<AlignMode, ALIGN_MAX_ENUM> alignModes;
 
 	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
 	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;

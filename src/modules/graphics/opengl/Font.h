@@ -22,15 +22,20 @@
 #define LOVE_GRAPHICS_OPENGL_FONT_H
 
 // STD
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
 // LOVE
+#include "common/config.h"
 #include "common/Object.h"
+#include "common/Matrix.h"
+#include "common/Vector.h"
+
 #include "font/Rasterizer.h"
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
+#include "VertexBuffer.h"
 
 #include "OpenGL.h"
 
@@ -45,9 +50,53 @@ class Font : public Object, public Volatile
 {
 public:
 
+	enum AlignMode
+	{
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT,
+		ALIGN_JUSTIFY,
+		ALIGN_MAX_ENUM
+	};
+
+	struct GlyphVertex
+	{
+		float x, y;
+		float s, t;
+	};
+
+	struct TextInfo
+	{
+		int width;
+		int height;
+	};
+
+	// Used to determine when to change textures in the generated vertex array.
+	struct DrawCommand
+	{
+		GLuint texture;
+		int startvertex;
+		int vertexcount;
+
+		// used when sorting with std::sort.
+		bool operator < (const DrawCommand &other) const
+		{
+			// Texture binds are expensive, so we should sort by that first.
+			if (texture != other.texture)
+				return texture < other.texture;
+			else
+				return startvertex < other.startvertex;
+		}
+	};
+
 	Font(love::font::Rasterizer *r, const Texture::Filter &filter = Texture::getDefaultFilter());
 
 	virtual ~Font();
+
+	std::vector<DrawCommand> generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = Vector(), TextInfo *info = nullptr);
+	std::vector<DrawCommand> generateVerticesFormatted(const std::string &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
+
+	void drawVertices(const std::vector<DrawCommand> &drawcommands);
 
 	/**
 	 * Prints the text at the designated position with rotation and scaling.
@@ -55,7 +104,6 @@ public:
 	 * @param text A string.
 	 * @param x The x-coordinate.
 	 * @param y The y-coordinate.
-	 * @param extra_spacing Additional spacing added to spaces (" ").
 	 * @param angle The amount of rotation.
 	 * @param sx Scale along the x axis.
 	 * @param sy Scale along the y axis.
@@ -64,7 +112,9 @@ public:
 	 * @param kx Shear along the x axis.
 	 * @param ky Shear along the y axis.
 	 **/
-	void print(const std::string &text, float x, float y, float extra_spacing = 0.0f, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+	void print(const std::string &text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+
+	void printf(const std::string &text, float x, float y, float wrap, AlignMode align, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 	/**
 	 * Returns the height of the font.
@@ -96,7 +146,7 @@ public:
 	 *        auto-wrapped. Indices correspond to indices of the returned value.
 	 * Returns a vector with the lines.
 	 **/
-	std::vector<std::string> getWrap(const std::string &text, float wrap, int *max_width = 0, std::vector<bool> *wrapped_lines = 0);
+	void getWrap(const std::string &text, float wrap, std::vector<std::string> &lines, std::vector<int> *line_widths = 0, std::vector<bool> *wrapped_lines = 0);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
@@ -109,19 +159,6 @@ public:
 	 * Returns the line height.
 	 **/
 	float getLineHeight() const;
-
-	/**
-	 * Sets the spacing modifier (changes the spacing between the characters the
-	 * same way that the line height does [multiplication]).
-	 * Note: The spacing must be set BEFORE the font is loaded to have any effect.
-	 * @param amount The amount of modification.
-	 **/
-	void setSpacing(float amount);
-
-	/**
-	 * Returns the spacing modifier.
-	 **/
-	float getSpacing() const;
 
 	void setFilter(const Texture::Filter &f);
 	const Texture::Filter &getFilter();
@@ -138,6 +175,11 @@ public:
 	bool hasGlyph(uint32 glyph) const;
 	bool hasGlyphs(const std::string &text) const;
 
+	uint32 getTextureCacheID() const;
+
+	static bool getConstant(const char *in, AlignMode &out);
+	static bool getConstant(AlignMode in, const char  *&out);
+
 	static int fontCount;
 
 private:
@@ -149,12 +191,6 @@ private:
 		FONT_UNKNOWN
 	};
 
-	struct GlyphVertex
-	{
-		float x, y;
-		float s, t;
-	};
-
 	struct Glyph
 	{
 		GLuint texture;
@@ -162,36 +198,24 @@ private:
 		GlyphVertex vertices[4];
 	};
 
-	// used to determine when to change textures in the vertex array generated when printing text
-	struct GlyphArrayDrawInfo
+	struct TextureSize
 	{
-		GLuint texture;
-		int startvertex;
-		int vertexcount;
-
-		// used when sorting with std::sort
-		// sorts by texture first (binding textures is expensive) and relative position in memory second
-		bool operator < (const GlyphArrayDrawInfo &other) const
-		{
-			if (texture != other.texture)
-				return texture < other.texture;
-			else
-				return startvertex < other.startvertex;
-		}
+		int width;
+		int height;
 	};
 
-	bool initializeTexture(GLenum format);
+	TextureSize getNextTextureSize() const;
 	void createTexture();
-	Glyph *addGlyph(uint32 glyph);
-	Glyph *findGlyph(uint32 glyph);
+	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
+	const Glyph &addGlyph(uint32 glyph);
+	const Glyph &findGlyph(uint32 glyph);
+	void printv(const Matrix &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	Object::StrongRef<love::font::Rasterizer> rasterizer;
 
 	int height;
 	float lineHeight;
-	float mSpacing; // modifies the spacing by multiplying it with this value
 
-	int textureSizeIndex;
 	int textureWidth;
 	int textureHeight;
 
@@ -199,7 +223,7 @@ private:
 	std::vector<GLuint> textures;
 
 	// maps glyphs to glyph texture information
-	std::map<uint32, Glyph *> glyphs;
+	std::unordered_map<uint32, Glyph> glyphs;
 
 	FontType type;
 	Texture::Filter filter;
@@ -209,16 +233,21 @@ private:
 
 	bool useSpacesAsTab;
 
-	size_t textureMemorySize;
+	// Index buffer used for drawing quads with GL_TRIANGLES.
+	VertexIndex indexBuffer;
 
-	static const int NUM_TEXTURE_SIZES = 7;
-	static const int TEXTURE_WIDTHS[NUM_TEXTURE_SIZES];
-	static const int TEXTURE_HEIGHTS[NUM_TEXTURE_SIZES];
+	// ID which is incremented when the texture cache is invalidated.
+	uint32 textureCacheID;
+
+	size_t textureMemorySize;
 
 	static const int TEXTURE_PADDING = 1;
 
 	// This will be used if the Rasterizer doesn't have a tab character itself.
 	static const int SPACES_PER_TAB = 4;
+
+	static StringMap<AlignMode, ALIGN_MAX_ENUM>::Entry alignModeEntries[];
+	static StringMap<AlignMode, ALIGN_MAX_ENUM> alignModes;
 
 }; // Font
 

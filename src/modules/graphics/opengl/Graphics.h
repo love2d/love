@@ -45,6 +45,7 @@
 #include "Canvas.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "Text.h"
 
 namespace love
 {
@@ -157,6 +158,8 @@ public:
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
 	Mesh *newMesh(int vertexcount, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
+
+	Text *newText(Font *font, const std::string &text = "");
 
 	/**
 	 * Sets the foreground color.
@@ -325,7 +328,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void printf(const std::string &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draws a point at (x,y).

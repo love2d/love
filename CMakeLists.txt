@@ -294,6 +294,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Shader.h
 	src/modules/graphics/opengl/SpriteBatch.cpp
 	src/modules/graphics/opengl/SpriteBatch.h
+	src/modules/graphics/opengl/Text.cpp
+	src/modules/graphics/opengl/Text.h
 	src/modules/graphics/opengl/Texture.h
 	src/modules/graphics/opengl/VertexBuffer.cpp
 	src/modules/graphics/opengl/VertexBuffer.h
@@ -315,6 +317,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_Shader.h
 	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
 	src/modules/graphics/opengl/wrap_SpriteBatch.h
+	src/modules/graphics/opengl/wrap_Text.cpp
+	src/modules/graphics/opengl/wrap_Text.h
 	src/modules/graphics/opengl/wrap_Texture.cpp
 	src/modules/graphics/opengl/wrap_Texture.h
 )

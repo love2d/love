@@ -652,6 +652,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	{"Canvas", GRAPHICS_CANVAS_ID},
 	{"Shader", GRAPHICS_SHADER_ID},
 	{"Mesh", GRAPHICS_MESH_ID},
+	{"Text", GRAPHICS_TEXT_ID},
 
 	// Image
 	{"ImageData", IMAGE_IMAGE_DATA_ID},

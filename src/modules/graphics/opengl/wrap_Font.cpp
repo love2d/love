@@ -55,11 +55,19 @@ int w_Font_getWrap(lua_State *L)
 	const char *str = luaL_checkstring(L, 2);
 	float wrap = (float) luaL_checknumber(L, 3);
 	int max_width = 0, numlines = 0;
+	std::vector<std::string> lines;
+	std::vector<int> widths;
 
 	luax_catchexcept(L, [&]() {
-		std::vector<std::string> lines = t->getWrap(str, wrap, &max_width);
+		t->getWrap(str, wrap, lines, &widths);
 		numlines = lines.size();
 	});
+
+	for (int width : widths)
+	{
+		if (width > max_width)
+			max_width = width;
+	}
 
 	lua_pushinteger(L, max_width);
 	lua_pushinteger(L, numlines);
