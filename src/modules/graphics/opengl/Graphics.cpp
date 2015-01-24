@@ -1338,7 +1338,7 @@ Graphics::DisplayState::DisplayState()
 	, scissorBox()
 	, font(nullptr)
 	, shader(nullptr)
-	, colorMask{true, true, true, true}
+	, colorMask({true, true, true, true})
 	, wireframe(false)
 	, defaultFilter()
 	, defaultMipmapFilter(Texture::FILTER_NONE)
