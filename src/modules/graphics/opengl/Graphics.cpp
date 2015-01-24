@@ -226,7 +226,9 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
 	// Enable textures
-	glEnable(GL_TEXTURE_2D);
+	if (!GLAD_ES_VERSION_2_0)
+		glEnable(GL_TEXTURE_2D);
+
 	gl.setTextureUnit(0);
 
 	// Set pixel row alignment
@@ -279,8 +281,10 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 		Shader::defaultShader = newShader(Shader::defaultCode[renderer]);
 	}
 
-	if (!getShader())
-		setShader(Shader::defaultShader);
+	// A shader should always be active, but the default shader shouldn't be
+	// returned by getShader(), so we don't do setShader(defaultShader).
+	if (!Shader::current)
+		Shader::defaultShader->attach();
 
 	return true;
 }
@@ -737,6 +741,7 @@ void Graphics::setShader()
 {
 	DisplayState &state = states.back();
 
+	// This will activate the default shader.
 	Shader::detach();
 
 	state.shader.set(nullptr);
