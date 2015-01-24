@@ -18,13 +18,14 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include <algorithm>
-
 // LOVE
 #include "Polyline.h"
 
 // OpenGL
 #include "OpenGL.h"
+
+// C++
+#include <algorithm>
 
 // treat adjacent segments with angles between their directions <5 degree as straight
 static const float LINES_PARALLEL_EPS = 0.05f;
@@ -327,13 +328,50 @@ Polyline::~Polyline()
 
 void Polyline::draw()
 {
+	GLushort *indices = nullptr;
+
+	// TODO: We should probably be using a reusable index buffer.
+	if (use_quad_indices)
+	{
+		size_t numindices = (vertex_count / 4) * 6;
+		if (overdraw)
+			numindices = std::max(numindices, (overdraw_vertex_count / 4) * 6);
+
+		try
+		{
+			indices = new GLushort[numindices];
+		}
+		catch (std::bad_alloc &)
+		{
+			throw love::Exception("Out of memory.");
+		}
+
+		// Fill the index array to make 2 triangles from each quad.
+		for (size_t i = 0; i < numindices / 6; i++)
+		{
+			// First triangle.
+			indices[i * 6 + 0] = GLushort(i * 4 + 0);
+			indices[i * 6 + 1] = GLushort(i * 4 + 1);
+			indices[i * 6 + 2] = GLushort(i * 4 + 2);
+
+			// Second triangle.
+			indices[i * 6 + 3] = GLushort(i * 4 + 0);
+			indices[i * 6 + 4] = GLushort(i * 4 + 2);
+			indices[i * 6 + 5] = GLushort(i * 4 + 3);
+		}
+	}
+
 	gl.prepareDraw();
 
 	// draw the core line
 	gl.bindTexture(gl.getDefaultTexture());
 	glEnableVertexAttribArray(ATTRIB_POS);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-	gl.drawArrays(draw_mode, 0, vertex_count);
+
+	if (use_quad_indices)
+		gl.drawElements(draw_mode, (vertex_count / 4) * 6, GL_UNSIGNED_SHORT, indices);
+	else
+		gl.drawArrays(draw_mode, 0, vertex_count);
 
 	if (overdraw)
 	{
@@ -345,7 +383,12 @@ void Polyline::draw()
 		glEnableVertexAttribArray(ATTRIB_COLOR);
 		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, overdraw);
-		gl.drawArrays(draw_mode, 0, overdraw_vertex_count);
+
+		if (use_quad_indices)
+			gl.drawElements(draw_mode, (overdraw_vertex_count / 4) * 6, GL_UNSIGNED_SHORT, indices);
+		else
+			gl.drawArrays(draw_mode, 0, overdraw_vertex_count);
+
 		glDisableVertexAttribArray(ATTRIB_COLOR);
 
 		delete[] colors;
@@ -354,6 +397,9 @@ void Polyline::draw()
 	}
 
 	glDisableVertexAttribArray(ATTRIB_POS);
+
+	if (indices)
+		delete[] indices;
 }
 
 void Polyline::fill_color_array(Color *colors, const Color &c)
