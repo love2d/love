@@ -148,6 +148,24 @@ public:
 		size_t textureMemory;
 	};
 
+	struct ColorMask
+	{
+		bool r;
+		bool g;
+		bool b;
+		bool a;
+
+		bool operator == (const ColorMask &m) const
+		{
+			return r == m.r && g == m.g && b == m.b && a == m.a;
+		}
+
+		bool operator != (const ColorMask &m) const
+		{
+			return !(operator == (m));
+		}
+	};
+
 	virtual ~Graphics();
 
 	// Implements Module.

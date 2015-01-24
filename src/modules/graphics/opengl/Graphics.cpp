@@ -153,14 +153,8 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		}
 	}
 
-	for (int i = 0; i < 4; i++)
-	{
-		if (s.colorMask[i] != cur.colorMask[i])
-		{
-			setColorMask(s.colorMask);
-			break;
-		}
-	}
+	if (s.colorMask != cur.colorMask)
+		setColorMask(s.colorMask);
 
 	if (s.wireframe != cur.wireframe)
 		setWireframe(s.wireframe);
@@ -216,7 +210,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	glEnable(GL_BLEND);
 
 	// Enable all color component writes.
-	bool colormask[] = {true, true, true, true};
+	ColorMask colormask = {true, true, true, true};
 	setColorMask(colormask);
 
 	// Enable line/point smoothing.
@@ -727,15 +721,12 @@ std::vector<Canvas *> Graphics::getCanvas() const
 	return canvases;
 }
 
-void Graphics::setColorMask(const bool mask[4])
+void Graphics::setColorMask(ColorMask mask)
 {
-	for (int i = 0; i < 4; i++)
-		states.back().colorMask[i] = mask[i];
-
-	glColorMask(mask[0], mask[1], mask[2], mask[3]);
+	glColorMask(mask.r, mask.g, mask.b, mask.a);
 }
 
-const bool *Graphics::getColorMask() const
+Graphics::ColorMask Graphics::getColorMask() const
 {
 	return states.back().colorMask;
 }
@@ -1347,14 +1338,12 @@ Graphics::DisplayState::DisplayState()
 	, scissorBox()
 	, font(nullptr)
 	, shader(nullptr)
+	, colorMask{true, true, true, true}
 	, wireframe(false)
 	, defaultFilter()
 	, defaultMipmapFilter(Texture::FILTER_NONE)
 	, defaultMipmapSharpness(0.0f)
 {
-	// We should just directly initialize the array in the initializer list, but
-	// that feature of C++11 is broken in Visual Studio 2013...
-	colorMask[0] = colorMask[1] = colorMask[2] = colorMask[3] = true;
 }
 
 Graphics::DisplayState::DisplayState(const DisplayState &other)
@@ -1371,13 +1360,12 @@ Graphics::DisplayState::DisplayState(const DisplayState &other)
 	, font(other.font)
 	, shader(other.shader)
 	, canvases(other.canvases)
+	, colorMask(other.colorMask)
 	, wireframe(other.wireframe)
 	, defaultFilter(other.defaultFilter)
 	, defaultMipmapFilter(other.defaultMipmapFilter)
 	, defaultMipmapSharpness(other.defaultMipmapSharpness)
 {
-	for (int i = 0; i < 4; i++)
-		colorMask[i] = other.colorMask[i];
 }
 
 Graphics::DisplayState::~DisplayState()
@@ -1401,8 +1389,7 @@ Graphics::DisplayState &Graphics::DisplayState::operator = (const DisplayState &
 	shader = other.shader;
 	canvases = other.canvases;
 
-	for (int i = 0; i < 4; i++)
-		colorMask[i] = other.colorMask[i];
+	colorMask = other.colorMask;
 
 	wireframe = other.wireframe;
 

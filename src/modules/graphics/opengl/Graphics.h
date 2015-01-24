@@ -215,13 +215,12 @@ public:
 	/**
 	 * Sets the enabled color components when rendering.
 	 **/
-	void setColorMask(const bool mask[4]);
+	void setColorMask(ColorMask mask);
 
 	/**
 	 * Gets the current color mask.
-	 * Returns an array of 4 booleans representing the mask.
 	 **/
-	const bool *getColorMask() const;
+	ColorMask getColorMask() const;
 
 	/**
 	 * Sets the current blend mode.
@@ -470,7 +469,7 @@ private:
 		std::vector<Object::StrongRef<Canvas>> canvases;
 
 		// Color mask.
-		bool colorMask[4];
+		ColorMask colorMask;
 
 		bool wireframe;
 
