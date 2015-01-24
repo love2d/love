@@ -69,7 +69,7 @@ public:
 
 private:
 
-	Object::StrongRef<love::mouse::Cursor> curCursor;
+	StrongRef<love::mouse::Cursor> curCursor;
 
 	std::map<Cursor::SystemCursor, Cursor *> systemCursors;
 

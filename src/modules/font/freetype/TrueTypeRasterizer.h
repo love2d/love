@@ -58,7 +58,7 @@ private:
 	FT_Face face;
 
 	// File data
-	Object::StrongRef<Data> data;
+	StrongRef<Data> data;
 }; // FreetypeRasterizer
 
 } // freetype

@@ -53,7 +53,7 @@ protected:
 
 	// The encoded data. This should be replaced with buffered file
 	// reads in the future.
-	Object::StrongRef<Data> data;
+	StrongRef<Data> data;
 
 	// File extension.
 	std::string ext;

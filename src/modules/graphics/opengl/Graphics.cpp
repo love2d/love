@@ -173,7 +173,7 @@ void Graphics::setViewportSize(int width, int height)
 
 	// We want to affect the main screen, not any Canvas that's currently active
 	// (not that any *should* be active when this is called.)
-	std::vector<Object::StrongRef<Canvas>> canvases = states.back().canvases;
+	std::vector<StrongRef<Canvas>> canvases = states.back().canvases;
 	setCanvas();
 
 	// Set the viewport to top-left corner.
@@ -662,7 +662,7 @@ void Graphics::setCanvas(Canvas *canvas)
 
 	canvas->startGrab();
 
-	std::vector<Object::StrongRef<Canvas>> canvasref;
+	std::vector<StrongRef<Canvas>> canvasref;
 	canvasref.push_back(canvas);
 
 	std::swap(state.canvases, canvasref);
@@ -680,7 +680,7 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 	auto attachments = std::vector<Canvas *>(canvases.begin() + 1, canvases.end());
 	canvases[0]->startGrab(attachments);
 
-	std::vector<Object::StrongRef<Canvas>> canvasrefs;
+	std::vector<StrongRef<Canvas>> canvasrefs;
 	canvasrefs.reserve(canvases.size());
 
 	for (Canvas *c : canvases)
@@ -689,12 +689,12 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 	std::swap(state.canvases, canvasrefs);
 }
 
-void Graphics::setCanvas(const std::vector<Object::StrongRef<Canvas>> &canvases)
+void Graphics::setCanvas(const std::vector<StrongRef<Canvas>> &canvases)
 {
 	std::vector<Canvas *> canvaslist;
 	canvaslist.reserve(canvases.size());
 
-	for (const Object::StrongRef<Canvas> &c : canvases)
+	for (const StrongRef<Canvas> &c : canvases)
 		canvaslist.push_back(c.get());
 
 	return setCanvas(canvaslist);
@@ -715,7 +715,7 @@ std::vector<Canvas *> Graphics::getCanvas() const
 	std::vector<Canvas *> canvases;
 	canvases.reserve(states.back().canvases.size());
 
-	for (const Object::StrongRef<Canvas> &c : states.back().canvases)
+	for (const StrongRef<Canvas> &c : states.back().canvases)
 		canvases.push_back(c.get());
 
 	return canvases;
@@ -1091,7 +1091,7 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 {
 	// Temporarily unbind the currently active canvas (glReadPixels reads the
 	// active framebuffer, not the main one.)
-	std::vector<Object::StrongRef<Canvas>> canvases = states.back().canvases;
+	std::vector<StrongRef<Canvas>> canvases = states.back().canvases;
 	setCanvas();
 
 	int w = getWidth();

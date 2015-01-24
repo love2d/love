@@ -739,7 +739,7 @@ std::vector<Quad *> ParticleSystem::getQuads() const
 	std::vector<Quad *> quadlist;
 	quadlist.reserve(quads.size());
 
-	for (const Object::StrongRef<Quad> &q : quads)
+	for (const StrongRef<Quad> &q : quads)
 		quadlist.push_back(q.get());
 
 	return quadlist;

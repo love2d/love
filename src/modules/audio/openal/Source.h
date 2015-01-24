@@ -148,7 +148,7 @@ private:
 	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
 
-	Object::StrongRef<StaticDataBuffer> staticBuffer;
+	StrongRef<StaticDataBuffer> staticBuffer;
 
 	float pitch;
 	float volume;
@@ -183,7 +183,7 @@ private:
 	int sampleRate;
 	int channels;
 
-	Object::StrongRef<love::sound::Decoder> decoder;
+	StrongRef<love::sound::Decoder> decoder;
 
 	unsigned int toLoop;
 
