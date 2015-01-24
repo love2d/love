@@ -443,23 +443,18 @@ private:
 
 	struct DisplayState
 	{
-		// Colors.
 		Color color;
 		Color backgroundColor;
 
-		// Blend mode.
 		BlendMode blendMode;
 
-		// Line.
 		float lineWidth;
 		LineStyle lineStyle;
 		LineJoin lineJoin;
 
-		// Point.
 		float pointSize;
 		PointStyle pointStyle;
 
-		// Scissor.
 		bool scissor;
 		OpenGL::Viewport scissorBox;
 
@@ -468,15 +463,12 @@ private:
 
 		std::vector<Object::StrongRef<Canvas>> canvases;
 
-		// Color mask.
 		ColorMask colorMask;
 
 		bool wireframe;
 
-		// Default filter.
 		Texture::Filter defaultFilter;
 
-		// Default mipmap filter and sharpness.
 		Texture::FilterMode defaultMipmapFilter;
 		float defaultMipmapSharpness;
 
