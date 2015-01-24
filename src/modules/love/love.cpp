@@ -165,7 +165,9 @@ int w__openConsole(lua_State *L);
 
 const char *love_version()
 {
-	return love::VERSION;
+	// Do not refer to love::VERSION here, the linker
+	// will patch it back up to the executable's one..
+	return LOVE_VERSION_STRING;
 }
 
 const char *love_codename()
