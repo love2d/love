@@ -37,14 +37,14 @@ namespace math
 // https://web.archive.org/web/20110807030012/http://www.cris.com/%7ETtwang/tech/inthash.htm
 static uint64 wangHash64(uint64 key)
 {
-    key = (~key) + (key << 21); // key = (key << 21) - key - 1;
-    key = key ^ (key >> 24);
-    key = (key + (key << 3)) + (key << 8); // key * 265
-    key = key ^ (key >> 14);
-    key = (key + (key << 2)) + (key << 4); // key * 21
-    key = key ^ (key >> 28);
-    key = key + (key << 31);
-    return key;
+	key = (~key) + (key << 21); // key = (key << 21) - key - 1;
+	key = key ^ (key >> 24);
+	key = (key + (key << 3)) + (key << 8); // key * 265
+	key = key ^ (key >> 14);
+	key = (key + (key << 2)) + (key << 4); // key * 21
+	key = key ^ (key >> 28);
+	key = key + (key << 31);
+	return key;
 }
 
 // 64 bit Xorshift implementation taken from the end of Sec. 3 (page 4) in
@@ -96,9 +96,9 @@ void RandomGenerator::setSeed(RandomGenerator::Seed newseed)
 	// http://www.reedbeta.com/blog/2013/01/12/quick-and-easy-gpu-random-numbers-in-d3d11/
 	// Xorshift also can't handle a state value of 0, so we avoid that.
 	do
-    {
-        newseed.b64 = wangHash64(newseed.b64);
-    } while (newseed.b64 == 0);
+	{
+		newseed.b64 = wangHash64(newseed.b64);
+	} while (newseed.b64 == 0);
 
 	rng_state = newseed;
 }
