@@ -21,17 +21,31 @@
 #include "RandomGenerator.h"
 
 // C++
-#include <cmath>
 #include <sstream>
 #include <iomanip>
 
 // C
+#include <cmath>
 #include <cstdlib>
 
 namespace love
 {
 namespace math
 {
+
+// Thomas Wang's 64-bit integer hashing function:
+// https://web.archive.org/web/20110807030012/http://www.cris.com/%7ETtwang/tech/inthash.htm
+static uint64 wangHash64(uint64 key)
+{
+    key = (~key) + (key << 21); // key = (key << 21) - key - 1;
+    key = key ^ (key >> 24);
+    key = (key + (key << 3)) + (key << 8); // key * 265
+    key = key ^ (key >> 14);
+    key = (key + (key << 2)) + (key << 4); // key * 21
+    key = key ^ (key >> 28);
+    key = key + (key << 31);
+    return key;
+}
 
 // 64 bit Xorshift implementation taken from the end of Sec. 3 (page 4) in
 // George Marsaglia, "Xorshift RNGs", Journal of Statistical Software, Vol.8 (Issue 14), 2003
@@ -75,17 +89,18 @@ double RandomGenerator::randomNormal(double stddev)
 
 void RandomGenerator::setSeed(RandomGenerator::Seed newseed)
 {
-	// 0 xor 0 is still 0, so Xorshift can't generate new numbers.
-	if (newseed.b64 == 0)
-		throw love::Exception("Random seed cannot be 0.");
-
 	seed = newseed;
-	rng_state = seed;
 
-	// Xorshift's first couple results after seeding will be similar to results
-	// from very similar seeds, so we immediately discard them here.
-	for (int i = 0; i < 2; i++)
-		rand();
+	// Xorshift isn't designed to give a good distribution of values across many
+	// similar seeds, so we hash the state integer before using it.
+	// http://www.reedbeta.com/blog/2013/01/12/quick-and-easy-gpu-random-numbers-in-d3d11/
+	// Xorshift also can't handle a state value of 0, so we avoid that.
+	do
+    {
+        newseed.b64 = wangHash64(newseed.b64);
+    } while (newseed.b64 == 0);
+
+	rng_state = newseed;
 }
 
 RandomGenerator::Seed RandomGenerator::getSeed() const
@@ -98,32 +113,17 @@ void RandomGenerator::setState(const std::string &statestr)
 	// For this implementation we'll accept a hex string representing the
 	// 64-bit state integer xorshift uses.
 
-	Seed state = {};
-
 	// Hex string must start with 0x.
 	if (statestr.find("0x") != 0 || statestr.size() < 3)
-		throw love::Exception("Invalid random state.");
+		throw love::Exception("Invalid random state: %s", statestr.c_str());
 
-	// standardized strtoull (or 64 bit integer support for stringstream)
-	// requires C++11's standard library, which we can't use yet.
-	// I use strtol like this not because it's the best solution, but because
-	// it's "good enough".
+	Seed state = {};
 
-	// Convert the hex string to the state integer character-by-character.
-	for (size_t i = 2; i < statestr.size(); i++)
-	{
-		char hex[2] = {statestr[i], 0};
-		char *end = nullptr;
+	char *end = nullptr;
+	state.b64 = strtoull(statestr.c_str(), &end, 16);
 
-		// Convert the current hex character to a number.
-		int nibble = strtol(hex, &end, 16);
-
-		// Check if strtol failed to convert it.
-		if (end != nullptr && *end != 0)
-			throw love::Exception("Invalid random state.");
-
-		state.b64 = (state.b64 << 4) + nibble;
-	}
+	if (end != nullptr && *end != 0)
+		throw love::Exception("Invalid random state: %s", statestr.c_str());
 
 	rng_state = state;
 }
@@ -132,14 +132,8 @@ std::string RandomGenerator::getState() const
 {
 	// For this implementation we'll return a hex string representing the 64-bit
 	// state integer xorshift uses.
-
 	std::stringstream ss;
-
-	ss << "0x";
-
-	// Again with the stringstream not dealing with 64 bit integers...
-	ss << std::setfill('0') << std::setw(8) << std::hex << rng_state.b32.high;
-	ss << std::setfill('0') << std::setw(8) << std::hex << rng_state.b32.low;
+	ss << "0x" << std::setfill('0') << std::setw(16) << std::hex << rng_state.b64;
 
 	return ss.str();
 }
