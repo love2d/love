@@ -33,6 +33,9 @@ namespace freetype
 TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	: data(data)
 {
+	if (size <= 0)
+		throw love::Exception("Invalid TrueType font size: %d", size);
+
 	FT_Error err = FT_Err_Ok;
 	err = FT_New_Memory_Face(library,
 	                         (const FT_Byte *)data->getData(), /* first byte in memory */
@@ -41,9 +44,12 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	                         &face);
 
 	if (err != FT_Err_Ok)
-		throw love::Exception("TrueType Font Loading error: FT_New_Face failed: 0x%x (problem with font file?)", err);
+		throw love::Exception("TrueType Font loading error: FT_New_Face failed: 0x%x (problem with font file?)", err);
 
-	FT_Set_Pixel_Sizes(face, size, size);
+	err = FT_Set_Pixel_Sizes(face, size, size);
+
+	if (err != FT_Err_Ok)
+		throw love::Exception("TrueType Font loading error: FT_Set_Pixel_Sizes failed: 0x%x (invalid size?)", err);
 
 	// Set global metrics
 	FT_Size_Metrics s = face->size->metrics;
@@ -74,14 +80,17 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT);
 
 	if (err != FT_Err_Ok)
-		throw love::Exception("TrueType Font Loading error: FT_Load_Glyph failed (0x%x)", err);
+		throw love::Exception("TrueType Font glyph error: FT_Load_Glyph failed (0x%x)", err);
 
 	err = FT_Get_Glyph(face->glyph, &ftglyph);
 
 	if (err != FT_Err_Ok)
-		throw love::Exception("TrueType Font Loading error: FT_Get_Glyph failed (0x%x)", err);
+		throw love::Exception("TrueType Font glyph error: FT_Get_Glyph failed (0x%x)", err);
 
-	FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
+	err = FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
+
+	if (err != FT_Err_Ok)
+		throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
 
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
 	FT_Bitmap &bitmap = bitmap_glyph->bitmap; //just to make things easier
