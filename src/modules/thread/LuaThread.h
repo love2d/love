@@ -50,7 +50,7 @@ private:
 
 	void onError();
 
-	Object::StrongRef<love::Data> code;
+	StrongRef<love::Data> code;
 	std::string name;
 	std::string error;
 

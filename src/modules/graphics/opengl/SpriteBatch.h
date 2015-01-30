@@ -124,7 +124,7 @@ private:
 	 */
 	void setColorv(Vertex *v, const Color &color);
 
-	Object::StrongRef<Texture> texture;
+	StrongRef<Texture> texture;
 
 	// Max number of sprites in the batch.
 	int size;

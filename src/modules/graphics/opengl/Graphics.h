@@ -199,7 +199,7 @@ public:
 
 	void setCanvas(Canvas *canvas);
 	void setCanvas(const std::vector<Canvas *> &canvases);
-	void setCanvas(const std::vector<Object::StrongRef<Canvas>> &canvases);
+	void setCanvas(const std::vector<StrongRef<Canvas>> &canvases);
 	void setCanvas();
 
 	std::vector<Canvas *> getCanvas() const;
@@ -207,13 +207,12 @@ public:
 	/**
 	 * Sets the enabled color components when rendering.
 	 **/
-	void setColorMask(const bool mask[4]);
+	void setColorMask(ColorMask mask);
 
 	/**
 	 * Gets the current color mask.
-	 * Returns an array of 4 booleans representing the mask.
 	 **/
-	const bool *getColorMask() const;
+	ColorMask getColorMask() const;
 
 	/**
 	 * Sets the current blend mode.
@@ -425,22 +424,17 @@ private:
 
 	struct DisplayState
 	{
-		// Colors.
 		Color color;
 		Color backgroundColor;
 
-		// Blend mode.
 		BlendMode blendMode;
 
-		// Line.
 		float lineWidth;
 		LineStyle lineStyle;
 		LineJoin lineJoin;
 
-		// Point.
 		float pointSize;
 
-		// Scissor.
 		bool scissor;
 		OpenGL::Viewport scissorBox;
 
@@ -448,20 +442,17 @@ private:
 		bool stencilTest;
 		bool stencilInvert;
 
-		Object::StrongRef<Font> font;
-		Object::StrongRef<Shader> shader;
+		StrongRef<Font> font;
+		StrongRef<Shader> shader;
 
-		std::vector<Object::StrongRef<Canvas>> canvases;
+		std::vector<StrongRef<Canvas>> canvases;
 
-		// Color mask.
-		bool colorMask[4];
+		ColorMask colorMask;
 
 		bool wireframe;
 
-		// Default filter.
 		Texture::Filter defaultFilter;
 
-		// Default mipmap filter and sharpness.
 		Texture::FilterMode defaultMipmapFilter;
 		float defaultMipmapSharpness;
 

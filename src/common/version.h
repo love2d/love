@@ -25,10 +25,11 @@ namespace love
 {
 
 // Version stuff.
+#define LOVE_VERSION_STRING "0.10.0"
 const int VERSION_MAJOR = 0;
 const int VERSION_MINOR = 10;
 const int VERSION_REV = 0;
-const char *VERSION = "0.10.0";
+const char *VERSION = LOVE_VERSION_STRING;
 const char *VERSION_COMPATIBILITY[] =  { VERSION, 0 };
 const char *VERSION_CODENAME = "";
 

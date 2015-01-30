@@ -580,7 +580,7 @@ protected:
 	VertexIndex ibo;
 
 	// The texture to be drawn.
-	Object::StrongRef<Texture> texture;
+	StrongRef<Texture> texture;
 
 	// Whether the particle emitter is active.
 	bool active;
@@ -660,7 +660,7 @@ protected:
 	std::vector<Colorf> colors;
 
 	// Quads.
-	std::vector<Object::StrongRef<Quad>> quads;
+	std::vector<StrongRef<Quad>> quads;
 
 	bool relativeRotation;
 

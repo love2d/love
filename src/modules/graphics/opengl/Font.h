@@ -211,7 +211,7 @@ private:
 	const Glyph &findGlyph(uint32 glyph);
 	void printv(const Matrix &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
-	Object::StrongRef<love::font::Rasterizer> rasterizer;
+	StrongRef<love::font::Rasterizer> rasterizer;
 
 	int height;
 	float lineHeight;

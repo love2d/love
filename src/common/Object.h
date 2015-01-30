@@ -68,99 +68,72 @@ public:
 	 **/
 	virtual void release();
 
-	/**
-	 * Meant to be used as a temporary object. Facilitates safer and cleaner
-	 * code to release objects by doing so when the AutoRelease object is
-	 * destroyed (e.g. goes out of scope.)
-	 **/
-	class AutoRelease
-	{
-	public:
-
-		AutoRelease(Object *obj)
-			: object(obj)
-		{
-		}
-
-		~AutoRelease()
-		{
-			if (object)
-				object->release();
-		}
-
-	private:
-
-		AutoRelease() {}
-		Object *object;
-
-	}; // AutoRelease
-
-	/**
-	 * Partial re-implementation + specialization of std::shared_ptr. We can't
-	 * use C++11's stdlib yet...
-	 **/
-	template <typename T>
-	class StrongRef
-	{
-	public:
-
-		StrongRef()
-			: object(nullptr)
-		{
-		}
-
-		StrongRef(T *obj)
-			: object(obj)
-		{
-			if (object) object->retain();
-		}
-
-		StrongRef(const StrongRef &other)
-			: object(other.get())
-		{
-			if (object) object->retain();
-		}
-
-		~StrongRef()
-		{
-			if (object) object->release();
-		}
-
-		StrongRef &operator = (const StrongRef &other)
-		{
-			set(other.get());
-			return *this;
-		}
-
-		T *operator->() const
-		{
-			return object;
-		}
-
-		void set(T *obj)
-		{
-			if (obj) obj->retain();
-			if (object) object->release();
-			object = obj;
-		}
-
-		T *get() const
-		{
-			return object;
-		}
-
-	private:
-
-		T *object;
-
-	}; // StrongRef
-
 private:
 
 	// The reference count.
 	std::atomic<int> count;
 
 }; // Object
+
+/**
+ * Partial re-implementation + specialization of std::shared_ptr. We can't
+ * use C++11's stdlib yet...
+ **/
+template <typename T>
+class StrongRef
+{
+public:
+
+	StrongRef()
+	: object(nullptr)
+	{
+	}
+
+	StrongRef(T *obj)
+	: object(obj)
+	{
+		if (object) object->retain();
+	}
+
+	StrongRef(const StrongRef &other)
+	: object(other.get())
+	{
+		if (object) object->retain();
+	}
+
+	~StrongRef()
+	{
+		if (object) object->release();
+	}
+
+	StrongRef &operator = (const StrongRef &other)
+	{
+		set(other.get());
+		return *this;
+	}
+
+	T *operator->() const
+	{
+		return object;
+	}
+
+	void set(T *obj)
+	{
+		if (obj) obj->retain();
+		if (object) object->release();
+		object = obj;
+	}
+
+	T *get() const
+	{
+		return object;
+	}
+
+private:
+
+	T *object;
+	
+}; // StrongRef
 
 } // love
 

@@ -128,7 +128,7 @@ private:
 		int width  = 800;
 		int height = 600;
 		WindowSettings settings;
-		Object::StrongRef<love::image::ImageData> icon;
+		StrongRef<love::image::ImageData> icon;
 
 	} curMode;
 

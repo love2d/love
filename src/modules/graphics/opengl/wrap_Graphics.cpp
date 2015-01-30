@@ -675,17 +675,19 @@ int w_getFont(lua_State *L)
 
 int w_setColorMask(lua_State *L)
 {
-	bool mask[4];
+	Graphics::ColorMask mask;
 
 	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
 		// Enable all color components if no argument is given.
-		mask[0] = mask[1] = mask[2] = mask[3] = true;
+		mask.r = mask.g = mask.b = mask.a = true;
 	}
 	else
 	{
-		for (int i = 0; i < 4; i++)
-			mask[i] = luax_toboolean(L, i + 1);
+		mask.r = luax_toboolean(L, 1);
+		mask.g = luax_toboolean(L, 2);
+		mask.b = luax_toboolean(L, 3);
+		mask.a = luax_toboolean(L, 4);
 	}
 
 	instance()->setColorMask(mask);
@@ -695,10 +697,12 @@ int w_setColorMask(lua_State *L)
 
 int w_getColorMask(lua_State *L)
 {
-	const bool *mask = instance()->getColorMask();
+	Graphics::ColorMask mask = instance()->getColorMask();
 
-	for (int i = 0; i < 4; i++)
-		luax_pushboolean(L, mask[i]);
+	luax_pushboolean(L, mask.r);
+	luax_pushboolean(L, mask.g);
+	luax_pushboolean(L, mask.b);
+	luax_pushboolean(L, mask.a);
 
 	return 4;
 }

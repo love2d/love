@@ -151,10 +151,10 @@ int main(int argc, char **argv)
 	argv = hack_argv;
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
-	if (strcmp(love::VERSION, love_version()) != 0)
+	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
 	{
 		printf("Version mismatch detected!\nLOVE binary is version %s\n"
-				"LOVE library is version %s\n", love::VERSION, love_version());
+				"LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
 		return 1;
 	}
 
