@@ -114,14 +114,14 @@ private:
 	void setGLFramebufferAttributes(int msaa, bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
 	bool checkGLVersion(const ContextAttribs &attribs);
-	bool setContext(int msaa, bool vsync, bool sRGB);
+	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool sRGB);
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings);
 
 	SDL_MessageBoxFlags convertMessageBoxType(MessageBoxType type) const;
 
-	std::string windowTitle;
+	std::string title;
 
 	struct _currentMode
 	{
@@ -139,6 +139,7 @@ private:
 	SDL_Window *window;
 	SDL_GLContext context;
 
+	bool displayedWindowError;
 	bool displayedContextError;
 
 }; // Window

@@ -47,11 +47,11 @@ namespace sdl
 {
 
 Window::Window()
-	: windowTitle("")
-	, created(false)
+	: created(false)
 	, mouseGrabbed(false)
-	, window(0)
+	, window(nullptr)
 	, context(nullptr)
+	, displayedWindowError(false)
 	, displayedContextError(false)
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
@@ -73,6 +73,277 @@ Window::~Window()
 		SDL_DestroyWindow(window);
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+}
+
+void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
+{
+	// Set GL window / framebuffer attributes.
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (msaa > 0) ? msaa : 0);
+
+#if SDL_VERSION_ATLEAST(2,0,1)
+	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
+#endif
+}
+
+void Window::setGLContextAttributes(const ContextAttribs &attribs)
+{
+	int profilemask = 0;
+	int contextflags = 0;
+
+	if (attribs.gles)
+		profilemask |= SDL_GL_CONTEXT_PROFILE_ES;
+	else if (attribs.debug)
+		profilemask |= SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+
+	if (attribs.debug)
+		contextflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, attribs.versionMajor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, attribs.versionMinor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profilemask);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextflags);
+}
+
+bool Window::checkGLVersion(const ContextAttribs &attribs)
+{
+	typedef unsigned char GLubyte;
+	typedef unsigned int GLenum;
+	typedef const GLubyte *(APIENTRY *glGetStringPtr)(GLenum name);
+	const GLenum GL_VERSION_ENUM = 0x1F02;
+
+	// We don't have OpenGL headers or an automatic OpenGL function loader in
+	// this module, so we have to get the glGetString function pointer ourselves.
+	glGetStringPtr glGetStringFunc = (glGetStringPtr) SDL_GL_GetProcAddress("glGetString");
+	if (!glGetStringFunc)
+		return false;
+
+	const char *glversion = (const char *) glGetStringFunc(GL_VERSION_ENUM);
+	if (!glversion)
+		return false;
+
+	int glmajor = 0;
+	int glminor = 0;
+
+	// glGetString(GL_VERSION) returns a string with the format "major.minor",
+	// or "OpenGL ES major.minor" in GLES contexts.
+	const char *format = "%d.%d";
+	if (attribs.gles)
+		format = "OpenGL ES %d.%d";
+
+	if (sscanf(glversion, format, &glmajor, &glminor) != 2)
+		return false;
+
+	if (glmajor < attribs.versionMajor
+		|| (glmajor == attribs.versionMajor && glminor < attribs.versionMinor))
+		return false;
+	
+	return true;
+}
+
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool sRGB)
+{
+	bool preferGLES = false;
+
+#ifdef LOVE_GRAPHICS_USE_OPENGLES
+	preferGLES = true;
+#endif
+
+	const char *curdriver = SDL_GetCurrentVideoDriver();
+	const char *glesdrivers[] = {"RPI", "Android", "uikit", "winrt"};
+
+	// We always want to try OpenGL ES first on certain video backends.
+	for (const char *glesdriver : glesdrivers)
+	{
+		if (curdriver && strstr(curdriver, glesdriver) == curdriver)
+		{
+			preferGLES = true;
+			break;
+		}
+	}
+
+	if (!preferGLES)
+	{
+		const char *gleshint = SDL_GetHint("LOVE_GRAPHICS_USE_OPENGLES");
+		preferGLES = (gleshint != nullptr && gleshint[0] != '0');
+	}
+
+	// Do we want a debug context?
+	const char *debughint = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
+	bool debug = (debughint != nullptr && debughint[0] != '0');
+
+	// Different context attribute profiles to try.
+	std::vector<ContextAttribs> attribslist = {
+		{2, 1, false, debug}, // OpenGL 2.1.
+		{3, 0, true,  debug}, // OpenGL ES 3.
+		{2, 0, true,  debug}, // OpenGL ES 2.
+	};
+
+	// Move OpenGL ES to the front of the list if we should prefer GLES.
+	if (preferGLES)
+		std::rotate(attribslist.begin(), attribslist.begin() + 1, attribslist.end());
+
+	if (context)
+	{
+		SDL_GL_DeleteContext(context);
+		context = nullptr;
+	}
+
+	std::string windowerror;
+
+	// Try each context profile in order.
+	for (ContextAttribs attribs : attribslist)
+	{
+		// Unfortunately some OpenGL context settings are part of the internal
+		// window state in the Windows and Linux SDL backends, so we have to
+		// recreate the window when we want to change those settings...
+		if (window)
+		{
+			SDL_DestroyWindow(window);
+			SDL_FlushEvent(SDL_WINDOWEVENT);
+			window = nullptr;
+		}
+
+		int curMSAA  = msaa;
+		bool curSRGB = sRGB;
+
+		setGLFramebufferAttributes(curMSAA, curSRGB);
+		setGLContextAttributes(attribs);
+
+		window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
+
+		if (!window && curMSAA > 0)
+		{
+			// The MSAA setting could have caused the failure.
+			setGLFramebufferAttributes(0, curSRGB);
+			window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
+			if (window)
+				curMSAA = 0;
+		}
+
+		if (!window && curSRGB)
+		{
+			// same with sRGB.
+			setGLFramebufferAttributes(curMSAA, false);
+			window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
+			if (window)
+				curSRGB = false;
+		}
+
+		if (!window && curMSAA > 0 && curSRGB)
+		{
+			// Or both!
+			setGLFramebufferAttributes(0, false);
+			window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
+			if (window)
+				curSRGB = curMSAA = 0;
+		}
+
+		// Immediately try the next context profile if window creation failed.
+		if (!window)
+		{
+			windowerror = std::string(SDL_GetError());
+			continue;
+		}
+
+		windowerror.clear();
+
+		context = SDL_GL_CreateContext(window);
+
+		if (!context && curMSAA > 0)
+		{
+			// MSAA and sRGB settings can also cause CreateContext to fail, on
+			// certain SDL backends.
+			setGLFramebufferAttributes(0, curSRGB);
+			context = SDL_GL_CreateContext(window);
+		}
+
+		if (!context && curSRGB)
+		{
+			setGLFramebufferAttributes(curMSAA, false);
+			context = SDL_GL_CreateContext(window);
+		}
+
+		if (!context && curMSAA > 0 && curSRGB)
+		{
+			setGLFramebufferAttributes(0, false);
+			context = SDL_GL_CreateContext(window);
+		}
+
+		if (!context && attribs.debug)
+		{
+			attribs.debug = false;
+			setGLContextAttributes(attribs);
+			context = SDL_GL_CreateContext(window);
+		}
+
+		// Make sure the context's version is at least what we requested.
+		if (context && !checkGLVersion(attribs))
+		{
+			SDL_GL_DeleteContext(context);
+			context = nullptr;
+		}
+
+		if (context)
+			break;
+	}
+
+	if (!context || !window)
+	{
+		if (!windowerror.empty())
+		{
+			std::string title = "Unable to create window";
+			std::string message = "SDL error: " + windowerror;
+
+			std::cerr << title << std::endl << message << std::endl;
+
+			// Display a message box with the error, but only once.
+			if (!displayedWindowError)
+			{
+				showMessageBox(title, message, MESSAGEBOX_ERROR, false);
+				displayedWindowError = true;
+			}
+		}
+		else if (!context)
+		{
+			std::string title = "Unable to initialize OpenGL";
+			std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
+
+			std::cerr << title << std::endl << message << std::endl;
+
+			// Display a message box with the error, but only once.
+			if (!displayedContextError)
+			{
+				showMessageBox(title, message, MESSAGEBOX_ERROR, true);
+				displayedContextError = true;
+			}
+		}
+
+		if (context)
+		{
+			SDL_GL_DeleteContext(context);
+			context = nullptr;
+		}
+
+		if (window)
+		{
+			SDL_DestroyWindow(window);
+			SDL_FlushEvent(SDL_WINDOWEVENT);
+			window = nullptr;
+		}
+
+		return false;
+	}
+	
+	return true;
 }
 
 bool Window::setWindow(int width, int height, WindowSettings *settings)
@@ -157,70 +428,34 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (gfx != nullptr)
 		gfx->unSetMode();
 
-	// Destroy and recreate the window if the dimensions or flags have changed.
+	if (context)
+	{
+		SDL_GL_DeleteContext(context);
+		context = nullptr;
+	}
+
 	if (window)
 	{
-		int curdisplay = SDL_GetWindowDisplayIndex(window);
-		Uint32 wflags = SDL_GetWindowFlags(window);
+		SDL_DestroyWindow(window);
+		window = nullptr;
 
-		Uint32 testflags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP
-			| SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
-
-		// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
-#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
-		testflags |= SDL_WINDOW_ALLOW_HIGHDPI;
-#endif
-
-		wflags &= testflags;
-
-		if (sdlflags != wflags || width != curMode.width || height != curMode.height
-			|| f.display != curdisplay || f.msaa != curMode.settings.msaa || f.sRGB != curMode.settings.sRGB)
-		{
-			SDL_DestroyWindow(window);
-			window = nullptr;
-
-			// The old window may have generated pending events which are no
-			// longer relevant. Destroy them all!
-			SDL_FlushEvent(SDL_WINDOWEVENT);
-		}
+		// The old window may have generated pending events which are no longer
+		// relevant. Destroy them all!
+		SDL_FlushEvent(SDL_WINDOWEVENT);
 	}
 
-	if (!window)
-	{
-		created = false;
+	created = false;
 
-		// In Windows and Linux, some GL attributes are set on window creation.
-		setGLFramebufferAttributes(f.msaa, f.sRGB);
-
-		const char *title = windowTitle.c_str();
-		window = SDL_CreateWindow(title, x, y, width, height, sdlflags);
-
-		if (!window && f.msaa > 0)
-		{
-			// MSAA might have caused the failure, disable it and try again.
-			f.msaa = 0;
-			setGLFramebufferAttributes(f.msaa, f.sRGB);
-			window = SDL_CreateWindow(title, x, y, width, height, sdlflags);
-		}
-
-		if (!window && f.sRGB)
-		{
-			// Same with sRGB support.
-			f.sRGB = false;
-			setGLFramebufferAttributes(f.msaa, f.sRGB);
-			window = SDL_CreateWindow(title, x, y, width, height, sdlflags);
-		}
-
-		// Make sure the window keeps any previously set icon.
-		if (window && curMode.icon.get())
-			setIcon(curMode.icon.get());
-	}
-
-	if (!window)
-	{
-		std::cerr << "Could not set video mode: " << SDL_GetError() << std::endl;
+	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.sRGB))
 		return false;
-	}
+
+	created = true;
+
+	// Make sure the window keeps any previously set icon.
+	setIcon(curMode.icon.get());
+
+	// Make sure the mouse keeps its previous grab setting.
+	setMouseGrab(mouseGrabbed);
 
 	// Enforce minimum window dimensions.
 	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
@@ -230,10 +465,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_RaiseWindow(window);
 
-	if (!setContext(f.msaa, f.vsync, f.sRGB))
-		return false;
-
-	created = true;
+	SDL_GL_SetSwapInterval(f.vsync ? 1 : 0);
 
 	updateSettings(f);
 
@@ -250,9 +482,6 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		gfx->setMode(width, height, curMode.settings.sRGB);
 	}
 
-	// Make sure the mouse keeps its previous grab setting.
-	setMouseGrab(mouseGrabbed);
-
 	return true;
 }
 
@@ -263,217 +492,6 @@ bool Window::onWindowResize(int width, int height)
 
 	curMode.width = width;
 	curMode.height = height;
-
-	return true;
-}
-
-void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
-{
-	// Set GL window attributes.
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
-	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
-
-	// MSAA.
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (msaa > 0) ? msaa : 0);
-
-#if SDL_VERSION_ATLEAST(2,0,1)
-	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
-#endif
-}
-
-void Window::setGLContextAttributes(const ContextAttribs &attribs)
-{
-	int profilemask = 0;
-	int contextflags = 0;
-
-	if (attribs.gles)
-		profilemask |= SDL_GL_CONTEXT_PROFILE_ES;
-	else if (attribs.debug)
-		profilemask |= SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
-
-	if (attribs.debug)
-		contextflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, attribs.versionMajor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, attribs.versionMinor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profilemask);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextflags);
-}
-
-bool Window::checkGLVersion(const ContextAttribs &attribs)
-{
-	typedef unsigned char GLubyte;
-	typedef unsigned int GLenum;
-	typedef const GLubyte *(APIENTRY *glGetStringPtr)(GLenum name);
-	const GLenum GL_VERSION_ENUM = 0x1F02;
-
-	// We don't have OpenGL headers or an automatic OpenGL function loader in
-	// this module, so we have to get the glGetString function pointer ourselves.
-	glGetStringPtr glGetStringFunc = (glGetStringPtr) SDL_GL_GetProcAddress("glGetString");
-	if (!glGetStringFunc)
-		return false;
-
-	const char *glversion = (const char *) glGetStringFunc(GL_VERSION_ENUM);
-	if (!glversion)
-		return false;
-
-	int glmajor = 0;
-	int glminor = 0;
-
-	// glGetString(GL_VERSION) returns a string with the format "major.minor",
-	// or "OpenGL ES major.minor" in GLES contexts.
-	const char *format = "%d.%d";
-	if (attribs.gles)
-		format = "OpenGL ES %d.%d";
-
-	if (sscanf(glversion, format, &glmajor, &glminor) != 2)
-		return false;
-
-	if (glmajor < attribs.versionMajor
-		|| (glmajor == attribs.versionMajor && glminor < attribs.versionMinor))
-		return false;
-
-	return true;
-}
-
-bool Window::setContext(int msaa, bool vsync, bool sRGB)
-{
-	// We would normally only need to recreate the context if MSAA changes or
-	// SDL_GL_MakeCurrent is unsuccessful, but in Windows apparently MakeCurrent
-	// can sometimes claim success but the context will actually be trashed.
-	if (context)
-	{
-		SDL_GL_DeleteContext(context);
-		context = nullptr;
-	}
-
-	bool preferGLES = false;
-
-#ifdef LOVE_GRAPHICS_USE_OPENGLES
-	preferGLES = true;
-#endif
-
-	const char *curdriver = SDL_GetCurrentVideoDriver();
-	const char *glesdrivers[] = {"RPI", "Android", "uikit", "winrt"};
-
-	// We always want to try OpenGL ES first on certain video backends.
-	for (const char *glesdriver : glesdrivers)
-	{
-		if (curdriver && strstr(curdriver, glesdriver) == curdriver)
-		{
-			preferGLES = true;
-			break;
-		}
-	}
-
-	if (!preferGLES)
-	{
-		const char *gleshint = SDL_GetHint("LOVE_GRAPHICS_USE_OPENGLES");
-		preferGLES = (gleshint != nullptr && gleshint[0] != '0');
-	}
-
-	// Do we want a debug context?
-	const char *debughint = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
-	bool debug = (debughint != nullptr && debughint[0] != '0');
-
-	// Different context attribute profiles to try.
-	std::vector<ContextAttribs> attribslist = {
-		{2, 1, false, debug}, // OpenGL 2.1.
-		{3, 0, true,  debug}, // OpenGL ES 3.
-		{2, 0, true,  debug}, // OpenGL ES 2.
-	};
-
-	// Move OpenGL ES to the front of the list if we should prefer GLES.
-	if (preferGLES)
-		std::rotate(attribslist.begin(), attribslist.begin() + 1, attribslist.end());
-
-	for (ContextAttribs attribs : attribslist)
-	{
-		setGLFramebufferAttributes(msaa, sRGB);
-		setGLContextAttributes(attribs);
-
-		context = SDL_GL_CreateContext(window);
-
-		if (!context && msaa > 0)
-		{
-			// MSAA might have caused the failure, disable it and try again.
-			setGLFramebufferAttributes(0, sRGB);
-			context = SDL_GL_CreateContext(window);
-		}
-
-		if (!context && sRGB)
-		{
-			// Or maybe sRGB isn't supported.
-			setGLFramebufferAttributes(msaa, false);
-			context = SDL_GL_CreateContext(window);
-		}
-
-		if (!context && msaa > 0 && sRGB)
-		{
-			// Or both are an issue!
-			setGLFramebufferAttributes(0, false);
-			context = SDL_GL_CreateContext(window);
-		}
-
-		if (!context && attribs.debug)
-		{
-			attribs.debug = false;
-			setGLContextAttributes(attribs);
-			context = SDL_GL_CreateContext(window);
-		}
-
-		// Make sure the context's version is at least what we requested.
-		if (context && !checkGLVersion(attribs))
-		{
-			SDL_GL_DeleteContext(context);
-			context = nullptr;
-		}
-
-		if (context)
-			break;
-	}
-
-	if (!context)
-	{
-		std::string title = "Unable to initialize OpenGL";
-		std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
-
-		std::cerr << title << std::endl << message << std::endl;
-
-		// Display a message box with the error, but only once.
-		if (!displayedContextError)
-		{
-			showMessageBox(title, message, MESSAGEBOX_ERROR, true);
-			displayedContextError = true;
-		}
-
-		return false;
-	}
-
-	// Set vertical synchronization.
-	SDL_GL_SetSwapInterval(vsync ? 1 : 0);
-
-	// Verify MSAA setting.
-	int buffers;
-	int samples;
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
-
-	// Don't fail because of this, but issue a warning.
-	if ((!buffers && msaa > 0) || (samples != msaa))
-	{
-		std::cerr << "Warning, MSAA setting failed! (Result: " << samples << "x MSAA)" << std::endl;
-		msaa = (buffers > 0) ? samples : 0;
-	}
-
-	curMode.settings.msaa = msaa;
-	curMode.settings.vsync = SDL_GL_GetSwapInterval() != 0;
 
 	return true;
 }
@@ -530,6 +548,15 @@ void Window::updateSettings(const WindowSettings &newsettings)
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
 	curMode.settings.sRGB = newsettings.sRGB;
+
+	// Verify MSAA setting.
+	int buffers = 0;
+	int samples = 0;
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
+
+	curMode.settings.msaa = (buffers > 0 ? samples : 0);
+	curMode.settings.vsync = SDL_GL_GetSwapInterval() != 0;
 
 	SDL_DisplayMode dmode = {};
 	SDL_GetCurrentDisplayMode(curMode.settings.display, &dmode);
@@ -712,7 +739,7 @@ bool Window::isCreated() const
 
 void Window::setWindowTitle(const std::string &title)
 {
-	windowTitle = title;
+	this->title = title;
 
 	if (window)
 		SDL_SetWindowTitle(window, title.c_str());
@@ -720,7 +747,7 @@ void Window::setWindowTitle(const std::string &title)
 
 const std::string &Window::getWindowTitle() const
 {
-	return windowTitle;
+	return title;
 }
 
 bool Window::setIcon(love::image::ImageData *imgd)
