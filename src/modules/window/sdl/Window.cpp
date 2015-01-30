@@ -306,7 +306,7 @@ void Window::setGLContextAttributes(const ContextAttribs &attribs)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextflags);
 }
 
-bool Window::checkGLVersion(int versionmajor, int versionminor)
+bool Window::checkGLVersion(const ContextAttribs &attribs)
 {
 	typedef unsigned char GLubyte;
 	typedef unsigned int GLenum;
@@ -328,10 +328,15 @@ bool Window::checkGLVersion(int versionmajor, int versionminor)
 
 	// glGetString(GL_VERSION) returns a string with the format "major.minor",
 	// or "OpenGL ES major.minor" in GLES contexts.
-	if (sscanf(glversion, "%d.%d", &glmajor, &glminor) != 2)
+	const char *format = "%d.%d";
+	if (attribs.gles)
+		format = "OpenGL ES %d.%d";
+
+	if (sscanf(glversion, format, &glmajor, &glminor) != 2)
 		return false;
 
-	if (glmajor < versionmajor || (glmajor == versionmajor && glminor < versionminor))
+	if (glmajor < attribs.versionMajor
+		|| (glmajor == attribs.versionMajor && glminor < attribs.versionMinor))
 		return false;
 
 	return true;
@@ -424,7 +429,7 @@ bool Window::setContext(int msaa, bool vsync, bool sRGB)
 		}
 
 		// Make sure the context's version is at least what we requested.
-		if (context && !checkGLVersion(attribs.versionMajor, attribs.versionMinor))
+		if (context && !checkGLVersion(attribs))
 		{
 			SDL_GL_DeleteContext(context);
 			context = nullptr;

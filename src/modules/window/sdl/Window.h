@@ -113,7 +113,7 @@ private:
 
 	void setGLFramebufferAttributes(int msaa, bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
-	bool checkGLVersion(int versionmajor, int versionminor);
+	bool checkGLVersion(const ContextAttribs &attribs);
 	bool setContext(int msaa, bool vsync, bool sRGB);
 
 	// Update the saved window settings based on the window's actual state.
