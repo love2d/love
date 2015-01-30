@@ -139,7 +139,8 @@ void OpenGL::setupContext()
 	state.lastProjectionMatrix.setTranslation(nan, nan);
 	state.lastTransformMatrix.setTranslation(nan, nan);
 
-	glMatrixMode(GL_MODELVIEW);
+	if (GLAD_VERSION_1_0)
+		glMatrixMode(GL_MODELVIEW);
 
 	contextInitialized = true;
 }
@@ -567,7 +568,6 @@ void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 		else
 			gmin = GL_LINEAR;
 	}
-
 
 	switch (f.mag)
 	{

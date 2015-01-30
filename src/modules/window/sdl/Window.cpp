@@ -32,7 +32,7 @@
 #include <cstdio>
 
 #ifdef LOVE_WINDOWS
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 #ifndef APIENTRY
