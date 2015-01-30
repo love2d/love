@@ -472,16 +472,19 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const std::string
 
 		if (!commands.empty())
 		{
+			auto firstcmd = commands.begin();
+
 			// If the first draw command in the new list has the same texture
 			// as the last one in the existing list we're building and its
 			// vertices are in-order, we can combine them (saving a draw call.)
-			auto firstcmd = commands.begin();
-			auto prevcmd = drawcommands.back();
-			if (!drawcommands.empty() && prevcmd.texture == firstcmd->texture
-				&& (prevcmd.startvertex + prevcmd.vertexcount) == firstcmd->startvertex)
+			if (!drawcommands.empty())
 			{
-				drawcommands.back().vertexcount += firstcmd->vertexcount;
-				++firstcmd;
+				auto prevcmd = drawcommands.back();
+				if (prevcmd.texture == firstcmd->texture && (prevcmd.startvertex + prevcmd.vertexcount) == firstcmd->startvertex)
+				{
+					drawcommands.back().vertexcount += firstcmd->vertexcount;
+					++firstcmd;
+				}
 			}
 
 			// Append the new draw commands to the list we're building.

@@ -138,16 +138,19 @@ void Text::addTextData(const TextData &t)
 		for (Font::DrawCommand &cmd : new_commands)
 			cmd.startvertex += (int) voffset;
 
+		auto firstcmd = new_commands.begin();
+
 		// If the first draw command in the new list has the same texture as the
 		// last one in the existing list we're building and its vertices are
 		// in-order, we can combine them (saving a draw call.)
-		auto firstcmd = new_commands.begin();
-		auto prevcmd = draw_commands.back();
-		if (!draw_commands.empty() && prevcmd.texture == firstcmd->texture
-			&& (prevcmd.startvertex + prevcmd.vertexcount) == firstcmd->startvertex)
+		if (!draw_commands.empty())
 		{
-			draw_commands.back().vertexcount += firstcmd->vertexcount;
-			++firstcmd;
+			auto prevcmd = draw_commands.back();
+			if (prevcmd.texture == firstcmd->texture && (prevcmd.startvertex + prevcmd.vertexcount) == firstcmd->startvertex)
+			{
+				draw_commands.back().vertexcount += firstcmd->vertexcount;
+				++firstcmd;
+			}
 		}
 
 		// Append the new draw commands to the list we're building.
