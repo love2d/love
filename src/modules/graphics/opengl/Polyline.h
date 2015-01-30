@@ -21,13 +21,15 @@
 #ifndef LOVE_GRAPHICS_OPENGL_POLYLINE_H
 #define LOVE_GRAPHICS_OPENGL_POLYLINE_H
 
-#include <vector>
-
 // LOVE
+#include "common/config.h"
 #include "common/Vector.h"
 
 // OpenGL
 #include "OpenGL.h"
+
+// C++
+#include <vector>
 
 namespace love
 {
