@@ -31,6 +31,14 @@
 // C
 #include <cstdio>
 
+#ifdef LOVE_WINDOWS
+#include <Windows.h>
+#endif
+
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+
 namespace love
 {
 namespace window
@@ -302,7 +310,7 @@ bool Window::checkGLVersion(int versionmajor, int versionminor)
 {
 	typedef unsigned char GLubyte;
 	typedef unsigned int GLenum;
-	typedef const GLubyte *(*glGetStringPtr)(GLenum name);
+	typedef const GLubyte *(APIENTRY *glGetStringPtr)(GLenum name);
 	const GLenum GL_VERSION_ENUM = 0x1F02;
 
 	// We don't have OpenGL headers or an automatic OpenGL function loader in
