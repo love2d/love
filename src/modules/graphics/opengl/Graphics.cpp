@@ -25,6 +25,7 @@
 
 #include "Graphics.h"
 #include "window/sdl/Window.h"
+#include "font/Font.h"
 #include "Polyline.h"
 
 // C++
@@ -36,6 +37,7 @@
 // C
 #include <cmath>
 #include <cstdio>
+
 
 namespace love
 {
@@ -70,6 +72,7 @@ Graphics::~Graphics()
 {
 	// We do this manually so the love objects get released before the window.
 	states.clear();
+	defaultFont.set(nullptr);
 
 	currentWindow->release();
 }
@@ -161,6 +164,31 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 
 	setDefaultFilter(s.defaultFilter);
 	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
+}
+
+void Graphics::checkSetDefaultFont()
+{
+	// We don't create or set the default Font if an existing font is in use.
+	if (states.back().font.get() != nullptr)
+		return;
+
+	// Create a new default font if we don't have one yet.
+	if (!defaultFont.get())
+	{
+		font::Font *fontmodule = Module::getInstance<font::Font>(M_FONT);
+		if (!fontmodule)
+			throw love::Exception("Font module has not been loaded.");
+
+		StrongRef<font::Rasterizer> r(fontmodule->newRasterizer(12));
+		r->release();
+
+		defaultFont.set(newFont(r.get()));
+		defaultFont->release();
+
+		::printf("created default font\n");
+	}
+
+	states.back().font.set(defaultFont.get());
 }
 
 void Graphics::setViewportSize(int width, int height)
@@ -612,18 +640,16 @@ Color Graphics::getBackgroundColor() const
 
 void Graphics::setFont(Font *font)
 {
-	// Hack: the Lua-facing love.graphics.print function will set the current
-	// font if needed, but only on its first call... we want to make sure a nil
-	// font is never accidentally set (e.g. via love.graphics.reset.)
-	if (font == nullptr)
-		return;
+	// We don't need to set a default font here if null is passed in, since we
+	// only care about the default font in getFont and print.
 
 	DisplayState &state = states.back();
 	state.font.set(font);
 }
 
-Font *Graphics::getFont() const
+Font *Graphics::getFont()
 {
+	checkSetDefaultFont();
 	return states.back().font.get();
 }
 
@@ -883,6 +909,8 @@ bool Graphics::isWireframe() const
 
 void Graphics::print(const std::string &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
+	checkSetDefaultFont();
+
 	DisplayState &state = states.back();
 
 	if (state.font.get() != nullptr)
@@ -891,6 +919,8 @@ void Graphics::print(const std::string &str, float x, float y , float angle, flo
 
 void Graphics::printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
+	checkSetDefaultFont();
+
 	DisplayState &state = states.back();
 
 	if (state.font.get() == nullptr)

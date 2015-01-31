@@ -49,17 +49,21 @@ int w_newRasterizer(lua_State *L)
 		std::string glyphs(g);
 		luax_catchexcept(L, [&](){ t = instance()->newRasterizer(d, glyphs); });
 	}
-	else if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	else if (lua_type(L, 1) == LUA_TSTRING || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
 		love::filesystem::FileData *d = love::filesystem::luax_getfiledata(L, 1);
-		int size = luaL_checkint(L, 2);
+		int size = luaL_optint(L, 2, 12);
 		luax_catchexcept(L,
 			[&]() { t = instance()->newRasterizer(d, size); },
 			[&]() { d->release(); }
 		);
 	}
 	else
-		return luaL_argerror(L, 1, "expected ImageData, filename, or FileData");
+	{
+		// Default font (Vera.)
+		int size = luaL_optint(L, 1, 12);
+		luax_catchexcept(L, [&]() { t = instance()->newRasterizer(size); });
+	}
 
 	luax_pushtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 	t->release();

@@ -190,15 +190,8 @@ public:
 	 **/
 	Color getBackgroundColor() const;
 
-	/**
-	 * Sets the current font.
-	 * @param font A Font object.
-	 **/
 	void setFont(Font *font);
-	/**
-	 * Gets the current Font, or nil if none.
-	 **/
-	Font *getFont() const;
+	Font *getFont();
 
 	void setShader(Shader *shader);
 	void setShader();
@@ -482,7 +475,11 @@ private:
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
 
+	void checkSetDefaultFont();
+
 	love::window::Window *currentWindow;
+
+	StrongRef<Font> defaultFont;
 
 	std::vector<double> pixel_size_stack; // stores current size of a pixel (needed for line drawing)
 

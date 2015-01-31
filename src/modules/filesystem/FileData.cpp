@@ -30,10 +30,19 @@ namespace filesystem
 {
 
 FileData::FileData(uint64 size, const std::string &filename)
-	: data(new char[(size_t) size])
+	: data(nullptr)
 	, size((size_t) size)
 	, filename(filename)
 {
+	try
+	{
+		data = new char[(size_t) size];
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
+
 	if (filename.rfind('.') != std::string::npos)
 		extension = filename.substr(filename.rfind('.')+1);
 }

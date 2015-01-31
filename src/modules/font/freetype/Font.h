@@ -52,6 +52,7 @@ public:
 	virtual ~Font();
 
 	// Implements Font
+	Rasterizer *newRasterizer(int size);
 	Rasterizer *newRasterizer(Data *data, int size);
 	Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &text);
 	Rasterizer *newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs);

@@ -246,7 +246,9 @@ int w_newQuad(lua_State *L)
 
 int w_newFont(lua_State *L)
 {
-	// Convert to Rasterizer, if necessary.
+	// Convert to Rasterizer, if necessary. Note that lua_isstring returns true
+	// if the value is a number, which we rely on for the variant that uses the
+	// default Font rather than a font file.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
 		int idxs[] = {1, 2};
@@ -634,6 +636,14 @@ int w_getBackgroundColor(lua_State *L)
 	return 4;
 }
 
+int w_setNewFont(lua_State *L)
+{
+	int ret = w_newFont(L);
+	Font *font = luax_checktype<Font>(L, -1, "Font", GRAPHICS_FONT_T);
+	instance()->setFont(font);
+	return ret;
+}
+
 int w_setFont(lua_State *L)
 {
 	Font *font = luax_checktype<Font>(L, 1, "Font", GRAPHICS_FONT_T);
@@ -643,10 +653,8 @@ int w_setFont(lua_State *L)
 
 int w_getFont(lua_State *L)
 {
-	Font *f = instance()->getFont();
-
-	if (f == 0)
-		return 0;
+	Font *f = nullptr;
+	luax_catchexcept(L, [&](){ f = instance()->getFont(); });
 
 	luax_pushtype(L, "Font", GRAPHICS_FONT_T, f);
 	return 1;
@@ -1438,6 +1446,7 @@ static const luaL_Reg functions[] =
 	{ "setBackgroundColor", w_setBackgroundColor },
 	{ "getBackgroundColor", w_getBackgroundColor },
 
+	{ "setNewFont", w_setNewFont },
 	{ "setFont", w_setFont },
 	{ "getFont", w_getFont },
 

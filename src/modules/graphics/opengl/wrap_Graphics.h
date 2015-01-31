@@ -64,6 +64,7 @@ int w_setColor(lua_State *L);
 int w_getColor(lua_State *L);
 int w_setBackgroundColor(lua_State *L);
 int w_getBackgroundColor(lua_State *L);
+int w_setNewFont(lua_State *L);
 int w_setFont(lua_State *L);
 int w_getFont(lua_State *L);
 int w_setColorMask(lua_State *L);

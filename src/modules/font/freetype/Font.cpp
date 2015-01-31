@@ -25,6 +25,8 @@
 
 #include "libraries/utf8/utf8.h"
 
+#include <string.h>
+
 namespace love
 {
 namespace font
@@ -32,15 +34,28 @@ namespace font
 namespace freetype
 {
 
+// Default TrueType font.
+#include "font/Vera.ttf.h"
+
 Font::Font()
 {
 	if (FT_Init_FreeType(&library))
-		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed\n");
+		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed");
 }
 
 Font::~Font()
 {
 	FT_Done_FreeType(library);
+}
+
+Rasterizer *Font::newRasterizer(int size)
+{
+	StrongRef<filesystem::FileData> data(new filesystem::FileData(sizeof(Vera_ttf), "Vera.ttf"));
+	data->release();
+
+	memcpy(data->getData(), Vera_ttf, sizeof(Vera_ttf));
+
+	return new TrueTypeRasterizer(library, data.get(), size);
 }
 
 Rasterizer *Font::newRasterizer(Data *data, int size)

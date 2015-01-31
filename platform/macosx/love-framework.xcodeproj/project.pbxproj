@@ -293,6 +293,7 @@
 		FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E621724552C00EED715 /* wrap_Quad.h */; };
 		FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC86E671724555D00EED715 /* Quad.cpp */; };
 		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
+		FAD8E84F1A7C949B0084E24D /* Vera.ttf.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */; };
 		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
 		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
 		FAE010DC170DDE99006F29D0 /* ddsparse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE010D9170DDE99006F29D0 /* ddsparse.cpp */; };
@@ -856,6 +857,7 @@
 		FAC86E621724552C00EED715 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
 		FAC86E671724555D00EED715 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		FAC86E681724555D00EED715 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
+		FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vera.ttf.h; sourceTree = "<group>"; };
 		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
 		FAE010D9170DDE99006F29D0 /* ddsparse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ddsparse.cpp; sourceTree = "<group>"; };
@@ -1154,6 +1156,7 @@
 				36465ABA28FB06F4333C3F07 /* ImageRasterizer.h */,
 				1B1C4E4D288A1D2F29E57B1B /* Rasterizer.cpp */,
 				08D24B70441A2496160C0849 /* Rasterizer.h */,
+				FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */,
 				1B4E22F1388E2B2E76E3377B /* wrap_GlyphData.cpp */,
 				3547706F2E7D43212CB40D04 /* wrap_GlyphData.h */,
 				11745DE315E859F71E881D76 /* wrap_Rasterizer.cpp */,
@@ -2004,6 +2007,7 @@
 				FA7AA59317F6AC1F00704BE2 /* wrap_Mesh.h in Headers */,
 				FA01BE1F1878E35B00640047 /* wrap_Texture.h in Headers */,
 				FAEC808B1710FEA60057279A /* ImageData.h in Headers */,
+				FAD8E84F1A7C949B0084E24D /* Vera.ttf.h in Headers */,
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
 				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
