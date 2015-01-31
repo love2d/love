@@ -1276,14 +1276,14 @@ do
 	love.graphics.print = function (...)
 		love.graphics.getFont() -- make sure we have a font
 		love.graphics.print = _print
-		love.graphics.print(...)
+		return love.graphics.print(...)
 	end
 
 	local _printf = love.graphics.printf
 	love.graphics.printf = function (...)
 		love.graphics.getFont() -- make sure we have a font
 		love.graphics.printf = _printf
-		love.graphics.printf(...)
+		return love.graphics.printf(...)
 	end
 
 
