@@ -38,7 +38,6 @@
 #include <cmath>
 #include <cstdio>
 
-
 namespace love
 {
 namespace graphics
@@ -184,8 +183,6 @@ void Graphics::checkSetDefaultFont()
 
 		defaultFont.set(newFont(r.get()));
 		defaultFont->release();
-
-		::printf("created default font\n");
 	}
 
 	states.back().font.set(defaultFont.get());
