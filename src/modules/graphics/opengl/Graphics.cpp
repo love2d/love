@@ -237,13 +237,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	// Enable blending
 	glEnable(GL_BLEND);
 
-	// Enable all color component writes.
-	ColorMask colormask = {true, true, true, true};
-	setColorMask(colormask);
-
-	// Enable line/point smoothing.
-	setLineStyle(LINE_SMOOTH);
-	glEnable(GL_POINT_SMOOTH);
+	// Make sure smooth points look OK.
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 	// Auto-generated mipmaps should be the best quality possible
