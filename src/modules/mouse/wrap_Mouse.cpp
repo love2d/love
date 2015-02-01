@@ -179,16 +179,16 @@ int w_isGrabbed(lua_State *L)
 	return 1;
 }
 
-int w_setRelative(lua_State *L)
+int w_setRelativeMode(lua_State *L)
 {
 	bool relative = luax_toboolean(L, 1);
-	luax_pushboolean(L, instance()->setRelative(relative));
+	luax_pushboolean(L, instance()->setRelativeMode(relative));
 	return 1;
 }
 
-int w_isRelative(lua_State *L)
+int w_getRelativeMode(lua_State *L)
 {
-	luax_pushboolean(L, instance()->isRelative());
+	luax_pushboolean(L, instance()->getRelativeMode());
 	return 1;
 }
 
@@ -210,8 +210,8 @@ static const luaL_Reg functions[] =
 	{ "getPosition", w_getPosition },
 	{ "setGrabbed", w_setGrabbed },
 	{ "isGrabbed", w_isGrabbed },
-	{ "setRelative", w_setRelative },
-	{ "isRelative", w_isRelative },
+	{ "setRelativeMode", w_setRelativeMode },
+	{ "getRelativeMode", w_getRelativeMode },
 	{ 0, 0 }
 };
 
