@@ -47,6 +47,8 @@ int w_setOrientation(lua_State *L);
 int w_getOrientation(lua_State *L);
 int w_setVelocity(lua_State *L);
 int w_getVelocity(lua_State *L);
+int w_setDopplerScale(lua_State *L);
+int w_getDopplerScale(lua_State *L);
 int w_record(lua_State *L);
 int w_getRecordedData(lua_State *L);
 int w_stopRecording(lua_State *L);

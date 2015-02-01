@@ -132,6 +132,15 @@ void Audio::setVelocity(float *)
 {
 }
 
+void Audio::setDopplerScale(float)
+{
+}
+
+float Audio::getDopplerScale() const
+{
+	return 1.0f;
+}
+
 void Audio::record()
 {
 }

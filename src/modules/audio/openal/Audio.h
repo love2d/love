@@ -85,6 +85,9 @@ public:
 	void getVelocity(float *v) const;
 	void setVelocity(float *v);
 
+	void setDopplerScale(float scale);
+	float getDopplerScale() const;
+
 	void record();
 	love::sound::SoundData *getRecordedData();
 	love::sound::SoundData *stopRecording(bool returnData);

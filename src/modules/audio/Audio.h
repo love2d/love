@@ -185,6 +185,9 @@ public:
 	 **/
 	virtual void setVelocity(float *v) = 0;
 
+	virtual void setDopplerScale(float scale) = 0;
+	virtual float getDopplerScale() const = 0;
+
 	/**
 	 * Begins recording audio input from the microphone.
 	 **/

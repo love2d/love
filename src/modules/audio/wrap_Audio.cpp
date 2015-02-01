@@ -218,6 +218,18 @@ int w_getVelocity(lua_State *L)
 	return 3;
 }
 
+int w_setDopplerScale(lua_State *L)
+{
+	instance()->setDopplerScale(luax_checkfloat(L, 1));
+	return 0;
+}
+
+int w_getDopplerScale(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getDopplerScale());
+	return 1;
+}
+
 int w_record(lua_State *)
 {
 	instance()->record();
@@ -299,6 +311,8 @@ static const luaL_Reg functions[] =
 	{ "getOrientation", w_getOrientation },
 	{ "setVelocity", w_setVelocity },
 	{ "getVelocity", w_getVelocity },
+	{ "setDopplerScale", w_setDopplerScale },
+	{ "getDopplerScale", w_getDopplerScale },
 	/*{ "record", w_record },
 	{ "getRecordedData", w_getRecordedData },
 	{ "stopRecording", w_stopRecording },*/
