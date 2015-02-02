@@ -251,8 +251,11 @@ int w_newFont(lua_State *L)
 	// default Font rather than a font file.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
-		int idxs[] = {1, 2};
-		luax_convobj(L, idxs, 2, "font", "newRasterizer");
+		std::vector<int> idxs;
+		for (int i = 0; i < lua_gettop(L); i++)
+			idxs.push_back(i + 1);
+
+		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newRasterizer");
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
