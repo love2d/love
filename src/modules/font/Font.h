@@ -46,6 +46,7 @@ public:
 
 	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
 
+	virtual Rasterizer *newTrueTypeRasterizer(int size) = 0;
 	virtual Rasterizer *newTrueTypeRasterizer(love::filesystem::FileData *data, int size) = 0;
 
 	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images) = 0;

@@ -62,6 +62,40 @@ int w_isDown(lua_State *L)
 	return 1;
 }
 
+int w_getScancodeFromKey(lua_State *L)
+{
+	const char *keystr = luaL_checkstring(L, 1);
+	Keyboard::Key key;
+	if (!Keyboard::getConstant(keystr, key))
+		return luaL_error(L, "Invalid key constant: %s", keystr);
+
+	Keyboard::Scancode scancode = instance()->getScancodeFromKey(key);
+
+	const char *scancodestr;
+	if (!Keyboard::getConstant(scancode, scancodestr))
+		return luaL_error(L, "Unknown scancode.");
+
+	lua_pushstring(L, scancodestr);
+	return 1;
+}
+
+int w_getKeyFromScancode(lua_State *L)
+{
+	const char *scancodestr = luaL_checkstring(L, 1);
+	Keyboard::Scancode scancode;
+	if (!Keyboard::getConstant(scancodestr, scancode))
+		return luaL_error(L, "Invalid scancode: %s", scancode);
+
+	Keyboard::Key key = instance()->getKeyFromScancode(scancode);
+
+	const char *keystr;
+	if (!Keyboard::getConstant(key, keystr))
+		return luaL_error(L, "Unknown key constant");
+
+	lua_pushstring(L, keystr);
+	return 1;
+}
+
 int w_setTextInput(lua_State *L)
 {
 	instance()->setTextInput(luax_toboolean(L, 1));
@@ -82,6 +116,8 @@ static const luaL_Reg functions[] =
 	{ "setTextInput", w_setTextInput },
 	{ "hasTextInput", w_hasTextInput },
 	{ "isDown", w_isDown },
+	{ "getScancodeFromKey", w_getScancodeFromKey },
+	{ "getKeyFromScancode", w_getKeyFromScancode },
 	{ 0, 0 }
 };
 

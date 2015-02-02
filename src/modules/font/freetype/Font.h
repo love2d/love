@@ -46,6 +46,7 @@ public:
 	// Implements Font
 	Rasterizer *newRasterizer(love::filesystem::FileData *data);
 
+	Rasterizer *newTrueTypeRasterizer(int size);
 	Rasterizer *newTrueTypeRasterizer(love::filesystem::FileData *data, int size);
 
 	Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);

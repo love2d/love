@@ -319,6 +319,7 @@
 		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
 		FAD400A6196C5EBC004208B9 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD400A5196C5EBC004208B9 /* Text.cpp */; };
 		FAD5970C196E174000E8EA36 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD5970B196E174000E8EA36 /* wrap_Text.cpp */; };
+		FAD8E84F1A7C949B0084E24D /* Vera.ttf.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */; };
 		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
 		FADE620919368D5C00C25B97 /* STBHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADE620719368D5C00C25B97 /* STBHandler.cpp */; };
 		FADE620A19368D5C00C25B97 /* STBHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FADE620819368D5C00C25B97 /* STBHandler.h */; };
@@ -910,6 +911,7 @@
 		FAD400A7196C5ECC004208B9 /* Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Text.h; sourceTree = "<group>"; };
 		FAD5970B196E174000E8EA36 /* wrap_Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Text.cpp; sourceTree = "<group>"; };
 		FAD5970D196E17C100E8EA36 /* wrap_Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Text.h; sourceTree = "<group>"; };
+		FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vera.ttf.h; sourceTree = "<group>"; };
 		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FADE620719368D5C00C25B97 /* STBHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STBHandler.cpp; sourceTree = "<group>"; };
 		FADE620819368D5C00C25B97 /* STBHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STBHandler.h; sourceTree = "<group>"; };
@@ -1222,6 +1224,7 @@
 				36465ABA28FB06F4333C3F07 /* ImageRasterizer.h */,
 				1B1C4E4D288A1D2F29E57B1B /* Rasterizer.cpp */,
 				08D24B70441A2496160C0849 /* Rasterizer.h */,
+				FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */,
 				232D67C67BEE54B776420682 /* wrap_Font.cpp */,
 				202650DE4F267CD3082A1B30 /* wrap_Font.h */,
 				1B4E22F1388E2B2E76E3377B /* wrap_GlyphData.cpp */,
@@ -2119,6 +2122,7 @@
 				FA01BE1F1878E35B00640047 /* wrap_Texture.h in Headers */,
 				FAEC808B1710FEA60057279A /* ImageData.h in Headers */,
 				FA4B5B7A1936B688006C6D93 /* stb_image.h in Headers */,
+				FAD8E84F1A7C949B0084E24D /* Vera.ttf.h in Headers */,
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA0F0D5B19A2CFEB0010A75B /* glad.hpp in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,

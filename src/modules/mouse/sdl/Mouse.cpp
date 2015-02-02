@@ -112,18 +112,10 @@ love::mouse::Cursor *Mouse::getCursor() const
 	return curCursor.get();
 }
 
-static Uint32 GetSDLMouseState(int *x, int *y)
-{
-	// SDL's Linux and Windows video backends don't update the internal mouse
-	// state until the next PumpEvents, if SDL_WarpMouse was called previously.
-	SDL_PumpEvents();
-	return SDL_GetMouseState(x, y);
-}
-
 int Mouse::getX() const
 {
 	int x;
-	GetSDLMouseState(&x, nullptr);
+	SDL_GetMouseState(&x, nullptr);
 	windowToPixelCoords(&x, nullptr);
 
 	return x;
@@ -132,7 +124,7 @@ int Mouse::getX() const
 int Mouse::getY() const
 {
 	int y;
-	GetSDLMouseState(nullptr, &y);
+	SDL_GetMouseState(nullptr, &y);
 	windowToPixelCoords(nullptr, &y);
 
 	return y;
@@ -141,7 +133,7 @@ int Mouse::getY() const
 void Mouse::getPosition(int &x, int &y) const
 {
 	int mx, my;
-	GetSDLMouseState(&mx, &my);
+	SDL_GetMouseState(&mx, &my);
 	windowToPixelCoords(&mx, &my);
 
 	x = mx;
@@ -158,6 +150,11 @@ void Mouse::setPosition(int x, int y)
 
 	pixelToWindowCoords(&x, &y);
 	SDL_WarpMouseInWindow(handle, x, y);
+
+	// SDL_WarpMouse doesn't directly update SDL's internal mouse state in Linux
+	// and Windows, so we call SDL_PumpEvents now to make sure the next
+	// getPosition call always returns the updated state.
+	SDL_PumpEvents();
 }
 
 void Mouse::setX(int x)
@@ -211,12 +208,12 @@ bool Mouse::isGrabbed() const
 		return false;
 }
 
-bool Mouse::setRelative(bool relative)
+bool Mouse::setRelativeMode(bool relative)
 {
 	return SDL_SetRelativeMouseMode(relative ? SDL_TRUE : SDL_FALSE) == 0;
 }
 
-bool Mouse::isRelative() const
+bool Mouse::getRelativeMode() const
 {
 	return SDL_GetRelativeMouseMode() != SDL_FALSE;
 }

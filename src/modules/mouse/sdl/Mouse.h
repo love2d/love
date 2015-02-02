@@ -64,8 +64,8 @@ public:
 	bool isVisible() const;
 	void setGrabbed(bool grab);
 	bool isGrabbed() const;
-	bool setRelative(bool relative);
-	bool isRelative() const;
+	bool setRelativeMode(bool relative);
+	bool getRelativeMode() const;
 
 private:
 

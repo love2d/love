@@ -39,7 +39,11 @@ int w_newRasterizer(lua_State *L)
 {
 	if (lua_isnoneornil(L, 2))
 	{
-		// Single argument: call Font::newRasterizer.
+		// Single number argument: use the default TrueType font.
+		if (lua_type(L, 1) == LUA_TNUMBER)
+			return w_newTrueTypeRasterizer(L);
+
+		// Single argument of another type: call Font::newRasterizer.
 		Rasterizer *t = nullptr;
 		filesystem::FileData *d = filesystem::luax_getfiledata(L, 1);
 
@@ -68,13 +72,22 @@ int w_newTrueTypeRasterizer(lua_State *L)
 {
 	Rasterizer *t = nullptr;
 
-	filesystem::FileData *d = filesystem::luax_getfiledata(L, 1);
-	int size = luaL_optint(L, 2, 12);
+	if (lua_type(L, 1) == LUA_TNUMBER)
+	{
+		// First argument is a number: use the default TrueType font.
+		int size = luaL_checkint(L, 1);
+		luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size); });
+	}
+	else
+	{
+		filesystem::FileData *d = filesystem::luax_getfiledata(L, 1);
+		int size = luaL_optint(L, 2, 12);
 
-	luax_catchexcept(L,
-		[&]() { t = instance()->newTrueTypeRasterizer(d, size); },
-		[&]() { d->release(); }
-	);
+		luax_catchexcept(L,
+			[&]() { t = instance()->newTrueTypeRasterizer(d, size); },
+			[&]() { d->release(); }
+		);
+	}
 
 	luax_pushtype(L, "Rasterizer", FONT_RASTERIZER_T, t);
 	t->release();

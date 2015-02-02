@@ -26,12 +26,17 @@
 
 #include "libraries/utf8/utf8.h"
 
+#include <string.h>
+
 namespace love
 {
 namespace font
 {
 namespace freetype
 {
+
+// Default TrueType font.
+#include "font/Vera.ttf.h"
 
 Font::Font()
 {
@@ -52,6 +57,16 @@ Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 		return newBMFontRasterizer(data, std::vector<image::ImageData *>());
 
 	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
+}
+
+Rasterizer *Font::newTrueTypeRasterizer(int size)
+{
+	StrongRef<filesystem::FileData> data(new filesystem::FileData(sizeof(Vera_ttf), "Vera.ttf"));
+	data->release();
+
+	memcpy(data->getData(), Vera_ttf, sizeof(Vera_ttf));
+
+	return new TrueTypeRasterizer(library, data.get(), size);
 }
 
 Rasterizer *Font::newTrueTypeRasterizer(love::filesystem::FileData *data, int size)
