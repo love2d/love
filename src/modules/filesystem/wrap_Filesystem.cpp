@@ -277,6 +277,24 @@ int w_getSourceBaseDirectory(lua_State *L)
 	return 1;
 }
 
+int w_getRealDirectory(lua_State *L)
+{
+	const char *filename = luaL_checkstring(L, 1);
+	std::string dir;
+
+	try
+	{
+		dir = instance()->getRealDirectory(filename);
+	}
+	catch (love::Exception &e)
+	{
+		return luax_ioError(L, "%s", e.what());
+	}
+
+	lua_pushstring(L, dir.c_str());
+	return 1;
+}
+
 int w_exists(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
@@ -658,6 +676,7 @@ static const luaL_Reg functions[] =
 	{ "getAppdataDirectory", w_getAppdataDirectory },
 	{ "getSaveDirectory", w_getSaveDirectory },
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
+	{ "getRealDirectory", w_getRealDirectory },
 	{ "exists", w_exists },
 	{ "isDirectory", w_isDirectory },
 	{ "isFile", w_isFile },
