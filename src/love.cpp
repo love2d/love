@@ -39,6 +39,17 @@ extern "C" {
 #include "OSX.h"
 #endif // LOVE_MACOSX
 
+#ifdef LOVE_WINDOWS
+extern "C"
+{
+// Prefer the higher performance GPU on Windows systems that use nvidia Optimus.
+// http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
+// TODO: Re-evaluate in the future when the average integrated GPU in Optimus
+// systems is less mediocre?
+LOVE_EXPORT DWORD NvOptimusEnablement = 0x00000001;
+}
+#endif
+
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 
 void get_utf8_arguments(int &argc, char **&argv)
