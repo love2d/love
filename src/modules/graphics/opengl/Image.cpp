@@ -310,6 +310,13 @@ bool Image::loadVolatile()
 	{
 		if (flags.sRGB && !hasSRGBSupport())
 			throw love::Exception("sRGB images are not supported on this system.");
+
+		// GL_EXT_sRGB doesn't support glGenerateMipmap for sRGB textures.
+		if (flags.sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0))
+		{
+			flags.mipmaps = false;
+			filter.mipmap = FILTER_NONE;
+		}
 	}
 
 	// NPOT textures don't support mipmapping without full NPOT support.
