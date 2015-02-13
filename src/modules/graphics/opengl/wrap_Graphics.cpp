@@ -249,8 +249,11 @@ int w_newFont(lua_State *L)
 	// Convert to Rasterizer, if necessary. Note that lua_isstring returns true
 	// if the value is a number, which we rely on for the variant that uses the
 	// default Font rather than a font file.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	if (lua_isnoneornil(L, 1) || lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
 	{
+		if (lua_isnone(L, 1))
+			lua_pushnil(L);
+
 		std::vector<int> idxs;
 		for (int i = 0; i < lua_gettop(L); i++)
 			idxs.push_back(i + 1);
