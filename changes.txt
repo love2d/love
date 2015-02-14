@@ -12,6 +12,9 @@ Released: N/A
   * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
   * Added optional type argument to love.graphics.clear. Current type enums are "all" (the default) and "stencil".
   * Added optional x/y/width/height arguments to Image:refresh.
+  * Added support for OpenGL ES.
+  * Added support for loading ETC1/2, EAC, and PVRTC compressed textures.
+  * Added Text objects and love.graphics.newText.
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
