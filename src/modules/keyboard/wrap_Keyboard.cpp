@@ -84,7 +84,7 @@ int w_getKeyFromScancode(lua_State *L)
 	const char *scancodestr = luaL_checkstring(L, 1);
 	Keyboard::Scancode scancode;
 	if (!Keyboard::getConstant(scancodestr, scancode))
-		return luaL_error(L, "Invalid scancode: %s", scancode);
+		return luaL_error(L, "Invalid scancode: %s", scancodestr);
 
 	Keyboard::Key key = instance()->getKeyFromScancode(scancode);
 
