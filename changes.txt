@@ -1,7 +1,7 @@
 LOVE 0.9.2 [Baby Inspector]
 ---------------------------
 
-  Released: N/A
+  Released: 2015-02-14
 
   * Added Lua 5.3's UTF-8 module (via utf8 = require("utf8")).
   * Added Shader:getExternVariable.
