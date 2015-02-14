@@ -4,6 +4,9 @@ Priority: extra
 Maintainer: Bart van Strien <bart.bes@gmail.com>
 Build-Depends: debhelper (>= 9),
                autotools-dev,
+               autoconf,
+               automake,
+               libtool,
                pkg-config,
                libfreetype6-dev,
                libluajit-5.1-dev,
@@ -16,7 +19,7 @@ Build-Depends: debhelper (>= 9),
                libmpg123-dev,
                zlib1g-dev,
                libjpeg-turbo8-dev
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 Homepage: http://love2d.org
 
 Package: liblove@LOVE_SUFFIX@

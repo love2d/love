@@ -50,7 +50,7 @@ Released: N/A
 LOVE 0.9.2 [Baby Inspector]
 ---------------------------
 
-  Released: N/A
+  Released: 2015-02-14
 
   * Added Lua 5.3's UTF-8 module (via utf8 = require("utf8")).
   * Added Shader:getExternVariable.
@@ -83,6 +83,7 @@ LOVE 0.9.2 [Baby Inspector]
   * Added love.window.toPixels and love.window.fromPixels.
   * Added love.window.setPosition and love.window.getPosition, and 'x' and 'y' fields to love.window.setMode and t.window in love.conf.
   * Added love.filesystem.isSymlink, love.filesystem.setSymlinksEnabled, and love.filesystem.areSymlinksEnabled.
+  * Added love.filesystem.getRealDirectory.
 
   * Deprecated SpriteBatch:bind and SpriteBatch:unbind.
   * Deprecated all uses of the name 'FSAA' in favor of 'MSAA'.
@@ -122,6 +123,7 @@ LOVE 0.9.2 [Baby Inspector]
 
   * Updated the Windows executable to automatically prefer the higher performance GPU on nvidia Optimus systems.
   * Updated the --console command-line argument in Windows to open the console before conf.lua is loaded.
+  * Updated t.console and the --console command-line argument in Windows to use the existing Console window, if love was launched from one.
   * Updated the love executable to verify that the love library's version matches.
   * Updated the Lua wrapper code for modules to avoid crashes when the module's instance is created, deleted, and recreated.
   * Updated internal code for handling garbage collection of love objects to be more efficient.

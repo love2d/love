@@ -250,44 +250,77 @@ int luaopen_love(lua_State * L)
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+// Mostly taken from the Windows 8.1 SDK's VersionHelpers.h.
+static bool IsWindowsVistaOrGreater()
+{
+	OSVERSIONINFOEXW osvi = {sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0};
+
+	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
+	osvi.wServicePackMajor = 0;
+
+	DWORDLONG majorversionmask = VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL);
+	DWORDLONG versionmask = VerSetConditionMask(majorversionmask, VER_MINORVERSION, VER_GREATER_EQUAL);
+	DWORDLONG mask = VerSetConditionMask(versionmask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+
+	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, mask) != FALSE;
+}
+
 int w__openConsole(lua_State *L)
 {
 	static bool is_open = false;
+
 	if (is_open)
-		return 0;
+	{
+		love::luax_pushboolean(L, is_open);
+		return 1;
+	}
+
 	is_open = true;
 
-	if (GetConsoleWindow() != NULL || AllocConsole() == 0)
-		return 0;
+	// FIXME: we don't call AttachConsole in Windows XP because it seems to
+	// break later AllocConsole calls if it fails. A better workaround might be
+	// possible, but it's hard to find a WinXP system to test on these days...
+	if (!IsWindowsVistaOrGreater() || !AttachConsole(ATTACH_PARENT_PROCESS))
+	{
+		// Create our own console if we can't attach to an existing one.
+		if (!AllocConsole())
+		{
+			is_open = false;
+			love::luax_pushboolean(L, is_open);
+			return 1;
+		}
 
-	const int MAX_CONSOLE_LINES = 5000;
-	CONSOLE_SCREEN_BUFFER_INFO console_info;
+		SetConsoleTitle(TEXT("LOVE Console"));
 
-	// Set size.
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
-	console_info.dwSize.Y = MAX_CONSOLE_LINES;
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), console_info.dwSize);
+		const int MAX_CONSOLE_LINES = 5000;
+		CONSOLE_SCREEN_BUFFER_INFO console_info;
 
-	SetConsoleTitle(TEXT("LOVE Console"));
+		// Set size.
+		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
+		console_info.dwSize.Y = MAX_CONSOLE_LINES;
+		SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), console_info.dwSize);
+	}
 
-	FILE * fp;
+	FILE *fp;
 
 	// Redirect stdout.
 	fp = freopen("CONOUT$", "w", stdout);
 	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stdout failed.");
+		return luaL_error(L, "Console redirection of stdout failed.");
 
 	// Redirect stdin.
 	fp = freopen("CONIN$", "r", stdin);
 	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stdin failed.");
+		return luaL_error(L, "Console redirection of stdin failed.");
 
 	// Redirect stderr.
 	fp = freopen("CONOUT$", "w", stderr);
 	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stderr failed.");
+		return luaL_error(L, "Console redirection of stderr failed.");
 
-	return 0;
+	love::luax_pushboolean(L, is_open);
+	return 1;
 }
 
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
