@@ -28,7 +28,6 @@ LOVE 0.9.2 [Baby Inspector]
   * Added Scancode enums, love.keyboard.getKeyFromScancode, and love.keyboard.getScancodeFromKey.
   * Added love.window.getDisplayName.
   * Added love.window.minimize.
-  * Added love.window.maximize.
   * Added love.window.showMessageBox.
   * Added 'refreshrate' field to the table returned by love.window.getMode.
   * Added love.window.toPixels and love.window.fromPixels.
