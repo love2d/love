@@ -22,7 +22,7 @@
 
 #include "filesystem/DroppedFile.h"
 #include "filesystem/Filesystem.h"
-#include "keyboard/Keyboard.h"
+#include "keyboard/sdl/Keyboard.h"
 #include "mouse/Mouse.h"
 #include "joystick/JoystickModule.h"
 #include "joystick/sdl/Joystick.h"
@@ -53,6 +53,7 @@ static void windowToPixelCoords(double *x, double *y)
 		*y = window->toPixels(*y);
 }
 
+#ifndef LOVE_MACOSX
 static void normalizedToPixelCoords(double *x, double *y)
 {
 	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
@@ -66,6 +67,7 @@ static void normalizedToPixelCoords(double *x, double *y)
 	if (y)
 		*y = ((*y) * (double) h);
 }
+#endif
 
 const char *Event::getName() const
 {
@@ -128,14 +130,20 @@ Message *Event::convert(const SDL_Event &e) const
 	vargs.reserve(4);
 
 	love::keyboard::Keyboard *kb = nullptr;
-	love::touch::sdl::Touch *touchmodule = nullptr;
 	love::filesystem::Filesystem *filesystem = nullptr;
 
-	love::keyboard::Keyboard::Key key;
+	love::keyboard::Keyboard::Key key = love::keyboard::Keyboard::KEY_UNKNOWN;
+	love::keyboard::Keyboard::Scancode scancode = love::keyboard::Keyboard::SCANCODE_UNKNOWN;
 	love::mouse::Mouse::Button button;
-	love::touch::Touch::TouchInfo touchinfo;
+
 	const char *txt;
+	const char *txt2;
 	std::map<SDL_Keycode, love::keyboard::Keyboard::Key>::const_iterator keyit;
+
+#ifndef LOVE_MACOSX
+	love::touch::sdl::Touch *touchmodule = nullptr;
+	love::touch::Touch::TouchInfo touchinfo;
+#endif
 
 	switch (e.type)
 	{
@@ -150,12 +158,16 @@ Message *Event::convert(const SDL_Event &e) const
 		keyit = keys.find(e.key.keysym.sym);
 		if (keyit != keys.end())
 			key = keyit->second;
-		else
-			key = love::keyboard::Keyboard::KEY_UNKNOWN;
 
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
+
+		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.scancode, scancode);
+		if (!love::keyboard::Keyboard::getConstant(scancode, txt2))
+			txt2 = "unknown";
+
 		vargs.push_back(new Variant(txt, strlen(txt)));
+		vargs.push_back(new Variant(txt2, strlen(txt2)));
 		vargs.push_back(new Variant(e.key.repeat != 0));
 		msg = new Message("keypressed", vargs);
 		break;
@@ -163,12 +175,16 @@ Message *Event::convert(const SDL_Event &e) const
 		keyit = keys.find(e.key.keysym.sym);
 		if (keyit != keys.end())
 			key = keyit->second;
-		else
-			key = love::keyboard::Keyboard::KEY_UNKNOWN;
 
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
+
+		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.scancode, scancode);
+		if (!love::keyboard::Keyboard::getConstant(scancode, txt2))
+			txt2 = "unknown";
+
 		vargs.push_back(new Variant(txt, strlen(txt)));
+		vargs.push_back(new Variant(txt2, strlen(txt2)));
 		msg = new Message("keyreleased", vargs);
 		break;
 	case SDL_TEXTINPUT:

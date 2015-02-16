@@ -46,19 +46,34 @@ int w_hasKeyRepeat(lua_State *L)
 int w_isDown(lua_State *L)
 {
 	Keyboard::Key k;
-	unsigned int num = lua_gettop(L);
-	Keyboard::Key *keylist = new Keyboard::Key[num+1];
-	unsigned int counter = 0;
+	int num = lua_gettop(L);
+	std::vector<Keyboard::Key> keylist;
+	keylist.reserve(num);
 
-	for (unsigned int i = 0; i < num; i++)
+	for (int i = 0; i < num; i++)
 	{
 		if (Keyboard::getConstant(luaL_checkstring(L, i+1), k))
-			keylist[counter++] = k;
+			keylist.push_back(k);
 	}
-	keylist[counter] = Keyboard::KEY_MAX_ENUM;
 
 	luax_pushboolean(L, instance()->isDown(keylist));
-	delete[] keylist;
+	return 1;
+}
+
+int w_isScancodeDown(lua_State *L)
+{
+	Keyboard::Scancode scancode;
+	int num = lua_gettop(L);
+	std::vector<Keyboard::Scancode> scancodelist;
+	scancodelist.reserve(num);
+
+	for (int i = 0; i < num; i++)
+	{
+		if (Keyboard::getConstant(luaL_checkstring(L, i+1), scancode))
+			scancodelist.push_back(scancode);
+	}
+
+	luax_pushboolean(L, instance()->isScancodeDown(scancodelist));
 	return 1;
 }
 
@@ -116,6 +131,7 @@ static const luaL_Reg functions[] =
 	{ "setTextInput", w_setTextInput },
 	{ "hasTextInput", w_hasTextInput },
 	{ "isDown", w_isDown },
+	{ "isScancodeDown", w_isScancodeDown },
 	{ "getScancodeFromKey", w_getScancodeFromKey },
 	{ "getKeyFromScancode", w_getKeyFromScancode },
 	{ 0, 0 }

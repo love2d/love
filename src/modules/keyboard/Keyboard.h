@@ -25,6 +25,9 @@
 #include "common/Module.h"
 #include "common/StringMap.h"
 
+// C++
+#include <vector>
+
 namespace love
 {
 namespace keyboard
@@ -534,11 +537,18 @@ public:
 	virtual bool hasKeyRepeat() const = 0;
 
 	/**
-	 * Checks whether certain keys are down or not.
-	 * @param keylist An array of key identifiers, terminated by KEY_MAX_ENUM.
-	 * @return boolean
+	 * Checks whether certain keys are pressed or not.
+	 * @param keylist A list of key identifiers.
+	 * @return Whether any of the specified keys are pressed.
 	 **/
-	virtual bool isDown(Key *keylist) const = 0;
+	virtual bool isDown(const std::vector<Key> &keylist) const = 0;
+
+	/**
+	 * Checks whether certain scancodes are pressed or not.
+	 * @param scancodelist A list of scancodes.
+	 * @return Whether any of the specified scancodes are pressed.
+	 **/
+	virtual bool isScancodeDown(const std::vector<Scancode> &scancodelist) const = 0;
 
 	/**
 	 * Gets the key corresponding to the specified scancode according to the

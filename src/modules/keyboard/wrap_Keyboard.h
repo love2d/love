@@ -33,6 +33,7 @@ namespace keyboard
 int w_setKeyRepeat(lua_State *L);
 int w_hasKeyRepeat(lua_State *L);
 int w_isDown(lua_State *L);
+int w_isScancodeDown(lua_State *L);
 int w_getKeyFromScancode(lua_State *L);
 int w_getScancodeFromkey(lua_State *L);
 int w_setTextInput(lua_State *L);
