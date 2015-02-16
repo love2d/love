@@ -32,9 +32,6 @@ namespace font
 namespace freetype
 {
 
-// Default TrueType font.
-#include "font/Vera.ttf.h"
-
 Font::Font()
 {
 	if (FT_Init_FreeType(&library))
@@ -54,16 +51,6 @@ Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 		return newBMFontRasterizer(data, {});
 
 	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
-}
-
-Rasterizer *Font::newTrueTypeRasterizer(int size)
-{
-	StrongRef<filesystem::FileData> data(new filesystem::FileData(sizeof(Vera_ttf), "Vera.ttf"));
-	data->release();
-
-	memcpy(data->getData(), Vera_ttf, sizeof(Vera_ttf));
-
-	return new TrueTypeRasterizer(library, data.get(), size);
 }
 
 Rasterizer *Font::newTrueTypeRasterizer(love::filesystem::FileData *data, int size)

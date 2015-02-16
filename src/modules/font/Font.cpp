@@ -30,6 +30,19 @@ namespace love
 namespace font
 {
 
+// Default TrueType font.
+#include "Vera.ttf.h"
+
+Rasterizer *Font::newTrueTypeRasterizer(int size)
+{
+	StrongRef<filesystem::FileData> data(new filesystem::FileData(sizeof(Vera_ttf), "Vera.ttf"));
+	data->release();
+
+	memcpy(data->getData(), Vera_ttf, sizeof(Vera_ttf));
+
+	return newTrueTypeRasterizer(data.get(), size);
+}
+
 Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images)
 {
 	return new BMFontRasterizer(fontdef, images);
