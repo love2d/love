@@ -49,14 +49,6 @@ public:
 	Rasterizer *newTrueTypeRasterizer(int size);
 	Rasterizer *newTrueTypeRasterizer(love::filesystem::FileData *data, int size);
 
-	Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);
-
-	Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &text);
-	Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs);
-
-	GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
-	GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
-
 	// Implement Module
 	const char *getName() const;
 

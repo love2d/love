@@ -321,6 +321,7 @@
 		FAC86E6C1724555D00EED715 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC86E681724555D00EED715 /* Quad.h */; };
 		FAD400A6196C5EBC004208B9 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD400A5196C5EBC004208B9 /* Text.cpp */; };
 		FAD5970C196E174000E8EA36 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD5970B196E174000E8EA36 /* wrap_Text.cpp */; };
+		FAD661A21A91BA1800B64301 /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD661A11A91BA1800B64301 /* Font.cpp */; };
 		FAD8E84F1A7C949B0084E24D /* Vera.ttf.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */; };
 		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
 		FADDCDAD1A91817800B32118 /* CoreAudioDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADDCDAB1A91817800B32118 /* CoreAudioDecoder.cpp */; };
@@ -917,6 +918,7 @@
 		FAD400A7196C5ECC004208B9 /* Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Text.h; sourceTree = "<group>"; };
 		FAD5970B196E174000E8EA36 /* wrap_Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Text.cpp; sourceTree = "<group>"; };
 		FAD5970D196E17C100E8EA36 /* wrap_Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Text.h; sourceTree = "<group>"; };
+		FAD661A11A91BA1800B64301 /* Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Font.cpp; sourceTree = "<group>"; };
 		FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vera.ttf.h; sourceTree = "<group>"; };
 		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FADDCDAB1A91817800B32118 /* CoreAudioDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreAudioDecoder.cpp; sourceTree = "<group>"; };
@@ -1226,6 +1228,7 @@
 			children = (
 				FA9556C919D3741A00F29A4C /* BMFontRasterizer.cpp */,
 				FA9556CA19D3741A00F29A4C /* BMFontRasterizer.h */,
+				FAD661A11A91BA1800B64301 /* Font.cpp */,
 				2E9B5D9926034F9172215D5E /* Font.h */,
 				12BB56F127170B3709670896 /* freetype */,
 				74003CB27FA762A021183AD5 /* GlyphData.cpp */,
@@ -2506,6 +2509,7 @@
 				FA5FDC8A1788D548002F0ED2 /* peer.c in Sources */,
 				FA5FDC8B1788D548002F0ED2 /* protocol.c in Sources */,
 				FA5FDC8D1788D548002F0ED2 /* unix.c in Sources */,
+				FAD661A21A91BA1800B64301 /* Font.cpp in Sources */,
 				FA5FDC8E1788D548002F0ED2 /* win32.c in Sources */,
 				FA34E7CD174B513F00E04D3F /* System.cpp in Sources */,
 				FA34E7D2174B515D00E04D3F /* System.cpp in Sources */,

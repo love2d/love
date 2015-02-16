@@ -49,13 +49,13 @@ public:
 	virtual Rasterizer *newTrueTypeRasterizer(int size) = 0;
 	virtual Rasterizer *newTrueTypeRasterizer(love::filesystem::FileData *data, int size) = 0;
 
-	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images) = 0;
+	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);
 
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs) = 0;
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length) = 0;
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length);
 
-	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph) = 0;
-	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph) = 0;
+	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
+	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
 
 	// Implement Module.
 	virtual ModuleType getModuleType() const { return M_FONT; }

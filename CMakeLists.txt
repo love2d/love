@@ -226,6 +226,7 @@ source_group("modules\\filesystem\\physfs" FILES ${LOVE_SRC_MODULE_FILESYSTEM_PH
 set(LOVE_SRC_MODULE_FONT_ROOT
 	src/modules/font/BMFontRasterizer.cpp
 	src/modules/font/BMFontRasterizer.h
+	src/modules/font/Font.cpp
 	src/modules/font/Font.h
 	src/modules/font/GlyphData.cpp
 	src/modules/font/GlyphData.h
