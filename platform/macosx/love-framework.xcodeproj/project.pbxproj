@@ -321,6 +321,8 @@
 		FAD5970C196E174000E8EA36 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD5970B196E174000E8EA36 /* wrap_Text.cpp */; };
 		FAD8E84F1A7C949B0084E24D /* Vera.ttf.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */; };
 		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
+		FADDCDAD1A91817800B32118 /* CoreAudioDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADDCDAB1A91817800B32118 /* CoreAudioDecoder.cpp */; };
+		FADDCDAE1A91817800B32118 /* CoreAudioDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FADDCDAC1A91817800B32118 /* CoreAudioDecoder.h */; };
 		FADE620919368D5C00C25B97 /* STBHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADE620719368D5C00C25B97 /* STBHandler.cpp */; };
 		FADE620A19368D5C00C25B97 /* STBHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FADE620819368D5C00C25B97 /* STBHandler.h */; };
 		FAE010DB170DDE99006F29D0 /* ddsinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE010D8170DDE99006F29D0 /* ddsinfo.h */; };
@@ -913,6 +915,8 @@
 		FAD5970D196E17C100E8EA36 /* wrap_Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Text.h; sourceTree = "<group>"; };
 		FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vera.ttf.h; sourceTree = "<group>"; };
 		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
+		FADDCDAB1A91817800B32118 /* CoreAudioDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreAudioDecoder.cpp; sourceTree = "<group>"; };
+		FADDCDAC1A91817800B32118 /* CoreAudioDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreAudioDecoder.h; sourceTree = "<group>"; };
 		FADE620719368D5C00C25B97 /* STBHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STBHandler.cpp; sourceTree = "<group>"; };
 		FADE620819368D5C00C25B97 /* STBHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STBHandler.h; sourceTree = "<group>"; };
 		FAE010D8170DDE99006F29D0 /* ddsinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsinfo.h; sourceTree = "<group>"; };
@@ -1444,6 +1448,8 @@
 		47217E6729AC72E74FF651E3 /* lullaby */ = {
 			isa = PBXGroup;
 			children = (
+				FADDCDAB1A91817800B32118 /* CoreAudioDecoder.cpp */,
+				FADDCDAC1A91817800B32118 /* CoreAudioDecoder.h */,
 				4E15567759041CC379292BE6 /* Decoder.cpp */,
 				733758E8028B20BB799A7BE6 /* Decoder.h */,
 				4A774BC26B7235E410D40C8E /* FLACDecoder.cpp */,
@@ -2105,6 +2111,7 @@
 				FA0A4BF9182E260200E1E4D2 /* wrap_MotorJoint.h in Headers */,
 				FA6F557D1A6E28A200062204 /* CompressedFormatHandler.h in Headers */,
 				FAF272AD16E3D44400CC193A /* wrap_LuaThread.h in Headers */,
+				FADDCDAE1A91817800B32118 /* CoreAudioDecoder.h in Headers */,
 				FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */,
 				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
 				FAF272B816E3D46400CC193A /* threads.h in Headers */,
@@ -2336,6 +2343,7 @@
 				FA08F60B16C753DB00F007B5 /* wrap_FileData.cpp in Sources */,
 				FA08F60C16C753DB00F007B5 /* wrap_Filesystem.cpp in Sources */,
 				FA08F60D16C753E700F007B5 /* Font.cpp in Sources */,
+				FADDCDAD1A91817800B32118 /* CoreAudioDecoder.cpp in Sources */,
 				FA08F60E16C753E700F007B5 /* TrueTypeRasterizer.cpp in Sources */,
 				FA08F60F16C753E700F007B5 /* wrap_Font.cpp in Sources */,
 				FA08F61016C753E700F007B5 /* GlyphData.cpp in Sources */,

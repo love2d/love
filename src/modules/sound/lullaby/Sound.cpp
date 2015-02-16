@@ -34,6 +34,10 @@
 #	include "Mpg123Decoder.h"
 #endif // LOVE_NOMPG123
 
+#ifdef LOVE_SUPPORT_CORE_AUDIO
+#	include "CoreAudioDecoder.h"
+#endif
+
 namespace love
 {
 namespace sound
@@ -77,6 +81,10 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	else if (GmeDecoder::accepts(ext))
 		decoder = new GmeDecoder(data, ext, bufferSize);
 #endif // LOVE_SUPPORT_GME
+#ifdef LOVE_SUPPORT_CORE_AUDIO
+	else if (CoreAudioDecoder::accepts(ext))
+		decoder = new CoreAudioDecoder(data, ext, bufferSize);
+#endif
 	else if (WaveDecoder::accepts(ext))
 		decoder = new WaveDecoder(data, ext, bufferSize);
 	/*else if (FLACDecoder::accepts(ext))
