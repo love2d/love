@@ -145,6 +145,10 @@ Message *Event::convert(const SDL_Event &e) const
 	love::touch::Touch::TouchInfo touchinfo;
 #endif
 
+#ifdef LOVE_LINUX
+	static bool touchNormalizationBug = false;
+#endif
+
 	switch (e.type)
 	{
 	case SDL_KEYDOWN:
@@ -251,8 +255,9 @@ Message *Event::convert(const SDL_Event &e) const
 #ifdef LOVE_LINUX
 		// FIXME: hacky workaround for SDL not normalizing touch coordinates in
 		// its X11 backend: https://bugzilla.libsdl.org/show_bug.cgi?id=2307
-		if (fabs(touchinfo.x) >= 1.5 || fabs(touchinfo.y) >= 1.5 || fabs(touchinfo.dx) >= 1.5 || fabs(touchinfo.dy) >= 1.5)
+		if (touchNormalizationBug || fabs(touchinfo.x) >= 1.5 || fabs(touchinfo.y) >= 1.5 || fabs(touchinfo.dx) >= 1.5 || fabs(touchinfo.dy) >= 1.5)
 		{
+			touchNormalizationBug = true;
 			windowToPixelCoords(&touchinfo.x, &touchinfo.y);
 			windowToPixelCoords(&touchinfo.dx, &touchinfo.dy);
 		}
