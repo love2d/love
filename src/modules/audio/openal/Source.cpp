@@ -265,13 +265,14 @@ bool Source::isPaused() const
 
 bool Source::isFinished() const
 {
-	return type == TYPE_STATIC ? isStopped() : isStopped() && !isLooping() && decoder->isFinished();
+	return type == TYPE_STATIC ? isStopped() : (isStopped() && !isLooping() && decoder->isFinished());
 }
 
 bool Source::update()
 {
 	if (!valid)
 		return false;
+
 	if (type == TYPE_STATIC)
 	{
 		// Looping mode could have changed.
@@ -310,8 +311,10 @@ bool Source::update()
 			streamAtomic(buffer, decoder.get());
 			alSourceQueueBuffers(source, 1, &buffer);
 		}
+
 		return true;
 	}
+
 	return false;
 }
 
@@ -339,9 +342,7 @@ float Source::getPitch() const
 void Source::setVolume(float volume)
 {
 	if (valid)
-	{
 		alSourcef(source, AL_GAIN, volume);
-	}
 
 	this->volume = volume;
 }
@@ -374,9 +375,7 @@ void Source::seekAtomic(float offset, void *unit)
 				decoder->seek(offset);
 			}
 			else
-			{
 				alSourcef(source, AL_SAMPLE_OFFSET, offset);
-			}
 			break;
 		case Source::UNIT_SECONDS:
 		default:
@@ -387,9 +386,7 @@ void Source::seekAtomic(float offset, void *unit)
 				offsetSamples = offset * decoder->getSampleRate();
 			}
 			else
-			{
 				alSourcef(source, AL_SEC_OFFSET, offset);
-			}
 			break;
 		}
 		if (type == TYPE_STREAM)
@@ -512,8 +509,8 @@ void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 	if (channels > 1)
 		throw SpatialSupportException();
 
-	cone.innerAngle = (int) LOVE_TODEG(innerAngle);
-	cone.outerAngle = (int) LOVE_TODEG(outerAngle);
+	cone.innerAngle  = (int) LOVE_TODEG(innerAngle);
+	cone.outerAngle  = (int) LOVE_TODEG(outerAngle);
 	cone.outerVolume = outerVolume;
 
 	if (valid)
@@ -529,8 +526,8 @@ void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) c
 	if (channels > 1)
 		throw SpatialSupportException();
 
-	innerAngle = LOVE_TORAD(cone.innerAngle);
-	outerAngle = LOVE_TORAD(cone.outerAngle);
+	innerAngle  = LOVE_TORAD(cone.innerAngle);
+	outerAngle  = LOVE_TORAD(cone.outerAngle);
 	outerVolume = cone.outerVolume;
 }
 
@@ -553,12 +550,12 @@ bool Source::isRelative() const
 	return relative;
 }
 
-void Source::setLooping(bool looping)
+void Source::setLooping(bool enable)
 {
 	if (valid && type == TYPE_STATIC)
-		alSourcei(source, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
+		alSourcei(source, AL_LOOPING, enable ? AL_TRUE : AL_FALSE);
 
-	this->looping = looping;
+	looping = enable;
 }
 
 bool Source::isLooping() const
@@ -613,9 +610,7 @@ void Source::stopAtomic()
 	if (valid)
 	{
 		if (type == TYPE_STATIC)
-		{
 			alSourceStop(source);
-		}
 		else if (type == TYPE_STREAM)
 		{
 			alSourceStop(source);
@@ -628,8 +623,10 @@ void Source::stopAtomic()
 				alSourceUnqueueBuffers(source, 1, &buffer);
 			}
 		}
+
 		alSourcei(source, AL_BUFFER, AL_NONE);
 	}
+
 	toLoop = 0;
 	valid = false;
 }
@@ -797,11 +794,9 @@ float Source::getMinVolume() const
 void Source::setMaxVolume(float volume)
 {
 	if (valid)
-	{
 		alSourcef(source, AL_MAX_GAIN, volume);
-	}
 
-	this->maxVolume = volume;
+	maxVolume = volume;
 }
 
 float Source::getMaxVolume() const
@@ -814,7 +809,7 @@ float Source::getMaxVolume() const
 	}
 
 	// In case the Source isn't playing.
-	return this->maxVolume;
+	return maxVolume;
 }
 
 void Source::setReferenceDistance(float distance)
@@ -823,11 +818,9 @@ void Source::setReferenceDistance(float distance)
 		throw SpatialSupportException();
 
 	if (valid)
-	{
 		alSourcef(source, AL_REFERENCE_DISTANCE, distance);
-	}
 
-	this->referenceDistance = distance;
+	referenceDistance = distance;
 }
 
 float Source::getReferenceDistance() const
@@ -843,7 +836,7 @@ float Source::getReferenceDistance() const
 	}
 
 	// In case the Source isn't playing.
-	return this->referenceDistance;
+	return referenceDistance;
 }
 
 void Source::setRolloffFactor(float factor)
@@ -852,11 +845,9 @@ void Source::setRolloffFactor(float factor)
 		throw SpatialSupportException();
 
 	if (valid)
-	{
 		alSourcef(source, AL_ROLLOFF_FACTOR, factor);
-	}
 
-	this->rolloffFactor = factor;
+	rolloffFactor = factor;
 }
 
 float Source::getRolloffFactor() const
@@ -872,7 +863,7 @@ float Source::getRolloffFactor() const
 	}
 
 	// In case the Source isn't playing.
-	return this->rolloffFactor;
+	return rolloffFactor;
 }
 
 void Source::setMaxDistance(float distance)
@@ -883,11 +874,9 @@ void Source::setMaxDistance(float distance)
 	distance = std::min(distance, MAX_ATTENUATION_DISTANCE);
 
 	if (valid)
-	{
 		alSourcef(source, AL_MAX_DISTANCE, distance);
-	}
 
-	this->maxDistance = distance;
+	maxDistance = distance;
 }
 
 float Source::getMaxDistance() const
@@ -903,7 +892,7 @@ float Source::getMaxDistance() const
 	}
 
 	// In case the Source isn't playing.
-	return this->maxDistance;
+	return maxDistance;
 }
 
 int Source::getChannels() const
