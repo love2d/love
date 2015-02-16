@@ -111,7 +111,14 @@ const char *Filesystem::getName() const
 void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
-		throw Exception(PHYSFS_getLastError());
+		throw love::Exception("%s", PHYSFS_getLastError());
+
+	PHYSFS_Version version = {};
+	PHYSFS_getLinkedVersion(&version);
+
+	// FIXME: This is a workaround for a bug in PHYSFS_enumerateFiles in 2.1-alpha.
+	if (version.major == 2 && version.minor == 1)
+		PHYSFS_permitSymbolicLinks(1);
 }
 
 void Filesystem::setFused(bool fused)
