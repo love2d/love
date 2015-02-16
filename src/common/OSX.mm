@@ -18,30 +18,58 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_OSX_H
-#define LOVE_OSX_H
+#include "OSX.h"
 
-#include <string>
+#ifdef LOVE_MACOSX
+
+#import <Foundation/Foundation.h>
+
+#include <SDL2/SDL.h>
 
 namespace love
 {
 namespace osx
 {
 
-/**
- * Returns the filepath of the first detected love file in the Resources folder
- * in love.app.
- * Returns an empty string if no love file is found.
- **/
-std::string getLoveInResources();
+std::string getLoveInResources()
+{
+	std::string path;
 
-/**
- * Checks for drop-file events. Returns the filepath if an event occurred, or
- * an empty string otherwise.
- **/
-std::string checkDropEvents();
+	@autoreleasepool
+	{
+		// Check to see if there are any .love files in Resources.
+		NSString *lovepath = [[NSBundle mainBundle] pathForResource:nil ofType:@"love"];
+
+		if (lovepath != nil)
+			path = [lovepath UTF8String];
+	}
+
+	return path;
+}
+
+std::string checkDropEvents()
+{
+	std::string dropstr;
+	SDL_Event event;
+
+	SDL_InitSubSystem(SDL_INIT_VIDEO);
+
+	SDL_PumpEvents();
+	if (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_DROPFILE, SDL_DROPFILE) > 0)
+	{
+		if (event.type == SDL_DROPFILE)
+		{
+			dropstr = std::string(event.drop.file);
+			SDL_free(event.drop.file);
+		}
+	}
+
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+	return dropstr;
+}
 
 } // osx
 } // love
 
-#endif // LOVE_OSX_H
+#endif // LOVE_MACOSX

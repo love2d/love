@@ -36,7 +36,7 @@ extern "C" {
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_MACOSX
-#include "OSX.h"
+#include "common/OSX.h"
 #endif // LOVE_MACOSX
 
 #ifdef LOVE_WINDOWS
