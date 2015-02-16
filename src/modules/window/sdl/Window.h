@@ -84,6 +84,8 @@ public:
 	void setMouseGrab(bool grab);
 	bool isMouseGrabbed() const;
 
+	void getPixelDimensions(int &w, int &h) const;
+
 	double getPixelScale() const;
 
 	double toPixels(double x) const;

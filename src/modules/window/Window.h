@@ -153,6 +153,8 @@ public:
 	virtual void setMouseGrab(bool grab) = 0;
 	virtual bool isMouseGrabbed() const = 0;
 
+	virtual void getPixelDimensions(int &w, int &h) const = 0;
+
 	virtual double getPixelScale() const = 0;
 
 	virtual double toPixels(double x) const = 0;

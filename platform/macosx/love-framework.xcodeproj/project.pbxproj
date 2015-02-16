@@ -323,6 +323,11 @@
 		FAD5970C196E174000E8EA36 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD5970B196E174000E8EA36 /* wrap_Text.cpp */; };
 		FAD661A21A91BA1800B64301 /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD661A11A91BA1800B64301 /* Font.cpp */; };
 		FAD8E84F1A7C949B0084E24D /* Vera.ttf.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */; };
+		FADC9E5A1A926DE40040EA96 /* Touch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADC9E551A926DE40040EA96 /* Touch.cpp */; };
+		FADC9E5B1A926DE40040EA96 /* Touch.h in Headers */ = {isa = PBXBuildFile; fileRef = FADC9E561A926DE40040EA96 /* Touch.h */; };
+		FADC9E5C1A926DE40040EA96 /* Touch.h in Headers */ = {isa = PBXBuildFile; fileRef = FADC9E571A926DE40040EA96 /* Touch.h */; };
+		FADC9E5D1A926DE40040EA96 /* wrap_Touch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADC9E581A926DE40040EA96 /* wrap_Touch.cpp */; };
+		FADC9E5E1A926DE40040EA96 /* wrap_Touch.h in Headers */ = {isa = PBXBuildFile; fileRef = FADC9E591A926DE40040EA96 /* wrap_Touch.h */; };
 		FADD58DD18C30367005FC3BF /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADD58DC18C30367005FC3BF /* FormatHandler.cpp */; };
 		FADDCDAD1A91817800B32118 /* CoreAudioDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADDCDAB1A91817800B32118 /* CoreAudioDecoder.cpp */; };
 		FADDCDAE1A91817800B32118 /* CoreAudioDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FADDCDAC1A91817800B32118 /* CoreAudioDecoder.h */; };
@@ -920,6 +925,11 @@
 		FAD5970D196E17C100E8EA36 /* wrap_Text.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Text.h; sourceTree = "<group>"; };
 		FAD661A11A91BA1800B64301 /* Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Font.cpp; sourceTree = "<group>"; };
 		FAD8E84E1A7C949B0084E24D /* Vera.ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vera.ttf.h; sourceTree = "<group>"; };
+		FADC9E551A926DE40040EA96 /* Touch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Touch.cpp; sourceTree = "<group>"; };
+		FADC9E561A926DE40040EA96 /* Touch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Touch.h; sourceTree = "<group>"; };
+		FADC9E571A926DE40040EA96 /* Touch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Touch.h; sourceTree = "<group>"; };
+		FADC9E581A926DE40040EA96 /* wrap_Touch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Touch.cpp; sourceTree = "<group>"; };
+		FADC9E591A926DE40040EA96 /* wrap_Touch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Touch.h; sourceTree = "<group>"; };
 		FADD58DC18C30367005FC3BF /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FADDCDAB1A91817800B32118 /* CoreAudioDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreAudioDecoder.cpp; sourceTree = "<group>"; };
 		FADDCDAC1A91817800B32118 /* CoreAudioDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreAudioDecoder.h; sourceTree = "<group>"; };
@@ -1576,6 +1586,7 @@
 				FA34E7CA174B512200E04D3F /* system */,
 				02E0744773D13AD65E7C49DC /* thread */,
 				6D590DDD41E72A60262E4A4F /* timer */,
+				FADC9E531A926DE40040EA96 /* touch */,
 				153D76205F7A4ACD12FB4C0E /* window */,
 			);
 			name = modules;
@@ -2064,6 +2075,26 @@
 			path = luautf8;
 			sourceTree = "<group>";
 		};
+		FADC9E531A926DE40040EA96 /* touch */ = {
+			isa = PBXGroup;
+			children = (
+				FADC9E541A926DE40040EA96 /* sdl */,
+				FADC9E571A926DE40040EA96 /* Touch.h */,
+				FADC9E581A926DE40040EA96 /* wrap_Touch.cpp */,
+				FADC9E591A926DE40040EA96 /* wrap_Touch.h */,
+			);
+			path = touch;
+			sourceTree = "<group>";
+		};
+		FADC9E541A926DE40040EA96 /* sdl */ = {
+			isa = PBXGroup;
+			children = (
+				FADC9E551A926DE40040EA96 /* Touch.cpp */,
+				FADC9E561A926DE40040EA96 /* Touch.h */,
+			);
+			path = sdl;
+			sourceTree = "<group>";
+		};
 		FAE010D7170DDE99006F29D0 /* ddsparse */ = {
 			isa = PBXGroup;
 			children = (
@@ -2123,6 +2154,8 @@
 				FADDCDAE1A91817800B32118 /* CoreAudioDecoder.h in Headers */,
 				FAF272AF16E3D44400CC193A /* wrap_ThreadModule.h in Headers */,
 				FAF272B616E3D46400CC193A /* Thread.h in Headers */,
+				FADC9E5E1A926DE40040EA96 /* wrap_Touch.h in Headers */,
+				FADC9E5B1A926DE40040EA96 /* Touch.h in Headers */,
 				FAF272B816E3D46400CC193A /* threads.h in Headers */,
 				FA5454C316F1310000D30303 /* MathModule.h in Headers */,
 				FAA0A45E1A704016009487CB /* lprefix.h in Headers */,
@@ -2160,6 +2193,7 @@
 				FA9B492A1875EFB900201DA9 /* Texture.h in Headers */,
 				FAC5710117402D1100D147E4 /* BezierCurve.h in Headers */,
 				FAC5710317402D1100D147E4 /* wrap_BezierCurve.h in Headers */,
+				FADC9E5C1A926DE40040EA96 /* Touch.h in Headers */,
 				FA5FDC7E1788D548002F0ED2 /* callbacks.h in Headers */,
 				FA5FDC7F1788D548002F0ED2 /* enet.h in Headers */,
 				FA5FDC801788D548002F0ED2 /* list.h in Headers */,
@@ -2426,12 +2460,14 @@
 				FA08F65516C7547300F007B5 /* wrap_Body.cpp in Sources */,
 				FA08F65616C7547300F007B5 /* wrap_ChainShape.cpp in Sources */,
 				FA08F65716C7547300F007B5 /* wrap_CircleShape.cpp in Sources */,
+				FADC9E5D1A926DE40040EA96 /* wrap_Touch.cpp in Sources */,
 				FA08F65816C7547300F007B5 /* wrap_Contact.cpp in Sources */,
 				FA08F65916C7547300F007B5 /* wrap_DistanceJoint.cpp in Sources */,
 				FA08F65A16C7547300F007B5 /* wrap_EdgeShape.cpp in Sources */,
 				FA48E43618F10D00007CF0BD /* JPEGHandler.cpp in Sources */,
 				FA08F65B16C7547300F007B5 /* wrap_Fixture.cpp in Sources */,
 				FA08F65C16C7547300F007B5 /* wrap_FrictionJoint.cpp in Sources */,
+				FADC9E5A1A926DE40040EA96 /* Touch.cpp in Sources */,
 				FA08F65D16C7548200F007B5 /* wrap_GearJoint.cpp in Sources */,
 				FA08F65E16C7548200F007B5 /* wrap_Joint.cpp in Sources */,
 				FA08F65F16C7548200F007B5 /* wrap_MouseJoint.cpp in Sources */,

@@ -178,6 +178,15 @@ function love.createhandlers()
 		wheelmoved = function (x,y)
 			if love.wheelmoved then return love.wheelmoved(x,y) end
 		end,
+		touchpressed = function (id,x,y,dx,dy)
+			if love.touchpressed then return love.touchpressed(id,x,y,dx,dy) end
+		end,
+		touchreleased = function (id,x,y,dx,dy)
+			if love.touchreleased then return love.touchreleased(id,x,y,dx,dy) end
+		end,
+		touchmoved = function (id,x,y,dx,dy)
+			if love.touchmoved then return love.touchmoved(id,x,y,dx,dy) end
+		end,
 		joystickpressed = function (j,b)
 			if love.joystickpressed then return love.joystickpressed(j,b) end
 		end,
@@ -333,6 +342,7 @@ function love.init()
 			mouse = true,
 			timer = true,
 			joystick = true,
+			touch = true,
 			image = true,
 			graphics = true,
 			audio = true,
@@ -383,6 +393,7 @@ function love.init()
 		"keyboard",
 		"joystick",
 		"mouse",
+		"touch",
 		"sound",
 		"system",
 		"audio",

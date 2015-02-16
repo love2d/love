@@ -742,8 +742,28 @@ set(LOVE_SRC_MODULE_TIMER
 	${LOVE_SRC_MODULE_TIMER_SDL}
 )
 
-source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER_ROOT})
-source_group("modules\\timer\\sdl" FILES ${LOVE_SRC_MODULE_TIMER_SDL})
+#
+# love.touch
+#
+
+set(LOVE_SRC_MODULE_TOUCH_ROOT
+	src/modules/touch/Touch.h
+	src/modules/touch/wrap_Touch.cpp
+	src/modules/touch/wrap_Touch.h
+)
+
+set(LOVE_SRC_MODULE_TOUCH_SDL
+	src/modules/touch/sdl/Touch.cpp
+	src/modules/touch/sdl/Touch.h
+)
+
+set(LOVE_SRC_MODULE_TOUCH
+	${LOVE_SRC_MODULE_TOUCH_ROOT}
+	${LOVE_SRC_MODULE_TOUCH_SDL}
+)
+
+source_group("modules\\touch" FILES ${LOVE_SRC_MODULE_TOUCH_ROOT})
+source_group("modules\\touch\\sdl" FILES ${LOVE_SRC_MODULE_TOUCH_SDL})
 
 #
 # love.window
@@ -1152,6 +1172,7 @@ set(LOVE_LIB_SRC
 	${LOVE_SRC_MODULE_SYSTEM}
 	${LOVE_SRC_MODULE_THREAD}
 	${LOVE_SRC_MODULE_TIMER}
+	${LOVE_SRC_MODULE_TOUCH}
 	${LOVE_SRC_MODULE_WINDOW}
 )
 

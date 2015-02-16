@@ -26,6 +26,7 @@
 #include "mouse/Mouse.h"
 #include "joystick/JoystickModule.h"
 #include "joystick/sdl/Joystick.h"
+#include "touch/sdl/Touch.h"
 #include "graphics/Graphics.h"
 #include "window/Window.h"
 #include "common/Exception.h"
@@ -52,6 +53,19 @@ static void windowToPixelCoords(double *x, double *y)
 		*y = window->toPixels(*y);
 }
 
+static void normalizedToPixelCoords(double *x, double *y)
+{
+	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	int w = 1, h = 1;
+
+	if (window)
+		window->getPixelDimensions(w, h);
+
+	if (x)
+		*x = ((*x) * (double) w);
+	if (y)
+		*y = ((*y) * (double) h);
+}
 
 const char *Event::getName() const
 {
@@ -114,10 +128,12 @@ Message *Event::convert(const SDL_Event &e) const
 	vargs.reserve(4);
 
 	love::keyboard::Keyboard *kb = nullptr;
+	love::touch::sdl::Touch *touchmodule = nullptr;
 	love::filesystem::Filesystem *filesystem = nullptr;
 
 	love::keyboard::Keyboard::Key key;
 	love::mouse::Mouse::Button button;
+	love::touch::Touch::TouchInfo touchinfo;
 	const char *txt;
 	std::map<SDL_Keycode, love::keyboard::Keyboard::Key>::const_iterator keyit;
 
@@ -201,6 +217,56 @@ Message *Event::convert(const SDL_Event &e) const
 		vargs.push_back(new Variant((double) e.wheel.x));
 		vargs.push_back(new Variant((double) e.wheel.y));
 		msg = new Message("wheelmoved", vargs);
+		break;
+	case SDL_FINGERDOWN:
+	case SDL_FINGERUP:
+	case SDL_FINGERMOTION:
+		// Touch events are disabled in OS X because we only actually want touch
+		// screen events, but most touch devices in OS X aren't touch screens
+		// (and SDL doesn't differentiate.) Non-screen touch devices like Mac
+		// trackpads won't give touch coords in the window's coordinate-space.
+#ifndef LOVE_MACOSX
+		touchinfo.id = (int64) e.tfinger.fingerId;
+		touchinfo.x = e.tfinger.x;
+		touchinfo.y = e.tfinger.y;
+		touchinfo.dx = e.tfinger.dx;
+		touchinfo.dy = e.tfinger.dy;
+
+#ifdef LOVE_LINUX
+		// FIXME: hacky workaround for SDL not normalizing touch coordinates in
+		// its X11 backend: https://bugzilla.libsdl.org/show_bug.cgi?id=2307
+		if (fabs(touchinfo.x) >= 1.5 || fabs(touchinfo.y) >= 1.5 || fabs(touchinfo.dx) >= 1.5 || fabs(touchinfo.dy) >= 1.5)
+		{
+			windowToPixelCoords(&touchinfo.x, &touchinfo.y);
+			windowToPixelCoords(&touchinfo.dx, &touchinfo.dy);
+		}
+		else
+#endif
+		{
+			// SDL's coords are normalized to [0, 1], but we want them in pixels.
+			normalizedToPixelCoords(&touchinfo.x, &touchinfo.y);
+			normalizedToPixelCoords(&touchinfo.dx, &touchinfo.dy);
+		}
+
+		// We need to update the love.touch.sdl internal state from here.
+		touchmodule = (touch::sdl::Touch *) Module::getInstance("love.touch.sdl");
+		if (touchmodule)
+			touchmodule->onEvent(e.type, touchinfo);
+
+		vargs.push_back(new Variant((double) touchinfo.id));
+		vargs.push_back(new Variant(touchinfo.x));
+		vargs.push_back(new Variant(touchinfo.y));
+		vargs.push_back(new Variant(touchinfo.dx));
+		vargs.push_back(new Variant(touchinfo.dy));
+
+		if (e.type == SDL_FINGERDOWN)
+			txt = "touchpressed";
+		else if (e.type == SDL_FINGERUP)
+			txt = "touchreleased";
+		else
+			txt = "touchmoved";
+		msg = new Message(txt, vargs);
+#endif
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:

@@ -856,6 +856,24 @@ bool Window::isMouseGrabbed() const
 		return mouseGrabbed;
 }
 
+void Window::getPixelDimensions(int &w, int &h) const
+{
+	if (window)
+	{
+		// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
+#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
+		SDL_GL_GetDrawableSize(window, &w, &h);
+#else
+		SDL_GetWindowSize(window, &w, &h);
+#endif
+	}
+	else
+	{
+		w = curMode.width;
+		h = curMode.height;
+	}
+}
+
 double Window::getPixelScale() const
 {
 	double scale = 1.0;
