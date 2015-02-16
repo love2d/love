@@ -80,7 +80,13 @@ int w_newTrueTypeRasterizer(lua_State *L)
 	}
 	else
 	{
-		filesystem::FileData *d = filesystem::luax_getfiledata(L, 1);
+		love::Data *d = nullptr;
+
+		if (luax_istype(L, 1, DATA_T))
+			d = luax_checkdata(L, 1);
+		else
+			d = filesystem::luax_getfiledata(L, 1);
+
 		int size = luaL_optint(L, 2, 12);
 
 		luax_catchexcept(L,

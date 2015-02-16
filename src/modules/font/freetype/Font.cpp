@@ -53,7 +53,7 @@ Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
 }
 
-Rasterizer *Font::newTrueTypeRasterizer(love::filesystem::FileData *data, int size)
+Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size)
 {
 	return new TrueTypeRasterizer(library, data, size);
 }

@@ -33,12 +33,19 @@ namespace font
 // Default TrueType font.
 #include "Vera.ttf.h"
 
+class DefaultFontData : public love::Data
+{
+public:
+
+	virtual void *getData() const { return Vera_ttf; }
+	virtual size_t getSize() const { return sizeof(Vera_ttf); }
+
+};
+
 Rasterizer *Font::newTrueTypeRasterizer(int size)
 {
-	StrongRef<filesystem::FileData> data(new filesystem::FileData(sizeof(Vera_ttf), "Vera.ttf"));
+	StrongRef<DefaultFontData> data(new DefaultFontData);
 	data->release();
-
-	memcpy(data->getData(), Vera_ttf, sizeof(Vera_ttf));
 
 	return newTrueTypeRasterizer(data.get(), size);
 }
