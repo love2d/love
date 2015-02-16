@@ -30,27 +30,31 @@
 #include "joystick/Joystick.h"
 #include "thread/threads.h"
 
-// STL
+// C++
 #include <queue>
+#include <vector>
 
 namespace love
 {
 namespace event
 {
+
 class Message : public Object
 {
-private:
-	std::string name;
-	Variant *args[4];
-	int nargs;
-
 public:
-	Message(const std::string &name, Variant *a = NULL, Variant *b = NULL, Variant *c = NULL, Variant *d = NULL);
+
+	Message(const std::string &name, const std::vector<StrongRef<Variant>> &vargs = {});
 	~Message();
 
 	int toLua(lua_State *L);
 	static Message *fromLua(lua_State *L, int n);
-};
+
+private:
+
+	std::string name;
+	std::vector<StrongRef<Variant>> args;
+
+}; // Message
 
 class Event : public Module
 {

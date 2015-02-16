@@ -112,11 +112,15 @@ void LuaThread::onError()
 	p.flags = THREAD_THREAD_T;
 	p.data = this;
 
-	Variant *arg1 = new Variant(THREAD_THREAD_ID, &p);
-	Variant *arg2 = new Variant(error.c_str(), error.length());
-	event::Message *msg = new event::Message("threaderror", arg1, arg2);
-	arg1->release();
-	arg2->release();
+	std::vector<StrongRef<Variant>> vargs = {
+		new Variant(THREAD_THREAD_ID, &p),
+		new Variant(error.c_str(), error.length())
+	};
+
+	event::Message *msg = new event::Message("threaderror", vargs);
+
+	for (const StrongRef<Variant> &v : vargs)
+		v->release();
 
 	event->push(msg);
 	msg->release();

@@ -505,13 +505,13 @@ function love.run()
 		-- Process events.
 		if love.event then
 			love.event.pump()
-			for e,a,b,c,d in love.event.poll() do
-				if e == "quit" then
+			for name, a,b,c,d,e in love.event.poll() do
+				if name == "quit" then
 					if not love.quit or not love.quit() then
 						return
 					end
 				end
-				love.handlers[e](a,b,c,d)
+				love.handlers[name](a,b,c,d,e)
 			end
 		end
 
