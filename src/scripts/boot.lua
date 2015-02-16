@@ -154,11 +154,11 @@ function love.createhandlers()
 
 	-- Standard callback handlers.
 	love.handlers = setmetatable({
-		keypressed = function (b, u)
-			if love.keypressed then return love.keypressed(b, u) end
+		keypressed = function (b,s,r)
+			if love.keypressed then return love.keypressed(b,s,r) end
 		end,
-		keyreleased = function (b)
-			if love.keyreleased then return love.keyreleased(b) end
+		keyreleased = function (b,s)
+			if love.keyreleased then return love.keyreleased(b,s) end
 		end,
 		textinput = function (t)
 			if love.textinput then return love.textinput(t) end
