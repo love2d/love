@@ -25,6 +25,7 @@
 // STD
 #include <iostream>
 #include <float.h>
+#include <algorithm>
 
 namespace love
 {
@@ -32,6 +33,13 @@ namespace audio
 {
 namespace openal
 {
+
+#ifdef LOVE_IOS
+// OpenAL on iOS barfs if the max distance is +inf.
+static const float MAX_ATTENUATION_DISTANCE = 1000000.0f;
+#else
+static const float MAX_ATTENUATION_DISTANCE = FLT_MAX;
+#endif
 
 class InvalidFormatException : public love::Exception
 {
@@ -81,7 +89,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, maxVolume(1.0f)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
-	, maxDistance(FLT_MAX)
+	, maxDistance(MAX_ATTENUATION_DISTANCE)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
@@ -120,7 +128,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, maxVolume(1.0f)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
-	, maxDistance(FLT_MAX)
+	, maxDistance(MAX_ATTENUATION_DISTANCE)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
@@ -871,6 +879,8 @@ void Source::setMaxDistance(float distance)
 {
 	if (channels > 1)
 		throw SpatialSupportException();
+
+	distance = std::min(distance, MAX_ATTENUATION_DISTANCE);
 
 	if (valid)
 	{
