@@ -742,6 +742,9 @@ set(LOVE_SRC_MODULE_TIMER
 	${LOVE_SRC_MODULE_TIMER_SDL}
 )
 
+source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER_ROOT})
+source_group("modules\\timer\\sdl" FILES ${LOVE_SRC_MODULE_TIMER_SDL})
+
 #
 # love.touch
 #
