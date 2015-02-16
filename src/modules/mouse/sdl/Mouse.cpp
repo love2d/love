@@ -112,6 +112,12 @@ love::mouse::Cursor *Mouse::getCursor() const
 	return curCursor.get();
 }
 
+
+bool Mouse::hasCursor() const
+{
+	return SDL_GetDefaultCursor() != nullptr;
+}
+
 int Mouse::getX() const
 {
 	int x;

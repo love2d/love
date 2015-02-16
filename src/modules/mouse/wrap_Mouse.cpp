@@ -91,6 +91,12 @@ int w_getCursor(lua_State *L)
 	return 1;
 }
 
+int w_hasCursor(lua_State *L)
+{
+	luax_pushboolean(L, instance()->hasCursor());
+	return 1;
+}
+
 int w_getX(lua_State *L)
 {
 	lua_pushnumber(L, instance()->getX());
@@ -199,6 +205,7 @@ static const luaL_Reg functions[] =
 	{ "getSystemCursor", w_getSystemCursor },
 	{ "setCursor", w_setCursor },
 	{ "getCursor", w_getCursor },
+	{ "hasCursor", w_hasCursor },
 	{ "getX", w_getX },
 	{ "getY", w_getY },
 	{ "setX", w_setX },

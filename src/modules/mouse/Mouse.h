@@ -60,6 +60,8 @@ public:
 
 	virtual Cursor *getCursor() const = 0;
 
+	virtual bool hasCursor() const = 0;
+
 	virtual int getX() const = 0;
 	virtual int getY() const = 0;
 	virtual void getPosition(int &x, int &y) const = 0;
