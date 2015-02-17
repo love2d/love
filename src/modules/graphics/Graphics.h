@@ -178,6 +178,20 @@ public:
 	 **/
 	virtual void unSetMode() = 0;
 
+	/**
+	 * Sets whether the module is active (internal use only.)
+	 **/
+	virtual void setActive(bool active) = 0;
+
+	/**
+	 * Gets whether the module is active. Graphics module methods are only
+	 * guaranteed to work when it is active. Calling them otherwise may cause
+	 * the program to crash (or worse.)
+	 * Normally the module will always be active as long as a window exists, it
+	 * may be different on some platforms (especially mobile ones.)
+	 **/
+	virtual bool isActive() const = 0;
+
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char  *&out);
 

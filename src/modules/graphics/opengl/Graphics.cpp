@@ -49,6 +49,7 @@ Graphics::Graphics()
 	: width(0)
 	, height(0)
 	, created(false)
+	, active(true)
 	, writingToStencil(false)
 {
 	gl = OpenGL();
@@ -322,6 +323,23 @@ void Graphics::unSetMode()
 	created = false;
 }
 
+void Graphics::setActive(bool enable)
+{
+	// Make sure all pending OpenGL commands have fully executed before
+	// returning, if we're going from active to inactive.
+	if (isCreated() && this->active && !enable)
+		glFinish();
+
+	active = enable;
+}
+
+bool Graphics::isActive() const
+{
+	// The graphics module is only completely 'active' if there's a window, a
+	// context, and the active variable is set.
+	return active && isCreated() && currentWindow && currentWindow->isCreated();
+}
+
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
 {
 	// Human-readable strings for the debug info.
@@ -409,6 +427,9 @@ void Graphics::clear(ClearType type)
 
 void Graphics::present()
 {
+	if (!isActive())
+		return;
+
 	// Make sure we don't have a canvas active.
 	std::vector<StrongRef<Canvas>> canvases = states.back().canvases;
 	setCanvas();

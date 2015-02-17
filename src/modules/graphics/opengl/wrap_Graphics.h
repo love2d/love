@@ -44,6 +44,7 @@ int w_reset(lua_State *L);
 int w_clear(lua_State *L);
 int w_present(lua_State *L);
 int w_isCreated(lua_State *L);
+int w_isActive(lua_State *L);
 int w_getWidth(lua_State *L);
 int w_getHeight(lua_State *L);
 int w_getDimensions(lua_State *L);

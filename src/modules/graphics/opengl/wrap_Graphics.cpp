@@ -69,6 +69,12 @@ int w_isCreated(lua_State *L)
 	return 1;
 }
 
+int w_isActive(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isActive());
+	return 1;
+}
+
 int w_getWidth(lua_State *L)
 {
 	lua_pushinteger(L, instance()->getWidth());
@@ -1510,6 +1516,7 @@ static const luaL_Reg functions[] =
 	{ "printf", w_printf },
 
 	{ "isCreated", w_isCreated },
+	{ "isActive", w_isActive },
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },

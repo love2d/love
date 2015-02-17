@@ -69,6 +69,30 @@ static void normalizedToPixelCoords(double *x, double *y)
 }
 #endif
 
+// SDL's event watch callbacks trigger when the event is actually posted inside
+// SDL, unlike with SDL_PollEvents. This is useful for some events which require
+// handling inside the function which triggered them on some backends.
+static int SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
+{
+	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+
+	switch (event->type)
+	{
+	// On iOS, calling any OpenGL ES function after the function which triggers
+	// SDL_APP_DIDENTERBACKGROUND is called will kill the app, so we handle it
+	// with an event watch callback, which will be called inside that function.
+	case SDL_APP_DIDENTERBACKGROUND:
+	case SDL_APP_WILLENTERFOREGROUND:
+		if (gfx)
+			gfx->setActive(event->type == SDL_APP_WILLENTERFOREGROUND);
+		break;
+	default:
+		break;
+	}
+
+	return 1;
+}
+
 const char *Event::getName() const
 {
 	return "love.event.sdl";
@@ -78,10 +102,13 @@ Event::Event()
 {
 	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
 		throw love::Exception("%s", SDL_GetError());
+
+	SDL_AddEventWatch(watchAppEvents, this);
 }
 
 Event::~Event()
 {
+	SDL_DelEventWatch(watchAppEvents, this);
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
