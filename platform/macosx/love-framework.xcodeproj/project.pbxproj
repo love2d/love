@@ -11,6 +11,8 @@
 		FA01BE1F1878E35B00640047 /* wrap_Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA01BE1D1878E35B00640047 /* wrap_Texture.h */; };
 		FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA03546A1731F3A700284828 /* simplexnoise1234.cpp */; };
 		FA03546D1731F3A700284828 /* simplexnoise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA03546B1731F3A700284828 /* simplexnoise1234.h */; };
+		FA0706E11A93ED2800AF268C /* ImageIOHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0706DF1A93ED2800AF268C /* ImageIOHandler.cpp */; };
+		FA0706E21A93ED2800AF268C /* ImageIOHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0706E01A93ED2800AF268C /* ImageIOHandler.h */; };
 		FA088D861A919E1400F26F29 /* OSX.h in Headers */ = {isa = PBXBuildFile; fileRef = FA088D841A919E1400F26F29 /* OSX.h */; };
 		FA088D871A919E1400F26F29 /* OSX.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA088D851A919E1400F26F29 /* OSX.mm */; };
 		FA08F5B016C752F900F007B5 /* Source.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FB732687B1669402408356D /* Source.cpp */; };
@@ -795,6 +797,8 @@
 		FA01BE1D1878E35B00640047 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
 		FA03546A1731F3A700284828 /* simplexnoise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = simplexnoise1234.cpp; sourceTree = "<group>"; };
 		FA03546B1731F3A700284828 /* simplexnoise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simplexnoise1234.h; sourceTree = "<group>"; };
+		FA0706DF1A93ED2800AF268C /* ImageIOHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIOHandler.cpp; sourceTree = "<group>"; };
+		FA0706E01A93ED2800AF268C /* ImageIOHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageIOHandler.h; sourceTree = "<group>"; };
 		FA088D841A919E1400F26F29 /* OSX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSX.h; sourceTree = "<group>"; };
 		FA088D851A919E1400F26F29 /* OSX.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OSX.mm; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
@@ -1183,6 +1187,8 @@
 				68616BD516DB124312B47EB3 /* Image.h */,
 				FAEC80881710FEA60057279A /* ImageData.cpp */,
 				FAEC80891710FEA60057279A /* ImageData.h */,
+				FA0706DF1A93ED2800AF268C /* ImageIOHandler.cpp */,
+				FA0706E01A93ED2800AF268C /* ImageIOHandler.h */,
 				FA48E43418F10D00007CF0BD /* JPEGHandler.cpp */,
 				FA48E43518F10D00007CF0BD /* JPEGHandler.h */,
 				FA6F55701A6E261800062204 /* KTXHandler.cpp */,
@@ -2176,6 +2182,7 @@
 				FAEC808F1711E76C0057279A /* CompressedData.h in Headers */,
 				FA0F0D5B19A2CFEB0010A75B /* glad.hpp in Headers */,
 				FA636D8B171B70920065623F /* RandomGenerator.h in Headers */,
+				FA0706E21A93ED2800AF268C /* ImageIOHandler.h in Headers */,
 				FA6F557B1A6E261800062204 /* PVRHandler.h in Headers */,
 				FA636D8F171B72A70065623F /* wrap_RandomGenerator.h in Headers */,
 				FAC86E641724552C00EED715 /* wrap_Quad.h in Headers */,
@@ -2527,6 +2534,7 @@
 				FAC86E6B1724555D00EED715 /* Quad.cpp in Sources */,
 				FA03546C1731F3A700284828 /* simplexnoise1234.cpp in Sources */,
 				FA3D9E0D16E68DE600CA6630 /* Cursor.cpp in Sources */,
+				FA0706E11A93ED2800AF268C /* ImageIOHandler.cpp in Sources */,
 				FA3D9E1116E68EAE00CA6630 /* Cursor.cpp in Sources */,
 				FA3D9E1516E6D41100CA6630 /* wrap_Cursor.cpp in Sources */,
 				FA9FC0B0173D6E3E005027FF /* wrap_Window.cpp in Sources */,
