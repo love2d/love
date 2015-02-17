@@ -255,6 +255,7 @@ Message *Event::convert(const SDL_Event &e) const
 			vargs.push_back(new Variant(x));
 			vargs.push_back(new Variant(y));
 			vargs.push_back(new Variant(txt, strlen(txt)));
+			vargs.push_back(new Variant(e.button.which == SDL_TOUCH_MOUSEID));
 			msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
 							  "mousepressed" : "mousereleased",
 							  vargs);

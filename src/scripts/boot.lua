@@ -169,11 +169,11 @@ function love.createhandlers()
 		mousemoved = function (x,y,xrel,yrel)
 			if love.mousemoved then return love.mousemoved(x,y,xrel,yrel) end
 		end,
-		mousepressed = function (x,y,b)
-			if love.mousepressed then return love.mousepressed(x,y,b) end
+		mousepressed = function (x,y,b,t)
+			if love.mousepressed then return love.mousepressed(x,y,b,t) end
 		end,
-		mousereleased = function (x,y,b)
-			if love.mousereleased then return love.mousereleased(x,y,b) end
+		mousereleased = function (x,y,b,t)
+			if love.mousereleased then return love.mousereleased(x,y,b,t) end
 		end,
 		wheelmoved = function (x,y)
 			if love.wheelmoved then return love.wheelmoved(x,y) end
