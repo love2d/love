@@ -30,25 +30,25 @@ namespace touch
 namespace sdl
 {
 
-int Touch::getTouchCount() const
+std::vector<int64> Touch::getTouchIDs() const
 {
-	return (int) touches.size();
+	std::vector<int64> ids;
+	ids.reserve(touches.size());
+
+	for (const auto &touch : touches)
+		ids.push_back(touch.first);
+
+	return ids;
 }
 
-Touch::TouchInfo Touch::getTouch(int index) const
+void Touch::getPosition(int64 id, double &x, double &y) const
 {
-	if (index < 0)
-		throw love::Exception("Invalid touch index: %d", index);
+	const auto it = touches.find(id);
+	if (it == touches.end())
+		throw love::Exception("Invalid active touch ID: %d", id);
 
-	std::map<int64, TouchInfo>::const_iterator it = touches.begin();
-
-	for (int i = 0; i < index; i++)
-	{
-		if (++it == touches.end())
-			throw love::Exception("Invalid touch index: %d", index);
-	}
-
-	return it->second;
+	x = it->second.x;
+	y = it->second.y;
 }
 
 const char *Touch::getName() const

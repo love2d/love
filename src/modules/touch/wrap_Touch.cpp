@@ -32,31 +32,40 @@ namespace touch
 
 #define instance() (Module::getInstance<Touch>(Module::M_TOUCH))
 
-int w_getTouchCount(lua_State *L)
+int w_getTouchIDs(lua_State *L)
 {
-	lua_pushinteger(L, instance()->getTouchCount());
+	std::vector<int64> ids = instance()->getTouchIDs();
+
+	lua_createtable(L, (int) ids.size(), 0);
+
+	for (size_t i = 0; i < ids.size(); i++)
+	{
+		// Lets hope the ID can be accurately represented in a Lua number...
+		lua_pushnumber(L, (lua_Number) ids[i]);
+		lua_rawseti(L, -2, i + 1);
+	}
+
 	return 1;
 }
 
-int w_getTouch(lua_State *L)
+int w_getPosition(lua_State *L)
 {
-	int index = luaL_checkint(L, 1) - 1;
+	int64 id = (int64) luaL_checknumber(L, 1);
 
-	Touch::TouchInfo info;
-	luax_catchexcept(L, [&](){ info = instance()->getTouch(index); });
+	double x = 0;
+	double y = 0;
+	luax_catchexcept(L, [&]() { instance()->getPosition(id, x, y); });
 
-	// Lets hope the ID can be accurately represented in a Lua number...
-	lua_pushnumber(L, (lua_Number) info.id);
-	lua_pushnumber(L, info.x);
-	lua_pushnumber(L, info.y);
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
 
-	return 3;
+	return 2;
 }
 
 static const luaL_Reg functions[] =
 {
-	{ "getTouchCount", w_getTouchCount },
-	{ "getTouch", w_getTouch },
+	{ "getTouchIDs", w_getTouchIDs },
+	{ "getPosition", w_getPosition },
 	{ 0, 0 }
 };
 

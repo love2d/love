@@ -54,16 +54,14 @@ public:
 	virtual ModuleType getModuleType() const { return M_TOUCH; }
 
 	/**
-	 * Gets the number of current touch presses.
+	 * Gets a list of the IDs of all currently active touches.
 	 **/
-	virtual int getTouchCount() const = 0;
+	virtual std::vector<int64> getTouchIDs() const = 0;
 
 	/**
-	 * Gets information about a touch press. The index should only be used for
-	 * iterating over the current touch presses - it may change throughout a
-	 * touch press' lifetime.
+	 * Gets the position in pixels of a specific touch, using its ID.
 	 **/
-	virtual TouchInfo getTouch(int index) const = 0;
+	virtual void getPosition(int64 id, double &x, double &y) const = 0;
 
 }; // Touch
 
