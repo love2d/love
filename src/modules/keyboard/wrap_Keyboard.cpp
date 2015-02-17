@@ -113,13 +113,31 @@ int w_getKeyFromScancode(lua_State *L)
 
 int w_setTextInput(lua_State *L)
 {
-	instance()->setTextInput(luax_toboolean(L, 1));
+	bool enable = luax_toboolean(L, 1);
+
+	if (lua_gettop(L) <= 1)
+		instance()->setTextInput(enable);
+	else
+	{
+		int x = (int) luaL_checkinteger(L, 2);
+		int y = (int) luaL_checkinteger(L, 3);
+		int w = (int) luaL_checkinteger(L, 4);
+		int h = (int) luaL_checkinteger(L, 5);
+		instance()->setTextInput(enable, x, y, w, h);
+	}
+
 	return 0;
 }
 
 int w_hasTextInput(lua_State *L)
 {
 	luax_pushboolean(L, instance()->hasTextInput());
+	return 1;
+}
+
+int w_hasScreenKeyboard(lua_State *L)
+{
+	luax_pushboolean(L, instance()->hasScreenKeyboard());
 	return 1;
 }
 
@@ -130,6 +148,7 @@ static const luaL_Reg functions[] =
 	{ "hasKeyRepeat", w_hasKeyRepeat },
 	{ "setTextInput", w_setTextInput },
 	{ "hasTextInput", w_hasTextInput },
+	{ "hasScreenKeyboard", w_hasScreenKeyboard },
 	{ "isDown", w_isDown },
 	{ "isScancodeDown", w_isScancodeDown },
 	{ "getScancodeFromKey", w_getScancodeFromKey },

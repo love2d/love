@@ -117,9 +117,24 @@ void Keyboard::setTextInput(bool enable)
 		SDL_StopTextInput();
 }
 
+void Keyboard::setTextInput(bool enable, int x, int y, int w, int h)
+{
+	// TODO: SetTextInputRect expects coordinates in window-space, but
+	// setTextInput uses pixels. We should convert here.
+	SDL_Rect rect = {x, y, w, h};
+	SDL_SetTextInputRect(&rect);
+
+	setTextInput(enable);
+}
+
 bool Keyboard::hasTextInput() const
 {
 	return SDL_IsTextInputActive();
+}
+
+bool Keyboard::hasScreenKeyboard() const
+{
+	return SDL_HasScreenKeyboardSupport();
 }
 
 bool Keyboard::getConstant(Scancode in, SDL_Scancode &out)

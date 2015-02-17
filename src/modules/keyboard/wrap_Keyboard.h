@@ -38,6 +38,7 @@ int w_getKeyFromScancode(lua_State *L);
 int w_getScancodeFromkey(lua_State *L);
 int w_setTextInput(lua_State *L);
 int w_hasTextInput(lua_State *L);
+int w_hasScreenKeyboard(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State *L);
 
 } // keyboard

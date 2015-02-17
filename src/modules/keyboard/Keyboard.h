@@ -563,15 +563,28 @@ public:
 	virtual Scancode getScancodeFromKey(Key key) const = 0;
 
 	/**
-	 * Sets whether text input events should be sent
-	 * @param enable Whether to send text input events.
+	 * Sets whether text input events should be received.
+	 * @param enable Whether to receive text input events.
 	 **/
 	virtual void setTextInput(bool enable) = 0;
+
+	/**
+	 * Sets whether text input events should be received, and specifies where
+	 * on the screen the text will appear. This is used as a hint so on-screen
+	 * keyboards don't cover the text area.
+	 **/
+	virtual void setTextInput(bool enable, int x, int y, int w, int h) = 0;
 
 	/**
 	 * Gets whether text input events are enabled.
 	 **/
 	virtual bool hasTextInput() const = 0;
+
+	/**
+	 * Gets whether the system will display an on-screen keyboard when text input
+	 * events are enabled.
+	 **/
+	virtual bool hasScreenKeyboard() const = 0;
 
 	static bool getConstant(const char *in, Key &out);
 	static bool getConstant(Key in, const char *&out);
