@@ -329,6 +329,7 @@ Message *Event::convert(const SDL_Event &e) const
 		SDL_free(e.drop.file);
 		break;
 	case SDL_QUIT:
+	case SDL_APP_TERMINATING:
 		msg = new Message("quit");
 		break;
 	default:
