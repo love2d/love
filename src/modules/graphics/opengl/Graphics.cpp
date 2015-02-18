@@ -236,18 +236,20 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 
 	setViewportSize(width, height);
 
-	// Make sure antialiasing works when set elsewhere
-	glEnable(GL_MULTISAMPLE);
-
 	// Enable blending
 	glEnable(GL_BLEND);
 
 	// Auto-generated mipmaps should be the best quality possible
 	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
-	// Enable textures
 	if (!GLAD_ES_VERSION_2_0)
+	{
+		// Make sure antialiasing works when set elsewhere
+		glEnable(GL_MULTISAMPLE);
+
+		// Enable texturing
 		glEnable(GL_TEXTURE_2D);
+	}
 
 	gl.setTextureUnit(0);
 
