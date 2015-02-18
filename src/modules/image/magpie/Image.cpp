@@ -43,7 +43,11 @@ namespace magpie
 Image::Image()
 {
 	formatHandlers.push_back(new PNGHandler);
+
+#ifndef LOVE_NO_TURBOJPEG
 	formatHandlers.push_back(new JPEGHandler);
+#endif
+
 	formatHandlers.push_back(new STBHandler);
 
 #ifdef LOVE_SUPPORT_IMAGEIO

@@ -21,6 +21,10 @@
 #ifndef LOVE_IMAGE_MAGPIE_JPEG_HANDLER_H
 #define LOVE_IMAGE_MAGPIE_JPEG_HANDLER_H
 
+#include "common/config.h"
+
+#ifndef LOVE_NO_TURBOJPEG
+
 // LOVE
 #include "FormatHandler.h"
 #include "thread/threads.h"
@@ -71,5 +75,7 @@ private:
 } // magpie
 } // image
 } // love
+
+#endif // LOVE_NO_TURBOJPEG
 
 #endif // LOVE_IMAGE_MAGPIE_JPEG_HANDLER_H

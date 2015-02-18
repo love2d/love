@@ -18,8 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
 #include "JPEGHandler.h"
+
+#ifndef LOVE_NO_TURBOJPEG
+
+// LOVE
 #include "common/Exception.h"
 #include "common/math.h"
 
@@ -161,3 +164,5 @@ FormatHandler::EncodedImage JPEGHandler::encode(const DecodedImage &img, ImageDa
 } // magpie
 } // image
 } // love
+
+#endif // LOVE_NO_TURBOJPEG
