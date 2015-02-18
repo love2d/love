@@ -48,11 +48,14 @@ namespace magpie
 
 bool STBHandler::canDecode(love::filesystem::FileData *data)
 {
-	stbi__context s = {};
-	stbi__start_mem(&s, (const stbi_uc *) data->getData(), (int) data->getSize());
+	int w = 0;
+	int h = 0;
+	int comp = 0;
 
-	// These are internal stb_image functions, but we can still use them!
-	return stbi__bmp_test(&s) || stbi__tga_test(&s);
+	int status = stbi_info_from_memory((const stbi_uc *) data->getData(),
+	                                   (int) data->getSize(), &w, &h, &comp);
+
+	return status == 1 && w > 0 && h > 0;
 }
 
 bool STBHandler::canEncode(ImageData::Format format)
