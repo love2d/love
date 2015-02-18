@@ -22,8 +22,6 @@
 #define LOVE_INT_H
 
 // C standard sized integer types.
-// This header was added to Visual studio in VS 2012, which is LOVE's current
-// minimum supported VS version (as of this comment's commit date.)
 #include <stdint.h>
 
 #define LOVE_INT8_MAX   0x7F

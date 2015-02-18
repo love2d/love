@@ -302,7 +302,12 @@ Message *Event::convert(const SDL_Event &e) const
 		if (touchmodule)
 			touchmodule->onEvent(e.type, touchinfo);
 
-		vargs.push_back(new Variant((double) touchinfo.id));
+		// This is a bit hackish and we lose the higher 32 bits of the id on
+		// 32-bit systems, but SDL only ever gives id's that at most use as many
+		// bits as can fit in a pointer (for now.)
+		// We use lightuserdata instead of a lua_Number (double) because doubles
+		// can't represent all possible id values on 64-bit systems.
+		vargs.push_back(new Variant((void *) (intptr_t) touchinfo.id));
 		vargs.push_back(new Variant(touchinfo.x));
 		vargs.push_back(new Variant(touchinfo.y));
 		vargs.push_back(new Variant(touchinfo.dx));
