@@ -131,9 +131,6 @@ This software uses the following LGPL libraries:
  - OpenAL Soft
      Website: http://kcat.strangesoft.net/openal.html
      Source download: http://kcat.strangesoft.net/openal.html#download
- - DevIL
-     Website: http://openil.sourceforge.net/
-     Source download: http://downloads.sourceforge.net/openil/DevIL-1.7.8.tar.gz
 
 Following are the LGPL and GPL license texts:
 
