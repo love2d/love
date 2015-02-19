@@ -15,12 +15,12 @@
 		A93E6E5510420B57007D418B /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		A9DEC1C11046EFA70049C70C /* Love.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1BF1046EFA60049C70C /* Love.icns */; };
-		A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = A9DEC1C01046EFA70049C70C /* LoveDocument.icns */; };
 		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FA08F69616C766E000F007B5 /* love.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
 		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
+		FA0B78D21A95814A000E1D17 /* love.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D01A95814A000E1D17 /* love.icns */; };
+		FA0B78D31A95814A000E1D17 /* lovedocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D11A95814A000E1D17 /* lovedocument.icns */; };
 		FA77A36518F1172600D23AE9 /* jpeg-turbo.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */; };
 		FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
 		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -29,12 +29,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		FA08F6A616C77A4300F007B5 /* PBXContainerItemProxy */ = {
+		FA0B78D71A958301000E1D17 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = FA577A9316C7217800860150 /* love-framework.xcodeproj */;
+			containerPortal = FA577A9316C7217800860150 /* liblove.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = FA577AAF16C7507900860150;
-			remoteInfo = "love framework";
+			remoteInfo = Framework;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -71,14 +71,14 @@
 		A93E6E4710420B4A007D418B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		A93E6E4810420B4A007D418B /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		A93E6E5310420B57007D418B /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
-		A97E3842132A9EDE00198A2F /* love-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "love-Info.plist"; sourceTree = "<group>"; };
+		A97E3842132A9EDE00198A2F /* love-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "love-macosx.plist"; path = "macosx/love-macosx.plist"; sourceTree = "<group>"; };
 		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
-		A9DEC1BF1046EFA60049C70C /* Love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Love.icns; path = icons/Love.icns; sourceTree = "<group>"; };
-		A9DEC1C01046EFA70049C70C /* LoveDocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = LoveDocument.icns; path = icons/LoveDocument.icns; sourceTree = "<group>"; };
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA08F69116C765A200F007B5 /* love.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FA577A9316C7217800860150 /* love-framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "love-framework.xcodeproj"; sourceTree = "<group>"; };
+		FA0B78D01A95814A000E1D17 /* love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = love.icns; path = macosx/love.icns; sourceTree = "<group>"; };
+		FA0B78D11A95814A000E1D17 /* lovedocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = lovedocument.icns; path = macosx/lovedocument.icns; sourceTree = "<group>"; };
+		FA577A9316C7217800860150 /* liblove.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = liblove.xcodeproj; sourceTree = "<group>"; };
 		FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
 		FA9B4A0916E1579F00074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
@@ -135,7 +135,7 @@
 				1058C7A0FEA54F0111CA2CBB /* Frameworks */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
-				FA577A9316C7217800860150 /* love-framework.xcodeproj */,
+				FA577A9316C7217800860150 /* liblove.xcodeproj */,
 			);
 			name = love;
 			sourceTree = "<group>";
@@ -145,17 +145,17 @@
 			isa = PBXGroup;
 			children = (
 				FAC1A448196F5DC600125284 /* license.txt */,
-				A97E3842132A9EDE00198A2F /* love-Info.plist */,
-				A9DEC1BF1046EFA60049C70C /* Love.icns */,
-				A9DEC1C01046EFA70049C70C /* LoveDocument.icns */,
+				A97E3842132A9EDE00198A2F /* love-macosx.plist */,
+				FA0B78D01A95814A000E1D17 /* love.icns */,
+				FA0B78D11A95814A000E1D17 /* lovedocument.icns */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		FA08F6A316C77A4300F007B5 /* Products */ = {
+		FA0B78D41A958301000E1D17 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FA08F6A716C77A4300F007B5 /* love.framework */,
+				FA0B78D81A958301000E1D17 /* love.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -171,9 +171,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* love */ = {
+		8D1107260486CEB800E47090 /* love-macosx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "love" */;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "love-macosx" */;
 			buildPhases = (
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
@@ -184,7 +184,7 @@
 			);
 			dependencies = (
 			);
-			name = love;
+			name = "love-macosx";
 			productInstallPath = "$(HOME)/Applications";
 			productName = love;
 			productReference = 8D1107320486CEB800E47090 /* love.app */;
@@ -212,23 +212,23 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = FA08F6A316C77A4300F007B5 /* Products */;
-					ProjectRef = FA577A9316C7217800860150 /* love-framework.xcodeproj */;
+					ProductGroup = FA0B78D41A958301000E1D17 /* Products */;
+					ProjectRef = FA577A9316C7217800860150 /* liblove.xcodeproj */;
 				},
 			);
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* love */,
+				8D1107260486CEB800E47090 /* love-macosx */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		FA08F6A716C77A4300F007B5 /* love.framework */ = {
+		FA0B78D81A958301000E1D17 /* love.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = love.framework;
-			remoteRef = FA08F6A616C77A4300F007B5 /* PBXContainerItemProxy */;
+			remoteRef = FA0B78D71A958301000E1D17 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -239,8 +239,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FAC1A449196F5DC600125284 /* license.txt in Resources */,
-				A9DEC1C11046EFA70049C70C /* Love.icns in Resources */,
-				A9DEC1C21046EFA70049C70C /* LoveDocument.icns in Resources */,
+				FA0B78D31A95814A000E1D17 /* lovedocument.icns in Resources */,
+				FA0B78D21A95814A000E1D17 /* love.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,6 +269,7 @@
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
 				PRODUCT_NAME = love;
 			};
@@ -284,6 +285,7 @@
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
 				);
+				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
 				PRODUCT_NAME = love;
 			};
@@ -471,6 +473,7 @@
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
 				);
+				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
 				PRODUCT_NAME = love;
 			};
@@ -479,7 +482,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "love" */ = {
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "love-macosx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,

@@ -801,7 +801,7 @@
 		FA0706E01A93ED2800AF268C /* ImageIOHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageIOHandler.h; sourceTree = "<group>"; };
 		FA088D841A919E1400F26F29 /* OSX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSX.h; sourceTree = "<group>"; };
 		FA088D851A919E1400F26F29 /* OSX.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OSX.mm; sourceTree = "<group>"; };
-		FA08F5AE16C7525600F007B5 /* Info-Framework.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
+		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A4BEE182E0C2800E1E4D2 /* b2MotorJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2MotorJoint.cpp; sourceTree = "<group>"; };
 		FA0A4BEF182E0C2800E1E4D2 /* b2MotorJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2MotorJoint.h; sourceTree = "<group>"; };
 		FA0A4BF2182E1AD600E1E4D2 /* MotorJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MotorJoint.cpp; sourceTree = "<group>"; };
@@ -1927,7 +1927,7 @@
 		FA08F5AC16C751BA00F007B5 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				FA08F5AE16C7525600F007B5 /* Info-Framework.plist */,
+				FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -2233,9 +2233,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		FA577AAE16C7507900860150 /* Framework */ = {
+		FA577AAE16C7507900860150 /* liblove-macosx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "Framework" */;
+			buildConfigurationList = FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "liblove-macosx" */;
 			buildPhases = (
 				FA577AAA16C7507900860150 /* Sources */,
 				FA577AAB16C7507900860150 /* Frameworks */,
@@ -2246,7 +2246,7 @@
 			);
 			dependencies = (
 			);
-			name = Framework;
+			name = "liblove-macosx";
 			productName = love;
 			productReference = FA577AAF16C7507900860150 /* love.framework */;
 			productType = "com.apple.product-type.framework";
@@ -2259,7 +2259,7 @@
 			attributes = {
 				LastUpgradeCheck = 0610;
 			};
-			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "love-framework" */;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "liblove" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -2270,7 +2270,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				FA577AAE16C7507900860150 /* Framework */,
+				FA577AAE16C7507900860150 /* liblove-macosx */,
 			);
 		};
 /* End PBXProject section */
@@ -2712,7 +2712,7 @@
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				INFOPLIST_FILE = "Info-Framework.plist";
+				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"-undefined",
@@ -2742,7 +2742,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = "Info-Framework.plist";
+				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"-undefined",
@@ -2769,7 +2769,7 @@
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				INFOPLIST_FILE = "Info-Framework.plist";
+				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"-undefined",
@@ -2784,7 +2784,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "love-framework" */ = {
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "liblove" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				64274E785071353E1A1D0D4B /* Debug */,
@@ -2794,7 +2794,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "Framework" */ = {
+		FA577ABF16C7507900860150 /* Build configuration list for PBXNativeTarget "liblove-macosx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FA577AC016C7507900860150 /* Debug */,
