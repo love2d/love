@@ -30,7 +30,7 @@
 #include "thread/threads.h"
 
 // libjpeg-turbo
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#ifdef LOVE_APPLE_USE_FRAMEWORKS
 #include <jpeg-turbo/turbojpeg.h>
 #else
 #include <turbojpeg.h>

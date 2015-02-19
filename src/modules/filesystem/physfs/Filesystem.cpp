@@ -29,7 +29,7 @@
 #include "File.h"
 
 // PhysFS
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#ifdef LOVE_APPLE_USE_FRAMEWORKS
 #include <physfs/physfs.h>
 #else
 #include <physfs.h>

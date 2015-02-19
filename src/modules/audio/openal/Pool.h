@@ -32,7 +32,7 @@
 #include "thread/threads.h"
 
 // OpenAL
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#ifdef LOVE_APPLE_USE_FRAMEWORKS
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
 #include <OpenAL-Soft/alext.h>
