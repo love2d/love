@@ -17,8 +17,10 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  **/
-#include "common/config.h"
+
 #include "ModPlugDecoder.h"
+
+#ifndef LOVE_NO_MODPLUG
 
 #include "common/Exception.h"
 
@@ -145,3 +147,5 @@ int ModPlugDecoder::getBitDepth() const
 } // lullaby
 } // sound
 } // love
+
+#endif // LOVE_NO_MODPLUG

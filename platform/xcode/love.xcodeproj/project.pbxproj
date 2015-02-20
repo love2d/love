@@ -21,6 +21,20 @@
 		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
 		FA0B78D21A95814A000E1D17 /* love.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D01A95814A000E1D17 /* love.icns */; };
 		FA0B78D31A95814A000E1D17 /* lovedocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D11A95814A000E1D17 /* lovedocument.icns */; };
+		FA0B7F301A95AC7D000E1D17 /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
+		FA5D24821A96CA1800C6FC8F /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24811A96CA1800C6FC8F /* OpenAL.framework */; };
+		FA5D24841A96CA2700C6FC8F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */; };
+		FA5D24881A96CA8A00C6FC8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24871A96CA8A00C6FC8F /* UIKit.framework */; };
+		FA5D248A1A96CA9600C6FC8F /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24891A96CA9600C6FC8F /* AudioToolbox.framework */; };
+		FA5D248C1A96CA9E00C6FC8F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D248B1A96CA9E00C6FC8F /* QuartzCore.framework */; };
+		FA5D248E1A96CAA700C6FC8F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D248D1A96CAA700C6FC8F /* CoreGraphics.framework */; };
+		FA5D24901A96CAAE00C6FC8F /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D248F1A96CAAE00C6FC8F /* ImageIO.framework */; };
+		FA5D24921A96CAB300C6FC8F /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24911A96CAB300C6FC8F /* MobileCoreServices.framework */; };
+		FA5D24941A96CABA00C6FC8F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24931A96CABA00C6FC8F /* libz.dylib */; };
+		FA5D24961A96CAC200C6FC8F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24951A96CAC200C6FC8F /* CoreMotion.framework */; };
+		FA5D249C1A96CF4300C6FC8F /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA5D249A1A96CF4300C6FC8F /* Images.xcassets */; };
+		FA5D24C21A96D78000C6FC8F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24C11A96D78000C6FC8F /* Foundation.framework */; };
+		FA5D24D11A96E73300C6FC8F /* liblove.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0B7EEF1A95924A000E1D17 /* liblove.a */; };
 		FA77A36518F1172600D23AE9 /* jpeg-turbo.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */; };
 		FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
 		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -35,6 +49,20 @@
 			proxyType = 2;
 			remoteGlobalIDString = FA577AAF16C7507900860150;
 			remoteInfo = Framework;
+		};
+		FA0B7EEE1A95924A000E1D17 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FA577A9316C7217800860150 /* liblove.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = FA0B78DD1A958B90000E1D17;
+			remoteInfo = "liblove-ios";
+		};
+		FA5D24BA1A96D6FC00C6FC8F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FA577A9316C7217800860150 /* liblove.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = FA0B78DC1A958B90000E1D17;
+			remoteInfo = "liblove-ios";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -78,7 +106,21 @@
 		FA08F69116C765A200F007B5 /* love.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA0B78D01A95814A000E1D17 /* love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = love.icns; path = macosx/love.icns; sourceTree = "<group>"; };
 		FA0B78D11A95814A000E1D17 /* lovedocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = lovedocument.icns; path = macosx/lovedocument.icns; sourceTree = "<group>"; };
+		FA0B7F061A95AAF3000E1D17 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA577A9316C7217800860150 /* liblove.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = liblove.xcodeproj; sourceTree = "<group>"; };
+		FA5D24811A96CA1800C6FC8F /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/OpenAL.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D24871A96CA8A00C6FC8F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D24891A96CA9600C6FC8F /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D248B1A96CA9E00C6FC8F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D248D1A96CAA700C6FC8F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D248F1A96CAAE00C6FC8F /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/ImageIO.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D24911A96CAB300C6FC8F /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D24931A96CABA00C6FC8F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/usr/lib/libz.dylib; sourceTree = DEVELOPER_DIR; };
+		FA5D24951A96CAC200C6FC8F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/CoreMotion.framework; sourceTree = DEVELOPER_DIR; };
+		FA5D24971A96CE1E00C6FC8F /* love-ios.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "love-ios.plist"; path = "ios/love-ios.plist"; sourceTree = "<group>"; };
+		FA5D249A1A96CF4300C6FC8F /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ios/Images.xcassets; sourceTree = "<group>"; };
+		FA5D24C11A96D78000C6FC8F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
 		FA9B4A0916E1579F00074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
@@ -97,13 +139,83 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FA0B7F031A95AAF3000E1D17 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA5D24D11A96E73300C6FC8F /* liblove.a in Frameworks */,
+				FA5D24C21A96D78000C6FC8F /* Foundation.framework in Frameworks */,
+				FA5D24961A96CAC200C6FC8F /* CoreMotion.framework in Frameworks */,
+				FA5D24941A96CABA00C6FC8F /* libz.dylib in Frameworks */,
+				FA5D24921A96CAB300C6FC8F /* MobileCoreServices.framework in Frameworks */,
+				FA5D24901A96CAAE00C6FC8F /* ImageIO.framework in Frameworks */,
+				FA5D248E1A96CAA700C6FC8F /* CoreGraphics.framework in Frameworks */,
+				FA5D248C1A96CA9E00C6FC8F /* QuartzCore.framework in Frameworks */,
+				FA5D248A1A96CA9600C6FC8F /* AudioToolbox.framework in Frameworks */,
+				FA5D24881A96CA8A00C6FC8F /* UIKit.framework in Frameworks */,
+				FA5D24841A96CA2700C6FC8F /* OpenGLES.framework in Frameworks */,
+				FA5D24821A96CA1800C6FC8F /* OpenAL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		1058C7A0FEA54F0111CA2CBB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FA9B4A0916E1579F00074F42 /* SDL2.framework */,
+				FA5D24801A96C97900C6FC8F /* ios */,
+				FA0B7EEC1A959249000E1D17 /* macosx */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* love.app */,
+				FA0B7F061A95AAF3000E1D17 /* love.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* love */ = {
+			isa = PBXGroup;
+			children = (
+				FA5D249A1A96CF4300C6FC8F /* Images.xcassets */,
+				FA577A9D16C7262E00860150 /* Source */,
+				FA5D24A01A96CF7200C6FC8F /* Supporting Files */,
+				1058C7A0FEA54F0111CA2CBB /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				FA577A9316C7217800860150 /* liblove.xcodeproj */,
+			);
+			name = love;
+			sourceTree = "<group>";
+			usesTabs = 1;
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FAC1A448196F5DC600125284 /* license.txt */,
+				FA0B78D01A95814A000E1D17 /* love.icns */,
+				FA0B78D11A95814A000E1D17 /* lovedocument.icns */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		FA0B78D41A958301000E1D17 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FA0B78D81A958301000E1D17 /* love.framework */,
+				FA0B7EEF1A95924A000E1D17 /* liblove.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FA0B7EEC1A959249000E1D17 /* macosx */ = {
+			isa = PBXGroup;
+			children = (
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				A93E6E4810420B4A007D418B /* FreeType.framework */,
 				FA77A36418F1172600D23AE9 /* jpeg-turbo.framework */,
@@ -115,49 +227,10 @@
 				FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */,
 				A93E6E4710420B4A007D418B /* OpenGL.framework */,
 				A9D307E9106635C3004FEDF8 /* physfs.framework */,
+				FA9B4A0916E1579F00074F42 /* SDL2.framework */,
 				A9255E021043195A00BA1496 /* Vorbis.framework */,
 			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		19C28FACFE9D520D11CA2CBB /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				8D1107320486CEB800E47090 /* love.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		29B97314FDCFA39411CA2CEA /* love */ = {
-			isa = PBXGroup;
-			children = (
-				FA577A9D16C7262E00860150 /* Source */,
-				1058C7A0FEA54F0111CA2CBB /* Frameworks */,
-				29B97317FDCFA39411CA2CEA /* Resources */,
-				19C28FACFE9D520D11CA2CBB /* Products */,
-				FA577A9316C7217800860150 /* liblove.xcodeproj */,
-			);
-			name = love;
-			sourceTree = "<group>";
-			usesTabs = 1;
-		};
-		29B97317FDCFA39411CA2CEA /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				FAC1A448196F5DC600125284 /* license.txt */,
-				A97E3842132A9EDE00198A2F /* love-macosx.plist */,
-				FA0B78D01A95814A000E1D17 /* love.icns */,
-				FA0B78D11A95814A000E1D17 /* lovedocument.icns */,
-			);
-			name = Resources;
-			sourceTree = "<group>";
-		};
-		FA0B78D41A958301000E1D17 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				FA0B78D81A958301000E1D17 /* love.framework */,
-			);
-			name = Products;
+			name = macosx;
 			sourceTree = "<group>";
 		};
 		FA577A9D16C7262E00860150 /* Source */ = {
@@ -166,6 +239,33 @@
 				A93E6A3410420AC0007D418B /* love.cpp */,
 			);
 			name = Source;
+			sourceTree = "<group>";
+		};
+		FA5D24801A96C97900C6FC8F /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				FA5D24C11A96D78000C6FC8F /* Foundation.framework */,
+				FA5D24891A96CA9600C6FC8F /* AudioToolbox.framework */,
+				FA5D248D1A96CAA700C6FC8F /* CoreGraphics.framework */,
+				FA5D24951A96CAC200C6FC8F /* CoreMotion.framework */,
+				FA5D248F1A96CAAE00C6FC8F /* ImageIO.framework */,
+				FA5D24931A96CABA00C6FC8F /* libz.dylib */,
+				FA5D24911A96CAB300C6FC8F /* MobileCoreServices.framework */,
+				FA5D24811A96CA1800C6FC8F /* OpenAL.framework */,
+				FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */,
+				FA5D248B1A96CA9E00C6FC8F /* QuartzCore.framework */,
+				FA5D24871A96CA8A00C6FC8F /* UIKit.framework */,
+			);
+			name = ios;
+			sourceTree = "<group>";
+		};
+		FA5D24A01A96CF7200C6FC8F /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				A97E3842132A9EDE00198A2F /* love-macosx.plist */,
+				FA5D24971A96CE1E00C6FC8F /* love-ios.plist */,
+			);
+			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -190,6 +290,24 @@
 			productReference = 8D1107320486CEB800E47090 /* love.app */;
 			productType = "com.apple.product-type.application";
 		};
+		FA0B7F051A95AAF3000E1D17 /* love-ios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FA0B7F2E1A95AAF4000E1D17 /* Build configuration list for PBXNativeTarget "love-ios" */;
+			buildPhases = (
+				FA0B7F021A95AAF3000E1D17 /* Sources */,
+				FA0B7F031A95AAF3000E1D17 /* Frameworks */,
+				FA0B7F041A95AAF3000E1D17 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FA5D24BB1A96D6FC00C6FC8F /* PBXTargetDependency */,
+			);
+			name = "love-ios";
+			productName = "love-ios";
+			productReference = FA0B7F061A95AAF3000E1D17 /* love.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -197,6 +315,11 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0610;
+				TargetAttributes = {
+					FA0B7F051A95AAF3000E1D17 = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "love" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -207,6 +330,7 @@
 				Japanese,
 				French,
 				German,
+				Base,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* love */;
 			projectDirPath = "";
@@ -219,6 +343,7 @@
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* love-macosx */,
+				FA0B7F051A95AAF3000E1D17 /* love-ios */,
 			);
 		};
 /* End PBXProject section */
@@ -229,6 +354,13 @@
 			fileType = wrapper.framework;
 			path = love.framework;
 			remoteRef = FA0B78D71A958301000E1D17 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		FA0B7EEF1A95924A000E1D17 /* liblove.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = liblove.a;
+			remoteRef = FA0B7EEE1A95924A000E1D17 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -244,6 +376,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FA0B7F041A95AAF3000E1D17 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA5D249C1A96CF4300C6FC8F /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -255,20 +395,43 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FA0B7F021A95AAF3000E1D17 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA0B7F301A95AC7D000E1D17 /* love.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FA5D24BB1A96D6FC00C6FC8F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "liblove-ios";
+			targetProxy = FA5D24BA1A96D6FC00C6FC8F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Library/Frameworks/Lua.framework/Headers,
+					/Library/Frameworks/SDL2.framework/Headers,
+				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
 				PRODUCT_NAME = love;
@@ -278,12 +441,19 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Library/Frameworks/Lua.framework/Headers,
+					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
@@ -295,12 +465,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = LOVE_APPLE_USE_FRAMEWORKS;
@@ -324,8 +493,6 @@
 					"\"$(SRCROOT)/../../src\"",
 					"\"$(SRCROOT)/../../src/libraries\"",
 					"\"$(SRCROOT)/../../src/modules\"",
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "love-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
@@ -350,13 +517,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DEPLOYMENT_POSTPROCESSING = NO;
-				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = LOVE_APPLE_USE_FRAMEWORKS;
@@ -382,8 +548,6 @@
 					"\"$(SRCROOT)/../../src\"",
 					"\"$(SRCROOT)/../../src/libraries\"",
 					"\"$(SRCROOT)/../../src/modules\"",
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "love-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
@@ -406,17 +570,140 @@
 			};
 			name = Release;
 		};
+		FA0B7F261A95AAF4000E1D17 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					ios/include,
+					ios/include/lua,
+					ios/include/SDL2,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = love;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FA0B7F271A95AAF4000E1D17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					ios/include,
+					ios/include/lua,
+					ios/include/SDL2,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = love;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FA0B7F281A95AAF4000E1D17 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					ios/include,
+					ios/include/lua,
+					ios/include/SDL2,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = love;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Distribution;
+		};
 		FA5326C618971A0900F7BBF4 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DEPLOYMENT_POSTPROCESSING = NO;
-				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = LOVE_APPLE_USE_FRAMEWORKS;
@@ -442,8 +729,6 @@
 					"\"$(SRCROOT)/../../src\"",
 					"\"$(SRCROOT)/../../src/libraries\"",
 					"\"$(SRCROOT)/../../src/modules\"",
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "love-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
@@ -469,12 +754,19 @@
 		FA5326C718971A0900F7BBF4 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Library/Frameworks/Lua.framework/Headers,
+					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
@@ -501,6 +793,16 @@
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
 				FA5326C618971A0900F7BBF4 /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FA0B7F2E1A95AAF4000E1D17 /* Build configuration list for PBXNativeTarget "love-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA0B7F261A95AAF4000E1D17 /* Debug */,
+				FA0B7F271A95AAF4000E1D17 /* Release */,
+				FA0B7F281A95AAF4000E1D17 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

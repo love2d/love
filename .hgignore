@@ -20,6 +20,8 @@ glob:*.exe
 glob:*.bat
 glob:platform/xcode/Build
 glob:platform/xcode/DerivedData
+glob:platform/xcode/ios/include
+glob:platform/xcode/ios/libraries
 glob:*xcuserdata*
 glob:*.DS_Store
 glob:*.dylib

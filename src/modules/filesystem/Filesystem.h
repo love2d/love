@@ -41,7 +41,7 @@
 #	define LOVE_PATH_SEPARATOR "/"
 #	define LOVE_MAX_PATH _MAX_PATH
 #else
-#	ifdef LOVE_MACOSX
+#	if defined(LOVE_MACOSX) || defined(LOVE_IOS)
 #		define LOVE_APPDATA_FOLDER "LOVE"
 #	elif defined(LOVE_LINUX)
 #		define LOVE_APPDATA_FOLDER "love"

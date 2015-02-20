@@ -33,9 +33,16 @@
 
 // OpenAL
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
+#ifdef LOVE_IOS
+#include <OpenAL/alc.h>
+#include <OpenAL/al.h>
+#include <OpenAL/oalMacOSX_OALExtensions.h>
+#include <OpenAL/oalStaticBufferExtension.h>
+#else
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
 #include <OpenAL-Soft/alext.h>
+#endif
 #else
 #include <AL/alc.h>
 #include <AL/al.h>

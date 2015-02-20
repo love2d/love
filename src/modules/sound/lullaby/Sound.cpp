@@ -69,8 +69,12 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	sound::Decoder *decoder = 0;
 
 	// Find a suitable decoder here, and return it.
-	if (ModPlugDecoder::accepts(ext))
+	if (false)
+		/* nothing */;
+#ifndef LOVE_NO_MODPLUG
+	else if (ModPlugDecoder::accepts(ext))
 		decoder = new ModPlugDecoder(data, ext, bufferSize);
+#endif // LOVE_NO_MODPLUG
 #ifndef LOVE_NOMPG123
 	else if (Mpg123Decoder::accepts(ext))
 		decoder = new Mpg123Decoder(data, ext, bufferSize);

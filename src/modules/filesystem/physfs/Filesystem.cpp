@@ -46,6 +46,10 @@
 #	include <unistd.h>
 #endif
 
+#ifdef LOVE_IOS
+#	include "common/iOS.h"
+#endif
+
 namespace
 {
 	size_t getDriveDelim(const std::string &input)
@@ -422,6 +426,8 @@ std::string Filesystem::getAppdataDirectory()
 		std::string udir = getUserDirectory();
 		udir.append("/Library/Application Support");
 		appdata = normalize(udir);
+#elif defined(LOVE_IOS)
+		appdata = normalize(love::ios::getAppdataDirectory());
 #elif defined(LOVE_LINUX)
 		char *xdgdatahome = getenv("XDG_DATA_HOME");
 		if (!xdgdatahome)

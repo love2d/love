@@ -18,21 +18,44 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_VERSION_H
-#define LOVE_VERSION_H
+#ifndef LOVE_IOS_H
+#define LOVE_IOS_H
+
+#include "config.h"
+
+#ifdef LOVE_IOS
+
+#include <string>
 
 namespace love
 {
+namespace ios
+{
 
-// Version stuff.
-#define LOVE_VERSION_STRING "0.10.0"
-static const int VERSION_MAJOR = 0;
-static const int VERSION_MINOR = 10;
-static const int VERSION_REV = 0;
-static const char *VERSION = LOVE_VERSION_STRING;
-static const char *VERSION_COMPATIBILITY[] =  { VERSION, 0 };
-static const char *VERSION_CODENAME = "";
+/**
+ * Gets the filepath of the first detected love file. The main .app Bundle is
+ * searched first, and then the app's Documents folder.
+ **/
+std::string getLoveInResources(bool &fused);
 
+/**
+ * Gets the directory path where files should be stored.
+ **/
+std::string getAppdataDirectory();
+
+/**
+ * Get the home directory (on iOS, this really means the app's sandbox dir.)
+ **/
+std::string getHomeDirectory();
+
+/**
+ * Opens the specified URL with the default program associated with the URL's
+ * scheme.
+ **/
+bool openURL(const std::string &url);
+
+} // ios
 } // love
 
-#endif // LOVE_VERSION_H
+#endif // LOVE_IOS
+#endif // LOVE_IOS_H

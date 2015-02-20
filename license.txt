@@ -123,7 +123,7 @@ DEALINGS IN THE SOFTWARE.
 
 ---------
 
-This software uses the following LGPL libraries:
+This software uses the following LGPL libraries on Windows, Mac OS X, and Linux:
 
  - libmpg123
      Website: http://www.mpg123.de/

@@ -29,8 +29,12 @@
 #	define LOVE_LINUX 1
 #endif
 #if defined(__APPLE__)
-#	define LOVE_MACOSX 1
-#	include <AvailabilityMacros.h>
+#	include <TargetConditionals.h>
+#	if TARGET_OS_IPHONE
+#		define LOVE_IOS 1
+#	elif TARGET_OS_MAC
+#		define LOVE_MACOSX 1
+#	endif
 #endif
 
 // Endianness.
@@ -71,7 +75,7 @@
 #	define NOMINMAX
 #endif
 
-#if defined(LOVE_MACOSX)
+#if defined(LOVE_MACOSX) || defined(LOVE_IOS)
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
 #endif
 
