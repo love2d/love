@@ -1150,7 +1150,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 		gl.bindTexture(gl.getDefaultTexture());
 		glEnableVertexAttribArray(ATTRIB_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
-		gl.drawArrays(GL_TRIANGLE_FAN, 0, count/2-1); // opengl will close the polygon for us
+		gl.drawArrays(GL_TRIANGLE_FAN, 0, (int)count/2-1); // opengl will close the polygon for us
 		glDisableVertexAttribArray(ATTRIB_POS);
 	}
 }

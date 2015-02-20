@@ -196,7 +196,7 @@ int w_getFullscreenModes(lua_State *L)
 
 	std::vector<Window::WindowSize> modes = instance()->getFullscreenSizes(displayindex);
 
-	lua_createtable(L, modes.size(), 0);
+	lua_createtable(L, (int) modes.size(), 0);
 
 	for (size_t i = 0; i < modes.size(); i++)
 	{
@@ -417,7 +417,7 @@ int w_showMessageBox(lua_State *L)
 		// Array of button names.
 		for (size_t i = 0; i < numbuttons; i++)
 		{
-			lua_rawgeti(L, 3, i + 1);
+			lua_rawgeti(L, 3, (int) i + 1);
 			data.buttons.push_back(luax_checkstring(L, -1));
 			lua_pop(L, 1);
 		}

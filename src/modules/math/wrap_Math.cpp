@@ -110,9 +110,9 @@ int w_newBezierCurve(lua_State *L)
 	std::vector<Vector> points;
 	if (lua_istable(L, 1))
 	{
-		size_t top = lua_objlen(L, 1);
+		int top = (int) lua_objlen(L, 1);
 		points.reserve(top / 2);
-		for (size_t i = 1; i <= top; i += 2)
+		for (int i = 1; i <= top; i += 2)
 		{
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
@@ -127,9 +127,9 @@ int w_newBezierCurve(lua_State *L)
 	}
 	else
 	{
-		size_t top = lua_gettop(L);
+		int top = (int) lua_gettop(L);
 		points.reserve(top / 2);
-		for (size_t i = 1; i <= top; i += 2)
+		for (int i = 1; i <= top; i += 2)
 		{
 			Vector v;
 			v.x = (float) luaL_checknumber(L, i);
@@ -149,9 +149,9 @@ int w_triangulate(lua_State *L)
 	std::vector<Vertex> vertices;
 	if (lua_istable(L, 1))
 	{
-		size_t top = lua_objlen(L, 1);
+		int top = (int) lua_objlen(L, 1);
 		vertices.reserve(top / 2);
-		for (size_t i = 1; i <= top; i += 2)
+		for (int i = 1; i <= top; i += 2)
 		{
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
@@ -166,9 +166,9 @@ int w_triangulate(lua_State *L)
 	}
 	else
 	{
-		size_t top = lua_gettop(L);
+		int top = (int) lua_gettop(L);
 		vertices.reserve(top / 2);
-		for (size_t i = 1; i <= top; i += 2)
+		for (int i = 1; i <= top; i += 2)
 		{
 			Vertex v;
 			v.x = (float) luaL_checknumber(L, i);
@@ -189,8 +189,8 @@ int w_triangulate(lua_State *L)
 			triangles = Math::instance.triangulate(vertices);
 	});
 
-	lua_createtable(L, triangles.size(), 0);
-	for (size_t i = 0; i < triangles.size(); ++i)
+	lua_createtable(L, (int) triangles.size(), 0);
+	for (int i = 0; i < (int) triangles.size(); ++i)
 	{
 		const Triangle &tri = triangles[i];
 
@@ -219,9 +219,9 @@ int w_isConvex(lua_State *L)
 	std::vector<Vertex> vertices;
 	if (lua_istable(L, 1))
 	{
-		size_t top = lua_objlen(L, 1);
+		int top = (int) lua_objlen(L, 1);
 		vertices.reserve(top / 2);
-		for (size_t i = 1; i <= top; i += 2)
+		for (int i = 1; i <= top; i += 2)
 		{
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
@@ -257,7 +257,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 
 	if (lua_istable(L, 1))
 	{
-		int n = lua_objlen(L, 1);
+		int n = (int) lua_objlen(L, 1);
 		for (int i = 1; i <= n && i <= 4; i++)
 		{
 			lua_rawgeti(L, 1, i);

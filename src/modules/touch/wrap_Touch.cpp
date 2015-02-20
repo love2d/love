@@ -47,7 +47,7 @@ int w_getTouchIDs(lua_State *L)
 		// We use lightuserdata instead of a lua_Number (double) because doubles
 		// can't represent all possible id values on 64-bit systems.
 		lua_pushlightuserdata(L, (void *) (intptr_t) ids[i]);
-		lua_rawseti(L, -2, i + 1);
+		lua_rawseti(L, -2, (int) i + 1);
 	}
 
 	return 1;

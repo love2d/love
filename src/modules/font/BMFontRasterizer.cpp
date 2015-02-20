@@ -143,7 +143,7 @@ BMFontRasterizer::BMFontRasterizer(love::filesystem::FileData *fontdef, const st
 		fontFolder = filename.substr(0, separatorpos);
 
 	// The parseConfig function will try to load any missing page images.
-	for (size_t i = 0; i < imagelist.size(); i++)
+	for (int i = 0; i < (int) imagelist.size(); i++)
 		images[i] = imagelist[i];
 
 	std::string configtext((const char *) fontdef->getData(), fontdef->getSize());
@@ -178,7 +178,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 		}
 		else if (tag == "page")
 		{
-			size_t pageindex = (size_t) cline.getAttributeInt("id");
+			int pageindex = cline.getAttributeInt("id");
 			std::string filename = cline.getAttributeString("file");
 
 			// The file name is relative to the font file's folder.

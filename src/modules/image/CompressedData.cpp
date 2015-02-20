@@ -49,7 +49,7 @@ void *CompressedData::getData() const
 
 int CompressedData::getMipmapCount() const
 {
-	return dataImages.size();
+	return (int) dataImages.size();
 }
 
 size_t CompressedData::getSize(int miplevel) const

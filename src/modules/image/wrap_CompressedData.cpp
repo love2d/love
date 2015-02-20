@@ -34,7 +34,7 @@ CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 int w_CompressedData_getWidth(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
-	int miplevel = luaL_optinteger(L, 2, 1);
+	int miplevel = luaL_optint(L, 2, 1);
 	int width = 0;
 
 	luax_catchexcept(L, [&](){ width = t->getWidth(miplevel - 1); });
@@ -46,7 +46,7 @@ int w_CompressedData_getWidth(lua_State *L)
 int w_CompressedData_getHeight(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
-	int miplevel = luaL_optinteger(L, 2, 1);
+	int miplevel = luaL_optint(L, 2, 1);
 	int height = 0;
 
 	luax_catchexcept(L, [&](){ height = t->getHeight(miplevel - 1); });
@@ -58,7 +58,7 @@ int w_CompressedData_getHeight(lua_State *L)
 int w_CompressedData_getDimensions(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
-	int miplevel = luaL_optinteger(L, 2, 1);
+	int miplevel = luaL_optint(L, 2, 1);
 	int width = 0, height = 0;
 
 	luax_catchexcept(L, [&]()

@@ -116,7 +116,7 @@ void OpenGL::setupContext()
 	state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
 
 	// Retrieve currently bound textures for each texture unit.
-	for (size_t i = 0; i < state.textureUnits.size(); i++)
+	for (int i = 0; i < (int) state.textureUnits.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[i]);

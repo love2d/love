@@ -128,7 +128,7 @@ void Pool::update()
 
 int Pool::getSourceCount() const
 {
-	return playing.size();
+	return (int) playing.size();
 }
 
 int Pool::getMaxSources() const

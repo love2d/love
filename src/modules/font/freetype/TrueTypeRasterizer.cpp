@@ -53,10 +53,10 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int
 
 	// Set global metrics
 	FT_Size_Metrics s = face->size->metrics;
-	metrics.advance = s.max_advance >> 6;
-	metrics.ascent = s.ascender >> 6;
-	metrics.descent = s.descender >> 6;
-	metrics.height = s.height >> 6;
+	metrics.advance = (int) (s.max_advance >> 6);
+	metrics.ascent  = (int) (s.ascender >> 6);
+	metrics.descent = (int) (s.descender >> 6);
+	metrics.height  = (int) (s.height >> 6);
 }
 
 TrueTypeRasterizer::~TrueTypeRasterizer()
@@ -100,7 +100,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.bearingY = bitmap_glyph->top;
 	glyphMetrics.height = bitmap.rows;
 	glyphMetrics.width = bitmap.width;
-	glyphMetrics.advance = ftglyph->advance.x >> 16;
+	glyphMetrics.advance = (int) (ftglyph->advance.x >> 16);
 
 	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 
@@ -151,7 +151,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 
 int TrueTypeRasterizer::getGlyphCount() const
 {
-	return face->num_glyphs;
+	return (int) face->num_glyphs;
 }
 
 bool TrueTypeRasterizer::hasGlyph(uint32 glyph) const

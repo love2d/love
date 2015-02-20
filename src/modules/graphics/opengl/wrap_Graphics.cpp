@@ -526,7 +526,7 @@ int w_newMesh(lua_State *L)
 		// Get the vertices from the table.
 		for (size_t i = 1; i <= vertex_count; i++)
 		{
-			lua_rawgeti(L, 1, i);
+			lua_rawgeti(L, 1, (int) i);
 
 			if (lua_type(L, -1) != LUA_TTABLE)
 				return luax_typerror(L, 1, "table of tables");
@@ -923,7 +923,7 @@ int w_setCanvas(lua_State *L)
 
 	if (is_table)
 	{
-		for (size_t i = 1; i <= lua_objlen(L, 1); i++)
+		for (int i = 1; i <= (int) lua_objlen(L, 1); i++)
 		{
 			lua_rawgeti(L, 1, i);
 			canvases.push_back(luax_checkcanvas(L, -1));
@@ -1259,7 +1259,7 @@ int w_line(lua_State *L)
 	bool is_table = false;
 	if (args == 1 && lua_istable(L, 1))
 	{
-		args = lua_objlen(L, 1);
+		args = (int) lua_objlen(L, 1);
 		is_table = true;
 	}
 
@@ -1360,7 +1360,7 @@ int w_polygon(lua_State *L)
 	float *coords;
 	if (args == 1 && lua_istable(L, 2))
 	{
-		args = lua_objlen(L, 2);
+		args = (int) lua_objlen(L, 2);
 		is_table = true;
 	}
 

@@ -401,7 +401,7 @@ void Shader::attach(bool temporary)
 		for (size_t i = 0; i < activeTexUnits.size(); ++i)
 		{
 			if (activeTexUnits[i] > 0)
-				gl.bindTextureToUnit(activeTexUnits[i], i + 1, false);
+				gl.bindTextureToUnit(activeTexUnits[i], (int) i + 1, false);
 		}
 
 		// We always want to use texture unit 0 for everyhing else.
@@ -589,7 +589,7 @@ int Shader::getTextureUnit(const std::string &name)
 	if (freeunit_it != textureCounters.end())
 	{
 		// we don't want to use unit 0
-		texunit = std::distance(textureCounters.begin(), freeunit_it) + 1;
+		texunit = (int) std::distance(textureCounters.begin(), freeunit_it) + 1;
 	}
 	else
 	{
@@ -600,7 +600,7 @@ int Shader::getTextureUnit(const std::string &name)
 			throw love::Exception("No more texture units available for shader.");
 
 		// we don't want to use unit 0
-		texunit = std::distance(activeTexUnits.begin(), nextunit_it) + 1;
+		texunit = (int) std::distance(activeTexUnits.begin(), nextunit_it) + 1;
 	}
 
 	texUnitPool[name] = texunit;

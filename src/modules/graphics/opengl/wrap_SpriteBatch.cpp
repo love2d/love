@@ -78,7 +78,7 @@ int w_SpriteBatch_add(lua_State *L)
 int w_SpriteBatch_set(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int id = luaL_checkinteger(L, 2);
+	int id = luaL_checkint(L, 2);
 
 	Quad *quad = nullptr;
 	int startidx = 3;

@@ -457,7 +457,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const std::string
 			offset.x = floorf((wrap - width) / 2.0f);
 			break;
 		case ALIGN_JUSTIFY:
-			numspaces = std::count(line.begin(), line.end(), ' ');
+			numspaces = (int) std::count(line.begin(), line.end(), ' ');
 			if (wrappedlines[i] && numspaces >= 1)
 				extraspacing = (wrap - width) / float(numspaces);
 			else

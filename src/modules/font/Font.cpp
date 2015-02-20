@@ -73,7 +73,7 @@ Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::st
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
-	return newImageRasterizer(data, &glyphs[0], glyphs.size());
+	return newImageRasterizer(data, &glyphs[0], (int) glyphs.size());
 }
 
 Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)

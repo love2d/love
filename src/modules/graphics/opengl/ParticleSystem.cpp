@@ -889,7 +889,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	{
 		VertexBuffer::Bind ibo_bind(*ibo.getVertexBuffer());
-		gl.drawElements(GL_TRIANGLES, ibo.getIndexCount(pCount), ibo.getType(), ibo.getPointer(0));
+		gl.drawElements(GL_TRIANGLES, (GLsizei) ibo.getIndexCount(pCount), ibo.getType(), ibo.getPointer(0));
 	}
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
@@ -990,7 +990,7 @@ void ParticleSystem::update(float dt)
 			{
 				s = t * (float) k; // [0:numquads-1] (clamped below)
 				i = (s > 0.0f) ? (size_t) s : 0;
-				p->quadIndex = (i < k) ? i : k - 1;
+				p->quadIndex = (int) ((i < k) ? i : k - 1);
 			}
 
 			// Next particle.

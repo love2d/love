@@ -84,7 +84,7 @@ love::joystick::Joystick *JoystickModule::getJoystick(int joyindex)
 
 int JoystickModule::getIndex(const love::joystick::Joystick *joystick)
 {
-	for (size_t i = 0; i < activeSticks.size(); i++)
+	for (int i = 0; i < (int) activeSticks.size(); i++)
 	{
 		if (activeSticks[i] == joystick)
 			return i;
@@ -132,7 +132,7 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 
 	if (!joystick)
 	{
-		joystick = new Joystick(joysticks.size());
+		joystick = new Joystick((int) joysticks.size());
 		joysticks.push_back(joystick);
 	}
 

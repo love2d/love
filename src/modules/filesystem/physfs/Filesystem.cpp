@@ -373,7 +373,7 @@ FileData *Filesystem::newFileData(void *data, unsigned int size, const char *fil
 
 FileData *Filesystem::newFileData(const char *b64, const char *filename) const
 {
-	int size = strlen(b64);
+	int size = (int) strlen(b64);
 	int outsize = 0;
 	char *dst = b64_decode(b64, size, outsize);
 	FileData *fd = new FileData(outsize, std::string(filename));

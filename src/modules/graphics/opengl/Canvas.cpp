@@ -206,7 +206,7 @@ struct FramebufferStrategyCorePacked : public FramebufferStrategy
 		drawbuffers.push_back(GL_COLOR_ATTACHMENT0);
 
 		// Attach the canvas textures to the currently bound framebuffer.
-		for (size_t i = 0; i < canvases.size(); i++)
+		for (int i = 0; i < (int) canvases.size(); i++)
 		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1 + i,
 				GL_TEXTURE_2D, canvases[i]->getGLTexture(), 0);
@@ -214,7 +214,7 @@ struct FramebufferStrategyCorePacked : public FramebufferStrategy
 		}
 
 		// set up multiple render targets
-		glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
+		glDrawBuffers((int) drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 
@@ -364,7 +364,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		drawbuffers.push_back(GL_COLOR_ATTACHMENT0_EXT);
 
 		// Attach the canvas textures to the currently bound framebuffer.
-		for (size_t i = 0; i < canvases.size(); i++)
+		for (int i = 0; i < (int) canvases.size(); i++)
 		{
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1_EXT + i,
 								   GL_TEXTURE_2D, canvases[i]->getGLTexture(), 0);
@@ -372,7 +372,7 @@ struct FramebufferStrategyPackedEXT : public FramebufferStrategy
 		}
 
 		// set up multiple render targets
-		glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
+		glDrawBuffers((int) drawbuffers.size(), &drawbuffers[0]);
 	}
 };
 

@@ -102,7 +102,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	if (fmt == 0)
 		throw InvalidFormatException(soundData->getChannels(), soundData->getBitDepth());
 
-	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate()));
+	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), (ALsizei) soundData->getSize(), soundData->getSampleRate()));
 
 	// The buffer has a +2 retain count right now, but we want it to have +1.
 	staticBuffer->release();

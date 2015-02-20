@@ -60,7 +60,7 @@ int w_Font_getWrap(lua_State *L)
 
 	luax_catchexcept(L, [&]() {
 		t->getWrap(str, wrap, lines, &widths);
-		numlines = lines.size();
+		numlines = (int) lines.size();
 	});
 
 	for (int width : widths)

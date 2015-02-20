@@ -365,13 +365,13 @@ void VertexIndex::fill()
 
 	for (size_t i = 0; i < maxSize; ++i)
 	{
-		indices[i*6+0] = i * 4 + 0;
-		indices[i*6+1] = i * 4 + 1;
-		indices[i*6+2] = i * 4 + 2;
+		indices[i*6+0] = T(i * 4 + 0);
+		indices[i*6+1] = T(i * 4 + 1);
+		indices[i*6+2] = T(i * 4 + 2);
 
-		indices[i*6+3] = i * 4 + 0;
-		indices[i*6+4] = i * 4 + 2;
-		indices[i*6+5] = i * 4 + 3;
+		indices[i*6+3] = T(i * 4 + 0);
+		indices[i*6+4] = T(i * 4 + 2);
+		indices[i*6+5] = T(i * 4 + 3);
 	}
 }
 

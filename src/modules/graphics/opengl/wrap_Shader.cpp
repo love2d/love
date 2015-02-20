@@ -87,7 +87,7 @@ static T *_getVectors(lua_State *L, int count, size_t &dimension)
 			return 0;
 		}
 
-		for (size_t k = 1; k <= dimension; ++k)
+		for (int k = 1; k <= (int) dimension; ++k)
 		{
 			lua_rawgeti(L, 3 + i, k);
 			if (lua_isnumber(L, -1))
@@ -132,7 +132,7 @@ int w_Shader_sendInt(lua_State *L)
 	bool should_error = false;
 	try
 	{
-		shader->sendInt(name, dimension, values, count);
+		shader->sendInt(name, (int) dimension, values, count);
 	}
 	catch (love::Exception &e)
 	{
@@ -173,7 +173,7 @@ int w_Shader_sendFloat(lua_State *L)
 	bool should_error = false;
 	try
 	{
-		shader->sendFloat(name, dimension, values, count);
+		shader->sendFloat(name, (int) dimension, values, count);
 	}
 	catch (love::Exception &e)
 	{
@@ -199,7 +199,7 @@ int w_Shader_sendMatrix(lua_State *L)
 		return luax_typerror(L, 3, "matrix table");
 
 	lua_getfield(L, 3, "dimension");
-	int dimension = lua_tointeger(L, -1);
+	int dimension = (int) lua_tointeger(L, -1);
 	lua_pop(L, 1);
 
 	if (dimension < 2 || dimension > 4)
@@ -217,7 +217,7 @@ int w_Shader_sendMatrix(lua_State *L)
 			// a dimension of mind. You're moving into a land of both shadow
 			// and substance, of things and ideas. You've just crossed over
 			// into... the Twilight Zone.
-			int other_dimension = lua_tointeger(L, -1);
+			int other_dimension = (int) lua_tointeger(L, -1);
 			delete[] values;
 			return luaL_error(L, "Invalid matrix size at argument %d: Expected size %dx%d, got %dx%d.",
 							  3+i, dimension, dimension, other_dimension, other_dimension);
@@ -258,19 +258,19 @@ static void w_convertMatrices(lua_State *L, int idx)
 	for (int matrix = idx; matrix < idx + matrixcount; matrix++)
 	{
 		luaL_checktype(L, matrix, LUA_TTABLE);
-		int dimension = lua_objlen(L, matrix);
+		int dimension = (int) lua_objlen(L, matrix);
 
 		int newi = 1;
 		lua_createtable(L, dimension * dimension, 0);
 
 		// Collapse {{a,b,c}, {d,e,f}, ...} to {a,b,c, d,e,f, ...}
-		for (size_t i = 1; i <= lua_objlen(L, matrix); i++)
+		for (int i = 1; i <= (int) lua_objlen(L, matrix); i++)
 		{
 			// Push args[matrix][i] onto the stack.
 			lua_rawgeti(L, matrix, i);
 			luaL_checktype(L, -1, LUA_TTABLE);
 
-			for (size_t j = 1; j <= lua_objlen(L, -1); j++)
+			for (int j = 1; j <= (int) lua_objlen(L, -1); j++)
 			{
 				// Push args[matrix[i][j] onto the stack.
 				lua_rawgeti(L, -1, j);

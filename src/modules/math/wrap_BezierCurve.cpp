@@ -52,7 +52,7 @@ int w_BezierCurve_getDerivative(lua_State *L)
 int w_BezierCurve_getControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	int idx = luaL_checkinteger(L, 2);
+	int idx = luaL_checkint(L, 2);
 
 	if (idx > 0) // 1-indexing
 		idx--;
@@ -69,7 +69,7 @@ int w_BezierCurve_getControlPoint(lua_State *L)
 int w_BezierCurve_setControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	int idx = luaL_checkinteger(L, 2);
+	int idx = luaL_checkint(L, 2);
 	float vx = (float) luaL_checknumber(L, 3);
 	float vy = (float) luaL_checknumber(L, 4);
 
@@ -85,7 +85,7 @@ int w_BezierCurve_insertControlPoint(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	float vx = (float) luaL_checknumber(L, 2);
 	float vy = (float) luaL_checknumber(L, 3);
-	int idx = luaL_optinteger(L, 4, -1);
+	int idx = luaL_optint(L, 4, -1);
 
 	if (idx > 0) // 1-indexing
 		idx--;
@@ -148,13 +148,13 @@ int w_BezierCurve_evaluate(lua_State *L)
 int w_BezierCurve_render(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	int accuracy = luaL_optinteger(L, 2, 5);
+	int accuracy = luaL_optint(L, 2, 5);
 
 	std::vector<Vector> points;
 	luax_catchexcept(L, [&](){ points = curve->render(accuracy); });
 
-	lua_createtable(L, points.size()*2, 0);
-	for (size_t i = 0; i < points.size(); ++i)
+	lua_createtable(L, (int) points.size() * 2, 0);
+	for (int i = 0; i < (int) points.size(); ++i)
 	{
 		lua_pushnumber(L, points[i].x);
 		lua_rawseti(L, -2, 2*i+1);

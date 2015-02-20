@@ -129,8 +129,8 @@ ImageIOHandler::DecodedImage ImageIOHandler::decode(love::filesystem::FileData *
 	if (!image)
 		throw love::Exception("Could not decode image!");
 
-	img.width = CGImageGetWidth(image);
-	img.height = CGImageGetHeight(image);
+	img.width  = (int) CGImageGetWidth(image);
+	img.height = (int) CGImageGetHeight(image);
 
 	CGImageAlphaInfo alphainfo = CGImageGetAlphaInfo(image);
 

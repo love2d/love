@@ -358,7 +358,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
 
-		int max = element_count - 1;
+		int max = (int) element_count - 1;
 		if (range_max >= 0)
 			max = std::min(range_max, max);
 
@@ -373,7 +373,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	}
 	else
 	{
-		int max = vertex_count - 1;
+		int max = (int) vertex_count - 1;
 		if (range_max >= 0)
 			max = std::min(range_max, max);
 
