@@ -92,8 +92,8 @@ int w_setMode(lua_State *L)
 	}
 	else
 	{
-		// Default to exclusive fullscreen mode.
-		settings.fstype = Window::FULLSCREEN_TYPE_EXCLUSIVE;
+		// Default to desktop fullscreen mode.
+		settings.fstype = Window::FULLSCREEN_DESKTOP;
 	}
 	lua_pop(L, 1);
 
@@ -138,7 +138,7 @@ int w_getMode(lua_State *L)
 
 	lua_newtable(L);
 
-	const char *fstypestr = "exclusive";
+	const char *fstypestr = "desktop";
 	Window::getConstant(settings.fstype, fstypestr);
 
 	lua_pushstring(L, fstypestr);
@@ -222,14 +222,14 @@ int w_getFullscreenModes(lua_State *L)
 int w_setFullscreen(lua_State *L)
 {
 	bool fullscreen = luax_toboolean(L, 1);
-	Window::FullscreenType fstype = Window::FULLSCREEN_TYPE_MAX_ENUM;
+	Window::FullscreenType fstype = Window::FULLSCREEN_MAX_ENUM;
 
 	const char *typestr = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (typestr && !Window::getConstant(typestr, fstype))
 		return luaL_error(L, "Invalid fullscreen type: %s", typestr);
 
 	bool success = false;
-	if (fstype == Window::FULLSCREEN_TYPE_MAX_ENUM)
+	if (fstype == Window::FULLSCREEN_MAX_ENUM)
 		success = instance()->setFullscreen(fullscreen);
 	else
 		success = instance()->setFullscreen(fullscreen, fstype);

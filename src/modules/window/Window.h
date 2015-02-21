@@ -66,9 +66,9 @@ public:
 
 	enum FullscreenType
 	{
-		FULLSCREEN_TYPE_EXCLUSIVE,
-		FULLSCREEN_TYPE_DESKTOP,
-		FULLSCREEN_TYPE_MAX_ENUM
+		FULLSCREEN_EXCLUSIVE,
+		FULLSCREEN_DESKTOP,
+		FULLSCREEN_MAX_ENUM
 	};
 
 	enum MessageBoxType
@@ -189,8 +189,8 @@ private:
 	static StringMap<Setting, SETTING_MAX_ENUM>::Entry settingEntries[];
 	static StringMap<Setting, SETTING_MAX_ENUM> settings;
 
-	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM>::Entry fullscreenTypeEntries[];
-	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM> fullscreenTypes;
+	static StringMap<FullscreenType, FULLSCREEN_MAX_ENUM>::Entry fullscreenTypeEntries[];
+	static StringMap<FullscreenType, FULLSCREEN_MAX_ENUM> fullscreenTypes;
 
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry messageBoxTypeEntries[];
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> messageBoxTypes;
@@ -200,7 +200,7 @@ private:
 struct WindowSettings
 {
 	bool fullscreen = false;
-	Window::FullscreenType fstype = Window::FULLSCREEN_TYPE_EXCLUSIVE;
+	Window::FullscreenType fstype = Window::FULLSCREEN_DESKTOP;
 	bool vsync = true;
 	int msaa = 0;
 	bool resizable = false;

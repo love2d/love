@@ -326,7 +326,7 @@ function love.init()
 			minwidth = 1,
 			minheight = 1,
 			fullscreen = false,
-			fullscreentype = "exclusive",
+			fullscreentype = "desktop",
 			display = 1,
 			vsync = true,
 			msaa = 0,

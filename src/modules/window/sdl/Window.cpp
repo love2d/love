@@ -376,7 +376,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	if (f.fullscreen)
 	{
-		if (f.fstype == FULLSCREEN_TYPE_DESKTOP)
+		if (f.fstype == FULLSCREEN_DESKTOP)
 			sdlflags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 		else
 		{
@@ -511,12 +511,12 @@ void Window::updateSettings(const WindowSettings &newsettings)
 	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
 	{
 		curMode.settings.fullscreen = true;
-		curMode.settings.fstype = FULLSCREEN_TYPE_DESKTOP;
+		curMode.settings.fstype = FULLSCREEN_DESKTOP;
 	}
 	else if ((wflags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
 	{
 		curMode.settings.fullscreen = true;
-		curMode.settings.fstype = FULLSCREEN_TYPE_EXCLUSIVE;
+		curMode.settings.fstype = FULLSCREEN_EXCLUSIVE;
 	}
 	else
 	{
@@ -547,7 +547,7 @@ void Window::updateSettings(const WindowSettings &newsettings)
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen
 	// mode.
-	if (curMode.settings.fullscreen && curMode.settings.fstype == FULLSCREEN_TYPE_EXCLUSIVE)
+	if (curMode.settings.fullscreen && curMode.settings.fstype == FULLSCREEN_EXCLUSIVE)
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
 	else
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
@@ -594,7 +594,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 
 	if (fullscreen)
 	{
-		if (fstype == FULLSCREEN_TYPE_DESKTOP)
+		if (fstype == FULLSCREEN_DESKTOP)
 			sdlflags = SDL_WINDOW_FULLSCREEN_DESKTOP;
 		else
 		{

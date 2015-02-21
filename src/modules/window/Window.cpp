@@ -89,19 +89,19 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 
 StringMap<Window::Setting, Window::SETTING_MAX_ENUM> Window::settings(Window::settingEntries, sizeof(Window::settingEntries));
 
-StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
+StringMap<Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
 {
-	{"exclusive", Window::FULLSCREEN_TYPE_EXCLUSIVE},
-	{"desktop", Window::FULLSCREEN_TYPE_DESKTOP},
+	{"exclusive", FULLSCREEN_EXCLUSIVE},
+	{"desktop", FULLSCREEN_DESKTOP},
 };
 
-StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
+StringMap<Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
 
 StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM>::Entry Window::messageBoxTypeEntries[] =
 {
-	{"error", Window::MESSAGEBOX_ERROR},
-	{"warning", Window::MESSAGEBOX_WARNING},
-	{"info", Window::MESSAGEBOX_INFO},
+	{"error", MESSAGEBOX_ERROR},
+	{"warning", MESSAGEBOX_WARNING},
+	{"info", MESSAGEBOX_INFO},
 };
 
 StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM> Window::messageBoxTypes(Window::messageBoxTypeEntries, sizeof(Window::messageBoxTypeEntries));
