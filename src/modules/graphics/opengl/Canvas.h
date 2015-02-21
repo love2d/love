@@ -111,7 +111,7 @@ public:
 
 	inline int getMSAA() const
 	{
-		return msaa_samples;
+		return actual_samples;
 	}
 
 	bool resolveMSAA();
@@ -155,7 +155,8 @@ private:
 
 	std::vector<Canvas *> attachedCanvases;
 
-	int msaa_samples;
+	int requested_samples;
+	int actual_samples;
 	bool msaa_dirty;
 
 	size_t texture_memory;
