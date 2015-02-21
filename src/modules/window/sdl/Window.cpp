@@ -89,9 +89,7 @@ void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (msaa > 0) ? msaa : 0);
 
-#if SDL_VERSION_ATLEAST(2,0,1)
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
-#endif
 }
 
 void Window::setGLContextAttributes(const ContextAttribs &attribs)
@@ -404,11 +402,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (f.borderless)
 		sdlflags |= SDL_WINDOW_BORDERLESS;
 
-	// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
-#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 	if (f.highdpi)
 		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
-#endif
 
 	int x = f.x;
 	int y = f.y;
@@ -478,11 +473,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		int width = curMode.width;
 		int height = curMode.height;
-
-		// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
-#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 		SDL_GL_GetDrawableSize(window, &width, &height);
-#endif
 
 		gfx->setMode(width, height, curMode.settings.sRGB);
 	}
@@ -539,11 +530,7 @@ void Window::updateSettings(const WindowSettings &newsettings)
 
 	getPosition(curMode.settings.x, curMode.settings.y, curMode.settings.display);
 
-#if SDL_VERSION_ATLEAST(2,0,1)
 	curMode.settings.highdpi = (wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
-#else
-	curMode.settings.highdpi = false;
-#endif
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen
 	// mode.
@@ -620,11 +607,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 		{
 			int width = curMode.width;
 			int height = curMode.height;
-
-			// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
-#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 			SDL_GL_GetDrawableSize(window, &width, &height);
-#endif
 
 			gfx->setViewportSize(width, height);
 		}
@@ -864,14 +847,7 @@ bool Window::isMouseGrabbed() const
 void Window::getPixelDimensions(int &w, int &h) const
 {
 	if (window)
-	{
-		// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
-#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 		SDL_GL_GetDrawableSize(window, &w, &h);
-#else
-		SDL_GetWindowSize(window, &w, &h);
-#endif
-	}
 	else
 	{
 		w = curMode.width;
@@ -883,8 +859,6 @@ double Window::getPixelScale() const
 {
 	double scale = 1.0;
 
-	// FIXME: disabled in Linux for runtime SDL 2.0.0 compatibility.
-#if SDL_VERSION_ATLEAST(2,0,1) && !defined(LOVE_LINUX)
 	if (window)
 	{
 		int wheight;
@@ -895,7 +869,6 @@ double Window::getPixelScale() const
 
 		scale = (double) dheight / wheight;
 	}
-#endif
 
 	return scale;
 }
