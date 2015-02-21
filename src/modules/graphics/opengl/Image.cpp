@@ -87,118 +87,8 @@ Image::Image(love::image::CompressedData *cdata, const Flags &flags)
 
 Image::~Image()
 {
-	unload();
-
+	unloadVolatile();
 	--imageCount;
-}
-
-love::image::ImageData *Image::getImageData() const
-{
-	return data.get();
-}
-
-love::image::CompressedData *Image::getCompressedData() const
-{
-	return cdata.get();
-}
-
-void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
-{
-	Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	drawv(t, vertices);
-}
-
-void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
-{
-	Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	drawv(t, quad->getVertices());
-}
-
-void Image::predraw()
-{
-	bind();
-}
-
-void Image::postdraw()
-{
-}
-
-GLuint Image::getGLTexture() const
-{
-	return texture;
-}
-
-void Image::setFilter(const Texture::Filter &f)
-{
-	if (!validateFilter(f, flags.mipmaps))
-	{
-		if (f.mipmap != FILTER_NONE && !flags.mipmaps)
-			throw love::Exception("Non-mipmapped image cannot have mipmap filtering.");
-		else
-			throw love::Exception("Invalid texture filter.");
-	}
-
-	filter = f;
-
-	// We don't want filtering or (attempted) mipmaps on the default texture.
-	if (usingDefaultTexture)
-	{
-		filter.mipmap = FILTER_NONE;
-		filter.min = filter.mag = FILTER_NEAREST;
-	}
-
-	bind();
-	gl.setTextureFilter(filter);
-}
-
-bool Image::setWrap(const Texture::Wrap &w)
-{
-	bool success = true;
-	wrap = w;
-
-	if (hasLimitedNpot() && (width != next_p2(width) || height != next_p2(height)))
-	{
-		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
-			success = false;
-
-		// If we only have limited NPOT support then the wrap mode must be CLAMP.
-		wrap.s = wrap.t = WRAP_CLAMP;
-	}
-
-	bind();
-	gl.setTextureWrap(w);
-
-	return success;
-}
-
-void Image::setMipmapSharpness(float sharpness)
-{
-	// OpenGL ES doesn't support LOD bias via glTexParameter.
-	if (!GLAD_VERSION_1_4)
-		return;
-
-	// LOD bias has the range (-maxbias, maxbias)
-	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
-
-	bind();
-
-	// negative bias is sharper
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
-}
-
-float Image::getMipmapSharpness() const
-{
-	return mipmapSharpness;
-}
-
-void Image::bind() const
-{
-	if (texture != 0)
-		gl.bindTexture(texture);
 }
 
 void Image::preload()
@@ -206,23 +96,23 @@ void Image::preload()
 	// For colors.
 	memset(vertices, 255, sizeof(Vertex)*4);
 
-	vertices[0].x = 0;
-	vertices[0].y = 0;
-	vertices[1].x = 0;
+	vertices[0].x = 0.0f;
+	vertices[0].y = 0.0f;
+	vertices[1].x = 0.0f;
 	vertices[1].y = (float) height;
 	vertices[2].x = (float) width;
 	vertices[2].y = (float) height;
 	vertices[3].x = (float) width;
-	vertices[3].y = 0;
+	vertices[3].y = 0.0f;
 
-	vertices[0].s = 0;
-	vertices[0].t = 0;
-	vertices[1].s = 0;
-	vertices[1].t = 1;
-	vertices[2].s = 1;
-	vertices[2].t = 1;
-	vertices[3].s = 1;
-	vertices[3].t = 0;
+	vertices[0].s = 0.0f;
+	vertices[0].t = 0.0f;
+	vertices[1].s = 0.0f;
+	vertices[1].t = 1.0f;
+	vertices[2].s = 1.0f;
+	vertices[2].t = 1.0f;
+	vertices[3].s = 1.0f;
+	vertices[3].t = 0.0f;
 
 	if (flags.mipmaps)
 		filter.mipmap = defaultMipmapFilter;
@@ -231,11 +121,6 @@ void Image::preload()
 bool Image::load()
 {
 	return loadVolatile();
-}
-
-void Image::unload()
-{
-	return unloadVolatile();
 }
 
 void Image::generateMipmaps()
@@ -253,6 +138,20 @@ void Image::generateMipmaps()
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
+}
+
+void Image::loadDefaultTexture()
+{
+	usingDefaultTexture = true;
+
+	bind();
+	setFilter(filter);
+
+	// A nice friendly checkerboard to signify invalid textures...
+	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xC0,0xC0,0xC0,0xFF,
+	                0xC0,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
 void Image::loadTextureFromCompressedData()
@@ -301,7 +200,7 @@ bool Image::loadVolatile()
 		if (image::CompressedData::getConstant(cdata->getFormat(), str))
 		{
 			throw love::Exception("Cannot create image: "
-			      "%s%s compressed images are not supported on this system.", flags.sRGB ? "sRGB " : "", str);
+			                      "%s%s compressed images are not supported on this system.", flags.sRGB ? "sRGB " : "", str);
 		}
 		else
 			throw love::Exception("cannot create image: format is not supported on this system.");
@@ -397,15 +296,14 @@ bool Image::loadVolatile()
 
 void Image::unloadVolatile()
 {
-	// Delete the hardware texture.
-	if (texture != 0)
-	{
-		gl.deleteTexture(texture);
-		texture = 0;
+	if (texture == 0)
+		return;
 
-		gl.updateTextureMemorySize(textureMemorySize, 0);
-		textureMemorySize = 0;
-	}
+	gl.deleteTexture(texture);
+	texture = 0;
+	
+	gl.updateTextureMemorySize(textureMemorySize, 0);
+	textureMemorySize = 0;
 }
 
 bool Image::refresh(int xoffset, int yoffset, int w, int h)
@@ -432,32 +330,22 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 		{
 			thread::Lock lock(data->getMutex());
 			glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, w, h, GL_RGBA,
-							GL_UNSIGNED_BYTE, pdata);
+			                GL_UNSIGNED_BYTE, pdata);
 		}
 
 		generateMipmaps();
 	}
-
+	
 	return true;
 }
 
-const Image::Flags &Image::getFlags() const
+void Image::predraw()
 {
-	return flags;
+	bind();
 }
 
-void Image::loadDefaultTexture()
+void Image::postdraw()
 {
-	usingDefaultTexture = true;
-
-	bind();
-	setFilter(filter);
-
-	// A nice friendly checkerboard to signify invalid textures...
-	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xC0,0xC0,0xC0,0xFF,
-	                0xC0,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
 void Image::drawv(const Matrix &t, const Vertex *v)
@@ -478,8 +366,113 @@ void Image::drawv(const Matrix &t, const Vertex *v)
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);
-
+	
 	postdraw();
+}
+
+void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+{
+	Matrix t;
+	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+
+	drawv(t, vertices);
+}
+
+void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+{
+	Matrix t;
+	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+
+	drawv(t, quad->getVertices());
+}
+
+GLuint Image::getGLTexture() const
+{
+	return texture;
+}
+
+love::image::ImageData *Image::getImageData() const
+{
+	return data.get();
+}
+
+love::image::CompressedData *Image::getCompressedData() const
+{
+	return cdata.get();
+}
+
+void Image::setFilter(const Texture::Filter &f)
+{
+	if (!validateFilter(f, flags.mipmaps))
+	{
+		if (f.mipmap != FILTER_NONE && !flags.mipmaps)
+			throw love::Exception("Non-mipmapped image cannot have mipmap filtering.");
+		else
+			throw love::Exception("Invalid texture filter.");
+	}
+
+	filter = f;
+
+	// We don't want filtering or (attempted) mipmaps on the default texture.
+	if (usingDefaultTexture)
+	{
+		filter.mipmap = FILTER_NONE;
+		filter.min = filter.mag = FILTER_NEAREST;
+	}
+
+	bind();
+	gl.setTextureFilter(filter);
+}
+
+bool Image::setWrap(const Texture::Wrap &w)
+{
+	bool success = true;
+	wrap = w;
+
+	if (hasLimitedNpot() && (width != next_p2(width) || height != next_p2(height)))
+	{
+		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
+			success = false;
+
+		// If we only have limited NPOT support then the wrap mode must be CLAMP.
+		wrap.s = wrap.t = WRAP_CLAMP;
+	}
+
+	bind();
+	gl.setTextureWrap(w);
+
+	return success;
+}
+
+void Image::setMipmapSharpness(float sharpness)
+{
+	// OpenGL ES doesn't support LOD bias via glTexParameter.
+	if (!GLAD_VERSION_1_4)
+		return;
+
+	// LOD bias has the range (-maxbias, maxbias)
+	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
+
+	bind();
+
+	// negative bias is sharper
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
+}
+
+float Image::getMipmapSharpness() const
+{
+	return mipmapSharpness;
+}
+
+void Image::bind() const
+{
+	if (texture != 0)
+		gl.bindTexture(texture);
+}
+
+const Image::Flags &Image::getFlags() const
+{
+	return flags;
 }
 
 void Image::setDefaultMipmapSharpness(float sharpness)

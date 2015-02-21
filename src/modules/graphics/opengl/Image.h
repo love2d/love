@@ -79,13 +79,13 @@ public:
 	 **/
 	Image(love::image::CompressedData *cdata, const Flags &flags);
 
-	/**
-	 * Destructor. Deletes the hardware texture and other resources.
-	 **/
 	virtual ~Image();
 
-	love::image::ImageData *getImageData() const;
-	love::image::CompressedData *getCompressedData() const;
+	bool load();
+
+	// Implements Volatile.
+	bool loadVolatile();
+	void unloadVolatile();
 
 	/**
 	 * @copydoc Drawable::draw()
@@ -107,6 +107,9 @@ public:
 
 	virtual GLuint getGLTexture() const;
 
+	love::image::ImageData *getImageData() const;
+	love::image::CompressedData *getCompressedData() const;
+
 	virtual void setFilter(const Texture::Filter &f);
 	virtual bool setWrap(const Texture::Wrap &w);
 
@@ -119,13 +122,6 @@ public:
 	bool isCompressed() const;
 
 	void bind() const;
-
-	bool load();
-	void unload();
-
-	// Implements Volatile.
-	bool loadVolatile();
-	void unloadVolatile();
 
 	/**
 	 * Re-uploads the ImageData or CompressedData associated with this Image to
