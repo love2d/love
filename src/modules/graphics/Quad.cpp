@@ -33,7 +33,7 @@ Quad::Quad(const Quad::Viewport &v, float sw, float sh)
 	: sw(sw)
 	, sh(sh)
 {
-	memset(vertices, 255, sizeof(Vertex) * NUM_VERTICES);
+	memset(vertices, 255, sizeof(Vertex) * 4);
 	refresh(v, sw, sh);
 }
 

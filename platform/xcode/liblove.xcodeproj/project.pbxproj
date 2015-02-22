@@ -3802,6 +3802,7 @@
 					LOVE_NOMPG123,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
@@ -3843,6 +3844,7 @@
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
@@ -3885,6 +3887,7 @@
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,

@@ -174,7 +174,7 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
-	PHYSFS_addToSearchPath(save_path_full.c_str(), appendToPath);
+	PHYSFS_mount(save_path_full.c_str(), nullptr, appendToPath);
 
 	// HACK: This forces setupWriteDirectory to be called the next time a file
 	// is opened for writing - otherwise it won't be called at all if it was
@@ -199,7 +199,7 @@ bool Filesystem::setSource(const char *source)
 		return false;
 
 	// Add the directory.
-	if (!PHYSFS_addToSearchPath(source, 1))
+	if (!PHYSFS_mount(source, nullptr, 1))
 		return false;
 
 	// Save the game source.
@@ -260,7 +260,7 @@ bool Filesystem::setupWriteDirectory()
 		return false;
 
 	// Add the directory. (Will not be readded if already present).
-	if (!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
+	if (!PHYSFS_mount(save_path_full.c_str(), nullptr, 0))
 	{
 		PHYSFS_setWriteDir(nullptr); // Clear the write directory in case of error.
 		return false;
