@@ -22,10 +22,9 @@
 #include "Image.h"
 #include "Graphics.h"
 #include "common/Matrix.h"
-#include "common/config.h"
 
 #include <cstring> // For memcpy
-#include <limits>
+#include <algorithm> // For min/max
 
 namespace love
 {
