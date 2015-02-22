@@ -102,8 +102,8 @@ Variant::Variant(love::Type udatatype, void *userdata)
 	{
 		Proxy *p = (Proxy *) userdata;
 		flags = p->flags;
-		data.userdata = p->data;
-		((love::Object *) data.userdata)->retain();
+		data.userdata = p->object;
+		p->object->retain();
 	}
 	else
 		data.userdata = userdata;

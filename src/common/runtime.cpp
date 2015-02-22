@@ -42,10 +42,7 @@ namespace love
 static int w__gc(lua_State *L)
 {
 	Proxy *p = (Proxy *) lua_touserdata(L, 1);
-	Object *object = (Object *) p->data;
-
-	object->release();
-
+	p->object->release();
 	return 0;
 }
 
@@ -67,7 +64,7 @@ static int w__eq(lua_State *L)
 {
 	Proxy *p1 = (Proxy *)lua_touserdata(L, 1);
 	Proxy *p2 = (Proxy *)lua_touserdata(L, 2);
-	luax_pushboolean(L, p1->data == p2->data);
+	luax_pushboolean(L, p1->object == p2->object);
 	return 1;
 }
 
@@ -209,7 +206,7 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	luax_insistregistry(L, REGISTRY_MODULES);
 
 	Proxy *p = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
-	p->data = m.module;
+	p->object = m.module;
 	p->flags = m.flags;
 
 	luaL_newmetatable(L, m.module->getName());
@@ -383,7 +380,7 @@ void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *o
 
 	object->retain();
 
-	u->data = (void *) object;
+	u->object = object;
 	u->flags = flags;
 
 	luaL_newmetatable(L, name);

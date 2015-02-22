@@ -65,8 +65,8 @@ struct Proxy
 	// Holds type information (see types.h).
 	bits flags;
 
-	// The light userdata (pointer to the love::Object).
-	void *data;
+	// Pointer to the actual object.
+	Object *object;
 };
 
 /**
@@ -409,7 +409,7 @@ T *luax_checktype(lua_State *L, int idx, const char *name, love::bits type)
 	if ((u->flags & type) != type)
 		luax_typerror(L, idx, name);
 
-	return (T *)u->data;
+	return (T *)u->object;
 }
 
 template <typename T>
@@ -428,7 +428,7 @@ T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 
 	lua_pop(L, 2);
 
-	return (T *)u->data;
+	return (T *)u->object;
 }
 
 template <typename T>
@@ -450,7 +450,7 @@ T *luax_optmodule(lua_State *L, const char *k, love::bits type)
 	
 	lua_pop(L, 2);
 	
-	return (T *) u->data;
+	return (T *) u->object;
 }
 
 /**
@@ -465,7 +465,7 @@ T *luax_optmodule(lua_State *L, const char *k, love::bits type)
 template <typename T>
 T *luax_totype(lua_State *L, int idx, const char * /* name */, love::bits /* type */)
 {
-	return (T *)(((Proxy *)lua_touserdata(L, idx))->data);
+	return (T *)(((Proxy *)lua_touserdata(L, idx))->object);
 }
 
 Type luax_type(lua_State *L, int idx);
