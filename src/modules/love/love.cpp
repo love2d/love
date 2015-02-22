@@ -100,7 +100,7 @@ extern "C"
 #if defined(LOVE_ENABLE_THREAD)
 	extern int luaopen_love_thread(lua_State*);
 #endif
-#if defined(LOVE_ENABLE_THREAD)
+#if defined(LOVE_ENABLE_TOUCH)
 	extern int luaopen_love_touch(lua_State*);
 #endif
 #if defined(LOVE_ENABLE_WINDOW)
@@ -155,7 +155,7 @@ static const luaL_Reg modules[] = {
 #if defined(LOVE_ENABLE_THREAD)
 	{ "love.thread", luaopen_love_thread },
 #endif
-#if defined(LOVE_ENABLE_THREAD)
+#if defined(LOVE_ENABLE_TOUCH)
 	{ "love.touch", luaopen_love_touch },
 #endif
 #if defined(LOVE_ENABLE_WINDOW)
