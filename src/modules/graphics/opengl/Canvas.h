@@ -21,6 +21,7 @@
 #ifndef LOVE_GRAPHICS_OPENGL_CANVAS_H
 #define LOVE_GRAPHICS_OPENGL_CANVAS_H
 
+#include "common/config.h"
 #include "graphics/Color.h"
 #include "image/Image.h"
 #include "image/ImageData.h"
