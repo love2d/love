@@ -122,17 +122,7 @@ bool Joystick::isConnected() const
 
 const char *Joystick::getName() const
 {
-	// Use the saved name if this Joystick isn't connected anymore.
-	if (!isConnected())
-		return name.c_str();
-
-	// Prefer the Joystick name for consistency.
-	const char *joyname = SDL_JoystickName(joyhandle);
-
-	if (!joyname && isGamepad())
-		joyname = SDL_GameControllerName(controller);
-
-	return joyname;
+	return name.c_str();
 }
 
 int Joystick::getAxisCount() const
