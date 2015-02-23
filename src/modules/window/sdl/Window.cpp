@@ -470,24 +470,24 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	updateSettings(f);
 
 	if (gfx != nullptr)
-	{
-		int width = curMode.width;
-		int height = curMode.height;
-		SDL_GL_GetDrawableSize(window, &width, &height);
-
-		gfx->setMode(width, height, curMode.settings.sRGB);
-	}
+		gfx->setMode(curMode.pixelwidth, curMode.pixelheight, curMode.settings.sRGB);
 
 	return true;
 }
 
-bool Window::onWindowResize(int width, int height)
+bool Window::onSizeChanged(int width, int height)
 {
 	if (!window)
 		return false;
 
 	curMode.width = width;
 	curMode.height = height;
+
+	SDL_GL_GetDrawableSize(window, &curMode.pixelwidth, &curMode.pixelheight);
+
+	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr)
+		gfx->setViewportSize(curMode.pixelwidth, curMode.pixelheight);
 
 	return true;
 }
@@ -498,6 +498,7 @@ void Window::updateSettings(const WindowSettings &newsettings)
 
 	// Set the new display mode as the current display mode.
 	SDL_GetWindowSize(window, &curMode.width, &curMode.height);
+	SDL_GL_GetDrawableSize(window, &curMode.pixelwidth, &curMode.pixelheight);
 
 	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
 	{
@@ -604,13 +605,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 		// Update the viewport size now instead of waiting for event polling.
 		graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		if (gfx != nullptr)
-		{
-			int width = curMode.width;
-			int height = curMode.height;
-			SDL_GL_GetDrawableSize(window, &width, &height);
-
-			gfx->setViewportSize(width, height);
-		}
+			gfx->setViewportSize(curMode.pixelwidth, curMode.pixelheight);
 
 		return true;
 	}
@@ -846,31 +841,30 @@ bool Window::isMouseGrabbed() const
 
 void Window::getPixelDimensions(int &w, int &h) const
 {
-	if (window)
-		SDL_GL_GetDrawableSize(window, &w, &h);
-	else
-	{
-		w = curMode.width;
-		h = curMode.height;
-	}
+	w = curMode.pixelwidth;
+	h = curMode.pixelheight;
+}
+
+void Window::windowToPixelCoords(double *x, double *y) const
+{
+	if (x != nullptr)
+		*x = (*x) * ((double) curMode.pixelwidth / (double) curMode.width);
+	if (y != nullptr)
+		*y = (*y) * ((double) curMode.pixelheight / (double) curMode.height);
+}
+
+void Window::pixelToWindowCoords(double *x, double *y) const
+{
+	if (x != nullptr)
+		*x = (*x) * ((double) curMode.width / (double) curMode.pixelwidth);
+	if (y != nullptr)
+		*y = (*y) * ((double) curMode.height / (double) curMode.pixelheight);
 }
 
 double Window::getPixelScale() const
 {
-	double scale = 1.0;
-
-	if (window)
-	{
-		int wheight;
-		SDL_GetWindowSize(window, nullptr, &wheight);
-
-		int dheight = wheight;
-		SDL_GL_GetDrawableSize(window, nullptr, &dheight);
-
-		scale = (double) dheight / wheight;
-	}
-
-	return scale;
+	// TODO: Return the density display metric on Android.
+	return (double) curMode.pixelheight / (double) curMode.height;
 }
 
 double Window::toPixels(double x) const

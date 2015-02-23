@@ -53,7 +53,7 @@ public:
 	Scancode getScancodeFromKey(Key key) const;
 
 	void setTextInput(bool enable);
-	void setTextInput(bool enable, int x, int y, int w, int h);
+	void setTextInput(bool enable, double x, double y, double w, double h);
 	bool hasTextInput() const;
 	bool hasScreenKeyboard() const;
 

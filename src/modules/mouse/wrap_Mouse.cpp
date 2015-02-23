@@ -111,31 +111,31 @@ int w_getY(lua_State *L)
 
 int w_getPosition(lua_State *L)
 {
-	int x, y;
+	double x, y;
 	instance()->getPosition(x, y);
-	lua_pushinteger(L, x);
-	lua_pushinteger(L, y);
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
 	return 2;
 }
 
 int w_setX(lua_State *L)
 {
-	int x = luaL_checkint(L, 1);
+	double x = luaL_checknumber(L, 1);
 	instance()->setX(x);
 	return 0;
 }
 
 int w_setY(lua_State *L)
 {
-	int y = luaL_checkint(L, 1);
+	double y = luaL_checknumber(L, 1);
 	instance()->setY(y);
 	return 0;
 }
 
 int w_setPosition(lua_State *L)
 {
-	int x = luaL_checkint(L, 1);
-	int y = luaL_checkint(L, 2);
+	double x = luaL_checknumber(L, 1);
+	double y = luaL_checknumber(L, 2);
 	instance()->setPosition(x, y);
 	return 0;
 }

@@ -19,6 +19,7 @@
  **/
 
 #include "Keyboard.h"
+#include "window/Window.h"
 
 namespace love
 {
@@ -117,11 +118,18 @@ void Keyboard::setTextInput(bool enable)
 		SDL_StopTextInput();
 }
 
-void Keyboard::setTextInput(bool enable, int x, int y, int w, int h)
+void Keyboard::setTextInput(bool enable, double x, double y, double w, double h)
 {
-	// TODO: SetTextInputRect expects coordinates in window-space, but
-	// setTextInput uses pixels. We should convert here.
-	SDL_Rect rect = {x, y, w, h};
+	// SDL_SetTextInputRect expects coordinates in window-space but setTextInput
+	// takes pixels, so we should convert.
+	window::Window *window = Module::getInstance<window::Window>(M_WINDOW);
+	if (window)
+	{
+		window->pixelToWindowCoords(&x, &y);
+		window->pixelToWindowCoords(&w, &h);
+	}
+
+	SDL_Rect rect = {(int) x, (int) y, (int) w, (int) h};
 	SDL_SetTextInputRect(&rect);
 
 	setTextInput(enable);

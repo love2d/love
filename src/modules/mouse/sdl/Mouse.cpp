@@ -34,25 +34,19 @@ namespace sdl
 
 // SDL reports mouse coordinates in the window coordinate system in OS X, but
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
-static void windowToPixelCoords(int *x, int *y)
+static void windowToPixelCoords(double *x, double *y)
 {
 	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
-
-	if (window && x)
-		*x = (int) window->toPixels(*x);
-	if (window && y)
-		*y = (int) window->toPixels(*y);
+	if (window)
+		window->windowToPixelCoords(x, y);
 }
 
 // And vice versa for setting mouse coordinates.
-static void pixelToWindowCoords(int *x, int *y)
+static void pixelToWindowCoords(double *x, double *y)
 {
 	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
-
-	if (window && x)
-		*x = (int) window->fromPixels(*x);
-	if (window && y)
-		*y = (int) window->fromPixels(*y);
+	if (window)
+		window->pixelToWindowCoords(x, y);
 }
 
 const char *Mouse::getName() const
@@ -118,35 +112,39 @@ bool Mouse::hasCursor() const
 	return SDL_GetDefaultCursor() != nullptr;
 }
 
-int Mouse::getX() const
+double Mouse::getX() const
 {
 	int x;
 	SDL_GetMouseState(&x, nullptr);
-	windowToPixelCoords(&x, nullptr);
 
-	return x;
+	double dx = (double) x;
+	windowToPixelCoords(&dx, nullptr);
+
+	return dx;
 }
 
-int Mouse::getY() const
+double Mouse::getY() const
 {
 	int y;
 	SDL_GetMouseState(nullptr, &y);
-	windowToPixelCoords(nullptr, &y);
 
-	return y;
+	double dy = (double) y;
+	windowToPixelCoords(nullptr, &dy);
+
+	return dy;
 }
 
-void Mouse::getPosition(int &x, int &y) const
+void Mouse::getPosition(double &x, double &y) const
 {
 	int mx, my;
 	SDL_GetMouseState(&mx, &my);
-	windowToPixelCoords(&mx, &my);
 
-	x = mx;
-	y = my;
+	x = (double) mx;
+	y = (double) my;
+	windowToPixelCoords(&x, &y);
 }
 
-void Mouse::setPosition(int x, int y)
+void Mouse::setPosition(double x, double y)
 {
 	love::window::Window *window = love::window::sdl::Window::getSingleton();
 
@@ -155,7 +153,7 @@ void Mouse::setPosition(int x, int y)
 		handle = (SDL_Window *) window->getHandle();
 
 	pixelToWindowCoords(&x, &y);
-	SDL_WarpMouseInWindow(handle, x, y);
+	SDL_WarpMouseInWindow(handle, (int) x, (int) y);
 
 	// SDL_WarpMouse doesn't directly update SDL's internal mouse state in Linux
 	// and Windows, so we call SDL_PumpEvents now to make sure the next
@@ -163,16 +161,14 @@ void Mouse::setPosition(int x, int y)
 	SDL_PumpEvents();
 }
 
-void Mouse::setX(int x)
+void Mouse::setX(double x)
 {
-	int y = getY();
-	setPosition(x, y);
+	setPosition(x, getY());
 }
 
-void Mouse::setY(int y)
+void Mouse::setY(double y)
 {
-	int x = getX();
-	setPosition(x, y);
+	setPosition(getX(), y);
 }
 
 void Mouse::setVisible(bool visible)

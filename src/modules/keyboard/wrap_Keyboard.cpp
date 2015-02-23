@@ -119,10 +119,10 @@ int w_setTextInput(lua_State *L)
 		instance()->setTextInput(enable);
 	else
 	{
-		int x = (int) luaL_checkinteger(L, 2);
-		int y = (int) luaL_checkinteger(L, 3);
-		int w = (int) luaL_checkinteger(L, 4);
-		int h = (int) luaL_checkinteger(L, 5);
+		double x = luaL_checknumber(L, 2);
+		double y = luaL_checknumber(L, 3);
+		double w = luaL_checknumber(L, 4);
+		double h = luaL_checknumber(L, 5);
 		instance()->setTextInput(enable, x, y, w, h);
 	}
 

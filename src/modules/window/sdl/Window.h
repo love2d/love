@@ -47,7 +47,7 @@ public:
 	bool setFullscreen(bool fullscreen, FullscreenType fstype);
 	bool setFullscreen(bool fullscreen);
 
-	bool onWindowResize(int width, int height);
+	bool onSizeChanged(int width, int height);
 
 	int getDisplayCount() const;
 
@@ -85,6 +85,8 @@ public:
 	bool isMouseGrabbed() const;
 
 	void getPixelDimensions(int &w, int &h) const;
+	void windowToPixelCoords(double *x, double *y) const;
+	void pixelToWindowCoords(double *x, double *y) const;
 
 	double getPixelScale() const;
 
@@ -129,6 +131,8 @@ private:
 	{
 		int width  = 800;
 		int height = 600;
+		int pixelwidth = 800;
+		int pixelheight = 600;
 		WindowSettings settings;
 		StrongRef<love::image::ImageData> icon;
 

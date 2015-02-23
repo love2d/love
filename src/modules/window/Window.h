@@ -115,7 +115,7 @@ public:
 	virtual bool setFullscreen(bool fullscreen, FullscreenType fstype) = 0;
 	virtual bool setFullscreen(bool fullscreen) = 0;
 
-	virtual bool onWindowResize(int width, int height) = 0;
+	virtual bool onSizeChanged(int width, int height) = 0;
 
 	virtual int getDisplayCount() const = 0;
 
@@ -154,6 +154,10 @@ public:
 	virtual bool isMouseGrabbed() const = 0;
 
 	virtual void getPixelDimensions(int &w, int &h) const = 0;
+	// Note: window-space coordinates are not necessarily the same as
+	// density-independent units (which toPixels and fromPixels use.)
+	virtual void windowToPixelCoords(double *x, double *y) const = 0;
+	virtual void pixelToWindowCoords(double *x, double *y) const = 0;
 
 	virtual double getPixelScale() const = 0;
 

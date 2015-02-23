@@ -573,7 +573,7 @@ public:
 	 * on the screen the text will appear. This is used as a hint so on-screen
 	 * keyboards don't cover the text area.
 	 **/
-	virtual void setTextInput(bool enable, int x, int y, int w, int h) = 0;
+	virtual void setTextInput(bool enable, double x, double y, double w, double h) = 0;
 
 	/**
 	 * Gets whether text input events are enabled.

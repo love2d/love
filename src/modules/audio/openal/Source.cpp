@@ -771,11 +771,9 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 void Source::setMinVolume(float volume)
 {
 	if (valid)
-	{
 		alSourcef(source, AL_MIN_GAIN, volume);
-	}
 
-	this->minVolume = volume;
+	minVolume = volume;
 }
 
 float Source::getMinVolume() const

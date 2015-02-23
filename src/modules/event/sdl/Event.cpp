@@ -46,11 +46,8 @@ namespace sdl
 static void windowToPixelCoords(double *x, double *y)
 {
 	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
-
-	if (window && x)
-		*x = window->toPixels(*x);
-	if (window && y)
-		*y = window->toPixels(*y);
+	if (window)
+		window->windowToPixelCoords(x, y);
 }
 
 #ifndef LOVE_MACOSX
@@ -547,8 +544,6 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 		msg = new Message("visible", vargs);
 		break;
 	case SDL_WINDOWEVENT_RESIZED:
-		win = Module::getInstance<window::Window>(Module::M_WINDOW);
-		if (win)
 		{
 			int px_w = e.window.data1;
 			int px_h = e.window.data2;
@@ -557,18 +552,17 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 			if (sdlwin)
 				SDL_GL_GetDrawableSize(sdlwin, &px_w, &px_h);
 
-			win->onWindowResize(e.window.data1, e.window.data2);
-
-			graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-			if (gfx)
-				gfx->setViewportSize(px_w, px_h);
-
 			vargs.push_back(new Variant((double) px_w));
 			vargs.push_back(new Variant((double) px_h));
 			vargs.push_back(new Variant((double) e.window.data1));
 			vargs.push_back(new Variant((double) e.window.data2));
 			msg = new Message("resize", vargs);
 		}
+		break;
+	case SDL_WINDOWEVENT_SIZE_CHANGED:
+		win = Module::getInstance<window::Window>(Module::M_WINDOW);
+		if (win)
+			win->onSizeChanged(e.window.data1, e.window.data2);
 		break;
 	}
 

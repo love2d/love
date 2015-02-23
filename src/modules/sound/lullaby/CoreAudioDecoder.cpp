@@ -50,7 +50,7 @@ OSStatus readFunc(void *inClientData, SInt64 inPosition, UInt32 requestCount, vo
 	else
 	{
 		*actualCount = 0;
-		return kAudioFileUnspecifiedError;
+		return kAudioFilePositionError;
 	}
 
 	return noErr;
