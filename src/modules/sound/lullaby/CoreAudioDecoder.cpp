@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifdef LOVE_SUPPORT_CORE_AUDIO
+#ifdef LOVE_SUPPORT_COREAUDIO
 
 // LOVE
 #include "CoreAudioDecoder.h"
@@ -271,4 +271,4 @@ int CoreAudioDecoder::getBitDepth() const
 } // sound
 } // love
 
-#endif // LOVE_SUPPORT_CORE_AUDIO
+#endif // LOVE_SUPPORT_COREAUDIO

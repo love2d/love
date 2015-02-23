@@ -34,7 +34,7 @@
 #	include "Mpg123Decoder.h"
 #endif // LOVE_NOMPG123
 
-#ifdef LOVE_SUPPORT_CORE_AUDIO
+#ifdef LOVE_SUPPORT_COREAUDIO
 #	include "CoreAudioDecoder.h"
 #endif
 
@@ -85,7 +85,7 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	else if (GmeDecoder::accepts(ext))
 		decoder = new GmeDecoder(data, ext, bufferSize);
 #endif // LOVE_SUPPORT_GME
-#ifdef LOVE_SUPPORT_CORE_AUDIO
+#ifdef LOVE_SUPPORT_COREAUDIO
 	else if (CoreAudioDecoder::accepts(ext))
 		decoder = new CoreAudioDecoder(data, ext, bufferSize);
 #endif

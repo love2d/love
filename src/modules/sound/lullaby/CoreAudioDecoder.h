@@ -23,7 +23,7 @@
 
 #include "common/config.h"
 
-#ifdef LOVE_SUPPORT_CORE_AUDIO
+#ifdef LOVE_SUPPORT_COREAUDIO
 
 // LOVE
 #include "common/Data.h"
@@ -76,6 +76,6 @@ private:
 } // sound
 } // love
 
-#endif // LOVE_SUPPORT_CORE_AUDIO
+#endif // LOVE_SUPPORT_COREAUDIO
 
 #endif // LOVE_SOUND_LULLABY_CORE_AUDIO_DECODER_H
