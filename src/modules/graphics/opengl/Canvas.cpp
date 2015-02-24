@@ -520,7 +520,7 @@ bool Canvas::createMSAAFBO(GLenum internalformat)
 	// Create our FBO without a texture.
 	status = strategy->createFBO(fbo, 0);
 
-	GLuint previous = 0;
+	GLuint previous = gl.getDefaultFBO();
 	if (current != this)
 	{
 		if (current != nullptr)
@@ -567,11 +567,8 @@ bool Canvas::loadVolatile()
 		return false;
 	}
 
-	int max_samples = 0;
-	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_EXT_framebuffer_multisample)
-		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
-
-	requested_samples = std::max(std::min(requested_samples, max_samples), 0);
+	requested_samples = std::min(requested_samples, gl.getMaxRenderbufferSamples());
+	requested_samples = std::max(requested_samples, 0);
 
 	glGenTextures(1, &texture);
 	gl.bindTexture(texture);
@@ -596,14 +593,8 @@ bool Canvas::loadVolatile()
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
 
-	glTexImage2D(GL_TEXTURE_2D,
-	             0,
-	             iformat,
-	             width, height,
-	             0,
-	             externalformat,
-	             textype,
-	             nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0,
+	             externalformat, textype, nullptr);
 
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -890,7 +881,7 @@ void Canvas::clear(Color c)
 	if (strategy == &strategyNone)
 		return;
 
-	GLuint previous = 0;
+	GLuint previous = gl.getDefaultFBO();
 
 	if (current != this)
 	{
@@ -1024,12 +1015,12 @@ bool Canvas::resolveMSAA()
 	if (!msaa_dirty)
 		return true;
 
-	GLuint previous = 0;
+	GLuint previous = gl.getDefaultFBO();
 	if (current != nullptr)
 		previous = current->fbo;
 
 	// Do the MSAA resolve by blitting the MSAA renderbuffer to the texture.
-	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolve_fbo);

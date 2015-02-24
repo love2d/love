@@ -38,6 +38,10 @@
 #include <cmath>
 #include <cstdio>
 
+#ifdef LOVE_IOS
+#include <SDL_system.h>
+#endif
+
 namespace love
 {
 namespace graphics
@@ -453,6 +457,12 @@ void Graphics::present()
 		else if (GLAD_EXT_discard_framebuffer)
 			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachments);
 	}
+
+#ifdef LOVE_IOS
+	// Hack: SDL's color renderbuffer needs to be bound when swapBuffers is called.
+	GLuint rbo = SDL_iPhoneGetViewRenderbuffer(SDL_GL_GetCurrentWindow());
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+#endif
 
 	currentWindow->swapBuffers();
 
@@ -1286,13 +1296,7 @@ double Graphics::getSystemLimit(SystemLimit limittype) const
 		limit = (double) gl.getMaxRenderTargets();
 		break;
 	case Graphics::LIMIT_CANVAS_MSAA:
-		if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
-			|| GLAD_EXT_framebuffer_multisample)
-		{
-			GLint intlimit = 0;
-			glGetIntegerv(GL_MAX_SAMPLES, &intlimit);
-			limit = (double) intlimit;
-		}
+		limit = (double) gl.getMaxRenderbufferSamples();
 		break;
 	default:
 		break;

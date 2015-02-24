@@ -310,6 +310,11 @@ public:
 	 **/
 	int getMaxRenderTargets() const;
 
+	/**
+	 * Returns the maximum supported number of MSAA samples for renderbuffers.
+	 **/
+	int getMaxRenderbufferSamples() const;
+
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
 
 	/**
@@ -335,6 +340,7 @@ private:
 	float maxAnisotropy;
 	int maxTextureSize;
 	int maxRenderTargets;
+	int maxRenderbufferSamples;
 
 	Vendor vendor;
 
@@ -357,7 +363,6 @@ private:
 
 		float pointSize;
 
-		GLuint defaultFBO;
 		GLuint defaultTexture;
 
 		BlendState blend;

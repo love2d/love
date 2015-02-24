@@ -36,6 +36,10 @@
 // For SDL_GL_GetProcAddress.
 #include <SDL_video.h>
 
+#ifdef LOVE_IOS
+#include <SDL_system.h>
+#endif
+
 namespace love
 {
 namespace graphics
@@ -49,6 +53,7 @@ OpenGL::OpenGL()
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
 	, maxRenderTargets(0)
+	, maxRenderbufferSamples(0)
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
@@ -123,8 +128,6 @@ void OpenGL::setupContext()
 	}
 
 	glActiveTexture(curgltextureunit);
-
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *) &state.defaultFBO);
 
 	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
 	setBlendState(blend);
@@ -215,6 +218,11 @@ void OpenGL::initMaxValues()
 	}
 
 	maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
+
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_EXT_framebuffer_multisample)
+		glGetIntegerv(GL_MAX_SAMPLES, &maxRenderbufferSamples);
+	else
+		maxRenderbufferSamples = 0;
 }
 
 void OpenGL::initMatrices()
@@ -423,7 +431,12 @@ float OpenGL::getPointSize() const
 
 GLuint OpenGL::getDefaultFBO() const
 {
-	return state.defaultFBO;
+#ifdef LOVE_IOS
+	// Hack: iOS uses a custom FBO.
+	return SDL_iPhoneGetViewFramebuffer(SDL_GL_GetCurrentWindow());
+#else
+	return 0;
+#endif
 }
 
 GLuint OpenGL::getDefaultTexture() const
@@ -558,6 +571,11 @@ int OpenGL::getMaxTextureSize() const
 int OpenGL::getMaxRenderTargets() const
 {
 	return maxRenderTargets;
+}
+
+int OpenGL::getMaxRenderbufferSamples() const
+{
+	return maxRenderbufferSamples;
 }
 
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
