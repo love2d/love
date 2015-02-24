@@ -149,12 +149,11 @@ struct FramebufferStrategyCorePacked : public FramebufferStrategy
 		return true;
 	}
 
-	virtual bool createMSAABuffer(int width, int height, int &samples, GLenum internalformat, GLuint &buffer)
+	virtual bool createMSAABuffer(int width, int height, int &samples, GLenum iformat, GLuint &buffer)
 	{
 		glGenRenderbuffers(1, &buffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, buffer);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalformat,
-		                                 width, height);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, iformat, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 		                          GL_RENDERBUFFER, buffer);
 		glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
@@ -1020,7 +1019,10 @@ bool Canvas::resolveMSAA()
 		previous = current->fbo;
 
 	// Do the MSAA resolve by blitting the MSAA renderbuffer to the texture.
-	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
+	// For many of the extensions that add suffixes to the functions, we assign
+	// function pointers in OpenGL.cpp so we can call the core functions.
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
+		|| GLAD_ANGLE_framebuffer_multisample)
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolve_fbo);
@@ -1033,6 +1035,12 @@ bool Canvas::resolveMSAA()
 		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, resolve_fbo);
 		glBlitFramebufferEXT(0, 0, width, height, 0, 0, width, height,
 							 GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	}
+	else if (GLAD_APPLE_framebuffer_multisample)
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolve_fbo);
+		glResolveMultisampleFramebufferAPPLE();
 	}
 	else
 		return false;

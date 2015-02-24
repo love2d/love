@@ -77,7 +77,7 @@ public:
 		VENDOR_NVIDIA,
 		VENDOR_INTEL,
 		VENDOR_MESA_SOFT, // Software renderer.
-		VENDOR_APPLE,     // Software renderer.
+		VENDOR_APPLE,     // Software renderer on desktops.
 		VENDOR_MICROSOFT, // Software renderer.
 		VENDOR_IMGTEC,
 		VENDOR_ARM,
@@ -353,7 +353,7 @@ private:
 		Color clearColor;
 
 		// Texture unit state (currently bound texture for each texture unit.)
-		std::vector<GLuint> textureUnits;
+		std::vector<GLuint> boundTextures;
 
 		// Currently active texture unit.
 		int curTextureUnit;

@@ -108,12 +108,12 @@ void OpenGL::setupContext()
 		state.pointSize = 1.0f;
 
 	// Initialize multiple texture unit support for shaders.
-	state.textureUnits.clear();
+	state.boundTextures.clear();
 
 	GLint maxtextureunits;
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
 
-	state.textureUnits.resize(maxtextureunits, 0);
+	state.boundTextures.resize(maxtextureunits, 0);
 
 	GLenum curgltextureunit;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
@@ -121,10 +121,10 @@ void OpenGL::setupContext()
 	state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
 
 	// Retrieve currently bound textures for each texture unit.
-	for (int i = 0; i < (int) state.textureUnits.size(); i++)
+	for (int i = 0; i < (int) state.boundTextures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
-		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[i]);
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.boundTextures[i]);
 	}
 
 	glActiveTexture(curgltextureunit);
@@ -176,7 +176,7 @@ void OpenGL::initVendor()
 		vendor = VENDOR_INTEL;
 	else if (strstr(vstr, "Mesa"))
 		vendor = VENDOR_MESA_SOFT;
-	else if (strstr(vstr, "Apple Computer"))
+	else if (strstr(vstr, "Apple Computer") || strstr(vstr, "Apple Inc."))
 		vendor = VENDOR_APPLE;
 	else if (strstr(vstr, "Microsoft"))
 		vendor = VENDOR_MICROSOFT;
@@ -196,6 +196,18 @@ void OpenGL::initVendor()
 
 void OpenGL::initOpenGLFunctions()
 {
+	if (!(GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
+	{
+		// There are like 100 different suffixed versions of glRenderbufferStorageMultisample,
+		// so we'll just assign all the ones we use to the core function pointer.
+		if (GLAD_APPLE_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = (pfn_glRenderbufferStorageMultisample) fp_glRenderbufferStorageMultisampleAPPLE;
+		else if (GLAD_ANGLE_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = (pfn_glRenderbufferStorageMultisample) fp_glRenderbufferStorageMultisampleANGLE;
+
+		if (GLAD_ANGLE_framebuffer_blit)
+			fp_glBlitFramebuffer = (pfn_glBlitFramebuffer) fp_glBlitFramebufferANGLE;
+	}
 }
 
 void OpenGL::initMaxValues()
@@ -219,8 +231,12 @@ void OpenGL::initMaxValues()
 
 	maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
 
-	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_EXT_framebuffer_multisample)
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
+		|| GLAD_EXT_framebuffer_multisample || GLAD_APPLE_framebuffer_multisample
+		|| GLAD_ANGLE_framebuffer_multisample)
+	{
 		glGetIntegerv(GL_MAX_SAMPLES, &maxRenderbufferSamples);
+	}
 	else
 		maxRenderbufferSamples = 0;
 }
@@ -241,7 +257,7 @@ void OpenGL::createDefaultTexture()
 	// primitives, which would create the need to use different "passthrough"
 	// shaders for untextured primitives vs images.
 
-	GLuint curtexture = state.textureUnits[state.curTextureUnit];
+	GLuint curtexture = state.boundTextures[state.curTextureUnit];
 
 	glGenTextures(1, &state.defaultTexture);
 	bindTexture(state.defaultTexture);
@@ -446,7 +462,7 @@ GLuint OpenGL::getDefaultTexture() const
 
 void OpenGL::setTextureUnit(int textureunit)
 {
-	if (textureunit < 0 || (size_t) textureunit >= state.textureUnits.size())
+	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
 		throw love::Exception("Invalid texture unit index (%d).", textureunit);
 
 	if (textureunit != state.curTextureUnit)
@@ -457,24 +473,24 @@ void OpenGL::setTextureUnit(int textureunit)
 
 void OpenGL::bindTexture(GLuint texture)
 {
-	if (texture != state.textureUnits[state.curTextureUnit])
+	if (texture != state.boundTextures[state.curTextureUnit])
 	{
-		state.textureUnits[state.curTextureUnit] = texture;
+		state.boundTextures[state.curTextureUnit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 }
 
 void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 {
-	if (textureunit < 0 || (size_t) textureunit >= state.textureUnits.size())
+	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
 		throw love::Exception("Invalid texture unit index.");
 
-	if (texture != state.textureUnits[textureunit])
+	if (texture != state.boundTextures[textureunit])
 	{
 		int oldtextureunit = state.curTextureUnit;
 		setTextureUnit(textureunit);
 
-		state.textureUnits[textureunit] = texture;
+		state.boundTextures[textureunit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 		if (restoreprev)
@@ -486,7 +502,7 @@ void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture
 	// was bound to before deletion.
-	for (GLuint &texid : state.textureUnits)
+	for (GLuint &texid : state.boundTextures)
 	{
 		if (texid == texture)
 			texid = 0;
