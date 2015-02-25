@@ -52,7 +52,7 @@ extern "C"
 // systems is less mediocre?
 LOVE_EXPORT DWORD NvOptimusEnablement = 0x00000001;
 }
-#endif
+#endif // LOVE_WINDOWS
 
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 
