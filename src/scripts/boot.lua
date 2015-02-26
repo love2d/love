@@ -211,7 +211,7 @@ function love.createhandlers()
 		joystickadded = function (j)
 			if love.joystickadded then return love.joystickadded(j) end
 		end,
-		joystickremoved = function(j)
+		joystickremoved = function (j)
 			if love.joystickremoved then return love.joystickremoved(j) end
 		end,
 		focus = function (f)
@@ -229,7 +229,7 @@ function love.createhandlers()
 		threaderror = function (t, err)
 			if love.threaderror then return love.threaderror(t, err) end
 		end,
-		resize = function(w, h)
+		resize = function (w, h)
 			if love.resize then return love.resize(w, h) end
 		end,
 		filedropped = function (f)
@@ -237,6 +237,10 @@ function love.createhandlers()
 		end,
 		directorydropped = function (dir)
 			if love.directorydropped then return love.directorydropped(dir) end
+		end,
+		lowmemory = function ()
+			collectgarbage()
+			if love.lowmemory then return love.lowmemory() end
 		end,
 	}, {
 		__index = function(self, name)
