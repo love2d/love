@@ -768,6 +768,11 @@ void Canvas::setupGrab()
 
 	if (msaa_buffer != 0)
 		msaa_dirty = true;
+
+	// We discard the stencil buffer in stopGrab, so we should clear it here
+	// to prevent the discarded (invalid) contents from being accidentally used.
+	if (depth_stencil != 0 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer))
+		glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)
