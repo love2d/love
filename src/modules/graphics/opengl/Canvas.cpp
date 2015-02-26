@@ -955,7 +955,7 @@ bool Canvas::checkCreateStencil()
 	return success;
 }
 
-love::image::ImageData *Canvas::getImageData(love::image::Image *image, int x, int y, int w, int h)
+love::image::ImageData *Canvas::newImageData(love::image::Image *image, int x, int y, int w, int h)
 {
 	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > width || (y + h) > height)
 		throw love::Exception("Invalid ImageData rectangle dimensions.");

@@ -62,7 +62,7 @@ int w_Canvas_renderTo(lua_State *L)
 	return 0;
 }
 
-int w_Canvas_getImageData(lua_State *L)
+int w_Canvas_newImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
@@ -71,7 +71,7 @@ int w_Canvas_getImageData(lua_State *L)
 	int w = luaL_optint(L, 4, canvas->getWidth());
 	int h = luaL_optint(L, 5, canvas->getHeight());
 
-	love::image::ImageData *img = canvas->getImageData(image, x, y, w, h);
+	love::image::ImageData *img = canvas->newImageData(image, x, y, w, h);
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, img);
 	img->release();
 	return 1;
@@ -140,7 +140,7 @@ static const luaL_Reg functions[] =
 	{ "getWrap", w_Texture_getWrap },
 
 	{ "renderTo", w_Canvas_renderTo },
-	{ "getImageData", w_Canvas_getImageData },
+	{ "newImageData", w_Canvas_newImageData },
 	{ "clear", w_Canvas_clear },
 	{ "getFormat", w_Canvas_getFormat },
 	{ "getMSAA", w_Canvas_getMSAA },

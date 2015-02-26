@@ -91,7 +91,7 @@ public:
 	 **/
 	bool checkCreateStencil();
 
-	love::image::ImageData *getImageData(love::image::Image *image, int x, int y, int w, int h);
+	love::image::ImageData *newImageData(love::image::Image *image, int x, int y, int w, int h);
 
 	inline const std::vector<Canvas *> &getAttachedCanvases() const
 	{
