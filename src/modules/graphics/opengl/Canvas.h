@@ -113,8 +113,6 @@ public:
 		return actual_samples;
 	}
 
-	bool resolveMSAA();
-
 	static bool isSupported();
 	static bool isMultiCanvasSupported();
 	static bool isFormatSupported(Format format);
@@ -127,7 +125,6 @@ public:
 	// Whether the main screen should have linear -> sRGB conversions enabled.
 	static bool screenHasSRGB;
 
-	static int switchCount;
 	static int canvasCount;
 
 	static bool getConstant(const char *in, Format &out);
@@ -136,6 +133,7 @@ public:
 private:
 
 	bool createMSAAFBO(GLenum internalformat);
+	bool resolveMSAA(bool restoreprev);
 
 	static Format getSizedFormat(Format format);
 	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);
@@ -156,7 +154,6 @@ private:
 
 	int requested_samples;
 	int actual_samples;
-	bool msaa_dirty;
 
 	size_t texture_memory;
 

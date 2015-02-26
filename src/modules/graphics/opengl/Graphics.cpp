@@ -471,7 +471,7 @@ void Graphics::present()
 
 	// Reset the per-frame stat counts.
 	gl.stats.drawCalls = 0;
-	Canvas::switchCount = 0;
+	gl.stats.framebufferBinds = 0;
 }
 
 int Graphics::getWidth() const
@@ -1267,7 +1267,7 @@ Graphics::Stats Graphics::getStats() const
 	Stats stats;
 
 	stats.drawCalls = gl.stats.drawCalls;
-	stats.canvasSwitches = Canvas::switchCount;
+	stats.canvasSwitches = gl.stats.framebufferBinds;
 	stats.canvases = Canvas::canvasCount;
 	stats.images = Image::imageCount;
 	stats.fonts = Font::fontCount;

@@ -148,6 +148,7 @@ public:
 	{
 		size_t textureMemory;
 		int    drawCalls;
+		int    framebufferBinds;
 	} stats;
 
 	OpenGL();
@@ -249,6 +250,11 @@ public:
 	 * Gets the global point size.
 	 **/
 	float getPointSize() const;
+
+	/**
+	 * Binds a Framebuffer Object to the specified target.
+	 **/
+	void bindFramebuffer(GLenum target, GLuint framebuffer);
 
 	/**
 	 * This will usually be 0 (system drawable), but some platforms require a

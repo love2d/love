@@ -196,17 +196,42 @@ void OpenGL::initVendor()
 
 void OpenGL::initOpenGLFunctions()
 {
+	// Alias extension-suffixed framebuffer functions to core versions since
+	// there are so many different-named extensions that do the same things...
 	if (!(GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 	{
-		// There are like 100 different suffixed versions of glRenderbufferStorageMultisample,
-		// so we'll just assign all the ones we use to the core function pointer.
-		if (GLAD_APPLE_framebuffer_multisample)
-			fp_glRenderbufferStorageMultisample = (pfn_glRenderbufferStorageMultisample) fp_glRenderbufferStorageMultisampleAPPLE;
-		else if (GLAD_ANGLE_framebuffer_multisample)
-			fp_glRenderbufferStorageMultisample = (pfn_glRenderbufferStorageMultisample) fp_glRenderbufferStorageMultisampleANGLE;
+		if (GLAD_VERSION_1_0 && GLAD_EXT_framebuffer_object)
+		{
+			fp_glBindRenderbuffer = fp_glBindRenderbufferEXT;
+			fp_glDeleteRenderbuffers = fp_glDeleteRenderbuffersEXT;
+			fp_glGenRenderbuffers = fp_glGenRenderbuffersEXT;
+			fp_glRenderbufferStorage = fp_glRenderbufferStorageEXT;
+			fp_glGetRenderbufferParameteriv = fp_glGetRenderbufferParameterivEXT;
+			fp_glBindFramebuffer = fp_glBindFramebufferEXT;
+			fp_glDeleteFramebuffers = fp_glDeleteFramebuffersEXT;
+			fp_glGenFramebuffers = fp_glGenFramebuffersEXT;
+			fp_glCheckFramebufferStatus = fp_glCheckFramebufferStatusEXT;
+			fp_glFramebufferTexture2D = fp_glFramebufferTexture2DEXT;
+			fp_glFramebufferRenderbuffer = fp_glFramebufferRenderbufferEXT;
+			fp_glGetFramebufferAttachmentParameteriv = fp_glGetFramebufferAttachmentParameterivEXT;
+			fp_glGenerateMipmap = fp_glGenerateMipmapEXT;
+		}
 
-		if (GLAD_ANGLE_framebuffer_blit)
-			fp_glBlitFramebuffer = (pfn_glBlitFramebuffer) fp_glBlitFramebufferANGLE;
+		if (GLAD_EXT_framebuffer_blit)
+			fp_glBlitFramebuffer = fp_glBlitFramebufferEXT;
+		else if (GLAD_ANGLE_framebuffer_blit)
+			fp_glBlitFramebuffer = fp_glBlitFramebufferANGLE;
+		else if (GLAD_NV_framebuffer_blit)
+			fp_glBlitFramebuffer = fp_glBlitFramebufferNV;
+
+		if (GLAD_EXT_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleEXT;
+		else if (GLAD_APPLE_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleAPPLE;
+		else if (GLAD_ANGLE_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleANGLE;
+		else if (GLAD_NV_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleNV;
 	}
 }
 
@@ -297,17 +322,6 @@ void OpenGL::prepareDraw()
 		// Make sure the active shader has the correct values for its
 		// love-provided uniforms.
 		shader->checkSetScreenParams();
-
-		// We need to make sure antialiased Canvases are properly resolved
-		// before sampling from their textures in a shader.
-		// This is kind of a big hack. :(
-		for (auto &r : shader->getBoundRetainables())
-		{
-			// Even bigger hack! D:
-			Canvas *canvas = dynamic_cast<Canvas *>(r.second);
-			if (canvas != nullptr)
-				canvas->resolveMSAA();
-		}
 	}
 
 	const Matrix &curproj = matrices.projection.back();
@@ -443,6 +457,12 @@ void OpenGL::setPointSize(float size)
 float OpenGL::getPointSize() const
 {
 	return state.pointSize;
+}
+
+void OpenGL::bindFramebuffer(GLenum target, GLuint framebuffer)
+{
+	glBindFramebuffer(target, framebuffer);
+	++stats.framebufferBinds;
 }
 
 GLuint OpenGL::getDefaultFBO() const
