@@ -955,13 +955,24 @@ bool Canvas::checkCreateStencil()
 	return success;
 }
 
-love::image::ImageData *Canvas::getImageData(love::image::Image *image)
+love::image::ImageData *Canvas::getImageData(love::image::Image *image, int x, int y, int w, int h)
 {
+	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > width || (y + h) > height)
+		throw love::Exception("Invalid ImageData rectangle dimensions.");
+
 	resolveMSAA();
 
-	int row = 4 * width;
-	int size = row * height;
-	GLubyte *pixels  = new GLubyte[size];
+	int row = 4 * w;
+	int size = row * h;
+	GLubyte *pixels = nullptr;
+	try
+	{
+		pixels = new GLubyte[size];
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
 
 	// Our texture is attached to 'resolve_fbo' when we use MSAA.
 	if (resolve_fbo != 0 && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
@@ -971,7 +982,7 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 	else
 		strategy->bindFBO(fbo);
 
-	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	if (current)
 		strategy->bindFBO(current->fbo);
@@ -979,31 +990,7 @@ love::image::ImageData *Canvas::getImageData(love::image::Image *image)
 		strategy->bindFBO(gl.getDefaultFBO());
 
 	// The new ImageData now owns the pixel data, so we don't delete it here.
-	love::image::ImageData *img = image->newImageData(width, height, (void *)pixels, true);
-	return img;
-}
-
-void Canvas::getPixel(unsigned char* pixel_rgba, int x, int y)
-{
-	if (x < 0 || x >= width || y < 0 || y >= width)
-		throw love::Exception("Attempt to get out-of-range pixel (%d,%d)!", x, y);
-
-	resolveMSAA();
-
-	// Our texture is attached to 'resolve_fbo' when we use MSAA.
-	if (resolve_fbo != 0 && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
-	else if (resolve_fbo != 0 && GLAD_EXT_framebuffer_multisample)
-		glBindFramebufferEXT(GL_READ_FRAMEBUFFER, resolve_fbo);
-	else if (current != this)
-		strategy->bindFBO(fbo);
-
-	glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_rgba);
-
-	if (current && current != this)
-		strategy->bindFBO(current->fbo);
-	else if (!current)
-		strategy->bindFBO(gl.getDefaultFBO());
+	return image->newImageData(w, h, pixels, true);
 }
 
 bool Canvas::resolveMSAA()

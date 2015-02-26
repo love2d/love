@@ -66,26 +66,15 @@ int w_Canvas_getImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
-	love::image::ImageData *img = canvas->getImageData(image);
+	int x = luaL_optint(L, 2, 0);
+	int y = luaL_optint(L, 3, 0);
+	int w = luaL_optint(L, 4, canvas->getWidth());
+	int h = luaL_optint(L, 5, canvas->getHeight());
+
+	love::image::ImageData *img = canvas->getImageData(image, x, y, w, h);
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, img);
 	img->release();
 	return 1;
-}
-
-int w_Canvas_getPixel(lua_State * L)
-{
-	Canvas * canvas = luax_checkcanvas(L, 1);
-	int x = luaL_checkint(L, 2);
-	int y = luaL_checkint(L, 3);
-	unsigned char c[4];
-
-	luax_catchexcept(L, [&](){ canvas->getPixel(c, x, y); });
-
-	lua_pushnumber(L, c[0]);
-	lua_pushnumber(L, c[1]);
-	lua_pushnumber(L, c[2]);
-	lua_pushnumber(L, c[3]);
-	return 4;
 }
 
 int w_Canvas_clear(lua_State *L)
@@ -152,7 +141,6 @@ static const luaL_Reg functions[] =
 
 	{ "renderTo", w_Canvas_renderTo },
 	{ "getImageData", w_Canvas_getImageData },
-	{ "getPixel", w_Canvas_getPixel },
 	{ "clear", w_Canvas_clear },
 	{ "getFormat", w_Canvas_getFormat },
 	{ "getMSAA", w_Canvas_getMSAA },
