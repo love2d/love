@@ -77,38 +77,6 @@ int w_Canvas_newImageData(lua_State *L)
 	return 1;
 }
 
-int w_Canvas_clear(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	Color c;
-	if (lua_isnoneornil(L, 2))
-	{
-		c.set(0, 0, 0, 0);
-	}
-	else if (lua_istable(L, 2))
-	{
-		for (int i = 1; i <= 4; i++)
-			lua_rawgeti(L, 2, i);
-
-		c.r = (unsigned char)luaL_checkinteger(L, -4);
-		c.g = (unsigned char)luaL_checkinteger(L, -3);
-		c.b = (unsigned char)luaL_checkinteger(L, -2);
-		c.a = (unsigned char)luaL_optinteger(L, -1, 255);
-
-		lua_pop(L, 4);
-	}
-	else
-	{
-		c.r = (unsigned char)luaL_checkinteger(L, 2);
-		c.g = (unsigned char)luaL_checkinteger(L, 3);
-		c.b = (unsigned char)luaL_checkinteger(L, 4);
-		c.a = (unsigned char)luaL_optinteger(L, 5, 255);
-	}
-	canvas->clear(c);
-
-	return 0;
-}
-
 int w_Canvas_getFormat(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
@@ -141,7 +109,6 @@ static const luaL_Reg functions[] =
 
 	{ "renderTo", w_Canvas_renderTo },
 	{ "newImageData", w_Canvas_newImageData },
-	{ "clear", w_Canvas_clear },
 	{ "getFormat", w_Canvas_getFormat },
 	{ "getMSAA", w_Canvas_getMSAA },
 	{ 0, 0 }

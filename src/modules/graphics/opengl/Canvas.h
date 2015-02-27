@@ -84,8 +84,6 @@ public:
 	void startGrab();
 	void stopGrab(bool switchingToOtherCanvas = false);
 
-	void clear(Color c);
-
 	/**
 	 * Create and attach a stencil buffer to this Canvas' framebuffer, if necessary.
 	 **/
@@ -132,8 +130,12 @@ public:
 
 private:
 
+	void setupGrab();
+
 	bool createMSAAFBO(GLenum internalformat);
 	bool resolveMSAA(bool restoreprev);
+
+	void drawv(const Matrix &t, const Vertex *v);
 
 	static Format getSizedFormat(Format format);
 	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);
@@ -156,9 +158,6 @@ private:
 	int actual_samples;
 
 	size_t texture_memory;
-
-	void setupGrab();
-	void drawv(const Matrix &t, const Vertex *v);
 
 	static bool supportedFormats[FORMAT_MAX_ENUM];
 	static bool checkedFormats[FORMAT_MAX_ENUM];

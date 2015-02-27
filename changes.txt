@@ -10,7 +10,6 @@ Released: N/A
   * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
   * Added love.graphics.getSystemLimits (replaces love.graphics.getSystemLimit.)
   * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
-  * Added optional type argument to love.graphics.clear. Current type enums are "all" (the default) and "stencil".
   * Added optional x/y/width/height arguments to Image:refresh.
   * Added support for OpenGL ES.
   * Added support for loading ETC1/2, EAC, and PVRTC compressed textures.

@@ -43,7 +43,13 @@ static GLenum createFBO(GLuint &framebuffer, GLuint texture)
 	gl.bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
 	if (texture != 0)
+	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+		// Initialize the texture to transparent black.
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
@@ -67,7 +73,13 @@ static GLenum createMSAABuffer(int width, int height, int &samples, GLenum iform
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-	if (status != GL_FRAMEBUFFER_COMPLETE)
+	if (status == GL_FRAMEBUFFER_COMPLETE)
+	{
+		// Initialize the buffer to transparent black.
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+	else
 	{
 		glDeleteRenderbuffers(1, &buffer);
 		buffer = 0;
@@ -246,8 +258,6 @@ bool Canvas::loadVolatile()
 		return false;
     }
 
-	clear(Color(0, 0, 0, 0));
-
 	size_t prevmemsize = texture_memory;
 
 	texture_memory = (getFormatBitsPerPixel(format) * width * height) / 8;
@@ -393,11 +403,6 @@ void Canvas::setupGrab()
 		else if (screenHasSRGB)
 			glDisable(GL_FRAMEBUFFER_SRGB);
 	}
-
-	// We discard the stencil buffer in stopGrab, so we should clear it here
-	// to prevent the discarded (invalid) contents from being accidentally used.
-	if (depth_stencil != 0 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer))
-		glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)
@@ -482,17 +487,6 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	if (current != this)
 		return;
 
-	if (depth_stencil != 0)
-	{
-		GLenum attachments[] = {GL_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT};
-
-		// Hint for the driver that it doesn't need to save these buffers.
-		if (GLAD_ES_VERSION_3_0)
-			glInvalidateFramebuffer(GL_FRAMEBUFFER, 2, attachments);
-		else if (GLAD_EXT_discard_framebuffer)
-			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachments);
-	}
-
 	// Make sure the canvas texture is up to date if we're using MSAA.
 	resolveMSAA(false);
 
@@ -520,70 +514,6 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 			else if (format != FORMAT_SRGB && screenHasSRGB)
 				glEnable(GL_FRAMEBUFFER_SRGB);
 		}
-	}
-}
-
-void Canvas::clear(Color c)
-{
-	GLuint previous = gl.getDefaultFBO();
-
-	if (current != this)
-	{
-		if (current != nullptr)
-			previous = current->fbo;
-
-		gl.bindFramebuffer(GL_FRAMEBUFFER, fbo);
-	}
-
-	GLfloat glcolor[] = {c.r/255.f, c.g/255.f, c.b/255.f, c.a/255.f};
-
-	// We don't need to worry about multiple FBO attachments or global clear
-	// color state when OpenGL 3.0+ is supported.
-	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
-	{
-		glClearBufferfv(GL_COLOR, 0, glcolor);
-
-		if (depth_stencil != 0)
-		{
-			GLint stencilvalue = 0;
-			glClearBufferiv(GL_STENCIL, 0, &stencilvalue);
-		}
-	}
-	else
-	{
-		// glClear will clear all active draw buffers, so should make sure only
-		// the draw buffer corresponding to our canvas' texture is active.
-		if (attachedCanvases.size() > 0)
-			glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-		// Don't use the state-shadowed gl.setClearColor because we want to save
-		// the previous clear color.
-		glClearColor(glcolor[0], glcolor[1], glcolor[2], glcolor[3]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Restore the draw buffers for rendering to multiple textures.
-		if (attachedCanvases.size() > 0)
-		{
-			std::vector<GLenum> drawbuffers;
-			drawbuffers.reserve(attachedCanvases.size() + 1);
-
-			for (int i = 0; i < (int) attachedCanvases.size() + 1; i++)
-				drawbuffers.push_back(GL_COLOR_ATTACHMENT0 + i);
-
-			glDrawBuffers((GLsizei) drawbuffers.size(), &drawbuffers[0]);
-		}
-
-		// Restore the global clear color.
-		gl.setClearColor(gl.getClearColor());
-	}
-
-	if (current != this)
-	{
-		// If we're not the active canvas, we need to do a MSAA resolve after
-		// clearing the FBO since the resolve texture might be used afterward.
-		resolveMSAA(false);
-
-		gl.bindFramebuffer(GL_FRAMEBUFFER, previous);
 	}
 }
 
@@ -624,7 +554,7 @@ bool Canvas::checkCreateStencil()
 
 	// We don't want the stencil buffer filled with garbage.
 	if (success)
-		glClear(GL_STENCIL_BUFFER_BIT);
+		glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	else
 	{
 		glDeleteRenderbuffers(1, &depth_stencil);

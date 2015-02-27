@@ -81,9 +81,9 @@ public:
 	void reset();
 
 	/**
-	 * Clears the screen.
+	 * Clears the screen to a specific color.
 	 **/
-	void clear(ClearType type = CLEAR_ALL);
+	void clear(Color c);
 
 	/**
 	 * Flips buffers. (Rendered geometry is presented on screen).

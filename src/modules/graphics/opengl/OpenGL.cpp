@@ -87,13 +87,6 @@ void OpenGL::setupContext()
 	GLfloat glcolor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
 
-	// Get the current clear color so we don't have to get it through GL later.
-	glGetFloatv(GL_COLOR_CLEAR_VALUE, glcolor);
-	state.clearColor.r = glcolor[0] * 255;
-	state.clearColor.g = glcolor[1] * 255;
-	state.clearColor.b = glcolor[2] * 255;
-	state.clearColor.a = glcolor[3] * 255;
-
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
 
@@ -385,17 +378,6 @@ void OpenGL::setColor(const Color &c)
 Color OpenGL::getColor() const
 {
 	return state.color;
-}
-
-void OpenGL::setClearColor(const Color &c)
-{
-	glClearColor(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
-	state.clearColor = c;
-}
-
-Color OpenGL::getClearColor() const
-{
-	return state.clearColor;
 }
 
 void OpenGL::setViewport(const OpenGL::Viewport &v)

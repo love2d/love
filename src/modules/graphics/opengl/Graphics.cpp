@@ -158,14 +158,19 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	setFont(s.font.get());
 	setShader(s.shader.get());
 
+	bool canvaseschanged = s.canvases.size() != cur.canvases.size();
+
 	for (size_t i = 0; i < s.canvases.size() && i < cur.canvases.size(); i++)
 	{
 		if (s.canvases[i].get() != cur.canvases[i].get())
 		{
-			setCanvas(s.canvases);
+			canvaseschanged = true;
 			break;
 		}
 	}
+
+	if (canvaseschanged)
+		setCanvas(s.canvases);
 
 	if (s.colorMask != cur.colorMask)
 		setColorMask(s.colorMask);
@@ -413,22 +418,10 @@ void Graphics::reset()
 	origin();
 }
 
-void Graphics::clear(ClearType type)
+void Graphics::clear(Color c)
 {
-	GLbitfield mask = 0;
-
-	switch (type)
-	{
-	case CLEAR_ALL:
-	default:
-		mask = GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-		break;
-	case CLEAR_STENCIL:
-		mask = GL_STENCIL_BUFFER_BIT;
-		break;
-	}
-
-	glClear(mask);
+	glClearColor(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Graphics::present()
@@ -751,7 +744,6 @@ Color Graphics::getColor() const
 
 void Graphics::setBackgroundColor(const Color &c)
 {
-	gl.setClearColor(c);
 	states.back().backgroundColor = c;
 }
 

@@ -199,16 +199,6 @@ public:
 	Color getColor() const;
 
 	/**
-	 * Sets the current clear color for all framebuffer objects.
-	 **/
-	void setClearColor(const Color &c);
-
-	/**
-	 * Gets the current clear color.
-	 **/
-	Color getClearColor() const;
-
-	/**
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
 	 * The y-coordinate starts at the top.
 	 **/
@@ -355,8 +345,6 @@ private:
 	{
 		// Current constant color.
 		Color color;
-
-		Color clearColor;
 
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> boundTextures;

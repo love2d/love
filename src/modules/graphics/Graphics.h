@@ -101,13 +101,6 @@ public:
 		STACK_MAX_ENUM
 	};
 
-	enum ClearType
-	{
-		CLEAR_ALL,
-		CLEAR_STENCIL,
-		CLEAR_MAX_ENUM
-	};
-
 	enum StatType
 	{
 		STAT_DRAW_CALLS,
@@ -213,9 +206,6 @@ public:
 	static bool getConstant(const char *in, StackType &out);
 	static bool getConstant(StackType in, const char *&out);
 
-	static bool getConstant(const char *in, ClearType &out);
-	static bool getConstant(ClearType in, const char *&out);
-
 	static bool getConstant(const char *in, StatType &out);
 	static bool getConstant(StatType in, const char *&out);
 
@@ -241,9 +231,6 @@ private:
 
 	static StringMap<StackType, STACK_MAX_ENUM>::Entry stackTypeEntries[];
 	static StringMap<StackType, STACK_MAX_ENUM> stackTypes;
-
-	static StringMap<ClearType, CLEAR_MAX_ENUM>::Entry clearTypeEntries[];
-	static StringMap<ClearType, CLEAR_MAX_ENUM> clearTypes;
 
 	static StringMap<StatType, STAT_MAX_ENUM>::Entry statTypeEntries[];
 	static StringMap<StatType, STAT_MAX_ENUM> statTypes;

@@ -526,7 +526,7 @@ function love.run()
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 
 		if love.graphics and love.graphics.isActive() then
-			love.graphics.clear()
+			love.graphics.clear(love.graphics.getBackgroundColor())
 			love.graphics.origin()
 			if love.draw then love.draw() end
 			love.graphics.present()

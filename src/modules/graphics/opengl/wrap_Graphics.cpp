@@ -47,13 +47,17 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	Graphics::ClearType type = Graphics::CLEAR_ALL;
+	Color color(0, 0, 0, 0);
 
-	const char *tname = lua_isnoneornil(L, 1) ? nullptr : luaL_checkstring(L, 1);
-	if (tname && !Graphics::getConstant(tname, type))
-		return luaL_error(L, "Invalid graphics clear type: %s", tname);
+	if (!lua_isnoneornil(L, 1))
+	{
+		color.r = (unsigned char) luaL_checkinteger(L, 1);
+		color.g = (unsigned char) luaL_checkinteger(L, 2);
+		color.b = (unsigned char) luaL_checkinteger(L, 3);
+		color.a = (unsigned char) luaL_optinteger(L, 4, 255);
+	}
 
-	instance()->clear(type);
+	instance()->clear(color);
 	return 0;
 }
 
