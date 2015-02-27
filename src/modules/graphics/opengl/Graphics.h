@@ -139,6 +139,11 @@ public:
 	void getStencilTest(bool &enable, bool &invert);
 
 	/**
+	 * Clear the stencil buffer in the active Canvas(es.)
+	 **/
+	void clearStencil();
+
+	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
 	Image *newImage(love::image::ImageData *data, const Image::Flags &flags);

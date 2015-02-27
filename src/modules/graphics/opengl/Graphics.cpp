@@ -575,6 +575,11 @@ void Graphics::getStencilTest(bool &enable, bool &invert)
 	invert = state.stencilInvert;
 }
 
+void Graphics::clearStencil()
+{
+	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 Image *Graphics::newImage(love::image::ImageData *data, const Image::Flags &flags)
 {
 	// Create the image.

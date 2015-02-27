@@ -53,6 +53,7 @@ int w_getScissor(lua_State *L);
 int w_stencil(lua_State *L);
 int w_setStencilTest(lua_State *L);
 int w_getStencilTest(lua_State *L);
+int w_clearStencil(lua_State *L);
 int w_newImage(lua_State *L);
 int w_newQuad(lua_State *L);
 int w_newFont(lua_State *L);

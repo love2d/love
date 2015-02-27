@@ -166,6 +166,12 @@ int w_getStencilTest(lua_State *L)
 	return 2;
 }
 
+int w_clearStencil(lua_State* /*L*/)
+{
+	instance()->clearStencil();
+	return 0;
+}
+
 static const char *imageFlagName(Image::FlagType flagtype)
 {
 	const char *name = nullptr;
@@ -1531,6 +1537,7 @@ static const luaL_Reg functions[] =
 	{ "stencil", w_stencil },
 	{ "setStencilTest", w_setStencilTest },
 	{ "getStencilTest", w_getStencilTest },
+	{ "clearStencil", w_clearStencil },
 
 	{ "point", w_point },
 	{ "line", w_line },
