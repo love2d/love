@@ -424,6 +424,49 @@ void Graphics::clear(Color c)
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void Graphics::discard(bool color, bool stencil)
+{
+	if (!(GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer))
+		return;
+
+	std::vector<GLenum> attachments;
+	attachments.reserve(3);
+
+	// glDiscardFramebuffer uses different attachment enums for the default FBO.
+	if (!Canvas::current && gl.getDefaultFBO() == 0)
+	{
+		if (color)
+			attachments.push_back(GL_COLOR);
+
+		if (stencil)
+		{
+			attachments.push_back(GL_STENCIL);
+			attachments.push_back(GL_DEPTH);
+		}
+	}
+	else
+	{
+		if (color)
+		{
+			attachments.push_back(GL_COLOR_ATTACHMENT0);
+			for (int i = 0; i < (int) states.back().canvases.size() - 1; i++)
+				attachments.push_back(GL_COLOR_ATTACHMENT1 + i);
+		}
+
+		if (stencil)
+		{
+			attachments.push_back(GL_STENCIL_ATTACHMENT);
+			attachments.push_back(GL_DEPTH_ATTACHMENT);
+		}
+	}
+
+	// Hint for the driver that it doesn't need to save these buffers.
+	if (GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_ES_VERSION_3_0)
+		glInvalidateFramebuffer(GL_FRAMEBUFFER, (GLint) attachments.size(), &attachments[0]);
+	else if (GLAD_EXT_discard_framebuffer)
+		glDiscardFramebufferEXT(GL_FRAMEBUFFER, (GLint) attachments.size(), &attachments[0]);
+}
+
 void Graphics::present()
 {
 	if (!isActive())
@@ -433,23 +476,8 @@ void Graphics::present()
 	std::vector<StrongRef<Canvas>> canvases = states.back().canvases;
 	setCanvas();
 
-	if (GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer)
-	{
-		GLenum attachments[] = {GL_STENCIL, GL_DEPTH};
-
-		if (gl.getDefaultFBO() != 0)
-		{
-			// A non-zero FBO needs different attachment enums.
-			attachments[0] = GL_STENCIL_ATTACHMENT;
-			attachments[1] = GL_DEPTH_ATTACHMENT;
-		}
-
-		// Hint for the driver that it doesn't need to save these buffers.
-		if (GLAD_ES_VERSION_3_0)
-			glInvalidateFramebuffer(GL_FRAMEBUFFER, 2, attachments);
-		else if (GLAD_EXT_discard_framebuffer)
-			glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, attachments);
-	}
+	// Discard the stencil buffer before swapping.
+	discard(false, true);
 
 #ifdef LOVE_IOS
 	// Hack: SDL's color renderbuffer needs to be bound when swapBuffers is called.

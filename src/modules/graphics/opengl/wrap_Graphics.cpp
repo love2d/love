@@ -61,6 +61,14 @@ int w_clear(lua_State *L)
 	return 0;
 }
 
+int w_discard(lua_State *L)
+{
+	bool color = luax_optboolean(L, 1, true);
+	bool stencil = luax_optboolean(L, 2, true);
+	instance()->discard(color, stencil);
+	return 0;
+}
+
 int w_present(lua_State *)
 {
 	instance()->present();
@@ -1465,6 +1473,7 @@ static const luaL_Reg functions[] =
 {
 	{ "reset", w_reset },
 	{ "clear", w_clear },
+	{ "discard", w_discard },
 	{ "present", w_present },
 
 	{ "newImage", w_newImage },

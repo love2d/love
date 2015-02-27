@@ -42,6 +42,7 @@ namespace opengl
 
 int w_reset(lua_State *L);
 int w_clear(lua_State *L);
+int w_discard(lua_State *L);
 int w_present(lua_State *L);
 int w_isCreated(lua_State *L);
 int w_isActive(lua_State *L);

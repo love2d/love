@@ -86,6 +86,11 @@ public:
 	void clear(Color c);
 
 	/**
+	 * Discards the contents of the screen.
+	 **/
+	void discard(bool color, bool stencil);
+
+	/**
 	 * Flips buffers. (Rendered geometry is presented on screen).
 	 **/
 	void present();
