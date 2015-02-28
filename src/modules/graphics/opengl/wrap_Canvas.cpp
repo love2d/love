@@ -71,7 +71,9 @@ int w_Canvas_newImageData(lua_State *L)
 	int w = luaL_optint(L, 4, canvas->getWidth());
 	int h = luaL_optint(L, 5, canvas->getHeight());
 
-	love::image::ImageData *img = canvas->newImageData(image, x, y, w, h);
+	love::image::ImageData *img = nullptr;
+	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, x, y, w, h); });
+
 	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, img);
 	img->release();
 	return 1;

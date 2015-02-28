@@ -132,10 +132,7 @@ public:
 
 	struct ColorMask
 	{
-		bool r;
-		bool g;
-		bool b;
-		bool a;
+		bool r, g, b, a;
 
 		bool operator == (const ColorMask &m) const
 		{
