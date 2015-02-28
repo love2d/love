@@ -426,7 +426,7 @@ void Graphics::clear(Color c)
 
 void Graphics::discard(bool color, bool stencil)
 {
-	if (!(GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer))
+	if (!(GLAD_VERSION_4_3 || GLAD_ARB_invalidate_subdata || GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer))
 		return;
 
 	std::vector<GLenum> attachments;
@@ -461,7 +461,7 @@ void Graphics::discard(bool color, bool stencil)
 	}
 
 	// Hint for the driver that it doesn't need to save these buffers.
-	if (GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_ES_VERSION_3_0)
+	if (GLAD_VERSION_4_3 || GLAD_ARB_invalidate_subdata || GLAD_ES_VERSION_3_0)
 		glInvalidateFramebuffer(GL_FRAMEBUFFER, (GLint) attachments.size(), &attachments[0]);
 	else if (GLAD_EXT_discard_framebuffer)
 		glDiscardFramebufferEXT(GL_FRAMEBUFFER, (GLint) attachments.size(), &attachments[0]);
