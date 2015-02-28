@@ -1575,7 +1575,7 @@ function love.errhand(msg)
 
 	local trace = debug.traceback()
 
-	love.graphics.clear()
+	love.graphics.clear(love.graphics.getBackgroundColor())
 	love.graphics.origin()
 
 	local err = {}
@@ -1597,7 +1597,7 @@ function love.errhand(msg)
 
 	local function draw()
 		local pos = love.window.toPixels(70)
-		love.graphics.clear()
+		love.graphics.clear(love.graphics.getBackgroundColor())
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
 		love.graphics.present()
 	end

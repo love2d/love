@@ -163,9 +163,9 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 		throw love::Exception("Could not decode PNG image (%s)", err);
 	}
 
-	img.width = (int) width;
+	img.width  = (int) width;
 	img.height = (int) height;
-	img.size = width * height * 4;
+	img.size   = width * height * 4;
 
 	return img;
 }

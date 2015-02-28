@@ -444,7 +444,9 @@ float OpenGL::getPointSize() const
 void OpenGL::bindFramebuffer(GLenum target, GLuint framebuffer)
 {
 	glBindFramebuffer(target, framebuffer);
-	++stats.framebufferBinds;
+
+	if (target == GL_FRAMEBUFFER)
+		++stats.framebufferBinds;
 }
 
 GLuint OpenGL::getDefaultFBO() const
