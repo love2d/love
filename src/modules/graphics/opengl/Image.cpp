@@ -93,26 +93,31 @@ Image::~Image()
 
 void Image::preload()
 {
-	// For colors.
-	memset(vertices, 255, sizeof(Vertex)*4);
+	for (int i = 0; i < 4; i++)
+		vertices[i].r = vertices[i].g = vertices[i].b = vertices[i].a = 255;
 
+	// Vertices are ordered for use with triangle strips:
+	// 0----2
+	// |  / |
+	// | /  |
+	// 1----3
 	vertices[0].x = 0.0f;
 	vertices[0].y = 0.0f;
 	vertices[1].x = 0.0f;
 	vertices[1].y = (float) height;
 	vertices[2].x = (float) width;
-	vertices[2].y = (float) height;
+	vertices[2].y = 0.0f;
 	vertices[3].x = (float) width;
-	vertices[3].y = 0.0f;
+	vertices[3].y = (float) height;
 
 	vertices[0].s = 0.0f;
 	vertices[0].t = 0.0f;
 	vertices[1].s = 0.0f;
 	vertices[1].t = 1.0f;
 	vertices[2].s = 1.0f;
-	vertices[2].t = 1.0f;
+	vertices[2].t = 0.0f;
 	vertices[3].s = 1.0f;
-	vertices[3].t = 0.0f;
+	vertices[3].t = 1.0f;
 
 	if (flags.mipmaps)
 		filter.mipmap = defaultMipmapFilter;
@@ -362,7 +367,7 @@ void Image::drawv(const Matrix &t, const Vertex *v)
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
 
 	gl.prepareDraw();
-	gl.drawArrays(GL_TRIANGLE_FAN, 0, 4);
+	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);

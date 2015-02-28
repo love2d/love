@@ -45,23 +45,28 @@ void Quad::refresh(const Quad::Viewport &v, float sw, float sh)
 {
 	viewport = v;
 
-	vertices[0].x = 0;
-	vertices[0].y = 0;
-	vertices[1].x = 0;
+	// Vertices are ordered for use with triangle strips:
+	// 0----2
+	// |  / |
+	// | /  |
+	// 1----3
+	vertices[0].x = 0.0f;
+	vertices[0].y = 0.0f;
+	vertices[1].x = 0.0f;
 	vertices[1].y = v.h;
 	vertices[2].x = v.w;
-	vertices[2].y = v.h;
+	vertices[2].y = 0.0f;
 	vertices[3].x = v.w;
-	vertices[3].y = 0;
+	vertices[3].y = v.h;
 
 	vertices[0].s = v.x/sw;
 	vertices[0].t = v.y/sh;
 	vertices[1].s = v.x/sw;
 	vertices[1].t = (v.y+v.h)/sh;
 	vertices[2].s = (v.x+v.w)/sw;
-	vertices[2].t = (v.y+v.h)/sh;
+	vertices[2].t = v.y/sh;
 	vertices[3].s = (v.x+v.w)/sw;
-	vertices[3].t = v.y/sh;
+	vertices[3].t = (v.y+v.h)/sh;
 }
 
 void Quad::setViewport(const Quad::Viewport &v)

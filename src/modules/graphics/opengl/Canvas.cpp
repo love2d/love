@@ -110,15 +110,20 @@ Canvas::Canvas(int width, int height, Format format, int msaa)
 	float w = static_cast<float>(width);
 	float h = static_cast<float>(height);
 
+	// Vertices are ordered for use with triangle strips:
+	// 0----2
+	// |  / |
+	// | /  |
+	// 1----3
 	// world coordinates
 	vertices[0].x = 0;
 	vertices[0].y = 0;
 	vertices[1].x = 0;
 	vertices[1].y = h;
 	vertices[2].x = w;
-	vertices[2].y = h;
+	vertices[2].y = 0;
 	vertices[3].x = w;
-	vertices[3].y = 0;
+	vertices[3].y = h;
 
 	// texture coordinates
 	vertices[0].s = 0;
@@ -126,9 +131,9 @@ Canvas::Canvas(int width, int height, Format format, int msaa)
 	vertices[1].s = 0;
 	vertices[1].t = 1;
 	vertices[2].s = 1;
-	vertices[2].t = 1;
+	vertices[2].t = 0;
 	vertices[3].s = 1;
-	vertices[3].t = 0;
+	vertices[3].t = 1;
 
 	loadVolatile();
 
@@ -305,7 +310,7 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
 
 	gl.prepareDraw();
-	gl.drawArrays(GL_TRIANGLE_FAN, 0, 4);
+	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);

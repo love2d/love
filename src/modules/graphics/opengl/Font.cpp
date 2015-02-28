@@ -265,11 +265,15 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		float tX     = (float) textureX,     tY      = (float) textureY;
 		float tWidth = (float) textureWidth, tHeight = (float) textureHeight;
 
+		// 0----2
+		// |  / |
+		// | /  |
+		// 1----3
 		const GlyphVertex verts[4] = {
 			{    0.0f,     0.0f,     tX/tWidth,     tY/tHeight},
 			{    0.0f, float(h),     tX/tWidth, (tY+h)/tHeight},
-			{float(w), float(h), (tX+w)/tWidth, (tY+h)/tHeight},
-			{float(w),     0.0f, (tX+w)/tWidth,     tY/tHeight}
+			{float(w),     0.0f, (tX+w)/tWidth,     tY/tHeight},
+			{float(w), float(h), (tX+w)/tWidth, (tY+h)/tHeight}
 		};
 
 		// Copy vertex data to the glyph and set proper bearing.
