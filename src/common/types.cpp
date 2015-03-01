@@ -202,6 +202,8 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 StringMap<Type, TYPE_MAX_ENUM> types(typeEntries, sizeof(typeEntries));
 
+static_assert((sizeof(typeEntries) / sizeof(typeEntries[0])) == TYPE_MAX_ENUM, "Type name array size doesn't match the total number of type IDs!");
+
 bool getType(const char *in, love::Type &out)
 {
 	return types.find(in, out);
