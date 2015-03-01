@@ -76,7 +76,6 @@ public:
 
 private:
 	love::Type udatatype;
-	bits flags;
 
 }; // Variant
 } // love

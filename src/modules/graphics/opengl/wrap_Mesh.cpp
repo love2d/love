@@ -36,7 +36,7 @@ namespace opengl
 
 Mesh *luax_checkmesh(lua_State *L, int idx)
 {
-	return luax_checktype<Mesh>(L, idx, "Mesh", GRAPHICS_MESH_T);
+	return luax_checktype<Mesh>(L, idx, GRAPHICS_MESH_ID);
 }
 
 int w_Mesh_setVertex(lua_State *L)
@@ -265,9 +265,9 @@ int w_Mesh_getTexture(lua_State *L)
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
-		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+		luax_pushtype(L, GRAPHICS_IMAGE_ID, tex);
 	else if (typeid(*tex) == typeid(Canvas))
-		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+		luax_pushtype(L, GRAPHICS_CANVAS_ID, tex);
 	else
 		return luaL_error(L, "Unable to determine texture type.");
 
@@ -368,7 +368,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_mesh(lua_State *L)
 {
-	return luax_register_type(L, "Mesh", functions);
+	return luax_register_type(L, GRAPHICS_MESH_ID, functions);
 }
 
 } // opengl

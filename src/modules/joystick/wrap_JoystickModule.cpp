@@ -40,7 +40,7 @@ int w_getJoysticks(lua_State *L)
 	for (int i = 0; i < stickcount; i++)
 	{
 		Joystick *stick = instance()->getJoystick(i);
-		luax_pushtype(L, "Joystick", JOYSTICK_JOYSTICK_T, stick);
+		luax_pushtype(L, JOYSTICK_JOYSTICK_ID, stick);
 		lua_rawseti(L, -2, i + 1);
 	}
 
@@ -254,7 +254,7 @@ extern "C" int luaopen_love_joystick(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "joystick";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = types;
 

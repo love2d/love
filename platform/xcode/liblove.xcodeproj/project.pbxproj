@@ -846,6 +846,8 @@
 		FA620A351AA2F8DB005DB4C2 /* wrap_Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */; };
 		FA620A361AA2F8DB005DB4C2 /* wrap_Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */; };
 		FA620A371AA2F8DB005DB4C2 /* wrap_Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */; };
+		FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
+		FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
 		FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
@@ -1480,6 +1482,7 @@
 		FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
 		FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
 		FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
+		FA620A391AA305F6005DB4C2 /* types.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = types.cpp; sourceTree = "<group>"; };
 		FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
@@ -1601,6 +1604,7 @@
 				FA0B790E1A958E3B000E1D17 /* runtime.cpp */,
 				FA0B790F1A958E3B000E1D17 /* runtime.h */,
 				FA0B79101A958E3B000E1D17 /* StringMap.h */,
+				FA620A391AA305F6005DB4C2 /* types.cpp */,
 				FA0B79111A958E3B000E1D17 /* types.h */,
 				FA0B79121A958E3B000E1D17 /* utf8.cpp */,
 				FA0B79131A958E3B000E1D17 /* utf8.h */,
@@ -3352,6 +3356,7 @@
 				FA0B7A591A958EA3000E1D17 /* b2StackAllocator.cpp in Sources */,
 				FA0B7E3D1A95902C000E1D17 /* wrap_Body.cpp in Sources */,
 				FA0B7D7A1A95902C000E1D17 /* Quad.cpp in Sources */,
+				FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */,
 				FA0B7DD41A95902C000E1D17 /* BezierCurve.cpp in Sources */,
 				FA0B7E7C1A95902C000E1D17 /* wrap_World.cpp in Sources */,
 				FA0B7B0C1A958EA3000E1D17 /* tcp.c in Sources */,
@@ -3630,6 +3635,7 @@
 				FA0B7B1B1A958EA3000E1D17 /* usocket.c in Sources */,
 				FA0B7E3C1A95902C000E1D17 /* wrap_Body.cpp in Sources */,
 				FA0B7D791A95902C000E1D17 /* Quad.cpp in Sources */,
+				FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */,
 				FA0B7DD31A95902C000E1D17 /* BezierCurve.cpp in Sources */,
 				FA0B7E7B1A95902C000E1D17 /* wrap_World.cpp in Sources */,
 				FA0B7B281A958EA3000E1D17 /* simplexnoise1234.cpp in Sources */,
@@ -3988,10 +3994,6 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/SDL2",
-				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -4024,10 +4026,6 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/SDL2",
-				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -4061,10 +4059,6 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/SDL2",
-				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,

@@ -30,7 +30,7 @@ namespace image
 
 ImageData *luax_checkimagedata(lua_State *L, int idx)
 {
-	return luax_checktype<ImageData>(L, idx, "ImageData", IMAGE_IMAGE_DATA_T);
+	return luax_checktype<ImageData>(L, idx, IMAGE_IMAGE_DATA_ID);
 }
 
 int w_ImageData_getWidth(lua_State *L)
@@ -245,7 +245,7 @@ int w_ImageData_encode(lua_State *L)
 
 	if (lua_isstring(L, 2))
 		luax_convobj(L, 2, "filesystem", "newFile");
-	love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 2, "File", FILESYSTEM_FILE_T);
+	love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 2, FILESYSTEM_FILE_ID);
 
 	if (lua_isnoneornil(L, 3))
 	{
@@ -285,7 +285,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
-	return luax_register_type(L, "ImageData", functions);
+	return luax_register_type(L, IMAGE_IMAGE_DATA_ID, functions);
 }
 
 } // image

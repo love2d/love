@@ -30,7 +30,7 @@ namespace math
 
 BezierCurve *luax_checkbeziercurve(lua_State *L, int idx)
 {
-	return luax_checktype<BezierCurve>(L, idx, "BezierCurve", MATH_BEZIER_CURVE_T);
+	return luax_checktype<BezierCurve>(L, idx, MATH_BEZIER_CURVE_ID);
 }
 
 int w_BezierCurve_getDegree(lua_State *L)
@@ -44,7 +44,7 @@ int w_BezierCurve_getDerivative(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	BezierCurve *deriv = new BezierCurve(curve->getDerivative());
-	luax_pushtype(L, "BezierCurve", MATH_BEZIER_CURVE_T, deriv);
+	luax_pushtype(L, MATH_BEZIER_CURVE_ID, deriv);
 	deriv->release();
 	return 1;
 }
@@ -183,7 +183,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_beziercurve(lua_State *L)
 {
-	return luax_register_type(L, "BezierCurve", functions);
+	return luax_register_type(L, MATH_BEZIER_CURVE_ID, functions);
 }
 
 } // math

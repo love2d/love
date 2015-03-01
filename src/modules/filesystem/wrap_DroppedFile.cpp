@@ -28,7 +28,7 @@ namespace filesystem
 
 DroppedFile *luax_checkdroppedfile(lua_State *L, int idx)
 {
-	return luax_checktype<DroppedFile>(L, idx, "DroppedFile", FILESYSTEM_DROPPED_FILE_T);
+	return luax_checktype<DroppedFile>(L, idx, FILESYSTEM_DROPPED_FILE_ID);
 }
 
 static const luaL_Reg functions[] =
@@ -55,7 +55,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_droppedfile(lua_State *L)
 {
-	return luax_register_type(L, "DroppedFile", functions);
+	return luax_register_type(L, FILESYSTEM_DROPPED_FILE_ID, functions);
 }
 
 } // filesystem

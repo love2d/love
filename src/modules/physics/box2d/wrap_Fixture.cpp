@@ -30,7 +30,7 @@ namespace box2d
 
 Fixture *luax_checkfixture(lua_State *L, int idx)
 {
-	Fixture *f = luax_checktype<Fixture>(L, idx, "Fixture", PHYSICS_FIXTURE_T);
+	Fixture *f = luax_checktype<Fixture>(L, idx, PHYSICS_FIXTURE_ID);
 	if (!f->isValid())
 		luaL_error(L, "Attempt to use destroyed fixture.");
 	return f;
@@ -111,7 +111,7 @@ int w_Fixture_getBody(lua_State *L)
 	Body *body = t->getBody();
 	if (body == 0)
 		return 0;
-	luax_pushtype(L, "Body", PHYSICS_BODY_T, body);
+	luax_pushtype(L, PHYSICS_BODY_ID, body);
 	return 1;
 }
 
@@ -124,19 +124,19 @@ int w_Fixture_getShape(lua_State *L)
 	switch (shape->getType())
 	{
 	case Shape::SHAPE_EDGE:
-		luax_pushtype(L, "EdgeShape", PHYSICS_EDGE_SHAPE_T, shape);
+		luax_pushtype(L, PHYSICS_EDGE_SHAPE_ID, shape);
 		break;
 	case Shape::SHAPE_CHAIN:
-		luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, shape);
+		luax_pushtype(L, PHYSICS_CHAIN_SHAPE_ID, shape);
 		break;
 	case Shape::SHAPE_CIRCLE:
-		luax_pushtype(L, "CircleShape", PHYSICS_CIRCLE_SHAPE_T, shape);
+		luax_pushtype(L, PHYSICS_CIRCLE_SHAPE_ID, shape);
 		break;
 	case Shape::SHAPE_POLYGON:
-		luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, shape);
+		luax_pushtype(L, PHYSICS_POLYGON_SHAPE_ID, shape);
 		break;
 	default:
-		luax_pushtype(L, "Shape", PHYSICS_SHAPE_T, shape);
+		luax_pushtype(L, PHYSICS_SHAPE_ID, shape);
 		break;
 	}
 	shape->release();
@@ -264,7 +264,7 @@ int w_Fixture_destroy(lua_State *L)
 
 int w_Fixture_isDestroyed(lua_State *L)
 {
-	Fixture *f = luax_checktype<Fixture>(L, 1, "Fixture", PHYSICS_FIXTURE_T);
+	Fixture *f = luax_checktype<Fixture>(L, 1, PHYSICS_FIXTURE_ID);
 	luax_pushboolean(L, !f->isValid());
 	return 1;
 }
@@ -303,7 +303,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_fixture(lua_State *L)
 {
-	return luax_register_type(L, "Fixture", functions);
+	return luax_register_type(L, PHYSICS_FIXTURE_ID, functions);
 }
 
 } // box2d

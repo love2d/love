@@ -63,7 +63,7 @@ enum Registry
 struct Proxy
 {
 	// Holds type information (see types.h).
-	bits flags;
+	Type type;
 
 	// Pointer to the actual object.
 	Object *object;
@@ -80,15 +80,14 @@ struct WrappedModule
 	// The name for the table to put the functions in, without the 'love'-prefix.
 	const char *name;
 
-	// The type flags of this module.
-	love::bits flags;
+	// The type of this module.
+	love::Type type;
 
 	// The functions of the module (last element {0,0}).
 	const luaL_Reg *functions;
 
 	// A list of functions which expose the types of the modules (last element 0).
 	const lua_CFunction *types;
-
 };
 
 /**
@@ -241,11 +240,10 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name);
 
 /**
  * Register a new type.
- * @param tname The name of the type. This must not conflict with other type names,
- * even from other modules.
+ * @param type The type.
  * @param f The list of member functions for the type.
  **/
-int luax_register_type(lua_State *L, const char *tname, const luaL_Reg *f = 0);
+int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f = 0);
 
 /**
  * Do a table.insert from C
@@ -271,10 +269,10 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
  * NOTE: The object will be retained by Lua and released upon garbage collection.
  * @param L The Lua state.
  * @param name The name of the type. This must match the name used with luax_register_type.
- * @param flags The type information of the object.
+ * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
-void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object);
+void luax_pushtype(lua_State *L, const love::Type type, love::Object *object);
 
 /**
  * Creates a new Lua representation of the given object *without* checking if it
@@ -285,10 +283,10 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
  * NOTE: The object will be retained by Lua and released upon garbage collection.
  * @param L The Lua state.
  * @param name The name of the type. This must match the name used with luax_register_type.
- * @param flags The type information of the object.
+ * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
-void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *object);
+void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object);
 
 /**
  * Checks whether the value at idx is a certain type.
@@ -297,7 +295,7 @@ void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *o
  * @param type The type to check for.
  * @return True if the value is Proxy of the specified type, false otherwise.
  **/
-bool luax_istype(lua_State *L, int idx, love::bits type);
+bool luax_istype(lua_State *L, int idx, love::Type type);
 
 /**
  * Gets the function love.module.function and puts it on top of the stack (alone). If the
@@ -399,32 +397,43 @@ extern "C" { // Also called from luasocket
  * @param type The type bit.
  **/
 template <typename T>
-T *luax_checktype(lua_State *L, int idx, const char *name, love::bits type)
+T *luax_checktype(lua_State *L, int idx, love::Type type)
 {
 	if (lua_type(L, idx) != LUA_TUSERDATA)
+	{
+		const char *name = "Invalid";
+		getType(type, name);
 		luax_typerror(L, idx, name);
+	}
 
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
-	if ((u->flags & type) != type)
+	if (!typeFlags[u->type][type])
+	{
+		const char *name = "Invalid";
+		getType(type, name);
 		luax_typerror(L, idx, name);
+	}
 
 	return (T *)u->object;
 }
 
 template <typename T>
-T *luax_getmodule(lua_State *L, const char *k, love::bits type)
+T *luax_getmodule(lua_State *L, love::Type type)
 {
+	const char *name = "Invalid";
+	getType(type, name);
+
 	luax_insistregistry(L, REGISTRY_MODULES);
-	lua_getfield(L, -1, k);
+	lua_getfield(L, -1, name);
 
 	if (!lua_isuserdata(L, -1))
-		luaL_error(L, "Tried to get nonexistant module %s.", k);
+		luaL_error(L, "Tried to get nonexistant module %s.", name);
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
-	if ((u->flags & type) != type)
-		luaL_error(L, "Incorrect module %s", k);
+	if (!typeFlags[u->type][type])
+		luaL_error(L, "Incorrect module %s", name);
 
 	lua_pop(L, 2);
 
@@ -432,10 +441,13 @@ T *luax_getmodule(lua_State *L, const char *k, love::bits type)
 }
 
 template <typename T>
-T *luax_optmodule(lua_State *L, const char *k, love::bits type)
+T *luax_optmodule(lua_State *L, love::Type type)
 {
+	const char *name = "Invalid";
+	getType(type, name);
+
 	luax_insistregistry(L, REGISTRY_MODULES);
-	lua_getfield(L, -1, k);
+	lua_getfield(L, -1, name);
 
 	if (!lua_isuserdata(L, -1))
 	{
@@ -445,8 +457,8 @@ T *luax_optmodule(lua_State *L, const char *k, love::bits type)
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
-	if ((u->flags & type) != type)
-		luaL_error(L, "Incorrect module %s", k);
+	if (!typeFlags[u->type][type])
+		luaL_error(L, "Incorrect module %s", name);
 	
 	lua_pop(L, 2);
 	
@@ -459,11 +471,10 @@ T *luax_optmodule(lua_State *L, const char *k, love::bits type)
  * luax_istype, then this can be safely used. Otherwise, use luax_checktype.
  * @param L The Lua state.
  * @param idx The index on the stack.
- * @param name The name of the type.
- * @param type The type bit.
+ * @param type The type of the object.
  **/
 template <typename T>
-T *luax_totype(lua_State *L, int idx, const char * /* name */, love::bits /* type */)
+T *luax_totype(lua_State *L, int idx, love::Type /*type*/)
 {
 	return (T *)(((Proxy *)lua_touserdata(L, idx))->object);
 }

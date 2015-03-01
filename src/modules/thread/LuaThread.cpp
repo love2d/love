@@ -109,7 +109,7 @@ void LuaThread::onError()
 		return;
 
 	Proxy p;
-	p.flags = THREAD_THREAD_T;
+	p.type = THREAD_THREAD_ID;
 	p.object = this;
 
 	std::vector<StrongRef<Variant>> vargs = {

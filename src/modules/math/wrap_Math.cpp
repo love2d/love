@@ -100,7 +100,7 @@ int w_newRandomGenerator(lua_State *L)
 			return luaL_error(L, "%s", lua_tostring(L, -1));
 	}
 
-	luax_pushtype(L, "RandomGenerator", MATH_RANDOM_GENERATOR_T, t);
+	luax_pushtype(L, MATH_RANDOM_GENERATOR_ID, t);
 	t->release();
 	return 1;
 }
@@ -139,7 +139,7 @@ int w_newBezierCurve(lua_State *L)
 	}
 
 	BezierCurve *curve = Math::instance.newBezierCurve(points);
-	luax_pushtype(L, "BezierCurve", MATH_BEZIER_CURVE_T, curve);
+	luax_pushtype(L, MATH_BEZIER_CURVE_ID, curve);
 	curve->release();
 	return 1;
 }
@@ -384,7 +384,7 @@ extern "C" int luaopen_love_math(lua_State *L)
 	WrappedModule w;
 	w.module = &Math::instance;
 	w.name = "math";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = types;
 

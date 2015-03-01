@@ -203,7 +203,7 @@ int w_newImage(lua_State *L)
 	bool releasedata = false;
 
 	// Convert to ImageData / CompressedData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
 	{
 		love::image::Image *image = Module::getInstance<love::image::Image>(Module::M_IMAGE);
 		if (image == nullptr)
@@ -229,10 +229,10 @@ int w_newImage(lua_State *L)
 		// Lua's GC won't release the image data, so we should do it ourselves.
 		releasedata = true;
 	}
-	else if (luax_istype(L, 1, IMAGE_COMPRESSED_DATA_T))
-		cdata = luax_checktype<love::image::CompressedData>(L, 1, "CompressedData", IMAGE_COMPRESSED_DATA_T);
+	else if (luax_istype(L, 1, IMAGE_COMPRESSED_DATA_ID))
+		cdata = luax_checktype<love::image::CompressedData>(L, 1, IMAGE_COMPRESSED_DATA_ID);
 	else
-		data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+		data = luax_checktype<love::image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
 
 	if (!data && !cdata)
 		return luaL_error(L, "Error creating image (could not load data.)");
@@ -258,7 +258,7 @@ int w_newImage(lua_State *L)
 		return luaL_error(L, "Could not load image.");
 
 	// Push the type.
-	luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, image);
+	luax_pushtype(L, GRAPHICS_IMAGE_ID, image);
 	image->release();
 	return 1;
 }
@@ -275,7 +275,7 @@ int w_newQuad(lua_State *L)
 	float sh = (float) luaL_checknumber(L, 6);
 
 	Quad *quad = instance()->newQuad(v, sw, sh);
-	luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quad);
+	luax_pushtype(L, GRAPHICS_QUAD_ID, quad);
 	quad->release();
 	return 1;
 }
@@ -285,7 +285,7 @@ int w_newFont(lua_State *L)
 	Font *font = nullptr;
 
 	// Convert to Rasterizer, if necessary.
-	if (!luax_istype(L, 1, FONT_RASTERIZER_T))
+	if (!luax_istype(L, 1, FONT_RASTERIZER_ID))
 	{
 		std::vector<int> idxs;
 		for (int i = 0; i < lua_gettop(L); i++)
@@ -294,14 +294,14 @@ int w_newFont(lua_State *L)
 		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newRasterizer");
 	}
 
-	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
+	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, FONT_RASTERIZER_ID);
 
 	luax_catchexcept(L, [&]() {
 		font = instance()->newFont(rasterizer, instance()->getDefaultFilter()); }
 	);
 
 	// Push the type.
-	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
+	luax_pushtype(L, GRAPHICS_FONT_ID, font);
 	font->release();
 	return 1;
 }
@@ -312,32 +312,32 @@ int w_newImageFont(lua_State *L)
 	Texture::Filter filter = instance()->getDefaultFilter();
 
 	// Convert to ImageData if necessary.
-	if (luax_istype(L, 1, GRAPHICS_IMAGE_T))
+	if (luax_istype(L, 1, GRAPHICS_IMAGE_ID))
 	{
-		Image *i = luax_checktype<Image>(L, 1, "Image", GRAPHICS_IMAGE_T);
+		Image *i = luax_checktype<Image>(L, 1, GRAPHICS_IMAGE_ID);
 		filter = i->getFilter();
 		love::image::ImageData *id = i->getImageData();
 		if (!id)
 			return luaL_argerror(L, 1, "Image must not be compressed.");
-		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, id);
+		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, id);
 		lua_replace(L, 1);
 	}
 
 	// Convert to Rasterizer if necessary.
-	if (!luax_istype(L, 1, FONT_RASTERIZER_T))
+	if (!luax_istype(L, 1, FONT_RASTERIZER_ID))
 	{
 		luaL_checkstring(L, 2);
 		int idxs[] = {1, 2};
 		luax_convobj(L, idxs, 2, "font", "newImageRasterizer");
 	}
 
-	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, "Rasterizer", FONT_RASTERIZER_T);
+	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, FONT_RASTERIZER_ID);
 
 	// Create the font.
 	Font *font = instance()->newFont(rasterizer, filter);
 
 	// Push the type.
-	luax_pushtype(L, "Font", GRAPHICS_FONT_T, font);
+	luax_pushtype(L, GRAPHICS_FONT_ID, font);
 	font->release();
 	return 1;
 }
@@ -359,7 +359,7 @@ int w_newSpriteBatch(lua_State *L)
 		[&](){ t = instance()->newSpriteBatch(texture, size, usage); }
 	);
 
-	luax_pushtype(L, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T, t);
+	luax_pushtype(L, GRAPHICS_SPRITE_BATCH_ID, t);
 	t->release();
 	return 1;
 }
@@ -376,7 +376,7 @@ int w_newParticleSystem(lua_State *L)
 		[&](){ t = instance()->newParticleSystem(texture, int(size)); }
 	);
 
-	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, t);
+	luax_pushtype(L, GRAPHICS_PARTICLE_SYSTEM_ID, t);
 	t->release();
 	return 1;
 }
@@ -401,7 +401,7 @@ int w_newCanvas(lua_State *L)
 	if (canvas == nullptr)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
 
-	luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, canvas);
+	luax_pushtype(L, GRAPHICS_CANVAS_ID, canvas);
 	canvas->release();
 	return 1;
 }
@@ -492,7 +492,7 @@ int w_newShader(lua_State *L)
 	try
 	{
 		Shader *shader = instance()->newShader(source);
-		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
+		luax_pushtype(L, GRAPHICS_SHADER_ID, shader);
 		shader->release();
 	}
 	catch (love::Exception &e)
@@ -585,7 +585,7 @@ int w_newMesh(lua_State *L)
 	if (tex)
 		t->setTexture(tex);
 
-	luax_pushtype(L, "Mesh", GRAPHICS_MESH_T, t);
+	luax_pushtype(L, GRAPHICS_MESH_ID, t);
 	t->release();
 	return 1;
 }
@@ -603,7 +603,7 @@ int w_newText(lua_State *L)
 		luax_catchexcept(L, [&](){ t = instance()->newText(font, text); });
 	}
 
-	luax_pushtype(L, "Text", GRAPHICS_TEXT_T, t);
+	luax_pushtype(L, GRAPHICS_TEXT_ID, t);
 	return 1;
 }
 
@@ -682,14 +682,14 @@ int w_getBackgroundColor(lua_State *L)
 int w_setNewFont(lua_State *L)
 {
 	int ret = w_newFont(L);
-	Font *font = luax_checktype<Font>(L, -1, "Font", GRAPHICS_FONT_T);
+	Font *font = luax_checktype<Font>(L, -1, GRAPHICS_FONT_ID);
 	instance()->setFont(font);
 	return ret;
 }
 
 int w_setFont(lua_State *L)
 {
-	Font *font = luax_checktype<Font>(L, 1, "Font", GRAPHICS_FONT_T);
+	Font *font = luax_checktype<Font>(L, 1, GRAPHICS_FONT_ID);
 	instance()->setFont(font);
 	return 0;
 }
@@ -699,7 +699,7 @@ int w_getFont(lua_State *L)
 	Font *f = nullptr;
 	luax_catchexcept(L, [&](){ f = instance()->getFont(); });
 
-	luax_pushtype(L, "Font", GRAPHICS_FONT_T, f);
+	luax_pushtype(L, GRAPHICS_FONT_ID, f);
 	return 1;
 }
 
@@ -913,13 +913,13 @@ int w_isWireframe(lua_State *L)
 
 int w_newScreenshot(lua_State *L)
 {
-	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
+	love::image::Image *image = luax_getmodule<love::image::Image>(L, MODULE_IMAGE_ID);
 	bool copyAlpha = luax_optboolean(L, 1, false);
 	love::image::ImageData *i = 0;
 
 	luax_catchexcept(L, [&](){ i = instance()->newScreenshot(image, copyAlpha); });
 
-	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
+	luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i);
 	i->release();
 	return 1;
 }
@@ -971,7 +971,7 @@ int w_getCanvas(lua_State *L)
 
 	for (Canvas *c : canvases)
 	{
-		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, c);
+		luax_pushtype(L, GRAPHICS_CANVAS_ID, c);
 		n++;
 	}
 
@@ -1001,7 +1001,7 @@ int w_getShader(lua_State *L)
 {
 	Shader *shader = instance()->getShader();
 	if (shader)
-		luax_pushtype(L, "Shader", GRAPHICS_SHADER_T, shader);
+		luax_pushtype(L, GRAPHICS_SHADER_ID, shader);
 	else
 		lua_pushnil(L);
 
@@ -1172,10 +1172,10 @@ int w_draw(lua_State *L)
 	Quad *quad = nullptr;
 	int startidx = 2;
 
-	if (luax_istype(L, 2, GRAPHICS_QUAD_T))
+	if (luax_istype(L, 2, GRAPHICS_QUAD_ID))
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
+		quad = luax_totype<Quad>(L, 2, GRAPHICS_QUAD_ID);
 		startidx = 3;
 	}
 	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
@@ -1184,7 +1184,7 @@ int w_draw(lua_State *L)
 	}
 	else
 	{
-		drawable = luax_checktype<Drawable>(L, 1, "Drawable", GRAPHICS_DRAWABLE_T);
+		drawable = luax_checktype<Drawable>(L, 1, GRAPHICS_DRAWABLE_ID);
 		startidx = 2;
 	}
 
@@ -1595,7 +1595,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "graphics";
-	w.flags = MODULE_GRAPHICS_T;
+	w.type = MODULE_GRAPHICS_ID;
 	w.functions = functions;
 	w.types = types;
 

@@ -101,7 +101,6 @@ Variant::Variant(love::Type udatatype, void *userdata)
 	if (udatatype != INVALID_ID)
 	{
 		Proxy *p = (Proxy *) userdata;
-		flags = p->flags;
 		data.userdata = p->object;
 		p->object->retain();
 	}
@@ -223,11 +222,7 @@ void Variant::toLua(lua_State *L)
 		break;
 	case FUSERDATA:
 		if (udatatype != INVALID_ID)
-		{
-			const char *name = NULL;
-			love::types.find(udatatype, name);
-			luax_pushtype(L, name, flags, (love::Object *) data.userdata);
-		}
+			luax_pushtype(L, udatatype, (love::Object *) data.userdata);
 		else
 			lua_pushlightuserdata(L, data.userdata);
 		// I know this is not the same

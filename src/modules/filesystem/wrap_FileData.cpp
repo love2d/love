@@ -29,7 +29,7 @@ namespace filesystem
 
 FileData *luax_checkfiledata(lua_State *L, int idx)
 {
-	return luax_checktype<FileData>(L, idx, "FileData", FILESYSTEM_FILE_DATA_T);
+	return luax_checktype<FileData>(L, idx, FILESYSTEM_FILE_DATA_ID);
 }
 
 int w_FileData_getFilename(lua_State *L)
@@ -61,7 +61,7 @@ static const luaL_Reg w_FileData_functions[] =
 
 extern "C" int luaopen_filedata(lua_State *L)
 {
-	return luax_register_type(L, "FileData", w_FileData_functions);
+	return luax_register_type(L, FILESYSTEM_FILE_DATA_ID, w_FileData_functions);
 }
 
 } // filesystem

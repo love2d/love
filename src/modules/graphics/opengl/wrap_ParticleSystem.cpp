@@ -41,7 +41,7 @@ namespace opengl
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx)
 {
-	return luax_checktype<ParticleSystem>(L, idx, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T);
+	return luax_checktype<ParticleSystem>(L, idx, GRAPHICS_PARTICLE_SYSTEM_ID);
 }
 
 int w_ParticleSystem_clone(lua_State *L)
@@ -51,7 +51,7 @@ int w_ParticleSystem_clone(lua_State *L)
 	ParticleSystem *clone = nullptr;
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
 
-	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, clone);
+	luax_pushtype(L, GRAPHICS_PARTICLE_SYSTEM_ID, clone);
 	clone->release();
 	return 1;
 }
@@ -71,9 +71,9 @@ int w_ParticleSystem_getTexture(lua_State *L)
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
-		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+		luax_pushtype(L, GRAPHICS_IMAGE_ID, tex);
 	else if (typeid(*tex) == typeid(Canvas))
-		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+		luax_pushtype(L, GRAPHICS_CANVAS_ID, tex);
 	else
 		return luaL_error(L, "Unable to determine texture type.");
 
@@ -596,7 +596,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 		{
 			lua_rawgeti(L, 2, i);
 
-			Quad *q = luax_checktype<Quad>(L, -1, "Quad", GRAPHICS_QUAD_T);
+			Quad *q = luax_checktype<Quad>(L, -1, GRAPHICS_QUAD_ID);
 			quads.push_back(q);
 
 			lua_pop(L, 1);
@@ -606,7 +606,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 	{
 		for (int i = 2; i <= lua_gettop(L); i++)
 		{
-			Quad *q = luax_checktype<Quad>(L, i, "Quad", GRAPHICS_QUAD_T);
+			Quad *q = luax_checktype<Quad>(L, i, GRAPHICS_QUAD_ID);
 			quads.push_back(q);
 		}
 	}
@@ -624,7 +624,7 @@ int w_ParticleSystem_getQuads(lua_State *L)
 
 	for (int i = 0; i < (int) quads.size(); i++)
 	{
-		luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quads[i]);
+		luax_pushtype(L, GRAPHICS_QUAD_ID, quads[i]);
 		lua_rawseti(L, -2, i + 1);
 	}
 
@@ -784,7 +784,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_particlesystem(lua_State *L)
 {
-	return luax_register_type(L, "ParticleSystem", functions);
+	return luax_register_type(L, GRAPHICS_PARTICLE_SYSTEM_ID, functions);
 }
 
 } // opengl

@@ -43,7 +43,7 @@ int luax_ioError(lua_State *L, const char *fmt, ...)
 
 File *luax_checkfile(lua_State *L, int idx)
 {
-	return luax_checktype<File>(L, idx, "File", FILESYSTEM_FILE_T);
+	return luax_checktype<File>(L, idx, FILESYSTEM_FILE_ID);
 }
 
 int w_File_getSize(lua_State *L)
@@ -149,11 +149,11 @@ int w_File_write(lua_State *L)
 			return luax_ioError(L, "%s", e.what());
 		}
 	}
-	else if (luax_istype(L, 2, DATA_T))
+	else if (luax_istype(L, 2, DATA_ID))
 	{
 		try
 		{
-			love::Data *data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
+			love::Data *data = luax_totype<love::Data>(L, 2, DATA_ID);
 			result = file->write(data, luaL_optinteger(L, 3, data->getSize()));
 		}
 		catch (love::Exception &e)
@@ -228,7 +228,7 @@ int w_File_lines_i(lua_State *L)
 	int linesize = 0;
 	bool newline = false;
 
-	File *file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
+	File *file = luax_checktype<File>(L, lua_upvalueindex(1), FILESYSTEM_FILE_ID);
 
 	// Only accept read mode at this point.
 	if (file->getMode() != File::MODE_READ)
@@ -436,7 +436,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_file(lua_State *L)
 {
-	return luax_register_type(L, "File", functions);
+	return luax_register_type(L, FILESYSTEM_FILE_ID, functions);
 }
 
 } // filesystem

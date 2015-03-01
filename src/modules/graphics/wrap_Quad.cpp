@@ -28,7 +28,7 @@ namespace graphics
 
 Quad *luax_checkquad(lua_State *L, int idx)
 {
-	return luax_checktype<Quad>(L, idx, "Quad", GRAPHICS_QUAD_T);
+	return luax_checktype<Quad>(L, idx, GRAPHICS_QUAD_ID);
 }
 
 int w_Quad_setViewport(lua_State *L)
@@ -73,7 +73,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_quad(lua_State *L)
 {
-	return luax_register_type(L, "Quad", functions);
+	return luax_register_type(L, GRAPHICS_QUAD_ID, functions);
 }
 
 } // graphics

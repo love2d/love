@@ -110,7 +110,7 @@ extern "C" int luaopen_love_system(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "system";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = nullptr;
 

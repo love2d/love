@@ -40,7 +40,7 @@ void releaseVariant(Channel *c, Variant *v)
 
 Channel *luax_checkchannel(lua_State *L, int idx)
 {
-	return luax_checktype<Channel>(L, idx, "Channel", THREAD_CHANNEL_T);
+	return luax_checktype<Channel>(L, idx, THREAD_CHANNEL_ID);
 }
 
 int w_Channel_push(lua_State *L)
@@ -129,7 +129,7 @@ static const luaL_Reg type_functions[] = {
 
 extern "C" int luaopen_channel(lua_State *L)
 {
-	return luax_register_type(L, "Channel", type_functions);
+	return luax_register_type(L, THREAD_CHANNEL_ID, type_functions);
 }
 }
 }

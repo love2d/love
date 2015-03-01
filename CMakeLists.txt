@@ -102,6 +102,7 @@ set(LOVE_SRC_COMMON
 	src/common/runtime.cpp
 	src/common/runtime.h
 	src/common/StringMap.h
+	src/common/types.cpp
 	src/common/types.h
 	src/common/utf8.cpp
 	src/common/utf8.h

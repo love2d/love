@@ -27,7 +27,7 @@ namespace graphics
 
 Texture *luax_checktexture(lua_State *L, int idx)
 {
-	return luax_checktype<Texture>(L, idx, "Texture", GRAPHICS_TEXTURE_T);
+	return luax_checktype<Texture>(L, idx, GRAPHICS_TEXTURE_ID);
 }
 
 int w_Texture_getWidth(lua_State *L)

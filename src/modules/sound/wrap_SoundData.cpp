@@ -29,7 +29,7 @@ namespace sound
 
 SoundData *luax_checksounddata(lua_State *L, int idx)
 {
-	return luax_checktype<SoundData>(L, idx, "SoundData", SOUND_SOUND_DATA_T);
+	return luax_checktype<SoundData>(L, idx, SOUND_SOUND_DATA_ID);
 }
 
 int w_SoundData_getChannels(lua_State *L)
@@ -105,7 +105,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_sounddata(lua_State *L)
 {
-	return luax_register_type(L, "SoundData", functions);
+	return luax_register_type(L, SOUND_SOUND_DATA_ID, functions);
 }
 
 } // sound

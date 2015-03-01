@@ -49,7 +49,7 @@ int w_newSoundData(lua_State *L)
 	else
 	{
 		// Convert to Decoder, if necessary.
-		if (!luax_istype(L, 1, SOUND_DECODER_T))
+		if (!luax_istype(L, 1, SOUND_DECODER_ID))
 		{
 			w_newDecoder(L);
 			lua_replace(L, 1);
@@ -58,7 +58,7 @@ int w_newSoundData(lua_State *L)
 		luax_catchexcept(L, [&](){ t = instance()->newSoundData(luax_checkdecoder(L, 1)); });
 	}
 
-	luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, t);
+	luax_pushtype(L, SOUND_SOUND_DATA_ID, t);
 	t->release();
 	return 1;
 }
@@ -77,7 +77,7 @@ int w_newDecoder(lua_State *L)
 	if (t == nullptr)
 		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
 
-	luax_pushtype(L, "Decoder", SOUND_DECODER_T, t);
+	luax_pushtype(L, SOUND_DECODER_ID, t);
 	t->release();
 	return 1;
 }
@@ -111,7 +111,7 @@ extern "C" int luaopen_love_sound(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "sound";
-	w.flags = MODULE_SOUND_T;
+	w.type = MODULE_SOUND_ID;
 	w.functions = functions;
 	w.types = types;
 

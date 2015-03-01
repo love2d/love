@@ -29,7 +29,7 @@ namespace box2d
 
 RopeJoint *luax_checkropejoint(lua_State *L, int idx)
 {
-	RopeJoint *j = luax_checktype<RopeJoint>(L, idx, "RopeJoint", PHYSICS_ROPE_JOINT_T);
+	RopeJoint *j = luax_checktype<RopeJoint>(L, idx, PHYSICS_ROPE_JOINT_ID);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -61,7 +61,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_ropejoint(lua_State *L)
 {
-	return luax_register_type(L, "RopeJoint", functions);
+	return luax_register_type(L, PHYSICS_ROPE_JOINT_ID, functions);
 }
 
 } // box2d

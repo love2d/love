@@ -29,7 +29,7 @@ namespace audio
 
 Source *luax_checksource(lua_State *L, int idx)
 {
-	return luax_checktype<Source>(L, idx, "Source", AUDIO_SOURCE_T);
+	return luax_checktype<Source>(L, idx, AUDIO_SOURCE_ID);
 }
 
 int w_Source_clone(lua_State *L)
@@ -37,7 +37,7 @@ int w_Source_clone(lua_State *L)
 	Source *t = luax_checksource(L, 1);
 	Source *clone = nullptr;
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
-	luax_pushtype(L, "Source", AUDIO_SOURCE_T, clone);
+	luax_pushtype(L, AUDIO_SOURCE_ID, clone);
 	clone->release();
 	return 1;
 }
@@ -406,7 +406,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_source(lua_State *L)
 {
-	return luax_register_type(L, "Source", functions);
+	return luax_register_type(L, AUDIO_SOURCE_ID, functions);
 }
 
 } // audio

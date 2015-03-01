@@ -32,7 +32,7 @@ namespace opengl
 
 Shader *luax_checkshader(lua_State *L, int idx)
 {
-	return luax_checktype<Shader>(L, idx, "Shader", GRAPHICS_SHADER_T);
+	return luax_checktype<Shader>(L, idx, GRAPHICS_SHADER_ID);
 }
 
 int w_Shader_getWarnings(lua_State *L)
@@ -308,7 +308,7 @@ int w_Shader_send(lua_State *L)
 		// Texture (Image or Canvas).
 		p = (Proxy *) lua_touserdata(L, 3);
 
-		if (p->flags[GRAPHICS_TEXTURE_ID])
+		if (typeFlags[p->type][GRAPHICS_TEXT_ID])
 			return w_Shader_sendTexture(L);
 
 		break;
@@ -381,7 +381,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, "Shader", functions);
+	return luax_register_type(L, GRAPHICS_SHADER_ID, functions);
 }
 
 } // opengl

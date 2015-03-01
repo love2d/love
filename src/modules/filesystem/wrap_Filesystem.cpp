@@ -150,7 +150,7 @@ int w_newFile(lua_State *L)
 		}
 	}
 
-	luax_pushtype(L, "File", FILESYSTEM_FILE_T, t);
+	luax_pushtype(L, FILESYSTEM_FILE_ID, t);
 	t->release();
 	return 1;
 }
@@ -165,12 +165,12 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 		const char *filename = luaL_checkstring(L, idx);
 		file = instance()->newFile(filename);
 	}
-	else if (luax_istype(L, idx, FILESYSTEM_FILE_T))
+	else if (luax_istype(L, idx, FILESYSTEM_FILE_ID))
 	{
 		file = luax_checkfile(L, idx);
 		file->retain();
 	}
-	else if (luax_istype(L, idx, FILESYSTEM_FILE_DATA_T))
+	else if (luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID))
 	{
 		data = luax_checkfiledata(L, idx);
 		data->retain();
@@ -203,7 +203,7 @@ int w_newFileData(lua_State *L)
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		// Get FileData from the File.
-		if (luax_istype(L, 1, FILESYSTEM_FILE_T))
+		if (luax_istype(L, 1, FILESYSTEM_FILE_ID))
 		{
 			File *file = luax_checkfile(L, 1);
 
@@ -216,7 +216,7 @@ int w_newFileData(lua_State *L)
 			{
 				return luax_ioError(L, "%s", e.what());
 			}
-			luax_pushtype(L, "FileData", FILESYSTEM_FILE_DATA_T, data);
+			luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, data);
 			data->release();
 			return 1;
 		}
@@ -248,7 +248,7 @@ int w_newFileData(lua_State *L)
 		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
 	}
 
-	luax_pushtype(L, "FileData", FILESYSTEM_FILE_DATA_T, t);
+	luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, t);
 	t->release();
 	return 1;
 }
@@ -366,9 +366,9 @@ static int w_write_or_append(lua_State *L, File::Mode mode)
 	const char *input = 0;
 	size_t len = 0;
 
-	if (luax_istype(L, 2, DATA_T))
+	if (luax_istype(L, 2, DATA_ID))
 	{
-		love::Data *data = luax_totype<love::Data>(L, 2, "Data", DATA_T);
+		love::Data *data = luax_totype<love::Data>(L, 2, DATA_ID);
 		input = (const char *) data->getData();
 		len = data->getSize();
 	}
@@ -428,7 +428,7 @@ int w_lines(lua_State *L)
 			return luaL_error(L, "Could not open file.");
 		}
 
-		luax_pushtype(L, "File", FILESYSTEM_FILE_T, file);
+		luax_pushtype(L, FILESYSTEM_FILE_ID, file);
 		file->release();
 	}
 	else
@@ -731,7 +731,7 @@ extern "C" int luaopen_love_filesystem(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "filesystem";
-	w.flags = MODULE_FILESYSTEM_T;
+	w.type = MODULE_FILESYSTEM_ID;
 	w.functions = functions;
 	w.types = types;
 

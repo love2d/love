@@ -30,7 +30,7 @@ namespace box2d
 
 PrismaticJoint *luax_checkprismaticjoint(lua_State *L, int idx)
 {
-	PrismaticJoint *j = luax_checktype<PrismaticJoint>(L, idx, "PrismaticJoint", PHYSICS_PRISMATIC_JOINT_T);
+	PrismaticJoint *j = luax_checktype<PrismaticJoint>(L, idx, PHYSICS_PRISMATIC_JOINT_ID);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -199,7 +199,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_prismaticjoint(lua_State *L)
 {
-	return luax_register_type(L, "PrismaticJoint", functions);
+	return luax_register_type(L, PHYSICS_PRISMATIC_JOINT_ID, functions);
 }
 
 } // box2d

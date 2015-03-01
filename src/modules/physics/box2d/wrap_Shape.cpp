@@ -30,7 +30,7 @@ namespace box2d
 
 Shape *luax_checkshape(lua_State *L, int idx)
 {
-	return luax_checktype<Shape>(L, idx, "Shape", PHYSICS_SHAPE_T);
+	return luax_checktype<Shape>(L, idx, PHYSICS_SHAPE_ID);
 }
 
 int w_Shape_getType(lua_State *L)
@@ -108,7 +108,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_shape(lua_State *L)
 {
-	return luax_register_type(L, "Shape", functions);
+	return luax_register_type(L, PHYSICS_SHAPE_ID, functions);
 }
 
 } // box2d

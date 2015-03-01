@@ -292,7 +292,7 @@ int w_getPosition(lua_State *L)
 
 int w_setIcon(lua_State *L)
 {
-	image::ImageData *i = luax_checktype<image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+	image::ImageData *i = luax_checktype<image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
 	luax_pushboolean(L, instance()->setIcon(i));
 	return 1;
 }
@@ -300,10 +300,7 @@ int w_setIcon(lua_State *L)
 int w_getIcon(lua_State *L)
 {
 	image::ImageData *i = instance()->getIcon();
-	if (i)
-		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
-	else
-		lua_pushnil(L);
+	luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i);
 	return 1;
 }
 
@@ -500,7 +497,7 @@ extern "C" int luaopen_love_window(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "window";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = 0;
 

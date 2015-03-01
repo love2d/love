@@ -29,7 +29,7 @@ namespace box2d
 
 WheelJoint *luax_checkwheeljoint(lua_State *L, int idx)
 {
-	WheelJoint *j = luax_checktype<WheelJoint>(L, idx, "WheelJoint", PHYSICS_WHEEL_JOINT_T);
+	WheelJoint *j = luax_checktype<WheelJoint>(L, idx, PHYSICS_WHEEL_JOINT_ID);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -163,7 +163,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_wheeljoint(lua_State *L)
 {
-	return luax_register_type(L, "WheelJoint", functions);
+	return luax_register_type(L, PHYSICS_WHEEL_JOINT_ID, functions);
 }
 
 } // box2d

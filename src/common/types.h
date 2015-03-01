@@ -115,91 +115,15 @@ enum Type
 	TYPE_MAX_ENUM
 };
 
-typedef std::bitset<TYPE_MAX_ENUM> bits;
+typedef std::bitset<TYPE_MAX_ENUM> TypeBits;
 
-const bits INVALID_T = bits(1) << INVALID_ID;
-
-const bits OBJECT_T = bits(1) << OBJECT_ID;
-const bits DATA_T = (bits(1) << DATA_ID) | OBJECT_T;
-const bits MODULE_T = (bits(1) << MODULE_ID) | OBJECT_T;
-
-// Filesystem.
-const bits FILESYSTEM_FILE_T = (bits(1) << FILESYSTEM_FILE_ID) | OBJECT_T;
-const bits FILESYSTEM_DROPPED_FILE_T = (bits(1) << FILESYSTEM_DROPPED_FILE_ID) | FILESYSTEM_FILE_T;
-const bits FILESYSTEM_FILE_DATA_T = (bits(1) << FILESYSTEM_FILE_DATA_ID) | DATA_T;
-
-const bits FONT_GLYPH_DATA_T = (bits(1) << FONT_GLYPH_DATA_ID) | DATA_T;
-const bits FONT_RASTERIZER_T = (bits(1) << FONT_RASTERIZER_ID) | OBJECT_T;
-
-// Graphics.
-const bits GRAPHICS_DRAWABLE_T = (bits(1) << GRAPHICS_DRAWABLE_ID) | OBJECT_T;
-const bits GRAPHICS_TEXTURE_T = (bits(1) << GRAPHICS_TEXTURE_ID) | GRAPHICS_DRAWABLE_T;
-const bits GRAPHICS_IMAGE_T = (bits(1) << GRAPHICS_IMAGE_ID) | GRAPHICS_TEXTURE_T;
-const bits GRAPHICS_QUAD_T = (bits(1) << GRAPHICS_QUAD_ID) | OBJECT_T;
-const bits GRAPHICS_FONT_T = (bits(1) << GRAPHICS_FONT_ID) | OBJECT_T;
-const bits GRAPHICS_PARTICLE_SYSTEM_T = (bits(1) << GRAPHICS_PARTICLE_SYSTEM_ID) | GRAPHICS_DRAWABLE_T;
-const bits GRAPHICS_SPRITE_BATCH_T = (bits(1) << GRAPHICS_SPRITE_BATCH_ID) | GRAPHICS_DRAWABLE_T;
-const bits GRAPHICS_CANVAS_T = (bits(1) << GRAPHICS_CANVAS_ID) | GRAPHICS_TEXTURE_T;
-const bits GRAPHICS_SHADER_T = (bits(1) << GRAPHICS_SHADER_ID) | OBJECT_T;
-const bits GRAPHICS_MESH_T = (bits(1) << GRAPHICS_MESH_ID) | GRAPHICS_DRAWABLE_T;
-const bits GRAPHICS_TEXT_T = (bits(1) << GRAPHICS_TEXT_ID) | GRAPHICS_DRAWABLE_T;
-
-// Image.
-const bits IMAGE_IMAGE_DATA_T = (bits(1) << IMAGE_IMAGE_DATA_ID) | DATA_T;
-const bits IMAGE_COMPRESSED_DATA_T = (bits(1) << IMAGE_COMPRESSED_DATA_ID) | DATA_T;
-
-// Joystick.
-const bits JOYSTICK_JOYSTICK_T = (bits(1) << JOYSTICK_JOYSTICK_ID) | OBJECT_T;
-
-// Math.
-const bits MATH_RANDOM_GENERATOR_T = (bits(1) << MATH_RANDOM_GENERATOR_ID) | OBJECT_T;
-const bits MATH_BEZIER_CURVE_T = (bits(1) << MATH_BEZIER_CURVE_ID) | OBJECT_T;
-
-// Audio.
-const bits AUDIO_SOURCE_T = (bits(1) << AUDIO_SOURCE_ID) | OBJECT_T;
-
-// Sound.
-const bits SOUND_SOUND_DATA_T = (bits(1) << SOUND_SOUND_DATA_ID) | DATA_T;
-const bits SOUND_DECODER_T = bits(1) << SOUND_DECODER_ID;
-
-// Mouse.
-const bits MOUSE_CURSOR_T = (bits(1) << MOUSE_CURSOR_ID) | OBJECT_T;
-
-// Physics.
-const bits PHYSICS_WORLD_T = (bits(1) << PHYSICS_WORLD_ID) | OBJECT_T;
-const bits PHYSICS_CONTACT_T = (bits(1) << PHYSICS_CONTACT_ID) | OBJECT_T;
-const bits PHYSICS_BODY_T = (bits(1) << PHYSICS_BODY_ID) | OBJECT_T;
-const bits PHYSICS_FIXTURE_T = (bits(1) << PHYSICS_FIXTURE_ID) | OBJECT_T;
-const bits PHYSICS_SHAPE_T = (bits(1) << PHYSICS_SHAPE_ID) | OBJECT_T;
-const bits PHYSICS_CIRCLE_SHAPE_T = (bits(1) << PHYSICS_CIRCLE_SHAPE_ID) | PHYSICS_SHAPE_T;
-const bits PHYSICS_POLYGON_SHAPE_T = (bits(1) << PHYSICS_POLYGON_SHAPE_ID) | PHYSICS_SHAPE_T;
-const bits PHYSICS_EDGE_SHAPE_T = (bits(1) << PHYSICS_EDGE_SHAPE_ID) | PHYSICS_SHAPE_T;
-const bits PHYSICS_CHAIN_SHAPE_T = (bits(1) << PHYSICS_CHAIN_SHAPE_ID) | PHYSICS_SHAPE_T;
-const bits PHYSICS_JOINT_T = (bits(1) << PHYSICS_JOINT_ID) | OBJECT_T;
-const bits PHYSICS_MOUSE_JOINT_T = (bits(1) << PHYSICS_MOUSE_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_DISTANCE_JOINT_T = (bits(1) << PHYSICS_DISTANCE_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_PRISMATIC_JOINT_T = (bits(1) << PHYSICS_PRISMATIC_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_REVOLUTE_JOINT_T = (bits(1) << PHYSICS_REVOLUTE_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_PULLEY_JOINT_T = (bits(1) << PHYSICS_PULLEY_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_GEAR_JOINT_T = (bits(1) << PHYSICS_GEAR_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_FRICTION_JOINT_T = (bits(1) << PHYSICS_FRICTION_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_WELD_JOINT_T = (bits(1) << PHYSICS_WELD_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_ROPE_JOINT_T = (bits(1) << PHYSICS_ROPE_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_WHEEL_JOINT_T = (bits(1) << PHYSICS_WHEEL_JOINT_ID) | PHYSICS_JOINT_T;
-const bits PHYSICS_MOTOR_JOINT_T = (bits(1) << PHYSICS_MOTOR_JOINT_ID) | PHYSICS_JOINT_T;
-
-// Thread.
-const bits THREAD_THREAD_T = (bits(1) << THREAD_THREAD_ID) | OBJECT_T;
-const bits THREAD_CHANNEL_T = (bits(1) << THREAD_CHANNEL_ID) | OBJECT_T;
-
-// Modules.
-const bits MODULE_FILESYSTEM_T = (bits(1) << MODULE_FILESYSTEM_ID) | MODULE_T;
-const bits MODULE_GRAPHICS_T = (bits(1) << MODULE_GRAPHICS_ID) | MODULE_T;
-const bits MODULE_IMAGE_T = (bits(1) << MODULE_IMAGE_ID) | MODULE_T;
-const bits MODULE_SOUND_T = (bits(1) << MODULE_SOUND_ID) | MODULE_T;
+/**
+ * Array of length TYPE_MAX_ENUM containing the flags for each love Type.
+ **/
+extern const TypeBits *typeFlags;
 
 bool getType(const char *in, Type &out);
-bool getType(Type in, const char  *&out);
+bool getType(Type in, const char *&out);
 
 } // love
 

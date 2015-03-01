@@ -56,7 +56,7 @@ static int w__typeOf(lua_State *L)
 {
 	Proxy *p = (Proxy *)lua_touserdata(L, 1);
 	Type t = luax_type(L, 2);
-	luax_pushboolean(L, p->flags[t]);
+	luax_pushboolean(L, typeFlags[p->type][t]);
 	return 1;
 }
 
@@ -207,7 +207,7 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 
 	Proxy *p = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
 	p->object = m.module;
-	p->flags = m.flags;
+	p->type = m.type;
 
 	luaL_newmetatable(L, m.module->getName());
 	lua_pushvalue(L, -1);
@@ -254,12 +254,12 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
-int luax_register_type(lua_State *L, const char *tname, const luaL_Reg *f)
+int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
 {
 	// Verify that this type name has a matching Type ID and type name mapping.
-	love::Type ltype;
-	if (!love::getType(tname, ltype))
-		printf("Missing type entry for type name: %s\n", tname);
+	const char *tname = "Invalid";
+	if (!love::getType(type, tname))
+		printf("Missing type name entry for type ID %d\n", type);
 
 	// Get the place for storing and re-using instantiated love types.
 	luax_getregistry(L, REGISTRY_TYPES);
@@ -374,20 +374,23 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos)
 	return 0;
 }
 
-void luax_rawnewtype(lua_State *L, const char *name, bits flags, love::Object *object)
+void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object)
 {
 	Proxy *u = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
 
 	object->retain();
 
 	u->object = object;
-	u->flags = flags;
+	u->type = type;
+
+	const char *name = "Invalid";
+	getType(type, name);
 
 	luaL_newmetatable(L, name);
 	lua_setmetatable(L, -2);
 }
 
-void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *object)
+void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 {
 	if (object == nullptr)
 	{
@@ -402,11 +405,11 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
 	if (!lua_istable(L, -1))
 	{
 		lua_pop(L, 1);
-		return luax_rawnewtype(L, name, flags, object);
+		return luax_rawnewtype(L, type, object);
 	}
 
 	// Get the value of lovetypes[object] on the stack.
-	lua_pushlightuserdata(L, (void *) object);
+	lua_pushlightuserdata(L, object);
 	lua_gettable(L, -2);
 
 	// If the Proxy userdata isn't in the instantiated types table yet, add it.
@@ -414,9 +417,9 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
 	{
 		lua_pop(L, 1);
 
-		luax_rawnewtype(L, name, flags, object);
+		luax_rawnewtype(L, type, object);
 
-		lua_pushlightuserdata(L, (void *) object);
+		lua_pushlightuserdata(L, object);
 		lua_pushvalue(L, -2);
 
 		// lovetypes[object] = Proxy.
@@ -429,12 +432,13 @@ void luax_pushtype(lua_State *L, const char *name, bits flags, love::Object *obj
 	// Keep the Proxy userdata on the stack.
 }
 
-bool luax_istype(lua_State *L, int idx, love::bits type)
+bool luax_istype(lua_State *L, int idx, love::Type type)
 {
 	if (lua_type(L, idx) != LUA_TUSERDATA)
 		return false;
 
-	return ((((Proxy *)lua_touserdata(L, idx))->flags & type) == type);
+	Proxy *p = (Proxy *) lua_touserdata(L, idx);
+	return typeFlags[p->type][type];
 }
 
 int luax_getfunction(lua_State *L, const char *mod, const char *fn)
@@ -624,107 +628,10 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 	return luaL_argerror(L, narg, msg);
 }
 
-StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
-{
-	{"Invalid", INVALID_ID},
-
-	{"Object", OBJECT_ID},
-	{"Data", DATA_ID},
-	{"Module", MODULE_ID},
-
-	// Filesystem
-	{"File", FILESYSTEM_FILE_ID},
-	{"DroppedFile", FILESYSTEM_DROPPED_FILE_ID},
-	{"FileData", FILESYSTEM_FILE_DATA_ID},
-
-	// Font
-	{"GlyphData", FONT_GLYPH_DATA_ID},
-	{"Rasterizer", FONT_RASTERIZER_ID},
-
-	// Graphics
-	{"Drawable", GRAPHICS_DRAWABLE_ID},
-	{"Texture", GRAPHICS_TEXTURE_ID},
-	{"Image", GRAPHICS_IMAGE_ID},
-	{"Quad", GRAPHICS_QUAD_ID},
-	{"Font", GRAPHICS_FONT_ID},
-	{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
-	{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
-	{"Canvas", GRAPHICS_CANVAS_ID},
-	{"Shader", GRAPHICS_SHADER_ID},
-	{"Mesh", GRAPHICS_MESH_ID},
-	{"Text", GRAPHICS_TEXT_ID},
-
-	// Image
-	{"ImageData", IMAGE_IMAGE_DATA_ID},
-	{"CompressedData", IMAGE_COMPRESSED_DATA_ID},
-
-	// Joystick
-	{"Joystick", JOYSTICK_JOYSTICK_ID},
-
-	// Math
-	{"RandomGenerator", MATH_RANDOM_GENERATOR_ID},
-	{"BezierCurve", MATH_BEZIER_CURVE_ID},
-
-	// Audio
-	{"Source", AUDIO_SOURCE_ID},
-
-	// Sound
-	{"SoundData", SOUND_SOUND_DATA_ID},
-	{"Decoder", SOUND_DECODER_ID},
-
-	// Mouse
-	{"Cursor", MOUSE_CURSOR_ID},
-
-	// Physics
-	{"World", PHYSICS_WORLD_ID},
-	{"Contact", PHYSICS_CONTACT_ID},
-	{"Body", PHYSICS_BODY_ID},
-	{"Fixture", PHYSICS_FIXTURE_ID},
-	{"Shape", PHYSICS_SHAPE_ID},
-	{"CircleShape", PHYSICS_CIRCLE_SHAPE_ID},
-	{"PolygonShape", PHYSICS_POLYGON_SHAPE_ID},
-	{"EdgeShape", PHYSICS_EDGE_SHAPE_ID},
-	{"ChainShape", PHYSICS_CHAIN_SHAPE_ID},
-	{"Joint", PHYSICS_JOINT_ID},
-	{"MouseJoint", PHYSICS_MOUSE_JOINT_ID},
-	{"DistanceJoint", PHYSICS_DISTANCE_JOINT_ID},
-	{"PrismaticJoint", PHYSICS_PRISMATIC_JOINT_ID},
-	{"RevoluteJoint", PHYSICS_REVOLUTE_JOINT_ID},
-	{"PulleyJoint", PHYSICS_PULLEY_JOINT_ID},
-	{"GearJoint", PHYSICS_GEAR_JOINT_ID},
-	{"FrictionJoint", PHYSICS_FRICTION_JOINT_ID},
-	{"WeldJoint", PHYSICS_WELD_JOINT_ID},
-	{"RopeJoint", PHYSICS_ROPE_JOINT_ID},
-	{"WheelJoint", PHYSICS_WHEEL_JOINT_ID},
-	{"MotorJoint", PHYSICS_MOTOR_JOINT_ID},
-
-	// Thread
-	{"Thread", THREAD_THREAD_ID},
-	{"Channel", THREAD_CHANNEL_ID},
-
-	// The modules themselves. Only add abstracted modules here.
-	{"filesystem", MODULE_FILESYSTEM_ID},
-	{"graphics", MODULE_GRAPHICS_ID},
-	{"image", MODULE_IMAGE_ID},
-	{"sound", MODULE_SOUND_ID},
-};
-
-StringMap<Type, TYPE_MAX_ENUM> types(typeEntries, sizeof(typeEntries));
-
-bool getType(const char *in, love::Type &out)
-{
-	return types.find(in, out);
-}
-
-bool getType(love::Type in, const char *&out)
-{
-	return types.find(in, out);
-}
-
 Type luax_type(lua_State *L, int idx)
 {
 	Type t = INVALID_ID;
-	types.find(luaL_checkstring(L, idx), t);
+	getType(luaL_checkstring(L, idx), t);
 	return t;
 }
 

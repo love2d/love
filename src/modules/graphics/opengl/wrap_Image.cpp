@@ -30,7 +30,7 @@ namespace opengl
 
 Image *luax_checkimage(lua_State *L, int idx)
 {
-	return luax_checktype<Image>(L, idx, "Image", GRAPHICS_IMAGE_T);
+	return luax_checktype<Image>(L, idx, GRAPHICS_IMAGE_ID);
 }
 
 int w_Image_setMipmapFilter(lua_State *L)
@@ -96,18 +96,12 @@ int w_Image_getData(lua_State *L)
 	if (i->isCompressed())
 	{
 		love::image::CompressedData *t = i->getCompressedData();
-		if (t)
-			luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
-		else
-			lua_pushnil(L);
+		luax_pushtype(L, IMAGE_COMPRESSED_DATA_ID, t);
 	}
 	else
 	{
 		love::image::ImageData *t = i->getImageData();
-		if (t)
-			luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
-		else
-			lua_pushnil(L);
+		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
 	}
 
 	return 1;
@@ -134,7 +128,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_image(lua_State *L)
 {
-	return luax_register_type(L, "Image", functions);
+	return luax_register_type(L, GRAPHICS_IMAGE_ID, functions);
 }
 
 } // opengl
