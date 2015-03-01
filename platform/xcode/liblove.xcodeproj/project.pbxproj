@@ -325,9 +325,6 @@
 		FA0B7CEB1A95902C000E1D17 /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B561A95902C000E1D17 /* Event.cpp */; };
 		FA0B7CEC1A95902C000E1D17 /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B561A95902C000E1D17 /* Event.cpp */; };
 		FA0B7CED1A95902C000E1D17 /* Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B571A95902C000E1D17 /* Event.h */; };
-		FA0B7CEE1A95902C000E1D17 /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B581A95902C000E1D17 /* wrap_Event.cpp */; };
-		FA0B7CEF1A95902C000E1D17 /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B581A95902C000E1D17 /* wrap_Event.cpp */; };
-		FA0B7CF01A95902C000E1D17 /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B591A95902C000E1D17 /* wrap_Event.h */; };
 		FA0B7CF11A95902C000E1D17 /* DroppedFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B5B1A95902C000E1D17 /* DroppedFile.cpp */; };
 		FA0B7CF21A95902C000E1D17 /* DroppedFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B5B1A95902C000E1D17 /* DroppedFile.cpp */; };
 		FA0B7CF31A95902C000E1D17 /* DroppedFile.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B5C1A95902C000E1D17 /* DroppedFile.h */; };
@@ -850,6 +847,9 @@
 		FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */; };
 		FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */; };
 		FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */; };
+		FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
+		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
+		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAA627CD18E7E1560080752D /* CoreServices.framework */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
@@ -1118,8 +1118,6 @@
 		FA0B7B541A95902C000E1D17 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
 		FA0B7B561A95902C000E1D17 /* Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Event.cpp; sourceTree = "<group>"; };
 		FA0B7B571A95902C000E1D17 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
-		FA0B7B581A95902C000E1D17 /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
-		FA0B7B591A95902C000E1D17 /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA0B7B5B1A95902C000E1D17 /* DroppedFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DroppedFile.cpp; sourceTree = "<group>"; };
 		FA0B7B5C1A95902C000E1D17 /* DroppedFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DroppedFile.h; sourceTree = "<group>"; };
 		FA0B7B5D1A95902C000E1D17 /* File.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = File.cpp; sourceTree = "<group>"; };
@@ -1484,6 +1482,8 @@
 		FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libphysfs.a; sourceTree = "<group>"; };
 		FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvorbis.a; sourceTree = "<group>"; };
 		FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libSDL2.a; sourceTree = "<group>"; };
+		FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
+		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FAA627CD18E7E1560080752D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
@@ -2071,6 +2071,8 @@
 				FA0B7B531A95902C000E1D17 /* Event.cpp */,
 				FA0B7B541A95902C000E1D17 /* Event.h */,
 				FA0B7B551A95902C000E1D17 /* sdl */,
+				FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */,
+				FA8951A11AA2EDF300EC385A /* wrap_Event.h */,
 			);
 			path = event;
 			sourceTree = "<group>";
@@ -2080,8 +2082,6 @@
 			children = (
 				FA0B7B561A95902C000E1D17 /* Event.cpp */,
 				FA0B7B571A95902C000E1D17 /* Event.h */,
-				FA0B7B581A95902C000E1D17 /* wrap_Event.cpp */,
-				FA0B7B591A95902C000E1D17 /* wrap_Event.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
@@ -2823,7 +2823,6 @@
 				FA0B7EDE1A95902D000E1D17 /* Touch.h in Headers */,
 				FA0B7A541A958EA3000E1D17 /* b2Math.h in Headers */,
 				FA0B7ED01A95902C000E1D17 /* wrap_LuaThread.h in Headers */,
-				FA0B7CF01A95902C000E1D17 /* wrap_Event.h in Headers */,
 				FA0B7CE41A95902C000E1D17 /* wrap_Audio.h in Headers */,
 				FA0B7A7F1A958EA3000E1D17 /* b2ContactSolver.h in Headers */,
 				FA0B79491A958E3B000E1D17 /* version.h in Headers */,
@@ -2962,6 +2961,7 @@
 				FA0B7DF91A95902C000E1D17 /* Body.h in Headers */,
 				FA0B7DB91A95902C000E1D17 /* Joystick.h in Headers */,
 				FA0B7E2C1A95902C000E1D17 /* RevoluteJoint.h in Headers */,
+				FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */,
 				FA0B7B2A1A958EA3000E1D17 /* simplexnoise1234.h in Headers */,
 				FA0B7ADC1A958EA3000E1D17 /* glad.hpp in Headers */,
 				FA0B7CF91A95902C000E1D17 /* FileData.h in Headers */,
@@ -3184,6 +3184,7 @@
 				FA0B7D041A95902C000E1D17 /* wrap_DroppedFile.cpp in Sources */,
 				FA0B7B261A958EA3000E1D17 /* lutf8lib.c in Sources */,
 				FA0B7D461A95902C000E1D17 /* ParticleSystem.cpp in Sources */,
+				FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */,
 				FA0B7A361A958EA3000E1D17 /* b2Distance.cpp in Sources */,
 				FA0B7D4C1A95902C000E1D17 /* Shader.cpp in Sources */,
 				FA0B792A1A958E3B000E1D17 /* Matrix.cpp in Sources */,
@@ -3321,7 +3322,6 @@
 				FA0B7B381A958EA3000E1D17 /* wuff_internal.c in Sources */,
 				FA0B7DF81A95902C000E1D17 /* Body.cpp in Sources */,
 				FA0B7DF51A95902C000E1D17 /* wrap_Mouse.cpp in Sources */,
-				FA0B7CEF1A95902C000E1D17 /* wrap_Event.cpp in Sources */,
 				FA0B7D6E1A95902C000E1D17 /* wrap_Shader.cpp in Sources */,
 				FA0B7E861A95902C000E1D17 /* CoreAudioDecoder.cpp in Sources */,
 				FA0B7E761A95902C000E1D17 /* wrap_WeldJoint.cpp in Sources */,
@@ -3462,6 +3462,7 @@
 				FA0B7D031A95902C000E1D17 /* wrap_DroppedFile.cpp in Sources */,
 				FA0B79291A958E3B000E1D17 /* Matrix.cpp in Sources */,
 				FA0B7D451A95902C000E1D17 /* ParticleSystem.cpp in Sources */,
+				FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */,
 				FA0B7ABF1A958EA3000E1D17 /* host.c in Sources */,
 				FA0B7D4B1A95902C000E1D17 /* Shader.cpp in Sources */,
 				FA0B7A581A958EA3000E1D17 /* b2StackAllocator.cpp in Sources */,
@@ -3599,7 +3600,6 @@
 				FA0B7AAA1A958EA3000E1D17 /* b2WeldJoint.cpp in Sources */,
 				FA0B7DF71A95902C000E1D17 /* Body.cpp in Sources */,
 				FA0B7DF41A95902C000E1D17 /* wrap_Mouse.cpp in Sources */,
-				FA0B7CEE1A95902C000E1D17 /* wrap_Event.cpp in Sources */,
 				FA0B7D6D1A95902C000E1D17 /* wrap_Shader.cpp in Sources */,
 				FA0B7E851A95902C000E1D17 /* CoreAudioDecoder.cpp in Sources */,
 				FA0B7E751A95902C000E1D17 /* wrap_WeldJoint.cpp in Sources */,

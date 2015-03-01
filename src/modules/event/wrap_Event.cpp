@@ -23,14 +23,11 @@
 // LOVE
 #include "common/runtime.h"
 
-// sdlevent
-#include "Event.h"
+#include "sdl/Event.h"
 
 namespace love
 {
 namespace event
-{
-namespace sdl
 {
 
 #define instance() (Module::getInstance<Event>(Module::M_EVENT))
@@ -124,7 +121,7 @@ extern "C" int luaopen_love_event(lua_State *L)
 	Event *instance = instance();
 	if (instance == nullptr)
 	{
-		luax_catchexcept(L, [&](){ instance = new Event(); });
+		luax_catchexcept(L, [&](){ instance = new love::event::sdl::Event(); });
 	}
 	else
 		instance->retain();
@@ -139,6 +136,5 @@ extern "C" int luaopen_love_event(lua_State *L)
 	return luax_register_module(L, w);
 }
 
-} // sdl
 } // event
 } // love

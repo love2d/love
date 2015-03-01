@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_EVENT_SDL_WRAP_EVENT_H
-#define LOVE_EVENT_SDL_WRAP_EVENT_H
+#ifndef LOVE_EVENT_WRAP_EVENT_H
+#define LOVE_EVENT_WRAP_EVENT_H
 
 // LOVE
 #include "common/config.h"
@@ -28,8 +28,6 @@
 namespace love
 {
 namespace event
-{
-namespace sdl
 {
 
 int w_pump(lua_State *L);
@@ -41,8 +39,7 @@ int w_quit(lua_State *L);
 
 extern "C" LOVE_EXPORT int luaopen_love_event(lua_State *L);
 
-} // sdl
 } // event
 } // love
 
-#endif // LOVE_EVENT_SDL_WRAP_EVENT_H
+#endif // LOVE_EVENT_WRAP_EVENT_H

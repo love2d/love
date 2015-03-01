@@ -70,6 +70,7 @@ public:
 	virtual void clear();
 
 	virtual void pump() = 0;
+	virtual Message *wait() = 0;
 
 protected:
 	thread::Mutex *mutex;

@@ -164,13 +164,13 @@ source_group("modules\\audio\\openal" FILES ${LOVE_SRC_MODULE_AUDIO_OPENAL})
 set(LOVE_SRC_MODULE_EVENT_ROOT
 	src/modules/event/Event.cpp
 	src/modules/event/Event.h
+	src/modules/event/wrap_Event.cpp
+	src/modules/event/wrap_Event.h
 )
 
 set(LOVE_SRC_MODULE_EVENT_SDL
 	src/modules/event/sdl/Event.cpp
 	src/modules/event/sdl/Event.h
-	src/modules/event/sdl/wrap_Event.cpp
-	src/modules/event/sdl/wrap_Event.h
 )
 
 set(LOVE_SRC_MODULE_EVENT
