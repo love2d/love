@@ -28,7 +28,8 @@
 #include "common/Matrix.h"
 #include "common/StringMap.h"
 #include "common/int.h"
-#include "Texture.h"
+#include "graphics/Texture.h"
+#include "graphics/Volatile.h"
 #include "OpenGL.h"
 
 namespace love
@@ -38,7 +39,7 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas : public Texture
+class Canvas : public Texture, public Volatile
 {
 public:
 
@@ -73,8 +74,7 @@ public:
 	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 	virtual void setFilter(const Texture::Filter &f);
 	virtual bool setWrap(const Texture::Wrap &w);
-	virtual GLuint getGLTexture() const;
-	virtual void predraw();
+	virtual const void *getHandle() const;
 
 	/**
 	 * @param canvases A list of other canvases to temporarily attach to this one,

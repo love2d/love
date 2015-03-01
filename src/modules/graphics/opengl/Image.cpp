@@ -149,7 +149,7 @@ void Image::loadDefaultTexture()
 {
 	usingDefaultTexture = true;
 
-	bind();
+	gl.bindTexture(texture);
 	setFilter(filter);
 
 	// A nice friendly checkerboard to signify invalid textures...
@@ -224,7 +224,8 @@ bool Image::loadVolatile()
 	}
 
 	// NPOT textures don't support mipmapping without full NPOT support.
-	if (hasLimitedNpot() && (width != next_p2(width) || height != next_p2(height)))
+	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
+		&& (width != next_p2(width) || height != next_p2(height)))
 	{
 		flags.mipmaps = false;
 		filter.mipmap = FILTER_NONE;
@@ -323,7 +324,7 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 		throw love::Exception("Invalid rectangle dimensions.");
 	}
 
-	bind();
+	gl.bindTexture(texture);
 
 	if (isCompressed())
 		loadTextureFromCompressedData();
@@ -344,21 +345,12 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 	return true;
 }
 
-void Image::predraw()
-{
-	bind();
-}
-
-void Image::postdraw()
-{
-}
-
 void Image::drawv(const Matrix &t, const Vertex *v)
 {
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	predraw();
+	gl.bindTexture(texture);
 
 	glEnableVertexAttribArray(ATTRIB_POS);
 	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
@@ -371,8 +363,6 @@ void Image::drawv(const Matrix &t, const Vertex *v)
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);
-	
-	postdraw();
 }
 
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -391,9 +381,9 @@ void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy,
 	drawv(t, quad->getVertices());
 }
 
-GLuint Image::getGLTexture() const
+const void *Image::getHandle() const
 {
-	return texture;
+	return &texture;
 }
 
 love::image::ImageData *Image::getImageData() const
@@ -425,7 +415,7 @@ void Image::setFilter(const Texture::Filter &f)
 		filter.min = filter.mag = FILTER_NEAREST;
 	}
 
-	bind();
+	gl.bindTexture(texture);
 	gl.setTextureFilter(filter);
 }
 
@@ -434,7 +424,8 @@ bool Image::setWrap(const Texture::Wrap &w)
 	bool success = true;
 	wrap = w;
 
-	if (hasLimitedNpot() && (width != next_p2(width) || height != next_p2(height)))
+	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
+		&& (width != next_p2(width) || height != next_p2(height)))
 	{
 		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
 			success = false;
@@ -443,7 +434,7 @@ bool Image::setWrap(const Texture::Wrap &w)
 		wrap.s = wrap.t = WRAP_CLAMP;
 	}
 
-	bind();
+	gl.bindTexture(texture);
 	gl.setTextureWrap(w);
 
 	return success;
@@ -458,7 +449,7 @@ void Image::setMipmapSharpness(float sharpness)
 	// LOD bias has the range (-maxbias, maxbias)
 	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
-	bind();
+	gl.bindTexture(texture);
 
 	// negative bias is sharper
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
@@ -467,12 +458,6 @@ void Image::setMipmapSharpness(float sharpness)
 float Image::getMipmapSharpness() const
 {
 	return mipmapSharpness;
-}
-
-void Image::bind() const
-{
-	if (texture != 0)
-		gl.bindTexture(texture);
 }
 
 const Image::Flags &Image::getFlags() const

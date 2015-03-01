@@ -318,7 +318,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		return;
 
 	if (texture.get())
-		texture->predraw();
+		gl.bindTexture(*(GLuint *) texture->getHandle());
 	else
 		gl.bindTexture(gl.getDefaultTexture());
 
@@ -394,9 +394,6 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		// Using the color array leaves the GL constant color undefined.
 		gl.setColor(gl.getColor());
 	}
-
-	if (texture.get())
-		texture->postdraw();
 }
 
 GLenum Mesh::getGLDrawMode(DrawMode mode) const

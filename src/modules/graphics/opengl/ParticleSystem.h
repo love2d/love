@@ -28,7 +28,7 @@
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
-#include "Texture.h"
+#include "graphics/Texture.h"
 #include "VertexBuffer.h"
 
 // STL

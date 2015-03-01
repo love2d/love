@@ -26,7 +26,7 @@
 
 // LOVE
 #include "VertexBuffer.h"
-#include "Texture.h"
+#include "graphics/Texture.h"
 
 // C++
 #include <algorithm>
@@ -238,7 +238,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	texture->predraw();
+	gl.bindTexture(*(GLuint *) texture->getHandle());
 
 	VertexBuffer::Bind array_bind(*array_buf);
 	VertexBuffer::Bind element_bind(*element_buf.getVertexBuffer());
@@ -273,8 +273,6 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 		glDisableVertexAttribArray(ATTRIB_COLOR);
 		gl.setColor(curcolor);
 	}
-
-	texture->postdraw();
 }
 
 void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)

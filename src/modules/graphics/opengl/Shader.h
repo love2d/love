@@ -25,8 +25,9 @@
 #include "common/Object.h"
 #include "common/StringMap.h"
 #include "graphics/Graphics.h"
+#include "graphics/Texture.h"
+#include "graphics/Volatile.h"
 #include "OpenGL.h"
-#include "Texture.h"
 
 // STL
 #include <string>

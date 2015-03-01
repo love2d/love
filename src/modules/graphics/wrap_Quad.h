@@ -18,18 +18,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_QUAD_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_QUAD_H
+#ifndef LOVE_GRAPHICS_WRAP_QUAD_H
+#define LOVE_GRAPHICS_WRAP_QUAD_H
 
 // LOVE
 #include "common/runtime.h"
-#include "graphics/Quad.h"
+#include "Quad.h"
 
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 Quad *luax_checkquad(lua_State *L, int idx);
@@ -37,8 +35,7 @@ int w_Quad_setViewport(lua_State *L);
 int w_Quad_getViewport(lua_State *L);
 extern "C" int luaopen_quad(lua_State *L);
 
-} // opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_QUAD_H
+#endif // LOVE_GRAPHICS_WRAP_QUAD_H

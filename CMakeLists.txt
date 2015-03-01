@@ -272,6 +272,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Texture.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
+	src/modules/graphics/wrap_Quad.cpp
+	src/modules/graphics/wrap_Quad.h
+	src/modules/graphics/wrap_Texture.cpp
+	src/modules/graphics/wrap_Texture.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
@@ -297,7 +301,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/SpriteBatch.h
 	src/modules/graphics/opengl/Text.cpp
 	src/modules/graphics/opengl/Text.h
-	src/modules/graphics/opengl/Texture.h
 	src/modules/graphics/opengl/VertexBuffer.cpp
 	src/modules/graphics/opengl/VertexBuffer.h
 	src/modules/graphics/opengl/wrap_Canvas.cpp
@@ -312,16 +315,12 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_Mesh.h
 	src/modules/graphics/opengl/wrap_ParticleSystem.cpp
 	src/modules/graphics/opengl/wrap_ParticleSystem.h
-	src/modules/graphics/opengl/wrap_Quad.cpp
-	src/modules/graphics/opengl/wrap_Quad.h
 	src/modules/graphics/opengl/wrap_Shader.cpp
 	src/modules/graphics/opengl/wrap_Shader.h
 	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
 	src/modules/graphics/opengl/wrap_SpriteBatch.h
 	src/modules/graphics/opengl/wrap_Text.cpp
 	src/modules/graphics/opengl/wrap_Text.h
-	src/modules/graphics/opengl/wrap_Texture.cpp
-	src/modules/graphics/opengl/wrap_Texture.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS

@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Shader.h"
-#include "wrap_Texture.h"
+#include "graphics/wrap_Texture.h"
 #include <string>
 #include <iostream>
 

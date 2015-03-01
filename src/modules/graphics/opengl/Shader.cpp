@@ -536,7 +536,7 @@ void Shader::sendMatrix(const std::string &name, int size, const GLfloat *m, int
 
 void Shader::sendTexture(const std::string &name, Texture *texture)
 {
-	GLuint gltex = texture->getGLTexture();
+	GLuint gltex = *(GLuint *) texture->getHandle();
 
 	TemporaryAttacher attacher(this);
 

@@ -301,7 +301,7 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	predraw();
+	gl.bindTexture(texture);
 
 	glEnableVertexAttribArray(ATTRIB_POS);
 	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
@@ -314,8 +314,6 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);
-
-	postdraw();
 }
 
 void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -350,7 +348,8 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 	bool success = true;
 	wrap = w;
 
-	if (hasLimitedNpot() && (width != next_p2(width) || height != next_p2(height)))
+	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
+		&& (width != next_p2(width) || height != next_p2(height)))
 	{
 		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
 			success = false;
@@ -365,14 +364,9 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 	return success;
 }
 
-GLuint Canvas::getGLTexture() const
+const void *Canvas::getHandle() const
 {
-	return texture;
-}
-
-void Canvas::predraw()
-{
-	gl.bindTexture(texture);
+	return &texture;
 }
 
 void Canvas::setupGrab()
@@ -459,7 +453,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	for (int i = 0; i < (int) canvases.size(); i++)
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1 + i,
-		                       GL_TEXTURE_2D, canvases[i]->getGLTexture(), 0);
+		                       GL_TEXTURE_2D, *(GLuint *) canvases[i]->getHandle(), 0);
 
 		drawbuffers.push_back(GL_COLOR_ATTACHMENT1 + i);
 	}

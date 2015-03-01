@@ -24,8 +24,6 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Texture *luax_checktexture(lua_State *L, int idx)
 {
@@ -127,7 +125,5 @@ int w_Texture_getWrap(lua_State *L)
 	return 2;
 }
 
-
-} // opengl
 } // graphics
 } // love

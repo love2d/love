@@ -424,7 +424,6 @@
 		FA0B7D511A95902C000E1D17 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA11A95902C000E1D17 /* Text.cpp */; };
 		FA0B7D521A95902C000E1D17 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA11A95902C000E1D17 /* Text.cpp */; };
 		FA0B7D531A95902C000E1D17 /* Text.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA21A95902C000E1D17 /* Text.h */; };
-		FA0B7D541A95902C000E1D17 /* Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA31A95902C000E1D17 /* Texture.h */; };
 		FA0B7D551A95902C000E1D17 /* VertexBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */; };
 		FA0B7D561A95902C000E1D17 /* VertexBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */; };
 		FA0B7D571A95902C000E1D17 /* VertexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA51A95902C000E1D17 /* VertexBuffer.h */; };
@@ -446,9 +445,6 @@
 		FA0B7D671A95902C000E1D17 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB01A95902C000E1D17 /* wrap_ParticleSystem.cpp */; };
 		FA0B7D681A95902C000E1D17 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB01A95902C000E1D17 /* wrap_ParticleSystem.cpp */; };
 		FA0B7D691A95902C000E1D17 /* wrap_ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BB11A95902C000E1D17 /* wrap_ParticleSystem.h */; };
-		FA0B7D6A1A95902C000E1D17 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB21A95902C000E1D17 /* wrap_Quad.cpp */; };
-		FA0B7D6B1A95902C000E1D17 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB21A95902C000E1D17 /* wrap_Quad.cpp */; };
-		FA0B7D6C1A95902C000E1D17 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BB31A95902C000E1D17 /* wrap_Quad.h */; };
 		FA0B7D6D1A95902C000E1D17 /* wrap_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB41A95902C000E1D17 /* wrap_Shader.cpp */; };
 		FA0B7D6E1A95902C000E1D17 /* wrap_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB41A95902C000E1D17 /* wrap_Shader.cpp */; };
 		FA0B7D6F1A95902C000E1D17 /* wrap_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BB51A95902C000E1D17 /* wrap_Shader.h */; };
@@ -458,9 +454,6 @@
 		FA0B7D731A95902C000E1D17 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB81A95902C000E1D17 /* wrap_Text.cpp */; };
 		FA0B7D741A95902C000E1D17 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BB81A95902C000E1D17 /* wrap_Text.cpp */; };
 		FA0B7D751A95902C000E1D17 /* wrap_Text.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BB91A95902C000E1D17 /* wrap_Text.h */; };
-		FA0B7D761A95902C000E1D17 /* wrap_Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BBA1A95902C000E1D17 /* wrap_Texture.cpp */; };
-		FA0B7D771A95902C000E1D17 /* wrap_Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BBA1A95902C000E1D17 /* wrap_Texture.cpp */; };
-		FA0B7D781A95902C000E1D17 /* wrap_Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BBB1A95902C000E1D17 /* wrap_Texture.h */; };
 		FA0B7D791A95902C000E1D17 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BBC1A95902C000E1D17 /* Quad.cpp */; };
 		FA0B7D7A1A95902C000E1D17 /* Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BBC1A95902C000E1D17 /* Quad.cpp */; };
 		FA0B7D7B1A95902C000E1D17 /* Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BBD1A95902C000E1D17 /* Quad.h */; };
@@ -847,6 +840,12 @@
 		FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */; };
 		FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */; };
 		FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */; };
+		FA620A321AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */; };
+		FA620A331AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */; };
+		FA620A341AA2F8DB005DB4C2 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */; };
+		FA620A351AA2F8DB005DB4C2 /* wrap_Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */; };
+		FA620A361AA2F8DB005DB4C2 /* wrap_Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */; };
+		FA620A371AA2F8DB005DB4C2 /* wrap_Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */; };
 		FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
@@ -1185,7 +1184,6 @@
 		FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteBatch.h; sourceTree = "<group>"; };
 		FA0B7BA11A95902C000E1D17 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
 		FA0B7BA21A95902C000E1D17 /* Text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Text.h; sourceTree = "<group>"; };
-		FA0B7BA31A95902C000E1D17 /* Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
 		FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VertexBuffer.cpp; sourceTree = "<group>"; };
 		FA0B7BA51A95902C000E1D17 /* VertexBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VertexBuffer.h; sourceTree = "<group>"; };
 		FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Canvas.cpp; sourceTree = "<group>"; };
@@ -1200,16 +1198,12 @@
 		FA0B7BAF1A95902C000E1D17 /* wrap_Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mesh.h; sourceTree = "<group>"; };
 		FA0B7BB01A95902C000E1D17 /* wrap_ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ParticleSystem.cpp; sourceTree = "<group>"; };
 		FA0B7BB11A95902C000E1D17 /* wrap_ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ParticleSystem.h; sourceTree = "<group>"; };
-		FA0B7BB21A95902C000E1D17 /* wrap_Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Quad.cpp; sourceTree = "<group>"; };
-		FA0B7BB31A95902C000E1D17 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
 		FA0B7BB41A95902C000E1D17 /* wrap_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Shader.cpp; sourceTree = "<group>"; };
 		FA0B7BB51A95902C000E1D17 /* wrap_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Shader.h; sourceTree = "<group>"; };
 		FA0B7BB61A95902C000E1D17 /* wrap_SpriteBatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_SpriteBatch.cpp; sourceTree = "<group>"; };
 		FA0B7BB71A95902C000E1D17 /* wrap_SpriteBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_SpriteBatch.h; sourceTree = "<group>"; };
 		FA0B7BB81A95902C000E1D17 /* wrap_Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Text.cpp; sourceTree = "<group>"; };
 		FA0B7BB91A95902C000E1D17 /* wrap_Text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Text.h; sourceTree = "<group>"; };
-		FA0B7BBA1A95902C000E1D17 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
-		FA0B7BBB1A95902C000E1D17 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
 		FA0B7BBC1A95902C000E1D17 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
 		FA0B7BBD1A95902C000E1D17 /* Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quad.h; sourceTree = "<group>"; };
 		FA0B7BBE1A95902C000E1D17 /* Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Texture.cpp; sourceTree = "<group>"; };
@@ -1482,6 +1476,10 @@
 		FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libphysfs.a; sourceTree = "<group>"; };
 		FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvorbis.a; sourceTree = "<group>"; };
 		FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libSDL2.a; sourceTree = "<group>"; };
+		FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Quad.cpp; sourceTree = "<group>"; };
+		FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
+		FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
+		FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
 		FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
@@ -2171,6 +2169,10 @@
 				FA0B7BBF1A95902C000E1D17 /* Texture.h */,
 				FA0B7BC01A95902C000E1D17 /* Volatile.cpp */,
 				FA0B7BC11A95902C000E1D17 /* Volatile.h */,
+				FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */,
+				FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */,
+				FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */,
+				FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */,
 			);
 			path = graphics;
 			sourceTree = "<group>";
@@ -2200,7 +2202,6 @@
 				FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */,
 				FA0B7BA11A95902C000E1D17 /* Text.cpp */,
 				FA0B7BA21A95902C000E1D17 /* Text.h */,
-				FA0B7BA31A95902C000E1D17 /* Texture.h */,
 				FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */,
 				FA0B7BA51A95902C000E1D17 /* VertexBuffer.h */,
 				FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */,
@@ -2215,16 +2216,12 @@
 				FA0B7BAF1A95902C000E1D17 /* wrap_Mesh.h */,
 				FA0B7BB01A95902C000E1D17 /* wrap_ParticleSystem.cpp */,
 				FA0B7BB11A95902C000E1D17 /* wrap_ParticleSystem.h */,
-				FA0B7BB21A95902C000E1D17 /* wrap_Quad.cpp */,
-				FA0B7BB31A95902C000E1D17 /* wrap_Quad.h */,
 				FA0B7BB41A95902C000E1D17 /* wrap_Shader.cpp */,
 				FA0B7BB51A95902C000E1D17 /* wrap_Shader.h */,
 				FA0B7BB61A95902C000E1D17 /* wrap_SpriteBatch.cpp */,
 				FA0B7BB71A95902C000E1D17 /* wrap_SpriteBatch.h */,
 				FA0B7BB81A95902C000E1D17 /* wrap_Text.cpp */,
 				FA0B7BB91A95902C000E1D17 /* wrap_Text.h */,
-				FA0B7BBA1A95902C000E1D17 /* wrap_Texture.cpp */,
-				FA0B7BBB1A95902C000E1D17 /* wrap_Texture.h */,
 			);
 			path = opengl;
 			sourceTree = "<group>";
@@ -2844,7 +2841,6 @@
 				FA0B7A661A958EA3000E1D17 /* b2Fixture.h in Headers */,
 				FA0B7EE11A95902D000E1D17 /* wrap_Touch.h in Headers */,
 				FA0B7AA91A958EA3000E1D17 /* b2RopeJoint.h in Headers */,
-				FA0B7D781A95902C000E1D17 /* wrap_Texture.h in Headers */,
 				FA0B7E441A95902C000E1D17 /* wrap_CircleShape.h in Headers */,
 				FA0B7EB41A95902C000E1D17 /* System.h in Headers */,
 				FA0B7CE11A95902C000E1D17 /* Source.h in Headers */,
@@ -2859,8 +2855,8 @@
 				FA0B793E1A958E3B000E1D17 /* StringMap.h in Headers */,
 				FA0B793A1A958E3B000E1D17 /* Reference.h in Headers */,
 				FA0B7DCC1A95902C000E1D17 /* Keyboard.h in Headers */,
+				FA620A341AA2F8DB005DB4C2 /* wrap_Quad.h in Headers */,
 				FA0B7EA51A95902C000E1D17 /* SoundData.h in Headers */,
-				FA0B7D6C1A95902C000E1D17 /* wrap_Quad.h in Headers */,
 				FA0B7A821A958EA3000E1D17 /* b2EdgeAndCircleContact.h in Headers */,
 				FA0B79341A958E3B000E1D17 /* Object.h in Headers */,
 				FA0B7CEA1A95902C000E1D17 /* Event.h in Headers */,
@@ -2973,6 +2969,7 @@
 				FA0B794C1A958E3B000E1D17 /* wrap_Data.h in Headers */,
 				FA0B7D321A95902C000E1D17 /* Graphics.h in Headers */,
 				FA0B7E321A95902C000E1D17 /* Shape.h in Headers */,
+				FA620A371AA2F8DB005DB4C2 /* wrap_Texture.h in Headers */,
 				FA0B7DBA1A95902C000E1D17 /* JoystickModule.h in Headers */,
 				FA0B792E1A958E3B000E1D17 /* Memoizer.h in Headers */,
 				FA0B7A731A958EA3000E1D17 /* b2ChainAndCircleContact.h in Headers */,
@@ -3002,7 +2999,6 @@
 				FA0B7A881A958EA3000E1D17 /* b2PolygonAndCircleContact.h in Headers */,
 				FA0B7DDE1A95902C000E1D17 /* wrap_BezierCurve.h in Headers */,
 				FA0B7DED1A95902C000E1D17 /* Cursor.h in Headers */,
-				FA0B7D541A95902C000E1D17 /* Texture.h in Headers */,
 				FA0B7E501A95902C000E1D17 /* wrap_Fixture.h in Headers */,
 				FA0B7A491A958EA3000E1D17 /* b2PolygonShape.h in Headers */,
 				FA0B79281A958E3B000E1D17 /* math.h in Headers */,
@@ -3139,7 +3135,6 @@
 				FA0B7EC61A95902C000E1D17 /* ThreadModule.cpp in Sources */,
 				FA0B7D2C1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */,
 				FA0B7D591A95902C000E1D17 /* wrap_Canvas.cpp in Sources */,
-				FA0B7D6B1A95902C000E1D17 /* wrap_Quad.cpp in Sources */,
 				FA0B7E8F1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
 				FA0B7CD71A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7AC01A958EA3000E1D17 /* host.c in Sources */,
@@ -3153,7 +3148,6 @@
 				FA0B7DD11A95902C000E1D17 /* love.cpp in Sources */,
 				FA0B7AB61A958EA3000E1D17 /* ddsparse.cpp in Sources */,
 				FA0B7D221A95902C000E1D17 /* Rasterizer.cpp in Sources */,
-				FA0B7D771A95902C000E1D17 /* wrap_Texture.cpp in Sources */,
 				FA0B7A4F1A958EA3000E1D17 /* b2Draw.cpp in Sources */,
 				FA0B7D7D1A95902C000E1D17 /* Texture.cpp in Sources */,
 				FA0B7ECC1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
@@ -3174,6 +3168,7 @@
 				FA0B7D871A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7AE21A958EA3000E1D17 /* auxiliar.c in Sources */,
 				FA0B7E101A95902C000E1D17 /* FrictionJoint.cpp in Sources */,
+				FA620A361AA2F8DB005DB4C2 /* wrap_Texture.cpp in Sources */,
 				FA0B7D0A1A95902C000E1D17 /* wrap_FileData.cpp in Sources */,
 				FA0B7ABE1A958EA3000E1D17 /* compress.c in Sources */,
 				FA0B7CF21A95902C000E1D17 /* DroppedFile.cpp in Sources */,
@@ -3305,6 +3300,7 @@
 				FA0B7A721A958EA3000E1D17 /* b2ChainAndCircleContact.cpp in Sources */,
 				FA0B7EAA1A95902C000E1D17 /* wrap_Sound.cpp in Sources */,
 				FA0B79391A958E3B000E1D17 /* Reference.cpp in Sources */,
+				FA620A331AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */,
 				FA0B7E071A95902C000E1D17 /* DistanceJoint.cpp in Sources */,
 				FA0B7A331A958EA3000E1D17 /* b2Collision.cpp in Sources */,
 				FA0B7D9A1A95902C000E1D17 /* ImageIOHandler.cpp in Sources */,
@@ -3417,7 +3413,6 @@
 				FA0B7EC51A95902C000E1D17 /* ThreadModule.cpp in Sources */,
 				FA0B7D2B1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */,
 				FA0B7D581A95902C000E1D17 /* wrap_Canvas.cpp in Sources */,
-				FA0B7D6A1A95902C000E1D17 /* wrap_Quad.cpp in Sources */,
 				FA0B7E8E1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
 				FA0B7CD61A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7A9E1A958EA3000E1D17 /* b2PrismaticJoint.cpp in Sources */,
@@ -3431,7 +3426,6 @@
 				FA0B7DD01A95902C000E1D17 /* love.cpp in Sources */,
 				FA0B7A521A958EA3000E1D17 /* b2Math.cpp in Sources */,
 				FA0B7D211A95902C000E1D17 /* Rasterizer.cpp in Sources */,
-				FA0B7D761A95902C000E1D17 /* wrap_Texture.cpp in Sources */,
 				FA0B7B131A958EA3000E1D17 /* udp.c in Sources */,
 				FA0B7D7C1A95902C000E1D17 /* Texture.cpp in Sources */,
 				FA0B7ECB1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
@@ -3452,6 +3446,7 @@
 				FA0B7D861A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7A3E1A958EA3000E1D17 /* b2ChainShape.cpp in Sources */,
 				FA0B7E0F1A95902C000E1D17 /* FrictionJoint.cpp in Sources */,
+				FA620A351AA2F8DB005DB4C2 /* wrap_Texture.cpp in Sources */,
 				FA0B7D091A95902C000E1D17 /* wrap_FileData.cpp in Sources */,
 				FA0B7B341A958EA3000E1D17 /* wuff_convert.c in Sources */,
 				FA0B7CF11A95902C000E1D17 /* DroppedFile.cpp in Sources */,
@@ -3583,6 +3578,7 @@
 				FA0B7EA91A95902C000E1D17 /* wrap_Sound.cpp in Sources */,
 				FA0B7A981A958EA3000E1D17 /* b2MotorJoint.cpp in Sources */,
 				FA0B7E061A95902C000E1D17 /* DistanceJoint.cpp in Sources */,
+				FA620A321AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */,
 				FA0B793B1A958E3B000E1D17 /* runtime.cpp in Sources */,
 				FA0B7D991A95902C000E1D17 /* ImageIOHandler.cpp in Sources */,
 				FA0B7E5D1A95902C000E1D17 /* wrap_MouseJoint.cpp in Sources */,

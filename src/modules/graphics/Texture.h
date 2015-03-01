@@ -100,6 +100,8 @@ public:
 
 	virtual const Vertex *getVertices() const;
 
+	virtual const void *getHandle() const = 0;
+
 	// The default filter.
 	static void setDefaultFilter(const Filter &f);
 	static const Filter &getDefaultFilter();

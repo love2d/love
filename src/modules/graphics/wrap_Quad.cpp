@@ -25,8 +25,6 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Quad *luax_checkquad(lua_State *L, int idx)
 {
@@ -78,6 +76,5 @@ extern "C" int luaopen_quad(lua_State *L)
 	return luax_register_type(L, "Quad", functions);
 }
 
-} // opengl
 } // graphics
 } // love

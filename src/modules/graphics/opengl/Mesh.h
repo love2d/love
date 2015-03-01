@@ -27,7 +27,7 @@
 #include "common/math.h"
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
-#include "Texture.h"
+#include "graphics/Texture.h"
 #include "VertexBuffer.h"
 
 // C++

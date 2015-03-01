@@ -29,7 +29,8 @@
 #include "common/math.h"
 #include "image/ImageData.h"
 #include "image/CompressedData.h"
-#include "Texture.h"
+#include "graphics/Texture.h"
+#include "graphics/Volatile.h"
 
 // OpenGL
 #include "OpenGL.h"
@@ -47,7 +48,7 @@ namespace opengl
  *
  * @author Anders Ruud
  **/
-class Image : public Texture
+class Image : public Texture, public Volatile
 {
 public:
 
@@ -97,15 +98,7 @@ public:
 	 **/
 	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
-	/**
-	 * Call before using this Image's texture to draw. Binds the texture,
-	 * globally scales texture coordinates if the Image has NPOT dimensions and
-	 * NPOT isn't supported, etc.
-	 **/
-	virtual void predraw();
-	virtual void postdraw();
-
-	virtual GLuint getGLTexture() const;
+	virtual const void *getHandle() const;
 
 	love::image::ImageData *getImageData() const;
 	love::image::CompressedData *getCompressedData() const;
@@ -120,8 +113,6 @@ public:
 	 * Whether this Image is using a compressed texture (via CompressedData).
 	 **/
 	bool isCompressed() const;
-
-	void bind() const;
 
 	/**
 	 * Re-uploads the ImageData or CompressedData associated with this Image to

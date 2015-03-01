@@ -22,7 +22,7 @@
 #include "wrap_Mesh.h"
 #include "Image.h"
 #include "Canvas.h"
-#include "wrap_Texture.h"
+#include "graphics/wrap_Texture.h"
 
 // C++
 #include <typeinfo>

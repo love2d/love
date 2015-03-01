@@ -876,7 +876,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		p = p->next;
 	}
 
-	texture->predraw();
+	gl.bindTexture(*(GLuint *) texture->getHandle());
 	gl.prepareDraw();
 
 	glEnableVertexAttribArray(ATTRIB_COLOR);
@@ -895,8 +895,6 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);
 	glDisableVertexAttribArray(ATTRIB_COLOR);
-
-	texture->postdraw();
 
 	gl.setColor(curcolor);
 }

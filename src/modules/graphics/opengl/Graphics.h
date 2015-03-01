@@ -40,6 +40,7 @@
 #include "Font.h"
 #include "Image.h"
 #include "graphics/Quad.h"
+#include "graphics/Texture.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"

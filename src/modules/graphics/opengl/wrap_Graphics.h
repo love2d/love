@@ -24,7 +24,7 @@
 // LOVE
 #include "wrap_Font.h"
 #include "wrap_Image.h"
-#include "wrap_Quad.h"
+#include "graphics/wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
 #include "wrap_Canvas.h"
