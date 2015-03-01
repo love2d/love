@@ -30,7 +30,7 @@ namespace love
 namespace touch
 {
 
-int w_getTouchIDs(lua_State *L);
+int w_getIDs(lua_State *L);
 int w_getPosition(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_touch(lua_State *L);
 

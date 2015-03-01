@@ -33,9 +33,9 @@ namespace touch
 
 #define instance() (Module::getInstance<Touch>(Module::M_TOUCH))
 
-int w_getTouchIDs(lua_State *L)
+int w_getIDs(lua_State *L)
 {
-	std::vector<int64> ids = instance()->getTouchIDs();
+	std::vector<int64> ids = instance()->getIDs();
 
 	lua_createtable(L, (int) ids.size(), 0);
 
@@ -72,7 +72,7 @@ int w_getPosition(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "getTouchIDs", w_getTouchIDs },
+	{ "getIDs", w_getIDs },
 	{ "getPosition", w_getPosition },
 	{ 0, 0 }
 };

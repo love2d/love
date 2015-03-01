@@ -43,7 +43,7 @@ public:
 
 	virtual ~Touch() {}
 
-	virtual std::vector<int64> getTouchIDs() const;
+	virtual std::vector<int64> getIDs() const;
 	virtual void getPosition(int64 id, double &x, double &y) const;
 
 	// Implements Module.
