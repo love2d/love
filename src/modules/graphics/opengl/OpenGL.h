@@ -55,7 +55,6 @@ enum VertexAttribID
 	ATTRIB_POS = 0,
 	ATTRIB_TEXCOORD,
 	ATTRIB_COLOR,
-	ATTRIB_PSEUDO_INSTANCE_ID, // Instance ID used with pseudo-instancing.
 	ATTRIB_MAX_ENUM
 };
 
@@ -92,14 +91,6 @@ public:
 	{
 		int x, y;
 		int w, h;
-
-		Viewport()
-			: x(0), y(0), w(0), h(0)
-		{}
-
-		Viewport(int _x, int _y, int _w, int _h)
-			: x(_x), y(_y), w(_w), h(_h)
-		{}
 
 		bool operator == (const Viewport &rhs) const
 		{
@@ -271,12 +262,10 @@ public:
 	void bindTexture(GLuint texture);
 
 	/**
-	 * Helper for binding a texture to a specific texture unit.
-	 *
-	 * @param textureunit Index in the range of [0, maxtextureunits-1]
-	 * @param restoreprev Restore previously bound texture unit when done.
+	 * Binds multiple textures to texture units without changing the active
+	 * texture unit. Equivalent to glBindTextures.
 	 **/
-	void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
+	void bindTextures(GLuint first, GLsizei count, const GLuint *textures);
 
 	/**
 	 * Helper for deleting an OpenGL texture.
@@ -311,6 +300,11 @@ public:
 	 **/
 	int getMaxRenderbufferSamples() const;
 
+	/**
+	 * Returns the maximum number of accessible texture units.
+	 **/
+	int getMaxTextureUnits() const;
+
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
 
 	/**
@@ -337,6 +331,7 @@ private:
 	int maxTextureSize;
 	int maxRenderTargets;
 	int maxRenderbufferSamples;
+	int maxTextureUnits;
 
 	Vendor vendor;
 

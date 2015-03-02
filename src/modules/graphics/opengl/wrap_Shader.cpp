@@ -308,7 +308,7 @@ int w_Shader_send(lua_State *L)
 		// Texture (Image or Canvas).
 		p = (Proxy *) lua_touserdata(L, 3);
 
-		if (typeFlags[p->type][GRAPHICS_TEXT_ID])
+		if (typeFlags[p->type][GRAPHICS_TEXTURE_ID])
 			return w_Shader_sendTexture(L);
 
 		break;

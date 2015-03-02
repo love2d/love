@@ -250,9 +250,6 @@ private:
 	Canvas *lastCanvas;
 	OpenGL::Viewport lastViewport;
 
-	// Max GPU texture units available for sent images
-	static GLint maxTexUnits;
-
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
 

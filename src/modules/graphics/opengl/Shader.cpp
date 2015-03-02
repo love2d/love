@@ -66,7 +66,6 @@ Shader *Shader::defaultShader = nullptr;
 
 Shader::ShaderSource Shader::defaultCode[Graphics::RENDERER_MAX_ENUM];
 
-GLint Shader::maxTexUnits = 0;
 std::vector<int> Shader::textureCounters;
 
 Shader::Shader(const ShaderSource &source)
@@ -80,16 +79,9 @@ Shader::Shader(const ShaderSource &source)
 	if (source.vertex.empty() && source.pixel.empty())
 		throw love::Exception("Cannot create shader: no source code!");
 
-	if (maxTexUnits <= 0)
-	{
-		GLint maxtexunits;
-		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtexunits);
-		maxTexUnits = std::max(maxtexunits - 1, 0);
-	}
-
 	// initialize global texture id counters if needed
-	if (textureCounters.size() < (size_t) maxTexUnits)
-		textureCounters.resize(maxTexUnits, 0);
+	if ((int) textureCounters.size() < gl.getMaxTextureUnits())
+		textureCounters.resize(gl.getMaxTextureUnits(), 0);
 
 	// load shader source and create program object
 	loadVolatile();
@@ -224,7 +216,7 @@ bool Shader::loadVolatile()
 
 	// zero out active texture list
 	activeTexUnits.clear();
-	activeTexUnits.insert(activeTexUnits.begin(), maxTexUnits, 0);
+	activeTexUnits.insert(activeTexUnits.begin(), gl.getMaxTextureUnits(), 0);
 
 	std::vector<GLuint> shaderids;
 
@@ -263,16 +255,8 @@ bool Shader::loadVolatile()
 	// Bind generic vertex attribute indices to names in the shader.
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
-		VertexAttribID attrib = (VertexAttribID) i;
-
-		// FIXME: We skip this both because pseudo-instancing is temporarily
-		// disabled (see graphics.lua), and because binding a non-existant
-		// attribute name to a location causes a shader linker warning.
-		if (attrib == ATTRIB_PSEUDO_INSTANCE_ID)
-			continue;
-
 		const char *name = nullptr;
-		if (attribNames.find(attrib, name))
+		if (attribNames.find((VertexAttribID) i, name))
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
@@ -336,7 +320,7 @@ void Shader::unloadVolatile()
 
 	// active texture list is probably invalid, clear it
 	activeTexUnits.clear();
-	activeTexUnits.resize(maxTexUnits, 0);
+	activeTexUnits.resize(gl.getMaxTextureUnits(), 0);
 
 	// same with uniform location list
 	uniforms.clear();
@@ -398,14 +382,7 @@ void Shader::attach(bool temporary)
 	{
 		// make sure all sent textures are properly bound to their respective texture units
 		// note: list potentially contains texture ids of deleted/invalid textures!
-		for (size_t i = 0; i < activeTexUnits.size(); ++i)
-		{
-			if (activeTexUnits[i] > 0)
-				gl.bindTextureToUnit(activeTexUnits[i], (int) i + 1, false);
-		}
-
-		// We always want to use texture unit 0 for everyhing else.
-		gl.setTextureUnit(0);
+		gl.bindTextures(1, (GLsizei) activeTexUnits.size(), &activeTexUnits[0]);
 	}
 }
 
@@ -546,12 +523,9 @@ void Shader::sendTexture(const std::string &name, Texture *texture)
 	checkSetUniformError(u, 1, 1, UNIFORM_SAMPLER);
 
 	// bind texture to assigned texture unit and send uniform to shader program
-	gl.bindTextureToUnit(gltex, texunit, false);
+	gl.bindTextures(texunit, 1, &gltex);
 
 	glUniform1i(u.location, texunit);
-
-	// reset texture unit
-	gl.setTextureUnit(0);
 
 	// increment global shader texture id counter for this texture unit, if we haven't already
 	if (activeTexUnits[texunit-1] == 0)
@@ -849,7 +823,6 @@ StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
 	{"VertexPosition", ATTRIB_POS},
 	{"VertexTexCoord", ATTRIB_TEXCOORD},
 	{"VertexColor", ATTRIB_COLOR},
-	{"love_PseudoInstanceID", ATTRIB_PSEUDO_INSTANCE_ID},
 };
 
 StringMap<VertexAttribID, ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));

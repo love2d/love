@@ -389,7 +389,7 @@ void Canvas::setupGrab()
 
 	// bind the framebuffer object.
 	gl.bindFramebuffer(GL_FRAMEBUFFER, fbo);
-	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
+	gl.setViewport({0, 0, width, height});
 
 	// Set up the projection matrix
 	gl.matrices.projection.push_back(Matrix::ortho(0.0, width, 0.0, height));

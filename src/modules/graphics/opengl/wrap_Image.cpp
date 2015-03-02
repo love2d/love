@@ -94,15 +94,9 @@ int w_Image_getData(lua_State *L)
 	Image *i = luax_checkimage(L, 1);
 
 	if (i->isCompressed())
-	{
-		love::image::CompressedData *t = i->getCompressedData();
-		luax_pushtype(L, IMAGE_COMPRESSED_DATA_ID, t);
-	}
+		luax_pushtype(L, IMAGE_COMPRESSED_DATA_ID, i->getCompressedData());
 	else
-	{
-		love::image::ImageData *t = i->getImageData();
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
-	}
+		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i->getImageData());
 
 	return 1;
 }

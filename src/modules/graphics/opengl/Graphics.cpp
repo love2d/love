@@ -219,7 +219,7 @@ void Graphics::setViewportSize(int width, int height)
 	setCanvas();
 
 	// Set the viewport to top-left corner.
-	gl.setViewport(OpenGL::Viewport(0, 0, width, height));
+	gl.setViewport({0, 0, width, height});
 
 	// If a canvas was bound before this function was called, it needs to be
 	// made aware of the new system viewport size.
@@ -512,7 +512,7 @@ bool Graphics::isCreated() const
 
 void Graphics::setScissor(int x, int y, int width, int height)
 {
-	OpenGL::Viewport box(x, y, width, height);
+	OpenGL::Viewport box = {x, y, width, height};
 
 	states.back().scissor = true;
 	glEnable(GL_SCISSOR_TEST);

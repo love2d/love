@@ -52,8 +52,9 @@ OpenGL::OpenGL()
 	, contextInitialized(false)
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
-	, maxRenderTargets(0)
+	, maxRenderTargets(1)
 	, maxRenderbufferSamples(0)
+	, maxTextureUnits(1)
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
@@ -83,6 +84,8 @@ void OpenGL::setupContext()
 	if (!contextInitialized)
 		return;
 
+	initMaxValues();
+
 	state.color = Color(255, 255, 255, 255);
 	GLfloat glcolor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
@@ -102,11 +105,7 @@ void OpenGL::setupContext()
 
 	// Initialize multiple texture unit support for shaders.
 	state.boundTextures.clear();
-
-	GLint maxtextureunits;
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
-
-	state.boundTextures.resize(maxtextureunits, 0);
+	state.boundTextures.resize(maxTextureUnits, 0);
 
 	GLenum curgltextureunit;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
@@ -125,7 +124,6 @@ void OpenGL::setupContext()
 	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
 	setBlendState(blend);
 
-	initMaxValues();
 	createDefaultTexture();
 
 	// Invalidate the cached matrices by setting some elements to NaN.
@@ -257,6 +255,8 @@ void OpenGL::initMaxValues()
 	}
 	else
 		maxRenderbufferSamples = 0;
+
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 }
 
 void OpenGL::initMatrices()
@@ -484,21 +484,29 @@ void OpenGL::bindTexture(GLuint texture)
 	}
 }
 
-void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
+void OpenGL::bindTextures(GLuint first, GLsizei count, const GLuint *textures)
 {
-	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
-		throw love::Exception("Invalid texture unit index.");
+	if (first + count > (GLuint) maxTextureUnits)
+		return;
 
-	if (texture != state.boundTextures[textureunit])
+	if (GLAD_VERSION_4_4 || GLAD_ARB_multi_bind)
+		glBindTextures(first, count, textures);
+	else
 	{
-		int oldtextureunit = state.curTextureUnit;
-		setTextureUnit(textureunit);
+		for (GLint i = 0; i < count; i++)
+		{
+			GLuint texture = textures != nullptr ? textures[i] : 0;
 
-		state.boundTextures[textureunit] = texture;
-		glBindTexture(GL_TEXTURE_2D, texture);
+			if (state.boundTextures[first + i] != texture)
+			{
+				glActiveTexture(GL_TEXTURE0 + first + i);
+				glBindTexture(GL_TEXTURE_2D, texture);
 
-		if (restoreprev)
-			setTextureUnit(oldtextureunit);
+				state.boundTextures[first + i] = texture;
+			}
+		}
+
+		glActiveTexture(GL_TEXTURE0 + state.curTextureUnit);
 	}
 }
 
@@ -596,6 +604,11 @@ int OpenGL::getMaxRenderTargets() const
 int OpenGL::getMaxRenderbufferSamples() const
 {
 	return maxRenderbufferSamples;
+}
+
+int OpenGL::getMaxTextureUnits() const
+{
+	return maxTextureUnits;
 }
 
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
