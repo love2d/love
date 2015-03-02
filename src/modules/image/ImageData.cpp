@@ -179,7 +179,6 @@ bool ImageData::getConstant(ImageData::Format in, const char  *&out)
 StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
 {
 	{"tga", ImageData::FORMAT_TGA},
-	{"bmp", ImageData::FORMAT_BMP},
 	{"jpg", ImageData::FORMAT_JPG},
 	{"png", ImageData::FORMAT_PNG},
 };

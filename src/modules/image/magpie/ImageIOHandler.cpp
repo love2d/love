@@ -55,8 +55,6 @@ static CFStringRef getFormatType(ImageData::Format format)
 {
 	switch (format)
 	{
-	case ImageData::FORMAT_BMP:
-		return kUTTypeBMP;
 	case ImageData::FORMAT_JPG:
 		return kUTTypeJPEG;
 	case ImageData::FORMAT_TGA:
