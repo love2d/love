@@ -170,6 +170,7 @@ const SDL_Keycode *Keyboard::createKeyMap()
 	k[Keyboard::KEY_EXCLAIM] = SDLK_EXCLAIM;
 	k[Keyboard::KEY_QUOTEDBL] = SDLK_QUOTEDBL;
 	k[Keyboard::KEY_HASH] = SDLK_HASH;
+	k[Keyboard::KEY_PERCENT] = SDLK_PERCENT;
 	k[Keyboard::KEY_DOLLAR] = SDLK_DOLLAR;
 	k[Keyboard::KEY_AMPERSAND] = SDLK_AMPERSAND;
 	k[Keyboard::KEY_QUOTE] = SDLK_QUOTE;

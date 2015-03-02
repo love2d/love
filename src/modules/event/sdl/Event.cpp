@@ -595,6 +595,7 @@ std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::createKeyMap()
 	k[SDLK_EXCLAIM] = Keyboard::KEY_EXCLAIM;
 	k[SDLK_QUOTEDBL] = Keyboard::KEY_QUOTEDBL;
 	k[SDLK_HASH] = Keyboard::KEY_HASH;
+	k[SDLK_PERCENT] = Keyboard::KEY_PERCENT;
 	k[SDLK_DOLLAR] = Keyboard::KEY_DOLLAR;
 	k[SDLK_AMPERSAND] = Keyboard::KEY_AMPERSAND;
 	k[SDLK_QUOTE] = Keyboard::KEY_QUOTE;

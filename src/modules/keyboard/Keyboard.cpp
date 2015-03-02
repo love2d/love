@@ -59,6 +59,7 @@ StringMap<Keyboard::Key, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] =
 	{"!", Keyboard::KEY_EXCLAIM},
 	{"\"", Keyboard::KEY_QUOTEDBL},
 	{"#", Keyboard::KEY_HASH},
+	{"%", Keyboard::KEY_PERCENT},
 	{"$", Keyboard::KEY_DOLLAR},
 	{"&", Keyboard::KEY_AMPERSAND},
 	{"'", Keyboard::KEY_QUOTE},
