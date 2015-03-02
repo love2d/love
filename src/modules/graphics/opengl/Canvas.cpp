@@ -657,11 +657,6 @@ void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum
 
 	switch (format)
 	{
-	case FORMAT_RGBA8:
-	default:
-		internalformat = GL_RGBA8;
-		type = GL_UNSIGNED_BYTE;
-		break;
 	case FORMAT_RGBA4:
 		internalformat = GL_RGBA4;
 		type = GL_UNSIGNED_SHORT_4_4_4_4;
@@ -675,6 +670,21 @@ void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum
 		externalformat = GL_RGB;
 		type = GL_UNSIGNED_SHORT_5_6_5;
 		break;
+	case FORMAT_R8:
+		internalformat = GL_R8;
+		externalformat = GL_RED;
+		type = GL_UNSIGNED_BYTE;
+		break;
+	case FORMAT_RG8:
+		internalformat = GL_RG8;
+		externalformat = GL_RG;
+		type = GL_UNSIGNED_BYTE;
+		break;
+	case FORMAT_RGBA8:
+	default:
+		internalformat = GL_RGBA8;
+		type = GL_UNSIGNED_BYTE;
+		break;
 	case FORMAT_RGB10A2:
 		internalformat = GL_RGB10_A2;
 		type = GL_UNSIGNED_INT_2_10_10_10_REV;
@@ -684,14 +694,44 @@ void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum
 		externalformat = GL_RGB;
 		type = GL_UNSIGNED_INT_10F_11F_11F_REV;
 		break;
-	case FORMAT_RGBA16F:
-		internalformat = GL_RGBA16F;
-		if (GLAD_OES_texture_float)
+	case FORMAT_R16F:
+		internalformat = GL_R16F;
+		externalformat = GL_RED;
+		if (GLAD_OES_texture_half_float)
 			type = GL_HALF_FLOAT_OES;
 		else if (GLAD_VERSION_1_0)
 			type = GL_FLOAT;
 		else
 			type = GL_HALF_FLOAT;
+		break;
+	case FORMAT_RG16F:
+		internalformat = GL_RG16F;
+		externalformat = GL_RG;
+		if (GLAD_OES_texture_half_float)
+			type = GL_HALF_FLOAT_OES;
+		else if (GLAD_VERSION_1_0)
+			type = GL_FLOAT;
+		else
+			type = GL_HALF_FLOAT;
+		break;
+	case FORMAT_RGBA16F:
+		internalformat = GL_RGBA16F;
+		if (GLAD_OES_texture_half_float)
+			type = GL_HALF_FLOAT_OES;
+		else if (GLAD_VERSION_1_0)
+			type = GL_FLOAT;
+		else
+			type = GL_HALF_FLOAT;
+		break;
+	case FORMAT_R32F:
+		internalformat = GL_R32F;
+		externalformat = GL_RED;
+		type = GL_FLOAT;
+		break;
+	case FORMAT_RG32F:
+		internalformat = GL_RG32F;
+		externalformat = GL_RG;
+		type = GL_FLOAT;
 		break;
 	case FORMAT_RGBA32F:
 		internalformat = GL_RGBA32F;
@@ -710,17 +750,24 @@ size_t Canvas::getFormatBitsPerPixel(Format format)
 {
 	switch (getSizedFormat(format))
 	{
-	case FORMAT_RGBA8:
-	case FORMAT_RGB10A2:
-	case FORMAT_RG11B10F:
-	case FORMAT_SRGB:
-	default:
-		return 32;
+	case FORMAT_R8:
+		return 8;
 	case FORMAT_RGBA4:
 	case FORMAT_RGB5A1:
 	case FORMAT_RGB565:
+	case FORMAT_RG8:
+	case FORMAT_R16F:
 		return 16;
+	case FORMAT_RGBA8:
+	case FORMAT_RGB10A2:
+	case FORMAT_RG11B10F:
+	case FORMAT_RG16F:
+	case FORMAT_R32F:
+	case FORMAT_SRGB:
+	default:
+		return 32;
 	case FORMAT_RGBA16F:
+	case FORMAT_RG32F:
 		return 64;
 	case FORMAT_RGBA32F:
 		return 128;
@@ -751,9 +798,6 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 
 	switch (format)
 	{
-	case FORMAT_RGBA8:
-		supported = GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8;
-		break;
 	case FORMAT_RGBA4:
 	case FORMAT_RGB5A1:
 		supported = true;
@@ -761,17 +805,38 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	case FORMAT_RGB565:
 		supported = GLAD_ES_VERSION_2_0 || GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility;
 		break;
+	case FORMAT_R8:
+	case FORMAT_RG8:
+		if (GLAD_VERSION_1_0)
+			supported = GLAD_VERSION_3_0 || GLAD_ARB_texture_rg;
+		else if (GLAD_ES_VERSION_2_0)
+			supported = GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg;
+		break;
+	case FORMAT_RGBA8:
+		supported = GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8;
+		break;
 	case FORMAT_RGB10A2:
 		supported = GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0;
 		break;
 	case FORMAT_RG11B10F:
 		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float /*|| GLAD_APPLE_color_buffer_packed_float*/;
 		break;
+	case FORMAT_R16F:
+	case FORMAT_RG16F:
+		if (GLAD_VERSION_1_0)
+			supported = GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_texture_rg);
+		else
+			supported = GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_half_float && GLAD_EXT_texture_rg));
+		break;
 	case FORMAT_RGBA16F:
 		if (GLAD_VERSION_1_0)
 			supported = GLAD_VERSION_3_0 || GLAD_ARB_texture_float;
 		else if (GLAD_ES_VERSION_2_0)
 			supported = GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float);
+		break;
+	case FORMAT_R32F:
+	case FORMAT_RG32F:
+		supported = GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_texture_rg);
 		break;
 	case FORMAT_RGBA32F:
 		supported = GLAD_VERSION_3_0 || GLAD_ARB_texture_float;
@@ -848,17 +913,23 @@ bool Canvas::getConstant(Format in, const char *&out)
 
 StringMap<Canvas::Format, Canvas::FORMAT_MAX_ENUM>::Entry Canvas::formatEntries[] =
 {
-	{"normal", Canvas::FORMAT_NORMAL},
-	{"hdr", Canvas::FORMAT_HDR},
-	{"rgba8", Canvas::FORMAT_RGBA8},
-	{"rgba4", Canvas::FORMAT_RGBA4},
-	{"rgb5a1", Canvas::FORMAT_RGB5A1},
-	{"rgb565", Canvas::FORMAT_RGB565},
-	{"rgb10a2", Canvas::FORMAT_RGB10A2},
-	{"rg11b10f", Canvas::FORMAT_RG11B10F},
-	{"rgba16f", Canvas::FORMAT_RGBA16F},
-	{"rgba32f", Canvas::FORMAT_RGBA32F},
-	{"srgb", Canvas::FORMAT_SRGB},
+	{"normal", FORMAT_NORMAL},
+	{"hdr", FORMAT_HDR},
+	{"rgba4", FORMAT_RGBA4},
+	{"rgb5a1", FORMAT_RGB5A1},
+	{"rgb565", FORMAT_RGB565},
+	{"r8", FORMAT_R8},
+	{"rg8", FORMAT_RG8},
+	{"rgba8", FORMAT_RGBA8},
+	{"rgb10a2", FORMAT_RGB10A2},
+	{"rg11b10f", FORMAT_RG11B10F},
+	{"r16f", FORMAT_R16F},
+	{"rg16f", FORMAT_RG16F},
+	{"rgba16f", FORMAT_RGBA16F},
+	{"r32f", FORMAT_R32F},
+	{"rg32f", FORMAT_RG32F},
+	{"rgba32f", FORMAT_RGBA32F},
+	{"srgb", FORMAT_SRGB},
 };
 
 StringMap<Canvas::Format, Canvas::FORMAT_MAX_ENUM> Canvas::formats(Canvas::formatEntries, sizeof(Canvas::formatEntries));

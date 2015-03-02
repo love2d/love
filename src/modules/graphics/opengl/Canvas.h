@@ -48,15 +48,21 @@ public:
 	{
 		FORMAT_NORMAL,   // Usually RGBA8 or a similar fallback. Always supported.
 		FORMAT_HDR,      // Usually RGBA16F. Not always supported.
-		FORMAT_RGBA8,    // RGBA with 8 bits per component.
-		FORMAT_RGBA4,    // RGBA with 4 bits per component.
-		FORMAT_RGB5A1,   // RGB with 5 bits per component, and A with 1 bit.
+		FORMAT_RGBA4,    // RGBA with 4 bits per channel.
+		FORMAT_RGB5A1,   // RGB with 5 bits per channel, and A with 1 bit.
 		FORMAT_RGB565,   // RGB with 5, 6, and 5 bits each, respectively.
+		FORMAT_R8,       // Single (red) 8-bit channel.
+		FORMAT_RG8,      // Two-channel (red and green) with 8 bits per channel.
+		FORMAT_RGBA8,    // RGBA with 8 bits per channel.
 		FORMAT_RGB10A2,  // RGB with 10 bits each, and A with 2 bits.
 		FORMAT_RG11B10F, // Floating point [0, +inf]. RG with 11 FP bits each, and B with 10 FP bits.
-		FORMAT_RGBA16F,  // Floating point [-inf, +inf]. RGBA with 16 FP bits per component.
-		FORMAT_RGBA32F,  // Floating point [-inf, +inf]. RGBA with 32 FP bits per component.
-		FORMAT_SRGB,     // sRGB with 8 bits per component, plus 8 bit linear A.
+		FORMAT_R16F,     // Floating point [-inf, +inf]. R with 16 FP bits.
+		FORMAT_RG16F,    // Floating point [-inf, +inf]. RG with 16 FP bits per channel.
+		FORMAT_RGBA16F,  // Floating point [-inf, +inf]. RGBA with 16 FP bits per channel.
+		FORMAT_R32F,     // Floating point [-inf, +inf]. R with 32 FP bits.
+		FORMAT_RG32F,    // Floating point [-inf, +inf]. RG with 32 FP bits per channel.
+		FORMAT_RGBA32F,  // Floating point [-inf, +inf]. RGBA with 32 FP bits per channel.
+		FORMAT_SRGB,     // sRGB with 8 bits per channel, plus 8 bit linear A.
 		FORMAT_MAX_ENUM
 	};
 
