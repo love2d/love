@@ -47,9 +47,23 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	Color color(0, 0, 0, 0);
+	Color color;
 
-	if (!lua_isnoneornil(L, 1))
+	if (lua_isnoneornil(L, 1))
+		color.set(0, 0, 0, 0);
+	else if (lua_istable(L, 1))
+	{
+		for (int i = 1; i <= 4; i++)
+			lua_rawgeti(L, 1, i);
+
+		color.r = (unsigned char) luaL_checkinteger(L, -4);
+		color.g = (unsigned char) luaL_checkinteger(L, -3);
+		color.b = (unsigned char) luaL_checkinteger(L, -2);
+		color.a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+		lua_pop(L, 4);
+	}
+	else
 	{
 		color.r = (unsigned char) luaL_checkinteger(L, 1);
 		color.g = (unsigned char) luaL_checkinteger(L, 2);
