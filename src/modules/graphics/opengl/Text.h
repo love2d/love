@@ -25,7 +25,7 @@
 #include "common/config.h"
 #include "graphics/Drawable.h"
 #include "Font.h"
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 
 namespace love
 {
@@ -81,7 +81,7 @@ private:
 	void addTextData(const TextData &s);
 
 	StrongRef<Font> font;
-	VertexBuffer *vbo;
+	GLBuffer *vbo;
 
 	std::vector<Font::DrawCommand> draw_commands;
 

@@ -424,9 +424,9 @@
 		FA0B7D511A95902C000E1D17 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA11A95902C000E1D17 /* Text.cpp */; };
 		FA0B7D521A95902C000E1D17 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA11A95902C000E1D17 /* Text.cpp */; };
 		FA0B7D531A95902C000E1D17 /* Text.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA21A95902C000E1D17 /* Text.h */; };
-		FA0B7D551A95902C000E1D17 /* VertexBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */; };
-		FA0B7D561A95902C000E1D17 /* VertexBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */; };
-		FA0B7D571A95902C000E1D17 /* VertexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA51A95902C000E1D17 /* VertexBuffer.h */; };
+		FA0B7D551A95902C000E1D17 /* GLBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* GLBuffer.cpp */; };
+		FA0B7D561A95902C000E1D17 /* GLBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* GLBuffer.cpp */; };
+		FA0B7D571A95902C000E1D17 /* GLBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA51A95902C000E1D17 /* GLBuffer.h */; };
 		FA0B7D581A95902C000E1D17 /* wrap_Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */; };
 		FA0B7D591A95902C000E1D17 /* wrap_Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */; };
 		FA0B7D5A1A95902C000E1D17 /* wrap_Canvas.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA71A95902C000E1D17 /* wrap_Canvas.h */; };
@@ -1186,8 +1186,8 @@
 		FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteBatch.h; sourceTree = "<group>"; };
 		FA0B7BA11A95902C000E1D17 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
 		FA0B7BA21A95902C000E1D17 /* Text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Text.h; sourceTree = "<group>"; };
-		FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VertexBuffer.cpp; sourceTree = "<group>"; };
-		FA0B7BA51A95902C000E1D17 /* VertexBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VertexBuffer.h; sourceTree = "<group>"; };
+		FA0B7BA41A95902C000E1D17 /* GLBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLBuffer.cpp; sourceTree = "<group>"; };
+		FA0B7BA51A95902C000E1D17 /* GLBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLBuffer.h; sourceTree = "<group>"; };
 		FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Canvas.cpp; sourceTree = "<group>"; };
 		FA0B7BA71A95902C000E1D17 /* wrap_Canvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Canvas.h; sourceTree = "<group>"; };
 		FA0B7BA81A95902C000E1D17 /* wrap_Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Font.cpp; sourceTree = "<group>"; };
@@ -2188,6 +2188,8 @@
 				FA0B7B8E1A95902C000E1D17 /* Canvas.h */,
 				FA0B7B8F1A95902C000E1D17 /* Font.cpp */,
 				FA0B7B901A95902C000E1D17 /* Font.h */,
+				FA0B7BA41A95902C000E1D17 /* GLBuffer.cpp */,
+				FA0B7BA51A95902C000E1D17 /* GLBuffer.h */,
 				FA0B7B911A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B921A95902C000E1D17 /* Graphics.h */,
 				FA0B7B931A95902C000E1D17 /* Image.cpp */,
@@ -2206,8 +2208,6 @@
 				FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */,
 				FA0B7BA11A95902C000E1D17 /* Text.cpp */,
 				FA0B7BA21A95902C000E1D17 /* Text.h */,
-				FA0B7BA41A95902C000E1D17 /* VertexBuffer.cpp */,
-				FA0B7BA51A95902C000E1D17 /* VertexBuffer.h */,
 				FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */,
 				FA0B7BA71A95902C000E1D17 /* wrap_Canvas.h */,
 				FA0B7BA81A95902C000E1D17 /* wrap_Font.cpp */,
@@ -2815,7 +2815,7 @@
 				FA0B79231A958E3B000E1D17 /* EnumMap.h in Headers */,
 				FA0B7A371A958EA3000E1D17 /* b2Distance.h in Headers */,
 				FA0B7E681A95902C000E1D17 /* wrap_PrismaticJoint.h in Headers */,
-				FA0B7D571A95902C000E1D17 /* VertexBuffer.h in Headers */,
+				FA0B7D571A95902C000E1D17 /* GLBuffer.h in Headers */,
 				FA0B7ED71A95902D000E1D17 /* Timer.h in Headers */,
 				FA0B7AC31A958EA3000E1D17 /* list.h in Headers */,
 				FA0B7B2D1A958EA3000E1D17 /* core.h in Headers */,
@@ -3325,7 +3325,7 @@
 				FA0B7D6E1A95902C000E1D17 /* wrap_Shader.cpp in Sources */,
 				FA0B7E861A95902C000E1D17 /* CoreAudioDecoder.cpp in Sources */,
 				FA0B7E761A95902C000E1D17 /* wrap_WeldJoint.cpp in Sources */,
-				FA0B7D561A95902C000E1D17 /* VertexBuffer.cpp in Sources */,
+				FA0B7D561A95902C000E1D17 /* GLBuffer.cpp in Sources */,
 				FA0B7A6C1A958EA3000E1D17 /* b2World.cpp in Sources */,
 				FA0B7E221A95902C000E1D17 /* PolygonShape.cpp in Sources */,
 				FA0B7A651A958EA3000E1D17 /* b2Fixture.cpp in Sources */,
@@ -3604,7 +3604,7 @@
 				FA0B7D6D1A95902C000E1D17 /* wrap_Shader.cpp in Sources */,
 				FA0B7E851A95902C000E1D17 /* CoreAudioDecoder.cpp in Sources */,
 				FA0B7E751A95902C000E1D17 /* wrap_WeldJoint.cpp in Sources */,
-				FA0B7D551A95902C000E1D17 /* VertexBuffer.cpp in Sources */,
+				FA0B7D551A95902C000E1D17 /* GLBuffer.cpp in Sources */,
 				FA0B7AFF1A958EA3000E1D17 /* options.c in Sources */,
 				FA0B7E211A95902C000E1D17 /* PolygonShape.cpp in Sources */,
 				FA0B7AE41A958EA3000E1D17 /* buffer.c in Sources */,

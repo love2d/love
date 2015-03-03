@@ -97,12 +97,12 @@ void Mesh::setVertices(const std::vector<Vertex> &verts)
 	}
 
 	if (!vbo)
-		vbo = VertexBuffer::Create(size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+		vbo = GLBuffer::Create(size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 	vertex_count = verts.size();
 
-	VertexBuffer::Bind vbo_bind(*vbo);
-	VertexBuffer::Mapper vbo_mapper(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Mapper vbo_mapper(*vbo);
 
 	// Fill the buffer with the vertices.
 	memcpy(vbo_mapper.get(), &verts[0], size);
@@ -112,7 +112,7 @@ const Vertex *Mesh::getVertices() const
 {
 	if (vbo)
 	{
-		VertexBuffer::Bind vbo_bind(*vbo);
+		GLBuffer::Bind vbo_bind(*vbo);
 		return (Vertex *) vbo->map();
 	}
 
@@ -124,7 +124,7 @@ void Mesh::setVertex(size_t index, const Vertex &v)
 	if (index >= vertex_count)
 		throw love::Exception("Invalid vertex index: %ld", index + 1);
 
-	VertexBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
 
 	// We unmap the vertex buffer in Mesh::draw. This lets us coalesce the
 	// buffer transfer calls into just one.
@@ -137,7 +137,7 @@ Vertex Mesh::getVertex(size_t index) const
 	if (index >= vertex_count)
 		throw love::Exception("Invalid vertex index: %ld", index + 1);
 
-	VertexBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
 
 	// We unmap the vertex buffer in Mesh::draw.
 	Vertex *vertices = (Vertex *) vbo->map();
@@ -153,7 +153,7 @@ size_t Mesh::getVertexCount() const
  * Copies index data from a vector to a mapped index buffer.
  **/
 template <typename T>
-static void copyToIndexBuffer(const std::vector<uint32> &indices, VertexBuffer::Mapper &buffermap, size_t maxval)
+static void copyToIndexBuffer(const std::vector<uint32> &indices, GLBuffer::Mapper &buffermap, size_t maxval)
 {
 	T *elems = (T *) buffermap.get();
 
@@ -180,15 +180,15 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	}
 
 	if (!ibo && size > 0)
-		ibo = VertexBuffer::Create(size, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+		ibo = GLBuffer::Create(size, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 	element_count = map.size();
 
 	if (!ibo || element_count == 0)
 		return;
 
-	VertexBuffer::Bind ibo_bind(*ibo);
-	VertexBuffer::Mapper ibo_map(*ibo);
+	GLBuffer::Bind ibo_bind(*ibo);
+	GLBuffer::Mapper ibo_map(*ibo);
 
 	// Fill the buffer with the index values from the vector.
 	switch (datatype)
@@ -227,7 +227,7 @@ void Mesh::getVertexMap(std::vector<uint32> &map) const
 	map.clear();
 	map.reserve(element_count);
 
-	VertexBuffer::Bind ibo_bind(*ibo);
+	GLBuffer::Bind ibo_bind(*ibo);
 
 	// We unmap the buffer in Mesh::draw and Mesh::setVertexMap.
 	void *buffer = ibo->map();
@@ -328,7 +328,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= m;
 
-	VertexBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
 
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	vbo->unmap();
@@ -353,7 +353,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (ibo && element_count > 0)
 	{
 		// Use the custom vertex map (index buffer) to draw the vertices.
-		VertexBuffer::Bind ibo_bind(*ibo);
+		GLBuffer::Bind ibo_bind(*ibo);
 
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();

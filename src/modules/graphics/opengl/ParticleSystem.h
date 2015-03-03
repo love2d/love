@@ -29,7 +29,7 @@
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
 #include "graphics/Texture.h"
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 
 // STL
 #include <vector>

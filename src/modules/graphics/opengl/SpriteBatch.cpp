@@ -25,7 +25,7 @@
 #include "OpenGL.h"
 
 // LOVE
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 #include "graphics/Texture.h"
 
 // C++
@@ -73,7 +73,7 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 
 	try
 	{
-		array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
+		array_buf = GLBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
 	}
 	catch (love::Exception &)
 	{
@@ -135,7 +135,7 @@ void SpriteBatch::clear()
 
 void SpriteBatch::flush()
 {
-	VertexBuffer::Bind bind(*array_buf);
+	GLBuffer::Bind bind(*array_buf);
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
 
 	buffer_used_offset = buffer_used_size = 0;
@@ -183,22 +183,22 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	// Map the old VertexBuffer to get a pointer to its data.
+	// Map the old GLBuffer to get a pointer to its data.
 	void *old_data = nullptr;
 	{
-		VertexBuffer::Bind bind(*array_buf);
+		GLBuffer::Bind bind(*array_buf);
 		old_data = array_buf->map();
 	}
 
 	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
-	VertexBuffer *new_array_buf = nullptr;
+	GLBuffer *new_array_buf = nullptr;
 
 	try
 	{
-		new_array_buf = VertexBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
+		new_array_buf = GLBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
 
-		// Copy as much of the old data into the new VertexBuffer as can fit.
-		VertexBuffer::Bind bind(*new_array_buf);
+		// Copy as much of the old data into the new GLBuffer as can fit.
+		GLBuffer::Bind bind(*new_array_buf);
 		void *new_data = new_array_buf->map();
 		memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
 
@@ -210,7 +210,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		throw;
 	}
 
-	// We don't need to unmap the old VertexBuffer since we're deleting it.
+	// We don't need to unmap the old GLBuffer since we're deleting it.
 	delete array_buf;
 
 	array_buf = new_array_buf;
@@ -240,8 +240,8 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 
 	gl.bindTexture(*(GLuint *) texture->getHandle());
 
-	VertexBuffer::Bind array_bind(*array_buf);
-	VertexBuffer::Bind element_bind(*element_buf.getVertexBuffer());
+	GLBuffer::Bind array_bind(*array_buf);
+	GLBuffer::Bind element_bind(*element_buf.getBuffer());
 
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
@@ -286,7 +286,7 @@ void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)
 	if (color)
 		setColorv(sprite, *color);
 
-	VertexBuffer::Bind bind(*array_buf);
+	GLBuffer::Bind bind(*array_buf);
 
 	// Always keep the VBO mapped when adding data for now (it'll be unmapped
 	// on draw.)

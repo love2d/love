@@ -35,7 +35,7 @@
 #include "font/Rasterizer.h"
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 
 #include "OpenGL.h"
 

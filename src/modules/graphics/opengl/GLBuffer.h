@@ -19,8 +19,8 @@
  **/
 
 
-#ifndef LOVE_GRAPHICS_OPENGL_VERTEX_BUFFER_H
-#define LOVE_GRAPHICS_OPENGL_VERTEX_BUFFER_H
+#ifndef LOVE_GRAPHICS_OPENGL_GL_BUFFER_H
+#define LOVE_GRAPHICS_OPENGL_GL_BUFFER_H
 
 // LOVE
 #include "common/config.h"
@@ -40,45 +40,43 @@ namespace opengl
 {
 
 /**
- * VertexBuffer is a thin abstraction over VBOs (Vertex Buffer Objects) and
- * other OpenGL Buffer Objects.
- *
- * The class is (for now) meant for internal use.
+ * GLBuffer is a thin abstraction over OpenGL's Buffer Objects.
+ * The class is meant for internal use.
  */
-class VertexBuffer : public Volatile
+class GLBuffer : public Volatile
 {
 public:
 
 	/**
-	 * Create a new VertexBuffer.
+	 * Create a new GLBuffer.
 	 *
-	 * @param size The size of the VertexBuffer (in bytes).
+	 * @param size The size of the GLBuffer (in bytes).
 	 * @param target GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER.
 	 * @param usage GL_DYNAMIC_DRAW, etc.
 	 * @param backing Determines what guarantees are placed on the data.
-	 * @return A new VertexBuffer.
+	 * @return A new GLBuffer.
 	 */
-	static VertexBuffer *Create(size_t size, GLenum target, GLenum usage);
+	static GLBuffer *Create(size_t size, GLenum target, GLenum usage);
 
 	/**
 	 * Constructor.
 	 *
-	 * @param size The size of the VertexBuffer in bytes.
-	 * @param target The target VertexBuffer object, e.g. GL_ARRAY_BUFFER.
+	 * @param size The size of the GLBuffer in bytes.
+	 * @param target The target GLBuffer object, e.g. GL_ARRAY_BUFFER.
 	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
 	 * @param backing Determines what guarantees are placed on the data.
 	 */
-	VertexBuffer(size_t size, GLenum target, GLenum usage);
+	GLBuffer(size_t size, GLenum target, GLenum usage);
 
 	/**
 	 * Destructor.
 	 */
-	virtual ~VertexBuffer();
+	virtual ~GLBuffer();
 
 	/**
-	 * Get the size of the VertexBuffer, in bytes.
+	 * Get the size of the GLBuffer, in bytes.
 	 *
-	 * @return The size of the VertexBuffer.
+	 * @return The size of the GLBuffer.
 	 */
 	size_t getSize() const
 	{
@@ -96,7 +94,7 @@ public:
 	}
 
 	/**
-	 * Get the usage hint for this VertexBuffer.
+	 * Get the usage hint for this GLBuffer.
 	 *
 	 * @return The usage hint, e.g. GL_DYNAMIC_DRAW.
 	 */
@@ -116,22 +114,22 @@ public:
 	}
 
 	/**
-	 * Map the VertexBuffer to client memory.
+	 * Map the GLBuffer to client memory.
 	 *
 	 * This can be faster for large changes to the buffer. For smaller
 	 * changes, see fill().
 	 *
-	 * The VertexBuffer must be bound to use this function.
+	 * The GLBuffer must be bound to use this function.
 	 *
 	 * @return A pointer to memory which represents the buffer.
 	 */
 	virtual void *map();
 
 	/**
-	 * Unmap a previously mapped VertexBuffer. The buffer must be unmapped
+	 * Unmap a previously mapped GLBuffer. The buffer must be unmapped
 	 * when used to draw elements.
 	 *
-	 * The VertexBuffer must be bound to use this function.
+	 * The GLBuffer must be bound to use this function.
 	 *
 	 * @param usedOffset The offset into the mapped buffer indicating the
 	 *                   sub-range of data modified. Optional.
@@ -140,22 +138,22 @@ public:
 	virtual void unmap(size_t usedOffset = 0, size_t usedSize = -1);
 
 	/**
-	 * Bind the VertexBuffer to its specified target.
+	 * Bind the GLBuffer to its specified target.
 	 * (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, etc).
 	 */
 	virtual void bind();
 
 	/**
-	 * Unbind a prevously bound VertexBuffer.
+	 * Unbind a prevously bound GLBuffer.
 	 */
 	virtual void unbind();
 
 	/**
 	 * Fill a portion of the buffer with data.
 	 *
-	 * The VertexBuffer must be bound to use this function.
+	 * The GLBuffer must be bound to use this function.
 	 *
-	 * @param offset The offset in the VertexBuffer to store the data.
+	 * @param offset The offset in the GLBuffer to store the data.
 	 * @param size The size of the incoming data.
 	 * @param data Pointer to memory to copy data from.
 	 */
@@ -174,7 +172,7 @@ public:
 	virtual void unloadVolatile();
 
 	/**
-	 * This helper class can bind a VertexArray temporarily, and
+	 * This helper class can bind a GLBuffer temporarily, and
 	 * automatically un-bind when it's destroyed.
 	 */
 	class Bind
@@ -182,16 +180,16 @@ public:
 	public:
 
 		/**
-		 * Bind a VertexBuffer.
+		 * Bind a GLBuffer.
 		 */
-		Bind(VertexBuffer &buf)
+		Bind(GLBuffer &buf)
 			: buf(buf)
 		{
 			buf.bind();
 		}
 
 		/**
-		 * Unbinds a VertexBuffer.
+		 * Unbinds a GLBuffer.
 		 */
 		~Bind()
 		{
@@ -200,8 +198,8 @@ public:
 
 	private:
 
-		// VertexBuffer to work on.
-		VertexBuffer &buf;
+		// GLBuffer to work on.
+		GLBuffer &buf;
 
 	}; // Bind
 
@@ -210,9 +208,9 @@ public:
 	public:
 
 		/**
-		 * Memory-maps a VertexBuffer.
+		 * Memory-maps a GLBuffer.
 		 */
-		Mapper(VertexBuffer &buffer)
+		Mapper(GLBuffer &buffer)
 			: buf(buffer)
 		{
 			elems = buf.map();
@@ -236,7 +234,7 @@ public:
 
 	private:
 
-		VertexBuffer &buf;
+		GLBuffer &buf;
 		void *elems;
 
 	}; // Mapper
@@ -276,11 +274,11 @@ private:
 	// A pointer to mapped memory.
 	char *memory_map;
 
-}; // VertexBuffer
+}; // GLBuffer
 
 
 /**
- * VertexIndex manages one shared VertexBuffer that stores the indices for an
+ * VertexIndex manages one shared GLBuffer that stores the indices for an
  * element array. Vertex arrays using the vertex structure (or anything else
  * that can use the pattern below) can request a size and use it for the
  * drawElements call.
@@ -293,19 +291,19 @@ private:
  *  indices[i*6 + 4] = i*4 + 2;
  *  indices[i*6 + 5] = i*4 + 3;
  *
- * There will always be a large enough VertexBuffer around until all
+ * There will always be a large enough GLBuffer around until all
  * VertexIndex instances have been deleted.
  *
  * Q: Why have something like VertexIndex?
  * A: The indices for the SpriteBatch do not change, only the array size
- * varies. Using one VertexBuffer for all element arrays removes this
+ * varies. Using one GLBuffer for all element arrays removes this
  * duplicated data and saves some memory.
  */
 class VertexIndex
 {
 public:
 	/**
-	 * Adds an entry to the list of sizes and resizes the VertexBuffer
+	 * Adds an entry to the list of sizes and resizes the GLBuffer
 	 * if needed. A size of 1 allocates a group of 6 indices for 4 vertices
 	 * creating 1 face.
 	 *
@@ -317,7 +315,7 @@ public:
 	VertexIndex &operator = (const VertexIndex &other);
 
 	/**
-	 * Removes an entry from the list of sizes and resizes the VertexBuffer
+	 * Removes an entry from the list of sizes and resizes the GLBuffer
 	 * if needed.
 	 */
 	~VertexIndex();
@@ -364,14 +362,14 @@ public:
 	size_t getElementSize();
 
 	/**
-	 * Returns the pointer to the VertexBuffer.
+	 * Returns the pointer to the GLBuffer.
 	 * The pointer will change if a new size request or removal causes
-	 * a VertexBuffer resize. It is recommended to retrieve the pointer
+	 * a GLBuffer resize. It is recommended to retrieve the pointer
 	 * value directly before the drawing call.
 	 *
-	 * @return The pointer to the VertexBuffer.
+	 * @return The pointer to the GLBuffer.
 	 */
-	VertexBuffer *getVertexBuffer() const;
+	GLBuffer *getBuffer() const;
 
 	/**
 	 * Returns a pointer which represents the specified byte offset.
@@ -398,12 +396,12 @@ private:
 	void removeSize(size_t oldSize);
 
 	/**
-	 * Resizes the VertexBuffer to the requested size.
+	 * Resizes the GLBuffer to the requested size.
 	 * This function takes care of choosing the correct integer type and
-	 * allocating and deleting the VertexBuffer instance. It also has some
+	 * allocating and deleting the GLBuffer instance. It also has some
 	 * fallback logic in case the memory ran out.
 	 *
-	 * @param size The requested VertexBuffer size. Passing 0 deletes the VertexBuffer without allocating a new one.
+	 * @param size The requested GLBuffer size. Passing 0 deletes the GLBuffer without allocating a new one.
 	 */
 	void resize(size_t size);
 
@@ -419,16 +417,16 @@ private:
 
 	// The size in bytes of an element in the element array.
 	static size_t elementSize;
-	// The current VertexBuffer size. 0 means no VertexBuffer.
+	// The current GLBuffer size. 0 means no GLBuffer.
 	static size_t maxSize;
 	// The list of sizes. Needs to be kept sorted in ascending order.
 	static std::list<size_t> sizeRefs;
-	// The VertexBuffer for the element array. Can be NULL.
-	static VertexBuffer *element_array;
+	// The GLBuffer for the element array. Can be NULL.
+	static GLBuffer *element_array;
 };
 
 } // opengl
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_SPRITE_BATCH_H
+#endif // LOVE_GRAPHICS_OPENGL_GL_BUFFER_H

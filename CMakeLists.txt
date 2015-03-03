@@ -284,6 +284,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Canvas.h
 	src/modules/graphics/opengl/Font.cpp
 	src/modules/graphics/opengl/Font.h
+	src/modules/graphics/opengl/GLBuffer.cpp
+	src/modules/graphics/opengl/GLBuffer.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp
@@ -302,8 +304,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/SpriteBatch.h
 	src/modules/graphics/opengl/Text.cpp
 	src/modules/graphics/opengl/Text.h
-	src/modules/graphics/opengl/VertexBuffer.cpp
-	src/modules/graphics/opengl/VertexBuffer.h
 	src/modules/graphics/opengl/wrap_Canvas.cpp
 	src/modules/graphics/opengl/wrap_Canvas.h
 	src/modules/graphics/opengl/wrap_Font.cpp

@@ -28,7 +28,7 @@
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
 #include "graphics/Texture.h"
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 
 // C++
 #include <vector>
@@ -165,11 +165,11 @@ private:
 	size_t getGLDataTypeSize(GLenum datatype) const;
 
 	// Vertex buffer.
-	VertexBuffer *vbo;
+	GLBuffer *vbo;
 	size_t vertex_count;
 
 	// Element (vertex index) buffer, for the vertex map.
-	VertexBuffer *ibo;
+	GLBuffer *ibo;
 	size_t element_count;
 	GLenum element_data_type;
 

@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 
 #include "common/Exception.h"
 
@@ -34,14 +34,14 @@ namespace graphics
 namespace opengl
 {
 
-// VertexBuffer
+// GLBuffer
 
-VertexBuffer *VertexBuffer::Create(size_t size, GLenum target, GLenum usage)
+GLBuffer *GLBuffer::Create(size_t size, GLenum target, GLenum usage)
 {
-	return new VertexBuffer(size, target, usage);
+	return new GLBuffer(size, target, usage);
 }
 
-VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage)
+GLBuffer::GLBuffer(size_t size, GLenum target, GLenum usage)
 	: is_bound(false)
 	, is_mapped(false)
 	, size(size)
@@ -68,7 +68,7 @@ VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage)
 	}
 }
 
-VertexBuffer::~VertexBuffer()
+GLBuffer::~GLBuffer()
 {
 	if (vbo != 0)
 		unload();
@@ -76,7 +76,7 @@ VertexBuffer::~VertexBuffer()
 	delete[] memory_map;
 }
 
-void *VertexBuffer::map()
+void *GLBuffer::map()
 {
 	if (is_mapped)
 		return memory_map;
@@ -86,13 +86,13 @@ void *VertexBuffer::map()
 	return memory_map;
 }
 
-void VertexBuffer::unmapStatic(size_t offset, size_t size)
+void GLBuffer::unmapStatic(size_t offset, size_t size)
 {
 	// Upload the mapped data to the buffer.
 	glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, memory_map + offset);
 }
 
-void VertexBuffer::unmapStream()
+void GLBuffer::unmapStream()
 {
 	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
@@ -100,7 +100,7 @@ void VertexBuffer::unmapStream()
 	glBufferData(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
 }
 
-void VertexBuffer::unmap(size_t usedOffset, size_t usedSize)
+void GLBuffer::unmap(size_t usedOffset, size_t usedSize)
 {
 	if (!is_mapped)
 		return;
@@ -138,7 +138,7 @@ void VertexBuffer::unmap(size_t usedOffset, size_t usedSize)
 	is_mapped = false;
 }
 
-void VertexBuffer::bind()
+void GLBuffer::bind()
 {
 	if (!is_mapped)
 	{
@@ -147,7 +147,7 @@ void VertexBuffer::bind()
 	}
 }
 
-void VertexBuffer::unbind()
+void GLBuffer::unbind()
 {
 	if (is_bound)
 		glBindBuffer(getTarget(), 0);
@@ -155,7 +155,7 @@ void VertexBuffer::unbind()
 	is_bound = false;
 }
 
-void VertexBuffer::fill(size_t offset, size_t size, const void *data)
+void GLBuffer::fill(size_t offset, size_t size, const void *data)
 {
 	memcpy(memory_map + offset, data, size);
 
@@ -163,26 +163,26 @@ void VertexBuffer::fill(size_t offset, size_t size, const void *data)
 		glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
 }
 
-const void *VertexBuffer::getPointer(size_t offset) const
+const void *GLBuffer::getPointer(size_t offset) const
 {
 	return BUFFER_OFFSET(offset);
 }
 
-bool VertexBuffer::loadVolatile()
+bool GLBuffer::loadVolatile()
 {
 	return load(true);
 }
 
-void VertexBuffer::unloadVolatile()
+void GLBuffer::unloadVolatile()
 {
 	unload();
 }
 
-bool VertexBuffer::load(bool restore)
+bool GLBuffer::load(bool restore)
 {
 	glGenBuffers(1, &vbo);
 
-	VertexBuffer::Bind bind(*this);
+	GLBuffer::Bind bind(*this);
 
 	// Copy the old buffer only if 'restore' was requested.
 	const GLvoid *src = restore ? memory_map : nullptr;
@@ -193,7 +193,7 @@ bool VertexBuffer::load(bool restore)
 	return true;
 }
 
-void VertexBuffer::unload()
+void GLBuffer::unload()
 {
 	is_mapped = false;
 
@@ -207,7 +207,7 @@ void VertexBuffer::unload()
 size_t VertexIndex::maxSize = 0;
 size_t VertexIndex::elementSize = 0;
 std::list<size_t> VertexIndex::sizeRefs;
-VertexBuffer *VertexIndex::element_array = NULL;
+GLBuffer *VertexIndex::element_array = NULL;
 
 VertexIndex::VertexIndex(size_t size)
 	: size(size)
@@ -264,7 +264,7 @@ size_t VertexIndex::getElementSize()
 	return elementSize;
 }
 
-VertexBuffer *VertexIndex::getVertexBuffer() const
+GLBuffer *VertexIndex::getBuffer() const
 {
 	return element_array;
 }
@@ -318,7 +318,7 @@ void VertexIndex::resize(size_t size)
 		return;
 	}
 
-	VertexBuffer *new_element_array;
+	GLBuffer *new_element_array;
 	
 	// Depending on the size, a switch to int and more memory is needed.
 	GLenum target_type = getType(size);
@@ -327,18 +327,18 @@ void VertexIndex::resize(size_t size)
 	size_t array_size = elem_size * 6 * size;
 
 	// Create may throw out-of-memory exceptions.
-	// VertexIndex will propagate the exception and keep the old VertexBuffer.
+	// VertexIndex will propagate the exception and keep the old GLBuffer.
 	try
 	{
-		new_element_array = VertexBuffer::Create(array_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+		new_element_array = GLBuffer::Create(array_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
 	}
 	catch (std::bad_alloc &)
 	{
 		throw love::Exception("Out of memory.");
 	}
 
-	// Allocation of the new VertexBuffer succeeded.
-	// The old VertexBuffer can now be deleted.
+	// Allocation of the new GLBuffer succeeded.
+	// The old GLBuffer can now be deleted.
 	delete element_array;
 	element_array = new_element_array;
 	maxSize = size;
@@ -358,8 +358,8 @@ void VertexIndex::resize(size_t size)
 template <typename T>
 void VertexIndex::fill()
 {
-	VertexBuffer::Bind bind(*element_array);
-	VertexBuffer::Mapper mapper(*element_array);
+	GLBuffer::Bind bind(*element_array);
+	GLBuffer::Mapper mapper(*element_array);
 
 	T *indices = (T *) mapper.get();
 

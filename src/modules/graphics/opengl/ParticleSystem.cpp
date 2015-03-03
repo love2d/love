@@ -888,7 +888,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
 
 	{
-		VertexBuffer::Bind ibo_bind(*ibo.getVertexBuffer());
+		GLBuffer::Bind ibo_bind(*ibo.getBuffer());
 		gl.drawElements(GL_TRIANGLES, (GLsizei) ibo.getIndexCount(pCount), ibo.getType(), ibo.getPointer(0));
 	}
 

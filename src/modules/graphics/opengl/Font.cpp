@@ -531,7 +531,7 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands)
 	const GLenum gltype = indexBuffer.getType();
 	const size_t elemsize = indexBuffer.getElementSize();
 
-	VertexBuffer::Bind bind(*indexBuffer.getVertexBuffer());
+	GLBuffer::Bind bind(*indexBuffer.getBuffer());
 
 	// We need a separate draw call for every section of the text which uses a
 	// different texture than the previous section.

@@ -32,7 +32,7 @@
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 
 namespace love
 {
@@ -137,7 +137,7 @@ private:
 	// added sprite.
 	Color *color;
 
-	VertexBuffer *array_buf;
+	GLBuffer *array_buf;
 	VertexIndex element_buf;
 
 	// The portion of the vertex buffer that's been modified while mapped.

@@ -633,9 +633,8 @@ const char *OpenGL::debugSeverityString(GLenum severity)
 	case GL_DEBUG_SEVERITY_LOW:
 		return "low";
 	default:
-		break;
+		return "unknown";
 	}
-	return "unknown";
 }
 
 const char *OpenGL::debugSourceString(GLenum source)
@@ -655,9 +654,8 @@ const char *OpenGL::debugSourceString(GLenum source)
 	case GL_DEBUG_SOURCE_OTHER:
 		return "other";
 	default:
-		break;
+		return "unknown";
 	}
-	return "unknown";
 }
 
 const char *OpenGL::debugTypeString(GLenum type)
@@ -677,9 +675,8 @@ const char *OpenGL::debugTypeString(GLenum type)
 	case GL_DEBUG_TYPE_OTHER:
 		return "other";
 	default:
-		break;
+		return "unknown";
 	}
-	return "unknown";
 }
 
 

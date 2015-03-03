@@ -59,13 +59,13 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 		if (vbo != nullptr)
 			newsize = std::max(size_t(vbo->getSize() * 1.5), newsize);
 
-		VertexBuffer *new_vbo = VertexBuffer::Create(newsize, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+		GLBuffer *new_vbo = GLBuffer::Create(newsize, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 		if (vbo != nullptr)
 		{
 			try
 			{
-				VertexBuffer::Bind bind(*vbo);
+				GLBuffer::Bind bind(*vbo);
 				vbodata = (uint8 *) vbo->map();
 			}
 			catch (love::Exception &)
@@ -74,7 +74,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 				throw;
 			}
 
-			VertexBuffer::Bind bind(*new_vbo);
+			GLBuffer::Bind bind(*new_vbo);
 			new_vbo->fill(0, vbo->getSize(), vbodata);
 		}
 
@@ -84,7 +84,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 
 	if (vbo != nullptr)
 	{
-		VertexBuffer::Bind bind(*vbo);
+		GLBuffer::Bind bind(*vbo);
 		vbodata = (uint8 *) vbo->map();
 		memcpy(vbodata + offset, &vertices[0], datasize);
 		// We unmap when we draw, to avoid unnecessary full map()/unmap() calls.
@@ -237,7 +237,7 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	transform.get() *= t;
 
 	{
-		VertexBuffer::Bind bind(*vbo);
+		GLBuffer::Bind bind(*vbo);
 		vbo->unmap(); // Make sure all pending data is flushed to the GPU.
 
 		// Font::drawVertices expects AttribPointer calls to be done already.
