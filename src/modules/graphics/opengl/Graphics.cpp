@@ -1336,6 +1336,8 @@ bool Graphics::isSupported(Support feature) const
 	{
 	case SUPPORT_MULTI_CANVAS:
 		return Canvas::isMultiCanvasSupported();
+	case SUPPORT_MULTI_CANVAS_FORMATS:
+		return Canvas::isMultiFormatMultiCanvasSupported();
 	case SUPPORT_SRGB:
 		// sRGB support for the screen is guaranteed if it's supported as a
 		// Canvas format.

@@ -416,19 +416,21 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 			throw love::Exception("Multi-canvas rendering is not supported on this system.");
 
 		if ((int) canvases.size() + 1 > gl.getMaxRenderTargets())
-			throw love::Exception("This system can't simultaniously render to %d canvases.", canvases.size()+1);
+			throw love::Exception("This system can't simultaneously render to %d canvases.", canvases.size()+1);
 
 		if (actual_samples != 0)
 			throw love::Exception("Multi-canvas rendering is not supported with MSAA.");
 	}
 
+	bool multiformatsupported = isMultiFormatMultiCanvasSupported();
+
 	for (size_t i = 0; i < canvases.size(); i++)
 	{
 		if (canvases[i]->getWidth() != width || canvases[i]->getHeight() != height)
-			throw love::Exception("All canvas arguments must have the same dimensions.");
+			throw love::Exception("All canvases must have the same dimensions.");
 
-		if (canvases[i]->getTextureFormat() != format)
-			throw love::Exception("All canvas arguments must have the same texture format.");
+		if (canvases[i]->getTextureFormat() != format && !multiformatsupported)
+			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (canvases[i]->getMSAA() != 0)
 			throw love::Exception("Multi-canvas rendering is not supported with MSAA.");
@@ -783,6 +785,11 @@ bool Canvas::isMultiCanvasSupported()
 {
 	// system must support at least 4 simultaneous active canvases.
 	return gl.getMaxRenderTargets() >= 4;
+}
+
+bool Canvas::isMultiFormatMultiCanvasSupported()
+{
+	return isMultiCanvasSupported() && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
 }
 
 bool Canvas::supportedFormats[] = {false};

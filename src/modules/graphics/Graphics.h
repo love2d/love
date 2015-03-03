@@ -74,6 +74,7 @@ public:
 	enum Support
 	{
 		SUPPORT_MULTI_CANVAS,
+		SUPPORT_MULTI_CANVAS_FORMATS,
 		SUPPORT_SRGB,
 		SUPPORT_MAX_ENUM
 	};
@@ -183,19 +184,19 @@ public:
 	virtual bool isActive() const = 0;
 
 	static bool getConstant(const char *in, DrawMode &out);
-	static bool getConstant(DrawMode in, const char  *&out);
+	static bool getConstant(DrawMode in, const char *&out);
 
 	static bool getConstant(const char *in, BlendMode &out);
-	static bool getConstant(BlendMode in, const char  *&out);
+	static bool getConstant(BlendMode in, const char *&out);
 
 	static bool getConstant(const char *in, LineStyle &out);
-	static bool getConstant(LineStyle in, const char  *&out);
+	static bool getConstant(LineStyle in, const char *&out);
 
 	static bool getConstant(const char *in, LineJoin &out);
-	static bool getConstant(LineJoin in, const char  *&out);
+	static bool getConstant(LineJoin in, const char *&out);
 
 	static bool getConstant(const char *in, Support &out);
-	static bool getConstant(Support in, const char  *&out);
+	static bool getConstant(Support in, const char *&out);
 
 	static bool getConstant(const char *in, SystemLimit &out);
 	static bool getConstant(SystemLimit in, const char *&out);

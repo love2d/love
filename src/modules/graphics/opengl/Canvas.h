@@ -119,6 +119,7 @@ public:
 
 	static bool isSupported();
 	static bool isMultiCanvasSupported();
+	static bool isMultiFormatMultiCanvasSupported();
 	static bool isFormatSupported(Format format);
 
 	static Canvas *current;
