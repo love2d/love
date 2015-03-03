@@ -3,18 +3,31 @@ LOVE 0.10.0 []
 
 Released: N/A
 
+  * Added a (work-in-progress) iOS port.
+  * Added love.touch module. Note that it has important differences from the touch implementation in the LÖVE 0.9 Android and iOS ports.
+  * Added love.touchpressed, love.touchreleased, and love.touchmoved.
   * Added love.filesystem.setRequirePath and love.filesystem.getRequirePath.
   * Added love.filedropped and love.directorydropped event callback functions.
+  * Added love.lowmemory event callback function, called when the app is running out of memory on mobile operating systems.
   * Added love.wheelmoved event callback function (replaces "wu" and "wd" constants for love.mousepressed.)
+  * Added love.mouse.hasCursor.
+  * Added a boolean argument to love.mousepressed and love.mousereleased indicating whether the button event originated from a touch press.
+  * Added optional x/y/width/height arguments to love.keyboard.setTextInput. They tell the system where text will show up so on-screen keyboards can avoid that area.
   * Added Source:getType (replaces Source:isStatic.)
   * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
   * Added love.graphics.getSystemLimits (replaces love.graphics.getSystemLimit.)
-  * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
-  * Added optional x/y/width/height arguments to Image:refresh.
-  * Added support for OpenGL ES.
-  * Added support for loading ETC1/2, EAC, and PVRTC compressed textures.
+  * Added love.graphics.stencil, love.graphics.setStencilTest, and love.graphics.clearStencil (replaces love.graphics.setStencil.)
+  * Added love.graphics.isActive.
+  * Added color arguments to love.graphics.clear. It no longer always uses the background color value.
+  * Added love.graphics.discard.
+  * Added optional x/y/width/height arguments to Image:refresh and Canvas:newImageData.
+  * Added one- and two-channel Canvas formats: r8, rg8, r16f, rg16f, r32f, and rg32f.
+  * Added support for different formats in each Canvas when using multi-canvas rendering. Added the "multicanvasformats" Graphics Feature constant.
+  * Added support for OpenGL ES 2 and 3.
+  * Added support for loading ETC1/2, EAC, and PVRTC1 compressed textures.
   * Added Text objects and love.graphics.newText.
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
+  * Added love.window.maximize.
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
   * Removed the "wu" and "wd" constants for love.mousepressed (replaced by love.wheelmoved.)
@@ -24,7 +37,9 @@ Released: N/A
   * Removed love.graphics.isSupported (replaced by love.graphics.getSupported.)
   * Removed love.graphics.getSystemLimit (replaced by love.graphics.getSystemLimits.)
   * Removed love.graphics.setStencil (replaced by love.graphics.stencil and love.graphics.setStencilTest.)
-  * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature enums.
+  * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature constant (the features always have guaranteed support now.)
+  * Removed Canvas:getPixel (use Canvas:newImageData instead.)
+  * Removed Canvas:clear (use love.graphics.clear instead.)
   * Removed functions deprecated in LOVE 0.9.x:
     * Removed Canvas:getType (replaced by Canvas:getFormat.)
     * Removed love.graphics.getMaxTextureSize/getMaxImageSize (replaced by love.graphics.getSystemLimits.)
@@ -32,18 +47,28 @@ Released: N/A
     * Removed Mesh:set/getImage, SpriteBatch:set/getImage, and ParticleSystem:set/getImage (replaced by set/getTexture.)
     * Removed SpriteBatch:bind/unbind.
     * Removed Canvas:getFSAA and the "fsaa" flag in love.conf and love.window.setMode (replaced by Canvas:getMSAA and "msaa".)
-    * Removed the "dxt" and "bc5" Graphics Feature enums (replaced by love.graphics.getCompressedImageFormats.)
-    * Removed the "hdrcanvas" Graphics Feature enum (replaced by love.graphics.getCanvasFormats.)
+    * Removed the "dxt" and "bc5" Graphics Feature constant (replaced by love.graphics.getCompressedImageFormats.)
+    * Removed the "hdrcanvas" Graphics Feature constant (replaced by love.graphics.getCanvasFormats.)
     * Removed love.window.getWidth/getHeight (use love.graphics.getWidth/getHeight or love.window.getMode instead.)
 
   * Renamed the fullscreen type "normal" to "exclusive".
-  * Renamed the Distance Model enums "inverse clamped", "linear clamped", and "exponent clamped" to "inverseclamped", "linearclamped", and "exponentclamped".
+  * Renamed the Distance Model constants "inverse clamped", "linear clamped", and "exponent clamped" to "inverseclamped", "linearclamped", and "exponentclamped".
   * Renamed blend modes "additive", "subtractive", and "multiplicative" to "add", "subtract", and "multiply".
+  * Renamed the key constant and scancode representing the spacebar from " " to "space".
+  * Renamed Canvas:getImageData to Canvas:newImageData.
 
+  * Fixed love.graphics.getKeyFromScancode crashing when an invalid scancode is given.
+  * Fixed the stencil buffer in Canvases when an unsupported MSAA value is used to create the Canvas.
+
+  * Updated the compatibility warning notice to use a message box.
+  * Updated love.keypressed to be love.keypressed(key, scancode, isrepeat).
+  * Updated love.keyreleased to be love.keyreleleased(key, scancode).
   * Updated love.math.setRandomSeed and RandomGenerator:setSeed to produce better results for the first few random() calls.
   * Updated Source methods that deal with spatial audio to error rather than failing silently if the Source isn't mono.
   * Updated ImageFonts to no longer treat separator pixels as spacing.
-  * Updated the minimum runtime system requirements of LOVE to require OpenGL 2.1 support.
+  * Updated the default font to use less memory.
+  * Updated the default fullscreen type to be "desktop" rather than "exclusive".
+  * Updated the minimum runtime system requirements of LOVE to require OpenGL 2.1 or OpenGL ES 2 support.
   * Updated the pixel shader effect function so screen_coords.y is 0 at the top of the screen instead of the bottom.
   * Updated love.graphics.newImage's optional second argument to be a table of flags (flags are "mipmaps" and "srgb".)
   * Updated Images to require setting the mipmaps flag to true on creation in order to use mipmaps.

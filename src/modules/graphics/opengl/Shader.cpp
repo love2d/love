@@ -631,7 +631,7 @@ bool Shader::sendBuiltinMatrix(BuiltinUniform builtin, int size, const GLfloat *
 	default:
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -661,7 +661,7 @@ bool Shader::sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *v
 	default:
 		return false;
 	}
-	
+
 	return true;
 }
 
