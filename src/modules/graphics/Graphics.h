@@ -44,21 +44,12 @@ public:
 		DRAW_MAX_ENUM
 	};
 
-	enum AlignMode
-	{
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_JUSTIFY,
-		ALIGN_MAX_ENUM
-	};
-
 	enum BlendMode
 	{
 		BLEND_ALPHA,
-		BLEND_ADDITIVE,
-		BLEND_SUBTRACTIVE,
-		BLEND_MULTIPLICATIVE,
+		BLEND_ADD,
+		BLEND_SUBTRACT,
+		BLEND_MULTIPLY,
 		BLEND_PREMULTIPLIED,
 		BLEND_SCREEN,
 		BLEND_REPLACE,
@@ -80,26 +71,19 @@ public:
 		LINE_JOIN_MAX_ENUM
 	};
 
-	enum PointStyle
-	{
-		POINT_ROUGH,
-		POINT_SMOOTH,
-		POINT_MAX_ENUM
-	};
-
 	enum Support
 	{
-		SUPPORT_CANVAS,
-		SUPPORT_HDR_CANVAS,
 		SUPPORT_MULTI_CANVAS,
-		SUPPORT_SHADER,
-		SUPPORT_NPOT,
-		SUPPORT_SUBTRACTIVE,
-		SUPPORT_MIPMAP,
-		SUPPORT_DXT,
-		SUPPORT_BC5,
+		SUPPORT_MULTI_CANVAS_FORMATS,
 		SUPPORT_SRGB,
 		SUPPORT_MAX_ENUM
+	};
+
+	enum Renderer
+	{
+		RENDERER_OPENGL = 0,
+		RENDERER_OPENGLES,
+		RENDERER_MAX_ENUM
 	};
 
 	enum SystemLimit
@@ -107,7 +91,6 @@ public:
 		LIMIT_POINT_SIZE,
 		LIMIT_TEXTURE_SIZE,
 		LIMIT_MULTI_CANVAS,
-		LIMIT_CANVAS_FSAA, // For backward-compatibility. TODO: remove!
 		LIMIT_CANVAS_MSAA,
 		LIMIT_MAX_ENUM
 	};
@@ -150,10 +133,7 @@ public:
 
 	struct ColorMask
 	{
-		bool r;
-		bool g;
-		bool b;
-		bool a;
+		bool r, g, b, a;
 
 		bool operator == (const ColorMask &m) const
 		{
@@ -189,26 +169,34 @@ public:
 	 **/
 	virtual void unSetMode() = 0;
 
-	static bool getConstant(const char *in, DrawMode &out);
-	static bool getConstant(DrawMode in, const char  *&out);
+	/**
+	 * Sets whether the module is active (internal use only.)
+	 **/
+	virtual void setActive(bool active) = 0;
 
-	static bool getConstant(const char *in, AlignMode &out);
-	static bool getConstant(AlignMode in, const char  *&out);
+	/**
+	 * Gets whether the module is active. Graphics module methods are only
+	 * guaranteed to work when it is active. Calling them otherwise may cause
+	 * the program to crash (or worse.)
+	 * Normally the module will always be active as long as a window exists, it
+	 * may be different on some platforms (especially mobile ones.)
+	 **/
+	virtual bool isActive() const = 0;
+
+	static bool getConstant(const char *in, DrawMode &out);
+	static bool getConstant(DrawMode in, const char *&out);
 
 	static bool getConstant(const char *in, BlendMode &out);
-	static bool getConstant(BlendMode in, const char  *&out);
+	static bool getConstant(BlendMode in, const char *&out);
 
 	static bool getConstant(const char *in, LineStyle &out);
-	static bool getConstant(LineStyle in, const char  *&out);
+	static bool getConstant(LineStyle in, const char *&out);
 
 	static bool getConstant(const char *in, LineJoin &out);
-	static bool getConstant(LineJoin in, const char  *&out);
-
-	static bool getConstant(const char *in, PointStyle &out);
-	static bool getConstant(PointStyle in, const char  *&out);
+	static bool getConstant(LineJoin in, const char *&out);
 
 	static bool getConstant(const char *in, Support &out);
-	static bool getConstant(Support in, const char  *&out);
+	static bool getConstant(Support in, const char *&out);
 
 	static bool getConstant(const char *in, SystemLimit &out);
 	static bool getConstant(SystemLimit in, const char *&out);
@@ -224,9 +212,6 @@ private:
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
 
-	static StringMap<AlignMode, ALIGN_MAX_ENUM>::Entry alignModeEntries[];
-	static StringMap<AlignMode, ALIGN_MAX_ENUM> alignModes;
-
 	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
 	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;
 
@@ -235,9 +220,6 @@ private:
 
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
-
-	static StringMap<PointStyle, POINT_MAX_ENUM>::Entry pointStyleEntries[];
-	static StringMap<PointStyle, POINT_MAX_ENUM> pointStyles;
 
 	static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
 	static StringMap<Support, SUPPORT_MAX_ENUM> support;

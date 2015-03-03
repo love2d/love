@@ -33,6 +33,13 @@
 // C
 #include <cstring>
 
+// For SDL_GL_GetProcAddress.
+#include <SDL_video.h>
+
+#ifdef LOVE_IOS
+#include <SDL_system.h>
+#endif
+
 namespace love
 {
 namespace graphics
@@ -45,7 +52,9 @@ OpenGL::OpenGL()
 	, contextInitialized(false)
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
-	, maxRenderTargets(0)
+	, maxRenderTargets(1)
+	, maxRenderbufferSamples(0)
+	, maxTextureUnits(1)
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
@@ -53,29 +62,33 @@ OpenGL::OpenGL()
 	matrices.projection.reserve(2);
 }
 
-void OpenGL::initContext()
+bool OpenGL::initContext()
 {
 	if (contextInitialized)
-		return;
+		return true;
+
+	if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
+		return false;
 
 	initOpenGLFunctions();
 	initVendor();
 	initMatrices();
 
-	// Store the current color so we don't have to get it through GL later.
-	GLfloat glcolor[4];
-	glGetFloatv(GL_CURRENT_COLOR, glcolor);
-	state.color.r = glcolor[0] * 255;
-	state.color.g = glcolor[1] * 255;
-	state.color.b = glcolor[2] * 255;
-	state.color.a = glcolor[3] * 255;
+	contextInitialized = true;
 
-	// Same with the current clear color.
-	glGetFloatv(GL_COLOR_CLEAR_VALUE, glcolor);
-	state.clearColor.r = glcolor[0] * 255;
-	state.clearColor.g = glcolor[1] * 255;
-	state.clearColor.b = glcolor[2] * 255;
-	state.clearColor.a = glcolor[3] * 255;
+	return true;
+}
+
+void OpenGL::setupContext()
+{
+	if (!contextInitialized)
+		return;
+
+	initMaxValues();
+
+	state.color = Color(255, 255, 255, 255);
+	GLfloat glcolor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -85,41 +98,32 @@ void OpenGL::initContext()
 	glGetIntegerv(GL_SCISSOR_BOX, (GLint *) &state.scissor.x);
 	state.scissor.y = state.viewport.h - (state.scissor.y + state.scissor.h);
 
-	// Initialize multiple texture unit support for shaders, if available.
-	state.textureUnits.clear();
-	if (Shader::isSupported())
-	{
-		GLint maxtextureunits;
-		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxtextureunits);
-
-		state.textureUnits.resize(maxtextureunits, 0);
-
-		GLenum curgltextureunit;
-		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
-
-		state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
-
-		// Retrieve currently bound textures for each texture unit.
-		for (size_t i = 0; i < state.textureUnits.size(); i++)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[i]);
-		}
-
-		glActiveTexture(curgltextureunit);
-	}
+	if (GLAD_VERSION_1_0)
+		glGetFloatv(GL_POINT_SIZE, &state.pointSize);
 	else
+		state.pointSize = 1.0f;
+
+	// Initialize multiple texture unit support for shaders.
+	state.boundTextures.clear();
+	state.boundTextures.resize(maxTextureUnits, 0);
+
+	GLenum curgltextureunit;
+	glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
+
+	state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
+
+	// Retrieve currently bound textures for each texture unit.
+	for (int i = 0; i < (int) state.boundTextures.size(); i++)
 	{
-		// Multitexturing not supported, so we only have 1 texture unit.
-		state.textureUnits.resize(1, 0);
-		state.curTextureUnit = 0;
-		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.textureUnits[0]);
+		glActiveTexture(GL_TEXTURE0 + i);
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.boundTextures[i]);
 	}
+
+	glActiveTexture(curgltextureunit);
 
 	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
 	setBlendState(blend);
 
-	initMaxValues();
 	createDefaultTexture();
 
 	// Invalidate the cached matrices by setting some elements to NaN.
@@ -127,7 +131,8 @@ void OpenGL::initContext()
 	state.lastProjectionMatrix.setTranslation(nan, nan);
 	state.lastTransformMatrix.setTranslation(nan, nan);
 
-	glMatrixMode(GL_MODELVIEW);
+	if (GLAD_VERSION_1_0)
+		glMatrixMode(GL_MODELVIEW);
 
 	contextInitialized = true;
 }
@@ -136,6 +141,9 @@ void OpenGL::deInitContext()
 {
 	if (!contextInitialized)
 		return;
+
+	glDeleteTextures(1, &state.defaultTexture);
+	state.defaultTexture = 0;
 
 	contextInitialized = false;
 }
@@ -150,6 +158,7 @@ void OpenGL::initVendor()
 	}
 
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
+	// http://stackoverflow.com/questions/2093594/opengl-extensions-available-on-different-android-devices
 	if (strstr(vstr, "ATI Technologies"))
 		vendor = VENDOR_ATI_AMD;
 	else if (strstr(vstr, "NVIDIA"))
@@ -158,65 +167,96 @@ void OpenGL::initVendor()
 		vendor = VENDOR_INTEL;
 	else if (strstr(vstr, "Mesa"))
 		vendor = VENDOR_MESA_SOFT;
-	else if (strstr(vstr, "Apple Computer"))
+	else if (strstr(vstr, "Apple Computer") || strstr(vstr, "Apple Inc."))
 		vendor = VENDOR_APPLE;
 	else if (strstr(vstr, "Microsoft"))
 		vendor = VENDOR_MICROSOFT;
+	else if (strstr(vstr, "Imagination"))
+		vendor = VENDOR_IMGTEC;
+	else if (strstr(vstr, "ARM"))
+		vendor = VENDOR_ARM;
+	else if (strstr(vstr, "Qualcomm"))
+		vendor = VENDOR_QUALCOMM;
+	else if (strstr(vstr, "Broadcom"))
+		vendor = VENDOR_BROADCOM;
+	else if (strstr(vstr, "Vivante"))
+		vendor = VENDOR_VIVANTE;
 	else
 		vendor = VENDOR_UNKNOWN;
 }
 
 void OpenGL::initOpenGLFunctions()
 {
-	// The functionality of the core and ARB VBOs are identical, so we can
-	// assign the pointers of the core functions to the names of the ARB
-	// functions, if the latter isn't supported but the former is.
-	if (GLEE_VERSION_1_5 && !GLEE_ARB_vertex_buffer_object)
+	// Alias extension-suffixed framebuffer functions to core versions since
+	// there are so many different-named extensions that do the same things...
+	if (!(GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 	{
-		glBindBufferARB = (GLEEPFNGLBINDBUFFERARBPROC) glBindBuffer;
-		glBufferDataARB = (GLEEPFNGLBUFFERDATAARBPROC) glBufferData;
-		glBufferSubDataARB = (GLEEPFNGLBUFFERSUBDATAARBPROC) glBufferSubData;
-		glDeleteBuffersARB = (GLEEPFNGLDELETEBUFFERSARBPROC) glDeleteBuffers;
-		glGenBuffersARB = (GLEEPFNGLGENBUFFERSARBPROC) glGenBuffers;
-		glGetBufferParameterivARB = (GLEEPFNGLGETBUFFERPARAMETERIVARBPROC) glGetBufferParameteriv;
-		glGetBufferPointervARB = (GLEEPFNGLGETBUFFERPOINTERVARBPROC) glGetBufferPointerv;
-		glGetBufferSubDataARB = (GLEEPFNGLGETBUFFERSUBDATAARBPROC) glGetBufferSubData;
-		glIsBufferARB = (GLEEPFNGLISBUFFERARBPROC) glIsBuffer;
-		glMapBufferARB = (GLEEPFNGLMAPBUFFERARBPROC) glMapBuffer;
-		glUnmapBufferARB = (GLEEPFNGLUNMAPBUFFERARBPROC) glUnmapBuffer;
-	}
+		if (GLAD_VERSION_1_0 && GLAD_EXT_framebuffer_object)
+		{
+			fp_glBindRenderbuffer = fp_glBindRenderbufferEXT;
+			fp_glDeleteRenderbuffers = fp_glDeleteRenderbuffersEXT;
+			fp_glGenRenderbuffers = fp_glGenRenderbuffersEXT;
+			fp_glRenderbufferStorage = fp_glRenderbufferStorageEXT;
+			fp_glGetRenderbufferParameteriv = fp_glGetRenderbufferParameterivEXT;
+			fp_glBindFramebuffer = fp_glBindFramebufferEXT;
+			fp_glDeleteFramebuffers = fp_glDeleteFramebuffersEXT;
+			fp_glGenFramebuffers = fp_glGenFramebuffersEXT;
+			fp_glCheckFramebufferStatus = fp_glCheckFramebufferStatusEXT;
+			fp_glFramebufferTexture2D = fp_glFramebufferTexture2DEXT;
+			fp_glFramebufferRenderbuffer = fp_glFramebufferRenderbufferEXT;
+			fp_glGetFramebufferAttachmentParameteriv = fp_glGetFramebufferAttachmentParameterivEXT;
+			fp_glGenerateMipmap = fp_glGenerateMipmapEXT;
+		}
 
-	// Same deal for compressed textures.
-	if (GLEE_VERSION_1_3 && !GLEE_ARB_texture_compression)
-	{
-		glCompressedTexImage2DARB = (GLEEPFNGLCOMPRESSEDTEXIMAGE2DARBPROC) glCompressedTexImage2D;
-		glCompressedTexSubImage2DARB = (GLEEPFNGLCOMPRESSEDTEXSUBIMAGE2DARBPROC) glCompressedTexSubImage2D;
-		glGetCompressedTexImageARB = (GLEEPFNGLGETCOMPRESSEDTEXIMAGEARBPROC) glGetCompressedTexImage;
+		if (GLAD_EXT_framebuffer_blit)
+			fp_glBlitFramebuffer = fp_glBlitFramebufferEXT;
+		else if (GLAD_ANGLE_framebuffer_blit)
+			fp_glBlitFramebuffer = fp_glBlitFramebufferANGLE;
+		else if (GLAD_NV_framebuffer_blit)
+			fp_glBlitFramebuffer = fp_glBlitFramebufferNV;
+
+		if (GLAD_EXT_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleEXT;
+		else if (GLAD_APPLE_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleAPPLE;
+		else if (GLAD_ANGLE_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleANGLE;
+		else if (GLAD_NV_framebuffer_multisample)
+			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleNV;
 	}
 }
 
 void OpenGL::initMaxValues()
 {
 	// We'll need this value to clamp anisotropy.
-	if (GLEE_EXT_texture_filter_anisotropic)
+	if (GLAD_EXT_texture_filter_anisotropic)
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
 	else
 		maxAnisotropy = 1.0f;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-	if (Canvas::isSupported() && (GLEE_VERSION_2_0 || GLEE_ARB_draw_buffers))
+	int maxattachments = 1;
+	int maxdrawbuffers = 1;
+
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_2_0)
 	{
-		int maxattachments = 0;
 		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxattachments);
-
-		int maxdrawbuffers = 0;
 		glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxdrawbuffers);
+	}
 
-		maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
+	maxRenderTargets = std::min(maxattachments, maxdrawbuffers);
+
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
+		|| GLAD_EXT_framebuffer_multisample || GLAD_APPLE_framebuffer_multisample
+		|| GLAD_ANGLE_framebuffer_multisample)
+	{
+		glGetIntegerv(GL_MAX_SAMPLES, &maxRenderbufferSamples);
 	}
 	else
-		maxRenderTargets = 0;
+		maxRenderbufferSamples = 0;
+
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 }
 
 void OpenGL::initMatrices()
@@ -235,8 +275,10 @@ void OpenGL::createDefaultTexture()
 	// primitives, which would create the need to use different "passthrough"
 	// shaders for untextured primitives vs images.
 
-	GLuint curtexture = state.textureUnits[state.curTextureUnit];
-	bindTexture(0);
+	GLuint curtexture = state.boundTextures[state.curTextureUnit];
+
+	glGenTextures(1, &state.defaultTexture);
+	bindTexture(state.defaultTexture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -245,7 +287,7 @@ void OpenGL::createDefaultTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	GLubyte pix = 255;
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pix);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pix);
 
 	bindTexture(curtexture);
 }
@@ -273,40 +315,43 @@ void OpenGL::prepareDraw()
 		// Make sure the active shader has the correct values for its
 		// love-provided uniforms.
 		shader->checkSetScreenParams();
+	}
 
-		// We need to make sure antialiased Canvases are properly resolved
-		// before sampling from their textures in a shader.
-		// This is kind of a big hack. :(
-		for (auto &r : shader->getBoundRetainables())
+	const Matrix &curproj = matrices.projection.back();
+	const Matrix &curxform = matrices.transform.back();
+
+	if (GLAD_ES_VERSION_2_0 && shader)
+	{
+		// Send built-in uniforms to the current shader.
+		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_MATRIX, 4, curxform.getElements(), 1);
+		shader->sendBuiltinMatrix(Shader::BUILTIN_PROJECTION_MATRIX, 4, curproj.getElements(), 1);
+
+		Matrix tp_matrix(curproj * curxform);
+		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX, 4, tp_matrix.getElements(), 1);
+
+		shader->sendBuiltinFloat(Shader::BUILTIN_POINT_SIZE, 1, &state.pointSize, 1);
+	}
+	else if (GLAD_VERSION_1_0)
+	{
+		const Matrix &lastproj = state.lastProjectionMatrix;
+		const Matrix &lastxform = state.lastTransformMatrix;
+
+		// We only need to re-upload the projection matrix if it's changed.
+		if (memcmp(curproj.getElements(), lastproj.getElements(), sizeof(float) * 16) != 0)
 		{
-			// Even bigger hack! D:
-			Canvas *canvas = dynamic_cast<Canvas *>(r.second);
-			if (canvas != nullptr)
-				canvas->resolveMSAA();
+			glMatrixMode(GL_PROJECTION);
+			glLoadMatrixf(curproj.getElements());
+			glMatrixMode(GL_MODELVIEW);
+
+			state.lastProjectionMatrix = matrices.projection.back();
 		}
-	}
 
-	const float *curproj = matrices.projection.back().getElements();
-	const float *lastproj = state.lastProjectionMatrix.getElements();
-
-	// We only need to re-upload the projection matrix if it's changed.
-	if (memcmp(curproj, lastproj, sizeof(float) * 16) != 0)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glLoadMatrixf(curproj);
-		glMatrixMode(GL_MODELVIEW);
-
-		state.lastProjectionMatrix = matrices.projection.back();
-	}
-
-	const float *curxform = matrices.transform.back().getElements();
-	const float *lastxform = state.lastTransformMatrix.getElements();
-
-	// Same with the transform matrix.
-	if (memcmp(curxform, lastxform, sizeof(float) * 16) != 0)
-	{
-		glLoadMatrixf(curxform);
-		state.lastTransformMatrix = matrices.transform.back();
+		// Same with the transform matrix.
+		if (memcmp(curxform.getElements(), lastxform.getElements(), sizeof(float) * 16) != 0)
+		{
+			glLoadMatrixf(curxform.getElements());
+			state.lastTransformMatrix = matrices.transform.back();
+		}
 	}
 }
 
@@ -324,24 +369,15 @@ void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *i
 
 void OpenGL::setColor(const Color &c)
 {
-	glColor4ubv(&c.r);
+	GLfloat glc[] = {c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f};
+	glVertexAttrib4fv(ATTRIB_COLOR, glc);
+
 	state.color = c;
 }
 
 Color OpenGL::getColor() const
 {
 	return state.color;
-}
-
-void OpenGL::setClearColor(const Color &c)
-{
-	glClearColor(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
-	state.clearColor = c;
-}
-
-Color OpenGL::getClearColor() const
-{
-	return state.clearColor;
 }
 
 void OpenGL::setViewport(const OpenGL::Viewport &v)
@@ -381,28 +417,8 @@ OpenGL::Viewport OpenGL::getScissor() const
 
 void OpenGL::setBlendState(const BlendState &blend)
 {
-	if (GLEE_VERSION_1_4 || GLEE_ARB_imaging)
-		glBlendEquation(blend.func);
-	else if (GLEE_EXT_blend_minmax && GLEE_EXT_blend_subtract)
-		glBlendEquationEXT(blend.func);
-	else
-	{
-		if (blend.func == GL_FUNC_REVERSE_SUBTRACT)
-			throw love::Exception("This graphics card does not support the subtractive blend mode!");
-		// GL_FUNC_ADD is the default even without access to glBlendEquation, so that'll still work.
-	}
-
-	if (blend.srcRGB == blend.srcA && blend.dstRGB == blend.dstA)
-		glBlendFunc(blend.srcRGB, blend.dstRGB);
-	else
-	{
-		if (GLEE_VERSION_1_4)
-			glBlendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
-		else if (GLEE_EXT_blend_func_separate)
-			glBlendFuncSeparateEXT(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
-		else
-			throw love::Exception("This graphics card does not support separated rgb and alpha blend functions!");
-	}
+	glBlendEquation(blend.func);
+	glBlendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
 
 	state.blend = blend;
 }
@@ -412,46 +428,85 @@ OpenGL::BlendState OpenGL::getBlendState() const
 	return state.blend;
 }
 
+void OpenGL::setPointSize(float size)
+{
+	if (GLAD_VERSION_1_0)
+		glPointSize(size);
+
+	state.pointSize = size;
+}
+
+float OpenGL::getPointSize() const
+{
+	return state.pointSize;
+}
+
+void OpenGL::bindFramebuffer(GLenum target, GLuint framebuffer)
+{
+	glBindFramebuffer(target, framebuffer);
+
+	if (target == GL_FRAMEBUFFER)
+		++stats.framebufferBinds;
+}
+
+GLuint OpenGL::getDefaultFBO() const
+{
+#ifdef LOVE_IOS
+	// Hack: iOS uses a custom FBO.
+	return SDL_iPhoneGetViewFramebuffer(SDL_GL_GetCurrentWindow());
+#else
+	return 0;
+#endif
+}
+
+GLuint OpenGL::getDefaultTexture() const
+{
+	return state.defaultTexture;
+}
+
 void OpenGL::setTextureUnit(int textureunit)
 {
-	if (textureunit < 0 || (size_t) textureunit >= state.textureUnits.size())
+	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
 		throw love::Exception("Invalid texture unit index (%d).", textureunit);
 
 	if (textureunit != state.curTextureUnit)
-	{
-		if (state.textureUnits.size() > 1)
-			glActiveTexture(GL_TEXTURE0 + textureunit);
-		else
-			throw love::Exception("Multitexturing is not supported.");
-	}
+		glActiveTexture(GL_TEXTURE0 + textureunit);
 
 	state.curTextureUnit = textureunit;
 }
 
 void OpenGL::bindTexture(GLuint texture)
 {
-	if (texture != state.textureUnits[state.curTextureUnit])
+	if (texture != state.boundTextures[state.curTextureUnit])
 	{
-		state.textureUnits[state.curTextureUnit] = texture;
+		state.boundTextures[state.curTextureUnit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 }
 
-void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
+void OpenGL::bindTextures(GLuint first, GLsizei count, const GLuint *textures)
 {
-	if (textureunit < 0 || (size_t) textureunit >= state.textureUnits.size())
-		throw love::Exception("Invalid texture unit index.");
+	if (first + count > (GLuint) maxTextureUnits)
+		return;
 
-	if (texture != state.textureUnits[textureunit])
+	if (GLAD_VERSION_4_4 || GLAD_ARB_multi_bind)
+		glBindTextures(first, count, textures);
+	else
 	{
-		int oldtextureunit = state.curTextureUnit;
-		setTextureUnit(textureunit);
+		for (GLint i = 0; i < count; i++)
+		{
+			GLuint texture = textures != nullptr ? textures[i] : 0;
 
-		state.textureUnits[textureunit] = texture;
-		glBindTexture(GL_TEXTURE_2D, texture);
+			if (state.boundTextures[first + i] != texture)
+			{
+				glActiveTexture(GL_TEXTURE0 + first + i);
+				glBindTexture(GL_TEXTURE_2D, texture);
 
-		if (restoreprev)
-			setTextureUnit(oldtextureunit);
+				state.boundTextures[first + i] = texture;
+			}
+		}
+
+		glActiveTexture(GL_TEXTURE0 + state.curTextureUnit);
 	}
 }
 
@@ -459,7 +514,7 @@ void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture
 	// was bound to before deletion.
-	for (GLuint &texid : state.textureUnits)
+	for (GLuint &texid : state.boundTextures)
 	{
 		if (texid == texture)
 			texid = 0;
@@ -468,7 +523,7 @@ void OpenGL::deleteTexture(GLuint texture)
 	glDeleteTextures(1, &texture);
 }
 
-float OpenGL::setTextureFilter(graphics::Texture::Filter &f)
+void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 {
 	GLint gmin, gmag;
 
@@ -493,7 +548,6 @@ float OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 			gmin = GL_LINEAR;
 	}
 
-
 	switch (f.mag)
 	{
 	case Texture::FILTER_NEAREST:
@@ -508,13 +562,13 @@ float OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
 
-	if (GLEE_EXT_texture_filter_anisotropic)
+	if (GLAD_EXT_texture_filter_anisotropic)
 	{
 		f.anisotropy = std::min(std::max(f.anisotropy, 1.0f), maxAnisotropy);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, f.anisotropy);
 	}
-
-	return f.anisotropy;
+	else
+		f.anisotropy = 1.0f;
 }
 
 void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
@@ -545,6 +599,16 @@ int OpenGL::getMaxTextureSize() const
 int OpenGL::getMaxRenderTargets() const
 {
 	return maxRenderTargets;
+}
+
+int OpenGL::getMaxRenderbufferSamples() const
+{
+	return maxRenderbufferSamples;
+}
+
+int OpenGL::getMaxTextureUnits() const
+{
+	return maxTextureUnits;
 }
 
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)

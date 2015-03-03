@@ -21,9 +21,7 @@
 #include "Font.h"
 
 #include "TrueTypeRasterizer.h"
-#include "font/ImageRasterizer.h"
-
-#include "libraries/utf8/utf8.h"
+#include "font/BMFontRasterizer.h"
 
 #include <string.h>
 
@@ -33,9 +31,6 @@ namespace font
 {
 namespace freetype
 {
-
-// Default TrueType font.
-#include "font/Vera.ttf.h"
 
 Font::Font()
 {
@@ -48,72 +43,19 @@ Font::~Font()
 	FT_Done_FreeType(library);
 }
 
-Rasterizer *Font::newRasterizer(int size)
+Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 {
-	StrongRef<filesystem::FileData> data(new filesystem::FileData(sizeof(Vera_ttf), "Vera.ttf"));
-	data->release();
+	if (TrueTypeRasterizer::accepts(library, data))
+		return newTrueTypeRasterizer(data, 12);
+	else if (BMFontRasterizer::accepts(data))
+		return newBMFontRasterizer(data, {});
 
-	memcpy(data->getData(), Vera_ttf, sizeof(Vera_ttf));
-
-	return new TrueTypeRasterizer(library, data.get(), size);
+	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
 }
 
-Rasterizer *Font::newRasterizer(Data *data, int size)
+Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size)
 {
 	return new TrueTypeRasterizer(library, data, size);
-}
-
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string &text)
-{
-	size_t strlen = text.size();
-	size_t numglyphs = 0;
-
-	uint32 *glyphs = new uint32[strlen];
-
-	try
-	{
-		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
-		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
-
-		while (i != end)
-			glyphs[numglyphs++] = *i++;
-	}
-	catch (utf8::exception &e)
-	{
-		delete [] glyphs;
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-
-	Rasterizer *r = newRasterizer(data, glyphs, numglyphs);
-	delete [] glyphs;
-
-	return r;
-}
-
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
-{
-	return new ImageRasterizer(data, glyphs, numglyphs);
-}
-
-GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)
-{
-	uint32 codepoint = 0;
-
-	try
-	{
-		codepoint = utf8::peek_next(text.begin(), text.end());
-	}
-	catch (utf8::exception &e)
-	{
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-
-	return r->getGlyphData(codepoint);
-}
-
-GlyphData *Font::newGlyphData(Rasterizer *r, uint32 glyph)
-{
-	return r->getGlyphData(glyph);
 }
 
 const char *Font::getName() const

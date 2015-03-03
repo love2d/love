@@ -44,8 +44,6 @@ public:
 		BUTTON_RIGHT,
 		BUTTON_X1,
 		BUTTON_X2,
-		BUTTON_WHEELUP,
-		BUTTON_WHEELDOWN,
 		BUTTON_MAX_ENUM
 	};
 
@@ -62,12 +60,14 @@ public:
 
 	virtual Cursor *getCursor() const = 0;
 
-	virtual int getX() const = 0;
-	virtual int getY() const = 0;
-	virtual void getPosition(int &x, int &y) const = 0;
-	virtual void setX(int x) = 0;
-	virtual void setY(int y) = 0;
-	virtual void setPosition(int x, int y) = 0;
+	virtual bool hasCursor() const = 0;
+
+	virtual double getX() const = 0;
+	virtual double getY() const = 0;
+	virtual void getPosition(double &x, double &y) const = 0;
+	virtual void setX(double x) = 0;
+	virtual void setY(double y) = 0;
+	virtual void setPosition(double x, double y) = 0;
 	virtual void setVisible(bool visible) = 0;
 	virtual bool isDown(Button *buttonlist) const = 0;
 	virtual bool isVisible() const = 0;

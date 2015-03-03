@@ -53,12 +53,14 @@ public:
 
 	love::mouse::Cursor *getCursor() const;
 
-	int getX() const;
-	int getY() const;
-	void getPosition(int &x, int &y) const;
-	void setX(int x);
-	void setY(int y);
-	void setPosition(int x, int y);
+	bool hasCursor() const;
+
+	double getX() const;
+	double getY() const;
+	void getPosition(double &x, double &y) const;
+	void setX(double x);
+	void setY(double y);
+	void setPosition(double x, double y);
 	void setVisible(bool visible);
 	bool isDown(Button *buttonlist) const;
 	bool isVisible() const;

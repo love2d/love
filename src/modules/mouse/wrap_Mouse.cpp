@@ -36,16 +36,16 @@ int w_newCursor(lua_State *L)
 {
 	Cursor *cursor = nullptr;
 
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
 		luax_convobj(L, 1, "image", "newImageData");
 
-	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
 	int hotx = luaL_optint(L, 2, 0);
 	int hoty = luaL_optint(L, 3, 0);
 
 	luax_catchexcept(L, [&](){ cursor = instance()->newCursor(data, hotx, hoty); });
 
-	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
+	luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
 	cursor->release();
 	return 1;
 }
@@ -61,7 +61,7 @@ int w_getSystemCursor(lua_State *L)
 	Cursor *cursor = 0;
 	luax_catchexcept(L, [&](){ cursor = instance()->getSystemCursor(systemCursor); });
 
-	luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
+	luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
 	return 1;
 }
 
@@ -84,10 +84,16 @@ int w_getCursor(lua_State *L)
 	Cursor *cursor = instance()->getCursor();
 
 	if (cursor)
-		luax_pushtype(L, "Cursor", MOUSE_CURSOR_T, cursor);
+		luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
 	else
 		lua_pushnil(L);
 
+	return 1;
+}
+
+int w_hasCursor(lua_State *L)
+{
+	luax_pushboolean(L, instance()->hasCursor());
 	return 1;
 }
 
@@ -105,31 +111,31 @@ int w_getY(lua_State *L)
 
 int w_getPosition(lua_State *L)
 {
-	int x, y;
+	double x, y;
 	instance()->getPosition(x, y);
-	lua_pushinteger(L, x);
-	lua_pushinteger(L, y);
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
 	return 2;
 }
 
 int w_setX(lua_State *L)
 {
-	int x = luaL_checkint(L, 1);
+	double x = luaL_checknumber(L, 1);
 	instance()->setX(x);
 	return 0;
 }
 
 int w_setY(lua_State *L)
 {
-	int y = luaL_checkint(L, 1);
+	double y = luaL_checknumber(L, 1);
 	instance()->setY(y);
 	return 0;
 }
 
 int w_setPosition(lua_State *L)
 {
-	int x = luaL_checkint(L, 1);
-	int y = luaL_checkint(L, 2);
+	double x = luaL_checknumber(L, 1);
+	double y = luaL_checknumber(L, 2);
 	instance()->setPosition(x, y);
 	return 0;
 }
@@ -199,6 +205,7 @@ static const luaL_Reg functions[] =
 	{ "getSystemCursor", w_getSystemCursor },
 	{ "setCursor", w_setCursor },
 	{ "getCursor", w_getCursor },
+	{ "hasCursor", w_hasCursor },
 	{ "getX", w_getX },
 	{ "getY", w_getY },
 	{ "setX", w_setX },
@@ -235,7 +242,7 @@ extern "C" int luaopen_love_mouse(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "mouse";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = types;
 

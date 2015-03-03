@@ -28,7 +28,7 @@ namespace mouse
 
 Cursor *luax_checkcursor(lua_State *L, int idx)
 {
-	return luax_checktype<Cursor>(L, idx, "Cursor", MOUSE_CURSOR_T);
+	return luax_checktype<Cursor>(L, idx, MOUSE_CURSOR_ID);
 }
 
 int w_Cursor_getType(lua_State *L)
@@ -61,7 +61,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_cursor(lua_State *L)
 {
-	return luax_register_type(L, "Cursor", functions);
+	return luax_register_type(L, MOUSE_CURSOR_ID, functions);
 }
 
 } // mouse

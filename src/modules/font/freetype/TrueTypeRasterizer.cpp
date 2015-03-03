@@ -30,7 +30,7 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size)
 	: data(data)
 {
 	if (size <= 0)
@@ -53,10 +53,10 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 
 	// Set global metrics
 	FT_Size_Metrics s = face->size->metrics;
-	metrics.advance = s.max_advance >> 6;
-	metrics.ascent = s.ascender >> 6;
-	metrics.descent = s.descender >> 6;
-	metrics.height = s.height >> 6;
+	metrics.advance = (int) (s.max_advance >> 6);
+	metrics.ascent  = (int) (s.ascender >> 6);
+	metrics.descent = (int) (s.descender >> 6);
+	metrics.height  = (int) (s.height >> 6);
 }
 
 TrueTypeRasterizer::~TrueTypeRasterizer()
@@ -100,7 +100,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.bearingY = bitmap_glyph->top;
 	glyphMetrics.height = bitmap.rows;
 	glyphMetrics.width = bitmap.width;
-	glyphMetrics.advance = ftglyph->advance.x >> 16;
+	glyphMetrics.advance = (int) (ftglyph->advance.x >> 16);
 
 	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 
@@ -151,12 +151,21 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 
 int TrueTypeRasterizer::getGlyphCount() const
 {
-	return face->num_glyphs;
+	return (int) face->num_glyphs;
 }
 
 bool TrueTypeRasterizer::hasGlyph(uint32 glyph) const
 {
 	return FT_Get_Char_Index(face, glyph) != 0;
+}
+
+bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)
+{
+	const FT_Byte *fbase = (const FT_Byte *) data->getData();
+	FT_Long fsize = (FT_Long) data->getSize();
+
+	// Pasing in -1 for the face index lets us test if the data is valid.
+	return FT_New_Memory_Face(library, fbase, fsize, -1, nullptr) == 0;
 }
 
 } // freetype

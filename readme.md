@@ -22,7 +22,7 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 ###Mac OS X
 Download the required frameworks from [here][dependencies] and place them in `/Library/Frameworks/`.
 
-Then use the Xcode project found at `platform/macosx/love.xcodeproj`.
+Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
 Repository information
 ----------------------

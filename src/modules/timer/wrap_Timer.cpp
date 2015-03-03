@@ -94,7 +94,7 @@ extern "C" int luaopen_love_timer(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "timer";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = 0;
 

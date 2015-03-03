@@ -57,6 +57,11 @@ FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, I
 	throw love::Exception("Image encoding is not implemented for this format backend.");
 }
 
+void FormatHandler::free(unsigned char *mem)
+{
+	delete[] mem;
+}
+
 } // magpie
 } // image
 } // love

@@ -174,7 +174,7 @@ Vector BezierCurve::evaluate(double t) const
 	return points[0];
 }
 
-vector<Vector> BezierCurve::render(size_t accuracy) const
+vector<Vector> BezierCurve::render(int accuracy) const
 {
 	if (controlPoints.size() < 2)
 		throw Exception("Invalid Bezier curve: Not enough control points.");

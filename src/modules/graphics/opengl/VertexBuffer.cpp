@@ -27,11 +27,6 @@
 #include <algorithm>
 #include <limits>
 
-// Conflicts with std::numeric_limits<GLushort>::max() (Windows).
-#ifdef max
-# undef max
-#endif
-
 namespace love
 {
 namespace graphics
@@ -41,148 +36,71 @@ namespace opengl
 
 // VertexBuffer
 
-VertexBuffer *VertexBuffer::Create(size_t size, GLenum target, GLenum usage, MemoryBacking backing)
+VertexBuffer *VertexBuffer::Create(size_t size, GLenum target, GLenum usage)
 {
-	try
-	{
-		// Try to create a VBO.
-		return new VBO(size, target, usage, backing);
-	}
-	catch(const love::Exception &)
-	{
-		// VBO not supported ... create regular array.
-		return new VertexArray(size, target, usage, backing);
-	}
+	return new VertexBuffer(size, target, usage);
 }
 
-VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage, MemoryBacking backing)
+VertexBuffer::VertexBuffer(size_t size, GLenum target, GLenum usage)
 	: is_bound(false)
 	, is_mapped(false)
 	, size(size)
 	, target(target)
 	, usage(usage)
-	, backing(backing)
-{
-}
-
-VertexBuffer::~VertexBuffer()
-{
-}
-
-// VertexArray
-
-VertexArray::VertexArray(size_t size, GLenum target, GLenum usage, MemoryBacking backing)
-	: VertexBuffer(size, target, usage, backing)
-	, buf(new char[size])
-{
-}
-
-VertexArray::~VertexArray()
-{
-	delete [] buf;
-}
-
-void *VertexArray::map()
-{
-	is_mapped = true;
-	return buf;
-}
-
-void VertexArray::unmap(size_t /*usedOffset*/, size_t /*usedSize*/)
-{
-	is_mapped = false;
-}
-
-void VertexArray::bind()
-{
-	is_bound = true;
-}
-
-void VertexArray::unbind()
-{
-	is_bound = false;
-}
-
-void VertexArray::fill(size_t offset, size_t size, const void *data)
-{
-	memcpy(buf + offset, data, size);
-}
-
-const void *VertexArray::getPointer(size_t offset) const
-{
-	return buf + offset;
-}
-
-// VBO
-
-VBO::VBO(size_t size, GLenum target, GLenum usage, MemoryBacking backing)
-	: VertexBuffer(size, target, usage, backing)
 	, vbo(0)
 	, memory_map(nullptr)
-	, is_dirty(false)
 {
-	if (!(GLEE_ARB_vertex_buffer_object || GLEE_VERSION_1_5))
-		throw love::Exception("Not supported");
-
-	if (getMemoryBacking() == BACKING_FULL)
-		memory_map = (char *) malloc(getSize());
+	try
+	{
+		memory_map = new char[size];
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
 
 	bool ok = load(false);
 
 	if (!ok)
 	{
-		free(memory_map);
+		delete[] memory_map;
 		throw love::Exception("Could not load VBO.");
 	}
 }
 
-VBO::~VBO()
+VertexBuffer::~VertexBuffer()
 {
 	if (vbo != 0)
-		unload(false);
+		unload();
 
-	if (memory_map)
-		free(memory_map);
+	delete[] memory_map;
 }
 
-void *VBO::map()
+void *VertexBuffer::map()
 {
 	if (is_mapped)
 		return memory_map;
-
-	if (!memory_map)
-	{
-		memory_map = (char * ) malloc(getSize());
-		if (!memory_map)
-			throw love::Exception("Out of memory (oh the humanity!)");
-	}
-
-	if (is_dirty)
-	{
-		glGetBufferSubDataARB(getTarget(), 0, (GLsizeiptr) getSize(), memory_map);
-		is_dirty = false;
-	}
 
 	is_mapped = true;
 
 	return memory_map;
 }
 
-void VBO::unmapStatic(size_t offset, size_t size)
+void VertexBuffer::unmapStatic(size_t offset, size_t size)
 {
 	// Upload the mapped data to the buffer.
-	glBufferSubDataARB(getTarget(), (GLintptr) offset, (GLsizeiptr) size, memory_map + offset);
+	glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, memory_map + offset);
 }
 
-void VBO::unmapStream()
+void VertexBuffer::unmapStream()
 {
 	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-	glBufferDataARB(getTarget(), (GLsizeiptr) getSize(), nullptr,    getUsage());
-	glBufferDataARB(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
+	glBufferData(getTarget(), (GLsizeiptr) getSize(), nullptr,    getUsage());
+	glBufferData(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
 }
 
-void VBO::unmap(size_t usedOffset, size_t usedSize)
+void VertexBuffer::unmap(size_t usedOffset, size_t usedSize)
 {
 	if (!is_mapped)
 		return;
@@ -194,7 +112,7 @@ void VBO::unmap(size_t usedOffset, size_t usedSize)
 	// bound here.
 	if (!is_bound)
 	{
-		glBindBufferARB(getTarget(), vbo);
+		glBindBuffer(getTarget(), vbo);
 		is_bound = true;
 	}
 
@@ -220,83 +138,66 @@ void VBO::unmap(size_t usedOffset, size_t usedSize)
 	is_mapped = false;
 }
 
-void VBO::bind()
+void VertexBuffer::bind()
 {
 	if (!is_mapped)
 	{
-		glBindBufferARB(getTarget(), vbo);
+		glBindBuffer(getTarget(), vbo);
 		is_bound = true;
 	}
 }
 
-void VBO::unbind()
+void VertexBuffer::unbind()
 {
 	if (is_bound)
-		glBindBufferARB(getTarget(), 0);
+		glBindBuffer(getTarget(), 0);
 
 	is_bound = false;
 }
 
-void VBO::fill(size_t offset, size_t size, const void *data)
+void VertexBuffer::fill(size_t offset, size_t size, const void *data)
 {
-	if (is_mapped || getMemoryBacking() == BACKING_FULL)
-		memcpy(memory_map + offset, data, size);
+	memcpy(memory_map + offset, data, size);
 
 	if (!is_mapped)
-	{
-		glBufferSubDataARB(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
-
-		if (getMemoryBacking() != BACKING_FULL)
-			is_dirty = true;
-	}
+		glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
 }
 
-const void *VBO::getPointer(size_t offset) const
+const void *VertexBuffer::getPointer(size_t offset) const
 {
 	return BUFFER_OFFSET(offset);
 }
 
-bool VBO::loadVolatile()
+bool VertexBuffer::loadVolatile()
 {
 	return load(true);
 }
 
-void VBO::unloadVolatile()
+void VertexBuffer::unloadVolatile()
 {
-	unload(true);
+	unload();
 }
 
-bool VBO::load(bool restore)
+bool VertexBuffer::load(bool restore)
 {
-	glGenBuffersARB(1, &vbo);
+	glGenBuffers(1, &vbo);
 
 	VertexBuffer::Bind bind(*this);
 
 	// Copy the old buffer only if 'restore' was requested.
 	const GLvoid *src = restore ? memory_map : nullptr;
 
-	while (GL_NO_ERROR != glGetError())
-		/* clear error messages */;
-
 	// Note that if 'src' is '0', no data will be copied.
-	glBufferDataARB(getTarget(), (GLsizeiptr) getSize(), src, getUsage());
-	GLenum err = glGetError();
+	glBufferData(getTarget(), (GLsizeiptr) getSize(), src, getUsage());
 
-	return (GL_NO_ERROR == err);
+	return true;
 }
 
-void VBO::unload(bool save)
+void VertexBuffer::unload()
 {
-	// Save data before unloading, if we need to.
-	if (save && getMemoryBacking() == BACKING_PARTIAL)
-	{
-		VertexBuffer::Bind bind(*this);
-		map(); // saves buffer content to memory_map.
-	}
-
 	is_mapped = false;
 
-	glDeleteBuffersARB(1, &vbo);
+	glDeleteBuffers(1, &vbo);
 	vbo = 0;
 }
 
@@ -462,15 +363,19 @@ void VertexIndex::fill()
 
 	T *indices = (T *) mapper.get();
 
+	// 0----2
+	// |  / |
+	// | /  |
+	// 1----3
 	for (size_t i = 0; i < maxSize; ++i)
 	{
-		indices[i*6+0] = i * 4 + 0;
-		indices[i*6+1] = i * 4 + 1;
-		indices[i*6+2] = i * 4 + 2;
+		indices[i*6+0] = T(i * 4 + 0);
+		indices[i*6+1] = T(i * 4 + 1);
+		indices[i*6+2] = T(i * 4 + 2);
 
-		indices[i*6+3] = i * 4 + 0;
-		indices[i*6+4] = i * 4 + 2;
-		indices[i*6+5] = i * 4 + 3;
+		indices[i*6+3] = T(i * 4 + 1);
+		indices[i*6+4] = T(i * 4 + 2);
+		indices[i*6+5] = T(i * 4 + 3);
 	}
 }
 

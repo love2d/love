@@ -29,7 +29,7 @@ namespace box2d
 
 MotorJoint *luax_checkmotorjoint(lua_State *L, int idx)
 {
-	MotorJoint *j = luax_checktype<MotorJoint>(L, idx, "MotorJoint", PHYSICS_MOTOR_JOINT_T);
+	MotorJoint *j = luax_checktype<MotorJoint>(L, idx, PHYSICS_MOTOR_JOINT_ID);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -138,7 +138,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_motorjoint(lua_State *L)
 {
-	return luax_register_type(L, "MotorJoint", functions);
+	return luax_register_type(L, PHYSICS_MOTOR_JOINT_ID, functions);
 }
 
 

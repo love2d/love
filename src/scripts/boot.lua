@@ -154,11 +154,11 @@ function love.createhandlers()
 
 	-- Standard callback handlers.
 	love.handlers = setmetatable({
-		keypressed = function (b, u)
-			if love.keypressed then return love.keypressed(b, u) end
+		keypressed = function (b,s,r)
+			if love.keypressed then return love.keypressed(b,s,r) end
 		end,
-		keyreleased = function (b)
-			if love.keyreleased then return love.keyreleased(b) end
+		keyreleased = function (b,s)
+			if love.keyreleased then return love.keyreleased(b,s) end
 		end,
 		textinput = function (t)
 			if love.textinput then return love.textinput(t) end
@@ -169,11 +169,23 @@ function love.createhandlers()
 		mousemoved = function (x,y,xrel,yrel)
 			if love.mousemoved then return love.mousemoved(x,y,xrel,yrel) end
 		end,
-		mousepressed = function (x,y,b)
-			if love.mousepressed then return love.mousepressed(x,y,b) end
+		mousepressed = function (x,y,b,t)
+			if love.mousepressed then return love.mousepressed(x,y,b,t) end
 		end,
-		mousereleased = function (x,y,b)
-			if love.mousereleased then return love.mousereleased(x,y,b) end
+		mousereleased = function (x,y,b,t)
+			if love.mousereleased then return love.mousereleased(x,y,b,t) end
+		end,
+		wheelmoved = function (x,y)
+			if love.wheelmoved then return love.wheelmoved(x,y) end
+		end,
+		touchpressed = function (id,x,y,dx,dy)
+			if love.touchpressed then return love.touchpressed(id,x,y,dx,dy) end
+		end,
+		touchreleased = function (id,x,y,dx,dy)
+			if love.touchreleased then return love.touchreleased(id,x,y,dx,dy) end
+		end,
+		touchmoved = function (id,x,y,dx,dy)
+			if love.touchmoved then return love.touchmoved(id,x,y,dx,dy) end
 		end,
 		joystickpressed = function (j,b)
 			if love.joystickpressed then return love.joystickpressed(j,b) end
@@ -199,7 +211,7 @@ function love.createhandlers()
 		joystickadded = function (j)
 			if love.joystickadded then return love.joystickadded(j) end
 		end,
-		joystickremoved = function(j)
+		joystickremoved = function (j)
 			if love.joystickremoved then return love.joystickremoved(j) end
 		end,
 		focus = function (f)
@@ -217,8 +229,18 @@ function love.createhandlers()
 		threaderror = function (t, err)
 			if love.threaderror then return love.threaderror(t, err) end
 		end,
-		resize = function(w, h)
+		resize = function (w, h)
 			if love.resize then return love.resize(w, h) end
+		end,
+		filedropped = function (f)
+			if love.filedropped then return love.filedropped(f) end
+		end,
+		directorydropped = function (dir)
+			if love.directorydropped then return love.directorydropped(dir) end
+		end,
+		lowmemory = function ()
+			collectgarbage()
+			if love.lowmemory then return love.lowmemory() end
 		end,
 	}, {
 		__index = function(self, name)
@@ -308,11 +330,10 @@ function love.init()
 			minwidth = 1,
 			minheight = 1,
 			fullscreen = false,
-			fullscreentype = "normal",
+			fullscreentype = "desktop",
 			display = 1,
 			vsync = true,
 			msaa = 0,
-			fsaa = 0, -- For backward-compatibility. TODO: remove!
 			borderless = false,
 			resizable = false,
 			centered = true,
@@ -325,6 +346,7 @@ function love.init()
 			mouse = true,
 			timer = true,
 			joystick = true,
+			touch = true,
 			image = true,
 			graphics = true,
 			audio = true,
@@ -375,6 +397,7 @@ function love.init()
 		"keyboard",
 		"joystick",
 		"mouse",
+		"touch",
 		"sound",
 		"system",
 		"audio",
@@ -405,7 +428,6 @@ function love.init()
 			fullscreen = c.window.fullscreen,
 			fullscreentype = c.window.fullscreentype,
 			vsync = c.window.vsync,
-			fsaa = c.window.fsaa, -- For backward-compatibility. TODO: remove!
 			msaa = c.window.msaa,
 			resizable = c.window.resizable,
 			minwidth = c.window.minwidth,
@@ -470,7 +492,6 @@ function love.run()
 
 	if love.math then
 		love.math.setRandomSeed(os.time())
-		for i=1,3 do love.math.random() end
 	end
 
 	if love.load then love.load(arg) end
@@ -485,13 +506,13 @@ function love.run()
 		-- Process events.
 		if love.event then
 			love.event.pump()
-			for e,a,b,c,d in love.event.poll() do
-				if e == "quit" then
+			for name, a,b,c,d,e in love.event.poll() do
+				if name == "quit" then
 					if not love.quit or not love.quit() then
 						return
 					end
 				end
-				love.handlers[e](a,b,c,d)
+				love.handlers[name](a,b,c,d,e)
 			end
 		end
 
@@ -504,15 +525,14 @@ function love.run()
 		-- Call update and draw
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 
-		if love.window and love.graphics and love.window.isCreated() then
-			love.graphics.clear()
+		if love.graphics and love.graphics.isActive() then
+			love.graphics.clear(love.graphics.getBackgroundColor())
 			love.graphics.origin()
 			if love.draw then love.draw() end
 			love.graphics.present()
 		end
 
 		if love.timer then love.timer.sleep(0.001) end
-
 	end
 
 end
@@ -1327,13 +1347,7 @@ function love.nogame()
 	local create_rain
 
 	function love.load()
-		-- Subtractive blending isn't supported on some ancient systems, so
-		-- we should make sure it still looks decent in that case.
-		if love.graphics.isSupported("subtractive") then
-			love.graphics.setBackgroundColor(137, 194, 218)
-		else
-			love.graphics.setBackgroundColor(11, 88, 123)
-		end
+		love.graphics.setBackgroundColor(137, 194, 218)
 
 		local win_w = love.graphics.getWidth()
 		local win_h = love.graphics.getHeight()
@@ -1392,8 +1406,6 @@ function love.nogame()
 			batch:setBufferSize(batch_w * batch_h)
 		end
 
-		batch:bind()
-
 		for i = 0, batch_h - 1 do
 			for j = 0, batch_w - 1 do
 				local is_even = (j % 2) == 0
@@ -1404,7 +1416,7 @@ function love.nogame()
 			end
 		end
 
-		batch:unbind()
+		batch:flush()
 	end
 
 	local function update_rain(t)		
@@ -1424,18 +1436,12 @@ function love.nogame()
 	end
 
 	local function draw_grid()
-		local blendmode = "subtractive"
-		if not love.graphics.isSupported("subtractive") then
-			-- We also change the background color in this case, so it looks OK.
-			blendmode = "additive"
-		end
-
 		local y = rain.spacing_y * rain.t
 
 		local small_y = -rain.spacing_y + y / 2
 		local big_y = -rain.spacing_y + y
 
-		love.graphics.setBlendMode(blendmode)
+		love.graphics.setBlendMode("subtract")
 		love.graphics.setColor(255, 255, 255, 128)
 		love.graphics.draw(rain.batch, -rain.spacing_x, small_y, 0, 0.5, 0.5)
 
@@ -1464,7 +1470,7 @@ function love.nogame()
 		love.graphics.draw(background.image, bx, by, 0, 0.7, 0.7, 256, 256)
 		love.graphics.setColor(255, 255, 255, 32 + 16*intensity)
 		love.graphics.draw(background.image, bx, by, 0, 0.65, 0.65, 256, 256)
-		love.graphics.setBlendMode("additive")
+		love.graphics.setBlendMode("add")
 		love.graphics.setColor(255, 255, 255, 16 + 16*intensity)
 		love.graphics.draw(background.image, bx, by, 0, 0.6, 0.6, 256, 256)
 	end
@@ -1569,7 +1575,7 @@ function love.errhand(msg)
 
 	local trace = debug.traceback()
 
-	love.graphics.clear()
+	love.graphics.clear(love.graphics.getBackgroundColor())
 	love.graphics.origin()
 
 	local err = {}
@@ -1591,7 +1597,7 @@ function love.errhand(msg)
 
 	local function draw()
 		local pos = love.window.toPixels(70)
-		love.graphics.clear()
+		love.graphics.clear(love.graphics.getBackgroundColor())
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
 		love.graphics.present()
 	end

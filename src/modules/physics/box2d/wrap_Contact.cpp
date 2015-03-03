@@ -30,7 +30,7 @@ namespace box2d
 
 Contact *luax_checkcontact(lua_State *L, int idx)
 {
-	Contact *c = luax_checktype<Contact>(L, idx, "Contact", PHYSICS_CONTACT_T);
+	Contact *c = luax_checktype<Contact>(L, idx, PHYSICS_CONTACT_ID);
 	if (!c->isValid())
 		luaL_error(L, "Attempt to use destroyed contact.");
 	return c;
@@ -146,14 +146,14 @@ int w_Contact_getFixtures(lua_State *L)
 	Fixture *b = nullptr;
 	luax_catchexcept(L, [&](){ t->getFixtures(a, b); });
 
-	luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, a);
-	luax_pushtype(L, "Fixture", PHYSICS_FIXTURE_T, b);
+	luax_pushtype(L, PHYSICS_FIXTURE_ID, a);
+	luax_pushtype(L, PHYSICS_FIXTURE_ID, b);
 	return 2;
 }
 
 int w_Contact_isDestroyed(lua_State *L)
 {
-	Contact *c = luax_checktype<Contact>(L, 1, "Contact", PHYSICS_CONTACT_T);
+	Contact *c = luax_checktype<Contact>(L, 1, PHYSICS_CONTACT_ID);
 	luax_pushboolean(L, !c->isValid());
 	return 1;
 }
@@ -181,7 +181,7 @@ extern "C" int luaopen_contact(lua_State *L)
 		{ 0, 0 }
 	};
 
-	return luax_register_type(L, "Contact", functions);
+	return luax_register_type(L, PHYSICS_CONTACT_ID, functions);
 }
 
 } // box2d

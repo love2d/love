@@ -30,7 +30,7 @@ namespace opengl
 
 Canvas *luax_checkcanvas(lua_State *L, int idx)
 {
-	return luax_checktype<Canvas>(L, idx, "Canvas", GRAPHICS_CANVAS_T);
+	return luax_checktype<Canvas>(L, idx, GRAPHICS_CANVAS_ID);
 }
 
 int w_Canvas_renderTo(lua_State *L)
@@ -62,62 +62,21 @@ int w_Canvas_renderTo(lua_State *L)
 	return 0;
 }
 
-int w_Canvas_getImageData(lua_State *L)
+int w_Canvas_newImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	love::image::Image *image = luax_getmodule<love::image::Image>(L, "image", MODULE_IMAGE_T);
-	love::image::ImageData *img = canvas->getImageData(image);
-	luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, img);
+	love::image::Image *image = luax_getmodule<love::image::Image>(L, MODULE_IMAGE_ID);
+	int x = luaL_optint(L, 2, 0);
+	int y = luaL_optint(L, 3, 0);
+	int w = luaL_optint(L, 4, canvas->getWidth());
+	int h = luaL_optint(L, 5, canvas->getHeight());
+
+	love::image::ImageData *img = nullptr;
+	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, x, y, w, h); });
+
+	luax_pushtype(L, IMAGE_IMAGE_DATA_ID, img);
 	img->release();
 	return 1;
-}
-
-int w_Canvas_getPixel(lua_State * L)
-{
-	Canvas * canvas = luax_checkcanvas(L, 1);
-	int x = luaL_checkint(L, 2);
-	int y = luaL_checkint(L, 3);
-	unsigned char c[4];
-
-	luax_catchexcept(L, [&](){ canvas->getPixel(c, x, y); });
-
-	lua_pushnumber(L, c[0]);
-	lua_pushnumber(L, c[1]);
-	lua_pushnumber(L, c[2]);
-	lua_pushnumber(L, c[3]);
-	return 4;
-}
-
-int w_Canvas_clear(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	Color c;
-	if (lua_isnoneornil(L, 2))
-	{
-		c.set(0, 0, 0, 0);
-	}
-	else if (lua_istable(L, 2))
-	{
-		for (int i = 1; i <= 4; i++)
-			lua_rawgeti(L, 2, i);
-
-		c.r = (unsigned char)luaL_checkinteger(L, -4);
-		c.g = (unsigned char)luaL_checkinteger(L, -3);
-		c.b = (unsigned char)luaL_checkinteger(L, -2);
-		c.a = (unsigned char)luaL_optinteger(L, -1, 255);
-
-		lua_pop(L, 4);
-	}
-	else
-	{
-		c.r = (unsigned char)luaL_checkinteger(L, 2);
-		c.g = (unsigned char)luaL_checkinteger(L, 3);
-		c.b = (unsigned char)luaL_checkinteger(L, 4);
-		c.a = (unsigned char)luaL_optinteger(L, 5, 255);
-	}
-	canvas->clear(c);
-
-	return 0;
 }
 
 int w_Canvas_getFormat(lua_State *L)
@@ -151,24 +110,15 @@ static const luaL_Reg functions[] =
 	{ "getWrap", w_Texture_getWrap },
 
 	{ "renderTo", w_Canvas_renderTo },
-	{ "getImageData", w_Canvas_getImageData },
-	{ "getPixel", w_Canvas_getPixel },
-	{ "clear", w_Canvas_clear },
+	{ "newImageData", w_Canvas_newImageData },
 	{ "getFormat", w_Canvas_getFormat },
 	{ "getMSAA", w_Canvas_getMSAA },
-
-	// Deprecated since 0.9.1.
-	{ "getType", w_Canvas_getFormat },
-
-	// Deprecated since 0.9.2.
-	{ "getFSAA", w_Canvas_getMSAA },
-
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_canvas(lua_State *L)
 {
-	return luax_register_type(L, "Canvas", functions);
+	return luax_register_type(L, GRAPHICS_CANVAS_ID, functions);
 }
 
 } // opengl

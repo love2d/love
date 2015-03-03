@@ -64,6 +64,7 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
+	, ibo(1)
 	, texture(texture)
 	, active(true)
 	, insertMode(INSERT_MODE_TOP)
@@ -112,6 +113,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
+	, ibo(p.ibo)
 	, texture(p.texture)
 	, active(p.active)
 	, insertMode(p.insertMode)
@@ -196,6 +198,7 @@ void ParticleSystem::setBufferSize(uint32 size)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid buffer size");
+	ibo = VertexIndex(size);
 	deleteBuffers();
 	createBuffers(size);
 	reset();
@@ -873,24 +876,25 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		p = p->next;
 	}
 
-	texture->predraw();
-
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid *) &particleVerts[0].r);
-	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (GLvoid *) &particleVerts[0].s);
-
+	gl.bindTexture(*(GLuint *) texture->getHandle());
 	gl.prepareDraw();
-	gl.drawArrays(GL_QUADS, 0, pCount * 4);
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	glEnableVertexAttribArray(ATTRIB_COLOR);
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
 
-	texture->postdraw();
+	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), &particleVerts[0].r);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].x);
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
+
+	{
+		VertexBuffer::Bind ibo_bind(*ibo.getVertexBuffer());
+		gl.drawElements(GL_TRIANGLES, (GLsizei) ibo.getIndexCount(pCount), ibo.getType(), ibo.getPointer(0));
+	}
+
+	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
+	glDisableVertexAttribArray(ATTRIB_POS);
+	glDisableVertexAttribArray(ATTRIB_COLOR);
 
 	gl.setColor(curcolor);
 }
@@ -984,7 +988,7 @@ void ParticleSystem::update(float dt)
 			{
 				s = t * (float) k; // [0:numquads-1] (clamped below)
 				i = (s > 0.0f) ? (size_t) s : 0;
-				p->quadIndex = (i < k) ? i : k - 1;
+				p->quadIndex = (int) ((i < k) ? i : k - 1);
 			}
 
 			// Next particle.

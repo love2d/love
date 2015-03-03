@@ -51,6 +51,7 @@ public:
 		M_SYSTEM,
 		M_THREAD,
 		M_TIMER,
+		M_TOUCH,
 		M_WINDOW,
 		M_MAX_ENUM
 	};

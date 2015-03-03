@@ -22,9 +22,7 @@
 #define LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
 
 // LOVE
-#include "common/EnumMap.h"
-#include "filesystem/FileData.h"
-#include "image/CompressedData.h"
+#include "CompressedFormatHandler.h"
 
 // dds parser
 #include "ddsparse/ddsparse.h"
@@ -42,36 +40,21 @@ namespace magpie
 /**
  * Interface between CompressedData and the ddsparse library.
  **/
-class ddsHandler
+class DDSHandler : public CompressedFormatHandler
 {
 public:
 
-	/**
-	 * Determines whether a particular FileData can be parsed as CompressedData
-	 * by this handler.
-	 * @param data The data to parse.
-	 **/
-	static bool canParse(const filesystem::FileData *data);
+	virtual ~DDSHandler() {}
 
-	/**
-	 * Parses compressed image filedata into a list of sub-images and returns
-	 * a single block of memory containing all the images.
-	 *
-	 * @param[in] filedata The data to parse.
-	 * @param[out] images The list of sub-images generated. Byte data is a pointer
-	 *             to the returned data.
-	 * @param[out] dataSize The total size in bytes of the returned data.
-	 * @param[out] format The format of the Compressed Data.
-	 *
-	 * @return The single block of memory containing the parsed images.
-	 **/
-	static uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format);
+	// Implements CompressedFormatHandler.
+	virtual bool canParse(const filesystem::FileData *data);
+	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB);
 
 private:
 
-	static CompressedData::Format convertFormat(dds::Format ddsformat);
+	static CompressedData::Format convertFormat(dds::Format ddsformat, bool &sRGB);
 
-}; // ddsHandler
+}; // DDSHandler
 
 } // magpie
 } // image

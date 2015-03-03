@@ -28,13 +28,13 @@ namespace image
 
 CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 {
-	return luax_checktype<CompressedData>(L, idx, "CompressedData", IMAGE_COMPRESSED_DATA_T);
+	return luax_checktype<CompressedData>(L, idx, IMAGE_COMPRESSED_DATA_ID);
 }
 
 int w_CompressedData_getWidth(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
-	int miplevel = luaL_optinteger(L, 2, 1);
+	int miplevel = luaL_optint(L, 2, 1);
 	int width = 0;
 
 	luax_catchexcept(L, [&](){ width = t->getWidth(miplevel - 1); });
@@ -46,7 +46,7 @@ int w_CompressedData_getWidth(lua_State *L)
 int w_CompressedData_getHeight(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
-	int miplevel = luaL_optinteger(L, 2, 1);
+	int miplevel = luaL_optint(L, 2, 1);
 	int height = 0;
 
 	luax_catchexcept(L, [&](){ height = t->getHeight(miplevel - 1); });
@@ -58,7 +58,7 @@ int w_CompressedData_getHeight(lua_State *L)
 int w_CompressedData_getDimensions(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
-	int miplevel = luaL_optinteger(L, 2, 1);
+	int miplevel = luaL_optint(L, 2, 1);
 	int width = 0, height = 0;
 
 	luax_catchexcept(L, [&]()
@@ -111,7 +111,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_compresseddata(lua_State *L)
 {
-	return luax_register_type(L, "CompressedData", functions);
+	return luax_register_type(L, IMAGE_COMPRESSED_DATA_ID, functions);
 }
 
 } // image

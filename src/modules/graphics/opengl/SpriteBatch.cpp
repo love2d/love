@@ -26,7 +26,7 @@
 
 // LOVE
 #include "VertexBuffer.h"
-#include "Texture.h"
+#include "graphics/Texture.h"
 
 // C++
 #include <algorithm>
@@ -183,7 +183,7 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	// Map (lock) the old VertexBuffer to get a pointer to its data.
+	// Map the old VertexBuffer to get a pointer to its data.
 	void *old_data = nullptr;
 	{
 		VertexBuffer::Bind bind(*array_buf);
@@ -226,7 +226,7 @@ int SpriteBatch::getBufferSize() const
 
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	const size_t pos_offset = offsetof(Vertex, x);
+	const size_t pos_offset   = offsetof(Vertex, x);
 	const size_t texel_offset = offsetof(Vertex, s);
 	const size_t color_offset = offsetof(Vertex, r);
 
@@ -238,7 +238,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	texture->predraw();
+	gl.bindTexture(*(GLuint *) texture->getHandle());
 
 	VertexBuffer::Bind array_bind(*array_buf);
 	VertexBuffer::Bind element_bind(*element_buf.getVertexBuffer());
@@ -252,29 +252,27 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	// Apply per-sprite color, if a color is set.
 	if (color)
 	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), array_buf->getPointer(color_offset));
+		glEnableVertexAttribArray(ATTRIB_COLOR);
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), array_buf->getPointer(color_offset));
 	}
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(pos_offset));
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(pos_offset));
 
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(texel_offset));
+	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
 
 	gl.prepareDraw();
-	gl.drawElements(GL_TRIANGLES, element_buf.getIndexCount(next), element_buf.getType(), element_buf.getPointer(0));
+	gl.drawElements(GL_TRIANGLES, (GLsizei) element_buf.getIndexCount(next), element_buf.getType(), element_buf.getPointer(0));
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
+	glDisableVertexAttribArray(ATTRIB_POS);
 
 	if (color)
 	{
-		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableVertexAttribArray(ATTRIB_COLOR);
 		gl.setColor(curcolor);
 	}
-
-	texture->postdraw();
 }
 
 void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)

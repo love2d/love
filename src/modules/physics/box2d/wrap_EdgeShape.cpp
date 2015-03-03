@@ -29,7 +29,7 @@ namespace box2d
 
 EdgeShape *luax_checkedgeshape(lua_State *L, int idx)
 {
-	return luax_checktype<EdgeShape>(L, idx, "EdgeShape", PHYSICS_EDGE_SHAPE_T);
+	return luax_checktype<EdgeShape>(L, idx, PHYSICS_EDGE_SHAPE_ID);
 }
 
 int w_EdgeShape_getPoints(lua_State *L)
@@ -55,7 +55,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_edgeshape(lua_State *L)
 {
-	return luax_register_type(L, "EdgeShape", functions);
+	return luax_register_type(L, PHYSICS_EDGE_SHAPE_ID, functions);
 }
 
 } // box2d

@@ -21,6 +21,10 @@
 #ifndef LOVE_SOUND_LULLABY_MODPLUG_DECODER_H
 #define LOVE_SOUND_LULLABY_MODPLUG_DECODER_H
 
+#include "common/config.h"
+
+#ifndef LOVE_NO_MODPLUG
+
 // LOVE
 #include "common/Data.h"
 #include "Decoder.h"
@@ -61,5 +65,7 @@ private:
 } // lullaby
 } // sound
 } // love
+
+#endif // LOVE_NO_MODPLUG
 
 #endif // LOVE_SOUND_LULLABY_MODPLUG_DECODER_H

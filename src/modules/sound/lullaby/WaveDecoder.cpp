@@ -140,7 +140,7 @@ int WaveDecoder::decode()
 		size += bytes;
 	}
 
-	return size;
+	return (int) size;
 }
 
 bool WaveDecoder::seek(float s)

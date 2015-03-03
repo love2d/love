@@ -27,7 +27,7 @@ namespace thread
 
 LuaThread *luax_checkthread(lua_State *L, int idx)
 {
-	return luax_checktype<LuaThread>(L, idx, "Thread", THREAD_THREAD_T);
+	return luax_checktype<LuaThread>(L, idx, THREAD_THREAD_ID);
 }
 
 int w_Thread_start(lua_State *L)
@@ -91,7 +91,7 @@ static const luaL_Reg type_functions[] = {
 
 extern "C" int luaopen_thread(lua_State *L)
 {
-	return luax_register_type(L, "Thread", type_functions);
+	return luax_register_type(L, THREAD_THREAD_ID, type_functions);
 }
 
 } // thread

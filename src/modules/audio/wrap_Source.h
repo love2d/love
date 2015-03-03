@@ -57,7 +57,6 @@ int w_Source_isLooping(lua_State *L);
 int w_Source_isStopped(lua_State *L);
 int w_Source_isPaused(lua_State *L);
 int w_Source_isPlaying(lua_State *L);
-int w_Source_isStatic(lua_State *L);
 int w_Source_setVolumeLimits(lua_State *L);
 int w_Source_getVolumeLimits(lua_State *L);
 int w_Source_setAttenuationDistances(lua_State *L);
@@ -65,6 +64,7 @@ int w_Source_getAttenuationDistances(lua_State *L);
 int w_Source_setRolloff(lua_State *L);
 int w_Source_getRolloff(lua_State *L);
 int w_Source_getChannels(lua_State *L);
+int w_Source_getType(lua_State *L);
 extern "C" int luaopen_source(lua_State *L);
 
 } // audio

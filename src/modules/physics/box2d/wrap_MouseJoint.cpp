@@ -29,7 +29,7 @@ namespace box2d
 
 MouseJoint *luax_checkmousejoint(lua_State *L, int idx)
 {
-	MouseJoint *j = luax_checktype<MouseJoint>(L, idx, "MouseJoint", PHYSICS_MOUSE_JOINT_T);
+	MouseJoint *j = luax_checktype<MouseJoint>(L, idx, PHYSICS_MOUSE_JOINT_ID);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -122,7 +122,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_mousejoint(lua_State *L)
 {
-	return luax_register_type(L, "MouseJoint", functions);
+	return luax_register_type(L, PHYSICS_MOUSE_JOINT_ID, functions);
 }
 
 } // box2d

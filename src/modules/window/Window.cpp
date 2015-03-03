@@ -38,26 +38,6 @@ void Window::swapBuffers()
 {
 }
 
-WindowSettings::WindowSettings()
-	: fullscreen(false)
-	, fstype(Window::FULLSCREEN_TYPE_NORMAL)
-	, vsync(true)
-	, msaa(0)
-	, resizable(false)
-	, minwidth(1)
-	, minheight(1)
-	, borderless(false)
-	, centered(true)
-	, display(0)
-	, highdpi(false)
-	, sRGB(false)
-	, refreshrate(0.0)
-	, useposition(false)
-	, x(0)
-	, y(0)
-{
-}
-
 bool Window::getConstant(const char *in, Window::FullscreenType &out)
 {
 	return fullscreenTypes.find(in, out);
@@ -93,7 +73,6 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"fullscreen", SETTING_FULLSCREEN},
 	{"fullscreentype", SETTING_FULLSCREEN_TYPE},
 	{"vsync", SETTING_VSYNC},
-	{"fsaa", SETTING_FSAA},
 	{"msaa", SETTING_MSAA},
 	{"resizable", SETTING_RESIZABLE},
 	{"minwidth", SETTING_MIN_WIDTH},
@@ -110,19 +89,19 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 
 StringMap<Window::Setting, Window::SETTING_MAX_ENUM> Window::settings(Window::settingEntries, sizeof(Window::settingEntries));
 
-StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
+StringMap<Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
 {
-	{"normal", Window::FULLSCREEN_TYPE_NORMAL},
-	{"desktop", Window::FULLSCREEN_TYPE_DESKTOP},
+	{"exclusive", FULLSCREEN_EXCLUSIVE},
+	{"desktop", FULLSCREEN_DESKTOP},
 };
 
-StringMap<Window::FullscreenType, Window::FULLSCREEN_TYPE_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
+StringMap<Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
 
 StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM>::Entry Window::messageBoxTypeEntries[] =
 {
-	{"error", Window::MESSAGEBOX_ERROR},
-	{"warning", Window::MESSAGEBOX_WARNING},
-	{"info", Window::MESSAGEBOX_INFO},
+	{"error", MESSAGEBOX_ERROR},
+	{"warning", MESSAGEBOX_WARNING},
+	{"info", MESSAGEBOX_INFO},
 };
 
 StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM> Window::messageBoxTypes(Window::messageBoxTypeEntries, sizeof(Window::messageBoxTypeEntries));

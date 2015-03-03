@@ -24,7 +24,7 @@
 // LOVE
 #include "common/runtime.h"
 #include "Image.h"
-#include "wrap_Texture.h"
+#include "graphics/wrap_Texture.h"
 
 namespace love
 {

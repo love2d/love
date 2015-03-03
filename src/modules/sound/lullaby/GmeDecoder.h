@@ -27,7 +27,7 @@
 #include "common/Data.h"
 #include "Decoder.h"
 
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#ifdef LOVE_APPLE_USE_FRAMEWORKS
 #include <Game_Music_Emu/gme.h>
 #else
 #include <gme.h>

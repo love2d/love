@@ -144,7 +144,7 @@ VorbisDecoder::VorbisDecoder(Data *data, const std::string &ext, int bufferSize)
 
 	// Initialize OGG file
 	oggFile.dataPtr = (char *) data->getData();
-	oggFile.dataSize = data->getSize();
+	oggFile.dataSize = (int) data->getSize();
 	oggFile.dataRead = 0;
 
 	// Open Vorbis handle
@@ -188,7 +188,7 @@ int VorbisDecoder::decode()
 
 	while (size < bufferSize)
 	{
-		int result = ov_read(&handle, (char *) buffer + size, bufferSize - size, endian, (getBitDepth() == 16 ? 2 : 1), 1, 0);
+		long result = ov_read(&handle, (char *) buffer + size, bufferSize - size, endian, (getBitDepth() == 16 ? 2 : 1), 1, 0);
 
 		if (result == OV_HOLE)
 			continue;
@@ -250,7 +250,7 @@ int VorbisDecoder::getBitDepth() const
 
 int VorbisDecoder::getSampleRate() const
 {
-	return vorbisInfo->rate;
+	return (int) vorbisInfo->rate;
 }
 
 } // lullaby

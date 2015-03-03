@@ -25,11 +25,7 @@
 #include "font/Font.h"
 
 // FreeType2
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
-#include <freetype/ft2build.h>
-#else
 #include <ft2build.h>
-#endif
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
@@ -45,19 +41,11 @@ class Font : public love::font::Font
 public:
 
 	Font();
-
-	/**
-	 * Destructor.
-	 **/
 	virtual ~Font();
 
 	// Implements Font
-	Rasterizer *newRasterizer(int size);
-	Rasterizer *newRasterizer(Data *data, int size);
-	Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &text);
-	Rasterizer *newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs);
-	GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
-	GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
+	Rasterizer *newRasterizer(love::filesystem::FileData *data);
+	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size);
 
 	// Implement Module
 	const char *getName() const;
@@ -66,6 +54,7 @@ private:
 
 	// FreeType library
 	FT_Library library;
+
 }; // Font
 
 } // freetype

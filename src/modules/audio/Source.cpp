@@ -34,6 +34,11 @@ Source::~Source()
 {
 }
 
+Source::Type Source::getType() const
+{
+	return type;
+}
+
 bool Source::getConstant(const char *in, Type &out)
 {
 	return types.find(in, out);

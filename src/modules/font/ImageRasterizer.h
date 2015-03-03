@@ -66,7 +66,6 @@ private:
 	{
 		int x;
 		int width;
-		int spacing;
 	};
 
 	std::map<uint32, ImageGlyphData> imageGlyphs;

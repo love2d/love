@@ -30,7 +30,7 @@ namespace opengl
 
 Image *luax_checkimage(lua_State *L, int idx)
 {
-	return luax_checktype<Image>(L, idx, "Image", GRAPHICS_IMAGE_T);
+	return luax_checktype<Image>(L, idx, GRAPHICS_IMAGE_ID);
 }
 
 int w_Image_setMipmapFilter(lua_State *L)
@@ -48,9 +48,7 @@ int w_Image_setMipmapFilter(lua_State *L)
 	}
 
 	luax_catchexcept(L, [&](){ t->setFilter(f); });
-
-	float sharpness = (float) luaL_optnumber(L, 3, 0);
-	t->setMipmapSharpness(sharpness);
+	t->setMipmapSharpness((float) luaL_optnumber(L, 3, 0.0));
 
 	return 0;
 }
@@ -81,7 +79,13 @@ int w_Image_isCompressed(lua_State *L)
 int w_Image_refresh(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	luax_catchexcept(L, [&](){ i->refresh(); });
+
+	int xoffset = luaL_optint(L, 2, 0);
+	int yoffset = luaL_optint(L, 3, 0);
+	int w = luaL_optint(L, 4, i->getWidth());
+	int h = luaL_optint(L, 5, i->getHeight());
+
+	luax_catchexcept(L, [&](){ i->refresh(xoffset, yoffset, w, h); });
 	return 0;
 }
 
@@ -90,21 +94,9 @@ int w_Image_getData(lua_State *L)
 	Image *i = luax_checkimage(L, 1);
 
 	if (i->isCompressed())
-	{
-		love::image::CompressedData *t = i->getCompressedData();
-		if (t)
-			luax_pushtype(L, "CompressedData", IMAGE_COMPRESSED_DATA_T, t);
-		else
-			lua_pushnil(L);
-	}
+		luax_pushtype(L, IMAGE_COMPRESSED_DATA_ID, i->getCompressedData());
 	else
-	{
-		love::image::ImageData *t = i->getImageData();
-		if (t)
-			luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, t);
-		else
-			lua_pushnil(L);
-	}
+		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i->getImageData());
 
 	return 1;
 }
@@ -130,7 +122,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_image(lua_State *L)
 {
-	return luax_register_type(L, "Image", functions);
+	return luax_register_type(L, GRAPHICS_IMAGE_ID, functions);
 }
 
 } // opengl

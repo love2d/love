@@ -25,7 +25,7 @@
 #include "filesystem/File.h"
 
 // PhysFS
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#ifdef LOVE_APPLE_USE_FRAMEWORKS
 #include <physfs/physfs.h>
 #else
 #include <physfs.h>
@@ -54,14 +54,14 @@ public:
 	virtual ~File();
 
 	// Implements love::filesystem::File.
+	using love::filesystem::File::read;
+	using love::filesystem::File::write;
 	bool open(Mode mode);
 	bool close();
 	bool isOpen() const;
 	int64 getSize();
-	FileData *read(int64 size = ALL);
-	int64 read(void *dst, int64 size);
+	virtual int64 read(void *dst, int64 size);
 	bool write(const void *data, int64 size);
-	bool write(const Data *data, int64 size = ALL);
 	bool flush();
 	bool eof();
 	int64 tell();
@@ -69,8 +69,7 @@ public:
 	bool setBuffer(BufferMode bufmode, int64 size);
 	BufferMode getBuffer(int64 &size) const;
 	Mode getMode() const;
-	std::string getFilename() const;
-	std::string getExtension() const;
+	const std::string &getFilename() const;
 
 private:
 

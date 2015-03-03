@@ -112,7 +112,7 @@ public:
 	 * @param accuracy The 'fineness' of the curve.
 	 * @returns A polygon chain that approximates the bezier curve.
 	 **/
-	std::vector<Vector> render(size_t accuracy = 4) const;
+	std::vector<Vector> render(int accuracy = 4) const;
 
 private:
 	std::vector<Vector> controlPoints;

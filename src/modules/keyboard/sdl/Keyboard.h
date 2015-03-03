@@ -46,13 +46,19 @@ public:
 
 	void setKeyRepeat(bool enable);
 	bool hasKeyRepeat() const;
-	bool isDown(Key *keylist) const;
+	bool isDown(const std::vector<Key> &keylist) const;
+	bool isScancodeDown(const std::vector<Scancode> &scancodelist) const;
 
 	Key getKeyFromScancode(Scancode scancode) const;
 	Scancode getScancodeFromKey(Key key) const;
 
 	void setTextInput(bool enable);
+	void setTextInput(bool enable, double x, double y, double w, double h);
 	bool hasTextInput() const;
+	bool hasScreenKeyboard() const;
+
+	static bool getConstant(Scancode in, SDL_Scancode &out);
+	static bool getConstant(SDL_Scancode in, Scancode &out);
 
 private:
 

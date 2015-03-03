@@ -22,8 +22,12 @@
 #define LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
 
 // LOVE
+#include "CompressedFormatHandler.h"
 #include "filesystem/FileData.h"
 #include "image/CompressedData.h"
+
+// C++
+#include <list>
 
 namespace love
 {
@@ -36,14 +40,8 @@ class CompressedData : public love::image::CompressedData
 {
 public:
 
-	CompressedData(love::filesystem::FileData *filedata);
+	CompressedData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata);
 	virtual ~CompressedData();
-
-	static bool isCompressed(love::filesystem::FileData *filedata);
-
-private:
-
-	void load(love::filesystem::FileData *filedata);
 
 }; // CompressedData
 

@@ -24,7 +24,7 @@
 
 #include "Image.h"
 #include "Canvas.h"
-#include "wrap_Texture.h"
+#include "graphics/wrap_Texture.h"
 
 // C
 #include <cstring>
@@ -41,7 +41,7 @@ namespace opengl
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx)
 {
-	return luax_checktype<ParticleSystem>(L, idx, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T);
+	return luax_checktype<ParticleSystem>(L, idx, GRAPHICS_PARTICLE_SYSTEM_ID);
 }
 
 int w_ParticleSystem_clone(lua_State *L)
@@ -51,7 +51,7 @@ int w_ParticleSystem_clone(lua_State *L)
 	ParticleSystem *clone = nullptr;
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
 
-	luax_pushtype(L, "ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_T, clone);
+	luax_pushtype(L, GRAPHICS_PARTICLE_SYSTEM_ID, clone);
 	clone->release();
 	return 1;
 }
@@ -71,9 +71,9 @@ int w_ParticleSystem_getTexture(lua_State *L)
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
-		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+		luax_pushtype(L, GRAPHICS_IMAGE_ID, tex);
 	else if (typeid(*tex) == typeid(Canvas))
-		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+		luax_pushtype(L, GRAPHICS_CANVAS_ID, tex);
 	else
 		return luaL_error(L, "Unable to determine texture type.");
 
@@ -381,7 +381,7 @@ int w_ParticleSystem_setSizes(lua_State *L)
 	{
 		std::vector<float> sizes(nSizes);
 		for (size_t i = 0; i < nSizes; ++i)
-			sizes[i] = luax_checkfloat(L, 1 + i + 1);
+			sizes[i] = luax_checkfloat(L, (int) (1 + i + 1));
 
 		t->setSizes(sizes);
 	}
@@ -396,7 +396,7 @@ int w_ParticleSystem_getSizes(lua_State *L)
 	for (size_t i = 0; i < sizes.size(); i++)
 		lua_pushnumber(L, sizes[i]);
 
-	return sizes.size();
+	return (int) sizes.size();
 }
 
 int w_ParticleSystem_setSizeVariation(lua_State *L)
@@ -494,14 +494,14 @@ int w_ParticleSystem_setColors(lua_State *L)
 
 	if (lua_istable(L, 2)) // setColors({r,g,b,a}, {r,g,b,a}, ...)
 	{
-		size_t nColors = lua_gettop(L) - 1;
+		int nColors = (int) lua_gettop(L) - 1;
 
 		if (nColors > 8)
 			return luaL_error(L, "At most eight (8) colors may be used.");
 
 		std::vector<Color> colors(nColors);
 
-		for (size_t i = 0; i < nColors; i++)
+		for (int i = 0; i < nColors; i++)
 		{
 			luaL_checktype(L, i + 2, LUA_TTABLE);
 
@@ -528,7 +528,7 @@ int w_ParticleSystem_setColors(lua_State *L)
 	else // setColors(r,g,b,a, r,g,b,a, ...)
 	{
 		int cargs = lua_gettop(L) - 1;
-		size_t nColors = (cargs + 3) / 4; // nColors = ceil(color_args / 4)
+		int nColors = (cargs + 3) / 4; // nColors = ceil(color_args / 4)
 
 		if (cargs != 3 && (cargs % 4 != 0 || cargs == 0))
 			return luaL_error(L, "Expected red, green, blue, and alpha. Only got %d of 4 components.", cargs % 4);
@@ -547,7 +547,7 @@ int w_ParticleSystem_setColors(lua_State *L)
 		else
 		{
 			std::vector<Color> colors(nColors);
-			for (size_t i = 0; i < nColors; ++i)
+			for (int i = 0; i < nColors; ++i)
 			{
 				unsigned char r = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 1);
 				unsigned char g = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 2);
@@ -582,7 +582,7 @@ int w_ParticleSystem_getColors(lua_State *L)
 		lua_rawseti(L, -2, 4);
 	}
 
-	return colors.size();
+	return (int) colors.size();
 }
 
 int w_ParticleSystem_setQuads(lua_State *L)
@@ -592,11 +592,11 @@ int w_ParticleSystem_setQuads(lua_State *L)
 
 	if (lua_istable(L, 2))
 	{
-		for (size_t i = 1; i <= lua_objlen(L, 2); i++)
+		for (int i = 1; i <= (int) lua_objlen(L, 2); i++)
 		{
 			lua_rawgeti(L, 2, i);
 
-			Quad *q = luax_checktype<Quad>(L, -1, "Quad", GRAPHICS_QUAD_T);
+			Quad *q = luax_checktype<Quad>(L, -1, GRAPHICS_QUAD_ID);
 			quads.push_back(q);
 
 			lua_pop(L, 1);
@@ -606,7 +606,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 	{
 		for (int i = 2; i <= lua_gettop(L); i++)
 		{
-			Quad *q = luax_checktype<Quad>(L, i, "Quad", GRAPHICS_QUAD_T);
+			Quad *q = luax_checktype<Quad>(L, i, GRAPHICS_QUAD_ID);
 			quads.push_back(q);
 		}
 	}
@@ -622,9 +622,9 @@ int w_ParticleSystem_getQuads(lua_State *L)
 
 	lua_createtable(L, (int) quads.size(), 0);
 
-	for (size_t i = 0; i < quads.size(); i++)
+	for (int i = 0; i < (int) quads.size(); i++)
 	{
-		luax_pushtype(L, "Quad", GRAPHICS_QUAD_T, quads[i]);
+		luax_pushtype(L, GRAPHICS_QUAD_ID, quads[i]);
 		lua_rawseti(L, -2, i + 1);
 	}
 
@@ -779,17 +779,12 @@ static const luaL_Reg functions[] =
 	{ "isPaused", w_ParticleSystem_isPaused },
 	{ "isStopped", w_ParticleSystem_isStopped },
 	{ "update", w_ParticleSystem_update },
-
-	// Deprecated since 0.9.1.
-	{ "setImage", w_ParticleSystem_setTexture },
-	{ "getImage", w_ParticleSystem_getTexture },
-
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_particlesystem(lua_State *L)
 {
-	return luax_register_type(L, "ParticleSystem", functions);
+	return luax_register_type(L, GRAPHICS_PARTICLE_SYSTEM_ID, functions);
 }
 
 } // opengl

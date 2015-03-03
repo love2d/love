@@ -38,11 +38,12 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 // Forward declarations.
 class Texture;
+
+namespace opengl
+{
 
 class SpriteBatch : public Drawable
 {

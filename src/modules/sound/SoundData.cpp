@@ -176,7 +176,7 @@ int SoundData::getSampleRate() const
 
 int SoundData::getSampleCount() const
 {
-	return (size/channels)/(bitDepth/8);
+	return (int) ((size/channels)/(bitDepth/8));
 }
 
 float SoundData::getDuration() const

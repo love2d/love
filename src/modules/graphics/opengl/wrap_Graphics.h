@@ -24,12 +24,13 @@
 // LOVE
 #include "wrap_Font.h"
 #include "wrap_Image.h"
-#include "wrap_Quad.h"
+#include "graphics/wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
 #include "wrap_Canvas.h"
 #include "wrap_Shader.h"
 #include "wrap_Mesh.h"
+#include "wrap_Text.h"
 #include "Graphics.h"
 
 namespace love
@@ -41,16 +42,19 @@ namespace opengl
 
 int w_reset(lua_State *L);
 int w_clear(lua_State *L);
+int w_discard(lua_State *L);
 int w_present(lua_State *L);
 int w_isCreated(lua_State *L);
+int w_isActive(lua_State *L);
 int w_getWidth(lua_State *L);
 int w_getHeight(lua_State *L);
 int w_getDimensions(lua_State *L);
 int w_setScissor(lua_State *L);
 int w_getScissor(lua_State *L);
-int w_setStencil(lua_State *L);
-int w_setInvertedStencil(lua_State *L);
-int w_getMaxTextureSize(lua_State *L);
+int w_stencil(lua_State *L);
+int w_setStencilTest(lua_State *L);
+int w_getStencilTest(lua_State *L);
+int w_clearStencil(lua_State *L);
 int w_newImage(lua_State *L);
 int w_newQuad(lua_State *L);
 int w_newFont(lua_State *L);
@@ -60,6 +64,7 @@ int w_newParticleSystem(lua_State *L);
 int w_newCanvas(lua_State *L);  // comments in function
 int w_newShader(lua_State *L);
 int w_newMesh(lua_State *L);
+int w_newText(lua_State *L);
 int w_setColor(lua_State *L);
 int w_getColor(lua_State *L);
 int w_setBackgroundColor(lua_State *L);
@@ -82,10 +87,7 @@ int w_getLineWidth(lua_State *L);
 int w_getLineStyle(lua_State *L);
 int w_getLineJoin(lua_State *L);
 int w_setPointSize(lua_State *L);
-int w_setPointStyle(lua_State *L);
 int w_getPointSize(lua_State *L);
-int w_getPointStyle(lua_State *L);
-int w_getMaxPointSize(lua_State *L);
 int w_setWireframe(lua_State *L);
 int w_isWireframe(lua_State *L);
 int w_newScreenshot(lua_State *L);
@@ -93,12 +95,13 @@ int w_setCanvas(lua_State *L);
 int w_getCanvas(lua_State *L);
 int w_setShader(lua_State *L);
 int w_getShader(lua_State *L);
-int w_isSupported(lua_State *L);
+int w_setDefaultShaderCode(lua_State *L);
+int w_getSupported(lua_State *L);
 int w_getCanvasFormats(lua_State *L);
 int w_getCompressedImageFormats(lua_State *L);
 int w_getRendererInfo(lua_State *L);
+int w_getSystemLimits(lua_State *L);
 int w_getStats(lua_State *L);
-int w_getSystemLimit(lua_State *L);
 int w_draw(lua_State *L);
 int w_print(lua_State *L);
 int w_printf(lua_State *L);

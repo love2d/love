@@ -30,7 +30,7 @@ namespace opengl
 
 Font *luax_checkfont(lua_State *L, int idx)
 {
-	return luax_checktype<Font>(L, idx, "Font", GRAPHICS_FONT_T);
+	return luax_checktype<Font>(L, idx, GRAPHICS_FONT_ID);
 }
 
 int w_Font_getHeight(lua_State *L)
@@ -55,11 +55,19 @@ int w_Font_getWrap(lua_State *L)
 	const char *str = luaL_checkstring(L, 2);
 	float wrap = (float) luaL_checknumber(L, 3);
 	int max_width = 0, numlines = 0;
+	std::vector<std::string> lines;
+	std::vector<int> widths;
 
 	luax_catchexcept(L, [&]() {
-		std::vector<std::string> lines = t->getWrap(str, wrap, &max_width);
-		numlines = lines.size();
+		t->getWrap(str, wrap, lines, &widths);
+		numlines = (int) lines.size();
 	});
+
+	for (int width : widths)
+	{
+		if (width > max_width)
+			max_width = width;
+	}
 
 	lua_pushinteger(L, max_width);
 	lua_pushinteger(L, numlines);
@@ -178,7 +186,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_font(lua_State *L)
 {
-	return luax_register_type(L, "Font", functions);
+	return luax_register_type(L, GRAPHICS_FONT_ID, functions);
 }
 
 } // opengl

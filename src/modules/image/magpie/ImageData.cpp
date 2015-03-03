@@ -30,18 +30,20 @@ namespace magpie
 
 ImageData::ImageData(std::list<FormatHandler *> formats, love::filesystem::FileData *data)
 	: formatHandlers(formats)
+	, decodeHandler(nullptr)
 {
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->retain();
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 
 	decode(data);
 }
 
 ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height)
 	: formatHandlers(formats)
+	, decodeHandler(nullptr)
 {
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->retain();
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 
 	this->width = width;
 	this->height = height;
@@ -54,9 +56,10 @@ ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height)
 
 ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height, void *data, bool own)
 	: formatHandlers(formats)
+	, decodeHandler(nullptr)
 {
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->retain();
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 
 	this->width = width;
 	this->height = height;
@@ -69,10 +72,13 @@ ImageData::ImageData(std::list<FormatHandler *> formats, int width, int height, 
 
 ImageData::~ImageData()
 {
-	delete[] data;
+	if (decodeHandler)
+		decodeHandler->free(data);
+	else
+		delete[] data;
 
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->release();
+	for (FormatHandler *handler : formatHandlers)
+		handler->release();
 }
 
 void ImageData::create(int width, int height, void *data)
@@ -88,23 +94,32 @@ void ImageData::create(int width, int height, void *data)
 
 	if (data)
 		memcpy(this->data, data, width*height*sizeof(pixel));
+
+	decodeHandler = nullptr;
 }
 
 void ImageData::decode(love::filesystem::FileData *data)
 {
+	FormatHandler *decoder = nullptr;
 	FormatHandler::DecodedImage decodedimage;
 
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+	for (FormatHandler *handler : formatHandlers)
 	{
-		if ((*it)->canDecode(data))
+		if (handler->canDecode(data))
 		{
-			decodedimage = (*it)->decode(data);
+			decoder = handler;
 			break;
 		}
 	}
 
+	if (decoder)
+		decodedimage = decoder->decode(data);
+
 	if (decodedimage.data == nullptr)
-		throw love::Exception("Could not decode image: unrecognized format.");
+	{
+		const char *ext = data->getExtension().c_str();
+		throw love::Exception("Could not decode to ImageData: unrecognized format (%s)", ext);
+	}
 
 	// The decoder *must* output a 32 bits-per-pixel image.
 	if (decodedimage.size != decodedimage.width*decodedimage.height*sizeof(pixel))
@@ -113,54 +128,65 @@ void ImageData::decode(love::filesystem::FileData *data)
 		throw love::Exception("Could not convert image!");
 	}
 
-	if (this->data)
+	// Clean up any old data.
+	if (decodeHandler)
+		decodeHandler->free(this->data);
+	else
 		delete[] this->data;
 
 	this->width = decodedimage.width;
 	this->height = decodedimage.height;
 	this->data = decodedimage.data;
+
+	decodeHandler = decoder;
 }
 
 void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 {
+	FormatHandler *encoder = nullptr;
 	FormatHandler::EncodedImage encodedimage;
+	FormatHandler::DecodedImage rawimage;
 
+	rawimage.width = width;
+	rawimage.height = height;
+	rawimage.size = width*height*sizeof(pixel);
+	rawimage.data = data;
+
+	for (FormatHandler *handler : formatHandlers)
 	{
-		// We only need to lock this mutex when actually encoding the ImageData.
-		thread::Lock lock(mutex);
-
-		FormatHandler::DecodedImage rawimage;
-		rawimage.width = width;
-		rawimage.height = height;
-		rawimage.size = width*height*sizeof(pixel);
-		rawimage.data = data;
-
-		for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
+		if (handler->canEncode(format))
 		{
-			if ((*it)->canEncode(format))
-			{
-				encodedimage = (*it)->encode(rawimage, format);
-				break;
-			}
+			encoder = handler;
+			break;
 		}
+	}
 
-		if (encodedimage.data == nullptr)
-			throw love::Exception("Image format has no suitable encoder.");
+	if (encoder != nullptr)
+	{
+		thread::Lock lock(mutex);
+		encodedimage = encoder->encode(rawimage, format);
+	}
+
+	if (encoder == nullptr || encodedimage.data == nullptr)
+	{
+		const char *fname = "unknown";
+		getConstant(format, fname);
+		throw love::Exception("no suitable image encoder for %s format.", fname);
 	}
 
 	try
 	{
-		f->open(love::filesystem::File::WRITE);
+		f->open(love::filesystem::File::MODE_WRITE);
 		f->write(encodedimage.data, encodedimage.size);
 		f->close();
 	}
 	catch (love::Exception &)
 	{
-		delete[] encodedimage.data;
+		encoder->free(encodedimage.data);
 		throw;
 	}
 
-	delete[] encodedimage.data;
+	encoder->free(encodedimage.data);
 }
 
 } // magpie

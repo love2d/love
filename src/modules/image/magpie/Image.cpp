@@ -23,7 +23,15 @@
 #include "ImageData.h"
 #include "CompressedData.h"
 
-#include "DevilHandler.h"
+#include "JPEGHandler.h"
+#include "PNGHandler.h"
+#include "STBHandler.h"
+#include "ImageIOHandler.h"
+
+#include "ddsHandler.h"
+#include "PVRHandler.h"
+#include "KTXHandler.h"
+#include "PKMHandler.h"
 
 namespace love
 {
@@ -34,15 +42,33 @@ namespace magpie
 
 Image::Image()
 {
-	formatHandlers.push_back(new DevilHandler);
+	formatHandlers.push_back(new PNGHandler);
+
+#ifndef LOVE_NO_TURBOJPEG
+	formatHandlers.push_back(new JPEGHandler);
+#endif
+
+	formatHandlers.push_back(new STBHandler);
+
+#ifdef LOVE_SUPPORT_IMAGEIO
+	formatHandlers.push_back(new ImageIOHandler);
+#endif
+
+	compressedFormatHandlers.push_back(new DDSHandler);
+	compressedFormatHandlers.push_back(new PVRHandler);
+	compressedFormatHandlers.push_back(new KTXHandler);
+	compressedFormatHandlers.push_back(new PKMHandler);
 }
 
 Image::~Image()
 {
 	// ImageData objects reference the FormatHandlers in our list, so we should
 	// release them instead of deleting them completely here.
-	for (auto it = formatHandlers.begin(); it != formatHandlers.end(); ++it)
-		(*it)->release();
+	for (FormatHandler *handler : formatHandlers)
+		handler->release();
+
+	for (CompressedFormatHandler *handler : compressedFormatHandlers)
+		handler->release();
 }
 
 const char *Image::getName() const
@@ -67,12 +93,18 @@ love::image::ImageData *Image::newImageData(int width, int height, void *data, b
 
 love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)
 {
-	return new CompressedData(data);
+	return new CompressedData(compressedFormatHandlers, data);
 }
 
 bool Image::isCompressed(love::filesystem::FileData *data)
 {
-	return CompressedData::isCompressed(data);
+	for (CompressedFormatHandler *handler : compressedFormatHandlers)
+	{
+		if (handler->canParse(data))
+			return true;
+	}
+
+	return false;
 }
 
 } // magpie

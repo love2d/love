@@ -59,6 +59,10 @@ private:
 	// Image format handlers we can use for decoding and encoding.
 	std::list<FormatHandler *> formatHandlers;
 
+	// The format handler that was used to decode the ImageData. We need to know
+	// this so we can properly delete memory allocated by the decoder.
+	FormatHandler *decodeHandler;
+
 }; // ImageData
 
 } // magpie

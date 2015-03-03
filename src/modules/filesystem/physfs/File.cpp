@@ -39,8 +39,8 @@ namespace physfs
 
 File::File(const std::string &filename)
 	: filename(filename)
-	, file(0)
-	, mode(CLOSED)
+	, file(nullptr)
+	, mode(MODE_CLOSED)
 	, bufferMode(BUFFER_NONE)
 	, bufferSize(0)
 {
@@ -48,25 +48,25 @@ File::File(const std::string &filename)
 
 File::~File()
 {
-	if (mode != CLOSED)
+	if (mode != MODE_CLOSED)
 		close();
 }
 
 bool File::open(Mode mode)
 {
-	if (mode == CLOSED)
+	if (mode == MODE_CLOSED)
 		return true;
 
 	// File must exist if read mode.
-	if ((mode == READ) && !PHYSFS_exists(filename.c_str()))
+	if ((mode == MODE_READ) && !PHYSFS_exists(filename.c_str()))
 		throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
 
 	// Check whether the write directory is set.
-	if ((mode == APPEND || mode == WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
+	if ((mode == MODE_APPEND || mode == MODE_WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
 		throw love::Exception("Could not set write directory.");
 
 	// File already open?
-	if (file != 0)
+	if (file != nullptr)
 		return false;
 
 	PHYSFS_getLastError(); // Clear the error buffer.
@@ -74,13 +74,13 @@ bool File::open(Mode mode)
 
 	switch (mode)
 	{
-	case READ:
+	case MODE_READ:
 		handle = PHYSFS_openRead(filename.c_str());
 		break;
-	case APPEND:
+	case MODE_APPEND:
 		handle = PHYSFS_openAppend(filename.c_str());
 		break;
-	case WRITE:
+	case MODE_WRITE:
 		handle = PHYSFS_openWrite(filename.c_str());
 		break;
 	default:
@@ -99,94 +99,50 @@ bool File::open(Mode mode)
 
 	this->mode = mode;
 
-	if (file != 0 && !setBuffer(bufferMode, bufferSize))
+	if (file != nullptr && !setBuffer(bufferMode, bufferSize))
 	{
 		// Revert to buffer defaults if we don't successfully set the buffer.
 		bufferMode = BUFFER_NONE;
 		bufferSize = 0;
 	}
 
-	return (file != 0);
+	return (file != nullptr);
 }
 
 bool File::close()
 {
-	if (!PHYSFS_close(file))
+	if (file == nullptr || !PHYSFS_close(file))
 		return false;
-	mode = CLOSED;
-	file = 0;
+
+	mode = MODE_CLOSED;
+	file = nullptr;
+
 	return true;
 }
 
 bool File::isOpen() const
 {
-	return mode != CLOSED && file != 0;
+	return mode != MODE_CLOSED && file != nullptr;
 }
 
 int64 File::getSize()
 {
 	// If the file is closed, open it to
 	// check the size.
-	if (file == 0)
+	if (file == nullptr)
 	{
-		open(READ);
-		int64 size = (int64)PHYSFS_fileLength(file);
+		open(MODE_READ);
+		int64 size = (int64) PHYSFS_fileLength(file);
 		close();
 		return size;
 	}
 
-	return (int64)PHYSFS_fileLength(file);
-}
-
-
-FileData *File::read(int64 size)
-{
-	bool isOpen = (file != 0);
-
-	if (!isOpen && !open(READ))
-		throw love::Exception("Could not read file %s.", filename.c_str());
-
-	int64 max = getSize();
-	int64 cur = tell();
-	size = (size == ALL) ? max : size;
-
-	if (size < 0)
-		throw love::Exception("Invalid read size.");
-
-	// Clamping because the file offset may be in a weird position.
-	if (cur < 0)
-		cur = 0;
-	else if (cur > max)
-		cur = max;
-
-	if (cur + size > max)
-		size = max - cur;
-
-	FileData *fileData = new FileData(size, getFilename());
-	int64 bytesRead = read(fileData->getData(), size);
-
-	if (bytesRead < 0 || (bytesRead == 0 && bytesRead != size))
-	{
-		delete fileData;
-		throw love::Exception("Could not read from file.");
-	}
-	if (bytesRead < size)
-	{
-		FileData *tmpFileData = new FileData(bytesRead, getFilename());
-		memcpy(tmpFileData->getData(), fileData->getData(), (size_t) bytesRead);
-		delete fileData;
-		fileData = tmpFileData;
-	}
-
-	if (!isOpen)
-		close();
-
-	return fileData;
+	return (int64) PHYSFS_fileLength(file);
 }
 
 int64 File::read(void *dst, int64 size)
 {
-	if (!file || mode != READ)
+	if (!file || mode != MODE_READ)
 		throw love::Exception("File is not opened for reading.");
 
 	int64 max = (int64)PHYSFS_fileLength(file);
@@ -205,7 +161,7 @@ int64 File::read(void *dst, int64 size)
 
 bool File::write(const void *data, int64 size)
 {
-	if (!file || (mode != WRITE && mode != APPEND))
+	if (!file || (mode != MODE_WRITE && mode != MODE_APPEND))
 		throw love::Exception("File is not opened for writing.");
 
 	// Another clamp, for the time being.
@@ -215,7 +171,7 @@ bool File::write(const void *data, int64 size)
 		throw love::Exception("Invalid write size.");
 
 	// Try to write.
-	int64 written = static_cast<int64>(PHYSFS_write(file, data, 1, (PHYSFS_uint32) size));
+	int64 written = (int64) PHYSFS_write(file, data, 1, (PHYSFS_uint32) size);
 
 	// Check that correct amount of data was written.
 	if (written != size)
@@ -231,14 +187,9 @@ bool File::write(const void *data, int64 size)
 	return true;
 }
 
-bool File::write(const Data *data, int64 size)
-{
-	return write(data->getData(), (size == ALL) ? data->getSize() : size);
-}
-
 bool File::flush()
 {
-	if (!file || (mode != WRITE && mode != APPEND))
+	if (!file || (mode != MODE_WRITE && mode != MODE_APPEND))
 		throw love::Exception("File is not opened for writing.");
 
 	return PHYSFS_flush(file) != 0;
@@ -263,14 +214,12 @@ inline bool test_eof(File *, PHYSFS_File *file)
 
 bool File::eof()
 {
-	if (file == 0 || test_eof(this, file))
-		return true;
-	return false;
+	return file == nullptr || test_eof(this, file);
 }
 
 int64 File::tell()
 {
-	if (file == 0)
+	if (file == nullptr)
 		return -1;
 
 	return (int64) PHYSFS_tell(file);
@@ -278,23 +227,17 @@ int64 File::tell()
 
 bool File::seek(uint64 pos)
 {
-	if (file == 0)
-		return false;
-
-	if (!PHYSFS_seek(file, (PHYSFS_uint64) pos))
-		return false;
-	return true;
+	return file != nullptr && PHYSFS_seek(file, (PHYSFS_uint64) pos) != 0;
 }
 
 bool File::setBuffer(BufferMode bufmode, int64 size)
 {
-	// No negativity allowed!
 	if (size < 0)
 		return false;
 
 	// If the file isn't open, we'll make sure the buffer values are set in
 	// File::open.
-	if (file == 0 || mode == CLOSED)
+	if (!isOpen())
 	{
 		bufferMode = bufmode;
 		bufferSize = size;
@@ -331,19 +274,9 @@ File::BufferMode File::getBuffer(int64 &size) const
 	return bufferMode;
 }
 
-std::string File::getFilename() const
+const std::string &File::getFilename() const
 {
 	return filename;
-}
-
-std::string File::getExtension() const
-{
-	std::string::size_type idx = filename.rfind('.');
-
-	if (idx != std::string::npos)
-		return filename.substr(idx+1);
-	else
-		return std::string();
 }
 
 filesystem::File::Mode File::getMode() const

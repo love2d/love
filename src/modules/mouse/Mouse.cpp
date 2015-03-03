@@ -40,8 +40,6 @@ StringMap<Mouse::Button, Mouse::BUTTON_MAX_ENUM>::Entry Mouse::buttonEntries[] =
 	{"l", Mouse::BUTTON_LEFT},
 	{"m", Mouse::BUTTON_MIDDLE},
 	{"r", Mouse::BUTTON_RIGHT},
-	{"wu", Mouse::BUTTON_WHEELUP},
-	{"wd", Mouse::BUTTON_WHEELDOWN},
 	{"x1", Mouse::BUTTON_X1},
 	{"x2", Mouse::BUTTON_X2},
 };

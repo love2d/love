@@ -168,7 +168,7 @@ bool GlyphData::getConstant(GlyphData::Format in, const char *&out)
 
 StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM>::Entry GlyphData::formatEntries[] =
 {
-	{"luminance alpha", GlyphData::FORMAT_LUMINANCE_ALPHA},
+	{"luminancealpha", GlyphData::FORMAT_LUMINANCE_ALPHA},
 	{"rgba", GlyphData::FORMAT_RGBA},
 };
 

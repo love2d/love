@@ -88,7 +88,6 @@ public:
 
 	virtual void setLooping(bool looping) = 0;
 	virtual bool isLooping() const = 0;
-	virtual bool isStatic() const = 0;
 
 	virtual void setMinVolume(float volume) = 0;
 	virtual float getMinVolume() const = 0;
@@ -103,6 +102,7 @@ public:
 	virtual float getMaxDistance() const = 0;
 
 	virtual int getChannels() const = 0;
+	virtual Type getType() const;
 
 	static bool getConstant(const char *in, Type &out);
 	static bool getConstant(Type in, const char  *&out);
@@ -110,6 +110,7 @@ public:
 	static bool getConstant(Unit in, const char  *&out);
 
 protected:
+
 	Type type;
 
 private:
