@@ -510,6 +510,24 @@ void OpenGL::bindTextures(GLuint first, GLsizei count, const GLuint *textures)
 	}
 }
 
+void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
+{
+	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
+		throw love::Exception("Invalid texture unit index.");
+
+	if (texture != state.boundTextures[textureunit])
+	{
+		int oldtextureunit = state.curTextureUnit;
+		setTextureUnit(textureunit);
+
+		state.boundTextures[textureunit] = texture;
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		if (restoreprev)
+			setTextureUnit(oldtextureunit);
+	}
+}
+
 void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture

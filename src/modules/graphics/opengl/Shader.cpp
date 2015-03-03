@@ -382,7 +382,14 @@ void Shader::attach(bool temporary)
 	{
 		// make sure all sent textures are properly bound to their respective texture units
 		// note: list potentially contains texture ids of deleted/invalid textures!
-		gl.bindTextures(1, (GLsizei) activeTexUnits.size(), &activeTexUnits[0]);
+		for (size_t i = 0; i < activeTexUnits.size(); ++i)
+		{
+			if (activeTexUnits[i] > 0)
+				gl.bindTextureToUnit(activeTexUnits[i], i + 1, false);
+		}
+
+		// We always want to use texture unit 0 for everyhing else.
+		gl.setTextureUnit(0);
 	}
 }
 
@@ -523,7 +530,7 @@ void Shader::sendTexture(const std::string &name, Texture *texture)
 	checkSetUniformError(u, 1, 1, UNIFORM_SAMPLER);
 
 	// bind texture to assigned texture unit and send uniform to shader program
-	gl.bindTextures(texunit, 1, &gltex);
+	gl.bindTextureToUnit(gltex, texunit, true);
 
 	glUniform1i(u.location, texunit);
 

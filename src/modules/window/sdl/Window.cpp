@@ -89,7 +89,12 @@ void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (msaa > 0) ? msaa : 0);
 
+	// SDL or GLX may have bugs with this: https://bugzilla.libsdl.org/show_bug.cgi?id=2897
+	// It's fine to leave the attribute disabled on desktops though, because in
+	// practice the framebuffer will be sRGB-capable even if it's not requested.
+#if !defined(LOVE_LINUX)
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
+#endif
 }
 
 void Window::setGLContextAttributes(const ContextAttribs &attribs)

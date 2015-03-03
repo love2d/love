@@ -268,6 +268,14 @@ public:
 	void bindTextures(GLuint first, GLsizei count, const GLuint *textures);
 
 	/**
+	 * Helper for binding a texture to a specific texture unit.
+	 *
+	 * @param textureunit Index in the range of [0, maxtextureunits-1]
+	 * @param restoreprev Restore previously bound texture unit when done.
+	 **/
+	void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
+
+	/**
 	 * Helper for deleting an OpenGL texture.
 	 * Cleans up if the texture is currently bound.
 	 **/
