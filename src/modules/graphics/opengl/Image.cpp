@@ -153,20 +153,16 @@ void Image::loadDefaultTexture()
 	setFilter(filter);
 
 	// A nice friendly checkerboard to signify invalid textures...
-	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xC0,0xC0,0xC0,0xFF,
-	                0xC0,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
+	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xFF,0xC0,0xC0,0xFF,
+	                0xFF,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
-void Image::loadTextureFromCompressedData()
+void Image::loadFromCompressedData()
 {
 	GLenum iformat = getCompressedFormat(cdata->getFormat());
 	int count = flags.mipmaps ? cdata->getMipmapCount() : 1;
-
-	// We have to inform OpenGL if the image doesn't have all mipmap levels.
-	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
 
 	for (int i = 0; i < count; i++)
 	{
@@ -176,7 +172,7 @@ void Image::loadTextureFromCompressedData()
 	}
 }
 
-void Image::loadTextureFromImageData()
+void Image::loadFromImageData()
 {
 	GLenum iformat = flags.sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 	GLenum format  = GL_RGBA;
@@ -248,8 +244,11 @@ bool Image::loadVolatile()
 		return true;
 	}
 
-	if (!flags.mipmaps && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0))
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	if ((isCompressed() || !flags.mipmaps) && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0))
+	{
+		int count = (flags.mipmaps && isCompressed()) ? cdata->getMipmapCount() : 1;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+	}
 
 	if (flags.mipmaps && !isCompressed() &&
 		!(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
@@ -264,9 +263,9 @@ bool Image::loadVolatile()
 	try
 	{
 		if (isCompressed())
-			loadTextureFromCompressedData();
+			loadFromCompressedData();
 		else
-			loadTextureFromImageData();
+			loadFromImageData();
 
 		GLenum glerr = glGetError();
 		if (glerr != GL_NO_ERROR)
@@ -327,7 +326,7 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 	gl.bindTexture(texture);
 
 	if (isCompressed())
-		loadTextureFromCompressedData();
+		loadFromCompressedData();
 	else
 	{
 		const image::pixel *pdata = (const image::pixel *) data->getData();

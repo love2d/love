@@ -144,8 +144,8 @@ private:
 
 	void generateMipmaps();
 	void loadDefaultTexture();
-	void loadTextureFromCompressedData();
-	void loadTextureFromImageData();
+	void loadFromCompressedData();
+	void loadFromImageData();
 
 	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
 

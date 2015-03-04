@@ -373,8 +373,8 @@ void VertexIndex::fill()
 		indices[i*6+1] = T(i * 4 + 1);
 		indices[i*6+2] = T(i * 4 + 2);
 
-		indices[i*6+3] = T(i * 4 + 1);
-		indices[i*6+4] = T(i * 4 + 2);
+		indices[i*6+3] = T(i * 4 + 2);
+		indices[i*6+4] = T(i * 4 + 1);
 		indices[i*6+5] = T(i * 4 + 3);
 	}
 }
