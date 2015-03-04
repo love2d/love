@@ -95,8 +95,8 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, spinStart(0)
 	, spinEnd(0)
 	, spinVariation(0)
-	, offsetX(float(texture->getWidth())*0.5f)
-	, offsetY(float(texture->getHeight())*0.5f)
+	, offset(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f)
+	, defaultOffset(true)
 	, relativeRotation(false)
 {
 	if (size == 0 || size > MAX_PARTICLES)
@@ -148,8 +148,8 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, spinStart(p.spinStart)
 	, spinEnd(p.spinEnd)
 	, spinVariation(p.spinVariation)
-	, offsetX(p.offsetX)
-	, offsetY(p.offsetY)
+	, offset(p.offset)
+	, defaultOffset(p.defaultOffset)
 	, colors(p.colors)
 	, quads(p.quads)
 	, relativeRotation(p.relativeRotation)
@@ -165,6 +165,17 @@ ParticleSystem::~ParticleSystem()
 ParticleSystem *ParticleSystem::clone()
 {
 	return new ParticleSystem(*this);
+}
+
+void ParticleSystem::resetOffset()
+{
+	if (quads.empty())
+		offset = love::Vector(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f);
+	else
+	{
+		Quad::Viewport v = quads[0]->getViewport();
+		offset = love::Vector(v.x*0.5f, v.y*0.5f);
+	}
 }
 
 void ParticleSystem::createBuffers(size_t size)
@@ -423,6 +434,9 @@ ParticleSystem::Particle *ParticleSystem::removeParticle(Particle *p)
 void ParticleSystem::setTexture(Texture *tex)
 {
 	texture.set(tex);
+
+	if (defaultOffset)
+		resetOffset();
 }
 
 Texture *ParticleSystem::getTexture() const
@@ -683,13 +697,13 @@ float ParticleSystem::getSpinVariation() const
 
 void ParticleSystem::setOffset(float x, float y)
 {
-	offsetX = x;
-	offsetY = y;
+	offset = love::Vector(x, y);
+	defaultOffset = false;
 }
 
 love::Vector ParticleSystem::getOffset() const
 {
-	return love::Vector(offsetX, offsetY);
+	return offset;
 }
 
 void ParticleSystem::setColor(const Color &color)
@@ -730,6 +744,9 @@ void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
 		quadlist.push_back(q);
 
 	quads = quadlist;
+
+	if (defaultOffset)
+		resetOffset();
 }
 
 void ParticleSystem::setQuads()
@@ -856,7 +873,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 			textureVerts = quads[p->quadIndex]->getVertices();
 
 		// particle vertices are image vertices transformed by particle information
-		t.setTransformation(p->position[0], p->position[1], p->angle, p->size, p->size, offsetX, offsetY, 0.0f, 0.0f);
+		t.setTransformation(p->position[0], p->position[1], p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
 		t.transform(pVerts, textureVerts, 4);
 
 		// set the texture coordinate and color data for particle vertices

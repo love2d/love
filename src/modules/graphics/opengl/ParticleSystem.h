@@ -653,8 +653,10 @@ protected:
 	float spinVariation;
 
 	// Offsets
-	float offsetX;
-	float offsetY;
+	love::Vector offset;
+
+	// Is the ParticleSystem using a default offset?
+	bool defaultOffset;
 
 	// Color.
 	std::vector<Colorf> colors;
@@ -663,6 +665,8 @@ protected:
 	std::vector<StrongRef<Quad>> quads;
 
 	bool relativeRotation;
+
+	void resetOffset();
 
 	void createBuffers(size_t size);
 	void deleteBuffers();
