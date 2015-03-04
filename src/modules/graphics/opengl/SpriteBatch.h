@@ -138,7 +138,7 @@ private:
 	Color *color;
 
 	GLBuffer *array_buf;
-	VertexIndex element_buf;
+	VertexIndex quad_indices;
 
 	// The portion of the vertex buffer that's been modified while mapped.
 	size_t buffer_used_offset;

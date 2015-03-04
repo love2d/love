@@ -64,7 +64,7 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
-	, ibo(1)
+	, quadIndices(1)
 	, texture(texture)
 	, active(true)
 	, insertMode(INSERT_MODE_TOP)
@@ -113,7 +113,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, pHead(nullptr)
 	, pTail(nullptr)
 	, particleVerts(nullptr)
-	, ibo(p.ibo)
+	, quadIndices(p.quadIndices)
 	, texture(p.texture)
 	, active(p.active)
 	, insertMode(p.insertMode)
@@ -198,7 +198,7 @@ void ParticleSystem::setBufferSize(uint32 size)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid buffer size");
-	ibo = VertexIndex(size);
+	quadIndices = VertexIndex(size);
 	deleteBuffers();
 	createBuffers(size);
 	reset();
@@ -888,8 +888,9 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
 
 	{
-		GLBuffer::Bind ibo_bind(*ibo.getBuffer());
-		gl.drawElements(GL_TRIANGLES, (GLsizei) ibo.getIndexCount(pCount), ibo.getType(), ibo.getPointer(0));
+		GLsizei count = (GLsizei) quadIndices.getIndexCount(pCount);
+		GLBuffer::Bind ibo_bind(*quadIndices.getBuffer());
+		gl.drawElements(GL_TRIANGLES, count, quadIndices.getType(), quadIndices.getPointer(0));
 	}
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);

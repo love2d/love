@@ -47,7 +47,7 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 	, next(0)
 	, color(0)
 	, array_buf(nullptr)
-	, element_buf(size)
+	, quad_indices(size)
 	, buffer_used_offset(0)
 	, buffer_used_size(0)
 {
@@ -202,7 +202,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		void *new_data = new_array_buf->map();
 		memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
 
-		element_buf = VertexIndex(newsize);
+		quad_indices = VertexIndex(newsize);
 	}
 	catch (love::Exception &)
 	{
@@ -241,7 +241,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	gl.bindTexture(*(GLuint *) texture->getHandle());
 
 	GLBuffer::Bind array_bind(*array_buf);
-	GLBuffer::Bind element_bind(*element_buf.getBuffer());
+	GLBuffer::Bind element_bind(*quad_indices.getBuffer());
 
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
@@ -263,7 +263,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
 
 	gl.prepareDraw();
-	gl.drawElements(GL_TRIANGLES, (GLsizei) element_buf.getIndexCount(next), element_buf.getType(), element_buf.getPointer(0));
+	gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(next), quad_indices.getType(), quad_indices.getPointer(0));
 
 	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
 	glDisableVertexAttribArray(ATTRIB_POS);
@@ -322,8 +322,8 @@ bool SpriteBatch::getConstant(UsageHint in, const char *&out)
 StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM>::Entry SpriteBatch::usageHintEntries[] =
 {
 	{"dynamic", SpriteBatch::USAGE_DYNAMIC},
-	{"static", SpriteBatch::USAGE_STATIC},
-	{"stream", SpriteBatch::USAGE_STREAM},
+	{"static",  SpriteBatch::USAGE_STATIC},
+	{"stream",  SpriteBatch::USAGE_STREAM},
 };
 
 StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM> SpriteBatch::usageHints(usageHintEntries, sizeof(usageHintEntries));

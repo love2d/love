@@ -48,7 +48,7 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	, textureHeight(128)
 	, filter(filter)
 	, useSpacesAsTab(false)
-	, indexBuffer(20) // We make this bigger at draw-time, if needed.
+	, quadIndices(20) // We make this bigger at draw-time, if needed.
 	, textureCacheID(0)
 	, textureMemorySize(0)
 {
@@ -523,15 +523,15 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands)
 	for (const DrawCommand &cmd : drawcommands)
 		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
 
-	if ((size_t) totalverts / 4 > indexBuffer.getSize())
-		indexBuffer = VertexIndex((size_t) totalverts / 4);
+	if ((size_t) totalverts / 4 > quadIndices.getSize())
+		quadIndices = VertexIndex((size_t) totalverts / 4);
 
 	gl.prepareDraw();
 
-	const GLenum gltype = indexBuffer.getType();
-	const size_t elemsize = indexBuffer.getElementSize();
+	const GLenum gltype = quadIndices.getType();
+	const size_t elemsize = quadIndices.getElementSize();
 
-	GLBuffer::Bind bind(*indexBuffer.getBuffer());
+	GLBuffer::Bind bind(*quadIndices.getBuffer());
 
 	// We need a separate draw call for every section of the text which uses a
 	// different texture than the previous section.
@@ -542,7 +542,7 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands)
 
 		// TODO: Use glDrawElementsBaseVertex when supported?
 		gl.bindTexture(cmd.texture);
-		gl.drawElements(GL_TRIANGLES, count, gltype, indexBuffer.getPointer(offset));
+		gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
 	}
 }
 

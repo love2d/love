@@ -24,6 +24,16 @@ Download the required frameworks from [here][dependencies] and place them in `/L
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
+###iOS
+Download the required libraries from [here][dependencies-ios] and place the `include` and `libraries` folders
+into the `platform/xcode/ios` folder.
+
+Then use the Xcode project foind at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
+
+Note that you must be registered in the [iOS Developer Program][iosdeveloper] in order to build for physical iOS devices.
+
+The iOS version is currently a work-in-progress.
+
 Repository information
 ----------------------
 
@@ -54,7 +64,7 @@ Dependencies
 - OpenGL
 - OpenAL
 - Lua / LuaJIT / LLVM-lua
-- DevIL with MNG and TIFF
+- jpeg-turbo
 - FreeType
 - PhysicsFS
 - ModPlug
@@ -66,9 +76,11 @@ Dependencies
 [forums]: http://love2d.org/forums
 [irc]: irc://irc.oftc.net/love
 [dependencies]: http://love2d.org/sdk
+[dependencies-ios]: https://dl.dropboxusercontent.com/u/4214717/love-ios-libraries-0.10.zip
 [megasource]: https://bitbucket.org/rude/megasource
 [builds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
 [aur]: http://aur.archlinux.org/packages.php?ID=35279
 [love-experiments]: https://bitbucket.org/bartbes/love-experiments
+[iosdeveloper]: https://developer.apple.com/programs/ios/
