@@ -19,7 +19,11 @@
  **/
 
 // LOVE
+#include "common/config.h"
 #include "wrap_Font.h"
+
+// C++
+#include <algorithm>
 
 namespace love
 {
@@ -54,23 +58,24 @@ int w_Font_getWrap(lua_State *L)
 	Font *t = luax_checkfont(L, 1);
 	const char *str = luaL_checkstring(L, 2);
 	float wrap = (float) luaL_checknumber(L, 3);
-	int max_width = 0, numlines = 0;
+	int max_width = 0;
 	std::vector<std::string> lines;
 	std::vector<int> widths;
 
-	luax_catchexcept(L, [&]() {
-		t->getWrap(str, wrap, lines, &widths);
-		numlines = (int) lines.size();
-	});
+	luax_catchexcept(L, [&]() { t->getWrap(str, wrap, lines, &widths); });
 
 	for (int width : widths)
-	{
-		if (width > max_width)
-			max_width = width;
-	}
+		max_width = std::max(max_width, width);
 
 	lua_pushinteger(L, max_width);
-	lua_pushinteger(L, numlines);
+	lua_createtable(L, (int) lines.size(), 0);
+
+	for (int i = 0; i < (int) lines.size(); i++)
+	{
+		lua_pushstring(L, lines[i].c_str());
+		lua_rawseti(L, -2, i + 1);
+	}
+
 	return 2;
 }
 
@@ -148,8 +153,7 @@ int w_Font_hasGlyphs(lua_State *L)
 	Font *t = luax_checkfont(L, 1);
 	bool hasglyph = false;
 
-	int count = lua_gettop(L) - 1;
-	count = count < 1 ? 1 : count;
+	int count = std::max(lua_gettop(L) - 1, 1);
 
 	luax_catchexcept(L, [&]() {
 		 for (int i = 2; i < count + 2; i++)
