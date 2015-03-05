@@ -101,6 +101,29 @@ int w_Image_getData(lua_State *L)
 	return 1;
 }
 
+static const char *imageFlagName(Image::FlagType flagtype)
+{
+	const char *name = nullptr;
+	Image::getConstant(flagtype, name);
+	return name;
+}
+
+int w_Image_getFlags(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+	Image::Flags flags = i->getFlags();
+
+	lua_createtable(L, 0, 2);
+
+	lua_pushboolean(L, flags.mipmaps);
+	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_MIPMAPS));
+
+	lua_pushboolean(L, flags.sRGB);
+	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_SRGB));
+
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	// From wrap_Texture.
@@ -117,6 +140,7 @@ static const luaL_Reg functions[] =
 	{ "isCompressed", w_Image_isCompressed },
 	{ "refresh", w_Image_refresh },
 	{ "getData", w_Image_getData },
+	{ "getFlags", w_Image_getFlags },
 	{ 0, 0 }
 };
 
