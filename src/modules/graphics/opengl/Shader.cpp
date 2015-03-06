@@ -80,8 +80,8 @@ Shader::Shader(const ShaderSource &source)
 		throw love::Exception("Cannot create shader: no source code!");
 
 	// initialize global texture id counters if needed
-	if ((int) textureCounters.size() < gl.getMaxTextureUnits())
-		textureCounters.resize(gl.getMaxTextureUnits(), 0);
+	if ((int) textureCounters.size() < gl.getMaxTextureUnits() - 1)
+		textureCounters.resize(gl.getMaxTextureUnits() - 1, 0);
 
 	// load shader source and create program object
 	loadVolatile();
@@ -216,7 +216,7 @@ bool Shader::loadVolatile()
 
 	// zero out active texture list
 	activeTexUnits.clear();
-	activeTexUnits.insert(activeTexUnits.begin(), gl.getMaxTextureUnits(), 0);
+	activeTexUnits.insert(activeTexUnits.begin(), gl.getMaxTextureUnits() - 1, 0);
 
 	std::vector<GLuint> shaderids;
 
@@ -320,7 +320,7 @@ void Shader::unloadVolatile()
 
 	// active texture list is probably invalid, clear it
 	activeTexUnits.clear();
-	activeTexUnits.resize(gl.getMaxTextureUnits(), 0);
+	activeTexUnits.resize(gl.getMaxTextureUnits() - 1, 0);
 
 	// same with uniform location list
 	uniforms.clear();

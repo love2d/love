@@ -262,12 +262,6 @@ public:
 	void bindTexture(GLuint texture);
 
 	/**
-	 * Binds multiple textures to texture units without changing the active
-	 * texture unit. Equivalent to glBindTextures.
-	 **/
-	void bindTextures(GLuint first, GLsizei count, const GLuint *textures);
-
-	/**
 	 * Helper for binding a texture to a specific texture unit.
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]

@@ -484,32 +484,6 @@ void OpenGL::bindTexture(GLuint texture)
 	}
 }
 
-void OpenGL::bindTextures(GLuint first, GLsizei count, const GLuint *textures)
-{
-	if (first + count > (GLuint) maxTextureUnits)
-		return;
-
-	if (GLAD_VERSION_4_4 || GLAD_ARB_multi_bind)
-		glBindTextures(first, count, textures);
-	else
-	{
-		for (GLint i = 0; i < count; i++)
-		{
-			GLuint texture = textures != nullptr ? textures[i] : 0;
-
-			if (state.boundTextures[first + i] != texture)
-			{
-				glActiveTexture(GL_TEXTURE0 + first + i);
-				glBindTexture(GL_TEXTURE_2D, texture);
-
-				state.boundTextures[first + i] = texture;
-			}
-		}
-
-		glActiveTexture(GL_TEXTURE0 + state.curTextureUnit);
-	}
-}
-
 void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 {
 	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
