@@ -239,6 +239,7 @@ Message *Event::convert(const SDL_Event &e) const
 			vargs.push_back(new Variant(y));
 			vargs.push_back(new Variant(xrel));
 			vargs.push_back(new Variant(yrel));
+			vargs.push_back(new Variant(e.motion.which == SDL_TOUCH_MOUSEID));
 			msg = new Message("mousemoved", vargs);
 		}
 		break;
