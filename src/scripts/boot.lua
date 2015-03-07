@@ -361,6 +361,7 @@ function love.init()
 		console = false, -- Only relevant for windows.
 		identity = false,
 		appendidentity = false,
+		accelerometerjoystick = true, -- Only relevant for Android / iOS.
 	}
 
 	-- Console hack, part 1.
@@ -387,6 +388,11 @@ function love.init()
 	-- Console hack, part 2.
 	if c.console and love._openConsole and not openedconsole then
 		love._openConsole()
+	end
+
+	-- Hack for disabling accelerometer-as-joystick on Android / iOS.
+	if love._setAccelerometerAsJoystick then
+		love._setAccelerometerAsJoystick(c.accelerometerjoystick)
 	end
 
 	-- Gets desired modules.

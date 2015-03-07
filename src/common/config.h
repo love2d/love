@@ -79,6 +79,10 @@
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
 #endif
 
+#if defined(LOVE_ANDROID) || defined(LOVE_IOS)
+#	define LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+#endif
+
 // Autotools config.h
 #ifdef HAVE_CONFIG_H
 #	include <../config.h>

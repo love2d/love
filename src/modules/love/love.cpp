@@ -36,6 +36,10 @@
 #include <fstream>
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+#include <SDL_hints.h>
+#endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+
 // Libraries.
 #ifdef LOVE_ENABLE_LUASOCKET
 #	include "libraries/luasocket/luasocket.h"
@@ -169,6 +173,10 @@ static const luaL_Reg modules[] = {
 int w__openConsole(lua_State *L);
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+int w__setAccelerometerAsJoystick(lua_State *L);
+#endif
+
 const char *love_version()
 {
 	// Do not refer to love::VERSION here, the linker
@@ -212,6 +220,11 @@ int luaopen_love(lua_State * L)
 	lua_pushcfunction(L, w__openConsole);
 	lua_setfield(L, -2, "_openConsole");
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
+
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+	lua_pushcfunction(L, w__setAccelerometerAsJoystick);
+	lua_setfield(L, -2, "_setAccelerometerAsJoystick");
+#endif
 
 	lua_newtable(L);
 
@@ -332,6 +345,15 @@ int w__openConsole(lua_State *L)
 }
 
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
+
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+int w__setAccelerometerAsJoystick(lua_State *L)
+{
+	bool enable = (bool) lua_toboolean(L, 1);
+	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, enable ? "1" : "0");
+	return 0;
+}
+#endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 
 int luaopen_love_boot(lua_State *L)
 {
