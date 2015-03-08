@@ -854,6 +854,9 @@
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAA627CD18E7E1560080752D /* CoreServices.framework */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
+		FAB2D5AA1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
+		FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
+		FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1488,6 +1491,8 @@
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FAA627CD18E7E1560080752D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TrueTypeRasterizer.cpp; sourceTree = "<group>"; };
+		FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeRasterizer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2137,6 +2142,8 @@
 				FA0B7B7D1A95902C000E1D17 /* ImageRasterizer.h */,
 				FA0B7B7E1A95902C000E1D17 /* Rasterizer.cpp */,
 				FA0B7B7F1A95902C000E1D17 /* Rasterizer.h */,
+				FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */,
+				FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */,
 				FA0B7B801A95902C000E1D17 /* Vera.ttf.h */,
 				FA0B7B811A95902C000E1D17 /* wrap_Font.cpp */,
 				FA0B7B821A95902C000E1D17 /* wrap_Font.h */,
@@ -2810,6 +2817,7 @@
 				FA0B7DB01A95902C000E1D17 /* wrap_CompressedData.h in Headers */,
 				FA0B7AC11A958EA3000E1D17 /* callbacks.h in Headers */,
 				FA0B7D8F1A95902C000E1D17 /* ddsHandler.h in Headers */,
+				FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */,
 				FA0B7AA31A958EA3000E1D17 /* b2PulleyJoint.h in Headers */,
 				FA0B7B2F1A958EA3000E1D17 /* utf8.h in Headers */,
 				FA0B79231A958E3B000E1D17 /* EnumMap.h in Headers */,
@@ -3365,6 +3373,7 @@
 				FA0B7AF21A958EA3000E1D17 /* io.c in Sources */,
 				FA0B7DBF1A95902C000E1D17 /* JoystickModule.cpp in Sources */,
 				FA0B7D4F1A95902C000E1D17 /* SpriteBatch.cpp in Sources */,
+				FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */,
 				FA0B7A9F1A958EA3000E1D17 /* b2PrismaticJoint.cpp in Sources */,
 				FA0B79331A958E3B000E1D17 /* Object.cpp in Sources */,
 				FA0B7E5B1A95902C000E1D17 /* wrap_MotorJoint.cpp in Sources */,
@@ -3644,6 +3653,7 @@
 				FA0B7A671A958EA3000E1D17 /* b2Island.cpp in Sources */,
 				FA0B7DBE1A95902C000E1D17 /* JoystickModule.cpp in Sources */,
 				FA0B7D4E1A95902C000E1D17 /* SpriteBatch.cpp in Sources */,
+				FAB2D5AA1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */,
 				FA0B7ACD1A958EA3000E1D17 /* packet.c in Sources */,
 				FA0B7A921A958EA3000E1D17 /* b2GearJoint.cpp in Sources */,
 				FA0B7E5A1A95902C000E1D17 /* wrap_MotorJoint.cpp in Sources */,

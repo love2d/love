@@ -235,6 +235,8 @@ set(LOVE_SRC_MODULE_FONT_ROOT
 	src/modules/font/ImageRasterizer.h
 	src/modules/font/Rasterizer.cpp
 	src/modules/font/Rasterizer.h
+	src/modules/font/TrueTypeRasterizer.cpp
+	src/modules/font/TrueTypeRasterizer.h
 	src/modules/font/wrap_Font.cpp
 	src/modules/font/wrap_Font.h
 	src/modules/font/wrap_GlyphData.cpp

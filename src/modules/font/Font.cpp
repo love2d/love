@@ -39,15 +39,14 @@ public:
 
 	virtual void *getData() const { return Vera_ttf; }
 	virtual size_t getSize() const { return sizeof(Vera_ttf); }
-
 };
 
-Rasterizer *Font::newTrueTypeRasterizer(int size)
+Rasterizer *Font::newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting)
 {
 	StrongRef<DefaultFontData> data(new DefaultFontData);
 	data->release();
 
-	return newTrueTypeRasterizer(data.get(), size);
+	return newTrueTypeRasterizer(data.get(), size, hinting);
 }
 
 Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images)

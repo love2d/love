@@ -160,7 +160,7 @@ void OpenGL::initVendor()
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
 	// http://stackoverflow.com/questions/2093594/opengl-extensions-available-on-different-android-devices
 	if (strstr(vstr, "ATI Technologies"))
-		vendor = VENDOR_ATI_AMD;
+		vendor = VENDOR_AMD;
 	else if (strstr(vstr, "NVIDIA"))
 		vendor = VENDOR_NVIDIA;
 	else if (strstr(vstr, "Intel"))

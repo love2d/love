@@ -18,51 +18,45 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Font.h"
+#ifndef LOVE_FONT_TRUE_TYPE_RASTERIZER_H
+#define LOVE_FONT_TRUE_TYPE_RASTERIZER_H
 
-#include "TrueTypeRasterizer.h"
-#include "font/BMFontRasterizer.h"
-
-#include <string.h>
+// LOVE
+#include "Rasterizer.h"
+#include "common/StringMap.h"
 
 namespace love
 {
 namespace font
 {
-namespace freetype
+
+class TrueTypeRasterizer : public Rasterizer
 {
+public:
 
-Font::Font()
-{
-	if (FT_Init_FreeType(&library))
-		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed");
-}
+	// Types of hinting for TrueType font glyphs.
+	enum Hinting
+	{
+		HINTING_NORMAL,
+		HINTING_LIGHT,
+		HINTING_MONO,
+		HINTING_NONE,
+		HINTING_MAX_ENUM
+	};
 
-Font::~Font()
-{
-	FT_Done_FreeType(library);
-}
+	virtual ~TrueTypeRasterizer() {}
 
-Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
-{
-	if (TrueTypeRasterizer::accepts(library, data))
-		return newTrueTypeRasterizer(data, 12, TrueTypeRasterizer::HINTING_NORMAL);
-	else if (BMFontRasterizer::accepts(data))
-		return newBMFontRasterizer(data, {});
+	static bool getConstant(const char *in, Hinting &out);
+	static bool getConstant(Hinting in, const char *&out);
 
-	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
-}
+private:
 
-Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting)
-{
-	return new TrueTypeRasterizer(library, data, size, hinting);
-}
+	static StringMap<Hinting, HINTING_MAX_ENUM>::Entry hintingEntries[];
+	static StringMap<Hinting, HINTING_MAX_ENUM> hintings;
 
-const char *Font::getName() const
-{
-	return "love.font.freetype";
-}
+}; // TrueTypeRasterizer
 
-} // freetype
 } // font
 } // love
+
+#endif // LOVE_FONT_TRUE_TYPE_RASTERIZER_H

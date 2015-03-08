@@ -18,51 +18,32 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Font.h"
-
 #include "TrueTypeRasterizer.h"
-#include "font/BMFontRasterizer.h"
-
-#include <string.h>
 
 namespace love
 {
 namespace font
 {
-namespace freetype
-{
 
-Font::Font()
+bool TrueTypeRasterizer::getConstant(const char *in, Hinting &out)
 {
-	if (FT_Init_FreeType(&library))
-		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed");
+	return hintings.find(in, out);
 }
 
-Font::~Font()
+bool TrueTypeRasterizer::getConstant(Hinting in, const char *&out)
 {
-	FT_Done_FreeType(library);
+	return hintings.find(in, out);
 }
 
-Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
+StringMap<TrueTypeRasterizer::Hinting, TrueTypeRasterizer::HINTING_MAX_ENUM>::Entry TrueTypeRasterizer::hintingEntries[] =
 {
-	if (TrueTypeRasterizer::accepts(library, data))
-		return newTrueTypeRasterizer(data, 12, TrueTypeRasterizer::HINTING_NORMAL);
-	else if (BMFontRasterizer::accepts(data))
-		return newBMFontRasterizer(data, {});
+	{"normal", HINTING_NORMAL},
+	{"light", HINTING_LIGHT},
+	{"mono", HINTING_MONO},
+	{"none", HINTING_NONE},
+};
 
-	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
-}
+StringMap<TrueTypeRasterizer::Hinting, TrueTypeRasterizer::HINTING_MAX_ENUM> TrueTypeRasterizer::hintings(TrueTypeRasterizer::hintingEntries, sizeof(TrueTypeRasterizer::hintingEntries));
 
-Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting)
-{
-	return new TrueTypeRasterizer(library, data, size, hinting);
-}
-
-const char *Font::getName() const
-{
-	return "love.font.freetype";
-}
-
-} // freetype
 } // font
 } // love

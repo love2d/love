@@ -23,6 +23,7 @@
 
 // LOVE
 #include "Rasterizer.h"
+#include "TrueTypeRasterizer.h"
 #include "image/ImageData.h"
 #include "filesystem/FileData.h"
 #include "common/Module.h"
@@ -46,8 +47,8 @@ public:
 
 	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
 
-	virtual Rasterizer *newTrueTypeRasterizer(int size);
-	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size) = 0;
+	virtual Rasterizer *newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting);
+	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting) = 0;
 
 	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);
 

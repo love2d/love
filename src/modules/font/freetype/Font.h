@@ -45,7 +45,7 @@ public:
 
 	// Implements Font
 	Rasterizer *newRasterizer(love::filesystem::FileData *data);
-	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size);
+	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting);
 
 	// Implement Module
 	const char *getName() const;

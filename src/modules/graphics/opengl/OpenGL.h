@@ -72,7 +72,7 @@ public:
 	// OpenGL GPU vendors.
 	enum Vendor
 	{
-		VENDOR_ATI_AMD,
+		VENDOR_AMD,
 		VENDOR_NVIDIA,
 		VENDOR_INTEL,
 		VENDOR_MESA_SOFT, // Software renderer.

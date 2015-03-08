@@ -137,7 +137,7 @@ void Image::generateMipmaps()
 	{
 		// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
 #if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
-		if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
+		if (gl.getVendor() == OpenGL::VENDOR_AMD)
 			glEnable(GL_TEXTURE_2D);
 #endif
 
