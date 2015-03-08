@@ -798,11 +798,14 @@ std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::keys = Event::create
 
 EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
 {
-	{ love::mouse::Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
-	{ love::mouse::Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},
-	{ love::mouse::Mouse::BUTTON_RIGHT, SDL_BUTTON_RIGHT},
-	{ love::mouse::Mouse::BUTTON_X1, SDL_BUTTON_X1},
-	{ love::mouse::Mouse::BUTTON_X2, SDL_BUTTON_X2},
+	{love::mouse::Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
+	{love::mouse::Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},
+	{love::mouse::Mouse::BUTTON_RIGHT, SDL_BUTTON_RIGHT},
+	{love::mouse::Mouse::BUTTON_X1, SDL_BUTTON_X1},
+	{love::mouse::Mouse::BUTTON_X2, SDL_BUTTON_X2+0},
+	{love::mouse::Mouse::BUTTON_X3, SDL_BUTTON_X2+1},
+	{love::mouse::Mouse::BUTTON_X4, SDL_BUTTON_X2+2},
+	{love::mouse::Mouse::BUTTON_X5, SDL_BUTTON_X2+3},
 };
 
 EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> Event::buttons(Event::buttonEntries, sizeof(Event::buttonEntries));

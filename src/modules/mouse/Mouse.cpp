@@ -37,11 +37,14 @@ bool Mouse::getConstant(Button in, const char  *&out)
 
 StringMap<Mouse::Button, Mouse::BUTTON_MAX_ENUM>::Entry Mouse::buttonEntries[] =
 {
-	{"l", Mouse::BUTTON_LEFT},
-	{"m", Mouse::BUTTON_MIDDLE},
-	{"r", Mouse::BUTTON_RIGHT},
-	{"x1", Mouse::BUTTON_X1},
-	{"x2", Mouse::BUTTON_X2},
+	{"l", BUTTON_LEFT},
+	{"m", BUTTON_MIDDLE},
+	{"r", BUTTON_RIGHT},
+	{"x1", BUTTON_X1},
+	{"x2", BUTTON_X2},
+	{"x3", BUTTON_X3},
+	{"x4", BUTTON_X4},
+	{"x5", BUTTON_X5},
 };
 
 StringMap<Mouse::Button, Mouse::BUTTON_MAX_ENUM> Mouse::buttons(Mouse::buttonEntries, sizeof(Mouse::buttonEntries));

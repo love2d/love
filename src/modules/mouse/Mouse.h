@@ -36,14 +36,18 @@ class Mouse : public Module
 {
 public:
 
+	// FIXME: We should probably just use button numbers.
 	enum Button
 	{
-		BUTTON_INVALID,
+		BUTTON_INVALID = 0,
 		BUTTON_LEFT,
 		BUTTON_MIDDLE,
 		BUTTON_RIGHT,
 		BUTTON_X1,
 		BUTTON_X2,
+		BUTTON_X3,
+		BUTTON_X4,
+		BUTTON_X5,
 		BUTTON_MAX_ENUM
 	};
 
