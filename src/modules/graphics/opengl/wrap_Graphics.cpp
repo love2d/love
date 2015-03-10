@@ -161,10 +161,14 @@ int w_stencil(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
+	// Second argument: whether to keep the contents of the stencil buffer.
+	if (lua_toboolean(L, 2) == 0)
+		instance()->clearStencil();
+
 	instance()->drawToStencilBuffer(true);
 
-	// Call stencilfunc(...)
-	lua_call(L, lua_gettop(L) - 1, 0);
+	// Call stencilfunc()
+	lua_call(L, 0, 0);
 
 	instance()->drawToStencilBuffer(false);
 
@@ -186,12 +190,6 @@ int w_getStencilTest(lua_State *L)
 	luax_pushboolean(L, enabled);
 	luax_pushboolean(L, inverted);
 	return 2;
-}
-
-int w_clearStencil(lua_State* /*L*/)
-{
-	instance()->clearStencil();
-	return 0;
 }
 
 static const char *imageFlagName(Image::FlagType flagtype)
@@ -1560,7 +1558,6 @@ static const luaL_Reg functions[] =
 	{ "stencil", w_stencil },
 	{ "setStencilTest", w_setStencilTest },
 	{ "getStencilTest", w_getStencilTest },
-	{ "clearStencil", w_clearStencil },
 
 	{ "point", w_point },
 	{ "line", w_line },

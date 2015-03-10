@@ -16,7 +16,7 @@ Released: N/A
   * Added Source:getType (replaces Source:isStatic.)
   * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
   * Added love.graphics.getSystemLimits (replaces love.graphics.getSystemLimit.)
-  * Added love.graphics.stencil, love.graphics.setStencilTest, and love.graphics.clearStencil (replaces love.graphics.setStencil.)
+  * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
   * Added love.graphics.isActive.
   * Added color arguments to love.graphics.clear. It no longer always uses the background color value.
   * Added love.graphics.discard.
