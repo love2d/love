@@ -898,6 +898,7 @@ std::vector<Canvas *> Graphics::getCanvas() const
 void Graphics::setColorMask(ColorMask mask)
 {
 	glColorMask(mask.r, mask.g, mask.b, mask.a);
+	states.back().colorMask = mask;
 }
 
 Graphics::ColorMask Graphics::getColorMask() const

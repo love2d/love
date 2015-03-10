@@ -168,7 +168,7 @@ int w_stencil(lua_State *L)
 	instance()->drawToStencilBuffer(true);
 
 	// Call stencilfunc()
-    lua_pushvalue(L, 1);
+	lua_pushvalue(L, 1);
 	lua_call(L, 0, 0);
 
 	instance()->drawToStencilBuffer(false);
