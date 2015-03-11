@@ -54,7 +54,7 @@ Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const
 	return new BMFontRasterizer(fontdef, images);
 }
 
-Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::string &text)
+Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::string &text, int extraspacing)
 {
 	std::vector<uint32> glyphs;
 	glyphs.reserve(text.size());
@@ -72,12 +72,12 @@ Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::st
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
-	return newImageRasterizer(data, &glyphs[0], (int) glyphs.size());
+	return newImageRasterizer(data, &glyphs[0], (int) glyphs.size(), extraspacing);
 }
 
-Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
+Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing)
 {
-	return new ImageRasterizer(data, glyphs, numglyphs);
+	return new ImageRasterizer(data, glyphs, numglyphs, extraspacing);
 }
 
 GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)

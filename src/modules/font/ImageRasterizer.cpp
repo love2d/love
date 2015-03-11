@@ -34,10 +34,11 @@ inline bool equal(const love::image::pixel &a, const love::image::pixel &b)
 	return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
 }
 
-ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
+ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing)
 	: imageData(data)
 	, glyphs(glyphs)
 	, numglyphs(numglyphs)
+	, extraSpacing(extraspacing)
 {
 	load();
 }
@@ -60,7 +61,7 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 	if (it != imageGlyphs.end())
 	{
 		gm.width = it->second.width;
-		gm.advance = it->second.width;
+		gm.advance = it->second.width + extraSpacing;
 	}
 
 	gm.height = metrics.height;

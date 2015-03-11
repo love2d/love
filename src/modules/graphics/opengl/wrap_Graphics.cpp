@@ -339,9 +339,13 @@ int w_newImageFont(lua_State *L)
 	// Convert to Rasterizer if necessary.
 	if (!luax_istype(L, 1, FONT_RASTERIZER_ID))
 	{
-		luaL_checkstring(L, 2);
-		int idxs[] = {1, 2};
-		luax_convobj(L, idxs, 2, "font", "newImageRasterizer");
+		luaL_checktype(L, 2, LUA_TSTRING);
+
+		std::vector<int> idxs;
+		for (int i = 0; i < lua_gettop(L); i++)
+			idxs.push_back(i + 1);
+
+		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newImageRasterizer");
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, FONT_RASTERIZER_ID);

@@ -162,8 +162,9 @@ int w_newImageRasterizer(lua_State *L)
 
 	image::ImageData *d = luax_checktype<image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
 	std::string glyphs = luax_checkstring(L, 2);
+	int extraspacing = luaL_optint(L, 3, 0);
 
-	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs); });
+	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs, extraspacing); });
 
 	luax_pushtype(L, FONT_RASTERIZER_ID, t);
 	t->release();

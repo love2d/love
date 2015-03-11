@@ -52,8 +52,8 @@ public:
 
 	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);
 
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs);
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs, int extraspacing);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length, int extraspacing);
 
 	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
 	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
