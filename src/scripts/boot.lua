@@ -470,14 +470,8 @@ function love.init()
 	end
 
 	-- Check the version
-	local compat = false
 	c.version = tostring(c.version)
-	for i, v in ipairs(love._version_compat) do
-		if c.version == v then
-			compat = true
-			break
-		end
-	end
+	local compat = love.isVersionCompatible(c.version)
 	if not compat then
 		local major, minor, revision = c.version:match("^(%d+)%.(%d+)%.(%d+)$")
 		if (not major or not minor or not revision) or (major ~= love._version_major and minor ~= love._version_minor) then

@@ -25,6 +25,10 @@
 
 #include "love.h"
 
+// C
+#include <cstdio>
+#include <cstring>
+
 #ifdef LOVE_WINDOWS
 #include <windows.h>
 #endif // LOVE_WINDOWS
@@ -198,6 +202,46 @@ static int w_love_getVersion(lua_State *L)
 	return 4;
 }
 
+static int w_love_isVersionCompatible(lua_State *L)
+{
+	const char *version = nullptr;
+	char versionbuffer[64] = {0};
+
+	if (lua_type(L, 1) == LUA_TSTRING)
+		version = luaL_checkstring(L, 1);
+	else
+	{
+		int major = luaL_checkint(L, 1);
+		int minor = luaL_checkint(L, 2);
+		int rev   = luaL_checkint(L, 3);
+
+		// Convert the numbers to a string, since VERSION_COMPATIBILITY is an
+		// array of version strings.
+		if (snprintf(versionbuffer, 64, "%d.%d.%d", major, minor, rev) < 0)
+		{
+			lua_pushboolean(L, false);
+			return 1;
+		}
+
+		version = versionbuffer;
+	}
+
+	if (version != nullptr)
+	{
+		for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
+		{
+			if (strcmp(version, love::VERSION_COMPATIBILITY[i]) != 0)
+				continue;
+
+			lua_pushboolean(L, true);
+			return 1;
+		}
+	}
+
+	lua_pushboolean(L, false);
+	return 1;
+}
+
 int luaopen_love(lua_State * L)
 {
 	love::luax_insistglobal(L, "love");
@@ -228,7 +272,7 @@ int luaopen_love(lua_State * L)
 
 	lua_newtable(L);
 
-	for (int i = 0; love::VERSION_COMPATIBILITY[i] != 0; ++i)
+	for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
 	{
 		lua_pushstring(L, love::VERSION_COMPATIBILITY[i]);
 		lua_rawseti(L, -2, i+1);
@@ -238,6 +282,9 @@ int luaopen_love(lua_State * L)
 
 	lua_pushcfunction(L, w_love_getVersion);
 	lua_setfield(L, -2, "getVersion");
+
+	lua_pushcfunction(L, w_love_isVersionCompatible);
+	lua_setfield(L, -2, "isVersionCompatible");
 
 #ifdef LOVE_WINDOWS
 	lua_pushstring(L, "Windows");
