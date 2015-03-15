@@ -47,31 +47,42 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	Color color;
+	std::vector<Color> colors(1);
 
 	if (lua_isnoneornil(L, 1))
-		color.set(0, 0, 0, 0);
+		colors[0].set(0, 0, 0, 0);
 	else if (lua_istable(L, 1))
 	{
-		for (int i = 1; i <= 4; i++)
-			lua_rawgeti(L, 1, i);
+		colors.resize((size_t) lua_gettop(L));
 
-		color.r = (unsigned char) luaL_checkinteger(L, -4);
-		color.g = (unsigned char) luaL_checkinteger(L, -3);
-		color.b = (unsigned char) luaL_checkinteger(L, -2);
-		color.a = (unsigned char) luaL_optinteger(L, -1, 255);
+		for (int i = 0; i < lua_gettop(L); i++)
+		{
+			for (int j = 1; j <= 4; j++)
+				lua_rawgeti(L, i + 1, j);
 
-		lua_pop(L, 4);
+			colors[i].r = (unsigned char) luaL_checkinteger(L, -4);
+			colors[i].g = (unsigned char) luaL_checkinteger(L, -3);
+			colors[i].b = (unsigned char) luaL_checkinteger(L, -2);
+			colors[i].a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+			lua_pop(L, 4);
+		}
 	}
 	else
 	{
-		color.r = (unsigned char) luaL_checkinteger(L, 1);
-		color.g = (unsigned char) luaL_checkinteger(L, 2);
-		color.b = (unsigned char) luaL_checkinteger(L, 3);
-		color.a = (unsigned char) luaL_optinteger(L, 4, 255);
+		colors[0].r = (unsigned char) luaL_checkinteger(L, 1);
+		colors[0].g = (unsigned char) luaL_checkinteger(L, 2);
+		colors[0].b = (unsigned char) luaL_checkinteger(L, 3);
+		colors[0].a = (unsigned char) luaL_optinteger(L, 4, 255);
 	}
 
-	instance()->clear(color);
+	luax_catchexcept(L, [&]() {
+		if (colors.size() == 1)
+			instance()->clear(colors[0]);
+		else
+			instance()->clear(colors);
+	});
+
 	return 0;
 }
 

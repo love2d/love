@@ -424,6 +424,47 @@ void Graphics::clear(Color c)
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void Graphics::clear(const std::vector<Color> &colors)
+{
+	if (colors.size() == 0)
+		return;
+
+	if (states.back().canvases.size() == 0)
+		return clear(colors[0]);
+
+	if (colors.size() != states.back().canvases.size())
+		throw love::Exception("Number of clear colors must match the number of active canvases (%ld)", states.back().canvases.size());
+
+	std::vector<GLenum> bufs;
+
+	for (int i = 0; i < (int) colors.size(); i++)
+	{
+		const GLfloat c[] = {colors[i].r/255.f, colors[i].g/255.f, colors[i].b/255.f, colors[i].a/255.f};
+
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
+			glClearBufferfv(GL_COLOR, i, c);
+		else
+		{
+			bufs.push_back(GL_COLOR_ATTACHMENT0 + i);
+			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
+			glClearColor(c[0], c[1], c[2], c[3]);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
+	}
+
+	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Revert to the expected draw buffers once we're done, if glClearBuffer
+	// wasn't supported.
+	if (!(GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0))
+	{
+		if (bufs.size() > 1)
+			glDrawBuffers((int) bufs.size(), &bufs[0]);
+		else
+			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	}
+}
+
 void Graphics::discard(bool color, bool stencil)
 {
 	if (!(GLAD_VERSION_4_3 || GLAD_ARB_invalidate_subdata || GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer))

@@ -87,6 +87,11 @@ public:
 	void clear(Color c);
 
 	/**
+	 * Clears each active canvas to a different color.
+	 **/
+	void clear(const std::vector<Color> &colors);
+
+	/**
 	 * Discards the contents of the screen.
 	 **/
 	void discard(bool color, bool stencil);
