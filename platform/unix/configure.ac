@@ -63,7 +63,6 @@ PKG_CHECK_MODULES([zlib], [zlib], [], [LOVE_MSG_ERROR([zlib])])
 # Other libraries
 AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], [LOVE_MSG_ERROR([PhysicsFS])])
-AC_SEARCH_LIBS([glDrawArrays], [GL], [], [LOVE_MSG_ERROR([OpenGL])])
 AC_SEARCH_LIBS([tjInitCompress], [turbojpeg], [], [LOVE_MSG_ERROR([TurboJPEG])])
 
 # Lua, treated seperately because of --with-lua
