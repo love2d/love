@@ -241,7 +241,7 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 	std::string insertstr = gpinputname + ":" + joyinputstr + ",";
 
 	// We should replace any existing gamepad bind.
-	size_t findpos = mapstr.find(gpinputname + ":");
+	size_t findpos = mapstr.find(std::string(", ") + gpinputname + ":");
 	if (findpos != std::string::npos)
 	{
 		// The bind string ends at the next comma, or the end of the string.
