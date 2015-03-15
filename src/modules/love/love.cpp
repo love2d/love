@@ -25,9 +25,9 @@
 
 #include "love.h"
 
-// C
-#include <cstdio>
-#include <cstring>
+// C++
+#include <string>
+#include <sstream>
 
 #ifdef LOVE_WINDOWS
 #include <windows.h>
@@ -204,8 +204,7 @@ static int w_love_getVersion(lua_State *L)
 
 static int w_love_isVersionCompatible(lua_State *L)
 {
-	const char *version = nullptr;
-	char versionbuffer[64] = {0};
+	std::string version;
 
 	if (lua_type(L, 1) == LUA_TSTRING)
 		version = luaL_checkstring(L, 1);
@@ -217,25 +216,19 @@ static int w_love_isVersionCompatible(lua_State *L)
 
 		// Convert the numbers to a string, since VERSION_COMPATIBILITY is an
 		// array of version strings.
-		if (snprintf(versionbuffer, 64, "%d.%d.%d", major, minor, rev) < 0)
-		{
-			lua_pushboolean(L, false);
-			return 1;
-		}
+		std::stringstream ss;
+		ss << major << "." << minor << "." << rev;
 
-		version = versionbuffer;
+		version = ss.str();
 	}
 
-	if (version != nullptr)
+	for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
 	{
-		for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
-		{
-			if (strcmp(version, love::VERSION_COMPATIBILITY[i]) != 0)
-				continue;
+		if (version.compare(love::VERSION_COMPATIBILITY[i]) != 0)
+			continue;
 
-			lua_pushboolean(L, true);
-			return 1;
-		}
+		lua_pushboolean(L, true);
+		return 1;
 	}
 
 	lua_pushboolean(L, false);

@@ -423,6 +423,22 @@ function love.init()
 		love.createhandlers()
 	end
 
+	-- Check the version
+	c.version = tostring(c.version)
+	if not love.isVersionCompatible(c.version) then
+		local major, minor, revision = c.version:match("^(%d+)%.(%d+)%.(%d+)$")
+		if (not major or not minor or not revision) or (major ~= love._version_major and minor ~= love._version_minor) then
+			local msg = "This game was made for a different version of LÖVE.\n"..
+			"It may not be not be compatible with the running version ("..love._version..")."
+
+			print(msg)
+
+			if love.window then
+				love.window.showMessageBox("Compatibility Warning", msg, "warning")
+			end
+		end
+	end
+
 	if not confok and conferr then
 		error(conferr)
 	end
@@ -468,24 +484,6 @@ function love.init()
 	if no_game_code then
 		error("No code to run\nYour game might be packaged incorrectly\nMake sure main.lua is at the top level of the zip")
 	end
-
-	-- Check the version
-	c.version = tostring(c.version)
-	local compat = love.isVersionCompatible(c.version)
-	if not compat then
-		local major, minor, revision = c.version:match("^(%d+)%.(%d+)%.(%d+)$")
-		if (not major or not minor or not revision) or (major ~= love._version_major and minor ~= love._version_minor) then
-			local msg = "This game was made for a different version of LÖVE.\n"..
-				"It may not be not be compatible with the running version ("..love._version..")."
-
-			print(msg)
-
-			if love.window then
-				love.window.showMessageBox("Compatibility Warning", msg, "warning")
-			end
-		end
-	end
-
 end
 
 function love.run()
