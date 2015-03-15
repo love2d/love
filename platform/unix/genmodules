@@ -16,7 +16,7 @@ implfind()
 
 sourcefind()
 {
-	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
+	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.lch" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
 }
 
 handlemodule()
