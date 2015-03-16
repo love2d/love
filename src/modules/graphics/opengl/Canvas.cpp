@@ -826,7 +826,7 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 		supported = GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0;
 		break;
 	case FORMAT_RG11B10F:
-		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float /*|| GLAD_APPLE_color_buffer_packed_float*/;
+		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float;
 		break;
 	case FORMAT_R16F:
 	case FORMAT_RG16F:
