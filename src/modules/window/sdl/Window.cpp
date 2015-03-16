@@ -970,11 +970,6 @@ love::window::Window *Window::createSingleton()
 	return singleton;
 }
 
-love::window::Window *Window::getSingleton()
-{
-	return singleton;
-}
-
 const char *Window::getName() const
 {
 	return "love.window.sdl";

@@ -352,7 +352,7 @@ Message *Event::convert(const SDL_Event &e) const
 				Proxy proxy;
 				proxy.object = new love::filesystem::DroppedFile(e.drop.file);
 				proxy.type = FILESYSTEM_DROPPED_FILE_ID;
-				vargs.push_back(new Variant(FILESYSTEM_DROPPED_FILE_ID, &proxy));
+				vargs.push_back(new Variant(proxy.type, &proxy));
 				msg = new Message("filedropped", vargs);
 				proxy.object->release();
 			}
@@ -406,7 +406,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!proxy.object)
 			break;
 
-		vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+		vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 		vargs.push_back(new Variant((double)(e.jbutton.button+1)));
 		msg = new Message((e.type == SDL_JOYBUTTONDOWN) ?
 						  "joystickpressed" : "joystickreleased",
@@ -419,7 +419,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			if (!proxy.object)
 				break;
 
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 			vargs.push_back(new Variant((double)(e.jaxis.axis+1)));
 			float value = joystick::Joystick::clampval(e.jaxis.value / 32768.0f);
 			vargs.push_back(new Variant((double) value));
@@ -435,7 +435,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!proxy.object)
 			break;
 
-		vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+		vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 		vargs.push_back(new Variant((double)(e.jhat.hat+1)));
 		vargs.push_back(new Variant(txt, strlen(txt)));
 		msg = new Message("joystickhat", vargs);
@@ -453,7 +453,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!proxy.object)
 			break;
 
-		vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+		vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 		vargs.push_back(new Variant(txt, strlen(txt)));
 		msg = new Message(e.type == SDL_CONTROLLERBUTTONDOWN ?
 						  "gamepadpressed" : "gamepadreleased", vargs);
@@ -469,7 +469,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			if (!proxy.object)
 				break;
 
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 
 			vargs.push_back(new Variant(txt, strlen(txt)));
 			float value = joystick::Joystick::clampval(e.caxis.value / 32768.0f);
@@ -483,7 +483,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		proxy.type = JOYSTICK_JOYSTICK_ID;
 		if (proxy.object)
 		{
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 			msg = new Message("joystickadded", vargs);
 		}
 		break;
@@ -494,7 +494,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (proxy.object)
 		{
 			joymodule->removeJoystick((joystick::Joystick *) proxy.object);
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;

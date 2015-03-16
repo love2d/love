@@ -172,8 +172,7 @@ public:
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
 
 	//virtual static Window *createSingleton() = 0;
-	//virtual static Window *getSingleton() = 0;
-	// No virtual statics, of course, but you are supposed to implement these statics.
+	// No virtual statics, of course, but you are supposed to implement this static.
 
 	static bool getConstant(const char *in, Setting &out);
 	static bool getConstant(Setting in, const char *&out);

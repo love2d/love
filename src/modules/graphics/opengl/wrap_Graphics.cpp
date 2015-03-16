@@ -632,6 +632,7 @@ int w_newText(lua_State *L)
 	}
 
 	luax_pushtype(L, GRAPHICS_TEXT_ID, t);
+	t->release();
 	return 1;
 }
 

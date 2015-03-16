@@ -146,7 +146,7 @@ void Mouse::getPosition(double &x, double &y) const
 
 void Mouse::setPosition(double x, double y)
 {
-	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
 
 	SDL_Window *handle = nullptr;
 	if (window)
@@ -196,14 +196,14 @@ bool Mouse::isVisible() const
 
 void Mouse::setGrabbed(bool grab)
 {
-	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->setMouseGrab(grab);
 }
 
 bool Mouse::isGrabbed() const
 {
-	love::window::Window *window = love::window::sdl::Window::getSingleton();
+	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		return window->isMouseGrabbed();
 	else

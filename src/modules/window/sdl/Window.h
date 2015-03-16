@@ -101,7 +101,6 @@ public:
 	int showMessageBox(const MessageBoxData &data);
 
 	static love::window::Window *createSingleton();
-	static love::window::Window *getSingleton();
 
 	const char *getName() const;
 
