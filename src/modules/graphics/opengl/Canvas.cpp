@@ -198,6 +198,8 @@ bool Canvas::createMSAAFBO(GLenum internalformat)
 
 bool Canvas::loadVolatile()
 {
+	OpenGL::TempDebugGroup debuggroup("Canvas load");
+
 	fbo = depth_stencil = texture = 0;
 	resolve_fbo = msaa_buffer = 0;
 	status = GL_FRAMEBUFFER_COMPLETE;
@@ -298,6 +300,8 @@ void Canvas::unloadVolatile()
 
 void Canvas::drawv(const Matrix &t, const Vertex *v)
 {
+	OpenGL::TempDebugGroup debuggroup("Canvas draw");
+
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
@@ -439,6 +443,8 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 			canvaseschanged = true;
 	}
 
+	OpenGL::TempDebugGroup debuggroup("Canvas set");
+
 	setupGrab();
 
 	// Don't attach anything if there's nothing to change.
@@ -471,6 +477,8 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 
 void Canvas::startGrab()
 {
+	OpenGL::TempDebugGroup debuggroup("Canvas set");
+
 	setupGrab();
 
 	if (attachedCanvases.size() == 0)
@@ -487,6 +495,8 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	// i am not grabbing. leave me alone
 	if (current != this)
 		return;
+
+	OpenGL::TempDebugGroup debuggroup("Canvas un-set");
 
 	// Make sure the canvas texture is up to date if we're using MSAA.
 	resolveMSAA(false);
@@ -523,6 +533,8 @@ bool Canvas::checkCreateStencil()
 	// Do nothing if we've already created the stencil buffer.
 	if (depth_stencil != 0)
 		return true;
+
+	OpenGL::TempDebugGroup debuggroup("Canvas create stencil");
 
 	if (current != this)
 		gl.bindFramebuffer(GL_FRAMEBUFFER, fbo);

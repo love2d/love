@@ -309,6 +309,8 @@ Matrix &OpenGL::getTransform()
 
 void OpenGL::prepareDraw()
 {
+	TempDebugGroup debuggroup("Prepare OpenGL draw");
+
 	Shader *shader = Shader::current;
 	if (shader != nullptr)
 	{

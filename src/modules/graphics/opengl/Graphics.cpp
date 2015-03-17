@@ -1100,6 +1100,8 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Font
 
 void Graphics::point(float x, float y)
 {
+	OpenGL::TempDebugGroup debuggroup("Graphics point draw");
+
 	GLfloat coord[] = {x, y};
 
 	gl.prepareDraw();
@@ -1199,6 +1201,8 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	}
 	else
 	{
+		OpenGL::TempDebugGroup debuggroup("Filled arc draw");
+
 		gl.prepareDraw();
 		gl.bindTexture(gl.getDefaultTexture());
 		glEnableVertexAttribArray(ATTRIB_POS);
@@ -1223,6 +1227,8 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
+		OpenGL::TempDebugGroup debuggroup("Filled polygon draw");
+
 		gl.prepareDraw();
 		gl.bindTexture(gl.getDefaultTexture());
 		glEnableVertexAttribArray(ATTRIB_POS);

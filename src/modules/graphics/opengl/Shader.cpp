@@ -210,6 +210,8 @@ void Shader::mapActiveUniforms()
 
 bool Shader::loadVolatile()
 {
+	OpenGL::TempDebugGroup debuggroup("Shader load");
+
     // Recreating the shader program will invalidate uniforms that rely on these.
     lastCanvas = (Canvas *) -1;
     lastViewport = OpenGL::Viewport();

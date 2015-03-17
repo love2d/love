@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_OPENGL_H
 
 // LOVE
+#include "common/config.h"
 #include "graphics/Color.h"
 #include "graphics/Texture.h"
 #include "common/Matrix.h"
@@ -133,6 +134,29 @@ public:
 
 	private:
 		OpenGL &gl;
+	};
+
+	class TempDebugGroup
+	{
+	public:
+
+#if defined(DEBUG) && DEBUG == 1
+		TempDebugGroup(const char *name)
+		{
+			if (GLAD_EXT_debug_marker)
+				glPushGroupMarkerEXT(0, (const GLchar *) name);
+		}
+#else
+		TempDebugGroup(const char *) {}
+#endif
+
+#if defined(DEBUG) && DEBUG == 1
+		~TempDebugGroup()
+		{
+			if (GLAD_EXT_debug_marker)
+				glPopGroupMarkerEXT();
+		}
+#endif
 	};
 
 	struct Stats

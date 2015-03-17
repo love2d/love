@@ -233,6 +233,8 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	if (next == 0)
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
+
 	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);

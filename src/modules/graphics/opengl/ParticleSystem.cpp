@@ -852,6 +852,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || particleVerts == nullptr)
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
+
 	Color curcolor = gl.getColor();
 
 	static Matrix t;

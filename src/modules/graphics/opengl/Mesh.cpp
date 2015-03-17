@@ -317,6 +317,8 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (vertex_count == 0)
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("Mesh draw");
+
 	if (texture.get())
 		gl.bindTexture(*(GLuint *) texture->getHandle());
 	else

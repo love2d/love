@@ -328,6 +328,8 @@ Polyline::~Polyline()
 
 void Polyline::draw()
 {
+	OpenGL::TempDebugGroup debuggroup("Line draw");
+
 	GLushort *indices = nullptr;
 
 	// TODO: We should probably be using a reusable index buffer.

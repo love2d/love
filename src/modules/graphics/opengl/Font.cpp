@@ -109,6 +109,8 @@ Font::TextureSize Font::getNextTextureSize() const
 
 void Font::createTexture()
 {
+	OpenGL::TempDebugGroup debuggroup("Font create texture");
+
 	GLenum format = type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA;
 	size_t bpp = format == GL_LUMINANCE_ALPHA ? 2 : 4;
 
@@ -550,6 +552,8 @@ void Font::printv(const Matrix &t, const std::vector<DrawCommand> &drawcommands,
 {
 	if (vertices.empty() || drawcommands.empty())
 		return;
+
+	OpenGL::TempDebugGroup debuggroup("Font print");
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;

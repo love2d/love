@@ -195,6 +195,8 @@ void Image::loadFromImageData()
 
 bool Image::loadVolatile()
 {
+	OpenGL::TempDebugGroup debuggroup("Image load");
+
 	if (isCompressed() && !hasCompressedTextureSupport(cdata->getFormat(), flags.sRGB))
 	{
 		const char *str;
@@ -346,6 +348,8 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 
 void Image::drawv(const Matrix &t, const Vertex *v)
 {
+	OpenGL::TempDebugGroup debuggroup("Image draw");
+
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 

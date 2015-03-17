@@ -222,6 +222,8 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (vbo == nullptr || draw_commands.empty())
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("Text object draw");
+
 	// Re-generate the text if the Font's texture cache was invalidated.
 	if (font->getTextureCacheID() != texture_cache_id)
 		regenerateVertices();
