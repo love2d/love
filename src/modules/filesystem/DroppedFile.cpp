@@ -157,7 +157,7 @@ bool DroppedFile::flush()
 	return fflush(file) == 0;
 }
 
-bool DroppedFile::eof()
+bool DroppedFile::isEOF()
 {
 	return file == nullptr || feof(file) != 0;
 }

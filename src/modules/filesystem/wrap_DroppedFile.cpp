@@ -41,7 +41,7 @@ static const luaL_Reg functions[] =
 	{ "read", w_File_read },
 	{ "write", w_File_write },
 	{ "flush", w_File_flush },
-	{ "eof", w_File_eof },
+	{ "isEOF", w_File_isEOF },
 	{ "tell", w_File_tell },
 	{ "seek", w_File_seek },
 	{ "lines", w_File_lines },

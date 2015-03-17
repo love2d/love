@@ -147,7 +147,7 @@ public:
 	 *
 	 * @return True if EOF, false otherwise.
 	 **/
-	virtual bool eof() = 0;
+	virtual bool isEOF() = 0;
 
 	/**
 	 * Gets the current position in the File.

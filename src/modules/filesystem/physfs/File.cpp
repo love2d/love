@@ -212,7 +212,7 @@ inline bool test_eof(File *, PHYSFS_File *file)
 }
 #endif
 
-bool File::eof()
+bool File::isEOF()
 {
 	return file == nullptr || test_eof(this, file);
 }

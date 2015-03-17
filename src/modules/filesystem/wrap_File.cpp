@@ -186,10 +186,10 @@ int w_File_flush(lua_State *L)
 	return 1;
 }
 
-int w_File_eof(lua_State *L)
+int w_File_isEOF(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
-	luax_pushboolean(L, file->eof());
+	luax_pushboolean(L, file->isEOF());
 	return 1;
 }
 
@@ -246,7 +246,7 @@ int w_File_lines_i(lua_State *L)
 			file->seek(pos);
 	}
 
-	while (!newline && !file->eof())
+	while (!newline && !file->isEOF())
 	{
 		// This 64-bit to 32-bit integer cast should be safe as it never exceeds bufsize.
 		int read = (int) file->read(buf, bufsize);
@@ -266,7 +266,7 @@ int w_File_lines_i(lua_State *L)
 		}
 	}
 
-	if (newline || (file->eof() && linesize > 0))
+	if (newline || (file->isEOF() && linesize > 0))
 	{
 		if (linesize < bufsize)
 		{
@@ -422,7 +422,7 @@ static const luaL_Reg functions[] =
 	{ "read", w_File_read },
 	{ "write", w_File_write },
 	{ "flush", w_File_flush },
-	{ "eof", w_File_eof },
+	{ "isEOF", w_File_isEOF },
 	{ "tell", w_File_tell },
 	{ "seek", w_File_seek },
 	{ "lines", w_File_lines },

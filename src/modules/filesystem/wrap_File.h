@@ -41,7 +41,7 @@ int w_File_isOpen(lua_State *L);
 int w_File_read(lua_State *L);
 int w_File_write(lua_State *L);
 int w_File_flush(lua_State *L);
-int w_File_eof(lua_State *L);
+int w_File_isEOF(lua_State *L);
 int w_File_tell(lua_State *L);
 int w_File_seek(lua_State *L);
 int w_File_lines_i(lua_State *L);
