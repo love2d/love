@@ -241,7 +241,7 @@ bool CoreAudioDecoder::seek(float s)
 
 bool CoreAudioDecoder::rewind()
 {
-	OSStatus err =  ExtAudioFileSeek(extAudioFile, 0);
+	OSStatus err = ExtAudioFileSeek(extAudioFile, 0);
 	
 	if (err == noErr)
 	{
