@@ -331,7 +331,7 @@ void OpenGL::prepareDraw()
 		Matrix tp_matrix(curproj * curxform);
 		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX, 4, tp_matrix.getElements(), 1);
 
-		shader->sendBuiltinFloat(Shader::BUILTIN_POINT_SIZE, 1, &state.pointSize, 1);
+		shader->checkSetPointSize(state.pointSize);
 	}
 	else if (GLAD_VERSION_1_0)
 	{

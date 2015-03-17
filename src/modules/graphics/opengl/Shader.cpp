@@ -75,6 +75,7 @@ Shader::Shader(const ShaderSource &source)
 	, builtinAttributes()
 	, lastCanvas((Canvas *) -1)
 	, lastViewport()
+	, lastPointSize(0.0f)
 {
 	if (source.vertex.empty() && source.pixel.empty())
 		throw love::Exception("Cannot create shader: no source code!");
@@ -215,6 +216,8 @@ bool Shader::loadVolatile()
     // Recreating the shader program will invalidate uniforms that rely on these.
     lastCanvas = (Canvas *) -1;
     lastViewport = OpenGL::Viewport();
+
+	lastPointSize = 0.0f;
 
 	// zero out active texture list
 	activeTexUnits.clear();
@@ -707,6 +710,16 @@ void Shader::checkSetScreenParams()
 
 	lastCanvas = Canvas::current;
 	lastViewport = view;
+}
+
+void Shader::checkSetPointSize(float size)
+{
+	if (size == lastPointSize)
+		return;
+
+	sendBuiltinFloat(BUILTIN_POINT_SIZE, 1, &size, 1);
+
+	lastPointSize = size;
 }
 
 const std::map<std::string, Object *> &Shader::getBoundRetainables() const

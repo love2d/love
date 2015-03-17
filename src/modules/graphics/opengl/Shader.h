@@ -182,6 +182,7 @@ public:
 	bool sendBuiltinMatrix(BuiltinUniform builtin, int size, const GLfloat *m, int count);
 	bool sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *m, int count);
 	void checkSetScreenParams();
+	void checkSetPointSize(float size);
 
 	const std::map<std::string, Object *> &getBoundRetainables() const;
 
@@ -249,6 +250,8 @@ private:
 	// Pointer to the active Canvas when the screen params were last checked.
 	Canvas *lastCanvas;
 	OpenGL::Viewport lastViewport;
+
+	float lastPointSize;
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
