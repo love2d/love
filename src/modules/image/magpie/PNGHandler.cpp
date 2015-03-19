@@ -152,7 +152,11 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 	state.info_raw.colortype = LCT_RGBA;
 	state.info_raw.bitdepth = 8;
 
+#if 0
+	// FIXME: temporarily disabled: using this makes decoded images use more
+	// memory than they should and seems to potentially cause memory leaks.
 	state.decoder.zlibsettings.custom_zlib = zlibDecompress;
+#endif
 
 	unsigned status = lodepng_decode(&img.data, &width, &height,
 	                                 &state, indata, insize);
