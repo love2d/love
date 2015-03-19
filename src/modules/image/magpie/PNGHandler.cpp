@@ -51,7 +51,7 @@ static unsigned zlibDecompress(unsigned char **out, size_t *outsize, const unsig
 
 	uLongf outdatasize = insize;
 	size_t sizemultiplier = 0;
-	unsigned char *outdata = nullptr;
+	unsigned char *outdata = out != nullptr ? *out : nullptr;
 
 	while (true)
 	{
@@ -59,7 +59,13 @@ static unsigned zlibDecompress(unsigned char **out, size_t *outsize, const unsig
 		outdatasize = insize << (++sizemultiplier);
 
 		// LodePNG uses malloc, realloc, and free.
-		outdata = (unsigned char *) malloc(outdatasize);
+		// Since version 2014-08-23, LodePNG passes in an existing pointer in
+		// the 'out' argument that it expects to be realloc'd. Not doing so can
+		// result in a memory leak.
+		if (outdata != nullptr)
+			outdata = (unsigned char *) realloc(outdata, outdatasize);
+		else
+			outdata = (unsigned char *) malloc(outdatasize);
 
 		if (!outdata)
 			return 83; // "Memory allocation failed" error code for LodePNG.
@@ -152,11 +158,7 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 	state.info_raw.colortype = LCT_RGBA;
 	state.info_raw.bitdepth = 8;
 
-#if 0
-	// FIXME: temporarily disabled: using this makes decoded images use more
-	// memory than they should and seems to potentially cause memory leaks.
 	state.decoder.zlibsettings.custom_zlib = zlibDecompress;
-#endif
 
 	unsigned status = lodepng_decode(&img.data, &width, &height,
 	                                 &state, indata, insize);
