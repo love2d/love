@@ -52,7 +52,9 @@ Image::Image(love::image::ImageData *data, const Flags &flags)
 {
 	width = data->getWidth();
 	height = data->getHeight();
+
 	preload();
+	loadVolatile();
 
 	++imageCount;
 }
@@ -81,6 +83,7 @@ Image::Image(love::image::CompressedData *cdata, const Flags &flags)
 	}
 
 	preload();
+	loadVolatile();
 
 	++imageCount;
 }
@@ -121,11 +124,6 @@ void Image::preload()
 
 	if (flags.mipmaps)
 		filter.mipmap = defaultMipmapFilter;
-}
-
-bool Image::load()
-{
-	return loadVolatile();
 }
 
 void Image::generateMipmaps()

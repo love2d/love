@@ -555,10 +555,11 @@ void Graphics::setScissor(int x, int y, int width, int height)
 {
 	OpenGL::Viewport box = {x, y, width, height};
 
-	states.back().scissor = true;
 	glEnable(GL_SCISSOR_TEST);
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
 	gl.setScissor(box);
+
+	states.back().scissor = true;
 	states.back().scissorBox = box;
 }
 
@@ -570,14 +571,14 @@ void Graphics::setScissor()
 
 bool Graphics::getScissor(int &x, int &y, int &width, int &height) const
 {
-	OpenGL::Viewport scissor = gl.getScissor();
+	const DisplayState &state = states.back();
 
-	x = scissor.x;
-	y = scissor.y;
-	width = scissor.w;
-	height = scissor.h;
+	x = state.scissorBox.x;
+	y = state.scissorBox.y;
+	width = state.scissorBox.w;
+	height = state.scissorBox.h;
 
-	return states.back().scissor;
+	return state.scissor;
 }
 
 void Graphics::drawToStencilBuffer(bool enable)
@@ -651,56 +652,12 @@ void Graphics::clearStencil()
 
 Image *Graphics::newImage(love::image::ImageData *data, const Image::Flags &flags)
 {
-	// Create the image.
-	Image *image = new Image(data, flags);
-
-	if (!isCreated())
-		return image;
-
-	bool success = false;
-	try
-	{
-		success = image->load();
-	}
-	catch(love::Exception &)
-	{
-		image->release();
-		throw;
-	}
-	if (!success)
-	{
-		image->release();
-		return nullptr;
-	}
-
-	return image;
+	return new Image(data, flags);
 }
 
 Image *Graphics::newImage(love::image::CompressedData *cdata, const Image::Flags &flags)
 {
-	// Create the image.
-	Image *image = new Image(cdata, flags);
-
-	if (!isCreated())
-		return image;
-
-	bool success = false;
-	try
-	{
-		success = image->load();
-	}
-	catch(love::Exception &)
-	{
-		image->release();
-		throw;
-	}
-	if (!success)
-	{
-		image->release();
-		return nullptr;
-	}
-
-	return image;
+	return new Image(cdata, flags);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, float sw, float sh)
@@ -752,21 +709,20 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int ms
 	error_string << "Cannot create canvas: ";
 	switch (err)
 	{
-
 	case GL_FRAMEBUFFER_UNSUPPORTED:
 		error_string << "Not supported by your OpenGL implementation.";
 		break;
-
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+		error_string << "Texture format cannot be rendered to on this system.";
+		break;
 		// remaining error codes are highly unlikely:
 	case GL_FRAMEBUFFER_UNDEFINED:
-	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
 	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
 	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-		error_string << "Error in implementation. Possible fix: Make canvas width and height powers of two.";
+		error_string << "Error in implementation.";
 		break;
-
 	default:
 		// my intel hda card wrongly returns 0 to glCheckFramebufferStatus() but sets
 		// no error flag. I think it meant to return GL_FRAMEBUFFER_UNSUPPORTED, but who
@@ -949,41 +905,47 @@ Graphics::ColorMask Graphics::getColorMask() const
 
 void Graphics::setBlendMode(Graphics::BlendMode mode)
 {
-	OpenGL::BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
+	GLenum func   = GL_FUNC_ADD;
+	GLenum srcRGB = GL_ONE;
+	GLenum srcA   = GL_ONE;
+	GLenum dstRGB = GL_ZERO;
+	GLenum dstA   = GL_ZERO;
 
 	switch (mode)
 	{
 	case BLEND_ALPHA:
-		blend.srcRGB = GL_SRC_ALPHA;
-		blend.srcA = GL_ONE;
-		blend.dstRGB = blend.dstA = GL_ONE_MINUS_SRC_ALPHA;
+		srcRGB = GL_SRC_ALPHA;
+		srcA = GL_ONE;
+		dstRGB = dstA = GL_ONE_MINUS_SRC_ALPHA;
 		break;
 	case BLEND_MULTIPLY:
-		blend.srcRGB = blend.srcA = GL_DST_COLOR;
-		blend.dstRGB = blend.dstA = GL_ZERO;
+		srcRGB = srcA = GL_DST_COLOR;
+		dstRGB = dstA = GL_ZERO;
 		break;
 	case BLEND_PREMULTIPLIED:
-		blend.srcRGB = blend.srcA = GL_ONE;
-		blend.dstRGB = blend.dstA = GL_ONE_MINUS_SRC_ALPHA;
+		srcRGB = srcA = GL_ONE;
+		dstRGB = dstA = GL_ONE_MINUS_SRC_ALPHA;
 		break;
 	case BLEND_SUBTRACT:
-		blend.func = GL_FUNC_REVERSE_SUBTRACT;
+		func = GL_FUNC_REVERSE_SUBTRACT;
 	case BLEND_ADD:
-		blend.srcRGB = blend.srcA = GL_SRC_ALPHA;
-		blend.dstRGB = blend.dstA = GL_ONE;
+		srcRGB = srcA = GL_SRC_ALPHA;
+		dstRGB = dstA = GL_ONE;
 		break;
 	case BLEND_SCREEN:
-		blend.srcRGB = blend.srcA = GL_ONE;
-		blend.dstRGB = blend.dstA = GL_ONE_MINUS_SRC_COLOR;
+		srcRGB = srcA = GL_ONE;
+		dstRGB = dstA = GL_ONE_MINUS_SRC_COLOR;
 		break;
 	case BLEND_REPLACE:
 	default:
-		blend.srcRGB = blend.srcA = GL_ONE;
-		blend.dstRGB = blend.dstA = GL_ZERO;
+		srcRGB = srcA = GL_ONE;
+		dstRGB = dstA = GL_ZERO;
 		break;
 	}
 
-	gl.setBlendState(blend);
+	glBlendEquation(func);
+	glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA);
+
 	states.back().blendMode = mode;
 }
 
@@ -1114,13 +1076,13 @@ void Graphics::point(float x, float y)
 
 void Graphics::polyline(const float *coords, size_t count)
 {
-	DisplayState &state = states.back();
+	const DisplayState &state = states.back();
 
 	if (state.lineJoin == LINE_JOIN_NONE)
 	{
-			NoneJoinPolyline line;
-			line.render(coords, count, state.lineWidth * .5f, float(pixel_size_stack.back()), state.lineStyle == LINE_SMOOTH);
-			line.draw();
+		NoneJoinPolyline line;
+		line.render(coords, count, state.lineWidth * .5f, float(pixel_size_stack.back()), state.lineStyle == LINE_SMOOTH);
+		line.draw();
 	}
 	else if (state.lineJoin == LINE_JOIN_BEVEL)
 	{
@@ -1351,31 +1313,23 @@ Graphics::Stats Graphics::getStats() const
 
 double Graphics::getSystemLimit(SystemLimit limittype) const
 {
-	double limit = 0.0;
-
 	switch (limittype)
 	{
 	case Graphics::LIMIT_POINT_SIZE:
 		{
 			GLfloat limits[2];
 			glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
-			limit = limits[1];
+			return (double) limits[1];
 		}
-		break;
 	case Graphics::LIMIT_TEXTURE_SIZE:
-		limit = (double) gl.getMaxTextureSize();
-		break;
+		return (double) gl.getMaxTextureSize();
 	case Graphics::LIMIT_MULTI_CANVAS:
-		limit = (double) gl.getMaxRenderTargets();
-		break;
+		return (double) gl.getMaxRenderTargets();
 	case Graphics::LIMIT_CANVAS_MSAA:
-		limit = (double) gl.getMaxRenderbufferSamples();
-		break;
+		return (double) gl.getMaxRenderbufferSamples();
 	default:
-		break;
+		return 0.0;
 	}
-
-	return limit;
 }
 
 bool Graphics::isSupported(Support feature) const

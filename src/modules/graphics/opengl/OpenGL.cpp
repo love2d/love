@@ -121,9 +121,6 @@ void OpenGL::setupContext()
 
 	glActiveTexture(curgltextureunit);
 
-	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
-	setBlendState(blend);
-
 	createDefaultTexture();
 
 	// Invalidate the cached matrices by setting some elements to NaN.
@@ -286,8 +283,8 @@ void OpenGL::createDefaultTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	GLubyte pix = 255;
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pix);
+	GLubyte pix[] = {255, 255, 255, 255};
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pix);
 
 	bindTexture(curtexture);
 }
@@ -415,19 +412,6 @@ void OpenGL::setScissor(const OpenGL::Viewport &v)
 OpenGL::Viewport OpenGL::getScissor() const
 {
 	return state.scissor;
-}
-
-void OpenGL::setBlendState(const BlendState &blend)
-{
-	glBlendEquation(blend.func);
-	glBlendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
-
-	state.blend = blend;
-}
-
-OpenGL::BlendState OpenGL::getBlendState() const
-{
-	return state.blend;
 }
 
 void OpenGL::setPointSize(float size)

@@ -82,8 +82,6 @@ public:
 
 	virtual ~Image();
 
-	bool load();
-
 	// Implements Volatile.
 	bool loadVolatile();
 	void unloadVolatile();
