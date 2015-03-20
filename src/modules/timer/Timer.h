@@ -33,6 +33,7 @@ class Timer : public Module
 {
 public:
 
+	Timer();
 	virtual ~Timer() {}
 
 	// Implements Module.
@@ -42,7 +43,7 @@ public:
 	 * Measures the time between this call and the previous call,
 	 * and updates internal values accordinly.
 	 **/
-	virtual void step() = 0;
+	virtual void step();
 
 	/**
 	 * Tries to sleep for the specified amount of time. The precision is
@@ -55,19 +56,19 @@ public:
 	 * Gets the time between the last two frames, assuming step is called
 	 * each frame.
 	 **/
-	virtual double getDelta() const = 0;
+	virtual double getDelta() const;
 
 	/**
 	 * Gets the average FPS over the last second. Beucase the value is only updated
 	 * once per second, it does not look erratic when displayed on screen.
 	 * @return The "current" FPS.
 	 **/
-	virtual int getFPS() const = 0;
+	virtual int getFPS() const;
 
 	/**
 	 * Gets the average delta time (seconds per frame) over the last second.
 	 **/
-	virtual double getAverageDelta() const = 0;
+	virtual double getAverageDelta() const;
 
 	/**
 	 * Gets the amount of time passed since an unspecified time. Useful for
@@ -75,7 +76,33 @@ public:
 	 * and increases monotonically.
 	 * @return The time (in seconds)
 	 **/
-	virtual double getTime() const = 0;
+	virtual double getTime() const;
+
+private:
+
+	// Frame delta vars.
+	double currTime;
+	double prevTime;
+	double prevFpsUpdate;
+
+	// Updated with a certain frequency.
+	int fps;
+	double averageDelta;
+
+	// The frequency by which to update the FPS.
+	double fpsUpdateFrequency;
+
+	// Frames since last FPS update.
+	int frames;
+
+	// The current timestep.
+	double dt;
+
+	// The timer period (reciprocal of the frequency.)
+	const double timerPeriod;
+
+	// Returns the timer period on some platforms.
+	static double getTimerPeriod();
 
 }; // Timer
 

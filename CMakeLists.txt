@@ -729,6 +729,7 @@ source_group("modules\\thread\\sdl" FILES ${LOVE_SRC_MODULE_THREAD_SDL})
 #
 
 set(LOVE_SRC_MODULE_TIMER_ROOT
+	src/modules/timer/Timer.cpp
 	src/modules/timer/Timer.h
 	src/modules/timer/wrap_Timer.cpp
 	src/modules/timer/wrap_Timer.h

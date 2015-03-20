@@ -826,6 +826,8 @@
 		FA0B7EF21A959D2C000E1D17 /* iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7EF11A959D2C000E1D17 /* iOS.mm */; };
 		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
 		FA48E43918F10D6C007CF0BD /* jpeg-turbo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */; };
+		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
+		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
@@ -1462,6 +1464,7 @@
 		FA0B7EF11A959D2C000E1D17 /* iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = iOS.mm; sourceTree = "<group>"; };
 		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
+		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
@@ -2602,6 +2605,7 @@
 			isa = PBXGroup;
 			children = (
 				FA0B7CB81A95902C000E1D17 /* sdl */,
+				FA4B66C81ABBCF1900558F15 /* Timer.cpp */,
 				FA0B7CBB1A95902C000E1D17 /* Timer.h */,
 				FA0B7CBC1A95902C000E1D17 /* wrap_Timer.cpp */,
 				FA0B7CBD1A95902C000E1D17 /* wrap_Timer.h */,
@@ -3202,6 +3206,7 @@
 				FA0B7EBF1A95902C000E1D17 /* Thread.cpp in Sources */,
 				FA0B7EB91A95902C000E1D17 /* Channel.cpp in Sources */,
 				FA0B7AFB1A958EA3000E1D17 /* mime.c in Sources */,
+				FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */,
 				FA0B7A3F1A958EA3000E1D17 /* b2ChainShape.cpp in Sources */,
 				FA0B7E921A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */,
 				FA0B7E521A95902C000E1D17 /* wrap_FrictionJoint.cpp in Sources */,
@@ -3482,6 +3487,7 @@
 				FA0B7EBE1A95902C000E1D17 /* Thread.cpp in Sources */,
 				FA0B7EB81A95902C000E1D17 /* Channel.cpp in Sources */,
 				FA0B7AB11A958EA3000E1D17 /* b2Rope.cpp in Sources */,
+				FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */,
 				FA0B7A351A958EA3000E1D17 /* b2Distance.cpp in Sources */,
 				FA0B7E911A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */,
 				FA0B7E511A95902C000E1D17 /* wrap_FrictionJoint.cpp in Sources */,
