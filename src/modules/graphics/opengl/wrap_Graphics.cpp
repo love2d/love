@@ -88,9 +88,26 @@ int w_clear(lua_State *L)
 
 int w_discard(lua_State *L)
 {
-	bool color = luax_optboolean(L, 1, true);
+	std::vector<bool> colorbuffers;
+
+	if (lua_istable(L, 1))
+	{
+		for (size_t i = 1; i <= lua_objlen(L, 1); i++)
+		{
+			lua_rawgeti(L, 1, i);
+			colorbuffers.push_back(luax_optboolean(L, -1, true));
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		bool discardcolor = luax_optboolean(L, 1, true);
+		size_t numbuffers = std::max((size_t) 1, instance()->getCanvas().size());
+		colorbuffers = std::vector<bool>(numbuffers, discardcolor);
+	}
+
 	bool stencil = luax_optboolean(L, 2, true);
-	instance()->discard(color, stencil);
+	instance()->discard(colorbuffers, stencil);
 	return 0;
 }
 

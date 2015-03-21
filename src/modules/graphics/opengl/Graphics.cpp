@@ -465,18 +465,18 @@ void Graphics::clear(const std::vector<Color> &colors)
 	}
 }
 
-void Graphics::discard(bool color, bool stencil)
+void Graphics::discard(const std::vector<bool> &colorbuffers, bool stencil)
 {
 	if (!(GLAD_VERSION_4_3 || GLAD_ARB_invalidate_subdata || GLAD_ES_VERSION_3_0 || GLAD_EXT_discard_framebuffer))
 		return;
 
 	std::vector<GLenum> attachments;
-	attachments.reserve(3);
+	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
 	if (!Canvas::current && gl.getDefaultFBO() == 0)
 	{
-		if (color)
+		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
 
 		if (stencil)
@@ -487,11 +487,12 @@ void Graphics::discard(bool color, bool stencil)
 	}
 	else
 	{
-		if (color)
+		int activecanvascount = (int) states.back().canvases.size();
+
+		for (int i = 0; i < (int) colorbuffers.size(); i++)
 		{
-			attachments.push_back(GL_COLOR_ATTACHMENT0);
-			for (int i = 0; i < (int) states.back().canvases.size() - 1; i++)
-				attachments.push_back(GL_COLOR_ATTACHMENT1 + i);
+			if (colorbuffers[i] && i < activecanvascount)
+				attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
 		}
 
 		if (stencil)
@@ -518,7 +519,7 @@ void Graphics::present()
 	setCanvas();
 
 	// Discard the stencil buffer before swapping.
-	discard(false, true);
+	discard({}, true);
 
 #ifdef LOVE_IOS
 	// Hack: SDL's color renderbuffer needs to be bound when swapBuffers is called.
