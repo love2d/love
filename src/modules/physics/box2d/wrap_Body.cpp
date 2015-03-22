@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace box2d
 
 Body *luax_checkbody(lua_State *L, int idx)
 {
-	Body *b = luax_checktype<Body>(L, idx, "Body", PHYSICS_BODY_T);
+	Body *b = luax_checktype<Body>(L, idx, PHYSICS_BODY_ID);
 	if (b->body == 0)
 		luaL_error(L, "Attempt to use destroyed body.");
 	return b;
@@ -526,7 +526,7 @@ int w_Body_getWorld(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	World *world = t->getWorld();
-	luax_pushtype(L, "World", PHYSICS_WORLD_T, world);
+	luax_pushtype(L, PHYSICS_WORLD_ID, world);
 	return 1;
 }
 
@@ -562,6 +562,13 @@ int w_Body_destroy(lua_State *L)
 	Body *t = luax_checkbody(L, 1);
 	luax_catchexcept(L, [&](){ t->destroy(); });
 	return 0;
+}
+
+int w_Body_isDestroyed(lua_State *L)
+{
+	Body *b = luax_checktype<Body>(L, 1, PHYSICS_BODY_ID);
+	luax_pushboolean(L, b->body == nullptr);
+	return 1;
 }
 
 int w_Body_setUserData(lua_State *L)
@@ -635,6 +642,7 @@ static const luaL_Reg functions[] =
 	{ "getJointList", w_Body_getJointList },
 	{ "getContactList", w_Body_getContactList },
 	{ "destroy", w_Body_destroy },
+	{ "isDestroyed", w_Body_isDestroyed },
 	{ "setUserData", w_Body_setUserData },
 	{ "getUserData", w_Body_getUserData },
 	{ 0, 0 }
@@ -642,7 +650,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_body(lua_State *L)
 {
-	return luax_register_type(L, "Body", functions);
+	return luax_register_type(L, PHYSICS_BODY_ID, functions);
 }
 
 } // box2d

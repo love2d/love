@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -84,7 +84,7 @@ love::joystick::Joystick *JoystickModule::getJoystick(int joyindex)
 
 int JoystickModule::getIndex(const love::joystick::Joystick *joystick)
 {
-	for (size_t i = 0; i < activeSticks.size(); i++)
+	for (int i = 0; i < (int) activeSticks.size(); i++)
 	{
 		if (activeSticks[i] == joystick)
 			return i;
@@ -132,7 +132,7 @@ love::joystick::Joystick *JoystickModule::addJoystick(int deviceindex)
 
 	if (!joystick)
 	{
-		joystick = new Joystick(joysticks.size());
+		joystick = new Joystick((int) joysticks.size());
 		joysticks.push_back(joystick);
 	}
 
@@ -241,7 +241,7 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 	std::string insertstr = gpinputname + ":" + joyinputstr + ",";
 
 	// We should replace any existing gamepad bind.
-	size_t findpos = mapstr.find(gpinputname + ":");
+	size_t findpos = mapstr.find(std::string(", ") + gpinputname + ":");
 	if (findpos != std::string::npos)
 	{
 		// The bind string ends at the next comma, or the end of the string.

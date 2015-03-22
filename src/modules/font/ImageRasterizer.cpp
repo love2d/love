@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,10 +34,11 @@ inline bool equal(const love::image::pixel &a, const love::image::pixel &b)
 	return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
 }
 
-ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
+ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing)
 	: imageData(data)
 	, glyphs(glyphs)
 	, numglyphs(numglyphs)
+	, extraSpacing(extraspacing)
 {
 	load();
 }
@@ -53,15 +54,14 @@ int ImageRasterizer::getLineHeight() const
 
 GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 {
-	GlyphMetrics gm;
-	memset(&gm, 0, sizeof(GlyphMetrics));
+	GlyphMetrics gm = {};
 
 	// Set relevant glyph metrics if the glyph is in this ImageFont
 	std::map<uint32, ImageGlyphData>::const_iterator it = imageGlyphs.find(glyph);
 	if (it != imageGlyphs.end())
 	{
 		gm.width = it->second.width;
-		gm.advance = it->second.width + it->second.spacing;
+		gm.advance = it->second.width + extraSpacing;
 	}
 
 	gm.height = metrics.height;
@@ -119,10 +119,6 @@ void ImageRasterizer::load()
 		while (start < imgw && equal(pixels[start], spacer))
 			++start;
 
-		// set previous glyph's spacing
-		if (i > 0 && imageGlyphs.size() > 0)
-			imageGlyphs[glyphs[i - 1]].spacing = (start > end) ? (start - end) : 0;
-
 		end = start;
 
 		// Find where glyph ends.
@@ -137,16 +133,6 @@ void ImageRasterizer::load()
 		imageGlyph.width = end - start;
 
 		imageGlyphs[glyphs[i]] = imageGlyph;
-	}
-
-	// Find spacing of last glyph
-	if (numglyphs > 0)
-	{
-		start = end;
-		while (start < imgw && equal(pixels[start], spacer))
-			++start;
-
-		imageGlyphs[glyphs[numglyphs - 1]].spacing = (start > end) ? (start - end) : 0;
 	}
 }
 

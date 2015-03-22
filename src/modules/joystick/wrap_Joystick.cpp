@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@ namespace joystick
 
 Joystick *luax_checkjoystick(lua_State *L, int idx)
 {
-	return luax_checktype<Joystick>(L, idx, "Joystick", JOYSTICK_JOYSTICK_T);
+	return luax_checktype<Joystick>(L, idx, JOYSTICK_JOYSTICK_ID);
 }
 
 int w_Joystick_isConnected(lua_State *L)
@@ -255,7 +255,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_joystick(lua_State *L)
 {
-	return luax_register_type(L, "Joystick", functions);
+	return luax_register_type(L, JOYSTICK_JOYSTICK_ID, functions);
 }
 
 } // joystick

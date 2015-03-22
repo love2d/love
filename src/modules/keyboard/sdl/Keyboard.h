@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,10 +46,19 @@ public:
 
 	void setKeyRepeat(bool enable);
 	bool hasKeyRepeat() const;
-	bool isDown(Key *keylist) const;
+	bool isDown(const std::vector<Key> &keylist) const;
+	bool isScancodeDown(const std::vector<Scancode> &scancodelist) const;
+
+	Key getKeyFromScancode(Scancode scancode) const;
+	Scancode getScancodeFromKey(Key key) const;
 
 	void setTextInput(bool enable);
+	void setTextInput(bool enable, double x, double y, double w, double h);
 	bool hasTextInput() const;
+	bool hasScreenKeyboard() const;
+
+	static bool getConstant(Scancode in, SDL_Scancode &out);
+	static bool getConstant(SDL_Scancode in, Scancode &out);
 
 private:
 
@@ -59,6 +68,9 @@ private:
 
 	static const SDL_Keycode *createKeyMap();
 	static const SDL_Keycode *keymap;
+
+	static EnumMap<Scancode, SDL_Scancode, SDL_NUM_SCANCODES>::Entry scancodeEntries[];
+	static EnumMap<Scancode, SDL_Scancode, SDL_NUM_SCANCODES> scancodes;
 
 }; // Keyboard
 

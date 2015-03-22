@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,19 +27,20 @@ namespace image
 namespace magpie
 {
 
-bool ddsHandler::canParse(const filesystem::FileData *data)
+bool DDSHandler::canParse(const filesystem::FileData *data)
 {
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-uint8 *ddsHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format)
+uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
 {
 	if (!dds::isDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
 
 	CompressedData::Format texformat = CompressedData::FORMAT_UNKNOWN;
+	bool isSRGB = false;
 
-	uint8 *data = 0;
+	uint8 *data = nullptr;
 	dataSize = 0;
 	images.clear();
 
@@ -48,7 +49,7 @@ uint8 *ddsHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 		// Attempt to parse the dds file.
 		dds::Parser parser(filedata->getData(), filedata->getSize());
 
-		texformat = convertFormat(parser.getFormat());
+		texformat = convertFormat(parser.getFormat(), isSRGB);
 
 		if (texformat == CompressedData::FORMAT_UNKNOWN)
 			throw love::Exception("Could not parse compressed data: Unsupported format.");
@@ -96,11 +97,14 @@ uint8 *ddsHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 	}
 
 	format = texformat;
+	sRGB = isSRGB;
 	return data;
 }
 
-CompressedData::Format ddsHandler::convertFormat(dds::Format ddsformat)
+CompressedData::Format DDSHandler::convertFormat(dds::Format ddsformat, bool &sRGB)
 {
+	sRGB = false;
+
 	switch (ddsformat)
 	{
 	case dds::FORMAT_DXT1:
@@ -124,7 +128,8 @@ CompressedData::Format ddsHandler::convertFormat(dds::Format ddsformat)
 	case dds::FORMAT_BC7:
 		return CompressedData::FORMAT_BC7;
 	case dds::FORMAT_BC7srgb:
-		return CompressedData::FORMAT_BC7SRGB;
+		sRGB = true;
+		return CompressedData::FORMAT_BC7;
 	default:
 		return CompressedData::FORMAT_UNKNOWN;
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,9 +29,14 @@
 #include "sound/Decoder.h"
 
 // OpenAL
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS
+#ifdef LOVE_APPLE_USE_FRAMEWORKS
+#ifdef LOVE_IOS
+#include <OpenAL/alc.h>
+#include <OpenAL/al.h>
+#else
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
+#endif
 #else
 #include <AL/alc.h>
 #include <AL/al.h>
@@ -105,7 +110,6 @@ public:
 	virtual bool isRelative() const;
 	void setLooping(bool looping);
 	bool isLooping() const;
-	bool isStatic() const;
 	virtual void setMinVolume(float volume);
 	virtual float getMinVolume() const;
 	virtual void setMaxVolume(float volume);
@@ -148,7 +152,7 @@ private:
 	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
 
-	Object::StrongRef<StaticDataBuffer> staticBuffer;
+	StrongRef<StaticDataBuffer> staticBuffer;
 
 	float pitch;
 	float volume;
@@ -166,15 +170,9 @@ private:
 
 	struct Cone
 	{
-		int innerAngle; // degrees
-		int outerAngle; // degrees
-		float outerVolume;
-
-		Cone()
-			: innerAngle(360)
-			, outerAngle(360)
-			, outerVolume(0.0f)
-		{}
+		int innerAngle = 360; // degrees
+		int outerAngle = 360; // degrees
+		float outerVolume = 0.0f;
 	} cone;
 
 	float offsetSamples;
@@ -183,7 +181,7 @@ private:
 	int sampleRate;
 	int channels;
 
-	Object::StrongRef<love::sound::Decoder> decoder;
+	StrongRef<love::sound::Decoder> decoder;
 
 	unsigned int toLoop;
 

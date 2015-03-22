@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,9 +30,13 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, Hinting hinting)
 	: data(data)
+	, hinting(hinting)
 {
+	if (size <= 0)
+		throw love::Exception("Invalid TrueType font size: %d", size);
+
 	FT_Error err = FT_Err_Ok;
 	err = FT_New_Memory_Face(library,
 	                         (const FT_Byte *)data->getData(), /* first byte in memory */
@@ -41,16 +45,19 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, Data *data, int size)
 	                         &face);
 
 	if (err != FT_Err_Ok)
-		throw love::Exception("TrueType Font Loading error: FT_New_Face failed: 0x%x (problem with font file?)", err);
+		throw love::Exception("TrueType Font loading error: FT_New_Face failed: 0x%x (problem with font file?)", err);
 
-	FT_Set_Pixel_Sizes(face, size, size);
+	err = FT_Set_Pixel_Sizes(face, size, size);
+
+	if (err != FT_Err_Ok)
+		throw love::Exception("TrueType Font loading error: FT_Set_Pixel_Sizes failed: 0x%x (invalid size?)", err);
 
 	// Set global metrics
 	FT_Size_Metrics s = face->size->metrics;
-	metrics.advance = s.max_advance >> 6;
-	metrics.ascent = s.ascender >> 6;
-	metrics.descent = s.descender >> 6;
-	metrics.height = s.height >> 6;
+	metrics.advance = (int) (s.max_advance >> 6);
+	metrics.ascent  = (int) (s.ascender >> 6);
+	metrics.descent = (int) (s.descender >> 6);
+	metrics.height  = (int) (s.height >> 6);
 }
 
 TrueTypeRasterizer::~TrueTypeRasterizer()
@@ -69,19 +76,27 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	FT_Glyph ftglyph;
 
 	FT_Error err = FT_Err_Ok;
+	FT_ULong loadoption = hintingToLoadOption(hinting);
 
 	// Initialize
-	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT);
+	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT | loadoption);
 
 	if (err != FT_Err_Ok)
-		throw love::Exception("TrueType Font Loading error: FT_Load_Glyph failed (0x%x)", err);
+		throw love::Exception("TrueType Font glyph error: FT_Load_Glyph failed (0x%x)", err);
 
 	err = FT_Get_Glyph(face->glyph, &ftglyph);
 
 	if (err != FT_Err_Ok)
-		throw love::Exception("TrueType Font Loading error: FT_Get_Glyph failed (0x%x)", err);
+		throw love::Exception("TrueType Font glyph error: FT_Get_Glyph failed (0x%x)", err);
 
-	FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
+	FT_Render_Mode rendermode = FT_RENDER_MODE_NORMAL;
+	if (hinting == HINTING_MONO)
+		rendermode = FT_RENDER_MODE_MONO;
+
+	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
+
+	if (err != FT_Err_Ok)
+		throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
 
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
 	FT_Bitmap &bitmap = bitmap_glyph->bitmap; //just to make things easier
@@ -91,7 +106,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.bearingY = bitmap_glyph->top;
 	glyphMetrics.height = bitmap.rows;
 	glyphMetrics.width = bitmap.width;
-	glyphMetrics.advance = ftglyph->advance.x >> 16;
+	glyphMetrics.advance = (int) (ftglyph->advance.x >> 16);
 
 	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
 
@@ -142,12 +157,37 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 
 int TrueTypeRasterizer::getGlyphCount() const
 {
-	return face->num_glyphs;
+	return (int) face->num_glyphs;
 }
 
 bool TrueTypeRasterizer::hasGlyph(uint32 glyph) const
 {
 	return FT_Get_Char_Index(face, glyph) != 0;
+}
+
+bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)
+{
+	const FT_Byte *fbase = (const FT_Byte *) data->getData();
+	FT_Long fsize = (FT_Long) data->getSize();
+
+	// Pasing in -1 for the face index lets us test if the data is valid.
+	return FT_New_Memory_Face(library, fbase, fsize, -1, nullptr) == 0;
+}
+
+FT_ULong TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
+{
+	switch (hint)
+	{
+	case HINTING_NORMAL:
+	default:
+		return FT_LOAD_TARGET_NORMAL;
+	case HINTING_LIGHT:
+		return FT_LOAD_TARGET_LIGHT;
+	case HINTING_MONO:
+		return FT_LOAD_TARGET_MONO;
+	case HINTING_NONE:
+		return FT_LOAD_NO_HINTING;
+	}
 }
 
 } // freetype

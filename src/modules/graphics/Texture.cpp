@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,20 +26,6 @@ namespace graphics
 {
 
 Texture::Filter Texture::defaultFilter;
-
-Texture::Filter::Filter()
-	: min(FILTER_LINEAR)
-	, mag(FILTER_LINEAR)
-	, mipmap(FILTER_NONE)
-	, anisotropy(1.0f)
-{
-}
-
-Texture::Wrap::Wrap()
-	: s(WRAP_CLAMP)
-	, t(WRAP_CLAMP)
-{
-}
 
 Texture::Texture()
 	: width(0)
@@ -89,6 +75,23 @@ const Texture::Filter &Texture::getDefaultFilter()
 	return defaultFilter;
 }
 
+bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)
+{
+	if (!mipmapsAllowed && f.mipmap != FILTER_NONE)
+		return false;
+
+	if (f.mag != FILTER_LINEAR && f.mag != FILTER_NEAREST)
+		return false;
+
+	if (f.min != FILTER_LINEAR && f.min != FILTER_NEAREST)
+		return false;
+
+	if (f.mipmap != FILTER_LINEAR && f.mipmap != FILTER_NEAREST && f.mipmap != FILTER_NONE)
+		return false;
+
+	return true;
+}
+
 bool Texture::getConstant(const char *in, FilterMode &out)
 {
 	return filterModes.find(in, out);
@@ -113,6 +116,7 @@ StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM>::Entry Texture::filterM
 {
 	{ "linear", Texture::FILTER_LINEAR },
 	{ "nearest", Texture::FILTER_NEAREST },
+	{ "none", Texture::FILTER_NONE },
 };
 
 StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM> Texture::filterModes(Texture::filterModeEntries, sizeof(Texture::filterModeEntries));
@@ -121,6 +125,7 @@ StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM>::Entry Texture::wrapModeEnt
 {
 	{ "clamp", Texture::WRAP_CLAMP },
 	{ "repeat", Texture::WRAP_REPEAT },
+	{ "mirroredrepeat", Texture::WRAP_MIRRORED_REPEAT },
 };
 
 StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM> Texture::wrapModes(Texture::wrapModeEntries, sizeof(Texture::wrapModeEntries));

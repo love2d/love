@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -122,17 +122,7 @@ bool Joystick::isConnected() const
 
 const char *Joystick::getName() const
 {
-	// Use the saved name if this Joystick isn't connected anymore.
-	if (!isConnected())
-		return name.c_str();
-
-	// Prefer the Joystick name for consistency.
-	const char *joyname = SDL_JoystickName(joyhandle);
-
-	if (!joyname && isGamepad())
-		joyname = SDL_GameControllerName(controller);
-
-	return joyname;
+	return name.c_str();
 }
 
 int Joystick::getAxisCount() const

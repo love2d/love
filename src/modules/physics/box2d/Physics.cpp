@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -97,7 +97,7 @@ int Physics::newPolygonShape(lua_State *L)
 	bool istable = lua_istable(L, 1);
 
 	if (istable)
-		argc = lua_objlen(L, 1);
+		argc = (int) lua_objlen(L, 1);
 
 	if (argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
@@ -146,7 +146,7 @@ int Physics::newPolygonShape(lua_State *L)
 	}
 
 	PolygonShape *p = new PolygonShape(s);
-	luax_pushtype(L, "PolygonShape", PHYSICS_POLYGON_SHAPE_T, p);
+	luax_pushtype(L, PHYSICS_POLYGON_SHAPE_ID, p);
 	p->release();
 	return 1;
 }
@@ -158,12 +158,12 @@ int Physics::newChainShape(lua_State *L)
 	bool istable = lua_istable(L, 2);
 
 	if (istable)
-		argc = lua_objlen(L, 2);
+		argc = (int) lua_objlen(L, 2);
 
 	if (argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
-	int vcount = (int)argc/2;
+	int vcount = argc/2;
 	bool loop = luax_toboolean(L, 1);
 	b2Vec2 *vecs = new b2Vec2[vcount];
 
@@ -208,7 +208,7 @@ int Physics::newChainShape(lua_State *L)
 	delete[] vecs;
 
 	ChainShape *c = new ChainShape(s);
-	luax_pushtype(L, "ChainShape", PHYSICS_CHAIN_SHAPE_T, c);
+	luax_pushtype(L, PHYSICS_CHAIN_SHAPE_ID, c);
 	c->release();
 	return 1;
 }
@@ -281,8 +281,8 @@ Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 
 int Physics::getDistance(lua_State *L)
 {
-	Fixture *fixtureA = luax_checktype<Fixture>(L, 1, "Fixture", PHYSICS_FIXTURE_T);
-	Fixture *fixtureB = luax_checktype<Fixture>(L, 2, "Fixture", PHYSICS_FIXTURE_T);
+	Fixture *fixtureA = luax_checktype<Fixture>(L, 1, PHYSICS_FIXTURE_ID);
+	Fixture *fixtureB = luax_checktype<Fixture>(L, 2, PHYSICS_FIXTURE_ID);
 	b2DistanceProxy pA, pB;
 	b2DistanceInput i;
 	b2DistanceOutput o;

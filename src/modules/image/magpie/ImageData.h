@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -58,6 +58,10 @@ private:
 
 	// Image format handlers we can use for decoding and encoding.
 	std::list<FormatHandler *> formatHandlers;
+
+	// The format handler that was used to decode the ImageData. We need to know
+	// this so we can properly delete memory allocated by the decoder.
+	FormatHandler *decodeHandler;
 
 }; // ImageData
 

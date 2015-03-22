@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,11 +40,13 @@
 #include "Font.h"
 #include "Image.h"
 #include "graphics/Quad.h"
+#include "graphics/Texture.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "Text.h"
 
 namespace love
 {
@@ -52,11 +54,6 @@ namespace graphics
 {
 namespace opengl
 {
-
-// During display mode changing, certain
-// variables about the OpenGL context are
-// lost.
-
 
 class Graphics : public love::graphics::Graphics
 {
@@ -72,6 +69,9 @@ public:
 	virtual bool setMode(int width, int height, bool &sRGB);
 	virtual void unSetMode();
 
+	virtual void setActive(bool active);
+	virtual bool isActive() const;
+
 	void setDebug(bool enable);
 
 	/**
@@ -82,9 +82,19 @@ public:
 	void reset();
 
 	/**
-	 * Clears the screen.
+	 * Clears the screen to a specific color.
 	 **/
-	void clear();
+	void clear(Color c);
+
+	/**
+	 * Clears each active canvas to a different color.
+	 **/
+	void clear(const std::vector<Color> &colors);
+
+	/**
+	 * Discards the contents of the screen.
+	 **/
+	void discard(const std::vector<bool> &colorbuffers, bool stencil);
 
 	/**
 	 * Flips buffers. (Rendered geometry is presented on screen).
@@ -128,28 +138,27 @@ public:
 	bool getScissor(int &x, int &y, int &width, int &height) const;
 
 	/**
-	 * Enables the stencil buffer and set stencil function to fill it
-	 */
-	void defineStencil();
+	 * Enables or disables drawing to the stencil buffer. When enabled, the
+	 * color buffer is disabled.
+	 **/
+	void drawToStencilBuffer(bool enable);
 
 	/**
-	 * Set stencil function to mask the following drawing calls using
-	 * the current stencil buffer
-	 * @param invert Invert the mask, i.e. draw everywhere expect where
-	 *               the mask is defined.
-	 */
-	void useStencil(bool invert = false);
+	 * Sets whether stencil testing is enabled.
+	 **/
+	void setStencilTest(bool enable, bool invert);
+	void getStencilTest(bool &enable, bool &invert);
 
 	/**
-	 * Disables the stencil buffer
-	 */
-	void discardStencil();
+	 * Clear the stencil buffer in the active Canvas(es.)
+	 **/
+	void clearStencil();
 
 	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(love::image::ImageData *data, Image::Format format = Image::FORMAT_NORMAL);
-	Image *newImage(love::image::CompressedData *cdata, Image::Format format = Image::FORMAT_NORMAL);
+	Image *newImage(love::image::ImageData *data, const Image::Flags &flags);
+	Image *newImage(love::image::CompressedData *cdata, const Image::Flags &flags);
 
 	Quad *newQuad(Quad::Viewport v, float sw, float sh);
 
@@ -168,6 +177,8 @@ public:
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
 	Mesh *newMesh(int vertexcount, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
+
+	Text *newText(Font *font, const std::string &text = "");
 
 	/**
 	 * Sets the foreground color.
@@ -190,15 +201,8 @@ public:
 	 **/
 	Color getBackgroundColor() const;
 
-	/**
-	 * Sets the current font.
-	 * @param font A Font object.
-	 **/
 	void setFont(Font *font);
-	/**
-	 * Gets the current Font, or nil if none.
-	 **/
-	Font *getFont() const;
+	Font *getFont();
 
 	void setShader(Shader *shader);
 	void setShader();
@@ -207,7 +211,7 @@ public:
 
 	void setCanvas(Canvas *canvas);
 	void setCanvas(const std::vector<Canvas *> &canvases);
-	void setCanvas(const std::vector<Object::StrongRef<Canvas>> &canvases);
+	void setCanvas(const std::vector<StrongRef<Canvas>> &canvases);
 	void setCanvas();
 
 	std::vector<Canvas *> getCanvas() const;
@@ -215,13 +219,12 @@ public:
 	/**
 	 * Sets the enabled color components when rendering.
 	 **/
-	void setColorMask(const bool mask[4]);
+	void setColorMask(ColorMask mask);
 
 	/**
 	 * Gets the current color mask.
-	 * Returns an array of 4 booleans representing the mask.
 	 **/
-	const bool *getColorMask() const;
+	ColorMask getColorMask() const;
 
 	/**
 	 * Sets the current blend mode.
@@ -288,20 +291,9 @@ public:
 	void setPointSize(float size);
 
 	/**
-	 * Sets the style of points.
-	 * @param style POINT_SMOOTH or POINT_ROUGH.
-	 **/
-	void setPointStyle(PointStyle style);
-
-	/**
 	 * Gets the point size.
 	 **/
 	float getPointSize() const;
-
-	/**
-	 * Gets the point style.
-	 **/
-	PointStyle getPointStyle() const;
 
 	/**
 	 * Sets whether graphics will be drawn as wireframe lines instead of filled
@@ -347,7 +339,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void printf(const std::string &str, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void printf(const std::string &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draws a point at (x,y).
@@ -444,40 +436,35 @@ private:
 
 	struct DisplayState
 	{
-		// Colors.
 		Color color;
 		Color backgroundColor;
 
-		// Blend mode.
 		BlendMode blendMode;
 
-		// Line.
 		float lineWidth;
 		LineStyle lineStyle;
 		LineJoin lineJoin;
 
-		// Point.
 		float pointSize;
-		PointStyle pointStyle;
 
-		// Scissor.
 		bool scissor;
 		OpenGL::Viewport scissorBox;
 
-		Object::StrongRef<Font> font;
-		Object::StrongRef<Shader> shader;
+		// Stencil.
+		bool stencilTest;
+		bool stencilInvert;
 
-		std::vector<Object::StrongRef<Canvas>> canvases;
+		StrongRef<Font> font;
+		StrongRef<Shader> shader;
 
-		// Color mask.
-		bool colorMask[4];
+		std::vector<StrongRef<Canvas>> canvases;
+
+		ColorMask colorMask;
 
 		bool wireframe;
 
-		// Default filter.
 		Texture::Filter defaultFilter;
 
-		// Default mipmap filter and sharpness.
 		Texture::FilterMode defaultMipmapFilter;
 		float defaultMipmapSharpness;
 
@@ -491,15 +478,20 @@ private:
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
 
+	void checkSetDefaultFont();
+
 	love::window::Window *currentWindow;
+
+	StrongRef<Font> defaultFont;
 
 	std::vector<double> pixel_size_stack; // stores current size of a pixel (needed for line drawing)
 
 	int width;
 	int height;
 	bool created;
+	bool active;
 
-	bool activeStencil;
+	bool writingToStencil;
 
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypes; // Keeps track of the pushed stack types.

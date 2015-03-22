@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,9 +21,9 @@
 #include "Font.h"
 
 #include "TrueTypeRasterizer.h"
-#include "font/ImageRasterizer.h"
+#include "font/BMFontRasterizer.h"
 
-#include "libraries/utf8/utf8.h"
+#include <string.h>
 
 namespace love
 {
@@ -35,7 +35,7 @@ namespace freetype
 Font::Font()
 {
 	if (FT_Init_FreeType(&library))
-		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed\n");
+		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed");
 }
 
 Font::~Font()
@@ -43,62 +43,19 @@ Font::~Font()
 	FT_Done_FreeType(library);
 }
 
-Rasterizer *Font::newRasterizer(Data *data, int size)
+Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 {
-	return new TrueTypeRasterizer(library, data, size);
+	if (TrueTypeRasterizer::accepts(library, data))
+		return newTrueTypeRasterizer(data, 12, TrueTypeRasterizer::HINTING_NORMAL);
+	else if (BMFontRasterizer::accepts(data))
+		return newBMFontRasterizer(data, {});
+
+	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
 }
 
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, const std::string &text)
+Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting)
 {
-	size_t strlen = text.size();
-	size_t numglyphs = 0;
-
-	uint32 *glyphs = new uint32[strlen];
-
-	try
-	{
-		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
-		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
-
-		while (i != end)
-			glyphs[numglyphs++] = *i++;
-	}
-	catch (utf8::exception &e)
-	{
-		delete [] glyphs;
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-
-	Rasterizer *r = newRasterizer(data, glyphs, numglyphs);
-	delete [] glyphs;
-
-	return r;
-}
-
-Rasterizer *Font::newRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs)
-{
-	return new ImageRasterizer(data, glyphs, numglyphs);
-}
-
-GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)
-{
-	uint32 codepoint = 0;
-
-	try
-	{
-		codepoint = utf8::peek_next(text.begin(), text.end());
-	}
-	catch (utf8::exception &e)
-	{
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-
-	return r->getGlyphData(codepoint);
-}
-
-GlyphData *Font::newGlyphData(Rasterizer *r, uint32 glyph)
-{
-	return r->getGlyphData(glyph);
+	return new TrueTypeRasterizer(library, data, size, hinting);
 }
 
 const char *Font::getName() const

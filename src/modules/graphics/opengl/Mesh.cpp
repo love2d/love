@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -97,15 +97,12 @@ void Mesh::setVertices(const std::vector<Vertex> &verts)
 	}
 
 	if (!vbo)
-	{
-		// Full memory backing because we might access the data at any time.
-		vbo = VertexBuffer::Create(size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW, VertexBuffer::BACKING_FULL);
-	}
+		vbo = GLBuffer::Create(size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 	vertex_count = verts.size();
 
-	VertexBuffer::Bind vbo_bind(*vbo);
-	VertexBuffer::Mapper vbo_mapper(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Mapper vbo_mapper(*vbo);
 
 	// Fill the buffer with the vertices.
 	memcpy(vbo_mapper.get(), &verts[0], size);
@@ -115,7 +112,7 @@ const Vertex *Mesh::getVertices() const
 {
 	if (vbo)
 	{
-		VertexBuffer::Bind vbo_bind(*vbo);
+		GLBuffer::Bind vbo_bind(*vbo);
 		return (Vertex *) vbo->map();
 	}
 
@@ -127,7 +124,7 @@ void Mesh::setVertex(size_t index, const Vertex &v)
 	if (index >= vertex_count)
 		throw love::Exception("Invalid vertex index: %ld", index + 1);
 
-	VertexBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
 
 	// We unmap the vertex buffer in Mesh::draw. This lets us coalesce the
 	// buffer transfer calls into just one.
@@ -140,7 +137,7 @@ Vertex Mesh::getVertex(size_t index) const
 	if (index >= vertex_count)
 		throw love::Exception("Invalid vertex index: %ld", index + 1);
 
-	VertexBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
 
 	// We unmap the vertex buffer in Mesh::draw.
 	Vertex *vertices = (Vertex *) vbo->map();
@@ -156,7 +153,7 @@ size_t Mesh::getVertexCount() const
  * Copies index data from a vector to a mapped index buffer.
  **/
 template <typename T>
-static void copyToIndexBuffer(const std::vector<uint32> &indices, VertexBuffer::Mapper &buffermap, size_t maxval)
+static void copyToIndexBuffer(const std::vector<uint32> &indices, GLBuffer::Mapper &buffermap, size_t maxval)
 {
 	T *elems = (T *) buffermap.get();
 
@@ -183,18 +180,15 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	}
 
 	if (!ibo && size > 0)
-	{
-		// Full memory backing because we might access the data at any time.
-		ibo = VertexBuffer::Create(size, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW, VertexBuffer::BACKING_FULL);
-	}
+		ibo = GLBuffer::Create(size, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 	element_count = map.size();
 
 	if (!ibo || element_count == 0)
 		return;
 
-	VertexBuffer::Bind ibo_bind(*ibo);
-	VertexBuffer::Mapper ibo_map(*ibo);
+	GLBuffer::Bind ibo_bind(*ibo);
+	GLBuffer::Mapper ibo_map(*ibo);
 
 	// Fill the buffer with the index values from the vector.
 	switch (datatype)
@@ -233,7 +227,7 @@ void Mesh::getVertexMap(std::vector<uint32> &map) const
 	map.clear();
 	map.reserve(element_count);
 
-	VertexBuffer::Bind ibo_bind(*ibo);
+	GLBuffer::Bind ibo_bind(*ibo);
 
 	// We unmap the buffer in Mesh::draw and Mesh::setVertexMap.
 	void *buffer = ibo->map();
@@ -323,10 +317,12 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (vertex_count == 0)
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("Mesh draw");
+
 	if (texture.get())
-		texture->predraw();
+		gl.bindTexture(*(GLuint *) texture->getHandle());
 	else
-		gl.bindTexture(0);
+		gl.bindTexture(gl.getDefaultTexture());
 
 	Matrix m;
 	m.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
@@ -334,22 +330,22 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= m;
 
-	VertexBuffer::Bind vbo_bind(*vbo);
+	GLBuffer::Bind vbo_bind(*vbo);
 
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	vbo->unmap();
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
 
-	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), vbo->getPointer(pos_offset));
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), vbo->getPointer(tex_offset));
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), vbo->getPointer(pos_offset));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), vbo->getPointer(tex_offset));
 
 	if (hasVertexColors())
 	{
 		// Per-vertex colors.
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), vbo->getPointer(color_offset));
+		glEnableVertexAttribArray(ATTRIB_COLOR);
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), vbo->getPointer(color_offset));
 	}
 
 	GLenum mode = getGLDrawMode(draw_mode);
@@ -359,12 +355,12 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (ibo && element_count > 0)
 	{
 		// Use the custom vertex map (index buffer) to draw the vertices.
-		VertexBuffer::Bind ibo_bind(*ibo);
+		GLBuffer::Bind ibo_bind(*ibo);
 
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
 
-		int max = element_count - 1;
+		int max = (int) element_count - 1;
 		if (range_max >= 0)
 			max = std::min(range_max, max);
 
@@ -379,7 +375,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	}
 	else
 	{
-		int max = vertex_count - 1;
+		int max = (int) vertex_count - 1;
 		if (range_max >= 0)
 			max = std::min(range_max, max);
 
@@ -391,18 +387,15 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		gl.drawArrays(mode, min, max - min + 1);
 	}
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
+	glDisableVertexAttribArray(ATTRIB_POS);
 
 	if (hasVertexColors())
 	{
-		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableVertexAttribArray(ATTRIB_COLOR);
 		// Using the color array leaves the GL constant color undefined.
 		gl.setColor(gl.getColor());
 	}
-
-	if (texture.get())
-		texture->postdraw();
 }
 
 GLenum Mesh::getGLDrawMode(DrawMode mode) const

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,8 @@
 
 #if defined(LOVE_MACOSX)
 #include <CoreServices/CoreServices.h>
+#elif defined(LOVE_IOS)
+#include "common/iOS.h"
 #elif defined(LOVE_LINUX)
 #include <spawn.h>
 //#include <stdlib.h>
@@ -60,6 +62,8 @@ std::string System::getOS() const
 {
 #if defined(LOVE_MACOSX)
 	return "OS X";
+#elif defined(LOVE_IOS)
+	return "iOS";
 #elif defined(LOVE_WINDOWS)
 	return "Windows";
 #elif defined(LOVE_LINUX)
@@ -90,6 +94,10 @@ bool System::openURL(const std::string &url) const
 	success = LSOpenCFURLRef(cfurl, nullptr) == noErr;
 	CFRelease(cfurl);
 	return success;
+
+#elif defined(LOVE_IOS)
+
+	return love::ios::openURL(url);
 
 #elif defined(LOVE_LINUX)
 

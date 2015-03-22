@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -110,7 +110,7 @@ extern "C" int luaopen_love_system(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "system";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = nullptr;
 

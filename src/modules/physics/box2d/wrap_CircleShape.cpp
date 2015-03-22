@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ namespace box2d
 
 CircleShape *luax_checkcircleshape(lua_State *L, int idx)
 {
-	return luax_checktype<CircleShape>(L, idx, "CircleShape", PHYSICS_CIRCLE_SHAPE_T);
+	return luax_checktype<CircleShape>(L, idx, PHYSICS_CIRCLE_SHAPE_ID);
 }
 
 int w_CircleShape_getRadius(lua_State *L)
@@ -83,7 +83,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_circleshape(lua_State *L)
 {
-	return luax_register_type(L, "CircleShape", functions);
+	return luax_register_type(L, PHYSICS_CIRCLE_SHAPE_ID, functions);
 }
 
 } // box2d

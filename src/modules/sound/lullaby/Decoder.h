@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ protected:
 
 	// The encoded data. This should be replaced with buffered file
 	// reads in the future.
-	Object::StrongRef<Data> data;
+	StrongRef<Data> data;
 
 	// File extension.
 	std::string ext;

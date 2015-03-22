@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,11 @@ Source::Source(Type type)
 
 Source::~Source()
 {
+}
+
+Source::Type Source::getType() const
+{
+	return type;
 }
 
 bool Source::getConstant(const char *in, Type &out)

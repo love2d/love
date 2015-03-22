@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,9 +36,14 @@
 #include "thread/threads.h"
 
 // OpenAL
-#ifdef LOVE_MACOSX_USE_FRAMEWORKS // Frameworks have different include paths.
+#ifdef LOVE_APPLE_USE_FRAMEWORKS // Frameworks have different include paths.
+#ifdef LOVE_IOS
+#include <OpenAL/alc.h>
+#include <OpenAL/al.h>
+#else
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
+#endif
 #else
 #include <AL/alc.h>
 #include <AL/al.h>
@@ -84,6 +89,9 @@ public:
 	void setOrientation(float *v);
 	void getVelocity(float *v) const;
 	void setVelocity(float *v);
+
+	void setDopplerScale(float scale);
+	float getDopplerScale() const;
 
 	void record();
 	love::sound::SoundData *getRecordedData();

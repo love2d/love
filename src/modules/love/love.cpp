@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,10 @@
 
 #include "love.h"
 
+// C++
+#include <string>
+#include <sstream>
+
 #ifdef LOVE_WINDOWS
 #include <windows.h>
 #endif // LOVE_WINDOWS
@@ -36,12 +40,19 @@
 #include <fstream>
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+#include <SDL_hints.h>
+#endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+
 // Libraries.
 #ifdef LOVE_ENABLE_LUASOCKET
 #	include "libraries/luasocket/luasocket.h"
 #endif
 #ifdef LOVE_ENABLE_ENET
 #	include "libraries/enet/lua-enet.h"
+#endif
+#ifdef LOVE_ENABLE_LUAUTF8
+#	include "libraries/luautf8/lutf8lib.h"
 #endif
 
 // Scripts
@@ -97,6 +108,9 @@ extern "C"
 #if defined(LOVE_ENABLE_THREAD)
 	extern int luaopen_love_thread(lua_State*);
 #endif
+#if defined(LOVE_ENABLE_TOUCH)
+	extern int luaopen_love_touch(lua_State*);
+#endif
 #if defined(LOVE_ENABLE_WINDOW)
 	extern int luaopen_love_window(lua_State*);
 #endif
@@ -149,6 +163,9 @@ static const luaL_Reg modules[] = {
 #if defined(LOVE_ENABLE_THREAD)
 	{ "love.thread", luaopen_love_thread },
 #endif
+#if defined(LOVE_ENABLE_TOUCH)
+	{ "love.touch", luaopen_love_touch },
+#endif
 #if defined(LOVE_ENABLE_WINDOW)
 	{ "love.window", luaopen_love_window },
 #endif
@@ -160,9 +177,15 @@ static const luaL_Reg modules[] = {
 int w__openConsole(lua_State *L);
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+int w__setAccelerometerAsJoystick(lua_State *L);
+#endif
+
 const char *love_version()
 {
-	return love::VERSION;
+	// Do not refer to love::VERSION here, the linker
+	// will patch it back up to the executable's one..
+	return LOVE_VERSION_STRING;
 }
 
 const char *love_codename()
@@ -177,6 +200,39 @@ static int w_love_getVersion(lua_State *L)
 	lua_pushinteger(L, love::VERSION_REV);
 	lua_pushstring(L, love::VERSION_CODENAME);
 	return 4;
+}
+
+static int w_love_isVersionCompatible(lua_State *L)
+{
+	std::string version;
+
+	if (lua_type(L, 1) == LUA_TSTRING)
+		version = luaL_checkstring(L, 1);
+	else
+	{
+		int major = luaL_checkint(L, 1);
+		int minor = luaL_checkint(L, 2);
+		int rev   = luaL_checkint(L, 3);
+
+		// Convert the numbers to a string, since VERSION_COMPATIBILITY is an
+		// array of version strings.
+		std::stringstream ss;
+		ss << major << "." << minor << "." << rev;
+
+		version = ss.str();
+	}
+
+	for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
+	{
+		if (version.compare(love::VERSION_COMPATIBILITY[i]) != 0)
+			continue;
+
+		lua_pushboolean(L, true);
+		return 1;
+	}
+
+	lua_pushboolean(L, false);
+	return 1;
 }
 
 int luaopen_love(lua_State * L)
@@ -202,9 +258,14 @@ int luaopen_love(lua_State * L)
 	lua_setfield(L, -2, "_openConsole");
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+	lua_pushcfunction(L, w__setAccelerometerAsJoystick);
+	lua_setfield(L, -2, "_setAccelerometerAsJoystick");
+#endif
+
 	lua_newtable(L);
 
-	for (int i = 0; love::VERSION_COMPATIBILITY[i] != 0; ++i)
+	for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
 	{
 		lua_pushstring(L, love::VERSION_COMPATIBILITY[i]);
 		lua_rawseti(L, -2, i+1);
@@ -215,10 +276,15 @@ int luaopen_love(lua_State * L)
 	lua_pushcfunction(L, w_love_getVersion);
 	lua_setfield(L, -2, "getVersion");
 
+	lua_pushcfunction(L, w_love_isVersionCompatible);
+	lua_setfield(L, -2, "isVersionCompatible");
+
 #ifdef LOVE_WINDOWS
 	lua_pushstring(L, "Windows");
 #elif defined(LOVE_MACOSX)
 	lua_pushstring(L, "OS X");
+#elif defined(LOVE_IOS)
+	lua_pushstring(L, "iOS");
 #elif defined(LOVE_LINUX)
 	lua_pushstring(L, "Linux");
 #else
@@ -228,9 +294,7 @@ int luaopen_love(lua_State * L)
 
 	// Preload module loaders.
 	for (int i = 0; modules[i].name != 0; i++)
-	{
 		love::luax_preload(L, modules[i].func, modules[i].name);
-	}
 
 #ifdef LOVE_ENABLE_LUASOCKET
 	love::luasocket::__open(L);
@@ -238,53 +302,98 @@ int luaopen_love(lua_State * L)
 #ifdef LOVE_ENABLE_ENET
 	love::luax_preload(L, luaopen_enet, "enet");
 #endif
+#ifdef LOVE_ENABLE_LUAUTF8
+	love::luax_preload(L, luaopen_luautf8, "utf8");
+#endif
 
 	return 1;
 }
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 
+// Mostly taken from the Windows 8.1 SDK's VersionHelpers.h.
+static bool IsWindowsVistaOrGreater()
+{
+	OSVERSIONINFOEXW osvi = {sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0};
+
+	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
+	osvi.wServicePackMajor = 0;
+
+	DWORDLONG majorversionmask = VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL);
+	DWORDLONG versionmask = VerSetConditionMask(majorversionmask, VER_MINORVERSION, VER_GREATER_EQUAL);
+	DWORDLONG mask = VerSetConditionMask(versionmask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+
+	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, mask) != FALSE;
+}
+
 int w__openConsole(lua_State *L)
 {
 	static bool is_open = false;
+
 	if (is_open)
-		return 0;
+	{
+		love::luax_pushboolean(L, is_open);
+		return 1;
+	}
+
 	is_open = true;
 
-	if (GetConsoleWindow() != NULL || AllocConsole() == 0)
-		return 0;
+	// FIXME: we don't call AttachConsole in Windows XP because it seems to
+	// break later AllocConsole calls if it fails. A better workaround might be
+	// possible, but it's hard to find a WinXP system to test on these days...
+	if (!IsWindowsVistaOrGreater() || !AttachConsole(ATTACH_PARENT_PROCESS))
+	{
+		// Create our own console if we can't attach to an existing one.
+		if (!AllocConsole())
+		{
+			is_open = false;
+			love::luax_pushboolean(L, is_open);
+			return 1;
+		}
 
-	const int MAX_CONSOLE_LINES = 5000;
-	CONSOLE_SCREEN_BUFFER_INFO console_info;
+		SetConsoleTitle(TEXT("LOVE Console"));
 
-	// Set size.
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
-	console_info.dwSize.Y = MAX_CONSOLE_LINES;
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), console_info.dwSize);
+		const int MAX_CONSOLE_LINES = 5000;
+		CONSOLE_SCREEN_BUFFER_INFO console_info;
 
-	SetConsoleTitle(TEXT("LOVE Console"));
+		// Set size.
+		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
+		console_info.dwSize.Y = MAX_CONSOLE_LINES;
+		SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), console_info.dwSize);
+	}
 
-	FILE * fp;
+	FILE *fp;
 
 	// Redirect stdout.
 	fp = freopen("CONOUT$", "w", stdout);
 	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stdout failed.");
+		return luaL_error(L, "Console redirection of stdout failed.");
 
 	// Redirect stdin.
 	fp = freopen("CONIN$", "r", stdin);
 	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stdin failed.");
+		return luaL_error(L, "Console redirection of stdin failed.");
 
 	// Redirect stderr.
 	fp = freopen("CONOUT$", "w", stderr);
 	if (L && fp == NULL)
-		luaL_error(L, "Console redirection of stderr failed.");
+		return luaL_error(L, "Console redirection of stderr failed.");
 
-	return 0;
+	love::luax_pushboolean(L, is_open);
+	return 1;
 }
 
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
+
+#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
+int w__setAccelerometerAsJoystick(lua_State *L)
+{
+	bool enable = (bool) lua_toboolean(L, 1);
+	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, enable ? "1" : "0");
+	return 0;
+}
+#endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 
 int luaopen_love_boot(lua_State *L)
 {

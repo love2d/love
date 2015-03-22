@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -185,7 +185,7 @@ Vector BezierCurve::evaluate(double t) const
 	return points[0];
 }
 
-vector<Vector> BezierCurve::render(size_t accuracy) const
+vector<Vector> BezierCurve::render(int accuracy) const
 {
 	if (controlPoints.size() < 2)
 		throw Exception("Invalid Bezier curve: Not enough control points.");

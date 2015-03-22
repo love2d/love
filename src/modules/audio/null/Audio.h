@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -66,6 +66,9 @@ public:
 	void setOrientation(float *v);
 	void getVelocity(float *v) const;
 	void setVelocity(float *v);
+
+	void setDopplerScale(float scale);
+	float getDopplerScale() const;
 
 	void record();
 	love::sound::SoundData *getRecordedData();

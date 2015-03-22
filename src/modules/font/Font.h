@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,12 +23,15 @@
 
 // LOVE
 #include "Rasterizer.h"
+#include "TrueTypeRasterizer.h"
 #include "image/ImageData.h"
+#include "filesystem/FileData.h"
 #include "common/Module.h"
 #include "common/int.h"
 
-// STD
+// C++
 #include <string>
+#include <vector>
 
 namespace love
 {
@@ -42,16 +45,21 @@ public:
 
 	virtual ~Font() {}
 
-	// Implements Module.
+	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
+
+	virtual Rasterizer *newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting);
+	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting) = 0;
+
+	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);
+
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs, int extraspacing);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length, int extraspacing);
+
+	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
+	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
+
+	// Implement Module.
 	virtual ModuleType getModuleType() const { return M_FONT; }
-
-	virtual Rasterizer *newRasterizer(Data *data, int size) = 0;
-	virtual Rasterizer *newRasterizer(love::image::ImageData *data, const std::string &glyphs) = 0;
-	virtual Rasterizer *newRasterizer(love::image::ImageData *data, uint32 *glyphs, int length) = 0;
-	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph) = 0;
-	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph) = 0;
-
-	// Implement Module
 	virtual const char *getName() const = 0;
 
 }; // Font

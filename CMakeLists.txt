@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2014 LOVE Development Team
+# Copyright (c) 2006-2015 LOVE Development Team
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
@@ -102,6 +102,7 @@ set(LOVE_SRC_COMMON
 	src/common/runtime.cpp
 	src/common/runtime.h
 	src/common/StringMap.h
+	src/common/types.cpp
 	src/common/types.h
 	src/common/utf8.cpp
 	src/common/utf8.h
@@ -164,13 +165,13 @@ source_group("modules\\audio\\openal" FILES ${LOVE_SRC_MODULE_AUDIO_OPENAL})
 set(LOVE_SRC_MODULE_EVENT_ROOT
 	src/modules/event/Event.cpp
 	src/modules/event/Event.h
+	src/modules/event/wrap_Event.cpp
+	src/modules/event/wrap_Event.h
 )
 
 set(LOVE_SRC_MODULE_EVENT_SDL
 	src/modules/event/sdl/Event.cpp
 	src/modules/event/sdl/Event.h
-	src/modules/event/sdl/wrap_Event.cpp
-	src/modules/event/sdl/wrap_Event.h
 )
 
 set(LOVE_SRC_MODULE_EVENT
@@ -186,10 +187,16 @@ source_group("modules\\event\\sdl" FILES ${LOVE_SRC_MODULE_EVENT_SDL})
 #
 
 set(LOVE_SRC_MODULE_FILESYSTEM_ROOT
+	src/modules/filesystem/DroppedFile.cpp
+	src/modules/filesystem/DroppedFile.h
 	src/modules/filesystem/File.cpp
 	src/modules/filesystem/File.h
 	src/modules/filesystem/FileData.cpp
 	src/modules/filesystem/FileData.h
+	src/modules/filesystem/Filesystem.cpp
+	src/modules/filesystem/Filesystem.h
+	src/modules/filesystem/wrap_DroppedFile.cpp
+	src/modules/filesystem/wrap_DroppedFile.h
 	src/modules/filesystem/wrap_File.cpp
 	src/modules/filesystem/wrap_File.h
 	src/modules/filesystem/wrap_FileData.cpp
@@ -218,6 +225,9 @@ source_group("modules\\filesystem\\physfs" FILES ${LOVE_SRC_MODULE_FILESYSTEM_PH
 #
 
 set(LOVE_SRC_MODULE_FONT_ROOT
+	src/modules/font/BMFontRasterizer.cpp
+	src/modules/font/BMFontRasterizer.h
+	src/modules/font/Font.cpp
 	src/modules/font/Font.h
 	src/modules/font/GlyphData.cpp
 	src/modules/font/GlyphData.h
@@ -225,6 +235,10 @@ set(LOVE_SRC_MODULE_FONT_ROOT
 	src/modules/font/ImageRasterizer.h
 	src/modules/font/Rasterizer.cpp
 	src/modules/font/Rasterizer.h
+	src/modules/font/TrueTypeRasterizer.cpp
+	src/modules/font/TrueTypeRasterizer.h
+	src/modules/font/wrap_Font.cpp
+	src/modules/font/wrap_Font.h
 	src/modules/font/wrap_GlyphData.cpp
 	src/modules/font/wrap_GlyphData.h
 	src/modules/font/wrap_Rasterizer.cpp
@@ -236,8 +250,6 @@ set(LOVE_SRC_MODULE_FONT_FREETYPE
 	src/modules/font/freetype/Font.h
 	src/modules/font/freetype/TrueTypeRasterizer.cpp
 	src/modules/font/freetype/TrueTypeRasterizer.h
-	src/modules/font/freetype/wrap_Font.cpp
-	src/modules/font/freetype/wrap_Font.h
 )
 
 set(LOVE_SRC_MODULE_FONT
@@ -263,6 +275,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Texture.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
+	src/modules/graphics/wrap_Quad.cpp
+	src/modules/graphics/wrap_Quad.h
+	src/modules/graphics/wrap_Texture.cpp
+	src/modules/graphics/wrap_Texture.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
@@ -270,8 +286,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Canvas.h
 	src/modules/graphics/opengl/Font.cpp
 	src/modules/graphics/opengl/Font.h
-	src/modules/graphics/opengl/GLee.c
-	src/modules/graphics/opengl/GLee.h
+	src/modules/graphics/opengl/GLBuffer.cpp
+	src/modules/graphics/opengl/GLBuffer.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp
@@ -288,9 +304,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Shader.h
 	src/modules/graphics/opengl/SpriteBatch.cpp
 	src/modules/graphics/opengl/SpriteBatch.h
-	src/modules/graphics/opengl/Texture.h
-	src/modules/graphics/opengl/VertexBuffer.cpp
-	src/modules/graphics/opengl/VertexBuffer.h
+	src/modules/graphics/opengl/Text.cpp
+	src/modules/graphics/opengl/Text.h
 	src/modules/graphics/opengl/wrap_Canvas.cpp
 	src/modules/graphics/opengl/wrap_Canvas.h
 	src/modules/graphics/opengl/wrap_Font.cpp
@@ -303,14 +318,12 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_Mesh.h
 	src/modules/graphics/opengl/wrap_ParticleSystem.cpp
 	src/modules/graphics/opengl/wrap_ParticleSystem.h
-	src/modules/graphics/opengl/wrap_Quad.cpp
-	src/modules/graphics/opengl/wrap_Quad.h
 	src/modules/graphics/opengl/wrap_Shader.cpp
 	src/modules/graphics/opengl/wrap_Shader.h
 	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
 	src/modules/graphics/opengl/wrap_SpriteBatch.h
-	src/modules/graphics/opengl/wrap_Texture.cpp
-	src/modules/graphics/opengl/wrap_Texture.h
+	src/modules/graphics/opengl/wrap_Text.cpp
+	src/modules/graphics/opengl/wrap_Text.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
@@ -342,16 +355,27 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/CompressedData.cpp
 	src/modules/image/magpie/CompressedData.h
+	src/modules/image/magpie/CompressedFormatHandler.h
 	src/modules/image/magpie/ddsHandler.cpp
 	src/modules/image/magpie/ddsHandler.h
-	src/modules/image/magpie/DevilHandler.cpp
-	src/modules/image/magpie/DevilHandler.h
 	src/modules/image/magpie/FormatHandler.cpp
 	src/modules/image/magpie/FormatHandler.h
 	src/modules/image/magpie/Image.cpp
 	src/modules/image/magpie/Image.h
 	src/modules/image/magpie/ImageData.cpp
 	src/modules/image/magpie/ImageData.h
+	src/modules/image/magpie/JPEGHandler.cpp
+	src/modules/image/magpie/JPEGHandler.h
+	src/modules/image/magpie/KTXHandler.cpp
+	src/modules/image/magpie/KTXHandler.h
+	src/modules/image/magpie/PKMHandler.cpp
+	src/modules/image/magpie/PKMHandler.h
+	src/modules/image/magpie/PNGHandler.cpp
+	src/modules/image/magpie/PNGHandler.h
+	src/modules/image/magpie/PVRHandler.cpp
+	src/modules/image/magpie/PVRHandler.h
+	src/modules/image/magpie/STBHandler.cpp
+	src/modules/image/magpie/STBHandler.h
 )
 
 set(LOVE_SRC_MODULE_IMAGE
@@ -705,6 +729,7 @@ source_group("modules\\thread\\sdl" FILES ${LOVE_SRC_MODULE_THREAD_SDL})
 #
 
 set(LOVE_SRC_MODULE_TIMER_ROOT
+	src/modules/timer/Timer.cpp
 	src/modules/timer/Timer.h
 	src/modules/timer/wrap_Timer.cpp
 	src/modules/timer/wrap_Timer.h
@@ -722,6 +747,29 @@ set(LOVE_SRC_MODULE_TIMER
 
 source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER_ROOT})
 source_group("modules\\timer\\sdl" FILES ${LOVE_SRC_MODULE_TIMER_SDL})
+
+#
+# love.touch
+#
+
+set(LOVE_SRC_MODULE_TOUCH_ROOT
+	src/modules/touch/Touch.h
+	src/modules/touch/wrap_Touch.cpp
+	src/modules/touch/wrap_Touch.h
+)
+
+set(LOVE_SRC_MODULE_TOUCH_SDL
+	src/modules/touch/sdl/Touch.cpp
+	src/modules/touch/sdl/Touch.h
+)
+
+set(LOVE_SRC_MODULE_TOUCH
+	${LOVE_SRC_MODULE_TOUCH_ROOT}
+	${LOVE_SRC_MODULE_TOUCH_SDL}
+)
+
+source_group("modules\\touch" FILES ${LOVE_SRC_MODULE_TOUCH_ROOT})
+source_group("modules\\touch\\sdl" FILES ${LOVE_SRC_MODULE_TOUCH_SDL})
 
 #
 # love.window
@@ -940,6 +988,29 @@ target_link_libraries(love_3p_enet ${MEGA_LUA})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 
 #
+# GLAD
+#
+
+set(LOVE_SRC_3P_GLAD
+	src/libraries/glad/glad.cpp
+	src/libraries/glad/glad.hpp
+	src/libraries/glad/gladfuncs.hpp
+)
+
+add_library(love_3p_glad ${LOVE_SRC_3P_GLAD})
+
+#
+# LodePNG
+#
+
+set(LOVE_SRC_3P_LODEPNG
+	src/libraries/lodepng/lodepng.cpp
+	src/libraries/lodepng/lodepng.h
+)
+
+add_library(love_3p_lodepng ${LOVE_SRC_3P_LODEPNG})
+
+#
 # luasocket
 #
 
@@ -1002,6 +1073,18 @@ add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
 target_link_libraries(love_3p_luasocket ${MEGA_LUA})
 
 #
+# Lua 5.3's UTF-8 library
+#
+set(LOVE_SRC_3P_LUAUTF8
+	src/libraries/luautf8/lprefix.h
+	src/libraries/luautf8/lutf8lib.c
+	src/libraries/luautf8/lutf8lib.h
+)
+
+add_library(love_3p_luautf8 ${LOVE_SRC_3P_LUAUTF8})
+target_link_libraries(love_3p_luautf8 ${MEGA_LUA})
+
+#
 # noise1234
 #
 
@@ -1011,6 +1094,16 @@ set(LOVE_SRC_3P_NOISE1234
 )
 
 add_library(love_3p_noise1234 ${LOVE_SRC_3P_NOISE1234})
+
+#
+# stb_image
+#
+
+set(LOVE_SRC_3P_STB
+	src/libraries/stb/stb_image.h
+)
+
+# stb_image has no implementation files of its own.
 
 #
 # utf8
@@ -1053,7 +1146,10 @@ set(LOVE_3P
 	love_3p_box2d
 	love_3p_ddsparse
 	love_3p_enet
+	love_3p_glad
+	love_3p_lodepng
 	love_3p_luasocket
+	love_3p_luautf8
 	love_3p_noise1234
 	love_3p_wuff
 )
@@ -1082,6 +1178,7 @@ set(LOVE_LIB_SRC
 	${LOVE_SRC_MODULE_SYSTEM}
 	${LOVE_SRC_MODULE_THREAD}
 	${LOVE_SRC_MODULE_TIMER}
+	${LOVE_SRC_MODULE_TOUCH}
 	${LOVE_SRC_MODULE_WINDOW}
 )
 
@@ -1097,12 +1194,9 @@ include_directories(
 link_directories(${SDL_LINK_DIR})
 
 set(LOVE_MEGA_3P
-	${MEGA_DEVIL}
 	${MEGA_FREETYPE}
-	${MEGA_JASPER}
-	${MEGA_JPEG}
+	${MEGA_JPEG_TURBO}
 	${MEGA_LIBOGG}
-	${MEGA_LIBPNG}
 	${MEGA_LIBVORBISFILE}
 	${MEGA_LIBVORBIS}
 	${MEGA_LUA}
@@ -1111,7 +1205,6 @@ set(LOVE_MEGA_3P
 	${MEGA_PHYSFS}
 	${MEGA_SDL2MAIN}
 	${MEGA_SDL2}
-	${MEGA_TIFF}
 	${MEGA_ZLIB}
 )
 
@@ -1150,8 +1243,8 @@ if(MEGA_EXTRA_DEPENDECIES)
 endif()
 
 if(MSVC)
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove")
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love" PDB_NAME "liblove")
+	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
+	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
 endif()
 
 #
@@ -1168,7 +1261,6 @@ endif()
 
 add_move_dll(love ${MEGA_SDL2})
 add_move_dll(love ${MEGA_OPENAL})
-add_move_dll(love ${MEGA_DEVIL})
 
 if(LOVE_JIT)
 	add_move_file(love ${MEGA_LUAJIT_DLL})

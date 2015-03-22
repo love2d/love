@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,12 +21,14 @@
 #ifndef LOVE_GRAPHICS_OPENGL_OPENGL_H
 #define LOVE_GRAPHICS_OPENGL_OPENGL_H
 
-#include "GLee.h"
-
 // LOVE
+#include "common/config.h"
 #include "graphics/Color.h"
 #include "graphics/Texture.h"
 #include "common/Matrix.h"
+
+// GLAD
+#include "libraries/glad/gladfuncs.hpp"
 
 // C++
 #include <vector>
@@ -42,6 +44,21 @@ namespace graphics
 namespace opengl
 {
 
+// Awful, but the library uses the namespace in order to use the functions sanely
+// with proper autocomplete in IDEs while having name mangling safety -
+// no clashes with other GL libraries when linking, etc.
+using namespace glad;
+
+// Vertex attribute indices used in shaders by LOVE. The values map to OpenGL
+// generic vertex attribute indices.
+enum VertexAttribID
+{
+	ATTRIB_POS = 0,
+	ATTRIB_TEXCOORD,
+	ATTRIB_COLOR,
+	ATTRIB_MAX_ENUM
+};
+
 /**
  * Thin layer between OpenGL and the rest of the program.
  * Internally shadows some OpenGL context state for improved efficiency and
@@ -56,24 +73,18 @@ public:
 	// OpenGL GPU vendors.
 	enum Vendor
 	{
-		VENDOR_ATI_AMD,
+		VENDOR_AMD,
 		VENDOR_NVIDIA,
 		VENDOR_INTEL,
 		VENDOR_MESA_SOFT, // Software renderer.
-		VENDOR_APPLE,     // Software renderer.
+		VENDOR_APPLE,     // Software renderer on desktops.
 		VENDOR_MICROSOFT, // Software renderer.
+		VENDOR_IMGTEC,
+		VENDOR_ARM,
+		VENDOR_QUALCOMM,
+		VENDOR_BROADCOM,
+		VENDOR_VIVANTE,
 		VENDOR_UNKNOWN
-	};
-
-	// Vertex attributes used in shaders by LOVE. The values map to OpenGL
-	// generic vertex attribute indices, when applicable.
-	// LOVE uses the old hard-coded attribute APIs for positions, colors, etc.
-	// (for now.)
-	enum VertexAttrib
-	{
-		// Instance ID when pseudo-instancing is used.
-		ATTRIB_PSEUDO_INSTANCE_ID = 1,
-		ATTRIB_MAX_ENUM
 	};
 
 	// A rectangle representing an OpenGL viewport or a scissor box.
@@ -82,25 +93,10 @@ public:
 		int x, y;
 		int w, h;
 
-		Viewport()
-			: x(0), y(0), w(0), h(0)
-		{}
-
-		Viewport(int _x, int _y, int _w, int _h)
-			: x(_x), y(_y), w(_w), h(_h)
-		{}
-
 		bool operator == (const Viewport &rhs) const
 		{
 			return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
 		}
-	};
-
-	struct BlendState
-	{
-		GLenum srcRGB, srcA;
-		GLenum dstRGB, dstA;
-		GLenum func;
 	};
 
 	struct
@@ -133,19 +129,48 @@ public:
 		OpenGL &gl;
 	};
 
+	class TempDebugGroup
+	{
+	public:
+
+#if defined(DEBUG) && DEBUG == 1
+		TempDebugGroup(const char *name)
+		{
+			if (GLAD_EXT_debug_marker)
+				glPushGroupMarkerEXT(0, (const GLchar *) name);
+		}
+#else
+		TempDebugGroup(const char *) {}
+#endif
+
+#if defined(DEBUG) && DEBUG == 1
+		~TempDebugGroup()
+		{
+			if (GLAD_EXT_debug_marker)
+				glPopGroupMarkerEXT();
+		}
+#endif
+	};
+
 	struct Stats
 	{
 		size_t textureMemory;
 		int    drawCalls;
+		int    framebufferBinds;
 	} stats;
 
 	OpenGL();
 
 	/**
-	 * Initializes some required context state based on current and default
-	 * OpenGL state. Call this directly after creating an OpenGL context!
+	 * Initializes the active OpenGL context.
 	 **/
-	void initContext();
+	bool initContext();
+
+	/**
+	 * Sets up some required context state based on current and default OpenGL
+	 * state. Call this directly after initializing an OpenGL context!
+	 **/
+	void setupContext();
 
 	/**
 	 * Marks current context state as invalid and deletes OpenGL objects owned
@@ -172,13 +197,6 @@ public:
 	void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
 
 	/**
-	 * glDrawArraysInstanced and glDrawElementsInstanced with pseudo-instancing
-	 * fallbacks. They also increment the draw-call counter (once per call).
-	 **/
-	void drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
-	void drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount);
-
-	/**
 	 * Sets the current constant color.
 	 **/
 	void setColor(const Color &c);
@@ -187,16 +205,6 @@ public:
 	 * Gets the current constant color.
 	 **/
 	Color getColor() const;
-
-	/**
-	 * Sets the current clear color for all framebuffer objects.
-	 **/
-	void setClearColor(const Color &c);
-
-	/**
-	 * Gets the current clear color.
-	 **/
-	Color getClearColor() const;
 
 	/**
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
@@ -221,15 +229,30 @@ public:
 	Viewport getScissor() const;
 
 	/**
-	 * Sets blending functionality.
-	 * Note: This does not globally enable or disable blending.
+	 * Sets the global point size.
 	 **/
-	void setBlendState(const BlendState &blend);
+	void setPointSize(float size);
 
 	/**
-	 * Gets the currently set blending functionality.
+	 * Gets the global point size.
 	 **/
-	BlendState getBlendState() const;
+	float getPointSize() const;
+
+	/**
+	 * Binds a Framebuffer Object to the specified target.
+	 **/
+	void bindFramebuffer(GLenum target, GLuint framebuffer);
+
+	/**
+	 * This will usually be 0 (system drawable), but some platforms require a
+	 * non-zero FBO for rendering.
+	 **/
+	GLuint getDefaultFBO() const;
+
+	/**
+	 * Gets the ID for love's default texture (used for "untextured" primitives.)
+	 **/
+	GLuint getDefaultTexture() const;
 
 	/**
 	 * Helper for setting the active texture unit.
@@ -260,9 +283,10 @@ public:
 
 	/**
 	 * Sets the texture filter mode for the currently bound texture.
-	 * Returns the actual amount of anisotropic filtering set.
+	 * The anisotropy parameter of the argument is set to the actual amount of
+	 * anisotropy that was used.
 	 **/
-	float setTextureFilter(graphics::Texture::Filter &f);
+	void setTextureFilter(graphics::Texture::Filter &f);
 
 	/**
 	 * Sets the texture wrap mode for the currently bound texture.
@@ -278,6 +302,16 @@ public:
 	 * Returns the maximum supported number of simultaneous render targets.
 	 **/
 	int getMaxRenderTargets() const;
+
+	/**
+	 * Returns the maximum supported number of MSAA samples for renderbuffers.
+	 **/
+	int getMaxRenderbufferSamples() const;
+
+	/**
+	 * Returns the maximum number of accessible texture units.
+	 **/
+	int getMaxTextureUnits() const;
 
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
 
@@ -304,6 +338,8 @@ private:
 	float maxAnisotropy;
 	int maxTextureSize;
 	int maxRenderTargets;
+	int maxRenderbufferSamples;
+	int maxTextureUnits;
 
 	Vendor vendor;
 
@@ -313,10 +349,8 @@ private:
 		// Current constant color.
 		Color color;
 
-		Color clearColor;
-
 		// Texture unit state (currently bound texture for each texture unit.)
-		std::vector<GLuint> textureUnits;
+		std::vector<GLuint> boundTextures;
 
 		// Currently active texture unit.
 		int curTextureUnit;
@@ -324,10 +358,9 @@ private:
 		Viewport viewport;
 		Viewport scissor;
 
-		BlendState blend;
+		float pointSize;
 
-		// The last ID value used for pseudo-instancing.
-		int lastPseudoInstanceID;
+		GLuint defaultTexture;
 
 		Matrix lastProjectionMatrix;
 		Matrix lastTransformMatrix;

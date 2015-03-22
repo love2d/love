@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -153,7 +153,8 @@ public:
 	 * @param src The source vertices.
 	 * @param size The number of vertices.
 	 **/
-	void transform(Vertex *dst, const Vertex *src, int size) const;
+	template <typename V>
+	void transform(V *dst, const V *src, int size) const;
 
 	/**
 	 * Creates a new orthographic projection matrix with depth in the range of
@@ -172,6 +173,29 @@ private:
 	float e[16];
 
 }; // Matrix
+
+//                 | x |
+//                 | y |
+//                 | 0 |
+//                 | 1 |
+// | e0 e4 e8  e12 |
+// | e1 e5 e9  e13 |
+// | e2 e6 e10 e14 |
+// | e3 e7 e11 e15 |
+
+template <typename V>
+void Matrix::transform(V *dst, const V *src, int size) const
+{
+	for (int i = 0; i < size; i++)
+	{
+		// Store in temp variables in case src = dst
+		float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (0) + (e[12]);
+		float y = (e[1]*src[i].x) + (e[5]*src[i].y) + (0) + (e[13]);
+
+		dst[i].x = x;
+		dst[i].y = y;
+	}
+}
 
 } //love
 

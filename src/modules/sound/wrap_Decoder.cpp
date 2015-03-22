@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@ namespace sound
 
 Decoder *luax_checkdecoder(lua_State *L, int idx)
 {
-	return luax_checktype<Decoder>(L, idx, "Decoder", SOUND_DECODER_T);
+	return luax_checktype<Decoder>(L, idx, SOUND_DECODER_ID);
 }
 
 int w_Decoder_getChannels(lua_State *L)
@@ -61,7 +61,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_decoder(lua_State *L)
 {
-	return luax_register_type(L, "Decoder", functions);
+	return luax_register_type(L, SOUND_DECODER_ID, functions);
 }
 
 } // sound

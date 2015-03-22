@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,7 +44,7 @@ int w_getSourceCount(lua_State *L)
 
 int w_newSource(lua_State *L)
 {
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_T) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_T))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
 		luax_convobj(L, 1, "sound", "newDecoder");
 
 	Source::Type stype = Source::TYPE_STREAM;
@@ -53,19 +53,21 @@ int w_newSource(lua_State *L)
 	if (stypestr && !Source::getConstant(stypestr, stype))
 		return luaL_error(L, "Invalid source type: %s", stypestr);
 
-	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_T))
+	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_ID))
 		luax_convobj(L, 1, "sound", "newSoundData");
 
 	Source *t = 0;
 
-	if (luax_istype(L, 1, SOUND_SOUND_DATA_T))
-		t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, "SoundData", SOUND_SOUND_DATA_T));
-	else if (luax_istype(L, 1, SOUND_DECODER_T))
-		t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, "Decoder", SOUND_DECODER_T));
+	luax_catchexcept(L, [&]() {
+		if (luax_istype(L, 1, SOUND_SOUND_DATA_ID))
+			t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, SOUND_SOUND_DATA_ID));
+		else if (luax_istype(L, 1, SOUND_DECODER_ID))
+			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, SOUND_DECODER_ID));
+	});
 
 	if (t)
 	{
-		luax_pushtype(L, "Source", AUDIO_SOURCE_T, t);
+		luax_pushtype(L, AUDIO_SOURCE_ID, t);
 		t->release();
 		return 1;
 	}
@@ -216,6 +218,18 @@ int w_getVelocity(lua_State *L)
 	return 3;
 }
 
+int w_setDopplerScale(lua_State *L)
+{
+	instance()->setDopplerScale(luax_checkfloat(L, 1));
+	return 0;
+}
+
+int w_getDopplerScale(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getDopplerScale());
+	return 1;
+}
+
 int w_record(lua_State *)
 {
 	instance()->record();
@@ -229,7 +243,7 @@ int w_getRecordedData(lua_State *L)
 		lua_pushnil(L);
 	else
 	{
-		luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
+		luax_pushtype(L, SOUND_SOUND_DATA_ID, sd);
 		sd->release();
 	}
 	return 1;
@@ -244,7 +258,7 @@ int w_stopRecording(lua_State *L)
 			lua_pushnil(L);
 		else
 		{
-			luax_pushtype(L, "SoundData", SOUND_SOUND_DATA_T, sd);
+			luax_pushtype(L, SOUND_SOUND_DATA_ID, sd);
 			sd->release();
 		}
 		return 1;
@@ -297,6 +311,8 @@ static const luaL_Reg functions[] =
 	{ "getOrientation", w_getOrientation },
 	{ "setVelocity", w_setVelocity },
 	{ "getVelocity", w_getVelocity },
+	{ "setDopplerScale", w_setDopplerScale },
+	{ "getDopplerScale", w_getDopplerScale },
 	/*{ "record", w_record },
 	{ "getRecordedData", w_getRecordedData },
 	{ "stopRecording", w_stopRecording },*/
@@ -353,7 +369,7 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "audio";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = types;
 

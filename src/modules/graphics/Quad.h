@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,8 +40,6 @@ public:
 		float w, h;
 	};
 
-	static const size_t NUM_VERTICES = 4;
-
 	Quad(const Viewport &v, float sw, float sh);
 	virtual ~Quad();
 
@@ -53,7 +51,7 @@ public:
 
 private:
 
-	Vertex vertices[NUM_VERTICES];
+	Vertex vertices[4];
 
 	Viewport viewport;
 	float sw;

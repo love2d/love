@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ namespace box2d
 
 World *luax_checkworld(lua_State *L, int idx)
 {
-	World *w = luax_checktype<World>(L, idx, "World", PHYSICS_WORLD_T);
+	World *w = luax_checktype<World>(L, idx, PHYSICS_WORLD_ID);
 	if (!w->isValid())
 		luaL_error(L, "Attempt to use destroyed world.");
 	return w;
@@ -189,6 +189,13 @@ int w_World_destroy(lua_State *L)
 	return 0;
 }
 
+int w_World_isDestroyed(lua_State *L)
+{
+	World *w = luax_checktype<World>(L, 1, PHYSICS_WORLD_ID);
+	luax_pushboolean(L, !w->isValid());
+	return 1;
+}
+
 
 static const luaL_Reg functions[] =
 {
@@ -212,12 +219,13 @@ static const luaL_Reg functions[] =
 	{ "queryBoundingBox", w_World_queryBoundingBox },
 	{ "rayCast", w_World_rayCast },
 	{ "destroy", w_World_destroy },
+	{ "isDestroyed", w_World_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_world(lua_State *L)
 {
-	return luax_register_type(L, "World", functions);
+	return luax_register_type(L, PHYSICS_WORLD_ID, functions);
 }
 
 } // box2d

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -57,7 +57,18 @@ public:
 		FORMAT_BC6H,
 		FORMAT_BC6Hs,
 		FORMAT_BC7,
-		FORMAT_BC7SRGB,
+		FORMAT_ETC1,
+		FORMAT_ETC2_RGB,
+		FORMAT_ETC2_RGBA,
+		FORMAT_ETC2_RGBA1,
+		FORMAT_EAC_R,
+		FORMAT_EAC_Rs,
+		FORMAT_EAC_RG,
+		FORMAT_EAC_RGs,
+		FORMAT_PVR1_RGB2,
+		FORMAT_PVR1_RGB4,
+		FORMAT_PVR1_RGBA2,
+		FORMAT_PVR1_RGBA4,
 		FORMAT_MAX_ENUM
 	};
 
@@ -108,12 +119,16 @@ public:
 	 **/
 	Format getFormat() const;
 
+	bool isSRGB() const;
+
 	static bool getConstant(const char *in, Format &out);
 	static bool getConstant(Format in, const char *&out);
 
 protected:
 
 	Format format;
+
+	bool sRGB;
 
 	// Single block of memory containing all of the sub-images.
 	uint8 *data;

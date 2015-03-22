@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -49,7 +49,6 @@ public:
 		SETTING_FULLSCREEN,
 		SETTING_FULLSCREEN_TYPE,
 		SETTING_VSYNC,
-		SETTING_FSAA, // For backward-compatibility. TODO: remove!
 		SETTING_MSAA,
 		SETTING_RESIZABLE,
 		SETTING_MIN_WIDTH,
@@ -67,9 +66,9 @@ public:
 
 	enum FullscreenType
 	{
-		FULLSCREEN_TYPE_NORMAL,
-		FULLSCREEN_TYPE_DESKTOP,
-		FULLSCREEN_TYPE_MAX_ENUM
+		FULLSCREEN_EXCLUSIVE,
+		FULLSCREEN_DESKTOP,
+		FULLSCREEN_MAX_ENUM
 	};
 
 	enum MessageBoxType
@@ -116,16 +115,13 @@ public:
 	virtual bool setFullscreen(bool fullscreen, FullscreenType fstype) = 0;
 	virtual bool setFullscreen(bool fullscreen) = 0;
 
-	virtual bool onWindowResize(int width, int height) = 0;
+	virtual bool onSizeChanged(int width, int height) = 0;
 
 	virtual int getDisplayCount() const = 0;
 
 	virtual const char *getDisplayName(int displayindex) const = 0;
 
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
-
-	virtual int getWidth() const = 0;
-	virtual int getHeight() const = 0;
 
 	virtual void getDesktopDimensions(int displayindex, int &width, int &height) const = 0;
 
@@ -141,6 +137,7 @@ public:
 	virtual love::image::ImageData *getIcon() = 0;
 
 	virtual void minimize() = 0;
+	virtual void maximize() = 0;
 
 	// default no-op implementation
 	virtual void swapBuffers();
@@ -156,6 +153,12 @@ public:
 	virtual void setMouseGrab(bool grab) = 0;
 	virtual bool isMouseGrabbed() const = 0;
 
+	virtual void getPixelDimensions(int &w, int &h) const = 0;
+	// Note: window-space coordinates are not necessarily the same as
+	// density-independent units (which toPixels and fromPixels use.)
+	virtual void windowToPixelCoords(double *x, double *y) const = 0;
+	virtual void pixelToWindowCoords(double *x, double *y) const = 0;
+
 	virtual double getPixelScale() const = 0;
 
 	virtual double toPixels(double x) const = 0;
@@ -169,8 +172,7 @@ public:
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
 
 	//virtual static Window *createSingleton() = 0;
-	//virtual static Window *getSingleton() = 0;
-	// No virtual statics, of course, but you are supposed to implement these statics.
+	// No virtual statics, of course, but you are supposed to implement this static.
 
 	static bool getConstant(const char *in, Setting &out);
 	static bool getConstant(Setting in, const char *&out);
@@ -190,8 +192,8 @@ private:
 	static StringMap<Setting, SETTING_MAX_ENUM>::Entry settingEntries[];
 	static StringMap<Setting, SETTING_MAX_ENUM> settings;
 
-	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM>::Entry fullscreenTypeEntries[];
-	static StringMap<FullscreenType, FULLSCREEN_TYPE_MAX_ENUM> fullscreenTypes;
+	static StringMap<FullscreenType, FULLSCREEN_MAX_ENUM>::Entry fullscreenTypeEntries[];
+	static StringMap<FullscreenType, FULLSCREEN_MAX_ENUM> fullscreenTypes;
 
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry messageBoxTypeEntries[];
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> messageBoxTypes;
@@ -200,26 +202,23 @@ private:
 
 struct WindowSettings
 {
-	WindowSettings();
-
-	bool fullscreen; // = false
-	Window::FullscreenType fstype; // = FULLSCREEN_TYPE_NORMAL
-	bool vsync; // = true
-	int msaa; // = 0
-	bool resizable; // = false
-	int minwidth; // = 1
-	int minheight; // = 1
-	bool borderless; // = false
-	bool centered; // = true
-	int display; // = 0
-	bool highdpi; // false
-	bool sRGB; // false
-	double refreshrate; // 0.0
-	bool useposition; // false
-	int x; // 0
-	int y; // 0
-
-}; // WindowSettings
+	bool fullscreen = false;
+	Window::FullscreenType fstype = Window::FULLSCREEN_DESKTOP;
+	bool vsync = true;
+	int msaa = 0;
+	bool resizable = false;
+	int minwidth = 1;
+	int minheight = 1;
+	bool borderless = false;
+	bool centered = true;
+	int display = 0;
+	bool highdpi = false;
+	bool sRGB = false;
+	double refreshrate = 0.0;
+	bool useposition = false;
+	int x = 0;
+	int y = 0;
+};
 
 } // window
 } // love

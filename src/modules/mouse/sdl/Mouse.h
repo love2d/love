@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,21 +53,25 @@ public:
 
 	love::mouse::Cursor *getCursor() const;
 
-	int getX() const;
-	int getY() const;
-	void getPosition(int &x, int &y) const;
-	void setX(int x);
-	void setY(int y);
-	void setPosition(int x, int y);
+	bool hasCursor() const;
+
+	double getX() const;
+	double getY() const;
+	void getPosition(double &x, double &y) const;
+	void setX(double x);
+	void setY(double y);
+	void setPosition(double x, double y);
 	void setVisible(bool visible);
 	bool isDown(Button *buttonlist) const;
 	bool isVisible() const;
 	void setGrabbed(bool grab);
 	bool isGrabbed() const;
+	bool setRelativeMode(bool relative);
+	bool getRelativeMode() const;
 
 private:
 
-	Object::StrongRef<love::mouse::Cursor> curCursor;
+	StrongRef<love::mouse::Cursor> curCursor;
 
 	std::map<Cursor::SystemCursor, Cursor *> systemCursors;
 

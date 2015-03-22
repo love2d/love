@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -92,8 +92,8 @@ int w_setMode(lua_State *L)
 	}
 	else
 	{
-		// Default to "normal" fullscreen.
-		settings.fstype = Window::FULLSCREEN_TYPE_NORMAL;
+		// Default to desktop fullscreen mode.
+		settings.fstype = Window::FULLSCREEN_DESKTOP;
 	}
 	lua_pop(L, 1);
 
@@ -121,10 +121,6 @@ int w_setMode(lua_State *L)
 
 	// We don't explicitly set the refresh rate, it's "read-only".
 
-	// For backward-compatibility. TODO: remove!
-	int fsaa = luax_intflag(L, 3, settingName(Window::SETTING_FSAA), 0);
-	if (fsaa > settings.msaa) settings.msaa = fsaa;
-
 	luax_catchexcept(L,
 		[&](){ luax_pushboolean(L, instance()->setWindow(w, h, &settings)); }
 	);
@@ -142,7 +138,7 @@ int w_getMode(lua_State *L)
 
 	lua_newtable(L);
 
-	const char *fstypestr = "normal";
+	const char *fstypestr = "desktop";
 	Window::getConstant(settings.fstype, fstypestr);
 
 	lua_pushstring(L, fstypestr);
@@ -156,9 +152,6 @@ int w_getMode(lua_State *L)
 
 	lua_pushinteger(L, settings.msaa);
 	lua_setfield(L, -2, settingName(Window::SETTING_MSAA));
-
-	lua_pushinteger(L, settings.msaa);
-	lua_setfield(L, -2, settingName(Window::SETTING_FSAA)); // For backward-compatibility. TODO: remove!
 
 	luax_pushboolean(L, settings.resizable);
 	lua_setfield(L, -2, settingName(Window::SETTING_RESIZABLE));
@@ -203,7 +196,7 @@ int w_getFullscreenModes(lua_State *L)
 
 	std::vector<Window::WindowSize> modes = instance()->getFullscreenSizes(displayindex);
 
-	lua_createtable(L, modes.size(), 0);
+	lua_createtable(L, (int) modes.size(), 0);
 
 	for (size_t i = 0; i < modes.size(); i++)
 	{
@@ -229,14 +222,14 @@ int w_getFullscreenModes(lua_State *L)
 int w_setFullscreen(lua_State *L)
 {
 	bool fullscreen = luax_toboolean(L, 1);
-	Window::FullscreenType fstype = Window::FULLSCREEN_TYPE_MAX_ENUM;
+	Window::FullscreenType fstype = Window::FULLSCREEN_MAX_ENUM;
 
 	const char *typestr = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (typestr && !Window::getConstant(typestr, fstype))
 		return luaL_error(L, "Invalid fullscreen type: %s", typestr);
 
 	bool success = false;
-	if (fstype == Window::FULLSCREEN_TYPE_MAX_ENUM)
+	if (fstype == Window::FULLSCREEN_MAX_ENUM)
 		success = instance()->setFullscreen(fullscreen);
 	else
 		success = instance()->setFullscreen(fullscreen, fstype);
@@ -264,25 +257,6 @@ int w_isCreated(lua_State *L)
 {
 	luax_pushboolean(L, instance()->isCreated());
 	return 1;
-}
-
-int w_getWidth(lua_State *L)
-{
-	lua_pushinteger(L, instance()->getWidth());
-	return 1;
-}
-
-int w_getHeight(lua_State *L)
-{
-	lua_pushinteger(L, instance()->getHeight());
-	return 1;
-}
-
-int w_getDimensions(lua_State *L)
-{
-	lua_pushinteger(L, instance()->getWidth());
-	lua_pushinteger(L, instance()->getHeight());
-	return 2;
 }
 
 int w_getDesktopDimensions(lua_State *L)
@@ -318,7 +292,7 @@ int w_getPosition(lua_State *L)
 
 int w_setIcon(lua_State *L)
 {
-	image::ImageData *i = luax_checktype<image::ImageData>(L, 1, "ImageData", IMAGE_IMAGE_DATA_T);
+	image::ImageData *i = luax_checktype<image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
 	luax_pushboolean(L, instance()->setIcon(i));
 	return 1;
 }
@@ -326,10 +300,7 @@ int w_setIcon(lua_State *L)
 int w_getIcon(lua_State *L)
 {
 	image::ImageData *i = instance()->getIcon();
-	if (i)
-		luax_pushtype(L, "ImageData", IMAGE_IMAGE_DATA_T, i);
-	else
-		lua_pushnil(L);
+	luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i);
 	return 1;
 }
 
@@ -418,6 +389,12 @@ int w_minimize(lua_State* /*L*/)
 	return 0;
 }
 
+int w_maximize(lua_State *)
+{
+	instance()->maximize();
+	return 0;
+}
+
 int w_showMessageBox(lua_State *L)
 {
 	Window::MessageBoxData data = {};
@@ -437,7 +414,7 @@ int w_showMessageBox(lua_State *L)
 		// Array of button names.
 		for (size_t i = 0; i < numbuttons; i++)
 		{
-			lua_rawgeti(L, 3, i + 1);
+			lua_rawgeti(L, 3, (int) i + 1);
 			data.buttons.push_back(luax_checkstring(L, -1));
 			lua_pop(L, 1);
 		}
@@ -493,9 +470,6 @@ static const luaL_Reg functions[] =
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
 	{ "isCreated", w_isCreated },
-	{ "getWidth", w_getWidth },
-	{ "getHeight", w_getHeight },
-	{ "getDimensions", w_getDimensions },
 	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setPosition", w_setPosition },
 	{ "getPosition", w_getPosition },
@@ -510,6 +484,7 @@ static const luaL_Reg functions[] =
 	{ "toPixels", w_toPixels },
 	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },
+	{ "maximize", w_maximize },
 	{ "showMessageBox", w_showMessageBox },
 	{ 0, 0 }
 };
@@ -522,7 +497,7 @@ extern "C" int luaopen_love_window(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "window";
-	w.flags = MODULE_T;
+	w.type = MODULE_ID;
 	w.functions = functions;
 	w.types = 0;
 

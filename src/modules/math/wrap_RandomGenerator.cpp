@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -84,7 +84,7 @@ int luax_getrandom(lua_State *L, int startidx, double r)
 
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 {
-	return luax_checktype<RandomGenerator>(L, idx, "RandomGenerator", MATH_RANDOM_GENERATOR_T);
+	return luax_checktype<RandomGenerator>(L, idx, MATH_RANDOM_GENERATOR_ID);
 }
 
 int w_RandomGenerator_random(lua_State *L)
@@ -148,7 +148,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_randomgenerator(lua_State *L)
 {
-	return luax_register_type(L, "RandomGenerator", functions);
+	return luax_register_type(L, MATH_RANDOM_GENERATOR_ID, functions);
 }
 
 } // math

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -179,7 +179,6 @@ bool ImageData::getConstant(ImageData::Format in, const char  *&out)
 StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
 {
 	{"tga", ImageData::FORMAT_TGA},
-	{"bmp", ImageData::FORMAT_BMP},
 	{"jpg", ImageData::FORMAT_JPG},
 	{"png", ImageData::FORMAT_PNG},
 };

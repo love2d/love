@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,15 +18,37 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "common/config.h"
-
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include "common/utf8.h"
 #include "common/b64.h"
 
 #include "Filesystem.h"
+#include "File.h"
+
+// PhysFS
+#ifdef LOVE_APPLE_USE_FRAMEWORKS
+#include <physfs/physfs.h>
+#else
+#include <physfs.h>
+#endif
+
+// For great CWD. (Current Working Directory)
+// Using this instead of boost::filesystem which totally
+// cramped our style.
+#ifdef LOVE_WINDOWS
+#	include <windows.h>
+#	include <direct.h>
+#else
+#	include <sys/param.h>
+#	include <unistd.h>
+#endif
+
+#ifdef LOVE_IOS
+#	include "common/iOS.h"
+#endif
 
 namespace
 {
@@ -73,15 +95,15 @@ namespace physfs
 {
 
 Filesystem::Filesystem()
-	: initialized(false)
-	, fused(false)
+	: fused(false)
 	, fusedSet(false)
 {
+	requirePath = {"?.lua", "?/init.lua"};
 }
 
 Filesystem::~Filesystem()
 {
-	if (initialized)
+	if (PHYSFS_isInit())
 		PHYSFS_deinit();
 }
 
@@ -93,8 +115,14 @@ const char *Filesystem::getName() const
 void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
-		throw Exception(PHYSFS_getLastError());
-	initialized = true;
+		throw love::Exception("%s", PHYSFS_getLastError());
+
+	PHYSFS_Version version = {};
+	PHYSFS_getLinkedVersion(&version);
+
+	// FIXME: This is a workaround for a bug in PHYSFS_enumerateFiles in 2.1-alpha.
+	if (version.major == 2 && version.minor == 1)
+		PHYSFS_permitSymbolicLinks(1);
 }
 
 void Filesystem::setFused(bool fused)
@@ -114,7 +142,7 @@ bool Filesystem::isFused() const
 
 bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 {
-	if (!initialized)
+	if (!PHYSFS_isInit())
 		return false;
 
 	std::string old_save_path = save_path_full;
@@ -146,7 +174,7 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
-	PHYSFS_addToSearchPath(save_path_full.c_str(), appendToPath);
+	PHYSFS_mount(save_path_full.c_str(), nullptr, appendToPath);
 
 	// HACK: This forces setupWriteDirectory to be called the next time a file
 	// is opened for writing - otherwise it won't be called at all if it was
@@ -163,7 +191,7 @@ const char *Filesystem::getIdentity() const
 
 bool Filesystem::setSource(const char *source)
 {
-	if (!initialized)
+	if (!PHYSFS_isInit())
 		return false;
 
 	// Check whether directory is already set.
@@ -171,7 +199,7 @@ bool Filesystem::setSource(const char *source)
 		return false;
 
 	// Add the directory.
-	if (!PHYSFS_addToSearchPath(source, 1))
+	if (!PHYSFS_mount(source, nullptr, 1))
 		return false;
 
 	// Save the game source.
@@ -187,7 +215,7 @@ const char *Filesystem::getSource() const
 
 bool Filesystem::setupWriteDirectory()
 {
-	if (!initialized)
+	if (!PHYSFS_isInit())
 		return false;
 
 	// These must all be set.
@@ -232,7 +260,7 @@ bool Filesystem::setupWriteDirectory()
 		return false;
 
 	// Add the directory. (Will not be readded if already present).
-	if (!PHYSFS_addToSearchPath(save_path_full.c_str(), 0))
+	if (!PHYSFS_mount(save_path_full.c_str(), nullptr, 0))
 	{
 		PHYSFS_setWriteDir(nullptr); // Clear the write directory in case of error.
 		return false;
@@ -243,13 +271,18 @@ bool Filesystem::setupWriteDirectory()
 
 bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendToPath)
 {
-	if (!initialized || !archive)
+	if (!PHYSFS_isInit() || !archive)
 		return false;
 
 	std::string realPath;
 	std::string sourceBase = getSourceBaseDirectory();
 
-	if (isFused() && sourceBase.compare(archive) == 0)
+	// Check whether the given archive path is in the list of allowed full paths.
+	auto it = std::find(allowedMountPaths.begin(), allowedMountPaths.end(), archive);
+
+	if (it != allowedMountPaths.end())
+		realPath = *it;
+	else if (isFused() && sourceBase.compare(archive) == 0)
 	{
 		// Special case: if the game is fused and the archive is the source's
 		// base directory, mount it even though it's outside of the save dir.
@@ -284,13 +317,18 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendT
 
 bool Filesystem::unmount(const char *archive)
 {
-	if (!initialized || !archive)
+	if (!PHYSFS_isInit() || !archive)
 		return false;
 
 	std::string realPath;
 	std::string sourceBase = getSourceBaseDirectory();
 
-	if (isFused() && sourceBase.compare(archive) == 0)
+	// Check whether the given archive path is in the list of allowed full paths.
+	auto it = std::find(allowedMountPaths.begin(), allowedMountPaths.end(), archive);
+
+	if (it != allowedMountPaths.end())
+		realPath = *it;
+	else if (isFused() && sourceBase.compare(archive) == 0)
 	{
 		// Special case: if the game is fused and the archive is the source's
 		// base directory, unmount it even though it's outside of the save dir.
@@ -318,7 +356,7 @@ bool Filesystem::unmount(const char *archive)
 	return PHYSFS_removeFromSearchPath(realPath.c_str());
 }
 
-File *Filesystem::newFile(const char *filename) const
+love::filesystem::File *Filesystem::newFile(const char *filename) const
 {
 	return new File(filename);
 }
@@ -335,7 +373,7 @@ FileData *Filesystem::newFileData(void *data, unsigned int size, const char *fil
 
 FileData *Filesystem::newFileData(const char *b64, const char *filename) const
 {
-	int size = strlen(b64);
+	int size = (int) strlen(b64);
 	int outsize = 0;
 	char *dst = b64_decode(b64, size, outsize);
 	FileData *fd = new FileData(outsize, std::string(filename));
@@ -388,6 +426,8 @@ std::string Filesystem::getAppdataDirectory()
 		std::string udir = getUserDirectory();
 		udir.append("/Library/Application Support");
 		appdata = normalize(udir);
+#elif defined(LOVE_IOS)
+		appdata = normalize(love::ios::getAppdataDirectory());
 #elif defined(LOVE_LINUX)
 		char *xdgdatahome = getenv("XDG_DATA_HOME");
 		if (!xdgdatahome)
@@ -443,19 +483,14 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	return std::string(dir);
 }
 
-bool Filesystem::exists(const char *file) const
+bool Filesystem::isDirectory(const char *dir) const
 {
-	return PHYSFS_exists(file);
-}
-
-bool Filesystem::isDirectory(const char *file) const
-{
-	return PHYSFS_isDirectory(file);
+	return PHYSFS_isDirectory(dir);
 }
 
 bool Filesystem::isFile(const char *file) const
 {
-	return exists(file) && !isDirectory(file);
+	return PHYSFS_exists(file) && !PHYSFS_isDirectory(file);
 }
 
 bool Filesystem::createDirectory(const char *dir)
@@ -478,11 +513,11 @@ bool Filesystem::remove(const char *file)
 	return true;
 }
 
-Data *Filesystem::read(const char *filename, int64 size) const
+FileData *Filesystem::read(const char *filename, int64 size) const
 {
 	File file(filename);
 
-	file.open(File::READ);
+	file.open(File::MODE_READ);
 
 	// close() is called in the File destructor.
 	return file.read(size);
@@ -492,7 +527,7 @@ void Filesystem::write(const char *filename, const void *data, int64 size) const
 {
 	File file(filename);
 
-	file.open(File::WRITE);
+	file.open(File::MODE_WRITE);
 
 	// close() is called in the File destructor.
 	if (!file.write(data, size))
@@ -503,7 +538,7 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 {
 	File file(filename);
 
-	file.open(File::APPEND);
+	file.open(File::MODE_APPEND);
 
 	// close() is called in the File destructor.
 	if (!file.write(data, size))
@@ -542,108 +577,6 @@ int Filesystem::getDirectoryItems(lua_State *L)
 	return 1;
 }
 
-int Filesystem::lines_i(lua_State *L)
-{
-	const int bufsize = 1024;
-	char buf[bufsize];
-	int linesize = 0;
-	bool newline = false;
-
-	File *file = luax_checktype<File>(L, lua_upvalueindex(1), "File", FILESYSTEM_FILE_T);
-
-	// Only accept read mode at this point.
-	if (file->getMode() != File::READ)
-		return luaL_error(L, "File needs to stay in read mode.");
-
-	int64 pos = file->tell();
-	int64 userpos = -1;
-
-	if (lua_isnoneornil(L, lua_upvalueindex(2)) == 0)
-	{
-		// User may have changed the file position.
-		userpos = pos;
-		pos = (int64) lua_tonumber(L, lua_upvalueindex(2));
-		if (userpos != pos)
-			file->seek(pos);
-	}
-
-	while (!newline && !file->eof())
-	{
-		// This 64-bit to 32-bit integer cast should be safe as it never exceeds bufsize.
-		int read = (int) file->read(buf, bufsize);
-		if (read < 0)
-			return luaL_error(L, "Could not read from file.");
-
-		linesize += read;
-
-		for (int i = 0; i < read; i++)
-		{
-			if (buf[i] == '\n')
-			{
-				linesize -= read - i;
-				newline = true;
-				break;
-			}
-		}
-	}
-
-	if (newline || (file->eof() && linesize > 0))
-	{
-		if (linesize < bufsize)
-		{
-			// We have the line in the buffer on the stack. No 'new' and 'read' needed.
-			lua_pushlstring(L, buf, linesize > 0 && buf[linesize - 1] == '\r' ? linesize - 1 : linesize);
-			if (userpos < 0)
-				file->seek(pos + linesize + 1);
-		}
-		else
-		{
-			char *str = 0;
-			try
-			{
-				str = new char[linesize + 1];
-			}
-			catch(std::bad_alloc &)
-			{
-				// Can't lua_error (longjmp) in exception handlers.
-			}
-
-			if (!str)
-				return luaL_error(L, "Out of memory.");
-
-			file->seek(pos);
-
-			// Read the \n anyway and save us a call to seek.
-			if (file->read(str, linesize + 1) == -1)
-			{
-				delete [] str;
-				return luaL_error(L, "Could not read from file.");
-			}
-
-			lua_pushlstring(L, str, str[linesize - 1] == '\r' ? linesize - 1 : linesize);
-			delete [] str;
-		}
-
-		if (userpos >= 0)
-		{
-			// Save new position in upvalue.
-			lua_pushnumber(L, (lua_Number)(pos + linesize + 1));
-			lua_replace(L, lua_upvalueindex(2));
-			file->seek(userpos);
-		}
-
-		return 1;
-	}
-
-	// EOF reached.
-	if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(3)))
-		file->seek(userpos);
-	else
-		file->close();
-
-	return 0;
-}
-
 int64 Filesystem::getLastModified(const char *filename) const
 {
 	PHYSFS_sint64 time = PHYSFS_getLastModTime(filename);
@@ -674,6 +607,17 @@ bool Filesystem::areSymlinksEnabled() const
 bool Filesystem::isSymlink(const char *filename) const
 {
 	return PHYSFS_isSymbolicLink(filename) != 0;
+}
+
+std::vector<std::string> &Filesystem::getRequirePath()
+{
+	return requirePath;
+}
+
+void Filesystem::allowMountingForPath(const std::string &path)
+{
+	if (std::find(allowedMountPaths.begin(), allowedMountPaths.end(), path) == allowedMountPaths.end())
+		allowedMountPaths.push_back(path);
 }
 
 } // physfs

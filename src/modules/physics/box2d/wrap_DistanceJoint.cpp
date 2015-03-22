@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ namespace box2d
 
 DistanceJoint *luax_checkdistancejoint(lua_State *L, int idx)
 {
-	DistanceJoint *j = luax_checktype<DistanceJoint>(L, idx, "DistanceJoint", PHYSICS_DISTANCE_JOINT_T);
+	DistanceJoint *j = luax_checktype<DistanceJoint>(L, idx, PHYSICS_DISTANCE_JOINT_ID);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -98,12 +98,13 @@ static const luaL_Reg functions[] =
 	{ "setUserData", w_Joint_setUserData },
 	{ "getUserData", w_Joint_getUserData },
 	{ "destroy", w_Joint_destroy },
+	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_distancejoint(lua_State *L)
 {
-	return luax_register_type(L, "DistanceJoint", functions);
+	return luax_register_type(L, PHYSICS_DISTANCE_JOINT_ID, functions);
 }
 
 } // box2d

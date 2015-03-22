@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,8 @@
 #include "OpenGL.h"
 
 // LOVE
-#include "VertexBuffer.h"
-#include "Texture.h"
+#include "GLBuffer.h"
+#include "graphics/Texture.h"
 
 // C++
 #include <algorithm>
@@ -47,7 +47,7 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 	, next(0)
 	, color(0)
 	, array_buf(nullptr)
-	, element_buf(size)
+	, quad_indices(size)
 	, buffer_used_offset(0)
 	, buffer_used_size(0)
 {
@@ -73,7 +73,7 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 
 	try
 	{
-		array_buf = VertexBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
+		array_buf = GLBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
 	}
 	catch (love::Exception &)
 	{
@@ -135,7 +135,7 @@ void SpriteBatch::clear()
 
 void SpriteBatch::flush()
 {
-	VertexBuffer::Bind bind(*array_buf);
+	GLBuffer::Bind bind(*array_buf);
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
 
 	buffer_used_offset = buffer_used_size = 0;
@@ -183,26 +183,26 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	// Map (lock) the old VertexBuffer to get a pointer to its data.
+	// Map the old GLBuffer to get a pointer to its data.
 	void *old_data = nullptr;
 	{
-		VertexBuffer::Bind bind(*array_buf);
+		GLBuffer::Bind bind(*array_buf);
 		old_data = array_buf->map();
 	}
 
 	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
-	VertexBuffer *new_array_buf = nullptr;
+	GLBuffer *new_array_buf = nullptr;
 
 	try
 	{
-		new_array_buf = VertexBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
+		new_array_buf = GLBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
 
-		// Copy as much of the old data into the new VertexBuffer as can fit.
-		VertexBuffer::Bind bind(*new_array_buf);
+		// Copy as much of the old data into the new GLBuffer as can fit.
+		GLBuffer::Bind bind(*new_array_buf);
 		void *new_data = new_array_buf->map();
 		memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
 
-		element_buf = VertexIndex(newsize);
+		quad_indices = VertexIndex(newsize);
 	}
 	catch (love::Exception &)
 	{
@@ -210,7 +210,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		throw;
 	}
 
-	// We don't need to unmap the old VertexBuffer since we're deleting it.
+	// We don't need to unmap the old GLBuffer since we're deleting it.
 	delete array_buf;
 
 	array_buf = new_array_buf;
@@ -226,22 +226,24 @@ int SpriteBatch::getBufferSize() const
 
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	const size_t pos_offset = offsetof(Vertex, x);
+	const size_t pos_offset   = offsetof(Vertex, x);
 	const size_t texel_offset = offsetof(Vertex, s);
 	const size_t color_offset = offsetof(Vertex, r);
 
 	if (next == 0)
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
+
 	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	texture->predraw();
+	gl.bindTexture(*(GLuint *) texture->getHandle());
 
-	VertexBuffer::Bind array_bind(*array_buf);
-	VertexBuffer::Bind element_bind(*element_buf.getVertexBuffer());
+	GLBuffer::Bind array_bind(*array_buf);
+	GLBuffer::Bind element_bind(*quad_indices.getBuffer());
 
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
@@ -252,29 +254,27 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	// Apply per-sprite color, if a color is set.
 	if (color)
 	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), array_buf->getPointer(color_offset));
+		glEnableVertexAttribArray(ATTRIB_COLOR);
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), array_buf->getPointer(color_offset));
 	}
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(pos_offset));
+	glEnableVertexAttribArray(ATTRIB_POS);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(pos_offset));
 
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), array_buf->getPointer(texel_offset));
+	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
 
 	gl.prepareDraw();
-	gl.drawElements(GL_TRIANGLES, element_buf.getIndexCount(next), element_buf.getType(), element_buf.getPointer(0));
+	gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(next), quad_indices.getType(), quad_indices.getPointer(0));
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
+	glDisableVertexAttribArray(ATTRIB_POS);
 
 	if (color)
 	{
-		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableVertexAttribArray(ATTRIB_COLOR);
 		gl.setColor(curcolor);
 	}
-
-	texture->postdraw();
 }
 
 void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)
@@ -288,7 +288,7 @@ void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)
 	if (color)
 		setColorv(sprite, *color);
 
-	VertexBuffer::Bind bind(*array_buf);
+	GLBuffer::Bind bind(*array_buf);
 
 	// Always keep the VBO mapped when adding data for now (it'll be unmapped
 	// on draw.)
@@ -324,8 +324,8 @@ bool SpriteBatch::getConstant(UsageHint in, const char *&out)
 StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM>::Entry SpriteBatch::usageHintEntries[] =
 {
 	{"dynamic", SpriteBatch::USAGE_DYNAMIC},
-	{"static", SpriteBatch::USAGE_STATIC},
-	{"stream", SpriteBatch::USAGE_STREAM},
+	{"static",  SpriteBatch::USAGE_STATIC},
+	{"stream",  SpriteBatch::USAGE_STREAM},
 };
 
 StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM> SpriteBatch::usageHints(usageHintEntries, sizeof(usageHintEntries));

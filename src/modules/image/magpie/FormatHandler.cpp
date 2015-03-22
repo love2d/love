@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -55,6 +55,11 @@ FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*
 FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::Format /*format*/)
 {
 	throw love::Exception("Image encoding is not implemented for this format backend.");
+}
+
+void FormatHandler::free(unsigned char *mem)
+{
+	delete[] mem;
 }
 
 } // magpie

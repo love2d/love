@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,7 @@
 // STD
 #include <iostream>
 #include <float.h>
+#include <algorithm>
 
 namespace love
 {
@@ -32,6 +33,36 @@ namespace audio
 {
 namespace openal
 {
+
+#ifdef LOVE_IOS
+// OpenAL on iOS barfs if the max distance is +inf.
+static const float MAX_ATTENUATION_DISTANCE = 1000000.0f;
+#else
+static const float MAX_ATTENUATION_DISTANCE = FLT_MAX;
+#endif
+
+class InvalidFormatException : public love::Exception
+{
+public:
+
+	InvalidFormatException(int channels, int bitdepth)
+		: Exception("%d-channel Sources with %d bits per sample are not supported.", channels, bitdepth)
+	{
+	}
+
+};
+
+class SpatialSupportException : public love::Exception
+{
+public:
+
+	SpatialSupportException()
+		: Exception("This spatial audio functionality is only available for mono Sources. \
+Ensure the Source is not multi-channel before calling this function.")
+	{
+	}
+
+};
 
 StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
 {
@@ -58,7 +89,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, maxVolume(1.0f)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
-	, maxDistance(FLT_MAX)
+	, maxDistance(MAX_ATTENUATION_DISTANCE)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
@@ -68,7 +99,10 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, toLoop(0)
 {
 	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
-	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), soundData->getSize(), soundData->getSampleRate()));
+	if (fmt == 0)
+		throw InvalidFormatException(soundData->getChannels(), soundData->getBitDepth());
+
+	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), (ALsizei) soundData->getSize(), soundData->getSampleRate()));
 
 	// The buffer has a +2 retain count right now, but we want it to have +1.
 	staticBuffer->release();
@@ -94,7 +128,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, maxVolume(1.0f)
 	, referenceDistance(1.0f)
 	, rolloffFactor(1.0f)
-	, maxDistance(FLT_MAX)
+	, maxDistance(MAX_ATTENUATION_DISTANCE)
 	, cone()
 	, offsetSamples(0)
 	, offsetSeconds(0)
@@ -103,6 +137,9 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, decoder(decoder)
 	, toLoop(0)
 {
+	if (getFormat(decoder->getChannels(), decoder->getBitDepth()) == 0)
+		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
+
 	alGenBuffers(MAX_BUFFERS, streamBuffers);
 
 	float z[3] = {0, 0, 0};
@@ -228,13 +265,14 @@ bool Source::isPaused() const
 
 bool Source::isFinished() const
 {
-	return type == TYPE_STATIC ? isStopped() : isStopped() && !isLooping() && decoder->isFinished();
+	return type == TYPE_STATIC ? isStopped() : (isStopped() && !isLooping() && decoder->isFinished());
 }
 
 bool Source::update()
 {
 	if (!valid)
 		return false;
+
 	if (type == TYPE_STATIC)
 	{
 		// Looping mode could have changed.
@@ -273,8 +311,10 @@ bool Source::update()
 			streamAtomic(buffer, decoder.get());
 			alSourceQueueBuffers(source, 1, &buffer);
 		}
+
 		return true;
 	}
+
 	return false;
 }
 
@@ -302,9 +342,7 @@ float Source::getPitch() const
 void Source::setVolume(float volume)
 {
 	if (valid)
-	{
 		alSourcef(source, AL_GAIN, volume);
-	}
 
 	this->volume = volume;
 }
@@ -337,9 +375,7 @@ void Source::seekAtomic(float offset, void *unit)
 				decoder->seek(offset);
 			}
 			else
-			{
 				alSourcef(source, AL_SAMPLE_OFFSET, offset);
-			}
 			break;
 		case Source::UNIT_SECONDS:
 		default:
@@ -350,9 +386,7 @@ void Source::seekAtomic(float offset, void *unit)
 				offsetSamples = offset * decoder->getSampleRate();
 			}
 			else
-			{
 				alSourcef(source, AL_SEC_OFFSET, offset);
-			}
 			break;
 		}
 		if (type == TYPE_STREAM)
@@ -406,6 +440,9 @@ float Source::tell(Source::Unit unit)
 
 void Source::setPosition(float *v)
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 		alSourcefv(source, AL_POSITION, v);
 
@@ -414,6 +451,9 @@ void Source::setPosition(float *v)
 
 void Source::getPosition(float *v) const
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 		alGetSourcefv(source, AL_POSITION, v);
 	else
@@ -422,6 +462,9 @@ void Source::getPosition(float *v) const
 
 void Source::setVelocity(float *v)
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 		alSourcefv(source, AL_VELOCITY, v);
 
@@ -430,6 +473,9 @@ void Source::setVelocity(float *v)
 
 void Source::getVelocity(float *v) const
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 		alGetSourcefv(source, AL_VELOCITY, v);
 	else
@@ -438,6 +484,9 @@ void Source::getVelocity(float *v) const
 
 void Source::setDirection(float *v)
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 		alSourcefv(source, AL_DIRECTION, v);
 	else
@@ -446,6 +495,9 @@ void Source::setDirection(float *v)
 
 void Source::getDirection(float *v) const
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 		alGetSourcefv(source, AL_DIRECTION, v);
 	else
@@ -454,8 +506,11 @@ void Source::getDirection(float *v) const
 
 void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 {
-	cone.innerAngle = (int) LOVE_TODEG(innerAngle);
-	cone.outerAngle = (int) LOVE_TODEG(outerAngle);
+	if (channels > 1)
+		throw SpatialSupportException();
+
+	cone.innerAngle  = (int) LOVE_TODEG(innerAngle);
+	cone.outerAngle  = (int) LOVE_TODEG(outerAngle);
 	cone.outerVolume = outerVolume;
 
 	if (valid)
@@ -468,13 +523,19 @@ void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 
 void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
 {
-	innerAngle = LOVE_TORAD(cone.innerAngle);
-	outerAngle = LOVE_TORAD(cone.outerAngle);
+	if (channels > 1)
+		throw SpatialSupportException();
+
+	innerAngle  = LOVE_TORAD(cone.innerAngle);
+	outerAngle  = LOVE_TORAD(cone.outerAngle);
 	outerVolume = cone.outerVolume;
 }
 
 void Source::setRelative(bool enable)
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 		alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
 
@@ -483,15 +544,18 @@ void Source::setRelative(bool enable)
 
 bool Source::isRelative() const
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	return relative;
 }
 
-void Source::setLooping(bool looping)
+void Source::setLooping(bool enable)
 {
 	if (valid && type == TYPE_STATIC)
-		alSourcei(source, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
+		alSourcei(source, AL_LOOPING, enable ? AL_TRUE : AL_FALSE);
 
-	this->looping = looping;
+	looping = enable;
 }
 
 bool Source::isLooping() const
@@ -546,9 +610,7 @@ void Source::stopAtomic()
 	if (valid)
 	{
 		if (type == TYPE_STATIC)
-		{
 			alSourceStop(source);
-		}
 		else if (type == TYPE_STREAM)
 		{
 			alSourceStop(source);
@@ -561,8 +623,10 @@ void Source::stopAtomic()
 				alSourceUnqueueBuffers(source, 1, &buffer);
 			}
 		}
+
 		alSourcei(source, AL_BUFFER, AL_NONE);
 	}
+
 	toLoop = 0;
 	valid = false;
 }
@@ -627,7 +691,7 @@ void Source::reset()
 	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
-	alSourcei(source, AL_LOOPING, isStatic() && isLooping() ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_LOOPING, (type == TYPE_STATIC) && isLooping() ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
@@ -651,8 +715,22 @@ ALenum Source::getFormat(int channels, int bitDepth) const
 		return AL_FORMAT_STEREO8;
 	else if (channels == 2 && bitDepth == 16)
 		return AL_FORMAT_STEREO16;
-	else
-		return 0;
+
+#ifdef AL_EXT_MCFORMATS
+	if (alIsExtensionPresent("AL_EXT_MCFORMATS"))
+	{
+		if (channels == 6 && bitDepth == 8)
+			return AL_FORMAT_51CHN8;
+		else if (channels == 6 && bitDepth == 16)
+			return AL_FORMAT_51CHN16;
+		else if (channels == 8 && bitDepth == 8)
+			return AL_FORMAT_71CHN8;
+		else if (channels == 8 && bitDepth == 16)
+			return AL_FORMAT_71CHN16;
+	}
+#endif
+
+	return 0;
 }
 
 int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
@@ -690,19 +768,12 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 	return decoded;
 }
 
-bool Source::isStatic() const
-{
-	return (type == TYPE_STATIC);
-}
-
 void Source::setMinVolume(float volume)
 {
 	if (valid)
-	{
 		alSourcef(source, AL_MIN_GAIN, volume);
-	}
 
-	this->minVolume = volume;
+	minVolume = volume;
 }
 
 float Source::getMinVolume() const
@@ -721,11 +792,9 @@ float Source::getMinVolume() const
 void Source::setMaxVolume(float volume)
 {
 	if (valid)
-	{
 		alSourcef(source, AL_MAX_GAIN, volume);
-	}
 
-	this->maxVolume = volume;
+	maxVolume = volume;
 }
 
 float Source::getMaxVolume() const
@@ -738,21 +807,25 @@ float Source::getMaxVolume() const
 	}
 
 	// In case the Source isn't playing.
-	return this->maxVolume;
+	return maxVolume;
 }
 
 void Source::setReferenceDistance(float distance)
 {
-	if (valid)
-	{
-		alSourcef(source, AL_REFERENCE_DISTANCE, distance);
-	}
+	if (channels > 1)
+		throw SpatialSupportException();
 
-	this->referenceDistance = distance;
+	if (valid)
+		alSourcef(source, AL_REFERENCE_DISTANCE, distance);
+
+	referenceDistance = distance;
 }
 
 float Source::getReferenceDistance() const
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 	{
 		ALfloat f;
@@ -761,21 +834,25 @@ float Source::getReferenceDistance() const
 	}
 
 	// In case the Source isn't playing.
-	return this->referenceDistance;
+	return referenceDistance;
 }
 
 void Source::setRolloffFactor(float factor)
 {
-	if (valid)
-	{
-		alSourcef(source, AL_ROLLOFF_FACTOR, factor);
-	}
+	if (channels > 1)
+		throw SpatialSupportException();
 
-	this->rolloffFactor = factor;
+	if (valid)
+		alSourcef(source, AL_ROLLOFF_FACTOR, factor);
+
+	rolloffFactor = factor;
 }
 
 float Source::getRolloffFactor() const
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 	{
 		ALfloat f;
@@ -784,21 +861,27 @@ float Source::getRolloffFactor() const
 	}
 
 	// In case the Source isn't playing.
-	return this->rolloffFactor;
+	return rolloffFactor;
 }
 
 void Source::setMaxDistance(float distance)
 {
-	if (valid)
-	{
-		alSourcef(source, AL_MAX_DISTANCE, distance);
-	}
+	if (channels > 1)
+		throw SpatialSupportException();
 
-	this->maxDistance = distance;
+	distance = std::min(distance, MAX_ATTENUATION_DISTANCE);
+
+	if (valid)
+		alSourcef(source, AL_MAX_DISTANCE, distance);
+
+	maxDistance = distance;
 }
 
 float Source::getMaxDistance() const
 {
+	if (channels > 1)
+		throw SpatialSupportException();
+
 	if (valid)
 	{
 		ALfloat f;
@@ -807,7 +890,7 @@ float Source::getMaxDistance() const
 	}
 
 	// In case the Source isn't playing.
-	return this->maxDistance;
+	return maxDistance;
 }
 
 int Source::getChannels() const

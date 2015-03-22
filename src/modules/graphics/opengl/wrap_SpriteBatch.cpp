@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 #include "wrap_SpriteBatch.h"
 #include "Image.h"
 #include "Canvas.h"
-#include "wrap_Texture.h"
+#include "graphics/wrap_Texture.h"
 
 // C++
 #include <typeinfo>
@@ -36,7 +36,7 @@ namespace opengl
 
 SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 {
-	return luax_checktype<SpriteBatch>(L, idx, "SpriteBatch", GRAPHICS_SPRITE_BATCH_T);
+	return luax_checktype<SpriteBatch>(L, idx, GRAPHICS_SPRITE_BATCH_ID);
 }
 
 int w_SpriteBatch_add(lua_State *L)
@@ -45,9 +45,9 @@ int w_SpriteBatch_add(lua_State *L)
 	Quad *quad = nullptr;
 	int startidx = 2;
 
-	if (luax_istype(L, 2, GRAPHICS_QUAD_T))
+	if (luax_istype(L, 2, GRAPHICS_QUAD_ID))
 	{
-		quad = luax_totype<Quad>(L, 2, "Quad", GRAPHICS_QUAD_T);
+		quad = luax_totype<Quad>(L, 2, GRAPHICS_QUAD_ID);
 		startidx = 3;
 	}
 	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
@@ -78,14 +78,14 @@ int w_SpriteBatch_add(lua_State *L)
 int w_SpriteBatch_set(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int id = luaL_checkinteger(L, 2);
+	int id = luaL_checkint(L, 2);
 
 	Quad *quad = nullptr;
 	int startidx = 3;
 
-	if (luax_istype(L, 3, GRAPHICS_QUAD_T))
+	if (luax_istype(L, 3, GRAPHICS_QUAD_ID))
 	{
-		quad = luax_totype<Quad>(L, 3, "Quad", GRAPHICS_QUAD_T);
+		quad = luax_totype<Quad>(L, 3, GRAPHICS_QUAD_ID);
 		startidx = 4;
 	}
 	else if (lua_isnil(L, 3) && !lua_isnoneornil(L, 4))
@@ -118,12 +118,6 @@ int w_SpriteBatch_clear(lua_State *L)
 	return 0;
 }
 
-int w_SpriteBatch_bind(lua_State* /*L*/)
-{
-	// No-op (deprecated.)
-	return 0;
-}
-
 int w_SpriteBatch_flush(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
@@ -146,9 +140,9 @@ int w_SpriteBatch_getTexture(lua_State *L)
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
-		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+		luax_pushtype(L, GRAPHICS_IMAGE_ID, tex);
 	else if (typeid(*tex) == typeid(Canvas))
-		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+		luax_pushtype(L, GRAPHICS_CANVAS_ID, tex);
 	else
 		return luaL_error(L, "Unable to determine texture type.");
 
@@ -242,21 +236,12 @@ static const luaL_Reg functions[] =
 	{ "getCount", w_SpriteBatch_getCount },
 	{ "setBufferSize", w_SpriteBatch_setBufferSize },
 	{ "getBufferSize", w_SpriteBatch_getBufferSize },
-
-	// Deprecated since 0.9.1.
-	{ "setImage", w_SpriteBatch_setTexture },
-	{ "getImage", w_SpriteBatch_getTexture },
-
-	// Deprecated since 0.9.2.
-	{ "bind", w_SpriteBatch_bind },
-	{ "unbind", w_SpriteBatch_flush },
-
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_spritebatch(lua_State *L)
 {
-	return luax_register_type(L, "SpriteBatch", functions);
+	return luax_register_type(L, GRAPHICS_SPRITE_BATCH_ID, functions);
 }
 
 } // opengl

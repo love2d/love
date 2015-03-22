@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,7 +39,7 @@ namespace font
 class ImageRasterizer : public Rasterizer
 {
 public:
-	ImageRasterizer(love::image::ImageData *imageData, uint32 *glyphs, int numglyphs);
+	ImageRasterizer(love::image::ImageData *imageData, uint32 *glyphs, int numglyphs, int extraspacing);
 	virtual ~ImageRasterizer();
 
 	// Implement Rasterizer
@@ -49,11 +49,19 @@ public:
 	virtual bool hasGlyph(uint32 glyph) const;
 
 private:
+
+	// Information about a glyph in the ImageData
+	struct ImageGlyphData
+	{
+		int x;
+		int width;
+	};
+
 	// Load all the glyph positions into memory
 	void load();
 
 	// The image data
-	Object::StrongRef<love::image::ImageData> imageData;
+	StrongRef<love::image::ImageData> imageData;
 
 	// The glyphs in the font
 	uint32 *glyphs;
@@ -61,13 +69,7 @@ private:
 	// Number of glyphs in the font
 	int numglyphs;
 
-	// Information about a glyph in the ImageData
-	struct ImageGlyphData
-	{
-		int x;
-		int width;
-		int spacing;
-	};
+	int extraSpacing;
 
 	std::map<uint32, ImageGlyphData> imageGlyphs;
 

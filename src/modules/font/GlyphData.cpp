@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -168,7 +168,7 @@ bool GlyphData::getConstant(GlyphData::Format in, const char *&out)
 
 StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM>::Entry GlyphData::formatEntries[] =
 {
-	{"luminance alpha", GlyphData::FORMAT_LUMINANCE_ALPHA},
+	{"luminancealpha", GlyphData::FORMAT_LUMINANCE_ALPHA},
 	{"rgba", GlyphData::FORMAT_RGBA},
 };
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,17 +32,18 @@
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 // Forward declarations.
 class Texture;
+
+namespace opengl
+{
 
 class SpriteBatch : public Drawable
 {
@@ -124,7 +125,7 @@ private:
 	 */
 	void setColorv(Vertex *v, const Color &color);
 
-	Object::StrongRef<Texture> texture;
+	StrongRef<Texture> texture;
 
 	// Max number of sprites in the batch.
 	int size;
@@ -136,8 +137,8 @@ private:
 	// added sprite.
 	Color *color;
 
-	VertexBuffer *array_buf;
-	VertexIndex element_buf;
+	GLBuffer *array_buf;
+	VertexIndex quad_indices;
 
 	// The portion of the vertex buffer that's been modified while mapped.
 	size_t buffer_used_offset;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,10 @@
 #	include "Mpg123Decoder.h"
 #endif // LOVE_NOMPG123
 
+#ifdef LOVE_SUPPORT_COREAUDIO
+#	include "CoreAudioDecoder.h"
+#endif
+
 namespace love
 {
 namespace sound
@@ -65,8 +69,12 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	sound::Decoder *decoder = 0;
 
 	// Find a suitable decoder here, and return it.
-	if (ModPlugDecoder::accepts(ext))
+	if (false)
+		/* nothing */;
+#ifndef LOVE_NO_MODPLUG
+	else if (ModPlugDecoder::accepts(ext))
 		decoder = new ModPlugDecoder(data, ext, bufferSize);
+#endif // LOVE_NO_MODPLUG
 #ifndef LOVE_NOMPG123
 	else if (Mpg123Decoder::accepts(ext))
 		decoder = new Mpg123Decoder(data, ext, bufferSize);
@@ -77,6 +85,10 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	else if (GmeDecoder::accepts(ext))
 		decoder = new GmeDecoder(data, ext, bufferSize);
 #endif // LOVE_SUPPORT_GME
+#ifdef LOVE_SUPPORT_COREAUDIO
+	else if (CoreAudioDecoder::accepts(ext))
+		decoder = new CoreAudioDecoder(data, ext, bufferSize);
+#endif
 	else if (WaveDecoder::accepts(ext))
 		decoder = new WaveDecoder(data, ext, bufferSize);
 	/*else if (FLACDecoder::accepts(ext))

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,8 +27,8 @@
 #include "common/math.h"
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
-#include "Texture.h"
-#include "VertexBuffer.h"
+#include "graphics/Texture.h"
+#include "GLBuffer.h"
 
 // C++
 #include <vector>
@@ -165,11 +165,11 @@ private:
 	size_t getGLDataTypeSize(GLenum datatype) const;
 
 	// Vertex buffer.
-	VertexBuffer *vbo;
+	GLBuffer *vbo;
 	size_t vertex_count;
 
 	// Element (vertex index) buffer, for the vertex map.
-	VertexBuffer *ibo;
+	GLBuffer *ibo;
 	size_t element_count;
 	GLenum element_data_type;
 
@@ -178,7 +178,7 @@ private:
 	int range_min;
 	int range_max;
 
-	Object::StrongRef<Texture> texture;
+	StrongRef<Texture> texture;
 
 	// Whether the per-vertex colors are used when drawing.
 	bool colors_enabled;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,16 +36,18 @@ class Mouse : public Module
 {
 public:
 
+	// FIXME: We should probably just use button numbers.
 	enum Button
 	{
-		BUTTON_INVALID,
+		BUTTON_INVALID = 0,
 		BUTTON_LEFT,
 		BUTTON_MIDDLE,
 		BUTTON_RIGHT,
 		BUTTON_X1,
 		BUTTON_X2,
-		BUTTON_WHEELUP,
-		BUTTON_WHEELDOWN,
+		BUTTON_X3,
+		BUTTON_X4,
+		BUTTON_X5,
 		BUTTON_MAX_ENUM
 	};
 
@@ -62,17 +64,21 @@ public:
 
 	virtual Cursor *getCursor() const = 0;
 
-	virtual int getX() const = 0;
-	virtual int getY() const = 0;
-	virtual void getPosition(int &x, int &y) const = 0;
-	virtual void setX(int x) = 0;
-	virtual void setY(int y) = 0;
-	virtual void setPosition(int x, int y) = 0;
+	virtual bool hasCursor() const = 0;
+
+	virtual double getX() const = 0;
+	virtual double getY() const = 0;
+	virtual void getPosition(double &x, double &y) const = 0;
+	virtual void setX(double x) = 0;
+	virtual void setY(double y) = 0;
+	virtual void setPosition(double x, double y) = 0;
 	virtual void setVisible(bool visible) = 0;
 	virtual bool isDown(Button *buttonlist) const = 0;
 	virtual bool isVisible() const = 0;
 	virtual void setGrabbed(bool grab) = 0;
 	virtual bool isGrabbed() const = 0;
+	virtual bool setRelativeMode(bool relative) = 0;
+	virtual bool getRelativeMode() const = 0;
 
 	static bool getConstant(const char *in, Button &out);
 	static bool getConstant(Button in, const char  *&out);

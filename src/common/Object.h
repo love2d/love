@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,8 @@
 #ifndef LOVE_OBJECT_H
 #define LOVE_OBJECT_H
 
+#include <atomic>
+
 namespace love
 {
 
@@ -40,6 +42,7 @@ public:
 	 * Constructor. Sets reference count to one.
 	 **/
 	Object();
+	Object(const Object &other);
 
 	/**
 	 * Destructor.
@@ -65,99 +68,72 @@ public:
 	 **/
 	virtual void release();
 
-	/**
-	 * Meant to be used as a temporary object. Facilitates safer and cleaner
-	 * code to release objects by doing so when the AutoRelease object is
-	 * destroyed (e.g. goes out of scope.)
-	 **/
-	class AutoRelease
-	{
-	public:
-
-		AutoRelease(Object *obj)
-			: object(obj)
-		{
-		}
-
-		~AutoRelease()
-		{
-			if (object)
-				object->release();
-		}
-
-	private:
-
-		AutoRelease() {}
-		Object *object;
-
-	}; // AutoRelease
-
-	/**
-	 * Partial re-implementation + specialization of std::shared_ptr. We can't
-	 * use C++11's stdlib yet...
-	 **/
-	template <typename T>
-	class StrongRef
-	{
-	public:
-
-		StrongRef()
-			: object(nullptr)
-		{
-		}
-
-		StrongRef(T *obj)
-			: object(obj)
-		{
-			if (object) object->retain();
-		}
-
-		StrongRef(const StrongRef &other)
-			: object(other.get())
-		{
-			if (object) object->retain();
-		}
-
-		~StrongRef()
-		{
-			if (object) object->release();
-		}
-
-		StrongRef &operator = (const StrongRef &other)
-		{
-			set(other.get());
-			return *this;
-		}
-
-		T *operator->() const
-		{
-			return object;
-		}
-
-		void set(T *obj)
-		{
-			if (obj) obj->retain();
-			if (object) object->release();
-			object = obj;
-		}
-
-		T *get() const
-		{
-			return object;
-		}
-
-	private:
-
-		T *object;
-
-	}; // StrongRef
-
 private:
 
 	// The reference count.
-	int count;
+	std::atomic<int> count;
 
 }; // Object
+
+/**
+ * Partial re-implementation + specialization of std::shared_ptr. We can't
+ * use C++11's stdlib yet...
+ **/
+template <typename T>
+class StrongRef
+{
+public:
+
+	StrongRef()
+	: object(nullptr)
+	{
+	}
+
+	StrongRef(T *obj)
+	: object(obj)
+	{
+		if (object) object->retain();
+	}
+
+	StrongRef(const StrongRef &other)
+	: object(other.get())
+	{
+		if (object) object->retain();
+	}
+
+	~StrongRef()
+	{
+		if (object) object->release();
+	}
+
+	StrongRef &operator = (const StrongRef &other)
+	{
+		set(other.get());
+		return *this;
+	}
+
+	T *operator->() const
+	{
+		return object;
+	}
+
+	void set(T *obj)
+	{
+		if (obj) obj->retain();
+		if (object) object->release();
+		object = obj;
+	}
+
+	T *get() const
+	{
+		return object;
+	}
+
+private:
+
+	T *object;
+	
+}; // StrongRef
 
 } // love
 

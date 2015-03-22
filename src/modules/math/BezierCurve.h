@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -78,7 +78,7 @@ public:
 	 * @param i Control point to remove
 	 **/
 	void removeControlPoint(int i);
-	
+
 	/**
 	 * @returns Number of control points.
 	 **/
@@ -118,8 +118,8 @@ public:
 	 * @param accuracy The 'fineness' of the curve.
 	 * @returns A polygon chain that approximates the bezier curve.
 	 **/
-	std::vector<Vector> render(size_t accuracy = 4) const;
-	
+	std::vector<Vector> render(int accuracy = 4) const;
+
 	/**
 	 * Renders a segment of the curve by subdivision.
 	 * @param start The starting point (between 0 and 1) on the curve.

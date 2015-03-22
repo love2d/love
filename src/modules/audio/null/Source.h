@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -66,7 +66,6 @@ public:
 	virtual bool isRelative() const;
 	void setLooping(bool looping);
 	bool isLooping() const;
-	bool isStatic() const;
 	virtual void setMinVolume(float volume);
 	virtual float getMinVolume() const;
 	virtual void setMaxVolume(float volume);

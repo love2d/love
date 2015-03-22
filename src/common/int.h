@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,8 +22,6 @@
 #define LOVE_INT_H
 
 // C standard sized integer types.
-// This header was added to Visual studio in VS 2012, which is LOVE's current
-// minimum supported VS version (as of this comment's commit date.)
 #include <stdint.h>
 
 #define LOVE_INT8_MAX   0x7F
@@ -46,6 +44,27 @@ typedef int32_t int32;
 typedef uint32_t uint32;
 typedef int64_t int64;
 typedef uint64_t uint64;
+
+static inline uint16 swap16(uint16 x)
+{
+	return (x >> 8) | (x << 8);
+}
+
+static inline uint32 swap32(uint32 x)
+{
+	return ((x & 0x000000FF) << 24) |
+	       ((x & 0x0000FF00) <<  8) |
+	       ((x & 0x00FF0000) >>  8) |
+	       ((x & 0xFF000000) >> 24);
+}
+
+static inline uint64 swap64(uint64 x)
+{
+	return ((x << 56) & 0xFF00000000000000ULL) | ((x << 40) & 0x00FF000000000000ULL) |
+	       ((x << 24) & 0x0000FF0000000000ULL) | ((x <<  8) & 0x000000FF00000000ULL) |
+	       ((x >>  8) & 0x00000000FF000000ULL) | ((x >> 24) & 0x0000000000FF0000ULL) |
+	       ((x >> 40) & 0x000000000000FF00ULL) | ((x >> 56) & 0x00000000000000FFULL);
+}
 
 } // love
 

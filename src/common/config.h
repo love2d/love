@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,8 +29,12 @@
 #	define LOVE_LINUX 1
 #endif
 #if defined(__APPLE__)
-#	define LOVE_MACOSX 1
-#	include <AvailabilityMacros.h>
+#	include <TargetConditionals.h>
+#	if TARGET_OS_IPHONE
+#		define LOVE_IOS 1
+#	elif TARGET_OS_MAC
+#		define LOVE_MACOSX 1
+#	endif
 #endif
 
 // Endianness.
@@ -71,8 +75,12 @@
 #	define NOMINMAX
 #endif
 
-#if defined(LOVE_MACOSX)
+#if defined(LOVE_MACOSX) || defined(LOVE_IOS)
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
+#endif
+
+#if defined(LOVE_ANDROID) || defined(LOVE_IOS)
+#	define LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 #endif
 
 // Autotools config.h
@@ -109,6 +117,7 @@
 #	define LOVE_ENABLE_KEYBOARD_SDL
 #	define LOVE_ENABLE_LOVE
 #	define LOVE_ENABLE_LUASOCKET
+#	define LOVE_ENABLE_LUAUTF8
 #	define LOVE_ENABLE_MATH
 #	define LOVE_ENABLE_MOUSE
 #	define LOVE_ENABLE_MOUSE_SDL
@@ -123,6 +132,8 @@
 #	define LOVE_ENABLE_THREAD_SDL
 #	define LOVE_ENABLE_TIMER
 #	define LOVE_ENABLE_TIMER_SDL
+#	define LOVE_ENABLE_TOUCH
+#	define LOVE_ENABLE_TOUCH_SDL
 #	define LOVE_ENABLE_UTF8
 #	define LOVE_ENABLE_WINDOW
 #	define LOVE_ENABLE_WINDOW_SDL

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,13 +21,16 @@
 // LOVE
 #include "Object.h"
 
-#include <stdio.h>
-
 namespace love
 {
 
 Object::Object()
 	: count(1)
+{
+}
+
+Object::Object(const Object & /*other*/)
+	: count(1) // Always start with a reference count of 1.
 {
 }
 
@@ -42,13 +45,17 @@ int Object::getReferenceCount() const
 
 void Object::retain()
 {
-	++count;
+	count.fetch_add(1, std::memory_order_relaxed);
 }
 
 void Object::release()
 {
-	if (--count <= 0)
+	// http://www.boost.org/doc/libs/1_56_0/doc/html/atomic/usage_examples.html
+	if (count.fetch_sub(1, std::memory_order_release) == 1)
+	{
+		std::atomic_thread_fence(std::memory_order_acquire);
 		delete this;
+	}
 }
 
 } // love

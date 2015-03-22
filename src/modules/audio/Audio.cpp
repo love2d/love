@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,11 +29,11 @@ StringMap<Audio::DistanceModel, Audio::DISTANCE_MAX_ENUM>::Entry Audio::distance
 {
 	{"none", Audio::DISTANCE_NONE},
 	{"inverse", Audio::DISTANCE_INVERSE},
-	{"inverse clamped", Audio::DISTANCE_INVERSE_CLAMPED},
+	{"inverseclamped", Audio::DISTANCE_INVERSE_CLAMPED},
 	{"linear", Audio::DISTANCE_LINEAR},
-	{"linear clamped", Audio::DISTANCE_LINEAR_CLAMPED},
+	{"linearclamped", Audio::DISTANCE_LINEAR_CLAMPED},
 	{"exponent", Audio::DISTANCE_EXPONENT},
-	{"exponent clamped", Audio::DISTANCE_EXPONENT_CLAMPED}
+	{"exponentclamped", Audio::DISTANCE_EXPONENT_CLAMPED}
 };
 
 StringMap<Audio::DistanceModel, Audio::DISTANCE_MAX_ENUM> Audio::distanceModels(Audio::distanceModelEntries, sizeof(Audio::distanceModelEntries));

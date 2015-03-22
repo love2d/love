@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,13 +37,14 @@ bool Mouse::getConstant(Button in, const char  *&out)
 
 StringMap<Mouse::Button, Mouse::BUTTON_MAX_ENUM>::Entry Mouse::buttonEntries[] =
 {
-	{"l", Mouse::BUTTON_LEFT},
-	{"m", Mouse::BUTTON_MIDDLE},
-	{"r", Mouse::BUTTON_RIGHT},
-	{"wu", Mouse::BUTTON_WHEELUP},
-	{"wd", Mouse::BUTTON_WHEELDOWN},
-	{"x1", Mouse::BUTTON_X1},
-	{"x2", Mouse::BUTTON_X2},
+	{"l", BUTTON_LEFT},
+	{"m", BUTTON_MIDDLE},
+	{"r", BUTTON_RIGHT},
+	{"x1", BUTTON_X1},
+	{"x2", BUTTON_X2},
+	{"x3", BUTTON_X3},
+	{"x4", BUTTON_X4},
+	{"x5", BUTTON_X5},
 };
 
 StringMap<Mouse::Button, Mouse::BUTTON_MAX_ENUM> Mouse::buttons(Mouse::buttonEntries, sizeof(Mouse::buttonEntries));

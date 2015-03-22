@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,6 +43,7 @@ int w_Joint_getCollideConnected(lua_State *L);
 int w_Joint_setUserData(lua_State *L);
 int w_Joint_getUserData(lua_State *L);
 int w_Joint_destroy(lua_State *L);
+int w_Joint_isDestroyed(lua_State *L);
 extern "C" int luaopen_joint(lua_State *L);
 
 } // box2d

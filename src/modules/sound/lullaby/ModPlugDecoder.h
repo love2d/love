@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,10 @@
 
 #ifndef LOVE_SOUND_LULLABY_MODPLUG_DECODER_H
 #define LOVE_SOUND_LULLABY_MODPLUG_DECODER_H
+
+#include "common/config.h"
+
+#ifndef LOVE_NO_MODPLUG
 
 // LOVE
 #include "common/Data.h"
@@ -61,5 +65,7 @@ private:
 } // lullaby
 } // sound
 } // love
+
+#endif // LOVE_NO_MODPLUG
 
 #endif // LOVE_SOUND_LULLABY_MODPLUG_DECODER_H

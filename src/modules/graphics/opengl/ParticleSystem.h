@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,8 @@
 #include "graphics/Drawable.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
-#include "Texture.h"
+#include "graphics/Texture.h"
+#include "GLBuffer.h"
 
 // STL
 #include <vector>
@@ -575,8 +576,11 @@ protected:
 	// array of transformed vertex data for all particles, for drawing
 	Vertex *particleVerts;
 
+	// Vertex index buffer.
+	VertexIndex quadIndices;
+
 	// The texture to be drawn.
-	Object::StrongRef<Texture> texture;
+	StrongRef<Texture> texture;
 
 	// Whether the particle emitter is active.
 	bool active;
@@ -649,16 +653,20 @@ protected:
 	float spinVariation;
 
 	// Offsets
-	float offsetX;
-	float offsetY;
+	love::Vector offset;
+
+	// Is the ParticleSystem using a default offset?
+	bool defaultOffset;
 
 	// Color.
 	std::vector<Colorf> colors;
 
 	// Quads.
-	std::vector<Object::StrongRef<Quad>> quads;
+	std::vector<StrongRef<Quad>> quads;
 
 	bool relativeRotation;
+
+	void resetOffset();
 
 	void createBuffers(size_t size);
 	void deleteBuffers();

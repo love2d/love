@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,6 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/version.h"
 #include "modules/love/love.h"
 #include <SDL.h>
 
@@ -35,8 +36,23 @@ extern "C" {
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_MACOSX
-#include "OSX.h"
+#include "common/OSX.h"
 #endif // LOVE_MACOSX
+
+#ifdef LOVE_IOS
+#include "common/iOS.h"
+#endif
+
+#ifdef LOVE_WINDOWS
+extern "C"
+{
+// Prefer the higher performance GPU on Windows systems that use nvidia Optimus.
+// http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
+// TODO: Re-evaluate in the future when the average integrated GPU in Optimus
+// systems is less mediocre?
+LOVE_EXPORT DWORD NvOptimusEnablement = 0x00000001;
+}
+#endif // LOVE_WINDOWS
 
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 
@@ -89,6 +105,7 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 			temp_argv.push_back(std::string(argv[i]));
 	}
 
+#ifdef LOVE_MACOSX
 	// Check for a drop file string.
 	std::string dropfilestr = love::osx::checkDropEvents();
 	if (!dropfilestr.empty())
@@ -96,15 +113,24 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 		temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
 	}
 	else
+#endif
 	{
 		// If it exists, add the love file in love.app/Contents/Resources/ to argv.
-		std::string loveResourcesPath = love::osx::getLoveInResources();
+		std::string loveResourcesPath;
+		bool fused = true;
+#if defined(LOVE_MACOSX)
+		loveResourcesPath = love::osx::getLoveInResources();
+#elif defined(LOVE_IOS)
+		loveResourcesPath = love::ios::getLoveInResources(fused);
+#endif
 		if (!loveResourcesPath.empty())
 		{
-			// Run in pseudo-fused mode.
 			std::vector<std::string>::iterator it = temp_argv.begin();
 			it = temp_argv.insert(it + 1, loveResourcesPath);
-			temp_argv.insert(it + 1, std::string("--fused"));
+
+			// Run in pseudo-fused mode.
+			if (fused)
+				temp_argv.insert(it + 1, std::string("--fused"));
 		}
 	}
 
@@ -135,6 +161,21 @@ static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 
 int main(int argc, char **argv)
 {
+	int retval = 0;
+
+#ifdef LOVE_IOS
+	int orig_argc = argc;
+	char **orig_argv = argv;
+
+	// on iOS we should never programmatically exit the app, so we'll just
+	// "restart" when that is attempted. Games which use threads might cause
+	// some issues if the threads aren't cleaned up properly...
+	while (true)
+	{
+		argc = orig_argc;
+		argv = orig_argv;
+#endif
+
 #ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
 	int hack_argc = 0;	char **hack_argv = 0;
 	get_utf8_arguments(hack_argc, hack_argv);
@@ -149,6 +190,13 @@ int main(int argc, char **argv)
 	argc = hack_argc;
 	argv = hack_argv;
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
+
+	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
+	{
+		printf("Version mismatch detected!\nLOVE binary is version %s\n"
+				"LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
+		return 1;
+	}
 
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
@@ -191,7 +239,7 @@ int main(int argc, char **argv)
 	lua_pushstring(L, "love");
 	lua_call(L, 1, 1); // leave the returned table on the stack.
 
-	// Add love.__exe = true.
+	// Add love._exe = true.
 	// This indicates that we're running the standalone version of love, and not
 	// the library version.
 	{
@@ -210,7 +258,6 @@ int main(int argc, char **argv)
 	// Call the returned boot function.
 	lua_call(L, 0, 1);
 
-	int retval = 0;
 	if (lua_isnumber(L, -1))
 		retval = (int) lua_tonumber(L, -1);
 
@@ -224,6 +271,11 @@ int main(int argc, char **argv)
 		delete [] hack_argv;
 	}
 #endif // LOVE_LEGENDARY_UTF8_ARGV_HACK || LOVE_LEGENDARY_APP_ARGV_HACK
+
+#ifdef LOVE_IOS
+	} // while (true)
+#endif
+
 	return retval;
 }
 

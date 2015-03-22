@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,13 +41,16 @@ int w_File_isOpen(lua_State *L);
 int w_File_read(lua_State *L);
 int w_File_write(lua_State *L);
 int w_File_flush(lua_State *L);
-int w_File_eof(lua_State *L);
+int w_File_isEOF(lua_State *L);
 int w_File_tell(lua_State *L);
 int w_File_seek(lua_State *L);
+int w_File_lines_i(lua_State *L);
 int w_File_lines(lua_State *L);
 int w_File_setBuffer(lua_State *L);
 int w_File_getBuffer(lua_State *L);
 int w_File_getMode(lua_State *L);
+int w_File_getFilename(lua_State *L);
+int w_File_getExtension(lua_State *L);
 extern "C" int luaopen_file(lua_State *L);
 
 } // filesystem

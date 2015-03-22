@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ namespace box2d
 
 MouseJoint *luax_checkmousejoint(lua_State *L, int idx)
 {
-	MouseJoint *j = luax_checktype<MouseJoint>(L, idx, "MouseJoint", PHYSICS_MOUSE_JOINT_T);
+	MouseJoint *j = luax_checktype<MouseJoint>(L, idx, PHYSICS_MOUSE_JOINT_ID);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -116,12 +116,13 @@ static const luaL_Reg functions[] =
 	{ "setUserData", w_Joint_setUserData },
 	{ "getUserData", w_Joint_getUserData },
 	{ "destroy", w_Joint_destroy },
+	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_mousejoint(lua_State *L)
 {
-	return luax_register_type(L, "MouseJoint", functions);
+	return luax_register_type(L, PHYSICS_MOUSE_JOINT_ID, functions);
 }
 
 } // box2d

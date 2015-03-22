@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,13 +21,15 @@
 #ifndef LOVE_GRAPHICS_OPENGL_POLYLINE_H
 #define LOVE_GRAPHICS_OPENGL_POLYLINE_H
 
-#include <vector>
-
 // LOVE
+#include "common/config.h"
 #include "common/Vector.h"
 
 // OpenGL
 #include "OpenGL.h"
+
+// C++
+#include <vector>
 
 namespace love
 {
@@ -43,12 +45,13 @@ namespace opengl
 class Polyline
 {
 public:
-	Polyline(GLenum mode = GL_TRIANGLE_STRIP)
+	Polyline(GLenum mode = GL_TRIANGLE_STRIP, bool quadindices = false)
 		: vertices(NULL)
 		, overdraw(NULL)
 		, vertex_count(0)
 		, overdraw_vertex_count(0)
 		, draw_mode(mode)
+		, use_quad_indices(quadindices)
 	{}
 	virtual ~Polyline();
 
@@ -90,6 +93,7 @@ protected:
 	size_t vertex_count;
 	size_t overdraw_vertex_count;
 	GLenum draw_mode;
+	bool use_quad_indices;
 
 }; // Polyline
 
@@ -102,7 +106,7 @@ class NoneJoinPolyline : public Polyline
 {
 public:
 	NoneJoinPolyline()
-		: Polyline(GL_QUADS)
+		: Polyline(GL_TRIANGLES, true)
 	{}
 
 	void render(const float *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)

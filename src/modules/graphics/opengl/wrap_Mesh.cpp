@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 #include "wrap_Mesh.h"
 #include "Image.h"
 #include "Canvas.h"
-#include "wrap_Texture.h"
+#include "graphics/wrap_Texture.h"
 
 // C++
 #include <typeinfo>
@@ -36,7 +36,7 @@ namespace opengl
 
 Mesh *luax_checkmesh(lua_State *L, int idx)
 {
-	return luax_checktype<Mesh>(L, idx, "Mesh", GRAPHICS_MESH_T);
+	return luax_checktype<Mesh>(L, idx, GRAPHICS_MESH_ID);
 }
 
 int w_Mesh_setVertex(lua_State *L)
@@ -102,12 +102,12 @@ int w_Mesh_setVertices(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 
-	size_t vertex_count = lua_objlen(L, 2);
+	int vertex_count = (int) lua_objlen(L, 2);
 	std::vector<Vertex> vertices;
 	vertices.reserve(vertex_count);
 
 	// Get the vertices from the table.
-	for (size_t i = 1; i <= vertex_count; i++)
+	for (int i = 1; i <= vertex_count; i++)
 	{
 		lua_rawgeti(L, 2, i);
 
@@ -144,13 +144,13 @@ int w_Mesh_getVertices(lua_State *L)
 
 	const Vertex *vertices = t->getVertices();
 
-	size_t count = t->getVertexCount();
+	int count = (int) t->getVertexCount();
 	lua_createtable(L, count, 0);
 
 	if (count == 0 || vertices == nullptr)
 		return 1;
 
-	for (size_t i = 0; i < count; i++)
+	for (int i = 0; i < count; i++)
 	{
 		// Create vertex table.
 		lua_createtable(L, 8, 0);
@@ -199,7 +199,7 @@ int w_Mesh_setVertexMap(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 
 	bool is_table = lua_istable(L, 2);
-	int nargs = is_table ? lua_objlen(L, 2) : lua_gettop(L) - 1;
+	int nargs = is_table ? (int) lua_objlen(L, 2) : lua_gettop(L) - 1;
 
 	std::vector<uint32> vertexmap;
 	vertexmap.reserve(nargs);
@@ -227,11 +227,11 @@ int w_Mesh_getVertexMap(lua_State *L)
 	std::vector<uint32> vertex_map;
 	luax_catchexcept(L, [&](){ t->getVertexMap(vertex_map); });
 
-	size_t element_count = vertex_map.size();
+	int element_count = (int) vertex_map.size();
 
 	lua_createtable(L, element_count, 0);
 
-	for (size_t i = 0; i < element_count; i++)
+	for (int i = 0; i < element_count; i++)
 	{
 		lua_pushinteger(L, lua_Integer(vertex_map[i]) + 1);
 		lua_rawseti(L, -2, i + 1);
@@ -265,9 +265,9 @@ int w_Mesh_getTexture(lua_State *L)
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
-		luax_pushtype(L, "Image", GRAPHICS_IMAGE_T, tex);
+		luax_pushtype(L, GRAPHICS_IMAGE_ID, tex);
 	else if (typeid(*tex) == typeid(Canvas))
-		luax_pushtype(L, "Canvas", GRAPHICS_CANVAS_T, tex);
+		luax_pushtype(L, GRAPHICS_CANVAS_ID, tex);
 	else
 		return luaL_error(L, "Unable to determine texture type.");
 
@@ -363,17 +363,12 @@ static const luaL_Reg functions[] =
 	{ "getDrawRange", w_Mesh_getDrawRange },
 	{ "setVertexColors", w_Mesh_setVertexColors },
 	{ "hasVertexColors", w_Mesh_hasVertexColors },
-
-	// Deprecated since 0.9.1.
-	{ "setImage", w_Mesh_setTexture },
-	{ "getImage", w_Mesh_getTexture },
-
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_mesh(lua_State *L)
 {
-	return luax_register_type(L, "Mesh", functions);
+	return luax_register_type(L, GRAPHICS_MESH_ID, functions);
 }
 
 } // opengl

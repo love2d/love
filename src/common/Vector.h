@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2014 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -216,15 +216,15 @@ inline float Vector::normalize(float length)
  **/
 
 inline Vector::Vector()
+	: x(0.0f)
+	, y(0.0f)
 {
-	x = 1;
-	y = 1;
 }
 
 inline Vector::Vector(float x, float y)
+	: x(x)
+	, y(y)
 {
-	this->x = x;
-	this->y = y;
 }
 
 inline Vector Vector::operator + (const Vector &v) const
