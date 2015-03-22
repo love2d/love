@@ -127,10 +127,10 @@ void BezierCurve::setControlPoint(int i, const Vector &point)
 void BezierCurve::insertControlPoint(const Vector &point, int i)
 {
 	while (i < 0)
-		i += controlPoints.size() + 1;
+		i += controlPoints.size();
 
 	while ((size_t)  i > controlPoints.size())
-		throw Exception("Invalid control point index");
+		i -= controlPoints.size();
 
 	controlPoints.insert(controlPoints.begin() + i, point);
 }
@@ -139,13 +139,13 @@ void BezierCurve::removeControlPoint(int i)
 {
 	while (i < 0)
 		i += controlPoints.size();
-	
+
 	while ((size_t) i >= controlPoints.size())
 		i -= controlPoints.size();
-	
+
 	controlPoints.erase(controlPoints.begin() + i);
 }
-	
+
 void BezierCurve::translate(const Vector &t)
 {
 	for (size_t i = 0; i < controlPoints.size(); ++i)
@@ -181,7 +181,7 @@ Vector BezierCurve::evaluate(double t) const
 	for (size_t step = 1; step < controlPoints.size(); ++step)
 		for (size_t i = 0; i < controlPoints.size() - step; ++i)
 			points[i] = points[i] * (1-t) + points[i+1] * t;
-	
+
 	return points[0];
 }
 
