@@ -36,6 +36,10 @@
 #		define LOVE_MACOSX 1
 #	endif
 #endif
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+// I know it's not linux, but it seems most "linux-only" code is bsd-compatible
+#	define LOVE_LINUX 1
+#endif
 
 // Endianness.
 #if defined(__i386__) || defined(__i386)
