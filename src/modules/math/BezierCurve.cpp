@@ -104,35 +104,46 @@ BezierCurve BezierCurve::getDerivative() const
 
 const Vector &BezierCurve::getControlPoint(int i) const
 {
-	if (i < 0)
+	while (i < 0)
 		i += controlPoints.size();
 
-	if (i < 0 || (size_t) i >= controlPoints.size())
-		throw Exception("Invalid control point index");
+	while ((size_t) i >= controlPoints.size())
+		i -= controlPoints.size();
 
 	return controlPoints[i];
 }
 
 void BezierCurve::setControlPoint(int i, const Vector &point)
 {
-	if (i < 0)
+	while (i < 0)
 		i += controlPoints.size();
 
-	if (i < 0 || (size_t) i >= controlPoints.size())
-		throw Exception("Invalid control point index");
+	while ((size_t) i >= controlPoints.size())
+		i -= controlPoints.size();
 
 	controlPoints[i] = point;
 }
 
-void BezierCurve::insertControlPoint(const Vector &point, int pos)
+void BezierCurve::insertControlPoint(const Vector &point, int i)
 {
-	if (pos < 0)
-		pos += controlPoints.size() + 1;
+	while (i < 0)
+		i += controlPoints.size();
 
-	if (pos < 0 ||(size_t)  pos > controlPoints.size())
-		throw Exception("Invalid control point index");
+	while ((size_t)  i > controlPoints.size())
+		i -= controlPoints.size();
 
-	controlPoints.insert(controlPoints.begin() + pos, point);
+	controlPoints.insert(controlPoints.begin() + i, point);
+}
+
+void BezierCurve::removeControlPoint(int i)
+{
+	while (i < 0)
+		i += controlPoints.size();
+
+	while ((size_t) i >= controlPoints.size())
+		i -= controlPoints.size();
+
+	controlPoints.erase(controlPoints.begin() + i);
 }
 
 void BezierCurve::translate(const Vector &t)
@@ -170,7 +181,7 @@ Vector BezierCurve::evaluate(double t) const
 	for (size_t step = 1; step < controlPoints.size(); ++step)
 		for (size_t i = 0; i < controlPoints.size() - step; ++i)
 			points[i] = points[i] * (1-t) + points[i+1] * t;
-	
+
 	return points[0];
 }
 
@@ -183,6 +194,30 @@ vector<Vector> BezierCurve::render(int accuracy) const
 	return vertices;
 }
 
+vector<Vector> BezierCurve::renderSegment(double start, double end, size_t accuracy) const
+{
+	if (controlPoints.size() < 2)
+		throw Exception("Invalid Bezier curve: Not enough control points.");
+	vector<Vector> vertices(controlPoints);
+	subdivide(vertices, accuracy);
+	if (start == end)
+	{
+		vertices.clear();
+	}
+	else if (start < end)
+	{
+		size_t start_idx = size_t(start * vertices.size());
+		size_t end_idx = size_t(end * vertices.size() + 0.5);
+		return std::vector<Vector>(vertices.begin() + start_idx, vertices.begin() + end_idx);
+	}
+	else if (end > start)
+	{
+		size_t start_idx = size_t(end * vertices.size() + 0.5);
+		size_t end_idx = size_t(start * vertices.size());
+		return std::vector<Vector>(vertices.begin() + start_idx, vertices.begin() + end_idx);
+	}
+	return vertices;
+}
 
 } // namespace math
 } // namespace love

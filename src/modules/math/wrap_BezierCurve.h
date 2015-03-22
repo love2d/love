@@ -36,12 +36,14 @@ int w_BezierCurve_getDerivative(lua_State *L);
 int w_BezierCurve_getControlPoint(lua_State *L);
 int w_BezierCurve_setControlPoint(lua_State *L);
 int w_BezierCurve_insertControlPoint(lua_State *L);
+int w_BezierCurve_removeControlPoint(lua_State *L);
 int w_BezierCurve_getControlPointCount(lua_State *L);
 int w_BezierCurve_translate(lua_State *L);
 int w_BezierCurve_rotate(lua_State *L);
 int w_BezierCurve_scale(lua_State *L);
 int w_BezierCurve_evaluate(lua_State *L);
 int w_BezierCurve_render(lua_State *L);
+int w_BezierCurve_renderSegment(lua_State *L);
 extern "C" int luaopen_beziercurve(lua_State *L);
 
 } // math

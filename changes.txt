@@ -28,6 +28,7 @@ Released: N/A
   * Added Text objects and love.graphics.newText.
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
   * Added love.window.maximize.
+  * Added BezierCurve:renderSegment and BezierCurve:removePoint.
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
   * Removed the "wu" and "wd" constants for love.mousepressed (replaced by love.wheelmoved.)
@@ -315,7 +316,7 @@ LOVE 0.9.0 [Baby Inspector]
   * Added love.window.getIcon.
   * Added t.window.icon to love.conf.
   * Added love.mousefocus and love.window.hasMouseFocus.
-  * Added custom hardware cursors via love.mouse.newCursor. 
+  * Added custom hardware cursors via love.mouse.newCursor.
   * Added love.mouse.setX/setY.
   * Added Joystick objects.
   * Added love.joystick.getJoystick.
