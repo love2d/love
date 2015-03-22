@@ -140,4 +140,12 @@
 #	define LOVE_ENABLE_WUFF
 #endif
 
+// Check we have a sane configuration
+#if !defined(LOVE_WINDOWS) && !defined(LOVE_LINUX) && !defined(LOVE_IOS) && !defined(LOVE_MACOSX)
+#	error Could not detect target platform
+#endif
+#if !defined(LOVE_LITTLE_ENDIAN) && !defined(LOVE_BIG_ENDIAN)
+#	error Could not detect endianness
+#endif
+
 #endif // LOVE_CONFIG_H
