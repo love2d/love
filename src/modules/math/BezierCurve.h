@@ -114,6 +114,15 @@ public:
 	Vector evaluate(double t) const;
 
 	/**
+	 * Get curve segment starting at t1 and ending at t2.
+	 * The new curve will be parametrized from 0 <= t <= 1.
+	 * @param t1 Start of the segment.
+	 * @param t2 End of the segment.
+	 * @returns Bezier curve covering the segment.
+	 */
+	BezierCurve* getSegment(double t1, double t2) const;
+
+	/**
 	 * Renders the curve by subdivision.
 	 * @param accuracy The 'fineness' of the curve.
 	 * @returns A polygon chain that approximates the bezier curve.

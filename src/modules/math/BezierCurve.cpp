@@ -23,6 +23,7 @@
 #include "common/Exception.h"
 
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -183,6 +184,44 @@ Vector BezierCurve::evaluate(double t) const
 			points[i] = points[i] * (1-t) + points[i+1] * t;
 
 	return points[0];
+}
+
+BezierCurve* BezierCurve::getSegment(double t1, double t2) const
+{
+	if (t1 < 0 || t2 > 1)
+		throw Exception("Invalid segment parameters: must be between 0 and 1");
+	if (t2 <= t1)
+		throw Exception("Invalid segment parameters: t1 must be smaller than t2");
+
+	// First, sudivide the curve at t2, then subdivide the "left"
+	// sub-curve at t1/t2. The "right" curve is the segment.
+	vector<Vector> points(controlPoints);
+	vector<Vector> left, right;
+	left.reserve(points.size());
+	right.reserve(points.size());
+
+	// first subdivision at t2 (take only the left curve)
+	for (size_t step = 1; step < points.size(); ++step)
+	{
+		left.push_back(points[0]);
+		for (size_t i = 0; i < points.size() - step; ++i)
+			points[i] += (points[i+1] - points[i]) * t2; // p_i <- (1-t2)*p_i + t2*p_{i+1}
+	}
+	left.push_back(points[0]);
+
+	// second subdivion at t1/t2 (take only the right curve)
+	double s = t1/t2;
+	for (size_t step = 1; step < left.size(); ++step)
+	{
+		right.push_back(left[left.size() - step]);
+		for (size_t i = 0; i < left.size() - step; ++i)
+			left[i] += (left[i+1] - left[i]) * s;
+	}
+	right.push_back(left[0]);
+
+	// control points for right curve were added in reversed order
+	std::reverse(right.begin(), right.end());
+	return new BezierCurve(right);
 }
 
 vector<Vector> BezierCurve::render(int accuracy) const
