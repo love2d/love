@@ -42,11 +42,10 @@
 #endif
 
 // Endianness.
-#if defined(__i386__) || defined(__i386)
-#	define LOVE_LITTLE_ENDIAN 1
-#endif
 #if defined(__ppc__) || defined(__ppc) || defined(__powerpc__) || defined(__powerpc)
 #	define LOVE_BIG_ENDIAN 1
+#else
+#	define LOVE_LITTLE_ENDIAN 1
 #endif
 
 // Warnings.
