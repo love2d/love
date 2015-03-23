@@ -4,6 +4,7 @@ LOVE 0.10.0 []
 Released: N/A
 
   * Added a (work-in-progress) iOS port.
+  * Added the flag t.accelerometerjoystick to love.conf. Disables accelerometer-as-joystick functionality on mobile devices when false.
   * Added love.touch module. Note that it has important differences from the touch implementation in the LÖVE 0.9 Android and iOS ports.
   * Added love.touchpressed, love.touchreleased, and love.touchmoved.
   * Added love.filesystem.setRequirePath and love.filesystem.getRequirePath.
@@ -12,6 +13,7 @@ Released: N/A
   * Added love.wheelmoved event callback function (replaces "wu" and "wd" constants for love.mousepressed.)
   * Added love.mouse.hasCursor.
   * Added a boolean argument to love.mousepressed and love.mousereleased indicating whether the button event originated from a touch press.
+  * Added more mouse button constants ("x3", "x4", and "x5".)
   * Added optional x/y/width/height arguments to love.keyboard.setTextInput. They tell the system where text will show up so on-screen keyboards can avoid that area.
   * Added Source:getType (replaces Source:isStatic.)
   * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
@@ -21,14 +23,19 @@ Released: N/A
   * Added color arguments to love.graphics.clear. It no longer always uses the background color value.
   * Added love.graphics.discard.
   * Added optional x/y/width/height arguments to Image:refresh and Canvas:newImageData.
+  * Added Image:getFlags.
   * Added one- and two-channel Canvas formats: r8, rg8, r16f, rg16f, r32f, and rg32f.
   * Added support for different formats in each Canvas when using multi-canvas rendering. Added the "multicanvasformats" Graphics Feature constant.
   * Added support for OpenGL ES 2 and 3.
   * Added support for loading ETC1/2, EAC, and PVRTC1 compressed textures.
   * Added Text objects and love.graphics.newText.
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
+  * Added an optional font hinting argument to love.graphics.newFont when loading TrueType fonts.
+  * Added an optional spacing argument to love.graphics.newImageFont, which applies additional spacing to all rendered glyphs.
   * Added love.window.maximize.
   * Added BezierCurve:renderSegment and BezierCurve:removePoint.
+  * Added BezierCurve:getSegment.
+  * Added love.math.compress and love.math.decompress.
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
   * Removed the "wu" and "wd" constants for love.mousepressed (replaced by love.wheelmoved.)
@@ -56,18 +63,24 @@ Released: N/A
   * Renamed the Distance Model constants "inverse clamped", "linear clamped", and "exponent clamped" to "inverseclamped", "linearclamped", and "exponentclamped".
   * Renamed blend modes "additive", "subtractive", and "multiplicative" to "add", "subtract", and "multiply".
   * Renamed the key constant and scancode representing the spacebar from " " to "space".
+  * Renamed File:eof to File:isEOF.
   * Renamed Canvas:getImageData to Canvas:newImageData.
+  * Renamed love.image's CompressedData type to CompressedImageData.
 
   * Fixed love.graphics.getKeyFromScancode crashing when an invalid scancode is given.
   * Fixed the stencil buffer in Canvases when an unsupported MSAA value is used to create the Canvas.
+  * Fixed love.graphics.getColorMask.
+  * Fixed the default offset for particles when ParticleSystem:setQuads or ParticleSystem:setTexture is used.
 
   * Updated the compatibility warning notice to use a message box.
+  * Updated the compatibility warning notice to display before main.lua is loaded.
   * Updated love.keypressed to be love.keypressed(key, scancode, isrepeat).
   * Updated love.keyreleased to be love.keyreleleased(key, scancode).
   * Updated love.math.setRandomSeed and RandomGenerator:setSeed to produce better results for the first few random() calls.
   * Updated Source methods that deal with spatial audio to error rather than failing silently if the Source isn't mono.
   * Updated ImageFonts to no longer treat separator pixels as spacing.
   * Updated the default font to use less memory.
+  * Updated Font:getWrap's second return value to be a table containing the text split into lines.
   * Updated the default fullscreen type to be "desktop" rather than "exclusive".
   * Updated the minimum runtime system requirements of LOVE to require OpenGL 2.1 or OpenGL ES 2 support.
   * Updated the pixel shader effect function so screen_coords.y is 0 at the top of the screen instead of the bottom.
