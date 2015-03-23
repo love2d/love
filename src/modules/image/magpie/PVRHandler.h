@@ -40,7 +40,7 @@ public:
 
 	// Implements CompressedFormatHandler.
 	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB);
+	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB);
 
 }; // PVRHandler
 

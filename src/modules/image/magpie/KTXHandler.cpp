@@ -90,53 +90,53 @@ enum KTXGLInternalFormat
 	KTX_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3
 };
 
-CompressedData::Format convertFormat(uint32 glformat, bool &sRGB)
+CompressedImageData::Format convertFormat(uint32 glformat, bool &sRGB)
 {
 	sRGB = false;
 
 	switch (glformat)
 	{
 	case KTX_GL_ETC1_RGB8_OES:
-		return CompressedData::FORMAT_ETC1;
+		return CompressedImageData::FORMAT_ETC1;
 	case KTX_GL_COMPRESSED_R11_EAC:
-		return CompressedData::FORMAT_EAC_R;
+		return CompressedImageData::FORMAT_EAC_R;
 	case KTX_GL_COMPRESSED_SIGNED_R11_EAC:
-		return CompressedData::FORMAT_EAC_Rs;
+		return CompressedImageData::FORMAT_EAC_Rs;
 	case KTX_GL_COMPRESSED_RG11_EAC:
-		return CompressedData::FORMAT_EAC_RG;
+		return CompressedImageData::FORMAT_EAC_RG;
 	case KTX_GL_COMPRESSED_SIGNED_RG11_EAC:
-		return CompressedData::FORMAT_EAC_RGs;
+		return CompressedImageData::FORMAT_EAC_RGs;
 	case KTX_GL_COMPRESSED_RGB8_ETC2:
-		return CompressedData::FORMAT_ETC2_RGB;
+		return CompressedImageData::FORMAT_ETC2_RGB;
 	case KTX_GL_COMPRESSED_SRGB8_ETC2:
 		sRGB = true;
-		return CompressedData::FORMAT_ETC2_RGB;
+		return CompressedImageData::FORMAT_ETC2_RGB;
 	case KTX_GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-		return CompressedData::FORMAT_ETC2_RGBA1;
+		return CompressedImageData::FORMAT_ETC2_RGBA1;
 	case KTX_GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
 		sRGB = true;
-		return CompressedData::FORMAT_ETC2_RGBA1;
+		return CompressedImageData::FORMAT_ETC2_RGBA1;
 	case KTX_GL_COMPRESSED_RGBA8_ETC2_EAC:
-		return CompressedData::FORMAT_ETC2_RGBA;
+		return CompressedImageData::FORMAT_ETC2_RGBA;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
 		sRGB = true;
-		return CompressedData::FORMAT_ETC2_RGBA;
+		return CompressedImageData::FORMAT_ETC2_RGBA;
 	case KTX_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-		return CompressedData::FORMAT_PVR1_RGB4;
+		return CompressedImageData::FORMAT_PVR1_RGB4;
 	case KTX_GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-		return CompressedData::FORMAT_PVR1_RGB2;
+		return CompressedImageData::FORMAT_PVR1_RGB2;
 	case KTX_GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-		return CompressedData::FORMAT_PVR1_RGBA4;
+		return CompressedImageData::FORMAT_PVR1_RGBA4;
 	case KTX_GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-		return CompressedData::FORMAT_PVR1_RGBA2;
+		return CompressedImageData::FORMAT_PVR1_RGBA2;
 	case KTX_GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-		return CompressedData::FORMAT_DXT1;
+		return CompressedImageData::FORMAT_DXT1;
 	case KTX_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-		return CompressedData::FORMAT_DXT3;
+		return CompressedImageData::FORMAT_DXT3;
 	case KTX_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-		return CompressedData::FORMAT_DXT5;
+		return CompressedImageData::FORMAT_DXT5;
 	default:
-		return CompressedData::FORMAT_UNKNOWN;
+		return CompressedImageData::FORMAT_UNKNOWN;
 	}
 }
 
@@ -159,7 +159,7 @@ bool KTXHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
+uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");
@@ -176,9 +176,9 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 	header.numberOfMipmapLevels = std::max(header.numberOfMipmapLevels, 1u);
 
 	bool isSRGB = false;
-	CompressedData::Format cformat = convertFormat(header.glInternalFormat, isSRGB);
+	CompressedImageData::Format cformat = convertFormat(header.glInternalFormat, isSRGB);
 
-	if (cformat == CompressedData::FORMAT_UNKNOWN)
+	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
 		throw love::Exception("Unsupported image format in KTX file.");
 
 	if (header.numberOfArrayElements > 0)
@@ -241,7 +241,7 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 
 		uint32 mipsizepadded = (mipsize + 3) & ~uint32(3);
 
-		CompressedData::SubImage mip;
+		CompressedImageData::SubImage mip;
 		mip.width = (int) std::max(header.pixelWidth >> i, 1u);
 		mip.height = (int) std::max(header.pixelHeight >> i, 1u);
 		mip.size = mipsize;

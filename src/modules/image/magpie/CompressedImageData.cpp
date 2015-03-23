@@ -18,11 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
-
-#include "common/config.h"
-#include "CompressedFormatHandler.h"
+#include "CompressedImageData.h"
 
 namespace love
 {
@@ -31,23 +27,45 @@ namespace image
 namespace magpie
 {
 
-/**
- * Handles PKM files with compressed ETC data inside.
- **/
-class PKMHandler : public CompressedFormatHandler
+CompressedImageData::CompressedImageData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata)
 {
-public:
+	CompressedFormatHandler *parser = nullptr;
 
-	virtual ~PKMHandler() {}
+	for (CompressedFormatHandler *handler : formats)
+	{
+		if (handler->canParse(filedata))
+		{
+			parser = handler;
+			break;
+		}
+	}
 
-	// Implements CompressedFormatHandler.
-	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB);
+	if (parser == nullptr)
+		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-}; // PKMHandler
+	data = parser->parse(filedata, dataImages, dataSize, format, sRGB);
+
+	if (data == nullptr)
+		throw love::Exception("Could not parse compressed data.");
+
+	if (format == FORMAT_UNKNOWN)
+	{
+		delete[] data;
+		throw love::Exception("Could not parse compressed data: Unknown format.");
+	}
+
+	if (dataImages.size() == 0 || dataSize == 0)
+	{
+		delete[] data;
+		throw love::Exception("Could not parse compressed data: No valid data?");
+	}
+}
+
+CompressedImageData::~CompressedImageData()
+{
+	delete[] data;
+}
 
 } // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_PKM_HANDLER_H

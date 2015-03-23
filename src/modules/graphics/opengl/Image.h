@@ -28,7 +28,7 @@
 #include "common/StringMap.h"
 #include "common/math.h"
 #include "image/ImageData.h"
-#include "image/CompressedData.h"
+#include "image/CompressedImageData.h"
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
 
@@ -78,7 +78,7 @@ public:
 	 *
 	 * @param cdata The compressed data from which to load the image.
 	 **/
-	Image(love::image::CompressedData *cdata, const Flags &flags);
+	Image(love::image::CompressedImageData *cdata, const Flags &flags);
 
 	virtual ~Image();
 
@@ -99,7 +99,7 @@ public:
 	virtual const void *getHandle() const;
 
 	love::image::ImageData *getImageData() const;
-	love::image::CompressedData *getCompressedData() const;
+	love::image::CompressedImageData *getCompressedData() const;
 
 	virtual void setFilter(const Texture::Filter &f);
 	virtual bool setWrap(const Texture::Wrap &w);
@@ -108,12 +108,12 @@ public:
 	float getMipmapSharpness() const;
 
 	/**
-	 * Whether this Image is using a compressed texture (via CompressedData).
+	 * Whether this Image is using a compressed texture (via CompressedImageData).
 	 **/
 	bool isCompressed() const;
 
 	/**
-	 * Re-uploads the ImageData or CompressedData associated with this Image to
+	 * Re-uploads the ImageData or CompressedImageData associated with this Image to
 	 * the GPU.
 	 **/
 	bool refresh(int xoffset, int yoffset, int w, int h);
@@ -126,7 +126,7 @@ public:
 	static FilterMode getDefaultMipmapFilter();
 
 	static bool hasAnisotropicFilteringSupport();
-	static bool hasCompressedTextureSupport(image::CompressedData::Format format, bool sRGB);
+	static bool hasCompressedTextureSupport(image::CompressedImageData::Format format, bool sRGB);
 	static bool hasSRGBSupport();
 
 	static bool getConstant(const char *in, FlagType &out);
@@ -145,7 +145,7 @@ private:
 	void loadFromCompressedData();
 	void loadFromImageData();
 
-	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
+	GLenum getCompressedFormat(image::CompressedImageData::Format cformat) const;
 
 	// The ImageData from which the texture is created. May be null if
 	// Compressed image data was used to create the texture.
@@ -153,7 +153,7 @@ private:
 
 	// Or the Compressed Image Data from which the texture is created. May be
 	// null if raw ImageData was used to create the texture.
-	StrongRef<love::image::CompressedData> cdata;
+	StrongRef<love::image::CompressedImageData> cdata;
 
 	// OpenGL texture identifier.
 	GLuint texture;

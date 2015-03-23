@@ -18,36 +18,48 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
-
-#include "common/config.h"
-#include "CompressedFormatHandler.h"
+// LOVE
+#include "wrap_CompressedData.h"
+#include "common/wrap_Data.h"
 
 namespace love
 {
-namespace image
-{
-namespace magpie
+namespace math
 {
 
-/**
- * Handles PKM files with compressed ETC data inside.
- **/
-class PKMHandler : public CompressedFormatHandler
+CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 {
-public:
+	return luax_checktype<CompressedData>(L, idx, MATH_COMPRESSED_DATA_ID);
+}
 
-	virtual ~PKMHandler() {}
+int w_CompressedData_getFormat(lua_State *L)
+{
+	CompressedData *t = luax_checkcompresseddata(L, 1);
 
-	// Implements CompressedFormatHandler.
-	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB);
+	const char *fname = nullptr;
+	if (!Compressor::getConstant(t->getFormat(), fname))
+		return luaL_error(L, "Unknown compressed data format.");
 
-}; // PKMHandler
+	lua_pushstring(L, fname);
+	return 1;
+}
 
-} // magpie
-} // image
+static const luaL_Reg functions[] =
+{
+	// Data
+	{ "getString", w_Data_getString },
+	{ "getPointer", w_Data_getPointer },
+	{ "getSize", w_Data_getSize },
+
+	{ "getFormat", w_CompressedData_getFormat },
+	{ 0, 0 },
+};
+
+
+extern "C" int luaopen_compresseddata(lua_State *L)
+{
+	return luax_register_type(L, MATH_COMPRESSED_DATA_ID, functions);
+}
+
+} // math
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_PKM_HANDLER_H

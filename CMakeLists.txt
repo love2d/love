@@ -339,13 +339,13 @@ source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL
 #
 
 set(LOVE_SRC_MODULE_IMAGE_ROOT
-	src/modules/image/CompressedData.cpp
-	src/modules/image/CompressedData.h
+	src/modules/image/CompressedImageData.cpp
+	src/modules/image/CompressedImageData.h
 	src/modules/image/Image.h
 	src/modules/image/ImageData.cpp
 	src/modules/image/ImageData.h
-	src/modules/image/wrap_CompressedData.cpp
-	src/modules/image/wrap_CompressedData.h
+	src/modules/image/wrap_CompressedImageData.cpp
+	src/modules/image/wrap_CompressedImageData.h
 	src/modules/image/wrap_Image.cpp
 	src/modules/image/wrap_Image.h
 	src/modules/image/wrap_ImageData.cpp
@@ -353,8 +353,8 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 )
 
 set(LOVE_SRC_MODULE_IMAGE_MAGPIE
-	src/modules/image/magpie/CompressedData.cpp
-	src/modules/image/magpie/CompressedData.h
+	src/modules/image/magpie/CompressedImageData.cpp
+	src/modules/image/magpie/CompressedImageData.h
 	src/modules/image/magpie/CompressedFormatHandler.h
 	src/modules/image/magpie/ddsHandler.cpp
 	src/modules/image/magpie/ddsHandler.h
@@ -446,12 +446,18 @@ source_group("modules\\keyboard\\sdl" FILES ${LOVE_SRC_MODULE_KEYBOARD_SDL})
 set(LOVE_SRC_MODULE_MATH
 	src/modules/math/BezierCurve.cpp
 	src/modules/math/BezierCurve.h
+	src/modules/math/CompressedData.cpp
+	src/modules/math/CompressedData.h
+	src/modules/math/Compressor.cpp
+	src/modules/math/Compressor.h
 	src/modules/math/MathModule.cpp
 	src/modules/math/MathModule.h
 	src/modules/math/RandomGenerator.cpp
 	src/modules/math/RandomGenerator.h
 	src/modules/math/wrap_BezierCurve.cpp
 	src/modules/math/wrap_BezierCurve.h
+	src/modules/math/wrap_CompressedData.cpp
+	src/modules/math/wrap_CompressedData.h
 	src/modules/math/wrap_Math.cpp
 	src/modules/math/wrap_Math.h
 	src/modules/math/wrap_RandomGenerator.cpp
@@ -1075,6 +1081,7 @@ target_link_libraries(love_3p_luasocket ${MEGA_LUA})
 #
 # Lua 5.3's UTF-8 library
 #
+
 set(LOVE_SRC_3P_LUAUTF8
 	src/libraries/luautf8/lprefix.h
 	src/libraries/luautf8/lutf8lib.c
@@ -1083,6 +1090,19 @@ set(LOVE_SRC_3P_LUAUTF8
 
 add_library(love_3p_luautf8 ${LOVE_SRC_3P_LUAUTF8})
 target_link_libraries(love_3p_luautf8 ${MEGA_LUA})
+
+#
+# lz4
+#
+
+set(LOVE_SRC_3P_LZ4
+	src/libraries/lz4/lz4.c
+	src/libraries/lz4/lz4.h
+	src/libraries/lz4/lz4hc.c
+	src/libraries/lz4/lz4hc.h
+)
+
+add_library(love_3p_lz4 ${LOVE_SRC_3P_LZ4})
 
 #
 # noise1234
@@ -1150,6 +1170,7 @@ set(LOVE_3P
 	love_3p_lodepng
 	love_3p_luasocket
 	love_3p_luautf8
+	love_3p_lz4
 	love_3p_noise1234
 	love_3p_wuff
 )

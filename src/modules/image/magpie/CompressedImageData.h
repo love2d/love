@@ -18,7 +18,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "CompressedData.h"
+#ifndef LOVE_IMAGE_MAGPIE_COMPRESSED_IMAGE_DATA_H
+#define LOVE_IMAGE_MAGPIE_COMPRESSED_IMAGE_DATA_H
+
+// LOVE
+#include "CompressedFormatHandler.h"
+#include "filesystem/FileData.h"
+#include "image/CompressedImageData.h"
+
+// C++
+#include <list>
 
 namespace love
 {
@@ -27,45 +36,17 @@ namespace image
 namespace magpie
 {
 
-CompressedData::CompressedData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata)
+class CompressedImageData : public love::image::CompressedImageData
 {
-	CompressedFormatHandler *parser = nullptr;
+public:
 
-	for (CompressedFormatHandler *handler : formats)
-	{
-		if (handler->canParse(filedata))
-		{
-			parser = handler;
-			break;
-		}
-	}
+	CompressedImageData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata);
+	virtual ~CompressedImageData();
 
-	if (parser == nullptr)
-		throw love::Exception("Could not parse compressed data: Unknown format.");
-
-	data = parser->parse(filedata, dataImages, dataSize, format, sRGB);
-
-	if (data == nullptr)
-		throw love::Exception("Could not parse compressed data.");
-
-	if (format == FORMAT_UNKNOWN)
-	{
-		delete[] data;
-		throw love::Exception("Could not parse compressed data: Unknown format.");
-	}
-
-	if (dataImages.size() == 0 || dataSize == 0)
-	{
-		delete[] data;
-		throw love::Exception("Could not parse compressed data: No valid data?");
-	}
-}
-
-CompressedData::~CompressedData()
-{
-	delete[] data;
-}
+}; // CompressedImageData
 
 } // magpie
 } // image
 } // love
+
+#endif // LOVE_IMAGE_MAGPIE_COMPRESSED_IMAGE_DATA_H

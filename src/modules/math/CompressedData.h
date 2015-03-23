@@ -18,46 +18,58 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
+#ifndef LOVE_MATH_COMPRESSED_DATA_H
+#define LOVE_MATH_COMPRESSED_DATA_H
 
 // LOVE
-#include "CompressedFormatHandler.h"
-
-// dds parser
-#include "ddsparse/ddsparse.h"
-
-// STL
-#include <string>
+#include "common/Data.h"
+#include "Compressor.h"
 
 namespace love
 {
-namespace image
-{
-namespace magpie
+namespace math
 {
 
 /**
- * Interface between CompressedImageData and the ddsparse library.
+ * Stores byte data compressed via Math::compress.
  **/
-class DDSHandler : public CompressedFormatHandler
+class CompressedData : public love::Data
 {
 public:
 
-	virtual ~DDSHandler() {}
+	/**
+	 * Constructor just stores already-compressed data in the object.
+	 **/
+	CompressedData(Compressor::Format format, char *cdata, size_t compressedsize, size_t rawsize, bool own = true);
+	virtual ~CompressedData();
 
-	// Implements CompressedFormatHandler.
-	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB);
+	/**
+	 * Gets the format that was used to compress the data.
+	 **/
+	Compressor::Format getFormat() const;
+
+	/**
+	 * Gets the original (uncompressed) size of the compressed data. May return
+	 * 0 if the uncompressed size is unknown.
+	 **/
+	size_t getDecompressedSize() const;
+
+	// Implements Data.
+	void *getData() const override;
+	size_t getSize() const override;
 
 private:
 
-	static CompressedImageData::Format convertFormat(dds::Format ddsformat, bool &sRGB);
+	Compressor::Format format;
 
-}; // DDSHandler
+	char *data;
+	size_t dataSize;
 
-} // magpie
-} // image
+	size_t originalSize;
+
+}; // CompressedData
+
+} // math
 } // love
 
-#endif // LOVE_IMAGE_MAGPIE_DDS_HANDLER_H
+#endif // LOVE_MATH_COMPRESSED_DATA_H

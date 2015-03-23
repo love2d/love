@@ -59,7 +59,7 @@ Image::Image(love::image::ImageData *data, const Flags &flags)
 	++imageCount;
 }
 
-Image::Image(love::image::CompressedData *cdata, const Flags &flags)
+Image::Image(love::image::CompressedImageData *cdata, const Flags &flags)
 	: data(nullptr)
 	, cdata(cdata)
 	, texture(0)
@@ -76,7 +76,7 @@ Image::Image(love::image::CompressedData *cdata, const Flags &flags)
 
 	if (flags.mipmaps)
 	{
-		// The mipmap texture data comes from the CompressedData in this case,
+		// The mipmap texture data comes from the CompressedImageData in this case,
 		// so we should make sure it has all necessary mipmap levels.
 		if (cdata->getMipmapCount() < (int) log2(std::max(width, height)) + 1)
 			throw love::Exception("Image cannot have mipmaps: compressed image data does not have all required mipmap levels.");
@@ -198,7 +198,7 @@ bool Image::loadVolatile()
 	if (isCompressed() && !hasCompressedTextureSupport(cdata->getFormat(), flags.sRGB))
 	{
 		const char *str;
-		if (image::CompressedData::getConstant(cdata->getFormat(), str))
+		if (image::CompressedImageData::getConstant(cdata->getFormat(), str))
 		{
 			throw love::Exception("Cannot create image: "
 			                      "%s%s compressed images are not supported on this system.", flags.sRGB ? "sRGB " : "", str);
@@ -392,7 +392,7 @@ love::image::ImageData *Image::getImageData() const
 	return data.get();
 }
 
-love::image::CompressedData *Image::getCompressedData() const
+love::image::CompressedImageData *Image::getCompressedData() const
 {
 	return cdata.get();
 }
@@ -491,87 +491,87 @@ bool Image::isCompressed() const
 	return compressed;
 }
 
-GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
+GLenum Image::getCompressedFormat(image::CompressedImageData::Format cformat) const
 {
 	switch (cformat)
 	{
-	case image::CompressedData::FORMAT_DXT1:
+	case image::CompressedImageData::FORMAT_DXT1:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
 		else
 			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-	case image::CompressedData::FORMAT_DXT3:
+	case image::CompressedImageData::FORMAT_DXT3:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
 		else
 			return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-	case image::CompressedData::FORMAT_DXT5:
+	case image::CompressedImageData::FORMAT_DXT5:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
 		else
 			return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-	case image::CompressedData::FORMAT_BC4:
+	case image::CompressedImageData::FORMAT_BC4:
 		return GL_COMPRESSED_RED_RGTC1;
-	case image::CompressedData::FORMAT_BC4s:
+	case image::CompressedImageData::FORMAT_BC4s:
 		return GL_COMPRESSED_SIGNED_RED_RGTC1;
-	case image::CompressedData::FORMAT_BC5:
+	case image::CompressedImageData::FORMAT_BC5:
 		return GL_COMPRESSED_RG_RGTC2;
-	case image::CompressedData::FORMAT_BC5s:
+	case image::CompressedImageData::FORMAT_BC5s:
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
-	case image::CompressedData::FORMAT_BC6H:
+	case image::CompressedImageData::FORMAT_BC6H:
 		return GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
-	case image::CompressedData::FORMAT_BC6Hs:
+	case image::CompressedImageData::FORMAT_BC6Hs:
 		return GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
-	case image::CompressedData::FORMAT_BC7:
+	case image::CompressedImageData::FORMAT_BC7:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
 		else
 			return GL_COMPRESSED_RGBA_BPTC_UNORM;
-	case image::CompressedData::FORMAT_ETC1:
+	case image::CompressedImageData::FORMAT_ETC1:
 		// The ETC2 format can load ETC1 textures.
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
 			return GL_COMPRESSED_RGB8_ETC2;
 		else
 			return GL_ETC1_RGB8_OES;
-	case image::CompressedData::FORMAT_ETC2_RGB:
+	case image::CompressedImageData::FORMAT_ETC2_RGB:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB8_ETC2;
 		else
 			return GL_COMPRESSED_RGB8_ETC2;
-	case image::CompressedData::FORMAT_ETC2_RGBA:
+	case image::CompressedImageData::FORMAT_ETC2_RGBA:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
 		else
 			return GL_COMPRESSED_RGBA8_ETC2_EAC;
-	case image::CompressedData::FORMAT_ETC2_RGBA1:
+	case image::CompressedImageData::FORMAT_ETC2_RGBA1:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 		else
 			return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
-	case image::CompressedData::FORMAT_EAC_R:
+	case image::CompressedImageData::FORMAT_EAC_R:
 		return GL_COMPRESSED_R11_EAC;
-	case image::CompressedData::FORMAT_EAC_Rs:
+	case image::CompressedImageData::FORMAT_EAC_Rs:
 		return GL_COMPRESSED_SIGNED_R11_EAC;
-	case image::CompressedData::FORMAT_EAC_RG:
+	case image::CompressedImageData::FORMAT_EAC_RG:
 		return GL_COMPRESSED_RG11_EAC;
-	case image::CompressedData::FORMAT_EAC_RGs:
+	case image::CompressedImageData::FORMAT_EAC_RGs:
 		return GL_COMPRESSED_SIGNED_RG11_EAC;
-	case image::CompressedData::FORMAT_PVR1_RGB2:
+	case image::CompressedImageData::FORMAT_PVR1_RGB2:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT;
 		else
 			return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
-	case image::CompressedData::FORMAT_PVR1_RGB4:
+	case image::CompressedImageData::FORMAT_PVR1_RGB4:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT;
 		else
 			return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-	case image::CompressedData::FORMAT_PVR1_RGBA2:
+	case image::CompressedImageData::FORMAT_PVR1_RGBA2:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT;
 		else
 			return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
-	case image::CompressedData::FORMAT_PVR1_RGBA4:
+	case image::CompressedImageData::FORMAT_PVR1_RGBA4:
 		if (flags.sRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT;
 		else
@@ -589,40 +589,40 @@ bool Image::hasAnisotropicFilteringSupport()
 	return GLAD_EXT_texture_filter_anisotropic;
 }
 
-bool Image::hasCompressedTextureSupport(image::CompressedData::Format format, bool sRGB)
+bool Image::hasCompressedTextureSupport(image::CompressedImageData::Format format, bool sRGB)
 {
 	switch (format)
 	{
-	case image::CompressedData::FORMAT_DXT1:
+	case image::CompressedImageData::FORMAT_DXT1:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;
-	case image::CompressedData::FORMAT_DXT3:
+	case image::CompressedImageData::FORMAT_DXT3:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt3;
-	case image::CompressedData::FORMAT_DXT5:
+	case image::CompressedImageData::FORMAT_DXT5:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt5;
-	case image::CompressedData::FORMAT_BC4:
-	case image::CompressedData::FORMAT_BC4s:
-	case image::CompressedData::FORMAT_BC5:
-	case image::CompressedData::FORMAT_BC5s:
+	case image::CompressedImageData::FORMAT_BC4:
+	case image::CompressedImageData::FORMAT_BC4s:
+	case image::CompressedImageData::FORMAT_BC5:
+	case image::CompressedImageData::FORMAT_BC5s:
 		return (GLAD_VERSION_3_0 || GLAD_ARB_texture_compression_rgtc || GLAD_EXT_texture_compression_rgtc);
-	case image::CompressedData::FORMAT_BC6H:
-	case image::CompressedData::FORMAT_BC6Hs:
-	case image::CompressedData::FORMAT_BC7:
+	case image::CompressedImageData::FORMAT_BC6H:
+	case image::CompressedImageData::FORMAT_BC6Hs:
+	case image::CompressedImageData::FORMAT_BC7:
 		return GLAD_VERSION_4_2 || GLAD_ARB_texture_compression_bptc;
-	case image::CompressedData::FORMAT_ETC1:
+	case image::CompressedImageData::FORMAT_ETC1:
 		// ETC2 support guarantees ETC1 support as well.
 		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_OES_compressed_ETC1_RGB8_texture;
-	case image::CompressedData::FORMAT_ETC2_RGB:
-	case image::CompressedData::FORMAT_ETC2_RGBA:
-	case image::CompressedData::FORMAT_ETC2_RGBA1:
-	case image::CompressedData::FORMAT_EAC_R:
-	case image::CompressedData::FORMAT_EAC_Rs:
-	case image::CompressedData::FORMAT_EAC_RG:
-	case image::CompressedData::FORMAT_EAC_RGs:
+	case image::CompressedImageData::FORMAT_ETC2_RGB:
+	case image::CompressedImageData::FORMAT_ETC2_RGBA:
+	case image::CompressedImageData::FORMAT_ETC2_RGBA1:
+	case image::CompressedImageData::FORMAT_EAC_R:
+	case image::CompressedImageData::FORMAT_EAC_Rs:
+	case image::CompressedImageData::FORMAT_EAC_RG:
+	case image::CompressedImageData::FORMAT_EAC_RGs:
 		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility;
-	case image::CompressedData::FORMAT_PVR1_RGB2:
-	case image::CompressedData::FORMAT_PVR1_RGB4:
-	case image::CompressedData::FORMAT_PVR1_RGBA2:
-	case image::CompressedData::FORMAT_PVR1_RGBA4:
+	case image::CompressedImageData::FORMAT_PVR1_RGB2:
+	case image::CompressedImageData::FORMAT_PVR1_RGB4:
+	case image::CompressedImageData::FORMAT_PVR1_RGBA2:
+	case image::CompressedImageData::FORMAT_PVR1_RGBA4:
 		if (sRGB)
 			return GLAD_EXT_pvrtc_sRGB;
 		else

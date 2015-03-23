@@ -86,9 +86,19 @@ Math Math::instance;
 
 Math::Math()
 	: rng()
+	, compressors()
 {
 	// prevent the runtime from free()-ing this
 	retain();
+
+	for (int i = 0; i < (int) Compressor::FORMAT_MAX_ENUM; i++)
+		compressors[i] = Compressor::Create((Compressor::Format) i);
+}
+
+Math::~Math()
+{
+	for (Compressor *c : compressors)
+		delete c;
 }
 
 RandomGenerator *Math::newRandomGenerator()
@@ -221,6 +231,55 @@ float Math::linearToGamma(float c) const
 		return c * 12.92f;
 	else
 		return 1.055f * powf(c, 0.41666f) - 0.055f;
+}
+
+CompressedData *Math::compress(Compressor::Format format, love::Data *rawdata, int level)
+{
+	return compress(format, (const char *) rawdata->getData(), rawdata->getSize(), level);
+}
+
+CompressedData *Math::compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
+{
+	if (format == Compressor::FORMAT_MAX_ENUM || !compressors[format])
+		throw love::Exception("Invalid compression format.");
+
+	size_t compressedsize = 0;
+	Compressor *compressor = compressors[format];
+
+	char *cbytes = compressor->compress(rawbytes, rawsize, level, compressedsize);
+
+	CompressedData *data = nullptr;
+
+	try
+	{
+		data = new CompressedData(format, cbytes, compressedsize, rawsize, true);
+	}
+	catch (love::Exception &)
+	{
+		delete[] cbytes;
+		throw;
+	}
+
+	return data;
+}
+
+char *Math::decompress(CompressedData *data, size_t &decompressedsize)
+{
+	size_t rawsize = data->getDecompressedSize();
+
+	char *rawbytes = decompress(data->getFormat(), (const char *) data->getData(),
+	                            data->getSize(), rawsize);
+
+	decompressedsize = rawsize;
+	return rawbytes;
+}
+
+char *Math::decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize)
+{
+	if (format == Compressor::FORMAT_MAX_ENUM || !compressors[format])
+		throw love::Exception("Invalid compression format.");
+
+	return compressors[format]->decompress(cbytes, compressedsize, rawsize);
 }
 
 } // math

@@ -18,27 +18,61 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_WRAP_COMRESSED_DATA_H
-#define LOVE_IMAGE_WRAP_COMRESSED_DATA_H
-
 // LOVE
-#include "common/runtime.h"
 #include "CompressedData.h"
 
 namespace love
 {
-namespace image
+namespace math
 {
 
-CompressedData *luax_checkcompresseddata(lua_State *L, int idx);
-int w_CompressedData_getWidth(lua_State *L);
-int w_CompressedData_getHeight(lua_State *L);
-int w_CompressedData_getDimensions(lua_State *L);
-int w_CompressedData_getMipmapCount(lua_State *L);
-int w_CompressedData_getFormat(lua_State *L);
-extern "C" int luaopen_compresseddata(lua_State *L);
+CompressedData::CompressedData(Compressor::Format format, char *cdata, size_t compressedsize, size_t rawsize, bool own)
+	: format(format)
+	, data(nullptr)
+	, dataSize(compressedsize)
+	, originalSize(rawsize)
+{
+	if (own)
+		data = cdata;
+	else
+	{
+		try
+		{
+			data = new char[dataSize];
+		}
+		catch (std::bad_alloc &)
+		{
+			throw love::Exception("Out of memory.");
+		}
 
-} // image
+		memcpy(data, cdata, dataSize);
+	}
+}
+
+CompressedData::~CompressedData()
+{
+	delete[] data;
+}
+
+Compressor::Format CompressedData::getFormat() const
+{
+	return format;
+}
+
+size_t CompressedData::getDecompressedSize() const
+{
+	return originalSize;
+}
+
+void *CompressedData::getData() const
+{
+	return data;
+}
+
+size_t CompressedData::getSize() const
+{
+	return dataSize;
+}
+
+} // math
 } // love
-
-#endif // LOVE_IMAGE_WRAP_COMRESSED_DATA_H

@@ -22,6 +22,8 @@
 #define LOVE_MATH_MODMATH_H
 
 #include "RandomGenerator.h"
+#include "CompressedData.h"
+#include "Compressor.h"
 
 // LOVE
 #include "common/Module.h"
@@ -50,8 +52,7 @@ private:
 
 public:
 
-	virtual ~Math()
-	{}
+	virtual ~Math();
 
 	/**
 	 * @copydoc RandomGenerator::random()
@@ -162,11 +163,48 @@ public:
 	float noise(float x, float y, float z) const;
 	float noise(float x, float y, float z, float w) const;
 
+	/**
+	 * Compresses a block of memory using the given compression format.
+	 *
+	 * @param format The compression format to use.
+	 * @param rawdata The data to compress.
+	 * @param level The amount of compression to apply (between 0 and 9.)
+	 *              A value of -1 indicates the default amount of compression.
+	 *              Specific formats may not use every level.
+	 * @return The newly compressed data.
+	 **/
+	CompressedData *compress(Compressor::Format format, Data *rawdata, int level = -1);
+	CompressedData *compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level = -1);
+
+	/**
+	 * Decompresses existing compressed data into raw bytes.
+	 *
+	 * @param[in] data The compressed data to decompress.
+	 * @param[out] decompressedsize The size in bytes of the decompressed data.
+	 * @return The newly decompressed data (allocated with new[]).
+	 **/
+	char *decompress(CompressedData *data, size_t &decompressedsize);
+
+	/**
+	 * Decompresses existing compressed data into raw bytes.
+	 *
+	 * @param[in] format The compression format the data is in.
+	 * @param[in] cbytes The compressed data to decompress.
+	 * @param[in] compressedSize The size in bytes of the compressed data.
+	 * @param[inout] rawsize On input, the size in bytes of the original
+	 *               uncompressed data, or 0 if unknown. On return, the size in
+	 *               bytes of the newly decompressed data.
+	 * @return The newly decompressed data (allocated with new[]).
+	 **/
+	char *decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize);
+
 	static Math instance;
 
 private:
 
 	Math();
+
+	Compressor *compressors[Compressor::FORMAT_MAX_ENUM];
 
 }; // Math
 

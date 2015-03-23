@@ -21,7 +21,7 @@
 #include "Image.h"
 
 #include "ImageData.h"
-#include "CompressedData.h"
+#include "CompressedImageData.h"
 
 #include "JPEGHandler.h"
 #include "PNGHandler.h"
@@ -91,9 +91,9 @@ love::image::ImageData *Image::newImageData(int width, int height, void *data, b
 	return new ImageData(formatHandlers, width, height, data, own);
 }
 
-love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)
+love::image::CompressedImageData *Image::newCompressedData(love::filesystem::FileData *data)
 {
-	return new CompressedData(compressedFormatHandlers, data);
+	return new CompressedImageData(compressedFormatHandlers, data);
 }
 
 bool Image::isCompressed(love::filesystem::FileData *data)

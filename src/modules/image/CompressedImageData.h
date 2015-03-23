@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_COMPRESSED_DATA_H
-#define LOVE_IMAGE_COMPRESSED_DATA_H
+#ifndef LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H
+#define LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H
 
 // LOVE
 #include "common/Data.h"
@@ -35,11 +35,11 @@ namespace image
 {
 
 /**
- * CompressedData represents image data which is designed to be uploaded to the
- * GPU and rendered in its compressed form, without being un-compressed.
+ * CompressedImageData represents image data which is designed to be uploaded to
+ * the GPU and rendered in its compressed form, without being decompressed.
  * http://renderingpipeline.com/2012/07/texture-compression/
  **/
-class CompressedData : public Data
+class CompressedImageData : public Data
 {
 public:
 
@@ -81,8 +81,8 @@ public:
 		uint8 *data; // Should not have ownership of the data.
 	};
 
-	CompressedData();
-	virtual ~CompressedData();
+	CompressedImageData();
+	virtual ~CompressedImageData();
 
 	// Implements Data.
 	virtual void *getData() const;
@@ -144,9 +144,9 @@ private:
 	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
 	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
-}; // CompressedData
+}; // CompressedImageData
 
 } // image
 } // love
 
-#endif // LOVE_IMAGE_COMPRESSED_DATA_H
+#endif // LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H

@@ -231,7 +231,7 @@ static const char *imageFlagName(Image::FlagType flagtype)
 int w_newImage(lua_State *L)
 {
 	love::image::ImageData *data = nullptr;
-	love::image::CompressedData *cdata = nullptr;
+	love::image::CompressedImageData *cdata = nullptr;
 
 	Image::Flags flags;
 	if (!lua_isnoneornil(L, 2))
@@ -243,7 +243,7 @@ int w_newImage(lua_State *L)
 
 	bool releasedata = false;
 
-	// Convert to ImageData / CompressedData, if necessary.
+	// Convert to ImageData / CompressedImageData, if necessary.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
 	{
 		love::image::Image *image = Module::getInstance<love::image::Image>(Module::M_IMAGE);
@@ -270,8 +270,8 @@ int w_newImage(lua_State *L)
 		// Lua's GC won't release the image data, so we should do it ourselves.
 		releasedata = true;
 	}
-	else if (luax_istype(L, 1, IMAGE_COMPRESSED_DATA_ID))
-		cdata = luax_checktype<love::image::CompressedData>(L, 1, IMAGE_COMPRESSED_DATA_ID);
+	else if (luax_istype(L, 1, IMAGE_COMPRESSED_IMAGE_DATA_ID))
+		cdata = luax_checktype<love::image::CompressedImageData>(L, 1, IMAGE_COMPRESSED_IMAGE_DATA_ID);
 	else
 		data = luax_checktype<love::image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
 
@@ -1125,17 +1125,17 @@ int w_getCanvasFormats(lua_State *L)
 
 int w_getCompressedImageFormats(lua_State *L)
 {
-	lua_createtable(L, 0, (int) image::CompressedData::FORMAT_MAX_ENUM);
+	lua_createtable(L, 0, (int) image::CompressedImageData::FORMAT_MAX_ENUM);
 
-	for (int i = 0; i < (int) image::CompressedData::FORMAT_MAX_ENUM; i++)
+	for (int i = 0; i < (int) image::CompressedImageData::FORMAT_MAX_ENUM; i++)
 	{
-		image::CompressedData::Format format = (image::CompressedData::Format) i;
+		image::CompressedImageData::Format format = (image::CompressedImageData::Format) i;
 		const char *name = nullptr;
 
-		if (format == image::CompressedData::FORMAT_UNKNOWN)
+		if (format == image::CompressedImageData::FORMAT_UNKNOWN)
 			continue;
 
-		if (!image::CompressedData::getConstant(format, name))
+		if (!image::CompressedImageData::getConstant(format, name))
 			continue;
 
 		luax_pushboolean(L, Image::hasCompressedTextureSupport(format, false));

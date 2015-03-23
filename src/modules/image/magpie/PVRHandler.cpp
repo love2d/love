@@ -163,28 +163,28 @@ void ConvertPVRHeader(PVRTexHeaderV2 header2, PVRTexHeaderV3 *header3)
 	}
 }
 
-CompressedData::Format convertFormat(PVRV3PixelFormat format)
+static CompressedImageData::Format convertFormat(PVRV3PixelFormat format)
 {
 	switch (format)
 	{
 	case ePVRTPF_PVRTCI_2bpp_RGB:
-		return CompressedData::FORMAT_PVR1_RGB2;
+		return CompressedImageData::FORMAT_PVR1_RGB2;
 	case ePVRTPF_PVRTCI_2bpp_RGBA:
-		return CompressedData::FORMAT_PVR1_RGBA2;
+		return CompressedImageData::FORMAT_PVR1_RGBA2;
 	case ePVRTPF_PVRTCI_4bpp_RGB:
-		return CompressedData::FORMAT_PVR1_RGB4;
+		return CompressedImageData::FORMAT_PVR1_RGB4;
 	case ePVRTPF_PVRTCI_4bpp_RGBA:
-		return CompressedData::FORMAT_PVR1_RGBA4;
+		return CompressedImageData::FORMAT_PVR1_RGBA4;
 	case ePVRTPF_ETC1:
-		return CompressedData::FORMAT_ETC1;
+		return CompressedImageData::FORMAT_ETC1;
 	case ePVRTPF_DXT1:
-		return CompressedData::FORMAT_DXT1;
+		return CompressedImageData::FORMAT_DXT1;
 	case ePVRTPF_DXT3:
-		return CompressedData::FORMAT_DXT3;
+		return CompressedImageData::FORMAT_DXT3;
 	case ePVRTPF_DXT5:
-		return CompressedData::FORMAT_DXT5;
+		return CompressedImageData::FORMAT_DXT5;
 	default:
-		return CompressedData::FORMAT_UNKNOWN;
+		return CompressedImageData::FORMAT_UNKNOWN;
 	}
 }
 
@@ -294,7 +294,7 @@ bool PVRHandler::canParse(const filesystem::FileData *data)
 	return false;
 }
 
-uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
+uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
@@ -324,9 +324,9 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 	if (header3.depth > 1)
 		throw love::Exception("Image depths greater than 1 in PVR files are unsupported.");
 
-	CompressedData::Format cformat = convertFormat((PVRV3PixelFormat) header3.pixelFormat);
+	CompressedImageData::Format cformat = convertFormat((PVRV3PixelFormat) header3.pixelFormat);
 
-	if (cformat == CompressedData::FORMAT_UNKNOWN)
+	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PVR file: unsupported image format.");
 
 	size_t totalsize = 0;
@@ -361,7 +361,7 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 		if (curoffset + mipsize > totalsize)
 			break; // Just in case.
 
-		CompressedData::SubImage mip;
+		CompressedImageData::SubImage mip;
 		mip.width = std::max((int) header3.width >> i, 1);
 		mip.height = std::max((int) header3.height >> i, 1);
 		mip.size = mipsize;

@@ -70,13 +70,13 @@ int w_newCompressedData(lua_State *L)
 {
 	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
 
-	CompressedData *t = nullptr;
+	CompressedImageData *t = nullptr;
 	luax_catchexcept(L,
 		[&]() { t = instance()->newCompressedData(data); },
 		[&]() { data->release(); }
 	);
 
-	luax_pushtype(L, IMAGE_COMPRESSED_DATA_ID, t);
+	luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, t);
 	t->release();
 	return 1;
 }
@@ -103,7 +103,7 @@ static const luaL_Reg functions[] =
 static const lua_CFunction types[] =
 {
 	luaopen_imagedata,
-	luaopen_compresseddata,
+	luaopen_compressedimagedata,
 	0
 };
 

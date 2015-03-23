@@ -21,6 +21,7 @@
 #include "wrap_Math.h"
 #include "wrap_RandomGenerator.h"
 #include "wrap_BezierCurve.h"
+#include "wrap_CompressedData.h"
 #include "MathModule.h"
 #include "BezierCurve.h"
 
@@ -351,6 +352,64 @@ int w_noise(lua_State *L)
 	return 1;
 }
 
+int w_compress(lua_State *L)
+{
+	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
+	Compressor::Format format = Compressor::FORMAT_LZ4;
+
+	if (fstr && !Compressor::getConstant(fstr, format))
+		return luaL_error(L, "Invalid compressed format: %s", fstr);
+
+	int level = luaL_optint(L, 3, -1);
+
+	CompressedData *cdata = nullptr;
+	if (lua_isstring(L, 1))
+	{
+		size_t rawsize = 0;
+		const char *rawbytes = luaL_checklstring(L, 1, &rawsize);
+		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawbytes, rawsize, level); });
+	}
+	else
+	{
+		Data *rawdata = luax_checktype<Data>(L, 1, DATA_ID);
+		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawdata, level); });
+	}
+
+	luax_pushtype(L, MATH_COMPRESSED_DATA_ID, cdata);
+	return 1;
+}
+
+int w_decompress(lua_State *L)
+{
+	char *rawbytes = nullptr;
+	size_t rawsize = 0;
+
+	if (lua_isstring(L, 1))
+	{
+		Compressor::Format format = Compressor::FORMAT_LZ4;
+		const char *fstr = luaL_checkstring(L, 2);
+
+		if (!Compressor::getConstant(fstr, format))
+			return luaL_error(L, "Invalid compressed format: %s", fstr);
+
+		size_t compressedsize = 0;
+		const char *cbytes = luaL_checklstring(L, 1, &compressedsize);
+
+		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(format, cbytes, compressedsize, rawsize); });
+	}
+	else
+	{
+		CompressedData *data = luax_checkcompresseddata(L, 1);
+		rawsize = data->getDecompressedSize();
+		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(data, rawsize); });
+	}
+
+	lua_pushlstring(L, rawbytes, rawsize);
+	delete[] rawbytes;
+
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -367,6 +426,8 @@ static const luaL_Reg functions[] =
 	{ "gammaToLinear", w_gammaToLinear },
 	{ "linearToGamma", w_linearToGamma },
 	{ "noise", w_noise },
+	{ "compress", w_compress },
+	{ "decompress", w_decompress },
 	{ 0, 0 }
 };
 
@@ -374,6 +435,7 @@ static const lua_CFunction types[] =
 {
 	luaopen_randomgenerator,
 	luaopen_beziercurve,
+	luaopen_compresseddata,
 	0
 };
 

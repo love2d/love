@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_CompressedData.h"
+#include "wrap_CompressedImageData.h"
 #include "common/wrap_Data.h"
 
 namespace love
@@ -26,14 +26,14 @@ namespace love
 namespace image
 {
 
-CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
+CompressedImageData *luax_checkcompressedimagedata(lua_State *L, int idx)
 {
-	return luax_checktype<CompressedData>(L, idx, IMAGE_COMPRESSED_DATA_ID);
+	return luax_checktype<CompressedImageData>(L, idx, IMAGE_COMPRESSED_IMAGE_DATA_ID);
 }
 
-int w_CompressedData_getWidth(lua_State *L)
+int w_CompressedImageData_getWidth(lua_State *L)
 {
-	CompressedData *t = luax_checkcompresseddata(L, 1);
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
 	int miplevel = luaL_optint(L, 2, 1);
 	int width = 0;
 
@@ -43,9 +43,9 @@ int w_CompressedData_getWidth(lua_State *L)
 	return 1;
 }
 
-int w_CompressedData_getHeight(lua_State *L)
+int w_CompressedImageData_getHeight(lua_State *L)
 {
-	CompressedData *t = luax_checkcompresseddata(L, 1);
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
 	int miplevel = luaL_optint(L, 2, 1);
 	int height = 0;
 
@@ -55,9 +55,9 @@ int w_CompressedData_getHeight(lua_State *L)
 	return 1;
 }
 
-int w_CompressedData_getDimensions(lua_State *L)
+int w_CompressedImageData_getDimensions(lua_State *L)
 {
-	CompressedData *t = luax_checkcompresseddata(L, 1);
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
 	int miplevel = luaL_optint(L, 2, 1);
 	int width = 0, height = 0;
 
@@ -72,21 +72,21 @@ int w_CompressedData_getDimensions(lua_State *L)
 	return 2;
 }
 
-int w_CompressedData_getMipmapCount(lua_State *L)
+int w_CompressedImageData_getMipmapCount(lua_State *L)
 {
-	CompressedData *t = luax_checkcompresseddata(L, 1);
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
 	lua_pushinteger(L, t->getMipmapCount());
 	return 1;
 }
 
-int w_CompressedData_getFormat(lua_State *L)
+int w_CompressedImageData_getFormat(lua_State *L)
 {
-	CompressedData *t = luax_checkcompresseddata(L, 1);
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
 
-	image::CompressedData::Format format = t->getFormat();
+	image::CompressedImageData::Format format = t->getFormat();
 	const char *str;
 
-	if (image::CompressedData::getConstant(format, str))
+	if (image::CompressedImageData::getConstant(format, str))
 		lua_pushstring(L, str);
 	else
 		lua_pushstring(L, "unknown");
@@ -101,17 +101,17 @@ static const luaL_Reg functions[] =
 	{ "getPointer", w_Data_getPointer },
 	{ "getSize", w_Data_getSize },
 
-	{ "getWidth", w_CompressedData_getWidth },
-	{ "getHeight", w_CompressedData_getHeight },
-	{ "getDimensions", w_CompressedData_getDimensions },
-	{ "getMipmapCount", w_CompressedData_getMipmapCount },
-	{ "getFormat", w_CompressedData_getFormat },
+	{ "getWidth", w_CompressedImageData_getWidth },
+	{ "getHeight", w_CompressedImageData_getHeight },
+	{ "getDimensions", w_CompressedImageData_getDimensions },
+	{ "getMipmapCount", w_CompressedImageData_getMipmapCount },
+	{ "getFormat", w_CompressedImageData_getFormat },
 	{ 0, 0 },
 };
 
-extern "C" int luaopen_compresseddata(lua_State *L)
+extern "C" int luaopen_compressedimagedata(lua_State *L)
 {
-	return luax_register_type(L, IMAGE_COMPRESSED_DATA_ID, functions);
+	return luax_register_type(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, functions);
 }
 
 } // image

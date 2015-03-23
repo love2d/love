@@ -58,7 +58,7 @@ static const TypeBits *createTypeFlags()
 
 	// Image.
 	b[IMAGE_IMAGE_DATA_ID] = (one << IMAGE_IMAGE_DATA_ID) | b[DATA_ID];
-	b[IMAGE_COMPRESSED_DATA_ID] = (one << IMAGE_COMPRESSED_DATA_ID) | b[DATA_ID];
+	b[IMAGE_COMPRESSED_IMAGE_DATA_ID] = (one << IMAGE_COMPRESSED_IMAGE_DATA_ID) | b[DATA_ID];
 
 	// Joystick.
 	b[JOYSTICK_JOYSTICK_ID] = (one << JOYSTICK_JOYSTICK_ID) | b[OBJECT_ID];
@@ -66,6 +66,7 @@ static const TypeBits *createTypeFlags()
 	// Math.
 	b[MATH_RANDOM_GENERATOR_ID] = (one << MATH_RANDOM_GENERATOR_ID) | b[OBJECT_ID];
 	b[MATH_BEZIER_CURVE_ID] = (one << MATH_BEZIER_CURVE_ID) | b[OBJECT_ID];
+	b[MATH_COMPRESSED_DATA_ID] = (one <<MATH_COMPRESSED_DATA_ID) | b[DATA_ID];
 
 	// Audio.
 	b[AUDIO_SOURCE_ID] = (one << AUDIO_SOURCE_ID) | b[OBJECT_ID];
@@ -147,7 +148,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 
 	// Image
 	{"ImageData", IMAGE_IMAGE_DATA_ID},
-	{"CompressedData", IMAGE_COMPRESSED_DATA_ID},
+	{"CompressedImageData", IMAGE_COMPRESSED_IMAGE_DATA_ID},
 
 	// Joystick
 	{"Joystick", JOYSTICK_JOYSTICK_ID},
@@ -155,6 +156,7 @@ StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
 	// Math
 	{"RandomGenerator", MATH_RANDOM_GENERATOR_ID},
 	{"BezierCurve", MATH_BEZIER_CURVE_ID},
+	{"CompressedData", MATH_COMPRESSED_DATA_ID},
 
 	// Audio
 	{"Source", AUDIO_SOURCE_ID},

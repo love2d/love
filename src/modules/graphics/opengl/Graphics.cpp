@@ -656,7 +656,7 @@ Image *Graphics::newImage(love::image::ImageData *data, const Image::Flags &flag
 	return new Image(data, flags);
 }
 
-Image *Graphics::newImage(love::image::CompressedData *cdata, const Image::Flags &flags)
+Image *Graphics::newImage(love::image::CompressedImageData *cdata, const Image::Flags &flags)
 {
 	return new Image(cdata, flags);
 }

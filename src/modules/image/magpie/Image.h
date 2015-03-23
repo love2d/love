@@ -55,7 +55,7 @@ public:
 	love::image::ImageData *newImageData(int width, int height);
 	love::image::ImageData *newImageData(int width, int height, void *data, bool own = false);
 
-	love::image::CompressedData *newCompressedData(love::filesystem::FileData *data);
+	love::image::CompressedImageData *newCompressedData(love::filesystem::FileData *data);
 
 	bool isCompressed(love::filesystem::FileData *data);
 
@@ -64,7 +64,7 @@ private:
 	// Image format handlers we can use for decoding and encoding ImageData.
 	std::list<FormatHandler *> formatHandlers;
 
-	// Compressed image format handers we can use for parsing CompressedData.
+	// Compressed image format handers we can use for parsing CompressedImageData.
 	std::list<CompressedFormatHandler *> compressedFormatHandlers;
 
 }; // Image

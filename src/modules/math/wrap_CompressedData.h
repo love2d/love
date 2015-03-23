@@ -18,35 +18,23 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
-#define LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
+#ifndef LOVE_MATH_WRAP_COMPRESSED_DATA_H
+#define LOVE_MATH_WRAP_COMPRESSED_DATA_H
 
 // LOVE
-#include "CompressedFormatHandler.h"
-#include "filesystem/FileData.h"
-#include "image/CompressedData.h"
-
-// C++
-#include <list>
+#include "common/runtime.h"
+#include "CompressedData.h"
 
 namespace love
 {
-namespace image
-{
-namespace magpie
+namespace math
 {
 
-class CompressedData : public love::image::CompressedData
-{
-public:
+CompressedData *luax_checkcompresseddata(lua_State *L, int idx);
+int w_CompressedData_getFormat(lua_State *L);
+extern "C" int luaopen_compresseddata(lua_State *L);
 
-	CompressedData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata);
-	virtual ~CompressedData();
-
-}; // CompressedData
-
-} // magpie
-} // image
+} // math
 } // love
 
-#endif // LOVE_IMAGE_MAGPIE_COMPRESSED_DATA_H
+#endif // LOVE_MATH_WRAP_COMPRESSED_DATA_H

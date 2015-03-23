@@ -32,12 +32,12 @@ bool DDSHandler::canParse(const filesystem::FileData *data)
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
+uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
 {
 	if (!dds::isDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
 
-	CompressedData::Format texformat = CompressedData::FORMAT_UNKNOWN;
+	CompressedImageData::Format texformat = CompressedImageData::FORMAT_UNKNOWN;
 	bool isSRGB = false;
 
 	uint8 *data = nullptr;
@@ -51,7 +51,7 @@ uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 
 		texformat = convertFormat(parser.getFormat(), isSRGB);
 
-		if (texformat == CompressedData::FORMAT_UNKNOWN)
+		if (texformat == CompressedImageData::FORMAT_UNKNOWN)
 			throw love::Exception("Could not parse compressed data: Unsupported format.");
 
 		if (parser.getMipmapCount() == 0)
@@ -68,13 +68,13 @@ uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 
 		size_t dataOffset = 0;
 
-		// Copy the parsed mipmap levels from the FileData to our CompressedData.
+		// Copy the parsed mipmap levels from the FileData to our CompressedImageData.
 		for (size_t i = 0; i < parser.getMipmapCount(); i++)
 		{
 			// Fetch the data for this mipmap level.
 			const dds::Image *img = parser.getImageData(i);
 
-			CompressedData::SubImage mip;
+			CompressedImageData::SubImage mip;
 
 			mip.width = img->width;
 			mip.height = img->height;
@@ -101,37 +101,37 @@ uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 	return data;
 }
 
-CompressedData::Format DDSHandler::convertFormat(dds::Format ddsformat, bool &sRGB)
+CompressedImageData::Format DDSHandler::convertFormat(dds::Format ddsformat, bool &sRGB)
 {
 	sRGB = false;
 
 	switch (ddsformat)
 	{
 	case dds::FORMAT_DXT1:
-		return CompressedData::FORMAT_DXT1;
+		return CompressedImageData::FORMAT_DXT1;
 	case dds::FORMAT_DXT3:
-		return CompressedData::FORMAT_DXT3;
+		return CompressedImageData::FORMAT_DXT3;
 	case dds::FORMAT_DXT5:
-		return CompressedData::FORMAT_DXT5;
+		return CompressedImageData::FORMAT_DXT5;
 	case dds::FORMAT_BC4:
-		return CompressedData::FORMAT_BC4;
+		return CompressedImageData::FORMAT_BC4;
 	case dds::FORMAT_BC4s:
-		return CompressedData::FORMAT_BC4s;
+		return CompressedImageData::FORMAT_BC4s;
 	case dds::FORMAT_BC5:
-		return CompressedData::FORMAT_BC5;
+		return CompressedImageData::FORMAT_BC5;
 	case dds::FORMAT_BC5s:
-		return CompressedData::FORMAT_BC5s;
+		return CompressedImageData::FORMAT_BC5s;
 	case dds::FORMAT_BC6H:
-		return CompressedData::FORMAT_BC6H;
+		return CompressedImageData::FORMAT_BC6H;
 	case dds::FORMAT_BC6Hs:
-		return CompressedData::FORMAT_BC6Hs;
+		return CompressedImageData::FORMAT_BC6Hs;
 	case dds::FORMAT_BC7:
-		return CompressedData::FORMAT_BC7;
+		return CompressedImageData::FORMAT_BC7;
 	case dds::FORMAT_BC7srgb:
 		sRGB = true;
-		return CompressedData::FORMAT_BC7;
+		return CompressedImageData::FORMAT_BC7;
 	default:
-		return CompressedData::FORMAT_UNKNOWN;
+		return CompressedImageData::FORMAT_UNKNOWN;
 	}
 }
 

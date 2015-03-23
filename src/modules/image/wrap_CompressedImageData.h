@@ -18,36 +18,27 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
+#ifndef LOVE_IMAGE_WRAP_COMRESSED_IMAGE_DATA_H
+#define LOVE_IMAGE_WRAP_COMRESSED_IMAGE_DATA_H
 
-#include "common/config.h"
-#include "CompressedFormatHandler.h"
+// LOVE
+#include "common/runtime.h"
+#include "CompressedImageData.h"
 
 namespace love
 {
 namespace image
 {
-namespace magpie
-{
 
-/**
- * Handles PKM files with compressed ETC data inside.
- **/
-class PKMHandler : public CompressedFormatHandler
-{
-public:
+CompressedImageData *luax_checkcompressedimagedata(lua_State *L, int idx);
+int w_CompressedImageData_getWidth(lua_State *L);
+int w_CompressedImageData_getHeight(lua_State *L);
+int w_CompressedImageData_getDimensions(lua_State *L);
+int w_CompressedImageData_getMipmapCount(lua_State *L);
+int w_CompressedImageData_getFormat(lua_State *L);
+extern "C" int luaopen_compressedimagedata(lua_State *L);
 
-	virtual ~PKMHandler() {}
-
-	// Implements CompressedFormatHandler.
-	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB);
-
-}; // PKMHandler
-
-} // magpie
 } // image
 } // love
 
-#endif // LOVE_IMAGE_MAGPIE_PKM_HANDLER_H
+#endif // LOVE_IMAGE_WRAP_COMRESSED_IMAGE_DATA_H

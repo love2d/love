@@ -26,7 +26,7 @@
 #include "common/Module.h"
 #include "filesystem/File.h"
 #include "ImageData.h"
-#include "CompressedData.h"
+#include "CompressedImageData.h"
 
 namespace love
 {
@@ -76,11 +76,11 @@ public:
 	virtual ImageData *newImageData(int width, int height, void *data, bool own = false) = 0;
 
 	/**
-	 * Creates new CompressedData from FileData.
+	 * Creates new CompressedImageData from FileData.
 	 * @param data The FileData containing the compressed image data.
-	 * @return The new CompressedData.
+	 * @return The new CompressedImageData.
 	 **/
-	virtual CompressedData *newCompressedData(love::filesystem::FileData *data) = 0;
+	virtual CompressedImageData *newCompressedData(love::filesystem::FileData *data) = 0;
 
 	/**
 	 * Determines whether a FileData is Compressed image data or not.
