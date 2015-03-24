@@ -178,14 +178,14 @@ function love.createhandlers()
 		wheelmoved = function (x,y)
 			if love.wheelmoved then return love.wheelmoved(x,y) end
 		end,
-		touchpressed = function (id,x,y,dx,dy)
-			if love.touchpressed then return love.touchpressed(id,x,y,dx,dy) end
+		touchpressed = function (id,x,y,dx,dy,p)
+			if love.touchpressed then return love.touchpressed(id,x,y,dx,dy,p) end
 		end,
-		touchreleased = function (id,x,y,dx,dy)
-			if love.touchreleased then return love.touchreleased(id,x,y,dx,dy) end
+		touchreleased = function (id,x,y,dx,dy,p)
+			if love.touchreleased then return love.touchreleased(id,x,y,dx,dy,p) end
 		end,
-		touchmoved = function (id,x,y,dx,dy)
-			if love.touchmoved then return love.touchmoved(id,x,y,dx,dy) end
+		touchmoved = function (id,x,y,dx,dy,p)
+			if love.touchmoved then return love.touchmoved(id,x,y,dx,dy,p) end
 		end,
 		joystickpressed = function (j,b)
 			if love.joystickpressed then return love.joystickpressed(j,b) end
@@ -504,13 +504,13 @@ function love.run()
 		-- Process events.
 		if love.event then
 			love.event.pump()
-			for name, a,b,c,d,e in love.event.poll() do
+			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
 					if not love.quit or not love.quit() then
 						return
 					end
 				end
-				love.handlers[name](a,b,c,d,e)
+				love.handlers[name](a,b,c,d,e,f)
 			end
 		end
 

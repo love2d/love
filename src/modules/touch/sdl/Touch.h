@@ -43,11 +43,12 @@ public:
 
 	virtual ~Touch() {}
 
-	virtual std::vector<int64> getIDs() const;
-	virtual void getPosition(int64 id, double &x, double &y) const;
+	std::vector<int64> getIDs() const override;
+	void getPosition(int64 id, double &x, double &y) const override;
+	double getPressure(int64 id) const override;
 
 	// Implements Module.
-	virtual const char *getName() const;
+	const char *getName() const override;
 
 	// SDL has functions to query the state of touch presses, but unfortunately
 	// they are updated on a different thread in some backends, which causes

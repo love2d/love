@@ -19,7 +19,6 @@
  **/
 
 #include "common/config.h"
-#include "common/int.h"
 
 // LOVE
 #include "wrap_Touch.h"
@@ -32,6 +31,14 @@ namespace touch
 {
 
 #define instance() (Module::getInstance<Touch>(Module::M_TOUCH))
+
+int64 luax_checktouchid(lua_State *L, int idx)
+{
+	if (!lua_islightuserdata(L, idx))
+		return luax_typerror(L, idx, "touch id");
+
+	return (int64) (intptr_t) lua_touserdata(L, 1);
+}
 
 int w_getIDs(lua_State *L)
 {
@@ -55,10 +62,7 @@ int w_getIDs(lua_State *L)
 
 int w_getPosition(lua_State *L)
 {
-	if (!lua_islightuserdata(L, 1))
-		return luax_typerror(L, 1, "touch id");
-
-	int64 id = (int64) (intptr_t) lua_touserdata(L, 1);
+	int64 id = luax_checktouchid(L, 1);
 
 	double x = 0;
 	double y = 0;
@@ -70,10 +74,20 @@ int w_getPosition(lua_State *L)
 	return 2;
 }
 
+int w_getPressure(lua_State *L)
+{
+	int64 id = luax_checktouchid(L, 1);
+	double pressure = 0.0;
+	luax_catchexcept(L, [&](){ pressure = instance()->getPressure(id); });
+	lua_pushnumber(L, pressure);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getIDs", w_getIDs },
 	{ "getPosition", w_getPosition },
+	{ "getPressure", w_getPressure },
 	{ 0, 0 }
 };
 

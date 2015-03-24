@@ -51,6 +51,15 @@ void Touch::getPosition(int64 id, double &x, double &y) const
 	y = it->second.y;
 }
 
+double Touch::getPressure(int64 id) const
+{
+	const auto it = touches.find(id);
+	if (it == touches.end())
+		throw love::Exception("Invalid active touch ID: %d", id);
+
+	return it->second.pressure;
+}
+
 const char *Touch::getName() const
 {
 	return "love.touch.sdl";

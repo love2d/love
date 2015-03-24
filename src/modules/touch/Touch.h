@@ -46,6 +46,7 @@ public:
 		double y;  // Position in pixels along the y-axis.
 		double dx; // Amount in pixels moved along the x-axis.
 		double dy; // Amount in pixels moved along the y-axis.
+		double pressure;
 	};
 
 	virtual ~Touch() {}
@@ -62,6 +63,11 @@ public:
 	 * Gets the position in pixels of a specific touch, using its ID.
 	 **/
 	virtual void getPosition(int64 id, double &x, double &y) const = 0;
+
+	/**
+	 * Gets the pressure of a specific touch, using its ID.
+	 **/
+	virtual double getPressure(int64 id) const = 0;
 
 }; // Touch
 

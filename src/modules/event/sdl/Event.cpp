@@ -277,6 +277,7 @@ Message *Event::convert(const SDL_Event &e) const
 		touchinfo.y = e.tfinger.y;
 		touchinfo.dx = e.tfinger.dx;
 		touchinfo.dy = e.tfinger.dy;
+		touchinfo.pressure = e.tfinger.pressure;
 
 #ifdef LOVE_LINUX
 		// FIXME: hacky workaround for SDL not normalizing touch coordinates in
@@ -310,6 +311,7 @@ Message *Event::convert(const SDL_Event &e) const
 		vargs.push_back(new Variant(touchinfo.y));
 		vargs.push_back(new Variant(touchinfo.dx));
 		vargs.push_back(new Variant(touchinfo.dy));
+		vargs.push_back(new Variant(touchinfo.pressure));
 
 		if (e.type == SDL_FINGERDOWN)
 			txt = "touchpressed";
