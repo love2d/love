@@ -142,20 +142,14 @@ int w_setPosition(lua_State *L)
 
 int w_isDown(lua_State *L)
 {
-	Mouse::Button b;
-	unsigned int num = lua_gettop(L);
-	Mouse::Button *buttonlist = new Mouse::Button[num+1];
-	unsigned int counter = 0;
+	int num = lua_gettop(L);
+	std::vector<int> buttons;
+	buttons.reserve(num);
 
-	for (unsigned int i = 0; i < num; i++)
-	{
-		if (Mouse::getConstant(luaL_checkstring(L, i+1), b))
-			buttonlist[counter++] = b;
-	}
-	buttonlist[counter] = Mouse::BUTTON_MAX_ENUM;
+	for (int i = 0; i < num; i++)
+		buttons.push_back(luaL_checkint(L, i + 1));
 
-	luax_pushboolean(L, instance()->isDown(buttonlist));
-	delete[] buttonlist;
+	luax_pushboolean(L, instance()->isDown(buttons));
 	return 1;
 }
 

@@ -23,7 +23,6 @@
 #include "filesystem/DroppedFile.h"
 #include "filesystem/Filesystem.h"
 #include "keyboard/sdl/Keyboard.h"
-#include "mouse/Mouse.h"
 #include "joystick/JoystickModule.h"
 #include "joystick/sdl/Joystick.h"
 #include "touch/sdl/Touch.h"
@@ -158,7 +157,6 @@ Message *Event::convert(const SDL_Event &e) const
 
 	love::keyboard::Keyboard::Key key = love::keyboard::Keyboard::KEY_UNKNOWN;
 	love::keyboard::Keyboard::Scancode scancode = love::keyboard::Keyboard::SCANCODE_UNKNOWN;
-	love::mouse::Mouse::Button button;
 
 	const char *txt;
 	const char *txt2;
@@ -245,14 +243,26 @@ Message *Event::convert(const SDL_Event &e) const
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
-		if (buttons.find(e.button.button, button) && mouse::Mouse::getConstant(button, txt))
 		{
+			// SDL uses button index 3 for the right mouse button, but we use
+			// index 2.
+			int button = e.button.button;
+			switch (button)
+			{
+			case SDL_BUTTON_RIGHT:
+				button = 2;
+				break;
+			case SDL_BUTTON_MIDDLE:
+				button = 3;
+				break;
+			}
+
 			double x = (double) e.button.x;
 			double y = (double) e.button.y;
 			windowToPixelCoords(&x, &y);
 			vargs.push_back(new Variant(x));
 			vargs.push_back(new Variant(y));
-			vargs.push_back(new Variant(txt, strlen(txt)));
+			vargs.push_back(new Variant((double) button));
 			vargs.push_back(new Variant(e.button.which == SDL_TOUCH_MOUSEID));
 			msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
 							  "mousepressed" : "mousereleased",
@@ -797,20 +807,6 @@ std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::createKeyMap()
 }
 
 std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::keys = Event::createKeyMap();
-
-EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
-{
-	{love::mouse::Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
-	{love::mouse::Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},
-	{love::mouse::Mouse::BUTTON_RIGHT, SDL_BUTTON_RIGHT},
-	{love::mouse::Mouse::BUTTON_X1, SDL_BUTTON_X1},
-	{love::mouse::Mouse::BUTTON_X2, SDL_BUTTON_X2+0},
-	{love::mouse::Mouse::BUTTON_X3, SDL_BUTTON_X2+1},
-	{love::mouse::Mouse::BUTTON_X4, SDL_BUTTON_X2+2},
-	{love::mouse::Mouse::BUTTON_X5, SDL_BUTTON_X2+3},
-};
-
-EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> Event::buttons(Event::buttonEntries, sizeof(Event::buttonEntries));
 
 } // sdl
 } // event

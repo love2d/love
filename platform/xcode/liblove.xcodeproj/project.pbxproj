@@ -565,8 +565,6 @@
 		FA0B7DE51A95902C000E1D17 /* Cursor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C0E1A95902C000E1D17 /* Cursor.cpp */; };
 		FA0B7DE61A95902C000E1D17 /* Cursor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C0E1A95902C000E1D17 /* Cursor.cpp */; };
 		FA0B7DE71A95902C000E1D17 /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C0F1A95902C000E1D17 /* Cursor.h */; };
-		FA0B7DE81A95902C000E1D17 /* Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C101A95902C000E1D17 /* Mouse.cpp */; };
-		FA0B7DE91A95902C000E1D17 /* Mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C101A95902C000E1D17 /* Mouse.cpp */; };
 		FA0B7DEA1A95902C000E1D17 /* Mouse.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C111A95902C000E1D17 /* Mouse.h */; };
 		FA0B7DEB1A95902C000E1D17 /* Cursor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C131A95902C000E1D17 /* Cursor.cpp */; };
 		FA0B7DEC1A95902C000E1D17 /* Cursor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C131A95902C000E1D17 /* Cursor.cpp */; };
@@ -1301,7 +1299,6 @@
 		FA0B7C0C1A95902C000E1D17 /* wrap_RandomGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_RandomGenerator.h; sourceTree = "<group>"; };
 		FA0B7C0E1A95902C000E1D17 /* Cursor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cursor.cpp; sourceTree = "<group>"; };
 		FA0B7C0F1A95902C000E1D17 /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
-		FA0B7C101A95902C000E1D17 /* Mouse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mouse.cpp; sourceTree = "<group>"; };
 		FA0B7C111A95902C000E1D17 /* Mouse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mouse.h; sourceTree = "<group>"; };
 		FA0B7C131A95902C000E1D17 /* Cursor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cursor.cpp; sourceTree = "<group>"; };
 		FA0B7C141A95902C000E1D17 /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
@@ -2403,7 +2400,6 @@
 			children = (
 				FA0B7C0E1A95902C000E1D17 /* Cursor.cpp */,
 				FA0B7C0F1A95902C000E1D17 /* Cursor.h */,
-				FA0B7C101A95902C000E1D17 /* Mouse.cpp */,
 				FA0B7C111A95902C000E1D17 /* Mouse.h */,
 				FA0B7C121A95902C000E1D17 /* sdl */,
 				FA0B7C171A95902C000E1D17 /* wrap_Cursor.cpp */,
@@ -3267,7 +3263,6 @@
 				FA0B7D3D1A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7B351A958EA3000E1D17 /* wuff_convert.c in Sources */,
 				FA0B7E431A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
-				FA0B7DE91A95902C000E1D17 /* Mouse.cpp in Sources */,
 				FA0B7CE61A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA0B7AA21A958EA3000E1D17 /* b2PulleyJoint.cpp in Sources */,
 				FA0B7CCE1A95902C000E1D17 /* Audio.cpp in Sources */,
@@ -3553,7 +3548,6 @@
 				FA0B7D3C1A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7A8C1A958EA3000E1D17 /* b2DistanceJoint.cpp in Sources */,
 				FA0B7E421A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
-				FA0B7DE81A95902C000E1D17 /* Mouse.cpp in Sources */,
 				FA0B7CE51A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA0B792C1A958E3B000E1D17 /* Memoizer.cpp in Sources */,
 				FA0B7CCD1A95902C000E1D17 /* Audio.cpp in Sources */,

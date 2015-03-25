@@ -483,7 +483,6 @@ source_group("modules\\love" FILES ${LOVE_SRC_MODULE_LOVE})
 set(LOVE_SRC_MODULE_MOUSE_ROOT
 	src/modules/mouse/Cursor.cpp
 	src/modules/mouse/Cursor.h
-	src/modules/mouse/Mouse.cpp
 	src/modules/mouse/Mouse.h
 	src/modules/mouse/wrap_Cursor.cpp
 	src/modules/mouse/wrap_Cursor.h

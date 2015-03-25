@@ -40,7 +40,7 @@ class Mouse : public love::mouse::Mouse
 public:
 
 	// Implements Module.
-	const char *getName() const;
+	const char *getName() const override;
 
 	Mouse();
 	~Mouse();
@@ -62,7 +62,7 @@ public:
 	void setY(double y);
 	void setPosition(double x, double y);
 	void setVisible(bool visible);
-	bool isDown(Button *buttonlist) const;
+	bool isDown(const std::vector<int> &buttons) const;
 	bool isVisible() const;
 	void setGrabbed(bool grab);
 	bool isGrabbed() const;

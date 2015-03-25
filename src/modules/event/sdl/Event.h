@@ -24,7 +24,6 @@
 // LOVE
 #include "event/Event.h"
 #include "common/runtime.h"
-#include "common/EnumMap.h"
 
 // SDL
 #include <SDL_events.h>
@@ -76,9 +75,6 @@ private:
 
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;
-
-	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry buttonEntries[];
-	static EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> buttons;
 
 }; // Event
 

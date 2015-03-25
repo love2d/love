@@ -24,8 +24,10 @@
 // LOVE
 #include "Cursor.h"
 #include "common/Module.h"
-#include "common/StringMap.h"
 #include "image/ImageData.h"
+
+// C++
+#include <vector>
 
 namespace love
 {
@@ -35,21 +37,6 @@ namespace mouse
 class Mouse : public Module
 {
 public:
-
-	// FIXME: We should probably just use button numbers.
-	enum Button
-	{
-		BUTTON_INVALID = 0,
-		BUTTON_LEFT,
-		BUTTON_MIDDLE,
-		BUTTON_RIGHT,
-		BUTTON_X1,
-		BUTTON_X2,
-		BUTTON_X3,
-		BUTTON_X4,
-		BUTTON_X5,
-		BUTTON_MAX_ENUM
-	};
 
 	virtual ~Mouse() {}
 
@@ -73,20 +60,12 @@ public:
 	virtual void setY(double y) = 0;
 	virtual void setPosition(double x, double y) = 0;
 	virtual void setVisible(bool visible) = 0;
-	virtual bool isDown(Button *buttonlist) const = 0;
+	virtual bool isDown(const std::vector<int> &buttons) const = 0;
 	virtual bool isVisible() const = 0;
 	virtual void setGrabbed(bool grab) = 0;
 	virtual bool isGrabbed() const = 0;
 	virtual bool setRelativeMode(bool relative) = 0;
 	virtual bool getRelativeMode() const = 0;
-
-	static bool getConstant(const char *in, Button &out);
-	static bool getConstant(Button in, const char  *&out);
-
-private:
-
-	static StringMap<Button, BUTTON_MAX_ENUM>::Entry buttonEntries[];
-	static StringMap<Button, BUTTON_MAX_ENUM> buttons;
 
 }; // Mouse
 

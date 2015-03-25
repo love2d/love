@@ -176,12 +176,27 @@ void Mouse::setVisible(bool visible)
 	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
 }
 
-bool Mouse::isDown(Button *buttonlist) const
+bool Mouse::isDown(const std::vector<int> &buttons) const
 {
 	Uint32 buttonstate = SDL_GetMouseState(nullptr, nullptr);
 
-	for (Button button = *buttonlist; button != BUTTON_MAX_ENUM; button = *(++buttonlist))
+	for (int button : buttons)
 	{
+		if (button <= 0)
+			continue;
+
+		// We use button index 2 to represent the right mouse button, but SDL
+		// uses 2 to represent the middle mouse button.
+		switch (button)
+		{
+		case 2:
+			button = SDL_BUTTON_RIGHT;
+			break;
+		case 3:
+			button = SDL_BUTTON_MIDDLE;
+			break;
+		}
+
 		if (buttonstate & SDL_BUTTON(button))
 			return true;
 	}
