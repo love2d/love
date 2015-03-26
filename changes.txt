@@ -75,7 +75,7 @@ Released: N/A
   * Updated the compatibility warning notice to use a message box.
   * Updated the compatibility warning notice to display before main.lua is loaded.
   * Updated love.keypressed to be love.keypressed(key, scancode, isrepeat).
-  * Updated love.keyreleased to be love.keyreleleased(key, scancode).
+  * Updated love.keyreleased to be love.keyreleased(key, scancode).
   * Updated love.math.setRandomSeed and RandomGenerator:setSeed to produce better results for the first few random() calls.
   * Updated Source methods that deal with spatial audio to error rather than failing silently if the Source isn't mono.
   * Updated ImageFonts to no longer treat separator pixels as spacing.

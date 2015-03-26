@@ -55,7 +55,7 @@ Window::Window()
 	, displayedContextError(false)
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-		throw love::Exception("%s", SDL_GetError());
+		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
 }
 
 Window::~Window()

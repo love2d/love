@@ -36,7 +36,7 @@ Timer::Timer()
 {
 	// Init the SDL timer system (needed for SDL_Delay.)
 	if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
-		throw love::Exception("%s", SDL_GetError());
+		throw love::Exception("Could not initialize SDL timer subsystem (%s)", SDL_GetError());
 }
 
 Timer::~Timer()

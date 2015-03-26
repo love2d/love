@@ -97,7 +97,7 @@ const char *Event::getName() const
 Event::Event()
 {
 	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
-		throw love::Exception("%s", SDL_GetError());
+		throw love::Exception("Could not initialize SDL events subsystem (%s)", SDL_GetError());
 
 	SDL_AddEventWatch(watchAppEvents, this);
 }
