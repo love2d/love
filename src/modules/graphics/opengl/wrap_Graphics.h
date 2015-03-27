@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
 
 // LOVE
+#include "common/config.h"
 #include "wrap_Font.h"
 #include "wrap_Image.h"
 #include "graphics/wrap_Quad.h"

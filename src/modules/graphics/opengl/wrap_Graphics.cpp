@@ -30,6 +30,8 @@
 #include <cassert>
 #include <cstring>
 
+#include <algorithm>
+
 namespace love
 {
 namespace graphics
