@@ -13,8 +13,8 @@ init:
 install:
 # Move all woking directory items except `appveyor.yml` to `love` subdirectory.
 - md love
-- for /D %%i in (*) do @move %%i love\%%i
-- for %%i in (*) do @if "%%i" NEQ "appveyor.yml" echo move %%i love\%%i
+- for /D %%i in (*) do @if "%%i" NEQ "love" @move %%i love\%%i
+- for %%i in (*) do @if "%%i" NEQ "appveyor.yml" @move %%i love\%%i
 # clone megasource and move into top directory.
 - hg clone https://bitbucket.org/rude/megasource megasource
 - move megasource\* .
