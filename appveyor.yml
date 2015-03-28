@@ -11,7 +11,7 @@ init:
 - call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %platform%
 
 install:
-# Move all woking dir items except appveyor.yml to love subdir.
+# Move all woking directory items except `appveyor.yml` to `love` subdirectory.
 - md love
 - for /D %%i in (*) do @move %%i love\%%i
 - for %%i in (*) do @if "%%i" NEQ "appveyor.yml" echo move %%i love\%%i
