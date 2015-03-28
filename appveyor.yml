@@ -17,7 +17,10 @@ install:
 - for %%i in (*) do @if "%%i" NEQ "appveyor.yml" @move %%i love\%%i
 # clone megasource and move into top directory.
 - hg clone https://bitbucket.org/rude/megasource megasource
-- move megasource\* .
+- cd megasource
+- for /D %%i in (*) do @move %%i ..\%%i
+- for %%i in (*) do @move %%i ..\%%i
+- cd ..
 # move love source to megasource's libs\love.
 - move love libs\love
 
