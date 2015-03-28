@@ -43,6 +43,9 @@
 
 #define MAXUNICODE	0x10FFFF
 
+/* size of buffer for 'utf8esc' function (taken from lobject.h) */
+#define UTF8BUFFSZ	8
+
 #define iscont(p)	((*(p) & 0xC0) == 0x80)
 
 
@@ -146,10 +149,33 @@ static int codepoint (lua_State *L) {
 }
 
 
+/* taken from lobject.c */
+static int utf8esc (char *buff, unsigned long x) {
+	int n = 1;  /* number of bytes put in buffer (backwards) */
+	lua_assert(x <= 0x10FFFF);
+	if (x < 0x80)  /* ascii? */
+		buff[UTF8BUFFSZ - 1] = (char) x;
+	else {  /* need continuation bytes */
+		unsigned int mfb = 0x3f;  /* maximum that fits in first byte */
+		do {  /* add continuation bytes */
+			buff[UTF8BUFFSZ - (n++)] = (char) (0x80 | (x & 0x3f));
+			x >>= 6;  /* remove added bits */
+			mfb >>= 1;  /* now there is one less bit available in first byte */
+		} while (x > mfb);  /* still needs continuation byte? */
+		buff[UTF8BUFFSZ - n] = (char) ((~mfb << 1) | x);  /* add first byte */
+	}
+	return n;
+}
+
 static void pushutfchar (lua_State *L, int arg) {
   lua_Integer code = luaL_checkinteger(L, arg);
   luaL_argcheck(L, 0 <= code && code <= MAXUNICODE, arg, "value out of range");
-  lua_pushfstring(L, "%U", (long)code);
+
+  /* the %U string format does not exist in lua 5.1 or 5.2, so we emulate it */
+  /* (code from luaO_pushvfstring in lobject.c) */
+  char buff[UTF8BUFFSZ];
+  int l = utf8esc(buff, (long) code);
+  lua_pushlstring(L, buff + UTF8BUFFSZ - l, l);
 }
 
 
