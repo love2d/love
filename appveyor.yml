@@ -1,0 +1,33 @@
+version: 0.10.0.{build}
+
+os:
+- Windows Server 2012 R2
+
+shallow_clone: true
+
+
+init:
+# Make VS 2013 command line tools available
+- call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %platform%
+
+install:
+# Move all woking dir items except appveyor.yml to love subdir.
+- md love
+- for /D %%i in (*) do @move %%i love\%%i
+- for %%i in (*) do @if "%%i" NEQ "appveyor.yml" echo move %%i love\%%i
+# clone megasource and move into top directory.
+- hg clone https://bitbucket.org/rude/megasource megasource
+- move megasource\* .
+# move love source to megasource's libs\love.
+- move love libs\love
+
+before_build:
+- cmake -H. -Bbuild
+
+build_script:
+- cmake --build build --target love/love --config Release
+
+before_test:
+
+
+test_script:
