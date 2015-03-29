@@ -1404,7 +1404,7 @@ void Graphics::translate(float x, float y)
 
 void Graphics::shear(float kx, float ky)
 {
-	gl.getTransform().setShear(kx, ky);
+	gl.getTransform().shear(kx, ky);
 }
 
 void Graphics::origin()
