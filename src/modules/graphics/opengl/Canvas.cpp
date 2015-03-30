@@ -433,8 +433,16 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if (canvases[i]->getWidth() != width || canvases[i]->getHeight() != height)
 			throw love::Exception("All canvases must have the same dimensions.");
 
-		if (canvases[i]->getTextureFormat() != format && !multiformatsupported)
-			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
+		Format otherformat = canvases[i]->getTextureFormat();
+
+		if (otherformat != format)
+		{
+			if (!multiformatsupported)
+				throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
+			else if (otherformat == FORMAT_SRGB || format == FORMAT_SRGB)
+				// Driver bugs related to enabling GL_FRAMEBUFFER_SRGB...
+				throw love::Exception("sRGB and non-sRGB canvas formats cannot be mixed when using multi-canvas rendering.");
+		}
 
 		if (canvases[i]->getMSAA() != 0)
 			throw love::Exception("Multi-canvas rendering is not supported with MSAA.");
