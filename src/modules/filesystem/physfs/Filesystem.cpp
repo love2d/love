@@ -312,7 +312,7 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendT
 	if (realPath.length() == 0)
 		return false;
 
-	return PHYSFS_mount(realPath.c_str(), mountpoint, appendToPath);
+	return PHYSFS_mount(realPath.c_str(), mountpoint, appendToPath) != 0;
 }
 
 bool Filesystem::unmount(const char *archive)
@@ -353,7 +353,7 @@ bool Filesystem::unmount(const char *archive)
 	if (!mountPoint)
 		return false;
 
-	return PHYSFS_removeFromSearchPath(realPath.c_str());
+	return PHYSFS_removeFromSearchPath(realPath.c_str()) != 0;
 }
 
 love::filesystem::File *Filesystem::newFile(const char *filename) const
@@ -485,7 +485,7 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 
 bool Filesystem::isDirectory(const char *dir) const
 {
-	return PHYSFS_isDirectory(dir);
+	return PHYSFS_isDirectory(dir) != 0;
 }
 
 bool Filesystem::isFile(const char *file) const

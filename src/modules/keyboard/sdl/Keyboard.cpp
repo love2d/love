@@ -137,12 +137,12 @@ void Keyboard::setTextInput(bool enable, double x, double y, double w, double h)
 
 bool Keyboard::hasTextInput() const
 {
-	return SDL_IsTextInputActive();
+	return SDL_IsTextInputActive() != SDL_FALSE;
 }
 
 bool Keyboard::hasScreenKeyboard() const
 {
-	return SDL_HasScreenKeyboardSupport();
+	return SDL_HasScreenKeyboardSupport() != SDL_FALSE;
 }
 
 bool Keyboard::getConstant(Scancode in, SDL_Scancode &out)

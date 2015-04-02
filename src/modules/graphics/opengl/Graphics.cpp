@@ -226,7 +226,7 @@ void Graphics::setViewportSize(int width, int height)
 	Canvas::systemViewport = gl.getViewport();
 
 	// Set up the projection matrix
-	gl.matrices.projection.back() = Matrix::ortho(0.0, width, height, 0.0);
+	gl.matrices.projection.back() = Matrix::ortho(0.0, (float) width, (float) height, 0.0);
 
 	// Restore the previously active Canvas.
 	setCanvas(canvases);

@@ -396,7 +396,7 @@ void Canvas::setupGrab()
 	gl.setViewport({0, 0, width, height});
 
 	// Set up the projection matrix
-	gl.matrices.projection.push_back(Matrix::ortho(0.0, width, 0.0, height));
+	gl.matrices.projection.push_back(Matrix::ortho(0.0, (float) width, 0.0, (float) height));
 
 	// Make sure the correct sRGB setting is used when drawing to the canvas.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)

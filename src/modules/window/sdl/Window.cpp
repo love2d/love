@@ -252,7 +252,10 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			setGLFramebufferAttributes(0, false);
 			window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
 			if (window)
-				curSRGB = curMSAA = 0;
+			{
+				curMSAA = 0;
+				curSRGB = false;
+			}
 		}
 
 		// Immediately try the next context profile if window creation failed.
@@ -839,7 +842,7 @@ void Window::setMouseGrab(bool grab)
 bool Window::isMouseGrabbed() const
 {
 	if (window)
-		return (bool) SDL_GetWindowGrab(window);
+		return SDL_GetWindowGrab(window) != SDL_FALSE;
 	else
 		return mouseGrabbed;
 }
@@ -936,17 +939,17 @@ int Window::showMessageBox(const MessageBoxData &data)
 
 	std::vector<SDL_MessageBoxButtonData> sdlbuttons;
 
-	for (size_t i = 0; i < data.buttons.size(); i++)
+	for (int i = 0; i < (int) data.buttons.size(); i++)
 	{
 		SDL_MessageBoxButtonData sdlbutton = {};
 
-		sdlbutton.buttonid = (int) i;
+		sdlbutton.buttonid = i;
 		sdlbutton.text = data.buttons[i].c_str();
 
-		if ((int) i == data.enterButtonIndex)
+		if (i == data.enterButtonIndex)
 			sdlbutton.flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 
-		if ((int) i == data.escapeButtonIndex)
+		if (i == data.escapeButtonIndex)
 			sdlbutton.flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
 
 		sdlbuttons.push_back(sdlbutton);

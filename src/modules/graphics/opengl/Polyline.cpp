@@ -49,7 +49,7 @@ void Polyline::render(const float *coords, size_t count, size_t size_hint, float
 
 	// prepare vertex arrays
 	if (draw_overdraw)
-		halfwidth -= pixel_size * .3;
+		halfwidth -= pixel_size * 0.3f;
 
 	// compute sleeve
 	bool is_looping = (coords[0] == coords[count - 2]) && (coords[1] == coords[count - 1]);

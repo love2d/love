@@ -76,7 +76,7 @@ EdgeShape *ChainShape::getChildEdge(int index) const
 	{
 		c->GetChildEdge(e, index);
 	}
-	catch (love::Exception &ex)
+	catch (love::Exception &)
 	{
 		delete e;
 		throw;

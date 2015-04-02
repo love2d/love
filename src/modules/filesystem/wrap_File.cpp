@@ -110,7 +110,7 @@ int w_File_read(lua_State *L)
 	File *file = luax_checkfile(L, 1);
 	Data *d = 0;
 
-	int64 size = (int64)luaL_optnumber(L, 2, File::ALL);
+	int64 size = (int64) luaL_optnumber(L, 2, (lua_Number) File::ALL);
 
 	try
 	{

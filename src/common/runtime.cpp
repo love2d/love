@@ -133,7 +133,7 @@ bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultV
 	if (lua_isnoneornil(L, -1))
 		retval = defaultValue;
 	else
-		retval = lua_toboolean(L, -1);
+		retval = lua_toboolean(L, -1) != 0;
 
 	lua_pop(L, 1);
 	return retval;

@@ -494,8 +494,8 @@ int w_newShader(lua_State *L)
 		}
 	}
 
-	bool has_arg1 = lua_isstring(L, 1);
-	bool has_arg2 = lua_isstring(L, 2);
+	bool has_arg1 = lua_isstring(L, 1) != 0;
+	bool has_arg2 = lua_isstring(L, 2) != 0;
 
 	// require at least one string argument
 	if (!(has_arg1 || has_arg2))

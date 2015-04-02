@@ -586,7 +586,7 @@ GLenum Image::getCompressedFormat(image::CompressedImageData::Format cformat) co
 
 bool Image::hasAnisotropicFilteringSupport()
 {
-	return GLAD_EXT_texture_filter_anisotropic;
+	return GLAD_EXT_texture_filter_anisotropic != GL_FALSE;
 }
 
 bool Image::hasCompressedTextureSupport(image::CompressedImageData::Format format, bool sRGB)
