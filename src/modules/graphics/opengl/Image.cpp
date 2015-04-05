@@ -332,9 +332,16 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 		const image::pixel *pdata = (const image::pixel *) data->getData();
 		pdata += yoffset * data->getWidth() + xoffset;
 
+		GLenum format = GL_RGBA;
+
+		// In ES2, the format parameter of TexSubImage must match the internal
+		// format of the texture.
+		if (flags.sRGB && (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0))
+			format = GL_SRGB_ALPHA;
+
 		{
 			thread::Lock lock(data->getMutex());
-			glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, w, h, GL_RGBA,
+			glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, w, h, format,
 			                GL_UNSIGNED_BYTE, pdata);
 		}
 
