@@ -234,7 +234,7 @@ int w_Shader_sendMatrix(lua_State *L)
 
 	luax_catchexcept(L,
 		[&]() { shader->sendMatrix(name, dimension, values, count); },
-		[&]() { delete[] values; }
+		[&](bool) { delete[] values; }
 	);
 
 	return 0;

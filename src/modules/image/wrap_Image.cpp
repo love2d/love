@@ -58,7 +58,7 @@ int w_newImageData(lua_State *L)
 	ImageData *t = nullptr;
 	luax_catchexcept(L,
 		[&]() { t = instance()->newImageData(data); },
-		[&]() { data->release(); }
+		[&](bool) { data->release(); }
 	);
 
 	luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
@@ -73,7 +73,7 @@ int w_newCompressedData(lua_State *L)
 	CompressedImageData *t = nullptr;
 	luax_catchexcept(L,
 		[&]() { t = instance()->newCompressedData(data); },
-		[&]() { data->release(); }
+		[&](bool) { data->release(); }
 	);
 
 	luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, t);

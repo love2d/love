@@ -671,7 +671,7 @@ Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filter &filter
 	return new Font(r, filter);
 }
 
-SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, int usage)
+SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, Mesh::Usage usage)
 {
 	return new SpriteBatch(texture, size, usage);
 }
@@ -747,14 +747,24 @@ Shader *Graphics::newShader(const Shader::ShaderSource &source)
 	return new Shader(source);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode)
+Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, Mesh::Usage usage)
 {
-	return new Mesh(vertices, mode);
+	return new Mesh(vertices, drawmode, usage);
 }
 
-Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode mode)
+Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage)
 {
-	return new Mesh(vertexcount, mode);
+	return new Mesh(vertexcount, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage)
+{
+	return new Mesh(vertexformat, vertexcount, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, Mesh::Usage usage)
+{
+	return new Mesh(vertexformat, data, datasize, drawmode, usage);
 }
 
 Text *Graphics::newText(Font *font, const std::string &text)
@@ -762,7 +772,7 @@ Text *Graphics::newText(Font *font, const std::string &text)
 	return new Text(font, text);
 }
 
-void Graphics::setColor(const Color &c)
+void Graphics::setColor(Color c)
 {
 	gl.setColor(c);
 	states.back().color = c;
@@ -773,7 +783,7 @@ Color Graphics::getColor() const
 	return states.back().color;
 }
 
-void Graphics::setBackgroundColor(const Color &c)
+void Graphics::setBackgroundColor(Color c)
 {
 	states.back().backgroundColor = c;
 }

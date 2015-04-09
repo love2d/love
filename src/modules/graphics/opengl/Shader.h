@@ -174,6 +174,8 @@ public:
 	 **/
 	UniformType getExternVariable(const std::string &name, int &components, int &count);
 
+	GLint getAttribLocation(const std::string &name);
+
 	/**
 	 * Internal use only.
 	 **/
@@ -191,6 +193,9 @@ public:
 
 	static bool getConstant(const char *in, UniformType &out);
 	static bool getConstant(UniformType in, const char *&out);
+
+	static bool getConstant(const char *in, VertexAttribID &out);
+	static bool getConstant(VertexAttribID in, const char *&out);
 
 private:
 
@@ -236,6 +241,8 @@ private:
 
 	// Location values for any generic vertex attribute variables.
 	GLint builtinAttributes[ATTRIB_MAX_ENUM];
+
+	std::map<std::string, GLint> attributes;
 
 	// Uniform location buffer map
 	std::map<std::string, Uniform> uniforms;

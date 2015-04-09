@@ -27,12 +27,12 @@
 // LOVE
 #include "common/math.h"
 #include "common/Matrix.h"
-#include "common/StringMap.h"
 #include "graphics/Drawable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
 #include "GLBuffer.h"
+#include "Mesh.h"
 
 namespace love
 {
@@ -49,15 +49,7 @@ class SpriteBatch : public Drawable
 {
 public:
 
-	enum UsageHint
-	{
-		USAGE_DYNAMIC,
-		USAGE_STATIC,
-		USAGE_STREAM,
-		USAGE_MAX_ENUM
-	};
-
-	SpriteBatch(Texture *texture, int size, int usage);
+	SpriteBatch(Texture *texture, int size, Mesh::Usage usage);
 	virtual ~SpriteBatch();
 
 	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
@@ -109,9 +101,6 @@ public:
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
-	static bool getConstant(const char *in, UsageHint &out);
-	static bool getConstant(UsageHint in, const char *&out);
-
 private:
 
 	void addv(const Vertex *v, const Matrix &m, int index);
@@ -143,9 +132,6 @@ private:
 	// The portion of the vertex buffer that's been modified while mapped.
 	size_t buffer_used_offset;
 	size_t buffer_used_size;
-
-	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
-	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
 
 }; // SpriteBatch
 

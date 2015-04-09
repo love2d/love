@@ -33,12 +33,16 @@ namespace opengl
 {
 
 Mesh *luax_checkmesh(lua_State *L, int idx);
-
 int w_Mesh_setVertex(lua_State *L);
 int w_Mesh_getVertex(lua_State *L);
-int w_Mesh_setVertices(lua_State *L);
-int w_Mesh_getVertices(lua_State *L);
+int w_Mesh_setVertexAttribute(lua_State *L);
+int w_Mesh_getVertexAttribute(lua_State *L);
 int w_Mesh_getVertexCount(lua_State *L);
+int w_Mesh_getVertexFormat(lua_State *L);
+int w_Mesh_setAttributeEnabled(lua_State *L);
+int w_Mesh_isAttributeEnabled(lua_State *L);
+int w_Mesh_attachAttribute(lua_State *L);
+int w_Mesh_flush(lua_State *L);
 int w_Mesh_setVertexMap(lua_State *L);
 int w_Mesh_getVertexMap(lua_State *L);
 int w_Mesh_setTexture(lua_State *L);
@@ -47,9 +51,6 @@ int w_Mesh_setDrawMode(lua_State *L);
 int w_Mesh_getDrawMode(lua_State *L);
 int w_Mesh_setDrawRange(lua_State *L);
 int w_Mesh_getDrawRange(lua_State *L);
-int w_Mesh_setVertexColors(lua_State *L);
-int w_Mesh_hasVertexColors(lua_State *L);
-
 extern "C" int luaopen_mesh(lua_State *L);
 
 } // opengl

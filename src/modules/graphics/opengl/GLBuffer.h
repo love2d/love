@@ -48,17 +48,6 @@ class GLBuffer : public Volatile
 public:
 
 	/**
-	 * Create a new GLBuffer.
-	 *
-	 * @param size The size of the GLBuffer (in bytes).
-	 * @param target GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER.
-	 * @param usage GL_DYNAMIC_DRAW, etc.
-	 * @param backing Determines what guarantees are placed on the data.
-	 * @return A new GLBuffer.
-	 */
-	static GLBuffer *Create(size_t size, GLenum target, GLenum usage);
-
-	/**
 	 * Constructor.
 	 *
 	 * @param size The size of the GLBuffer in bytes.
@@ -66,7 +55,7 @@ public:
 	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
 	 * @param backing Determines what guarantees are placed on the data.
 	 */
-	GLBuffer(size_t size, GLenum target, GLenum usage);
+	GLBuffer(size_t size, const void *data, GLenum target, GLenum usage);
 
 	/**
 	 * Destructor.
@@ -123,7 +112,7 @@ public:
 	 *
 	 * @return A pointer to memory which represents the buffer.
 	 */
-	virtual void *map();
+	void *map();
 
 	/**
 	 * Unmap a previously mapped GLBuffer. The buffer must be unmapped
@@ -135,18 +124,18 @@ public:
 	 *                   sub-range of data modified. Optional.
 	 * @param usedSize   The size of the sub-range of modified data. Optional.
 	 */
-	virtual void unmap(size_t usedOffset = 0, size_t usedSize = -1);
+	void unmap(size_t usedOffset = 0, size_t usedSize = -1);
 
 	/**
 	 * Bind the GLBuffer to its specified target.
 	 * (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, etc).
 	 */
-	virtual void bind();
+	void bind();
 
 	/**
 	 * Unbind a prevously bound GLBuffer.
 	 */
-	virtual void unbind();
+	void unbind();
 
 	/**
 	 * Fill a portion of the buffer with data.
@@ -157,7 +146,7 @@ public:
 	 * @param size The size of the incoming data.
 	 * @param data Pointer to memory to copy data from.
 	 */
-	virtual void fill(size_t offset, size_t size, const void *data);
+	void fill(size_t offset, size_t size, const void *data);
 
 	/**
 	 * Get a pointer which represents the specified byte offset.
@@ -165,11 +154,11 @@ public:
 	 * @param offset The byte offset. (0 is first byte).
 	 * @return A pointer which represents the offset.
 	 */
-	virtual const void *getPointer(size_t offset) const;
+	const void *getPointer(size_t offset) const;
 
 	// Implements Volatile.
-	virtual bool loadVolatile();
-	virtual void unloadVolatile();
+	bool loadVolatile() override;
+	void unloadVolatile() override;
 
 	/**
 	 * This helper class can bind a GLBuffer temporarily, and

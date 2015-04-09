@@ -258,14 +258,14 @@ int w_newImage(lua_State *L)
 		{
 			luax_catchexcept(L,
 				[&]() { cdata = image->newCompressedData(fdata); },
-				[&]() { fdata->release(); }
+				[&](bool) { fdata->release(); }
 			);
 		}
 		else
 		{
 			luax_catchexcept(L,
 				[&]() { data = image->newImageData(fdata); },
-				[&]() { fdata->release(); }
+				[&](bool) { fdata->release(); }
 			);
 		}
 
@@ -289,7 +289,7 @@ int w_newImage(lua_State *L)
 			else if (data)
 				image = instance()->newImage(data, flags);
 		},
-		[&]() {
+		[&](bool) {
 			if (releasedata && data)
 				data->release();
 			else if (releasedata && cdata)
@@ -393,11 +393,11 @@ int w_newSpriteBatch(lua_State *L)
 {
 	Texture *texture = luax_checktexture(L, 1);
 	int size = luaL_optint(L, 2, 1000);
-	SpriteBatch::UsageHint usage = SpriteBatch::USAGE_DYNAMIC;
+	Mesh::Usage usage = Mesh::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
 		const char *usagestr = luaL_checkstring(L, 3);
-		if (!SpriteBatch::getConstant(usagestr, usage))
+		if (!Mesh::getConstant(usagestr, usage))
 			return luaL_error(L, "Invalid SpriteBatch usage hint: %s", usagestr);
 	}
 
@@ -558,43 +558,62 @@ int w_newShader(lua_State *L)
 	return 1;
 }
 
-int w_newMesh(lua_State *L)
+static Mesh::Usage luax_optmeshusage(lua_State *L, int idx, Mesh::Usage def)
 {
-	// Check first argument: table of vertices or number of vertices.
-	int ttype = lua_type(L, 1);
-	if (ttype != LUA_TTABLE && ttype != LUA_TNUMBER)
-		luaL_argerror(L, 1, "table or number expected");
+	const char *usagestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
-	// Second argument: optional texture.
-	Texture *tex = nullptr;
-	if (!lua_isnoneornil(L, 2))
-		tex = luax_checktexture(L, 2);
+	if (usagestr && !Mesh::getConstant(usagestr, def))
+		luaL_error(L, "Invalid mesh usage hint: %s", usagestr);
 
-	// Third argument: optional draw mode.
-	const char *str = 0;
-	Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN;
-	str = lua_isnoneornil(L, 3) ? 0 : luaL_checkstring(L, 3);
+	return def;
+}
 
-	if (str && !Mesh::getConstant(str, mode))
-		return luaL_error(L, "Invalid mesh draw mode: %s", str);
+static Mesh::DrawMode luax_optmeshdrawmode(lua_State *L, int idx, Mesh::DrawMode def)
+{
+	const char *modestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
+	if (modestr && !Mesh::getConstant(modestr, def))
+		luaL_error(L, "Invalid mesh draw mode: %s", modestr);
+
+	return def;
+}
+
+template <typename T>
+static inline size_t writeVertexData(lua_State *L, int startidx, int components, char *data)
+{
+	T *componentdata = (T *) data;
+
+	for (int i = 0; i < components; i++)
+		componentdata[i] = (T) luaL_checknumber(L, startidx + i);
+
+	return sizeof(T) * components;
+}
+
+static Mesh *newStandardMesh(lua_State *L)
+{
 	Mesh *t = nullptr;
 
-	if (ttype == LUA_TTABLE)
-	{
-		size_t vertex_count = lua_objlen(L, 1);
-		std::vector<Vertex> vertices;
-		vertices.reserve(vertex_count);
+	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 2, Mesh::DRAWMODE_FAN);
+	Mesh::Usage usage = luax_optmeshusage(L, 3, Mesh::USAGE_DYNAMIC);
 
-		bool use_colors = false;
+	// First argument is a table of standard vertices, or the number of
+	// standard vertices.
+	if (lua_istable(L, 1))
+	{
+		size_t vertexcount = lua_objlen(L, 1);
+		std::vector<Vertex> vertices;
+		vertices.reserve(vertexcount);
 
 		// Get the vertices from the table.
-		for (size_t i = 1; i <= vertex_count; i++)
+		for (size_t i = 1; i <= vertexcount; i++)
 		{
 			lua_rawgeti(L, 1, (int) i);
 
 			if (lua_type(L, -1) != LUA_TTABLE)
-				return luax_typerror(L, 1, "table of tables");
+			{
+				luax_typerror(L, 1, "table of tables");
+				return nullptr;
+			}
 
 			for (int j = 1; j <= 8; j++)
 				lua_rawgeti(L, -j, j);
@@ -603,34 +622,178 @@ int w_newMesh(lua_State *L)
 
 			v.x = (float) luaL_checknumber(L, -8);
 			v.y = (float) luaL_checknumber(L, -7);
-
 			v.s = (float) luaL_optnumber(L, -6, 0.0);
 			v.t = (float) luaL_optnumber(L, -5, 0.0);
-
 			v.r = (unsigned char) luaL_optinteger(L, -4, 255);
 			v.g = (unsigned char) luaL_optinteger(L, -3, 255);
 			v.b = (unsigned char) luaL_optinteger(L, -2, 255);
 			v.a = (unsigned char) luaL_optinteger(L, -1, 255);
 
-			// Enable per-vertex coloring if any color is not the default.
-			if (!use_colors && (v.r != 255 || v.g != 255 || v.b != 255 || v.a != 255))
-				use_colors = true;
-
 			lua_pop(L, 9);
 			vertices.push_back(v);
 		}
 
-		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertices, mode); });
-		t->setVertexColors(use_colors);
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertices, drawmode, usage); });
 	}
 	else
 	{
 		int count = luaL_checkint(L, 1);
-		luax_catchexcept(L, [&](){ t = instance()->newMesh(count, mode); });
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(count, drawmode, usage); });
 	}
 
-	if (tex)
-		t->setTexture(tex);
+	return t;
+}
+
+static Mesh *newCustomMesh(lua_State *L)
+{
+	Mesh *t = nullptr;
+
+	// First argument is the vertex format, second is a table of vertices or
+	// the number of vertices.
+	std::vector<Mesh::AttribFormat> vertexformat;
+
+	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 3, Mesh::DRAWMODE_FAN);
+	Mesh::Usage usage = luax_optmeshusage(L, 4, Mesh::USAGE_DYNAMIC);
+
+	lua_rawgeti(L, 1, 1);
+	if (!lua_istable(L, -1))
+	{
+		luaL_argerror(L, 1, "table of tables expected");
+		return nullptr;
+	}
+	lua_pop(L, 1);
+
+	// Per-vertex attribute formats.
+	for (int i = 1; i <= (int) lua_objlen(L, 1); i++)
+	{
+		lua_rawgeti(L, 1, i);
+
+		// {name, datatype, components}
+		for (int j = 1; j <= 3; j++)
+			lua_rawgeti(L, -j, j);
+
+		Mesh::AttribFormat format;
+		format.name = luaL_checkstring(L, -3);
+
+		const char *tname = luaL_checkstring(L, -2);
+		if (!Mesh::getConstant(tname, format.type))
+		{
+			luaL_error(L, "Invalid Mesh vertex data type name: %s", tname);
+			return nullptr;
+		}
+
+		format.components = luaL_checkint(L, -1);
+		if (format.components <= 0 || format.components > 4)
+		{
+			luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", format.components);
+			return nullptr;
+		}
+
+		lua_pop(L, 4);
+		vertexformat.push_back(format);
+	}
+
+	if (lua_isnumber(L, 2))
+	{
+		int vertexcount = luaL_checkint(L, 2);
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, vertexcount, drawmode, usage); });
+	}
+	else if (luax_istype(L, 2, DATA_ID))
+	{
+		// Vertex data comes directly from a Data object.
+		Data *data = luax_checktype<Data>(L, 2, DATA_ID);
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, data->getData(), data->getSize(), drawmode, usage); });
+	}
+	else
+	{
+		// Table of vertices.
+		lua_rawgeti(L, 2, 1);
+		if (!lua_istable(L, -1))
+		{
+			luaL_argerror(L, 2, "expected table of tables");
+			return nullptr;
+		}
+		lua_pop(L, 1);
+
+		int vertexcomponents = 0;
+		for (const Mesh::AttribFormat &format : vertexformat)
+			vertexcomponents += format.components;
+
+		size_t numvertices = lua_objlen(L, 2);
+
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, numvertices, drawmode, usage); });
+
+		// Maximum possible data size for a single vertex attribute.
+		char data[sizeof(float) * 4];
+
+		for (size_t vertindex = 0; vertindex < numvertices; vertindex++)
+		{
+			// get vertices[vertindex]
+			lua_rawgeti(L, 2, vertindex + 1);
+			luaL_checktype(L, -1, LUA_TTABLE);
+
+			if ((int) lua_objlen(L, -1) < vertexcomponents)
+			{
+				t->release();
+				const char *err = "Invalid number of components in vertex #%d (expected %d components, got %d)";
+				luaL_error(L, err, vertindex+1, vertexcomponents, lua_objlen(L, -1));
+				return nullptr;
+			}
+
+			int n = 0;
+			for (size_t i = 0; i < vertexformat.size(); i++)
+			{
+				int components = vertexformat[i].components;
+
+				// get vertices[vertindex][n]
+				for (int c = 0; c < components; c++)
+				{
+					n++;
+					lua_rawgeti(L, -(c + 1), n);
+				}
+
+				// Fetch the values from Lua and store them in data buffer.
+				switch (vertexformat[i].type)
+				{
+				case Mesh::DATA_BYTE:
+					writeVertexData<uint8>(L, -components, components, data);
+					break;
+				case Mesh::DATA_FLOAT:
+				default:
+					writeVertexData<float>(L, -components, components, data);
+					break;
+				}
+
+				lua_pop(L, components);
+
+				luax_catchexcept(L,
+					[&](){ t->setVertexAttribute(vertindex, i, data, sizeof(float) * 4); },
+					[&](bool diderror){ if (diderror) t->release(); }
+				);
+			}
+
+			lua_pop(L, 1); // pop vertices[vertindex]
+		}
+
+		t->flush();
+	}
+
+	return t;
+}
+
+int w_newMesh(lua_State *L)
+{
+	// Check first argument: table or number of vertices.
+	int ttype = lua_type(L, 1);
+	if (ttype != LUA_TTABLE && ttype != LUA_TNUMBER)
+		luaL_argerror(L, 1, "table or number expected");
+
+	Mesh *t = nullptr;
+
+	if (ttype == LUA_TTABLE && (lua_istable(L, 2) || lua_type(L, 2) == LUA_TNUMBER))
+		t = newCustomMesh(L);
+	else
+		t = newStandardMesh(L);
 
 	luax_pushtype(L, GRAPHICS_MESH_ID, t);
 	t->release();
@@ -1086,7 +1249,6 @@ int w_setDefaultShaderCode(lua_State *L)
 	return 0;
 }
 
-
 int w_getSupported(lua_State *L)
 {
 	lua_createtable(L, 0, (int) Graphics::SUPPORT_MAX_ENUM);
@@ -1246,10 +1408,12 @@ int w_draw(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	if (texture && quad)
-		texture->drawq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
-	else if (drawable)
-		drawable->draw(x, y, a, sx, sy, ox, oy, kx, ky);
+	luax_catchexcept(L, [&]() {
+		if (texture && quad)
+			texture->drawq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
+		else if (drawable)
+			drawable->draw(x, y, a, sx, sy, ox, oy, kx, ky);
+	});
 
 	return 0;
 }

@@ -34,14 +34,7 @@ namespace graphics
 namespace opengl
 {
 
-// GLBuffer
-
-GLBuffer *GLBuffer::Create(size_t size, GLenum target, GLenum usage)
-{
-	return new GLBuffer(size, target, usage);
-}
-
-GLBuffer::GLBuffer(size_t size, GLenum target, GLenum usage)
+GLBuffer::GLBuffer(size_t size, const void *data, GLenum target, GLenum usage)
 	: is_bound(false)
 	, is_mapped(false)
 	, size(size)
@@ -59,7 +52,10 @@ GLBuffer::GLBuffer(size_t size, GLenum target, GLenum usage)
 		throw love::Exception("Out of memory.");
 	}
 
-	bool ok = load(false);
+	if (data != nullptr)
+		memcpy(memory_map, data, size);
+
+	bool ok = load(data != nullptr);
 
 	if (!ok)
 	{
@@ -330,7 +326,7 @@ void VertexIndex::resize(size_t size)
 	// VertexIndex will propagate the exception and keep the old GLBuffer.
 	try
 	{
-		new_element_array = GLBuffer::Create(array_size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+		new_element_array = new GLBuffer(array_size, nullptr, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
 	}
 	catch (std::bad_alloc &)
 	{

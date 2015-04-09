@@ -186,7 +186,7 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	{
 		luax_catchexcept(L,
 			[&]() { data = file->read(); },
-			[&]() { file->release(); }
+			[&](bool) { file->release(); }
 		);
 	}
 

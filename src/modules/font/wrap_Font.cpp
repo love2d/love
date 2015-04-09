@@ -50,7 +50,7 @@ int w_newRasterizer(lua_State *L)
 
 		luax_catchexcept(L,
 			[&]() { t = instance()->newRasterizer(d); },
-			[&]() { d->release(); }
+			[&](bool) { d->release(); }
 		);
 
 		luax_pushtype(L, FONT_RASTERIZER_ID, t);
@@ -97,7 +97,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 
 		luax_catchexcept(L,
 			[&]() { t = instance()->newTrueTypeRasterizer(d, size, hinting); },
-			[&]() { d->release(); }
+			[&](bool) { d->release(); }
 		);
 	}
 
@@ -146,7 +146,7 @@ int w_newBMFontRasterizer(lua_State *L)
 
 	luax_catchexcept(L,
 		[&]() { t = instance()->newBMFontRasterizer(d, images); },
-		[&]() { d->release(); for (auto id : images) id->release(); }
+		[&](bool) { d->release(); for (auto id : images) id->release(); }
 	);
 
 	luax_pushtype(L, FONT_RASTERIZER_ID, t);

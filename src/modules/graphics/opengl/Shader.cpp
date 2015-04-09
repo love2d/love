@@ -327,6 +327,8 @@ void Shader::unloadVolatile()
 	activeTexUnits.clear();
 	activeTexUnits.resize(gl.getMaxTextureUnits() - 1, 0);
 
+	attributes.clear();
+
 	// same with uniform location list
 	uniforms.clear();
 
@@ -610,6 +612,18 @@ Shader::UniformType Shader::getExternVariable(const std::string &name, int &comp
 	return it->second.baseType;
 }
 
+GLint Shader::getAttribLocation(const std::string &name)
+{
+	auto it = attributes.find(name);
+	if (it != attributes.end())
+		return it->second;
+
+	GLint location = glGetAttribLocation(program, name.c_str());
+
+	attributes[name] = location;
+	return location;
+}
+
 bool Shader::hasVertexAttrib(VertexAttribID attrib) const
 {
 	return builtinAttributes[int(attrib)] != -1;
@@ -819,6 +833,16 @@ bool Shader::getConstant(const char *in, UniformType &out)
 bool Shader::getConstant(UniformType in, const char *&out)
 {
 	return uniformTypes.find(in, out);
+}
+
+bool Shader::getConstant(const char *in, VertexAttribID &out)
+{
+	return attribNames.find(in, out);
+}
+
+bool Shader::getConstant(VertexAttribID in, const char *&out)
+{
+	return attribNames.find(in, out);
 }
 
 StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM>::Entry Shader::stageNameEntries[] =

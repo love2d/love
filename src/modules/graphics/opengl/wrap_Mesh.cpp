@@ -39,152 +39,162 @@ Mesh *luax_checkmesh(lua_State *L, int idx)
 	return luax_checktype<Mesh>(L, idx, GRAPHICS_MESH_ID);
 }
 
+template <typename T>
+static inline size_t writeData(lua_State *L, int startidx, int components, char *data)
+{
+	T *componentdata = (T *) data;
+	for (int i = 0; i < components; i++)
+		componentdata[i] = (T) luaL_checknumber(L, startidx + i);
+
+	return sizeof(T) * components;
+}
+
+static inline char *writeAttributeData(lua_State *L, int startidx, Mesh::DataType type, int components, char *data)
+{
+	switch (type)
+	{
+	case Mesh::DATA_BYTE:
+		data += writeData<uint8>(L, startidx, components, data);
+		break;
+	case Mesh::DATA_FLOAT:
+		data += writeData<float>(L, startidx, components, data);
+		break;
+	default:
+		break;
+	}
+
+	return data;
+}
+
+template <typename T>
+static inline size_t readData(lua_State *L, int components, const char *data)
+{
+	const T *componentdata = (const T *) data;
+	for (int i = 0; i < components; i++)
+		lua_pushnumber(L, (lua_Number) componentdata[i]);
+
+	return sizeof(T) * components;
+}
+
+static inline const char *readAttributeData(lua_State *L, Mesh::DataType type, int components, const char *data)
+{
+	switch (type)
+	{
+	case Mesh::DATA_BYTE:
+		data += readData<uint8>(L, components, data);
+		break;
+	case Mesh::DATA_FLOAT:
+		data += readData<float>(L, components, data);
+		break;
+	default:
+		break;
+	}
+
+	return data;
+}
+
 int w_Mesh_setVertex(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	size_t i = size_t(luaL_checkinteger(L, 2) - 1);
+	size_t index = (size_t) luaL_checkinteger(L, 2) - 1;
 
-	Vertex v;
+	bool istable = lua_istable(L, 3);
 
-	if (lua_istable(L, 3))
+	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
+
+	char *data = (char *) t->getVertexScratchBuffer();
+	char *writtendata = data;
+
+	int idx = istable ? 1 : 3;
+
+	if (istable)
 	{
-		for (int i = 1; i <= 8; i++)
-			lua_rawgeti(L, 3, i);
+		for (const Mesh::AttribFormat &format : vertexformat)
+		{
+			for (int i = idx; i < idx + format.components; i++)
+				lua_rawgeti(L, 3, i);
 
-		v.x = luaL_checknumber(L, -8);
-		v.y = luaL_checknumber(L, -7);
-		v.s = luaL_optnumber(L, -6, 0.0);
-		v.t = luaL_optnumber(L, -5, 0.0);
-		v.r = luaL_optinteger(L, -4, 255);
-		v.g = luaL_optinteger(L, -3, 255);
-		v.b = luaL_optinteger(L, -2, 255);
-		v.a = luaL_optinteger(L, -1, 255);
+			// Fetch the values from Lua and store them in data buffer.
+			writtendata = writeAttributeData(L, -format.components, format.type, format.components, writtendata);
 
-		lua_pop(L, 8);
+			idx += format.components;
+			lua_pop(L, format.components);
+		}
 	}
 	else
 	{
-		v.x = luaL_checknumber(L, 3);
-		v.y = luaL_checknumber(L, 4);
-		v.s = luaL_optnumber(L, 5, 0.0);
-		v.t = luaL_optnumber(L, 6, 0.0);
-		v.r = luaL_optinteger(L,  7, 255);
-		v.g = luaL_optinteger(L,  8, 255);
-		v.b = luaL_optinteger(L,  9, 255);
-		v.a = luaL_optinteger(L, 10, 255);
+		for (const Mesh::AttribFormat &format : vertexformat)
+		{
+			// Fetch the values from Lua and store them in data buffer.
+			writtendata = writeAttributeData(L, idx, format.type, format.components, writtendata);
+			idx += format.components;
+		}
 	}
 
-	luax_catchexcept(L, [&](){ t->setVertex(i, v); });
+	luax_catchexcept(L, [&](){ t->setVertex(index, data, t->getVertexStride()); });
 	return 0;
 }
 
 int w_Mesh_getVertex(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	size_t i = (size_t) (luaL_checkinteger(L, 2) - 1);
+	size_t index = (size_t) luaL_checkinteger(L, 2) - 1;
 
-	Vertex v;
-	luax_catchexcept(L, [&](){ v = t->getVertex(i); });
+	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
 
-	lua_pushnumber(L, v.x);
-	lua_pushnumber(L, v.y);
-	lua_pushnumber(L, v.s);
-	lua_pushnumber(L, v.t);
-	lua_pushnumber(L, v.r);
-	lua_pushnumber(L, v.g);
-	lua_pushnumber(L, v.b);
-	lua_pushnumber(L, v.a);
+	char *data = (char *) t->getVertexScratchBuffer();
+	const char *readdata = data;
 
-	return 8;
-}
+	luax_catchexcept(L, [&](){ t->getVertex(index, data, t->getVertexStride()); });
 
-int w_Mesh_setVertices(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
+	int n = 0;
 
-	int vertex_count = (int) lua_objlen(L, 2);
-	std::vector<Vertex> vertices;
-	vertices.reserve(vertex_count);
-
-	// Get the vertices from the table.
-	for (int i = 1; i <= vertex_count; i++)
+	for (const Mesh::AttribFormat &format : vertexformat)
 	{
-		lua_rawgeti(L, 2, i);
-
-		if (lua_type(L, -1) != LUA_TTABLE)
-			return luax_typerror(L, 2, "table of tables");
-
-		for (int j = 1; j <= 8; j++)
-			lua_rawgeti(L, -j, j);
-
-		Vertex v;
-
-		v.x = (float) luaL_checknumber(L, -8);
-		v.y = (float) luaL_checknumber(L, -7);
-
-		v.s = (float) luaL_optnumber(L, -6, 0.0);
-		v.t = (float) luaL_optnumber(L, -5, 0.0);
-
-		v.r = (unsigned char) luaL_optinteger(L, -4, 255);
-		v.g = (unsigned char) luaL_optinteger(L, -3, 255);
-		v.b = (unsigned char) luaL_optinteger(L, -2, 255);
-		v.a = (unsigned char) luaL_optinteger(L, -1, 255);
-
-		lua_pop(L, 9);
-		vertices.push_back(v);
+		readdata = readAttributeData(L, format.type, format.components, readdata);
+		n += format.components;
 	}
 
-	luax_catchexcept(L, [&](){ t->setVertices(vertices); });
+	return n;
+}
+
+int w_Mesh_setVertexAttribute(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
+	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
+
+	Mesh::DataType type;
+	int components;
+	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
+
+	// Maximum possible size for a single vertex attribute.
+	char data[sizeof(float) * 4];
+
+	// Fetch the values from Lua and store them in the data buffer.
+	writeAttributeData(L, 4, type, components, data);
+
+	luax_catchexcept(L, [&](){ t->setVertexAttribute(vertindex, attribindex, data, sizeof(float) * 4); });
 	return 0;
 }
 
-int w_Mesh_getVertices(lua_State *L)
+int w_Mesh_getVertexAttribute(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
+	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
+	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
 
-	const Vertex *vertices = t->getVertices();
+	Mesh::DataType type;
+	int components;
+	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
 
-	int count = (int) t->getVertexCount();
-	lua_createtable(L, count, 0);
+	// Maximum possible size for a single vertex attribute.
+	char data[sizeof(float) * 4];
 
-	if (count == 0 || vertices == nullptr)
-		return 1;
+	luax_catchexcept(L, [&](){ t->getVertexAttribute(vertindex, attribindex, data, sizeof(float) * 4); });
 
-	for (int i = 0; i < count; i++)
-	{
-		// Create vertex table.
-		lua_createtable(L, 8, 0);
-
-		lua_pushnumber(L, vertices[i].x);
-		lua_rawseti(L, -2, 1);
-
-		lua_pushnumber(L, vertices[i].y);
-		lua_rawseti(L, -2, 2);
-
-		lua_pushnumber(L, vertices[i].s);
-		lua_rawseti(L, -2, 3);
-
-		lua_pushnumber(L, vertices[i].t);
-		lua_rawseti(L, -2, 4);
-
-		lua_pushnumber(L, vertices[i].r);
-		lua_rawseti(L, -2, 5);
-
-		lua_pushnumber(L, vertices[i].g);
-		lua_rawseti(L, -2, 6);
-
-		lua_pushnumber(L, vertices[i].b);
-		lua_rawseti(L, -2, 7);
-
-		lua_pushnumber(L, vertices[i].a);
-		lua_rawseti(L, -2, 8);
-
-		// Insert vertex table into vertices table.
-		lua_rawseti(L, -2, i + 1);
-	}
-
-	// Return vertices table.
-	return 1;
+	readAttributeData(L, type, components, data);
+	return components;
 }
 
 int w_Mesh_getVertexCount(lua_State *L)
@@ -192,6 +202,73 @@ int w_Mesh_getVertexCount(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 	lua_pushinteger(L, t->getVertexCount());
 	return 1;
+}
+
+int w_Mesh_getVertexFormat(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+
+	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
+	lua_createtable(L, (int) vertexformat.size(), 0);
+
+	const char *tname = nullptr;
+
+	for (size_t i = 0; i < vertexformat.size(); i++)
+	{
+		if (!Mesh::getConstant(vertexformat[i].type, tname))
+			return luaL_error(L, "Unknown vertex attribute data type.");
+
+		lua_createtable(L, 3, 0);
+
+		lua_pushstring(L, vertexformat[i].name.c_str());
+		lua_rawseti(L, -2, 1);
+
+		lua_pushstring(L, tname);
+		lua_rawseti(L, -2, 2);
+
+		lua_pushinteger(L, vertexformat[i].components);
+		lua_rawseti(L, -2, 3);
+
+		// format[i] = {name, type, components}
+		lua_rawseti(L, -2, (int) i + 1);
+	}
+	
+	return 1;
+}
+
+int w_Mesh_setAttributeEnabled(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	bool enable = luax_toboolean(L, 3);
+	luax_catchexcept(L, [&](){ t->setAttributeEnabled(name, enable); });
+	return 0;
+}
+
+int w_Mesh_isAttributeEnabled(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	bool enabled = false;
+	luax_catchexcept(L, [&](){ enabled = t->isAttributeEnabled(name); });
+	lua_pushboolean(L, enabled);
+	return 1;
+}
+
+int w_Mesh_attachAttribute(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	Mesh *mesh = luax_checkmesh(L, 3);
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, mesh); });
+	return 0;
+}
+
+int w_Mesh_flush(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	t->flush();
+	return 0;
 }
 
 int w_Mesh_setVertexMap(lua_State *L)
@@ -204,15 +281,18 @@ int w_Mesh_setVertexMap(lua_State *L)
 	std::vector<uint32> vertexmap;
 	vertexmap.reserve(nargs);
 
-	for (int i = 0; i < nargs; i++)
+	if (is_table)
 	{
-		if (is_table)
+		for (int i = 0; i < nargs; i++)
 		{
 			lua_rawgeti(L, 2, i + 1);
 			vertexmap.push_back(uint32(luaL_checkinteger(L, -1) - 1));
 			lua_pop(L, 1);
 		}
-		else
+	}
+	else
+	{
+		for (int i = 0; i < nargs; i++)
 			vertexmap.push_back(uint32(luaL_checkinteger(L, i + 2) - 1));
 	}
 
@@ -332,27 +412,18 @@ int w_Mesh_getDrawRange(lua_State *L)
 	return 2;
 }
 
-int w_Mesh_setVertexColors(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	t->setVertexColors(luax_toboolean(L, 2));
-	return 0;
-}
-
-int w_Mesh_hasVertexColors(lua_State *L)
-{
-	Mesh *t = luax_checkmesh(L, 1);
-	luax_pushboolean(L, t->hasVertexColors());
-	return 1;
-}
-
 static const luaL_Reg functions[] =
 {
 	{ "setVertex", w_Mesh_setVertex },
 	{ "getVertex", w_Mesh_getVertex },
-	{ "setVertices", w_Mesh_setVertices },
-	{ "getVertices", w_Mesh_getVertices },
+	{ "setVertexAttribute", w_Mesh_setVertexAttribute },
+	{ "getVertexAttribute", w_Mesh_getVertexAttribute },
 	{ "getVertexCount", w_Mesh_getVertexCount },
+	{ "getVertexFormat", w_Mesh_getVertexFormat },
+	{ "setAttributeEnabled", w_Mesh_setAttributeEnabled },
+	{ "isAttributeEnabled", w_Mesh_isAttributeEnabled },
+	{ "attachAttribute", w_Mesh_attachAttribute },
+	{ "flush", w_Mesh_flush },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
 	{ "setTexture", w_Mesh_setTexture },
@@ -361,8 +432,6 @@ static const luaL_Reg functions[] =
 	{ "getDrawMode", w_Mesh_getDrawMode },
 	{ "setDrawRange", w_Mesh_setDrawRange },
 	{ "getDrawRange", w_Mesh_getDrawRange },
-	{ "setVertexColors", w_Mesh_setVertexColors },
-	{ "hasVertexColors", w_Mesh_hasVertexColors },
 	{ 0, 0 }
 };
 

@@ -71,7 +71,7 @@ int w_newDecoder(lua_State *L)
 	Decoder *t = nullptr;
 	luax_catchexcept(L,
 		[&]() { t = instance()->newDecoder(data, bufferSize); },
-		[&]() { data->release(); }
+		[&](bool) { data->release(); }
 	);
 
 	if (t == nullptr)

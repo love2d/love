@@ -167,7 +167,7 @@ public:
 	 **/
 	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::getDefaultFilter());
 
-	SpriteBatch *newSpriteBatch(Texture *texture, int size, int usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, Mesh::Usage usage);
 
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
@@ -175,8 +175,11 @@ public:
 
 	Shader *newShader(const Shader::ShaderSource &source);
 
-	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
-	Mesh *newMesh(int vertexcount, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
+	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, Mesh::Usage usage);
+	Mesh *newMesh(int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage);
+
+	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage);
+	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, Mesh::Usage usage);
 
 	Text *newText(Font *font, const std::string &text = "");
 
@@ -184,7 +187,7 @@ public:
 	 * Sets the foreground color.
 	 * @param c The new foreground color.
 	 **/
-	void setColor(const Color &c);
+	void setColor(Color c);
 
 	/**
 	 * Gets current color.
@@ -194,7 +197,7 @@ public:
 	/**
 	 * Sets the background Color.
 	 **/
-	void setBackgroundColor(const Color &c);
+	void setBackgroundColor(Color c);
 
 	/**
 	 * Gets the current background color.

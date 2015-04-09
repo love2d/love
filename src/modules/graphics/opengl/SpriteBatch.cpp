@@ -41,7 +41,7 @@ namespace graphics
 namespace opengl
 {
 
-SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
+SpriteBatch::SpriteBatch(Texture *texture, int size, Mesh::Usage usage)
 	: texture(texture)
 	, size(size)
 	, next(0)
@@ -54,26 +54,13 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, int usage)
 	if (size <= 0)
 		throw love::Exception("Invalid SpriteBatch size.");
 
-	GLenum gl_usage;
-	switch (usage)
-	{
-	default:
-	case USAGE_DYNAMIC:
-		gl_usage = GL_DYNAMIC_DRAW;
-		break;
-	case USAGE_STATIC:
-		gl_usage = GL_STATIC_DRAW;
-		break;
-	case USAGE_STREAM:
-		gl_usage = GL_STREAM_DRAW;
-		break;
-	}
+	GLenum gl_usage = Mesh::getGLBufferUsage(usage);
 
 	const size_t vertex_size = sizeof(Vertex) * 4 * size;
 
 	try
 	{
-		array_buf = GLBuffer::Create(vertex_size, GL_ARRAY_BUFFER, gl_usage);
+		array_buf = new GLBuffer(vertex_size, nullptr, GL_ARRAY_BUFFER, gl_usage);
 	}
 	catch (love::Exception &)
 	{
@@ -162,7 +149,7 @@ void SpriteBatch::setColor(const Color &color)
 void SpriteBatch::setColor()
 {
 	delete color;
-	color = 0;
+	color = nullptr;
 }
 
 const Color *SpriteBatch::getColor() const
@@ -195,7 +182,7 @@ void SpriteBatch::setBufferSize(int newsize)
 
 	try
 	{
-		new_array_buf = GLBuffer::Create(vertex_size, array_buf->getTarget(), array_buf->getUsage());
+		new_array_buf = new GLBuffer(vertex_size, nullptr, array_buf->getTarget(), array_buf->getUsage());
 
 		// Copy as much of the old data into the new GLBuffer as can fit.
 		GLBuffer::Bind bind(*new_array_buf);
@@ -310,25 +297,6 @@ void SpriteBatch::setColorv(Vertex *v, const Color &color)
 		v[i].a = color.a;
 	}
 }
-
-bool SpriteBatch::getConstant(const char *in, UsageHint &out)
-{
-	return usageHints.find(in, out);
-}
-
-bool SpriteBatch::getConstant(UsageHint in, const char *&out)
-{
-	return usageHints.find(in, out);
-}
-
-StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM>::Entry SpriteBatch::usageHintEntries[] =
-{
-	{"dynamic", SpriteBatch::USAGE_DYNAMIC},
-	{"static",  SpriteBatch::USAGE_STATIC},
-	{"stream",  SpriteBatch::USAGE_STREAM},
-};
-
-StringMap<SpriteBatch::UsageHint, SpriteBatch::USAGE_MAX_ENUM> SpriteBatch::usageHints(usageHintEntries, sizeof(usageHintEntries));
 
 } // opengl
 } // graphics

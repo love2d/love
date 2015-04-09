@@ -32,6 +32,7 @@
 
 // C++
 #include <vector>
+#include <unordered_map>
 
 namespace love
 {
@@ -42,63 +43,106 @@ namespace opengl
 
 /**
  * Holds and draws arbitrary vertex geometry.
- * Each vertex in the Mesh has a position, texture coordinate, and color.
+ * Each vertex in the Mesh has a collection of vertex attributes specified on
+ * creation.
  **/
 class Mesh : public Drawable
 {
 public:
 
+	// The expected usage pattern of the Mesh's vertex data.
+	enum Usage
+	{
+		USAGE_STREAM,
+		USAGE_DYNAMIC,
+		USAGE_STATIC,
+		USAGE_MAX_ENUM
+	};
+
 	// How the Mesh's vertices are used when drawing.
 	// http://escience.anu.edu.au/lecture/cg/surfaceModeling/image/surfaceModeling015.png
 	enum DrawMode
 	{
-		DRAW_MODE_FAN,
-		DRAW_MODE_STRIP,
-		DRAW_MODE_TRIANGLES,
-		DRAW_MODE_POINTS,
-		DRAW_MODE_MAX_ENUM
+		DRAWMODE_FAN,
+		DRAWMODE_STRIP,
+		DRAWMODE_TRIANGLES,
+		DRAWMODE_POINTS,
+		DRAWMODE_MAX_ENUM
 	};
 
-	/**
-	 * Constructor.
-	 * @param verts The vertices to use in the Mesh.
-	 * @param mode The draw mode to use when drawing the Mesh.
-	 **/
-	Mesh(const std::vector<Vertex> &verts, DrawMode mode = DRAW_MODE_FAN);
+	// The type of data a vertex attribute can store.
+	enum DataType
+	{
+		DATA_BYTE,
+		DATA_FLOAT,
+		DATA_MAX_ENUM
+	};
 
-	/**
-	 * Constructor.
-	 * Creates a Mesh with a certain number of default-initialized (hidden)
-	 * vertices.
-	 * @param vertexcount The number of vertices to use in the Mesh.
-	 * @param mode The draw mode to use when drawing the Mesh.
-	 **/
-	Mesh(int vertexcount, DrawMode mode = DRAW_MODE_FAN);
+	struct AttribFormat
+	{
+		std::string name;
+		DataType type;
+		int components; // max 4
+	};
+
+	Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, Usage usage);
+	Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, Usage usage);
+
+	Mesh(const std::vector<Vertex> &vertices, DrawMode drawmode, Usage usage);
+	Mesh(int vertexcount, DrawMode drawmode, Usage usage);
 
 	virtual ~Mesh();
 
 	/**
-	 * Replaces all the vertices in the Mesh with a new set of vertices.
+	 * Sets the values of all attributes at a specific vertex index in the Mesh.
+	 * The size of the data must be less than or equal to the total size of all
+	 * vertex attributes.
 	 **/
-	void setVertices(const std::vector<Vertex> &verts);
+	void setVertex(size_t vertindex, const void *data, size_t datasize);
+	size_t getVertex(size_t vertindex, void *data, size_t datasize);
+	void *getVertexScratchBuffer();
 
 	/**
-	 * Gets all of the vertices in the Mesh as an array.
+	 * Sets the values for a single attribute at a specific vertex index in the
+	 * Mesh. The size of the data must be less than or equal to the size of the
+	 * attribute.
 	 **/
-	const Vertex *getVertices() const;
+	void setVertexAttribute(size_t vertindex, int attribindex, const void *data, size_t datasize);
+	size_t getVertexAttribute(size_t vertindex, int attribindex, void *data, size_t datasize);
 
 	/**
-	 * Sets an individual vertex in the Mesh.
-	 * @param index The index into the list of vertices to use.
-	 * @param v The new vertex.
-	 **/
-	void setVertex(size_t index, const Vertex &v);
-	Vertex getVertex(size_t index) const;
-
-	/**
-	 * Gets the total number of vertices in the Mesh.
+	 * Gets the total number of vertices that can be used when drawing the Mesh.
 	 **/
 	size_t getVertexCount() const;
+
+	/**
+	 * Gets the size in bytes of the start of one vertex to the start of the
+	 * next, in the buffer.
+	 **/
+	size_t getVertexStride() const;
+
+	/**
+	 * Gets the format of each vertex attribute stored in the Mesh.
+	 **/
+	const std::vector<AttribFormat> &getVertexFormat() const;
+	DataType getAttributeInfo(int attribindex, int &components) const;
+
+	/**
+	 * Sets whether a specific vertex attribute is used when drawing the Mesh.
+	 **/
+	void setAttributeEnabled(const std::string &name, bool enable);
+	bool isAttributeEnabled(const std::string &name) const;
+
+	/**
+	 * Attaches a vertex attribute from another Mesh to this one. The attribute
+	 * will be used when drawing this Mesh.
+	 **/
+	void attachAttribute(const std::string &name, Mesh *mesh);
+
+	/**
+	 * Flushes all modified data to the GPU.
+	 **/
+	void flush();
 
 	/**
 	 * Sets the vertex map to use when drawing the Mesh. The vertex map
@@ -145,46 +189,79 @@ public:
 	void setDrawRange();
 	void getDrawRange(int &min, int &max) const;
 
-	/**
-	 * Sets whether per-vertex colors are enabled. If this is disabled, the
-	 * global color (love.graphics.setColor) will be used for the entire Mesh.
-	 **/
-	void setVertexColors(bool enable);
-	bool hasVertexColors() const;
-
 	// Implements Drawable.
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) override;
+
+	static GLenum getGLBufferUsage(Usage usage);
+
+	static bool getConstant(const char *in, Usage &out);
+	static bool getConstant(Usage in, const char *&out);
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
 
+	static bool getConstant(const char *in, DataType &out);
+	static bool getConstant(DataType in, const char *&out);
+
 private:
 
-	GLenum getGLDrawMode(DrawMode mode) const;
-	GLenum getGLDataTypeFromMax(size_t maxvalue) const;
-	size_t getGLDataTypeSize(GLenum datatype) const;
+	struct AttachedAttribute
+	{
+		Mesh *mesh;
+		size_t index;
+		bool enabled;
+	};
 
-	// Vertex buffer.
+	void setupAttachedAttributes();
+	void calculateAttributeSizes();
+	size_t getAttributeOffset(size_t attribindex) const;
+
+	static size_t getAttribFormatSize(const AttribFormat &format);
+
+	static GLenum getGLDrawMode(DrawMode mode);
+	static GLenum getGLDataType(DataType type);
+	static GLenum getGLDataTypeFromMax(size_t maxvalue);
+	static size_t getGLDataTypeSize(GLenum datatype);
+
+	std::vector<AttribFormat> vertexFormat;
+	std::vector<size_t> attributeSizes;
+
+	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
+
+	// Vertex buffer, for the vertex data.
 	GLBuffer *vbo;
-	size_t vertex_count;
+	size_t vertexCount;
+	size_t vertexStride;
+
+	// Block of memory whose size is at least as large as a single vertex. Helps
+	// avoid memory allocations when using Mesh::setVertex etc.
+	char *vertexScratchBuffer;
+
+	// Tracks the range of the vertex buffer that has been used, to make unmap()
+	// calls as efficient as possible.
+	size_t vboUsedOffset;
+	size_t vboUsedSize;
 
 	// Element (vertex index) buffer, for the vertex map.
 	GLBuffer *ibo;
-	size_t element_count;
-	GLenum element_data_type;
+	size_t elementCount;
+	GLenum elementDataType;
 
-	DrawMode draw_mode;
+	DrawMode drawMode;
 
-	int range_min;
-	int range_max;
+	int rangeMin;
+	int rangeMax;
 
 	StrongRef<Texture> texture;
 
-	// Whether the per-vertex colors are used when drawing.
-	bool colors_enabled;
+	static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[];
+	static StringMap<Usage, USAGE_MAX_ENUM> usages;
 
-	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM>::Entry drawModeEntries[];
-	static StringMap<DrawMode, DRAW_MODE_MAX_ENUM> drawModes;
+	static StringMap<DrawMode, DRAWMODE_MAX_ENUM>::Entry drawModeEntries[];
+	static StringMap<DrawMode, DRAWMODE_MAX_ENUM> drawModes;
+
+	static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[];
+	static StringMap<DataType, DATA_MAX_ENUM> dataTypes;
 
 }; // Mesh
 

@@ -524,7 +524,7 @@ int luax_catchexcept(lua_State *L, const T& func, const F& finallyfunc)
 		lua_pushstring(L, e.what());
 	}
 
-	finallyfunc();
+	finallyfunc(should_error);
 
 	if (should_error)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
