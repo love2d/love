@@ -28,6 +28,10 @@ Released: N/A
   * Added support for different formats in each Canvas when using multi-canvas rendering. Added the "multicanvasformats" Graphics Feature constant.
   * Added support for OpenGL ES 2 and 3.
   * Added support for loading ETC1/2, EAC, and PVRTC1 compressed textures.
+  * Added custom vertex attribute support for Meshes via new variants of love.graphics.newMesh.
+  * Added Mesh:setVertexAttribute and Mesh:getVertexAttribute, Mesh:getVertexFormat, and Mesh:flush.
+  * Added Mesh:setAttributeEnabled and Mesh:isAttributeEnabled.
+  * Added Mesh:attachAttribute.
   * Added Text objects and love.graphics.newText.
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
   * Added an optional font hinting argument to love.graphics.newFont when loading TrueType fonts.
@@ -39,6 +43,7 @@ Released: N/A
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
   * Removed the "wu" and "wd" constants for love.mousepressed (replaced by love.wheelmoved.)
+  * Removed the named mouse button constants (replaced by button numbers.)
   * Removed Source:isStatic (replaced by Source:getType.)
   * Removed image loading support for all (non-compressed texture) file formats except for PNG, JPEG, TGA, and BMP.
   * Removed love.graphics.setPointStyle and love.graphics.getPointStyle.
@@ -48,6 +53,8 @@ Released: N/A
   * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature constant (the features always have guaranteed support now.)
   * Removed Canvas:getPixel (use Canvas:newImageData instead.)
   * Removed Canvas:clear (use love.graphics.clear instead.)
+  * Removed Mesh:setVertices and Mesh:getVertices.
+  * Removed Mesh:setVertexColors and Mesh:hasVertexColors (use Mesh:setAttributeEnabled("VertexColor", enable) instead.)
   * Removed functions deprecated in LOVE 0.9.x:
     * Removed Canvas:getType (replaced by Canvas:getFormat.)
     * Removed love.graphics.getMaxTextureSize/getMaxImageSize (replaced by love.graphics.getSystemLimits.)
@@ -67,15 +74,18 @@ Released: N/A
   * Renamed Canvas:getImageData to Canvas:newImageData.
   * Renamed love.image's CompressedData type to CompressedImageData.
 
-  * Fixed love.graphics.getKeyFromScancode crashing when an invalid scancode is given.
+  * Fixed utf8.char.
+  * Fixed love.keyboard.getKeyFromScancode crashing when an invalid scancode is given.
   * Fixed the stencil buffer in Canvases when an unsupported MSAA value is used to create the Canvas.
   * Fixed love.graphics.getColorMask.
   * Fixed the default offset for particles when ParticleSystem:setQuads or ParticleSystem:setTexture is used.
+  * Fixed love.graphics.shear resetting all love.graphics transformations.
 
   * Updated the compatibility warning notice to use a message box.
   * Updated the compatibility warning notice to display before main.lua is loaded.
   * Updated love.keypressed to be love.keypressed(key, scancode, isrepeat).
   * Updated love.keyreleased to be love.keyreleased(key, scancode).
+  * Updated love.mousepressed, love.mousereleased, and love.mouse.isDown to use button numbers instead of named button constants. 
   * Updated love.math.setRandomSeed and RandomGenerator:setSeed to produce better results for the first few random() calls.
   * Updated Source methods that deal with spatial audio to error rather than failing silently if the Source isn't mono.
   * Updated ImageFonts to no longer treat separator pixels as spacing.
@@ -87,6 +97,7 @@ Released: N/A
   * Updated love.graphics.newImage's optional second argument to be a table of flags (flags are "mipmaps" and "srgb".)
   * Updated Images to require setting the mipmaps flag to true on creation in order to use mipmaps.
   * Updated Images to allow mipmaps for non-power-of-two sizes.
+  * Updated Mesh:setVertex to explicitly set every component of every attribute in the vertex, instead of having default values.
 
 LOVE 0.9.2 [Baby Inspector]
 ---------------------------
