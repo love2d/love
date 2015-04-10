@@ -42,9 +42,17 @@ GLSL.SYNTAX = [[
 -- Uniforms shared by the vertex and pixel shader stages.
 GLSL.UNIFORMS = [[
 #ifdef GL_ES
-uniform mat4 TransformMatrix;
-uniform mat4 ProjectionMatrix;
-uniform mat4 TransformProjectionMatrix;
+// According to the GLSL ES 1.0 spec, uniform precision must match between stages,
+// but we can't guarantee that highp is always supported in fragment shaders...
+// We *really* don't want to use mediump for these in vertex shaders though.
+#if defined(VERTEX) || defined(GL_FRAGMENT_PRECISION_HIGH)
+#define LOVE_UNIFORM_PRECISION highp
+#else
+#define LOVE_UNIFORM_PRECISION mediump
+#endif
+uniform LOVE_UNIFORM_PRECISION mat4 TransformMatrix;
+uniform LOVE_UNIFORM_PRECISION mat4 ProjectionMatrix;
+uniform LOVE_UNIFORM_PRECISION mat4 TransformProjectionMatrix;
 #else
 #define TransformMatrix gl_ModelViewMatrix
 #define ProjectionMatrix gl_ProjectionMatrix
