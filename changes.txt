@@ -97,6 +97,7 @@ Released: N/A
   * Updated love.graphics.newImage's optional second argument to be a table of flags (flags are "mipmaps" and "srgb".)
   * Updated Images to require setting the mipmaps flag to true on creation in order to use mipmaps.
   * Updated Images to allow mipmaps for non-power-of-two sizes.
+  * Updated the arguments for the standard variants of love.graphics.newMesh. They're now newMesh(vertices [, drawmode, usage]) and newMesh(vertexcount [, drawmode, usage]).
   * Updated Mesh:setVertex to explicitly set every component of every attribute in the vertex, instead of having default values.
 
 LOVE 0.9.2 [Baby Inspector]

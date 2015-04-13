@@ -37,7 +37,7 @@
 #include <SDL_video.h>
 
 #ifdef LOVE_IOS
-#include <SDL_system.h>
+#include <SDL_syswm.h>
 #endif
 
 namespace love
@@ -439,7 +439,10 @@ GLuint OpenGL::getDefaultFBO() const
 {
 #ifdef LOVE_IOS
 	// Hack: iOS uses a custom FBO.
-	return SDL_iPhoneGetViewFramebuffer(SDL_GL_GetCurrentWindow());
+	SDL_SysWMinfo info = {};
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
+	return info.info.uikit.framebuffer;
 #else
 	return 0;
 #endif

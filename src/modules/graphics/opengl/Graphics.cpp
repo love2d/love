@@ -39,7 +39,7 @@
 #include <cstdio>
 
 #ifdef LOVE_IOS
-#include <SDL_system.h>
+#include <SDL_syswm.h>
 #endif
 
 namespace love
@@ -522,9 +522,11 @@ void Graphics::present()
 	discard({}, true);
 
 #ifdef LOVE_IOS
-	// Hack: SDL's color renderbuffer needs to be bound when swapBuffers is called.
-	GLuint rbo = SDL_iPhoneGetViewRenderbuffer(SDL_GL_GetCurrentWindow());
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	// Hack: SDL's color renderbuffer must be bound when swapBuffers is called.
+	SDL_SysWMinfo info = {};
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
+	glBindRenderbuffer(GL_RENDERBUFFER, info.info.uikit.colorbuffer);
 #endif
 
 	currentWindow->swapBuffers();
