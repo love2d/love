@@ -37,7 +37,7 @@ int Image::imageCount = 0;
 
 float Image::maxMipmapSharpness = 0.0f;
 
-Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NEAREST;
+Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_LINEAR;
 float Image::defaultMipmapSharpness = 0.0f;
 
 Image::Image(love::image::ImageData *data, const Flags &flags)
