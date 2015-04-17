@@ -32,6 +32,7 @@
 #include "common/int.h"
 
 // Noise
+#include "libraries/noise1234/noise1234.h"
 #include "libraries/noise1234/simplexnoise1234.h"
 
 // STL
@@ -154,7 +155,7 @@ public:
 	float linearToGamma(float c) const;
 
 	/**
-	 * Calculate Simplex noise for the specified coordinate(s).
+	 * Calculate noise for the specified coordinate(s).
 	 *
 	 * @return Noise value in the range of [0, 1].
 	 **/
@@ -218,14 +219,17 @@ inline float Math::noise(float x, float y) const
 	return SimplexNoise1234::noise(x, y) * 0.5f + 0.5f;
 }
 
+// Perlin noise is used instead of Simplex noise in the 3D and 4D cases to avoid
+// patent issues.
+
 inline float Math::noise(float x, float y, float z) const
 {
-	return SimplexNoise1234::noise(x, y, z) * 0.5f + 0.5f;
+	return Noise1234::noise(x, y, z) * 0.5f + 0.5f;
 }
 
 inline float Math::noise(float x, float y, float z, float w) const
 {
-	return SimplexNoise1234::noise(x, y, z, w) * 0.5f + 0.5f;
+	return Noise1234::noise(x, y, z, w) * 0.5f + 0.5f;
 }
 
 } // math

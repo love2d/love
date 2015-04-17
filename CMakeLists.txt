@@ -1108,6 +1108,8 @@ add_library(love_3p_lz4 ${LOVE_SRC_3P_LZ4})
 #
 
 set(LOVE_SRC_3P_NOISE1234
+	src/libraries/noise1234/noise1234.cpp
+	src/libraries/noise1234/noise1234.h
 	src/libraries/noise1234/simplexnoise1234.cpp
 	src/libraries/noise1234/simplexnoise1234.h
 )
