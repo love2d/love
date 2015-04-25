@@ -408,7 +408,21 @@ int w_append(lua_State *L)
 
 int w_getDirectoryItems(lua_State *L)
 {
-	return instance()->getDirectoryItems(L);
+	const char *dir = luaL_checkstring(L, 1);
+	std::vector<std::string> items;
+
+	instance()->getDirectoryItems(dir, items);
+
+	lua_createtable(L, (int) items.size(), 0);
+
+	for (int i = 0; i < (int) items.size(); i++)
+	{
+		lua_pushstring(L, items[i].c_str());
+		lua_rawseti(L, -2, i + 1);
+	}
+
+	// Return the table.
+	return 1;
 }
 
 int w_lines(lua_State *L)

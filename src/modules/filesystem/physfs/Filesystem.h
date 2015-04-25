@@ -86,7 +86,7 @@ public:
 	void write(const char *filename, const void *data, int64 size) const;
 	void append(const char *filename, const void *data, int64 size) const;
 
-	int getDirectoryItems(lua_State *L);
+	void getDirectoryItems(const char *dir, std::vector<std::string> &items);
 
 	int64 getLastModified(const char *filename) const;
 	int64 getSize(const char *filename) const;

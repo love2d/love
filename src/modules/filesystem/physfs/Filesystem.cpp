@@ -545,36 +545,14 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 		throw love::Exception("Data could not be written.");
 }
 
-int Filesystem::getDirectoryItems(lua_State *L)
+void Filesystem::getDirectoryItems(const char *dir, std::vector<std::string> &items)
 {
-	const char *dir = luaL_checkstring(L, 1);
-	bool hascallback = !lua_isnoneornil(L, 2);
-
-	if (hascallback)
-		luaL_checktype(L, 2, LUA_TFUNCTION);
-
 	char **rc = PHYSFS_enumerateFiles(dir);
-	int index = 1;
-
-	lua_newtable(L);
 
 	for (char **i = rc; *i != 0; i++)
-	{
-		if (hascallback)
-		{
-			lua_pushvalue(L, 2);
-			lua_pushstring(L, *i);
-			lua_call(L, 1, 0);
-		}
-
-		lua_pushstring(L, *i);
-		lua_rawseti(L, -2, index);
-		index++;
-	}
+		items.push_back(*i);
 
 	PHYSFS_freeList(rc);
-
-	return 1;
 }
 
 int64 Filesystem::getLastModified(const char *filename) const
