@@ -36,6 +36,7 @@ int w_Channel_demand(lua_State *L);
 int w_Channel_peek(lua_State *L);
 int w_Channel_getCount(lua_State *L);
 int w_Channel_clear(lua_State *L);
+int w_Channel_performAtomic(lua_State *L);
 
 extern "C" int luaopen_channel(lua_State *L);
 } // thread

@@ -39,6 +39,7 @@ class Channel : public love::Object
 // FOR WRAPPER USE ONLY
 friend void retainVariant(Channel *, Variant *);
 friend void releaseVariant(Channel *, Variant *);
+friend int w_Channel_performAtomic(lua_State *);
 
 public:
 
