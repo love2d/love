@@ -37,8 +37,8 @@ class DefaultFontData : public love::Data
 {
 public:
 
-	virtual void *getData() const { return Vera_ttf; }
-	virtual size_t getSize() const { return sizeof(Vera_ttf); }
+	void *getData() const override { return Vera_ttf; }
+	size_t getSize() const override { return sizeof(Vera_ttf); }
 };
 
 Rasterizer *Font::newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting)
