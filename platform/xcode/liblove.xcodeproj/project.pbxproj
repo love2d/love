@@ -838,7 +838,6 @@
 		FA57FB991AE1993600F2AD6D /* noise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA57FB961AE1993600F2AD6D /* noise1234.cpp */; };
 		FA57FB9A1AE1993600F2AD6D /* noise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA57FB971AE1993600F2AD6D /* noise1234.h */; };
 		FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */; };
-		FA5D24B21A96D2EC00C6FC8F /* libluajit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24A91A96D2EC00C6FC8F /* libluajit.a */; };
 		FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AB1A96D2EC00C6FC8F /* libogg.a */; };
 		FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */; };
 		FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */; };
@@ -851,6 +850,7 @@
 		FA620A371AA2F8DB005DB4C2 /* wrap_Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */; };
 		FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
 		FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
+		FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7550A71AEBE276003E311E /* libluajit.a */; };
 		FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
@@ -1496,7 +1496,6 @@
 		FA57FB961AE1993600F2AD6D /* noise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = noise1234.cpp; sourceTree = "<group>"; };
 		FA57FB971AE1993600F2AD6D /* noise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = noise1234.h; sourceTree = "<group>"; };
 		FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libFreetype2.a; sourceTree = "<group>"; };
-		FA5D24A91A96D2EC00C6FC8F /* libluajit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libluajit.a; sourceTree = "<group>"; };
 		FA5D24AB1A96D2EC00C6FC8F /* libogg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libogg.a; sourceTree = "<group>"; };
 		FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libphysfs.a; sourceTree = "<group>"; };
 		FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvorbis.a; sourceTree = "<group>"; };
@@ -1506,6 +1505,7 @@
 		FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
 		FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
 		FA620A391AA305F6005DB4C2 /* types.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = types.cpp; sourceTree = "<group>"; };
+		FA7550A71AEBE276003E311E /* libluajit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libluajit.a; sourceTree = "<group>"; };
 		FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
@@ -1531,10 +1531,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */,
-				FA5D24B21A96D2EC00C6FC8F /* libluajit.a in Frameworks */,
 				FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */,
 				FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */,
 				FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */,
+				FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */,
 				FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2738,8 +2738,8 @@
 		FA5D24A31A96D2C300C6FC8F /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				FA7550A61AEBE250003E311E /* luajit */,
 				FA5D24A41A96D2EC00C6FC8F /* freetype */,
-				FA5D24A81A96D2EC00C6FC8F /* lua */,
 				FA5D24AA1A96D2EC00C6FC8F /* ogg */,
 				FA5D24AC1A96D2EC00C6FC8F /* physfs */,
 				FA5D24CC1A96E63D00C6FC8F /* SDL2 */,
@@ -2755,15 +2755,6 @@
 			);
 			name = freetype;
 			path = ios/libraries/freetype;
-			sourceTree = "<group>";
-		};
-		FA5D24A81A96D2EC00C6FC8F /* lua */ = {
-			isa = PBXGroup;
-			children = (
-				FA5D24A91A96D2EC00C6FC8F /* libluajit.a */,
-			);
-			name = lua;
-			path = ios/libraries/lua;
 			sourceTree = "<group>";
 		};
 		FA5D24AA1A96D2EC00C6FC8F /* ogg */ = {
@@ -2800,6 +2791,15 @@
 			);
 			name = SDL2;
 			path = ios/libraries/SDL2;
+			sourceTree = "<group>";
+		};
+		FA7550A61AEBE250003E311E /* luajit */ = {
+			isa = PBXGroup;
+			children = (
+				FA7550A71AEBE276003E311E /* libluajit.a */,
+			);
+			name = luajit;
+			path = ios/libraries/luajit;
 			sourceTree = "<group>";
 		};
 		FAB17BE31ABFAA9000F9BA27 /* lz4 */ = {
@@ -3884,7 +3884,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
-					ios/include/lua,
+					ios/include/luajit,
 					ios/include/freetype,
 					ios/include/SDL2,
 				);
@@ -3898,6 +3898,7 @@
 					"$(PROJECT_DIR)/ios/libraries/physfs",
 					"$(PROJECT_DIR)/ios/libraries/vorbis",
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
+					"$(PROJECT_DIR)/ios/libraries/luajit",
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				OTHER_LDFLAGS = "-ObjC";
@@ -3926,7 +3927,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
-					ios/include/lua,
+					ios/include/luajit,
 					ios/include/freetype,
 					ios/include/SDL2,
 				);
@@ -3940,6 +3941,7 @@
 					"$(PROJECT_DIR)/ios/libraries/physfs",
 					"$(PROJECT_DIR)/ios/libraries/vorbis",
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
+					"$(PROJECT_DIR)/ios/libraries/luajit",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
@@ -3969,7 +3971,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
-					ios/include/lua,
+					ios/include/luajit,
 					ios/include/freetype,
 					ios/include/SDL2,
 				);
@@ -3983,6 +3985,7 @@
 					"$(PROJECT_DIR)/ios/libraries/physfs",
 					"$(PROJECT_DIR)/ios/libraries/vorbis",
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
+					"$(PROJECT_DIR)/ios/libraries/luajit",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";

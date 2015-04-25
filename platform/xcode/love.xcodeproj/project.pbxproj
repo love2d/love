@@ -605,7 +605,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
-					ios/include/lua,
+					ios/include/luajit,
 					ios/include/SDL2,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
@@ -644,7 +644,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
-					ios/include/lua,
+					ios/include/luajit,
 					ios/include/SDL2,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
@@ -684,7 +684,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					ios/include,
-					ios/include/lua,
+					ios/include/luajit,
 					ios/include/SDL2,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";

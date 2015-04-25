@@ -23,7 +23,6 @@
 
 // LOVE
 #include "event/Event.h"
-#include "common/runtime.h"
 
 // SDL
 #include <SDL_events.h>
