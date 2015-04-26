@@ -103,6 +103,14 @@ void OpenGL::setupContext()
 	else
 		state.pointSize = 1.0f;
 
+	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
+		|| GLAD_EXT_sRGB_write_control)
+	{
+		state.framebufferSRGBEnabled = (glIsEnabled(GL_FRAMEBUFFER_SRGB) == GL_TRUE);
+	}
+	else
+		state.framebufferSRGBEnabled = false;
+
 	// Initialize multiple texture unit support for shaders.
 	state.boundTextures.clear();
 	state.boundTextures.resize(maxTextureUnits, 0);
@@ -425,6 +433,21 @@ void OpenGL::setPointSize(float size)
 float OpenGL::getPointSize() const
 {
 	return state.pointSize;
+}
+
+void OpenGL::setFramebufferSRGB(bool enable)
+{
+	if (enable)
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	else
+		glDisable(GL_FRAMEBUFFER_SRGB);
+
+	state.framebufferSRGBEnabled = enable;
+}
+
+bool OpenGL::hasFramebufferSRGB() const
+{
+	return state.framebufferSRGBEnabled;
 }
 
 void OpenGL::bindFramebuffer(GLenum target, GLuint framebuffer)

@@ -270,12 +270,7 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 		|| GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB)
 	{
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-		{
-			if (sRGB)
-				glEnable(GL_FRAMEBUFFER_SRGB);
-			else
-				glDisable(GL_FRAMEBUFFER_SRGB);
-		}
+			gl.setFramebufferSRGB(sRGB);
 	}
 	else
 		sRGB = false;

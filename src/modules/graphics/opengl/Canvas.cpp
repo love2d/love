@@ -397,15 +397,6 @@ void Canvas::setupGrab()
 
 	// Set up the projection matrix
 	gl.matrices.projection.push_back(Matrix::ortho(0.0, (float) width, 0.0, (float) height));
-
-	// Make sure the correct sRGB setting is used when drawing to the canvas.
-	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-	{
-		if (format == FORMAT_SRGB)
-			glEnable(GL_FRAMEBUFFER_SRGB);
-		else if (screenHasSRGB)
-			glDisable(GL_FRAMEBUFFER_SRGB);
-	}
 }
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)
@@ -413,6 +404,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	// Whether the new canvas list is different from the old one.
 	// A more thorough check is done below.
 	bool canvaseschanged = canvases.size() != attachedCanvases.size();
+	bool hasSRGBcanvas = (format == FORMAT_SRGB);
 
 	if (canvases.size() > 0)
 	{
@@ -435,25 +427,31 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 
 		Format otherformat = canvases[i]->getTextureFormat();
 
-		if (otherformat != format)
-		{
-			if (!multiformatsupported)
-				throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
-			else if (otherformat == FORMAT_SRGB || format == FORMAT_SRGB)
-				// Driver bugs related to enabling GL_FRAMEBUFFER_SRGB...
-				throw love::Exception("sRGB and non-sRGB canvas formats cannot be mixed when using multi-canvas rendering.");
-		}
+		if (otherformat != format && !multiformatsupported)
+			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (canvases[i]->getMSAA() != 0)
 			throw love::Exception("Multi-canvas rendering is not supported with MSAA.");
 
 		if (!canvaseschanged && canvases[i] != attachedCanvases[i])
 			canvaseschanged = true;
+
+		if (otherformat == FORMAT_SRGB)
+			hasSRGBcanvas = true;
 	}
 
 	OpenGL::TempDebugGroup debuggroup("Canvas set");
 
 	setupGrab();
+
+	// Make sure the correct sRGB setting is used when drawing to the canvases.
+	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
+	{
+		if (hasSRGBcanvas && !gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(true);
+		else if (!hasSRGBcanvas && gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(false);
+	}
 
 	// Don't attach anything if there's nothing to change.
 	if (!canvaseschanged)
@@ -489,10 +487,19 @@ void Canvas::startGrab()
 
 	setupGrab();
 
+	// Make sure the correct sRGB setting is used when drawing to the canvas.
+	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
+	{
+		if (format == FORMAT_SRGB && !gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(true);
+		else if (format != FORMAT_SRGB && gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(false);
+	}
+
 	if (attachedCanvases.size() == 0)
 		return;
 
-	// make sure the FBO is only using a single draw buffer
+	// Make sure the FBO is only using a single draw buffer.
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	attachedCanvases.clear();
@@ -511,15 +518,7 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 
 	gl.matrices.projection.pop_back();
 
-	if (switchingToOtherCanvas)
-	{
-		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-		{
-			if (format == FORMAT_SRGB)
-				glDisable(GL_FRAMEBUFFER_SRGB);
-		}
-	}
-	else
+	if (!switchingToOtherCanvas)
 	{
 		// bind system framebuffer.
 		gl.bindFramebuffer(GL_FRAMEBUFFER, gl.getDefaultFBO());
@@ -528,10 +527,10 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 		{
-			if (format == FORMAT_SRGB && !screenHasSRGB)
-				glDisable(GL_FRAMEBUFFER_SRGB);
-			else if (format != FORMAT_SRGB && screenHasSRGB)
-				glEnable(GL_FRAMEBUFFER_SRGB);
+			if (screenHasSRGB && !gl.hasFramebufferSRGB())
+				gl.setFramebufferSRGB(true);
+			else if (!screenHasSRGB && gl.hasFramebufferSRGB())
+				gl.setFramebufferSRGB(false);
 		}
 	}
 }
@@ -630,6 +629,8 @@ bool Canvas::resolveMSAA(bool restoreprev)
 {
 	if (resolve_fbo == 0 || msaa_buffer == 0)
 		return false;
+
+	OpenGL::TempDebugGroup debuggroup("Canvas MSAA resolve");
 
 	GLint w = width;
 	GLint h = height;

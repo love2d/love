@@ -239,6 +239,16 @@ public:
 	float getPointSize() const;
 
 	/**
+	 * Calls glEnable/glDisable(GL_FRAMEBUFFER_SRGB).
+	 **/
+	void setFramebufferSRGB(bool enable);
+
+	/**
+	 * Equivalent to glIsEnabled(GL_FRAMEBUFFER_SRGB).
+	 **/
+	bool hasFramebufferSRGB() const;
+
+	/**
 	 * Binds a Framebuffer Object to the specified target.
 	 **/
 	void bindFramebuffer(GLenum target, GLuint framebuffer);
@@ -359,6 +369,8 @@ private:
 		Viewport scissor;
 
 		float pointSize;
+
+		bool framebufferSRGBEnabled;
 
 		GLuint defaultTexture;
 
