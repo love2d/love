@@ -37,7 +37,6 @@ ChainShape *luax_checkchainshape(lua_State *L, int idx);
 
 int w_ChainShape_setNextVertex(lua_State *L);
 int w_ChainShape_setPreviousVertex(lua_State *L);
-int w_ChainShape_getChildCount(lua_State *L);
 int w_ChainShape_getChildEdge(lua_State *L);
 int w_ChainShape_getVertexCount(lua_State *L);
 int w_ChainShape_getPoint(lua_State *L);

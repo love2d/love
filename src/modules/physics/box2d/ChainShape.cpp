@@ -85,12 +85,6 @@ EdgeShape *ChainShape::getChildEdge(int index) const
 	return new EdgeShape(e, true);
 }
 
-int ChainShape::getChildCount() const
-{
-	b2ChainShape *c = (b2ChainShape *)shape;
-	return c->GetChildCount();
-}
-
 int ChainShape::getVertexCount() const
 {
 	b2ChainShape *c = (b2ChainShape *)shape;
