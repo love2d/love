@@ -182,6 +182,7 @@ void Pool::stop()
 	for (const auto &i : playing)
 	{
 		i.first->stopAtomic();
+		i.first->rewindAtomic();
 		i.first->release();
 		available.push(i.second);
 	}
