@@ -70,7 +70,7 @@ static int w__eq(lua_State *L)
 
 Reference *luax_refif(lua_State *L, int type)
 {
-	Reference *r = 0;
+	Reference *r = nullptr;
 
 	// Create a reference only if the test succeeds.
 	if (lua_type(L, -1) == type)
@@ -84,9 +84,7 @@ Reference *luax_refif(lua_State *L, int type)
 void luax_printstack(lua_State *L)
 {
 	for (int i = 1; i<=lua_gettop(L); i++)
-	{
 		std::cout << i << " - " << luaL_typename(L, i) << std::endl;
-	}
 }
 
 bool luax_toboolean(lua_State *L, int idx)
@@ -193,7 +191,7 @@ void luax_setfuncs(lua_State *L, const luaL_Reg *l)
 	if (l == 0)
 		return;
 
-	for (; l->name != 0; l++)
+	for (; l->name != nullptr; l++)
 	{
 		lua_pushcfunction(L, l->func);
 		lua_setfield(L, -2, l->name);
