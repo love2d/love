@@ -52,6 +52,7 @@ public:
 	// Implements Drawable.
 	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
+	void setFont(Font *f);
 	Font *getFont() const;
 
 	/**

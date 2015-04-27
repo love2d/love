@@ -135,6 +135,14 @@ int w_Text_clear(lua_State *L)
 	return 0;
 }
 
+int w_Text_setFont(lua_State *L)
+{
+	Text *t = luax_checktext(L, 1);
+	Font *f = luax_checktype<Font>(L, 2, GRAPHICS_FONT_ID);
+	luax_catchexcept(L, [&](){ t->setFont(f); });
+	return 0;
+}
+
 int w_Text_getFont(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
@@ -164,6 +172,7 @@ static const luaL_Reg functions[] =
 	{ "add", w_Text_add },
 	{ "addf", w_Text_addf },
 	{ "clear", w_Text_clear },
+	{ "setFont", w_Text_setFont },
 	{ "getFont", w_Text_getFont },
 	{ "getWidth", w_Text_getWidth },
 	{ "getHeight", w_Text_getHeight },

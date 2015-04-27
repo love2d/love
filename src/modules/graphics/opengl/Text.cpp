@@ -265,6 +265,16 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
+void Text::setFont(Font *f)
+{
+	font.set(f);
+
+	// Invalidate the texture cache ID since the font is different. We also have
+	// to re-upload all the vertices based on the new font's textures.
+	texture_cache_id = (uint32) -1;
+	regenerateVertices();
+}
+
 Font *Text::getFont() const
 {
 	return font.get();
