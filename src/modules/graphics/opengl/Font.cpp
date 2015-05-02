@@ -41,7 +41,7 @@ namespace opengl
 int Font::fontCount = 0;
 
 Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
-	: rasterizer(r)
+	: rasterizers({r})
 	, height(r->getHeight())
 	, lineHeight(1)
 	, textureWidth(128)
@@ -201,7 +201,7 @@ love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
 	// Use spaces for the tab 'glyph'.
 	if (glyph == 9 && useSpacesAsTab)
 	{
-		love::font::GlyphData *spacegd = rasterizer->getGlyphData(32);
+		love::font::GlyphData *spacegd = rasterizers[0]->getGlyphData(32);
 		love::font::GlyphData::Format fmt = spacegd->getFormat();
 
 		love::font::GlyphMetrics gm = {};
@@ -214,7 +214,13 @@ love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
 		return new love::font::GlyphData(glyph, gm, fmt);
 	}
 
-	return rasterizer->getGlyphData(glyph);
+	for (const StrongRef<love::font::Rasterizer> &r : rasterizers)
+	{
+		if (r->hasGlyph(glyph))
+			return r->getGlyphData(glyph);
+	}
+
+	return rasterizers[0]->getGlyphData(glyph);
 }
 
 const Font::Glyph &Font::addGlyph(uint32 glyph)
@@ -757,12 +763,12 @@ void Font::unloadVolatile()
 
 int Font::getAscent() const
 {
-	return rasterizer->getAscent();
+	return rasterizers[0]->getAscent();
 }
 
 int Font::getDescent() const
 {
-	return rasterizer->getDescent();
+	return rasterizers[0]->getDescent();
 }
 
 float Font::getBaseline() const
@@ -773,12 +779,54 @@ float Font::getBaseline() const
 
 bool Font::hasGlyph(uint32 glyph) const
 {
-	return rasterizer->hasGlyph(glyph);
+	for (const StrongRef<love::font::Rasterizer> &r : rasterizers)
+	{
+		if (r->hasGlyph(glyph))
+			return true;
+	}
+
+	return false;
 }
 
 bool Font::hasGlyphs(const std::string &text) const
 {
-	return rasterizer->hasGlyphs(text);
+	if (text.size() == 0)
+		return false;
+
+	try
+	{
+		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
+		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
+
+		while (i != end)
+		{
+			uint32 codepoint = *i++;
+
+			if (!hasGlyph(codepoint))
+				return false;
+		}
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
+	}
+
+	return true;
+}
+
+void Font::setFallbacks(const std::vector<Font *> &fallbacks)
+{
+	for (const Font *f : fallbacks)
+	{
+		if (f->type != this->type)
+			throw love::Exception("Font fallbacks must be of the same font type.");
+	}
+
+	rasterizers.resize(1);
+
+	// NOTE: this won't invalidate already-rasterized glyphs.
+	for (const Font *f : fallbacks)
+		rasterizers.push_back(f->rasterizers[0]);
 }
 
 uint32 Font::getTextureCacheID() const

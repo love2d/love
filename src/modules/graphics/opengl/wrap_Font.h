@@ -44,6 +44,7 @@ int w_Font_getAscent(lua_State *L);
 int w_Font_getDescent(lua_State *L);
 int w_Font_getBaseline(lua_State *L);
 int w_Font_hasGlyphs(lua_State *L);
+int w_Font_setFallbacks(lua_State *L);
 extern "C" int luaopen_font(lua_State *L);
 
 } // opengl

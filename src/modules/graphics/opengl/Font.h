@@ -175,6 +175,8 @@ public:
 	bool hasGlyph(uint32 glyph) const;
 	bool hasGlyphs(const std::string &text) const;
 
+	void setFallbacks(const std::vector<Font *> &fallbacks);
+
 	uint32 getTextureCacheID() const;
 
 	static bool getConstant(const char *in, AlignMode &out);
@@ -211,7 +213,7 @@ private:
 	const Glyph &findGlyph(uint32 glyph);
 	void printv(const Matrix &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
-	StrongRef<love::font::Rasterizer> rasterizer;
+	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
 
 	int height;
 	float lineHeight;

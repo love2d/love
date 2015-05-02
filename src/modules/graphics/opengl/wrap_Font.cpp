@@ -172,6 +172,18 @@ int w_Font_hasGlyphs(lua_State *L)
 	return 1;
 }
 
+int w_Font_setFallbacks(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	std::vector<Font *> fallbacks;
+
+	for (int i = 2; i <= lua_gettop(L); i++)
+		fallbacks.push_back(luax_checkfont(L, i));
+
+	luax_catchexcept(L, [&](){ t->setFallbacks(fallbacks); });
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getHeight", w_Font_getHeight },
@@ -185,6 +197,7 @@ static const luaL_Reg functions[] =
 	{ "getDescent", w_Font_getDescent },
 	{ "getBaseline", w_Font_getBaseline },
 	{ "hasGlyphs", w_Font_hasGlyphs },
+	{ "setFallbacks", w_Font_setFallbacks },
 	{ 0, 0 }
 };
 
