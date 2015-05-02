@@ -188,7 +188,7 @@ int luax_assert_nilerror(lua_State *L, int idx)
 
 void luax_setfuncs(lua_State *L, const luaL_Reg *l)
 {
-	if (l == 0)
+	if (l == nullptr)
 		return;
 
 	for (; l->name != nullptr; l++)
@@ -196,6 +196,14 @@ void luax_setfuncs(lua_State *L, const luaL_Reg *l)
 		lua_pushcfunction(L, l->func);
 		lua_setfield(L, -2, l->name);
 	}
+}
+
+int luax_require(lua_State *L, const char *name)
+{
+	lua_getglobal(L, "require");
+	lua_pushstring(L, name);
+	lua_call(L, 1, 1);
+	return 1;
 }
 
 int luax_register_module(lua_State *L, const WrappedModule &m)
@@ -224,13 +232,15 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	lua_newtable(L);
 
 	// Register all the functions.
-	if (m.functions != 0)
+	if (m.functions != nullptr)
 		luax_setfuncs(L, m.functions);
 
 	// Register types.
-	if (m.types != 0)
-		for (const lua_CFunction *t = m.types; *t != 0; t++)
+	if (m.types != nullptr)
+	{
+		for (const lua_CFunction *t = m.types; *t != nullptr; t++)
 			(*t)(L);
+	}
 
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -3, m.name); // love.graphics = table

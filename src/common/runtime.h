@@ -223,6 +223,13 @@ int luax_assert_nilerror(lua_State *L, int idx);
 void luax_setfuncs(lua_State *L, const luaL_Reg *l);
 
 /**
+ * Loads a Lua module using the 'require' function. Leaves the return result on
+ * the stack.
+ * @param name The name of the module to require.
+ **/
+int luax_require(lua_State *L, const char *name);
+
+/**
  * Register a module in the love table. The love table will be created if it does not exist.
  * NOTE: The module-object is expected to have a +1 reference count before calling
  * this function, as it doesn't retain the object itself but Lua will release it

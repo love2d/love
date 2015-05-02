@@ -293,7 +293,7 @@ int luaopen_love(lua_State * L)
 	lua_setfield(L, -2, "_os");
 
 	// Preload module loaders.
-	for (int i = 0; modules[i].name != 0; i++)
+	for (int i = 0; modules[i].name != nullptr; i++)
 		love::luax_preload(L, modules[i].func, modules[i].name);
 
 #ifdef LOVE_ENABLE_LUASOCKET
