@@ -139,6 +139,9 @@ public:
 	 **/
 	void attachAttribute(const std::string &name, Mesh *mesh);
 
+	void *mapVertexData();
+	void unmapVertexData();
+
 	/**
 	 * Flushes all modified data to the GPU.
 	 **/

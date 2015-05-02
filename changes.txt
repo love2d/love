@@ -53,7 +53,7 @@ Released: N/A
   * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature constant (the features always have guaranteed support now.)
   * Removed Canvas:getPixel (use Canvas:newImageData instead.)
   * Removed Canvas:clear (use love.graphics.clear instead.)
-  * Removed Mesh:setVertices and Mesh:getVertices.
+  * Removed Mesh:getVertices.
   * Removed Mesh:setVertexColors and Mesh:hasVertexColors (use Mesh:setAttributeEnabled("VertexColor", enable) instead.)
   * Removed functions deprecated in LOVE 0.9.x:
     * Removed Canvas:getType (replaced by Canvas:getFormat.)

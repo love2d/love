@@ -134,7 +134,7 @@ Mesh::~Mesh()
 	delete ibo;
 	delete vertexScratchBuffer;
 
-	for (const auto attrib : attachedAttributes)
+	for (const auto &attrib : attachedAttributes)
 	{
 		if (attrib.second.mesh != this)
 			attrib.second.mesh->release();
@@ -365,6 +365,21 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh)
 
 	if (oldattrib.mesh && oldattrib.mesh != this)
 		oldattrib.mesh->release();
+}
+
+void *Mesh::mapVertexData()
+{
+	GLBuffer::Bind bind(*vbo);
+	return vbo->map();
+}
+
+void Mesh::unmapVertexData()
+{
+	// Assume the whole buffer was modified.
+	GLBuffer::Bind bind(*vbo);
+	vbo->unmap();
+
+	vboUsedOffset = vboUsedSize = 0;
 }
 
 void Mesh::flush()

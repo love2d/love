@@ -54,16 +54,12 @@ static inline char *writeAttributeData(lua_State *L, int startidx, Mesh::DataTyp
 	switch (type)
 	{
 	case Mesh::DATA_BYTE:
-		data += writeData<uint8>(L, startidx, components, data);
-		break;
+		return data + writeData<uint8>(L, startidx, components, data);
 	case Mesh::DATA_FLOAT:
-		data += writeData<float>(L, startidx, components, data);
-		break;
+		return data + writeData<float>(L, startidx, components, data);
 	default:
-		break;
+		return data;
 	}
-
-	return data;
 }
 
 template <typename T>
@@ -81,16 +77,56 @@ static inline const char *readAttributeData(lua_State *L, Mesh::DataType type, i
 	switch (type)
 	{
 	case Mesh::DATA_BYTE:
-		data += readData<uint8>(L, components, data);
-		break;
+		return data + readData<uint8>(L, components, data);
 	case Mesh::DATA_FLOAT:
-		data += readData<float>(L, components, data);
-		break;
+		return data + readData<float>(L, components, data);
 	default:
-		break;
+		return data;
+	}
+}
+
+int w_Mesh_setVertices(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	size_t nvertices = lua_objlen(L, 2);
+	if (nvertices != t->getVertexCount())
+		return luaL_error(L, "Invalid number of vertices (expected %d, got %d)", (int) t->getVertexCount(), (int) nvertices);
+
+	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
+
+	int ncomponents = 0;
+	for (const Mesh::AttribFormat &format : vertexformat)
+		ncomponents += format.components;
+
+	char *data = (char *) t->mapVertexData();
+
+	for (size_t i = 0; i < nvertices; i++)
+	{
+		// get vertices[vertindex]
+		lua_rawgeti(L, 2, i + 1);
+		luaL_checktype(L, -1, LUA_TTABLE);
+
+		// get vertices[vertindex][j]
+		for (int j = 1; j <= ncomponents; j++)
+			lua_rawgeti(L, -j, j);
+
+		int idx = -ncomponents;
+
+		for (const Mesh::AttribFormat &format : vertexformat)
+		{
+			// Fetch the values from Lua and store them in data buffer.
+			data = writeAttributeData(L, idx, format.type, format.components, data);
+
+			idx += format.components;
+		}
+
+		lua_pop(L, ncomponents + 1);
 	}
 
-	return data;
+	t->unmapVertexData();
+	return 0;
 }
 
 int w_Mesh_setVertex(lua_State *L)
@@ -414,6 +450,7 @@ int w_Mesh_getDrawRange(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
+	{ "setVertices", w_Mesh_setVertices },
 	{ "setVertex", w_Mesh_setVertex },
 	{ "getVertex", w_Mesh_getVertex },
 	{ "setVertexAttribute", w_Mesh_setVertexAttribute },
