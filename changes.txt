@@ -42,6 +42,7 @@ Released: N/A
   * Added love.math.compress and love.math.decompress.
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
+  * Removed callback variant of love.filesystem.getDirectoryItems.
   * Removed the "wu" and "wd" constants for love.mousepressed (replaced by love.wheelmoved.)
   * Removed the named mouse button constants (replaced by button numbers.)
   * Removed Source:isStatic (replaced by Source:getType.)
