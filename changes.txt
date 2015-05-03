@@ -36,6 +36,7 @@ Released: N/A
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
   * Added an optional font hinting argument to love.graphics.newFont when loading TrueType fonts.
   * Added an optional spacing argument to love.graphics.newImageFont, which applies additional spacing to all rendered glyphs.
+  * Added Font:setFallbacks.
   * Added love.window.maximize.
   * Added BezierCurve:renderSegment and BezierCurve:removePoint.
   * Added BezierCurve:getSegment.
@@ -47,6 +48,7 @@ Released: N/A
   * Removed the named mouse button constants (replaced by button numbers.)
   * Removed Source:isStatic (replaced by Source:getType.)
   * Removed image loading support for all (non-compressed texture) file formats except for PNG, JPEG, TGA, and BMP.
+  * Removed JPEG encoding support from ImageData:encode.
   * Removed love.graphics.setPointStyle and love.graphics.getPointStyle.
   * Removed love.graphics.isSupported (replaced by love.graphics.getSupported.)
   * Removed love.graphics.getSystemLimit (replaced by love.graphics.getSystemLimits.)
@@ -77,6 +79,7 @@ Released: N/A
 
   * Fixed utf8.char.
   * Fixed love.keyboard.getKeyFromScancode crashing when an invalid scancode is given.
+  * Fixed love.audio.stop() not rewinding streaming Sources.
   * Fixed the stencil buffer in Canvases when an unsupported MSAA value is used to create the Canvas.
   * Fixed love.graphics.getColorMask.
   * Fixed the default offset for particles when ParticleSystem:setQuads or ParticleSystem:setTexture is used.
@@ -86,9 +89,12 @@ Released: N/A
   * Updated the compatibility warning notice to display before main.lua is loaded.
   * Updated love.keypressed to be love.keypressed(key, scancode, isrepeat).
   * Updated love.keyreleased to be love.keyreleased(key, scancode).
-  * Updated love.mousepressed, love.mousereleased, and love.mouse.isDown to use button numbers instead of named button constants. 
+  * Updated love.mousepressed, love.mousereleased, and love.mouse.isDown to use button numbers instead of named button constants.
+  * Updated World:setCallbacks, World:setContactFilter, World:queryBoundingBox, and World:rayCast to have improved argument type checking.
+  * Updated threads to load love.filesystem automatically.
   * Updated love.math.setRandomSeed and RandomGenerator:setSeed to produce better results for the first few random() calls.
   * Updated Source methods that deal with spatial audio to error rather than failing silently if the Source isn't mono.
+  * Updated the 3D and 4D variants of love.math.noise to use Perlin noise rather than Simplex noise, to avoid patent issues.
   * Updated ImageFonts to no longer treat separator pixels as spacing.
   * Updated the default font to use less memory.
   * Updated Font:getWrap's second return value to be a table containing the text split into lines.
@@ -99,7 +105,7 @@ Released: N/A
   * Updated Images to require setting the mipmaps flag to true on creation in order to use mipmaps.
   * Updated Images to allow mipmaps for non-power-of-two sizes.
   * Updated the arguments for the standard variants of love.graphics.newMesh. They're now newMesh(vertices [, drawmode, usage]) and newMesh(vertexcount [, drawmode, usage]).
-  * Updated Mesh:setVertex to explicitly set every component of every attribute in the vertex, instead of having default values.
+  * Updated Mesh:setVertex to require every component of every attribute in the vertex, instead of having default values.
 
 LOVE 0.9.2 [Baby Inspector]
 ---------------------------
