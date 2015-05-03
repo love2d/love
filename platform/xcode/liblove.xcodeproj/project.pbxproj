@@ -489,9 +489,6 @@
 		FA0B7D991A95902C000E1D17 /* ImageIOHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */; };
 		FA0B7D9A1A95902C000E1D17 /* ImageIOHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */; };
 		FA0B7D9B1A95902C000E1D17 /* ImageIOHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD51A95902C000E1D17 /* ImageIOHandler.h */; };
-		FA0B7D9C1A95902C000E1D17 /* JPEGHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD61A95902C000E1D17 /* JPEGHandler.cpp */; };
-		FA0B7D9D1A95902C000E1D17 /* JPEGHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD61A95902C000E1D17 /* JPEGHandler.cpp */; };
-		FA0B7D9E1A95902C000E1D17 /* JPEGHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD71A95902C000E1D17 /* JPEGHandler.h */; };
 		FA0B7D9F1A95902C000E1D17 /* KTXHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */; };
 		FA0B7DA01A95902C000E1D17 /* KTXHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */; };
 		FA0B7DA11A95902C000E1D17 /* KTXHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD91A95902C000E1D17 /* KTXHandler.h */; };
@@ -823,7 +820,6 @@
 		FA0B7EEA1A95902D000E1D17 /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */; };
 		FA0B7EF21A959D2C000E1D17 /* iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7EF11A959D2C000E1D17 /* iOS.mm */; };
 		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
-		FA48E43918F10D6C007CF0BD /* jpeg-turbo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
@@ -1251,8 +1247,6 @@
 		FA0B7BD31A95902C000E1D17 /* ImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageData.h; sourceTree = "<group>"; };
 		FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIOHandler.cpp; sourceTree = "<group>"; };
 		FA0B7BD51A95902C000E1D17 /* ImageIOHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageIOHandler.h; sourceTree = "<group>"; };
-		FA0B7BD61A95902C000E1D17 /* JPEGHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGHandler.cpp; sourceTree = "<group>"; };
-		FA0B7BD71A95902C000E1D17 /* JPEGHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JPEGHandler.h; sourceTree = "<group>"; };
 		FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KTXHandler.cpp; sourceTree = "<group>"; };
 		FA0B7BD91A95902C000E1D17 /* KTXHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KTXHandler.h; sourceTree = "<group>"; };
 		FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PKMHandler.cpp; sourceTree = "<group>"; };
@@ -1478,7 +1472,6 @@
 		FA0B7EF01A959D2C000E1D17 /* iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOS.h; sourceTree = "<group>"; };
 		FA0B7EF11A959D2C000E1D17 /* iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = iOS.mm; sourceTree = "<group>"; };
 		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "jpeg-turbo.framework"; path = "/Library/Frameworks/jpeg-turbo.framework"; sourceTree = "<absolute>"; };
 		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
@@ -1544,7 +1537,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
-				FA48E43918F10D6C007CF0BD /* jpeg-turbo.framework in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
@@ -2305,8 +2297,6 @@
 				FA0B7BD31A95902C000E1D17 /* ImageData.h */,
 				FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */,
 				FA0B7BD51A95902C000E1D17 /* ImageIOHandler.h */,
-				FA0B7BD61A95902C000E1D17 /* JPEGHandler.cpp */,
-				FA0B7BD71A95902C000E1D17 /* JPEGHandler.h */,
 				FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */,
 				FA0B7BD91A95902C000E1D17 /* KTXHandler.h */,
 				FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */,
@@ -2704,7 +2694,6 @@
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
 				FA577A6716C719D900860150 /* FreeType.framework */,
-				FA48E43818F10D6C007CF0BD /* jpeg-turbo.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
 				FA317EB918F28B6D00B0BCD7 /* libz.dylib */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
@@ -2843,7 +2832,6 @@
 				FA0B7E5F1A95902C000E1D17 /* wrap_MouseJoint.h in Headers */,
 				FAB17BED1ABFAF1800F9BA27 /* CompressedData.h in Headers */,
 				FA0B7B361A958EA3000E1D17 /* wuff_convert.h in Headers */,
-				FA0B7D9E1A95902C000E1D17 /* JPEGHandler.h in Headers */,
 				FA0B7D981A95902C000E1D17 /* ImageData.h in Headers */,
 				FA0B7CDE1A95902C000E1D17 /* Source.h in Headers */,
 				FA0B7E141A95902C000E1D17 /* GearJoint.h in Headers */,
@@ -3284,7 +3272,6 @@
 				FA0B7DC51A95902C000E1D17 /* wrap_JoystickModule.cpp in Sources */,
 				FA0B7E701A95902C000E1D17 /* wrap_RopeJoint.cpp in Sources */,
 				FA0B7A7B1A958EA3000E1D17 /* b2Contact.cpp in Sources */,
-				FA0B7D9D1A95902C000E1D17 /* JPEGHandler.cpp in Sources */,
 				FA0B7A6F1A958EA3000E1D17 /* b2WorldCallbacks.cpp in Sources */,
 				FA0B793C1A958E3B000E1D17 /* runtime.cpp in Sources */,
 				FA0B7DBC1A95902C000E1D17 /* Joystick.cpp in Sources */,
@@ -3570,7 +3557,6 @@
 				FA0B7DC41A95902C000E1D17 /* wrap_JoystickModule.cpp in Sources */,
 				FA0B7E6F1A95902C000E1D17 /* wrap_RopeJoint.cpp in Sources */,
 				FA0B7AB51A958EA3000E1D17 /* ddsparse.cpp in Sources */,
-				FA0B7D9C1A95902C000E1D17 /* JPEGHandler.cpp in Sources */,
 				FA0B7A441A958EA3000E1D17 /* b2EdgeShape.cpp in Sources */,
 				FA0B79461A958E3B000E1D17 /* Vector.cpp in Sources */,
 				FA0B7DBB1A95902C000E1D17 /* Joystick.cpp in Sources */,
@@ -3875,7 +3861,6 @@
 					"$(inherited)",
 					LOVE_SUPPORT_IMAGEIO,
 					LOVE_SUPPORT_COREAUDIO,
-					LOVE_NO_TURBOJPEG,
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
@@ -3892,7 +3877,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
-					"$(PROJECT_DIR)/ios/libraries/libjpeg-turbo",
 					"$(PROJECT_DIR)/ios/libraries/lua",
 					"$(PROJECT_DIR)/ios/libraries/ogg",
 					"$(PROJECT_DIR)/ios/libraries/physfs",
@@ -3919,7 +3903,6 @@
 					"$(inherited)",
 					LOVE_SUPPORT_IMAGEIO,
 					LOVE_SUPPORT_COREAUDIO,
-					LOVE_NO_TURBOJPEG,
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
@@ -3935,7 +3918,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
-					"$(PROJECT_DIR)/ios/libraries/libjpeg-turbo",
 					"$(PROJECT_DIR)/ios/libraries/lua",
 					"$(PROJECT_DIR)/ios/libraries/ogg",
 					"$(PROJECT_DIR)/ios/libraries/physfs",
@@ -3963,7 +3945,6 @@
 					"$(inherited)",
 					LOVE_SUPPORT_IMAGEIO,
 					LOVE_SUPPORT_COREAUDIO,
-					LOVE_NO_TURBOJPEG,
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
@@ -3979,7 +3960,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
-					"$(PROJECT_DIR)/ios/libraries/libjpeg-turbo",
 					"$(PROJECT_DIR)/ios/libraries/lua",
 					"$(PROJECT_DIR)/ios/libraries/ogg",
 					"$(PROJECT_DIR)/ios/libraries/physfs",

@@ -64,7 +64,6 @@ PKG_CHECK_MODULES([zlib], [zlib], [], [LOVE_MSG_ERROR([zlib])])
 # Other libraries
 AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], [LOVE_MSG_ERROR([PhysicsFS])])
-AC_SEARCH_LIBS([tjInitCompress], [turbojpeg], [], [LOVE_MSG_ERROR([TurboJPEG])])
 
 # Lua, treated seperately because of --with-lua
 AS_VAR_IF([with_luaversion], [5.2], [luatest=lua_version], [luatest=lua_pcall]) # use lua_version for 5.2

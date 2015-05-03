@@ -18,7 +18,6 @@ Build-Depends: debhelper (>= 9),
                libmodplug-dev,
                libmpg123-dev,
                zlib1g-dev,
-               libjpeg-turbo8-dev
 Standards-Version: 3.9.5
 Homepage: http://love2d.org
 
@@ -40,7 +39,6 @@ Depends: ${misc:Depends},
          libmodplug1,
          libmpg123-0,
          zlib1g,
-         libjpeg-turbo8
 Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
 
 Package: love@LOVE_SUFFIX@

@@ -28,7 +28,7 @@ namespace image
 {
 
 ImageData::ImageData()
-	: data(0)
+	: data(nullptr)
 {
 	mutex = thread::newMutex();
 }
@@ -179,7 +179,6 @@ bool ImageData::getConstant(ImageData::Format in, const char  *&out)
 StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
 {
 	{"tga", ImageData::FORMAT_TGA},
-	{"jpg", ImageData::FORMAT_JPG},
 	{"png", ImageData::FORMAT_PNG},
 };
 

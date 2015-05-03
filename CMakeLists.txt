@@ -364,8 +364,6 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/Image.h
 	src/modules/image/magpie/ImageData.cpp
 	src/modules/image/magpie/ImageData.h
-	src/modules/image/magpie/JPEGHandler.cpp
-	src/modules/image/magpie/JPEGHandler.h
 	src/modules/image/magpie/KTXHandler.cpp
 	src/modules/image/magpie/KTXHandler.h
 	src/modules/image/magpie/PKMHandler.cpp
@@ -1217,7 +1215,6 @@ link_directories(${SDL_LINK_DIR})
 
 set(LOVE_MEGA_3P
 	${MEGA_FREETYPE}
-	${MEGA_JPEG_TURBO}
 	${MEGA_LIBOGG}
 	${MEGA_LIBVORBISFILE}
 	${MEGA_LIBVORBIS}

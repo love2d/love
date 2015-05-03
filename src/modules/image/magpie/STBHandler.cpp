@@ -21,20 +21,20 @@
 // LOVE
 #include "STBHandler.h"
 
-static void loveSTBAssert(bool test, const char *teststr)
+static void loveSTBIAssert(bool test, const char *teststr)
 {
 	if (!test)
 		throw love::Exception("Could not decode image (stb_image assertion '%s' failed)", teststr);
 }
 
 // stb_image
-// #define STBI_ONLY_JPEG
+ #define STBI_ONLY_JPEG
 // #define STBI_ONLY_PNG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_TGA
 #define STBI_NO_STDIO
 #define STB_IMAGE_IMPLEMENTATION
-#define STBI_ASSERT(A) loveSTBAssert((A), #A)
+#define STBI_ASSERT(A) loveSTBIAssert((A), #A)
 #include "libraries/stb/stb_image.h"
 
 // C
@@ -75,7 +75,7 @@ FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 	                                 &comp, 4);
 
 	if (img.data == nullptr || img.width <= 0 || img.height <= 0)
-		throw love::Exception("Could not decode TGA or BMP image.");
+		throw love::Exception("Could not decode image with stb_image.");
 
 	img.size = img.width * img.height * 4;
 

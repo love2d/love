@@ -60,7 +60,6 @@ Dependencies
 - OpenGL 2.1+ / OpenGL ES 2+
 - OpenAL
 - Lua / LuaJIT / LLVM-lua
-- jpeg-turbo
 - FreeType
 - PhysicsFS
 - ModPlug
