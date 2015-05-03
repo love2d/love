@@ -25,7 +25,6 @@
 
 #include "PNGHandler.h"
 #include "STBHandler.h"
-#include "ImageIOHandler.h"
 
 #include "ddsHandler.h"
 #include "PVRHandler.h"
@@ -43,10 +42,6 @@ Image::Image()
 {
 	formatHandlers.push_back(new PNGHandler);
 	formatHandlers.push_back(new STBHandler);
-
-#ifdef LOVE_SUPPORT_IMAGEIO
-	formatHandlers.push_back(new ImageIOHandler);
-#endif
 
 	compressedFormatHandlers.push_back(new DDSHandler);
 	compressedFormatHandlers.push_back(new PVRHandler);

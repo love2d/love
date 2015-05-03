@@ -486,9 +486,6 @@
 		FA0B7D961A95902C000E1D17 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD21A95902C000E1D17 /* ImageData.cpp */; };
 		FA0B7D971A95902C000E1D17 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD21A95902C000E1D17 /* ImageData.cpp */; };
 		FA0B7D981A95902C000E1D17 /* ImageData.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD31A95902C000E1D17 /* ImageData.h */; };
-		FA0B7D991A95902C000E1D17 /* ImageIOHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */; };
-		FA0B7D9A1A95902C000E1D17 /* ImageIOHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */; };
-		FA0B7D9B1A95902C000E1D17 /* ImageIOHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD51A95902C000E1D17 /* ImageIOHandler.h */; };
 		FA0B7D9F1A95902C000E1D17 /* KTXHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */; };
 		FA0B7DA01A95902C000E1D17 /* KTXHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */; };
 		FA0B7DA11A95902C000E1D17 /* KTXHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD91A95902C000E1D17 /* KTXHandler.h */; };
@@ -1245,8 +1242,6 @@
 		FA0B7BD11A95902C000E1D17 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		FA0B7BD21A95902C000E1D17 /* ImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageData.cpp; sourceTree = "<group>"; };
 		FA0B7BD31A95902C000E1D17 /* ImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageData.h; sourceTree = "<group>"; };
-		FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIOHandler.cpp; sourceTree = "<group>"; };
-		FA0B7BD51A95902C000E1D17 /* ImageIOHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageIOHandler.h; sourceTree = "<group>"; };
 		FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KTXHandler.cpp; sourceTree = "<group>"; };
 		FA0B7BD91A95902C000E1D17 /* KTXHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KTXHandler.h; sourceTree = "<group>"; };
 		FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PKMHandler.cpp; sourceTree = "<group>"; };
@@ -2295,8 +2290,6 @@
 				FA0B7BD11A95902C000E1D17 /* Image.h */,
 				FA0B7BD21A95902C000E1D17 /* ImageData.cpp */,
 				FA0B7BD31A95902C000E1D17 /* ImageData.h */,
-				FA0B7BD41A95902C000E1D17 /* ImageIOHandler.cpp */,
-				FA0B7BD51A95902C000E1D17 /* ImageIOHandler.h */,
 				FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */,
 				FA0B7BD91A95902C000E1D17 /* KTXHandler.h */,
 				FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */,
@@ -3006,7 +2999,6 @@
 				FA0B7E991A95902C000E1D17 /* Sound.h in Headers */,
 				FA0B7D841A95902C000E1D17 /* CompressedImageData.h in Headers */,
 				FA0B7D231A95902C000E1D17 /* Rasterizer.h in Headers */,
-				FA0B7D9B1A95902C000E1D17 /* ImageIOHandler.h in Headers */,
 				FA0B7CDB1A95902C000E1D17 /* Pool.h in Headers */,
 				FA0B7D0B1A95902C000E1D17 /* wrap_FileData.h in Headers */,
 				FA0B7DF91A95902C000E1D17 /* Body.h in Headers */,
@@ -3361,7 +3353,6 @@
 				FA620A331AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */,
 				FA0B7E071A95902C000E1D17 /* DistanceJoint.cpp in Sources */,
 				FA0B7A331A958EA3000E1D17 /* b2Collision.cpp in Sources */,
-				FA0B7D9A1A95902C000E1D17 /* ImageIOHandler.cpp in Sources */,
 				FA0B7E5E1A95902C000E1D17 /* wrap_MouseJoint.cpp in Sources */,
 				FA0B7B3B1A958EA3000E1D17 /* wuff_memory.c in Sources */,
 				FA0B79411A958E3B000E1D17 /* utf8.cpp in Sources */,
@@ -3645,7 +3636,6 @@
 				FA0B7E061A95902C000E1D17 /* DistanceJoint.cpp in Sources */,
 				FA620A321AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */,
 				FA0B793B1A958E3B000E1D17 /* runtime.cpp in Sources */,
-				FA0B7D991A95902C000E1D17 /* ImageIOHandler.cpp in Sources */,
 				FA0B7E5D1A95902C000E1D17 /* wrap_MouseJoint.cpp in Sources */,
 				FA0B7A741A958EA3000E1D17 /* b2ChainAndPolygonContact.cpp in Sources */,
 				FA0B7AD41A958EA3000E1D17 /* unix.c in Sources */,
@@ -3859,7 +3849,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					LOVE_SUPPORT_IMAGEIO,
 					LOVE_SUPPORT_COREAUDIO,
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
@@ -3901,7 +3890,6 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					LOVE_SUPPORT_IMAGEIO,
 					LOVE_SUPPORT_COREAUDIO,
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
@@ -3943,7 +3931,6 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					LOVE_SUPPORT_IMAGEIO,
 					LOVE_SUPPORT_COREAUDIO,
 					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,

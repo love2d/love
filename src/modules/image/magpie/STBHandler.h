@@ -31,12 +31,11 @@ namespace magpie
 {
 
 /**
- * Interface between ImageData and the stb_image library, for decoding TGA and
- * BMP images.
+ * Interface between ImageData and the stb_image library, for decoding JPEG,
+ * TGA, and BMP images.
  *
- * We could use stb_image to decode PNG and JPEG as well, but performance and
- * comprehensive format support is lacking compared to some alternatives, plus
- * stb_image_write doesn't have JPEG support.
+ * We could use stb_image to decode PNG as well, but performance and
+ * comprehensive format support is lacking compared to some alternatives.
  **/
 class STBHandler : public FormatHandler
 {
