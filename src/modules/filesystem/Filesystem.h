@@ -252,6 +252,11 @@ public:
 	 **/
 	virtual bool isRealDirectory(const std::string &path) const;
 
+	/**
+	 * Gets the full platform-dependent path to the executable.
+	 **/
+	virtual std::string getExecutablePath() const;
+
 }; // Filesystem
 
 } // filesystem

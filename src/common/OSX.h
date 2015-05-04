@@ -45,6 +45,11 @@ std::string getLoveInResources();
  **/
 std::string checkDropEvents();
 
+/**
+ * Returns the full path to the executable.
+ **/
+std::string getExecutablePath();
+
 } // osx
 } // love
 

@@ -54,6 +54,11 @@ std::string getHomeDirectory();
  **/
 bool openURL(const std::string &url);
 
+/**
+ * Returns the full path to the executable.
+ **/
+std::string getExecutablePath();
+
 } // ios
 } // love
 

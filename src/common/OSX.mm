@@ -69,6 +69,14 @@ std::string checkDropEvents()
 	return dropstr;
 }
 
+std::string getExecutablePath()
+{
+	@autoreleasepool
+	{
+		return std::string([NSBundle mainBundle].executablePath.UTF8String);
+	}
+}
+
 } // osx
 } // love
 

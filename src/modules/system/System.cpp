@@ -84,7 +84,6 @@ bool System::openURL(const std::string &url) const
 #if defined(LOVE_MACOSX)
 
 	bool success = false;
-	// We could be lazy and use system("open " + url), but this is safer.
 	CFURLRef cfurl = CFURLCreateWithBytes(nullptr,
 	                                      (const UInt8 *) url.c_str(),
 	                                      url.length(),

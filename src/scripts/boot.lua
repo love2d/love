@@ -271,8 +271,14 @@ function love.boot()
 	local arg0 = love.arg.getLow(arg)
 	love.filesystem.init(arg0)
 
+	local exepath = love.filesystem.getExecutablePath()
+	if #exepath == 0 then
+		-- This shouldn't happen, but just in case we'll fall back to arg0.
+		exepath = arg0
+	end
+
 	-- Is this one of those fancy "fused" games?
-	local can_has_game = pcall(love.filesystem.setSource, arg0)
+	local can_has_game = pcall(love.filesystem.setSource, exepath)
 	local is_fused_game = can_has_game
 	if love.arg.options.fused.set then
 		is_fused_game = true
@@ -293,7 +299,7 @@ function love.boot()
 		identity = love.path.leaf(full_source)
 	else
 		-- Use the name of the exe as the identity for now.
-		identity = love.path.leaf(arg0)
+		identity = love.path.leaf(exepath)
 	end
 
 	identity = identity:gsub("^([%.]+)", "") -- strip leading "."'s

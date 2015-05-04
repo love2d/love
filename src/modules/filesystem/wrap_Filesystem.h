@@ -57,6 +57,7 @@ int w_getAppdataDirectory(lua_State *L);
 int w_getSaveDirectory(lua_State *L);
 int w_getSourceBaseDirectory(lua_State *L);
 int w_getRealDirectory(lua_State *L);
+int w_getExecutablePath(lua_State *L);
 int w_isDirectory(lua_State *L);
 int w_isFile(lua_State *L);
 int w_createDirectory(lua_State *L);

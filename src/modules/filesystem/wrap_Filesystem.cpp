@@ -301,6 +301,12 @@ int w_getRealDirectory(lua_State *L)
 	return 1;
 }
 
+int w_getExecutablePath(lua_State *L)
+{
+	luax_pushstring(L, instance()->getExecutablePath());
+	return 1;
+}
+
 int w_isDirectory(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
@@ -699,6 +705,7 @@ static const luaL_Reg functions[] =
 	{ "getSaveDirectory", w_getSaveDirectory },
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
 	{ "getRealDirectory", w_getRealDirectory },
+	{ "getExecutablePath", w_getExecutablePath },
 	{ "isDirectory", w_isDirectory },
 	{ "isFile", w_isFile },
 	{ "createDirectory", w_createDirectory },

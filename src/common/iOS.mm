@@ -305,13 +305,22 @@ bool openURL(const std::string &url)
 
 	@autoreleasepool
 	{
+		UIApplication *app = [UIApplication sharedApplication];
 		NSURL *nsurl = [NSURL URLWithString:@(url.c_str())];
 
-		if ([[UIApplication sharedApplication] canOpenURL:nsurl])
-			success = [[UIApplication sharedApplication] openURL:nsurl];
+		if ([app canOpenURL:nsurl])
+			success = [app openURL:nsurl];
 	}
 
 	return success;
+}
+
+std::string getExecutablePath()
+{
+	@autoreleasepool
+	{
+		return std::string([NSBundle mainBundle].executablePath.UTF8String);
+	}
 }
 
 } // ios
