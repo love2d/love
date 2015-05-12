@@ -184,16 +184,18 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	bool debug = (debughint != nullptr && debughint[0] != '0');
 
 	// Different context attribute profiles to try.
-	// FIXME: OpenGL ES 3 is disabled on non-iOS because SDL's EGL code doesn't
-	// properly handle OpenGL ES 3 context creation requests (for now.)
-	// https://bugzilla.libsdl.org/show_bug.cgi?id=2865
 	std::vector<ContextAttribs> attribslist = {
 		{2, 1, false, debug}, // OpenGL 2.1.
-#ifdef LOVE_IOS
 		{3, 0, true,  debug}, // OpenGL ES 3.
-#endif
 		{2, 0, true,  debug}, // OpenGL ES 2.
 	};
+
+	SDL_version sdlversion = {};
+	SDL_GetVersion(&sdlversion);
+
+	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
+	if (sdlversion.major == 2 && sdlversion.minor == 0 && sdlversion.patch <= 3)
+		attribslist.erase(attribslist.begin() + 1);
 
 	// Move OpenGL ES to the front of the list if we should prefer GLES.
 	if (preferGLES)

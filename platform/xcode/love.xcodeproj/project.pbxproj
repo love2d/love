@@ -28,8 +28,6 @@
 		FA5D248A1A96CA9600C6FC8F /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24891A96CA9600C6FC8F /* AudioToolbox.framework */; };
 		FA5D248C1A96CA9E00C6FC8F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D248B1A96CA9E00C6FC8F /* QuartzCore.framework */; };
 		FA5D248E1A96CAA700C6FC8F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D248D1A96CAA700C6FC8F /* CoreGraphics.framework */; };
-		FA5D24901A96CAAE00C6FC8F /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D248F1A96CAAE00C6FC8F /* ImageIO.framework */; };
-		FA5D24921A96CAB300C6FC8F /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24911A96CAB300C6FC8F /* MobileCoreServices.framework */; };
 		FA5D24941A96CABA00C6FC8F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24931A96CABA00C6FC8F /* libz.dylib */; };
 		FA5D24961A96CAC200C6FC8F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24951A96CAC200C6FC8F /* CoreMotion.framework */; };
 		FA5D249C1A96CF4300C6FC8F /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA5D249A1A96CF4300C6FC8F /* Images.xcassets */; };
@@ -113,8 +111,6 @@
 		FA5D24891A96CA9600C6FC8F /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
 		FA5D248B1A96CA9E00C6FC8F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		FA5D248D1A96CAA700C6FC8F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
-		FA5D248F1A96CAAE00C6FC8F /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/ImageIO.framework; sourceTree = DEVELOPER_DIR; };
-		FA5D24911A96CAB300C6FC8F /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		FA5D24931A96CABA00C6FC8F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/usr/lib/libz.dylib; sourceTree = DEVELOPER_DIR; };
 		FA5D24951A96CAC200C6FC8F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/CoreMotion.framework; sourceTree = DEVELOPER_DIR; };
 		FA5D24971A96CE1E00C6FC8F /* love-ios.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "love-ios.plist"; path = "ios/love-ios.plist"; sourceTree = "<group>"; };
@@ -146,8 +142,6 @@
 				FA5D24C21A96D78000C6FC8F /* Foundation.framework in Frameworks */,
 				FA5D24961A96CAC200C6FC8F /* CoreMotion.framework in Frameworks */,
 				FA5D24941A96CABA00C6FC8F /* libz.dylib in Frameworks */,
-				FA5D24921A96CAB300C6FC8F /* MobileCoreServices.framework in Frameworks */,
-				FA5D24901A96CAAE00C6FC8F /* ImageIO.framework in Frameworks */,
 				FA5D248E1A96CAA700C6FC8F /* CoreGraphics.framework in Frameworks */,
 				FA5D248C1A96CA9E00C6FC8F /* QuartzCore.framework in Frameworks */,
 				FA5D248A1A96CA9600C6FC8F /* AudioToolbox.framework in Frameworks */,
@@ -246,9 +240,7 @@
 				FA5D24891A96CA9600C6FC8F /* AudioToolbox.framework */,
 				FA5D248D1A96CAA700C6FC8F /* CoreGraphics.framework */,
 				FA5D24951A96CAC200C6FC8F /* CoreMotion.framework */,
-				FA5D248F1A96CAAE00C6FC8F /* ImageIO.framework */,
 				FA5D24931A96CABA00C6FC8F /* libz.dylib */,
-				FA5D24911A96CAB300C6FC8F /* MobileCoreServices.framework */,
 				FA5D24811A96CA1800C6FC8F /* OpenAL.framework */,
 				FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */,
 				FA5D248B1A96CA9E00C6FC8F /* QuartzCore.framework */,
