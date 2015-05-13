@@ -59,7 +59,7 @@ int w_setMode(lua_State *L)
 
 	if (lua_isnoneornil(L, 3))
 	{
-		luax_pushboolean(L, instance()->setWindow(w, h, 0));
+		luax_pushboolean(L, instance()->setWindow(w, h, nullptr));
 		return 1;
 	}
 
@@ -192,7 +192,14 @@ int w_getMode(lua_State *L)
 
 int w_getFullscreenModes(lua_State *L)
 {
-	int displayindex = luaL_optint(L, 1, 1) - 1;
+	int displayindex = 0;
+	if (!lua_isnoneornil(L, 1))
+		displayindex = luaL_checkint(L, 1);
+	else
+	{
+		int x, y;
+		instance()->getPosition(x, y, displayindex);
+	}
 
 	std::vector<Window::WindowSize> modes = instance()->getFullscreenSizes(displayindex);
 
@@ -200,7 +207,7 @@ int w_getFullscreenModes(lua_State *L)
 
 	for (size_t i = 0; i < modes.size(); i++)
 	{
-		lua_pushinteger(L, i+1);
+		lua_pushinteger(L, i + 1);
 		lua_createtable(L, 0, 2);
 
 		// Inner table attribs.
@@ -262,7 +269,14 @@ int w_isCreated(lua_State *L)
 int w_getDesktopDimensions(lua_State *L)
 {
 	int width = 0, height = 0;
-	int displayindex = luaL_optint(L, 1, 1) - 1;
+	int displayindex = 0;
+	if (!lua_isnoneornil(L, 1))
+		displayindex = luaL_checkint(L, 1);
+	else
+	{
+		int x, y;
+		instance()->getPosition(x, y, displayindex);
+	}
 	instance()->getDesktopDimensions(displayindex, width, height);
 	lua_pushinteger(L, width);
 	lua_pushinteger(L, height);
@@ -273,7 +287,16 @@ int w_setPosition(lua_State *L)
 {
 	int x = luaL_checkint(L, 1);
 	int y = luaL_checkint(L, 2);
-	int displayindex = luaL_optint(L, 3, 1) - 1;
+
+	int displayindex = 0;
+	if (!lua_isnoneornil(L, 3))
+		displayindex = luaL_checkint(L, 3);
+	else
+	{
+		int x_unused, y_unused;
+		instance()->getPosition(x_unused, y_unused, displayindex);
+	}
+
 	instance()->setPosition(x, y, displayindex);
 	return 0;
 }
