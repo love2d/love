@@ -784,13 +784,14 @@ static Mesh *newCustomMesh(lua_State *L)
 int w_newMesh(lua_State *L)
 {
 	// Check first argument: table or number of vertices.
-	int ttype = lua_type(L, 1);
-	if (ttype != LUA_TTABLE && ttype != LUA_TNUMBER)
+	int arg1type = lua_type(L, 1);
+	if (arg1type != LUA_TTABLE && arg1type != LUA_TNUMBER)
 		luaL_argerror(L, 1, "table or number expected");
 
 	Mesh *t = nullptr;
 
-	if (ttype == LUA_TTABLE && (lua_istable(L, 2) || lua_type(L, 2) == LUA_TNUMBER))
+	int arg2type = lua_type(L, 2);
+	if (arg1type == LUA_TTABLE && (arg2type == LUA_TTABLE || arg2type == LUA_TNUMBER || arg2type == LUA_TUSERDATA))
 		t = newCustomMesh(L);
 	else
 		t = newStandardMesh(L);
