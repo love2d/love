@@ -126,8 +126,8 @@ int WaveDecoder::decode()
 
 	while (size < (size_t) bufferSize)
 	{
-		size_t bytes = bufferSize;
-		int wuff_status = wuff_read(handle, (wuff_uint8 *) buffer, &bytes);
+		size_t bytes = bufferSize-size;
+		int wuff_status = wuff_read(handle, (wuff_uint8 *) buffer+size, &bytes);
 
 		if (wuff_status < 0)
 			return 0;
