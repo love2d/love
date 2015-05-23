@@ -1807,7 +1807,7 @@ static const luaL_Reg functions[] =
 	{ "line", w_line },
 	{ "rectangle", w_rectangle },
 	{ "circle", w_circle },
-	{ "eclipse", w_ellipse },
+	{ "ellipse", w_ellipse },
 	{ "arc", w_arc },
 	{ "roundedRectangle", w_roundedRectangle },
 
