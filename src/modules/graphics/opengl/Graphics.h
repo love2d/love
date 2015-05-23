@@ -407,10 +407,11 @@ public:
 	 * @param y Y-coordinate of top-left corner
 	 * @param w The width of the rectangle.
 	 * @param h The height of the rectangle.
-	 * @param r The radius of the corners.
+	 * @param rx The radius of the corners on the x axis
+	 * @param ry The radius of the corners on the y axis
 	 * @param points The number of points to use per corner
 	 **/
-	void roundedRectangle(DrawMode mode, float x, float y, float w, float h, float r, float points = 10);
+	void roundedRectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, float points = 10);
 	
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.

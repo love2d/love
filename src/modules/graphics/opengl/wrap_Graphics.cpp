@@ -1610,14 +1610,15 @@ int w_roundedRectangle(lua_State *L)
 	float y = (float)luaL_checknumber(L, 3);
 	float w = (float)luaL_checknumber(L, 4);
 	float h = (float)luaL_checknumber(L, 5);
-	float r = (float)luaL_checknumber(L, 6);
+	float rx = (float)luaL_checknumber(L, 6);
+	float ry = (float)luaL_checknumber(L, 7);
 	int points;
-	if (lua_isnoneornil(L, 7))
-		points = r > 10 ? (int)(r) : 10;
+	if (lua_isnoneornil(L, 8))
+		points = rx + ry > 20 ? (int)((rx + ry) / 2) : 10;
 	else
-		points = luaL_checkint(L, 7);
+		points = luaL_checkint(L, 8);
 	
-	instance()->roundedRectangle(mode, x, y, w, h, r, points);
+	instance()->roundedRectangle(mode, x, y, w, h, rx, ry, points);
 	return 0;
 }
 	

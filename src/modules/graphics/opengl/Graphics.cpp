@@ -1206,12 +1206,12 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	delete[] coords;
 }
 
-void Graphics::roundedRectangle(DrawMode mode, float x, float y, float w, float h, float r, float points)
+void Graphics::roundedRectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, float points)
 {
 	if (points < 1)
 		points = 1;
 	
-	if (r == 0)
+	if (rx == 0 || ry == 0)
 	{
 		rectangle(mode, x, y, w, h);
 		return;
@@ -1226,32 +1226,32 @@ void Graphics::roundedRectangle(DrawMode mode, float x, float y, float w, float 
 	
 	for (int i = 0; i <= points + 2; ++i, phi += angle_shift)
 	{
-		coords[2 * i] = x + r * (1 - cosf(phi));
-		coords[2 * i + 1] = y + r * (1 - sinf(phi));
+		coords[2 * i] = x + rx * (1 - cosf(phi));
+		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
 	}
 	
 	phi = half_pi;
 	
 	for (int i = points + 2; i <= 2 * (points + 2); ++i, phi += angle_shift)
 	{
-		coords[2 * i] = x + w - r * cosf(phi);
-		coords[2 * i + 1] = y + r * (1 - sinf(phi));
+		coords[2 * i] = x + w - rx * cosf(phi);
+		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
 	}
 	
 	phi = 2 * half_pi;
 	
 	for (int i = 2 * (points + 2); i <= 3 * (points + 2); ++i, phi += angle_shift)
 	{
-		coords[2 * i] = x + w - r * cosf(phi);
-		coords[2 * i + 1] = y + h - r * sinf(phi);
+		coords[2 * i] = x + w - rx * cosf(phi);
+		coords[2 * i + 1] = y + h - ry * sinf(phi);
 	}
 	
 	phi =  3 * half_pi;
 	
 	for (int i = 3 * (points + 2); i <= 4 * (points + 2); ++i, phi += angle_shift)
 	{
-		coords[2 * i] = x + r * (1 - cosf(phi));
-		coords[2 * i + 1] = y + h - r * sinf(phi);
+		coords[2 * i] = x + rx * (1 - cosf(phi));
+		coords[2 * i + 1] = y + h - ry * sinf(phi);
 	}
 	
 	coords[num_coords] = coords[0];
