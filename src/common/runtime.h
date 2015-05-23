@@ -275,7 +275,6 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
  * storing the Lua representation in a weak table if it doesn't exist yet.
  * NOTE: The object will be retained by Lua and released upon garbage collection.
  * @param L The Lua state.
- * @param name The name of the type. This must match the name used with luax_register_type.
  * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
@@ -289,7 +288,6 @@ void luax_pushtype(lua_State *L, const love::Type type, love::Object *object);
  * Lua-side objects from working in some cases when used as keys in tables.
  * NOTE: The object will be retained by Lua and released upon garbage collection.
  * @param L The Lua state.
- * @param name The name of the type. This must match the name used with luax_register_type.
  * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
@@ -400,7 +398,6 @@ extern "C" { // Also called from luasocket
  * or is not the specified type.
  * @param L The Lua state.
  * @param idx The index on the stack.
- * @param name The name of the type.
  * @param type The type bit.
  **/
 template <typename T>

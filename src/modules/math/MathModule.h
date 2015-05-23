@@ -191,8 +191,8 @@ public:
 	 *
 	 * @param[in] format The compression format the data is in.
 	 * @param[in] cbytes The compressed data to decompress.
-	 * @param[in] compressedSize The size in bytes of the compressed data.
-	 * @param[inout] rawsize On input, the size in bytes of the original
+	 * @param[in] compressedsize The size in bytes of the compressed data.
+	 * @param[in,out] rawsize On input, the size in bytes of the original
 	 *               uncompressed data, or 0 if unknown. On return, the size in
 	 *               bytes of the newly decompressed data.
 	 * @return The newly decompressed data (allocated with new[]).

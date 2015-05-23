@@ -45,7 +45,7 @@ public:
 	 * @param fmt The format string (see printf).
 	 **/
 	Exception(const char *fmt, ...);
-	virtual ~Exception() throw() {}
+	virtual ~Exception() throw();
 
 	/**
 	 * Returns a string containing reason for the exception.

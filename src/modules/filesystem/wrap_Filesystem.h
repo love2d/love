@@ -75,6 +75,8 @@ int w_getSize(lua_State *L);
 int w_setSymlinksEnabled(lua_State *L);
 int w_areSymlinksEnabled(lua_State *L);
 int w_isSymlink(lua_State *L);
+int w_getRequirePath(lua_State *L);
+int w_setRequirePath(lua_State *L);
 int loader(lua_State *L);
 int extloader(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State *L);

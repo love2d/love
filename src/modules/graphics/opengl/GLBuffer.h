@@ -53,7 +53,6 @@ public:
 	 * @param size The size of the GLBuffer in bytes.
 	 * @param target The target GLBuffer object, e.g. GL_ARRAY_BUFFER.
 	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
-	 * @param backing Determines what guarantees are placed on the data.
 	 */
 	GLBuffer(size_t size, const void *data, GLenum target, GLenum usage);
 

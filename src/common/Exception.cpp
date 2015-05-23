@@ -60,4 +60,8 @@ Exception::Exception(const char *fmt, ...)
 	delete[] buffer;
 }
 
+Exception::~Exception() throw()
+{
+}
+
 }

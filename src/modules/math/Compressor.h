@@ -70,7 +70,7 @@ public:
 	 *
 	 * @param[in] data The input (compressed) data.
 	 * @param[in] dataSize The size in bytes of the compressed data.
-	 * @param[inout] decompressedSize On input, the size in bytes of the
+	 * @param[in,out] decompressedSize On input, the size in bytes of the
 	 *               original uncompressed data, or 0 if unknown. On return, the
 	 *               size in bytes of the decompressed data.
 	 *
