@@ -1556,7 +1556,7 @@ int w_circle(lua_State *L)
 	return 0;
 }
 
-int w_eclipse(lua_State *L)
+int w_ellipse(lua_State *L)
 {
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
@@ -1573,7 +1573,7 @@ int w_eclipse(lua_State *L)
 	else
 		points = luaL_checkint(L, 6);
 
-	instance()->eclipse(mode, x, y, a, b, points);
+	instance()->ellipse(mode, x, y, a, b, points);
 	return 0;
 }
 	
@@ -1807,7 +1807,7 @@ static const luaL_Reg functions[] =
 	{ "line", w_line },
 	{ "rectangle", w_rectangle },
 	{ "circle", w_circle },
-	{ "eclipse", w_eclipse },
+	{ "eclipse", w_ellipse },
 	{ "arc", w_arc },
 	{ "roundedRectangle", w_roundedRectangle },
 

@@ -386,7 +386,7 @@ public:
 	 * @param b Radius in y-direction
 	 * @param points Number of points to use to draw the circle.
 	 **/
-	void eclipse(DrawMode mode, float x, float y, float a, float b, int points = 10);
+	void ellipse(DrawMode mode, float x, float y, float a, float b, int points = 10);
 	
 	/**
 	 * Draws an arc using the specified arguments.

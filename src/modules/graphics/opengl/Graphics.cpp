@@ -1134,7 +1134,7 @@ void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
 	delete[] coords;
 }
 
-void Graphics::eclipse(DrawMode mode, float x, float y, float a, float b, int points)
+void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int points)
 {
 	float two_pi = static_cast<float>(LOVE_M_PI * 2);
 	if (points <= 0) points = 1;
