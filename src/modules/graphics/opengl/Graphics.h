@@ -378,6 +378,17 @@ public:
 	void circle(DrawMode mode, float x, float y, float radius, int points = 10);
 
 	/**
+	 * Draws an eclipse using the specified arguments.
+	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate of center
+	 * @param y Y-coordinate of center
+	 * @param a Radius in x-direction
+	 * @param b Radius in y-direction
+	 * @param points Number of points to use to draw the circle.
+	 **/
+	void eclipse(DrawMode mode, float x, float y, float a, float b, int points = 10);
+	
+	/**
 	 * Draws an arc using the specified arguments.
 	 * @param mode The mode of drawing (line/filled).
 	 * @param x X-coordinate.
@@ -389,6 +400,18 @@ public:
 	 **/
 	void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
+	/**
+	 * Draws a rounded rectangle.
+	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate of top-left corner
+	 * @param y Y-coordinate of top-left corner
+	 * @param w The width of the rectangle.
+	 * @param h The height of the rectangle.
+	 * @param r The radius of the corners.
+	 * @param points The number of points to use per corner
+	 **/
+	void roundedRectangle(DrawMode mode, float x, float y, float w, float h, float r, float points = 10);
+	
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.
 	 * @param mode The type of drawing (line/filled).

@@ -1556,6 +1556,27 @@ int w_circle(lua_State *L)
 	return 0;
 }
 
+int w_eclipse(lua_State *L)
+{
+	Graphics::DrawMode mode;
+	const char *str = luaL_checkstring(L, 1);
+	if (!Graphics::getConstant(str, mode))
+		return luaL_error(L, "Incorrect draw mode %s", str);
+		
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	float a = (float)luaL_checknumber(L, 4);
+	float b = (float)luaL_checknumber(L, 5);
+	int points;
+	if (lua_isnoneornil(L, 6))
+		points = a > 10 || b > 10 ? (int)(a + b) : 10;
+	else
+		points = luaL_checkint(L, 6);
+
+	instance()->eclipse(mode, x, y, a, b, points);
+	return 0;
+}
+	
 int w_arc(lua_State *L)
 {
 	Graphics::DrawMode mode;
@@ -1578,6 +1599,28 @@ int w_arc(lua_State *L)
 	return 0;
 }
 
+int w_roundedRectangle(lua_State *L)
+{
+	Graphics::DrawMode mode;
+	const char *str = luaL_checkstring(L, 1);
+	if (!Graphics::getConstant(str, mode))
+		return luaL_error(L, "Incorrect draw mode %s", str);
+	
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	float w = (float)luaL_checknumber(L, 4);
+	float h = (float)luaL_checknumber(L, 5);
+	float r = (float)luaL_checknumber(L, 6);
+	int points;
+	if (lua_isnoneornil(L, 7))
+		points = r > 10 ? (int)(r) : 10;
+	else
+		points = luaL_checkint(L, 7);
+	
+	instance()->roundedRectangle(mode, x, y, w, h, r, points);
+	return 0;
+}
+	
 int w_polygon(lua_State *L)
 {
 	int args = lua_gettop(L) - 1;
@@ -1764,7 +1807,9 @@ static const luaL_Reg functions[] =
 	{ "line", w_line },
 	{ "rectangle", w_rectangle },
 	{ "circle", w_circle },
+	{ "eclipse", w_eclipse },
 	{ "arc", w_arc },
+	{ "roundedRectangle", w_roundedRectangle },
 
 	{ "polygon", w_polygon },
 
