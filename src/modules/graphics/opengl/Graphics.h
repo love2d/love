@@ -401,7 +401,7 @@ public:
 	void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
 	/**
-	 * Draws a rounded rectangle.
+	 * Variant of rectanglge that draws a rounded rectangle.
 	 * @param mode The mode of drawing (line/filled).
 	 * @param x X-coordinate of top-left corner
 	 * @param y Y-coordinate of top-left corner
@@ -411,7 +411,7 @@ public:
 	 * @param ry The radius of the corners on the y axis
 	 * @param points The number of points to use per corner
 	 **/
-	void roundedRectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, float points = 10);
+	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, float points = 10);
 	
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.

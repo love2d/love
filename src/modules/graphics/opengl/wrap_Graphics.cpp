@@ -1532,7 +1532,16 @@ int w_rectangle(lua_State *L)
 	float y = (float)luaL_checknumber(L, 3);
 	float w = (float)luaL_checknumber(L, 4);
 	float h = (float)luaL_checknumber(L, 5);
-	instance()->rectangle(mode, x, y, w, h);
+	float rx = (float)luaL_optnumber(L, 6, 0.0);
+	float ry = (float)luaL_optnumber(L, 7, 0.0);
+	
+	int points;
+	if (lua_isnoneornil(L, 8))
+		points = rx + ry > 20 ? (int)((rx + ry) / 2) : 10;
+	else
+		points = luaL_checkint(L, 8);
+	
+	instance()->rectangle(mode, x, y, w, h, rx, ry, points);
 	return 0;
 }
 
@@ -1596,29 +1605,6 @@ int w_arc(lua_State *L)
 		points = luaL_checkint(L, 7);
 
 	instance()->arc(mode, x, y, radius, angle1, angle2, points);
-	return 0;
-}
-
-int w_roundedRectangle(lua_State *L)
-{
-	Graphics::DrawMode mode;
-	const char *str = luaL_checkstring(L, 1);
-	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Incorrect draw mode %s", str);
-	
-	float x = (float)luaL_checknumber(L, 2);
-	float y = (float)luaL_checknumber(L, 3);
-	float w = (float)luaL_checknumber(L, 4);
-	float h = (float)luaL_checknumber(L, 5);
-	float rx = (float)luaL_checknumber(L, 6);
-	float ry = (float)luaL_checknumber(L, 7);
-	int points;
-	if (lua_isnoneornil(L, 8))
-		points = rx + ry > 20 ? (int)((rx + ry) / 2) : 10;
-	else
-		points = luaL_checkint(L, 8);
-	
-	instance()->roundedRectangle(mode, x, y, w, h, rx, ry, points);
 	return 0;
 }
 	
@@ -1810,7 +1796,6 @@ static const luaL_Reg functions[] =
 	{ "circle", w_circle },
 	{ "ellipse", w_ellipse },
 	{ "arc", w_arc },
-	{ "roundedRectangle", w_roundedRectangle },
 
 	{ "polygon", w_polygon },
 

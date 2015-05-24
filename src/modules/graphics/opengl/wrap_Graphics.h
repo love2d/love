@@ -111,7 +111,6 @@ int w_rectangle(lua_State *L);
 int w_circle(lua_State *L);
 int w_ellipse(lua_State *L);
 int w_arc(lua_State *L);
-int w_roundedRectangle(lua_State *L);
 int w_polygon(lua_State *L);
 int w_push(lua_State *L);
 int w_pop(lua_State *L);
