@@ -1575,10 +1575,11 @@ int w_ellipse(lua_State *L)
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	float a = (float)luaL_checknumber(L, 4);
-	float b = (float)luaL_checknumber(L, 5);
+	float b = (float)luaL_optnumber(L, 5, a);
+	
 	int points;
 	if (lua_isnoneornil(L, 6))
-		points = a > 10 || b > 10 ? (int)(a + b) : 10;
+		points = a + b > 30 ? (int)((a + b) / 2) : 15;
 	else
 		points = luaL_checkint(L, 6);
 
