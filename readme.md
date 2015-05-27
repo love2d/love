@@ -41,6 +41,12 @@ We tag all our releases (since we started using mercurial), and have binary down
 
 Experimental changes are developed in the separate [love-experiments][love-experiments] repository.
 
+Contributing
+------------
+
+The best places to contribute are through the Bitbucket issue tracker and the official IRC channel.
+For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
+
 Builds
 ------
 
@@ -79,3 +85,4 @@ Dependencies
 [aur]: http://aur.archlinux.org/packages.php?ID=35279
 [love-experiments]: https://bitbucket.org/bartbes/love-experiments
 [iosdeveloper]: https://developer.apple.com/programs/ios/
+[codestyle]: https://love2d.org/wiki/Code_Style
