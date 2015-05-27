@@ -1542,7 +1542,7 @@ int w_rectangle(lua_State *L)
 
 	int points;
 	if (lua_isnoneornil(L, 8))
-		points = rx + ry > 20 ? (int)((rx + ry) / 4) : 10;
+		points = std::max(rx, ry) > 20.0 ? (int)(std::max(rx, ry) / 2) : 10;
 	else
 		points = luaL_checkint(L, 8);
 
