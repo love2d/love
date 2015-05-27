@@ -368,6 +368,19 @@ public:
 	void rectangle(DrawMode mode, float x, float y, float w, float h);
 
 	/**
+	 * Variant of rectangle that draws a rounded rectangle.
+	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate of top-left corner
+	 * @param y Y-coordinate of top-left corner
+	 * @param w The width of the rectangle.
+	 * @param h The height of the rectangle.
+	 * @param rx The radius of the corners on the x axis
+	 * @param ry The radius of the corners on the y axis
+	 * @param points The number of points to use per corner
+	 **/
+	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points = 10);
+
+	/**
 	 * Draws a circle using the specified arguments.
 	 * @param mode The mode of drawing (line/filled).
 	 * @param x X-coordinate.
@@ -387,7 +400,7 @@ public:
 	 * @param points Number of points to use to draw the circle.
 	 **/
 	void ellipse(DrawMode mode, float x, float y, float a, float b, int points = 10);
-	
+
 	/**
 	 * Draws an arc using the specified arguments.
 	 * @param mode The mode of drawing (line/filled).
@@ -400,19 +413,6 @@ public:
 	 **/
 	void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
-	/**
-	 * Variant of rectanglge that draws a rounded rectangle.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x X-coordinate of top-left corner
-	 * @param y Y-coordinate of top-left corner
-	 * @param w The width of the rectangle.
-	 * @param h The height of the rectangle.
-	 * @param rx The radius of the corners on the x axis
-	 * @param ry The radius of the corners on the y axis
-	 * @param points The number of points to use per corner
-	 **/
-	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, float points = 10);
-	
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.
 	 * @param mode The type of drawing (line/filled).

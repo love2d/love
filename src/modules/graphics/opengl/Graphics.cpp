@@ -1112,26 +1112,64 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 	polygon(mode, coords, 5 * 2);
 }
 
-void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
+void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points)
 {
-	float two_pi = static_cast<float>(LOVE_M_PI * 2);
-	if (points <= 0) points = 1;
-	float angle_shift = (two_pi / points);
-	float phi = .0f;
-
-	float *coords = new float[2 * (points + 1)];
-	for (int i = 0; i < points; ++i, phi += angle_shift)
+	if (rx == 0 || ry == 0)
 	{
-		coords[2*i]   = x + radius * cosf(phi);
-		coords[2*i+1] = y + radius * sinf(phi);
+		rectangle(mode, x, y, w, h);
+		return;
 	}
 
-	coords[2*points]   = coords[0];
-	coords[2*points+1] = coords[1];
+	points = std::max(points, 1);
 
-	polygon(mode, coords, (points + 1) * 2);
+	const float half_pi = static_cast<float>(LOVE_M_PI / 2);
+	float angle_shift = half_pi / ((float) points + 1.0f);
+
+	int num_coords = (points + 2) * 8;
+	float *coords = new float[num_coords + 2];
+	float phi = .0f;
+
+	for (int i = 0; i <= points + 2; ++i, phi += angle_shift)
+	{
+		coords[2 * i + 0] = x + rx * (1 - cosf(phi));
+		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
+	}
+
+	phi = half_pi;
+
+	for (int i = points + 2; i <= 2 * (points + 2); ++i, phi += angle_shift)
+	{
+		coords[2 * i + 0] = x + w - rx * (1 + cosf(phi));
+		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
+	}
+
+	phi = 2 * half_pi;
+
+	for (int i = 2 * (points + 2); i <= 3 * (points + 2); ++i, phi += angle_shift)
+	{
+		coords[2 * i + 0] = x + w - rx * (1 + cosf(phi));
+		coords[2 * i + 1] = y + h - ry * (1 + sinf(phi));
+	}
+
+	phi =  3 * half_pi;
+
+	for (int i = 3 * (points + 2); i <= 4 * (points + 2); ++i, phi += angle_shift)
+	{
+		coords[2 * i + 0] = x + rx * (1 - cosf(phi));
+		coords[2 * i + 1] = y + h - ry * (1 + sinf(phi));
+	}
+
+	coords[num_coords + 0] = coords[0];
+	coords[num_coords + 1] = coords[1];
+
+	polygon(mode, coords, num_coords + 2);
 
 	delete[] coords;
+}
+
+void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
+{
+	ellipse(mode, x, y, radius, radius, points);
 }
 
 void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int points)
@@ -1140,22 +1178,22 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 	if (points <= 0) points = 1;
 	float angle_shift = (two_pi / points);
 	float phi = .0f;
-	
+
 	float *coords = new float[2 * (points + 1)];
 	for (int i = 0; i < points; ++i, phi += angle_shift)
 	{
-		coords[2*i]   = x + a * cosf(phi);
+		coords[2*i+0] = x + a * cosf(phi);
 		coords[2*i+1] = y + b * sinf(phi);
 	}
-	
-	coords[2*points]   = coords[0];
+
+	coords[2*points+0] = coords[0];
 	coords[2*points+1] = coords[1];
-	
+
 	polygon(mode, coords, (points + 1) * 2);
-	
+
 	delete[] coords;
 }
-	
+
 void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
 {
 	// Nothing to display with no points or equal angles. (Or is there with line mode?)
@@ -1206,62 +1244,6 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	delete[] coords;
 }
 
-void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, float points)
-{
-	if (points < 1)
-		points = 1;
-	
-	if (rx == 0 || ry == 0)
-	{
-		rectangle(mode, x, y, w, h);
-		return;
-	}
-	
-	const float half_pi = static_cast<float>(LOVE_M_PI / 2);
-	float angle_shift = half_pi / (points + 1);
-	
-	int num_coords = (points + 2) * 8;
-	float *coords = new float[num_coords + 2];
-	float phi = .0f;
-	
-	for (int i = 0; i <= points + 2; ++i, phi += angle_shift)
-	{
-		coords[2 * i] = x + rx * (1 - cosf(phi));
-		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
-	}
-	
-	phi = half_pi;
-	
-	for (int i = points + 2; i <= 2 * (points + 2); ++i, phi += angle_shift)
-	{
-		coords[2 * i] = x + w - rx * (1 + cosf(phi));
-		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
-	}
-	
-	phi = 2 * half_pi;
-	
-	for (int i = 2 * (points + 2); i <= 3 * (points + 2); ++i, phi += angle_shift)
-	{
-		coords[2 * i] = x + w - rx * (1 + cosf(phi));
-		coords[2 * i + 1] = y + h - ry * (1 + sinf(phi));
-	}
-	
-	phi =  3 * half_pi;
-	
-	for (int i = 3 * (points + 2); i <= 4 * (points + 2); ++i, phi += angle_shift)
-	{
-		coords[2 * i] = x + rx * (1 - cosf(phi));
-		coords[2 * i + 1] = y + h - ry * (1 + sinf(phi));
-	}
-	
-	coords[num_coords] = coords[0];
-	coords[num_coords + 1] = coords[1];
-	
-	polygon(mode, coords, num_coords + 2);
-	
-	delete[] coords;
-}
-	
 /// @param mode    the draw mode
 /// @param coords  the coordinate array
 /// @param count   the number of coordinates/size of the array

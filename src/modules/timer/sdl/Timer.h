@@ -41,7 +41,7 @@ public:
 	const char *getName() const override;
 
 	void sleep(double seconds) const override;
-	
+
 }; // Timer
 
 } // sdl

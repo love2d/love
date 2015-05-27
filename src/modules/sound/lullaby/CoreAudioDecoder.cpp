@@ -229,26 +229,26 @@ int CoreAudioDecoder::decode()
 bool CoreAudioDecoder::seek(float s)
 {
 	OSStatus err = ExtAudioFileSeek(extAudioFile, (SInt64) (s * inputInfo.mSampleRate));
-	
+
 	if (err == noErr)
 	{
 		eof = false;
 		return true;
 	}
-	
+
 	return false;
 }
 
 bool CoreAudioDecoder::rewind()
 {
 	OSStatus err = ExtAudioFileSeek(extAudioFile, 0);
-	
+
 	if (err == noErr)
 	{
 		eof = false;
 		return true;
 	}
-	
+
 	return false;
 }
 

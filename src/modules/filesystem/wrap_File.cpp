@@ -319,7 +319,7 @@ int w_File_lines_i(lua_State *L)
 		file->seek(userpos);
 	else
 		file->close();
-	
+
 	return 0;
 }
 

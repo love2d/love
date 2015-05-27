@@ -268,7 +268,7 @@ int w_Mesh_getVertexFormat(lua_State *L)
 		// format[i] = {name, type, components}
 		lua_rawseti(L, -2, (int) i + 1);
 	}
-	
+
 	return 1;
 }
 

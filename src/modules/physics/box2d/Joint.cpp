@@ -213,7 +213,7 @@ int Joint::getUserData(lua_State *L)
 		udata->ref->push(L);
 	else
 		lua_pushnil(L);
-	
+
 	return 1;
 }
 

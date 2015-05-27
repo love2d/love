@@ -132,7 +132,7 @@ public:
 private:
 
 	T *object;
-	
+
 }; // StrongRef
 
 } // love

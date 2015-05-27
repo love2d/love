@@ -306,7 +306,7 @@ void Image::unloadVolatile()
 
 	gl.deleteTexture(texture);
 	texture = 0;
-	
+
 	gl.updateTextureMemorySize(textureMemorySize, 0);
 	textureMemorySize = 0;
 }
@@ -347,7 +347,7 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 
 		generateMipmaps();
 	}
-	
+
 	return true;
 }
 

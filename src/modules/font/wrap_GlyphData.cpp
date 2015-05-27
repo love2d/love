@@ -59,7 +59,7 @@ int w_GlyphData_getGlyph(lua_State *L)
 	lua_pushnumber(L, (lua_Number) glyph);
 	return 1;
 }
-	
+
 int w_GlyphData_getGlyphString(lua_State *L)
 {
 	GlyphData *t = luax_checkglyphdata(L, 1);

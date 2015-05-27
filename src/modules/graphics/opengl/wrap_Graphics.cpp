@@ -417,7 +417,7 @@ int w_newParticleSystem(lua_State *L)
 	lua_Number size = luaL_optnumber(L, 2, 1000);
 	ParticleSystem *t = 0;
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
-		return luaL_error(L, "Invalid ParticleSystem size");	
+		return luaL_error(L, "Invalid ParticleSystem size");
 
 	luax_catchexcept(L,
 		[&](){ t = instance()->newParticleSystem(texture, int(size)); }
@@ -1037,7 +1037,7 @@ int w_getDefaultMipmapFilter(lua_State *L)
 		lua_pushstring(L, str);
 	else
 		lua_pushnil(L);
-	
+
 	lua_pushnumber(L, sharpness);
 
 	return 2;
@@ -1372,7 +1372,7 @@ int w_getStats(lua_State *L)
 	Graphics::getConstant(Graphics::STAT_TEXTURE_MEMORY, sname);
 	lua_pushnumber(L, (lua_Number) stats.textureMemory);
 	lua_setfield(L, -2, sname);
-	
+
 	return 1;
 }
 
@@ -1533,14 +1533,14 @@ int w_rectangle(lua_State *L)
 	float w = (float)luaL_checknumber(L, 4);
 	float h = (float)luaL_checknumber(L, 5);
 	float rx = (float)luaL_optnumber(L, 6, 0.0);
-	float ry = (float)luaL_optnumber(L, 7, 0.0);
-	
+	float ry = (float)luaL_optnumber(L, 7, rx);
+
 	int points;
 	if (lua_isnoneornil(L, 8))
-		points = rx + ry > 20 ? (int)((rx + ry) / 2) : 10;
+		points = rx + ry > 20 ? (int)((rx + ry) / 4) : 10;
 	else
 		points = luaL_checkint(L, 8);
-	
+
 	instance()->rectangle(mode, x, y, w, h, rx, ry, points);
 	return 0;
 }
@@ -1571,12 +1571,12 @@ int w_ellipse(lua_State *L)
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
 		return luaL_error(L, "Incorrect draw mode %s", str);
-		
+
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	float a = (float)luaL_checknumber(L, 4);
 	float b = (float)luaL_optnumber(L, 5, a);
-	
+
 	int points;
 	if (lua_isnoneornil(L, 6))
 		points = a + b > 30 ? (int)((a + b) / 2) : 15;
@@ -1586,7 +1586,7 @@ int w_ellipse(lua_State *L)
 	instance()->ellipse(mode, x, y, a, b, points);
 	return 0;
 }
-	
+
 int w_arc(lua_State *L)
 {
 	Graphics::DrawMode mode;
@@ -1608,7 +1608,7 @@ int w_arc(lua_State *L)
 	instance()->arc(mode, x, y, radius, angle1, angle2, points);
 	return 0;
 }
-	
+
 int w_polygon(lua_State *L)
 {
 	int args = lua_gettop(L) - 1;

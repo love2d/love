@@ -315,7 +315,7 @@ void VertexIndex::resize(size_t size)
 	}
 
 	GLBuffer *new_element_array;
-	
+
 	// Depending on the size, a switch to int and more memory is needed.
 	GLenum target_type = getType(size);
 	size_t elem_size = (target_type == GL_UNSIGNED_SHORT) ? sizeof(GLushort) : sizeof(GLuint);

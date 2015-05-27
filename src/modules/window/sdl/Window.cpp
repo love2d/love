@@ -148,7 +148,7 @@ bool Window::checkGLVersion(const ContextAttribs &attribs)
 	if (glmajor < attribs.versionMajor
 		|| (glmajor == attribs.versionMajor && glminor < attribs.versionMinor))
 		return false;
-	
+
 	return true;
 }
 
@@ -355,7 +355,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 		return false;
 	}
-	
+
 	return true;
 }
 

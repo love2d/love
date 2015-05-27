@@ -69,7 +69,7 @@ public:
 
 	/// Get the position correction factor in the range [0,1].
 	float getCorrectionFactor() const;
-	
+
 private:
 
 	// The Box2D MotorJoint object.

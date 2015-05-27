@@ -71,7 +71,7 @@ FileData *File::read(int64 size)
 
 	if (!isopen)
 		close();
-	
+
 	return fileData;
 }
 

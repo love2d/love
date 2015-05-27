@@ -514,7 +514,7 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 	{"kbdillumup", SCANCODE_KBDILLUMUP},
 	{"eject", SCANCODE_EJECT},
 	{"sleep", SCANCODE_SLEEP},
-	
+
 	{"app1", SCANCODE_APP1},
 	{"app2", SCANCODE_APP2},
 };

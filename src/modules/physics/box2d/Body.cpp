@@ -482,7 +482,7 @@ int Body::getContactList(lua_State *L) const
 			contact = new Contact(ce->contact);
 		else
 			contact->retain();
-		
+
 		luax_pushtype(L, PHYSICS_CONTACT_ID, contact);
 		contact->release();
 		lua_rawseti(L, -2, i);

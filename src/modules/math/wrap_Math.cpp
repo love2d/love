@@ -280,7 +280,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 
 	if (numcomponents == 0)
 		luaL_checknumber(L, 1);
-	
+
 	return numcomponents;
 }
 

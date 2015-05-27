@@ -38,7 +38,7 @@ namespace love
 {
 namespace filesystem
 {
-	
+
 #define instance() (Module::getInstance<Filesystem>(Module::M_FILESYSTEM))
 
 bool hack_setupWriteDirectory()

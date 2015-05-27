@@ -332,7 +332,7 @@ bool Joystick::runVibrationEffect()
 
 	if (vibration.id != -1 && SDL_HapticRunEffect(haptic, vibration.id, 1) == 0)
 		return true;
-	
+
 	return false;
 }
 

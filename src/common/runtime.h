@@ -463,9 +463,9 @@ T *luax_optmodule(lua_State *L, love::Type type)
 
 	if (!typeFlags[u->type][type])
 		luaL_error(L, "Incorrect module %s", name);
-	
+
 	lua_pop(L, 2);
-	
+
 	return (T *) u->object;
 }
 
@@ -510,7 +510,6 @@ int luax_catchexcept(lua_State *L, const T& func)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
 
 	return 0;
-
 }
 
 template <typename T, typename F>
@@ -532,9 +531,8 @@ int luax_catchexcept(lua_State *L, const T& func, const F& finallyfunc)
 
 	if (should_error)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
-	
+
 	return 0;
-	
 }
 
 } // love
