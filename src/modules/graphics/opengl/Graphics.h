@@ -391,7 +391,7 @@ public:
 	void circle(DrawMode mode, float x, float y, float radius, int points = 10);
 
 	/**
-	 * Draws an eclipse using the specified arguments.
+	 * Draws an ellipse using the specified arguments.
 	 * @param mode The mode of drawing (line/filled).
 	 * @param x X-coordinate of center
 	 * @param y Y-coordinate of center

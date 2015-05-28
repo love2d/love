@@ -44,8 +44,25 @@ int w_newImageData(lua_State *L)
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
 
+		size_t numbytes = 0;
+		const char *bytes = nullptr;
+
+		if (!lua_isnoneornil(L, 3))
+			bytes = luaL_checklstring(L, 3, &numbytes);
+
 		ImageData *t = nullptr;
 		luax_catchexcept(L, [&](){ t = instance()->newImageData(w, h); });
+
+		if (bytes)
+		{
+			if (numbytes != t->getSize())
+			{
+				t->release();
+				return luaL_error(L, "The size of the raw byte string must match the ImageData's actual size in bytes.");
+			}
+
+			memcpy(t->getData(), bytes, t->getSize());
+		}
 
 		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
 		t->release();
