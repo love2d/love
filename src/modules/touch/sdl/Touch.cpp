@@ -30,7 +30,7 @@ namespace touch
 namespace sdl
 {
 
-std::vector<int64> Touch::getIDs() const
+std::vector<int64> Touch::getTouches() const
 {
 	std::vector<int64> ids;
 	ids.reserve(touches.size());

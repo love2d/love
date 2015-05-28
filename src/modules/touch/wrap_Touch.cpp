@@ -40,9 +40,9 @@ int64 luax_checktouchid(lua_State *L, int idx)
 	return (int64) (intptr_t) lua_touserdata(L, 1);
 }
 
-int w_getIDs(lua_State *L)
+int w_getTouches(lua_State *L)
 {
-	std::vector<int64> ids = instance()->getIDs();
+	std::vector<int64> ids = instance()->getTouches();
 
 	lua_createtable(L, (int) ids.size(), 0);
 
@@ -85,7 +85,7 @@ int w_getPressure(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "getIDs", w_getIDs },
+	{ "getTouches", w_getTouches },
 	{ "getPosition", w_getPosition },
 	{ "getPressure", w_getPressure },
 	{ 0, 0 }

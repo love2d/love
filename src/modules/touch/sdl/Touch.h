@@ -43,7 +43,7 @@ public:
 
 	virtual ~Touch() {}
 
-	std::vector<int64> getIDs() const override;
+	std::vector<int64> getTouches() const override;
 	void getPosition(int64 id, double &x, double &y) const override;
 	double getPressure(int64 id) const override;
 

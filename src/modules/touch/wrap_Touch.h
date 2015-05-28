@@ -32,7 +32,7 @@ namespace touch
 {
 
 int64 luax_checktouchid(lua_State *L, int idx);
-int w_getIDs(lua_State *L);
+int w_getTouches(lua_State *L);
 int w_getPosition(lua_State *L);
 int w_getPressure(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_touch(lua_State *L);

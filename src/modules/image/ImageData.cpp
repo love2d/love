@@ -130,22 +130,18 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 		dy -= sy;
 		sy = 0;
 	}
+
 	if (dx + sw > getWidth())
-	{
 		sw = getWidth() - dx;
-	}
+
 	if (dy + sh > getHeight())
-	{
 		sh = getHeight() - dy;
-	}
+
 	if (sx + sw > src->getWidth())
-	{
 		sw = src->getWidth() - sx;
-	}
+
 	if (sy + sh > src->getHeight())
-	{
 		sh = src->getHeight() - sy;
-	}
 
 	// If the dimensions match up, copy the entire memory stream in one go
 	if (sw == getWidth() && getWidth() == src->getWidth()

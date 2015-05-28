@@ -57,7 +57,7 @@ public:
 	/**
 	 * Gets a list of the IDs of all currently active touches.
 	 **/
-	virtual std::vector<int64> getIDs() const = 0;
+	virtual std::vector<int64> getTouches() const = 0;
 
 	/**
 	 * Gets the position in pixels of a specific touch, using its ID.
