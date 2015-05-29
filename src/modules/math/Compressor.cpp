@@ -47,7 +47,8 @@ public:
 		// We use a custom header to store some info with the compressed data.
 		const size_t headersize = sizeof(uint32);
 
-		size_t maxsize = headersize + (size_t) LZ4_compressBound((int) dataSize);
+		int maxdestsize = LZ4_compressBound((int) dataSize);
+		size_t maxsize = headersize + (size_t) maxdestsize;
 		char *compressedbytes = nullptr;
 
 		try
@@ -67,12 +68,12 @@ public:
 		*(uint32 *) compressedbytes = (uint32) dataSize;
 #endif
 
-		// Use LZ4-HC for compression level 8 and higher.
+		// Use LZ4-HC for compression level 9 and higher.
 		int csize = 0;
-		if (level > 7)
-			csize = LZ4_compressHC(data, compressedbytes + headersize, (int) dataSize);
+		if (level > 8)
+			csize = LZ4_compress_HC(data, compressedbytes + headersize, (int) dataSize, maxdestsize, 0);
 		else
-			csize = LZ4_compress(data, compressedbytes + headersize, (int) dataSize);
+			csize = LZ4_compress_default(data, compressedbytes + headersize, (int) dataSize, maxdestsize);
 
 		if (csize <= 0)
 		{
