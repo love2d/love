@@ -163,8 +163,8 @@ function love.createhandlers()
 		textinput = function (t)
 			if love.textinput then return love.textinput(t) end
 		end,
-		textedit = function (t,s,l)
-			if love.textedit then return love.textedit(t,s,l) end
+		textedited = function (t,s,l)
+			if love.textedited then return love.textedited(t,s,l) end
 		end,
 		mousemoved = function (x,y,dx,dy,t)
 			if love.mousemoved then return love.mousemoved(x,y,dx,dy,t) end

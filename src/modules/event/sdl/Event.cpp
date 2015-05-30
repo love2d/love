@@ -223,7 +223,7 @@ Message *Event::convert(const SDL_Event &e) const
 		vargs.push_back(new Variant(txt, strlen(txt)));
 		vargs.push_back(new Variant((double) e.edit.start));
 		vargs.push_back(new Variant((double) e.edit.length));
-		msg = new Message("textedit", vargs);
+		msg = new Message("textedited", vargs);
 		break;
 	case SDL_MOUSEMOTION:
 		{
