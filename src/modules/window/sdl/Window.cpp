@@ -161,7 +161,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 #endif
 
 	const char *curdriver = SDL_GetCurrentVideoDriver();
-	const char *glesdrivers[] = {"RPI", "Android", "uikit", "winrt"};
+	const char *glesdrivers[] = {"RPI", "Android", "uikit", "winrt", "emscripten"};
 
 	// We always want to try OpenGL ES first on certain video backends.
 	for (const char *glesdriver : glesdrivers)
