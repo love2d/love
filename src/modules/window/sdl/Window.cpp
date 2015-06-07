@@ -974,6 +974,9 @@ void Window::requestAttention(bool continuous)
 {
 #if defined(LOVE_WINDOWS)
 
+	if (hasFocus())
+		return;
+
 	SDL_SysWMinfo wminfo = {};
 	SDL_VERSION(&wminfo.version);
 
@@ -986,7 +989,10 @@ void Window::requestAttention(bool continuous)
 		flashinfo.dwFlags = FLASHW_ALL;
 
 		if (continuous)
+		{
+			flashinfo.uCount = 0;
 			flashinfo.dwFlags |= FLASHW_TIMERNOFG;
+		}
 
 		FlashWindowEx(&flashinfo);
 	}
