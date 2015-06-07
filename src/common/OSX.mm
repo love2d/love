@@ -23,6 +23,7 @@
 #ifdef LOVE_MACOSX
 
 #import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 
 #include <SDL2/SDL.h>
 
@@ -41,7 +42,7 @@ std::string getLoveInResources()
 		NSString *lovepath = [[NSBundle mainBundle] pathForResource:nil ofType:@"love"];
 
 		if (lovepath != nil)
-			path = [lovepath UTF8String];
+			path = lovepath.UTF8String;
 	}
 
 	return path;
@@ -74,6 +75,17 @@ std::string getExecutablePath()
 	@autoreleasepool
 	{
 		return std::string([NSBundle mainBundle].executablePath.UTF8String);
+	}
+}
+
+void requestAttention(bool continuous)
+{
+	@autoreleasepool
+	{
+		if (continuous)
+			[NSApp requestUserAttention:NSCriticalRequest];
+		else
+			[NSApp requestUserAttention:NSInformationalRequest];
 	}
 }
 

@@ -31,8 +31,13 @@
 // C
 #include <cstdio>
 
-#ifdef LOVE_WINDOWS
+// SDL
+#include <SDL_syswm.h>
+
+#if defined(LOVE_WINDOWS)
 #include <windows.h>
+#elif defined(LOVE_MACOSX)
+#include "common/OSX.h"
 #endif
 
 #ifndef APIENTRY
@@ -963,6 +968,36 @@ int Window::showMessageBox(const MessageBoxData &data)
 	SDL_ShowMessageBox(&sdldata, &pressedbutton);
 
 	return pressedbutton;
+}
+
+void Window::requestAttention(bool continuous)
+{
+#if defined(LOVE_WINDOWS)
+
+	SDL_SysWMinfo wminfo = {};
+	SDL_VERSION(&wminfo.version);
+
+	if (SDL_GetWindowWMInfo(window, &wminfo))
+	{
+		FLASHWINFO flashinfo = {};
+		flashinfo.cbSize = sizeof(FLASHWINFO);
+		flashinfo.hwnd = wminfo.info.win.window;
+		flashinfo.uCount = 1;
+		flashinfo.dwFlags = FLASHW_ALL;
+
+		if (continuous)
+			flashinfo.dwFlags |= FLASHW_TIMERNOFG;
+
+		FlashWindowEx(&flashinfo);
+	}
+
+#elif defined(LOVE_MACOSX)
+
+	love::osx::requestAttention(continuous);
+	
+#endif
+	
+	// TODO: Linux?
 }
 
 love::window::Window *Window::createSingleton()

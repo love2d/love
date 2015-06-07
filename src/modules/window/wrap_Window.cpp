@@ -483,6 +483,13 @@ int w_showMessageBox(lua_State *L)
 	return 1;
 }
 
+int w_requestAttention(lua_State *L)
+{
+	bool continuous = luax_optboolean(L, 1, false);
+	instance()->requestAttention(continuous);
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
@@ -509,6 +516,7 @@ static const luaL_Reg functions[] =
 	{ "minimize", w_minimize },
 	{ "maximize", w_maximize },
 	{ "showMessageBox", w_showMessageBox },
+	{ "requestAttention", w_requestAttention },
 	{ 0, 0 }
 };
 

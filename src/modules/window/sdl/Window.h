@@ -100,6 +100,8 @@ public:
 	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow);
 	int showMessageBox(const MessageBoxData &data);
 
+	void requestAttention(bool continuous) override;
+
 	static love::window::Window *createSingleton();
 
 	const char *getName() const;

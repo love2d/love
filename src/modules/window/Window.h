@@ -171,6 +171,8 @@ public:
 	virtual bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) = 0;
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
 
+	virtual void requestAttention(bool continuous) = 0;
+
 	//virtual static Window *createSingleton() = 0;
 	// No virtual statics, of course, but you are supposed to implement this static.
 
