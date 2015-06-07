@@ -1532,12 +1532,19 @@ int w_rectangle(lua_State *L)
 	float y = (float)luaL_checknumber(L, 3);
 	float w = (float)luaL_checknumber(L, 4);
 	float h = (float)luaL_checknumber(L, 5);
+
+	if (lua_isnoneornil(L, 6))
+	{
+		instance()->rectangle(mode, x, y, w, h);
+		return 0;
+	}
+
 	float rx = (float)luaL_optnumber(L, 6, 0.0);
 	float ry = (float)luaL_optnumber(L, 7, rx);
 
-	if (rx >= w / 2.0)
+	if (w > 0.0 && rx >= w / 2.0)
 		return luaL_error(L, "Invalid rectangle x-axis radius (must be less than half the width)");
-	if (ry >= h / 2.0)
+	if (h > 0.0 && ry >= h / 2.0)
 		return luaL_error(L, "Invalid rectangle y-axis radius (must be less than half the height)");
 
 	int points;
