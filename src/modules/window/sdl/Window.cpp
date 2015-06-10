@@ -1000,6 +1000,10 @@ void Window::requestAttention(bool continuous)
 #elif defined(LOVE_MACOSX)
 
 	love::osx::requestAttention(continuous);
+
+#else
+
+	LOVE_UNUSED(continuous);
 	
 #endif
 	
