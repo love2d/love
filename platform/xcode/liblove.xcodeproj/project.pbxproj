@@ -1466,6 +1466,8 @@
 		FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
 		FA0B7EF01A959D2C000E1D17 /* iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOS.h; sourceTree = "<group>"; };
 		FA0B7EF11A959D2C000E1D17 /* iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = iOS.mm; sourceTree = "<group>"; };
+		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
+		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
@@ -1566,6 +1568,8 @@
 				503971A86B7167A91B670FBA /* boot.lua.h */,
 				FA577A8E16C71D3600860150 /* graphics.lua */,
 				104144AB73A974BC04A03131 /* graphics.lua.h */,
+				FA283EDC1B27CFAA00C70067 /* nogame.lua */,
+				FA283EDD1B27CFAA00C70067 /* nogame.lua.h */,
 			);
 			name = scripts;
 			path = ../../src/scripts;

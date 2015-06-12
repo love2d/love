@@ -148,35 +148,38 @@ static bool deleteFileInDocuments(NSString *filename)
 
 static int dropFileEventFilter(void *userdata, SDL_Event *event)
 {
-	if (event->type != SDL_DROPFILE)
-		return 1;
-
-	NSString *fname = @(event->drop.file);
-	NSFileManager *fmanager = [NSFileManager defaultManager];
-
-	if ([fmanager fileExistsAtPath:fname] && [fname.pathExtension isEqual:@"love"])
+	@autoreleasepool
 	{
-		NSString *documents = getDocumentsDirectory();
+		if (event->type != SDL_DROPFILE)
+			return 1;
 
-		documents = [[documents stringByStandardizingPath] stringByResolvingSymlinksInPath];
-		fname = [[fname stringByStandardizingPath] stringByResolvingSymlinksInPath];
+		NSString *fname = @(event->drop.file);
+		NSFileManager *fmanager = [NSFileManager defaultManager];
 
-		// Is the file inside the Documents directory?
-		if ([fname hasPrefix:documents])
+		if ([fmanager fileExistsAtPath:fname] && [fname.pathExtension isEqual:@"love"])
 		{
-			LOVETableViewController *vc = (__bridge LOVETableViewController *) userdata;
+			NSString *documents = getDocumentsDirectory();
 
-			// Update the game list.
-			NSArray *games = getLovesInDocuments();
-			vc.gameList = [[NSMutableArray alloc] initWithArray:games copyItems:YES];
-			[vc.tableView reloadData];
+			documents = documents.stringByStandardizingPath.stringByResolvingSymlinksInPath;
+			fname = fname.stringByStandardizingPath.stringByResolvingSymlinksInPath;
 
-			SDL_free(event->drop.file);
-			return 0;
+			// Is the file inside the Documents directory?
+			if ([fname hasPrefix:documents])
+			{
+				LOVETableViewController *vc = (__bridge LOVETableViewController *) userdata;
+
+				// Update the game list.
+				NSArray *games = getLovesInDocuments();
+				vc.gameList = [[NSMutableArray alloc] initWithArray:games copyItems:YES];
+				[vc.tableView reloadData];
+
+				SDL_free(event->drop.file);
+				return 0;
+			}
 		}
-	}
 
-	return 1;
+		return 1;
+	}
 }
 
 namespace love
@@ -245,16 +248,12 @@ std::string getLoveInResources(bool &fused)
 		{
 			// The game should be fused if we have something here.
 			fused = true;
-			NSLog(@".love files in main Bundle: %@", bundlepaths);
 			return [bundlepaths[0] UTF8String];
 		}
 
 		// Otherwise look in the app's Documents directory. The game won't be
 		// fused.
 		NSArray *filepaths = getLovesInDocuments();
-
-		if (filepaths.count > 0)
-			NSLog(@".love files in Documents: %@", filepaths);
 
 		// Let the user select a game from the un-fused list.
 		NSString *selectedfile = showGameList(filepaths);
@@ -263,8 +262,7 @@ std::string getLoveInResources(bool &fused)
 		if (selectedfile != nil && selectedfile.length > 0)
 		{
 			NSString *documents = getDocumentsDirectory();
-			path = [[documents stringByAppendingPathComponent:selectedfile] UTF8String];
-			NSLog(@"Using unfused .love file: %@", selectedfile);
+			path = [documents stringByAppendingPathComponent:selectedfile].UTF8String;
 		}
 	}
 
