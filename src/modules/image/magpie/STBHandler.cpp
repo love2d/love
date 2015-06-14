@@ -59,9 +59,9 @@ bool STBHandler::canDecode(love::filesystem::FileData *data)
 	return status == 1 && w > 0 && h > 0;
 }
 
-bool STBHandler::canEncode(ImageData::Format format)
+bool STBHandler::canEncode(ImageData::EncodedFormat format)
 {
-	return format == ImageData::FORMAT_TGA;
+	return format == ImageData::ENCODED_TGA;
 }
 
 FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
@@ -82,7 +82,7 @@ FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 	return img;
 }
 
-FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, ImageData::Format format)
+FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, ImageData::EncodedFormat format)
 {
 	if (!canEncode(format))
 		throw love::Exception("Invalid format.");

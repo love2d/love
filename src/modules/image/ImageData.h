@@ -47,22 +47,15 @@ class ImageData : public Data
 {
 public:
 
-	enum Format
+	enum EncodedFormat
 	{
-		FORMAT_TGA,
-		FORMAT_PNG,
-		FORMAT_MAX_ENUM
+		ENCODED_TGA,
+		ENCODED_PNG,
+		ENCODED_MAX_ENUM
 	};
 
 	ImageData();
-
-	/**
-	 * Destructor.
-	 **/
 	virtual ~ImageData();
-
-	static bool getConstant(const char *in, Format &out);
-	static bool getConstant(Format in, const char  *&out);
 
 	/**
 	 * Paste part of one ImageData onto another. The subregion defined by the top-left
@@ -122,13 +115,16 @@ public:
 	 * @param f The file to save the encoded image data to.
 	 * @param format The format of the encoded data.
 	 **/
-	virtual void encode(love::filesystem::File *f, Format format) = 0;
+	virtual void encode(love::filesystem::File *f, EncodedFormat format) = 0;
 
 	love::thread::Mutex *getMutex() const;
 
 	// Implements Data.
 	virtual void *getData() const;
 	virtual size_t getSize() const;
+
+	static bool getConstant(const char *in, EncodedFormat &out);
+	static bool getConstant(EncodedFormat in, const char *&out);
 
 protected:
 
@@ -148,8 +144,8 @@ protected:
 
 private:
 
-	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
-	static StringMap<Format, FORMAT_MAX_ENUM> formats;
+	static StringMap<EncodedFormat, ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
+	static StringMap<EncodedFormat, ENCODED_MAX_ENUM> encodedFormats;
 
 }; // ImageData
 

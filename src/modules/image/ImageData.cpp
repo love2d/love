@@ -74,7 +74,7 @@ void ImageData::setPixel(int x, int y, pixel c)
 	pixels[y*getWidth()+x] = c;
 }
 
-void ImageData::setPixelUnsafe(int x, int y, love::image::pixel c)
+void ImageData::setPixelUnsafe(int x, int y, pixel c)
 {
 	if (!inside(x, y))
 		throw love::Exception("Attempt to set out-of-range pixel!");
@@ -162,23 +162,23 @@ love::thread::Mutex *ImageData::getMutex() const
 	return mutex;
 }
 
-bool ImageData::getConstant(const char *in, ImageData::Format &out)
+bool ImageData::getConstant(const char *in, EncodedFormat &out)
 {
-	return formats.find(in, out);
+	return encodedFormats.find(in, out);
 }
 
-bool ImageData::getConstant(ImageData::Format in, const char  *&out)
+bool ImageData::getConstant(EncodedFormat in, const char *&out)
 {
-	return formats.find(in, out);
+	return encodedFormats.find(in, out);
 }
 
-StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
+StringMap<ImageData::EncodedFormat, ImageData::ENCODED_MAX_ENUM>::Entry ImageData::encodedFormatEntries[] =
 {
-	{"tga", ImageData::FORMAT_TGA},
-	{"png", ImageData::FORMAT_PNG},
+	{"tga", ENCODED_TGA},
+	{"png", ENCODED_PNG},
 };
 
-StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM> ImageData::formats(ImageData::formatEntries, sizeof(ImageData::formatEntries));
+StringMap<ImageData::EncodedFormat, ImageData::ENCODED_MAX_ENUM> ImageData::encodedFormats(ImageData::encodedFormatEntries, sizeof(ImageData::encodedFormatEntries));
 
 } // image
 } // love

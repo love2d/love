@@ -141,7 +141,7 @@ void ImageData::decode(love::filesystem::FileData *data)
 	decodeHandler = decoder;
 }
 
-void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
+void ImageData::encode(love::filesystem::File *f, ImageData::EncodedFormat format)
 {
 	FormatHandler *encoder = nullptr;
 	FormatHandler::EncodedImage encodedimage;

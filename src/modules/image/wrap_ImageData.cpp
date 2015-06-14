@@ -240,7 +240,7 @@ int w_ImageData_encode(lua_State *L)
 {
 	std::string ext;
 	const char *fmt;
-	ImageData::Format format = ImageData::FORMAT_MAX_ENUM;
+	ImageData::EncodedFormat format = ImageData::ENCODED_MAX_ENUM;
 	ImageData *t = luax_checkimagedata(L, 1);
 
 	if (lua_isstring(L, 2))

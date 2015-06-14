@@ -46,7 +46,7 @@ public:
 	virtual ~ImageData();
 
 	// Implements image::ImageData.
-	virtual void encode(love::filesystem::File *f, ImageData::Format format);
+	virtual void encode(love::filesystem::File *f, ImageData::EncodedFormat format);
 
 private:
 

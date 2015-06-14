@@ -75,7 +75,7 @@ public:
 	/**
 	 * Whether this format handler can encode to a particular format.
 	 **/
-	virtual bool canEncode(ImageData::Format format);
+	virtual bool canEncode(ImageData::EncodedFormat format);
 
 	/**
 	 * Decodes an image from its encoded form into raw pixel data.
@@ -90,7 +90,7 @@ public:
 	 * @param format The format to encode to.
 	 * @return The encoded image data.
 	 **/
-	virtual EncodedImage encode(const DecodedImage &img, ImageData::Format format);
+	virtual EncodedImage encode(const DecodedImage &img, ImageData::EncodedFormat format);
 
 	/**
 	 * Frees memory allocated by the format handler.
