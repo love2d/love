@@ -44,6 +44,7 @@ local _getBitDepth = SoundData_mt.__index.getBitDepth
 local _getSampleCount = SoundData_mt.__index.getSampleCount
 local _getSampleRate = SoundData_mt.__index.getSampleRate
 local _getChannels = SoundData_mt.__index.getChannels
+local _getDuration = SoundData_mt.__index.getDuration
 
 -- Table which holds SoundData objects as keys, and information about the objects
 -- as values. Uses weak keys so the SoundData objects can still be GC'd properly.
@@ -61,6 +62,7 @@ local objectcache = setmetatable({}, {
 			samplecount = _getSampleCount(sounddata),
 			samplerate = _getSampleRate(sounddata),
 			channels = _getChannels(sounddata),
+			duration = _getDuration(sounddata),
 		}
 
 		self[sounddata] = p
@@ -97,19 +99,24 @@ function SoundData_mt.__index:setSample(i, sample)
 	end
 end
 
+function SoundData_mt.__index:getBitDepth()
+	return objectcache[self].bytedepth * 8
+end
+
 function SoundData_mt.__index:getSampleCount()
-	local p = objectcache[self]
-	return p.samplecount
+	return objectcache[self].samplecount
 end
 
 function SoundData_mt.__index:getSampleRate()
-	local p = objectcache[self]
-	return p.samplerate
+	return objectcache[self].samplerate
 end
 
 function SoundData_mt.__index:getChannels()
-	local p = objectcache[self]
-	return p.channels
+	return objectcache[self].channels
+end
+
+function SoundData_mt.__index:getDuration()
+	return objectcache[self].duration
 end
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
