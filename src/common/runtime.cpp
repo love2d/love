@@ -262,7 +262,7 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
-int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
+int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f, bool pushmetatable)
 {
 	// Verify that this type name has a matching Type ID and type name mapping.
 	const char *tname = "Invalid";
@@ -270,9 +270,9 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
 		printf("Missing type name entry for type ID %d\n", type);
 
 	// Get the place for storing and re-using instantiated love types.
-	luax_getregistry(L, REGISTRY_TYPES);
+	luax_getregistry(L, REGISTRY_OBJECTS);
 
-	// Create registry._lovetypes if it doesn't exist yet.
+	// Create registry._loveobjects if it doesn't exist yet.
 	if (!lua_istable(L, -1))
 	{
 		lua_newtable(L);
@@ -288,8 +288,8 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
 		// setmetatable(newtable, metatable)
 		lua_setmetatable(L, -2);
 
-		// registry._lovetypes = newtable
-		lua_setfield(L, LUA_REGISTRYINDEX, "_lovetypes");
+		// registry._loveobjects = newtable
+		lua_setfield(L, LUA_REGISTRYINDEX, "_loveobjects");
 	}
 	else
 		lua_pop(L, 1);
@@ -322,8 +322,11 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
 	lua_pushcfunction(L, w__typeOf);
 	lua_setfield(L, -2, "typeOf");
 
-	if (f != 0)
+	if (f != nullptr)
 		luax_setfuncs(L, f);
+
+	if (pushmetatable)
+		return 1; // leave the metatable on the stack.
 
 	lua_pop(L, 1); // Pops metatable.
 	return 0;
@@ -406,8 +409,8 @@ void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 		return;
 	}
 
-	// Fetch the registry table of instantiated types.
-	luax_getregistry(L, REGISTRY_TYPES);
+	// Fetch the registry table of instantiated objects.
+	luax_getregistry(L, REGISTRY_OBJECTS);
 
 	// The table might not exist - it should be insisted in luax_register_type.
 	if (!lua_istable(L, -1))
@@ -416,7 +419,7 @@ void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 		return luax_rawnewtype(L, type, object);
 	}
 
-	// Get the value of lovetypes[object] on the stack.
+	// Get the value of loveobjects[object] on the stack.
 	lua_pushlightuserdata(L, object);
 	lua_gettable(L, -2);
 
@@ -430,11 +433,11 @@ void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 		lua_pushlightuserdata(L, object);
 		lua_pushvalue(L, -2);
 
-		// lovetypes[object] = Proxy.
+		// loveobjects[object] = Proxy.
 		lua_settable(L, -4);
 	}
 
-	// Remove the lovetypes table from the stack.
+	// Remove the loveobjects table from the stack.
 	lua_remove(L, -2);
 
 	// Keep the Proxy userdata on the stack.
@@ -586,8 +589,8 @@ int luax_insistregistry(lua_State *L, Registry r)
 		return luax_insistlove(L, "_gc");
 	case REGISTRY_MODULES:
 		return luax_insistlove(L, "_modules");
-	case REGISTRY_TYPES:
-		return luax_insist(L, LUA_REGISTRYINDEX, "_lovetypes");
+	case REGISTRY_OBJECTS:
+		return luax_insist(L, LUA_REGISTRYINDEX, "_loveobjects");
 	default:
 		return luaL_error(L, "Attempted to use invalid registry.");
 	}
@@ -601,8 +604,8 @@ int luax_getregistry(lua_State *L, Registry r)
 		return luax_getlove(L, "_gc");
 	case REGISTRY_MODULES:
 		return luax_getlove(L, "_modules");
-	case REGISTRY_TYPES:
-		lua_getfield(L, LUA_REGISTRYINDEX, "_lovetypes");
+	case REGISTRY_OBJECTS:
+		lua_getfield(L, LUA_REGISTRYINDEX, "_loveobjects");
 		return 1;
 	default:
 		return luaL_error(L, "Attempted to use invalid registry.");

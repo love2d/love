@@ -1513,6 +1513,7 @@
 		FAB17BF41ABFC4B100F9BA27 /* lz4hc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4hc.h; sourceTree = "<group>"; };
 		FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TrueTypeRasterizer.cpp; sourceTree = "<group>"; };
 		FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeRasterizer.h; sourceTree = "<group>"; };
+		FAC734C11B2E021A00AB460A /* wrap_SoundData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_SoundData.lua; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2539,6 +2540,7 @@
 				FA0B7C971A95902C000E1D17 /* wrap_Sound.h */,
 				FA0B7C981A95902C000E1D17 /* wrap_SoundData.cpp */,
 				FA0B7C991A95902C000E1D17 /* wrap_SoundData.h */,
+				FAC734C11B2E021A00AB460A /* wrap_SoundData.lua */,
 			);
 			path = sound;
 			sourceTree = "<group>";

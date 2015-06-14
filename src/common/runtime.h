@@ -51,7 +51,7 @@ enum Registry
 {
 	REGISTRY_GC,
 	REGISTRY_MODULES,
-	REGISTRY_TYPES
+	REGISTRY_OBJECTS
 };
 
 /**
@@ -249,8 +249,9 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name);
  * Register a new type.
  * @param type The type.
  * @param f The list of member functions for the type.
+ * @param pushmetatable Whether to push the type's metatable to the stack.
  **/
-int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f = 0);
+int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f = nullptr, bool pushmetatable = false);
 
 /**
  * Do a table.insert from C

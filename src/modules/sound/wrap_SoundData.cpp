@@ -22,10 +22,20 @@
 
 #include "common/wrap_Data.h"
 
+// Shove the wrap_SoundData.lua code directly into a raw string literal.
+static const char sounddata_lua[] =
+#include "wrap_SoundData.lua"
+;
+
 namespace love
 {
 namespace sound
 {
+
+/**
+ * NOTE: Additional wrapper code is in wrap_SoundData.lua. Be sure to keep it
+ * in sync with any changes made to this file!
+ **/
 
 SoundData *luax_checksounddata(lua_State *L, int idx)
 {
@@ -105,7 +115,22 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_sounddata(lua_State *L)
 {
-	return luax_register_type(L, SOUND_SOUND_DATA_ID, functions);
+	// The last argument pushes the type's metatable onto the stack.
+	int ret = luax_register_type(L, SOUND_SOUND_DATA_ID, functions, true);
+
+	// Load and execute SoundData.lua, sending the metatable as an argument.
+	if (ret > 0)
+	{
+		luaL_loadbuffer(L, sounddata_lua, sizeof(sounddata_lua), "SoundData.lua");
+		lua_pushvalue(L, -2);
+		lua_call(L, 1, 0);
+
+		// Pop the metatable.
+		lua_pop(L, 1);
+		ret--;
+	}
+
+	return ret;
 }
 
 } // sound
