@@ -71,16 +71,13 @@ void ImageData::setPixel(int x, int y, pixel c)
 	Lock lock(mutex);
 
 	pixel *pixels = (pixel *) getData();
-	pixels[y*getWidth()+x] = c;
+	pixels[y*width+x] = c;
 }
 
 void ImageData::setPixelUnsafe(int x, int y, pixel c)
 {
-	if (!inside(x, y))
-		throw love::Exception("Attempt to set out-of-range pixel!");
-
 	pixel *pixels = (pixel *) getData();
-	pixels[y*getWidth()+x] = c;
+	pixels[y*width+x] = c;
 }
 
 pixel ImageData::getPixel(int x, int y) const
@@ -88,8 +85,16 @@ pixel ImageData::getPixel(int x, int y) const
 	if (!inside(x, y))
 		throw love::Exception("Attempt to get out-of-range pixel!");
 
+	Lock lock(mutex);
+
 	const pixel *pixels = (const pixel *) getData();
-	return pixels[y*getWidth()+x];
+	return pixels[y*width+x];
+}
+
+pixel ImageData::getPixelUnsafe(int x, int y) const
+{
+	const pixel *pixels = (const pixel *) getData();
+	return pixels[y*width+x];
 }
 
 void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, int sh)

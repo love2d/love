@@ -1514,6 +1514,7 @@
 		FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TrueTypeRasterizer.cpp; sourceTree = "<group>"; };
 		FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeRasterizer.h; sourceTree = "<group>"; };
 		FAC734C11B2E021A00AB460A /* wrap_SoundData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_SoundData.lua; sourceTree = "<group>"; };
+		FAC734C21B2E628700AB460A /* wrap_ImageData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_ImageData.lua; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2277,6 +2278,7 @@
 				FA0B7BE51A95902C000E1D17 /* wrap_Image.h */,
 				FA0B7BE61A95902C000E1D17 /* wrap_ImageData.cpp */,
 				FA0B7BE71A95902C000E1D17 /* wrap_ImageData.h */,
+				FAC734C21B2E628700AB460A /* wrap_ImageData.lua */,
 			);
 			path = image;
 			sourceTree = "<group>";

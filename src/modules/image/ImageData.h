@@ -98,7 +98,7 @@ public:
 
 	/**
 	 * Sets the pixel at location (x,y).
-	 * Not thread-safe!
+	 * Not thread-safe, and doesn't verify the coordinates!
 	 **/
 	void setPixelUnsafe(int x, int y, pixel p);
 
@@ -109,6 +109,12 @@ public:
 	 * @return The color for the given location.
 	 **/
 	pixel getPixel(int x, int y) const;
+
+	/**
+	 * Gets the pixel at location (x,y).
+	 * Not thread-safe, and doesn't verify the coordinates!
+	 **/
+	pixel getPixelUnsafe(int x, int y) const;
 
 	/**
 	 * Encodes raw pixel data into a given format.
