@@ -78,7 +78,7 @@ int w_SpriteBatch_add(lua_State *L)
 int w_SpriteBatch_set(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int id = luaL_checkint(L, 2);
+	int id = (int) luaL_checknumber(L, 2);
 
 	Quad *quad = nullptr;
 	int startidx = 3;
@@ -211,7 +211,7 @@ int w_SpriteBatch_getCount(lua_State *L)
 int w_SpriteBatch_setBufferSize(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int size = luaL_checkint(L, 2);
+	int size = (int) luaL_checknumber(L, 2);
 	luax_catchexcept(L, [&]() {t->setBufferSize(size); });
 	return 0;
 }

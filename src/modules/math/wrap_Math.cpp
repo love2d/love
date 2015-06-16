@@ -111,7 +111,7 @@ int w_newBezierCurve(lua_State *L)
 	std::vector<Vector> points;
 	if (lua_istable(L, 1))
 	{
-		int top = (int) lua_objlen(L, 1);
+		int top = (int) luax_objlen(L, 1);
 		points.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
@@ -150,7 +150,7 @@ int w_triangulate(lua_State *L)
 	std::vector<Vertex> vertices;
 	if (lua_istable(L, 1))
 	{
-		int top = (int) lua_objlen(L, 1);
+		int top = (int) luax_objlen(L, 1);
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
@@ -220,7 +220,7 @@ int w_isConvex(lua_State *L)
 	std::vector<Vertex> vertices;
 	if (lua_istable(L, 1))
 	{
-		int top = (int) lua_objlen(L, 1);
+		int top = (int) luax_objlen(L, 1);
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
@@ -258,7 +258,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 
 	if (lua_istable(L, 1))
 	{
-		int n = (int) lua_objlen(L, 1);
+		int n = (int) luax_objlen(L, 1);
 		for (int i = 1; i <= n && i <= 4; i++)
 		{
 			lua_rawgeti(L, 1, i);
@@ -360,7 +360,7 @@ int w_compress(lua_State *L)
 	if (fstr && !Compressor::getConstant(fstr, format))
 		return luaL_error(L, "Invalid compressed format: %s", fstr);
 
-	int level = luaL_optint(L, 3, -1);
+	int level = (int) luaL_optnumber(L, 3, -1);
 
 	CompressedData *cdata = nullptr;
 	if (lua_isstring(L, 1))

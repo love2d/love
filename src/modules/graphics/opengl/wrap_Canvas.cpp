@@ -66,10 +66,10 @@ int w_Canvas_newImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, MODULE_IMAGE_ID);
-	int x = luaL_optint(L, 2, 0);
-	int y = luaL_optint(L, 3, 0);
-	int w = luaL_optint(L, 4, canvas->getWidth());
-	int h = luaL_optint(L, 5, canvas->getHeight());
+	int x = (int) luaL_optnumber(L, 2, 0);
+	int y = (int) luaL_optnumber(L, 3, 0);
+	int w = (int) luaL_optnumber(L, 4, canvas->getWidth());
+	int h = (int) luaL_optnumber(L, 5, canvas->getHeight());
 
 	love::image::ImageData *img = nullptr;
 	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, x, y, w, h); });

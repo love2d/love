@@ -80,10 +80,10 @@ int w_Image_refresh(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
 
-	int xoffset = luaL_optint(L, 2, 0);
-	int yoffset = luaL_optint(L, 3, 0);
-	int w = luaL_optint(L, 4, i->getWidth());
-	int h = luaL_optint(L, 5, i->getHeight());
+	int xoffset = (int) luaL_optnumber(L, 2, 0);
+	int yoffset = (int) luaL_optnumber(L, 3, 0);
+	int w = (int) luaL_optnumber(L, 4, i->getWidth());
+	int h = (int) luaL_optnumber(L, 5, i->getHeight());
 
 	luax_catchexcept(L, [&](){ i->refresh(xoffset, yoffset, w, h); });
 	return 0;

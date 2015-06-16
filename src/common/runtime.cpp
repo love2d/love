@@ -342,13 +342,13 @@ int luax_table_insert(lua_State *L, int tindex, int vindex, int pos)
 	if (pos == -1)
 	{
 		lua_pushvalue(L, vindex);
-		lua_rawseti(L, tindex, (int) lua_objlen(L, tindex)+1);
+		lua_rawseti(L, tindex, (int) luax_objlen(L, tindex)+1);
 		return 0;
 	}
 	else if (pos < 0)
-		pos = (int) lua_objlen(L, tindex)+1+pos;
+		pos = (int) luax_objlen(L, tindex)+1+pos;
 
-	for (int i = (int) lua_objlen(L, tindex)+1; i > pos; i--)
+	for (int i = (int) luax_objlen(L, tindex)+1; i > pos; i--)
 	{
 		lua_rawgeti(L, tindex, i-1);
 		lua_rawseti(L, tindex, i);
@@ -556,6 +556,11 @@ int luax_insistglobal(lua_State *L, const char *k)
 	return 1;
 }
 
+int luax_c_insistglobal(lua_State *L, const char *k)
+{
+	return luax_insistglobal(L, k);
+}
+
 int luax_insistlove(lua_State *L, const char *k)
 {
 	luax_insistglobal(L, "love");
@@ -638,6 +643,28 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 
 	const char *msg = lua_pushfstring(L, "%s expected, got %s", tname, argtname);
 	return luaL_argerror(L, narg, msg);
+}
+
+int luax_objlen(lua_State *L, int ndx)
+{
+#if LUA_VERSION_NUM == 501
+	return lua_objlen(L, ndx);
+#else
+	return lua_rawlen(L, ndx);
+#endif
+}
+
+void luax_register(lua_State *L, const char *name, const luaL_Reg *l)
+{
+	if (name)
+		lua_newtable(L);
+
+	luax_setfuncs(L, l);
+	if (name)
+	{
+		lua_pushvalue(L, -1);
+		lua_setglobal(L, name);
+	}
 }
 
 Type luax_type(lua_State *L, int idx)

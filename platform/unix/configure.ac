@@ -53,8 +53,10 @@ AC_ARG_WITH([luaversion], [AS_HELP_STRING([--with-luaversion], [Select the lua v
 
 # pkg-config libraries
 AM_PATH_SDL2([], [], [LOVE_MSG_ERROR([SDL 2])])
+with_clean_luaversion=`printf ${with_luaversion} | sed 's/\.//g'`
 PKG_CHECK_MODULES([lua], [${with_lua}${with_luaversion}], [lua_found=yes],
-				  [PKG_CHECK_MODULES([lua], [${with_lua}], [lua_found=yes], [lua_found=no])])
+	[PKG_CHECK_MODULES([lua], [${with_lua}${with_clean_luaversion}], [lua_found=yes],
+	[PKG_CHECK_MODULES([lua], [${with_lua}], [lua_found=yes], [lua_found=no])])])
 PKG_CHECK_MODULES([freetype2], [freetype2], [], [LOVE_MSG_ERROR([FreeType2])])
 PKG_CHECK_MODULES([openal], [openal], [], [LOVE_MSG_ERROR([OpenAL])])
 PKG_CHECK_MODULES([libmodplug], [libmodplug], [], [LOVE_MSG_ERROR([libmodplug])])
@@ -66,17 +68,16 @@ AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], [LOVE_MSG_ERROR([PhysicsFS])])
 
 # Lua, treated seperately because of --with-lua
-AS_VAR_IF([with_luaversion], [5.2], [luatest=lua_version], [luatest=lua_pcall]) # use lua_version for 5.2
 AS_VAR_IF([lua_found], [yes],
 		  #if
 		  [
 		   luaheaders_found=yes
-		   AC_MSG_CHECKING([for library containing ${luatest}])
+		   AC_MSG_CHECKING([for library containing lua_call])
 		   AC_MSG_RESULT([${lua_LIBS}])],
 		  #else
 		  [
-		   AC_MSG_WARN([Could not find pkg-config definition for ${with_lua}${with_luaversion} or ${with_lua}, falling back to manual detection])
-		   AC_SEARCH_LIBS([$luatest], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
+		   AC_MSG_WARN([Could not find pkg-config definition for ${with_lua}${with_luaversion} or ${with_lua}${with_clean_luaversion}${with_lua}, falling back to manual detection])
+		   AC_SEARCH_LIBS([lua_call], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
 						  [LOVE_MSG_ERROR([$with_lua])])
 		   luaheaders_found=no
 		   AC_CHECK_HEADER(["${with_lua}${with_luaversion}/lua.h"], [luaheaders_found=yes includes="$includes -I/usr/include/${with_lua}${with_luaversion}"], [])

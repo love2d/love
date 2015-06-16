@@ -97,7 +97,7 @@ int Physics::newPolygonShape(lua_State *L)
 	bool istable = lua_istable(L, 1);
 
 	if (istable)
-		argc = (int) lua_objlen(L, 1);
+		argc = (int) luax_objlen(L, 1);
 
 	if (argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
@@ -158,7 +158,7 @@ int Physics::newChainShape(lua_State *L)
 	bool istable = lua_istable(L, 2);
 
 	if (istable)
-		argc = (int) lua_objlen(L, 2);
+		argc = (int) luax_objlen(L, 2);
 
 	if (argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");

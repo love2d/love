@@ -68,8 +68,8 @@ int w_ImageData_getDimensions(lua_State *L)
 int w_ImageData_getPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = luaL_checkint(L, 2);
-	int y = luaL_checkint(L, 3);
+	int x = (int) luaL_checknumber(L, 2);
+	int y = (int) luaL_checknumber(L, 3);
 	pixel c;
 
 	luax_catchexcept(L, [&](){ c = t->getPixel(x, y); });
@@ -84,8 +84,8 @@ int w_ImageData_getPixel(lua_State *L)
 int w_ImageData_setPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = luaL_checkint(L, 2);
-	int y = luaL_checkint(L, 3);
+	int x = (int) luaL_checknumber(L, 2);
+	int y = (int) luaL_checknumber(L, 3);
 	pixel c;
 
 	if (lua_istable(L, 4))
@@ -205,12 +205,12 @@ int w_ImageData_paste(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	ImageData *src = luax_checkimagedata(L, 2);
-	int dx = luaL_checkint(L, 3);
-	int dy = luaL_checkint(L, 4);
-	int sx = luaL_optint(L, 5, 0);
-	int sy = luaL_optint(L, 6, 0);
-	int sw = luaL_optint(L, 7, src->getWidth());
-	int sh = luaL_optint(L, 8, src->getHeight());
+	int dx = (int) luaL_checknumber(L, 3);
+	int dy = (int) luaL_checknumber(L, 4);
+	int sx = (int) luaL_optnumber(L, 5, 0);
+	int sy = (int) luaL_optnumber(L, 6, 0);
+	int sw = (int) luaL_optnumber(L, 7, src->getWidth());
+	int sh = (int) luaL_optnumber(L, 8, src->getHeight());
 	t->paste((love::image::ImageData *)src, dx, dy, sx, sy, sw, sh);
 	return 0;
 }

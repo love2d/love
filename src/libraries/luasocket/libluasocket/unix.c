@@ -15,6 +15,9 @@
 #include "unix.h"
 #include <sys/un.h> 
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+extern int luax_c_insistglobal(lua_State *L, const char *k);
+
 /*=========================================================================*\
 * Internal function prototypes
 \*=========================================================================*/
@@ -90,10 +93,14 @@ int luaopen_socket_unix(lua_State *L) {
     auxiliar_add2group(L, "unix{client}", "unix{any}");
     auxiliar_add2group(L, "unix{server}", "unix{any}");
     /* make sure the function ends up in the package table */
-    luaL_openlib(L, "socket", func, 0);
-    /* return the function instead of the 'socket' table */
+    lua_pushcfunction(L, global_create);
+
+    luax_c_insistglobal(L, "socket");
     lua_pushstring(L, "unix");
-    lua_gettable(L, -2);
+    lua_pushvalue(L, -3);
+    lua_settable(L, -3);
+
+    /* return the function instead of the 'socket' table */
     return 1;
 }
 

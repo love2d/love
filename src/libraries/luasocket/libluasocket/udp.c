@@ -23,6 +23,8 @@
 #define MAX(x, y) ((x) > (y) ? x : y)
 #endif 
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*=========================================================================*\
 * Internal function prototypes
 \*=========================================================================*/
@@ -95,7 +97,7 @@ int udp_open(lua_State *L)
     auxiliar_add2group(L, "udp{connected}",   "select{able}");
     auxiliar_add2group(L, "udp{unconnected}", "select{able}");
     /* define library functions */
-    luaL_openlib(L, NULL, func, 0); 
+    luax_register(L, NULL, func);
     return 0;
 }
 

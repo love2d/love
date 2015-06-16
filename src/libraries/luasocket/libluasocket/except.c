@@ -11,6 +11,8 @@
 
 #include "except.h"
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*=========================================================================*\
 * Internal function prototypes.
 \*=========================================================================*/
@@ -94,6 +96,6 @@ static int global_protect(lua_State *L) {
 * Init module
 \*-------------------------------------------------------------------------*/
 int except_open(lua_State *L) {
-    luaL_openlib(L, NULL, func, 0);
+    luax_register(L, NULL, func);
     return 0;
 }

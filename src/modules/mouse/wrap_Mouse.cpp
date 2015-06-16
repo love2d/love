@@ -40,8 +40,8 @@ int w_newCursor(lua_State *L)
 		luax_convobj(L, 1, "image", "newImageData");
 
 	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
-	int hotx = luaL_optint(L, 2, 0);
-	int hoty = luaL_optint(L, 3, 0);
+	int hotx = (int) luaL_optnumber(L, 2, 0);
+	int hoty = (int) luaL_optnumber(L, 3, 0);
 
 	luax_catchexcept(L, [&](){ cursor = instance()->newCursor(data, hotx, hoty); });
 
@@ -147,7 +147,7 @@ int w_isDown(lua_State *L)
 	buttons.reserve(num);
 
 	for (int i = 0; i < num; i++)
-		buttons.push_back(luaL_checkint(L, i + 1));
+		buttons.push_back((int) luaL_checknumber(L, i + 1));
 
 	luax_pushboolean(L, instance()->isDown(buttons));
 	return 1;

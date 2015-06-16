@@ -68,7 +68,7 @@ static T *_getScalars(lua_State *L, int count, size_t &dimension)
 template <typename T>
 static T *_getVectors(lua_State *L, int count, size_t &dimension)
 {
-	dimension = lua_objlen(L, 3);
+	dimension = luax_objlen(L, 3);
 	T *values = new T[count * dimension];
 
 	for (int i = 0; i < count; ++i)
@@ -79,11 +79,11 @@ static T *_getVectors(lua_State *L, int count, size_t &dimension)
 			luax_typerror(L, 3 + i, "table");
 			return 0;
 		}
-		if (lua_objlen(L, 3 + i) != dimension)
+		if (luax_objlen(L, 3 + i) != dimension)
 		{
 			delete[] values;
 			luaL_error(L, "Error in argument %d: Expected table size %d, got %d.",
-						   3+i, dimension, lua_objlen(L, 3+i));
+						   3+i, dimension, luax_objlen(L, 3+i));
 			return 0;
 		}
 
@@ -258,19 +258,19 @@ static void w_convertMatrices(lua_State *L, int idx)
 	for (int matrix = idx; matrix < idx + matrixcount; matrix++)
 	{
 		luaL_checktype(L, matrix, LUA_TTABLE);
-		int dimension = (int) lua_objlen(L, matrix);
+		int dimension = (int) luax_objlen(L, matrix);
 
 		int newi = 1;
 		lua_createtable(L, dimension * dimension, 0);
 
 		// Collapse {{a,b,c}, {d,e,f}, ...} to {a,b,c, d,e,f, ...}
-		for (int i = 1; i <= (int) lua_objlen(L, matrix); i++)
+		for (int i = 1; i <= (int) luax_objlen(L, matrix); i++)
 		{
 			// Push args[matrix][i] onto the stack.
 			lua_rawgeti(L, matrix, i);
 			luaL_checktype(L, -1, LUA_TTABLE);
 
-			for (int j = 1; j <= (int) lua_objlen(L, -1); j++)
+			for (int j = 1; j <= (int) luax_objlen(L, -1); j++)
 			{
 				// Push args[matrix[i][j] onto the stack.
 				lua_rawgeti(L, -1, j);

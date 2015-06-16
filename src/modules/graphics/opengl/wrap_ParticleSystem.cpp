@@ -505,7 +505,7 @@ int w_ParticleSystem_setColors(lua_State *L)
 		{
 			luaL_checktype(L, i + 2, LUA_TTABLE);
 
-			if (lua_objlen(L, i + 2) < 3)
+			if (luax_objlen(L, i + 2) < 3)
 				return luaL_argerror(L, i + 2, "expected 4 color components");
 
 			for (int j = 0; j < 4; j++)
@@ -592,7 +592,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 
 	if (lua_istable(L, 2))
 	{
-		for (int i = 1; i <= (int) lua_objlen(L, 2); i++)
+		for (int i = 1; i <= (int) luax_objlen(L, 2); i++)
 		{
 			lua_rawgeti(L, 2, i);
 
@@ -683,7 +683,7 @@ int w_ParticleSystem_reset(lua_State *L)
 int w_ParticleSystem_emit(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int num = luaL_checkint(L, 2);
+	int num = (int) luaL_checknumber(L, 2);
 	t->emit(num);
 	return 0;
 }

@@ -94,7 +94,7 @@ int w_discard(lua_State *L)
 
 	if (lua_istable(L, 1))
 	{
-		for (size_t i = 1; i <= lua_objlen(L, 1); i++)
+		for (size_t i = 1; i <= luax_objlen(L, 1); i++)
 		{
 			lua_rawgeti(L, 1, i);
 			colorbuffers.push_back(luax_optboolean(L, -1, true));
@@ -161,10 +161,10 @@ int w_setScissor(lua_State *L)
 		return 0;
 	}
 
-	int x = luaL_checkint(L, 1);
-	int y = luaL_checkint(L, 2);
-	int w = luaL_checkint(L, 3);
-	int h = luaL_checkint(L, 4);
+	int x = (int) luaL_checknumber(L, 1);
+	int y = (int) luaL_checknumber(L, 2);
+	int w = (int) luaL_checknumber(L, 3);
+	int h = (int) luaL_checknumber(L, 4);
 
 	if (w < 0 || h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
@@ -392,7 +392,7 @@ int w_newImageFont(lua_State *L)
 int w_newSpriteBatch(lua_State *L)
 {
 	Texture *texture = luax_checktexture(L, 1);
-	int size = luaL_optint(L, 2, 1000);
+	int size = (int) luaL_optnumber(L, 2, 1000);
 	Mesh::Usage usage = Mesh::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
@@ -431,10 +431,10 @@ int w_newParticleSystem(lua_State *L)
 int w_newCanvas(lua_State *L)
 {
 	// check if width and height are given. else default to screen dimensions.
-	int width       = luaL_optint(L, 1, instance()->getWidth());
-	int height      = luaL_optint(L, 2, instance()->getHeight());
+	int width       = (int) luaL_optnumber(L, 1, instance()->getWidth());
+	int height      = (int) luaL_optnumber(L, 2, instance()->getHeight());
 	const char *str = luaL_optstring(L, 3, "normal");
-	int msaa        = luaL_optint(L, 4, 0);
+	int msaa        = (int) luaL_optnumber(L, 4, 0);
 
 	Canvas::Format format;
 	if (!Canvas::getConstant(str, format))
@@ -600,7 +600,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	// standard vertices.
 	if (lua_istable(L, 1))
 	{
-		size_t vertexcount = lua_objlen(L, 1);
+		size_t vertexcount = luax_objlen(L, 1);
 		std::vector<Vertex> vertices;
 		vertices.reserve(vertexcount);
 
@@ -637,7 +637,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	}
 	else
 	{
-		int count = luaL_checkint(L, 1);
+		int count = (int) luaL_checknumber(L, 1);
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(count, drawmode, usage); });
 	}
 
@@ -664,7 +664,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	lua_pop(L, 1);
 
 	// Per-vertex attribute formats.
-	for (int i = 1; i <= (int) lua_objlen(L, 1); i++)
+	for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
 	{
 		lua_rawgeti(L, 1, i);
 
@@ -682,7 +682,7 @@ static Mesh *newCustomMesh(lua_State *L)
 			return nullptr;
 		}
 
-		format.components = luaL_checkint(L, -1);
+		format.components = (int) luaL_checknumber(L, -1);
 		if (format.components <= 0 || format.components > 4)
 		{
 			luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", format.components);
@@ -695,7 +695,7 @@ static Mesh *newCustomMesh(lua_State *L)
 
 	if (lua_isnumber(L, 2))
 	{
-		int vertexcount = luaL_checkint(L, 2);
+		int vertexcount = (int) luaL_checknumber(L, 2);
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, vertexcount, drawmode, usage); });
 	}
 	else if (luax_istype(L, 2, DATA_ID))
@@ -719,7 +719,7 @@ static Mesh *newCustomMesh(lua_State *L)
 		for (const Mesh::AttribFormat &format : vertexformat)
 			vertexcomponents += format.components;
 
-		size_t numvertices = lua_objlen(L, 2);
+		size_t numvertices = luax_objlen(L, 2);
 
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, numvertices, drawmode, usage); });
 
@@ -732,11 +732,11 @@ static Mesh *newCustomMesh(lua_State *L)
 			lua_rawgeti(L, 2, vertindex + 1);
 			luaL_checktype(L, -1, LUA_TTABLE);
 
-			if ((int) lua_objlen(L, -1) < vertexcomponents)
+			if ((int) luax_objlen(L, -1) < vertexcomponents)
 			{
 				t->release();
 				const char *err = "Invalid number of components in vertex #%d (expected %d components, got %d)";
-				luaL_error(L, err, vertindex+1, vertexcomponents, lua_objlen(L, -1));
+				luaL_error(L, err, vertindex+1, vertexcomponents, luax_objlen(L, -1));
 				return nullptr;
 			}
 
@@ -827,19 +827,19 @@ int w_setColor(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 1, i);
 
-		c.r = (unsigned char)luaL_checkint(L, -4);
-		c.g = (unsigned char)luaL_checkint(L, -3);
-		c.b = (unsigned char)luaL_checkint(L, -2);
-		c.a = (unsigned char)luaL_optint(L, -1, 255);
+		c.r = (unsigned char) luaL_checknumber(L, -4);
+		c.g = (unsigned char) luaL_checknumber(L, -3);
+		c.b = (unsigned char) luaL_checknumber(L, -2);
+		c.a = (unsigned char) luaL_optnumber(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char)luaL_checkint(L, 1);
-		c.g = (unsigned char)luaL_checkint(L, 2);
-		c.b = (unsigned char)luaL_checkint(L, 3);
-		c.a = (unsigned char)luaL_optint(L, 4, 255);
+		c.r = (unsigned char) luaL_checknumber(L, 1);
+		c.g = (unsigned char) luaL_checknumber(L, 2);
+		c.b = (unsigned char) luaL_checknumber(L, 3);
+		c.a = (unsigned char) luaL_optnumber(L, 4, 255);
 	}
 	instance()->setColor(c);
 	return 0;
@@ -863,19 +863,19 @@ int w_setBackgroundColor(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 1, i);
 
-		c.r = (unsigned char)luaL_checkint(L, -4);
-		c.g = (unsigned char)luaL_checkint(L, -3);
-		c.b = (unsigned char)luaL_checkint(L, -2);
-		c.a = (unsigned char)luaL_optint(L, -1, 255);
+		c.r = (unsigned char) luaL_checknumber(L, -4);
+		c.g = (unsigned char) luaL_checknumber(L, -3);
+		c.b = (unsigned char) luaL_checknumber(L, -2);
+		c.a = (unsigned char) luaL_optnumber(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char)luaL_checkint(L, 1);
-		c.g = (unsigned char)luaL_checkint(L, 2);
-		c.b = (unsigned char)luaL_checkint(L, 3);
-		c.a = (unsigned char)luaL_optint(L, 4, 255);
+		c.r = (unsigned char) luaL_checknumber(L, 1);
+		c.g = (unsigned char) luaL_checknumber(L, 2);
+		c.b = (unsigned char) luaL_checknumber(L, 3);
+		c.a = (unsigned char) luaL_optnumber(L, 4, 255);
 	}
 	instance()->setBackgroundColor(c);
 	return 0;
@@ -1153,7 +1153,7 @@ int w_setCanvas(lua_State *L)
 
 	if (is_table)
 	{
-		for (int i = 1; i <= (int) lua_objlen(L, 1); i++)
+		for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
 		{
 			lua_rawgeti(L, 1, i);
 			canvases.push_back(luax_checkcanvas(L, -1));
@@ -1490,7 +1490,7 @@ int w_line(lua_State *L)
 	bool is_table = false;
 	if (args == 1 && lua_istable(L, 1))
 	{
-		args = (int) lua_objlen(L, 1);
+		args = (int) luax_objlen(L, 1);
 		is_table = true;
 	}
 
@@ -1551,7 +1551,7 @@ int w_rectangle(lua_State *L)
 	if (lua_isnoneornil(L, 8))
 		points = std::max(rx, ry) > 20.0 ? (int)(std::max(rx, ry) / 2) : 10;
 	else
-		points = luaL_checkint(L, 8);
+		points = (int) luaL_checknumber(L, 8);
 
 	instance()->rectangle(mode, x, y, w, h, rx, ry, points);
 	return 0;
@@ -1571,7 +1571,7 @@ int w_circle(lua_State *L)
 	if (lua_isnoneornil(L, 5))
 		points = radius > 10 ? (int)(radius) : 10;
 	else
-		points = luaL_checkint(L, 5);
+		points = (int) luaL_checknumber(L, 5);
 
 	instance()->circle(mode, x, y, radius, points);
 	return 0;
@@ -1593,7 +1593,7 @@ int w_ellipse(lua_State *L)
 	if (lua_isnoneornil(L, 6))
 		points = a + b > 30 ? (int)((a + b) / 2) : 15;
 	else
-		points = luaL_checkint(L, 6);
+		points = (int) luaL_checknumber(L, 6);
 
 	instance()->ellipse(mode, x, y, a, b, points);
 	return 0;
@@ -1615,7 +1615,7 @@ int w_arc(lua_State *L)
 	if (lua_isnoneornil(L, 7))
 		points = radius > 10 ? (int)(radius) : 10;
 	else
-		points = luaL_checkint(L, 7);
+		points = (int) luaL_checknumber(L, 7);
 
 	instance()->arc(mode, x, y, radius, angle1, angle2, points);
 	return 0;
@@ -1634,7 +1634,7 @@ int w_polygon(lua_State *L)
 	float *coords;
 	if (args == 1 && lua_istable(L, 2))
 	{
-		args = (int) lua_objlen(L, 2);
+		args = (int) luax_objlen(L, 2);
 		is_table = true;
 	}
 

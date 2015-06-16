@@ -27,6 +27,8 @@
 #define MAX(x, y) ((x) > (y) ? x : y)
 #endif
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*=========================================================================*\
 * Internal function prototypes
 \*=========================================================================*/
@@ -144,7 +146,7 @@ double timeout_gettime(void) {
 * Initializes module
 \*-------------------------------------------------------------------------*/
 int timeout_open(lua_State *L) {
-    luaL_openlib(L, NULL, func, 0);
+    luax_register(L, NULL, func);
     return 0;
 }
 

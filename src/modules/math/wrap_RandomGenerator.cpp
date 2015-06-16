@@ -66,13 +66,13 @@ int luax_getrandom(lua_State *L, int startidx, double r)
 		lua_pushnumber(L, r);
 		break;
 	case 1:
-		u = luaL_checkint(L, startidx);
+		u = (int) luaL_checknumber(L, startidx);
 		luaL_argcheck(L, 1 <= u, startidx, "interval is empty");
 		lua_pushnumber(L, floor(r * u) + 1);
 		break;
 	case 2:
-		l = luaL_checkint(L, startidx);
-		u = luaL_checkint(L, startidx + 1);
+		l = (int) luaL_checknumber(L, startidx);
+		u = (int) luaL_checknumber(L, startidx + 1);
 		luaL_argcheck(L, l <= u, startidx + 1, "interval is empty");
 		lua_pushnumber(L, floor(r * (u - l + 1)) + l);
 		break;

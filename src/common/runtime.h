@@ -395,6 +395,16 @@ extern "C" { // Also called from luasocket
 }
 
 /**
+ * Calls luax_objlen/lua_rawlen depending on version
+ **/
+int luax_objlen(lua_State *L, int ndx);
+
+extern "C" { // Called by enet and luasocket
+	void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+	int luax_c_insistglobal(lua_State *L, const char *k);
+}
+
+/**
  * Like luax_totype, but causes an error if the value at idx is not Proxy,
  * or is not the specified type.
  * @param L The Lua state.

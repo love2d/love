@@ -39,8 +39,8 @@ int w_newImageData(lua_State *L)
 	// Case 1: Integers.
 	if (lua_isnumber(L, 1))
 	{
-		int w = luaL_checkint(L, 1);
-		int h = luaL_checkint(L, 2);
+		int w = (int) luaL_checknumber(L, 1);
+		int h = (int) luaL_checknumber(L, 2);
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
 

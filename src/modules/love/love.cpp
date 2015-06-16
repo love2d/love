@@ -213,9 +213,9 @@ static int w_love_isVersionCompatible(lua_State *L)
 		version = luaL_checkstring(L, 1);
 	else
 	{
-		int major = luaL_checkint(L, 1);
-		int minor = luaL_checkint(L, 2);
-		int rev   = luaL_checkint(L, 3);
+		int major = (int) luaL_checknumber(L, 1);
+		int minor = (int) luaL_checknumber(L, 2);
+		int rev   = (int) luaL_checknumber(L, 3);
 
 		// Convert the numbers to a string, since VERSION_COMPATIBILITY is an
 		// array of version strings.

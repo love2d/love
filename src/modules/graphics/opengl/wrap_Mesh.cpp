@@ -90,7 +90,7 @@ int w_Mesh_setVertices(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 	luaL_checktype(L, 2, LUA_TTABLE);
 
-	size_t nvertices = lua_objlen(L, 2);
+	size_t nvertices = luax_objlen(L, 2);
 	if (nvertices != t->getVertexCount())
 		return luaL_error(L, "Invalid number of vertices (expected %d, got %d)", (int) t->getVertexCount(), (int) nvertices);
 
@@ -312,7 +312,7 @@ int w_Mesh_setVertexMap(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 
 	bool is_table = lua_istable(L, 2);
-	int nargs = is_table ? (int) lua_objlen(L, 2) : lua_gettop(L) - 1;
+	int nargs = is_table ? (int) luax_objlen(L, 2) : lua_gettop(L) - 1;
 
 	std::vector<uint32> vertexmap;
 	vertexmap.reserve(nargs);
@@ -424,8 +424,8 @@ int w_Mesh_setDrawRange(lua_State *L)
 		t->setDrawRange();
 	else
 	{
-		int rangemin = luaL_checkint(L, 2) - 1;
-		int rangemax = luaL_checkint(L, 3) - 1;
+		int rangemin = (int) luaL_checknumber(L, 2) - 1;
+		int rangemax = (int) luaL_checknumber(L, 3) - 1;
 		luax_catchexcept(L, [&](){ t->setDrawRange(rangemin, rangemax); });
 	}
 

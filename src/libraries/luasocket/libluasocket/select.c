@@ -13,6 +13,8 @@
 #include "timeout.h"
 #include "select.h"
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*=========================================================================*\
 * Internal function prototypes.
 \*=========================================================================*/
@@ -39,7 +41,7 @@ static luaL_reg func[] = {
 * Initializes module
 \*-------------------------------------------------------------------------*/
 int select_open(lua_State *L) {
-    luaL_openlib(L, NULL, func, 0);
+    luax_register(L, NULL, func);
     return 0;
 }
 

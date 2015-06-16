@@ -38,10 +38,10 @@ int w_newSoundData(lua_State *L)
 
 	if (lua_isnumber(L, 1))
 	{
-		int samples = luaL_checkint(L, 1);
-		int sampleRate = luaL_optint(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
-		int bitDepth = luaL_optint(L, 3, Decoder::DEFAULT_BIT_DEPTH);
-		int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
+		int samples = (int) luaL_checknumber(L, 1);
+		int sampleRate = (int) luaL_optnumber(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
+		int bitDepth = (int) luaL_optnumber(L, 3, Decoder::DEFAULT_BIT_DEPTH);
+		int channels = (int) luaL_optnumber(L, 4, Decoder::DEFAULT_CHANNELS);
 
 		luax_catchexcept(L, [&](){ t = instance()->newSoundData(samples, sampleRate, bitDepth, channels); });
 	}
@@ -66,7 +66,7 @@ int w_newSoundData(lua_State *L)
 int w_newDecoder(lua_State *L)
 {
 	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
-	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
+	int bufferSize = (int) luaL_optnumber(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
 
 	Decoder *t = nullptr;
 	luax_catchexcept(L,

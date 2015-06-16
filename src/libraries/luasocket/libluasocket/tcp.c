@@ -15,6 +15,8 @@
 #include "options.h"
 #include "tcp.h"
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*=========================================================================*\
 * Internal function prototypes
 \*=========================================================================*/
@@ -92,7 +94,7 @@ int tcp_open(lua_State *L)
     auxiliar_add2group(L, "tcp{client}", "tcp{any}");
     auxiliar_add2group(L, "tcp{server}", "tcp{any}");
     /* define library functions */
-    luaL_openlib(L, NULL, func, 0); 
+    luax_register(L, NULL, func);
     return 0;
 }
 

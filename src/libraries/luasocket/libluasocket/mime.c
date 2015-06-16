@@ -15,6 +15,8 @@
 
 #include "mime.h"
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*=========================================================================*\
 * Don't want to trust escape character constants
 \*=========================================================================*/
@@ -83,7 +85,7 @@ static UC b64unbase[256];
 \*-------------------------------------------------------------------------*/
 MIME_API int luaopen_mime_core(lua_State *L)
 {
-    luaL_openlib(L, "mime", func, 0);
+    luax_register(L, "mime", func);
     /* make version string available to scripts */
     lua_pushstring(L, "_VERSION");
     lua_pushstring(L, MIME_VERSION);
@@ -644,7 +646,7 @@ static int eolprocess(int c, int last, const char *marker,
 \*-------------------------------------------------------------------------*/
 static int mime_global_eol(lua_State *L)
 {
-    int ctx = luaL_checkint(L, 1);
+    int ctx = (int) luaL_checknumber(L, 1);
     size_t isize = 0;
     const char *input = luaL_optlstring(L, 2, NULL, &isize);
     const char *last = input + isize;
