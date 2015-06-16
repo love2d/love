@@ -397,7 +397,7 @@ extern "C" { // Also called from luasocket
 /**
  * Calls luax_objlen/lua_rawlen depending on version
  **/
-int luax_objlen(lua_State *L, int ndx);
+size_t luax_objlen(lua_State *L, int ndx);
 
 extern "C" { // Called by enet and luasocket
 	void luax_register(lua_State *L, const char *name, const luaL_Reg *l);

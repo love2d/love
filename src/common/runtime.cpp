@@ -645,7 +645,7 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 	return luaL_argerror(L, narg, msg);
 }
 
-int luax_objlen(lua_State *L, int ndx)
+size_t luax_objlen(lua_State *L, int ndx)
 {
 #if LUA_VERSION_NUM == 501
 	return lua_objlen(L, ndx);
