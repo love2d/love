@@ -236,7 +236,7 @@ private:
 	bool useSpacesAsTab;
 
 	// Index buffer used for drawing quads with GL_TRIANGLES.
-	VertexIndex quadIndices;
+	QuadIndices quadIndices;
 
 	// ID which is incremented when the texture cache is invalidated.
 	uint32 textureCacheID;

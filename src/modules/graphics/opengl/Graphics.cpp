@@ -50,7 +50,8 @@ namespace opengl
 {
 
 Graphics::Graphics()
-	: width(0)
+	: quadIndices(nullptr)
+	, width(0)
 	, height(0)
 	, created(false)
 	, active(true)
@@ -83,6 +84,9 @@ Graphics::~Graphics()
 		Shader::defaultShader->release();
 		Shader::defaultShader = nullptr;
 	}
+
+	if (quadIndices)
+		delete quadIndices;
 
 	currentWindow->release();
 }
@@ -289,6 +293,14 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 
 	setDebug(enabledebug);
 
+	// Create a quad indices object owned by love.graphics, so at least one
+	// QuadIndices object is alive at all times while love.graphics is alive.
+	// This makes sure there aren't too many expensive destruction/creations of
+	// index buffer objects, since the shared index buffer used by QuadIndices
+	// objects is destroyed when the last object is destroyed.
+	if (quadIndices == nullptr)
+		quadIndices = new QuadIndices(20);
+
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
 		::printf("Could not reload all volatile objects.\n");
@@ -296,9 +308,9 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 	// Restore the graphics state.
 	restoreState(states.back());
 
-	pixel_size_stack.clear();
-	pixel_size_stack.reserve(5);
-	pixel_size_stack.push_back(1);
+	pixelSizeStack.clear();
+	pixelSizeStack.reserve(5);
+	pixelSizeStack.push_back(1);
 
 	// We always need a default shader.
 	if (!Shader::defaultShader)
@@ -1089,19 +1101,19 @@ void Graphics::polyline(const float *coords, size_t count)
 	if (state.lineJoin == LINE_JOIN_NONE)
 	{
 		NoneJoinPolyline line;
-		line.render(coords, count, state.lineWidth * .5f, float(pixel_size_stack.back()), state.lineStyle == LINE_SMOOTH);
+		line.render(coords, count, state.lineWidth * .5f, float(pixelSizeStack.back()), state.lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 	else if (state.lineJoin == LINE_JOIN_BEVEL)
 	{
 		BevelJoinPolyline line;
-		line.render(coords, count, state.lineWidth * .5f, float(pixel_size_stack.back()), state.lineStyle == LINE_SMOOTH);
+		line.render(coords, count, state.lineWidth * .5f, float(pixelSizeStack.back()), state.lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 	else // LINE_JOIN_MITER
 	{
 		MiterJoinPolyline line;
-		line.render(coords, count, state.lineWidth * .5f, float(pixel_size_stack.back()), state.lineStyle == LINE_SMOOTH);
+		line.render(coords, count, state.lineWidth * .5f, float(pixelSizeStack.back()), state.lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 }
@@ -1424,7 +1436,7 @@ void Graphics::push(StackType type)
 
 	gl.pushTransform();
 
-	pixel_size_stack.push_back(pixel_size_stack.back());
+	pixelSizeStack.push_back(pixelSizeStack.back());
 
 	if (type == STACK_ALL)
 		states.push_back(states.back());
@@ -1438,7 +1450,7 @@ void Graphics::pop()
 		throw Exception("Minimum stack depth reached (more pops than pushes?)");
 
 	gl.popTransform();
-	pixel_size_stack.pop_back();
+	pixelSizeStack.pop_back();
 
 	if (stackTypes.back() == STACK_ALL)
 	{
@@ -1461,7 +1473,7 @@ void Graphics::rotate(float r)
 void Graphics::scale(float x, float y)
 {
 	gl.getTransform().scale(x, y);
-	pixel_size_stack.back() *= 2. / (fabs(x) + fabs(y));
+	pixelSizeStack.back() *= 2. / (fabs(x) + fabs(y));
 }
 
 void Graphics::translate(float x, float y)
@@ -1477,7 +1489,7 @@ void Graphics::shear(float kx, float ky)
 void Graphics::origin()
 {
 	gl.getTransform().setIdentity();
-	pixel_size_stack.back() = 1;
+	pixelSizeStack.back() = 1;
 }
 
 Graphics::DisplayState::DisplayState()

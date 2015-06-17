@@ -532,7 +532,7 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands)
 		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
 
 	if ((size_t) totalverts / 4 > quadIndices.getSize())
-		quadIndices = VertexIndex((size_t) totalverts / 4);
+		quadIndices = QuadIndices((size_t) totalverts / 4);
 
 	gl.prepareDraw();
 

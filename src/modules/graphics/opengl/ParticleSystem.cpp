@@ -209,7 +209,7 @@ void ParticleSystem::setBufferSize(uint32 size)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid buffer size");
-	quadIndices = VertexIndex(size);
+	quadIndices = QuadIndices(size);
 	deleteBuffers();
 	createBuffers(size);
 	reset();

@@ -511,7 +511,9 @@ private:
 
 	StrongRef<Font> defaultFont;
 
-	std::vector<double> pixel_size_stack; // stores current size of a pixel (needed for line drawing)
+	std::vector<double> pixelSizeStack; // stores current size of a pixel (needed for line drawing)
+
+	QuadIndices *quadIndices;
 
 	int width;
 	int height;

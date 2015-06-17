@@ -577,7 +577,7 @@ protected:
 	Vertex *particleVerts;
 
 	// Vertex index buffer.
-	VertexIndex quadIndices;
+	QuadIndices quadIndices;
 
 	// The texture to be drawn.
 	StrongRef<Texture> texture;

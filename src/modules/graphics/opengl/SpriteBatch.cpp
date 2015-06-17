@@ -189,7 +189,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		void *new_data = new_array_buf->map();
 		memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
 
-		quad_indices = VertexIndex(newsize);
+		quad_indices = QuadIndices(newsize);
 	}
 	catch (love::Exception &)
 	{

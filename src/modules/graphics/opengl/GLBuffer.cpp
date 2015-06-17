@@ -198,164 +198,127 @@ void GLBuffer::unload()
 }
 
 
-// VertexIndex
+// QuadIndices
 
-size_t VertexIndex::maxSize = 0;
-size_t VertexIndex::elementSize = 0;
-std::list<size_t> VertexIndex::sizeRefs;
-GLBuffer *VertexIndex::element_array = NULL;
+size_t QuadIndices::maxSize = 0;
+size_t QuadIndices::elementSize = 0;
+size_t QuadIndices::objectCount = 0;
+GLBuffer *QuadIndices::indexBuffer = nullptr;
 
-VertexIndex::VertexIndex(size_t size)
+QuadIndices::QuadIndices(size_t size)
 	: size(size)
 {
 	// The upper limit is the maximum of GLuint divided by six (the number
 	// of indices per size) and divided by the size of GLuint. This guarantees
 	// no overflows when calculating the array size in bytes.
-	// Memory issues will be handled by other exceptions.
 	if (size == 0 || size > ((GLuint) -1) / 6 / sizeof(GLuint))
-		throw love::Exception("Invalid size.");
+		throw love::Exception("Invalid number of quads.");
 
-	addSize(size);
+	// Create a new / larger buffer if needed.
+	if (indexBuffer == nullptr || size > maxSize)
+	{
+		GLBuffer *newbuffer = nullptr;
+
+		// Depending on the size, a switch to int and more memory is needed.
+		GLenum targettype = getType(size);
+		size_t elemsize = (targettype == GL_UNSIGNED_SHORT) ? sizeof(GLushort) : sizeof(GLuint);
+
+		size_t buffersize = elemsize * 6 * size;
+
+		// Create may throw out-of-memory exceptions.
+		// QuadIndices will propagate the exception and keep the old GLBuffer.
+		try
+		{
+			newbuffer = new GLBuffer(buffersize, nullptr, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+		}
+		catch (std::bad_alloc &)
+		{
+			throw love::Exception("Out of memory.");
+		}
+
+		// Allocation of the new GLBuffer succeeded.
+		// The old GLBuffer can now be deleted.
+		delete indexBuffer;
+		indexBuffer = newbuffer;
+		maxSize = size;
+		elementSize = elemsize;
+
+		switch (targettype)
+		{
+		case GL_UNSIGNED_SHORT:
+			fill<GLushort>();
+			break;
+		case GL_UNSIGNED_INT:
+			fill<GLuint>();
+			break;
+		}
+	}
+
+	objectCount++;
 }
 
-VertexIndex::VertexIndex(const VertexIndex &other)
+QuadIndices::QuadIndices(const QuadIndices &other)
 	: size(other.size)
 {
-	addSize(size);
+	objectCount++;
 }
 
-VertexIndex &VertexIndex::operator = (const VertexIndex &other)
+QuadIndices &QuadIndices::operator = (const QuadIndices &other)
 {
-	addSize(other.size);
-	removeSize(size);
 	size = other.size;
 	return *this;
 }
 
-VertexIndex::~VertexIndex()
+QuadIndices::~QuadIndices()
 {
-	removeSize(size);
+	--objectCount;
+
+	// Delete the buffer if we were the last living QuadIndices object.
+	if (objectCount <= 0)
+	{
+		delete indexBuffer;
+		indexBuffer = nullptr;
+	}
 }
 
-size_t VertexIndex::getSize() const
+size_t QuadIndices::getSize() const
 {
 	return size;
 }
 
-size_t VertexIndex::getIndexCount(size_t elements) const
+size_t QuadIndices::getIndexCount(size_t elements) const
 {
 	return elements * 6;
 }
 
-GLenum VertexIndex::getType(size_t s) const
+GLenum QuadIndices::getType(size_t s) const
 {
 	// Calculates if unsigned short is big enough to hold all the vertex indices.
-	static const GLenum type_table[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-	return type_table[s * 4 > std::numeric_limits<GLushort>::max()];
+	static const GLenum types[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
+	return types[s * 4 > std::numeric_limits<GLushort>::max()];
 	// if buffer-size > max(GLushort) then GL_UNSIGNED_INT else GL_UNSIGNED_SHORT
 }
 
-size_t VertexIndex::getElementSize()
+size_t QuadIndices::getElementSize()
 {
 	return elementSize;
 }
 
-GLBuffer *VertexIndex::getBuffer() const
+GLBuffer *QuadIndices::getBuffer() const
 {
-	return element_array;
+	return indexBuffer;
 }
 
-const void *VertexIndex::getPointer(size_t offset) const
+const void *QuadIndices::getPointer(size_t offset) const
 {
-	return element_array->getPointer(offset);
-}
-
-void VertexIndex::addSize(size_t newSize)
-{
-	if (newSize <= maxSize)
-	{
-		// Current size is bigger. Append the size to list and sort.
-		sizeRefs.push_back(newSize);
-		sizeRefs.sort();
-		return;
-	}
-
-	// Try to resize before adding it to the list because resize may throw.
-	resize(newSize);
-	sizeRefs.push_back(newSize);
-}
-
-void VertexIndex::removeSize(size_t oldSize)
-{
-	// TODO: For debugging purposes, this should check if the size was actually found.
-	sizeRefs.erase(std::find(sizeRefs.begin(), sizeRefs.end(), oldSize));
-	if (sizeRefs.size() == 0)
-	{
-		resize(0);
-		return;
-	}
-
-	if (oldSize == maxSize)
-	{
-		// Shrink if there's a smaller size.
-		size_t newSize = sizeRefs.back();
-		if (newSize < maxSize)
-			resize(newSize);
-	}
-}
-
-void VertexIndex::resize(size_t size)
-{
-	if (size == 0)
-	{
-		delete element_array;
-		element_array = NULL;
-		maxSize = 0;
-		return;
-	}
-
-	GLBuffer *new_element_array;
-
-	// Depending on the size, a switch to int and more memory is needed.
-	GLenum target_type = getType(size);
-	size_t elem_size = (target_type == GL_UNSIGNED_SHORT) ? sizeof(GLushort) : sizeof(GLuint);
-
-	size_t array_size = elem_size * 6 * size;
-
-	// Create may throw out-of-memory exceptions.
-	// VertexIndex will propagate the exception and keep the old GLBuffer.
-	try
-	{
-		new_element_array = new GLBuffer(array_size, nullptr, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-	}
-	catch (std::bad_alloc &)
-	{
-		throw love::Exception("Out of memory.");
-	}
-
-	// Allocation of the new GLBuffer succeeded.
-	// The old GLBuffer can now be deleted.
-	delete element_array;
-	element_array = new_element_array;
-	maxSize = size;
-	elementSize = elem_size;
-
-	switch (target_type)
-	{
-	case GL_UNSIGNED_SHORT:
-		fill<GLushort>();
-		break;
-	case GL_UNSIGNED_INT:
-		fill<GLuint>();
-		break;
-	}
+	return indexBuffer->getPointer(offset);
 }
 
 template <typename T>
-void VertexIndex::fill()
+void QuadIndices::fill()
 {
-	GLBuffer::Bind bind(*element_array);
-	GLBuffer::Mapper mapper(*element_array);
+	GLBuffer::Bind bind(*indexBuffer);
+	GLBuffer::Mapper mapper(*indexBuffer);
 
 	T *indices = (T *) mapper.get();
 
