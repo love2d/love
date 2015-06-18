@@ -1,3 +1,7 @@
+R"luastring"--(
+-- DO NOT REMOVE THE ABOVE LINE. It is used to load this file as a C++ string.
+-- There is a matching delimiter at the bottom of the file.
+
 --[[
 Copyright (c) 2006-2015 LOVE Development Team
 
@@ -254,3 +258,6 @@ local defaults = {
 }
 
 love.graphics._setDefaultShaderCode(defaults)
+
+-- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
+--)luastring"--"

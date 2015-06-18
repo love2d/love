@@ -26,11 +26,15 @@
 #include "font/Rasterizer.h"
 #include "filesystem/wrap_Filesystem.h"
 
-#include "scripts/graphics.lua.h"
 #include <cassert>
 #include <cstring>
 
 #include <algorithm>
+
+// Shove the wrap_Graphics.lua code directly into a raw string literal.
+static const char graphics_lua[] =
+#include "wrap_Graphics.lua"
+;
 
 namespace love
 {
@@ -1857,7 +1861,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 
 	int n = luax_register_module(L, w);
 
-	if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "graphics.lua") == 0)
+	if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "wrap_Graphics.lua") == 0)
 		lua_call(L, 0, 0);
 
 	return n;
