@@ -582,15 +582,22 @@ static Mesh::DrawMode luax_optmeshdrawmode(lua_State *L, int idx, Mesh::DrawMode
 	return def;
 }
 
-template <typename T>
-static inline size_t writeVertexData(lua_State *L, int startidx, int components, char *data)
+static inline size_t writeVertexByteData(lua_State *L, int startidx, int components, char *data)
 {
-	T *componentdata = (T *) data;
-
+	uint8 *componentdata = (uint8 *) data;
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (T) luaL_checknumber(L, startidx + i);
+		componentdata[i] = (uint8) luaL_optnumber(L, startidx + i, 255);
 
-	return sizeof(T) * components;
+	return sizeof(uint8) * components;
+}
+
+static inline size_t writeVertexFloatData(lua_State *L, int startidx, int components, char *data)
+{
+	float *componentdata = (float *) data;
+	for (int i = 0; i < components; i++)
+		componentdata[i] = (float) luaL_optnumber(L, startidx + i, 0);
+
+	return sizeof(float) * components;
 }
 
 static Mesh *newStandardMesh(lua_State *L)
@@ -760,11 +767,11 @@ static Mesh *newCustomMesh(lua_State *L)
 				switch (vertexformat[i].type)
 				{
 				case Mesh::DATA_BYTE:
-					writeVertexData<uint8>(L, -components, components, data);
+					writeVertexByteData(L, -components, components, data);
 					break;
 				case Mesh::DATA_FLOAT:
 				default:
-					writeVertexData<float>(L, -components, components, data);
+					writeVertexFloatData(L, -components, components, data);
 					break;
 				}
 

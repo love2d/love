@@ -39,14 +39,22 @@ Mesh *luax_checkmesh(lua_State *L, int idx)
 	return luax_checktype<Mesh>(L, idx, GRAPHICS_MESH_ID);
 }
 
-template <typename T>
-static inline size_t writeData(lua_State *L, int startidx, int components, char *data)
+static inline size_t writeByteData(lua_State *L, int startidx, int components, char *data)
 {
-	T *componentdata = (T *) data;
+	uint8 *componentdata = (uint8 *) data;
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (T) luaL_checknumber(L, startidx + i);
+		componentdata[i] = (uint8) luaL_optnumber(L, startidx + i, 255);
 
-	return sizeof(T) * components;
+	return sizeof(uint8) * components;
+}
+
+static inline size_t writeFloatData(lua_State *L, int startidx, int components, char *data)
+{
+	float *componentdata = (float *) data;
+	for (int i = 0; i < components; i++)
+		componentdata[i] = (float) luaL_optnumber(L, startidx + i, 0);
+
+	return sizeof(float) * components;
 }
 
 static inline char *writeAttributeData(lua_State *L, int startidx, Mesh::DataType type, int components, char *data)
@@ -54,9 +62,9 @@ static inline char *writeAttributeData(lua_State *L, int startidx, Mesh::DataTyp
 	switch (type)
 	{
 	case Mesh::DATA_BYTE:
-		return data + writeData<uint8>(L, startidx, components, data);
+		return data + writeByteData(L, startidx, components, data);
 	case Mesh::DATA_FLOAT:
-		return data + writeData<float>(L, startidx, components, data);
+		return data + writeFloatData(L, startidx, components, data);
 	default:
 		return data;
 	}
