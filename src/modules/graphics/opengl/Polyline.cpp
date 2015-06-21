@@ -75,12 +75,40 @@ void Polyline::render(const float *coords, size_t count, size_t size_hint, float
 	renderEdge(anchors, normals, s, len_s, ns, q, r, halfwidth);
 
 	vertex_count = normals.size();
-	vertices = new Vector[vertex_count];
+
+	size_t extra_vertices = 0;
+
+	if (draw_overdraw)
+	{
+		calc_overdraw_vertex_count(is_looping);
+
+		// When drawing overdraw lines using triangle strips, we want to add an
+		// extra degenerate triangle in between the core line and the overdraw
+		// line in order to break up the strip into two. This will let us draw
+		// everything in one draw call.
+		if (draw_mode == GL_TRIANGLE_STRIP)
+			extra_vertices = 2;
+	}
+
+	// Use a single linear array for both the regular and overdraw vertices.
+	vertices = new Vector[vertex_count + extra_vertices + overdraw_vertex_count];
+
 	for (size_t i = 0; i < vertex_count; ++i)
 		vertices[i] = anchors[i] + normals[i];
 
 	if (draw_overdraw)
+	{
+		overdraw = vertices + vertex_count + extra_vertices;
+		overdraw_vertex_start = vertex_count + extra_vertices;
 		render_overdraw(normals, pixel_size, is_looping);
+	}
+
+	// Add the degenerate triangle strip.
+	if (extra_vertices)
+	{
+		vertices[vertex_count + 0] = vertices[vertex_count - 1];
+		vertices[vertex_count + 1] = vertices[overdraw_vertex_start];
+	}
 }
 
 void NoneJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
@@ -238,10 +266,13 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vec
 	ns    = nt;
 }
 
-void Polyline::render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping)
+void Polyline::calc_overdraw_vertex_count(bool is_looping)
 {
 	overdraw_vertex_count = 2 * vertex_count + (is_looping ? 0 : 2);
-	overdraw = new Vector[overdraw_vertex_count];
+}
+
+void Polyline::render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping)
+{
 	// upper segment
 	for (size_t i = 0; i + 1 < vertex_count; i += 2)
 	{
@@ -284,10 +315,13 @@ void Polyline::render_overdraw(const std::vector<Vector> &normals, float pixel_s
 	}
 }
 
-void NoneJoinPolyline::render_overdraw(const std::vector<Vector> &/*normals*/, float pixel_size, bool /*is_looping*/)
+void NoneJoinPolyline::calc_overdraw_vertex_count(bool /*is_looping*/)
 {
 	overdraw_vertex_count = 4 * (vertex_count-2); // less than ideal
-	overdraw = new Vector[overdraw_vertex_count];
+}
+
+void NoneJoinPolyline::render_overdraw(const std::vector<Vector> &/*normals*/, float pixel_size, bool /*is_looping*/)
+{
 	for (size_t i = 2; i + 3 < vertex_count; i += 4)
 	{
 		Vector s = vertices[i] - vertices[i+3];
@@ -322,8 +356,6 @@ Polyline::~Polyline()
 {
 	if (vertices)
 		delete[] vertices;
-	if (overdraw)
-		delete[] overdraw;
 }
 
 void Polyline::draw()
@@ -331,13 +363,16 @@ void Polyline::draw()
 	OpenGL::TempDebugGroup debuggroup("Line draw");
 
 	GLushort *indices = nullptr;
+	Color *colors = nullptr;
+
+	size_t total_vertex_count = vertex_count;
+	if (overdraw)
+		total_vertex_count = overdraw_vertex_start + overdraw_vertex_count;
 
 	// TODO: We should probably be using a reusable index buffer.
 	if (use_quad_indices)
 	{
-		size_t numindices = (vertex_count / 4) * 6;
-		if (overdraw)
-			numindices = std::max(numindices, (overdraw_vertex_count / 4) * 6);
+		size_t numindices = (total_vertex_count / 4) * 6;
 
 		try
 		{
@@ -366,38 +401,39 @@ void Polyline::draw()
 
 	gl.prepareDraw();
 
-	// draw the core line
 	gl.bindTexture(gl.getDefaultTexture());
 	glEnableVertexAttribArray(ATTRIB_POS);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-
-	if (use_quad_indices)
-		gl.drawElements(draw_mode, (int) (vertex_count / 4) * 6, GL_UNSIGNED_SHORT, indices);
-	else
-		gl.drawArrays(draw_mode, 0, (int) vertex_count);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices + vertex_start);
 
 	if (overdraw)
 	{
-		// prepare colors:
-		Color *colors = new Color[overdraw_vertex_count];
-		fill_color_array(colors);
+		// Prepare colors. Set the core line's colors to white, and the overdraw
+		// line's colors to white on one side and transparent on the other.
+		colors = new Color[total_vertex_count];
+		memset(colors, 255, overdraw_vertex_start * sizeof(Color));
+		fill_color_array(colors + overdraw_vertex_start);
 
 		glEnableVertexAttribArray(ATTRIB_COLOR);
 		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, overdraw);
+	}
 
-		if (use_quad_indices)
-			gl.drawElements(draw_mode, (int) (overdraw_vertex_count / 4) * 6, GL_UNSIGNED_SHORT, indices);
-		else
-			gl.drawArrays(draw_mode, 0, (int) overdraw_vertex_count);
+	// Draw the core line and the overdraw in a single draw call. We can do this
+	// because the vertex array contains both the core line and the overdraw
+	// vertices.
+	if (use_quad_indices)
+		gl.drawElements(draw_mode, (int) (total_vertex_count / 4) * 6, GL_UNSIGNED_SHORT, indices);
+	else
+		gl.drawArrays(draw_mode, 0, (int) total_vertex_count);
 
+	glDisableVertexAttribArray(ATTRIB_POS);
+
+	if (overdraw)
+	{
 		glDisableVertexAttribArray(ATTRIB_COLOR);
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		delete[] colors;
 	}
-
-	glDisableVertexAttribArray(ATTRIB_POS);
 
 	if (indices)
 		delete[] indices;
