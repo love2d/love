@@ -10,12 +10,15 @@ Released: N/A
   * Added love.filesystem.setRequirePath and love.filesystem.getRequirePath.
   * Added love.filedropped and love.directorydropped event callback functions.
   * Added love.lowmemory event callback function, called when the app is running out of memory on mobile operating systems.
+  * Added love.textedited event callback function, called when the user is compositing text (e.g. via an IME.)
   * Added love.wheelmoved event callback function (replaces "wu" and "wd" constants for love.mousepressed.)
   * Added love.mouse.hasCursor.
   * Added a boolean argument to love.mousepressed and love.mousereleased indicating whether the button event originated from a touch press.
   * Added more mouse button constants ("x3", "x4", and "x5".)
   * Added optional x/y/width/height arguments to love.keyboard.setTextInput. They tell the system where text will show up so on-screen keyboards can avoid that area.
   * Added Source:getType (replaces Source:isStatic.)
+  * Added love.graphics.ellipse.
+  * Added rounded-rectangle support to love.graphics.rectangle.
   * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
   * Added love.graphics.getSystemLimits (replaces love.graphics.getSystemLimit.)
   * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
@@ -38,9 +41,11 @@ Released: N/A
   * Added an optional spacing argument to love.graphics.newImageFont, which applies additional spacing to all rendered glyphs.
   * Added Font:setFallbacks.
   * Added love.window.maximize.
+  * Added love.window.requestAttention.
   * Added BezierCurve:renderSegment and BezierCurve:removePoint.
   * Added BezierCurve:getSegment.
   * Added love.math.compress and love.math.decompress.
+  * Added Channel:performAtomic.
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
   * Removed callback variant of love.filesystem.getDirectoryItems.
@@ -59,8 +64,7 @@ Released: N/A
   * Removed Mesh:getVertices.
   * Removed Mesh:setVertexColors and Mesh:hasVertexColors (use Mesh:setAttributeEnabled("VertexColor", enable) instead.)
   * Removed functions deprecated in LOVE 0.9.x:
-    * Removed Canvas:getType (replaced by Canvas:getFormat.)
-    * Removed love.graphics.getMaxTextureSize/getMaxImageSize (replaced by love.graphics.getSystemLimits.)
+    * Removed love.graphics.getMaxImageSize (replaced by love.graphics.getSystemLimits.)
     * Removed love.graphics.getMaxPointSize (replaced by love.graphics.getSystemLimits.)
     * Removed Mesh:set/getImage, SpriteBatch:set/getImage, and ParticleSystem:set/getImage (replaced by set/getTexture.)
     * Removed SpriteBatch:bind/unbind.
@@ -78,7 +82,9 @@ Released: N/A
   * Renamed love.image's CompressedData type to CompressedImageData.
 
   * Fixed utf8.char.
+  * Fixed detection of fused love games.
   * Fixed love.keyboard.getKeyFromScancode crashing when an invalid scancode is given.
+  * Fixed decoding of 8-bit WAV files.
   * Fixed love.audio.stop() not rewinding streaming Sources.
   * Fixed the stencil buffer in Canvases when an unsupported MSAA value is used to create the Canvas.
   * Fixed love.graphics.getColorMask.
@@ -98,6 +104,7 @@ Released: N/A
   * Updated ImageFonts to no longer treat separator pixels as spacing.
   * Updated the default font to use less memory.
   * Updated Font:getWrap's second return value to be a table containing the text split into lines.
+  * Updated love.graphics.setColor to affect all drawn objects, including ParticleSystems, SpriteBatches, and Meshes.
   * Updated the default fullscreen type to be "desktop" rather than "exclusive".
   * Updated the minimum runtime system requirements of LOVE to require OpenGL 2.1 or OpenGL ES 2 support.
   * Updated the pixel shader effect function so screen_coords.y is 0 at the top of the screen instead of the bottom.
@@ -105,7 +112,8 @@ Released: N/A
   * Updated Images to require setting the mipmaps flag to true on creation in order to use mipmaps.
   * Updated Images to allow mipmaps for non-power-of-two sizes.
   * Updated the arguments for the standard variants of love.graphics.newMesh. They're now newMesh(vertices [, drawmode, usage]) and newMesh(vertexcount [, drawmode, usage]).
-  * Updated Mesh:setVertex to require every component of every attribute in the vertex, instead of having default values.
+  * Updated the width/height variant of love.image.newImageData to take an additional optional string containing raw pixel data.
+  * Updated ImageData and SoundData methods to use efficient LuaJIT FFI code, when the JIT compiler is enabled.
 
 LOVE 0.9.2 [Baby Inspector]
 ---------------------------
