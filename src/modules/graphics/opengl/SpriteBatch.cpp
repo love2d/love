@@ -236,8 +236,6 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
 	buffer_used_offset = buffer_used_size = 0;
 
-	Color curcolor = gl.getColor();
-
 	// Apply per-sprite color, if a color is set.
 	if (color)
 	{
@@ -260,7 +258,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	if (color)
 	{
 		glDisableVertexAttribArray(ATTRIB_COLOR);
-		gl.setColor(curcolor);
+		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 	}
 }
 

@@ -654,7 +654,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	{
 		glDisableVertexAttribArray(attrib);
 		if (attrib == ATTRIB_COLOR)
-			gl.setColor(gl.getColor());
+			glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 	}
 }
 

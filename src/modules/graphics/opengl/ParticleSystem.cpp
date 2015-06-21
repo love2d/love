@@ -854,8 +854,6 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 
-	Color curcolor = gl.getColor();
-
 	static Matrix t;
 	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 
@@ -916,7 +914,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glDisableVertexAttribArray(ATTRIB_POS);
 	glDisableVertexAttribArray(ATTRIB_COLOR);
 
-	gl.setColor(curcolor);
+	glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void ParticleSystem::update(float dt)

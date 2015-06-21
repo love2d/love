@@ -56,6 +56,7 @@ enum VertexAttribID
 	ATTRIB_POS = 0,
 	ATTRIB_TEXCOORD,
 	ATTRIB_COLOR,
+	ATTRIB_CONSTANTCOLOR,
 	ATTRIB_MAX_ENUM
 };
 
@@ -195,16 +196,6 @@ public:
 	 **/
 	void drawArrays(GLenum mode, GLint first, GLsizei count);
 	void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
-
-	/**
-	 * Sets the current constant color.
-	 **/
-	void setColor(const Color &c);
-
-	/**
-	 * Gets the current constant color.
-	 **/
-	Color getColor() const;
 
 	/**
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
@@ -356,9 +347,6 @@ private:
 	// Tracked OpenGL state.
 	struct
 	{
-		// Current constant color.
-		Color color;
-
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> boundTextures;
 

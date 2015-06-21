@@ -783,7 +783,7 @@ Text *Graphics::newText(Font *font, const std::string &text)
 
 void Graphics::setColor(Color c)
 {
-	gl.setColor(c);
+	glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
 	states.back().color = c;
 }
 

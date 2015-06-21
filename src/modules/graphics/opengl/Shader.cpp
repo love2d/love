@@ -282,7 +282,7 @@ bool Shader::loadVolatile()
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
 
-	// Retreive all active uniform variables in this shader from OpenGL.
+	// Get all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
 
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
@@ -869,6 +869,7 @@ StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
 	{"VertexPosition", ATTRIB_POS},
 	{"VertexTexCoord", ATTRIB_TEXCOORD},
 	{"VertexColor", ATTRIB_COLOR},
+	{"ConstantColor", ATTRIB_CONSTANTCOLOR},
 };
 
 StringMap<VertexAttribID, ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));

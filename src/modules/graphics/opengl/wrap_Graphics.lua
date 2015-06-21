@@ -71,6 +71,7 @@ GLSL.VERTEX = {
 attribute vec4 VertexPosition;
 attribute vec4 VertexTexCoord;
 attribute vec4 VertexColor;
+attribute vec4 ConstantColor;
 
 varying vec4 VaryingTexCoord;
 varying vec4 VaryingColor;
@@ -82,7 +83,7 @@ uniform mediump float love_PointSize;
 	FOOTER = [[
 void main() {
 	VaryingTexCoord = VertexTexCoord;
-	VaryingColor = VertexColor;
+	VaryingColor = VertexColor * ConstantColor;
 #ifdef GL_ES
 	gl_PointSize = love_PointSize;
 #endif

@@ -86,9 +86,9 @@ void OpenGL::setupContext()
 
 	initMaxValues();
 
-	state.color = Color(255, 255, 255, 255);
 	GLfloat glcolor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
+	glVertexAttrib4fv(ATTRIB_CONSTANTCOLOR, glcolor);
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -317,10 +317,11 @@ void OpenGL::prepareDraw()
 	TempDebugGroup debuggroup("Prepare OpenGL draw");
 
 	Shader *shader = Shader::current;
+
 	if (shader != nullptr)
 	{
-		// Make sure the active shader has the correct values for its
-		// love-provided uniforms.
+		// Make sure the active shader has the correct values for its love-
+		// provided uniforms.
 		shader->checkSetScreenParams();
 	}
 
@@ -372,19 +373,6 @@ void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *i
 {
 	glDrawElements(mode, count, type, indices);
 	++stats.drawCalls;
-}
-
-void OpenGL::setColor(const Color &c)
-{
-	GLfloat glc[] = {c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f};
-	glVertexAttrib4fv(ATTRIB_COLOR, glc);
-
-	state.color = c;
-}
-
-Color OpenGL::getColor() const
-{
-	return state.color;
 }
 
 void OpenGL::setViewport(const OpenGL::Viewport &v)

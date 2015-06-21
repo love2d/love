@@ -71,7 +71,7 @@ public:
 
 protected:
 	virtual void render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping);
-	virtual void fill_color_array(Color *colors, const Color &c);
+	virtual void fill_color_array(Color *colors);
 
 	/** Calculate line boundary points.
 	 *
@@ -120,7 +120,7 @@ public:
 
 protected:
 	virtual void render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping);
-	virtual void fill_color_array(Color *colors, const Color &c);
+	virtual void fill_color_array(Color *colors);
 	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
 	                        Vector &s, float &len_s, Vector &ns,
 	                        const Vector &q, const Vector &r, float hw);

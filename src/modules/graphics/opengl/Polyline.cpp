@@ -379,9 +379,8 @@ void Polyline::draw()
 	if (overdraw)
 	{
 		// prepare colors:
-		Color c = gl.getColor();
 		Color *colors = new Color[overdraw_vertex_count];
-		fill_color_array(colors, c);
+		fill_color_array(colors);
 
 		glEnableVertexAttribArray(ATTRIB_COLOR);
 		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
@@ -393,10 +392,9 @@ void Polyline::draw()
 			gl.drawArrays(draw_mode, 0, (int) overdraw_vertex_count);
 
 		glDisableVertexAttribArray(ATTRIB_COLOR);
+		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		delete[] colors;
-
-		gl.setColor(c);
 	}
 
 	glDisableVertexAttribArray(ATTRIB_POS);
@@ -405,23 +403,21 @@ void Polyline::draw()
 		delete[] indices;
 }
 
-void Polyline::fill_color_array(Color *colors, const Color &c)
+void Polyline::fill_color_array(Color *colors)
 {
 	for (size_t i = 0; i < overdraw_vertex_count; ++i)
 	{
-		colors[i] = c;
 		// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
-		colors[i].a *= GLubyte((i+1) % 2);
+		colors[i] = {255, 255, 255, GLubyte(255 * ((i+1) % 2))};
 	}
 }
 
-void NoneJoinPolyline::fill_color_array(Color *colors, const Color &c)
+void NoneJoinPolyline::fill_color_array(Color *colors)
 {
 	for (size_t i = 0; i < overdraw_vertex_count; ++i)
 	{
-		colors[i] = c;
 		// if (i % 4 == 1 || i % 4 == 2) colors[i].a = 0
-		colors[i].a *= GLubyte((i+1) % 4 < 2);
+		colors[i] = {255, 255, 255, GLubyte(255 * ((i+1) % 4 < 2))};
 	}
 }
 
