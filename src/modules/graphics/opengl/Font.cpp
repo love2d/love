@@ -564,25 +564,12 @@ void Font::printv(const Matrix &t, const std::vector<DrawCommand> &drawcommands,
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	glEnableVertexAttribArray(ATTRIB_POS);
-	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), &vertices[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), &vertices[0].s);
 
-	try
-	{
-		drawVertices(drawcommands);
-	}
-	catch (love::Exception &)
-	{
-		glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-		glDisableVertexAttribArray(ATTRIB_POS);
-		throw;
-	}
-
-	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-	glDisableVertexAttribArray(ATTRIB_POS);
+	drawVertices(drawcommands);
 }
 
 void Font::print(const std::string &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
@@ -590,8 +577,7 @@ void Font::print(const std::string &text, float x, float y, float angle, float s
 	std::vector<GlyphVertex> vertices;
 	std::vector<DrawCommand> drawcommands = generateVertices(text, vertices);
 
-	Matrix t;
-	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	Matrix t(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
 
 	printv(t, drawcommands, vertices);
 }
@@ -601,8 +587,7 @@ void Font::printf(const std::string &text, float x, float y, float wrap, AlignMo
 	std::vector<GlyphVertex> vertices;
 	std::vector<DrawCommand> drawcommands = generateVerticesFormatted(text, wrap, align, vertices);
 
-	Matrix t;
-	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	Matrix t(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
 
 	printv(t, drawcommands, vertices);
 }

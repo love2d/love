@@ -402,20 +402,25 @@ void Polyline::draw()
 	gl.prepareDraw();
 
 	gl.bindTexture(gl.getDefaultTexture());
-	glEnableVertexAttribArray(ATTRIB_POS);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices + vertex_start);
+
+	uint32 enabledattribs = ATTRIBFLAG_POS;
 
 	if (overdraw)
 	{
-		// Prepare colors. Set the core line's colors to white, and the overdraw
+		// Prepare per-vertex colors. Set the core to white, and the overdraw
 		// line's colors to white on one side and transparent on the other.
 		colors = new Color[total_vertex_count];
 		memset(colors, 255, overdraw_vertex_start * sizeof(Color));
 		fill_color_array(colors + overdraw_vertex_start);
 
-		glEnableVertexAttribArray(ATTRIB_COLOR);
 		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
+
+		enabledattribs |= ATTRIBFLAG_COLOR;
 	}
+
+	gl.useVertexAttribArrays(enabledattribs);
+
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices + vertex_start);
 
 	// Draw the core line and the overdraw in a single draw call. We can do this
 	// because the vertex array contains both the core line and the overdraw
@@ -425,15 +430,8 @@ void Polyline::draw()
 	else
 		gl.drawArrays(draw_mode, 0, (int) total_vertex_count);
 
-	glDisableVertexAttribArray(ATTRIB_POS);
-
 	if (overdraw)
-	{
-		glDisableVertexAttribArray(ATTRIB_COLOR);
-		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
-
 		delete[] colors;
-	}
 
 	if (indices)
 		delete[] indices;

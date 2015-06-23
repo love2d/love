@@ -232,8 +232,7 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	const size_t tex_offset = offsetof(Font::GlyphVertex, s);
 	const size_t stride = sizeof(Font::GlyphVertex);
 
-	Matrix t;
-	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	Matrix t(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
@@ -247,22 +246,9 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(tex_offset));
 	}
 
-	glEnableVertexAttribArray(ATTRIB_POS);
-	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
-	try
-	{
-		font->drawVertices(draw_commands);
-	}
-	catch (love::Exception &)
-	{
-		glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-		glDisableVertexAttribArray(ATTRIB_POS);
-		throw;
-	}
-
-	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-	glDisableVertexAttribArray(ATTRIB_POS);
+	font->drawVertices(draw_commands);
 }
 
 void Text::setFont(Font *f)

@@ -90,6 +90,11 @@ void OpenGL::setupContext()
 	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
 	glVertexAttrib4fv(ATTRIB_CONSTANTCOLOR, glcolor);
 
+	GLint maxvertexattribs = 1;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxvertexattribs);
+	state.enabledAttribArrays = 1u << uint32(maxvertexattribs - 1);
+	useVertexAttribArrays(0);
+
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
 
@@ -373,6 +378,38 @@ void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *i
 {
 	glDrawElements(mode, count, type, indices);
 	++stats.drawCalls;
+}
+
+void OpenGL::useVertexAttribArrays(uint32 arraybits)
+{
+	uint32 diff = arraybits ^ state.enabledAttribArrays;
+
+	if (diff == 0)
+		return;
+
+	// Max 32 attributes. As of when this was written, no GL driver exposes more
+	// than 32. Lets hope that doesn't change...
+	for (uint32 i = 0; i < 32; i++)
+	{
+		uint32 bit = 1 << i;
+
+		if (diff & bit)
+		{
+			if (arraybits & bit)
+				glEnableVertexAttribArray(i);
+			else
+				glDisableVertexAttribArray(i);
+		}
+	}
+
+	state.enabledAttribArrays = arraybits;
+
+	// glDisableVertexAttribArray will make the constant value for a vertex
+	// attribute undefined. We rely on the per-vertex color attribte being white
+	// when no per-vertex color is used, so we set it here.
+	// FIXME: Is there a better place to do this?
+	if ((diff & ATTRIBFLAG_COLOR) && !(arraybits & ATTRIBFLAG_COLOR))
+		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void OpenGL::setViewport(const OpenGL::Viewport &v)

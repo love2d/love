@@ -1088,10 +1088,9 @@ void Graphics::point(float x, float y)
 
 	gl.prepareDraw();
 	gl.bindTexture(gl.getDefaultTexture());
-	glEnableVertexAttribArray(ATTRIB_POS);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coord);
 	gl.drawArrays(GL_POINTS, 0, 1);
-	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
 void Graphics::polyline(const float *coords, size_t count)
@@ -1247,10 +1246,9 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 
 		gl.prepareDraw();
 		gl.bindTexture(gl.getDefaultTexture());
-		glEnableVertexAttribArray(ATTRIB_POS);
+		gl.useVertexAttribArrays(ATTRIBFLAG_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
 		gl.drawArrays(GL_TRIANGLE_FAN, 0, points + 2);
-		glDisableVertexAttribArray(ATTRIB_POS);
 	}
 
 	delete[] coords;
@@ -1273,10 +1271,9 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 
 		gl.prepareDraw();
 		gl.bindTexture(gl.getDefaultTexture());
-		glEnableVertexAttribArray(ATTRIB_POS);
+		gl.useVertexAttribArrays(ATTRIBFLAG_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
 		gl.drawArrays(GL_TRIANGLE_FAN, 0, (int)count/2-1); // opengl will close the polygon for us
-		glDisableVertexAttribArray(ATTRIB_POS);
 	}
 }
 

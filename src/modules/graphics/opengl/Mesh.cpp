@@ -546,10 +546,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 {
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
 
-	std::vector<GLint> attriblocations;
-	attriblocations.reserve(attachedAttributes.size());
-
-	bool hasposattrib = false;
+	uint32 enabledattribs = 0;
 
 	for (const auto &attrib : attachedAttributes)
 	{
@@ -585,23 +582,18 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		GLenum datatype = getGLDataType(format.type);
 		GLboolean normalized = (datatype == GL_UNSIGNED_BYTE);
 
-		glEnableVertexAttribArray(attriblocation);
 		glVertexAttribPointer(attriblocation, format.components, datatype, normalized, mesh->vertexStride, gloffset);
 
-		attriblocations.push_back(attriblocation);
-
-		if (attriblocation == ATTRIB_POS)
-			hasposattrib = true;
+		enabledattribs |= 1 << uint32(attriblocation);
 	}
 
-	if (!hasposattrib)
+	if (!(enabledattribs & ATTRIBFLAG_POS))
 	{
-		for (GLint attrib : attriblocations)
-			glDisableVertexAttribArray(attrib);
-
 		// Not supported on all platforms or GL versions at least, I believe.
 		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
 	}
+
+	gl.useVertexAttribArrays(enabledattribs);
 
 	if (texture.get())
 		gl.bindTexture(*(GLuint *) texture->getHandle());
@@ -648,13 +640,6 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 
 		// Normal non-indexed drawing (no custom vertex map.)
 		gl.drawArrays(getGLDrawMode(drawMode), min, max - min + 1);
-	}
-
-	for (GLint attrib : attriblocations)
-	{
-		glDisableVertexAttribArray(attrib);
-		if (attrib == ATTRIB_COLOR)
-			glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 	}
 }
 

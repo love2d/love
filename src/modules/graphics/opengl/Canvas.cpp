@@ -307,31 +307,25 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 
 	gl.bindTexture(texture);
 
-	glEnableVertexAttribArray(ATTRIB_POS);
-	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
 
 	gl.prepareDraw();
 	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
 void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	static Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	drawv(t, vertices);
 }
 
 void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	static Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	const Vertex *v = quad->getVertices();
 	drawv(t, v);

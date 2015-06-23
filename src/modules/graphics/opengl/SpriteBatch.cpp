@@ -236,30 +236,22 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	array_buf->unmap(buffer_used_offset, buffer_used_size);
 	buffer_used_offset = buffer_used_size = 0;
 
+	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
+
 	// Apply per-sprite color, if a color is set.
 	if (color)
 	{
-		glEnableVertexAttribArray(ATTRIB_COLOR);
+		enabledattribs |= ATTRIBFLAG_COLOR;
 		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), array_buf->getPointer(color_offset));
 	}
 
-	glEnableVertexAttribArray(ATTRIB_POS);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(pos_offset));
-
-	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
+
+	gl.useVertexAttribArrays(enabledattribs);
 
 	gl.prepareDraw();
 	gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(next), quad_indices.getType(), quad_indices.getPointer(0));
-
-	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-	glDisableVertexAttribArray(ATTRIB_POS);
-
-	if (color)
-	{
-		glDisableVertexAttribArray(ATTRIB_COLOR);
-		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
-	}
 }
 
 void SpriteBatch::addv(const Vertex *v, const Matrix &m, int index)
