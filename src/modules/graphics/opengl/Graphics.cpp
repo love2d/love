@@ -101,7 +101,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setColor(s.color);
 	setBackgroundColor(s.backgroundColor);
 
-	setBlendMode(s.blendMode);
+	setBlendMode(s.blendMode, s.blendMultiplyAlpha);
 
 	setLineWidth(s.lineWidth);
 	setLineStyle(s.lineStyle);
@@ -137,8 +137,8 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	if (*(uint32 *) &s.backgroundColor.r != *(uint32 *) &cur.backgroundColor.r)
 		setBackgroundColor(s.backgroundColor);
 
-	if (s.blendMode != cur.blendMode)
-		setBlendMode(s.blendMode);
+	if (s.blendMode != cur.blendMode || s.blendMultiplyAlpha != cur.blendMultiplyAlpha)
+		setBlendMode(s.blendMode, s.blendMultiplyAlpha);
 
 	// These are just simple assignments.
 	setLineWidth(s.lineWidth);
@@ -923,7 +923,7 @@ Graphics::ColorMask Graphics::getColorMask() const
 	return states.back().colorMask;
 }
 
-void Graphics::setBlendMode(Graphics::BlendMode mode)
+void Graphics::setBlendMode(BlendMode mode, bool multiplyalpha)
 {
 	GLenum func   = GL_FUNC_ADD;
 	GLenum srcRGB = GL_ONE;
@@ -934,22 +934,18 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 	switch (mode)
 	{
 	case BLEND_ALPHA:
-		srcRGB = GL_SRC_ALPHA;
-		srcA = GL_ONE;
+		srcRGB = srcA = GL_ONE;
 		dstRGB = dstA = GL_ONE_MINUS_SRC_ALPHA;
 		break;
 	case BLEND_MULTIPLY:
 		srcRGB = srcA = GL_DST_COLOR;
 		dstRGB = dstA = GL_ZERO;
 		break;
-	case BLEND_PREMULTIPLIED:
-		srcRGB = srcA = GL_ONE;
-		dstRGB = dstA = GL_ONE_MINUS_SRC_ALPHA;
-		break;
 	case BLEND_SUBTRACT:
 		func = GL_FUNC_REVERSE_SUBTRACT;
 	case BLEND_ADD:
-		srcRGB = srcA = GL_SRC_ALPHA;
+		srcRGB = GL_ONE;
+		srcA = GL_SRC_ALPHA; // FIXME: This isn't correct...
 		dstRGB = dstA = GL_ONE;
 		break;
 	case BLEND_SCREEN:
@@ -963,14 +959,20 @@ void Graphics::setBlendMode(Graphics::BlendMode mode)
 		break;
 	}
 
+	// We can only do alpha-multiplication when srcRGB would have been unmodified.
+	if (srcRGB == GL_ONE && multiplyalpha)
+		srcRGB = GL_SRC_ALPHA;
+
 	glBlendEquation(func);
 	glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA);
 
 	states.back().blendMode = mode;
+	states.back().blendMultiplyAlpha = multiplyalpha;
 }
 
-Graphics::BlendMode Graphics::getBlendMode() const
+Graphics::BlendMode Graphics::getBlendMode(bool &multiplyalpha) const
 {
+	multiplyalpha = states.back().blendMultiplyAlpha;
 	return states.back().blendMode;
 }
 
@@ -1493,6 +1495,7 @@ Graphics::DisplayState::DisplayState()
 	: color(255, 255, 255, 255)
 	, backgroundColor(0, 0, 0, 255)
 	, blendMode(BLEND_ALPHA)
+	, blendMultiplyAlpha(true)
 	, lineWidth(1.0f)
 	, lineStyle(LINE_SMOOTH)
 	, lineJoin(LINE_JOIN_MITER)
@@ -1515,6 +1518,7 @@ Graphics::DisplayState::DisplayState(const DisplayState &other)
 	: color(other.color)
 	, backgroundColor(other.backgroundColor)
 	, blendMode(other.blendMode)
+	, blendMultiplyAlpha(other.blendMultiplyAlpha)
 	, lineWidth(other.lineWidth)
 	, lineStyle(other.lineStyle)
 	, lineJoin(other.lineJoin)
@@ -1543,6 +1547,7 @@ Graphics::DisplayState &Graphics::DisplayState::operator = (const DisplayState &
 	color = other.color;
 	backgroundColor = other.backgroundColor;
 	blendMode = other.blendMode;
+	blendMultiplyAlpha = other.blendMultiplyAlpha;
 	lineWidth = other.lineWidth;
 	lineStyle = other.lineStyle;
 	lineJoin = other.lineJoin;

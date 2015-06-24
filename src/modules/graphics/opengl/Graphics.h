@@ -232,12 +232,12 @@ public:
 	/**
 	 * Sets the current blend mode.
 	 **/
-	void setBlendMode(BlendMode mode);
+	void setBlendMode(BlendMode mode, bool multiplyalpha);
 
 	/**
 	 * Gets the current blend mode.
 	 **/
-	BlendMode getBlendMode() const;
+	BlendMode getBlendMode(bool &multiplyalpha) const;
 
 	/**
 	 * Sets the default filter for images, canvases, and fonts.
@@ -467,6 +467,7 @@ private:
 		Color backgroundColor;
 
 		BlendMode blendMode;
+		bool blendMultiplyAlpha;
 
 		float lineWidth;
 		LineStyle lineStyle;

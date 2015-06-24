@@ -967,7 +967,9 @@ int w_setBlendMode(lua_State *L)
 	if (!Graphics::getConstant(str, mode))
 		return luaL_error(L, "Invalid blend mode: %s", str);
 
-	luax_catchexcept(L, [&](){ instance()->setBlendMode(mode); });
+	bool multiplyalpha = luax_optboolean(L, 2, true);
+
+	luax_catchexcept(L, [&](){ instance()->setBlendMode(mode, multiplyalpha); });
 	return 0;
 }
 
@@ -975,14 +977,16 @@ int w_getBlendMode(lua_State *L)
 {
 	const char *str;
 	Graphics::BlendMode mode;
+	bool multiplyalpha = false;
 
-	luax_catchexcept(L, [&](){ mode = instance()->getBlendMode(); });
+	luax_catchexcept(L, [&](){ mode = instance()->getBlendMode(multiplyalpha); });
 
 	if (!Graphics::getConstant(mode, str))
 		return luaL_error(L, "Unknown blend mode");
 
 	lua_pushstring(L, str);
-	return 1;
+	lua_pushboolean(L, multiplyalpha);
+	return 2;
 }
 
 int w_setDefaultFilter(lua_State *L)

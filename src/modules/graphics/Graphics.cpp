@@ -123,7 +123,6 @@ StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendM
 	{ "add", BLEND_ADD },
 	{ "subtract", BLEND_SUBTRACT },
 	{ "multiply", BLEND_MULTIPLY },
-	{ "premultiplied", BLEND_PREMULTIPLIED },
 	{ "screen", BLEND_SCREEN },
 	{ "replace", BLEND_REPLACE },
 };
