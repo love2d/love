@@ -279,10 +279,7 @@ function love.boot()
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, exepath)
-	local is_fused_game = can_has_game
-	if love.arg.options.fused.set then
-		is_fused_game = true
-	end
+	local is_fused_game = can_has_game or love.arg.options.fused.set
 
 	love.filesystem.setFused(is_fused_game)
 
@@ -290,23 +287,25 @@ function love.boot()
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local nouri = o.game.arg[1]
 
-		-- Use the realdir to determine the identity, if we can
-		if love.filesystem.isFile("main.lua") then
-			nouri = love.filesystem.getRealDirectory("main.lua")
-		end
-
 		if nouri:sub(1, 7) == "file://" then
 			nouri = uridecode(nouri:sub(8))
 		end
 
 		local full_source =  love.path.getfull(nouri)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
-		
+
 		-- Use the name of the source .love as the identity for now.
 		identity = love.path.leaf(full_source)
 	else
 		-- Use the name of the exe as the identity for now.
 		identity = love.path.leaf(exepath)
+	end
+
+	-- Try to use the archive containing main.lua as the identity name. It
+	-- might not be available, in which case the fallbacks above are used.
+	local realdir = love.filesystem.getRealDirectory("main.lua")
+	if realdir then
+		identity = love.path.leaf(realdir)
 	end
 
 	identity = identity:gsub("^([%.]+)", "") -- strip leading "."'s
