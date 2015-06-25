@@ -325,6 +325,8 @@ void OpenGL::prepareDraw()
 	if (Shader::current != nullptr)
 		Shader::current->checkSetBuiltinUniforms();
 
+	// We use glLoadMatrix rather than uniforms for our matrices when possible,
+	// because uniform uploads can be significantly slower than glLoadMatrix.
 	if (GLAD_VERSION_1_0)
 	{
 		const Matrix &curproj = matrices.projection.back();

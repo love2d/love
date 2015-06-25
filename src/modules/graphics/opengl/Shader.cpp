@@ -696,6 +696,8 @@ void Shader::checkSetBuiltinUniforms()
 {
 	checkSetScreenParams();
 
+	// We use a more efficient method for sending transformation matrices to
+	// the GPU on desktop GL.
 	if (GLAD_ES_VERSION_2_0)
 	{
 		checkSetPointSize(gl.getPointSize());
