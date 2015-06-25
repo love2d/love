@@ -321,31 +321,15 @@ void OpenGL::prepareDraw()
 {
 	TempDebugGroup debuggroup("Prepare OpenGL draw");
 
-	Shader *shader = Shader::current;
+	// Make sure the active shader's love-provided uniforms are up to date.
+	if (Shader::current != nullptr)
+		Shader::current->checkSetBuiltinUniforms();
 
-	if (shader != nullptr)
+	if (GLAD_VERSION_1_0)
 	{
-		// Make sure the active shader has the correct values for its love-
-		// provided uniforms.
-		shader->checkSetScreenParams();
-	}
+		const Matrix &curproj = matrices.projection.back();
+		const Matrix &curxform = matrices.transform.back();
 
-	const Matrix &curproj = matrices.projection.back();
-	const Matrix &curxform = matrices.transform.back();
-
-	if (GLAD_ES_VERSION_2_0 && shader)
-	{
-		// Send built-in uniforms to the current shader.
-		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_MATRIX, 4, curxform.getElements(), 1);
-		shader->sendBuiltinMatrix(Shader::BUILTIN_PROJECTION_MATRIX, 4, curproj.getElements(), 1);
-
-		Matrix tp_matrix(curproj * curxform);
-		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX, 4, tp_matrix.getElements(), 1);
-
-		shader->checkSetPointSize(state.pointSize);
-	}
-	else if (GLAD_VERSION_1_0)
-	{
 		const Matrix &lastproj = state.lastProjectionMatrix;
 		const Matrix &lastxform = state.lastTransformMatrix;
 

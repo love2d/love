@@ -180,11 +180,10 @@ public:
 	 * Internal use only.
 	 **/
 	bool hasVertexAttrib(VertexAttribID attrib) const;
-	bool hasBuiltinUniform(BuiltinUniform builtin) const;
-	bool sendBuiltinMatrix(BuiltinUniform builtin, int size, const GLfloat *m, int count);
-	bool sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *m, int count);
+
 	void checkSetScreenParams();
 	void checkSetPointSize(float size);
+	void checkSetBuiltinUniforms();
 
 	const std::map<std::string, Object *> &getBoundRetainables() const;
 
@@ -259,6 +258,9 @@ private:
 	OpenGL::Viewport lastViewport;
 
 	float lastPointSize;
+
+	Matrix lastTransformMatrix;
+	Matrix lastProjectionMatrix;
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
