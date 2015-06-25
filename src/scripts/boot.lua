@@ -289,9 +289,16 @@ function love.boot()
 	local identity = ""
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local nouri = o.game.arg[1]
+
+		-- Use the realdir to determine the identity, if we can
+		if love.filesystem.isFile("main.lua") then
+			nouri = love.filesystem.getRealDirectory("main.lua")
+		end
+
 		if nouri:sub(1, 7) == "file://" then
 			nouri = uridecode(nouri:sub(8))
 		end
+
 		local full_source =  love.path.getfull(nouri)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
 		
