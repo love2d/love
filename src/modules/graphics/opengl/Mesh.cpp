@@ -600,7 +600,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	else
 		gl.bindTexture(gl.getDefaultTexture());
 
-	Matrix m(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= m;

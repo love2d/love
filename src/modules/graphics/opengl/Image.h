@@ -136,7 +136,7 @@ public:
 
 private:
 
-	void drawv(const Matrix &t, const Vertex *v);
+	void drawv(const Matrix4 &t, const Vertex *v);
 
 	void preload();
 

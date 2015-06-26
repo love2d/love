@@ -211,7 +211,7 @@ private:
 	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
-	void printv(const Matrix &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
+	void printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
 

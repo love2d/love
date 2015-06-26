@@ -32,17 +32,17 @@ namespace love
 // | e2 e6 e10 e14 |
 // | e3 e7 e11 e15 |
 
-Matrix::Matrix()
+Matrix4::Matrix4()
 {
 	setIdentity();
 }
 
-Matrix::Matrix(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+Matrix4::Matrix4(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 }
 
-Matrix::~Matrix()
+Matrix4::~Matrix4()
 {
 }
 
@@ -55,9 +55,9 @@ Matrix::~Matrix()
 // | e2 e6 e10 e14 |
 // | e3 e7 e11 e15 |
 
-Matrix Matrix::operator * (const Matrix &m) const
+Matrix4 Matrix4::operator * (const Matrix4 &m) const
 {
-	Matrix t;
+	Matrix4 t;
 
 	t.e[0] = (e[0]*m.e[0]) + (e[4]*m.e[1]) + (e[8]*m.e[2]) + (e[12]*m.e[3]);
 	t.e[4] = (e[0]*m.e[4]) + (e[4]*m.e[5]) + (e[8]*m.e[6]) + (e[12]*m.e[7]);
@@ -82,31 +82,31 @@ Matrix Matrix::operator * (const Matrix &m) const
 	return t;
 }
 
-void Matrix::operator *= (const Matrix &m)
+void Matrix4::operator *= (const Matrix4 &m)
 {
-	Matrix t = (*this) * m;
+	Matrix4 t = (*this) * m;
 	memcpy((void *)this->e, (void *)t.e, sizeof(float)*16);
 }
 
-const float *Matrix::getElements() const
+const float *Matrix4::getElements() const
 {
 	return e;
 }
 
-void Matrix::setIdentity()
+void Matrix4::setIdentity()
 {
 	memset(e, 0, sizeof(float)*16);
 	e[0] = e[5] = e[10] = e[15] = 1;
 }
 
-void Matrix::setTranslation(float x, float y)
+void Matrix4::setTranslation(float x, float y)
 {
 	setIdentity();
 	e[12] = x;
 	e[13] = y;
 }
 
-void Matrix::setRotation(float rad)
+void Matrix4::setRotation(float rad)
 {
 	setIdentity();
 	float c = cosf(rad), s = sinf(rad);
@@ -116,21 +116,21 @@ void Matrix::setRotation(float rad)
 	e[5] = c;
 }
 
-void Matrix::setScale(float sx, float sy)
+void Matrix4::setScale(float sx, float sy)
 {
 	setIdentity();
 	e[0] = sx;
 	e[5] = sy;
 }
 
-void Matrix::setShear(float kx, float ky)
+void Matrix4::setShear(float kx, float ky)
 {
 	setIdentity();
 	e[1] = ky;
 	e[4] = kx;
 }
 
-void Matrix::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Matrix4::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	memset(e, 0, sizeof(float)*16); // zero out matrix
 	float c = cosf(angle), s = sinf(angle);
@@ -149,37 +149,37 @@ void Matrix::setTransformation(float x, float y, float angle, float sx, float sy
 	e[13] = y - ox * e[1] - oy * e[5];
 }
 
-void Matrix::translate(float x, float y)
+void Matrix4::translate(float x, float y)
 {
-	Matrix t;
+	Matrix4 t;
 	t.setTranslation(x, y);
 	this->operator *=(t);
 }
 
-void Matrix::rotate(float rad)
+void Matrix4::rotate(float rad)
 {
-	Matrix t;
+	Matrix4 t;
 	t.setRotation(rad);
 	this->operator *=(t);
 }
 
-void Matrix::scale(float sx, float sy)
+void Matrix4::scale(float sx, float sy)
 {
-	Matrix t;
+	Matrix4 t;
 	t.setScale(sx, sy);
 	this->operator *=(t);
 }
 
-void Matrix::shear(float kx, float ky)
+void Matrix4::shear(float kx, float ky)
 {
-	Matrix t;
+	Matrix4 t;
 	t.setShear(kx,ky);
 	this->operator *=(t);
 }
 
-Matrix Matrix::ortho(float left, float right, float bottom, float top)
+Matrix4 Matrix4::ortho(float left, float right, float bottom, float top)
 {
-	Matrix m;
+	Matrix4 m;
 
 	m.e[0] = 2.0f / (right - left);
 	m.e[5] = 2.0f / (top - bottom);

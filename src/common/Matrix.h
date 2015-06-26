@@ -32,37 +32,37 @@ namespace love
  * really needed for 2D, it contains 4x4 elements to be compatible with
  * OpenGL without conversions.
  **/
-class Matrix
+class Matrix4
 {
 public:
 
 	/**
 	 * Creates a new identity matrix.
 	 **/
-	Matrix();
+	Matrix4();
 
 	/**
 	 * Creates a new matrix set to a transformation.
 	 **/
-	Matrix(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	Matrix4(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Destructor.
 	 **/
-	~Matrix();
+	~Matrix4();
 
 	/**
 	 * Multiplies this Matrix with another Matrix, changing neither.
 	 * @param m The Matrix to multiply with this Matrix.
 	 * @return The combined matrix.
 	 **/
-	Matrix operator * (const Matrix &m) const;
+	Matrix4 operator * (const Matrix4 &m) const;
 
 	/**
 	 * Multiplies a Matrix into this Matrix.
 	 * @param m The Matrix to combine into this Matrix.
 	 **/
-	void operator *= (const Matrix &m);
+	void operator *= (const Matrix4 &m);
 
 	/**
 	 * Gets a pointer to the 16 array elements.
@@ -160,7 +160,7 @@ public:
 	 * Creates a new orthographic projection matrix with depth in the range of
 	 * [-1, 1].
 	 **/
-	static Matrix ortho(float left, float right, float bottom, float top);
+	static Matrix4 ortho(float left, float right, float bottom, float top);
 
 private:
 
@@ -172,7 +172,7 @@ private:
 	 **/
 	float e[16];
 
-}; // Matrix
+}; // Matrix4
 
 //                 | x |
 //                 | y |
@@ -184,7 +184,7 @@ private:
 // | e3 e7 e11 e15 |
 
 template <typename V>
-void Matrix::transform(V *dst, const V *src, int size) const
+void Matrix4::transform(V *dst, const V *src, int size) const
 {
 	for (int i = 0; i < size; i++)
 	{

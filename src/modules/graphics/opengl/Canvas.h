@@ -142,7 +142,7 @@ private:
 	bool createMSAAFBO(GLenum internalformat);
 	bool resolveMSAA(bool restoreprev);
 
-	void drawv(const Matrix &t, const Vertex *v);
+	void drawv(const Matrix4 &t, const Vertex *v);
 
 	static Format getSizedFormat(Format format);
 	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);

@@ -259,8 +259,8 @@ private:
 
 	float lastPointSize;
 
-	Matrix lastTransformMatrix;
-	Matrix lastProjectionMatrix;
+	Matrix4 lastTransformMatrix;
+	Matrix4 lastProjectionMatrix;
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;

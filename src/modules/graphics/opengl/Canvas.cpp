@@ -298,7 +298,7 @@ void Canvas::unloadVolatile()
 	texture_memory = 0;
 }
 
-void Canvas::drawv(const Matrix &t, const Vertex *v)
+void Canvas::drawv(const Matrix4 &t, const Vertex *v)
 {
 	OpenGL::TempDebugGroup debuggroup("Canvas draw");
 
@@ -318,14 +318,14 @@ void Canvas::drawv(const Matrix &t, const Vertex *v)
 
 void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	drawv(t, vertices);
 }
 
 void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	const Vertex *v = quad->getVertices();
 	drawv(t, v);
@@ -390,7 +390,7 @@ void Canvas::setupGrab()
 	gl.setViewport({0, 0, width, height});
 
 	// Set up the projection matrix
-	gl.matrices.projection.push_back(Matrix::ortho(0.0, (float) width, 0.0, (float) height));
+	gl.matrices.projection.push_back(Matrix4::ortho(0.0, (float) width, 0.0, (float) height));
 }
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)

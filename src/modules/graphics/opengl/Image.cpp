@@ -351,7 +351,7 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 	return true;
 }
 
-void Image::drawv(const Matrix &t, const Vertex *v)
+void Image::drawv(const Matrix4 &t, const Vertex *v)
 {
 	OpenGL::TempDebugGroup debuggroup("Image draw");
 
@@ -371,14 +371,14 @@ void Image::drawv(const Matrix &t, const Vertex *v)
 
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	drawv(t, vertices);
 }
 
 void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	drawv(t, quad->getVertices());
 }

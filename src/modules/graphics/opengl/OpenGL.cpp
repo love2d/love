@@ -274,8 +274,8 @@ void OpenGL::initMatrices()
 	matrices.transform.clear();
 	matrices.projection.clear();
 
-	matrices.transform.push_back(Matrix());
-	matrices.projection.push_back(Matrix());
+	matrices.transform.push_back(Matrix4());
+	matrices.projection.push_back(Matrix4());
 }
 
 void OpenGL::createDefaultTexture()
@@ -312,7 +312,7 @@ void OpenGL::popTransform()
 	matrices.transform.pop_back();
 }
 
-Matrix &OpenGL::getTransform()
+Matrix4 &OpenGL::getTransform()
 {
 	return matrices.transform.back();
 }
@@ -329,11 +329,11 @@ void OpenGL::prepareDraw()
 	// because uniform uploads can be significantly slower than glLoadMatrix.
 	if (GLAD_VERSION_1_0)
 	{
-		const Matrix &curproj = matrices.projection.back();
-		const Matrix &curxform = matrices.transform.back();
+		const Matrix4 &curproj = matrices.projection.back();
+		const Matrix4 &curxform = matrices.transform.back();
 
-		const Matrix &lastproj = state.lastProjectionMatrix;
-		const Matrix &lastxform = state.lastTransformMatrix;
+		const Matrix4 &lastproj = state.lastProjectionMatrix;
+		const Matrix4 &lastxform = state.lastTransformMatrix;
 
 		// We only need to re-upload the projection matrix if it's changed.
 		if (memcmp(curproj.getElements(), lastproj.getElements(), sizeof(float) * 16) != 0)

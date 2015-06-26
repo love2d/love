@@ -51,7 +51,7 @@ namespace
 		~TemporaryAttacher()
 		{
 			if (prevShader != nullptr)
-				prevShader->attach(true);
+				prevShader->attach();
 			else
 				curShader->detach();
 		}
@@ -702,8 +702,8 @@ void Shader::checkSetBuiltinUniforms()
 	{
 		checkSetPointSize(gl.getPointSize());
 
-		const Matrix &curxform = gl.matrices.transform.back();
-		const Matrix &curproj = gl.matrices.projection.back();
+		const Matrix4 &curxform = gl.matrices.transform.back();
+		const Matrix4 &curproj = gl.matrices.projection.back();
 
 		TemporaryAttacher attacher(this);
 
@@ -735,7 +735,7 @@ void Shader::checkSetBuiltinUniforms()
 			GLint location = builtinUniforms[BUILTIN_TRANSFORM_PROJECTION_MATRIX];
 			if (location >= 0)
 			{
-				Matrix tp_matrix(curproj * curxform);
+				Matrix4 tp_matrix(curproj * curxform);
 				glUniformMatrix4fv(location, 1, GL_FALSE, tp_matrix.getElements());
 			}
 		}

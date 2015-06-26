@@ -854,7 +854,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 
-	Matrix t(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;

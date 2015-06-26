@@ -170,7 +170,7 @@ void Text::set(const std::string &text)
 	if (text.empty())
 		return set();
 
-	addTextData({text, -1.0f, Font::ALIGN_MAX_ENUM, false, false, Matrix()});
+	addTextData({text, -1.0f, Font::ALIGN_MAX_ENUM, false, false, Matrix4()});
 }
 
 void Text::set(const std::string &text, float wrap, Font::AlignMode align)
@@ -178,7 +178,7 @@ void Text::set(const std::string &text, float wrap, Font::AlignMode align)
 	if (text.empty())
 		return set();
 
-	addTextData({text, wrap, align, false, false, Matrix()});
+	addTextData({text, wrap, align, false, false, Matrix4()});
 }
 
 void Text::set()
@@ -191,8 +191,7 @@ void Text::add(const std::string &text, float x, float y, float angle, float sx,
 	if (text.empty())
 		return;
 
-	Matrix m;
-	m.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	addTextData({text, -1.0f, Font::ALIGN_MAX_ENUM, true, true, m});
 }
@@ -202,8 +201,7 @@ void Text::addf(const std::string &text, float wrap, Font::AlignMode align, floa
 	if (text.empty())
 		return;
 
-	Matrix m;
-	m.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	addTextData({text, wrap, align, true, true, m});
 }
@@ -232,7 +230,7 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	const size_t tex_offset = offsetof(Font::GlyphVertex, s);
 	const size_t stride = sizeof(Font::GlyphVertex);
 
-	Matrix t(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;

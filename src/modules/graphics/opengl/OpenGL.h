@@ -111,8 +111,8 @@ public:
 
 	struct
 	{
-		std::vector<Matrix> transform;
-		std::vector<Matrix> projection;
+		std::vector<Matrix4> transform;
+		std::vector<Matrix4> projection;
 	} matrices;
 
 	class TempTransform
@@ -130,7 +130,7 @@ public:
 			gl.popTransform();
 		}
 
-		Matrix &get()
+		Matrix4 &get()
 		{
 			return gl.getTransform();
 		}
@@ -191,7 +191,7 @@ public:
 
 	void pushTransform();
 	void popTransform();
-	Matrix &getTransform();
+	Matrix4 &getTransform();
 
 	/**
 	 * Set up necessary state (LOVE-provided shader uniforms, etc.) for drawing.
@@ -382,8 +382,8 @@ private:
 
 		GLuint defaultTexture;
 
-		Matrix lastProjectionMatrix;
-		Matrix lastTransformMatrix;
+		Matrix4 lastProjectionMatrix;
+		Matrix4 lastTransformMatrix;
 
 	} state;
 

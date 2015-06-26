@@ -103,7 +103,7 @@ public:
 
 private:
 
-	void addv(const Vertex *v, const Matrix &m, int index);
+	void addv(const Vertex *v, const Matrix4 &m, int index);
 
 	/**
 	 * Set the color for vertices.
