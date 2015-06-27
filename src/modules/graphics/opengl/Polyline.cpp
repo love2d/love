@@ -420,7 +420,7 @@ void Polyline::draw()
 
 	gl.useVertexAttribArrays(enabledattribs);
 
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices + vertex_start);
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices);
 
 	// Draw the core line and the overdraw in a single draw call. We can do this
 	// because the vertex array contains both the core line and the overdraw
