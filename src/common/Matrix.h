@@ -28,9 +28,9 @@ namespace love
 {
 
 /**
- * This class is the basis for all transformations in LOVE. Althought not
- * really needed for 2D, it contains 4x4 elements to be compatible with
- * OpenGL without conversions.
+ * This class is the basis for all transformations in LOVE. Although not really
+ * needed for 2D, it contains 4x4 elements to be compatible with OpenGL without
+ * conversions.
  **/
 class Matrix4
 {
@@ -174,6 +174,54 @@ private:
 
 }; // Matrix4
 
+class Matrix3
+{
+public:
+
+	Matrix3();
+
+	/**
+	 * Constructs a 3x3 matrix from the upper left section of a 4x4 matrix.
+	 **/
+	Matrix3(const Matrix4 &mat4);
+
+	~Matrix3();
+
+	/**
+	 * Resets this matrix to the identity matrix.
+	 **/
+	void setIdentity();
+
+	Matrix3 operator * (const Matrix3 &m) const;
+	void operator *= (const Matrix3 &m);
+
+	/**
+	 * Gets a pointer to the 9 array elements.
+	 **/
+	const float *getElements() const;
+
+	/**
+	 * Calculates the inverse of the transpose of this matrix.
+	 **/
+	Matrix3 transposedInverse() const;
+
+	/**
+	 * Transforms an array of vertices by this matrix.
+	 **/
+	template <typename V>
+	void transform(V *dst, const V *src, int size) const;
+
+private:
+
+	/**
+	 * | e0 e3 e6
+	 * | e1 e4 e7
+	 * | e2 e5 e8
+	 **/
+	float e[9];
+
+}; // Matrix3
+
 //                 | x |
 //                 | y |
 //                 | 0 |
@@ -191,6 +239,25 @@ void Matrix4::transform(V *dst, const V *src, int size) const
 		// Store in temp variables in case src = dst
 		float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (0) + (e[12]);
 		float y = (e[1]*src[i].x) + (e[5]*src[i].y) + (0) + (e[13]);
+
+		dst[i].x = x;
+		dst[i].y = y;
+	}
+}
+
+//            | x |
+//            | y |
+//            | 1 |
+// | e0 e3 e6 |
+// | e1 e4 e7 |
+// | e2 e5 e8 |
+template <typename V>
+void Matrix3::transform(V *dst, const V *src, int size) const
+{
+	for (int i = 0; i < size; i++)
+	{
+		float x = (e[0]*src[i].x) + (e[3]*src[i].y) + (e[6]);
+		float y = (e[1]*src[i].x) + (e[4]*src[i].y) + (e[7]);
 
 		dst[i].x = x;
 		dst[i].y = y;

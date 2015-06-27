@@ -85,7 +85,7 @@ Matrix4 Matrix4::operator * (const Matrix4 &m) const
 void Matrix4::operator *= (const Matrix4 &m)
 {
 	Matrix4 t = (*this) * m;
-	memcpy((void *)this->e, (void *)t.e, sizeof(float)*16);
+	memcpy(this->e, t.e, sizeof(float)*16);
 }
 
 const float *Matrix4::getElements() const
@@ -191,5 +191,101 @@ Matrix4 Matrix4::ortho(float left, float right, float bottom, float top)
 	return m;
 }
 
+/**
+ * | e0 e3 e6 |
+ * | e1 e4 e7 |
+ * | e2 e5 e8 |
+ **/
+Matrix3::Matrix3()
+{
+	setIdentity();
+}
+
+Matrix3::Matrix3(const Matrix4 &mat4)
+{
+	const float *mat4elems = mat4.getElements();
+
+	// Column 0.
+	e[0] = mat4elems[0];
+	e[1] = mat4elems[1];
+	e[2] = mat4elems[2];
+
+	// Column 1.
+	e[3] = mat4elems[4];
+	e[4] = mat4elems[5];
+	e[5] = mat4elems[6];
+
+	// Column 2.
+	e[6] = mat4elems[8];
+	e[7] = mat4elems[9];
+	e[8] = mat4elems[10];
+}
+
+Matrix3::~Matrix3()
+{
+}
+
+void Matrix3::setIdentity()
+{
+	memset(e, 0, sizeof(float) * 9);
+	e[8] = e[4] = e[0] = 1.0f;
+}
+
+Matrix3 Matrix3::operator * (const love::Matrix3 &m) const
+{
+	Matrix3 t;
+
+	t.e[0] = (e[0]*m.e[0]) + (e[3]*m.e[1]) + (e[6]*m.e[2]);
+	t.e[3] = (e[0]*m.e[3]) + (e[3]*m.e[4]) + (e[6]*m.e[5]);
+	t.e[6] = (e[0]*m.e[6]) + (e[3]*m.e[7]) + (e[6]*m.e[8]);
+
+	t.e[1] = (e[1]*m.e[0]) + (e[4]*m.e[1]) + (e[7]*m.e[2]);
+	t.e[4] = (e[1]*m.e[3]) + (e[4]*m.e[4]) + (e[7]*m.e[5]);
+	t.e[7] = (e[1]*m.e[6]) + (e[4]*m.e[7]) + (e[7]*m.e[8]);
+
+	t.e[2] = (e[2]*m.e[0]) + (e[5]*m.e[1]) + (e[8]*m.e[2]);
+	t.e[5] = (e[2]*m.e[3]) + (e[5]*m.e[4]) + (e[8]*m.e[5]);
+	t.e[8] = (e[2]*m.e[6]) + (e[5]*m.e[7]) + (e[8]*m.e[8]);
+
+	return t;
+}
+
+void Matrix3::operator *= (const Matrix3 &m)
+{
+	Matrix3 t = (*this) * m;
+	memcpy(e, t.e, sizeof(float) * 9);
+}
+
+const float *Matrix3::getElements() const
+{
+	return e;
+}
+
+Matrix3 Matrix3::transposedInverse() const
+{
+	// e0 e3 e6
+	// e1 e4 e7
+	// e2 e5 e8
+
+	float det = e[0] * (e[4]*e[8] - e[7]*e[5])
+	          - e[1] * (e[3]*e[8] - e[5]*e[6])
+	          + e[2] * (e[3]*e[7] - e[4]*e[6]);
+
+	float invdet = 1.0f / det;
+
+	Matrix3 m;
+
+	m.e[0] =  invdet * (e[4]*e[8] - e[7]*e[5]);
+	m.e[3] = -invdet * (e[1]*e[8] - e[2]*e[7]);
+	m.e[6] =  invdet * (e[1]*e[5] - e[2]*e[4]);
+	m.e[1] = -invdet * (e[3]*e[8] - e[5]*e[6]);
+	m.e[4] =  invdet * (e[0]*e[8] - e[2]*e[6]);
+	m.e[7] = -invdet * (e[0]*e[5] - e[3]*e[2]);
+	m.e[2] =  invdet * (e[3]*e[7] - e[6]*e[4]);
+	m.e[5] = -invdet * (e[0]*e[7] - e[6]*e[1]);
+	m.e[8] =  invdet * (e[0]*e[4] - e[3]*e[1]);
+
+	return m;
+}
 
 } // love

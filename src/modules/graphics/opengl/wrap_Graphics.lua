@@ -57,10 +57,12 @@ GLSL.UNIFORMS = [[
 uniform LOVE_UNIFORM_PRECISION mat4 TransformMatrix;
 uniform LOVE_UNIFORM_PRECISION mat4 ProjectionMatrix;
 uniform LOVE_UNIFORM_PRECISION mat4 TransformProjectionMatrix;
+uniform LOVE_UNIFORM_PRECISION mat3 NormalMatrix;
 #else
 #define TransformMatrix gl_ModelViewMatrix
 #define ProjectionMatrix gl_ProjectionMatrix
 #define TransformProjectionMatrix gl_ModelViewProjectionMatrix
+#define NormalMatrix gl_NormalMatrix
 #endif
 uniform mediump vec4 love_ScreenSize;]]
 

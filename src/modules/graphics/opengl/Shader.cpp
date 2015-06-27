@@ -716,6 +716,16 @@ void Shader::checkSetBuiltinUniforms()
 			if (location >= 0)
 				glUniformMatrix4fv(location, 1, GL_FALSE, curxform.getElements());
 
+			// Also upload the re-calculated normal matrix, if possible. The
+			// normal matrix is the transpose of the inverse of the rotation
+			// portion (top-left 3x3) of the transform matrix.
+			location = builtinUniforms[BUILTIN_NORMAL_MATRIX];
+			if (location >= 0)
+			{
+				Matrix3 normalmatrix = Matrix3(curxform).transposedInverse();
+				glUniformMatrix3fv(location, 1, GL_FALSE, normalmatrix.getElements());
+			}
+
 			tpmatrixneedsupdate = true;
 			lastTransformMatrix = curxform;
 		}
@@ -885,6 +895,7 @@ StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::built
 	{"TransformMatrix", Shader::BUILTIN_TRANSFORM_MATRIX},
 	{"ProjectionMatrix", Shader::BUILTIN_PROJECTION_MATRIX},
 	{"TransformProjectionMatrix", Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX},
+	{"NormalMatrix", Shader::BUILTIN_NORMAL_MATRIX},
 	{"love_PointSize", Shader::BUILTIN_POINT_SIZE},
 	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
 };
