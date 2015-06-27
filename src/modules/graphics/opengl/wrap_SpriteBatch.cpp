@@ -63,22 +63,22 @@ int w_SpriteBatch_add(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	int id = 0;
+	int index = 0;
 	luax_catchexcept(L, [&]() {
 		if (quad)
-			id = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
+			index = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
 		else
-			id = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
+			index = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
 	});
 
-	lua_pushinteger(L, id);
+	lua_pushinteger(L, index + 1);
 	return 1;
 }
 
 int w_SpriteBatch_set(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int id = (int) luaL_checknumber(L, 2);
+	int index = (int) luaL_checknumber(L, 2) - 1;
 
 	Quad *quad = nullptr;
 	int startidx = 3;
@@ -103,9 +103,9 @@ int w_SpriteBatch_set(lua_State *L)
 
 	luax_catchexcept(L, [&]() {
 		if (quad)
-			t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, id);
+			t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, index);
 		else
-			t->add(x, y, a, sx, sy, ox, oy, kx, ky, id);
+			t->add(x, y, a, sx, sy, ox, oy, kx, ky, index);
 	});
 
 	return 0;
