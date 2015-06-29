@@ -47,11 +47,8 @@ ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSiz
 	// garbage settings when the struct is only partially initialized)
 	// This does not exist yet on Windows.
 
-	// Some settings not supported by some older versions
-#ifndef LOVE_OLD_MODPLUG
 	settings.mStereoSeparation = 128;
 	settings.mMaxMixChannels = 32;
-#endif
 	settings.mReverbDepth = 0;
 	settings.mReverbDelay = 0;
 	settings.mBassAmount = 0;
