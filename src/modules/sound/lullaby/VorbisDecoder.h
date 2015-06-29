@@ -40,7 +40,7 @@ namespace lullaby
 // Struct for handling data
 struct SOggFile
 {
-	char *dataPtr;	// Pointer to the data in memory
+	const char *dataPtr;	// Pointer to the data in memory
 	int dataSize;	// Size of the data
 	int dataRead;	// How much we've read so far
 };

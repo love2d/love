@@ -92,7 +92,7 @@ void OpenGL::setupContext()
 
 	GLint maxvertexattribs = 1;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxvertexattribs);
-	state.enabledAttribArrays = 1u << uint32(maxvertexattribs - 1);
+	state.enabledAttribArrays = (uint32) ((1ull << uint32(maxvertexattribs)) - 1);
 	useVertexAttribArrays(0);
 
 	// Get the current viewport.
@@ -391,8 +391,8 @@ void OpenGL::useVertexAttribArrays(uint32 arraybits)
 	state.enabledAttribArrays = arraybits;
 
 	// glDisableVertexAttribArray will make the constant value for a vertex
-	// attribute undefined. We rely on the per-vertex color attribte being white
-	// when no per-vertex color is used, so we set it here.
+	// attribute undefined. We rely on the per-vertex color attribute being
+	// white when no per-vertex color is used, so we set it here.
 	// FIXME: Is there a better place to do this?
 	if ((diff & ATTRIBFLAG_COLOR) && !(arraybits & ATTRIBFLAG_COLOR))
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);

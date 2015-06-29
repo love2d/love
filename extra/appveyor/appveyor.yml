@@ -25,12 +25,22 @@ install:
 - move love libs\love
 
 before_build:
-- cmake -H. -Bbuild
+- cmake -G "Visual Studio 12" -H. -Bbuild
 
 build_script:
 - cmake --build build --target love/love --config Release
 
+after_build:
+# TODO: Find the C++ and C runtime .dll's and zip them.
+- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\Release\*.dll
+- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\Release\love.exe
+- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\changes.txt
+- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\license.txt
+
 before_test:
 
-
 test_script:
+
+
+artifacts:
+- path: love.zip
