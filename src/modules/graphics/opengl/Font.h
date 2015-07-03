@@ -211,6 +211,7 @@ private:
 	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
+	float getKerning(uint32 leftglyph, uint32 rightglyph);
 	void printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
@@ -226,6 +227,9 @@ private:
 
 	// maps glyphs to glyph texture information
 	std::unordered_map<uint32, Glyph> glyphs;
+
+	// map of left/right glyph pairs to horizontal kerning.
+	std::unordered_map<uint64, float> kerning;
 
 	FontType type;
 	Texture::Filter filter;

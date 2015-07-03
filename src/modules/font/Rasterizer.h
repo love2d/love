@@ -105,6 +105,11 @@ public:
 	 **/
 	virtual bool hasGlyphs(const std::string &text) const;
 
+	/**
+	 * Gets the amount of horizontal kerning between two glyphs.
+	 **/
+	virtual float getKerning(uint32 leftglyph, uint32 rightglyph) const;
+
 protected:
 
 	FontMetrics metrics;

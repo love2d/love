@@ -316,6 +316,29 @@ const Font::Glyph &Font::findGlyph(uint32 glyph)
 	return addGlyph(glyph);
 }
 
+float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
+{
+	uint64 packedglyphs = ((uint64) leftglyph << 32) | (uint64) rightglyph;
+
+	const auto it = kerning.find(packedglyphs);
+	if (it != kerning.end())
+		return it->second;
+
+	float k = rasterizers[0]->getKerning(leftglyph, rightglyph);
+
+	for (const auto &r : rasterizers)
+	{
+		if (r->hasGlyph(leftglyph) && r->hasGlyph(rightglyph))
+		{
+			k = r->getKerning(leftglyph, rightglyph);
+			break;
+		}
+	}
+
+	kerning[packedglyphs] = k;
+	return k;
+}
+
 float Font::getHeight() const
 {
 	return (float) height;
@@ -336,6 +359,8 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 	// Pre-allocate space for the maximum possible number of vertices.
 	size_t vertstartsize = vertices.size();
 	vertices.reserve(vertstartsize + text.length() * 4);
+
+	uint32 prevglyph = 0;
 
 	try
 	{
@@ -370,8 +395,12 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 				dy = offset.y;
 				drawcommands.clear();
 				vertices.resize(vertstartsize);
+				prevglyph = 0;
 				continue;
 			}
+
+			// Add kerning to the current horizontal offset.
+			dx += getKerning(prevglyph, g);
 
 			if (glyph.texture != 0)
 			{
@@ -379,8 +408,8 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 				for (int j = 0; j < 4; j++)
 				{
 					vertices.push_back(glyph.vertices[j]);
-					vertices.back().x += dx;
-					vertices.back().y += dy + lineheight;
+					vertices.back().x += dx /*+ kerning*/;
+					vertices.back().y += dy /*+ kerning.y*/ + lineheight;
 				}
 
 				// Check if glyph texture has changed since the last iteration.
@@ -403,6 +432,8 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 			// Account for extra spacing given to space characters.
 			if (g == ' ' && extra_spacing != 0.0f)
 				dx = floorf(dx + extra_spacing);
+
+			prevglyph = g;
 		}
 	}
 	catch (utf8::exception &e)

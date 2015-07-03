@@ -95,5 +95,10 @@ bool Rasterizer::hasGlyphs(const std::string &text) const
 	return true;
 }
 
+float Rasterizer::getKerning(uint32 /*leftglyph*/, uint32 /*rightglyph*/) const
+{
+	return 0.0f;
+}
+
 } // font
 } // love

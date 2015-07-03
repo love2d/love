@@ -59,7 +59,7 @@ public:
 private:
 
 	std::string tag;
-	std::map<std::string, std::string> attributes;
+	std::unordered_map<std::string, std::string> attributes;
 
 };
 
@@ -226,7 +226,12 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 		}
 		else if (tag == "kerning")
 		{
-			// TODO
+			uint32 firstid  = (uint32) cline.getAttributeInt("first");
+			uint32 secondid = (uint32) cline.getAttributeInt("second");
+
+			uint64 packedids = ((uint64) firstid << 32) | (uint64) secondid;
+
+			kerning[packedids] = cline.getAttributeInt("amount");
 		}
 	}
 
@@ -307,6 +312,17 @@ int BMFontRasterizer::getGlyphCount() const
 bool BMFontRasterizer::hasGlyph(uint32 glyph) const
 {
 	return characters.find(glyph) != characters.end();
+}
+
+float BMFontRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
+{
+	uint64 packedglyphs = ((uint64) leftglyph << 32) | (uint64) rightglyph;
+
+	auto it = kerning.find(packedglyphs);
+	if (it != kerning.end())
+		return it->second;
+
+	return 0.0f;
 }
 
 bool BMFontRasterizer::accepts(love::filesystem::FileData *fontdef)

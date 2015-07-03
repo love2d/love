@@ -52,6 +52,7 @@ public:
 	virtual GlyphData *getGlyphData(uint32 glyph) const;
 	virtual int getGlyphCount() const;
 	virtual bool hasGlyph(uint32 glyph) const;
+	virtual float getKerning(uint32 leftglyph, uint32 rightglyph) const;
 
 	static bool accepts(FT_Library library, love::Data *data);
 
