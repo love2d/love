@@ -633,9 +633,16 @@ function love.errhand(msg)
 		for e, a, b, c in love.event.poll() do
 			if e == "quit" then
 				return
-			end
-			if e == "keypressed" and a == "escape" then
+			elseif e == "keypressed" and a == "escape" then
 				return
+			elseif e == "mousereleased" then
+				local name = love.window.getTitle()
+				if #name == 0 then name = "Game" end
+				local buttons = {"OK", "Cancel"}
+				local pressed = love.window.showMessageBox("Quit "..name.."?", "", buttons)
+				if pressed == 1 then
+					return
+				end
 			end
 		end
 
