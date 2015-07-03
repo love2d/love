@@ -410,7 +410,13 @@ const char *Filesystem::getWorkingDirectory()
 
 std::string Filesystem::getUserDirectory()
 {
+#ifdef LOVE_IOS
+	// PHYSFS_getUserDir doesn't give exactly the path we want on iOS.
+	static std::string userDir = normalize(love::ios::getHomeDirectory());
+#else
 	static std::string userDir = normalize(PHYSFS_getUserDir());
+#endif
+
 	return userDir;
 }
 
