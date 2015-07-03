@@ -636,13 +636,17 @@ int Font::getWidth(const std::string &str)
 		int width = 0;
 		try
 		{
+			uint32 prevglyph = 0;
+
 			utf8::iterator<std::string::const_iterator> i(line.begin(), line.begin(), line.end());
 			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
 			while (i != end)
 			{
 				uint32 c = *i++;
 				const Glyph &g = findGlyph(c);
-				width += g.spacing;
+				width += g.spacing + getKerning(prevglyph, c);
+
+				prevglyph = c;
 			}
 		}
 		catch(utf8::exception &e)
