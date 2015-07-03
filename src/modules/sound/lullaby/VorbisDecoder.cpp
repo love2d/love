@@ -106,10 +106,12 @@ static int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files 
 		vorbisData->dataRead += (int)actualOffset;
 		break;
 	case SEEK_END: // Seek from the end of the file
-		vorbisData->dataRead = vorbisData->dataSize+1;
+		if (offset < 0)
+			vorbisData->dataRead = vorbisData->dataSize + offset;
+		else
+			vorbisData->dataRead = vorbisData->dataSize;
 		break;
 	default:
-		throw love::Exception("Unknown seek command in vorbisSeek");
 		break;
 	};
 
