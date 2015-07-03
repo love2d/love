@@ -148,8 +148,10 @@ void Font::createTexture()
 
 	GLenum internalformat = type == FONT_TRUETYPE ? GL_LUMINANCE8_ALPHA8 : GL_RGBA8;
 
-	// in GLES2, the internalformat and format params of TexImage have to match.
-	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
+	// In GLES2, the internalformat and format params of TexImage have to match.
+	// There is still no GL_LUMINANCE8_ALPHA8 in GLES3, so we have to use
+	// GL_LUMINANCE_ALPHA even on ES3.
+	if (GLAD_ES_VERSION_2_0)
 		internalformat = format;
 
 	// Initialize the texture with transparent black.
