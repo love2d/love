@@ -23,7 +23,7 @@
 
 // LOVE
 #include "common/Data.h"
-#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 #include "thread/threads.h"
 
 using love::thread::Mutex;
@@ -121,7 +121,7 @@ public:
 	 * @param f The file to save the encoded image data to.
 	 * @param format The format of the encoded data.
 	 **/
-	virtual void encode(love::filesystem::File *f, EncodedFormat format) = 0;
+	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename) = 0;
 
 	love::thread::Mutex *getMutex() const;
 

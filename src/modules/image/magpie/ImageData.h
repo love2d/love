@@ -23,7 +23,6 @@
 
 // LOVE
 #include "FormatHandler.h"
-#include "filesystem/File.h"
 #include "image/ImageData.h"
 
 // C++
@@ -46,7 +45,7 @@ public:
 	virtual ~ImageData();
 
 	// Implements image::ImageData.
-	virtual void encode(love::filesystem::File *f, ImageData::EncodedFormat format);
+	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename);
 
 private:
 

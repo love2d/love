@@ -217,31 +217,37 @@ int w_ImageData_paste(lua_State *L)
 
 int w_ImageData_encode(lua_State *L)
 {
-	std::string ext;
-	const char *fmt;
-	ImageData::EncodedFormat format = ImageData::ENCODED_MAX_ENUM;
 	ImageData *t = luax_checkimagedata(L, 1);
 
-	if (lua_isstring(L, 2))
-		luax_convobj(L, 2, "filesystem", "newFile");
-	love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 2, FILESYSTEM_FILE_ID);
+	ImageData::EncodedFormat format;
+	const char *fmt = luaL_checkstring(L, 2);
+	if (!ImageData::getConstant(fmt, format))
+		return luaL_error(L, "Invalid encoded image format '%s'.", fmt);
 
-	if (lua_isnoneornil(L, 3))
+	bool hasfilename = false;
+
+	std::string filename = "Image." + std::string(fmt);
+	if (!lua_isnoneornil(L, 3))
 	{
-		ext = file->getExtension();
-		fmt = ext.c_str();
-		if (!ImageData::getConstant(fmt, format))
-			return luaL_error(L, "Invalid image format '%s'.", fmt);
-	}
-	else
-	{
-		fmt = luaL_checkstring(L, 3);
-		if (!ImageData::getConstant(fmt, format))
-			return luaL_error(L, "Invalid image format '%s'.", fmt);
+		hasfilename = true;
+		filename = luax_checkstring(L, 3);
 	}
 
-	luax_catchexcept(L, [&](){ t->encode(file, format); });
-	return 0;
+	love::filesystem::FileData *filedata = nullptr;
+	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str()); });
+
+	luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, filedata);
+	filedata->release();
+
+	if (hasfilename)
+	{
+		luax_getfunction(L, "filesystem", "write");
+		lua_pushvalue(L, 3); // filename
+		lua_pushvalue(L, -3); // FileData
+		lua_call(L, 2, 0);
+	}
+
+	return 1;
 }
 
 int w_ImageData__performAtomic(lua_State *L)

@@ -144,7 +144,7 @@ void ImageData::decode(love::filesystem::FileData *data)
 	decodeHandler = decoder;
 }
 
-void ImageData::encode(love::filesystem::File *f, ImageData::EncodedFormat format)
+love::filesystem::FileData *ImageData::encode(EncodedFormat format, const char *filename)
 {
 	FormatHandler *encoder = nullptr;
 	FormatHandler::EncodedImage encodedimage;
@@ -174,14 +174,14 @@ void ImageData::encode(love::filesystem::File *f, ImageData::EncodedFormat forma
 	{
 		const char *fname = "unknown";
 		getConstant(format, fname);
-		throw love::Exception("no suitable image encoder for %s format.", fname);
+		throw love::Exception("No suitable image encoder for %s format.", fname);
 	}
+
+	love::filesystem::FileData *filedata = nullptr;
 
 	try
 	{
-		f->open(love::filesystem::File::MODE_WRITE);
-		f->write(encodedimage.data, encodedimage.size);
-		f->close();
+		filedata = new love::filesystem::FileData(encodedimage.size, filename);
 	}
 	catch (love::Exception &)
 	{
@@ -189,7 +189,10 @@ void ImageData::encode(love::filesystem::File *f, ImageData::EncodedFormat forma
 		throw;
 	}
 
+	memcpy(filedata->getData(), encodedimage.data, encodedimage.size);
 	encoder->free(encodedimage.data);
+
+	return filedata;
 }
 
 } // magpie
