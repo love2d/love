@@ -194,7 +194,7 @@ int w_getFullscreenModes(lua_State *L)
 {
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 1))
-		displayindex = (int) luaL_checknumber(L, 1);
+		displayindex = (int) luaL_checknumber(L, 1) - 1;
 	else
 	{
 		int x, y;
@@ -271,7 +271,7 @@ int w_getDesktopDimensions(lua_State *L)
 	int width = 0, height = 0;
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 1))
-		displayindex = (int) luaL_checknumber(L, 1);
+		displayindex = (int) luaL_checknumber(L, 1) - 1;
 	else
 	{
 		int x, y;
@@ -290,7 +290,7 @@ int w_setPosition(lua_State *L)
 
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 3))
-		displayindex = (int) luaL_checknumber(L, 3);
+		displayindex = (int) luaL_checknumber(L, 3) - 1;
 	else
 	{
 		int x_unused, y_unused;
