@@ -124,7 +124,7 @@ private:
 
 	// Only one thread can access this object at the same time. This mutex will
 	// make sure of that.
-	thread::Mutex *mutex;
+	love::thread::MutexRef mutex;
 
 }; // Pool
 

@@ -36,13 +36,11 @@ Audio::PoolThread::PoolThread(Pool *pool)
 	: pool(pool)
 	, finish(false)
 {
-	mutex = thread::newMutex();
 	threadName = "AudioPool";
 }
 
 Audio::PoolThread::~PoolThread()
 {
-	delete mutex;
 }
 
 

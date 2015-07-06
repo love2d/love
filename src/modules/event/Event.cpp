@@ -81,14 +81,8 @@ Message *Message::fromLua(lua_State *L, int n)
 	return new Message(name, vargs);
 }
 
-Event::Event()
-{
-	mutex = thread::newMutex();
-}
-
 Event::~Event()
 {
-	delete mutex;
 }
 
 void Event::push(Message *msg)

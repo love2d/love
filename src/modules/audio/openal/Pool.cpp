@@ -32,7 +32,6 @@ namespace openal
 Pool::Pool()
 	: sources()
 	, totalSources(0)
-	, mutex(nullptr)
 {
 	// Clear errors.
 	alGetError();
@@ -52,9 +51,6 @@ Pool::Pool()
 
 	if (totalSources < 4)
 		throw love::Exception("Could not generate sources.");
-
-	// Create the mutex.
-	mutex = thread::newMutex();
 
 #ifdef AL_SOFT_direct_channels
 	ALboolean hasext = alIsExtensionPresent("AL_SOFT_direct_channels");
@@ -78,8 +74,6 @@ Pool::Pool()
 Pool::~Pool()
 {
 	stop();
-
-	delete mutex;
 
 	// Free all sources.
 	alDeleteSources(totalSources, sources);

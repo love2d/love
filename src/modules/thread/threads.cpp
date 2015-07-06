@@ -104,5 +104,20 @@ const char *Threadable::getThreadName() const
 	return threadName.empty() ? nullptr : threadName.c_str();
 }
 
+MutexRef::MutexRef()
+	: mutex(newMutex())
+{
+}
+
+MutexRef::~MutexRef()
+{
+	delete mutex;
+}
+
+MutexRef::operator Mutex*() const
+{
+	return mutex;
+}
+
 } // thread
 } // love

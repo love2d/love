@@ -59,7 +59,6 @@ private:
 class Event : public Module
 {
 public:
-	Event();
 	virtual ~Event();
 
 	// Implements Module.
@@ -73,7 +72,7 @@ public:
 	virtual Message *wait() = 0;
 
 protected:
-	thread::Mutex *mutex;
+	love::thread::MutexRef mutex;
 	std::queue<Message *> queue;
 
 }; // Event

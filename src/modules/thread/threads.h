@@ -96,6 +96,18 @@ protected:
 
 };
 
+class MutexRef
+{
+public:
+	MutexRef();
+	~MutexRef();
+
+	operator Mutex*() const;
+
+private:
+	Mutex *mutex;
+};
+
 Mutex *newMutex();
 Conditional *newConditional();
 Thread *newThread(Threadable *t);

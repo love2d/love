@@ -146,7 +146,7 @@ protected:
 	// We need to be thread-safe
 	// so we lock when we're accessing our
 	// data
-	Mutex *mutex;
+	love::thread::MutexRef mutex;
 
 private:
 

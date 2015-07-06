@@ -30,12 +30,10 @@ namespace image
 ImageData::ImageData()
 	: data(nullptr)
 {
-	mutex = thread::newMutex();
 }
 
 ImageData::~ImageData()
 {
-	delete mutex;
 }
 
 size_t ImageData::getSize() const
