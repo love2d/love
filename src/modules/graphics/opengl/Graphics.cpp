@@ -945,7 +945,7 @@ void Graphics::setBlendMode(BlendMode mode, bool multiplyalpha)
 		func = GL_FUNC_REVERSE_SUBTRACT;
 	case BLEND_ADD:
 		srcRGB = GL_ONE;
-		srcA = GL_SRC_ALPHA; // FIXME: This isn't correct...
+		srcA = GL_ZERO;
 		dstRGB = dstA = GL_ONE;
 		break;
 	case BLEND_SCREEN:
