@@ -370,10 +370,10 @@ int World::setCallbacks(lua_State *L)
 
 int World::getCallbacks(lua_State *L)
 {
-	begin.ref ? begin.ref->push() : lua_pushnil(L);
-	end.ref ? end.ref->push() : lua_pushnil(L);
-	presolve.ref ? presolve.ref->push() : lua_pushnil(L);
-	postsolve.ref ? postsolve.ref->push() : lua_pushnil(L);
+	begin.ref ? begin.ref->push(L) : lua_pushnil(L);
+	end.ref ? end.ref->push(L) : lua_pushnil(L);
+	presolve.ref ? presolve.ref->push(L) : lua_pushnil(L);
+	postsolve.ref ? postsolve.ref->push(L) : lua_pushnil(L);
 	return 4;
 }
 
@@ -390,7 +390,7 @@ int World::setContactFilter(lua_State *L)
 
 int World::getContactFilter(lua_State *L)
 {
-	filter.ref ? filter.ref->push() : lua_pushnil(L);
+	filter.ref ? filter.ref->push(L) : lua_pushnil(L);
 	return 1;
 }
 
