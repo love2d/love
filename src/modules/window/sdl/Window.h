@@ -44,6 +44,8 @@ public:
 	bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr);
 	void getWindow(int &width, int &height, WindowSettings &settings);
 
+	void close();
+
 	bool setFullscreen(bool fullscreen, FullscreenType fstype);
 	bool setFullscreen(bool fullscreen);
 
@@ -60,7 +62,7 @@ public:
 	void setPosition(int x, int y, int displayindex);
 	void getPosition(int &x, int &y, int &displayindex);
 
-	bool isCreated() const;
+	bool isOpen() const;
 
 	void setWindowTitle(const std::string &title);
 	const std::string &getWindowTitle() const;
@@ -139,7 +141,7 @@ private:
 
 	} curMode;
 
-	bool created;
+	bool open;
 
 	bool mouseGrabbed;
 

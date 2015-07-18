@@ -69,7 +69,7 @@ Graphics::Graphics()
 
 	currentWindow->getWindow(w, h, wsettings);
 
-	if (currentWindow->isCreated())
+	if (currentWindow->isOpen())
 		setMode(w, h, wsettings.sRGB);
 }
 
@@ -355,7 +355,7 @@ bool Graphics::isActive() const
 {
 	// The graphics module is only completely 'active' if there's a window, a
 	// context, and the active variable is set.
-	return active && isCreated() && currentWindow && currentWindow->isCreated();
+	return active && isCreated() && currentWindow && currentWindow->isOpen();
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)

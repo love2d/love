@@ -260,10 +260,16 @@ int w_getFullscreen(lua_State *L)
 	return 2;
 }
 
-int w_isCreated(lua_State *L)
+int w_isOpen(lua_State *L)
 {
-	luax_pushboolean(L, instance()->isCreated());
+	luax_pushboolean(L, instance()->isOpen());
 	return 1;
+}
+
+int w_close(lua_State * /*L*/)
+{
+	instance()->close();
+	return 0;
 }
 
 int w_getDesktopDimensions(lua_State *L)
@@ -499,7 +505,8 @@ static const luaL_Reg functions[] =
 	{ "getFullscreenModes", w_getFullscreenModes },
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
-	{ "isCreated", w_isCreated },
+	{ "isOpen", w_isOpen },
+	{ "close", w_close },
 	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setPosition", w_setPosition },
 	{ "getPosition", w_getPosition },

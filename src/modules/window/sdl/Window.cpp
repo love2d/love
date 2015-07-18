@@ -52,7 +52,7 @@ namespace sdl
 {
 
 Window::Window()
-	: created(false)
+	: open(false)
 	, mouseGrabbed(false)
 	, window(nullptr)
 	, context(nullptr)
@@ -65,17 +65,7 @@ Window::Window()
 
 Window::~Window()
 {
-	if (context)
-	{
-		graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		if (gfx != nullptr)
-			gfx->unSetMode();
-
-		SDL_GL_DeleteContext(context);
-	}
-
-	if (window)
-		SDL_DestroyWindow(window);
+	close();
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
@@ -345,22 +335,12 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			}
 		}
 
-		if (context)
-		{
-			SDL_GL_DeleteContext(context);
-			context = nullptr;
-		}
-
-		if (window)
-		{
-			SDL_DestroyWindow(window);
-			SDL_FlushEvent(SDL_WINDOWEVENT);
-			window = nullptr;
-		}
+		close();
 
 		return false;
 	}
 
+	open = true;
 	return true;
 }
 
@@ -439,32 +419,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 			x = y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.display);
 	}
 
-	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		gfx->unSetMode();
-
-	if (context)
-	{
-		SDL_GL_DeleteContext(context);
-		context = nullptr;
-	}
-
-	if (window)
-	{
-		SDL_DestroyWindow(window);
-		window = nullptr;
-
-		// The old window may have generated pending events which are no longer
-		// relevant. Destroy them all!
-		SDL_FlushEvent(SDL_WINDOWEVENT);
-	}
-
-	created = false;
+	close();
 
 	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.sRGB))
 		return false;
-
-	created = true;
 
 	// Make sure the window keeps any previously set icon.
 	setIcon(curMode.icon.get());
@@ -484,6 +442,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	updateSettings(f);
 
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
 		gfx->setMode(curMode.pixelwidth, curMode.pixelheight, curMode.settings.sRGB);
 
@@ -582,6 +541,31 @@ void Window::getWindow(int &width, int &height, WindowSettings &settings)
 	width = curMode.width;
 	height = curMode.height;
 	settings = curMode.settings;
+}
+
+void Window::close()
+{
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr)
+		gfx->unSetMode();
+
+	if (context)
+	{
+		SDL_GL_DeleteContext(context);
+		context = nullptr;
+	}
+
+	if (window)
+	{
+		SDL_DestroyWindow(window);
+		window = nullptr;
+
+		// The old window may have generated pending events which are no longer
+		// relevant. Destroy them all!
+		SDL_FlushEvent(SDL_WINDOWEVENT);
+	}
+
+	open = false;
 }
 
 bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
@@ -730,9 +714,9 @@ void Window::getPosition(int &x, int &y, int &displayindex)
 	}
 }
 
-bool Window::isCreated() const
+bool Window::isOpen() const
 {
-	return created;
+	return open;
 }
 
 void Window::setWindowTitle(const std::string &title)
