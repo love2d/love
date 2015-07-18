@@ -48,7 +48,7 @@ class Fixture;
 struct bodyudata
 {
 	// Reference to arbitrary data.
-	Reference *ref;
+	Reference *ref = nullptr;
 };
 
 /**

@@ -238,8 +238,10 @@ static int w_love_isVersionCompatible(lua_State *L)
 	return 1;
 }
 
-int luaopen_love(lua_State * L)
+int luaopen_love(lua_State *L)
 {
+	love::luax_insistpinnedthread(L);
+
 	love::luax_insistglobal(L, "love");
 
 	// Set version information.

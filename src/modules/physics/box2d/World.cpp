@@ -36,6 +36,7 @@ namespace box2d
 
 World::ContactCallback::ContactCallback()
 	: ref(nullptr)
+	, L(nullptr)
 {
 }
 
@@ -48,10 +49,9 @@ World::ContactCallback::~ContactCallback()
 void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse *impulse)
 {
 	// Process contacts.
-	if (ref != nullptr)
+	if (ref != nullptr && L != nullptr)
 	{
-		lua_State *L = ref->getL();
-		ref->push();
+		ref->push(L);
 
 		// Push first fixture.
 		{
@@ -97,6 +97,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 
 World::ContactFilter::ContactFilter()
 	: ref(nullptr)
+	, L(nullptr)
 {
 }
 
@@ -124,10 +125,9 @@ bool World::ContactFilter::process(Fixture *a, Fixture *b)
 		(filterB[1] & filterA[0]) == 0)
 		return false; // A and B aren't set to collide
 
-	if (ref != nullptr)
+	if (ref != nullptr && L != nullptr)
 	{
-		lua_State *L = ref->getL();
-		ref->push();
+		ref->push(L);
 		luax_pushtype(L, PHYSICS_FIXTURE_ID, a);
 		luax_pushtype(L, PHYSICS_FIXTURE_ID, b);
 		lua_call(L, 2, 1);
@@ -136,50 +136,51 @@ bool World::ContactFilter::process(Fixture *a, Fixture *b)
 	return true;
 }
 
-World::QueryCallback::QueryCallback()
-	: ref(nullptr)
+World::QueryCallback::QueryCallback(lua_State *L, int idx)
+	: L(L)
+	, funcidx(idx)
 {
+	luaL_checktype(L, funcidx, LUA_TFUNCTION);
 }
 
 World::QueryCallback::~QueryCallback()
 {
-	if (ref != nullptr)
-		delete ref;
 }
 
 bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 {
-	if (ref != nullptr)
+	if (L != nullptr)
 	{
-		lua_State *L = ref->getL();
-		ref->push();
+		lua_pushvalue(L, funcidx);
 		Fixture *f = (Fixture *)Memoizer::find(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		luax_pushtype(L, PHYSICS_FIXTURE_ID, f);
 		lua_call(L, 1, 1);
-		return luax_toboolean(L, -1);
+		bool cont = luax_toboolean(L, -1);
+		lua_pop(L, 1);
+		return cont;
 	}
+
 	return true;
 }
 
-World::RayCastCallback::RayCastCallback()
-	: ref(nullptr)
+World::RayCastCallback::RayCastCallback(lua_State *L, int idx)
+	: L(L)
+	, funcidx(idx)
 {
+	luaL_checktype(L, funcidx, LUA_TFUNCTION);
 }
 
 World::RayCastCallback::~RayCastCallback()
 {
-	if (ref != nullptr)
-		delete ref;
 }
 
 float32 World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float32 fraction)
 {
-	if (ref != nullptr)
+	if (L != nullptr)
 	{
-		lua_State *L = ref->getL();
-		ref->push();
+		lua_pushvalue(L, funcidx);
 		Fixture *f = (Fixture *)Memoizer::find(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
@@ -193,8 +194,11 @@ float32 World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &
 		lua_call(L, 6, 1);
 		if (!lua_isnumber(L, -1))
 			luaL_error(L, "Raycast callback didn't return a number!");
-		return (float32)lua_tonumber(L, -1);
+		float32 fraction = (float32) lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		return fraction;
 	}
+
 	return 0;
 }
 
@@ -345,24 +349,28 @@ int World::setCallbacks(lua_State *L)
 	{
 		lua_pushvalue(L, 1);
 		begin.ref = luax_refif(L, LUA_TFUNCTION);
+		begin.L = L;
 	}
 
 	if (nargs >= 2)
 	{
 		lua_pushvalue(L, 2);
 		end.ref = luax_refif(L, LUA_TFUNCTION);
+		end.L = L;
 	}
 
 	if (nargs >= 3)
 	{
 		lua_pushvalue(L, 3);
 		presolve.ref = luax_refif(L, LUA_TFUNCTION);
+		presolve.L = L;
 	}
 
 	if (nargs >= 4)
 	{
 		lua_pushvalue(L, 4);
 		postsolve.ref = luax_refif(L, LUA_TFUNCTION);
+		postsolve.L = L;
 	}
 
 	return 0;
@@ -377,6 +385,11 @@ int World::getCallbacks(lua_State *L)
 	return 4;
 }
 
+void World::setCallbacksL(lua_State *L)
+{
+	begin.L = end.L = presolve.L = postsolve.L = filter.L = L;
+}
+
 int World::setContactFilter(lua_State *L)
 {
 	if (!lua_isnoneornil(L, 1))
@@ -385,6 +398,7 @@ int World::setContactFilter(lua_State *L)
 	if (filter.ref)
 		delete filter.ref;
 	filter.ref = luax_refif(L, LUA_TFUNCTION);
+	filter.L = L;
 	return 0;
 }
 
@@ -519,8 +533,7 @@ int World::queryBoundingBox(lua_State *L)
 	box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
 	box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
 	luaL_checktype(L, 5, LUA_TFUNCTION);
-	if (query.ref) delete query.ref;
-	query.ref = luax_refif(L, LUA_TFUNCTION);
+	QueryCallback query(L, 5);
 	world->QueryAABB(&query, box);
 	return 0;
 }
@@ -534,9 +547,7 @@ int World::rayCast(lua_State *L)
 	b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
 	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
 	luaL_checktype(L, 5, LUA_TFUNCTION);
-	if (raycast.ref)
-		delete raycast.ref;
-	raycast.ref = luax_refif(L, LUA_TFUNCTION);
+	RayCastCallback raycast(L, 5);
 	world->RayCast(&raycast, v1, v2);
 	return 0;
 }

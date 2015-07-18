@@ -46,7 +46,7 @@ class World;
 struct jointudata
 {
     // Reference to arbitrary data.
-    Reference *ref;
+    Reference *ref = nullptr;
 };
 
 /**

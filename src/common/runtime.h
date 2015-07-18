@@ -49,7 +49,6 @@ class Reference;
  **/
 enum Registry
 {
-	REGISTRY_GC,
 	REGISTRY_MODULES,
 	REGISTRY_OBJECTS
 };
@@ -389,6 +388,24 @@ int luax_insistregistry(lua_State *L, Registry r);
  * @param r The Registry to get.
  **/
 int luax_getregistry(lua_State *L, Registry r);
+
+/**
+ * Gets (and pins if needed) a "pinned" Lua thread (coroutine) in the specified
+ * Lua state. This will usually be the main Lua thread, unless the first call
+ * to this function for a specific Lua state is made from within a coroutine.
+ * NOTE: This does not push anything to the stack.
+ **/
+lua_State *luax_insistpinnedthread(lua_State *L);
+
+/**
+ * Gets a "pinned" Lua thread (coroutine) in the specified Lua state. This will
+ * usually be the main Lua thread. This can be used to access global variables
+ * in a specific Lua state without needing another alive lua_State value.
+ * PRECONDITION: luax_insistpinnedthread must have been called on a lua_State
+ * value corresponding to the Lua state which will be used with this function.
+ * NOTE: This does not push anything to the stack.
+ **/
+lua_State *luax_getpinnedthread(lua_State *L);
 
 extern "C" { // Also called from luasocket
 	int luax_typerror(lua_State *L, int narg, const char *tname);

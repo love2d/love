@@ -26,13 +26,13 @@ namespace love
 const char REFERENCE_TABLE_NAME[] = "love-references";
 
 Reference::Reference()
-	: L(nullptr)
+	: pinnedL(nullptr)
 	, idx(LUA_REFNIL)
 {
 }
 
 Reference::Reference(lua_State *L)
-	: L(L)
+	: pinnedL(nullptr)
 	, idx(LUA_REFNIL)
 {
 	ref(L);
@@ -46,7 +46,7 @@ Reference::~Reference()
 void Reference::ref(lua_State *L)
 {
 	unref(); // Just to be safe.
-	this->L = L;
+	pinnedL = luax_getpinnedthread(L);
 	luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
 	lua_insert(L, -2); // Move reference table behind value.
 	idx = luaL_ref(L, -2);
@@ -57,38 +57,26 @@ void Reference::unref()
 {
 	if (idx != LUA_REFNIL)
 	{
-		luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
-		luaL_unref(L, -1, idx);
-		lua_pop(L, 1);
+		// We use a pinned thread/coroutine for the Lua state because we know it
+		// hasn't been garbage collected and is valid, as long as the whole lua
+		// state is still open.
+		luax_insist(pinnedL, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
+		luaL_unref(pinnedL, -1, idx);
+		lua_pop(pinnedL, 1);
 		idx = LUA_REFNIL;
 	}
 }
 
-void Reference::push(lua_State *newL)
+void Reference::push(lua_State *L)
 {
 	if (idx != LUA_REFNIL)
 	{
-		luax_insist(newL, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
-		lua_rawgeti(newL, -1, idx);
-		lua_remove(newL, -2);
+		luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
+		lua_rawgeti(L, -1, idx);
+		lua_remove(L, -2);
 	}
 	else
-		lua_pushnil(newL);
-}
-
-void Reference::push()
-{
-	push(L);
-}
-
-lua_State *Reference::getL() const
-{
-	return L;
-}
-
-void Reference::setL(lua_State *newL)
-{
-	L = newL;
+		lua_pushnil(L);
 }
 
 } // love

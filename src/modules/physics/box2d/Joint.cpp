@@ -193,15 +193,7 @@ int Joint::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	if (udata->ref != nullptr)
-	{
-		// We set the Reference's lua_State to this one before deleting it, so
-		// it unrefs using the current lua_State's stack. This is necessary
-		// if setUserData is called in a coroutine.
-		udata->ref->setL(L);
-		delete udata->ref;
-	}
-
+	delete udata->ref;
 	udata->ref = new Reference(L);
 
 	return 0;

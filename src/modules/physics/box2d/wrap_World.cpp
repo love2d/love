@@ -39,6 +39,8 @@ int w_World_update(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	float dt = (float)luaL_checknumber(L, 2);
+	// Make sure the world callbacks are using the calling Lua thread.
+	t->setCallbacksL(L);
 	luax_catchexcept(L, [&](){ t->update(dt); });
 	return 0;
 }

@@ -83,7 +83,7 @@ Reference *luax_refif(lua_State *L, int type)
 
 void luax_printstack(lua_State *L)
 {
-	for (int i = 1; i<=lua_gettop(L); i++)
+	for (int i = 1; i <= lua_gettop(L); i++)
 		std::cout << i << " - " << luaL_typename(L, i) << std::endl;
 }
 
@@ -590,8 +590,6 @@ int luax_insistregistry(lua_State *L, Registry r)
 {
 	switch (r)
 	{
-	case REGISTRY_GC:
-		return luax_insistlove(L, "_gc");
 	case REGISTRY_MODULES:
 		return luax_insistlove(L, "_modules");
 	case REGISTRY_OBJECTS:
@@ -605,8 +603,6 @@ int luax_getregistry(lua_State *L, Registry r)
 {
 	switch (r)
 	{
-	case REGISTRY_GC:
-		return luax_getlove(L, "_gc");
 	case REGISTRY_MODULES:
 		return luax_getlove(L, "_modules");
 	case REGISTRY_OBJECTS:
@@ -615,6 +611,39 @@ int luax_getregistry(lua_State *L, Registry r)
 	default:
 		return luaL_error(L, "Attempted to use invalid registry.");
 	}
+}
+
+static const char *MAIN_THREAD_KEY = "_love_mainthread";
+
+lua_State *luax_insistpinnedthread(lua_State *L)
+{
+	lua_getfield(L, LUA_REGISTRYINDEX, MAIN_THREAD_KEY);
+
+	if (lua_isnoneornil(L, -1))
+	{
+		lua_pop(L, 1);
+
+		// lua_pushthread returns 1 if it's actually the main thread, but we
+		// can't actually get the real main thread if lua_pushthread doesn't
+		// return it (in Lua 5.1 at least), so we ignore that for now...
+		// We do store a strong reference to the current thread/coroutine in
+		// the registry, however.
+		lua_pushthread(L);
+		lua_pushvalue(L, -1);
+		lua_setfield(L, LUA_REGISTRYINDEX, MAIN_THREAD_KEY);
+	}
+
+	lua_State *thread = lua_tothread(L, -1);
+	lua_pop(L, 1);
+	return thread;
+}
+
+lua_State *luax_getpinnedthread(lua_State *L)
+{
+	lua_getfield(L, LUA_REGISTRYINDEX, MAIN_THREAD_KEY);
+	lua_State *thread = lua_tothread(L, -1);
+	lua_pop(L, 1);
+	return thread;
 }
 
 extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)

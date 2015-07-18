@@ -227,15 +227,7 @@ int Fixture::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	if (data->ref != nullptr)
-	{
-		// We set the Reference's lua_State to this one before deleting it, so
-		// it unrefs using the current lua_State's stack. This is necessary
-		// if setUserData is called in a coroutine.
-		data->ref->setL(L);
-		delete data->ref;
-	}
-
+	delete data->ref;
 	data->ref = new Reference(L);
 
 	return 0;

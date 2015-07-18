@@ -47,7 +47,7 @@ namespace box2d
 struct fixtureudata
 {
 	// Reference to arbitrary data.
-	Reference *ref;
+	Reference *ref = nullptr;
 };
 
 /**
