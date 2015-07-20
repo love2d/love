@@ -39,19 +39,17 @@ SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 	return luax_checktype<SpriteBatch>(L, idx, GRAPHICS_SPRITE_BATCH_ID);
 }
 
-int w_SpriteBatch_add(lua_State *L)
+static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int startidx, int index)
 {
-	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	Quad *quad = nullptr;
-	int startidx = 2;
 
-	if (luax_istype(L, 2, GRAPHICS_QUAD_ID))
+	if (luax_istype(L, startidx, GRAPHICS_QUAD_ID))
 	{
-		quad = luax_totype<Quad>(L, 2, GRAPHICS_QUAD_ID);
-		startidx = 3;
+		quad = luax_totype<Quad>(L, startidx, GRAPHICS_QUAD_ID);
+		startidx++;
 	}
-	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
-		return luax_typerror(L, 2, "Quad");
+	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
+		return luax_typerror(L, startidx, "Quad");
 
 	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
 	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
@@ -63,15 +61,23 @@ int w_SpriteBatch_add(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	int index = 0;
 	luax_catchexcept(L, [&]() {
 		if (quad)
-			index = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
+			index = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, index);
 		else
-			index = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
+			index = t->add(x, y, a, sx, sy, ox, oy, kx, ky, index);
 	});
 
+	return index;
+}
+
+int w_SpriteBatch_add(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+
+	int index = w_SpriteBatch_add_or_set(L, t, 2, -1);
 	lua_pushinteger(L, index + 1);
+
 	return 1;
 }
 
@@ -80,33 +86,7 @@ int w_SpriteBatch_set(lua_State *L)
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	int index = (int) luaL_checknumber(L, 2) - 1;
 
-	Quad *quad = nullptr;
-	int startidx = 3;
-
-	if (luax_istype(L, 3, GRAPHICS_QUAD_ID))
-	{
-		quad = luax_totype<Quad>(L, 3, GRAPHICS_QUAD_ID);
-		startidx = 4;
-	}
-	else if (lua_isnil(L, 3) && !lua_isnoneornil(L, 4))
-		return luax_typerror(L, 3, "Quad");
-
-	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
-	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
-	float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
-	float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
-	float sy = (float) luaL_optnumber(L, startidx + 4, sx);
-	float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
-	float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
-	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
-	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
-
-	luax_catchexcept(L, [&]() {
-		if (quad)
-			t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, index);
-		else
-			t->add(x, y, a, sx, sy, ox, oy, kx, ky, index);
-	});
+	w_SpriteBatch_add_or_set(L, t, 3, index);
 
 	return 0;
 }

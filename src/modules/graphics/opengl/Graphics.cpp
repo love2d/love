@@ -494,11 +494,13 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool stencil)
 	}
 	else
 	{
-		int activecanvascount = (int) states.back().canvases.size();
+		int rendertargetcount = 1;
+		if (Canvas::current)
+			rendertargetcount = (int) states.back().canvases.size();
 
 		for (int i = 0; i < (int) colorbuffers.size(); i++)
 		{
-			if (colorbuffers[i] && i < activecanvascount)
+			if (colorbuffers[i] && i < rendertargetcount)
 				attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
 		}
 
@@ -1308,7 +1310,33 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 		throw love::Exception("Out of memory.");
 	}
 
+#ifdef LOVE_IOS
+	SDL_SysWMinfo info = {};
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
+
+	if (info.info.uikit.resolveFramebuffer != 0)
+	{
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, info.info.uikit.resolveFramebuffer);
+
+		// We need to do an explicit MSAA resolve on iOS, because it uses GLES
+		// FBOs rather than a system framebuffer.
+		if (GLAD_ES_VERSION_3_0)
+			glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		else if (GLAD_APPLE_framebuffer_multisample)
+			glResolveMultisampleFramebufferAPPLE();
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, info.info.uikit.resolveFramebuffer);
+	}
+#endif
+
 	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+#ifdef LOVE_IOS
+	// Restore the previous binding for the main framebuffer.
+	if (info.info.uikit.resolveFramebuffer != 0)
+		glBindFramebuffer(GL_FRAMEBUFFER, gl.getDefaultFBO());
+#endif
 
 	if (!copyAlpha)
 	{
