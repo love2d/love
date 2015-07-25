@@ -529,8 +529,11 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_love_window(lua_State *L)
 {
-	Window *instance = nullptr;
-	luax_catchexcept(L, [&](){ instance = sdl::Window::createSingleton(); });
+	Window *instance = instance();
+	if (instance == nullptr)
+		luax_catchexcept(L, [&](){ instance = new love::window::sdl::Window(); });
+	else
+		instance->retain();
 
 	WrappedModule w;
 	w.module = instance;

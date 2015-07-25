@@ -175,9 +175,6 @@ public:
 
 	virtual void requestAttention(bool continuous) = 0;
 
-	//virtual static Window *createSingleton() = 0;
-	// No virtual statics, of course, but you are supposed to implement this static.
-
 	static bool getConstant(const char *in, Setting &out);
 	static bool getConstant(Setting in, const char *&out);
 
@@ -186,10 +183,6 @@ public:
 
 	static bool getConstant(const char *in, MessageBoxType &out);
 	static bool getConstant(MessageBoxType in, const char *&out);
-
-protected:
-
-	static Window *singleton;
 
 private:
 

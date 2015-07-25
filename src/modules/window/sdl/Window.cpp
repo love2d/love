@@ -994,16 +994,6 @@ void Window::requestAttention(bool continuous)
 	// TODO: Linux?
 }
 
-love::window::Window *Window::createSingleton()
-{
-	if (!singleton)
-		singleton = new Window();
-	else
-		singleton->retain();
-
-	return singleton;
-}
-
 const char *Window::getName() const
 {
 	return "love.window.sdl";

@@ -26,12 +26,8 @@ namespace love
 namespace window
 {
 
-Window *Window::singleton = nullptr;
-
 Window::~Window()
 {
-	if (singleton == this)
-		singleton = nullptr;
 }
 
 void Window::swapBuffers()

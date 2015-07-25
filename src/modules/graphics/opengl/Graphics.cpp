@@ -24,7 +24,6 @@
 #include "common/Vector.h"
 
 #include "Graphics.h"
-#include "window/sdl/Window.h"
 #include "font/Font.h"
 #include "Polyline.h"
 
@@ -50,7 +49,8 @@ namespace opengl
 {
 
 Graphics::Graphics()
-	: quadIndices(nullptr)
+	: currentWindow(Module::getInstance<love::window::Window>(Module::M_WINDOW))
+	, quadIndices(nullptr)
 	, width(0)
 	, height(0)
 	, created(false)
@@ -62,20 +62,21 @@ Graphics::Graphics()
 	states.reserve(10);
 	states.push_back(DisplayState());
 
-	currentWindow = love::window::sdl::Window::createSingleton();
+	if (currentWindow.get())
+	{
+		int w, h;
+		love::window::WindowSettings wsettings;
 
-	int w, h;
-	love::window::WindowSettings wsettings;
+		currentWindow->getWindow(w, h, wsettings);
 
-	currentWindow->getWindow(w, h, wsettings);
-
-	if (currentWindow->isOpen())
-		setMode(w, h, wsettings.sRGB);
+		if (currentWindow->isOpen())
+			setMode(w, h, wsettings.sRGB);
+	}
 }
 
 Graphics::~Graphics()
 {
-	// We do this manually so the love objects get released before the window.
+	// We do this manually so the graphics objects are released before the window.
 	states.clear();
 	defaultFont.set(nullptr);
 
@@ -87,8 +88,6 @@ Graphics::~Graphics()
 
 	if (quadIndices)
 		delete quadIndices;
-
-	currentWindow->release();
 }
 
 const char *Graphics::getName() const
@@ -238,6 +237,8 @@ void Graphics::setViewportSize(int width, int height)
 
 bool Graphics::setMode(int width, int height, bool &sRGB)
 {
+	currentWindow.set(Module::getInstance<love::window::Window>(Module::M_WINDOW));
+
 	this->width = width;
 	this->height = height;
 
@@ -355,7 +356,7 @@ bool Graphics::isActive() const
 {
 	// The graphics module is only completely 'active' if there's a window, a
 	// context, and the active variable is set.
-	return active && isCreated() && currentWindow && currentWindow->isOpen();
+	return active && isCreated() && currentWindow.get() && currentWindow->isOpen();
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
@@ -538,7 +539,8 @@ void Graphics::present()
 	glBindRenderbuffer(GL_RENDERBUFFER, info.info.uikit.colorbuffer);
 #endif
 
-	currentWindow->swapBuffers();
+	if (currentWindow.get())
+		currentWindow->swapBuffers();
 
 	// Restore the currently active canvas, if there is one.
 	setCanvas(canvases);

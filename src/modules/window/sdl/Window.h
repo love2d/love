@@ -104,8 +104,6 @@ public:
 
 	void requestAttention(bool continuous);
 
-	static love::window::Window *createSingleton();
-
 	const char *getName() const;
 
 private:

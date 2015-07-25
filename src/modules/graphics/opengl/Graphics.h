@@ -508,7 +508,7 @@ private:
 
 	void checkSetDefaultFont();
 
-	love::window::Window *currentWindow;
+	StrongRef<love::window::Window> currentWindow;
 
 	StrongRef<Font> defaultFont;
 
