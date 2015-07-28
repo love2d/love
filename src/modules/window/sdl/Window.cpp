@@ -90,6 +90,13 @@ void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
 #if !defined(LOVE_LINUX)
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
 #endif
+
+#if defined(LOVE_WINDOWS)
+	// Avoid the Microsoft OpenGL 1.1 software renderer on Windows. Apparently
+	// older Intel drivers like to use it as a fallback when requesting some
+	// unsupported framebuffer attribute values, rather than properly failing.
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+#endif
 }
 
 void Window::setGLContextAttributes(const ContextAttribs &attribs)
