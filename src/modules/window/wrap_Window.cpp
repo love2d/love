@@ -506,6 +506,7 @@ static const luaL_Reg functions[] =
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
 	{ "isOpen", w_isOpen },
+	{ "isCreated", w_isOpen }, // For compatibility with old error handlers...
 	{ "close", w_close },
 	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setPosition", w_setPosition },

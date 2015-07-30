@@ -567,7 +567,7 @@ function love.errhand(msg)
 		return
 	end
 
-	if not love.graphics.isCreated() or not love.window.isCreated() then
+	if not love.graphics.isCreated() or not love.window.isOpen() then
 		local success, status = pcall(love.window.setMode, 800, 600)
 		if not success or not status then
 			return
