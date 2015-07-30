@@ -38,7 +38,7 @@ int w_Canvas_renderTo(lua_State *L)
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	Graphics *graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	auto graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 	if (graphics)
 	{

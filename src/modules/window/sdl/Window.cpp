@@ -466,7 +466,7 @@ bool Window::onSizeChanged(int width, int height)
 
 	SDL_GL_GetDrawableSize(window, &curMode.pixelwidth, &curMode.pixelheight);
 
-	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
 		gfx->setViewportSize(curMode.pixelwidth, curMode.pixelheight);
 
@@ -609,7 +609,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 		updateSettings(newsettings);
 
 		// Update the viewport size now instead of waiting for event polling.
-		graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		if (gfx != nullptr)
 			gfx->setViewportSize(curMode.pixelwidth, curMode.pixelheight);
 

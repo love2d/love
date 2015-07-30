@@ -190,8 +190,8 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 			{
 				using namespace love::filesystem;
 
-				Filesystem *filesystem = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
-				image::Image *imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);
+				auto filesystem  = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
+				auto imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);
 
 				if (!filesystem)
 					throw love::Exception("Filesystem module not loaded!");

@@ -194,7 +194,7 @@ void Graphics::checkSetDefaultFont()
 	// Create a new default font if we don't have one yet.
 	if (!defaultFont.get())
 	{
-		font::Font *fontmodule = Module::getInstance<font::Font>(M_FONT);
+		auto fontmodule = Module::getInstance<font::Font>(M_FONT);
 		if (!fontmodule)
 			throw love::Exception("Font module has not been loaded.");
 
@@ -664,12 +664,12 @@ void Graphics::clearStencil()
 	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-Image *Graphics::newImage(love::image::ImageData *data, const Image::Flags &flags)
+Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Flags &flags)
 {
 	return new Image(data, flags);
 }
 
-Image *Graphics::newImage(love::image::CompressedImageData *cdata, const Image::Flags &flags)
+Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Flags &flags)
 {
 	return new Image(cdata, flags);
 }

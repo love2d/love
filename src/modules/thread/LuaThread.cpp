@@ -118,8 +118,8 @@ void LuaThread::onError()
 	if (error.empty())
 		return;
 
-	event::Event *event = Module::getInstance<event::Event>(Module::M_EVENT);
-	if (!event)
+	auto eventmodule = Module::getInstance<event::Event>(Module::M_EVENT);
+	if (!eventmodule)
 		return;
 
 	Proxy p;
@@ -136,7 +136,7 @@ void LuaThread::onError()
 	for (const StrongRef<Variant> &v : vargs)
 		v->release();
 
-	event->push(msg);
+	eventmodule->push(msg);
 	msg->release();
 }
 

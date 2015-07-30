@@ -44,7 +44,7 @@ namespace sdl
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
 static void windowToPixelCoords(double *x, double *y)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->windowToPixelCoords(x, y);
 }
@@ -52,7 +52,7 @@ static void windowToPixelCoords(double *x, double *y)
 #ifndef LOVE_MACOSX
 static void normalizedToPixelCoords(double *x, double *y)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	int w = 1, h = 1;
 
 	if (window)
@@ -70,7 +70,7 @@ static void normalizedToPixelCoords(double *x, double *y)
 // handling inside the function which triggered them on some backends.
 static int SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 {
-	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 
 	switch (event->type)
 	{
@@ -152,7 +152,6 @@ Message *Event::convert(const SDL_Event &e) const
 	std::vector<StrongRef<Variant>> vargs;
 	vargs.reserve(4);
 
-	love::keyboard::Keyboard *kb = nullptr;
 	love::filesystem::Filesystem *filesystem = nullptr;
 
 	love::keyboard::Keyboard::Key key = love::keyboard::Keyboard::KEY_UNKNOWN;
@@ -176,7 +175,7 @@ Message *Event::convert(const SDL_Event &e) const
 	case SDL_KEYDOWN:
 		if (e.key.repeat)
 		{
-			kb = Module::getInstance<love::keyboard::Keyboard>(Module::M_KEYBOARD);
+			auto kb = Module::getInstance<love::keyboard::Keyboard>(Module::M_KEYBOARD);
 			if (kb && !kb->hasKeyRepeat())
 				break;
 		}
@@ -394,7 +393,7 @@ Message *Event::convert(const SDL_Event &e) const
 
 Message *Event::convertJoystickEvent(const SDL_Event &e) const
 {
-	joystick::JoystickModule *joymodule = Module::getInstance<joystick::JoystickModule>(Module::M_JOYSTICK);
+	auto joymodule = Module::getInstance<joystick::JoystickModule>(Module::M_JOYSTICK);
 	if (!joymodule)
 		return nullptr;
 

@@ -92,13 +92,26 @@ int w_Image_refresh(lua_State *L)
 int w_Image_getData(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
+	int n = 0;
 
 	if (i->isCompressed())
-		luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, i->getCompressedData());
+	{
+		for (const auto &cdata : i->getCompressedData())
+		{
+			luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, cdata.get());
+			n++;
+		}
+	}
 	else
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i->getImageData());
+	{
+		for (const auto &data : i->getImageData())
+		{
+			luax_pushtype(L, IMAGE_IMAGE_DATA_ID, data.get());
+			n++;
+		}
+	}
 
-	return 1;
+	return n;
 }
 
 static const char *imageFlagName(Image::FlagType flagtype)

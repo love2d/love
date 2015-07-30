@@ -69,16 +69,18 @@ public:
 	 * Creates a new Image. Not that anything is ready to use
 	 * before load is called.
 	 *
-	 * @param data The data from which to load the image.
+	 * @param data The data from which to load the image. Each element in the
+	 * array is a mipmap level. If more than the base level is present, all
+	 * mip levels must be present.
 	 **/
-	Image(love::image::ImageData *data, const Flags &flags);
+	Image(const std::vector<love::image::ImageData *> &data, const Flags &flags);
 
 	/**
 	 * Creates a new Image with compressed image data.
 	 *
 	 * @param cdata The compressed data from which to load the image.
 	 **/
-	Image(love::image::CompressedImageData *cdata, const Flags &flags);
+	Image(const std::vector<love::image::CompressedImageData *> &cdata, const Flags &flags);
 
 	virtual ~Image();
 
@@ -98,8 +100,8 @@ public:
 
 	virtual const void *getHandle() const;
 
-	love::image::ImageData *getImageData() const;
-	love::image::CompressedImageData *getCompressedData() const;
+	const std::vector<StrongRef<love::image::ImageData>> &getImageData() const;
+	const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const;
 
 	virtual void setFilter(const Texture::Filter &f);
 	virtual bool setWrap(const Texture::Wrap &w);
@@ -147,13 +149,14 @@ private:
 
 	GLenum getCompressedFormat(image::CompressedImageData::Format cformat) const;
 
-	// The ImageData from which the texture is created. May be null if
+	// The ImageData from which the texture is created. May be empty if
 	// Compressed image data was used to create the texture.
-	StrongRef<love::image::ImageData> data;
+	// Each element in the array is a mipmap level.
+	std::vector<StrongRef<love::image::ImageData>> data;
 
 	// Or the Compressed Image Data from which the texture is created. May be
-	// null if raw ImageData was used to create the texture.
-	StrongRef<love::image::CompressedImageData> cdata;
+	// empty if raw ImageData was used to create the texture.
+	std::vector<StrongRef<love::image::CompressedImageData>> cdata;
 
 	// OpenGL texture identifier.
 	GLuint texture;

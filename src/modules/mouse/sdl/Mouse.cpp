@@ -36,7 +36,7 @@ namespace sdl
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
 static void windowToPixelCoords(double *x, double *y)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->windowToPixelCoords(x, y);
 }
@@ -44,7 +44,7 @@ static void windowToPixelCoords(double *x, double *y)
 // And vice versa for setting mouse coordinates.
 static void pixelToWindowCoords(double *x, double *y)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->pixelToWindowCoords(x, y);
 }
@@ -146,7 +146,7 @@ void Mouse::getPosition(double &x, double &y) const
 
 void Mouse::setPosition(double x, double y)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 
 	SDL_Window *handle = nullptr;
 	if (window)
@@ -211,14 +211,14 @@ bool Mouse::isVisible() const
 
 void Mouse::setGrabbed(bool grab)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->setMouseGrab(grab);
 }
 
 bool Mouse::isGrabbed() const
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		return window->isMouseGrabbed();
 	else

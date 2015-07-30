@@ -107,12 +107,12 @@ public:
 	/**
 	 * Gets the width of a sub-image at the specified mipmap level.
 	 **/
-	int getWidth(int miplevel) const;
+	int getWidth(int miplevel = 0) const;
 
 	/**
 	 * Gets the height of a sub-image at the specified mipmap level.
 	 **/
-	int getHeight(int miplevel) const;
+	int getHeight(int miplevel = 0) const;
 
 	/**
 	 * Gets the format of the compressed data.

@@ -25,6 +25,7 @@
 #include "image/Image.h"
 #include "font/Rasterizer.h"
 #include "filesystem/wrap_Filesystem.h"
+#include "image/wrap_Image.h"
 
 #include <cassert>
 #include <cstring>
@@ -236,8 +237,8 @@ static const char *imageFlagName(Image::FlagType flagtype)
 
 int w_newImage(lua_State *L)
 {
-	love::image::ImageData *data = nullptr;
-	love::image::CompressedImageData *cdata = nullptr;
+	std::vector<love::image::ImageData *> data;
+	std::vector<love::image::CompressedImageData *> cdata;
 
 	Image::Flags flags;
 	if (!lua_isnoneornil(L, 2))
@@ -252,23 +253,23 @@ int w_newImage(lua_State *L)
 	// Convert to ImageData / CompressedImageData, if necessary.
 	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
 	{
-		love::image::Image *image = Module::getInstance<love::image::Image>(Module::M_IMAGE);
-		if (image == nullptr)
+		auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
+		if (imagemodule == nullptr)
 			return luaL_error(L, "Cannot load images without the love.image module.");
 
 		love::filesystem::FileData *fdata = love::filesystem::luax_getfiledata(L, 1);
 
-		if (image->isCompressed(fdata))
+		if (imagemodule->isCompressed(fdata))
 		{
 			luax_catchexcept(L,
-				[&]() { cdata = image->newCompressedData(fdata); },
+				[&]() { cdata.push_back(imagemodule->newCompressedData(fdata)); },
 				[&](bool) { fdata->release(); }
 			);
 		}
 		else
 		{
 			luax_catchexcept(L,
-				[&]() { data = image->newImageData(fdata); },
+				[&]() { data.push_back(imagemodule->newImageData(fdata)); },
 				[&](bool) { fdata->release(); }
 			);
 		}
@@ -277,27 +278,61 @@ int w_newImage(lua_State *L)
 		releasedata = true;
 	}
 	else if (luax_istype(L, 1, IMAGE_COMPRESSED_IMAGE_DATA_ID))
-		cdata = luax_checktype<love::image::CompressedImageData>(L, 1, IMAGE_COMPRESSED_IMAGE_DATA_ID);
+		cdata.push_back(love::image::luax_checkcompressedimagedata(L, 1));
 	else
-		data = luax_checktype<love::image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
+		data.push_back(love::image::luax_checkimagedata(L, 1));
 
-	if (!data && !cdata)
-		return luaL_error(L, "Error creating image (could not load data.)");
+	if (lua_istable(L, 2))
+	{
+		lua_getfield(L, 2, imageFlagName(Image::FLAG_TYPE_MIPMAPS));
+
+		// Add all manually specified mipmap images to the array of imagedata.
+		// i.e. flags = {mipmaps = {mip1, mip2, ...}}.
+		if (lua_istable(L, -1))
+		{
+			for (size_t i = 1; i <= luax_objlen(L, -1); i++)
+			{
+				lua_rawgeti(L, -1, i);
+
+				if (!data.empty())
+				{
+					if (!luax_istype(L, -1, IMAGE_IMAGE_DATA_ID))
+						luax_convobj(L, -1, "image", "newImageData");
+
+					data.push_back(love::image::luax_checkimagedata(L, -1));
+				}
+				else if (!cdata.empty())
+				{
+					if (!luax_istype(L, -1, IMAGE_COMPRESSED_IMAGE_DATA_ID))
+						luax_convobj(L, -1, "image", "newCompressedData");
+
+					cdata.push_back(love::image::luax_checkcompressedimagedata(L, -1));
+				}
+
+				lua_pop(L, 1);
+			}
+		}
+
+		lua_pop(L, 1);
+	}
 
 	// Create the image.
 	Image *image = nullptr;
 	luax_catchexcept(L,
 		[&]() {
-			if (cdata)
+			if (!cdata.empty())
 				image = instance()->newImage(cdata, flags);
-			else if (data)
+			else if (!data.empty())
 				image = instance()->newImage(data, flags);
 		},
 		[&](bool) {
-			if (releasedata && data)
-				data->release();
-			else if (releasedata && cdata)
-				cdata->release();
+			if (releasedata)
+			{
+				for (auto d : data)
+					d->release();
+				for (auto d : cdata)
+					d->release();
+			}
 		}
 	);
 
@@ -363,10 +398,10 @@ int w_newImageFont(lua_State *L)
 	{
 		Image *i = luax_checktype<Image>(L, 1, GRAPHICS_IMAGE_ID);
 		filter = i->getFilter();
-		love::image::ImageData *id = i->getImageData();
-		if (!id)
+		const auto &idlevels = i->getImageData();
+		if (idlevels.empty())
 			return luaL_argerror(L, 1, "Image must not be compressed.");
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, id);
+		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, idlevels[0].get());
 		lua_replace(L, 1);
 	}
 
