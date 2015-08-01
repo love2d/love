@@ -110,7 +110,7 @@ Image::Image(const std::vector<love::image::CompressedImageData *> &compressedda
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
 {
-	this->flags.sRGB = (flags.sRGB || cdata[0]->isSRGB());
+	this->flags.sRGB = (flags.sRGB || compresseddata[0]->isSRGB());
 
 	width = compresseddata[0]->getWidth(0);
 	height = compresseddata[0]->getHeight(0);
