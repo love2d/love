@@ -1592,11 +1592,6 @@ int w_rectangle(lua_State *L)
 	float rx = (float)luaL_optnumber(L, 6, 0.0);
 	float ry = (float)luaL_optnumber(L, 7, rx);
 
-	if (w > 0.0 && rx >= w / 2.0)
-		return luaL_error(L, "Invalid rectangle x-axis radius (must be less than half the width)");
-	if (h > 0.0 && ry >= h / 2.0)
-		return luaL_error(L, "Invalid rectangle y-axis radius (must be less than half the height)");
-
 	int points;
 	if (lua_isnoneornil(L, 8))
 		points = std::max(rx, ry) > 20.0 ? (int)(std::max(rx, ry) / 2) : 10;

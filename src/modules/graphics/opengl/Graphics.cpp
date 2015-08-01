@@ -1137,6 +1137,13 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 		return;
 	}
 
+	// Radius values that are more than half the rectangle's size aren't handled
+	// correctly (for now)...
+	if (w >= 0.02f)
+		rx = std::min(rx, w / 2.0f - 0.01f);
+	if (h >= 0.02f)
+		ry = std::min(ry, h / 2.0f - 0.01f);
+
 	points = std::max(points, 1);
 
 	const float half_pi = static_cast<float>(LOVE_M_PI / 2);
