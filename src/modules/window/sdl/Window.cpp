@@ -709,13 +709,14 @@ void Window::getPosition(int &x, int &y, int &displayindex)
 
 	SDL_GetWindowPosition(window, &x, &y);
 
-	// SDL always reports 0, 0 for fullscreen windows.
-	if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN))
+	// In SDL <= 2.0.3, fullscreen windows are always reported as 0,0. In every
+	// other case we need to convert the position from global coordinates to the
+	// monitor's coordinate space.
+	if (x != 0 || y != 0)
 	{
 		SDL_Rect displaybounds = {};
 		SDL_GetDisplayBounds(displayindex, &displaybounds);
 
-		// The position needs to be in the monitor's coordinate space.
 		x -= displaybounds.x;
 		y -= displaybounds.y;
 	}
