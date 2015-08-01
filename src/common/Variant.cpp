@@ -31,7 +31,7 @@ static love::Type extractudatatype(lua_State *L, int idx)
 	Type t = INVALID_ID;
 	if (!lua_isuserdata(L, idx))
 		return t;
-	if (luaL_getmetafield(L, idx, "__tostring") == 0)
+	if (luaL_getmetafield(L, idx, "type") == 0)
 		return t;
 	lua_pushvalue(L, idx);
 	int result = lua_pcall(L, 1, 1, 0);

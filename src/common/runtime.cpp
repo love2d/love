@@ -48,6 +48,14 @@ static int w__gc(lua_State *L)
 
 static int w__tostring(lua_State *L)
 {
+	Proxy *p = (Proxy *) lua_touserdata(L, 1);
+	const char *typname = lua_tostring(L, lua_upvalueindex(1));
+	lua_pushfstring(L, "%s: %p", typname, p->object);
+	return 1;
+}
+
+static int w__type(lua_State *L)
+{
 	lua_pushvalue(L, lua_upvalueindex(1));
 	return 1;
 }
@@ -313,9 +321,9 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f, bool pu
 	lua_pushcclosure(L, w__tostring, 1);
 	lua_setfield(L, -2, "__tostring");
 
-	// Add tostring to as type() as well.
+	// Add type
 	lua_pushstring(L, tname);
-	lua_pushcclosure(L, w__tostring, 1);
+	lua_pushcclosure(L, w__type, 1);
 	lua_setfield(L, -2, "type");
 
 	// Add typeOf
@@ -652,15 +660,15 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 	const char *argtname = 0;
 
 	// We want to use the love type name for userdata, if possible.
-	if (argtype == LUA_TUSERDATA && luaL_getmetafield(L, narg, "__tostring") != 0)
+	if (argtype == LUA_TUSERDATA && luaL_getmetafield(L, narg, "type") != 0)
 	{
 		lua_pushvalue(L, narg);
 		if (lua_pcall(L, 1, 1, 0) == 0 && lua_type(L, -1) == LUA_TSTRING)
 		{
 			argtname = lua_tostring(L, -1);
 
-			// Non-love userdata might have a tostring metamethod which doesn't
-			// describe its type, so we only use __tostring for love types.
+			// Non-love userdata might have a type metamethod which doesn't
+			// describe its type properly, so we only use it for love types.
 			love::Type t;
 			if (!love::getType(argtname, t))
 				argtname = 0;
