@@ -63,7 +63,7 @@ public:
 		// Store the size of the uncompressed data as a header.
 #ifdef LOVE_BIG_ENDIAN
 		// Make sure it's little-endian for storage.
-		*(uint32 *) compressedbytes = swap32((uint32) dataSize);
+		*(uint32 *) compressedbytes = swapuint32((uint32) dataSize);
 #else
 		*(uint32 *) compressedbytes = (uint32) dataSize;
 #endif
@@ -110,7 +110,7 @@ public:
 		// Extract the original uncompressed size (stored in our custom header.)
 #ifdef LOVE_BIG_ENDIAN
 		// Convert from stored little-endian to big-endian.
-		uint32 rawsize = swap32(*(uint32 *) data);
+		uint32 rawsize = swapuint32(*(uint32 *) data);
 #else
 		uint32 rawsize = *(uint32 *) data;
 #endif

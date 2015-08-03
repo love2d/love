@@ -38,7 +38,7 @@ inline uint16 swap16big(uint16 x)
 #ifdef LOVE_BIG_ENDIAN
 	return x;
 #else
-	return swap16(x);
+	return swapuint16(x);
 #endif
 }
 

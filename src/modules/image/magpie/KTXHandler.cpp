@@ -170,7 +170,7 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	{
 		uint32 *headerArray = (uint32 *) &header.glType;
 		for (int i = 0; i < 12; i++)
-			headerArray[i] = swap32(headerArray[i]);
+			headerArray[i] = swapuint32(headerArray[i]);
 	}
 
 	header.numberOfMipmapLevels = std::max(header.numberOfMipmapLevels, 1u);
@@ -203,7 +203,7 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 		uint32 mipsize = *(uint32 *) (filebytes + fileoffset);
 
 		if (header.endianness == KTX_ENDIAN_REF_REV)
-			mipsize = swap32(mipsize);
+			mipsize = swapuint32(mipsize);
 
 		fileoffset += sizeof(uint32);
 
@@ -235,7 +235,7 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 		uint32 mipsize = *(uint32 *) (filebytes + fileoffset);
 
 		if (header.endianness == KTX_ENDIAN_REF_REV)
-			mipsize = swap32(mipsize);
+			mipsize = swapuint32(mipsize);
 
 		fileoffset += sizeof(uint32);
 

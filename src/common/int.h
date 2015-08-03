@@ -45,12 +45,12 @@ typedef uint32_t uint32;
 typedef int64_t int64;
 typedef uint64_t uint64;
 
-static inline uint16 swap16(uint16 x)
+static inline uint16 swapuint16(uint16 x)
 {
 	return (x >> 8) | (x << 8);
 }
 
-static inline uint32 swap32(uint32 x)
+static inline uint32 swapuint32(uint32 x)
 {
 	return ((x & 0x000000FF) << 24) |
 	       ((x & 0x0000FF00) <<  8) |
@@ -58,7 +58,7 @@ static inline uint32 swap32(uint32 x)
 	       ((x & 0xFF000000) >> 24);
 }
 
-static inline uint64 swap64(uint64 x)
+static inline uint64 swapuint64(uint64 x)
 {
 	return ((x << 56) & 0xFF00000000000000ULL) | ((x << 40) & 0x00FF000000000000ULL) |
 	       ((x << 24) & 0x0000FF0000000000ULL) | ((x <<  8) & 0x000000FF00000000ULL) |

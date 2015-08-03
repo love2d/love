@@ -117,7 +117,7 @@ void ConvertPVRHeader(PVRTexHeaderV2 header2, PVRTexHeaderV3 *header3)
 		// All of the struct's members are uint32 values, so we can do this.
 		uint32 *headerArray = (uint32 *) &header2;
 		for (size_t i = 0; i < sizeof(PVRTexHeaderV2) / sizeof(uint32); i++)
-			headerArray[i] = swap32(headerArray[i]);
+			headerArray[i] = swapuint32(headerArray[i]);
 	}
 
 	memset(header3, 0, sizeof(PVRTexHeaderV3));
@@ -309,16 +309,16 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	if (header3.version == PVRTEX3_IDENT_REV)
 	{
 		header3.version = PVRTEX3_IDENT;
-		header3.flags = swap32(header3.flags);
-		header3.pixelFormat = swap64(header3.pixelFormat);
-		header3.colorSpace = swap32(header3.colorSpace);
-		header3.channelType = swap32(header3.channelType);
-		header3.height = swap32(header3.height);
-		header3.width = swap32(header3.width);
-		header3.depth = swap32(header3.depth);
-		header3.numFaces = swap32(header3.numFaces);
-		header3.numMipmaps = swap32(header3.numMipmaps);
-		header3.metaDataSize = swap32(header3.metaDataSize);
+		header3.flags = swapuint32(header3.flags);
+		header3.pixelFormat = swapuint64(header3.pixelFormat);
+		header3.colorSpace = swapuint32(header3.colorSpace);
+		header3.channelType = swapuint32(header3.channelType);
+		header3.height = swapuint32(header3.height);
+		header3.width = swapuint32(header3.width);
+		header3.depth = swapuint32(header3.depth);
+		header3.numFaces = swapuint32(header3.numFaces);
+		header3.numMipmaps = swapuint32(header3.numMipmaps);
+		header3.metaDataSize = swapuint32(header3.metaDataSize);
 	}
 
 	if (header3.depth > 1)
