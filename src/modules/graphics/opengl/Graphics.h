@@ -463,44 +463,38 @@ private:
 
 	struct DisplayState
 	{
-		Color color;
-		Color backgroundColor;
+		Color color = Color(255, 255, 255, 255);
+		Color backgroundColor = Color(0, 0, 0, 255);
 
-		BlendMode blendMode;
-		bool blendMultiplyAlpha;
+		BlendMode blendMode = BLEND_ALPHA;
+		bool blendMultiplyAlpha = true;
 
-		float lineWidth;
-		LineStyle lineStyle;
-		LineJoin lineJoin;
+		float lineWidth = 1.0f;
+		LineStyle lineStyle = LINE_SMOOTH;
+		LineJoin lineJoin = LINE_JOIN_MITER;
 
-		float pointSize;
+		float pointSize = 1.0f;
 
-		bool scissor;
-		OpenGL::Viewport scissorBox;
+		bool scissor = false;
+		OpenGL::Viewport scissorBox = OpenGL::Viewport();
 
 		// Stencil.
-		bool stencilTest;
-		bool stencilInvert;
+		bool stencilTest = false;
+		bool stencilInvert = false;
 
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
 
 		std::vector<StrongRef<Canvas>> canvases;
 
-		ColorMask colorMask;
+		ColorMask colorMask = {true, true, true, true};
 
-		bool wireframe;
+		bool wireframe = false;
 
-		Texture::Filter defaultFilter;
+		Texture::Filter defaultFilter = Texture::Filter();
 
-		Texture::FilterMode defaultMipmapFilter;
-		float defaultMipmapSharpness;
-
-		DisplayState();
-		DisplayState(const DisplayState &other);
-		~DisplayState();
-
-		DisplayState &operator = (const DisplayState &other);
+		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_NEAREST;
+		float defaultMipmapSharpness = 0.0f;
 	};
 
 	void restoreState(const DisplayState &s);
