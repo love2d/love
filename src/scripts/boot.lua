@@ -441,8 +441,8 @@ function love.init()
 	if not love.isVersionCompatible(c.version) then
 		local major, minor, revision = c.version:match("^(%d+)%.(%d+)%.(%d+)$")
 		if (not major or not minor or not revision) or (major ~= love._version_major and minor ~= love._version_minor) then
-			local msg = "This game was made for a different version of LOVE.\n"..
-			"It may not be not be compatible with the running version ("..love._version..")."
+			local msg = ("This game indicates it was made for version '%s' of LOVE.\n"..
+				"It may not be compatible with the running version (%s)."):format(c.version, love._version)
 
 			print(msg)
 
