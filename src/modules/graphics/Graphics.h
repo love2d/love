@@ -134,6 +134,14 @@ public:
 	{
 		bool r, g, b, a;
 
+		ColorMask()
+			: r(true), g(true), b(true), a(true)
+		{}
+
+		ColorMask(bool _r, bool _g, bool _b, bool _a)
+			: r(_r), g(_g), b(_b), a(_a)
+		{}
+
 		bool operator == (const ColorMask &m) const
 		{
 			return r == m.r && g == m.g && b == m.b && a == m.a;

@@ -487,7 +487,7 @@ private:
 
 		std::vector<StrongRef<Canvas>> canvases;
 
-		ColorMask colorMask = {true, true, true, true};
+		ColorMask colorMask = ColorMask(true, true, true, true);
 
 		bool wireframe = false;
 
