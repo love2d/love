@@ -5,12 +5,14 @@ os:
 
 shallow_clone: true
 
-
 init:
 # Make VS 2013 command line tools available
 - call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %platform%
 
 install:
+# We need to install NSIS to create the packaged installer executable.
+- choco install nsis -pre -y
+
 # Move all woking directory items except `appveyor.yml` to `love` subdirectory.
 - md love
 - for /D %%i in (*) do @if "%%i" NEQ "love" @move %%i love\%%i
@@ -28,19 +30,14 @@ before_build:
 - cmake -G "Visual Studio 12" -H. -Bbuild
 
 build_script:
-- cmake --build build --target love/love --config Release
+- cmake --build build --target PACKAGE --config Release
 
 after_build:
-# TODO: Find the C++ and C runtime .dll's and zip them.
-- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\Release\*.dll
-- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\Release\love.exe
-- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\changes.txt
-- 7z a love.zip %APPVEYOR_BUILD_FOLDER%\build\love\license.txt
 
 before_test:
 
 test_script:
 
-
 artifacts:
-- path: love.zip
+- path: build\*.zip
+- path: build\*.exe
