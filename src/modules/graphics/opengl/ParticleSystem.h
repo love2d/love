@@ -534,8 +534,7 @@ protected:
 		float lifetime;
 		float life;
 
-		float position[2];
-		float direction;
+		love::Vector position;
 
 		// Particles gravitate towards this point.
 		love::Vector origin;

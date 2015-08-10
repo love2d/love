@@ -256,35 +256,34 @@ void ParticleSystem::initParticle(Particle *p, float t)
 		p->life = (float) rng.random(min, max);
 	p->lifetime = p->life;
 
-	p->position[0] = pos.x;
-	p->position[1] = pos.y;
+	p->position = pos;
 
 	switch (areaSpreadDistribution)
 	{
 	case DISTRIBUTION_UNIFORM:
-		p->position[0] += (float) rng.random(-areaSpread.getX(), areaSpread.getX());
-		p->position[1] += (float) rng.random(-areaSpread.getY(), areaSpread.getY());
+		p->position.x += (float) rng.random(-areaSpread.getX(), areaSpread.getX());
+		p->position.y += (float) rng.random(-areaSpread.getY(), areaSpread.getY());
 		break;
 	case DISTRIBUTION_NORMAL:
-		p->position[0] += (float) rng.randomNormal(areaSpread.getX());
-		p->position[1] += (float) rng.randomNormal(areaSpread.getY());
+		p->position.x += (float) rng.randomNormal(areaSpread.getX());
+		p->position.y += (float) rng.randomNormal(areaSpread.getY());
 		break;
 	case DISTRIBUTION_NONE:
 	default:
 		break;
 	}
 
-	min = direction - spread/2.0f;
-	max = direction + spread/2.0f;
-	p->direction = (float) rng.random(min, max);
-
 	p->origin = pos;
 
 	min = speedMin;
 	max = speedMax;
 	float speed = (float) rng.random(min, max);
-	p->velocity = love::Vector(cosf(p->direction), sinf(p->direction));
-	p->velocity *= speed;
+
+	min = direction - spread/2.0f;
+	max = direction + spread/2.0f;
+	float dir = (float) rng.random(min, max);
+
+	p->velocity = love::Vector(cosf(dir), sinf(dir)) * speed;
 
 	p->linearAcceleration.x = (float) rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
 	p->linearAcceleration.y = (float) rng.random(linearAccelerationMin.y, linearAccelerationMax.y);
@@ -872,8 +871,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 		if (useQuads)
 			textureVerts = quads[p->quadIndex]->getVertices();
 
-		// particle vertices are image vertices transformed by particle information
-		t.setTransformation(p->position[0], p->position[1], p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
+		// particle vertices are image vertices transformed by particle info
+		t.setTransformation(p->position.x, p->position.y, p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
 		t.transform(pVerts, textureVerts, 4);
 
 		// set the texture coordinate and color data for particle vertices
@@ -882,7 +881,8 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 			pVerts[v].s = textureVerts[v].s;
 			pVerts[v].t = textureVerts[v].t;
 
-			// particle colors are stored as floats (0-1) but vertex colors are stored as unsigned bytes (0-255)
+			// Particle colors are stored as floats (0-1) but vertex colors are
+			// unsigned bytes (0-255).
 			pVerts[v].r = (unsigned char) (p->color.r*255);
 			pVerts[v].g = (unsigned char) (p->color.g*255);
 			pVerts[v].b = (unsigned char) (p->color.b*255);
@@ -928,7 +928,7 @@ void ParticleSystem::update(float dt)
 		{
 			// Temp variables.
 			love::Vector radial, tangential;
-			love::Vector ppos(p->position[0], p->position[1]);
+			love::Vector ppos = p->position;
 
 			// Get vector from particle center to particle.
 			radial = ppos - p->origin;
@@ -957,8 +957,7 @@ void ParticleSystem::update(float dt)
 			// Modify position.
 			ppos += p->velocity * dt;
 
-			p->position[0] = ppos.getX();
-			p->position[1] = ppos.getY();
+			p->position = ppos;
 
 			const float t = 1.0f - p->life / p->lifetime;
 
