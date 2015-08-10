@@ -298,6 +298,7 @@ Mesh::DataType Mesh::getAttributeInfo(int attribindex, int &components) const
 
 	DataType type = vertexFormat[attribindex].type;
 	components = vertexFormat[attribindex].components;
+
 	return type;
 }
 

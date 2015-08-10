@@ -20,8 +20,11 @@
 
 #include "wrap_Shader.h"
 #include "graphics/wrap_Texture.h"
+#include "math/MathModule.h"
+
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 namespace love
 {
@@ -148,7 +151,7 @@ int w_Shader_sendInt(lua_State *L)
 	return 0;
 }
 
-int w_Shader_sendFloat(lua_State *L)
+static int w__Shader_sendFloat(lua_State *L, bool colors)
 {
 	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
@@ -157,7 +160,7 @@ int w_Shader_sendFloat(lua_State *L)
 	if (count < 1)
 		return luaL_error(L, "No variable to send.");
 
-	float *values = 0;
+	float *values = nullptr;
 	size_t dimension = 1;
 
 	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
@@ -169,6 +172,24 @@ int w_Shader_sendFloat(lua_State *L)
 
 	if (!values)
 		return luaL_error(L, "Error in arguments.");
+
+	if (colors)
+	{
+		bool gammacorrect = love::graphics::isGammaCorrect();
+		const auto &m = love::math::Math::instance;
+
+		for (int i = 0; i < count; i++)
+		{
+			for (int j = 0; j < (int) dimension; j++)
+			{
+				// the fourth component (alpha) is always already linear, if it exists.
+				if (gammacorrect && i < 4)
+					values[i * dimension + j] = m.gammaToLinear(values[i * dimension + j] / 255.0f);
+				else
+					values[i * dimension + j] /= 255.0f;
+			}
+		}
+	}
 
 	bool should_error = false;
 	try
@@ -187,6 +208,16 @@ int w_Shader_sendFloat(lua_State *L)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
 
 	return 0;
+}
+
+int w_Shader_sendFloat(lua_State *L)
+{
+	return w__Shader_sendFloat(L, false);
+}
+
+int w_Shader_sendColor(lua_State *L)
+{
+	return w__Shader_sendFloat(L, true);
 }
 
 int w_Shader_sendMatrix(lua_State *L)
@@ -372,6 +403,7 @@ static const luaL_Reg functions[] =
 	{ "sendInt",     w_Shader_sendInt },
 	{ "sendBoolean", w_Shader_sendInt },
 	{ "sendFloat",   w_Shader_sendFloat },
+	{ "sendColor",   w_Shader_sendColor },
 	{ "sendMatrix",  w_Shader_sendMatrix },
 	{ "sendTexture", w_Shader_sendTexture },
 	{ "send",        w_Shader_send },

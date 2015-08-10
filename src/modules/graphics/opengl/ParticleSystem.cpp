@@ -43,11 +43,6 @@ namespace
 
 love::math::RandomGenerator rng;
 
-Colorf colorToFloat(const Color &c)
-{
-	return Colorf((float)c.r/255.0f, (float)c.g/255.0f, (float)c.b/255.0f, (float)c.a/255.0f);
-}
-
 float calculate_variation(float inner, float outer, float var)
 {
 	float low = inner - (outer/2.0f)*var;
@@ -706,30 +701,36 @@ love::Vector ParticleSystem::getOffset() const
 	return offset;
 }
 
-void ParticleSystem::setColor(const Color &color)
+void ParticleSystem::setColor(const Colorf &color)
 {
-	colors.resize(1);
-	colors[0] = colorToFloat(color);
+	setColor({color});
 }
 
-void ParticleSystem::setColor(const std::vector<Color> &newColors)
+void ParticleSystem::setColor(const std::vector<Colorf> &newColors)
 {
-	colors.resize(newColors.size());
-	for (size_t i = 0; i < newColors.size(); ++i)
-		colors[i] = colorToFloat(newColors[i]);
-}
+	colors = newColors;
 
-std::vector<Color> ParticleSystem::getColor() const
-{
-	// The particle system stores colors as floats...
-	std::vector<Color> ncolors(colors.size());
-
-	for (size_t i = 0; i < colors.size(); ++i)
+	for (Colorf &c : colors)
 	{
-		ncolors[i].r = (unsigned char) (colors[i].r * 255);
-		ncolors[i].g = (unsigned char) (colors[i].g * 255);
-		ncolors[i].b = (unsigned char) (colors[i].b * 255);
-		ncolors[i].a = (unsigned char) (colors[i].a * 255);
+		// We want to store the colors as [0, 1], rather than [0, 255].
+		c.r /= 255.0f;
+		c.g /= 255.0f;
+		c.b /= 255.0f;
+		c.a /= 255.0f;
+	}
+}
+
+std::vector<Colorf> ParticleSystem::getColor() const
+{
+	// The particle system stores colors in the range of [0, 1]...
+	std::vector<Colorf> ncolors(colors);
+
+	for (Colorf &c : ncolors)
+	{
+		c.r *= 255.0f;
+		c.g *= 255.0f;
+		c.b *= 255.0f;
+		c.a *= 255.0f;
 	}
 
 	return ncolors;

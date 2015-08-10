@@ -351,7 +351,6 @@ function love.init()
 			resizable = false,
 			centered = true,
 			highdpi = false,
-			srgb = false,
 		},
 		modules = {
 			event = true,
@@ -375,6 +374,7 @@ function love.init()
 		identity = false,
 		appendidentity = false,
 		accelerometerjoystick = true, -- Only relevant for Android / iOS.
+		gammacorrect = false,
 	}
 
 	-- Console hack, part 1.
@@ -406,6 +406,10 @@ function love.init()
 	-- Hack for disabling accelerometer-as-joystick on Android / iOS.
 	if love._setAccelerometerAsJoystick then
 		love._setAccelerometerAsJoystick(c.accelerometerjoystick)
+	end
+
+	if love._setGammaCorrect then
+		love._setGammaCorrect(c.gammacorrect)
 	end
 
 	-- Gets desired modules.
@@ -471,13 +475,12 @@ function love.init()
 			centered = c.window.centered,
 			display = c.window.display,
 			highdpi = c.window.highdpi,
-			srgb = c.window.srgb,
 			x = c.window.x,
 			y = c.window.y,
 		}), "Could not set window mode")
 		love.window.setTitle(c.window.title or c.title)
 		if c.window.icon then
-			assert(love.image, "If an icon is set in love.conf, love.image has to be loaded!")
+			assert(love.image, "If an icon is set in love.conf, love.image must be loaded!")
 			love.window.setIcon(love.image.newImageData(c.window.icon))
 		end
 	end
@@ -589,13 +592,7 @@ function love.errhand(msg)
 	love.graphics.reset()
 	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
 
-	local sRGB = select(3, love.window.getMode()).srgb
-	if sRGB and love.math then
-		love.graphics.setBackgroundColor(love.math.gammaToLinear(89, 157, 220))
-	else
-		love.graphics.setBackgroundColor(89, 157, 220)
-	end
-
+	love.graphics.setBackgroundColor(89, 157, 220)
 	love.graphics.setColor(255, 255, 255, 255)
 
 	local trace = debug.traceback()

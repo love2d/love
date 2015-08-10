@@ -66,7 +66,7 @@ public:
 	const char *getName() const;
 
 	virtual void setViewportSize(int width, int height);
-	virtual bool setMode(int width, int height, bool &sRGB);
+	virtual bool setMode(int width, int height);
 	virtual void unSetMode();
 
 	virtual void setActive(bool active);
@@ -84,12 +84,12 @@ public:
 	/**
 	 * Clears the screen to a specific color.
 	 **/
-	void clear(Color c);
+	void clear(Colorf c);
 
 	/**
 	 * Clears each active canvas to a different color.
 	 **/
-	void clear(const std::vector<Color> &colors);
+	void clear(const std::vector<Colorf> &colors);
 
 	/**
 	 * Discards the contents of the screen.
@@ -183,26 +183,28 @@ public:
 
 	Text *newText(Font *font, const std::string &text = "");
 
+	bool isGammaCorrect() const;
+
 	/**
 	 * Sets the foreground color.
 	 * @param c The new foreground color.
 	 **/
-	void setColor(Color c);
+	void setColor(Colorf c);
 
 	/**
 	 * Gets current color.
 	 **/
-	Color getColor() const;
+	Colorf getColor() const;
 
 	/**
 	 * Sets the background Color.
 	 **/
-	void setBackgroundColor(Color c);
+	void setBackgroundColor(Colorf c);
 
 	/**
 	 * Gets the current background color.
 	 **/
-	Color getBackgroundColor() const;
+	Colorf getBackgroundColor() const;
 
 	void setFont(Font *font);
 	Font *getFont();
@@ -463,8 +465,8 @@ private:
 
 	struct DisplayState
 	{
-		Color color = Color(255, 255, 255, 255);
-		Color backgroundColor = Color(0, 0, 0, 255);
+		Colorf color = Colorf(255.0, 255.0, 255.0, 255.0);
+		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 255.0);
 
 		BlendMode blendMode = BLEND_ALPHA;
 		bool blendMultiplyAlpha = true;

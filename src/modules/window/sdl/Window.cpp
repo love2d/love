@@ -58,9 +58,14 @@ Window::Window()
 	, context(nullptr)
 	, displayedWindowError(false)
 	, displayedContextError(false)
+	, hasSDL203orEarlier(false)
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
+
+	SDL_version version = {};
+	SDL_GetVersion(&version);
+	hasSDL203orEarlier = (version.major == 2 && version.minor == 0 && version.patch <= 3);
 }
 
 Window::~Window()
@@ -84,12 +89,17 @@ void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (msaa > 0) ? msaa : 0);
 
-	// SDL or GLX may have bugs with this: https://bugzilla.libsdl.org/show_bug.cgi?id=2897
-	// It's fine to leave the attribute disabled on desktops though, because in
-	// practice the framebuffer will be sRGB-capable even if it's not requested.
-#if !defined(LOVE_LINUX)
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
-#endif
+
+	const char *driver = SDL_GetCurrentVideoDriver();
+	if (driver && strstr(driver, "x11") == driver)
+	{
+		// Always disable the sRGB flag when GLX is used with older SDL versions,
+		// because of this bug: https://bugzilla.libsdl.org/show_bug.cgi?id=2897
+		// In practice GLX will always give an sRGB-capable framebuffer anyway.
+		if (hasSDL203orEarlier)
+			SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
+	}
 
 #if defined(LOVE_WINDOWS)
 	// Avoid the Microsoft OpenGL 1.1 software renderer on Windows. Apparently
@@ -154,7 +164,7 @@ bool Window::checkGLVersion(const ContextAttribs &attribs)
 	return true;
 }
 
-bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool sRGB)
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa)
 {
 	bool preferGLES = false;
 
@@ -171,6 +181,14 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		if (curdriver && strstr(curdriver, glesdriver) == curdriver)
 		{
 			preferGLES = true;
+
+			// Prior to SDL 2.0.4, backends that use OpenGL ES didn't properly
+			// ask for a sRGB framebuffer when requested by SDL_GL_SetAttribute.
+			// FIXME: This doesn't account for windowing backends that sometimes
+			// use EGL, e.g. the X11 and windows SDL backends.
+			if (hasSDL203orEarlier)
+				graphics::setGammaCorrect(false);
+
 			break;
 		}
 	}
@@ -192,11 +210,8 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		{2, 0, true,  debug}, // OpenGL ES 2.
 	};
 
-	SDL_version sdlversion = {};
-	SDL_GetVersion(&sdlversion);
-
 	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
-	if (sdlversion.major == 2 && sdlversion.minor == 0 && sdlversion.patch <= 3)
+	if (hasSDL203orEarlier)
 		attribslist.erase(attribslist.begin() + 1);
 
 	// Move OpenGL ES to the front of the list if we should prefer GLES.
@@ -225,7 +240,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		}
 
 		int curMSAA  = msaa;
-		bool curSRGB = sRGB;
+		bool curSRGB = love::graphics::isGammaCorrect();
 
 		setGLFramebufferAttributes(curMSAA, curSRGB);
 		setGLContextAttributes(attribs);
@@ -308,7 +323,10 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		}
 
 		if (context)
+		{
+			love::graphics::setGammaCorrect(curSRGB);
 			break;
+		}
 	}
 
 	if (!context || !window)
@@ -428,7 +446,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	close();
 
-	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.sRGB))
+	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa))
 		return false;
 
 	// Make sure the window keeps any previously set icon.
@@ -451,7 +469,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
-		gfx->setMode(curMode.pixelwidth, curMode.pixelheight, curMode.settings.sRGB);
+		gfx->setMode(curMode.pixelwidth, curMode.pixelheight);
 
 	return true;
 }
@@ -520,8 +538,6 @@ void Window::updateSettings(const WindowSettings &newsettings)
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
 	else
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-
-	curMode.settings.sRGB = newsettings.sRGB;
 
 	// Verify MSAA setting.
 	int buffers = 0;

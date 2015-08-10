@@ -54,7 +54,7 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	std::vector<Color> colors(1);
+	std::vector<Colorf> colors(1);
 
 	if (lua_isnoneornil(L, 1))
 		colors[0].set(0, 0, 0, 0);
@@ -67,20 +67,20 @@ int w_clear(lua_State *L)
 			for (int j = 1; j <= 4; j++)
 				lua_rawgeti(L, i + 1, j);
 
-			colors[i].r = (unsigned char) luaL_checkinteger(L, -4);
-			colors[i].g = (unsigned char) luaL_checkinteger(L, -3);
-			colors[i].b = (unsigned char) luaL_checkinteger(L, -2);
-			colors[i].a = (unsigned char) luaL_optinteger(L, -1, 255);
+			colors[i].r = (float) luaL_checknumber(L, -4);
+			colors[i].g = (float) luaL_checknumber(L, -3);
+			colors[i].b = (float) luaL_checknumber(L, -2);
+			colors[i].a = (float) luaL_optnumber(L, -1, 255);
 
 			lua_pop(L, 4);
 		}
 	}
 	else
 	{
-		colors[0].r = (unsigned char) luaL_checkinteger(L, 1);
-		colors[0].g = (unsigned char) luaL_checkinteger(L, 2);
-		colors[0].b = (unsigned char) luaL_checkinteger(L, 3);
-		colors[0].a = (unsigned char) luaL_optinteger(L, 4, 255);
+		colors[0].r = (float) luaL_checknumber(L, 1);
+		colors[0].g = (float) luaL_checknumber(L, 2);
+		colors[0].b = (float) luaL_checknumber(L, 3);
+		colors[0].a = (float) luaL_optnumber(L, 4, 255);
 	}
 
 	luax_catchexcept(L, [&]() {
@@ -133,6 +133,12 @@ int w_isCreated(lua_State *L)
 int w_isActive(lua_State *L)
 {
 	luax_pushboolean(L, instance()->isActive());
+	return 1;
+}
+
+int w_isGammaCorrect(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isGammaCorrect());
 	return 1;
 }
 
@@ -245,7 +251,7 @@ int w_newImage(lua_State *L)
 	{
 		luaL_checktype(L, 2, LUA_TTABLE);
 		flags.mipmaps = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_MIPMAPS), flags.mipmaps);
-		flags.sRGB = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_SRGB), flags.sRGB);
+		flags.linear = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_LINEAR), flags.linear);
 	}
 
 	bool releasedata = false;
@@ -617,24 +623,6 @@ static Mesh::DrawMode luax_optmeshdrawmode(lua_State *L, int idx, Mesh::DrawMode
 	return def;
 }
 
-static inline size_t writeVertexByteData(lua_State *L, int startidx, int components, char *data)
-{
-	uint8 *componentdata = (uint8 *) data;
-	for (int i = 0; i < components; i++)
-		componentdata[i] = (uint8) luaL_optnumber(L, startidx + i, 255);
-
-	return sizeof(uint8) * components;
-}
-
-static inline size_t writeVertexFloatData(lua_State *L, int startidx, int components, char *data)
-{
-	float *componentdata = (float *) data;
-	for (int i = 0; i < components; i++)
-		componentdata[i] = (float) luaL_optnumber(L, startidx + i, 0);
-
-	return sizeof(float) * components;
-}
-
 static Mesh *newStandardMesh(lua_State *L)
 {
 	Mesh *t = nullptr;
@@ -670,10 +658,20 @@ static Mesh *newStandardMesh(lua_State *L)
 			v.y = (float) luaL_checknumber(L, -7);
 			v.s = (float) luaL_optnumber(L, -6, 0.0);
 			v.t = (float) luaL_optnumber(L, -5, 0.0);
-			v.r = (unsigned char) luaL_optinteger(L, -4, 255);
-			v.g = (unsigned char) luaL_optinteger(L, -3, 255);
-			v.b = (unsigned char) luaL_optinteger(L, -2, 255);
-			v.a = (unsigned char) luaL_optinteger(L, -1, 255);
+
+			Colorf c = {
+				(float) luaL_optnumber(L, -4, 255) / 255.0f,
+				(float) luaL_optnumber(L, -3, 255) / 255.0f,
+				(float) luaL_optnumber(L, -2, 255) / 255.0f,
+				(float) luaL_optnumber(L, -1, 255) / 255.0f
+			};
+
+			gammaCorrectColor(c);
+
+			v.r = (unsigned char) (c.r * 255.0f);
+			v.g = (unsigned char) (c.g * 255.0f);
+			v.b = (unsigned char) (c.b * 255.0f);
+			v.a = (unsigned char) (c.a * 255.0f);
 
 			lua_pop(L, 9);
 			vertices.push_back(v);
@@ -799,16 +797,7 @@ static Mesh *newCustomMesh(lua_State *L)
 				}
 
 				// Fetch the values from Lua and store them in data buffer.
-				switch (vertexformat[i].type)
-				{
-				case Mesh::DATA_BYTE:
-					writeVertexByteData(L, -components, components, data);
-					break;
-				case Mesh::DATA_FLOAT:
-				default:
-					writeVertexFloatData(L, -components, components, data);
-					break;
-				}
+				luax_writeAttributeData(L, -components, vertexformat[i].type, components, data);
 
 				lua_pop(L, components);
 
@@ -867,25 +856,25 @@ int w_newText(lua_State *L)
 
 int w_setColor(lua_State *L)
 {
-	Color c;
+	Colorf c;
 	if (lua_istable(L, 1))
 	{
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 1, i);
 
-		c.r = (unsigned char) luaL_checknumber(L, -4);
-		c.g = (unsigned char) luaL_checknumber(L, -3);
-		c.b = (unsigned char) luaL_checknumber(L, -2);
-		c.a = (unsigned char) luaL_optnumber(L, -1, 255);
+		c.r = (float) luaL_checknumber(L, -4);
+		c.g = (float) luaL_checknumber(L, -3);
+		c.b = (float) luaL_checknumber(L, -2);
+		c.a = (float) luaL_optnumber(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char) luaL_checknumber(L, 1);
-		c.g = (unsigned char) luaL_checknumber(L, 2);
-		c.b = (unsigned char) luaL_checknumber(L, 3);
-		c.a = (unsigned char) luaL_optnumber(L, 4, 255);
+		c.r = (float) luaL_checknumber(L, 1);
+		c.g = (float) luaL_checknumber(L, 2);
+		c.b = (float) luaL_checknumber(L, 3);
+		c.a = (float) luaL_optnumber(L, 4, 255);
 	}
 	instance()->setColor(c);
 	return 0;
@@ -893,35 +882,35 @@ int w_setColor(lua_State *L)
 
 int w_getColor(lua_State *L)
 {
-	Color c = instance()->getColor();
-	lua_pushinteger(L, c.r);
-	lua_pushinteger(L, c.g);
-	lua_pushinteger(L, c.b);
-	lua_pushinteger(L, c.a);
+	Colorf c = instance()->getColor();
+	lua_pushnumber(L, c.r);
+	lua_pushnumber(L, c.g);
+	lua_pushnumber(L, c.b);
+	lua_pushnumber(L, c.a);
 	return 4;
 }
 
 int w_setBackgroundColor(lua_State *L)
 {
-	Color c;
+	Colorf c;
 	if (lua_istable(L, 1))
 	{
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 1, i);
 
-		c.r = (unsigned char) luaL_checknumber(L, -4);
-		c.g = (unsigned char) luaL_checknumber(L, -3);
-		c.b = (unsigned char) luaL_checknumber(L, -2);
-		c.a = (unsigned char) luaL_optnumber(L, -1, 255);
+		c.r = (float) luaL_checknumber(L, -4);
+		c.g = (float) luaL_checknumber(L, -3);
+		c.b = (float) luaL_checknumber(L, -2);
+		c.a = (float) luaL_optnumber(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char) luaL_checknumber(L, 1);
-		c.g = (unsigned char) luaL_checknumber(L, 2);
-		c.b = (unsigned char) luaL_checknumber(L, 3);
-		c.a = (unsigned char) luaL_optnumber(L, 4, 255);
+		c.r = (float) luaL_checknumber(L, 1);
+		c.g = (float) luaL_checknumber(L, 2);
+		c.b = (float) luaL_checknumber(L, 3);
+		c.a = (float) luaL_optnumber(L, 4, 255);
 	}
 	instance()->setBackgroundColor(c);
 	return 0;
@@ -929,11 +918,11 @@ int w_setBackgroundColor(lua_State *L)
 
 int w_getBackgroundColor(lua_State *L)
 {
-	Color c = instance()->getBackgroundColor();
-	lua_pushinteger(L, c.r);
-	lua_pushinteger(L, c.g);
-	lua_pushinteger(L, c.b);
-	lua_pushinteger(L, c.a);
+	Colorf c = instance()->getBackgroundColor();
+	lua_pushnumber(L, c.r);
+	lua_pushnumber(L, c.g);
+	lua_pushnumber(L, c.b);
+	lua_pushnumber(L, c.a);
 	return 4;
 }
 
@@ -1837,6 +1826,7 @@ static const luaL_Reg functions[] =
 
 	{ "isCreated", w_isCreated },
 	{ "isActive", w_isActive },
+	{ "isGammaCorrect", w_isGammaCorrect },
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },

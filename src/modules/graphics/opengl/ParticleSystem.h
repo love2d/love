@@ -421,18 +421,18 @@ public:
 	 * Sets the color of the particles.
 	 * @param color The color.
 	 **/
-	void setColor(const Color &color);
+	void setColor(const Colorf &color);
 
 	/**
 	 * Sets the color of the particles.
 	 * @param newColors Array of colors
 	 **/
-	void setColor(const std::vector<Color> &newColors);
+	void setColor(const std::vector<Colorf> &newColors);
 
 	/**
 	 * Returns the color of the particles.
 	 **/
-	std::vector<Color> getColor() const;
+	std::vector<Colorf> getColor() const;
 
 	/**
 	 * Sets a list of Quads to use for particles over their lifetime.

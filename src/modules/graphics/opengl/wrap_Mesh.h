@@ -32,6 +32,9 @@ namespace graphics
 namespace opengl
 {
 
+char *luax_writeAttributeData(lua_State *L, int startidx, Mesh::DataType type, int components, char *data);
+const char *luax_readAttributeData(lua_State *L, Mesh::DataType type, int components, const char *data);
+
 Mesh *luax_checkmesh(lua_State *L, int idx);
 int w_Mesh_setVertices(lua_State *L);
 int w_Mesh_setVertex(lua_State *L);

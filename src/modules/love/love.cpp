@@ -55,6 +55,11 @@
 #	include "libraries/luautf8/lutf8lib.h"
 #endif
 
+// For love::graphics::setGammaCorrect.
+#ifdef LOVE_ENABLE_GRAPHICS
+#	include "graphics/Graphics.h"
+#endif
+
 // Scripts
 #include "scripts/nogame.lua.h"
 #include "scripts/boot.lua.h"
@@ -238,6 +243,14 @@ static int w_love_isVersionCompatible(lua_State *L)
 	return 1;
 }
 
+static int w__setGammaCorrect(lua_State *L)
+{
+#ifdef LOVE_ENABLE_GRAPHICS
+	love::graphics::setGammaCorrect((bool) lua_toboolean(L, 1));
+#endif
+	return 0;
+}
+
 int luaopen_love(lua_State *L)
 {
 	love::luax_insistpinnedthread(L);
@@ -267,6 +280,9 @@ int luaopen_love(lua_State *L)
 	lua_pushcfunction(L, w__setAccelerometerAsJoystick);
 	lua_setfield(L, -2, "_setAccelerometerAsJoystick");
 #endif
+
+	lua_pushcfunction(L, w__setGammaCorrect);
+	lua_setfield(L, -2, "_setGammaCorrect");
 
 	lua_newtable(L);
 

@@ -398,7 +398,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	// Whether the new canvas list is different from the old one.
 	// A more thorough check is done below.
 	bool canvaseschanged = canvases.size() != attachedCanvases.size();
-	bool hasSRGBcanvas = (format == FORMAT_SRGB);
+	bool hasSRGBcanvas = getSizedFormat(format) == FORMAT_SRGB;
 
 	if (canvases.size() > 0)
 	{
@@ -430,7 +430,7 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if (!canvaseschanged && canvases[i] != attachedCanvases[i])
 			canvaseschanged = true;
 
-		if (otherformat == FORMAT_SRGB)
+		if (getSizedFormat(otherformat) == FORMAT_SRGB)
 			hasSRGBcanvas = true;
 	}
 
@@ -484,9 +484,10 @@ void Canvas::startGrab()
 	// Make sure the correct sRGB setting is used when drawing to the canvas.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
-		if (format == FORMAT_SRGB && !gl.hasFramebufferSRGB())
+		bool isSRGB = getSizedFormat(format) == FORMAT_SRGB;
+		if (isSRGB && !gl.hasFramebufferSRGB())
 			gl.setFramebufferSRGB(true);
-		else if (format != FORMAT_SRGB && gl.hasFramebufferSRGB())
+		else if (!isSRGB && gl.hasFramebufferSRGB())
 			gl.setFramebufferSRGB(false);
 	}
 
@@ -655,8 +656,10 @@ Canvas::Format Canvas::getSizedFormat(Canvas::Format format)
 	switch (format)
 	{
 	case FORMAT_NORMAL:
-		// 32-bit render targets don't have guaranteed support on OpenGL ES 2.
-		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8))
+		if (isGammaCorrect())
+			return FORMAT_SRGB;
+		else if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8))
+			// 32-bit render targets don't have guaranteed support on GLES2.
 			return FORMAT_RGBA4;
 		else
 			return FORMAT_RGBA8;

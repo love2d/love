@@ -77,7 +77,6 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"centered", SETTING_CENTERED},
 	{"display", SETTING_DISPLAY},
 	{"highdpi", SETTING_HIGHDPI},
-	{"srgb", SETTING_SRGB},
 	{"refreshrate", SETTING_REFRESHRATE},
 	{"x", SETTING_X},
 	{"y", SETTING_Y},

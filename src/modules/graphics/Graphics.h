@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "Color.h"
 
 // C++
 #include <string>
@@ -32,6 +33,31 @@ namespace love
 {
 namespace graphics
 {
+
+/**
+ * Globally sets whether gamma correction is enabled. Ideally this should be set
+ * prior to using any Graphics module function.
+ **/
+void setGammaCorrect(bool gammacorrect);
+
+/**
+ * Gets whether global gamma correction is enabled.
+ **/
+bool isGammaCorrect();
+
+/**
+ * Gamma-corrects a color (converts it from sRGB to linear RGB, if
+ * gamma correction is enabled.)
+ * The color's components are expected to be in the range of [0, 1].
+ **/
+void gammaCorrectColor(Colorf &c);
+
+/**
+ * Un-gamma-corrects a color (converts it from linear RGB to sRGB, if
+ * gamma correction is enabled.)
+ * The color's components are expected to be in the range of [0, 1].
+ **/
+void unGammaCorrectColor(Colorf &c);
 
 class Graphics : public Module
 {
@@ -74,7 +100,6 @@ public:
 	{
 		SUPPORT_MULTI_CANVAS,
 		SUPPORT_MULTI_CANVAS_FORMATS,
-		SUPPORT_SRGB,
 		SUPPORT_MAX_ENUM
 	};
 
@@ -168,7 +193,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height, bool &sRGB) = 0;
+	virtual bool setMode(int width, int height) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if

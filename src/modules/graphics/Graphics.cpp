@@ -19,11 +19,44 @@
  **/
 
 #include "Graphics.h"
+#include "math/MathModule.h"
 
 namespace love
 {
 namespace graphics
 {
+
+static bool gammaCorrect = false;
+
+void setGammaCorrect(bool gammacorrect)
+{
+	gammaCorrect = gammacorrect;
+}
+
+bool isGammaCorrect()
+{
+	return gammaCorrect;
+}
+
+void gammaCorrectColor(Colorf &c)
+{
+	if (isGammaCorrect())
+	{
+		c.r = math::Math::instance.gammaToLinear(c.r);
+		c.g = math::Math::instance.gammaToLinear(c.g);
+		c.b = math::Math::instance.gammaToLinear(c.b);
+	}
+}
+
+void unGammaCorrectColor(Colorf &c)
+{
+	if (isGammaCorrect())
+	{
+		c.r = math::Math::instance.linearToGamma(c.r);
+		c.g = math::Math::instance.linearToGamma(c.g);
+		c.b = math::Math::instance.linearToGamma(c.b);
+	}
+}
 
 Graphics::~Graphics()
 {
@@ -150,7 +183,6 @@ StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::suppor
 {
 	{ "multicanvas", SUPPORT_MULTI_CANVAS },
 	{ "multicanvasformats", SUPPORT_MULTI_CANVAS_FORMATS },
-	{ "srgb", SUPPORT_SRGB },
 };
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));

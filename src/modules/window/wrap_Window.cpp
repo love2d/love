@@ -107,7 +107,6 @@ int w_setMode(lua_State *L)
 	settings.centered = luax_boolflag(L, 3, settingName(Window::SETTING_CENTERED), true);
 	settings.display = luax_intflag(L, 3, settingName(Window::SETTING_DISPLAY), 1) - 1;
 	settings.highdpi = luax_boolflag(L, 3, settingName(Window::SETTING_HIGHDPI), false);
-	settings.sRGB = luax_boolflag(L, 3, settingName(Window::SETTING_SRGB), false);
 
 	lua_getfield(L, 3, settingName(Window::SETTING_X));
 	lua_getfield(L, 3, settingName(Window::SETTING_Y));
@@ -174,9 +173,6 @@ int w_getMode(lua_State *L)
 
 	luax_pushboolean(L, settings.highdpi);
 	lua_setfield(L, -2, settingName(Window::SETTING_HIGHDPI));
-
-	luax_pushboolean(L, settings.sRGB);
-	lua_setfield(L, -2, settingName(Window::SETTING_SRGB));
 
 	lua_pushnumber(L, settings.refreshrate);
 	lua_setfield(L, -2, settingName(Window::SETTING_REFRESHRATE));

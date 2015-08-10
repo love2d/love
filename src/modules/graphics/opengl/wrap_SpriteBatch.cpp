@@ -144,19 +144,19 @@ int w_SpriteBatch_setColor(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 2, i);
 
-		c.r = (unsigned char) luaL_checkinteger(L, -4);
-		c.g = (unsigned char) luaL_checkinteger(L, -3);
-		c.b = (unsigned char) luaL_checkinteger(L, -2);
-		c.a = (unsigned char) luaL_optinteger(L, -1, 255);
+		c.r = (unsigned char) luaL_checknumber(L, -4);
+		c.g = (unsigned char) luaL_checknumber(L, -3);
+		c.b = (unsigned char) luaL_checknumber(L, -2);
+		c.a = (unsigned char) luaL_optnumber(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char)luaL_checkinteger(L, 2);
-		c.g = (unsigned char)luaL_checkinteger(L, 3);
-		c.b = (unsigned char)luaL_checkinteger(L, 4);
-		c.a = (unsigned char)luaL_optinteger(L, 5, 255);
+		c.r = (unsigned char) luaL_checknumber(L, 2);
+		c.g = (unsigned char) luaL_checknumber(L, 3);
+		c.b = (unsigned char) luaL_checknumber(L, 4);
+		c.a = (unsigned char) luaL_optnumber(L, 5, 255);
 	}
 
 	t->setColor(c);
@@ -169,14 +169,14 @@ int w_SpriteBatch_getColor(lua_State *L)
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	const Color *color = t->getColor();
 
-	// getColor returns NULL if no color is set.
+	// getColor returns null if no color is set.
 	if (!color)
 		return 0;
 
-	lua_pushinteger(L, (lua_Integer) color->r);
-	lua_pushinteger(L, (lua_Integer) color->g);
-	lua_pushinteger(L, (lua_Integer) color->b);
-	lua_pushinteger(L, (lua_Integer) color->a);
+	lua_pushnumber(L, color->r);
+	lua_pushnumber(L, color->g);
+	lua_pushnumber(L, color->b);
+	lua_pushnumber(L, color->a);
 
 	return 4;
 }

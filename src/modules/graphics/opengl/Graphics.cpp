@@ -26,6 +26,7 @@
 #include "Graphics.h"
 #include "font/Font.h"
 #include "Polyline.h"
+#include "math/MathModule.h"
 
 // C++
 #include <vector>
@@ -70,7 +71,7 @@ Graphics::Graphics()
 		currentWindow->getWindow(w, h, wsettings);
 
 		if (currentWindow->isOpen())
-			setMode(w, h, wsettings.sRGB);
+			setMode(w, h);
 	}
 }
 
@@ -235,7 +236,7 @@ void Graphics::setViewportSize(int width, int height)
 	setCanvas(canvases);
 }
 
-bool Graphics::setMode(int width, int height, bool &sRGB)
+bool Graphics::setMode(int width, int height)
 {
 	currentWindow.set(Module::getInstance<love::window::Window>(Module::M_WINDOW));
 
@@ -275,12 +276,12 @@ bool Graphics::setMode(int width, int height, bool &sRGB)
 		|| GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB)
 	{
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-			gl.setFramebufferSRGB(sRGB);
+			gl.setFramebufferSRGB(isGammaCorrect());
 	}
 	else
-		sRGB = false;
+		setGammaCorrect(false);
 
-	Canvas::screenHasSRGB = sRGB;
+	Canvas::screenHasSRGB = isGammaCorrect();
 
 	bool enabledebug = false;
 
@@ -345,7 +346,7 @@ void Graphics::unSetMode()
 void Graphics::setActive(bool enable)
 {
 	// Make sure all pending OpenGL commands have fully executed before
-	// returning, if we're going from active to inactive.
+	// returning, when going from active to inactive. This is required on iOS.
 	if (isCreated() && this->active && !enable)
 		glFinish();
 
@@ -426,13 +427,17 @@ void Graphics::reset()
 	origin();
 }
 
-void Graphics::clear(Color c)
+void Graphics::clear(Colorf c)
 {
-	glClearColor(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
+	Colorf nc = Colorf(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+
+	gammaCorrectColor(nc);
+
+	glClearColor(nc.r, nc.g, nc.b, nc.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Graphics::clear(const std::vector<Color> &colors)
+void Graphics::clear(const std::vector<Colorf> &colors)
 {
 	if (colors.size() == 0)
 		return;
@@ -447,7 +452,16 @@ void Graphics::clear(const std::vector<Color> &colors)
 
 	for (int i = 0; i < (int) colors.size(); i++)
 	{
-		const GLfloat c[] = {colors[i].r/255.f, colors[i].g/255.f, colors[i].b/255.f, colors[i].a/255.f};
+		GLfloat c[] = {colors[i].r/255.f, colors[i].g/255.f, colors[i].b/255.f, colors[i].a/255.f};
+
+		// TODO: Investigate a potential bug on AMD drivers in Windows/Linux
+		// which apparently causes the clear color to be incorrect when mixed
+		// sRGB and linear render targets are active.
+		if (isGammaCorrect())
+		{
+			for (int i = 0; i < 3; i++)
+				c[i] = math::Math::instance.gammaToLinear(c[i]);
+		}
 
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
 			glClearBufferfv(GL_COLOR, i, c);
@@ -785,23 +799,32 @@ Text *Graphics::newText(Font *font, const std::string &text)
 	return new Text(font, text);
 }
 
-void Graphics::setColor(Color c)
+bool Graphics::isGammaCorrect() const
 {
-	glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+	return love::graphics::isGammaCorrect();
+}
+
+void Graphics::setColor(Colorf c)
+{
+	Colorf nc = Colorf(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+
+	gammaCorrectColor(nc);
+
+	glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, nc.r, nc.g, nc.b, nc.a);
 	states.back().color = c;
 }
 
-Color Graphics::getColor() const
+Colorf Graphics::getColor() const
 {
 	return states.back().color;
 }
 
-void Graphics::setBackgroundColor(Color c)
+void Graphics::setBackgroundColor(Colorf c)
 {
 	states.back().backgroundColor = c;
 }
 
-Color Graphics::getBackgroundColor() const
+Colorf Graphics::getBackgroundColor() const
 {
 	return states.back().backgroundColor;
 }
@@ -1456,10 +1479,6 @@ bool Graphics::isSupported(Support feature) const
 		return Canvas::isMultiCanvasSupported();
 	case SUPPORT_MULTI_CANVAS_FORMATS:
 		return Canvas::isMultiFormatMultiCanvasSupported();
-	case SUPPORT_SRGB:
-		// sRGB support for the screen is guaranteed if it's supported as a
-		// Canvas format.
-		return Canvas::isFormatSupported(Canvas::FORMAT_SRGB);
 	default:
 		return false;
 	}

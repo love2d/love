@@ -131,8 +131,8 @@ int w_Image_getFlags(lua_State *L)
 	lua_pushboolean(L, flags.mipmaps);
 	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_MIPMAPS));
 
-	lua_pushboolean(L, flags.sRGB);
-	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_SRGB));
+	lua_pushboolean(L, flags.linear);
+	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_LINEAR));
 
 	return 1;
 }

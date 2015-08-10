@@ -46,7 +46,7 @@ public:
 	// Different Canvas render target formats.
 	enum Format
 	{
-		FORMAT_NORMAL,   // Usually RGBA8 or a similar fallback. Always supported.
+		FORMAT_NORMAL,   // Usually SRGB, RGBA8 or a similar fallback. Always supported.
 		FORMAT_HDR,      // Usually RGBA16F. Not always supported.
 		FORMAT_RGBA4,    // RGBA with 4 bits per channel.
 		FORMAT_RGB5A1,   // RGB with 5 bits per channel, and A with 1 bit.

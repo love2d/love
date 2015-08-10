@@ -20,6 +20,7 @@
 
 #include "Image.h"
 
+#include "graphics/Graphics.h"
 #include "common/int.h"
 
 // STD
@@ -81,6 +82,7 @@ Image::Image(const std::vector<love::image::ImageData *> &imagedata, const Flags
 	, mipmapSharpness(defaultMipmapSharpness)
 	, compressed(false)
 	, flags(flags)
+	, sRGB(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
 {
@@ -107,11 +109,10 @@ Image::Image(const std::vector<love::image::CompressedImageData *> &compressedda
 	, mipmapSharpness(defaultMipmapSharpness)
 	, compressed(true)
 	, flags(flags)
+	, sRGB(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
 {
-	this->flags.sRGB = (flags.sRGB || compresseddata[0]->isSRGB());
-
 	width = compresseddata[0]->getWidth(0);
 	height = compresseddata[0]->getHeight(0);
 
@@ -169,6 +170,14 @@ void Image::preload()
 
 	if (flags.mipmaps)
 		filter.mipmap = defaultMipmapFilter;
+
+	if (!isGammaCorrect())
+		flags.linear = false;
+
+	if (isGammaCorrect() && !flags.linear)
+		sRGB = true;
+	else
+		sRGB = false;
 }
 
 void Image::generateMipmaps()
@@ -204,7 +213,10 @@ void Image::loadDefaultTexture()
 
 void Image::loadFromCompressedData()
 {
-	GLenum iformat = getCompressedFormat(cdata[0]->getFormat());
+	GLenum iformat = getCompressedFormat(cdata[0]->getFormat(), sRGB);
+
+	if (isGammaCorrect() && !sRGB)
+		flags.linear = true;
 
 	int count = 1;
 
@@ -228,13 +240,13 @@ void Image::loadFromCompressedData()
 
 void Image::loadFromImageData()
 {
-	GLenum iformat = flags.sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+	GLenum iformat = sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 	GLenum format  = GL_RGBA;
 
 	// in GLES2, the internalformat and format params of TexImage have to match.
 	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
 	{
-		format  = flags.sRGB ? GL_SRGB_ALPHA : GL_RGBA;
+		format  = sRGB ? GL_SRGB_ALPHA : GL_RGBA;
 		iformat = format;
 	}
 
@@ -257,24 +269,24 @@ bool Image::loadVolatile()
 {
 	OpenGL::TempDebugGroup debuggroup("Image load");
 
-	if (isCompressed() && !hasCompressedTextureSupport(cdata[0]->getFormat(), flags.sRGB))
+	if (isCompressed() && !hasCompressedTextureSupport(cdata[0]->getFormat(), sRGB))
 	{
 		const char *str;
 		if (image::CompressedImageData::getConstant(cdata[0]->getFormat(), str))
 		{
 			throw love::Exception("Cannot create image: "
-			                      "%s%s compressed images are not supported on this system.", flags.sRGB ? "sRGB " : "", str);
+			                      "%s%s compressed images are not supported on this system.", sRGB ? "sRGB " : "", str);
 		}
 		else
 			throw love::Exception("cannot create image: format is not supported on this system.");
 	}
 	else if (!isCompressed())
 	{
-		if (flags.sRGB && !hasSRGBSupport())
+		if (sRGB && !hasSRGBSupport())
 			throw love::Exception("sRGB images are not supported on this system.");
 
 		// GL_EXT_sRGB doesn't support glGenerateMipmap for sRGB textures.
-		if (flags.sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0)
+		if (sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0)
 			&& data.size() <= 1)
 		{
 			flags.mipmaps = false;
@@ -392,7 +404,7 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 
 	// In ES2, the format parameter of TexSubImage must match the internal
 	// format of the texture.
-	if (flags.sRGB && (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0))
+	if (sRGB && (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0))
 		format = GL_SRGB_ALPHA;
 
 	int mipcount = flags.mipmaps ? (int) data.size() : 1;
@@ -560,93 +572,111 @@ bool Image::isCompressed() const
 	return compressed;
 }
 
-GLenum Image::getCompressedFormat(image::CompressedImageData::Format cformat) const
+GLenum Image::getCompressedFormat(image::CompressedImageData::Format cformat, bool &isSRGB) const
 {
 	switch (cformat)
 	{
 	case image::CompressedImageData::FORMAT_DXT1:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
 		else
 			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 	case image::CompressedImageData::FORMAT_DXT3:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
 		else
 			return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	case image::CompressedImageData::FORMAT_DXT5:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
 		else
 			return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 	case image::CompressedImageData::FORMAT_BC4:
+		isSRGB = false;
 		return GL_COMPRESSED_RED_RGTC1;
 	case image::CompressedImageData::FORMAT_BC4s:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_RED_RGTC1;
 	case image::CompressedImageData::FORMAT_BC5:
+		isSRGB = false;
 		return GL_COMPRESSED_RG_RGTC2;
 	case image::CompressedImageData::FORMAT_BC5s:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
 	case image::CompressedImageData::FORMAT_BC6H:
+		isSRGB = false;
 		return GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
 	case image::CompressedImageData::FORMAT_BC6Hs:
+		isSRGB = false;
 		return GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
 	case image::CompressedImageData::FORMAT_BC7:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
 		else
 			return GL_COMPRESSED_RGBA_BPTC_UNORM;
 	case image::CompressedImageData::FORMAT_ETC1:
 		// The ETC2 format can load ETC1 textures.
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
-			return GL_COMPRESSED_RGB8_ETC2;
+		{
+			if (isSRGB)
+				return GL_COMPRESSED_SRGB8_ETC2;
+			else
+				return GL_COMPRESSED_RGB8_ETC2;
+		}
 		else
+		{
+			isSRGB = false;
 			return GL_ETC1_RGB8_OES;
+		}
 	case image::CompressedImageData::FORMAT_ETC2_RGB:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB8_ETC2;
 		else
 			return GL_COMPRESSED_RGB8_ETC2;
 	case image::CompressedImageData::FORMAT_ETC2_RGBA:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
 		else
 			return GL_COMPRESSED_RGBA8_ETC2_EAC;
 	case image::CompressedImageData::FORMAT_ETC2_RGBA1:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 		else
 			return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 	case image::CompressedImageData::FORMAT_EAC_R:
+		isSRGB = false;
 		return GL_COMPRESSED_R11_EAC;
 	case image::CompressedImageData::FORMAT_EAC_Rs:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_R11_EAC;
 	case image::CompressedImageData::FORMAT_EAC_RG:
+		isSRGB = false;
 		return GL_COMPRESSED_RG11_EAC;
 	case image::CompressedImageData::FORMAT_EAC_RGs:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_RG11_EAC;
 	case image::CompressedImageData::FORMAT_PVR1_RGB2:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT;
 		else
 			return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
 	case image::CompressedImageData::FORMAT_PVR1_RGB4:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT;
 		else
 			return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
 	case image::CompressedImageData::FORMAT_PVR1_RGBA2:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT;
 		else
 			return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 	case image::CompressedImageData::FORMAT_PVR1_RGBA4:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT;
 		else
 			return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 	default:
-		if (flags.sRGB)
+		if (isSRGB)
 			return GL_SRGB8_ALPHA8;
 		else
 			return GL_RGBA8;
@@ -719,7 +749,7 @@ bool Image::getConstant(FlagType in, const char *&out)
 StringMap<Image::FlagType, Image::FLAG_TYPE_MAX_ENUM>::Entry Image::flagNameEntries[] =
 {
 	{"mipmaps", Image::FLAG_TYPE_MIPMAPS},
-	{"srgb", Image::FLAG_TYPE_SRGB},
+	{"linear", Image::FLAG_TYPE_LINEAR},
 };
 
 StringMap<Image::FlagType, Image::FLAG_TYPE_MAX_ENUM> Image::flagNames(Image::flagNameEntries, sizeof(Image::flagNameEntries));

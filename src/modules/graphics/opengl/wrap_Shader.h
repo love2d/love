@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_WRAP_PROGRAM_H
 
 #include "common/runtime.h"
+#include "common/config.h"
 #include "Shader.h"
 
 namespace love
@@ -35,6 +36,7 @@ Shader *luax_checkshader(lua_State *L, int idx);
 int w_Shader_getWarnings(lua_State *L);
 int w_Shader_sendInt(lua_State *L);
 int w_Shader_sendFloat(lua_State *L);
+int w_Shader_sendColor(lua_State *L);
 int w_Shader_sendMatrix(lua_State *L);
 int w_Shader_sendTexture(lua_State *L);
 int w_Shader_send(lua_State *L);

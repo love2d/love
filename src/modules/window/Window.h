@@ -57,7 +57,6 @@ public:
 		SETTING_CENTERED,
 		SETTING_DISPLAY,
 		SETTING_HIGHDPI,
-		SETTING_SRGB,
 		SETTING_REFRESHRATE,
 		SETTING_X,
 		SETTING_Y,
@@ -210,7 +209,6 @@ struct WindowSettings
 	bool centered = true;
 	int display = 0;
 	bool highdpi = false;
-	bool sRGB = false;
 	double refreshrate = 0.0;
 	bool useposition = false;
 	int x = 0;

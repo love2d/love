@@ -55,14 +55,14 @@ public:
 	enum FlagType
 	{
 		FLAG_TYPE_MIPMAPS,
-		FLAG_TYPE_SRGB,
+		FLAG_TYPE_LINEAR,
 		FLAG_TYPE_MAX_ENUM
 	};
 
 	struct Flags
 	{
 		bool mipmaps = false;
-		bool sRGB = false;;
+		bool linear = false;
 	};
 
 	/**
@@ -147,7 +147,7 @@ private:
 	void loadFromCompressedData();
 	void loadFromImageData();
 
-	GLenum getCompressedFormat(image::CompressedImageData::Format cformat) const;
+	GLenum getCompressedFormat(image::CompressedImageData::Format cformat, bool &isSRGB) const;
 
 	// The ImageData from which the texture is created. May be empty if
 	// Compressed image data was used to create the texture.
@@ -169,6 +169,8 @@ private:
 
 	// The flags used to initialize this Image.
 	Flags flags;
+
+	bool sRGB;
 
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
