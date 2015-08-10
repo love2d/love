@@ -536,27 +536,27 @@ int w_ParticleSystem_setColors(lua_State *L)
 		if (nColors > 8)
 			return luaL_error(L, "At most eight (8) colors may be used.");
 
+		std::vector<Colorf> colors(nColors);
+
 		if (nColors == 1)
 		{
-			float r = (float) luaL_checknumber(L, 2);
-			float g = (float) luaL_checknumber(L, 3);
-			float b = (float) luaL_checknumber(L, 4);
-			float a = (float) luaL_optnumber(L, 5, 255);
-			t->setColor(Colorf(r,g,b,a));
+			colors[0].r = (float) luaL_checknumber(L, 2);
+			colors[0].g = (float) luaL_checknumber(L, 3);
+			colors[0].b = (float) luaL_checknumber(L, 4);
+			colors[0].a = (float) luaL_optnumber(L, 5, 255);
 		}
 		else
 		{
-			std::vector<Colorf> colors(nColors);
 			for (int i = 0; i < nColors; ++i)
 			{
-				float r = (float) luaL_checknumber(L, 1 + i*4 + 1);
-				float g = (float) luaL_checknumber(L, 1 + i*4 + 2);
-				float b = (float) luaL_checknumber(L, 1 + i*4 + 3);
-				float a = (float) luaL_checknumber(L, 1 + i*4 + 4);
-				colors[i] = Colorf(r,g,b,a);
+				colors[i].r = (float) luaL_checknumber(L, 1 + i*4 + 1);
+				colors[i].g = (float) luaL_checknumber(L, 1 + i*4 + 2);
+				colors[i].b = (float) luaL_checknumber(L, 1 + i*4 + 3);
+				colors[i].a = (float) luaL_checknumber(L, 1 + i*4 + 4);
 			}
-			t->setColor(colors);
 		}
+
+		t->setColor(colors);
 	}
 
 	return 0;

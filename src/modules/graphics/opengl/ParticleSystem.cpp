@@ -700,11 +700,6 @@ love::Vector ParticleSystem::getOffset() const
 	return offset;
 }
 
-void ParticleSystem::setColor(const Colorf &color)
-{
-	setColor({color});
-}
-
 void ParticleSystem::setColor(const std::vector<Colorf> &newColors)
 {
 	colors = newColors;

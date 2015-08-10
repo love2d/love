@@ -419,12 +419,6 @@ public:
 
 	/**
 	 * Sets the color of the particles.
-	 * @param color The color.
-	 **/
-	void setColor(const Colorf &color);
-
-	/**
-	 * Sets the color of the particles.
 	 * @param newColors Array of colors
 	 **/
 	void setColor(const std::vector<Colorf> &newColors);

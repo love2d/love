@@ -69,7 +69,7 @@ Released: N/A
   * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature constant (the features always have guaranteed support now.)
   * Removed the "srgb" Graphics Feature constant (use love.graphics.isGammaCorrect() or love.graphics.getCanvasFormats().srgb instead.)
   * Removed the "srgb" flag in love.window.setMode and in the t.window table in love.conf (Replaced by t.gammacorrect.)
-  * Removed the "premultiplied" blend mode (love.graphics.setBlendMode"alpha", false) now does the same thing.)
+  * Removed the "premultiplied" blend mode (love.graphics.setBlendMode("alpha", false) now does the same thing.)
   * Removed Canvas:getPixel (use Canvas:newImageData instead.)
   * Removed Canvas:clear (use love.graphics.clear instead.)
   * Removed Mesh:getVertices.
