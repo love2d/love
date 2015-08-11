@@ -849,16 +849,16 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
 	OpenGL::TempTransform transform(gl);
-	transform.get() *= t;
+	transform.get() *= Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	const Vertex *textureVerts = texture->getVertices();
 	Vertex *pVerts = particleVerts;
 	Particle *p = pHead;
 
 	bool useQuads = !quads.empty();
+
+	Matrix3 t;
 
 	// set the vertex data for each particle (transformation, texcoords, color)
 	while (p)

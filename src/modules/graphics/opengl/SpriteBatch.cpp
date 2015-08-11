@@ -86,7 +86,7 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if ((index == -1 && next >= size) || index < -1 || index >= size)
 		return -1;
 
-	Matrix4 t(x, y, a, sx, sy, ox, oy, kx, ky);
+	Matrix3 t(x, y, a, sx, sy, ox, oy, kx, ky);
 
 	addv(texture->getVertices(), t, (index == -1) ? next : index);
 
@@ -103,7 +103,7 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	if ((index == -1 && next >= size) || index < -1 || index >= next)
 		return -1;
 
-	Matrix4 t(x, y, a, sx, sy, ox, oy, kx, ky);
+	Matrix3 t(x, y, a, sx, sy, ox, oy, kx, ky);
 
 	addv(quad->getVertices(), t, (index == -1) ? next : index);
 
@@ -222,10 +222,8 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
 
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
 	OpenGL::TempTransform transform(gl);
-	transform.get() *= t;
+	transform.get() *= Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	gl.bindTexture(*(GLuint *) texture->getHandle());
 
@@ -254,7 +252,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(next), quad_indices.getType(), quad_indices.getPointer(0));
 }
 
-void SpriteBatch::addv(const Vertex *v, const Matrix4 &m, int index)
+void SpriteBatch::addv(const Vertex *v, const Matrix3 &m, int index)
 {
 	// Needed for colors.
 	Vertex sprite[4] = {v[0], v[1], v[2], v[3]};

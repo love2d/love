@@ -221,6 +221,11 @@ Matrix3::Matrix3(const Matrix4 &mat4)
 	e[8] = mat4elems[10];
 }
 
+Matrix3::Matrix3(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+{
+	setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+}
+
 Matrix3::~Matrix3()
 {
 }
@@ -286,6 +291,25 @@ Matrix3 Matrix3::transposedInverse() const
 	m.e[8] =  invdet * (e[0]*e[4] - e[3]*e[1]);
 
 	return m;
+}
+
+void Matrix3::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+{
+	float c = cosf(angle), s = sinf(angle);
+	// matrix multiplication carried out on paper:
+	// |1    x| |c -s  | |sx     | | 1 ky  | |1   -ox|
+	// |  1  y| |s  c  | |   sy  | |kx  1  | |  1 -oy|
+	// |     1| |     1| |      1| |      1| |     1 |
+	//   move    rotate    scale     skew      origin
+	e[0] = c * sx - ky * s * sy; // = a
+	e[1] = s * sx + ky * c * sy; // = b
+	e[3] = kx * c * sx - s * sy; // = c
+	e[4] = kx * s * sx + c * sy; // = d
+	e[6] = x - ox * e[0] - oy * e[3];
+	e[7] = y - ox * e[1] - oy * e[4];
+
+	e[2] = e[5] = 0.0f;
+	e[8] = 1.0f;
 }
 
 } // love

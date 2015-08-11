@@ -512,15 +512,13 @@ int w_ParticleSystem_setColors(lua_State *L)
 				// push args[i+2][j+1] onto the stack
 				lua_rawgeti(L, i + 2, j + 1);
 
-			float r = (float) luaL_checknumber(L, -4);
-			float g = (float) luaL_checknumber(L, -3);
-			float b = (float) luaL_checknumber(L, -2);
-			float a = (float) luaL_optnumber(L, -1, 255);
+			colors[i].r = (float) luaL_checknumber(L, -4);
+			colors[i].g = (float) luaL_checknumber(L, -3);
+			colors[i].b = (float) luaL_checknumber(L, -2);
+			colors[i].a = (float) luaL_optnumber(L, -1, 255);
 
 			// pop the color components from the stack
 			lua_pop(L, 4);
-
-			colors[i] = Colorf(r, g, b, a);
 		}
 
 		t->setColor(colors);
@@ -538,22 +536,12 @@ int w_ParticleSystem_setColors(lua_State *L)
 
 		std::vector<Colorf> colors(nColors);
 
-		if (nColors == 1)
+		for (int i = 0; i < nColors; ++i)
 		{
-			colors[0].r = (float) luaL_checknumber(L, 2);
-			colors[0].g = (float) luaL_checknumber(L, 3);
-			colors[0].b = (float) luaL_checknumber(L, 4);
-			colors[0].a = (float) luaL_optnumber(L, 5, 255);
-		}
-		else
-		{
-			for (int i = 0; i < nColors; ++i)
-			{
-				colors[i].r = (float) luaL_checknumber(L, 1 + i*4 + 1);
-				colors[i].g = (float) luaL_checknumber(L, 1 + i*4 + 2);
-				colors[i].b = (float) luaL_checknumber(L, 1 + i*4 + 3);
-				colors[i].a = (float) luaL_checknumber(L, 1 + i*4 + 4);
-			}
+			colors[i].r = (float) luaL_checknumber(L, 1 + i*4 + 1);
+			colors[i].g = (float) luaL_checknumber(L, 1 + i*4 + 2);
+			colors[i].b = (float) luaL_checknumber(L, 1 + i*4 + 3);
+			colors[i].a = (float) luaL_checknumber(L, 1 + i*4 + 4);
 		}
 
 		t->setColor(colors);

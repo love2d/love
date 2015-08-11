@@ -185,6 +185,11 @@ public:
 	 **/
 	Matrix3(const Matrix4 &mat4);
 
+	/**
+	 * Creates a new matrix set to a transformation.
+	 **/
+	Matrix3(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+
 	~Matrix3();
 
 	/**
@@ -204,6 +209,22 @@ public:
 	 * Calculates the inverse of the transpose of this matrix.
 	 **/
 	Matrix3 transposedInverse() const;
+
+	/**
+	 * Creates a transformation with a certain position, orientation, scale
+	 * and offset.
+	 *
+	 * @param x The translation along the x-axis.
+	 * @param y The translation along the y-axis.
+	 * @param angle The rotation (rad) around the center with offset (ox,oy).
+	 * @param sx Scale along x-axis.
+	 * @param sy Scale along y-axis.
+	 * @param ox The offset for rotation along the x-axis.
+	 * @param oy The offset for rotation along the y-axis.
+	 * @param kx Shear along x-axis
+	 * @param ky Shear along y-axis
+	 **/
+	void setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Transforms an array of vertices by this matrix.
