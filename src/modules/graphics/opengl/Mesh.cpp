@@ -63,8 +63,6 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	, vbo(nullptr)
 	, vertexCount(0)
 	, vertexStride(0)
-	, vboUsedOffset(0)
-	, vboUsedSize(0)
 	, ibo(nullptr)
 	, elementCount(0)
 	, elementDataType(0)
@@ -81,7 +79,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
 
-	vbo = new GLBuffer(datasize, data, GL_ARRAY_BUFFER, getGLBufferUsage(usage));
+	vbo = new GLBuffer(datasize, data, GL_ARRAY_BUFFER, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
@@ -91,8 +89,6 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 	, vbo(nullptr)
 	, vertexCount((size_t) vertexcount)
 	, vertexStride(0)
-	, vboUsedOffset(0)
-	, vboUsedSize(0)
 	, ibo(nullptr)
 	, elementCount(0)
 	, elementDataType(getGLDataTypeFromMax(vertexcount))
@@ -108,11 +104,12 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 
 	size_t buffersize = vertexCount * vertexStride;
 
-	vbo = new GLBuffer(buffersize, nullptr, GL_ARRAY_BUFFER, getGLBufferUsage(usage));
+	vbo = new GLBuffer(buffersize, nullptr, GL_ARRAY_BUFFER, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 
 	// Initialize the buffer's contents to 0.
 	GLBuffer::Bind bind(*vbo);
 	memset(vbo->map(), 0, buffersize);
+	vbo->setMappedRangeModified(0, vbo->getSize());
 	vbo->unmap();
 
 	vertexScratchBuffer = new char[vertexStride];
@@ -198,8 +195,7 @@ void Mesh::setVertex(size_t vertindex, const void *data, size_t datasize)
 
 	memcpy(bufferdata + offset, data, size);
 
-	vboUsedOffset = std::min(vboUsedOffset, offset);
-	vboUsedSize = std::max(vboUsedSize, (offset + size) - vboUsedOffset);
+	vbo->setMappedRangeModified(offset, size);
 }
 
 size_t Mesh::getVertex(size_t vertindex, void *data, size_t datasize)
@@ -215,12 +211,6 @@ size_t Mesh::getVertex(size_t vertindex, void *data, size_t datasize)
 	const uint8 *bufferdata = (const uint8 *) vbo->map();
 
 	memcpy(data, bufferdata + offset, size);
-
-	if (vboUsedSize == 0)
-	{
-		vboUsedOffset = std::min(vboUsedOffset, offset);
-		vboUsedSize = std::max(vboUsedSize, (offset + size) - vboUsedOffset);
-	}
 
 	return size;
 }
@@ -246,8 +236,7 @@ void Mesh::setVertexAttribute(size_t vertindex, int attribindex, const void *dat
 
 	memcpy(bufferdata + offset, data, size);
 
-	vboUsedOffset = std::min(vboUsedOffset, offset);
-	vboUsedSize = std::max(vboUsedSize, (offset + size) - vboUsedOffset);
+	vbo->setMappedRangeModified(offset, size);
 }
 
 size_t Mesh::getVertexAttribute(size_t vertindex, int attribindex, void *data, size_t datasize)
@@ -266,12 +255,6 @@ size_t Mesh::getVertexAttribute(size_t vertindex, int attribindex, void *data, s
 	const uint8 *bufferdata = (const uint8 *) vbo->map();
 
 	memcpy(data, bufferdata + offset, size);
-
-	if (vboUsedSize == 0)
-	{
-		vboUsedOffset = std::min(vboUsedOffset, offset);
-		vboUsedSize = std::max(vboUsedSize, (offset + size) - vboUsedOffset);
-	}
 
 	return size;
 }
@@ -378,17 +361,15 @@ void Mesh::unmapVertexData()
 {
 	// Assume the whole buffer was modified.
 	GLBuffer::Bind bind(*vbo);
+	vbo->setMappedRangeModified(0, vbo->getSize());
 	vbo->unmap();
-
-	vboUsedOffset = vboUsedSize = 0;
 }
 
 void Mesh::flush()
 {
 	{
 		GLBuffer::Bind vbobind(*vbo);
-		vbo->unmap(vboUsedOffset, vboUsedSize);
-		vboUsedOffset = vboUsedSize = 0;
+		vbo->unmap();
 	}
 
 	if (ibo != nullptr)
@@ -575,8 +556,7 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		GLBuffer::Bind vbobind(*mesh->vbo);
 
 		// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-		mesh->vbo->unmap(mesh->vboUsedOffset, mesh->vboUsedSize);
-		mesh->vboUsedOffset = mesh->vboUsedSize = 0;
+		mesh->vbo->unmap();
 
 		size_t offset = mesh->getAttributeOffset(attrib.second.index);
 		const void *gloffset = mesh->vbo->getPointer(offset);

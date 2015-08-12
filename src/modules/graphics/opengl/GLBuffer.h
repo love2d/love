@@ -47,6 +47,11 @@ class GLBuffer : public Volatile
 {
 public:
 
+	enum MapFlags
+	{
+		MAP_EXPLICIT_RANGE_MODIFY = 0x01, // see setMappedRangeModified.
+	};
+
 	/**
 	 * Constructor.
 	 *
@@ -54,7 +59,7 @@ public:
 	 * @param target The target GLBuffer object, e.g. GL_ARRAY_BUFFER.
 	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
 	 */
-	GLBuffer(size_t size, const void *data, GLenum target, GLenum usage);
+	GLBuffer(size_t size, const void *data, GLenum target, GLenum usage, uint32 mapflags = 0);
 
 	/**
 	 * Destructor.
@@ -118,12 +123,14 @@ public:
 	 * when used to draw elements.
 	 *
 	 * The GLBuffer must be bound to use this function.
-	 *
-	 * @param usedOffset The offset into the mapped buffer indicating the
-	 *                   sub-range of data modified. Optional.
-	 * @param usedSize   The size of the sub-range of modified data. Optional.
 	 */
-	void unmap(size_t usedOffset = 0, size_t usedSize = -1);
+	void unmap();
+
+	/**
+	 * Marks a range of mapped data as modified.
+	 * NOTE: GLBuffer::fill calls this internally for you.
+	 **/
+	void setMappedRangeModified(size_t offset, size_t size);
 
 	/**
 	 * Bind the GLBuffer to its specified target.
@@ -137,7 +144,7 @@ public:
 	void unbind();
 
 	/**
-	 * Fill a portion of the buffer with data.
+	 * Fill a portion of the buffer with data and marks the range as modified.
 	 *
 	 * The GLBuffer must be bound to use this function.
 	 *
@@ -154,6 +161,11 @@ public:
 	 * @return A pointer which represents the offset.
 	 */
 	const void *getPointer(size_t offset) const;
+
+	uint32 getMapFlags() const
+	{
+		return map_flags;
+	}
 
 	// Implements Volatile.
 	bool loadVolatile() override;
@@ -261,6 +273,11 @@ private:
 
 	// A pointer to mapped memory.
 	char *memory_map;
+
+	size_t modified_offset;
+	size_t modified_size;
+
+	uint32 map_flags;
 
 }; // GLBuffer
 

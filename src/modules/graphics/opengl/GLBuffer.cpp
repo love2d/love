@@ -34,7 +34,7 @@ namespace graphics
 namespace opengl
 {
 
-GLBuffer::GLBuffer(size_t size, const void *data, GLenum target, GLenum usage)
+GLBuffer::GLBuffer(size_t size, const void *data, GLenum target, GLenum usage, uint32 mapflags)
 	: is_bound(false)
 	, is_mapped(false)
 	, size(size)
@@ -42,6 +42,9 @@ GLBuffer::GLBuffer(size_t size, const void *data, GLenum target, GLenum usage)
 	, usage(usage)
 	, vbo(0)
 	, memory_map(nullptr)
+	, modified_offset(0)
+	, modified_size(0)
+	, map_flags(mapflags)
 {
 	try
 	{
@@ -79,6 +82,9 @@ void *GLBuffer::map()
 
 	is_mapped = true;
 
+	modified_offset = 0;
+	modified_size = 0;
+
 	return memory_map;
 }
 
@@ -96,13 +102,21 @@ void GLBuffer::unmapStream()
 	glBufferData(getTarget(), (GLsizeiptr) getSize(), memory_map, getUsage());
 }
 
-void GLBuffer::unmap(size_t usedOffset, size_t usedSize)
+void GLBuffer::unmap()
 {
 	if (!is_mapped)
 		return;
 
-	usedOffset = std::min(usedOffset, getSize());
-	usedSize = std::min(usedSize, getSize() - usedOffset);
+	if ((map_flags & MAP_EXPLICIT_RANGE_MODIFY) != 0)
+	{
+		modified_offset = std::min(modified_offset, getSize() - 1);
+		modified_size = std::min(modified_size, getSize() - modified_offset);
+	}
+	else
+	{
+		modified_offset = 0;
+		modified_size = getSize();
+	}
 
 	// VBO::bind is a no-op when the VBO is mapped, so we have to make sure it's
 	// bound here.
@@ -112,26 +126,50 @@ void GLBuffer::unmap(size_t usedOffset, size_t usedSize)
 		is_bound = true;
 	}
 
-	switch (getUsage())
+	if (modified_size > 0)
 	{
-	case GL_STATIC_DRAW:
-		unmapStatic(usedOffset, usedSize);
-		break;
-	case GL_STREAM_DRAW:
-		unmapStream();
-		break;
-	case GL_DYNAMIC_DRAW:
-	default:
-		// It's probably more efficient to treat it like a streaming buffer if
-		// more than a third of its contents have been modified during the map().
-		if (usedSize >= getSize() / 3)
+		switch (getUsage())
+		{
+		case GL_STATIC_DRAW:
+			unmapStatic(modified_offset, modified_size);
+			break;
+		case GL_STREAM_DRAW:
 			unmapStream();
-		else
-			unmapStatic(usedOffset, usedSize);
-		break;
+			break;
+		case GL_DYNAMIC_DRAW:
+		default:
+			// It's probably more efficient to treat it like a streaming buffer if
+			// at least a third of its contents have been modified during the map().
+			if (modified_size >= getSize() / 3)
+				unmapStream();
+			else
+				unmapStatic(modified_offset, modified_size);
+			break;
+		}
 	}
 
+	modified_offset = 0;
+	modified_size = 0;
+
 	is_mapped = false;
+}
+
+void GLBuffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
+{
+	if (!is_mapped || !(map_flags & MAP_EXPLICIT_RANGE_MODIFY))
+		return;
+
+	// We're being conservative right now by internally marking the whole range
+	// from the start of section a to the end of section b as modified if both
+	// a and b are marked as modified.
+
+	size_t old_range_end = modified_offset + modified_offset;
+
+	modified_offset = std::min(modified_offset, offset);
+
+	size_t new_range_end = std::max(offset + modifiedsize, old_range_end);
+
+	modified_size = new_range_end - modified_offset;
 }
 
 void GLBuffer::bind()
@@ -155,7 +193,9 @@ void GLBuffer::fill(size_t offset, size_t size, const void *data)
 {
 	memcpy(memory_map + offset, data, size);
 
-	if (!is_mapped)
+	if (is_mapped)
+		setMappedRangeModified(offset, size);
+	else
 		glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, data);
 }
 

@@ -240,11 +240,6 @@ private:
 	// avoid memory allocations when using Mesh::setVertex etc.
 	char *vertexScratchBuffer;
 
-	// Tracks the range of the vertex buffer that has been used, to make unmap()
-	// calls as efficient as possible.
-	size_t vboUsedOffset;
-	size_t vboUsedSize;
-
 	// Element (vertex index) buffer, for the vertex map.
 	GLBuffer *ibo;
 	size_t elementCount;
