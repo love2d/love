@@ -51,12 +51,15 @@ int w_Canvas_renderTo(lua_State *L)
 		luax_catchexcept(L, [&](){ graphics->setCanvas(canvas); });
 
 		lua_settop(L, 2); // make sure the function is on top of the stack
-		lua_call(L, 0, 0);
+		int status = lua_pcall(L, 0, 0, 0);
 
 		graphics->setCanvas(oldcanvases);
 
 		for (Canvas *c : oldcanvases)
 			c->release();
+
+		if (status != 0)
+			return lua_error(L);
 	}
 
 	return 0;
