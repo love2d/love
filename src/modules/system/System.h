@@ -99,6 +99,13 @@ public:
 	 **/
 	virtual bool openURL(const std::string &url) const;
 
+	/**
+	 * Vibrates for the specified amount of seconds.
+	 *
+	 * @param number of seconds to vibrate.
+	 */
+	virtual void vibrate(double seconds) const;
+
 	static bool getConstant(const char *in, PowerState &out);
 	static bool getConstant(PowerState in, const char *&out);
 

@@ -26,6 +26,8 @@
 #include <CoreServices/CoreServices.h>
 #elif defined(LOVE_IOS)
 #include "common/iOS.h"
+#elif defined(LOVE_ANDROID)
+#include "common/android.h"
 #elif defined(LOVE_LINUX)
 #include <spawn.h>
 //#include <stdlib.h>
@@ -66,6 +68,8 @@ std::string System::getOS() const
 	return "iOS";
 #elif defined(LOVE_WINDOWS)
 	return "Windows";
+#elif defined(LOVE_ANDROID)
+	return "Android";
 #elif defined(LOVE_LINUX)
 	return "Linux";
 #else
@@ -97,6 +101,10 @@ bool System::openURL(const std::string &url) const
 #elif defined(LOVE_IOS)
 
 	return love::ios::openURL(url);
+
+#elif defined(LOVE_ANDROID)
+
+	return love::android::openURL(url);
 
 #elif defined(LOVE_LINUX)
 
@@ -131,6 +139,15 @@ bool System::openURL(const std::string &url) const
 
 	return (int) result > 32;
 
+#endif
+}
+
+void System::vibrate(double seconds) const
+{
+#ifdef LOVE_ANDROID
+	love::android::vibrate(seconds);
+#else
+	LOVE_UNUSED(seconds);
 #endif
 }
 

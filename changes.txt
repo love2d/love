@@ -3,7 +3,8 @@ LOVE 0.10.0 []
 
 Released: N/A
 
-  * Added a (work-in-progress) iOS port.
+  * Added an iOS port.
+  * Added an Android port.
   * Added the flag t.accelerometerjoystick to love.conf. Disables accelerometer-as-joystick functionality on mobile devices when false.
   * Added the flag t.gammacorrect to love.conf (replaces t.window.srgb.) Enabling it globally enables gamma-correct rendering, when supported.
   * Added love.touch module. Note that it has important differences from the touch implementation in the LÖVE 0.9 Android and iOS ports.

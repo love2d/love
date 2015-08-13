@@ -306,6 +306,8 @@ int luaopen_love(lua_State *L)
 	lua_pushstring(L, "OS X");
 #elif defined(LOVE_IOS)
 	lua_pushstring(L, "iOS");
+#elif defined(LOVE_ANDROID)
+	lua_pushstring(L, "Android");
 #elif defined(LOVE_LINUX)
 	lua_pushstring(L, "Linux");
 #else

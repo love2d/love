@@ -86,6 +86,13 @@ int w_openURL(lua_State *L)
 	return 1;
 }
 
+int w_vibrate(lua_State *L)
+{
+	double seconds = luaL_checknumber(L, 1);
+	instance()->vibrate(seconds);
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
@@ -94,6 +101,7 @@ static const luaL_Reg functions[] =
 	{ "getClipboardText", w_getClipboardText },
 	{ "getPowerInfo", w_getPowerInfo },
 	{ "openURL", w_openURL },
+	{ "vibrate", w_vibrate },
 	{ 0, 0 }
 };
 
