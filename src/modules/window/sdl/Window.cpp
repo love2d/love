@@ -23,6 +23,10 @@
 #include "graphics/Graphics.h"
 #include "Window.h"
 
+#ifdef LOVE_ANDROID
+#include "common/android.h"
+#endif
+
 // C++
 #include <iostream>
 #include <vector>
@@ -392,6 +396,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	Uint32 sdlflags = SDL_WINDOW_OPENGL;
 
+	// On Android we always must have fullscreen type FULLSCREEN_TYPE_DESKTOP
+#ifdef LOVE_ANDROID
+	f.fstype = FULLSCREEN_DESKTOP;
+#endif
+
 	if (f.fullscreen)
 	{
 		if (f.fstype == FULLSCREEN_DESKTOP)
@@ -471,6 +480,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (gfx != nullptr)
 		gfx->setMode(curMode.pixelwidth, curMode.pixelheight);
 
+#ifdef LOVE_ANDROID
+		love::android::setImmersive(f.fullscreen);
+#endif
+
 	return true;
 }
 
@@ -514,6 +527,10 @@ void Window::updateSettings(const WindowSettings &newsettings)
 		curMode.settings.fullscreen = false;
 		curMode.settings.fstype = newsettings.fstype;
 	}
+
+#ifdef LOVE_ANDROID
+	curMode.settings.fullscreen = love::android::getImmersive();
+#endif
 
 	// The min width/height is set to 0 internally in SDL when in fullscreen.
 	if (curMode.settings.fullscreen)
@@ -618,6 +635,10 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 			SDL_SetWindowDisplayMode(window, &mode);
 		}
 	}
+
+#ifdef LOVE_ANDROID
+	love::android::setImmersive(fullscreen);
+#endif
 
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
 	{
@@ -886,8 +907,11 @@ void Window::pixelToWindowCoords(double *x, double *y) const
 
 double Window::getPixelScale() const
 {
-	// TODO: Return the density display metric on Android.
+#ifdef LOVE_ANDROID
+	return love::android::getScreenScale();
+#else
 	return (double) curMode.pixelheight / (double) curMode.height;
+#endif
 }
 
 double Window::toPixels(double x) const
