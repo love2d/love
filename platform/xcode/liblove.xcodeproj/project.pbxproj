@@ -848,6 +848,9 @@
 		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
+		FAA3A9AE1B7D465A00CED060 /* android.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAA3A9AC1B7D465A00CED060 /* android.cpp */; };
+		FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAA3A9AC1B7D465A00CED060 /* android.cpp */; };
+		FAA3A9B01B7D465A00CED060 /* android.h in Headers */ = {isa = PBXBuildFile; fileRef = FAA3A9AD1B7D465A00CED060 /* android.h */; };
 		FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAA627CD18E7E1560080752D /* CoreServices.framework */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
 		FAB17BE01ABFAA2000F9BA27 /* Compressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB17BDE1ABFAA2000F9BA27 /* Compressor.cpp */; };
@@ -1498,6 +1501,8 @@
 		FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
+		FAA3A9AC1B7D465A00CED060 /* android.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = android.cpp; sourceTree = "<group>"; };
+		FAA3A9AD1B7D465A00CED060 /* android.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = android.h; sourceTree = "<group>"; };
 		FAA627CD18E7E1560080752D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
 		FAB17BDE1ABFAA2000F9BA27 /* Compressor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Compressor.cpp; sourceTree = "<group>"; };
@@ -1601,6 +1606,8 @@
 		FA0B78F61A958E3B000E1D17 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				FAA3A9AC1B7D465A00CED060 /* android.cpp */,
+				FAA3A9AD1B7D465A00CED060 /* android.h */,
 				FA0B78F71A958E3B000E1D17 /* b64.cpp */,
 				FA0B78F81A958E3B000E1D17 /* b64.h */,
 				FA0B78F91A958E3B000E1D17 /* config.h */,
@@ -3054,6 +3061,7 @@
 				FA0B7DDE1A95902C000E1D17 /* wrap_BezierCurve.h in Headers */,
 				FA0B7DED1A95902C000E1D17 /* Cursor.h in Headers */,
 				FA0B7E501A95902C000E1D17 /* wrap_Fixture.h in Headers */,
+				FAA3A9B01B7D465A00CED060 /* android.h in Headers */,
 				FA0B7A491A958EA3000E1D17 /* b2PolygonShape.h in Headers */,
 				FA0B79281A958E3B000E1D17 /* math.h in Headers */,
 				FA0B7A9A1A958EA3000E1D17 /* b2MotorJoint.h in Headers */,
@@ -3312,6 +3320,7 @@
 				FA0B7DC21A95902C000E1D17 /* wrap_Joystick.cpp in Sources */,
 				FA0B7CD41A95902C000E1D17 /* Source.cpp in Sources */,
 				FA0B7AEF1A958EA3000E1D17 /* inet.c in Sources */,
+				FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */,
 				FA0B7CD11A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7D131A95902C000E1D17 /* Font.cpp in Sources */,
 				FA0B7EC91A95902C000E1D17 /* threads.cpp in Sources */,
@@ -3596,6 +3605,7 @@
 				FA0B7CD31A95902C000E1D17 /* Source.cpp in Sources */,
 				FA0B7A411A958EA3000E1D17 /* b2CircleShape.cpp in Sources */,
 				FA0B7CD01A95902C000E1D17 /* Audio.cpp in Sources */,
+				FAA3A9AE1B7D465A00CED060 /* android.cpp in Sources */,
 				FA0B7D121A95902C000E1D17 /* Font.cpp in Sources */,
 				FA0B7EC81A95902C000E1D17 /* threads.cpp in Sources */,
 				FA0B7A6B1A958EA3000E1D17 /* b2World.cpp in Sources */,

@@ -26,7 +26,10 @@
 #	define LOVE_WINDOWS 1
 #endif
 #if defined(linux) || defined(__linux) || defined(__linux__)
-#	define LOVE_LINUX 1
+# define LOVE_LINUX 1
+#endif
+#if defined(__ANDROID__)
+#  define LOVE_ANDROID 1
 #endif
 #if defined(__APPLE__)
 #	include <TargetConditionals.h>
