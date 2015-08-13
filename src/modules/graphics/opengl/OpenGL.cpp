@@ -40,12 +40,27 @@
 #include <SDL_syswm.h>
 #endif
 
+#ifdef LOVE_ANDROID
+#include <dlfcn.h>
+#endif
+
 namespace love
 {
 namespace graphics
 {
 namespace opengl
 {
+
+static void *LOVEGetProcAddress(const char *name)
+{
+#ifdef LOVE_ANDROID
+	void *proc = dlsym(RTLD_DEFAULT, name);
+	if (proc)
+		return proc;
+#endif
+
+	return SDL_GL_GetProcAddress(name);
+}
 
 OpenGL::OpenGL()
 	: stats()
@@ -67,7 +82,7 @@ bool OpenGL::initContext()
 	if (contextInitialized)
 		return true;
 
-	if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
+	if (!gladLoadGLLoader(LOVEGetProcAddress))
 		return false;
 
 	initOpenGLFunctions();
