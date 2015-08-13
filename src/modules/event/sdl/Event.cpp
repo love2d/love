@@ -29,6 +29,7 @@
 #include "graphics/Graphics.h"
 #include "window/Window.h"
 #include "common/Exception.h"
+#include "audio/Audio.h"
 #include "common/config.h"
 
 #include <cmath>
@@ -509,6 +510,22 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
+#ifdef LOVE_ANDROID
+	case SDL_WINDOWEVENT_MINIMIZED:
+		{
+			auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
+			if (audio)
+				audio->pause();
+		}
+		break;
+	case SDL_WINDOWEVENT_RESTORED:
+		{
+			auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
+			if (audio)
+				audio->resume();
+		}
+		break;
+#endif
 	default:
 		break;
 	}
@@ -801,6 +818,10 @@ std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::createKeyMap()
 	k[SDLK_KBDILLUMUP] = Keyboard::KEY_KBDILLUMUP;
 	k[SDLK_EJECT] = Keyboard::KEY_EJECT;
 	k[SDLK_SLEEP] = Keyboard::KEY_SLEEP;
+
+#ifdef LOVE_ANDROID
+	k[SDLK_AC_BACK] = Keyboard::KEY_ESCAPE;
+#endif
 
 	return k;
 }

@@ -47,6 +47,7 @@
 #else
 #include <AL/alc.h>
 #include <AL/al.h>
+#include <AL/alext.h>
 #endif
 
 namespace love
