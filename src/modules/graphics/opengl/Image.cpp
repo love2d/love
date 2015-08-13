@@ -26,6 +26,16 @@
 // STD
 #include <algorithm> // for min/max
 
+#ifdef LOVE_ANDROID
+// log2 is not declared in the math.h shipped with the Android NDK
+#include <cmath>
+inline double log2( double n )  
+{ 
+	// log(n)/log(2) is log2.  
+	return std::log( n ) / std::log( 2 );  
+}
+#endif
+
 namespace love
 {
 namespace graphics

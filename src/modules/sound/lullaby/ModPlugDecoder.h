@@ -29,8 +29,12 @@
 #include "common/Data.h"
 #include "Decoder.h"
 
-// SDL_sound
+// libmodplug
+#ifdef LOVE_ANDROID
+#include <modplug.h>
+#else
 #include <libmodplug/modplug.h>
+#endif
 
 namespace love
 {
