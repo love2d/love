@@ -43,6 +43,10 @@ extern "C" {
 #include "common/iOS.h"
 #endif
 
+#ifdef LOVE_ANDROID
+#include "common/android.h"
+#endif
+
 #ifdef LOVE_WINDOWS
 extern "C"
 {
@@ -159,6 +163,39 @@ static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
+#ifdef LOVE_ANDROID
+static int l_print_sdl_log(lua_State *L)
+{
+	int nargs = lua_gettop(L);
+
+	lua_getglobal(L, "tostring");
+
+	std::string outstring;
+
+	for (int i = 1; i <= nargs; i++)
+	{
+		// Call tostring(arg) and leave the result on the top of the stack.
+		lua_pushvalue(L, -1);
+		lua_pushvalue(L, i);
+		lua_call(L, 1, 1);
+
+		const char *s = lua_tostring(L, -1);
+		if (s == nullptr)
+			return luaL_error(L, "'tostring' must return a string to 'print'");
+
+		if (i > 1)
+			outstring += "\t";
+
+		outstring += s;
+
+		lua_pop(L, 1); // Pop the result of tostring(arg).
+	}
+
+	SDL_Log("[LOVE] %s", outstring.c_str());
+	return 0;
+}
+#endif
+
 int main(int argc, char **argv)
 {
 	int retval = 0;
@@ -208,6 +245,10 @@ int main(int argc, char **argv)
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
+
+#ifdef LOVE_ANDROID
+	lua_register(L, "print", l_print_sdl_log);
+#endif
 
 	// Add love to package.preload for easy requiring.
 	love_preload(L, luaopen_love, "love");
@@ -274,6 +315,10 @@ int main(int argc, char **argv)
 
 #ifdef LOVE_IOS
 	} // while (true)
+#endif
+
+#ifdef LOVE_ANDROID
+	SDL_Quit();
 #endif
 
 	return retval;
