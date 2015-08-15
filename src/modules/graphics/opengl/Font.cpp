@@ -410,8 +410,8 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 				for (int j = 0; j < 4; j++)
 				{
 					vertices.push_back(glyph.vertices[j]);
-					vertices.back().x += dx /*+ kerning*/;
-					vertices.back().y += dy /*+ kerning.y*/ + lineheight;
+					vertices.back().x += dx;
+					vertices.back().y += dy + lineheight;
 				}
 
 				// Check if glyph texture has changed since the last iteration.

@@ -41,7 +41,7 @@
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
 #elif defined(LOVE_MACOSX)
-#include "common/OSX.h"
+#include "common/macosx.h"
 #endif
 
 #ifndef APIENTRY

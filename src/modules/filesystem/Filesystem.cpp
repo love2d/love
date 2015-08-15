@@ -27,9 +27,9 @@
 #include <sys/stat.h>
 
 #if defined(LOVE_MACOSX)
-#include "common/OSX.h"
+#include "common/macosx.h"
 #elif defined(LOVE_IOS)
-#include "common/iOS.h"
+#include "common/ios.h"
 #elif defined(LOVE_WINDOWS)
 #include <windows.h>
 #include "common/utf8.h"

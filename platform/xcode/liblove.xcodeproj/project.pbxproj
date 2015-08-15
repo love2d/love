@@ -33,9 +33,9 @@
 		FA0B79321A958E3B000E1D17 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B79081A958E3B000E1D17 /* Object.cpp */; };
 		FA0B79331A958E3B000E1D17 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B79081A958E3B000E1D17 /* Object.cpp */; };
 		FA0B79341A958E3B000E1D17 /* Object.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B79091A958E3B000E1D17 /* Object.h */; };
-		FA0B79351A958E3B000E1D17 /* OSX.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B790A1A958E3B000E1D17 /* OSX.h */; };
-		FA0B79361A958E3B000E1D17 /* OSX.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B790B1A958E3B000E1D17 /* OSX.mm */; };
-		FA0B79371A958E3B000E1D17 /* OSX.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B790B1A958E3B000E1D17 /* OSX.mm */; };
+		FA0B79351A958E3B000E1D17 /* macosx.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B790A1A958E3B000E1D17 /* macosx.h */; };
+		FA0B79361A958E3B000E1D17 /* macosx.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B790B1A958E3B000E1D17 /* macosx.mm */; };
+		FA0B79371A958E3B000E1D17 /* macosx.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B790B1A958E3B000E1D17 /* macosx.mm */; };
 		FA0B79381A958E3B000E1D17 /* Reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B790C1A958E3B000E1D17 /* Reference.cpp */; };
 		FA0B79391A958E3B000E1D17 /* Reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B790C1A958E3B000E1D17 /* Reference.cpp */; };
 		FA0B793A1A958E3B000E1D17 /* Reference.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B790D1A958E3B000E1D17 /* Reference.h */; };
@@ -908,8 +908,8 @@
 		FA0B79071A958E3B000E1D17 /* Module.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Module.h; sourceTree = "<group>"; };
 		FA0B79081A958E3B000E1D17 /* Object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Object.cpp; sourceTree = "<group>"; };
 		FA0B79091A958E3B000E1D17 /* Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Object.h; sourceTree = "<group>"; };
-		FA0B790A1A958E3B000E1D17 /* OSX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSX.h; sourceTree = "<group>"; };
-		FA0B790B1A958E3B000E1D17 /* OSX.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OSX.mm; sourceTree = "<group>"; };
+		FA0B790A1A958E3B000E1D17 /* macosx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = macosx.h; sourceTree = "<group>"; };
+		FA0B790B1A958E3B000E1D17 /* macosx.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macosx.mm; sourceTree = "<group>"; };
 		FA0B790C1A958E3B000E1D17 /* Reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reference.cpp; sourceTree = "<group>"; };
 		FA0B790D1A958E3B000E1D17 /* Reference.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reference.h; sourceTree = "<group>"; };
 		FA0B790E1A958E3B000E1D17 /* runtime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runtime.cpp; sourceTree = "<group>"; };
@@ -1629,8 +1629,8 @@
 				FA0B79071A958E3B000E1D17 /* Module.h */,
 				FA0B79081A958E3B000E1D17 /* Object.cpp */,
 				FA0B79091A958E3B000E1D17 /* Object.h */,
-				FA0B790A1A958E3B000E1D17 /* OSX.h */,
-				FA0B790B1A958E3B000E1D17 /* OSX.mm */,
+				FA0B790A1A958E3B000E1D17 /* macosx.h */,
+				FA0B790B1A958E3B000E1D17 /* macosx.mm */,
 				FA0B790C1A958E3B000E1D17 /* Reference.cpp */,
 				FA0B790D1A958E3B000E1D17 /* Reference.h */,
 				FA0B790E1A958E3B000E1D17 /* runtime.cpp */,
@@ -2924,7 +2924,7 @@
 				FA0B7D141A95902C000E1D17 /* Font.h in Headers */,
 				FA0B7D411A95902C000E1D17 /* Mesh.h in Headers */,
 				FA0B7E591A95902C000E1D17 /* wrap_Joint.h in Headers */,
-				FA0B79351A958E3B000E1D17 /* OSX.h in Headers */,
+				FA0B79351A958E3B000E1D17 /* macosx.h in Headers */,
 				FA0B7A631A958EA3000E1D17 /* b2ContactManager.h in Headers */,
 				FA0B7E771A95902C000E1D17 /* wrap_WeldJoint.h in Headers */,
 				FA0B7A911A958EA3000E1D17 /* b2FrictionJoint.h in Headers */,
@@ -3204,7 +3204,7 @@
 				FA0B7EE31A95902D000E1D17 /* Window.cpp in Sources */,
 				FA0B7AAB1A958EA3000E1D17 /* b2WeldJoint.cpp in Sources */,
 				FA0B7EC21A95902C000E1D17 /* threads.cpp in Sources */,
-				FA0B79371A958E3B000E1D17 /* OSX.mm in Sources */,
+				FA0B79371A958E3B000E1D17 /* macosx.mm in Sources */,
 				FA0B7D011A95902C000E1D17 /* Filesystem.cpp in Sources */,
 				FA0B7ED91A95902D000E1D17 /* wrap_Timer.cpp in Sources */,
 				FA0B7DD11A95902C000E1D17 /* love.cpp in Sources */,
@@ -3599,7 +3599,7 @@
 				FA0B7EBB1A95902C000E1D17 /* LuaThread.cpp in Sources */,
 				FA0B79381A958E3B000E1D17 /* Reference.cpp in Sources */,
 				FA0B7D391A95902C000E1D17 /* Graphics.cpp in Sources */,
-				FA0B79361A958E3B000E1D17 /* OSX.mm in Sources */,
+				FA0B79361A958E3B000E1D17 /* macosx.mm in Sources */,
 				FA0B7E121A95902C000E1D17 /* GearJoint.cpp in Sources */,
 				FA0B7DC11A95902C000E1D17 /* wrap_Joystick.cpp in Sources */,
 				FA0B7CD31A95902C000E1D17 /* Source.cpp in Sources */,
