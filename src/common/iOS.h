@@ -59,6 +59,11 @@ bool openURL(const std::string &url);
  **/
 std::string getExecutablePath();
 
+/**
+ * Causes devices with vibration support to vibrate for about 0.5 seconds.
+ **/
+void vibrate();
+
 } // ios
 } // love
 

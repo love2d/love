@@ -25,6 +25,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import <AudioToolbox/AudioServices.h>
+
 #include <vector>
 
 #include <SDL_events.h>
@@ -318,6 +320,17 @@ std::string getExecutablePath()
 	@autoreleasepool
 	{
 		return std::string([NSBundle mainBundle].executablePath.UTF8String);
+	}
+}
+
+static dispatch_queue_t queue = nil;
+static dispatch_source_t timer = nil;
+
+void vibrate()
+{
+	@autoreleasepool
+	{
+		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 	}
 }
 

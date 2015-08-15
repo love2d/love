@@ -199,7 +199,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 					throw love::Exception("Image module not loaded!");
 
 				// Release these variables right away since StrongRef retains.
-				StrongRef<filesystem::FileData> data = filesystem->read(filename.c_str());
+				StrongRef<FileData> data = filesystem->read(filename.c_str());
 				data->release();
 
 				images[pageindex].set(imagemodule->newImageData(data.get()));
