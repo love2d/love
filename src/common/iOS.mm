@@ -323,9 +323,6 @@ std::string getExecutablePath()
 	}
 }
 
-static dispatch_queue_t queue = nil;
-static dispatch_source_t timer = nil;
-
 void vibrate()
 {
 	@autoreleasepool

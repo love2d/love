@@ -300,6 +300,12 @@ void Canvas::unloadVolatile()
 
 void Canvas::drawv(const Matrix4 &t, const Vertex *v)
 {
+	// FIXME: This doesn't handle cases where the Canvas is used as a texture
+	// in a SpriteBatch, Mesh, or ParticleSystem, or when the Canvas is used in
+	// a shader as a non-default texture.
+	if (Canvas::current == this)
+		throw love::Exception("Cannot draw a Canvas to itself.");
+
 	OpenGL::TempDebugGroup debuggroup("Canvas draw");
 
 	OpenGL::TempTransform transform(gl);
@@ -327,8 +333,7 @@ void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy
 {
 	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	const Vertex *v = quad->getVertices();
-	drawv(t, v);
+	drawv(t, quad->getVertices());
 }
 
 void Canvas::setFilter(const Texture::Filter &f)
