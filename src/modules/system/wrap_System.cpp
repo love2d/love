@@ -88,7 +88,7 @@ int w_openURL(lua_State *L)
 
 int w_vibrate(lua_State *L)
 {
-	double seconds = luaL_checknumber(L, 1);
+	double seconds = luaL_optnumber(L, 1, 0.5);
 	instance()->vibrate(seconds);
 	return 0;
 }
