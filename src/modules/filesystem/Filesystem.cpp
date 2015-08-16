@@ -74,7 +74,7 @@ bool Filesystem::isRealDirectory(const std::string &path) const
 std::string Filesystem::getExecutablePath() const
 {
 #if defined(LOVE_MACOSX)
-	return love::osx::getExecutablePath();
+	return love::macosx::getExecutablePath();
 #elif defined(LOVE_IOS)
 	return love::ios::getExecutablePath();
 #elif defined(LOVE_WINDOWS)

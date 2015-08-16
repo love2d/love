@@ -130,9 +130,22 @@ static NSString *getDocumentsDirectory()
 
 static NSArray *getLovesInDocuments()
 {
-	NSString *documents = getDocumentsDirectory();
-	NSArray *filepaths = [[NSFileManager defaultManager] subpathsOfDirectoryAtPath:documents error:nil];
-	return [filepaths pathsMatchingExtensions:@[@"love"]];
+	NSMutableArray *paths = [NSMutableArray new];
+
+	NSFileManager *manager = [NSFileManager defaultManager];
+	NSDirectoryEnumerator *enumerator = [manager enumeratorAtPath:getDocumentsDirectory()];
+
+	NSString *path = nil;
+	while ((path = [enumerator nextObject]))
+	{
+		//  Add .love files plus folders that contain main.lua to our list.
+		if ([path.pathExtension isEqualToString:@"love"])
+			[paths addObject:path];
+		else if ([path.lastPathComponent isEqualToString:@"main.lua"])
+			[paths addObject:path.stringByDeletingLastPathComponent];
+	}
+
+	return paths;
 }
 
 static bool deleteFileInDocuments(NSString *filename)

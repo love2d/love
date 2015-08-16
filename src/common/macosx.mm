@@ -29,7 +29,7 @@
 
 namespace love
 {
-namespace osx
+namespace macosx
 {
 
 std::string getLoveInResources()

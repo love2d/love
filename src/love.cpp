@@ -111,7 +111,7 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 
 #ifdef LOVE_MACOSX
 	// Check for a drop file string.
-	std::string dropfilestr = love::osx::checkDropEvents();
+	std::string dropfilestr = love::macosx::checkDropEvents();
 	if (!dropfilestr.empty())
 	{
 		temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
@@ -123,7 +123,7 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 		std::string loveResourcesPath;
 		bool fused = true;
 #if defined(LOVE_MACOSX)
-		loveResourcesPath = love::osx::getLoveInResources();
+		loveResourcesPath = love::macosx::getLoveInResources();
 #elif defined(LOVE_IOS)
 		loveResourcesPath = love::ios::getLoveInResources(fused);
 #endif

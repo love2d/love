@@ -29,7 +29,7 @@
 
 namespace love
 {
-namespace osx
+namespace macosx
 {
 
 /**
@@ -55,7 +55,7 @@ std::string getExecutablePath();
  **/
 void requestAttention(bool continuous);
 
-} // osx
+} // macosx
 } // love
 
 #endif // LOVE_MACOSX
