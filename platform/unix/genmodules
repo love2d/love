@@ -129,8 +129,7 @@ love${love_amsuffix}_SOURCES = love.cpp
 if LOVE_TARGET_OSX
 love${love_amsuffix}_LIBTOOLFLAGS = --tag=OBJCXX
 love${love_amsuffix}_SOURCES += \\
-    ../platform/macosx/OSX.h \\
-    ../platform/macosx/OSX.mm
+    ./common/macosx.mm
 else
 love${love_amsuffix}_LIBTOOLFLAGS = --tag=CXX
 endif
