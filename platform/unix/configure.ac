@@ -19,23 +19,11 @@ AC_LANG([C++])
 
 includes=
 
-AC_DEFUN([ACLOVE_CXX_FLAG_TEST], # WARNING: NOT REENTRANT
-		 [aclove_cxx_flag_test_save_cflags="$CXXFLAGS"
-		  CXXFLAGS="$1"
-		  AC_MSG_CHECKING([whether $CXX supports flag $1])
-		  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-			  [AC_MSG_RESULT([yes])]; $2,
-			  [AC_MSG_RESULT([no]); $3])
-		  CXXFLAGS="$aclove_cxx_flag_test_save_cflags"])
-
 AC_DEFUN([LOVE_MSG_ERROR],
 		 [AC_MSG_ERROR([LÖVE needs "$1"[,] please install "$1" with development files and try again])])
 
-# C++11 support
-cxx11name="no"
-ACLOVE_CXX_FLAG_TEST([-std=c++0x], cxx11name="c++0x", [])
-ACLOVE_CXX_FLAG_TEST([-std=c++11], cxx11name="c++11", [])
-AS_VAR_IF([cxx11name], [no], AC_MSG_ERROR([LÖVE needs a C++ compiler with C++11 support]), CXXFLAGS="$CXXFLAGS -std=$cxx11name")
+# C++11 support in m4/cpp11.m4
+ACLOVE_CPP11_TEST
 
 # Allow people on OSX to use autotools, they need their platform files
 AC_ARG_ENABLE([osx],
