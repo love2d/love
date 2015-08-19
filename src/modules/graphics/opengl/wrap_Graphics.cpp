@@ -776,14 +776,6 @@ static Mesh *newCustomMesh(lua_State *L)
 			lua_rawgeti(L, 2, vertindex + 1);
 			luaL_checktype(L, -1, LUA_TTABLE);
 
-			if ((int) luax_objlen(L, -1) < vertexcomponents)
-			{
-				t->release();
-				const char *err = "Invalid number of components in vertex #%d (expected %d components, got %d)";
-				luaL_error(L, err, vertindex+1, vertexcomponents, luax_objlen(L, -1));
-				return nullptr;
-			}
-
 			int n = 0;
 			for (size_t i = 0; i < vertexformat.size(); i++)
 			{
