@@ -17,12 +17,15 @@ PKG_PROG_PKG_CONFIG
 AC_C_BIGENDIAN
 AC_LANG([C++])
 
+dnl Workaround for old aclocal versions
+m4_include([platform/unix/cpp11.m4])
+
 includes=
 
 AC_DEFUN([LOVE_MSG_ERROR],
 		 [AC_MSG_ERROR([LÖVE needs "$1"[,] please install "$1" with development files and try again])])
 
-# C++11 support in m4/cpp11.m4
+# C++11 support in cpp11.m4
 ACLOVE_CPP11_TEST
 
 # Allow people on OSX to use autotools, they need their platform files
