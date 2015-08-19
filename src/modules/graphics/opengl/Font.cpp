@@ -693,7 +693,8 @@ void Font::getWrap(const std::string &text, float wrap, std::vector<std::string>
 		// Put words back together until a wrap occurs.
 		for (const std::string &word : words)
 		{
-			width += getWidth(word);
+			float wordwidth = (float) getWidth(word);
+			width += wordwidth;
 
 			// On wordwrap, push line to line buffer and clear string builder.
 			if (width > wrap && oldwidth > 0)
@@ -704,7 +705,7 @@ void Font::getWrap(const std::string &text, float wrap, std::vector<std::string>
 				std::string tmp = string_builder.str();
 				lines.push_back(tmp.substr(0,tmp.size()-1));
 				string_builder.str("");
-				width = static_cast<float>(getWidth(word));
+				width = wordwidth;
 				realw -= (int) width;
 
 				if (linewidths)
