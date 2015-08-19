@@ -351,7 +351,7 @@ public:
 	 * @param x Point along x-axis.
 	 * @param y Point along y-axis.
 	 **/
-	void point(float x, float y);
+	void points(const float *coords, const uint8 *colors, size_t numpoints);
 
 	/**
 	 * Draws a series of lines connecting the given vertices.

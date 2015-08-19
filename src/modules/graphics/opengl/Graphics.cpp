@@ -1109,17 +1109,24 @@ void Graphics::printf(const std::string &str, float x, float y, float wrap, Font
  * Primitives
  **/
 
-void Graphics::point(float x, float y)
+void Graphics::points(const float *coords, const uint8 *colors, size_t numpoints)
 {
-	OpenGL::TempDebugGroup debuggroup("Graphics point draw");
-
-	GLfloat coord[] = {x, y};
+	OpenGL::TempDebugGroup debuggroup("Graphics points draw");
 
 	gl.prepareDraw();
 	gl.bindTexture(gl.getDefaultTexture());
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coord);
-	gl.drawArrays(GL_POINTS, 0, 1);
+
+	uint32 attribflags = ATTRIBFLAG_POS;
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
+
+	if (colors)
+	{
+		attribflags |= ATTRIBFLAG_COLOR;
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
+	}
+
+	gl.useVertexAttribArrays(attribflags);
+	gl.drawArrays(GL_POINTS, 0, numpoints);
 }
 
 void Graphics::polyline(const float *coords, size_t count)

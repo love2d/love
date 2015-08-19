@@ -106,7 +106,7 @@ int w_getStats(lua_State *L);
 int w_draw(lua_State *L);
 int w_print(lua_State *L);
 int w_printf(lua_State *L);
-int w_point(lua_State *L);
+int w_points(lua_State *L);
 int w_line(lua_State *L);
 int w_rectangle(lua_State *L);
 int w_circle(lua_State *L);

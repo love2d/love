@@ -1507,11 +1507,86 @@ int w_printf(lua_State *L)
 	return 0;
 }
 
-int w_point(lua_State *L)
+int w_points(lua_State *L)
 {
-	float x = (float)luaL_checknumber(L, 1);
-	float y = (float)luaL_checknumber(L, 2);
-	instance()->point(x, y);
+	// love.graphics.points has 3 variants:
+	// - points(x1, y1, x2, y2, ...)
+	// - points({x1, y1, x2, y2, ...})
+	// - points({{x1, y1 [, r, g, b, a]}, {x2, y2 [, r, g, b, a]}, ...})
+
+	int args = lua_gettop(L);
+	bool is_table = false;
+	bool is_table_of_tables = false;
+	if (args == 1 && lua_istable(L, 1))
+	{
+		is_table = true;
+		args = (int) luax_objlen(L, 1);
+
+		lua_rawgeti(L, 1, 1);
+		is_table_of_tables = lua_istable(L, -1);
+		lua_pop(L, 1);
+	}
+
+	if (args % 2 != 0 && !is_table_of_tables)
+		return luaL_error(L, "Number of vertex components must be a multiple of two");
+
+	int numpoints = args / 2;
+	if (is_table_of_tables)
+		numpoints = args;
+
+	float *coords = nullptr;
+	uint8 *colors = nullptr;
+
+	coords = new float[numpoints * 2];
+
+	if (is_table_of_tables)
+		colors = new uint8[numpoints * 4];
+
+	if (is_table)
+	{
+		if (is_table_of_tables)
+		{
+			// points({{x1, y1 [, r, g, b, a]}, {x2, y2 [, r, g, b, a]}, ...})
+			for (int i = 0; i < args; i++)
+			{
+				lua_rawgeti(L, 1, i + 1);
+				for (int j = 1; j <= 6; j++)
+					lua_rawgeti(L, -j, j);
+
+				coords[i * 2 + 0] = luax_tofloat(L, -6);
+				coords[i * 2 + 1] = luax_tofloat(L, -5);
+
+				colors[i * 4 + 0] = (uint8) luaL_optnumber(L, -4, 255);
+				colors[i * 4 + 1] = (uint8) luaL_optnumber(L, -3, 255);
+				colors[i * 4 + 2] = (uint8) luaL_optnumber(L, -2, 255);
+				colors[i * 4 + 3] = (uint8) luaL_optnumber(L, -1, 255);
+
+				lua_pop(L, 7);
+			}
+		}
+		else
+		{
+			// points({x1, y1, x2, y2, ...})
+			for (int i = 0; i < args; i++)
+			{
+				lua_rawgeti(L, 1, i + 1);
+				coords[i] = luax_tofloat(L, -1);
+				lua_pop(L, 1);
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < args; i++)
+			coords[i] = luax_tofloat(L, i + 1);
+	}
+
+	instance()->points(coords, colors, numpoints);
+
+	delete[] coords;
+	if (colors)
+		delete[] colors;
+
 	return 0;
 }
 
@@ -1830,7 +1905,7 @@ static const luaL_Reg functions[] =
 	{ "setStencilTest", w_setStencilTest },
 	{ "getStencilTest", w_getStencilTest },
 
-	{ "point", w_point },
+	{ "points", w_points },
 	{ "line", w_line },
 	{ "rectangle", w_rectangle },
 	{ "circle", w_circle },
