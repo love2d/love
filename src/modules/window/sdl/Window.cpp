@@ -137,7 +137,9 @@ bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversi
 	typedef unsigned char GLubyte;
 	typedef unsigned int GLenum;
 	typedef const GLubyte *(APIENTRY *glGetStringPtr)(GLenum name);
-	const GLenum GL_VERSION_ENUM = 0x1F02;
+	const GLenum GL_VENDOR_ENUM   = 0x1F00;
+	const GLenum GL_RENDERER_ENUM = 0x1F01;
+	const GLenum GL_VERSION_ENUM  = 0x1F02;
 
 	// We don't have OpenGL headers or an automatic OpenGL function loader in
 	// this module, so we have to get the glGetString function pointer ourselves.
@@ -150,6 +152,14 @@ bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversi
 		return false;
 
 	outversion = glversion;
+
+	const char *glrenderer = (const char *) glGetStringFunc(GL_RENDERER_ENUM);
+	if (glrenderer)
+		outversion += " - " + std::string(glrenderer);
+
+	const char *glvendor = (const char *) glGetStringFunc(GL_VENDOR_ENUM);
+	if (glvendor)
+		outversion += " (" + std::string(glvendor) + ")";
 
 	int glmajor = 0;
 	int glminor = 0;
@@ -358,7 +368,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
 
 			if (!glversion.empty())
-				message += " \n(Detected OpenGL version: " + glversion + ")";
+				message += " \n\nDetected OpenGL version: " + glversion;
 
 			std::cerr << title << std::endl << message << std::endl;
 
