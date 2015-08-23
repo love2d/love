@@ -1,13 +1,13 @@
 version: 0.10.0.{build}
 
 os:
-- Windows Server 2012 R2
+- Visual Studio 2015
 
 shallow_clone: true
 
 init:
 # Make VS 2013 command line tools available
-- call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %platform%
+- call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %platform%
 
 install:
 # We need to install NSIS to create the packaged installer executable.
@@ -27,7 +27,7 @@ install:
 - move love libs\love
 
 before_build:
-- cmake -G "Visual Studio 12" -H. -Bbuild
+- cmake -G "Visual Studio 14" -H. -Bbuild
 
 build_script:
 - cmake --build build --target PACKAGE --config Release
