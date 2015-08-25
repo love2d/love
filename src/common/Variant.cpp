@@ -134,7 +134,7 @@ Variant::~Variant()
 
 Variant *Variant::fromLua(lua_State *L, int n, bool allowTables)
 {
-	Variant *v = NULL;
+	Variant *v = nullptr;
 	size_t len;
 	const char *str;
 	if (n < 0) // Fix the stack position, we might modify it later

@@ -651,13 +651,12 @@ int Font::getWidth(const std::string &str)
 				prevglyph = c;
 			}
 		}
-		catch(utf8::exception &e)
+		catch (utf8::exception &e)
 		{
 			throw love::Exception("UTF-8 decoding error: %s", e.what());
 		}
 
-		if (width > max_width)
-			max_width = width;
+		max_width = std::max(max_width, width);
 	}
 
 	return max_width;

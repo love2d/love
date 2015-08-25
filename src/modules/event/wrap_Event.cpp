@@ -97,9 +97,19 @@ int w_clear(lua_State *)
 
 int w_quit(lua_State *L)
 {
-	Message *m = new Message("quit");
+	std::vector<StrongRef<Variant>> args;
+
+	Variant *v = Variant::fromLua(L, 1);
+	if (v)
+	{
+		args.push_back(v);
+		v->release();
+	}
+
+	Message *m = new Message("quit", args);
 	instance()->push(m);
 	m->release();
+
 	luax_pushboolean(L, true);
 	return 1;
 }

@@ -523,7 +523,7 @@ function love.run()
 			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
 					if not love.quit or not love.quit() then
-						return
+						return a
 					end
 				end
 				love.handlers[name](a,b,c,d,e,f)
