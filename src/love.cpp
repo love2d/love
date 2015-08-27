@@ -40,7 +40,7 @@ extern "C" {
 #endif // LOVE_MACOSX
 
 #ifdef LOVE_IOS
-#include "common/iOS.h"
+#include "common/ios.h"
 #endif
 
 #ifdef LOVE_ANDROID

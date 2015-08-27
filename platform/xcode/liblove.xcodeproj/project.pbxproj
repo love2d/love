@@ -815,7 +815,7 @@
 		FA0B7EE81A95902D000E1D17 /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CCB1A95902C000E1D17 /* wrap_Window.cpp */; };
 		FA0B7EE91A95902D000E1D17 /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CCB1A95902C000E1D17 /* wrap_Window.cpp */; };
 		FA0B7EEA1A95902D000E1D17 /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */; };
-		FA0B7EF21A959D2C000E1D17 /* iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7EF11A959D2C000E1D17 /* iOS.mm */; };
+		FA0B7EF21A959D2C000E1D17 /* ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7EF11A959D2C000E1D17 /* ios.mm */; };
 		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
@@ -1466,8 +1466,8 @@
 		FA0B7CCA1A95902C000E1D17 /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
 		FA0B7CCB1A95902C000E1D17 /* wrap_Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Window.cpp; sourceTree = "<group>"; };
 		FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
-		FA0B7EF01A959D2C000E1D17 /* iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOS.h; sourceTree = "<group>"; };
-		FA0B7EF11A959D2C000E1D17 /* iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = iOS.mm; sourceTree = "<group>"; };
+		FA0B7EF01A959D2C000E1D17 /* ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ios.h; sourceTree = "<group>"; };
+		FA0B7EF11A959D2C000E1D17 /* ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ios.mm; sourceTree = "<group>"; };
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -1618,8 +1618,8 @@
 				FA0B78FE1A958E3B000E1D17 /* Exception.cpp */,
 				FA0B78FF1A958E3B000E1D17 /* Exception.h */,
 				FA0B79001A958E3B000E1D17 /* int.h */,
-				FA0B7EF01A959D2C000E1D17 /* iOS.h */,
-				FA0B7EF11A959D2C000E1D17 /* iOS.mm */,
+				FA0B7EF01A959D2C000E1D17 /* ios.h */,
+				FA0B7EF11A959D2C000E1D17 /* ios.mm */,
 				FA0B79011A958E3B000E1D17 /* math.h */,
 				FA0B79021A958E3B000E1D17 /* Matrix.cpp */,
 				FA0B79031A958E3B000E1D17 /* Matrix.h */,
@@ -3313,7 +3313,7 @@
 				FA0B792D1A958E3B000E1D17 /* Memoizer.cpp in Sources */,
 				FA0B7EBC1A95902C000E1D17 /* LuaThread.cpp in Sources */,
 				FA0B7A871A958EA3000E1D17 /* b2PolygonAndCircleContact.cpp in Sources */,
-				FA0B7EF21A959D2C000E1D17 /* iOS.mm in Sources */,
+				FA0B7EF21A959D2C000E1D17 /* ios.mm in Sources */,
 				FA0B7D3A1A95902C000E1D17 /* Graphics.cpp in Sources */,
 				FA0B7A2D1A958EA3000E1D17 /* b2CollideCircle.cpp in Sources */,
 				FA0B7E131A95902C000E1D17 /* GearJoint.cpp in Sources */,

@@ -25,7 +25,7 @@
 #if defined(LOVE_MACOSX)
 #include <CoreServices/CoreServices.h>
 #elif defined(LOVE_IOS)
-#include "common/iOS.h"
+#include "common/ios.h"
 #elif defined(LOVE_ANDROID)
 #include "common/android.h"
 #elif defined(LOVE_LINUX)

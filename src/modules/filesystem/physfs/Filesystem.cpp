@@ -47,7 +47,7 @@
 #endif
 
 #ifdef LOVE_IOS
-#	include "common/iOS.h"
+#	include "common/ios.h"
 #endif
 
 #include <string>
