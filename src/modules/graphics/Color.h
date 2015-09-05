@@ -44,10 +44,25 @@ struct ColorT
 		a = a_;
 	}
 
+	bool operator==(const ColorT<T> &other) const;
+	bool operator!=(const ColorT<T> &other) const;
+
 	ColorT<T> operator+=(const ColorT<T> &other);
 	ColorT<T> operator*=(T s);
 	ColorT<T> operator/=(T s);
 };
+
+template <typename T>
+bool ColorT<T>::operator==(const ColorT<T> &other) const
+{
+	return r == other.r && g == other.g && b == other.b && a == other.a;
+}
+
+template <typename T>
+bool ColorT<T>::operator!=(const ColorT<T> &other) const
+{
+	return !(operator==(other));
+}
 
 template <typename T>
 ColorT<T> ColorT<T>::operator+=(const ColorT<T> &other)

@@ -131,11 +131,10 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 {
 	const DisplayState &cur = states.back();
 
-	if (*(uint32 *) &s.color.r != *(uint32 *) &cur.color.r)
+	if (s.color != cur.color)
 		setColor(s.color);
 
-	if (*(uint32 *) &s.backgroundColor.r != *(uint32 *) &cur.backgroundColor.r)
-		setBackgroundColor(s.backgroundColor);
+	setBackgroundColor(s.backgroundColor);
 
 	if (s.blendMode != cur.blendMode || s.blendMultiplyAlpha != cur.blendMultiplyAlpha)
 		setBlendMode(s.blendMode, s.blendMultiplyAlpha);
