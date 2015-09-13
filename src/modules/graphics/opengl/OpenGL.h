@@ -143,7 +143,7 @@ public:
 	{
 	public:
 
-#if defined(DEBUG) && DEBUG == 1
+#if defined(LOVE_IOS)
 		TempDebugGroup(const char *name)
 		{
 			if (GLAD_EXT_debug_marker)
@@ -153,7 +153,7 @@ public:
 		TempDebugGroup(const char *) {}
 #endif
 
-#if defined(DEBUG) && DEBUG == 1
+#if defined(LOVE_IOS)
 		~TempDebugGroup()
 		{
 			if (GLAD_EXT_debug_marker)
