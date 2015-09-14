@@ -28,7 +28,7 @@ Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the
 Download the required libraries from [here][dependencies-ios] and place the `include` and `libraries` folders
 into the `platform/xcode/ios` folder.
 
-Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target. Note that you must be registered in the [iOS Developer Program][iosdeveloper] in order to build for physical iOS devices.
+Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
 Repository information
 ----------------------
@@ -84,5 +84,4 @@ Dependencies
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
 [aur]: http://aur.archlinux.org/packages.php?ID=35279
 [love-experiments]: https://bitbucket.org/bartbes/love-experiments
-[iosdeveloper]: https://developer.apple.com/programs/ios/
 [codestyle]: https://love2d.org/wiki/Code_Style

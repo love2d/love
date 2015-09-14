@@ -3798,6 +3798,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -3849,6 +3850,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -3878,7 +3880,6 @@
 					ios/include/freetype,
 					ios/include/SDL2,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
@@ -3918,7 +3919,6 @@
 					ios/include/freetype,
 					ios/include/SDL2,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
@@ -3959,7 +3959,6 @@
 					ios/include/freetype,
 					ios/include/SDL2,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
@@ -4018,6 +4017,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
