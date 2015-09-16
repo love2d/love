@@ -110,7 +110,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setPointSize(s.pointSize);
 
 	if (s.scissor)
-		setScissor(s.scissorBox.x, s.scissorBox.y, s.scissorBox.w, s.scissorBox.h);
+		setScissor(s.scissorRect.x, s.scissorRect.y, s.scissorRect.w, s.scissorRect.h);
 	else
 		setScissor();
 
@@ -147,10 +147,10 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	if (s.pointSize != cur.pointSize)
 		setPointSize(s.pointSize);
 
-	if (s.scissor != cur.scissor || (s.scissor && !(s.scissorBox == cur.scissorBox)))
+	if (s.scissor != cur.scissor || (s.scissor && !(s.scissorRect == cur.scissorRect)))
 	{
 		if (s.scissor)
-			setScissor(s.scissorBox.x, s.scissorBox.y, s.scissorBox.w, s.scissorBox.h);
+			setScissor(s.scissorRect.x, s.scissorRect.y, s.scissorRect.w, s.scissorRect.h);
 		else
 			setScissor();
 	}
@@ -580,14 +580,35 @@ bool Graphics::isCreated() const
 
 void Graphics::setScissor(int x, int y, int width, int height)
 {
-	OpenGL::Viewport box = {x, y, width, height};
+	ScissorRect rect = {x, y, width, height};
 
 	glEnable(GL_SCISSOR_TEST);
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor(box);
+	gl.setScissor({rect.x, rect.y, rect.w, rect.h});
 
 	states.back().scissor = true;
-	states.back().scissorBox = box;
+	states.back().scissorRect = rect;
+}
+
+void Graphics::intersectScissor(int x, int y, int width, int height)
+{
+	ScissorRect rect = states.back().scissorRect;
+
+	if (!states.back().scissor)
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.w = std::numeric_limits<int>::max();
+		rect.h = std::numeric_limits<int>::max();
+	}
+
+	int x1 = std::max(rect.x, x);
+	int y1 = std::max(rect.y, y);
+
+	int x2 = std::min(rect.x + rect.w, x + width);
+	int y2 = std::min(rect.y + rect.h, y + height);
+
+	setScissor(x1, y1, std::max(0, x2 - x1), std::max(0, y2 - y1));
 }
 
 void Graphics::setScissor()
@@ -600,10 +621,10 @@ bool Graphics::getScissor(int &x, int &y, int &width, int &height) const
 {
 	const DisplayState &state = states.back();
 
-	x = state.scissorBox.x;
-	y = state.scissorBox.y;
-	width = state.scissorBox.w;
-	height = state.scissorBox.h;
+	x = state.scissorRect.x;
+	y = state.scissorRect.y;
+	width = state.scissorRect.w;
+	height = state.scissorRect.h;
 
 	return state.scissor;
 }

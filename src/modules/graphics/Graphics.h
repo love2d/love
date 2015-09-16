@@ -178,6 +178,17 @@ public:
 		}
 	};
 
+	struct ScissorRect
+	{
+		int x, y;
+		int w, h;
+
+		bool operator == (const ScissorRect &rhs) const
+		{
+			return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
+		}
+	};
+
 	virtual ~Graphics();
 
 	// Implements Module.

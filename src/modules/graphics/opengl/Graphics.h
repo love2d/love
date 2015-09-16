@@ -126,6 +126,8 @@ public:
 	 **/
 	void setScissor(int x, int y, int width, int height);
 
+	void intersectScissor(int x, int y, int width, int height);
+
 	/**
 	 * Clears any scissor that has been created.
 	 **/
@@ -478,7 +480,7 @@ private:
 		float pointSize = 1.0f;
 
 		bool scissor = false;
-		OpenGL::Viewport scissorBox = OpenGL::Viewport();
+		ScissorRect scissorRect = ScissorRect();
 
 		// Stencil.
 		bool stencilTest = false;

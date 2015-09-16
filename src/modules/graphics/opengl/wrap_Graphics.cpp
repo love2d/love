@@ -184,6 +184,20 @@ int w_setScissor(lua_State *L)
 	return 0;
 }
 
+int w_intersectScissor(lua_State *L)
+{
+	int x = (int) luaL_checknumber(L, 1);
+	int y = (int) luaL_checknumber(L, 2);
+	int w = (int) luaL_checknumber(L, 3);
+	int h = (int) luaL_checknumber(L, 4);
+
+	if (w < 0 || h < 0)
+		return luaL_error(L, "Can't set scissor with negative width and/or height.");
+
+	instance()->intersectScissor(x, y, w, h);
+	return 0;
+}
+
 int w_getScissor(lua_State *L)
 {
 	int x, y, w, h;
@@ -1899,6 +1913,7 @@ static const luaL_Reg functions[] =
 	{ "getDimensions", w_getDimensions },
 
 	{ "setScissor", w_setScissor },
+	{ "intersectScissor", w_intersectScissor },
 	{ "getScissor", w_getScissor },
 
 	{ "stencil", w_stencil },
