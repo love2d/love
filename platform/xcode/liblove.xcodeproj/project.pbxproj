@@ -3152,7 +3152,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 				TargetAttributes = {
 					FA0B78DC1A958B90000E1D17 = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -3826,6 +3826,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -4055,6 +4056,7 @@
 					"-undefined",
 					dynamic_lookup,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "love2d.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = love;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
@@ -4086,6 +4088,7 @@
 					"-undefined",
 					dynamic_lookup,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "love2d.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = love;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
@@ -4118,6 +4121,7 @@
 					"-undefined",
 					dynamic_lookup,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "love2d.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = love;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
