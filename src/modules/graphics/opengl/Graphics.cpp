@@ -294,6 +294,10 @@ bool Graphics::setMode(int width, int height)
 
 	setDebug(enabledebug);
 
+	// Reload all volatile objects.
+	if (!Volatile::loadAll())
+		::printf("Could not reload all volatile objects.\n");
+
 	// Create a quad indices object owned by love.graphics, so at least one
 	// QuadIndices object is alive at all times while love.graphics is alive.
 	// This makes sure there aren't too many expensive destruction/creations of
@@ -301,10 +305,6 @@ bool Graphics::setMode(int width, int height)
 	// objects is destroyed when the last object is destroyed.
 	if (quadIndices == nullptr)
 		quadIndices = new QuadIndices(20);
-
-	// Reload all volatile objects.
-	if (!Volatile::loadAll())
-		::printf("Could not reload all volatile objects.\n");
 
 	// Restore the graphics state.
 	restoreState(states.back());
