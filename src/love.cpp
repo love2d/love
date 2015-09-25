@@ -110,12 +110,16 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 	}
 
 #ifdef LOVE_MACOSX
-	// Check for a drop file string.
-	std::string dropfilestr = love::macosx::checkDropEvents();
+	// Check for a drop file string, if the app wasn't launched in a terminal.
+	// Checking for the terminal is a pretty big hack, but works around an issue
+	// where OS X will switch Spaces if the terminal launching love is in its
+	// own full-screen Space.
+	std::string dropfilestr;
+	if (!isatty(STDIN_FILENO))
+		dropfilestr = love::macosx::checkDropEvents();
+
 	if (!dropfilestr.empty())
-	{
 		temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
-	}
 	else
 #endif
 	{
