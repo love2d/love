@@ -37,6 +37,7 @@ extern "C" {
 
 #ifdef LOVE_MACOSX
 #include "common/macosx.h"
+#include <unistd.h>
 #endif // LOVE_MACOSX
 
 #ifdef LOVE_IOS
