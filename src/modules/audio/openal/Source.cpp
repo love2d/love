@@ -308,8 +308,11 @@ bool Source::update()
 			offsetSamples += (curOffsetSamples - newOffsetSamples);
 			offsetSeconds += (curOffsetSecs - newOffsetSecs);
 
-			streamAtomic(buffer, decoder.get());
-			alSourceQueueBuffers(source, 1, &buffer);
+			// FIXME: We should put freed buffers into a list that we later
+			// consume here, so we can keep track of all free buffers even if we
+			// tried to stream data to one but the decoder didn't have data for it.
+			if (streamAtomic(buffer, decoder.get()) > 0)
+				alSourceQueueBuffers(source, 1, &buffer);
 		}
 
 		return true;
@@ -575,8 +578,11 @@ bool Source::playAtomic()
 
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 		{
-			streamAtomic(streamBuffers[i], decoder.get());
+			if (streamAtomic(streamBuffers[i], decoder.get()) == 0)
+				break;
+
 			++usedBuffers;
+
 			if (decoder->isFinished())
 				break;
 		}
@@ -736,13 +742,18 @@ ALenum Source::getFormat(int channels, int bitDepth) const
 int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 {
 	// Get more sound data.
-	int decoded = d->decode();
-	decoded = decoded >= 0 ? decoded : 0;
+	int decoded = std::max(d->decode(), 0);
 
-	int fmt = getFormat(d->getChannels(), d->getBitDepth());
+	// OpenAL implementations are allowed to ignore 0-size alBufferData calls.
+	if (decoded > 0)
+	{
+		int fmt = getFormat(d->getChannels(), d->getBitDepth());
 
-	if (fmt != 0)
-		alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
+		if (fmt != 0)
+			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
+		else
+			decoded = 0;
+	}
 
 	if (decoder->isFinished() && isLooping())
 	{
