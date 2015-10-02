@@ -86,19 +86,13 @@ Math Math::instance;
 
 Math::Math()
 	: rng()
-	, compressors()
 {
 	// prevent the runtime from free()-ing this
 	retain();
-
-	for (int i = 0; i < (int) Compressor::FORMAT_MAX_ENUM; i++)
-		compressors[i] = Compressor::Create((Compressor::Format) i);
 }
 
 Math::~Math()
 {
-	for (Compressor *c : compressors)
-		delete c;
 }
 
 RandomGenerator *Math::newRandomGenerator()
@@ -232,13 +226,13 @@ CompressedData *Math::compress(Compressor::Format format, love::Data *rawdata, i
 
 CompressedData *Math::compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
 {
-	if (format == Compressor::FORMAT_MAX_ENUM || !compressors[format])
+	Compressor *compressor = Compressor::getCompressor(format);
+
+	if (compressor == nullptr)
 		throw love::Exception("Invalid compression format.");
 
 	size_t compressedsize = 0;
-	Compressor *compressor = compressors[format];
-
-	char *cbytes = compressor->compress(rawbytes, rawsize, level, compressedsize);
+	char *cbytes = compressor->compress(format, rawbytes, rawsize, level, compressedsize);
 
 	CompressedData *data = nullptr;
 
@@ -268,10 +262,12 @@ char *Math::decompress(CompressedData *data, size_t &decompressedsize)
 
 char *Math::decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize)
 {
-	if (format == Compressor::FORMAT_MAX_ENUM || !compressors[format])
+	Compressor *compressor = Compressor::getCompressor(format);
+
+	if (compressor == nullptr)
 		throw love::Exception("Invalid compression format.");
 
-	return compressors[format]->decompress(cbytes, compressedsize, rawsize);
+	return compressor->decompress(format, cbytes, compressedsize, rawsize);
 }
 
 } // math

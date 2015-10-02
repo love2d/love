@@ -24,6 +24,9 @@
 // LOVE
 #include "common/StringMap.h"
 
+// C++
+#include <vector>
+
 namespace love
 {
 namespace math
@@ -40,20 +43,22 @@ public:
 	{
 		FORMAT_LZ4,
 		FORMAT_ZLIB,
+		FORMAT_GZIP,
 		FORMAT_MAX_ENUM
 	};
 
 	/**
-	 * Creates a new Compressor that can compress and decompress a specific
-	 * format.
+	 * Gets a Compressor that can compress and decompress a specific format.
+	 * Returns null if there are no supported compressors for the given format.
 	 **/
-	static Compressor *Create(Format format);
+	static Compressor *getCompressor(Format format);
 
 	virtual ~Compressor() {}
 
 	/**
 	 * Compresses input data, and returns the compressed result.
 	 *
+	 * @param[in] format The format to compress to.
 	 * @param[in] data The input (uncompressed) data.
 	 * @param[in] dataSize The size in bytes of the input data.
 	 * @param[in] level The amount of compression to apply (between 0 and 9.)
@@ -63,11 +68,12 @@ public:
 	 *
 	 * @return The newly compressed data (allocated with new[]).
 	 **/
-	virtual char *compress(const char *data, size_t dataSize, int level, size_t &compressedSize) = 0;
+	virtual char *compress(Format format, const char *data, size_t dataSize, int level, size_t &compressedSize) = 0;
 
 	/**
 	 * Decompresses compressed data, and returns the decompressed result.
 	 *
+	 * @param[in] format The format the compressed data is in.
 	 * @param[in] data The input (compressed) data.
 	 * @param[in] dataSize The size in bytes of the compressed data.
 	 * @param[in,out] decompressedSize On input, the size in bytes of the
@@ -76,17 +82,19 @@ public:
 	 *
 	 * @return The decompressed data (allocated with new[]).
 	 **/
-	virtual char *decompress(const char *data, size_t dataSize, size_t &decompressedSize) = 0;
+	virtual char *decompress(Format format, const char *data, size_t dataSize, size_t &decompressedSize) = 0;
 
 	/**
-	 * Gets the compression format implemented by this backend.
-	 *
-	 * @return The supported format.
+	 * Gets whether a specific format is supported by this backend.
 	 **/
-	virtual Format getFormat() const = 0;
+	virtual bool isSupported(Format format) const = 0;
 
 	static bool getConstant(const char *in, Format &out);
 	static bool getConstant(Format in, const char *&out);
+
+protected:
+
+	Compressor() {}
 
 private:
 

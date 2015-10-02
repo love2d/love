@@ -205,8 +205,6 @@ private:
 
 	Math();
 
-	Compressor *compressors[Compressor::FORMAT_MAX_ENUM];
-
 }; // Math
 
 inline float Math::noise(float x) const
