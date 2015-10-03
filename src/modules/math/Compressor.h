@@ -24,9 +24,6 @@
 // LOVE
 #include "common/StringMap.h"
 
-// C++
-#include <vector>
-
 namespace love
 {
 namespace math

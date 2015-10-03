@@ -358,7 +358,7 @@ int w_compress(lua_State *L)
 	Compressor::Format format = Compressor::FORMAT_LZ4;
 
 	if (fstr && !Compressor::getConstant(fstr, format))
-		return luaL_error(L, "Invalid compressed format: %s", fstr);
+		return luaL_error(L, "Invalid compressed data format: %s", fstr);
 
 	int level = (int) luaL_optnumber(L, 3, -1);
 
@@ -384,24 +384,33 @@ int w_decompress(lua_State *L)
 	char *rawbytes = nullptr;
 	size_t rawsize = 0;
 
-	if (lua_isstring(L, 1))
+	if (luax_istype(L, 1, MATH_COMPRESSED_DATA_ID))
+	{
+		CompressedData *data = luax_checkcompresseddata(L, 1);
+		rawsize = data->getDecompressedSize();
+		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(data, rawsize); });
+	}
+	else
 	{
 		Compressor::Format format = Compressor::FORMAT_LZ4;
 		const char *fstr = luaL_checkstring(L, 2);
 
 		if (!Compressor::getConstant(fstr, format))
-			return luaL_error(L, "Invalid compressed format: %s", fstr);
+			return luaL_error(L, "Invalid compressed data format: %s", fstr);
 
 		size_t compressedsize = 0;
-		const char *cbytes = luaL_checklstring(L, 1, &compressedsize);
+		const char *cbytes = nullptr;
+
+		if (luax_istype(L, 1, DATA_ID))
+		{
+			Data *data = luax_checktype<Data>(L, 1, DATA_ID);
+			cbytes = (const char *) data->getData();
+			compressedsize = data->getSize();
+		}
+		else
+			cbytes = luaL_checklstring(L, 1, &compressedsize);
 
 		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(format, cbytes, compressedsize, rawsize); });
-	}
-	else
-	{
-		CompressedData *data = luax_checkcompresseddata(L, 1);
-		rawsize = data->getDecompressedSize();
-		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(data, rawsize); });
 	}
 
 	lua_pushlstring(L, rawbytes, rawsize);
