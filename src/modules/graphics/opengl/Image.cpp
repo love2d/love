@@ -356,7 +356,7 @@ bool Image::loadVolatile()
 
 		GLenum glerr = glGetError();
 		if (glerr != GL_NO_ERROR)
-			throw love::Exception("Cannot create image (error code 0x%x)", glerr);
+			throw love::Exception("Cannot create image (OpenGL error: %s)", OpenGL::errorString(glerr));
 	}
 	catch (love::Exception &)
 	{

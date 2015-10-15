@@ -339,6 +339,8 @@ public:
 	 **/
 	Vendor getVendor() const;
 
+	static const char *errorString(GLenum errorcode);
+
 	// Get human-readable strings for debug info.
 	static const char *debugSeverityString(GLenum severity);
 	static const char *debugSourceString(GLenum source);

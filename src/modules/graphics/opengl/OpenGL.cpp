@@ -32,6 +32,7 @@
 
 // C
 #include <cstring>
+#include <cstdio>
 
 // For SDL_GL_GetProcAddress.
 #include <SDL_video.h>
@@ -643,13 +644,43 @@ int OpenGL::getMaxTextureUnits() const
 
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
 {
-	int64 memsize = (int64) stats.textureMemory + ((int64 )newsize -  (int64) oldsize);
+	int64 memsize = (int64) stats.textureMemory + ((int64) newsize - (int64) oldsize);
 	stats.textureMemory = (size_t) std::max(memsize, (int64) 0);
 }
 
 OpenGL::Vendor OpenGL::getVendor() const
 {
 	return vendor;
+}
+
+const char *OpenGL::errorString(GLenum errorcode)
+{
+	switch (errorcode)
+	{
+	case GL_NO_ERROR:
+		return "no error";
+	case GL_INVALID_ENUM:
+		return "invalid enum";
+	case GL_INVALID_VALUE:
+		return "invalid value";
+	case GL_INVALID_OPERATION:
+		return "invalid operation";
+	case GL_OUT_OF_MEMORY:
+		return "out of memory";
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		return "invalid framebuffer operation";
+	case GL_CONTEXT_LOST:
+		return "OpenGL context has been lost";
+	default:
+		break;
+	}
+
+	static char text[64] = {};
+
+	memset(text, 0, sizeof(text));
+	sprintf(text, "0x%x", errorcode);
+
+	return text;
 }
 
 const char *OpenGL::debugSeverityString(GLenum severity)
