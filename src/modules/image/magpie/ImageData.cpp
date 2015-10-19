@@ -117,8 +117,8 @@ void ImageData::decode(love::filesystem::FileData *data)
 
 	if (decodedimage.data == nullptr)
 	{
-		const char *ext = data->getExtension().c_str();
-		throw love::Exception("Could not decode to ImageData: unrecognized format (%s)", ext);
+		const std::string &name = data->getFilename();
+		throw love::Exception("Could not decode file '%s' to ImageData: unsupported file format", name.c_str());
 	}
 
 	// The decoder *must* output a 32 bits-per-pixel image.
