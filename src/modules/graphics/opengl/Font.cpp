@@ -346,7 +346,7 @@ float Font::getHeight() const
 	return (float) height;
 }
 
-std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
+std::vector<Font::DrawCommand> Font::generateVertices(const Codepoints &codepoints, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
 {
 	// Spacing counter and newline handling.
 	float dx = offset.x;
@@ -360,87 +360,78 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 
 	// Pre-allocate space for the maximum possible number of vertices.
 	size_t vertstartsize = vertices.size();
-	vertices.reserve(vertstartsize + text.length() * 4);
+	vertices.reserve(vertstartsize + codepoints.size());
 
 	uint32 prevglyph = 0;
 
-	try
+	for (int i = 0; i < (int) codepoints.size(); i++)
 	{
-		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
-		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
+		uint32 g = codepoints[i];
 
-		while (i != end)
+		if (g == '\n')
 		{
-			uint32 g = *i++;
+			if (dx > maxwidth)
+				maxwidth = (int) dx;
 
-			if (g == '\n')
-			{
-				if (dx > maxwidth)
-					maxwidth = (int) dx;
-
-				// Wrap newline, but do not print it.
-				dy += floorf(getHeight() * getLineHeight() + 0.5f);
-				dx = offset.x;
-				continue;
-			}
-
-			uint32 cacheid = textureCacheID;
-
-			const Glyph &glyph = findGlyph(g);
-
-			// If findGlyph invalidates the texture cache, re-start the loop.
-			if (cacheid != textureCacheID)
-			{
-				i = utf8::iterator<std::string::const_iterator>(text.begin(), text.begin(), text.end());
-				maxwidth = 0;
-				dx = offset.x;
-				dy = offset.y;
-				drawcommands.clear();
-				vertices.resize(vertstartsize);
-				prevglyph = 0;
-				continue;
-			}
-
-			// Add kerning to the current horizontal offset.
-			dx += getKerning(prevglyph, g);
-
-			if (glyph.texture != 0)
-			{
-				// Copy the vertices and set their proper relative positions.
-				for (int j = 0; j < 4; j++)
-				{
-					vertices.push_back(glyph.vertices[j]);
-					vertices.back().x += dx;
-					vertices.back().y += dy + lineheight;
-				}
-
-				// Check if glyph texture has changed since the last iteration.
-				if (drawcommands.empty() || drawcommands.back().texture != glyph.texture)
-				{
-					// Add a new draw command if the texture has changed.
-					DrawCommand cmd;
-					cmd.startvertex = (int) vertices.size() - 4;
-					cmd.vertexcount = 0;
-					cmd.texture = glyph.texture;
-					drawcommands.push_back(cmd);
-				}
-
-				drawcommands.back().vertexcount += 4;
-			}
-
-			// Advance the x position for the next glyph.
-			dx += glyph.spacing;
-
-			// Account for extra spacing given to space characters.
-			if (g == ' ' && extra_spacing != 0.0f)
-				dx = floorf(dx + extra_spacing);
-
-			prevglyph = g;
+			// Wrap newline, but do not print it.
+			dy += floorf(getHeight() * getLineHeight() + 0.5f);
+			dx = offset.x;
+			continue;
 		}
-	}
-	catch (utf8::exception &e)
-	{
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
+
+		uint32 cacheid = textureCacheID;
+
+		const Glyph &glyph = findGlyph(g);
+
+		// If findGlyph invalidates the texture cache, re-start the loop.
+		if (cacheid != textureCacheID)
+		{
+			i = 0;
+			maxwidth = 0;
+			dx = offset.x;
+			dy = offset.y;
+			drawcommands.clear();
+			vertices.resize(vertstartsize);
+			prevglyph = 0;
+			continue;
+		}
+
+		// Add kerning to the current horizontal offset.
+		dx += getKerning(prevglyph, g);
+
+		if (glyph.texture != 0)
+		{
+			// Copy the vertices and set their proper relative positions.
+			for (int j = 0; j < 4; j++)
+			{
+				vertices.push_back(glyph.vertices[j]);
+				vertices.back().x += dx;
+				vertices.back().y += dy + lineheight;
+			}
+
+			// Check if glyph texture has changed since the last iteration.
+			if (drawcommands.empty() || drawcommands.back().texture != glyph.texture)
+			{
+				// Add a new draw command if the texture has changed.
+				DrawCommand cmd;
+				cmd.startvertex = (int) vertices.size() - 4;
+				cmd.vertexcount = 0;
+				cmd.texture = glyph.texture;
+				drawcommands.push_back(cmd);
+			}
+
+			drawcommands.back().vertexcount += 4;
+		}
+
+		// Advance the x position for the next glyph.
+		dx += glyph.spacing;
+
+		// Account for extra spacing given to space characters.
+		if (g == ' ' && extra_spacing != 0.0f)
+			dx = floorf(dx + extra_spacing);
+
+		prevglyph = g;
+
 	}
 
 	// Sort draw commands by texture first, and quad position in memory second
@@ -455,43 +446,61 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 		info->width = maxwidth - offset.x;;
 		info->height = (int) dy + (dx > 0.0f ? floorf(getHeight() * getLineHeight() + 0.5f) : 0) - offset.y;
 	}
-
+	
 	return drawcommands;
+}
+
+std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
+{
+	Codepoints codepoints;
+	codepoints.reserve(text.size());
+
+	try
+	{
+		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
+		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
+
+		while (i != end)
+		{
+			uint32 g = *i++;
+			codepoints.push_back(g);
+		}
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
+	}
+
+	return generateVertices(codepoints, vertices, extra_spacing, offset, info);
 }
 
 std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const std::string &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info)
 {
-	if (wrap < 0.0f)
-		wrap = std::numeric_limits<float>::max();
+	
+	wrap = std::max(wrap, 0.0f);
 
 	uint32 cacheid = textureCacheID;
 
 	std::vector<DrawCommand> drawcommands;
 	vertices.reserve(text.length() * 4);
 
-	// wrappedlines indicates which lines were automatically wrapped. It
-	// has the same number of elements as lines_to_draw.
-	std::vector<bool> wrappedlines;
 	std::vector<int> widths;
-	std::vector<std::string> lines;
+	std::vector<Codepoints> lines;
 
-	// We only need the list of wrapped lines in 'justify' mode.
-	getWrap(text, wrap, lines, &widths, align == ALIGN_JUSTIFY ? &wrappedlines : nullptr);
+	getWrap(text, wrap, lines, &widths);
 
-	float extraspacing = 0.0f;
-	int numspaces = 0;
-	int i = 0;
 	float y = 0.0f;
-	float maxwidth = 0;
+	float maxwidth = 0.0f;
 
-	for (const std::string &line : lines)
+	for (int i = 0; i < (int) lines.size(); i++)
 	{
-		extraspacing = 0.0f;
+		const auto &line = lines[i];
+
 		float width = (float) widths[i];
 		love::Vector offset(0.0f, floorf(y));
+		float extraspacing = 0.0f;
 
-		if (width > maxwidth)
-			maxwidth = width;
+		maxwidth = std::max(width, maxwidth);
 
 		switch (align)
 		{
@@ -502,12 +511,14 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const std::string
 			offset.x = floorf((wrap - width) / 2.0f);
 			break;
 		case ALIGN_JUSTIFY:
-			numspaces = (int) std::count(line.begin(), line.end(), ' ');
-			if (wrappedlines[i] && numspaces >= 1)
-				extraspacing = (wrap - width) / float(numspaces);
+		{
+			float numspaces = (float) std::count(line.begin(), line.end(), ' ');
+			if (width < wrap && numspaces >= 1)
+				extraspacing = (wrap - width) / numspaces;
 			else
 				extraspacing = 0.0f;
 			break;
+		}
 		case ALIGN_LEFT:
 		default:
 			break;
@@ -537,7 +548,6 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const std::string
 		}
 
 		y += getHeight() * getLineHeight();
-		i++;
 	}
 
 	if (info != nullptr)
@@ -636,15 +646,16 @@ int Font::getWidth(const std::string &str)
 	while (getline(iss, line, '\n'))
 	{
 		int width = 0;
+		uint32 prevglyph = 0;
 		try
 		{
-			uint32 prevglyph = 0;
-
 			utf8::iterator<std::string::const_iterator> i(line.begin(), line.begin(), line.end());
 			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
+
 			while (i != end)
 			{
 				uint32 c = *i++;
+
 				const Glyph &g = findGlyph(c);
 				width += g.spacing + getKerning(prevglyph, c);
 
@@ -668,69 +679,117 @@ int Font::getWidth(char character)
 	return g.spacing;
 }
 
-void Font::getWrap(const std::string &text, float wrap, std::vector<std::string> &lines, std::vector<int> *linewidths, std::vector<bool> *wrappedlines)
+void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoints> &lines, std::vector<int> *linewidths)
 {
-	const float width_space = (float) getWidth(' ');
-
-	std::istringstream iss(text);
-	std::string line;
-	std::ostringstream string_builder;
-
 	// Split text at newlines.
+	std::string line;
+	std::istringstream iss(text);
+
+	// A wrapped line of text.
+	Codepoints wline;
+
 	while (std::getline(iss, line, '\n'))
 	{
-		std::vector<std::string> words;
-		std::istringstream word_iss(line);
-
-		// split line into words
-		std::copy(std::istream_iterator<std::string>(word_iss), std::istream_iterator<std::string>(), std::back_inserter(words));
-
 		float width = 0.0f;
-		float oldwidth = 0.0f;
-		string_builder.str("");
+		uint32 prevglyph = 0;
 
-		// Put words back together until a wrap occurs.
-		for (const std::string &word : words)
+		wline.clear();
+		wline.reserve(line.length());
+
+		try
 		{
-			float wordwidth = (float) getWidth(word);
-			width += wordwidth;
+			utf8::iterator<std::string::const_iterator> i(line.begin(), line.begin(), line.end());
+			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
 
-			// On wordwrap, push line to line buffer and clear string builder.
-			if (width > wrap && oldwidth > 0)
+			utf8::iterator<std::string::const_iterator> lastspaceit = end;
+
+			while (i != end)
 			{
-				int realw = (int) width;
+				uint32 c = *i;
 
-				// Remove trailing space.
-				std::string tmp = string_builder.str();
-				lines.push_back(tmp.substr(0,tmp.size()-1));
-				string_builder.str("");
-				width = wordwidth;
-				realw -= (int) width;
+				const Glyph &g = findGlyph(c);
+				float newwidth = width + g.spacing + getKerning(prevglyph, c);
 
-				if (linewidths)
-					linewidths->push_back(realw);
+				// Wrap the line if it exceeds the wrap limit. Don't wrap yet if
+				// we're processing a newline character, though.
+				if (c != ' ' && newwidth > wraplimit)
+				{
+					// If this is the first character in the line and it exceeds
+					// the limit, skip it completely.
+					if (wline.empty())
+						++i;
+					else if (lastspaceit != end)
+					{
+						// 'Rewind' to the last seen space, if the line has one.
+						// FIXME: This should preferably use vector::erase.
+						while (!wline.empty() && wline.back() != ' ')
+							wline.pop_back();
 
-				// Indicate that this line was automatically wrapped.
-				if (wrappedlines)
-					wrappedlines->push_back(true);
+						i = lastspaceit;
+						++i; // Start the next line after the space.
+					}
+
+					lines.push_back(wline);
+
+					if (linewidths)
+						linewidths->push_back(width);
+
+					prevglyph = 0; // Reset kerning information.
+					width = 0.0f;
+					wline.clear();
+					lastspaceit = end;
+					continue;
+				}
+
+				width = newwidth;
+				prevglyph = c;
+
+				wline.push_back(c);
+
+				// Keep track of the last seen space, so we can "rewind" to it
+				// when wrapping.
+				if (c == ' ')
+					lastspaceit = i;
+
+				++i;
 			}
-
-			string_builder << word << " ";
-
-			width += width_space;
-			oldwidth = width;
+		}
+		catch (utf8::exception &e)
+		{
+			throw love::Exception("UTF-8 decoding error: %s", e.what());
 		}
 
-		// Push last line.
+		// Remove trailing newlines.
+		if (!wline.empty() && wline.back() == '\n')
+			wline.pop_back();
+
+		lines.push_back(wline);
+
 		if (linewidths)
 			linewidths->push_back(width);
+	}
+}
 
-		std::string tmp = string_builder.str();
-		lines.push_back(tmp.substr(0,tmp.size()-1));
+void Font::getWrap(const std::string &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
+{
+	std::vector<Codepoints> codepointlines;
+	getWrap(text, wraplimit, codepointlines, linewidths);
 
-		// Indicate that this line was not automatically wrapped.
-		if (wrappedlines)
-			wrappedlines->push_back(false);
+	std::string line;
+
+	for (const Codepoints &codepoints : codepointlines)
+	{
+		line.clear();
+		line.reserve(codepoints.size());
+
+		for (uint32 codepoint : codepoints)
+		{
+			char character[5] = {'\0'};
+			char *end = utf8::unchecked::append(codepoint, character);
+			line.append(character, end - character);
+		}
+
+		lines.push_back(line);
 	}
 }
 

@@ -50,6 +50,8 @@ class Font : public Object, public Volatile
 {
 public:
 
+	typedef std::vector<uint32> Codepoints;
+
 	enum AlignMode
 	{
 		ALIGN_LEFT,
@@ -93,7 +95,9 @@ public:
 
 	virtual ~Font();
 
+	std::vector<DrawCommand> generateVertices(const Codepoints &str, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
 	std::vector<DrawCommand> generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = Vector(), TextInfo *info = nullptr);
+
 	std::vector<DrawCommand> generateVerticesFormatted(const std::string &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
 
 	void drawVertices(const std::vector<DrawCommand> &drawcommands);
@@ -140,13 +144,12 @@ public:
 	 * and optionally the number of lines
 	 *
 	 * @param text The input text
-	 * @param wrap The number of pixels to wrap at
+	 * @param wraplimit The number of pixels to wrap at
 	 * @param max_width Optional output of the maximum width
-	 * @param wrapped_lines Optional output indicating which lines were
-	 *        auto-wrapped. Indices correspond to indices of the returned value.
 	 * Returns a vector with the lines.
 	 **/
-	void getWrap(const std::string &text, float wrap, std::vector<std::string> &lines, std::vector<int> *line_widths = 0, std::vector<bool> *wrapped_lines = 0);
+	void getWrap(const std::string &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *line_widths = nullptr);
+	void getWrap(const std::string &text, float wraplimit, std::vector<Codepoints> &lines, std::vector<int> *line_widths = nullptr);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
