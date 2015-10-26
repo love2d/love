@@ -49,6 +49,7 @@ static uint64 wangHash64(uint64 key)
 
 // 64 bit Xorshift implementation taken from the end of Sec. 3 (page 4) in
 // George Marsaglia, "Xorshift RNGs", Journal of Statistical Software, Vol.8 (Issue 14), 2003
+// Use an 'Xorshift*' variant, as shown here: http://xorshift.di.unimi.it
 
 RandomGenerator::RandomGenerator()
 	: last_randomnormal(std::numeric_limits<double>::infinity())
@@ -63,10 +64,10 @@ RandomGenerator::RandomGenerator()
 
 uint64 RandomGenerator::rand()
 {
-	rng_state.b64 ^= (rng_state.b64 << 13);
-	rng_state.b64 ^= (rng_state.b64 >> 7);
-	rng_state.b64 ^= (rng_state.b64 << 17);
-	return rng_state.b64;
+	rng_state.b64 ^= (rng_state.b64 >> 12);
+	rng_state.b64 ^= (rng_state.b64 << 25);
+	rng_state.b64 ^= (rng_state.b64 >> 27);
+	return rng_state.b64 * 2685821657736338717ULL;
 }
 
 // Box–Muller transform

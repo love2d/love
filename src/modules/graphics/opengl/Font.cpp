@@ -434,9 +434,16 @@ std::vector<Font::DrawCommand> Font::generateVertices(const Codepoints &codepoin
 
 	}
 
-	// Sort draw commands by texture first, and quad position in memory second
-	// (using the struct's < operator).
-	std::sort(drawcommands.begin(), drawcommands.end());
+	const auto drawsort = [](const DrawCommand &a, const DrawCommand &b) -> bool
+	{
+		// Texture binds are expensive, so we should sort by that first.
+		if (a.texture != b.texture)
+			return a.texture < b.texture;
+		else
+			return a.startvertex < b.startvertex;
+	};
+
+	std::sort(drawcommands.begin(), drawcommands.end(), drawsort);
 
 	if (dx > maxwidth)
 		maxwidth = (int) dx;
@@ -929,10 +936,10 @@ bool Font::getConstant(AlignMode in, const char  *&out)
 
 StringMap<Font::AlignMode, Font::ALIGN_MAX_ENUM>::Entry Font::alignModeEntries[] =
 {
-	{ "left", Font::ALIGN_LEFT },
-	{ "right", Font::ALIGN_RIGHT },
-	{ "center", Font::ALIGN_CENTER },
-	{ "justify", Font::ALIGN_JUSTIFY },
+	{ "left", ALIGN_LEFT },
+	{ "right", ALIGN_RIGHT },
+	{ "center", ALIGN_CENTER },
+	{ "justify", ALIGN_JUSTIFY },
 };
 
 StringMap<Font::AlignMode, Font::ALIGN_MAX_ENUM> Font::alignModes(Font::alignModeEntries, sizeof(Font::alignModeEntries));

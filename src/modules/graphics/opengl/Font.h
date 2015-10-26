@@ -79,16 +79,6 @@ public:
 		GLuint texture;
 		int startvertex;
 		int vertexcount;
-
-		// used when sorting with std::sort.
-		bool operator < (const DrawCommand &other) const
-		{
-			// Texture binds are expensive, so we should sort by that first.
-			if (texture != other.texture)
-				return texture < other.texture;
-			else
-				return startvertex < other.startvertex;
-		}
 	};
 
 	Font(love::font::Rasterizer *r, const Texture::Filter &filter = Texture::getDefaultFilter());
