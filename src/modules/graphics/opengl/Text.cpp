@@ -231,7 +231,7 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	const size_t stride = sizeof(Font::GlyphVertex);
 
 	OpenGL::TempTransform transform(gl);
-	transform.get() *= Matrix4(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	transform.get() *= Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	{
 		GLBuffer::Bind bind(*vbo);

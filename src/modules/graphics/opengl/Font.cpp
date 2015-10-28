@@ -627,7 +627,7 @@ void Font::print(const std::string &text, float x, float y, float angle, float s
 	std::vector<GlyphVertex> vertices;
 	std::vector<DrawCommand> drawcommands = generateVertices(text, vertices);
 
-	Matrix4 t(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	printv(t, drawcommands, vertices);
 }
@@ -637,7 +637,7 @@ void Font::printf(const std::string &text, float x, float y, float wrap, AlignMo
 	std::vector<GlyphVertex> vertices;
 	std::vector<DrawCommand> drawcommands = generateVerticesFormatted(text, wrap, align, vertices);
 
-	Matrix4 t(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	printv(t, drawcommands, vertices);
 }
