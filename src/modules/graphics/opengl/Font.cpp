@@ -341,6 +341,27 @@ float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 	return k;
 }
 
+void Font::codepointsFromString(const std::string &text, Codepoints &codepoints)
+{
+	codepoints.reserve(text.size());
+
+	try
+	{
+		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
+		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
+
+		while (i != end)
+		{
+			uint32 g = *i++;
+			codepoints.push_back(g);
+		}
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
+	}
+}
+
 float Font::getHeight() const
 {
 	return (float) height;
@@ -460,24 +481,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const Codepoints &codepoin
 std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
 {
 	Codepoints codepoints;
-	codepoints.reserve(text.size());
-
-	try
-	{
-		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
-		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
-
-		while (i != end)
-		{
-			uint32 g = *i++;
-			codepoints.push_back(g);
-		}
-	}
-	catch (utf8::exception &e)
-	{
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-
+	codepointsFromString(text, codepoints);
 	return generateVertices(codepoints, vertices, extra_spacing, offset, info);
 }
 
@@ -698,7 +702,8 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 	while (std::getline(iss, line, '\n'))
 	{
 		float width = 0.0f;
-		float widthatlastspace = 0.0f;
+		float widthbeforelastspace = 0.0f;
+		float widthoftrailingspace = 0.0f;
 		uint32 prevglyph = 0;
 
 		wline.clear();
@@ -716,7 +721,8 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 				uint32 c = *i;
 
 				const Glyph &g = findGlyph(c);
-				float newwidth = width + g.spacing + getKerning(prevglyph, c);
+				float charwidth = g.spacing + getKerning(prevglyph, c);
+				float newwidth = width + charwidth;
 
 				// Wrap the line if it exceeds the wrap limit. Don't wrap yet if
 				// we're processing a newline character, though.
@@ -733,7 +739,8 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 						while (!wline.empty() && wline.back() != ' ')
 							wline.pop_back();
 
-						width = widthatlastspace;
+						// Ignore the width of trailing spaces in wrapped lines.
+						width = widthbeforelastspace;
 
 						i = lastspaceit;
 						++i; // Start the next line after the space.
@@ -745,11 +752,14 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 						linewidths->push_back(width);
 
 					prevglyph = 0; // Reset kerning information.
-					width = 0.0f;
+					width = widthbeforelastspace = widthoftrailingspace = 0.0f;
 					wline.clear();
 					lastspaceit = end;
 					continue;
 				}
+
+				if (prevglyph != ' ' && c == ' ')
+					widthbeforelastspace = width;
 
 				width = newwidth;
 				prevglyph = c;
@@ -760,9 +770,11 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 				// when wrapping.
 				if (c == ' ')
 				{
-					widthatlastspace = width;
 					lastspaceit = i;
+					widthoftrailingspace += charwidth;
 				}
+				else if (c != '\n')
+					widthoftrailingspace = 0.0f;
 
 				++i;
 			}
@@ -778,8 +790,9 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 
 		lines.push_back(wline);
 
+		// Ignore the width of any trailing spaces, for individual lines.
 		if (linewidths)
-			linewidths->push_back(width);
+			linewidths->push_back(width - widthoftrailingspace);
 	}
 }
 

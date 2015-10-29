@@ -205,6 +205,7 @@ private:
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
 	float getKerning(uint32 leftglyph, uint32 rightglyph);
+	void codepointsFromString(const std::string &str, Codepoints &codepoints);
 	void printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
