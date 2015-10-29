@@ -698,6 +698,7 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 	while (std::getline(iss, line, '\n'))
 	{
 		float width = 0.0f;
+		float widthatlastspace = 0.0f;
 		uint32 prevglyph = 0;
 
 		wline.clear();
@@ -732,6 +733,8 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 						while (!wline.empty() && wline.back() != ' ')
 							wline.pop_back();
 
+						width = widthatlastspace;
+
 						i = lastspaceit;
 						++i; // Start the next line after the space.
 					}
@@ -756,7 +759,10 @@ void Font::getWrap(const std::string &text, float wraplimit, std::vector<Codepoi
 				// Keep track of the last seen space, so we can "rewind" to it
 				// when wrapping.
 				if (c == ' ')
+				{
+					widthatlastspace = width;
 					lastspaceit = i;
+				}
 
 				++i;
 			}
