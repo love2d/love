@@ -814,7 +814,7 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, con
 	return new Mesh(vertexformat, data, datasize, drawmode, usage);
 }
 
-Text *Graphics::newText(Font *font, const std::string &text)
+Text *Graphics::newText(Font *font, const std::vector<Font::ColoredString> &text)
 {
 	return new Text(font, text);
 }
@@ -1105,7 +1105,7 @@ bool Graphics::isWireframe() const
 	return states.back().wireframe;
 }
 
-void Graphics::print(const std::string &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Graphics::print(const std::vector<Font::ColoredString> &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	checkSetDefaultFont();
 
@@ -1115,7 +1115,7 @@ void Graphics::print(const std::string &str, float x, float y , float angle, flo
 		state.font->print(str, x, y, angle, sx, sy, ox, oy, kx, ky);
 }
 
-void Graphics::printf(const std::string &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Graphics::printf(const std::vector<Font::ColoredString> &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	checkSetDefaultFont();
 

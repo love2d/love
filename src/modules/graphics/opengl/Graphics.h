@@ -183,7 +183,7 @@ public:
 	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage);
 	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, Mesh::Usage usage);
 
-	Text *newText(Font *font, const std::string &text = "");
+	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 
 	bool isGammaCorrect() const;
 
@@ -328,7 +328,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void print(const std::string &str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void print(const std::vector<Font::ColoredString> &str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draw formatted text on screen at the specified coordinates.
@@ -346,7 +346,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void printf(const std::string &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void printf(const std::vector<Font::ColoredString> &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draws a point at (x,y).

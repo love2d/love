@@ -61,10 +61,29 @@ public:
 		ALIGN_MAX_ENUM
 	};
 
+	struct ColoredString
+	{
+		std::string str;
+		Color color;
+	};
+
+	struct IndexedColor
+	{
+		Color color;
+		int index;
+	};
+
+	struct ColoredCodepoints
+	{
+		std::vector<uint32> cps;
+		std::vector<IndexedColor> colors;
+	};
+
 	struct GlyphVertex
 	{
-		float x, y;
-		float s, t;
+		float  x, y;
+		uint16 s, t;
+		Color  color;
 	};
 
 	struct TextInfo
@@ -81,16 +100,25 @@ public:
 		int vertexcount;
 	};
 
+	struct DrawCommands
+	{
+		std::vector<DrawCommand> commands;
+		bool usecolors;
+	};
+
 	Font(love::font::Rasterizer *r, const Texture::Filter &filter = Texture::getDefaultFilter());
 
 	virtual ~Font();
 
-	std::vector<DrawCommand> generateVertices(const Codepoints &str, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
-	std::vector<DrawCommand> generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = Vector(), TextInfo *info = nullptr);
+	DrawCommands generateVertices(const ColoredCodepoints &codepoints, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
+	DrawCommands generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = Vector(), TextInfo *info = nullptr);
 
-	std::vector<DrawCommand> generateVerticesFormatted(const std::string &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
+	DrawCommands generateVerticesFormatted(const ColoredCodepoints &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
 
-	void drawVertices(const std::vector<DrawCommand> &drawcommands);
+	void drawVertices(const DrawCommands &drawcommands);
+
+	static void getCodepointsFromString(const std::string &str, Codepoints &codepoints);
+	static void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints);
 
 	/**
 	 * Prints the text at the designated position with rotation and scaling.
@@ -106,9 +134,9 @@ public:
 	 * @param kx Shear along the x axis.
 	 * @param ky Shear along the y axis.
 	 **/
-	void print(const std::string &text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+	void print(const std::vector<ColoredString> &text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
-	void printf(const std::string &text, float x, float y, float wrap, AlignMode align, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+	void printf(const std::vector<ColoredString> &text, float x, float y, float wrap, AlignMode align, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
 
 	/**
 	 * Returns the height of the font.
@@ -139,7 +167,7 @@ public:
 	 * Returns a vector with the lines.
 	 **/
 	void getWrap(const std::string &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *line_widths = nullptr);
-	void getWrap(const std::string &text, float wraplimit, std::vector<Codepoints> &lines, std::vector<int> *line_widths = nullptr);
+	void getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<ColoredCodepoints> &lines, std::vector<int> *line_widths = nullptr);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
@@ -205,8 +233,7 @@ private:
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
 	float getKerning(uint32 leftglyph, uint32 rightglyph);
-	void codepointsFromString(const std::string &str, Codepoints &codepoints);
-	void printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
+	void printv(const Matrix4 &t, const DrawCommands &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
 

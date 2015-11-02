@@ -38,15 +38,15 @@ class Text : public Drawable
 {
 public:
 
-	Text(Font *font, const std::string &text = "");
+	Text(Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 
-	void set(const std::string &text);
-	void set(const std::string &text, float wrap, Font::AlignMode align);
+	void set(const std::vector<Font::ColoredString> &text);
+	void set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align);
 	void set();
 
-	void add(const std::string &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
-	void addf(const std::string &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 	void clear();
 
 	// Implements Drawable.
@@ -69,7 +69,7 @@ private:
 
 	struct TextData
 	{
-		std::string text;
+		Font::ColoredCodepoints codepoints;
 		float wrap;
 		Font::AlignMode align;
 		bool use_matrix;
@@ -84,7 +84,7 @@ private:
 	StrongRef<Font> font;
 	GLBuffer *vbo;
 
-	std::vector<Font::DrawCommand> draw_commands;
+	Font::DrawCommands draw_commands;
 
 	std::vector<TextData> text_data;
 	Font::TextInfo text_info;

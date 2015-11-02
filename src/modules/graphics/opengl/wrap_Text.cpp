@@ -32,6 +32,47 @@ Text *luax_checktext(lua_State *L, int idx)
 	return luax_checktype<Text>(L, idx, GRAPHICS_TEXT_ID);
 }
 
+void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings)
+{
+	Font::ColoredString coloredstr;
+	coloredstr.color = Color(255, 255, 255, 255);
+
+	if (lua_istable(L, idx))
+	{
+		int len = luax_objlen(L, idx);
+
+		for (int i = 1; i <= len; i++)
+		{
+			lua_rawgeti(L, idx, i);
+
+			if (lua_istable(L, -1))
+			{
+				for (int j = 1; j <= 4; j++)
+					lua_rawgeti(L, -j, j);
+
+				coloredstr.color.r = (unsigned char) luaL_checknumber(L, -4);
+				coloredstr.color.g = (unsigned char) luaL_checknumber(L, -3);
+				coloredstr.color.b = (unsigned char) luaL_checknumber(L, -2);
+				coloredstr.color.a = (unsigned char) luaL_optnumber(L, -1, 255);
+
+				lua_pop(L, 4);
+			}
+			else
+			{
+				coloredstr.str = luaL_checkstring(L, -1);
+				strings.push_back(coloredstr);
+			}
+
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		coloredstr.str = luaL_checkstring(L, idx);
+		strings.push_back(coloredstr);
+	}
+}
+
 int w_Text_set(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
@@ -44,7 +85,8 @@ int w_Text_set(lua_State *L)
 	else if (lua_isnoneornil(L, 3))
 	{
 		// Single argument: unformatted text.
-		std::string newtext = luax_checkstring(L, 2);
+		std::vector<Font::ColoredString> newtext;
+		luax_checkcoloredstring(L, 2, newtext);
 		luax_catchexcept(L, [&](){ t->set(newtext); });
 	}
 	else
@@ -57,7 +99,8 @@ int w_Text_set(lua_State *L)
 		if (!Font::getConstant(alignstr, align))
 			return luaL_error(L, "Invalid align mode: %s", alignstr);
 
-		std::string newtext = luax_checkstring(L, 2);
+		std::vector<Font::ColoredString> newtext;
+		luax_checkcoloredstring(L, 2, newtext);
 
 		luax_catchexcept(L, [&](){ t->set(newtext, wraplimit, align); });
 	}
@@ -76,7 +119,8 @@ int w_Text_setf(lua_State *L)
 	if (!Font::getConstant(alignstr, align))
 		return luaL_error(L, "Invalid align mode: %s", alignstr);
 
-	std::string newtext = luax_checkstring(L, 2);
+	std::vector<Font::ColoredString> newtext;
+	luax_checkcoloredstring(L, 2, newtext);
 
 	luax_catchexcept(L, [&](){ t->set(newtext, wraplimit, align); });
 
@@ -86,7 +130,9 @@ int w_Text_setf(lua_State *L)
 int w_Text_add(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	std::string text = luax_checkstring(L, 2);
+
+	std::vector<Font::ColoredString> text;
+	luax_checkcoloredstring(L, 2, text);
 
 	float x  = (float) luaL_optnumber(L, 3, 0.0);
 	float y  = (float) luaL_optnumber(L, 4, 0.0);
@@ -105,7 +151,10 @@ int w_Text_add(lua_State *L)
 int w_Text_addf(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	std::string text = luax_checkstring(L, 2);
+
+	std::vector<Font::ColoredString> text;
+	luax_checkcoloredstring(L, 2, text);
+
 	float wrap = (float) luaL_checknumber(L, 3);
 
 	Font::AlignMode align = Font::ALIGN_MAX_ENUM;
