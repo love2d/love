@@ -100,22 +100,16 @@ public:
 		int vertexcount;
 	};
 
-	struct DrawCommands
-	{
-		std::vector<DrawCommand> commands;
-		bool usecolors;
-	};
-
 	Font(love::font::Rasterizer *r, const Texture::Filter &filter = Texture::getDefaultFilter());
 
 	virtual ~Font();
 
-	DrawCommands generateVertices(const ColoredCodepoints &codepoints, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
-	DrawCommands generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = Vector(), TextInfo *info = nullptr);
+	std::vector<DrawCommand> generateVertices(const ColoredCodepoints &codepoints, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
+	std::vector<DrawCommand> generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = Vector(), TextInfo *info = nullptr);
 
-	DrawCommands generateVerticesFormatted(const ColoredCodepoints &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
+	std::vector<DrawCommand> generateVerticesFormatted(const ColoredCodepoints &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
 
-	void drawVertices(const DrawCommands &drawcommands);
+	void drawVertices(const std::vector<DrawCommand> &drawcommands);
 
 	static void getCodepointsFromString(const std::string &str, Codepoints &codepoints);
 	static void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints);
@@ -233,7 +227,7 @@ private:
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
 	float getKerning(uint32 leftglyph, uint32 rightglyph);
-	void printv(const Matrix4 &t, const DrawCommands &drawcommands, const std::vector<GlyphVertex> &vertices);
+	void printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
 

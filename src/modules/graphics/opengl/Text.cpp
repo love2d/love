@@ -111,7 +111,7 @@ void Text::regenerateVertices()
 void Text::addTextData(const TextData &t)
 {
 	std::vector<Font::GlyphVertex> vertices;
-	Font::DrawCommands new_commands;
+	std::vector<Font::DrawCommand> new_commands;
 
 	// We only have formatted text if the align mode is valid.
 	if (t.align == Font::ALIGN_MAX_ENUM)
@@ -127,37 +127,34 @@ void Text::addTextData(const TextData &t)
 	if (!t.append_vertices)
 	{
 		voffset = 0;
-		draw_commands.commands.clear();
-		draw_commands.usecolors = false;
+		draw_commands.clear();
 	}
 
 	uploadVertices(vertices, voffset);
 
-	if (!new_commands.commands.empty())
+	if (!new_commands.empty())
 	{
 		// The start vertex should be adjusted to account for the vertex offset.
-		for (Font::DrawCommand &cmd : new_commands.commands)
+		for (Font::DrawCommand &cmd : new_commands)
 			cmd.startvertex += (int) voffset;
 
-		auto firstcmd = new_commands.commands.begin();
+		auto firstcmd = new_commands.begin();
 
 		// If the first draw command in the new list has the same texture as the
 		// last one in the existing list we're building and its vertices are
 		// in-order, we can combine them (saving a draw call.)
-		if (!draw_commands.commands.empty())
+		if (!draw_commands.empty())
 		{
-			auto prevcmd = draw_commands.commands.back();
+			auto prevcmd = draw_commands.back();
 			if (prevcmd.texture == firstcmd->texture && (prevcmd.startvertex + prevcmd.vertexcount) == firstcmd->startvertex)
 			{
-				draw_commands.commands.back().vertexcount += firstcmd->vertexcount;
+				draw_commands.back().vertexcount += firstcmd->vertexcount;
 				++firstcmd;
 			}
 		}
 
 		// Append the new draw commands to the list we're building.
-		draw_commands.commands.insert(draw_commands.commands.end(), firstcmd, new_commands.commands.end());
-
-		draw_commands.usecolors = draw_commands.usecolors || new_commands.usecolors;
+		draw_commands.insert(draw_commands.end(), firstcmd, new_commands.end());
 	}
 
 	vert_offset = voffset + vertices.size();
@@ -210,8 +207,7 @@ void Text::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::
 void Text::clear()
 {
 	text_data.clear();
-	draw_commands.commands.clear();
-	draw_commands.usecolors = false;
+	draw_commands.clear();
 	texture_cache_id = font->getTextureCacheID();
 	text_info = {};
 	vert_offset = 0;
@@ -219,7 +215,7 @@ void Text::clear()
 
 void Text::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	if (vbo == nullptr || draw_commands.commands.empty())
+	if (vbo == nullptr || draw_commands.empty())
 		return;
 
 	OpenGL::TempDebugGroup debuggroup("Text object draw");
@@ -243,17 +239,10 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		// Font::drawVertices expects AttribPointer calls to be done already.
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(pos_offset));
 		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, vbo->getPointer(tex_offset));
-
-		if (draw_commands.usecolors)
-			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, vbo->getPointer(color_offset));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, vbo->getPointer(color_offset));
 	}
 
-	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
-
-	if (draw_commands.usecolors)
-		enabledattribs |= ATTRIBFLAG_COLOR;
-
-	gl.useVertexAttribArrays(enabledattribs);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
 	font->drawVertices(draw_commands);
 }

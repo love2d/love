@@ -84,7 +84,7 @@ private:
 	StrongRef<Font> font;
 	GLBuffer *vbo;
 
-	Font::DrawCommands draw_commands;
+	std::vector<Font::DrawCommand> draw_commands;
 
 	std::vector<TextData> text_data;
 	Font::TextInfo text_info;
