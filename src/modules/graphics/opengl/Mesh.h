@@ -154,12 +154,13 @@ public:
 	 * {0, 1, 2, 3, 4, ...}
 	 **/
 	void setVertexMap(const std::vector<uint32> &map);
+	void setVertexMap();
 
 	/**
 	 * Fills the uint32 vector passed into the method with the previously set
 	 * vertex map (index buffer) values.
 	 **/
-	void getVertexMap(std::vector<uint32> &map) const;
+	bool getVertexMap(std::vector<uint32> &map) const;
 
 	/**
 	 * Gets the total number of elements in the vertex map array.
@@ -242,6 +243,7 @@ private:
 
 	// Element (vertex index) buffer, for the vertex map.
 	GLBuffer *ibo;
+	bool useIndexBuffer;
 	size_t elementCount;
 	GLenum elementDataType;
 

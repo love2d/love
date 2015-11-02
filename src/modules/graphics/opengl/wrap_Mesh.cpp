@@ -331,6 +331,13 @@ int w_Mesh_setVertexMap(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 
+	if (lua_isnoneornil(L, 2))
+	{
+		// Disable the vertex map / index buffer.
+		luax_catchexcept(L, [&](){ t->setVertexMap(); });
+		return 0;
+	}
+
 	bool is_table = lua_istable(L, 2);
 	int nargs = is_table ? (int) luax_objlen(L, 2) : lua_gettop(L) - 1;
 
@@ -361,7 +368,14 @@ int w_Mesh_getVertexMap(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 
 	std::vector<uint32> vertex_map;
-	luax_catchexcept(L, [&](){ t->getVertexMap(vertex_map); });
+	bool has_vertex_map = false;
+	luax_catchexcept(L, [&](){ has_vertex_map = t->getVertexMap(vertex_map); });
+
+	if (!has_vertex_map)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
 
 	int element_count = (int) vertex_map.size();
 
