@@ -82,6 +82,6 @@ Dependencies
 [builds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
-[aur]: http://aur.archlinux.org/packages.php?ID=35279
+[aur]: http://aur.archlinux.org/packages/love-hg
 [love-experiments]: https://bitbucket.org/bartbes/love-experiments
 [codestyle]: https://love2d.org/wiki/Code_Style
