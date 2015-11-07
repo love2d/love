@@ -59,6 +59,7 @@ public:
 	bool isSeekable();
 	int getChannels() const;
 	int getBitDepth() const;
+	double getDuration();
 
 private:
 
@@ -69,6 +70,8 @@ private:
 
 	AudioStreamBasicDescription inputInfo;
 	AudioStreamBasicDescription outputInfo;
+
+	double duration;
 
 }; // CoreAudioDecoder
 

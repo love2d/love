@@ -59,11 +59,15 @@ public:
 	bool isSeekable();
 	int getChannels() const;
 	int getBitDepth() const;
+	double getDuration();
 
 private:
 
 	ModPlugFile *plug;
 	ModPlug_Settings settings;
+
+	double duration;
+
 }; // Decoder
 
 } // lullaby

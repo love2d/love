@@ -62,6 +62,7 @@ public:
 	int getChannels() const;
 	int getBitDepth() const;
 	int getSampleRate() const;
+	double getDuration();
 
 private:
 	SOggFile oggFile;				// (see struct)
@@ -70,6 +71,7 @@ private:
 	vorbis_info *vorbisInfo;		// Info
 	vorbis_comment *vorbisComment;	// Comments
 	int endian;						// Endianness
+	double duration;
 }; // VorbisDecoder
 
 } // lullaby

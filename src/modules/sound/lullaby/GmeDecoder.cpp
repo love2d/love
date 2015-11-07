@@ -142,6 +142,11 @@ int GmeDecoder::getBitDepth() const
 	return 16;
 }
 
+double GmeDecoder::getDuration()
+{
+	return -1;
+}
+
 } // lullaby
 } // sound
 } // love

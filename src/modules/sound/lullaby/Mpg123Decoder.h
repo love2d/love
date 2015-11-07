@@ -39,6 +39,19 @@ namespace sound
 namespace lullaby
 {
 
+struct DecoderFile
+{
+	unsigned char *data;
+	size_t size;
+	size_t offset;
+
+	DecoderFile(Data *d)
+		: data((unsigned char *) d->getData())
+		, size(d->getSize())
+		, offset(0)
+	{}
+};
+
 class Mpg123Decoder : public Decoder
 {
 public:
@@ -56,18 +69,18 @@ public:
 	bool isSeekable();
 	int getChannels() const;
 	int getBitDepth() const;
+	double getDuration();
 
 private:
 
-	int feed(int bytes);
+	DecoderFile decoder_file;
 
 	mpg123_handle *handle;
 	static bool inited;
 
-	int data_offset;
-	int data_size;
-
 	int channels;
+
+	double duration;
 
 }; // Decoder
 

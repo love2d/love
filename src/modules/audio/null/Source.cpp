@@ -112,6 +112,11 @@ float Source::tell(Source::Unit)
 	return 0.0f;
 }
 
+double Source::getDuration(Unit)
+{
+	return -1.0f;
+}
+
 void Source::setPosition(float *)
 {
 }

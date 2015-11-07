@@ -56,6 +56,7 @@ public:
 	bool isSeekable();
 	int getChannels() const;
 	int getBitDepth() const;
+	double getDuration();
 
 private:
 	Music_Emu *emu;

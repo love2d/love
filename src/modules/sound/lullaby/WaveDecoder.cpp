@@ -189,6 +189,11 @@ int WaveDecoder::getSampleRate() const
 	return info.sample_rate;
 }
 
+double WaveDecoder::getDuration()
+{
+	return (double) info.length / (double) info.sample_rate;
+}
+
 } // lullaby
 } // sound
 } // love

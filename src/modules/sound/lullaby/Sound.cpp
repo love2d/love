@@ -66,7 +66,7 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	std::string ext = data->getExtension();
 	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
-	sound::Decoder *decoder = 0;
+	sound::Decoder *decoder = nullptr;
 
 	// Find a suitable decoder here, and return it.
 	if (false)

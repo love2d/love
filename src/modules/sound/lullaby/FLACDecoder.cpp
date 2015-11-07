@@ -108,6 +108,11 @@ int FLACDecoder::getSampleRate() const
 	return get_sample_rate();
 }
 
+double FLACDecoder::getDuration()
+{
+	return -1;
+}
+
 FLAC__StreamDecoderReadStatus FLACDecoder::read_callback(FLAC__byte buffer[], size_t *bytes)
 {
 	int size = data->getSize();

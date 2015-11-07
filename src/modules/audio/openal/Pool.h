@@ -93,6 +93,7 @@ public:
 	void softRewind(Source *source);
 	void seek(Source *source, float offset, void *unit);
 	float tell(Source *source, void *unit);
+	double getDuration(Source *source, void *unit);
 
 private:
 

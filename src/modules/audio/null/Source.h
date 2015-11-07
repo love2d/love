@@ -54,6 +54,7 @@ public:
 	virtual float getVolume() const;
 	virtual void seek(float offset, Unit unit);
 	virtual float tell(Unit unit);
+	virtual double getDuration(Unit unit);
 	virtual void setPosition(float *v);
 	virtual void getPosition(float *v) const;
 	virtual void setVelocity(float *v);

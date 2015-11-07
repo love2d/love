@@ -263,6 +263,12 @@ float Pool::tell(Source *source, void *unit)
 	return source->tellAtomic(unit);
 }
 
+double Pool::getDuration(Source *source, void *unit)
+{
+	thread::Lock lock(mutex);
+	return source->getDurationAtomic(unit);
+}
+
 ALuint Pool::findi(const Source *source) const
 {
 	std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);

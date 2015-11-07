@@ -34,6 +34,7 @@ namespace lullaby
 ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSize)
 	: Decoder(data, ext, bufferSize)
 	, plug(0)
+	, duration(-2.0)
 {
 
 	// Set some ModPlug settings.
@@ -139,6 +140,22 @@ int ModPlugDecoder::getChannels() const
 int ModPlugDecoder::getBitDepth() const
 {
 	return 16;
+}
+
+double ModPlugDecoder::getDuration()
+{
+	// Only calculate the duration if we haven't done so already.
+	if (duration == -2.0)
+	{
+		int lengthms = ModPlug_GetLength(plug);
+
+		if (lengthms < 0)
+			duration = -1.0;
+		else
+			duration = (double) lengthms / 1000.0;
+	}
+
+	return duration;
 }
 
 } // lullaby

@@ -140,6 +140,19 @@ int w_Source_tell(lua_State *L)
 	return 1;
 }
 
+int w_Source_getDuration(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+
+	Source::Unit u = Source::UNIT_SECONDS;
+	const char *unit = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	if (unit && !t->getConstant(unit, u))
+		return luaL_error(L, "Invalid Source time unit: %s", unit);
+
+	lua_pushnumber(L, t->getDuration(u));
+	return 1;
+}
+
 int w_Source_setPosition(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -373,6 +386,7 @@ static const luaL_Reg functions[] =
 	{ "getVolume", w_Source_getVolume },
 	{ "seek", w_Source_seek },
 	{ "tell", w_Source_tell },
+	{ "getDuration", w_Source_getDuration },
 	{ "setPosition", w_Source_setPosition },
 	{ "getPosition", w_Source_getPosition },
 	{ "setVelocity", w_Source_setVelocity },

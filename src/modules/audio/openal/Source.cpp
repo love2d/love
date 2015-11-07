@@ -65,6 +65,7 @@ Ensure the Source is not multi-channel before calling this function.")
 };
 
 StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
+	: size(size)
 {
 	alGenBuffers(1, &buffer);
 	alBufferData(buffer, format, data, size, freq);
@@ -95,6 +96,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, offsetSeconds(0)
 	, sampleRate(soundData->getSampleRate())
 	, channels(soundData->getChannels())
+	, bitDepth(soundData->getBitDepth())
 	, decoder(nullptr)
 	, toLoop(0)
 {
@@ -134,6 +136,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, offsetSeconds(0)
 	, sampleRate(decoder->getSampleRate())
 	, channels(decoder->getChannels())
+	, bitDepth(decoder->getBitDepth())
 	, decoder(decoder)
 	, toLoop(0)
 {
@@ -169,6 +172,7 @@ Source::Source(const Source &s)
 	, offsetSeconds(0)
 	, sampleRate(s.sampleRate)
 	, channels(s.channels)
+	, bitDepth(s.bitDepth)
 	, decoder(nullptr)
 	, toLoop(0)
 {
@@ -439,6 +443,36 @@ float Source::tellAtomic(void *unit) const
 float Source::tell(Source::Unit unit)
 {
 	return pool->tell(this, &unit);
+}
+
+double Source::getDurationAtomic(void *vunit)
+{
+	Unit unit = *(Unit *) vunit;
+
+	if (type == TYPE_STREAM)
+	{
+		double seconds = decoder->getDuration();
+
+		if (unit == UNIT_SECONDS)
+			return seconds;
+		else
+			return seconds * decoder->getSampleRate();
+	}
+	else
+	{
+		ALsizei size = staticBuffer->getSize();
+		ALsizei samples = (size / channels) / (bitDepth / 8);
+
+		if (unit == UNIT_SAMPLES)
+			return (double) samples;
+		else
+			return (double) samples / (double) sampleRate;
+	}
+}
+
+double Source::getDuration(Unit unit)
+{
+	return pool->getDuration(this, &unit);
 }
 
 void Source::setPosition(float *v)

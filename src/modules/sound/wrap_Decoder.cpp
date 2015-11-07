@@ -51,11 +51,19 @@ int w_Decoder_getSampleRate(lua_State *L)
 	return 1;
 }
 
+int w_Decoder_getDuration(lua_State *L)
+{
+	Decoder *t = luax_checkdecoder(L, 1);
+	lua_pushnumber(L, t->getDuration());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getChannels", w_Decoder_getChannels },
 	{ "getBitDepth", w_Decoder_getBitDepth },
 	{ "getSampleRate", w_Decoder_getSampleRate },
+	{ "getDuration", w_Decoder_getDuration },
 	{ 0, 0 }
 };
 

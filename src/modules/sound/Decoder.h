@@ -134,6 +134,12 @@ public:
 	 **/
 	virtual int getSampleRate() const = 0;
 
+	/**
+	 * Gets the estimated total duration of the stream. in seconds. May return
+	 * -1 if the duration cannot be determined.
+	 **/
+	virtual double getDuration() = 0;
+
 }; // Decoder
 
 } // sound

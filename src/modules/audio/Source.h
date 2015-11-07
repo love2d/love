@@ -39,7 +39,7 @@ public:
 		TYPE_STATIC,
 		TYPE_STREAM,
 		TYPE_MAX_ENUM
-	}; // Type
+	};
 
 	enum Unit
 	{
@@ -71,6 +71,7 @@ public:
 
 	virtual void seek(float offset, Unit unit) = 0;
 	virtual float tell(Unit unit) = 0;
+	virtual double getDuration(Unit unit) = 0;
 
 	// all float * v must be of size 3
 	virtual void setPosition(float *v) = 0;

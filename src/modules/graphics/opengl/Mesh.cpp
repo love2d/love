@@ -581,11 +581,9 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		enabledattribs |= 1 << uint32(attriblocation);
 	}
 
+	// Not supported on all platforms or GL versions, I believe.
 	if (!(enabledattribs & ATTRIBFLAG_POS))
-	{
-		// Not supported on all platforms or GL versions at least, I believe.
 		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
-	}
 
 	gl.useVertexAttribArrays(enabledattribs);
 

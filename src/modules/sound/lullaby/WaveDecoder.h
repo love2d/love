@@ -59,11 +59,12 @@ public:
 	int getChannels() const;
 	int getBitDepth() const;
 	int getSampleRate() const;
+	double getDuration();
 
 private:
 
 	WaveFile dataFile;
-	wuff_handle * handle;
+	wuff_handle *handle;
 	wuff_info info;
 
 }; // WaveDecoder

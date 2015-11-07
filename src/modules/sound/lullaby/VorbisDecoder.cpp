@@ -130,6 +130,7 @@ static long vorbisTell(void *datasource	/* ptr to the data that the vorbis files
 
 VorbisDecoder::VorbisDecoder(Data *data, const std::string &ext, int bufferSize)
 	: Decoder(data, ext, bufferSize)
+	, duration(-2.0)
 {
 	// Initialize callbacks
 	vorbisCallbacks.close_func = vorbisClose;
@@ -262,6 +263,20 @@ int VorbisDecoder::getBitDepth() const
 int VorbisDecoder::getSampleRate() const
 {
 	return (int) vorbisInfo->rate;
+}
+
+double VorbisDecoder::getDuration()
+{
+	// Only calculate the duration if we haven't done so already.
+	if (duration == -2.0)
+	{
+		duration = ov_time_total(&handle, -1);
+
+		if (duration == OV_EINVAL || duration < 0.0)
+			duration = -1.0;
+	}
+
+	return duration;
 }
 
 } // lullaby

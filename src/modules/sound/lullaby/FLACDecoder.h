@@ -52,6 +52,7 @@ public:
 	int getChannels() const;
 	int getBitDepth() const;
 	int getSampleRate() const;
+	double getDuration();
 
 	//needed for FLAC
 	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[], size_t *bytes);
