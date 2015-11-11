@@ -439,14 +439,20 @@ function love.nogame()
 		self.pieces = {}
 		self.color_t = 1
 
-		local COLORS = {
+		local COLORS = {}
+
+		for _,color in ipairs({
 			{ 240, 240, 240 }, -- WHITE (ish)
-			{ 191, 98, 166 }, -- DARK PINK
 			{ 232, 104, 162}, -- PINK
-			{ 197, 214, 71 }, -- LIME
 			{ 69, 155, 168 }, -- BLUE
 			{ 67, 93, 119 }, -- DARK BLUE
-		}
+		}) do
+			table.insert(COLORS, color)
+			table.insert(COLORS, color)
+		end
+
+		-- Insert only once. This way it appears half as often.
+		table.insert(COLORS, { 220, 239, 113 }) -- LIME
 
 		self.generator = function()
 			return COLORS[math.random(1, #COLORS)]
