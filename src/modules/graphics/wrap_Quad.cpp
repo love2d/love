@@ -36,17 +36,17 @@ int w_Quad_setViewport(lua_State *L)
 	Quad *quad = luax_checkquad(L, 1);
 
 	Quad::Viewport v;
-	v.x = (float) luaL_checknumber(L, 2);
-	v.y = (float) luaL_checknumber(L, 3);
-	v.w = (float) luaL_checknumber(L, 4);
-	v.h = (float) luaL_checknumber(L, 5);
+	v.x = luaL_checknumber(L, 2);
+	v.y = luaL_checknumber(L, 3);
+	v.w = luaL_checknumber(L, 4);
+	v.h = luaL_checknumber(L, 5);
 
 	if (lua_isnoneornil(L, 6))
 		quad->setViewport(v);
 	else
 	{
-		float sw = (float) luaL_checknumber(L, 6);
-		float sh = (float) luaL_checknumber(L, 7);
+		double sw = luaL_checknumber(L, 6);
+		double sh = luaL_checknumber(L, 7);
 		quad->refresh(v, sw, sh);
 	}
 

@@ -159,7 +159,7 @@ precision mediump float;
 #endif
 
 varying mediump vec4 VaryingTexCoord;
-varying lowp vec4 VaryingColor;
+varying mediump vec4 VaryingColor;
 
 #define love_Canvases gl_FragData
 
@@ -307,7 +307,7 @@ vec4 position(mat4 transform_proj, vec4 vertpos) {
 	return transform_proj * vertpos;
 }]],
 	pixel = [[
-vec4 effect(lowp vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
+vec4 effect(mediump vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 	return Texel(tex, texcoord) * vcolor;
 }]]
 }

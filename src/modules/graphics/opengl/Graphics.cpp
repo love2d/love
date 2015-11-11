@@ -708,7 +708,7 @@ Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> 
 	return new Image(cdata, flags);
 }
 
-Quad *Graphics::newQuad(Quad::Viewport v, float sw, float sh)
+Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
 {
 	return new Quad(v, sw, sh);
 }

@@ -36,14 +36,14 @@ public:
 
 	struct Viewport
 	{
-		float x, y;
-		float w, h;
+		double x, y;
+		double w, h;
 	};
 
-	Quad(const Viewport &v, float sw, float sh);
+	Quad(const Viewport &v, double sw, double sh);
 	virtual ~Quad();
 
-	void refresh(const Viewport &v, float sw, float sh);
+	void refresh(const Viewport &v, double sw, double sh);
 	void setViewport(const Viewport &v);
 	Viewport getViewport() const;
 
@@ -54,8 +54,8 @@ private:
 	Vertex vertices[4];
 
 	Viewport viewport;
-	float sw;
-	float sh;
+	double sw;
+	double sh;
 
 }; // Quad
 

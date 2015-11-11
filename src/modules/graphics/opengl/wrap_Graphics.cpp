@@ -368,13 +368,13 @@ int w_newImage(lua_State *L)
 int w_newQuad(lua_State *L)
 {
 	Quad::Viewport v;
-	v.x = (float) luaL_checknumber(L, 1);
-	v.y = (float) luaL_checknumber(L, 2);
-	v.w = (float) luaL_checknumber(L, 3);
-	v.h = (float) luaL_checknumber(L, 4);
+	v.x = luaL_checknumber(L, 1);
+	v.y = luaL_checknumber(L, 2);
+	v.w = luaL_checknumber(L, 3);
+	v.h = luaL_checknumber(L, 4);
 
-	float sw = (float) luaL_checknumber(L, 5);
-	float sh = (float) luaL_checknumber(L, 6);
+	double sw = luaL_checknumber(L, 5);
+	double sh = luaL_checknumber(L, 6);
 
 	Quad *quad = instance()->newQuad(v, sw, sh);
 	luax_pushtype(L, GRAPHICS_QUAD_ID, quad);

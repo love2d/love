@@ -22,6 +22,7 @@ freely, subject to the following restrictions:
 local love = require("love")
 
 function love.nogame()
+	local math = math
 
 	-- 30log.lua begins
 	local function require_30log()
@@ -198,6 +199,302 @@ function love.nogame()
 	tR2pdOv59PFbSfExn7byycJWsUINUFHfRarRZvQiUOrk/5hialAUy6cFWCPca/j9oCGbH+Ao\
 	h2xs4FEO/xFgABM8Re+PY7oUAAAAAElFTkSuQmCC\
 	"
+
+	local mosaic_2x_png =
+	"iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAAGXRFWHRTb2Z0d2FyZQBBZG9i\
+	ZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tl\
+	dCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1l\
+	dGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUu\
+	My1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpS\
+	REYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgt\
+	bnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6\
+	Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRv\
+	YmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9u\
+	cy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRp\
+	ZDo2NDY3ODU2OTk0NkJFNTExQTg3RkQ3MTNCOTc2N0UzNyIgeG1wTU06RG9jdW1lbnRJRD0i\
+	eG1wLmRpZDo2MUE5QkRBODg3RkMxMUU1OTRCREE0MUFFRjY2QUZCQyIgeG1wTU06SW5zdGFu\
+	Y2VJRD0ieG1wLmlpZDo2MUE5QkRBNzg3RkMxMUU1OTRCREE0MUFFRjY2QUZCQyIgeG1wOkNy\
+	ZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJp\
+	dmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkIyQjY0ODJDRkM4N0U1MTFBNDUy\
+	ODc2NjFDRjM3OTIwIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY0Njc4NTY5OTQ2QkU1\
+	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\
+	"
+
 	local toast_back_png =
 	"iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAGWElEQVR4nO2dW4hVVRjHf6Oi\
 	I5mmRopdVEzJjLTbQ0WQJUGQDyIUQgX2li9FEAQ99thLTxW9FUS9SBD01kNQCBk9VGqWo+Ml\
@@ -336,7 +633,7 @@ function love.nogame()
 	end
 
 	function Toast:center()
-		local ww, wh = love.graphics.getDimensions()
+		local ww, wh = love.window.fromPixels(love.graphics.getDimensions())
 		self.x = math.floor(ww / 2 / 32) * 32 + 16
 		self.y = math.floor(wh / 2 / 32) * 32 + 16
 	end
@@ -428,14 +725,22 @@ function love.nogame()
 	local Mosaic = class("Mosaic")
 
 	function Mosaic:init()
-		local sw, sh = g_images.mosaic:getDimensions()
-		local ww, wh = love.graphics.getDimensions()
+		local mosaic_image = g_images.mosaic[1]
+		self.mosaic_image_scale = 1
+
+		if love.window.getPixelScale() > 1 then
+			mosaic_image = g_images.mosaic[2]
+			self.mosaic_image_scale = 2
+		end
+
+		local sw, sh = mosaic_image:getDimensions()
+		local ww, wh = love.window.fromPixels(love.graphics.getDimensions())
 
 		local SIZE_X = math.floor(ww / 32 + 2)
 		local SIZE_Y = math.floor(wh / 32 + 2)
 		local SIZE = SIZE_X * SIZE_Y
 
-		self.batch = love.graphics.newSpriteBatch(g_images.mosaic, SIZE, "dynamic")
+		self.batch = love.graphics.newSpriteBatch(mosaic_image, SIZE, "stream")
 		self.pieces = {}
 		self.color_t = 1
 
@@ -458,11 +763,13 @@ function love.nogame()
 			return COLORS[math.random(1, #COLORS)]
 		end
 
+		local sc = self.mosaic_image_scale
+
 		local QUADS = {
-			love.graphics.newQuad(0, 0, 32, 32, sw, sh),
-			love.graphics.newQuad(0, 32, 32, 32, sw, sh),
-			love.graphics.newQuad(32, 32, 32, 32, sw, sh),
-			love.graphics.newQuad(32, 0, 32, 32, sw, sh),
+			love.graphics.newQuad(0,     0,     32*sc, 32*sc, sw, sh),
+			love.graphics.newQuad(0,     32*sc, 32*sc, 32*sc, sw, sh),
+			love.graphics.newQuad(32*sc, 32*sc, 32*sc, 32*sc, sw, sh),
+			love.graphics.newQuad(32*sc, 0,     32*sc, 32*sc, sw, sh),
 		}
 
 		local exclude_left = math.floor(ww / 2 / 32)
@@ -501,19 +808,19 @@ function love.nogame()
 		end
 
 		local GLYPHS = {
-			N = love.graphics.newQuad(0, 64, 32, 32, sw, sh),
-			O = love.graphics.newQuad(32, 64, 32, 32, sw, sh),
-			G = love.graphics.newQuad(0, 96, 32, 32, sw, sh),
-			A = love.graphics.newQuad(32, 96, 32, 32, sw, sh),
-			M = love.graphics.newQuad(64, 96, 32, 32, sw, sh),
-			E = love.graphics.newQuad(96, 96, 32, 32, sw, sh),
+			N = love.graphics.newQuad(0,     64*sc, 32*sc, 32*sc, sw, sh),
+			O = love.graphics.newQuad(32*sc, 64*sc, 32*sc, 32*sc, sw, sh),
+			G = love.graphics.newQuad(0,     96*sc, 32*sc, 32*sc, sw, sh),
+			A = love.graphics.newQuad(32*sc, 96*sc, 32*sc, 32*sc, sw, sh),
+			M = love.graphics.newQuad(64*sc, 96*sc, 32*sc, 32*sc, sw, sh),
+			E = love.graphics.newQuad(96*sc, 96*sc, 32*sc, 32*sc, sw, sh),
 
-			U = love.graphics.newQuad(64, 0, 32, 32, sw, sh),
-			P = love.graphics.newQuad(96, 0, 32, 32, sw, sh),
-			o = love.graphics.newQuad(64, 32, 32, 32, sw, sh),
-			S = love.graphics.newQuad(96, 32, 32, 32, sw, sh),
-			R = love.graphics.newQuad(64, 64, 32, 32, sw, sh),
-			T = love.graphics.newQuad(96, 64, 32, 32, sw, sh),
+			U = love.graphics.newQuad(64*sc, 0,     32*sc, 32*sc, sw, sh),
+			P = love.graphics.newQuad(96*sc, 0,     32*sc, 32*sc, sw, sh),
+			o = love.graphics.newQuad(64*sc, 32*sc, 32*sc, 32*sc, sw, sh),
+			S = love.graphics.newQuad(96*sc, 32*sc, 32*sc, 32*sc, sw, sh),
+			R = love.graphics.newQuad(64*sc, 64*sc, 32*sc, 32*sc, sw, sh),
+			T = love.graphics.newQuad(96*sc, 64*sc, 32*sc, 32*sc, sw, sh),
 		}
 
 		local INITIAL_TEXT_COLOR = { 240, 240, 240 }
@@ -558,6 +865,8 @@ function love.nogame()
 	end
 
 	function Mosaic:draw()
+		local sc = self.mosaic_image_scale
+
 		self.batch:clear()
 		love.graphics.setColor(255, 255, 255, 64)
 		for idx,piece in ipairs(self.pieces) do
@@ -569,7 +878,7 @@ function love.nogame()
 			local b = easeOut(ct, c0[3], c1[3] - c0[3], 1)
 
 			self.batch:setColor(r, g, b)
-			self.batch:add(piece.quad, piece.x, piece.y, piece.r, 1, 1, 16, 16)
+			self.batch:add(piece.quad, piece.x, piece.y, piece.r, 1/sc, 1/sc, 16*sc, 16*sc)
 		end
 		love.graphics.setColor(255, 255, 255, 255)
 		love.graphics.draw(self.batch, 0, 0)
@@ -590,7 +899,10 @@ function love.nogame()
 		g_images.toast.eyes.open = load_image(toast_eyes_open_png, "toast_eyes_open.png")
 		g_images.toast.eyes.closed = load_image(toast_eyes_closed_png, "toast_eyes_closed.png")
 		g_images.toast.mouth = load_image(toast_mouth_png, "toast_mouth.png")
-		g_images.mosaic = load_image(mosaic_png, "mosaic.png")
+
+		g_images.mosaic = {}
+		g_images.mosaic[1] = load_image(mosaic_png, "mosaic.png")
+		g_images.mosaic[2] = load_image(mosaic_2x_png, "mosaic@2x.png")
 
 		g_entities = {}
 		g_entities.toast = Toast()
@@ -598,14 +910,18 @@ function love.nogame()
 	end
 
 	function love.update(dt)
+		dt = math.min(dt, 1/10)
 		g_entities.toast:update(dt)
 		g_entities.mosaic:update(dt)
 	end
 
 	function love.draw()
 		love.graphics.setColor(255, 255, 255)
+		love.graphics.push()
+		love.graphics.scale(love.window.getPixelScale())
 		g_entities.mosaic:draw()
 		g_entities.toast:draw()
+		love.graphics.pop()
 	end
 
 	function love.resize(w, h)
@@ -626,6 +942,33 @@ function love.nogame()
 		g_entities.toast:look_at(tx, ty)
 	end
 
+	function love.mousemoved(x, y)
+		if love.mouse.isDown(1) then
+			local tx = x / love.graphics.getWidth()
+			local ty = y / love.graphics.getHeight()
+			g_entities.toast:look_at(tx, ty)
+		end
+	end
+
+	local last_touch = {time=0, x=0, y=0}
+
+	function love.touchpressed(id, x, y, pressure)
+		-- Double-tap the screen (when using a touch screen) to exit.
+		if #love.touch.getTouches() == 1 then
+			local dist = math.sqrt((x-last_touch.x)^2 + (y-last_touch.y)^2)
+			local difftime = love.timer.getTime() - last_touch.time
+			if difftime < 0.3 and dist < 50 then
+				if love.window.showMessageBox("Exit No-Game Screen", "", {"OK", "Cancel"}) == 1 then
+					love.event.quit()
+				end
+			end
+
+			last_touch.time = love.timer.getTime()
+			last_touch.x = x
+			last_touch.y = y
+		end
+	end
+
 	function love.conf(t)
 		t.title = "L\195\150VE " .. love._version .. " (" .. love._version_codename .. ")"
 		t.gammacorrect = true
@@ -635,6 +978,10 @@ function love.nogame()
 		t.modules.joystick = false
 		t.window.resizable = true
 		t.window.highdpi = true
+
+		if love._os == "iOS" then
+			t.window.borderless = true
+		end
 	end
 end
 
