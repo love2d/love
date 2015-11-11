@@ -698,7 +698,7 @@ function love.nogame()
 	end
 
 	function Toast:next_blink()
-		return 5 + math.random(0, 3)
+		return 5 + love.math.random(0, 3)
 	end
 
 	function Toast:look_at(tx, ty)
@@ -707,7 +707,7 @@ function love.nogame()
 		self.look.current.y = look_y
 
 		self.look.t = 0
-		self.look.point_t = 3 + math.random(0, 1)
+		self.look.point_t = 3 + love.math.random(0, 1)
 
 		self.look.target.x = tx
 		self.look.target.y = ty
@@ -726,15 +726,13 @@ function love.nogame()
 
 	function Mosaic:init()
 		local mosaic_image = g_images.mosaic[1]
-		self.mosaic_image_scale = 1
-
-		if love.window.getPixelScale() > 1 then
-			mosaic_image = g_images.mosaic[2]
-			self.mosaic_image_scale = 2
-		end
 
 		local sw, sh = mosaic_image:getDimensions()
 		local ww, wh = love.window.fromPixels(love.graphics.getDimensions())
+
+		if love.window.getPixelScale() > 1 then
+			mosaic_image = g_images.mosaic[2]
+		end
 
 		local SIZE_X = math.floor(ww / 32 + 2)
 		local SIZE_Y = math.floor(wh / 32 + 2)
@@ -760,16 +758,21 @@ function love.nogame()
 		table.insert(COLORS, { 220, 239, 113 }) -- LIME
 
 		self.generator = function()
-			return COLORS[math.random(1, #COLORS)]
+			return COLORS[love.math.random(1, #COLORS)]
 		end
 
-		local sc = self.mosaic_image_scale
-
+		-- When using the higher-resolution mosaic sprite sheet we want to draw
+		-- its sprites at the same scale as the regular-resolution one.
+		-- We can avoid a lot of scaling by taking advantage of the fact that
+		-- Quads use normalized texture coordinates internally - if we use the
+		-- 'source image size' and quad size of the @1x image for the Quads
+		-- even when rendering them using the @2x image, it will automatically
+		-- scale as expected.
 		local QUADS = {
-			love.graphics.newQuad(0,     0,     32*sc, 32*sc, sw, sh),
-			love.graphics.newQuad(0,     32*sc, 32*sc, 32*sc, sw, sh),
-			love.graphics.newQuad(32*sc, 32*sc, 32*sc, 32*sc, sw, sh),
-			love.graphics.newQuad(32*sc, 0,     32*sc, 32*sc, sw, sh),
+			love.graphics.newQuad(0,  0,  32, 32, sw, sh),
+			love.graphics.newQuad(0,  32, 32, 32, sw, sh),
+			love.graphics.newQuad(32, 32, 32, 32, sw, sh),
+			love.graphics.newQuad(32, 0,  32, 32, sw, sh),
 		}
 
 		local exclude_left = math.floor(ww / 2 / 32)
@@ -794,7 +797,7 @@ function love.nogame()
 					local piece = {
 						x = (x - 1) * 32,
 						y = (y - 1) * 32,
-						r = math.random(0, 100) / 100 * math.pi,
+						r = love.math.random(0, 100) / 100 * math.pi,
 						rv = 1,
 						color = {},
 						quad = QUADS[(x + y) % 4 + 1]
@@ -808,19 +811,19 @@ function love.nogame()
 		end
 
 		local GLYPHS = {
-			N = love.graphics.newQuad(0,     64*sc, 32*sc, 32*sc, sw, sh),
-			O = love.graphics.newQuad(32*sc, 64*sc, 32*sc, 32*sc, sw, sh),
-			G = love.graphics.newQuad(0,     96*sc, 32*sc, 32*sc, sw, sh),
-			A = love.graphics.newQuad(32*sc, 96*sc, 32*sc, 32*sc, sw, sh),
-			M = love.graphics.newQuad(64*sc, 96*sc, 32*sc, 32*sc, sw, sh),
-			E = love.graphics.newQuad(96*sc, 96*sc, 32*sc, 32*sc, sw, sh),
+			N = love.graphics.newQuad(0,  64, 32, 32, sw, sh),
+			O = love.graphics.newQuad(32, 64, 32, 32, sw, sh),
+			G = love.graphics.newQuad(0,  96, 32, 32, sw, sh),
+			A = love.graphics.newQuad(32, 96, 32, 32, sw, sh),
+			M = love.graphics.newQuad(64, 96, 32, 32, sw, sh),
+			E = love.graphics.newQuad(96, 96, 32, 32, sw, sh),
 
-			U = love.graphics.newQuad(64*sc, 0,     32*sc, 32*sc, sw, sh),
-			P = love.graphics.newQuad(96*sc, 0,     32*sc, 32*sc, sw, sh),
-			o = love.graphics.newQuad(64*sc, 32*sc, 32*sc, 32*sc, sw, sh),
-			S = love.graphics.newQuad(96*sc, 32*sc, 32*sc, 32*sc, sw, sh),
-			R = love.graphics.newQuad(64*sc, 64*sc, 32*sc, 32*sc, sw, sh),
-			T = love.graphics.newQuad(96*sc, 64*sc, 32*sc, 32*sc, sw, sh),
+			U = love.graphics.newQuad(64, 0,  32, 32, sw, sh),
+			P = love.graphics.newQuad(96, 0,  32, 32, sw, sh),
+			o = love.graphics.newQuad(64, 32, 32, 32, sw, sh),
+			S = love.graphics.newQuad(96, 32, 32, 32, sw, sh),
+			R = love.graphics.newQuad(64, 64, 32, 32, sw, sh),
+			T = love.graphics.newQuad(96, 64, 32, 32, sw, sh),
 		}
 
 		local INITIAL_TEXT_COLOR = { 240, 240, 240 }
@@ -865,8 +868,6 @@ function love.nogame()
 	end
 
 	function Mosaic:draw()
-		local sc = self.mosaic_image_scale
-
 		self.batch:clear()
 		love.graphics.setColor(255, 255, 255, 64)
 		for idx,piece in ipairs(self.pieces) do
@@ -878,7 +879,7 @@ function love.nogame()
 			local b = easeOut(ct, c0[3], c1[3] - c0[3], 1)
 
 			self.batch:setColor(r, g, b)
-			self.batch:add(piece.quad, piece.x, piece.y, piece.r, 1/sc, 1/sc, 16*sc, 16*sc)
+			self.batch:add(piece.quad, piece.x, piece.y, piece.r, 1, 1, 16, 16)
 		end
 		love.graphics.setColor(255, 255, 255, 255)
 		love.graphics.draw(self.batch, 0, 0)
