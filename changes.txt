@@ -1,4 +1,4 @@
-LOVE 0.10.0 []
+LOVE 0.10.0 [Super Toast]
 --------------
 
 Released: N/A
@@ -9,7 +9,9 @@ Released: N/A
   * Added the flag t.gammacorrect to love.conf (replaces t.window.srgb.) Enabling it globally enables gamma-correct rendering, when supported.
   * Added love.touch module. Note that it has important differences from the touch implementation in the LÖVE 0.9 Android and iOS ports.
   * Added love.touchpressed, love.touchreleased, and love.touchmoved.
+  * Added love.system.vibrate.
   * Added love.filesystem.setRequirePath and love.filesystem.getRequirePath.
+  * Added an optional program exit argument to love.event.quit.
   * Added love.filedropped and love.directorydropped event callback functions.
   * Added love.lowmemory event callback function, called when the app is running out of memory on mobile operating systems.
   * Added love.textedited event callback function, called when the user is compositing text (e.g. via an IME.)
@@ -19,12 +21,16 @@ Released: N/A
   * Added more mouse button constants ("x3", "x4", and "x5".)
   * Added optional x/y/width/height arguments to love.keyboard.setTextInput. They tell the system where text will show up so on-screen keyboards can avoid that area.
   * Added Source:getType (replaces Source:isStatic.)
+  * Added Source:getDuration and Decoder:getDuration.
+  * Added an optional string argument containing raw pixel byte data to the width/height variant of love.image.newImageData.
   * Added love.graphics.ellipse.
   * Added rounded-rectangle support to love.graphics.rectangle.
+  * Added love.graphics.points (replaces love.graphics.point.)
+  * Added love.graphics.intersectScissor.
   * Added an optional boolean argument to love.graphics.setBlendMode which indicates whether the blend mode should multiply alpha with rgb for the source color. It is true by default.
   * Added love.graphics.getSupported (replaces love.graphics.isSupported.)
   * Added love.graphics.getSystemLimits (replaces love.graphics.getSystemLimit.)
-  * Added love.graphics.stencil and love.graphics.setStencilTest (replaces love.graphics.setStencil.)
+  * Added love.graphics.stencil and love.graphics.set/getStencilTest (replaces love.graphics.setStencil.)
   * Added love.graphics.isActive.
   * Added color arguments to love.graphics.clear. It no longer always uses the background color value.
   * Added love.graphics.discard.
@@ -35,7 +41,7 @@ Released: N/A
   * Added one- and two-channel Canvas formats: r8, rg8, r16f, rg16f, r32f, and rg32f.
   * Added support for different formats in each Canvas when using multi-canvas rendering. Added the "multicanvasformats" Graphics Feature constant.
   * Added support for OpenGL ES 2 and 3.
-  * Added support for loading ETC1/2, EAC, and PVRTC1 compressed textures.
+  * Added support for loading ETC1, ETC2, EAC, and PVRTC1 compressed textures on systems that support them.
   * Added custom vertex attribute support for Meshes via new variants of love.graphics.newMesh.
   * Added Mesh:setVertexAttribute and Mesh:getVertexAttribute, Mesh:getVertexFormat, and Mesh:flush.
   * Added Mesh:setAttributeEnabled and Mesh:isAttributeEnabled.
@@ -43,6 +49,7 @@ Released: N/A
   * Added Shader:sendColor.
   * Added new shader functions: gammaCorrectColor, gammaToLinear, and linearToGamma. The functions also have 'precise' and 'fast' variants.
   * Added Text objects and love.graphics.newText.
+  * Added per-character color support to love.graphics.print/printf and to Text objects.
   * Added BMFont bitmap font file support to love.graphics.newFont and love.font.
   * Added kerning support for TrueType/OpenType and BMFont Fonts.
   * Added an optional font hinting argument to love.graphics.newFont when loading TrueType fonts.
@@ -51,10 +58,26 @@ Released: N/A
   * Added love.window.maximize.
   * Added love.window.close.
   * Added love.window.requestAttention.
-  * Added BezierCurve:renderSegment and BezierCurve:removePoint.
+  * Added BezierCurve:renderSegment and BezierCurve:removeControlPoint.
   * Added BezierCurve:getSegment.
   * Added love.math.compress and love.math.decompress.
   * Added Channel:performAtomic.
+
+  * Changed love.mousepressed], love.mousereleased, and love.mouse.isDown to use button numbers instead of named button constants.
+  * Changed love.keypressed to be love.keypressed(key, scancode, isrepeat).
+  * Changed love.keyreleased to be love.keyreleased(key, scancode).
+  * Changed Font:getWrap's second return value to be a table containing the text split into lines.
+  * Changed love.graphics.newImage's optional second argument to be a table of flags (flags are "mipmaps" and "linear".)
+  * Changed the arguments for the standard variants of love.graphics.newMesh to newMesh(vertices [, drawmode, usage]) and newMesh(vertexcount [, drawmode, usage]).
+  * Changed ImageData:encode to return a FileData object. ImageData:encode's first parameter is now the format to encode to, and the second parameter is an optional filename to write to.
+
+  * Renamed the "normal" Fullscreen Type to "exclusive".
+  * Renamed the DistanceModel constants "inverse clamped", "linear clamped", and "exponent clamped" to "inverseclamped", "linearclamped", and "exponentclamped".
+  * Renamed the "additive", "subtractive", and "multiplicative" BlendModes to "add", "subtract", and "multiply".
+  * Renamed the KeyConstant and Scancode representing the spacebar from " " to "space".
+  * Renamed File:eof to File:isEOF.
+  * Renamed Canvas:getImageData to Canvas:newImageData.
+  * Renamed love.image's CompressedData type to CompressedImageData.
 
   * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
   * Removed callback variant of love.filesystem.getDirectoryItems.
@@ -63,11 +86,12 @@ Released: N/A
   * Removed Source:isStatic (replaced by Source:getType.)
   * Removed image loading support for all (non-compressed texture) file formats except for PNG, JPEG, TGA, and BMP.
   * Removed JPEG encoding support from ImageData:encode.
+  * Removed love.graphics.point (replaced by love.graphics.points.)
   * Removed love.graphics.setPointStyle and love.graphics.getPointStyle.
   * Removed love.graphics.isSupported (replaced by love.graphics.getSupported.)
   * Removed love.graphics.getSystemLimit (replaced by love.graphics.getSystemLimits.)
   * Removed love.graphics.setStencil (replaced by love.graphics.stencil and love.graphics.setStencilTest.)
-  * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature constant (the features always have guaranteed support now.)
+  * Removed the "canvas", "shader", "npot", "subtractive", and "mipmap" Graphics Feature constants (the features always have guaranteed support now.)
   * Removed the "srgb" Graphics Feature constant (use love.graphics.isGammaCorrect() or love.graphics.getCanvasFormats().srgb instead.)
   * Removed the "srgb" flag in love.window.setMode and in the t.window table in love.conf (Replaced by t.gammacorrect.)
   * Removed the "premultiplied" blend mode (love.graphics.setBlendMode("alpha", false) now does the same thing.)
@@ -82,15 +106,7 @@ Released: N/A
     * Removed Canvas:getFSAA and the "fsaa" flag in love.conf and love.window.setMode (replaced by Canvas:getMSAA and "msaa".)
     * Removed the "dxt" and "bc5" Graphics Feature constant (replaced by love.graphics.getCompressedImageFormats.)
     * Removed the "hdrcanvas" Graphics Feature constant (replaced by love.graphics.getCanvasFormats.)
-    * Removed love.window.getWidth/getHeight (use love.graphics.getWidth/getHeight or love.window.getMode instead.)
-
-  * Renamed the fullscreen type "normal" to "exclusive".
-  * Renamed the Distance Model constants "inverse clamped", "linear clamped", and "exponent clamped" to "inverseclamped", "linearclamped", and "exponentclamped".
-  * Renamed blend modes "additive", "subtractive", and "multiplicative" to "add", "subtract", and "multiply".
-  * Renamed the key constant and scancode representing the spacebar from " " to "space".
-  * Renamed File:eof to File:isEOF.
-  * Renamed Canvas:getImageData to Canvas:newImageData.
-  * Renamed love.image's CompressedData type to CompressedImageData.
+    * Removed love.window.getWidth/getHeight/getDimensions (use love.graphics.getWidth/getHeight/getDimensions or love.window.getMode instead.)
 
   * Fixed utf8.char.
   * Fixed detection of fused love games.
@@ -98,41 +114,44 @@ Released: N/A
   * Fixed crashes when objects which store Lua callback functions are garbage collected after being used in coroutines.
   * Fixed love.keyboard.getKeyFromScancode crashing when an invalid scancode is given.
   * Fixed decoding of 8-bit WAV files.
+  * Fixed a crash issue when rewinding streaming ogg Sources, when certain versions of libvorbis are used.
   * Fixed love.audio.stop() not rewinding streaming Sources.
   * Fixed the stencil buffer in Canvases when an unsupported MSAA value is used to create the Canvas.
+  * Fixed Canvas:renderTo to restore the previous Canvas if an error occurs in the passed function.
+  * Fixed love.graphics.draw(canvas) to cause an error if that Canvas is the active one.
+  * Fixed Mesh:getVertexMap to return nil rather than an empty table, if no vertex map has been set.
   * Fixed love.graphics.getColorMask.
   * Fixed the default offset for particles when ParticleSystem:setQuads or ParticleSystem:setTexture is used.
   * Fixed love.graphics.shear resetting all love.graphics transformations.
   * Fixed the "add" and "subtract" blend modes to no longer modify the alpha of the Canvas / screen.
 
+  * Improved the performance of World:rayCast and World:queryBoundingBox.
+  * Improved the performance of love.graphics.line and other line drawing functions, when the "smooth" LineStyle is used.
+  * Improved the performance of ImageData and SoundData methods when LuaJIT's JIT compiler is enabled, by using efficient FFI code.
+
   * Updated the compatibility warning notice to use a message box and to show the version specified in love.conf.
   * Updated the compatibility warning notice to display before main.lua is loaded.
   * Updated the __tostring metamethod of love objects to output the pointer value, similar to tostring(table).
-  * Updated love.keypressed to be love.keypressed(key, scancode, isrepeat).
-  * Updated love.keyreleased to be love.keyreleased(key, scancode).
-  * Updated love.mousepressed, love.mousereleased, and love.mouse.isDown to use button numbers instead of named button constants.
   * Updated World:setCallbacks, World:setContactFilter, World:queryBoundingBox, and World:rayCast to have improved argument type checking.
   * Updated threads to load love.filesystem automatically.
+  * Updated love.filesystem to enable symlinks by default.
   * Updated love.math.setRandomSeed and RandomGenerator:setSeed to produce better results for the first few random() calls.
+  * Updated love.math.random and RandomGenerator:random to produce slightly better results in general.
   * Updated Source methods that deal with spatial audio to error rather than failing silently if the Source isn't mono.
   * Updated the 3D and 4D variants of love.math.noise to use Perlin noise rather than Simplex noise, to avoid patent issues.
   * Updated ImageFonts to no longer treat separator pixels as spacing.
   * Updated the default font to use less memory.
-  * Updated Font:getWrap's second return value to be a table containing the text split into lines.
-  * Updated love.graphics color functions to automatically apply love.graphics.gammaToLinear to color values when gamma-correct rendering is enabled. 
+  * Updated the behavior of text wrapping with love.graphics.printf and Font:getWrap to work better.
+  * Updated love.graphics.print and love.graphics.printf to no longer automatically round the x and y position arguments.
+  * Updated some error messages for love.graphics.newImage to be more descriptive.
+  * Updated love.graphics color functions to automatically apply love.math.gammaToLinear to color values when gamma-correct rendering is enabled.
   * Updated the 'normal' Canvas format to internally use 'srgb' rather than 'rgba8' when gamma-correct rendering is enabled.
   * Updated love.graphics.setColor to affect all drawn objects, including ParticleSystems, SpriteBatches, and Meshes.
   * Updated the default fullscreen type to be "desktop" rather than "exclusive".
   * Updated the minimum runtime system requirements of LOVE to require OpenGL 2.1 or OpenGL ES 2 support.
   * Updated the pixel shader effect function so screen_coords.y is 0 at the top of the screen instead of the bottom.
-  * Updated the arguments for the standard variants of love.graphics.newMesh. They're now newMesh(vertices [, drawmode, usage]) and newMesh(vertexcount [, drawmode, usage]).
-  * Updated line drawing code to be more efficient.
-  * Updated love.graphics.newImage's optional second argument to be a table of flags (flags are "mipmaps" and "linear".)
   * Updated Images to require setting the mipmaps flag to true on creation in order to use mipmaps.
   * Updated Images to allow mipmaps for non-power-of-two sizes.
-  * Updated the width/height variant of love.image.newImageData to take an additional optional string containing raw pixel data.
-  * Updated ImageData:encode to return a FileData object. ImageData:encode's first parameter is now the format to encode to, and the second parameter is an optional filename to write to.
-  * Updated ImageData and SoundData methods to use efficient LuaJIT FFI code, when the JIT compiler is enabled.
 
 LOVE 0.9.2 [Baby Inspector]
 ---------------------------
