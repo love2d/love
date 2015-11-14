@@ -1502,8 +1502,6 @@ bool Graphics::isSupported(Support feature) const
 {
 	switch (feature)
 	{
-	case SUPPORT_MULTI_CANVAS:
-		return Canvas::isMultiCanvasSupported();
 	case SUPPORT_MULTI_CANVAS_FORMATS:
 		return Canvas::isMultiFormatMultiCanvasSupported();
 	default:

@@ -98,7 +98,6 @@ public:
 
 	enum Support
 	{
-		SUPPORT_MULTI_CANVAS,
 		SUPPORT_MULTI_CANVAS_FORMATS,
 		SUPPORT_MAX_ENUM
 	};
