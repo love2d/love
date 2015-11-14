@@ -63,7 +63,7 @@ Released: N/A
   * Added love.math.compress and love.math.decompress.
   * Added Channel:performAtomic.
 
-  * Changed love.mousepressed], love.mousereleased, and love.mouse.isDown to use button numbers instead of named button constants.
+  * Changed love.mousepressed, love.mousereleased, and love.mouse.isDown to use button numbers instead of named button constants.
   * Changed love.keypressed to be love.keypressed(key, scancode, isrepeat).
   * Changed love.keyreleased to be love.keyreleased(key, scancode).
   * Changed Font:getWrap's second return value to be a table containing the text split into lines.

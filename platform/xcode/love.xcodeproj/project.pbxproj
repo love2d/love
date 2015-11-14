@@ -17,6 +17,7 @@
 		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		FA0797991BF480A200034B7C /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0797981BF480A200034B7C /* GameController.framework */; };
 		FA08F69616C766E000F007B5 /* love.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
 		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FA0B78D21A95814A000E1D17 /* love.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D01A95814A000E1D17 /* love.icns */; };
@@ -107,6 +108,7 @@
 		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
+		FA0797981BF480A200034B7C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		FA08F69116C765A200F007B5 /* love.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA0B78D01A95814A000E1D17 /* love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = love.icns; path = macosx/love.icns; sourceTree = "<group>"; };
 		FA0B78D11A95814A000E1D17 /* lovedocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = lovedocument.icns; path = macosx/lovedocument.icns; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				FA5D24D11A96E73300C6FC8F /* liblove.a in Frameworks */,
 				FA5D24C21A96D78000C6FC8F /* Foundation.framework in Frameworks */,
 				FA5D24961A96CAC200C6FC8F /* CoreMotion.framework in Frameworks */,
+				FA0797991BF480A200034B7C /* GameController.framework in Frameworks */,
 				FA5D24941A96CABA00C6FC8F /* libz.dylib in Frameworks */,
 				FA5D248E1A96CAA700C6FC8F /* CoreGraphics.framework in Frameworks */,
 				FA5D248C1A96CA9E00C6FC8F /* QuartzCore.framework in Frameworks */,
@@ -243,6 +246,7 @@
 		FA5D24801A96C97900C6FC8F /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				FA0797981BF480A200034B7C /* GameController.framework */,
 				FA5D24C11A96D78000C6FC8F /* Foundation.framework */,
 				FA5D24891A96CA9600C6FC8F /* AudioToolbox.framework */,
 				FA5D248D1A96CAA700C6FC8F /* CoreGraphics.framework */,

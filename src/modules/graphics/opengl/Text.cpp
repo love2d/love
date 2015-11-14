@@ -33,7 +33,6 @@ namespace opengl
 Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vbo(nullptr)
-	, text_info()
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -82,7 +81,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 		vbo = new_vbo;
 	}
 
-	if (vbo != nullptr)
+	if (vbo != nullptr && datasize > 0)
 	{
 		GLBuffer::Bind bind(*vbo);
 		vbodata = (uint8 *) vbo->map();
@@ -112,6 +111,8 @@ void Text::addTextData(const TextData &t)
 {
 	std::vector<Font::GlyphVertex> vertices;
 	std::vector<Font::DrawCommand> new_commands;
+
+	Font::TextInfo text_info;
 
 	// We only have formatted text if the align mode is valid.
 	if (t.align == Font::ALIGN_MAX_ENUM)
@@ -158,7 +159,9 @@ void Text::addTextData(const TextData &t)
 	}
 
 	vert_offset = voffset + vertices.size();
+
 	text_data.push_back(t);
+	text_data.back().text_info = text_info;
 
 	// Font::generateVertices can invalidate the font's texture cache.
 	if (font->getTextureCacheID() != texture_cache_id)
@@ -178,7 +181,7 @@ void Text::set(const std::vector<Font::ColoredString> &text, float wrap, Font::A
 	Font::ColoredCodepoints codepoints;
 	Font::getCodepointsFromString(text, codepoints);
 
-	addTextData({codepoints, wrap, align, false, false, Matrix3()});
+	addTextData({codepoints, wrap, align, {}, false, false, Matrix3()});
 }
 
 void Text::set()
@@ -186,22 +189,21 @@ void Text::set()
 	clear();
 }
 
-void Text::add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+int Text::add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	return addf(text, -1.0f, Font::ALIGN_MAX_ENUM, x, y, angle, sx, sy, ox, oy, kx, ky);
 }
 
-void Text::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+int Text::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	if (text.empty() || (text.size() == 1 && text[0].str.empty()))
-		return;
-
 	Font::ColoredCodepoints codepoints;
 	Font::getCodepointsFromString(text, codepoints);
 
 	Matrix3 m(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	addTextData({codepoints, wrap, align, true, true, m});
+	addTextData({codepoints, wrap, align, {}, true, true, m});
+
+	return (int) text_data.size() - 1;
 }
 
 void Text::clear()
@@ -209,7 +211,6 @@ void Text::clear()
 	text_data.clear();
 	draw_commands.clear();
 	texture_cache_id = font->getTextureCacheID();
-	text_info = {};
 	vert_offset = 0;
 }
 
@@ -262,14 +263,26 @@ Font *Text::getFont() const
 	return font.get();
 }
 
-int Text::getWidth() const
+int Text::getWidth(int index) const
 {
-	return text_info.width;
+	if (index < 0)
+		index = std::max((int) text_data.size() - 1, 0);
+
+	if (index >= (int) text_data.size())
+		return 0;
+
+	return text_data[index].text_info.width;
 }
 
-int Text::getHeight() const
+int Text::getHeight(int index) const
 {
-	return text_info.height;
+	if (index < 0)
+		index = std::max((int) text_data.size() - 1, 0);
+
+	if (index >= (int) text_data.size())
+		return 0;
+
+	return text_data[index].text_info.height;
 }
 
 } // opengl

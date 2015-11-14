@@ -761,11 +761,13 @@ function love.nogame()
 			return COLORS[love.math.random(1, #COLORS)]
 		end
 
-		-- When using the higher-resolution mosaic sprite sheet we want to draw
-		-- its sprites at the same scale as the regular-resolution one.
-		-- We can avoid a lot of scaling by taking advantage of the fact that
-		-- Quads use normalized texture coordinates internally - if we use the
-		-- 'source image size' and quad size of the @1x image for the Quads
+		-- When using the higher-res mosaic sprite sheet, we want to draw its
+		-- sprites at the same scale as the regular-resolution one, because
+		-- we'll globally love.graphics.scale *everything* by the screen's
+		-- pixel density ratio.
+		-- We can avoid a lot of Quad scaling by taking advantage of the fact
+		-- that Quads use normalized texture coordinates internally - if we use 
+		-- the 'source image size' and quad size of the @1x image for the Quads
 		-- even when rendering them using the @2x image, it will automatically
 		-- scale as expected.
 		local QUADS = {
@@ -889,7 +891,7 @@ function love.nogame()
 		love.graphics.setBackgroundColor(136, 193, 206)
 
 		local function load_image(file, name)
-			return love.graphics.newImage(love.image.newImageData(love.filesystem.newFileData(file, name:gsub("_", "."), "base64")))
+			return love.graphics.newImage(love.filesystem.newFileData(file, name:gsub("_", "."), "base64"))
 		end
 
 		g_images = {}

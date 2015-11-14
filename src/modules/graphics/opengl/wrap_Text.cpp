@@ -144,8 +144,11 @@ int w_Text_add(lua_State *L)
 	float kx = (float) luaL_optnumber(L, 10, 0.0);
 	float ky = (float) luaL_optnumber(L, 11, 0.0);
 
-	luax_catchexcept(L, [&](){ t->add(text, x, y, a, sx, sy, ox, oy, kx, ky); });
-	return 0;
+	int index = 0;
+	luax_catchexcept(L, [&](){ index = t->add(text, x, y, a, sx, sy, ox, oy, kx, ky); });
+	lua_pushnumber(L, index + 1);
+
+	return 1;
 }
 
 int w_Text_addf(lua_State *L)
@@ -173,8 +176,11 @@ int w_Text_addf(lua_State *L)
 	float kx = (float) luaL_optnumber(L, 12, 0.0);
 	float ky = (float) luaL_optnumber(L, 13, 0.0);
 
-	luax_catchexcept(L, [&](){ t->addf(text, wrap, align, x, y, a, sx, sy, ox, oy, kx, ky); });
-	return 0;
+	int index = 0;
+	luax_catchexcept(L, [&](){ index = t->addf(text, wrap, align, x, y, a, sx, sy, ox, oy, kx, ky); });
+	lua_pushnumber(L, index + 1);
+
+	return 1;
 }
 
 int w_Text_clear(lua_State *L)
@@ -203,14 +209,16 @@ int w_Text_getFont(lua_State *L)
 int w_Text_getWidth(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	lua_pushnumber(L, t->getWidth());
+	int index = (int) luaL_optnumber(L, 2, 0) - 1;
+	lua_pushnumber(L, t->getWidth(index));
 	return 1;
 }
 
 int w_Text_getHeight(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	lua_pushnumber(L, t->getHeight());
+	int index = (int) luaL_optnumber(L, 2, 0) - 1;
+	lua_pushnumber(L, t->getHeight(index));
 	return 1;
 }
 

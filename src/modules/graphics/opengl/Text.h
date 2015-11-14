@@ -45,8 +45,8 @@ public:
 	void set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align);
 	void set();
 
-	void add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
-	void addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	int add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	int addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 	void clear();
 
 	// Implements Drawable.
@@ -58,12 +58,12 @@ public:
 	/**
 	 * Gets the width of the currently set text.
 	 **/
-	int getWidth() const;
+	int getWidth(int index = 0) const;
 
 	/**
 	 * Gets the height of the currently set text.
 	 **/
-	int getHeight() const;
+	int getHeight(int index = 0) const;
 
 private:
 
@@ -72,6 +72,7 @@ private:
 		Font::ColoredCodepoints codepoints;
 		float wrap;
 		Font::AlignMode align;
+		Font::TextInfo text_info;
 		bool use_matrix;
 		bool append_vertices;
 		Matrix3 matrix;
@@ -87,7 +88,6 @@ private:
 	std::vector<Font::DrawCommand> draw_commands;
 
 	std::vector<TextData> text_data;
-	Font::TextInfo text_info;
 
 	size_t vert_offset;
 
