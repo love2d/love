@@ -435,13 +435,9 @@ private:
 	 **/
 	int pushVector(lua_State *L, const b2Vec2 &v);
 
-	// We need a shared_ptr to the parent World,
-	// because World can not be destroyed as long as
-	// bodies exists in it.
-	//
-	// This ensures that a World only can be destroyed
-	// once all bodies have been destroyed too.
-	StrongRef<World> world;
+	// FIXME: This should be a weak reference, rather than being completely
+	// unowned?
+	World *world;
 
 	bodyudata *udata;
 

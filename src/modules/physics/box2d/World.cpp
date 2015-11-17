@@ -221,7 +221,6 @@ World::World()
 	, destructWorld(false)
 {
 	world = new b2World(b2Vec2(0,0));
-	this->retain(); // The Box2D world holds a reference to this World.
 	world->SetAllowSleeping(true);
 	world->SetContactListener(this);
 	world->SetContactFilter(this);
@@ -236,8 +235,6 @@ World::World(b2Vec2 gravity, bool sleep)
 	, destructWorld(false)
 {
 	world = new b2World(Physics::scaleDown(gravity));
-	// The Box2D world holds a reference to this World.
-	this->retain();
 	world->SetAllowSleeping(sleep);
 	world->SetContactListener(this);
 	world->SetContactFilter(this);
@@ -249,6 +246,7 @@ World::World(b2Vec2 gravity, bool sleep)
 
 World::~World()
 {
+	destroy();
 }
 
 void World::update(float dt)
@@ -554,6 +552,9 @@ int World::rayCast(lua_State *L)
 
 void World::destroy()
 {
+	if (world == nullptr)
+		return;
+
 	if (world->IsLocked())
 	{
 		destructWorld = true;
@@ -578,9 +579,6 @@ void World::destroy()
 	Memoizer::remove(world);
 	delete world;
 	world = nullptr;
-
-	// Box2D world destroyed. Release its reference.
-	this->release();
 }
 
 } // box2d

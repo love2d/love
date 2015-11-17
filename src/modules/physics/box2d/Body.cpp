@@ -59,7 +59,7 @@ Body::Body(b2Body *b)
 	, udata(nullptr)
 {
 	udata = (bodyudata *) b->GetUserData();
-	world.set((World *) Memoizer::find(b->GetWorld()));
+	world = (World *) Memoizer::find(b->GetWorld());
 	// Box2D body holds a reference to the love Body.
 	this->retain();
 	Memoizer::add(body, this);
@@ -420,7 +420,7 @@ bool Body::isFixedRotation() const
 
 World *Body::getWorld() const
 {
-	return world.get();
+	return world;
 }
 
 int Body::getFixtureList(lua_State *L) const

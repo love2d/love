@@ -40,7 +40,7 @@ namespace box2d
 {
 
 Joint::Joint(Body *body1)
-	: world(body1->world.get())
+	: world(body1->world)
 	, udata(nullptr)
 	, body1(body1)
 	, body2(nullptr)
@@ -50,7 +50,7 @@ Joint::Joint(Body *body1)
 }
 
 Joint::Joint(Body *body1, Body *body2)
-	: world(body1->world.get())
+	: world(body1->world)
 	, udata(nullptr)
 	, body1(body1)
 	, body2(body2)
