@@ -741,6 +741,7 @@ function love.nogame()
 		self.batch = love.graphics.newSpriteBatch(mosaic_image, SIZE, "stream")
 		self.pieces = {}
 		self.color_t = 1
+		self.generation = 1
 
 		local COLORS = {}
 
@@ -756,10 +757,6 @@ function love.nogame()
 
 		-- Insert only once. This way it appears half as often.
 		table.insert(COLORS, { 220, 239, 113 }) -- LIME
-
-		self.generator = function()
-			return COLORS[love.math.random(1, #COLORS)]
-		end
 
 		-- When using the higher-res mosaic sprite sheet, we want to draw its
 		-- sprites at the same scale as the regular-resolution one, because
@@ -785,6 +782,38 @@ function love.nogame()
 		local exclude_height = exclude_bottom - exclude_top + 1
 		local exclude_area = exclude_width * exclude_height
 
+		local exclude_center_x = exclude_left + 1.5
+		local exclude_center_y = exclude_top + 1.5
+
+		self.generators = {
+			function(piece, generation)
+				return COLORS[math.random(1, #COLORS)]
+			end,
+			function(piece, generation)
+				return COLORS[1 + (generation + piece.grid_x - piece.grid_y) % #COLORS]
+			end,
+			function(piece, generation)
+				return COLORS[1 + (piece.grid_x + generation) % #COLORS]
+			end,
+			function(piece, generation)
+				local len = generation + math.sqrt(piece.grid_x ^ 2 + piece.grid_y ^ 2)
+				return COLORS[1 + math.floor(len) % #COLORS]
+			end,
+			function(piece, generation)
+				local dx = piece.grid_x - exclude_center_x
+				local dy = piece.grid_y - exclude_center_y
+				local len = generation - math.sqrt(dx ^ 2 + dy ^ 2)
+				return COLORS[1 + math.floor(len) % #COLORS]
+			end,
+			function(piece, generation)
+				local dx = math.abs(piece.grid_x - exclude_center_x) - generation
+				local dy = math.abs(piece.grid_y - exclude_center_y) - generation
+				return COLORS[1 + math.floor(math.max(dx, dy)) % #COLORS]
+			end,
+		}
+
+		self.generator = self.generators[1]
+
 		local EXCLUDE = {}
 		for y = exclude_top,exclude_bottom do
 			EXCLUDE[y]  = {}
@@ -797,6 +826,8 @@ function love.nogame()
 			for x = 1,SIZE_X do
 				if not EXCLUDE[y] or not EXCLUDE[y][x] then
 					local piece = {
+						grid_x = x,
+						grid_y = y,
 						x = (x - 1) * 32,
 						y = (y - 1) * 32,
 						r = love.math.random(0, 100) / 100 * math.pi,
@@ -805,7 +836,7 @@ function love.nogame()
 						quad = QUADS[(x + y) % 4 + 1]
 					}
 
-					piece.color.prev = self.generator(#self.pieces + 1, 0, 2)
+					piece.color.prev = self.generator(piece, self.generation)
 					piece.color.next = piece.color.prev
 					table.insert(self.pieces, piece)
 				end
@@ -853,18 +884,30 @@ function love.nogame()
 		put_text("SUPER TOAST", 0, text_center_x - 4, exclude_top - 3)
 	end
 
+	function Mosaic:addGeneration()
+		self.generation = self.generation + 1
+		if self.generation % 5 == 0 then
+			if math.random(0, 100) < 30 then
+				self.generator = self.generators[math.random(2, #self.generators)]
+			else
+				self.generator = self.generators[1]
+			end
+		end
+	end
+
 	function Mosaic:update(dt)
 		self.color_t = math.max(self.color_t - dt, 0)
 		local change_color = self.color_t == 0
 		if change_color then
 			self.color_t = 1
+			self:addGeneration()
 		end
 		local gen = self.generator
 		for idx,piece in ipairs(self.pieces) do
 			piece.r = piece.r + piece.rv * dt
-			if change_color and not piece.color.immutable then
+			if change_color then
 				piece.color.prev = piece.color.next
-				piece.color.next = gen()
+				piece.color.next = gen(piece, self.generation)
 			end
 		end
 	end
