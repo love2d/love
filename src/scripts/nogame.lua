@@ -787,7 +787,7 @@ function love.nogame()
 
 		self.generators = {
 			function(piece, generation)
-				return COLORS[math.random(1, #COLORS)]
+				return COLORS[love.math.random(1, #COLORS)]
 			end,
 			function(piece, generation)
 				return COLORS[1 + (generation + piece.grid_x - piece.grid_y) % #COLORS]
@@ -887,8 +887,8 @@ function love.nogame()
 	function Mosaic:addGeneration()
 		self.generation = self.generation + 1
 		if self.generation % 5 == 0 then
-			if math.random(0, 100) < 30 then
-				self.generator = self.generators[math.random(2, #self.generators)]
+			if love.math.random(0, 100) < 30 then
+				self.generator = self.generators[love.math.random(2, #self.generators)]
 			else
 				self.generator = self.generators[1]
 			end

@@ -229,38 +229,88 @@ int w_Shader_sendMatrix(lua_State *L)
 	if (!lua_istable(L, 3))
 		return luax_typerror(L, 3, "matrix table");
 
-	lua_getfield(L, 3, "dimension");
-	int dimension = (int) lua_tointeger(L, -1);
+	int dimension = 0;
+
+	lua_rawgeti(L, 3, 1);
+	if (lua_istable(L, -1))
+		dimension = (int) luax_objlen(L, 3);
 	lua_pop(L, 1);
+
+	if (dimension == 0)
+	{
+		lua_getfield(L, 3, "dimension");
+
+		if (!lua_isnoneornil(L, -1))
+			dimension = (int) lua_tointeger(L, -1);
+
+		lua_pop(L, 1);
+	}
 
 	if (dimension < 2 || dimension > 4)
 		return luaL_error(L, "Invalid matrix size: %dx%d (only 2x2, 3x3 and 4x4 matrices are supported).",
 						  dimension, dimension);
 
 	float *values = new float[dimension * dimension * count];
+
 	for (int i = 0; i < count; ++i)
 	{
-		lua_getfield(L, 3+i, "dimension");
-		if (lua_tointeger(L, -1) != dimension)
+		int other_dimension = 0;
+
+		lua_rawgeti(L, 3+i, 1);
+		bool table_of_tables = lua_istable(L, -1);
+
+		if (table_of_tables)
+			other_dimension = luax_objlen(L, -1);
+
+		lua_pop(L, 1);
+
+		if (!table_of_tables)
+		{
+			lua_getfield(L, 3+i, "dimension");
+			other_dimension = lua_tointeger(L, -1);
+			lua_pop(L, 1);
+		}
+
+		if (other_dimension != dimension)
 		{
 			// You unlock this door with the key of imagination. Beyond it is
 			// another dimension: a dimension of sound, a dimension of sight,
 			// a dimension of mind. You're moving into a land of both shadow
 			// and substance, of things and ideas. You've just crossed over
 			// into... the Twilight Zone.
-			int other_dimension = (int) lua_tointeger(L, -1);
 			delete[] values;
 			return luaL_error(L, "Invalid matrix size at argument %d: Expected size %dx%d, got %dx%d.",
 							  3+i, dimension, dimension, other_dimension, other_dimension);
 		}
 
-		for (int k = 1; k <= dimension*dimension; ++k)
+		if (table_of_tables)
 		{
-			lua_rawgeti(L, 3+i, k);
-			values[i * dimension * dimension + k - 1] = (float)lua_tonumber(L, -1);
-		}
+			int n = 0;
 
-		lua_pop(L, 1 + dimension);
+			for (int j = 1; j <= dimension; j++)
+			{
+				lua_rawgeti(L, 3+i, j);
+
+				for (int k = 1; k <= dimension; k++)
+				{
+					lua_rawgeti(L, -k, k);
+					values[i * dimension * dimension + n] = (float) lua_tonumber(L, -1);
+					n++;
+				}
+
+				lua_pop(L, dimension + 1);
+			}
+		}
+		else
+		{
+			for (int k = 1; k <= dimension*dimension; k++)
+			{
+				lua_rawgeti(L, 3+i, k);
+				values[i * dimension * dimension + k - 1] = (float) lua_tonumber(L, -1);
+			}
+
+			lua_pop(L, dimension*dimension);
+		}
 	}
 
 	luax_catchexcept(L,
@@ -279,48 +329,6 @@ int w_Shader_sendTexture(lua_State *L)
 
 	luax_catchexcept(L, [&](){ shader->sendTexture(name, texture); });
 	return 0;
-}
-
-// Convert matrices on the stack for use with sendMatrix.
-static void w_convertMatrices(lua_State *L, int idx)
-{
-	int matrixcount = lua_gettop(L) - (idx - 1);
-
-	for (int matrix = idx; matrix < idx + matrixcount; matrix++)
-	{
-		luaL_checktype(L, matrix, LUA_TTABLE);
-		int dimension = (int) luax_objlen(L, matrix);
-
-		int newi = 1;
-		lua_createtable(L, dimension * dimension, 0);
-
-		// Collapse {{a,b,c}, {d,e,f}, ...} to {a,b,c, d,e,f, ...}
-		for (int i = 1; i <= (int) luax_objlen(L, matrix); i++)
-		{
-			// Push args[matrix][i] onto the stack.
-			lua_rawgeti(L, matrix, i);
-			luaL_checktype(L, -1, LUA_TTABLE);
-
-			for (int j = 1; j <= (int) luax_objlen(L, -1); j++)
-			{
-				// Push args[matrix[i][j] onto the stack.
-				lua_rawgeti(L, -1, j);
-				luaL_checktype(L, -1, LUA_TNUMBER);
-
-				// newtable[newi] = args[matrix][i][j]
-				lua_rawseti(L, -3, newi++);
-			}
-
-			lua_pop(L, 1);
-		}
-
-		// newtable.dimension = #args[matrix]
-		lua_pushinteger(L, dimension);
-		lua_setfield(L, -2, "dimension");
-
-		// Replace args[i] with the new table
-		lua_replace(L, matrix);
-	}
 }
 
 int w_Shader_send(lua_State *L)
@@ -352,10 +360,7 @@ int w_Shader_send(lua_State *L)
 		if (ttype == LUA_TNUMBER || ttype == LUA_TBOOLEAN)
 			return w_Shader_sendFloat(L);
 		else if (ttype == LUA_TTABLE)
-		{
-			w_convertMatrices(L, 3);
 			return w_Shader_sendMatrix(L);
-		}
 
 		break;
 	default:
