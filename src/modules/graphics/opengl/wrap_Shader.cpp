@@ -25,6 +25,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 namespace love
 {
@@ -242,6 +243,8 @@ int w_Shader_sendMatrix(lua_State *L)
 
 		if (!lua_isnoneornil(L, -1))
 			dimension = (int) lua_tointeger(L, -1);
+		else
+			dimension = (int) sqrtf((float) luax_objlen(L, 3));
 
 		lua_pop(L, 1);
 	}
@@ -265,11 +268,7 @@ int w_Shader_sendMatrix(lua_State *L)
 		lua_pop(L, 1);
 
 		if (!table_of_tables)
-		{
-			lua_getfield(L, 3+i, "dimension");
-			other_dimension = lua_tointeger(L, -1);
-			lua_pop(L, 1);
-		}
+			other_dimension = (int) sqrtf((float) luax_objlen(L, 3+i));
 
 		if (other_dimension != dimension)
 		{
