@@ -137,8 +137,8 @@ public:
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;
 	virtual love::image::ImageData *getIcon() = 0;
 
-	virtual void setScreenSaverEnabled(bool enable) = 0;
-	virtual bool isScreenSaverEnabled() const = 0;
+	virtual void setDisplaySleepEnabled(bool enable) = 0;
+	virtual bool isDisplaySleepEnabled() const = 0;
 
 	virtual void minimize() = 0;
 	virtual void maximize() = 0;

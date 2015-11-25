@@ -219,7 +219,7 @@ bool Filesystem::setSource(const char *source)
 	std::string new_search_path = source;
 
 #ifdef LOVE_ANDROID
-	if (!love::android::createStorageDirectories ())
+	if (!love::android::createStorageDirectories())
 		SDL_Log("Error creating storage directories!");
 
 	char* game_archive_ptr = NULL;

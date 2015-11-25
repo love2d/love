@@ -70,8 +70,8 @@ public:
 	bool setIcon(love::image::ImageData *imgd);
 	love::image::ImageData *getIcon();
 
-	void setScreenSaverEnabled(bool enable);
-	bool isScreenSaverEnabled() const;
+	void setDisplaySleepEnabled(bool enable);
+	bool isDisplaySleepEnabled() const;
 
 	void minimize();
 	void maximize();
