@@ -269,6 +269,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Drawable.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
+	src/modules/graphics/ParticleSystem.cpp
+	src/modules/graphics/ParticleSystem.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
 	src/modules/graphics/Texture.cpp

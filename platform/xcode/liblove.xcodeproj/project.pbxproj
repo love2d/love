@@ -871,6 +871,8 @@
 		FAB2D5AA1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */; };
+		FAE272521C05A15B00A67640 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
+		FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE272511C05A15B00A67640 /* ParticleSystem.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1519,6 +1521,8 @@
 		FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeRasterizer.h; sourceTree = "<group>"; };
 		FAC734C11B2E021A00AB460A /* wrap_SoundData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_SoundData.lua; sourceTree = "<group>"; };
 		FAC734C21B2E628700AB460A /* wrap_ImageData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_ImageData.lua; sourceTree = "<group>"; };
+		FAE272501C05A15B00A67640 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
+		FAE272511C05A15B00A67640 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2204,6 +2208,8 @@
 				FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B8B1A95902C000E1D17 /* Graphics.h */,
 				FA0B7B8C1A95902C000E1D17 /* opengl */,
+				FAE272501C05A15B00A67640 /* ParticleSystem.cpp */,
+				FAE272511C05A15B00A67640 /* ParticleSystem.h */,
 				FA0B7BBC1A95902C000E1D17 /* Quad.cpp */,
 				FA0B7BBD1A95902C000E1D17 /* Quad.h */,
 				FA0B7BBE1A95902C000E1D17 /* Texture.cpp */,
@@ -2874,6 +2880,7 @@
 				FA0B7B2D1A958EA3000E1D17 /* core.h in Headers */,
 				FAB17BF71ABFC4B100F9BA27 /* lz4hc.h in Headers */,
 				FA0B7E831A95902C000E1D17 /* Shape.h in Headers */,
+				FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */,
 				FA0B7EDD1A95902D000E1D17 /* Touch.h in Headers */,
 				FA0B7EDE1A95902D000E1D17 /* Touch.h in Headers */,
 				FA0B7A541A958EA3000E1D17 /* b2Math.h in Headers */,
@@ -3601,6 +3608,7 @@
 				FA0B7D391A95902C000E1D17 /* Graphics.cpp in Sources */,
 				FA0B79361A958E3B000E1D17 /* macosx.mm in Sources */,
 				FA0B7E121A95902C000E1D17 /* GearJoint.cpp in Sources */,
+				FAE272521C05A15B00A67640 /* ParticleSystem.cpp in Sources */,
 				FA0B7DC11A95902C000E1D17 /* wrap_Joystick.cpp in Sources */,
 				FA0B7CD31A95902C000E1D17 /* Source.cpp in Sources */,
 				FA0B7A411A958EA3000E1D17 /* b2CircleShape.cpp in Sources */,
