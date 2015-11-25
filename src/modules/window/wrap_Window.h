@@ -43,6 +43,8 @@ int w_setPosition(lua_State *L);
 int w_getPosition(lua_State *L);
 int w_setIcon(lua_State *L);
 int w_getIcon(lua_State *L);
+int w_setScreenSaverEnabled(lua_State *L);
+int w_isScreenSaverEnabled(lua_State *L);
 int w_setTitle(lua_State *L);
 int w_getTitle(lua_State *L);
 int w_hasFocus(lua_State *L);

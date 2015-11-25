@@ -53,23 +53,9 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, Mesh::Usage usage)
 		throw love::Exception("Invalid SpriteBatch size.");
 
 	GLenum gl_usage = Mesh::getGLBufferUsage(usage);
+	size_t vertex_size = sizeof(Vertex) * 4 * size;
 
-	const size_t vertex_size = sizeof(Vertex) * 4 * size;
-
-	try
-	{
-		array_buf = new GLBuffer(vertex_size, nullptr, GL_ARRAY_BUFFER, gl_usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
-	}
-	catch (love::Exception &)
-	{
-		delete array_buf;
-		throw;
-	}
-	catch (std::bad_alloc &)
-	{
-		delete array_buf;
-		throw love::Exception("Out of memory.");
-	}
+	array_buf = new GLBuffer(vertex_size, nullptr, GL_ARRAY_BUFFER, gl_usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 }
 
 SpriteBatch::~SpriteBatch()

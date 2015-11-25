@@ -556,12 +556,6 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 	{
 	case SDL_WINDOWEVENT_FOCUS_GAINED:
 	case SDL_WINDOWEVENT_FOCUS_LOST:
-		// Users won't expect the screensaver to activate if a game is in
-		// focus. Also, joystick input may not delay the screensaver timer.
-		if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-			SDL_DisableScreenSaver();
-		else
-			SDL_EnableScreenSaver();
 		vargs.push_back(new Variant(e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED));
 		msg = new Message("focus", vargs);
 		break;

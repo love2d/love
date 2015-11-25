@@ -67,6 +67,9 @@ Window::Window()
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
 
+	// Make sure the screensaver doesn't activate by default.
+	setScreenSaverEnabled(false);
+
 	SDL_version version = {};
 	SDL_GetVersion(&version);
 	hasSDL203orEarlier = (version.major == 2 && version.minor == 0 && version.patch <= 3);
@@ -840,6 +843,19 @@ bool Window::setIcon(love::image::ImageData *imgd)
 love::image::ImageData *Window::getIcon()
 {
 	return curMode.icon.get();
+}
+
+void Window::setScreenSaverEnabled(bool enable)
+{
+	if (enable)
+		SDL_EnableScreenSaver();
+	else
+		SDL_DisableScreenSaver();
+}
+
+bool Window::isScreenSaverEnabled() const
+{
+	return SDL_IsScreenSaverEnabled() != SDL_FALSE;
 }
 
 void Window::minimize()

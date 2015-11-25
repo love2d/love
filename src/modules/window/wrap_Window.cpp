@@ -329,6 +329,18 @@ int w_getIcon(lua_State *L)
 	return 1;
 }
 
+int w_setScreenSaverEnabled(lua_State *L)
+{
+	instance()->setScreenSaverEnabled(luax_toboolean(L, 1));
+	return 0;
+}
+
+int w_isScreenSaverEnabled(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isScreenSaverEnabled());
+	return 1;
+}
+
 int w_setTitle(lua_State *L)
 {
 	std::string title = luax_checkstring(L, 1);
@@ -509,6 +521,8 @@ static const luaL_Reg functions[] =
 	{ "getPosition", w_getPosition },
 	{ "setIcon", w_setIcon },
 	{ "getIcon", w_getIcon },
+	{ "setScreenSaverEnabled", w_setScreenSaverEnabled },
+	{ "isScreenSaverEnabled", w_isScreenSaverEnabled },
 	{ "setTitle", w_setTitle },
 	{ "getTitle", w_getTitle },
 	{ "hasFocus", w_hasFocus },
