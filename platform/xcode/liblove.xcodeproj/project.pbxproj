@@ -830,6 +830,7 @@
 		FA57FB981AE1993600F2AD6D /* noise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA57FB961AE1993600F2AD6D /* noise1234.cpp */; };
 		FA57FB991AE1993600F2AD6D /* noise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA57FB961AE1993600F2AD6D /* noise1234.cpp */; };
 		FA57FB9A1AE1993600F2AD6D /* noise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA57FB971AE1993600F2AD6D /* noise1234.h */; };
+		FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
 		FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */; };
 		FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AB1A96D2EC00C6FC8F /* libogg.a */; };
 		FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */; };
@@ -3323,6 +3324,7 @@
 				FA0B7EF21A959D2C000E1D17 /* ios.mm in Sources */,
 				FA0B7D3A1A95902C000E1D17 /* Graphics.cpp in Sources */,
 				FA0B7A2D1A958EA3000E1D17 /* b2CollideCircle.cpp in Sources */,
+				FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */,
 				FA0B7E131A95902C000E1D17 /* GearJoint.cpp in Sources */,
 				FA0B7DC21A95902C000E1D17 /* wrap_Joystick.cpp in Sources */,
 				FA0B7CD41A95902C000E1D17 /* Source.cpp in Sources */,
