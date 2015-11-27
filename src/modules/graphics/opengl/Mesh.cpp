@@ -360,11 +360,10 @@ void *Mesh::mapVertexData()
 	return vbo->map();
 }
 
-void Mesh::unmapVertexData()
+void Mesh::unmapVertexData(size_t modifiedoffset, size_t modifiedsize)
 {
-	// Assume the whole buffer was modified.
 	GLBuffer::Bind bind(*vbo);
-	vbo->setMappedRangeModified(0, vbo->getSize());
+	vbo->setMappedRangeModified(modifiedoffset, modifiedsize);
 	vbo->unmap();
 }
 

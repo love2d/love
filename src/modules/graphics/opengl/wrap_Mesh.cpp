@@ -109,10 +109,15 @@ int w_Mesh_setVertices(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 	luaL_checktype(L, 2, LUA_TTABLE);
+	size_t vertoffset = (size_t) luaL_optnumber(L, 3, 1) - 1;
+
+	if (vertoffset >= t->getVertexCount())
+		return luaL_error(L, "Invalid vertex start index (must be between 1 and %d)", (int) t->getVertexCount());
 
 	size_t nvertices = luax_objlen(L, 2);
-	if (nvertices != t->getVertexCount())
-		return luaL_error(L, "Invalid number of vertices (expected %d, got %d)", (int) t->getVertexCount(), (int) nvertices);
+
+	if (vertoffset + nvertices > t->getVertexCount())
+		return luaL_error(L, "Too many vertices (expected at most %d, got %d)", (int) t->getVertexCount() - (int) vertoffset, (int) nvertices);
 
 	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
 
@@ -120,7 +125,10 @@ int w_Mesh_setVertices(lua_State *L)
 	for (const Mesh::AttribFormat &format : vertexformat)
 		ncomponents += format.components;
 
-	char *data = (char *) t->mapVertexData();
+	size_t stride = t->getVertexStride();
+	size_t byteoffset = vertoffset * stride;
+
+	char *data = (char *) t->mapVertexData() + byteoffset;
 
 	for (size_t i = 0; i < nvertices; i++)
 	{
@@ -145,7 +153,7 @@ int w_Mesh_setVertices(lua_State *L)
 		lua_pop(L, ncomponents + 1);
 	}
 
-	t->unmapVertexData();
+	t->unmapVertexData(byteoffset, nvertices * stride);
 	return 0;
 }
 

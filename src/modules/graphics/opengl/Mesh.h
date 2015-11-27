@@ -141,7 +141,7 @@ public:
 	void attachAttribute(const std::string &name, Mesh *mesh);
 
 	void *mapVertexData();
-	void unmapVertexData();
+	void unmapVertexData(size_t modifiedoffset = 0, size_t modifiedsize = -1);
 
 	/**
 	 * Flushes all modified data to the GPU.
