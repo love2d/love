@@ -1298,21 +1298,8 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 		coords[2 * (i+1) + 1] = y + radius * sinf(phi);
 	}
 
-	// GL_POLYGON can only fill-draw convex polygons, so we need to do stuff manually here
-	if (mode == DRAW_LINE)
-	{
-		polyline(coords, num_coords); // Artifacts at sharp angles if set to looping.
-	}
-	else
-	{
-		OpenGL::TempDebugGroup debuggroup("Filled arc draw");
-
-		gl.prepareDraw();
-		gl.bindTexture(gl.getDefaultTexture());
-		gl.useVertexAttribArrays(ATTRIBFLAG_POS);
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
-		gl.drawArrays(GL_TRIANGLE_FAN, 0, points + 2);
-	}
+	// NOTE: We rely on polygon() using GL_TRIANGLE_FAN, when fill mode is used.
+	polygon(mode, coords, num_coords);
 
 	delete[] coords;
 }
