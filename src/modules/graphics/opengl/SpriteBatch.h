@@ -24,6 +24,9 @@
 // C
 #include <cstring>
 
+// C++
+#include <unordered_map>
+
 // LOVE
 #include "common/math.h"
 #include "common/Matrix.h"
@@ -98,10 +101,22 @@ public:
 	 **/
 	int getBufferSize() const;
 
+	/**
+	 * Attaches a specific vertex attribute from a Mesh to this SpriteBatch.
+	 * The vertex attribute will be used when drawing the SpriteBatch.
+	 **/
+	void attachAttribute(const std::string &name, Mesh *mesh);
+
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 private:
+
+	struct AttachedAttribute
+	{
+		StrongRef<Mesh> mesh;
+		int index;
+	};
 
 	void addv(const Vertex *v, const Matrix3 &m, int index);
 
@@ -128,6 +143,8 @@ private:
 
 	GLBuffer *array_buf;
 	QuadIndices quad_indices;
+
+	std::unordered_map<std::string, AttachedAttribute> attached_attributes;
 
 }; // SpriteBatch
 

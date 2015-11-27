@@ -126,6 +126,7 @@ public:
 	 **/
 	const std::vector<AttribFormat> &getVertexFormat() const;
 	DataType getAttributeInfo(int attribindex, int &components) const;
+	int getAttributeIndex(const std::string &name) const;
 
 	/**
 	 * Sets whether a specific vertex attribute is used when drawing the Mesh.
@@ -193,6 +194,8 @@ public:
 	void setDrawRange();
 	void getDrawRange(int &min, int &max) const;
 
+	int bindAttributeToShaderInput(int attributeindex, const std::string &inputname);
+
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) override;
 
@@ -212,7 +215,7 @@ private:
 	struct AttachedAttribute
 	{
 		Mesh *mesh;
-		size_t index;
+		int index;
 		bool enabled;
 	};
 

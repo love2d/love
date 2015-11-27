@@ -203,6 +203,16 @@ int w_SpriteBatch_getBufferSize(lua_State *L)
 	return 1;
 }
 
+int w_SpriteBatch_attachAttribute(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	Mesh *m = luax_checktype<Mesh>(L, 3, GRAPHICS_MESH_ID);
+
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, m); });
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "add", w_SpriteBatch_add },
@@ -216,6 +226,7 @@ static const luaL_Reg functions[] =
 	{ "getCount", w_SpriteBatch_getCount },
 	{ "setBufferSize", w_SpriteBatch_setBufferSize },
 	{ "getBufferSize", w_SpriteBatch_getBufferSize },
+	{ "attachAttribute", w_SpriteBatch_attachAttribute },
 	{ 0, 0 }
 };
 

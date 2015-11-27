@@ -149,7 +149,7 @@ void Mesh::setupAttachedAttributes()
 		if (attachedAttributes.find(name) != attachedAttributes.end())
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes[name] = {this, i, true};
+		attachedAttributes[name] = {this, (int) i, true};
 	}
 }
 
@@ -287,6 +287,17 @@ Mesh::DataType Mesh::getAttributeInfo(int attribindex, int &components) const
 	return type;
 }
 
+int Mesh::getAttributeIndex(const std::string &name) const
+{
+	for (int i = 0; i < (int) vertexFormat.size(); i++)
+	{
+		if (vertexFormat[i].name == name)
+			return i;
+	}
+
+	return -1;
+}
+
 void Mesh::setAttributeEnabled(const std::string &name, bool enable)
 {
 	auto it = attachedAttributes.find(name);
@@ -328,20 +339,10 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh)
 		oldattrib = it->second;
 
 	newattrib.mesh = mesh;
-	newattrib.index = std::numeric_limits<size_t>::max();
 	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
+	newattrib.index = mesh->getAttributeIndex(name);
 
-	// Find the index of the attribute in the mesh.
-	for (size_t i = 0; i < mesh->vertexFormat.size(); i++)
-	{
-		if (mesh->vertexFormat[i].name == name)
-		{
-			newattrib.index = i;
-			break;
-		}
-	}
-
-	if (newattrib.index == std::numeric_limits<size_t>::max())
+	if (newattrib.index < 0)
 		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", name.c_str());
 
 	if (newattrib.mesh != this)
@@ -537,6 +538,39 @@ void Mesh::getDrawRange(int &min, int &max) const
 	max = rangeMax;
 }
 
+int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inputname)
+{
+	const AttribFormat &format = vertexFormat[attributeindex];
+
+	GLint attriblocation = -1;
+
+	// If the attribute is one of the LOVE-defined ones, use the constant
+	// attribute index for it, otherwise query the index from the shader.
+	VertexAttribID builtinattrib;
+	if (Shader::getConstant(inputname.c_str(), builtinattrib))
+		attriblocation = (GLint) builtinattrib;
+	else if (Shader::current)
+		attriblocation = Shader::current->getAttribLocation(inputname);
+
+	// The active shader might not use this vertex attribute name.
+	if (attriblocation < 0)
+		return attriblocation;
+
+	// Needed for unmap and glVertexAttribPointer.
+	GLBuffer::Bind vbobind(*vbo);
+
+	// Make sure the buffer isn't mapped (sends data to GPU if needed.)
+	vbo->unmap();
+
+	const void *gloffset = vbo->getPointer(getAttributeOffset(attributeindex));
+	GLenum datatype = getGLDataType(format.type);
+	GLboolean normalized = (datatype == GL_UNSIGNED_BYTE);
+
+	glVertexAttribPointer(attriblocation, format.components, datatype, normalized, vertexStride, gloffset);
+
+	return attriblocation;
+}
+
 void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
@@ -549,36 +583,10 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 			continue;
 
 		Mesh *mesh = attrib.second.mesh;
-		const AttribFormat &format = mesh->vertexFormat[attrib.second.index];
+		int location = mesh->bindAttributeToShaderInput(attrib.second.index, attrib.first);
 
-		GLint attriblocation = -1;
-
-		// If the attribute is one of the LOVE-defined ones, use the constant
-		// attribute index for it, otherwise query the index from the shader.
-		VertexAttribID builtinattrib;
-		if (Shader::getConstant(format.name.c_str(), builtinattrib))
-			attriblocation = (GLint) builtinattrib;
-		else if (Shader::current)
-			attriblocation = Shader::current->getAttribLocation(format.name);
-
-		// The active shader might not use this vertex attribute name.
-		if (attriblocation < 0)
-			continue;
-
-		// Needed for unmap and glVertexAttribPointer.
-		GLBuffer::Bind vbobind(*mesh->vbo);
-
-		// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-		mesh->vbo->unmap();
-
-		size_t offset = mesh->getAttributeOffset(attrib.second.index);
-		const void *gloffset = mesh->vbo->getPointer(offset);
-		GLenum datatype = getGLDataType(format.type);
-		GLboolean normalized = (datatype == GL_UNSIGNED_BYTE);
-
-		glVertexAttribPointer(attriblocation, format.components, datatype, normalized, mesh->vertexStride, gloffset);
-
-		enabledattribs |= 1 << uint32(attriblocation);
+		if (location >= 0)
+			enabledattribs |= 1u << (uint32) location;
 	}
 
 	// Not supported on all platforms or GL versions, I believe.

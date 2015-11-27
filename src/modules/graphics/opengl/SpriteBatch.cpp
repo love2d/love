@@ -193,6 +193,28 @@ int SpriteBatch::getBufferSize() const
 	return size;
 }
 
+void SpriteBatch::attachAttribute(const std::string &name, Mesh *mesh)
+{
+	AttachedAttribute oldattrib = {};
+	AttachedAttribute newattrib = {};
+
+	if (mesh->getVertexCount() < (size_t) getBufferSize() * 4)
+		throw love::Exception("Mesh has too few vertices to be attached to this SpriteBatch (at least %d vertices are required)", getBufferSize()*4);
+
+	auto it = attached_attributes.find(name);
+	if (it != attached_attributes.end())
+		oldattrib = it->second;
+
+	newattrib.index = mesh->getAttributeIndex(name);
+
+	if (newattrib.index < 0)
+		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", name.c_str());
+
+	newattrib.mesh = mesh;
+
+	attached_attributes[name] = newattrib;
+}
+
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	const size_t pos_offset   = offsetof(Vertex, x);
@@ -209,27 +231,47 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 
 	gl.bindTexture(*(GLuint *) texture->getHandle());
 
-	GLBuffer::Bind array_bind(*array_buf);
-	GLBuffer::Bind element_bind(*quad_indices.getBuffer());
-
-	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
-	array_buf->unmap();
-
 	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
 
-	// Apply per-sprite color, if a color is set.
-	if (color)
 	{
-		enabledattribs |= ATTRIBFLAG_COLOR;
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), array_buf->getPointer(color_offset));
+		// Scope this bind so it doesn't interfere with the
+		// Mesh::bindAttributeToShaderInput calls below.
+		GLBuffer::Bind array_bind(*array_buf);
+
+		// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
+		array_buf->unmap();
+
+		// Apply per-sprite color, if a color is set.
+		if (color)
+		{
+			enabledattribs |= ATTRIBFLAG_COLOR;
+			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), array_buf->getPointer(color_offset));
+		}
+
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(pos_offset));
+		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
 	}
 
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(pos_offset));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
+	for (const auto &it : attached_attributes)
+	{
+		Mesh *mesh = it.second.mesh.get();
+
+		// We have to do this check here as well because setBufferSize can be
+		// called after attachAttribute.
+		if (mesh->getVertexCount() < (size_t) getBufferSize() * 4)
+			throw love::Exception("Mesh with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
+
+		int location = mesh->bindAttributeToShaderInput(it.second.index, it.first);
+
+		if (location >= 0)
+			enabledattribs |= 1u << (uint32) location;
+	}
 
 	gl.useVertexAttribArrays(enabledattribs);
 
 	gl.prepareDraw();
+
+	GLBuffer::Bind element_bind(*quad_indices.getBuffer());
 	gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(next), quad_indices.getType(), quad_indices.getPointer(0));
 }
 

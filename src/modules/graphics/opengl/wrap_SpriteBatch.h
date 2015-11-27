@@ -43,6 +43,7 @@ int w_SpriteBatch_getColor(lua_State *L);
 int w_SpriteBatch_getCount(lua_State *L);
 int w_SpriteBatch_setBufferSize(lua_State *L);
 int w_SpriteBatch_getBufferSize(lua_State *L);
+int w_SpriteBatch_attachAttribute(lua_State *L);
 
 extern "C" int luaopen_spritebatch(lua_State *L);
 

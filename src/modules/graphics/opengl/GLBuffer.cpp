@@ -90,6 +90,9 @@ void *GLBuffer::map()
 
 void GLBuffer::unmapStatic(size_t offset, size_t size)
 {
+	if (size == 0)
+		return;
+
 	// Upload the mapped data to the buffer.
 	glBufferSubData(getTarget(), (GLintptr) offset, (GLsizeiptr) size, memory_map + offset);
 }
