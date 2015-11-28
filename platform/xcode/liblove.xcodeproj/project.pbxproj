@@ -817,6 +817,9 @@
 		FA0B7EEA1A95902D000E1D17 /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */; };
 		FA0B7EF21A959D2C000E1D17 /* ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7EF11A959D2C000E1D17 /* ios.mm */; };
 		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
+		FA41A3C81C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
+		FA41A3C91C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
+		FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA41A3C71C0A1F950084430C /* ASTCHandler.h */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
@@ -1474,6 +1477,8 @@
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASTCHandler.cpp; sourceTree = "<group>"; };
+		FA41A3C71C0A1F950084430C /* ASTCHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASTCHandler.h; sourceTree = "<group>"; };
 		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
@@ -2298,9 +2303,11 @@
 		FA0B7BC81A95902C000E1D17 /* magpie */ = {
 			isa = PBXGroup;
 			children = (
+				FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */,
+				FA41A3C71C0A1F950084430C /* ASTCHandler.h */,
+				FA0B7BCB1A95902C000E1D17 /* CompressedFormatHandler.h */,
 				FA0B7BC91A95902C000E1D17 /* CompressedImageData.cpp */,
 				FA0B7BCA1A95902C000E1D17 /* CompressedImageData.h */,
-				FA0B7BCB1A95902C000E1D17 /* CompressedFormatHandler.h */,
 				FA0B7BCC1A95902C000E1D17 /* ddsHandler.cpp */,
 				FA0B7BCD1A95902C000E1D17 /* ddsHandler.h */,
 				FA0B7BCE1A95902C000E1D17 /* FormatHandler.cpp */,
@@ -3108,6 +3115,7 @@
 				FA0B7E171A95902C000E1D17 /* Joint.h in Headers */,
 				FA0B793F1A958E3B000E1D17 /* types.h in Headers */,
 				FA0B7AB31A958EA3000E1D17 /* b2Rope.h in Headers */,
+				FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */,
 				FA0B7D5D1A95902C000E1D17 /* wrap_Font.h in Headers */,
 				FA0B7ED31A95902C000E1D17 /* wrap_ThreadModule.h in Headers */,
 				FA0B7A511A958EA3000E1D17 /* b2GrowableStack.h in Headers */,
@@ -3336,6 +3344,7 @@
 				FA0B7A781A958EA3000E1D17 /* b2CircleContact.cpp in Sources */,
 				FA0B7D5F1A95902C000E1D17 /* wrap_Graphics.cpp in Sources */,
 				FA0B7A9C1A958EA3000E1D17 /* b2MouseJoint.cpp in Sources */,
+				FA41A3C91C0A1F950084430C /* ASTCHandler.cpp in Sources */,
 				FA0B7E551A95902C000E1D17 /* wrap_GearJoint.cpp in Sources */,
 				FA0B7E791A95902C000E1D17 /* wrap_WheelJoint.cpp in Sources */,
 				FA0B7DDD1A95902C000E1D17 /* wrap_BezierCurve.cpp in Sources */,
@@ -3622,6 +3631,7 @@
 				FA0B7D5E1A95902C000E1D17 /* wrap_Graphics.cpp in Sources */,
 				FA0B7A801A958EA3000E1D17 /* b2EdgeAndCircleContact.cpp in Sources */,
 				FA0B7E541A95902C000E1D17 /* wrap_GearJoint.cpp in Sources */,
+				FA41A3C81C0A1F950084430C /* ASTCHandler.cpp in Sources */,
 				FA0B7E781A95902C000E1D17 /* wrap_WheelJoint.cpp in Sources */,
 				FA0B7DDC1A95902C000E1D17 /* wrap_BezierCurve.cpp in Sources */,
 				FA0B7AF71A958EA3000E1D17 /* luasocket.c in Sources */,

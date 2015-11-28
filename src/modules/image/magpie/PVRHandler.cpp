@@ -237,20 +237,11 @@ static CompressedImageData::Format convertFormat(PVRV3PixelFormat format, PVRV3C
 	case ePVRTPF_DXT5:
 		return CompressedImageData::FORMAT_DXT5;
 	case ePVRTPF_BC4:
-		if (snorm)
-			return CompressedImageData::FORMAT_BC4s;
-		else
-			return CompressedImageData::FORMAT_BC4;
+		return snorm ? CompressedImageData::FORMAT_BC4s : CompressedImageData::FORMAT_BC4;
 	case ePVRTPF_BC5:
-		if (snorm)
-			return CompressedImageData::FORMAT_BC5s;
-		else
-			return CompressedImageData::FORMAT_BC5;
+		return snorm ? CompressedImageData::FORMAT_BC5s : CompressedImageData::FORMAT_BC5;
 	case ePVRTPF_BC6:
-		if (snorm)
-			return CompressedImageData::FORMAT_BC6Hs;
-		else
-			return CompressedImageData::FORMAT_BC6H;
+		return snorm ? CompressedImageData::FORMAT_BC6Hs : CompressedImageData::FORMAT_BC6H;
 	case ePVRTPF_BC7:
 		return CompressedImageData::FORMAT_BC7;
 	case ePVRTPF_ETC2_RGB:
@@ -260,15 +251,37 @@ static CompressedImageData::Format convertFormat(PVRV3PixelFormat format, PVRV3C
 	case ePVRTPF_ETC2_RGBA1:
 		return CompressedImageData::FORMAT_ETC2_RGBA1;
 	case ePVRTPF_EAC_R:
-		if (snorm)
-			return CompressedImageData::FORMAT_EAC_Rs;
-		else
-			return CompressedImageData::FORMAT_EAC_R;
+		return snorm ? CompressedImageData::FORMAT_EAC_Rs : CompressedImageData::FORMAT_EAC_R;
 	case ePVRTPF_EAC_RG:
-		if (snorm)
-			return CompressedImageData::FORMAT_EAC_RGs;
-		else
-			return CompressedImageData::FORMAT_EAC_RG;
+		return snorm ? CompressedImageData::FORMAT_EAC_RGs : CompressedImageData::FORMAT_EAC_RG;
+	case ePVRTPF_ASTC_4x4:
+		return CompressedImageData::FORMAT_ASTC_4x4;
+	case ePVRTPF_ASTC_5x4:
+		return CompressedImageData::FORMAT_ASTC_5x4;
+	case ePVRTPF_ASTC_5x5:
+		return CompressedImageData::FORMAT_ASTC_5x5;
+	case ePVRTPF_ASTC_6x5:
+		return CompressedImageData::FORMAT_ASTC_6x5;
+	case ePVRTPF_ASTC_6x6:
+		return CompressedImageData::FORMAT_ASTC_6x6;
+	case ePVRTPF_ASTC_8x5:
+		return CompressedImageData::FORMAT_ASTC_8x5;
+	case ePVRTPF_ASTC_8x6:
+		return CompressedImageData::FORMAT_ASTC_8x6;
+	case ePVRTPF_ASTC_8x8:
+		return CompressedImageData::FORMAT_ASTC_8x8;
+	case ePVRTPF_ASTC_10x5:
+		return CompressedImageData::FORMAT_ASTC_10x5;
+	case ePVRTPF_ASTC_10x6:
+		return CompressedImageData::FORMAT_ASTC_10x6;
+	case ePVRTPF_ASTC_10x8:
+		return CompressedImageData::FORMAT_ASTC_10x8;
+	case ePVRTPF_ASTC_10x10:
+		return CompressedImageData::FORMAT_ASTC_10x10;
+	case ePVRTPF_ASTC_12x10:
+		return CompressedImageData::FORMAT_ASTC_12x10;
+	case ePVRTPF_ASTC_12x12:
+		return CompressedImageData::FORMAT_ASTC_12x12;
 	default:
 		return CompressedImageData::FORMAT_UNKNOWN;
 	}
@@ -314,8 +327,10 @@ int getBitsPerPixel(uint64 pixelformat)
 	}
 }
 
-void getFormatMinDimensions(uint64 pixelformat, int &minX, int &minY)
+void getFormatMinDimensions(uint64 pixelformat, int &minX, int &minY, int &minZ)
 {
+	minZ = 1;
+
 	switch (pixelformat)
 	{
 	case ePVRTPF_PVRTCI_2bpp_RGB:
@@ -351,6 +366,62 @@ void getFormatMinDimensions(uint64 pixelformat, int &minX, int &minY)
 	case ePVRTPF_EAC_RG:
 		minX = minY = 4;
 		break;
+	case ePVRTPF_ASTC_4x4:
+		minX = 4;
+		minY = 4;
+		break;
+	case ePVRTPF_ASTC_5x4:
+		minX = 5;
+		minY = 4;
+		break;
+	case ePVRTPF_ASTC_5x5:
+		minX = 5;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_6x5:
+		minX = 6;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_6x6:
+		minX = 6;
+		minY = 6;
+		break;
+	case ePVRTPF_ASTC_8x5:
+		minX = 8;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_8x6:
+		minX = 8;
+		minY = 6;
+		break;
+	case ePVRTPF_ASTC_8x8:
+		minX = 8;
+		minY = 8;
+		break;
+	case ePVRTPF_ASTC_10x5:
+		minX = 10;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_10x6:
+		minX = 10;
+		minY = 6;
+		break;
+	case ePVRTPF_ASTC_10x8:
+		minX = 10;
+		minY = 8;
+		break;
+	case ePVRTPF_ASTC_10x10:
+		minX = 10;
+		minY = 10;
+		break;
+	case ePVRTPF_ASTC_12x10:
+		minX = 12;
+		minY = 10;
+		break;
+	case ePVRTPF_ASTC_12x12:
+		minX = 12;
+		minY = 12;
+		break;
 	default: // We don't handle all possible formats, but that's fine.
 		minX = minY = 1;
 		break;
@@ -361,17 +432,22 @@ size_t getMipLevelSize(const PVRTexHeaderV3 &header, int miplevel)
 {
 	int smallestwidth = 1;
 	int smallestheight = 1;
-	getFormatMinDimensions(header.pixelFormat, smallestwidth, smallestheight);
+	int smallestdepth = 1;
+	getFormatMinDimensions(header.pixelFormat, smallestwidth, smallestheight, smallestdepth);
 
 	int width = std::max((int) header.width >> miplevel, 1);
 	int height = std::max((int) header.height >> miplevel, 1);
 	int depth = std::max((int) header.depth >> miplevel, 1);
 
 	// Pad the dimensions.
-	width += (-width) % smallestwidth;
-	height += (-height) % smallestheight;
+	width = ((width + smallestwidth - 1) / smallestwidth) * smallestwidth;
+	height = ((height + smallestheight - 1) / smallestheight) * smallestheight;
+	depth = ((depth + smallestdepth - 1) / smallestdepth) * smallestdepth;
 
-	return getBitsPerPixel(header.pixelFormat) * width * height * depth / 8;
+	if (header.pixelFormat >= ePVRTPF_ASTC_4x4 && header.pixelFormat <= ePVRTPF_ASTC_12x12)
+		return (width / smallestwidth) * (height / smallestheight) * (depth / smallestdepth) * (128 / 8);
+	else
+		return getBitsPerPixel(header.pixelFormat) * width * height * depth / 8;
 }
 
 } // Anonymous namespace.

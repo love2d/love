@@ -30,6 +30,7 @@
 #include "PVRHandler.h"
 #include "KTXHandler.h"
 #include "PKMHandler.h"
+#include "ASTCHandler.h"
 
 namespace love
 {
@@ -47,6 +48,7 @@ Image::Image()
 	compressedFormatHandlers.push_back(new PVRHandler);
 	compressedFormatHandlers.push_back(new KTXHandler);
 	compressedFormatHandlers.push_back(new PKMHandler);
+	compressedFormatHandlers.push_back(new ASTCHandler);
 }
 
 Image::~Image()

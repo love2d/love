@@ -355,6 +355,8 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 )
 
 set(LOVE_SRC_MODULE_IMAGE_MAGPIE
+	src/modules/image/magpie/ASTCHandler.cpp
+	src/modules/image/magpie/ASTCHandler.h
 	src/modules/image/magpie/CompressedImageData.cpp
 	src/modules/image/magpie/CompressedImageData.h
 	src/modules/image/magpie/CompressedFormatHandler.h
