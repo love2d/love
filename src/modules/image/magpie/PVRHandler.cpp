@@ -59,19 +59,59 @@ struct PVRTexHeaderV3
 
 enum PVRV3PixelFormat
 {
-	ePVRTPF_PVRTCI_2bpp_RGB = 0x00,
+	ePVRTPF_PVRTCI_2bpp_RGB = 0,
 	ePVRTPF_PVRTCI_2bpp_RGBA,
 	ePVRTPF_PVRTCI_4bpp_RGB,
 	ePVRTPF_PVRTCI_4bpp_RGBA,
-	ePVRTPF_PVRTCII_2bpp,
+	ePVRTPF_PVRTCII_2bpp = 4,
 	ePVRTPF_PVRTCII_4bpp,
-	ePVRTPF_ETC1 = 0x06,
-	ePVRTPF_DXT1,
+	ePVRTPF_ETC1 = 6,
+	ePVRTPF_DXT1 = 7,
 	ePVRTPF_DXT2,
 	ePVRTPF_DXT3,
 	ePVRTPF_DXT4,
 	ePVRTPF_DXT5,
-	ePVRTF_UNKNOWN_FORMAT = 0x7F
+	ePVRTPF_BC4,
+	ePVRTPF_BC5,
+	ePVRTPF_BC6,
+	ePVRTPF_BC7,
+	ePVRTPF_ETC2_RGB = 22,
+	ePVRTPF_ETC2_RGBA,
+	ePVRTPF_ETC2_RGBA1,
+	ePVRTPF_EAC_R = 25,
+	ePVRTPF_EAC_RG,
+	ePVRTPF_ASTC_4x4 = 27,
+	ePVRTPF_ASTC_5x4,
+	ePVRTPF_ASTC_5x5,
+	ePVRTPF_ASTC_6x5,
+	ePVRTPF_ASTC_6x6,
+	ePVRTPF_ASTC_8x5,
+	ePVRTPF_ASTC_8x6,
+	ePVRTPF_ASTC_8x8,
+	ePVRTPF_ASTC_10x5,
+	ePVRTPF_ASTC_10x6,
+	ePVRTPF_ASTC_10x8,
+	ePVRTPF_ASTC_10x10,
+	ePVRTPF_ASTC_12x10,
+	ePVRTPF_ASTC_12x12,
+	ePVRTPF_UNKNOWN_FORMAT = 0x7F
+};
+
+enum PVRV3ChannelType
+{
+	ePVRTCT_UNORM8 = 0,
+	ePVRTCT_SNORM8,
+	ePVRTCT_UINT8,
+	ePVRTCT_SINT8,
+	ePVRTCT_UNORM16,
+	ePVRTCT_SNORM16,
+	ePVRTCT_UINT16,
+	ePVRTCT_SINT16,
+	ePVRTCT_UNORM32,
+	ePVRTCT_SNORM32,
+	ePVRTCT_UINT32,
+	ePVRTCT_SINT32,
+	ePVRTCT_FLOAT
 };
 
 // 'P' 'V' 'R' '!'
@@ -158,13 +198,26 @@ void ConvertPVRHeader(PVRTexHeaderV2 header2, PVRTexHeaderV3 *header3)
 		header3->pixelFormat = ePVRTPF_ETC1;
 		break;
 	default:
-		header3->pixelFormat = ePVRTF_UNKNOWN_FORMAT;
+		header3->pixelFormat = ePVRTPF_UNKNOWN_FORMAT;
 		break;
 	}
 }
 
-static CompressedImageData::Format convertFormat(PVRV3PixelFormat format)
+static CompressedImageData::Format convertFormat(PVRV3PixelFormat format, PVRV3ChannelType channeltype)
 {
+	bool snorm = false;
+
+	switch (channeltype)
+	{
+	case ePVRTCT_SNORM8:
+	case ePVRTCT_SNORM16:
+	case ePVRTCT_SNORM32:
+		snorm = true;
+		break;
+	default:
+		break;
+	}
+
 	switch (format)
 	{
 	case ePVRTPF_PVRTCI_2bpp_RGB:
@@ -183,6 +236,39 @@ static CompressedImageData::Format convertFormat(PVRV3PixelFormat format)
 		return CompressedImageData::FORMAT_DXT3;
 	case ePVRTPF_DXT5:
 		return CompressedImageData::FORMAT_DXT5;
+	case ePVRTPF_BC4:
+		if (snorm)
+			return CompressedImageData::FORMAT_BC4s;
+		else
+			return CompressedImageData::FORMAT_BC4;
+	case ePVRTPF_BC5:
+		if (snorm)
+			return CompressedImageData::FORMAT_BC5s;
+		else
+			return CompressedImageData::FORMAT_BC5;
+	case ePVRTPF_BC6:
+		if (snorm)
+			return CompressedImageData::FORMAT_BC6Hs;
+		else
+			return CompressedImageData::FORMAT_BC6H;
+	case ePVRTPF_BC7:
+		return CompressedImageData::FORMAT_BC7;
+	case ePVRTPF_ETC2_RGB:
+		return CompressedImageData::FORMAT_ETC2_RGB;
+	case ePVRTPF_ETC2_RGBA:
+		return CompressedImageData::FORMAT_ETC2_RGBA;
+	case ePVRTPF_ETC2_RGBA1:
+		return CompressedImageData::FORMAT_ETC2_RGBA1;
+	case ePVRTPF_EAC_R:
+		if (snorm)
+			return CompressedImageData::FORMAT_EAC_Rs;
+		else
+			return CompressedImageData::FORMAT_EAC_R;
+	case ePVRTPF_EAC_RG:
+		if (snorm)
+			return CompressedImageData::FORMAT_EAC_RGs;
+		else
+			return CompressedImageData::FORMAT_EAC_RG;
 	default:
 		return CompressedImageData::FORMAT_UNKNOWN;
 	}
@@ -208,11 +294,20 @@ int getBitsPerPixel(uint64 pixelformat)
 	case ePVRTPF_PVRTCII_4bpp:
 	case ePVRTPF_ETC1:
 	case ePVRTPF_DXT1:
+	case ePVRTPF_BC4:
+	case ePVRTPF_ETC2_RGB:
+	case ePVRTPF_ETC2_RGBA1:
+	case ePVRTPF_EAC_R:
 		return 4;
 	case ePVRTPF_DXT2:
 	case ePVRTPF_DXT3:
 	case ePVRTPF_DXT4:
 	case ePVRTPF_DXT5:
+	case ePVRTPF_BC5:
+	case ePVRTPF_BC6:
+	case ePVRTPF_BC7:
+	case ePVRTPF_ETC2_RGBA:
+	case ePVRTPF_EAC_RG:
 		return 8;
 	default:
 		return 0;
@@ -244,7 +339,16 @@ void getFormatMinDimensions(uint64 pixelformat, int &minX, int &minY)
 	case ePVRTPF_DXT3:
 	case ePVRTPF_DXT4:
 	case ePVRTPF_DXT5:
+	case ePVRTPF_BC4:
+	case ePVRTPF_BC5:
+	case ePVRTPF_BC6:
+	case ePVRTPF_BC7:
 	case ePVRTPF_ETC1:
+	case ePVRTPF_ETC2_RGB:
+	case ePVRTPF_ETC2_RGBA:
+	case ePVRTPF_ETC2_RGBA1:
+	case ePVRTPF_EAC_R:
+	case ePVRTPF_EAC_RG:
 		minX = minY = 4;
 		break;
 	default: // We don't handle all possible formats, but that's fine.
@@ -324,7 +428,10 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	if (header3.depth > 1)
 		throw love::Exception("Image depths greater than 1 in PVR files are unsupported.");
 
-	CompressedImageData::Format cformat = convertFormat((PVRV3PixelFormat) header3.pixelFormat);
+	PVRV3PixelFormat pixelformat = (PVRV3PixelFormat) header3.pixelFormat;
+	PVRV3ChannelType channeltype = (PVRV3ChannelType) header3.channelType;
+
+	CompressedImageData::Format cformat = convertFormat(pixelformat, channeltype);
 
 	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PVR file: unsupported image format.");

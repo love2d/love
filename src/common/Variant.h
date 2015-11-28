@@ -71,7 +71,7 @@ public:
 			size_t len;
 		} string;
 		void *userdata;
-		std::vector<std::pair<Variant*, Variant*> > *table;
+		std::vector<std::pair<Variant*, Variant*>> *table;
 	} data;
 
 private:
