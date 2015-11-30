@@ -43,6 +43,7 @@ public:
 	enum WrapMode
 	{
 		WRAP_CLAMP,
+		WRAP_CLAMP_ZERO,
 		WRAP_REPEAT,
 		WRAP_MIRRORED_REPEAT,
 		WRAP_MAX_ENUM

@@ -602,24 +602,35 @@ void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 		f.anisotropy = 1.0f;
 }
 
+GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
+{
+	if (wmode == Texture::WRAP_CLAMP_ZERO && !isClampZeroTextureWrapSupported())
+		wmode = Texture::WRAP_CLAMP;
+
+	switch (wmode)
+	{
+	case Texture::WRAP_CLAMP:
+	default:
+		return GL_CLAMP_TO_EDGE;
+	case Texture::WRAP_CLAMP_ZERO:
+		return GL_CLAMP_TO_BORDER;
+	case Texture::WRAP_REPEAT:
+		return GL_REPEAT;
+	case Texture::WRAP_MIRRORED_REPEAT:
+		return GL_MIRRORED_REPEAT;
+	}
+
+}
+
 void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
 {
-	auto glWrapMode = [](Texture::WrapMode wmode) -> GLint
-	{
-		switch (wmode)
-		{
-		case Texture::WRAP_CLAMP:
-		default:
-			return GL_CLAMP_TO_EDGE;
-		case Texture::WRAP_REPEAT:
-			return GL_REPEAT;
-		case Texture::WRAP_MIRRORED_REPEAT:
-			return GL_MIRRORED_REPEAT;
-		}
-	};
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, getGLWrapMode(w.t));
+}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode(w.s));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode(w.t));
+bool OpenGL::isClampZeroTextureWrapSupported() const
+{
+	return GLAD_VERSION_1_3 || GLAD_EXT_texture_border_clamp || GLAD_NV_texture_border_clamp;
 }
 
 int OpenGL::getMaxTextureSize() const

@@ -312,6 +312,8 @@ public:
 	 **/
 	void setTextureWrap(const graphics::Texture::Wrap &w);
 
+	bool isClampZeroTextureWrapSupported() const;
+
 	/**
 	 * Returns the maximum supported width or height of a texture.
 	 **/
@@ -353,6 +355,8 @@ private:
 	void initMaxValues();
 	void initMatrices();
 	void createDefaultTexture();
+
+	GLint getGLWrapMode(Texture::WrapMode wmode);
 
 	bool contextInitialized;
 

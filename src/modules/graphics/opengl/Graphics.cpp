@@ -1491,6 +1491,8 @@ bool Graphics::isSupported(Support feature) const
 	{
 	case SUPPORT_MULTI_CANVAS_FORMATS:
 		return Canvas::isMultiFormatMultiCanvasSupported();
+	case SUPPORT_CLAMP_ZERO:
+		return gl.isClampZeroTextureWrapSupported();
 	default:
 		return false;
 	}

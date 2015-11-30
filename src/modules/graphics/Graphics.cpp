@@ -182,6 +182,7 @@ StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM> Graphics::lineJoins(
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM>::Entry Graphics::supportEntries[] =
 {
 	{ "multicanvasformats", SUPPORT_MULTI_CANVAS_FORMATS },
+	{ "clampzero", SUPPORT_CLAMP_ZERO },
 };
 
 StringMap<Graphics::Support, Graphics::SUPPORT_MAX_ENUM> Graphics::support(Graphics::supportEntries, sizeof(Graphics::supportEntries));
