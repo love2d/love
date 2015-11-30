@@ -361,6 +361,14 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 		wrap.s = wrap.t = WRAP_CLAMP;
 	}
 
+	if (!gl.isClampZeroTextureWrapSupported())
+	{
+		if (wrap.s == WRAP_CLAMP_ZERO)
+			wrap.s = WRAP_CLAMP;
+		if (wrap.t == WRAP_CLAMP_ZERO)
+			wrap.t = WRAP_CLAMP;
+	}
+
 	gl.bindTexture(texture);
 	gl.setTextureWrap(wrap);
 

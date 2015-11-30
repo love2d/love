@@ -604,9 +604,6 @@ void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 
 GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
 {
-	if (wmode == Texture::WRAP_CLAMP_ZERO && !isClampZeroTextureWrapSupported())
-		wmode = Texture::WRAP_CLAMP;
-
 	switch (wmode)
 	{
 	case Texture::WRAP_CLAMP:
