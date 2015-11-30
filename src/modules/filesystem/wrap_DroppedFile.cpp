@@ -31,31 +31,9 @@ DroppedFile *luax_checkdroppedfile(lua_State *L, int idx)
 	return luax_checktype<DroppedFile>(L, idx, FILESYSTEM_DROPPED_FILE_ID);
 }
 
-static const luaL_Reg functions[] =
-{
-	// Inherits from File.
-	{ "getSize", w_File_getSize },
-	{ "open", w_File_open },
-	{ "close", w_File_close },
-	{ "isOpen", w_File_isOpen },
-	{ "read", w_File_read },
-	{ "write", w_File_write },
-	{ "flush", w_File_flush },
-	{ "isEOF", w_File_isEOF },
-	{ "tell", w_File_tell },
-	{ "seek", w_File_seek },
-	{ "lines", w_File_lines },
-	{ "setBuffer", w_File_setBuffer },
-	{ "getBuffer", w_File_getBuffer },
-	{ "getMode", w_File_getMode },
-	{ "getFilename", w_File_getFilename },
-	{ "getExtension", w_File_getExtension },
-	{ 0, 0 }
-};
-
 extern "C" int luaopen_droppedfile(lua_State *L)
 {
-	return luax_register_type(L, FILESYSTEM_DROPPED_FILE_ID, functions);
+	return luax_register_type(L, FILESYSTEM_DROPPED_FILE_ID, "DroppedFile", w_File_functions, nullptr);
 }
 
 } // filesystem

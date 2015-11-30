@@ -137,17 +137,8 @@ int w_Image_getFlags(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Image_functions[] =
 {
-	// From wrap_Texture.
-	{ "getWidth", w_Texture_getWidth },
-	{ "getHeight", w_Texture_getHeight },
-	{ "getDimensions", w_Texture_getDimensions },
-	{ "setFilter", w_Texture_setFilter },
-	{ "getFilter", w_Texture_getFilter },
-	{ "setWrap", w_Texture_setWrap },
-	{ "getWrap", w_Texture_getWrap },
-
 	{ "setMipmapFilter", w_Image_setMipmapFilter },
 	{ "getMipmapFilter", w_Image_getMipmapFilter },
 	{ "isCompressed", w_Image_isCompressed },
@@ -159,7 +150,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_image(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_IMAGE_ID, functions);
+	return luax_register_type(L, GRAPHICS_IMAGE_ID, "Image", w_Texture_functions, w_Image_functions, nullptr);
 }
 
 } // opengl

@@ -30,13 +30,6 @@ namespace love
 namespace event
 {
 
-int w_pump(lua_State *L);
-int w_poll(lua_State *L);
-int w_wait(lua_State *L);
-int w_push(lua_State *L);
-int w_clear(lua_State *L);
-int w_quit(lua_State *L);
-
 extern "C" LOVE_EXPORT int luaopen_love_event(lua_State *L);
 
 } // event

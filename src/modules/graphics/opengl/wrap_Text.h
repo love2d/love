@@ -33,15 +33,6 @@ namespace opengl
 
 Text *luax_checktext(lua_State *L, int idx);
 void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings);
-int w_Text_set(lua_State *L);
-int w_Text_setf(lua_State *L);
-int w_Text_add(lua_State *L);
-int w_Text_addf(lua_State *L);
-int w_Text_clear(lua_State *L);
-int w_Text_setFont(lua_State *L);
-int w_Text_getFont(lua_State *L);
-int w_Text_getWidth(lua_State *L);
-int w_Text_getHeight(lua_State *L);
 extern "C" int luaopen_text(lua_State *L);
 
 } // opengl

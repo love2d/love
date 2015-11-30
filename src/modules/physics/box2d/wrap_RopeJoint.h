@@ -34,7 +34,6 @@ namespace box2d
 {
 
 RopeJoint *luax_checkropejoint(lua_State *L, int idx);
-int w_RopeJoint_getMaxLength(lua_State *L);
 extern "C" int luaopen_ropejoint(lua_State *L);
 
 } // box2d

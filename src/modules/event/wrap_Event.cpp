@@ -141,7 +141,7 @@ extern "C" int luaopen_love_event(lua_State *L)
 	w.name = "event";
 	w.type = MODULE_ID;
 	w.functions = functions;
-	w.types = 0;
+	w.types = nullptr;
 
 	return luax_register_module(L, w);
 }

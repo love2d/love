@@ -110,7 +110,7 @@ int w_MotorJoint_getCorrectionFactor(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_MotorJoint_functions[] =
 {
 	{ "setLinearOffset", w_MotorJoint_setLinearOffset },
 	{ "getLinearOffset", w_MotorJoint_getLinearOffset },
@@ -122,23 +122,12 @@ static const luaL_Reg functions[] =
 	{ "getMaxTorque", w_MotorJoint_getMaxTorque },
 	{ "setCorrectionFactor", w_MotorJoint_setCorrectionFactor },
 	{ "getCorrectionFactor", w_MotorJoint_getCorrectionFactor },
-	// From Joint.
-	{ "getType", w_Joint_getType },
-	{ "getBodies", w_Joint_getBodies },
-	{ "getAnchors", w_Joint_getAnchors },
-	{ "getReactionForce", w_Joint_getReactionForce },
-	{ "getReactionTorque", w_Joint_getReactionTorque },
-	{ "getCollideConnected", w_Joint_getCollideConnected },
-	{ "setUserData", w_Joint_setUserData },
-	{ "getUserData", w_Joint_getUserData },
-	{ "destroy", w_Joint_destroy },
-	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_motorjoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_MOTOR_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_MOTOR_JOINT_ID, "MotorJoint", w_Joint_functions, w_MotorJoint_functions, nullptr);
 }
 
 

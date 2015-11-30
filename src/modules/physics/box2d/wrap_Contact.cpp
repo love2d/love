@@ -158,30 +158,30 @@ int w_Contact_isDestroyed(lua_State *L)
 	return 1;
 }
 
+static const luaL_Reg w_Contact_functions[] =
+{
+	{ "getPositions", w_Contact_getPositions },
+	{ "getNormal", w_Contact_getNormal },
+	{ "getFriction", w_Contact_getFriction },
+	{ "getRestitution", w_Contact_getRestitution },
+	{ "isEnabled", w_Contact_isEnabled },
+	{ "isTouching", w_Contact_isTouching },
+	{ "setFriction", w_Contact_setFriction },
+	{ "setRestitution", w_Contact_setRestitution },
+	{ "setEnabled", w_Contact_setEnabled },
+	{ "resetFriction", w_Contact_resetFriction },
+	{ "resetRestitution", w_Contact_resetRestitution },
+	{ "setTangentSpeed", w_Contact_setTangentSpeed },
+	{ "getTangentSpeed", w_Contact_getTangentSpeed },
+	{ "getChildren", w_Contact_getChildren },
+	{ "getFixtures", w_Contact_getFixtures },
+	{ "isDestroyed", w_Contact_isDestroyed },
+	{ 0, 0 }
+};
+
 extern "C" int luaopen_contact(lua_State *L)
 {
-	static const luaL_Reg functions[] =
-	{
-		{ "getPositions", w_Contact_getPositions },
-		{ "getNormal", w_Contact_getNormal },
-		{ "getFriction", w_Contact_getFriction },
-		{ "getRestitution", w_Contact_getRestitution },
-		{ "isEnabled", w_Contact_isEnabled },
-		{ "isTouching", w_Contact_isTouching },
-		{ "setFriction", w_Contact_setFriction },
-		{ "setRestitution", w_Contact_setRestitution },
-		{ "setEnabled", w_Contact_setEnabled },
-		{ "resetFriction", w_Contact_resetFriction },
-		{ "resetRestitution", w_Contact_resetRestitution },
-		{ "setTangentSpeed", w_Contact_setTangentSpeed },
-		{ "getTangentSpeed", w_Contact_getTangentSpeed },
-		{ "getChildren", w_Contact_getChildren },
-		{ "getFixtures", w_Contact_getFixtures },
-		{ "isDestroyed", w_Contact_isDestroyed },
-		{ 0, 0 }
-	};
-
-	return luax_register_type(L, PHYSICS_CONTACT_ID, functions);
+	return luax_register_type(L, PHYSICS_CONTACT_ID, "Contact", w_Contact_functions, nullptr);
 }
 
 } // box2d

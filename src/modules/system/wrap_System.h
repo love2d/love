@@ -30,13 +30,6 @@ namespace love
 namespace system
 {
 
-int w_getOS(lua_State *L);
-int w_getProcessorCount(lua_State *L);
-int w_setClipboardText(lua_State *L);
-int w_getClipboardText(lua_State *L);
-int w_getPowerInfo(lua_State *L);
-int w_openURL(lua_State *L);
-int w_vibrate(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_system(lua_State *L);
 
 } // system

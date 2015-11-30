@@ -413,7 +413,7 @@ int w_File_getExtension(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+const luaL_Reg w_File_functions[] =
 {
 	{ "getSize", w_File_getSize },
 	{ "open", w_File_open },
@@ -436,7 +436,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_file(lua_State *L)
 {
-	return luax_register_type(L, FILESYSTEM_FILE_ID, functions);
+	return luax_register_type(L, FILESYSTEM_FILE_ID, "File", w_File_functions, nullptr);
 }
 
 } // filesystem

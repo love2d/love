@@ -33,22 +33,6 @@ namespace box2d
 {
 
 Contact *luax_checkcontact(lua_State *L, int idx);
-int w_Contact_getPositions(lua_State *L);
-int w_Contact_getNormal(lua_State *L);
-int w_Contact_getFriction(lua_State *L);
-int w_Contact_getRestitution(lua_State *L);
-int w_Contact_isEnabled(lua_State *L);
-int w_Contact_isTouching(lua_State *L);
-int w_Contact_setFriction(lua_State *L);
-int w_Contact_setRestitution(lua_State *L);
-int w_Contact_setEnabled(lua_State *L);
-int w_Contact_resetFriction(lua_State *L);
-int w_Contact_resetRestitution(lua_State *L);
-int w_Contact_setTangentSpeed(lua_State *L);
-int w_Contact_getTangentSpeed(lua_State *L);
-int w_Contact_getChildren(lua_State *L);
-int w_Contact_getFixtures(lua_State *L);
-int w_Contact_isDestroyed(lua_State *L);
 extern "C" int luaopen_contact(lua_State *L);
 
 } // box2d

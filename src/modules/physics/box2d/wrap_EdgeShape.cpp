@@ -39,23 +39,15 @@ int w_EdgeShape_getPoints(lua_State *L)
 	return t->getPoints(L);
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_EdgeShape_functions[] =
 {
 	{ "getPoints", w_EdgeShape_getPoints },
-	// From Shape.
-	{ "getType", w_Shape_getType },
-	{ "getRadius", w_Shape_getRadius },
-	{ "getChildCount", w_Shape_getChildCount },
-	{ "testPoint", w_Shape_testPoint },
-	{ "rayCast", w_Shape_rayCast },
-	{ "computeAABB", w_Shape_computeAABB },
-	{ "computeMass", w_Shape_computeMass },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_edgeshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_EDGE_SHAPE_ID, functions);
+	return luax_register_type(L, PHYSICS_EDGE_SHAPE_ID, "EdgeShape", w_Shape_functions, w_EdgeShape_functions, nullptr);
 }
 
 } // box2d

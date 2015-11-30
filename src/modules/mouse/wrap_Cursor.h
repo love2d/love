@@ -31,7 +31,6 @@ namespace mouse
 {
 
 Cursor *luax_checkcursor(lua_State *L, int idx);
-int w_Cursor_getType(lua_State *L);
 extern "C" int luaopen_cursor(lua_State *L);
 
 } // mouse

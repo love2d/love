@@ -31,11 +31,6 @@ namespace image
 {
 
 CompressedImageData *luax_checkcompressedimagedata(lua_State *L, int idx);
-int w_CompressedImageData_getWidth(lua_State *L);
-int w_CompressedImageData_getHeight(lua_State *L);
-int w_CompressedImageData_getDimensions(lua_State *L);
-int w_CompressedImageData_getMipmapCount(lua_State *L);
-int w_CompressedImageData_getFormat(lua_State *L);
 extern "C" int luaopen_compressedimagedata(lua_State *L);
 
 } // image

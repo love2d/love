@@ -154,7 +154,7 @@ int w_Joint_isDestroyed(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+const luaL_Reg w_Joint_functions[] =
 {
 	{ "getType", w_Joint_getType },
 	{ "getBodies", w_Joint_getBodies },
@@ -171,7 +171,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_joint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_JOINT_ID, "Joint", w_Joint_functions, nullptr);
 }
 
 } // box2d

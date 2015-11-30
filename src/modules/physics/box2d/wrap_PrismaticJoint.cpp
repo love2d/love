@@ -164,7 +164,7 @@ int w_PrismaticJoint_getLimits(lua_State *L)
 	return t->getLimits(L);
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_PrismaticJoint_functions[] =
 {
 	{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
 	{ "getJointSpeed", w_PrismaticJoint_getJointSpeed },
@@ -183,23 +183,12 @@ static const luaL_Reg functions[] =
 	{ "getLowerLimit", w_PrismaticJoint_getLowerLimit },
 	{ "getUpperLimit", w_PrismaticJoint_getUpperLimit },
 	{ "getLimits", w_PrismaticJoint_getLimits },
-	// From Joint.
-	{ "getType", w_Joint_getType },
-	{ "getBodies", w_Joint_getBodies },
-	{ "getAnchors", w_Joint_getAnchors },
-	{ "getReactionForce", w_Joint_getReactionForce },
-	{ "getReactionTorque", w_Joint_getReactionTorque },
-	{ "getCollideConnected", w_Joint_getCollideConnected },
-	{ "setUserData", w_Joint_setUserData },
-	{ "getUserData", w_Joint_getUserData },
-	{ "destroy", w_Joint_destroy },
-	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_prismaticjoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_PRISMATIC_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_PRISMATIC_JOINT_ID, "PrismaticJoint", w_Joint_functions, w_PrismaticJoint_functions, nullptr);
 }
 
 } // box2d

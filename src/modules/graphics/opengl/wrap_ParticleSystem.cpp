@@ -705,7 +705,7 @@ int w_ParticleSystem_update(lua_State *L)
 	return 0;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_ParticleSystem_functions[] =
 {
 	{ "clone", w_ParticleSystem_clone },
 	{ "setTexture", w_ParticleSystem_setTexture },
@@ -772,7 +772,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_particlesystem(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_PARTICLE_SYSTEM_ID, functions);
+	return luax_register_type(L, GRAPHICS_PARTICLE_SYSTEM_ID, "ParticleSystem", w_ParticleSystem_functions, nullptr);
 }
 
 } // opengl

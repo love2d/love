@@ -115,13 +115,8 @@ int w_GlyphData_getFormat(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+const luaL_Reg w_GlyphData_functions[] =
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-
 	{ "getWidth", w_GlyphData_getWidth },
 	{ "getHeight", w_GlyphData_getHeight },
 	{ "getDimensions", w_GlyphData_getDimensions },
@@ -136,7 +131,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_glyphdata(lua_State *L)
 {
-	return luax_register_type(L, FONT_GLYPH_DATA_ID, functions);
+	return luax_register_type(L, FONT_GLYPH_DATA_ID, "GlyphData", w_Data_functions, w_GlyphData_functions, nullptr);
 }
 
 } // font

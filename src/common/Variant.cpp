@@ -24,8 +24,6 @@
 namespace love
 {
 
-extern StringMap<Type, TYPE_MAX_ENUM> types;
-
 static love::Type extractudatatype(lua_State *L, int idx)
 {
 	Type t = INVALID_ID;
@@ -36,7 +34,7 @@ static love::Type extractudatatype(lua_State *L, int idx)
 	lua_pushvalue(L, idx);
 	int result = lua_pcall(L, 1, 1, 0);
 	if (result == 0)
-		types.find(lua_tostring(L, -1), t);
+		getTypeName(lua_tostring(L, -1), t);
 	if (result == 0 || result == LUA_ERRRUN)
 		lua_pop(L, 1);
 	return t;

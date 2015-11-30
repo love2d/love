@@ -144,7 +144,8 @@ int w_Channel_performAtomic(lua_State *L)
 	return lua_gettop(L) - 1;
 }
 
-static const luaL_Reg type_functions[] = {
+static const luaL_Reg w_Channel_functions[] =
+{
 	{ "push", w_Channel_push },
 	{ "supply", w_Channel_supply },
 	{ "pop", w_Channel_pop },
@@ -158,7 +159,7 @@ static const luaL_Reg type_functions[] = {
 
 extern "C" int luaopen_channel(lua_State *L)
 {
-	return luax_register_type(L, THREAD_CHANNEL_ID, type_functions);
+	return luax_register_type(L, THREAD_CHANNEL_ID, "Channel", w_Channel_functions, nullptr);
 }
 
 } // thread

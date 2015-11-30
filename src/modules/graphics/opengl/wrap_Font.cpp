@@ -184,7 +184,7 @@ int w_Font_setFallbacks(lua_State *L)
 	return 0;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Font_functions[] =
 {
 	{ "getHeight", w_Font_getHeight },
 	{ "getWidth", w_Font_getWidth },
@@ -203,7 +203,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_font(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_FONT_ID, functions);
+	return luax_register_type(L, GRAPHICS_FONT_ID, "Font", w_Font_functions, nullptr);
 }
 
 } // opengl

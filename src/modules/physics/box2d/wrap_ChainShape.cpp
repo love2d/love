@@ -98,7 +98,7 @@ int w_ChainShape_getPoints(lua_State *L)
 	return count*2;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_ChainShape_functions[] =
 {
 	{ "setNextVertex", w_ChainShape_setNextVertex },
 	{ "setPreviousVertex", w_ChainShape_setPreviousVertex },
@@ -106,20 +106,12 @@ static const luaL_Reg functions[] =
 	{ "getVertexCount", w_ChainShape_getVertexCount },
 	{ "getPoint", w_ChainShape_getPoint },
 	{ "getPoints", w_ChainShape_getPoints },
-	// From Shape.
-	{ "getType", w_Shape_getType },
-	{ "getRadius", w_Shape_getRadius },
-	{ "getChildCount", w_Shape_getChildCount },
-	{ "testPoint", w_Shape_testPoint },
-	{ "rayCast", w_Shape_rayCast },
-	{ "computeAABB", w_Shape_computeAABB },
-	{ "computeMass", w_Shape_computeMass },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_chainshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_CHAIN_SHAPE_ID, functions);
+	return luax_register_type(L, PHYSICS_CHAIN_SHAPE_ID, "ChainShape", w_Shape_functions, w_ChainShape_functions, nullptr);
 }
 
 } // box2d

@@ -30,13 +30,9 @@ namespace graphics
 {
 
 Texture *luax_checktexture(lua_State *L, int idx);
-int w_Texture_getWidth(lua_State *L);
-int w_Texture_getHeight(lua_State *L);
-int w_Texture_getDimensions(lua_State *L);
-int w_Texture_setFilter(lua_State *L);
-int w_Texture_getFilter(lua_State *L);
-int w_Texture_setWrap(lua_State *L);
-int w_Texture_getWrap(lua_State *L);
+extern "C" int luaopen_texture(lua_State *L);
+
+extern const luaL_Reg w_Texture_functions[];
 
 } // graphics
 } // love

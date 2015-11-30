@@ -64,7 +64,7 @@ int w_Quad_getViewport(lua_State *L)
 	return 4;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Quad_functions[] =
 {
 	{ "setViewport", w_Quad_setViewport },
 	{ "getViewport", w_Quad_getViewport },
@@ -73,7 +73,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_quad(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_QUAD_ID, functions);
+	return luax_register_type(L, GRAPHICS_QUAD_ID, "Quad", w_Quad_functions, nullptr);
 }
 
 } // graphics

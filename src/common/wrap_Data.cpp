@@ -59,7 +59,7 @@ const luaL_Reg w_Data_functions[] =
 
 int w_Data_open(lua_State *L)
 {
-	luax_register_type(L, DATA_ID, w_Data_functions);
+	luax_register_type(L, DATA_ID, "Data", w_Data_functions, nullptr);
 	return 0;
 }
 

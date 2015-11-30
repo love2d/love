@@ -96,7 +96,7 @@ int w_MouseJoint_getDampingRatio(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_MouseJoint_functions[] =
 {
 	{ "setTarget", w_MouseJoint_setTarget },
 	{ "getTarget", w_MouseJoint_getTarget },
@@ -106,23 +106,12 @@ static const luaL_Reg functions[] =
 	{ "getFrequency", w_MouseJoint_getFrequency },
 	{ "setDampingRatio", w_MouseJoint_setDampingRatio },
 	{ "getDampingRatio", w_MouseJoint_getDampingRatio },
-	// From Joint.
-	{ "getType", w_Joint_getType },
-	{ "getBodies", w_Joint_getBodies },
-	{ "getAnchors", w_Joint_getAnchors },
-	{ "getReactionForce", w_Joint_getReactionForce },
-	{ "getReactionTorque", w_Joint_getReactionTorque },
-	{ "getCollideConnected", w_Joint_getCollideConnected },
-	{ "setUserData", w_Joint_setUserData },
-	{ "getUserData", w_Joint_getUserData },
-	{ "destroy", w_Joint_destroy },
-	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_mousejoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_MOUSE_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_MOUSE_JOINT_ID, "MouseJoint", w_Joint_functions, w_MouseJoint_functions, nullptr);
 }
 
 } // box2d

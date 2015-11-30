@@ -135,7 +135,7 @@ int w_RandomGenerator_getState(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_RandomGenerator_functions[] =
 {
 	{ "random", w_RandomGenerator_random },
 	{ "randomNormal", w_RandomGenerator_randomNormal },
@@ -148,7 +148,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_randomgenerator(lua_State *L)
 {
-	return luax_register_type(L, MATH_RANDOM_GENERATOR_ID, functions);
+	return luax_register_type(L, MATH_RANDOM_GENERATOR_ID, "RandomGenerator", w_RandomGenerator_functions, nullptr);
 }
 
 } // math

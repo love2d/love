@@ -279,7 +279,7 @@ struct FFI_ImageData
 
 static FFI_ImageData ffifuncs =
 {
-	[](Proxy *p) -> void // lockMutex
+	[](Proxy *p) // lockMutex
 	{
 		// We don't do any type-checking for the Proxy here since these functions
 		// are always called from code which has already done type checking.
@@ -287,20 +287,15 @@ static FFI_ImageData ffifuncs =
 		i->getMutex()->lock();
 	},
 
-	[](Proxy *p) -> void // unlockMutex
+	[](Proxy *p) // unlockMutex
 	{
 		ImageData *i = (ImageData *) p->object;
 		i->getMutex()->unlock();
 	}
 };
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_ImageData_functions[] =
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-
 	{ "getWidth", w_ImageData_getWidth },
 	{ "getHeight", w_ImageData_getHeight },
 	{ "getDimensions", w_ImageData_getDimensions },
@@ -318,22 +313,22 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
-	// The last argument pushes the type's metatable onto the stack.
-	int ret = luax_register_type(L, IMAGE_IMAGE_DATA_ID, functions, true);
+	int ret = luax_register_type(L, IMAGE_IMAGE_DATA_ID, "ImageData", w_Data_functions, w_ImageData_functions, nullptr);
+
+	luax_gettypemetatable(L, IMAGE_IMAGE_DATA_ID);
 
 	// Load and execute ImageData.lua, sending the metatable and the ffi
 	// functions struct pointer as arguments.
-	if (ret > 0)
+	if (lua_istable(L, -1))
 	{
 		luaL_loadbuffer(L, imagedata_lua, sizeof(imagedata_lua), "ImageData.lua");
 		lua_pushvalue(L, -2);
 		lua_pushlightuserdata(L, &ffifuncs);
 		lua_call(L, 2, 0);
-
-		// Pop the metatable.
-		lua_pop(L, 1);
-		ret--;
 	}
+
+	// Pop the metatable.
+	lua_pop(L, 1);
 
 	return ret;
 }

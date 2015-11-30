@@ -32,8 +32,6 @@ namespace love
 namespace sound
 {
 
-int w_newSoundData(lua_State *L);
-int w_newDecoder(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_sound(lua_State *L);
 
 } // sound

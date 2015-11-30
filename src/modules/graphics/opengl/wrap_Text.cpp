@@ -222,7 +222,7 @@ int w_Text_getHeight(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Text_functions[] =
 {
 	{ "set", w_Text_set },
 	{ "setf", w_Text_setf },
@@ -238,7 +238,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_text(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_TEXT_ID, functions);
+	return luax_register_type(L, GRAPHICS_TEXT_ID, "Text", w_Text_functions, nullptr);
 }
 
 } // opengl

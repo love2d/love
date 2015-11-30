@@ -30,12 +30,6 @@ namespace love
 namespace timer
 {
 
-int w_step(lua_State *L);
-int w_getDelta(lua_State *L);
-int w_getFPS(lua_State *L);
-int w_getAverageDelta(lua_State *L);
-int w_sleep(lua_State *L);
-int w_getTime(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_timer(lua_State *L);
 
 } // timer

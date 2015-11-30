@@ -124,7 +124,7 @@ int w_Rasterizer_hasGlyphs(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+const luaL_Reg w_Rasterizer_functions[] =
 {
 	{ "getHeight", w_Rasterizer_getHeight },
 	{ "getAdvance", w_Rasterizer_getAdvance },
@@ -139,7 +139,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_rasterizer(lua_State *L)
 {
-	return luax_register_type(L, FONT_RASTERIZER_ID, functions);
+	return luax_register_type(L, FONT_RASTERIZER_ID, "Rasterizer", w_Rasterizer_functions, nullptr);
 }
 
 } // font

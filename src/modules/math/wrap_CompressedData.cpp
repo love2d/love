@@ -44,13 +44,8 @@ int w_CompressedData_getFormat(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_CompressedData_functions[] =
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-
 	{ "getFormat", w_CompressedData_getFormat },
 	{ 0, 0 },
 };
@@ -58,7 +53,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_compresseddata(lua_State *L)
 {
-	return luax_register_type(L, MATH_COMPRESSED_DATA_ID, functions);
+	return luax_register_type(L, MATH_COMPRESSED_DATA_ID, "CompressedData", w_Data_functions, w_CompressedData_functions, nullptr);
 }
 
 } // math

@@ -32,6 +32,25 @@ namespace sound
 
 #define instance() (Module::getInstance<Sound>(Module::M_SOUND))
 
+int w_newDecoder(lua_State *L)
+{
+	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+	int bufferSize = (int) luaL_optnumber(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
+
+	Decoder *t = nullptr;
+	luax_catchexcept(L,
+		[&]() { t = instance()->newDecoder(data, bufferSize); },
+		[&](bool) { data->release(); }
+	);
+
+	if (t == nullptr)
+		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
+
+	luax_pushtype(L, SOUND_DECODER_ID, t);
+	t->release();
+	return 1;
+}
+
 int w_newSoundData(lua_State *L)
 {
 	SoundData *t = 0;
@@ -63,30 +82,11 @@ int w_newSoundData(lua_State *L)
 	return 1;
 }
 
-int w_newDecoder(lua_State *L)
-{
-	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
-	int bufferSize = (int) luaL_optnumber(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
-
-	Decoder *t = nullptr;
-	luax_catchexcept(L,
-		[&]() { t = instance()->newDecoder(data, bufferSize); },
-		[&](bool) { data->release(); }
-	);
-
-	if (t == nullptr)
-		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
-
-	luax_pushtype(L, SOUND_DECODER_ID, t);
-	t->release();
-	return 1;
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "newSoundData",  w_newSoundData },
 	{ "newDecoder",  w_newDecoder },
+	{ "newSoundData",  w_newSoundData },
 	{ 0, 0 }
 };
 

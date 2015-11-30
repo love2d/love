@@ -213,7 +213,7 @@ int w_SpriteBatch_attachAttribute(lua_State *L)
 	return 0;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_SpriteBatch_functions[] =
 {
 	{ "add", w_SpriteBatch_add },
 	{ "set", w_SpriteBatch_set },
@@ -232,7 +232,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_spritebatch(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_SPRITE_BATCH_ID, functions);
+	return luax_register_type(L, GRAPHICS_SPRITE_BATCH_ID, "SpriteBatch", w_SpriteBatch_functions, nullptr);
 }
 
 } // opengl

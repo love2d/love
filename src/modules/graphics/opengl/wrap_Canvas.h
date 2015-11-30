@@ -35,10 +35,6 @@ namespace opengl
 
 //see Canvas.h
 Canvas *luax_checkcanvas(lua_State *L, int idx);
-int w_Canvas_renderTo(lua_State *L);
-int w_Canvas_newImageData(lua_State *L);
-int w_Canvas_getFormat(lua_State *L);
-int w_Canvas_getMSAA(lua_State *L);
 extern "C" int luaopen_canvas(lua_State *L);
 
 } // opengl

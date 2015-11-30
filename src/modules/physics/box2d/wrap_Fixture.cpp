@@ -269,7 +269,7 @@ int w_Fixture_isDestroyed(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Fixture_functions[] =
 {
 	{ "getType", w_Fixture_getType },
 	{ "setFriction", w_Fixture_setFriction },
@@ -303,7 +303,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_fixture(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_FIXTURE_ID, functions);
+	return luax_register_type(L, PHYSICS_FIXTURE_ID, "Fixture", w_Fixture_functions, nullptr);
 }
 
 } // box2d

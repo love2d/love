@@ -46,24 +46,16 @@ int w_PolygonShape_validate(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_PolygonShape_functions[] =
 {
 	{ "getPoints", w_PolygonShape_getPoints },
 	{ "validate", w_PolygonShape_validate },
-	// From Shape.
-	{ "getType", w_Shape_getType },
-	{ "getRadius", w_Shape_getRadius },
-	{ "getChildCount", w_Shape_getChildCount },
-	{ "testPoint", w_Shape_testPoint },
-	{ "rayCast", w_Shape_rayCast },
-	{ "computeAABB", w_Shape_computeAABB },
-	{ "computeMass", w_Shape_computeMass },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_polygonshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_POLYGON_SHAPE_ID, functions);
+	return luax_register_type(L, PHYSICS_POLYGON_SHAPE_ID, "PolygonShape", w_Shape_functions, w_PolygonShape_functions, nullptr);
 }
 
 } // box2d

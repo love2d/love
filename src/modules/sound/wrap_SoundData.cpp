@@ -96,13 +96,8 @@ int w_SoundData_getSample(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_SoundData_functions[] =
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-
 	{ "getChannels", w_SoundData_getChannels },
 	{ "getBitDepth", w_SoundData_getBitDepth },
 	{ "getSampleRate", w_SoundData_getSampleRate },
@@ -115,20 +110,20 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_sounddata(lua_State *L)
 {
-	// The last argument pushes the type's metatable onto the stack.
-	int ret = luax_register_type(L, SOUND_SOUND_DATA_ID, functions, true);
+	int ret = luax_register_type(L, SOUND_SOUND_DATA_ID, "SoundData", w_Data_functions, w_SoundData_functions, nullptr);
+
+	luax_gettypemetatable(L, SOUND_SOUND_DATA_ID);
 
 	// Load and execute SoundData.lua, sending the metatable as an argument.
-	if (ret > 0)
+	if (lua_istable(L, -1))
 	{
 		luaL_loadbuffer(L, sounddata_lua, sizeof(sounddata_lua), "SoundData.lua");
 		lua_pushvalue(L, -2);
 		lua_call(L, 1, 0);
-
-		// Pop the metatable.
-		lua_pop(L, 1);
-		ret--;
 	}
+
+	// Pop the metatable.
+	lua_pop(L, 1);
 
 	return ret;
 }

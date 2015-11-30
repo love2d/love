@@ -34,33 +34,6 @@ namespace box2d
 {
 
 Fixture *luax_checkfixture(lua_State *L, int idx);
-int w_Fixture_getType(lua_State *L);
-int w_Fixture_setFriction(lua_State *L);
-int w_Fixture_setRestitution(lua_State *L);
-int w_Fixture_setDensity(lua_State *L);
-int w_Fixture_setSensor(lua_State *L);
-int w_Fixture_getFriction(lua_State *L);
-int w_Fixture_getRestitution(lua_State *L);
-int w_Fixture_getDensity(lua_State *L);
-int w_Fixture_isSensor(lua_State *L);
-int w_Fixture_getBody(lua_State *L);
-int w_Fixture_getShape(lua_State *L);
-int w_Fixture_testPoint(lua_State *L);
-int w_Fixture_rayCast(lua_State *L);
-int w_Fixture_setFilterData(lua_State *L);
-int w_Fixture_getFilterData(lua_State *L);
-int w_Fixture_setCategory(lua_State *L);
-int w_Fixture_getCategory(lua_State *L);
-int w_Fixture_setMask(lua_State *L);
-int w_Fixture_getMask(lua_State *L);
-int w_Fixture_setUserData(lua_State *L);
-int w_Fixture_getUserData(lua_State *L);
-int w_Fixture_getBoundingBox(lua_State *L);
-int w_Fixture_getMassData(lua_State *L);
-int w_Fixture_getGroupIndex(lua_State *L);
-int w_Fixture_setGroupIndex(lua_State *L);
-int w_Fixture_destroy(lua_State *L);
-int w_Fixture_isDestroyed(lua_State *L);
 extern "C" int luaopen_fixture(lua_State *L);
 
 } // box2d

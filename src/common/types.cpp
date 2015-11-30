@@ -116,102 +116,21 @@ static const TypeBits *createTypeFlags()
 
 const TypeBits *typeFlags = createTypeFlags();
 
-StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[] =
+static StringMap<Type, TYPE_MAX_ENUM> types(nullptr, 0);
+
+void addTypeName(Type type, const char *name)
 {
-	{"Invalid", INVALID_ID},
+	const char *n;
+	if (!types.find(type, n))
+		types.add(name, type);
+}
 
-	{"Object", OBJECT_ID},
-	{"Data", DATA_ID},
-	{"Module", MODULE_ID},
-
-	// Filesystem
-	{"File", FILESYSTEM_FILE_ID},
-	{"DroppedFile", FILESYSTEM_DROPPED_FILE_ID},
-	{"FileData", FILESYSTEM_FILE_DATA_ID},
-
-	// Font
-	{"GlyphData", FONT_GLYPH_DATA_ID},
-	{"Rasterizer", FONT_RASTERIZER_ID},
-
-	// Graphics
-	{"Drawable", GRAPHICS_DRAWABLE_ID},
-	{"Texture", GRAPHICS_TEXTURE_ID},
-	{"Image", GRAPHICS_IMAGE_ID},
-	{"Quad", GRAPHICS_QUAD_ID},
-	{"Font", GRAPHICS_FONT_ID},
-	{"ParticleSystem", GRAPHICS_PARTICLE_SYSTEM_ID},
-	{"SpriteBatch", GRAPHICS_SPRITE_BATCH_ID},
-	{"Canvas", GRAPHICS_CANVAS_ID},
-	{"Shader", GRAPHICS_SHADER_ID},
-	{"Mesh", GRAPHICS_MESH_ID},
-	{"Text", GRAPHICS_TEXT_ID},
-
-	// Image
-	{"ImageData", IMAGE_IMAGE_DATA_ID},
-	{"CompressedImageData", IMAGE_COMPRESSED_IMAGE_DATA_ID},
-
-	// Joystick
-	{"Joystick", JOYSTICK_JOYSTICK_ID},
-
-	// Math
-	{"RandomGenerator", MATH_RANDOM_GENERATOR_ID},
-	{"BezierCurve", MATH_BEZIER_CURVE_ID},
-	{"CompressedData", MATH_COMPRESSED_DATA_ID},
-
-	// Audio
-	{"Source", AUDIO_SOURCE_ID},
-
-	// Sound
-	{"SoundData", SOUND_SOUND_DATA_ID},
-	{"Decoder", SOUND_DECODER_ID},
-
-	// Mouse
-	{"Cursor", MOUSE_CURSOR_ID},
-
-	// Physics
-	{"World", PHYSICS_WORLD_ID},
-	{"Contact", PHYSICS_CONTACT_ID},
-	{"Body", PHYSICS_BODY_ID},
-	{"Fixture", PHYSICS_FIXTURE_ID},
-	{"Shape", PHYSICS_SHAPE_ID},
-	{"CircleShape", PHYSICS_CIRCLE_SHAPE_ID},
-	{"PolygonShape", PHYSICS_POLYGON_SHAPE_ID},
-	{"EdgeShape", PHYSICS_EDGE_SHAPE_ID},
-	{"ChainShape", PHYSICS_CHAIN_SHAPE_ID},
-	{"Joint", PHYSICS_JOINT_ID},
-	{"MouseJoint", PHYSICS_MOUSE_JOINT_ID},
-	{"DistanceJoint", PHYSICS_DISTANCE_JOINT_ID},
-	{"PrismaticJoint", PHYSICS_PRISMATIC_JOINT_ID},
-	{"RevoluteJoint", PHYSICS_REVOLUTE_JOINT_ID},
-	{"PulleyJoint", PHYSICS_PULLEY_JOINT_ID},
-	{"GearJoint", PHYSICS_GEAR_JOINT_ID},
-	{"FrictionJoint", PHYSICS_FRICTION_JOINT_ID},
-	{"WeldJoint", PHYSICS_WELD_JOINT_ID},
-	{"RopeJoint", PHYSICS_ROPE_JOINT_ID},
-	{"WheelJoint", PHYSICS_WHEEL_JOINT_ID},
-	{"MotorJoint", PHYSICS_MOTOR_JOINT_ID},
-
-	// Thread
-	{"Thread", THREAD_THREAD_ID},
-	{"Channel", THREAD_CHANNEL_ID},
-
-	// The modules themselves. Only add abstracted modules here.
-	{"filesystem", MODULE_FILESYSTEM_ID},
-	{"graphics", MODULE_GRAPHICS_ID},
-	{"image", MODULE_IMAGE_ID},
-	{"sound", MODULE_SOUND_ID},
-};
-
-StringMap<Type, TYPE_MAX_ENUM> types(typeEntries, sizeof(typeEntries));
-
-static_assert((sizeof(typeEntries) / sizeof(typeEntries[0])) == TYPE_MAX_ENUM, "Type name array size doesn't match the total number of type IDs!");
-
-bool getType(const char *in, love::Type &out)
+bool getTypeName(const char *in, love::Type &out)
 {
 	return types.find(in, out);
 }
 
-bool getType(love::Type in, const char *&out)
+bool getTypeName(love::Type in, const char *&out)
 {
 	return types.find(in, out);
 }

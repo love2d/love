@@ -401,7 +401,7 @@ int w_Shader_getExternVariable(lua_State *L)
 	return 3;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Shader_functions[] =
 {
 	{ "getWarnings", w_Shader_getWarnings },
 	{ "sendInt",     w_Shader_sendInt },
@@ -417,7 +417,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_SHADER_ID, functions);
+	return luax_register_type(L, GRAPHICS_SHADER_ID, "Shader", w_Shader_functions, nullptr);
 }
 
 } // opengl

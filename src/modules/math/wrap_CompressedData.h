@@ -31,7 +31,6 @@ namespace math
 {
 
 CompressedData *luax_checkcompresseddata(lua_State *L, int idx);
-int w_CompressedData_getFormat(lua_State *L);
 extern "C" int luaopen_compresseddata(lua_State *L);
 
 } // math

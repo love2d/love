@@ -58,7 +58,7 @@ int w_Decoder_getDuration(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Decoder_functions[] =
 {
 	{ "getChannels", w_Decoder_getChannels },
 	{ "getBitDepth", w_Decoder_getBitDepth },
@@ -69,7 +69,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_decoder(lua_State *L)
 {
-	return luax_register_type(L, SOUND_DECODER_ID, functions);
+	return luax_register_type(L, SOUND_DECODER_ID, "Decoder", w_Decoder_functions, nullptr);
 }
 
 } // sound

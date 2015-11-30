@@ -22,6 +22,7 @@
 #include "common/config.h"
 #include "common/version.h"
 #include "common/runtime.h"
+#include "common/wrap_Data.h"
 
 #include "love.h"
 
@@ -318,6 +319,9 @@ int luaopen_love(lua_State *L)
 	// Preload module loaders.
 	for (int i = 0; modules[i].name != nullptr; i++)
 		love::luax_preload(L, modules[i].func, modules[i].name);
+
+	// Load "common" types.
+	love::w_Data_open(L);
 
 #ifdef LOVE_ENABLE_LUASOCKET
 	love::luasocket::__open(L);

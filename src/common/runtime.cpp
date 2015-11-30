@@ -216,6 +216,8 @@ int luax_require(lua_State *L, const char *name)
 
 int luax_register_module(lua_State *L, const WrappedModule &m)
 {
+	love::addTypeName(m.type, m.name);
+
 	// Put a reference to the C++ module in Lua.
 	luax_insistregistry(L, REGISTRY_MODULES);
 
@@ -270,12 +272,9 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
-int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f, bool pushmetatable)
+int luax_register_type(lua_State *L, love::Type type, const char *name, ...)
 {
-	// Verify that this type name has a matching Type ID and type name mapping.
-	const char *tname = "Invalid";
-	if (!love::getType(type, tname))
-		printf("Missing type name entry for type ID %d\n", type);
+	love::addTypeName(type, name);
 
 	// Get the place for storing and re-using instantiated love types.
 	luax_getregistry(L, REGISTRY_OBJECTS);
@@ -302,7 +301,7 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f, bool pu
 	else
 		lua_pop(L, 1);
 
-	luaL_newmetatable(L, tname);
+	luaL_newmetatable(L, name);
 
 	// m.__index = m
 	lua_pushvalue(L, -1);
@@ -317,12 +316,12 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f, bool pu
 	lua_setfield(L, -2, "__eq");
 
 	// Add tostring function.
-	lua_pushstring(L, tname);
+	lua_pushstring(L, name);
 	lua_pushcclosure(L, w__tostring, 1);
 	lua_setfield(L, -2, "__tostring");
 
 	// Add type
-	lua_pushstring(L, tname);
+	lua_pushstring(L, name);
 	lua_pushcclosure(L, w__type, 1);
 	lua_setfield(L, -2, "type");
 
@@ -330,14 +329,23 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f, bool pu
 	lua_pushcfunction(L, w__typeOf);
 	lua_setfield(L, -2, "typeOf");
 
-	if (f != nullptr)
+	va_list fs;
+	va_start(fs, name);
+	for (const luaL_Reg *f = va_arg(fs, const luaL_Reg *); f; f = va_arg(fs, const luaL_Reg *))
 		luax_setfuncs(L, f);
-
-	if (pushmetatable)
-		return 1; // leave the metatable on the stack.
+	va_end(fs);
 
 	lua_pop(L, 1); // Pops metatable.
 	return 0;
+}
+
+void luax_gettypemetatable(lua_State *L, love::Type type)
+{
+	const char *name = nullptr;
+	if (getTypeName(type, name))
+		lua_getfield(L, LUA_REGISTRYINDEX, name);
+	else
+		lua_pushnil(L);
 }
 
 int luax_table_insert(lua_State *L, int tindex, int vindex, int pos)
@@ -403,7 +411,7 @@ void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object)
 	u->type = type;
 
 	const char *name = "Invalid";
-	getType(type, name);
+	getTypeName(type, name);
 
 	luaL_newmetatable(L, name);
 	lua_setmetatable(L, -2);
@@ -670,7 +678,7 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 			// Non-love userdata might have a type metamethod which doesn't
 			// describe its type properly, so we only use it for love types.
 			love::Type t;
-			if (!love::getType(argtname, t))
+			if (!love::getTypeName(argtname, t))
 				argtname = 0;
 		}
 	}
@@ -707,7 +715,7 @@ void luax_register(lua_State *L, const char *name, const luaL_Reg *l)
 Type luax_type(lua_State *L, int idx)
 {
 	Type t = INVALID_ID;
-	getType(luaL_checkstring(L, idx), t);
+	getTypeName(luaL_checkstring(L, idx), t);
 	return t;
 }
 

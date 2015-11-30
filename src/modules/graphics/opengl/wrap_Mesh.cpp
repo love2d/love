@@ -490,7 +490,7 @@ int w_Mesh_getDrawRange(lua_State *L)
 	return 2;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Mesh_functions[] =
 {
 	{ "setVertices", w_Mesh_setVertices },
 	{ "setVertex", w_Mesh_setVertex },
@@ -516,7 +516,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_mesh(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_MESH_ID, functions);
+	return luax_register_type(L, GRAPHICS_MESH_ID, "Mesh", w_Mesh_functions, nullptr);
 }
 
 } // opengl

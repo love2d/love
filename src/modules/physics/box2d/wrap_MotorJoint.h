@@ -34,16 +34,6 @@ namespace box2d
 {
 
 MotorJoint *luax_checkmotorjoint(lua_State *L, int idx);
-int w_MotorJoint_setLinearOffset(lua_State *L);
-int w_MotorJoint_getLinearOffset(lua_State *L);
-int w_MotorJoint_setAngularOffset(lua_State *L);
-int w_MotorJoint_getAngularOffset(lua_State *L);
-int w_MotorJoint_setMaxForce(lua_State *L);
-int w_MotorJoint_getMaxForce(lua_State *L);
-int w_MotorJoint_setMaxTorque(lua_State *L);
-int w_MotorJoint_getMaxTorque(lua_State *L);
-int w_MotorJoint_setCorrectionFactor(lua_State *L);
-int w_MotorJoint_getCorrectionFactor(lua_State *L);
 extern "C" int luaopen_motorjoint(lua_State *L);
 
 } // box2d

@@ -31,8 +31,6 @@ namespace filesystem
 {
 
 FileData *luax_checkfiledata(lua_State *L, int idx);
-int w_FileData_getFilename(lua_State *L);
-int w_FileData_getExtension(lua_State *L);
 extern "C" int luaopen_filedata(lua_State *L);
 
 } // filesystem

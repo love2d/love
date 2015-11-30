@@ -132,7 +132,7 @@ int w_WheelJoint_getSpringDampingRatio(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_WheelJoint_functions[] =
 {
 	{ "getJointTranslation", w_WheelJoint_getJointTranslation },
 	{ "getJointSpeed", w_WheelJoint_getJointSpeed },
@@ -147,23 +147,12 @@ static const luaL_Reg functions[] =
 	{ "getSpringFrequency", w_WheelJoint_getSpringFrequency },
 	{ "setSpringDampingRatio", w_WheelJoint_setSpringDampingRatio },
 	{ "getSpringDampingRatio", w_WheelJoint_getSpringDampingRatio },
-	// From Joint.
-	{ "getType", w_Joint_getType },
-	{ "getBodies", w_Joint_getBodies },
-	{ "getAnchors", w_Joint_getAnchors },
-	{ "getReactionForce", w_Joint_getReactionForce },
-	{ "getReactionTorque", w_Joint_getReactionTorque },
-	{ "getCollideConnected", w_Joint_getCollideConnected },
-	{ "setUserData", w_Joint_setUserData },
-	{ "getUserData", w_Joint_getUserData },
-	{ "destroy", w_Joint_destroy },
-	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_wheeljoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_WHEEL_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_WHEEL_JOINT_ID, "WheelJoint", w_Joint_functions, w_WheelJoint_functions, nullptr);
 }
 
 } // box2d

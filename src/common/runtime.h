@@ -247,10 +247,15 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name);
 /**
  * Register a new type.
  * @param type The type.
- * @param f The list of member functions for the type.
- * @param pushmetatable Whether to push the type's metatable to the stack.
+ * @param name The type's human-readable name
+ * @param ... The list of lists of member functions for the type. (of type luaL_Reg*)
  **/
-int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f = nullptr, bool pushmetatable = false);
+int luax_register_type(lua_State *L, love::Type type, const char *name, ...);
+
+/**
+ * Pushes the metatable of the specified type onto the stack.
+**/
+void luax_gettypemetatable(lua_State *L, love::Type type);
 
 /**
  * Do a table.insert from C
@@ -434,7 +439,7 @@ T *luax_checktype(lua_State *L, int idx, love::Type type)
 	if (lua_type(L, idx) != LUA_TUSERDATA)
 	{
 		const char *name = "Invalid";
-		getType(type, name);
+		getTypeName(type, name);
 		luax_typerror(L, idx, name);
 	}
 
@@ -443,7 +448,7 @@ T *luax_checktype(lua_State *L, int idx, love::Type type)
 	if (!typeFlags[u->type][type])
 	{
 		const char *name = "Invalid";
-		getType(type, name);
+		getTypeName(type, name);
 		luax_typerror(L, idx, name);
 	}
 
@@ -454,7 +459,7 @@ template <typename T>
 T *luax_getmodule(lua_State *L, love::Type type)
 {
 	const char *name = "Invalid";
-	getType(type, name);
+	getTypeName(type, name);
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);
@@ -476,7 +481,7 @@ template <typename T>
 T *luax_optmodule(lua_State *L, love::Type type)
 {
 	const char *name = "Invalid";
-	getType(type, name);
+	getTypeName(type, name);
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);

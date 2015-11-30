@@ -48,11 +48,6 @@ int w_FileData_getExtension(lua_State *L)
 
 static const luaL_Reg w_FileData_functions[] =
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-
 	{ "getFilename", w_FileData_getFilename },
 	{ "getExtension", w_FileData_getExtension },
 
@@ -61,7 +56,7 @@ static const luaL_Reg w_FileData_functions[] =
 
 extern "C" int luaopen_filedata(lua_State *L)
 {
-	return luax_register_type(L, FILESYSTEM_FILE_DATA_ID, w_FileData_functions);
+	return luax_register_type(L, FILESYSTEM_FILE_DATA_ID, "FileData", w_Data_functions, w_FileData_functions, nullptr);
 }
 
 } // filesystem

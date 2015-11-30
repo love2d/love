@@ -34,14 +34,6 @@ namespace box2d
 {
 
 MouseJoint *luax_checkmousejoint(lua_State *L, int idx);
-int w_MouseJoint_setTarget(lua_State *L);
-int w_MouseJoint_getTarget(lua_State *L);
-int w_MouseJoint_setMaxForce(lua_State *L);
-int w_MouseJoint_getMaxForce(lua_State *L);
-int w_MouseJoint_setFrequency(lua_State *L);
-int w_MouseJoint_getFrequency(lua_State *L);
-int w_MouseJoint_setDampingRatio(lua_State *L);
-int w_MouseJoint_getDampingRatio(lua_State *L);
 extern "C" int luaopen_mousejoint(lua_State *L);
 
 } // box2d

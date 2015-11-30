@@ -370,7 +370,7 @@ int w_Source_getType(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Source_functions[] =
 {
 	{ "clone", w_Source_clone },
 
@@ -420,7 +420,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_source(lua_State *L)
 {
-	return luax_register_type(L, AUDIO_SOURCE_ID, functions);
+	return luax_register_type(L, AUDIO_SOURCE_ID, "Source", w_Source_functions, nullptr);
 }
 
 } // audio

@@ -1946,9 +1946,16 @@ static const luaL_Reg functions[] =
 	{ 0, 0 }
 };
 
+static int luaopen_drawable(lua_State *L)
+{
+	return luax_register_type(L, GRAPHICS_DRAWABLE_ID, "Drawable", nullptr);
+}
+
 // Types for this module.
 static const lua_CFunction types[] =
 {
+	luaopen_drawable,
+	luaopen_texture,
 	luaopen_font,
 	luaopen_image,
 	luaopen_quad,

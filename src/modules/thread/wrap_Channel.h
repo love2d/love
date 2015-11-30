@@ -28,17 +28,10 @@ namespace love
 {
 namespace thread
 {
-Channel *luax_checkchannel(lua_State *L, int idx);
-int w_Channel_push(lua_State *L);
-int w_Channel_supply(lua_State *L);
-int w_Channel_pop(lua_State *L);
-int w_Channel_demand(lua_State *L);
-int w_Channel_peek(lua_State *L);
-int w_Channel_getCount(lua_State *L);
-int w_Channel_clear(lua_State *L);
-int w_Channel_performAtomic(lua_State *L);
 
+Channel *luax_checkchannel(lua_State *L, int idx);
 extern "C" int luaopen_channel(lua_State *L);
+
 } // thread
 } // love
 

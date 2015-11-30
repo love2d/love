@@ -213,7 +213,7 @@ int w_BezierCurve_renderSegment(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_BezierCurve_functions[] =
 {
 	{"getDegree", w_BezierCurve_getDegree},
 	{"getDerivative", w_BezierCurve_getDerivative},
@@ -234,7 +234,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_beziercurve(lua_State *L)
 {
-	return luax_register_type(L, MATH_BEZIER_CURVE_ID, functions);
+	return luax_register_type(L, MATH_BEZIER_CURVE_ID, "BezierCurve", w_BezierCurve_functions, nullptr);
 }
 
 } // math

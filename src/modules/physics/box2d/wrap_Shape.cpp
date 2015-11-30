@@ -94,7 +94,7 @@ int w_Shape_computeMass(lua_State *L)
 	return t->computeMass(L);
 }
 
-static const luaL_Reg functions[] =
+const luaL_Reg w_Shape_functions[] =
 {
 	{ "getType", w_Shape_getType },
 	{ "getRadius", w_Shape_getRadius },
@@ -108,7 +108,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_shape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_SHAPE_ID, functions);
+	return luax_register_type(L, PHYSICS_SHAPE_ID, "Shape", w_Shape_functions, nullptr);
 }
 
 } // box2d

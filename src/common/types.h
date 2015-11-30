@@ -123,8 +123,9 @@ typedef std::bitset<TYPE_MAX_ENUM> TypeBits;
  **/
 extern const TypeBits *typeFlags;
 
-bool getType(const char *in, Type &out);
-bool getType(Type in, const char *&out);
+void addTypeName(Type type, const char *name);
+bool getTypeName(const char *in, Type &out);
+bool getTypeName(Type in, const char *&out);
 
 } // love
 

@@ -34,8 +34,6 @@ namespace box2d
 {
 
 PolygonShape *luax_checkpolygonshape(lua_State *L, int idx);
-int w_PolygonShape_getPoints(lua_State *L);
-int w_PolygonShape_validate(lua_State *L);
 extern "C" int luaopen_polygonshape(lua_State *L);
 
 } // box2d

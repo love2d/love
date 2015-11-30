@@ -585,7 +585,7 @@ int w_Body_getUserData(lua_State *L)
 	return t->getUserData(L);
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Body_functions[] =
 {
 	{ "getX", w_Body_getX },
 	{ "getY", w_Body_getY },
@@ -650,7 +650,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_body(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_BODY_ID, functions);
+	return luax_register_type(L, PHYSICS_BODY_ID, "Body", w_Body_functions, nullptr);
 }
 
 } // box2d

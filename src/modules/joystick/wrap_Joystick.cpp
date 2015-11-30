@@ -224,7 +224,7 @@ int w_Joystick_getVibration(lua_State *L)
 }
 
 // List of functions to wrap.
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Joystick_functions[] =
 {
 	{ "isConnected", w_Joystick_isConnected },
 	{ "getName", w_Joystick_getName },
@@ -255,7 +255,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_joystick(lua_State *L)
 {
-	return luax_register_type(L, JOYSTICK_JOYSTICK_ID, functions);
+	return luax_register_type(L, JOYSTICK_JOYSTICK_ID, "Joystick", w_Joystick_functions, nullptr);
 }
 
 } // joystick

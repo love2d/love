@@ -30,11 +30,6 @@ namespace thread
 {
 
 LuaThread *luax_checkthread(lua_State *L, int idx);
-int w_Thread_start(lua_State *L);
-int w_Thread_wait(lua_State *L);
-int w_Thread_getError(lua_State *L);
-int w_Thread_isRunning(lua_State *L);
-
 extern "C" int luaopen_thread(lua_State *L);
 
 } // thread
