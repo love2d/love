@@ -116,9 +116,9 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	// We treat the luminance of the FreeType bitmap as alpha in the GlyphData.
 	if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
 	{
-		for (int y = 0; y < bitmap.rows; y++)
+		for (int y = 0; y < (int) bitmap.rows; y++)
 		{
-			for (int x = 0; x < bitmap.width; x++)
+			for (int x = 0; x < (int) bitmap.width; x++)
 			{
 				// Extract the 1-bit value and convert it to uint8.
 				uint8 v = ((pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 255 : 0;
@@ -131,9 +131,9 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	}
 	else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
 	{
-		for (int y = 0; y < bitmap.rows; y++)
+		for (int y = 0; y < (int) bitmap.rows; y++)
 		{
-			for (int x = 0; x < bitmap.width; x++)
+			for (int x = 0; x < (int) bitmap.width; x++)
 			{
 				dest[2 * (y * bitmap.width + x) + 0] = 255;
 				dest[2 * (y * bitmap.width + x) + 1] = pixels[x];
