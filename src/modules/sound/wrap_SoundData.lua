@@ -23,6 +23,7 @@ misrepresented as being the original software.
 --]]
 
 local SoundData_mt = ...
+local SoundData = SoundData_mt.__index
 
 if type(jit) ~= "table" or not jit.status() then
 	-- LuaJIT's FFI is *much* slower than LOVE's regular methods when the JIT
@@ -33,18 +34,18 @@ end
 local status, ffi = pcall(require, "ffi")
 if not status then return end
 
-local tonumber, assert = tonumber, assert
+local tonumber, assert, error = tonumber, assert, error
 
 local float = ffi.typeof("float")
 local datatypes = {ffi.typeof("uint8_t *"), ffi.typeof("int16_t *")}
 
 local typemaxvals = {0x7F, 0x7FFF}
 
-local _getBitDepth = SoundData_mt.__index.getBitDepth
-local _getSampleCount = SoundData_mt.__index.getSampleCount
-local _getSampleRate = SoundData_mt.__index.getSampleRate
-local _getChannels = SoundData_mt.__index.getChannels
-local _getDuration = SoundData_mt.__index.getDuration
+local _getBitDepth = SoundData.getBitDepth
+local _getSampleCount = SoundData.getSampleCount
+local _getSampleRate = SoundData.getSampleRate
+local _getChannels = SoundData.getChannels
+local _getDuration = SoundData.getDuration
 
 -- Table which holds SoundData objects as keys, and information about the objects
 -- as values. Uses weak keys so the SoundData objects can still be GC'd properly.
@@ -73,9 +74,13 @@ local objectcache = setmetatable({}, {
 
 -- Overwrite existing functions with new FFI versions.
 
-function SoundData_mt.__index:getSample(i)
+function SoundData:getSample(i)
 	local p = objectcache[self]
-	assert(i >= 0 and i < p.size/p.bytedepth, "Attempt to get out-of-range sample!")
+
+	if not (i >= 0 and i < p.size/p.bytedepth) then
+		error("Attempt to get out-of-range sample!", 2)
+	end
+
 	if p.bytedepth == 2 then
 		-- 16-bit data is stored as signed values internally.
 		return tonumber(p.pointer[i]) / p.maxvalue
@@ -85,9 +90,13 @@ function SoundData_mt.__index:getSample(i)
 	end
 end
 
-function SoundData_mt.__index:setSample(i, sample)
+function SoundData:setSample(i, sample)
 	local p = objectcache[self]
-	assert(i >= 0 and i < p.size/p.bytedepth, "Attempt to set out-of-range sample!")
+
+	if not (i >= 0 and i < p.size/p.bytedepth) then
+		error("Attempt to set out-of-range sample!", 2)
+	end
+
 	if p.bytedepth == 2 then
 		-- 16-bit data is stored as signed values internally.
 		p.pointer[i] = sample * p.maxvalue
@@ -99,23 +108,23 @@ function SoundData_mt.__index:setSample(i, sample)
 	end
 end
 
-function SoundData_mt.__index:getBitDepth()
+function SoundData:getBitDepth()
 	return objectcache[self].bytedepth * 8
 end
 
-function SoundData_mt.__index:getSampleCount()
+function SoundData:getSampleCount()
 	return objectcache[self].samplecount
 end
 
-function SoundData_mt.__index:getSampleRate()
+function SoundData:getSampleRate()
 	return objectcache[self].samplerate
 end
 
-function SoundData_mt.__index:getChannels()
+function SoundData:getChannels()
 	return objectcache[self].channels
 end
 
-function SoundData_mt.__index:getDuration()
+function SoundData:getDuration()
 	return objectcache[self].duration
 end
 

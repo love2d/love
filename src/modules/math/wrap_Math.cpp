@@ -318,33 +318,27 @@ int w_linearToGamma(lua_State *L)
 
 int w_noise(lua_State *L)
 {
-	float w, x, y, z;
-	float val;
+	int nargs = std::min(std::max(lua_gettop(L), 1), 4);
+	float args[4];
 
-	switch (lua_gettop(L))
+	for (int i = 0; i < nargs; i++)
+		args[i] = (float) luaL_checknumber(L, i + 1);
+
+	float val = 0.0f;
+
+	switch (nargs)
 	{
 	case 1:
-		x = (float) luaL_checknumber(L, 1);
-		val = Math::instance.noise(x);
+		val = Math::instance.noise(args[0]);
 		break;
 	case 2:
-		x = (float) luaL_checknumber(L, 1);
-		y = (float) luaL_checknumber(L, 2);
-		val = Math::instance.noise(x, y);
+		val = Math::instance.noise(args[0], args[1]);
 		break;
 	case 3:
-		x = (float) luaL_checknumber(L, 1);
-		y = (float) luaL_checknumber(L, 2);
-		z = (float) luaL_checknumber(L, 3);
-		val = Math::instance.noise(x, y, z);
+		val = Math::instance.noise(args[0], args[1], args[2]);
 		break;
 	case 4:
-	default:
-		x = (float) luaL_checknumber(L, 1);
-		y = (float) luaL_checknumber(L, 2);
-		z = (float) luaL_checknumber(L, 3);
-		w = (float) luaL_checknumber(L, 4);
-		val = Math::instance.noise(x, y, z, w);
+		val = Math::instance.noise(args[0], args[1], args[2], args[3]);
 		break;
 	}
 
