@@ -23,6 +23,8 @@
 		FA0B78D21A95814A000E1D17 /* love.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D01A95814A000E1D17 /* love.icns */; };
 		FA0B78D31A95814A000E1D17 /* lovedocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D11A95814A000E1D17 /* lovedocument.icns */; };
 		FA0B7F301A95AC7D000E1D17 /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
+		FA27B3CB1B498696008A9DCE /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3CA1B498696008A9DCE /* Theora.framework */; };
+		FA27B3CC1B498696008A9DCE /* Theora.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3CA1B498696008A9DCE /* Theora.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FA5D24821A96CA1800C6FC8F /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24811A96CA1800C6FC8F /* OpenAL.framework */; };
 		FA5D24841A96CA2700C6FC8F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */; };
 		FA5D24881A96CA8A00C6FC8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24871A96CA8A00C6FC8F /* UIKit.framework */; };
@@ -80,6 +82,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */,
+				FA27B3CC1B498696008A9DCE /* Theora.framework in Copy Frameworks */,
 				FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */,
 				FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */,
 				A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */,
@@ -113,6 +116,7 @@
 		FA0B78D01A95814A000E1D17 /* love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = love.icns; path = macosx/love.icns; sourceTree = "<group>"; };
 		FA0B78D11A95814A000E1D17 /* lovedocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = lovedocument.icns; path = macosx/lovedocument.icns; sourceTree = "<group>"; };
 		FA0B7F061A95AAF3000E1D17 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA27B3CA1B498696008A9DCE /* Theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Theora.framework; path = /Library/Frameworks/Theora.framework; sourceTree = "<absolute>"; };
 		FA577A9316C7217800860150 /* liblove.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = liblove.xcodeproj; sourceTree = "<group>"; };
 		FA5D24811A96CA1800C6FC8F /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/OpenAL.framework; sourceTree = DEVELOPER_DIR; };
 		FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
@@ -139,6 +143,7 @@
 				FA08F69616C766E000F007B5 /* love.framework in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				A93E6E5510420B57007D418B /* Lua.framework in Frameworks */,
+				FA27B3CB1B498696008A9DCE /* Theora.framework in Frameworks */,
 				FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -219,6 +224,7 @@
 		FA0B7EEC1A959249000E1D17 /* macosx */ = {
 			isa = PBXGroup;
 			children = (
+				FA27B3CA1B498696008A9DCE /* Theora.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				A93E6E4810420B4A007D418B /* FreeType.framework */,
 				A9F16926109E7BAD00FC83D1 /* libmodplug.framework */,
@@ -432,6 +438,7 @@
 					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -442,6 +449,7 @@
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
 				PRODUCT_NAME = love;
 			};
@@ -457,6 +465,7 @@
 					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -465,6 +474,7 @@
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
 				PRODUCT_NAME = love;
 			};
@@ -620,6 +630,7 @@
 					ios/include/SDL2,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "love.${PRODUCT_NAME:rfc1034identifier}";
@@ -660,6 +671,7 @@
 					ios/include/SDL2,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "love.${PRODUCT_NAME:rfc1034identifier}";
@@ -701,6 +713,7 @@
 					ios/include/SDL2,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "love.${PRODUCT_NAME:rfc1034identifier}";
@@ -780,6 +793,7 @@
 					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -788,6 +802,7 @@
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
 				INSTALL_PATH = /Applications;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
 				PRODUCT_NAME = love;
 			};

@@ -816,6 +816,30 @@
 		FA0B7EE91A95902D000E1D17 /* wrap_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CCB1A95902C000E1D17 /* wrap_Window.cpp */; };
 		FA0B7EEA1A95902D000E1D17 /* wrap_Window.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */; };
 		FA0B7EF21A959D2C000E1D17 /* ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7EF11A959D2C000E1D17 /* ios.mm */; };
+		FA19C4C51B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
+		FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
+		FA19C4C71B4B0BD50059B0B3 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */; };
+		FA19C4C81B4B0BD50059B0B3 /* wrap_Video.lua in Resources */ = {isa = PBXBuildFile; fileRef = FA19C4C41B4B0BD50059B0B3 /* wrap_Video.lua */; };
+		FA27B39D1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
+		FA27B39E1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
+		FA27B39F1B498151008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B38B1B498151008A9DCE /* Video.h */; };
+		FA27B3A01B498151008A9DCE /* VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38C1B498151008A9DCE /* VideoStream.cpp */; };
+		FA27B3A11B498151008A9DCE /* VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38C1B498151008A9DCE /* VideoStream.cpp */; };
+		FA27B3A21B498151008A9DCE /* VideoStream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B38D1B498151008A9DCE /* VideoStream.h */; };
+		FA27B3A91B498151008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B3931B498151008A9DCE /* Video.h */; };
+		FA27B3AA1B498151008A9DCE /* VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3941B498151008A9DCE /* VideoStream.cpp */; };
+		FA27B3AB1B498151008A9DCE /* VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3941B498151008A9DCE /* VideoStream.cpp */; };
+		FA27B3AC1B498151008A9DCE /* VideoStream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B3951B498151008A9DCE /* VideoStream.h */; };
+		FA27B3B31B498151008A9DCE /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B39B1B498151008A9DCE /* wrap_Video.cpp */; };
+		FA27B3B41B498151008A9DCE /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B39B1B498151008A9DCE /* wrap_Video.cpp */; };
+		FA27B3B51B498151008A9DCE /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B39C1B498151008A9DCE /* wrap_Video.h */; };
+		FA27B3C01B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */; };
+		FA27B3C11B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */; };
+		FA27B3C21B4985BF008A9DCE /* wrap_VideoStream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */; };
+		FA27B3C51B4985D8008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3C31B4985D8008A9DCE /* Video.cpp */; };
+		FA27B3C61B4985D8008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3C31B4985D8008A9DCE /* Video.cpp */; };
+		FA27B3C71B4985D8008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B3C41B4985D8008A9DCE /* Video.h */; };
+		FA27B3C91B498623008A9DCE /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3C81B498623008A9DCE /* Theora.framework */; };
 		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
 		FA41A3C81C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
 		FA41A3C91C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
@@ -834,6 +858,7 @@
 		FA57FB991AE1993600F2AD6D /* noise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA57FB961AE1993600F2AD6D /* noise1234.cpp */; };
 		FA57FB9A1AE1993600F2AD6D /* noise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA57FB971AE1993600F2AD6D /* noise1234.h */; };
 		FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
+		FA59A2D81C0649C200328DBA /* libtheora.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA59A2D61C0649BB00328DBA /* libtheora.a */; };
 		FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */; };
 		FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AB1A96D2EC00C6FC8F /* libogg.a */; };
 		FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */; };
@@ -1475,6 +1500,23 @@
 		FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
 		FA0B7EF01A959D2C000E1D17 /* ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ios.h; sourceTree = "<group>"; };
 		FA0B7EF11A959D2C000E1D17 /* ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ios.mm; sourceTree = "<group>"; };
+		FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Video.cpp; sourceTree = "<group>"; };
+		FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
+		FA19C4C41B4B0BD50059B0B3 /* wrap_Video.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Video.lua; sourceTree = "<group>"; };
+		FA27B38A1B498151008A9DCE /* Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Video.cpp; sourceTree = "<group>"; };
+		FA27B38B1B498151008A9DCE /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
+		FA27B38C1B498151008A9DCE /* VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VideoStream.cpp; sourceTree = "<group>"; };
+		FA27B38D1B498151008A9DCE /* VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoStream.h; sourceTree = "<group>"; };
+		FA27B3931B498151008A9DCE /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
+		FA27B3941B498151008A9DCE /* VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VideoStream.cpp; sourceTree = "<group>"; };
+		FA27B3951B498151008A9DCE /* VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoStream.h; sourceTree = "<group>"; };
+		FA27B39B1B498151008A9DCE /* wrap_Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Video.cpp; sourceTree = "<group>"; };
+		FA27B39C1B498151008A9DCE /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
+		FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_VideoStream.cpp; sourceTree = "<group>"; };
+		FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_VideoStream.h; sourceTree = "<group>"; };
+		FA27B3C31B4985D8008A9DCE /* Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Video.cpp; sourceTree = "<group>"; };
+		FA27B3C41B4985D8008A9DCE /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
+		FA27B3C81B498623008A9DCE /* Theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Theora.framework; path = /Library/Frameworks/Theora.framework; sourceTree = "<absolute>"; };
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -1495,6 +1537,7 @@
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA57FB961AE1993600F2AD6D /* noise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = noise1234.cpp; sourceTree = "<group>"; };
 		FA57FB971AE1993600F2AD6D /* noise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = noise1234.h; sourceTree = "<group>"; };
+		FA59A2D61C0649BB00328DBA /* libtheora.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtheora.a; sourceTree = "<group>"; };
 		FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libFreetype2.a; sourceTree = "<group>"; };
 		FA5D24AB1A96D2EC00C6FC8F /* libogg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libogg.a; sourceTree = "<group>"; };
 		FA5D24AD1A96D2EC00C6FC8F /* libphysfs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libphysfs.a; sourceTree = "<group>"; };
@@ -1539,9 +1582,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */,
+				FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */,
+				FA59A2D81C0649C200328DBA /* libtheora.a in Frameworks */,
 				FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */,
 				FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */,
-				FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */,
 				FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */,
 				FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */,
 			);
@@ -1551,6 +1595,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA27B3C91B498623008A9DCE /* Theora.framework in Frameworks */,
 				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
@@ -2067,6 +2112,7 @@
 				FA0B7CA21A95902C000E1D17 /* thread */,
 				FA0B7CB71A95902C000E1D17 /* timer */,
 				FA0B7CBE1A95902C000E1D17 /* touch */,
+				FA27B3881B498151008A9DCE /* video */,
 				FA0B7CC51A95902C000E1D17 /* window */,
 			);
 			name = modules;
@@ -2259,6 +2305,8 @@
 				FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */,
 				FA0B7BA11A95902C000E1D17 /* Text.cpp */,
 				FA0B7BA21A95902C000E1D17 /* Text.h */,
+				FA27B3C31B4985D8008A9DCE /* Video.cpp */,
+				FA27B3C41B4985D8008A9DCE /* Video.h */,
 				FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */,
 				FA0B7BA71A95902C000E1D17 /* wrap_Canvas.h */,
 				FA0B7BA81A95902C000E1D17 /* wrap_Font.cpp */,
@@ -2278,6 +2326,9 @@
 				FA0B7BB71A95902C000E1D17 /* wrap_SpriteBatch.h */,
 				FA0B7BB81A95902C000E1D17 /* wrap_Text.cpp */,
 				FA0B7BB91A95902C000E1D17 /* wrap_Text.h */,
+				FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */,
+				FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */,
+				FA19C4C41B4B0BD50059B0B3 /* wrap_Video.lua */,
 			);
 			path = opengl;
 			sourceTree = "<group>";
@@ -2714,6 +2765,7 @@
 		FA0B7EEB1A959125000E1D17 /* macosx */ = {
 			isa = PBXGroup;
 			children = (
+				FA27B3C81B498623008A9DCE /* Theora.framework */,
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
 				FA577A6716C719D900860150 /* FreeType.framework */,
@@ -2731,12 +2783,47 @@
 			name = macosx;
 			sourceTree = "<group>";
 		};
+		FA27B3881B498151008A9DCE /* video */ = {
+			isa = PBXGroup;
+			children = (
+				FA27B3891B498151008A9DCE /* theora */,
+				FA27B3931B498151008A9DCE /* Video.h */,
+				FA27B3941B498151008A9DCE /* VideoStream.cpp */,
+				FA27B3951B498151008A9DCE /* VideoStream.h */,
+				FA27B39B1B498151008A9DCE /* wrap_Video.cpp */,
+				FA27B39C1B498151008A9DCE /* wrap_Video.h */,
+				FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */,
+				FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */,
+			);
+			path = video;
+			sourceTree = "<group>";
+		};
+		FA27B3891B498151008A9DCE /* theora */ = {
+			isa = PBXGroup;
+			children = (
+				FA27B38A1B498151008A9DCE /* Video.cpp */,
+				FA27B38B1B498151008A9DCE /* Video.h */,
+				FA27B38C1B498151008A9DCE /* VideoStream.cpp */,
+				FA27B38D1B498151008A9DCE /* VideoStream.h */,
+			);
+			path = theora;
+			sourceTree = "<group>";
+		};
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				FA0B7EEB1A959125000E1D17 /* macosx */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		FA59A2D51C0649BB00328DBA /* theora */ = {
+			isa = PBXGroup;
+			children = (
+				FA59A2D61C0649BB00328DBA /* libtheora.a */,
+			);
+			name = theora;
+			path = ios/libraries/theora;
 			sourceTree = "<group>";
 		};
 		FA5D24A11A96D24500C6FC8F /* Libraries */ = {
@@ -2750,11 +2837,12 @@
 		FA5D24A31A96D2C300C6FC8F /* ios */ = {
 			isa = PBXGroup;
 			children = (
-				FA7550A61AEBE250003E311E /* luajit */,
 				FA5D24A41A96D2EC00C6FC8F /* freetype */,
+				FA7550A61AEBE250003E311E /* luajit */,
 				FA5D24AA1A96D2EC00C6FC8F /* ogg */,
 				FA5D24AC1A96D2EC00C6FC8F /* physfs */,
 				FA5D24CC1A96E63D00C6FC8F /* SDL2 */,
+				FA59A2D51C0649BB00328DBA /* theora */,
 				FA5D24AE1A96D2EC00C6FC8F /* vorbis */,
 			);
 			name = ios;
@@ -2880,12 +2968,15 @@
 				FA0B7AC11A958EA3000E1D17 /* callbacks.h in Headers */,
 				FA0B7D8F1A95902C000E1D17 /* ddsHandler.h in Headers */,
 				FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */,
+				FA27B3C21B4985BF008A9DCE /* wrap_VideoStream.h in Headers */,
 				FA0B7AA31A958EA3000E1D17 /* b2PulleyJoint.h in Headers */,
 				FA0B7B2F1A958EA3000E1D17 /* utf8.h in Headers */,
+				FA19C4C71B4B0BD50059B0B3 /* wrap_Video.h in Headers */,
 				FA0B79231A958E3B000E1D17 /* EnumMap.h in Headers */,
 				FA0B7A371A958EA3000E1D17 /* b2Distance.h in Headers */,
 				FA0B7E681A95902C000E1D17 /* wrap_PrismaticJoint.h in Headers */,
 				FA0B7D571A95902C000E1D17 /* GLBuffer.h in Headers */,
+				FA27B3C71B4985D8008A9DCE /* Video.h in Headers */,
 				FA0B7ED71A95902D000E1D17 /* Timer.h in Headers */,
 				FA0B7AC31A958EA3000E1D17 /* list.h in Headers */,
 				FA0B7B2D1A958EA3000E1D17 /* core.h in Headers */,
@@ -2967,6 +3058,7 @@
 				FA0B7E871A95902C000E1D17 /* CoreAudioDecoder.h in Headers */,
 				FA0B7CD51A95902C000E1D17 /* Source.h in Headers */,
 				FA0B7A2B1A958EA3000E1D17 /* b2BroadPhase.h in Headers */,
+				FA27B39F1B498151008A9DCE /* Video.h in Headers */,
 				FA0B7D661A95902C000E1D17 /* wrap_Mesh.h in Headers */,
 				FA0B7AAC1A958EA3000E1D17 /* b2WeldJoint.h in Headers */,
 				FA0B7E7A1A95902C000E1D17 /* wrap_WheelJoint.h in Headers */,
@@ -2993,9 +3085,11 @@
 				FA0B7D501A95902C000E1D17 /* SpriteBatch.h in Headers */,
 				FA0B7DD51A95902C000E1D17 /* BezierCurve.h in Headers */,
 				FA0B79271A958E3B000E1D17 /* int.h in Headers */,
+				FA27B3A21B498151008A9DCE /* VideoStream.h in Headers */,
 				FA0B7D8C1A95902C000E1D17 /* CompressedFormatHandler.h in Headers */,
 				FA0B7E531A95902C000E1D17 /* wrap_FrictionJoint.h in Headers */,
 				FA0B7EB71A95902C000E1D17 /* wrap_System.h in Headers */,
+				FA27B3A91B498151008A9DCE /* Video.h in Headers */,
 				FA0B7DF61A95902C000E1D17 /* wrap_Mouse.h in Headers */,
 				FAB17BF21ABFB37500F9BA27 /* wrap_CompressedData.h in Headers */,
 				FA0B7E801A95902C000E1D17 /* Joint.h in Headers */,
@@ -3025,6 +3119,7 @@
 				FA0B7D271A95902C000E1D17 /* wrap_Font.h in Headers */,
 				FA0B7A761A958EA3000E1D17 /* b2ChainAndPolygonContact.h in Headers */,
 				FA0B7DAA1A95902C000E1D17 /* PVRHandler.h in Headers */,
+				FA27B3B51B498151008A9DCE /* wrap_Video.h in Headers */,
 				FA0B7D7B1A95902C000E1D17 /* Quad.h in Headers */,
 				FA0B7E261A95902C000E1D17 /* PrismaticJoint.h in Headers */,
 				FA0B7E991A95902C000E1D17 /* Sound.h in Headers */,
@@ -3090,6 +3185,7 @@
 				FA0B7CF31A95902C000E1D17 /* DroppedFile.h in Headers */,
 				FA0B7D3B1A95902C000E1D17 /* Graphics.h in Headers */,
 				FA0B7E6E1A95902C000E1D17 /* wrap_RevoluteJoint.h in Headers */,
+				FA27B3AC1B498151008A9DCE /* VideoStream.h in Headers */,
 				FA0B7AC71A958EA3000E1D17 /* unix.h in Headers */,
 				FA0B7E8D1A95902C000E1D17 /* FLACDecoder.h in Headers */,
 				FA0B7A501A958EA3000E1D17 /* b2Draw.h in Headers */,
@@ -3200,6 +3296,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA19C4C81B4B0BD50059B0B3 /* wrap_Video.lua in Resources */,
 				FA7DA04D1C16874A0056B200 /* wrap_Math.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3240,6 +3337,7 @@
 				FA0B7E641A95902C000E1D17 /* wrap_PolygonShape.cpp in Sources */,
 				FA0B7E731A95902C000E1D17 /* wrap_Shape.cpp in Sources */,
 				FA0B7CFE1A95902C000E1D17 /* File.cpp in Sources */,
+				FA27B39E1B498151008A9DCE /* Video.cpp in Sources */,
 				FA0B7A751A958EA3000E1D17 /* b2ChainAndPolygonContact.cpp in Sources */,
 				FA0B7E6A1A95902C000E1D17 /* wrap_PulleyJoint.cpp in Sources */,
 				FA0B7DB81A95902C000E1D17 /* Joystick.cpp in Sources */,
@@ -3300,6 +3398,7 @@
 				FA0B7A7B1A958EA3000E1D17 /* b2Contact.cpp in Sources */,
 				FA0B7A6F1A958EA3000E1D17 /* b2WorldCallbacks.cpp in Sources */,
 				FA0B793C1A958E3B000E1D17 /* runtime.cpp in Sources */,
+				FA27B3C61B4985D8008A9DCE /* Video.cpp in Sources */,
 				FA0B7DBC1A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B7DAF1A95902C000E1D17 /* wrap_CompressedImageData.cpp in Sources */,
 				FA0B7A481A958EA3000E1D17 /* b2PolygonShape.cpp in Sources */,
@@ -3356,11 +3455,14 @@
 				FA0B7A811A958EA3000E1D17 /* b2EdgeAndCircleContact.cpp in Sources */,
 				FA0B7D071A95902C000E1D17 /* wrap_File.cpp in Sources */,
 				FA0B7AD01A958EA3000E1D17 /* peer.c in Sources */,
+				FA27B3C11B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */,
 				FA0B791C1A958E3B000E1D17 /* b64.cpp in Sources */,
 				FA0B7D941A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7DA01A95902C000E1D17 /* KTXHandler.cpp in Sources */,
+				FA27B3A11B498151008A9DCE /* VideoStream.cpp in Sources */,
 				FA0B7A5C1A958EA3000E1D17 /* b2Timer.cpp in Sources */,
 				FA0B7CEC1A95902C000E1D17 /* Event.cpp in Sources */,
+				FA27B3AB1B498151008A9DCE /* VideoStream.cpp in Sources */,
 				FA0B7A7E1A958EA3000E1D17 /* b2ContactSolver.cpp in Sources */,
 				FA0B7D971A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7E581A95902C000E1D17 /* wrap_Joint.cpp in Sources */,
@@ -3480,6 +3582,8 @@
 				FA0B7E821A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA0B7ACE1A958EA3000E1D17 /* packet.c in Sources */,
 				FA0B7ED51A95902D000E1D17 /* Timer.cpp in Sources */,
+				FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */,
+				FA27B3B41B498151008A9DCE /* wrap_Video.cpp in Sources */,
 				FA0B7AA81A958EA3000E1D17 /* b2RopeJoint.cpp in Sources */,
 				FA0B7ACC1A958EA3000E1D17 /* list.c in Sources */,
 				FA0B7DEF1A95902C000E1D17 /* Mouse.cpp in Sources */,
@@ -3527,6 +3631,7 @@
 				FA0B7E631A95902C000E1D17 /* wrap_PolygonShape.cpp in Sources */,
 				FA0B7E721A95902C000E1D17 /* wrap_Shape.cpp in Sources */,
 				FA0B7CFD1A95902C000E1D17 /* File.cpp in Sources */,
+				FA27B39D1B498151008A9DCE /* Video.cpp in Sources */,
 				FA0B7A2E1A958EA3000E1D17 /* b2CollideEdge.cpp in Sources */,
 				FA0B7E691A95902C000E1D17 /* wrap_PulleyJoint.cpp in Sources */,
 				FA0B7DB71A95902C000E1D17 /* Joystick.cpp in Sources */,
@@ -3587,6 +3692,7 @@
 				FA0B7AB51A958EA3000E1D17 /* ddsparse.cpp in Sources */,
 				FA0B7A441A958EA3000E1D17 /* b2EdgeShape.cpp in Sources */,
 				FA0B79461A958E3B000E1D17 /* Vector.cpp in Sources */,
+				FA27B3C51B4985D8008A9DCE /* Video.cpp in Sources */,
 				FA0B7DBB1A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B7DAE1A95902C000E1D17 /* wrap_CompressedImageData.cpp in Sources */,
 				FA0B7A6E1A958EA3000E1D17 /* b2WorldCallbacks.cpp in Sources */,
@@ -3643,11 +3749,14 @@
 				FA0B7D061A95902C000E1D17 /* wrap_File.cpp in Sources */,
 				FA0B7A4E1A958EA3000E1D17 /* b2Draw.cpp in Sources */,
 				FA0B7AEE1A958EA3000E1D17 /* inet.c in Sources */,
+				FA27B3C01B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */,
 				FA0B7D931A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7D9F1A95902C000E1D17 /* KTXHandler.cpp in Sources */,
 				FA0B7A2C1A958EA3000E1D17 /* b2CollideCircle.cpp in Sources */,
+				FA27B3A01B498151008A9DCE /* VideoStream.cpp in Sources */,
 				FA0B7CEB1A95902C000E1D17 /* Event.cpp in Sources */,
 				FA0B7B0B1A958EA3000E1D17 /* tcp.c in Sources */,
+				FA27B3AA1B498151008A9DCE /* VideoStream.cpp in Sources */,
 				FA0B7D961A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7E571A95902C000E1D17 /* wrap_Joint.cpp in Sources */,
 				FA0B7E301A95902C000E1D17 /* Shape.cpp in Sources */,
@@ -3767,6 +3876,8 @@
 				FA0B7E811A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA0B7B251A958EA3000E1D17 /* lutf8lib.c in Sources */,
 				FA0B7ED41A95902D000E1D17 /* Timer.cpp in Sources */,
+				FA19C4C51B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */,
+				FA27B3B31B498151008A9DCE /* wrap_Video.cpp in Sources */,
 				FA0B7A611A958EA3000E1D17 /* b2ContactManager.cpp in Sources */,
 				FA0B7AAD1A958EA3000E1D17 /* b2WheelJoint.cpp in Sources */,
 				FA0B7DEE1A95902C000E1D17 /* Mouse.cpp in Sources */,
@@ -3914,6 +4025,7 @@
 					"$(PROJECT_DIR)/ios/libraries/vorbis",
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
 					"$(PROJECT_DIR)/ios/libraries/luajit",
+					"$(PROJECT_DIR)/ios/libraries/theora",
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				OTHER_LDFLAGS = "-ObjC";
@@ -3953,6 +4065,7 @@
 					"$(PROJECT_DIR)/ios/libraries/vorbis",
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
 					"$(PROJECT_DIR)/ios/libraries/luajit",
+					"$(PROJECT_DIR)/ios/libraries/theora",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
@@ -3993,6 +4106,7 @@
 					"$(PROJECT_DIR)/ios/libraries/vorbis",
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
 					"$(PROJECT_DIR)/ios/libraries/luajit",
+					"$(PROJECT_DIR)/ios/libraries/theora",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
@@ -4065,6 +4179,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/Library/Frameworks,
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -4076,6 +4191,10 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios/libraries/theora",
+				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -4097,6 +4216,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/Library/Frameworks,
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -4108,6 +4228,10 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios/libraries/theora",
+				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -4130,6 +4254,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/Library/Frameworks,
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -4141,6 +4266,10 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios/libraries/theora",
+				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
