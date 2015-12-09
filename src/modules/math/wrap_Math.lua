@@ -76,7 +76,7 @@ end
 function math.gammaToLinear(r, g, b, a)
 	if type(r) == "table" then
 		local t = r
-		return gammaToLinear(t[1]), gammaToLinear(t[2]), gammaToLinear(t[3]), a
+		return gammaToLinear(t[1]), gammaToLinear(t[2]), gammaToLinear(t[3]), t[4]
 	end
 	return gammaToLinear(r), gammaToLinear(g), gammaToLinear(b), a
 end
@@ -91,7 +91,7 @@ end
 function math.linearToGamma(r, g, b, a)
 	if type(r) == "table" then
 		local t = r
-		return linearToGamma(t[1]), linearToGamma(t[2]), linearToGamma(t[3]), a
+		return linearToGamma(t[1]), linearToGamma(t[2]), linearToGamma(t[3]), t[4]
 	end
 	return linearToGamma(r), linearToGamma(g), linearToGamma(b), a
 end
