@@ -154,7 +154,11 @@ int64 File::read(void *dst, int64 size)
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
 
+#ifdef LOVE_USE_PHYSFS_2_1
+	int64 read = PHYSFS_readBytes(file, dst, (PHYSFS_uint64) size);
+#else
 	int64 read = (int64)PHYSFS_read(file, dst, 1, (PHYSFS_uint32) size);
+#endif
 
 	return read;
 }
@@ -171,7 +175,11 @@ bool File::write(const void *data, int64 size)
 		throw love::Exception("Invalid write size.");
 
 	// Try to write.
+#ifdef LOVE_USE_PHYSFS_2_1
+	int64 written = PHYSFS_writeBytes(file, data, (PHYSFS_uint64) size);
+#else
 	int64 written = (int64) PHYSFS_write(file, data, 1, (PHYSFS_uint32) size);
+#endif
 
 	// Check that correct amount of data was written.
 	if (written != size)

@@ -188,7 +188,13 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	// We don't want old read-only save paths to accumulate when we set a new
 	// identity.
 	if (!old_save_path.empty())
+	{
+#ifdef LOVE_USE_PHYSFS_2_1
+		PHYSFS_unmount(old_save_path.c_str());
+#else
 		PHYSFS_removeFromSearchPath(old_save_path.c_str());
+#endif
+	}
 
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
@@ -433,7 +439,11 @@ bool Filesystem::unmount(const char *archive)
 	if (!mountPoint)
 		return false;
 
+#ifdef LOVE_USE_PHYSFS_2_1
+	return PHYSFS_unmount(realPath.c_str()) != 0;
+#else
 	return PHYSFS_removeFromSearchPath(realPath.c_str()) != 0;
+#endif
 }
 
 love::filesystem::File *Filesystem::newFile(const char *filename) const
@@ -571,12 +581,20 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 
 bool Filesystem::isDirectory(const char *dir) const
 {
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(dir, &stat))
+		return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
+	else
+		return false;
+#else
 	return PHYSFS_isDirectory(dir) != 0;
+#endif
 }
 
 bool Filesystem::isFile(const char *file) const
 {
-	return PHYSFS_exists(file) && !PHYSFS_isDirectory(file);
+	return PHYSFS_exists(file) && !isDirectory(file);
 }
 
 bool Filesystem::createDirectory(const char *dir)
@@ -643,7 +661,15 @@ void Filesystem::getDirectoryItems(const char *dir, std::vector<std::string> &it
 
 int64 Filesystem::getLastModified(const char *filename) const
 {
-	PHYSFS_sint64 time = PHYSFS_getLastModTime(filename);
+	PHYSFS_sint64 time = -1;
+
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(filename, &stat))
+		time = stat.modtime;
+#else
+	time = PHYSFS_getLastModTime(filename);
+#endif
 
 	if (time == -1)
 		throw love::Exception("Could not determine file modification date.");
@@ -681,7 +707,15 @@ bool Filesystem::areSymlinksEnabled() const
 
 bool Filesystem::isSymlink(const char *filename) const
 {
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(filename, &stat))
+		return stat.filetype == PHYSFS_FILETYPE_SYMLINK;
+	else
+		return false;
+#else
 	return PHYSFS_isSymbolicLink(filename) != 0;
+#endif
 }
 
 std::vector<std::string> &Filesystem::getRequirePath()

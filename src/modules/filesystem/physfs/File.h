@@ -22,6 +22,7 @@
 #define LOVE_FILESYSTEM_PHYSFS_FILE_H
 
 // LOVE
+#include "common/config.h"
 #include "filesystem/File.h"
 
 // PhysFS
@@ -33,6 +34,12 @@
 
 // STD
 #include <string>
+
+// These platforms always use PhysFS 2.1.
+#if (defined(LOVE_IOS) || defined(LOVE_ANDROID)) \
+&& (PHYSFS_VER_MAJOR == 2 && PHYSFS_VER_MINOR >= 1)
+#define LOVE_USE_PHYSFS_2_1
+#endif
 
 namespace love
 {
