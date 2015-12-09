@@ -53,6 +53,7 @@ PKG_CHECK_MODULES([openal], [openal], [], [LOVE_MSG_ERROR([OpenAL])])
 PKG_CHECK_MODULES([libmodplug], [libmodplug], [], [LOVE_MSG_ERROR([libmodplug])])
 PKG_CHECK_MODULES([vorbisfile], [vorbisfile], [], [LOVE_MSG_ERROR([libvorbis and libvorbisfile])])
 PKG_CHECK_MODULES([zlib], [zlib], [], [LOVE_MSG_ERROR([zlib])])
+PKG_CHECK_MODULES([theora], [theoradec], [], [LOVE_MSG_ERROR([libtheora])])
 
 # Other libraries
 AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])

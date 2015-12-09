@@ -56,7 +56,6 @@ Timer::Timer()
 	, fpsUpdateFrequency(1)
 	, frames(0)
 	, dt(0)
-	, timerPeriod(getTimerPeriod())
 {
 	prevFpsUpdate = currTime = getTime();
 }
@@ -115,8 +114,11 @@ double Timer::getTimerPeriod()
 	return 0;
 }
 
-double Timer::getTime() const
+double Timer::getTimeSinceEpoch()
 {
+	// The timer period (reciprocal of the frequency.)
+	static const double timerPeriod = getTimerPeriod();
+
 #if defined(LOVE_LINUX)
 	double mt;
 	// Check for POSIX timers and monotonic clocks. If not supported, use the gettimeofday fallback.
@@ -141,6 +143,11 @@ double Timer::getTime() const
 	QueryPerformanceCounter(&microTime);
 	return (double) microTime.QuadPart * timerPeriod;
 #endif
+}
+
+double Timer::getTime() const
+{
+	return getTimeSinceEpoch();
 }
 
 } // timer

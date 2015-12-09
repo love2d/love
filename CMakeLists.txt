@@ -308,6 +308,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/SpriteBatch.h
 	src/modules/graphics/opengl/Text.cpp
 	src/modules/graphics/opengl/Text.h
+	src/modules/graphics/opengl/Video.cpp
+	src/modules/graphics/opengl/Video.h
 	src/modules/graphics/opengl/wrap_Canvas.cpp
 	src/modules/graphics/opengl/wrap_Canvas.h
 	src/modules/graphics/opengl/wrap_Font.cpp
@@ -326,6 +328,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_SpriteBatch.h
 	src/modules/graphics/opengl/wrap_Text.cpp
 	src/modules/graphics/opengl/wrap_Text.h
+	src/modules/graphics/opengl/wrap_Video.cpp
+	src/modules/graphics/opengl/wrap_Video.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
@@ -779,6 +783,35 @@ source_group("modules\\touch" FILES ${LOVE_SRC_MODULE_TOUCH_ROOT})
 source_group("modules\\touch\\sdl" FILES ${LOVE_SRC_MODULE_TOUCH_SDL})
 
 #
+# love.video
+#
+
+set(LOVE_SRC_MODULE_VIDEO_ROOT
+	src/modules/video/Video.h
+	src/modules/video/VideoStream.cpp
+	src/modules/video/VideoStream.h
+	src/modules/video/wrap_Video.cpp
+	src/modules/video/wrap_Video.h
+	src/modules/video/wrap_VideoStream.cpp
+	src/modules/video/wrap_VideoStream.h
+)
+
+set(LOVE_SRC_MODULE_VIDEO_THEORA
+	src/modules/video/theora/Video.cpp
+	src/modules/video/theora/Video.h
+	src/modules/video/theora/VideoStream.cpp
+	src/modules/video/theora/VideoStream.h
+)
+
+set(LOVE_SRC_MODULE_VIDEO
+	${LOVE_SRC_MODULE_VIDEO_ROOT}
+	${LOVE_SRC_MODULE_VIDEO_THEORA}
+)
+
+source_group("modules\\video" FILES ${LOVE_SRC_MODULE_VIDEO_ROOT})
+source_group("modules\\video\\theora" FILES ${LOVE_SRC_MODULE_VIDEO_THEORA})
+
+#
 # love.window
 #
 
@@ -1203,6 +1236,7 @@ set(LOVE_LIB_SRC
 	${LOVE_SRC_MODULE_THREAD}
 	${LOVE_SRC_MODULE_TIMER}
 	${LOVE_SRC_MODULE_TOUCH}
+	${LOVE_SRC_MODULE_VIDEO}
 	${LOVE_SRC_MODULE_WINDOW}
 )
 
@@ -1222,6 +1256,7 @@ set(LOVE_MEGA_3P
 	${MEGA_LIBOGG}
 	${MEGA_LIBVORBISFILE}
 	${MEGA_LIBVORBIS}
+	${MEGA_LIBTHEORA}
 	${MEGA_LUA}
 	${MEGA_MODPLUG}
 	${MEGA_OPENAL}

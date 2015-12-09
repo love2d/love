@@ -118,6 +118,9 @@ extern "C"
 #if defined(LOVE_ENABLE_TOUCH)
 	extern int luaopen_love_touch(lua_State*);
 #endif
+#if defined(LOVE_ENABLE_VIDEO)
+	extern int luaopen_love_video(lua_State*);
+#endif
 #if defined(LOVE_ENABLE_WINDOW)
 	extern int luaopen_love_window(lua_State*);
 #endif
@@ -173,6 +176,9 @@ static const luaL_Reg modules[] = {
 #endif
 #if defined(LOVE_ENABLE_TOUCH)
 	{ "love.touch", luaopen_love_touch },
+#endif
+#if defined(LOVE_ENABLE_VIDEO)
+	{ "love.video", luaopen_love_video },
 #endif
 #if defined(LOVE_ENABLE_WINDOW)
 	{ "love.window", luaopen_love_window },

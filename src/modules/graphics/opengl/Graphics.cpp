@@ -86,6 +86,11 @@ Graphics::~Graphics()
 		Shader::defaultShader->release();
 		Shader::defaultShader = nullptr;
 	}
+	if (Shader::defaultVideoShader)
+	{
+		Shader::defaultVideoShader->release();
+		Shader::defaultVideoShader = nullptr;
+	}
 
 	if (quadIndices)
 		delete quadIndices;
@@ -318,6 +323,13 @@ bool Graphics::setMode(int width, int height)
 	{
 		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
 		Shader::defaultShader = newShader(Shader::defaultCode[renderer]);
+	}
+
+	// and a default video shader.
+	if (!Shader::defaultVideoShader)
+	{
+		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
+		Shader::defaultVideoShader = newShader(Shader::defaultVideoCode[renderer]);
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
@@ -817,6 +829,11 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, con
 Text *Graphics::newText(Font *font, const std::vector<Font::ColoredString> &text)
 {
 	return new Text(font, text);
+}
+
+Video *Graphics::newVideo(love::video::VideoStream *stream)
+{
+	return new Video(stream);
 }
 
 bool Graphics::isGammaCorrect() const

@@ -18,35 +18,36 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
-#define LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
+#ifndef LOVE_VIDEO_VIDEO_H
+#define LOVE_VIDEO_VIDEO_H
 
 // LOVE
-#include "common/runtime.h"
-#include "File.h"
-#include "FileData.h"
+#include "common/Module.h"
+#include "common/Stream.h"
+#include "filesystem/File.h"
+
+#include "VideoStream.h"
 
 namespace love
 {
-namespace filesystem
+namespace video
 {
 
-/**
- * Gets FileData at the specified index. If the index contains a filepath or
- * a File object, the FileData will be created from that.
- * Note that this function retains the FileData object (possibly by creating it),
- * so a matching release() is required!
- * May trigger a Lua error.
- **/
-FileData *luax_getfiledata(lua_State *L, int idx);
-File *luax_getfile(lua_State *L, int idx);
+class Video : public Module
+{
+public:
+	virtual ~Video() {}
 
-bool hack_setupWriteDirectory();
-int loader(lua_State *L);
-int extloader(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State *L);
+	// Implements Module
+	virtual ModuleType getModuleType() const { return M_VIDEO; }
 
-} // filesystem
+	/**
+	 * Create a VideoStream representing video frames
+	 **/
+	virtual VideoStream *newVideoStream(love::filesystem::File *file) = 0;
+}; // Video
+
+} // video
 } // love
 
-#endif // LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
+#endif // LOVE_VIDEO_VIDEO_H

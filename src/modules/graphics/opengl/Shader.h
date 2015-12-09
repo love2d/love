@@ -64,6 +64,9 @@ public:
 		BUILTIN_NORMAL_MATRIX,
 		BUILTIN_POINT_SIZE,
 		BUILTIN_SCREEN_SIZE,
+		BUILTIN_VIDEO_Y_CHANNEL,
+		BUILTIN_VIDEO_CB_CHANNEL,
+		BUILTIN_VIDEO_CR_CHANNEL,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -89,9 +92,11 @@ public:
 
 	// Pointer to the default Shader.
 	static Shader *defaultShader;
+	static Shader *defaultVideoShader;
 
 	// Default shader code (a shader is always required internally.)
 	static ShaderSource defaultCode[Graphics::RENDERER_MAX_ENUM];
+	static ShaderSource defaultVideoCode[Graphics::RENDERER_MAX_ENUM];
 
 	/**
 	 * Creates a new Shader using a list of source codes.
@@ -182,6 +187,7 @@ public:
 	 **/
 	bool hasVertexAttrib(VertexAttribID attrib) const;
 
+	void setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtexture);
 	void checkSetScreenParams();
 	void checkSetPointSize(float size);
 	void checkSetBuiltinUniforms();
@@ -262,6 +268,8 @@ private:
 
 	Matrix4 lastTransformMatrix;
 	Matrix4 lastProjectionMatrix;
+
+	GLuint videoTextureUnits[3];
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;

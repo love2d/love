@@ -117,6 +117,16 @@ public:
 		return object;
 	}
 
+	operator bool() const
+	{
+		return object != nullptr;
+	}
+
+	operator T*() const
+	{
+		return object;
+	}
+
 	void set(T *obj)
 	{
 		if (obj) obj->retain();

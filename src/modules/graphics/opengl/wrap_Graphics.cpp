@@ -25,6 +25,7 @@
 #include "image/Image.h"
 #include "font/Rasterizer.h"
 #include "filesystem/wrap_Filesystem.h"
+#include "video/VideoStream.h"
 #include "image/wrap_Image.h"
 
 #include <cassert>
@@ -862,6 +863,20 @@ int w_newText(lua_State *L)
 	return 1;
 }
 
+int w_newVideo(lua_State *L)
+{
+	if (!luax_istype(L, 1, VIDEO_VIDEO_STREAM_ID))
+		luax_convobj(L, 1, "video", "newVideoStream");
+
+	auto stream = luax_checktype<love::video::VideoStream>(L, 1, VIDEO_VIDEO_STREAM_ID);
+	Video *video = nullptr;
+
+	luax_catchexcept(L, [&]() { video = instance()->newVideo(stream); });
+	luax_pushtype(L, GRAPHICS_VIDEO_ID, video);
+	video->release();
+	return 1;
+}
+
 int w_setColor(lua_State *L)
 {
 	Colorf c;
@@ -1274,25 +1289,37 @@ int w_setDefaultShaderCode(lua_State *L)
 	lua_getfield(L, 1, "opengl");
 	lua_rawgeti(L, -1, 1);
 	lua_rawgeti(L, -2, 2);
+	lua_rawgeti(L, -3, 3);
 
 	Shader::ShaderSource openglcode;
-	openglcode.vertex = luax_checkstring(L, -2);
-	openglcode.pixel = luax_checkstring(L, -1);
+	openglcode.vertex = luax_checkstring(L, -3);
+	openglcode.pixel = luax_checkstring(L, -2);
 
-	lua_pop(L, 3);
+	Shader::ShaderSource openglVideocode;
+	openglVideocode.vertex = luax_checkstring(L, -3);
+	openglVideocode.pixel = luax_checkstring(L, -1);
+
+	lua_pop(L, 4);
 
 	lua_getfield(L, 1, "opengles");
 	lua_rawgeti(L, -1, 1);
 	lua_rawgeti(L, -2, 2);
+	lua_rawgeti(L, -3, 3);
 
 	Shader::ShaderSource openglescode;
-	openglescode.vertex = luax_checkstring(L, -2);
-	openglescode.pixel = luax_checkstring(L, -1);
+	openglescode.vertex = luax_checkstring(L, -3);
+	openglescode.pixel = luax_checkstring(L, -2);
 
-	lua_pop(L, 3);
+	Shader::ShaderSource openglesVideocode;
+	openglesVideocode.vertex = luax_checkstring(L, -3);
+	openglesVideocode.pixel = luax_checkstring(L, -1);
+
+	lua_pop(L, 4);
 
 	Shader::defaultCode[Graphics::RENDERER_OPENGL]   = openglcode;
 	Shader::defaultCode[Graphics::RENDERER_OPENGLES] = openglescode;
+	Shader::defaultVideoCode[Graphics::RENDERER_OPENGL]   = openglVideocode;
+	Shader::defaultVideoCode[Graphics::RENDERER_OPENGLES] = openglesVideocode;
 
 	return 0;
 }
@@ -1863,6 +1890,7 @@ static const luaL_Reg functions[] =
 	{ "newShader", w_newShader },
 	{ "newMesh", w_newMesh },
 	{ "newText", w_newText },
+	{ "_newVideo", w_newVideo },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -1965,6 +1993,7 @@ static const lua_CFunction types[] =
 	luaopen_shader,
 	luaopen_mesh,
 	luaopen_text,
+	luaopen_video,
 	0
 };
 

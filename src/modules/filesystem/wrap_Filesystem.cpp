@@ -155,19 +155,28 @@ int w_newFile(lua_State *L)
 	return 1;
 }
 
-FileData *luax_getfiledata(lua_State *L, int idx)
+File *luax_getfile(lua_State *L, int idx)
 {
-	FileData *data = nullptr;
 	File *file = nullptr;
-
 	if (lua_isstring(L, idx))
 	{
 		const char *filename = luaL_checkstring(L, idx);
 		file = instance()->newFile(filename);
 	}
-	else if (luax_istype(L, idx, FILESYSTEM_FILE_ID))
-	{
+	else
 		file = luax_checkfile(L, idx);
+
+	return file;
+}
+
+FileData *luax_getfiledata(lua_State *L, int idx)
+{
+	FileData *data = nullptr;
+	File *file = nullptr;
+
+	if (lua_isstring(L, idx) || luax_istype(L, idx, FILESYSTEM_FILE_ID))
+	{
+		file = luax_getfile(L, idx);
 		file->retain();
 	}
 	else if (luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID))

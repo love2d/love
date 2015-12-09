@@ -34,6 +34,7 @@ enum Type
 	OBJECT_ID,
 	DATA_ID,
 	MODULE_ID,
+	STREAM_ID,
 
 	// Filesystem.
 	FILESYSTEM_FILE_ID,
@@ -56,6 +57,7 @@ enum Type
 	GRAPHICS_SHADER_ID,
 	GRAPHICS_MESH_ID,
 	GRAPHICS_TEXT_ID,
+	GRAPHICS_VIDEO_ID,
 
 	// Image
 	IMAGE_IMAGE_DATA_ID,
@@ -105,6 +107,9 @@ enum Type
 	// Thread
 	THREAD_THREAD_ID,
 	THREAD_CHANNEL_ID,
+
+	// Video
+	VIDEO_VIDEO_STREAM_ID,
 
 	// The modules themselves. Only add abstracted modules here.
 	MODULE_FILESYSTEM_ID,

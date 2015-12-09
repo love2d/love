@@ -18,35 +18,64 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
-#define LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
+#ifndef LOVE_VIDEO_THEORA_VIDEO_H
+#define LOVE_VIDEO_THEORA_VIDEO_H
+
+// STL
+#include <vector>
 
 // LOVE
-#include "common/runtime.h"
-#include "File.h"
-#include "FileData.h"
+#include "filesystem/File.h"
+#include "video/Video.h"
+#include "thread/threads.h"
+#include "VideoStream.h"
 
 namespace love
 {
-namespace filesystem
+namespace video
+{
+namespace theora
 {
 
-/**
- * Gets FileData at the specified index. If the index contains a filepath or
- * a File object, the FileData will be created from that.
- * Note that this function retains the FileData object (possibly by creating it),
- * so a matching release() is required!
- * May trigger a Lua error.
- **/
-FileData *luax_getfiledata(lua_State *L, int idx);
-File *luax_getfile(lua_State *L, int idx);
+class Worker;
 
-bool hack_setupWriteDirectory();
-int loader(lua_State *L);
-int extloader(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State *L);
+class Video : public love::video::Video
+{
+public:
+	Video();
+	~Video();
 
-} // filesystem
+	// Implements Module
+	virtual const char *getName() const;
+
+	VideoStream *newVideoStream(love::filesystem::File* file);
+
+private:
+	Worker *workerThread;
+}; // Video
+
+class Worker : public love::thread::Threadable
+{
+public:
+	Worker();
+	~Worker();
+
+	// Implements Threadable
+	void threadFunction();
+
+	void addStream(VideoStream *stream);
+	// Frees itself!
+	void stop();
+
+private:
+	std::vector<StrongRef<VideoStream>> streams;
+	love::thread::MutexRef mutex;
+
+	volatile bool stopping;
+}; // Worker
+
+} // theora
+} // video
 } // love
 
-#endif // LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
+#endif // LOVE_VIDEO_THEORA_VIDEO_H

@@ -18,22 +18,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
+#pragma once
 
 // LOVE
-#include "common/config.h"
-#include "wrap_Font.h"
-#include "wrap_Image.h"
-#include "graphics/wrap_Quad.h"
-#include "wrap_SpriteBatch.h"
-#include "wrap_ParticleSystem.h"
-#include "wrap_Canvas.h"
-#include "wrap_Shader.h"
-#include "wrap_Mesh.h"
-#include "wrap_Text.h"
-#include "wrap_Video.h"
-#include "Graphics.h"
+#include "common/math.h"
+#include "graphics/Drawable.h"
+#include "graphics/Volatile.h"
+#include "video/VideoStream.h"
+#include "audio/Source.h"
+
+#include "OpenGL.h"
 
 namespace love
 {
@@ -42,10 +36,44 @@ namespace graphics
 namespace opengl
 {
 
-extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State *L);
+class Video : public Drawable, public Volatile
+{
+public:
+
+	Video(love::video::VideoStream *stream);
+	~Video();
+
+	// Volatile
+	bool loadVolatile();
+	void unloadVolatile();
+
+	love::video::VideoStream *getStream();
+	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+
+	love::audio::Source *getSource();
+	void setSource(love::audio::Source *source);
+
+	int getWidth() const;
+	int getHeight() const;
+
+	void setFilter(const Texture::Filter &f);
+	const Texture::Filter &getFilter() const;
+
+private:
+
+	void update();
+
+	StrongRef<love::video::VideoStream> stream;
+	StrongRef<love::audio::Source> source;
+
+	GLuint textures[3];
+
+	Vertex vertices[4];
+
+	Texture::Filter filter;
+
+}; // Video
 
 } // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H

@@ -369,6 +369,7 @@ function love.init()
 			font = true,
 			thread = true,
 			window = true,
+			video = true,
 		},
 		console = false, -- Only relevant for windows.
 		identity = false,
@@ -425,6 +426,7 @@ function love.init()
 		"system",
 		"audio",
 		"image",
+		"video",
 		"font",
 		"window",
 		"graphics",

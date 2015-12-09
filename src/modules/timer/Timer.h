@@ -77,6 +77,7 @@ public:
 	 * @return The time (in seconds)
 	 **/
 	virtual double getTime() const;
+	static double getTimeSinceEpoch();
 
 private:
 
@@ -97,9 +98,6 @@ private:
 
 	// The current timestep.
 	double dt;
-
-	// The timer period (reciprocal of the frequency.)
-	const double timerPeriod;
 
 	// Returns the timer period on some platforms.
 	static double getTimerPeriod();

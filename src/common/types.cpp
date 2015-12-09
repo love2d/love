@@ -34,6 +34,7 @@ static const TypeBits *createTypeFlags()
 	b[OBJECT_ID] = one << OBJECT_ID;
 	b[DATA_ID] = (one << DATA_ID) | b[OBJECT_ID];
 	b[MODULE_ID] = (one << MODULE_ID) | b[OBJECT_ID];
+	b[STREAM_ID] = (one << STREAM_ID) | b[OBJECT_ID];
 
 	// Filesystem.
 	b[FILESYSTEM_FILE_ID] = (one << FILESYSTEM_FILE_ID) | b[OBJECT_ID];
@@ -55,6 +56,7 @@ static const TypeBits *createTypeFlags()
 	b[GRAPHICS_SHADER_ID] = (one << GRAPHICS_SHADER_ID) | b[OBJECT_ID];
 	b[GRAPHICS_MESH_ID] = (one << GRAPHICS_MESH_ID) | b[GRAPHICS_DRAWABLE_ID];
 	b[GRAPHICS_TEXT_ID] = (one << GRAPHICS_TEXT_ID) | b[GRAPHICS_DRAWABLE_ID];
+	b[GRAPHICS_VIDEO_ID] = (one << GRAPHICS_VIDEO_ID) | b[GRAPHICS_DRAWABLE_ID];
 
 	// Image.
 	b[IMAGE_IMAGE_DATA_ID] = (one << IMAGE_IMAGE_DATA_ID) | b[DATA_ID];
@@ -104,6 +106,9 @@ static const TypeBits *createTypeFlags()
 	// Thread.
 	b[THREAD_THREAD_ID] = (one << THREAD_THREAD_ID) | b[OBJECT_ID];
 	b[THREAD_CHANNEL_ID] = (one << THREAD_CHANNEL_ID) | b[OBJECT_ID];
+
+	// Video
+	b[VIDEO_VIDEO_STREAM_ID] = (one << VIDEO_VIDEO_STREAM_ID) | b[STREAM_ID];
 
 	// Modules.
 	b[MODULE_FILESYSTEM_ID] = (one << MODULE_FILESYSTEM_ID) | b[MODULE_ID];

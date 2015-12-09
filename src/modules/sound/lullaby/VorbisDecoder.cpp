@@ -168,7 +168,7 @@ bool VorbisDecoder::accepts(const std::string &ext)
 {
 	static const std::string supported[] =
 	{
-		"ogg", "oga", ""
+		"ogg", "oga", "ogv", ""
 	};
 
 	for (int i = 0; !(supported[i].empty()); i++)

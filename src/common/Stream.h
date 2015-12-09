@@ -18,35 +18,47 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
-#define LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
+#ifndef LOVE_STREAM_H
+#define LOVE_STREAM_H
 
 // LOVE
-#include "common/runtime.h"
-#include "File.h"
-#include "FileData.h"
+#include <stddef.h>
+#include "Object.h"
 
 namespace love
 {
-namespace filesystem
+
+class Stream : public Object
 {
+public:
+	virtual ~Stream() {}
 
-/**
- * Gets FileData at the specified index. If the index contains a filepath or
- * a File object, the FileData will be created from that.
- * Note that this function retains the FileData object (possibly by creating it),
- * so a matching release() is required!
- * May trigger a Lua error.
- **/
-FileData *luax_getfiledata(lua_State *L, int idx);
-File *luax_getfile(lua_State *L, int idx);
+	// getData and getSize are assumed to talk about
+	// the buffer
 
-bool hack_setupWriteDirectory();
-int loader(lua_State *L);
-int extloader(lua_State *L);
-extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State *L);
+	/**
+	 * A callback, gets called when some Stream consumer exhausts the data
+	 **/
+	virtual void fillBackBuffer() {}
 
-} // filesystem
+	/**
+	 * Get the front buffer, Streams are supposed to be (at least) double-buffered
+	 **/
+	virtual const void *getFrontBuffer() const = 0;
+
+	/**
+	 * Get the size of any (and in particular the front) buffer
+	 **/
+	virtual size_t getSize() const = 0;
+
+	/**
+	 * Swap buffers. Returns true if there is new data in the front buffer,
+     * false otherwise.
+	 * NOTE: If there is no back buffer ready, this call must be ignored
+	 **/
+	virtual bool swapBuffers() = 0;
+}; // Stream
+
 } // love
 
-#endif // LOVE_FILESYSTEM_WRAP_FILESYSTEM_H
+#endif // LOVE_STREAM_H

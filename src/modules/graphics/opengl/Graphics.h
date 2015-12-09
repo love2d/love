@@ -37,6 +37,8 @@
 
 #include "window/Window.h"
 
+#include "video/VideoStream.h"
+
 #include "Font.h"
 #include "Image.h"
 #include "graphics/Quad.h"
@@ -47,6 +49,7 @@
 #include "Shader.h"
 #include "Mesh.h"
 #include "Text.h"
+#include "Video.h"
 
 namespace love
 {
@@ -184,6 +187,8 @@ public:
 	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, Mesh::Usage usage);
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
+
+	Video *newVideo(love::video::VideoStream *stream);
 
 	bool isGammaCorrect() const;
 

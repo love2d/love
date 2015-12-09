@@ -165,6 +165,28 @@ varying mediump vec4 VaryingColor;
 
 uniform sampler2D _tex0_;]],
 
+	FUNCTIONS = [[
+uniform sampler2D love_VideoYChannel;
+uniform sampler2D love_VideoCbChannel;
+uniform sampler2D love_VideoCrChannel;
+
+vec4 VideoTexel(vec2 texcoords)
+{
+	vec3 yuv;
+	yuv[0] = Texel(love_VideoYChannel, texcoords).r;
+	yuv[1] = Texel(love_VideoCbChannel, texcoords).r;
+	yuv[2] = Texel(love_VideoCrChannel, texcoords).r;
+	yuv += vec3(-0.0627451017, -0.501960814, -0.501960814);
+
+	vec4 color;
+	color.r = dot(yuv, vec3(1.164,  0.000,  1.596));
+	color.g = dot(yuv, vec3(1.164, -0.391, -0.813));
+	color.b = dot(yuv, vec3(1.164,  2.018,  0.000));
+	color.a = 1.0;
+
+	return gammaCorrectColor(color);
+}]],
+
 	FOOTER = [[
 void main() {
 	// fix crashing issue in OSX when _tex0_ is unused within effect()
@@ -209,6 +231,7 @@ local function createPixelCode(pixelcode, is_multicanvas, lang)
 		love.graphics.isGammaCorrect() and "#define LOVE_GAMMA_CORRECT 1" or "",
 		GLSL.PIXEL.HEADER, GLSL.UNIFORMS,
 		GLSL.FUNCTIONS,
+		GLSL.PIXEL.FUNCTIONS,
 		lang == "glsles" and "#line 1" or "#line 0",
 		pixelcode,
 		is_multicanvas and GLSL.PIXEL.FOOTER_MULTI_CANVAS or GLSL.PIXEL.FOOTER,
@@ -309,21 +332,45 @@ vec4 position(mat4 transform_proj, vec4 vertpos) {
 	pixel = [[
 vec4 effect(mediump vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 	return Texel(tex, texcoord) * vcolor;
-}]]
+}]],
+	videopixel = [[
+vec4 effect(mediump vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
+	return VideoTexel(texcoord) * vcolor;
+}]],
 }
 
 local defaults = {
 	opengl = {
 		createVertexCode(defaultcode.vertex, "glsl"),
 		createPixelCode(defaultcode.pixel, false, "glsl"),
+		createPixelCode(defaultcode.videopixel, false, "glsl"),
 	},
 	opengles = {
 		createVertexCode(defaultcode.vertex, "glsles"),
 		createPixelCode(defaultcode.pixel, false, "glsles"),
+		createPixelCode(defaultcode.videopixel, false, "glsles"),
 	},
 }
 
 love.graphics._setDefaultShaderCode(defaults)
+
+function love.graphics.newVideo(file, loadaudio)
+	local video = love.graphics._newVideo(file)
+	local source, success
+
+	if loadaudio ~= false then
+		success, source = pcall(love.audio.newSource, video:getStream():getFilename())
+	end
+	if success then
+		video:setSource(source)
+	elseif loadaudio == true then
+		error("Video had no audio track", 2)
+	else
+		video:getStream():setSync(love.video.newRemote())
+	end
+
+	return video
+end
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
 --)luastring"--"

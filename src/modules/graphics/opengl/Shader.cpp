@@ -64,8 +64,10 @@ namespace
 
 Shader *Shader::current = nullptr;
 Shader *Shader::defaultShader = nullptr;
+Shader *Shader::defaultVideoShader = nullptr;
 
 Shader::ShaderSource Shader::defaultCode[Graphics::RENDERER_MAX_ENUM];
+Shader::ShaderSource Shader::defaultVideoCode[Graphics::RENDERER_MAX_ENUM];
 
 std::vector<int> Shader::textureCounters;
 
@@ -77,6 +79,7 @@ Shader::Shader(const ShaderSource &source)
 	, lastCanvas((Canvas *) -1)
 	, lastViewport()
 	, lastPointSize(0.0f)
+	, videoTextureUnits()
 {
 	if (source.vertex.empty() && source.pixel.empty())
 		throw love::Exception("Cannot create shader: no source code!");
@@ -224,6 +227,9 @@ bool Shader::loadVolatile()
 	float nan = std::numeric_limits<float>::quiet_NaN();
 	lastProjectionMatrix.setTranslation(nan, nan);
 	lastTransformMatrix.setTranslation(nan, nan);
+
+	for (int i = 0; i < 3; i++)
+		videoTextureUnits[i] = 0;
 
 	// zero out active texture list
 	activeTexUnits.clear();
@@ -635,6 +641,57 @@ bool Shader::hasVertexAttrib(VertexAttribID attrib) const
 	return builtinAttributes[int(attrib)] != -1;
 }
 
+void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtexture)
+{
+	TemporaryAttacher attacher(this);
+
+	// Set up the texture units that will be used by the shader to sample from
+	// the textures, if they haven't been set up yet.
+	if (videoTextureUnits[0] == 0)
+	{
+		const GLint locs[3] = {
+			builtinUniforms[BUILTIN_VIDEO_Y_CHANNEL],
+			builtinUniforms[BUILTIN_VIDEO_CB_CHANNEL],
+			builtinUniforms[BUILTIN_VIDEO_CR_CHANNEL]
+		};
+
+		const char *names[3] = {nullptr, nullptr, nullptr};
+		builtinNames.find(BUILTIN_VIDEO_Y_CHANNEL,  names[0]);
+		builtinNames.find(BUILTIN_VIDEO_CB_CHANNEL, names[1]);
+		builtinNames.find(BUILTIN_VIDEO_CR_CHANNEL, names[2]);
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (locs[i] >= 0 && names[i] != nullptr)
+			{
+				videoTextureUnits[i] = getTextureUnit(names[i]);
+
+				// Increment global shader texture id counter for this texture
+				// unit, if we haven't already.
+				if (activeTexUnits[videoTextureUnits[i] - 1] == 0)
+					++textureCounters[videoTextureUnits[i] - 1];
+
+				glUniform1i(locs[i], videoTextureUnits[i]);
+			}
+		}
+	}
+
+	const GLuint textures[3] = {ytexture, cbtexture, crtexture};
+
+	// Bind the textures to their respective texture units.
+	for (int i = 0; i < 3; i++)
+	{
+		if (videoTextureUnits[i] != 0)
+		{
+			// Store texture id so it can be re-bound later.
+			activeTexUnits[videoTextureUnits[i] - 1] = textures[i];
+			gl.bindTextureToUnit(textures[i], videoTextureUnits[i], false);
+		}
+	}
+
+	gl.setTextureUnit(0);
+}
+
 void Shader::checkSetScreenParams()
 {
 	OpenGL::Viewport view = gl.getViewport();
@@ -898,6 +955,9 @@ StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::built
 	{"NormalMatrix", Shader::BUILTIN_NORMAL_MATRIX},
 	{"love_PointSize", Shader::BUILTIN_POINT_SIZE},
 	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
+	{"love_VideoYChannel", Shader::BUILTIN_VIDEO_Y_CHANNEL},
+	{"love_VideoCbChannel", Shader::BUILTIN_VIDEO_CB_CHANNEL},
+	{"love_VideoCrChannel", Shader::BUILTIN_VIDEO_CR_CHANNEL},
 };
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));
