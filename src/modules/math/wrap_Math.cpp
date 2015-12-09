@@ -29,6 +29,11 @@
 #include <iostream>
 #include <algorithm>
 
+// Put the Lua code directly into a raw string literal.
+static const char math_lua[] =
+#include "wrap_Math.lua"
+;
+
 namespace love
 {
 namespace math
@@ -414,6 +419,47 @@ int w_decompress(lua_State *L)
 	return 1;
 }
 
+// C functions in a struct, necessary for the FFI versions of math functions.
+struct FFI_Math
+{
+	float (*noise1)(float x);
+	float (*noise2)(float x, float y);
+	float (*noise3)(float x, float y, float z);
+	float (*noise4)(float x, float y, float z, float w);
+
+	float (*gammaToLinear)(float c);
+	float (*linearToGamma)(float c);
+};
+
+static FFI_Math ffifuncs =
+{
+	[](float x) -> float // noise1
+	{
+		return Math::instance.noise(x);
+	},
+	[](float x, float y) -> float // noise2
+	{
+		return Math::instance.noise(x, y);
+	},
+	[](float x, float y, float z) -> float // noise3
+	{
+		return Math::instance.noise(x, y, z);
+	},
+	[](float x, float y, float z, float w) -> float // noise4
+	{
+		return Math::instance.noise(x, y, z, w);
+	},
+
+	[](float c) -> float // gammaToLinear
+	{
+		return Math::instance.gammaToLinear(c);
+	},
+	[](float c) -> float // linearToGamma
+	{
+		return Math::instance.linearToGamma(c);
+	}
+};
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -455,6 +501,12 @@ extern "C" int luaopen_love_math(lua_State *L)
 	w.types = types;
 
 	int n = luax_register_module(L, w);
+
+	// Execute wrap_Event.lua, sending the math table and ffifuncs pointer as args.
+	luaL_loadbuffer(L, math_lua, sizeof(math_lua), "wrap_Math.lua");
+	lua_pushvalue(L, -2);
+	lua_pushlightuserdata(L, &ffifuncs);
+	lua_call(L, 2, 0);
 
 	return n;
 }

@@ -848,6 +848,7 @@
 		FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
 		FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
 		FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7550A71AEBE276003E311E /* libluajit.a */; };
+		FA7DA04D1C16874A0056B200 /* wrap_Math.lua in Resources */ = {isa = PBXBuildFile; fileRef = FA7DA04C1C16874A0056B200 /* wrap_Math.lua */; };
 		FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
@@ -1506,6 +1507,7 @@
 		FA620A391AA305F6005DB4C2 /* types.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = types.cpp; sourceTree = "<group>"; };
 		FA6AE6041B3335EC00583D5C /* wrap_Graphics.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_Graphics.lua; sourceTree = "<group>"; };
 		FA7550A71AEBE276003E311E /* libluajit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libluajit.a; sourceTree = "<group>"; };
+		FA7DA04C1C16874A0056B200 /* wrap_Math.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Math.lua; sourceTree = "<group>"; };
 		FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
@@ -2405,6 +2407,7 @@
 				FAB17BEF1ABFB37500F9BA27 /* wrap_CompressedData.h */,
 				FA0B7C091A95902C000E1D17 /* wrap_Math.cpp */,
 				FA0B7C0A1A95902C000E1D17 /* wrap_Math.h */,
+				FA7DA04C1C16874A0056B200 /* wrap_Math.lua */,
 				FA0B7C0B1A95902C000E1D17 /* wrap_RandomGenerator.cpp */,
 				FA0B7C0C1A95902C000E1D17 /* wrap_RandomGenerator.h */,
 			);
@@ -3197,6 +3200,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA7DA04D1C16874A0056B200 /* wrap_Math.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
