@@ -32,6 +32,9 @@ into the `platform/xcode/ios` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
+###Android
+Visit the [Android build repository][android-repository] for build instructions.
+
 Repository information
 ----------------------
 
@@ -87,3 +90,4 @@ Dependencies
 [aur]: http://aur.archlinux.org/packages/love-hg
 [love-experiments]: https://bitbucket.org/bartbes/love-experiments
 [codestyle]: https://love2d.org/wiki/Code_Style
+[android-repository]: https://bitbucket.org/MartinFelis/love-android-sdl2
