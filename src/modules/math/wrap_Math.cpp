@@ -39,9 +39,10 @@ namespace love
 namespace math
 {
 
-int w_random(lua_State *L)
+int w__random(lua_State *L)
 {
-	return luax_getrandom(L, 1, Math::instance.random());
+	lua_pushnumber(L, Math::instance.random());
+	return 1;
 }
 
 int w_randomNormal(lua_State *L)
@@ -422,6 +423,8 @@ int w_decompress(lua_State *L)
 // C functions in a struct, necessary for the FFI versions of math functions.
 struct FFI_Math
 {
+	double (*random)(void);
+
 	float (*noise1)(float x);
 	float (*noise2)(float x, float y);
 	float (*noise3)(float x, float y, float z);
@@ -433,6 +436,11 @@ struct FFI_Math
 
 static FFI_Math ffifuncs =
 {
+	[](void) -> double // random
+	{
+		return Math::instance.random();
+	},
+
 	[](float x) -> float // noise1
 	{
 		return Math::instance.noise(x);
@@ -463,7 +471,7 @@ static FFI_Math ffifuncs =
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "random", w_random },
+	{ "_random", w__random }, // love.math.random is inside wrap_Math.lua.
 	{ "randomNormal", w_randomNormal },
 	{ "setRandomSeed", w_setRandomSeed },
 	{ "getRandomSeed", w_getRandomSeed },

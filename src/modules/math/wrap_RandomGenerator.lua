@@ -22,12 +22,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
-local love_math, ffifuncspointer = ...
+local RandomGenerator_mt, ffifuncspointer = ...
+local RandomGenerator = RandomGenerator_mt.__index
 
 local type, tonumber, error = type, tonumber, error
 local floor = math.floor
 
-local _random = love_math._random
+local _random = RandomGenerator._random
 
 local function getrandom(r, l, u)
 	if u ~= nil then
@@ -42,8 +43,8 @@ local function getrandom(r, l, u)
 	end
 end
 
-function love_math.random(l, u)
-	local r = _random()
+function RandomGenerator:random(l, u)
+	local r = _random(self)
 	return getrandom(r, l, u)
 end
 
@@ -56,72 +57,23 @@ end
 local status, ffi = pcall(require, "ffi")
 if not status then return end
 
--- Matches the struct declaration in wrap_Math.cpp.
 pcall(ffi.cdef, [[
-typedef struct FFI_Math
+typedef struct Proxy Proxy;
+
+typedef struct FFI_RandomGenerator
 {
-	double (*random)(void);
-
-	float (*noise1)(float x);
-	float (*noise2)(float x, float y);
-	float (*noise3)(float x, float y, float z);
-	float (*noise4)(float x, float y, float z, float w);
-
-	float (*gammaToLinear)(float c);
-	float (*linearToGamma)(float c);
-} FFI_Math;
+	double (*random)(Proxy *p);
+} FFI_RandomGenerator;
 ]])
 
-local ffifuncs = ffi.cast("FFI_Math *", ffifuncspointer)
+local ffifuncs = ffi.cast("FFI_RandomGenerator *", ffifuncspointer)
 
 
 -- Overwrite some regular love.math functions with FFI implementations.
 
-function love_math.random(l, u)
-	local r = tonumber(ffifuncs.random())
+function RandomGenerator:random(l, u)
+	local r = tonumber(ffifuncs.random(self))
 	return getrandom(r, l, u)
-end
-
-function love_math.noise(x, y, z, w)
-	if w ~= nil then
-		return tonumber(ffifuncs.noise4(x, y, z, w))
-	elseif z ~= nil then
-		return tonumber(ffifuncs.noise3(x, y, z))
-	elseif y ~= nil then
-		return tonumber(ffifuncs.noise2(x, y))
-	elseif x ~= nil then
-		return tonumber(ffifuncs.noise1(x))
-	end
-end
-
-local function gammaToLinear(c)
-	if c ~= nil then
-		return tonumber(ffifuncs.gammaToLinear(c / 255)) * 255
-	end
-	return c
-end
-
-function love_math.gammaToLinear(r, g, b, a)
-	if type(r) == "table" then
-		local t = r
-		return gammaToLinear(t[1]), gammaToLinear(t[2]), gammaToLinear(t[3]), t[4]
-	end
-	return gammaToLinear(r), gammaToLinear(g), gammaToLinear(b), a
-end
-
-local function linearToGamma(c)
-	if c ~= nil then
-		return tonumber(ffifuncs.linearToGamma(c / 255)) * 255
-	end
-	return c
-end
-
-function love_math.linearToGamma(r, g, b, a)
-	if type(r) == "table" then
-		local t = r
-		return linearToGamma(t[1]), linearToGamma(t[2]), linearToGamma(t[3]), t[4]
-	end
-	return linearToGamma(r), linearToGamma(g), linearToGamma(b), a
 end
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.

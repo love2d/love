@@ -33,7 +33,6 @@ namespace math
 
 // Helper functions.
 RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx);
-int luax_getrandom(lua_State *L, int startidx, double r);
 
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx);
 extern "C" int luaopen_randomgenerator(lua_State *L);
