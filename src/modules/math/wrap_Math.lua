@@ -27,24 +27,30 @@ local love_math, ffifuncspointer = ...
 local type, tonumber, error = type, tonumber, error
 local floor = math.floor
 
-local _random = love_math._random
-
-local function getrandom(r, l, u)
-	if u ~= nil then
-		if type(r) ~= "number" then error("bad argument #1 to 'random' (number expected)", 2) end
-		if type(l) ~= "number" then error("bad argument #2 to 'random' (number expected)", 2) end
-		return floor(r * (u - l + 1)) + l
-	elseif l ~= nil then
-		if type(l) ~= "number" then error("bad argument #1 to 'random' (number expected)", 2) end
-		return floor(r * l) + 1
-	else
-		return r
-	end
-end
+local rng = love_math._getRandomGenerator()
 
 function love_math.random(l, u)
-	local r = _random()
-	return getrandom(r, l, u)
+	return rng:random(l, u)
+end
+
+function love_math.randomNormal(stddev, mean)
+	return rng:randomNormal(stddev, mean)
+end
+
+function love_math.setRandomSeed(low, high)
+	return rng:setSeed(low, high)
+end
+
+function love_math.getRandomSeed()
+	return rng:getSeed()
+end
+
+function love_math.setRandomState(state)
+	return rng:setState(state)
+end
+
+function love_math.getRandomState()
+	return rng:getState()
 end
 
 if type(jit) ~= "table" or not jit.status() then
@@ -60,8 +66,6 @@ if not status then return end
 pcall(ffi.cdef, [[
 typedef struct FFI_Math
 {
-	double (*random)(void);
-
 	float (*noise1)(float x);
 	float (*noise2)(float x, float y);
 	float (*noise3)(float x, float y, float z);
@@ -76,11 +80,6 @@ local ffifuncs = ffi.cast("FFI_Math *", ffifuncspointer)
 
 
 -- Overwrite some regular love.math functions with FFI implementations.
-
-function love_math.random(l, u)
-	local r = tonumber(ffifuncs.random())
-	return getrandom(r, l, u)
-end
 
 function love_math.noise(x, y, z, w)
 	if w ~= nil then

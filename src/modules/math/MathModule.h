@@ -55,56 +55,9 @@ public:
 
 	virtual ~Math();
 
-	/**
-	 * @copydoc RandomGenerator::random()
-	 **/
-	inline double random()
+	RandomGenerator *getRandomGenerator()
 	{
-		return rng.random();
-	}
-
-	/**
-	 * @copydoc RandomGenerator::random(double)
-	 **/
-	inline double random(double max)
-	{
-		return rng.random(max);
-	}
-
-	/**
-	 * @copydoc RandomGenerator::random(double,double)
-	 **/
-	inline double random(double min, double max)
-	{
-		return rng.random(min, max);
-	}
-
-	/**
-	 * @copydoc RandomGenerator::randomNormal()
-	 **/
-	inline double randomNormal(double stddev)
-	{
-		return rng.randomNormal(stddev);
-	}
-
-	inline void setRandomSeed(RandomGenerator::Seed seed)
-	{
-		rng.setSeed(seed);
-	}
-
-	inline RandomGenerator::Seed getRandomSeed() const
-	{
-		return rng.getSeed();
-	}
-
-	inline void setRandomState(const std::string &statestr)
-	{
-		rng.setState(statestr);
-	}
-
-	inline std::string getRandomState() const
-	{
-		return rng.getState();
+		return &rng;
 	}
 
 	/**
