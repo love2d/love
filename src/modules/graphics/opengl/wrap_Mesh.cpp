@@ -108,12 +108,28 @@ const char *luax_readAttributeData(lua_State *L, Mesh::DataType type, int compon
 int w_Mesh_setVertices(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	luaL_checktype(L, 2, LUA_TTABLE);
 	size_t vertoffset = (size_t) luaL_optnumber(L, 3, 1) - 1;
 
 	if (vertoffset >= t->getVertexCount())
 		return luaL_error(L, "Invalid vertex start index (must be between 1 and %d)", (int) t->getVertexCount());
 
+	size_t stride = t->getVertexStride();
+	size_t byteoffset = vertoffset * stride;
+
+	if (luax_istype(L, 2, DATA_ID))
+	{
+		Data *d = luax_checktype<Data>(L, 2, DATA_ID);
+
+		size_t datasize = std::min(d->getSize(), (t->getVertexCount() - vertoffset) * stride);
+		char *bytedata = (char *) t->mapVertexData() + byteoffset;
+
+		memcpy(bytedata, d->getData(), datasize);
+
+		t->unmapVertexData(byteoffset, datasize);
+		return 0;
+	}
+
+	luaL_checktype(L, 2, LUA_TTABLE);
 	size_t nvertices = luax_objlen(L, 2);
 
 	if (vertoffset + nvertices > t->getVertexCount())
@@ -124,9 +140,6 @@ int w_Mesh_setVertices(lua_State *L)
 	int ncomponents = 0;
 	for (const Mesh::AttribFormat &format : vertexformat)
 		ncomponents += format.components;
-
-	size_t stride = t->getVertexStride();
-	size_t byteoffset = vertoffset * stride;
 
 	char *data = (char *) t->mapVertexData() + byteoffset;
 
