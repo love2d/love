@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_WRAP_MESH_H
 
 // LOVE
+#include "common/config.h"
 #include "common/runtime.h"
 #include "Mesh.h"
 

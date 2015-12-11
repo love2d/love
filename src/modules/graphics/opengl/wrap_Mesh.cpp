@@ -26,6 +26,7 @@
 
 // C++
 #include <typeinfo>
+#include <algorithm>
 
 namespace love
 {
