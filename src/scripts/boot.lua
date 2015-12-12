@@ -386,13 +386,13 @@ function love.init()
 	end
 
 	-- If config file exists, load it and allow it to update config table.
-	if not love.conf and love.filesystem and love.filesystem.isFile("conf.lua") then
-		require("conf")
+	local confok, conferr
+	if (not love.conf) and love.filesystem and love.filesystem.isFile("conf.lua") then
+		confok, conferr = pcall(require, "conf")
 	end
 
 	-- Yes, conf.lua might not exist, but there are other ways of making
 	-- love.conf appear, so we should check for it anyway.
-	local confok, conferr
 	if love.conf then
 		confok, conferr = pcall(love.conf, c)
 		-- If love.conf errors, we'll trigger the error after loading modules so
