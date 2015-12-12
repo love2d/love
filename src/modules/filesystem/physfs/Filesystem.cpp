@@ -579,6 +579,11 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	return std::string(dir);
 }
 
+bool Filesystem::exists(const char *path) const
+{
+	return PHYSFS_exists(path) != 0;
+}
+
 bool Filesystem::isDirectory(const char *dir) const
 {
 #ifdef LOVE_USE_PHYSFS_2_1
@@ -595,6 +600,19 @@ bool Filesystem::isDirectory(const char *dir) const
 bool Filesystem::isFile(const char *file) const
 {
 	return PHYSFS_exists(file) && !isDirectory(file);
+}
+
+bool Filesystem::isSymlink(const char *filename) const
+{
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(filename, &stat))
+		return stat.filetype == PHYSFS_FILETYPE_SYMLINK;
+	else
+		return false;
+#else
+	return PHYSFS_isSymbolicLink(filename) != 0;
+#endif
 }
 
 bool Filesystem::createDirectory(const char *dir)
@@ -703,19 +721,6 @@ void Filesystem::setSymlinksEnabled(bool enable)
 bool Filesystem::areSymlinksEnabled() const
 {
 	return PHYSFS_symbolicLinksPermitted() != 0;
-}
-
-bool Filesystem::isSymlink(const char *filename) const
-{
-#ifdef LOVE_USE_PHYSFS_2_1
-	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(filename, &stat))
-		return stat.filetype == PHYSFS_FILETYPE_SYMLINK;
-	else
-		return false;
-#else
-	return PHYSFS_isSymbolicLink(filename) != 0;
-#endif
 }
 
 std::vector<std::string> &Filesystem::getRequirePath()

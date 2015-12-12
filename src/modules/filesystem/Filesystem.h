@@ -157,6 +157,12 @@ public:
 	virtual std::string getRealDirectory(const char *filename) const = 0;
 
 	/**
+	 * Checks if a path exists.
+	 * @param path The path to check.
+	 **/
+	virtual bool exists(const char *path) const = 0;
+
+	/**
 	 * Checks if a path is a directory.
 	 * @param dir The directory name to check.
 	 **/
@@ -167,6 +173,12 @@ public:
 	 * @param file The filename to check.
 	 **/
 	virtual bool isFile(const char *file) const = 0;
+
+	/**
+	 * Gets whether a filepath is actually a symlink.
+	 * Always returns false if symlinks are not enabled.
+	 **/
+	virtual bool isSymlink(const char *filename) const = 0;
 
 	/**
 	 * Creates a directory. Write dir must be set.
@@ -231,12 +243,6 @@ public:
 	 * Gets whether symbolic link support is enabled.
 	 **/
 	virtual bool areSymlinksEnabled() const = 0;
-
-	/**
-	 * Gets whether a filepath is actually a symlink.
-	 * Always returns false if symlinks are not enabled.
-	 **/
-	virtual bool isSymlink(const char *filename) const = 0;
 
 	// Require path accessors
 	// Not const because it's R/W

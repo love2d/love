@@ -75,8 +75,10 @@ public:
 
 	std::string getRealDirectory(const char *filename) const;
 
+	bool exists(const char *path) const;
 	bool isDirectory(const char *dir) const;
 	bool isFile(const char *file) const;
+	bool isSymlink(const char *filename) const;
 
 	bool createDirectory(const char *dir);
 
@@ -93,7 +95,6 @@ public:
 
 	void setSymlinksEnabled(bool enable);
 	bool areSymlinksEnabled() const;
-	bool isSymlink(const char *filename) const;
 
 	std::vector<std::string> &getRequirePath();
 

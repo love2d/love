@@ -79,7 +79,6 @@ Released: N/A
   * Renamed Canvas:getImageData to Canvas:newImageData.
   * Renamed love.image's CompressedData type to CompressedImageData.
 
-  * Removed love.filesystem.exists (use love.filesystem.isFile or love.filesystem.isDirectory instead.)
   * Removed callback variant of love.filesystem.getDirectoryItems.
   * Removed the "wu" and "wd" constants for love.mousepressed (replaced by love.wheelmoved.)
   * Removed the named mouse button constants (replaced by button numbers.)

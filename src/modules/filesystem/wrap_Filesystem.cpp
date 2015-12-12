@@ -316,6 +316,13 @@ int w_getExecutablePath(lua_State *L)
 	return 1;
 }
 
+int w_exists(lua_State *L)
+{
+	const char *arg = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->exists(arg));
+	return 1;
+}
+
 int w_isDirectory(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
@@ -327,6 +334,13 @@ int w_isFile(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
 	luax_pushboolean(L, instance()->isFile(arg));
+	return 1;
+}
+
+int w_isSymlink(lua_State *L)
+{
+	const char *filename = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->isSymlink(filename));
 	return 1;
 }
 
@@ -551,13 +565,6 @@ int w_areSymlinksEnabled(lua_State *L)
 	return 1;
 }
 
-int w_isSymlink(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isSymlink(filename));
-	return 1;
-}
-
 int w_getRequirePath(lua_State *L)
 {
 	std::stringstream path;
@@ -715,8 +722,10 @@ static const luaL_Reg functions[] =
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
 	{ "getRealDirectory", w_getRealDirectory },
 	{ "getExecutablePath", w_getExecutablePath },
+	{ "exists", w_exists },
 	{ "isDirectory", w_isDirectory },
 	{ "isFile", w_isFile },
+	{ "isSymlink", w_isSymlink },
 	{ "createDirectory", w_createDirectory },
 	{ "remove", w_remove },
 	{ "read", w_read },
@@ -729,7 +738,6 @@ static const luaL_Reg functions[] =
 	{ "getSize", w_getSize },
 	{ "setSymlinksEnabled", w_setSymlinksEnabled },
 	{ "areSymlinksEnabled", w_areSymlinksEnabled },
-	{ "isSymlink", w_isSymlink },
 	{ "newFileData", w_newFileData },
 	{ "getRequirePath", w_getRequirePath },
 	{ "setRequirePath", w_setRequirePath },
