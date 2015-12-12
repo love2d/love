@@ -920,6 +920,7 @@
 
 /* Begin PBXFileReference section */
 		503971A86B7167A91B670FBA /* boot.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = boot.lua.h; sourceTree = "<group>"; };
+		FA024C1C1C0D81CD00567EB0 /* wrap_Event.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Event.lua; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0B78DD1A958B90000E1D17 /* liblove.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblove.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA0B78F71A958E3B000E1D17 /* b64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b64.cpp; sourceTree = "<group>"; };
@@ -2170,6 +2171,7 @@
 				FA0B7B551A95902C000E1D17 /* sdl */,
 				FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */,
 				FA8951A11AA2EDF300EC385A /* wrap_Event.h */,
+				FA024C1C1C0D81CD00567EB0 /* wrap_Event.lua */,
 			);
 			path = event;
 			sourceTree = "<group>";
