@@ -591,7 +591,6 @@ function love.errhand(msg)
 			v:setVibration()
 		end
 	end
-	love.event.clearListeners()
 	if love.audio then love.audio.stop() end
 	love.graphics.reset()
 	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))

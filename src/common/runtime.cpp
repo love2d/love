@@ -243,17 +243,7 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 
 	// Register all the functions.
 	if (m.functions != nullptr)
-	{
-		const luaL_Reg *l = m.functions;
-
-		for (; l->name != nullptr; l++)
-		{
-			// Set the module's table as an upvalue for the module's functions.
-			lua_pushvalue(L, -1);
-			lua_pushcclosure(L, l->func, 1);
-			lua_setfield(L, -2, l->name);
-		}
-	}
+		luax_setfuncs(L, m.functions);
 
 	// Register types.
 	if (m.types != nullptr)

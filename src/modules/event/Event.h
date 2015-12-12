@@ -49,8 +49,6 @@ public:
 	int toLua(lua_State *L);
 	static Message *fromLua(lua_State *L, int n);
 
-	const std::string &getName() const { return name; }
-
 private:
 
 	std::string name;
