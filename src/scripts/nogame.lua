@@ -887,7 +887,7 @@ function love.nogame()
 	function Mosaic:addGeneration()
 		self.generation = self.generation + 1
 		if self.generation % 5 == 0 then
-			if love.math.random(0, 100) < 30 then
+			if love.math.random(0, 100) < 60 then
 				self.generator = self.generators[love.math.random(2, #self.generators)]
 			else
 				self.generator = self.generators[1]
