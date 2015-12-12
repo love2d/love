@@ -76,6 +76,7 @@ Dependencies
 - ModPlug
 - mpg123
 - Vorbisfile
+- Theora
 
 [site]: http://love2d.org
 [wiki]: http://love2d.org/wiki
