@@ -591,6 +591,7 @@ function love.errhand(msg)
 			v:setVibration()
 		end
 	end
+	love.event.clearListeners()
 	if love.audio then love.audio.stop() end
 	love.graphics.reset()
 	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
@@ -635,7 +636,7 @@ function love.errhand(msg)
 				return
 			elseif e == "keypressed" and a == "escape" then
 				return
-			elseif e == "touchreleased" then
+			elseif e == "touchpressed" then
 				local name = love.window.getTitle()
 				if #name == 0 or name == "Untitled" then name = "Game" end
 				local buttons = {"OK", "Cancel"}

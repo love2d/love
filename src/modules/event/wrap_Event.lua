@@ -93,5 +93,11 @@ function event.removeListener(func)
 	return success
 end
 
+function event.clearListeners()
+	for k in pairs(listeners) do
+		listeners[k] = nil
+	end
+end
+
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
 --)luastring"--"
