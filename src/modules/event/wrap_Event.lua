@@ -51,7 +51,7 @@ function event.addListener(func, ...)
 	if type(t) == "table" then
 		for i, name in ipairs(t) do
 			if type(name) ~= "string" then
-				error("Invalid table element #"..i.." in argument #2 to love.event.addListener (expected string)", 2)
+				error("Invalid table element #"..i.." in argument #2 to addListener (expected string)", 2)
 			end
 
 			addListenerForEvent(name, func)
