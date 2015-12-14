@@ -558,7 +558,7 @@ bool Canvas::checkCreateStencil()
 	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
 		|| GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil)
 	{
-		format = GL_DEPTH_STENCIL;
+		format = GL_DEPTH24_STENCIL8;
 		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
 	}
 
