@@ -551,14 +551,9 @@ void Window::updateSettings(const WindowSettings &newsettings)
 	curMode.settings.fullscreen = love::android::getImmersive();
 #endif
 
-	// The min width/height is set to 0 internally in SDL when in fullscreen.
-	if (curMode.settings.fullscreen)
-	{
-		curMode.settings.minwidth = newsettings.minwidth;
-		curMode.settings.minheight = newsettings.minheight;
-	}
-	else
-		SDL_GetWindowMinimumSize(window, &curMode.settings.minwidth, &curMode.settings.minheight);
+	// SDL_GetWindowMinimumSize gives back 0,0 sometimes...
+	curMode.settings.minwidth = newsettings.minwidth;
+	curMode.settings.minheight = newsettings.minheight;
 
 	curMode.settings.resizable = (wflags & SDL_WINDOW_RESIZABLE) != 0;
 	curMode.settings.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
@@ -663,6 +658,10 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	{
 		SDL_GL_MakeCurrent(window, context);
 		updateSettings(newsettings);
+
+		// Apparently this gets un-set when we exit fullscreen (at least in OS X).
+		if (!fullscreen)
+			SDL_SetWindowMinimumSize(window, curMode.settings.minwidth, curMode.settings.minheight);
 
 		// Update the viewport size now instead of waiting for event polling.
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
