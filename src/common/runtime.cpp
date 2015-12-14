@@ -465,7 +465,11 @@ bool luax_istype(lua_State *L, int idx, love::Type type)
 		return false;
 
 	Proxy *p = (Proxy *) lua_touserdata(L, idx);
-	return typeFlags[p->type][type];
+
+	if (p->type > INVALID_ID && p->type < TYPE_MAX_ENUM)
+		return typeFlags[p->type][type];
+	else
+		return false;
 }
 
 int luax_getfunction(lua_State *L, const char *mod, const char *fn)
