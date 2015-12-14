@@ -366,7 +366,7 @@ function love.graphics.newVideo(file, loadaudio)
 	elseif loadaudio == true then
 		error("Video had no audio track", 2)
 	else
-		video:getStream():setSync(love.video.newRemote())
+		video:getStream():setSync()
 	end
 
 	return video
