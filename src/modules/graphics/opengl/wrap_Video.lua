@@ -34,10 +34,7 @@ end
 
 function Video:setSource(source)
 	self:_setSource(source)
-	if source then
-		self:getStream():setSync(source)
-	else
-		self:getStream():setSync(love.video.newRemote())
+	self:getStream():setSync(source)
 	end
 end
 
