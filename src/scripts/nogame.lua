@@ -975,6 +975,12 @@ function love.nogame()
 		g_entities.toast:center()
 	end
 
+	function love.keypressed(key)
+		if key == "escape" then
+			love.event.quit()
+		end
+	end
+
 	function love.keyreleased(key)
 		if key == "f" then
 			local is_fs = love.window.getFullscreen()
