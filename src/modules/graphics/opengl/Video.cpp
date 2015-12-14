@@ -79,23 +79,23 @@ bool Video::loadVolatile()
 	// Create the textures using the initial frame data.
 	auto frame = (const love::video::VideoStream::Frame*) stream->getFrontBuffer();
 
-	gl.bindTexture(textures[0]);
-	gl.setTextureFilter(filter);
+	int widths[3]  = {frame->yw, frame->cw, frame->cw};
+	int heights[3] = {frame->yh, frame->ch, frame->ch};
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->yw, frame->yh,
-	             0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->yplane);
+	const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
 
-	gl.bindTexture(textures[1]);
-	gl.setTextureFilter(filter);
+	Texture::Wrap wrap; // Clamp wrap mode.
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->cw, frame->ch,
-	             0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->cbplane);
+	for (int i = 0; i < 3; i++)
+	{
+		gl.bindTexture(textures[i]);
 
-	gl.bindTexture(textures[2]);
-	gl.setTextureFilter(filter);
+		gl.setTextureFilter(filter);
+		gl.setTextureWrap(wrap);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->cw, frame->ch,
-	             0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->crplane);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, widths[i], heights[i], 0,
+		             GL_LUMINANCE, GL_UNSIGNED_BYTE, data[i]);
+	}
 
 	return true;
 }
@@ -154,17 +154,17 @@ void Video::update()
 	{
 		auto frame = (const love::video::VideoStream::Frame*) stream->getFrontBuffer();
 
-		gl.bindTexture(textures[0]);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, frame->yw, frame->yh,
-		                GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->yplane);
+		int widths[3]  = {frame->yw, frame->cw, frame->cw};
+		int heights[3] = {frame->yh, frame->ch, frame->ch};
 
-		gl.bindTexture(textures[1]);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, frame->cw, frame->ch,
-		                GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->cbplane);
+		const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
 
-		gl.bindTexture(textures[2]);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, frame->cw, frame->ch,
-		                GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->crplane);
+		for (int i = 0; i < 3; i++)
+		{
+			gl.bindTexture(textures[i]);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, widths[i], heights[i],
+			                GL_LUMINANCE, GL_UNSIGNED_BYTE, data[i]);
+		}
 	}
 }
 
