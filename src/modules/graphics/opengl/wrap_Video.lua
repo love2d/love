@@ -35,7 +35,6 @@ end
 function Video:setSource(source)
 	self:_setSource(source)
 	self:getStream():setSync(source)
-	end
 end
 
 function Video:play()
