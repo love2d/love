@@ -819,7 +819,6 @@
 		FA19C4C51B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C71B4B0BD50059B0B3 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */; };
-		FA19C4C81B4B0BD50059B0B3 /* wrap_Video.lua in Resources */ = {isa = PBXBuildFile; fileRef = FA19C4C41B4B0BD50059B0B3 /* wrap_Video.lua */; };
 		FA27B39D1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39E1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39F1B498151008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B38B1B498151008A9DCE /* Video.h */; };
@@ -840,7 +839,6 @@
 		FA27B3C61B4985D8008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3C31B4985D8008A9DCE /* Video.cpp */; };
 		FA27B3C71B4985D8008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B3C41B4985D8008A9DCE /* Video.h */; };
 		FA27B3C91B498623008A9DCE /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3C81B498623008A9DCE /* Theora.framework */; };
-		FA2E9BFF1C19E00C0004A1EE /* wrap_RandomGenerator.lua in Resources */ = {isa = PBXBuildFile; fileRef = FA2E9BFE1C19E00C0004A1EE /* wrap_RandomGenerator.lua */; };
 		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
 		FA41A3C81C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
 		FA41A3C91C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
@@ -874,7 +872,6 @@
 		FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
 		FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
 		FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7550A71AEBE276003E311E /* libluajit.a */; };
-		FA7DA04D1C16874A0056B200 /* wrap_Math.lua in Resources */ = {isa = PBXBuildFile; fileRef = FA7DA04C1C16874A0056B200 /* wrap_Math.lua */; };
 		FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
@@ -3299,9 +3296,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA19C4C81B4B0BD50059B0B3 /* wrap_Video.lua in Resources */,
-				FA2E9BFF1C19E00C0004A1EE /* wrap_RandomGenerator.lua in Resources */,
-				FA7DA04D1C16874A0056B200 /* wrap_Math.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4195,10 +4189,7 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/theora",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -4232,10 +4223,7 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/theora",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -4270,10 +4258,7 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/theora",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,

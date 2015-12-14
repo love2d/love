@@ -24,7 +24,6 @@
 		FA0B78D31A95814A000E1D17 /* lovedocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D11A95814A000E1D17 /* lovedocument.icns */; };
 		FA0B7F301A95AC7D000E1D17 /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
 		FA27B3CB1B498696008A9DCE /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3CA1B498696008A9DCE /* Theora.framework */; };
-		FA27B3CC1B498696008A9DCE /* Theora.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3CA1B498696008A9DCE /* Theora.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FA5D24821A96CA1800C6FC8F /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24811A96CA1800C6FC8F /* OpenAL.framework */; };
 		FA5D24841A96CA2700C6FC8F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */; };
 		FA5D24881A96CA8A00C6FC8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24871A96CA8A00C6FC8F /* UIKit.framework */; };
@@ -41,6 +40,7 @@
 		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FAC1A449196F5DC600125284 /* license.txt in Resources */ = {isa = PBXBuildFile; fileRef = FAC1A448196F5DC600125284 /* license.txt */; };
+		FAD4B1731C1F50A3004CF150 /* Theora.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3CA1B498696008A9DCE /* Theora.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,8 +82,8 @@
 			dstSubfolderSpec = 10;
 			files = (
 				FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */,
-				FA27B3CC1B498696008A9DCE /* Theora.framework in Copy Frameworks */,
 				FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */,
+				FAD4B1731C1F50A3004CF150 /* Theora.framework in Copy Frameworks */,
 				FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */,
 				A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */,
 				A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */,
