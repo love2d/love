@@ -146,13 +146,15 @@ public:
 	 * Enables or disables drawing to the stencil buffer. When enabled, the
 	 * color buffer is disabled.
 	 **/
-	void drawToStencilBuffer(bool enable);
+	void drawToStencilBuffer(StencilAction action, int value);
+	void stopDrawToStencilBuffer();
 
 	/**
 	 * Sets whether stencil testing is enabled.
 	 **/
-	void setStencilTest(bool enable, bool invert);
-	void getStencilTest(bool &enable, bool &invert);
+	void setStencilTest(CompareMode compare, int value);
+	void setStencilTest();
+	void getStencilTest(CompareMode &compare, int &value);
 
 	/**
 	 * Clear the stencil buffer in the active Canvas(es.)
@@ -488,8 +490,8 @@ private:
 		ScissorRect scissorRect = ScissorRect();
 
 		// Stencil.
-		bool stencilTest = false;
-		bool stencilInvert = false;
+		CompareMode stencilCompare = COMPARE_ALWAYS;
+		int stencilTestValue = 0;
 
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;

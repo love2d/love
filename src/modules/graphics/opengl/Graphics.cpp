@@ -119,7 +119,7 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 
-	setStencilTest(s.stencilTest, s.stencilInvert);
+	setStencilTest(s.stencilCompare, s.stencilTestValue);
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
@@ -160,8 +160,8 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 			setScissor();
 	}
 
-	if (s.stencilTest != cur.stencilTest || s.stencilInvert != cur.stencilInvert)
-		setStencilTest(s.stencilTest, s.stencilInvert);
+	if (s.stencilCompare != cur.stencilCompare || s.stencilTestValue != cur.stencilTestValue)
+		setStencilTest(s.stencilCompare, s.stencilTestValue);
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
@@ -433,7 +433,7 @@ void Graphics::setDebug(bool enable)
 void Graphics::reset()
 {
 	DisplayState s;
-	drawToStencilBuffer(false);
+	stopDrawToStencilBuffer();
 	restoreState(s);
 	origin();
 }
@@ -641,24 +641,9 @@ bool Graphics::getScissor(int &x, int &y, int &width, int &height) const
 	return state.scissor;
 }
 
-void Graphics::drawToStencilBuffer(bool enable)
+void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
-	if (writingToStencil == enable)
-		return;
-
-	writingToStencil = enable;
-
-	if (!enable)
-	{
-		const DisplayState &state = states.back();
-
-		// Revert the color write mask.
-		setColorMask(state.colorMask);
-
-		// Use the user-set stencil test state when writes are disabled.
-		setStencilTest(state.stencilTest, state.stencilInvert);
-		return;
-	}
+	writingToStencil = true;
 
 	// Make sure the active canvas has a stencil buffer.
 	if (Canvas::current)
@@ -667,23 +652,63 @@ void Graphics::drawToStencilBuffer(bool enable)
 	// Disable color writes but don't save the state for it.
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
+	GLenum glaction = GL_REPLACE;
+
+	switch (action)
+	{
+	case STENCIL_REPLACE:
+	default:
+		glaction = GL_REPLACE;
+		break;
+	case STENCIL_INCREMENT:
+		glaction = GL_INCR;
+		break;
+	case STENCIL_DECREMENT:
+		glaction = GL_DECR;
+		break;
+	case STENCIL_INCREMENT_WRAP:
+		glaction = GL_INCR_WRAP;
+		break;
+	case STENCIL_DECREMENT_WRAP:
+		glaction = GL_DECR_WRAP;
+		break;
+	case STENCIL_INVERT:
+		glaction = GL_INVERT;
+		break;
+	}
+
 	// The stencil test must be enabled in order to write to the stencil buffer.
 	glEnable(GL_STENCIL_TEST);
-
-	glStencilFunc(GL_ALWAYS, 1, 1);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, value, 0xFFFFFFFF);
+	glStencilOp(GL_KEEP, GL_KEEP, glaction);
 }
 
-void Graphics::setStencilTest(bool enable, bool invert)
+void Graphics::stopDrawToStencilBuffer()
+{
+	if (!writingToStencil)
+		return;
+
+	writingToStencil = false;
+
+	const DisplayState &state = states.back();
+
+	// Revert the color write mask.
+	setColorMask(state.colorMask);
+
+	// Use the user-set stencil test state when writes are disabled.
+	setStencilTest(state.stencilCompare, state.stencilTestValue);
+}
+
+void Graphics::setStencilTest(CompareMode compare, int value)
 {
 	DisplayState &state = states.back();
-	state.stencilTest = enable;
-	state.stencilInvert = invert;
+	state.stencilCompare = compare;
+	state.stencilTestValue = value;
 
 	if (writingToStencil)
 		return;
 
-	if (!enable)
+	if (compare == COMPARE_ALWAYS)
 	{
 		glDisable(GL_STENCIL_TEST);
 		return;
@@ -693,16 +718,61 @@ void Graphics::setStencilTest(bool enable, bool invert)
 	if (Canvas::current)
 		Canvas::current->checkCreateStencil();
 
+	GLenum glcompare = GL_EQUAL;
+
+	/**
+	 * Q: Why are some of the compare modes inverted (e.g. COMPARE_LESS becomes
+	 * GL_GREATER)?
+	 *
+	 * A: OpenGL / GPUs do the comparison in the opposite way that makes sense
+	 * for this API. For example, if the compare function is GL_GREATER then the
+	 * stencil test will pass if the reference value is greater than the value
+	 * in the stencil buffer. With our API it's more intuitive to assume that
+	 * setStencilTest(COMPARE_GREATER, 4) will make it pass if the stencil
+	 * buffer has a value greater than 4.
+	 **/
+
+	switch (compare)
+	{
+	case COMPARE_LESS:
+		glcompare = GL_GREATER;
+		break;
+	case COMPARE_LEQUAL:
+		glcompare = GL_GEQUAL;
+		break;
+	case COMPARE_EQUAL:
+	default:
+		glcompare = GL_EQUAL;
+		break;
+	case COMPARE_GEQUAL:
+		glcompare = GL_LEQUAL;
+		break;
+	case COMPARE_GREATER:
+		glcompare = GL_LESS;
+		break;
+	case COMPARE_NOTEQUAL:
+		glcompare = GL_NOTEQUAL;
+		break;
+	case COMPARE_ALWAYS:
+		glcompare = GL_ALWAYS;
+		break;
+	}
+
 	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_EQUAL, invert ? 0 : 1, 1);
+	glStencilFunc(glcompare, value, 0xFFFFFFFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
-void Graphics::getStencilTest(bool &enable, bool &invert)
+void Graphics::setStencilTest()
+{
+	setStencilTest(COMPARE_ALWAYS, 0);
+}
+
+void Graphics::getStencilTest(CompareMode &compare, int &value)
 {
 	const DisplayState &state = states.back();
-	enable = state.stencilTest;
-	invert = state.stencilInvert;
+	compare = state.stencilCompare;
+	value = state.stencilTestValue;
 }
 
 void Graphics::clearStencil()
