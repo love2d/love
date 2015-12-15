@@ -845,6 +845,8 @@
 		FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA41A3C71C0A1F950084430C /* ASTCHandler.h */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
+		FA56D9BB1C2089EE00D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
+		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
@@ -1522,6 +1524,7 @@
 		FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASTCHandler.cpp; sourceTree = "<group>"; };
 		FA41A3C71C0A1F950084430C /* ASTCHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASTCHandler.h; sourceTree = "<group>"; };
 		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
+		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
@@ -1583,6 +1586,7 @@
 				FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */,
 				FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */,
 				FA59A2D81C0649C200328DBA /* libtheora.a in Frameworks */,
+				FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */,
 				FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */,
 				FA5D24B41A96D2EC00C6FC8F /* libphysfs.a in Frameworks */,
 				FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */,
@@ -1598,6 +1602,7 @@
 				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
+				FA56D9BB1C2089EE00D8D3C7 /* libmodplug.a in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */,
@@ -2809,6 +2814,15 @@
 			path = theora;
 			sourceTree = "<group>";
 		};
+		FA56D9B91C2089CE00D8D3C7 /* modplug */ = {
+			isa = PBXGroup;
+			children = (
+				FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */,
+			);
+			name = modplug;
+			path = ios/libraries/modplug;
+			sourceTree = "<group>";
+		};
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -2839,6 +2853,7 @@
 			children = (
 				FA5D24A41A96D2EC00C6FC8F /* freetype */,
 				FA7550A61AEBE250003E311E /* luajit */,
+				FA56D9B91C2089CE00D8D3C7 /* modplug */,
 				FA5D24AA1A96D2EC00C6FC8F /* ogg */,
 				FA5D24AC1A96D2EC00C6FC8F /* physfs */,
 				FA5D24CC1A96E63D00C6FC8F /* SDL2 */,
@@ -4002,7 +4017,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					LOVE_SUPPORT_COREAUDIO,
-					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -4013,6 +4027,7 @@
 					ios/include/luajit,
 					ios/include/freetype,
 					ios/include/SDL2,
+					ios/include/modplug,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4024,6 +4039,7 @@
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
 					"$(PROJECT_DIR)/ios/libraries/luajit",
 					"$(PROJECT_DIR)/ios/libraries/theora",
+					"$(PROJECT_DIR)/ios/libraries/modplug",
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				OTHER_LDFLAGS = "-ObjC";
@@ -4043,7 +4059,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					LOVE_SUPPORT_COREAUDIO,
-					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
@@ -4053,6 +4068,7 @@
 					ios/include/luajit,
 					ios/include/freetype,
 					ios/include/SDL2,
+					ios/include/modplug,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4064,6 +4080,7 @@
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
 					"$(PROJECT_DIR)/ios/libraries/luajit",
 					"$(PROJECT_DIR)/ios/libraries/theora",
+					"$(PROJECT_DIR)/ios/libraries/modplug",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
@@ -4084,7 +4101,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					LOVE_SUPPORT_COREAUDIO,
-					LOVE_NO_MODPLUG,
 					LOVE_NOMPG123,
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
@@ -4094,6 +4110,7 @@
 					ios/include/luajit,
 					ios/include/freetype,
 					ios/include/SDL2,
+					ios/include/modplug,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4105,6 +4122,7 @@
 					"$(PROJECT_DIR)/ios/libraries/SDL2",
 					"$(PROJECT_DIR)/ios/libraries/luajit",
 					"$(PROJECT_DIR)/ios/libraries/theora",
+					"$(PROJECT_DIR)/ios/libraries/modplug",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";

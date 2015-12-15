@@ -30,7 +30,7 @@
 #include "Decoder.h"
 
 // libmodplug
-#ifdef LOVE_ANDROID
+#if defined(LOVE_ANDROID) || defined(LOVE_IOS)
 #include <modplug.h>
 #else
 #include <libmodplug/modplug.h>
