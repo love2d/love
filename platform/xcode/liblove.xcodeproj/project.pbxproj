@@ -845,7 +845,6 @@
 		FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA41A3C71C0A1F950084430C /* ASTCHandler.h */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
-		FA56D9BB1C2089EE00D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
@@ -1602,7 +1601,6 @@
 				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
-				FA56D9BB1C2089EE00D8D3C7 /* libmodplug.a in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */,
