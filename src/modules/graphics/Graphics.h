@@ -81,6 +81,13 @@ public:
 		BLEND_MAX_ENUM
 	};
 
+	enum BlendAlpha
+	{
+		BLENDALPHA_MULTIPLY,
+		BLENDALPHA_PREMULTIPLIED,
+		BLENDALPHA_MAX_ENUM
+	};
+
 	enum LineStyle
 	{
 		LINE_ROUGH,
@@ -255,6 +262,9 @@ public:
 	static bool getConstant(const char *in, BlendMode &out);
 	static bool getConstant(BlendMode in, const char *&out);
 
+	static bool getConstant(const char *in, BlendAlpha &out);
+	static bool getConstant(BlendAlpha in, const char *&out);
+
 	static bool getConstant(const char *in, LineStyle &out);
 	static bool getConstant(LineStyle in, const char *&out);
 
@@ -286,6 +296,9 @@ private:
 
 	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
 	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;
+
+	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM>::Entry blendAlphaEntries[];
+	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM> blendAlphaModes;
 
 	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
 	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;

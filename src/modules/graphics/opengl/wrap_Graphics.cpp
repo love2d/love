@@ -1042,25 +1042,34 @@ int w_setBlendMode(lua_State *L)
 	if (!Graphics::getConstant(str, mode))
 		return luaL_error(L, "Invalid blend mode: %s", str);
 
-	bool multiplyalpha = luax_optboolean(L, 2, true);
+	Graphics::BlendAlpha alphamode = Graphics::BLENDALPHA_MULTIPLY;
+	if (!lua_isnoneornil(L, 2))
+	{
+		const char *alphastr = luaL_checkstring(L, 2);
+		if (!Graphics::getConstant(alphastr, alphamode))
+			return luaL_error(L, "Invalid blend alpha mode: %s", alphastr);
+	}
 
-	luax_catchexcept(L, [&](){ instance()->setBlendMode(mode, multiplyalpha); });
+	luax_catchexcept(L, [&](){ instance()->setBlendMode(mode, alphamode); });
 	return 0;
 }
 
 int w_getBlendMode(lua_State *L)
 {
 	const char *str;
-	Graphics::BlendMode mode;
-	bool multiplyalpha = false;
+	const char *alphastr;
 
-	luax_catchexcept(L, [&](){ mode = instance()->getBlendMode(multiplyalpha); });
+	Graphics::BlendAlpha alphamode;
+	Graphics::BlendMode mode = instance()->getBlendMode(alphamode);
 
 	if (!Graphics::getConstant(mode, str))
 		return luaL_error(L, "Unknown blend mode");
 
+	if (!Graphics::getConstant(alphamode, alphastr))
+		return luaL_error(L, "Unknown blend alpha mode");
+
 	lua_pushstring(L, str);
-	lua_pushboolean(L, multiplyalpha);
+	lua_pushstring(L, alphastr);
 	return 2;
 }
 

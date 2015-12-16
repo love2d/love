@@ -82,6 +82,16 @@ bool Graphics::getConstant(BlendMode in, const char *&out)
 	return blendModes.find(in, out);
 }
 
+bool Graphics::getConstant(const char *in, BlendAlpha &out)
+{
+	return blendAlphaModes.find(in, out);
+}
+
+bool Graphics::getConstant(BlendAlpha in, const char *&out)
+{
+	return blendAlphaModes.find(in, out);
+}
+
 bool Graphics::getConstant(const char *in, LineStyle &out)
 {
 	return lineStyles.find(in, out);
@@ -172,15 +182,23 @@ StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM> Graphics::drawModes(Graph
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendModeEntries[] =
 {
-	{ "alpha", BLEND_ALPHA },
-	{ "add", BLEND_ADD },
+	{ "alpha",    BLEND_ALPHA    },
+	{ "add",      BLEND_ADD      },
 	{ "subtract", BLEND_SUBTRACT },
 	{ "multiply", BLEND_MULTIPLY },
-	{ "screen", BLEND_SCREEN },
-	{ "replace", BLEND_REPLACE },
+	{ "screen",   BLEND_SCREEN   },
+	{ "replace",  BLEND_REPLACE  },
 };
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
+
+StringMap<Graphics::BlendAlpha, Graphics::BLENDALPHA_MAX_ENUM>::Entry Graphics::blendAlphaEntries[] =
+{
+	{ "alphamultiply", BLENDALPHA_MULTIPLY      },
+	{ "premultiplied", BLENDALPHA_PREMULTIPLIED },
+};
+
+StringMap<Graphics::BlendAlpha, Graphics::BLENDALPHA_MAX_ENUM> Graphics::blendAlphaModes(Graphics::blendAlphaEntries, sizeof(Graphics::blendAlphaEntries));
 
 StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineStyleEntries[] =
 {

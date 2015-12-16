@@ -106,7 +106,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setColor(s.color);
 	setBackgroundColor(s.backgroundColor);
 
-	setBlendMode(s.blendMode, s.blendMultiplyAlpha);
+	setBlendMode(s.blendMode, s.blendAlphaMode);
 
 	setLineWidth(s.lineWidth);
 	setLineStyle(s.lineStyle);
@@ -141,8 +141,8 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 
 	setBackgroundColor(s.backgroundColor);
 
-	if (s.blendMode != cur.blendMode || s.blendMultiplyAlpha != cur.blendMultiplyAlpha)
-		setBlendMode(s.blendMode, s.blendMultiplyAlpha);
+	if (s.blendMode != cur.blendMode || s.blendAlphaMode != cur.blendAlphaMode)
+		setBlendMode(s.blendMode, s.blendAlphaMode);
 
 	// These are just simple assignments.
 	setLineWidth(s.lineWidth);
@@ -1057,7 +1057,7 @@ Graphics::ColorMask Graphics::getColorMask() const
 	return states.back().colorMask;
 }
 
-void Graphics::setBlendMode(BlendMode mode, bool multiplyalpha)
+void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 {
 	GLenum func   = GL_FUNC_ADD;
 	GLenum srcRGB = GL_ONE;
@@ -1094,19 +1094,19 @@ void Graphics::setBlendMode(BlendMode mode, bool multiplyalpha)
 	}
 
 	// We can only do alpha-multiplication when srcRGB would have been unmodified.
-	if (srcRGB == GL_ONE && multiplyalpha)
+	if (srcRGB == GL_ONE && alphamode == BLENDALPHA_MULTIPLY)
 		srcRGB = GL_SRC_ALPHA;
 
 	glBlendEquation(func);
 	glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA);
 
 	states.back().blendMode = mode;
-	states.back().blendMultiplyAlpha = multiplyalpha;
+	states.back().blendAlphaMode = alphamode;
 }
 
-Graphics::BlendMode Graphics::getBlendMode(bool &multiplyalpha) const
+Graphics::BlendMode Graphics::getBlendMode(BlendAlpha &alphamode) const
 {
-	multiplyalpha = states.back().blendMultiplyAlpha;
+	alphamode = states.back().blendAlphaMode;
 	return states.back().blendMode;
 }
 

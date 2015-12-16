@@ -243,12 +243,12 @@ public:
 	/**
 	 * Sets the current blend mode.
 	 **/
-	void setBlendMode(BlendMode mode, bool multiplyalpha);
+	void setBlendMode(BlendMode mode, BlendAlpha alphamode);
 
 	/**
 	 * Gets the current blend mode.
 	 **/
-	BlendMode getBlendMode(bool &multiplyalpha) const;
+	BlendMode getBlendMode(BlendAlpha &alphamode) const;
 
 	/**
 	 * Sets the default filter for images, canvases, and fonts.
@@ -478,7 +478,7 @@ private:
 		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 255.0);
 
 		BlendMode blendMode = BLEND_ALPHA;
-		bool blendMultiplyAlpha = true;
+		BlendAlpha blendAlphaMode = BLENDALPHA_MULTIPLY;
 
 		float lineWidth = 1.0f;
 		LineStyle lineStyle = LINE_SMOOTH;
