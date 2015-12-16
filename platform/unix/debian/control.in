@@ -14,12 +14,9 @@ Build-Depends: debhelper (>= 9),
                libopenal-dev,
                libphysfs-dev,
                libsdl2-dev (>= 2.0.1),
-               libopenal-dev,
                libogg-dev,
                libvorbis-dev,
                libtheora-dev,
-               libmodplug-dev,
-               libmpg123-dev,
                zlib1g-dev
 Standards-Version: 3.9.5
 Homepage: http://love2d.org
