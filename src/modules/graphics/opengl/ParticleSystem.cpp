@@ -141,11 +141,14 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
 
-	{
-		GLsizei count = (GLsizei) quadIndices.getIndexCount(pCount);
-		GLBuffer::Bind ibo_bind(*quadIndices.getBuffer());
-		gl.drawElements(GL_TRIANGLES, count, quadIndices.getType(), quadIndices.getPointer(0));
-	}
+	GLsizei count = (GLsizei) quadIndices.getIndexCount(pCount);
+	GLenum gltype = quadIndices.getType();
+
+	// We use a client-side index array instead of an Index Buffers, because
+	// at least one graphics driver (the one for Kepler nvidia GPUs in OS X
+	// 10.11) fails to render geometry if an index buffer is used with
+	// client-side vertex arrays.
+	gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getIndices(0));
 }
 
 } // opengl

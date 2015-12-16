@@ -617,7 +617,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCode
 	return drawcommands;
 }
 
-void Font::drawVertices(const std::vector<DrawCommand> &drawcommands)
+void Font::drawVertices(const std::vector<DrawCommand> &drawcommands, bool bufferedvertices)
 {
 	// Vertex attribute pointers need to be set before calling this function.
 	// This assumes that the attribute pointers are constant for all vertices.
@@ -634,7 +634,12 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands)
 	const GLenum gltype = quadIndices.getType();
 	const size_t elemsize = quadIndices.getElementSize();
 
-	GLBuffer::Bind bind(*quadIndices.getBuffer());
+	// We only get indices from the index buffer if we're also using vertex
+	// buffers, because at least one graphics driver (the one for Kepler nvidia
+	// GPUs in OS X 10.11) fails to render geometry if an index buffer is used
+	// with client-side vertex arrays.
+	if (bufferedvertices)
+		quadIndices.getBuffer()->bind();
 
 	// We need a separate draw call for every section of the text which uses a
 	// different texture than the previous section.
@@ -645,8 +650,15 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands)
 
 		// TODO: Use glDrawElementsBaseVertex when supported?
 		gl.bindTexture(cmd.texture);
-		gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
+
+		if (bufferedvertices)
+			gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
+		else
+			gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getIndices(offset));
 	}
+
+	if (bufferedvertices)
+		quadIndices.getBuffer()->unbind();
 }
 
 void Font::printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices)
@@ -665,7 +677,7 @@ void Font::printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
-	drawVertices(drawcommands);
+	drawVertices(drawcommands, false);
 }
 
 void Font::print(const std::vector<ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)

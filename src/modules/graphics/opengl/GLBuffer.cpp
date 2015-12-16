@@ -244,7 +244,9 @@ void GLBuffer::unload()
 size_t QuadIndices::maxSize = 0;
 size_t QuadIndices::elementSize = 0;
 size_t QuadIndices::objectCount = 0;
+
 GLBuffer *QuadIndices::indexBuffer = nullptr;
+char *QuadIndices::indices = nullptr;
 
 QuadIndices::QuadIndices(size_t size)
 	: size(size)
@@ -259,6 +261,7 @@ QuadIndices::QuadIndices(size_t size)
 	if (indexBuffer == nullptr || size > maxSize)
 	{
 		GLBuffer *newbuffer = nullptr;
+		char *newindices = nullptr;
 
 		// Depending on the size, a switch to int and more memory is needed.
 		GLenum targettype = getType(size);
@@ -271,9 +274,12 @@ QuadIndices::QuadIndices(size_t size)
 		try
 		{
 			newbuffer = new GLBuffer(buffersize, nullptr, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+			newindices = new char[buffersize];
 		}
 		catch (std::bad_alloc &)
 		{
+			delete[] newbuffer;
+			delete[] newindices;
 			throw love::Exception("Out of memory.");
 		}
 
@@ -281,6 +287,10 @@ QuadIndices::QuadIndices(size_t size)
 		// The old GLBuffer can now be deleted.
 		delete indexBuffer;
 		indexBuffer = newbuffer;
+
+		delete[] indices;
+		indices = newindices;
+
 		maxSize = size;
 		elementSize = elemsize;
 
@@ -355,13 +365,15 @@ const void *QuadIndices::getPointer(size_t offset) const
 	return indexBuffer->getPointer(offset);
 }
 
+const void *QuadIndices::getIndices(size_t offset) const
+{
+	return indices + offset;
+}
+
 template <typename T>
 void QuadIndices::fill()
 {
-	GLBuffer::Bind bind(*indexBuffer);
-	GLBuffer::Mapper mapper(*indexBuffer);
-
-	T *indices = (T *) mapper.get();
+	T *inds = (T *) indices;
 
 	// 0----2
 	// |  / |
@@ -369,14 +381,17 @@ void QuadIndices::fill()
 	// 1----3
 	for (size_t i = 0; i < maxSize; ++i)
 	{
-		indices[i*6+0] = T(i * 4 + 0);
-		indices[i*6+1] = T(i * 4 + 1);
-		indices[i*6+2] = T(i * 4 + 2);
+		inds[i*6+0] = T(i * 4 + 0);
+		inds[i*6+1] = T(i * 4 + 1);
+		inds[i*6+2] = T(i * 4 + 2);
 
-		indices[i*6+3] = T(i * 4 + 2);
-		indices[i*6+4] = T(i * 4 + 1);
-		indices[i*6+5] = T(i * 4 + 3);
+		inds[i*6+3] = T(i * 4 + 2);
+		inds[i*6+4] = T(i * 4 + 1);
+		inds[i*6+5] = T(i * 4 + 3);
 	}
+
+	GLBuffer::Bind bind(*indexBuffer);
+	indexBuffer->fill(0, indexBuffer->getSize(), indices);
 }
 
 } // opengl

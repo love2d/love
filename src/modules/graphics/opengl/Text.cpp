@@ -245,7 +245,7 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
-	font->drawVertices(draw_commands);
+	font->drawVertices(draw_commands, true);
 }
 
 void Text::setFont(Font *f)

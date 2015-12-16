@@ -384,6 +384,20 @@ public:
 	 */
 	const void *getPointer(size_t offset) const;
 
+	/**
+	 * Returns a direct pointer to the index data.
+	 *
+	 * At least one graphics driver (the one for Kepler nvidia GPUs in OS X)
+	 * fails to render geometry if the vertex data was a direct CPU pointer but
+	 * the index data came from an Index Buffer.
+	 * So the direct pointer to the index buffer should be used instead of the
+	 * index buffer when rendering using client-side vertex arrays.
+	 *
+	 * @param offset An offset in bytes into the index data.
+	 * @return A direct pointer to the index data at the specified offset.
+	 **/
+	const void *getIndices(size_t offset) const;
+
 private:
 
 	/**
@@ -406,6 +420,9 @@ private:
 
 	// The GLBuffer for the element array. Can be null.
 	static GLBuffer *indexBuffer;
+
+	// The array of indices that will also be stored in the index buffer.
+	static char *indices;
 };
 
 } // opengl

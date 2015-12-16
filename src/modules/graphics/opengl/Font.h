@@ -109,7 +109,7 @@ public:
 
 	std::vector<DrawCommand> generateVerticesFormatted(const ColoredCodepoints &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
 
-	void drawVertices(const std::vector<DrawCommand> &drawcommands);
+	void drawVertices(const std::vector<DrawCommand> &drawcommands, bool bufferedvertices);
 
 	static void getCodepointsFromString(const std::string &str, Codepoints &codepoints);
 	static void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints);
