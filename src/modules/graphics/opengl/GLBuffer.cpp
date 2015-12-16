@@ -329,6 +329,9 @@ QuadIndices::~QuadIndices()
 	{
 		delete indexBuffer;
 		indexBuffer = nullptr;
+
+		delete[] indices;
+		indices = nullptr;
 	}
 }
 
