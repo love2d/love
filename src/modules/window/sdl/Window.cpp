@@ -237,21 +237,24 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	if (preferGLES)
 		std::rotate(attribslist.begin(), attribslist.begin() + 1, attribslist.end());
 
-	if (context)
-	{
-		SDL_GL_DeleteContext(context);
-		context = nullptr;
-	}
-
 	std::string windowerror;
+	std::string contexterror;
 	std::string glversion;
 
-	// Try each context profile in order.
-	for (ContextAttribs attribs : attribslist)
+	// Unfortunately some OpenGL context settings are part of the internal
+	// window state in the Windows and Linux SDL backends, so we have to
+	// recreate the window when we want to change those settings...
+	// Also, apparently some Intel drivers on Windows give back a Microsoft
+	// OpenGL 1.1 software renderer context when high MSAA values are requested!
+
+	const auto create = [&](ContextAttribs attribs) -> bool
 	{
-		// Unfortunately some OpenGL context settings are part of the internal
-		// window state in the Windows and Linux SDL backends, so we have to
-		// recreate the window when we want to change those settings...
+		if (context)
+		{
+			SDL_GL_DeleteContext(context);
+			context = nullptr;
+		}
+
 		if (window)
 		{
 			SDL_DestroyWindow(window);
@@ -259,81 +262,18 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			window = nullptr;
 		}
 
-		int curMSAA  = msaa;
-		bool curSRGB = love::graphics::isGammaCorrect();
-
-		setGLFramebufferAttributes(curMSAA, curSRGB);
-		setGLContextAttributes(attribs);
-
 		window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
 
-		if (!window && curMSAA > 0)
-		{
-			// The MSAA setting could have caused the failure.
-			setGLFramebufferAttributes(0, curSRGB);
-			window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
-			if (window)
-				curMSAA = 0;
-		}
-
-		if (!window && curSRGB)
-		{
-			// same with sRGB.
-			setGLFramebufferAttributes(curMSAA, false);
-			window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
-			if (window)
-				curSRGB = false;
-		}
-
-		if (!window && curMSAA > 0 && curSRGB)
-		{
-			// Or both!
-			setGLFramebufferAttributes(0, false);
-			window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
-			if (window)
-			{
-				curMSAA = 0;
-				curSRGB = false;
-			}
-		}
-
-		// Immediately try the next context profile if window creation failed.
 		if (!window)
 		{
 			windowerror = std::string(SDL_GetError());
-			continue;
+			return false;
 		}
-
-		windowerror.clear();
 
 		context = SDL_GL_CreateContext(window);
 
-		if (!context && curMSAA > 0)
-		{
-			// MSAA and sRGB settings can also cause CreateContext to fail, on
-			// certain SDL backends.
-			setGLFramebufferAttributes(0, curSRGB);
-			context = SDL_GL_CreateContext(window);
-		}
-
-		if (!context && curSRGB)
-		{
-			setGLFramebufferAttributes(curMSAA, false);
-			context = SDL_GL_CreateContext(window);
-		}
-
-		if (!context && curMSAA > 0 && curSRGB)
-		{
-			setGLFramebufferAttributes(0, false);
-			context = SDL_GL_CreateContext(window);
-		}
-
-		if (!context && attribs.debug)
-		{
-			attribs.debug = false;
-			setGLContextAttributes(attribs);
-			context = SDL_GL_CreateContext(window);
-		}
+		if (!context)
+			contexterror = std::string(SDL_GetError());
 
 		// Make sure the context's version is at least what we requested.
 		if (context && !checkGLVersion(attribs, glversion))
@@ -342,7 +282,58 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			context = nullptr;
 		}
 
-		if (context)
+		if (!context)
+		{
+			SDL_DestroyWindow(window);
+			window = nullptr;
+			return false;
+		}
+
+		return true;
+	};
+
+	// Try each context profile in order.
+	for (ContextAttribs attribs : attribslist)
+	{
+		int curMSAA  = msaa;
+		bool curSRGB = love::graphics::isGammaCorrect();
+
+		setGLFramebufferAttributes(curMSAA, curSRGB);
+		setGLContextAttributes(attribs);
+
+		windowerror.clear();
+		contexterror.clear();
+
+		create(attribs);
+
+		if (!window && curMSAA > 0)
+		{
+			// The MSAA setting could have caused the failure.
+			setGLFramebufferAttributes(0, curSRGB);
+			if (create(attribs))
+				curMSAA = 0;
+		}
+
+		if (!window && curSRGB)
+		{
+			// same with sRGB.
+			setGLFramebufferAttributes(curMSAA, false);
+			if (create(attribs))
+				curSRGB = false;
+		}
+
+		if (!window && curMSAA > 0 && curSRGB)
+		{
+			// Or both!
+			setGLFramebufferAttributes(0, false);
+			if (create(attribs))
+			{
+				curMSAA = 0;
+				curSRGB = false;
+			}
+		}
+
+		if (window && context)
 		{
 			love::graphics::setGammaCorrect(curSRGB);
 			break;
@@ -370,6 +361,8 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			std::string title = "Unable to initialize OpenGL";
 			std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
 
+			if (!contexterror.empty())
+				message += "\n\nOpenGL context creation error: " + contexterror;
 			if (!glversion.empty())
 				message += " \n\nDetected OpenGL version: " + glversion;
 
