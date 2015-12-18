@@ -131,16 +131,12 @@ private:
 
 	std::string title;
 
-	struct _currentMode
-	{
-		int width  = 800;
-		int height = 600;
-		int pixelwidth = 800;
-		int pixelheight = 600;
-		WindowSettings settings;
-		StrongRef<love::image::ImageData> icon;
-
-	} curMode;
+	int windowWidth  = 800;
+	int windowHeight = 600;
+	int pixelWidth   = 800;
+	int pixelHeight  = 600;
+	WindowSettings settings;
+	StrongRef<love::image::ImageData> icon;
 
 	bool open;
 
