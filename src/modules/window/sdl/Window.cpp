@@ -541,7 +541,7 @@ void Window::updateSettings(const WindowSettings &newsettings)
 	}
 
 #ifdef LOVE_ANDROID
-	curMode.settings.fullscreen = love::android::getImmersive();
+	settings.fullscreen = love::android::getImmersive();
 #endif
 
 	// SDL_GetWindowMinimumSize gives back 0,0 sometimes...
