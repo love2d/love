@@ -368,7 +368,7 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 	{"nonusbackslash", SCANCODE_NONUSBACKSLASH},
 	{"application", SCANCODE_APPLICATION},
 	{"power", SCANCODE_POWER},
-	{"=", SCANCODE_KP_EQUALS},
+	{"kp=", SCANCODE_KP_EQUALS},
 	{"f13", SCANCODE_F13},
 	{"f14", SCANCODE_F14},
 	{"f15", SCANCODE_F15},
