@@ -21,6 +21,7 @@
 // LOVE
 #include "common/config.h"
 #include "wrap_Font.h"
+#include "wrap_Text.h"
 
 // C++
 #include <algorithm>
@@ -56,13 +57,16 @@ int w_Font_getWidth(lua_State *L)
 int w_Font_getWrap(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
-	const char *str = luaL_checkstring(L, 2);
+
+	std::vector<Font::ColoredString> text;
+	luax_checkcoloredstring(L, 2, text);
+
 	float wrap = (float) luaL_checknumber(L, 3);
 	int max_width = 0;
 	std::vector<std::string> lines;
 	std::vector<int> widths;
 
-	luax_catchexcept(L, [&]() { t->getWrap(str, wrap, lines, &widths); });
+	luax_catchexcept(L, [&]() { t->getWrap(text, wrap, lines, &widths); });
 
 	for (int width : widths)
 		max_width = std::max(max_width, width);

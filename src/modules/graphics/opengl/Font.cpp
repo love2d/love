@@ -901,13 +901,13 @@ void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::ve
 	}
 }
 
-void Font::getWrap(const std::string &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
+void Font::getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
 {
-	ColoredCodepoints codepoints;
-	getCodepointsFromString(text, codepoints.cps);
+	ColoredCodepoints cps;
+	getCodepointsFromString(text, cps);
 
 	std::vector<ColoredCodepoints> codepointlines;
-	getWrap(codepoints, wraplimit, codepointlines, linewidths);
+	getWrap(cps, wraplimit, codepointlines, linewidths);
 
 	std::string line;
 

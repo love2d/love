@@ -160,7 +160,7 @@ public:
 	 * @param max_width Optional output of the maximum width
 	 * Returns a vector with the lines.
 	 **/
-	void getWrap(const std::string &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *line_widths = nullptr);
+	void getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *line_widths = nullptr);
 	void getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<ColoredCodepoints> &lines, std::vector<int> *line_widths = nullptr);
 
 	/**
