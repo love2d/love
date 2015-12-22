@@ -32,6 +32,8 @@ into the `platform/xcode/ios` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
+See `readme-iOS.rtf` for more information.
+
 ###Android
 Visit the [Android build repository][android-repository] for build instructions.
 
@@ -83,7 +85,7 @@ Dependencies
 [forums]: http://love2d.org/forums
 [irc]: irc://irc.oftc.net/love
 [dependencies]: http://love2d.org/sdk
-[dependencies-ios]: https://dl.dropboxusercontent.com/u/4214717/love-ios-libraries-0.10.zip
+[dependencies-ios]: https://bitbucket.org/rude/love/downloads/love-0.10.0-ios-libraries.zip
 [megasource]: https://bitbucket.org/rude/megasource
 [builds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
