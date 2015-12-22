@@ -20,7 +20,6 @@ Released: N/A
   * Added love.wheelmoved event callback function (replaces "wu" and "wd" constants for love.mousepressed.)
   * Added love.mouse.hasCursor.
   * Added a boolean argument to love.mousepressed and love.mousereleased indicating whether the button event originated from a touch press.
-  * Added more mouse button constants ("x3", "x4", and "x5".)
   * Added optional x/y/width/height arguments to love.keyboard.setTextInput. They tell the system where text will show up so on-screen keyboards can avoid that area.
   * Added Source:getType (replaces Source:isStatic.)
   * Added Source:getDuration and Decoder:getDuration.
