@@ -46,6 +46,10 @@ extern "C" {
 
 #ifdef LOVE_ANDROID
 #include "common/android.h"
+extern "C" 
+{
+#include "luajit.h"
+}
 #endif
 
 #ifdef LOVE_WINDOWS
@@ -252,6 +256,7 @@ int main(int argc, char **argv)
 	luaL_openlibs(L);
 
 #ifdef LOVE_ANDROID
+	luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE| LUAJIT_MODE_OFF);
 	lua_register(L, "print", l_print_sdl_log);
 #endif
 
