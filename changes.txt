@@ -1,7 +1,7 @@
 LOVE 0.10.0 [Super Toast]
 --------------
 
-Released: N/A
+Released: 2015-12-22
 
   * Added an iOS port.
   * Added an Android port.
