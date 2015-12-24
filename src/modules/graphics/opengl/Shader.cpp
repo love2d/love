@@ -200,9 +200,9 @@ void Shader::mapActiveUniforms()
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(u.type);
 
-		// Initialize all samplers to 0. I'm not sure whether this is needed on
-		// desktop GL or not, but on some Android devices they don't seem to be
-		// initialized to 0 by default...
+		// Initialize all samplers to 0. Both GLSL and GLSL ES are supposed to
+		// do this themselves, but some Android devices (galaxy tab 3 and 4)
+		// don't seem to do it...
 		if (u.baseType == UNIFORM_SAMPLER)
 			glUniform1i(u.location, 0);
 
