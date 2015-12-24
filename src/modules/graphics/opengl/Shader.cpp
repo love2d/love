@@ -178,6 +178,11 @@ void Shader::mapActiveUniforms()
 
 	uniforms.clear();
 
+	GLint activeprogram = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &activeprogram);
+
+	glUseProgram(program);
+
 	GLint numuniforms;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numuniforms);
 
@@ -195,6 +200,12 @@ void Shader::mapActiveUniforms()
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(u.type);
 
+		// Initialize all samplers to 0. I'm not sure whether this is needed on
+		// desktop GL or not, but on some Android devices they don't seem to be
+		// initialized to 0 by default...
+		if (u.baseType == UNIFORM_SAMPLER)
+			glUniform1i(u.location, 0);
+
 		// glGetActiveUniform appends "[0]" to the end of array uniform names...
 		if (u.name.length() > 3)
 		{
@@ -211,6 +222,8 @@ void Shader::mapActiveUniforms()
 		if (u.location != -1)
 			uniforms[u.name] = u;
 	}
+
+	glUseProgram(activeprogram);
 }
 
 bool Shader::loadVolatile()
@@ -883,6 +896,12 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 	case GL_FLOAT_MAT2:
 	case GL_FLOAT_MAT3:
 	case GL_FLOAT_MAT4:
+	case GL_FLOAT_MAT2x3:
+	case GL_FLOAT_MAT2x4:
+	case GL_FLOAT_MAT3x2:
+	case GL_FLOAT_MAT3x4:
+	case GL_FLOAT_MAT4x2:
+	case GL_FLOAT_MAT4x3:
 		return UNIFORM_FLOAT;
 	case GL_BOOL:
 	case GL_BOOL_VEC2:
@@ -890,8 +909,22 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 	case GL_BOOL_VEC4:
 		return UNIFORM_BOOL;
 	case GL_SAMPLER_1D:
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
 	case GL_SAMPLER_2D:
+	case GL_SAMPLER_2D_MULTISAMPLE:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_SAMPLER_2D_RECT:
+	case GL_SAMPLER_2D_RECT_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_2D_ARRAY:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
 	case GL_SAMPLER_3D:
+	case GL_SAMPLER_CUBE:
+	case GL_SAMPLER_CUBE_SHADOW:
+	case GL_SAMPLER_CUBE_MAP_ARRAY:
+	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
 		return UNIFORM_SAMPLER;
 	default:
 		return UNIFORM_UNKNOWN;
