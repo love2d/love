@@ -136,19 +136,14 @@ void OpenGL::setupContext()
 	state.boundTextures.clear();
 	state.boundTextures.resize(maxTextureUnits, 0);
 
-	GLenum curgltextureunit;
-	glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
-
-	state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
-
-	// Retrieve currently bound textures for each texture unit.
 	for (int i = 0; i < (int) state.boundTextures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
-		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.boundTextures[i]);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	glActiveTexture(curgltextureunit);
+	glActiveTexture(GL_TEXTURE0);
+	state.curTextureUnit = 0;
 
 	createDefaultTexture();
 
