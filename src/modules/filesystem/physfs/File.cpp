@@ -57,6 +57,9 @@ bool File::open(Mode mode)
 	if (mode == MODE_CLOSED)
 		return true;
 
+	if (!PHYSFS_isInit())
+		throw love::Exception("PhysFS is not initialized.");
+
 	// File must exist if read mode.
 	if ((mode == MODE_READ) && !PHYSFS_exists(filename.c_str()))
 		throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
