@@ -448,21 +448,29 @@ void Graphics::clear(Colorf c)
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Graphics::clear(const std::vector<Colorf> &colors)
+void Graphics::clear(const std::vector<OptionalColorf> &colors)
 {
 	if (colors.size() == 0)
 		return;
 
 	if (states.back().canvases.size() == 0)
-		return clear(colors[0]);
+	{
+		if (colors[0].enabled)
+			clear({colors[0].r, colors[0].g, colors[0].b, colors[0].a});
+
+		return;
+	}
 
 	if (colors.size() != states.back().canvases.size())
 		throw love::Exception("Number of clear colors must match the number of active canvases (%ld)", states.back().canvases.size());
 
-	std::vector<GLenum> bufs;
+	bool drawbuffermodified = false;
 
 	for (int i = 0; i < (int) colors.size(); i++)
 	{
+		if (!colors[i].enabled)
+			continue;
+
 		GLfloat c[] = {colors[i].r/255.f, colors[i].g/255.f, colors[i].b/255.f, colors[i].a/255.f};
 
 		// TODO: Investigate a potential bug on AMD drivers in Windows/Linux
@@ -478,10 +486,11 @@ void Graphics::clear(const std::vector<Colorf> &colors)
 			glClearBufferfv(GL_COLOR, i, c);
 		else
 		{
-			bufs.push_back(GL_COLOR_ATTACHMENT0 + i);
 			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
 			glClearColor(c[0], c[1], c[2], c[3]);
 			glClear(GL_COLOR_BUFFER_BIT);
+
+			drawbuffermodified = true;
 		}
 	}
 
@@ -489,8 +498,13 @@ void Graphics::clear(const std::vector<Colorf> &colors)
 
 	// Revert to the expected draw buffers once we're done, if glClearBuffer
 	// wasn't supported.
-	if (!(GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0))
+	if (drawbuffermodified)
 	{
+		std::vector<GLenum> bufs;
+
+		for (int i = 0; i < (int) states.back().canvases.size(); i++)
+			bufs.push_back(GL_COLOR_ATTACHMENT0 + i);
+
 		if (bufs.size() > 1)
 			glDrawBuffers((int) bufs.size(), &bufs[0]);
 		else

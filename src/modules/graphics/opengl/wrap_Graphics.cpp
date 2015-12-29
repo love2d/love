@@ -55,19 +55,26 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	std::vector<Colorf> colors(1);
+	Colorf color;
 
 	if (lua_isnoneornil(L, 1))
-		colors[0].set(0, 0, 0, 0);
+		color.set(0, 0, 0, 0);
 	else if (lua_istable(L, 1))
 	{
-		colors.resize((size_t) lua_gettop(L));
+		std::vector<Graphics::OptionalColorf> colors((size_t) lua_gettop(L));
 
 		for (int i = 0; i < lua_gettop(L); i++)
 		{
+			if (lua_isnoneornil(L, i + 1) || luax_objlen(L, i + 1) == 0)
+			{
+				colors[i].enabled = false;
+				continue;
+			}
+
 			for (int j = 1; j <= 4; j++)
 				lua_rawgeti(L, i + 1, j);
 
+			colors[i].enabled = true;
 			colors[i].r = (float) luaL_checknumber(L, -4);
 			colors[i].g = (float) luaL_checknumber(L, -3);
 			colors[i].b = (float) luaL_checknumber(L, -2);
@@ -75,22 +82,19 @@ int w_clear(lua_State *L)
 
 			lua_pop(L, 4);
 		}
+
+		luax_catchexcept(L, [&]() { instance()->clear(colors); });
+		return 0;
 	}
 	else
 	{
-		colors[0].r = (float) luaL_checknumber(L, 1);
-		colors[0].g = (float) luaL_checknumber(L, 2);
-		colors[0].b = (float) luaL_checknumber(L, 3);
-		colors[0].a = (float) luaL_optnumber(L, 4, 255);
+		color.r = (float) luaL_checknumber(L, 1);
+		color.g = (float) luaL_checknumber(L, 2);
+		color.b = (float) luaL_checknumber(L, 3);
+		color.a = (float) luaL_optnumber(L, 4, 255);
 	}
 
-	luax_catchexcept(L, [&]() {
-		if (colors.size() == 1)
-			instance()->clear(colors[0]);
-		else
-			instance()->clear(colors);
-	});
-
+	luax_catchexcept(L, [&]() { instance()->clear(color); });
 	return 0;
 }
 

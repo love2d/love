@@ -62,6 +62,12 @@ class Graphics : public love::graphics::Graphics
 {
 public:
 
+	struct OptionalColorf
+	{
+		float r, g, b, a;
+		bool enabled;
+	};
+
 	Graphics();
 	virtual ~Graphics();
 
@@ -92,7 +98,7 @@ public:
 	/**
 	 * Clears each active canvas to a different color.
 	 **/
-	void clear(const std::vector<Colorf> &colors);
+	void clear(const std::vector<OptionalColorf> &colors);
 
 	/**
 	 * Discards the contents of the screen.
