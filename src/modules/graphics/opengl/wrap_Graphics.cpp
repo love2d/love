@@ -706,19 +706,10 @@ static Mesh *newStandardMesh(lua_State *L)
 			v.s = (float) luaL_optnumber(L, -6, 0.0);
 			v.t = (float) luaL_optnumber(L, -5, 0.0);
 
-			Colorf c = {
-				(float) luaL_optnumber(L, -4, 255) / 255.0f,
-				(float) luaL_optnumber(L, -3, 255) / 255.0f,
-				(float) luaL_optnumber(L, -2, 255) / 255.0f,
-				(float) luaL_optnumber(L, -1, 255) / 255.0f
-			};
-
-			gammaCorrectColor(c);
-
-			v.r = (unsigned char) (c.r * 255.0f);
-			v.g = (unsigned char) (c.g * 255.0f);
-			v.b = (unsigned char) (c.b * 255.0f);
-			v.a = (unsigned char) (c.a * 255.0f);
+			v.r = (unsigned char) luaL_optnumber(L, -4, 255);
+			v.g = (unsigned char) luaL_optnumber(L, -3, 255);
+			v.b = (unsigned char) luaL_optnumber(L, -2, 255);
+			v.a = (unsigned char) luaL_optnumber(L, -1, 255);
 
 			lua_pop(L, 9);
 			vertices.push_back(v);
