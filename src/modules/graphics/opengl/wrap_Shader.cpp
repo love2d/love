@@ -184,7 +184,7 @@ static int w__Shader_sendFloat(lua_State *L, bool colors)
 			for (int j = 0; j < (int) dimension; j++)
 			{
 				// the fourth component (alpha) is always already linear, if it exists.
-				if (gammacorrect && i < 4)
+				if (gammacorrect && j < 3)
 					values[i * dimension + j] = m.gammaToLinear(values[i * dimension + j] / 255.0f);
 				else
 					values[i * dimension + j] /= 255.0f;
