@@ -1079,6 +1079,28 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 	GLenum dstRGB = GL_ZERO;
 	GLenum dstA   = GL_ZERO;
 
+	if (mode == BLEND_LIGHTEN || mode == BLEND_DARKEN)
+	{
+		if (!isSupported(SUPPORT_LIGHTEN))
+			throw love::Exception("The 'lighten' and 'darken' blend modes are not supported on this system.");
+	}
+
+	if (alphamode != BLENDALPHA_PREMULTIPLIED)
+	{
+		const char *modestr = "unknown";
+		switch (mode)
+		{
+		case BLEND_LIGHTEN:
+		case BLEND_DARKEN:
+		/*case BLEND_MULTIPLY:*/ // FIXME: Uncomment for 0.11.0
+			getConstant(mode, modestr);
+			throw love::Exception("The '%s' blend mode must be used with premultiplied alpha.", modestr);
+			break;
+		default:
+			break;
+		}
+	}
+
 	switch (mode)
 	{
 	case BLEND_ALPHA:
@@ -1095,6 +1117,12 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 		srcRGB = GL_ONE;
 		srcA = GL_ZERO;
 		dstRGB = dstA = GL_ONE;
+		break;
+	case BLEND_LIGHTEN:
+		func = GL_MAX;
+		break;
+	case BLEND_DARKEN:
+		func = GL_MIN;
 		break;
 	case BLEND_SCREEN:
 		srcRGB = srcA = GL_ONE;
@@ -1609,14 +1637,13 @@ Graphics::Stats Graphics::getStats() const
 
 double Graphics::getSystemLimit(SystemLimit limittype) const
 {
+	GLfloat limits[2];
+
 	switch (limittype)
 	{
 	case Graphics::LIMIT_POINT_SIZE:
-		{
-			GLfloat limits[2];
-			glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
-			return (double) limits[1];
-		}
+		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
+		return (double) limits[1];
 	case Graphics::LIMIT_TEXTURE_SIZE:
 		return (double) gl.getMaxTextureSize();
 	case Graphics::LIMIT_MULTI_CANVAS:
@@ -1636,6 +1663,8 @@ bool Graphics::isSupported(Support feature) const
 		return Canvas::isMultiFormatMultiCanvasSupported();
 	case SUPPORT_CLAMP_ZERO:
 		return gl.isClampZeroTextureWrapSupported();
+	case SUPPORT_LIGHTEN:
+		return GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
 	default:
 		return false;
 	}
