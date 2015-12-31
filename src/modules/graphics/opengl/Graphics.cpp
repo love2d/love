@@ -1369,7 +1369,7 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 	delete[] coords;
 }
 
-void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points)
+void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2, int points)
 {
 	// Nothing to display with no points or equal angles. (Or is there with line mode?)
 	if (points <= 0 || angle1 == angle2)
@@ -1378,7 +1378,7 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	// Oh, you want to draw a circle?
 	if (fabs(angle1 - angle2) >= 2.0f * (float) LOVE_M_PI)
 	{
-		circle(mode, x, y, radius, points);
+		circle(drawmode, x, y, radius, points);
 		return;
 	}
 
@@ -1387,20 +1387,62 @@ void Graphics::arc(DrawMode mode, float x, float y, float radius, float angle1, 
 	if (angle_shift == 0.0)
 		return;
 
-	float phi = angle1;
-	int num_coords = (points + 3) * 2;
-	float *coords = new float[num_coords];
-	coords[0] = coords[num_coords - 2] = x;
-	coords[1] = coords[num_coords - 1] = y;
+	// Prevent the connecting line from being drawn if a closed line arc has a
+	// small angle. Avoids some visual issues when connected lines are at sharp
+	// angles, due to the miter line join drawing code.
+	if (drawmode == DRAW_LINE && arcmode == ARC_CLOSED && fabsf(angle1 - angle2) < LOVE_TORAD(4))
+		arcmode = ARC_OPEN;
 
-	for (int i = 0; i <= points; ++i, phi += angle_shift)
+	// Quick fix for the last part of a filled open arc not being drawn (because
+	// polygon(DRAW_FILL, ...) doesn't work without a closed loop of vertices.)
+	if (drawmode == DRAW_FILL && arcmode == ARC_OPEN)
+		arcmode = ARC_CLOSED;
+
+	float phi = angle1;
+
+	float *coords = nullptr;
+	int num_coords = 0;
+
+	const auto createPoints = [&](float *coordinates)
 	{
-		coords[2 * (i+1)]     = x + radius * cosf(phi);
-		coords[2 * (i+1) + 1] = y + radius * sinf(phi);
+		for (int i = 0; i <= points; ++i, phi += angle_shift)
+		{
+			coordinates[2 * i + 0] = x + radius * cosf(phi);
+			coordinates[2 * i + 1] = y + radius * sinf(phi);
+		}
+	};
+
+	if (arcmode == ARC_PIE)
+	{
+		num_coords = (points + 3) * 2;
+		coords = new float[num_coords];
+
+		coords[0] = coords[num_coords - 2] = x;
+		coords[1] = coords[num_coords - 1] = y;
+
+		createPoints(coords + 2);
+	}
+	else if (arcmode == ARC_OPEN)
+	{
+		num_coords = (points + 1) * 2;
+		coords = new float[num_coords];
+
+		createPoints(coords);
+	}
+	else // ARC_CLOSED
+	{
+		num_coords = (points + 2) * 2;
+		coords = new float[num_coords];
+
+		createPoints(coords);
+
+		// Connect the ends of the arc.
+		coords[num_coords - 2] = coords[0];
+		coords[num_coords - 1] = coords[1];
 	}
 
 	// NOTE: We rely on polygon() using GL_TRIANGLE_FAN, when fill mode is used.
-	polygon(mode, coords, num_coords);
+	polygon(drawmode, coords, num_coords);
 
 	delete[] coords;
 }

@@ -72,6 +72,16 @@ bool Graphics::getConstant(DrawMode in, const char *&out)
 	return drawModes.find(in, out);
 }
 
+bool Graphics::getConstant(const char *in, ArcMode &out)
+{
+	return arcModes.find(in, out);
+}
+
+bool Graphics::getConstant(ArcMode in, const char *&out)
+{
+	return arcModes.find(in, out);
+}
+
 bool Graphics::getConstant(const char *in, BlendMode &out)
 {
 	return blendModes.find(in, out);
@@ -179,6 +189,15 @@ StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawMode
 };
 
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM> Graphics::drawModes(Graphics::drawModeEntries, sizeof(Graphics::drawModeEntries));
+
+StringMap<Graphics::ArcMode, Graphics::ARC_MAX_ENUM>::Entry Graphics::arcModeEntries[] =
+{
+	{ "open",   ARC_OPEN   },
+	{ "closed", ARC_CLOSED },
+	{ "pie",    ARC_PIE    },
+};
+
+StringMap<Graphics::ArcMode, Graphics::ARC_MAX_ENUM> Graphics::arcModes(Graphics::arcModeEntries, sizeof(Graphics::arcModeEntries));
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendModeEntries[] =
 {

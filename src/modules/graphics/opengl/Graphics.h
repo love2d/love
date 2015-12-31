@@ -420,7 +420,8 @@ public:
 
 	/**
 	 * Draws an arc using the specified arguments.
-	 * @param mode The mode of drawing (line/filled).
+	 * @param drawmode The mode of drawing (line/filled).
+	 * @param arcmode The type of arc.
 	 * @param x X-coordinate.
 	 * @param y Y-coordinate.
 	 * @param radius Radius of the arc.
@@ -428,7 +429,7 @@ public:
 	 * @param angle2 The angle at which the arc terminates.
 	 * @param points Number of points to use to draw the arc.
 	 **/
-	void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
+	void arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.

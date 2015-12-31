@@ -70,6 +70,14 @@ public:
 		DRAW_MAX_ENUM
 	};
 
+	enum ArcMode
+	{
+		ARC_OPEN,
+		ARC_CLOSED,
+		ARC_PIE,
+		ARC_MAX_ENUM
+	};
+
 	enum BlendMode
 	{
 		BLEND_ALPHA,
@@ -259,6 +267,9 @@ public:
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
 
+	static bool getConstant(const char *in, ArcMode &out);
+	static bool getConstant(ArcMode in, const char *&out);
+
 	static bool getConstant(const char *in, BlendMode &out);
 	static bool getConstant(BlendMode in, const char *&out);
 
@@ -293,6 +304,9 @@ private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
+
+	static StringMap<ArcMode, ARC_MAX_ENUM>::Entry arcModeEntries[];
+	static StringMap<ArcMode, ARC_MAX_ENUM> arcModes;
 
 	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
 	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;

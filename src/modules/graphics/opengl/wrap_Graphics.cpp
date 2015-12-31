@@ -1711,7 +1711,7 @@ int w_rectangle(lua_State *L)
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Incorrect draw mode %s", str);
+		return luaL_error(L, "Invalid draw mode: %s", str);
 
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
@@ -1742,7 +1742,7 @@ int w_circle(lua_State *L)
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Incorrect draw mode %s", str);
+		return luaL_error(L, "Invalid draw mode: %s", str);
 
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
@@ -1762,7 +1762,7 @@ int w_ellipse(lua_State *L)
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Incorrect draw mode %s", str);
+		return luaL_error(L, "Invalid draw mode: %s", str);
 
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
@@ -1781,23 +1781,41 @@ int w_ellipse(lua_State *L)
 
 int w_arc(lua_State *L)
 {
-	Graphics::DrawMode mode;
-	const char *str = luaL_checkstring(L, 1);
-	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Incorrect draw mode %s", str);
+	Graphics::DrawMode drawmode;
+	const char *drawstr = luaL_checkstring(L, 1);
+	if (!Graphics::getConstant(drawstr, drawmode))
+		return luaL_error(L, "Invalid draw mode: %s", drawstr);
 
-	float x = (float)luaL_checknumber(L, 2);
-	float y = (float)luaL_checknumber(L, 3);
-	float radius = (float)luaL_checknumber(L, 4);
-	float angle1 = (float)luaL_checknumber(L, 5);
-	float angle2 = (float)luaL_checknumber(L, 6);
-	int points;
-	if (lua_isnoneornil(L, 7))
-		points = radius > 10 ? (int)(radius) : 10;
-	else
-		points = (int) luaL_checknumber(L, 7);
+	int startidx = 2;
 
-	instance()->arc(mode, x, y, radius, angle1, angle2, points);
+	Graphics::ArcMode arcmode = Graphics::ARC_PIE;
+
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		const char *arcstr = luaL_checkstring(L, 2);
+		if (!Graphics::getConstant(arcstr, arcmode))
+			return luaL_error(L, "Invalid arc mode: %s", arcstr);
+
+		startidx = 3;
+	}
+
+	float x = (float) luaL_checknumber(L, startidx + 0);
+	float y = (float) luaL_checknumber(L, startidx + 1);
+	float radius = (float) luaL_checknumber(L, startidx + 2);
+	float angle1 = (float) luaL_checknumber(L, startidx + 3);
+	float angle2 = (float) luaL_checknumber(L, startidx + 4);
+
+	int points = (int) radius;
+	float angle = fabs(angle1 - angle2);
+
+	// The amount of points is based on the fraction of the circle created by the arc.
+	if (angle < 2.0f * (float) LOVE_M_PI)
+		points *= angle / (2.0f * (float) LOVE_M_PI);
+
+	points = std::max(points, 10);
+	points = (int) luaL_optnumber(L, startidx + 5, points);
+
+	instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2, points);
 	return 0;
 }
 
