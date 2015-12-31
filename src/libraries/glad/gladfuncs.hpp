@@ -30,6 +30,7 @@
 
 namespace glad {
 
+
 /* GL_VERSION_1_0 */
 inline void glCullFace(GLenum mode) { fp_glCullFace(mode); }
 inline void glFrontFace(GLenum mode) { fp_glFrontFace(mode); }
@@ -1022,7 +1023,7 @@ inline void glInvalidateNamedFramebufferSubData(GLuint framebuffer, GLsizei numA
 inline void glClearNamedFramebufferiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLint* value) { fp_glClearNamedFramebufferiv(framebuffer, buffer, drawbuffer, value); }
 inline void glClearNamedFramebufferuiv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLuint* value) { fp_glClearNamedFramebufferuiv(framebuffer, buffer, drawbuffer, value); }
 inline void glClearNamedFramebufferfv(GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLfloat* value) { fp_glClearNamedFramebufferfv(framebuffer, buffer, drawbuffer, value); }
-inline void glClearNamedFramebufferfi(GLuint framebuffer, GLenum buffer, const GLfloat depth, GLint stencil) { fp_glClearNamedFramebufferfi(framebuffer, buffer, depth, stencil); }
+inline void glClearNamedFramebufferfi(GLuint framebuffer, GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil) { fp_glClearNamedFramebufferfi(framebuffer, buffer, drawbuffer, depth, stencil); }
 inline void glBlitNamedFramebuffer(GLuint readFramebuffer, GLuint drawFramebuffer, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) { fp_glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter); }
 inline GLenum glCheckNamedFramebufferStatus(GLuint framebuffer, GLenum target) { return fp_glCheckNamedFramebufferStatus(framebuffer, target); }
 inline void glGetNamedFramebufferParameteriv(GLuint framebuffer, GLenum pname, GLint* param) { fp_glGetNamedFramebufferParameteriv(framebuffer, pname, param); }
@@ -1110,6 +1111,10 @@ inline void glGetnHistogram(GLenum target, GLboolean reset, GLenum format, GLenu
 inline void glGetnMinmax(GLenum target, GLboolean reset, GLenum format, GLenum type, GLsizei bufSize, void* values) { fp_glGetnMinmax(target, reset, format, type, bufSize, values); }
 inline void glTextureBarrier() { fp_glTextureBarrier(); }
 
+/* GL_ES_VERSION_3_2 */
+inline void glBlendBarrier() { fp_glBlendBarrier(); }
+inline void glPrimitiveBoundingBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW) { fp_glPrimitiveBoundingBox(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW); }
+
 /* GL_KHR_blend_equation_advanced */
 inline void glBlendBarrierKHR() { fp_glBlendBarrierKHR(); }
 
@@ -1176,11 +1181,52 @@ inline void glBlendFuncSeparateiARB(GLuint buf, GLenum srcRGB, GLenum dstRGB, GL
 inline void glDrawArraysInstancedARB(GLenum mode, GLint first, GLsizei count, GLsizei primcount) { fp_glDrawArraysInstancedARB(mode, first, count, primcount); }
 inline void glDrawElementsInstancedARB(GLenum mode, GLsizei count, GLenum type, const void* indices, GLsizei primcount) { fp_glDrawElementsInstancedARB(mode, count, type, indices, primcount); }
 
+/* GL_ARB_ES3_2_compatibility */
+inline void glPrimitiveBoundingBoxARB(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW) { fp_glPrimitiveBoundingBoxARB(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW); }
+
 /* GL_ARB_geometry_shader4 */
 inline void glProgramParameteriARB(GLuint program, GLenum pname, GLint value) { fp_glProgramParameteriARB(program, pname, value); }
 inline void glFramebufferTextureARB(GLenum target, GLenum attachment, GLuint texture, GLint level) { fp_glFramebufferTextureARB(target, attachment, texture, level); }
 inline void glFramebufferTextureLayerARB(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer) { fp_glFramebufferTextureLayerARB(target, attachment, texture, level, layer); }
 inline void glFramebufferTextureFaceARB(GLenum target, GLenum attachment, GLuint texture, GLint level, GLenum face) { fp_glFramebufferTextureFaceARB(target, attachment, texture, level, face); }
+
+/* GL_ARB_gpu_shader_int64 */
+inline void glUniform1i64ARB(GLint location, GLint64 x) { fp_glUniform1i64ARB(location, x); }
+inline void glUniform2i64ARB(GLint location, GLint64 x, GLint64 y) { fp_glUniform2i64ARB(location, x, y); }
+inline void glUniform3i64ARB(GLint location, GLint64 x, GLint64 y, GLint64 z) { fp_glUniform3i64ARB(location, x, y, z); }
+inline void glUniform4i64ARB(GLint location, GLint64 x, GLint64 y, GLint64 z, GLint64 w) { fp_glUniform4i64ARB(location, x, y, z, w); }
+inline void glUniform1i64vARB(GLint location, GLsizei count, const GLint64* value) { fp_glUniform1i64vARB(location, count, value); }
+inline void glUniform2i64vARB(GLint location, GLsizei count, const GLint64* value) { fp_glUniform2i64vARB(location, count, value); }
+inline void glUniform3i64vARB(GLint location, GLsizei count, const GLint64* value) { fp_glUniform3i64vARB(location, count, value); }
+inline void glUniform4i64vARB(GLint location, GLsizei count, const GLint64* value) { fp_glUniform4i64vARB(location, count, value); }
+inline void glUniform1ui64ARB(GLint location, GLuint64 x) { fp_glUniform1ui64ARB(location, x); }
+inline void glUniform2ui64ARB(GLint location, GLuint64 x, GLuint64 y) { fp_glUniform2ui64ARB(location, x, y); }
+inline void glUniform3ui64ARB(GLint location, GLuint64 x, GLuint64 y, GLuint64 z) { fp_glUniform3ui64ARB(location, x, y, z); }
+inline void glUniform4ui64ARB(GLint location, GLuint64 x, GLuint64 y, GLuint64 z, GLuint64 w) { fp_glUniform4ui64ARB(location, x, y, z, w); }
+inline void glUniform1ui64vARB(GLint location, GLsizei count, const GLuint64* value) { fp_glUniform1ui64vARB(location, count, value); }
+inline void glUniform2ui64vARB(GLint location, GLsizei count, const GLuint64* value) { fp_glUniform2ui64vARB(location, count, value); }
+inline void glUniform3ui64vARB(GLint location, GLsizei count, const GLuint64* value) { fp_glUniform3ui64vARB(location, count, value); }
+inline void glUniform4ui64vARB(GLint location, GLsizei count, const GLuint64* value) { fp_glUniform4ui64vARB(location, count, value); }
+inline void glGetUniformi64vARB(GLuint program, GLint location, GLint64* params) { fp_glGetUniformi64vARB(program, location, params); }
+inline void glGetUniformui64vARB(GLuint program, GLint location, GLuint64* params) { fp_glGetUniformui64vARB(program, location, params); }
+inline void glGetnUniformi64vARB(GLuint program, GLint location, GLsizei bufSize, GLint64* params) { fp_glGetnUniformi64vARB(program, location, bufSize, params); }
+inline void glGetnUniformui64vARB(GLuint program, GLint location, GLsizei bufSize, GLuint64* params) { fp_glGetnUniformui64vARB(program, location, bufSize, params); }
+inline void glProgramUniform1i64ARB(GLuint program, GLint location, GLint64 x) { fp_glProgramUniform1i64ARB(program, location, x); }
+inline void glProgramUniform2i64ARB(GLuint program, GLint location, GLint64 x, GLint64 y) { fp_glProgramUniform2i64ARB(program, location, x, y); }
+inline void glProgramUniform3i64ARB(GLuint program, GLint location, GLint64 x, GLint64 y, GLint64 z) { fp_glProgramUniform3i64ARB(program, location, x, y, z); }
+inline void glProgramUniform4i64ARB(GLuint program, GLint location, GLint64 x, GLint64 y, GLint64 z, GLint64 w) { fp_glProgramUniform4i64ARB(program, location, x, y, z, w); }
+inline void glProgramUniform1i64vARB(GLuint program, GLint location, GLsizei count, const GLint64* value) { fp_glProgramUniform1i64vARB(program, location, count, value); }
+inline void glProgramUniform2i64vARB(GLuint program, GLint location, GLsizei count, const GLint64* value) { fp_glProgramUniform2i64vARB(program, location, count, value); }
+inline void glProgramUniform3i64vARB(GLuint program, GLint location, GLsizei count, const GLint64* value) { fp_glProgramUniform3i64vARB(program, location, count, value); }
+inline void glProgramUniform4i64vARB(GLuint program, GLint location, GLsizei count, const GLint64* value) { fp_glProgramUniform4i64vARB(program, location, count, value); }
+inline void glProgramUniform1ui64ARB(GLuint program, GLint location, GLuint64 x) { fp_glProgramUniform1ui64ARB(program, location, x); }
+inline void glProgramUniform2ui64ARB(GLuint program, GLint location, GLuint64 x, GLuint64 y) { fp_glProgramUniform2ui64ARB(program, location, x, y); }
+inline void glProgramUniform3ui64ARB(GLuint program, GLint location, GLuint64 x, GLuint64 y, GLuint64 z) { fp_glProgramUniform3ui64ARB(program, location, x, y, z); }
+inline void glProgramUniform4ui64ARB(GLuint program, GLint location, GLuint64 x, GLuint64 y, GLuint64 z, GLuint64 w) { fp_glProgramUniform4ui64ARB(program, location, x, y, z, w); }
+inline void glProgramUniform1ui64vARB(GLuint program, GLint location, GLsizei count, const GLuint64* value) { fp_glProgramUniform1ui64vARB(program, location, count, value); }
+inline void glProgramUniform2ui64vARB(GLuint program, GLint location, GLsizei count, const GLuint64* value) { fp_glProgramUniform2ui64vARB(program, location, count, value); }
+inline void glProgramUniform3ui64vARB(GLuint program, GLint location, GLsizei count, const GLuint64* value) { fp_glProgramUniform3ui64vARB(program, location, count, value); }
+inline void glProgramUniform4ui64vARB(GLuint program, GLint location, GLsizei count, const GLuint64* value) { fp_glProgramUniform4ui64vARB(program, location, count, value); }
 
 /* GL_ARB_indirect_parameters */
 inline void glMultiDrawArraysIndirectCountARB(GLenum mode, GLintptr indirect, GLintptr drawcount, GLsizei maxdrawcount, GLsizei stride) { fp_glMultiDrawArraysIndirectCountARB(mode, indirect, drawcount, maxdrawcount, stride); }
@@ -1188,6 +1234,9 @@ inline void glMultiDrawElementsIndirectCountARB(GLenum mode, GLenum type, GLintp
 
 /* GL_ARB_instanced_arrays */
 inline void glVertexAttribDivisorARB(GLuint index, GLuint divisor) { fp_glVertexAttribDivisorARB(index, divisor); }
+
+/* GL_ARB_parallel_shader_compile */
+inline void glMaxShaderCompilerThreadsARB(GLuint count) { fp_glMaxShaderCompilerThreadsARB(count); }
 
 /* GL_ARB_robustness */
 inline GLenum glGetGraphicsResetStatusARB() { return fp_glGetGraphicsResetStatusARB(); }
@@ -1211,6 +1260,11 @@ inline void glGetnSeparableFilterARB(GLenum target, GLenum format, GLenum type, 
 inline void glGetnHistogramARB(GLenum target, GLboolean reset, GLenum format, GLenum type, GLsizei bufSize, void* values) { fp_glGetnHistogramARB(target, reset, format, type, bufSize, values); }
 inline void glGetnMinmaxARB(GLenum target, GLboolean reset, GLenum format, GLenum type, GLsizei bufSize, void* values) { fp_glGetnMinmaxARB(target, reset, format, type, bufSize, values); }
 
+/* GL_ARB_sample_locations */
+inline void glFramebufferSampleLocationsfvARB(GLenum target, GLuint start, GLsizei count, const GLfloat* v) { fp_glFramebufferSampleLocationsfvARB(target, start, count, v); }
+inline void glNamedFramebufferSampleLocationsfvARB(GLuint framebuffer, GLuint start, GLsizei count, const GLfloat* v) { fp_glNamedFramebufferSampleLocationsfvARB(framebuffer, start, count, v); }
+inline void glEvaluateDepthValuesARB() { fp_glEvaluateDepthValuesARB(); }
+
 /* GL_ARB_sample_shading */
 inline void glMinSampleShadingARB(GLfloat value) { fp_glMinSampleShadingARB(value); }
 
@@ -1228,7 +1282,7 @@ inline void glNamedBufferPageCommitmentEXT(GLuint buffer, GLintptr offset, GLsiz
 inline void glNamedBufferPageCommitmentARB(GLuint buffer, GLintptr offset, GLsizeiptr size, GLboolean commit) { fp_glNamedBufferPageCommitmentARB(buffer, offset, size, commit); }
 
 /* GL_ARB_sparse_texture */
-inline void glTexPageCommitmentARB(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean resident) { fp_glTexPageCommitmentARB(target, level, xoffset, yoffset, zoffset, width, height, depth, resident); }
+inline void glTexPageCommitmentARB(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean commit) { fp_glTexPageCommitmentARB(target, level, xoffset, yoffset, zoffset, width, height, depth, commit); }
 
 /* GL_ARB_texture_buffer_object */
 inline void glTexBufferARB(GLenum target, GLenum internalformat, GLuint buffer) { fp_glTexBufferARB(target, internalformat, buffer); }
@@ -1242,6 +1296,18 @@ inline void glDrawElementsInstancedBaseVertexBaseInstanceEXT(GLenum mode, GLsize
 inline void glUniformBufferEXT(GLuint program, GLint location, GLuint buffer) { fp_glUniformBufferEXT(program, location, buffer); }
 inline GLint glGetUniformBufferSizeEXT(GLuint program, GLint location) { return fp_glGetUniformBufferSizeEXT(program, location); }
 inline GLintptr glGetUniformOffsetEXT(GLuint program, GLint location) { return fp_glGetUniformOffsetEXT(program, location); }
+
+/* GL_EXT_blend_func_extended */
+inline void glBindFragDataLocationIndexedEXT(GLuint program, GLuint colorNumber, GLuint index, const GLchar* name) { fp_glBindFragDataLocationIndexedEXT(program, colorNumber, index, name); }
+inline void glBindFragDataLocationEXT(GLuint program, GLuint color, const GLchar* name) { fp_glBindFragDataLocationEXT(program, color, name); }
+inline GLint glGetProgramResourceLocationIndexEXT(GLuint program, GLenum programInterface, const GLchar* name) { return fp_glGetProgramResourceLocationIndexEXT(program, programInterface, name); }
+inline GLint glGetFragDataIndexEXT(GLuint program, const GLchar* name) { return fp_glGetFragDataIndexEXT(program, name); }
+
+/* GL_EXT_blend_minmax */
+inline void glBlendEquationEXT(GLenum mode) { fp_glBlendEquationEXT(mode); }
+
+/* GL_EXT_buffer_storage */
+inline void glBufferStorageEXT(GLenum target, GLsizeiptr size, const void* data, GLbitfield flags) { fp_glBufferStorageEXT(target, size, data, flags); }
 
 /* GL_EXT_copy_image */
 inline void glCopyImageSubDataEXT(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth) { fp_glCopyImageSubDataEXT(srcName, srcTarget, srcLevel, srcX, srcY, srcZ, dstName, dstTarget, dstLevel, dstX, dstY, dstZ, srcWidth, srcHeight, srcDepth); }
@@ -1509,7 +1575,7 @@ inline void glVertexArrayVertexAttribLFormatEXT(GLuint vaobj, GLuint attribindex
 inline void glVertexArrayVertexAttribBindingEXT(GLuint vaobj, GLuint attribindex, GLuint bindingindex) { fp_glVertexArrayVertexAttribBindingEXT(vaobj, attribindex, bindingindex); }
 inline void glVertexArrayVertexBindingDivisorEXT(GLuint vaobj, GLuint bindingindex, GLuint divisor) { fp_glVertexArrayVertexBindingDivisorEXT(vaobj, bindingindex, divisor); }
 inline void glVertexArrayVertexAttribLOffsetEXT(GLuint vaobj, GLuint buffer, GLuint index, GLint size, GLenum type, GLsizei stride, GLintptr offset) { fp_glVertexArrayVertexAttribLOffsetEXT(vaobj, buffer, index, size, type, stride, offset); }
-inline void glTexturePageCommitmentEXT(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean resident) { fp_glTexturePageCommitmentEXT(texture, level, xoffset, yoffset, zoffset, width, height, depth, resident); }
+inline void glTexturePageCommitmentEXT(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean commit) { fp_glTexturePageCommitmentEXT(texture, level, xoffset, yoffset, zoffset, width, height, depth, commit); }
 inline void glVertexArrayVertexAttribDivisorEXT(GLuint vaobj, GLuint index, GLuint divisor) { fp_glVertexArrayVertexAttribDivisorEXT(vaobj, index, divisor); }
 
 /* GL_EXT_discard_framebuffer */
@@ -1591,7 +1657,6 @@ inline void glProgramLocalParameters4fvEXT(GLenum target, GLuint index, GLsizei 
 
 /* GL_EXT_gpu_shader4 */
 inline void glGetUniformuivEXT(GLuint program, GLint location, GLuint* params) { fp_glGetUniformuivEXT(program, location, params); }
-inline void glBindFragDataLocationEXT(GLuint program, GLuint color, const GLchar* name) { fp_glBindFragDataLocationEXT(program, color, name); }
 inline GLint glGetFragDataLocationEXT(GLuint program, const GLchar* name) { return fp_glGetFragDataLocationEXT(program, name); }
 inline void glUniform1uiEXT(GLint location, GLuint v0) { fp_glUniform1uiEXT(location, v0); }
 inline void glUniform2uiEXT(GLint location, GLuint v0, GLuint v1) { fp_glUniform2uiEXT(location, v0, v1); }
@@ -1657,6 +1722,9 @@ inline void glValidateProgramPipelineEXT(GLuint pipeline) { fp_glValidateProgram
 /* GL_EXT_shader_image_load_store */
 inline void glBindImageTextureEXT(GLuint index, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLint format) { fp_glBindImageTextureEXT(index, texture, level, layered, layer, access, format); }
 inline void glMemoryBarrierEXT(GLbitfield barriers) { fp_glMemoryBarrierEXT(barriers); }
+
+/* GL_EXT_sparse_texture */
+inline void glTexPageCommitmentEXT(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean commit) { fp_glTexPageCommitmentEXT(target, level, xoffset, yoffset, zoffset, width, height, depth, commit); }
 
 /* GL_EXT_stencil_clear_tag */
 inline void glStencilClearTagEXT(GLsizei stencilTagBits, GLuint stencilClearTag) { fp_glStencilClearTagEXT(stencilTagBits, stencilClearTag); }
@@ -1978,6 +2046,9 @@ inline void glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachmen
 /* GL_INGR_blend_func_separate */
 inline void glBlendFuncSeparateINGR(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha) { fp_glBlendFuncSeparateINGR(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha); }
 
+/* GL_INTEL_framebuffer_CMAA */
+inline void glApplyFramebufferAttachmentCMAAINTEL() { fp_glApplyFramebufferAttachmentCMAAINTEL(); }
+
 /* GL_INTEL_map_texture */
 inline void glSyncTextureINTEL(GLuint texture) { fp_glSyncTextureINTEL(texture); }
 inline void glUnmapTexture2DINTEL(GLuint texture, GLint level) { fp_glUnmapTexture2DINTEL(texture, level); }
@@ -2022,12 +2093,34 @@ inline GLboolean glIsImageHandleResidentNV(GLuint64 handle) { return fp_glIsImag
 inline void glBlendParameteriNV(GLenum pname, GLint value) { fp_glBlendParameteriNV(pname, value); }
 inline void glBlendBarrierNV() { fp_glBlendBarrierNV(); }
 
+/* GL_NV_command_list */
+inline void glCreateStatesNV(GLsizei n, GLuint* states) { fp_glCreateStatesNV(n, states); }
+inline void glDeleteStatesNV(GLsizei n, const GLuint* states) { fp_glDeleteStatesNV(n, states); }
+inline GLboolean glIsStateNV(GLuint state) { return fp_glIsStateNV(state); }
+inline void glStateCaptureNV(GLuint state, GLenum mode) { fp_glStateCaptureNV(state, mode); }
+inline GLuint glGetCommandHeaderNV(GLenum tokenID, GLuint size) { return fp_glGetCommandHeaderNV(tokenID, size); }
+inline GLushort glGetStageIndexNV(GLenum shadertype) { return fp_glGetStageIndexNV(shadertype); }
+inline void glDrawCommandsNV(GLenum primitiveMode, GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, GLuint count) { fp_glDrawCommandsNV(primitiveMode, buffer, indirects, sizes, count); }
+inline void glDrawCommandsAddressNV(GLenum primitiveMode, const GLuint64* indirects, const GLsizei* sizes, GLuint count) { fp_glDrawCommandsAddressNV(primitiveMode, indirects, sizes, count); }
+inline void glDrawCommandsStatesNV(GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count) { fp_glDrawCommandsStatesNV(buffer, indirects, sizes, states, fbos, count); }
+inline void glDrawCommandsStatesAddressNV(const GLuint64* indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count) { fp_glDrawCommandsStatesAddressNV(indirects, sizes, states, fbos, count); }
+inline void glCreateCommandListsNV(GLsizei n, GLuint* lists) { fp_glCreateCommandListsNV(n, lists); }
+inline void glDeleteCommandListsNV(GLsizei n, const GLuint* lists) { fp_glDeleteCommandListsNV(n, lists); }
+inline GLboolean glIsCommandListNV(GLuint list) { return fp_glIsCommandListNV(list); }
+inline void glListDrawCommandsStatesClientNV(GLuint list, GLuint segment, const void** indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count) { fp_glListDrawCommandsStatesClientNV(list, segment, indirects, sizes, states, fbos, count); }
+inline void glCommandListSegmentsNV(GLuint list, GLuint segments) { fp_glCommandListSegmentsNV(list, segments); }
+inline void glCompileCommandListNV(GLuint list) { fp_glCompileCommandListNV(list); }
+inline void glCallCommandListNV(GLuint list) { fp_glCallCommandListNV(list); }
+
 /* GL_NV_conditional_render */
 inline void glBeginConditionalRenderNV(GLuint id, GLenum mode) { fp_glBeginConditionalRenderNV(id, mode); }
 inline void glEndConditionalRenderNV() { fp_glEndConditionalRenderNV(); }
 
 /* GL_NV_conservative_raster */
 inline void glSubpixelPrecisionBiasNV(GLuint xbits, GLuint ybits) { fp_glSubpixelPrecisionBiasNV(xbits, ybits); }
+
+/* GL_NV_conservative_raster_dilate */
+inline void glConservativeRasterParameterfNV(GLenum pname, GLfloat value) { fp_glConservativeRasterParameterfNV(pname, value); }
 
 /* GL_NV_copy_buffer */
 inline void glCopyBufferSubDataNV(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size) { fp_glCopyBufferSubDataNV(readTarget, writeTarget, readOffset, writeOffset, size); }
@@ -2253,6 +2346,9 @@ inline void glGetPathColorGenfvNV(GLenum color, GLenum pname, GLfloat* value) { 
 inline void glGetPathTexGenivNV(GLenum texCoordSet, GLenum pname, GLint* value) { fp_glGetPathTexGenivNV(texCoordSet, pname, value); }
 inline void glGetPathTexGenfvNV(GLenum texCoordSet, GLenum pname, GLfloat* value) { fp_glGetPathTexGenfvNV(texCoordSet, pname, value); }
 
+/* GL_NV_polygon_mode */
+inline void glPolygonModeNV(GLenum face, GLenum mode) { fp_glPolygonModeNV(face, mode); }
+
 /* GL_NV_present_video */
 inline void glPresentFrameKeyedNV(GLuint video_slot, GLuint64EXT minPresentTime, GLuint beginPresentTimeId, GLuint presentDurationId, GLenum type, GLenum target0, GLuint fill0, GLuint key0, GLenum target1, GLuint fill1, GLuint key1) { fp_glPresentFrameKeyedNV(video_slot, minPresentTime, beginPresentTimeId, presentDurationId, type, target0, fill0, key0, target1, fill1, key1); }
 inline void glPresentFrameDualFillNV(GLuint video_slot, GLuint64EXT minPresentTime, GLuint beginPresentTimeId, GLuint presentDurationId, GLenum type, GLenum target0, GLuint fill0, GLenum target1, GLuint fill1, GLenum target2, GLuint fill2, GLenum target3, GLuint fill3) { fp_glPresentFrameDualFillNV(video_slot, minPresentTime, beginPresentTimeId, presentDurationId, type, target0, fill0, target1, fill1, target2, fill2, target3, fill3); }
@@ -2425,6 +2521,12 @@ inline GLboolean glIsEnablediNV(GLenum target, GLuint index) { return fp_glIsEna
 /* GL_NVX_conditional_render */
 inline void glBeginConditionalRenderNVX(GLuint id) { fp_glBeginConditionalRenderNVX(id); }
 inline void glEndConditionalRenderNVX() { fp_glEndConditionalRenderNVX(); }
+
+/* GL_OVR_multiview */
+inline void glFramebufferTextureMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews) { fp_glFramebufferTextureMultiviewOVR(target, attachment, texture, level, baseViewIndex, numViews); }
+
+/* GL_OVR_multiview_multisampled_render_to_texture */
+inline void glFramebufferTextureMultisampleMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews) { fp_glFramebufferTextureMultisampleMultiviewOVR(target, attachment, texture, level, samples, baseViewIndex, numViews); }
 
 /* GL_QCOM_alpha_test */
 inline void glAlphaFuncQCOM(GLenum func, GLclampf ref) { fp_glAlphaFuncQCOM(func, ref); }
