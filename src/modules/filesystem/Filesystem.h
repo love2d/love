@@ -84,7 +84,7 @@ public:
 	 * @param ident The name of the game. Will be used to
 	 * to create the folder in the LOVE data folder.
 	 **/
-	virtual bool setIdentity(const char *ident, bool appendToPath = false) = 0;
+	virtual bool setIdentity(const char *ident, bool appendToPath = false, bool internalStorage = false) = 0;
 	virtual const char *getIdentity() const = 0;
 
 	/**

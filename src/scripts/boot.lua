@@ -374,6 +374,7 @@ function love.init()
 		console = false, -- Only relevant for windows.
 		identity = false,
 		appendidentity = false,
+		internalStorage = false, -- Only relevant for Android.
 		accelerometerjoystick = true, -- Only relevant for Android / iOS.
 		gammacorrect = false,
 	}
@@ -493,7 +494,7 @@ function love.init()
 	end
 
 	if love.filesystem then
-		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
+		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity, c.internalStorage)
 		if love.filesystem.isFile("main.lua") then
 			require("main")
 		end

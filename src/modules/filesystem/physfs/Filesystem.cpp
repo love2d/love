@@ -144,7 +144,7 @@ bool Filesystem::isFused() const
 	return fused;
 }
 
-bool Filesystem::setIdentity(const char *ident, bool appendToPath)
+bool Filesystem::setIdentity(const char *ident, bool appendToPath, bool internalStorage) 
 {
 	if (!PHYSFS_isInit())
 		return false;
@@ -169,11 +169,16 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 #ifdef LOVE_ANDROID
 	if (save_identity == "")
 		save_identity = "unnamed";
-	
-	std::string internal_storage_path = SDL_AndroidGetInternalStoragePath();
-	std::string save_directory = internal_storage_path + "/save";
 
-	save_path_full = std::string(SDL_AndroidGetInternalStoragePath()) + std::string("/save/") + save_identity;
+	std::string storage_path;
+	if (internalStorage)
+		storage_path = SDL_AndroidGetInternalStoragePath();
+	else
+		storage_path = SDL_AndroidGetExternalStoragePath();
+
+	std::string save_directory = storage_path + "/save";
+
+	save_path_full = storage_path + std::string("/save/") + save_identity;
 
 	if (!love::android::directoryExists(save_path_full.c_str()) &&
 			!love::android::mkdir(save_path_full.c_str()))

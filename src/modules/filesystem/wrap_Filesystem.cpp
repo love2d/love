@@ -73,8 +73,10 @@ int w_setIdentity(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
 	bool append = luax_optboolean(L, 2, false);
+	bool internalStorage = luax_optboolean(L, 3, false);
 
-	if (!instance()->setIdentity(arg, append))
+
+	if (!instance()->setIdentity(arg, append, internalStorage))
 		return luaL_error(L, "Could not set write directory.");
 
 	return 0;
