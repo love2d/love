@@ -494,7 +494,7 @@ function love.init()
 	end
 
 	if love.filesystem then
-		love.filesystem.setAndroidSaveExternal(c.useexternalstoragee)
+		love.filesystem.setAndroidSaveExternal(c.useexternalstorage)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
 		if love.filesystem.isFile("main.lua") then
 			require("main")
