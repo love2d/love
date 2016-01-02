@@ -52,7 +52,7 @@ public:
 
 	bool setupWriteDirectory();
 
-	bool setIdentity(const char *ident, bool appendToPath = false, bool internalStorage = false);
+	bool setIdentity(const char *ident, bool appendToPath = false);
 	const char *getIdentity() const;
 
 	bool setSource(const char *source);

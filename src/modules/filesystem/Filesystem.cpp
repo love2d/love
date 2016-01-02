@@ -50,6 +50,17 @@ Filesystem::~Filesystem()
 {
 }
 
+void Filesystem::setAndroidSaveExternal(bool useExternal)
+{	
+	this->useExternal = useExternal;
+}
+
+bool Filesystem::isAndroidSaveExternal() const
+{ 
+	return useExternal;
+}
+
+
 bool Filesystem::isRealDirectory(const std::string &path) const
 {
 #ifdef LOVE_WINDOWS

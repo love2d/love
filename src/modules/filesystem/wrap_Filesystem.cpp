@@ -69,14 +69,25 @@ int w_isFused(lua_State *L)
 	return 1;
 }
 
+int w_setAndroidSaveExternal(lua_State *L)
+{
+	bool useExternal = luax_optboolean(L, 1, false);
+	instance()->setAndroidSaveExternal(useExternal);
+	return 0;
+}
+
+int w_isAndroidSaveExternal(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isAndroidSaveExternal());
+	return 1;
+}
+
 int w_setIdentity(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
 	bool append = luax_optboolean(L, 2, false);
-	bool internalStorage = luax_optboolean(L, 3, false);
 
-
-	if (!instance()->setIdentity(arg, append, internalStorage))
+	if (!instance()->setIdentity(arg, append))
 		return luaL_error(L, "Could not set write directory.");
 
 	return 0;
@@ -710,6 +721,8 @@ static const luaL_Reg functions[] =
 	{ "init", w_init },
 	{ "setFused", w_setFused },
 	{ "isFused", w_isFused },
+	{ "setAndroidSaveExternal", w_setAndroidSaveExternal },
+	{ "getAndroidSaveExternal", w_isAndroidSaveExternal },
 	{ "setIdentity", w_setIdentity },
 	{ "getIdentity", w_getIdentity },
 	{ "setSource", w_setSource },
