@@ -374,7 +374,7 @@ function love.init()
 		console = false, -- Only relevant for windows.
 		identity = false,
 		appendidentity = false,
-		useexternalstorage = false, -- Only relevant for Android.
+		externalstorage = false, -- Only relevant for Android.
 		accelerometerjoystick = true, -- Only relevant for Android / iOS.
 		gammacorrect = false,
 	}
@@ -494,7 +494,7 @@ function love.init()
 	end
 
 	if love.filesystem then
-		love.filesystem.setAndroidSaveExternal(c.useexternalstorage)
+		love.filesystem.setAndroidSaveExternal(c.externalstorage)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
 		if love.filesystem.isFile("main.lua") then
 			require("main")
