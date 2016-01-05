@@ -266,13 +266,19 @@ void VideoStream::rewind()
 
 void VideoStream::seekDecoder(double target)
 {
+	if (target < 0.01)
+	{
+		rewind();
+		return;
+	}
+
 	double low = 0;
 	double high = file->getSize();
 
 	while (high-low > 0.0001)
 	{
 		// Determine our next binary search position
-		double pos = (high-low)/2+low;
+		double pos = (high+low)/2;
 		file->seek(pos);
 
 		// Break sync
@@ -280,12 +286,18 @@ void VideoStream::seekDecoder(double target)
 		ogg_sync_pageseek(&sync, &page);
 
 		// Read a packet
-		readPacket(true);
+		readPacket(false);
+		if (eos)
+			return;
 
 		// Determine if this is the right place
 		double curTime = th_granule_time(decoder, packet.granulepos);
-		if (curTime > target && th_granule_time(decoder, packet.granulepos-1) < target)
-			break;
+		double nextTime = th_granule_time(decoder, packet.granulepos+1);
+
+		if (curTime == -1)
+			continue; // Invalid granule position (magic?)
+		else if (curTime <= target && nextTime > target)
+			break; // the current frame should be displaying right now
 		else if (curTime > target)
 			high = pos;
 		else
@@ -306,12 +318,7 @@ void VideoStream::threadedFillBackBuffer(double dt)
 
 	// Seeking backwards
 	if (position < lastFrame)
-	{
-		if (position < 0.01)
-			rewind();
-		else
-			seekDecoder(position);
-	}
+		seekDecoder(position);
 
 	// If we're at the end of the stream, or if we're displaying the right frame
 	// stop here
