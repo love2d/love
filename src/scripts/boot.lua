@@ -584,6 +584,9 @@ function love.errhand(msg)
 		love.mouse.setVisible(true)
 		love.mouse.setGrabbed(false)
 		love.mouse.setRelativeMode(false)
+		if love.mouse.hasCursor() then
+			love.mouse.setCursor()
+		end
 	end
 	if love.joystick then
 		-- Stop all joystick vibrations.
