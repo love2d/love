@@ -44,8 +44,8 @@ public:
 	virtual void play();
 	virtual void pause();
 	virtual void seek(double offset);
-	virtual double tell();
-	virtual bool isPlaying();
+	virtual double tell() const;
+	virtual bool isPlaying() const;
 
 	class FrameSync;
 	class DeltaSync;

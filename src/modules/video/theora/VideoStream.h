@@ -56,6 +56,8 @@ public:
 	const std::string &getFilename() const;
 	void setSync(FrameSync *frameSync);
 
+	bool isPlaying() const;
+
 	void threadedFillBackBuffer(double dt);
 
 private:

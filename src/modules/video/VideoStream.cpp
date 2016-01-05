@@ -52,12 +52,12 @@ void VideoStream::seek(double offset)
 	frameSync->seek(offset);
 }
 
-double VideoStream::tell()
+double VideoStream::tell() const
 {
 	return frameSync->tell();
 }
 
-bool VideoStream::isPlaying()
+bool VideoStream::isPlaying() const
 {
 	return frameSync->isPlaying();
 }

@@ -120,6 +120,11 @@ size_t VideoStream::getSize() const
 	return sizeof(Frame);
 }
 
+bool VideoStream::isPlaying() const
+{
+	return frameSync->isPlaying() && !eos;
+}
+
 void VideoStream::readPage()
 {
 	char *syncBuffer = nullptr;
