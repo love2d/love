@@ -90,6 +90,14 @@ bool OpenGL::initContext()
 	initVendor();
 	initMatrices();
 
+	bugs = {};
+
+#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
+	// See the comment in OpenGL.h.
+	if (getVendor() == VENDOR_AMD)
+		bugs.clearRequiresDummyDraw = true;
+#endif
+
 	contextInitialized = true;
 
 	return true;
