@@ -76,12 +76,6 @@ int w_setAndroidSaveExternal(lua_State *L)
 	return 0;
 }
 
-int w_isAndroidSaveExternal(lua_State *L)
-{
-	luax_pushboolean(L, instance()->isAndroidSaveExternal());
-	return 1;
-}
-
 int w_setIdentity(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
