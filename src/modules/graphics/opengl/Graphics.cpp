@@ -438,27 +438,6 @@ void Graphics::reset()
 	origin();
 }
 
-void Graphics::dummyDraw()
-{
-	gl.prepareDraw();
-
-	// Draw a triangle using a single vertex position indexed 3 times. The
-	// triangle will be degenerate and won't be rasterized (so the pixel shader
-	// won't be run), and an index array with a single vertex is used so the
-	// vertex shader can't prevent the triangle from being degenerate by using
-	// gl_VertexID.
-	// NOTE: This code will have to be changed to use a vertex and index buffer,
-	// for it to work with a Core Profile GL3 backend. But the bug should be
-	// re-tested in that case as well.
-	const GLfloat vertex[] = {0.0f, 0.0f};
-	const GLushort indices[] = {0, 0, 0};
-
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertex);
-
-	gl.drawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, indices);
-}
-
 void Graphics::clear(Colorf c)
 {
 	Colorf nc = Colorf(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
@@ -468,8 +447,13 @@ void Graphics::clear(Colorf c)
 	glClearColor(nc.r, nc.g, nc.b, nc.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (gl.bugs.clearRequiresDummyDraw)
-		dummyDraw();
+	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
+	{
+		// This seems to be enough to fix the bug for me. Other methods I've
+		// tried (e.g. dummy draws) don't work in all cases.
+		glUseProgram(0);
+		glUseProgram(Shader::current->getProgram());
+	}
 }
 
 void Graphics::clear(const std::vector<OptionalColorf> &colors)
@@ -535,8 +519,13 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 			glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	}
 
-	if (gl.bugs.clearRequiresDummyDraw)
-		dummyDraw();
+	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
+	{
+		// This seems to be enough to fix the bug for me. Other methods I've
+		// tried (e.g. dummy draws) don't work in all cases.
+		glUseProgram(0);
+		glUseProgram(Shader::current->getProgram());
+	}
 }
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool stencil)

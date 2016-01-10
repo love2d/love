@@ -95,7 +95,7 @@ bool OpenGL::initContext()
 #if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
 	// See the comment in OpenGL.h.
 	if (getVendor() == VENDOR_AMD)
-		bugs.clearRequiresDummyDraw = true;
+		bugs.clearRequiresDriverTextureStateUpdate = true;
 #endif
 
 	contextInitialized = true;

@@ -518,8 +518,6 @@ private:
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
 
-	void dummyDraw();
-
 	void checkSetDefaultFont();
 
 	StrongRef<love::window::Window> currentWindow;

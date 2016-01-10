@@ -172,14 +172,15 @@ public:
 	struct Bugs
 	{
 		// On AMD's Windows (and probably Linux) drivers,
-		// glBindFramebuffer + glClear + glBindFramebuffer won't work unless
-		// there's a draw in between the glBindFramebuffer calls (or unless
-		// there's some other thing that causes the driver to avoid the buggy
-		// "fast path", e.g. if the scissor test is active and its rectangle
-		// doesn't cover the whole framebuffer).
+		// glBindFramebuffer + glClear + glBindFramebuffer + draw(fbo_tex) won't
+		// work unless there's some kind of draw or state change which causes
+		// the texture's contents to update (just drawing the texture won't
+		// always do it).
+		// Activating shader program 0 and then activating the actual program
+		// seems to always 'fix' it for me.
 		// Bug observed January 2016 with multiple AMD GPUs and driver versions.
 		// https://love2d.org/forums/viewtopic.php?f=4&t=81496
-		bool clearRequiresDummyDraw;
+		bool clearRequiresDriverTextureStateUpdate;
 	} bugs;
 
 	OpenGL();

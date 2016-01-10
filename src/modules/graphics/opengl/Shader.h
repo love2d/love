@@ -194,6 +194,11 @@ public:
 
 	const std::map<std::string, Object *> &getBoundRetainables() const;
 
+	GLuint getProgram() const
+	{
+		return program;
+	}
+
 	static std::string getGLSLVersion();
 	static bool isSupported();
 
