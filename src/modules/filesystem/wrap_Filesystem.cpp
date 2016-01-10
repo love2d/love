@@ -722,7 +722,6 @@ static const luaL_Reg functions[] =
 	{ "setFused", w_setFused },
 	{ "isFused", w_isFused },
 	{ "_setAndroidSaveExternal", w_setAndroidSaveExternal },
-	{ "_getAndroidSaveExternal", w_isAndroidSaveExternal },
 	{ "setIdentity", w_setIdentity },
 	{ "getIdentity", w_getIdentity },
 	{ "setSource", w_setSource },
