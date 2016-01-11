@@ -69,6 +69,13 @@ int w_isFused(lua_State *L)
 	return 1;
 }
 
+int w_setAndroidSaveExternal(lua_State *L)
+{
+	bool useExternal = luax_optboolean(L, 1, false);
+	instance()->setAndroidSaveExternal(useExternal);
+	return 0;
+}
+
 int w_setIdentity(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
@@ -708,6 +715,7 @@ static const luaL_Reg functions[] =
 	{ "init", w_init },
 	{ "setFused", w_setFused },
 	{ "isFused", w_isFused },
+	{ "_setAndroidSaveExternal", w_setAndroidSaveExternal },
 	{ "setIdentity", w_setIdentity },
 	{ "getIdentity", w_getIdentity },
 	{ "setSource", w_setSource },
