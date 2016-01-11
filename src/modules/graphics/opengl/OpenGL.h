@@ -175,8 +175,8 @@ public:
 		 * On AMD's Windows (and probably Linux) drivers,
 		 * glBindFramebuffer + glClear + glBindFramebuffer + draw(fbo_tex) won't
 		 * work unless there's some kind of draw or state change which causes
-		 * the texture's contents to update (just drawing the texture won't
-		 * always do it).
+		 * the driver to update the texture's contents (just drawing the texture
+		 * won't always do it, with this driver bug).
 		 * Activating shader program 0 and then activating the actual program
 		 * seems to always 'fix' it for me.
 		 * Bug observed January 2016 with multiple AMD GPUs and driver versions.
@@ -189,9 +189,9 @@ public:
 		 * the moment:
 		 *
 		 * Kepler nvidia GPUs in at least OS X 10.10 and 10.11 fail to render
-		 * geometry with glDrawElements if index data comes from a Buffer
-		 * Object but and vertex data doesn't. One workaround is to use a
-		 * CPU-side index array when there's also a CPU-side vertex array.
+		 * geometry with glDrawElements if index data comes from a Buffer Object
+		 * and vertex data doesn't. One workaround is to use a CPU-side index
+		 * array when there's also a CPU-side vertex array.
 		 * https://love2d.org/forums/viewtopic.php?f=4&t=81401&start=10
 		 *
 		 * Some android drivers don't seem to initialize the sampler index
