@@ -146,8 +146,6 @@ private:
 	SDL_GLContext context;
 
 	bool displayedWindowError;
-	bool displayedContextError;
-
 	bool hasSDL203orEarlier;
 
 }; // Window

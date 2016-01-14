@@ -61,7 +61,6 @@ Window::Window()
 	, window(nullptr)
 	, context(nullptr)
 	, displayedWindowError(false)
-	, displayedContextError(false)
 	, hasSDL203orEarlier(false)
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
@@ -231,7 +230,16 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
 	if (hasSDL203orEarlier)
-		attribslist.erase(attribslist.begin() + 1);
+	{
+		auto it = attribslist.begin();
+		while (it != attribslist.end())
+		{
+			if (it->gles && it->versionMajor >= 3)
+				it = attribslist.erase(it);
+			else
+				++it;
+		}
+	}
 
 	// Move OpenGL ES to the front of the list if we should prefer GLES.
 	if (preferGLES)
@@ -342,42 +350,26 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 	if (!context || !window)
 	{
-		if (!windowerror.empty())
+		std::string title = "Unable to create OpenGL window";
+		std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
+
+		if (!glversion.empty())
+			message += "\n\nDetected OpenGL version:\n" + glversion;
+		else if (!contexterror.empty())
+			message += "\n\nOpenGL context creation error: " + contexterror;
+		else if (!windowerror.empty())
+			message += "\n\nSDL window creation error: " + windowerror;
+
+		std::cerr << title << std::endl << message << std::endl;
+
+		// Display a message box with the error, but only once.
+		if (!displayedWindowError)
 		{
-			std::string title = "Unable to create window";
-			std::string message = "SDL error: " + windowerror;
-
-			std::cerr << title << std::endl << message << std::endl;
-
-			// Display a message box with the error, but only once.
-			if (!displayedWindowError)
-			{
-				showMessageBox(title, message, MESSAGEBOX_ERROR, false);
-				displayedWindowError = true;
-			}
-		}
-		else if (!context)
-		{
-			std::string title = "Unable to initialize OpenGL";
-			std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
-
-			if (!contexterror.empty())
-				message += "\n\nOpenGL context creation error: " + contexterror;
-			if (!glversion.empty())
-				message += " \n\nDetected OpenGL version: " + glversion;
-
-			std::cerr << title << std::endl << message << std::endl;
-
-			// Display a message box with the error, but only once.
-			if (!displayedContextError)
-			{
-				showMessageBox(title, message, MESSAGEBOX_ERROR, true);
-				displayedContextError = true;
-			}
+			showMessageBox(title, message, MESSAGEBOX_ERROR, false);
+			displayedWindowError = true;
 		}
 
 		close();
-
 		return false;
 	}
 
