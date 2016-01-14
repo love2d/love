@@ -82,7 +82,7 @@ float linearToGammaPrecise(float c) {
 	return c < 0.0031308 ? c * 12.92 : 1.055 * pow(c, 1.0 / 2.4) - 0.055;
 }
 vec3 linearToGammaPrecise(vec3 c) {
-	bvec3 lt = lessThan(c, vec3(0.0031308));
+	bvec3 lt = lessThanEqual(c, vec3(0.0031308));
 	c.r = lt.r ? c.r * 12.92 : 1.055 * pow(c.r, 1.0 / 2.4) - 0.055;
 	c.g = lt.g ? c.g * 12.92 : 1.055 * pow(c.g, 1.0 / 2.4) - 0.055;
 	c.b = lt.b ? c.b * 12.92 : 1.055 * pow(c.b, 1.0 / 2.4) - 0.055;

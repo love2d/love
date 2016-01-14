@@ -213,7 +213,7 @@ float Math::gammaToLinear(float c) const
  **/
 float Math::linearToGamma(float c) const
 {
-	if (c < 0.0031308f)
+	if (c <= 0.0031308f)
 		return c * 12.92f;
 	else
 		return 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
