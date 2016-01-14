@@ -185,6 +185,15 @@ public:
 		bool clearRequiresDriverTextureStateUpdate;
 
 		/**
+		 * AMD's Windows drivers don't always properly generate mipmaps unless
+		 * glEnable(GL_TEXTURE_2D) is called directly before glGenerateMipmap.
+		 * This only applies to legacy and Compatibility Profile contexts, of
+		 * course.
+		 * https://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
+		 **/
+		bool generateMipmapsRequiresTexture2DEnable;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *

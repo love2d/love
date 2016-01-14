@@ -93,9 +93,12 @@ bool OpenGL::initContext()
 	bugs = {};
 
 #if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
-	// See the comment in OpenGL.h.
+	// See the comments in OpenGL.h.
 	if (getVendor() == VENDOR_AMD)
+	{
 		bugs.clearRequiresDriverTextureStateUpdate = true;
+		bugs.generateMipmapsRequiresTexture2DEnable = true;
+	}
 #endif
 
 	contextInitialized = true;

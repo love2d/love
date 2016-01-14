@@ -202,11 +202,8 @@ void Image::generateMipmaps()
 	if (flags.mipmaps && !isCompressed() &&
 		(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 	{
-		// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
-#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
-		if (gl.getVendor() == OpenGL::VENDOR_AMD)
+		if (gl.bugs.generateMipmapsRequiresTexture2DEnable)
 			glEnable(GL_TEXTURE_2D);
-#endif
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
