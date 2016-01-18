@@ -245,6 +245,8 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 	for (const auto &cpair : characters)
 	{
 		const BMFontCharacter &c = cpair.second;
+		int width = c.metrics.width;
+		int height = c.metrics.height;
 
 		if (!unicode && cpair.first > 127)
 			throw love::Exception("Invalid BMFont character id (only unicode and ASCII are supported)");
@@ -254,8 +256,14 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 
 		const image::ImageData *id = images[c.page].get();
 
-		if (!id->inside(c.x, c.y) || !id->inside(c.x + c.metrics.width - 1, c.y + c.metrics.height - 1))
-			throw love::Exception("Invalid BMFont character coordinates.");
+		if (!id->inside(c.x, c.y))
+			throw love::Exception("Invalid coordinates for BMFont character %u.", cpair.first);
+
+		if (width > 0 && !id->inside(c.x + width - 1, c.y))
+			throw love::Exception("Invalid width %d for BMFont character %u.", width, cpair.first);
+
+		if (height > 0 && !id->inside(c.x, c.y + height - 1))
+			throw love::Exception("Invalid height %d for BMFont character %u.", height, cpair.first);
 
 		if (guessheight)
 			lineHeight = std::max(lineHeight, c.metrics.height);
