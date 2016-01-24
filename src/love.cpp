@@ -59,7 +59,11 @@ extern "C"
 // http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
 // TODO: Re-evaluate in the future when the average integrated GPU in Optimus
 // systems is less mediocre?
-LOVE_EXPORT DWORD NvOptimusEnablement = 0x00000001;
+LOVE_EXPORT DWORD NvOptimusEnablement = 1;
+
+// Same with AMD GPUs.
+// https://community.amd.com/thread/169965
+LOVE_EXPORT DWORD AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif // LOVE_WINDOWS
 
