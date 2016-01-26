@@ -67,43 +67,6 @@ LOVE_EXPORT DWORD AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif // LOVE_WINDOWS
 
-#ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
-
-void get_utf8_arguments(int &argc, char **&argv)
-{
-	LPWSTR cmd = GetCommandLineW();
-
-	if (!cmd)
-		return;
-
-	LPWSTR *argv_w = CommandLineToArgvW(cmd, &argc);
-
-	argv = new char *[argc];
-
-	for (int i = 0; i < argc; ++i)
-	{
-		// Size of wide char buffer (plus one for trailing '\0').
-		size_t wide_len = wcslen(argv_w[i]) + 1;
-
-		// Get size in UTF-8.
-		int utf8_size = WideCharToMultiByte(CP_UTF8, 0, argv_w[i], wide_len, argv[i], 0, 0, 0);
-
-		argv[i] = new char[utf8_size];
-
-		// Convert to UTF-8.
-		int ok = WideCharToMultiByte(CP_UTF8, 0, argv_w[i], wide_len, argv[i], utf8_size, 0, 0);
-
-		int len = strlen(argv[i]);
-
-		if (!ok)
-			printf("Warning: could not convert to UTF8.\n");
-	}
-
-	LocalFree(argv_w);
-}
-
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
-
 #ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 
 #include <vector>
@@ -226,13 +189,6 @@ int main(int argc, char **argv)
 		argv = orig_argv;
 #endif
 
-#ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
-	int hack_argc = 0;	char **hack_argv = 0;
-	get_utf8_arguments(hack_argc, hack_argv);
-	argc = hack_argc;
-	argv = hack_argv;
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
-
 #ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 	int hack_argc = 0;
 	char **hack_argv = 0;
@@ -318,14 +274,14 @@ int main(int argc, char **argv)
 
 	lua_close(L);
 
-#if defined(LOVE_LEGENDARY_UTF8_ARGV_HACK) || defined(LOVE_LEGENDARY_APP_ARGV_HACK)
+#if defined(LOVE_LEGENDARY_APP_ARGV_HACK)
 	if (hack_argv)
 	{
 		for (int i = 0; i<hack_argc; ++i)
 			delete [] hack_argv[i];
 		delete [] hack_argv;
 	}
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK || LOVE_LEGENDARY_APP_ARGV_HACK
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
 #ifdef LOVE_IOS
 	} // while (true)
