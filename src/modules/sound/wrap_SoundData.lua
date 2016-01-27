@@ -75,6 +75,8 @@ local objectcache = setmetatable({}, {
 -- Overwrite existing functions with new FFI versions.
 
 function SoundData:getSample(i)
+	if type(i) ~= "number" then error("bad argument #1 to SoundData:getSample (expected number)", 2) end
+
 	local p = objectcache[self]
 
 	if not (i >= 0 and i < p.size/p.bytedepth) then
@@ -91,6 +93,9 @@ function SoundData:getSample(i)
 end
 
 function SoundData:setSample(i, sample)
+	if type(i) ~= "number" then error("bad argument #1 to SoundData:setSample (expected number)", 2) end
+	if type(sample) ~= "number" then error("bad argument #2 to SoundData:setSample (expected number)", 2) end
+
 	local p = objectcache[self]
 
 	if not (i >= 0 and i < p.size/p.bytedepth) then

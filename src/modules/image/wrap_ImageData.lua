@@ -42,12 +42,12 @@ function ImageData:mapPixel(func, ix, iy, iw, ih)
 	iw = iw or idw
 	ih = ih or idh
 
-	if type(ix) ~= "number" then error("Invalid argument #2 to ImageData:mapPixel (expected number)", 2) end
-	if type(iy) ~= "number" then error("Invalid argument #3 to ImageData:mapPixel (expected number)", 2) end
-	if type(iw) ~= "number" then error("Invalid argument #4 to ImageData:mapPixel (expected number)", 2) end
-	if type(ih) ~= "number" then error("Invalid argument #5 to ImageData:mapPixel (expected number)", 2) end
+	if type(ix) ~= "number" then error("bad argument #2 to ImageData:mapPixel (expected number)", 2) end
+	if type(iy) ~= "number" then error("bad argument #3 to ImageData:mapPixel (expected number)", 2) end
+	if type(iw) ~= "number" then error("bad argument #4 to ImageData:mapPixel (expected number)", 2) end
+	if type(ih) ~= "number" then error("bad argument #5 to ImageData:mapPixel (expected number)", 2) end
 
-	if type(func) ~= "function" then error("Invalid argument #1 to ImageData:mapPixel (expected function)", 2) end
+	if type(func) ~= "function" then error("bad argument #1 to ImageData:mapPixel (expected function)", 2) end
 	if not (inside(ix, iy, idw, idh) and inside(ix+iw-1, iy+ih-1, idw, idh)) then error("Invalid rectangle dimensions", 2) end
 
 	-- performAtomic and mapPixelUnsafe have Lua-C API and FFI versions.
@@ -141,6 +141,9 @@ function ImageData:_mapPixelUnsafe(func, ix, iy, iw, ih)
 end
 
 function ImageData:getPixel(x, y)
+	if type(x) ~= "number" then error("bad argument #1 to ImageData:getPixel (expected number)", 2) end
+	if type(y) ~= "number" then error("bad argument #2 to ImageData:getPixel (expected number)", 2) end
+
 	local p = objectcache[self]
 	if not inside(x, y, p.width, p.height) then error("Attempt to get out-of-range pixel!", 2) end
 
@@ -154,14 +157,22 @@ end
 
 local temppixel = ffi.new("ImageData_Pixel")
 
-function ImageData:setPixel(x, y, r, g, b, a)	
-	local p = objectcache[self]
-	if not inside(x, y, p.width, p.height) then error("Attempt to set out-of-range pixel!", 2) end
+function ImageData:setPixel(x, y, r, g, b, a)
+	if type(x) ~= "number" then error("bad argument #1 to ImageData:setPixel (expected number)", 2) end
+	if type(y) ~= "number" then error("bad argument #2 to ImageData:setPixel (expected number)", 2) end
 
 	if type(r) == "table" then
 		local t = r
 		r, g, b, a = t[1], t[2], t[3], t[4]
 	end
+
+	if type(r) ~= "number" then error("bad red color component argument to ImageData:setPixel (expected number)", 2) end
+	if type(g) ~= "number" then error("bad green color component argument to ImageData:setPixel (expected number)", 2) end
+	if type(b) ~= "number" then error("bad blue color component argument to ImageData:setPixel (expected number)", 2) end
+	if a ~= nil and type(a) ~= "number" then error("bad alpha color component argument to ImageData:setPixel (expected number)", 2) end
+
+	local p = objectcache[self]
+	if not inside(x, y, p.width, p.height) then error("Attempt to set out-of-range pixel!", 2) end
 
 	temppixel.r = r
 	temppixel.g = g
