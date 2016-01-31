@@ -746,17 +746,17 @@ function love.nogame()
 		local COLORS = {}
 
 		for _,color in ipairs({
-			{ 240, 240, 240 }, -- WHITE (ish)
-			{ 232, 104, 162}, -- PINK
-			{ 69, 155, 168 }, -- BLUE
-			{ 67, 93, 119 }, -- DARK BLUE
+			{ 15/16, 15/16, 15/16 }, -- WHITE (ish)
+			{ 232/255, 104/255, 162/255 }, -- PINK
+			{ 69/255, 155/255, 168/255 }, -- BLUE
+			{ 67/255, 93/255, 119/255 }, -- DARK BLUE
 		}) do
 			table.insert(COLORS, color)
 			table.insert(COLORS, color)
 		end
 
 		-- Insert only once. This way it appears half as often.
-		table.insert(COLORS, { 220, 239, 113 }) -- LIME
+		table.insert(COLORS, { 220/255, 239/255, 113/255 }) -- LIME
 
 		-- When using the higher-res mosaic sprite sheet, we want to draw its
 		-- sprites at the same scale as the regular-resolution one, because
@@ -859,7 +859,7 @@ function love.nogame()
 			T = love.graphics.newQuad(96, 64, 32, 32, sw, sh),
 		}
 
-		local INITIAL_TEXT_COLOR = { 240, 240, 240 }
+		local INITIAL_TEXT_COLOR = { 15/16, 15/16, 15/16 }
 
 		local put_text = function(str, offset, x, y)
 			local idx = offset + SIZE_X * y + x
@@ -916,7 +916,7 @@ function love.nogame()
 
 	function Mosaic:draw()
 		self.batch:clear()
-		love.graphics.setColor(255, 255, 255, 64)
+		love.graphics.setColor(1, 1, 1, 0.25)
 		for idx,piece in ipairs(self.pieces) do
 			local ct = 1 - self.color_t
 			local c0 = piece.color.prev
@@ -928,12 +928,12 @@ function love.nogame()
 			self.batch:setColor(r, g, b)
 			self.batch:add(piece.quad, piece.x, piece.y, piece.r, 1, 1, 16, 16)
 		end
-		love.graphics.setColor(255, 255, 255, 255)
+		love.graphics.setColor(1, 1, 1, 1)
 		love.graphics.draw(self.batch, 0, 0)
 	end
 
 	function love.load()
-		love.graphics.setBackgroundColor(136, 193, 206)
+		love.graphics.setBackgroundColor(136/255, 193/255, 206/255)
 
 		local function load_image(file, name)
 			return love.graphics.newImage(love.filesystem.newFileData(file, name:gsub("_", "."), "base64"))
@@ -964,7 +964,7 @@ function love.nogame()
 	end
 
 	function love.draw()
-		love.graphics.setColor(255, 255, 255)
+		love.graphics.setColor(1, 1, 1)
 		love.graphics.push()
 		love.graphics.scale(love.window.getPixelScale())
 		g_entities.mosaic:draw()

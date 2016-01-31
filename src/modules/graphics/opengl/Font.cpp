@@ -388,7 +388,7 @@ void Font::getCodepointsFromString(const std::vector<ColoredString> &strs, Color
 	{
 		IndexedColor c = codepoints.colors[0];
 
-		if (c.index == 0 && c.color == Color(255, 255, 255, 255))
+		if (c.index == 0 && c.color == Colorf(1.0f, 1.0f, 1.0f, 1.0f))
 			codepoints.colors.pop_back();
 	}
 }
@@ -425,7 +425,13 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 		uint32 g = codepoints.cps[i];
 
 		if (curcolori + 1 < ncolors && codepoints.colors[curcolori + 1].index == i)
-			curcolor = codepoints.colors[++curcolori].color;
+		{
+			const Colorf &c = codepoints.colors[++curcolori].color;
+			curcolor.r = (unsigned char) (c.r * 255.0f);
+			curcolor.g = (unsigned char) (c.g * 255.0f);
+			curcolor.b = (unsigned char) (c.b * 255.0f);
+			curcolor.a = (unsigned char) (c.a * 255.0f);
+		}
 
 		if (g == '\n')
 		{
@@ -763,7 +769,7 @@ void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::ve
 	// Keeping the indexed colors "in sync" is a bit tricky, since we split
 	// things up and we might skip some glyphs but we don't want to skip any
 	// color which starts at those indices.
-	Color curcolor(255, 255, 255, 255);
+	Colorf curcolor(1.0f, 1.0f, 1.0f, 1.0f);
 	bool addcurcolor = false;
 	int curcolori = -1;
 	int endcolori = (int) codepoints.colors.size() - 1;

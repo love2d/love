@@ -515,7 +515,7 @@ int w_ParticleSystem_setColors(lua_State *L)
 			colors[i].r = (float) luaL_checknumber(L, -4);
 			colors[i].g = (float) luaL_checknumber(L, -3);
 			colors[i].b = (float) luaL_checknumber(L, -2);
-			colors[i].a = (float) luaL_optnumber(L, -1, 255);
+			colors[i].a = (float) luaL_optnumber(L, -1, 1.0);
 
 			// pop the color components from the stack
 			lua_pop(L, 4);

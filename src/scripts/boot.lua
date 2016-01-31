@@ -600,8 +600,8 @@ function love.errhand(msg)
 	love.graphics.reset()
 	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
 
-	love.graphics.setBackgroundColor(89, 157, 220)
-	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.setBackgroundColor(89/255, 157/255, 220/255)
+	love.graphics.setColor(1, 1, 1, 1)
 
 	local trace = debug.traceback()
 

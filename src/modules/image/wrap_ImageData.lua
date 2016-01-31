@@ -132,10 +132,10 @@ function ImageData:_mapPixelUnsafe(func, ix, iy, iw, ih)
 		for x=ix, ix+iw-1 do
 			local p = pixels[y*idw+x]
 			local r, g, b, a = func(x, y, tonumber(p.r), tonumber(p.g), tonumber(p.b), tonumber(p.a))
-			pixels[y*idw+x].r = r
-			pixels[y*idw+x].g = g
-			pixels[y*idw+x].b = b
-			pixels[y*idw+x].a = a == nil and 255 or a
+			pixels[y*idw+x].r = r * 255
+			pixels[y*idw+x].g = g * 255
+			pixels[y*idw+x].b = b * 255
+			pixels[y*idw+x].a = a == nil and 255 or (a*255)
 		end
 	end
 end
@@ -152,7 +152,7 @@ function ImageData:getPixel(x, y)
 	local r, g, b, a = tonumber(pixel.r), tonumber(pixel.g), tonumber(pixel.b), tonumber(pixel.a)
 	ffifuncs.unlockMutex(self)
 
-	return r, g, b, a
+	return r / 255, g / 255, b / 255, a / 255
 end
 
 local temppixel = ffi.new("ImageData_Pixel")
@@ -174,10 +174,10 @@ function ImageData:setPixel(x, y, r, g, b, a)
 	local p = objectcache[self]
 	if not inside(x, y, p.width, p.height) then error("Attempt to set out-of-range pixel!", 2) end
 
-	temppixel.r = r
-	temppixel.g = g
-	temppixel.b = b
-	temppixel.a = a == nil and 255 or a
+	temppixel.r = r * 255
+	temppixel.g = g * 255
+	temppixel.b = b * 255
+	temppixel.a = a == nil and 255 or a * 255
 
 	ffifuncs.lockMutex(self)
 	p.pointer[y * p.width + x] = temppixel

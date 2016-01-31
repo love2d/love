@@ -95,7 +95,7 @@ end
 
 local function gammaToLinear(c)
 	if c ~= nil then
-		return tonumber(ffifuncs.gammaToLinear(c / 255)) * 255
+		return tonumber(ffifuncs.gammaToLinear(c))
 	end
 	return c
 end
@@ -110,7 +110,7 @@ end
 
 local function linearToGamma(c)
 	if c ~= nil then
-		return tonumber(ffifuncs.linearToGamma(c / 255)) * 255
+		return tonumber(ffifuncs.linearToGamma(c))
 	end
 	return c
 end

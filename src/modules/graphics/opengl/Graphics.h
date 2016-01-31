@@ -442,7 +442,7 @@ public:
 	/**
 	 * Creates a screenshot of the view and saves it to the default folder.
 	 * @param image The love.image module.
-	 * @param copyAlpha If the alpha channel should be copied or set to full opacity (255).
+	 * @param copyAlpha If the alpha channel should be copied or set to full opacity (1.0).
 	 **/
 	love::image::ImageData *newScreenshot(love::image::Image *image, bool copyAlpha = true);
 
@@ -481,8 +481,8 @@ private:
 
 	struct DisplayState
 	{
-		Colorf color = Colorf(255.0, 255.0, 255.0, 255.0);
-		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 255.0);
+		Colorf color = Colorf(1.0, 1.0, 1.0, 1.0);
+		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 1.0);
 
 		BlendMode blendMode = BLEND_ALPHA;
 		BlendAlpha blendAlphaMode = BLENDALPHA_MULTIPLY;

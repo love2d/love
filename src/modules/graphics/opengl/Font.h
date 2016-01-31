@@ -64,12 +64,12 @@ public:
 	struct ColoredString
 	{
 		std::string str;
-		Color color;
+		Colorf color;
 	};
 
 	struct IndexedColor
 	{
-		Color color;
+		Colorf color;
 		int index;
 	};
 

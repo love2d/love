@@ -45,7 +45,7 @@ static inline size_t writeByteData(lua_State *L, int startidx, int components, c
 	uint8 *componentdata = (uint8 *) data;
 
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (uint8) luaL_optnumber(L, startidx + i, 255);
+		componentdata[i] = (uint8) (luaL_optnumber(L, startidx + i, 1.0) * 255.0);
 
 	return sizeof(uint8) * components;
 }
@@ -78,7 +78,7 @@ static inline size_t readByteData(lua_State *L, int components, const char *data
 	const uint8 *componentdata = (const uint8 *) data;
 
 	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, (lua_Number) componentdata[i]);
+		lua_pushnumber(L, (lua_Number) componentdata[i] / 255.0);
 
 	return sizeof(uint8) * components;
 }

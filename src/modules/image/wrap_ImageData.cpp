@@ -74,10 +74,10 @@ int w_ImageData_getPixel(lua_State *L)
 
 	luax_catchexcept(L, [&](){ c = t->getPixel(x, y); });
 
-	lua_pushnumber(L, c.r);
-	lua_pushnumber(L, c.g);
-	lua_pushnumber(L, c.b);
-	lua_pushnumber(L, c.a);
+	lua_pushnumber(L, (lua_Number) c.r / 255.0);
+	lua_pushnumber(L, (lua_Number) c.g / 255.0);
+	lua_pushnumber(L, (lua_Number) c.b / 255.0);
+	lua_pushnumber(L, (lua_Number) c.a / 255.0);
 	return 4;
 }
 
@@ -93,19 +93,19 @@ int w_ImageData_setPixel(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 4, i);
 
-		c.r = (unsigned char)luaL_checkinteger(L, -4);
-		c.g = (unsigned char)luaL_checkinteger(L, -3);
-		c.b = (unsigned char)luaL_checkinteger(L, -2);
-		c.a = (unsigned char)luaL_optinteger(L, -1, 255);
+		c.r = (unsigned char) (luaL_checknumber(L, -4) * 255.0);
+		c.g = (unsigned char) (luaL_checknumber(L, -3) * 255.0);
+		c.b = (unsigned char) (luaL_checknumber(L, -2) * 255.0);
+		c.a = (unsigned char) (luaL_optnumber(L, -1, 1.0) * 255.0);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char)luaL_checkinteger(L, 4);
-		c.g = (unsigned char)luaL_checkinteger(L, 5);
-		c.b = (unsigned char)luaL_checkinteger(L, 6);
-		c.a = (unsigned char)luaL_optinteger(L, 7, 255);
+		c.r = (unsigned char) (luaL_checknumber(L, 4) * 255.0);
+		c.g = (unsigned char) (luaL_checknumber(L, 5) * 255.0);
+		c.b = (unsigned char) (luaL_checknumber(L, 6) * 255.0);
+		c.a = (unsigned char) (luaL_optnumber(L, 7, 1.0) * 255.0);
 	}
 
 	luax_catchexcept(L, [&](){ t->setPixel(x, y, c); });
@@ -182,7 +182,7 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 				int ttype = lua_type(L, -4 + i);
 
 				if (ttype == LUA_TNUMBER)
-					parray[i] = (unsigned char) lua_tonumber(L, -4 + i);
+					parray[i] = (unsigned char) (lua_tonumber(L, -4 + i) * 255.0);
 				else if (i == 3 && (ttype == LUA_TNONE || ttype == LUA_TNIL))
 					parray[i] = 255; // Alpha component defaults to 255.
 				else

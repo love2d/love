@@ -687,31 +687,11 @@ love::Vector ParticleSystem::getOffset() const
 void ParticleSystem::setColor(const std::vector<Colorf> &newColors)
 {
 	colors = newColors;
-
-	for (Colorf &c : colors)
-	{
-		// We want to store the colors as [0, 1], rather than [0, 255].
-		c.r /= 255.0f;
-		c.g /= 255.0f;
-		c.b /= 255.0f;
-		c.a /= 255.0f;
-	}
 }
 
 std::vector<Colorf> ParticleSystem::getColor() const
 {
-	// The particle system stores colors in the range of [0, 1]...
-	std::vector<Colorf> ncolors(colors);
-
-	for (Colorf &c : ncolors)
-	{
-		c.r *= 255.0f;
-		c.g *= 255.0f;
-		c.b *= 255.0f;
-		c.a *= 255.0f;
-	}
-
-	return ncolors;
+	return colors;
 }
 
 void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
