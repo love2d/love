@@ -510,22 +510,6 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
-#ifdef LOVE_ANDROID
-	case SDL_WINDOWEVENT_MINIMIZED:
-		{
-			auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
-			if (audio)
-				audio->pause();
-		}
-		break;
-	case SDL_WINDOWEVENT_RESTORED:
-		{
-			auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
-			if (audio)
-				audio->resume();
-		}
-		break;
-#endif
 	default:
 		break;
 	}
@@ -589,6 +573,21 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 		win = Module::getInstance<window::Window>(Module::M_WINDOW);
 		if (win)
 			win->onSizeChanged(e.window.data1, e.window.data2);
+		break;
+	case SDL_WINDOWEVENT_MINIMIZED:
+	case SDL_WINDOWEVENT_RESTORED:
+#ifdef LOVE_ANDROID
+	{
+		auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
+		if (audio)
+		{
+			if (e.window.event == SDL_WINDOWEVENT_MINIMIZED)
+				audio->pause();
+			else if (e.window.event == SDL_WINDOWEVENT_RESTORED)
+				audio->resume();
+		}
+	}
+#endif
 		break;
 	}
 
