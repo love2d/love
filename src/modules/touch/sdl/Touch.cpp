@@ -23,6 +23,9 @@
 #include "common/Exception.h"
 #include "Touch.h"
 
+// C++
+#include <algorithm>
+
 namespace love
 {
 namespace touch
@@ -30,34 +33,20 @@ namespace touch
 namespace sdl
 {
 
-std::vector<int64> Touch::getTouches() const
+const std::vector<Touch::TouchInfo> &Touch::getTouches() const
 {
-	std::vector<int64> ids;
-	ids.reserve(touches.size());
+	return touches;
+}
 
+const Touch::TouchInfo &Touch::getTouch(int64 id) const
+{
 	for (const auto &touch : touches)
-		ids.push_back(touch.first);
+	{
+		if (touch.id == id)
+			return touch;
+	}
 
-	return ids;
-}
-
-void Touch::getPosition(int64 id, double &x, double &y) const
-{
-	const auto it = touches.find(id);
-	if (it == touches.end())
-		throw love::Exception("Invalid active touch ID: %d", id);
-
-	x = it->second.x;
-	y = it->second.y;
-}
-
-double Touch::getPressure(int64 id) const
-{
-	const auto it = touches.find(id);
-	if (it == touches.end())
-		throw love::Exception("Invalid active touch ID: %d", id);
-
-	return it->second.pressure;
+	throw love::Exception("Invalid active touch ID: %d", id);
 }
 
 const char *Touch::getName() const
@@ -67,14 +56,28 @@ const char *Touch::getName() const
 
 void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)
 {
+	auto compare = [&](const TouchInfo &touch) -> bool
+	{
+		return touch.id == info.id;
+	};
+
 	switch (eventtype)
 	{
 	case SDL_FINGERDOWN:
-	case SDL_FINGERMOTION:
-		touches[info.id] = info;
+		touches.erase(std::remove_if(touches.begin(), touches.end(), compare), touches.end());
+		touches.push_back(info);
 		break;
+	case SDL_FINGERMOTION:
+	{
+		for (TouchInfo &touch : touches)
+		{
+			if (touch.id == info.id)
+				touch = info;
+		}
+		break;
+	}
 	case SDL_FINGERUP:
-		touches.erase(info.id);
+		touches.erase(std::remove_if(touches.begin(), touches.end(), compare), touches.end());
 		break;
 	default:
 		break;

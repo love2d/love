@@ -55,19 +55,14 @@ public:
 	virtual ModuleType getModuleType() const { return M_TOUCH; }
 
 	/**
-	 * Gets a list of the IDs of all currently active touches.
+	 * Gets all currently active touches.
 	 **/
-	virtual std::vector<int64> getTouches() const = 0;
+	virtual const std::vector<TouchInfo> &getTouches() const = 0;
 
 	/**
-	 * Gets the position in pixels of a specific touch, using its ID.
+	 * Gets a specific touch, using its ID.
 	 **/
-	virtual void getPosition(int64 id, double &x, double &y) const = 0;
-
-	/**
-	 * Gets the pressure of a specific touch, using its ID.
-	 **/
-	virtual double getPressure(int64 id) const = 0;
+	virtual const TouchInfo &getTouch(int64 id) const = 0;
 
 }; // Touch
 

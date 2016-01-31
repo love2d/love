@@ -24,9 +24,6 @@
 // LOVE
 #include "touch/Touch.h"
 
-// C++
-#include <map>
-
 // SDL
 #include <SDL_events.h>
 
@@ -43,9 +40,8 @@ public:
 
 	virtual ~Touch() {}
 
-	std::vector<int64> getTouches() const override;
-	void getPosition(int64 id, double &x, double &y) const override;
-	double getPressure(int64 id) const override;
+	const std::vector<TouchInfo> &getTouches() const override;
+	const TouchInfo &getTouch(int64 id) const override;
 
 	// Implements Module.
 	const char *getName() const override;
@@ -59,8 +55,8 @@ public:
 
 private:
 
-	// All current touches, indexed by their IDs.
-	std::map<int64, TouchInfo> touches;
+	// All current touches.
+	std::vector<TouchInfo> touches;
 
 }; // Touch
 
